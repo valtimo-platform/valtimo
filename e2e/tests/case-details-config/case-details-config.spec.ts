@@ -46,6 +46,25 @@ test.describe('Case details configuration', () => {
     await page.goto('/');
     await caseDetailsConfigPage.goToCaseDetailsConfig(CASE_IDENTIFIER);
     draftVersion = await caseDetailsConfigPage.ensureDraftVersionSelected();
+
+    // Clean up leftover data from previous failed runs
+    const statusKey = statusTestData.updatedTitle.toLowerCase().replace(/\s+/g, '-');
+    const originalStatusKey = statusTestData.title.toLowerCase().replace(/\s+/g, '-');
+    const colorStatusKey = statusColorTestData.title.toLowerCase().replace(/\s+/g, '-');
+    const visibilityStatusKey = statusVisibilityTestData.title.toLowerCase().replace(/\s+/g, '-');
+    const reorderKeyA = statusReorderTestData.titleA.toLowerCase().replace(/\s+/g, '-');
+    const reorderKeyB = statusReorderTestData.titleB.toLowerCase().replace(/\s+/g, '-');
+    const tagKey = tagTestData.updatedTitle.toLowerCase().replace(/\s+/g, '-');
+    const originalTagKey = tagTestData.title.toLowerCase().replace(/\s+/g, '-');
+
+    await caseDetailsConfigPage.deleteStatusViaApi(CASE_IDENTIFIER, statusKey);
+    await caseDetailsConfigPage.deleteStatusViaApi(CASE_IDENTIFIER, originalStatusKey);
+    await caseDetailsConfigPage.deleteStatusViaApi(CASE_IDENTIFIER, colorStatusKey);
+    await caseDetailsConfigPage.deleteStatusViaApi(CASE_IDENTIFIER, visibilityStatusKey);
+    await caseDetailsConfigPage.deleteStatusViaApi(CASE_IDENTIFIER, reorderKeyA);
+    await caseDetailsConfigPage.deleteStatusViaApi(CASE_IDENTIFIER, reorderKeyB);
+    await caseDetailsConfigPage.deleteTagViaApi(CASE_IDENTIFIER, draftVersion, tagKey);
+    await caseDetailsConfigPage.deleteTagViaApi(CASE_IDENTIFIER, draftVersion, originalTagKey);
   });
 
   test.afterAll(async () => {

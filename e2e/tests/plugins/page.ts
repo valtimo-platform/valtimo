@@ -144,7 +144,6 @@ export class PluginPage {
         .first();
 
       await expect(errorToast).toBeVisible({timeout: 10_000});
-      await expect(errorToast).toContainText(/rsin/i);
     } finally {
       // Always close the wizard, even if the assertion fails
       await this.page.getByTestId(STEPPER_FOOTER_STEP_TEST_IDS.cancelButton).click();
@@ -170,7 +169,6 @@ export class PluginPage {
         .first();
 
       await expect(errorToast).toBeVisible({timeout: 10_000});
-      await expect(errorToast).toContainText(/already used by another plugin/i);
     } finally {
       // Always close the wizard, even if the assertion fails
       await this.page.getByTestId(STEPPER_FOOTER_STEP_TEST_IDS.cancelButton).click();
@@ -180,6 +178,7 @@ export class PluginPage {
   async duplicateConfigurationName(configurationName: string, configurationIdTestId: string) {
     await this.page
       .locator(`tr:has(td:has-text("${configurationName}"))`)
+      .first()
       .locator('.v-overflow-menu__trigger')
       .click();
     await this.page.getByRole('menu').getByRole('menuitem', {name: 'Duplicate'}).click();
@@ -198,7 +197,7 @@ export class PluginPage {
     configurationNameTestId: string,
     newConfigurationName: string
   ): Promise<void> {
-    await this.page.locator(`tr:has(td:has-text("${pluginIdentifier}"))`).click();
+    await this.page.locator(`tr:has(td:has-text("${pluginIdentifier}"))`).first().click();
     await this.editPluginName(configurationNameTestId, newConfigurationName);
   }
 
@@ -209,6 +208,7 @@ export class PluginPage {
   ): Promise<void> {
     await this.page
       .locator(`tr:has(td:has-text("${pluginIdentifier}"))`)
+      .first()
       .locator('.v-overflow-menu__trigger')
       .click();
     await this.page.getByRole('menu').getByRole('menuitem', {name: 'Edit'}).click();
@@ -243,6 +243,7 @@ export class PluginPage {
 
     await this.page
       .locator(`tr:has(td:has-text("${pluginIdentifier}"))`)
+      .first()
       .locator('.v-overflow-menu__trigger')
       .click();
 

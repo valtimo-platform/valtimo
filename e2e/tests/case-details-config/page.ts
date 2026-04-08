@@ -135,6 +135,8 @@ export class CaseDetailsConfigPage {
     await this.statusAddButton.click();
     await expect(this.statusTitleInput).toBeVisible();
     await this.statusTitleInput.fill(title);
+    // Wait for auto-generated key to be populated before expecting the confirm button
+    await expect(this.statusKeyInput).not.toHaveValue('', {timeout: 5_000});
     await expect(this.statusAddConfirmButton).toBeVisible({timeout: 10_000});
     await expect(this.statusAddConfirmButton).toBeEnabled();
     await this.statusAddConfirmButton.click();
@@ -148,10 +150,9 @@ export class CaseDetailsConfigPage {
   }
 
   async deleteStatus(title: string) {
-    // Carbon valtimo-carbon-list: use getByRole('menu') to find the overflow menu trigger
     const row = this.page.locator(`tr:has(td:has-text("${title}"))`);
-    await row.getByRole('menu').locator('button').click();
-    await this.page.getByRole('menuitem', {name: 'Delete'}).click();
+    await row.locator('.v-overflow-menu__trigger').click();
+    await this.page.getByRole('menu').getByRole('menuitem', {name: 'Delete'}).click();
     await this.page.getByRole('button', {name: 'Delete'}).click();
   }
 
@@ -220,6 +221,8 @@ export class CaseDetailsConfigPage {
     await this.tagAddButton.click();
     await expect(this.tagTitleInput).toBeVisible();
     await this.tagTitleInput.fill(title);
+    // Wait for auto-generated key to be populated before expecting the confirm button
+    await expect(this.tagKeyInput).not.toHaveValue('', {timeout: 5_000});
     await expect(this.tagAddConfirmButton).toBeVisible({timeout: 10_000});
     await expect(this.tagAddConfirmButton).toBeEnabled();
     await this.tagAddConfirmButton.click();
@@ -233,10 +236,9 @@ export class CaseDetailsConfigPage {
   }
 
   async deleteTag(title: string) {
-    // Carbon valtimo-carbon-list: use getByRole('menu') to find the overflow menu trigger
     const row = this.page.locator(`tr:has(td:has-text("${title}"))`);
-    await row.getByRole('menu').locator('button').click();
-    await this.page.getByRole('menuitem', {name: 'Delete'}).click();
+    await row.locator('.v-overflow-menu__trigger').click();
+    await this.page.getByRole('menu').getByRole('menuitem', {name: 'Delete'}).click();
     await this.page.getByRole('button', {name: 'Delete'}).click();
   }
 
