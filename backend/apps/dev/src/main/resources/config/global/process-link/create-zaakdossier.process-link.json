@@ -12,7 +12,7 @@
         }
     },
     {
-        "activityId": "create-initiator-zaak-rol",
+        "activityId": "create-initiator-zaak-rol-bsn",
         "activityType": "bpmn:ServiceTask:start",
         "processLinkType": "plugin",
         "pluginConfigurationId": "3079d6fe-42e3-4f8f-a9db-52ce2507b7ee",
@@ -21,6 +21,18 @@
             "roltypeUrl": "pv:rolTypeUrl",
             "rolToelichting": "pv:rolDescription",
             "inpBsn": "pv:initiatorValue"
+        }
+    },
+    {
+        "activityId": "create-initiator-zaak-rol-kvk",
+        "activityType": "bpmn:ServiceTask:start",
+        "processLinkType": "plugin",
+        "pluginConfigurationId": "3079d6fe-42e3-4f8f-a9db-52ce2507b7ee",
+        "pluginActionDefinitionKey": "create-niet-natuurlijk-persoon-zaak-rol",
+        "actionProperties": {
+            "roltypeUrl": "pv:rolTypeUrl",
+            "rolToelichting": "pv:rolDescription",
+            "kvkNummer": "pv:initiatorValue"
         }
     },
     {
