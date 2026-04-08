@@ -119,6 +119,7 @@
     * [Register Angular component](features/case/for-developers/register-angular-component.md)
 * [🧱 Building blocks](features/building-blocks/README.md)
   * [Forms](features/building-blocks/forms.md)
+  * [Form flows](features/building-blocks/form-flows.md)
 * [📊 Dashboard](features/dashboard/README.md)
   * [Widget data sources](features/dashboard/dashboard.md)
   * [Widget display types](features/dashboard/widget-display-types.md)
@@ -177,6 +178,7 @@
 
 * [Release notes](release-notes/release-notes.md)
 * [13.x.x](release-notes/13.x.x/README.md)
+  * [13.24.0](release-notes/13.x.x/13.24.0/README.md)
   * [13.23.0](release-notes/13.x.x/13.23.0/README.md)
   * [13.22.0](release-notes/13.x.x/13.22.0/README.md)
   * [13.21.0](release-notes/13.x.x/13.21.0/README.md)

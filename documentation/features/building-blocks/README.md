@@ -80,9 +80,9 @@ and outputs when you link them to a case.
 <figure><img src="./images/link-additional-process.png" alt=""><figcaption><p>Link to a different process in the building block</p></figcaption></figure>
 
 {% hint style="info" %}
-Building blocks support user tasks with form process links. Tasks from building blocks automatically appear in the case
-task list and support auto-assignment. To use forms in user tasks, first create them in the [Forms](forms.md) tab of the
-building block. Form flow and custom UI component process links are not yet supported.
+Building blocks support user tasks with form and form flow process links. Tasks from building blocks automatically
+appear in the case task list and support auto-assignment. To use forms in user tasks, first create them in the
+[Forms](forms.md) tab. To use form flows, create them in the [Form flows](form-flows.md) tab.
 {% endhint %}
 
 ### 5. Finalize the version

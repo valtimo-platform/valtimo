@@ -59,8 +59,10 @@ class FormFlowStepTypeFormHandler(
             val stepDefinitionType = stepInstance.definition.type
             require(stepDefinitionType.name == getType())
             val formDefinitionName = (stepDefinitionType.properties as FormStepTypeProperties).definition
-            val caseDefinitionId = stepInstance.instance.formFlowDefinition.id.caseDefinitionId
-            formIoFormDefinitionService.getFormDefinitionByName(formDefinitionName, caseDefinitionId)
+            val blueprintId = stepInstance.instance.formFlowDefinition.id.blueprintId
+            val blueprintRef = blueprintId.asCaseDefinitionId() ?: blueprintId.asBuildingBlockDefinitionId()
+                ?: throw IllegalStateException("Unsupported blueprint type: ${blueprintId.blueprintType}")
+            formIoFormDefinitionService.getFormDefinitionByName(formDefinitionName, blueprintRef)
                 .orElseThrow { IllegalStateException("No FormDefinition found by name $formDefinitionName") }
         }
     }
