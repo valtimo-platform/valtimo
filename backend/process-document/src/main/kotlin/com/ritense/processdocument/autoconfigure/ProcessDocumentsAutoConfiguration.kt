@@ -233,13 +233,15 @@ class ProcessDocumentsAutoConfiguration {
         caseDefinitionService: CaseDefinitionService,
         processDocumentService: ProcessDocumentService,
         teamManagementService: TeamManagementService?,
+        caseDocumentResolver: CaseDocumentResolver,
     ): CaseTaskTeamAutoAssignListener {
         return CaseTaskTeamAutoAssignListener(
             operatonTaskService,
             documentService,
             caseDefinitionService,
             processDocumentService,
-            teamManagementService
+            teamManagementService,
+            caseDocumentResolver
         )
     }
 

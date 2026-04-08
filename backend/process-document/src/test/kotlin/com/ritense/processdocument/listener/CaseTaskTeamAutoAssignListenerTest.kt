@@ -28,6 +28,7 @@ import com.ritense.processdocument.service.ProcessDocumentService
 import com.ritense.valtimo.contract.authentication.Team
 import com.ritense.valtimo.contract.authentication.TeamManagementService
 import com.ritense.valtimo.contract.case_.CaseDefinitionId
+import com.ritense.valtimo.contract.document.CaseDocumentResolver
 import com.ritense.valtimo.event.OperatonTaskEvent
 import com.ritense.valtimo.operaton.domain.OperatonTask
 import com.ritense.valtimo.service.OperatonTaskService
@@ -54,6 +55,7 @@ class CaseTaskTeamAutoAssignListenerTest {
     private val caseDefinitionService: CaseDefinitionService = mock()
     private val processDocumentService: ProcessDocumentService = mock()
     private val teamManagementService: TeamManagementService = mock()
+    private val caseDocumentResolver: CaseDocumentResolver = mock()
 
     private lateinit var listener: CaseTaskTeamAutoAssignListener
 
@@ -73,8 +75,11 @@ class CaseTaskTeamAutoAssignListenerTest {
             documentService,
             caseDefinitionService,
             processDocumentService,
-            teamManagementService
+            teamManagementService,
+            caseDocumentResolver
         )
+
+        whenever(caseDocumentResolver.resolveCaseDocumentId(any())).thenReturn(documentId)
 
         jsonSchemaDocumentId = JsonSchemaDocumentId.existingId(documentId)
 
@@ -198,7 +203,7 @@ class CaseTaskTeamAutoAssignListenerTest {
     @Test
     fun `should not assign team when teamManagementService is null`() {
         val listenerWithoutTeams = CaseTaskTeamAutoAssignListener(
-            operatonTaskService, documentService, caseDefinitionService, processDocumentService, null
+            operatonTaskService, documentService, caseDefinitionService, processDocumentService, null, caseDocumentResolver
         )
 
         val delegateTask = mockDelegateTask(listOf("INTAKE_TEAM"))
@@ -270,7 +275,7 @@ class CaseTaskTeamAutoAssignListenerTest {
     @Test
     fun `should not update tasks when teamManagementService is null on document team change`() {
         val listenerWithoutTeams = CaseTaskTeamAutoAssignListener(
-            operatonTaskService, documentService, caseDefinitionService, processDocumentService, null
+            operatonTaskService, documentService, caseDefinitionService, processDocumentService, null, caseDocumentResolver
         )
 
         val event = DocumentAssigneeChangedEvent(
@@ -333,7 +338,7 @@ class CaseTaskTeamAutoAssignListenerTest {
     @Test
     fun `should not remove team from tasks when teamManagementService is null`() {
         val listenerWithoutTeams = CaseTaskTeamAutoAssignListener(
-            operatonTaskService, documentService, caseDefinitionService, processDocumentService, null
+            operatonTaskService, documentService, caseDefinitionService, processDocumentService, null, caseDocumentResolver
         )
 
         val event = DocumentUnassignedEvent(

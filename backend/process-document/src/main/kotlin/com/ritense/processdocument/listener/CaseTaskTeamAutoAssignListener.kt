@@ -18,6 +18,7 @@ package com.ritense.processdocument.listener
 
 import com.ritense.authorization.AuthorizationContext.Companion.runWithoutAuthorization
 import com.ritense.case.service.CaseDefinitionService
+import com.ritense.document.domain.Document
 import com.ritense.document.domain.impl.JsonSchemaDocumentId
 import com.ritense.document.event.DocumentAssigneeChangedEvent
 import com.ritense.document.event.DocumentUnassignedEvent
@@ -26,12 +27,14 @@ import com.ritense.processdocument.domain.impl.OperatonProcessInstanceId
 import com.ritense.processdocument.service.ProcessDocumentService
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import com.ritense.valtimo.contract.authentication.TeamManagementService
+import com.ritense.valtimo.contract.document.CaseDocumentResolver
 import com.ritense.valtimo.event.OperatonTaskEvent
 import com.ritense.valtimo.operaton.repository.OperatonTaskSpecificationHelper.Companion.byCandidateGroups
 import com.ritense.valtimo.operaton.repository.OperatonTaskSpecificationHelper.Companion.byHasTeam
 import com.ritense.valtimo.operaton.repository.OperatonTaskSpecificationHelper.Companion.byRootProcessInstanceBusinessKey
 import com.ritense.valtimo.service.OperatonTaskService
 import io.github.oshai.kotlinlogging.KotlinLogging
+import java.util.UUID
 import org.springframework.context.event.EventListener
 import org.springframework.stereotype.Component
 import org.springframework.transaction.annotation.Transactional
@@ -46,6 +49,7 @@ class CaseTaskTeamAutoAssignListener(
     private val caseDefinitionService: CaseDefinitionService,
     private val processDocumentService: ProcessDocumentService,
     private val teamManagementService: TeamManagementService?,
+    private val caseDocumentResolver: CaseDocumentResolver,
 ) {
 
     @EventListener(
@@ -102,30 +106,20 @@ class CaseTaskTeamAutoAssignListener(
             return
         }
 
-        runWithoutAuthorization {
-            val caseDocument = documentService.findBy(JsonSchemaDocumentId.existingId(event.documentId))
-                .orElse(null) ?: return@runWithoutAuthorization
+        val caseDocument = getEligibleCaseDocument(event.documentId)
+            ?: return
 
-            val caseDefinition = caseDefinitionService.getCaseDefinition(
-                caseDocument.definitionId().caseDefinitionId()
-            )
+        val teamKey = caseDocument.assignedTeamKey()
+            ?: return
 
-            if (!caseDefinition.canHaveAssignee || !caseDefinition.autoAssignTasks) {
-                return@runWithoutAuthorization
-            }
+        val tasks = operatonTaskService.findTasks(
+            byRootProcessInstanceBusinessKey(caseDocument.id().toString())
+                .and(byCandidateGroups(teamKey))
+        )
 
-            val teamKey = caseDocument.assignedTeamKey()
-                ?: return@runWithoutAuthorization
-
-            val tasks = operatonTaskService.findTasks(
-                byRootProcessInstanceBusinessKey(caseDocument.id().toString())
-                    .and(byCandidateGroups(teamKey))
-            )
-
-            logger.debug { "Updating team assignment to '$teamKey' on ${tasks.size} task(s)" }
-            for (task in tasks) {
-                operatonTaskService.assignTeamToTask(task.id, teamKey)
-            }
+        logger.debug { "Updating team assignment to '$teamKey' on ${tasks.size} task(s)" }
+        for (task in tasks) {
+            operatonTaskService.assignTeamToTask(task.id, teamKey)
         }
     }
 
@@ -136,27 +130,36 @@ class CaseTaskTeamAutoAssignListener(
             return
         }
 
-        runWithoutAuthorization {
-            val caseDocument = documentService.findBy(JsonSchemaDocumentId.existingId(event.documentId))
-                .orElse(null) ?: return@runWithoutAuthorization
+        val caseDocument = getEligibleCaseDocument(event.documentId)
+            ?: return
+
+        val tasks = operatonTaskService.findTasks(
+            byRootProcessInstanceBusinessKey(caseDocument.id().toString())
+                .and(byHasTeam())
+        )
+
+        logger.debug { "Removing team assignment from ${tasks.size} task(s)" }
+        for (task in tasks) {
+            operatonTaskService.unassignTeamFromTask(task.id)
+        }
+    }
+
+    private fun getEligibleCaseDocument(documentId: UUID): Document? {
+        return runWithoutAuthorization {
+            val caseDocumentId = caseDocumentResolver.resolveCaseDocumentId(documentId)
+
+            val caseDocument = documentService.findBy(JsonSchemaDocumentId.existingId(caseDocumentId))
+                .orElse(null) ?: return@runWithoutAuthorization null
 
             val caseDefinition = caseDefinitionService.getCaseDefinition(
                 caseDocument.definitionId().caseDefinitionId()
             )
 
             if (!caseDefinition.canHaveAssignee || !caseDefinition.autoAssignTasks) {
-                return@runWithoutAuthorization
+                return@runWithoutAuthorization null
             }
 
-            val tasks = operatonTaskService.findTasks(
-                byRootProcessInstanceBusinessKey(caseDocument.id().toString())
-                    .and(byHasTeam())
-            )
-
-            logger.debug { "Removing team assignment from ${tasks.size} task(s)" }
-            for (task in tasks) {
-                operatonTaskService.unassignTeamFromTask(task.id)
-            }
+            return@runWithoutAuthorization caseDocument
         }
     }
 
