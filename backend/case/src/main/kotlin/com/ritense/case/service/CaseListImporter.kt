@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -45,7 +45,7 @@ class CaseListImporter(
     override fun supports(fileName: String) = fileName.matches(FILENAME_REGEX)
 
     override fun import(request: ImportRequest) {
-        val caseDefinitionName = FILENAME_REGEX.matchEntire(request.fileName)!!.groupValues[1]
+        val caseDefinitionName = request.caseDefinitionId!!.key
         withLoggingContext("jsonSchemaDocumentName" to caseDefinitionName) {
             deployColumns(caseDefinitionName, request.content.toString(Charsets.UTF_8))
         }

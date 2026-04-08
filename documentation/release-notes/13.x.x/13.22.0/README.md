@@ -20,6 +20,10 @@
 
 ## Bugfixes
 
+* **Replaced Carbon overflow menus with custom overflow components**
+
+  The Carbon Design System overflow menu components have been replaced with custom-built overflow components throughout the application. The Carbon overflow menu had persistent issues with sizing, positioning, and lacked adequate support for custom panes and custom trigger elements. The new custom components resolve these limitations and provide a consistent, flexible overflow menu experience across the platform.
+
 * Fixed sensitive data logging in inbox messages and null safety issues in SSE event mappers.
 * Fixed MySQL outbox message query missing ordering.
 * Fixed RabbitMQ outbox publisher null safety on confirmation result.
@@ -31,3 +35,11 @@ The following will be removed in 14.0:
 * `OutboxMessageRepository.findOutboxMessage()` — use `findOutboxMessages(batchSize)`
 * `ValtimoOutboxService.getOldestMessage()` — use `getOldestMessages(batchSize)`
 * `ValtimoOutboxService.deleteMessage(id)` — use `deleteMessages(ids)`
+
+## Known issues
+
+This version has the following known issues:
+
+* **Outbox circuit breaker never recovers from OPEN state**
+  * Discovered in version 13.22.0
+  * Fixed in 13.23.0. Workaround: Disable the circuit breaker using the `valtimo.outbox.publisher.polling.circuit-breaker.enabled` property.

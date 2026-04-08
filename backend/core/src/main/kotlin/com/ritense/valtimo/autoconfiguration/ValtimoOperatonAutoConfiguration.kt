@@ -35,6 +35,7 @@ import com.ritense.valtimo.operaton.repository.OperatonProcessDefinitionReposito
 import com.ritense.valtimo.operaton.repository.OperatonTaskIdentityLinkMapper
 import com.ritense.valtimo.operaton.repository.OperatonTaskRepository
 import com.ritense.valtimo.operaton.repository.OperatonVariableInstanceRepository
+import com.ritense.valtimo.task.repository.TaskTeamRepository
 import com.ritense.valtimo.task.repository.UserTaskOpenedStatusRepository
 import com.ritense.valtimo.operaton.service.OperatonContextService
 import com.ritense.valtimo.operaton.service.OperatonHistoryService
@@ -76,6 +77,7 @@ import org.springframework.data.jpa.repository.config.EnableJpaRepositories
         OperatonDecisionDefinitionRepository::class,
         OperatonTaskRepository::class,
         OperatonVariableInstanceRepository::class,
+        TaskTeamRepository::class,
         UserTaskOpenedStatusRepository::class
     ]
 )

@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,6 +25,8 @@ data class ImportRequest(
     val content: ByteArray,
     val caseDefinitionId: CaseDefinitionId? = null,
     val buildingBlockDefinitionId: BuildingBlockDefinitionId? = null,
+    val keyOverride: String? = null,
+    val nameOverride: String? = null,
 ) {
     override fun equals(other: Any?): Boolean {
         if (this === other) return true

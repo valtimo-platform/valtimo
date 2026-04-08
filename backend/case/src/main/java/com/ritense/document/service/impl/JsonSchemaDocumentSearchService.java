@@ -28,7 +28,6 @@ import com.ritense.authorization.Action;
 import com.ritense.authorization.AuthorizationService;
 import com.ritense.authorization.request.EntityAuthorizationRequest;
 import com.ritense.document.domain.CaseTag;
-import com.ritense.valtimo.contract.blueprint.BlueprintType;
 import com.ritense.document.domain.impl.JsonSchemaDocument;
 import com.ritense.document.domain.impl.searchfield.SearchField;
 import com.ritense.document.domain.search.AdvancedSearchRequest;
@@ -42,7 +41,9 @@ import com.ritense.document.service.DocumentSearchService;
 import com.ritense.document.service.SearchFieldService;
 import com.ritense.logging.LoggableResource;
 import com.ritense.outbox.OutboxService;
+import com.ritense.valtimo.contract.authentication.TeamManagementService;
 import com.ritense.valtimo.contract.authentication.UserManagementService;
+import com.ritense.valtimo.contract.blueprint.BlueprintType;
 import com.ritense.valtimo.contract.database.QueryDialectHelper;
 import com.ritense.valtimo.contract.utils.RequestHelper;
 import jakarta.persistence.EntityManager;
@@ -90,6 +91,7 @@ public class JsonSchemaDocumentSearchService implements DocumentSearchService {
     private static final String SEQUENCE = "sequence";
     private static final String CONTENT = "content";
     private static final String ASSIGNEE_ID = "assigneeId";
+    private static final String ASSIGNED_TEAM_KEY = "assignedTeamKey";
     private static final String INTERNAL_STATUS = "internalStatus";
     private static final String INTERNAL_STATUS_KEY = "internalStatus.id.key";
     private static final String INTERNAL_STATUS_ORDER = "internalStatus.order";
@@ -109,6 +111,7 @@ public class JsonSchemaDocumentSearchService implements DocumentSearchService {
     private final QueryDialectHelper queryDialectHelper;
     private final SearchFieldService searchFieldService;
     private final UserManagementService userManagementService;
+    private final TeamManagementService teamManagementService;
 
     private final AuthorizationService authorizationService;
     private final OutboxService outboxService;
@@ -121,6 +124,7 @@ public class JsonSchemaDocumentSearchService implements DocumentSearchService {
         QueryDialectHelper queryDialectHelper,
         SearchFieldService searchFieldService,
         UserManagementService userManagementService,
+        TeamManagementService teamManagementService,
         AuthorizationService authorizationService, OutboxService outboxService,
         JsonSchemaDocumentDefinitionService jsonSchemaDocumentDefinitionService,
         ObjectMapper objectMapper
@@ -129,6 +133,7 @@ public class JsonSchemaDocumentSearchService implements DocumentSearchService {
         this.queryDialectHelper = queryDialectHelper;
         this.searchFieldService = searchFieldService;
         this.userManagementService = userManagementService;
+        this.teamManagementService = teamManagementService;
         this.authorizationService = authorizationService;
         this.outboxService = outboxService;
         this.jsonSchemaDocumentDefinitionService = jsonSchemaDocumentDefinitionService;
@@ -446,11 +451,28 @@ public class JsonSchemaDocumentSearchService implements DocumentSearchService {
         AssigneeFilter assigneeFilter
     ) {
         var caseAssigneeIdColumn = documentRoot.get(ASSIGNEE_ID);
-        var userId = userManagementService.getCurrentUser().getUsername();
+        var caseAssignedTeamKeyColumn = documentRoot.get(ASSIGNED_TEAM_KEY);
 
         return switch (assigneeFilter) {
-            case MINE -> cb.equal(caseAssigneeIdColumn, userId);
-            case OPEN -> cb.isNull(caseAssigneeIdColumn);
+            case MINE -> {
+                var username = userManagementService.getCurrentUser().getUsername();
+                yield cb.equal(caseAssigneeIdColumn, username);
+            }
+            case TEAM -> {
+                var username = userManagementService.getCurrentUser().getUsername();
+                if (teamManagementService == null) {
+                    throw new IllegalStateException(
+                        "No teamManagementService found. In order to use this feature, the team library must be included.");
+                }
+                var teamKeys = teamManagementService.findTeamKeysByUsername(username);
+
+                if (!teamKeys.isEmpty()) {
+                    yield cb.in(caseAssignedTeamKeyColumn).value(teamKeys);
+                } else {
+                    yield cb.disjunction();
+                }
+            }
+            case OPEN -> cb.and(cb.isNull(caseAssigneeIdColumn), cb.isNull(caseAssignedTeamKeyColumn));
             default -> null;
         };
     }

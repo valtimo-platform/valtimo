@@ -28,6 +28,7 @@ object CurrentUserExpressionHandler {
                 PermissionConditionKey.CURRENT_USER_ROLES.key -> UserManagementServiceHolder.currentInstance.currentUser.roles
                 PermissionConditionKey.CURRENT_USER_NAME.key -> UserManagementServiceHolder.currentInstance.currentUser.username
                 PermissionConditionKey.CURRENT_USER_IDENTIFIER.key -> UserManagementServiceHolder.currentInstance.currentUser.username
+                PermissionConditionKey.CURRENT_USER_TEAMS.key -> UserManagementServiceHolder.currentInstance.currentUserTeams
                 else -> value
             }
         }

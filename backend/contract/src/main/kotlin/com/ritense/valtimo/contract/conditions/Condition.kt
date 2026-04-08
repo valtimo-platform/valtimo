@@ -16,10 +16,8 @@
 
 package com.ritense.valtimo.contract.conditions
 
-import PermissionConditionKey
 import com.fasterxml.jackson.annotation.JsonAlias
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize
-import com.ritense.valtimo.contract.authorization.CurrentUserExpressionHandler
 import com.ritense.valtimo.contract.dashboard.ConditionSpelEvaluationContext
 import com.ritense.valtimo.contract.repository.ExpressionOperator
 import jakarta.persistence.criteria.CriteriaBuilder
@@ -27,8 +25,8 @@ import jakarta.persistence.criteria.Expression
 import jakarta.persistence.criteria.Predicate
 import jakarta.persistence.criteria.Root
 import org.springframework.expression.spel.standard.SpelExpressionParser
-import org.springframework.expression.spel.support.StandardEvaluationContext
-import java.time.LocalDateTime
+import org.springframework.expression.spel.support.DataBindingMethodResolver
+import org.springframework.expression.spel.support.SimpleEvaluationContext
 
 /**
  * A condition that can generically be used for different features where user entered conditions are required.
@@ -84,9 +82,11 @@ data class Condition<T : Comparable<T>>(
                 val expressionWithoutPrefixSuffix = it.substringAfter("\${").substringBefore("}")
 
                 val expressionContextRoot = getExpressionContextRoot()
-                val context = StandardEvaluationContext()
-
-                context.setRootObject(expressionContextRoot)
+                val context = SimpleEvaluationContext
+                    .forReadOnlyDataBinding()
+                    .withMethodResolvers(DataBindingMethodResolver.forInstanceMethodInvocation())
+                    .withRootObject(expressionContextRoot)
+                    .build()
 
                 val spelExpression = parser.parseExpression(expressionWithoutPrefixSuffix)
 
@@ -100,14 +100,5 @@ data class Condition<T : Comparable<T>>(
 
     private fun getExpressionContextRoot(): ConditionSpelEvaluationContext {
         return ConditionSpelEvaluationContext()
-    }
-
-    private fun <T> queryValueIsCurrentUserExpression(target: T): Boolean {
-        return (target as? String)?.let {
-            it.isNotEmpty() &&
-                PermissionConditionKey.isValidKey(it) &&
-                // roles is a list and is currently not supported
-                PermissionConditionKey.fromKey(it) != PermissionConditionKey.CURRENT_USER_ROLES
-        } ?: false
     }
 }
