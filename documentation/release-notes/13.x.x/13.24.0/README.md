@@ -6,9 +6,11 @@
 
 ## New Features
 
-* **New feature title**
+* **Publish notification plugin action for Notificaties API**
 
-  New feature explanation.
+  A new plugin action "Publiceer een notificatie" has been added to the Notificaties API plugin. This action allows
+  publishing notifications via the Notificaties API from a BPMN process, for example from a send task or intermediate
+  throw event.
 
 ## Enhancements
 
