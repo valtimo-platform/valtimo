@@ -318,9 +318,8 @@ export class CaseManagementActionsComponent implements AfterViewInit, OnDestroy 
     return mappings.map(mapping => {
       if (direction === 'input') {
         return {...mapping, target: ensureDocPrefix(mapping.target)};
-      } else {
-        return {...mapping, source: ensureDocPrefix(mapping.source)};
       }
+      return {...mapping, source: ensureDocPrefix(mapping.source)};
     });
   }
 
