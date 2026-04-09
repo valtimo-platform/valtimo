@@ -241,7 +241,7 @@ class ProcessDocumentsAutoConfiguration {
             caseDefinitionService,
             processDocumentService,
             teamManagementService,
-            caseDocumentResolver
+            caseDocumentResolver,
         )
     }
 

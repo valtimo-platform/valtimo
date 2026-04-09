@@ -17,7 +17,9 @@
 package com.ritense.buildingblock.listener
 
 import com.ritense.authorization.AuthorizationContext.Companion.runWithoutAuthorization
+import com.ritense.authorization.AuthorizationService
 import com.ritense.authorization.annotation.RunWithoutAuthorization
+import com.ritense.authorization.request.DelegateUserEntityAuthorizationRequest
 import com.ritense.buildingblock.repository.BuildingBlockInstanceRepository
 import com.ritense.case.service.CaseDefinitionService
 import com.ritense.case_.domain.definition.CaseDefinition
@@ -28,8 +30,9 @@ import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import com.ritense.valtimo.contract.authentication.UserManagementService
 import com.ritense.valtimo.contract.document.CaseDocumentResolutionException
 import com.ritense.valtimo.contract.document.CaseDocumentResolver
+import com.ritense.valtimo.operaton.authorization.OperatonTaskActionProvider
+import com.ritense.valtimo.operaton.domain.OperatonTask
 import com.ritense.valtimo.operaton.repository.OperatonTaskSpecificationHelper.Companion.byAssigned
-import com.ritense.valtimo.operaton.repository.OperatonTaskSpecificationHelper.Companion.byCandidateGroups
 import com.ritense.valtimo.operaton.repository.OperatonTaskSpecificationHelper.Companion.byRootProcessInstanceBusinessKeys
 import com.ritense.valtimo.service.OperatonTaskService
 import io.github.oshai.kotlinlogging.KotlinLogging
@@ -44,32 +47,52 @@ class BuildingBlockCaseAssigneeListener(
     private val caseDefinitionService: CaseDefinitionService,
     private val userManagementService: UserManagementService,
     private val caseDocumentResolver: CaseDocumentResolver,
-    private val buildingBlockInstanceRepository: BuildingBlockInstanceRepository
+    private val buildingBlockInstanceRepository: BuildingBlockInstanceRepository,
+    private val authorizationService: AuthorizationService,
 ) {
 
-    @RunWithoutAuthorization
     @EventListener(DocumentAssigneeChangedEvent::class)
     fun updateAssigneeOnBuildingBlockTasks(event: DocumentAssigneeChangedEvent) {
         try {
-            val caseDocumentId = caseDocumentResolver.resolveCaseDocumentId(event.documentId)
-            val caseDocument = documentService[caseDocumentId.toString()]
-            val caseDefinition: CaseDefinition = caseDefinitionService.getCaseDefinition(
-                caseDocument.definitionId().caseDefinitionId()
-            )
+            val caseDocumentId = runWithoutAuthorization {
+                caseDocumentResolver.resolveCaseDocumentId(event.documentId)
+            }
+            val caseDocument = runWithoutAuthorization { documentService[caseDocumentId.toString()] }
+            val caseDefinition = runWithoutAuthorization {
+                caseDefinitionService.getCaseDefinition(
+                    caseDocument.definitionId().caseDefinitionId()
+                )
+            }
 
             if (caseDefinition.canHaveAssignee && caseDefinition.autoAssignTasks) {
                 val businessKeys = buildingBlockInstanceRepository.findAllByCaseDocumentId(caseDocumentId)
                     .map { it.documentId.toString() }
                 if (businessKeys.isEmpty()) return
 
-                val assignee = runWithoutAuthorization { userManagementService.findByUsername(caseDocument.assigneeId()) }
-                val tasks = operatonTaskService.findTasks(
-                    byRootProcessInstanceBusinessKeys(businessKeys)
-                        .and(byCandidateGroups(assignee.roles))
-                )
-                logger.debug { "Updating assignee on ${tasks.size} building block task(s)" }
-                tasks.forEach { task ->
-                    operatonTaskService.assign(task.id, assignee.id)
+                val assigneeUsername = caseDocument.assigneeId()
+                if (assigneeUsername != null) {
+                    val assignee = runWithoutAuthorization { userManagementService.findByUsername(assigneeUsername) }
+                    val tasks = runWithoutAuthorization {
+                        operatonTaskService.findTasks(
+                            byRootProcessInstanceBusinessKeys(businessKeys)
+                        )
+                    }
+                    logger.debug { "Updating assignee on ${tasks.size} task(s)" }
+                    tasks.forEach { task ->
+                        if (authorizationService.hasPermission(
+                                DelegateUserEntityAuthorizationRequest(
+                                    OperatonTask::class.java,
+                                    OperatonTaskActionProvider.ASSIGNABLE,
+                                    assigneeUsername,
+                                    task
+                                )
+                            )
+                        ) {
+                            runWithoutAuthorization {
+                                operatonTaskService.assign(task.id, assignee.id)
+                            }
+                        }
+                    }
                 }
             }
         } catch (e: CaseDocumentResolutionException) {

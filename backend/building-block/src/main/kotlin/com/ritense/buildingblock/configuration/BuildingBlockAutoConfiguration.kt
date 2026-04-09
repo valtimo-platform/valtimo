@@ -408,6 +408,7 @@ class BuildingBlockAutoConfiguration {
         caseDefinitionService: CaseDefinitionService,
         userManagementService: UserManagementService,
         caseDocumentResolver: CaseDocumentResolver,
+        authorizationService: AuthorizationService,
         buildingBlockInstanceRepository: BuildingBlockInstanceRepository
     ) = BuildingBlockCaseAssigneeListener(
         operatonTaskService,
@@ -415,7 +416,8 @@ class BuildingBlockAutoConfiguration {
         caseDefinitionService,
         userManagementService,
         caseDocumentResolver,
-        buildingBlockInstanceRepository
+        buildingBlockInstanceRepository,
+        authorizationService,
     )
 
     @Bean

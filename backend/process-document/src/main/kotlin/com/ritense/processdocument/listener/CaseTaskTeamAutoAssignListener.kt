@@ -16,7 +16,7 @@
 
 package com.ritense.processdocument.listener
 
-import com.ritense.authorization.AuthorizationContext.Companion.runWithoutAuthorization
+import com.ritense.authorization.annotation.RunWithoutAuthorization
 import com.ritense.case.service.CaseDefinitionService
 import com.ritense.document.domain.Document
 import com.ritense.document.domain.impl.JsonSchemaDocumentId
@@ -52,6 +52,7 @@ class CaseTaskTeamAutoAssignListener(
     private val caseDocumentResolver: CaseDocumentResolver,
 ) {
 
+    @RunWithoutAuthorization
     @EventListener(
         condition = """#event.delegateTask.bpmnModelElementInstance != null
             && #event.delegateTask.bpmnModelElementInstance.elementType.typeName == T(org.operaton.bpm.engine.ActivityTypes).TASK_USER_TASK
@@ -65,44 +66,38 @@ class CaseTaskTeamAutoAssignListener(
 
         val delegateTask = event.delegateTask
         val processInstanceId = OperatonProcessInstanceId(delegateTask.processInstanceId)
+        val caseDocument = processDocumentService.getCaseDocument(processInstanceId, delegateTask.execution)
+            ?: return
 
-        runWithoutAuthorization {
-            val caseDocument = processDocumentService.getCaseDocument(processInstanceId, delegateTask.execution)
-                ?: return@runWithoutAuthorization
+        val caseDefinition = caseDefinitionService.getCaseDefinition(
+            caseDocument.definitionId().caseDefinitionId()
+        )
 
-            val caseDefinition = caseDefinitionService.getCaseDefinition(
-                caseDocument.definitionId().caseDefinitionId()
-            )
-
-            if (!caseDefinition.canHaveAssignee || !caseDefinition.autoAssignTasks) {
-                return@runWithoutAuthorization
-            }
-
-            val teamKey = caseDocument.assignedTeamKey()
-                ?: return@runWithoutAuthorization
-
-            val candidateGroups = delegateTask.candidates
-                .mapNotNull { it.groupId }
-                .filter { it.isNotBlank() }
-
-            if (teamKey !in candidateGroups) {
-                return@runWithoutAuthorization
-            }
-
-            val taskId = delegateTask.id
-            TransactionSynchronizationManager.registerSynchronization(object : TransactionSynchronization {
-                override fun beforeCommit(readOnly: Boolean) {
-                    operatonTaskService.assignTeamToTask(taskId, teamKey)
-                }
-            })
-            logger.debug { "Deferred auto-assign of team '$teamKey' to task '$taskId' based on candidate group" }
+        if (!caseDefinition.canHaveAssignee || !caseDefinition.autoAssignTasks) {
+            return
         }
+
+        val teamKey = caseDocument.assignedTeamKey()
+            ?: return
+
+        if (teamKey !in delegateTask.candidates.map { it.groupId }) {
+            return
+        }
+
+        val taskId = delegateTask.id
+        TransactionSynchronizationManager.registerSynchronization(object : TransactionSynchronization {
+            override fun beforeCommit(readOnly: Boolean) {
+                operatonTaskService.assignTeamToTask(taskId, teamKey)
+                logger.debug { "Auto assigning team '$teamKey' to task '$taskId'" }
+            }
+        })
     }
 
+    @RunWithoutAuthorization
     @EventListener(DocumentAssigneeChangedEvent::class)
     @Transactional
     fun updateTeamOnTasksForDocument(event: DocumentAssigneeChangedEvent) {
-        if (teamManagementService == null || event.assignedTeamTitle == null) {
+        if (teamManagementService == null) {
             return
         }
 
@@ -117,12 +112,13 @@ class CaseTaskTeamAutoAssignListener(
                 .and(byCandidateGroups(teamKey))
         )
 
-        logger.debug { "Updating team assignment to '$teamKey' on ${tasks.size} task(s)" }
+        logger.debug { "Auto assigning team '$teamKey' on ${tasks.size} task(s)" }
         for (task in tasks) {
             operatonTaskService.assignTeamToTask(task.id, teamKey)
         }
     }
 
+    @RunWithoutAuthorization
     @EventListener(DocumentUnassignedEvent::class)
     @Transactional
     fun removeTeamFromTasksForDocument(event: DocumentUnassignedEvent) {
@@ -138,29 +134,27 @@ class CaseTaskTeamAutoAssignListener(
                 .and(byHasTeam())
         )
 
-        logger.debug { "Removing team assignment from ${tasks.size} task(s)" }
+        logger.debug { "Unassign team from ${tasks.size} task(s)" }
         for (task in tasks) {
             operatonTaskService.unassignTeamFromTask(task.id)
         }
     }
 
     private fun getEligibleCaseDocument(documentId: UUID): Document? {
-        return runWithoutAuthorization {
-            val caseDocumentId = caseDocumentResolver.resolveCaseDocumentId(documentId)
+        val caseDocumentId = caseDocumentResolver.resolveCaseDocumentId(documentId)
 
-            val caseDocument = documentService.findBy(JsonSchemaDocumentId.existingId(caseDocumentId))
-                .orElse(null) ?: return@runWithoutAuthorization null
+        val caseDocument = documentService.findBy(JsonSchemaDocumentId.existingId(caseDocumentId))
+            .orElse(null) ?: return null
 
-            val caseDefinition = caseDefinitionService.getCaseDefinition(
-                caseDocument.definitionId().caseDefinitionId()
-            )
+        val caseDefinition = caseDefinitionService.getCaseDefinition(
+            caseDocument.definitionId().caseDefinitionId()
+        )
 
-            if (!caseDefinition.canHaveAssignee || !caseDefinition.autoAssignTasks) {
-                return@runWithoutAuthorization null
-            }
-
-            return@runWithoutAuthorization caseDocument
+        if (!caseDefinition.canHaveAssignee || !caseDefinition.autoAssignTasks) {
+            return null
         }
+
+        return caseDocument
     }
 
     companion object {

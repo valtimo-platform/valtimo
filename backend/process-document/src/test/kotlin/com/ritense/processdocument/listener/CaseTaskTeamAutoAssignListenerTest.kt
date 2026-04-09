@@ -25,7 +25,6 @@ import com.ritense.document.event.DocumentAssigneeChangedEvent
 import com.ritense.document.event.DocumentUnassignedEvent
 import com.ritense.document.service.DocumentService
 import com.ritense.processdocument.service.ProcessDocumentService
-import com.ritense.valtimo.contract.authentication.Team
 import com.ritense.valtimo.contract.authentication.TeamManagementService
 import com.ritense.valtimo.contract.case_.CaseDefinitionId
 import com.ritense.valtimo.contract.document.CaseDocumentResolver
@@ -76,7 +75,7 @@ class CaseTaskTeamAutoAssignListenerTest {
             caseDefinitionService,
             processDocumentService,
             teamManagementService,
-            caseDocumentResolver
+            caseDocumentResolver,
         )
 
         whenever(caseDocumentResolver.resolveCaseDocumentId(any())).thenReturn(documentId)
@@ -116,7 +115,7 @@ class CaseTaskTeamAutoAssignListenerTest {
             autoAssignTasks = autoAssignTasks
         )
 
-    private fun mockDelegateTask(candidateGroupIds: List<String?>): DelegateTask {
+    private fun mockDelegateTask(candidateGroupIds: List<String?> = emptyList()): DelegateTask {
         val delegateTask = mock<DelegateTask>()
         whenever(delegateTask.id).thenReturn("task-123")
         whenever(delegateTask.processInstanceId).thenReturn(UUID.randomUUID().toString())
@@ -134,21 +133,14 @@ class CaseTaskTeamAutoAssignListenerTest {
         return delegateTask
     }
 
-    private fun mockTeam(key: String, title: String): Team {
-        return object : Team {
-            override val key = key
-            override val title = title
-        }
-    }
-
-    // --- onTaskCreated ---
+    // --- assignTeam (task created) ---
 
     @Test
-    fun `should assign team when candidate group matches a team`() {
+    fun `should assign team when team key matches candidate group`() {
         whenever(caseDefinitionService.getCaseDefinition(any())).thenReturn(caseDefinitionWithSettings())
         whenever(caseDocument.assignedTeamKey()).thenReturn("INTAKE_TEAM")
 
-        val delegateTask = mockDelegateTask(listOf("INTAKE_TEAM"))
+        val delegateTask = mockDelegateTask(candidateGroupIds = listOf("INTAKE_TEAM"))
         listener.assignTeamFromCandidateGroup(OperatonTaskEvent(delegateTask, "create"))
         triggerBeforeCommit()
 
@@ -156,26 +148,25 @@ class CaseTaskTeamAutoAssignListenerTest {
     }
 
     @Test
-    fun `should not assign team when assignedTeamKey does not match any candidate group`() {
+    fun `should not assign team when team key does not match candidate groups`() {
         whenever(caseDefinitionService.getCaseDefinition(any())).thenReturn(caseDefinitionWithSettings())
         whenever(caseDocument.assignedTeamKey()).thenReturn("INTAKE_TEAM")
 
-        val delegateTask = mockDelegateTask(listOf("ROLE_USER"))
+        val delegateTask = mockDelegateTask(candidateGroupIds = listOf("OTHER_TEAM"))
         listener.assignTeamFromCandidateGroup(OperatonTaskEvent(delegateTask, "create"))
 
         verify(operatonTaskService, never()).assignTeamToTask(any(), any())
     }
 
     @Test
-    fun `should assign team when assignedTeamKey matches one of multiple candidate groups`() {
+    fun `should not assign team when candidate groups are empty`() {
         whenever(caseDefinitionService.getCaseDefinition(any())).thenReturn(caseDefinitionWithSettings())
         whenever(caseDocument.assignedTeamKey()).thenReturn("INTAKE_TEAM")
 
-        val delegateTask = mockDelegateTask(listOf("ROLE_USER", "INTAKE_TEAM"))
+        val delegateTask = mockDelegateTask(candidateGroupIds = emptyList())
         listener.assignTeamFromCandidateGroup(OperatonTaskEvent(delegateTask, "create"))
-        triggerBeforeCommit()
 
-        verify(operatonTaskService).assignTeamToTask("task-123", "INTAKE_TEAM")
+        verify(operatonTaskService, never()).assignTeamToTask(any(), any())
     }
 
     @Test
@@ -183,7 +174,7 @@ class CaseTaskTeamAutoAssignListenerTest {
         whenever(caseDefinitionService.getCaseDefinition(any()))
             .thenReturn(caseDefinitionWithSettings(canHaveAssignee = false))
 
-        val delegateTask = mockDelegateTask(listOf("INTAKE_TEAM"))
+        val delegateTask = mockDelegateTask()
         listener.assignTeamFromCandidateGroup(OperatonTaskEvent(delegateTask, "create"))
 
         verify(operatonTaskService, never()).assignTeamToTask(any(), any())
@@ -194,7 +185,7 @@ class CaseTaskTeamAutoAssignListenerTest {
         whenever(caseDefinitionService.getCaseDefinition(any()))
             .thenReturn(caseDefinitionWithSettings(autoAssignTasks = false))
 
-        val delegateTask = mockDelegateTask(listOf("INTAKE_TEAM"))
+        val delegateTask = mockDelegateTask()
         listener.assignTeamFromCandidateGroup(OperatonTaskEvent(delegateTask, "create"))
 
         verify(operatonTaskService, never()).assignTeamToTask(any(), any())
@@ -203,10 +194,11 @@ class CaseTaskTeamAutoAssignListenerTest {
     @Test
     fun `should not assign team when teamManagementService is null`() {
         val listenerWithoutTeams = CaseTaskTeamAutoAssignListener(
-            operatonTaskService, documentService, caseDefinitionService, processDocumentService, null, caseDocumentResolver
+            operatonTaskService, documentService, caseDefinitionService, processDocumentService,
+            null, caseDocumentResolver
         )
 
-        val delegateTask = mockDelegateTask(listOf("INTAKE_TEAM"))
+        val delegateTask = mockDelegateTask()
         listenerWithoutTeams.assignTeamFromCandidateGroup(OperatonTaskEvent(delegateTask, "create"))
 
         verify(operatonTaskService, never()).assignTeamToTask(any(), any())
@@ -216,13 +208,24 @@ class CaseTaskTeamAutoAssignListenerTest {
     fun `should not assign team when getCaseDocument returns null`() {
         whenever(processDocumentService.getCaseDocument(any(), any())).thenReturn(null)
 
-        val delegateTask = mockDelegateTask(listOf("INTAKE_TEAM"))
+        val delegateTask = mockDelegateTask()
         listener.assignTeamFromCandidateGroup(OperatonTaskEvent(delegateTask, "create"))
 
         verify(operatonTaskService, never()).assignTeamToTask(any(), any())
     }
 
-    // --- onDocumentTeamAssigneeChanged ---
+    @Test
+    fun `should not assign team when assignedTeamKey is null`() {
+        whenever(caseDefinitionService.getCaseDefinition(any())).thenReturn(caseDefinitionWithSettings())
+        whenever(caseDocument.assignedTeamKey()).thenReturn(null)
+
+        val delegateTask = mockDelegateTask(candidateGroupIds = listOf("INTAKE_TEAM"))
+        listener.assignTeamFromCandidateGroup(OperatonTaskEvent(delegateTask, "create"))
+
+        verify(operatonTaskService, never()).assignTeamToTask(any(), any())
+    }
+
+    // --- updateTeamOnTasksForDocument (team changed on case) ---
 
     @Test
     fun `should update team on existing tasks when document team assignee changes`() {
@@ -275,7 +278,8 @@ class CaseTaskTeamAutoAssignListenerTest {
     @Test
     fun `should not update tasks when teamManagementService is null on document team change`() {
         val listenerWithoutTeams = CaseTaskTeamAutoAssignListener(
-            operatonTaskService, documentService, caseDefinitionService, processDocumentService, null, caseDocumentResolver
+            operatonTaskService, documentService, caseDefinitionService, processDocumentService,
+            null, caseDocumentResolver
         )
 
         val event = DocumentAssigneeChangedEvent(
@@ -286,7 +290,7 @@ class CaseTaskTeamAutoAssignListenerTest {
         verify(operatonTaskService, never()).findTasks(any())
     }
 
-    // --- onDocumentUnassigned (team removal) ---
+    // --- removeTeamFromTasksForDocument (case unassigned) ---
 
     @Test
     fun `should remove team from tasks when document is unassigned`() {
@@ -338,7 +342,8 @@ class CaseTaskTeamAutoAssignListenerTest {
     @Test
     fun `should not remove team from tasks when teamManagementService is null`() {
         val listenerWithoutTeams = CaseTaskTeamAutoAssignListener(
-            operatonTaskService, documentService, caseDefinitionService, processDocumentService, null, caseDocumentResolver
+            operatonTaskService, documentService, caseDefinitionService, processDocumentService,
+            null, caseDocumentResolver
         )
 
         val event = DocumentUnassignedEvent(
