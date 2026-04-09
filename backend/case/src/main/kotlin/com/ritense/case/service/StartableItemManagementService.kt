@@ -96,8 +96,8 @@ class StartableItemManagementService(
         newProperties: JsonNode
     ): StartableItemDto {
         val existingItems = startableItemProviders.flatMap { it.getStartableItems(caseDefinitionId) }
-        val oldItem = existingItems.find { it.key == oldItemKey }
-            ?: throw NoSuchElementException("Startable item not found: $oldItemKey")
+        val oldItem = existingItems.find { it.key == oldItemKey && it.versionTag == oldVersionTag }
+            ?: throw NoSuchElementException("Startable item not found: $oldItemKey:$oldVersionTag")
 
         val oldSortOrder = startableItemRepository
             .findAllByIdCaseDefinitionId(caseDefinitionId)
