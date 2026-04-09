@@ -140,7 +140,8 @@ class NotificatiesApiServiceTest {
             resourceUrl = "http://example.com",
             actie = "create",
             aanmaakdatum = LocalDateTime.now(),
-            kenmerken = mapOf("bronId" to UUID.randomUUID().toString())
+            kenmerken = mapOf("bronId" to UUID.randomUUID().toString()),
+            resource = null
         )
     }
 }
