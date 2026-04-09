@@ -72,9 +72,8 @@ class OperatonTaskSpecificationHelper {
         }
 
         /**
-         * Matches on the task's own process instance business key. Note: child processes can have
-         * different business keys (e.g. building block document IDs). Use
-         * [byRootProcessInstanceBusinessKey] when matching on the case document ID.
+         * Matches on the task's own process instance business key.
+         * Note: For building blocks the, business key is the building block document ID (not the case document ID).
          */
         @JvmStatic
         fun byProcessInstanceBusinessKey(businessKey: String) = Specification<OperatonTask> { root, _, cb ->
@@ -82,9 +81,8 @@ class OperatonTaskSpecificationHelper {
         }
 
         /**
-         * Matches on the task's own process instance business key. Note: child processes can have
-         * different business keys (e.g. building block document IDs). Use
-         * [byRootProcessInstanceBusinessKeys] when matching on case document IDs.
+         * Matches on the task's own process instance business key.
+         * Note: For building blocks, the business key is the building block document ID (not the case document ID).
          */
         @JvmStatic
         fun byProcessInstanceBusinessKeys(businessKeys: Collection<String>) = Specification<OperatonTask> { root, _, cb ->
@@ -95,6 +93,10 @@ class OperatonTaskSpecificationHelper {
             }
         }
 
+        /**
+         * Note: For ad-hoc building blocks, the building block process is the root process,
+         * so the business key is the building block document ID (not the case document ID).
+         */
         @JvmStatic
         fun byRootProcessInstanceBusinessKey(businessKey: String) = Specification<OperatonTask> { root, _, cb ->
             cb.equal(
@@ -103,6 +105,10 @@ class OperatonTaskSpecificationHelper {
             )
         }
 
+        /**
+         * Note: For ad-hoc building blocks, the building block process is the root process,
+         * so the business key is the building block document ID (not the case document ID).
+         */
         @JvmStatic
         fun byRootProcessInstanceBusinessKeys(businessKeys: Collection<String>) = Specification<OperatonTask> { root, _, cb ->
             if (businessKeys.isEmpty()) {
