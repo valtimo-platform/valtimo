@@ -77,7 +77,7 @@ type ModalStep = 'selectType' | 'selectItem' | 'configureBuildingBlock';
   ],
 })
 export class CaseManagementActionsModalComponent implements OnDestroy {
-  @Output() public readonly configureBuildingBlock = new EventEmitter<BuildingBlockConfigRequest>();
+  @Output() public readonly configureBuildingBlockEvent = new EventEmitter<BuildingBlockConfigRequest>();
 
   public readonly showModal$ = this.stateService.showModal$;
   public readonly editingItem$ = this.stateService.editingItem$;
@@ -268,7 +268,7 @@ export class CaseManagementActionsModalComponent implements OnDestroy {
     if (!selectedId) return;
 
     if (this.$selectedType() === StartableItemType.BUILDING_BLOCK) {
-      this.configureBuildingBlock.emit({
+      this.configureBuildingBlockEvent.emit({
         buildingBlockDefinitionKey: selectedId,
         buildingBlockDefinitionVersionTag: this.getSelectedBuildingBlockVersionTag(selectedId),
       });
