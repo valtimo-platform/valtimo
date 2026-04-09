@@ -220,8 +220,14 @@ test.describe('Case management', () => {
       await caseManagementPage.pluginConfigurationStep();
       await caseManagementPage.uploadFileStep('test-case-import-success_1.0.0.case.zip');
 
-      // Change the key to the finalized one so the "Cannot import" warning appears
-      await caseManagementPage.changeConfigureKey(importedKey);
+      // Wait for the configure step to fully render before interacting
+      await expect(caseManagementPage.configureNameInput).toBeVisible();
+      await expect(caseManagementPage.configureKeyInput).toBeVisible();
+
+      const prefilledKey = await caseManagementPage.configureKeyInput.inputValue();
+      if (prefilledKey !== importedKey) {
+        await caseManagementPage.changeConfigureKey(importedKey);
+      }
 
       // Assert: final version warning blocks import (wait for validation API to complete)
       await caseManagementPage.assertExistingFinalWarning();

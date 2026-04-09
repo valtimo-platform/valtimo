@@ -132,6 +132,7 @@ export class CaseDetailsConfigPage {
   // ─── Status CRUD ──────────────────────────────────────────────────
 
   async addStatus(title: string) {
+    await this.page.waitForTimeout(300);
     await this.statusAddButton.click();
     // Wait for the modal to be fully in 'add' mode. The Add button only renders when
     // Angular's isAdd$ emits true, which also enables auto-key generation.
@@ -219,6 +220,8 @@ export class CaseDetailsConfigPage {
   // ─── Tag CRUD ─────────────────────────────────────────────────────
 
   async addTag(title: string) {
+    // Wait for the modal's initial 'closed' animation timeout (240ms) to resolve
+    await this.page.waitForTimeout(300);
     await this.tagAddButton.click();
     // Wait for the modal to be fully in 'add' mode. The Add button only renders when
     // Angular's isAdd$ emits true, which also enables auto-key generation.
