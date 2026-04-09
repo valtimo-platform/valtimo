@@ -17,6 +17,9 @@ permissions:
   contents: write
   actions: read
 
+concurrency:
+  group: finalize-release-${{ github.event.workflow_run.head_branch }}
+
 jobs:
   finalize:
     runs-on: ubuntu-latest
@@ -77,6 +80,10 @@ jobs:
           NOTES_DIR="documentation/release-notes/${MAJOR}.x.x"
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
+          if [ ! -d "${NOTES_DIR}/next-minor" ]; then
+            echo "next-minor already renamed, skipping"
+            exit 0
+          fi
           mv "${NOTES_DIR}/next-minor" "${NOTES_DIR}/${VERSION}"
           sed -i "s/# ${MAJOR}.XX.X/# ${VERSION}/" "${NOTES_DIR}/${VERSION}/README.md"
           RELEASE_DATE=$(date +"%d-%m-%Y")
@@ -96,8 +103,7 @@ jobs:
         run: |
           VERSION="${{ steps.version.outputs.semver }}"
           git add documentation/
-          git commit -m "Release notes for ${VERSION}"
-          git push
+          git diff --cached --quiet && echo "No release notes changes to commit" || (git commit -m "Release notes for ${VERSION}" && git push)
 
       - name: "Create a git tag for the release version and push it"
         if: steps.check.outputs.both_done == 'true'
@@ -154,6 +160,10 @@ jobs:
           NEXT_MINOR=$((MINOR + 1))
           RC_BRANCH="rc/${MAJOR}.${NEXT_MINOR}.0"
           NOTES_DIR="documentation/release-notes/${MAJOR}.x.x"
+          if git ls-remote --exit-code origin "$RC_BRANCH" >/dev/null 2>&1; then
+            echo "Branch $RC_BRANCH already exists, skipping"
+            exit 0
+          fi
           git checkout "$RELEASE_BRANCH"
           git checkout -b "$RC_BRANCH"
           mkdir -p "${NOTES_DIR}/next-minor"
