@@ -2016,6 +2016,7 @@
   },
   "processLinkConfiguration": {
     "configureStep": "Processtap configureren",
+    "buildingBlockActionTitle": "Bouwblokactie: {{buildingBlockName}}",
     "modalTitle": "Processtap: {{processStepName}}",
     "pluginConfiguration": "Plugin configuratie: {{pluginConfigTitle}}",
     "chooseProcessLinkTypeDescription": "Een processtap kan verschillende acties uitvoeren. Kies hieronder aan welk type actie je deze stap wilt koppelen.",

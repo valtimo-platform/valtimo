@@ -64,8 +64,8 @@
 
   <ng-template #addItemButton>
     <button
-      cdsButton="primary"
       *ngIf="obs.hasEditPermissions"
+      cdsButton="primary"
       (click)="onAddItemClick()"
     >
       {{ 'caseManagement.actions.addItem' | translate }}
@@ -76,7 +76,7 @@
 </ng-container>
 
 <valtimo-case-management-actions-modal
-  (configureBuildingBlock)="onConfigureBuildingBlock($event)"
+  (configureBuildingBlockEvent)="onConfigureBuildingBlock($event)"
 ></valtimo-case-management-actions-modal>
 
 <valtimo-process-link-modal></valtimo-process-link-modal>

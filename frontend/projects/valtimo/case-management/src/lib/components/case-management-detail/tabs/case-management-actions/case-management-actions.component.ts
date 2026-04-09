@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 import {CommonModule} from '@angular/common';
 import {
   AfterViewInit,
@@ -34,7 +35,6 @@ import {
   ViewType,
 } from '@valtimo/components';
 import {
-  CaseManagementParams,
   EditPermissionsService,
   getCaseManagementRouteParams,
 } from '@valtimo/shared';
@@ -45,7 +45,7 @@ import {
   ProcessLinkStepService,
 } from '@valtimo/process-link';
 import {ButtonModule, IconModule, NotificationModule, TagModule} from 'carbon-components-angular';
-import {BehaviorSubject, Observable, of, Subscription, switchMap, tap} from 'rxjs';
+import {BehaviorSubject, Observable, of, shareReplay, Subscription, switchMap, tap} from 'rxjs';
 import {catchError, take} from 'rxjs/operators';
 import {ManagementStartableItem, StartableItemType} from '../../../../models';
 import {StartableItemManagementService} from '../../../../services';
@@ -75,7 +75,7 @@ import {
   providers: [StartableItemManagementService],
 })
 export class CaseManagementActionsComponent implements AfterViewInit, OnDestroy {
-  @ViewChild('typeColumn') typeColumnTemplate: TemplateRef<any>;
+  @ViewChild('typeColumn') public typeColumnTemplate!: TemplateRef<any>;
 
   public readonly StartableItemType = StartableItemType;
 
@@ -83,7 +83,8 @@ export class CaseManagementActionsComponent implements AfterViewInit, OnDestroy 
     tap(params => {
       this.startableItemManagementService.setParams(params);
       this.startableItemManagementService.loadItems();
-    })
+    }),
+    shareReplay(1)
   );
 
   public readonly fields$ = new BehaviorSubject<ColumnConfig[]>([]);
@@ -97,10 +98,7 @@ export class CaseManagementActionsComponent implements AfterViewInit, OnDestroy 
       })
     );
 
-  private readonly params$: Observable<CaseManagementParams | undefined> =
-    getCaseManagementRouteParams(this.route);
-
-  public readonly hasEditPermissions$: Observable<boolean> = this.params$.pipe(
+  public readonly hasEditPermissions$: Observable<boolean> = this.caseManagementRouteParams$.pipe(
     switchMap(params =>
       this.editPermissionsService.hasEditPermissions(
         params?.caseDefinitionKey,
@@ -227,6 +225,7 @@ export class CaseManagementActionsComponent implements AfterViewInit, OnDestroy 
           processDefinitionKey: '',
           processDefinitionId: '',
         });
+        this.processLinkStateService.setElementName(item.name || item.key);
 
         this.processLinkStateService.selectProcessLink({
           id: `${item.key}:${item.versionTag}`,
@@ -269,8 +268,8 @@ export class CaseManagementActionsComponent implements AfterViewInit, OnDestroy 
       properties: {
         buildingBlockDefinitionKey: event.buildingBlockDefinitionKey,
         buildingBlockDefinitionVersionTag: event.buildingBlockDefinitionVersionTag,
-        inputMappings: event.inputMappings || [],
-        outputMappings: event.outputMappings || [],
+        inputMappings: this.normalizeMappingsForSave(event.inputMappings || [], 'input'),
+        outputMappings: this.normalizeMappingsForSave(event.outputMappings || [], 'output'),
         pluginConfigurationMappings: event.pluginConfigurationMappings || {},
       },
     };
@@ -293,8 +292,8 @@ export class CaseManagementActionsComponent implements AfterViewInit, OnDestroy 
       properties: {
         buildingBlockDefinitionKey: key,
         buildingBlockDefinitionVersionTag: versionTag,
-        inputMappings: event.inputMappings || [],
-        outputMappings: event.outputMappings || [],
+        inputMappings: this.normalizeMappingsForSave(event.inputMappings || [], 'input'),
+        outputMappings: this.normalizeMappingsForSave(event.outputMappings || [], 'output'),
         pluginConfigurationMappings: event.pluginConfigurationMappings || {},
       },
     };
@@ -305,6 +304,30 @@ export class CaseManagementActionsComponent implements AfterViewInit, OnDestroy 
       .subscribe(() => {
         this.startableItemManagementService.loadItems();
       });
+  }
+
+  /**
+   * Ensures building block field references have the `doc:/` prefix for the backend value resolver.
+   * For input mappings, the target is a building block field (needs prefix).
+   * For output mappings, the source is a building block field (needs prefix).
+   */
+  private normalizeMappingsForSave(
+    mappings: any[],
+    direction: 'input' | 'output'
+  ): any[] {
+    return mappings.map(mapping => {
+      if (direction === 'input') {
+        return {...mapping, target: this.ensureDocPrefix(mapping.target)};
+      } else {
+        return {...mapping, source: this.ensureDocPrefix(mapping.source)};
+      }
+    });
+  }
+
+  private ensureDocPrefix(value: string): string {
+    if (!value) return value;
+    if (value.includes(':')) return value;
+    return `doc:/${value}`;
   }
 
   private setFields(): void {
