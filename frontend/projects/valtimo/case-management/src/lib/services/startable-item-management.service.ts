@@ -20,6 +20,7 @@ import {runAfterCarbonModalClosed} from '@valtimo/components';
 import {BehaviorSubject, Observable, of} from 'rxjs';
 import {catchError, filter, map, switchMap, take} from 'rxjs/operators';
 import {
+  BuildingBlockItemProperties,
   CreateStartableItemRequest,
   ManagementStartableItem,
   StartableItemOrderEntry,
@@ -131,33 +132,8 @@ export class StartableItemManagementService {
   }
 
   public updateItem(
-    item: ManagementStartableItem,
-    request: CreateStartableItemRequest
-  ): Observable<ManagementStartableItem> {
-    return this.startableItemApiService.updateItem(
-      this.getParams(),
-      item.key,
-      item.versionTag ?? '0',
-      request
-    );
-  }
-
-  public getItemProperties(
-    itemKey: string,
-    versionTag: string,
-    type: StartableItemType
-  ): Observable<any> {
-    return this.startableItemApiService.getItemProperties(
-      this.getParams(),
-      itemKey,
-      versionTag,
-      type
-    );
-  }
-
-  public updateItemByKeyAndVersion(
     key: string,
-    versionTag: string,
+    versionTag: string | null,
     request: CreateStartableItemRequest
   ): Observable<ManagementStartableItem> {
     return this.startableItemApiService.updateItem(
@@ -168,11 +144,24 @@ export class StartableItemManagementService {
     );
   }
 
+  public getItemProperties(
+    itemKey: string,
+    versionTag: string | null,
+    type: StartableItemType
+  ): Observable<BuildingBlockItemProperties> {
+    return this.startableItemApiService.getItemProperties(
+      this.getParams(),
+      itemKey,
+      versionTag,
+      type
+    );
+  }
+
   public deleteItem(item: ManagementStartableItem): Observable<void> {
     return this.startableItemApiService.deleteItem(
       this.getParams(),
       item.key,
-      item.versionTag ?? '0'
+      item.versionTag
     );
   }
 

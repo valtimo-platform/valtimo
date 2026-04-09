@@ -39,7 +39,11 @@ import {
   getCaseManagementRouteParams,
 } from '@valtimo/shared';
 import {
+  BuildingBlockProcessLinkCreateDto,
+  BuildingBlockProcessLinkUpdateDto,
   BuildingBlockStateService,
+  ensureDocPrefix,
+  ProcessLinkButtonService,
   ProcessLinkModule,
   ProcessLinkStateService,
   ProcessLinkStepService,
@@ -72,7 +76,7 @@ import {
     ConfirmationModalModule,
     ProcessLinkModule,
   ],
-  providers: [StartableItemManagementService],
+  providers: [StartableItemManagementService, ProcessLinkStateService, ProcessLinkStepService, ProcessLinkButtonService],
 })
 export class CaseManagementActionsComponent implements AfterViewInit, OnDestroy {
   @ViewChild('typeColumn') public typeColumnTemplate!: TemplateRef<any>;
@@ -123,7 +127,6 @@ export class CaseManagementActionsComponent implements AfterViewInit, OnDestroy 
   ];
 
   private readonly _subscriptions = new Subscription();
-  private _pendingBuildingBlockRequest: BuildingBlockConfigRequest | null = null;
 
   constructor(
     private readonly cd: ChangeDetectorRef,
@@ -171,7 +174,6 @@ export class CaseManagementActionsComponent implements AfterViewInit, OnDestroy 
   }
 
   public onConfigureBuildingBlock(request: BuildingBlockConfigRequest): void {
-    this._pendingBuildingBlockRequest = request;
     this.openProcessLinkModalForBuildingBlock(
       request.buildingBlockDefinitionKey,
       request.buildingBlockDefinitionVersionTag
@@ -194,7 +196,7 @@ export class CaseManagementActionsComponent implements AfterViewInit, OnDestroy 
     this.processLinkStepService.setSkipBuildingBlockSelectionStep(true);
 
     this.processLinkStateService.setModalParams({
-      element: {id: 'ad-hoc', name: key, activityListenerType: 'callActivity'} as any,
+      element: {id: 'ad-hoc', type: 'bpmn:CallActivity', name: key, activityListenerType: 'callActivity'},
       processDefinitionKey: '',
       processDefinitionId: '',
     });
@@ -213,15 +215,14 @@ export class CaseManagementActionsComponent implements AfterViewInit, OnDestroy 
   }
 
   private openProcessLinkModalForBuildingBlockEdit(item: ManagementStartableItem): void {
-    this._pendingBuildingBlockRequest = null;
     this.processLinkStepService.setSkipBuildingBlockSelectionStep(true);
 
     this.startableItemManagementService
-      .getItemProperties(item.key, item.versionTag ?? '', StartableItemType.BUILDING_BLOCK)
+      .getItemProperties(item.key, item.versionTag, StartableItemType.BUILDING_BLOCK)
       .pipe(take(1))
       .subscribe(properties => {
         this.processLinkStateService.setModalParams({
-          element: {id: 'ad-hoc', name: item.name || item.key, activityListenerType: 'callActivity'} as any,
+          element: {id: 'ad-hoc', type: 'bpmn:CallActivity', name: item.name || item.key, activityListenerType: 'callActivity'},
           processDefinitionKey: '',
           processDefinitionId: '',
         });
@@ -238,7 +239,7 @@ export class CaseManagementActionsComponent implements AfterViewInit, OnDestroy 
           inputMappings: properties?.inputMappings ?? [],
           outputMappings: properties?.outputMappings ?? [],
           pluginConfigurationMappings: properties?.pluginConfigurationMappings ?? {},
-        } as any);
+        });
 
         this.processLinkStateService.showModal();
       });
@@ -249,7 +250,7 @@ export class CaseManagementActionsComponent implements AfterViewInit, OnDestroy 
       this.processLinkStateService.processLinkCreateEvents$.subscribe(event => {
         this.processLinkStateService.stopSaving();
         this.processLinkStateService.closeModal();
-        this.saveBuildingBlockStartableItem(event as any);
+        this.saveBuildingBlockStartableItem(event as BuildingBlockProcessLinkCreateDto);
       })
     );
 
@@ -257,12 +258,12 @@ export class CaseManagementActionsComponent implements AfterViewInit, OnDestroy 
       this.processLinkStateService.processLinkUpdateEvents$.subscribe(event => {
         this.processLinkStateService.stopSaving();
         this.processLinkStateService.closeModal();
-        this.updateBuildingBlockStartableItem(event as any);
+        this.updateBuildingBlockStartableItem(event as BuildingBlockProcessLinkUpdateDto);
       })
     );
   }
 
-  private saveBuildingBlockStartableItem(event: any): void {
+  private saveBuildingBlockStartableItem(event: BuildingBlockProcessLinkCreateDto): void {
     const request = {
       type: StartableItemType.BUILDING_BLOCK,
       properties: {
@@ -278,12 +279,11 @@ export class CaseManagementActionsComponent implements AfterViewInit, OnDestroy 
       .createItem(request)
       .pipe(catchError(() => of(null)))
       .subscribe(() => {
-        this._pendingBuildingBlockRequest = null;
         this.startableItemManagementService.loadItems();
       });
   }
 
-  private updateBuildingBlockStartableItem(event: any): void {
+  private updateBuildingBlockStartableItem(event: BuildingBlockProcessLinkUpdateDto): void {
     const key = event.buildingBlockDefinitionKey;
     const versionTag = event.buildingBlockDefinitionVersionTag;
 
@@ -299,7 +299,7 @@ export class CaseManagementActionsComponent implements AfterViewInit, OnDestroy 
     };
 
     this.startableItemManagementService
-      .updateItemByKeyAndVersion(key, versionTag, request)
+      .updateItem(key, versionTag, request)
       .pipe(catchError(() => of(null)))
       .subscribe(() => {
         this.startableItemManagementService.loadItems();
@@ -317,17 +317,11 @@ export class CaseManagementActionsComponent implements AfterViewInit, OnDestroy 
   ): any[] {
     return mappings.map(mapping => {
       if (direction === 'input') {
-        return {...mapping, target: this.ensureDocPrefix(mapping.target)};
+        return {...mapping, target: ensureDocPrefix(mapping.target)};
       } else {
-        return {...mapping, source: this.ensureDocPrefix(mapping.source)};
+        return {...mapping, source: ensureDocPrefix(mapping.source)};
       }
     });
-  }
-
-  private ensureDocPrefix(value: string): string {
-    if (!value) return value;
-    if (value.includes(':')) return value;
-    return `doc:/${value}`;
   }
 
   private setFields(): void {

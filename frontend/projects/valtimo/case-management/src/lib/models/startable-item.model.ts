@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 
+import {BuildingBlockInputMapping, BuildingBlockOutputMapping} from '@valtimo/process-link';
+
 export enum StartableItemType {
   PROCESS = 'PROCESS',
   BUILDING_BLOCK = 'BUILDING_BLOCK',
@@ -50,4 +52,10 @@ export interface CreateStartableItemProcessProperties {
 export interface CreateStartableItemBuildingBlockProperties {
   buildingBlockDefinitionKey: string;
   buildingBlockDefinitionVersionTag: string;
+}
+
+export interface BuildingBlockItemProperties {
+  inputMappings: Array<BuildingBlockInputMapping>;
+  outputMappings: Array<BuildingBlockOutputMapping>;
+  pluginConfigurationMappings: Record<string, string>;
 }

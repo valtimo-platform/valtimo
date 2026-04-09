@@ -2185,7 +2185,7 @@
     "savedSuccessTitleMessage": "{{key}} is succesvol opgeslagen",
     "noResults": {
       "description": "Klik op <strong>Nieuwe form flow toevoegen</strong> om te beginnen met het ontwerpen van je form flow",
-      "title": "Geen formulierstromen toegevoegd"
+      "title": "Geen form flows toegevoegd"
     }
   },
   "taskManagement": {

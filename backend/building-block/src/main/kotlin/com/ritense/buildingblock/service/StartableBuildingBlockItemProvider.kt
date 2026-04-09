@@ -97,10 +97,10 @@ class StartableBuildingBlockItemProvider(
     override fun updateItem(
         caseDefinitionId: CaseDefinitionId,
         itemKey: String,
-        versionTag: String,
+        versionTag: String?,
         properties: JsonNode
     ): StartableItemDto {
-        val buildingBlockDefinitionId = BuildingBlockDefinitionId.of(itemKey, versionTag)
+        val buildingBlockDefinitionId = BuildingBlockDefinitionId.of(itemKey, versionTag!!)
         val dto = objectMapper.treeToValue(properties, UpdateCaseDefinitionBuildingBlockLinkDto::class.java)
         val linkDto = caseDefinitionBuildingBlockLinkService.updateLink(caseDefinitionId, buildingBlockDefinitionId, dto)
 
@@ -116,17 +116,17 @@ class StartableBuildingBlockItemProvider(
         )
     }
 
-    override fun deleteItem(caseDefinitionId: CaseDefinitionId, itemKey: String, versionTag: String) {
-        val buildingBlockDefinitionId = BuildingBlockDefinitionId.of(itemKey, versionTag)
+    override fun deleteItem(caseDefinitionId: CaseDefinitionId, itemKey: String, versionTag: String?) {
+        val buildingBlockDefinitionId = BuildingBlockDefinitionId.of(itemKey, versionTag!!)
         caseDefinitionBuildingBlockLinkService.deleteLink(caseDefinitionId, buildingBlockDefinitionId)
     }
 
     override fun getItemProperties(
         caseDefinitionId: CaseDefinitionId,
         itemKey: String,
-        versionTag: String
+        versionTag: String?
     ): JsonNode {
-        val buildingBlockDefinitionId = BuildingBlockDefinitionId.of(itemKey, versionTag)
+        val buildingBlockDefinitionId = BuildingBlockDefinitionId.of(itemKey, versionTag!!)
         val linkDto = caseDefinitionBuildingBlockLinkService.getLink(caseDefinitionId, buildingBlockDefinitionId)
         return objectMapper.valueToTree(linkDto)
     }

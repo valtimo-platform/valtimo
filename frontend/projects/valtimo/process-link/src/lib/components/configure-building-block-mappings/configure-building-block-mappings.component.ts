@@ -53,6 +53,7 @@ import {
   ProcessLinkStateService,
   ProcessLinkStepService,
 } from '../../services';
+import {stripDocPrefix} from '../../utils';
 import {
   ButtonModule,
   ComboBoxModule,
@@ -416,7 +417,7 @@ export class ConfigureBuildingBlockMappingsComponent implements OnInit, OnDestro
     this._syncingFromState = true;
     const normalizedMappings = mappings.map(m => ({
       ...m,
-      target: this.stripDocPrefix(m.target),
+      target: stripDocPrefix(m.target),
     }));
     const requiredTargets = fields.filter(f => f.required).map(f => f.name);
     const allMappings: BuildingBlockInputMapping[] = [
@@ -465,7 +466,7 @@ export class ConfigureBuildingBlockMappingsComponent implements OnInit, OnDestro
     const mappingByTarget = new Map<string, BuildingBlockInputMapping>(
       mappings
         .filter(mapping => !!mapping.target)
-        .map(mapping => [this.stripDocPrefix(mapping.target), mapping])
+        .map(mapping => [stripDocPrefix(mapping.target), mapping])
     );
     let updated = false;
 
@@ -513,7 +514,7 @@ export class ConfigureBuildingBlockMappingsComponent implements OnInit, OnDestro
     (mappings || []).forEach(mapping => {
       const normalizedMapping = {
         ...mapping,
-        source: this.stripDocPrefix(mapping.source),
+        source: stripDocPrefix(mapping.source),
       };
       this.outputs.push(this.createOutputGroup(normalizedMapping));
     });
@@ -744,14 +745,4 @@ export class ConfigureBuildingBlockMappingsComponent implements OnInit, OnDestro
     return fields.some(field => field.required && field.name === target);
   }
 
-  /**
-   * Strips the `doc:/` prefix from a path if present.
-   * Building block field names are stored without prefix (e.g. `applicantName`),
-   * but saved mappings may include the `doc:/` prefix (e.g. `doc:/applicantName`).
-   * This normalizes the value for comparison against field names.
-   */
-  private stripDocPrefix(value: string): string {
-    if (!value) return value;
-    return value.startsWith('doc:/') ? value.substring('doc:/'.length) : value;
-  }
 }

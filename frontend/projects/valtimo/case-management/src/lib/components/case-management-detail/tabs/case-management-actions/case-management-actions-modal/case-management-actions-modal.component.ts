@@ -348,7 +348,7 @@ export class CaseManagementActionsModalComponent implements OnDestroy {
           };
 
     this.stateService
-      .updateItem(this._editingItem, request)
+      .updateItem(this._editingItem.key, this._editingItem.versionTag, request)
       .pipe(
         catchError(() => {
           this.$saving.set(false);

@@ -116,9 +116,12 @@ class CaseHttpSecurityConfigurer : HttpSecurityConfigurer {
                     .requestMatchers(antMatcher(GET, MANAGEMENT_STARTABLE_ITEMS_URL)).hasAuthority(ADMIN)
                     .requestMatchers(antMatcher(POST, MANAGEMENT_STARTABLE_ITEMS_URL)).hasAuthority(ADMIN)
                     .requestMatchers(antMatcher(DELETE, "$MANAGEMENT_STARTABLE_ITEMS_URL/{itemKey}/version/{versionTag}")).hasAuthority(ADMIN)
+                    .requestMatchers(antMatcher(DELETE, "$MANAGEMENT_STARTABLE_ITEMS_URL/{itemKey}")).hasAuthority(ADMIN)
                     .requestMatchers(antMatcher(PUT, "$MANAGEMENT_STARTABLE_ITEMS_URL/order")).hasAuthority(ADMIN)
                     .requestMatchers(antMatcher(GET, "$MANAGEMENT_STARTABLE_ITEMS_URL/{itemKey}/version/{versionTag}/properties")).hasAuthority(ADMIN)
+                    .requestMatchers(antMatcher(GET, "$MANAGEMENT_STARTABLE_ITEMS_URL/{itemKey}/properties")).hasAuthority(ADMIN)
                     .requestMatchers(antMatcher(PUT, "$MANAGEMENT_STARTABLE_ITEMS_URL/{itemKey}/version/{versionTag}")).hasAuthority(ADMIN)
+                    .requestMatchers(antMatcher(PUT, "$MANAGEMENT_STARTABLE_ITEMS_URL/{itemKey}")).hasAuthority(ADMIN)
             }
         } catch (e: Exception) {
             throw HttpConfigurerConfigurationException(e)

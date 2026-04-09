@@ -91,7 +91,7 @@ class StartableProcessItemProvider(
         )
     }
 
-    override fun deleteItem(caseDefinitionId: CaseDefinitionId, itemKey: String, versionTag: String) {
+    override fun deleteItem(caseDefinitionId: CaseDefinitionId, itemKey: String, versionTag: String?) {
         val pdcds = processDefinitionCaseDefinitionRepository
             .findByIdCaseDefinitionId(caseDefinitionId)
             .filter { it.processDefinitionKey == itemKey }
