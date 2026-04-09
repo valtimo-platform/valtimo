@@ -143,20 +143,20 @@ internal class ZakenApiClientIT @Autowired constructor(
             caseDocumentId = CASE_DOCUMENT_ID
         )
 
-        assertEquals(URI("https://example.com"), result!!.url)
+        assertEquals(URI("https://example.com"), result.url)
     }
 
     @Test
     @WithMockUser(authorities = ["ROLE_TEST"])
-    fun `should return null for get single zaakinformatieobject by url when missing permission`() {
-        val result = zakenApiClient.getZaakInformatieObject(
-            authentication = zakenApiPlugin.authenticationPluginConfiguration,
-            baseUrl = zakenApiPlugin.url,
-            zaakInformatieobjectUrl = ZAAK_INFORMATIEOBJECT_URL,
-            caseDocumentId = CASE_DOCUMENT_ID
-        )
-
-        assertEquals(null, result)
+    fun `should throw access denied for get single zaakinformatieobject by url when missing permission`() {
+        assertThrows<AccessDeniedException> {
+            zakenApiClient.getZaakInformatieObject(
+                authentication = zakenApiPlugin.authenticationPluginConfiguration,
+                baseUrl = zakenApiPlugin.url,
+                zaakInformatieobjectUrl = ZAAK_INFORMATIEOBJECT_URL,
+                caseDocumentId = CASE_DOCUMENT_ID
+            )
+        }
     }
 
     @Test

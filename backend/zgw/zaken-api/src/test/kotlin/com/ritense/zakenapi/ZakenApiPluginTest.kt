@@ -73,6 +73,8 @@ import org.junit.jupiter.api.assertThrows
 import org.mockito.kotlin.any
 import org.mockito.kotlin.argumentCaptor
 import org.mockito.kotlin.doReturn
+import org.mockito.kotlin.doThrow
+import org.springframework.security.access.AccessDeniedException
 import org.mockito.kotlin.eq
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.times
@@ -1759,7 +1761,7 @@ internal class ZakenApiPluginTest {
     }
 
     @Test
-    fun `should return null when not authorized to get zaak informatie object by url`() {
+    fun `should throw exception when not authorized to get zaak informatie object by url`() {
         // given
         val caseDocumentId = UUID.randomUUID()
         val zaakInformatieobjectUrl = URI("${zakenApiUrl()}/zaakinformatieobjecten/abc123")
@@ -1773,7 +1775,7 @@ internal class ZakenApiPluginTest {
                     zaakInformatieobjectUrl = eq(zaakInformatieobjectUrl),
                     caseDocumentId = eq(caseDocumentId)
                 )
-            } doReturn null
+            } doThrow AccessDeniedException("Access denied")
         }
 
         val plugin = zakenApiPlugin(
@@ -1781,11 +1783,10 @@ internal class ZakenApiPluginTest {
             authenticationMock = authenticationMock
         )
 
-        // when
-        val result = plugin.getZaakInformatieObjectByUrl(zaakInformatieobjectUrl, caseDocumentId)
-
-        // then
-        assertThat(result).isNull()
+        // when / then
+        assertThrows<AccessDeniedException> {
+            plugin.getZaakInformatieObjectByUrl(zaakInformatieobjectUrl, caseDocumentId)
+        }
     }
 
     private fun zakenApiPlugin(

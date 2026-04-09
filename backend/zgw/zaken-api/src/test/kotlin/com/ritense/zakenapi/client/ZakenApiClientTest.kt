@@ -45,6 +45,7 @@ import org.junit.jupiter.api.TestInstance
 import org.junit.jupiter.api.assertThrows
 import org.mockito.kotlin.*
 import org.springframework.context.ApplicationEventPublisher
+import org.springframework.security.access.AccessDeniedException
 import org.springframework.web.client.HttpClientErrorException
 import org.springframework.web.client.RestClient
 import org.springframework.web.reactive.function.client.ClientRequest
@@ -1847,24 +1848,25 @@ internal class ZakenApiClientTest {
     }
 
     @Test
-    fun `should return null and not call api when not authorized to get zaakinformatieobject`() {
+    fun `should throw exception and not call api when not authorized to get zaakinformatieobject`() {
         val zaakInformatieobjectUrl = zakenApiBaseUri("/zaakinformatieobjecten/095be615-a8ad-4c33-8e9c-c7612fbf6c9f")
         val caseDocumentId = UUID.randomUUID()
         val requestsBefore = mockApi.requestCount
 
         authorizationService = mock {
-            on { this.hasPermission<Any>(any()) } doReturn false
+            on { this.requirePermission<Any>(any()) } doThrow AccessDeniedException("Unauthorized")
         }
         val client = zakenApiClient()
 
-        val result = client.getZaakInformatieObject(
-            authentication = TestAuthentication(),
-            baseUrl = zakenApiBaseUri(),
-            zaakInformatieobjectUrl = zaakInformatieobjectUrl,
-            caseDocumentId = caseDocumentId
-        )
+        assertThrows<AccessDeniedException> {
+            client.getZaakInformatieObject(
+                authentication = TestAuthentication(),
+                baseUrl = zakenApiBaseUri(),
+                zaakInformatieobjectUrl = zaakInformatieobjectUrl,
+                caseDocumentId = caseDocumentId
+            )
+        }
 
-        assertThat(result).isNull()
         assertEquals(requestsBefore, mockApi.requestCount)
         verify(outboxService, times(0)).send(any())
     }

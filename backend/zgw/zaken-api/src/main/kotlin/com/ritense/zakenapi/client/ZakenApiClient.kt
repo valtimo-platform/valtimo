@@ -23,21 +23,21 @@ import com.ritense.outbox.OutboxService
 import com.ritense.resource.authorization.ResourcePermission
 import com.ritense.resource.authorization.ResourcePermissionActionProvider
 import com.ritense.zakenapi.ZakenApiAuthentication
+import com.ritense.zakenapi.domain.CreateZaakNotitieRequest
 import com.ritense.zakenapi.domain.CreateZaakRequest
 import com.ritense.zakenapi.domain.CreateZaakResultaatRequest
 import com.ritense.zakenapi.domain.CreateZaakResultaatResponse
 import com.ritense.zakenapi.domain.CreateZaakStatusRequest
 import com.ritense.zakenapi.domain.CreateZaakStatusResponse
 import com.ritense.zakenapi.domain.CreateZaakeigenschapRequest
+import com.ritense.zakenapi.domain.GetZaakResultatenRequest
+import com.ritense.zakenapi.domain.PatchZaakNotitieRequest
 import com.ritense.zakenapi.domain.PatchZaakRequest
+import com.ritense.zakenapi.domain.PutZaakNotitieRequest
 import com.ritense.zakenapi.domain.SearchParameter
 import com.ritense.zakenapi.domain.UpdateZaakeigenschapRequest
 import com.ritense.zakenapi.domain.ZaakInformatieObject
 import com.ritense.zakenapi.domain.ZaakNotitie
-import com.ritense.zakenapi.domain.CreateZaakNotitieRequest
-import com.ritense.zakenapi.domain.GetZaakResultatenRequest
-import com.ritense.zakenapi.domain.PatchZaakNotitieRequest
-import com.ritense.zakenapi.domain.PutZaakNotitieRequest
 import com.ritense.zakenapi.domain.ZaakObject
 import com.ritense.zakenapi.domain.ZaakResponse
 import com.ritense.zakenapi.domain.ZaakResultaat
@@ -57,12 +57,19 @@ import com.ritense.zakenapi.event.ZaakCreated
 import com.ritense.zakenapi.event.ZaakInformatieObjectListed
 import com.ritense.zakenapi.event.ZaakInformatieObjectenListed
 import com.ritense.zakenapi.event.ZaakListed
+import com.ritense.zakenapi.event.ZaakNotitieCreated
+import com.ritense.zakenapi.event.ZaakNotitieDeleted
+import com.ritense.zakenapi.event.ZaakNotitiePatched
+import com.ritense.zakenapi.event.ZaakNotitieUpdated
+import com.ritense.zakenapi.event.ZaakNotitieViewed
+import com.ritense.zakenapi.event.ZaakNotitiesListed
 import com.ritense.zakenapi.event.ZaakObjectCreated
 import com.ritense.zakenapi.event.ZaakObjectViewed
 import com.ritense.zakenapi.event.ZaakObjectenListed
 import com.ritense.zakenapi.event.ZaakOpschortingUpdated
 import com.ritense.zakenapi.event.ZaakPatched
 import com.ritense.zakenapi.event.ZaakResultaatCreated
+import com.ritense.zakenapi.event.ZaakResultaatDeleted
 import com.ritense.zakenapi.event.ZaakResultaatViewed
 import com.ritense.zakenapi.event.ZaakRolCreated
 import com.ritense.zakenapi.event.ZaakRolDeleted
@@ -76,13 +83,6 @@ import com.ritense.zakenapi.event.ZaakeigenschapCreated
 import com.ritense.zakenapi.event.ZaakeigenschapDeleted
 import com.ritense.zakenapi.event.ZaakeigenschapListed
 import com.ritense.zakenapi.event.ZaakeigenschapUpdated
-import com.ritense.zakenapi.event.ZaakNotitieCreated
-import com.ritense.zakenapi.event.ZaakNotitieDeleted
-import com.ritense.zakenapi.event.ZaakNotitiePatched
-import com.ritense.zakenapi.event.ZaakNotitieUpdated
-import com.ritense.zakenapi.event.ZaakNotitieViewed
-import com.ritense.zakenapi.event.ZaakNotitiesListed
-import com.ritense.zakenapi.event.ZaakResultaatDeleted
 import com.ritense.zakenapi.exception.ZaakRolNotUpdatedException
 import com.ritense.zgw.ClientTools
 import com.ritense.zgw.Page
@@ -94,7 +94,6 @@ import org.springframework.http.HttpHeaders
 import org.springframework.http.MediaType
 import org.springframework.web.client.RestClient
 import org.springframework.web.client.body
-import kotlin.toString
 
 class ZakenApiClient(
     private val restClientBuilder: RestClient.Builder,
@@ -227,19 +226,16 @@ class ZakenApiClient(
         baseUrl: URI,
         zaakInformatieobjectUrl: URI,
         caseDocumentId: UUID,
-    ): ZaakInformatieObject? {
+    ): ZaakInformatieObject {
         validateUrlHost(baseUrl, zaakInformatieobjectUrl)
 
-        if (!authorizationService.hasPermission(
-                EntityAuthorizationRequest(
-                    ResourcePermission::class.java,
-                    ResourcePermissionActionProvider.VIEW,
-                    ResourcePermission(caseDocumentId)
-                )
+        authorizationService.requirePermission(
+            EntityAuthorizationRequest(
+                ResourcePermission::class.java,
+                ResourcePermissionActionProvider.VIEW,
+                ResourcePermission(caseDocumentId)
             )
-        ) {
-            return null
-        }
+        )
 
         val result = buildRestClient(authentication)
             .get()
