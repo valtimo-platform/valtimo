@@ -226,9 +226,9 @@ class StartableItemManagementServiceTest {
         whenever(processProvider.getStartableItems(caseDefinitionId)).thenReturn(existingItems)
         whenever(buildingBlockProvider.getStartableItems(caseDefinitionId)).thenReturn(emptyList())
 
-        service.deleteItem(caseDefinitionId, "my-process", "0")
+        service.deleteItem(caseDefinitionId, "my-process", null)
 
-        verify(processProvider).deleteItem(caseDefinitionId, "my-process", "0")
+        verify(processProvider).deleteItem(caseDefinitionId, "my-process", null)
         verify(startableItemRepository).deleteById(
             StartableItemId(caseDefinitionId, "my-process", StartableItemType.PROCESS)
         )
@@ -240,7 +240,7 @@ class StartableItemManagementServiceTest {
         whenever(buildingBlockProvider.getStartableItems(caseDefinitionId)).thenReturn(emptyList())
 
         assertThrows<NoSuchElementException> {
-            service.deleteItem(caseDefinitionId, "non-existent", "0")
+            service.deleteItem(caseDefinitionId, "non-existent", null)
         }
     }
 

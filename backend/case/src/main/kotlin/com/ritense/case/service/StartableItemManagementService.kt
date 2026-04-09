@@ -91,7 +91,7 @@ class StartableItemManagementService(
     fun updateItem(
         caseDefinitionId: CaseDefinitionId,
         oldItemKey: String,
-        oldVersionTag: String,
+        oldVersionTag: String?,
         newType: StartableItemType,
         newProperties: JsonNode
     ): StartableItemDto {
@@ -137,7 +137,7 @@ class StartableItemManagementService(
     fun deleteItem(
         caseDefinitionId: CaseDefinitionId,
         itemKey: String,
-        versionTag: String
+        versionTag: String?
     ) {
         val existingItems = startableItemProviders.flatMap { it.getStartableItems(caseDefinitionId) }
         val item = existingItems.find { it.key == itemKey && it.versionTag == versionTag }
@@ -155,7 +155,7 @@ class StartableItemManagementService(
     fun getItemProperties(
         caseDefinitionId: CaseDefinitionId,
         itemKey: String,
-        versionTag: String,
+        versionTag: String?,
         type: StartableItemType
     ): JsonNode {
         val provider = startableItemProviders.find { it.type == type }

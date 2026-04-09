@@ -35,18 +35,18 @@ interface StartableItemProvider {
     fun updateItem(
         caseDefinitionId: CaseDefinitionId,
         itemKey: String,
-        versionTag: String,
+        versionTag: String?,
         properties: JsonNode
     ): StartableItemDto {
         deleteItem(caseDefinitionId, itemKey, versionTag)
         return createItem(caseDefinitionId, properties)
     }
 
-    fun deleteItem(caseDefinitionId: CaseDefinitionId, itemKey: String, versionTag: String)
+    fun deleteItem(caseDefinitionId: CaseDefinitionId, itemKey: String, versionTag: String?)
 
     fun getItemProperties(
         caseDefinitionId: CaseDefinitionId,
         itemKey: String,
-        versionTag: String
+        versionTag: String?
     ): JsonNode? = null
 }

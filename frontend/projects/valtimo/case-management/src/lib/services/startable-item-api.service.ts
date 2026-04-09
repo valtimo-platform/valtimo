@@ -24,6 +24,7 @@ import {
 } from '@valtimo/shared';
 import {Observable} from 'rxjs';
 import {
+  BuildingBlockItemProperties,
   CreateStartableItemRequest,
   ManagementStartableItem,
   StartableItemType,
@@ -64,21 +65,23 @@ export class StartableItemApiService extends BaseApiService {
   public deleteItem(
     params: CaseManagementParams,
     itemKey: string,
-    versionTag: string
+    versionTag: string | null
   ): Observable<void> {
+    const versionSegment = versionTag ? `/version/${versionTag}` : '';
     return this.httpClient.delete<void>(
-      `${this.getCaseDefinitionUrl(params)}/${itemKey}/version/${versionTag}`
+      `${this.getCaseDefinitionUrl(params)}/${itemKey}${versionSegment}`
     );
   }
 
   public updateItem(
     params: CaseManagementParams,
     itemKey: string,
-    versionTag: string,
+    versionTag: string | null,
     request: CreateStartableItemRequest
   ): Observable<ManagementStartableItem> {
+    const versionSegment = versionTag ? `/version/${versionTag}` : '';
     return this.httpClient.put<ManagementStartableItem>(
-      `${this.getCaseDefinitionUrl(params)}/${itemKey}/version/${versionTag}`,
+      `${this.getCaseDefinitionUrl(params)}/${itemKey}${versionSegment}`,
       request
     );
   }
@@ -96,11 +99,12 @@ export class StartableItemApiService extends BaseApiService {
   public getItemProperties(
     params: CaseManagementParams,
     itemKey: string,
-    versionTag: string,
+    versionTag: string | null,
     type: StartableItemType
-  ): Observable<any> {
-    return this.httpClient.get<any>(
-      `${this.getCaseDefinitionUrl(params)}/${itemKey}/version/${versionTag}/properties`,
+  ): Observable<BuildingBlockItemProperties> {
+    const versionSegment = versionTag ? `/version/${versionTag}` : '';
+    return this.httpClient.get<BuildingBlockItemProperties>(
+      `${this.getCaseDefinitionUrl(params)}/${itemKey}${versionSegment}/properties`,
       {params: {type}}
     );
   }

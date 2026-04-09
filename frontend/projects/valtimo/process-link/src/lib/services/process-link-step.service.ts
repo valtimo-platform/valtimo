@@ -25,9 +25,7 @@ import {PluginStateService} from './plugin-state.service';
 import {PluginConfiguration, PluginDefinition, PluginTranslationService} from '@valtimo/plugin';
 import {ManagementContext} from '@valtimo/shared';
 
-@Injectable({
-  providedIn: 'root',
-})
+@Injectable()
 export class ProcessLinkStepService {
   private readonly _steps$ = new BehaviorSubject<Array<Step>>(undefined);
   private readonly _currentStepIndex$ = new BehaviorSubject<number>(0);
@@ -261,38 +259,21 @@ export class ProcessLinkStepService {
 
   public setConfigureBuildingBlockPluginsStep(selectionLabel?: string): void {
     this._hasOneProcessLinkType$.pipe(take(1)).subscribe(hasOneType => {
-      let steps: Array<Step>;
-      let currentIndex: number;
-
-      if (this._skipBuildingBlockSelectionStep$.getValue()) {
-        steps = [
-          {label: 'configureBuildingBlockPlugins'},
-          {label: 'configureBuildingBlockMappings', disabled: true},
-        ];
-        currentIndex = 0;
-      } else if (hasOneType) {
-        steps = [
-          {label: 'selectBuildingBlock', secondaryLabel: selectionLabel},
-          {label: 'configureBuildingBlockPlugins'},
-          {label: 'configureBuildingBlockMappings', disabled: true},
-        ];
-        currentIndex = 1;
-      } else {
-        steps = [
-          {label: 'chooseProcessLinkType', secondaryLabel: 'processLinkType.building-block'},
-          {label: 'selectBuildingBlock', secondaryLabel: selectionLabel},
-          {label: 'configureBuildingBlockPlugins'},
-          {label: 'configureBuildingBlockMappings', disabled: true},
-        ];
-        currentIndex = 2;
-      }
+      const skipSelection = this._skipBuildingBlockSelectionStep$.getValue();
+      const {steps, targetIndex} = this.buildBuildingBlockSteps({
+        hasOneType,
+        skipSelection,
+        selectionLabel,
+        activeStep: 'configureBuildingBlockPlugins',
+        disabledAfterActive: true,
+      });
 
       this._steps$.next(steps);
-      this._currentStepIndex$.next(currentIndex);
+      this._currentStepIndex$.next(targetIndex);
       this.buttonService.showNextButton();
       this.buttonService.hideSaveButton();
       this.buttonService.disableNextButton();
-      if (this._skipBuildingBlockSelectionStep$.getValue()) {
+      if (skipSelection) {
         this.buttonService.hideBackButton();
       } else {
         this.buttonService.showBackButton();
@@ -302,34 +283,16 @@ export class ProcessLinkStepService {
 
   public setConfigureBuildingBlockMappingsStep(selectionLabel?: string): void {
     this._hasOneProcessLinkType$.pipe(take(1)).subscribe(hasOneType => {
-      let steps: Array<Step>;
-      let currentIndex: number;
-
-      if (this._skipBuildingBlockSelectionStep$.getValue()) {
-        steps = [
-          {label: 'configureBuildingBlockPlugins'},
-          {label: 'configureBuildingBlockMappings'},
-        ];
-        currentIndex = 1;
-      } else if (hasOneType) {
-        steps = [
-          {label: 'selectBuildingBlock', secondaryLabel: selectionLabel},
-          {label: 'configureBuildingBlockPlugins'},
-          {label: 'configureBuildingBlockMappings'},
-        ];
-        currentIndex = 2;
-      } else {
-        steps = [
-          {label: 'chooseProcessLinkType', secondaryLabel: 'processLinkType.building-block'},
-          {label: 'selectBuildingBlock', secondaryLabel: selectionLabel},
-          {label: 'configureBuildingBlockPlugins'},
-          {label: 'configureBuildingBlockMappings'},
-        ];
-        currentIndex = 3;
-      }
+      const {steps, targetIndex} = this.buildBuildingBlockSteps({
+        hasOneType,
+        skipSelection: this._skipBuildingBlockSelectionStep$.getValue(),
+        selectionLabel,
+        activeStep: 'configureBuildingBlockMappings',
+        disabledAfterActive: false,
+      });
 
       this._steps$.next(steps);
-      this._currentStepIndex$.next(currentIndex);
+      this._currentStepIndex$.next(targetIndex);
       this.buttonService.hideNextButton();
       this.buttonService.showSaveButton();
       this.buttonService.disableSaveButton();
@@ -427,6 +390,38 @@ export class ProcessLinkStepService {
     }
   }
 
+  private buildBuildingBlockSteps(options: {
+    hasOneType: boolean;
+    skipSelection: boolean;
+    selectionLabel?: string;
+    activeStep: 'configureBuildingBlockPlugins' | 'configureBuildingBlockMappings';
+    disabledAfterActive: boolean;
+  }): {steps: Array<Step>; targetIndex: number} {
+    const bbSteps: Array<Step> = [
+      {label: 'configureBuildingBlockPlugins'},
+      {label: 'configureBuildingBlockMappings'},
+    ];
+
+    const activeIdx = bbSteps.findIndex(s => s.label === options.activeStep);
+    if (options.disabledAfterActive) {
+      for (let i = activeIdx + 1; i < bbSteps.length; i++) {
+        bbSteps[i] = {...bbSteps[i], disabled: true};
+      }
+    }
+
+    const prefix: Array<Step> = [];
+    if (!options.skipSelection) {
+      if (!options.hasOneType) {
+        prefix.push({label: 'chooseProcessLinkType', secondaryLabel: 'processLinkType.building-block'});
+      }
+      prefix.push({label: 'selectBuildingBlock', ...(options.selectionLabel && {secondaryLabel: options.selectionLabel})});
+    }
+
+    const steps = [...prefix, ...bbSteps];
+    const targetIndex = prefix.length + activeIdx;
+    return {steps, targetIndex};
+  }
+
   private setChoiceSteps(): void {
     this._steps$.next([
       {label: 'chooseProcessLinkType'},
@@ -484,24 +479,17 @@ export class ProcessLinkStepService {
         this._currentStepIndex$.next(2); // Start at last step
         break;
       }
-      case 'building-block':
-        if (this._skipBuildingBlockSelectionStep$.getValue()) {
-          // Ad-hoc context: only show config steps (BB already selected)
-          this._steps$.next([
-            {label: 'configureBuildingBlockPlugins'},
-            {label: 'configureBuildingBlockMappings'},
-          ]);
-          this._currentStepIndex$.next(1); // Start at last step
-        } else {
-          // Building block has 3 config steps: select BB, configure plugins, configure mappings
-          this._steps$.next([
-            {label: 'selectBuildingBlock'},
-            {label: 'configureBuildingBlockPlugins'},
-            {label: 'configureBuildingBlockMappings'},
-          ]);
-          this._currentStepIndex$.next(2); // Start at last step
-        }
+      case 'building-block': {
+        const {steps: bbSteps, targetIndex: bbIndex} = this.buildBuildingBlockSteps({
+          hasOneType: true,
+          skipSelection: this._skipBuildingBlockSelectionStep$.getValue(),
+          activeStep: 'configureBuildingBlockMappings',
+          disabledAfterActive: false,
+        });
+        this._steps$.next(bbSteps);
+        this._currentStepIndex$.next(bbIndex);
         break;
+      }
       case 'ui-component':
         // Single step for UI component
         this._steps$.next([{label: 'uiComponent'}]);

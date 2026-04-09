@@ -80,6 +80,66 @@ class StartableItemManagementResource(
         @PathVariable versionTag: String,
         @RequestBody request: UpdateStartableItemRequest
     ): ResponseEntity<StartableItemDto> {
+        return doUpdateStartableItem(caseDefinitionKey, caseDefinitionVersionTag, itemKey, versionTag, request)
+    }
+
+    @PutMapping("/{itemKey}")
+    fun updateStartableItemWithoutVersionTag(
+        @PathVariable caseDefinitionKey: String,
+        @PathVariable caseDefinitionVersionTag: String,
+        @PathVariable itemKey: String,
+        @RequestBody request: UpdateStartableItemRequest
+    ): ResponseEntity<StartableItemDto> {
+        return doUpdateStartableItem(caseDefinitionKey, caseDefinitionVersionTag, itemKey, null, request)
+    }
+
+    @GetMapping("/{itemKey}/version/{versionTag}/properties")
+    fun getStartableItemProperties(
+        @PathVariable caseDefinitionKey: String,
+        @PathVariable caseDefinitionVersionTag: String,
+        @PathVariable itemKey: String,
+        @PathVariable versionTag: String,
+        @RequestParam type: StartableItemType
+    ): ResponseEntity<JsonNode> {
+        return doGetStartableItemProperties(caseDefinitionKey, caseDefinitionVersionTag, itemKey, versionTag, type)
+    }
+
+    @GetMapping("/{itemKey}/properties")
+    fun getStartableItemPropertiesWithoutVersionTag(
+        @PathVariable caseDefinitionKey: String,
+        @PathVariable caseDefinitionVersionTag: String,
+        @PathVariable itemKey: String,
+        @RequestParam type: StartableItemType
+    ): ResponseEntity<JsonNode> {
+        return doGetStartableItemProperties(caseDefinitionKey, caseDefinitionVersionTag, itemKey, null, type)
+    }
+
+    @DeleteMapping("/{itemKey}/version/{versionTag}")
+    fun deleteStartableItem(
+        @PathVariable caseDefinitionKey: String,
+        @PathVariable caseDefinitionVersionTag: String,
+        @PathVariable itemKey: String,
+        @PathVariable versionTag: String
+    ): ResponseEntity<Void> {
+        return doDeleteStartableItem(caseDefinitionKey, caseDefinitionVersionTag, itemKey, versionTag)
+    }
+
+    @DeleteMapping("/{itemKey}")
+    fun deleteStartableItemWithoutVersionTag(
+        @PathVariable caseDefinitionKey: String,
+        @PathVariable caseDefinitionVersionTag: String,
+        @PathVariable itemKey: String
+    ): ResponseEntity<Void> {
+        return doDeleteStartableItem(caseDefinitionKey, caseDefinitionVersionTag, itemKey, null)
+    }
+
+    private fun doUpdateStartableItem(
+        caseDefinitionKey: String,
+        caseDefinitionVersionTag: String,
+        itemKey: String,
+        versionTag: String?,
+        request: UpdateStartableItemRequest
+    ): ResponseEntity<StartableItemDto> {
         val caseDefinitionId = CaseDefinitionId(caseDefinitionKey, caseDefinitionVersionTag)
         val item = startableItemManagementService.updateItem(
             caseDefinitionId,
@@ -91,13 +151,12 @@ class StartableItemManagementResource(
         return ResponseEntity.ok(item)
     }
 
-    @GetMapping("/{itemKey}/version/{versionTag}/properties")
-    fun getStartableItemProperties(
-        @PathVariable caseDefinitionKey: String,
-        @PathVariable caseDefinitionVersionTag: String,
-        @PathVariable itemKey: String,
-        @PathVariable versionTag: String,
-        @RequestParam type: StartableItemType
+    private fun doGetStartableItemProperties(
+        caseDefinitionKey: String,
+        caseDefinitionVersionTag: String,
+        itemKey: String,
+        versionTag: String?,
+        type: StartableItemType
     ): ResponseEntity<JsonNode> {
         val caseDefinitionId = CaseDefinitionId(caseDefinitionKey, caseDefinitionVersionTag)
         val properties = startableItemManagementService.getItemProperties(
@@ -109,12 +168,11 @@ class StartableItemManagementResource(
         return ResponseEntity.ok(properties)
     }
 
-    @DeleteMapping("/{itemKey}/version/{versionTag}")
-    fun deleteStartableItem(
-        @PathVariable caseDefinitionKey: String,
-        @PathVariable caseDefinitionVersionTag: String,
-        @PathVariable itemKey: String,
-        @PathVariable versionTag: String
+    private fun doDeleteStartableItem(
+        caseDefinitionKey: String,
+        caseDefinitionVersionTag: String,
+        itemKey: String,
+        versionTag: String?
     ): ResponseEntity<Void> {
         val caseDefinitionId = CaseDefinitionId(caseDefinitionKey, caseDefinitionVersionTag)
         startableItemManagementService.deleteItem(caseDefinitionId, itemKey, versionTag)
