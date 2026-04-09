@@ -230,20 +230,6 @@ config/building-block/<key>/<version>/
 }
 ```
 
-#### Additional process definition links
-
-If the building block uses more than one process (e.g. sub-processes called via call activities),
-`building-block-process-definition-links.json` lists the additional processes:
-
-```json
-[
-    {
-        "processDefinitionKey": "brp-lookup",
-        "main": false
-    }
-]
-```
-
 ### Start form
 
 Building blocks that are started ad-hoc (not from a call activity in a case process) require a **start form**.

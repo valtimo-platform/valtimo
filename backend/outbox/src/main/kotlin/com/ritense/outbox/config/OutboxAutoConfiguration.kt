@@ -104,6 +104,7 @@ class OutboxAutoConfiguration {
             .slidingWindowSize(props.slidingWindowSize)
             .waitDurationInOpenState(Duration.ofSeconds(props.waitDurationInOpenStateSeconds))
             .permittedNumberOfCallsInHalfOpenState(props.permittedNumberOfCallsInHalfOpenState)
+            .automaticTransitionFromOpenToHalfOpenEnabled(true)
             .build()
         return CircuitBreaker.of("outboxPollingPublisher", config)
     }
