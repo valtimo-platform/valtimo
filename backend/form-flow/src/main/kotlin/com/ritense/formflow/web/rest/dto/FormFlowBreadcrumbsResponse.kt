@@ -28,7 +28,9 @@ data class FormFlowBreadcrumbsResponse(
             val currentStepIndex = if (currentStepInstanceId == null) {
                 breadcrumbs.size
             } else {
-                breadcrumbs.indexOfFirst { it.stepInstanceId == currentStepInstanceId }
+                breadcrumbs
+                    .indexOfFirst { it.stepInstanceId == currentStepInstanceId }
+                    .takeIf { it >= 0 } ?: 0
             }
             return FormFlowBreadcrumbsResponse(
                 currentStepIndex = currentStepIndex,
