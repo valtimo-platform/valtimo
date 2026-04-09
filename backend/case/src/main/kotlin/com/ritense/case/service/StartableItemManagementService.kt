@@ -140,8 +140,8 @@ class StartableItemManagementService(
         versionTag: String
     ) {
         val existingItems = startableItemProviders.flatMap { it.getStartableItems(caseDefinitionId) }
-        val item = existingItems.find { it.key == itemKey }
-            ?: throw NoSuchElementException("Startable item not found: $itemKey")
+        val item = existingItems.find { it.key == itemKey && it.versionTag == versionTag }
+            ?: throw NoSuchElementException("Startable item not found: $itemKey:$versionTag")
 
         val provider = startableItemProviders.find { it.type == item.type }
             ?: throw UnsupportedOperationException("No provider found for type: ${item.type}")

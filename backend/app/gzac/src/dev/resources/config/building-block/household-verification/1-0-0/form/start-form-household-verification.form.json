@@ -26,10 +26,10 @@
             "input": true
         },
         {
-            "label": "Parent zaak omschrijving",
+            "label": "Zaak omschrijving",
             "placeholder": "Zaak omschrijving...",
             "tableView": true,
-            "key": "parentZaakOmschrijving",
+            "key": "zaakOmschrijvingFromZgw",
             "type": "textfield",
             "input": true
         },
