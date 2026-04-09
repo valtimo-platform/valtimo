@@ -579,7 +579,8 @@ internal class VerzoekPluginEventListenerIntTest : BaseIntegrationTest() {
             actie = "create",
             resourceUrl = "aResource",
             aanmaakdatum = null,
-            kenmerken = mapOf(Pair("objectType", "something/$objectType"))
+            kenmerken = mapOf(Pair("objectType", "something/$objectType")),
+            resource = null
         )
     }
 }

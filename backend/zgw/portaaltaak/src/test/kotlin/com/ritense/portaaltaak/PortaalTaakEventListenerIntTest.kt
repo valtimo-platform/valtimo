@@ -229,7 +229,8 @@ internal class PortaalTaakEventListenerIntTest : BaseIntegrationTest() {
             actie = "update",
             aanmaakdatum = null,
             resourceUrl = "${server.url("/")}objects",
-            kenmerken = mapOf(Pair("objectType", objectManagement.objecttypeId))
+            kenmerken = mapOf(Pair("objectType", objectManagement.objecttypeId)),
+            resource = null
         )
     }
 
