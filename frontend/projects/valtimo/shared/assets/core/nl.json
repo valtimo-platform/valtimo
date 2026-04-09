@@ -426,7 +426,13 @@
     "deploy": "Opslaan",
     "loadFailure": "Er is iets misgegaan bij het laden van het beslistabel.",
     "deploySuccess": "Het beslistabel is succesvol opgeslagen.",
-    "deployFailure": "Er is iets misgegaan bij het opslaan van het beslistabel."
+    "deployFailure": "Er is iets misgegaan bij het opslaan van het beslistabel.",
+    "deleteSuccess": "Het beslistabel is succesvol verwijderd.",
+    "deleteFailure": "Er is iets misgegaan bij het verwijderen van het beslistabel.",
+    "deleteModal": {
+      "title": "Beslistabel verwijderen",
+      "content": "Weet u zeker dat u dit beslistabel wilt verwijderen? Deze actie kan niet ongedaan worden gemaakt."
+    }
   },
   "message": {"empty": "Geen resultaat gevonden"},
   "cta": {"close": "Sluiten", "moreDetails": "Meer details"},
@@ -2371,7 +2377,8 @@
       "document": "Document",
       "processes": "Processen",
       "forms": "Formulieren",
-      "formFlows": "Form flows"
+      "formFlows": "Form flows",
+      "decisions": "Beslistabellen"
     },
     "formDefinition": {
       "name": "Naam"

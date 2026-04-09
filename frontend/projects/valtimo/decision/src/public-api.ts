@@ -19,6 +19,7 @@
  */
 
 export * from './lib/models';
+export * from './lib/services';
 export * from './lib/decision.module';
 export * from './lib/decision-modeler/decision-modeler.component';
 export * from './lib/decision-display/decision-display.component';

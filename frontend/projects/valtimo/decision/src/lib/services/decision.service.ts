@@ -108,4 +108,46 @@ export class DecisionService extends BaseApiService {
       )
     );
   }
+
+  public listBuildingBlockDecisionDefinitions(
+    key: string,
+    versionTag: string
+  ): Observable<Decision[]> {
+    return this.httpClient.get<Decision[]>(
+      this.getApiUrl(
+        `/management/v1/building-block/${key}/version/${versionTag}/decision-definition`
+      )
+    );
+  }
+
+  public deployBuildingBlockDecisionDefinition(
+    key: string,
+    versionTag: string,
+    dmn: File
+  ): Observable<{identifier: string}> {
+    const formData = new FormData();
+    formData.append('file', dmn);
+
+    return this.httpClient.post<{identifier: string}>(
+      this.getApiUrl(
+        `/management/v1/building-block/${key}/version/${versionTag}/decision-definition`
+      ),
+      formData,
+      {
+        headers: new HttpHeaders().set(InterceptorSkip, '204'),
+      }
+    );
+  }
+
+  public deleteBuildingBlockDecisionDefinition(
+    key: string,
+    versionTag: string,
+    decisionDefinitionKey: string
+  ): Observable<any> {
+    return this.httpClient.delete<any>(
+      this.getApiUrl(
+        `/management/v1/building-block/${key}/version/${versionTag}/decision-definition/${decisionDefinitionKey}`
+      )
+    );
+  }
 }
