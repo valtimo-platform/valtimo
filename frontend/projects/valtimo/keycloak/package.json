@@ -3,8 +3,8 @@
   "license": "EUPL-1.2",
   "version": "13.0.1",
   "peerDependencies": {
-    "@angular/common": "19.2.8",
-    "@angular/core": "19.2.8"
+    "@angular/common": ": 19.2.21",
+    "@angular/core": ": 19.2.21"
   },
   "dependencies": {
     "jwt-decode": "4.0.0",
