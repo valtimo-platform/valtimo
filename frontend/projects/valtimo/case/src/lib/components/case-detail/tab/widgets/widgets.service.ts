@@ -15,7 +15,7 @@
  */
 
 import {EventEmitter, Injectable} from '@angular/core';
-import {DocumentService, ProcessDefinitionCaseDefinition} from '@valtimo/document';
+import {DocumentService, StartableItem} from '@valtimo/document';
 import {
   BehaviorSubject,
   Subject,
@@ -42,23 +42,16 @@ export class WidgetsService {
     this._documentId$.next(value);
   }
 
-  public readonly documentProcesses$ = this._documentId$.pipe(
+  private readonly startableItems$ = this._documentId$.pipe(
     filter((documentId: string | null) => !!documentId),
-    switchMap((documentId: string) =>
-      this.documentService.findProcessDefinitionCaseDefinitionsForDocument(documentId, {
-        startableByUser: true,
-      })
-    ),
+    switchMap((documentId: string) => this.documentService.getStartableItems({caseDocumentId: documentId})),
     distinctUntilChanged()
   );
 
-  public get activeProcess$(): Observable<ProcessDefinitionCaseDefinition> {
-    return combineLatest([this._activeProcessKey$, this.documentProcesses$]).pipe(
-      map(([activeProcessKey, documentProcesses]: [string, ProcessDefinitionCaseDefinition[]]) => {
-        return documentProcesses.find(
-          (processDefinition: ProcessDefinitionCaseDefinition) =>
-            activeProcessKey === processDefinition.processDefinitionKey
-        );
+  public get activeProcess$(): Observable<StartableItem | undefined> {
+    return combineLatest([this._activeProcessKey$, this.startableItems$]).pipe(
+      map(([activeProcessKey, items]: [string | null, StartableItem[]]) => {
+        return items.find((item: StartableItem) => activeProcessKey === item.key);
       })
     );
   }

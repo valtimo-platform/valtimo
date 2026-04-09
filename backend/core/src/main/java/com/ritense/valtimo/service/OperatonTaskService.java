@@ -729,7 +729,7 @@ public class OperatonTaskService {
                 UUID.randomUUID(),
                 RequestHelper.getOrigin(),
                 LocalDateTime.now(),
-                SecurityUtils.getCurrentUserLogin(),
+                SecurityUtils.getCurrentUserLogin() == null ? "system" : SecurityUtils.getCurrentUserLogin(),
                 formerAssignee,
                 newAssignee,
                 task.getId(),

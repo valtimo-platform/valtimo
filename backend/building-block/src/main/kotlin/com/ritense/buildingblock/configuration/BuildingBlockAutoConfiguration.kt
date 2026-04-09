@@ -18,8 +18,11 @@ package com.ritense.buildingblock.configuration
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.ritense.authorization.AuthorizationService
+import com.ritense.buildingblock.listener.CaseDefinitionBuildingBlockLinkCaseEventListener
 import com.ritense.buildingblock.listener.BuildingBlockCaseAssigneeListener
 import com.ritense.buildingblock.listener.BuildingBlockDefinitionEventListener
+import com.ritense.buildingblock.listener.BuildingBlockEndEventListener
+import com.ritense.buildingblock.listener.BuildingBlockStartEventListener
 import com.ritense.buildingblock.processlink.mapper.BuildingBlockProcessLinkMapper
 import com.ritense.buildingblock.processlink.service.BuildingBlockCallActivityListener
 import com.ritense.buildingblock.processlink.service.BuildingBlockSupportedProcessLinksHandler
@@ -27,6 +30,7 @@ import com.ritense.buildingblock.processlink.service.DefaultBuildingBlockPluginC
 import com.ritense.buildingblock.repository.BuildingBlockDefinitionArtworkRepository
 import com.ritense.buildingblock.repository.BuildingBlockDefinitionRepository
 import com.ritense.buildingblock.repository.BuildingBlockInstanceRepository
+import com.ritense.buildingblock.repository.CaseDefinitionBuildingBlockLinkRepository
 import com.ritense.buildingblock.repository.JsonSchemaDocumentCaseDefinitionMapper
 import com.ritense.buildingblock.repository.ProcessDefinitionBuildingBlockDefinitionRepository
 import com.ritense.buildingblock.security.config.BuildingBlockHttpSecurityConfigurer
@@ -59,7 +63,11 @@ import com.ritense.buildingblock.service.BuildingBlockProcessDefinitionExporter
 import com.ritense.buildingblock.service.BuildingBlockProcessDefinitionLinkExporter
 import com.ritense.buildingblock.service.BuildingBlockProcessLinkExporter
 import com.ritense.buildingblock.service.BuildingBlockProcessLinkImporter
+import com.ritense.buildingblock.service.CaseDefinitionBuildingBlockLinkExporter
+import com.ritense.buildingblock.service.CaseDefinitionBuildingBlockLinkImporter
+import com.ritense.buildingblock.service.CaseDefinitionBuildingBlockLinkService
 import com.ritense.buildingblock.service.ProcessDefinitionBuildingBlockDefinitionImporter
+import com.ritense.buildingblock.service.StartableBuildingBlockItemProvider
 import com.ritense.buildingblock.web.rest.BuildingBlockDefinitionArtworkResource
 import com.ritense.buildingblock.web.rest.BuildingBlockDocumentDefinitionResource
 import com.ritense.buildingblock.web.rest.BuildingBlockFieldResource
@@ -83,6 +91,8 @@ import com.ritense.importer.ImportService
 import com.ritense.importer.ValtimoImportService
 import com.ritense.plugin.service.BuildingBlockPluginConfigurationResolver
 import com.ritense.plugin.service.PluginService
+import com.ritense.processdocument.service.ProcessDocumentAssociationService
+import com.ritense.processdocument.service.ProcessDocumentService
 import com.ritense.processlink.exporter.BuildingBlockProcessLinkToBuildingBlockMapper
 import com.ritense.processlink.mapper.ProcessLinkMapper
 import com.ritense.processlink.repository.ValtimoPluginProcessLinkRepository
@@ -109,6 +119,7 @@ import org.springframework.core.annotation.Order
 import org.springframework.core.env.Environment
 import org.springframework.core.io.ResourceLoader
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories
+import org.springframework.jdbc.core.JdbcTemplate
 
 @AutoConfiguration(before = [DocumentAuthorizationAutoConfiguration::class])
 @EnableJpaRepositories(
@@ -116,7 +127,8 @@ import org.springframework.data.jpa.repository.config.EnableJpaRepositories
         BuildingBlockDefinitionRepository::class,
         ProcessDefinitionBuildingBlockDefinitionRepository::class,
         BuildingBlockDefinitionArtworkRepository::class,
-        BuildingBlockInstanceRepository::class
+        BuildingBlockInstanceRepository::class,
+        CaseDefinitionBuildingBlockLinkRepository::class
     ]
 )
 @EntityScan(basePackages = ["com.ritense.buildingblock.domain", "com.ritense.buildingblock.processlink.domain"])
@@ -394,10 +406,14 @@ class BuildingBlockAutoConfiguration {
     fun buildingBlockPluginConfigurationResolver(
         buildingBlockInstanceService: BuildingBlockInstanceService,
         @Lazy processLinkService: ProcessLinkService,
+        linkRepository: CaseDefinitionBuildingBlockLinkRepository,
+        documentService: DocumentService,
     ): BuildingBlockPluginConfigurationResolver =
         DefaultBuildingBlockPluginConfigurationResolver(
             buildingBlockInstanceService,
-            processLinkService
+            processLinkService,
+            linkRepository,
+            documentService,
         )
 
     @Bean
@@ -434,6 +450,48 @@ class BuildingBlockAutoConfiguration {
         valueResolverService,
         objectMapper,
         operatonRepositoryService
+    )
+
+    @Bean
+    @ConditionalOnMissingBean(BuildingBlockStartEventListener::class)
+    fun buildingBlockStartEventListener(
+        buildingBlockInstanceService: BuildingBlockInstanceService,
+        processDocumentService: ProcessDocumentService,
+        operatonRepositoryService: OperatonRepositoryService,
+        caseDocumentResolver: CaseDocumentResolver,
+        objectMapper: ObjectMapper,
+        caseDefinitionBuildingBlockLinkService: CaseDefinitionBuildingBlockLinkService,
+        documentService: DocumentService,
+        valueResolverService: ValueResolverService,
+        processDocumentAssociationService: ProcessDocumentAssociationService,
+        jdbcTemplate: JdbcTemplate,
+    ) = BuildingBlockStartEventListener(
+        buildingBlockInstanceService,
+        processDocumentService,
+        operatonRepositoryService,
+        caseDocumentResolver,
+        objectMapper,
+        caseDefinitionBuildingBlockLinkService,
+        documentService,
+        valueResolverService,
+        processDocumentAssociationService,
+        jdbcTemplate,
+    )
+
+    @Bean
+    @ConditionalOnMissingBean(BuildingBlockEndEventListener::class)
+    fun buildingBlockEndEventListener(
+        buildingBlockInstanceService: BuildingBlockInstanceService,
+        caseDefinitionBuildingBlockLinkService: CaseDefinitionBuildingBlockLinkService,
+        processDocumentService: ProcessDocumentService,
+        documentService: DocumentService,
+        valueResolverService: ValueResolverService,
+    ) = BuildingBlockEndEventListener(
+        buildingBlockInstanceService,
+        caseDefinitionBuildingBlockLinkService,
+        processDocumentService,
+        documentService,
+        valueResolverService,
     )
 
     @Bean
@@ -561,18 +619,68 @@ class BuildingBlockAutoConfiguration {
     )
 
     @Bean
+    @ConditionalOnMissingBean(CaseDefinitionBuildingBlockLinkService::class)
+    fun caseDefinitionBuildingBlockLinkService(
+        caseDefinitionBuildingBlockLinkRepository: CaseDefinitionBuildingBlockLinkRepository,
+        buildingBlockDefinitionRepository: BuildingBlockDefinitionRepository
+    ): CaseDefinitionBuildingBlockLinkService {
+        return CaseDefinitionBuildingBlockLinkService(
+            caseDefinitionBuildingBlockLinkRepository,
+            buildingBlockDefinitionRepository
+        )
+    }
+
+    @Bean
+    @ConditionalOnMissingBean(StartableBuildingBlockItemProvider::class)
+    fun startableBuildingBlockItemProvider(
+        caseDefinitionBuildingBlockLinkRepository: CaseDefinitionBuildingBlockLinkRepository,
+        processDefinitionBuildingBlockDefinitionRepository: ProcessDefinitionBuildingBlockDefinitionRepository,
+        authorizationService: AuthorizationService,
+        caseDefinitionBuildingBlockLinkService: CaseDefinitionBuildingBlockLinkService,
+        objectMapper: ObjectMapper,
+    ): StartableBuildingBlockItemProvider {
+        return StartableBuildingBlockItemProvider(
+            caseDefinitionBuildingBlockLinkRepository,
+            processDefinitionBuildingBlockDefinitionRepository,
+            authorizationService,
+            caseDefinitionBuildingBlockLinkService,
+            objectMapper,
+        )
+    }
+
+    @Bean
+    @ConditionalOnMissingBean(CaseDefinitionBuildingBlockLinkExporter::class)
+    fun caseDefinitionBuildingBlockLinkExporter(
+        objectMapper: ObjectMapper,
+        caseDefinitionBuildingBlockLinkRepository: CaseDefinitionBuildingBlockLinkRepository
+    ): CaseDefinitionBuildingBlockLinkExporter {
+        return CaseDefinitionBuildingBlockLinkExporter(objectMapper, caseDefinitionBuildingBlockLinkRepository)
+    }
+
+    @Bean
+    @ConditionalOnMissingBean(CaseDefinitionBuildingBlockLinkImporter::class)
+    fun caseDefinitionBuildingBlockLinkImporter(
+        objectMapper: ObjectMapper,
+        caseDefinitionBuildingBlockLinkRepository: CaseDefinitionBuildingBlockLinkRepository
+    ): CaseDefinitionBuildingBlockLinkImporter {
+        return CaseDefinitionBuildingBlockLinkImporter(objectMapper, caseDefinitionBuildingBlockLinkRepository)
+    }
+
+    @Bean
     @ConditionalOnMissingBean(BuildingBlockCaseDefinitionFinalizationChecker::class)
     fun buildingBlockCaseDefinitionFinalizationChecker(
         operatonProcessService: OperatonProcessService,
         processLinkService: ProcessLinkService,
         buildingBlockDefinitionRepository: BuildingBlockDefinitionRepository,
         processDefinitionBuildingBlockDefinitionRepository: ProcessDefinitionBuildingBlockDefinitionRepository,
+        caseDefinitionBuildingBlockLinkRepository: CaseDefinitionBuildingBlockLinkRepository,
     ): CaseDefinitionFinalizationChecker =
         BuildingBlockCaseDefinitionFinalizationChecker(
             operatonProcessService,
             processLinkService,
             buildingBlockDefinitionRepository,
-            processDefinitionBuildingBlockDefinitionRepository
+            processDefinitionBuildingBlockDefinitionRepository,
+            caseDefinitionBuildingBlockLinkRepository
         )
 
     @Bean
@@ -608,6 +716,12 @@ class BuildingBlockAutoConfiguration {
     ): BuildingBlockFormDefinitionImporter {
         return BuildingBlockFormDefinitionImporter(buildingBlockFormDefinitionService)
     }
+
+    @Bean
+    @ConditionalOnMissingBean(CaseDefinitionBuildingBlockLinkCaseEventListener::class)
+    fun caseDefinitionBuildingBlockLinkCaseEventListener(
+        linkRepository: CaseDefinitionBuildingBlockLinkRepository,
+    ) = CaseDefinitionBuildingBlockLinkCaseEventListener(linkRepository)
 
     @Bean
     @ConditionalOnMissingBean(BuildingBlockFormFlowDefinitionService::class)

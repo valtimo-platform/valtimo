@@ -53,6 +53,7 @@ import com.ritense.processdocument.service.ProcessDocumentAssociationService
 import com.ritense.processdocument.service.ProcessDocumentDeletedEventListener
 import com.ritense.processdocument.service.ProcessDocumentService
 import com.ritense.processdocument.service.ProcessDocumentsService
+import com.ritense.processdocument.service.StartableProcessItemProvider
 import com.ritense.processdocument.service.ValueResolverDelegateService
 import com.ritense.processdocument.service.impl.OperatonProcessJsonSchemaDocumentService
 import com.ritense.processdocument.tasksearch.TaskSearchFieldExporter
@@ -501,4 +502,16 @@ class ProcessDocumentsAutoConfiguration {
     fun processDocumentLinkEventListener(
         caseDefinitionProcessLinkService: CaseDefinitionProcessLinkService
     ): ProcessDocumentLinkEventListener = ProcessDocumentLinkEventListener(caseDefinitionProcessLinkService)
+
+    @Bean
+    @ConditionalOnMissingBean(StartableProcessItemProvider::class)
+    fun startableProcessItemProvider(
+        processDefinitionCaseDefinitionRepository: ProcessDefinitionCaseDefinitionRepository,
+        authorizationService: AuthorizationService,
+    ): StartableProcessItemProvider {
+        return StartableProcessItemProvider(
+            processDefinitionCaseDefinitionRepository,
+            authorizationService,
+        )
+    }
 }

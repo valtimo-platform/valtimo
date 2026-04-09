@@ -16,12 +16,6 @@
 
 package com.ritense.processdocument.service.impl;
 
-import static com.ritense.authorization.AuthorizationContext.runWithoutAuthorization;
-import static com.ritense.document.service.JsonSchemaDocumentActionProvider.CREATE;
-import static com.ritense.document.service.JsonSchemaDocumentActionProvider.MODIFY;
-import static com.ritense.document.service.JsonSchemaDocumentActionProvider.VIEW;
-import static com.ritense.valtimo.operaton.authorization.OperatonTaskActionProvider.COMPLETE;
-
 import com.ritense.authorization.Action;
 import com.ritense.authorization.AuthorizationContext;
 import com.ritense.authorization.AuthorizationService;
@@ -58,11 +52,11 @@ import com.ritense.processdocument.service.result.NewDocumentAndStartProcessResu
 import com.ritense.processdocument.service.result.NewDocumentForRunningProcessResult;
 import com.ritense.processdocument.service.result.StartProcessForDocumentResult;
 import com.ritense.valtimo.contract.document.CaseDocumentResolver;
+import com.ritense.valtimo.contract.result.FunctionResult;
+import com.ritense.valtimo.contract.result.OperationError;
 import com.ritense.valtimo.operaton.domain.OperatonExecution;
 import com.ritense.valtimo.operaton.domain.OperatonTask;
 import com.ritense.valtimo.operaton.domain.ProcessInstanceWithDefinition;
-import com.ritense.valtimo.contract.result.FunctionResult;
-import com.ritense.valtimo.contract.result.OperationError;
 import com.ritense.valtimo.service.OperatonProcessService;
 import com.ritense.valtimo.service.OperatonTaskService;
 import java.util.Map;
@@ -74,6 +68,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.lang.Nullable;
 import org.springframework.transaction.annotation.Transactional;
+
+import static com.ritense.authorization.AuthorizationContext.runWithoutAuthorization;
+import static com.ritense.document.service.JsonSchemaDocumentActionProvider.CREATE;
+import static com.ritense.document.service.JsonSchemaDocumentActionProvider.MODIFY;
+import static com.ritense.document.service.JsonSchemaDocumentActionProvider.VIEW;
+import static com.ritense.valtimo.operaton.authorization.OperatonTaskActionProvider.COMPLETE;
 
 public class OperatonProcessJsonSchemaDocumentService implements ProcessDocumentService {
 
@@ -304,11 +304,16 @@ public class OperatonProcessJsonSchemaDocumentService implements ProcessDocument
                 processInstanceWithDefinition.getProcessInstanceDto().getId()
             );
 
-            runWithoutAuthorization(() -> processDocumentAssociationService.createProcessDocumentInstance(
-                operatonProcessInstanceId.toString(),
-                UUID.fromString(document.id().toString()),
-                processInstanceWithDefinition.getProcessDefinition().getName()
-            ));
+            runWithoutAuthorization(() -> {
+                if (processDocumentAssociationService.findProcessDocumentInstance(operatonProcessInstanceId).isEmpty()) {
+                    processDocumentAssociationService.createProcessDocumentInstance(
+                        operatonProcessInstanceId.toString(),
+                        UUID.fromString(document.id().toString()),
+                        processInstanceWithDefinition.getProcessDefinition().getName()
+                    );
+                }
+                return null;
+            });
 
             return new ModifyDocumentAndStartProcessResultSucceeded(document, operatonProcessInstanceId);
         } catch (RuntimeException ex) {
