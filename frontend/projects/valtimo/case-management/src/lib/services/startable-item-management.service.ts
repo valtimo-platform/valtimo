@@ -15,6 +15,7 @@
  */
 
 import {Injectable} from '@angular/core';
+import {NGXLogger} from 'ngx-logger';
 import {CaseManagementParams, CaseProcessDefinitionResponseDto} from '@valtimo/shared';
 import {runAfterCarbonModalClosed} from '@valtimo/components';
 import {BehaviorSubject, Observable, of} from 'rxjs';
@@ -74,7 +75,8 @@ export class StartableItemManagementService {
     );
 
   constructor(
-    private readonly startableItemApiService: StartableItemApiService
+    private readonly startableItemApiService: StartableItemApiService,
+    private readonly logger: NGXLogger
   ) {}
 
   public setParams(params: CaseManagementParams): void {
@@ -82,7 +84,11 @@ export class StartableItemManagementService {
   }
 
   public getParams(): CaseManagementParams {
-    return this._params$.value!;
+    const params = this._params$.value;
+    if (!params) {
+      this.logger.error('Params not initialized. Call setParams() first.');
+    }
+    return params!;
   }
 
   public loadItems(): void {
