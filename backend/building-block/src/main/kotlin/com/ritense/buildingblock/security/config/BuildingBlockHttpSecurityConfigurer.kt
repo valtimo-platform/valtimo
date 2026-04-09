@@ -117,6 +117,13 @@ class BuildingBlockHttpSecurityConfigurer : HttpSecurityConfigurer {
                     .hasAuthority(ADMIN)
                     .requestMatchers(antMatcher(DELETE, "$MANAGEMENT_BASE_PATH/{key}/version/{versionTag}/form-flow-definition/{definitionKey}"))
                     .hasAuthority(ADMIN)
+                    // Decision definition management endpoints
+                    .requestMatchers(antMatcher(GET, "$MANAGEMENT_BASE_PATH/{key}/version/{versionTag}/decision-definition"))
+                    .hasAuthority(ADMIN)
+                    .requestMatchers(antMatcher(POST, "$MANAGEMENT_BASE_PATH/{key}/version/{versionTag}/decision-definition"))
+                    .hasAuthority(ADMIN)
+                    .requestMatchers(antMatcher(DELETE, "$MANAGEMENT_BASE_PATH/{key}/version/{versionTag}/decision-definition/{decisionDefinitionKey}"))
+                    .hasAuthority(ADMIN)
             }
         } catch (e: Exception) {
             throw HttpConfigurerConfigurationException(e)

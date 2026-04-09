@@ -58,8 +58,10 @@ import {
   SelectModule,
 } from 'carbon-components-angular';
 import {
+  BuildingBlockManagementParams,
   CaseManagementParams,
   EditPermissionsService,
+  getBuildingBlockManagementRouteParams,
   getCaseManagementRouteParams,
   getContextObservable,
   GlobalNotificationService,
@@ -113,6 +115,10 @@ export class DecisionModelerComponent
 
   public readonly caseManagementRouteParams$: Observable<CaseManagementParams | undefined> =
     getCaseManagementRouteParams(this.route);
+
+  public readonly buildingBlockManagementRouteParams$: Observable<
+    BuildingBlockManagementParams | undefined
+  > = getBuildingBlockManagementRouteParams(this.route);
 
   public readonly context$: Observable<ManagementContext | null> = getContextObservable(this.route);
   public readonly isIndependent$ = this.context$.pipe(map(context => context === 'independent'));
@@ -196,13 +202,19 @@ export class DecisionModelerComponent
     this.setTabEvents();
     this.setModelerEvents();
 
-    combineLatest([this.caseManagementRouteParams$, this.context$])
-      .pipe(take(1))
-      .subscribe(([params, context]) => {
-        if (!params || !context) return;
+    this.context$.pipe(take(1)).subscribe(context => {
+      if (!context) return;
 
-        this.initBreadcrumbs(params, context);
-      });
+      if (context === 'buildingBlock') {
+        this.buildingBlockManagementRouteParams$.pipe(take(1)).subscribe(params => {
+          if (params) this.initBuildingBlockBreadcrumbs(params);
+        });
+      } else {
+        this.caseManagementRouteParams$.pipe(take(1)).subscribe(params => {
+          if (params) this.initBreadcrumbs(params, context);
+        });
+      }
+    });
   }
 
   public switchVersion(decisionId: string | SelectedValue): void {
@@ -217,19 +229,31 @@ export class DecisionModelerComponent
       .pipe(
         map(result => new File([(result as any).xml], this._fileName, {type: 'text/xml'})),
         switchMap(file => combineLatest([of(file), this.context$])),
-        switchMap(([file, context]) =>
-          context === 'independent'
-            ? this.decisionService.deployDmn(file)
-            : this.caseManagementRouteParams$.pipe(
-                switchMap(params =>
-                  this.decisionService.deployCaseDecisionDefinition(
-                    params?.caseDefinitionKey ?? '',
-                    params?.caseDefinitionVersionTag ?? '',
-                    file
-                  )
+        switchMap(([file, context]) => {
+          if (context === 'independent') {
+            return this.decisionService.deployDmn(file);
+          } else if (context === 'buildingBlock') {
+            return this.buildingBlockManagementRouteParams$.pipe(
+              switchMap(params =>
+                this.decisionService.deployBuildingBlockDecisionDefinition(
+                  params?.buildingBlockDefinitionKey ?? '',
+                  params?.buildingBlockDefinitionVersionTag ?? '',
+                  file
                 )
               )
-        ),
+            );
+          } else {
+            return this.caseManagementRouteParams$.pipe(
+              switchMap(params =>
+                this.decisionService.deployCaseDecisionDefinition(
+                  params?.caseDefinitionKey ?? '',
+                  params?.caseDefinitionVersionTag ?? '',
+                  file
+                )
+              )
+            );
+          }
+        }),
         tap((res: {identifier: string}) => {
           this.switchVersion(res.identifier);
           this.showNotification('success', 'decisions.deploySuccess');
@@ -369,6 +393,24 @@ export class DecisionModelerComponent
     this.breadcrumbService.setFourthBreadcrumb({
       route: [routeWithDecisions],
       content: this.translateService.instant('caseManagement.tabs.decision'),
+      href: routeWithDecisions,
+    });
+  }
+
+  private initBuildingBlockBreadcrumbs(params: BuildingBlockManagementParams): void {
+    const route = `/building-block-management/building-block/${params.buildingBlockDefinitionKey}/version/${params.buildingBlockDefinitionVersionTag}`;
+
+    this.breadcrumbService.setThirdBreadcrumb({
+      route: [route],
+      content: `${params.buildingBlockDefinitionKey} (${params.buildingBlockDefinitionVersionTag})`,
+      href: route,
+    });
+
+    const routeWithDecisions = `${route}/decisions`;
+
+    this.breadcrumbService.setFourthBreadcrumb({
+      route: [routeWithDecisions],
+      content: this.translateService.instant('buildingBlockManagement.tabs.decisions'),
       href: routeWithDecisions,
     });
   }

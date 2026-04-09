@@ -76,6 +76,18 @@
       </cds-tab>
     }
 
+    @if ({active: activeTabKey === BUILDING_BLOCK_MANAGEMENT_TABS.DECISIONS}; as obs) {
+      <cds-tab
+        [active]="obs.active"
+        [heading]="'buildingBlockManagement.tabs.decisions' | translate"
+        (selected)="switchTab(BUILDING_BLOCK_MANAGEMENT_TABS.DECISIONS)"
+      >
+        @if (obs.active) {
+          <valtimo-building-block-management-decisions></valtimo-building-block-management-decisions>
+        }
+      </cds-tab>
+    }
+
     @for (customTab of customTabs; track customTab.tabRoute) {
       @if ((customTab.enabled$ | async) && {active: activeTabKey === customTab.tabRoute}; as obs) {
         <cds-tab

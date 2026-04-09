@@ -23,6 +23,7 @@ import com.ritense.buildingblock.domain.definition.BuildingBlockDefinitionArtwor
 import com.ritense.buildingblock.repository.BuildingBlockDefinitionArtworkRepository
 import com.ritense.buildingblock.repository.BuildingBlockDefinitionRepository
 import com.ritense.buildingblock.repository.ProcessDefinitionBuildingBlockDefinitionRepository
+import com.ritense.buildingblock.service.BuildingBlockDecisionService
 import com.ritense.buildingblock.service.BuildingBlockDocumentDefinitionService
 import com.ritense.document.domain.impl.JsonSchemaDocumentDefinition
 import com.ritense.document.domain.impl.JsonSchemaDocumentDefinitionId
@@ -45,6 +46,7 @@ class BuildingBlockDefinitionEventListener(
     private val buildingBlockDefinitionArtworkRepository: BuildingBlockDefinitionArtworkRepository,
     private val buildingBlockDocumentDefinitionService: BuildingBlockDocumentDefinitionService,
     private val operatonProcessService: OperatonProcessService,
+    private val buildingBlockDecisionService: BuildingBlockDecisionService,
 ) {
 
     @EventListener(BuildingBlockDefinitionCreatedEvent::class)
@@ -55,6 +57,7 @@ class BuildingBlockDefinitionEventListener(
 
         copyDocumentDefinition(newId.key, basedOnId, newId)
         copyProcessDefinitions(basedOnId, newId)
+        copyDecisionDefinitions(basedOnId, newId)
         copyArtwork(basedOnId, newId)
     }
 
@@ -112,6 +115,20 @@ class BuildingBlockDefinitionEventListener(
                     ProcessDefinitionBuildingBlockDefinition(newLinkId, link.main)
                 )
             }
+    }
+
+    private fun copyDecisionDefinitions(
+        basedOnId: BuildingBlockDefinitionId,
+        newId: BuildingBlockDefinitionId
+    ) {
+        buildingBlockDecisionService.getDecisionDefinitions(basedOnId).forEach { oldDecision ->
+            operatonProcessService.deploy(
+                newId,
+                oldDecision.resourceName,
+                buildingBlockDecisionService.getDmnModel(oldDecision).inputStream()
+            )
+                ?: error { "Failed to duplicate decision ${oldDecision.key} for building block $newId" }
+        }
     }
 
     private fun copyArtwork(

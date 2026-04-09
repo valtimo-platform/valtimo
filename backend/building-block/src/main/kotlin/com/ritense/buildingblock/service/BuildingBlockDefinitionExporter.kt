@@ -25,6 +25,7 @@ import com.ritense.exporter.ExportResult
 import com.ritense.exporter.Exporter
 import com.ritense.exporter.request.BuildingBlockDefinitionExportRequest
 import com.ritense.exporter.request.BuildingBlockDocumentDefinitionExportRequest
+import com.ritense.exporter.request.BuildingBlockDecisionDefinitionExportRequest
 import com.ritense.exporter.request.BuildingBlockFormDefinitionExportRequest
 import com.ritense.exporter.request.ExportRequest
 import com.ritense.form.repository.FormDefinitionRepository
@@ -39,6 +40,7 @@ class BuildingBlockDefinitionExporter(
     val buildingBlockDefinitionRepository: BuildingBlockDefinitionRepository,
     private val documentDefinitionService: DocumentDefinitionService,
     private val formDefinitionRepository: FormDefinitionRepository,
+    private val buildingBlockDecisionService: BuildingBlockDecisionService,
 ) : Exporter<BuildingBlockDefinitionExportRequest> {
     override fun supports() = BuildingBlockDefinitionExportRequest::class.java
 
@@ -70,6 +72,7 @@ class BuildingBlockDefinitionExporter(
         val relatedExportRequests = mutableSetOf<ExportRequest>()
         relatedExportRequests.addAll(createDocumentDefinitionExportRequest(definition.id))
         relatedExportRequests.addAll(createFormDefinitionExportRequests(definition.id))
+        relatedExportRequests.addAll(createDecisionDefinitionExportRequests(definition.id))
 
         return ExportResult(definitionExport, relatedExportRequests)
     }
@@ -97,6 +100,16 @@ class BuildingBlockDefinitionExporter(
         return forms.map { form ->
             BuildingBlockFormDefinitionExportRequest(
                 form.name,
+                buildingBlockDefinitionId
+            )
+        }.toSet()
+    }
+
+    private fun createDecisionDefinitionExportRequests(buildingBlockDefinitionId: BuildingBlockDefinitionId): Set<BuildingBlockDecisionDefinitionExportRequest> {
+        val decisions = buildingBlockDecisionService.getDecisionDefinitions(buildingBlockDefinitionId)
+        return decisions.map { decision ->
+            BuildingBlockDecisionDefinitionExportRequest(
+                decision.id,
                 buildingBlockDefinitionId
             )
         }.toSet()

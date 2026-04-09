@@ -13,18 +13,27 @@
     </bpmn:serviceTask>
     <bpmn:serviceTask id="RemoveTagPriorityTask" name="Verwijder Tag: Prioriteit" camunda:asyncAfter="true" camunda:expression="${documentDelegateService.removeCaseTag(execution, 'prioriteit-hoog')}">
       <bpmn:incoming>Flow_SetStatusInkomenstoets_To_RemoveTagPriority</bpmn:incoming>
-      <bpmn:outgoing>Flow_RemoveTagPriority_To_Check</bpmn:outgoing>
+      <bpmn:outgoing>Flow_RemoveTagPriority_To_DMN</bpmn:outgoing>
     </bpmn:serviceTask>
-    <bpmn:serviceTask id="DetermineEligibilityTask" name="Bepaal Geschiktheid" camunda:asyncAfter="true" camunda:expression="${valueResolverDelegateService.handleValue(execution, 'doc:/eligibilityResult', 'Geschikt: '.concat(valueResolverDelegateService.resolveValue(execution, 'doc:/applicantName')).concat(' (huishouden: ').concat(valueResolverDelegateService.resolveValue(execution, 'doc:/householdSize')).concat(' personen)'))}">
-      <bpmn:incoming>Flow_RemoveTagPriority_To_Check</bpmn:incoming>
-      <bpmn:outgoing>Flow_Check_To_Status</bpmn:outgoing>
+    <bpmn:businessRuleTask id="DetermineEligibilityDmnTask" name="Bepaal Geschiktheid (DMN)" camunda:asyncAfter="true" camunda:decisionRef="income-eligibility-decision" camunda:mapDecisionResult="singleResult" camunda:decisionRefBinding="versionTag" camunda:decisionRefVersionTag="BB:income-check:1.0.0">
+      <bpmn:extensionElements>
+        <camunda:inputOutput>
+          <camunda:inputParameter name="householdSize">${valueResolverDelegateService.resolveValue(execution, 'doc:/householdSize')}</camunda:inputParameter>
+        </camunda:inputOutput>
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_RemoveTagPriority_To_DMN</bpmn:incoming>
+      <bpmn:outgoing>Flow_DMN_To_StoreEligibility</bpmn:outgoing>
+    </bpmn:businessRuleTask>
+    <bpmn:serviceTask id="StoreEligibilityResultTask" name="Sla Resultaat Op" camunda:asyncAfter="true" camunda:expression="${valueResolverDelegateService.handleValue(execution, 'doc:/eligibilityResult', eligibilityResult)}">
+      <bpmn:incoming>Flow_DMN_To_StoreEligibility</bpmn:incoming>
+      <bpmn:outgoing>Flow_StoreEligibility_To_StoreStatus</bpmn:outgoing>
     </bpmn:serviceTask>
-    <bpmn:serviceTask id="SetCheckStatusTask" name="Registreer Status" camunda:asyncAfter="true" camunda:expression="${valueResolverDelegateService.handleValue(execution, 'doc:/checkStatus', 'GOEDGEKEURD')}">
-      <bpmn:incoming>Flow_Check_To_Status</bpmn:incoming>
-      <bpmn:outgoing>Flow_Status_To_SetDate</bpmn:outgoing>
+    <bpmn:serviceTask id="StoreCheckStatusTask" name="Registreer Status" camunda:asyncAfter="true" camunda:expression="${valueResolverDelegateService.handleValue(execution, 'doc:/checkStatus', checkStatus)}">
+      <bpmn:incoming>Flow_StoreEligibility_To_StoreStatus</bpmn:incoming>
+      <bpmn:outgoing>Flow_StoreStatus_To_SetDate</bpmn:outgoing>
     </bpmn:serviceTask>
     <bpmn:serviceTask id="SetEinddatumGeplandTask" name="Bereken Einddatum" camunda:asyncAfter="true" camunda:expression="${execution.setVariable('einddatumGeplandBB3', '2026-03-01')}">
-      <bpmn:incoming>Flow_Status_To_SetDate</bpmn:incoming>
+      <bpmn:incoming>Flow_StoreStatus_To_SetDate</bpmn:incoming>
       <bpmn:outgoing>Flow_SetDate_To_PatchZaak</bpmn:outgoing>
     </bpmn:serviceTask>
     <bpmn:serviceTask id="PatchZaakIncomeCheckTask" name="Update Zaak: Einddatum" camunda:asyncAfter="true">
@@ -40,9 +49,10 @@
     </bpmn:endEvent>
     <bpmn:sequenceFlow id="Flow_Start_To_SetStatusInkomenstoets" sourceRef="StartEvent" targetRef="SetStatusInkomenstoetsTask" />
     <bpmn:sequenceFlow id="Flow_SetStatusInkomenstoets_To_RemoveTagPriority" sourceRef="SetStatusInkomenstoetsTask" targetRef="RemoveTagPriorityTask" />
-    <bpmn:sequenceFlow id="Flow_RemoveTagPriority_To_Check" sourceRef="RemoveTagPriorityTask" targetRef="DetermineEligibilityTask" />
-    <bpmn:sequenceFlow id="Flow_Check_To_Status" sourceRef="DetermineEligibilityTask" targetRef="SetCheckStatusTask" />
-    <bpmn:sequenceFlow id="Flow_Status_To_SetDate" sourceRef="SetCheckStatusTask" targetRef="SetEinddatumGeplandTask" />
+    <bpmn:sequenceFlow id="Flow_RemoveTagPriority_To_DMN" sourceRef="RemoveTagPriorityTask" targetRef="DetermineEligibilityDmnTask" />
+    <bpmn:sequenceFlow id="Flow_DMN_To_StoreEligibility" sourceRef="DetermineEligibilityDmnTask" targetRef="StoreEligibilityResultTask" />
+    <bpmn:sequenceFlow id="Flow_StoreEligibility_To_StoreStatus" sourceRef="StoreEligibilityResultTask" targetRef="StoreCheckStatusTask" />
+    <bpmn:sequenceFlow id="Flow_StoreStatus_To_SetDate" sourceRef="StoreCheckStatusTask" targetRef="SetEinddatumGeplandTask" />
     <bpmn:sequenceFlow id="Flow_SetDate_To_PatchZaak" sourceRef="SetEinddatumGeplandTask" targetRef="PatchZaakIncomeCheckTask" />
     <bpmn:sequenceFlow id="Flow_PatchZaak_To_ReadEinddatum" sourceRef="PatchZaakIncomeCheckTask" targetRef="ReadZaakEinddatumTask" />
     <bpmn:sequenceFlow id="Flow_ReadEinddatum_To_End" sourceRef="ReadZaakEinddatumTask" targetRef="EndEvent" />
@@ -50,7 +60,7 @@
   <bpmndi:BPMNDiagram id="BPMNDiagram_1">
     <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="Collaboration_IncomeCheck">
       <bpmndi:BPMNShape id="Participant_IncomeCheck_di" bpmnElement="IncomeCheckParticipant" isHorizontal="true">
-        <dc:Bounds x="160" y="60" width="1240" height="200" />
+        <dc:Bounds x="160" y="60" width="1500" height="200" />
         <bpmndi:BPMNLabel />
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="StartEvent_di" bpmnElement="StartEvent">
@@ -67,30 +77,34 @@
         <dc:Bounds x="420" y="120" width="100" height="80" />
         <bpmndi:BPMNLabel />
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="DetermineEligibilityTask_di" bpmnElement="DetermineEligibilityTask">
+      <bpmndi:BPMNShape id="DetermineEligibilityDmnTask_di" bpmnElement="DetermineEligibilityDmnTask">
         <dc:Bounds x="550" y="120" width="100" height="80" />
         <bpmndi:BPMNLabel />
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="SetCheckStatusTask_di" bpmnElement="SetCheckStatusTask">
+      <bpmndi:BPMNShape id="StoreEligibilityResultTask_di" bpmnElement="StoreEligibilityResultTask">
         <dc:Bounds x="680" y="120" width="100" height="80" />
         <bpmndi:BPMNLabel />
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="SetEinddatumGeplandTask_di" bpmnElement="SetEinddatumGeplandTask">
+      <bpmndi:BPMNShape id="StoreCheckStatusTask_di" bpmnElement="StoreCheckStatusTask">
         <dc:Bounds x="810" y="120" width="100" height="80" />
         <bpmndi:BPMNLabel />
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="PatchZaakIncomeCheckTask_di" bpmnElement="PatchZaakIncomeCheckTask">
+      <bpmndi:BPMNShape id="SetEinddatumGeplandTask_di" bpmnElement="SetEinddatumGeplandTask">
         <dc:Bounds x="940" y="120" width="100" height="80" />
         <bpmndi:BPMNLabel />
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="ReadZaakEinddatumTask_di" bpmnElement="ReadZaakEinddatumTask">
+      <bpmndi:BPMNShape id="PatchZaakIncomeCheckTask_di" bpmnElement="PatchZaakIncomeCheckTask">
         <dc:Bounds x="1070" y="120" width="100" height="80" />
         <bpmndi:BPMNLabel />
       </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="ReadZaakEinddatumTask_di" bpmnElement="ReadZaakEinddatumTask">
+        <dc:Bounds x="1200" y="120" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="EndEvent_di" bpmnElement="EndEvent">
-        <dc:Bounds x="1232" y="142" width="36" height="36" />
+        <dc:Bounds x="1362" y="142" width="36" height="36" />
         <bpmndi:BPMNLabel>
-          <dc:Bounds x="1208" y="185" width="85" height="27" />
+          <dc:Bounds x="1338" y="185" width="85" height="27" />
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNShape>
       <bpmndi:BPMNEdge id="Flow_Start_To_SetStatusInkomenstoets_di" bpmnElement="Flow_Start_To_SetStatusInkomenstoets">
@@ -101,29 +115,33 @@
         <di:waypoint x="390" y="160" />
         <di:waypoint x="420" y="160" />
       </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="Flow_RemoveTagPriority_To_Check_di" bpmnElement="Flow_RemoveTagPriority_To_Check">
+      <bpmndi:BPMNEdge id="Flow_RemoveTagPriority_To_DMN_di" bpmnElement="Flow_RemoveTagPriority_To_DMN">
         <di:waypoint x="520" y="160" />
         <di:waypoint x="550" y="160" />
       </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="Flow_Check_To_Status_di" bpmnElement="Flow_Check_To_Status">
+      <bpmndi:BPMNEdge id="Flow_DMN_To_StoreEligibility_di" bpmnElement="Flow_DMN_To_StoreEligibility">
         <di:waypoint x="650" y="160" />
         <di:waypoint x="680" y="160" />
       </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="Flow_Status_To_SetDate_di" bpmnElement="Flow_Status_To_SetDate">
+      <bpmndi:BPMNEdge id="Flow_StoreEligibility_To_StoreStatus_di" bpmnElement="Flow_StoreEligibility_To_StoreStatus">
         <di:waypoint x="780" y="160" />
         <di:waypoint x="810" y="160" />
       </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="Flow_SetDate_To_PatchZaak_di" bpmnElement="Flow_SetDate_To_PatchZaak">
+      <bpmndi:BPMNEdge id="Flow_StoreStatus_To_SetDate_di" bpmnElement="Flow_StoreStatus_To_SetDate">
         <di:waypoint x="910" y="160" />
         <di:waypoint x="940" y="160" />
       </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="Flow_PatchZaak_To_ReadEinddatum_di" bpmnElement="Flow_PatchZaak_To_ReadEinddatum">
+      <bpmndi:BPMNEdge id="Flow_SetDate_To_PatchZaak_di" bpmnElement="Flow_SetDate_To_PatchZaak">
         <di:waypoint x="1040" y="160" />
         <di:waypoint x="1070" y="160" />
       </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="Flow_ReadEinddatum_To_End_di" bpmnElement="Flow_ReadEinddatum_To_End">
+      <bpmndi:BPMNEdge id="Flow_PatchZaak_To_ReadEinddatum_di" bpmnElement="Flow_PatchZaak_To_ReadEinddatum">
         <di:waypoint x="1170" y="160" />
-        <di:waypoint x="1232" y="160" />
+        <di:waypoint x="1200" y="160" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_ReadEinddatum_To_End_di" bpmnElement="Flow_ReadEinddatum_To_End">
+        <di:waypoint x="1300" y="160" />
+        <di:waypoint x="1362" y="160" />
       </bpmndi:BPMNEdge>
     </bpmndi:BPMNPlane>
   </bpmndi:BPMNDiagram>

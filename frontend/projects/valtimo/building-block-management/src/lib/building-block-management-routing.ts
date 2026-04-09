@@ -28,6 +28,7 @@ import {
 } from '@valtimo/process-management';
 import {FormManagementEditComponent} from '@valtimo/form-management';
 import {FormFlowEditorComponent} from '@valtimo/form-flow-management';
+import {DecisionModelerComponent} from '@valtimo/decision';
 
 const routes: Routes = [
   {
@@ -85,6 +86,17 @@ const routes: Routes = [
     canActivate: [AuthGuardService],
     data: {
       title: 'formFlow.title',
+      roles: [ROLE_ADMIN],
+      customPageTitle: true,
+      context: 'buildingBlock',
+    },
+  },
+  {
+    path: `building-block-management/building-block/:buildingBlockDefinitionKey/version/:buildingBlockDefinitionVersionTag/${BUILDING_BLOCK_MANAGEMENT_TABS.DECISIONS}/:id`,
+    component: DecisionModelerComponent,
+    canActivate: [AuthGuardService],
+    data: {
+      title: 'Decision table',
       roles: [ROLE_ADMIN],
       customPageTitle: true,
       context: 'buildingBlock',

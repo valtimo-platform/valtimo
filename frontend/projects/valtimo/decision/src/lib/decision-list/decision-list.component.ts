@@ -23,6 +23,7 @@ import {DecisionService} from '../services/decision.service';
 import {
   ConfigService,
   EditPermissionsService,
+  getBuildingBlockManagementRouteParams,
   getCaseManagementRouteParams,
   getContextObservable,
 } from '@valtimo/shared';
@@ -62,22 +63,35 @@ export class DecisionListComponent {
   readonly experimentalEditing!: boolean;
 
   public readonly caseManagementRouteParams$ = getCaseManagementRouteParams(this.route);
+  public readonly buildingBlockManagementRouteParams$ =
+    getBuildingBlockManagementRouteParams(this.route);
   public readonly context$ = getContextObservable(this.route);
 
   readonly decisionsLatestVersions$ = this.stateService.refreshDecisions$.pipe(
     switchMap(() => this.context$),
-    switchMap(context =>
-      context === 'case'
-        ? this.caseManagementRouteParams$.pipe(
-            switchMap(params =>
-              this.decisionService.listCaseDecisionDefinitions(
-                params.caseDefinitionKey,
-                params.caseDefinitionVersionTag
-              )
+    switchMap(context => {
+      if (context === 'case') {
+        return this.caseManagementRouteParams$.pipe(
+          switchMap(params =>
+            this.decisionService.listCaseDecisionDefinitions(
+              params.caseDefinitionKey,
+              params.caseDefinitionVersionTag
             )
           )
-        : this.decisionService.getDecisions()
-    ),
+        );
+      } else if (context === 'buildingBlock') {
+        return this.buildingBlockManagementRouteParams$.pipe(
+          switchMap(params =>
+            this.decisionService.listBuildingBlockDecisionDefinitions(
+              params.buildingBlockDefinitionKey,
+              params.buildingBlockDefinitionVersionTag
+            )
+          )
+        );
+      } else {
+        return this.decisionService.getDecisions();
+      }
+    }),
     map(decisions =>
       decisions.reduce((acc, curr) => {
         const existing = acc.find(d => d.key === curr.key);
@@ -121,6 +135,12 @@ export class DecisionListComponent {
       if (context === 'independent') {
         const basePath = this.experimentalEditing ? '/decision-tables/edit/' : '/decision-tables/';
         this.router.navigate([basePath + decision.id]);
+      } else if (context === 'buildingBlock') {
+        this.buildingBlockManagementRouteParams$.pipe(take(1)).subscribe(params => {
+          this.router.navigateByUrl(
+            `building-block-management/building-block/${params.buildingBlockDefinitionKey}/version/${params.buildingBlockDefinitionVersionTag}/decisions/${decision.id}`
+          );
+        });
       } else {
         this.caseManagementRouteParams$.pipe(take(1)).subscribe(params => {
           this.router.navigateByUrl(
