@@ -96,11 +96,7 @@ export class CaseManagementActionsComponent implements AfterViewInit, OnDestroy 
   public readonly dragAndDropDisabled = signal(false);
 
   public readonly items$: Observable<ManagementStartableItem[]> =
-    this.startableItemManagementService.items$.pipe(
-      tap(() => {
-        this.dragAndDropDisabled.set(false);
-      })
-    );
+    this.startableItemManagementService.items$;
 
   public readonly hasEditPermissions$: Observable<boolean> = this.caseManagementRouteParams$.pipe(
     switchMap(params =>
@@ -138,6 +134,11 @@ export class CaseManagementActionsComponent implements AfterViewInit, OnDestroy 
     private readonly buildingBlockStateService: BuildingBlockStateService
   ) {
     this.subscribeToProcessLinkEvents();
+    this._subscriptions.add(
+      this.startableItemManagementService.reorderComplete$.subscribe(() => {
+        this.dragAndDropDisabled.set(false);
+      })
+    );
   }
 
   public ngAfterViewInit(): void {
