@@ -16,11 +16,14 @@
 
 package com.ritense.case.web.rest
 
+import com.fasterxml.jackson.databind.JsonNode
 import com.ritense.case.service.StartableItemManagementService
 import com.ritense.case.web.rest.dto.CreateStartableItemRequest
 import com.ritense.case.web.rest.dto.ManagementStartableItemDto
 import com.ritense.case.web.rest.dto.StartableItemDto
+import com.ritense.case.web.rest.dto.StartableItemType
 import com.ritense.case.web.rest.dto.UpdateStartableItemOrderRequest
+import com.ritense.case.web.rest.dto.UpdateStartableItemRequest
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import com.ritense.valtimo.contract.case_.CaseDefinitionId
 import com.ritense.valtimo.contract.domain.ValtimoMediaType.APPLICATION_JSON_UTF8_VALUE
@@ -32,6 +35,7 @@ import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.PutMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
+import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 
 @RestController
@@ -68,12 +72,107 @@ class StartableItemManagementResource(
         return ResponseEntity.ok(item)
     }
 
+    @PutMapping("/{itemKey}/version/{versionTag}")
+    fun updateStartableItem(
+        @PathVariable caseDefinitionKey: String,
+        @PathVariable caseDefinitionVersionTag: String,
+        @PathVariable itemKey: String,
+        @PathVariable versionTag: String,
+        @RequestBody request: UpdateStartableItemRequest
+    ): ResponseEntity<StartableItemDto> {
+        return doUpdateStartableItem(caseDefinitionKey, caseDefinitionVersionTag, itemKey, versionTag, request)
+    }
+
+    @PutMapping("/{itemKey}")
+    fun updateStartableItemWithoutVersionTag(
+        @PathVariable caseDefinitionKey: String,
+        @PathVariable caseDefinitionVersionTag: String,
+        @PathVariable itemKey: String,
+        @RequestBody request: UpdateStartableItemRequest
+    ): ResponseEntity<StartableItemDto> {
+        return doUpdateStartableItem(caseDefinitionKey, caseDefinitionVersionTag, itemKey, null, request)
+    }
+
+    @GetMapping("/{itemKey}/version/{versionTag}/properties")
+    fun getStartableItemProperties(
+        @PathVariable caseDefinitionKey: String,
+        @PathVariable caseDefinitionVersionTag: String,
+        @PathVariable itemKey: String,
+        @PathVariable versionTag: String,
+        @RequestParam type: StartableItemType
+    ): ResponseEntity<JsonNode> {
+        return doGetStartableItemProperties(caseDefinitionKey, caseDefinitionVersionTag, itemKey, versionTag, type)
+    }
+
+    @GetMapping("/{itemKey}/properties")
+    fun getStartableItemPropertiesWithoutVersionTag(
+        @PathVariable caseDefinitionKey: String,
+        @PathVariable caseDefinitionVersionTag: String,
+        @PathVariable itemKey: String,
+        @RequestParam type: StartableItemType
+    ): ResponseEntity<JsonNode> {
+        return doGetStartableItemProperties(caseDefinitionKey, caseDefinitionVersionTag, itemKey, null, type)
+    }
+
     @DeleteMapping("/{itemKey}/version/{versionTag}")
     fun deleteStartableItem(
         @PathVariable caseDefinitionKey: String,
         @PathVariable caseDefinitionVersionTag: String,
         @PathVariable itemKey: String,
         @PathVariable versionTag: String
+    ): ResponseEntity<Void> {
+        return doDeleteStartableItem(caseDefinitionKey, caseDefinitionVersionTag, itemKey, versionTag)
+    }
+
+    @DeleteMapping("/{itemKey}")
+    fun deleteStartableItemWithoutVersionTag(
+        @PathVariable caseDefinitionKey: String,
+        @PathVariable caseDefinitionVersionTag: String,
+        @PathVariable itemKey: String
+    ): ResponseEntity<Void> {
+        return doDeleteStartableItem(caseDefinitionKey, caseDefinitionVersionTag, itemKey, null)
+    }
+
+    private fun doUpdateStartableItem(
+        caseDefinitionKey: String,
+        caseDefinitionVersionTag: String,
+        itemKey: String,
+        versionTag: String?,
+        request: UpdateStartableItemRequest
+    ): ResponseEntity<StartableItemDto> {
+        val caseDefinitionId = CaseDefinitionId(caseDefinitionKey, caseDefinitionVersionTag)
+        val item = startableItemManagementService.updateItem(
+            caseDefinitionId,
+            itemKey,
+            versionTag,
+            request.type,
+            request.properties
+        )
+        return ResponseEntity.ok(item)
+    }
+
+    private fun doGetStartableItemProperties(
+        caseDefinitionKey: String,
+        caseDefinitionVersionTag: String,
+        itemKey: String,
+        versionTag: String?,
+        type: StartableItemType
+    ): ResponseEntity<JsonNode> {
+        val caseDefinitionId = CaseDefinitionId(caseDefinitionKey, caseDefinitionVersionTag)
+        val properties = startableItemManagementService.getItemProperties(
+            caseDefinitionId,
+            itemKey,
+            versionTag,
+            type
+        )
+        return ResponseEntity.ok(properties)
+    }
+
+    private fun doDeleteStartableItem(
+        caseDefinitionKey: String,
+        caseDefinitionVersionTag: String,
+        itemKey: String,
+        versionTag: String?
     ): ResponseEntity<Void> {
         val caseDefinitionId = CaseDefinitionId(caseDefinitionKey, caseDefinitionVersionTag)
         startableItemManagementService.deleteItem(caseDefinitionId, itemKey, versionTag)

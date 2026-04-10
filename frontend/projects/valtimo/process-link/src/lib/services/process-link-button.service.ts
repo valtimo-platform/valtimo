@@ -17,9 +17,7 @@
 import {Injectable} from '@angular/core';
 import {BehaviorSubject, Observable, Subject} from 'rxjs';
 
-@Injectable({
-  providedIn: 'root',
-})
+@Injectable()
 export class ProcessLinkButtonService {
   private readonly _showSaveButton$ = new BehaviorSubject<boolean>(false);
   private readonly _enableSaveButton$ = new BehaviorSubject<boolean>(false);
