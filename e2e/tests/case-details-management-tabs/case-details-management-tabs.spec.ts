@@ -15,7 +15,7 @@
  */
 
 import {expect, test} from '@playwright/test';
-import {CASE_IDENTIFIER, tabTestData, tabReorderTestData} from './case-details-management-tabs';
+import {CASE_IDENTIFIER, createTabTestData, createTabReorderTestData} from './case-details-management-tabs';
 import {CaseDetailsManagementTabsPage} from './page';
 
 test.use({storageState: undefined});
@@ -26,6 +26,10 @@ test.describe('Case details management — Tabs', () => {
   let tabsPage: CaseDetailsManagementTabsPage;
   let request;
   let draftVersion: string;
+
+  // Generate unique test data per run to avoid key collisions
+  const tabTestData = createTabTestData();
+  const tabReorderTestData = createTabReorderTestData();
 
   // Arrange
   test.beforeAll(async ({browser, baseURL}) => {
@@ -38,16 +42,6 @@ test.describe('Case details management — Tabs', () => {
     await page.goto('/');
     await tabsPage.goToCaseManagement(CASE_IDENTIFIER);
     draftVersion = await tabsPage.ensureDraftVersionSelected();
-
-    // Clean up leftover tabs from previous failed runs (across all versions)
-    const tabKey = tabTestData.title.toLowerCase().replace(/\s+/g, '-');
-    const updatedTabKey = tabTestData.updatedTitle.toLowerCase().replace(/\s+/g, '-');
-    const reorderKeyA = tabReorderTestData.titleA.toLowerCase().replace(/\s+/g, '-');
-    const reorderKeyB = tabReorderTestData.titleB.toLowerCase().replace(/\s+/g, '-');
-    await tabsPage.deleteTabFromAllVersions(CASE_IDENTIFIER, tabKey);
-    await tabsPage.deleteTabFromAllVersions(CASE_IDENTIFIER, updatedTabKey);
-    await tabsPage.deleteTabFromAllVersions(CASE_IDENTIFIER, reorderKeyA);
-    await tabsPage.deleteTabFromAllVersions(CASE_IDENTIFIER, reorderKeyB);
 
     // ensureDraftVersionSelected may redirect to /general — navigate to Case details > Tabs
     await tabsPage.switchToCaseDetailsTabs();

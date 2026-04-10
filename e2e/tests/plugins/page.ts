@@ -16,7 +16,7 @@
 
 import {APIRequestContext, expect, Page} from '@playwright/test';
 import {PluginFieldMap, pluginTestConfiguration, pluginTypes} from './plugin-config';
-import {STEPPER_FOOTER_STEP_TEST_IDS, PLUGIN_CATALOG_TEST_IDS} from '../../constants';
+import {STEPPER_FOOTER_STEP_TEST_IDS} from '../../constants';
 import {CarbonList} from '../../shared/carbon-list/carbon-list.utils';
 
 export class PluginPage {
@@ -293,10 +293,6 @@ export class PluginPage {
 
   // ─── Plugin Catalog Assertions (9.7) ──────────────────────────────
 
-  get catalogGrid() {
-    return this.page.getByTestId(PLUGIN_CATALOG_TEST_IDS.tileGrid);
-  }
-
   get catalogTiles() {
     return this.page.locator('cds-selection-tile');
   }
@@ -308,7 +304,7 @@ export class PluginPage {
 
     for (let i = 0; i < count; i++) {
       const tile = tiles.nth(i);
-      const logo = tile.getByTestId(PLUGIN_CATALOG_TEST_IDS.tileLogo);
+      const logo = tile.locator('img.plugin-definition-logo');
       await expect(logo).toBeVisible();
       const src = await logo.getAttribute('src');
       expect(src).toBeTruthy();
@@ -322,7 +318,7 @@ export class PluginPage {
 
     for (let i = 0; i < count; i++) {
       const tile = tiles.nth(i);
-      const title = tile.getByTestId(PLUGIN_CATALOG_TEST_IDS.tileTitle);
+      const title = tile.locator('h5');
       await expect(title).toBeVisible();
       const text = await title.textContent();
       expect(text?.trim().length).toBeGreaterThan(0);
@@ -336,7 +332,7 @@ export class PluginPage {
 
     for (let i = 0; i < count; i++) {
       const tile = tiles.nth(i);
-      const description = tile.getByTestId(PLUGIN_CATALOG_TEST_IDS.tileDescription);
+      const description = tile.locator('p');
       await expect(description).toBeVisible();
       const text = await description.textContent();
       expect(text?.trim().length).toBeGreaterThan(0);

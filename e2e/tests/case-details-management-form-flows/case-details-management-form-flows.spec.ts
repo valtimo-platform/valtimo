@@ -15,7 +15,7 @@
  */
 
 import {expect, test} from '@playwright/test';
-import {CASE_IDENTIFIER, formFlowTestData} from './case-details-management-form-flows';
+import {CASE_IDENTIFIER, createFormFlowTestData} from './case-details-management-form-flows';
 import {CaseDetailsManagementFormFlowsPage} from './page';
 
 test.use({storageState: undefined});
@@ -25,6 +25,9 @@ test.describe('Case details management — Form Flows', () => {
   let page;
   let formFlowsPage: CaseDetailsManagementFormFlowsPage;
   let request;
+
+  // Generate unique test data per run to avoid key collisions
+  const formFlowTestData = createFormFlowTestData();
 
   // Arrange
   test.beforeAll(async ({browser, baseURL}) => {
@@ -37,9 +40,6 @@ test.describe('Case details management — Form Flows', () => {
     await page.goto('/');
     await formFlowsPage.goToCaseManagement(CASE_IDENTIFIER);
     await formFlowsPage.ensureDraftVersionSelected();
-
-    // Clean up leftover form flow from previous failed runs
-    await formFlowsPage.deleteFormFlowViaApi(formFlowTestData.key);
 
     await formFlowsPage.switchToFormFlowsTab();
   });

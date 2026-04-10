@@ -199,42 +199,53 @@ test.describe('Case management', () => {
     });
 
     test('Existing final version blocks import', async () => {
-      // Arrange: import a case and finalize it
-      await caseManagementPage.goToCaseManagement();
-      const {key: importedKey} = await caseManagementPage.uploadCase();
-      createdKeys.push(importedKey);
+      // This test does upload + finalize + second upload — needs extra time
+      test.slow();
 
-      // Finalize the version — fail explicitly if this doesn't work
+      // Arrange: import a case with a unique key
+      const uniqueKey = `e2e-final-test-${Date.now().toString(36)}`;
+      await caseManagementPage.goToCaseManagement();
+      await caseManagementPage.uploadCaseButton.click();
+      await caseManagementPage.pluginConfigurationStep();
+      await caseManagementPage.uploadFileStep('test-case-import-success_1.0.0.case.zip');
+      const firstImport = await caseManagementPage.configureStepWithCustomKey(
+        'E2e Final Version Test',
+        uniqueKey
+      );
+      createdKeys.push(firstImport.key);
+
+      if (firstImport.response.status() === 200) {
+        await caseManagementPage.uploadWizardNextButton.click();
+        await caseManagementPage.accessControlStep();
+        await caseManagementPage.dashboardStep();
+      }
+
+      // Finalize the version
       await ApiUtils.apiPost(
-        `/api/management/v1/case-definition/${importedKey}/version/1.0.0/finalize`,
+        `/api/management/v1/case-definition/${firstImport.key}/version/1.0.0/finalize`,
         {}
       );
 
       // Verify finalization succeeded before proceeding
-      const versions = await ApiUtils.apiGet<Array<{versionTag: string; finalized: boolean}>>(
-        `/api/management/v1/case-definition/${importedKey}/version`
+      const versions = await ApiUtils.apiGet<Array<{versionTag: string; final: boolean}>>(
+        `/api/management/v1/case-definition/${firstImport.key}/version`
       );
       const finalVersion = versions.find(v => v.versionTag === '1.0.0');
-      expect(finalVersion?.finalized).toBeTruthy();
+      expect(finalVersion?.final).toBeTruthy();
 
-      // Act: try to import the same archive again, explicitly setting the key to the one
-      // that was finalized (the first import may have used a different key due to collision handling)
+      // Act: try to import the same archive again, setting the key to the finalized one
       await caseManagementPage.goToCaseManagement();
       await caseManagementPage.uploadCaseButton.click();
       await caseManagementPage.pluginConfigurationStep();
       await caseManagementPage.uploadFileStep('test-case-import-success_1.0.0.case.zip');
 
-      // Wait for the configure step to fully render before interacting
+      // Wait for the configure step to render, then set the key to the finalized one
       await expect(caseManagementPage.configureNameInput).toBeVisible();
       await expect(caseManagementPage.configureKeyInput).toBeVisible();
 
-      // If the pre-filled key differs from the finalized key, change it and wait for validation
-      const prefilledKey = await caseManagementPage.configureKeyInput.inputValue();
-      if (prefilledKey !== importedKey) {
-        const validationPromise = caseManagementPage.waitForKeyValidationResponse();
-        await caseManagementPage.changeConfigureKey(importedKey);
-        await validationPromise;
-      }
+      const validationPromise = caseManagementPage.waitForKeyValidationResponse();
+      await caseManagementPage.changeConfigureKey(firstImport.key);
+      await validationPromise;
 
       // Wait for the UI to reflect the validation result
       await caseManagementPage.awaitConfigureValidation();
