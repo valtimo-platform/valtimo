@@ -48,7 +48,7 @@ class StartableProcessItemProvider(
         document: Document?
     ): List<StartableItemDto> {
         return processDefinitionCaseDefinitionRepository
-            .findAll(caseDefinitionId, startableByUser = true, canInitializeDocument = false)
+            .findAll(caseDefinitionId, startableByUser = true, canInitializeDocument = null)
             .filter { hasExecutionPermission(it.id.processDefinitionId.id, document) }
             .map { pdcd ->
                 StartableItemDto(
@@ -70,6 +70,10 @@ class StartableProcessItemProvider(
             .firstOrNull()
             ?: throw NoSuchElementException("Process definition '$processDefinitionId' is not linked to case definition '$caseDefinitionId'")
 
+        val processDefinitionName = pdcd.processDefinitionName
+        val processDefinitionKey = pdcd.processDefinitionKey
+            ?: error("Process definition key is null")
+
         processDefinitionCaseDefinitionRepository.save(
             ProcessDefinitionCaseDefinition(
                 id = pdcd.id,
@@ -80,14 +84,14 @@ class StartableProcessItemProvider(
 
         return StartableItemDto(
             type = StartableItemType.PROCESS,
-            name = pdcd.processDefinitionName,
-            key = pdcd.processDefinitionKey ?: error("Process definition key is null"),
+            name = processDefinitionName,
+            key = processDefinitionKey,
             versionTag = null,
             processDefinitionId = pdcd.id.processDefinitionId.id
         )
     }
 
-    override fun deleteItem(caseDefinitionId: CaseDefinitionId, itemKey: String, versionTag: String) {
+    override fun deleteItem(caseDefinitionId: CaseDefinitionId, itemKey: String, versionTag: String?) {
         val pdcds = processDefinitionCaseDefinitionRepository
             .findByIdCaseDefinitionId(caseDefinitionId)
             .filter { it.processDefinitionKey == itemKey }
