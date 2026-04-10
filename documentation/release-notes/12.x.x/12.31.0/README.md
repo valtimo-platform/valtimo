@@ -14,4 +14,4 @@
 
 ## Bugfixes
 
-* New bugfix.
+* Fixed problem with dashboards sometimes not loading.
