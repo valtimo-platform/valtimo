@@ -18,4 +18,4 @@
 
 ## Bugfixes
 
-* New bugfix.
+* **Fixed 403 error in Operaton Cockpit**
