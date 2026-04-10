@@ -16,6 +16,12 @@
 
   New enhancement explanation.
 
+## Security
+
+* **Dependencies**
+
+  All frontend dependencies have been locked to specific versions.
+
 ## Bugfixes
 
 * New bugfix.
