@@ -41,13 +41,11 @@ export class CaseDetailsManagementTabsPage {
   }
 
   get tabNameInput() {
-    // cds-label wraps the input — filter by label text, then grab the child input
-    return this.page.locator('cds-modal').locator('cds-label').filter({hasText: 'Tab name'}).locator('input');
+    return this.page.locator('cds-modal input[formcontrolname="name"]');
   }
 
   get tabKeyInput() {
-    // The key input is the only one with a pattern attribute in the modal form
-    return this.page.locator('cds-modal').locator('input[pattern]');
+    return this.page.locator('cds-modal input[formcontrolname="key"]');
   }
 
   get addTabConfirmButton() {

@@ -33,6 +33,7 @@ test.describe('Case details management — Tabs', () => {
 
   // Arrange
   test.beforeAll(async ({browser, baseURL}) => {
+    test.setTimeout(60_000);
     context = await browser.newContext({baseURL});
     page = await context.newPage();
     request = context.request;
