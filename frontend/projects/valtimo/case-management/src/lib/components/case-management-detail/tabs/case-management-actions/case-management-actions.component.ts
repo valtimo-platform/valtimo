@@ -51,12 +51,9 @@ import {
 import {ButtonModule, IconModule, NotificationModule, TagModule} from 'carbon-components-angular';
 import {BehaviorSubject, Observable, of, shareReplay, Subscription, switchMap, tap} from 'rxjs';
 import {catchError, filter, take} from 'rxjs/operators';
-import {ManagementStartableItem, StartableItemType} from '../../../../models';
+import {BuildingBlockConfigRequest, ManagementStartableItem, StartableItemType} from '../../../../models';
 import {StartableItemManagementService} from '../../../../services';
-import {
-  BuildingBlockConfigRequest,
-  CaseManagementActionsModalComponent,
-} from './case-management-actions-modal/case-management-actions-modal.component';
+import {CaseManagementActionsModalComponent} from './case-management-actions-modal/case-management-actions-modal.component';
 
 @Component({
   standalone: true,

@@ -34,26 +34,14 @@ import {
 } from 'carbon-components-angular';
 import {catchError, combineLatest, EMPTY, map, Observable, of, Subscription} from 'rxjs';
 import {
+  BuildingBlockConfigRequest,
   CreateStartableItemRequest,
+  ListItem,
   ManagementStartableItem,
+  ModalStep,
   StartableItemType,
 } from '../../../../../models';
 import {StartableItemManagementService} from '../../../../../services';
-
-export interface BuildingBlockConfigRequest {
-  buildingBlockDefinitionKey: string;
-  buildingBlockDefinitionVersionTag: string;
-}
-
-interface ListItem {
-  content: string;
-  key: string;
-  id: string;
-  selected: boolean;
-  versionTag?: string;
-}
-
-type ModalStep = 'selectType' | 'selectItem' | 'configureBuildingBlock';
 
 @Component({
   standalone: true,
