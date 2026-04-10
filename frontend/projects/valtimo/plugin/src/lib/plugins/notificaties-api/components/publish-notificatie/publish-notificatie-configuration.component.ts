@@ -16,7 +16,7 @@
 
 import {Component, EventEmitter, Input, OnDestroy, OnInit, Output} from '@angular/core';
 import {FunctionConfigurationComponent} from '../../../../models';
-import {BehaviorSubject, combineLatest, Observable, Subscription, take} from 'rxjs';
+import {BehaviorSubject, combineLatest, Observable, Subscription, switchMap, take} from 'rxjs';
 import {MultiInputOutput, MultiInputValues} from '@valtimo/components';
 import {PublishNotificatieConfig} from '../../models';
 
@@ -36,7 +36,7 @@ export class PublishNotificatieConfigurationComponent
   @Output() configuration: EventEmitter<PublishNotificatieConfig> =
     new EventEmitter<PublishNotificatieConfig>();
 
-  kenmerkenDefaultValues: MultiInputValues = [];
+  public kenmerkenDefaultValues: MultiInputValues = [];
 
   private saveSubscription!: Subscription;
   private prefillSubscription!: Subscription;
@@ -45,22 +45,22 @@ export class PublishNotificatieConfigurationComponent
   private readonly valid$ = new BehaviorSubject<boolean>(false);
   private kenmerken: {[key: string]: string} = {};
 
-  ngOnInit(): void {
+  public ngOnInit(): void {
     this.openSaveSubscription();
     this.openPrefillSubscription();
   }
 
-  ngOnDestroy() {
+  public ngOnDestroy() {
     this.saveSubscription?.unsubscribe();
     this.prefillSubscription?.unsubscribe();
   }
 
-  formValueChange(formValue: PublishNotificatieConfig): void {
+  public formValueChange(formValue: PublishNotificatieConfig): void {
     this.formValue$.next({...formValue, kenmerken: this.kenmerken});
     this.handleValid(formValue);
   }
 
-  kenmerkenChange(value: MultiInputOutput): void {
+  public kenmerkenChange(value: MultiInputOutput): void {
     const values = value as MultiInputValues;
     this.kenmerken = values.reduce(
       (acc, curr) => ({
@@ -88,15 +88,13 @@ export class PublishNotificatieConfigurationComponent
   }
 
   private openSaveSubscription(): void {
-    this.saveSubscription = this.save$?.subscribe(save => {
-      combineLatest([this.formValue$, this.valid$])
-        .pipe(take(1))
-        .subscribe(([formValue, valid]) => {
-          if (valid) {
-            this.configuration.emit(formValue);
-          }
-        });
-    });
+    this.saveSubscription = this.save$
+      ?.pipe(switchMap(() => combineLatest([this.formValue$, this.valid$]).pipe(take(1))))
+      .subscribe(([formValue, valid]) => {
+        if (valid) {
+          this.configuration.emit(formValue);
+        }
+      });
   }
 
   private openPrefillSubscription(): void {
