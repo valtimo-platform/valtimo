@@ -107,7 +107,21 @@ class StartableItemManagementService(
         if (oldItem.type == newType) {
             val provider = startableItemProviders.find { it.type == newType }
                 ?: throw UnsupportedOperationException("No provider found for type: $newType")
-            return provider.updateItem(caseDefinitionId, oldItemKey, oldVersionTag, newProperties)
+            val updatedItem = provider.updateItem(caseDefinitionId, oldItemKey, oldVersionTag, newProperties)
+            val oldId = StartableItemId(caseDefinitionId, oldItemKey, oldItem.type, oldVersionTag.orEmpty())
+            val newId = StartableItemId(caseDefinitionId, updatedItem.key, updatedItem.type, updatedItem.versionTag.orEmpty())
+
+            if (oldId != newId && oldSortOrder != null) {
+                startableItemRepository.deleteById(oldId)
+                startableItemRepository.save(
+                    StartableItem(
+                        id = newId,
+                        sortOrder = oldSortOrder
+                    )
+                )
+            }
+
+            return updatedItem
         }
 
         val oldProvider = startableItemProviders.find { it.type == oldItem.type }

@@ -18,7 +18,7 @@ import {Injectable} from '@angular/core';
 import {NGXLogger} from 'ngx-logger';
 import {CaseManagementParams, CaseProcessDefinitionResponseDto} from '@valtimo/shared';
 import {runAfterCarbonModalClosed} from '@valtimo/components';
-import {BehaviorSubject, Observable, of} from 'rxjs';
+import {BehaviorSubject, Observable, of, Subject} from 'rxjs';
 import {catchError, filter, map, switchMap, take} from 'rxjs/operators';
 import {
   BuildingBlockItemProperties,
@@ -51,6 +51,9 @@ export class StartableItemManagementService {
 
   private readonly _itemToDelete$ = new BehaviorSubject<ManagementStartableItem | null>(null);
   public readonly itemToDelete$ = this._itemToDelete$.asObservable();
+
+  private readonly _reorderComplete$ = new Subject<void>();
+  public readonly reorderComplete$ = this._reorderComplete$.asObservable();
 
   public readonly usedProcessDefinitionIds$: Observable<string[]> = this._items$.pipe(
     map(items =>
@@ -199,6 +202,7 @@ export class StartableItemManagementService {
           if (updatedItems.length) {
             this._items$.next(updatedItems);
           }
+          this._reorderComplete$.next();
         },
       });
   }
