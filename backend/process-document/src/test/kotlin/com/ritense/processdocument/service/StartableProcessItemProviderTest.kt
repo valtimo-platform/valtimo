@@ -68,7 +68,7 @@ class StartableProcessItemProviderTest {
     }
 
     @Test
-    fun `should get startable items that are startable by user and not document initializers`() {
+    fun `should get startable items that are startable by user regardless of canInitializeDocument`() {
         val pdcdId = ProcessDefinitionCaseDefinitionId(
             processDefinitionId = ProcessDefinitionId("process:1"),
             caseDefinitionId = caseDefinitionId
@@ -82,17 +82,34 @@ class StartableProcessItemProviderTest {
             processDefinitionKey = "my-process"
         }
 
-        whenever(repository.findAll(caseDefinitionId, startableByUser = true, canInitializeDocument = false))
-            .thenReturn(listOf(pdcd))
+        val pdcdId2 = ProcessDefinitionCaseDefinitionId(
+            processDefinitionId = ProcessDefinitionId("process:2"),
+            caseDefinitionId = caseDefinitionId
+        )
+        val pdcd2 = ProcessDefinitionCaseDefinition(
+            id = pdcdId2,
+            canInitializeDocument = true,
+            startableByUser = true
+        ).apply {
+            processDefinitionName = "Dossier Starter Process"
+            processDefinitionKey = "dossier-starter-process"
+        }
+
+        whenever(repository.findAll(caseDefinitionId, startableByUser = true, canInitializeDocument = null))
+            .thenReturn(listOf(pdcd, pdcd2))
 
         val result = provider.getStartableItems(caseDefinitionId)
 
-        assertThat(result).hasSize(1)
+        assertThat(result).hasSize(2)
         assertThat(result[0].type).isEqualTo(StartableItemType.PROCESS)
         assertThat(result[0].name).isEqualTo("My Process")
         assertThat(result[0].key).isEqualTo("my-process")
         assertThat(result[0].processDefinitionId).isEqualTo("process:1")
         assertThat(result[0].versionTag).isNull()
+        assertThat(result[1].type).isEqualTo(StartableItemType.PROCESS)
+        assertThat(result[1].name).isEqualTo("Dossier Starter Process")
+        assertThat(result[1].key).isEqualTo("dossier-starter-process")
+        assertThat(result[1].processDefinitionId).isEqualTo("process:2")
     }
 
     @Test
@@ -110,7 +127,7 @@ class StartableProcessItemProviderTest {
             processDefinitionKey = "unauthorized-process"
         }
 
-        whenever(repository.findAll(caseDefinitionId, startableByUser = true, canInitializeDocument = false))
+        whenever(repository.findAll(caseDefinitionId, startableByUser = true, canInitializeDocument = null))
             .thenReturn(listOf(pdcd))
         whenever(authorizationService.hasPermission<Any>(any())).thenReturn(false)
 
