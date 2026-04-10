@@ -47,13 +47,12 @@
       <bpmn:incoming>Flow_PatchZaak_To_ReadToelichting</bpmn:incoming>
       <bpmn:outgoing>Flow_ReadToelichting_To_Calculate</bpmn:outgoing>
     </bpmn:serviceTask>
-    <bpmn:businessRuleTask id="CalculateBaseAmountDmnTask" name="Bereken Basisbedrag (DMN)" camunda:asyncAfter="true" camunda:decisionRef="base-subsidy-amount-decision" camunda:mapDecisionResult="singleResult" camunda:decisionRefBinding="versionTag" camunda:decisionRefVersionTag="BB:household-verification:1.0.0">
-      <bpmn:extensionElements>
-        <camunda:inputOutput>
-          <camunda:inputParameter name="householdSize">${valueResolverDelegateService.resolveValue(execution, 'doc:/householdSize')}</camunda:inputParameter>
-        </camunda:inputOutput>
-      </bpmn:extensionElements>
+    <bpmn:serviceTask id="ResolveHouseholdSizeTask" name="Haal Huishoudgrootte Op" camunda:asyncAfter="true" camunda:expression="${execution.setVariable('householdSize', valueResolverDelegateService.resolveValue(execution, 'doc:/householdSize'))}">
       <bpmn:incoming>Flow_ReadToelichting_To_Calculate</bpmn:incoming>
+      <bpmn:outgoing>Flow_ResolveHouseholdSize_To_Calculate</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:businessRuleTask id="CalculateBaseAmountDmnTask" name="Bereken Basisbedrag (DMN)" camunda:asyncAfter="true" camunda:decisionRef="base-subsidy-amount-decision" camunda:mapDecisionResult="singleResult" camunda:decisionRefBinding="versionTag" camunda:decisionRefVersionTag="BB:household-verification:1.0.0">
+      <bpmn:incoming>Flow_ResolveHouseholdSize_To_Calculate</bpmn:incoming>
       <bpmn:outgoing>Flow_Calculate_To_StoreBaseAmount</bpmn:outgoing>
     </bpmn:businessRuleTask>
     <bpmn:serviceTask id="StoreBaseAmountTask" name="Sla Basisbedrag Op" camunda:asyncAfter="true" camunda:expression="${valueResolverDelegateService.handleValue(execution, 'doc:/baseSubsidyAmount', baseSubsidyAmount)}">
@@ -62,7 +61,8 @@
     </bpmn:serviceTask>
     <bpmn:sequenceFlow id="Flow_Verify_To_PatchZaak" sourceRef="CreateVerifiedApplicantTask" targetRef="PatchZaakVerificationTask" />
     <bpmn:sequenceFlow id="Flow_PatchZaak_To_ReadToelichting" sourceRef="PatchZaakVerificationTask" targetRef="ReadZaakToelichtingTask" />
-    <bpmn:sequenceFlow id="Flow_ReadToelichting_To_Calculate" sourceRef="ReadZaakToelichtingTask" targetRef="CalculateBaseAmountDmnTask" />
+    <bpmn:sequenceFlow id="Flow_ReadToelichting_To_Calculate" sourceRef="ReadZaakToelichtingTask" targetRef="ResolveHouseholdSizeTask" />
+    <bpmn:sequenceFlow id="Flow_ResolveHouseholdSize_To_Calculate" sourceRef="ResolveHouseholdSizeTask" targetRef="CalculateBaseAmountDmnTask" />
     <bpmn:sequenceFlow id="Flow_Calculate_To_StoreBaseAmount" sourceRef="CalculateBaseAmountDmnTask" targetRef="StoreBaseAmountTask" />
     <bpmn:endEvent id="EndEvent" name="Verificatie Afgerond">
       <bpmn:incoming>Flow_Calculate_To_End</bpmn:incoming>
@@ -78,7 +78,7 @@
   <bpmndi:BPMNDiagram id="BPMNDiagram_1">
     <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="Collaboration_HouseholdVerification">
       <bpmndi:BPMNShape id="Participant_HouseholdVerification_di" bpmnElement="HouseholdVerificationParticipant" isHorizontal="true">
-        <dc:Bounds x="160" y="60" width="1700" height="250" />
+        <dc:Bounds x="160" y="60" width="1830" height="250" />
         <bpmndi:BPMNLabel />
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="StartEvent_di" bpmnElement="StartEvent">
@@ -119,18 +119,22 @@
         <dc:Bounds x="1200" y="137" width="100" height="80" />
         <bpmndi:BPMNLabel />
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="CalculateBaseAmountDmnTask_di" bpmnElement="CalculateBaseAmountDmnTask">
+      <bpmndi:BPMNShape id="ResolveHouseholdSizeTask_di" bpmnElement="ResolveHouseholdSizeTask">
         <dc:Bounds x="1330" y="137" width="100" height="80" />
         <bpmndi:BPMNLabel />
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="StoreBaseAmountTask_di" bpmnElement="StoreBaseAmountTask">
+      <bpmndi:BPMNShape id="CalculateBaseAmountDmnTask_di" bpmnElement="CalculateBaseAmountDmnTask">
         <dc:Bounds x="1460" y="137" width="100" height="80" />
         <bpmndi:BPMNLabel />
       </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="StoreBaseAmountTask_di" bpmnElement="StoreBaseAmountTask">
+        <dc:Bounds x="1590" y="137" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="EndEvent_di" bpmnElement="EndEvent">
-        <dc:Bounds x="1622" y="159" width="36" height="36" />
+        <dc:Bounds x="1752" y="159" width="36" height="36" />
         <bpmndi:BPMNLabel>
-          <dc:Bounds x="1600" y="202" width="80" height="27" />
+          <dc:Bounds x="1730" y="202" width="80" height="27" />
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNShape>
       <bpmndi:BPMNEdge id="Flow_Start_To_SetStatusVerificatie_di" bpmnElement="Flow_Start_To_SetStatusVerificatie">
@@ -169,13 +173,17 @@
         <di:waypoint x="1300" y="177" />
         <di:waypoint x="1330" y="177" />
       </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="Flow_Calculate_To_StoreBaseAmount_di" bpmnElement="Flow_Calculate_To_StoreBaseAmount">
+      <bpmndi:BPMNEdge id="Flow_ResolveHouseholdSize_To_Calculate_di" bpmnElement="Flow_ResolveHouseholdSize_To_Calculate">
         <di:waypoint x="1430" y="177" />
         <di:waypoint x="1460" y="177" />
       </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="Flow_Calculate_To_End_di" bpmnElement="Flow_Calculate_To_End">
+      <bpmndi:BPMNEdge id="Flow_Calculate_To_StoreBaseAmount_di" bpmnElement="Flow_Calculate_To_StoreBaseAmount">
         <di:waypoint x="1560" y="177" />
-        <di:waypoint x="1622" y="177" />
+        <di:waypoint x="1590" y="177" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Calculate_To_End_di" bpmnElement="Flow_Calculate_To_End">
+        <di:waypoint x="1690" y="177" />
+        <di:waypoint x="1752" y="177" />
       </bpmndi:BPMNEdge>
     </bpmndi:BPMNPlane>
   </bpmndi:BPMNDiagram>

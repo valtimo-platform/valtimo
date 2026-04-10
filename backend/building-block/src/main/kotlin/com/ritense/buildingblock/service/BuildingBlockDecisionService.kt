@@ -48,8 +48,9 @@ class BuildingBlockDecisionService(
             .singleResult()
 
         if (decisionDefinition == null) {
-            logger.error { "Failed to delete decision definition $decisionDefinitionKey for building block $buildingBlockDefinitionId." }
-            return
+            throw IllegalArgumentException(
+                "Decision definition '$decisionDefinitionKey' not found for building block $buildingBlockDefinitionId."
+            )
         }
 
         val allDecisions = repositoryService
@@ -76,10 +77,11 @@ class BuildingBlockDecisionService(
         return operatonByteArrayService.getByNameAndDeploymentId(
             decisionDefinition.resourceName,
             decisionDefinition.deploymentId
-        ).bytes!!
+        ).bytes
+            ?: error("DMN model bytes are null for resource '${decisionDefinition.resourceName}' in deployment '${decisionDefinition.deploymentId}'")
     }
 
-    companion object {
-        val logger = KotlinLogging.logger {}
+    private companion object {
+        private val logger = KotlinLogging.logger {}
     }
 }

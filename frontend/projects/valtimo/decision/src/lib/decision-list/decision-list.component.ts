@@ -19,6 +19,7 @@ import {CommonModule} from '@angular/common';
 import {ActivatedRoute, Router, RouterModule} from '@angular/router';
 import {BehaviorSubject, combineLatest, map, Observable, switchMap, take, tap} from 'rxjs';
 import {Decision} from '../models';
+import {filterLatestDecisionVersions} from '../utils/decision.utils';
 import {DecisionService} from '../services/decision.service';
 import {
   ConfigService,
@@ -92,15 +93,7 @@ export class DecisionListComponent {
         return this.decisionService.getDecisions();
       }
     }),
-    map(decisions =>
-      decisions.reduce((acc, curr) => {
-        const existing = acc.find(d => d.key === curr.key);
-        if (existing && existing.version > curr.version) return acc;
-        if (existing && existing.version < curr.version)
-          return [...acc.filter(d => d.key !== curr.key), curr];
-        return [...acc, curr];
-      }, [])
-    ),
+    map(filterLatestDecisionVersions),
     tap(() => {
       this.loading$.next(false);
       this.cdr.detectChanges();
