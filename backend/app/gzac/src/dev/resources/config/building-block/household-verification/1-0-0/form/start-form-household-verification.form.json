@@ -1,0 +1,45 @@
+{
+    "display": "form",
+    "components": [
+        {
+            "label": "Applicant name",
+            "placeholder": "Enter your full name...",
+            "tableView": true,
+            "validate": {
+                "required": true,
+                "minLength": 2
+            },
+            "key": "applicantName",
+            "type": "textfield",
+            "input": true
+        },
+        {
+            "label": "Household size",
+            "placeholder": "Number of people in your household...",
+            "tableView": true,
+            "validate": {
+                "required": true,
+                "min": 1
+            },
+            "key": "householdSize",
+            "type": "number",
+            "input": true
+        },
+        {
+            "label": "Zaak omschrijving",
+            "placeholder": "Zaak omschrijving...",
+            "tableView": true,
+            "key": "zaakOmschrijvingFromZgw",
+            "type": "textfield",
+            "input": true
+        },
+        {
+            "type": "button",
+            "label": "Submit",
+            "key": "submit",
+            "disableOnInvalid": true,
+            "input": true,
+            "tableView": false
+        }
+    ]
+}

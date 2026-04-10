@@ -38,6 +38,7 @@ import com.ritense.valtimo.contract.authentication.AuthoritiesConstants
 import com.ritense.valtimo.service.OperatonTaskService
 import com.ritense.valtimo.task.domain.TaskTeam
 import com.ritense.valtimo.task.repository.TaskTeamRepository
+import com.ritense.team.repository.TeamRepository
 import jakarta.persistence.EntityManager
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
@@ -66,6 +67,9 @@ class CaseTaskListSearchServiceIntTest : BaseIntegrationTest() {
 
     @Autowired
     lateinit var taskTeamRepository: TaskTeamRepository
+
+    @Autowired
+    lateinit var teamRepository: TeamRepository
 
     @Autowired
     lateinit var entityManager: EntityManager
@@ -387,10 +391,9 @@ class CaseTaskListSearchServiceIntTest : BaseIntegrationTest() {
     }
 
     private fun createTeamAndAssignToTask(taskId: String, teamKey: String, teamTitle: String) {
-        entityManager.createNativeQuery("INSERT INTO team (team_key, title) VALUES (:key, :title) ON CONFLICT DO NOTHING")
-            .setParameter("key", teamKey)
-            .setParameter("title", teamTitle)
-            .executeUpdate()
+        if (!teamRepository.existsById(teamKey)) {
+            teamRepository.save(com.ritense.team.domain.Team(key = teamKey, title = teamTitle))
+        }
         taskTeamRepository.save(TaskTeam(taskId, teamKey, teamTitle))
         entityManager.flush()
     }
