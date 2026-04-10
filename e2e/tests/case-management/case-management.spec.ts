@@ -204,14 +204,18 @@ test.describe('Case management', () => {
       const {key: importedKey} = await caseManagementPage.uploadCase();
       createdKeys.push(importedKey);
 
-      try {
-        await ApiUtils.apiPost(
-          `/api/management/v1/case-definition/${importedKey}/version/1.0.0/finalize`,
-          {}
-        );
-      } catch {
-        // Token may have expired or version may already be finalized
-      }
+      // Finalize the version — fail explicitly if this doesn't work
+      await ApiUtils.apiPost(
+        `/api/management/v1/case-definition/${importedKey}/version/1.0.0/finalize`,
+        {}
+      );
+
+      // Verify finalization succeeded before proceeding
+      const versions = await ApiUtils.apiGet<Array<{versionTag: string; finalized: boolean}>>(
+        `/api/management/v1/case-definition/${importedKey}/version`
+      );
+      const finalVersion = versions.find(v => v.versionTag === '1.0.0');
+      expect(finalVersion?.finalized).toBeTruthy();
 
       // Act: try to import the same archive again, explicitly setting the key to the one
       // that was finalized (the first import may have used a different key due to collision handling)
@@ -224,12 +228,18 @@ test.describe('Case management', () => {
       await expect(caseManagementPage.configureNameInput).toBeVisible();
       await expect(caseManagementPage.configureKeyInput).toBeVisible();
 
+      // If the pre-filled key differs from the finalized key, change it and wait for validation
       const prefilledKey = await caseManagementPage.configureKeyInput.inputValue();
       if (prefilledKey !== importedKey) {
+        const validationPromise = caseManagementPage.waitForKeyValidationResponse();
         await caseManagementPage.changeConfigureKey(importedKey);
+        await validationPromise;
       }
 
-      // Assert: final version warning blocks import (wait for validation API to complete)
+      // Wait for the UI to reflect the validation result
+      await caseManagementPage.awaitConfigureValidation();
+
+      // Assert: final version warning blocks import
       await caseManagementPage.assertExistingFinalWarning();
 
       // Close wizard

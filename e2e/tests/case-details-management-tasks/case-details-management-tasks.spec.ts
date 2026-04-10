@@ -17,9 +17,9 @@
 import {expect, test} from '@playwright/test';
 import {
   CASE_IDENTIFIER,
-  taskColumnReorderTestData,
-  taskColumnTestData,
-  taskSearchFieldTestData,
+  createTaskColumnTestData,
+  createTaskColumnReorderTestData,
+  createTaskSearchFieldTestData,
 } from './case-details-management-tasks';
 import {CaseDetailsManagementTasksPage} from './page';
 
@@ -30,6 +30,11 @@ test.describe('Case details management — Tasks', () => {
   let page;
   let tasksPage: CaseDetailsManagementTasksPage;
   let request;
+
+  // Generate unique test data per run to avoid key collisions
+  const taskColumnTestData = createTaskColumnTestData();
+  const taskColumnReorderTestData = createTaskColumnReorderTestData();
+  const taskSearchFieldTestData = createTaskSearchFieldTestData();
 
   // Arrange
   test.beforeAll(async ({browser, baseURL}) => {
@@ -42,12 +47,6 @@ test.describe('Case details management — Tasks', () => {
     await page.goto('/');
     await tasksPage.goToCaseManagement(CASE_IDENTIFIER);
     await tasksPage.ensureDraftVersionSelected();
-
-    // Clean up leftover data
-    await tasksPage.deleteColumnViaApi(CASE_IDENTIFIER, taskColumnTestData.key);
-    await tasksPage.deleteColumnViaApi(CASE_IDENTIFIER, taskColumnReorderTestData.keyA);
-    await tasksPage.deleteColumnViaApi(CASE_IDENTIFIER, taskColumnReorderTestData.keyB);
-    await tasksPage.deleteSearchFieldViaApi(CASE_IDENTIFIER, taskSearchFieldTestData.key);
 
     await tasksPage.switchToTasksTab();
   });

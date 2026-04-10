@@ -292,7 +292,7 @@ export class CaseManagementPage {
     return {response: await responsePromise, key: actualKey};
   }
 
-  private waitForKeyValidationResponse() {
+  waitForKeyValidationResponse() {
     return this.page
       .waitForResponse(
         res =>
@@ -303,7 +303,7 @@ export class CaseManagementPage {
       .catch(() => {});
   }
 
-  private async awaitConfigureValidation() {
+  async awaitConfigureValidation() {
     await Promise.race([
       expect(this.uploadWizardNextButton).toBeEnabled({timeout: 15_000}).catch(() => {}),
       this.page
