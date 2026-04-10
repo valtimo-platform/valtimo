@@ -50,7 +50,7 @@ import {
 } from '@valtimo/process-link';
 import {ButtonModule, IconModule, NotificationModule, TagModule} from 'carbon-components-angular';
 import {BehaviorSubject, Observable, of, shareReplay, Subscription, switchMap, tap} from 'rxjs';
-import {catchError, take} from 'rxjs/operators';
+import {catchError, filter, take} from 'rxjs/operators';
 import {ManagementStartableItem, StartableItemType} from '../../../../models';
 import {StartableItemManagementService} from '../../../../services';
 import {
@@ -147,6 +147,17 @@ export class CaseManagementActionsComponent implements AfterViewInit, OnDestroy 
 
   public ngOnDestroy(): void {
     this._subscriptions.unsubscribe();
+  }
+
+  public onRowClicked(item: ManagementStartableItem): void {
+    this.hasEditPermissions$
+      .pipe(
+        filter(hasPermission => hasPermission),
+        take(1)
+      )
+      .subscribe(() => {
+        this.onEditItem(item);
+      });
   }
 
   public onAddItemClick(): void {

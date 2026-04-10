@@ -179,6 +179,7 @@ export class StartableItemManagementService {
         (item, index): StartableItemOrderEntry => ({
           key: item.key,
           type: item.type,
+          versionTag: item.versionTag,
           sortOrder: index,
         })
       ),

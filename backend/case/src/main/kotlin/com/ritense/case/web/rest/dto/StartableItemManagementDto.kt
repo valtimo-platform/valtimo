@@ -44,5 +44,6 @@ data class UpdateStartableItemOrderRequest(
 data class StartableItemOrderEntry(
     val key: String,
     val type: StartableItemType,
+    val versionTag: String? = null,
     val sortOrder: Int
 )
