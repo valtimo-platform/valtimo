@@ -33,6 +33,7 @@ export interface ManagementStartableItem {
 export interface StartableItemOrderEntry {
   key: string;
   type: StartableItemType;
+  versionTag: string | null;
   sortOrder: number;
 }
 

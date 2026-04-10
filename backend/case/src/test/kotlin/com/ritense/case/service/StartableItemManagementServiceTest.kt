@@ -81,7 +81,7 @@ class StartableItemManagementServiceTest {
 
         val sortEntities = listOf(
             StartableItem(
-                id = StartableItemId(caseDefinitionId, "a-bb", StartableItemType.BUILDING_BLOCK),
+                id = StartableItemId(caseDefinitionId, "a-bb", StartableItemType.BUILDING_BLOCK, "1.0.0"),
                 sortOrder = 0
             ),
             StartableItem(
@@ -266,7 +266,7 @@ class StartableItemManagementServiceTest {
 
         val sortEntities = listOf(
             StartableItem(
-                id = StartableItemId(caseDefinitionId, "income-check", StartableItemType.BUILDING_BLOCK),
+                id = StartableItemId(caseDefinitionId, "income-check", StartableItemType.BUILDING_BLOCK, "1.0.0"),
                 sortOrder = 0
             ),
             StartableItem(
@@ -277,8 +277,8 @@ class StartableItemManagementServiceTest {
         whenever(startableItemRepository.findAllByIdCaseDefinitionId(caseDefinitionId)).thenReturn(sortEntities)
 
         val orderEntries = listOf(
-            StartableItemOrderEntry("income-check", StartableItemType.BUILDING_BLOCK, 0),
-            StartableItemOrderEntry("my-process", StartableItemType.PROCESS, 1)
+            StartableItemOrderEntry("income-check", StartableItemType.BUILDING_BLOCK, "1.0.0", 0),
+            StartableItemOrderEntry("my-process", StartableItemType.PROCESS, null, 1)
         )
 
         val result = service.updateOrder(caseDefinitionId, orderEntries)
@@ -295,7 +295,7 @@ class StartableItemManagementServiceTest {
         whenever(startableItemRepository.findAllByIdCaseDefinitionId(caseDefinitionId)).thenReturn(emptyList())
 
         val orderEntries = listOf(
-            StartableItemOrderEntry("non-existent", StartableItemType.PROCESS, 0)
+            StartableItemOrderEntry("non-existent", StartableItemType.PROCESS, null, 0)
         )
 
         service.updateOrder(caseDefinitionId, orderEntries)
