@@ -6,6 +6,31 @@ The front-end of Valtimo supports localization. The front-end libraries include 
 From Valtimo front-end and back-end libraries version `12.0.0` and up, it is possible for an administrator to configure translations from the user interface.
 {% endhint %}
 
+## Ensuring translations are applied
+
+In order to ensure translations configured through the UI are applied to Valtimo, make sure the following import is present in your `app.module.ts`:
+
+```typescript
+import {
+  ConfigModule,
+  ConfigService,
+  CustomMultiTranslateHttpLoaderFactory,
+  LocalizationService,
+} from '@valtimo/shared';
+```
+
+Additionally, make sure the translation module is configured correctly:
+
+```typescript
+TranslateModule.forRoot({
+    loader: {
+        provide: TranslateLoader,
+        useFactory: CustomMultiTranslateHttpLoaderFactory,
+        deps: [HttpBackend, HttpClient, ConfigService, LocalizationService],
+    }
+}),
+```
+
 ## Admin configuration of translations
 
 After following the above-mentioned steps, an administrator can now navigate to `/translation-management`. On this page, custom translation keys can be configured, which will be available directly in any custom component code using the `translate` pipe provided by `'@ngx-translate/core'`.
