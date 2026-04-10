@@ -1,0 +1,108 @@
+{
+    "$id": "aanvraag-algemene-bijstand-dcm.schema",
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "Algemene bijstand",
+    "type": "object",
+    "properties": {
+        "openzaak": {
+            "$ref": "openzaak.schema.json#/definitions/openzaakgegevens"
+        },
+        "besluit": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+                "genomenBesluit": {
+                    "type": "string",
+                    "enum": [
+                        "TOEGEKEND",
+                        "AFGEWEZEN",
+                        "INGETROKKEN",
+                        "BUITEN_BEHANDELING_GESTELD"
+                    ]
+                },
+                "versneldBeslist": {
+                    "type": ["boolean", "null"]
+                },
+                "beslisser": {
+                    "type": "string"
+                },
+                "besluitDatum": {
+                    "type": "string"
+                },
+                "redenAfwijzing": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "vervalreden": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "vervaldatum": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "buitenBehandelingStellen": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "properties": {
+                        "datumUitgezet": {
+                            "type": "string"
+                        },
+                        "deadlineInformatieverzoek": {
+                            "type": "string"
+                        },
+                        "ontbrekendeStukken": {
+                            "type": "string"
+                        },
+                        "toelichting": {
+                            "type": "string"
+                        }
+                    }
+                },
+                "intrekking": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "properties": {
+                        "datumIngetrokken": {
+                            "type": "string"
+                        },
+                        "ingetrokkenVia": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "poortonderzoek": {
+            "type": "object",
+            "properties": {
+                "uitvoeren": {
+                    "type": "string",
+                    "enum": [
+                        "JA",
+                        "NEE"
+                    ]
+                },
+                "datumAangevraagd": {
+                    "type": "string"
+                },
+                "toelichting": {
+                    "type": "string"
+                },
+                "datumUitkomst": {
+                    "type": "string"
+                },
+                "uitkomst": {
+                    "type": "string"
+                }
+            },
+            "additionalProperties": false
+        }
+    }
+}

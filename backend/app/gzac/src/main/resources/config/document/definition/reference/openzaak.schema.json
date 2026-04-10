@@ -1,0 +1,29 @@
+{
+    "$id": "openzaak.schema",
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "Openzaak definition",
+    "definitions": {
+        "openzaakgegevens": {
+            "type": "object",
+            "description": "Openzaak",
+            "properties": {
+                "statusOmschrijving": {
+                    "type": "string",
+                    "description": "Zaak status uit openzaak"
+                },
+                "resultaatOmschrijving": {
+                    "type": "string",
+                    "description": "Resultaat uit openzaak"
+                },
+                "identificatie": {
+                    "type": "string",
+                    "description": "Zaaknummer uit openzaak"
+                },
+                "uiterlijkeEinddatumAfdoening": {
+                    "type": "string",
+                    "description": "Uiterlijke einddatum afdoening van de Zaak"
+                }
+            }
+        }
+    }
+}
