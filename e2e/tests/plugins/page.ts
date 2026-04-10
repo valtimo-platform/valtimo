@@ -16,7 +16,8 @@
 
 import {APIRequestContext, expect, Page} from '@playwright/test';
 import {PluginFieldMap, pluginTestConfiguration, pluginTypes} from './plugin-config';
-import {STEPPER_FOOTER_STEP_TEST_IDS} from '../../constants';
+import {STEPPER_FOOTER_STEP_TEST_IDS, PLUGIN_CATALOG_TEST_IDS} from '../../constants';
+import {CarbonList} from '../../shared/carbon-list/carbon-list.utils';
 
 export class PluginPage {
   constructor(private readonly page: Page, private readonly request: APIRequestContext) {}
@@ -268,6 +269,82 @@ export class PluginPage {
 
   async assertPluginExists(pluginIdentifier: string): Promise<void> {
     await expect(this.page.getByText(pluginIdentifier).first()).toBeVisible();
+  }
+
+  // ─── Plugin Overview Table Assertions (9.3, 9.4) ──────────────────
+
+  get carbonList(): CarbonList {
+    return new CarbonList(this.page);
+  }
+
+  async assertRowHasPluginName(configName: string, expectedPluginName: string): Promise<void> {
+    const row = this.carbonList.row(configName);
+    await row.assertVisible();
+    const pluginNameCell = row.cellByIndex(1);
+    await expect(pluginNameCell).toHaveText(expectedPluginName);
+  }
+
+  async assertRowHasIdentifier(configName: string, expectedIdentifier: string): Promise<void> {
+    const row = this.carbonList.row(configName);
+    await row.assertVisible();
+    const identifierCell = row.cellByIndex(2);
+    await expect(identifierCell).toContainText(expectedIdentifier);
+  }
+
+  // ─── Plugin Catalog Assertions (9.7) ──────────────────────────────
+
+  get catalogGrid() {
+    return this.page.getByTestId(PLUGIN_CATALOG_TEST_IDS.tileGrid);
+  }
+
+  get catalogTiles() {
+    return this.page.locator('cds-selection-tile');
+  }
+
+  async assertCatalogTilesHaveLogos(): Promise<void> {
+    const tiles = this.catalogTiles;
+    const count = await tiles.count();
+    expect(count).toBeGreaterThan(0);
+
+    for (let i = 0; i < count; i++) {
+      const tile = tiles.nth(i);
+      const logo = tile.getByTestId(PLUGIN_CATALOG_TEST_IDS.tileLogo);
+      await expect(logo).toBeVisible();
+      const src = await logo.getAttribute('src');
+      expect(src).toBeTruthy();
+    }
+  }
+
+  async assertCatalogTilesHaveTitles(): Promise<void> {
+    const tiles = this.catalogTiles;
+    const count = await tiles.count();
+    expect(count).toBeGreaterThan(0);
+
+    for (let i = 0; i < count; i++) {
+      const tile = tiles.nth(i);
+      const title = tile.getByTestId(PLUGIN_CATALOG_TEST_IDS.tileTitle);
+      await expect(title).toBeVisible();
+      const text = await title.textContent();
+      expect(text?.trim().length).toBeGreaterThan(0);
+    }
+  }
+
+  async assertCatalogTilesHaveDescriptions(): Promise<void> {
+    const tiles = this.catalogTiles;
+    const count = await tiles.count();
+    expect(count).toBeGreaterThan(0);
+
+    for (let i = 0; i < count; i++) {
+      const tile = tiles.nth(i);
+      const description = tile.getByTestId(PLUGIN_CATALOG_TEST_IDS.tileDescription);
+      await expect(description).toBeVisible();
+      const text = await description.textContent();
+      expect(text?.trim().length).toBeGreaterThan(0);
+    }
+  }
+
+  async closeWizard(): Promise<void> {
+    await this.page.getByTestId(STEPPER_FOOTER_STEP_TEST_IDS.cancelButton).click();
   }
 
   async assertPluginDeleted(pluginType: string): Promise<void> {

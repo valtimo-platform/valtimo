@@ -5,10 +5,10 @@
 | Category                    | Features | Functions | ✅ Covered | ❌ Not Covered |
 |-----------------------------|----------|-----------|------------|----------------|
 | User Features (ROLE_USER)   | 5        | 21        | 2          | 19             |
-| Admin Features (ROLE_ADMIN) | 15       | 328       | 58         | 270            |
-| **Total**                   | **20**   | **349**   | **60**     | **289**        |
+| Admin Features (ROLE_ADMIN) | 15       | 328       | 61         | 265            |
+| **Total**                   | **20**   | **349**   | **63**     | **284**        |
 
-**Coverage:** `60 / 349` — `17.2%`
+**Coverage:** `63 / 349` — `18.1%`
 
 ---
 
@@ -328,12 +328,12 @@
 |:----|:------------------------------------|:-------------------------------------------------------------------------------------------|:--------:|:------------------------------------------------|
 | 9.1 | View plugin configurations list     | Display list of all plugin configurations · Display empty state when no plugins configured |    ✅    | plugin.spec.ts                                  |
 | 9.2 | View plugin configuration name      | Display configuration name in list view                                                    |    ✅    | plugin.spec.ts                                  |
-| 9.3 | View plugin name (API type)         | Display plugin API type in list                                                            |    ❌    |                                                 |
-| 9.4 | View plugin identifier              | Display UUID identifier in list                                                            |    ❌    |                                                 |
+| 9.3 | View plugin name (API type)         | Display plugin API type in list                                                            |    ✅    | plugin.spec.ts                                  |
+| 9.4 | View plugin identifier              | Display UUID identifier in list                                                            |    ✅    | plugin.spec.ts                                  |
 | 9.5 | Browse available plugins            | Navigate through plugin catalog · View plugin details in catalog                           |    ✅    | plugin.spec.ts                                  |
-| 9.6 | View plugin categories              | Display categorized plugin list                                                            |    ❌    |                                                 |
-| 9.7 | View plugin descriptions with logos | Display plugin with logo and description                                                   |    ❌    |                                                 |
-| 9.8 | Filter/search plugins               | Search plugins by name · Filter plugins by type                                            |    ❌    |                                                 |
+| 9.6 | View plugin categories              | Display categorized plugin list                                                            |   `N/A`  | No category grouping in UI                      |
+| 9.7 | View plugin descriptions with logos | Display plugin with logo and description                                                   |    ✅    | plugin.spec.ts                                  |
+| 9.8 | Filter/search plugins               | Search plugins by name · Filter plugins by type                                            |   `N/A`  | No search/filter in plugin overview              |
 
 #### 9B · Create Plugin Config
 
@@ -727,8 +727,8 @@
 |:-------------------------|:-------:|
 | Total Features           |   20    |
 | Total Functions          |   349   |
-| ✅ Covered by Playwright |   60    |
-| ❌ Not covered           |   289   |
+| ✅ Covered by Playwright |   63    |
+| ❌ Not covered           |   284   |
 | ⏳ In progress           |    0    |
-| `N/A` Not applicable     |    0    |
-| **Coverage %**           | **17.2%** |
+| `N/A` Not applicable     |    2    |
+| **Coverage %**           | **18.1%** |

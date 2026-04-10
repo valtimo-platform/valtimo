@@ -21,6 +21,77 @@ import {BESLUITEN_API_CONFIGURATION_TEST_IDS} from '../../constants';
 
 test.use({storageState: undefined});
 
+test.describe('Plugin overview', () => {
+  let context;
+  let page;
+  let pluginPage;
+
+  test.beforeAll(async ({browser, baseURL}) => {
+    context = await browser.newContext({baseURL});
+    page = await context.newPage();
+
+    pluginPage = new PluginPage(page, context.request);
+
+    await page.goto('/');
+    await pluginPage.goToPluginManagement();
+  });
+
+  test.afterAll(async () => {
+    await context.close();
+  });
+
+  test.describe('9.3 — View plugin name (API type) in list', () => {
+    test('displays plugin name column for existing configurations', async () => {
+      // The pre-configured plugins (e.g. OpenZaak) should show their translated name
+      const rows = pluginPage.carbonList.rows;
+      const rowCount = await rows.count();
+      expect(rowCount).toBeGreaterThan(0);
+
+      // Verify the second column (plugin name) is non-empty for the first row
+      const firstRow = rows.first();
+      const pluginNameCell = firstRow.locator('td').nth(1);
+      const text = await pluginNameCell.textContent();
+      expect(text?.trim().length).toBeGreaterThan(0);
+    });
+  });
+
+  test.describe('9.4 — View plugin identifier in list', () => {
+    test('displays plugin definition key column for existing configurations', async () => {
+      const rows = pluginPage.carbonList.rows;
+      const rowCount = await rows.count();
+      expect(rowCount).toBeGreaterThan(0);
+
+      // Verify the third column (identifier/definition key) is non-empty for the first row
+      const firstRow = rows.first();
+      const identifierCell = firstRow.locator('td').nth(2);
+      const text = await identifierCell.textContent();
+      expect(text?.trim().length).toBeGreaterThan(0);
+    });
+  });
+
+  test.describe('9.7 — View plugin descriptions with logos in catalog', () => {
+    test.beforeAll(async () => {
+      await pluginPage.openWizard();
+    });
+
+    test.afterAll(async () => {
+      await pluginPage.closeWizard();
+    });
+
+    test('catalog tiles display logos', async () => {
+      await pluginPage.assertCatalogTilesHaveLogos();
+    });
+
+    test('catalog tiles display titles', async () => {
+      await pluginPage.assertCatalogTilesHaveTitles();
+    });
+
+    test('catalog tiles display descriptions', async () => {
+      await pluginPage.assertCatalogTilesHaveDescriptions();
+    });
+  });
+});
+
 test.describe('Plugin management', () => {
   let context;
   let page;
