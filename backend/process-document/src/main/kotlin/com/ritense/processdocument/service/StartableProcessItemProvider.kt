@@ -48,7 +48,7 @@ class StartableProcessItemProvider(
         document: Document?
     ): List<StartableItemDto> {
         return processDefinitionCaseDefinitionRepository
-            .findAll(caseDefinitionId, startableByUser = true, canInitializeDocument = false)
+            .findAll(caseDefinitionId, startableByUser = true, canInitializeDocument = null)
             .filter { hasExecutionPermission(it.id.processDefinitionId.id, document) }
             .map { pdcd ->
                 StartableItemDto(

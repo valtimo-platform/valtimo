@@ -96,10 +96,9 @@ export class CaseManagementActionsModalComponent implements OnDestroy {
       definitions
         .filter(
           (def: CaseProcessDefinitionResponseDto) =>
-            !def.processCaseLink?.canInitializeDocument &&
-            (!usedIds.includes(def.processDefinition.id) ||
-              (editingItem?.type === StartableItemType.PROCESS &&
-                editingItem?.processDefinitionId === def.processDefinition.id))
+            !usedIds.includes(def.processDefinition.id) ||
+            (editingItem?.type === StartableItemType.PROCESS &&
+              editingItem?.processDefinitionId === def.processDefinition.id)
         )
         .map(
           (def: CaseProcessDefinitionResponseDto): ListItem => ({
