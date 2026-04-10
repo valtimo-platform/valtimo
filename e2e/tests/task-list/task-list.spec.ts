@@ -16,6 +16,8 @@
 
 import {expect, test} from '@playwright/test';
 import {TaskListPage} from './page';
+import {TASK_CONFIG} from './task-config';
+import {apiPost} from '../../utils/api.utils';
 
 test.describe('Task list', () => {
   let taskListPage: TaskListPage;
@@ -65,5 +67,60 @@ test.describe('Task list', () => {
 
     // Verify the dropdown still shows the selected case
     await expect(taskListPage.caseDropdown).toContainText(targetOptionText);
+  });
+});
+
+test.describe('Task details', () => {
+  const ADMIN_TASK_NAME = 'Task for ROLE_ADMIN';
+  let context;
+  let page;
+  let taskListPage: TaskListPage;
+
+  test.beforeAll(async ({browser, baseURL}) => {
+    test.setTimeout(60_000);
+    context = await browser.newContext({baseURL});
+    page = await context.newPage();
+    taskListPage = new TaskListPage(page);
+
+    // Create a case with the auto-assign-test process to generate simple tasks
+    await apiPost(TASK_CONFIG.processDocumentEndpoint, {
+      processDefinitionKey: TASK_CONFIG.autoAssignProcess,
+      request: {
+        definition: TASK_CONFIG.autoAssignProcess,
+        caseDefinitionKey: TASK_CONFIG.autoAssignProcess,
+        caseDefinitionVersionTag: '1.0.0',
+        content: {},
+      },
+    });
+
+    await page.goto('/tasks');
+    await taskListPage.waitForTaskListLoaded();
+    await taskListPage.selectTab('All tasks');
+    await taskListPage.selectCaseFromDropdown('Auto assign test');
+    await expect(page.locator(`td:has-text("${ADMIN_TASK_NAME}")`).first()).toBeVisible({timeout: 30_000});
+  });
+
+  test.afterAll(async () => {
+    await context.close();
+  });
+
+  test.describe('3.3 — View task details', () => {
+    test('opens task detail modal when clicking a task row', async () => {
+      await taskListPage.openTaskByName(ADMIN_TASK_NAME);
+      await taskListPage.assertTaskDetailVisible(ADMIN_TASK_NAME);
+      await taskListPage.closeTaskDetailModal();
+    });
+  });
+
+  test.describe('3.4 — Claim task, 3.5 + 3.6 — Complete task', () => {
+    test('can claim, submit, and complete a task', async () => {
+      test.slow();
+      await taskListPage.openTaskByName(ADMIN_TASK_NAME);
+      await taskListPage.assertTaskDetailVisible(ADMIN_TASK_NAME);
+      await taskListPage.claimTask();
+      await taskListPage.assertTaskAssigned();
+      await taskListPage.submitEmptyForm();
+      await taskListPage.assertTaskCompletedNotification(ADMIN_TASK_NAME);
+    });
   });
 });

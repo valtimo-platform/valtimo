@@ -4,11 +4,11 @@
 
 | Category                    | Features | Functions | ✅ Covered | ❌ Not Covered |
 |-----------------------------|----------|-----------|------------|----------------|
-| User Features (ROLE_USER)   | 5        | 21        | 2          | 19             |
+| User Features (ROLE_USER)   | 5        | 21        | 6          | 15             |
 | Admin Features (ROLE_ADMIN) | 15       | 328       | 61         | 265            |
-| **Total**                   | **20**   | **349**   | **63**     | **284**        |
+| **Total**                   | **20**   | **349**   | **67**     | **280**        |
 
-**Coverage:** `63 / 349` — `18.1%`
+**Coverage:** `67 / 349` — `19.2%`
 
 ---
 
@@ -56,10 +56,10 @@
 |:----|:-------------------------|:------------------------------------------------|:--------:|:------------------------------------------------|
 | 3.1 | View all open tasks      | Display list of all open tasks                  |    ✅    | task-list.spec.ts                               |
 | 3.2 | Filter/sort tasks        | Filter tasks by criteria · Sort tasks by column |    ✅    | task-list.spec.ts                               |
-| 3.3 | View task details        | Open and view task details                      |    ❌    |                                                 |
-| 3.4 | Claim task               | Claim an unassigned task                        |    ❌    |                                                 |
-| 3.5 | Execute task (fill form) | Fill in task form fields                        |    ❌    |                                                 |
-| 3.6 | Complete task            | Submit and complete task                        |    ❌    |                                                 |
+| 3.3 | View task details        | Open and view task details                      |    ✅    | task-list.spec.ts                               |
+| 3.4 | Claim task               | Claim an unassigned task                        |    ✅    | task-list.spec.ts                               |
+| 3.5 | Execute task (fill form) | Fill in task form fields                        |    ✅    | task-list.spec.ts                               |
+| 3.6 | Complete task            | Submit and complete task                        |    ✅    | task-list.spec.ts                               |
 
 ---
 
@@ -727,8 +727,8 @@
 |:-------------------------|:-------:|
 | Total Features           |   20    |
 | Total Functions          |   349   |
-| ✅ Covered by Playwright |   63    |
-| ❌ Not covered           |   284   |
+| ✅ Covered by Playwright |   67    |
+| ❌ Not covered           |   280   |
 | ⏳ In progress           |    0    |
 | `N/A` Not applicable     |    2    |
-| **Coverage %**           | **18.1%** |
+| **Coverage %**           | **19.2%** |
