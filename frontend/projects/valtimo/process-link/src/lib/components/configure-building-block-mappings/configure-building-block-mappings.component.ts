@@ -53,6 +53,7 @@ import {
   ProcessLinkStateService,
   ProcessLinkStepService,
 } from '../../services';
+import {stripDocPrefix} from '../../utils';
 import {
   ButtonModule,
   ComboBoxModule,
@@ -414,12 +415,17 @@ export class ConfigureBuildingBlockMappingsComponent implements OnInit, OnDestro
     mappings: BuildingBlockInputMapping[]
   ): void {
     this._syncingFromState = true;
+    const normalizedMappings = mappings.map(m => ({
+      ...m,
+      target: stripDocPrefix(m.target),
+    }));
     const requiredTargets = fields.filter(f => f.required).map(f => f.name);
     const allMappings: BuildingBlockInputMapping[] = [
       ...requiredTargets.map(
-        target => mappings.find(m => m.target === target) || {target: target, source: ''}
+        target =>
+          normalizedMappings.find(m => m.target === target) || {target: target, source: ''}
       ),
-      ...mappings.filter(mapping => !requiredTargets.includes(mapping.target)),
+      ...normalizedMappings.filter(mapping => !requiredTargets.includes(mapping.target)),
     ];
 
     this.inputs.clear();
@@ -458,7 +464,9 @@ export class ConfigureBuildingBlockMappingsComponent implements OnInit, OnDestro
 
   private applyMappingSources(mappings: BuildingBlockInputMapping[]): void {
     const mappingByTarget = new Map<string, BuildingBlockInputMapping>(
-      mappings.filter(mapping => !!mapping.target).map(mapping => [mapping.target, mapping])
+      mappings
+        .filter(mapping => !!mapping.target)
+        .map(mapping => [stripDocPrefix(mapping.target), mapping])
     );
     let updated = false;
 
@@ -504,7 +512,11 @@ export class ConfigureBuildingBlockMappingsComponent implements OnInit, OnDestro
     this._syncingFromState = true;
     this.outputs.clear();
     (mappings || []).forEach(mapping => {
-      this.outputs.push(this.createOutputGroup(mapping));
+      const normalizedMapping = {
+        ...mapping,
+        source: stripDocPrefix(mapping.source),
+      };
+      this.outputs.push(this.createOutputGroup(normalizedMapping));
     });
     this._syncingFromState = false;
     this.triggerValidation();
@@ -732,4 +744,5 @@ export class ConfigureBuildingBlockMappingsComponent implements OnInit, OnDestro
     if (!fields) return false;
     return fields.some(field => field.required && field.name === target);
   }
+
 }

@@ -31,9 +31,7 @@ import {FORM_CUSTOM_COMPONENT_TOKEN, UNSUPPORTED_PROCESS_LINK_TYPES_IN_BUILDING_
 import {ManagementContext} from '@valtimo/shared';
 import {BuildingBlockStateService} from './building-block-state.service';
 
-@Injectable({
-  providedIn: 'root',
-})
+@Injectable()
 export class ProcessLinkStateService implements OnDestroy {
   private readonly _showModal$ = new BehaviorSubject<boolean>(false);
   private readonly _availableProcessLinkTypes$ = new BehaviorSubject<Array<ProcessLinkType>>([]);

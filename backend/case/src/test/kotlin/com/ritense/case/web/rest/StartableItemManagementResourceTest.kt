@@ -213,8 +213,8 @@ class StartableItemManagementResourceTest {
             )
         )
         val orderEntries = listOf(
-            StartableItemOrderEntry("income-check", StartableItemType.BUILDING_BLOCK, 0),
-            StartableItemOrderEntry("my-process", StartableItemType.PROCESS, 1)
+            StartableItemOrderEntry("income-check", StartableItemType.BUILDING_BLOCK, "1.0.0", 0),
+            StartableItemOrderEntry("my-process", StartableItemType.PROCESS, null, 1)
         )
         whenever(managementService.updateOrder(caseDefinitionId, orderEntries)).thenReturn(reorderedItems)
 
