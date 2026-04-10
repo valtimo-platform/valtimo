@@ -87,7 +87,8 @@ class NotificatiesApiResourceTest {
             actie = "",
             hoofdObject = "",
             aanmaakdatum = null,
-            kenmerken = mapOf()
+            kenmerken = mapOf(),
+            resource = null
         )
     }
 

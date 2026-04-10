@@ -147,7 +147,8 @@ class NotificatiesApiInboundEventRepositoryIT : BaseIntegrationTest() {
             resourceUrl = "http://example.com/resource/${UUID.randomUUID()}",
             actie = "create",
             aanmaakdatum = LocalDateTime.now(),
-            kenmerken = mapOf("bronId" to UUID.randomUUID().toString())
+            kenmerken = mapOf("bronId" to UUID.randomUUID().toString()),
+            resource = null
         )
         return objectMapper.writeValueAsString(notification)
     }
