@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,15 +14,14 @@
  * limitations under the License.
  */
 
-/*
- * Public API Surface of decision
- */
+import {Decision} from '../models';
 
-export * from './lib/models';
-export * from './lib/services';
-export * from './lib/decision.module';
-export * from './lib/decision-modeler/decision-modeler.component';
-export * from './lib/decision-display/decision-display.component';
-export * from './lib/decision-list/decision-list.component';
-export * from './lib/decision-deploy/decision-deploy.component';
-export * from './lib/utils/decision.utils';
+export function filterLatestDecisionVersions(decisions: Decision[]): Decision[] {
+  return decisions.reduce((acc: Decision[], curr: Decision) => {
+    const existing = acc.find(d => d.key === curr.key);
+    if (existing && existing.version > curr.version) return acc;
+    if (existing && existing.version < curr.version)
+      return [...acc.filter(d => d.key !== curr.key), curr];
+    return [...acc, curr];
+  }, []);
+}

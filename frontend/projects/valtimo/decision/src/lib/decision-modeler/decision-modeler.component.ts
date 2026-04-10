@@ -195,6 +195,8 @@ export class DecisionModelerComponent
 
   public ngOnDestroy(): void {
     this.pageTitleService.enableReset();
+    this.breadcrumbService.clearThirdBreadcrumb();
+    this.breadcrumbService.clearFourthBreadcrumb();
   }
 
   public ngAfterViewInit(): void {
@@ -399,11 +401,12 @@ export class DecisionModelerComponent
 
   private initBuildingBlockBreadcrumbs(params: BuildingBlockManagementParams): void {
     const route = `/building-block-management/building-block/${params.buildingBlockDefinitionKey}/version/${params.buildingBlockDefinitionVersionTag}`;
+    const generalRoute = `${route}/general`;
 
     this.breadcrumbService.setThirdBreadcrumb({
-      route: [route],
+      route: [generalRoute],
       content: `${params.buildingBlockDefinitionKey} (${params.buildingBlockDefinitionVersionTag})`,
-      href: route,
+      href: generalRoute,
     });
 
     const routeWithDecisions = `${route}/decisions`;

@@ -24,7 +24,6 @@ import {
   BehaviorSubject,
   combineLatest,
   distinctUntilChanged,
-  map,
   Observable,
   Subscription,
   switchMap,
@@ -68,7 +67,6 @@ export class BuildingBlockManagementDecisionsComponent implements OnInit, OnDest
   public readonly FIELDS: ColumnConfig[] = [
     {key: 'key', label: 'Key'},
     {key: 'name', label: 'Name'},
-    {key: 'version', label: 'Version'},
   ];
 
   public onDeleteClick = (decision: Decision): void => {
@@ -124,15 +122,6 @@ export class BuildingBlockManagementDecisionsComponent implements OnInit, OnDest
                 )
               )
             )
-          ),
-          map(decisions =>
-            decisions.reduce((acc: Decision[], curr: Decision) => {
-              const existing = acc.find(d => d.key === curr.key);
-              if (existing && existing.version > curr.version) return acc;
-              if (existing && existing.version < curr.version)
-                return [...acc.filter(d => d.key !== curr.key), curr];
-              return [...acc, curr];
-            }, [])
           ),
           tap(decisions => {
             this._decisions$.next(decisions);
