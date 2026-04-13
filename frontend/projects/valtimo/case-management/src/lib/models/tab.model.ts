@@ -19,6 +19,7 @@ export enum TabEnum {
   DOCUMENT = 'document',
   CASE = 'case',
   PROCESSES = 'processes',
+  ACTIONS = 'actions',
   SEARCH = 'search',
   LIST = 'list',
   TABS = 'tabs',
