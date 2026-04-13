@@ -147,8 +147,12 @@ class OperatonTaskSpecificationHelper {
         }
 
         @JvmStatic
-        fun byAssignee(assignee: String) = Specification<OperatonTask> { root, _, cb ->
-            cb.equal(root.get<Any>(ASSIGNEE), assignee)
+        fun byAssignee(assignee: String?) = Specification<OperatonTask> { root, _, cb ->
+            if (assignee == null) {
+                root.get<Any>(ASSIGNEE).isNull
+            } else {
+                cb.equal(root.get<Any>(ASSIGNEE), assignee)
+            }
         }
 
         @JvmStatic
@@ -193,11 +197,32 @@ class OperatonTaskSpecificationHelper {
         }
 
         @JvmStatic
+        fun byTeamKey(teamKey: String?) = Specification<OperatonTask> { root, query, cb ->
+            val subquery = query!!.subquery(String::class.java)
+            val taskTeamRoot = subquery.from(TaskTeam::class.java)
+            subquery.select(taskTeamRoot.get("taskId"))
+            if (teamKey == null) {
+                root.get<Any>(ID).`in`(subquery).not()
+            } else {
+                subquery.where(cb.equal(taskTeamRoot.get<Any>("teamKey"), teamKey))
+                root.get<Any>(ID).`in`(subquery)
+            }
+        }
+
+        @JvmStatic
         fun byHasTeam() = Specification<OperatonTask> { root, query, _ ->
             val subquery = query!!.subquery(String::class.java)
             val taskTeamRoot = subquery.from(TaskTeam::class.java)
             subquery.select(taskTeamRoot.get("taskId"))
             root.get<Any>(ID).`in`(subquery)
+        }
+
+        @JvmStatic
+        fun byNoTeam() = Specification<OperatonTask> { root, query, _ ->
+            val subquery = query!!.subquery(String::class.java)
+            val taskTeamRoot = subquery.from(TaskTeam::class.java)
+            subquery.select(taskTeamRoot.get("taskId"))
+            root.get<Any>(ID).`in`(subquery).not()
         }
 
     }

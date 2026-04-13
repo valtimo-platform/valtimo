@@ -2,6 +2,8 @@
     {
         "resourceType": "com.ritense.valtimo.operaton.domain.OperatonTask",
         "actions": [
+            "assign",
+            "claim",
             "complete",
             "view_list",
             "view"
@@ -11,9 +13,7 @@
     {
         "resourceType": "com.ritense.valtimo.operaton.domain.OperatonTask",
         "actions": [
-            "assign",
-            "assignable",
-            "claim"
+            "assignable"
         ],
         "roleKey": "ROLE_ADMIN",
         "conditions": [
@@ -34,9 +34,7 @@
     {
         "resourceType": "com.ritense.valtimo.operaton.domain.OperatonTask",
         "actions": [
-            "assign",
-            "assignable",
-            "claim"
+            "assignable"
         ],
         "roleKey": "ROLE_ADMIN",
         "conditions": [

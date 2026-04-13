@@ -215,14 +215,30 @@ class CaseTaskTeamAutoAssignListenerTest {
     }
 
     @Test
-    fun `should not assign team when assignedTeamKey is null`() {
+    fun `should not assign team when assignedTeamKey is null and no candidate resolves to a team`() {
         whenever(caseDefinitionService.getCaseDefinition(any())).thenReturn(caseDefinitionWithSettings())
         whenever(caseDocument.assignedTeamKey()).thenReturn(null)
+        whenever(teamManagementService.findByKey(any())).thenReturn(null)
 
-        val delegateTask = mockDelegateTask(candidateGroupIds = listOf("INTAKE_TEAM"))
+        val delegateTask = mockDelegateTask(candidateGroupIds = listOf("ROLE_ADMIN"))
         listener.assignTeamFromCandidateGroup(OperatonTaskEvent(delegateTask, "create"))
 
         verify(operatonTaskService, never()).assignTeamToTask(any(), any())
+    }
+
+    @Test
+    fun `should assign first candidate team when assignedTeamKey is null`() {
+        whenever(caseDefinitionService.getCaseDefinition(any())).thenReturn(caseDefinitionWithSettings())
+        whenever(caseDocument.assignedTeamKey()).thenReturn(null)
+        whenever(teamManagementService.findByKey("ROLE_ADMIN")).thenReturn(null)
+        whenever(teamManagementService.findByKey("INTAKE_TEAM")).thenReturn(mock())
+        whenever(teamManagementService.findByKey("OTHER_TEAM")).thenReturn(mock())
+
+        val delegateTask = mockDelegateTask(candidateGroupIds = listOf("ROLE_ADMIN", "INTAKE_TEAM", "OTHER_TEAM"))
+        listener.assignTeamFromCandidateGroup(OperatonTaskEvent(delegateTask, "create"))
+        triggerBeforeCommit()
+
+        verify(operatonTaskService).assignTeamToTask("task-123", "INTAKE_TEAM")
     }
 
     // --- updateTeamOnTasksForDocument (team changed on case) ---
@@ -303,7 +319,7 @@ class CaseTaskTeamAutoAssignListenerTest {
         whenever(operatonTaskService.findTasks(any())).thenReturn(listOf(task1, task2))
 
         val event = DocumentUnassignedEvent(
-            UUID.randomUUID(), "test", LocalDateTime.now(), "admin", documentId
+            UUID.randomUUID(), "test", LocalDateTime.now(), "admin", documentId, null, "team-key"
         )
         listener.removeTeamFromTasksForDocument(event)
 
@@ -317,7 +333,7 @@ class CaseTaskTeamAutoAssignListenerTest {
             .thenReturn(caseDefinitionWithSettings(canHaveAssignee = false))
 
         val event = DocumentUnassignedEvent(
-            UUID.randomUUID(), "test", LocalDateTime.now(), "admin", documentId
+            UUID.randomUUID(), "test", LocalDateTime.now(), "admin", documentId, null, "team-key"
         )
         listener.removeTeamFromTasksForDocument(event)
 
@@ -331,7 +347,7 @@ class CaseTaskTeamAutoAssignListenerTest {
             .thenReturn(caseDefinitionWithSettings(autoAssignTasks = false))
 
         val event = DocumentUnassignedEvent(
-            UUID.randomUUID(), "test", LocalDateTime.now(), "admin", documentId
+            UUID.randomUUID(), "test", LocalDateTime.now(), "admin", documentId, null, "team-key"
         )
         listener.removeTeamFromTasksForDocument(event)
 
@@ -347,7 +363,7 @@ class CaseTaskTeamAutoAssignListenerTest {
         )
 
         val event = DocumentUnassignedEvent(
-            UUID.randomUUID(), "test", LocalDateTime.now(), "admin", documentId
+            UUID.randomUUID(), "test", LocalDateTime.now(), "admin", documentId, null, "team-key"
         )
         listenerWithoutTeams.removeTeamFromTasksForDocument(event)
 
@@ -359,7 +375,7 @@ class CaseTaskTeamAutoAssignListenerTest {
         whenever(documentService.findBy(any<JsonSchemaDocumentId>())).thenReturn(Optional.empty())
 
         val event = DocumentUnassignedEvent(
-            UUID.randomUUID(), "test", LocalDateTime.now(), "admin", documentId
+            UUID.randomUUID(), "test", LocalDateTime.now(), "admin", documentId, null, "team-key"
         )
         listener.removeTeamFromTasksForDocument(event)
 

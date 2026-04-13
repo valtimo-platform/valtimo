@@ -32,7 +32,7 @@ import com.ritense.valtimo.contract.document.CaseDocumentResolutionException
 import com.ritense.valtimo.contract.document.CaseDocumentResolver
 import com.ritense.valtimo.operaton.authorization.OperatonTaskActionProvider
 import com.ritense.valtimo.operaton.domain.OperatonTask
-import com.ritense.valtimo.operaton.repository.OperatonTaskSpecificationHelper.Companion.byAssigned
+import com.ritense.valtimo.operaton.repository.OperatonTaskSpecificationHelper.Companion.byAssignee
 import com.ritense.valtimo.operaton.repository.OperatonTaskSpecificationHelper.Companion.byRootProcessInstanceBusinessKeys
 import com.ritense.valtimo.service.OperatonTaskService
 import io.github.oshai.kotlinlogging.KotlinLogging
@@ -75,6 +75,7 @@ class BuildingBlockCaseAssigneeListener(
                     val tasks = runWithoutAuthorization {
                         operatonTaskService.findTasks(
                             byRootProcessInstanceBusinessKeys(businessKeys)
+                                .and(byAssignee(event.formerAssigneeId))
                         )
                     }
                     logger.debug { "Updating assignee on ${tasks.size} task(s)" }
@@ -103,6 +104,7 @@ class BuildingBlockCaseAssigneeListener(
     @RunWithoutAuthorization
     @EventListener(DocumentUnassignedEvent::class)
     fun removeAssigneeFromBuildingBlockTasks(event: DocumentUnassignedEvent) {
+        val formerAssigneeId = event.assigneeId ?: return
         try {
             val caseDocumentId = caseDocumentResolver.resolveCaseDocumentId(event.documentId)
             val caseDocument = documentService[caseDocumentId.toString()]
@@ -117,7 +119,7 @@ class BuildingBlockCaseAssigneeListener(
 
                 val tasks = operatonTaskService.findTasks(
                     byRootProcessInstanceBusinessKeys(businessKeys)
-                        .and(byAssigned())
+                        .and(byAssignee(formerAssigneeId))
                 )
                 logger.debug { "Removing assignee from ${tasks.size} building block task(s)" }
                 tasks.forEach { task ->

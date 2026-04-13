@@ -223,7 +223,7 @@ class BuildingBlockTaskTeamAutoAssignListenerTest {
         whenever(operatonTaskService.findTasks(any())).thenReturn(listOf(task1, task2))
 
         val event = DocumentUnassignedEvent(
-            UUID.randomUUID(), "test", LocalDateTime.now(), "admin", documentId
+            UUID.randomUUID(), "test", LocalDateTime.now(), "admin", documentId, null, "team-key"
         )
         listener.removeTeamFromBuildingBlockTasks(event)
 
@@ -237,7 +237,7 @@ class BuildingBlockTaskTeamAutoAssignListenerTest {
         whenever(buildingBlockInstanceRepository.findAllByCaseDocumentId(caseDocumentId)).thenReturn(emptyList())
 
         val event = DocumentUnassignedEvent(
-            UUID.randomUUID(), "test", LocalDateTime.now(), "admin", documentId
+            UUID.randomUUID(), "test", LocalDateTime.now(), "admin", documentId, null, "team-key"
         )
         listener.removeTeamFromBuildingBlockTasks(event)
 
@@ -251,7 +251,7 @@ class BuildingBlockTaskTeamAutoAssignListenerTest {
             .thenReturn(caseDefinitionWithSettings(canHaveAssignee = false))
 
         val event = DocumentUnassignedEvent(
-            UUID.randomUUID(), "test", LocalDateTime.now(), "admin", documentId
+            UUID.randomUUID(), "test", LocalDateTime.now(), "admin", documentId, null, "team-key"
         )
         listener.removeTeamFromBuildingBlockTasks(event)
 
@@ -265,7 +265,7 @@ class BuildingBlockTaskTeamAutoAssignListenerTest {
             .thenReturn(caseDefinitionWithSettings(autoAssignTasks = false))
 
         val event = DocumentUnassignedEvent(
-            UUID.randomUUID(), "test", LocalDateTime.now(), "admin", documentId
+            UUID.randomUUID(), "test", LocalDateTime.now(), "admin", documentId, null, "team-key"
         )
         listener.removeTeamFromBuildingBlockTasks(event)
 
@@ -281,7 +281,7 @@ class BuildingBlockTaskTeamAutoAssignListenerTest {
         )
 
         val event = DocumentUnassignedEvent(
-            UUID.randomUUID(), "test", LocalDateTime.now(), "admin", documentId
+            UUID.randomUUID(), "test", LocalDateTime.now(), "admin", documentId, null, "team-key"
         )
         listenerWithoutTeams.removeTeamFromBuildingBlockTasks(event)
 
@@ -293,7 +293,7 @@ class BuildingBlockTaskTeamAutoAssignListenerTest {
         whenever(documentService.findBy(any<JsonSchemaDocumentId>())).thenReturn(Optional.empty())
 
         val event = DocumentUnassignedEvent(
-            UUID.randomUUID(), "test", LocalDateTime.now(), "admin", documentId
+            UUID.randomUUID(), "test", LocalDateTime.now(), "admin", documentId, null, "team-key"
         )
         listener.removeTeamFromBuildingBlockTasks(event)
 

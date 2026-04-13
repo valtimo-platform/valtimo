@@ -671,12 +671,15 @@ public class OperatonTaskService {
         final OperatonTask task = runWithoutAuthorization(() -> findTaskById(taskId));
         requirePermission(task, ASSIGN);
 
-        var team = teamManagementService != null ? teamManagementService.findByKey(teamKey) : null;
-        var teamTitle = team != null ? team.getTitle() : teamKey;
-
         var existingTaskTeam = taskTeamRepository.findById(taskId).orElse(null);
         var formerTeamKey = existingTaskTeam != null ? existingTaskTeam.getTeamKey() : null;
+        if (Objects.equals(formerTeamKey, teamKey)) {
+            return;
+        }
         var formerTeamTitle = existingTaskTeam != null ? existingTaskTeam.getTeamTitle() : null;
+
+        var team = teamManagementService != null ? teamManagementService.findByKey(teamKey) : null;
+        var teamTitle = team != null ? team.getTitle() : teamKey;
 
         var taskTeam = existingTaskTeam != null ? existingTaskTeam : new TaskTeam(taskId, teamKey, teamTitle);
         taskTeam.setTeamKey(teamKey);
@@ -693,8 +696,11 @@ public class OperatonTaskService {
         requirePermission(task, ASSIGN);
 
         var existingTaskTeam = taskTeamRepository.findById(taskId).orElse(null);
-        var formerTeamKey = existingTaskTeam != null ? existingTaskTeam.getTeamKey() : null;
-        var formerTeamTitle = existingTaskTeam != null ? existingTaskTeam.getTeamTitle() : null;
+        if (existingTaskTeam == null) {
+            return;
+        }
+        var formerTeamKey = existingTaskTeam.getTeamKey();
+        var formerTeamTitle = existingTaskTeam.getTeamTitle();
 
         taskTeamRepository.deleteById(taskId);
 

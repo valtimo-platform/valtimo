@@ -28,8 +28,8 @@ import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import com.ritense.valtimo.contract.authentication.TeamManagementService
 import com.ritense.valtimo.contract.document.CaseDocumentResolver
 import com.ritense.valtimo.operaton.repository.OperatonTaskSpecificationHelper.Companion.byCandidateGroups
-import com.ritense.valtimo.operaton.repository.OperatonTaskSpecificationHelper.Companion.byHasTeam
 import com.ritense.valtimo.operaton.repository.OperatonTaskSpecificationHelper.Companion.byProcessInstanceBusinessKeys
+import com.ritense.valtimo.operaton.repository.OperatonTaskSpecificationHelper.Companion.byTeamKey
 import com.ritense.valtimo.service.OperatonTaskService
 import io.github.oshai.kotlinlogging.KotlinLogging
 import java.util.UUID
@@ -69,6 +69,7 @@ class BuildingBlockTaskTeamAutoAssignListener(
         val tasks = operatonTaskService.findTasks(
             byProcessInstanceBusinessKeys(businessKeys)
                 .and(byCandidateGroups(teamKey))
+                .and(byTeamKey(event.formerTeamKey))
         )
 
         logger.debug { "Auto assigning team '$teamKey' on ${tasks.size} building block task(s)" }
@@ -85,6 +86,9 @@ class BuildingBlockTaskTeamAutoAssignListener(
             return
         }
 
+        val formerTeamKey = event.teamKey
+            ?: return
+
         val caseDocument = getEligibleCaseDocument(event.documentId)
             ?: return
 
@@ -94,7 +98,7 @@ class BuildingBlockTaskTeamAutoAssignListener(
 
         val tasks = operatonTaskService.findTasks(
             byProcessInstanceBusinessKeys(businessKeys)
-                .and(byHasTeam())
+                .and(byTeamKey(formerTeamKey))
         )
 
         logger.debug { "Unassign team from ${tasks.size} building block task(s)" }
@@ -107,7 +111,8 @@ class BuildingBlockTaskTeamAutoAssignListener(
         val caseDocumentId = caseDocumentResolver.resolveCaseDocumentId(documentId)
 
         val caseDocument = documentService.findBy(JsonSchemaDocumentId.existingId(caseDocumentId))
-            .orElse(null) ?: return null
+            .orElse(null)
+            ?: return null
 
         val caseDefinition = caseDefinitionService.getCaseDefinition(
             caseDocument.definitionId().caseDefinitionId()

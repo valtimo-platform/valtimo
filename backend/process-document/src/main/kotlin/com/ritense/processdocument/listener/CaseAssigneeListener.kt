@@ -30,7 +30,7 @@ import com.ritense.valtimo.contract.document.CaseDocumentResolutionException
 import com.ritense.valtimo.contract.document.CaseDocumentResolver
 import com.ritense.valtimo.operaton.authorization.OperatonTaskActionProvider
 import com.ritense.valtimo.operaton.domain.OperatonTask
-import com.ritense.valtimo.operaton.repository.OperatonTaskSpecificationHelper.Companion.byAssigned
+import com.ritense.valtimo.operaton.repository.OperatonTaskSpecificationHelper.Companion.byAssignee
 import com.ritense.valtimo.operaton.repository.OperatonTaskSpecificationHelper.Companion.byRootProcessInstanceBusinessKey
 import com.ritense.valtimo.service.OperatonTaskService
 import io.github.oshai.kotlinlogging.KotlinLogging
@@ -69,6 +69,7 @@ class CaseAssigneeListener(
                     val tasks = runWithoutAuthorization {
                         operatonTaskService.findTasks(
                             byRootProcessInstanceBusinessKey(caseDocument.id().toString())
+                                .and(byAssignee(event.formerAssigneeId))
                         )
                     }
 
@@ -101,6 +102,7 @@ class CaseAssigneeListener(
     @RunWithoutAuthorization
     @EventListener(DocumentUnassignedEvent::class)
     fun removeAssigneeFromTasks(event: DocumentUnassignedEvent) {
+        val formerAssigneeId = event.assigneeId ?: return
         try {
             val caseDocumentId = caseDocumentResolver.resolveCaseDocumentId(event.documentId)
             val caseDocument = documentService[caseDocumentId.toString()]
@@ -110,7 +112,7 @@ class CaseAssigneeListener(
             if (caseDefinition.canHaveAssignee && caseDefinition.autoAssignTasks) {
                 val tasks = operatonTaskService.findTasks(
                     byRootProcessInstanceBusinessKey(caseDocument.id().toString())
-                        .and(byAssigned())
+                        .and(byAssignee(formerAssigneeId))
                 )
                 logger.debug { "Removing assignee from ${tasks.size} task(s)" }
                 tasks.forEach { task ->
