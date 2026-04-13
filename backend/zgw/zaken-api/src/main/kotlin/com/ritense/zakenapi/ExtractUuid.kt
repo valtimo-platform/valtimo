@@ -33,4 +33,11 @@ object ExtractUuid {
         }
     }
 
+    fun extractUuidFromUri(uri: String): UUID? {
+        return try {
+            extractUuidFromUri(URI(uri))
+        } catch (e: Exception) {
+            null
+        }
+    }
 }

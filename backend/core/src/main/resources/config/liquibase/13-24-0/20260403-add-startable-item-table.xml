@@ -42,4 +42,15 @@
                        columnNames="case_definition_key, case_definition_version_tag, item_key, item_type"/>
     </changeSet>
 
+    <changeSet id="2" author="Ritense">
+        <dropPrimaryKey tableName="startable_item"/>
+        <addColumn tableName="startable_item">
+            <column name="item_version_tag" type="VARCHAR(200)" defaultValue="">
+                <constraints nullable="false"/>
+            </column>
+        </addColumn>
+        <addPrimaryKey tableName="startable_item"
+                       columnNames="case_definition_key, case_definition_version_tag, item_key, item_type, item_version_tag"/>
+    </changeSet>
+
 </databaseChangeLog>

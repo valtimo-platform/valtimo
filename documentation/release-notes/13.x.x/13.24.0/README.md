@@ -26,6 +26,12 @@
   team — either manually or by another process — are left untouched. The same rule applies when the case's
   assignee or team is cleared: only tasks that still hold that exact user or team are cleared.
 
+## Security
+
+* **Dependencies**
+
+  All frontend dependencies have been locked to specific versions.
+
 ## Bugfixes
 
 * New bugfix.
