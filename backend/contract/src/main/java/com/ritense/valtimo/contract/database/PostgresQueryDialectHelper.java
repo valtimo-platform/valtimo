@@ -108,7 +108,10 @@ public class PostgresQueryDialectHelper implements QueryDialectHelper {
     }
 
     private Expression<String> getValueForPathText(CriteriaBuilder cb, Path column, String path) {
-        List<Expression<String>> pathParts = splitPath(path).stream().map(cb::literal).toList();
+        List<Expression<String>> pathParts = splitPath(path).stream()
+            .map(this::unquote)
+            .map(cb::literal)
+            .toList();
         Expression[] expressions = new Expression[pathParts.size() + 1];
         expressions[0] = column;
         System.arraycopy(pathParts.toArray(), 0, expressions, 1, pathParts.size());
@@ -118,6 +121,13 @@ public class PostgresQueryDialectHelper implements QueryDialectHelper {
             String.class,
             expressions
         );
+    }
+
+    private String unquote(String pathPart) {
+        if (pathPart.length() >= 2 && pathPart.startsWith("\"") && pathPart.endsWith("\"")) {
+            return pathPart.substring(1, pathPart.length() - 1);
+        }
+        return pathPart;
     }
 
     private List<String> splitPath(String path) {
