@@ -16,6 +16,7 @@
 
 import {PluginSpecification} from '../../models';
 import {NotificatiesApiConfigurationComponent} from './components/notificaties-api-configuration/notificaties-api-configuration.component';
+import {PublishNotificatieConfigurationComponent} from './components/publish-notificatie/publish-notificatie-configuration.component';
 import {ReceiveNotificatieConfigurationComponent} from './components/receive-notificatie/receive-notificatie-configuration.component';
 import {NOTIFICATIES_API_PLUGIN_LOGO_BASE64} from './assets/notificaties-api-plugin-logo';
 
@@ -24,6 +25,7 @@ const notificatiesApiPluginSpecification: PluginSpecification = {
   pluginConfigurationComponent: NotificatiesApiConfigurationComponent,
   pluginLogoBase64: NOTIFICATIES_API_PLUGIN_LOGO_BASE64,
   functionConfigurationComponents: {
+    'publish-notificatie': PublishNotificatieConfigurationComponent,
     'receive-notificatie': ReceiveNotificatieConfigurationComponent,
   },
   pluginTranslations: {
@@ -39,25 +41,36 @@ const notificatiesApiPluginSpecification: PluginSpecification = {
         'De naam van de huidige plugin-configuratie. Onder deze naam kan de configuratie in de rest van de applicatie teruggevonden worden.',
       authenticationPluginConfiguration: 'Configuratie authenticatie-plug-in',
       authHeader: 'Authenticatie header (herstart server vereist)',
-      authHeaderTooltip:
-        'Secret van de authenticatie header voor de callback URL. Als niet ingevuld wordt een random secret gegenereerd. Het abonnement moet opnieuw worden aangemaakt (na een herstart van de applicatie).',
+      authHeaderTooltip: 'Secret van de authenticatie header voor de callback URL. Als niet ingevuld wordt een random secret gegenereerd. Het abonnement moet opnieuw worden aangemaakt (na een herstart van de applicatie).',
+      'publish-notificatie': 'Publiceer een notificatie',
+      kanaal: 'Kanaal',
+      kanaalTooltip: 'Het kanaal waarop de notificatie gepubliceerd wordt (max 50 tekens).',
+      hoofdObject: 'Hoofd-object URL',
+      hoofdObjectTooltip: 'URL-referentie naar het hoofd-object van de publicerende API.',
+      resource: 'Resource',
+      resourceTooltip: 'De resourcenaam waar de notificatie betrekking op heeft (max 100 tekens).',
+      resourceUrl: 'Resource URL',
+      resourceUrlTooltip: 'URL-referentie naar de resource in de publicerende API.',
+      actie: 'Actie',
+      actieTooltip: 'De actie die door de publicerende API is uitgevoerd (max 100 tekens).',
+      aanmaakdatum: 'Aanmaakdatum',
+      aanmaakdatumTooltip: 'Tijdstip waarop de actie heeft plaatsgevonden (ISO 8601 formaat). Indien leeg wordt het huidige tijdstip gebruikt.',
+      kenmerken: 'Kenmerken',
+      kenmerkenTooltip: 'Sleutel-waardeparen voor het filteren van notificaties.',
+      kenmerkenKey: 'Kenmerk',
+      kenmerkenValue: 'Waarde',
+      kenmerkenAddRow: 'Kenmerk toevoegen',
+      kenmerkenDeleteRow: 'Kenmerk verwijderen',
       'receive-notificatie': 'Ontvang een notificatie',
       receiveNotificatieDescription:
         'Configureer de filtercriteria voor binnenkomende notificaties. Alle velden zijn optioneel — lege velden matchen alle waarden.',
       receiveNotificatieWarningTitle: 'Vereisten',
       receiveNotificatieWarning:
         'Het kanaal moet bestaan in de Notificaties API en het abonnement moet zijn geconfigureerd om te filteren op de opgegeven kenmerken. Per kanaal kan alleen gefilterd worden op kenmerken die op het kanaal zijn gedefinieerd.',
-      kanaal: 'Kanaal',
       receiveKanaalTooltip: 'Filter op kanaal. Indien leeg worden alle kanalen gematcht.',
-      actie: 'Actie',
       receiveActieTooltip: 'Filter op actie. Indien leeg worden alle acties gematcht.',
-      kenmerken: 'Kenmerken',
       receiveKenmerkenTooltip:
         'Filter op kenmerken. Alleen notificaties die alle opgegeven kenmerken bevatten worden gematcht.',
-      kenmerkenKey: 'Kenmerk',
-      kenmerkenValue: 'Waarde',
-      kenmerkenAddRow: 'Kenmerk toevoegen',
-      kenmerkenDeleteRow: 'Kenmerk verwijderen',
     },
     en: {
       title: 'Notificaties API',
@@ -71,25 +84,36 @@ const notificatiesApiPluginSpecification: PluginSpecification = {
         'The name of the current plugin configuration. Under this name, the configuration can be found in the rest of the application.',
       authenticationPluginConfiguration: 'Authentication plugin configuration',
       authHeader: 'Authentication header (restart server required)',
-      authHeaderTooltip:
-        'Secret value in Authentication header for the callback URL. When omitting this field, a random secret is generated. The abonnement needs to be recreated (after a restart of the application).',
+      authHeaderTooltip: 'Secret value in Authentication header for the callback URL. When omitting this field, a random secret is generated. The abonnement needs to be recreated (after a restart of the application).',
+      'publish-notificatie': 'Publish a notification',
+      kanaal: 'Channel',
+      kanaalTooltip: 'The channel on which the notification is published (max 50 characters).',
+      hoofdObject: 'Main object URL',
+      hoofdObjectTooltip: 'URL reference to the main object of the publishing API.',
+      resource: 'Resource',
+      resourceTooltip: 'The resource name the notification concerns (max 100 characters).',
+      resourceUrl: 'Resource URL',
+      resourceUrlTooltip: 'URL reference to the resource in the publishing API.',
+      actie: 'Action',
+      actieTooltip: 'The action performed by the publishing API (max 100 characters).',
+      aanmaakdatum: 'Creation date',
+      aanmaakdatumTooltip: 'Timestamp when the action occurred (ISO 8601 format). If empty, the current time is used.',
+      kenmerken: 'Attributes',
+      kenmerkenTooltip: 'Key-value pairs for notification filtering.',
+      kenmerkenKey: 'Attribute',
+      kenmerkenValue: 'Value',
+      kenmerkenAddRow: 'Add attribute',
+      kenmerkenDeleteRow: 'Delete attribute',
       'receive-notificatie': 'Receive a notification',
       receiveNotificatieDescription:
         'Configure the filter criteria for incoming notifications. All fields are optional — empty fields match all values.',
       receiveNotificatieWarningTitle: 'Prerequisites',
       receiveNotificatieWarning:
         'The kanaal must exist in the Notificaties API and the subscription must be configured to filter on the specified kenmerken. Per kanaal, only kenmerken that are defined on the kanaal can be used as filters.',
-      kanaal: 'Channel',
       receiveKanaalTooltip: 'Filter by channel. If empty, all channels are matched.',
-      actie: 'Action',
       receiveActieTooltip: 'Filter by action. If empty, all actions are matched.',
-      kenmerken: 'Attributes',
       receiveKenmerkenTooltip:
         'Filter by attributes. Only notifications containing all specified attributes are matched.',
-      kenmerkenKey: 'Attribute',
-      kenmerkenValue: 'Value',
-      kenmerkenAddRow: 'Add attribute',
-      kenmerkenDeleteRow: 'Delete attribute',
     },
   },
 };
