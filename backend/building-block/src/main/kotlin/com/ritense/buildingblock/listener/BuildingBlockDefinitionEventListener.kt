@@ -25,6 +25,7 @@ import com.ritense.buildingblock.repository.BuildingBlockDefinitionRepository
 import com.ritense.buildingblock.repository.ProcessDefinitionBuildingBlockDefinitionRepository
 import com.ritense.buildingblock.service.BuildingBlockDocumentDefinitionService
 import com.ritense.buildingblock.service.BuildingBlockFormDefinitionService
+import com.ritense.buildingblock.service.BuildingBlockFormFlowDefinitionService
 import com.ritense.document.domain.impl.JsonSchemaDocumentDefinition
 import com.ritense.document.domain.impl.JsonSchemaDocumentDefinitionId
 import com.ritense.document.repository.impl.JsonSchemaDocumentDefinitionRepository
@@ -50,6 +51,7 @@ class BuildingBlockDefinitionEventListener(
     private val buildingBlockDocumentDefinitionService: BuildingBlockDocumentDefinitionService,
     private val operatonProcessService: OperatonProcessService,
     private val buildingBlockFormDefinitionService: BuildingBlockFormDefinitionService,
+    private val buildingBlockFormFlowDefinitionService: BuildingBlockFormFlowDefinitionService,
     private val processLinkRepository: ProcessLinkRepository,
 ) {
 
@@ -61,6 +63,7 @@ class BuildingBlockDefinitionEventListener(
 
         copyDocumentDefinition(newId.key, basedOnId, newId)
         val formIdMapping = buildingBlockFormDefinitionService.copyFormDefinitions(basedOnId, newId)
+        buildingBlockFormFlowDefinitionService.copyFormFlowDefinitions(basedOnId, newId)
         val newProcessDefinitionIds = copyProcessDefinitions(basedOnId, newId)
         rewriteFormProcessLinks(newProcessDefinitionIds, formIdMapping)
         copyArtwork(basedOnId, newId)

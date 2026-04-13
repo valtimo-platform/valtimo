@@ -25,6 +25,7 @@ import com.ritense.buildingblock.repository.BuildingBlockDefinitionRepository
 import com.ritense.buildingblock.repository.ProcessDefinitionBuildingBlockDefinitionRepository
 import com.ritense.buildingblock.service.BuildingBlockDocumentDefinitionService
 import com.ritense.buildingblock.service.BuildingBlockFormDefinitionService
+import com.ritense.buildingblock.service.BuildingBlockFormFlowDefinitionService
 import com.ritense.document.domain.impl.JsonSchema
 import com.ritense.document.domain.impl.JsonSchemaDocumentDefinition
 import com.ritense.document.domain.impl.JsonSchemaDocumentDefinitionId
@@ -75,6 +76,9 @@ class BuildingBlockDefinitionEventListenerTest {
 
     @Mock
     private lateinit var buildingBlockFormDefinitionService: BuildingBlockFormDefinitionService
+
+    @Mock
+    private lateinit var buildingBlockFormFlowDefinitionService: BuildingBlockFormFlowDefinitionService
 
     @Mock
     private lateinit var processLinkRepository: ProcessLinkRepository
@@ -181,6 +185,7 @@ class BuildingBlockDefinitionEventListenerTest {
             any()
         )
         verify(buildingBlockFormDefinitionService).copyFormDefinitions(basedOnId, newId)
+        verify(buildingBlockFormFlowDefinitionService).copyFormFlowDefinitions(basedOnId, newId)
         verify(processDefinitionBuildingBlockDefinitionRepository).save(any<ProcessDefinitionBuildingBlockDefinition>())
         verify(buildingBlockDefinitionArtworkRepository).save(any<BuildingBlockDefinitionArtwork>())
         verify(buildingBlockDocumentDefinitionService, never()).ensureEmptyFor(any(), any())
