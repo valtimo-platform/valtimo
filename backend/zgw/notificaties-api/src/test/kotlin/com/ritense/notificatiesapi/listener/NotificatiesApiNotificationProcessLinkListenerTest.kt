@@ -440,6 +440,7 @@ class NotificatiesApiNotificationProcessLinkListenerTest {
         actie: String = "create",
         resourceUrl: String = "https://example.com/api/v1/zaken/123",
         hoofdObject: String? = "https://example.com/api/v1/zaken/123",
+        resource: String? = "zaak",
         aanmaakdatum: LocalDateTime? = LocalDateTime.of(2026, 4, 6, 12, 0, 0),
         kenmerken: Map<String, String> = emptyMap(),
     ): NotificatiesApiNotificationReceivedEvent {
@@ -447,6 +448,7 @@ class NotificatiesApiNotificationProcessLinkListenerTest {
             kanaal = kanaal,
             hoofdObject = hoofdObject,
             resourceUrl = resourceUrl,
+            resource = resource,
             actie = actie,
             aanmaakdatum = aanmaakdatum,
             kenmerken = kenmerken,
