@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,22 +14,19 @@
  * limitations under the License.
  */
 
-import {PluginConfigurationData} from '../../../models';
+package com.ritense.notificatiesapi.domain
 
-interface NotificatiesApiConfig extends PluginConfigurationData {
-  url: string;
-  callbackUrl: string;
-  authHeader: string;
-}
+import com.fasterxml.jackson.annotation.JsonInclude
+import java.net.URI
+import java.time.LocalDateTime
 
-interface PublishNotificatieConfig {
-  kanaal: string;
-  hoofdObject: string;
-  resource: string;
-  resourceUrl: string;
-  actie: string;
-  aanmaakdatum?: string;
-  kenmerken?: {[key: string]: string};
-}
-
-export {NotificatiesApiConfig, PublishNotificatieConfig};
+@JsonInclude(JsonInclude.Include.NON_NULL)
+data class Notificatie(
+    val kanaal: String,
+    val hoofdObject: URI,
+    val resource: String,
+    val resourceUrl: URI,
+    val actie: String,
+    val aanmaakdatum: LocalDateTime,
+    val kenmerken: Map<String, String>? = null,
+)
