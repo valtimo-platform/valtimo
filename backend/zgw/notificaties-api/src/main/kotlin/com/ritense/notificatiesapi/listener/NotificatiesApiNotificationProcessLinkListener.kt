@@ -18,7 +18,7 @@ package com.ritense.notificatiesapi.listener
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.node.JsonNodeFactory
-import com.ritense.authorization.AuthorizationContext.Companion.runWithoutAuthorization
+import com.ritense.authorization.annotation.RunWithoutAuthorization
 import com.ritense.case.service.CaseDefinitionService
 import com.ritense.document.domain.impl.request.NewDocumentRequest
 import com.ritense.notificatiesapi.event.NotificatiesApiNotificationReceivedEvent
@@ -51,6 +51,7 @@ open class NotificatiesApiNotificationProcessLinkListener(
     private val objectMapper: ObjectMapper,
 ) {
 
+    @RunWithoutAuthorization
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     @EventListener(NotificatiesApiNotificationReceivedEvent::class)
     open fun onNotificationReceived(event: NotificatiesApiNotificationReceivedEvent) {
@@ -154,9 +155,7 @@ open class NotificatiesApiNotificationProcessLinkListener(
         }
 
         val caseDefinitionKey = processDefinitionCaseDefinition.id.caseDefinitionId.key
-        val activeCaseDefinition = runWithoutAuthorization {
-            caseDefinitionService.getActiveCaseDefinition(caseDefinitionKey)
-        }
+        val activeCaseDefinition = caseDefinitionService.getActiveCaseDefinition(caseDefinitionKey)
         if (activeCaseDefinition?.id != processDefinitionCaseDefinition.id.caseDefinitionId) {
             return
         }
@@ -180,7 +179,7 @@ open class NotificatiesApiNotificationProcessLinkListener(
         ).withProcessVars(variables)
 
         logger.info { "Starting document process for case '${activeCaseDefinition.id.key}' (${activeCaseDefinition.id.versionTag}) with process definition key '$processDefinitionKey'" }
-        val result = runWithoutAuthorization { processDocumentService.newDocumentAndStartProcess(request) }
+        val result = processDocumentService.newDocumentAndStartProcess(request)
         if (result.errors().isNotEmpty()) {
             error("Failed to start document process: ${result.errors()}")
         }

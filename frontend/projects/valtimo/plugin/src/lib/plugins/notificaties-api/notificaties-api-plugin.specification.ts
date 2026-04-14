@@ -56,7 +56,7 @@ const notificatiesApiPluginSpecification: PluginSpecification = {
       actieTooltip: 'De actie die door de publicerende API is uitgevoerd (max 100 tekens).',
       aanmaakdatum: 'Aanmaakdatum',
       aanmaakdatumTooltip:
-        'Tijdstip waarop de actie heeft plaatsgevonden (ISO 8601 formaat). Indien leeg wordt het huidige tijdstip gebruikt.',
+        'Tijdstip waarop de actie heeft plaatsgevonden (ISO 8601 formaat, bijv. 2024-01-15T10:30:00). Indien leeg wordt het huidige tijdstip gebruikt.',
       kenmerken: 'Kenmerken',
       kenmerkenTooltip: 'Sleutel-waardeparen voor het filteren van notificaties.',
       kenmerkenKey: 'Kenmerk',
@@ -101,7 +101,7 @@ const notificatiesApiPluginSpecification: PluginSpecification = {
       actieTooltip: 'The action performed by the publishing API (max 100 characters).',
       aanmaakdatum: 'Creation date',
       aanmaakdatumTooltip:
-        'Timestamp when the action occurred (ISO 8601 format). If empty, the current time is used.',
+        'Timestamp when the action occurred (ISO 8601 format, e.g. 2026-01-15T10:30:00). If empty, the current time is used.',
       kenmerken: 'Attributes',
       kenmerkenTooltip: 'Key-value pairs for notification filtering.',
       kenmerkenKey: 'Attribute',
