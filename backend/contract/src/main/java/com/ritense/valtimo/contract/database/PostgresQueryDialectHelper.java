@@ -32,20 +32,25 @@ public class PostgresQueryDialectHelper implements QueryDialectHelper {
 
     @Override
     public <T> Expression<T> getJsonValueExpression(CriteriaBuilder cb, Path column, String jsonPath, Class<T> type) {
+        if (String.class.isAssignableFrom(type)) {
+            // jsonb_extract_path_text returns the value as text without JSON quotes,
+            // avoiding the need to trim quotes from jsonb (which fails in Hibernate 6.6+
+            // because trim() does not accept jsonb).
+            return getValueForPathText(cb, column, jsonPath).as(type);
+        } else if (TemporalAccessor.class.isAssignableFrom(type)) {
+            var textValue = getValueForPathText(cb, column, jsonPath);
+            return cb.selectCase()
+                .when(textValue.in(""), cb.nullLiteral(type))
+                .otherwise(textValue)
+                .as(type);
+        }
         var jsonValue = cb.function(
             "jsonb_path_query_first",
             Object.class,
             column,
             cb.function("jsonpath", String.class, cb.literal(jsonPath))
         );
-        if (String.class.isAssignableFrom(type)) {
-            return cb.trim('"', jsonValue.as(String.class)).as(type);
-        } else if (TemporalAccessor.class.isAssignableFrom(type)) {
-            return cb.selectCase()
-                .when(jsonValue.as(String.class).in("\"\""), cb.nullLiteral(type))
-                .otherwise(cb.trim('"', jsonValue.as(String.class)))
-                .as(type);
-        } else if (Collection.class.isAssignableFrom(type)) {
+        if (Collection.class.isAssignableFrom(type)) {
             throw new UnsupportedOperationException("Failed to query '" + jsonPath + "'. Unsupported type '" + type + "'.");
         } else {
             return jsonValue.as(type);
@@ -103,7 +108,10 @@ public class PostgresQueryDialectHelper implements QueryDialectHelper {
     }
 
     private Expression<String> getValueForPathText(CriteriaBuilder cb, Path column, String path) {
-        List<Expression<String>> pathParts = splitPath(path).stream().map(cb::literal).toList();
+        List<Expression<String>> pathParts = splitPath(path).stream()
+            .map(this::unquote)
+            .map(cb::literal)
+            .toList();
         Expression[] expressions = new Expression[pathParts.size() + 1];
         expressions[0] = column;
         System.arraycopy(pathParts.toArray(), 0, expressions, 1, pathParts.size());
@@ -113,6 +121,13 @@ public class PostgresQueryDialectHelper implements QueryDialectHelper {
             String.class,
             expressions
         );
+    }
+
+    private String unquote(String pathPart) {
+        if (pathPart.length() >= 2 && pathPart.startsWith("\"") && pathPart.endsWith("\"")) {
+            return pathPart.substring(1, pathPart.length() - 1);
+        }
+        return pathPart;
     }
 
     private List<String> splitPath(String path) {
