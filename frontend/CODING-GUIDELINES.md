@@ -505,6 +505,41 @@ export const MY_COMPONENT_TEST_IDS = {
   requirements out of the box, it is acceptable to create an improved wrapper in
   `@valtimo/components` (e.g. `SelectModule` wraps and improves on `cds-combobox`).
 
+## Generated backend types
+
+TypeScript types for backend REST DTOs can be generated from the Java/Kotlin source code. Before
+manually defining a DTO interface in the frontend, always check whether it already exists (or can
+be generated) from the backend.
+
+### How it works
+
+The Gradle task scans all classes matching `com.ritense.**.web.rest.dto.*` and generates
+TypeScript interfaces into `@valtimo/shared`:
+
+```
+frontend/projects/valtimo/shared/src/lib/generated/generated-backend-types.ts
+```
+
+These types are re-exported via `@valtimo/shared` and can be imported in any library.
+
+### Workflow
+
+1. Run the generator:
+   ```bash
+   ./gradlew :backend:app:gzac:generateTypeScript
+   ```
+2. Check if the type you need is now in `generated-backend-types.ts`.
+3. If it is, import it from `@valtimo/shared` — do not duplicate the interface in the frontend.
+4. If the generator does not produce the type you need (e.g. the backend class is not in a
+   `web.rest.dto` package), it is acceptable to define the interface manually in the frontend
+   library's `models/` folder.
+
+### Example
+
+```typescript
+import {MyItemResponseDto} from '@valtimo/shared';
+```
+
 ## Error handling
 
 - **HTTP errors** are handled globally by `HttpErrorInterceptor` which shows toast notifications.
