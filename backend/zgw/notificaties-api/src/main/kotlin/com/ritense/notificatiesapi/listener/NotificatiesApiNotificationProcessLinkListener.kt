@@ -37,6 +37,7 @@ import org.operaton.bpm.engine.runtime.Execution
 import org.operaton.bpm.model.bpmn.instance.CatchEvent
 import org.operaton.bpm.model.bpmn.instance.MessageEventDefinition
 import org.springframework.context.event.EventListener
+import org.springframework.transaction.annotation.Propagation
 import org.springframework.transaction.annotation.Transactional
 
 open class NotificatiesApiNotificationProcessLinkListener(
@@ -50,7 +51,7 @@ open class NotificatiesApiNotificationProcessLinkListener(
     private val objectMapper: ObjectMapper,
 ) {
 
-    @Transactional
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
     @EventListener(NotificatiesApiNotificationReceivedEvent::class)
     open fun onNotificationReceived(event: NotificatiesApiNotificationReceivedEvent) {
         logger.debug { "Received notification on kanaal '${event.kanaal}', checking for matching process links" }
