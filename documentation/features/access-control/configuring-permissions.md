@@ -50,7 +50,7 @@ There are a lot of elements that can be specified for permissions. As an example
         "type": "field",
         "field": "assigneeId",
         "operator": "==",
-        "value": "${currentUserId}"
+        "value": "${currentUsername}"
       }
     ]
   }
@@ -141,7 +141,7 @@ The example below shows how container conditions can be used to join other entit
                             "type": "field",
                             "field": "assigneeId",
                             "operator": "==",
-                            "value": "${currentUserId}"
+                            "value": "${currentUsername}"
                         }
                     ]
                 }
@@ -150,6 +150,9 @@ The example below shows how container conditions can be used to join other entit
     ]
 }
 ```
+
+For more information on container conditions, including CaseDefinition scoping, nesting containers, and a full list of
+available container relationships, see [Container conditions](container-conditions.md).
 {% endtab %}
 {% endtabs %}
 

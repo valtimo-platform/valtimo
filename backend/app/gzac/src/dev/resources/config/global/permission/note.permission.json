@@ -1,0 +1,74 @@
+[
+    {
+        "resourceType": "com.ritense.note.domain.Note",
+        "actions": [
+            "view_list",
+            "create",
+            "modify",
+            "delete"
+        ],
+        "roleKey": "ROLE_ADMIN"
+    },
+    {
+        "resourceType": "com.ritense.note.domain.Note",
+        "actions": [
+            "view_list",
+            "create"
+        ],
+        "roleKey": "ROLE_USER",
+        "conditions": [
+            {
+                "type": "container",
+                "resourceType": "com.ritense.document.domain.impl.JsonSchemaDocument",
+                "conditions": [
+                    {
+                        "type": "container",
+                        "resourceType": "com.ritense.case_.domain.definition.CaseDefinition",
+                        "conditions": [
+                            {
+                                "type": "field",
+                                "field": "id.key",
+                                "operator": "==",
+                                "value": "bezwaar"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ]
+    },
+    {
+        "resourceType": "com.ritense.note.domain.Note",
+        "actions": [
+            "modify",
+            "delete"
+        ],
+        "roleKey": "ROLE_USER",
+        "conditions": [
+            {
+                "type": "field",
+                "field": "createdByUserId",
+                "operator": "==",
+                "value": "${currentUsername}"
+            },
+            {
+                "type": "container",
+                "resourceType": "com.ritense.document.domain.impl.JsonSchemaDocument",
+                "conditions": [
+                    {
+                        "type": "container",
+                        "resourceType": "com.ritense.case_.domain.definition.CaseDefinition",
+                        "conditions": [
+                            {
+                                "type": "field",
+                                "field": "id.key",
+                                "operator": "==",
+                                "value": "bezwaar"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ]
+    }
+]

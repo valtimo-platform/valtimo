@@ -27,6 +27,10 @@ import com.ritense.authorization.ValtimoAuthorizationService
 import com.ritense.authorization.annotation.RunWithoutAuthorizationAspect
 import com.ritense.authorization.deployment.PermissionDeployer
 import com.ritense.authorization.deployment.RoleDeployer
+import com.ritense.authorization.exporter.GlobalPermissionExporter
+import com.ritense.authorization.exporter.GlobalRoleExporter
+import com.ritense.authorization.importer.GlobalPermissionImporter
+import com.ritense.authorization.importer.GlobalRoleImporter
 import com.ritense.authorization.permission.PermissionRepository
 import com.ritense.authorization.role.RoleRepository
 import com.ritense.authorization.specification.AuthorizationSpecificationFactory
@@ -44,6 +48,7 @@ import org.springframework.boot.autoconfigure.AutoConfiguration
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.boot.autoconfigure.domain.EntityScan
 import org.springframework.context.annotation.Bean
+import org.springframework.context.annotation.Lazy
 import org.springframework.core.Ordered.HIGHEST_PRECEDENCE
 import org.springframework.core.annotation.Order
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories
@@ -52,7 +57,7 @@ import org.springframework.data.jpa.repository.config.EnableJpaRepositories
 @EnableJpaRepositories(basePackages = ["com.ritense.authorization"])
 @EntityScan("com.ritense.authorization")
 class AuthorizationAutoConfiguration(
-    userManagementService: UserManagementService
+    @Lazy userManagementService: UserManagementService
 ) {
 
     init {
@@ -164,4 +169,49 @@ class AuthorizationAutoConfiguration(
         return RunWithoutAuthorizationAspect()
     }
 
+    @Bean
+    fun globalPermissionImporter(
+        objectMapper: ObjectMapper,
+        permissionRepository: PermissionRepository,
+        roleRepository: RoleRepository,
+    ): GlobalPermissionImporter {
+        return GlobalPermissionImporter(
+            objectMapper,
+            permissionRepository,
+            roleRepository,
+        )
+    }
+
+    @Bean
+    fun globalPermissionExporter(
+        objectMapper: ObjectMapper,
+        permissionRepository: PermissionRepository
+    ): GlobalPermissionExporter {
+        return GlobalPermissionExporter(
+            objectMapper,
+            permissionRepository
+        )
+    }
+
+    @Bean
+    fun globalRoleImporter(
+        objectMapper: ObjectMapper,
+        roleRepository: RoleRepository,
+    ): GlobalRoleImporter {
+        return GlobalRoleImporter(
+            objectMapper,
+            roleRepository,
+        )
+    }
+
+    @Bean
+    fun globalRoleExporter(
+        objectMapper: ObjectMapper,
+        roleRepository: RoleRepository
+    ): GlobalRoleExporter {
+        return GlobalRoleExporter(
+            objectMapper,
+            roleRepository
+        )
+    }
 }

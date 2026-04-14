@@ -43,6 +43,7 @@ import {
   tap,
 } from 'rxjs';
 import {DocumentenApiLinkProcessService, DocumentenApiVersionService} from '../../services';
+import {ZGW_LINK_UPLOAD_PROCESS_TEST_IDS} from '../../../../constants';
 
 @Component({
   selector: 'valtimo-case-management-link-process',
@@ -53,6 +54,7 @@ import {DocumentenApiLinkProcessService, DocumentenApiVersionService} from '../.
   imports: [CommonModule, TranslateModule, ComboBoxModule, LayerModule],
 })
 export class CaseManagementLinkProcessComponent implements OnInit, OnDestroy {
+  public readonly testIds = ZGW_LINK_UPLOAD_PROCESS_TEST_IDS;
   @Input() isReadOnly$: Observable<boolean>;
   //Necessary to trigger outside click detection for combo-box
   @HostListener('document:click', ['$event'])
@@ -69,7 +71,7 @@ export class CaseManagementLinkProcessComponent implements OnInit, OnDestroy {
       (definitions || [])
         .filter(definition => !!definition?.key)
         .map(process => ({
-          content: process?.name || '-',
+          content: process?.name || `<${process.key}>`,
           id: process.key,
           selected: selectedProcessKey === process.key,
         }))

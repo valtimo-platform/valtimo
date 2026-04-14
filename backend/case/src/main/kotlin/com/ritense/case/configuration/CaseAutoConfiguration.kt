@@ -19,7 +19,11 @@ package com.ritense.case.configuration
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.ritense.authorization.AuthorizationService
 import com.ritense.case.deployment.CaseTabDeploymentService
+import com.ritense.case.listener.CaseDefinitionConfigurationIssueListener
+import com.ritense.case.mapper.ConfigurationIssueSseEventMapper
+import com.ritense.case.repository.CaseDefinitionConfigurationIssueRepository
 import com.ritense.case.repository.CaseDefinitionListColumnRepository
+import com.ritense.case.repository.StartableItemRepository
 import com.ritense.case.repository.CaseTabDocumentDefinitionMapper
 import com.ritense.case.repository.CaseTabRepository
 import com.ritense.case.repository.CaseTabSpecificationFactory
@@ -29,6 +33,7 @@ import com.ritense.case.security.config.CaseHttpSecurityConfigurer
 import com.ritense.case.service.CaseDefinitionCheckerImpl
 import com.ritense.case.service.CaseDefinitionDeploymentService
 import com.ritense.case.service.CaseDefinitionExporter
+import com.ritense.case.service.CaseDefinitionImportPreviewService
 import com.ritense.case.service.CaseDefinitionImporter
 import com.ritense.case.service.CaseDefinitionService
 import com.ritense.case.service.CaseExporter
@@ -41,12 +46,19 @@ import com.ritense.case.service.CaseTabImporter
 import com.ritense.case.service.CaseTabService
 import com.ritense.case.service.CaseTaskListExporter
 import com.ritense.case.service.CaseTaskListImporter
+import com.ritense.case.service.ConfigurationIssueCaseDefinitionFinalizationChecker
+import com.ritense.case.listener.StartableItemCaseEventListener
+import com.ritense.case.service.StartableItemManagementService
+import com.ritense.case.service.StartableItemProvider
+import com.ritense.case.service.StartableItemService
 import com.ritense.case.service.TaskColumnService
 import com.ritense.case.service.finalization.CaseDefinitionFinalizationChecker
 import com.ritense.case.web.rest.CaseDefinitionResource
 import com.ritense.case.web.rest.CaseInstanceResource
 import com.ritense.case.web.rest.CaseTabManagementResource
 import com.ritense.case.web.rest.CaseTabResource
+import com.ritense.case.web.rest.StartableItemManagementResource
+import com.ritense.case.web.rest.StartableItemResource
 import com.ritense.case.web.rest.TaskListResource
 import com.ritense.case_.authorization.CaseDefinitionSpecificationFactory
 import com.ritense.case_.repository.CaseDefinitionRepository
@@ -85,10 +97,18 @@ import org.springframework.data.jpa.repository.config.EnableJpaRepositories
 @EnableJpaRepositories(
     basePackageClasses = [
         CaseTabRepository::class,
+        CaseDefinitionConfigurationIssueRepository::class,
+        StartableItemRepository::class,
     ]
 )
 @EntityScan(basePackages = ["com.ritense.case.domain"])
 class CaseAutoConfiguration {
+
+    @Bean
+    @ConditionalOnMissingBean(CaseDefinitionImportPreviewService::class)
+    fun caseDefinitionImportPreviewService(
+        objectMapper: ObjectMapper,
+    ) = CaseDefinitionImportPreviewService(objectMapper)
 
     @ConditionalOnMissingBean(name = ["caseDefinitionResource"])
     @Bean
@@ -99,6 +119,8 @@ class CaseAutoConfiguration {
         activeCaseDefinitionService: ActiveCaseDefinitionService,
         caseDefinitionRepository: CaseDefinitionRepository,
         caseDefinitionChecker: CaseDefinitionChecker,
+        configurationIssueRepository: CaseDefinitionConfigurationIssueRepository,
+        caseDefinitionImportPreviewService: CaseDefinitionImportPreviewService,
     ): CaseDefinitionResource {
         return CaseDefinitionResource(
             service,
@@ -107,6 +129,8 @@ class CaseAutoConfiguration {
             importService,
             caseDefinitionRepository,
             caseDefinitionChecker,
+            configurationIssueRepository,
+            caseDefinitionImportPreviewService,
         )
     }
 
@@ -161,6 +185,7 @@ class CaseAutoConfiguration {
         caseDefinitionChecker: CaseDefinitionChecker,
         applicationEventPublisher: ApplicationEventPublisher,
         caseDefinitionFinalizationCheckersProvider: ObjectProvider<CaseDefinitionFinalizationChecker>,
+        configurationIssueRepository: CaseDefinitionConfigurationIssueRepository,
     ): CaseDefinitionService {
         return CaseDefinitionService(
             caseDefinitionListColumnRepository,
@@ -171,7 +196,8 @@ class CaseAutoConfiguration {
             authorizationService,
             applicationEventPublisher,
             caseDefinitionChecker,
-            caseDefinitionFinalizationCheckersProvider
+            caseDefinitionFinalizationCheckersProvider,
+            configurationIssueRepository
         )
     }
 
@@ -182,12 +208,14 @@ class CaseAutoConfiguration {
         environment: Environment,
         @Value("\${valtimo.draft.environments:inttest,dev,test}") draftEnvironments: String,
         @Value("\${valtimo.draft.enabled:false}") draftsEnabled: Boolean,
+        configurationIssueRepository: CaseDefinitionConfigurationIssueRepository,
     ): CaseDefinitionChecker {
         return CaseDefinitionCheckerImpl(
             caseDefinitionRepository,
             environment,
             draftEnvironments,
             draftsEnabled,
+            configurationIssueRepository,
         )
     }
 
@@ -360,10 +388,12 @@ class CaseAutoConfiguration {
         objectMapper: ObjectMapper,
         caseDefinitionRepository: CaseDefinitionRepository,
         caseDefinitionChecker: CaseDefinitionChecker,
+        applicationEventPublisher: ApplicationEventPublisher,
     ) = CaseDefinitionImporter(
         objectMapper,
         caseDefinitionRepository,
-        caseDefinitionChecker
+        caseDefinitionChecker,
+        applicationEventPublisher
     )
 
     @Bean
@@ -417,4 +447,71 @@ class CaseAutoConfiguration {
     fun caseListRowMapper(): CaseListRowMapper {
         return CaseListRowMapper()
     }
+
+    @Bean
+    @ConditionalOnMissingBean(CaseDefinitionConfigurationIssueListener::class)
+    fun caseDefinitionConfigurationIssueListener(
+        repository: CaseDefinitionConfigurationIssueRepository,
+        outboxService: OutboxService
+    ) = CaseDefinitionConfigurationIssueListener(repository, outboxService)
+
+    @Bean
+    @ConditionalOnMissingBean(ConfigurationIssueSseEventMapper::class)
+    fun configurationIssueSseEventMapper() = ConfigurationIssueSseEventMapper()
+
+    @Bean
+    @ConditionalOnMissingBean(ConfigurationIssueCaseDefinitionFinalizationChecker::class)
+    fun configurationIssueCaseDefinitionFinalizationChecker(
+        repository: CaseDefinitionConfigurationIssueRepository
+    ) = ConfigurationIssueCaseDefinitionFinalizationChecker(repository)
+
+    @Bean
+    @ConditionalOnMissingBean(StartableItemService::class)
+    fun startableItemService(
+        startableItemProviders: List<StartableItemProvider>,
+        startableItemRepository: StartableItemRepository,
+        documentService: DocumentService,
+        caseDefinitionService: CaseDefinitionService,
+    ): StartableItemService {
+        return StartableItemService(
+            startableItemProviders,
+            startableItemRepository,
+            documentService,
+            caseDefinitionService,
+        )
+    }
+
+    @Bean
+    @ConditionalOnMissingBean(StartableItemResource::class)
+    fun startableItemResource(
+        startableItemService: StartableItemService,
+    ): StartableItemResource {
+        return StartableItemResource(startableItemService)
+    }
+
+    @Bean
+    @ConditionalOnMissingBean(StartableItemManagementService::class)
+    fun startableItemManagementService(
+        startableItemProviders: List<StartableItemProvider>,
+        startableItemRepository: StartableItemRepository,
+    ): StartableItemManagementService {
+        return StartableItemManagementService(
+            startableItemProviders,
+            startableItemRepository,
+        )
+    }
+
+    @Bean
+    @ConditionalOnMissingBean(StartableItemManagementResource::class)
+    fun startableItemManagementResource(
+        startableItemManagementService: StartableItemManagementService,
+    ): StartableItemManagementResource {
+        return StartableItemManagementResource(startableItemManagementService)
+    }
+
+    @Bean
+    @ConditionalOnMissingBean(StartableItemCaseEventListener::class)
+    fun startableItemCaseEventListener(
+        startableItemRepository: StartableItemRepository,
+    ) = StartableItemCaseEventListener(startableItemRepository)
 }

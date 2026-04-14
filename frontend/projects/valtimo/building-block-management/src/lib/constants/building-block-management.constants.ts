@@ -19,6 +19,7 @@ const BUILDING_BLOCK_MANAGEMENT_TABS = {
   PROCESSES: 'process-definition',
   DOCUMENT: 'document',
   FORMS: 'forms',
+  FORM_FLOWS: 'form-flows',
 } as const;
 
 export {BUILDING_BLOCK_MANAGEMENT_TABS};

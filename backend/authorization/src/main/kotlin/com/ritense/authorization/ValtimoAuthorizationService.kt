@@ -16,6 +16,7 @@
 
 package com.ritense.authorization
 
+import com.ritense.authorization.AuthorizationContext.Companion.runWithoutAuthorization
 import com.ritense.authorization.permission.Permission
 import com.ritense.authorization.permission.PermissionRepository
 import com.ritense.authorization.request.AuthorizationRequest
@@ -95,6 +96,10 @@ class ValtimoAuthorizationService(
             ?: throw AccessDeniedException("No entity mapper found for given arguments.")
     }
 
+    override fun hasMapper(from: Class<*>, to: Class<*>): Boolean {
+        return mappers.any { it.supports(from, to) }
+    }
+
     override fun <T : Any> getAvailableActionsForResource(clazz: Class<T>): List<Action<T>> {
         return actionProviders
             .filter { (it.javaClass.genericInterfaces[0] as ParameterizedType).actualTypeArguments[0] == clazz }
@@ -115,7 +120,7 @@ class ValtimoAuthorizationService(
         val factory = (authorizationSpecificationFactories.firstOrNull {
             it.canCreate(request, permissionSupplier)
         } as AuthorizationSpecificationFactory<T>?)
-            ?: throw AccessDeniedException("No specification found for given context.")
+            ?: throw AccessDeniedException("Missing AuthorizationSpecificationFactory<${request.resourceType.name}>")
         return factory.create(request, permissionSupplier)
     }
 
@@ -123,7 +128,7 @@ class ValtimoAuthorizationService(
         val userRoles = if (context.user == null) {
             SecurityUtils.getCurrentUserRoles()
         } else {
-            userManagementService.findByUsername(context.user)
+            runWithoutAuthorization { userManagementService.findByUsername(context.user) }
                 ?.roles
                 ?: return emptyList()
         }

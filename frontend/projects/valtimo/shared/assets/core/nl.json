@@ -25,8 +25,12 @@
       "modal": {
         "confirm": "Toewijzen",
         "selectLabel": "Toewijzen aan gebruiker",
+        "selectTeamLabel": "Toewijzen aan team",
         "selectPlaceholder": "Kies een optie",
-        "title": "Wijs geselecteerde cases toe aan"
+        "title": "Wijs geselecteerde cases toe aan",
+        "warningTitle": "Waarschuwing",
+        "cannotAssignAnyWarning": "Je hebt geen toestemming om de geselecteerde dossiers toe te wijzen.",
+        "cannotAssignSomeWarning": "Je hebt geen toestemming om sommige van de geselecteerde dossiers toe te wijzen. Deze worden overgeslagen."
       }
     },
     "changePageModal": {
@@ -45,6 +49,10 @@
       "OPEN": {
         "description": "Kom later nog eens terug.",
         "title": "Alle dossiers hebben een behandelaar"
+      },
+      "TEAM": {
+        "description": "Er zijn nog geen dossiers aan je teams toegewezen.",
+        "title": "Geen teamdossiers"
       },
       "search": {
         "description": "Er zijn geen dossiers die voldoen aan je zoekcriteria.",
@@ -75,6 +83,7 @@
       "MINE": "Mijn dossiers",
       "OPEN": "Niet-toegewezen dossiers",
       "ALL": "Alle dossiers",
+      "TEAM": "Teamdossiers",
       "componentNotFound": "Tab-component niet gevonden",
       "componentNotFoundMessage": "Er is geen component beschikbaar voor dit tabblad. Neem contact op met de systeembeheerder."
     },
@@ -232,6 +241,7 @@
     "delete": "Verwijderen",
     "download": "Downloaden",
     "edit": "Bewerken",
+    "preview": "Weergeven",
     "application/octet-stream": "Onbekend",
     "application/json": "JSON",
     "application/msword": "DOC",
@@ -491,9 +501,18 @@
     "setGlobalActiveVersionErrorTitle": "Oeps",
     "setGlobalActiveVersionErrorMessage": "Er is iets misgegaan",
     "setGlobalActiveVersionSuccessTitle": "Globaal actieve versie bijgewerkt",
+    "setGlobalActiveVersionConfigurationIssuesWarning": "Deze versie heeft onopgeloste configuratieproblemen. Los deze op voordat u deze als actieve versie instelt.",
     "globallyActive": "Globaal actief",
     "unlinkProcess": "Ontkoppelen",
-    "listColumns": {"name": "Naam", "key": "Key", "version": "Versie", "draft": "Concept"},
+    "listColumns": {
+      "name": "Naam",
+      "key": "Key",
+      "version": "Versie",
+      "draft": "Concept",
+      "status": "Status"
+    },
+    "needsConfiguration": "Configuratie vereist",
+    "inactive": "Inactief",
     "globalActiveVersionModal": {
       "title": "Instellen als globaal actieve versie",
       "description": "Stel de momenteel geselecteerde versie in als de globaal actieve versie. Houd er rekening mee dat dingen kapot kunnen gaan of niet werken zoals bedoeld.",
@@ -570,10 +589,23 @@
           "description": "Beschrijving"
         }
       },
+      "importOrigin": {
+        "title": "Importherkomst",
+        "fields": {
+          "originalKey": "Oorspronkelijke sleutel",
+          "originalName": "Oorspronkelijke naam",
+          "originalVersionTag": "Oorspronkelijke versie"
+        }
+      },
       "notFinalizableWarning": {
         "title": "Deze dossierdefinitie kan niet definitief worden gemaakt.",
-        "BUILDING_BLOCK_NOT_FINAL": "De dossierdefinitie maakt gebruik van concept-bouwblokken. Om deze dossierdefinitie definitief te kunnen maken, moeten alle bouwblokken die het gebruikt definitief zijn."
+        "BUILDING_BLOCK_NOT_FINAL": "De dossierdefinitie maakt gebruik van concept-bouwblokken. Om deze dossierdefinitie definitief te kunnen maken, moeten alle bouwblokken die het gebruikt definitief zijn.",
+        "CONFIGURATION_ISSUES": "De dossierdefinitie bevat onopgeloste configuratieproblemen. Controleer en los alle configuratiewaarschuwingen op voordat u deze definitief maakt."
       }
+    },
+    "environmentConfig": {
+      "bannerTitle": "Configuratie vereist",
+      "bannerMessage": "Deze dossierdefinitie bevat verwijzingen naar configuraties die niet bestaan in deze omgeving. Controleer en werk de relevante instellingen bij."
     },
     "processLinkNotification": {
       "linkSuccess": "Proces succesvol gekoppeld",
@@ -616,6 +648,7 @@
       "general": "Algemeen",
       "cases": "Configuratie",
       "processes": "Processen",
+      "actions": "Acties",
       "document": "Document",
       "zgw": "ZGW",
       "forms": "Formulieren",
@@ -699,21 +732,55 @@
       }
     },
     "tabType": {"custom": "Inhoud", "formio": "FormIO", "standard": "Standaard"},
+    "actions": {
+      "columns": {
+        "name": "Naam",
+        "type": "Type"
+      },
+      "addItem": "Actie toevoegen",
+      "noResults": "Geen acties geconfigureerd",
+      "noResultsDescription": "Er zijn geen acties geconfigureerd voor dit dossiertype.",
+      "infoNotification": {
+        "message": "Acties verschijnen onder de startknop van een bestaand dossier en kunnen op elk moment door de gebruiker gestart worden."
+      },
+      "type": {
+        "PROCESS": "Proces",
+        "BUILDING_BLOCK": "Bouwblok"
+      },
+      "modal": {
+        "addTitle": "Actie toevoegen",
+        "addDescription": "Selecteer een proces of bouwblok dat de gebruiker kan starten",
+        "addProcessTitle": "Proces toevoegen als actie",
+        "addBuildingBlockTitle": "Bouwblok toevoegen als actie",
+        "editProcessTitle": "Procesactie bewerken",
+        "editBuildingBlockTitle": "Bouwblokactie bewerken",
+        "selectProcess": "Selecteer een proces",
+        "selectBuildingBlock": "Selecteer een bouwblok",
+        "selectProcessDescription": "Selecteer een proces dat de gebruiker kan starten",
+        "selectBuildingBlockDescription": "Selecteer een bouwblok dat de gebruiker kan starten",
+        "filterPlaceholder": "Filteren...",
+        "add": "Toevoegen",
+        "save": "Opslaan",
+        "back": "Terug",
+        "next": "Volgende",
+        "noProcessesAvailable": "Geen processen meer beschikbaar om als actie te configureren",
+        "noBuildingBlocksAvailable": "Geen bouwblokken meer beschikbaar om als actie te configureren"
+      },
+      "deleteModal": {
+        "title": "Actie verwijderen",
+        "content": "Weet u zeker dat u deze actie wilt verwijderen? Dit kan niet ongedaan worden gemaakt."
+      }
+    },
     "importDefinition": {
       "title": "Case-definitie importeren",
-      "overwriteWarning": "Als je case-definitie configuraties, modellen en/of definities bevat met een naam of identifier die al op je systeem aanwezig zijn, worden deze overschreven.",
       "startUpload": "Begin het uploaden",
-      "checkbox": {
-        "message": "Ik begrijp dat configuraties mogelijk worden overschreven",
-        "error": "Dit veld is verplicht"
-      },
       "info": {
         "title": "Let op",
         "message": "Controleer of de plugin-configuraties die gebruikt worden in de proceskoppelingen aanwezig zijn."
       },
       "upload": {
         "title": "Upload bestand",
-        "description": "De maximale bestandsgrootte is 500kb. Ondersteunde bestandstypen zijn ZIP en JSON.",
+        "description": "De maximale bestandsgrootte is 500kb. Ondersteund bestandstype is ZIP.",
         "buttonText": "Selecteer bestand"
       },
       "progressBar": {
@@ -722,9 +789,26 @@
         "finished": "Dossier-definitie succesvol geïmporteerd",
         "label": "Dossier-definitie importeren"
       },
-      "invalidJsonError": {
-        "text": "Zorg ervoor dat deze een geldige JSON-waarde bevat.",
-        "title": "Het bestand bevat een fout."
+      "invalidZipError": {
+        "title": "Ongeldig bestand",
+        "text": "Het bestand kon niet worden gelezen als een geldig case-definitie archief."
+      },
+      "configure": {
+        "draftTag": "Concept",
+        "finalTag": "Definitief",
+        "newVersionWarning": {
+          "title": "Nieuwe versie",
+          "message": "Er bestaat al een case-definitie met deze key. Dit wordt geïmporteerd als nieuwe versie."
+        },
+        "existingDraftWarning": {
+          "title": "Waarschuwing",
+          "message": "Er bestaat al een conceptversie met deze key en versie. Importeren overschrijft het bestaande concept."
+        },
+        "overrideConfirm": "Ik begrijp dat het bestaande concept wordt overschreven",
+        "existingFinalWarning": {
+          "title": "Kan niet importeren",
+          "message": "Er bestaat al een definitieve versie met deze key en versie. Wijzig de key om onder een andere naam te importeren."
+        }
       },
       "steps": {
         "accessControl": {
@@ -1042,6 +1126,15 @@
       "fieldType": "Veldtype",
       "fieldTypePlaceholder": "Voer een veldtype in",
       "fieldTypeTooltip": "Het veldtype bepaalt de waarden die de gebruiker kan invoeren. Voor de optie 'Enkel' kan de gebruiker slechts één waarde invoeren. Bij de optie 'Reeks' kan de gebruiker twee waarden invoeren. Naar deze waarden, en alle waarden daartussen, wordt vervolgens gezocht.",
+      "dropdownDataProvider": "Dropdown-databron",
+      "dropdownDataProviderPlaceholder": "Kies een databron",
+      "dropdownDataProviderTooltip": "De dropdown-databron bepaalt waar de waarden voor de dropdown vandaan komen.",
+      "dropdownValues": "Dropdown-waarden",
+      "dropdownValueKey": "Waarde",
+      "dropdownValueKeyPlaceholder": "Voer een waarde in",
+      "dropdownValueValue": "Weergave",
+      "dropdownValueValuePlaceholder": "Voer de weergegeven tekst in",
+      "addDropdownValue": "Dropdown-waarde toevoegen",
       "add": "Filter toevoegen"
     },
     "displayConditions": {
@@ -1107,6 +1200,13 @@
       "noColumns": {
         "description": "Klik hier om een kolom voor dit document te configureren",
         "title": "Er zijn geen kolommen geconfigureerd voor dit document."
+      },
+      "preview": {
+        "downloadOriginal": "Download origineel",
+        "modal": {
+          "header": "Document weergave"
+        },
+        "pdfViewerNotSupported": "Uw browser biedt geen ondersteuning voor het weergeven van PDF bestanden."
       }
     },
     "notifications": {
@@ -1225,6 +1325,12 @@
       "description": "Overzicht van alle niet toegewezen taken",
       "noResultsDescription": "Kom later nog eens terug.",
       "noResultsTitle": "Alle taken zijn al toegewezen"
+    },
+    "team": {
+      "title": "Teamtaken",
+      "description": "Overzicht van alle taken toegewezen aan je teams",
+      "noResultsDescription": "Er zijn nog geen taken aan je teams toegewezen.",
+      "noResultsTitle": "Geen teamtaken"
     },
     "all": {
       "title": "Alle taken",
@@ -1377,7 +1483,8 @@
     "selectZakenApiPlugin": "Kies Zaken Api plugin",
     "zakenApiPlugin": "Zaken Api plugin",
     "rsin": "RSIN gebruikt bij aanmaken zaak",
-    "selectInfoObjectType": "Kies informatieobject-type"
+    "selectInfoObjectType": "Kies informatieobject-type",
+    "configurationIssue": "Deze configuratie is niet volledig. Controleer en werk de instellingen bij zodat ze overeenkomen met deze omgeving."
   },
   "zaakdetails": {
     "title": "Zaakdetails-synchronisatie",
@@ -1391,7 +1498,8 @@
       "objectManagementConfiguration": "Object management-configuratie",
       "objectManagementConfigurationPlaceholder": "Selecteer een object management-configuratie",
       "enabled": "Ingeschakeld"
-    }
+    },
+    "configurationIssue": "Deze configuratie is niet volledig. Controleer en werk de instellingen bij zodat ze overeenkomen met deze omgeving."
   },
   "interface": {
     "icon": "Icoon",
@@ -1520,10 +1628,11 @@
     "taskCreated": "Aangemaakt op",
     "taskCompleted": "is succesvol afgerond",
     "assignedNotificationTitle": "Taak toegewezen",
-    "assignedNotificationContent": "De taak is toegewezen aan",
     "unassignedNotificationTitle": "Taak niet meer toegewezen",
-    "unassignedNotificationContent": "De taak is niet meer aan iemand toegewezen",
-    "unknownAssignee": "onbekend"
+    "dueDateSetNotificationTitle": "Einddatum ingesteld",
+    "dueDateSetNotificationContent": "Einddatum '{{date}}' ingesteld voor taak '{{task}}'",
+    "dueDateRemovedNotificationTitle": "Einddatum verwijderd",
+    "dueDateRemovedNotificationContent": "Einddatum verwijderd voor taak '{{task}}'"
   },
   "assignTask": {
     "assignedTo": "Toegewezen aan",
@@ -1532,15 +1641,33 @@
     "remove": "Toewijzing ongedaan maken",
     "save": "Opslaan",
     "fetchingUsers": "Gebruikers ophalen...",
-    "buttonText": "Gebruiker toewijzen",
+    "buttonText": "Toewijzen",
+    "assignToMe": "Aan mij toewijzen",
+    "assignToOtherUser": "Aan andere gebruiker toewijzen",
     "submitButtonText": "Gebruiker toewijzen aan taak",
-    "comboboxLabel": "Selecteer gebruiker om toe te wijzen"
+    "comboboxLabel": "Selecteer gebruiker om toe te wijzen",
+    "edit": "Bewerken",
+    "clickToEdit": "Klik om te bewerken"
   },
   "assignDocument": {
     "assignedTo": "Toegewezen aan ",
-    "header": "Gebruiker toewijzen aan dit dossier",
+    "header": "Gebruiker toewijzen",
     "remove": "Toewijzing ongedaan maken",
-    "fetchingUsers": "Gebruikers ophalen..."
+    "fetchingUsers": "Gebruikers ophalen...",
+    "submitButtonText": "Gebruiker toewijzen aan dossier"
+  },
+  "assignment": {
+    "assignThisCase": "Dossier toewijzen",
+    "assignThisTask": "Taak toewijzen",
+    "clickToEdit": "Klik om te bewerken",
+    "selectUser": "Selecteer gebruiker",
+    "selectTeam": "Selecteer team",
+    "confirm": "Bevestigen",
+    "update": "Bijwerken",
+    "unassign": "Toewijzing ongedaan maken",
+    "unassignAll": "Alles vrijgeven",
+    "loading": "Laden...",
+    "me": "mij"
   },
   "dropzone": {
     "drop": "Kies een bestand, of sleep het hier naartoe",
@@ -1841,7 +1968,8 @@
       "objecttypeVersion": "Objecttype versie",
       "formDefinitionView": "View formulier definitie",
       "formDefinitionEdit": "Wijzig formulier definitie",
-      "showInDataMenu": "Toon in menu"
+      "showInDataMenu": "Toon in menu",
+      "suppressOutbox": "Outbox onderdrukken"
     },
     "tooltips": {
       "title": "De naam van deze configuratie. Onder deze naam is deze configuratie terug te vinden in de rest van de applicatie.",
@@ -1849,7 +1977,8 @@
       "objecttypeVersion": "De versie van het objecttype",
       "formDefinitionView": "De naam van de formio IO definitie die wordt gebruikt om het object weer te geven.",
       "formDefinitionEdit": "De naam van de formio IO definitie die wordt gebruikt om het object te bewerken.",
-      "showInDataMenu": "Geeft aan of het objecttype in het menu zichtbaar is"
+      "showInDataMenu": "Geeft aan of het objecttype in het menu zichtbaar is",
+      "suppressOutbox": "Wanneer ingeschakeld, wordt de outbox-flow overgeslagen bij leesacties voor dit objecttype."
     },
     "cancel": "Annuleren",
     "add": "Object toevoegen",
@@ -1887,7 +2016,9 @@
   },
   "processLinkConfiguration": {
     "configureStep": "Processtap configureren",
+    "buildingBlockActionTitle": "Bouwblokactie: {{buildingBlockName}}",
     "modalTitle": "Processtap: {{processStepName}}",
+    "pluginConfiguration": "Plugin configuratie: {{pluginConfigTitle}}",
     "chooseProcessLinkTypeDescription": "Een processtap kan verschillende acties uitvoeren. Kies hieronder aan welk type actie je deze stap wilt koppelen.",
     "chooseFormDescription": "Kies hier het formulier dat je aan de processtap wilt koppelen.",
     "chooseFormFlowDescription": "Kies hier de FormFlow die je aan de processtap wilt koppelen.",
@@ -2054,7 +2185,7 @@
     "savedSuccessTitleMessage": "{{key}} is succesvol opgeslagen",
     "noResults": {
       "description": "Klik op <strong>Nieuwe form flow toevoegen</strong> om te beginnen met het ontwerpen van je form flow",
-      "title": "Geen formulierstromen toegevoegd"
+      "title": "Geen form flows toegevoegd"
     }
   },
   "taskManagement": {
@@ -2088,10 +2219,13 @@
     "stacktrace": "Stacktrace"
   },
   "setTaskDueDate": {
+    "label": "Selecteer datum",
     "buttonText": "Stel einddatum in",
     "submitButtonText": "Stel einddatum in",
     "dueDateText": "Einddatum:",
-    "removeButtonText": "Einddatum verwijderen"
+    "removeButtonText": "Einddatum verwijderen",
+    "edit": "Bewerken",
+    "clickToEdit": "Klik om te bewerken"
   },
   "processStartSuccessful": "{{processName}} is succesvol gestart",
   "widgets": {
@@ -2283,7 +2417,8 @@
       "general": "Algemeen",
       "document": "Document",
       "processes": "Processen",
-      "forms": "Formulieren"
+      "forms": "Formulieren",
+      "formFlows": "Form flows"
     },
     "formDefinition": {
       "name": "Naam"
@@ -2552,5 +2687,56 @@
     "rootObject": "Hoofdniveau",
     "manageRequiredFields": "Vereiste velden beheren",
     "requiredFields": "Vereiste velden"
+  },
+  "teams": {
+    "title": "Teams",
+    "listColumns": {
+      "name": "Naam",
+      "members": "Leden"
+    },
+    "newTeam": "Nieuw team",
+    "noResults": {
+      "title": "Er zijn geen teams",
+      "description": "Er zijn nog geen teams aangemaakt"
+    },
+    "createEditModal": {
+      "createTitle": "Nieuw team aanmaken",
+      "editTitle": "Team bewerken",
+      "createDescription": "Maak een nieuw team van gebruikers aan om toe te wijzen aan dossiers en taken",
+      "teamName": "Teamnaam",
+      "teamNamePlaceholder": "Teamnaam",
+      "create": "Team aanmaken",
+      "save": "Team opslaan"
+    },
+    "deleteModal": {
+      "title": "Team verwijderen",
+      "content": "Weet u zeker dat u dit team wilt verwijderen? Deze actie kan niet ongedaan worden gemaakt."
+    },
+    "detail": {
+      "title": "Team detail",
+      "more": "Meer",
+      "editTeam": "Team bewerken",
+      "deleteTeam": "Team verwijderen",
+      "addMember": "Lid toevoegen",
+      "removeMember": "Lid verwijderen",
+      "memberColumns": {
+        "name": "Naam",
+        "email": "E-mail"
+      },
+      "noMembers": {
+        "title": "Er zijn geen leden",
+        "description": "Er zijn nog geen leden aan dit team toegevoegd"
+      },
+      "addMemberModal": {
+        "selectMember": "Selecteer lid",
+        "selectMemberPlaceholder": "Kies optie(s)",
+        "noUsersAvailable": "Geen beschikbare gebruikers gevonden",
+        "addToTeam": "Toevoegen aan team"
+      },
+      "removeMemberModal": {
+        "title": "Lid verwijderen",
+        "content": "Weet u zeker dat u dit lid uit het team wilt verwijderen?"
+      }
+    }
   }
 }

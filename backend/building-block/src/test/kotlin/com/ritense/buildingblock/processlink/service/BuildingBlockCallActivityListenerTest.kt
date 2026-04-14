@@ -29,6 +29,7 @@ import com.ritense.processlink.service.ProcessLinkService
 import com.ritense.valtimo.contract.buildingblock.BuildingBlockDefinitionId
 import com.ritense.valtimo.contract.json.MapperSingleton
 import com.ritense.valtimo.contract.process.ProcessConstants.OPERATON_CASE_DEFINITION_VERSION_TAG_PREFIX
+import com.ritense.valtimo.event.OperatonExecutionEvent
 import com.ritense.valtimo.operaton.domain.OperatonProcessDefinition
 import com.ritense.valtimo.operaton.service.OperatonRepositoryService
 import com.ritense.valueresolver.ValueResolverService
@@ -50,14 +51,14 @@ import java.util.UUID
 class BuildingBlockCallActivityListenerTest {
 
     private val processLinkService = mock<ProcessLinkService>()
-    private val buidingBlockInstanceService = mock<BuildingBlockInstanceService>()
+    private val buildingBlockInstanceService = mock<BuildingBlockInstanceService>()
     private val valueResolverService = mock<ValueResolverService>()
     private val objectMapper = MapperSingleton.get()
     private val operatonRepositoryService = mock<OperatonRepositoryService>()
 
     private val listener = BuildingBlockCallActivityListener(
         processLinkService,
-        buidingBlockInstanceService,
+        buildingBlockInstanceService,
         valueResolverService,
         objectMapper,
         operatonRepositoryService,
@@ -70,8 +71,10 @@ class BuildingBlockCallActivityListenerTest {
         val execution = mock<DelegateExecution> {
             on { currentActivityId } doReturn "callActivity"
             on { processDefinitionId } doReturn "case-process"
+            on { processInstanceId } doReturn "case-process-instance"
             on { businessKey } doReturn caseDocumentId.toString()
             on { processBusinessKey } doReturn caseDocumentId.toString()
+            on { this.eventName } doReturn "start"
         }
         val inputMappings = listOf(
             BuildingBlockInputMapping(
@@ -89,12 +92,12 @@ class BuildingBlockCallActivityListenerTest {
             inputMappings = inputMappings
         )
         whenever(processLinkService.getProcessLinks("case-process", "callActivity")).thenReturn(listOf(link))
-        whenever(valueResolverService.resolveValues(caseDocumentId.toString(), inputMappings.map { it.source }))
+        whenever(valueResolverService.resolveValues(eq(caseDocumentId.toString()), eq(inputMappings.map { it.source })))
             .thenReturn(mapOf("doc:/person/name" to "Ada Lovelace"))
 
         whenever(buildingBlockInstance.documentId).thenReturn(UUID.randomUUID())
 
-        whenever(buidingBlockInstanceService.getByDocumentId(caseDocumentId)).thenReturn(null)
+        whenever(buildingBlockInstanceService.getByDocumentId(caseDocumentId)).thenReturn(null)
 
         val processDefinition = mock<OperatonProcessDefinition> {
             on { versionTag } doReturn "${OPERATON_CASE_DEFINITION_VERSION_TAG_PREFIX}my-case:1.0.0"
@@ -103,16 +106,18 @@ class BuildingBlockCallActivityListenerTest {
 
         val requestCaptor = argumentCaptor<NewDocumentRequest>()
         whenever(
-            buidingBlockInstanceService.create(
+            buildingBlockInstanceService.create(
                 requestCaptor.capture(),
                 eq(caseDocumentId),
                 eq("callActivity"),
-                isNull()
+                isNull(),
+                isNull(),
+                eq("case-process")
             )
         )
         .thenReturn(buildingBlockInstance)
 
-        listener.onCallActivityStart(execution)
+        listener.onCallActivityStart(OperatonExecutionEvent(execution))
 
         val capturedContent = requestCaptor.firstValue.content()
         assertThat(capturedContent.get("name").asText()).isEqualTo("Ada Lovelace")
@@ -150,8 +155,10 @@ class BuildingBlockCallActivityListenerTest {
         val execution = mock<DelegateExecution> {
             on { currentActivityId } doReturn "nestedCallActivity"
             on { processDefinitionId } doReturn "parent-bb-process"
+            on { processInstanceId } doReturn "parent-bb-process-instance"
             on { businessKey } doReturn parentBBDocumentId.toString()
             on { processBusinessKey } doReturn parentBBDocumentId.toString()
+            on { this.eventName } doReturn "start"
         }
 
         val inputMappings = listOf(
@@ -170,24 +177,26 @@ class BuildingBlockCallActivityListenerTest {
             inputMappings = inputMappings
         )
         whenever(processLinkService.getProcessLinks("parent-bb-process", "nestedCallActivity")).thenReturn(listOf(link))
-        whenever(valueResolverService.resolveValues(parentBBDocumentId.toString(), inputMappings.map { it.source }))
+        whenever(valueResolverService.resolveValues(eq(parentBBDocumentId.toString()), eq(inputMappings.map { it.source })))
             .thenReturn(mapOf("doc:/data" to "parent data"))
 
         // Parent BB instance is found because we're calling from a BB process
-        whenever(buidingBlockInstanceService.getByDocumentId(parentBBDocumentId)).thenReturn(parentBBInstance)
+        whenever(buildingBlockInstanceService.getByDocumentId(parentBBDocumentId)).thenReturn(parentBBInstance)
 
         val requestCaptor = argumentCaptor<NewDocumentRequest>()
         whenever(
-            buidingBlockInstanceService.create(
+            buildingBlockInstanceService.create(
                 requestCaptor.capture(),
                 eq(caseDocumentId),  // Root case document ID from parent chain
                 eq("nestedCallActivity"),
-                eq(parentBBInstanceId)  // Parent building block instance ID
+                eq(parentBBInstanceId),  // Parent building block instance ID
+                isNull(),
+                eq("parent-bb-process")
             )
         )
         .thenReturn(newBBInstance)
 
-        listener.onCallActivityStart(execution)
+        listener.onCallActivityStart(OperatonExecutionEvent(execution))
 
         val capturedContent = requestCaptor.firstValue.content()
         assertThat(capturedContent.get("input").asText()).isEqualTo("parent data")
@@ -199,12 +208,13 @@ class BuildingBlockCallActivityListenerTest {
             on { currentActivityId } doReturn "callActivity"
             on { processDefinitionId } doReturn "case-process"
             on { businessKey } doReturn UUID.randomUUID().toString()
+            on { this.eventName } doReturn "start"
         }
         whenever(processLinkService.getProcessLinks("case-process", "callActivity")).thenReturn(emptyList())
 
-        listener.onCallActivityStart(execution)
+        listener.onCallActivityStart(OperatonExecutionEvent(execution))
 
-        verify(buidingBlockInstanceService, never()).create(any(), any(), any(), any())
+        verify(buildingBlockInstanceService, never()).create(any(), any(), any(), any(), any(), any())
     }
 
     @Test
@@ -217,6 +227,7 @@ class BuildingBlockCallActivityListenerTest {
             on { businessKey } doReturn caseDocumentId.toString()
             on { processDefinitionId } doReturn testProcessDefinitionId
             on { getVariableLocal("buildingBlockDocumentId") } doReturn buildingBlockDocumentId.toString()
+            on { this.eventName } doReturn "start"
         }
 
         val buildingBlockDefinitionId = BuildingBlockDefinitionId.of("bb", "1.0.0")
@@ -229,7 +240,7 @@ class BuildingBlockCallActivityListenerTest {
             null,
             false
         )
-        whenever(buidingBlockInstanceService.getByDocumentId(buildingBlockDocumentId)).thenReturn(
+        whenever(buildingBlockInstanceService.getByDocumentId(buildingBlockDocumentId)).thenReturn(
             BuildingBlockInstance(
                 documentId = buildingBlockDocumentId,
                 caseDocumentId = caseDocumentId,
@@ -268,7 +279,7 @@ class BuildingBlockCallActivityListenerTest {
             )
         ).thenReturn(mapOf("doc:/result" to "value"))
 
-        listener.onCallActivityEnd(execution)
+        listener.onCallActivityEnd(OperatonExecutionEvent(execution))
 
         verify(valueResolverService).handleValues(caseDocumentId, mapOf("doc:/result" to "value"))
     }

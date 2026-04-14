@@ -18,10 +18,14 @@ package com.ritense.case.web.rest
 
 import com.ritense.authorization.annotation.RunWithoutAuthorization
 import com.ritense.case.exception.UnknownCaseDefinitionException
+import com.ritense.case.repository.CaseDefinitionConfigurationIssueRepository
+import com.ritense.case.service.CaseDefinitionImportPreviewService
 import com.ritense.case.service.CaseDefinitionService
 import com.ritense.case.service.finalization.CaseDefinitionFinalizationCheckResult
 import com.ritense.case.web.rest.dto.CaseDefinitionCheckResponse
+import com.ritense.case.web.rest.dto.CaseDefinitionConfigurationIssueDto
 import com.ritense.case.web.rest.dto.CaseDefinitionDraftCreateRequest
+import com.ritense.case.web.rest.dto.CaseDefinitionImportPreviewResponse
 import com.ritense.case.web.rest.dto.CaseDefinitionImportResponse
 import com.ritense.case.web.rest.dto.CaseDefinitionResponseDto
 import com.ritense.case.web.rest.dto.CaseDefinitionSettingsResponseDto
@@ -75,6 +79,8 @@ class CaseDefinitionResource(
     private val importService: ImportService,
     private val caseDefinitionRepository: CaseDefinitionRepository,
     private val caseDefinitionChecker: CaseDefinitionChecker,
+    private val configurationIssueRepository: CaseDefinitionConfigurationIssueRepository,
+    private val caseDefinitionImportPreviewService: CaseDefinitionImportPreviewService,
 ) {
 
     @RunWithoutAuthorization
@@ -158,13 +164,21 @@ class CaseDefinitionResource(
             SortDefault(sort = ["active", "id.versionTag"], direction = Sort.Direction.DESC)
         ) pageable: Pageable
     ): ResponseEntity<Page<CaseDefinitionResponseDto>> {
-        val caseDefinitions = service.getCaseDefinitions(
+        val caseDefinitions = service.getCaseDefinitionsForManagement(
             caseDefinitionKey = caseDefinitionKey,
             active = active,
             final = final,
             pageable = pageable
         )
-        return ResponseEntity.ok(caseDefinitions.map { CaseDefinitionResponseDto.of(it) })
+        val caseDefinitionIds = caseDefinitions.content.map { it.id }
+        val idsWithIssues = if (caseDefinitionIds.isNotEmpty()) {
+            configurationIssueRepository.findCaseDefinitionIdsWithUnresolvedIssues(caseDefinitionIds)
+        } else {
+            emptySet()
+        }
+        return ResponseEntity.ok(caseDefinitions.map {
+            CaseDefinitionResponseDto.of(it, hasConfigurationIssues = it.id in idsWithIssues)
+        })
     }
 
     @RunWithoutAuthorization
@@ -362,20 +376,52 @@ class CaseDefinitionResource(
             .body(baos.toByteArray())
     }
 
+    @PostMapping("/management/v1/case/import/preview")
+    @RunWithoutAuthorization
+    fun importPreview(
+        @RequestParam("file") file: MultipartFile
+    ): ResponseEntity<CaseDefinitionImportPreviewResponse> {
+        return try {
+            val preview = caseDefinitionImportPreviewService.preview(file.inputStream)
+            ResponseEntity.ok(preview)
+        } catch (exception: ImportServiceException) {
+            logger.info(exception) { "Import preview failed" }
+            ResponseEntity.badRequest().build()
+        }
+    }
+
     @PostMapping("/management/v1/case/import")
     @RunWithoutAuthorization
     fun import(
-        @RequestParam("file") file: MultipartFile
+        @RequestParam("file") file: MultipartFile,
+        @RequestParam("key", required = false) key: String?,
+        @RequestParam("name", required = false) name: String?,
     ): ResponseEntity<CaseDefinitionImportResponse> {
         return try {
             val skipImportOfCaseDefinitions = caseDefinitionRepository.findAllByFinalTrue().map { it.id }
-            val caseDefinitionId = importService.import(file.inputStream, skipImportOfCaseDefinitions)
+            val caseDefinitionId = importService.import(
+                file.inputStream,
+                skipImportOfCaseDefinitions,
+                key,
+                name,
+            )
             service.setLatestToActiveIfNoneIsActive()
             ResponseEntity.ok(CaseDefinitionImportResponse(caseDefinitionId))
         } catch (exception: ImportServiceException) {
             logger.info(exception) { "Import failed" }
             ResponseEntity.badRequest().build()
         }
+    }
+
+    @RunWithoutAuthorization
+    @GetMapping("/management/v1/case-definition/{caseDefinitionKey}/version/{caseDefinitionVersionTag}/configuration-issues")
+    fun getConfigurationIssues(
+        @LoggableResource("caseDefinitionKey") @PathVariable caseDefinitionKey: String,
+        @LoggableResource("caseDefinitionVersionTag") @PathVariable caseDefinitionVersionTag: String,
+    ): ResponseEntity<List<CaseDefinitionConfigurationIssueDto>> {
+        val caseDefinitionId = CaseDefinitionId.of(caseDefinitionKey, caseDefinitionVersionTag)
+        val issues = configurationIssueRepository.findAllByCaseDefinitionId(caseDefinitionId)
+        return ResponseEntity.ok(issues.map { CaseDefinitionConfigurationIssueDto.of(it) })
     }
 
     @RunWithoutAuthorization

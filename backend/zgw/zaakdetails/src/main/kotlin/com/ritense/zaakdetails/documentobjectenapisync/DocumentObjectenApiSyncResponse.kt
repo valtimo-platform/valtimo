@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -39,7 +39,7 @@ class DocumentObjectenApiSyncResponse(
             sync: DocumentObjectenApiSync,
             objectManagementInfo: ObjectManagementInfo,
         ): DocumentObjectenApiSyncResponse = DocumentObjectenApiSyncResponse(
-            objectManagementConfigurationId = sync.objectManagementConfigurationId,
+            objectManagementConfigurationId = sync.objectManagementConfigurationId!!,
             objectManagementConfigurationTitle = objectManagementInfo.title,
             objectManagementConfigurationObjecttypeVersion = objectManagementInfo.objecttypeVersion,
             enabled = sync.enabled,

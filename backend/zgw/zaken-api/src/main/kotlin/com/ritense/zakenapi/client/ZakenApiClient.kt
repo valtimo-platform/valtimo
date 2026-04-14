@@ -23,21 +23,21 @@ import com.ritense.outbox.OutboxService
 import com.ritense.resource.authorization.ResourcePermission
 import com.ritense.resource.authorization.ResourcePermissionActionProvider
 import com.ritense.zakenapi.ZakenApiAuthentication
+import com.ritense.zakenapi.domain.CreateZaakNotitieRequest
 import com.ritense.zakenapi.domain.CreateZaakRequest
 import com.ritense.zakenapi.domain.CreateZaakResultaatRequest
 import com.ritense.zakenapi.domain.CreateZaakResultaatResponse
 import com.ritense.zakenapi.domain.CreateZaakStatusRequest
 import com.ritense.zakenapi.domain.CreateZaakStatusResponse
 import com.ritense.zakenapi.domain.CreateZaakeigenschapRequest
+import com.ritense.zakenapi.domain.GetZaakResultatenRequest
+import com.ritense.zakenapi.domain.PatchZaakNotitieRequest
 import com.ritense.zakenapi.domain.PatchZaakRequest
+import com.ritense.zakenapi.domain.PutZaakNotitieRequest
 import com.ritense.zakenapi.domain.SearchParameter
 import com.ritense.zakenapi.domain.UpdateZaakeigenschapRequest
 import com.ritense.zakenapi.domain.ZaakInformatieObject
 import com.ritense.zakenapi.domain.ZaakNotitie
-import com.ritense.zakenapi.domain.CreateZaakNotitieRequest
-import com.ritense.zakenapi.domain.GetZaakResultatenRequest
-import com.ritense.zakenapi.domain.PatchZaakNotitieRequest
-import com.ritense.zakenapi.domain.PutZaakNotitieRequest
 import com.ritense.zakenapi.domain.ZaakObject
 import com.ritense.zakenapi.domain.ZaakResponse
 import com.ritense.zakenapi.domain.ZaakResultaat
@@ -54,14 +54,22 @@ import com.ritense.zakenapi.domain.zaakobjectrequest.ZaakObjectRequest
 import com.ritense.zakenapi.domain.zaakobjectrequest.ZaakObjectType
 import com.ritense.zakenapi.event.DocumentLinkedToZaak
 import com.ritense.zakenapi.event.ZaakCreated
+import com.ritense.zakenapi.event.ZaakInformatieObjectListed
 import com.ritense.zakenapi.event.ZaakInformatieObjectenListed
 import com.ritense.zakenapi.event.ZaakListed
+import com.ritense.zakenapi.event.ZaakNotitieCreated
+import com.ritense.zakenapi.event.ZaakNotitieDeleted
+import com.ritense.zakenapi.event.ZaakNotitiePatched
+import com.ritense.zakenapi.event.ZaakNotitieUpdated
+import com.ritense.zakenapi.event.ZaakNotitieViewed
+import com.ritense.zakenapi.event.ZaakNotitiesListed
 import com.ritense.zakenapi.event.ZaakObjectCreated
 import com.ritense.zakenapi.event.ZaakObjectViewed
 import com.ritense.zakenapi.event.ZaakObjectenListed
 import com.ritense.zakenapi.event.ZaakOpschortingUpdated
 import com.ritense.zakenapi.event.ZaakPatched
 import com.ritense.zakenapi.event.ZaakResultaatCreated
+import com.ritense.zakenapi.event.ZaakResultaatDeleted
 import com.ritense.zakenapi.event.ZaakResultaatViewed
 import com.ritense.zakenapi.event.ZaakRolCreated
 import com.ritense.zakenapi.event.ZaakRolDeleted
@@ -75,13 +83,6 @@ import com.ritense.zakenapi.event.ZaakeigenschapCreated
 import com.ritense.zakenapi.event.ZaakeigenschapDeleted
 import com.ritense.zakenapi.event.ZaakeigenschapListed
 import com.ritense.zakenapi.event.ZaakeigenschapUpdated
-import com.ritense.zakenapi.event.ZaakNotitieCreated
-import com.ritense.zakenapi.event.ZaakNotitieDeleted
-import com.ritense.zakenapi.event.ZaakNotitiePatched
-import com.ritense.zakenapi.event.ZaakNotitieUpdated
-import com.ritense.zakenapi.event.ZaakNotitieViewed
-import com.ritense.zakenapi.event.ZaakNotitiesListed
-import com.ritense.zakenapi.event.ZaakResultaatDeleted
 import com.ritense.zakenapi.exception.ZaakRolNotUpdatedException
 import com.ritense.zgw.ClientTools
 import com.ritense.zgw.Page
@@ -93,7 +94,6 @@ import org.springframework.http.HttpHeaders
 import org.springframework.http.MediaType
 import org.springframework.web.client.RestClient
 import org.springframework.web.client.body
-import kotlin.toString
 
 class ZakenApiClient(
     private val restClientBuilder: RestClient.Builder,
@@ -105,14 +105,15 @@ class ZakenApiClient(
 ) {
     fun linkDocument(
         authentication: ZakenApiAuthentication,
+        caseDocumentId: UUID,
         baseUrl: URI,
-        request: LinkDocumentRequest
+        request: LinkDocumentRequest,
     ): LinkDocumentResult {
         authorizationService.requirePermission(
             EntityAuthorizationRequest(
                 ResourcePermission::class.java,
                 ResourcePermissionActionProvider.CREATE,
-                ResourcePermission()
+                ResourcePermission(caseDocumentId)
             )
         )
 
@@ -138,7 +139,7 @@ class ZakenApiClient(
         authentication: ZakenApiAuthentication,
         baseUrl: URI,
         zaakUrl: URI,
-        page: Int
+        page: Int,
     ): Page<ZaakObject> {
         val result = buildRestClient(authentication)
             .get()
@@ -160,7 +161,7 @@ class ZakenApiClient(
         authentication: ZakenApiAuthentication,
         baseUrl: URI,
         zaakUrl: URI,
-        objectUrl: URI
+        objectUrl: URI,
     ): ZaakObject? {
         val result = buildRestClient(authentication)
             .get()
@@ -182,6 +183,7 @@ class ZakenApiClient(
 
     fun getZaakInformatieObjecten(
         authentication: ZakenApiAuthentication,
+        caseDocumentId: UUID?,
         baseUrl: URI,
         zaakUrl: URI? = null,
         informatieobjectUrl: URI? = null,
@@ -190,7 +192,7 @@ class ZakenApiClient(
                 EntityAuthorizationRequest(
                     ResourcePermission::class.java,
                     ResourcePermissionActionProvider.VIEW_LIST,
-                    ResourcePermission()
+                    ResourcePermission(caseDocumentId)
                 )
             )
         ) {
@@ -219,12 +221,41 @@ class ZakenApiClient(
         return result
     }
 
+    fun getZaakInformatieObject(
+        authentication: ZakenApiAuthentication,
+        baseUrl: URI,
+        zaakInformatieobjectUrl: URI,
+        caseDocumentId: UUID,
+    ): ZaakInformatieObject {
+        validateUrlHost(baseUrl, zaakInformatieobjectUrl)
+
+        authorizationService.requirePermission(
+            EntityAuthorizationRequest(
+                ResourcePermission::class.java,
+                ResourcePermissionActionProvider.VIEW,
+                ResourcePermission(caseDocumentId)
+            )
+        )
+
+        val result = buildRestClient(authentication)
+            .get()
+            .uri {
+                ClientTools.baseUrlToBuilder(it, zaakInformatieobjectUrl)
+                    .build()
+            }
+            .retrieve()
+            .body<ZaakInformatieObject>()!!
+
+        outboxService.send { ZaakInformatieObjectListed(objectMapper.valueToTree(result)) }
+        return result
+    }
+
     fun getZaakRollen(
         authentication: ZakenApiAuthentication,
         baseUrl: URI,
         zaakUrl: URI,
         page: Int,
-        omschrijvingGeneriek: RolTypeGeneriekeBeschrijving? = null
+        omschrijvingGeneriek: RolTypeGeneriekeBeschrijving? = null,
     ): Page<Rol> {
         val result = buildRestClient(authentication)
             .get()
@@ -250,7 +281,7 @@ class ZakenApiClient(
     fun createZaakRol(
         authentication: ZakenApiAuthentication,
         baseUrl: URI,
-        rol: Rol
+        rol: Rol,
     ): Rol {
         val result = buildRestClient(authentication)
             .post()
@@ -295,7 +326,7 @@ class ZakenApiClient(
         authentication: ZakenApiAuthentication,
         baseUrl: URI,
         rolUuid: UUID,
-        rol: Rol
+        rol: Rol,
     ): Rol {
         val result = buildRestClient(authentication)
             .put()
@@ -693,7 +724,12 @@ class ZakenApiClient(
         return result
     }
 
-    fun deleteZaakInformatieObject(authentication: ZakenApiAuthentication, baseUrl: URI, zaakInformatieobjectUrl: URI) {
+    fun deleteZaakInformatieObject(
+        authentication: ZakenApiAuthentication,
+        baseUrl: URI,
+        zaakInformatieobjectUrl: URI,
+        caseDocumentId: UUID?
+    ) {
         require(zaakInformatieobjectUrl.toString().startsWith(baseUrl.toString())) {
             "zaakInformatieobjectUrl '$zaakInformatieobjectUrl' does not start with baseUrl '$baseUrl'"
         }
@@ -701,7 +737,7 @@ class ZakenApiClient(
             EntityAuthorizationRequest(
                 ResourcePermission::class.java,
                 ResourcePermissionActionProvider.DELETE,
-                ResourcePermission()
+                ResourcePermission(caseDocumentId)
             )
         )
 
@@ -738,7 +774,7 @@ class ZakenApiClient(
     fun createZaakObject(
         authentication: ZakenApiAuthentication,
         baseUrl: URI,
-        request: com.ritense.zakenapi.domain.ZaakObjectRequest
+        request: com.ritense.zakenapi.domain.ZaakObjectRequest,
     ): ZaakObject {
         val convertedRequest: ZaakObjectRequest = if (request.objectType == ZaakObjectType.OVERIGE.value) {
             ZaakObjectOverigeRequest(
@@ -760,7 +796,7 @@ class ZakenApiClient(
     fun createZaakObject(
         authentication: ZakenApiAuthentication,
         baseUrl: URI,
-        request: ZaakObjectRequest
+        request: ZaakObjectRequest,
     ): ZaakObject {
         validateUrlHost(baseUrl, request.zaakUrl)
         requireNotNull(request.zaakUrl)
@@ -815,7 +851,7 @@ class ZakenApiClient(
         authentication: ZakenApiAuthentication,
         baseUrl: URI,
         notitieUrl: URI,
-        request: PutZaakNotitieRequest
+        request: PutZaakNotitieRequest,
     ): ZaakNotitie {
         validateUrlHost(baseUrl, notitieUrl)
         validateUrlHost(baseUrl, request.gerelateerdAan)
@@ -842,7 +878,7 @@ class ZakenApiClient(
         authentication: ZakenApiAuthentication,
         baseUrl: URI,
         notitieUrl: URI,
-        request: PatchZaakNotitieRequest
+        request: PatchZaakNotitieRequest,
     ): ZaakNotitie {
         validateUrlHost(baseUrl, notitieUrl)
         if (request.gerelateerdAan != null) {
@@ -870,7 +906,7 @@ class ZakenApiClient(
     fun deleteZaakNotitie(
         authentication: ZakenApiAuthentication,
         baseUrl: URI,
-        notitieUrl: URI
+        notitieUrl: URI,
     ) {
         validateUrlHost(baseUrl, notitieUrl)
         buildRestClient(authentication)
@@ -891,7 +927,7 @@ class ZakenApiClient(
     fun getZaakNotitie(
         authentication: ZakenApiAuthentication,
         baseUrl: URI,
-        zaakNotitieUrl: URI
+        zaakNotitieUrl: URI,
     ): ZaakNotitie {
         validateUrlHost(baseUrl, zaakNotitieUrl)
         return buildRestClient(authentication)
@@ -913,7 +949,7 @@ class ZakenApiClient(
         authentication: ZakenApiAuthentication,
         baseUrl: URI,
         zaakUrl: URI,
-        page: Int
+        page: Int,
     ): Page<ZaakNotitie> {
         validateUrlHost(baseUrl, zaakUrl)
         return buildRestClient(authentication)

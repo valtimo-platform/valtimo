@@ -51,6 +51,7 @@ import {VerzoekPluginService} from '../../services';
 import {ProcessService} from '@valtimo/process';
 import {DataTable16} from '@carbon/icons';
 import {IconService} from 'carbon-components-angular';
+import {VERZOEK_CONFIGURATION_TEST_IDS} from '../../../../constants';
 
 @Component({
   standalone: false,
@@ -69,6 +70,7 @@ export class VerzoekConfigurationComponent
   @Input() prefillConfiguration$: Observable<VerzoekConfig>;
   @Output() valid: EventEmitter<boolean> = new EventEmitter<boolean>();
   @Output() configuration: EventEmitter<VerzoekConfig> = new EventEmitter<VerzoekConfig>();
+  protected readonly testIds = VERZOEK_CONFIGURATION_TEST_IDS;
 
   mappedPrefill$: Observable<VerzoekConfig>;
 
@@ -102,10 +104,12 @@ export class VerzoekConfigurationComponent
     .getProcessDefinitions()
     .pipe(
       map(processDefinitions =>
-        processDefinitions.map(processDefinition => ({
-          id: processDefinition.key,
-          text: processDefinition.name ?? '',
-        }))
+        processDefinitions
+          .filter(processDefinitions => !!processDefinitions?.key)
+          .map(processDefinition => ({
+            id: processDefinition.key,
+            text: processDefinition.name ?? `<${processDefinition.key}>`,
+          }))
       )
     );
 

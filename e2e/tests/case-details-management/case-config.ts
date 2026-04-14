@@ -60,8 +60,3 @@ export const caseExternalFormConfiguration = {
   description: 'Google link',
 };
 
-//Should probably come from the environment
-export enum CASE_VERSIONS {
-  STABLE = '1.0.0',
-  DRAFT = '1.0.1',
-}

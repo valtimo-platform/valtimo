@@ -74,13 +74,16 @@ public class ProcessDocumentResource {
         this.activeCaseDefinitionService = activeCaseDefinitionService;
     }
 
+    @Deprecated(since = "13.x", forRemoval = true)
     @GetMapping("/v1/case-definition/{caseDefinitionKey}/case-process-link")
     public ResponseEntity<List<ProcessDefinitionCaseDefinition>> findProcessDocumentDefinitions(
         @PathVariable(name = "caseDefinitionKey") String caseDefinitionKey,
         @RequestParam(value = "startableByUser", required = false) @Nullable Boolean startableByUser,
         @RequestParam(value = "canInitializeDocument", required = false) @Nullable Boolean canInitializeDocument
     ) {
-        CaseDefinitionId caseDefinitionId = activeCaseDefinitionService.getActiveCaseDefinition(caseDefinitionKey).getId();
+        CaseDefinitionId caseDefinitionId = runWithoutAuthorization(() ->
+            activeCaseDefinitionService.getActiveCaseDefinition(caseDefinitionKey).getId()
+        );
         List<ProcessDefinitionCaseDefinition> processDocumentDefinitions = processDefinitionCaseDefinitionService.findProcessDefinitionCaseDefinitions(
             caseDefinitionId,
             startableByUser,
@@ -90,6 +93,7 @@ public class ProcessDocumentResource {
         return ResponseEntity.ok(processDocumentDefinitions);
     }
 
+    @Deprecated(since = "13.x", forRemoval = true)
     @GetMapping("/v1/document-instance/{documentId}/case-process-link")
     public ResponseEntity<List<ProcessDefinitionCaseDefinition>> findProcessDocumentDefinitions(
         @PathVariable(name = "documentId") UUID documentId,

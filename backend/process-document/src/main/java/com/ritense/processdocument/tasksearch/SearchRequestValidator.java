@@ -18,6 +18,7 @@ package com.ritense.processdocument.tasksearch;
 
 import static com.ritense.valtimo.service.OperatonTaskService.TaskFilter.MINE;
 import static com.ritense.valtimo.service.OperatonTaskService.TaskFilter.OPEN;
+import static com.ritense.valtimo.service.OperatonTaskService.TaskFilter.TEAM;
 import static java.time.format.DateTimeFormatter.ISO_INSTANT;
 import static java.time.format.DateTimeFormatter.ISO_LOCAL_DATE;
 import static java.time.format.DateTimeFormatter.ISO_LOCAL_DATE_TIME;
@@ -83,7 +84,7 @@ public class SearchRequestValidator {
     }
 
     private static void validateAssigneeFilter(TaskFilter assigneeFilter) {
-        if (assigneeFilter == OPEN || assigneeFilter == MINE) {
+        if (assigneeFilter == OPEN || assigneeFilter == MINE || assigneeFilter == TEAM) {
             var userId = SecurityUtils.getCurrentUserLogin();
             if (userId == null) {
                 throw new ValidationException("Failed to search for " + assigneeFilter + ". Reason: User is not logged in.");

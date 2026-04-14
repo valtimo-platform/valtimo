@@ -58,6 +58,7 @@ class CaseHttpSecurityConfigurer : HttpSecurityConfigurer {
                     .requestMatchers(antMatcher(POST, "/api/v1/case/{caseDefinitionName}/export")).authenticated()
                     .requestMatchers(antMatcher(GET, "/api/v1/case/{caseDefinitionKey}/hidden-list-column")).authenticated()
                     .requestMatchers(antMatcher(POST, "/api/v1/case/{caseDefinitionKey}/hidden-list-column")).authenticated()
+                    .requestMatchers(antMatcher(GET, "/api/management/v1/case-definition/{caseDefinitionKey}/version/{caseDefinitionVersionTag}/configuration-issues")).hasAuthority(ADMIN)
                     .requestMatchers(antMatcher(GET, "/api/management/v1/case-definition/{caseDefinitionKey}/version/{caseDefinitionVersionTag}/settings")).hasAuthority(ADMIN)
                     .requestMatchers(antMatcher(PATCH, "/api/management/v1/case-definition/{caseDefinitionKey}/version/{caseDefinitionVersionTag}/settings")).hasAuthority(ADMIN)
                     .requestMatchers(antMatcher(GET, "/api/management/v1/case-definition/{caseDefinitionKey}")).hasAuthority(ADMIN)
@@ -94,6 +95,7 @@ class CaseHttpSecurityConfigurer : HttpSecurityConfigurer {
                         )
                     ).hasAuthority(ADMIN)
                     .requestMatchers(antMatcher(POST, "/api/management/v1/case/import")).hasAuthority(ADMIN)
+                    .requestMatchers(antMatcher(POST, "/api/management/v1/case/import/preview")).hasAuthority(ADMIN)
                     .requestMatchers(antMatcher(GET, "/api/management/v1/case-definition/check")).hasAuthority(ADMIN)
                     .requestMatchers(antMatcher(GET, "$MANAGEMENT_WIDGET_TAB_URL/{tabKey}")).hasAuthority(ADMIN)
                     .requestMatchers(antMatcher(POST, "$MANAGEMENT_WIDGET_TAB_URL/{tabKey}")).hasAuthority(ADMIN)
@@ -110,6 +112,16 @@ class CaseHttpSecurityConfigurer : HttpSecurityConfigurer {
                     .hasAuthority(USER)
                     .requestMatchers(antMatcher(GET, "$HEADER_WIDGET_URL/data")).hasAuthority(USER)
                     .requestMatchers(antMatcher(GET, "/api/management/v1/case-definition/{key}/version/{version}/finalizable")).hasAuthority(ADMIN)
+                    .requestMatchers(antMatcher(GET, STARTABLE_ITEMS_PATH)).authenticated()
+                    .requestMatchers(antMatcher(GET, MANAGEMENT_STARTABLE_ITEMS_URL)).hasAuthority(ADMIN)
+                    .requestMatchers(antMatcher(POST, MANAGEMENT_STARTABLE_ITEMS_URL)).hasAuthority(ADMIN)
+                    .requestMatchers(antMatcher(DELETE, "$MANAGEMENT_STARTABLE_ITEMS_URL/{itemKey}/version/{versionTag}")).hasAuthority(ADMIN)
+                    .requestMatchers(antMatcher(DELETE, "$MANAGEMENT_STARTABLE_ITEMS_URL/{itemKey}")).hasAuthority(ADMIN)
+                    .requestMatchers(antMatcher(PUT, "$MANAGEMENT_STARTABLE_ITEMS_URL/order")).hasAuthority(ADMIN)
+                    .requestMatchers(antMatcher(GET, "$MANAGEMENT_STARTABLE_ITEMS_URL/{itemKey}/version/{versionTag}/properties")).hasAuthority(ADMIN)
+                    .requestMatchers(antMatcher(GET, "$MANAGEMENT_STARTABLE_ITEMS_URL/{itemKey}/properties")).hasAuthority(ADMIN)
+                    .requestMatchers(antMatcher(PUT, "$MANAGEMENT_STARTABLE_ITEMS_URL/{itemKey}/version/{versionTag}")).hasAuthority(ADMIN)
+                    .requestMatchers(antMatcher(PUT, "$MANAGEMENT_STARTABLE_ITEMS_URL/{itemKey}")).hasAuthority(ADMIN)
             }
         } catch (e: Exception) {
             throw HttpConfigurerConfigurationException(e)
@@ -134,5 +146,8 @@ class CaseHttpSecurityConfigurer : HttpSecurityConfigurer {
             "/api/management/v1/case-definition/{caseDefinitionKey}/version/{caseDefinitionVersionTag}/header-widget"
         private const val HEADER_WIDGET_URL =
             "/api/v1/case/{documentId}/header-widget"
+        private const val STARTABLE_ITEMS_PATH = "/api/v1/case/startable-item"
+        private const val MANAGEMENT_STARTABLE_ITEMS_URL =
+            "/api/management/v1/case-definition/{caseDefinitionKey}/version/{caseDefinitionVersionTag}/startable-item"
     }
 }

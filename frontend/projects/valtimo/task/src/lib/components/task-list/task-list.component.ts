@@ -20,6 +20,7 @@ import {
   HostListener,
   OnDestroy,
   OnInit,
+  TemplateRef,
   ViewChild,
   ViewEncapsulation,
 } from '@angular/core';
@@ -54,10 +55,12 @@ import {
   SortState,
   TaskListTab,
 } from '@valtimo/shared';
+import {ColumnConfig, ViewType} from '@valtimo/components';
 import {DocumentService} from '@valtimo/document';
 import {SseService} from '@valtimo/sse';
 import {distinctUntilChanged, filter, map, take} from 'rxjs/operators';
 import {PermissionService} from '@valtimo/access-control';
+import {TeamsApiService} from '@valtimo/teams';
 import {
   CAN_VIEW_CASE_PERMISSION,
   CAN_VIEW_TASK_PERMISSION,
@@ -97,6 +100,7 @@ moment.locale(localStorage.getItem('langKey') || '');
 })
 export class TaskListComponent implements OnInit, OnDestroy {
   @ViewChild('taskDetail') private readonly _taskDetail: TaskDetailModalComponent;
+  @ViewChild('unreadIndicator', {static: true}) private readonly _unreadIndicator: TemplateRef<any>;
 
   @HostListener('window:popstate', ['$event'])
   private onPopState() {
@@ -126,7 +130,18 @@ export class TaskListComponent implements OnInit, OnDestroy {
     )
   );
 
-  public readonly fields$ = this.taskListColumnService.fields$;
+  public readonly fields$ = this.taskListColumnService.fields$.pipe(
+    map((fields: ColumnConfig[]) => [
+      {
+        key: 'isOpened',
+        label: '',
+        viewType: ViewType.TEMPLATE,
+        template: this._unreadIndicator,
+        className: 'valtimo-task-list__unread-column',
+      } as ColumnConfig,
+      ...fields,
+    ])
+  );
   public readonly loadingTasks$ = new BehaviorSubject<boolean>(true);
   public readonly visibleTabs$ = new BehaviorSubject<Array<TaskListTab> | null>(null);
 
@@ -253,6 +268,7 @@ export class TaskListComponent implements OnInit, OnDestroy {
 
   private readonly _DEFAULT_TASK_LIST_TABS: TaskListTab[] = [
     TaskListTab.MINE,
+    TaskListTab.TEAM,
     TaskListTab.OPEN,
     TaskListTab.ALL,
   ];
@@ -275,7 +291,8 @@ export class TaskListComponent implements OnInit, OnDestroy {
     private readonly taskListSearchService: TaskListSearchService,
     private readonly taskListQueryParamService: TaskListQueryParamService,
     private readonly pageTitleService: PageTitleService,
-    private readonly sseService: SseService
+    private readonly sseService: SseService,
+    private readonly teamsApiService: TeamsApiService
   ) {}
 
   public ngOnInit(): void {
@@ -367,7 +384,7 @@ export class TaskListComponent implements OnInit, OnDestroy {
   }
 
   public setCaseDefinition(definition: {item: {id: string}}): void {
-    if (definition.item.id) {
+    if (definition.item.id && definition.item.id !== this.taskListService.caseDefinitionKey) {
       this.taskListSortService.resetOverrideSortState();
       this.loadingTasks$.next(true);
       this.taskListService.setCaseDefinitionKey(definition.item.id);
@@ -401,15 +418,18 @@ export class TaskListComponent implements OnInit, OnDestroy {
   }
 
   private setVisibleTabs(): void {
-    const visibleTabs = this.configService.config?.visibleTaskListTabs;
+    const configuredTabs =
+      this.configService.config?.visibleTaskListTabs || this._DEFAULT_TASK_LIST_TABS;
 
-    if (visibleTabs) {
-      this.visibleTabs$.next(visibleTabs);
-      this.taskListService.setSelectedTaskType(visibleTabs[0]);
-    } else {
-      this.visibleTabs$.next(this._DEFAULT_TASK_LIST_TABS);
-      this.taskListService.setSelectedTaskType(this._DEFAULT_TASK_LIST_TABS[0]);
-    }
+    this.teamsApiService.getCurrentUserTeams().subscribe(teams => {
+      const tabs =
+        teams.length > 0
+          ? configuredTabs
+          : configuredTabs.filter(tab => tab !== TaskListTab.TEAM);
+
+      this.visibleTabs$.next(tabs);
+      this.taskListService.setSelectedTaskType(tabs[0]);
+    });
   }
 
   private disableLoadingAnimation(): void {
@@ -500,6 +520,7 @@ export class TaskListComponent implements OnInit, OnDestroy {
               caseDocumentId: specifiedTask.caseDocumentId,
               processInstanceId: specifiedTask.processInstanceId,
               name: specifiedTask.name,
+              isOpened: specifiedTask.isOpened,
               ...(moment(specifiedTask.created).isValid() && {
                 created: moment(specifiedTask.created).format(MOMENT_FORMAT),
               }),

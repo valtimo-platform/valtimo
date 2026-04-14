@@ -86,6 +86,8 @@ import {
   catalogiApiPluginSpecification,
   DocumentenApiPluginModule,
   documentenApiPluginSpecification,
+  DocumentenApiPreviewPluginModule,
+  documentenApiPreviewPluginSpecification,
   KlantinteractiesApiPluginModule,
   klantinteractiesApiPluginSpecification,
   NotificatiesApiPluginModule,
@@ -123,6 +125,7 @@ import {CaseManagementModule} from '@valtimo/case-management';
 import {IkoModule} from '@valtimo/iko';
 import {devDeclarations, devImports, devProviders, devTabs} from './dev-tools';
 import {BuildingBlockManagementModule} from '@valtimo/building-block-management';
+import {TeamsModule} from '@valtimo/teams';
 import {registerDocumentenApiFormioUploadComponent, ZgwModule} from '@valtimo/zgw';
 import {SmtpMailPluginModule, smtpmailPluginSpecification} from '@valtimo-plugins/smtpmail';
 import {
@@ -190,6 +193,7 @@ export function tabsFactory() {
     OpenZaakPluginModule,
     SmartDocumentsPluginModule,
     DocumentenApiPluginModule,
+    DocumentenApiPreviewPluginModule,
     KlantinteractiesApiPluginModule,
     ObjecttypenApiPluginModule,
     OpenKlantTokenAuthenticationPluginModule,
@@ -222,6 +226,7 @@ export function tabsFactory() {
     DocumentGeneratorPluginModule,
     MailTemplatePluginModule,
     TextTemplatePluginModule,
+    TeamsModule,
     ...(environment.production ? [] : devImports),
   ],
   providers: [
@@ -232,6 +237,7 @@ export function tabsFactory() {
         besluitenApiPluginSpecification,
         catalogiApiPluginSpecification,
         documentenApiPluginSpecification,
+        documentenApiPreviewPluginSpecification,
         klantinteractiesApiPluginSpecification,
         notificatiesApiPluginSpecification,
         objectenApiPluginSpecification,

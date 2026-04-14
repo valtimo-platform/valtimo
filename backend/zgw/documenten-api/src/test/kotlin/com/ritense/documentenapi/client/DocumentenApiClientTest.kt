@@ -66,7 +66,7 @@ import reactor.core.publisher.Mono
 import java.io.InputStream
 import java.net.URI
 import java.time.LocalDate
-import java.time.LocalDateTime
+import java.time.OffsetDateTime
 import java.util.UUID
 import java.util.function.Supplier
 import kotlin.test.assertEquals
@@ -74,8 +74,7 @@ import kotlin.test.assertIs
 import kotlin.test.assertTrue
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-internal class
-DocumentenApiClientTest {
+internal class DocumentenApiClientTest {
 
     lateinit var mockDocumentenApi: MockWebServer
 
@@ -109,7 +108,6 @@ DocumentenApiClientTest {
     fun `should send request and parse response`() {
         val restClientBuilder = RestClient.builder()
         val client = DocumentenApiClient(restClientBuilder, outboxService, objectMapper, mock(), authorizationService)
-
         val responseBody = """
             {
               "url": "http://example.com",
@@ -164,6 +162,7 @@ DocumentenApiClientTest {
         val result = client.storeDocument(
             TestAuthentication(),
             mockDocumentenApi.url("/").toUri(),
+            CASE_DOCUMENT_ID,
             request
         )
 
@@ -209,7 +208,7 @@ DocumentenApiClientTest {
             "auteur",
             "bestandsnaam.jpg",
             0L,
-            LocalDateTime.now(),
+            OffsetDateTime.now(),
             bestandsdelen,
             "de9c883a-cdfc-493b-9c38-5824e334a1b1"
         )
@@ -290,6 +289,7 @@ DocumentenApiClientTest {
         val result = client.storeDocument(
             TestAuthentication(),
             mockDocumentenApi.url("/").toUri(),
+            CASE_DOCUMENT_ID,
             request
         )
 
@@ -330,6 +330,7 @@ DocumentenApiClientTest {
             client.storeDocument(
                 TestAuthentication(),
                 mockDocumentenApi.url("/").toUri(),
+                CASE_DOCUMENT_ID,
                 request
             )
         }
@@ -385,6 +386,7 @@ DocumentenApiClientTest {
 
         val result = client.getInformatieObject(
             TestAuthentication(),
+            CASE_DOCUMENT_ID,
             mockDocumentenApi.url("/zaakobjects").toUri(),
         )
 
@@ -402,7 +404,7 @@ DocumentenApiClientTest {
         assertEquals("formaat", result.formaat)
         assertEquals("nl", result.taal)
         assertEquals(4, result.versie)
-        assertEquals(LocalDateTime.of(2019, 8, 24, 14, 15, 22), result.beginRegistratie)
+        assertEquals(OffsetDateTime.parse("2019-08-24T14:15:22Z"), result.beginRegistratie)
         assertEquals("bestandsnaam", result.bestandsnaam)
         assertEquals(123, result.bestandsomvang)
         assertEquals(URI("http://example.com/link"), result.link)
@@ -460,6 +462,7 @@ DocumentenApiClientTest {
 
         val result = client.getInformatieObject(
             TestAuthentication(),
+            CASE_DOCUMENT_ID,
             mockDocumentenApi.url("/zaakobjects").toUri(),
         )
 
@@ -486,6 +489,7 @@ DocumentenApiClientTest {
         assertThrows<HttpClientErrorException> {
             client.getInformatieObject(
                 TestAuthentication(),
+                CASE_DOCUMENT_ID,
                 mockDocumentenApi.url("/zaakobjects").toUri(),
             )
         }
@@ -508,11 +512,11 @@ DocumentenApiClientTest {
         mockDocumentenApi.enqueue(mockInputStreamResponse(buffer))
 
         val eventCapture = argumentCaptor<Supplier<BaseEvent>>()
-
         client.downloadInformatieObjectContent(
             TestAuthentication(),
             mockDocumentenApi.url("/").toUri(),
-            documentInformatieObjectId
+            documentInformatieObjectId,
+            CASE_DOCUMENT_ID
         )
 
         mockDocumentenApi.takeRequest()
@@ -541,7 +545,8 @@ DocumentenApiClientTest {
             client.downloadInformatieObjectContent(
                 TestAuthentication(),
                 mockDocumentenApi.url("/").toUri(),
-                documentInformatieObjectId
+                documentInformatieObjectId,
+                CASE_DOCUMENT_ID
             )
         }
 
@@ -560,6 +565,7 @@ DocumentenApiClientTest {
 
         client.deleteInformatieObject(
             TestAuthentication(),
+            CASE_DOCUMENT_ID,
             mockDocumentenApi.url("/documenten/api/v1/enkelvoudiginformatieobjecten/123").toUri(),
         )
 
@@ -590,6 +596,7 @@ DocumentenApiClientTest {
         assertThrows<HttpClientErrorException> {
             client.deleteInformatieObject(
                 TestAuthentication(),
+                CASE_DOCUMENT_ID,
                 mockDocumentenApi.url("/zaakobjects").toUri(),
             )
         }
@@ -719,7 +726,8 @@ DocumentenApiClientTest {
                     ontvangstdatum = LocalDate.of(2020, 5, 3),
                     verzenddatum = LocalDate.of(2020, 5, 3),
                     indicatieGebruiksrecht = true
-                )
+                ),
+                CASE_DOCUMENT_ID
             )
         }
 
@@ -758,7 +766,7 @@ DocumentenApiClientTest {
         assertEquals("formaat", result.formaat)
         assertEquals("nl", result.taal)
         assertEquals(4, result.versie)
-        assertEquals(LocalDateTime.of(2019, 8, 24, 14, 15, 22), result.beginRegistratie)
+        assertEquals(OffsetDateTime.parse("2019-08-24T14:15:22Z"), result.beginRegistratie)
         assertEquals("bestandsnaam", result.bestandsnaam)
         assertEquals(123, result.bestandsomvang)
         assertEquals(URI("http://example.com/link"), result.link)
@@ -997,6 +1005,7 @@ DocumentenApiClientTest {
 
         val page = client.getInformatieObjecten(
             TestAuthentication(),
+            CASE_DOCUMENT_ID,
             mockDocumentenApi.url("/").toUri(),
             pageable,
             documentSearchRequest
@@ -1050,5 +1059,10 @@ DocumentenApiClientTest {
             }.build()
             return next.exchange(filteredRequest)
         }
+    }
+
+    companion object {
+        val CASE_DOCUMENT_ID: UUID =
+            UUID.fromString("123e4567-e89b-12d3-a456-426655440000")
     }
 }

@@ -42,6 +42,7 @@
         *ngIf="isSearchable"
         [expandable]="true"
         [formControl]="searchFormControl"
+        data-test-id="carbonListSearch"
       ></cds-table-toolbar-search>
 
       <ng-content select="[carbonToolbarContent]"> </ng-content>
@@ -63,7 +64,7 @@
     (rowClick)="onRowClick($event)"
   >
     <tbody cdsTableBody>
-      <tr class="valtimo-carbon-list__no-results">
+      <tr class="valtimo-carbon-list__no-results" data-test-id="carbonListNoResults">
         <td [attr.colspan]="obs.model.header.length + (showSelectionColumn ? 1 : 0)">
           <ng-content></ng-content>
         </td>
@@ -83,6 +84,7 @@
     [skeleton]="loading"
     [translations]="paginationTranslations$ | async"
     (selectPage)="onSelectPage($event)"
+    data-test-id="carbonListPagination"
   ></cds-pagination>
 </cds-table-container>
 
@@ -99,29 +101,26 @@
 </ng-template>
 
 <ng-template #actionsMenuTemplate let-data="data">
-  <cds-overflow-menu
+  <v-overflow-menu
     *ngIf="showActionItems"
     [open]="currentOpenActionId === data.item"
     (openChange)="handleActionOpenChange(data.item, $event)"
-    [flip]="true"
-    [offset]="{x: 0, y: 50}"
-    [autoAlign]="true"
-    placement="bottom"
-    role="menu"
+    placement="bottom-end"
     (click)="$event.stopPropagation()"
   >
+    <v-overflow-menu-trigger overflowTrigger></v-overflow-menu-trigger>
     @for (action of data.actions; track action.label) {
-      <cds-overflow-menu-option
-        [disabled]="action.disabledCallback ? action.disabledCallback(data.item) : false"
+      <v-overflow-menu-option
+        [disabled]="action | actionItemDisabled: data.item | async"
         [type]="action.type"
         (selected)="action.callback(data.item)"
       >
         <i *ngIf="!!action.iconClass" [ngClass]="action.iconClass"></i>
 
         {{ action.label | translate }}
-      </cds-overflow-menu-option>
+      </v-overflow-menu-option>
     }
-  </cds-overflow-menu>
+  </v-overflow-menu>
 </ng-template>
 
 <ng-template #rowDisabled let-data="data">
@@ -143,6 +142,7 @@
       [iconOnly]="true"
       size="sm"
       (click)="onMoveUpClick($event, data)"
+      data-test-id="carbonListMoveUp"
     >
       <svg cdsIcon="arrow--up" size="16"></svg>
     </button>
@@ -153,6 +153,7 @@
       [iconOnly]="true"
       size="sm"
       (click)="onMoveDownClick($event, data)"
+      data-test-id="carbonListMoveDown"
     >
       <svg cdsIcon="arrow--down" size="16"></svg>
     </button>
@@ -167,6 +168,7 @@
       [iconOnly]="true"
       size="sm"
       (mousedown)="onDragStart($event, data)"
+      data-test-id="carbonListDragHandle"
     >
       <svg cdsIcon="draggable" size="16"></svg>
     </button>
@@ -192,6 +194,7 @@
           class="cds-tag--no-margin valtimo-carbon-list__expand-tag"
           type="high-contrast"
           (click)="onTagClick($event, data.tags)"
+          data-test-id="carbonListExpandTags"
         >
           {{ data.tags.length - data.tagAmount }} <svg cdsIcon="add" size="16"></svg>
         </cds-tag>

@@ -14,12 +14,7 @@
   ~ limitations under the License.
   -->
 
-<cds-tile>
-  <valtimo-case-management-draft-warning
-    *ngIf="isDraftVersion$ | async"
-    [name]="'zaakdetails.title' | translate | lowercase"
-  ></valtimo-case-management-draft-warning>
-
+<cds-tile [class.tile--danger]="hasConfigurationIssue$ | async">
   <h2 class="valtimo-objecten-sync__title">{{ 'zaakdetails.title' | translate }}</h2>
 
   @if (loading$ | async) {
@@ -31,19 +26,21 @@
           {{ documentObjectenApiSync.objectManagementConfigurationTitle || '-' }}
         </span>
 
-        <div class="valtimo-objecten-sync__card-controls">
-          <button cdsButton="tertiary" (click)="showModal()">
-            {{ 'interface.edit' | translate }}
+        @if (canEdit$ | async) {
+          <div class="valtimo-objecten-sync__card-controls">
+            <button cdsButton="tertiary" (click)="showModal()">
+              {{ 'interface.edit' | translate }}
 
-            <svg class="cds--btn__icon" cdsIcon="edit" size="16"></svg>
-          </button>
+              <svg class="cds--btn__icon" cdsIcon="edit" size="16"></svg>
+            </button>
 
-          <button cdsButton="danger" (click)="remove()">
-            {{ 'interface.delete' | translate }}
+            <button cdsButton="danger" (click)="remove()">
+              {{ 'interface.delete' | translate }}
 
-            <svg class="cds--btn__icon" cdsIcon="trash-can" size="16"></svg>
-          </button>
-        </div>
+              <svg class="cds--btn__icon" cdsIcon="trash-can" size="16"></svg>
+            </button>
+          </div>
+        }
       </section>
 
       <section class="valtimo-objecten-sync__card-body">
@@ -63,13 +60,20 @@
           {{ documentObjectenApiSync.objectManagementConfigurationTitle || '-' }}
         </div>
       </section>
-    } @else {
+    } @else if (canEdit$ | async) {
       <button cdsButton="primary" (click)="showModal()">
         {{ 'zaakdetails.submitButton' | translate }}
 
         <svg class="cds--btn__icon" cdsIcon="add" size="16"></svg>
       </button>
     }
+  }
+
+  @if (hasConfigurationIssue$ | async) {
+    <div class="tile-error-message">
+      <svg cdsIcon="warning--filled" size="16" class="tile-error-message__icon"></svg>
+      <span class="tile-error-message__text">{{ 'zaakdetails.configurationIssue' | translate }}</span>
+    </div>
   }
 </cds-tile>
 

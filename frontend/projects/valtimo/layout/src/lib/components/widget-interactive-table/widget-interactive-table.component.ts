@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -34,6 +34,8 @@ import {
   CarbonPaginatorConfig,
   ColumnConfig,
   MdiIconViewerComponent,
+  OverflowMenuComponent,
+  OverflowMenuOptionComponent,
   Pagination,
   ViewType,
 } from '@valtimo/components';
@@ -42,7 +44,6 @@ import {Page, SortState} from '@valtimo/shared';
 import {
   ButtonModule,
   ContextMenuModule,
-  DialogModule,
   IconModule,
   IconService,
   MenuButtonModule,
@@ -75,7 +76,8 @@ import {HttpParams} from '@angular/common/http';
     TilesModule,
     TranslateModule,
     ButtonModule,
-    DialogModule,
+    OverflowMenuComponent,
+    OverflowMenuOptionComponent,
     MenuButtonModule,
     ContextMenuModule,
     IconModule,

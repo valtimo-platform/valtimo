@@ -16,20 +16,23 @@
 
 package com.valtimo.keycloak.autoconfigure;
 
+import com.ritense.authorization.AuthorizationService;
+import com.ritense.valtimo.contract.authentication.TeamManagementService;
 import com.ritense.valtimo.contract.security.config.oauth2.NoOAuth2ClientsConfiguredCondition;
+import com.valtimo.keycloak.authorization.UserActionProvider;
+import com.valtimo.keycloak.authorization.UserSpecificationFactory;
 import com.valtimo.keycloak.repository.KeycloakCurrentUserRepository;
 import com.valtimo.keycloak.security.config.KeycloakOAuth2HttpSecurityConfigurer;
 import com.valtimo.keycloak.security.config.ValtimoKeycloakPropertyResolver;
 import com.valtimo.keycloak.security.jwt.authentication.KeycloakTokenAuthenticator;
 import com.valtimo.keycloak.security.jwt.provider.KeycloakSecretKeyProvider;
+import com.valtimo.keycloak.service.CacheManagerUserCache;
 import com.valtimo.keycloak.service.KeycloakService;
 import com.valtimo.keycloak.service.KeycloakUserManagementService;
-import com.valtimo.keycloak.service.CacheManagerUserCache;
 import com.valtimo.keycloak.service.UserCache;
 import org.keycloak.adapters.springboot.KeycloakSpringBootProperties;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication;
@@ -41,7 +44,9 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Conditional;
 import org.springframework.context.annotation.DependsOn;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.core.annotation.Order;
+import java.util.Optional;
 
 @AutoConfiguration
 @EnableConfigurationProperties(KeycloakSpringBootProperties.class)
@@ -79,9 +84,17 @@ public class KeycloakAutoConfiguration {
     public KeycloakUserManagementService keycloakUserManagementService(
         final KeycloakService keycloakService,
         @Value("#{'${spring.security.oauth2.client.registration.keycloakjwt.client-id:${valtimo.keycloak.client:}}'}") final String keycloakClientName,
-        final UserCache userCache
+        final UserCache userCache,
+        @Lazy final AuthorizationService authorizationService,
+        @Lazy final Optional<TeamManagementService> teamManagementService
     ) {
-        return new KeycloakUserManagementService(keycloakService, keycloakClientName, userCache);
+        return new KeycloakUserManagementService(
+            keycloakService,
+            keycloakClientName,
+            userCache,
+            authorizationService,
+            teamManagementService.orElse(null)
+        );
     }
 
     @Bean
@@ -123,5 +136,18 @@ public class KeycloakAutoConfiguration {
     ) {
         return new CacheManagerUserCache(cacheManager);
     }
+
+    @Bean
+    @ConditionalOnMissingBean(UserActionProvider.class)
+    public UserActionProvider userActionProvider() {
+        return new UserActionProvider();
+    }
+
+    @Bean
+    @ConditionalOnMissingBean(UserSpecificationFactory.class)
+    public UserSpecificationFactory userSpecificationFactory() {
+        return new UserSpecificationFactory();
+    }
+
 
 }

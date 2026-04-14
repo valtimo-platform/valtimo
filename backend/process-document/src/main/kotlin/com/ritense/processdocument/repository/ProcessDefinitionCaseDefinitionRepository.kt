@@ -28,7 +28,7 @@ import org.springframework.lang.Nullable
 interface ProcessDefinitionCaseDefinitionRepository:
     JpaRepository<ProcessDefinitionCaseDefinition, ProcessDefinitionCaseDefinitionId> {
     fun findByIdCaseDefinitionId(caseDefinitionId: CaseDefinitionId): List<ProcessDefinitionCaseDefinition>
-    fun findByIdProcessDefinitionId(processDefinitionId: ProcessDefinitionId): ProcessDefinitionCaseDefinition
+    fun findByIdProcessDefinitionId(processDefinitionId: ProcessDefinitionId): ProcessDefinitionCaseDefinition?
     fun findAllByIdCaseDefinitionIdAndIdProcessDefinitionIdId(
         caseDefinitionId: CaseDefinitionId,
         processDefinitionId: String

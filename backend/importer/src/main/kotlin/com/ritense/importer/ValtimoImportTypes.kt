@@ -28,14 +28,18 @@ class ValtimoImportTypes {
         const val DECISION_DEFINITION = "decisiondefinition"
         const val DOCUMENT_DEFINITION = "documentdefinition"
         const val FORM = "form"
+        const val GLOBAL_FORM = "globalform"
         const val FORM_FLOW = "formflow"
         const val INTERNAL_CASE_STATUS = "internalcasestatus"
         const val PROCESS_DEFINITION = "processdefinition"
         const val GLOBAL_PROCESS_DEFINITION = "globalprocessdefinition"
         const val GLOBAL_DECISION_DEFINITION = "globaldecisiondefinition"
         const val PROCESS_DOCUMENT_LINK = "processdocumentlink"
+        const val CASE_DEFINITION_PROCESS_LINK = "casedefinitionprocesslink"
         const val PROCESS_LINK = "processlink"
         const val GLOBAL_PROCESS_LINK = "globalprocesslink"
+        const val GLOBAL_PERMISSION = "globalpermission"
+        const val GLOBAL_ROLE = "globalrole"
         const val SEARCH = "search"
         const val SEARCH_FIELD = "searchField"
         const val CASE_HEADER_WIDGET = "caseheaderwidget"
@@ -47,12 +51,17 @@ class ValtimoImportTypes {
         const val BUILDING_BLOCK_ARTWORK = "buildingblockartwork"
         const val BUILDING_BLOCK_PROCESS_LINK = "buildingblockprocesslink"
         const val BUILDING_BLOCK_FORM_DEFINITION = "buildingblockformdefinition"
+        const val BUILDING_BLOCK_FORM_FLOW_DEFINITION = "buildingblockformflowdefinition"
+        const val CASE_BUILDING_BLOCK_LINK = "casebuildingblocklink"
+
+        const val OBJECT_MANAGEMENT = "objectmanagement"
 
         // ZGW
         const val ZGW_DOCUMENT_LIST_COLUMN = "zgwdocumentlistcolumn"
         const val ZGW_DOCUMENT_TREFWOORD = "zgwdocumenttrefwoord"
         const val ZGW_DOCUMENT_UPLOAD_FIELD = "zgwdocumentuploadfield"
         const val ZGW_ZAAK_TYPE_LINK = "zgwzaaktypelink"
+        const val ZGW_ZAAKDETAIL_SYNC = "zgwzaakdetailsync"
 
         // IKO
         const val IKO_REPOSITORY_CONFIG = "ikorepositoryconfig"
@@ -62,5 +71,8 @@ class ValtimoImportTypes {
         const val IKO_LIST_COLUMN = "ikolistcolumn"
         const val IKO_TAB = "ikotab"
         const val IKO_WIDGET = "ikowidget"
+
+        // TEAM
+        const val TEAM = "team"
     }
 }

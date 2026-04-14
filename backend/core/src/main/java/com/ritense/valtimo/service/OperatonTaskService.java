@@ -36,6 +36,7 @@ import static com.ritense.valtimo.operaton.repository.OperatonTaskSpecificationH
 import static com.ritense.valtimo.operaton.repository.OperatonTaskSpecificationHelper.all;
 import static com.ritense.valtimo.operaton.repository.OperatonTaskSpecificationHelper.byAssignee;
 import static com.ritense.valtimo.operaton.repository.OperatonTaskSpecificationHelper.byProcessInstanceId;
+import static com.ritense.valtimo.operaton.repository.OperatonTaskSpecificationHelper.byTeamKeys;
 import static com.ritense.valtimo.operaton.repository.OperatonTaskSpecificationHelper.byUnassigned;
 import static java.util.Comparator.comparing;
 import static java.util.Comparator.naturalOrder;
@@ -55,6 +56,10 @@ import com.ritense.outbox.OutboxService;
 import com.ritense.resource.service.ResourceService;
 import com.ritense.valtimo.contract.authentication.ManageableUser;
 import com.ritense.valtimo.contract.authentication.NamedUser;
+import com.ritense.valtimo.contract.authentication.Team;
+import com.ritense.valtimo.operaton.dto.AssigneeDto;
+import com.ritense.valtimo.operaton.dto.TeamDto;
+import com.ritense.valtimo.contract.authentication.TeamManagementService;
 import com.ritense.valtimo.contract.authentication.UserManagementService;
 import com.ritense.valtimo.contract.authentication.model.ValtimoUser;
 import com.ritense.valtimo.contract.authentication.model.ValtimoUserBuilder;
@@ -74,9 +79,12 @@ import com.ritense.valtimo.operaton.dto.OperatonTaskDto;
 import com.ritense.valtimo.operaton.dto.TaskExtended;
 import com.ritense.valtimo.operaton.repository.OperatonIdentityLinkRepository;
 import com.ritense.valtimo.operaton.repository.OperatonTaskRepository;
+import com.ritense.valtimo.task.domain.TaskTeam;
+import com.ritense.valtimo.task.repository.TaskTeamRepository;
 import com.ritense.valtimo.repository.operaton.dto.TaskInstanceWithIdentityLink;
 import com.ritense.valtimo.security.exceptions.TaskNotFoundException;
 import com.ritense.valtimo.service.util.FormUtils;
+import com.ritense.valtimo.task.service.UserTaskOpenedStatusService;
 import com.ritense.valtimo.web.rest.dto.TaskCompletionDTO;
 import jakarta.annotation.Nullable;
 import jakarta.persistence.EntityManager;
@@ -139,6 +147,10 @@ public class OperatonTaskService {
     private final OutboxService outboxService;
     private final ObjectMapper objectMapper;
     private final List<TaskBusinessKeyResolver> taskBusinessKeyResolvers;
+    private final UserTaskOpenedStatusService userTaskOpenedStatusService;
+    private final TaskTeamRepository taskTeamRepository;
+    @Nullable
+    private final TeamManagementService teamManagementService;
 
     public OperatonTaskService(
         TaskService taskService,
@@ -154,7 +166,10 @@ public class OperatonTaskService {
         AuthorizationService authorizationService,
         OutboxService outboxService,
         ObjectMapper objectMapper,
-        List<TaskBusinessKeyResolver> taskBusinessKeyResolvers
+        List<TaskBusinessKeyResolver> taskBusinessKeyResolvers,
+        UserTaskOpenedStatusService userTaskOpenedStatusService,
+        TaskTeamRepository taskTeamRepository,
+        @Nullable TeamManagementService teamManagementService
     ) {
         this.taskService = taskService;
         this.formService = formService;
@@ -170,6 +185,9 @@ public class OperatonTaskService {
         this.outboxService = outboxService;
         this.objectMapper = objectMapper;
         this.taskBusinessKeyResolvers = taskBusinessKeyResolvers;
+        this.userTaskOpenedStatusService = userTaskOpenedStatusService;
+        this.taskTeamRepository = taskTeamRepository;
+        this.teamManagementService = teamManagementService;
     }
 
     @Transactional(readOnly = true)
@@ -181,20 +199,13 @@ public class OperatonTaskService {
     }
 
     @Transactional
-    public void assignByEmail(String taskId, String assigneeEmail) throws IllegalStateException {
-        var assignee = userManagementService.findNamedUserByEmail(assigneeEmail)
-            .orElseThrow(() -> new IllegalStateException("Error. No registered user found with email: " + assigneeEmail));
-        assign(taskId, assignee.getId());
-    }
-
-    @Transactional
     public void assign(String taskId, String assignee) throws IllegalStateException {
         if (assignee == null) {
             unassign(taskId);
         } else if (EmailValidator.getInstance().isValid(assignee)) {
             throw new IllegalStateException("Task assignee must be an ID. Not an email: '" + assignee + "'");
         } else {
-            String assigneeUsername = userManagementService.findById(assignee).getUsername();
+            String assigneeUsername = runWithoutAuthorization(() -> userManagementService.findById(assignee).getUsername());
             final OperatonTask task = runWithoutAuthorization(() -> findTaskById(taskId));
             final String currentUser = userManagementService.getCurrentUser().getUsername();
             if (assignee.equals(currentUser)) {
@@ -320,7 +331,7 @@ public class OperatonTaskService {
             ).stream()
             .map(Role::getKey)
             .collect(toSet());
-        return userManagementService.findNamedUserByRoles(candidateGroups);
+        return userManagementService.findNamedUserByRolesWithoutAuthorization(candidateGroups);
     }
 
     @Transactional
@@ -459,8 +470,20 @@ public class OperatonTaskService {
                 .setMaxResults(pageable.getPageSize());
         }
 
+        var tupleList = typedQuery.getResultList();
+        var taskIds = tupleList.stream()
+            .map(tuple -> tuple.get(0, OperatonTask.class).getId())
+            .collect(toSet());
+        var currentUserId = SecurityUtils.getCurrentUserLogin();
+        var openedTaskIds = currentUserId != null
+            ? userTaskOpenedStatusService.getOpenedTaskIdsForUser(taskIds, currentUserId)
+            : Set.<String>of();
+
+        var taskTeamMap = taskTeamRepository.findAllById(taskIds).stream()
+            .collect(Collectors.toMap(TaskTeam::getTaskId, t -> t));
+
         var assigneeMap = new java.util.HashMap<String, ValtimoUser>();
-        var tasks = typedQuery.getResultList().stream()
+        var tasks = tupleList.stream()
             .map(tuple -> {
                 var task = tuple.get(0, OperatonTask.class);
                 var executionId = tuple.get(1, String.class);
@@ -475,7 +498,7 @@ public class OperatonTaskService {
                         if (assigneeMap.containsKey(task.getAssignee())) {
                             valtimoUser = assigneeMap.get(task.getAssignee());
                         } else {
-                            valtimoUser = getValtimoUser(task.getAssignee());
+                            valtimoUser = runWithoutAuthorization(() -> getValtimoUser(task.getAssignee()));
                             assigneeMap.put(task.getAssignee(), valtimoUser);
                         }
                     } catch (Exception e) {
@@ -496,7 +519,9 @@ public class OperatonTaskService {
                     processDefinitionId,
                     processDefinitionKey,
                     valtimoUser,
-                    context
+                    context,
+                    openedTaskIds.contains(task.getId()),
+                    Optional.ofNullable(taskTeamMap.get(task.getId())).map(TeamDto::from).orElse(null)
                 );
             })
             .toList();
@@ -515,13 +540,41 @@ public class OperatonTaskService {
 
     @Transactional(readOnly = true)
     public List<TaskInstanceWithIdentityLink> getProcessInstanceTasks(String processInstanceId, String businessKey) {
-        return findTasks(byProcessInstanceId(processInstanceId), Sort.by(DESC, CREATE_TIME))
-            .stream()
+        var tasks = findTasks(byProcessInstanceId(processInstanceId), Sort.by(DESC, CREATE_TIME));
+        var teamKeyMap = taskTeamRepository.findAllById(
+            tasks.stream().map(OperatonTask::getId).collect(toSet())
+        ).stream().collect(Collectors.toMap(TaskTeam::getTaskId, t -> t));
+
+        var assigneeMap = new java.util.HashMap<String, AssigneeDto>();
+
+        return tasks.stream()
             .map(task -> AuthorizationContext.runWithoutAuthorization(() -> {
                     final var identityLinks = getIdentityLinks(task.getId());
+
+                    AssigneeDto assigneeDto = null;
+                    if (task.getAssignee() != null) {
+                        try {
+                            if (assigneeMap.containsKey(task.getAssignee())) {
+                                assigneeDto = assigneeMap.get(task.getAssignee());
+                            } else {
+                                assigneeDto = runWithoutAuthorization(() -> getAssigneeDto(task.getAssignee()));
+                                assigneeMap.put(task.getAssignee(), assigneeDto);
+                            }
+                        } catch (Exception e) {
+                            logger.error(
+                                "Failed to retrieve assignee " + task.getAssignee() + " for task " + task.getId(),
+                                e
+                            );
+                        }
+                    }
+
                     return new TaskInstanceWithIdentityLink(
                         businessKey,
-                        OperatonTaskDto.of(task),
+                        OperatonTaskDto.of(
+                            task,
+                            Optional.ofNullable(teamKeyMap.get(task.getId())).map(TeamDto::from).orElse(null),
+                            assigneeDto
+                        ),
                         delegateTaskHelper.isTaskPublic(task),
                         task.getProcessDefinition().getKey(),
                         identityLinks,
@@ -607,8 +660,51 @@ public class OperatonTaskService {
         return taskFormData == null || taskFormData.getFormKey() != null || !taskFormData.getFormFields().isEmpty();
     }
 
+    @Transactional(readOnly = true)
+    public TaskTeam getAssignedTeam(String taskId) {
+        return taskTeamRepository.findById(taskId).orElse(null);
+    }
+
+    @Transactional
+    public void assignTeamToTask(String taskId, String teamKey) {
+        final OperatonTask task = runWithoutAuthorization(() -> findTaskById(taskId));
+        requirePermission(task, ASSIGN);
+
+        var team = teamManagementService != null ? teamManagementService.findByKey(teamKey) : null;
+        var teamTitle = team != null ? team.getTitle() : teamKey;
+
+        var taskTeam = taskTeamRepository.findById(taskId)
+            .orElse(new TaskTeam(taskId, teamKey, teamTitle));
+        taskTeam.setTeamKey(teamKey);
+        taskTeam.setTeamTitle(teamTitle);
+        taskTeamRepository.save(taskTeam);
+
+        outboxService.send(() -> new TaskAssigned(task.getId(), objectMapper.valueToTree(task)));
+    }
+
+    @Transactional
+    public void unassignTeamFromTask(String taskId) {
+        final OperatonTask task = runWithoutAuthorization(() -> findTaskById(taskId));
+        requirePermission(task, ASSIGN);
+
+        taskTeamRepository.deleteById(taskId);
+
+        outboxService.send(() -> new TaskUnassigned(task.getId(), objectMapper.valueToTree(task)));
+    }
+
+    @Transactional(readOnly = true)
+    public Page<Team> getCandidateTeams(String taskId, Pageable pageable) {
+        final OperatonTask task = runWithoutAuthorization(() -> findTaskById(taskId));
+        requirePermission(task, ASSIGN);
+
+        if (teamManagementService == null) {
+            return Page.empty(pageable);
+        }
+        return runWithoutAuthorization(() -> teamManagementService.findAll(pageable));
+    }
+
     public enum TaskFilter {
-        MINE, OPEN, ALL
+        MINE, OPEN, ALL, TEAM
     }
 
     private void publishTaskAssignedEvent(OperatonTask task, String formerAssignee, String newAssignee) {
@@ -623,11 +719,11 @@ public class OperatonTaskService {
                 UUID.randomUUID(),
                 RequestHelper.getOrigin(),
                 LocalDateTime.now(),
-                SecurityUtils.getCurrentUserLogin(),
+                SecurityUtils.getCurrentUserLogin() == null ? "system" : SecurityUtils.getCurrentUserLogin(),
                 formerAssignee,
                 newAssignee,
                 task.getId(),
-                task.getName(),
+                task.getName() != null ? task.getName() : task.getTaskDefinitionKey(),
                 task.getCreateTime(),
                 task.getProcessDefinitionId(),
                 task.getProcessInstanceId(),
@@ -669,7 +765,7 @@ public class OperatonTaskService {
                 newDueDate,
                 task.getAssignee(),
                 task.getId(),
-                task.getName(),
+                task.getName() != null ? task.getName() : task.getTaskDefinitionKey(),
                 task.getCreateTime(),
                 task.getProcessDefinitionId(),
                 task.getProcessInstanceId(),
@@ -688,6 +784,14 @@ public class OperatonTaskService {
             return filterSpec;
         } else if (taskFilter == TaskFilter.OPEN) {
             return filterSpec.and(byUnassigned());
+        } else if (taskFilter == TaskFilter.TEAM) {
+            if (teamManagementService == null) {
+                throw new IllegalStateException(
+                    "No teamManagementService found. In order to use this feature, the team library must be included.");
+            }
+            String currentUsername = userManagementService.getCurrentUser().getUsername();
+            List<String> teamKeys = teamManagementService.findTeamKeysByUsername(currentUsername);
+            return filterSpec.and(byTeamKeys(teamKeys));
         }
 
         return filterSpec;
@@ -701,6 +805,17 @@ public class OperatonTaskService {
                     .lastName(user.getLastName())
                     .build())
             .orElse(null);
+    }
+
+    private AssigneeDto getAssigneeDto(String assignee) {
+        return Optional.ofNullable(userManagementService.findByUsername(assignee)).map(user -> {
+            var firstName = user.getFirstName();
+            var lastName = user.getLastName();
+            var fullName = java.util.stream.Stream.of(firstName, lastName)
+                .filter(s -> s != null && !s.isBlank())
+                .collect(Collectors.joining(" "));
+            return new AssigneeDto(assignee, firstName, lastName, fullName);
+        }).orElse(null);
     }
 
     private List<Order> getOrderBy(CriteriaBuilder cb, Root<OperatonTask> root, Sort sort) {

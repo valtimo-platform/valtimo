@@ -17,7 +17,9 @@
 package com.ritense.valtimo.web.rest;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -28,11 +30,15 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.ritense.valtimo.contract.authentication.Team;
+import com.ritense.valtimo.contract.authentication.UserManagementService;
+import com.ritense.valtimo.operaton.dto.TeamDto;
 import com.ritense.valtimo.contract.json.MapperSingleton;
 import com.ritense.valtimo.operaton.dto.TaskExtended;
 import com.ritense.valtimo.service.OperatonProcessService;
 import com.ritense.valtimo.service.OperatonTaskService;
 import com.ritense.valtimo.service.request.AssigneeRequest;
+import com.ritense.valtimo.task.service.UserTaskOpenedStatusService;
 import com.ritense.valtimo.service.request.SetDueDateRequest;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
@@ -58,6 +64,8 @@ class TaskResourceTest {
     private FormService formService;
     private OperatonTaskService operatonTaskService;
     private OperatonProcessService operatonProcessService;
+    private UserTaskOpenedStatusService userTaskOpenedStatusService;
+    private UserManagementService userManagementService;
     private AssigneeRequest assigneeRequest;
     private SetDueDateRequest dueDateRequest;
     private ObjectMapper objectMapper;
@@ -70,15 +78,19 @@ class TaskResourceTest {
         formService = mock(FormService.class);
         operatonTaskService = mock(OperatonTaskService.class);
         operatonProcessService = mock(OperatonProcessService.class);
+        userTaskOpenedStatusService = mock(UserTaskOpenedStatusService.class);
+        userManagementService = mock(UserManagementService.class);
 
         taskResource = new TaskResource(
             formService,
             operatonTaskService,
-                operatonProcessService
+            operatonProcessService,
+            userTaskOpenedStatusService,
+            userManagementService
         );
         objectMapper = MapperSingleton.INSTANCE.get();
 
-        assigneeRequest = new AssigneeRequest(assigneeId);
+        assigneeRequest = new AssigneeRequest(assigneeId, null);
 
         dueDate = LocalDateTime.now().truncatedTo(ChronoUnit.MILLIS);
         dueDateRequest = new SetDueDateRequest(dueDate);
@@ -162,6 +174,8 @@ class TaskResourceTest {
                 "businessKey",
                 "processDefinitionKey",
                 null,
+                null,
+                false,
                 null
             )
         );
@@ -201,6 +215,223 @@ class TaskResourceTest {
             .andExpect(jsonPath("$.content[0].processDefinitionKey").value(tasks.get(0).getProcessDefinitionKey()))
             .andExpect(jsonPath("$.totalElements").value(5))
             .andExpect(jsonPath("$.totalPages").value(5));
+    }
+
+    @Test
+    void getTasksPaged_withAssignedTeam() throws Exception {
+        TeamDto team = new TeamDto("team-a", "Team Alpha");
+
+        List<TaskExtended> tasks = List.of(
+            new TaskExtended(
+                "1", "name", "assignee",
+                LocalDateTime.now(), LocalDateTime.now(), LocalDateTime.now(), LocalDateTime.now(),
+                "delegationState", "description", "executionId", "owner", "parentTaskId",
+                1, "processDefinitionId", "processInstanceId", "taskDefinitionKey",
+                "caseExecutionId", "caseInstanceId", "caseDefinitionId",
+                true, "tenantId", "businessKey", "businessKey", "processDefinitionKey",
+                null, null, false, team
+            )
+        );
+
+        Pageable pageable = PageRequest.of(0, 10);
+        when(operatonTaskService.findTasksFiltered(any(), any())).thenReturn(new PageImpl<>(tasks, pageable, 1L));
+
+        mockMvc.perform(get("/api/v2/task?filter=all")
+                .characterEncoding(StandardCharsets.UTF_8.name())
+                .accept(MediaType.APPLICATION_JSON_VALUE))
+            .andDo(print())
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.content[0].assignedTeam.key").value("team-a"))
+            .andExpect(jsonPath("$.content[0].assignedTeam.title").value("Team Alpha"));
+    }
+
+    @Test
+    void getTasksPaged_withoutAssignedTeam() throws Exception {
+        List<TaskExtended> tasks = List.of(
+            new TaskExtended(
+                "1", "name", "assignee",
+                LocalDateTime.now(), LocalDateTime.now(), LocalDateTime.now(), LocalDateTime.now(),
+                "delegationState", "description", "executionId", "owner", "parentTaskId",
+                1, "processDefinitionId", "processInstanceId", "taskDefinitionKey",
+                "caseExecutionId", "caseInstanceId", "caseDefinitionId",
+                true, "tenantId", "businessKey", "businessKey", "processDefinitionKey",
+                null, null, false, null
+            )
+        );
+
+        Pageable pageable = PageRequest.of(0, 10);
+        when(operatonTaskService.findTasksFiltered(any(), any())).thenReturn(new PageImpl<>(tasks, pageable, 1L));
+
+        mockMvc.perform(get("/api/v2/task?filter=all")
+                .characterEncoding(StandardCharsets.UTF_8.name())
+                .accept(MediaType.APPLICATION_JSON_VALUE))
+            .andDo(print())
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.content[0].assignedTeam").doesNotExist());
+    }
+
+    @Test
+    void assignTeam() throws Exception {
+        var request = new AssigneeRequest(null, "team-a");
+
+        mockMvc.perform(post("/api/v1/task/{taskId}/assign", taskId)
+                .content(objectMapper.writeValueAsString(request))
+                .characterEncoding(StandardCharsets.UTF_8.name())
+                .contentType(MediaType.APPLICATION_JSON_VALUE)
+                .accept(MediaType.APPLICATION_JSON_VALUE)
+            )
+            .andDo(print())
+            .andExpect(status().isOk());
+
+        verify(operatonTaskService, never()).assign(any(), any());
+        verify(operatonTaskService, times(1)).assignTeamToTask(taskId, "team-a");
+    }
+
+    @Test
+    void assignUserAndTeam() throws Exception {
+        var request = new AssigneeRequest(assigneeId, "team-a");
+
+        mockMvc.perform(post("/api/v1/task/{taskId}/assign", taskId)
+                .content(objectMapper.writeValueAsString(request))
+                .characterEncoding(StandardCharsets.UTF_8.name())
+                .contentType(MediaType.APPLICATION_JSON_VALUE)
+                .accept(MediaType.APPLICATION_JSON_VALUE)
+            )
+            .andDo(print())
+            .andExpect(status().isOk());
+
+        verify(operatonTaskService, times(1)).assign(taskId, assigneeId);
+        verify(operatonTaskService, times(1)).assignTeamToTask(taskId, "team-a");
+    }
+
+    @Test
+    void assign_emptyAssignee_unassignsUser() throws Exception {
+        var request = new AssigneeRequest("", null);
+
+        mockMvc.perform(post("/api/v1/task/{taskId}/assign", taskId)
+                .content(objectMapper.writeValueAsString(request))
+                .characterEncoding(StandardCharsets.UTF_8.name())
+                .contentType(MediaType.APPLICATION_JSON_VALUE)
+                .accept(MediaType.APPLICATION_JSON_VALUE)
+            )
+            .andDo(print())
+            .andExpect(status().isOk());
+
+        verify(operatonTaskService, times(1)).unassign(taskId);
+        verify(operatonTaskService, never()).assign(any(), any());
+        verify(operatonTaskService, never()).assignTeamToTask(any(), any());
+        verify(operatonTaskService, never()).unassignTeamFromTask(any());
+    }
+
+    @Test
+    void assign_emptyTeamKey_unassignsTeam() throws Exception {
+        var request = new AssigneeRequest(null, "");
+
+        mockMvc.perform(post("/api/v1/task/{taskId}/assign", taskId)
+                .content(objectMapper.writeValueAsString(request))
+                .characterEncoding(StandardCharsets.UTF_8.name())
+                .contentType(MediaType.APPLICATION_JSON_VALUE)
+                .accept(MediaType.APPLICATION_JSON_VALUE)
+            )
+            .andDo(print())
+            .andExpect(status().isOk());
+
+        verify(operatonTaskService, never()).assign(any(), any());
+        verify(operatonTaskService, never()).unassign(any());
+        verify(operatonTaskService, times(1)).unassignTeamFromTask(taskId);
+        verify(operatonTaskService, never()).assignTeamToTask(any(), any());
+    }
+
+    @Test
+    void assign_emptyAssigneeAndTeamKey_unassignsBoth() throws Exception {
+        var request = new AssigneeRequest("", "");
+
+        mockMvc.perform(post("/api/v1/task/{taskId}/assign", taskId)
+                .content(objectMapper.writeValueAsString(request))
+                .characterEncoding(StandardCharsets.UTF_8.name())
+                .contentType(MediaType.APPLICATION_JSON_VALUE)
+                .accept(MediaType.APPLICATION_JSON_VALUE)
+            )
+            .andDo(print())
+            .andExpect(status().isOk());
+
+        verify(operatonTaskService, times(1)).unassign(taskId);
+        verify(operatonTaskService, never()).assign(any(), any());
+        verify(operatonTaskService, times(1)).unassignTeamFromTask(taskId);
+        verify(operatonTaskService, never()).assignTeamToTask(any(), any());
+    }
+
+    @Test
+    void assign_emptyAssigneeWithTeam_unassignsUserAndAssignsTeam() throws Exception {
+        var request = new AssigneeRequest("", "team-a");
+
+        mockMvc.perform(post("/api/v1/task/{taskId}/assign", taskId)
+                .content(objectMapper.writeValueAsString(request))
+                .characterEncoding(StandardCharsets.UTF_8.name())
+                .contentType(MediaType.APPLICATION_JSON_VALUE)
+                .accept(MediaType.APPLICATION_JSON_VALUE)
+            )
+            .andDo(print())
+            .andExpect(status().isOk());
+
+        verify(operatonTaskService, times(1)).unassign(taskId);
+        verify(operatonTaskService, never()).assign(any(), any());
+        verify(operatonTaskService, times(1)).assignTeamToTask(taskId, "team-a");
+        verify(operatonTaskService, never()).unassignTeamFromTask(any());
+    }
+
+    @Test
+    void assign_assigneeWithEmptyTeam_assignsUserAndUnassignsTeam() throws Exception {
+        var request = new AssigneeRequest(assigneeId, "");
+
+        mockMvc.perform(post("/api/v1/task/{taskId}/assign", taskId)
+                .content(objectMapper.writeValueAsString(request))
+                .characterEncoding(StandardCharsets.UTF_8.name())
+                .contentType(MediaType.APPLICATION_JSON_VALUE)
+                .accept(MediaType.APPLICATION_JSON_VALUE)
+            )
+            .andDo(print())
+            .andExpect(status().isOk());
+
+        verify(operatonTaskService, times(1)).assign(taskId, assigneeId);
+        verify(operatonTaskService, never()).unassign(any());
+        verify(operatonTaskService, times(1)).unassignTeamFromTask(taskId);
+        verify(operatonTaskService, never()).assignTeamToTask(any(), any());
+    }
+
+    @Test
+    void unassign_alsoClearsTeam() throws Exception {
+        mockMvc.perform(post("/api/v1/task/{taskId}/unassign", taskId)
+                .characterEncoding(StandardCharsets.UTF_8.name())
+                .contentType(MediaType.APPLICATION_JSON_VALUE)
+                .accept(MediaType.APPLICATION_JSON_VALUE)
+            )
+            .andDo(print())
+            .andExpect(status().isOk());
+
+        verify(operatonTaskService, times(1)).unassign(taskId);
+        verify(operatonTaskService, times(1)).unassignTeamFromTask(taskId);
+    }
+
+    @Test
+    void getCandidateTeams() throws Exception {
+        Team team = new Team() {
+            @Override public String getKey() { return "team-a"; }
+            @Override public String getTitle() { return "Team Alpha"; }
+        };
+        when(operatonTaskService.getCandidateTeams(eq(taskId), any(Pageable.class)))
+            .thenReturn(new PageImpl<>(List.of(team)));
+
+        mockMvc.perform(get("/api/v1/task/{taskId}/candidate-team", taskId)
+                .characterEncoding(StandardCharsets.UTF_8.name())
+                .accept(MediaType.APPLICATION_JSON_VALUE)
+            )
+            .andDo(print())
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.content").isArray())
+            .andExpect(jsonPath("$.content[0].key").value("team-a"))
+            .andExpect(jsonPath("$.content[0].title").value("Team Alpha"))
+            .andExpect(jsonPath("$.totalElements").value(1));
     }
 
 }

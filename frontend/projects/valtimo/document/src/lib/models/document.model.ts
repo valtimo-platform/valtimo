@@ -104,6 +104,8 @@ interface Document {
   relatedFiles: RelatedFile[];
   assigneeFullName: string;
   assigneeId: string;
+  assignedTeamKey?: string;
+  assignedTeamTitle?: string;
   internalStatus?: string;
   caseTags?: CaseTag[];
 }
@@ -143,6 +145,16 @@ interface ProcessDefinitionCaseDefinition {
   startableByUser: boolean;
   processDefinitionName: string;
   processDefinitionKey: string;
+}
+
+type StartableItemType = 'PROCESS' | 'BUILDING_BLOCK';
+
+interface StartableItem {
+  type: StartableItemType;
+  name: string | null;
+  key: string;
+  versionTag: string | null;
+  processDefinitionId: string | null;
 }
 
 interface ProcessDocumentInstanceId {
@@ -438,6 +450,8 @@ export {
   RelatedFileListItem,
   SortResult,
   SpecifiedDocuments,
+  StartableItem,
+  StartableItemType,
   TemplatePayload,
   TemplateResponse,
   UndeployDocumentDefinitionResult,

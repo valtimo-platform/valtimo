@@ -29,6 +29,7 @@ export class TaskListSortService {
     [TaskListTab.ALL]: this._defaultSortState,
     [TaskListTab.MINE]: this._defaultSortState,
     [TaskListTab.OPEN]: this._defaultSortState,
+    [TaskListTab.TEAM]: this._defaultSortState,
   });
 
   private readonly _sortStateForCurrentTaskType$: Observable<SortState> = combineLatest([

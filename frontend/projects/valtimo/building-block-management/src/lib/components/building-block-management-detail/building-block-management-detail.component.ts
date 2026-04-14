@@ -32,6 +32,7 @@ import {of, take} from 'rxjs';
 import {BuildingBlockManagementProcessesComponent} from '../building-block-management-processes/building-block-management-processes.component';
 import {BuildingBlockManagementDetailActionsComponent} from '../building-block-management-detail-actions/building-block-management-detail-actions.component';
 import {BuildingBlockManagementFormsComponent} from '../building-block-management-forms/building-block-management-forms.component';
+import {BuildingBlockManagementFormFlowsComponent} from '../building-block-management-form-flows/building-block-management-form-flows.component';
 
 @Component({
   standalone: true,
@@ -49,6 +50,7 @@ import {BuildingBlockManagementFormsComponent} from '../building-block-managemen
     BuildingBlockManagementDocumentComponent,
     BuildingBlockManagementProcessesComponent,
     BuildingBlockManagementFormsComponent,
+    BuildingBlockManagementFormFlowsComponent,
     RenderInPageHeaderDirective,
     BuildingBlockManagementDetailActionsComponent,
     DialogModule,

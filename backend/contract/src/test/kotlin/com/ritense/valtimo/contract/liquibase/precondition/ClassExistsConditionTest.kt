@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,10 +16,9 @@
 
 package com.ritense.valtimo.contract.liquibase.precondition
 
-import liquibase.changelog.DatabaseChangeLog
 import liquibase.database.Database
-import liquibase.exception.PreconditionErrorException
-import liquibase.exception.PreconditionFailedException
+import liquibase.exception.CustomPreconditionErrorException
+import liquibase.exception.CustomPreconditionFailedException
 import org.junit.jupiter.api.Assertions.assertDoesNotThrow
 import org.junit.jupiter.api.Assertions.assertThrows
 import org.junit.jupiter.api.Test
@@ -28,7 +27,6 @@ import org.mockito.kotlin.mock
 class ClassExistsConditionTest {
 
     private val database: Database = mock()
-    private val changeLog = DatabaseChangeLog("test-changelog.xml")
 
     @Test
     fun `check passes when class exists`() {
@@ -36,7 +34,7 @@ class ClassExistsConditionTest {
         condition.className = ClassExistsCondition::class.java.name
 
         assertDoesNotThrow {
-            condition.check(database, changeLog, null, null)
+            condition.check(database)
         }
     }
 
@@ -45,8 +43,8 @@ class ClassExistsConditionTest {
         val condition = ClassExistsCondition()
         condition.className = "com.example.MissingChangeLog"
 
-        assertThrows(PreconditionFailedException::class.java) {
-            condition.check(database, changeLog, null, null)
+        assertThrows(CustomPreconditionFailedException::class.java) {
+            condition.check(database)
         }
     }
 
@@ -55,8 +53,8 @@ class ClassExistsConditionTest {
         val condition = ClassExistsCondition()
         condition.className = "  "
 
-        assertThrows(PreconditionErrorException::class.java) {
-            condition.check(database, changeLog, null, null)
+        assertThrows(CustomPreconditionErrorException::class.java) {
+            condition.check(database)
         }
     }
 }

@@ -113,10 +113,17 @@ export const environment: ValtimoConfig = {
         sequence: 4,
       },
       {
+        roles: [ROLE_USER],
+        link: ['/teams'],
+        title: 'teams.title',
+        iconClass: 'icon mdi mdi-account-group',
+        sequence: 5,
+      },
+      {
         roles: [ROLE_ADMIN],
         title: 'Admin',
         iconClass: 'icon mdi mdi-tune',
-        sequence: 5,
+        sequence: 6,
         children: [
           {title: 'Configuration', textClass: 'text-dark font-weight-bold c-default', sequence: 1},
           {
@@ -162,7 +169,7 @@ export const environment: ValtimoConfig = {
         roles: [ROLE_DEVELOPER, ROLE_ADMIN],
         title: 'Development',
         iconClass: 'icon mdi mdi-xml',
-        sequence: 6,
+        sequence: 7,
         children: [
           {link: ['/swagger'], title: 'Swagger', iconClass: 'icon mdi mdi-dot-circle', sequence: 1},
         ],
@@ -198,8 +205,8 @@ export const environment: ValtimoConfig = {
   defaultDefinitionTable: defaultDefinitionColumns,
   caseFileUploadAcceptedFiles:
     'image/png, image/jpeg, text/plain, application/pdf, application/vnd.openxmlformats-officedocument.wordprocessingml.document, application/xml',
-  visibleTaskListTabs: [TaskListTab.MINE, TaskListTab.OPEN, TaskListTab.ALL],
-  visibleCaseListTabs: [CaseListTab.ALL, CaseListTab.MINE, CaseListTab.OPEN],
+  visibleTaskListTabs: [TaskListTab.MINE, TaskListTab.TEAM, TaskListTab.OPEN, TaskListTab.ALL],
+  visibleCaseListTabs: [CaseListTab.ALL, CaseListTab.MINE, CaseListTab.TEAM, CaseListTab.OPEN],
   customTaskList: {
     fields: [
       {
@@ -243,7 +250,7 @@ export const environment: ValtimoConfig = {
     showUserNameInTopBar: true,
     showPlantATreeButton: true,
     experimentalDmnEditing: true,
-    largeLogoMargin: true,
+    largeLogoMargin: false,
     sortFilesByDate: true,
     disableCaseCount: false,
     returnToLastUrlAfterTokenExpiration: true,

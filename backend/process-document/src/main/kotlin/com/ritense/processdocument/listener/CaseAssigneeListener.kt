@@ -15,7 +15,10 @@
  */
 package com.ritense.processdocument.listener
 
+import com.ritense.authorization.AuthorizationContext.Companion.runWithoutAuthorization
+import com.ritense.authorization.AuthorizationService
 import com.ritense.authorization.annotation.RunWithoutAuthorization
+import com.ritense.authorization.request.DelegateUserEntityAuthorizationRequest
 import com.ritense.case.service.CaseDefinitionService
 import com.ritense.case_.domain.definition.CaseDefinition
 import com.ritense.document.event.DocumentAssigneeChangedEvent
@@ -25,12 +28,15 @@ import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import com.ritense.valtimo.contract.authentication.UserManagementService
 import com.ritense.valtimo.contract.document.CaseDocumentResolutionException
 import com.ritense.valtimo.contract.document.CaseDocumentResolver
+import com.ritense.valtimo.operaton.authorization.OperatonTaskActionProvider
+import com.ritense.valtimo.operaton.domain.OperatonTask
 import com.ritense.valtimo.operaton.repository.OperatonTaskSpecificationHelper.Companion.byAssigned
 import com.ritense.valtimo.operaton.repository.OperatonTaskSpecificationHelper.Companion.byCandidateGroups
 import com.ritense.valtimo.operaton.repository.OperatonTaskSpecificationHelper.Companion.byProcessInstanceBusinessKey
 import com.ritense.valtimo.service.OperatonTaskService
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.context.event.EventListener
+import org.springframework.security.access.AccessDeniedException
 import org.springframework.stereotype.Component
 
 @Component
@@ -40,10 +46,10 @@ class CaseAssigneeListener(
     private val documentService: DocumentService,
     private val caseDefinitionService: CaseDefinitionService,
     private val userManagementService: UserManagementService,
-    private val caseDocumentResolver: CaseDocumentResolver
+    private val caseDocumentResolver: CaseDocumentResolver,
+    private val authorizationService: AuthorizationService,
 ) {
 
-    @RunWithoutAuthorization
     @EventListener(DocumentAssigneeChangedEvent::class)
     fun updateAssigneeOnTasks(event: DocumentAssigneeChangedEvent) {
         try {
@@ -54,14 +60,36 @@ class CaseAssigneeListener(
             )
 
             if (caseDefinition.canHaveAssignee && caseDefinition.autoAssignTasks) {
-                val assignee = userManagementService.findByUsername(caseDocument.assigneeId())
-                val tasks = operatonTaskService.findTasks(
-                    byProcessInstanceBusinessKey(caseDocument.id().toString())
-                        .and(byCandidateGroups(assignee.roles))
-                )
-                logger.debug { "Updating assignee on ${tasks.size} task(s)" }
-                tasks.forEach { task ->
-                    operatonTaskService.assign(task.id, assignee.id)
+                val assigneeUsername = caseDocument.assigneeId()
+                if (assigneeUsername != null) {
+                    val assignee = runWithoutAuthorization { userManagementService.findByUsername(caseDocument.assigneeId()) }
+                    val tasks = runWithoutAuthorization {
+                        operatonTaskService.findTasks(
+                            byProcessInstanceBusinessKey(caseDocument.id().toString())
+                                .and(byCandidateGroups(assignee.roles))
+                        )
+
+                    }
+
+                    logger.debug { "Updating assignee on ${tasks.size} task(s)" }
+                    for (task in tasks) {
+                        try {
+                            authorizationService.requirePermission(
+                                DelegateUserEntityAuthorizationRequest(
+                                    OperatonTask::class.java,
+                                    OperatonTaskActionProvider.Companion.ASSIGNABLE,
+                                    assignee.username,
+                                    task
+                                )
+                            )
+                        } catch (_: AccessDeniedException) {
+                            logger.info { "Auto assigning user to task ${task.id} failed." }
+                            continue
+                        }
+                        runWithoutAuthorization {
+                            operatonTaskService.assign(task.id, assignee.id)
+                        }
+                    }
                 }
             }
         } catch (e: CaseDocumentResolutionException) {

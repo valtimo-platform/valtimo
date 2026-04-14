@@ -74,7 +74,7 @@ internal class ZakenApiClientIT @Autowired constructor(
     fun `should allow zaak-document link`() {
         val permissions = listOf(
             Permission(
-                id = UUID.randomUUID(),
+                id = CASE_DOCUMENT_ID,
                 resourceType = ResourcePermission::class.java,
                 actions = mutableListOf(ResourcePermissionActionProvider.CREATE),
                 conditionContainer = ConditionContainer(),
@@ -87,6 +87,7 @@ internal class ZakenApiClientIT @Autowired constructor(
 
         zakenApiClient.linkDocument(
             zakenApiPlugin.authenticationPluginConfiguration,
+            CASE_DOCUMENT_ID,
             zakenApiPlugin.url,
             LinkDocumentRequest(
                 informatieobject = "https://localhost:56273/documenten/informatieobject/1234",
@@ -105,6 +106,7 @@ internal class ZakenApiClientIT @Autowired constructor(
         assertThrows<AccessDeniedException> {
             zakenApiClient.linkDocument(
                 zakenApiPlugin.authenticationPluginConfiguration,
+                CASE_DOCUMENT_ID,
                 zakenApiPlugin.url,
                 LinkDocumentRequest(
                     informatieobject = "https://localhost:56273/documenten/informatieobject/1234",
@@ -120,10 +122,49 @@ internal class ZakenApiClientIT @Autowired constructor(
 
     @Test
     @WithMockUser(authorities = ["ROLE_TEST"])
+    fun `should allow get single zaakinformatieobject by url`() {
+        val permissions = listOf(
+            Permission(
+                id = CASE_DOCUMENT_ID,
+                resourceType = ResourcePermission::class.java,
+                actions = mutableListOf(ResourcePermissionActionProvider.VIEW),
+                conditionContainer = ConditionContainer(),
+                role = roleTest,
+                contextResourceType = null,
+                contextConditionContainer = null
+            )
+        )
+        permissionRepository.saveAllAndFlush(permissions)
+
+        val result = zakenApiClient.getZaakInformatieObject(
+            authentication = zakenApiPlugin.authenticationPluginConfiguration,
+            baseUrl = zakenApiPlugin.url,
+            zaakInformatieobjectUrl = ZAAK_INFORMATIEOBJECT_URL,
+            caseDocumentId = CASE_DOCUMENT_ID
+        )
+
+        assertEquals(URI("https://example.com"), result.url)
+    }
+
+    @Test
+    @WithMockUser(authorities = ["ROLE_TEST"])
+    fun `should throw access denied for get single zaakinformatieobject by url when missing permission`() {
+        assertThrows<AccessDeniedException> {
+            zakenApiClient.getZaakInformatieObject(
+                authentication = zakenApiPlugin.authenticationPluginConfiguration,
+                baseUrl = zakenApiPlugin.url,
+                zaakInformatieobjectUrl = ZAAK_INFORMATIEOBJECT_URL,
+                caseDocumentId = CASE_DOCUMENT_ID
+            )
+        }
+    }
+
+    @Test
+    @WithMockUser(authorities = ["ROLE_TEST"])
     fun `should allow zaak-document list`() {
         val permissions = listOf(
             Permission(
-                id = UUID.randomUUID(),
+                id = CASE_DOCUMENT_ID,
                 resourceType = ResourcePermission::class.java,
                 actions = mutableListOf(ResourcePermissionActionProvider.VIEW_LIST),
                 conditionContainer = ConditionContainer(),
@@ -136,6 +177,7 @@ internal class ZakenApiClientIT @Autowired constructor(
 
         val results = zakenApiClient.getZaakInformatieObjecten(
             authentication = zakenApiPlugin.authenticationPluginConfiguration,
+            CASE_DOCUMENT_ID,
             baseUrl = zakenApiPlugin.url,
             zaakUrl = ZAAK_URL
         )
@@ -148,6 +190,7 @@ internal class ZakenApiClientIT @Autowired constructor(
     fun `should respond with empty zaak-document list when missing permission`() {
         val results = zakenApiClient.getZaakInformatieObjecten(
             authentication = zakenApiPlugin.authenticationPluginConfiguration,
+            CASE_DOCUMENT_ID,
             baseUrl = zakenApiPlugin.url,
             zaakUrl = ZAAK_URL
         )
@@ -161,6 +204,7 @@ internal class ZakenApiClientIT @Autowired constructor(
                 return when (request.method + " " + request.path?.substringBefore('?')) {
                     "POST $ZAKEN_API_PATH/zaakinformatieobjecten" -> handleLinkDocumentRequest()
                     "GET $ZAKEN_API_PATH/zaakinformatieobjecten" -> handleListDocumentRequest()
+                    "GET $ZAKEN_API_PATH/zaakinformatieobjecten/$ZAAK_ID" -> handleGetSingleDocumentRequest()
                     else -> MockResponse().setResponseCode(404)
                 }
             }
@@ -169,6 +213,22 @@ internal class ZakenApiClientIT @Autowired constructor(
     }
 
     private fun handleLinkDocumentRequest(zone: String = "Z"): MockResponse {
+        val body = """
+            {
+                "url": "https://example.com",
+                "uuid": "095be615-a8ad-4c33-8e9c-c7612fbf6c9f",
+                "informatieobject": "https://example.com",
+                "zaak": "https://example.com",
+                "aardRelatieWeergave": "Hoort bij, omgekeerd: kent",
+                "titel": "string",
+                "beschrijving": "string",
+                "registratiedatum": "2019-08-24T14:15:22Z"
+            }
+        """.trimIndent()
+        return mockResponse(body)
+    }
+
+    private fun handleGetSingleDocumentRequest(): MockResponse {
         val body = """
             {
                 "url": "https://example.com",
@@ -206,7 +266,10 @@ internal class ZakenApiClientIT @Autowired constructor(
         private const val ZAAK_ID = "57f66ff6-db7f-43bc-84ef-6847640d3609"
         private const val ZAKEN_API_PATH = "/zaken/api/v1"
         private const val ZAKEN_API_URL = "http://localhost:56273$ZAKEN_API_PATH"
+        val CASE_DOCUMENT_ID: UUID = UUID.fromString(ZAAK_ID)
 
         private val ZAAK_URL = URI("${ZAKEN_API_URL}/zaken/$ZAAK_ID")
+        val ZAAK_INFORMATIEOBJECT_URL = URI("${ZAKEN_API_URL}/zaakinformatieobjecten/$ZAAK_ID")
     }
+
 }

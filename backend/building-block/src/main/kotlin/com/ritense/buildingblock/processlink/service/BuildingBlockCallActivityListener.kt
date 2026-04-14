@@ -28,29 +28,31 @@ import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import com.ritense.valtimo.contract.buildingblock.BuildingBlockConstants.Companion.BUILDING_BLOCK_DOCUMENT_ID_VARIABLE
 import com.ritense.valtimo.contract.process.ProcessConstants.OPERATON_BUILDING_BLOCK_DEFINITION_VERSION_TAG_PREFIX
 import com.ritense.valtimo.contract.process.ProcessConstants.OPERATON_CASE_DEFINITION_VERSION_TAG_PREFIX
+import com.ritense.valtimo.event.OperatonExecutionEvent
 import com.ritense.valtimo.operaton.service.OperatonRepositoryService
 import com.ritense.valueresolver.ValueResolverService
+import java.util.UUID
 import org.operaton.bpm.engine.delegate.DelegateExecution
 import org.springframework.context.event.EventListener
 import org.springframework.stereotype.Component
-import java.util.UUID
 
 @Component
 @SkipComponentScan
 class BuildingBlockCallActivityListener(
     private val processLinkService: ProcessLinkService,
-    private val buidingBlockInstanceService: BuildingBlockInstanceService,
+    private val buildingBlockInstanceService: BuildingBlockInstanceService,
     private val valueResolverService: ValueResolverService,
     private val objectMapper: ObjectMapper,
     private val operatonRepositoryService: OperatonRepositoryService,
 ) {
 
     @EventListener(
-        condition = """#execution.bpmnModelElementInstance != null
-            && #execution.bpmnModelElementInstance.elementType.typeName == T(org.operaton.bpm.engine.ActivityTypes).CALL_ACTIVITY
-            && #execution.eventName == T(org.operaton.bpm.engine.delegate.ExecutionListener).EVENTNAME_START"""
+        condition = """#event.delegateExecution.bpmnModelElementInstance != null
+            && #event.delegateExecution.bpmnModelElementInstance.elementType.typeName == T(org.operaton.bpm.engine.ActivityTypes).CALL_ACTIVITY
+            && #event.eventName == T(org.operaton.bpm.engine.delegate.ExecutionListener).EVENTNAME_START"""
     )
-    fun onCallActivityStart(execution: DelegateExecution) {
+    fun onCallActivityStart(event: OperatonExecutionEvent) {
+        val execution = event.delegateExecution
         val activityId = execution.currentActivityId ?: return
         val links = processLinkService.getProcessLinks(execution.processDefinitionId, activityId)
             .filterIsInstance<BuildingBlockProcessLink>()
@@ -120,15 +122,16 @@ class BuildingBlockCallActivityListener(
 
         // Try to find a building block instance with this document ID
         // If found, the current process is a building block, and this instance is the parent
-        return buidingBlockInstanceService.getByDocumentId(documentId)
+        return buildingBlockInstanceService.getByDocumentId(documentId)
     }
 
     @EventListener(
-        condition = """#execution.bpmnModelElementInstance != null
-            && #execution.bpmnModelElementInstance.elementType.typeName == T(org.operaton.bpm.engine.ActivityTypes).CALL_ACTIVITY
-            && #execution.eventName == T(org.operaton.bpm.engine.delegate.ExecutionListener).EVENTNAME_END"""
+        condition = """#event.delegateExecution.bpmnModelElementInstance != null
+            && #event.delegateExecution.bpmnModelElementInstance.elementType.typeName == T(org.operaton.bpm.engine.ActivityTypes).CALL_ACTIVITY
+            && #event.eventName == T(org.operaton.bpm.engine.delegate.ExecutionListener).EVENTNAME_END"""
     )
-    fun onCallActivityEnd(execution: DelegateExecution) {
+    fun onCallActivityEnd(event: OperatonExecutionEvent) {
+        val execution = event.delegateExecution
 
         val buildingBlockVariableString = execution.getVariableLocal(BUILDING_BLOCK_DOCUMENT_ID_VARIABLE)?.let {
             it as String
@@ -141,18 +144,21 @@ class BuildingBlockCallActivityListener(
                 "referencing the building block document, but was '$buildingBlockVariableString'")
         }
 
-        val buildingBlockInstance = buidingBlockInstanceService.getByDocumentId(buildingBlockDocumentId)
+        val buildingBlockInstance = buildingBlockInstanceService.getByDocumentId(buildingBlockDocumentId)
             ?: throw IllegalStateException("No building block instance found for documentId '$buildingBlockDocumentId'")
+
+        val activityId = buildingBlockInstance.activityId
+            ?: throw IllegalStateException("No buildingBlockInstance.activityId found for documentId '$buildingBlockDocumentId'")
 
         val processLinks = processLinkService.getProcessLinks(
             execution.processDefinitionId,
-            buildingBlockInstance.activityId
+            activityId
         ).filterIsInstance<BuildingBlockProcessLink>()
 
         val processLink = processLinks.singleOrNull()
             ?: throw IllegalStateException(
                 "Expected a single building block process link for processDefinitionId '${execution.processDefinitionId}' " +
-                    "and activityId '${buildingBlockInstance.activityId}', but found ${processLinks.size}"
+                    "and activityId '$activityId', but found ${processLinks.size}"
             )
 
         val endSyncOutputMappings = processLink.outputMappings.filter {
@@ -191,9 +197,10 @@ class BuildingBlockCallActivityListener(
 
         // Handle document targets - write to parent building block doc or case doc
         if (otherTargets.isNotEmpty()) {
-            val targetDocumentId = if (buildingBlockInstance.parentBuildingBlockInstanceId != null) {
-                val parentInstance = buidingBlockInstanceService.get(buildingBlockInstance.parentBuildingBlockInstanceId)
-                    ?: throw IllegalStateException("Parent building block instance not found: ${buildingBlockInstance.parentBuildingBlockInstanceId}")
+            val parentId = buildingBlockInstance.parentBuildingBlockInstanceId
+            val targetDocumentId = if (parentId != null) {
+                val parentInstance = buildingBlockInstanceService.get(parentId)
+                    ?: throw IllegalStateException("Parent building block instance not found: $parentId")
                 parentInstance.documentId
             } else {
                 buildingBlockInstance.caseDocumentId
@@ -220,11 +227,12 @@ class BuildingBlockCallActivityListener(
             buildDocumentContent(execution, buildingBlockProcessLink, sourceDocumentId),
         )
 
-        return buidingBlockInstanceService.create(
+        return buildingBlockInstanceService.create(
             documentRequest,
             rootCaseDocumentId,
             activityId,
-            parentBuildingBlockInstanceId
+            parentBuildingBlockInstanceId,
+            callerProcessDefinitionId = execution.processDefinitionId
         )
     }
 

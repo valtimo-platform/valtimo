@@ -15,9 +15,14 @@
  */
 
 import {expect, test} from '@playwright/test';
-import {CASE_VERSIONS} from './case-config';
 import {CaseDetailsManagementPage} from './page';
 import {expectNotificationMessage} from '../../utils/ui.utils';
+import {apiGet, apiPut, apiDelete} from '../../utils/api.utils';
+import {
+  ensureDraftVersionSelected,
+  ensureFinalVersionSelected,
+  getVersionFromUrl,
+} from '../../utils/version.utils';
 
 test.use({storageState: undefined});
 
@@ -26,6 +31,7 @@ test.describe('Case management', () => {
   let page;
   let caseDetailsManagementPage;
   let request;
+  let draftVersion: string;
 
   // Arrange
   test.beforeAll(async ({browser, baseURL}) => {
@@ -38,35 +44,40 @@ test.describe('Case management', () => {
 
     await page.goto('/');
     await caseDetailsManagementPage.goToCaseDetailsManagement('bezwaar');
+    draftVersion = await ensureDraftVersionSelected(page);
   });
 
   test.describe('Success test', () => {
     test.describe('Version switch', () => {
       test('Switch version via dropdown', async () => {
+        // Arrange: ensure we're on a final version first so we actually switch
+        const stableVersion = await ensureFinalVersionSelected(page);
+
         // Act
-        await caseDetailsManagementPage.switchCaseVersionViaDropdown(CASE_VERSIONS.DRAFT);
+        await caseDetailsManagementPage.switchCaseVersionViaDropdown(draftVersion);
 
         // Assert
-        expect(page).toHaveURL(
-          `/case-management/case/bezwaar/version/${CASE_VERSIONS.STABLE}/general`
+        await expect(page).toHaveURL(
+          `/case-management/case/bezwaar/version/${draftVersion}/general`
         );
       });
 
       test('Switch version via list', async () => {
         // Act
-        await caseDetailsManagementPage.switchCaseVersionViaList(CASE_VERSIONS.STABLE);
+        await caseDetailsManagementPage.switchCaseVersionViaList();
 
         // Assert
-        expect(page).toHaveURL(
-          `/case-management/case/bezwaar/version/${CASE_VERSIONS.STABLE}/general`
+        await expect(page).toHaveURL(
+          /\/case-management\/case\/bezwaar\/version\/[\d.]+\/general/
         );
       });
 
       test('Set active version', async () => {
-        //Act
-        await caseDetailsManagementPage.makeVersionGlobal(CASE_VERSIONS.STABLE);
+        // Act
+        const stableVersion = await ensureFinalVersionSelected(page);
+        await caseDetailsManagementPage.makeVersionGlobal(stableVersion);
 
-        //Assert
+        // Assert
         await expect(
           caseDetailsManagementPage.versionSelectDropdown.locator('cds-tag', {
             hasText: 'Globally active',
@@ -78,11 +89,19 @@ test.describe('Case management', () => {
     test.describe('General tab', () => {
       test.beforeEach(async () => {
         //Arrange
-        await caseDetailsManagementPage.switchCaseVersionViaDropdown(CASE_VERSIONS.DRAFT);
+        draftVersion = await ensureDraftVersionSelected(page);
+        await page.reload();
+        await page.waitForLoadState('domcontentloaded');
       });
 
       test.describe('Case handler', () => {
         test('Can have handler is false', async () => {
+          // Arrange: ensure toggle starts as true so clicking it sets it to false
+          const checked = await caseDetailsManagementPage.caseHandlerCanHaveHandler.getAttribute('ng-reflect-checked');
+          if (checked === 'false') {
+            await caseDetailsManagementPage.caseHandlerCanHaveHandlerToggle.click();
+          }
+
           //Act
           await caseDetailsManagementPage.caseHandlerCanHaveHandlerToggle.click();
 
@@ -98,6 +117,12 @@ test.describe('Case management', () => {
         });
 
         test('Can have handler is true & cannot automatically assign', async () => {
+          // Arrange: ensure toggle starts as false so clicking it sets it to true
+          const checked = await caseDetailsManagementPage.caseHandlerCanHaveHandler.getAttribute('ng-reflect-checked');
+          if (checked === 'true') {
+            await caseDetailsManagementPage.caseHandlerCanHaveHandlerToggle.click();
+          }
+
           //Act
           await caseDetailsManagementPage.caseHandlerCanHaveHandlerToggle.click();
 
@@ -117,10 +142,13 @@ test.describe('Case management', () => {
         });
 
         test('Can have handler is true & can automatically assign', async () => {
-          //Act
-          await caseDetailsManagementPage.caseHandlerCanHaveHandlerToggle.click();
+          // Arrange: ensure canHaveHandler is true before testing auto-assign
+          const checked = await caseDetailsManagementPage.caseHandlerCanHaveHandler.getAttribute('ng-reflect-checked');
+          if (checked === 'false') {
+            await caseDetailsManagementPage.caseHandlerCanHaveHandlerToggle.click();
+          }
 
-          // Assert
+          // Assert canHaveHandler is true
           await expect(caseDetailsManagementPage.caseHandlerCanHaveHandler).toHaveAttribute(
             'ng-reflect-checked',
             'true'
@@ -184,9 +212,86 @@ test.describe('Case management', () => {
         });
       });
 
+      test.describe('Link upload process', () => {
+        let originalUploadProcessKey: string | null;
+
+        const getFeatureProcessUrl = () =>
+          `/api/management/v1/case-definition/bezwaar/version/${draftVersion}/feature-process`;
+
+        test.beforeAll(async () => {
+          try {
+            const linked = await apiGet<{processDefinitionKey: string}>(
+              `${getFeatureProcessUrl()}/DOCUMENT_UPLOAD`
+            );
+            originalUploadProcessKey = linked?.processDefinitionKey ?? null;
+          } catch {
+            originalUploadProcessKey = null;
+          }
+        });
+
+        test.afterAll(async () => {
+          try {
+            if (originalUploadProcessKey) {
+              await apiPut(getFeatureProcessUrl(), {
+                processDefinitionKey: originalUploadProcessKey,
+                linkType: 'DOCUMENT_UPLOAD',
+              });
+            } else {
+              await apiDelete(`${getFeatureProcessUrl()}/DOCUMENT_UPLOAD`);
+            }
+          } catch {
+            // Ignore cleanup errors
+          }
+        });
+
+        test('Upload process combo box is visible', async () => {
+          await expect(caseDetailsManagementPage.linkUploadProcessComboBox).toBeVisible();
+        });
+
+        test('Can select an upload process', async () => {
+          // Arrange: clear any existing selection first
+          const currentValue = await caseDetailsManagementPage.linkUploadProcessInput.inputValue();
+          if (currentValue) {
+            await caseDetailsManagementPage.clearUploadProcess();
+            await expect(caseDetailsManagementPage.linkUploadProcessInput).toHaveValue('');
+          }
+
+          // Act
+          await caseDetailsManagementPage.selectUploadProcess('Bezwaar');
+
+          // Assert
+          await expect(caseDetailsManagementPage.linkUploadProcessInput).toHaveValue('Bezwaar');
+        });
+
+        test('Can change the linked upload process', async () => {
+          // Act
+          await caseDetailsManagementPage.selectUploadProcess('Documenten API upload document');
+
+          // Assert
+          await expect(caseDetailsManagementPage.linkUploadProcessInput).toHaveValue(
+            'Documenten API upload document'
+          );
+        });
+
+        test('Can clear the linked upload process', async () => {
+          // Arrange: ensure a process is linked
+          const currentValue = await caseDetailsManagementPage.linkUploadProcessInput.inputValue();
+          if (!currentValue) {
+            await caseDetailsManagementPage.selectUploadProcess('Bezwaar');
+            await expect(caseDetailsManagementPage.linkUploadProcessInput).toHaveValue('Bezwaar');
+          }
+
+          // Act
+          await caseDetailsManagementPage.clearUploadProcess();
+
+          // Assert
+          await expect(caseDetailsManagementPage.linkUploadProcessInput).toHaveValue('');
+        });
+      });
+
       test('Read-only states', async () => {
         //Act
-        await caseDetailsManagementPage.switchCaseVersionViaDropdown(CASE_VERSIONS.STABLE);
+        await ensureFinalVersionSelected(page);
 
         //Assert
         await expect(caseDetailsManagementPage.caseHandlerCanHaveHandler).toHaveAttribute(
@@ -211,11 +316,11 @@ test.describe('Case management', () => {
 
     test('Export case definition', async () => {
       //Act
-      await caseDetailsManagementPage.switchCaseVersionViaDropdown(CASE_VERSIONS.STABLE);
+      const stableVersion = await ensureFinalVersionSelected(page);
       const download = await caseDetailsManagementPage.exportCaseDefinition();
 
       //Assert
-      expect(download.suggestedFilename()).toContain(CASE_VERSIONS.STABLE);
+      expect(download.suggestedFilename()).toContain(stableVersion);
     });
   });
 });

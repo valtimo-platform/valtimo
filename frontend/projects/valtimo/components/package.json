@@ -3,9 +3,9 @@
   "license": "EUPL-1.2",
   "version": "13.0.1",
   "peerDependencies": {
-    "@angular/common": "^19.2.8",
-    "@angular/core": "^19.2.8",
-    "@angular/elements": "^19.2.8"
+    "@angular/common": "19.2.20",
+    "@angular/core": "19.2.20",
+    "@angular/elements": "19.2.20"
   },
   "dependencies": {
     "@foxythemes/bootstrap-datetime-picker-bs4": "2.3.5",
@@ -30,6 +30,7 @@
     "ngx-skeleton-loader": "11.0.0",
     "@mdi/font": "7.4.47",
     "uuid": "11.1.0",
+    "@floating-ui/dom": "1.7.4",
     "flatpickr": "4.6.13",
     "lodash": "4.17.21",
     "jwt-decode": "4.0.0",

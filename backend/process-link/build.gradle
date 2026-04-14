@@ -59,6 +59,7 @@ dependencies {
 
     testImplementation project(":backend:test-utils-common")
     testImplementation(project(':backend:form'))
+    testImplementation(project(':backend:form-flow'))
     testImplementation(project(':backend:building-block')) {
         exclude(group: "com.ritense.valtimo", module: "process-link")
     }

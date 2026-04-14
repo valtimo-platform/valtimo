@@ -37,7 +37,7 @@
     <form [formGroup]="caseTagFormGroup" class="case-tag-form">
       <cds-label>
         {{ 'caseManagement.caseTags.columns.title' | translate }}
-        <input cdsText formControlName="title" data-test-id="caseTagTitleInput" [attr.modal-primary-focus]="true" />
+        <input cdsText formControlName="title" [attr.data-test-id]="testIds.titleInput" [attr.modal-primary-focus]="true" />
       </cds-label>
 
       <cds-label>
@@ -46,7 +46,7 @@
           <input
             cdsText
             formControlName="key"
-            data-test-id="caseTagKeyInput"
+            [attr.data-test-id]="testIds.keyInput"
             [readOnly]="!obs.editingKey"
             [placeholder]="
               obs.isAdd && !obs.editingKey
@@ -56,7 +56,7 @@
           />
           <cds-icon-button
             *ngIf="!obs.editingKey && obs.isAdd"
-            data-test-id="caseTagEditKeyButton"
+            [attr.data-test-id]="testIds.editKeyButton"
             [disabled]="obs.disabled"
             (click)="editKeyButtonClick()"
             kind="secondary"
@@ -71,7 +71,7 @@
           {{ 'caseManagement.caseTags.columns.color' | translate }}
           <cds-dropdown
             id="status-color-dropdown"
-            data-test-id="caseTagColorDropdown"
+            [attr.data-test-id]="testIds.colorDropdown"
             [appendInline]="false"
             [placeholder]="'caseManagement.caseTags.colorPlaceholder' | translate"
             (selected)="colorDropdownChange($event)"
@@ -87,14 +87,14 @@
   </section>
 
   <cds-modal-footer>
-    <button cdsButton="secondary" data-test-id="caseTagCancelButton" (click)="close()" [disabled]="obs.disabled">
+    <button cdsButton="ghost" [attr.data-test-id]="testIds.cancelButton" (click)="close()" [disabled]="obs.disabled">
       {{ 'interface.cancel' | translate }}
     </button>
 
     <button
       *ngIf="obs.isAdd"
       cdsButton="primary"
-      data-test-id="caseTagAddConfirmButton"
+      [attr.data-test-id]="testIds.addConfirmButton"
       [disabled]="invalid || pristine || obs.disabled"
       (click)="addCaseTag()"
     >
@@ -104,7 +104,7 @@
     <button
       *ngIf="obs.isEdit"
       cdsButton="primary"
-      data-test-id="caseTagSaveButton"
+      [attr.data-test-id]="testIds.saveButton"
       [disabled]="invalid || pristine || obs.disabled"
       (click)="editCaseTag()"
     >

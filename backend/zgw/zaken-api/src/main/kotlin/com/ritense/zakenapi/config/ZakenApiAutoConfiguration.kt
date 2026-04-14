@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,6 +25,7 @@ import com.ritense.document.service.impl.JsonSchemaDocumentService
 import com.ritense.documentenapi.service.DocumentenApiService
 import com.ritense.documentenapi.service.DocumentenApiVersionService
 import com.ritense.outbox.OutboxService
+import com.ritense.plugin.repository.PluginConfigurationRepository
 import com.ritense.plugin.service.PluginService
 import com.ritense.processdocument.importer.ZaakTypeLinkImporter
 import com.ritense.processdocument.service.ProcessDefinitionCaseDefinitionService
@@ -42,6 +43,7 @@ import com.ritense.zakenapi.exporter.ZaakTypeLinkExporter
 import com.ritense.zakenapi.ikorepository.ZakenApiIkoRepository
 import com.ritense.zakenapi.link.ZaakInstanceLinkService
 import com.ritense.zakenapi.listener.ZaakNotitieEventListener
+import com.ritense.zakenapi.listener.ZaakTypeLinkConfigurationIssueListener
 import com.ritense.zakenapi.provider.BsnProvider
 import com.ritense.zakenapi.provider.DefaultZaakUrlProvider
 import com.ritense.zakenapi.provider.DefaultZaaktypeUrlProvider
@@ -146,12 +148,14 @@ class ZakenApiAutoConfiguration {
         catalogiService: CatalogiService,
         documentenApiService: DocumentenApiService,
         documentenApiVersionService: DocumentenApiVersionService,
+        authorizationService: AuthorizationService,
     ) = ZaakDocumentService(
         zaakUrlProvider,
         pluginService,
         catalogiService,
         documentenApiService,
         documentenApiVersionService,
+        authorizationService
     )
 
     @Bean
@@ -231,10 +235,12 @@ class ZakenApiAutoConfiguration {
         zaakTypeLinkRepository: ZaakTypeLinkRepository,
         processDefinitionCaseDefinitionService: ProcessDefinitionCaseDefinitionService,
         caseDefinitionChecker: CaseDefinitionChecker,
+        applicationEventPublisher: ApplicationEventPublisher,
     ) = DefaultZaakTypeLinkService(
         zaakTypeLinkRepository,
         processDefinitionCaseDefinitionService,
-        caseDefinitionChecker
+        caseDefinitionChecker,
+        applicationEventPublisher
     )
 
     @Bean
@@ -314,10 +320,14 @@ class ZakenApiAutoConfiguration {
     @ConditionalOnMissingBean(ZaakTypeLinkImporter::class)
     fun zaakTypeLinkImporter(
         objectMapper: ObjectMapper,
-        zaakTypeLinkService: ZaakTypeLinkService
+        zaakTypeLinkService: ZaakTypeLinkService,
+        applicationEventPublisher: ApplicationEventPublisher,
+        pluginConfigurationRepository: PluginConfigurationRepository
     ) = ZaakTypeLinkImporter(
         objectMapper,
-        zaakTypeLinkService
+        zaakTypeLinkService,
+        applicationEventPublisher,
+        pluginConfigurationRepository
     )
 
     @Bean
@@ -373,4 +383,10 @@ class ZakenApiAutoConfiguration {
         pluginService,
         zaakNotitieService
     )
+
+    @Bean
+    @ConditionalOnMissingBean(ZaakTypeLinkConfigurationIssueListener::class)
+    fun zaakTypeLinkConfigurationIssueListener(
+        applicationEventPublisher: ApplicationEventPublisher
+    ) = ZaakTypeLinkConfigurationIssueListener(applicationEventPublisher)
 }

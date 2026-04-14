@@ -18,7 +18,6 @@ import {InjectionToken, Injector} from '@angular/core';
 import {Auth} from './security.config';
 import {MenuConfig} from './menu.config';
 import {CSPHeaderParams} from 'csp-header';
-import {FormioOptions} from '@formio/angular';
 
 const VALTIMO_CONFIG = new InjectionToken<ValtimoConfig>('valtimoConfig');
 
@@ -59,6 +58,10 @@ interface Sort {
 interface SortState {
   state: Sort;
   isSorting: boolean;
+}
+
+interface FormioOptions {
+  [key: string]: any;
 }
 
 interface OverrideFormioOptions extends FormioOptions {
@@ -160,12 +163,14 @@ enum TaskListTab {
   MINE = 'mine',
   OPEN = 'open',
   ALL = 'all',
+  TEAM = 'team',
 }
 
 enum CaseListTab {
   MINE = 'MINE',
   OPEN = 'OPEN',
   ALL = 'ALL',
+  TEAM = 'TEAM',
 }
 
 enum Language {

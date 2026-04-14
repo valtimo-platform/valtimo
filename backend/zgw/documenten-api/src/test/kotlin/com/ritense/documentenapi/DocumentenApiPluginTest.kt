@@ -60,6 +60,7 @@ import java.io.ByteArrayInputStream
 import java.net.URI
 import java.time.LocalDate
 import java.time.LocalDateTime
+import java.time.OffsetDateTime
 import java.util.UUID
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
@@ -96,6 +97,51 @@ internal class DocumentenApiPluginTest {
     }
 
     @Test
+    fun `should throw error when businessKey is null`() {
+        val storageService: TemporaryResourceStorageService = mock()
+        val applicationEventPublisher: ApplicationEventPublisher = mock()
+        val objectMapper = MapperSingleton.get()
+        val documentenApiVersionService: DocumentenApiVersionService = mock()
+        val executionMock = mock<DelegateExecution>()
+        val virusScanEnabledForDocumentenApiPlugin = false
+
+        whenever(executionMock.getVariable("localDocumentVariableName"))
+            .thenReturn("localDocumentLocation")
+        whenever(executionMock.businessKey).thenReturn(null)
+
+        val plugin = DocumentenApiPlugin(
+            client,
+            storageService,
+            applicationEventPublisher,
+            objectMapper,
+            mutableListOf(),
+            documentenApiVersionService,
+            pluginService,
+            runtimeService,
+            virusScanService,
+            virusScanEnabledForDocumentenApiPlugin
+        )
+        plugin.url = URI("http://some-url")
+        plugin.bronorganisatie = "123456789"
+
+        val exception = assertThrows<IllegalStateException> {
+            plugin.storeTemporaryDocument(
+                executionMock,
+                "test.ext",
+                Vertrouwelijkheid.ZAAKVERTROUWELIJK.key,
+                "title",
+                "description",
+                "localDocumentVariableName",
+                "storedDocumentVariableName",
+                "type",
+                "taal",
+                IN_BEWERKING
+            )
+        }
+        assertEquals("Failed to store document. Business key is null.", exception.message)
+    }
+
+    @Test
     fun `should call client to store file`() {
         val storageService: TemporaryResourceStorageService = mock()
         val applicationEventPublisher: ApplicationEventPublisher = mock()
@@ -113,16 +159,17 @@ internal class DocumentenApiPluginTest {
             "returnedAuthor",
             "returnedFileName",
             1L,
-            LocalDateTime.of(2020, 1, 1, 1, 1, 1),
+            OffsetDateTime.parse("2020-01-01T01:01:01Z"),
             listOf(),
             null
         )
 
         whenever(executionMock.getVariable("localDocumentVariableName"))
             .thenReturn("localDocumentLocation")
+        whenever(executionMock.businessKey).thenReturn("123e4567-e89b-12d3-a456-426655440000")
         whenever(storageService.getResourceContentAsInputStream("localDocumentLocation"))
             .thenReturn(inputStream)
-        whenever(client.storeDocument(any(), any(), any())).thenReturn(result)
+        whenever(client.storeDocument(any(), any(), any(), any())).thenReturn(result)
 
         val plugin = DocumentenApiPlugin(
             client,
@@ -167,7 +214,7 @@ internal class DocumentenApiPluginTest {
 
         val apiRequestCaptor = argumentCaptor<CreateDocumentRequest>()
         val eventCaptor = argumentCaptor<DocumentCreated>()
-        verify(client).storeDocument(any(), any(), apiRequestCaptor.capture())
+        verify(client).storeDocument(any(), any(), any(), apiRequestCaptor.capture())
         verify(applicationEventPublisher).publishEvent(eventCaptor.capture())
         verify(executionMock).setVariable("storedDocumentVariableName", "returnedUrl")
 
@@ -210,7 +257,7 @@ internal class DocumentenApiPluginTest {
             "returnedAuthor",
             "returnedFileName",
             1L,
-            LocalDateTime.of(2020, 1, 1, 1, 1, 1),
+            OffsetDateTime.parse("2020-01-01T01:01:01Z"),
             listOf(),
             null
         )
@@ -227,7 +274,7 @@ internal class DocumentenApiPluginTest {
             .thenReturn(byFileResult)
         whenever(storageService.getResourceContentAsInputStream("localDocumentLocation"))
             .thenReturn(inputStream)
-        whenever(client.storeDocument(any(), any(), any())).thenReturn(result)
+        whenever(client.storeDocument(any(), any(), any(), any())).thenReturn(result)
 
         val plugin = DocumentenApiPlugin(
             client,
@@ -291,18 +338,19 @@ internal class DocumentenApiPluginTest {
             "returnedAuthor",
             "returnedFileName",
             1L,
-            LocalDateTime.of(2020, 1, 1, 1, 1, 1),
+            OffsetDateTime.parse("2020-01-01T01:01:01Z"),
             listOf(),
             null
         )
 
         whenever(executionMock.getVariable("localDocumentVariableName"))
             .thenReturn("localDocumentLocation")
+        whenever(executionMock.businessKey).thenReturn("123e4567-e89b-12d3-a456-426655440000")
         whenever(virusScanService.scan(content.toByteArray()))
             .thenReturn(VirusScanResult(VirusScanStatus.OK,mapOf()))
         whenever(storageService.getResourceContentAsInputStream("localDocumentLocation"))
             .thenReturn(inputStream)
-        whenever(client.storeDocument(any(), any(), any())).thenReturn(result)
+        whenever(client.storeDocument(any(), any(), any(), any())).thenReturn(result)
 
         val plugin = DocumentenApiPlugin(
             client,
@@ -347,7 +395,7 @@ internal class DocumentenApiPluginTest {
 
         val apiRequestCaptor = argumentCaptor<CreateDocumentRequest>()
         val eventCaptor = argumentCaptor<DocumentCreated>()
-        verify(client).storeDocument(any(), any(), apiRequestCaptor.capture())
+        verify(client).storeDocument(any(), any(), any(), apiRequestCaptor.capture())
         verify(applicationEventPublisher).publishEvent(eventCaptor.capture())
         verify(virusScanService, times(1)).scan(content.toByteArray())
     }
@@ -369,7 +417,7 @@ internal class DocumentenApiPluginTest {
             "returnedAuthor",
             "returnedFileName",
             1L,
-            LocalDateTime.now(),
+            OffsetDateTime.now(),
             listOf(),
             null
         )
@@ -395,8 +443,8 @@ internal class DocumentenApiPluginTest {
                     "informatieobjecttype" to "type"
                 )
             )
-        whenever(client.storeDocument(any(), any(), any())).thenReturn(result)
-
+        whenever(client.storeDocument(any(), any(), any(), any())).thenReturn(result)
+        whenever(executionMock.businessKey).thenReturn("123e4567-e89b-12d3-a456-426655440000")
         whenever(pluginConfiguration.id).thenReturn(pluginConfigurationId)
         whenever(pluginConfigurationId.id).thenReturn(UUID.randomUUID())
 
@@ -428,7 +476,7 @@ internal class DocumentenApiPluginTest {
         plugin.storeUploadedDocument(executionMock)
 
         val apiRequestCaptor = argumentCaptor<CreateDocumentRequest>()
-        verify(client).storeDocument(any(), any(), apiRequestCaptor.capture())
+        verify(client).storeDocument(any(), any(), any(), apiRequestCaptor.capture())
         verify(executionMock).setVariable(DOCUMENT_URL_PROCESS_VAR, "returnedUrl")
 
         val request = apiRequestCaptor.firstValue
@@ -465,13 +513,14 @@ internal class DocumentenApiPluginTest {
             "returnedAuthor",
             "returnedFileName",
             1L,
-            LocalDateTime.now(),
+            OffsetDateTime.now(),
             listOf(),
             null
         )
 
         whenever(executionMock.getVariable(RESOURCE_ID_PROCESS_VAR))
             .thenReturn("localDocumentLocation")
+        whenever(executionMock.businessKey).thenReturn("123e4567-e89b-12d3-a456-426655440000")
         whenever(storageService.getResourceContentAsInputStream("localDocumentLocation"))
             .thenReturn(inputStream)
         whenever(storageService.getResourceMetadata("localDocumentLocation"))
@@ -484,7 +533,7 @@ internal class DocumentenApiPluginTest {
                     "informatieobjecttype" to "type"
                 )
             )
-        whenever(client.storeDocument(any(), any(), any())).thenReturn(result)
+        whenever(client.storeDocument(any(), any(), any(), any())).thenReturn(result)
 
         val plugin = DocumentenApiPlugin(
             client,
@@ -517,7 +566,7 @@ internal class DocumentenApiPluginTest {
         plugin.storeUploadedDocument(executionMock)
 
         val apiRequestCaptor = argumentCaptor<CreateDocumentRequest>()
-        verify(client).storeDocument(any(), any(), apiRequestCaptor.capture())
+        verify(client).storeDocument(any(), any(), any(), apiRequestCaptor.capture())
         verify(executionMock).setVariable(DOCUMENT_URL_PROCESS_VAR, "returnedUrl")
 
         val request = apiRequestCaptor.firstValue
@@ -560,13 +609,19 @@ internal class DocumentenApiPluginTest {
         plugin.url = URI("http://some-url")
         plugin.bronorganisatie = "123456789"
         plugin.authenticationPluginConfiguration = authenticationMock
-
+        val caseDocumentId = UUID.randomUUID()
         val informatieObjectUrl = URI("http://some-url/informatie-object/123")
-        plugin.getInformatieObject(informatieObjectUrl)
+        plugin.getInformatieObject(informatieObjectUrl, caseDocumentId)
 
         val informatieObjectUrlCaptor = argumentCaptor<URI>()
         val authorizationCaptor = argumentCaptor<DocumentenApiAuthentication>()
-        verify(client).getInformatieObject(authorizationCaptor.capture(), informatieObjectUrlCaptor.capture())
+        val caseDocumentIdCaptor = argumentCaptor<UUID>()
+
+        verify(client).getInformatieObject(
+            authorizationCaptor.capture(),
+            caseDocumentIdCaptor.capture(),
+            informatieObjectUrlCaptor.capture(),
+        )
 
         assertEquals(informatieObjectUrl, informatieObjectUrlCaptor.firstValue)
         assertEquals(authenticationMock, authorizationCaptor.firstValue)
@@ -580,6 +635,7 @@ internal class DocumentenApiPluginTest {
         val documentenApiVersionService: DocumentenApiVersionService = mock()
         val virusScanEnabledForDocumentenApiPlugin = false
         val informatieObjectUrl = URI("http://some-url/informatie-object/123")
+        val caseDocumentId = UUID.randomUUID()
         val plugin = DocumentenApiPlugin(
             client,
             storageService,
@@ -598,7 +654,7 @@ internal class DocumentenApiPluginTest {
         plugin.apiVersion = "1.0.0"
         whenever(documentenApiVersionService.getVersionByTag(plugin.apiVersion)).thenReturn(MINIMUM_VERSION)
         whenever(client.lockInformatieObject(authenticationMock, informatieObjectUrl)).thenReturn(DocumentLock("lock"))
-        whenever( client.getInformatieObject(authenticationMock, informatieObjectUrl)).thenReturn(
+        whenever( client.getInformatieObject(authenticationMock, caseDocumentId, informatieObjectUrl)).thenReturn(
             DocumentInformatieObject(
                 url = informatieObjectUrl,
                 bronorganisatie = Rsin("000000000"),
@@ -606,13 +662,14 @@ internal class DocumentenApiPluginTest {
                 titel = "titel",
                 auteur = "auteur",
                 taal = "taal",
-                beginRegistratie = LocalDateTime.now(),
+                beginRegistratie = OffsetDateTime.now(),
                 status = DEFINITIEF
             )
         )
 
         val exception = assertThrows<Exception> {
             plugin.modifyInformatieObject(
+                caseDocumentId,
                 informatieObjectUrl,
                 PatchDocumentRequest(LocalDate.now(), "Nieuwe titel", "auteur", DEFINITIEF, "taal")
             )
