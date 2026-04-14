@@ -57,6 +57,39 @@ Task identity links have no actions currently. As a result, they can only be use
 
 <details>
 
+<summary>Permission to view and complete tasks assigned to the user's teams</summary>
+
+This example uses the `${currentUserTeams}` expression, which resolves to the team keys of the current user. When a
+BPMN user task has a candidate group that matches a team key, this condition grants access to members of that team.
+
+{% code overflow="wrap" %}
+```json
+{
+    "resourceType": "com.ritense.valtimo.operaton.domain.OperatonTask",
+    "actions": ["view_list", "view", "complete"],
+    "roleKey": "ROLE_USER",
+    "conditions": [
+        {
+            "type": "container",
+            "resourceType": "com.ritense.valtimo.operaton.domain.OperatonIdentityLink",
+            "conditions": [
+                {
+                    "type": "field",
+                    "field": "groupId",
+                    "operator": "in",
+                    "value": "${currentUserTeams}"
+                }
+            ]
+        }
+    ]
+}
+```
+{% endcode %}
+
+</details>
+
+<details>
+
 <summary>Permission to claim a task if unassigned</summary>
 
 {% code overflow="wrap" %}
