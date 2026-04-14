@@ -70,6 +70,10 @@ class StartableItemImporter(
         startableItemRepository.deleteAllByIdCaseDefinitionId(caseDefinitionId)
         startableItemRepository.flush()
 
+        if (dtos.isEmpty()) {
+            return
+        }
+
         val entities = dtos.mapIndexed { index, dto ->
             StartableItem(
                 id = StartableItemId(

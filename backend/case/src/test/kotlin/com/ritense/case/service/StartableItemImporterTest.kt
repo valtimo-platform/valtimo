@@ -159,7 +159,7 @@ class StartableItemImporterTest(
     }
 
     @Test
-    fun `should not delete or save anything when content is empty array`() {
+    fun `should delete existing items but not save when content is empty array`() {
         val request = ImportRequest(
             fileName = "/startable-item/my-case.startable-items.json",
             content = "[]".toByteArray(),
@@ -168,7 +168,7 @@ class StartableItemImporterTest(
 
         importer.import(request)
 
-        verify(startableItemRepository, never()).deleteAllByIdCaseDefinitionId(caseDefinitionId)
+        verify(startableItemRepository).deleteAllByIdCaseDefinitionId(caseDefinitionId)
         verify(startableItemRepository, never()).saveAll(any<List<StartableItem>>())
     }
 
