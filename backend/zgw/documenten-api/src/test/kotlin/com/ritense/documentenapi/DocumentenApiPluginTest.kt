@@ -842,6 +842,7 @@ internal class DocumentenApiPluginTest {
         val plugin = createPlugin(documentenApiVersionService, apiVersion = "1.5.0-baseflow")
 
         val execution = mock<DelegateExecution>()
+        whenever(execution.businessKey).thenReturn("123e4567-e89b-12d3-a456-426655440000")
         whenever(execution.getVariable(DocumentenApiPlugin.DOCUMENT_URL_PROCESS_VAR)).thenReturn(null)
 
         val exception = assertThrows<IllegalStateException> {

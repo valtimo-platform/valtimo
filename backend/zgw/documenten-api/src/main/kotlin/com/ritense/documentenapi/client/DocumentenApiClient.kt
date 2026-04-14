@@ -180,7 +180,6 @@ class DocumentenApiClient(
         // because the documenten api only supports a fixed page size, we will try to calculate the page we need to request
         // the only page sizes that are supported are those that can fit n times in the itemsPerPage
         require(ITEMS_PER_PAGE % pageable.pageSize == 0) { "Page size is not supported" }
-        requireNotNull(documentSearchRequest.zaakUrl) { "Zaak URL is required" }
         val objectFilterUrl = documentSearchRequest.zaakUrl ?: documentSearchRequest.objectUrl
         requireNotNull(objectFilterUrl) { "Either zaakUrl or objectUrl is required" }
 
