@@ -21,7 +21,7 @@ import {BESLUITEN_API_CONFIGURATION_TEST_IDS} from '../../constants';
 
 test.use({storageState: undefined});
 
-test.describe('Plugin overview', () => {
+test.describe('9.1–9.7 — Plugin overview', () => {
   let context;
   let page;
   let pluginPage;
@@ -92,7 +92,7 @@ test.describe('Plugin overview', () => {
   });
 });
 
-test.describe('Plugin management', () => {
+test.describe('9.9–9.27 — Plugin management', () => {
   let context;
   let page;
   let pluginPage;

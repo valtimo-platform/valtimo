@@ -19,7 +19,7 @@ import {TaskListPage} from './page';
 import {TASK_CONFIG} from './task-config';
 import {apiPost} from '../../utils/api.utils';
 
-test.describe('Task list', () => {
+test.describe('3.1, 3.2 — Task list', () => {
   let taskListPage: TaskListPage;
 
   test.beforeEach(async ({page}) => {

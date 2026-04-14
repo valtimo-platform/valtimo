@@ -378,6 +378,7 @@ export class CaseManagementPage {
     await expect(dialog.getByText('Dashboard', {exact: true})).toBeVisible();
     await expect(dialog.getByText('If you want widgets to appear on your dashboard')).toBeVisible();
     await this.uploadWizardFinishButton.click();
+    await expect(this.page.locator('.cds--modal.is-visible')).not.toBeVisible();
   }
 
   // Assert functions

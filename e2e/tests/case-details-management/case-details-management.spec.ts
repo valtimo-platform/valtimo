@@ -48,7 +48,7 @@ test.describe('Case management', () => {
   });
 
   test.describe('Success test', () => {
-    test.describe('Version switch', () => {
+    test.describe('6.36–6.38 — Version switch', () => {
       test('Switch version via dropdown', async () => {
         // Arrange: ensure we're on a final version first so we actually switch
         const stableVersion = await ensureFinalVersionSelected(page);
@@ -97,7 +97,7 @@ test.describe('Case management', () => {
         ).toBeEnabled({timeout: 15_000});
       });
 
-      test.describe('Case handler', () => {
+      test.describe('6.2, 6.3 — Case handler', () => {
         test('Can have handler is false', async () => {
           // Arrange: ensure toggle starts as true so clicking it sets it to false
           const canHaveHandlerSwitch = caseDetailsManagementPage.caseHandlerCanHaveHandler.getByRole('switch');
@@ -152,7 +152,7 @@ test.describe('Case management', () => {
         });
       });
 
-      test.describe('External start form', () => {
+      test.describe('6.4, 6.5 — External start form', () => {
         test('Start form enabled', async () => {
           //Arrange
           await caseDetailsManagementPage.hasExternalFormToggle.click();
@@ -197,7 +197,7 @@ test.describe('Case management', () => {
         });
       });
 
-      test.describe('Link upload process', () => {
+      test.describe('6.1 — Link upload process', () => {
         let originalUploadProcessKey: string | null;
 
         const getFeatureProcessUrl = () =>

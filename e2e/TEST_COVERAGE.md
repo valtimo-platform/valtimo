@@ -5,10 +5,10 @@
 | Category                    | Features | Functions | ✅ Covered | ❌ Not Covered |
 |-----------------------------|----------|-----------|------------|----------------|
 | User Features (ROLE_USER)   | 5        | 21        | 6          | 15             |
-| Admin Features (ROLE_ADMIN) | 15       | 328       | 61         | 265            |
-| **Total**                   | **20**   | **349**   | **67**     | **280**        |
+| Admin Features (ROLE_ADMIN) | 15       | 328       | 63         | 263            |
+| **Total**                   | **20**   | **349**   | **69**     | **278**        |
 
-**Coverage:** `67 / 349` — `19.2%`
+**Coverage:** `69 / 349` — `19.8%`
 
 ---
 
@@ -242,8 +242,8 @@
 
 | #    | Function            | Test Scenarios                    | Coverage | Notes                                           |
 |:-----|:--------------------|:----------------------------------|:--------:|:------------------------------------------------|
-| 6.85 | View header widgets | View header widgets configuration |    ❌    |                                                 |
-| 6.86 | Add header widget   | Add header widget                 |    ❌    |                                                 |
+| 6.85 | View header widgets | View header widgets configuration |    ✅    | case-details-management-header.spec.ts          |
+| 6.86 | Add header widget   | Add header widget                 |    ✅    | case-details-management-header.spec.ts          |
 
 #### 6O · Case Details — Widgets
 
@@ -727,8 +727,8 @@
 |:-------------------------|:-------:|
 | Total Features           |   20    |
 | Total Functions          |   349   |
-| ✅ Covered by Playwright |   67    |
-| ❌ Not covered           |   280   |
+| ✅ Covered by Playwright |   69    |
+| ❌ Not covered           |   278   |
 | ⏳ In progress           |    0    |
 | `N/A` Not applicable     |    2    |
-| **Coverage %**           | **19.2%** |
+| **Coverage %**           | **19.8%** |

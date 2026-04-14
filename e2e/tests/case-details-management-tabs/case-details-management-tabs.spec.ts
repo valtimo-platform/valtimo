@@ -64,7 +64,7 @@ test.describe('Case details management — Tabs', () => {
 
   // ─── 6.74 View tabs configuration ─────────────────────────────────
 
-  test.describe('View tabs', () => {
+  test.describe('6.74 — View tabs', () => {
     test('Tabs list is visible', async () => {
       await expect(tabsPage.tabsList).toBeVisible();
     });
@@ -72,7 +72,7 @@ test.describe('Case details management — Tabs', () => {
 
   // ─── 6.75 Add tab ─────────────────────────────────────────────────
 
-  test.describe('Add tab', () => {
+  test.describe('6.75 — Add tab', () => {
     test.describe('Success', () => {
       test('Add a widgets tab', async () => {
         // Act
@@ -105,7 +105,7 @@ test.describe('Case details management — Tabs', () => {
 
   // ─── 6.76 Rearrange tabs ──────────────────────────────────────────
 
-  test.describe('Rearrange tabs', () => {
+  test.describe('6.76 — Rearrange tabs', () => {
     test('Add two tabs for reordering', async () => {
       await tabsPage.addWidgetsTab(tabReorderTestData.titleA);
       await tabsPage.assertTabExists(tabReorderTestData.titleA);

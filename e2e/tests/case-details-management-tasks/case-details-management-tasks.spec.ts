@@ -61,7 +61,7 @@ test.describe('Case details management — Tasks', () => {
 
   // ─── 6.62 View task list columns ──────────────────────────────────
 
-  test.describe('View task list columns', () => {
+  test.describe('6.62 — View task list columns', () => {
     test('Columns list is visible', async () => {
       await expect(tasksPage.columnsList).toBeVisible();
     });
@@ -69,7 +69,7 @@ test.describe('Case details management — Tasks', () => {
 
   // ─── 6.63 Add task list column ────────────────────────────────────
 
-  test.describe('Add task list column', () => {
+  test.describe('6.63 — Add task list column', () => {
     test.describe('Success', () => {
       test('Add a column', async () => {
         // Act
@@ -91,7 +91,7 @@ test.describe('Case details management — Tasks', () => {
 
   // ─── 6.64 Rearrange task list columns ─────────────────────────────
 
-  test.describe('Rearrange task list columns', () => {
+  test.describe('6.64 — Rearrange task list columns', () => {
     test('Add two columns for reordering', async () => {
       await tasksPage.addColumn({
         title: taskColumnReorderTestData.titleA,
@@ -151,7 +151,7 @@ test.describe('Case details management — Tasks', () => {
 
   // ─── 6.65 View task search fields ────────────────────────────────
 
-  test.describe('View task search fields', () => {
+  test.describe('6.65 — View task search fields', () => {
     test('Switch to Search fields sub-tab', async () => {
       await tasksPage.switchToSearchFieldsSubTab();
     });
@@ -163,7 +163,7 @@ test.describe('Case details management — Tasks', () => {
 
   // ─── 6.66 Add task search field ──────────────────────────────────
 
-  test.describe('Add task search field', () => {
+  test.describe('6.66 — Add task search field', () => {
     test('Add a search field', async () => {
       // Act
       await tasksPage.addSearchField(taskSearchFieldTestData);

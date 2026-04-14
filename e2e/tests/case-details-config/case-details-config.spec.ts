@@ -95,7 +95,7 @@ test.describe('Case details configuration', () => {
     await context.close();
   });
 
-  test.describe('Statuses', () => {
+  test.describe('6.77–6.81 — Statuses', () => {
     test.describe('Success', () => {
       test('Add a status', async () => {
         // Arrange
@@ -128,7 +128,7 @@ test.describe('Case details configuration', () => {
       });
     });
 
-    test.describe('Set status color', () => {
+    test.describe('6.79 — Set status color', () => {
       test('Add a status and set its color', async () => {
         // Arrange
         await caseDetailsConfigPage.addStatus(statusColorTestData.title);
@@ -159,7 +159,7 @@ test.describe('Case details configuration', () => {
       });
     });
 
-    test.describe('Set status visibility', () => {
+    test.describe('6.80 — Set status visibility', () => {
       test('Add a status with default visibility (visible)', async () => {
         // Act
         await caseDetailsConfigPage.addStatus(statusVisibilityTestData.title);
@@ -204,7 +204,7 @@ test.describe('Case details configuration', () => {
       });
     });
 
-    test.describe('Rearrange statuses', () => {
+    test.describe('6.81 — Rearrange statuses', () => {
       test('Add two statuses for reordering', async () => {
         // Arrange - add status A then status B
         await caseDetailsConfigPage.addStatus(statusReorderTestData.titleA);
@@ -244,7 +244,7 @@ test.describe('Case details configuration', () => {
     });
   });
 
-  test.describe('Tags', () => {
+  test.describe('6.82–6.84 — Tags', () => {
     test.describe('Success', () => {
       test('Add a tag', async () => {
         // Arrange
@@ -277,7 +277,7 @@ test.describe('Case details configuration', () => {
       });
     });
 
-    test.describe('Set tag color', () => {
+    test.describe('6.84 — Set tag color', () => {
       test('Add a tag and set its color', async () => {
         // Arrange
         await caseDetailsConfigPage.addTag(tagColorTestData.title);

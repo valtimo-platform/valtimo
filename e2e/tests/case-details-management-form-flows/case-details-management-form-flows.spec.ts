@@ -50,7 +50,7 @@ test.describe('Case details management — Form Flows', () => {
 
   // ─── 6.58 View form flows list ────────────────────────────────────
 
-  test.describe('View form flows list', () => {
+  test.describe('6.58 — View form flows list', () => {
     test('Form flows list is visible', async () => {
       await expect(formFlowsPage.formFlowsList).toBeVisible();
     });
@@ -58,7 +58,7 @@ test.describe('Case details management — Form Flows', () => {
 
   // ─── 6.59 Create form flow ────────────────────────────────────────
 
-  test.describe('Create form flow', () => {
+  test.describe('6.59 — Create form flow', () => {
     test.describe('Success', () => {
       test('Create a form flow', async () => {
         // Act
@@ -72,7 +72,7 @@ test.describe('Case details management — Form Flows', () => {
 
   // ─── 6.60 Edit form flow JSON ─────────────────────────────────────
 
-  test.describe('Edit form flow JSON', () => {
+  test.describe('6.60 — Edit form flow JSON', () => {
     test('Open form flow and see JSON editor', async () => {
       // Navigate back to list first (creation left us on the editor)
       await formFlowsPage.navigateBackToFormFlowsList();
@@ -87,7 +87,7 @@ test.describe('Case details management — Form Flows', () => {
 
   // ─── 6.61 Save form flow ───────────────────────────────────────────
 
-  test.describe('Save form flow', () => {
+  test.describe('6.61 — Save form flow', () => {
     test.describe('Success', () => {
       test('Save button is initially enabled with valid JSON', async () => {
         await expect(formFlowsPage.saveButton).toBeEnabled();
