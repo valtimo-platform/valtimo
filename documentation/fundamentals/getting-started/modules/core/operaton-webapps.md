@@ -25,3 +25,21 @@ See the [Operaton documentation](https://docs.operaton.org/docs/documentation/us
 The Operaton webapps are available in a separate path (`/operaton/*`) from the other Valtimo APIs (`/api/*`). Since the Operaton webapps are a tool used to manage the internal it may be advisable to control access to this path on an infrastructure level.
 
 To remove the Operaton webapps from Valtimo altogether the `org.operaton.bpm.springboot:operaton-bpm-spring-boot-starter-webapp:7.14.0` dependency can be excluded. This is a dependency in the Valtimo `core` module.
+
+### IP whitelist
+
+Access to the Operaton webapps is restricted by an IP whitelist. Only requests originating from whitelisted IP addresses
+are permitted. Requests from other IP addresses will receive a `403 Forbidden` response.
+
+The whitelist is configured via the `valtimo.security.whitelist.hosts` application property:
+
+```yaml
+valtimo:
+  security:
+    whitelist:
+      hosts:
+        - localhost
+```
+
+The value can be a hostname (e.g. `localhost`) or a CIDR notation (e.g. `10.0.0.0/8`). Hostnames are resolved to IP
+addresses at startup.
