@@ -12,11 +12,12 @@
   after completing the last step. Previously, the user was returned to the case list without any indication of which case
   was created.
 
-* **Receive notification plugin action for Notificaties API**
+* **Publish & Receive notification plugin action for Notificaties API**
 
-  A new plugin action "Ontvang een notificatie" has been added to the Notificaties API plugin. This action can be
-  configured on receive tasks, intermediate message catch events, and message start events. Documentation can be found
-  in the [Notificaties API plugin configuration guide](../../../features/plugins/configure-notificaties-api-plugin.md).
+  A new plugin action "Publiceer een notificatie" and "Ontvang een notificatie" have been added to the Notificaties API
+  plugin. This action allows publishing and receiving notifications via the Notificaties API from a BPMN process.
+  Documentation can be found in
+  the [Notificaties API plugin configuration guide](../../../features/plugins/configure-notificaties-api-plugin.md).
 
 ## Enhancements
 
