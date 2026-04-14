@@ -296,6 +296,37 @@ Each subfolder that contains multiple exported files should have an `index.ts` b
 The library's `public-api.ts` controls the public surface — only intentionally public symbols
 should be re-exported there. Internal components and services must not be exposed.
 
+### Model file exports
+
+In model files, define all interfaces, types, and enums at the top of the file and place a
+single explicit `export` block at the bottom. This makes it clear which models are intended for
+public use — some models may be internal to the file or only used by sibling files in the same
+folder.
+
+#### **`lib/models/my-item.model.ts`**
+
+```typescript
+interface InternalDetail {
+  raw: string;
+  parsed: number;
+}
+
+interface MyItemResponseDto {
+  id: string;
+  title: string;
+  detail: InternalDetail;
+}
+
+interface CreateMyItemDto {
+  title: string;
+}
+
+// Only export what consumers need — InternalDetail stays private
+export {MyItemResponseDto, CreateMyItemDto};
+```
+
+### Barrel exports
+
 #### **`lib/models/index.ts`**
 
 ```typescript
