@@ -43,3 +43,5 @@ valtimo:
 
 The value can be a hostname (e.g. `localhost`) or a CIDR notation (e.g. `10.0.0.0/8`). Hostnames are resolved to IP
 addresses at startup.
+If `valtimo.security.whitelist.hosts` is not configured, empty, or contains only entries that cannot be resolved, access
+to Operaton webapps is denied (requests receive `403 Forbidden`).
