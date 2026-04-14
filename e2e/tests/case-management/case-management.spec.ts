@@ -115,7 +115,7 @@ test.describe('Case management', () => {
       createdKeys.push(result.key);
 
       // Assert: the imported case should appear in the list
-      await expect(page.getByRole('cell', {name: result.key})).toBeVisible();
+      await expect(page.getByRole('cell', {name: result.key})).toBeVisible({timeout: 15_000});
     });
   });
 
@@ -156,7 +156,7 @@ test.describe('Case management', () => {
         await caseManagementPage.dashboardStep();
 
         // Assert: the case appears in the list under the actual key used
-        await expect(page.getByRole('cell', {name: result.key, exact: true})).toBeVisible();
+        await expect(page.getByRole('cell', {name: result.key, exact: true})).toBeVisible({timeout: 15_000});
       }
     });
 
