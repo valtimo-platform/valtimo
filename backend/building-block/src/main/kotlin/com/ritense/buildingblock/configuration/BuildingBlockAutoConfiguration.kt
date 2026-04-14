@@ -95,6 +95,7 @@ import com.ritense.processdocument.service.ProcessDocumentAssociationService
 import com.ritense.processdocument.service.ProcessDocumentService
 import com.ritense.processlink.exporter.BuildingBlockProcessLinkToBuildingBlockMapper
 import com.ritense.processlink.mapper.ProcessLinkMapper
+import com.ritense.processlink.repository.ProcessLinkRepository
 import com.ritense.processlink.repository.ValtimoPluginProcessLinkRepository
 import com.ritense.processlink.service.ProcessDeploymentService
 import com.ritense.processlink.service.ProcessLinkService
@@ -189,7 +190,10 @@ class BuildingBlockAutoConfiguration {
         processDefinitionBuildingBlockDefinitionRepository: ProcessDefinitionBuildingBlockDefinitionRepository,
         buildingBlockDefinitionArtworkRepository: BuildingBlockDefinitionArtworkRepository,
         buildingBlockDocumentDefinitionService: BuildingBlockDocumentDefinitionService,
-        operatonProcessService: OperatonProcessService
+        operatonProcessService: OperatonProcessService,
+        buildingBlockFormDefinitionService: BuildingBlockFormDefinitionService,
+        buildingBlockFormFlowDefinitionService: BuildingBlockFormFlowDefinitionService,
+        processLinkRepository: ProcessLinkRepository,
     ): BuildingBlockDefinitionEventListener {
         return BuildingBlockDefinitionEventListener(
             buildingBlockDefinitionRepository,
@@ -197,7 +201,10 @@ class BuildingBlockAutoConfiguration {
             processDefinitionBuildingBlockDefinitionRepository,
             buildingBlockDefinitionArtworkRepository,
             buildingBlockDocumentDefinitionService,
-            operatonProcessService
+            operatonProcessService,
+            buildingBlockFormDefinitionService,
+            buildingBlockFormFlowDefinitionService,
+            processLinkRepository,
         )
     }
 
