@@ -20,6 +20,7 @@ import com.ritense.formflow.domain.definition.FormFlowStep
 import com.ritense.formflow.domain.definition.FormFlowStepId
 import com.ritense.formflow.domain.definition.configuration.FormFlowStepType
 import com.ritense.formflow.domain.definition.configuration.step.FormStepTypeProperties
+import com.ritense.formflow.domain.instance.FormFlowCompleteResult
 import com.ritense.formflow.domain.instance.FormFlowInstance
 import com.ritense.formflow.domain.instance.FormFlowInstanceId
 import com.ritense.formflow.domain.instance.FormFlowStepInstance
@@ -134,7 +135,7 @@ class FormFlowResourceTest : BaseTest() {
 
     @Test
     fun `should complete step`() {
-        whenever(formFlowInstance.complete(any(), any())).thenReturn(stepInstance)
+        whenever(formFlowInstance.complete(any(), any())).thenReturn(FormFlowCompleteResult(stepInstance, emptyList()))
 
         mockMvc.perform(post("/api/v1/form-flow/instance/{flowId}/step/instance/{stepId}", formFlowInstance.id.id, formFlowInstance.getCurrentStep().id.id))
             .andDo(print())
@@ -193,5 +194,90 @@ class FormFlowResourceTest : BaseTest() {
             .andExpect(status().isNoContent)
 
         verify(formFlowInstance).saveTemporary(any())
+    }
+
+    @Test
+    fun `should return onCompleteResult when flow completes`() {
+        val documentId = UUID.randomUUID()
+        whenever(formFlowInstance.complete(any(), any())).thenReturn(
+            FormFlowCompleteResult(null, listOf(mapOf("documentId" to documentId)))
+        )
+
+        mockMvc.perform(post("/api/v1/form-flow/instance/{flowId}/step/instance/{stepId}", formFlowInstance.id.id, formFlowInstance.getCurrentStep().id.id))
+            .andDo(print())
+            .andExpect(status().isOk)
+            .andExpect(jsonPath("$.id").value(formFlowInstance.id.id.toString()))
+            .andExpect(jsonPath("$.step").doesNotExist())
+            .andExpect(jsonPath("$.onCompleteResult").isArray)
+            .andExpect(jsonPath("$.onCompleteResult[0].documentId").value(documentId.toString()))
+            .andExpect(jsonPath("$.onOpenResult").doesNotExist())
+    }
+
+    @Test
+    fun `should not return results when onComplete result is empty`() {
+        whenever(formFlowInstance.complete(any(), any())).thenReturn(
+            FormFlowCompleteResult(stepInstance, emptyList())
+        )
+
+        mockMvc.perform(post("/api/v1/form-flow/instance/{flowId}/step/instance/{stepId}", formFlowInstance.id.id, formFlowInstance.getCurrentStep().id.id))
+            .andDo(print())
+            .andExpect(status().isOk)
+            .andExpect(jsonPath("$.step").isNotEmpty)
+            .andExpect(jsonPath("$.onCompleteResult").doesNotExist())
+            .andExpect(jsonPath("$.onOpenResult").doesNotExist())
+    }
+
+    @Test
+    fun `should return separate onCompleteResult and onOpenResult when completing to next step`() {
+        val nextStepInstance: FormFlowStepInstance = mock()
+        val nextStepInstanceId = FormFlowStepInstanceId.newId()
+        val nextStep = FormFlowStep(
+            FormFlowStepId("step2"),
+            type = FormFlowStepType("form", FormStepTypeProperties("second-form-definition"))
+        )
+        whenever(nextStepInstance.id).thenReturn(nextStepInstanceId)
+        whenever(nextStepInstance.definition).thenReturn(nextStep)
+        whenever(nextStepInstance.open()).thenReturn(listOf(mapOf("openKey" to "openValue")))
+
+        whenever(formFlowInstance.complete(any(), any())).thenReturn(
+            FormFlowCompleteResult(nextStepInstance, listOf(mapOf("completeKey" to "completeValue")))
+        )
+
+        mockMvc.perform(post("/api/v1/form-flow/instance/{flowId}/step/instance/{stepId}", formFlowInstance.id.id, formFlowInstance.getCurrentStep().id.id))
+            .andDo(print())
+            .andExpect(status().isOk)
+            .andExpect(jsonPath("$.step.id").value(nextStepInstanceId.id.toString()))
+            .andExpect(jsonPath("$.onCompleteResult").isArray)
+            .andExpect(jsonPath("$.onCompleteResult[0].completeKey").value("completeValue"))
+            .andExpect(jsonPath("$.onOpenResult").isArray)
+            .andExpect(jsonPath("$.onOpenResult[0].openKey").value("openValue"))
+
+        verify(nextStepInstance).open()
+    }
+
+    @Test
+    fun `should return onOpenResult in getFormFlowState`() {
+        whenever(stepInstance.open()).thenReturn(listOf(mapOf("onOpenKey" to "onOpenValue")))
+
+        mockMvc.perform(
+            MockMvcRequestBuilders.get("/api/v1/form-flow/instance/{instanceId}", formFlowInstanceId.id.toString())
+                .contentType(MediaType.APPLICATION_JSON_VALUE)
+        )
+            .andDo(print())
+            .andExpect(status().isOk)
+            .andExpect(jsonPath("$.onOpenResult").isArray)
+            .andExpect(jsonPath("$.onOpenResult[0].onOpenKey").value("onOpenValue"))
+    }
+
+    @Test
+    fun `should return onOpenResult when navigating back`() {
+        whenever(formFlowInstance.back()).thenReturn(stepInstance)
+        whenever(stepInstance.open()).thenReturn(listOf(mapOf("backOpenKey" to "backOpenValue")))
+
+        mockMvc.perform(post("/api/v1/form-flow/instance/{flowId}/back", formFlowInstance.id.id))
+            .andDo(print())
+            .andExpect(status().isOk)
+            .andExpect(jsonPath("$.onOpenResult").isArray)
+            .andExpect(jsonPath("$.onOpenResult[0].backOpenKey").value("backOpenValue"))
     }
 }

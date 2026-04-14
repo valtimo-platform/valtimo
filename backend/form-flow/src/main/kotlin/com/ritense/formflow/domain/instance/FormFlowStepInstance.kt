@@ -73,8 +73,8 @@ data class FormFlowStepInstance(
     val definition: FormFlowStep
         get() = instance.formFlowDefinition.getStepByKey(stepKey)
 
-    fun back() {
-        processExpressions<Any>(definition.onBack)
+    fun back(): List<Any> {
+        return processExpressions<Any>(definition.onBack).filterNotNull()
     }
 
     fun saveTemporary(incompleteSubmissionData: String) {
@@ -82,11 +82,11 @@ data class FormFlowStepInstance(
         this.submissionOrder = nextSubmissionOrder(instance)
     }
 
-    fun open() {
-        processExpressions<Any>(definition.onOpen)
+    fun open(): List<Any> {
+        return processExpressions<Any>(definition.onOpen).filterNotNull()
     }
 
-    fun complete(submissionData: String) {
+    fun complete(submissionData: String): List<Any> {
         val previousStep = instance.getHistory().firstOrNull { it.order == order - 1 }
         val previousStepSubmissionDataChanged = previousStep?.submissionOrder ?: -1 >= submissionOrder
         if (this.submissionData != submissionData || previousStepSubmissionDataChanged) {
@@ -95,10 +95,11 @@ data class FormFlowStepInstance(
         this.submissionData = submissionData
         this.temporarySubmissionData = null
 
-        processExpressions<Any>(definition.onComplete)
+        val result = processExpressions<Any>(definition.onComplete)
         ApplicationEventPublisherHolder.getInstance().publishEvent(
             FormFlowStepCompletedEvent(this)
         )
+        return result.filterNotNull()
     }
 
     fun determineNextStep(): FormFlowNextStep? {

@@ -98,6 +98,7 @@ import {CaseManagementUploadComponent} from './components/case-management-upload
 import {CaseManagementUploadStepComponent} from './components/case-management-upload/step/case-management-upload-step.component';
 import {TabManagementService} from './services';
 import {CaseManagementDraftWarningComponent} from './components/case-management-draft-warning/case-management-draft-warning.component';
+import {CaseManagementActionsComponent} from './components/case-management-detail/tabs/case-management-actions/case-management-actions.component';
 import {CaseManagementHeaderComponent} from './components/case-management-detail/tabs/case-management-header/case-management-header.component';
 
 @NgModule({
@@ -186,6 +187,7 @@ import {CaseManagementHeaderComponent} from './components/case-management-detail
     ReadOnlyDirective,
     CaseManagementDraftWarningComponent,
     JsonEditorComponent,
+    CaseManagementActionsComponent,
     CaseManagementHeaderComponent,
     AutoKeyInputComponent,
   ],
