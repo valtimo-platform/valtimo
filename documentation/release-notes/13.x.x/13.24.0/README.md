@@ -6,6 +6,12 @@
 
 ## New Features
 
+* **Redirect to case detail after form flow completion**
+
+  When a case is created via a form flow, the user is now automatically redirected to the newly created case detail page
+  after completing the last step. Previously, the user was returned to the case list without any indication of which case
+  was created.
+
 * **Ad-hoc building blocks on a case**
 
   Case definitions now have an **Actions** tab in case configuration where administrators manage the items that are
@@ -28,4 +34,4 @@
 
 ## Bugfixes
 
-* New bugfix.
+* When a new version of a building block is created, forms and form flows are also copied over.
