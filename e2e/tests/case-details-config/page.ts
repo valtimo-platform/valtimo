@@ -134,8 +134,7 @@ export class CaseDetailsConfigPage {
   async addStatus(title: string) {
     await this.page.waitForTimeout(300);
     await this.statusAddButton.click();
-    // Wait for the modal to be fully in 'add' mode. The Add button only renders when
-    // Angular's isAdd$ emits true, which also enables auto-key generation.
+    // Wait for the modal to be in 'add' mode
     await expect(this.statusAddConfirmButton).toBeAttached({timeout: 10_000});
     await expect(this.statusTitleInput).toBeVisible();
     await this.statusTitleInput.pressSequentially(title, {delay: 30});

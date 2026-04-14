@@ -40,7 +40,6 @@ test.describe('Case details management — Form Flows', () => {
     await page.goto('/');
     await formFlowsPage.goToCaseManagement(CASE_IDENTIFIER);
     await formFlowsPage.ensureDraftVersionSelected();
-
     await formFlowsPage.switchToFormFlowsTab();
   });
 
@@ -91,7 +90,6 @@ test.describe('Case details management — Form Flows', () => {
   test.describe('Save form flow', () => {
     test.describe('Success', () => {
       test('Save button is initially enabled with valid JSON', async () => {
-        // We're on the editor from 6.60
         await expect(formFlowsPage.saveButton).toBeEnabled();
       });
 
@@ -125,10 +123,10 @@ test.describe('Case details management — Form Flows', () => {
 
     test.describe('Failure scenarios', () => {
       test('Save button is disabled when JSON is invalid', async () => {
-        // Act — paste syntactically invalid JSON
+        // Act
         await formFlowsPage.pasteRawTextInEditor('{ this is not valid json }');
 
-        // Assert — save button should be disabled due to JSON parse error
+        // Assert
         await expect(formFlowsPage.saveButton).toBeDisabled({timeout: 10_000});
 
         // Restore valid JSON so subsequent tests (delete) can proceed

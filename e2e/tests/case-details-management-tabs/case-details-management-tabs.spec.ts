@@ -122,7 +122,7 @@ test.describe('Case details management — Tabs', () => {
       expect(indexA).not.toBe(-1);
       expect(indexB).not.toBe(-1);
 
-      // Act — drag the later tab above the earlier one
+      // Act
       if (indexA < indexB) {
         await tabsPage.dragTabToPosition(tabReorderTestData.titleB, tabReorderTestData.titleA);
       } else {

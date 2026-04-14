@@ -48,7 +48,7 @@ test.describe('Case details configuration', () => {
     await caseDetailsConfigPage.goToCaseDetailsConfig(CASE_IDENTIFIER);
     draftVersion = await caseDetailsConfigPage.ensureDraftVersionSelected();
 
-    // Clean up leftover data
+    // Clean up data
     const statusKey = statusTestData.updatedTitle.toLowerCase().replace(/\s+/g, '-');
     const originalStatusKey = statusTestData.title.toLowerCase().replace(/\s+/g, '-');
     const colorStatusKey = statusColorTestData.title.toLowerCase().replace(/\s+/g, '-');
@@ -283,7 +283,7 @@ test.describe('Case details configuration', () => {
         await caseDetailsConfigPage.addTag(tagColorTestData.title);
         await caseDetailsConfigPage.assertTagExists(tagColorTestData.title);
 
-        // Act — edit the tag and change color to Red
+        // Act — Edit the tag and change color to 'Red'
         await caseDetailsConfigPage.openTagEditModal(tagColorTestData.title);
         await caseDetailsConfigPage.selectTagColor('Red');
         await caseDetailsConfigPage.saveTag();
@@ -293,7 +293,7 @@ test.describe('Case details configuration', () => {
       });
 
       test('Change tag color to a different value', async () => {
-        // Act — edit again and change to Green
+        // Act — Edit again and change to 'Green'
         await caseDetailsConfigPage.openTagEditModal(tagColorTestData.title);
         await caseDetailsConfigPage.selectTagColor('Green');
         await caseDetailsConfigPage.saveTag();

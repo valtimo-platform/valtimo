@@ -47,7 +47,6 @@ test.describe('Case details management — Tasks', () => {
     await page.goto('/');
     await tasksPage.goToCaseManagement(CASE_IDENTIFIER);
     await tasksPage.ensureDraftVersionSelected();
-
     await tasksPage.switchToTasksTab();
   });
 

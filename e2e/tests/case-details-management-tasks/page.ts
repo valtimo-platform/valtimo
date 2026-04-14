@@ -172,7 +172,6 @@ export class CaseDetailsManagementTasksPage {
   async addSearchField(field: {title: string; key: string; path: string; dataType: string; matchType?: string; fieldType: string}) {
     await this.addSearchFieldButton.click();
     await expect(this.searchFieldKeyInput).toBeVisible();
-
     await this.page.locator('[data-testid="task-management-search-title"]').fill(field.title);
     await this.searchFieldKeyInput.fill(field.key);
     await this.searchFieldPathToggle.click();
@@ -185,7 +184,6 @@ export class CaseDetailsManagementTasksPage {
       }
     }
     await this.selectDropdownItem(this.searchFieldFieldTypeDropdown, field.fieldType);
-
     await expect(this.searchFieldSaveButton).toBeEnabled();
     await this.searchFieldSaveButton.click();
   }

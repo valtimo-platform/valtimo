@@ -172,10 +172,7 @@ test.describe('Case management', () => {
       await caseManagementPage.pluginConfigurationStep();
       await caseManagementPage.uploadFileStep('test-case-import-success_1.0.0.case.zip');
 
-      // The configure step pre-fills with the archive key (test-case-import).
-      // Depending on environment state, we may see different warnings:
-      //  - If the imported draft used the original key → "draft override" warning
-      //  - If a finalized version exists for the original key → "Cannot import" warning
+      // The configure step pre-fills with the archive key
       const cannotImportVisible = await page
         .getByText('Cannot import')
         .isVisible({timeout: 1000})
@@ -189,7 +186,6 @@ test.describe('Case management', () => {
         await caseManagementPage.assertExistingDraftWarning();
 
         // Act: check the override checkbox and verify next becomes enabled
-        // Must click the inner label, not the cds-checkbox host, for checkedChange to fire
         await caseManagementPage.overrideCheckbox.locator('label').click();
         await expect(caseManagementPage.uploadWizardNextButton).toBeEnabled();
       }
