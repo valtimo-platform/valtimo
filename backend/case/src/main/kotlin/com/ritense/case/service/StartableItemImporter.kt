@@ -63,8 +63,6 @@ class StartableItemImporter(
             )
         }
 
-        if (dtos.isEmpty()) return
-
         val caseDefinitionId = request.caseDefinitionId!!
 
         logger.debug { "Importing ${dtos.size} startable items for case definition '$caseDefinitionId'" }

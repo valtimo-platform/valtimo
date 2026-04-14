@@ -74,7 +74,7 @@ class StartableProcessItemProvider(
             ?: error("Process definition key is null")
 
         if (!pdcd.startableByUser) {
-            processDefinitionCaseDefinitionRepository.save(pdcd.copy(startableByUser = false))
+            processDefinitionCaseDefinitionRepository.save(pdcd.copy(startableByUser = true))
         }
 
         return StartableItemDto(
