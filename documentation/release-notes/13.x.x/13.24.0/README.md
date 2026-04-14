@@ -6,9 +6,13 @@
 
 ## New Features
 
-* **New feature title**
+* **Ad-hoc building blocks on a case**
 
-  New feature explanation.
+  Case definitions now have an **Actions** tab in case configuration where administrators manage the items that are
+  startable from the **Start** button on the case detail page. The tab lists both processes linked to the case definition
+  and ad-hoc building blocks, and allows their visibility and ordering to be managed from a single place.
+
+  For more information, see [Building blocks](../../../features/building-blocks/README.md).
 
 ## Enhancements
 
