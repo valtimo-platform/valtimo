@@ -24,10 +24,14 @@ import com.ritense.buildingblock.repository.BuildingBlockDefinitionArtworkReposi
 import com.ritense.buildingblock.repository.BuildingBlockDefinitionRepository
 import com.ritense.buildingblock.repository.ProcessDefinitionBuildingBlockDefinitionRepository
 import com.ritense.buildingblock.service.BuildingBlockDocumentDefinitionService
+import com.ritense.buildingblock.service.BuildingBlockFormDefinitionService
+import com.ritense.buildingblock.service.BuildingBlockFormFlowDefinitionService
 import com.ritense.document.domain.impl.JsonSchemaDocumentDefinition
 import com.ritense.document.domain.impl.JsonSchemaDocumentDefinitionId
 import com.ritense.document.repository.impl.JsonSchemaDocumentDefinitionRepository
+import com.ritense.form.domain.FormProcessLink
 import com.ritense.processdocument.domain.ProcessDefinitionId
+import com.ritense.processlink.repository.ProcessLinkRepository
 import com.ritense.valtimo.contract.buildingblock.BuildingBlockDefinitionId
 import com.ritense.valtimo.contract.event.BuildingBlockDefinitionCreatedEvent
 import com.ritense.valtimo.service.OperatonProcessService
@@ -36,6 +40,7 @@ import org.springframework.context.event.EventListener
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Component
 import java.io.ByteArrayOutputStream
+import java.util.UUID
 
 @Component
 class BuildingBlockDefinitionEventListener(
@@ -45,6 +50,9 @@ class BuildingBlockDefinitionEventListener(
     private val buildingBlockDefinitionArtworkRepository: BuildingBlockDefinitionArtworkRepository,
     private val buildingBlockDocumentDefinitionService: BuildingBlockDocumentDefinitionService,
     private val operatonProcessService: OperatonProcessService,
+    private val buildingBlockFormDefinitionService: BuildingBlockFormDefinitionService,
+    private val buildingBlockFormFlowDefinitionService: BuildingBlockFormFlowDefinitionService,
+    private val processLinkRepository: ProcessLinkRepository,
 ) {
 
     @EventListener(BuildingBlockDefinitionCreatedEvent::class)
@@ -54,7 +62,10 @@ class BuildingBlockDefinitionEventListener(
         val newId = event.buildingBlockDefinitionId
 
         copyDocumentDefinition(newId.key, basedOnId, newId)
-        copyProcessDefinitions(basedOnId, newId)
+        val formIdMapping = buildingBlockFormDefinitionService.copyFormDefinitions(basedOnId, newId)
+        buildingBlockFormFlowDefinitionService.copyFormFlowDefinitions(basedOnId, newId)
+        val newProcessDefinitionIds = copyProcessDefinitions(basedOnId, newId)
+        rewriteFormProcessLinks(newProcessDefinitionIds, formIdMapping)
         copyArtwork(basedOnId, newId)
     }
 
@@ -79,7 +90,8 @@ class BuildingBlockDefinitionEventListener(
     private fun copyProcessDefinitions(
         basedOnId: BuildingBlockDefinitionId,
         newId: BuildingBlockDefinitionId
-    ) {
+    ): List<String> {
+        val newProcessDefinitionIds = mutableListOf<String>()
         processDefinitionBuildingBlockDefinitionRepository
             .findAllByIdBuildingBlockDefinitionId(basedOnId)
             .forEach { link ->
@@ -111,7 +123,26 @@ class BuildingBlockDefinitionEventListener(
                 processDefinitionBuildingBlockDefinitionRepository.save(
                     ProcessDefinitionBuildingBlockDefinition(newLinkId, link.main)
                 )
+                newProcessDefinitionIds.add(newProcessDefinitionId)
             }
+        return newProcessDefinitionIds
+    }
+
+    private fun rewriteFormProcessLinks(
+        newProcessDefinitionIds: List<String>,
+        formIdMapping: Map<UUID, UUID>
+    ) {
+        if (formIdMapping.isEmpty() || newProcessDefinitionIds.isEmpty()) {
+            return
+        }
+        newProcessDefinitionIds.forEach { processDefinitionId ->
+            processLinkRepository.findByProcessDefinitionId(processDefinitionId)
+                .filterIsInstance<FormProcessLink>()
+                .forEach { link ->
+                    val newFormId = formIdMapping[link.formDefinitionId] ?: return@forEach
+                    processLinkRepository.save(link.copy(formDefinitionId = newFormId))
+                }
+        }
     }
 
     private fun copyArtwork(

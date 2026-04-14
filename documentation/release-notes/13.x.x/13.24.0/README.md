@@ -26,4 +26,4 @@
 
 ## Bugfixes
 
-* New bugfix.
+* When a new version of a building block is created, forms and form flows are also copied over.
