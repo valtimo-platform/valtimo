@@ -75,11 +75,13 @@ class NotificatiesApiAutoConfiguration {
     @ConditionalOnMissingBean(NotificatiesApiPluginFactory::class)
     fun notificatiesApiPluginFactory(
         pluginService: PluginService,
-        client: NotificatiesApiClient
+        client: NotificatiesApiClient,
+        pluginProcessLinkRepository: PluginProcessLinkRepository
     ): NotificatiesApiPluginFactory {
         return NotificatiesApiPluginFactory(
             pluginService,
-            client
+            client,
+            pluginProcessLinkRepository
         )
     }
 

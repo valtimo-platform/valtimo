@@ -66,9 +66,6 @@ const notificatiesApiPluginSpecification: PluginSpecification = {
       'receive-notificatie': 'Ontvang een notificatie',
       receiveNotificatieDescription:
         'Configureer de filtercriteria voor binnenkomende notificaties. Alle velden zijn optioneel — lege velden matchen alle waarden.',
-      receiveNotificatieWarningTitle: 'Vereisten',
-      receiveNotificatieWarning:
-        'Het kanaal moet bestaan in de Notificaties API en het abonnement moet zijn geconfigureerd om te filteren op de opgegeven kenmerken. Per kanaal kan alleen gefilterd worden op kenmerken die op het kanaal zijn gedefinieerd.',
       receiveKanaalTooltip: 'Filter op kanaal. Indien leeg worden alle kanalen gematcht.',
       receiveActieTooltip: 'Filter op actie. Indien leeg worden alle acties gematcht.',
       receiveKenmerkenTooltip:
@@ -111,9 +108,6 @@ const notificatiesApiPluginSpecification: PluginSpecification = {
       'receive-notificatie': 'Receive a notification',
       receiveNotificatieDescription:
         'Configure the filter criteria for incoming notifications. All fields are optional — empty fields match all values.',
-      receiveNotificatieWarningTitle: 'Prerequisites',
-      receiveNotificatieWarning:
-        'The channel must exist in the Notificaties API and the subscription must be configured to filter on the specified kenmerken. Per kanaal, only kenmerken that are defined on the kanaal can be used as filters.',
       receiveKanaalTooltip: 'Filter by channel. If empty, all channels are matched.',
       receiveActieTooltip: 'Filter by action. If empty, all actions are matched.',
       receiveKenmerkenTooltip:

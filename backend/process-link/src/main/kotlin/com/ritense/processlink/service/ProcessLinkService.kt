@@ -38,11 +38,14 @@ import com.ritense.valtimo.contract.buildingblock.BuildingBlockDefinitionChecker
 import com.ritense.valtimo.contract.buildingblock.BuildingBlockDefinitionId
 import com.ritense.valtimo.contract.case_.CaseDefinitionChecker
 import com.ritense.valtimo.contract.case_.CaseDefinitionId
+import com.ritense.processlink.event.ProcessLinkCreatedEvent
+import com.ritense.processlink.event.ProcessLinkUpdatedEvent
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.util.UUID
+import org.springframework.context.ApplicationEventPublisher
 import kotlin.jvm.optionals.getOrElse
 
 @Transactional(readOnly = true)
@@ -55,6 +58,7 @@ class ProcessLinkService(
     private val operatonRepositoryService: OperatonRepositoryService,
     private val caseDefinitionChecker: CaseDefinitionChecker,
     private val buildingBlockDefinitionChecker: BuildingBlockDefinitionChecker,
+    private val applicationEventPublisher: ApplicationEventPublisher,
 ) {
 
     fun <T : ProcessLink> getProcessLink(
@@ -125,6 +129,7 @@ class ProcessLinkService(
                 )
             }
 
+            applicationEventPublisher.publishEvent(ProcessLinkCreatedEvent(createRequest.processLinkType))
             processLinkRepository.save(mapper.toNewProcessLink(createRequest, blueprintId))
         }
     }
@@ -147,6 +152,7 @@ class ProcessLinkService(
                 // Hibernate does not allow 2 different objects with the same identifier in the session, so do delete + insert instead
                 processLinkRepository.delete(processLinkToUpdate)
             }
+            applicationEventPublisher.publishEvent(ProcessLinkUpdatedEvent(updateRequest.processLinkType))
             processLinkRepository.save(processLinkUpdated)
         }
     }

@@ -18,21 +18,25 @@ package com.ritense.notificatiesapi
 
 import com.ritense.notificatiesapi.client.NotificatiesApiClient
 import com.ritense.plugin.domain.PluginConfigurationId
+import com.ritense.plugin.repository.PluginProcessLinkRepository
 import com.ritense.processlink.domain.ActivityTypeWithEventName
+import com.ritense.valtimo.contract.json.MapperSingleton
+import java.util.UUID
 import org.junit.jupiter.api.Assertions.assertDoesNotThrow
-import org.junit.jupiter.api.Assertions.assertArrayEquals
 import org.junit.jupiter.api.Test
 import org.mockito.kotlin.mock
-import java.util.UUID
 
 class NotificatiesApiPluginReceiveNotificatieTest {
 
     @Test
     fun `receiveNotificatie should not throw`() {
         val client: NotificatiesApiClient = mock()
+        val pluginProcessLinkRepository: PluginProcessLinkRepository = mock()
         val plugin = NotificatiesApiPlugin(
             PluginConfigurationId(UUID.randomUUID()),
             client,
+            MapperSingleton.get(),
+            pluginProcessLinkRepository,
         )
 
         assertDoesNotThrow {
@@ -43,9 +47,12 @@ class NotificatiesApiPluginReceiveNotificatieTest {
     @Test
     fun `receiveNotificatie should accept null parameters`() {
         val client: NotificatiesApiClient = mock()
+        val pluginProcessLinkRepository: PluginProcessLinkRepository = mock()
         val plugin = NotificatiesApiPlugin(
             PluginConfigurationId(UUID.randomUUID()),
             client,
+            MapperSingleton.get(),
+            pluginProcessLinkRepository,
         )
 
         assertDoesNotThrow {

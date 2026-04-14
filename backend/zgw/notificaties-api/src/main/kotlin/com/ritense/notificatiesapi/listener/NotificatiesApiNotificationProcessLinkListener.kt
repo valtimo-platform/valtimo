@@ -21,6 +21,8 @@ import com.fasterxml.jackson.databind.node.JsonNodeFactory
 import com.ritense.authorization.annotation.RunWithoutAuthorization
 import com.ritense.case.service.CaseDefinitionService
 import com.ritense.document.domain.impl.request.NewDocumentRequest
+import com.ritense.notificatiesapi.NotificatiesApiPlugin.Companion.NOTIFICATIES_API_PLUGIN_DEFINITION_KEY
+import com.ritense.notificatiesapi.NotificatiesApiPlugin.Companion.RECEIVE_NOTIFICATIE_ACTION_KEY
 import com.ritense.notificatiesapi.event.NotificatiesApiNotificationReceivedEvent
 import com.ritense.plugin.domain.PluginProcessLink
 import com.ritense.plugin.repository.PluginProcessLinkRepository
@@ -214,7 +216,5 @@ open class NotificatiesApiNotificationProcessLinkListener(
 
     companion object {
         private val logger = KotlinLogging.logger {}
-        const val NOTIFICATIES_API_PLUGIN_DEFINITION_KEY = "notificatiesapi"
-        const val RECEIVE_NOTIFICATIE_ACTION_KEY = "receive-notificatie"
     }
 }
