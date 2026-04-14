@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -286,8 +286,7 @@ function getLibDependencyGraph(packageJsonPath) {
   }
 
   const frontendRoot = path.dirname(packageJsonPath);
-  const {libLevels, levels, sortedLevelNumbers, levelBuildModes} =
-    parseBuildOrder(packageJsonPath);
+  const {libLevels, levels, sortedLevelNumbers, levelBuildModes} = parseBuildOrder(packageJsonPath);
   const {dependsOn, dependents} = buildDependencyMap(
     libLevels,
     levels,
