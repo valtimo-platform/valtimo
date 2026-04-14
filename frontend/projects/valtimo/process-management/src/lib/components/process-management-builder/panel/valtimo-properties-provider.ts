@@ -64,6 +64,8 @@ class ValtimoPropertiesProvider {
         is(element, 'bpmn:UserTask') ||
         is(element, 'bpmn:StartEvent') ||
         is(element, 'bpmn:ServiceTask') ||
+        is(element, 'bpmn:SendTask') ||
+        is(element, 'bpmn:IntermediateThrowEvent') ||
         is(element, 'bpmn:CallActivity')
       ) {
         const customGroup = {
