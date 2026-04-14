@@ -1,0 +1,24 @@
+{
+    "ikoViewKey": "demo",
+    "ikoSearchActionKey": "achternaam-geboortedatum",
+    "ikoSearchFields": [
+        {
+            "key": "achternaam",
+            "title": "Achternaam",
+            "path": "/basidgegevens/naam",
+            "dataType": "text",
+            "fieldType": "single",
+            "matchType": "like",
+            "required": false
+        },
+        {
+            "key": "geboortedatum",
+            "title": "Geboortedatum",
+            "path": "/basisgegevens/geboortedatum",
+            "dataType": "date",
+            "fieldType": "single",
+            "matchType": "exact",
+            "required": false
+        }
+    ]
+}
