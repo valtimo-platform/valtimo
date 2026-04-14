@@ -14,6 +14,12 @@
  * limitations under the License.
  */
 
-package com.ritense.valtimo.contract.document
+package com.ritense.valtimo.contract.event
 
-class CaseDocumentResolutionException(message: String, cause: Throwable? = null) : RuntimeException(message, cause)
+data class TaskTeamAssignedEvent(
+    val taskId: String,
+    val formerTeamKey: String?,
+    val formerTeamTitle: String?,
+    val newTeamKey: String?,
+    val newTeamTitle: String?,
+)

@@ -30,9 +30,9 @@ import com.ritense.valtimo.contract.document.CaseDocumentResolutionException
 import com.ritense.valtimo.contract.document.CaseDocumentResolver
 import com.ritense.valtimo.operaton.authorization.OperatonTaskActionProvider
 import com.ritense.valtimo.operaton.domain.OperatonTask
-import com.ritense.valtimo.operaton.repository.OperatonTaskSpecificationHelper.Companion.byAssigned
-import com.ritense.valtimo.operaton.repository.OperatonTaskSpecificationHelper.Companion.byCandidateGroups
-import com.ritense.valtimo.operaton.repository.OperatonTaskSpecificationHelper.Companion.byProcessInstanceBusinessKey
+import com.ritense.valtimo.operaton.repository.OperatonTaskSpecificationHelper.Companion.byAssignee
+import com.ritense.valtimo.operaton.repository.OperatonTaskSpecificationHelper.Companion.byRootProcessInstanceBusinessKey
+import com.ritense.valtimo.operaton.repository.OperatonTaskSpecificationHelper.Companion.byUnassigned
 import com.ritense.valtimo.service.OperatonTaskService
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.context.event.EventListener
@@ -53,22 +53,25 @@ class CaseAssigneeListener(
     @EventListener(DocumentAssigneeChangedEvent::class)
     fun updateAssigneeOnTasks(event: DocumentAssigneeChangedEvent) {
         try {
-            val caseDocumentId = caseDocumentResolver.resolveCaseDocumentId(event.documentId)
-            val caseDocument = documentService[caseDocumentId.toString()]
-            val caseDefinition: CaseDefinition = caseDefinitionService.getCaseDefinition(
-                caseDocument.definitionId().caseDefinitionId()
-            )
+            val caseDocument = runWithoutAuthorization {
+                val caseDocumentId = caseDocumentResolver.resolveCaseDocumentId(event.documentId)
+                documentService[caseDocumentId.toString()]
+            }
+            val caseDefinition = runWithoutAuthorization {
+                caseDefinitionService.getCaseDefinition(
+                    caseDocument.definitionId().caseDefinitionId()
+                )
+            }
 
             if (caseDefinition.canHaveAssignee && caseDefinition.autoAssignTasks) {
                 val assigneeUsername = caseDocument.assigneeId()
                 if (assigneeUsername != null) {
-                    val assignee = runWithoutAuthorization { userManagementService.findByUsername(caseDocument.assigneeId()) }
+                    val assignee = runWithoutAuthorization { userManagementService.findByUsername(assigneeUsername) }
                     val tasks = runWithoutAuthorization {
                         operatonTaskService.findTasks(
-                            byProcessInstanceBusinessKey(caseDocument.id().toString())
-                                .and(byCandidateGroups(assignee.roles))
+                            byRootProcessInstanceBusinessKey(caseDocument.id().toString())
+                                .and(byAssignee(event.formerAssigneeId).or(byUnassigned()))
                         )
-
                     }
 
                     logger.debug { "Updating assignee on ${tasks.size} task(s)" }
@@ -100,6 +103,7 @@ class CaseAssigneeListener(
     @RunWithoutAuthorization
     @EventListener(DocumentUnassignedEvent::class)
     fun removeAssigneeFromTasks(event: DocumentUnassignedEvent) {
+        val formerAssigneeId = event.assigneeId ?: return
         try {
             val caseDocumentId = caseDocumentResolver.resolveCaseDocumentId(event.documentId)
             val caseDocument = documentService[caseDocumentId.toString()]
@@ -108,8 +112,8 @@ class CaseAssigneeListener(
             )
             if (caseDefinition.canHaveAssignee && caseDefinition.autoAssignTasks) {
                 val tasks = operatonTaskService.findTasks(
-                    byProcessInstanceBusinessKey(caseDocument.id().toString())
-                        .and(byAssigned())
+                    byRootProcessInstanceBusinessKey(caseDocument.id().toString())
+                        .and(byAssignee(formerAssigneeId))
                 )
                 logger.debug { "Removing assignee from ${tasks.size} task(s)" }
                 tasks.forEach { task ->
