@@ -1,5 +1,6 @@
 // e2e/utils/api.utils.ts
 import { request, APIRequestContext, APIResponse } from '@playwright/test';
+import * as OTPAuth from 'otpauth';
 
 let _context: APIRequestContext | undefined;
 
@@ -8,16 +9,23 @@ async function fetchFreshToken(): Promise<string> {
   const keycloakRealm = process.env.KEYCLOAK_REALM ?? 'valtimo';
   const tokenUrl = `${keycloakUrl}/auth/realms/${keycloakRealm}/protocol/openid-connect/token`;
 
+  const form: Record<string, string> = {
+    client_id: process.env.KC_CLIENT_ID ?? 'valtimo-console',
+    client_secret: process.env.KC_CLIENT_SECRET ?? 'secret',
+    grant_type: 'password',
+    username: process.env.qa_admin_username ?? 'admin',
+    password: process.env.qa_admin_password ?? 'admin',
+    scope: 'openid',
+  };
+
+  if (process.env.qa_admin_otp_url) {
+    const totp = OTPAuth.URI.parse(process.env.qa_admin_otp_url);
+    form.otp = totp.generate();
+  }
+
   const ctx = await request.newContext();
   const resp = await ctx.post(tokenUrl, {
-    form: {
-      client_id: process.env.KC_CLIENT_ID ?? 'valtimo-console',
-      client_secret: process.env.KC_CLIENT_SECRET ?? 'secret',
-      grant_type: 'password',
-      username: process.env.qa_admin_username ?? 'admin',
-      password: process.env.qa_admin_password ?? 'admin',
-      scope: 'openid',
-    },
+    form,
     headers: {'Content-Type': 'application/x-www-form-urlencoded'},
   });
 
