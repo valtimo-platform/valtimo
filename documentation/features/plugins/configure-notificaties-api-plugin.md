@@ -81,7 +81,7 @@ When a notification matches, the following data from the notification is passed 
 | `notificatieKenmerken`    | A map of key-value attribute pairs from the notification.           |
 
 {% hint style="warning" %}
-The kanaal must exist in the Notificaties API and the abonnement must be configured to filter on the specified
+The channel must exist in the Notificaties API and the abonnement must be configured to filter on the specified
 kenmerken. Per kanaal, only kenmerken that are defined on the kanaal can be used as filters. See
 the [Notificaties API specification](https://vng-realisatie.github.io/gemma-zaken/standaard/notificaties/index) for
 details on kanalen and filters.

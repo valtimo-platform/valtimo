@@ -113,7 +113,7 @@ const notificatiesApiPluginSpecification: PluginSpecification = {
         'Configure the filter criteria for incoming notifications. All fields are optional — empty fields match all values.',
       receiveNotificatieWarningTitle: 'Prerequisites',
       receiveNotificatieWarning:
-        'The kanaal must exist in the Notificaties API and the subscription must be configured to filter on the specified kenmerken. Per kanaal, only kenmerken that are defined on the kanaal can be used as filters.',
+        'The channel must exist in the Notificaties API and the subscription must be configured to filter on the specified kenmerken. Per kanaal, only kenmerken that are defined on the kanaal can be used as filters.',
       receiveKanaalTooltip: 'Filter by channel. If empty, all channels are matched.',
       receiveActieTooltip: 'Filter by action. If empty, all actions are matched.',
       receiveKenmerkenTooltip:
