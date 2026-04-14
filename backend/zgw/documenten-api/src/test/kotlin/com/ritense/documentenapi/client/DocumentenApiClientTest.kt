@@ -894,7 +894,7 @@ internal class DocumentenApiClientTest {
     }
 
     @Test
-    fun `search without zaakUrl should throw exception`() {
+    fun `search without zaakUrl or objectUrl should throw exception`() {
 
         val pageable = Pageable.ofSize(10)
         val documentSearchRequest = DocumentSearchRequest()
@@ -1179,7 +1179,7 @@ internal class DocumentenApiClientTest {
 
     private fun parseQueryString(url: String?): Map<String, String> {
         return url?.substringAfter("?")?.split("&")?.associate {
-            val (key, value) = it.split("=")
+            val (key, value) = it.split("=", limit = 2)
             key to value
         } ?: emptyMap()
     }
