@@ -51,7 +51,7 @@ export class TaskListPage {
   // ─── Navigation & Waiting ──────────────────────────────────────────
 
   async waitForTaskListLoaded() {
-    await expect(this.taskTable).toBeVisible({timeout: 15_000});
+    await this.carbonList.waitForLoaded();
     await expect(this.tabList).toBeVisible();
   }
 
