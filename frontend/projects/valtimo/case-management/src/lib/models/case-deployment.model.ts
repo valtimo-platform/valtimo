@@ -64,11 +64,26 @@ export interface CaseDefinitionConfigurationIssue {
   resolvedAt: string | null;
 }
 
+export interface PluginConfigurationPreview {
+  pluginConfigurationId: string;
+  pluginDefinitionKey: string | null;
+  pluginActionDefinitionKey: string;
+  processDefinitionKey: string;
+  activityId: string;
+  existsInTargetEnvironment: boolean;
+}
+
 export interface CaseDefinitionImportPreview {
   key: string;
   name: string;
   versionTag: string;
   isFinal: boolean;
+  pluginConfigurations: PluginConfigurationPreview[];
+}
+
+export interface DanglingPluginConfiguration {
+  pluginDefinitionKey: string | null;
+  sourcePluginConfigurationIds: string[];
 }
 
 export interface ConfigurationIssueUpdatedSseEvent {

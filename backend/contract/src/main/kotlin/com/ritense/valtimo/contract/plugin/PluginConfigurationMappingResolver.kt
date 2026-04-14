@@ -14,12 +14,17 @@
  * limitations under the License.
  */
 
-package com.ritense.case.web.rest.dto
+package com.ritense.valtimo.contract.plugin
 
-data class CaseDefinitionImportPreviewResponse(
-    val key: String,
-    val name: String,
-    val versionTag: String,
-    val isFinal: Boolean,
-    val pluginConfigurations: List<PluginConfigurationPreviewDto> = emptyList(),
+import com.ritense.valtimo.contract.case_.CaseDefinitionId
+import java.util.UUID
+
+data class DanglingPluginConfigurationDto(
+    val pluginDefinitionKey: String?,
+    val sourcePluginConfigurationIds: Set<UUID>,
 )
+
+interface PluginConfigurationMappingResolver {
+    fun resolve(caseDefinitionId: CaseDefinitionId, mappings: Map<UUID, UUID>)
+    fun getDanglingPluginConfigurations(caseDefinitionId: CaseDefinitionId): List<DanglingPluginConfigurationDto>
+}

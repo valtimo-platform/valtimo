@@ -807,7 +807,28 @@
           "message": "This process may use plugins. Make sure you configure them correctly.",
           "title": "Plugin Configuration"
         }
+      },
+      "plugins": {
+        "description": "Connect the correct plugin configurations. Matching plugins are filled automatically. If a plugin configuration is missing you can still continue. You can configure the plugin afterwards and connect it through the case configuration page.",
+        "source": "Source",
+        "target": "Target",
+        "selectPlaceholder": "Select plugin configuration",
+        "unknownPlugin": "Unknown plugin",
+        "noPlugins": "No plugin configurations need to be mapped for this import.",
+        "noPluginsTitle": "No plugins to configure",
+        "notInstalled": "Plugin type not installed",
+        "noConfigurations": "No configurations available"
       }
+    },
+    "missingPluginConfigurations": {
+      "title": "Missing configuration",
+      "description": "There are missing plugin configurations for this case. Please link the required plugin configurations below",
+      "selectPlaceholder": "Select plugin configuration",
+      "unknownPlugin": "Unknown plugin",
+      "notInstalled": "Plugin type not installed",
+      "noConfigurations": "No configurations available",
+      "saveSuccess": "Plugin configuration mappings saved successfully",
+      "saveError": "Failed to save plugin configuration mappings"
     },
     "createDefinition": {
       "idError": "This definition name is already in use. Please change to a unique name",

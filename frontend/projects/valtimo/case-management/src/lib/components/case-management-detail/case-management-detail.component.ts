@@ -100,6 +100,9 @@ export class CaseManagementDetailComponent implements OnInit, OnDestroy {
   private _subscriptions = new Subscription();
   private readonly _refreshConfigurationIssues$ = new BehaviorSubject<null>(null);
 
+  public readonly hasPluginProcessLinkIssue$: Observable<boolean> =
+    this.configurationIssueService.hasIssue$('plugin-process-link');
+
   public readonly configurationIssues$: Observable<CaseDefinitionConfigurationIssue[]> =
     combineLatest([
       this.caseDetailService.selectedCaseDefinitionKey$,

@@ -14,12 +14,10 @@
  * limitations under the License.
  */
 
-package com.ritense.case.web.rest.dto
+package com.ritense.valtimo.contract.plugin
 
-data class CaseDefinitionImportPreviewResponse(
-    val key: String,
-    val name: String,
-    val versionTag: String,
-    val isFinal: Boolean,
-    val pluginConfigurations: List<PluginConfigurationPreviewDto> = emptyList(),
-)
+import java.util.UUID
+
+fun interface PluginConfigurationExistenceChecker {
+    fun exists(pluginConfigurationId: UUID): Boolean
+}

@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,6 +20,7 @@ import com.ritense.logging.LoggableResource
 import com.ritense.logging.withLoggingContext
 import com.ritense.processlink.domain.ActivityTypeWithEventName
 import com.ritense.processlink.domain.ProcessLink
+import com.ritense.processlink.domain.ProcessLinkChangedEvent
 import com.ritense.processlink.domain.ProcessLinkType
 import com.ritense.processlink.domain.SupportedProcessLinkTypeHandler
 import com.ritense.processlink.exception.ProcessLinkExistsException
@@ -28,17 +29,18 @@ import com.ritense.processlink.mapper.ProcessLinkMapper
 import com.ritense.processlink.repository.ProcessLinkRepository
 import com.ritense.processlink.web.rest.dto.ProcessLinkCreateRequestDto
 import com.ritense.processlink.web.rest.dto.ProcessLinkUpdateRequestDto
-import com.ritense.valtimo.operaton.domain.OperatonProcessDefinition
-import com.ritense.valtimo.operaton.repository.OperatonProcessDefinitionSpecificationHelper.Companion.byKey
-import com.ritense.valtimo.operaton.repository.OperatonProcessDefinitionSpecificationHelper.Companion.byLatestVersion
-import com.ritense.valtimo.operaton.service.OperatonRepositoryService
 import com.ritense.valtimo.contract.BlueprintId
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import com.ritense.valtimo.contract.buildingblock.BuildingBlockDefinitionChecker
 import com.ritense.valtimo.contract.buildingblock.BuildingBlockDefinitionId
 import com.ritense.valtimo.contract.case_.CaseDefinitionChecker
 import com.ritense.valtimo.contract.case_.CaseDefinitionId
+import com.ritense.valtimo.operaton.domain.OperatonProcessDefinition
+import com.ritense.valtimo.operaton.repository.OperatonProcessDefinitionSpecificationHelper.Companion.byKey
+import com.ritense.valtimo.operaton.repository.OperatonProcessDefinitionSpecificationHelper.Companion.byLatestVersion
+import com.ritense.valtimo.operaton.service.OperatonRepositoryService
 import io.github.oshai.kotlinlogging.KotlinLogging
+import org.springframework.context.ApplicationEventPublisher
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -55,6 +57,7 @@ class ProcessLinkService(
     private val operatonRepositoryService: OperatonRepositoryService,
     private val caseDefinitionChecker: CaseDefinitionChecker,
     private val buildingBlockDefinitionChecker: BuildingBlockDefinitionChecker,
+    private val applicationEventPublisher: ApplicationEventPublisher,
 ) {
 
     fun <T : ProcessLink> getProcessLink(
@@ -118,7 +121,9 @@ class ProcessLinkService(
                 )
             }
 
-            processLinkRepository.save(mapper.toNewProcessLink(createRequest, blueprintId))
+            val saved = processLinkRepository.save(mapper.toNewProcessLink(createRequest, blueprintId))
+            applicationEventPublisher.publishEvent(ProcessLinkChangedEvent(createRequest.processDefinitionId))
+            saved
         }
     }
 
@@ -140,7 +145,9 @@ class ProcessLinkService(
                 // Hibernate does not allow 2 different objects with the same identifier in the session, so do delete + insert instead
                 processLinkRepository.delete(processLinkToUpdate)
             }
-            processLinkRepository.save(processLinkUpdated)
+            val saved = processLinkRepository.save(processLinkUpdated)
+        applicationEventPublisher.publishEvent(ProcessLinkChangedEvent(updateRequest./clprocessDefinitionId))
+            saved
         }
     }
 
@@ -148,7 +155,11 @@ class ProcessLinkService(
     fun deleteProcessLink(
         @LoggableResource(resourceType = ProcessLink::class) id: UUID
     ) {
+        val processLink = processLinkRepository.findByIdOrNull(id)
         processLinkRepository.deleteById(id)
+        if (processLink != null) {
+            applicationEventPublisher.publishEvent(ProcessLinkChangedEvent(processLink.processDefinitionId))
+        }
     }
 
     fun deleteProcessLinksForProcessDefinition(processDefinitionId: String) {

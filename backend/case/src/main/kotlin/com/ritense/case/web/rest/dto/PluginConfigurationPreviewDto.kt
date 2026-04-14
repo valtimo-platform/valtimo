@@ -16,10 +16,13 @@
 
 package com.ritense.case.web.rest.dto
 
-data class CaseDefinitionImportPreviewResponse(
-    val key: String,
-    val name: String,
-    val versionTag: String,
-    val isFinal: Boolean,
-    val pluginConfigurations: List<PluginConfigurationPreviewDto> = emptyList(),
+import java.util.UUID
+
+data class PluginConfigurationPreviewDto(
+    val pluginConfigurationId: UUID,
+    val pluginDefinitionKey: String?,
+    val pluginActionDefinitionKey: String,
+    val processDefinitionKey: String,
+    val activityId: String,
+    val existsInTargetEnvironment: Boolean,
 )

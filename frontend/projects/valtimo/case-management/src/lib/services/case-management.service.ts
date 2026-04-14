@@ -30,6 +30,7 @@ import {
   CaseDefinitionConfigurationIssue,
   CaseDefinitionFinalizationCheckResult,
   CaseDefinitionImportPreview,
+  DanglingPluginConfiguration,
   DraftVersion,
 } from '../models/case-deployment.model';
 
@@ -157,11 +158,18 @@ export class CaseManagementService extends BaseApiService {
   public importDocumentDefinitionZip(
     file: FormData,
     key?: string,
-    name?: string
+    name?: string,
+    pluginConfigurationMappings?: Record<string, string | null>
   ): Observable<HttpResponse<Blob>> {
     let params = new HttpParams();
     if (key) params = params.set('key', key);
     if (name) params = params.set('name', name);
+    if (pluginConfigurationMappings) {
+      file.append(
+        'pluginConfigurationMappings',
+        new Blob([JSON.stringify(pluginConfigurationMappings)], {type: 'application/json'})
+      );
+    }
     return this.httpClient.post<HttpResponse<Blob>>(
       this.getApiUrl('management/v1/case/import'),
       file,
@@ -189,6 +197,30 @@ export class CaseManagementService extends BaseApiService {
       this.getApiUrl(
         `management/v1/case-definition/${caseDefinitionKey}/version/${caseDefinitionVersionTag}/configuration-issues`
       )
+    );
+  }
+
+  public getDanglingPluginConfigurations(
+    caseDefinitionKey: string,
+    caseDefinitionVersionTag: string
+  ): Observable<DanglingPluginConfiguration[]> {
+    return this.httpClient.get<DanglingPluginConfiguration[]>(
+      this.getApiUrl(
+        `management/v1/case-definition/${caseDefinitionKey}/version/${caseDefinitionVersionTag}/dangling-plugin-configurations`
+      )
+    );
+  }
+
+  public resolvePluginConfigurationMappings(
+    caseDefinitionKey: string,
+    caseDefinitionVersionTag: string,
+    mappings: Record<string, string>
+  ): Observable<void> {
+    return this.httpClient.put<void>(
+      this.getApiUrl(
+        `management/v1/case-definition/${caseDefinitionKey}/version/${caseDefinitionVersionTag}/plugin-configuration-mappings`
+      ),
+      mappings
     );
   }
 

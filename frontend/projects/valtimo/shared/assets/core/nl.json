@@ -823,7 +823,28 @@
           "message": "Dit proces maakt mogelijk gebruik van plugins. Zorg dat je deze goed instelt.",
           "title": "Plugin configuraties"
         }
+      },
+      "plugins": {
+        "description": "Koppel de juiste pluginconfiguraties. Overeenkomende plugins worden automatisch ingevuld. Als een pluginconfiguratie ontbreekt, kun je toch doorgaan. Je kunt de plugin achteraf configureren en koppelen via de dossier configuratiepagina.",
+        "source": "Bron",
+        "target": "Doel",
+        "selectPlaceholder": "Selecteer pluginconfiguratie",
+        "unknownPlugin": "Onbekende plugin",
+        "noPlugins": "Er hoeven geen pluginconfiguraties te worden gekoppeld voor deze import.",
+        "noPluginsTitle": "Geen plugins te configureren",
+        "notInstalled": "Plugintype niet geïnstalleerd",
+        "noConfigurations": "Geen configuraties beschikbaar"
       }
+    },
+    "missingPluginConfigurations": {
+      "title": "Ontbrekende configuratie",
+      "description": "Er ontbreken pluginconfiguraties voor dit dossier. Koppel hieronder de vereiste pluginconfiguraties",
+      "selectPlaceholder": "Selecteer pluginconfiguratie",
+      "unknownPlugin": "Onbekende plugin",
+      "notInstalled": "Plugintype niet geïnstalleerd",
+      "noConfigurations": "Geen configuraties beschikbaar",
+      "saveSuccess": "Pluginconfiguratie-koppelingen succesvol opgeslagen",
+      "saveError": "Kon pluginconfiguratie-koppelingen niet opslaan"
     },
     "createDefinition": {
       "idError": "Deze naam voor de dossierdefinitie is al in gebruik. Kies een unieke naam.",

@@ -18,18 +18,20 @@ package com.ritense.case.service
 
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.ritense.importer.exception.ImportServiceException
+import com.ritense.valtimo.contract.plugin.PluginConfigurationExistenceChecker
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.junit.jupiter.api.Test
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
+import java.util.UUID
 import java.util.zip.ZipEntry
 import java.util.zip.ZipOutputStream
 
 class CaseDefinitionImportPreviewServiceTest {
 
     private val objectMapper = jacksonObjectMapper()
-    private val service = CaseDefinitionImportPreviewService(objectMapper)
+    private val service = CaseDefinitionImportPreviewService(objectMapper, null)
 
     @Test
     fun `should return preview from valid ZIP`() {
@@ -91,6 +93,135 @@ class CaseDefinitionImportPreviewServiceTest {
 
         assertThatThrownBy { service.preview(ByteArrayInputStream(baos.toByteArray())) }
             .isInstanceOf(ImportServiceException::class.java)
+    }
+
+    @Test
+    fun `should extract plugin configurations from process-link files`() {
+        val pluginConfigId = UUID.randomUUID()
+        val checker = PluginConfigurationExistenceChecker { false }
+        val serviceWithChecker = CaseDefinitionImportPreviewService(objectMapper, checker)
+
+        val zip = createZip(
+            "case/definition/my-case.case-definition.json" to """
+                {
+                    "key": "my-case",
+                    "name": "My Case",
+                    "versionTag": "1.0.0",
+                    "final": false
+                }
+            """.trimIndent(),
+            "process-link/my-process.process-link.json" to """
+                [
+                    {
+                        "activityId": "Task_1",
+                        "activityType": "bpmn:ServiceTask:start",
+                        "processLinkType": "plugin",
+                        "pluginConfigurationId": "$pluginConfigId",
+                        "referenceType": "FIXED",
+                        "pluginDefinitionKey": "zaken-api",
+                        "pluginActionDefinitionKey": "create-zaak",
+                        "actionProperties": {}
+                    }
+                ]
+            """.trimIndent()
+        )
+
+        val result = serviceWithChecker.preview(ByteArrayInputStream(zip))
+
+        assertThat(result.pluginConfigurations).hasSize(1)
+        val config = result.pluginConfigurations[0]
+        assertThat(config.pluginConfigurationId).isEqualTo(pluginConfigId)
+        assertThat(config.pluginDefinitionKey).isEqualTo("zaken-api")
+        assertThat(config.pluginActionDefinitionKey).isEqualTo("create-zaak")
+        assertThat(config.processDefinitionKey).isEqualTo("my-process")
+        assertThat(config.activityId).isEqualTo("Task_1")
+        assertThat(config.existsInTargetEnvironment).isFalse()
+    }
+
+    @Test
+    fun `should mark existing plugin configuration as exists in target`() {
+        val existingId = UUID.randomUUID()
+        val checker = PluginConfigurationExistenceChecker { id -> id == existingId }
+        val serviceWithChecker = CaseDefinitionImportPreviewService(objectMapper, checker)
+
+        val zip = createZip(
+            "case/definition/my-case.case-definition.json" to """
+                {
+                    "key": "my-case",
+                    "name": "My Case",
+                    "versionTag": "1.0.0",
+                    "final": false
+                }
+            """.trimIndent(),
+            "process-link/my-process.process-link.json" to """
+                [
+                    {
+                        "activityId": "Task_1",
+                        "activityType": "bpmn:ServiceTask:start",
+                        "processLinkType": "plugin",
+                        "pluginConfigurationId": "$existingId",
+                        "referenceType": "FIXED",
+                        "pluginDefinitionKey": "zaken-api",
+                        "pluginActionDefinitionKey": "create-zaak",
+                        "actionProperties": {}
+                    }
+                ]
+            """.trimIndent()
+        )
+
+        val result = serviceWithChecker.preview(ByteArrayInputStream(zip))
+
+        assertThat(result.pluginConfigurations).hasSize(1)
+        assertThat(result.pluginConfigurations[0].existsInTargetEnvironment).isTrue()
+    }
+
+    @Test
+    fun `should skip BUILDING_BLOCK process links in preview`() {
+        val zip = createZip(
+            "case/definition/my-case.case-definition.json" to """
+                {
+                    "key": "my-case",
+                    "name": "My Case",
+                    "versionTag": "1.0.0",
+                    "final": false
+                }
+            """.trimIndent(),
+            "process-link/my-process.process-link.json" to """
+                [
+                    {
+                        "activityId": "Task_1",
+                        "activityType": "bpmn:ServiceTask:start",
+                        "processLinkType": "plugin",
+                        "referenceType": "BUILDING_BLOCK",
+                        "pluginDefinitionKey": "zaken-api",
+                        "pluginActionDefinitionKey": "create-zaak",
+                        "actionProperties": {}
+                    }
+                ]
+            """.trimIndent()
+        )
+
+        val result = service.preview(ByteArrayInputStream(zip))
+
+        assertThat(result.pluginConfigurations).isEmpty()
+    }
+
+    @Test
+    fun `should return empty plugin configurations when no process-link files`() {
+        val zip = createZip(
+            "case/definition/my-case.case-definition.json" to """
+                {
+                    "key": "my-case",
+                    "name": "My Case",
+                    "versionTag": "1.0.0",
+                    "final": false
+                }
+            """.trimIndent()
+        )
+
+        val result = service.preview(ByteArrayInputStream(zip))
+
+        assertThat(result.pluginConfigurations).isEmpty()
     }
 
     private fun createZip(vararg entries: Pair<String, String>): ByteArray {
