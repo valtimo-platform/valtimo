@@ -72,12 +72,12 @@ internal class FormFlowStepCompletedIntTest : BaseIntegrationTest() {
 
     private fun completeStep(instance: FormFlowInstance): FormFlowStepInstance {
         instance.getCurrentStep().open()
-        val formFlowStepInstance = instance.complete(
+        val result = instance.complete(
             instance.currentFormFlowStepInstanceId!!,
             JSONObject("""{"test":"data"}""")
         )
         formFlowService.save(instance)
-        return formFlowStepInstance!!
+        return result.nextStep!!
     }
 
 }

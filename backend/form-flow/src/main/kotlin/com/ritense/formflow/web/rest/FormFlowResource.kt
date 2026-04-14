@@ -61,12 +61,13 @@ class FormFlowResource(
             FormFlowInstanceId.existingId(instanceId)
         ) ?: return ResponseEntity
             .badRequest()
-            .body(GetFormFlowStateResult(null, null, "No form flow instance can be found for the given instance id"))
+            .body(GetFormFlowStateResult(errorMessage = "No form flow instance can be found for the given instance id"))
 
         val stepInstance = instance.getCurrentStep()
+        val openResult = stepInstance.open()
         formFlowService.save(instance)
 
-        return ResponseEntity.ok(GetFormFlowStateResult(instance.id.id, openStep(stepInstance)))
+        return ResponseEntity.ok(GetFormFlowStateResult(instance.id.id, toStepResult(stepInstance), toResultList(openResult)))
     }
 
     @PostMapping(
@@ -84,13 +85,16 @@ class FormFlowResource(
         val instance = formFlowService.getByInstanceIdIfExists(FormFlowInstanceId.existingId(formFlowId))!!
         val verifiedSubmissionData = formFlowValtimoService.getVerifiedSubmissionData(submissionData, instance)
 
-        val stepInstance = instance.complete(
+        val completeResult = instance.complete(
             FormFlowStepInstanceId.existingId(stepInstanceId),
             toJsonObject(verifiedSubmissionData)
         )
         formFlowService.save(instance)
 
-        return ResponseEntity.ok(CompleteStepResult(instance.id.id, openStep(stepInstance)))
+        val nextStep = completeResult.nextStep
+        val onCompleteResult = toResultList(completeResult.onCompleteResult)
+        val onOpenResult = nextStep?.let { toResultList(it.open()) }
+        return ResponseEntity.ok(CompleteStepResult(instance.id.id, nextStep?.let { toStepResult(it) }, onOpenResult, onCompleteResult))
     }
 
     @PostMapping(
@@ -112,7 +116,8 @@ class FormFlowResource(
         val stepInstance = instance.back()
         formFlowService.save(instance)
 
-        return ResponseEntity.ok(GetFormFlowStateResult(instance.id.id, openStep(stepInstance)))
+        val openResult = stepInstance?.let { toResultList(it.open()) }
+        return ResponseEntity.ok(GetFormFlowStateResult(instance.id.id, stepInstance?.let { toStepResult(it) }, onOpenResult = openResult))
     }
 
     @PostMapping(
@@ -153,8 +158,9 @@ class FormFlowResource(
         formFlowService.save(instance)
 
         val stepInstance = instance.navigateToStep(FormFlowStepInstanceId.existingId(targetStepInstanceId))
+        val openResult = toResultList(stepInstance.open())
 
-        return ResponseEntity.ok(GetFormFlowStateResult(instance.id.id, openStep(stepInstance)))
+        return ResponseEntity.ok(GetFormFlowStateResult(instance.id.id, toStepResult(stepInstance), openResult))
     }
 
     @GetMapping("/v1/form-flow/instance/{formFlowId}/breadcrumbs")
@@ -164,21 +170,20 @@ class FormFlowResource(
     ): ResponseEntity<FormFlowBreadcrumbsResponse> {
         val instance = formFlowService.getByInstanceIdIfExists(FormFlowInstanceId.existingId(formFlowId))!!
         val breadcrumbs = formFlowService.getBreadcrumbs(instance)
-        val response = FormFlowBreadcrumbsResponse.of(instance.currentFormFlowStepInstanceId!!.id, breadcrumbs)
+        val response = FormFlowBreadcrumbsResponse.of(instance.currentFormFlowStepInstanceId?.id, breadcrumbs)
         return ResponseEntity.ok(response)
     }
 
-    private fun openStep(stepInstance: FormFlowStepInstance?): FormFlowStepResult? {
-        return if (stepInstance != null) {
-            stepInstance.open()
-            FormFlowStepResult(
-                stepInstance.id.id,
-                stepInstance.definition.type.name,
-                formFlowService.getTypeProperties(stepInstance)
-            )
-        } else {
-            null
-        }
+    private fun toStepResult(stepInstance: FormFlowStepInstance): FormFlowStepResult {
+        return FormFlowStepResult(
+            stepInstance.id.id,
+            stepInstance.definition.type.name,
+            formFlowService.getTypeProperties(stepInstance)
+        )
+    }
+
+    private fun toResultList(expressionResults: List<Any>): List<Any>? {
+        return expressionResults.ifEmpty { null }
     }
 
     private fun toJsonObject(jsonNode: JsonNode?): JSONObject {

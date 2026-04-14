@@ -32,6 +32,11 @@ data class CreateStartableItemRequest(
     val properties: JsonNode
 )
 
+data class UpdateStartableItemRequest(
+    val type: StartableItemType,
+    val properties: JsonNode
+)
+
 data class UpdateStartableItemOrderRequest(
     val items: List<StartableItemOrderEntry>
 )
@@ -39,5 +44,6 @@ data class UpdateStartableItemOrderRequest(
 data class StartableItemOrderEntry(
     val key: String,
     val type: StartableItemType,
+    val versionTag: String? = null,
     val sortOrder: Int
 )

@@ -39,7 +39,7 @@
       @if (formFlowInstanceId) {
         <valtimo-form-flow
           [formFlowInstanceId]="formFlowInstanceId"
-          (formFlowComplete)="formFlowSubmitted()"
+          (formFlowComplete)="formFlowSubmitted($event)"
         ></valtimo-form-flow>
       }
 
