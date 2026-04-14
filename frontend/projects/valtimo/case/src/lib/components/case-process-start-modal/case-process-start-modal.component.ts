@@ -244,9 +244,16 @@ export class CaseProcessStartModalComponent implements OnInit, OnDestroy {
     });
   }
 
-  public formFlowSubmitted(): void {
-    this.formFlowComplete.emit(null);
-    this.closeCdsModal();
+  public formFlowSubmitted(result?: any[]): void {
+    const documentId = result
+      ?.filter(item => item?.documentId)
+      ?.map(item => item.documentId)?.[0];
+    if (documentId) {
+      this.submitCompleted({documentId, errors: []});
+    } else {
+      this.formFlowComplete.emit(null);
+      this.closeCdsModal();
+    }
   }
 
   public isUserAdmin(): void {
