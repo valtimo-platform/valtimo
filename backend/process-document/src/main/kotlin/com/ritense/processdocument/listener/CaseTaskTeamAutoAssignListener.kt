@@ -30,6 +30,7 @@ import com.ritense.valtimo.contract.authentication.TeamManagementService
 import com.ritense.valtimo.contract.document.CaseDocumentResolver
 import com.ritense.valtimo.event.OperatonTaskEvent
 import com.ritense.valtimo.operaton.repository.OperatonTaskSpecificationHelper.Companion.byCandidateGroups
+import com.ritense.valtimo.operaton.repository.OperatonTaskSpecificationHelper.Companion.byNoTeam
 import com.ritense.valtimo.operaton.repository.OperatonTaskSpecificationHelper.Companion.byRootProcessInstanceBusinessKey
 import com.ritense.valtimo.operaton.repository.OperatonTaskSpecificationHelper.Companion.byTeamKey
 import com.ritense.valtimo.service.OperatonTaskService
@@ -108,7 +109,7 @@ class CaseTaskTeamAutoAssignListener(
         val tasks = operatonTaskService.findTasks(
             byRootProcessInstanceBusinessKey(caseDocument.id().toString())
                 .and(byCandidateGroups(teamKey))
-                .and(byTeamKey(event.formerTeamKey))
+                .and(byTeamKey(event.formerTeamKey).or(byNoTeam()))
         )
 
         logger.debug { "Auto assigning team '$teamKey' on ${tasks.size} task(s)" }

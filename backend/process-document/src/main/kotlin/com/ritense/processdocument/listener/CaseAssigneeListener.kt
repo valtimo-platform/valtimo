@@ -32,6 +32,7 @@ import com.ritense.valtimo.operaton.authorization.OperatonTaskActionProvider
 import com.ritense.valtimo.operaton.domain.OperatonTask
 import com.ritense.valtimo.operaton.repository.OperatonTaskSpecificationHelper.Companion.byAssignee
 import com.ritense.valtimo.operaton.repository.OperatonTaskSpecificationHelper.Companion.byRootProcessInstanceBusinessKey
+import com.ritense.valtimo.operaton.repository.OperatonTaskSpecificationHelper.Companion.byUnassigned
 import com.ritense.valtimo.service.OperatonTaskService
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.context.event.EventListener
@@ -69,7 +70,7 @@ class CaseAssigneeListener(
                     val tasks = runWithoutAuthorization {
                         operatonTaskService.findTasks(
                             byRootProcessInstanceBusinessKey(caseDocument.id().toString())
-                                .and(byAssignee(event.formerAssigneeId))
+                                .and(byAssignee(event.formerAssigneeId).or(byUnassigned()))
                         )
                     }
 
