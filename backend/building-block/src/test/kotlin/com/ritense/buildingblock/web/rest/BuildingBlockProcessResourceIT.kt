@@ -32,6 +32,7 @@ import org.hamcrest.Matchers.hasSize
 import org.junit.jupiter.api.Test
 import org.mockito.kotlin.any
 import org.mockito.kotlin.doNothing
+import org.mockito.kotlin.anyOrNull
 import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.doThrow
 import org.mockito.kotlin.eq
@@ -42,6 +43,7 @@ import org.springframework.http.MediaType
 import org.springframework.mock.web.MockMultipartFile
 import org.springframework.mock.web.MockPart
 import org.springframework.security.test.context.support.WithMockUser
+import org.springframework.http.HttpMethod
 import org.springframework.test.web.servlet.MockMvc
 import org.springframework.test.web.servlet.delete
 import org.springframework.test.web.servlet.get
@@ -175,7 +177,7 @@ class BuildingBlockProcessResourceIT @Autowired constructor(
 
     @Test
     @WithMockUser
-    fun `should deploy process definition with file and links and return 204`() {
+    fun `should update process definition with file and links and return 204`() {
         doReturn(null)
             .whenever(buildingBlockProcessService)
             .deployProcessDefinitionAndProcessLinks(any(), any(), any(), any(), any(), any(), any())
@@ -191,14 +193,10 @@ class BuildingBlockProcessResourceIT @Autowired constructor(
         val linksJson = objectMapper.writeValueAsBytes(links)
         val linksPart = MockPart("processLinks", linksJson).apply { headers.contentType = MediaType.APPLICATION_JSON }
 
-        val idJsonString = "\"$processDefinitionId\"".toByteArray()
-        val idPart =
-            MockPart("processDefinitionId", idJsonString).apply { headers.contentType = MediaType.APPLICATION_JSON }
-
         val mainJson = "true".toByteArray()
         val mainPart = MockPart("main", mainJson).apply { headers.contentType = MediaType.APPLICATION_JSON }
 
-        mockMvc.multipart(
+        mockMvc.multipart(HttpMethod.PUT,
             "$base/{key}/version/{version}/process-definition/{processDefinitionId}",
             key,
             version,
@@ -206,7 +204,6 @@ class BuildingBlockProcessResourceIT @Autowired constructor(
         ) {
             file(bpmn)
             part(linksPart)
-            part(idPart)
             part(mainPart)
             contentType = MediaType.MULTIPART_FORM_DATA
             accept = MediaType.APPLICATION_JSON
@@ -219,7 +216,7 @@ class BuildingBlockProcessResourceIT @Autowired constructor(
             eq(version),
             any(),
             any(),
-            eq("\"$processDefinitionId\""),
+            eq(processDefinitionId),
             eq(true),
             eq(false)
         )
@@ -227,10 +224,10 @@ class BuildingBlockProcessResourceIT @Autowired constructor(
 
     @Test
     @WithMockUser
-    fun `should return 409 with duplicate process definitions in response body`() {
+    fun `should return 409 with duplicate process definitions in response body when updating`() {
         val exception = BuildingBlockProcessDefinitionKeyAlreadyExistsException(
             BuildingBlockDefinitionId.of(key, version),
-            listOf(DuplicateProcessDefinitionDescriptor("process-key", "Process name"))
+            listOf(DuplicateProcessDefinitionDescriptor("process-key", "Process name", "some-process-definition-id"))
         )
 
         doThrow(exception)
@@ -248,11 +245,7 @@ class BuildingBlockProcessResourceIT @Autowired constructor(
         val linksJson = objectMapper.writeValueAsBytes(links)
         val linksPart = MockPart("processLinks", linksJson).apply { headers.contentType = MediaType.APPLICATION_JSON }
 
-        val idJsonString = "\"$processDefinitionId\"".toByteArray()
-        val idPart =
-            MockPart("processDefinitionId", idJsonString).apply { headers.contentType = MediaType.APPLICATION_JSON }
-
-        mockMvc.multipart(
+        mockMvc.multipart(HttpMethod.PUT,
             "$base/{key}/version/{version}/process-definition/{processDefinitionId}",
             key,
             version,
@@ -260,13 +253,86 @@ class BuildingBlockProcessResourceIT @Autowired constructor(
         ) {
             file(bpmn)
             part(linksPart)
-            part(idPart)
             contentType = MediaType.MULTIPART_FORM_DATA
             accept = MediaType.APPLICATION_JSON
         }.andExpect {
             status { isConflict() }
             jsonPath("$.duplicateProcessDefinitions[0].key") { value("process-key") }
             jsonPath("$.duplicateProcessDefinitions[0].name") { value("Process name") }
+        }
+    }
+
+    @Test
+    @WithMockUser
+    fun `should create process definition for building block and return 204`() {
+        doReturn(null)
+            .whenever(buildingBlockProcessService)
+            .deployProcessDefinitionAndProcessLinks(any(), any(), any(), any(), anyOrNull(), any(), any())
+
+        val bpmn = MockMultipartFile(
+            "file",
+            "process.bpmn",
+            "application/xml",
+            "<definitions/>".toByteArray()
+        )
+
+        val links: List<ProcessLinkCreateRequestDto> = emptyList()
+        val linksJson = objectMapper.writeValueAsBytes(links)
+        val linksPart = MockPart("processLinks", linksJson).apply { headers.contentType = MediaType.APPLICATION_JSON }
+
+        mockMvc.multipart("$base/{key}/version/{version}/process-definition", key, version) {
+            file(bpmn)
+            part(linksPart)
+            contentType = MediaType.MULTIPART_FORM_DATA
+            accept = MediaType.APPLICATION_JSON
+        }.andExpect {
+            status { isNoContent() }
+        }
+
+        verify(buildingBlockProcessService).deployProcessDefinitionAndProcessLinks(
+            eq(key),
+            eq(version),
+            any(),
+            any(),
+            anyOrNull(),
+            eq(false),
+            eq(false)
+        )
+    }
+
+    @Test
+    @WithMockUser
+    fun `should return 409 with duplicate process definitions in response body when creating`() {
+        val exception = BuildingBlockProcessDefinitionKeyAlreadyExistsException(
+            BuildingBlockDefinitionId.of(key, version),
+            listOf(DuplicateProcessDefinitionDescriptor("process-key", "Process name", "some-process-definition-id"))
+        )
+
+        doThrow(exception)
+            .whenever(buildingBlockProcessService)
+            .deployProcessDefinitionAndProcessLinks(any(), any(), any(), any(), anyOrNull(), any(), any())
+
+        val bpmn = MockMultipartFile(
+            "file",
+            "process.bpmn",
+            "application/xml",
+            "<definitions/>".toByteArray()
+        )
+
+        val links: List<ProcessLinkCreateRequestDto> = emptyList()
+        val linksJson = objectMapper.writeValueAsBytes(links)
+        val linksPart = MockPart("processLinks", linksJson).apply { headers.contentType = MediaType.APPLICATION_JSON }
+
+        mockMvc.multipart("$base/{key}/version/{version}/process-definition", key, version) {
+            file(bpmn)
+            part(linksPart)
+            contentType = MediaType.MULTIPART_FORM_DATA
+            accept = MediaType.APPLICATION_JSON
+        }.andExpect {
+            status { isConflict() }
+            jsonPath("$.duplicateProcessDefinitions[0].key") { value("process-key") }
+            jsonPath("$.duplicateProcessDefinitions[0].name") { value("Process name") }
+            jsonPath("$.duplicateProcessDefinitions[0].processDefinitionId") { value("some-process-definition-id") }
         }
     }
 
