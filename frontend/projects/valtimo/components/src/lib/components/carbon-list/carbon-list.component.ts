@@ -195,6 +195,7 @@ export class CarbonListComponent implements OnInit, AfterViewInit, OnDestroy {
   @Output() rowClicked = new EventEmitter<any>();
   @Output() paginationClicked = new EventEmitter<number>();
   @Output() paginationSet = new EventEmitter<any>();
+  // eslint-disable-next-line @angular-eslint/no-output-native
   @Output() search = new EventEmitter<any>();
   @Output() sortChanged = new EventEmitter<SortState>();
   @Output() moveRow = new EventEmitter<MoveRowEvent>();

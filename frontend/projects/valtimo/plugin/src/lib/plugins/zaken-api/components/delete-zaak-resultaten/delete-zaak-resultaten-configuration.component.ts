@@ -23,7 +23,6 @@ import {
 import {PluginTranslatePipe} from '../../../../pipes';
 
 @Component({
-  standalone: false,
   selector: 'valtimo-delete-zaak-resultaten-configuration',
   templateUrl: './delete-zaak-resultaten-configuration.component.html',
   styleUrls: [],

@@ -22,7 +22,6 @@ import {TranslateService} from '@ngx-translate/core';
 import {GetZaakInformatieobjectenConfig} from '../../models';
 
 @Component({
-  standalone: false,
   selector: 'valtimo-get-zaak-informatieobjecten-configuration',
   templateUrl: './get-zaak-informatieobjecten.component.html',
 })

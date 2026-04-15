@@ -59,6 +59,7 @@ export class ListComponent implements OnChanges, OnInit, AfterViewInit {
   @Output() rowClicked: EventEmitter<any> = new EventEmitter();
   @Output() paginationClicked: EventEmitter<any> = new EventEmitter();
   @Output() paginationSet: EventEmitter<any> = new EventEmitter();
+  // eslint-disable-next-line @angular-eslint/no-output-native
   @Output() search: EventEmitter<any> = new EventEmitter();
   @Output() sortChanged: EventEmitter<SortState> = new EventEmitter();
 
