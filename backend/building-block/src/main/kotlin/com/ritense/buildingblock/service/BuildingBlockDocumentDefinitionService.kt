@@ -59,8 +59,8 @@ class BuildingBlockDocumentDefinitionService(
         jsonSchema: JsonSchema,
         buildingBlockDefinitionId: BuildingBlockDefinitionId
     ): DeployDocumentDefinitionResult {
-        val resolvedSchema = applyKeyOverride(jsonSchema, buildingBlockDefinitionId.key)
         try {
+            val resolvedSchema = applyKeyOverride(jsonSchema, buildingBlockDefinitionId.key)
             definitionChecker.assertCanUpdateBuildingBlockDefinition(buildingBlockDefinitionId)
             val documentDefinitionName = resolvedSchema.schema.id.replace(".schema", "")
 

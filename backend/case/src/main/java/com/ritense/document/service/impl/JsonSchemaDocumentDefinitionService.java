@@ -311,8 +311,8 @@ public class JsonSchemaDocumentDefinitionService implements DocumentDefinitionSe
 
     public DeployDocumentDefinitionResult deploy(JsonSchema jsonSchema, CaseDefinitionId caseDefinitionId) {
         //Authorization check is delegated to the store() method
-        var resolvedSchema = applyKeyOverride(jsonSchema, caseDefinitionId.getIdKey());
         try {
+            var resolvedSchema = applyKeyOverride(jsonSchema, caseDefinitionId.getIdKey());
             caseDefinitionChecker.assertCanUpdateCaseDefinition(caseDefinitionId);
             final var documentDefinitionName = resolvedSchema.getSchema().getId().replace(".schema", "");
             return withLoggingContext("documentDefinitionName", documentDefinitionName, () -> {
