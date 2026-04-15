@@ -204,13 +204,14 @@ class CaseAssigneeListenerIntTest : BaseIntegrationTest() {
     @WithMockUser(username = "user@ritense.com", authorities = [ADMIN])
     fun `should should update task assignee when document assignee is changed`() {
 
-        whenever(userManagementService.findById(any())).thenReturn(testUser)
+        whenever(userManagementService.findById(testUser.id)).thenReturn(testUser)
         whenever(userManagementService.findById(testUser2.id)).thenReturn(testUser2)
-        whenever(userManagementService.findByUsername(any())).thenReturn(testUser, testUser2)
+        whenever(userManagementService.findByUsername(testUser.username)).thenReturn(testUser)
+        whenever(userManagementService.findByUsername(testUser2.username)).thenReturn(testUser2)
         whenever(userManagementService.currentUser).thenReturn(testUser)
 
         val updatedTask = runWithoutAuthorization {
-            documentService.assignUserToDocument(testDocument.id().id, testUser.username)
+            documentService.assignUserToDocument(testDocument.id().id, testUser.id)
             val processInstance = runtimeService.startProcessInstanceByKey(
                 "parent-process",
                 testDocument.id().toString()
@@ -222,7 +223,7 @@ class CaseAssigneeListenerIntTest : BaseIntegrationTest() {
                 "parent process"
             )
 
-            documentService.assignUserToDocument(testDocument.id().id, testUser2.username)
+            documentService.assignUserToDocument(testDocument.id().id, testUser2.id)
 
             taskService.findTask(byName("child process user task"))
         }

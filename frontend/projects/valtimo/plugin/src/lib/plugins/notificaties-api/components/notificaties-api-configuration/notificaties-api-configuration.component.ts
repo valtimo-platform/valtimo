@@ -16,7 +16,7 @@
 
 import {Component, EventEmitter, Input, OnDestroy, OnInit, Output} from '@angular/core';
 import {PluginConfigurationComponent} from '../../../../models';
-import {BehaviorSubject, combineLatest, map, Observable, Subscription, take} from 'rxjs';
+import {BehaviorSubject, combineLatest, map, Observable, Subscription, switchMap, take} from 'rxjs';
 import {NotificatiesApiConfig} from '../../models';
 import {PluginManagementService, PluginTranslationService} from '../../../../services';
 import {TranslateService} from '@ngx-translate/core';
@@ -66,15 +66,15 @@ export class NotificatiesApiConfigurationComponent
     private readonly pluginTranslationService: PluginTranslationService
   ) {}
 
-  ngOnInit(): void {
+  public ngOnInit(): void {
     this.openSaveSubscription();
   }
 
-  ngOnDestroy() {
+  public ngOnDestroy() {
     this.saveSubscription?.unsubscribe();
   }
 
-  formValueChange(formValue: NotificatiesApiConfig): void {
+  public formValueChange(formValue: NotificatiesApiConfig): void {
     this.formValue$.next(formValue);
     this.handleValid(formValue);
   }
@@ -87,14 +87,12 @@ export class NotificatiesApiConfigurationComponent
   }
 
   private openSaveSubscription(): void {
-    this.saveSubscription = this.save$?.subscribe(save => {
-      combineLatest([this.formValue$, this.valid$])
-        .pipe(take(1))
-        .subscribe(([formValue, valid]) => {
-          if (valid) {
-            this.configuration.emit(formValue);
-          }
-        });
-    });
+    this.saveSubscription = this.save$
+      ?.pipe(switchMap(() => combineLatest([this.formValue$, this.valid$]).pipe(take(1))))
+      .subscribe(([formValue, valid]) => {
+        if (valid) {
+          this.configuration.emit(formValue);
+        }
+      });
   }
 }
