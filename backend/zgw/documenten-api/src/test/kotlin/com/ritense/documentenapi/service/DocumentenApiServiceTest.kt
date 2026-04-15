@@ -127,7 +127,6 @@ class DocumentenApiServiceTest {
         assertEquals("y", firstResult.auteur)
     }
 
-
     @Test
     fun `should call plugin to delete informatie object`() {
         val caseDocumentId = UUID.randomUUID()
