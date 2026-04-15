@@ -716,6 +716,20 @@ public class OperatonProcessService {
             callActivity.setOperatonCalledElementBinding("versionTag");
             callActivity.setOperatonCalledElementVersionTag(currentBuildingBlockVersionTag);
         });
+
+        // Update business rule tasks (DMN decision references) to use this building block's version tag
+        bpmnModel.getModelElementsByType(BusinessRuleTask.class).forEach(businessRuleTask -> {
+            String existingVersionTag = businessRuleTask.getOperatonDecisionRefVersionTag();
+
+            // If already has a BB: version tag pointing to a different building block key, preserve it
+            BuildingBlockDefinitionId existingBuildingBlockId = BuildingBlockDefinitionId.fromProcessVersionTag(existingVersionTag);
+            if (existingBuildingBlockId != null && !existingBuildingBlockId.getKey().equals(buildingBlockDefinitionId.getKey())) {
+                return;
+            }
+
+            businessRuleTask.setOperatonDecisionRefBinding("versionTag");
+            businessRuleTask.setOperatonDecisionRefVersionTag(currentBuildingBlockVersionTag);
+        });
     }
 
     void updateCaseDefinitionProcessesVersionTags(

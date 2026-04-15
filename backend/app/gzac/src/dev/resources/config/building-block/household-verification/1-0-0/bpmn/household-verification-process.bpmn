@@ -51,7 +51,12 @@
       <bpmn:incoming>Flow_ReadToelichting_To_Calculate</bpmn:incoming>
       <bpmn:outgoing>Flow_ResolveHouseholdSize_To_Calculate</bpmn:outgoing>
     </bpmn:serviceTask>
-    <bpmn:businessRuleTask id="CalculateBaseAmountDmnTask" name="Bereken Basisbedrag (DMN)" camunda:asyncAfter="true" camunda:decisionRef="base-subsidy-amount-decision" camunda:mapDecisionResult="singleResult" camunda:decisionRefBinding="versionTag" camunda:decisionRefVersionTag="BB:household-verification:1.0.0">
+    <bpmn:businessRuleTask id="CalculateBaseAmountDmnTask" name="Bereken Basisbedrag (DMN)" camunda:asyncAfter="true" camunda:decisionRef="base-subsidy-amount-decision" camunda:mapDecisionResult="singleResult" camunda:resultVariable="dmnResult" camunda:decisionRefBinding="versionTag" camunda:decisionRefVersionTag="BB:household-verification:1.0.0">
+      <bpmn:extensionElements>
+        <camunda:inputOutput>
+          <camunda:outputParameter name="baseSubsidyAmount">${dmnResult.baseSubsidyAmount}</camunda:outputParameter>
+        </camunda:inputOutput>
+      </bpmn:extensionElements>
       <bpmn:incoming>Flow_ResolveHouseholdSize_To_Calculate</bpmn:incoming>
       <bpmn:outgoing>Flow_Calculate_To_StoreBaseAmount</bpmn:outgoing>
     </bpmn:businessRuleTask>
