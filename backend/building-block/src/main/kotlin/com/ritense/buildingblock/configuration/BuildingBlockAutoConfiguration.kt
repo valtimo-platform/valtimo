@@ -198,11 +198,10 @@ class BuildingBlockAutoConfiguration {
         buildingBlockDefinitionArtworkRepository: BuildingBlockDefinitionArtworkRepository,
         buildingBlockDocumentDefinitionService: BuildingBlockDocumentDefinitionService,
         operatonProcessService: OperatonProcessService,
-        buildingBlockDecisionService: BuildingBlockDecisionService
-        operatonProcessService: OperatonProcessService,
         buildingBlockFormDefinitionService: BuildingBlockFormDefinitionService,
         buildingBlockFormFlowDefinitionService: BuildingBlockFormFlowDefinitionService,
         processLinkRepository: ProcessLinkRepository,
+        buildingBlockDecisionService: BuildingBlockDecisionService,
     ): BuildingBlockDefinitionEventListener {
         return BuildingBlockDefinitionEventListener(
             buildingBlockDefinitionRepository,
@@ -214,8 +213,7 @@ class BuildingBlockAutoConfiguration {
             buildingBlockFormDefinitionService,
             buildingBlockFormFlowDefinitionService,
             processLinkRepository,
-            operatonProcessService,
-            buildingBlockDecisionService
+            buildingBlockDecisionService,
         )
     }
 
