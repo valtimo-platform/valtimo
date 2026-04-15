@@ -16,12 +16,14 @@
 
 package com.ritense.valtimo.service;
 
+import static com.ritense.valtimo.contract.process.ProcessConstants.OPERATON_BUILDING_BLOCK_DEFINITION_VERSION_TAG_PREFIX;
 import static com.ritense.valtimo.contract.process.ProcessConstants.OPERATON_CASE_DEFINITION_VERSION_TAG_PREFIX;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 
 import com.ritense.authorization.AuthorizationContext;
 import com.ritense.valtimo.BaseIntegrationTest;
+import com.ritense.valtimo.contract.buildingblock.BuildingBlockDefinitionId;
 import com.ritense.valtimo.contract.case_.CaseDefinitionId;
 import com.ritense.valtimo.exception.FileExtensionNotSupportedException;
 import com.ritense.valtimo.exception.NoFileExtensionFoundException;
@@ -564,6 +566,47 @@ class OperatonProcessServiceIntTest extends BaseIntegrationTest {
 
         assertThat(customBusinessRuleTask.getOperatonDecisionRefBinding()).isEqualTo("versionTag");
         assertThat(customBusinessRuleTask.getOperatonDecisionRefVersionTag()).isEqualTo(customNonCaseTag);
+    }
+
+    @Test
+    void shouldUpdateBusinessRuleTaskVersionTagsWhenBuildingBlockDefinitionIsProvided() {
+        BpmnModelInstance model = createBpmnModelWithBusinessRuleTasks();
+
+        BusinessRuleTask bbLinkedBusinessRuleTask = model.getModelElementsByType(BusinessRuleTask.class)
+            .stream()
+            .filter(brt -> "caseLinkedBusinessRuleTask".equals(brt.getId()))
+            .findFirst()
+            .orElseThrow();
+
+        BusinessRuleTask otherBbBusinessRuleTask = model.getModelElementsByType(BusinessRuleTask.class)
+            .stream()
+            .filter(brt -> "customBusinessRuleTask".equals(brt.getId()))
+            .findFirst()
+            .orElseThrow();
+
+        BuildingBlockDefinitionId originalBbId = new BuildingBlockDefinitionId("income-check", "1.0.0");
+        BuildingBlockDefinitionId newBbId = new BuildingBlockDefinitionId("income-check", "2.0.0");
+        BuildingBlockDefinitionId otherBbId = new BuildingBlockDefinitionId("other-bb", "1.0.0");
+
+        String originalTag = OPERATON_BUILDING_BLOCK_DEFINITION_VERSION_TAG_PREFIX + originalBbId;
+        String otherBbTag = OPERATON_BUILDING_BLOCK_DEFINITION_VERSION_TAG_PREFIX + otherBbId;
+
+        bbLinkedBusinessRuleTask.setOperatonDecisionRefBinding("versionTag");
+        bbLinkedBusinessRuleTask.setOperatonDecisionRefVersionTag(originalTag);
+
+        otherBbBusinessRuleTask.setOperatonDecisionRefBinding("versionTag");
+        otherBbBusinessRuleTask.setOperatonDecisionRefVersionTag(otherBbTag);
+
+        operatonProcessService.setBuildingBlockDefinitionProcessesVersionTags(model, newBbId);
+
+        String expectedNewTag = OPERATON_BUILDING_BLOCK_DEFINITION_VERSION_TAG_PREFIX + newBbId;
+
+        assertThat(bbLinkedBusinessRuleTask.getOperatonDecisionRefBinding()).isEqualTo("versionTag");
+        assertThat(bbLinkedBusinessRuleTask.getOperatonDecisionRefVersionTag()).isEqualTo(expectedNewTag);
+
+        // The business rule task pointing to a different building block should be preserved
+        assertThat(otherBbBusinessRuleTask.getOperatonDecisionRefBinding()).isEqualTo("versionTag");
+        assertThat(otherBbBusinessRuleTask.getOperatonDecisionRefVersionTag()).isEqualTo(otherBbTag);
     }
 
     private BpmnModelInstance createBpmnModelWithBusinessRuleTasks() {

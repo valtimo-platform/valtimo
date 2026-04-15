@@ -19,7 +19,13 @@
       <bpmn:incoming>Flow_RemoveTagPriority_To_DMN</bpmn:incoming>
       <bpmn:outgoing>Flow_ResolveHouseholdSize_To_DMN</bpmn:outgoing>
     </bpmn:serviceTask>
-    <bpmn:businessRuleTask id="DetermineEligibilityDmnTask" name="Bepaal Geschiktheid (DMN)" camunda:asyncAfter="true" camunda:decisionRef="income-eligibility-decision" camunda:mapDecisionResult="singleResult" camunda:decisionRefBinding="versionTag" camunda:decisionRefVersionTag="BB:income-check:1.0.0">
+    <bpmn:businessRuleTask id="DetermineEligibilityDmnTask" name="Bepaal Geschiktheid (DMN)" camunda:asyncAfter="true" camunda:decisionRef="income-eligibility-decision" camunda:mapDecisionResult="singleResult" camunda:resultVariable="dmnResult" camunda:decisionRefBinding="versionTag" camunda:decisionRefVersionTag="BB:income-check:1.0.0">
+      <bpmn:extensionElements>
+        <camunda:inputOutput>
+          <camunda:outputParameter name="eligibilityResult">${dmnResult.eligibilityResult}</camunda:outputParameter>
+          <camunda:outputParameter name="checkStatus">${dmnResult.checkStatus}</camunda:outputParameter>
+        </camunda:inputOutput>
+      </bpmn:extensionElements>
       <bpmn:incoming>Flow_ResolveHouseholdSize_To_DMN</bpmn:incoming>
       <bpmn:outgoing>Flow_DMN_To_StoreEligibility</bpmn:outgoing>
     </bpmn:businessRuleTask>

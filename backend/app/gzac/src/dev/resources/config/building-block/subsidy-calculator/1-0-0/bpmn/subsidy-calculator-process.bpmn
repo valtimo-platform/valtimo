@@ -39,10 +39,12 @@
       <bpmn:incoming>Flow_CallHousehold_To_Summary</bpmn:incoming>
       <bpmn:outgoing>Flow_Summary_To_Calculate</bpmn:outgoing>
     </bpmn:serviceTask>
-    <bpmn:businessRuleTask id="CalculateFinalAmountDmnTask" name="Bereken Eindtotaal (DMN)" camunda:asyncAfter="true" camunda:decisionRef="final-subsidy-calculation-decision" camunda:mapDecisionResult="singleResult" camunda:decisionRefBinding="versionTag" camunda:decisionRefVersionTag="BB:subsidy-calculator:1.0.0">
+    <bpmn:businessRuleTask id="CalculateFinalAmountDmnTask" name="Bereken Eindtotaal (DMN)" camunda:asyncAfter="true" camunda:decisionRef="final-subsidy-calculation-decision" camunda:mapDecisionResult="singleResult" camunda:resultVariable="dmnResult" camunda:decisionRefBinding="versionTag" camunda:decisionRefVersionTag="BB:subsidy-calculator:1.0.0">
       <bpmn:extensionElements>
         <camunda:inputOutput>
           <camunda:inputParameter name="baseSubsidyAmount">${valueResolverDelegateService.resolveValue(execution, 'doc:/baseSubsidyAmount')}</camunda:inputParameter>
+          <camunda:outputParameter name="finalSubsidyAmount">${dmnResult.finalSubsidyAmount}</camunda:outputParameter>
+          <camunda:outputParameter name="subsidyCategory">${dmnResult.subsidyCategory}</camunda:outputParameter>
         </camunda:inputOutput>
       </bpmn:extensionElements>
       <bpmn:incoming>Flow_Summary_To_Calculate</bpmn:incoming>

@@ -64,7 +64,6 @@ class BuildingBlockDefinitionEventListener(
         val newId = event.buildingBlockDefinitionId
 
         copyDocumentDefinition(newId.key, basedOnId, newId)
-        copyProcessDefinitions(basedOnId, newId)
         copyDecisionDefinitions(basedOnId, newId)
         val formIdMapping = buildingBlockFormDefinitionService.copyFormDefinitions(basedOnId, newId)
         buildingBlockFormFlowDefinitionService.copyFormFlowDefinitions(basedOnId, newId)
