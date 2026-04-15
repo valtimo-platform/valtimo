@@ -264,13 +264,13 @@ class DocumentenApiPlugin(
     }
 
     fun getInformatieObjecten(
-        caseDocumentId: UUID,
+        documentId: UUID,
         documentSearchRequest: DocumentSearchRequest,
         pageable: Pageable
     ): Page<DocumentInformatieObject> {
         return client.getInformatieObjecten(
             authenticationPluginConfiguration,
-            caseDocumentId,
+            documentId,
             url,
             pageable,
             documentSearchRequest

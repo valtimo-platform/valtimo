@@ -113,7 +113,6 @@ class DocumentenApiService(
         return plugin.getInformatieObjecten( documentId, documentSearchRequest, pageable)
     }
 
-
     fun modifyInformatieObject(
         @LoggableResource(resourceType = PluginConfigurationId::class) pluginConfigurationId: String,
         @LoggableResource(resourceTypeName = ZAKEN_API.ZAAK) caseDocumentId: UUID?,
