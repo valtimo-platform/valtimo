@@ -19,14 +19,22 @@ package com.ritense.notificatiesapi
 import com.ritense.logging.withLoggingContext
 import com.ritense.notificatiesapi.client.NotificatiesApiClient
 import com.ritense.notificatiesapi.domain.Kanaal
+import com.ritense.notificatiesapi.domain.Notificatie
 import com.ritense.notificatiesapi.domain.NotificatiesApiConfigurationId
 import com.ritense.plugin.annotation.Plugin
+import com.ritense.plugin.annotation.PluginAction
+import com.ritense.plugin.annotation.PluginActionProperty
 import com.ritense.plugin.annotation.PluginProperty
 import com.ritense.plugin.domain.PluginConfiguration
 import com.ritense.plugin.domain.PluginConfigurationId
+import com.ritense.processlink.domain.ActivityTypeWithEventName.SEND_TASK_START
+import com.ritense.processlink.domain.ActivityTypeWithEventName.INTERMEDIATE_THROW_EVENT_START
 import com.ritense.valtimo.contract.validation.Url
 import io.github.oshai.kotlinlogging.KotlinLogging
 import java.net.URI
+import java.time.LocalDateTime
+import java.time.ZonedDateTime
+import java.time.format.DateTimeParseException
 
 @Plugin(
     key = "notificatiesapi",
@@ -52,6 +60,37 @@ class NotificatiesApiPlugin(
 
     @PluginProperty(key = "authenticationPluginConfiguration", secret = false)
     lateinit var authenticationPluginConfiguration: NotificatiesApiAuthentication
+
+    @PluginAction(
+        key = "publish-notificatie",
+        title = "Publiceer een notificatie",
+        description = "Publiceert een notificatie via de Notificaties API",
+        activityTypes = [SEND_TASK_START, INTERMEDIATE_THROW_EVENT_START]
+    )
+    fun publishNotificatie(
+        @PluginActionProperty kanaal: String,
+        @PluginActionProperty hoofdObject: URI,
+        @PluginActionProperty resource: String,
+        @PluginActionProperty resourceUrl: URI,
+        @PluginActionProperty actie: String,
+        @PluginActionProperty aanmaakdatum: LocalDateTime?,
+        @PluginActionProperty kenmerken: Map<String, String>?,
+    ) = withLoggingContext(
+        PluginConfiguration::class.java.canonicalName to notificatiesApiConfigurationId.toString()
+    ) {
+        logger.debug { "Publishing notificatie on kanaal '$kanaal'" }
+        val notificatie = Notificatie(
+            kanaal = kanaal,
+            hoofdObject = hoofdObject,
+            resource = resource,
+            resourceUrl = resourceUrl,
+            actie = actie,
+            aanmaakdatum = aanmaakdatum ?: LocalDateTime.now(),
+            kenmerken = kenmerken,
+        )
+        client.createNotificatie(authenticationPluginConfiguration, url, notificatie)
+        logger.info { "Successfully published notificatie on kanaal '$kanaal'" }
+    }
 
     fun ensureKanalenExist(kanalen: Set<String>) = withLoggingContext(
         PluginConfiguration::class.java.canonicalName to notificatiesApiConfigurationId.toString()

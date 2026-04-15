@@ -18,6 +18,7 @@ package com.ritense.buildingblock.service
 
 import com.ritense.buildingblock.processlink.domain.BuildingBlockProcessLink
 import com.ritense.buildingblock.repository.BuildingBlockDefinitionRepository
+import com.ritense.buildingblock.repository.CaseDefinitionBuildingBlockLinkRepository
 import com.ritense.buildingblock.repository.ProcessDefinitionBuildingBlockDefinitionRepository
 import com.ritense.case.service.finalization.CaseDefinitionFinalizationCheckResult
 import com.ritense.case.service.finalization.CaseDefinitionFinalizationChecker
@@ -35,6 +36,7 @@ class BuildingBlockCaseDefinitionFinalizationChecker(
     private val processLinkService: ProcessLinkService,
     private val buildingBlockDefinitionRepository: BuildingBlockDefinitionRepository,
     private val processDefinitionBuildingBlockDefinitionRepository: ProcessDefinitionBuildingBlockDefinitionRepository,
+    private val caseDefinitionBuildingBlockLinkRepository: CaseDefinitionBuildingBlockLinkRepository,
 ) : CaseDefinitionFinalizationChecker {
 
     @Transactional(readOnly = true)
@@ -56,8 +58,12 @@ class BuildingBlockCaseDefinitionFinalizationChecker(
      * Gets all building block definition IDs referenced by a case, including nested building blocks.
      */
     private fun getAllReferencedBuildingBlockIds(caseDefinitionId: CaseDefinitionId): Set<BuildingBlockDefinitionId> {
-        val directlyReferenced = referencedBuildingBlockDefinitionIds(caseDefinitionId).toSet()
-        return collectAllNestedBuildingBlocks(directlyReferenced)
+        val processReferenced = referencedBuildingBlockDefinitionIds(caseDefinitionId).toSet()
+        val adHocReferenced = caseDefinitionBuildingBlockLinkRepository
+            .findAllByCaseDefinitionId(caseDefinitionId)
+            .map { it.buildingBlockDefinitionId }
+            .toSet()
+        return collectAllNestedBuildingBlocks(processReferenced + adHocReferenced)
     }
 
     /**

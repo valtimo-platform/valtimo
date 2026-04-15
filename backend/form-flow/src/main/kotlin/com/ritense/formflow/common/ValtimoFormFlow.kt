@@ -30,7 +30,6 @@ import com.ritense.formflow.expression.FormFlowBean
 import com.ritense.formflow.service.FormFlowService
 import com.ritense.processdocument.domain.impl.request.StartProcessForDocumentRequest
 import com.ritense.processdocument.service.ProcessDocumentService
-import com.ritense.valtimo.contract.json.MapperSingleton
 import com.ritense.valtimo.service.OperatonTaskService
 import com.ritense.valueresolver.ValueResolverService
 import java.util.Objects
@@ -99,14 +98,14 @@ open class ValtimoFormFlow(
     open fun startCase(
         formFlowInstanceId: FormFlowInstanceId,
         submissionSavePath: Map<String, String>
-    ) {
+    ): Map<String, Any> {
         val formFlowInstance = formFlowService.getInstanceById(formFlowInstanceId)
         val documentDefinitionName = getRequiredAdditionalProperty(
             formFlowInstance.getAdditionalProperties(),
             "documentDefinitionName"
         ).toString()
 
-        val submission = MapperSingleton.get().readValue<JsonNode>(formFlowInstance.getSubmissionDataContext())
+        val submission = objectMapper.readValue<JsonNode>(formFlowInstance.getSubmissionDataContext())
 
         val submissionValues = submissionSavePath.entries
             .associate { it.key to getValue(submission, it.value) }
@@ -119,11 +118,11 @@ open class ValtimoFormFlow(
                     documentDefinitionName,
                     formFlowInstance.formFlowDefinition.id.caseDefinitionId!!.key,
                     formFlowInstance.formFlowDefinition.id.caseDefinitionId!!.versionTag.version,
-                    submittedByType["doc"] as JsonNode
+                    submittedByType["doc"] as JsonNode? ?: objectMapper.createObjectNode()
                 )
             )
         }.also { result ->
-            if (result.errors().size > 0) {
+            if (result.errors().isNotEmpty()) {
                 throw RuntimeException(
                     "Could not create document for document definition $documentDefinitionName\n" +
                         REASON +
@@ -149,6 +148,7 @@ open class ValtimoFormFlow(
                     startProcessForDocumentResult.errors().joinToString(separator = "\n - ")
             )
         }
+        return mapOf("documentId" to startProcessForDocumentResult.resultingDocument().get().id().id)
     }
 
     /**
@@ -165,7 +165,7 @@ open class ValtimoFormFlow(
             "documentId"
         ).toString()
 
-        val submission = MapperSingleton.get().readValue<JsonNode>(formFlowInstance.getSubmissionDataContext())
+        val submission = objectMapper.readValue<JsonNode>(formFlowInstance.getSubmissionDataContext())
         val submissionValues = submissionSavePath.entries
             .associate { it.key to getValue(submission, it.value) }
             .filter { it.value !is MissingNode }

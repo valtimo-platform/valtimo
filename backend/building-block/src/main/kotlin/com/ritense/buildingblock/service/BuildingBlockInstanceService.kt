@@ -39,8 +39,10 @@ class BuildingBlockInstanceService(
     fun create(
         newDocumentRequest: NewDocumentRequest,
         caseDocumentId: UUID?,
-        activityId: String,
-        parentBuildingBlockInstanceId: UUID? = null
+        activityId: String? = null,
+        parentBuildingBlockInstanceId: UUID? = null,
+        processInstanceId: String? = null,
+        callerProcessDefinitionId: String? = null
     ): BuildingBlockInstance {
         // TODO: add validation building block definition has a main process definition, otherwise it is not valid
         val definitionId = BuildingBlockDefinitionId.of(
@@ -63,15 +65,30 @@ class BuildingBlockInstanceService(
                 )
             }
 
+        val rootBuildingBlockInstanceId = if (parentBuildingBlockInstanceId != null) {
+            val parent = buildingBlockInstanceRepository.findByIdOrNull(parentBuildingBlockInstanceId)
+            parent?.rootBuildingBlockInstanceId ?: parentBuildingBlockInstanceId
+        } else {
+            null
+        }
+
         return buildingBlockInstanceRepository.save(
             BuildingBlockInstance(
                 documentId = document.id().getId(),
                 caseDocumentId = caseDocumentId,
                 activityId = activityId,
+                callerProcessDefinitionId = callerProcessDefinitionId,
+                processInstanceId = processInstanceId,
                 parentBuildingBlockInstanceId = parentBuildingBlockInstanceId,
+                rootBuildingBlockInstanceId = rootBuildingBlockInstanceId,
                 definition = definition
             )
         )
+    }
+
+    @Transactional
+    fun save(instance: BuildingBlockInstance): BuildingBlockInstance {
+        return buildingBlockInstanceRepository.save(instance)
     }
 
     @Transactional(readOnly = true)
@@ -82,6 +99,11 @@ class BuildingBlockInstanceService(
     @Transactional(readOnly = true)
     fun getByDocumentId(documentId: UUID): BuildingBlockInstance? {
         return buildingBlockInstanceRepository.findByDocumentId(documentId)
+    }
+
+    @Transactional(readOnly = true)
+    fun getByProcessInstanceId(processInstanceId: String): BuildingBlockInstance? {
+        return buildingBlockInstanceRepository.findByProcessInstanceId(processInstanceId)
     }
 
     @Transactional(readOnly = true)

@@ -23,6 +23,7 @@ import com.ritense.case.listener.CaseDefinitionConfigurationIssueListener
 import com.ritense.case.mapper.ConfigurationIssueSseEventMapper
 import com.ritense.case.repository.CaseDefinitionConfigurationIssueRepository
 import com.ritense.case.repository.CaseDefinitionListColumnRepository
+import com.ritense.case.repository.StartableItemRepository
 import com.ritense.case.repository.CaseTabDocumentDefinitionMapper
 import com.ritense.case.repository.CaseTabRepository
 import com.ritense.case.repository.CaseTabSpecificationFactory
@@ -46,12 +47,18 @@ import com.ritense.case.service.CaseTabService
 import com.ritense.case.service.CaseTaskListExporter
 import com.ritense.case.service.CaseTaskListImporter
 import com.ritense.case.service.ConfigurationIssueCaseDefinitionFinalizationChecker
+import com.ritense.case.listener.StartableItemCaseEventListener
+import com.ritense.case.service.StartableItemManagementService
+import com.ritense.case.service.StartableItemProvider
+import com.ritense.case.service.StartableItemService
 import com.ritense.case.service.TaskColumnService
 import com.ritense.case.service.finalization.CaseDefinitionFinalizationChecker
 import com.ritense.case.web.rest.CaseDefinitionResource
 import com.ritense.case.web.rest.CaseInstanceResource
 import com.ritense.case.web.rest.CaseTabManagementResource
 import com.ritense.case.web.rest.CaseTabResource
+import com.ritense.case.web.rest.StartableItemManagementResource
+import com.ritense.case.web.rest.StartableItemResource
 import com.ritense.case.web.rest.TaskListResource
 import com.ritense.case_.authorization.CaseDefinitionSpecificationFactory
 import com.ritense.case_.repository.CaseDefinitionRepository
@@ -91,6 +98,7 @@ import org.springframework.data.jpa.repository.config.EnableJpaRepositories
     basePackageClasses = [
         CaseTabRepository::class,
         CaseDefinitionConfigurationIssueRepository::class,
+        StartableItemRepository::class,
     ]
 )
 @EntityScan(basePackages = ["com.ritense.case.domain"])
@@ -456,4 +464,54 @@ class CaseAutoConfiguration {
     fun configurationIssueCaseDefinitionFinalizationChecker(
         repository: CaseDefinitionConfigurationIssueRepository
     ) = ConfigurationIssueCaseDefinitionFinalizationChecker(repository)
+
+    @Bean
+    @ConditionalOnMissingBean(StartableItemService::class)
+    fun startableItemService(
+        startableItemProviders: List<StartableItemProvider>,
+        startableItemRepository: StartableItemRepository,
+        documentService: DocumentService,
+        caseDefinitionService: CaseDefinitionService,
+    ): StartableItemService {
+        return StartableItemService(
+            startableItemProviders,
+            startableItemRepository,
+            documentService,
+            caseDefinitionService,
+        )
+    }
+
+    @Bean
+    @ConditionalOnMissingBean(StartableItemResource::class)
+    fun startableItemResource(
+        startableItemService: StartableItemService,
+    ): StartableItemResource {
+        return StartableItemResource(startableItemService)
+    }
+
+    @Bean
+    @ConditionalOnMissingBean(StartableItemManagementService::class)
+    fun startableItemManagementService(
+        startableItemProviders: List<StartableItemProvider>,
+        startableItemRepository: StartableItemRepository,
+    ): StartableItemManagementService {
+        return StartableItemManagementService(
+            startableItemProviders,
+            startableItemRepository,
+        )
+    }
+
+    @Bean
+    @ConditionalOnMissingBean(StartableItemManagementResource::class)
+    fun startableItemManagementResource(
+        startableItemManagementService: StartableItemManagementService,
+    ): StartableItemManagementResource {
+        return StartableItemManagementResource(startableItemManagementService)
+    }
+
+    @Bean
+    @ConditionalOnMissingBean(StartableItemCaseEventListener::class)
+    fun startableItemCaseEventListener(
+        startableItemRepository: StartableItemRepository,
+    ) = StartableItemCaseEventListener(startableItemRepository)
 }

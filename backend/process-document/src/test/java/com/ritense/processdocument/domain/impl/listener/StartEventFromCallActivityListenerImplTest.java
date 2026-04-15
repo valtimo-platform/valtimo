@@ -26,6 +26,7 @@ import com.ritense.document.domain.Document;
 import com.ritense.processdocument.domain.impl.OperatonProcessInstanceId;
 import com.ritense.processdocument.service.ProcessDocumentAssociationService;
 import com.ritense.processdocument.service.ProcessDocumentService;
+import com.ritense.valtimo.event.OperatonExecutionEvent;
 import java.lang.reflect.Proxy;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
@@ -63,7 +64,7 @@ class StartEventFromCallActivityListenerImplTest {
 
         when(processDocumentService.getDocumentId(expectedProcessId, execution)).thenReturn(documentId);
 
-        listener.notify(execution);
+        listener.notify(new OperatonExecutionEvent(execution, "start"));
 
         verify(processDocumentService).getDocumentId(expectedProcessId, execution);
         verify(processDocumentAssociationService).createProcessDocumentInstance(
@@ -82,7 +83,7 @@ class StartEventFromCallActivityListenerImplTest {
 
         when(processDocumentService.getDocumentId(expectedProcessId, execution)).thenReturn(null);
 
-        listener.notify(execution);
+        listener.notify(new OperatonExecutionEvent(execution, "start"));
 
         verify(processDocumentService).getDocumentId(expectedProcessId, execution);
         verify(processDocumentAssociationService, never()).createProcessDocumentInstance(

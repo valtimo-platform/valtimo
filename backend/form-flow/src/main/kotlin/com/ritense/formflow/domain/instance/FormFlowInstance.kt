@@ -75,23 +75,24 @@ class FormFlowInstance(
     fun complete(
         currentFormFlowStepInstanceId: FormFlowStepInstanceId,
         submissionData: JSONObject
-    ): FormFlowStepInstance? {
+    ): FormFlowCompleteResult {
         return withLoggingContext(FormFlowStepInstance::class.java.canonicalName to currentFormFlowStepInstanceId.toString()) {
             if (this.currentFormFlowStepInstanceId != currentFormFlowStepInstanceId) {
-                return getCurrentStep()
+                return FormFlowCompleteResult(getCurrentStep(), emptyList())
             }
 
             val formFlowStepInstance = getCurrentStep()
 
-            formFlowStepInstance.complete(submissionData.toString())
+            val onCompleteResult = formFlowStepInstance.complete(submissionData.toString())
 
             val nextStep = navigateToNextStep()
             check(nextStep != null || formFlowStepInstance.definition.onComplete.isNotEmpty()) {
                 "Form flow end reached but no action was taken because the 'onComplete' is empty. For form flow step: '${formFlowStepInstance.definition.id}'"
             }
-            nextStep
+            FormFlowCompleteResult(nextStep, onCompleteResult)
         }
     }
+
 
     /**
      * This method navigates to the previous step (if present).

@@ -25,22 +25,22 @@ import com.ritense.buildingblock.service.BuildingBlockInstanceService
 import com.ritense.document.domain.impl.request.NewDocumentRequest
 import com.ritense.processlink.service.ProcessLinkService
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
-import com.ritense.valtimo.event.OperatonExecutionEvent
 import com.ritense.valtimo.contract.buildingblock.BuildingBlockConstants.Companion.BUILDING_BLOCK_DOCUMENT_ID_VARIABLE
 import com.ritense.valtimo.contract.process.ProcessConstants.OPERATON_BUILDING_BLOCK_DEFINITION_VERSION_TAG_PREFIX
 import com.ritense.valtimo.contract.process.ProcessConstants.OPERATON_CASE_DEFINITION_VERSION_TAG_PREFIX
+import com.ritense.valtimo.event.OperatonExecutionEvent
 import com.ritense.valtimo.operaton.service.OperatonRepositoryService
 import com.ritense.valueresolver.ValueResolverService
+import java.util.UUID
 import org.operaton.bpm.engine.delegate.DelegateExecution
 import org.springframework.context.event.EventListener
 import org.springframework.stereotype.Component
-import java.util.UUID
 
 @Component
 @SkipComponentScan
 class BuildingBlockCallActivityListener(
     private val processLinkService: ProcessLinkService,
-    private val buidingBlockInstanceService: BuildingBlockInstanceService,
+    private val buildingBlockInstanceService: BuildingBlockInstanceService,
     private val valueResolverService: ValueResolverService,
     private val objectMapper: ObjectMapper,
     private val operatonRepositoryService: OperatonRepositoryService,
@@ -122,7 +122,7 @@ class BuildingBlockCallActivityListener(
 
         // Try to find a building block instance with this document ID
         // If found, the current process is a building block, and this instance is the parent
-        return buidingBlockInstanceService.getByDocumentId(documentId)
+        return buildingBlockInstanceService.getByDocumentId(documentId)
     }
 
     @EventListener(
@@ -144,18 +144,21 @@ class BuildingBlockCallActivityListener(
                 "referencing the building block document, but was '$buildingBlockVariableString'")
         }
 
-        val buildingBlockInstance = buidingBlockInstanceService.getByDocumentId(buildingBlockDocumentId)
+        val buildingBlockInstance = buildingBlockInstanceService.getByDocumentId(buildingBlockDocumentId)
             ?: throw IllegalStateException("No building block instance found for documentId '$buildingBlockDocumentId'")
+
+        val activityId = buildingBlockInstance.activityId
+            ?: throw IllegalStateException("No buildingBlockInstance.activityId found for documentId '$buildingBlockDocumentId'")
 
         val processLinks = processLinkService.getProcessLinks(
             execution.processDefinitionId,
-            buildingBlockInstance.activityId
+            activityId
         ).filterIsInstance<BuildingBlockProcessLink>()
 
         val processLink = processLinks.singleOrNull()
             ?: throw IllegalStateException(
                 "Expected a single building block process link for processDefinitionId '${execution.processDefinitionId}' " +
-                    "and activityId '${buildingBlockInstance.activityId}', but found ${processLinks.size}"
+                    "and activityId '$activityId', but found ${processLinks.size}"
             )
 
         val endSyncOutputMappings = processLink.outputMappings.filter {
@@ -196,7 +199,7 @@ class BuildingBlockCallActivityListener(
         if (otherTargets.isNotEmpty()) {
             val parentId = buildingBlockInstance.parentBuildingBlockInstanceId
             val targetDocumentId = if (parentId != null) {
-                val parentInstance = buidingBlockInstanceService.get(parentId)
+                val parentInstance = buildingBlockInstanceService.get(parentId)
                     ?: throw IllegalStateException("Parent building block instance not found: $parentId")
                 parentInstance.documentId
             } else {
@@ -224,11 +227,12 @@ class BuildingBlockCallActivityListener(
             buildDocumentContent(execution, buildingBlockProcessLink, sourceDocumentId),
         )
 
-        return buidingBlockInstanceService.create(
+        return buildingBlockInstanceService.create(
             documentRequest,
             rootCaseDocumentId,
             activityId,
-            parentBuildingBlockInstanceId
+            parentBuildingBlockInstanceId,
+            callerProcessDefinitionId = execution.processDefinitionId
         )
     }
 

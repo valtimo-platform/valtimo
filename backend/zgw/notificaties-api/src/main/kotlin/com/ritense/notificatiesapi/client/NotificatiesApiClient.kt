@@ -20,6 +20,7 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import com.ritense.notificatiesapi.NotificatiesApiAuthentication
 import com.ritense.notificatiesapi.domain.Abonnement
 import com.ritense.notificatiesapi.domain.Kanaal
+import com.ritense.notificatiesapi.domain.Notificatie
 import com.ritense.notificatiesapi.domain.NotificatiesApiException
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import org.springframework.http.MediaType
@@ -104,6 +105,23 @@ class NotificatiesApiClient(
             .uri { it.pathSegment("abonnement", "{abonnementId}").build(abonnementId) }
             .retrieve()
             .toBodilessEntity()
+    }
+
+    fun createNotificatie(
+        authentication: NotificatiesApiAuthentication,
+        baseUrl: URI,
+        notificatie: Notificatie
+    ): Notificatie {
+        return buildNotificatiesRestClient(authentication, baseUrl)
+            .post()
+            .uri { it.pathSegment("notificaties").build() }
+            .contentType(MediaType.APPLICATION_JSON)
+            .body(notificatie)
+            .retrieve()
+            .onStatus({ status -> status.is4xxClientError }) { _, response: ClientHttpResponse ->
+                throw objectMapper.readValue(response.body, NotificatiesApiException::class.java)
+            }
+            .body<Notificatie>()!!
     }
 
     fun createKanaal(
