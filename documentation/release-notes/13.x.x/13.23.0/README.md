@@ -14,7 +14,7 @@
 
   Building blocks now support form flow definitions. Form flows can be created, edited, and deleted through the **Form flows** tab in building block
   management. They are also included automatically in building block imports and exports. For more information, see
-  [Building block form flows](../../features/building-blocks/form-flows.md).
+  [Building block form flows](../../../features/building-blocks/form-flows.md).
 
 * **Added the Documenten API Preview plugin**
 
@@ -23,7 +23,7 @@
 
 * **Cross-case message correlation**
 
-  New `sendGlobalCatchEventMessage` and `sendGlobalCatchEventMessageToAll` methods on `correlationService` allow messages to be correlated to process instances across all cases, without requiring a business key. See [correlating messages](../../features/process/correlation-service.md) for details.
+  New `sendGlobalCatchEventMessage` and `sendGlobalCatchEventMessageToAll` methods on `correlationService` allow messages to be correlated to process instances across all cases, without requiring a business key. See [correlating messages](../../../features/process/correlation-service.md) for details.
 
 * **Teams**
 
