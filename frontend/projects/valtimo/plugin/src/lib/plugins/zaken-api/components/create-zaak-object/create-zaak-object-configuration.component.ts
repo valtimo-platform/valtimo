@@ -30,7 +30,6 @@ import {SelectItem} from '@valtimo/components';
   selector: 'valtimo-create-zaak-object-configuration',
   templateUrl: './create-zaak-object-configuration.component.html',
   providers: [PluginTranslatePipe],
-  standalone: false,
 })
 export class CreateZaakObjectConfigurationComponent implements FunctionConfigurationComponent, OnInit, OnDestroy {
   @Input() save$: Observable<void>;

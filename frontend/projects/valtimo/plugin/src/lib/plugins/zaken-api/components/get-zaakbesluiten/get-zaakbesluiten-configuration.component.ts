@@ -22,7 +22,6 @@ import {GetZaakbesluitenConfig} from '../../models';
 @Component({
   selector: 'valtimo-get-zaakbesluiten-configuration',
   templateUrl: './get-zaakbesluiten-configuration.component.html',
-  standalone: false,
 })
 export class GetZaakbesluitenConfigurationComponent
   implements FunctionConfigurationComponent, OnInit, OnDestroy

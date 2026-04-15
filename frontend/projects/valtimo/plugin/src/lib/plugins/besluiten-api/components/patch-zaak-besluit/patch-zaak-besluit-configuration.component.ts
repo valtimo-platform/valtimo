@@ -10,7 +10,6 @@ import {
 import {IconService} from 'carbon-components-angular';
 
 @Component({
-  standalone: false,
   selector: 'valtimo-patch-zaak-besluit-configuration',
   templateUrl: './patch-zaak-besluit-configuration.component.html',
   styleUrls: ['./patch-zaak-besluit-configuration.component.scss'],

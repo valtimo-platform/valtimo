@@ -23,7 +23,6 @@ import {Add16, TrashCan16} from '@carbon/icons';
 import {PatchZaakProperties, PatchZaakPropertyOptions} from '../../models/patch-zaak-properties';
 
 @Component({
-  standalone: false,
   selector: 'valtimo-patch-zaak-configuration',
   templateUrl: './patch-zaak-configuration.component.html',
   styleUrl: './patch-zaak-configuration.component.scss',

@@ -22,7 +22,6 @@ import {GetBesluitConfig} from '../../models';
 @Component({
   selector: 'valtimo-get-besluit-configuration',
   templateUrl: './get-besluit-configuration.component.html',
-  standalone: false,
 })
 export class GetBesluitConfigurationComponent
   implements FunctionConfigurationComponent, OnInit, OnDestroy

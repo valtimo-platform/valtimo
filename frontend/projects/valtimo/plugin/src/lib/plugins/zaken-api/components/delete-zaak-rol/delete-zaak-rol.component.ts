@@ -20,7 +20,6 @@ import {BehaviorSubject, combineLatest, Observable, Subscription, take} from 'rx
 import {DeleteZaakRolConfig} from '../../models';
 
 @Component({
-  standalone: false,
   selector: 'valtimo-delete-zaak-rol-configuration',
   templateUrl: './delete-zaak-rol.component.html',
 })
