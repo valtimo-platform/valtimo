@@ -12,7 +12,7 @@ As part of the security improvements, scripting in processes is now restricted b
 * Users with administrator privileges previously had access to unnecessary resources through the scripting engine in processes.
 * To mitigate this, Valtimo now restricts scripting access by default, allowing only a limited set of methods and classes.
 
-For migration details, see: [Whitelisting Scripting classes](../../features/process/process/whitelist-scripting-classes.md).
+For migration details, see: [Whitelisting Scripting classes](../../../features/process/process/whitelist-scripting-classes.md).
 
 ## Bugfixes
 

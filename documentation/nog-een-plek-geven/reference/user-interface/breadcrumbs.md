@@ -1,6 +1,6 @@
 # Breadcrumbs
 
-In [Valtimo front-end libraries version 10.7.0](../../../release-notes/10.x.x/10.7.0/valtimo-frontend-libraries.md), the existing page title and breadcrumb components were replaced with Carbon components. Since previously URLs had not been implemented consistently, a custom solution was made in order to provide breadcrumbs with a good user experience. At the time of writing, breadcrumbs up to two levels deep are supported.
+In [Valtimo front-end libraries version 10.7.0](broken-reference), the existing page title and breadcrumb components were replaced with Carbon components. Since previously URLs had not been implemented consistently, a custom solution was made in order to provide breadcrumbs with a good user experience. At the time of writing, breadcrumbs up to two levels deep are supported.
 
 ## Breadcrumbs logic
 

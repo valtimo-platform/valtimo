@@ -1,4 +1,4 @@
-# Object Token Auhentication Plugin
+# Object Token Authentication Plugin
 
 {% hint style="success" %}
 The Object Token Authentication plugin is a ZGW plugin and can only be used in the GZAC edition.
@@ -17,7 +17,7 @@ This page requires you to have knowledge on how to configure Objecten API.
 
 A plugin configuration is required before the plugin can be used. A general description on how to configure plugins can be found [here](./#configuring-plugins).
 
-If the Object Token Auhentication plugin is not visible in the plugin menu, it is possible the application is missing a dependency. Instructions on how to add the Objecten API authentication dependency can be found [here](../../fundamentals/getting-started/modules/zgw/objecten-api-authentication.md).
+If the Object Token Authentication plugin is not visible in the plugin menu, it is possible the application is missing a dependency. Instructions on how to add the Objecten API authentication dependency can be found [here](../../fundamentals/getting-started/modules/zgw/objecten-api-authentication.md).
 
 To configure this plugin the following properties have to be entered:
 
