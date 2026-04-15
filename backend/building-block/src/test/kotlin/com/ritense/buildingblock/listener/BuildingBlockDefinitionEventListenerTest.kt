@@ -25,11 +25,14 @@ import com.ritense.buildingblock.repository.BuildingBlockDefinitionRepository
 import com.ritense.buildingblock.repository.ProcessDefinitionBuildingBlockDefinitionRepository
 import com.ritense.buildingblock.service.BuildingBlockDecisionService
 import com.ritense.buildingblock.service.BuildingBlockDocumentDefinitionService
+import com.ritense.buildingblock.service.BuildingBlockFormDefinitionService
+import com.ritense.buildingblock.service.BuildingBlockFormFlowDefinitionService
 import com.ritense.document.domain.impl.JsonSchema
 import com.ritense.document.domain.impl.JsonSchemaDocumentDefinition
 import com.ritense.document.domain.impl.JsonSchemaDocumentDefinitionId
 import com.ritense.document.repository.impl.JsonSchemaDocumentDefinitionRepository
 import com.ritense.processdocument.domain.ProcessDefinitionId
+import com.ritense.processlink.repository.ProcessLinkRepository
 import com.ritense.valtimo.contract.buildingblock.BuildingBlockDefinitionId
 import com.ritense.valtimo.contract.event.BuildingBlockDefinitionCreatedEvent
 import com.ritense.valtimo.operaton.domain.OperatonProcessDefinition
@@ -75,6 +78,15 @@ class BuildingBlockDefinitionEventListenerTest {
 
     @Mock
     private lateinit var buildingBlockDecisionService: BuildingBlockDecisionService
+
+    @Mock
+    private lateinit var buildingBlockFormDefinitionService: BuildingBlockFormDefinitionService
+
+    @Mock
+    private lateinit var buildingBlockFormFlowDefinitionService: BuildingBlockFormFlowDefinitionService
+
+    @Mock
+    private lateinit var processLinkRepository: ProcessLinkRepository
 
     @InjectMocks
     private lateinit var listener: BuildingBlockDefinitionEventListener
@@ -138,6 +150,7 @@ class BuildingBlockDefinitionEventListenerTest {
             """.trimIndent().byteInputStream()
         )
 
+        whenever(buildingBlockFormDefinitionService.copyFormDefinitions(basedOnId, newId)).thenReturn(emptyMap())
         whenever(jsonSchemaDocumentDefinitionRepository.findById(basedOnDocId)).thenReturn(Optional.of(documentDefinition))
         whenever(processDefinitionBuildingBlockDefinitionRepository.findAllByIdBuildingBlockDefinitionId(basedOnId))
             .thenReturn(listOf(link))
@@ -177,6 +190,8 @@ class BuildingBlockDefinitionEventListenerTest {
             any(),
             any()
         )
+        verify(buildingBlockFormDefinitionService).copyFormDefinitions(basedOnId, newId)
+        verify(buildingBlockFormFlowDefinitionService).copyFormFlowDefinitions(basedOnId, newId)
         verify(processDefinitionBuildingBlockDefinitionRepository).save(any<ProcessDefinitionBuildingBlockDefinition>())
         verify(buildingBlockDefinitionArtworkRepository).save(any<BuildingBlockDefinitionArtwork>())
         verify(buildingBlockDocumentDefinitionService, never()).ensureEmptyFor(any(), any())

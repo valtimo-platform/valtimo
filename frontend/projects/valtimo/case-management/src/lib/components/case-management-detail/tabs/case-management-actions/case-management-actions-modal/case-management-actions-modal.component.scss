@@ -1,0 +1,64 @@
+/*!
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
+ *
+ * Licensed under EUPL, Version 1.2 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" basis,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+.action-type-tiles {
+  display: flex;
+  gap: 1px;
+}
+
+.action-type-tile {
+  display: flex;
+  flex: 1 1 0;
+  min-width: 0;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--cds-spacing-05, 1rem);
+  background-color: var(--cds-background-inverse, #393939);
+  color: var(--cds-text-inverse, #fff);
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+
+  &:hover:not(:disabled) {
+    background-color: var(--cds-background-inverse-hover, #474747);
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+
+  &__icon {
+    fill: currentColor;
+  }
+
+  &__label {
+    font-size: var(--cds-body-compact-01-font-size, 0.875rem);
+    font-weight: 400;
+  }
+}
+
+.footer-spacer {
+  flex: 1;
+}
+
+:host ::ng-deep {
+  cds-modal-footer .cds--modal-footer {
+    display: flex;
+    align-items: center;
+  }
+}

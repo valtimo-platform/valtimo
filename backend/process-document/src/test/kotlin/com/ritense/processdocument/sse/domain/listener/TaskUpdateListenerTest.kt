@@ -22,6 +22,9 @@ import com.ritense.document.service.DocumentService
 import com.ritense.processdocument.service.ProcessDocumentService
 import com.ritense.processdocument.sse.event.TaskUpdateSseEvent
 import com.ritense.valtimo.contract.document.CaseDocumentResolver
+import com.ritense.valtimo.contract.event.TaskTeamAssignedEvent
+import com.ritense.valtimo.operaton.domain.OperatonTask
+import com.ritense.valtimo.service.OperatonTaskService
 import com.ritense.valtimo.web.sse.service.SseSubscriptionService
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -41,6 +44,7 @@ class TaskUpdateListenerTest {
     lateinit var processDocumentService: ProcessDocumentService
     lateinit var caseDocumentResolver: CaseDocumentResolver
     lateinit var documentService: DocumentService
+    lateinit var operatonTaskService: OperatonTaskService
     lateinit var taskUpdateListener: TaskUpdateListener
 
     @BeforeEach
@@ -49,11 +53,13 @@ class TaskUpdateListenerTest {
         processDocumentService = mock()
         caseDocumentResolver = mock()
         documentService = mock()
+        operatonTaskService = mock()
         taskUpdateListener = TaskUpdateListener(
             sseSubscriptionService,
             processDocumentService,
             caseDocumentResolver,
             documentService,
+            operatonTaskService,
         )
     }
 
@@ -111,6 +117,60 @@ class TaskUpdateListenerTest {
         assertEquals(taskId, event.taskId)
         assertEquals(caseDocumentId.toString(), event.documentId)
         assertEquals(caseDefinitionKey, event.caseDefinitionKey)
+    }
+
+    @Test
+    fun `should send SSE event when team is assigned to task`() {
+        val caseDocumentId = UUID.randomUUID()
+        val taskId = UUID.randomUUID().toString()
+        val processInstanceId = UUID.randomUUID().toString()
+        val caseDefinitionKey = "house"
+
+        val task = mock<OperatonTask>()
+        whenever(task.getProcessInstanceId()).thenReturn(processInstanceId)
+        whenever(operatonTaskService.findTaskById(taskId)).thenReturn(task)
+
+        val document = mockDocument(caseDocumentId, caseDefinitionKey)
+        whenever(processDocumentService.getDocument(any(), anyOrNull())).thenReturn(document)
+        whenever(caseDocumentResolver.resolveCaseDocumentId(caseDocumentId)).thenReturn(caseDocumentId)
+
+        val event = TaskTeamAssignedEvent(taskId, null, null, "INTAKE_TEAM", "Intake Team")
+        taskUpdateListener.handleTeamAssignment(event)
+
+        val eventCaptor = argumentCaptor<TaskUpdateSseEvent>()
+        verify(sseSubscriptionService).notifySubscribers(eventCaptor.capture())
+
+        val sseEvent = eventCaptor.firstValue
+        assertEquals(taskId, sseEvent.taskId)
+        assertEquals(caseDocumentId.toString(), sseEvent.documentId)
+        assertEquals(caseDefinitionKey, sseEvent.caseDefinitionKey)
+    }
+
+    @Test
+    fun `should send SSE event when team is unassigned from task`() {
+        val caseDocumentId = UUID.randomUUID()
+        val taskId = UUID.randomUUID().toString()
+        val processInstanceId = UUID.randomUUID().toString()
+        val caseDefinitionKey = "house"
+
+        val task = mock<OperatonTask>()
+        whenever(task.getProcessInstanceId()).thenReturn(processInstanceId)
+        whenever(operatonTaskService.findTaskById(taskId)).thenReturn(task)
+
+        val document = mockDocument(caseDocumentId, caseDefinitionKey)
+        whenever(processDocumentService.getDocument(any(), anyOrNull())).thenReturn(document)
+        whenever(caseDocumentResolver.resolveCaseDocumentId(caseDocumentId)).thenReturn(caseDocumentId)
+
+        val event = TaskTeamAssignedEvent(taskId, "INTAKE_TEAM", "Intake Team", null, null)
+        taskUpdateListener.handleTeamAssignment(event)
+
+        val eventCaptor = argumentCaptor<TaskUpdateSseEvent>()
+        verify(sseSubscriptionService).notifySubscribers(eventCaptor.capture())
+
+        val sseEvent = eventCaptor.firstValue
+        assertEquals(taskId, sseEvent.taskId)
+        assertEquals(caseDocumentId.toString(), sseEvent.documentId)
+        assertEquals(caseDefinitionKey, sseEvent.caseDefinitionKey)
     }
 
     private fun mockDocument(documentId: UUID, definitionName: String): Document {

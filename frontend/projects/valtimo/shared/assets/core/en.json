@@ -638,6 +638,7 @@
       "general": "General",
       "cases": "Configuration",
       "processes": "Processes",
+      "actions": "Actions",
       "document": "Document",
       "zgw": "ZGW",
       "forms": "Forms",
@@ -721,6 +722,45 @@
       }
     },
     "tabType": {"custom": "Custom", "formio": "FormIO", "standard": "Standard"},
+    "actions": {
+      "columns": {
+        "name": "Name",
+        "type": "Type"
+      },
+      "addItem": "Add an action",
+      "noResults": "No actions configured",
+      "noResultsDescription": "No actions are configured for this case type.",
+      "infoNotification": {
+        "message": "Actions appear under the start button of an existing case and can be initiated at any time by the user."
+      },
+      "type": {
+        "PROCESS": "Process",
+        "BUILDING_BLOCK": "Building block"
+      },
+      "modal": {
+        "addTitle": "Add an action",
+        "addDescription": "Select a process or a building block for the user to start",
+        "addProcessTitle": "Add process as action",
+        "addBuildingBlockTitle": "Add building block as action",
+        "editProcessTitle": "Edit process action",
+        "editBuildingBlockTitle": "Edit building block action",
+        "selectProcess": "Select a process",
+        "selectBuildingBlock": "Select a building block",
+        "selectProcessDescription": "Select a process for the user to start",
+        "selectBuildingBlockDescription": "Select a building block for the user to start",
+        "filterPlaceholder": "Filter...",
+        "add": "Add",
+        "save": "Save",
+        "back": "Back",
+        "next": "Next",
+        "noProcessesAvailable": "No more processes available to configure as action",
+        "noBuildingBlocksAvailable": "No more building blocks available to configure as action"
+      },
+      "deleteModal": {
+        "title": "Delete action",
+        "content": "Are you sure you want to delete this action? This cannot be undone."
+      }
+    },
     "importDefinition": {
       "title": "Import case definition",
       "startUpload": "Start upload",
@@ -1940,6 +1980,7 @@
   },
   "processLinkConfiguration": {
     "configureStep": "Configure process step",
+    "buildingBlockActionTitle": "Building block action: {{buildingBlockName}}",
     "modalTitle": "Process step: {{processStepName}}",
     "pluginConfiguration": "Plugin configuration: {{pluginConfigTitle}}",
     "chooseProcessLinkTypeDescription": "A process step can perform a variety of actions. Choose below to what type of action you would like to link this step.",
