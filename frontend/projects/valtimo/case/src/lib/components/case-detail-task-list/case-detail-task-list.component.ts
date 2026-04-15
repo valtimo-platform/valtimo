@@ -52,7 +52,7 @@ import {PermissionService} from '@valtimo/access-control';
 import moment from 'moment';
 import {CaseDetailLayoutService} from '../../services';
 import {ProcessLinkService, TaskWithProcessLink} from '@valtimo/process-link';
-import {UserFilled20} from '@carbon/icons';
+import {UserFilled20, Group20} from '@carbon/icons';
 
 moment.locale(localStorage.getItem('langKey') || '');
 moment.defaultFormat = 'DD MMM YYYY HH:mm';
@@ -157,7 +157,14 @@ export class CaseDetailTaskListComponent {
     private readonly caseDetailLayoutService: CaseDetailLayoutService,
     private readonly processLinkService: ProcessLinkService
   ) {
-    this.iconService.registerAll([UserFilled20]);
+    this.iconService.registerAll([UserFilled20, Group20]);
+  }
+
+  public getAssigneeTooltip(task: TaskWithProcessLink['task']): string {
+    const name = task.valtimoAssignee?.fullName;
+    const team = task.assignedTeam?.title;
+    if (name && team) return `${name} & ${team}`;
+    return name || team || '';
   }
 
   public rowTaskClick(tasWithProcessLink: TaskWithProcessLink): void {

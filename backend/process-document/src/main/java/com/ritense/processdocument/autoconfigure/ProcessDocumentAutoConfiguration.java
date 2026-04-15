@@ -42,6 +42,7 @@ import com.ritense.processdocument.service.ProcessDocumentService;
 import com.ritense.processdocument.service.impl.OperatonProcessJsonSchemaDocumentAssociationService;
 import com.ritense.processdocument.service.impl.OperatonProcessJsonSchemaDocumentService;
 import com.ritense.processdocument.web.rest.ProcessDocumentResource;
+import com.ritense.valtimo.contract.document.CaseDocumentResolver;
 import com.ritense.valtimo.operaton.service.OperatonRepositoryService;
 import com.ritense.valtimo.contract.authentication.UserManagementService;
 import com.ritense.valtimo.contract.case_.CaseDefinitionChecker;
@@ -69,14 +70,16 @@ public class ProcessDocumentAutoConfiguration {
         OperatonTaskService operatonTaskService,
         OperatonProcessService operatonProcessService,
         ProcessDocumentAssociationService processDocumentAssociationService,
-        AuthorizationService authorizationService
+        AuthorizationService authorizationService,
+        CaseDocumentResolver caseDocumentResolver
     ) {
         return new OperatonProcessJsonSchemaDocumentService(
             documentService,
             operatonTaskService,
             operatonProcessService,
             processDocumentAssociationService,
-            authorizationService
+            authorizationService,
+            caseDocumentResolver
         );
     }
 

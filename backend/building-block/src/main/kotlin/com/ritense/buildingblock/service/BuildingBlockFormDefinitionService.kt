@@ -149,6 +149,36 @@ class BuildingBlockFormDefinitionService(
     }
 
     @Transactional
+    fun copyFormDefinitions(
+        sourceBuildingBlockDefinitionId: BuildingBlockDefinitionId,
+        targetBuildingBlockDefinitionId: BuildingBlockDefinitionId
+    ): Map<UUID, UUID> {
+        val mapping = mutableMapOf<UUID, UUID>()
+        val targetBlueprintId = FormDefinitionBlueprintId.forBuildingBlock(targetBuildingBlockDefinitionId)
+        val sourceForms = formDefinitionRepository.findAllByBlueprintIdOrderByNameAsc(
+            BlueprintType.BUILDING_BLOCK,
+            sourceBuildingBlockDefinitionId.key,
+            sourceBuildingBlockDefinitionId.versionTag
+        )
+        sourceForms.forEach { oldForm ->
+            val newForm = FormIoFormDefinition(
+                UUID.randomUUID(),
+                oldForm.name,
+                oldForm.formDefinition.toString(),
+                targetBlueprintId,
+                oldForm.isReadOnly
+            )
+            logger.info {
+                "Copying form definition '${oldForm.name}' from building block " +
+                    "$sourceBuildingBlockDefinitionId to $targetBuildingBlockDefinitionId"
+            }
+            formDefinitionRepository.save(newForm)
+            mapping[oldForm.id] = newForm.id
+        }
+        return mapping
+    }
+
+    @Transactional
     fun deleteFormDefinition(
         buildingBlockDefinitionId: BuildingBlockDefinitionId,
         formDefinitionId: UUID

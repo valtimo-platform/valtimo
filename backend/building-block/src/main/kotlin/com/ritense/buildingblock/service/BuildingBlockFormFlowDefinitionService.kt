@@ -17,6 +17,8 @@
 package com.ritense.buildingblock.service
 
 import com.ritense.formflow.domain.definition.FormFlowDefinition
+import com.ritense.formflow.domain.definition.FormFlowDefinitionId
+import com.ritense.formflow.domain.definition.FormFlowStepId
 import com.ritense.formflow.service.FormFlowService
 import com.ritense.formflow.web.rest.result.FormFlowDefinitionDto
 import com.ritense.valtimo.contract.buildingblock.BuildingBlockDefinitionChecker
@@ -62,6 +64,23 @@ class BuildingBlockFormFlowDefinitionService(
     ) {
         definitionChecker.assertCanUpdateBuildingBlockDefinition(buildingBlockDefinitionId)
         formFlowService.deleteByKeyAndBuildingBlockDefinition(definitionKey, buildingBlockDefinitionId)
+    }
+
+    fun copyFormFlowDefinitions(
+        sourceBuildingBlockDefinitionId: BuildingBlockDefinitionId,
+        targetBuildingBlockDefinitionId: BuildingBlockDefinitionId
+    ) {
+        definitionChecker.assertCanUpdateBuildingBlockDefinition(targetBuildingBlockDefinitionId)
+        formFlowService.getFormFlowDefinitions(sourceBuildingBlockDefinitionId).forEach { oldDefinition ->
+            val newSteps = oldDefinition.steps.map { step ->
+                step.copy(id = FormFlowStepId.create(step.id.key))
+            }.toSet()
+            val newDefinition = oldDefinition.copy(
+                id = FormFlowDefinitionId.newId(oldDefinition.id.key, targetBuildingBlockDefinitionId),
+                steps = newSteps
+            )
+            formFlowService.save(newDefinition)
+        }
     }
 
     fun isAutoDeployed(definitionKey: String): Boolean {

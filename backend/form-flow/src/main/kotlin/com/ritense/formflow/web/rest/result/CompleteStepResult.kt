@@ -18,7 +18,9 @@ package com.ritense.formflow.web.rest.result
 
 import java.util.UUID
 
-class CompleteStepResult(
+data class CompleteStepResult(
     val id: UUID,
-    val step: FormFlowStepResult?
+    val step: FormFlowStepResult?,
+    val onOpenResult: List<Any>? = null,
+    val onCompleteResult: List<Any>? = null,
 )
