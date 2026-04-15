@@ -22,6 +22,7 @@ data class NotificatiesApiNotificationReceivedEvent(
     val kanaal: String,
     val hoofdObject: String?,
     val resourceUrl: String,
+    val resource: String?,
     val actie: String,
     val aanmaakdatum: LocalDateTime?,
     val kenmerken: Map<String, String>

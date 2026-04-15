@@ -31,6 +31,7 @@ import com.ritense.processdocument.importer.CaseDefinitionProcessLinkImporter
 import com.ritense.processdocument.importer.ProcessDocumentLinkImporter
 import com.ritense.processdocument.listener.CaseAssigneeListener
 import com.ritense.processdocument.listener.CaseAssigneeTaskCreatedListener
+import com.ritense.processdocument.listener.CaseTaskTeamAutoAssignListener
 import com.ritense.processdocument.listener.DecisionCaseEventListener
 import com.ritense.processdocument.listener.ProcessDefinitionCaseEventListener
 import com.ritense.processdocument.listener.ProcessDocumentLinkEventListener
@@ -52,6 +53,7 @@ import com.ritense.processdocument.service.ProcessDocumentAssociationService
 import com.ritense.processdocument.service.ProcessDocumentDeletedEventListener
 import com.ritense.processdocument.service.ProcessDocumentService
 import com.ritense.processdocument.service.ProcessDocumentsService
+import com.ritense.processdocument.service.StartableProcessItemProvider
 import com.ritense.processdocument.service.ValueResolverDelegateService
 import com.ritense.processdocument.service.impl.OperatonProcessJsonSchemaDocumentService
 import com.ritense.processdocument.tasksearch.TaskSearchFieldExporter
@@ -221,6 +223,26 @@ class ProcessDocumentsAutoConfiguration {
             userManagementService,
             caseDocumentResolver,
             authorizationService
+        )
+    }
+
+    @Bean
+    @ConditionalOnMissingBean(CaseTaskTeamAutoAssignListener::class)
+    fun caseTaskTeamAutoAssignListener(
+        operatonTaskService: OperatonTaskService,
+        documentService: DocumentService,
+        caseDefinitionService: CaseDefinitionService,
+        processDocumentService: ProcessDocumentService,
+        teamManagementService: TeamManagementService?,
+        caseDocumentResolver: CaseDocumentResolver,
+    ): CaseTaskTeamAutoAssignListener {
+        return CaseTaskTeamAutoAssignListener(
+            operatonTaskService,
+            documentService,
+            caseDefinitionService,
+            processDocumentService,
+            teamManagementService,
+            caseDocumentResolver,
         )
     }
 
@@ -480,4 +502,16 @@ class ProcessDocumentsAutoConfiguration {
     fun processDocumentLinkEventListener(
         caseDefinitionProcessLinkService: CaseDefinitionProcessLinkService
     ): ProcessDocumentLinkEventListener = ProcessDocumentLinkEventListener(caseDefinitionProcessLinkService)
+
+    @Bean
+    @ConditionalOnMissingBean(StartableProcessItemProvider::class)
+    fun startableProcessItemProvider(
+        processDefinitionCaseDefinitionRepository: ProcessDefinitionCaseDefinitionRepository,
+        authorizationService: AuthorizationService,
+    ): StartableProcessItemProvider {
+        return StartableProcessItemProvider(
+            processDefinitionCaseDefinitionRepository,
+            authorizationService,
+        )
+    }
 }

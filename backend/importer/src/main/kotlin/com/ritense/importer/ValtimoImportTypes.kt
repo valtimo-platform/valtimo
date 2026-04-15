@@ -52,6 +52,7 @@ class ValtimoImportTypes {
         const val BUILDING_BLOCK_PROCESS_LINK = "buildingblockprocesslink"
         const val BUILDING_BLOCK_FORM_DEFINITION = "buildingblockformdefinition"
         const val BUILDING_BLOCK_FORM_FLOW_DEFINITION = "buildingblockformflowdefinition"
+        const val CASE_BUILDING_BLOCK_LINK = "casebuildingblocklink"
 
         const val OBJECT_MANAGEMENT = "objectmanagement"
 

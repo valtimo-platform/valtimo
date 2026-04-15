@@ -29,12 +29,13 @@
         cdsLayer
         size="lg"
         [appendInline]="true"
+        [items]="versionItems"
         [label]="'processLinkConfiguration.buildingBlock.versionLabel' | translate"
         [placeholder]="versionPlaceholder || ''"
         (selected)="onVersionChange($event?.id || '')"
         (clear)="onVersionChange('')"
       >
-        <cds-dropdown-list [items]="versionItems"></cds-dropdown-list>
+        <cds-dropdown-list></cds-dropdown-list>
       </cds-combo-box>
     </div>
   }
@@ -81,11 +82,12 @@
                     cdsLayer
                     size="lg"
                     [appendInline]="true"
+                    [items]="plugin.dropdownItems"
                     [placeholder]="configurationPlaceholder || ''"
                     (selected)="onMappingChange(plugin.key, $event?.id || '')"
                     (clear)="onMappingChange(plugin.key, '')"
                   >
-                    <cds-dropdown-list [items]="plugin.dropdownItems"></cds-dropdown-list>
+                    <cds-dropdown-list></cds-dropdown-list>
                   </cds-combo-box>
                 </div>
               }

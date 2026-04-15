@@ -100,7 +100,8 @@ class NotificatiesApiInboundEventProcessingServiceIT : BaseIntegrationTest() {
             hoofdObject = null,
             actie = "update",
             aanmaakdatum = LocalDateTime.now(),
-            kenmerken = mapOf("bronId" to UUID.randomUUID().toString())
+            kenmerken = mapOf("bronId" to UUID.randomUUID().toString()),
+            resource = null
         )
         return objectMapper.writeValueAsString(notification)
     }

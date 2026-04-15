@@ -234,7 +234,7 @@ export class FormFlowComponent implements OnInit, OnDestroy {
       this.FormFlowCustomComponentId$.next('');
       this.formFlowInstanceId$.next(null);
       this.formFlowStepInstanceId = null;
-      this.formFlowComplete.emit(null);
+      this.formFlowComplete.emit(formFlowInstance.onCompleteResult ?? null);
     } else {
       this.getBreadcrumbs();
       this.modalService.scrollToTop();

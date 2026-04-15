@@ -248,6 +248,8 @@ class JsonSchemaDocumentServiceTest extends BaseTest {
         var captor = ArgumentCaptor.forClass(DocumentUnassignedEvent.class);
         verify(applicationEventPublisher, times(1)).publishEvent(captor.capture());
         assertEquals("System", captor.getValue().getUser());
+        assertEquals("my-id", captor.getValue().getAssigneeId());
+        assertNull(captor.getValue().getTeamKey());
     }
 
     @Test
@@ -286,6 +288,8 @@ class JsonSchemaDocumentServiceTest extends BaseTest {
         verify(documentRepository, times(1)).save(jsonSchemaDocument);
         var captor = ArgumentCaptor.forClass(DocumentUnassignedEvent.class);
         verify(applicationEventPublisher, times(1)).publishEvent(captor.capture());
+        assertEquals("team-key", captor.getValue().getTeamKey());
+        assertNull(captor.getValue().getAssigneeId());
     }
 
     @Test
