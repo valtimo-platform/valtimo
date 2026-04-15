@@ -81,6 +81,7 @@ dependencies {
 
     annotationProcessor "org.springframework.boot:spring-boot-autoconfigure-processor"
 
+    testImplementation project(':backend:team')
     testImplementation project(':backend:test-utils-common')
     testImplementation(project(':backend:building-block')) {
         exclude(group: "com.ritense.valtimo", module: "process-document")

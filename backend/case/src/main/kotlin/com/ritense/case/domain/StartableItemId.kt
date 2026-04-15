@@ -36,5 +36,8 @@ data class StartableItemId(
 
     @Enumerated(EnumType.STRING)
     @Column(name = "item_type", nullable = false)
-    val itemType: StartableItemType
+    val itemType: StartableItemType,
+
+    @Column(name = "item_version_tag", nullable = false)
+    val itemVersionTag: String = ""
 ) : Serializable

@@ -77,8 +77,8 @@ internal class FormFlowInstanceTest : BaseTest() {
         val result = instance.complete(instance.currentFormFlowStepInstanceId!!, JSONObject("{\"data\":\"data\"}"))
 
         assertThat(instance.getHistory()[0].submissionData, equalTo("{\"data\":\"data\"}"))
-        assertNotNull(result)
-        assertEquals("test2", result!!.stepKey)
+        assertNotNull(result.nextStep)
+        assertEquals("test2", result.nextStep!!.stepKey)
     }
 
     @Test
@@ -102,7 +102,7 @@ internal class FormFlowInstanceTest : BaseTest() {
         val result = instance.complete(instance.currentFormFlowStepInstanceId!!, JSONObject("{\"data\":\"data\"}"))
 
         assertThat(instance.getHistory()[0].submissionData, equalTo("{\"data\":\"data\"}"))
-        assertNull(result)
+        assertNull(result.nextStep)
     }
 
     @Test
@@ -155,9 +155,9 @@ internal class FormFlowInstanceTest : BaseTest() {
             formFlowDefinition = definition
         )
 
-        val stepInstance = instance.complete(FormFlowStepInstanceId.newId(), JSONObject("{\"data\": \"data\"}"))
+        val result = instance.complete(FormFlowStepInstanceId.newId(), JSONObject("{\"data\": \"data\"}"))
 
-        assertEquals("step1", stepInstance!!.definition.id.key)
+        assertEquals("step1", result.nextStep!!.definition.id.key)
     }
 
     @Test

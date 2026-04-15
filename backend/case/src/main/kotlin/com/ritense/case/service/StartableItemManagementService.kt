@@ -44,7 +44,7 @@ class StartableItemManagementService(
 
         val sortOrderMap = startableItemRepository
             .findAllByIdCaseDefinitionId(caseDefinitionId)
-            .associate { (it.id.itemKey to it.id.itemType) to it.sortOrder }
+            .associate { Triple(it.id.itemKey, it.id.itemType, it.id.itemVersionTag) to it.sortOrder }
 
         return allItems
             .map { item ->
@@ -54,7 +54,7 @@ class StartableItemManagementService(
                     key = item.key,
                     versionTag = item.versionTag,
                     processDefinitionId = item.processDefinitionId,
-                    sortOrder = sortOrderMap[item.key to item.type]
+                    sortOrder = sortOrderMap[Triple(item.key, item.type, item.versionTag.orEmpty())]
                 )
             }
             .sortedWith(compareBy(
@@ -79,7 +79,7 @@ class StartableItemManagementService(
 
         startableItemRepository.save(
             StartableItem(
-                id = StartableItemId(caseDefinitionId, item.key, item.type),
+                id = StartableItemId(caseDefinitionId, item.key, item.type, item.versionTag.orEmpty()),
                 sortOrder = maxSortOrder + 1
             )
         )
@@ -88,10 +88,70 @@ class StartableItemManagementService(
     }
 
     @Transactional
+    fun updateItem(
+        caseDefinitionId: CaseDefinitionId,
+        oldItemKey: String,
+        oldVersionTag: String?,
+        newType: StartableItemType,
+        newProperties: JsonNode
+    ): StartableItemDto {
+        val existingItems = startableItemProviders.flatMap { it.getStartableItems(caseDefinitionId) }
+        val oldItem = existingItems.find { it.key == oldItemKey && it.versionTag == oldVersionTag }
+            ?: throw NoSuchElementException("Startable item not found: $oldItemKey:$oldVersionTag")
+
+        val oldSortOrder = startableItemRepository
+            .findAllByIdCaseDefinitionId(caseDefinitionId)
+            .find { it.id.itemKey == oldItemKey && it.id.itemType == oldItem.type && it.id.itemVersionTag == oldVersionTag.orEmpty() }
+            ?.sortOrder
+
+        if (oldItem.type == newType) {
+            val provider = startableItemProviders.find { it.type == newType }
+                ?: throw UnsupportedOperationException("No provider found for type: $newType")
+            val updatedItem = provider.updateItem(caseDefinitionId, oldItemKey, oldVersionTag, newProperties)
+            val oldId = StartableItemId(caseDefinitionId, oldItemKey, oldItem.type, oldVersionTag.orEmpty())
+            val newId = StartableItemId(caseDefinitionId, updatedItem.key, updatedItem.type, updatedItem.versionTag.orEmpty())
+
+            if (oldId != newId && oldSortOrder != null) {
+                startableItemRepository.deleteById(oldId)
+                startableItemRepository.save(
+                    StartableItem(
+                        id = newId,
+                        sortOrder = oldSortOrder
+                    )
+                )
+            }
+
+            return updatedItem
+        }
+
+        val oldProvider = startableItemProviders.find { it.type == oldItem.type }
+            ?: throw UnsupportedOperationException("No provider found for type: ${oldItem.type}")
+        oldProvider.deleteItem(caseDefinitionId, oldItemKey, oldVersionTag)
+        startableItemRepository.deleteById(StartableItemId(caseDefinitionId, oldItemKey, oldItem.type, oldVersionTag.orEmpty()))
+
+        val newProvider = startableItemProviders.find { it.type == newType }
+            ?: throw UnsupportedOperationException("No provider found for type: $newType")
+        val newItem = newProvider.createItem(caseDefinitionId, newProperties)
+
+        val sortOrder = oldSortOrder ?: (startableItemRepository
+            .findAllByIdCaseDefinitionId(caseDefinitionId)
+            .maxOfOrNull { it.sortOrder }?.plus(1) ?: 0)
+
+        startableItemRepository.save(
+            StartableItem(
+                id = StartableItemId(caseDefinitionId, newItem.key, newItem.type, newItem.versionTag.orEmpty()),
+                sortOrder = sortOrder
+            )
+        )
+
+        return newItem
+    }
+
+    @Transactional
     fun deleteItem(
         caseDefinitionId: CaseDefinitionId,
         itemKey: String,
-        versionTag: String
+        versionTag: String?
     ) {
         val existingItems = startableItemProviders.flatMap { it.getStartableItems(caseDefinitionId) }
         val item = existingItems.find { it.key == itemKey && it.versionTag == versionTag }
@@ -102,7 +162,20 @@ class StartableItemManagementService(
 
         provider.deleteItem(caseDefinitionId, itemKey, versionTag)
 
-        startableItemRepository.deleteById(StartableItemId(caseDefinitionId, itemKey, item.type))
+        startableItemRepository.deleteById(StartableItemId(caseDefinitionId, itemKey, item.type, versionTag.orEmpty()))
+    }
+
+    @Transactional(readOnly = true)
+    fun getItemProperties(
+        caseDefinitionId: CaseDefinitionId,
+        itemKey: String,
+        versionTag: String?,
+        type: StartableItemType
+    ): JsonNode {
+        val provider = startableItemProviders.find { it.type == type }
+            ?: throw UnsupportedOperationException("No provider found for type: $type")
+        return provider.getItemProperties(caseDefinitionId, itemKey, versionTag)
+            ?: throw UnsupportedOperationException("Provider for type $type does not support item properties")
     }
 
     @Transactional
@@ -111,12 +184,12 @@ class StartableItemManagementService(
         items: List<StartableItemOrderEntry>
     ): List<ManagementStartableItemDto> {
         val existingItems = startableItemProviders.flatMap { it.getStartableItems(caseDefinitionId) }
-        val existingItemsByKeyAndType = existingItems.associateBy { it.key to it.type }
+        val existingItemsByIdentity = existingItems.associateBy { Triple(it.key, it.type, it.versionTag.orEmpty()) }
 
         val entities = items.mapNotNull { entry ->
-            existingItemsByKeyAndType[entry.key to entry.type] ?: return@mapNotNull null
+            existingItemsByIdentity[Triple(entry.key, entry.type, entry.versionTag.orEmpty())] ?: return@mapNotNull null
             StartableItem(
-                id = StartableItemId(caseDefinitionId, entry.key, entry.type),
+                id = StartableItemId(caseDefinitionId, entry.key, entry.type, entry.versionTag.orEmpty()),
                 sortOrder = entry.sortOrder
             )
         }

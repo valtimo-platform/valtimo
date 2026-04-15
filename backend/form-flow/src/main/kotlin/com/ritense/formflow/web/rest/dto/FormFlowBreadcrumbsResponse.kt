@@ -24,10 +24,19 @@ data class FormFlowBreadcrumbsResponse(
     val breadcrumbs: List<FormFlowBreadcrumbResponse>
 ) {
     companion object {
-        fun of(currentStepInstanceId: UUID, breadcrumbs: List<FormFlowBreadcrumb>) = FormFlowBreadcrumbsResponse(
-            currentStepIndex = breadcrumbs.indexOfFirst { it.stepInstanceId == currentStepInstanceId },
-            breadcrumbs = breadcrumbs.map { FormFlowBreadcrumbResponse.of(it) }
-        )
+        fun of(currentStepInstanceId: UUID?, breadcrumbs: List<FormFlowBreadcrumb>): FormFlowBreadcrumbsResponse {
+            val currentStepIndex = if (currentStepInstanceId == null) {
+                breadcrumbs.size
+            } else {
+                breadcrumbs
+                    .indexOfFirst { it.stepInstanceId == currentStepInstanceId }
+                    .takeIf { it >= 0 } ?: 0
+            }
+            return FormFlowBreadcrumbsResponse(
+                currentStepIndex = currentStepIndex,
+                breadcrumbs = breadcrumbs.map { FormFlowBreadcrumbResponse.of(it) }
+            )
+        }
     }
 }
 

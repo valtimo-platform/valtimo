@@ -29,6 +29,26 @@ An example plugin configuration:&#x20;
 
 After saving the configuration Valtimo automatically ensures the required kanalen exist and that an abonnement with a generated secret is registered against the configured Notificaties API instance. Disabling this behaviour is possible by setting `valtimo.zgw.register-abonnementen=false` in the `application.yml`.
 
+## Available actions
+
+The Notificaties API plugin supports the following actions that can be configured in process links.
+
+A general description on how to create process links can be found in the [process link configuration guide](configure-plugin.md).
+
+### Publish notification (Publiceer een notificatie)
+
+This action publishes a notification via the Notificaties API. It can be used on send tasks and intermediate throw events.
+
+When creating a process link the following properties have to be entered:
+
+* **Channel (`kanaal`).** The channel on which the notification is published (max 50 characters).
+* **Main object URL (`hoofdObject`).** URL reference to the main object of the publishing API.
+* **Resource (`resource`).** The resource name the notification concerns (max 100 characters).
+* **Resource URL (`resourceUrl`).** URL reference to the resource in the publishing API.
+* **Action (`actie`).** The action performed by the publishing API (max 100 characters).
+* **Creation date (`aanmaakdatum`)** *(optional).* Timestamp when the action occurred. If empty, the current time is used.
+* **Attributes (`kenmerken`)** *(optional).* Key-value pairs for notification filtering.
+
 ## Subscriptions
 
 When working with the Notificaties API, it is important to keep subscriptions (abonnementen) as specific as possible.
