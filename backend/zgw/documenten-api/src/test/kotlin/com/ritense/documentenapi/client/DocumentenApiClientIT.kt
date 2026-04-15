@@ -345,6 +345,8 @@ internal class DocumentenApiClientIT @Autowired constructor(
         )
         permissionRepository.saveAllAndFlush(permissions)
 
+        // Drain any previously queued requests so takeRequest() returns this test's request
+        val requestCountBefore = server.requestCount
         val objectUrl = URI("http://localhost:56273/documenten/zaken/5678")
         documentenApiClient.getInformatieObjecten(
             documentenApiPlugin.authenticationPluginConfiguration,
@@ -357,6 +359,8 @@ internal class DocumentenApiClientIT @Autowired constructor(
             )
         )
 
+        // Skip requests queued by previous tests
+        repeat(requestCountBefore) { server.takeRequest() }
         val recordedRequest = server.takeRequest()
         val requestUrl = recordedRequest.requestUrl.toString()
         assertTrue(requestUrl.contains("objectinformatieobjecten__object="), "Expected objectinformatieobjecten__object query param")
