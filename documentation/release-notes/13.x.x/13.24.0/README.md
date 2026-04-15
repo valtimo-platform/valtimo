@@ -24,7 +24,7 @@
 
   When a user task is created with a candidate group that matches the case's assigned team key, the team is now
   automatically assigned to the task. This requires the case definition to have `canHaveAssignee` and `autoAssignTasks`
-  enabled. See [Teams](../../features/teams/README.md) for more information.
+  enabled. See [Teams](../../../features/teams/README.md) for more information.
 
 * **Automatic user assignment changes**
 

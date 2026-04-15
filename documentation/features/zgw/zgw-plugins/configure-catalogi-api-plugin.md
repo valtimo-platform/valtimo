@@ -64,7 +64,7 @@ An example action configuration: ![Retrieve statustype](../../../using-valtimo/p
 
 The Catalogi API plugin supports the following actions that can be configured in process links in order to retrieve type data.
 
-A general description on how to create process links can be found [here](../../../using-valtimo/plugin/create-process-link.md).
+A general description on how to create process links can be found [here](../../../features/process/process-link.md).
 
 ### Retrieve statustype
 
