@@ -16,6 +16,8 @@
 
 package com.ritense.buildingblock.service
 
+import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.databind.node.ObjectNode
 import com.ritense.document.domain.impl.JsonSchema
 import com.ritense.document.domain.impl.JsonSchemaDocumentDefinition
 import com.ritense.document.domain.impl.JsonSchemaDocumentDefinitionId
@@ -36,6 +38,7 @@ import org.springframework.security.access.AccessDeniedException
 class BuildingBlockDocumentDefinitionService(
     private val repository: JsonSchemaDocumentDefinitionRepository,
     private val definitionChecker: BuildingBlockDefinitionChecker,
+    private val objectMapper: ObjectMapper,
 ) {
     @Transactional
     fun ensureEmptyFor(key: String, versionTag: String): JsonSchemaDocumentDefinition {
@@ -56,9 +59,10 @@ class BuildingBlockDocumentDefinitionService(
         jsonSchema: JsonSchema,
         buildingBlockDefinitionId: BuildingBlockDefinitionId
     ): DeployDocumentDefinitionResult {
+        val resolvedSchema = applyKeyOverride(jsonSchema, buildingBlockDefinitionId.key)
         try {
             definitionChecker.assertCanUpdateBuildingBlockDefinition(buildingBlockDefinitionId)
-            val documentDefinitionName = jsonSchema.schema.id.replace(".schema", "")
+            val documentDefinitionName = resolvedSchema.schema.id.replace(".schema", "")
 
             return withLoggingContext(
                 "documentDefinitionName",
@@ -67,10 +71,10 @@ class BuildingBlockDocumentDefinitionService(
                     val documentDefinitionId =
                         JsonSchemaDocumentDefinitionId.forBuildingBlock(documentDefinitionName, buildingBlockDefinitionId)
                     logger.info {
-                        "Deploying schema ${jsonSchema.schema.id} for building block definition $buildingBlockDefinitionId"
+                        "Deploying schema ${resolvedSchema.schema.id} for building block definition $buildingBlockDefinitionId"
                     }
 
-                    val documentDefinition = JsonSchemaDocumentDefinition(documentDefinitionId, jsonSchema)
+                    val documentDefinition = JsonSchemaDocumentDefinition(documentDefinitionId, resolvedSchema)
                     store(documentDefinition)
                     return DeployDocumentDefinitionResultSucceeded(documentDefinition)
                 }
@@ -94,6 +98,17 @@ class BuildingBlockDocumentDefinitionService(
                 repository.saveAndFlush(documentDefinition)
             }
         )
+    }
+
+    private fun applyKeyOverride(jsonSchema: JsonSchema, key: String): JsonSchema {
+        val json = jsonSchema.asJson()
+        val currentName = json.get("\$id")?.asText()?.replace(".schema", "")
+        return if (currentName == key) {
+            jsonSchema
+        } else {
+            (json as ObjectNode).put("\$id", "$key.schema")
+            JsonSchema.fromString(objectMapper.writeValueAsString(json))
+        }
     }
 
     private fun emptySchemaForName(name: String): JsonSchema {
