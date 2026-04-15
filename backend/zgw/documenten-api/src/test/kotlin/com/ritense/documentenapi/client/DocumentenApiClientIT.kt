@@ -45,6 +45,7 @@ import java.time.LocalDate
 import java.util.UUID
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
+import kotlin.test.assertTrue
 
 @Transactional
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
@@ -298,6 +299,167 @@ internal class DocumentenApiClientIT @Autowired constructor(
         }
     }
 
+    @Test
+    @WithMockUser(authorities = ["ROLE_TEST"])
+    fun `should allow document listing with objectUrl and zaak objectType`() {
+        val documentId = UUID.randomUUID()
+        val permissions = listOf(
+            Permission(
+                UUID.randomUUID(),
+                ResourcePermission::class.java,
+                ResourcePermissionActionProvider.VIEW_LIST,
+                ConditionContainer(),
+                roleTest
+            )
+        )
+        permissionRepository.saveAllAndFlush(permissions)
+
+        // Use objectUrl (non-zaak filter, simulating a custom ZGW object) with objectType "zaak"
+        val zaakUrl = URI("http://localhost:56273/documenten/zaken/1234")
+        val results = documentenApiClient.getInformatieObjecten(
+            documentenApiPlugin.authenticationPluginConfiguration,
+            documentId,
+            documentenApiPlugin.url,
+            Pageable.ofSize(10),
+            DocumentSearchRequest(
+                objectUrl = zaakUrl,
+                objectType = "zaak",
+            )
+        )
+
+        assertEquals(1, results.count())
+    }
+
+    @Test
+    @WithMockUser(authorities = ["ROLE_TEST"])
+    fun `should send objectUrl and objectType as query parameters when searching with objectUrl and objectType`() {
+        val documentId = UUID.randomUUID()
+        val permissions = listOf(
+            Permission(
+                UUID.randomUUID(),
+                ResourcePermission::class.java,
+                ResourcePermissionActionProvider.VIEW_LIST,
+                ConditionContainer(),
+                roleTest
+            )
+        )
+        permissionRepository.saveAllAndFlush(permissions)
+
+        val objectUrl = URI("http://localhost:56273/documenten/zaken/5678")
+        documentenApiClient.getInformatieObjecten(
+            documentenApiPlugin.authenticationPluginConfiguration,
+            documentId,
+            documentenApiPlugin.url,
+            Pageable.ofSize(10),
+            DocumentSearchRequest(
+                objectUrl = objectUrl,
+                objectType = "zaak",
+            )
+        )
+
+        val recordedRequest = server.takeRequest()
+        val requestUrl = recordedRequest.requestUrl.toString()
+        assertTrue(requestUrl.contains("objectinformatieobjecten__object="), "Expected objectinformatieobjecten__object query param")
+        assertTrue(requestUrl.contains("objectinformatieobjecten__objectType=zaak"), "Expected objectinformatieobjecten__objectType=zaak query param")
+    }
+
+    @Test
+    @WithMockUser(authorities = ["ROLE_TEST"])
+    fun `should allow linking a document to a zaak object (objectinformatieobject)`() {
+        val caseDocumentId = UUID.randomUUID()
+        val permissions = listOf(
+            Permission(
+                UUID.randomUUID(),
+                ResourcePermission::class.java,
+                ResourcePermissionActionProvider.CREATE,
+                ConditionContainer(),
+                roleTest
+            )
+        )
+        permissionRepository.deleteByRoleKeyIn(listOf("ROLE_TEST"))
+        permissionRepository.saveAllAndFlush(permissions)
+
+        val request = ObjectInformatieObjectRequest(
+            informatieobject = URI("${documentenApiPlugin.url}enkelvoudiginformatieobjecten/objectId"),
+            `object` = URI("http://localhost:56273/documenten/zaken/objectId"),
+            objectType = "zaak",
+        )
+
+        val result = documentenApiClient.linkDocument(
+            documentenApiPlugin.authenticationPluginConfiguration,
+            documentenApiPlugin.url,
+            caseDocumentId,
+            request
+        )
+
+        assertNotNull(result)
+        assertNotNull(result.url)
+        assertEquals("zaak", result.objectType)
+    }
+
+    @Test
+    @WithMockUser(authorities = ["ROLE_TEST"])
+    fun `should not allow linking a document when missing create permission`() {
+        val caseDocumentId = UUID.randomUUID()
+        permissionRepository.deleteByRoleKeyIn(listOf("ROLE_TEST"))
+
+        val request = ObjectInformatieObjectRequest(
+            informatieobject = URI("${documentenApiPlugin.url}enkelvoudiginformatieobjecten/objectId"),
+            `object` = URI("http://localhost:56273/documenten/zaken/objectId"),
+            objectType = "zaak",
+        )
+
+        assertThrows<AccessDeniedException> {
+            documentenApiClient.linkDocument(
+                documentenApiPlugin.authenticationPluginConfiguration,
+                documentenApiPlugin.url,
+                caseDocumentId,
+                request
+            )
+        }
+    }
+
+    @Test
+    @WithMockUser(authorities = ["ROLE_TEST"])
+    fun `should allow deleting an objectinformatieobject link`() {
+        val caseDocumentId = UUID.randomUUID()
+        val permissions = listOf(
+            Permission(
+                UUID.randomUUID(),
+                ResourcePermission::class.java,
+                ResourcePermissionActionProvider.DELETE,
+                ConditionContainer(),
+                roleTest
+            )
+        )
+        permissionRepository.deleteByRoleKeyIn(listOf("ROLE_TEST"))
+        permissionRepository.saveAllAndFlush(permissions)
+
+        documentenApiClient.deleteDocumentLink(
+            documentenApiPlugin.authenticationPluginConfiguration,
+            documentenApiPlugin.url,
+            caseDocumentId,
+            URI(documentenApiPlugin.url.toString() + "objectinformatieobjecten/objectLinkId"),
+        )
+        // No exception thrown means success
+    }
+
+    @Test
+    @WithMockUser(authorities = ["ROLE_TEST"])
+    fun `should not allow deleting an objectinformatieobject link when missing delete permission`() {
+        val caseDocumentId = UUID.randomUUID()
+        permissionRepository.deleteByRoleKeyIn(listOf("ROLE_TEST"))
+
+        assertThrows<AccessDeniedException> {
+            documentenApiClient.deleteDocumentLink(
+                documentenApiPlugin.authenticationPluginConfiguration,
+                documentenApiPlugin.url,
+                caseDocumentId,
+                URI(documentenApiPlugin.url.toString() + "objectinformatieobjecten/objectLinkId"),
+            )
+        }
+    }
+
     private fun setupMockDocumentenApiServer() {
         val dispatcher = object : Dispatcher() {
             override fun dispatch(request: RecordedRequest): MockResponse {
@@ -308,11 +470,25 @@ internal class DocumentenApiClientIT @Autowired constructor(
                     "GET /documenten/enkelvoudiginformatieobjecten/objectId" -> handleDocumentRequest()
                     "PATCH /documenten/enkelvoudiginformatieobjecten/objectId" -> handleDocumentRequest()
                     "DELETE /documenten/enkelvoudiginformatieobjecten/objectId" -> MockResponse().setResponseCode(204)
+                    "POST /documenten/objectinformatieobjecten" -> handleCreateObjectInformatieObjectRequest()
+                    "DELETE /documenten/objectinformatieobjecten/objectLinkId" -> MockResponse().setResponseCode(204)
                     else -> MockResponse().setResponseCode(404)
                 }
             }
         }
         server.dispatcher = dispatcher
+    }
+
+    private fun handleCreateObjectInformatieObjectRequest(): MockResponse {
+        val body = """
+            {
+              "url": "${server.url("/")}objectinformatieobjecten/new-link-id",
+              "informatieobject": "${server.url("/")}enkelvoudiginformatieobjecten/objectId",
+              "object": "http://localhost:56273/documenten/zaken/objectId",
+              "objectType": "zaak"
+            }
+        """.trimIndent()
+        return mockResponse(body).setResponseCode(201)
     }
 
     private fun handleCreateDocumentRequest(): MockResponse {
