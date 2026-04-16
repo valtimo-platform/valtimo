@@ -234,7 +234,8 @@ export class DecisionModelerComponent
         switchMap(([file, context]) => {
           if (context === 'independent') {
             return this.decisionService.deployDmn(file);
-          } else if (context === 'buildingBlock') {
+          }
+          if (context === 'buildingBlock') {
             return this.buildingBlockManagementRouteParams$.pipe(
               switchMap(params =>
                 this.decisionService.deployBuildingBlockDecisionDefinition(
@@ -244,17 +245,16 @@ export class DecisionModelerComponent
                 )
               )
             );
-          } else {
-            return this.caseManagementRouteParams$.pipe(
-              switchMap(params =>
-                this.decisionService.deployCaseDecisionDefinition(
-                  params?.caseDefinitionKey ?? '',
-                  params?.caseDefinitionVersionTag ?? '',
-                  file
-                )
-              )
-            );
           }
+          return this.caseManagementRouteParams$.pipe(
+            switchMap(params =>
+              this.decisionService.deployCaseDecisionDefinition(
+                params?.caseDefinitionKey ?? '',
+                params?.caseDefinitionVersionTag ?? '',
+                file
+              )
+            )
+          );
         }),
         tap((res: {identifier: string}) => {
           this.switchVersion(res.identifier);

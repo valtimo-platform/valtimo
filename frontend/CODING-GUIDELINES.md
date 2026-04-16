@@ -394,9 +394,7 @@ export class MyPageService implements OnDestroy {
   constructor(private readonly myApiService: MyApiService) {}
 
   public loadItems(): void {
-    this._subscriptions.add(
-      this.myApiService.getItems().subscribe(items => this._items$.next(items))
-    );
+    this.myApiService.getItems().subscribe(items => this._items$.next(items));
   }
 
   public showEditModal(item: Item): void {

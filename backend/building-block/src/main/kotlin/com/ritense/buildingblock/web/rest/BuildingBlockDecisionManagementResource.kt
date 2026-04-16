@@ -79,8 +79,9 @@ class BuildingBlockDecisionManagementResource(
         val buildingBlockDefinitionId = BuildingBlockDefinitionId.of(key, versionTag)
         val fileName = dmn.originalFilename
             ?: return ResponseEntity.badRequest().body("File name is required.")
+        val normalizedFileName = fileName.substringAfterLast('/').substringAfterLast('\\')
 
-        if (!fileName.endsWith(".dmn")) {
+        if (!normalizedFileName.endsWith(".dmn")) {
             return ResponseEntity.badRequest().body("Invalid file name. Must have '.dmn' suffix.")
         }
 
@@ -89,7 +90,7 @@ class BuildingBlockDecisionManagementResource(
                 runWithoutAuthorization {
                     operatonProcessService.deploy(
                         buildingBlockDefinitionId,
-                        fileName,
+                        normalizedFileName,
                         ByteArrayInputStream(dmn.bytes),
                         true,
                         false

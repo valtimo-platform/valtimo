@@ -96,7 +96,7 @@ const routes: Routes = [
     component: DecisionModelerComponent,
     canActivate: [AuthGuardService],
     data: {
-      title: 'Decision table',
+      title: 'Edit decision table',
       roles: [ROLE_ADMIN],
       customPageTitle: true,
       context: 'buildingBlock',

@@ -80,7 +80,8 @@ export class DecisionListComponent {
             )
           )
         );
-      } else if (context === 'buildingBlock') {
+      }
+      if (context === 'buildingBlock') {
         return this.buildingBlockManagementRouteParams$.pipe(
           switchMap(params =>
             this.decisionService.listBuildingBlockDecisionDefinitions(
@@ -89,9 +90,8 @@ export class DecisionListComponent {
             )
           )
         );
-      } else {
-        return this.decisionService.getDecisions();
       }
+      return this.decisionService.getDecisions();
     }),
     map(filterLatestDecisionVersions),
     tap(() => {
