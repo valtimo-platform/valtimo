@@ -18,7 +18,7 @@
   startable from the **Start** button on the case detail page. The tab lists both processes linked to the case definition
   and ad-hoc building blocks, and allows their visibility and ordering to be managed from a single place.
 
-  For more information, see [Building blocks](../../../features/building-blocks/README.md).
+  For more information, see [Actions](../../../features/case/actions.md).
 
 * **Publish notification plugin action for Notificaties API**
 
