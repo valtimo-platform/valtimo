@@ -468,11 +468,14 @@ public formGroup: FormGroup = this.fb.group({
 
 ### HTTP observables
 
-HTTP observables (`httpClient.get()`, `.post()`, `.put()`, `.delete()`) complete automatically
-after emitting a single value. This means:
+Default HTTP body observables (`httpClient.get/post/put/delete` with `observe: 'body'`) complete
+automatically after a single emission. This means:
 
 - **Do not** add HTTP subscriptions to a `Subscription` container — they clean up on their own.
 - **Do not** wrap them in `take(1)` — they already complete after one emission.
+
+For multi-emission/event-based HTTP flows (e.g. `observe: 'events'`, progress events), manage
+subscriptions explicitly when cancellation/lifecycle control is required.
 
 Only add a subscription to the `_subscriptions` container when the source is a long-lived
 observable (e.g. `BehaviorSubject`, `combineLatest`, route params, store selectors) that does

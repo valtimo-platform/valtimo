@@ -20,15 +20,36 @@ import com.ritense.valtimo.contract.buildingblock.BuildingBlockDefinitionChecker
 import com.ritense.valtimo.contract.buildingblock.BuildingBlockDefinitionId
 import com.ritense.valtimo.contract.process.ProcessConstants.OPERATON_BUILDING_BLOCK_DEFINITION_VERSION_TAG_PREFIX
 import com.ritense.valtimo.service.OperatonByteArrayService
+import com.ritense.valtimo.service.OperatonProcessService
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.operaton.bpm.engine.RepositoryService
 import org.operaton.bpm.engine.repository.DecisionDefinition
+import org.operaton.bpm.engine.repository.DeploymentWithDefinitions
+import java.io.ByteArrayInputStream
 
 class BuildingBlockDecisionService(
     private val repositoryService: RepositoryService,
     private val buildingBlockDefinitionChecker: BuildingBlockDefinitionChecker,
     private val operatonByteArrayService: OperatonByteArrayService,
+    private val operatonProcessService: OperatonProcessService,
 ) {
+
+    fun deployDecisionDefinition(
+        buildingBlockDefinitionId: BuildingBlockDefinitionId,
+        fileName: String,
+        fileInput: ByteArrayInputStream
+    ): DeploymentWithDefinitions {
+        logger.info { "Deploying decision definition $fileName for building block $buildingBlockDefinitionId" }
+        buildingBlockDefinitionChecker.assertCanUpdateBuildingBlockDefinition(buildingBlockDefinitionId)
+
+        return operatonProcessService.deploy(
+            buildingBlockDefinitionId,
+            fileName,
+            fileInput,
+            true,
+            false
+        )
+    }
 
     fun getDecisionDefinitions(buildingBlockDefinitionId: BuildingBlockDefinitionId): List<DecisionDefinition> {
         return repositoryService
