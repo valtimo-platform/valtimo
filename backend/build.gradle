@@ -159,17 +159,17 @@ allprojects {
 
                 // CVE overrides: Spring Boot 3.5.13 ships with vulnerable versions of these
                 // dependencies. Override until a new Spring Boot patch includes the fixes.
-                dependency "org.apache.tomcat.embed:tomcat-embed-core:10.1.54"
-                dependency "org.apache.tomcat.embed:tomcat-embed-el:10.1.54"
-                dependency "org.apache.tomcat.embed:tomcat-embed-websocket:10.1.54"
-                dependency "org.apache.logging.log4j:log4j-api:2.25.4"
-                dependency "org.apache.logging.log4j:log4j-core:2.25.4"
-                dependency "org.apache.logging.log4j:log4j-jul:2.25.4"
-                dependency "org.apache.logging.log4j:log4j-slf4j2-impl:2.25.4"
+                dependency "org.apache.tomcat.embed:tomcat-embed-core:${apacheTomcatEmbedVersion}"
+                dependency "org.apache.tomcat.embed:tomcat-embed-el:${apacheTomcatEmbedVersion}"
+                dependency "org.apache.tomcat.embed:tomcat-embed-websocket:${apacheTomcatEmbedVersion}"
+                dependency "org.apache.logging.log4j:log4j-api:${log4jVersion}"
+                dependency "org.apache.logging.log4j:log4j-core:${log4jVersion}"
+                dependency "org.apache.logging.log4j:log4j-jul:${log4jVersion}"
+                dependency "org.apache.logging.log4j:log4j-slf4j2-impl:${log4jVersion}"
 
                 // CVE override: httpclient 4.5.3 pulled in transitively by lutung has a known
                 // vulnerability. Force upgrade to the latest 4.5.x release.
-                dependency "org.apache.httpcomponents:httpclient:4.5.14"
+                dependency "org.apache.httpcomponents:httpclient:${apacheHttpclientVersion}"
             }
         }
 
