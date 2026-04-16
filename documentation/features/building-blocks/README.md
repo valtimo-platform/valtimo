@@ -200,7 +200,7 @@ config/building-block/<key>/<version>/
 ├── bpmn/
 │   └── <process-key>.bpmn
 ├── dmn/
-│   └── <decision-name>.dmn  (optional)
+│   └── <decision-key>.dmn  (optional)
 ├── form/
 │   └── <form-name>.form.json
 ├── form-flow/
