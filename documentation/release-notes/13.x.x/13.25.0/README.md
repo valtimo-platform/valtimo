@@ -14,4 +14,4 @@
 
 ## Bugfixes
 
-* New bugfix.
+* Fixed Documenten API document preview not working for non-admin users.
