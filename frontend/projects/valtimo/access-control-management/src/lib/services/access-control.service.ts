@@ -16,7 +16,7 @@
 
 import {HttpClient} from '@angular/common/http';
 import {Injectable} from '@angular/core';
-import {ConfigService} from '@valtimo/shared';
+import {ConfigService, PbacRegistryDto} from '@valtimo/shared';
 import {BehaviorSubject, catchError, Observable, of, switchMap, take, tap} from 'rxjs';
 import {DeleteRolesRequest, Role} from '../models';
 
@@ -105,5 +105,9 @@ export class AccessControlService {
 
   public updateRole(roleKey: string, request: Role): Observable<object> {
     return this.http.put<object>(`${this.valtimoEndpointUri}v1/roles/${roleKey}`, request);
+  }
+
+  public getPbacRegistry(): Observable<PbacRegistryDto> {
+    return this.http.get<PbacRegistryDto>(`${this.valtimoEndpointUri}v1/pbac/registry`);
   }
 }

@@ -58,6 +58,7 @@ export class AccessControlEditorComponent implements OnInit, OnDestroy {
   public ngOnInit(): void {
     this.getPermissions();
     this.openRoleKeySubscription();
+    this.loadPbacRegistry();
   }
 
   public ngOnDestroy(): void {
@@ -216,6 +217,12 @@ export class AccessControlEditorComponent implements OnInit, OnDestroy {
 
   private enableEditor(): void {
     this.editorDisabled$.next(false);
+  }
+
+  private loadPbacRegistry(): void {
+    this.accessControlService.getPbacRegistry().subscribe(registry => {
+      console.log('[PBAC Registry]', registry);
+    });
   }
 
   private showSuccessMessage(roleKey: string): void {

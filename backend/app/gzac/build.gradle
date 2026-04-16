@@ -106,9 +106,9 @@ dockerCompose.isRequiredBy(bootRunWithDocker)
 
 // generate typescript types for frontend
 
-def generatedDir = rootProject.file("../frontend/projects/valtimo/shared/src/lib/generated")
-def outDtsFile = rootProject.file("../frontend/projects/valtimo/shared/src/lib/generated/generated-backend-types.d.ts")
-def outTsFile = rootProject.file("../frontend/projects/valtimo/shared/src/lib/generated/generated-backend-types.ts")
+def generatedDir = rootProject.file("frontend/projects/valtimo/shared/src/lib/generated")
+def outDtsFile = rootProject.file("frontend/projects/valtimo/shared/src/lib/generated/generated-backend-types.d.ts")
+def outTsFile = rootProject.file("frontend/projects/valtimo/shared/src/lib/generated/generated-backend-types.ts")
 
 tasks.named("generateTypeScript").configure {
     dependsOn tasks.named("classes")

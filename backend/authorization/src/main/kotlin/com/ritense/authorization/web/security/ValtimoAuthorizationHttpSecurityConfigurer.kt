@@ -37,6 +37,7 @@ class ValtimoAuthorizationHttpSecurityConfigurer : HttpSecurityConfigurer {
                     .requestMatchers(antMatcher(GET, "$ROLES_URL/{roleKey}/permissions")).hasAuthority(ADMIN)
                     .requestMatchers(antMatcher(PUT, "$ROLES_URL/{roleKey}/permissions")).hasAuthority(ADMIN)
                     .requestMatchers(antMatcher(POST, "/api/management/v1/permissions/search")).hasAuthority(ADMIN)
+                    .requestMatchers(antMatcher(GET, PBAC_REGISTRY_URL)).hasAuthority(ADMIN)
                     .requestMatchers(antMatcher(POST, "/api/v1/permissions")).authenticated()
             }
 
@@ -47,5 +48,6 @@ class ValtimoAuthorizationHttpSecurityConfigurer : HttpSecurityConfigurer {
 
     companion object {
         private const val ROLES_URL = "/api/management/v1/roles"
+        private const val PBAC_REGISTRY_URL = "/api/management/v1/pbac/registry"
     }
 }

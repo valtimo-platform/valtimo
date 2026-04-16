@@ -1,6 +1,49 @@
 /* tslint:disable */
 /* eslint-disable */
-// Generated using typescript-generator version 3.2.1263 on 2026-03-16 10:02:12.
+// Generated using typescript-generator version 3.2.1263 on 2026-04-16 16:24:17.
+
+export interface PbacConditionFieldDto {
+    name: string;
+    type: string;
+}
+
+export interface PbacConditionTypeDto {
+    key: string;
+    label: string;
+}
+
+export interface PbacEntityMapperDto {
+    fromResourceType: string;
+    toResourceType: string;
+}
+
+export interface PbacFieldAliasDto {
+    alias: string;
+    field: string;
+}
+
+export interface PbacOperatorDto {
+    key: string;
+    label: string;
+}
+
+export interface PbacRegistryDto {
+    resources: PbacResourceDto[];
+    operators: PbacOperatorDto[];
+    conditionTypes: PbacConditionTypeDto[];
+    entityMappers: PbacEntityMapperDto[];
+    roles: string[];
+}
+
+export interface PbacResourceDto {
+    resourceType: string;
+    shortName: string;
+    actions: string[];
+    fields: PbacConditionFieldDto[];
+    fieldAliases: PbacFieldAliasDto[];
+    hasSpecificationFactory: boolean;
+    containerTargets: string[];
+}
 
 export interface BuildingBlockDefinitionArtworkDto {
     key: string;
@@ -46,6 +89,17 @@ export interface BuildingBlockVersionDto {
     final: boolean;
 }
 
+export interface CaseDefinitionBuildingBlockLinkDto {
+    id: string;
+    caseDefinitionKey: string;
+    caseDefinitionVersionTag: string;
+    buildingBlockDefinitionKey: string;
+    buildingBlockDefinitionVersionTag: string;
+    inputMappings: BuildingBlockInputMapping[];
+    outputMappings: BuildingBlockOutputMapping[];
+    pluginConfigurationMappings: { [index: string]: string };
+}
+
 export interface CreateBuildingBlockDefinitionArtworkDto {
     imageBase64: string;
 }
@@ -67,6 +121,14 @@ export interface CreateBuildingBlockFormDefinitionDto {
     readOnly: boolean | null;
 }
 
+export interface CreateCaseDefinitionBuildingBlockLinkDto {
+    buildingBlockDefinitionKey: string;
+    buildingBlockDefinitionVersionTag: string;
+    inputMappings: BuildingBlockInputMapping[];
+    outputMappings: BuildingBlockOutputMapping[];
+    pluginConfigurationMappings: { [index: string]: string };
+}
+
 export interface UpdateBuildingBlockDefinitionArtworkDto {
     imageBase64: string;
 }
@@ -81,8 +143,22 @@ export interface UpdateBuildingBlockFormDefinitionDto {
     formDefinition: string;
 }
 
+export interface UpdateCaseDefinitionBuildingBlockLinkDto {
+    inputMappings: BuildingBlockInputMapping[];
+    outputMappings: BuildingBlockOutputMapping[];
+    pluginConfigurationMappings: { [index: string]: string };
+}
+
 export interface CaseDefinitionCheckResponse {
     canUpdateGlobalConfiguration: boolean;
+}
+
+export interface CaseDefinitionConfigurationIssueDto {
+    id: string;
+    issueType: string;
+    resolved: boolean;
+    createdAt: DateAsString;
+    resolvedAt: DateAsString | null;
 }
 
 export interface CaseDefinitionDraftCreateRequest {
@@ -93,6 +169,13 @@ export interface CaseDefinitionDraftCreateRequest {
     basedOnCaseDefinitionVersion: string | null;
     basedOnCaseDefinitionId: CaseDefinitionId | null;
     caseDefinitionId: CaseDefinitionId;
+}
+
+export interface CaseDefinitionImportPreviewResponse {
+    key: string;
+    name: string;
+    versionTag: string;
+    final: boolean;
 }
 
 export interface CaseDefinitionImportResponse {
@@ -120,6 +203,10 @@ export interface CaseDefinitionResponseDto {
     externalStartFormUrl: string | null;
     externalStartFormDescription: string | null;
     conflictingVersions: string | null;
+    hasConfigurationIssues: boolean;
+    originalKey: string | null;
+    originalName: string | null;
+    originalVersionTag: string | null;
 }
 
 export interface CaseDefinitionSettingsResponseDto {
@@ -200,8 +287,37 @@ export interface CaseVersionDto {
     final: boolean;
 }
 
+export interface CreateStartableItemRequest {
+    type: StartableItemType;
+    properties: any;
+}
+
 export interface HiddenCaseListColumnDto {
     columnKey: string;
+}
+
+export interface ManagementStartableItemDto {
+    type: StartableItemType;
+    name: string | null;
+    key: string;
+    versionTag: string | null;
+    processDefinitionId: string | null;
+    sortOrder: number | null;
+}
+
+export interface StartableItemDto {
+    type: StartableItemType;
+    name: string | null;
+    key: string;
+    versionTag: string | null;
+    processDefinitionId: string | null;
+}
+
+export interface StartableItemOrderEntry {
+    key: string;
+    type: StartableItemType;
+    versionTag: string | null;
+    sortOrder: number;
 }
 
 export interface TaskListColumnDto {
@@ -212,6 +328,15 @@ export interface TaskListColumnDto {
     sortable: boolean;
     defaultSort: ColumnDefaultSort | null;
     order: number | null;
+}
+
+export interface UpdateStartableItemOrderRequest {
+    items: StartableItemOrderEntry[];
+}
+
+export interface UpdateStartableItemRequest {
+    type: StartableItemType;
+    properties: any;
 }
 
 export interface AdminWidgetConfigurationResponseDto {
@@ -688,23 +813,23 @@ export interface ProcessLinkActivityResultWithTask {
 }
 
 export interface ProcessLinkCreateRequestDto {
-    activityId: string;
-    processLinkType: string;
     processDefinitionId: string;
     activityType: ActivityTypeWithEventName;
+    processLinkType: string;
+    activityId: string;
 }
 
 export interface ProcessLinkExportResponseDto {
-    activityId: string;
-    processLinkType: string;
     activityType: ActivityTypeWithEventName;
+    processLinkType: string;
+    activityId: string;
 }
 
 export interface ProcessLinkResponseDto {
-    activityId: string;
-    processLinkType: string;
     processDefinitionId: string;
     activityType: ActivityTypeWithEventName;
+    processLinkType: string;
+    activityId: string;
     id: string;
 }
 
@@ -773,6 +898,7 @@ export interface TeamUserResponseDto {
 
 export interface BatchAssignTaskDTO {
     assignee: string;
+    assignedTeamKey: string;
     tasksIds: string[];
 }
 
@@ -894,17 +1020,32 @@ export interface TaskCompletionDTO {
     filesToDelete: string[];
 }
 
+export interface UserTeamDto {
+    key: string;
+}
+
 export interface WidgetDto {
     type: string;
-    color: WidgetColor | null;
-    icon: string | null;
-    width: number;
-    compact: boolean | null;
-    title: string;
     highContrast: boolean;
     displayConditions: Condition<any>[] | null;
+    icon: string | null;
+    color: WidgetColor | null;
+    compact: boolean | null;
+    width: number;
+    title: string;
     key: string;
     actions: WidgetAction[];
+}
+
+export interface BuildingBlockInputMapping {
+    source: string;
+    target: string;
+}
+
+export interface BuildingBlockOutputMapping {
+    source: string;
+    target: string;
+    syncTiming: BuildingBlockSyncTiming;
 }
 
 export interface CaseDefinitionId extends AbstractId<CaseDefinitionId>, BlueprintId {
@@ -924,10 +1065,10 @@ export interface URI extends Comparable<URI>, Serializable {
 }
 
 export interface RelatedFile {
-    createdOn: DateAsString;
     createdBy: string;
-    fileId: string;
     sizeInBytes: number;
+    createdOn: DateAsString;
+    fileId: string;
     fileName: string;
 }
 
@@ -944,9 +1085,9 @@ export interface ComponentError {
 
 export interface ProcessLinkDeployDto {
     processLinkType: "url";
-    activityId: string;
     processDefinitionId: string;
     activityType: ActivityTypeWithEventName;
+    activityId: string;
 }
 
 export interface ProcessDefinitionCaseDefinition {
@@ -980,6 +1121,8 @@ export interface TaskInstanceWithIdentityLink {
     caseDefinitionId: string | null;
     suspended: boolean;
     tenantId: string | null;
+    assignedTeam: TeamDto | null;
+    valtimoAssignee: AssigneeDto | null;
     external: boolean;
     processDefinitionKey: string;
     identityLinks: OperatonIdentityLinkDto[];
@@ -1017,12 +1160,14 @@ export interface OperatonTaskDto {
     caseDefinitionId: string | null;
     suspended: boolean;
     tenantId: string | null;
+    assignedTeam: TeamDto | null;
+    valtimoAssignee: AssigneeDto | null;
 }
 
 export interface FormField {
+    validationConstraints: FormFieldValidationConstraint[];
     label: string;
     businessKey: boolean;
-    validationConstraints: FormFieldValidationConstraint[];
     value: TypedValue;
     typeName: string;
     properties: { [index: string]: string };
@@ -1052,26 +1197,26 @@ export interface ProcessDefinitionDto {
 }
 
 export interface HistoricActivityInstance {
-    startTime: DateAsString;
-    endTime: DateAsString;
-    taskId: string;
-    activityId: string;
     processDefinitionId: string;
     activityType: string;
-    assignee: string;
-    tenantId: string;
     processDefinitionKey: string;
     processInstanceId: string;
-    executionId: string;
-    canceled: boolean;
-    removalTime: DateAsString;
+    activityName: string;
+    durationInMillis: number;
+    completeScope: boolean;
     rootProcessInstanceId: string;
     parentActivityInstanceId: string;
     calledProcessInstanceId: string;
     calledCaseInstanceId: string;
-    activityName: string;
-    durationInMillis: number;
-    completeScope: boolean;
+    startTime: DateAsString;
+    endTime: DateAsString;
+    taskId: string;
+    activityId: string;
+    assignee: string;
+    tenantId: string;
+    executionId: string;
+    canceled: boolean;
+    removalTime: DateAsString;
     id: string;
 }
 
@@ -1100,8 +1245,8 @@ export interface Semver extends Comparable<Semver> {
 }
 
 export interface BlueprintId {
-    idKey: string;
     tagPrefix: string;
+    idKey: string;
 }
 
 export interface Serializable {
@@ -1125,6 +1270,16 @@ export interface ChoiceField extends AbstractAuditingEntity, Serializable {
 }
 
 export interface AbstractAuditingEntity {
+}
+
+export interface TeamDto extends Team {
+}
+
+export interface AssigneeDto {
+    username: string;
+    firstName: string | null;
+    lastName: string | null;
+    fullName: string;
 }
 
 export interface FormFieldValidationConstraint {
@@ -1185,6 +1340,11 @@ export interface ProcessDefinitionId {
     id: string;
 }
 
+export interface Team {
+    title: string;
+    key: string;
+}
+
 export interface ValueType extends Serializable {
     primitiveValueType: boolean;
     name: string;
@@ -1207,6 +1367,8 @@ export interface JsonNodeCreator {
 }
 
 export type DateAsString = string;
+
+export type StartableItemType = "PROCESS" | "BUILDING_BLOCK";
 
 export type ColumnDefaultSort = "ASC" | "DESC";
 
@@ -1231,6 +1393,8 @@ export type FieldType = "text_contains" | "single" | "range" | "single-select-dr
 export type SearchFieldMatchType = "like" | "exact";
 
 export type WidgetColor = "YELLOW" | "ORANGE" | "RED" | "BROWN" | "GREEN" | "TURQOISE" | "PURPLE" | "PERIWINKLE" | "BLUE" | "HIGHCONTRAST" | "WHITE";
+
+export type BuildingBlockSyncTiming = "CONTINUOUS" | "END";
 
 export type ExpressionOperator = "!=" | "==" | ">" | ">=" | "<" | "<=" | "list_contains" | "in";
 
