@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,6 +27,7 @@ import {
   DEFAULT_PAGINATION,
   DEFAULT_PAGINATOR_CONFIG,
   DocumentenApiMetadata,
+  OverflowMenuComponent,
   Pagination,
   SortState,
   ViewType,
@@ -34,9 +35,6 @@ import {
 import {CaseSettings, DocumentService} from '@valtimo/document';
 import {
   CAN_CREATE_RESOURCE_PERMISSION,
-  CAN_DELETE_RESOURCE_PERMISSION,
-  CAN_MODIFY_RESOURCE_PERMISSION,
-  CAN_VIEW_RESOURCE_PERMISSION,
   DownloadService,
   RESOURCE_PERMISSION_RESOURCE,
   UploadProviderService,
@@ -44,7 +42,6 @@ import {
 import {UserProviderService} from '@valtimo/security';
 import {ConfigService, Direction} from '@valtimo/shared';
 import {ButtonModule, IconModule, IconService} from 'carbon-components-angular';
-import {OverflowMenuComponent} from '@valtimo/components';
 import {
   BehaviorSubject,
   combineLatest,
@@ -54,7 +51,7 @@ import {
   Subject,
   Subscription,
 } from 'rxjs';
-import {catchError, filter, map, switchMap, take, tap, shareReplay} from 'rxjs/operators';
+import {catchError, filter, map, shareReplay, switchMap, take, tap} from 'rxjs/operators';
 import {
   COLUMN_VIEW_TYPES,
   ConfiguredColumn,
@@ -68,9 +65,12 @@ import {
   DocumentenApiUploadFieldDefaultValues,
   DocumentenApiUploadFields,
 } from '../../models/documenten-api-upload-field.model';
-import {DocumentenApiColumnService, DocumentenApiVersionService} from '../../services';
-import {DocumentenApiDocumentService} from '../../services';
-import {DocumentenApiPreviewService} from '../../services';
+import {
+  DocumentenApiColumnService,
+  DocumentenApiDocumentService,
+  DocumentenApiPreviewService,
+  DocumentenApiVersionService,
+} from '../../services';
 import {DocumentenApiFilterComponent} from '../documenten-api-filter/documenten-api-filter.component';
 import {DocumentenApiMetadataModalComponent} from '../documenten-api-metadata-modal/documenten-api-metadata-modal.component';
 import {DocumentenApiPreviewModalComponent} from '../documenten-api-preview-modal/documenten-api-preview-modal.component';
@@ -367,41 +367,19 @@ export class CaseDetailTabDocumentenApiDocumentsComponent implements OnInit, OnD
 
   public registerPermissionSubscriptions(): void {
     this._subscriptions.add(
-      combineLatest([this.relatedFiles$, this.documentId$])
-        .pipe(
-          switchMap(([files, documentId]) => {
-            const documentContext = {
-              resource: RESOURCE_PERMISSION_RESOURCE.jsonSchemaDocument,
-              identifier: documentId,
-            };
-
-            return combineLatest({
-              files: of(files),
-              canView: this.getPermissions(files, CAN_VIEW_RESOURCE_PERMISSION, documentContext),
-              canModify: this.getPermissions(
-                files,
-                CAN_MODIFY_RESOURCE_PERMISSION,
-                documentContext
-              ),
-              canDelete: this.getPermissions(
-                files,
-                CAN_DELETE_RESOURCE_PERMISSION,
-                documentContext
-              ),
-            });
-          })
-        )
-        .subscribe(permissions => {
-          const documentenApiFilePermissions: DocumentenApiFilePermissions = {};
-          permissions.files.forEach(file => {
-            documentenApiFilePermissions[file.fileId] = {
-              canView: permissions.canView[file.fileId],
-              canModify: permissions.canModify[file.fileId],
-              canDelete: permissions.canDelete[file.fileId],
+      combineLatest([this.relatedFiles$, this.enablePbacDocumentenApiDocuments$]).subscribe(
+        ([files, pbacEnabled]) => {
+          const permissions: DocumentenApiFilePermissions = {};
+          files.forEach(file => {
+            permissions[file.fileId] = {
+              canView: pbacEnabled ? file.canView !== false : true,
+              canModify: pbacEnabled ? file.canModify !== false : true,
+              canDelete: pbacEnabled ? file.canDelete !== false : true,
             };
           });
-          this.filePermissions$.next(documentenApiFilePermissions);
-        })
+          this.filePermissions$.next(permissions);
+        }
+      )
     );
   }
 
@@ -700,28 +678,6 @@ export class CaseDetailTabDocumentenApiDocumentsComponent implements OnInit, OnD
     }
 
     return null;
-  }
-
-  private getPermissions(
-    files: DocumentenApiRelatedFile[],
-    permissionRequest: PermissionRequest,
-    context?: any
-  ): Observable<{
-    [key: string]: boolean;
-  }> {
-    return combineLatest(
-      files.map(file =>
-        this.getPermission(
-          permissionRequest,
-          context || {
-            resource: RESOURCE_PERMISSION_RESOURCE.resourcePermission,
-            identifier: file.fileId,
-          }
-        ).pipe(map(available => ({[file.fileId]: available})))
-      )
-    ).pipe(
-      map(permissions => permissions.reduce((acc, permission) => ({...acc, ...permission}), {}))
-    );
   }
 
   private getPermission(permissionRequest: PermissionRequest, context?: any): Observable<boolean> {

@@ -1,31 +1,31 @@
 [
     {
-        "resourceType": "com.ritense.resource.authorization.ResourcePermission",
+        "resourceType": "com.ritense.documentenapi.authorization.ZgwDocument",
         "action": "view_list",
         "roleKey": "ROLE_ADMIN"
     },
     {
-        "resourceType": "com.ritense.resource.authorization.ResourcePermission",
+        "resourceType": "com.ritense.documentenapi.authorization.ZgwDocument",
         "action": "view",
         "roleKey": "ROLE_ADMIN"
     },
     {
-        "resourceType": "com.ritense.resource.authorization.ResourcePermission",
+        "resourceType": "com.ritense.documentenapi.authorization.ZgwDocument",
         "action": "create",
         "roleKey": "ROLE_ADMIN"
     },
     {
-        "resourceType": "com.ritense.resource.authorization.ResourcePermission",
+        "resourceType": "com.ritense.documentenapi.authorization.ZgwDocument",
         "action": "modify",
         "roleKey": "ROLE_ADMIN"
     },
     {
-        "resourceType": "com.ritense.resource.authorization.ResourcePermission",
+        "resourceType": "com.ritense.documentenapi.authorization.ZgwDocument",
         "action": "delete",
         "roleKey": "ROLE_ADMIN"
     },
     {
-        "resourceType": "com.ritense.resource.authorization.ResourcePermission",
+        "resourceType": "com.ritense.documentenapi.authorization.ZgwDocument",
         "action": "view_list",
         "roleKey": "ROLE_USER",
         "conditions": [
@@ -42,11 +42,23 @@
                         ]
                     }
                 ]
+            },
+            {
+                "type": "field",
+                "field": "status",
+                "operator": "==",
+                "value": "in_bewerking"
+            },
+            {
+                "type": "field",
+                "field": "informatieobjecttypeOmschrijving",
+                "operator": "==",
+                "value": "test"
             }
         ]
     },
     {
-        "resourceType": "com.ritense.resource.authorization.ResourcePermission",
+        "resourceType": "com.ritense.documentenapi.authorization.ZgwDocument",
         "action": "view",
         "roleKey": "ROLE_USER",
         "conditions": [
@@ -67,7 +79,7 @@
         ]
     },
     {
-        "resourceType": "com.ritense.resource.authorization.ResourcePermission",
+        "resourceType": "com.ritense.documentenapi.authorization.ZgwDocument",
         "action": "create",
         "roleKey": "ROLE_USER",
         "conditions": [
@@ -88,7 +100,7 @@
         ]
     },
     {
-        "resourceType": "com.ritense.resource.authorization.ResourcePermission",
+        "resourceType": "com.ritense.documentenapi.authorization.ZgwDocument",
         "action": "modify",
         "roleKey": "ROLE_USER",
         "conditions": [
@@ -109,7 +121,7 @@
         ]
     },
     {
-        "resourceType": "com.ritense.resource.authorization.ResourcePermission",
+        "resourceType": "com.ritense.documentenapi.authorization.ZgwDocument",
         "action": "delete",
         "roleKey": "ROLE_USER",
         "conditions": [
