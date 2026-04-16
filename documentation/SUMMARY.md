@@ -82,6 +82,7 @@
 * [🗃️ Cases](features/case/README.md)
   * [General](features/case/general.md)
   * [Processes](features/case/processes.md)
+  * [Actions](features/case/actions.md)
   * [Decision tables](features/case/decision-tables.md)
   * [Document](features/case/document-definition.md)
   * [Forms](features/case/forms/README.md)

@@ -25,7 +25,6 @@ import com.ritense.case.web.rest.dto.StartableItemDto
 import com.ritense.case.web.rest.dto.StartableItemType
 import com.ritense.document.domain.Document
 import com.ritense.document.domain.impl.JsonSchemaDocument
-import com.ritense.processdocument.domain.ProcessDefinitionCaseDefinition
 import com.ritense.processdocument.repository.ProcessDefinitionCaseDefinitionRepository
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import com.ritense.valtimo.contract.case_.CaseDefinitionId
@@ -74,13 +73,9 @@ class StartableProcessItemProvider(
         val processDefinitionKey = pdcd.processDefinitionKey
             ?: error("Process definition key is null")
 
-        processDefinitionCaseDefinitionRepository.save(
-            ProcessDefinitionCaseDefinition(
-                id = pdcd.id,
-                canInitializeDocument = pdcd.canInitializeDocument,
-                startableByUser = true
-            )
-        )
+        if (!pdcd.startableByUser) {
+            processDefinitionCaseDefinitionRepository.save(pdcd.copy(startableByUser = true))
+        }
 
         return StartableItemDto(
             type = StartableItemType.PROCESS,
@@ -91,20 +86,40 @@ class StartableProcessItemProvider(
         )
     }
 
-    override fun deleteItem(caseDefinitionId: CaseDefinitionId, itemKey: String, versionTag: String?) {
-        val pdcds = processDefinitionCaseDefinitionRepository
-            .findByIdCaseDefinitionId(caseDefinitionId)
-            .filter { it.processDefinitionKey == itemKey }
+    override fun updateItem(
+        caseDefinitionId: CaseDefinitionId,
+        itemKey: String,
+        versionTag: String?,
+        properties: JsonNode
+    ): StartableItemDto {
+        val processDefinitionId = properties.get("processDefinitionId")?.asText()
+            ?: throw IllegalArgumentException("processDefinitionId is required")
 
-        pdcds.forEach { pdcd ->
-            processDefinitionCaseDefinitionRepository.save(
-                ProcessDefinitionCaseDefinition(
-                    id = pdcd.id,
-                    canInitializeDocument = pdcd.canInitializeDocument,
-                    startableByUser = false
-                )
-            )
+        val pdcd = processDefinitionCaseDefinitionRepository
+            .findAllByIdCaseDefinitionIdAndIdProcessDefinitionIdId(caseDefinitionId, processDefinitionId)
+            .firstOrNull()
+            ?: throw NoSuchElementException("Process definition '$processDefinitionId' is not linked to case definition '$caseDefinitionId'")
+
+        if (!pdcd.startableByUser) {
+            processDefinitionCaseDefinitionRepository.save(pdcd.copy(startableByUser = true))
         }
+
+        return StartableItemDto(
+            type = StartableItemType.PROCESS,
+            name = pdcd.processDefinitionName,
+            key = itemKey,
+            versionTag = versionTag,
+            processDefinitionId = pdcd.id.processDefinitionId.id
+        )
+    }
+
+    override fun deleteItem(caseDefinitionId: CaseDefinitionId, itemKey: String, versionTag: String?) {
+        processDefinitionCaseDefinitionRepository
+            .findByIdCaseDefinitionId(caseDefinitionId)
+            .filter { it.processDefinitionKey == itemKey && it.startableByUser }
+            .forEach { pdcd ->
+                processDefinitionCaseDefinitionRepository.save(pdcd.copy(startableByUser = false))
+            }
     }
 
     private fun hasExecutionPermission(processDefinitionId: String, document: Document?): Boolean {

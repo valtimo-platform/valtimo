@@ -154,6 +154,27 @@ Use the `pv:` prefix to indicate a process variable in your mappings.
 * **Inputs**: `pv:customerName` maps the process variable `customerName` to a building block input field.
 * **Outputs**: A building block output field mapped to `pv:result` writes the value to the process variable `result`.
 
+## Start a building block ad-hoc from a case
+
+A building block that is linked directly to a case definition (see [Linking building blocks to a case](#linking-building-blocks-to-a-case))
+can be started ad-hoc from the case detail page, without being triggered by a call activity in a case process.
+
+1. Open a case that uses the case definition.
+2. Click the **Start** button.
+3. Select the building block from the list of available actions.
+4. Fill in the building block's start form and confirm.
+
+A new building block instance is created and linked to the case. The instance runs its main process, and any fields
+declared in the link's `outputMappings` are written back to the case document when the configured `syncTiming` fires
+(by default at the end of the instance).
+
+Running and completed building block instances are shown in the case's progress overview alongside the case processes.
+
+{% hint style="info" %}
+Ad-hoc start requires the building block's main process to have a start form process link on its `StartEvent`. See
+[Start form](#start-form) below.
+{% endhint %}
+
 ## Import and export building blocks
 
 Building blocks are automatically included in case definition exports. You can also export or import a building block
