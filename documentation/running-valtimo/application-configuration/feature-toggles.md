@@ -41,7 +41,7 @@ In the frontend, feature toggles can be configured under the `featureToggles` ke
   If enabled, users will see a new breadcrumb trail on top of every form flow. This allows a user to quickly navigate between the different steps of the form flow. See [this page](../../features/case/form-flow.md#bread-crumbs) for more information.
 *   **`enableObjectManagement`**
 
-    If enabled, a new menu item 'objects' will appear in the left sidebar menu. Enabled by default when not configured. This menu item can have one or more submenu items depending on the configuration. For more information [here](../../fundamentals/getting-started/modules/zgw/object-management.md)
+    If enabled, a new menu item 'objects' will appear in the left sidebar menu. Enabled by default when not configured. This menu item can have one or more submenu items depending on the configuration. For more information, see the [object management documentation](../../fundamentals/getting-started/modules/zgw/object-management.md)
 *   **`hideValtimoVersionsForNonAdmins`**
 
     If enabled, the Valtimo version information in the right sidebar will only be visible for admins and will be hidden for any other users.

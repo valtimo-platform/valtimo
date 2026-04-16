@@ -59,13 +59,13 @@ Every Valtimo implementation comes with a system process called 'Upload Document
 
 By default, the Upload Document process does not do anything, so it will not upload anything yet. The process needs to be configured first.
 
-Process links can be used to configure the Upload Document process. The first service task called 'Upload document' can be linked to a Documenten API plugin action called 'Save uploaded document'. Look [here](../../../plugins/configure-documenten-api-plugin.md) for more information.
+Process links can be used to configure the Upload Document process. The first service task called 'Upload document' can be linked to a Documenten API plugin action called 'Save uploaded document'. Look at the [Documenten API plugin configuration](../../../plugins/configure-documenten-api-plugin.md) for more information.
 
 ![Plugin action: Save uploaded document](../../../../.gitbook/assets/save-uploaded-document.png)
 
 Configuring the first service task of the Upload Document process is enough to let Valtimo users upload their documents to the Documenten API in Valtimo. But the documents will not be visible yet in case information within Valtimo. This is because the document has not been linked to any zaak.
 
-The second service task in the Upload Document process is called 'Link uploaded document to zaak'. The Zaken API plugin can take care of this action. Look [here](../../../plugins/configure-zaken-api-plugin.md) for more information.
+The second service task in the Upload Document process is called 'Link uploaded document to zaak'. The Zaken API plugin can take care of this action. Look at the [Zaken API plugin configuration](../../../plugins/configure-zaken-api-plugin.md) for more information.
 
 ![Plugin action: Link uploaded document to zaak](../../../../.gitbook/assets/link-uploaded-document-to-zaak.png)
 

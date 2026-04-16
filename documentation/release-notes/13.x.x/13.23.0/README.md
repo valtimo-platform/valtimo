@@ -30,7 +30,7 @@
   Teams are groups of users in Valtimo. They can be used to organize users and manage their access to resources.
   Teams can be used for case assignment and access control rules.
 
-  More information about teams can be found [here](../../../features/teams/README.md).
+  More information about teams can be found in the [teams documentation](../../../features/teams/README.md).
 
 * **Team cases tab in the case list**
 

@@ -2,7 +2,7 @@
 
 ## Access control
 
-Access to the case notes can be configured through access control. More information about access control can be found [here](../access-control/README.md).
+Access to the case notes can be configured through access control. More information about access control can be found in the [access control documentation](../access-control/README.md).
 
 ### Resources and actions
 

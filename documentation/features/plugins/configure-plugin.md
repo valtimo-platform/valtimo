@@ -2,11 +2,11 @@
 
 Plugins can be configured in the plugin menu in Valtimo. The plugin menu is found under the admin menu. Admin privileges are required to configure plugins.
 
-Instructions for using the configuration to link an action to a process task can be found [here](../process/process-link.md#creating-a-plugin-process-link).
+Instructions for using the configuration to link an action to a process task can be found in the [process link documentation](../process/process-link.md#creating-a-plugin-process-link).
 
 ## Setup
 
-Before plugins can be configured, both the backend and frontend dependencies are needed. See [here](../../fundamentals/getting-started/modules/core/plugin.md) for instructions on how to do this.
+Before plugins can be configured, both the backend and frontend dependencies are needed. See the [plugin module setup guide](../../fundamentals/getting-started/modules/core/plugin.md) for instructions on how to do this.
 
 ## Adding plugin configuration
 

@@ -8,7 +8,7 @@ The following steps are required to run the `SecuritySmokeIntegrationTest`:
 
 ### Step 1: include the dependency
 
-The test-utils-common dependency should be included in your project. More information can be found [here](../../fundamentals/getting-started/modules/core/test-utils-common.md).
+The test-utils-common dependency should be included in your project. More information can be found in the [test-utils-common module documentation](../../fundamentals/getting-started/modules/core/test-utils-common.md).
 
 ### Step 2: create the security smoke test
 

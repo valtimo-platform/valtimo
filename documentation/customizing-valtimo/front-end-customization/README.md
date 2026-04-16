@@ -38,7 +38,7 @@ Out-of-the-box, a custom accent color used by Carbon components is supported. [R
 
 ### Custom logo
 
-The logo, displayed at the top left of the application, can be customized. More information can be found [here](./#custom-logo).
+The logo, displayed at the top left of the application, can be customized. More information can be found in the [custom logo section](./#custom-logo).
 
 ### Additional customization
 

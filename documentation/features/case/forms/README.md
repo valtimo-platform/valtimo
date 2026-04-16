@@ -67,7 +67,7 @@ Here's an example of a translated Form.io definition:
 }
 ```
 
-This form.io definition uses the following translation keys (defined for English, Dutch and German):
+This Form.io definition uses the following translation keys (defined for English, Dutch and German):
 
 ```json
 "bezwaarStartForm": {

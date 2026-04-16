@@ -56,7 +56,7 @@ The exporter module provides export functionality for Valtimo. By default, Valti
 
 ### Form
 
-Forms can be used to complete user tasks in Valtimo with a visual interface where the user can validate an/or input data. These forms can be composed using [Form.IO](https://www.form.io/).
+Forms can be used to complete user tasks in Valtimo with a visual interface where the user can validate an/or input data. These forms can be composed using [Form.io](https://www.form.io/).
 
 Forms can be managed by using the provided endpoints, or loaded from a configuration file at application startup.
 
@@ -64,7 +64,7 @@ Forms can be managed by using the provided endpoints, or loaded from a configura
 
 Form flow allows users to create a sequence of forms, similar to a flow chart or a form wizard. A form flow definition contains the configuration for each step, what the subsequent steps are, and the conditions under which they can be reached. A form flow can be linked to a task, which consequently allows for more forms for the same task. Form flow supports forwards and backwards movement between steps without completing the task, reducing complexity in a BPMN model.
 
-For information on how to create form flow definitions, see [here](../../features/case/form-flow.md).
+For information on how to create form flow definitions, see the [form flow documentation](../../features/case/form-flow.md).
 
 ### Form flow Valtimo
 
@@ -118,7 +118,7 @@ The `outbox-rabbitmq` module adds support for publishing `outbox` messages to Ra
 
 Plugins are extensions on the Valtimo platform. These are often connections to external services, such as transactional email and document generation. Plugins can be configured without writing code, and actions can be attached to BPMN activities.
 
-Some plugins are provided by the platform, but developers can create their own plugins as well. A more in-depth description can be found [here](https://app.gitbook.com/s/bcArISKZtxWk4tKpZb9P/features/plugins/plugins/custom-plugin-definition).
+Some plugins are provided by the platform, but developers can create their own plugins as well. A more in-depth description can be found in the [custom plugin definition documentation](https://app.gitbook.com/s/bcArISKZtxWk4tKpZb9P/features/plugins/plugins/custom-plugin-definition).
 
 ### Process document
 
