@@ -18,6 +18,7 @@ import {APIRequestContext, expect, Page} from '@playwright/test';
 import * as ApiUtils from '../../utils/api.utils';
 import {endpoints} from '../../api/endpoints';
 import {ensureDraftVersionSelected} from '../../utils/version.utils';
+import {WIDGET_CONTENT_FIELDS_TEST_IDS} from '../../constants';
 
 export class CaseDetailsManagementHeaderPage {
   constructor(
@@ -129,22 +130,31 @@ export class CaseDetailsManagementHeaderPage {
   }
 
   async fillFieldContent(title: string, valuePath: string, displayType = 'Text') {
+    const modal = this.wizardModal;
+
     // Expand the first accordion item if collapsed
-    const accordionItem = this.wizardModal.locator('cds-accordion-item').first();
+    const accordionItem = modal.locator('cds-accordion-item').first();
     const isExpanded = await accordionItem.getAttribute('expanded');
     if (isExpanded === null || isExpanded === 'false') {
       await accordionItem.click();
     }
 
-    // Fill the field title
-    await this.page.getByRole('textbox', {name: 'Title'}).fill(title);
+    // 1. Select the display type FIRST.
+    //    Carbon's modal focus trap consumes the first click on the dropdown button,
+    //    so we click once to hand focus to the dropdown, then click again to open it.
+    const dropdownButton = modal.getByRole('button', {name: 'Display type'});
+    await dropdownButton.click();
+    await dropdownButton.click();
+    const listbox = this.page.getByLabel('Listbox');
+    await listbox.waitFor({state: 'visible'});
+    await listbox.getByText(displayType).click();
 
-    // Select the display type from the dropdown
-    await this.page.getByRole('button', {name: 'Display type'}).click();
-    await this.page.getByText(displayType, {exact: true}).click();
+    // 2. Fill the field title
+    await modal.getByTestId(WIDGET_CONTENT_FIELDS_TEST_IDS.fieldTitleInput).fill(title);
 
-    // Select the value path from the combobox
-    await this.page.getByRole('combobox', {name: 'Select a path'}).click();
+    // 3. Select the value path from the combobox
+    const valuePathSelector = modal.getByTestId(WIDGET_CONTENT_FIELDS_TEST_IDS.valuePathSelector);
+    await valuePathSelector.getByRole('combobox').click();
     await this.page.getByText(valuePath).click();
   }
 

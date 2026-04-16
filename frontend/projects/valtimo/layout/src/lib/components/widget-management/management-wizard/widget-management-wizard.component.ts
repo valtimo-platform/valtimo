@@ -32,6 +32,7 @@ import {
 import {toObservable} from '@angular/core/rxjs-interop';
 import {TranslateModule, TranslateService} from '@ngx-translate/core';
 import {CARBON_CONSTANTS, KeyGeneratorService} from '@valtimo/components';
+import {WIDGET_WIZARD_TEST_IDS} from '../../../constants';
 import {ButtonModule, ModalModule, ProgressIndicatorModule, Step} from 'carbon-components-angular';
 import {combineLatest, filter, map, Observable, Subscription, switchMap, take} from 'rxjs';
 import {
@@ -63,6 +64,7 @@ import {WIDGET_STEPS} from './steps';
   ],
 })
 export class WidgetManagementWizardComponent implements OnDestroy {
+  protected readonly testIds = WIDGET_WIZARD_TEST_IDS;
   @ViewChild('wizardStepRenderer', {read: ViewContainerRef})
   private readonly _vcr: ViewContainerRef;
 
