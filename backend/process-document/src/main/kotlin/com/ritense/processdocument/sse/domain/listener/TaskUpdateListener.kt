@@ -16,20 +16,31 @@
 
 package com.ritense.processdocument.sse.domain.listener
 
+import com.ritense.authorization.AuthorizationContext.Companion.runWithoutAuthorization
+import com.ritense.document.domain.Document
 import com.ritense.document.service.DocumentService
 import com.ritense.processdocument.domain.impl.OperatonProcessInstanceId
 import com.ritense.processdocument.service.ProcessDocumentService
 import com.ritense.processdocument.sse.event.TaskUpdateSseEvent
+import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import com.ritense.valtimo.contract.document.CaseDocumentResolver
+import com.ritense.valtimo.contract.event.TaskTeamAssignedEvent
+import com.ritense.valtimo.service.OperatonTaskService
 import com.ritense.valtimo.web.sse.service.SseSubscriptionService
+import io.github.oshai.kotlinlogging.KotlinLogging
 import org.operaton.bpm.spring.boot.starter.event.TaskEvent
+import org.springframework.stereotype.Component
+import org.springframework.transaction.event.TransactionPhase
 import org.springframework.transaction.event.TransactionalEventListener
 
+@Component
+@SkipComponentScan
 class TaskUpdateListener(
     private val sseSubscriptionService: SseSubscriptionService,
     private val processDocumentService: ProcessDocumentService,
     private val caseDocumentResolver: CaseDocumentResolver,
     private val documentService: DocumentService,
+    private val operatonTaskService: OperatonTaskService,
 ) {
 
     @TransactionalEventListener(
@@ -41,19 +52,38 @@ class TaskUpdateListener(
     )
     fun handle(taskEvent: TaskEvent) {
         val document = processDocumentService.getDocument(OperatonProcessInstanceId(taskEvent.processInstanceId), null)
-        val caseDocumentId = caseDocumentResolver.resolveCaseDocumentId(document.id().id)
-        val caseDocument = if (caseDocumentId == document.id().id) {
-            document
-        } else {
-            documentService[caseDocumentId.toString()]
-        }
-        sseSubscriptionService.notifySubscribers(
-            TaskUpdateSseEvent(
-                taskId = taskEvent.id,
-                documentId = caseDocument.id().toString(),
-                caseDefinitionKey = caseDocument.definitionId().name(),
-            )
-        )
+        notifyTaskUpdate(taskEvent.id, document)
     }
 
+    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT, fallbackExecution = true)
+    fun handleTeamAssignment(event: TaskTeamAssignedEvent): Unit = runWithoutAuthorization {
+        val task = operatonTaskService.findTaskById(event.taskId)
+        val processInstanceId = OperatonProcessInstanceId(task.getProcessInstanceId())
+        val document = processDocumentService.getDocument(processInstanceId, task)
+        notifyTaskUpdate(event.taskId, document)
+    }
+
+    private fun notifyTaskUpdate(taskId: String, document: Document) {
+        try {
+            val caseDocumentId = caseDocumentResolver.resolveCaseDocumentId(document.id().id)
+            val caseDocument = if (caseDocumentId == document.id().id) {
+                document
+            } else {
+                documentService[caseDocumentId.toString()]
+            }
+            sseSubscriptionService.notifySubscribers(
+                TaskUpdateSseEvent(
+                    taskId = taskId,
+                    documentId = caseDocument.id().toString(),
+                    caseDefinitionKey = caseDocument.definitionId().name(),
+                )
+            )
+        } catch (e: Exception) {
+            logger.error(e) { "Failed to send SSE notification for team assignment on task $taskId" }
+        }
+    }
+
+    companion object {
+        private val logger = KotlinLogging.logger {}
+    }
 }

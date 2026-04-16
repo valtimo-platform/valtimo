@@ -51,6 +51,7 @@ import com.ritense.processdocument.service.result.ModifyDocumentAndStartProcessR
 import com.ritense.processdocument.service.result.NewDocumentAndStartProcessResult;
 import com.ritense.processdocument.service.result.NewDocumentForRunningProcessResult;
 import com.ritense.processdocument.service.result.StartProcessForDocumentResult;
+import com.ritense.valtimo.contract.document.CaseDocumentResolver;
 import com.ritense.valtimo.contract.result.FunctionResult;
 import com.ritense.valtimo.contract.result.OperationError;
 import com.ritense.valtimo.operaton.domain.OperatonExecution;
@@ -82,18 +83,21 @@ public class OperatonProcessJsonSchemaDocumentService implements ProcessDocument
     private final OperatonProcessService operatonProcessService;
     private final ProcessDocumentAssociationService processDocumentAssociationService;
     private final AuthorizationService authorizationService;
+    private final CaseDocumentResolver caseDocumentResolver;
 
     public OperatonProcessJsonSchemaDocumentService(
         JsonSchemaDocumentService documentService, OperatonTaskService operatonTaskService,
         OperatonProcessService operatonProcessService,
         ProcessDocumentAssociationService processDocumentAssociationService,
-        AuthorizationService authorizationService
+        AuthorizationService authorizationService,
+        CaseDocumentResolver caseDocumentResolver
     ) {
         this.documentService = documentService;
         this.operatonTaskService = operatonTaskService;
         this.operatonProcessService = operatonProcessService;
         this.processDocumentAssociationService = processDocumentAssociationService;
         this.authorizationService = authorizationService;
+        this.caseDocumentResolver = caseDocumentResolver;
     }
 
     @Override
@@ -407,6 +411,29 @@ public class OperatonProcessJsonSchemaDocumentService implements ProcessDocument
         );
 
         return document;
+    }
+
+    public JsonSchemaDocumentId getCaseDocumentId(
+        ProcessInstanceId processInstanceId,
+        @Nullable VariableScope variableScope
+    ) {
+        var documentId = getDocumentId(processInstanceId, variableScope);
+        if (documentId == null) {
+            return null;
+        }
+        var caseDocumentId = caseDocumentResolver.resolveCaseDocumentId(documentId.getId());
+        return JsonSchemaDocumentId.existingId(caseDocumentId);
+    }
+
+    public JsonSchemaDocument getCaseDocument(
+        ProcessInstanceId processInstanceId,
+        @Nullable VariableScope variableScope
+    ) {
+        var caseDocumentId = getCaseDocumentId(processInstanceId, variableScope);
+        if (caseDocumentId == null) {
+            return null;
+        }
+        return documentService.getDocumentBy(caseDocumentId);
     }
 
     private String getBusinessKey(ProcessInstanceId processInstanceId, VariableScope variableScope) {

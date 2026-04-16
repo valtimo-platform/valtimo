@@ -60,6 +60,30 @@ class ProcessLinkAutoConfiguration {
     }
 
     @Bean
+    @ConditionalOnMissingBean(ProcessLinkSendTaskStartListener::class)
+    fun processLinkSendTaskStartListener(
+        pluginProcessLinkRepository: PluginProcessLinkRepository?,
+        pluginService: PluginService?
+    ): ProcessLinkSendTaskStartListener {
+        return ProcessLinkSendTaskStartListener(
+            pluginProcessLinkRepository!!,
+            pluginService!!
+        )
+    }
+
+    @Bean
+    @ConditionalOnMissingBean(ProcessLinkIntermediateThrowEventStartListener::class)
+    fun processLinkIntermediateThrowEventStartListener(
+        pluginProcessLinkRepository: PluginProcessLinkRepository?,
+        pluginService: PluginService?
+    ): ProcessLinkIntermediateThrowEventStartListener {
+        return ProcessLinkIntermediateThrowEventStartListener(
+            pluginProcessLinkRepository!!,
+            pluginService!!
+        )
+    }
+
+    @Bean
     @ConditionalOnMissingBean(ProcessLinkCallActivityStartListener::class)
     fun processLinkCallActivityStartListener(
         pluginProcessLinkRepository: PluginProcessLinkRepository?,

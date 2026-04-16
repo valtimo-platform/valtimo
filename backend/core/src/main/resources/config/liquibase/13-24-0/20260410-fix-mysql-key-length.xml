@@ -1,0 +1,123 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  ~ Copyright 2015-2026 Ritense BV, the Netherlands.
+  ~
+  ~ Licensed under EUPL, Version 1.2 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~ https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" basis,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<databaseChangeLog
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.6.xsd">
+
+    <!--
+        Shrink VARCHAR columns on case_definition_building_block_link and startable_item so that
+        composite keys fit within MySQL's 3072-byte index limit (utf8mb4, 4 bytes per char).
+
+        On existing PostgreSQL deployments the unique constraint / PK was already created by the
+        original changesets; the preconditions below ensure those are dropped first.
+    -->
+
+    <!-- ==================== case_definition_building_block_link ==================== -->
+
+    <!-- Drop unique constraint if it was already created (existing PostgreSQL deployments) -->
+    <changeSet author="Ritense" id="1">
+        <preConditions onFail="MARK_RAN">
+            <indexExists tableName="case_definition_building_block_link" indexName="uk_casedefbblink_case_bbdef"/>
+        </preConditions>
+        <dropUniqueConstraint tableName="case_definition_building_block_link"
+                              constraintName="uk_casedefbblink_case_bbdef"/>
+    </changeSet>
+
+    <changeSet author="Ritense" id="2">
+        <dropIndex tableName="case_definition_building_block_link"
+                   indexName="idx_casedefbblink_casedef"/>
+    </changeSet>
+
+    <changeSet author="Ritense" id="3">
+        <modifyDataType tableName="case_definition_building_block_link"
+                        columnName="case_definition_key"
+                        newDataType="VARCHAR(128)"/>
+        <modifyDataType tableName="case_definition_building_block_link"
+                        columnName="case_definition_version_tag"
+                        newDataType="VARCHAR(100)"/>
+    </changeSet>
+
+    <changeSet author="Ritense" id="4">
+        <addNotNullConstraint tableName="case_definition_building_block_link"
+                              columnName="case_definition_key"
+                              columnDataType="VARCHAR(128)"/>
+        <addNotNullConstraint tableName="case_definition_building_block_link"
+                              columnName="case_definition_version_tag"
+                              columnDataType="VARCHAR(100)"/>
+    </changeSet>
+
+    <changeSet author="Ritense" id="5">
+        <addUniqueConstraint tableName="case_definition_building_block_link"
+                             columnNames="case_definition_key, case_definition_version_tag, building_block_definition_key, building_block_definition_version_tag"
+                             constraintName="uk_casedefbblink_case_bbdef"/>
+    </changeSet>
+
+    <changeSet author="Ritense" id="6">
+        <createIndex indexName="idx_casedefbblink_casedef" tableName="case_definition_building_block_link">
+            <column name="case_definition_key"/>
+            <column name="case_definition_version_tag"/>
+        </createIndex>
+    </changeSet>
+
+    <!-- ==================== startable_item ==================== -->
+
+    <!-- Drop PK if it was already created (existing PostgreSQL deployments) -->
+    <changeSet author="Ritense" id="7">
+        <preConditions onFail="MARK_RAN">
+            <primaryKeyExists tableName="startable_item"/>
+        </preConditions>
+        <dropPrimaryKey tableName="startable_item"/>
+    </changeSet>
+
+    <changeSet author="Ritense" id="8">
+        <modifyDataType tableName="startable_item"
+                        columnName="case_definition_key"
+                        newDataType="VARCHAR(128)"/>
+        <modifyDataType tableName="startable_item"
+                        columnName="case_definition_version_tag"
+                        newDataType="VARCHAR(100)"/>
+        <modifyDataType tableName="startable_item"
+                        columnName="item_key"
+                        newDataType="VARCHAR(128)"/>
+        <modifyDataType tableName="startable_item"
+                        columnName="item_version_tag"
+                        newDataType="VARCHAR(100)"/>
+    </changeSet>
+
+    <changeSet author="Ritense" id="9">
+        <addNotNullConstraint tableName="startable_item"
+                              columnName="case_definition_key"
+                              columnDataType="VARCHAR(128)"/>
+        <addNotNullConstraint tableName="startable_item"
+                              columnName="case_definition_version_tag"
+                              columnDataType="VARCHAR(100)"/>
+        <addNotNullConstraint tableName="startable_item"
+                              columnName="item_key"
+                              columnDataType="VARCHAR(128)"/>
+        <addNotNullConstraint tableName="startable_item"
+                              columnName="item_version_tag"
+                              columnDataType="VARCHAR(100)"/>
+    </changeSet>
+
+    <changeSet author="Ritense" id="10">
+        <addPrimaryKey tableName="startable_item"
+                       columnNames="case_definition_key, case_definition_version_tag, item_key, item_type, item_version_tag"/>
+    </changeSet>
+
+</databaseChangeLog>
