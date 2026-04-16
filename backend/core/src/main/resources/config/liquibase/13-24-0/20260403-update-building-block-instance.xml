@@ -47,7 +47,7 @@
         </sql>
     </changeSet>
 
-    <changeSet author="Ritense" id="4">
+    <changeSet author="Ritense" id="4" dbms="postgresql">
         <sql>
             UPDATE building_block_instance bbi
             SET caller_process_definition_id = (
@@ -61,7 +61,21 @@
         </sql>
     </changeSet>
 
-    <changeSet author="Ritense" id="5">
+    <changeSet author="Ritense" id="4" dbms="mysql">
+        <sql>
+            UPDATE building_block_instance bbi
+            SET caller_process_definition_id = (
+                SELECT MAX(hv.PROC_DEF_ID_)
+                FROM ACT_HI_VARINST hv
+                WHERE hv.NAME_ = 'buildingBlockDocumentId'
+                  AND hv.TEXT_ = CAST(bbi.building_block_document_id AS CHAR(36))
+            )
+            WHERE bbi.caller_process_definition_id IS NULL
+              AND bbi.activity_id IS NOT NULL
+        </sql>
+    </changeSet>
+
+    <changeSet author="Ritense" id="5" dbms="postgresql">
         <sql>
             UPDATE building_block_instance bbi
             SET caller_process_definition_id = (
@@ -75,8 +89,22 @@
         </sql>
     </changeSet>
 
+    <changeSet author="Ritense" id="5" dbms="mysql">
+        <sql>
+            UPDATE building_block_instance bbi
+            SET caller_process_definition_id = (
+                SELECT MAX(rv.PROC_DEF_ID_)
+                FROM ACT_RU_VARIABLE rv
+                WHERE rv.NAME_ = 'buildingBlockDocumentId'
+                  AND rv.TEXT_ = CAST(bbi.building_block_document_id AS CHAR(36))
+            )
+            WHERE bbi.caller_process_definition_id IS NULL
+              AND bbi.activity_id IS NOT NULL
+        </sql>
+    </changeSet>
+
     <!-- Repeated to handle multi-level nesting (each pass resolves one additional level) -->
-    <changeSet author="Ritense" id="6">
+    <changeSet author="Ritense" id="6" dbms="postgresql">
         <sql>
             UPDATE building_block_instance bbi
             SET root_building_block_instance_id = (
@@ -104,6 +132,30 @@
                 FROM building_block_instance parent
                 WHERE parent.id = bbi.parent_building_block_instance_id
             )
+            WHERE bbi.parent_building_block_instance_id IS NOT NULL
+              AND bbi.root_building_block_instance_id IS NULL
+        </sql>
+    </changeSet>
+
+    <changeSet author="Ritense" id="6" dbms="mysql">
+        <sql>
+            UPDATE building_block_instance bbi
+            INNER JOIN building_block_instance parent ON parent.id = bbi.parent_building_block_instance_id
+            SET bbi.root_building_block_instance_id = COALESCE(parent.root_building_block_instance_id, parent.id)
+            WHERE bbi.parent_building_block_instance_id IS NOT NULL
+              AND bbi.root_building_block_instance_id IS NULL
+        </sql>
+        <sql>
+            UPDATE building_block_instance bbi
+            INNER JOIN building_block_instance parent ON parent.id = bbi.parent_building_block_instance_id
+            SET bbi.root_building_block_instance_id = COALESCE(parent.root_building_block_instance_id, parent.id)
+            WHERE bbi.parent_building_block_instance_id IS NOT NULL
+              AND bbi.root_building_block_instance_id IS NULL
+        </sql>
+        <sql>
+            UPDATE building_block_instance bbi
+            INNER JOIN building_block_instance parent ON parent.id = bbi.parent_building_block_instance_id
+            SET bbi.root_building_block_instance_id = COALESCE(parent.root_building_block_instance_id, parent.id)
             WHERE bbi.parent_building_block_instance_id IS NOT NULL
               AND bbi.root_building_block_instance_id IS NULL
         </sql>

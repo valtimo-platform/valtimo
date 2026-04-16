@@ -12,6 +12,14 @@
   after completing the last step. Previously, the user was returned to the case list without any indication of which case
   was created.
 
+* **Ad-hoc building blocks on a case**
+
+  Case definitions now have an **Actions** tab in case configuration where administrators manage the items that are
+  startable from the **Start** button on the case detail page. The tab lists both processes linked to the case definition
+  and ad-hoc building blocks, and allows their visibility and ordering to be managed from a single place.
+
+  For more information, see [Actions](../../../features/case/actions.md).
+
 * **Publish notification plugin action for Notificaties API**
 
   A new plugin action "Publiceer een notificatie" has been added to the Notificaties API plugin. This action allows
