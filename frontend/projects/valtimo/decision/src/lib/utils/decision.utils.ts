@@ -19,7 +19,7 @@ import {Decision} from '../models';
 export function filterLatestDecisionVersions(decisions: Decision[]): Decision[] {
   return decisions.reduce((acc: Decision[], curr: Decision) => {
     const existing = acc.find(d => d.key === curr.key);
-    if (existing && existing.version > curr.version) return acc;
+    if (existing && existing.version >= curr.version) return acc;
     if (existing && existing.version < curr.version)
       return [...acc.filter(d => d.key !== curr.key), curr];
     return [...acc, curr];

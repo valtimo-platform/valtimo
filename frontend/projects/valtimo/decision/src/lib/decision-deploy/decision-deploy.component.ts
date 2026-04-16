@@ -102,7 +102,8 @@ export class DecisionDeployComponent {
                 )
               )
             );
-          } else if (context === 'buildingBlock') {
+          }
+          if (context === 'buildingBlock') {
             return this.buildingBlockManagementRouteParams$.pipe(
               take(1),
               switchMap(params =>
@@ -113,9 +114,8 @@ export class DecisionDeployComponent {
                 )
               )
             );
-          } else {
-            return this.decisionService.deployDmn(dmnFile);
           }
+          return this.decisionService.deployDmn(dmnFile);
         })
       )
       .subscribe(() => {
