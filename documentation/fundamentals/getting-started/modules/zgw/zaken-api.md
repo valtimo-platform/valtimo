@@ -51,4 +51,4 @@ import {ZakenApiPluginModule, zakenApiPluginSpecification} from '@valtimo/plugin
 })
 ```
 
-Before the Zaken API plugin can be used, an authentication plugin is needed. One such authentication plugin is the OpenZaak plugin. Instructions on how to add this plugin can be found [here](broken-reference).
+Before the Zaken API plugin can be used, an authentication plugin is needed. One such authentication plugin is the OpenZaak plugin. Instructions on how to add this plugin can be found [here](../../../../features/plugins/configure-openzaak-plugin.md).

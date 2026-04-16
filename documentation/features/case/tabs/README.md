@@ -143,7 +143,7 @@ For widget configuration, check [this page](widgets.md).
 
 ## Access control
 
-Access to the case tabs can be configured through access control. More information about access control can be found [here](https://docs.valtimo.nl/features/access-control).
+Access to the case tabs can be configured through access control. More information about access control can be found [here](../../access-control/README.md).
 
 ### Resources and actions
 

@@ -12,9 +12,9 @@ This page requires knowledge on how to configure the Notificaties API
 
 ## Configuring the plugin
 
-A plugin configuration is required before the plugin can be used. A general description on how to configure plugins can be found [here](broken-reference).
+A plugin configuration is required before the plugin can be used. A general description on how to configure plugins can be found [here](configure-plugin.md).
 
-If the Notificaties API plugin is not visible in the plugin menu, it is possible the application is missing a dependency. Instructions on how to add the Notificaties API dependency can be found [here](broken-reference).
+If the Notificaties API plugin is not visible in the plugin menu, it is possible the application is missing a dependency. Instructions on how to add the Notificaties API dependency can be found [here](../../fundamentals/getting-started/modules/zgw/notificaties-api.md).
 
 To configure this plugin the following properties have to be entered (in addition to the optional Configuration ID and required Configuration name):
 

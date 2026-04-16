@@ -76,7 +76,7 @@ An example configuration can be found below:
 ]
 ```
 
-The id (UUID) of the plugin should be generated manually. The same id's should be used when referencing configurations at the [plugin processlink auto-deployment](broken-reference).
+The id (UUID) of the plugin should be generated manually. The same id's should be used when referencing configurations at the [plugin processlink auto-deployment](../process/process-link.md).
 
 The available properties can be found in the documentation of the plugin.
 
