@@ -1,0 +1,17 @@
+[
+    {
+        "type": "BUILDING_BLOCK",
+        "key": "household-verification",
+        "versionTag": "1.0.0"
+    },
+    {
+        "type": "BUILDING_BLOCK",
+        "key": "income-check",
+        "versionTag": "1.0.0"
+    },
+    {
+        "type": "BUILDING_BLOCK",
+        "key": "subsidy-calculator",
+        "versionTag": "1.0.0"
+    }
+]
