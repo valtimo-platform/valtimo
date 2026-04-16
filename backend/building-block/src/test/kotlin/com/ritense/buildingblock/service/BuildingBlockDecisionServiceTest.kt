@@ -35,9 +35,9 @@ import org.mockito.kotlin.mock
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 import org.operaton.bpm.engine.RepositoryService
-import org.operaton.bpm.engine.impl.persistence.entity.DeploymentEntity
 import org.operaton.bpm.engine.repository.DecisionDefinition
 import org.operaton.bpm.engine.repository.DecisionDefinitionQuery
+import org.operaton.bpm.engine.repository.DeploymentWithDefinitions
 import org.operaton.bpm.engine.repository.ProcessDefinitionQuery
 import java.io.ByteArrayInputStream
 
@@ -153,11 +153,9 @@ class BuildingBlockDecisionServiceTest(
 
     @Test
     fun `should deploy decision definition after passing update guard`() {
-        val deploymentEntity = mock<DeploymentEntity> {
-            on { id } doReturn "dep-1"
-        }
+        val deploymentWithDefinitions = mock<DeploymentWithDefinitions>()
         whenever(operatonProcessService.deploy(any<BuildingBlockDefinitionId>(), eq("my-decision.dmn"), any(), eq(true), eq(false)))
-            .thenReturn(deploymentEntity)
+            .thenReturn(deploymentWithDefinitions)
 
         val result = service.deployDecisionDefinition(
             buildingBlockDefinitionId,
@@ -167,7 +165,7 @@ class BuildingBlockDecisionServiceTest(
 
         verify(buildingBlockDefinitionChecker).assertCanUpdateBuildingBlockDefinition(buildingBlockDefinitionId)
         verify(operatonProcessService).deploy(any<BuildingBlockDefinitionId>(), eq("my-decision.dmn"), any(), eq(true), eq(false))
-        assertThat(result).isEqualTo(deploymentEntity)
+        assertThat(result).isEqualTo(deploymentWithDefinitions)
     }
 
     @Test
