@@ -32,6 +32,22 @@
                                   constraintName="fk_form_flow_definition_step"/>
     </changeSet>
 
+    <!-- MySQL keeps the auto-created index after dropping a FK constraint; drop it explicitly -->
+
+    <changeSet id="2a" author="Ritense" dbms="mysql">
+        <preConditions onFail="MARK_RAN">
+            <indexExists tableName="form_flow_instance" indexName="fk_form_flow_definition_instance"/>
+        </preConditions>
+        <dropIndex tableName="form_flow_instance" indexName="fk_form_flow_definition_instance"/>
+    </changeSet>
+
+    <changeSet id="2b" author="Ritense" dbms="mysql">
+        <preConditions onFail="MARK_RAN">
+            <indexExists tableName="form_flow_step" indexName="fk_form_flow_definition_step"/>
+        </preConditions>
+        <dropIndex tableName="form_flow_step" indexName="fk_form_flow_definition_step"/>
+    </changeSet>
+
     <changeSet id="3" author="Ritense">
         <dropPrimaryKey tableName="form_flow_definition"/>
     </changeSet>
