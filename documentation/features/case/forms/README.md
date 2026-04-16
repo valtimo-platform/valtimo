@@ -8,9 +8,15 @@ Valtimo uses the [Form.io](https://www.form.io/) form builder to create forms th
 
 ## Translations
 
-To display forms in different languages, we can utilize translations. This involves translating all the labels based on their label property, and using a function `instance.t('translationKey')` to display content from the translation file inside the htmlContent.
+Form.io supports translations within its form definitions. You can use any translations available in your implementation that come from the [configured translation resources](../../localization/configuring-localization.md).
 
-An example of a translated form.io definition:
+To make something in your form translated, use the syntax: `translate:translationKey`.
+
+You can use this anywhere in the form definition, including inside HTML elements.
+
+When the form is displayed, the translation key will be replaced with the correct translated text.
+
+Here's an example of a translated Form.io definition:
 
 ```json
 {
@@ -20,71 +26,89 @@ An example of a translated form.io definition:
       "key": "html",
       "type": "htmlelement",
       "input": false,
-      "label": "HTML",
-      "content": "<p>{{ instance.t('contentX') }}</p>",
+      "label": "translate:bezwaarStartForm.htmlLabel",
+      "content": "translate:bezwaarStartForm.startInstruction",
       "tableView": false,
       "refreshOnChange": false
     },
     {
-      "key": "isApproved",
-      "type": "radio",
+      "key": "voornaam",
+      "type": "textfield",
       "input": true,
-      "label": "configurationApproved",
-      "inline": false,
-      "values": [
-        {
-          "label": "yes",
-          "value": "true",
-          "shortcut": ""
-        },
-        {
-          "label": "no",
-          "value": "false",
-          "shortcut": ""
-        }
-      ],
-      "default": true,
-      "tableView": false,
-      "defaultValue": false,
-      "optionsLabelPosition": "right"
-    },
-    {
-      "key": "comment",
-      "type": "textarea",
-      "input": true,
-      "label": "comment",
+      "label": "translate:bezwaarStartForm.firstName",
       "tableView": true,
-      "autoExpand": false
+      "attributes": {
+        "data-testid": "start-form-bezwaar-voornaam"
+      },
+      "applyMaskOn": "change",
+      "defaultValue": "translate:bezwaarStartForm.firstNameDefault"
     },
     {
-      "key": "send",
+      "key": "achternaam",
+      "type": "textfield",
+      "input": true,
+      "label": "translate:bezwaarStartForm.lastName",
+      "tableView": true,
+      "attributes": {
+        "data-testid": "start-form-bezwaar-achternaam"
+      },
+      "applyMaskOn": "change",
+      "defaultValue": "translate:bezwaarStartForm.lastNameDefault"
+    },
+    {
+      "key": "submit",
       "type": "button",
       "input": true,
-      "label": "send",
+      "label": "translate:bezwaarStartForm.start",
       "tableView": false,
-      "customClass": "float-right",
-      "saveOnEnter": false,
-      "showValidations": false
+      "disableOnInvalid": true
     }
   ]
 }
 ```
 
-Where form.io definition is using the following translation properties:
+This form.io definition uses the following translation keys (defined for English, Dutch and German):
 
 ```json
-{
-  "formioTranslations": {
-    "contentX": "This is content text which is set by the instance.t() function",
-    "ConfigurationApproved": "Configuration approved?",
-    "yes": "Yes",
-    "no": "No",
-    "comment": "Comment",
-    "send": "Send"
-  }
+"bezwaarStartForm": {
+    "htmlLabel": "HTML",
+    "startInstruction": "Click Start to submit your notice of objection.",
+    "firstName": "First name",
+    "lastName": "Last name",
+    "start": "Start",
+    "firstNameDefault": "John",
+    "lastNameDefault": "Doe"
 }
 ```
 
-Which results in:
+```json
+"bezwaarStartForm": {
+    "htmlLabel": "HTML",
+    "startInstruction": "Klik op Start om uw bezwaar in te dienen.",
+    "firstName": "Voornaam",
+    "lastName": "Achternaam",
+    "start": "Start",
+    "firstNameDefault": "Jan",
+    "lastNameDefault": "Doo"
+}
+```
 
-<figure><img src="../../../.gitbook/assets/form_io_translations.png" alt=""><figcaption></figcaption></figure>
+```json
+"bezwaarStartForm": {
+    "htmlLabel": "HTML",
+    "startInstruction": "Klicken Sie auf Start, um Ihren Einspruch einzureichen.",
+    "firstName": "Vorname",
+    "lastName": "Nachname",
+    "start": "Start",
+    "firstNameDefault": "Johann",
+    "lastNameDefault": "Doh"
+}
+```
+
+Which produces the following results:
+
+<figure><img src="../../../.gitbook/assets/formio-translation-en.png" alt=""><figcaption></figcaption></figure>
+
+<figure><img src="../../../.gitbook/assets/formio-translation-nl.png" alt=""><figcaption></figcaption></figure>
+
+<figure><img src="../../../.gitbook/assets/formio-translation-de.png" alt=""><figcaption></figcaption></figure>

@@ -51,4 +51,4 @@ import { DocumentenApiPluginModule, documentenApiPluginSpecification } from '@va
 })
 ```
 
-Before the Documenten API plugin can be used, an authentication plugin is needed. One such authentication plugin is the OpenZaak plugin. Instructions on how to add the OpenZaak plugin can be found [here](broken-reference).
+Before the Documenten API plugin can be used, an authentication plugin is needed. One such authentication plugin is the OpenZaak plugin. Instructions on how to add the OpenZaak plugin can be found [here](../../../../features/plugins/configure-openzaak-plugin.md).

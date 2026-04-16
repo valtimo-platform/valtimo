@@ -59,9 +59,9 @@ There are a lot of elements that can be specified for permissions. As an example
 
 Going over each element:
 
-* `resourceType` is required to specify what resource type this permission applies to. For information on the resource types Valtimo provides out of the box, see [here](broken-reference). For information on how to register custom resource types, see [here](for-developers/registering-a-resource.md).
-* `actionKey` specifies the kind of action that is being done. In this case, viewing a list. For a list of actions, see [here](broken-reference).
-* `conditions` is a list describing all the conditions that apply to this particular permission. This requires knowledge of the code for the resource type, as fields can be specified in here correspond to fields inside the class. For information on the kinds of conditions that can be specified, as well as the fields, see [this page](broken-reference). Permission is only granted when all conditions for that permission are met.
+* `resourceType` is required to specify what resource type this permission applies to. For information on the resource types Valtimo provides out of the box, see [here](configurable-elements.md). For information on how to register custom resource types, see [here](for-developers/registering-a-resource.md).
+* `actionKey` specifies the kind of action that is being done. In this case, viewing a list. For a list of actions, see [here](configurable-elements.md).
+* `conditions` is a list describing all the conditions that apply to this particular permission. This requires knowledge of the code for the resource type, as fields can be specified in here correspond to fields inside the class. For information on the kinds of conditions that can be specified, as well as the fields, see [this page](configurable-elements.md). Permission is only granted when all conditions for that permission are met.
 {% endtab %}
 
 {% tab title="Via IDE" %}

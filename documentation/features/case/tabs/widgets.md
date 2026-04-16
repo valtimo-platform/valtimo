@@ -323,7 +323,7 @@ A collection widget can be used when arrays (lists) are stored in the case data 
 * **Path to collection data**\
   \_The exact path in the JSON document that contains the array with data._
 * **Card title display type**\
-  Same as each text field, the title of the card can also be set to a certain [display type](broken-reference).
+  Same as each text field, the title of the card can also be set to a certain [display type](widgets.md#display-types).
 
 ### Configuring cards
 
@@ -523,7 +523,7 @@ Widgets for a case can also be configured directly through a JSON editor. For pr
 
 ## Access control
 
-Access to the case widgets can be configured through access control. More information about access control can be found [here](https://docs.valtimo.nl/features/access-control).
+Access to the case widgets can be configured through access control. More information about access control can be found [here](../../access-control/README.md).
 
 ### Resources and actions
 

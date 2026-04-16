@@ -64,7 +64,7 @@ Forms can be managed by using the provided endpoints, or loaded from a configura
 
 Form flow allows users to create a sequence of forms, similar to a flow chart or a form wizard. A form flow definition contains the configuration for each step, what the subsequent steps are, and the conditions under which they can be reached. A form flow can be linked to a task, which consequently allows for more forms for the same task. Form flow supports forwards and backwards movement between steps without completing the task, reducing complexity in a BPMN model.
 
-For information on how to create form flow definitions, see [here](broken-reference).
+For information on how to create form flow definitions, see [here](../../features/case/form-flow.md).
 
 ### Form flow Valtimo
 
@@ -204,7 +204,7 @@ The [Objecttypeb (Object types) API](https://vng.nl/projecten/overige-objecten-r
 
 ## OpenZaak Plugin Authentication
 
-[OpenZaak Plugin Authentication](broken-reference) contains the OpenZaakPlugin which can be used for authentication in several ZGW plugins.
+[OpenZaak Plugin Authentication](../../getting-started/modules/zgw/openzaak-plugin-authentication.md) contains the OpenZaakPlugin which can be used for authentication in several ZGW plugins.
 
 ### OpenZaak resource
 

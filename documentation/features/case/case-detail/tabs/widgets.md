@@ -444,7 +444,7 @@ Widgets for a case can also be configured directly through a JSON editor. For pr
 
 ## Access control
 
-Access to the case widgets can be configured through access control. More information about access control can be found [here](https://docs.valtimo.nl/features/access-control).
+Access to the case widgets can be configured through access control. More information about access control can be found [here](../../../access-control/README.md).
 
 ### Resources and actions
 

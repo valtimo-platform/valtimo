@@ -10,7 +10,7 @@ This section contains information on how to configure and use BPMN processes in 
 
 ## Access control
 
-Access to the processes can be configured through access control. More information about access control can be found [here](https://docs.valtimo.nl/features/access-control).
+Access to the processes can be configured through access control. More information about access control can be found [here](../access-control/README.md).
 
 ### Resources and actions
 
