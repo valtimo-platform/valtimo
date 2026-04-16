@@ -64,7 +64,11 @@ public class JsonDocumentContent implements DocumentContent {
     }
 
     public static JsonDocumentContent build(JsonNode jsonNode) {
-        return new JsonDocumentContent(jsonNode.toString());
+        if (jsonNode.isMissingNode() || jsonNode.isNull()) {
+            return new JsonDocumentContent("{}");
+        } else {
+            return new JsonDocumentContent(jsonNode.toString());
+        }
     }
 
     public JsonDocumentContent(final String jsonString) {
