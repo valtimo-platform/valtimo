@@ -21,7 +21,6 @@ import com.ritense.buildingblock.service.BuildingBlockDecisionService
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import com.ritense.valtimo.contract.buildingblock.BuildingBlockDefinitionId
 import com.ritense.valtimo.contract.domain.ValtimoMediaType.APPLICATION_JSON_UTF8_VALUE
-import com.ritense.valtimo.service.OperatonProcessService
 import com.ritense.valtimo.web.rest.dto.DefinitionDeploymentResponseDto
 import org.operaton.bpm.engine.impl.persistence.entity.DeploymentEntity
 import org.operaton.bpm.engine.rest.dto.repository.DecisionDefinitionDto
@@ -42,7 +41,6 @@ import java.io.ByteArrayInputStream
 @SkipComponentScan
 @RequestMapping("/api/management/v1/building-block", produces = [APPLICATION_JSON_UTF8_VALUE])
 class BuildingBlockDecisionManagementResource(
-    private val operatonProcessService: OperatonProcessService,
     private val buildingBlockDecisionService: BuildingBlockDecisionService,
 ) {
 
@@ -88,12 +86,10 @@ class BuildingBlockDecisionManagementResource(
         return ResponseEntity.ok(
             DefinitionDeploymentResponseDto.of(
                 runWithoutAuthorization {
-                    operatonProcessService.deploy(
+                    buildingBlockDecisionService.deployDecisionDefinition(
                         buildingBlockDefinitionId,
                         normalizedFileName,
-                        ByteArrayInputStream(dmn.bytes),
-                        true,
-                        false
+                        ByteArrayInputStream(dmn.bytes)
                     )
                 } as DeploymentEntity
             )

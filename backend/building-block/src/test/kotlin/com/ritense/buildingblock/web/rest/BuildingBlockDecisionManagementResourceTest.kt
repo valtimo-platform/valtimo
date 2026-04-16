@@ -18,8 +18,6 @@ package com.ritense.buildingblock.web.rest
 
 import com.ritense.buildingblock.service.BuildingBlockDecisionService
 import com.ritense.valtimo.contract.buildingblock.BuildingBlockDefinitionId
-import com.ritense.valtimo.service.OperatonProcessService
-import com.ritense.valtimo.web.rest.dto.DefinitionDeploymentResponseDto
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -44,9 +42,6 @@ import org.springframework.mock.web.MockMultipartFile
 class BuildingBlockDecisionManagementResourceTest {
 
     @Mock
-    private lateinit var operatonProcessService: OperatonProcessService
-
-    @Mock
     private lateinit var buildingBlockDecisionService: BuildingBlockDecisionService
 
     private lateinit var resource: BuildingBlockDecisionManagementResource
@@ -54,7 +49,6 @@ class BuildingBlockDecisionManagementResourceTest {
     @BeforeEach
     fun setUp() {
         resource = BuildingBlockDecisionManagementResource(
-            operatonProcessService,
             buildingBlockDecisionService,
         )
     }
@@ -137,13 +131,13 @@ class BuildingBlockDecisionManagementResourceTest {
         val deploymentEntity = mock<DeploymentEntity> {
             on { id } doReturn "dep-1"
         }
-        whenever(operatonProcessService.deploy(any<BuildingBlockDefinitionId>(), any<String>(), any(), any<Boolean>(), any<Boolean>()))
+        whenever(buildingBlockDecisionService.deployDecisionDefinition(any<BuildingBlockDefinitionId>(), any<String>(), any()))
             .thenReturn(deploymentEntity)
 
         val response = resource.deployDecisionDefinition("my-bb", "1.0.0", file)
 
         assertThat(response.statusCode).isEqualTo(HttpStatus.OK)
-        verify(operatonProcessService).deploy(any<BuildingBlockDefinitionId>(), eq("my-decision.dmn"), any(), eq(true), eq(false))
+        verify(buildingBlockDecisionService).deployDecisionDefinition(any<BuildingBlockDefinitionId>(), eq("my-decision.dmn"), any())
     }
 
     @Test

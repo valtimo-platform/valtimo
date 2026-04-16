@@ -804,18 +804,18 @@ class BuildingBlockAutoConfiguration {
     fun buildingBlockDecisionService(
         repositoryService: RepositoryService,
         buildingBlockDefinitionChecker: BuildingBlockDefinitionChecker,
-        operatonByteArrayService: OperatonByteArrayService
+        operatonByteArrayService: OperatonByteArrayService,
+        operatonProcessService: OperatonProcessService
     ): BuildingBlockDecisionService {
-        return BuildingBlockDecisionService(repositoryService, buildingBlockDefinitionChecker, operatonByteArrayService)
+        return BuildingBlockDecisionService(repositoryService, buildingBlockDefinitionChecker, operatonByteArrayService, operatonProcessService)
     }
 
     @Bean
     @ConditionalOnMissingBean(BuildingBlockDecisionManagementResource::class)
     fun buildingBlockDecisionManagementResource(
-        operatonProcessService: OperatonProcessService,
         buildingBlockDecisionService: BuildingBlockDecisionService
     ): BuildingBlockDecisionManagementResource {
-        return BuildingBlockDecisionManagementResource(operatonProcessService, buildingBlockDecisionService)
+        return BuildingBlockDecisionManagementResource(buildingBlockDecisionService)
     }
 
     @Bean

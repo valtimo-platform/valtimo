@@ -20,6 +20,7 @@ import com.ritense.valtimo.contract.buildingblock.BuildingBlockDefinitionChecker
 import com.ritense.valtimo.contract.buildingblock.BuildingBlockDefinitionId
 import com.ritense.valtimo.operaton.domain.OperatonBytearray
 import com.ritense.valtimo.service.OperatonByteArrayService
+import com.ritense.valtimo.service.OperatonProcessService
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -29,19 +30,23 @@ import org.mockito.Mock
 import org.mockito.junit.jupiter.MockitoExtension
 import org.mockito.kotlin.any
 import org.mockito.kotlin.doReturn
+import org.mockito.kotlin.eq
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 import org.operaton.bpm.engine.RepositoryService
+import org.operaton.bpm.engine.impl.persistence.entity.DeploymentEntity
 import org.operaton.bpm.engine.repository.DecisionDefinition
 import org.operaton.bpm.engine.repository.DecisionDefinitionQuery
 import org.operaton.bpm.engine.repository.ProcessDefinitionQuery
+import java.io.ByteArrayInputStream
 
 @ExtendWith(MockitoExtension::class)
 class BuildingBlockDecisionServiceTest(
     @Mock private val repositoryService: RepositoryService,
     @Mock private val buildingBlockDefinitionChecker: BuildingBlockDefinitionChecker,
     @Mock private val operatonByteArrayService: OperatonByteArrayService,
+    @Mock private val operatonProcessService: OperatonProcessService,
 ) {
 
     private lateinit var service: BuildingBlockDecisionService
@@ -50,7 +55,7 @@ class BuildingBlockDecisionServiceTest(
 
     @BeforeEach
     fun setUp() {
-        service = BuildingBlockDecisionService(repositoryService, buildingBlockDefinitionChecker, operatonByteArrayService)
+        service = BuildingBlockDecisionService(repositoryService, buildingBlockDefinitionChecker, operatonByteArrayService, operatonProcessService)
     }
 
     @Test
@@ -144,6 +149,25 @@ class BuildingBlockDecisionServiceTest(
         assertThrows<IllegalStateException> {
             service.deleteDecisionDefinition(buildingBlockDefinitionId, "my-decision")
         }
+    }
+
+    @Test
+    fun `should deploy decision definition after passing update guard`() {
+        val deploymentEntity = mock<DeploymentEntity> {
+            on { id } doReturn "dep-1"
+        }
+        whenever(operatonProcessService.deploy(any<BuildingBlockDefinitionId>(), eq("my-decision.dmn"), any(), eq(true), eq(false)))
+            .thenReturn(deploymentEntity)
+
+        val result = service.deployDecisionDefinition(
+            buildingBlockDefinitionId,
+            "my-decision.dmn",
+            ByteArrayInputStream("<definitions/>".toByteArray())
+        )
+
+        verify(buildingBlockDefinitionChecker).assertCanUpdateBuildingBlockDefinition(buildingBlockDefinitionId)
+        verify(operatonProcessService).deploy(any<BuildingBlockDefinitionId>(), eq("my-decision.dmn"), any(), eq(true), eq(false))
+        assertThat(result).isEqualTo(deploymentEntity)
     }
 
     @Test
