@@ -21,6 +21,7 @@ import com.ritense.authorization.AuthorizationService
 import com.ritense.buildingblock.listener.CaseDefinitionBuildingBlockLinkCaseEventListener
 import com.ritense.buildingblock.listener.BuildingBlockCaseAssigneeListener
 import com.ritense.buildingblock.listener.BuildingBlockDefinitionEventListener
+import com.ritense.buildingblock.listener.BuildingBlockTaskTeamAutoAssignListener
 import com.ritense.buildingblock.listener.BuildingBlockEndEventListener
 import com.ritense.buildingblock.listener.BuildingBlockStartEventListener
 import com.ritense.buildingblock.processlink.mapper.BuildingBlockProcessLinkMapper
@@ -99,6 +100,7 @@ import com.ritense.processlink.repository.ProcessLinkRepository
 import com.ritense.processlink.repository.ValtimoPluginProcessLinkRepository
 import com.ritense.processlink.service.ProcessDeploymentService
 import com.ritense.processlink.service.ProcessLinkService
+import com.ritense.valtimo.contract.authentication.TeamManagementService
 import com.ritense.valtimo.contract.authentication.UserManagementService
 import com.ritense.valtimo.contract.buildingblock.BuildingBlockDefinitionChecker
 import com.ritense.valtimo.contract.database.QueryDialectHelper
@@ -431,6 +433,7 @@ class BuildingBlockAutoConfiguration {
         caseDefinitionService: CaseDefinitionService,
         userManagementService: UserManagementService,
         caseDocumentResolver: CaseDocumentResolver,
+        authorizationService: AuthorizationService,
         buildingBlockInstanceRepository: BuildingBlockInstanceRepository
     ) = BuildingBlockCaseAssigneeListener(
         operatonTaskService,
@@ -438,7 +441,26 @@ class BuildingBlockAutoConfiguration {
         caseDefinitionService,
         userManagementService,
         caseDocumentResolver,
-        buildingBlockInstanceRepository
+        buildingBlockInstanceRepository,
+        authorizationService,
+    )
+
+    @Bean
+    @ConditionalOnMissingBean(BuildingBlockTaskTeamAutoAssignListener::class)
+    fun buildingBlockTaskTeamAutoAssignListener(
+        operatonTaskService: OperatonTaskService,
+        documentService: DocumentService,
+        caseDefinitionService: CaseDefinitionService,
+        buildingBlockInstanceRepository: BuildingBlockInstanceRepository,
+        teamManagementService: TeamManagementService?,
+        caseDocumentResolver: CaseDocumentResolver,
+    ) = BuildingBlockTaskTeamAutoAssignListener(
+        operatonTaskService,
+        documentService,
+        caseDefinitionService,
+        buildingBlockInstanceRepository,
+        teamManagementService,
+        caseDocumentResolver,
     )
 
     @Bean

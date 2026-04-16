@@ -25,8 +25,10 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.web.util.matcher.AndRequestMatcher;
 import org.springframework.security.web.util.matcher.OrRequestMatcher;
 import org.springframework.security.web.util.matcher.RequestMatcher;
+import org.springframework.web.servlet.config.annotation.ViewControllerRegistry;
+import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
-public class OperatonCockpitHttpSecurityConfigurer implements HttpSecurityConfigurer {
+public class OperatonCockpitHttpSecurityConfigurer implements HttpSecurityConfigurer, WebMvcConfigurer {
 
     private final WhitelistIpRequestMatcher whitelistIpRequestMatcher;
 
@@ -44,10 +46,16 @@ public class OperatonCockpitHttpSecurityConfigurer implements HttpSecurityConfig
             http.authorizeHttpRequests(requests ->
                 requests.requestMatchers(
                     whiteListed(
+                        antMatcher("/operaton-welcome/**"),
                         antMatcher("/operaton/api/admin/**"),
                         antMatcher("/operaton/api/cockpit/**"),
                         antMatcher("/operaton/api/engine/**"),
-                        antMatcher("/operaton/app/**"),
+                        antMatcher("/operaton/api/tasklist/**"),
+                        antMatcher("/operaton/api/welcome/**"),
+                        antMatcher("/operaton/app/admin/**"),
+                        antMatcher("/operaton/app/cockpit/**"),
+                        antMatcher("/operaton/app/tasklist/**"),
+                        antMatcher("/operaton/app/welcome/**"),
                         antMatcher("/operaton/assets/**"),
                         antMatcher("/operaton/favicon.ico"),
                         antMatcher("/operaton/lib/**")
@@ -57,6 +65,11 @@ public class OperatonCockpitHttpSecurityConfigurer implements HttpSecurityConfig
         } catch (Exception e) {
             throw new HttpConfigurerConfigurationException(e);
         }
+    }
+
+    @Override
+    public void addViewControllers(ViewControllerRegistry registry) {
+        registry.addRedirectViewController("/operaton-welcome", "/operaton-welcome/index.html");
     }
 
     private RequestMatcher whiteListed(RequestMatcher... requestMatchers) {
