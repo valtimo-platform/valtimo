@@ -21,5 +21,6 @@ import java.util.UUID
 class GetFormFlowStateResult(
     val id: UUID? = null,
     val step: FormFlowStepResult? = null,
+    val onOpenResult: List<Any>? = null,
     val errorMessage: String? = null
 )

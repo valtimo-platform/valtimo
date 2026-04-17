@@ -14,8 +14,12 @@
  * limitations under the License.
  */
 
+import {generateId} from '../../utils/dataGenerator';
+
 export const CASE_IDENTIFIER = 'bezwaar';
 
-export const formFlowTestData = {
-  key: 'e2e-test-form-flow',
-};
+export function createFormFlowTestData() {
+  return {
+    key: `e2e-form-flow-${generateId()}`,
+  };
+}

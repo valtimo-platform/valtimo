@@ -465,6 +465,8 @@ class OperatonTaskServiceTest {
     @Test
     void unassignTeamFromTask_taskExists() {
         doReturn(task).when(operatonTaskService).findTaskById(TASK_ID);
+        when(taskTeamRepository.findById(TASK_ID))
+            .thenReturn(Optional.of(new TaskTeam(TASK_ID, "team-a", "Team Alpha")));
 
         operatonTaskService.unassignTeamFromTask(TASK_ID);
 

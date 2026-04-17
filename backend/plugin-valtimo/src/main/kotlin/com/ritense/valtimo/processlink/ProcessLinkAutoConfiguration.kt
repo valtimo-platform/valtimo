@@ -60,12 +60,72 @@ class ProcessLinkAutoConfiguration {
     }
 
     @Bean
+    @ConditionalOnMissingBean(ProcessLinkSendTaskStartListener::class)
+    fun processLinkSendTaskStartListener(
+        pluginProcessLinkRepository: PluginProcessLinkRepository?,
+        pluginService: PluginService?
+    ): ProcessLinkSendTaskStartListener {
+        return ProcessLinkSendTaskStartListener(
+            pluginProcessLinkRepository!!,
+            pluginService!!
+        )
+    }
+
+    @Bean
+    @ConditionalOnMissingBean(ProcessLinkIntermediateThrowEventStartListener::class)
+    fun processLinkIntermediateThrowEventStartListener(
+        pluginProcessLinkRepository: PluginProcessLinkRepository?,
+        pluginService: PluginService?
+    ): ProcessLinkIntermediateThrowEventStartListener {
+        return ProcessLinkIntermediateThrowEventStartListener(
+            pluginProcessLinkRepository!!,
+            pluginService!!
+        )
+    }
+
+    @Bean
     @ConditionalOnMissingBean(ProcessLinkCallActivityStartListener::class)
     fun processLinkCallActivityStartListener(
         pluginProcessLinkRepository: PluginProcessLinkRepository?,
         pluginService: PluginService?
     ): ProcessLinkCallActivityStartListener {
         return ProcessLinkCallActivityStartListener(
+            pluginProcessLinkRepository!!,
+            pluginService!!
+        )
+    }
+
+    @Bean
+    @ConditionalOnMissingBean(ProcessLinkReceiveTaskEndListener::class)
+    fun processLinkReceiveTaskStartListener(
+        pluginProcessLinkRepository: PluginProcessLinkRepository,
+        pluginService: PluginService?
+    ): ProcessLinkReceiveTaskEndListener {
+        return ProcessLinkReceiveTaskEndListener(
+            pluginProcessLinkRepository!!,
+            pluginService!!
+        )
+    }
+
+    @Bean
+    @ConditionalOnMissingBean(ProcessLinkMessageStartEventStartListener::class)
+    fun processLinkMessageStartEventStartListener(
+        pluginProcessLinkRepository: PluginProcessLinkRepository,
+        pluginService: PluginService?
+    ): ProcessLinkMessageStartEventStartListener {
+        return ProcessLinkMessageStartEventStartListener(
+            pluginProcessLinkRepository!!,
+            pluginService!!
+        )
+    }
+
+    @Bean
+    @ConditionalOnMissingBean(ProcessLinkIntermediateCatchEventEndListener::class)
+    fun processLinkIntermediateCatchEventStartListener(
+        pluginProcessLinkRepository: PluginProcessLinkRepository,
+        pluginService: PluginService?
+    ): ProcessLinkIntermediateCatchEventEndListener {
+        return ProcessLinkIntermediateCatchEventEndListener(
             pluginProcessLinkRepository!!,
             pluginService!!
         )
