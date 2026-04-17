@@ -21,6 +21,8 @@ import com.ritense.notificatiesapi.domain.Kanaal
 import com.ritense.notificatiesapi.domain.NotificatiesApiConfigurationId
 import com.ritense.notificatiesapi.repository.NotificatiesApiAbonnementLinkRepository
 import com.ritense.plugin.domain.PluginConfigurationId
+import com.ritense.plugin.repository.PluginProcessLinkRepository
+import com.ritense.valtimo.contract.json.MapperSingleton
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.mockito.kotlin.any
@@ -46,7 +48,7 @@ internal class NotificatiesApiPluginTest {
         pluginConfigurationId = PluginConfigurationId(UUID.randomUUID())
         notificatiesApiConfigurationId = NotificatiesApiConfigurationId(pluginConfigurationId.id)
 
-        plugin = NotificatiesApiPlugin(pluginConfigurationId, notificatiesApiClient)
+        plugin = NotificatiesApiPlugin(pluginConfigurationId, notificatiesApiClient, MapperSingleton.get(), mock<PluginProcessLinkRepository>())
             .apply {
                 url = URI("http://example.com")
                 callbackUrl = URI("http://example.com/callback")

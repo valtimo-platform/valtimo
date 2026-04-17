@@ -33,7 +33,7 @@ When the case handler option is selected the following changes are visible in th
 * **An additional menu in which a case can be claimed.**\
   In this menu the logged in user has the possibility to immediately "claim" the case. Once a case is claimed, the unassign option removes the case handler that is currently assigned to the case. Who is allowed to claim, assign and unassign is all configured via [Access control](../access-control/README.md).
 
-Case settings can be configured as shown [here](README.md#creating-a-case-definition)
+Case settings can be configured as shown in the [creating a case definition section](README.md#creating-a-case-definition)
 
 ## Assigning a case handler
 

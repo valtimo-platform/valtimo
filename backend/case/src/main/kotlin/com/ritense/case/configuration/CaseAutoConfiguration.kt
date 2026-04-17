@@ -47,6 +47,8 @@ import com.ritense.case.service.CaseTabImporter
 import com.ritense.case.service.CaseTabService
 import com.ritense.case.service.CaseTaskListExporter
 import com.ritense.case.service.CaseTaskListImporter
+import com.ritense.case.service.StartableItemExporter
+import com.ritense.case.service.StartableItemImporter
 import com.ritense.case.service.ConfigurationIssueCaseDefinitionFinalizationChecker
 import com.ritense.case.service.StartableItemManagementService
 import com.ritense.case.service.StartableItemProvider
@@ -519,4 +521,18 @@ class CaseAutoConfiguration {
     fun startableItemCaseEventListener(
         startableItemRepository: StartableItemRepository,
     ) = StartableItemCaseEventListener(startableItemRepository)
+
+    @Bean
+    @ConditionalOnMissingBean(StartableItemExporter::class)
+    fun startableItemExporter(
+        objectMapper: ObjectMapper,
+        startableItemRepository: StartableItemRepository,
+    ) = StartableItemExporter(objectMapper, startableItemRepository)
+
+    @Bean
+    @ConditionalOnMissingBean(StartableItemImporter::class)
+    fun startableItemImporter(
+        objectMapper: ObjectMapper,
+        startableItemRepository: StartableItemRepository,
+    ) = StartableItemImporter(objectMapper, startableItemRepository)
 }

@@ -12,7 +12,7 @@ There are two different circumstances for which documentation for Valtimo can be
 ### Documentation related to an upcoming release <a href="#writing-documentation-related-to-an-upcoming-release" id="writing-documentation-related-to-an-upcoming-release"></a>
 
 1. Write documentation/release notes. These should be written as a PR for [this repository](https://github.com/valtimo-platform/valtimo-documentation/tree/main).
-   * Information on what language to use, as well as general guidelines can be found [here](https://github.com/valtimo-platform/valtimo-documentation/blob/story/restructure-docs/contributing/style-guide/README.md).
+   * Information on what language to use, as well as general guidelines can be found in the [style guide](https://github.com/valtimo-platform/valtimo-documentation/blob/story/restructure-docs/contributing/style-guide/README.md).
    * Release notes to in the `release-notes` package.
    * If new pages are added, these should also be added to `SUMMARY.md`. The sidebar shown on GitBook corresponds to this structure.
    * It is required to fork the repository to implement the changes and create the PR.

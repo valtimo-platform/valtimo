@@ -27,8 +27,8 @@ export const cspHeaderParamsDev: CSPHeaderParams = {
         // DATA is needed because of use of inline images
         'img-src': [SELF, DATA],
         /*
-        UNSAFE_EVAL is needed because of javascript in form.io forms (i.e. on summary page)
-        Scripts loaded from https://cdn.form.io/ are allowed, otherwise Form.IO won't work in our app.
+        UNSAFE_EVAL is needed because of javascript in Form.io forms (i.e. on summary page)
+        Scripts loaded from https://cdn.form.io/ are allowed, otherwise Form.io won't work in our app.
          */
         'script-src': [SELF, UNSAFE_EVAL, UNSAFE_INLINE, 'https://cdn.form.io/'],
         /* 

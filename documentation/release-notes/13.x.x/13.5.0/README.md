@@ -46,7 +46,7 @@ The Case widgets now have a new widget type provided out of the box: Interactive
 
 The Notificaties API plugin now safely stores incoming notifications, prevents duplicates, processes them in the background with automatic retries and clean-up, and offers an admin view for failed messages together with a health check that warns when too many remain.
 
-Make sure to add the admin menu entry described [here](../../../features/plugins/configure-notificaties-api-plugin.md) so users can reach the new overview.
+Make sure to add the admin menu entry described in the [Notificaties API plugin documentation](../../../features/plugins/configure-notificaties-api-plugin.md) so users can reach the new overview.
 
 ## Bugfixes
 
