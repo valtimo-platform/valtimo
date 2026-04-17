@@ -16,7 +16,9 @@
 
 package com.ritense.valtimo.processlink.listener
 
-import com.ritense.processlink.domain.ProcessLinkChangedEvent
+import com.ritense.processlink.event.ProcessLinkCreatedEvent
+import com.ritense.processlink.event.ProcessLinkDeletedEvent
+import com.ritense.processlink.event.ProcessLinkUpdatedEvent
 import com.ritense.valtimo.processlink.service.PluginConfigurationMappingResolverImpl
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.transaction.event.TransactionPhase
@@ -27,11 +29,25 @@ class ProcessLinkChangedEventListener(
 ) {
 
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
-    fun onProcessLinkChanged(event: ProcessLinkChangedEvent) {
+    fun onProcessLinkCreated(event: ProcessLinkCreatedEvent) {
+        recheckIssues(event.processDefinitionId)
+    }
+
+    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+    fun onProcessLinkUpdated(event: ProcessLinkUpdatedEvent) {
+        recheckIssues(event.processDefinitionId)
+    }
+
+    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+    fun onProcessLinkDeleted(event: ProcessLinkDeletedEvent) {
+        recheckIssues(event.processDefinitionId)
+    }
+
+    private fun recheckIssues(processDefinitionId: String) {
         try {
-            pluginConfigurationMappingResolver.recheckIssuesForProcessDefinition(event.processDefinitionId)
+            pluginConfigurationMappingResolver.recheckIssuesForProcessDefinition(processDefinitionId)
         } catch (e: Exception) {
-            logger.debug(e) { "Could not recheck plugin configuration issues for process definition ${event.processDefinitionId}" }
+            logger.debug(e) { "Could not recheck plugin configuration issues for process definition $processDefinitionId" }
         }
     }
 

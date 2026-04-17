@@ -14,8 +14,9 @@
  * limitations under the License.
  */
 
-package com.ritense.processlink.domain
+package com.ritense.processlink.event
 
-data class ProcessLinkChangedEvent(
+class ProcessLinkDeletedEvent(
+    val processLinkType: String,
     val processDefinitionId: String
 )

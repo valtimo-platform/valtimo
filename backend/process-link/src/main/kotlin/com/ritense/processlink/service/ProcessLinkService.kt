@@ -20,9 +20,11 @@ import com.ritense.logging.LoggableResource
 import com.ritense.logging.withLoggingContext
 import com.ritense.processlink.domain.ActivityTypeWithEventName
 import com.ritense.processlink.domain.ProcessLink
-import com.ritense.processlink.domain.ProcessLinkChangedEvent
 import com.ritense.processlink.domain.ProcessLinkType
 import com.ritense.processlink.domain.SupportedProcessLinkTypeHandler
+import com.ritense.processlink.event.ProcessLinkCreatedEvent
+import com.ritense.processlink.event.ProcessLinkDeletedEvent
+import com.ritense.processlink.event.ProcessLinkUpdatedEvent
 import com.ritense.processlink.exception.ProcessLinkExistsException
 import com.ritense.processlink.exception.ProcessLinkNotFoundException
 import com.ritense.processlink.mapper.ProcessLinkMapper
@@ -39,15 +41,12 @@ import com.ritense.valtimo.operaton.domain.OperatonProcessDefinition
 import com.ritense.valtimo.operaton.repository.OperatonProcessDefinitionSpecificationHelper.Companion.byKey
 import com.ritense.valtimo.operaton.repository.OperatonProcessDefinitionSpecificationHelper.Companion.byLatestVersion
 import com.ritense.valtimo.operaton.service.OperatonRepositoryService
-import com.ritense.processlink.event.ProcessLinkCreatedEvent
-import com.ritense.processlink.event.ProcessLinkUpdatedEvent
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.context.ApplicationEventPublisher
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.util.UUID
-import org.springframework.context.ApplicationEventPublisher
 import kotlin.jvm.optionals.getOrElse
 
 @Transactional(readOnly = true)
@@ -131,8 +130,9 @@ class ProcessLinkService(
                 )
             }
 
-            applicationEventPublisher.publishEvent(ProcessLinkCreatedEvent(createRequest.processLinkType))
-            processLinkRepository.save(mapper.toNewProcessLink(createRequest, blueprintId))
+            processLinkRepository.save(mapper.toNewProcessLink(createRequest, blueprintId)).also {
+                applicationEventPublisher.publishEvent(ProcessLinkCreatedEvent(createRequest.processLinkType, it.processDefinitionId))
+            }
         }
     }
 
@@ -154,8 +154,9 @@ class ProcessLinkService(
                 // Hibernate does not allow 2 different objects with the same identifier in the session, so do delete + insert instead
                 processLinkRepository.delete(processLinkToUpdate)
             }
-            applicationEventPublisher.publishEvent(ProcessLinkUpdatedEvent(updateRequest.processLinkType))
-            processLinkRepository.save(processLinkUpdated)
+            processLinkRepository.save(processLinkUpdated).also {
+                applicationEventPublisher.publishEvent(ProcessLinkUpdatedEvent(updateRequest.processLinkType, it.processDefinitionId))
+            }
         }
     }
 
@@ -166,7 +167,7 @@ class ProcessLinkService(
         val processLink = processLinkRepository.findByIdOrNull(id)
         processLinkRepository.deleteById(id)
         if (processLink != null) {
-            applicationEventPublisher.publishEvent(ProcessLinkChangedEvent(processLink.processDefinitionId))
+            applicationEventPublisher.publishEvent(ProcessLinkDeletedEvent(processLink.processLinkType, processLink.processDefinitionId))
         }
     }
 

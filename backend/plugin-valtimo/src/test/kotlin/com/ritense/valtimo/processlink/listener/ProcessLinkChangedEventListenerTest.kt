@@ -16,7 +16,9 @@
 
 package com.ritense.valtimo.processlink.listener
 
-import com.ritense.processlink.domain.ProcessLinkChangedEvent
+import com.ritense.processlink.event.ProcessLinkCreatedEvent
+import com.ritense.processlink.event.ProcessLinkDeletedEvent
+import com.ritense.processlink.event.ProcessLinkUpdatedEvent
 import com.ritense.valtimo.processlink.service.PluginConfigurationMappingResolverImpl
 import org.assertj.core.api.Assertions.assertThatCode
 import org.junit.jupiter.api.BeforeEach
@@ -41,8 +43,22 @@ class ProcessLinkChangedEventListenerTest {
     }
 
     @Test
-    fun `delegates to resolver with process definition id`() {
-        listener.onProcessLinkChanged(ProcessLinkChangedEvent("pd-1"))
+    fun `delegates to resolver on process link created`() {
+        listener.onProcessLinkCreated(ProcessLinkCreatedEvent("plugin", "pd-1"))
+
+        verify(pluginConfigurationMappingResolver).recheckIssuesForProcessDefinition("pd-1")
+    }
+
+    @Test
+    fun `delegates to resolver on process link updated`() {
+        listener.onProcessLinkUpdated(ProcessLinkUpdatedEvent("plugin", "pd-1"))
+
+        verify(pluginConfigurationMappingResolver).recheckIssuesForProcessDefinition("pd-1")
+    }
+
+    @Test
+    fun `delegates to resolver on process link deleted`() {
+        listener.onProcessLinkDeleted(ProcessLinkDeletedEvent("plugin", "pd-1"))
 
         verify(pluginConfigurationMappingResolver).recheckIssuesForProcessDefinition("pd-1")
     }
@@ -53,7 +69,7 @@ class ProcessLinkChangedEventListenerTest {
             .whenever(pluginConfigurationMappingResolver)
             .recheckIssuesForProcessDefinition("pd-1")
 
-        assertThatCode { listener.onProcessLinkChanged(ProcessLinkChangedEvent("pd-1")) }
+        assertThatCode { listener.onProcessLinkCreated(ProcessLinkCreatedEvent("plugin", "pd-1")) }
             .doesNotThrowAnyException()
     }
 }
