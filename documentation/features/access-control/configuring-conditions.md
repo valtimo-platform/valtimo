@@ -334,7 +334,7 @@ For this role the metadata of the resources related to a case (related documents
 {
     "resourceType": "com.ritense.documentenapi.authorization.ZgwDocument",
     "actions": [
-        "edit"
+        "modify"
     ],
     "conditions": [
         {
