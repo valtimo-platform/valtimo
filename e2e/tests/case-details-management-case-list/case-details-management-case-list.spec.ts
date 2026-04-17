@@ -55,7 +55,7 @@ test.describe('Case management', () => {
   });
 
   test.describe('Success test', () => {
-    test.describe('List columns', () => {
+    test.describe('6.68–6.70, 6.73 — List columns', () => {
       test.beforeAll(async () => {
         await testPage.listColumnsTab.click();
       });
