@@ -14,54 +14,62 @@
  * limitations under the License.
  */
 
-import {Component, EventEmitter, Input, OnDestroy, OnInit, Output} from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  EventEmitter,
+  Input,
+  OnDestroy,
+  OnInit,
+  Output,
+} from '@angular/core';
 import {FunctionConfigurationComponent} from '../../../../models';
 import {BehaviorSubject, combineLatest, Observable, Subscription, take} from 'rxjs';
 import {GetAuditTrailConfig} from '../../models';
 
 @Component({
-  selector: 'valtimo-get-audit-trail-configuration',
   templateUrl: './get-audit-trail-configuration.component.html',
   standalone: false,
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class GetAuditTrailConfigurationComponent
   implements FunctionConfigurationComponent, OnInit, OnDestroy
 {
-  @Input() save$: Observable<void>;
-  @Input() disabled$: Observable<boolean>;
-  @Input() pluginId: string;
-  @Input() prefillConfiguration$: Observable<GetAuditTrailConfig>;
-  @Output() valid: EventEmitter<boolean> = new EventEmitter<boolean>();
-  @Output() configuration: EventEmitter<GetAuditTrailConfig> =
+  @Input() public save$: Observable<void>;
+  @Input() public disabled$: Observable<boolean>;
+  @Input() public pluginId: string;
+  @Input() public prefillConfiguration$: Observable<GetAuditTrailConfig>;
+  @Output() public valid: EventEmitter<boolean> = new EventEmitter<boolean>();
+  @Output() public configuration: EventEmitter<GetAuditTrailConfig> =
     new EventEmitter<GetAuditTrailConfig>();
 
-  private saveSubscription!: Subscription;
-  private readonly formValue$ = new BehaviorSubject<GetAuditTrailConfig | null>(null);
-  private readonly valid$ = new BehaviorSubject<boolean>(false);
+  private _saveSubscription!: Subscription;
+  private readonly _formValue$ = new BehaviorSubject<GetAuditTrailConfig | null>(null);
+  private readonly _valid$ = new BehaviorSubject<boolean>(false);
 
-  ngOnInit(): void {
+  public ngOnInit(): void {
     this.openSaveSubscription();
   }
 
-  ngOnDestroy(): void {
-    this.saveSubscription?.unsubscribe();
+  public ngOnDestroy(): void {
+    this._saveSubscription?.unsubscribe();
   }
 
-  formValueChange(formValue: GetAuditTrailConfig): void {
-    this.formValue$.next(formValue);
+  public formValueChange(formValue: GetAuditTrailConfig): void {
+    this._formValue$.next(formValue);
     this.handleValid(formValue);
   }
 
   private handleValid(formValue: GetAuditTrailConfig): void {
     const valid = !!(formValue.documentUrl && formValue.processVariableName);
 
-    this.valid$.next(valid);
+    this._valid$.next(valid);
     this.valid.emit(valid);
   }
 
   private openSaveSubscription(): void {
-    this.saveSubscription = this.save$?.subscribe(save => {
-      combineLatest([this.formValue$, this.valid$])
+    this._saveSubscription = this.save$?.subscribe(() => {
+      combineLatest([this._formValue$, this._valid$])
         .pipe(take(1))
         .subscribe(([formValue, valid]) => {
           if (valid) {
