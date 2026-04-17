@@ -138,6 +138,9 @@
         },
         {
             "moduleLicense": "Unicode/ICU License"
+        },
+        {
+            "moduleLicense": "EUPL 1.2"
         }
     ]
 }
