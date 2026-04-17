@@ -118,9 +118,9 @@ class VerzoekPluginEventListener(
             val document = createDocument(caseDefinitionId, verzoekProperty, verzoekObject)
             withLoggingContext(JsonSchemaDocument::class, document.id()) {
                 val zaakTypeUrl = zaaktypeUrlProvider.getZaaktypeUrl(document.definitionId().caseDefinitionId())
-                val initiatorType = if (verzoekObjectData.has("kvk")) {
+                val initiatorType = if (verzoekObjectData.has("kvk") && verzoekObjectData["kvk"].textValue().isNotBlank()) {
                     "kvk"
-                } else if (verzoekObjectData.has("bsn")) {
+                } else if (verzoekObjectData.has("bsn") && verzoekObjectData["bsn"].textValue().isNotBlank()) {
                     "bsn"
                 } else {
                     null
