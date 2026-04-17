@@ -19,7 +19,7 @@ package com.ritense.valtimo.processlink.listener
 import com.ritense.processlink.event.ProcessLinkCreatedEvent
 import com.ritense.processlink.event.ProcessLinkDeletedEvent
 import com.ritense.processlink.event.ProcessLinkUpdatedEvent
-import com.ritense.valtimo.processlink.service.PluginConfigurationMappingResolverImpl
+import com.ritense.valtimo.contract.plugin.PluginConfigurationMappingResolver
 import org.assertj.core.api.Assertions.assertThatCode
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -28,12 +28,13 @@ import org.mockito.Mock
 import org.mockito.junit.jupiter.MockitoExtension
 import org.mockito.kotlin.doThrow
 import org.mockito.kotlin.verify
+import org.mockito.kotlin.whenever
 
 @ExtendWith(MockitoExtension::class)
 class ProcessLinkChangedEventListenerTest {
 
     @Mock
-    lateinit var pluginConfigurationMappingResolver: PluginConfigurationMappingResolverImpl
+    lateinit var pluginConfigurationMappingResolver: PluginConfigurationMappingResolver
 
     private lateinit var listener: ProcessLinkChangedEventListener
 

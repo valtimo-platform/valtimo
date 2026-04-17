@@ -213,7 +213,7 @@ class ProcessLinkAutoConfiguration {
     fun processLinkChangedEventListener(
         pluginConfigurationMappingResolver: PluginConfigurationMappingResolver,
     ): ProcessLinkChangedEventListener {
-        return ProcessLinkChangedEventListener(pluginConfigurationMappingResolver as PluginConfigurationMappingResolverImpl)
+        return ProcessLinkChangedEventListener(pluginConfigurationMappingResolver)
     }
 
     @Bean

@@ -84,8 +84,12 @@ open class ProcessLinkImporter(
                 if (mappings != null && isFixedPluginLink && node.has("pluginConfigurationId")) {
                     val originalIdText = node.get("pluginConfigurationId").asText(null)
                     if (originalIdText != null) {
-                        val originalId = java.util.UUID.fromString(originalIdText)
-                        if (mappings.containsKey(originalId)) {
+                        val originalId = try {
+                            java.util.UUID.fromString(originalIdText)
+                        } catch (_: IllegalArgumentException) {
+                            null
+                        }
+                        if (originalId != null && mappings.containsKey(originalId)) {
                             val mappedId = mappings[originalId]
                             if (mappedId != null) {
                                 node.set<ObjectNode>("pluginConfigurationId", TextNode.valueOf(mappedId.toString()))

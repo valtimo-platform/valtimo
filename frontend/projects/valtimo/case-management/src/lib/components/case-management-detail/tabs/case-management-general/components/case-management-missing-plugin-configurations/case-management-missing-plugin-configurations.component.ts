@@ -14,7 +14,8 @@
  * limitations under the License.
  */
 
-import {Component, OnInit} from '@angular/core';
+import {Component, DestroyRef, inject, OnInit} from '@angular/core';
+import {takeUntilDestroyed} from '@angular/core/rxjs-interop';
 import {CommonModule} from '@angular/common';
 import {ActivatedRoute} from '@angular/router';
 import {TranslateModule, TranslateService} from '@ngx-translate/core';
@@ -72,6 +73,7 @@ export class CaseManagementMissingPluginConfigurationsComponent implements OnIni
   public readonly mappingRows$ = new BehaviorSubject<MappingRow[]>([]);
   public readonly saving$ = new BehaviorSubject<boolean>(false);
   private readonly _selections = new Map<number, string | null>();
+  private readonly destroyRef = inject(DestroyRef);
 
   private _caseDefinitionKey: string;
   private _caseDefinitionVersionTag: string;
@@ -106,7 +108,8 @@ export class CaseManagementMissingPluginConfigurationsComponent implements OnIni
             this._caseDefinitionKey,
             this._caseDefinitionVersionTag
           );
-        })
+        }),
+        takeUntilDestroyed(this.destroyRef)
       )
       .subscribe(dangling => this.loadMappingRows(dangling));
   }

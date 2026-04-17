@@ -19,13 +19,13 @@ package com.ritense.valtimo.processlink.listener
 import com.ritense.processlink.event.ProcessLinkCreatedEvent
 import com.ritense.processlink.event.ProcessLinkDeletedEvent
 import com.ritense.processlink.event.ProcessLinkUpdatedEvent
-import com.ritense.valtimo.processlink.service.PluginConfigurationMappingResolverImpl
+import com.ritense.valtimo.contract.plugin.PluginConfigurationMappingResolver
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.transaction.event.TransactionPhase
 import org.springframework.transaction.event.TransactionalEventListener
 
 class ProcessLinkChangedEventListener(
-    private val pluginConfigurationMappingResolver: PluginConfigurationMappingResolverImpl
+    private val pluginConfigurationMappingResolver: PluginConfigurationMappingResolver
 ) {
 
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
