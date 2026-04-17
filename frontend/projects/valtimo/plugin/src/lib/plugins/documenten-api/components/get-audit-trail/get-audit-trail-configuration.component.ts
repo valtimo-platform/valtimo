@@ -28,6 +28,7 @@ import {BehaviorSubject, combineLatest, Observable, Subscription, take} from 'rx
 import {GetAuditTrailConfig} from '../../models';
 
 @Component({
+  selector: 'valtimo-get-audit-trail-configuration',
   templateUrl: './get-audit-trail-configuration.component.html',
   standalone: false,
   changeDetection: ChangeDetectionStrategy.OnPush,
