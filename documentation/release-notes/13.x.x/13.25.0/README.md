@@ -1,17 +1,12 @@
 # 13.25.0
 
+{% hint style="info" %}
+**Release date 22-04-2026**
+{% endhint %}
+
 ## New Features
 
-* **New feature title**
-
-  New feature explanation.
-
-## Enhancements
-
-* **New enhancement title**
-
-  New enhancement explanation.
-
-## Bugfixes
-
-* New bugfix.
+  A new plugin action "Publiceer een notificatie" and "Ontvang een notificatie" have been added to the Notificaties API
+  plugin. This action allows publishing and receiving notifications via the Notificaties API from a BPMN process.
+  Documentation can be found in
+  the [Notificaties API plugin configuration guide](../../../features/plugins/configure-notificaties-api-plugin.md).
