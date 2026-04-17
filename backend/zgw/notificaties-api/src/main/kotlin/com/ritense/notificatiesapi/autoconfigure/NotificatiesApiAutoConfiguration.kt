@@ -22,6 +22,7 @@ import com.ritense.notificatiesapi.PluginsDeployedEventListener
 import com.ritense.notificatiesapi.client.NotificatiesApiClient
 import com.ritense.notificatiesapi.config.NotificatiesApiProcessingProperties
 import com.ritense.notificatiesapi.health.NotificatiesApiInboundEventHealthIndicator
+import com.ritense.notificatiesapi.listener.NotificatiesApiNotificationProcessLinkListener
 import com.ritense.notificatiesapi.repository.NotificatiesApiAbonnementLinkRepository
 import com.ritense.notificatiesapi.repository.NotificatiesApiInboundEventRepository
 import com.ritense.notificatiesapi.security.config.NotificatiesApiHttpSecurityConfigurer
@@ -33,7 +34,14 @@ import com.ritense.notificatiesapi.service.NotificatiesApiInboundEventWorker
 import com.ritense.notificatiesapi.service.NotificatiesApiService
 import com.ritense.notificatiesapi.web.rest.NotificatiesApiManagementResource
 import com.ritense.notificatiesapi.web.rest.NotificatiesApiResource
+import com.ritense.case.service.CaseDefinitionService
+import com.ritense.plugin.repository.PluginProcessLinkRepository
 import com.ritense.plugin.service.PluginService
+import com.ritense.processdocument.service.ProcessDefinitionCaseDefinitionService
+import com.ritense.processdocument.service.ProcessDocumentService
+import com.ritense.valtimo.service.ProcessPropertyService
+import org.operaton.bpm.engine.RepositoryService
+import org.operaton.bpm.engine.RuntimeService
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.autoconfigure.AutoConfiguration
@@ -67,11 +75,13 @@ class NotificatiesApiAutoConfiguration {
     @ConditionalOnMissingBean(NotificatiesApiPluginFactory::class)
     fun notificatiesApiPluginFactory(
         pluginService: PluginService,
-        client: NotificatiesApiClient
+        client: NotificatiesApiClient,
+        pluginProcessLinkRepository: PluginProcessLinkRepository
     ): NotificatiesApiPluginFactory {
         return NotificatiesApiPluginFactory(
             pluginService,
-            client
+            client,
+            pluginProcessLinkRepository
         )
     }
 
@@ -203,6 +213,30 @@ class NotificatiesApiAutoConfiguration {
         return NotificatiesApiInboundEventHealthIndicator(
             inboundEventRepository,
             processingProperties
+        )
+    }
+
+    @Bean
+    @ConditionalOnMissingBean(NotificatiesApiNotificationProcessLinkListener::class)
+    fun notificatiesApiNotificationProcessLinkListener(
+        pluginProcessLinkRepository: PluginProcessLinkRepository,
+        runtimeService: RuntimeService,
+        repositoryService: RepositoryService,
+        processPropertyService: ProcessPropertyService,
+        processDefinitionCaseDefinitionService: ProcessDefinitionCaseDefinitionService,
+        processDocumentService: ProcessDocumentService,
+        caseDefinitionService: CaseDefinitionService,
+        objectMapper: ObjectMapper,
+    ): NotificatiesApiNotificationProcessLinkListener {
+        return NotificatiesApiNotificationProcessLinkListener(
+            pluginProcessLinkRepository,
+            runtimeService,
+            repositoryService,
+            processPropertyService,
+            processDefinitionCaseDefinitionService,
+            processDocumentService,
+            caseDefinitionService,
+            objectMapper,
         )
     }
 

@@ -58,6 +58,10 @@ class ProcessDefinitionCaseDefinitionService(
         return processDefinitionCaseDefinitionRepository.findByIdProcessDefinitionId(processDefinitionId)!!
     }
 
+    fun findByProcessDefinitionIdOrNull(processDefinitionId: ProcessDefinitionId): ProcessDefinitionCaseDefinition? {
+        return processDefinitionCaseDefinitionRepository.findByIdProcessDefinitionId(processDefinitionId)
+    }
+
     fun findProcessDefinitionCaseDefinitions(caseDefinitionId: CaseDefinitionId): List<ProcessDefinitionCaseDefinition> {
         return processDefinitionCaseDefinitionRepository.findByIdCaseDefinitionId(caseDefinitionId)
     }

@@ -21,6 +21,8 @@ import com.ritense.plugin.domain.PluginProcessLink
 import com.ritense.plugin.domain.PluginProcessLinkId
 import com.ritense.processlink.domain.ActivityTypeWithEventName
 import com.ritense.processlink.repository.BaseProcessLinkRepository
+import org.springframework.data.jpa.repository.Query
+import org.springframework.data.repository.query.Param
 
 @Deprecated("Marked for removal since 10.6.0", ReplaceWith("ProcessLinkRepository"))
 class PluginProcessLinkRepository(
@@ -61,7 +63,13 @@ class PluginProcessLinkRepository(
     fun findByPluginConfigurationId(pluginConfigurationId: PluginConfigurationId) =
         pluginProcessLinkRepositoryImpl.findByPluginConfigurationId(pluginConfigurationId)
 
-
+    fun findByPluginDefinitionKeyAndPluginActionDefinitionKey(
+        pluginDefinitionKey: String,
+        pluginActionDefinitionKey: String
+    ) = pluginProcessLinkRepositoryImpl.findByPluginDefinitionKeyAndPluginActionDefinitionKey(
+        pluginDefinitionKey,
+        pluginActionDefinitionKey
+    )
 }
 
 @Deprecated("Marked for removal since 10.6.0", ReplaceWith("ProcessLinkRepository"))
@@ -73,4 +81,15 @@ interface PluginProcessLinkRepositoryImpl : BaseProcessLinkRepository<PluginProc
     ): List<PluginProcessLink>
 
     fun findByPluginConfigurationId(pluginConfigurationId: PluginConfigurationId): List<PluginProcessLink>
+
+    @Query(
+        """SELECT pl FROM PluginProcessLink pl
+        JOIN PluginConfiguration pc ON pl.pluginConfigurationId = pc.id
+        WHERE pc.pluginDefinition.key = :pluginDefinitionKey
+        AND pl.pluginActionDefinitionKey = :pluginActionDefinitionKey"""
+    )
+    fun findByPluginDefinitionKeyAndPluginActionDefinitionKey(
+        @Param("pluginDefinitionKey") pluginDefinitionKey: String,
+        @Param("pluginActionDefinitionKey") pluginActionDefinitionKey: String
+    ): List<PluginProcessLink>
 }

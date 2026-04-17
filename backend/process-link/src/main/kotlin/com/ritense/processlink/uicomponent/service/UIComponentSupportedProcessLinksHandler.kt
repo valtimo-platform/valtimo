@@ -25,6 +25,7 @@ class UIComponentSupportedProcessLinksHandler: SupportedProcessLinkTypeHandler {
 
     private val supportedActivityTypes = listOf(
         ActivityTypeWithEventName.USER_TASK_CREATE,
+        ActivityTypeWithEventName.MESSAGE_START_EVENT_START,
         ActivityTypeWithEventName.START_EVENT_START
     )
 

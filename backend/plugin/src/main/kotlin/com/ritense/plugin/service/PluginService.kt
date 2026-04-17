@@ -42,6 +42,8 @@ import com.ritense.plugin.domain.PluginProcessLinkId
 import com.ritense.plugin.domain.PluginProperty
 import com.ritense.plugin.events.PluginConfigurationDeletedEvent
 import com.ritense.plugin.events.PluginConfigurationIdUpdatedEvent
+import com.ritense.processlink.event.ProcessLinkCreatedEvent
+import com.ritense.processlink.event.ProcessLinkUpdatedEvent
 import com.ritense.plugin.exception.PluginEventInvocationException
 import com.ritense.plugin.exception.PluginPropertyParseException
 import com.ritense.plugin.exception.PluginPropertyRequiredException
@@ -373,6 +375,7 @@ class PluginService(
             activityType = processLink.activityType
         )
         pluginProcessLinkRepository.save(newProcessLink)
+        applicationEventPublisher.publishEvent(ProcessLinkCreatedEvent(PROCESS_LINK_TYPE_PLUGIN))
     }
 
     @Deprecated("Marked for removal since 10.6.0", ReplaceWith("processLinkService.updateProcessLink(i)"))
@@ -392,6 +395,7 @@ class PluginService(
                 pluginActionDefinitionKey = processLink.pluginActionDefinitionKey
             )
             pluginProcessLinkRepository.save(link)
+            applicationEventPublisher.publishEvent(ProcessLinkUpdatedEvent(PROCESS_LINK_TYPE_PLUGIN))
         }
     }
 
