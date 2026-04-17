@@ -24,7 +24,7 @@ Operaton by default allows access to Spring beans, e.g. to send an email. Valtim
     }
     ```
 
-The bean can now be used. For information on how to use these beans inside a BPMN, see [here](integrate-spring-bean-in-process.md).
+The bean can now be used. For information on how to use these beans inside a BPMN, see [integrating a Spring bean in a process](integrate-spring-bean-in-process.md).
 
 Note: the whitelist can be disabled by setting the following Spring property to `false`.
 

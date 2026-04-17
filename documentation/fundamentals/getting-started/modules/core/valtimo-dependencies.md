@@ -36,24 +36,25 @@ Please check the individual pages of the individual dependencies for any require
 * [Authorization](authorization.md)
 * [Case](case.md)
 * Changelog
-* [Connector](broken-reference)
 * [Contract](contract.md)
 * [Core](core.md)
 * [Dashboard](dashboard.md)
 * Data provider
-* [Document](broken-reference)
 * [Exporter](exporter.md)
 * [Form](form.md)
 * [Form flow](form-flow.md)
 * [Form flow Valtimo](form-flow-valtimo.md)
 * [Importer](importer.md)
 * Keycloak IAM
+* [Localization](localization.md)
 * Notes
-* Plugin
+* [Plugins](plugin.md)
 * [Plugin Valtimo](plugin.md)
 * [Process document](process-document.md)
 * Process link
-* [Temporary resource storage](temporary-resource-storage.md)
+* [Resource](resource.md)
 * Search
+* [Team](team.md)
+* [Temporary resource storage](temporary-resource-storage.md)
 * [Value resolver](value-resolver.md)
 * [Web](web/)
