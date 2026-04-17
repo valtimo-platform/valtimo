@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,6 +23,7 @@ import com.ritense.authorization.request.EntityAuthorizationRequest
 import com.ritense.documentenapi.DocumentenApiAuthentication
 import com.ritense.documentenapi.domain.DocumentenApiColumnKey
 import com.ritense.documentenapi.domain.FileUploadPart
+import com.ritense.documentenapi.event.DocumentAuditTrailListed
 import com.ritense.documentenapi.event.DocumentDeleted
 import com.ritense.documentenapi.event.DocumentInformatieObjectDownloaded
 import com.ritense.documentenapi.event.DocumentInformatieObjectViewed
@@ -161,6 +162,39 @@ class DocumentenApiClient(
         outboxService.send {
             DocumentInformatieObjectViewed(
                 result.url.toString(),
+                objectMapper.valueToTree(result)
+            )
+        }
+
+        return result
+    }
+
+    fun getAuditTrail(
+        authentication: DocumentenApiAuthentication,
+        caseDocumentId: UUID?,
+        documentUrl: URI
+    ): List<AuditTrail> {
+        authorizationService.requirePermission(
+            EntityAuthorizationRequest(
+                ResourcePermission::class.java,
+                ResourcePermissionActionProvider.VIEW,
+                ResourcePermission(caseDocumentId)
+            )
+        )
+
+        val result = restClient(authentication)
+            .get()
+            .uri {
+                ClientTools.baseUrlToBuilder(it, documentUrl)
+                    .pathSegment("audittrail")
+                    .build()
+            }
+            .retrieve()
+            .body<List<AuditTrail>>()!!
+
+        outboxService.send {
+            DocumentAuditTrailListed(
+                documentUrl.toASCIIString(),
                 objectMapper.valueToTree(result)
             )
         }
