@@ -49,6 +49,44 @@ When creating a process link the following properties have to be entered:
 * **Creation date (`aanmaakdatum`)** *(optional).* Timestamp when the action occurred. If empty, the current time is used.
 * **Attributes (`kenmerken`)** *(optional).* Key-value pairs for notification filtering.
 
+### Receive notification (Ontvang een notificatie)
+
+This action waits for an incoming notification via the Notificaties API. It can be used on receive tasks, intermediate
+message catch events, and message start events. For receive tasks and intermediate catch events, the waiting process
+instance is automatically signaled to continue when a matching notification arrives. For message start events, a new
+process instance is started when a matching notification arrives.
+
+{% hint style="info" %}
+When a message start event is used on a **system process**, the process is started directly without a case.
+When used on a **case process**, the linked case definition must have `canInitializeDocument` set to `true`. In that
+case, a new document and process instance are created together.
+{% endhint %}
+
+When creating a process link the following properties can be entered (all are optional — empty fields match all values):
+
+* **Channel (`kanaal`).** Filter on the notification channel. Only notifications on this kanaal will match.
+* **Action (`actie`).** Filter on the action that was performed. Only notifications with this actie will match.
+* **Attributes (`kenmerken`).** Filter on key-value pairs. Only notifications that contain all specified kenmerken will
+  match.
+
+When a notification matches, the following data from the notification is passed as process variables:
+
+| Process variable          | Description                                                         |
+|---------------------------|---------------------------------------------------------------------|
+| `notificatieKanaal`       | The channel the notification was received on.                       |
+| `notificatieHoofdObject`  | The URL of the main object related to the notification.             |
+| `notificatieResourceUrl`  | The URL of the resource that triggered the notification.            |
+| `notificatieActie`        | The action that was performed (e.g. `create`, `update`, `destroy`). |
+| `notificatieAanmaakdatum` | The creation date of the notification (ISO-8601 string).            |
+| `notificatieKenmerken`    | A map of key-value attribute pairs from the notification.           |
+
+{% hint style="warning" %}
+The channel must exist in the Notificaties API and the abonnement must be configured to filter on the specified
+kenmerken. Per kanaal, only kenmerken that are defined on the kanaal can be used as filters. See
+the [Notificaties API specification](https://vng-realisatie.github.io/gemma-zaken/standaard/notificaties/index) for
+details on kanalen and filters.
+{% endhint %}
+
 ## Subscriptions
 
 When working with the Notificaties API, it is important to keep subscriptions (abonnementen) as specific as possible.

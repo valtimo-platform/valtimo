@@ -23,12 +23,16 @@ import com.ritense.notificatiesapi.domain.NotificatiesApiAbonnementLink
 import com.ritense.notificatiesapi.exception.NotificatiesApiAbonnementException
 import com.ritense.notificatiesapi.repository.NotificatiesApiAbonnementLinkRepository
 import com.ritense.plugin.events.PluginConfigurationDeletedEvent
+import com.ritense.processlink.event.ProcessLinkCreatedEvent
+import com.ritense.processlink.event.ProcessLinkUpdatedEvent
 import com.ritense.plugin.service.PluginConfigurationSearchParameters
 import com.ritense.plugin.service.PluginService
 import com.ritense.valtimo.contract.event.ApplicationFullyReadyEvent
 import com.ritense.valtimo.contract.event.PluginsDeployedEvent
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.context.event.EventListener
+import org.springframework.transaction.event.TransactionPhase.AFTER_COMMIT
+import org.springframework.transaction.event.TransactionalEventListener
 import java.net.URI
 import java.security.SecureRandom
 import java.util.Base64
@@ -51,6 +55,18 @@ class PluginsDeployedEventListener(
     @EventListener(PluginConfigurationDeletedEvent::class, PluginsDeployedEvent::class)
     fun handlePluginConfigurationChangedEvent() {
         if (!applicationFullyReady) return
+        registerAbonnementenForNotificatiesApiPlugins()
+    }
+
+    @TransactionalEventListener(phase = AFTER_COMMIT)
+    fun handleProcessLinkCreatedEvent(event: ProcessLinkCreatedEvent) {
+        if (!applicationFullyReady || event.processLinkType != "plugin") return
+        registerAbonnementenForNotificatiesApiPlugins()
+    }
+
+    @TransactionalEventListener(phase = AFTER_COMMIT)
+    fun handleProcessLinkUpdatedEvent(event: ProcessLinkUpdatedEvent) {
+        if (!applicationFullyReady || event.processLinkType != "plugin") return
         registerAbonnementenForNotificatiesApiPlugins()
     }
 
@@ -99,9 +115,9 @@ class PluginsDeployedEventListener(
                 )
             }
 
-        val kanalen = configurations.flatMap {
-            it.getKanaalFilters()
-        }
+        val kanalen = configurations
+            .flatMap { it.getKanaalFilters() }
+            .distinct()
 
         val currentNotificatiesApiAbonnementLink = knownNotificatiesApiAbonnementLinks.firstOrNull {
             it.notificatiesApiConfigurationId.id == configurations.first()
