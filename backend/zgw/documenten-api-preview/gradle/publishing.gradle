@@ -28,6 +28,13 @@ pluginManager.withPlugin('maven-publish') {
                             email = "help@baseflow.com"
                         }
                     }
+
+                    licenses {
+                        license {
+                            name.set("EUPL 1.2")
+                            url.set("https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12")
+                        }
+                    }
                 }
             }
         }
