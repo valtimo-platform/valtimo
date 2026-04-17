@@ -38,24 +38,38 @@ test.describe('Case management', () => {
 
     caseManagementPage = new CaseManagementPage(page, request);
 
-    // Cleanup of draft versions
-    for (const key of ['test-case', 'test-case-import', 'custom-import-key']) {
-      try {
-        const versions = await ApiUtils.apiGet<Array<{versionTag: string; finalized: boolean}>>(
-          `/api/management/v1/case-definition/${key}/version`
-        );
-        for (const v of versions) {
-          try {
-            await ApiUtils.apiDelete(
-              `/api/management/v1/case-definition/${key}/version/${v.versionTag}`
-            );
-          } catch {
-            // May be finalized — cannot delete
+    // Clean up all test case definitions from previous runs
+    const testKeyPrefixes = ['test-case', 'custom-import', 'e2e-final-test'];
+    try {
+      const allCases = await ApiUtils.apiGet<Array<{caseDefinitionKey: string}>>(
+        '/api/management/v1/case-definition/case'
+      );
+      const testCaseKeys = [...new Set(
+        allCases
+          .map(c => c.caseDefinitionKey)
+          .filter(key => testKeyPrefixes.some(prefix => key.startsWith(prefix)))
+      )];
+
+      for (const key of testCaseKeys) {
+        try {
+          const versions = await ApiUtils.apiGet<Array<{versionTag: string}>>(
+            `/api/management/v1/case-definition/${key}/version`
+          );
+          for (const v of versions) {
+            try {
+              await ApiUtils.apiDelete(
+                `/api/management/v1/case-definition/${key}/version/${v.versionTag}`
+              );
+            } catch {
+              // May be finalized — cannot delete
+            }
           }
+        } catch {
+          // Ignore errors
         }
-      } catch {
-        // Case definition may not exist
       }
+    } catch {
+      // API may not be available
     }
 
     await page.goto('/');

@@ -46,6 +46,7 @@ test.describe('Case details management — Tabs', () => {
 
     // ensureDraftVersionSelected may redirect to /general — navigate to Case details > Tabs
     await tabsPage.switchToCaseDetailsTabs();
+    await tabsPage.cleanupStaleTabs();
   });
 
   test.afterAll(async () => {

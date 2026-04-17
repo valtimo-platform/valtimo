@@ -16,7 +16,7 @@
 
 import {APIRequestContext, expect, Page} from '@playwright/test';
 import * as ApiUtils from '../../utils/api.utils';
-import {CarbonList} from '../../shared/carbon-list/carbon-list.utils';
+import {CarbonList, CarbonListRow} from '../../shared/carbon-list/carbon-list.utils';
 import {ensureDraftVersionSelected} from '../../utils/version.utils';
 
 export class CaseDetailsManagementTabsPage {
@@ -74,6 +74,23 @@ export class CaseDetailsManagementTabsPage {
 
   async ensureDraftVersionSelected(): Promise<string> {
     return ensureDraftVersionSelected(this.page);
+  }
+
+  // ─── Cleanup ───────────────────────────────────────────────────────
+
+  async cleanupStaleTabs() {
+    const staleRowLocator = this.tabsPanel.locator('tbody tr').filter({
+      has: this.page.locator('td', {hasText: 'E2e'}),
+    });
+
+    let count = await staleRowLocator.count();
+    while (count > 0) {
+      const row = new CarbonListRow(this.page, staleRowLocator.first());
+      await row.clickAction('Delete');
+      await this.page.getByRole('button', {name: 'Delete'}).click();
+      await this.page.waitForTimeout(500);
+      count = await staleRowLocator.count();
+    }
   }
 
   // ─── Tab CRUD ─────────────────────────────────────────────────────

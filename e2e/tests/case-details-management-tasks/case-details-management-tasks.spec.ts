@@ -48,6 +48,7 @@ test.describe('Case details management — Tasks', () => {
     await tasksPage.goToCaseManagement(CASE_IDENTIFIER);
     await tasksPage.ensureDraftVersionSelected();
     await tasksPage.switchToTasksTab();
+    await tasksPage.cleanupStaleColumns();
   });
 
   test.afterAll(async () => {

@@ -199,8 +199,9 @@ export class CaseDetailsManagementWidgetsPage {
     await this.page.getByText(opts.path).click();
 
     // Select the operator from the dropdown
+    // Use force:true because the modal header can overlap the dropdown options
     await this.page.getByTestId('valuePathSelectorDropdownValueDropDown').click();
-    await this.page.getByText(opts.operator, {exact: true}).click();
+    await this.page.getByText(opts.operator, {exact: true}).click({force: true});
 
     // Fill in the value
     const valueInput = this.page.getByTestId('valuePathSelectorDropdownValueValueInput');

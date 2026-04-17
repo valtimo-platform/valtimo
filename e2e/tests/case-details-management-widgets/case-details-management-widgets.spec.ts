@@ -48,6 +48,12 @@ test.describe('Case details management — Widgets', () => {
     // Navigate to Case details > click existing Widgets tab row
     await widgetsPage.goToWidgetTab();
     widgetTabKey = widgetsPage.getWidgetTabKeyFromUrl();
+
+    // Clean up stale test widgets/dividers from previous runs
+    await widgetsPage.removeTestWidgetsViaApi(CASE_IDENTIFIER, draftVersion, widgetTabKey, 'E2e Test Widget');
+    await widgetsPage.removeTestWidgetsViaApi(CASE_IDENTIFIER, draftVersion, widgetTabKey, 'E2e Test Divider');
+    await widgetsPage.removeTestWidgetsViaApi(CASE_IDENTIFIER, draftVersion, widgetTabKey, 'E2e JSON Divider');
+    await widgetsPage.removeTestWidgetsViaApi(CASE_IDENTIFIER, draftVersion, widgetTabKey, 'E2e Reorder Widget');
   });
 
   test.afterAll(async () => {
