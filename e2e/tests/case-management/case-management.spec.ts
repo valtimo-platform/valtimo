@@ -16,6 +16,7 @@
 
 import {expect, test} from '@playwright/test';
 import * as ApiUtils from '../../utils/api.utils';
+import {CarbonList} from '../../shared/carbon-list/carbon-list.utils';
 import {CaseManagementPage} from './page';
 
 test.use({storageState: undefined});
@@ -124,11 +125,34 @@ test.describe('Case management', () => {
       // Navigate back to case management list (previous test may leave us on case detail)
       await caseManagementPage.goToCaseManagement();
 
-      // Act
-      const result = await caseManagementPage.uploadCase();
+      // Act — use a unique key to avoid conflicts with finalized versions from previous runs
+      const uniqueSuffix = Date.now().toString(36);
+      await caseManagementPage.uploadCaseButton.click();
+      await caseManagementPage.pluginConfigurationStep();
+      await caseManagementPage.uploadFileStep('test-case-import-success_1.0.0.case.zip');
+      const result = await caseManagementPage.configureStepWithCustomKey(
+        `Test Case Import ${uniqueSuffix}`,
+        `test-case-import-${uniqueSuffix}`
+      );
       createdKeys.push(result.key);
 
-      // Assert: the imported case should appear in the list
+      // Assert: import succeeded
+      expect(result.response.status()).toBe(200);
+
+      if (result.response.status() === 200) {
+        await caseManagementPage.uploadWizardNextButton.click();
+        await caseManagementPage.accessControlStep();
+        await caseManagementPage.dashboardStep();
+      }
+
+      // After the wizard closes, the app may navigate to the case detail page
+      await caseManagementPage.goToCaseManagement();
+
+      // Search for the case to handle paginated lists with many stale test cases
+      const list = new CarbonList(page);
+      await list.search(result.key);
+
+      // Assert: the imported case should appear in the filtered list
       await expect(page.getByRole('cell', {name: result.name}).first()).toBeVisible({timeout: 15_000});
     });
   });

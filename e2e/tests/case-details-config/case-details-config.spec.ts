@@ -64,10 +64,8 @@ test.describe('Case details configuration', () => {
     await caseDetailsConfigPage.deleteStatusViaApi(CASE_IDENTIFIER, visibilityStatusKey);
     await caseDetailsConfigPage.deleteStatusViaApi(CASE_IDENTIFIER, reorderKeyA);
     await caseDetailsConfigPage.deleteStatusViaApi(CASE_IDENTIFIER, reorderKeyB);
-    await caseDetailsConfigPage.deleteTagViaApi(CASE_IDENTIFIER, draftVersion, tagKey);
-    await caseDetailsConfigPage.deleteTagViaApi(CASE_IDENTIFIER, draftVersion, originalTagKey);
-    const colorTagKey = tagColorTestData.title.toLowerCase().replace(/\s+/g, '-');
-    await caseDetailsConfigPage.deleteTagViaApi(CASE_IDENTIFIER, draftVersion, colorTagKey);
+    // Clean up ALL stale test tags (catches accumulated tags from many previous runs)
+    await caseDetailsConfigPage.cleanupStaleTagsViaApi(CASE_IDENTIFIER);
   });
 
   test.afterAll(async () => {

@@ -139,14 +139,14 @@ export class CaseDetailsManagementHeaderPage {
       await accordionItem.click();
     }
 
-    // 1. Select the display type FIRST.
-    //    Carbon's modal focus trap consumes the first click on the dropdown button,
-    //    so we click once to hand focus to the dropdown, then click again to open it.
+    // 1. Select the display type from the dropdown
     const dropdownButton = modal.getByRole('button', {name: 'Display type'});
     await dropdownButton.click();
-    await dropdownButton.click();
-    const listbox = this.page.getByLabel('Listbox');
-    await listbox.waitFor({state: 'visible'});
+    const listbox = this.page.getByRole('listbox');
+    // If the focus trap consumed the first click, click again to open the dropdown
+    if (!(await listbox.isVisible({timeout: 1000}).catch(() => false))) {
+      await dropdownButton.click();
+    }
     await listbox.getByText(displayType).click();
 
     // 2. Fill the field title

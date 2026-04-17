@@ -16,7 +16,7 @@
 
 import {APIRequestContext, expect, Page} from '@playwright/test';
 import * as ApiUtils from '../../utils/api.utils';
-import {CarbonList, CarbonListRow} from '../../shared/carbon-list/carbon-list.utils';
+import {CarbonList} from '../../shared/carbon-list/carbon-list.utils';
 import {ensureDraftVersionSelected} from '../../utils/version.utils';
 
 export class CaseDetailsManagementTabsPage {
@@ -78,18 +78,22 @@ export class CaseDetailsManagementTabsPage {
 
   // ─── Cleanup ───────────────────────────────────────────────────────
 
-  async cleanupStaleTabs() {
-    const staleRowLocator = this.tabsPanel.locator('tbody tr').filter({
-      has: this.page.locator('td', {hasText: 'E2e'}),
-    });
-
-    let count = await staleRowLocator.count();
-    while (count > 0) {
-      const row = new CarbonListRow(this.page, staleRowLocator.first());
-      await row.clickAction('Delete');
-      await this.page.getByRole('button', {name: 'Delete'}).click();
-      await this.page.waitForTimeout(500);
-      count = await staleRowLocator.count();
+  /**
+   * Cleans up stale test tabs via API. This avoids pagination issues
+   * that the UI cleanup has when the list spans multiple pages.
+   */
+  async cleanupStaleTabsViaApi(caseDefinitionKey: string, versionTag: string) {
+    try {
+      const tabs = await ApiUtils.apiGet<Array<{key: string}>>(
+        `/api/management/v1/case-definition/${caseDefinitionKey}/version/${versionTag}/tab`
+      );
+      for (const tab of tabs) {
+        if (tab.key.startsWith('e2e-')) {
+          await this.deleteTabViaApi(caseDefinitionKey, versionTag, tab.key);
+        }
+      }
+    } catch {
+      // Ignore errors
     }
   }
 

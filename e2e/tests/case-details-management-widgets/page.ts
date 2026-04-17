@@ -51,6 +51,7 @@ export class CaseDetailsManagementWidgetsPage {
 
   async goToWidgetTab() {
     await this.page.getByRole('tab', {name: 'Case details'}).click();
+    await this.page.getByRole('tab', {name: 'Tabs'}).click();
     await this.page.getByRole('cell', {name: 'Widgets', exact: true}).click();
     await this.page.waitForSelector('valtimo-widget-management-editor');
   }

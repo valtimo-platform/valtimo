@@ -212,6 +212,8 @@ test.describe('Case details management — Widgets', () => {
 
   test.describe('6.95 — Add widget separator', () => {
     test('Add a divider via the modal', async () => {
+      // Ensure we're on the visual editor tab (previous JSON editor tests may leave us on the wrong tab)
+      await widgetsPage.switchToVisualEditor();
       await widgetsPage.addDivider(dividerData.dividerTitle);
 
       // Verify the divider was added to the list

@@ -299,4 +299,23 @@ export class CaseDetailsConfigPage {
       // Tag may already have been deleted by the test
     }
   }
+
+  /**
+   * Cleans up all stale test tags via API by listing all tags and deleting
+   * any whose key contains 'e2e' or 'e\de-test-tag' patterns from previous runs.
+   */
+  async cleanupStaleTagsViaApi(caseDefinitionKey: string) {
+    try {
+      const tags = await ApiUtils.apiGet<Array<{key: string}>>(
+        `${endpoints.caseDefinition.caseTag(caseDefinitionKey)}`
+      );
+      for (const tag of tags) {
+        if (/e\d*e-/.test(tag.key)) {
+          await this.deleteTagViaApi(caseDefinitionKey, '', tag.key);
+        }
+      }
+    } catch {
+      // Ignore errors
+    }
+  }
 }

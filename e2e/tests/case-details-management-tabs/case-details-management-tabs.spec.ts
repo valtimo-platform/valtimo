@@ -44,9 +44,11 @@ test.describe('Case details management — Tabs', () => {
     await tabsPage.goToCaseManagement(CASE_IDENTIFIER);
     draftVersion = await tabsPage.ensureDraftVersionSelected();
 
+    // Clean up stale test tabs via API (avoids pagination issues with UI cleanup)
+    await tabsPage.cleanupStaleTabsViaApi(CASE_IDENTIFIER, draftVersion);
+
     // ensureDraftVersionSelected may redirect to /general — navigate to Case details > Tabs
     await tabsPage.switchToCaseDetailsTabs();
-    await tabsPage.cleanupStaleTabs();
   });
 
   test.afterAll(async () => {
