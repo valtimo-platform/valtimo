@@ -554,8 +554,12 @@ internal class DocumentenApiClientTest {
         assertEquals("create", result[0].actie)
         assertEquals(201, result[0].resultaat)
         assertEquals("document-2024-001.pdf", result[0].resourceWeergave)
-        assertThat(result[0].wijzigingen.oud!!.isNull).isTrue()
-        assertThat(result[0].wijzigingen.nieuw!!.isNull).isFalse()
+        val oud = result[0].wijzigingen.oud
+        assertThat(oud == null || oud.isNull).isTrue()
+        val nieuw = result[0].wijzigingen.nieuw
+        assertThat(nieuw).isNotNull()
+        assertThat(nieuw!!.isObject).isTrue()
+        assertThat(nieuw["identificatie"].asText()).isEqualTo("document-2024-001")
     }
 
     @Test

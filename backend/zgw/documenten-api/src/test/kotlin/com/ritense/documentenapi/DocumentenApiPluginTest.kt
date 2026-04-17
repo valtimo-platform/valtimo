@@ -780,12 +780,13 @@ internal class DocumentenApiPluginTest {
         )
         plugin.url = URI("http://some-url")
 
-        assertThrows<Exception> {
+        val exception = assertThrows<IllegalArgumentException> {
             plugin.getAuditTrail(
                 executionMock,
                 documentUrl,
                 "myAuditTrailVar"
             )
         }
+        assertEquals("Failed to get audit trail. Business key is null.", exception.message)
     }
 }
