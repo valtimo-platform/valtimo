@@ -34,7 +34,11 @@ test.describe('Right sidebar settings', () => {
 
   test.afterAll(async () => {
     // Reset language to English and theme to Light for subsequent tests
-    await apiPut('/api/v1/user/settings', {languageCode: 'en', preferredTheme: 'G10'});
+    try {
+      await apiPut('/api/v1/user/settings', {languageCode: 'en', preferredTheme: 'G10'});
+    } catch {
+      // Bearer token may have expired — the tests already restore both settings via UI
+    }
     await context.close();
   });
 

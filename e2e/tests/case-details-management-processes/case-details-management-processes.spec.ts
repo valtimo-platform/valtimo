@@ -41,6 +41,15 @@ test.describe('Case details - Processes tab', () => {
 
     await page.goto('/');
     draftVersion = await processesPage.goToCaseDetailsProcesses(CASE_KEY);
+
+    // Clean up stale test process from previous runs
+    try {
+      await apiDelete(
+        `/api/management/v1/case-definition/${CASE_KEY}/version/${draftVersion}/process-definition/key/${TEST_PROCESS_KEY}`
+      );
+    } catch {
+      // Process may not exist
+    }
   });
 
   test.afterAll(async () => {
@@ -55,7 +64,7 @@ test.describe('Case details - Processes tab', () => {
     await context.close();
   });
 
-  test.describe('Process list', () => {
+  test.describe('6.6 — Process list', () => {
     test('Process list is visible and loaded', async () => {
       await processesPage.carbonList.waitForLoaded();
       await expect(processesPage.carbonList.table).toBeVisible();
@@ -91,7 +100,7 @@ test.describe('Case details - Processes tab', () => {
     });
   });
 
-  test.describe('Create, edit and delete process', () => {
+  test.describe('6.7, 6.8 — Create, edit and delete process', () => {
     test('Can upload a new process via the upload modal', async () => {
       await processesPage.uploadProcess();
 
