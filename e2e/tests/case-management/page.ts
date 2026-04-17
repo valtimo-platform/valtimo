@@ -292,12 +292,16 @@ export class CaseManagementPage {
     return {response: await responsePromise, key: actualKey};
   }
 
-  waitForKeyValidationResponse() {
+  waitForKeyValidationResponse(key?: string) {
     return this.page
       .waitForResponse(
-        res =>
-          /\/management\/v1\/case-definition\/[^/]+\/version/.test(res.url()) &&
-          res.request().method() === 'GET',
+        res => {
+          if (res.request().method() !== 'GET') return false;
+          const match = /\/management\/v1\/case-definition\/([^/?]+)\/version/.exec(res.url());
+          if (!match) return false;
+          if (key && decodeURIComponent(match[1]) !== key) return false;
+          return true;
+        },
         {timeout: 15_000}
       )
       .catch(() => {});
@@ -305,7 +309,9 @@ export class CaseManagementPage {
 
   async awaitConfigureValidation() {
     await Promise.race([
-      expect(this.uploadWizardNextButton).toBeEnabled({timeout: 15_000}).catch(() => {}),
+      expect(this.uploadWizardNextButton)
+        .toBeEnabled({timeout: 15_000})
+        .catch(() => {}),
       this.page
         .getByText('Cannot import')
         .waitFor({state: 'visible', timeout: 15_000})

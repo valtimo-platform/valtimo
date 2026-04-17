@@ -128,20 +128,22 @@ export class CaseDetailsManagementHeaderPage {
     await this.wizardCancelButton.click();
   }
 
+  get displayTypeDropdown() {
+    return this.wizardModal.locator('cds-accordion-item cds-dropdown').first();
+  }
+
   async fillFieldContent(title: string, valuePath: string, displayType = 'Text') {
-    // Expand the first accordion item if collapsed
-    const accordionItem = this.wizardModal.locator('cds-accordion-item').first();
-    const isExpanded = await accordionItem.getAttribute('expanded');
-    if (isExpanded === null || isExpanded === 'false') {
-      await accordionItem.click();
-    }
+    // The first accordion item is auto-expanded ([expanded]="$index === 0").
+    // Do NOT click the accordion — toggling it causes the first subsequent
+    // click inside the re-expanded content to be swallowed.
 
     // Fill the field title
-    await this.page.getByRole('textbox', {name: 'Title'}).fill(title);
+    await this.page.getByRole('textbox', {name: 'Title'}).first().fill(title);
 
-    // Select the display type from the dropdown
-    await this.page.getByRole('button', {name: 'Display type'}).click();
-    await this.page.getByText(displayType, {exact: true}).click();
+    // Select the display type — click the cds-dropdown element directly
+    // (not the button role inside it), matching the pattern used in other tests.
+    await this.displayTypeDropdown.click();
+    await this.page.getByRole('listbox').getByText(displayType, {exact: true}).click();
 
     // Select the value path from the combobox
     await this.page.getByRole('combobox', {name: 'Select a path'}).click();
@@ -220,11 +222,7 @@ export class CaseDetailsManagementHeaderPage {
     }
   }
 
-  async createHeaderWidgetViaApi(
-    caseDefinitionKey: string,
-    versionTag: string,
-    widget: object
-  ) {
+  async createHeaderWidgetViaApi(caseDefinitionKey: string, versionTag: string, widget: object) {
     try {
       return await ApiUtils.apiPost(
         endpoints.caseDefinition.headerWidget(caseDefinitionKey, versionTag),

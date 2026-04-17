@@ -156,7 +156,9 @@ test.describe('Case management', () => {
         await caseManagementPage.dashboardStep();
 
         // Assert: the case appears in the list under the actual key used
-        await expect(page.getByRole('cell', {name: result.key, exact: true})).toBeVisible({timeout: 15_000});
+        await expect(page.getByRole('cell', {name: result.key, exact: true})).toBeVisible({
+          timeout: 15_000,
+        });
       }
     });
 
@@ -235,11 +237,13 @@ test.describe('Case management', () => {
       await caseManagementPage.pluginConfigurationStep();
       await caseManagementPage.uploadFileStep('test-case-import-success_1.0.0.case.zip');
 
-      // Wait for the configure step to render, then set the key to the finalized one
+      // Wait for the configure step to render and initial validation to settle
       await expect(caseManagementPage.configureNameInput).toBeVisible();
       await expect(caseManagementPage.configureKeyInput).toBeVisible();
+      await caseManagementPage.awaitConfigureValidation();
 
-      const validationPromise = caseManagementPage.waitForKeyValidationResponse();
+      // Change the key to the finalized one and wait for its specific validation response
+      const validationPromise = caseManagementPage.waitForKeyValidationResponse(firstImport.key);
       await caseManagementPage.changeConfigureKey(firstImport.key);
       await validationPromise;
 
