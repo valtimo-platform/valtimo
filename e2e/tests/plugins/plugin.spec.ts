@@ -110,6 +110,9 @@ test.describe('9.9–9.27 — Plugin management', () => {
 
     await page.goto('/');
     await pluginPage.goToPluginManagement();
+
+    // Clean up stale test plugins from previous runs
+    await pluginPage.deleteAllTestPlugins();
   });
 
   test.afterAll(async () => {

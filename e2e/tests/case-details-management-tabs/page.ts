@@ -76,6 +76,27 @@ export class CaseDetailsManagementTabsPage {
     return ensureDraftVersionSelected(this.page);
   }
 
+  // ─── Cleanup ───────────────────────────────────────────────────────
+
+  /**
+   * Cleans up stale test tabs via API. This avoids pagination issues
+   * that the UI cleanup has when the list spans multiple pages.
+   */
+  async cleanupStaleTabsViaApi(caseDefinitionKey: string, versionTag: string) {
+    try {
+      const tabs = await ApiUtils.apiGet<Array<{key: string}>>(
+        `/api/management/v1/case-definition/${caseDefinitionKey}/version/${versionTag}/tab`
+      );
+      for (const tab of tabs) {
+        if (tab.key.startsWith('e2e-')) {
+          await this.deleteTabViaApi(caseDefinitionKey, versionTag, tab.key);
+        }
+      }
+    } catch {
+      // Ignore errors
+    }
+  }
+
   // ─── Tab CRUD ─────────────────────────────────────────────────────
 
   /**

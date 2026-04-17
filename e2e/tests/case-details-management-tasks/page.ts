@@ -15,7 +15,7 @@
  */
 
 import {APIRequestContext, expect, Locator, Page} from '@playwright/test';
-import {CarbonList} from '../../shared/carbon-list/carbon-list.utils';
+import {CarbonList, CarbonListRow} from '../../shared/carbon-list/carbon-list.utils';
 import {VALUE_PATH_SELECTOR_TEST_IDS} from '../../constants';
 import * as ApiUtils from '../../utils/api.utils';
 import {ensureDraftVersionSelected} from '../../utils/version.utils';
@@ -138,6 +138,23 @@ export class CaseDetailsManagementTasksPage {
     await this.page.getByRole('listbox').getByText(itemText, {exact: true}).click();
     // Verify the dropdown reflects the selection (ensures Angular form control is updated)
     await expect(dropdownLocator).toContainText(itemText);
+  }
+
+  // ─── Cleanup ───────────────────────────────────────────────────────
+
+  async cleanupStaleColumns() {
+    const staleRowLocator = this.columnsPanel.locator('tbody tr').filter({
+      has: this.page.locator('td', {hasText: 'E2e Task Col'}),
+    });
+
+    let count = await staleRowLocator.count();
+    while (count > 0) {
+      const row = new CarbonListRow(this.page, staleRowLocator.first());
+      await row.clickAction('Delete');
+      await this.page.getByRole('button', {name: 'Delete column'}).click();
+      await this.page.waitForTimeout(500);
+      count = await staleRowLocator.count();
+    }
   }
 
   // ─── Actions ──────────────────────────────────────────────────────

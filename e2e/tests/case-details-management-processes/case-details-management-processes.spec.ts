@@ -41,6 +41,15 @@ test.describe('Case details - Processes tab', () => {
 
     await page.goto('/');
     draftVersion = await processesPage.goToCaseDetailsProcesses(CASE_KEY);
+
+    // Clean up stale test process from previous runs
+    try {
+      await apiDelete(
+        `/api/management/v1/case-definition/${CASE_KEY}/version/${draftVersion}/process-definition/key/${TEST_PROCESS_KEY}`
+      );
+    } catch {
+      // Process may not exist
+    }
   });
 
   test.afterAll(async () => {

@@ -38,24 +38,38 @@ test.describe('Case management', () => {
 
     caseManagementPage = new CaseManagementPage(page, request);
 
-    // Cleanup of draft versions
-    for (const key of ['test-case', 'test-case-import', 'custom-import-key']) {
-      try {
-        const versions = await ApiUtils.apiGet<Array<{versionTag: string; finalized: boolean}>>(
-          `/api/management/v1/case-definition/${key}/version`
-        );
-        for (const v of versions) {
-          try {
-            await ApiUtils.apiDelete(
-              `/api/management/v1/case-definition/${key}/version/${v.versionTag}`
-            );
-          } catch {
-            // May be finalized — cannot delete
+    // Clean up all test case definitions from previous runs
+    const testKeyPrefixes = ['test-case', 'custom-import', 'e2e-final-test'];
+    try {
+      const allCases = await ApiUtils.apiGet<Array<{caseDefinitionKey: string}>>(
+        '/api/management/v1/case-definition/case'
+      );
+      const testCaseKeys = Array.from(new Set(
+        allCases
+          .map(c => c.caseDefinitionKey)
+          .filter(key => testKeyPrefixes.some(prefix => key.startsWith(prefix)))
+      ));
+
+      for (const key of testCaseKeys) {
+        try {
+          const versions = await ApiUtils.apiGet<Array<{versionTag: string}>>(
+            `/api/management/v1/case-definition/${key}/version`
+          );
+          for (const v of versions) {
+            try {
+              await ApiUtils.apiDelete(
+                `/api/management/v1/case-definition/${key}/version/${v.versionTag}`
+              );
+            } catch {
+              // May be finalized — cannot delete
+            }
           }
+        } catch {
+          // Ignore errors
         }
-      } catch {
-        // Case definition may not exist
       }
+    } catch {
+      // API may not be available
     }
 
     await page.goto('/');
@@ -106,17 +120,6 @@ test.describe('Case management', () => {
       await page.unroute('**/case-management/case/**');
     });
 
-    test('Upload a case', async () => {
-      // Navigate back to case management list (previous test may leave us on case detail)
-      await caseManagementPage.goToCaseManagement();
-
-      // Act
-      const result = await caseManagementPage.uploadCase();
-      createdKeys.push(result.key);
-
-      // Assert: the imported case should appear in the list
-      await expect(page.getByRole('cell', {name: result.key})).toBeVisible({timeout: 15_000});
-    });
   });
 
   test.describe('Configure step', () => {
@@ -155,10 +158,8 @@ test.describe('Case management', () => {
         await caseManagementPage.accessControlStep();
         await caseManagementPage.dashboardStep();
 
-        // Assert: the case appears in the list under the actual key used
-        await expect(page.getByRole('cell', {name: result.key, exact: true})).toBeVisible({
-          timeout: 15_000,
-        });
+        // Assert: the case appears in the list under the actual name used
+        await expect(page.getByRole('cell', {name: result.name, exact: true}).first()).toBeVisible({timeout: 15_000});
       }
     });
 

@@ -15,7 +15,7 @@
  */
 
 import {APIRequestContext, expect, Page} from '@playwright/test';
-import {CarbonList} from '../../shared/carbon-list/carbon-list.utils';
+import {CarbonList, CarbonListRow} from '../../shared/carbon-list/carbon-list.utils';
 import * as ApiUtils from '../../utils/api.utils';
 import {ensureDraftVersionSelected, getVersionFromUrl} from '../../utils/version.utils';
 import {clearMonacoEditor, pasteToMonacoEditor} from '../../utils/monaco.utils';
@@ -70,6 +70,23 @@ export class CaseDetailsManagementFormFlowsPage {
 
   get cancelFormFlowButton() {
     return this.page.locator('cds-modal-footer').getByRole('button', {name: 'Cancel'});
+  }
+
+  // ─── Cleanup ───────────────────────────────────────────────────────
+
+  async cleanupStaleFormFlows() {
+    const staleRowLocator = this.formFlowsList.locator('tbody tr').filter({
+      has: this.page.locator('td', {hasText: 'e2e-'}),
+    });
+
+    let count = await staleRowLocator.count();
+    while (count > 0) {
+      const row = new CarbonListRow(this.page, staleRowLocator.first());
+      await row.clickAction('Delete');
+      await this.page.getByRole('button', {name: 'Delete'}).click();
+      await this.page.waitForTimeout(500);
+      count = await staleRowLocator.count();
+    }
   }
 
   // ─── Actions ──────────────────────────────────────────────────────

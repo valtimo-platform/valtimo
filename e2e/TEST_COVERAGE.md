@@ -5,10 +5,10 @@
 | Category                    | Features | Functions | ✅ Covered | ❌ Not Covered |
 |-----------------------------|----------|-----------|------------|----------------|
 | User Features (ROLE_USER)   | 5        | 21        | 6          | 15             |
-| Admin Features (ROLE_ADMIN) | 15       | 328       | 63         | 263            |
-| **Total**                   | **20**   | **349**   | **69**     | **278**        |
+| Admin Features (ROLE_ADMIN) | 15       | 328       | 74         | 252            |
+| **Total**                   | **20**   | **349**   | **80**     | **267**        |
 
-**Coverage:** `69 / 349` — `19.8%`
+**Coverage:** `80 / 349` — `22.9%`
 
 ---
 
@@ -249,17 +249,17 @@
 
 | #    | Function                 | Test Scenarios                                                            | Coverage | Notes                                           |
 |:-----|:-------------------------|:--------------------------------------------------------------------------|:--------:|:------------------------------------------------|
-| 6.87 | View widgets list        | View widgets list                                                         |    ❌    |                                                 |
-| 6.88 | Add widget               | Add widget via 6-step wizard                                              |    ❌    |                                                 |
-| 6.89 | Select widget type       | Select widget type (Fields / Custom / Form.io / Table / Collection / Map) |    ❌    |                                                 |
-| 6.90 | Set widget width         | Set widget width                                                          |    ❌    |                                                 |
-| 6.91 | Set widget density       | Set widget density                                                        |    ❌    |                                                 |
-| 6.92 | Set widget style         | Set widget style                                                          |    ❌    |                                                 |
-| 6.93 | Configure widget content | Configure widget content                                                  |    ❌    |                                                 |
+| 6.87 | View widgets list        | View widgets list                                                         |    ✅    | case-details-management-widgets.spec.ts         |
+| 6.88 | Add widget               | Add widget via 6-step wizard                                              |    ✅    | case-details-management-widgets.spec.ts         |
+| 6.89 | Select widget type       | Select widget type (Fields / Custom / Form.io / Table / Collection / Map) |    ✅    | case-details-management-widgets.spec.ts         |
+| 6.90 | Set widget width         | Set widget width                                                          |    ✅    | case-details-management-widgets.spec.ts         |
+| 6.91 | Set widget density       | Set widget density                                                        |    ✅    | case-details-management-widgets.spec.ts         |
+| 6.92 | Set widget style         | Set widget style                                                          |    ✅    | case-details-management-widgets.spec.ts         |
+| 6.93 | Configure widget content | Configure widget content                                                  |    ✅    | case-details-management-widgets.spec.ts         |
 | 6.94 | Set widget conditions    | Set widget display conditions                                             |    ❌    |                                                 |
-| 6.95 | Add widget separator     | Add widget separator                                                      |    ❌    |                                                 |
-| 6.96 | Rearrange widgets        | Rearrange widgets order                                                   |    ❌    |                                                 |
-| 6.97 | Use widget JSON editor   | Use widget JSON editor                                                    |    ❌    |                                                 |
+| 6.95 | Add widget separator     | Add widget separator                                                      |    ✅    | case-details-management-widgets.spec.ts         |
+| 6.96 | Rearrange widgets        | Rearrange widgets order                                                   |    ✅    | case-details-management-widgets.spec.ts         |
+| 6.97 | Use widget JSON editor   | Use widget JSON editor                                                    |    ✅    | case-details-management-widgets.spec.ts         |
 
 #### 6P · ZGW — General
 
@@ -727,8 +727,8 @@
 |:-------------------------|:-------:|
 | Total Features           |   20    |
 | Total Functions          |   349   |
-| ✅ Covered by Playwright |   69    |
-| ❌ Not covered           |   278   |
+| ✅ Covered by Playwright |   80    |
+| ❌ Not covered           |   267   |
 | ⏳ In progress           |    0    |
 | `N/A` Not applicable     |    2    |
-| **Coverage %**           | **19.8%** |
+| **Coverage %**           | **22.9%** |

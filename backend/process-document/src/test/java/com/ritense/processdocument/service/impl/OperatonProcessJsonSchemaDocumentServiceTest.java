@@ -25,6 +25,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.ritense.authorization.AuthorizationService;
+import com.ritense.valtimo.contract.document.CaseDocumentResolver;
 import com.ritense.document.domain.impl.JsonSchemaDocument;
 import com.ritense.document.domain.impl.JsonSchemaDocumentDefinitionId;
 import com.ritense.document.domain.impl.JsonSchemaDocumentId;
@@ -54,13 +55,15 @@ class OperatonProcessJsonSchemaDocumentServiceTest {
     private final OperatonProcessService operatonProcessService = mock(OperatonProcessService.class);
     private final ProcessDocumentAssociationService processDocumentAssociationService = mock(ProcessDocumentAssociationService.class);
     private final AuthorizationService authorizationService = mock(AuthorizationService.class);
+    private final CaseDocumentResolver caseDocumentResolver = mock(CaseDocumentResolver.class);
 
     private final ProcessDocumentService processDocumentService = new OperatonProcessJsonSchemaDocumentService(
         documentService,
         operatonTaskService,
         operatonProcessService,
         processDocumentAssociationService,
-        authorizationService
+        authorizationService,
+        caseDocumentResolver
     );
 
     @Test

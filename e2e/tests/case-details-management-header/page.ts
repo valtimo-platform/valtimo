@@ -18,6 +18,7 @@ import {APIRequestContext, expect, Page} from '@playwright/test';
 import * as ApiUtils from '../../utils/api.utils';
 import {endpoints} from '../../api/endpoints';
 import {ensureDraftVersionSelected} from '../../utils/version.utils';
+import {WIDGET_CONTENT_FIELDS_TEST_IDS} from '../../constants';
 
 export class CaseDetailsManagementHeaderPage {
   constructor(
@@ -128,25 +129,32 @@ export class CaseDetailsManagementHeaderPage {
     await this.wizardCancelButton.click();
   }
 
-  get displayTypeDropdown() {
-    return this.wizardModal.locator('cds-accordion-item cds-dropdown').first();
-  }
-
   async fillFieldContent(title: string, valuePath: string, displayType = 'Text') {
-    // The first accordion item is auto-expanded ([expanded]="$index === 0").
-    // Do NOT click the accordion — toggling it causes the first subsequent
-    // click inside the re-expanded content to be swallowed.
+    const modal = this.wizardModal;
 
-    // Fill the field title
-    await this.page.getByRole('textbox', {name: 'Title'}).first().fill(title);
+    // Expand the first accordion item if collapsed
+    const accordionItem = modal.locator('cds-accordion-item').first();
+    const isExpanded = await accordionItem.getAttribute('expanded');
+    if (isExpanded === null || isExpanded === 'false') {
+      await accordionItem.click();
+    }
 
-    // Select the display type — click the cds-dropdown element directly
-    // (not the button role inside it), matching the pattern used in other tests.
-    await this.displayTypeDropdown.click();
-    await this.page.getByRole('listbox').getByText(displayType, {exact: true}).click();
+    // 1. Select the display type from the dropdown
+    const dropdownButton = modal.getByRole('button', {name: 'Display type'});
+    await dropdownButton.click();
+    const listbox = this.page.getByRole('listbox');
+    // If the focus trap consumed the first click, click again to open the dropdown
+    if (!(await listbox.isVisible({timeout: 1000}).catch(() => false))) {
+      await dropdownButton.click();
+    }
+    await listbox.getByText(displayType).click();
 
-    // Select the value path from the combobox
-    await this.page.getByRole('combobox', {name: 'Select a path'}).click();
+    // 2. Fill the field title
+    await modal.getByTestId(WIDGET_CONTENT_FIELDS_TEST_IDS.fieldTitleInput).fill(title);
+
+    // 3. Select the value path from the combobox
+    const valuePathSelector = modal.getByTestId(WIDGET_CONTENT_FIELDS_TEST_IDS.valuePathSelector);
+    await valuePathSelector.getByRole('combobox').click();
     await this.page.getByText(valuePath).click();
   }
 
@@ -222,7 +230,11 @@ export class CaseDetailsManagementHeaderPage {
     }
   }
 
-  async createHeaderWidgetViaApi(caseDefinitionKey: string, versionTag: string, widget: object) {
+  async createHeaderWidgetViaApi(
+    caseDefinitionKey: string,
+    versionTag: string,
+    widget: object
+  ) {
     try {
       return await ApiUtils.apiPost(
         endpoints.caseDefinition.headerWidget(caseDefinitionKey, versionTag),

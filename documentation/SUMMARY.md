@@ -82,6 +82,7 @@
 * [🗃️ Cases](features/case/README.md)
   * [General](features/case/general.md)
   * [Processes](features/case/processes.md)
+  * [Actions](features/case/actions.md)
   * [Decision tables](features/case/decision-tables.md)
   * [Document](features/case/document-definition.md)
   * [Forms](features/case/forms/README.md)
@@ -178,6 +179,7 @@
 
 * [Release notes](release-notes/release-notes.md)
 * [13.x.x](release-notes/13.x.x/README.md)
+  * [13.25.0](release-notes/13.x.x/13.25.0/README.md)
   * [13.24.0](release-notes/13.x.x/13.24.0/README.md)
   * [13.23.0](release-notes/13.x.x/13.23.0/README.md)
   * [13.22.0](release-notes/13.x.x/13.22.0/README.md)

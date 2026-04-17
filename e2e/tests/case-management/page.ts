@@ -33,6 +33,7 @@ export interface UploadCaseOptions {
 export interface ConfigureStepResult {
   response: Awaited<ReturnType<Page['waitForResponse']>>;
   key: string;
+  name: string;
 }
 
 export class CaseManagementPage {
@@ -243,6 +244,7 @@ export class CaseManagementPage {
     }
 
     const key = await this.configureKeyInput.inputValue();
+    const name = await this.configureNameInput.inputValue();
 
     const responsePromise = this.page.waitForResponse(
       res =>
@@ -251,7 +253,7 @@ export class CaseManagementPage {
     await expect(this.uploadWizardNextButton).toBeEnabled({timeout: 10_000});
     await this.uploadWizardNextButton.click();
 
-    return {response: await responsePromise, key};
+    return {response: await responsePromise, key, name};
   }
 
   async configureStepWithCustomKey(name: string, key: string): Promise<ConfigureStepResult> {
@@ -281,6 +283,7 @@ export class CaseManagementPage {
     }
 
     const actualKey = await this.configureKeyInput.inputValue();
+    const actualName = await this.configureNameInput.inputValue();
 
     const responsePromise = this.page.waitForResponse(
       res =>
@@ -289,7 +292,7 @@ export class CaseManagementPage {
     await expect(this.uploadWizardNextButton).toBeEnabled({timeout: 10_000});
     await this.uploadWizardNextButton.click();
 
-    return {response: await responsePromise, key: actualKey};
+    return {response: await responsePromise, key: actualKey, name: actualName};
   }
 
   waitForKeyValidationResponse(key?: string) {
