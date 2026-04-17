@@ -256,7 +256,7 @@
 | 6.91 | Set widget density       | Set widget density                                                        |    ✅    | case-details-management-widgets.spec.ts         |
 | 6.92 | Set widget style         | Set widget style                                                          |    ✅    | case-details-management-widgets.spec.ts         |
 | 6.93 | Configure widget content | Configure widget content                                                  |    ✅    | case-details-management-widgets.spec.ts         |
-| 6.94 | Set widget conditions    | Set widget display conditions                                             |    ✅    | case-details-management-widgets.spec.ts         |
+| 6.94 | Set widget conditions    | Set widget display conditions                                             |    ❌    |                                                 |
 | 6.95 | Add widget separator     | Add widget separator                                                      |    ✅    | case-details-management-widgets.spec.ts         |
 | 6.96 | Rearrange widgets        | Rearrange widgets order                                                   |    ✅    | case-details-management-widgets.spec.ts         |
 | 6.97 | Use widget JSON editor   | Use widget JSON editor                                                    |    ✅    | case-details-management-widgets.spec.ts         |

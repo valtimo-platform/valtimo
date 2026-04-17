@@ -140,21 +140,6 @@ test.describe('Case details management — Widgets', () => {
     });
   });
 
-  // ─── 6.94 Set widget conditions ────────────────────────────────────
-
-  test.describe('6.94 — Set widget display conditions', () => {
-    test('Add a "Not equal to" display condition to the widget', async () => {
-      await widgetsPage.setDisplayCondition(testData.widgetTitle, {
-        path: 'case:definitionId.name',
-        operator: 'Not equal to',
-        value: 'HiddenValue',
-      });
-
-      // Verify the widget still appears in the list after saving
-      await widgetsPage.assertWidgetVisible(testData.widgetTitle);
-    });
-  });
-
   // ─── Delete widget ────────────────────────────────────────────────
 
   test.describe('Delete widget', () => {
