@@ -132,8 +132,14 @@ export class CaseDetailsConfigPage {
   // ─── Status CRUD ──────────────────────────────────────────────────
 
   async addStatus(title: string) {
+    await this.page.waitForTimeout(300);
     await this.statusAddButton.click();
-    await this.statusTitleInput.fill(title);
+    // Wait for the modal to be in 'add' mode
+    await expect(this.statusAddConfirmButton).toBeAttached({timeout: 10_000});
+    await expect(this.statusTitleInput).toBeVisible();
+    await this.statusTitleInput.pressSequentially(title, {delay: 30});
+    await expect(this.statusKeyInput).not.toHaveValue('', {timeout: 10_000});
+    await expect(this.statusAddConfirmButton).toBeEnabled();
     await this.statusAddConfirmButton.click();
   }
 
@@ -145,10 +151,9 @@ export class CaseDetailsConfigPage {
   }
 
   async deleteStatus(title: string) {
-    // Carbon valtimo-carbon-list: use getByRole('menu') to find the overflow menu trigger
     const row = this.page.locator(`tr:has(td:has-text("${title}"))`);
-    await row.getByRole('menu').locator('button').click();
-    await this.page.getByRole('menuitem', {name: 'Delete'}).click();
+    await row.locator('.v-overflow-menu__trigger').click();
+    await this.page.getByRole('menu').getByRole('menuitem', {name: 'Delete'}).click();
     await this.page.getByRole('button', {name: 'Delete'}).click();
   }
 
@@ -214,8 +219,16 @@ export class CaseDetailsConfigPage {
   // ─── Tag CRUD ─────────────────────────────────────────────────────
 
   async addTag(title: string) {
+    // Wait for the modal's initial 'closed' animation timeout (240ms) to resolve
+    await this.page.waitForTimeout(300);
     await this.tagAddButton.click();
-    await this.tagTitleInput.fill(title);
+    // Wait for the modal to be fully in 'add' mode. The Add button only renders when
+    // Angular's isAdd$ emits true, which also enables auto-key generation.
+    await expect(this.tagAddConfirmButton).toBeAttached({timeout: 10_000});
+    await expect(this.tagTitleInput).toBeVisible();
+    await this.tagTitleInput.pressSequentially(title, {delay: 30});
+    await expect(this.tagKeyInput).not.toHaveValue('', {timeout: 10_000});
+    await expect(this.tagAddConfirmButton).toBeEnabled();
     await this.tagAddConfirmButton.click();
   }
 
@@ -227,10 +240,9 @@ export class CaseDetailsConfigPage {
   }
 
   async deleteTag(title: string) {
-    // Carbon valtimo-carbon-list: use getByRole('menu') to find the overflow menu trigger
     const row = this.page.locator(`tr:has(td:has-text("${title}"))`);
-    await row.getByRole('menu').locator('button').click();
-    await this.page.getByRole('menuitem', {name: 'Delete'}).click();
+    await row.locator('.v-overflow-menu__trigger').click();
+    await this.page.getByRole('menu').getByRole('menuitem', {name: 'Delete'}).click();
     await this.page.getByRole('button', {name: 'Delete'}).click();
   }
 
@@ -240,6 +252,26 @@ export class CaseDetailsConfigPage {
 
   async assertTagNotExists(title: string) {
     await expect(this.page.locator(`td:has-text("${title}")`)).toHaveCount(0);
+  }
+
+  async openTagEditModal(title: string) {
+    await this.page.locator(`tr:has(td:has-text("${title}"))`).click();
+  }
+
+  async selectTagColor(colorName: string) {
+    await this.tagColorDropdown.click();
+    await this.page.getByRole('listbox').getByText(colorName, {exact: true}).click();
+  }
+
+  async saveTag() {
+    await expect(this.tagSaveButton).toBeEnabled();
+    await this.tagSaveButton.click();
+  }
+
+  async assertTagColorInList(title: string, expectedColorLabel: string) {
+    const row = this.page.locator(`tr:has(td:has-text("${title}"))`);
+    const colorTag = row.locator('cds-tag');
+    await expect(colorTag).toContainText(expectedColorLabel);
   }
 
   // ─── API Cleanup ──────────────────────────────────────────────────
@@ -265,6 +297,25 @@ export class CaseDetailsConfigPage {
       );
     } catch {
       // Tag may already have been deleted by the test
+    }
+  }
+
+  /**
+   * Cleans up all stale test tags via API by listing all tags and deleting
+   * any whose key contains 'e2e' or 'e\de-test-tag' patterns from previous runs.
+   */
+  async cleanupStaleTagsViaApi(caseDefinitionKey: string) {
+    try {
+      const tags = await ApiUtils.apiGet<Array<{key: string}>>(
+        `${endpoints.caseDefinition.caseTag(caseDefinitionKey)}`
+      );
+      for (const tag of tags) {
+        if (/e\d*e-/.test(tag.key)) {
+          await this.deleteTagViaApi(caseDefinitionKey, '', tag.key);
+        }
+      }
+    } catch {
+      // Ignore errors
     }
   }
 }

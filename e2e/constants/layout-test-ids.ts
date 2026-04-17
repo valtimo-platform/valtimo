@@ -14,8 +14,13 @@
  * limitations under the License.
  */
 
-export * from './custom-widget-token';
-export * from './layout.test-ids';
-export * from './widget.constants';
-export * from './widget-management.constants';
-export * from './widget-color.constants';
+export {
+  WIDGET_EDITOR_TEST_IDS,
+  WIDGET_WIZARD_TEST_IDS,
+  WIDGET_WIZARD_TYPE_TEST_IDS,
+  WIDGET_WIZARD_WIDTH_TEST_IDS,
+  WIDGET_WIZARD_DENSITY_TEST_IDS,
+  WIDGET_WIZARD_APPEARANCE_TEST_IDS,
+  WIDGET_DIVIDER_MODAL_TEST_IDS,
+  WIDGET_CONTENT_FIELDS_TEST_IDS,
+} from '../../frontend/projects/valtimo/layout/src/lib/constants/layout.test-ids';

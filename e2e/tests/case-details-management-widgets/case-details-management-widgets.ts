@@ -18,19 +18,37 @@ import {generateId} from '../../utils/dataGenerator';
 
 export const CASE_IDENTIFIER = 'bezwaar';
 
-export function createTabTestData() {
+export function createWidgetTestData() {
   const id = generateId();
   return {
-    title: `E2e Test Tab ${id}`,
-    updatedTitle: `E2e Updated Tab ${id}`,
+    tabName: `E2e Widget Tab ${id}`,
+    tabKey: `e2e-widget-tab-${id}`,
+    widgetTitle: `E2e Test Widget ${id}`,
+    fieldTitle: 'Test Field',
+    valuePath: 'case:definitionId.name',
   };
 }
 
-export function createTabReorderTestData() {
+export function createDividerTestData() {
+  const id = generateId();
+  return {
+    dividerTitle: `E2e Test Divider ${id}`,
+  };
+}
+
+export function createJsonEditorDividerData() {
+  const id = generateId();
+  return {
+    dividerTitle: `E2e JSON Divider ${id}`,
+    dividerKey: `e2e-json-divider-${id}`,
+  };
+}
+
+export function createReorderTestData() {
   const idA = generateId();
   const idB = generateId();
   return {
-    titleA: `E2e Reorder Tab A ${idA}`,
-    titleB: `E2e Reorder Tab B ${idB}`,
+    titleA: `E2e Reorder Widget A ${idA}`,
+    titleB: `E2e Reorder Widget B ${idB}`,
   };
 }

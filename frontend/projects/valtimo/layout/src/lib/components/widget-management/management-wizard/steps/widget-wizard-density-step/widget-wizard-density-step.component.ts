@@ -18,6 +18,7 @@ import {ChangeDetectionStrategy, Component} from '@angular/core';
 import {TranslateModule} from '@ngx-translate/core';
 import {TilesModule} from 'carbon-components-angular';
 import {WidgetDensity} from '../../../../../models';
+import {WIDGET_WIZARD_DENSITY_TEST_IDS} from '../../../../../constants';
 import {WidgetWizardService} from '../../../../../services';
 
 @Component({
@@ -27,6 +28,7 @@ import {WidgetWizardService} from '../../../../../services';
   imports: [CommonModule, TranslateModule, TilesModule],
 })
 export class WidgetWizardDensityStepComponent {
+  protected readonly testIds = WIDGET_WIZARD_DENSITY_TEST_IDS;
   public readonly WidgetDensity = WidgetDensity;
   public readonly $widgetDensity = this.widgetWizardService.$widgetDensity;
 

@@ -14,8 +14,21 @@
  * limitations under the License.
  */
 
-export * from './custom-widget-token';
-export * from './layout.test-ids';
-export * from './widget.constants';
-export * from './widget-management.constants';
-export * from './widget-color.constants';
+export const CASE_IDENTIFIER = 'bezwaar';
+
+export const HEADER_WIDGET_FIXTURE = {
+  type: 'fields',
+  highContrast: false,
+  properties: {
+    columns: [
+      [
+        {
+          key: 'e2e-field',
+          title: 'E2e Field',
+          value: 'doc:voornaam',
+          displayProperties: {type: 'text'},
+        },
+      ],
+    ],
+  },
+};

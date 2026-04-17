@@ -21,6 +21,7 @@
 >
   <cds-selection-tile
     class="valtimo-widget-wizard-step__tile"
+    [attr.data-test-id]="testIds.tileDefault"
     [value]="WidgetDensity.DEFAULT"
     [selected]="$widgetDensity() === WidgetDensity.DEFAULT"
   >
@@ -36,6 +37,7 @@
 
   <cds-selection-tile
     class="valtimo-widget-wizard-step__tile"
+    [attr.data-test-id]="testIds.tileCompact"
     [value]="WidgetDensity.COMPACT"
     [selected]="$widgetDensity() === WidgetDensity.COMPACT"
   >
