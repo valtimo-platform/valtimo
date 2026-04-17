@@ -16,8 +16,6 @@
 
 package com.ritense.document.importer
 
-import com.fasterxml.jackson.databind.ObjectMapper
-import com.fasterxml.jackson.databind.node.ObjectNode
 import com.ritense.document.domain.impl.JsonSchema
 import com.ritense.document.service.impl.JsonSchemaDocumentDefinitionService
 import com.ritense.importer.ImportRequest
@@ -29,7 +27,6 @@ import org.springframework.transaction.annotation.Transactional
 @Transactional
 class CaseJsonSchemaDocumentDefinitionImporter(
     private val jsonSchemaDocumentDefinitionService: JsonSchemaDocumentDefinitionService,
-    private val objectMapper: ObjectMapper,
 ) : Importer {
     override fun type() = DOCUMENT_DEFINITION
 
@@ -38,15 +35,10 @@ class CaseJsonSchemaDocumentDefinitionImporter(
     override fun supports(fileName: String) = fileName.matches(PATH_REGEX)
 
     override fun import(request: ImportRequest) {
-        val content = applyKeyOverride(request.content, request.keyOverride)
-        jsonSchemaDocumentDefinitionService.deploy(JsonSchema.fromString(content), request.caseDefinitionId)
-    }
-
-    private fun applyKeyOverride(content: ByteArray, keyOverride: String?): String {
-        if (keyOverride == null) return content.toString(Charsets.UTF_8)
-        val json = objectMapper.readTree(content)
-        (json as ObjectNode).put("\$id", "$keyOverride.schema")
-        return objectMapper.writeValueAsString(json)
+        jsonSchemaDocumentDefinitionService.deploy(
+            JsonSchema.fromString(request.content.toString(Charsets.UTF_8)),
+            request.caseDefinitionId
+        )
     }
 
     private companion object {

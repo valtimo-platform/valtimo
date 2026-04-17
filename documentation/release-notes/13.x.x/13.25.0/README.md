@@ -10,3 +10,7 @@
   plugin. This action allows publishing and receiving notifications via the Notificaties API from a BPMN process.
   Documentation can be found in
   the [Notificaties API plugin configuration guide](../../../features/plugins/configure-notificaties-api-plugin.md).
+
+## Bugfixes
+
+* Fixed duplicate document definitions being created, which caused the error "Query did not return a unique result".
