@@ -312,8 +312,9 @@ public class JsonSchemaDocumentDefinitionService implements DocumentDefinitionSe
     public DeployDocumentDefinitionResult deploy(JsonSchema jsonSchema, CaseDefinitionId caseDefinitionId) {
         //Authorization check is delegated to the store() method
         try {
+            var resolvedSchema = applyKeyOverride(jsonSchema, caseDefinitionId.getIdKey());
             caseDefinitionChecker.assertCanUpdateCaseDefinition(caseDefinitionId);
-            final var documentDefinitionName = jsonSchema.getSchema().getId().replace(".schema", "");
+            final var documentDefinitionName = resolvedSchema.getSchema().getId().replace(".schema", "");
             return withLoggingContext("documentDefinitionName", documentDefinitionName, () -> {
 
                 final JsonSchemaDocumentDefinitionId documentDefinitionId = JsonSchemaDocumentDefinitionId.existingId(
@@ -321,9 +322,9 @@ public class JsonSchemaDocumentDefinitionService implements DocumentDefinitionSe
                     caseDefinitionId
                 );
 
-                logger.info("Deploying schema {} for case definition {}", jsonSchema.getSchema().getId(), caseDefinitionId);
+                logger.info("Deploying schema {} for case definition {}", resolvedSchema.getSchema().getId(), caseDefinitionId);
 
-                var documentDefinition = new JsonSchemaDocumentDefinition(documentDefinitionId, jsonSchema);
+                var documentDefinition = new JsonSchemaDocumentDefinition(documentDefinitionId, resolvedSchema);
                 store(documentDefinition);
                 return new DeployDocumentDefinitionResultSucceeded(documentDefinition);
             });
@@ -561,5 +562,17 @@ public class JsonSchemaDocumentDefinitionService implements DocumentDefinitionSe
     private boolean isSimpleObject(String propertyType) {
         List<String> simpleTypes = List.of("string", "boolean", "integer", "number");
         return simpleTypes.contains(propertyType);
+    }
+
+    private JsonSchema applyKeyOverride(JsonSchema jsonSchema, String key) {
+        var json = jsonSchema.asJson();
+        var idNode = json.get("$id");
+        var currentName = idNode == null ? null : idNode.asText().replace(".schema", "");
+        if (key.equals(currentName)) {
+            return jsonSchema;
+        } else {
+            ((ObjectNode) json).put("$id", key + ".schema");
+            return JsonSchema.fromString(json.toString());
+        }
     }
 }
