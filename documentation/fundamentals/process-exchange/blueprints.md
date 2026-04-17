@@ -1,8 +1,8 @@
 # Process blueprints
 
-Process blueprints are a collection of files, that either form a starting point to speed up development for an implementation. There are two kinds of blueprints. Process blueprints that directly add value (e.g. a blueprint for City Pass applications), and process blueprints that are a part of the bigger picture (e.g. a process on handling change requests for a case). These can consist of one or more BPMNs, a document definition, forms, as well as less common things such as custom front-end and back-end code. These blueprints can be found on GitHub [here](https://github.com/generiekzaakafhandelcomponent/Basisprocessen).
+Process blueprints are a collection of files, that either form a starting point to speed up development for an implementation. There are two kinds of blueprints. Process blueprints that directly add value (e.g. a blueprint for City Pass applications), and process blueprints that are a part of the bigger picture (e.g. a process on handling change requests for a case). These can consist of one or more BPMNs, a document definition, forms, as well as less common things such as custom front-end and back-end code. These blueprints can be found in the [Basisprocessen GitHub repository](https://github.com/generiekzaakafhandelcomponent/Basisprocessen).
 
-How to create a process blueprint from an existing project can be found [here](blueprints.md#creating-process-blueprints-for-gzac).
+How to create a process blueprint from an existing project can be found in the [creating process blueprints for GZAC](#creating-process-blueprints-for-gzac) section.
 
 ### Prerequisites
 
@@ -94,7 +94,7 @@ This is a step-by-step guide on how to submit a process blueprint to the git rep
 
 #### Checkout the latest code
 
-You can find the latest version of the repository [here](https://github.com/generiekzaakafhandelcomponent/Basisprocessen).
+You can find the latest version of the [Basisprocessen GitHub repository](https://github.com/generiekzaakafhandelcomponent/Basisprocessen).
 
 After checking out the code, the folder structure should look similar to this:
 
@@ -172,4 +172,4 @@ In your new blueprint folder, create a README.md file. It should cover the follo
 
 #### Pull request
 
-Create a pull request according to the contributing page found [here](https://github.com/generiekzaakafhandelcomponent/Basisprocessen/blob/main/CONTRIBUTING.md).
+Create a pull request according to the [contributing guidelines](https://github.com/generiekzaakafhandelcomponent/Basisprocessen/blob/main/CONTRIBUTING.md).
