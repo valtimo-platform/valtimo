@@ -11,6 +11,11 @@
   Documentation can be found in
   the [Notificaties API plugin configuration guide](../../../features/plugins/configure-notificaties-api-plugin.md).
 
+  A new plugin action "Get audit trail" has been added to the Documenten API plugin. This action retrieves the audit
+  trail for a document from the Documenten API and stores the result as a JSON string in a process variable, allowing
+  BPMN processes to inspect who changed what on a document, when, and why. Documentation can be found in
+  the [Documenten API plugin configuration guide](../../../features/plugins/configure-documenten-api-plugin.md).
+
 ## Bugfixes
 
 * Fixed duplicate document definitions being created, which caused the error "Query did not return a unique result".
