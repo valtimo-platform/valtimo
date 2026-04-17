@@ -18,8 +18,7 @@ requires some configuration. A general description on how to configure plugins c
 
 > IMPORTANT:
 > 
-> The [Gotenberg][1] PDF conversion API is provided as a docker container and should be installed separately from the 
-> plugin (see [installation guide](https://gotenberg.dev/docs/getting-started/installation)).  
+> The [Gotenberg][1] PDF conversion API is available as a docker image and should be installed separately (see [installation guide](https://gotenberg.dev/docs/getting-started/installation)).  
 
 To configure this plugin the following properties have to be entered:
 

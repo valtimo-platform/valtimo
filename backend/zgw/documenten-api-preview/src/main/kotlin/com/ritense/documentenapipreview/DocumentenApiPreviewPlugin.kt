@@ -21,6 +21,7 @@ import com.ritense.documentenapi.DocumentenApiPlugin
 import com.ritense.documentenapi.client.DocumentInformatieObject
 import com.ritense.documentenapipreview.DocumentenApiPreviewPlugin.Companion.PLUGIN_KEY
 import com.ritense.documentenapipreview.client.PdfConversionClient
+import com.ritense.documentenapipreview.domain.PdfArchiveMethod
 import com.ritense.documentenapipreview.domain.PdfFile
 import com.ritense.plugin.annotation.Plugin
 import com.ritense.plugin.annotation.PluginProperty
@@ -46,6 +47,12 @@ class DocumentenApiPreviewPlugin(
     @PluginProperty(key = DOCUMENTEN_API_CONFIGURATION_ID, secret = false)
     lateinit var documentenApiConfigurationId: String
 
+    @PluginProperty(key = PDF_ARCHIVE_METHOD, secret = false, required = false)
+    var pdfArchiveMethod: PdfArchiveMethod = PdfArchiveMethod.NONE
+
+    @PluginProperty(key = PDF_ARCHIVE_UNIVERSAL_ACCESSIBILITY, secret = false, required = false)
+    var pdfArchiveUniversalAccessibility: Boolean = false
+
     fun generatePreview(caseDocumentId: UUID, documentId: String): PdfFile {
         val documentenApiPlugin = getDocumentenApiPlugin()
         val documentStream = documentenApiPlugin.downloadInformatieObject(caseDocumentId, documentId)
@@ -58,7 +65,12 @@ class DocumentenApiPreviewPlugin(
             return PdfFile(documentInformatieObject.bestandsnaam!!, documentStream)
         }
 
-        val pdfStream = pdfConversionClient.convertDocument(pdfConversionUrl, documentStream, documentInformatieObject.bestandsnaam)
+        val pdfStream = pdfConversionClient.convertDocument(
+            pdfConversionUrl,
+            documentStream,
+            documentInformatieObject.bestandsnaam,
+            pdfArchiveMethod,
+            pdfArchiveUniversalAccessibility)
 
         return PdfFile(createFilename(documentInformatieObject), pdfStream)
     }
@@ -78,6 +90,9 @@ class DocumentenApiPreviewPlugin(
         const val PLUGIN_KEY = "documentenapipreview"
         const val PDF_CONVERSION_URL_PROPERTY = "pdfConversionUrl"
         const val DOCUMENTEN_API_CONFIGURATION_ID = "documentenApiConfigurationId"
+        const val PDF_ARCHIVE_METHOD = "pdfArchive"
+        const val PDF_ARCHIVE_UNIVERSAL_ACCESSIBILITY = "pdfArchiveUniversalAccessibility"
+
 
         fun findConfigurationByDocumentenApiConfiguration(documentenApiConfigurationId: String) = { properties: JsonNode ->
             documentenApiConfigurationId == properties[DOCUMENTEN_API_CONFIGURATION_ID].textValue()

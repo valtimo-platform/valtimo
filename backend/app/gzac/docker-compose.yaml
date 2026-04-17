@@ -105,6 +105,8 @@ services:
         container_name: gotenberg-pdf-conversion-api
         ports:
             - "3000:3000"
+        environment:
+            API_TIMEOUT: "240s"
 
     # ZGW
 
