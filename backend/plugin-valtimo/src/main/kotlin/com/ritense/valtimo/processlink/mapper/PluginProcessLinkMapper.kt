@@ -199,9 +199,15 @@ class PluginProcessLinkMapper(
         }
 
         val hasIssue = allPluginLinks.any { link ->
-            link.pluginConfigurationReference.type == PluginConfigurationReferenceType.FIXED &&
-                (link.pluginConfigurationId == null ||
-                    !pluginConfigurationRepository.existsById(link.pluginConfigurationId!!))
+            if (link.pluginConfigurationReference.type != PluginConfigurationReferenceType.FIXED) {
+                return@any false
+            }
+
+            val configId = link.pluginConfigurationId ?: return@any true
+            val configuration = pluginConfigurationRepository.findById(configId).orElse(null) ?: return@any true
+            val expectedDefinitionKey = link.pluginConfigurationReference.pluginDefinitionKey
+
+            expectedDefinitionKey != null && configuration.pluginDefinition.key != expectedDefinitionKey
         }
 
         if (hasIssue) {

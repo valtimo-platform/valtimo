@@ -146,7 +146,7 @@ class ProcessLinkService(
                 processLinkRepository.delete(processLinkToUpdate)
             }
             val saved = processLinkRepository.save(processLinkUpdated)
-        applicationEventPublisher.publishEvent(ProcessLinkChangedEvent(updateRequest./clprocessDefinitionId))
+            applicationEventPublisher.publishEvent(ProcessLinkChangedEvent(saved.processDefinitionId))
             saved
         }
     }

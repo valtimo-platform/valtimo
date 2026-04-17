@@ -76,7 +76,7 @@ import com.ritense.valtimo.changelog.service.ChangelogDeployer
 import com.ritense.valtimo.contract.authentication.UserManagementService
 import com.ritense.valtimo.contract.case_.CaseDefinitionChecker
 import com.ritense.valtimo.contract.database.QueryDialectHelper
-import com.ritense.valtimo.contract.plugin.PluginConfigurationExistenceChecker
+import com.ritense.valtimo.contract.importer.ImportPreviewContributor
 import com.ritense.valtimo.contract.plugin.PluginConfigurationMappingResolver
 import com.ritense.valueresolver.ValueResolverService
 import org.springframework.beans.factory.ObjectProvider
@@ -110,8 +110,8 @@ class CaseAutoConfiguration {
     @ConditionalOnMissingBean(CaseDefinitionImportPreviewService::class)
     fun caseDefinitionImportPreviewService(
         objectMapper: ObjectMapper,
-        pluginConfigurationExistenceChecker: PluginConfigurationExistenceChecker?,
-    ) = CaseDefinitionImportPreviewService(objectMapper, pluginConfigurationExistenceChecker)
+        importPreviewContributors: List<ImportPreviewContributor>,
+    ) = CaseDefinitionImportPreviewService(objectMapper, importPreviewContributors)
 
     @ConditionalOnMissingBean(name = ["caseDefinitionResource"])
     @Bean

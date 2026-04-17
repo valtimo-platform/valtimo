@@ -165,7 +165,7 @@ export class CaseManagementService extends BaseApiService {
     if (key) params = params.set('key', key);
     if (name) params = params.set('name', name);
     if (pluginConfigurationMappings) {
-      file.append(
+      file.set(
         'pluginConfigurationMappings',
         new Blob([JSON.stringify(pluginConfigurationMappings)], {type: 'application/json'})
       );

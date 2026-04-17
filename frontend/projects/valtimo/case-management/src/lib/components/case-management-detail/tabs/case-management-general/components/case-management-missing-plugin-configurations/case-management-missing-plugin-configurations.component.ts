@@ -38,7 +38,7 @@ import {
   getCaseManagementRouteParams,
   GlobalNotificationService,
 } from '@valtimo/shared';
-import {BehaviorSubject, Observable, switchMap, take} from 'rxjs';
+import {BehaviorSubject, filter, Observable, switchMap, take} from 'rxjs';
 import {CaseManagementService} from '../../../../../../services';
 import {DanglingPluginConfiguration} from '../../../../../../models/case-deployment.model';
 
@@ -95,9 +95,13 @@ export class CaseManagementMissingPluginConfigurationsComponent implements OnIni
   public ngOnInit(): void {
     this._params$
       .pipe(
-        switchMap((params: CaseManagementParams | undefined) => {
-          this._caseDefinitionKey = params?.caseDefinitionKey ?? '';
-          this._caseDefinitionVersionTag = params?.caseDefinitionVersionTag ?? '';
+        filter(
+          (params): params is CaseManagementParams =>
+            !!params?.caseDefinitionKey && !!params?.caseDefinitionVersionTag
+        ),
+        switchMap(params => {
+          this._caseDefinitionKey = params.caseDefinitionKey;
+          this._caseDefinitionVersionTag = params.caseDefinitionVersionTag;
           return this.caseManagementService.getDanglingPluginConfigurations(
             this._caseDefinitionKey,
             this._caseDefinitionVersionTag

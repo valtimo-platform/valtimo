@@ -29,6 +29,7 @@ import com.ritense.valtimo.contract.plugin.PluginConfigurationExistenceChecker
 import com.ritense.valtimo.contract.plugin.PluginConfigurationMappingResolver
 import com.ritense.valtimo.processlink.listener.ProcessLinkChangedEventListener
 import com.ritense.valtimo.processlink.mapper.PluginProcessLinkMapper
+import com.ritense.valtimo.processlink.preview.PluginConfigurationImportPreviewContributor
 import com.ritense.valtimo.processlink.security.config.PluginProcessLinkHttpSecurityConfigurer
 import com.ritense.valtimo.processlink.service.PluginConfigurationMappingResolverImpl
 import com.ritense.valtimo.processlink.service.PluginProcessLinkService
@@ -126,6 +127,15 @@ class ProcessLinkAutoConfiguration {
         pluginProcessLinkService: PluginProcessLinkService
     ): PluginProcessLinkResource {
         return PluginProcessLinkResource(pluginProcessLinkService)
+    }
+
+    @Bean
+    @ConditionalOnMissingBean(PluginConfigurationImportPreviewContributor::class)
+    fun pluginConfigurationImportPreviewContributor(
+        objectMapper: ObjectMapper,
+        pluginConfigurationExistenceChecker: PluginConfigurationExistenceChecker?,
+    ): PluginConfigurationImportPreviewContributor {
+        return PluginConfigurationImportPreviewContributor(objectMapper, pluginConfigurationExistenceChecker)
     }
 
     @Bean
