@@ -20,7 +20,7 @@ import {CommonModule} from '@angular/common';
 import {ActivatedRoute} from '@angular/router';
 import {TranslateModule, TranslateService} from '@ngx-translate/core';
 import {ArrowRight16, Save16, WarningAltFilled16} from '@carbon/icons';
-import {SelectItem, SelectModule} from '@valtimo/components';
+import {SelectModule} from '@valtimo/components';
 import {
   ButtonModule,
   IconModule,
@@ -39,19 +39,13 @@ import {
   getCaseManagementRouteParams,
   GlobalNotificationService,
 } from '@valtimo/shared';
-import {BehaviorSubject, filter, Observable, switchMap, take} from 'rxjs';
+import {BehaviorSubject, combineLatest, filter, map, Observable, switchMap, take} from 'rxjs';
 import {CaseManagementService} from '../../../../../../services';
-import {DanglingPluginConfiguration} from '../../../../../../models/case-deployment.model';
-
-type PluginMappingStatus = 'available' | 'no-configurations' | 'not-installed';
-
-interface MappingRow {
-  pluginDefinitionKey: string | null;
-  pluginDefinitionTitle: string;
-  sourcePluginConfigurationIds: string[];
-  selectItems: SelectItem[];
-  status: PluginMappingStatus;
-}
+import {
+  DanglingPluginConfiguration,
+  MappingRow,
+  PluginMappingStatus,
+} from '../../../../../../models/case-deployment.model';
 
 @Component({
   selector: 'valtimo-case-management-missing-plugin-configurations',
@@ -71,6 +65,9 @@ interface MappingRow {
 export class CaseManagementMissingPluginConfigurationsComponent implements OnInit {
   public readonly hasIssue$ = this.configurationIssueService.hasIssue$('plugin-process-link');
   public readonly mappingRows$ = new BehaviorSubject<MappingRow[]>([]);
+  public readonly visibleRows$ = combineLatest([this.hasIssue$, this.mappingRows$]).pipe(
+    map(([hasIssue, rows]) => (hasIssue && rows?.length ? rows : null))
+  );
   public readonly saving$ = new BehaviorSubject<boolean>(false);
   private readonly _selections = new Map<number, string | null>();
   private readonly destroyRef = inject(DestroyRef);

@@ -14,61 +14,57 @@
   ~ limitations under the License.
   -->
 
-@if (hasIssue$ | async) {
-  @if (mappingRows$ | async; as rows) {
-    @if (rows.length > 0) {
-      <div class="missing-plugin-configurations">
-        <div class="missing-plugin-configurations__header">
-          <svg cdsIcon="warning--alt--filled" size="20" class="missing-plugin-configurations__icon"></svg>
-          <div>
-            <h4 class="missing-plugin-configurations__title">
-              {{ 'caseManagement.missingPluginConfigurations.title' | translate }}
-            </h4>
-            <p class="missing-plugin-configurations__description">
-              {{ 'caseManagement.missingPluginConfigurations.description' | translate }}
-            </p>
-          </div>
-        </div>
+@if (visibleRows$ | async; as rows) {
+  <div class="missing-plugin-configurations">
+    <div class="missing-plugin-configurations__header">
+      <svg cdsIcon="warning--alt--filled" size="20" class="missing-plugin-configurations__icon"></svg>
+      <div>
+        <h4 class="missing-plugin-configurations__title">
+          {{ 'caseManagement.missingPluginConfigurations.title' | translate }}
+        </h4>
+        <p class="missing-plugin-configurations__description">
+          {{ 'caseManagement.missingPluginConfigurations.description' | translate }}
+        </p>
+      </div>
+    </div>
 
-        <div class="missing-plugin-configurations__rows">
-          @for (row of rows; track row.pluginDefinitionKey; let i = $index) {
-            <div class="missing-plugin-configurations__row" [cdsLayer]="1">
-              <div class="missing-plugin-configurations__source">
-                {{ row.pluginDefinitionTitle }}
-              </div>
-              <svg cdsIcon="arrow--right" size="16" class="missing-plugin-configurations__arrow"></svg>
-              @if (row.status === 'available') {
-                <div class="missing-plugin-configurations__dropdown" [cdsLayer]="2">
-                  <v-select
-                    [items]="row.selectItems"
-                    [placeholder]="'caseManagement.missingPluginConfigurations.selectPlaceholder' | translate"
-                    (selectedChange)="onMappingChange(i, $event)"
-                  ></v-select>
-                </div>
-              } @else if (row.status === 'not-installed') {
-                <div class="missing-plugin-configurations__unavailable missing-plugin-configurations__unavailable--error">
-                  {{ 'caseManagement.missingPluginConfigurations.notInstalled' | translate }}
-                </div>
-              } @else if (row.status === 'no-configurations') {
-                <div class="missing-plugin-configurations__unavailable">
-                  {{ 'caseManagement.missingPluginConfigurations.noConfigurations' | translate }}
-                </div>
-              }
+    <div class="missing-plugin-configurations__rows">
+      @for (row of rows; track row.pluginDefinitionKey; let i = $index) {
+        <div class="missing-plugin-configurations__row" [cdsLayer]="1">
+          <div class="missing-plugin-configurations__source">
+            {{ row.pluginDefinitionTitle }}
+          </div>
+          <svg cdsIcon="arrow--right" size="16" class="missing-plugin-configurations__arrow"></svg>
+          @if (row.status === 'available') {
+            <div class="missing-plugin-configurations__dropdown" [cdsLayer]="2">
+              <v-select
+                [items]="row.selectItems"
+                [placeholder]="'caseManagement.missingPluginConfigurations.selectPlaceholder' | translate"
+                (selectedChange)="onMappingChange(i, $event)"
+              ></v-select>
+            </div>
+          } @else if (row.status === 'not-installed') {
+            <div class="missing-plugin-configurations__unavailable missing-plugin-configurations__unavailable--error">
+              {{ 'caseManagement.missingPluginConfigurations.notInstalled' | translate }}
+            </div>
+          } @else if (row.status === 'no-configurations') {
+            <div class="missing-plugin-configurations__unavailable">
+              {{ 'caseManagement.missingPluginConfigurations.noConfigurations' | translate }}
             </div>
           }
         </div>
+      }
+    </div>
 
-        <div class="missing-plugin-configurations__actions">
-          <button
-            cdsButton="primary"
-            [disabled]="saving$ | async"
-            (click)="save()"
-          >
-            {{ 'interface.save' | translate }}
-            <svg cdsIcon="save" size="16" class="cds--btn__icon"></svg>
-          </button>
-        </div>
-      </div>
-    }
-  }
+    <div class="missing-plugin-configurations__actions">
+      <button
+        cdsButton="primary"
+        [disabled]="saving$ | async"
+        (click)="save()"
+      >
+        {{ 'interface.save' | translate }}
+        <svg cdsIcon="save" size="16" class="cds--btn__icon"></svg>
+      </button>
+    </div>
+  </div>
 }

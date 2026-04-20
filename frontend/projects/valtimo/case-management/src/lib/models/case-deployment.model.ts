@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 
+import {SelectItem} from '@valtimo/components';
+
 export class CaseDefinition {
   caseDefinitionKey: string;
   caseDefinitionVersionTag: string;
@@ -84,6 +86,16 @@ export interface CaseDefinitionImportPreview {
 export interface DanglingPluginConfiguration {
   pluginDefinitionKey: string | null;
   sourcePluginConfigurationIds: string[];
+}
+
+export type PluginMappingStatus = 'available' | 'no-configurations' | 'not-installed';
+
+export interface MappingRow {
+  pluginDefinitionKey: string | null;
+  pluginDefinitionTitle: string;
+  sourcePluginConfigurationIds: string[];
+  selectItems: SelectItem[];
+  status: PluginMappingStatus;
 }
 
 export interface ConfigurationIssueUpdatedSseEvent {
