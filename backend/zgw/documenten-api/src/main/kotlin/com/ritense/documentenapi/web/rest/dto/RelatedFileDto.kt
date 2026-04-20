@@ -43,9 +43,9 @@ data class RelatedFileDto(
     val confidentialityLevel: String? = null,
     val version: Int? = null,
     val indicationUsageRights: Boolean? = null,
-    val canView: Boolean = true,
-    val canModify: Boolean = true,
-    val canDelete: Boolean = true,
+    val canView: Boolean = false,
+    val canModify: Boolean = false,
+    val canDelete: Boolean = false,
 ):  RelatedFile {
     override fun getFileId(): UUID {
         return fileId
