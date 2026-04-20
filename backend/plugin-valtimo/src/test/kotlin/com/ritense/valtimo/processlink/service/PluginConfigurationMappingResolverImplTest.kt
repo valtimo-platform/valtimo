@@ -124,7 +124,6 @@ class PluginConfigurationMappingResolverImplTest {
         )
         stubProcessDefinitions("pd-1")
         whenever(pluginProcessLinkRepository.findByProcessDefinitionId("pd-1")).thenReturn(listOf(link))
-        whenever(pluginConfigurationRepository.existsById(any())).thenReturn(true)
 
         resolver.resolve(caseDefinitionId, mapOf(linkId to targetId))
 
@@ -172,8 +171,7 @@ class PluginConfigurationMappingResolverImplTest {
         )
         stubProcessDefinitions("pd-1")
         whenever(pluginProcessLinkRepository.findByProcessDefinitionId("pd-1")).thenReturn(listOf(link))
-        whenever(pluginConfigurationRepository.existsById(eq(PluginConfigurationId.existingId(targetId))))
-            .thenReturn(true)
+        whenever(pluginConfigurationRepository.existsById(any())).thenReturn(true)
 
         resolver.resolve(caseDefinitionId, mapOf(sourceId to targetId))
 

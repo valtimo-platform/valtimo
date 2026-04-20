@@ -80,7 +80,6 @@ class PluginProcessLinkMapperTest {
             reference = PluginConfigurationReference(PluginConfigurationReferenceType.FIXED, "zaken-api"),
         )
         whenever(pluginProcessLinkRepository.findByProcessDefinitionId("pd-1")).thenReturn(listOf(link))
-        whenever(pluginConfigurationRepository.existsById(configId)).thenReturn(false)
 
         mapper.afterImport(caseDefinitionId, setOf("pd-1"), applicationEventPublisher)
 
@@ -111,8 +110,12 @@ class PluginProcessLinkMapperTest {
             pluginConfigurationId = configId,
             reference = PluginConfigurationReference(PluginConfigurationReferenceType.FIXED, "zaken-api"),
         )
+        val pluginDefinition = mock<PluginDefinition>()
+        whenever(pluginDefinition.key).thenReturn("zaken-api")
+        val pluginConfiguration = mock<PluginConfiguration>()
+        whenever(pluginConfiguration.pluginDefinition).thenReturn(pluginDefinition)
         whenever(pluginProcessLinkRepository.findByProcessDefinitionId("pd-1")).thenReturn(listOf(link))
-        whenever(pluginConfigurationRepository.existsById(configId)).thenReturn(true)
+        whenever(pluginConfigurationRepository.findById(eq(configId))).thenReturn(Optional.of(pluginConfiguration))
 
         mapper.afterImport(caseDefinitionId, setOf("pd-1"), applicationEventPublisher)
 
