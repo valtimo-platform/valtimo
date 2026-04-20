@@ -34,7 +34,13 @@ export const statusReorderTestData = {
   titleB: 'E2e Reorder B',
 };
 
+const tagSuffix = Date.now().toString(36);
+
 export const tagTestData = {
-  title: 'E2e Test Tag',
-  updatedTitle: 'E2e Updated Tag',
+  title: `E2e Test Tag ${tagSuffix}`,
+  updatedTitle: `E2e Updated Tag ${tagSuffix}`,
+};
+
+export const tagColorTestData = {
+  title: `E2e Color Tag ${tagSuffix}`,
 };

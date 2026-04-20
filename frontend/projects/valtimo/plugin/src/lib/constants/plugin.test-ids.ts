@@ -105,3 +105,10 @@ export const ZAKEN_API_CONFIGURATION_TEST_IDS = {
   url: 'zakenApiUrl',
   authenticationPluginConfiguration: 'zakenApiAuthenticationPluginConfiguration',
 } as const;
+
+export const PLUGIN_CATALOG_TEST_IDS = {
+  tileGrid: 'pluginCatalogTileGrid',
+  tileLogo: 'pluginCatalogTileLogo',
+  tileTitle: 'pluginCatalogTileTitle',
+  tileDescription: 'pluginCatalogTileDescription',
+} as const;

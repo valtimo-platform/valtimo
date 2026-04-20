@@ -15,7 +15,7 @@
   -->
 
 <ng-container *ngIf="pluginDefinitionsWithLogos$ | async as pluginDefinitions; else loading">
-  <div class="plugin-definition__grid">
+  <div class="plugin-definition__grid" [attr.data-test-id]="testIds.tileGrid">
     <ng-container
       *ngTemplateOutlet="pluginDefinitionsTemplate; context: {pluginDefinitions: pluginDefinitions}"
     ></ng-container>
@@ -47,11 +47,16 @@
         class="plugin-definition-logo"
         [title]="'title' | pluginTranslate: pluginDefinition.key | async"
         [src]="pluginDefinition.pluginLogoBase64"
+        [attr.data-test-id]="testIds.tileLogo"
       />
 
-      <h5>{{ 'title' | pluginTranslate: pluginDefinition.key | async }}</h5>
+      <h5 [attr.data-test-id]="testIds.tileTitle">
+        {{ 'title' | pluginTranslate: pluginDefinition.key | async }}
+      </h5>
 
-      <p>{{ 'description' | pluginTranslate: pluginDefinition.key | async }}</p>
+      <p [attr.data-test-id]="testIds.tileDescription">
+        {{ 'description' | pluginTranslate: pluginDefinition.key | async }}
+      </p>
     </cds-selection-tile>
   </cds-tile-group>
 </ng-template>
