@@ -30,14 +30,14 @@ data class UpdateRolePermissionRequest(
     val contextResourceType: Class<*>? = null,
     val contextConditions: List<PermissionCondition> = emptyList(),
 ) {
-    fun toPermission(role: Role): Permission {
+    fun toPermission(role: Role, migrator: PermissionResourceTypeMigrator): Permission {
         return Permission(
-            resourceType = PermissionResourceTypeMigrator.migrate(resourceType)!!,
+            resourceType = migrator.migrate(resourceType)!!,
             actions = actions.map { (Action<Any>(it)) }.toMutableList(),
-            conditionContainer = ConditionContainer(PermissionResourceTypeMigrator.migrateConditions(conditions)),
+            conditionContainer = ConditionContainer(migrator.migrateConditions(conditions)),
             role = role,
-            contextResourceType = PermissionResourceTypeMigrator.migrate(contextResourceType),
-            contextConditionContainer = ConditionContainer(PermissionResourceTypeMigrator.migrateConditions(contextConditions))
+            contextResourceType = migrator.migrate(contextResourceType),
+            contextConditionContainer = ConditionContainer(migrator.migrateConditions(contextConditions))
         )
     }
 }

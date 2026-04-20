@@ -19,17 +19,20 @@ package com.ritense.authorization.deployment
 import com.ritense.authorization.permission.condition.ContainerPermissionCondition
 import com.ritense.authorization.permission.condition.PermissionCondition
 
-object PermissionResourceTypeMigrator {
-    private val renames: Map<String, String> = mapOf(
-        "com.ritense.resource.authorization.ResourcePermission"
-            to "com.ritense.documentenapi.authorization.ZgwDocument",
-    )
+class PermissionResourceTypeMigrator(
+    renames: List<ResourceTypeRename> = emptyList()
+) {
+    private val renameMap: Map<String, String> = renames.associate { it.oldName to it.newName }
 
     fun migrate(resourceType: Class<*>?): Class<*>? {
         if (resourceType == null) return null
-        val replacement = renames[resourceType.name] ?: return resourceType
+        var name = resourceType.name
+        while (renameMap.containsKey(name)) {
+            name = renameMap[name]!!
+        }
+        if (name == resourceType.name) return resourceType
         return try {
-            Class.forName(replacement)
+            Class.forName(name)
         } catch (_: ClassNotFoundException) {
             resourceType
         }

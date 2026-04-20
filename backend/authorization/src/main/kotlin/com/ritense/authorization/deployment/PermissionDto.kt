@@ -46,13 +46,13 @@ data class PermissionDto(
     @field:JsonView(value = [PermissionView.RoleManagement::class, PermissionView.PermissionManagement::class])
     val contextConditions: List<PermissionCondition> = emptyList(),
 ) {
-    fun toPermission(roleRepository: RoleRepository) = Permission(
-        resourceType = PermissionResourceTypeMigrator.migrate(resourceType)!!,
+    fun toPermission(roleRepository: RoleRepository, migrator: PermissionResourceTypeMigrator) = Permission(
+        resourceType = migrator.migrate(resourceType)!!,
         actions = actions.map { Action<Any>(it) }.toMutableList(),
-        conditionContainer = ConditionContainer(conditions = PermissionResourceTypeMigrator.migrateConditions(conditions)),
+        conditionContainer = ConditionContainer(conditions = migrator.migrateConditions(conditions)),
         role = roleRepository.findByKey(roleKey) ?: error("Missing role '$roleKey'"),
-        contextResourceType = PermissionResourceTypeMigrator.migrate(contextResourceType),
-        contextConditionContainer = ConditionContainer(conditions = PermissionResourceTypeMigrator.migrateConditions(contextConditions))
+        contextResourceType = migrator.migrate(contextResourceType),
+        contextConditionContainer = ConditionContainer(conditions = migrator.migrateConditions(contextConditions))
     )
 
     companion object {

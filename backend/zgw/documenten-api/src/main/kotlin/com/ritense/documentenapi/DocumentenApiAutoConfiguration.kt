@@ -18,6 +18,7 @@ package com.ritense.documentenapi
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.ritense.authorization.AuthorizationService
+import com.ritense.authorization.deployment.ResourceTypeRename
 import com.ritense.case_.service.ActiveCaseDefinitionService
 import com.ritense.catalogiapi.service.CatalogiService
 import com.ritense.document.repository.impl.JsonSchemaDocumentRepository
@@ -68,6 +69,13 @@ import org.springframework.web.client.RestClient
 @EnableJpaRepositories(basePackages = ["com.ritense.documentenapi.repository"])
 @EntityScan("com.ritense.documentenapi.domain")
 class DocumentenApiAutoConfiguration {
+
+    // Temporary rename for forward compatibility. Remove at next major release.
+    @Bean
+    fun resourcePermissionToZgwDocumentRename() = ResourceTypeRename(
+        oldName = "com.ritense.resource.authorization.ResourcePermission",
+        newName = "com.ritense.documentenapi.authorization.ZgwDocument"
+    )
 
     @Bean
     fun zgwResourceDocumentMapper(
