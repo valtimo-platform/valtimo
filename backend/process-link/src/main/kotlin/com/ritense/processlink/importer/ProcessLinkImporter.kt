@@ -78,10 +78,7 @@ open class ProcessLinkImporter(
                 }
 
                 val mappings = request.pluginConfigurationMappings
-                val isFixedPluginLink =
-                    node.path("processLinkType").asText() == "plugin" &&
-                        node.path("referenceType").asText("FIXED") == "FIXED"
-                if (mappings != null && isFixedPluginLink && node.has("pluginConfigurationId")) {
+                if (mappings != null && node.has("pluginConfigurationId")) {
                     val originalIdText = node.get("pluginConfigurationId").asText(null)
                     if (originalIdText != null) {
                         val originalId = try {
