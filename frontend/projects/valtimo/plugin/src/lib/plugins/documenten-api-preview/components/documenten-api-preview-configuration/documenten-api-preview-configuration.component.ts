@@ -20,6 +20,7 @@ import {BehaviorSubject, combineLatest, map, Observable, Subscription, take} fro
 import {DocumentenApiPreviewConfig} from '../../models';
 import {PluginManagementService, PluginTranslationService} from '../../../../services';
 import {TranslateService} from '@ngx-translate/core';
+import {SelectItem} from '@valtimo/components';
 
 @Component({
   selector: 'valtimo-documenten-api-preview-configuration',
@@ -42,7 +43,14 @@ export class DocumentenApiPreviewConfigurationComponent
   private readonly formValue$ = new BehaviorSubject<DocumentenApiPreviewConfig | null>(null);
   private readonly valid$ = new BehaviorSubject<boolean>(false);
 
-  readonly documentenApiPluginSelectItems$: Observable<Array<{id: string; text: string}>> =
+  public readonly pdfArchiveMethods: SelectItem[] = [
+    {id: 'none', text: 'None', translationKey: 'pdfArchiveMethodNone'},
+    {id: 'PDF/A-1b', text: 'PDF/A-1b', translationKey: 'pdfArchiveMethodPDFA1b'},
+    {id: 'PDF/A-2b', text: 'PDF/A-2b', translationKey: 'pdfArchiveMethodPDFA2b'},
+    {id: 'PDF/A-3b', text: 'PDF/A-3b', translationKey: 'pdfArchiveMethodPDFA3b'},
+  ];
+
+  public readonly documentenApiPluginSelectItems$: Observable<Array<{id: string; text: string}>> =
     combineLatest([
       this.pluginManagementService.getPluginConfigurationsByPluginDefinitionKey('documentenapi'),
       this.translateService.stream('key'),

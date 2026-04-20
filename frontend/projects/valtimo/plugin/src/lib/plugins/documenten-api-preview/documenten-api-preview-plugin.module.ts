@@ -28,7 +28,6 @@ import {FormModule, InputModule, ParagraphModule, SelectModule} from '@valtimo/c
     FormModule,
     InputModule,
     SelectModule,
-    ParagraphModule,
   ],
   exports: [DocumentenApiPreviewConfigurationComponent],
 })
