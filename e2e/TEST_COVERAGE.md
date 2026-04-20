@@ -5,10 +5,10 @@
 | Category                    | Features | Functions | ✅ Covered | ❌ Not Covered |
 |-----------------------------|----------|-----------|------------|----------------|
 | User Features (ROLE_USER)   | 5        | 21        | 6          | 15             |
-| Admin Features (ROLE_ADMIN) | 15       | 328       | 81         | 245            |
-| **Total**                   | **20**   | **349**   | **87**     | **260**        |
+| Admin Features (ROLE_ADMIN) | 15       | 328       | 89         | 237            |
+| **Total**                   | **20**   | **349**   | **95**     | **252**        |
 
-**Coverage:** `87 / 349` — `24.9%`
+**Coverage:** `95 / 349` — `27.2%`
 
 ---
 
@@ -172,14 +172,14 @@
 
 | #    | Function            | Test Scenarios                                   | Coverage | Notes                                           |
 |:-----|:--------------------|:-------------------------------------------------|:--------:|:------------------------------------------------|
-| 6.50 | View forms list     | Display list of forms                            |    ❌    |                                                 |
-| 6.51 | Search/filter forms | Search and filter forms                          |    ❌    |                                                 |
-| 6.52 | Create form         | Create new form                                  |    ❌    |                                                 |
-| 6.53 | Add form components | Form.io builder — add components via drag-drop   |    ❌    |                                                 |
-| 6.54 | Configure component | Form.io builder — configure component properties |    ❌    |                                                 |
-| 6.55 | Use JSON editor     | Use Form.io JSON editor                          |    ❌    |                                                 |
-| 6.56 | View form preview   | View form preview                                |    ❌    |                                                 |
-| 6.57 | Save form           | Save form definition                             |    ❌    |                                                 |
+| 6.50 | View forms list     | Display list of forms                            |    ✅    | form-management.spec.ts                         |
+| 6.51 | Search/filter forms | Search and filter forms                          |    ✅    | form-management.spec.ts                         |
+| 6.52 | Create form         | Create new form                                  |    ✅    | case-details-management-forms.spec.ts           |
+| 6.53 | Add form components | Form.io builder — add components via drag-drop   |    ✅    | case-details-management-forms.spec.ts           |
+| 6.54 | Configure component | Form.io builder — configure component properties |    ✅    | case-details-management-forms.spec.ts           |
+| 6.55 | Use JSON editor     | Use Form.io JSON editor                          |    ✅    | case-details-management-forms.spec.ts           |
+| 6.56 | View form preview   | View form preview                                |    ✅    | case-details-management-forms.spec.ts           |
+| 6.57 | Save form           | Save form definition                             |    ✅    | case-details-management-forms.spec.ts           |
 
 #### 6H · Form Flows
 
@@ -727,8 +727,8 @@
 |:-------------------------|:-------:|
 | Total Features           |   20    |
 | Total Functions          |   349   |
-| ✅ Covered by Playwright |   87    |
-| ❌ Not covered           |   260   |
+| ✅ Covered by Playwright |   95    |
+| ❌ Not covered           |   252   |
 | ⏳ In progress           |    0    |
 | `N/A` Not applicable     |    2    |
-| **Coverage %**           | **24.9%** |
+| **Coverage %**           | **27.2%** |
