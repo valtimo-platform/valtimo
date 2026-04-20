@@ -5,10 +5,10 @@
 | Category                    | Features | Functions | ✅ Covered | ❌ Not Covered |
 |-----------------------------|----------|-----------|------------|----------------|
 | User Features (ROLE_USER)   | 5        | 21        | 6          | 15             |
-| Admin Features (ROLE_ADMIN) | 15       | 328       | 77         | 249            |
-| **Total**                   | **20**   | **349**   | **83**     | **264**        |
+| Admin Features (ROLE_ADMIN) | 15       | 328       | 81         | 245            |
+| **Total**                   | **20**   | **349**   | **87**     | **260**        |
 
-**Coverage:** `83 / 349` — `23.8%`
+**Coverage:** `87 / 349` — `24.9%`
 
 ---
 
@@ -163,10 +163,10 @@
 
 | #    | Function             | Test Scenarios              | Coverage | Notes                                           |
 |:-----|:---------------------|:----------------------------|:--------:|:------------------------------------------------|
-| 6.46 | View JSON Schema     | View JSON Schema definition |    ❌    |                                                 |
-| 6.47 | Download JSON Schema | Download JSON Schema        |    ❌    |                                                 |
-| 6.48 | Edit JSON Schema     | Edit JSON Schema            |    ❌    |                                                 |
-| 6.49 | Save JSON Schema     | Save JSON Schema changes    |    ❌    |                                                 |
+| 6.46 | View JSON Schema     | View JSON Schema definition |    ✅    | case-details-management-document.spec.ts        |
+| 6.47 | Download JSON Schema | Download JSON Schema        |    ✅    | case-details-management-document.spec.ts        |
+| 6.48 | Edit JSON Schema     | Edit JSON Schema            |    ✅    | case-details-management-document.spec.ts        |
+| 6.49 | Save JSON Schema     | Save JSON Schema changes    |    ✅    | case-details-management-document.spec.ts        |
 
 #### 6G · Forms
 
@@ -727,8 +727,8 @@
 |:-------------------------|:-------:|
 | Total Features           |   20    |
 | Total Functions          |   349   |
-| ✅ Covered by Playwright |   83    |
-| ❌ Not covered           |   264   |
+| ✅ Covered by Playwright |   87    |
+| ❌ Not covered           |   260   |
 | ⏳ In progress           |    0    |
 | `N/A` Not applicable     |    2    |
-| **Coverage %**           | **23.8%** |
+| **Coverage %**           | **24.9%** |
