@@ -5,10 +5,10 @@
 | Category                    | Features | Functions | ✅ Covered | ❌ Not Covered |
 |-----------------------------|----------|-----------|------------|----------------|
 | User Features (ROLE_USER)   | 5        | 21        | 6          | 15             |
-| Admin Features (ROLE_ADMIN) | 15       | 328       | 89         | 237            |
-| **Total**                   | **20**   | **349**   | **95**     | **252**        |
+| Admin Features (ROLE_ADMIN) | 15       | 328       | 96         | 230            |
+| **Total**                   | **20**   | **349**   | **102**    | **245**        |
 
-**Coverage:** `95 / 349` — `27.2%`
+**Coverage:** `102 / 349` — `29.2%`
 
 ---
 
@@ -151,13 +151,13 @@
 
 | #    | Function                    | Test Scenarios                         | Coverage | Notes                                           |
 |:-----|:----------------------------|:---------------------------------------|:--------:|:------------------------------------------------|
-| 6.39 | View linked decision tables | Display list of linked decision tables |    ❌    |                                                 |
-| 6.40 | Upload decision table       | Upload decision table (.dmn file)      |    ❌    |                                                 |
-| 6.41 | Open decision table editor  | Open decision table in DMN editor      |    ❌    |                                                 |
-| 6.42 | Set DMN Hit policy          | Set DMN Hit policy                     |    ❌    |                                                 |
-| 6.43 | Manage DMN columns          | Manage DMN input/output columns        |    ❌    |                                                 |
-| 6.44 | Manage DMN rules            | Add/edit/delete DMN rules              |    ❌    |                                                 |
-| 6.45 | Save decision table         | Save decision table                    |    ❌    |                                                 |
+| 6.39 | View linked decision tables | Display list of linked decision tables |    ✅    | case-details-management-decisions.spec.ts       |
+| 6.40 | Upload decision table       | Upload decision table (.dmn file)      |    ✅    | case-details-management-decisions.spec.ts       |
+| 6.41 | Open decision table editor  | Open decision table in DMN editor      |    ✅    | case-details-management-decisions.spec.ts       |
+| 6.42 | Set DMN Hit policy          | Set DMN Hit policy                     |    ✅    | case-details-management-decisions.spec.ts       |
+| 6.43 | Manage DMN columns          | Manage DMN input/output columns        |    ✅    | case-details-management-decisions.spec.ts       |
+| 6.44 | Manage DMN rules            | Add/edit/delete DMN rules              |    ✅    | case-details-management-decisions.spec.ts       |
+| 6.45 | Save decision table         | Save decision table                    |    ✅    | case-details-management-decisions.spec.ts       |
 
 #### 6F · Document
 
@@ -727,8 +727,8 @@
 |:-------------------------|:-------:|
 | Total Features           |   20    |
 | Total Functions          |   349   |
-| ✅ Covered by Playwright |   95    |
-| ❌ Not covered           |   252   |
+| ✅ Covered by Playwright |   102   |
+| ❌ Not covered           |   245   |
 | ⏳ In progress           |    0    |
 | `N/A` Not applicable     |    2    |
-| **Coverage %**           | **27.2%** |
+| **Coverage %**           | **29.2%** |

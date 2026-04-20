@@ -28,6 +28,7 @@ import {
 } from '@valtimo/shared';
 import {DecisionStateService} from '../services';
 import {DecisionDeployComponent} from '../decision-deploy/decision-deploy.component';
+import {DECISION_LIST_TEST_IDS} from '../constants';
 import {CarbonListModule, WidgetModule} from '@valtimo/components';
 import {ButtonModule, IconModule, IconService} from 'carbon-components-angular';
 import {Upload16} from '@carbon/icons';
@@ -60,6 +61,8 @@ export class DecisionListComponent {
 
   readonly loading$ = new BehaviorSubject<boolean>(true);
   readonly experimentalEditing!: boolean;
+
+  protected readonly testIds = DECISION_LIST_TEST_IDS;
 
   public readonly caseManagementRouteParams$ = getCaseManagementRouteParams(this.route);
   public readonly context$ = getContextObservable(this.route);

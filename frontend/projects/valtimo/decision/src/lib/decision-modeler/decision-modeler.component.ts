@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+import {DECISION_MODELER_TEST_IDS} from '../constants';
 import {DecisionService} from '../services/decision.service';
 import {AfterViewInit, Component, OnDestroy, OnInit} from '@angular/core';
 import DmnJS from 'dmn-js/dist/dmn-modeler.development.js';
@@ -100,6 +101,8 @@ export class DecisionModelerComponent
     decisionTable: 'dmn-icon-decision-table',
     literalExpression: 'dmn-icon-literal-expression',
   };
+
+  protected readonly testIds = DECISION_MODELER_TEST_IDS;
 
   private $container!: any;
   private $tabs!: any;

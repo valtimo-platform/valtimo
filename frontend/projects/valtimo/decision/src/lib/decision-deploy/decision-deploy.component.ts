@@ -27,6 +27,7 @@ import {
 } from 'carbon-components-angular';
 import {BehaviorSubject, combineLatest, switchMap, take} from 'rxjs';
 import {getCaseManagementRouteParams, getContextObservable} from '@valtimo/shared';
+import {DECISION_UPLOAD_TEST_IDS} from '../constants';
 import {DecisionService, DecisionStateService} from '../services';
 
 @Component({
@@ -51,6 +52,8 @@ export class DecisionDeployComponent {
   public dmn: File | null = null;
 
   public readonly modalOpen$ = new BehaviorSubject<boolean>(false);
+
+  protected readonly testIds = DECISION_UPLOAD_TEST_IDS;
 
   public readonly caseManagementRouteParams$ = getCaseManagementRouteParams(this.route);
   public readonly context$ = getContextObservable(this.route);
