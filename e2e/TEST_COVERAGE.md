@@ -5,10 +5,10 @@
 | Category                    | Features | Functions | ✅ Covered | ❌ Not Covered |
 |-----------------------------|----------|-----------|------------|----------------|
 | User Features (ROLE_USER)   | 5        | 21        | 6          | 15             |
-| Admin Features (ROLE_ADMIN) | 15       | 328       | 74         | 252            |
-| **Total**                   | **20**   | **349**   | **80**     | **267**        |
+| Admin Features (ROLE_ADMIN) | 15       | 328       | 77         | 249            |
+| **Total**                   | **20**   | **349**   | **83**     | **264**        |
 
-**Coverage:** `80 / 349` — `22.9%`
+**Coverage:** `83 / 349` — `23.8%`
 
 ---
 
@@ -106,9 +106,9 @@
 | 6.6  | View linked processes        | Display list of linked processes                              |    ✅    | case-details-management-processes.spec.ts       |
 | 6.7  | Create new process           | Create new BPMN process                                       |    ✅    | case-details-management-processes.spec.ts       |
 | 6.8  | Open process in BPMN modeler | Open process in BPMN editor                                   |    ✅    | case-details-management-processes.spec.ts       |
-| 6.9  | Add BPMN elements            | Add BPMN elements via drag-drop                               |    ❌    |                                                 |
-| 6.10 | Set process properties       | Configure process properties (Starts case, Startable by user) |    ❌    |                                                 |
-| 6.11 | Save process                 | Save process definition                                       |    ❌    |                                                 |
+| 6.9  | Add BPMN elements            | Add BPMN elements via drag-drop                               |    ✅    | case-details-management-processes.spec.ts       |
+| 6.10 | Set process properties       | Configure process properties (Starts case, Startable by user) |    ✅    | case-details-management-processes.spec.ts       |
+| 6.11 | Save process                 | Save process definition                                       |    ✅    | case-details-management-processes.spec.ts       |
 
 #### 6C · Process Links
 
@@ -727,8 +727,8 @@
 |:-------------------------|:-------:|
 | Total Features           |   20    |
 | Total Functions          |   349   |
-| ✅ Covered by Playwright |   80    |
-| ❌ Not covered           |   267   |
+| ✅ Covered by Playwright |   83    |
+| ❌ Not covered           |   264   |
 | ⏳ In progress           |    0    |
 | `N/A` Not applicable     |    2    |
-| **Coverage %**           | **22.9%** |
+| **Coverage %**           | **23.8%** |
