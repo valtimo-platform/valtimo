@@ -12,7 +12,28 @@ Access to the documents that were uploaded to the case, can be configured throug
 
 ### Resources and actions
 
-<table><thead><tr><th width="329">Resource type</th><th width="143">Action</th><th>Effect</th></tr></thead><tbody><tr><td><code>com.ritense.documentenapi.authorization.ZgwDocument</code></td><td><code>view_list</code></td><td>Allows viewing the list of documents</td></tr><tr><td></td><td><code>view</code></td><td>Allows downloading a document</td></tr><tr><td></td><td><code>create</code></td><td>Allows uploading a document</td></tr><tr><td></td><td><code>modify</code></td><td>Allows modifying the metadata of a document</td></tr><tr><td></td><td><code>delete</code></td><td>Allows deleting a document</td></tr></tbody></table>
+<table>
+    <thead>
+        <tr>
+            <th width="329">Resource type</th><th width="143">Action</th><th>Effect</th>
+        </tr>
+    </thead>
+    <tbody>
+    <tr>
+        <td><code>com.ritense.documentenapi.authorization.ZgwDocument</code></td>
+        <td><code>view_list</code></td><td>Allows viewing the list of documents</td>
+    </tr>
+    <tr>
+        <td></td><td><code>view</code></td><td>Allows downloading a document</td></tr><tr><td></td><td><code>create</code></td><td>Allows uploading a document</td>
+    </tr>
+    <tr>
+        <td></td><td><code>modify</code></td><td>Allows modifying the metadata of a document</td>
+    </tr>
+    <tr>
+        <td></td><td><code>delete</code></td><td>Allows deleting a document</td>
+    </tr>
+    </tbody>
+</table>
 
 ### Condition fields
 
@@ -26,12 +47,12 @@ The following fields can be used in `field` conditions on `ZgwDocument`:
 | `informatieobjecttypeOmschrijving` | `String` | Description of the informatieobjecttype |
 
 {% hint style="warning" %}
-The document list endpoint does not filter documents by these conditions — all documents for the case are returned. Per-document `canView` / `canModify` / `canDelete` flags are computed server-side and embedded in the list response. Single-document operations (view, download, modify, delete) enforce the full conditions.
+The document list endpoint does not filter documents by these conditions — all documents for the case are returned. Only single-document operations (view, download, modify, delete) enforce the full conditions.
 {% endhint %}
 
 ### Examples
 
-#### Permission to view all documents
+#### Permission to list all documents
 
 ```json
 {
@@ -41,7 +62,7 @@ The document list endpoint does not filter documents by these conditions — all
 }
 ```
 
-#### Permission to view only public documents
+#### Permission to download only public documents
 
 ```json
 {
