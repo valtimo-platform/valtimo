@@ -19,6 +19,8 @@ import {PluginConfigurationData} from '../../../models';
 interface DocumentenApiPreviewConfig extends PluginConfigurationData {
   pdfConversionUrl: string;
   documentenApiConfigurationId: string;
+  pdfArchiveMethod: string;
+  pdfArchiveUniversalAccessibility: boolean;
 }
 
 export {DocumentenApiPreviewConfig};

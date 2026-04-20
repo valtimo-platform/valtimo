@@ -19,6 +19,7 @@
   *ngIf="{
     disabled: disabled$ | async,
     prefill: prefillConfiguration$ ? (prefillConfiguration$ | async) : null,
+    documentenApiPluginSelectItems: documentenApiPluginSelectItems$ | async,
   } as obs"
 >
   <v-input
@@ -47,22 +48,27 @@
     placeholder="https://gotenberg:3000/"
   >
   </v-input>
-  <ng-container
-    *ngIf="{
-      documentenApiPluginSelectItems: documentenApiPluginSelectItems$ | async,
-    } as documentenApiObs"
-  >
-    <v-select
-      [loading]="!documentenApiObs.documentenApiPluginSelectItems"
-      [items]="documentenApiObs.documentenApiPluginSelectItems"
-      [margin]="true"
-      name="documentenApiConfigurationId"
-      data-test-id="documentenPreviewDocumentenApiPluginConfiguration"
-      [title]="'documentenApiPluginConfiguration' | pluginTranslate: pluginId | async"
-      [disabled]="obs.disabled"
-      [defaultSelectionId]="obs.prefill?.documentenApiConfigurationId"
-      [required]="true"
-      [tooltip]="'documentenApiPluginConfigurationTooltip' | pluginTranslate: pluginId | async"
-    ></v-select>
-  </ng-container>
+  <v-select
+    [loading]="!obs.documentenApiPluginSelectItems"
+    [items]="obs.documentenApiPluginSelectItems"
+    [margin]="true"
+    name="documentenApiConfigurationId"
+    data-test-id="documentenPreviewDocumentenApiPluginConfiguration"
+    [title]="'documentenApiPluginConfiguration' | pluginTranslate: pluginId | async"
+    [disabled]="obs.disabled"
+    [defaultSelectionId]="obs.prefill?.documentenApiConfigurationId"
+    [required]="true"
+    [tooltip]="'documentenApiPluginConfigurationTooltip' | pluginTranslate: pluginId | async"
+  ></v-select>
+  <v-select
+    [loading]="!pdfArchiveMethods"
+    [items]="pdfArchiveMethods"
+    name="pdfArchiveMethod"
+    [title]="'pdfArchiveMethod' | pluginTranslate: pluginId | async"
+    [tooltip]="'pdfArchiveMethodTooltip' | pluginTranslate: pluginId | async"
+    [margin]="true"
+    [defaultSelectionId]="obs.prefill?.pdfArchiveMethod || 'none'"
+    [disabled]="obs.disabled"
+    [required]="true"
+  ></v-select>
 </v-form>

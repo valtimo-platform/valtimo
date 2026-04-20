@@ -90,7 +90,7 @@ class DocumentenApiPreviewPlugin(
         const val PLUGIN_KEY = "documentenapipreview"
         const val PDF_CONVERSION_URL_PROPERTY = "pdfConversionUrl"
         const val DOCUMENTEN_API_CONFIGURATION_ID = "documentenApiConfigurationId"
-        const val PDF_ARCHIVE_METHOD = "pdfArchive"
+        const val PDF_ARCHIVE_METHOD = "pdfArchiveMethod"
         const val PDF_ARCHIVE_UNIVERSAL_ACCESSIBILITY = "pdfArchiveUniversalAccessibility"
 
 

@@ -12,6 +12,6 @@ enum class PdfArchiveMethod {
     @JsonProperty("PDF/A-2b")
     PDFA2B,
 
-    @JsonProperty("PDF/A-2b")
+    @JsonProperty("PDF/A-3b")
     PDFA3B,
 }
