@@ -23,16 +23,23 @@
 
     <changeSet author="Ritense" id="1">
         <sql>
-            DELETE FROM json_schema_document_definition a
-            WHERE a.document_definition_name != a.blueprint_key
-              AND EXISTS (
-                  SELECT 1
-                  FROM json_schema_document_definition b
-                  WHERE b.blueprint_type = a.blueprint_type
-                    AND b.blueprint_key = a.blueprint_key
-                    AND b.blueprint_version_tag = a.blueprint_version_tag
-                    AND b.document_definition_name = b.blueprint_key
-              )
+            DELETE FROM json_schema_document_definition
+            WHERE (blueprint_type, blueprint_key, blueprint_version_tag, document_definition_name) IN (
+                SELECT blueprint_type, blueprint_key, blueprint_version_tag, document_definition_name
+                FROM (
+                         SELECT a.blueprint_type, a.blueprint_key, a.blueprint_version_tag, a.document_definition_name
+                         FROM json_schema_document_definition a
+                         WHERE a.document_definition_name != a.blueprint_key
+                      AND EXISTS (
+                          SELECT 1
+                          FROM json_schema_document_definition b
+                          WHERE b.blueprint_type = a.blueprint_type
+                            AND b.blueprint_key = a.blueprint_key
+                            AND b.blueprint_version_tag = a.blueprint_version_tag
+                            AND b.document_definition_name = b.blueprint_key
+                      )
+                     ) tmp
+            )
         </sql>
     </changeSet>
 </databaseChangeLog>
