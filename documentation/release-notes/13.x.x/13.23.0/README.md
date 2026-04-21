@@ -14,23 +14,23 @@
 
   Building blocks now support form flow definitions. Form flows can be created, edited, and deleted through the **Form flows** tab in building block
   management. They are also included automatically in building block imports and exports. For more information, see
-  [Building block form flows](../../features/building-blocks/form-flows.md).
+  [Building block form flows](../../../features/building-blocks/form-flows.md).
 
 * **Added the Documenten API Preview plugin**
 
   The new "Documenten API Preview" plugin allows users to preview documents stored via the "Documenten API".
-  Documentation on configuring the "Documenten API Preview" plugin can be found in the [Documenten API Preview plugin configuration guide](../../../features/zgw/zgw-plugins/configure-documenten-api-preview-plugin.md).
+  Documentation on configuring the "Documenten API Preview" plugin can be found in the [Documenten API Preview plugin configuration guide](../../../features/plugins/configure-documenten-api-preview-plugin.md).
 
 * **Cross-case message correlation**
 
-  New `sendGlobalCatchEventMessage` and `sendGlobalCatchEventMessageToAll` methods on `correlationService` allow messages to be correlated to process instances across all cases, without requiring a business key. See [correlating messages](../../features/process/correlation-service.md) for details.
+  New `sendGlobalCatchEventMessage` and `sendGlobalCatchEventMessageToAll` methods on `correlationService` allow messages to be correlated to process instances across all cases, without requiring a business key. See [correlating messages](../../../features/process/correlation-service.md) for details.
 
 * **Teams**
 
   Teams are groups of users in Valtimo. They can be used to organize users and manage their access to resources.
   Teams can be used for case assignment and access control rules.
 
-  More information about teams can be found [here](../../../features/teams/README.md).
+  More information about teams can be found in the [teams documentation](../../../features/teams/README.md).
 
 * **Team cases tab in the case list**
 

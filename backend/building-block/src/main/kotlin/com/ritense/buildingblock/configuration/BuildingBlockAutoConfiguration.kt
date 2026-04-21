@@ -152,9 +152,10 @@ class BuildingBlockAutoConfiguration {
     @ConditionalOnMissingBean(BuildingBlockDocumentDefinitionService::class)
     fun buildingBlockDocumentDefinitionService(
         repository: JsonSchemaDocumentDefinitionRepository,
-        checker: BuildingBlockDefinitionChecker
+        checker: BuildingBlockDefinitionChecker,
+        objectMapper: ObjectMapper
     ): BuildingBlockDocumentDefinitionService {
-        return BuildingBlockDocumentDefinitionService(repository, checker)
+        return BuildingBlockDocumentDefinitionService(repository, checker, objectMapper)
     }
 
     @Bean

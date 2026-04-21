@@ -17,7 +17,7 @@
 import {Component, OnDestroy, OnInit} from '@angular/core';
 import {combineLatest, Subscription} from 'rxjs';
 import {PluginManagementStateService} from '../../services';
-import {PluginDefinition, PluginManagementService} from '@valtimo/plugin';
+import {PluginDefinition, PluginManagementService, PLUGIN_CATALOG_TEST_IDS} from '@valtimo/plugin';
 
 @Component({
   standalone: false,
@@ -29,6 +29,7 @@ export class PluginAddSelectComponent implements OnInit, OnDestroy {
   public readonly selectedPluginDefinition$ = this.stateService.selectedPluginDefinition$;
   public readonly disabled$ = this.stateService.inputDisabled$;
   public readonly pluginDefinitionsWithLogos$ = this.stateService.pluginDefinitionsWithLogos$;
+  public readonly testIds = PLUGIN_CATALOG_TEST_IDS;
 
   private refreshSubscription!: Subscription;
 

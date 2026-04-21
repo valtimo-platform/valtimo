@@ -117,12 +117,12 @@ export class CaseDetailsProcessesPage {
 
   async openUploadModal() {
     await this.uploadButton.click();
-    await expect(this.uploadModal).toHaveAttribute('ng-reflect-open', 'true');
+    await expect(this.uploadModalUploadButton).toBeVisible();
   }
 
   async closeUploadModal() {
     await this.uploadModalCancelButton.click();
-    await expect(this.uploadModal).toHaveAttribute('ng-reflect-open', 'false');
+    await expect(this.uploadModalUploadButton).not.toBeVisible();
   }
 
   async uploadProcess() {
@@ -130,7 +130,7 @@ export class CaseDetailsProcessesPage {
     await this.uploadModalFileInput.setInputFiles(BPMN_ASSET_PATH);
     await expect(this.uploadModalUploadButton).toBeEnabled();
     await this.uploadModalUploadButton.click();
-    await expect(this.uploadModal).toHaveAttribute('ng-reflect-open', 'false');
+    await expect(this.uploadModalUploadButton).not.toBeVisible();
     await this.carbonList.waitForLoaded();
   }
 
@@ -142,7 +142,7 @@ export class CaseDetailsProcessesPage {
   async deleteProcess(processName: string) {
     const row = this.carbonList.row(processName);
     await row.clickAction('Delete');
-    await expect(this.deleteConfirmationModal).toHaveAttribute('ng-reflect-open', 'true');
+    await expect(this.deleteConfirmButton).toBeVisible();
     await this.deleteConfirmButton.click();
   }
 

@@ -29,7 +29,7 @@ dependencies {
 
 ### Frontend
 
-A general instruction to add a front-end plugin to the implementation can be found [here](../core/plugin.md#adding-a-front-end-plugin-to-the-implementation).
+A general instruction to add a front-end plugin to the implementation can be found in the [plugin documentation](../core/plugin.md#adding-a-front-end-plugin-to-the-implementation).
 
 In order to use the Object Typen API plugin in the frontend the following can be added to your `app.module.ts`:
 
@@ -51,4 +51,4 @@ import { ObjecttypenApiPluginModule, objecttypenApiPluginSpecification } from '@
 })
 ```
 
-Before the Object Typen API plugin can be used, an authentication plugin is needed. One such authentication plugin is the Objecten API authentication plugin. Instructions on how to add this plugin can be found [here](objecten-api-authentication.md).
+Before the Object Typen API plugin can be used, an authentication plugin is needed. One such authentication plugin is the Objecten API authentication plugin. Instructions on how to add this plugin can be found in the [Objecten API authentication documentation](objecten-api-authentication.md).
