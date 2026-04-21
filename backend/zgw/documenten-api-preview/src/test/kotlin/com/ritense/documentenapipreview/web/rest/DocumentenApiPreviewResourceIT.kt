@@ -105,8 +105,8 @@ internal class DocumentenApiPreviewResourceIT : BaseIntegrationTest() {
 
     @Test
     fun `should generate PDF document from documenten preview API`() {
-        doReturn("TEST_DOCUMENT_CONTENT".byteInputStream()).whenever(mockDocumentenApiPlugin).downloadInformatieObject(null,DOCUMENT_ID)
-        doReturn(DOCUMENT_INFORMATIE_OBJECT).whenever(mockDocumentenApiPlugin).getInformatieObject(DOCUMENT_ID, null)
+        doReturn("TEST_DOCUMENT_CONTENT".byteInputStream()).whenever(mockDocumentenApiPlugin).downloadInformatieObject(CASE_DOCUMENT_ID, DOCUMENT_ID)
+        doReturn(DOCUMENT_INFORMATIE_OBJECT).whenever(mockDocumentenApiPlugin).getInformatieObject(DOCUMENT_ID, CASE_DOCUMENT_ID)
 
         val contentDispositionHeader = ContentDisposition.attachment()
             .filename("mock_document.pdf", StandardCharsets.UTF_8)
@@ -115,8 +115,9 @@ internal class DocumentenApiPreviewResourceIT : BaseIntegrationTest() {
 
         mockMvc.perform(
             get(
-                "/api/v1/documenten-api-preview/{pluginConfigurationId}/preview/{documentId}",
+                "/api/v1/documenten-api-preview/{pluginConfigurationId}/preview/{caseDocumentId}/{documentId}",
                 DOCUMENTEN_API_PLUGIN_CONFIGURATION_ID,
+                CASE_DOCUMENT_ID,
                 DOCUMENT_ID
             )
         )
@@ -146,6 +147,7 @@ internal class DocumentenApiPreviewResourceIT : BaseIntegrationTest() {
 
     companion object {
         private const val DOCUMENT_ID = "mock_document_id"
+        private val CASE_DOCUMENT_ID = UUID.randomUUID()
         private const val DOCUMENTEN_API_PLUGIN_CONFIGURATION_ID = "30a8589b-a686-4849-8e9e-e42f87de59bc"
 
         private val DOCUMENT_INFORMATIE_OBJECT = DocumentInformatieObject(

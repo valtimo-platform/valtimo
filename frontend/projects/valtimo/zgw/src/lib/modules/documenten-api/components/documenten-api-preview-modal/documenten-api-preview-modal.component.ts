@@ -25,7 +25,7 @@ import {
 } from '@angular/core';
 
 import {DomSanitizer, SafeResourceUrl} from '@angular/platform-browser';
-import {BehaviorSubject, Observable, Subscription} from 'rxjs';
+import {BehaviorSubject, combineLatest, Observable, Subscription} from 'rxjs';
 import {
   ButtonModule,
   IconModule,
@@ -63,6 +63,7 @@ import {take} from 'rxjs/operators';
 })
 export class DocumentenApiPreviewModalComponent implements OnInit, OnDestroy {
   @Input() public caseDefinitionKey!: string;
+  @Input() public caseDocumentId$: Observable<string>;
   @Input() public showModalSubject$: Observable<boolean>;
   @Input() public relatedFile$: Observable<DocumentenApiRelatedFile>;
   @Output() public modalClose = new EventEmitter();
@@ -98,25 +99,29 @@ export class DocumentenApiPreviewModalComponent implements OnInit, OnDestroy {
 
   private setPdfSrc(): void {
     this._subscriptions.push(
-      this.relatedFile$.subscribe(document => {
-        if (!document) {
-          return;
+      combineLatest([this.relatedFile$, this.caseDocumentId$]).subscribe(
+        ([document, caseDocumentId]) => {
+          if (!document) {
+            return;
+          }
+
+          this.fileName = document.bestandsnaam;
+
+          const pdfUri = `${this._valtimoEndpointUri}v1/documenten-api-preview/${document.pluginConfigurationId}/preview/${caseDocumentId}/${document.fileId}`;
+
+          this.loading$.next(true);
+          this.http
+            .get(pdfUri, {
+              responseType: 'blob',
+            })
+            .subscribe(blob => {
+              this.pdfSrc = this.sanitizer.bypassSecurityTrustResourceUrl(
+                URL.createObjectURL(blob)
+              );
+              this.loading$.next(false);
+            });
         }
-
-        this.fileName = document.bestandsnaam;
-
-        let pdfUri: string = `${this._valtimoEndpointUri}v1/documenten-api-preview/${document.pluginConfigurationId}/preview/${document.fileId}`;
-
-        this.loading$.next(true);
-        this.http
-          .get(pdfUri.toString(), {
-            responseType: 'blob',
-          })
-          .subscribe(blob => {
-            this.pdfSrc = this.sanitizer.bypassSecurityTrustResourceUrl(URL.createObjectURL(blob));
-            this.loading$.next(false);
-          });
-      })
+      )
     );
   }
 
