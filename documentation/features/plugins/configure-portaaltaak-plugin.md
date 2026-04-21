@@ -19,9 +19,9 @@ The lifecycle of a portaaltaak is as follows:
 
 ## Configure the plugin
 
-A plugin configuration is required before the plugin can be used. A general description on how to configure plugins can be found [here](./#configuring-plugins).
+A plugin configuration is required before the plugin can be used. A general description on how to configure plugins can be found in the [plugin configuration guide](./#configuring-plugins).
 
-If the Portaaltaak plugin is not visible in the plugin menu, it is possible the application is missing a dependency. Instructions on how to add the Portaaltaak Plugin dependency can be found [here](../../fundamentals/getting-started/modules/zgw/portaaltaak.md).
+If the Portaaltaak plugin is not visible in the plugin menu, it is possible the application is missing a dependency. Instructions on how to add the Portaaltaak Plugin dependency can be found in the [Portaaltaak module documentation](../../fundamentals/getting-started/modules/zgw/portaaltaak.md).
 
 To configure this plugin the following properties have to be entered:
 
@@ -59,7 +59,7 @@ Instead of using the `Process completed Portaaltaak` process it is possible to c
 
 The portaaltaak plugin supports the following actions that can be configured in process links in order to create and complete user tasks through external systems like the NL Portal.
 
-A general description on how to create process links can be found [here](../process/process-link.md#creating-a-plugin-process-link).
+A general description on how to create process links can be found in the [process link documentation](../process/process-link.md#creating-a-plugin-process-link).
 
 ### Create Portaaltaak
 

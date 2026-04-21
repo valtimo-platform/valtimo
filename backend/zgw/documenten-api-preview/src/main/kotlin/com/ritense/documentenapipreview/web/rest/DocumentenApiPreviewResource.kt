@@ -31,6 +31,7 @@ import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
 import java.nio.charset.StandardCharsets
+import java.util.UUID
 
 @RestController
 @SkipComponentScan
@@ -38,12 +39,13 @@ import java.nio.charset.StandardCharsets
 class DocumentenApiPreviewResource(
     private val documentenApiPreviewService: DocumentenApiPreviewService
 ) {
-    @GetMapping("/v1/documenten-api-preview/{pluginConfigurationId}/preview/{documentId}")
+    @GetMapping("/v1/documenten-api-preview/{pluginConfigurationId}/preview/{caseDocumentId}/{documentId}")
     fun preview(
         @LoggableResource(resourceType = PluginConfiguration::class) @PathVariable(name = "pluginConfigurationId") pluginConfigurationId: String,
+        @PathVariable(name = "caseDocumentId") caseDocumentId: UUID,
         @PathVariable(name = "documentId") documentId: String,
     ): ResponseEntity<InputStreamResource> {
-        val pdfFile = documentenApiPreviewService.generatePreview(pluginConfigurationId, documentId)
+        val pdfFile = documentenApiPreviewService.generatePreview(pluginConfigurationId, caseDocumentId, documentId)
 
         return ResponseEntity
             .ok()
@@ -55,5 +57,14 @@ class DocumentenApiPreviewResource(
                     .toString()
                 )
             .body(InputStreamResource(pdfFile.content))
+    }
+
+    @GetMapping("/v1/documenten-api-preview/configuration-exists/{documentenApiConfigurationId}")
+    fun isPreviewConfigured(
+        @PathVariable(name = "documentenApiConfigurationId") documentenApiConfigurationId: String,
+    ): ResponseEntity<Boolean> {
+        return ResponseEntity.ok(
+            documentenApiPreviewService.isPreviewConfigured(documentenApiConfigurationId)
+        )
     }
 }

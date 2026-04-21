@@ -4,11 +4,11 @@
 
 | Category                    | Features | Functions | ✅ Covered | ❌ Not Covered |
 |-----------------------------|----------|-----------|------------|----------------|
-| User Features (ROLE_USER)   | 5        | 21        | 2          | 19             |
-| Admin Features (ROLE_ADMIN) | 15       | 328       | 56         | 272            |
-| **Total**                   | **20**   | **349**   | **58**     | **291**        |
+| User Features (ROLE_USER)   | 5        | 21        | 6          | 15             |
+| Admin Features (ROLE_ADMIN) | 15       | 328       | 96         | 230            |
+| **Total**                   | **20**   | **349**   | **102**    | **245**        |
 
-**Coverage:** `58 / 349` — `16.6%`
+**Coverage:** `102 / 349` — `29.2%`
 
 ---
 
@@ -56,10 +56,10 @@
 |:----|:-------------------------|:------------------------------------------------|:--------:|:------------------------------------------------|
 | 3.1 | View all open tasks      | Display list of all open tasks                  |    ✅    | task-list.spec.ts                               |
 | 3.2 | Filter/sort tasks        | Filter tasks by criteria · Sort tasks by column |    ✅    | task-list.spec.ts                               |
-| 3.3 | View task details        | Open and view task details                      |    ❌    |                                                 |
-| 3.4 | Claim task               | Claim an unassigned task                        |    ❌    |                                                 |
-| 3.5 | Execute task (fill form) | Fill in task form fields                        |    ❌    |                                                 |
-| 3.6 | Complete task            | Submit and complete task                        |    ❌    |                                                 |
+| 3.3 | View task details        | Open and view task details                      |    ✅    | task-list.spec.ts                               |
+| 3.4 | Claim task               | Claim an unassigned task                        |    ✅    | task-list.spec.ts                               |
+| 3.5 | Execute task (fill form) | Fill in task form fields                        |    ✅    | task-list.spec.ts                               |
+| 3.6 | Complete task            | Submit and complete task                        |    ✅    | task-list.spec.ts                               |
 
 ---
 
@@ -106,9 +106,9 @@
 | 6.6  | View linked processes        | Display list of linked processes                              |    ✅    | case-details-management-processes.spec.ts       |
 | 6.7  | Create new process           | Create new BPMN process                                       |    ✅    | case-details-management-processes.spec.ts       |
 | 6.8  | Open process in BPMN modeler | Open process in BPMN editor                                   |    ✅    | case-details-management-processes.spec.ts       |
-| 6.9  | Add BPMN elements            | Add BPMN elements via drag-drop                               |    ❌    |                                                 |
-| 6.10 | Set process properties       | Configure process properties (Starts case, Startable by user) |    ❌    |                                                 |
-| 6.11 | Save process                 | Save process definition                                       |    ❌    |                                                 |
+| 6.9  | Add BPMN elements            | Add BPMN elements via drag-drop                               |    ✅    | case-details-management-processes.spec.ts       |
+| 6.10 | Set process properties       | Configure process properties (Starts case, Startable by user) |    ✅    | case-details-management-processes.spec.ts       |
+| 6.11 | Save process                 | Save process definition                                       |    ✅    | case-details-management-processes.spec.ts       |
 
 #### 6C · Process Links
 
@@ -151,35 +151,35 @@
 
 | #    | Function                    | Test Scenarios                         | Coverage | Notes                                           |
 |:-----|:----------------------------|:---------------------------------------|:--------:|:------------------------------------------------|
-| 6.39 | View linked decision tables | Display list of linked decision tables |    ❌    |                                                 |
-| 6.40 | Upload decision table       | Upload decision table (.dmn file)      |    ❌    |                                                 |
-| 6.41 | Open decision table editor  | Open decision table in DMN editor      |    ❌    |                                                 |
-| 6.42 | Set DMN Hit policy          | Set DMN Hit policy                     |    ❌    |                                                 |
-| 6.43 | Manage DMN columns          | Manage DMN input/output columns        |    ❌    |                                                 |
-| 6.44 | Manage DMN rules            | Add/edit/delete DMN rules              |    ❌    |                                                 |
-| 6.45 | Save decision table         | Save decision table                    |    ❌    |                                                 |
+| 6.39 | View linked decision tables | Display list of linked decision tables |    ✅    | case-details-management-decisions.spec.ts       |
+| 6.40 | Upload decision table       | Upload decision table (.dmn file)      |    ✅    | case-details-management-decisions.spec.ts       |
+| 6.41 | Open decision table editor  | Open decision table in DMN editor      |    ✅    | case-details-management-decisions.spec.ts       |
+| 6.42 | Set DMN Hit policy          | Set DMN Hit policy                     |    ✅    | case-details-management-decisions.spec.ts       |
+| 6.43 | Manage DMN columns          | Manage DMN input/output columns        |    ✅    | case-details-management-decisions.spec.ts       |
+| 6.44 | Manage DMN rules            | Add/edit/delete DMN rules              |    ✅    | case-details-management-decisions.spec.ts       |
+| 6.45 | Save decision table         | Save decision table                    |    ✅    | case-details-management-decisions.spec.ts       |
 
 #### 6F · Document
 
 | #    | Function             | Test Scenarios              | Coverage | Notes                                           |
 |:-----|:---------------------|:----------------------------|:--------:|:------------------------------------------------|
-| 6.46 | View JSON Schema     | View JSON Schema definition |    ❌    |                                                 |
-| 6.47 | Download JSON Schema | Download JSON Schema        |    ❌    |                                                 |
-| 6.48 | Edit JSON Schema     | Edit JSON Schema            |    ❌    |                                                 |
-| 6.49 | Save JSON Schema     | Save JSON Schema changes    |    ❌    |                                                 |
+| 6.46 | View JSON Schema     | View JSON Schema definition |    ✅    | case-details-management-document.spec.ts        |
+| 6.47 | Download JSON Schema | Download JSON Schema        |    ✅    | case-details-management-document.spec.ts        |
+| 6.48 | Edit JSON Schema     | Edit JSON Schema            |    ✅    | case-details-management-document.spec.ts        |
+| 6.49 | Save JSON Schema     | Save JSON Schema changes    |    ✅    | case-details-management-document.spec.ts        |
 
 #### 6G · Forms
 
 | #    | Function            | Test Scenarios                                   | Coverage | Notes                                           |
 |:-----|:--------------------|:-------------------------------------------------|:--------:|:------------------------------------------------|
-| 6.50 | View forms list     | Display list of forms                            |    ❌    |                                                 |
-| 6.51 | Search/filter forms | Search and filter forms                          |    ❌    |                                                 |
-| 6.52 | Create form         | Create new form                                  |    ❌    |                                                 |
-| 6.53 | Add form components | Form.io builder — add components via drag-drop   |    ❌    |                                                 |
-| 6.54 | Configure component | Form.io builder — configure component properties |    ❌    |                                                 |
-| 6.55 | Use JSON editor     | Use Form.io JSON editor                          |    ❌    |                                                 |
-| 6.56 | View form preview   | View form preview                                |    ❌    |                                                 |
-| 6.57 | Save form           | Save form definition                             |    ❌    |                                                 |
+| 6.50 | View forms list     | Display list of forms                            |    ✅    | form-management.spec.ts                         |
+| 6.51 | Search/filter forms | Search and filter forms                          |    ✅    | form-management.spec.ts                         |
+| 6.52 | Create form         | Create new form                                  |    ✅    | case-details-management-forms.spec.ts           |
+| 6.53 | Add form components | Form.io builder — add components via drag-drop   |    ✅    | case-details-management-forms.spec.ts           |
+| 6.54 | Configure component | Form.io builder — configure component properties |    ✅    | case-details-management-forms.spec.ts           |
+| 6.55 | Use JSON editor     | Use Form.io JSON editor                          |    ✅    | case-details-management-forms.spec.ts           |
+| 6.56 | View form preview   | View form preview                                |    ✅    | case-details-management-forms.spec.ts           |
+| 6.57 | Save form           | Save form definition                             |    ✅    | case-details-management-forms.spec.ts           |
 
 #### 6H · Form Flows
 
@@ -188,7 +188,7 @@
 | 6.58 | View form flows list | Display list of form flows     |    ✅    | case-details-management-form-flows.spec.ts      |
 | 6.59 | Create form flow     | Create new form flow           |    ✅    | case-details-management-form-flows.spec.ts      |
 | 6.60 | Edit form flow JSON  | Edit form flow JSON definition |    ✅    | case-details-management-form-flows.spec.ts      |
-| 6.61 | Save form flow       | Save form flow                 |    ❌    |                                                 |
+| 6.61 | Save form flow       | Save form flow, invalid JSON   |    ✅    | case-details-management-form-flows.spec.ts      |
 
 #### 6I · Tasks
 
@@ -236,30 +236,30 @@
 |:-----|:--------------|:------------------------|:--------:|:------------------------------------------------|
 | 6.82 | View tags     | View tags configuration |    ✅    | case-details-config.spec.ts                     |
 | 6.83 | Add tag       | Add new tag             |    ✅    | case-details-config.spec.ts                     |
-| 6.84 | Set tag color | Set tag color           |    ❌    |                                                 |
+| 6.84 | Set tag color | Set tag color, change color |    ✅    | case-details-config.spec.ts                     |
 
 #### 6N · Case Details — Header
 
 | #    | Function            | Test Scenarios                    | Coverage | Notes                                           |
 |:-----|:--------------------|:----------------------------------|:--------:|:------------------------------------------------|
-| 6.85 | View header widgets | View header widgets configuration |    ❌    |                                                 |
-| 6.86 | Add header widget   | Add header widget                 |    ❌    |                                                 |
+| 6.85 | View header widgets | View header widgets configuration |    ✅    | case-details-management-header.spec.ts          |
+| 6.86 | Add header widget   | Add header widget                 |    ✅    | case-details-management-header.spec.ts          |
 
 #### 6O · Case Details — Widgets
 
 | #    | Function                 | Test Scenarios                                                            | Coverage | Notes                                           |
 |:-----|:-------------------------|:--------------------------------------------------------------------------|:--------:|:------------------------------------------------|
-| 6.87 | View widgets list        | View widgets list                                                         |    ❌    |                                                 |
-| 6.88 | Add widget               | Add widget via 6-step wizard                                              |    ❌    |                                                 |
-| 6.89 | Select widget type       | Select widget type (Fields / Custom / Form.io / Table / Collection / Map) |    ❌    |                                                 |
-| 6.90 | Set widget width         | Set widget width                                                          |    ❌    |                                                 |
-| 6.91 | Set widget density       | Set widget density                                                        |    ❌    |                                                 |
-| 6.92 | Set widget style         | Set widget style                                                          |    ❌    |                                                 |
-| 6.93 | Configure widget content | Configure widget content                                                  |    ❌    |                                                 |
+| 6.87 | View widgets list        | View widgets list                                                         |    ✅    | case-details-management-widgets.spec.ts         |
+| 6.88 | Add widget               | Add widget via 6-step wizard                                              |    ✅    | case-details-management-widgets.spec.ts         |
+| 6.89 | Select widget type       | Select widget type (Fields / Custom / Form.io / Table / Collection / Map) |    ✅    | case-details-management-widgets.spec.ts         |
+| 6.90 | Set widget width         | Set widget width                                                          |    ✅    | case-details-management-widgets.spec.ts         |
+| 6.91 | Set widget density       | Set widget density                                                        |    ✅    | case-details-management-widgets.spec.ts         |
+| 6.92 | Set widget style         | Set widget style                                                          |    ✅    | case-details-management-widgets.spec.ts         |
+| 6.93 | Configure widget content | Configure widget content                                                  |    ✅    | case-details-management-widgets.spec.ts         |
 | 6.94 | Set widget conditions    | Set widget display conditions                                             |    ❌    |                                                 |
-| 6.95 | Add widget separator     | Add widget separator                                                      |    ❌    |                                                 |
-| 6.96 | Rearrange widgets        | Rearrange widgets order                                                   |    ❌    |                                                 |
-| 6.97 | Use widget JSON editor   | Use widget JSON editor                                                    |    ❌    |                                                 |
+| 6.95 | Add widget separator     | Add widget separator                                                      |    ✅    | case-details-management-widgets.spec.ts         |
+| 6.96 | Rearrange widgets        | Rearrange widgets order                                                   |    ✅    | case-details-management-widgets.spec.ts         |
+| 6.97 | Use widget JSON editor   | Use widget JSON editor                                                    |    ✅    | case-details-management-widgets.spec.ts         |
 
 #### 6P · ZGW — General
 
@@ -328,12 +328,12 @@
 |:----|:------------------------------------|:-------------------------------------------------------------------------------------------|:--------:|:------------------------------------------------|
 | 9.1 | View plugin configurations list     | Display list of all plugin configurations · Display empty state when no plugins configured |    ✅    | plugin.spec.ts                                  |
 | 9.2 | View plugin configuration name      | Display configuration name in list view                                                    |    ✅    | plugin.spec.ts                                  |
-| 9.3 | View plugin name (API type)         | Display plugin API type in list                                                            |    ❌    |                                                 |
-| 9.4 | View plugin identifier              | Display UUID identifier in list                                                            |    ❌    |                                                 |
+| 9.3 | View plugin name (API type)         | Display plugin API type in list                                                            |    ✅    | plugin.spec.ts                                  |
+| 9.4 | View plugin identifier              | Display UUID identifier in list                                                            |    ✅    | plugin.spec.ts                                  |
 | 9.5 | Browse available plugins            | Navigate through plugin catalog · View plugin details in catalog                           |    ✅    | plugin.spec.ts                                  |
-| 9.6 | View plugin categories              | Display categorized plugin list                                                            |    ❌    |                                                 |
-| 9.7 | View plugin descriptions with logos | Display plugin with logo and description                                                   |    ❌    |                                                 |
-| 9.8 | Filter/search plugins               | Search plugins by name · Filter plugins by type                                            |    ❌    |                                                 |
+| 9.6 | View plugin categories              | Display categorized plugin list                                                            |   `N/A`  | No category grouping in UI                      |
+| 9.7 | View plugin descriptions with logos | Display plugin with logo and description                                                   |    ✅    | plugin.spec.ts                                  |
+| 9.8 | Filter/search plugins               | Search plugins by name · Filter plugins by type                                            |   `N/A`  | No search/filter in plugin overview              |
 
 #### 9B · Create Plugin Config
 
@@ -727,8 +727,8 @@
 |:-------------------------|:-------:|
 | Total Features           |   20    |
 | Total Functions          |   349   |
-| ✅ Covered by Playwright |   58    |
-| ❌ Not covered           |   291   |
+| ✅ Covered by Playwright |   102   |
+| ❌ Not covered           |   245   |
 | ⏳ In progress           |    0    |
-| `N/A` Not applicable     |    0    |
-| **Coverage %**           | **16.6%** |
+| `N/A` Not applicable     |    2    |
+| **Coverage %**           | **29.2%** |

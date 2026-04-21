@@ -19,18 +19,18 @@
   These retry cycles can be customized in application.yml.
   In addition, custom cycles can be defined through Spring Boot configuration files.
 
-  See more about it [here](../../../features/process/retry-cycle.md).
+  See more about it in the [retry cycle documentation](../../../features/process/retry-cycle.md).
 
 * **Widget compact mode**
 
   During the configuration of the widgets, now a `Density` step appears under certain conditions.
 
-  See more about it [here](../../../features/case/case-detail/tabs/widgets.md).
+  See more about it in the [widgets documentation](../../../features/case/case-detail/tabs/widgets.md).
 
 * **Retrieving besluit action added to Besluiten API plugin**
 
   A new action was added to the Besluiten API plugin that allows a besluit to be retrieved. More information can be
-  found [here](../../../features/plugins/configure-besluiten-api-plugin.md).
+  found in the [Besluiten API plugin documentation](../../../features/plugins/configure-besluiten-api-plugin.md).
 
 ## Bugfixes
 

@@ -43,14 +43,14 @@
     </changeSet>
 
     <changeSet id="2" author="Ritense">
+        <validCheckSum>9:a02856f384583fa12b599f9632c6e4bf</validCheckSum>
         <dropPrimaryKey tableName="startable_item"/>
         <addColumn tableName="startable_item">
             <column name="item_version_tag" type="VARCHAR(200)" defaultValue="">
                 <constraints nullable="false"/>
             </column>
         </addColumn>
-        <addPrimaryKey tableName="startable_item"
-                       columnNames="case_definition_key, case_definition_version_tag, item_key, item_type, item_version_tag"/>
+        <!-- Primary key moved to 20260410-fix-mysql-key-length.xml (columns must be shrunk first for MySQL) -->
     </changeSet>
 
 </databaseChangeLog>

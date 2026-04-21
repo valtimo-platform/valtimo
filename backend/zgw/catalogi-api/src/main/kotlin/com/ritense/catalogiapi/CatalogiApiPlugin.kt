@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -275,9 +275,15 @@ class CatalogiApiPlugin(
 
                     // Filter the types based on the geldigheid dates for all non-concept types
                     if (!informatieobjecttype.concept &&
-                        informatieobjecttype.beginGeldigheid.isBefore(LocalDate.now()) &&
-                        (informatieobjecttype.eindeGeldigheid == null ||
-                            informatieobjecttype.eindeGeldigheid.isAfter(LocalDate.now()))
+                        (
+                            informatieobjecttype.beginGeldigheid.isBefore(LocalDate.now()) ||
+                            informatieobjecttype.beginGeldigheid.isEqual(LocalDate.now())
+                        ) &&
+                        (
+                            informatieobjecttype.eindeGeldigheid == null ||
+                            informatieobjecttype.eindeGeldigheid.isAfter(LocalDate.now()) ||
+                            informatieobjecttype.eindeGeldigheid.isEqual(LocalDate.now())
+                        )
                     ) {
                         informatieobjecttype
                     } else {

@@ -46,10 +46,10 @@ class DocumentenApiPreviewPlugin(
     @PluginProperty(key = DOCUMENTEN_API_CONFIGURATION_ID, secret = false)
     lateinit var documentenApiConfigurationId: String
 
-    fun generatePreview(documentId: String): PdfFile {
+    fun generatePreview(caseDocumentId: UUID, documentId: String): PdfFile {
         val documentenApiPlugin = getDocumentenApiPlugin()
-        val documentStream = documentenApiPlugin.downloadInformatieObject(null,documentId)
-        val documentInformatieObject = documentenApiPlugin.getInformatieObject(documentId, null);
+        val documentStream = documentenApiPlugin.downloadInformatieObject(caseDocumentId, documentId)
+        val documentInformatieObject = documentenApiPlugin.getInformatieObject(documentId, caseDocumentId)
 
         val extension = documentInformatieObject.bestandsnaam
             ?.substringAfterLast('.', "")

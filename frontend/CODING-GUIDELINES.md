@@ -394,9 +394,7 @@ export class MyPageService implements OnDestroy {
   constructor(private readonly myApiService: MyApiService) {}
 
   public loadItems(): void {
-    this._subscriptions.add(
-      this.myApiService.getItems().subscribe(items => this._items$.next(items))
-    );
+    this.myApiService.getItems().subscribe(items => this._items$.next(items));
   }
 
   public showEditModal(item: Item): void {
@@ -468,8 +466,20 @@ public formGroup: FormGroup = this.fb.group({
 2. **`Subscription` container with `ngOnDestroy`** — for imperative subscriptions that cannot
    live in the template.
 
-HTTP observables complete automatically after emitting, so wrapping them in `take(1)` is
-unnecessary.
+### HTTP observables
+
+Default HTTP body observables (`httpClient.get/post/put/delete` with `observe: 'body'`) complete
+automatically after a single emission. This means:
+
+- **Do not** add HTTP subscriptions to a `Subscription` container — they clean up on their own.
+- **Do not** wrap them in `take(1)` — they already complete after one emission.
+
+For multi-emission/event-based HTTP flows (e.g. `observe: 'events'`, progress events), manage
+subscriptions explicitly when cancellation/lifecycle control is required.
+
+Only add a subscription to the `_subscriptions` container when the source is a long-lived
+observable (e.g. `BehaviorSubject`, `combineLatest`, route params, store selectors) that does
+**not** complete on its own.
 
 ### Batching async pipes
 

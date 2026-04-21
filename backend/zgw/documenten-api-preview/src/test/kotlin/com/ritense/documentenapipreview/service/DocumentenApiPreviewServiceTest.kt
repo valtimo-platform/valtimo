@@ -24,6 +24,7 @@ import org.mockito.kotlin.any
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
+import java.util.UUID
 
 class DocumentenApiPreviewServiceTest {
     private lateinit var documentenApiPreviewService: DocumentenApiPreviewService
@@ -39,13 +40,14 @@ class DocumentenApiPreviewServiceTest {
     @Test
     fun `should call plugin to generate preview for document`() {
         val documentApiConfigurationId = "mock_document_api_configuration_id"
+        val caseDocumentId = UUID.randomUUID()
         val documentId = "mock_document_identifier"
         val pluginInstance = mock<DocumentenApiPreviewPlugin>()
         whenever(pluginService.createInstance<DocumentenApiPreviewPlugin>(any(), any()))
             .thenReturn(pluginInstance)
 
-        documentenApiPreviewService.generatePreview(documentApiConfigurationId, documentId)
+        documentenApiPreviewService.generatePreview(documentApiConfigurationId, caseDocumentId, documentId)
 
-        verify(pluginInstance).generatePreview(documentId)
+        verify(pluginInstance).generatePreview(caseDocumentId, documentId)
     }
 }

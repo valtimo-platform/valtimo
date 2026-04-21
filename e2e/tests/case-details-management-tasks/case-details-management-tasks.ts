@@ -14,29 +14,41 @@
  * limitations under the License.
  */
 
+import {generateId} from '../../utils/dataGenerator';
+
 export const CASE_IDENTIFIER = 'bezwaar';
 
-export const taskColumnTestData = {
-  title: 'E2e Task Column',
-  key: 'e2e-task-column',
-  path: 'e2eTestField',
-  displayType: 'Text',
-};
+export function createTaskColumnTestData() {
+  const id = generateId();
+  return {
+    title: `E2e Task Column ${id}`,
+    key: `e2e-task-column-${id}`,
+    path: 'e2eTestField',
+    displayType: 'Text',
+  };
+}
 
-export const taskColumnReorderTestData = {
-  titleA: 'E2e Task Col A',
-  keyA: 'e2e-task-col-a',
-  pathA: 'e2eFieldA',
-  titleB: 'E2e Task Col B',
-  keyB: 'e2e-task-col-b',
-  pathB: 'e2eFieldB',
-};
+export function createTaskColumnReorderTestData() {
+  const idA = generateId();
+  const idB = generateId();
+  return {
+    titleA: `E2e Task Col A ${idA}`,
+    keyA: `e2e-task-col-a-${idA}`,
+    pathA: 'e2eFieldA',
+    titleB: `E2e Task Col B ${idB}`,
+    keyB: `e2e-task-col-b-${idB}`,
+    pathB: 'e2eFieldB',
+  };
+}
 
-export const taskSearchFieldTestData = {
-  title: 'E2e Task Search',
-  key: 'e2e-task-search',
-  path: 'e2eSearchField',
-  dataType: 'Text',
-  matchType: 'Contains',
-  fieldType: 'Single',
-};
+export function createTaskSearchFieldTestData() {
+  const id = generateId();
+  return {
+    title: `E2e Task Search ${id}`,
+    key: `e2e-task-search-${id}`,
+    path: 'e2eSearchField',
+    dataType: 'Text',
+    matchType: 'Contains',
+    fieldType: 'Single',
+  };
+}

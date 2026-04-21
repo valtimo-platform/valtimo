@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,6 +20,7 @@ const BUILDING_BLOCK_MANAGEMENT_TABS = {
   DOCUMENT: 'document',
   FORMS: 'forms',
   FORM_FLOWS: 'form-flows',
+  DECISIONS: 'decisions',
 } as const;
 
 export {BUILDING_BLOCK_MANAGEMENT_TABS};

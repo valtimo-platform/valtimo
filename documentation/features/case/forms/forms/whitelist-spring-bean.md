@@ -36,7 +36,7 @@ Spring Expression Language (SpEL) by default allows access to Spring beans, e.g.
     }
     ```
 
-The bean can now be used. For information on how to use these beans inside of a form flow definition, see [here](../../form-flow.md#creating-a-form-flow-definition).
+The bean can now be used. For information on how to use these beans inside of a form flow definition, see the [form flow definition documentation](../../form-flow.md#creating-a-form-flow-definition).
 
 ## Available properties in SpEL context
 

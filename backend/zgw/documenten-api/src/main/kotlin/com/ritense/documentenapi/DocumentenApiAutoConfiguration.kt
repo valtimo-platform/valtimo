@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,12 +18,16 @@ package com.ritense.documentenapi
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.ritense.authorization.AuthorizationService
+import com.ritense.authorization.deployment.ResourceTypeRename
 import com.ritense.case_.service.ActiveCaseDefinitionService
 import com.ritense.catalogiapi.service.CatalogiService
 import com.ritense.document.repository.impl.JsonSchemaDocumentRepository
 import com.ritense.document.service.DocumentDefinitionService
 import com.ritense.document.service.DocumentService
 import com.ritense.document.service.impl.JsonSchemaDocumentDefinitionService
+import com.ritense.documentenapi.authorization.ZgwDocumentActionProvider
+import com.ritense.documentenapi.authorization.ZgwDocumentSpecificationFactory
+import com.ritense.documentenapi.authorization.ZgwDocumentToJsonSchemaDocumentMapper
 import com.ritense.documentenapi.authorization.ZgwResourceDocumentMapper
 import com.ritense.documentenapi.client.DocumentenApiClient
 import com.ritense.documentenapi.domain.DocumentenApiVersion
@@ -49,10 +53,10 @@ import com.ritense.valtimo.operaton.service.OperatonRepositoryService
 import com.ritense.valtimo.operaton.service.OperatonRuntimeService
 import com.ritense.valtimo.processlink.service.PluginProcessLinkService
 import com.ritense.valueresolver.ValueResolverService
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.autoconfigure.AutoConfiguration
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.boot.autoconfigure.domain.EntityScan
-import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.ApplicationEventPublisher
 import org.springframework.context.annotation.Bean
 import org.springframework.core.annotation.Order
@@ -66,6 +70,13 @@ import org.springframework.web.client.RestClient
 @EntityScan("com.ritense.documentenapi.domain")
 class DocumentenApiAutoConfiguration {
 
+    // Temporary rename for forward compatibility. Remove at next major release.
+    @Bean
+    fun resourcePermissionToZgwDocumentRename() = ResourceTypeRename(
+        oldName = "com.ritense.resource.authorization.ResourcePermission",
+        newName = "com.ritense.documentenapi.authorization.ZgwDocument"
+    )
+
     @Bean
     fun zgwResourceDocumentMapper(
         documentRepository: JsonSchemaDocumentRepository
@@ -74,18 +85,36 @@ class DocumentenApiAutoConfiguration {
     }
 
     @Bean
+    @ConditionalOnMissingBean(ZgwDocumentActionProvider::class)
+    fun zgwDocumentActionProvider(): ZgwDocumentActionProvider = ZgwDocumentActionProvider()
+
+    @Bean
+    @ConditionalOnMissingBean(ZgwDocumentSpecificationFactory::class)
+    fun zgwDocumentSpecificationFactory(): ZgwDocumentSpecificationFactory =
+        ZgwDocumentSpecificationFactory()
+
+    @Bean
+    @ConditionalOnMissingBean(ZgwDocumentToJsonSchemaDocumentMapper::class)
+    fun zgwDocumentToJsonSchemaDocumentMapper(
+        documentRepository: JsonSchemaDocumentRepository
+    ): ZgwDocumentToJsonSchemaDocumentMapper =
+        ZgwDocumentToJsonSchemaDocumentMapper(documentRepository)
+
+    @Bean
     fun documentenApiClient(
         restClientBuilder: RestClient.Builder,
         outboxService: OutboxService,
         objectMapper: ObjectMapper,
         platformTransactionManager: PlatformTransactionManager,
         authorizationService: AuthorizationService,
+        catalogiService: CatalogiService,
     ) = DocumentenApiClient(
         restClientBuilder,
         outboxService,
         objectMapper,
         platformTransactionManager,
         authorizationService,
+        catalogiService,
     )
 
     @Bean
