@@ -23,6 +23,7 @@ import {
   statusVisibilityTestData,
   statusReorderTestData,
   tagTestData,
+  tagColorTestData,
 } from './case-details-config';
 import {CaseDetailsConfigPage} from './page';
 
@@ -46,10 +47,8 @@ test.describe('Case details configuration', () => {
     await page.goto('/');
     await caseDetailsConfigPage.goToCaseDetailsConfig(CASE_IDENTIFIER);
     draftVersion = await caseDetailsConfigPage.ensureDraftVersionSelected();
-  });
 
-  test.afterAll(async () => {
-    // Cleanup any remaining test data via API
+    // Clean up data
     const statusKey = statusTestData.updatedTitle.toLowerCase().replace(/\s+/g, '-');
     const originalStatusKey = statusTestData.title.toLowerCase().replace(/\s+/g, '-');
     const colorStatusKey = statusColorTestData.title.toLowerCase().replace(/\s+/g, '-');
@@ -65,13 +64,36 @@ test.describe('Case details configuration', () => {
     await caseDetailsConfigPage.deleteStatusViaApi(CASE_IDENTIFIER, visibilityStatusKey);
     await caseDetailsConfigPage.deleteStatusViaApi(CASE_IDENTIFIER, reorderKeyA);
     await caseDetailsConfigPage.deleteStatusViaApi(CASE_IDENTIFIER, reorderKeyB);
+    // Clean up ALL stale test tags (catches accumulated tags from many previous runs)
+    await caseDetailsConfigPage.cleanupStaleTagsViaApi(CASE_IDENTIFIER);
+  });
+
+  test.afterAll(async () => {
+    // Cleanup any remaining test data via API
+    const statusKey = statusTestData.updatedTitle.toLowerCase().replace(/\s+/g, '-');
+    const originalStatusKey = statusTestData.title.toLowerCase().replace(/\s+/g, '-');
+    const colorStatusKey = statusColorTestData.title.toLowerCase().replace(/\s+/g, '-');
+    const visibilityStatusKey = statusVisibilityTestData.title.toLowerCase().replace(/\s+/g, '-');
+    const reorderKeyA = statusReorderTestData.titleA.toLowerCase().replace(/\s+/g, '-');
+    const reorderKeyB = statusReorderTestData.titleB.toLowerCase().replace(/\s+/g, '-');
+    const tagKey = tagTestData.updatedTitle.toLowerCase().replace(/\s+/g, '-');
+    const originalTagKey = tagTestData.title.toLowerCase().replace(/\s+/g, '-');
+    const colorTagKey = tagColorTestData.title.toLowerCase().replace(/\s+/g, '-');
+
+    await caseDetailsConfigPage.deleteStatusViaApi(CASE_IDENTIFIER, statusKey);
+    await caseDetailsConfigPage.deleteStatusViaApi(CASE_IDENTIFIER, originalStatusKey);
+    await caseDetailsConfigPage.deleteStatusViaApi(CASE_IDENTIFIER, colorStatusKey);
+    await caseDetailsConfigPage.deleteStatusViaApi(CASE_IDENTIFIER, visibilityStatusKey);
+    await caseDetailsConfigPage.deleteStatusViaApi(CASE_IDENTIFIER, reorderKeyA);
+    await caseDetailsConfigPage.deleteStatusViaApi(CASE_IDENTIFIER, reorderKeyB);
     await caseDetailsConfigPage.deleteTagViaApi(CASE_IDENTIFIER, draftVersion, tagKey);
     await caseDetailsConfigPage.deleteTagViaApi(CASE_IDENTIFIER, draftVersion, originalTagKey);
+    await caseDetailsConfigPage.deleteTagViaApi(CASE_IDENTIFIER, draftVersion, colorTagKey);
 
     await context.close();
   });
 
-  test.describe('Statuses', () => {
+  test.describe('6.77–6.81 — Statuses', () => {
     test.describe('Success', () => {
       test('Add a status', async () => {
         // Arrange
@@ -104,7 +126,7 @@ test.describe('Case details configuration', () => {
       });
     });
 
-    test.describe('Set status color', () => {
+    test.describe('6.79 — Set status color', () => {
       test('Add a status and set its color', async () => {
         // Arrange
         await caseDetailsConfigPage.addStatus(statusColorTestData.title);
@@ -135,7 +157,7 @@ test.describe('Case details configuration', () => {
       });
     });
 
-    test.describe('Set status visibility', () => {
+    test.describe('6.80 — Set status visibility', () => {
       test('Add a status with default visibility (visible)', async () => {
         // Act
         await caseDetailsConfigPage.addStatus(statusVisibilityTestData.title);
@@ -180,7 +202,7 @@ test.describe('Case details configuration', () => {
       });
     });
 
-    test.describe('Rearrange statuses', () => {
+    test.describe('6.81 — Rearrange statuses', () => {
       test('Add two statuses for reordering', async () => {
         // Arrange - add status A then status B
         await caseDetailsConfigPage.addStatus(statusReorderTestData.titleA);
@@ -220,7 +242,7 @@ test.describe('Case details configuration', () => {
     });
   });
 
-  test.describe('Tags', () => {
+  test.describe('6.82–6.84 — Tags', () => {
     test.describe('Success', () => {
       test('Add a tag', async () => {
         // Arrange
@@ -250,6 +272,37 @@ test.describe('Case details configuration', () => {
 
         // Assert
         await caseDetailsConfigPage.assertTagNotExists(tagTestData.updatedTitle);
+      });
+    });
+
+    test.describe('6.84 — Set tag color', () => {
+      test('Add a tag and set its color', async () => {
+        // Arrange
+        await caseDetailsConfigPage.addTag(tagColorTestData.title);
+        await caseDetailsConfigPage.assertTagExists(tagColorTestData.title);
+
+        // Act — Edit the tag and change color to 'Red'
+        await caseDetailsConfigPage.openTagEditModal(tagColorTestData.title);
+        await caseDetailsConfigPage.selectTagColor('Red');
+        await caseDetailsConfigPage.saveTag();
+
+        // Assert — verify color tag in the list shows 'Red'
+        await caseDetailsConfigPage.assertTagColorInList(tagColorTestData.title, 'Red');
+      });
+
+      test('Change tag color to a different value', async () => {
+        // Act — Edit again and change to 'Green'
+        await caseDetailsConfigPage.openTagEditModal(tagColorTestData.title);
+        await caseDetailsConfigPage.selectTagColor('Green');
+        await caseDetailsConfigPage.saveTag();
+
+        // Assert
+        await caseDetailsConfigPage.assertTagColorInList(tagColorTestData.title, 'Green');
+      });
+
+      test('Clean up color test tag', async () => {
+        await caseDetailsConfigPage.deleteTag(tagColorTestData.title);
+        await caseDetailsConfigPage.assertTagNotExists(tagColorTestData.title);
       });
     });
   });

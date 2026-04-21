@@ -228,7 +228,7 @@ The exported configuration serves as a portable package that can be used for ver
 
 * Importing a case definition always results in a _draft_ version, allowing final review and manual finalization before the configuration is used actively.
 * All existing configurations will be overwritten by the configurations in the import.
-* Access control and plugin configurations are not part of a case definition import/export and most likely need to be configured first for the newly imported case and process definitions. A full list of configurations and definitions that are included and excluded from imports and exports can be found [here](./#included-excluded-in-imports-exports).
+* Access control and plugin configurations are not part of a case definition import/export and most likely need to be configured first for the newly imported case and process definitions. A full list of configurations and definitions that are included and excluded from imports and exports can be found in the [included/excluded in imports/exports section](./#included-excluded-in-imports-exports).
 {% endhint %}
 
 ### Recommended Workflow
@@ -301,7 +301,7 @@ Most configurations and definitions are included in exports and imports. Some re
 
 ## Access control
 
-Access to the case definitions can be configured through access control. More information about access control can be found [here](../../features/access-control).
+Access to the case definitions can be configured through access control. More information about access control can be found in the [access control documentation](../../features/access-control).
 
 ### Resources and actions
 

@@ -128,7 +128,7 @@ class URLProcessLinkService(
         processDefinitionKey: String,
         blueprintId: BlueprintId?
     ): Request {
-        return if (processLink.activityType == ActivityTypeWithEventName.START_EVENT_START) {
+        return if (processLink.activityType == ActivityTypeWithEventName.START_EVENT_START || processLink.activityType == ActivityTypeWithEventName.MESSAGE_START_EVENT_START) {
             if (document == null) {
                 newDocumentAndStartProcessRequest(
                     documentDefinitionName,

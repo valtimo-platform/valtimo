@@ -4,11 +4,11 @@
 
 | Category                    | Features | Functions | ✅ Covered | ❌ Not Covered |
 |-----------------------------|----------|-----------|------------|----------------|
-| User Features (ROLE_USER)   | 5        | 21        | 2          | 19             |
-| Admin Features (ROLE_ADMIN) | 15       | 328       | 56         | 272            |
-| **Total**                   | **20**   | **349**   | **58**     | **291**        |
+| User Features (ROLE_USER)   | 5        | 21        | 6          | 15             |
+| Admin Features (ROLE_ADMIN) | 15       | 328       | 74         | 252            |
+| **Total**                   | **20**   | **349**   | **80**     | **267**        |
 
-**Coverage:** `58 / 349` — `16.6%`
+**Coverage:** `80 / 349` — `22.9%`
 
 ---
 
@@ -56,10 +56,10 @@
 |:----|:-------------------------|:------------------------------------------------|:--------:|:------------------------------------------------|
 | 3.1 | View all open tasks      | Display list of all open tasks                  |    ✅    | task-list.spec.ts                               |
 | 3.2 | Filter/sort tasks        | Filter tasks by criteria · Sort tasks by column |    ✅    | task-list.spec.ts                               |
-| 3.3 | View task details        | Open and view task details                      |    ❌    |                                                 |
-| 3.4 | Claim task               | Claim an unassigned task                        |    ❌    |                                                 |
-| 3.5 | Execute task (fill form) | Fill in task form fields                        |    ❌    |                                                 |
-| 3.6 | Complete task            | Submit and complete task                        |    ❌    |                                                 |
+| 3.3 | View task details        | Open and view task details                      |    ✅    | task-list.spec.ts                               |
+| 3.4 | Claim task               | Claim an unassigned task                        |    ✅    | task-list.spec.ts                               |
+| 3.5 | Execute task (fill form) | Fill in task form fields                        |    ✅    | task-list.spec.ts                               |
+| 3.6 | Complete task            | Submit and complete task                        |    ✅    | task-list.spec.ts                               |
 
 ---
 
@@ -188,7 +188,7 @@
 | 6.58 | View form flows list | Display list of form flows     |    ✅    | case-details-management-form-flows.spec.ts      |
 | 6.59 | Create form flow     | Create new form flow           |    ✅    | case-details-management-form-flows.spec.ts      |
 | 6.60 | Edit form flow JSON  | Edit form flow JSON definition |    ✅    | case-details-management-form-flows.spec.ts      |
-| 6.61 | Save form flow       | Save form flow                 |    ❌    |                                                 |
+| 6.61 | Save form flow       | Save form flow, invalid JSON   |    ✅    | case-details-management-form-flows.spec.ts      |
 
 #### 6I · Tasks
 
@@ -236,30 +236,30 @@
 |:-----|:--------------|:------------------------|:--------:|:------------------------------------------------|
 | 6.82 | View tags     | View tags configuration |    ✅    | case-details-config.spec.ts                     |
 | 6.83 | Add tag       | Add new tag             |    ✅    | case-details-config.spec.ts                     |
-| 6.84 | Set tag color | Set tag color           |    ❌    |                                                 |
+| 6.84 | Set tag color | Set tag color, change color |    ✅    | case-details-config.spec.ts                     |
 
 #### 6N · Case Details — Header
 
 | #    | Function            | Test Scenarios                    | Coverage | Notes                                           |
 |:-----|:--------------------|:----------------------------------|:--------:|:------------------------------------------------|
-| 6.85 | View header widgets | View header widgets configuration |    ❌    |                                                 |
-| 6.86 | Add header widget   | Add header widget                 |    ❌    |                                                 |
+| 6.85 | View header widgets | View header widgets configuration |    ✅    | case-details-management-header.spec.ts          |
+| 6.86 | Add header widget   | Add header widget                 |    ✅    | case-details-management-header.spec.ts          |
 
 #### 6O · Case Details — Widgets
 
 | #    | Function                 | Test Scenarios                                                            | Coverage | Notes                                           |
 |:-----|:-------------------------|:--------------------------------------------------------------------------|:--------:|:------------------------------------------------|
-| 6.87 | View widgets list        | View widgets list                                                         |    ❌    |                                                 |
-| 6.88 | Add widget               | Add widget via 6-step wizard                                              |    ❌    |                                                 |
-| 6.89 | Select widget type       | Select widget type (Fields / Custom / Form.io / Table / Collection / Map) |    ❌    |                                                 |
-| 6.90 | Set widget width         | Set widget width                                                          |    ❌    |                                                 |
-| 6.91 | Set widget density       | Set widget density                                                        |    ❌    |                                                 |
-| 6.92 | Set widget style         | Set widget style                                                          |    ❌    |                                                 |
-| 6.93 | Configure widget content | Configure widget content                                                  |    ❌    |                                                 |
+| 6.87 | View widgets list        | View widgets list                                                         |    ✅    | case-details-management-widgets.spec.ts         |
+| 6.88 | Add widget               | Add widget via 6-step wizard                                              |    ✅    | case-details-management-widgets.spec.ts         |
+| 6.89 | Select widget type       | Select widget type (Fields / Custom / Form.io / Table / Collection / Map) |    ✅    | case-details-management-widgets.spec.ts         |
+| 6.90 | Set widget width         | Set widget width                                                          |    ✅    | case-details-management-widgets.spec.ts         |
+| 6.91 | Set widget density       | Set widget density                                                        |    ✅    | case-details-management-widgets.spec.ts         |
+| 6.92 | Set widget style         | Set widget style                                                          |    ✅    | case-details-management-widgets.spec.ts         |
+| 6.93 | Configure widget content | Configure widget content                                                  |    ✅    | case-details-management-widgets.spec.ts         |
 | 6.94 | Set widget conditions    | Set widget display conditions                                             |    ❌    |                                                 |
-| 6.95 | Add widget separator     | Add widget separator                                                      |    ❌    |                                                 |
-| 6.96 | Rearrange widgets        | Rearrange widgets order                                                   |    ❌    |                                                 |
-| 6.97 | Use widget JSON editor   | Use widget JSON editor                                                    |    ❌    |                                                 |
+| 6.95 | Add widget separator     | Add widget separator                                                      |    ✅    | case-details-management-widgets.spec.ts         |
+| 6.96 | Rearrange widgets        | Rearrange widgets order                                                   |    ✅    | case-details-management-widgets.spec.ts         |
+| 6.97 | Use widget JSON editor   | Use widget JSON editor                                                    |    ✅    | case-details-management-widgets.spec.ts         |
 
 #### 6P · ZGW — General
 
@@ -328,12 +328,12 @@
 |:----|:------------------------------------|:-------------------------------------------------------------------------------------------|:--------:|:------------------------------------------------|
 | 9.1 | View plugin configurations list     | Display list of all plugin configurations · Display empty state when no plugins configured |    ✅    | plugin.spec.ts                                  |
 | 9.2 | View plugin configuration name      | Display configuration name in list view                                                    |    ✅    | plugin.spec.ts                                  |
-| 9.3 | View plugin name (API type)         | Display plugin API type in list                                                            |    ❌    |                                                 |
-| 9.4 | View plugin identifier              | Display UUID identifier in list                                                            |    ❌    |                                                 |
+| 9.3 | View plugin name (API type)         | Display plugin API type in list                                                            |    ✅    | plugin.spec.ts                                  |
+| 9.4 | View plugin identifier              | Display UUID identifier in list                                                            |    ✅    | plugin.spec.ts                                  |
 | 9.5 | Browse available plugins            | Navigate through plugin catalog · View plugin details in catalog                           |    ✅    | plugin.spec.ts                                  |
-| 9.6 | View plugin categories              | Display categorized plugin list                                                            |    ❌    |                                                 |
-| 9.7 | View plugin descriptions with logos | Display plugin with logo and description                                                   |    ❌    |                                                 |
-| 9.8 | Filter/search plugins               | Search plugins by name · Filter plugins by type                                            |    ❌    |                                                 |
+| 9.6 | View plugin categories              | Display categorized plugin list                                                            |   `N/A`  | No category grouping in UI                      |
+| 9.7 | View plugin descriptions with logos | Display plugin with logo and description                                                   |    ✅    | plugin.spec.ts                                  |
+| 9.8 | Filter/search plugins               | Search plugins by name · Filter plugins by type                                            |   `N/A`  | No search/filter in plugin overview              |
 
 #### 9B · Create Plugin Config
 
@@ -727,8 +727,8 @@
 |:-------------------------|:-------:|
 | Total Features           |   20    |
 | Total Functions          |   349   |
-| ✅ Covered by Playwright |   58    |
-| ❌ Not covered           |   291   |
+| ✅ Covered by Playwright |   80    |
+| ❌ Not covered           |   267   |
 | ⏳ In progress           |    0    |
-| `N/A` Not applicable     |    0    |
-| **Coverage %**           | **16.6%** |
+| `N/A` Not applicable     |    2    |
+| **Coverage %**           | **22.9%** |

@@ -8,9 +8,9 @@ The Zaken API plugin can be used to store and access data about a Zaak (case) in
 
 ## Configure the plugin
 
-A plugin configuration is required before the plugin can be used. A general description on how to configure plugins can be found [here](./#configuring-plugins).
+A plugin configuration is required before the plugin can be used. A general description on how to configure plugins can be found in the [plugin configuration guide](./#configuring-plugins).
 
-If the Zaken API plugin is not visible in the plugin menu, it is possible the application is missing a dependency. Instructions on how to add the Zaken API dependency can be found [here](../../fundamentals/getting-started/modules/zgw/documenten-api.md).
+If the Zaken API plugin is not visible in the plugin menu, it is possible the application is missing a dependency. Instructions on how to add the Zaken API dependency can be found in the [Zaken API module documentation](../../fundamentals/getting-started/modules/zgw/documenten-api.md).
 
 To configure this plugin the following properties have to be entered:
 
@@ -27,7 +27,7 @@ An example plugin configuration:
 
 The Zaken API plugin supports the following actions that can be configured in process links in order to manage data that is part of the Zaak.
 
-A general description on how to create process links, can be found [here](../process/process-link.md#creating-a-plugin-process-link).
+A general description on how to create process links, can be found in the [process link documentation](../process/process-link.md#creating-a-plugin-process-link).
 
 ### Link document to zaak
 
@@ -113,6 +113,7 @@ The **Create zaakrol - natural person** action creates a zaakrol in the zaken AP
 * **Initiator BSN.** The BSN (Citizen service number) of the person that should be linked to the zaak.
 * **Other natural person identification.** (Optional) The unique number issued by the municipality for another natural person.
 * **Administration number person.** (Optional) The administration number of the person, as referred to in the BRP Act.
+* **Resultaat process variable** (Optional) The name of the process variable that should be set to the UUID of the zaakrol that was created.
 
 ### Create zaakrol - non natural person
 
@@ -195,6 +196,12 @@ The **Delete zaakeigenschap** action deletes a zaakeigenschap in the zaken API. 
 * **Eigenschap.** The eigenschap as configured in the catalogi API.
 * **Property URL.** A URL can be entered that references to an eigenschap in the catalogi API. This is an alternative to providing an eigenschap.
 
+### Delete zaakrol
+
+The **Delete zaakrol** action deletes a zaakrol in the zaken API. When creating a process link the following properties can be entered:
+
+* **Rol UUID** The UUID of the zaakrol that should be deleted.
+
 ### Create zaak object
 
 The **Create zaak object** action adds a [zaakobject](https://vng-realisatie.github.io/gemma-zaken/standaard/zaken/#zaakobject) to a Zaak in the zaken API. When creating a process link the following properties can be entered:
@@ -259,6 +266,11 @@ The **Patch Zaak-notitie** action updates specific properties of the Zaak-notiti
 * **Status.** (Optional) The new value for the status (concept, definitief)
 
 Note: at least one of the properties marked with optional has to be provided.
+
+### Retrieve zaakbesluiten
+
+The **Retrieve zaakbesluiten** fetches all zaakbesluit URLs from the zaak in the zaken API. When creating a process link the following property can be entered:
+* **Result process variable** The name of the process variable in which the zaakbesluit URLs must be stored.
 
 ### Delete Zaak-resultaat
 
