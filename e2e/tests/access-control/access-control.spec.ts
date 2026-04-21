@@ -45,7 +45,7 @@ test.describe('Access Control Management', () => {
 
   // ─── 11.1 View roles list ─────────────────────────────────────────
 
-  test.describe('View roles list', () => {
+  test.describe('11.1 — View roles list', () => {
     test('Roles list is visible', async () => {
       await expect(accessControlPage.rolesList).toBeVisible();
     });
@@ -53,7 +53,7 @@ test.describe('Access Control Management', () => {
 
   // ─── 11.2–11.4 Add new role ───────────────────────────────────────
 
-  test.describe('Add new role', () => {
+  test.describe('11.2–11.4 — Add new role', () => {
     test.describe('Success', () => {
       test('Open add role modal', async () => {
         // Act
@@ -76,7 +76,7 @@ test.describe('Access Control Management', () => {
 
   // ─── 11.5 View role details ───────────────────────────────────────
 
-  test.describe('View role details', () => {
+  test.describe('11.5 — View role details', () => {
     test('Open role and view permissions editor', async () => {
       // Act
       await accessControlPage.openRole(roleTestData.key);
@@ -88,7 +88,7 @@ test.describe('Access Control Management', () => {
 
   // ─── 11.8 Delete role ─────────────────────────────────────────────
 
-  test.describe('Delete role', () => {
+  test.describe('11.8 — Delete role', () => {
     test('Navigate back to roles list', async () => {
       await page.goBack();
       await page.waitForURL('**/access-control', {waitUntil: 'load'});

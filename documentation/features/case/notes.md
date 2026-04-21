@@ -2,7 +2,7 @@
 
 ## Access control
 
-Access to the case notes can be configured through access control. More information about access control can be found [here](https://docs.valtimo.nl/features/access-control).
+Access to the case notes can be configured through access control. More information about access control can be found in the [access control documentation](../access-control/README.md).
 
 ### Resources and actions
 

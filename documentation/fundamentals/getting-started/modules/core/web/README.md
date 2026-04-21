@@ -4,7 +4,7 @@ Valtimo uses a client-side architecture where a Javascript component runs in the
 
 ## Dependencies
 
-In order to use web, the core module needs to be added as a dependency. For instructions on how to add the core module as a dependency, see [here](../core.md).
+In order to use web, the core module needs to be added as a dependency. For instructions on how to add the core module as a dependency, see the [core module documentation](../core.md).
 
 ## Configuration
 
@@ -18,4 +18,4 @@ valtimo:
     enabled: false
 ```
 
-Information on how to configure Cross Origin Resource Sharing (CORS) in Valtimo can be found [here](valtimo-cors.md).
+Information on how to configure Cross Origin Resource Sharing (CORS) in Valtimo can be found in the [Valtimo CORS configuration documentation](valtimo-cors.md).

@@ -18,6 +18,7 @@ import {ChangeDetectionStrategy, Component, computed, ViewEncapsulation} from '@
 import {TranslateModule} from '@ngx-translate/core';
 import {TilesModule} from 'carbon-components-angular';
 import {AVAILABLE_WIDGETS, WidgetTypeSelection} from '../../../../../models';
+import {WIDGET_WIZARD_TYPE_TEST_IDS} from '../../../../../constants';
 import {WidgetWizardService} from '../../../../../services';
 
 @Component({
@@ -28,6 +29,8 @@ import {WidgetWizardService} from '../../../../../services';
   imports: [CommonModule, TranslateModule, TilesModule],
 })
 export class WidgetWizardTypeStepComponent {
+  protected readonly typeTestIds = WIDGET_WIZARD_TYPE_TEST_IDS;
+
   public readonly $availableWidgetTypes = computed(() => {
     const availableTypes = this.widgetWizardService.$availableWidgetTypes();
     return !availableTypes

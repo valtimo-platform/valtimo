@@ -21,6 +21,7 @@
                                        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.6.xsd" logicalFilePath="config/liquibase/changelog/20260330-add-case-definition-building-block-link.xml">
 
     <changeSet author="Ritense" id="1">
+        <validCheckSum>9:fb888a92e4201311c0cd409ce3934e01</validCheckSum>
         <createTable tableName="case_definition_building_block_link">
             <column name="id" type="${uuidType}">
                 <constraints nullable="false"/>
@@ -61,10 +62,7 @@
                 onDelete="CASCADE"
                 constraintName="fk_casedefbblink_bbdef"/>
 
-        <addUniqueConstraint
-                tableName="case_definition_building_block_link"
-                columnNames="case_definition_key, case_definition_version_tag, building_block_definition_key, building_block_definition_version_tag"
-                constraintName="uk_casedefbblink_case_bbdef"/>
+        <!-- Unique constraint moved to 20260410-fix-mysql-key-length.xml (columns must be shrunk first for MySQL) -->
 
         <createIndex indexName="idx_casedefbblink_casedef" tableName="case_definition_building_block_link">
             <column name="case_definition_key"/>

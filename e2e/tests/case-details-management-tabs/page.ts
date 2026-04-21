@@ -41,13 +41,11 @@ export class CaseDetailsManagementTabsPage {
   }
 
   get tabNameInput() {
-    // cds-label wraps the input — filter by label text, then grab the child input
-    return this.page.locator('cds-modal').locator('cds-label').filter({hasText: 'Tab name'}).locator('input');
+    return this.page.locator('cds-modal input[formcontrolname="name"]');
   }
 
   get tabKeyInput() {
-    // The key input is the only one with a pattern attribute in the modal form
-    return this.page.locator('cds-modal').locator('input[pattern]');
+    return this.page.locator('cds-modal input[formcontrolname="key"]');
   }
 
   get addTabConfirmButton() {
@@ -78,6 +76,27 @@ export class CaseDetailsManagementTabsPage {
     return ensureDraftVersionSelected(this.page);
   }
 
+  // ─── Cleanup ───────────────────────────────────────────────────────
+
+  /**
+   * Cleans up stale test tabs via API. This avoids pagination issues
+   * that the UI cleanup has when the list spans multiple pages.
+   */
+  async cleanupStaleTabsViaApi(caseDefinitionKey: string, versionTag: string) {
+    try {
+      const tabs = await ApiUtils.apiGet<Array<{key: string}>>(
+        `/api/management/v1/case-definition/${caseDefinitionKey}/version/${versionTag}/tab`
+      );
+      for (const tab of tabs) {
+        if (tab.key.startsWith('e2e-')) {
+          await this.deleteTabViaApi(caseDefinitionKey, versionTag, tab.key);
+        }
+      }
+    } catch {
+      // Ignore errors
+    }
+  }
+
   // ─── Tab CRUD ─────────────────────────────────────────────────────
 
   /**
@@ -89,15 +108,17 @@ export class CaseDetailsManagementTabsPage {
     const key = title.toLowerCase().replace(/\s+/g, '-');
     await this.addTabButton.click();
     await this.page.getByRole('button', {name: 'Widgets component'}).click();
+    await expect(this.addTabConfirmButton).toBeVisible();
     await this.tabNameInput.fill(title);
     await this.tabKeyInput.fill(key);
+    await expect(this.addTabConfirmButton).toBeEnabled();
     await this.addTabConfirmButton.click();
   }
 
   async deleteTab(title: string) {
     const row = this.page.locator(`tr:has(td:has-text("${title}"))`);
-    await row.getByRole('menu').locator('button').click();
-    await this.page.getByRole('menuitem', {name: 'Delete'}).click();
+    await row.locator('.v-overflow-menu__trigger').click();
+    await this.page.getByRole('menu').getByRole('menuitem', {name: 'Delete'}).click();
     await this.page.getByRole('button', {name: 'Delete'}).click();
   }
 
@@ -140,6 +161,19 @@ export class CaseDetailsManagementTabsPage {
       );
     } catch {
       // Tab may already have been deleted by the test
+    }
+  }
+
+  async deleteTabFromAllVersions(caseDefinitionKey: string, tabKey: string) {
+    try {
+      const versions = await ApiUtils.apiGet<Array<{versionTag: string}>>(
+        `/api/management/v1/case-definition/${caseDefinitionKey}/version`
+      );
+      for (const v of versions) {
+        await this.deleteTabViaApi(caseDefinitionKey, v.versionTag, tabKey);
+      }
+    } catch {
+      // Ignore errors
     }
   }
 }

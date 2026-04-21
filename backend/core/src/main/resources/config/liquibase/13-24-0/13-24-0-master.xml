@@ -23,5 +23,6 @@
     <include file="20260330-add-case-definition-building-block-link.xml" relativeToChangelogFile="true"/>
     <include file="20260403-add-startable-item-table.xml" relativeToChangelogFile="true"/>
     <include file="20260403-update-building-block-instance.xml" relativeToChangelogFile="true"/>
+    <include file="20260410-fix-mysql-key-length.xml" relativeToChangelogFile="true"/>
 
 </databaseChangeLog>

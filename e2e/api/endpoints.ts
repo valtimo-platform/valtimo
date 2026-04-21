@@ -27,6 +27,8 @@ export const endpoints = {
       `/api/management/v1/case-definition/${caseDefinitionName}/documenten-api/version`,
     caseTab: (caseDefinitionName: string, version: string) =>
       `/api/management/v1/case-definition/${caseDefinitionName}/version/${version}/tab`,
+    headerWidget: (caseDefinitionName: string, version: string) =>
+      `/api/management/v1/case-definition/${caseDefinitionName}/version/${version}/header-widget`,
   },
 
   processDefinition: {
