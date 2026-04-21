@@ -38,6 +38,9 @@ import com.ritense.buildingblock.security.config.BuildingBlockHttpSecurityConfig
 import com.ritense.buildingblock.service.BuildingBlockCaseDefinitionFinalizationChecker
 import com.ritense.buildingblock.service.BuildingBlockCaseDocumentResolver
 import com.ritense.buildingblock.service.BuildingBlockCaseTaskContributor
+import com.ritense.buildingblock.service.BuildingBlockDecisionDefinitionExporter
+import com.ritense.buildingblock.service.BuildingBlockDecisionDefinitionImporter
+import com.ritense.buildingblock.service.BuildingBlockDecisionService
 import com.ritense.buildingblock.service.BuildingBlockDefinitionArtworkExporter
 import com.ritense.buildingblock.service.BuildingBlockDefinitionArtworkImporter
 import com.ritense.buildingblock.service.BuildingBlockDefinitionArtworkService
@@ -70,6 +73,7 @@ import com.ritense.buildingblock.service.CaseDefinitionBuildingBlockLinkService
 import com.ritense.buildingblock.service.ProcessDefinitionBuildingBlockDefinitionImporter
 import com.ritense.buildingblock.service.StartableBuildingBlockItemProvider
 import com.ritense.buildingblock.web.rest.BuildingBlockDefinitionArtworkResource
+import com.ritense.buildingblock.web.rest.BuildingBlockDecisionManagementResource
 import com.ritense.buildingblock.web.rest.BuildingBlockDocumentDefinitionResource
 import com.ritense.buildingblock.web.rest.BuildingBlockFieldResource
 import com.ritense.buildingblock.web.rest.BuildingBlockFormFlowManagementResource
@@ -106,6 +110,7 @@ import com.ritense.valtimo.contract.buildingblock.BuildingBlockDefinitionChecker
 import com.ritense.valtimo.contract.database.QueryDialectHelper
 import com.ritense.valtimo.contract.document.CaseDocumentResolver
 import com.ritense.valtimo.operaton.service.OperatonRepositoryService
+import com.ritense.valtimo.service.OperatonByteArrayService
 import com.ritense.valtimo.service.OperatonProcessService
 import com.ritense.valtimo.service.OperatonTaskService
 import com.ritense.valueresolver.ValueResolverService
@@ -197,6 +202,7 @@ class BuildingBlockAutoConfiguration {
         buildingBlockFormDefinitionService: BuildingBlockFormDefinitionService,
         buildingBlockFormFlowDefinitionService: BuildingBlockFormFlowDefinitionService,
         processLinkRepository: ProcessLinkRepository,
+        buildingBlockDecisionService: BuildingBlockDecisionService,
     ): BuildingBlockDefinitionEventListener {
         return BuildingBlockDefinitionEventListener(
             buildingBlockDefinitionRepository,
@@ -208,6 +214,7 @@ class BuildingBlockAutoConfiguration {
             buildingBlockFormDefinitionService,
             buildingBlockFormFlowDefinitionService,
             processLinkRepository,
+            buildingBlockDecisionService,
         )
     }
 
@@ -591,11 +598,13 @@ class BuildingBlockAutoConfiguration {
         buildingBlockDefinitionRepository: BuildingBlockDefinitionRepository,
         documentDefinitionService: DocumentDefinitionService,
         formDefinitionRepository: FormDefinitionRepository,
+        buildingBlockDecisionService: BuildingBlockDecisionService,
     ) = BuildingBlockDefinitionExporter(
         objectMapper,
         buildingBlockDefinitionRepository,
         documentDefinitionService,
-        formDefinitionRepository
+        formDefinitionRepository,
+        buildingBlockDecisionService
     )
 
     @Bean
@@ -789,5 +798,40 @@ class BuildingBlockAutoConfiguration {
         resourceLoader: ResourceLoader,
     ): BuildingBlockFormFlowDefinitionImporter {
         return BuildingBlockFormFlowDefinitionImporter(formFlowService, objectMapper, resourceLoader)
+    }
+
+    @Bean
+    @ConditionalOnMissingBean(BuildingBlockDecisionService::class)
+    fun buildingBlockDecisionService(
+        repositoryService: RepositoryService,
+        buildingBlockDefinitionChecker: BuildingBlockDefinitionChecker,
+        operatonByteArrayService: OperatonByteArrayService,
+        operatonProcessService: OperatonProcessService
+    ): BuildingBlockDecisionService {
+        return BuildingBlockDecisionService(repositoryService, buildingBlockDefinitionChecker, operatonByteArrayService, operatonProcessService)
+    }
+
+    @Bean
+    @ConditionalOnMissingBean(BuildingBlockDecisionManagementResource::class)
+    fun buildingBlockDecisionManagementResource(
+        buildingBlockDecisionService: BuildingBlockDecisionService
+    ): BuildingBlockDecisionManagementResource {
+        return BuildingBlockDecisionManagementResource(buildingBlockDecisionService)
+    }
+
+    @Bean
+    @ConditionalOnMissingBean(BuildingBlockDecisionDefinitionImporter::class)
+    fun buildingBlockDecisionDefinitionImporter(
+        operatonProcessService: OperatonProcessService
+    ): BuildingBlockDecisionDefinitionImporter {
+        return BuildingBlockDecisionDefinitionImporter(operatonProcessService)
+    }
+
+    @Bean
+    @ConditionalOnMissingBean(BuildingBlockDecisionDefinitionExporter::class)
+    fun buildingBlockDecisionDefinitionExporter(
+        repositoryService: RepositoryService
+    ): BuildingBlockDecisionDefinitionExporter {
+        return BuildingBlockDecisionDefinitionExporter(repositoryService)
     }
 }

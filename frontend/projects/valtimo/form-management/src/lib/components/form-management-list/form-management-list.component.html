@@ -62,7 +62,12 @@
 ></valtimo-confirmation-modal>
 
 <ng-template #createFormButton>
-  <button *ngIf="hasEditPermissions$ | async" cdsButton="primary" (click)="navigateToCreateRoute()">
+  <button
+    *ngIf="hasEditPermissions$ | async"
+    cdsButton="primary"
+    (click)="navigateToCreateRoute()"
+    [attr.data-test-id]="testIds.createFormButton"
+  >
     {{ 'Create Form' | translate }}
 
     <svg class="cds--btn__icon" cdsIcon="add" size="16"></svg>

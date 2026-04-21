@@ -46,6 +46,7 @@
           formControlName="name"
           [invalid]="formControls?.name?.touched && formControls?.name?.errors"
           required
+          [attr.data-test-id]="testIds.nameInput"
         />
       </cds-label>
     </section>
@@ -55,7 +56,12 @@
         {{ 'interface.cancel' | translate }}
       </button>
 
-      <button cdsButton="primary" type="submit" [disabled]="form?.invalid">
+      <button
+        cdsButton="primary"
+        type="submit"
+        [disabled]="form?.invalid"
+        [attr.data-test-id]="testIds.submitButton"
+      >
         {{ 'formManagement.submit' | translate }}
       </button>
     </cds-modal-footer>
