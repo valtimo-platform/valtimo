@@ -175,6 +175,7 @@
         [disabled]="obs.formDefinition.readOnly || !obs.isDraftVersion"
         [size]="obs.compactMode ? 'sm' : 'md'"
         (click)="modifyFormDefinition(obs.formDefinition)"
+        [attr.data-test-id]="testIds.saveButton"
       >
         {{ 'interface.save' | translate }}
 

@@ -22,6 +22,7 @@
   @for (colorTile of colorTiles; track colorTile.color) {
     <cds-selection-tile
       class="valtimo-widget-wizard-step__tile widget-appearance__color-tile"
+      [attr.data-test-id]="'widgetWizardAppearanceTile-' + colorTile.color"
       [value]="colorTile.color"
       [selected]="colorTile.color === $widgetColor()"
     >

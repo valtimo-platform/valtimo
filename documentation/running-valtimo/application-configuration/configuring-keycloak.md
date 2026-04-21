@@ -36,7 +36,7 @@ SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_KEYCLOAKAPI_CLIENT-ID=valtimo-user-m2
 SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_KEYCLOAKAPI_CLIENT-SECRET=0000000-1111-2222-3333-444444444444
 ```
 
-More information about these properties and other optional properties can be found [here](https://docs.spring.io/spring-security/reference/servlet/oauth2/login/core.html).
+More information about these properties and other optional properties can be found in the [Spring Security OAuth2 documentation](https://docs.spring.io/spring-security/reference/servlet/oauth2/login/core.html).
 
 ## Client roles
 

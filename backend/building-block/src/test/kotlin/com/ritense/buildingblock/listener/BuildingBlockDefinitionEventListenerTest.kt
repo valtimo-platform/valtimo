@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -8,7 +8,7 @@
  * https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
  *
  * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
+ * distributed under the License is distributed on an "AS IS" basis,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
@@ -23,6 +23,7 @@ import com.ritense.buildingblock.domain.definition.BuildingBlockDefinitionArtwor
 import com.ritense.buildingblock.repository.BuildingBlockDefinitionArtworkRepository
 import com.ritense.buildingblock.repository.BuildingBlockDefinitionRepository
 import com.ritense.buildingblock.repository.ProcessDefinitionBuildingBlockDefinitionRepository
+import com.ritense.buildingblock.service.BuildingBlockDecisionService
 import com.ritense.buildingblock.service.BuildingBlockDocumentDefinitionService
 import com.ritense.buildingblock.service.BuildingBlockFormDefinitionService
 import com.ritense.buildingblock.service.BuildingBlockFormFlowDefinitionService
@@ -48,6 +49,7 @@ import org.mockito.kotlin.mock
 import org.mockito.kotlin.never
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
+import org.operaton.bpm.engine.repository.DecisionDefinition
 import org.operaton.bpm.engine.repository.DeploymentWithDefinitions
 import org.operaton.bpm.engine.repository.ProcessDefinition
 import org.operaton.bpm.model.bpmn.Bpmn
@@ -73,6 +75,9 @@ class BuildingBlockDefinitionEventListenerTest {
 
     @Mock
     private lateinit var operatonProcessService: OperatonProcessService
+
+    @Mock
+    private lateinit var buildingBlockDecisionService: BuildingBlockDecisionService
 
     @Mock
     private lateinit var buildingBlockFormDefinitionService: BuildingBlockFormDefinitionService
@@ -153,6 +158,7 @@ class BuildingBlockDefinitionEventListenerTest {
         whenever(buildingBlockDefinitionRepository.findById(newId)).thenReturn(Optional.of(newDefinition))
         whenever(operatonProcessService.getProcessDefinitionById("pid")).thenReturn(originalProcessDefinition)
         whenever(operatonProcessService.getBpmnModelInstanceByProcessDefinitionId("pid")).thenReturn(bpmnModel)
+        whenever(buildingBlockDecisionService.getDecisionDefinitions(basedOnId)).thenReturn(emptyList())
         whenever(
             operatonProcessService.deploy(
                 eq(newId),
@@ -189,5 +195,40 @@ class BuildingBlockDefinitionEventListenerTest {
         verify(processDefinitionBuildingBlockDefinitionRepository).save(any<ProcessDefinitionBuildingBlockDefinition>())
         verify(buildingBlockDefinitionArtworkRepository).save(any<BuildingBlockDefinitionArtwork>())
         verify(buildingBlockDocumentDefinitionService, never()).ensureEmptyFor(any(), any())
+        verify(buildingBlockDecisionService).getDecisionDefinitions(basedOnId)
+    }
+
+    @Test
+    fun `copies decision definitions when basedOn present`() {
+        val basedOnDocId = JsonSchemaDocumentDefinitionId.forBuildingBlock(key, basedOnId)
+        whenever(jsonSchemaDocumentDefinitionRepository.findById(basedOnDocId)).thenReturn(Optional.empty())
+        whenever(processDefinitionBuildingBlockDefinitionRepository.findAllByIdBuildingBlockDefinitionId(basedOnId))
+            .thenReturn(emptyList())
+        whenever(buildingBlockDefinitionArtworkRepository.findById(basedOnId)).thenReturn(Optional.empty())
+
+        val dmnBytes = "<dmn-xml/>".toByteArray()
+        val decisionDefinition = mock<DecisionDefinition> {
+            on { resourceName } doReturn "my-decision.dmn"
+        }
+        whenever(buildingBlockDecisionService.getDecisionDefinitions(basedOnId))
+            .thenReturn(listOf(decisionDefinition))
+        whenever(buildingBlockDecisionService.getDmnModel(decisionDefinition)).thenReturn(dmnBytes)
+
+        val dmnDeployment = mock<DeploymentWithDefinitions>()
+        whenever(operatonProcessService.deploy(eq(newId), eq("my-decision.dmn"), any()))
+            .thenReturn(dmnDeployment)
+
+        val event = BuildingBlockDefinitionCreatedEvent(
+            buildingBlockDefinitionId = newId,
+            buildingBlockDefinitionName = "name",
+            basedOnBuildingBlockDefinitionId = basedOnId,
+            duplicate = true
+        )
+
+        listener.handleBuildingBlockDefinitionCreated(event)
+
+        verify(buildingBlockDecisionService).getDecisionDefinitions(basedOnId)
+        verify(buildingBlockDecisionService).getDmnModel(decisionDefinition)
+        verify(operatonProcessService).deploy(eq(newId), eq("my-decision.dmn"), any())
     }
 }

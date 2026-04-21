@@ -32,4 +32,10 @@ interface PublishNotificatieConfig {
   kenmerken?: {[key: string]: string};
 }
 
-export {NotificatiesApiConfig, PublishNotificatieConfig};
+interface ReceiveNotificatieConfig {
+  kanaal?: string;
+  actie?: string;
+  kenmerken?: {[key: string]: string};
+}
+
+export {NotificatiesApiConfig, PublishNotificatieConfig, ReceiveNotificatieConfig};

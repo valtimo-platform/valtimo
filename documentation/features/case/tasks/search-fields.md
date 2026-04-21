@@ -18,7 +18,7 @@ On the `Search fields` tab, search fields can be added, edited or removed.&#x20;
 
 <figure><img src="https://valtimo.gitbook.io/valtimo-documentation/~gitbook/image?url=https%3A%2F%2F181910120-files.gitbook.io%2F%7E%2Ffiles%2Fv0%2Fb%2Fgitbook-x-prod.appspot.com%2Fo%2Fspaces%252FG21VIGcgPc1cyGRZY5CR%252Fuploads%252Fgit-blob-889518249305f8f5e519bce7bcc83a16cd6b21e8%252Ftask-search-fields-list.png%3Falt%3Dmedia&#x26;width=300&#x26;dpr=4&#x26;quality=100&#x26;sign=fd8f962f&#x26;sv=2" alt=""><figcaption><p>Task search field configuration</p></figcaption></figure>
 
-When adding or editing a search field, the available options are similar to the case search fields. More information on case search fields can be found [here](../case-list/search-fields.md).
+When adding or editing a search field, the available options are similar to the case search fields. More information on case search fields can be found in the [case search fields documentation](../case-list/search-fields.md).
 
 For task list filters the following path prefixes are available:
 
@@ -54,7 +54,7 @@ You can find an example of the JSON below:
 ```
 {% endcode %}
 
-More information on the available fields and values can be found [here](../for-developers/configuring-search-fields.md).
+More information on the available fields and values can be found in the [search fields configuration documentation](../for-developers/configuring-search-fields.md).
 {% endtab %}
 {% endtabs %}
 

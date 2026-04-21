@@ -22,6 +22,7 @@
   @for (widgetType of $availableWidgetTypes(); track widgetType.titleKey) {
     <cds-selection-tile
       class="valtimo-widget-wizard-step__tile"
+      [attr.data-test-id]="'widgetWizardTypeTile-' + widgetType.type"
       [value]="widgetType"
       [selected]="widgetType.type === $selectedWidget()?.type"
     >

@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -715,6 +715,20 @@ public class OperatonProcessService {
             // within this building block that weren't caught by the process key check above)
             callActivity.setOperatonCalledElementBinding("versionTag");
             callActivity.setOperatonCalledElementVersionTag(currentBuildingBlockVersionTag);
+        });
+
+        // Update business rule tasks (DMN decision references) to use this building block's version tag
+        bpmnModel.getModelElementsByType(BusinessRuleTask.class).forEach(businessRuleTask -> {
+            String existingVersionTag = businessRuleTask.getOperatonDecisionRefVersionTag();
+
+            // If already has a BB: version tag pointing to a different building block key, preserve it
+            BuildingBlockDefinitionId existingBuildingBlockId = BuildingBlockDefinitionId.fromProcessVersionTag(existingVersionTag);
+            if (existingBuildingBlockId != null && !existingBuildingBlockId.getKey().equals(buildingBlockDefinitionId.getKey())) {
+                return;
+            }
+
+            businessRuleTask.setOperatonDecisionRefBinding("versionTag");
+            businessRuleTask.setOperatonDecisionRefVersionTag(currentBuildingBlockVersionTag);
         });
     }
 

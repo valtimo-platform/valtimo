@@ -36,12 +36,11 @@ import org.mockito.kotlin.verify
 class JsonSchemaDocumentDefinitionImporterTest(
     @Mock private val documentDefinitionService: JsonSchemaDocumentDefinitionService
 ) {
-    private val objectMapper = com.fasterxml.jackson.databind.ObjectMapper()
     private lateinit var importer: CaseJsonSchemaDocumentDefinitionImporter
 
     @BeforeEach
     fun before() {
-        importer = CaseJsonSchemaDocumentDefinitionImporter(documentDefinitionService, objectMapper)
+        importer = CaseJsonSchemaDocumentDefinitionImporter(documentDefinitionService)
     }
 
     @Test
@@ -75,39 +74,6 @@ class JsonSchemaDocumentDefinitionImporterTest(
         verify(documentDefinitionService).deploy(jsonCaptor.capture(), eq(caseDefinitionId))
 
         assertThat(jsonCaptor.firstValue.asJson()).isEqualTo(get().readTree(jsonContent))
-    }
-
-    @Test
-    fun `should apply key override to dollar-id in json schema`() {
-        val jsonContent = """{"${"$"}id":"original-key.schema","name":"my-definition"}"""
-        val caseDefinitionId = CaseDefinitionId.of("new-key", "1.0.0")
-        val request = ImportRequest(
-            FILENAME, jsonContent.toByteArray(), caseDefinitionId,
-            keyOverride = "new-key",
-        )
-
-        importer.import(request)
-
-        val jsonCaptor = argumentCaptor<JsonSchema>()
-        verify(documentDefinitionService).deploy(jsonCaptor.capture(), eq(caseDefinitionId))
-
-        val resultJson = jsonCaptor.firstValue.asJson()
-        assertThat(resultJson.get("${"$"}id").asText()).isEqualTo("new-key.schema")
-    }
-
-    @Test
-    fun `should not modify dollar-id when no key override`() {
-        val jsonContent = """{"${"$"}id":"original-key.schema","name":"my-definition"}"""
-        val caseDefinitionId = CaseDefinitionId.of("original-key", "1.0.0")
-        val request = ImportRequest(FILENAME, jsonContent.toByteArray(), caseDefinitionId)
-
-        importer.import(request)
-
-        val jsonCaptor = argumentCaptor<JsonSchema>()
-        verify(documentDefinitionService).deploy(jsonCaptor.capture(), eq(caseDefinitionId))
-
-        val resultJson = jsonCaptor.firstValue.asJson()
-        assertThat(resultJson.get("${"$"}id").asText()).isEqualTo("original-key.schema")
     }
 
     private companion object {
