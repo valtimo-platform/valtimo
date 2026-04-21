@@ -14,13 +14,12 @@
  * limitations under the License.
  */
 
-const BUILDING_BLOCK_MANAGEMENT_TABS = {
-  GENERAL: 'general',
-  PROCESSES: 'process-definition',
-  DOCUMENT: 'document',
-  FORMS: 'forms',
-  FORM_FLOWS: 'form-flows',
-  DECISIONS: 'decisions',
-} as const;
+package com.ritense.exporter.request
 
-export {BUILDING_BLOCK_MANAGEMENT_TABS};
+import com.ritense.valtimo.contract.buildingblock.BuildingBlockDefinitionId
+
+data class BuildingBlockDecisionDefinitionExportRequest(
+    val decisionDefinitionId: String,
+    override val buildingBlockDefinitionId: BuildingBlockDefinitionId,
+    override val required: Boolean = true,
+) : ExportRequest(required)
