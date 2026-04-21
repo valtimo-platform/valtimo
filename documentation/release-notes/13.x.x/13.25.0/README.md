@@ -23,4 +23,6 @@
 
 ## Bugfixes
 
+* Fixed Documenten API document preview not working for non-admin users.
+
 * Fixed duplicate document definitions being created, which caused the error "Query did not return a unique result".

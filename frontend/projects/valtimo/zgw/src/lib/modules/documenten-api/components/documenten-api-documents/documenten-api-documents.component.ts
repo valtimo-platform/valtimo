@@ -362,7 +362,6 @@ export class CaseDetailTabDocumentenApiDocumentsComponent implements OnInit, OnD
     this.isUserAdmin();
     this.iconService.registerAll([Filter16, TagGroup16, Upload16]);
     this.registerPermissionSubscriptions();
-    this.documentenApiPreviewService.retrieveDocumentenApiPreviewPluginConfigurations();
   }
 
   public registerPermissionSubscriptions(): void {
