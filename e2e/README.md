@@ -17,13 +17,19 @@ These tests validate the **Valtimo core libraries**, ensuring critical component
 | `case-details-config` | Case definition configuration |
 | `case-details-management` | Core case detail functionality |
 | `case-details-management-case-list` | Case list views within case details |
+| `case-details-management-decisions` | Decision tables tab (upload, edit, save DMN) |
+| `case-details-management-document` | Document tab (view, edit and save JSON schema) |
 | `case-details-management-form-flows` | Form flow integration in case details |
+| `case-details-management-forms` | Forms tab — create, build, configure and save forms |
 | `case-details-management-header` | Case header widgets and UI |
+| `case-details-management-process-links` | Process link wizard (Form / FormFlow / Plugin link types) |
 | `case-details-management-processes` | Process management within cases |
 | `case-details-management-search-fields` | Search field configuration |
 | `case-details-management-tabs` | Case detail tabs configuration |
 | `case-details-management-tasks` | Task management in cases |
+| `case-details-management-widgets` | Case detail widget-tab configuration |
 | `case-management` | Case overview and list management |
+| `form-management` | Admin Forms list (independent forms — view, search) |
 | `plugins` | Plugin configuration and management |
 | `right-sidebar-settings` | Right sidebar settings UI |
 | `task-list` | User task list functionality |

@@ -15,7 +15,11 @@
  */
 
 import {type Locator, type Page, type APIRequestContext, expect} from '@playwright/test';
-import {PROCESS_MANAGEMENT_LIST_TEST_IDS, CASE_MANAGEMENT_DETAIL_ACTIONS_TEST_IDS} from '../../constants';
+import {
+  PROCESS_MANAGEMENT_LIST_TEST_IDS,
+  PROCESS_MANAGEMENT_BUILDER_TEST_IDS,
+  CASE_MANAGEMENT_DETAIL_ACTIONS_TEST_IDS,
+} from '../../constants';
 import {CarbonList} from '../../shared/carbon-list/carbon-list.utils';
 import {ensureDraftVersionSelected} from '../../utils/version.utils';
 import path from 'path';
@@ -79,15 +83,46 @@ export class CaseDetailsProcessesPage {
   }
 
   get builderSaveButton() {
-    return this.page.getByRole('button', {name: 'Save'});
+    return this.page.getByTestId(PROCESS_MANAGEMENT_BUILDER_TEST_IDS.deployButton);
   }
 
   get startsCaseToggle() {
-    return this.page.getByText('Starts case');
+    return this.page.getByTestId(PROCESS_MANAGEMENT_BUILDER_TEST_IDS.startsCaseToggle);
+  }
+
+  get startsCaseToggleSwitch() {
+    return this.startsCaseToggle.locator('.cds--toggle__switch');
   }
 
   get startableByUserToggle() {
-    return this.page.getByText('Startable by user');
+    return this.page.getByTestId(PROCESS_MANAGEMENT_BUILDER_TEST_IDS.startableByUserToggle);
+  }
+
+  get startableByUserToggleSwitch() {
+    return this.startableByUserToggle.locator('.cds--toggle__switch');
+  }
+
+  // BPMN modeler locators (bpmn-js library-rendered DOM, no test IDs available)
+
+  get bpmnPalette() {
+    return this.page.locator('.djs-palette:visible');
+  }
+
+  // Both the modeler (editor) and the viewer (read-only) use .bpmn__modeler-canvas
+  get activeBpmnCanvas() {
+    return this.page.locator('.bpmn__modeler-canvas:visible');
+  }
+
+  elementShape(elementId: string) {
+    return this.activeBpmnCanvas.locator(`g[data-element-id="${elementId}"]`);
+  }
+
+  get appendTaskContextPadAction() {
+    return this.page.locator('.djs-context-pad [data-action="append.append-task"]');
+  }
+
+  get taskShapes() {
+    return this.activeBpmnCanvas.locator('g.djs-shape[data-element-id^="Activity_"]');
   }
 
   // Navigation
@@ -150,5 +185,30 @@ export class CaseDetailsProcessesPage {
     await this.builderBackButton.click();
     await this.page.waitForURL(/\/processes$/);
     await this.carbonList.waitForLoaded();
+  }
+
+  // Builder editor actions
+
+  async appendTaskToStartEvent(startEventId: string = 'StartEvent_1') {
+    const startEvent = this.elementShape(startEventId);
+    await expect(startEvent).toBeVisible();
+    await startEvent.click();
+
+    await expect(this.appendTaskContextPadAction).toBeVisible();
+    await this.appendTaskContextPadAction.click();
+    await this.page.keyboard.press('Escape');
+  }
+
+  async clickStartsCaseToggle() {
+    await this.startsCaseToggleSwitch.click();
+  }
+
+  async clickStartableByUserToggle() {
+    await this.startableByUserToggleSwitch.click();
+  }
+
+  async saveProcess() {
+    await expect(this.builderSaveButton).toBeEnabled();
+    await this.builderSaveButton.click();
   }
 }

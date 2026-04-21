@@ -14,14 +14,15 @@
  * limitations under the License.
  */
 
-/*
- * Public API Surface of form-management
- */
+export const FORM_MANAGEMENT_LIST_TEST_IDS = {
+  createFormButton: 'formManagementCreateFormButton',
+} as const;
 
-export * from './lib/services/form-management.service';
-export * from './lib/components/form-management/form-management.component';
-export * from './lib/models';
-export * from './lib/form-management.module';
-export * from './lib/components/form-management-edit/form-management-edit.component';
-export * from './lib/components/form-management-create/form-management-create.component';
-export * from './lib/constants';
+export const FORM_MANAGEMENT_CREATE_TEST_IDS = {
+  nameInput: 'formManagementCreateNameInput',
+  submitButton: 'formManagementCreateSubmitButton',
+} as const;
+
+export const FORM_MANAGEMENT_EDIT_TEST_IDS = {
+  saveButton: 'formManagementEditSaveButton',
+} as const;
