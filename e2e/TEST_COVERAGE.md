@@ -5,10 +5,10 @@
 | Category                    | Features | Functions | ✅ Covered | ❌ Not Covered |
 |-----------------------------|----------|-----------|------------|----------------|
 | User Features (ROLE_USER)   | 5        | 21        | 6          | 15             |
-| Admin Features (ROLE_ADMIN) | 15       | 328       | 74         | 252            |
-| **Total**                   | **20**   | **349**   | **80**     | **267**        |
+| Admin Features (ROLE_ADMIN) | 15       | 328       | 96         | 230            |
+| **Total**                   | **20**   | **349**   | **102**    | **245**        |
 
-**Coverage:** `80 / 349` — `22.9%`
+**Coverage:** `102 / 349` — `29.2%`
 
 ---
 
@@ -106,9 +106,9 @@
 | 6.6  | View linked processes        | Display list of linked processes                              |    ✅    | case-details-management-processes.spec.ts       |
 | 6.7  | Create new process           | Create new BPMN process                                       |    ✅    | case-details-management-processes.spec.ts       |
 | 6.8  | Open process in BPMN modeler | Open process in BPMN editor                                   |    ✅    | case-details-management-processes.spec.ts       |
-| 6.9  | Add BPMN elements            | Add BPMN elements via drag-drop                               |    ❌    |                                                 |
-| 6.10 | Set process properties       | Configure process properties (Starts case, Startable by user) |    ❌    |                                                 |
-| 6.11 | Save process                 | Save process definition                                       |    ❌    |                                                 |
+| 6.9  | Add BPMN elements            | Add BPMN elements via drag-drop                               |    ✅    | case-details-management-processes.spec.ts       |
+| 6.10 | Set process properties       | Configure process properties (Starts case, Startable by user) |    ✅    | case-details-management-processes.spec.ts       |
+| 6.11 | Save process                 | Save process definition                                       |    ✅    | case-details-management-processes.spec.ts       |
 
 #### 6C · Process Links
 
@@ -151,35 +151,35 @@
 
 | #    | Function                    | Test Scenarios                         | Coverage | Notes                                           |
 |:-----|:----------------------------|:---------------------------------------|:--------:|:------------------------------------------------|
-| 6.39 | View linked decision tables | Display list of linked decision tables |    ❌    |                                                 |
-| 6.40 | Upload decision table       | Upload decision table (.dmn file)      |    ❌    |                                                 |
-| 6.41 | Open decision table editor  | Open decision table in DMN editor      |    ❌    |                                                 |
-| 6.42 | Set DMN Hit policy          | Set DMN Hit policy                     |    ❌    |                                                 |
-| 6.43 | Manage DMN columns          | Manage DMN input/output columns        |    ❌    |                                                 |
-| 6.44 | Manage DMN rules            | Add/edit/delete DMN rules              |    ❌    |                                                 |
-| 6.45 | Save decision table         | Save decision table                    |    ❌    |                                                 |
+| 6.39 | View linked decision tables | Display list of linked decision tables |    ✅    | case-details-management-decisions.spec.ts       |
+| 6.40 | Upload decision table       | Upload decision table (.dmn file)      |    ✅    | case-details-management-decisions.spec.ts       |
+| 6.41 | Open decision table editor  | Open decision table in DMN editor      |    ✅    | case-details-management-decisions.spec.ts       |
+| 6.42 | Set DMN Hit policy          | Set DMN Hit policy                     |    ✅    | case-details-management-decisions.spec.ts       |
+| 6.43 | Manage DMN columns          | Manage DMN input/output columns        |    ✅    | case-details-management-decisions.spec.ts       |
+| 6.44 | Manage DMN rules            | Add/edit/delete DMN rules              |    ✅    | case-details-management-decisions.spec.ts       |
+| 6.45 | Save decision table         | Save decision table                    |    ✅    | case-details-management-decisions.spec.ts       |
 
 #### 6F · Document
 
 | #    | Function             | Test Scenarios              | Coverage | Notes                                           |
 |:-----|:---------------------|:----------------------------|:--------:|:------------------------------------------------|
-| 6.46 | View JSON Schema     | View JSON Schema definition |    ❌    |                                                 |
-| 6.47 | Download JSON Schema | Download JSON Schema        |    ❌    |                                                 |
-| 6.48 | Edit JSON Schema     | Edit JSON Schema            |    ❌    |                                                 |
-| 6.49 | Save JSON Schema     | Save JSON Schema changes    |    ❌    |                                                 |
+| 6.46 | View JSON Schema     | View JSON Schema definition |    ✅    | case-details-management-document.spec.ts        |
+| 6.47 | Download JSON Schema | Download JSON Schema        |    ✅    | case-details-management-document.spec.ts        |
+| 6.48 | Edit JSON Schema     | Edit JSON Schema            |    ✅    | case-details-management-document.spec.ts        |
+| 6.49 | Save JSON Schema     | Save JSON Schema changes    |    ✅    | case-details-management-document.spec.ts        |
 
 #### 6G · Forms
 
 | #    | Function            | Test Scenarios                                   | Coverage | Notes                                           |
 |:-----|:--------------------|:-------------------------------------------------|:--------:|:------------------------------------------------|
-| 6.50 | View forms list     | Display list of forms                            |    ❌    |                                                 |
-| 6.51 | Search/filter forms | Search and filter forms                          |    ❌    |                                                 |
-| 6.52 | Create form         | Create new form                                  |    ❌    |                                                 |
-| 6.53 | Add form components | Form.io builder — add components via drag-drop   |    ❌    |                                                 |
-| 6.54 | Configure component | Form.io builder — configure component properties |    ❌    |                                                 |
-| 6.55 | Use JSON editor     | Use Form.io JSON editor                          |    ❌    |                                                 |
-| 6.56 | View form preview   | View form preview                                |    ❌    |                                                 |
-| 6.57 | Save form           | Save form definition                             |    ❌    |                                                 |
+| 6.50 | View forms list     | Display list of forms                            |    ✅    | form-management.spec.ts                         |
+| 6.51 | Search/filter forms | Search and filter forms                          |    ✅    | form-management.spec.ts                         |
+| 6.52 | Create form         | Create new form                                  |    ✅    | case-details-management-forms.spec.ts           |
+| 6.53 | Add form components | Form.io builder — add components via drag-drop   |    ✅    | case-details-management-forms.spec.ts           |
+| 6.54 | Configure component | Form.io builder — configure component properties |    ✅    | case-details-management-forms.spec.ts           |
+| 6.55 | Use JSON editor     | Use Form.io JSON editor                          |    ✅    | case-details-management-forms.spec.ts           |
+| 6.56 | View form preview   | View form preview                                |    ✅    | case-details-management-forms.spec.ts           |
+| 6.57 | Save form           | Save form definition                             |    ✅    | case-details-management-forms.spec.ts           |
 
 #### 6H · Form Flows
 
@@ -727,8 +727,8 @@
 |:-------------------------|:-------:|
 | Total Features           |   20    |
 | Total Functions          |   349   |
-| ✅ Covered by Playwright |   80    |
-| ❌ Not covered           |   267   |
+| ✅ Covered by Playwright |   102   |
+| ❌ Not covered           |   245   |
 | ⏳ In progress           |    0    |
 | `N/A` Not applicable     |    2    |
-| **Coverage %**           | **22.9%** |
+| **Coverage %**           | **29.2%** |
