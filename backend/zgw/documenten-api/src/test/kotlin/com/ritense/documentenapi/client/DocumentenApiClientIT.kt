@@ -308,8 +308,8 @@ internal class DocumentenApiClientIT @Autowired constructor(
         val permissions = listOf(
             Permission(
                 UUID.randomUUID(),
-                ResourcePermission::class.java,
-                ResourcePermissionActionProvider.VIEW_LIST,
+                ZgwDocument::class.java,
+                ZgwDocumentActionProvider.VIEW_LIST,
                 ConditionContainer(),
                 roleTest
             )
@@ -339,8 +339,8 @@ internal class DocumentenApiClientIT @Autowired constructor(
         val permissions = listOf(
             Permission(
                 UUID.randomUUID(),
-                ResourcePermission::class.java,
-                ResourcePermissionActionProvider.VIEW_LIST,
+                ZgwDocument::class.java,
+                ZgwDocumentActionProvider.VIEW_LIST,
                 ConditionContainer(),
                 roleTest
             )
