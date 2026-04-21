@@ -23,6 +23,7 @@ import {DownloadDocumentConfigurationComponent} from './components/download-docu
 import {StoreUploadedDocumentInPartsConfigurationComponent} from './components/store-uploaded-document-in-parts/store-uploaded-document-in-parts-configuration.component';
 import {LinkDocumentToObjectConfigurationComponent} from './components/link-document-to-object/link-document-to-object-configuration.component';
 import {DeleteDocumentLinkConfigurationComponent} from './components/delete-document-link/delete-document-link-configuration.component';
+import {GetAuditTrailConfigurationComponent} from './components/get-audit-trail/get-audit-trail-configuration.component';
 import {documentenApiActionFilterFunction} from './services';
 
 const documentenApiPluginSpecification: PluginSpecification = {
@@ -36,6 +37,7 @@ const documentenApiPluginSpecification: PluginSpecification = {
     'download-document': DownloadDocumentConfigurationComponent,
     'link-document-to-object': LinkDocumentToObjectConfigurationComponent,
     'delete-document-link': DeleteDocumentLinkConfigurationComponent,
+    'get-audit-trail': GetAuditTrailConfigurationComponent,
   },
   functionConfigurationComponentsFilter: documentenApiActionFilterFunction,
   pluginTranslations: {
@@ -126,6 +128,13 @@ const documentenApiPluginSpecification: PluginSpecification = {
       objectInformatieObjectUrl: 'Objectinformatieobject URL',
       objectInformatieObjectUrlTooltip:
         "De URL van de objectinformatieobject-koppeling die verwijderd moet worden. ",
+      'get-audit-trail': 'Audit trail ophalen',
+      documentUrl: 'Document URL',
+      documentUrlTooltip:
+        'De volledige URL naar het enkelvoudiginformatieobject waarvoor de audit trail opgehaald moet worden',
+      auditTrailProcessVariableName: 'Naam procesvariabele voor audit trail',
+      auditTrailProcessVariableNameTooltip:
+        'De naam van de procesvariabele waarin het resultaat van de audit trail opgeslagen wordt als JSON',
     },
     en: {
       title: 'Documenten API',
@@ -215,6 +224,13 @@ const documentenApiPluginSpecification: PluginSpecification = {
       objectInformatieObjectUrlTooltip:
         "The URL of the objectinformatieobject link to delete. " +
         "The preceding action stores this in the process variable 'objectInformatieObjectUrl'.",
+      'get-audit-trail': 'Get audit trail',
+      documentUrl: 'Document URL',
+      documentUrlTooltip:
+        'The full URL to the enkelvoudiginformatieobject for which to retrieve the audit trail',
+      auditTrailProcessVariableName: 'Process variable name for audit trail',
+      auditTrailProcessVariableNameTooltip:
+        'The name of the process variable in which the audit trail result will be stored as JSON',
     },
   },
 };
