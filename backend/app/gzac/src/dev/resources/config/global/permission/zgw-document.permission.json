@@ -42,18 +42,6 @@
                         ]
                     }
                 ]
-            },
-            {
-                "type": "field",
-                "field": "status",
-                "operator": "==",
-                "value": "in_bewerking"
-            },
-            {
-                "type": "field",
-                "field": "informatieobjecttypeOmschrijving",
-                "operator": "==",
-                "value": "test"
             }
         ]
     },
