@@ -22,7 +22,8 @@
                    logicalFilePath="config/liquibase/changelog/20260415-remove-duplicate-document-definitions.xml">
 
     <changeSet author="Ritense" id="1">
-        <sql>
+        <validCheckSum>9:91a7366a069a0b90283e1334ecd9806e</validCheckSum>
+        <sql dbms="postgresql">
             DELETE FROM json_schema_document_definition a
             WHERE a.document_definition_name != a.blueprint_key
               AND EXISTS (
@@ -33,6 +34,15 @@
                     AND b.blueprint_version_tag = a.blueprint_version_tag
                     AND b.document_definition_name = b.blueprint_key
               )
+        </sql>
+        <sql dbms="mysql">
+            DELETE a FROM json_schema_document_definition a
+            INNER JOIN json_schema_document_definition b
+                ON b.blueprint_type = a.blueprint_type
+               AND b.blueprint_key = a.blueprint_key
+               AND b.blueprint_version_tag = a.blueprint_version_tag
+               AND b.document_definition_name = b.blueprint_key
+            WHERE a.document_definition_name != a.blueprint_key
         </sql>
     </changeSet>
 </databaseChangeLog>
