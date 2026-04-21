@@ -1042,7 +1042,7 @@ internal class DocumentenApiClientTest {
     @Test
     fun `should create objectinformatieobject and send outbox event`() {
         val restClientBuilder = RestClient.builder()
-        val client = DocumentenApiClient(restClientBuilder, outboxService, objectMapper, mock(), authorizationService)
+        val client = DocumentenApiClient(restClientBuilder, outboxService, objectMapper, mock(), authorizationService, mock())
 
         val responseBody = """
             {
@@ -1097,7 +1097,7 @@ internal class DocumentenApiClientTest {
     @Test
     fun `should not send outbox event on failed create objectinformatieobject`() {
         val restClientBuilder = RestClient.builder()
-        val client = DocumentenApiClient(restClientBuilder, outboxService, objectMapper, mock(), authorizationService)
+        val client = DocumentenApiClient(restClientBuilder, outboxService, objectMapper, mock(), authorizationService, mock())
 
         mockDocumentenApi.enqueue(mockResponse("{}").setResponseCode(400))
 
@@ -1124,7 +1124,7 @@ internal class DocumentenApiClientTest {
     @Test
     fun `should delete objectinformatieobject and send outbox event`() {
         val restClientBuilder = RestClient.builder()
-        val client = DocumentenApiClient(restClientBuilder, outboxService, objectMapper, mock(), authorizationService)
+        val client = DocumentenApiClient(restClientBuilder, outboxService, objectMapper, mock(), authorizationService, mock())
 
         val baseUrl = mockDocumentenApi.url("/").toUri()
         val objectInformatieObjectUrl = mockDocumentenApi
@@ -1154,7 +1154,7 @@ internal class DocumentenApiClientTest {
     @Test
     fun `should throw when delete objectinformatieobject url does not start with baseUrl`() {
         val restClientBuilder = RestClient.builder()
-        val client = DocumentenApiClient(restClientBuilder, outboxService, objectMapper, mock(), authorizationService)
+        val client = DocumentenApiClient(restClientBuilder, outboxService, objectMapper, mock(), authorizationService, mock())
 
         val baseUrl = URI("http://example.com/")
         val urlFromDifferentHost = URI("http://other-host.com/objectinformatieobjecten/123")
@@ -1169,7 +1169,7 @@ internal class DocumentenApiClientTest {
     @Test
     fun `should not send outbox event on failed delete objectinformatieobject`() {
         val restClientBuilder = RestClient.builder()
-        val client = DocumentenApiClient(restClientBuilder, outboxService, objectMapper, mock(), authorizationService)
+        val client = DocumentenApiClient(restClientBuilder, outboxService, objectMapper, mock(), authorizationService, mock())
 
         val baseUrl = mockDocumentenApi.url("/").toUri()
         mockDocumentenApi.enqueue(mockResponse("{}").setResponseCode(400))
