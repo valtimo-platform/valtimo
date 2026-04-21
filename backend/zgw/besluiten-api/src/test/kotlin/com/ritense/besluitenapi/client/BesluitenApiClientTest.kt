@@ -19,6 +19,7 @@ package com.ritense.besluitenapi.client
 import com.jayway.jsonpath.matchers.JsonPathMatchers
 import com.jayway.jsonpath.matchers.JsonPathMatchers.hasJsonPath
 import com.ritense.besluitenapi.BesluitenApiAuthentication
+import com.ritense.valtimo.Jackson2TestUtils
 import okhttp3.mockwebserver.MockResponse
 import okhttp3.mockwebserver.MockWebServer
 import org.hamcrest.CoreMatchers
@@ -55,7 +56,7 @@ class BesluitenApiClientTest {
 
     @Test
     fun `should send create besluit request and parse response`() {
-        val restClientBuilder = RestClient.builder()
+        val restClientBuilder = Jackson2TestUtils.restClientBuilder()
         val client = BesluitenApiClient(restClientBuilder)
 
         val responseBody = """
@@ -138,7 +139,7 @@ class BesluitenApiClientTest {
 
     @Test
     fun `should send create besluit request and parse response when vervalreden is null`() {
-        val restClientBuilder = RestClient.builder()
+        val restClientBuilder = Jackson2TestUtils.restClientBuilder()
         val client = BesluitenApiClient(restClientBuilder)
 
         val responseBody = """
@@ -220,7 +221,7 @@ class BesluitenApiClientTest {
 
     @Test
     fun `should send patch besluit request and parse response`() {
-        val restClientBuilder = RestClient.builder()
+        val restClientBuilder = Jackson2TestUtils.restClientBuilder()
         val client = BesluitenApiClient(restClientBuilder)
 
         val responseBody = """

@@ -137,7 +137,7 @@ class FormManagementResource(
     fun getFormDefinitions(
         @RequestParam(required = false) searchTerm: String?,
         @PageableDefault(sort = ["name"], direction = ASC) pageable: Pageable?
-    ): ResponseEntity<Page<out FormDefinition?>> {
+    ): ResponseEntity<Page<out FormDefinition>> {
         return if (searchTerm.isNullOrEmpty()) {
             ResponseEntity.ok(formDefinitionService.getAll(pageable))
         } else {

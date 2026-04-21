@@ -23,18 +23,18 @@ import org.springframework.http.HttpMethod.DELETE
 import org.springframework.http.HttpMethod.GET
 import org.springframework.http.HttpMethod.POST
 import org.springframework.security.config.annotation.web.builders.HttpSecurity
-import org.springframework.security.web.util.matcher.AntPathRequestMatcher.antMatcher
+import org.springframework.security.web.servlet.util.matcher.PathPatternRequestMatcher.pathPattern
 
 class DataProviderHttpSecurityConfigurer : HttpSecurityConfigurer {
 
     override fun configure(http: HttpSecurity) {
         try {
             http.authorizeHttpRequests { requests ->
-                requests.requestMatchers(antMatcher(GET, "$DATA_URL/provider")).hasAuthority(ADMIN)
-                    .requestMatchers(antMatcher(GET, "$DATA_URL/all")).authenticated()
-                    .requestMatchers(antMatcher(GET, DATA_URL)).authenticated()
-                    .requestMatchers(antMatcher(POST, DATA_URL)).hasAuthority(ADMIN)
-                    .requestMatchers(antMatcher(DELETE, DATA_URL)).hasAuthority(ADMIN)
+                requests.requestMatchers(pathPattern(GET, "$DATA_URL/provider")).hasAuthority(ADMIN)
+                    .requestMatchers(pathPattern(GET, "$DATA_URL/all")).authenticated()
+                    .requestMatchers(pathPattern(GET, DATA_URL)).authenticated()
+                    .requestMatchers(pathPattern(POST, DATA_URL)).hasAuthority(ADMIN)
+                    .requestMatchers(pathPattern(DELETE, DATA_URL)).hasAuthority(ADMIN)
             }
         } catch (e: Exception) {
             throw HttpConfigurerConfigurationException(e)

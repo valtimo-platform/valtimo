@@ -219,7 +219,7 @@ class BuildingBlockProcessResourceIT @Autowired constructor(
             eq(version),
             any(),
             any(),
-            eq("\"$processDefinitionId\""),
+            eq(processDefinitionId),
             eq(true),
             eq(false)
         )

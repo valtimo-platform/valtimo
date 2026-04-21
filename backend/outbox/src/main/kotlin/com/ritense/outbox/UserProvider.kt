@@ -31,6 +31,6 @@ open class UserProvider {
     open fun getCurrentUserRoles(): List<String> =
         SecurityContextHolder.getContext().authentication
             ?.authorities
-            ?.map { it.authority }
+            ?.mapNotNull { it.authority }
             ?: emptyList()
 }

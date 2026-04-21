@@ -72,7 +72,7 @@ dependencies {
     implementation "org.springframework.boot:spring-boot-autoconfigure"
 
     implementation "org.liquibase:liquibase-core:${liquibaseVersion}"
-    implementation "org.liquibase.ext:liquibase-hibernate6:${liquibaseVersion}"
+    implementation "org.liquibase.ext:liquibase-hibernate7:${liquibaseHibernateVersion}"
 
     implementation "io.github.oshai:kotlin-logging:${kotlinLoggingVersion}"
     implementation "com.github.erosb:everit-json-schema:${everitJsonSchemaVersion}"
@@ -80,7 +80,7 @@ dependencies {
     implementation "com.jayway.jsonpath:json-path:${jaywayJsonpathVersion}"
     implementation "com.fasterxml.jackson.module:jackson-module-kotlin"
 
-    implementation "io.hypersistence:hypersistence-utils-hibernate-62:${hypersistenceUtilsVersion}"
+    implementation "io.hypersistence:hypersistence-utils-hibernate-71:${hypersistenceUtilsVersion}"
     implementation "org.hibernate.orm:hibernate-core:${hibernateCoreVersion}"
 
     implementation "org.apache.commons:commons-lang3:${commonsLangVersion}"

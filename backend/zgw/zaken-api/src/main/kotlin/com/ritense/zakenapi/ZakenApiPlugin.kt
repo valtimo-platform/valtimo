@@ -245,8 +245,9 @@ class ZakenApiPlugin(
         ) {
             val relatedFiles = zaakDocumentService.getInformatieObjectenAsRelatedFiles(documentId)
             relatedFiles.let { relatedFile ->
+                val jsonNode = objectMapper.valueToTree<com.fasterxml.jackson.databind.JsonNode>(relatedFile)
                 execution.setVariable(resultProcessVariable,
-                    objectMapper.convertValue(relatedFile)
+                    ObjectMapper().convertValue(jsonNode, Object::class.java)
                 )
             }
 

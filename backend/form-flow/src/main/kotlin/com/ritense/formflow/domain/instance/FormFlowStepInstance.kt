@@ -122,7 +122,7 @@ data class FormFlowStepInstance(
             ?.first
     }
 
-    private fun <T> processExpressions(expressions: List<String?>): List<T?> {
+    private fun <T : Any> processExpressions(expressions: List<String?>): List<T?> {
         return ExpressionProcessorFactoryHolder.getInstance().let { factory ->
             val variables = createVarMap()
             val expressionProcessor = factory.create(variables)

@@ -60,7 +60,7 @@ class IkoWidgetResource(
         @RequestParam properties: LinkedMultiValueMap<String, List<Any>>,
         @PageableDefault pageable: Pageable,
         request: HttpServletRequest,
-    ): ResponseEntity<Any?> {
+    ): ResponseEntity<Any> {
         val pageSize = request.parameterMap["size"]?.firstOrNull()?.toIntOrNull()
         val collapsedValuesPropertiesMap =
             properties

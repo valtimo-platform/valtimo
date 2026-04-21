@@ -17,6 +17,7 @@
 package com.ritense.valtimo.operaton.domain
 
 import io.hypersistence.utils.hibernate.type.json.JsonType
+import com.ritense.valtimo.task.domain.TaskTeam
 import jakarta.persistence.Column
 import jakarta.persistence.Entity
 import jakarta.persistence.EnumType
@@ -26,6 +27,7 @@ import jakarta.persistence.Id
 import jakarta.persistence.JoinColumn
 import jakarta.persistence.ManyToOne
 import jakarta.persistence.OneToMany
+import jakarta.persistence.OneToOne
 import jakarta.persistence.Table
 import jakarta.persistence.Transient
 import org.hibernate.annotations.Formula
@@ -118,7 +120,11 @@ class OperatonTask(
 
     @Immutable
     @OneToMany(mappedBy = "task", fetch = FetchType.LAZY)
-    val variableInstances: Set<OperatonVariableInstance>
+    val variableInstances: Set<OperatonVariableInstance>,
+
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "ID_", referencedColumnName = "task_id", insertable = false, updatable = false)
+    val taskTeam: TaskTeam? = null
 
 ): OperatonVariableScope() {
 

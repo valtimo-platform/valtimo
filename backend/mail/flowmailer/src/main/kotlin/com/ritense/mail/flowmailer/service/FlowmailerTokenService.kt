@@ -55,13 +55,13 @@ class FlowmailerTokenService(
                 httpEntity,
                 getType(OauthTokenResponse::class.java)
             )
-            return response.body.accessToken
+            return response.body!!.accessToken
         } catch (e: HttpStatusCodeException) {
             throw HttpClientErrorException(e.statusCode, "No token received")
         }
     }
 
-    fun <T> getType(responseClass: Class<out T>): ParameterizedTypeReference<T> {
+    fun <T : Any> getType(responseClass: Class<out T>): ParameterizedTypeReference<T> {
         val type: ParameterizedTypeReference<T> = ParameterizedTypeReference.forType(
             ResolvableType.forClass(responseClass).type
         )

@@ -18,7 +18,7 @@ package com.ritense.valtimo.security.config;
 
 import static org.springframework.http.HttpMethod.GET;
 import static org.springframework.http.HttpMethod.POST;
-import static org.springframework.security.web.util.matcher.AntPathRequestMatcher.antMatcher;
+import static org.springframework.security.web.servlet.util.matcher.PathPatternRequestMatcher.pathPattern;
 
 import com.ritense.valtimo.contract.security.config.HttpConfigurerConfigurationException;
 import com.ritense.valtimo.contract.security.config.HttpSecurityConfigurer;
@@ -30,10 +30,10 @@ public class AccountHttpSecurityConfigurer implements HttpSecurityConfigurer {
     public void configure(HttpSecurity http) {
         try {
             http.authorizeHttpRequests(requests ->
-                requests.requestMatchers(antMatcher(GET, "/api/v1/account")).authenticated()
+                requests.requestMatchers(pathPattern(GET, "/api/v1/account")).authenticated()
                 .requestMatchers(
-                    antMatcher(POST, "/api/v1/account/profile"),
-                    antMatcher(POST,"/api/v1/account/change_password")).authenticated()
+                    pathPattern(POST, "/api/v1/account/profile"),
+                    pathPattern(POST,"/api/v1/account/change_password")).authenticated()
             );
         } catch (Exception e) {
             throw new HttpConfigurerConfigurationException(e);

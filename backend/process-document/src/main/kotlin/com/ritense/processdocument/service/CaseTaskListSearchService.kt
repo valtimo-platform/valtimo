@@ -194,7 +194,7 @@ class CaseTaskListSearchService(
             taskRoot.get<LocalDateTime?>(CaseTaskProperties.DUE_DATE.propertyName),
             taskRoot.get<OperatonExecution?>("processInstance").get<String>("id"),
             documentRoot.get<JsonSchemaDocumentId>("id").get<UUID>("id"),
-            taskTeamSubquery(query, taskRoot, "teamTitle")
+            taskTeamJoin(taskRoot, "teamTitle")
         )
 
         query.select(
@@ -299,6 +299,7 @@ class CaseTaskListSearchService(
                 val username = userManagementService.currentUser.username
                 val teamKeys = teamManagement.findTeamKeysByUsername(username)
                 byTeamKeys(teamKeys).toPredicate(taskRoot, query, cb)
+                    ?: cb.equal(cb.literal(1), 1)
             }
         }
         return assignmentFilterPredicate
@@ -463,17 +464,14 @@ class CaseTaskListSearchService(
         val taskColumnName = searchCriteria.path.substring(TASK_PREFIX.length)
         if (taskColumnName == CaseTaskProperties.ASSIGNED_TEAM_TITLE.propertyName) {
             @Suppress("UNCHECKED_CAST")
-            return taskTeamSubquery(query, taskRoot, "teamTitle") as Expression<Comparable<Any>>
+            return taskTeamJoin(taskRoot, "teamTitle") as Expression<Comparable<Any>>
         }
         return taskRoot.get<Any>(taskColumnName).`as`(searchCriteria.getDataType())
     }
 
-    private fun taskTeamSubquery(query: AbstractQuery<*>, taskRoot: Root<OperatonTask>, column: String): Expression<String> {
-        val subquery = query.subquery(String::class.java)
-        val taskTeamRoot = subquery.from(TaskTeam::class.java)
-        subquery.select(taskTeamRoot.get(column))
-        subquery.where(entityManager.criteriaBuilder.equal(taskTeamRoot.get<String>("taskId"), taskRoot.get<String>("id")))
-        return subquery.selection
+    private fun taskTeamJoin(taskRoot: Root<OperatonTask>, column: String): Expression<String> {
+        val join = taskRoot.join<OperatonTask, TaskTeam>("taskTeam", jakarta.persistence.criteria.JoinType.LEFT)
+        return join.get(column)
     }
 
     private fun getValueExpressionForCasePrefix(
@@ -649,7 +647,7 @@ class CaseTaskListSearchService(
                     property.startsWith(TASK_PREFIX) -> {
                         val taskColumnName = property.substring(TASK_PREFIX.length)
                         expression = if (taskColumnName == CaseTaskProperties.ASSIGNED_TEAM_TITLE.propertyName) {
-                            taskTeamSubquery(query, taskRoot, "teamTitle")
+                            taskTeamJoin(taskRoot, "teamTitle")
                         } else {
                             taskRoot.get<Any>(taskColumnName)
                         }
@@ -660,9 +658,7 @@ class CaseTaskListSearchService(
                             if (property.startsWith(CASE_PREFIX)) property.substring(
                                 CASE_PREFIX.length
                             ) else property
-                        if (DOCUMENT_FIELD_MAP.containsKey(docProperty)) {
-                            docProperty = DOCUMENT_FIELD_MAP[docProperty]
-                        }
+                        DOCUMENT_FIELD_MAP[docProperty]?.let { docProperty = it }
 
                         val parent: Path<*>
                         if (docProperty == INTERNAL_STATUS_ORDER) {

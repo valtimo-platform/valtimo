@@ -19,7 +19,7 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import org.hibernate.cfg.AvailableSettings
 import org.hibernate.type.format.jackson.JacksonJsonFormatMapper
 import org.springframework.boot.autoconfigure.AutoConfiguration
-import org.springframework.boot.autoconfigure.orm.jpa.HibernatePropertiesCustomizer
+import org.springframework.boot.hibernate.autoconfigure.HibernatePropertiesCustomizer
 import org.springframework.context.annotation.Bean
 
 
@@ -28,7 +28,7 @@ class HibernateJsonMapperConfiguration {
 
     @Bean
     fun jsonFormatMapperCustomizer(objectMapper: ObjectMapper): HibernatePropertiesCustomizer {
-        return HibernatePropertiesCustomizer { properties: MutableMap<String?, Any?> ->
+        return HibernatePropertiesCustomizer { properties: MutableMap<String, Any> ->
             properties[AvailableSettings.JSON_FORMAT_MAPPER] = JacksonJsonFormatMapper(objectMapper)
         }
     }

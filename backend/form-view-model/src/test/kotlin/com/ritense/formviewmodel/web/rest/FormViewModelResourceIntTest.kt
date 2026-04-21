@@ -52,6 +52,7 @@ class FormViewModelResourceIntTest @Autowired constructor(
     internal fun init() {
         mockMvc = MockMvcBuilders.standaloneSetup(formViewModelResource)
             .setCustomArgumentResolvers(PageableHandlerMethodArgumentResolver())
+            .setMessageConverters(com.ritense.valtimo.Jackson2TestUtils.jackson2Converter())
             .build()
     }
 

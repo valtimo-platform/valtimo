@@ -17,7 +17,7 @@
 package com.ritense.valtimo.security.config;
 
 import static org.springframework.http.HttpMethod.GET;
-import static org.springframework.security.web.util.matcher.AntPathRequestMatcher.antMatcher;
+import static org.springframework.security.web.servlet.util.matcher.PathPatternRequestMatcher.pathPattern;
 
 import com.ritense.valtimo.contract.security.config.HttpConfigurerConfigurationException;
 import com.ritense.valtimo.contract.security.config.HttpSecurityConfigurer;
@@ -29,7 +29,7 @@ public class ValtimoVersionHttpSecurityConfigurer implements HttpSecurityConfigu
     public void configure(HttpSecurity http) {
         try {
             http.authorizeHttpRequests(requests ->
-                requests.requestMatchers(antMatcher(GET, "/api/v1/valtimo/version")).authenticated()
+                requests.requestMatchers(pathPattern(GET, "/api/v1/valtimo/version")).authenticated()
             );
         } catch (Exception e) {
             throw new HttpConfigurerConfigurationException(e);

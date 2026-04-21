@@ -536,7 +536,7 @@ class DefaultFormSubmissionService(
                     withLoggingContext(JsonSchemaDocument::class, document.id()) {
                         formFields.forEach { it.postProcess(document) }
                         publishExternalDataSubmittedEvent(externalFormData, documentDefinitionName, document)
-                        valueResolverService.handleValues(document.id.id, remainingValueResolverValues)
+                        valueResolverService.handleValues(document.id!!.id, remainingValueResolverValues)
                     }
                 }
             )

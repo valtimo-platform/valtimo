@@ -30,9 +30,10 @@ import com.ritense.smartdocuments.io.UnicodeUnescapeInputStream
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import com.ritense.valtimo.contract.domain.ValtimoMediaType.APPLICATION_JSON_UTF8
 import org.apache.commons.io.FilenameUtils
-import org.springframework.core.io.Resource
-import org.springframework.http.converter.ResourceHttpMessageConverter
+import org.springframework.http.HttpStatusCode
 import org.springframework.stereotype.Component
+import org.springframework.web.client.HttpClientErrorException
+import org.springframework.web.client.HttpServerErrorException
 import org.springframework.web.client.RestClient
 import org.springframework.web.client.body
 import java.io.InputStream
@@ -71,27 +72,43 @@ class SmartDocumentsClient(
         smartDocumentsRequest: SmartDocumentsRequest,
         outputFormat: DocumentFormatOption,
     ): FileStreamResponse {
-        // Stream complete response (json) to a Resource
-        val result = restClient(authentication)
+        return restClient(authentication)
             .post()
             .uri { it.pathSegment("wsxmldeposit", "deposit", "unattended").build() }
             .contentType(APPLICATION_JSON_UTF8)
             .body(fixRequest(smartDocumentsRequest))
-            .retrieve()
-            .body<Resource>()!!
+            .exchange { _, response ->
+                if (response.statusCode.is4xxClientError) {
+                    throw HttpClientErrorException.create(
+                        response.statusCode as HttpStatusCode,
+                        response.statusText,
+                        response.headers,
+                        response.body.readBytes(),
+                        null
+                    )
+                }
+                if (response.statusCode.is5xxServerError) {
+                    throw HttpServerErrorException.create(
+                        response.statusCode as HttpStatusCode,
+                        response.statusText,
+                        response.headers,
+                        response.body.readBytes(),
+                        null
+                    )
+                }
+                val responseResourceId = temporaryResourceStorageService.store(response.body)
+                val parsedResponse = temporaryResourceStorageService.getResourceContentAsInputStream(responseResourceId)
+                    .use { parseSmartDocumentsResponse(it, outputFormat) }
 
-        val responseResourceId = temporaryResourceStorageService.store(result.inputStream)
-        val parsedResponse = temporaryResourceStorageService.getResourceContentAsInputStream(responseResourceId)
-            .use { parseSmartDocumentsResponse(it, outputFormat) }
+                val resourceIn = temporaryResourceStorageService.getResourceContentAsInputStream(responseResourceId)
+                val documentDataIn = toDocumentDataInputStream(resourceIn, parsedResponse)
 
-        val resourceIn = temporaryResourceStorageService.getResourceContentAsInputStream(responseResourceId)
-        val documentDataIn = toDocumentDataInputStream(resourceIn, parsedResponse)
-
-        return FileStreamResponse(
-            parsedResponse.fileName,
-            FilenameUtils.getExtension(parsedResponse.fileName),
-            documentDataIn
-        )
+                FileStreamResponse(
+                    parsedResponse.fileName,
+                    FilenameUtils.getExtension(parsedResponse.fileName),
+                    documentDataIn
+                )
+            }
     }
 
     private fun fixRequest(smartDocumentsRequest: SmartDocumentsRequest): SmartDocumentsRequest {
@@ -115,9 +132,6 @@ class SmartDocumentsClient(
                     authentication.username,
                     authentication.password
                 )
-            }
-            .messageConverters {
-                it + ResourceHttpMessageConverter(true) // Enables streaming
             }
             .build()
     }

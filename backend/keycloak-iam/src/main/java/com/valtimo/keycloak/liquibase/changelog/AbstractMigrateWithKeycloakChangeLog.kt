@@ -47,7 +47,7 @@ abstract class AbstractMigrateWithKeycloakChangeLog : EnvironmentPostProcessor {
     override fun postProcessEnvironment(environment: ConfigurableEnvironment, application: SpringApplication) {
         Companion.environment = environment
         Companion.userCache =
-            ConcurrentLruCache<String?, AbstractUserRepresentation?>(DEFAULT_BUFFER_SIZE, ::getKeycloakUserFromKeycloak)
+            ConcurrentLruCache<String, AbstractUserRepresentation>(DEFAULT_BUFFER_SIZE, ::getKeycloakUserFromKeycloak)
     }
 
     protected fun checkTableExists(connection: JdbcConnection, tableName: String): Boolean {
@@ -118,10 +118,8 @@ abstract class AbstractMigrateWithKeycloakChangeLog : EnvironmentPostProcessor {
         }
     }
 
-    protected fun getKeycloakUserFromKeycloak(emailOrUsernameOrUserId: String?): AbstractUserRepresentation? {
-        if (emailOrUsernameOrUserId == null) {
-            return null
-        } else if (emailOrUsernameOrUserId == SYSTEM_ACCOUNT) {
+    protected fun getKeycloakUserFromKeycloak(emailOrUsernameOrUserId: String): AbstractUserRepresentation {
+        if (emailOrUsernameOrUserId == SYSTEM_ACCOUNT) {
             val systemUser = UserRepresentation()
             systemUser.id = SYSTEM_ACCOUNT
             systemUser.username = SYSTEM_ACCOUNT
@@ -237,7 +235,7 @@ abstract class AbstractMigrateWithKeycloakChangeLog : EnvironmentPostProcessor {
 
         protected lateinit var environment: Environment
 
-        protected lateinit var userCache: ConcurrentLruCache<String?, AbstractUserRepresentation?>
+        protected lateinit var userCache: ConcurrentLruCache<String, AbstractUserRepresentation>
         private val logger = KotlinLogging.logger {}
     }
 }

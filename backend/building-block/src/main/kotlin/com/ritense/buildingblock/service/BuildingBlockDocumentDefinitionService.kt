@@ -89,7 +89,7 @@ class BuildingBlockDocumentDefinitionService(
             JsonSchemaDocumentDefinition::class.java,
             documentDefinition.id.toString(),
             {
-                definitionChecker.assertCanUpdateBuildingBlockDefinition(documentDefinition.id.buildingBlockDefinitionId())
+                definitionChecker.assertCanUpdateBuildingBlockDefinition(documentDefinition.id!!.buildingBlockDefinitionId())
 
                 repository.saveAndFlush(documentDefinition)
             }

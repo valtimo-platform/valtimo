@@ -149,7 +149,7 @@ class BuildingBlockProcessLink(
 data class BuildingBlockInputMapping(
     val source: String,
     val target: String
-)
+) : java.io.Serializable
 
 enum class BuildingBlockSyncTiming {
     CONTINUOUS,
@@ -160,4 +160,4 @@ data class BuildingBlockOutputMapping(
     val source: String,
     val target: String,
     val syncTiming: BuildingBlockSyncTiming = BuildingBlockSyncTiming.END
-)
+) : java.io.Serializable

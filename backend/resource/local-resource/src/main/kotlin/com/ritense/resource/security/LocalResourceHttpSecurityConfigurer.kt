@@ -22,17 +22,17 @@ import org.springframework.http.HttpMethod.DELETE
 import org.springframework.http.HttpMethod.GET
 import org.springframework.http.HttpMethod.PUT
 import org.springframework.security.config.annotation.web.builders.HttpSecurity
-import org.springframework.security.web.util.matcher.AntPathRequestMatcher.antMatcher
+import org.springframework.security.web.servlet.util.matcher.PathPatternRequestMatcher.pathPattern
 
 class LocalResourceHttpSecurityConfigurer : HttpSecurityConfigurer {
 
     override fun configure(http: HttpSecurity) {
         try {
             http.authorizeHttpRequests { requests ->
-                requests.requestMatchers(antMatcher(GET, "/api/v1/resource/pre-signed-url/{fileName}")).authenticated()
-                    .requestMatchers(antMatcher(GET, "/api/v1/resource/{resourceId}")).authenticated()
-                    .requestMatchers(antMatcher(DELETE, "/api/v1/resource/{resourceId}")).authenticated()
-                    .requestMatchers(antMatcher(PUT, "/api/v1/resource")).authenticated()
+                requests.requestMatchers(pathPattern(GET, "/api/v1/resource/pre-signed-url/{fileName}")).authenticated()
+                    .requestMatchers(pathPattern(GET, "/api/v1/resource/{resourceId}")).authenticated()
+                    .requestMatchers(pathPattern(DELETE, "/api/v1/resource/{resourceId}")).authenticated()
+                    .requestMatchers(pathPattern(PUT, "/api/v1/resource")).authenticated()
             }
         } catch (e: Exception) {
             throw HttpConfigurerConfigurationException(e)

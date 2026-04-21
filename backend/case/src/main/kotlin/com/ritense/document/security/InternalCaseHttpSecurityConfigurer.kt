@@ -29,11 +29,11 @@ class InternalCaseHttpSecurityConfigurer : AuthorizeRequestsHttpSecurityConfigur
 
     override fun authorizeHttpRequests(requests: AuthorizeHttpRequestsConfigurer<HttpSecurity>.AuthorizationManagerRequestMatcherRegistry) {
         requests
-            .antMatcher(GET, "/api/v1/case-definition/{caseDefinitionName}/internal-status").authenticated()
-            .antMatcher(GET, "/api/management/v1/case-definition/{caseDefinitionName}/internal-status").hasAuthority(ADMIN)
-            .antMatcher(POST, "/api/management/v1/case-definition/{caseDefinitionName}/internal-status").hasAuthority(ADMIN)
-            .antMatcher(PUT, "/api/management/v1/case-definition/{caseDefinitionName}/internal-status").hasAuthority(ADMIN)
-            .antMatcher(PUT, "/api/management/v1/case-definition/{caseDefinitionName}/internal-status/{internalStatusKey}").hasAuthority(ADMIN)
-            .antMatcher(DELETE, "/api/management/v1/case-definition/{caseDefinitionName}/internal-status/{internalStatusKey}").hasAuthority(ADMIN)
+            .pathPattern(GET, "/api/v1/case-definition/{caseDefinitionName}/internal-status").authenticated()
+            .pathPattern(GET, "/api/management/v1/case-definition/{caseDefinitionName}/internal-status").hasAuthority(ADMIN)
+            .pathPattern(POST, "/api/management/v1/case-definition/{caseDefinitionName}/internal-status").hasAuthority(ADMIN)
+            .pathPattern(PUT, "/api/management/v1/case-definition/{caseDefinitionName}/internal-status").hasAuthority(ADMIN)
+            .pathPattern(PUT, "/api/management/v1/case-definition/{caseDefinitionName}/internal-status/{internalStatusKey}").hasAuthority(ADMIN)
+            .pathPattern(DELETE, "/api/management/v1/case-definition/{caseDefinitionName}/internal-status/{internalStatusKey}").hasAuthority(ADMIN)
     }
 }

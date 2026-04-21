@@ -45,6 +45,7 @@ dependencies {
     implementation "org.jetbrains.kotlin:kotlin-test"
     implementation "org.junit.jupiter:junit-jupiter"
     implementation "org.springframework.boot:spring-boot-starter-test"
+    api "org.springframework.boot:spring-boot-webmvc-test"
 
     implementation "org.liquibase:liquibase-core:${liquibaseVersion}"
 

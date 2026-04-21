@@ -18,7 +18,7 @@ package com.ritense.valtimo.web.logging
 
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import io.github.oshai.kotlinlogging.KotlinLogging
-import org.springframework.boot.web.client.RestClientCustomizer
+import org.springframework.boot.restclient.RestClientCustomizer
 import org.springframework.http.HttpRequest
 import org.springframework.http.MediaType
 import org.springframework.http.client.ClientHttpRequestExecution
@@ -70,7 +70,7 @@ class LoggingRestClientCustomizer : RestClientCustomizer, ClientHttpRequestInter
             |Request:
             |HTTP Method = ${request.method}
             |Request URI = ${request.uri}
-            |Header names = ${request.headers.keys}
+            |Header names = ${request.headers.headerNames()}
             |Body = ${getFormattedBody(requestBody, request.headers.contentType)}
             |---------------------------------------
             |Response:

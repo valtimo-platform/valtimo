@@ -23,7 +23,7 @@ import org.springframework.http.HttpMethod.GET
 import org.springframework.http.HttpMethod.POST
 import org.springframework.http.HttpMethod.PUT
 import org.springframework.security.config.annotation.web.builders.HttpSecurity
-import org.springframework.security.web.util.matcher.AntPathRequestMatcher.antMatcher
+import org.springframework.security.web.servlet.util.matcher.PathPatternRequestMatcher.pathPattern
 
 class FormHttpSecurityConfigurerKotlin : HttpSecurityConfigurer {
     override fun configure(http: HttpSecurity) {
@@ -31,45 +31,45 @@ class FormHttpSecurityConfigurerKotlin : HttpSecurityConfigurer {
             http.authorizeHttpRequests { requests ->
                 requests
                     .requestMatchers(
-                        antMatcher(POST, "$PROCESS_LINK_BASE_URL/{processLinkId}/form/submission"),
-                        antMatcher(GET, "$PROCESS_LINK_BASE_URL/form-definition/{formKey}"),
-                        antMatcher(GET, INTERMEDIATE_BASE_URL),
-                        antMatcher(POST, INTERMEDIATE_BASE_URL),
-                        antMatcher(DELETE, INTERMEDIATE_BASE_URL)
+                        pathPattern(POST, "$PROCESS_LINK_BASE_URL/{processLinkId}/form/submission"),
+                        pathPattern(GET, "$PROCESS_LINK_BASE_URL/form-definition/{formKey}"),
+                        pathPattern(GET, INTERMEDIATE_BASE_URL),
+                        pathPattern(POST, INTERMEDIATE_BASE_URL),
+                        pathPattern(DELETE, INTERMEDIATE_BASE_URL)
                     ).authenticated()
                     .requestMatchers(
-                        antMatcher(GET, "/api/management/v1/form-option"),
-                        antMatcher(GET, "/api/management/v1/case-definition/{caseDefinitionKey}/version/{versionTag}/form-option"),
-                        antMatcher(
+                        pathPattern(GET, "/api/management/v1/form-option"),
+                        pathPattern(GET, "/api/management/v1/case-definition/{caseDefinitionKey}/version/{versionTag}/form-option"),
+                        pathPattern(
                             GET,
                             "/api/management/v1/case-definition/{caseDefinitionKey}/version/{versionTag}/form"
                         ),
-                        antMatcher(
+                        pathPattern(
                             POST,
                             "/api/management/v1/case-definition/{caseDefinitionKey}/version/{versionTag}/form"
                         ),
-                        antMatcher(
+                        pathPattern(
                             PUT,
                             "/api/management/v1/case-definition/{caseDefinitionKey}/version/{versionTag}/form"
                         ),
-                        antMatcher(
+                        pathPattern(
                             DELETE,
                             "/api/management/v1/case-definition/{caseDefinitionKey}/version/{versionTag}/form/{formDefinitionId}"
                         ),
-                        antMatcher(
+                        pathPattern(
                             GET,
                             "/api/management/v1/case-definition/{caseDefinitionKey}/version/{versionTag}/form/{formDefinitionId}"
                         ),
-                        antMatcher(
+                        pathPattern(
                             GET,
                             "/api/management/v1/case-definition/{caseDefinitionKey}/version/{versionTag}/form/{name}/exists"
                         ),
-                        antMatcher(GET, "/api/management/v1/form"),
-                        antMatcher(GET, "/api/management/v1/form/{formDefinitionId}"),
-                        antMatcher(POST, "/api/management/v1/form"),
-                        antMatcher(PUT, "/api/management/v1/form"),
-                        antMatcher(DELETE, "/api/management/v1/form/{formDefinitionId}"),
-                        antMatcher(GET, "/api/management/v1/form/exists/{name}")
+                        pathPattern(GET, "/api/management/v1/form"),
+                        pathPattern(GET, "/api/management/v1/form/{formDefinitionId}"),
+                        pathPattern(POST, "/api/management/v1/form"),
+                        pathPattern(PUT, "/api/management/v1/form"),
+                        pathPattern(DELETE, "/api/management/v1/form/{formDefinitionId}"),
+                        pathPattern(GET, "/api/management/v1/form/exists/{name}")
                     ).hasAuthority(ADMIN)
             }
         } catch (e: Exception) {

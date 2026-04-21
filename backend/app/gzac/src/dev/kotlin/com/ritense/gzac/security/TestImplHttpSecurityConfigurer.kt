@@ -22,7 +22,7 @@ import com.ritense.valtimo.contract.security.config.HttpSecurityConfigurer
 import org.springframework.core.annotation.Order
 import org.springframework.http.HttpMethod.POST
 import org.springframework.security.config.annotation.web.builders.HttpSecurity
-import org.springframework.security.web.util.matcher.AntPathRequestMatcher.antMatcher
+import org.springframework.security.web.servlet.util.matcher.PathPatternRequestMatcher.pathPattern
 import org.springframework.stereotype.Component
 
 @Order(0)
@@ -33,7 +33,7 @@ class TestImplHttpSecurityConfigurer : HttpSecurityConfigurer {
         try {
             http.authorizeHttpRequests { requests ->
                 requests
-                    .requestMatchers(antMatcher(POST, "/api/test-impl/notification")).hasAuthority(ADMIN)
+                    .requestMatchers(pathPattern(POST, "/api/test-impl/notification")).hasAuthority(ADMIN)
             }
         } catch (e: Exception) {
             throw HttpConfigurerConfigurationException(e)

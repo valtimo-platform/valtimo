@@ -18,7 +18,7 @@ package com.ritense.valtimo.security.config;
 
 import com.ritense.valtimo.contract.security.config.HttpConfigurerConfigurationException;
 import com.ritense.valtimo.contract.security.config.HttpSecurityConfigurer;
-import org.springframework.boot.autoconfigure.security.servlet.PathRequest;
+import org.springframework.boot.security.autoconfigure.web.servlet.PathRequest;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 
 public class StaticResourcesHttpSecurityConfigurer implements HttpSecurityConfigurer {

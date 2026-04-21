@@ -19,7 +19,6 @@ package com.ritense.valueresolver
 import com.fasterxml.jackson.core.JsonPointer
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.ObjectMapper
-import com.fasterxml.jackson.module.kotlin.treeToValue
 import com.flipkart.zjsonpatch.JsonPatch
 import com.ritense.valtimo.contract.json.patch.JsonPatchBuilder
 import io.github.oshai.kotlinlogging.KotlinLogging
@@ -109,7 +108,8 @@ class ProcessVariableValueResolverFactory(
 
         val root = objectMapper.valueToTree<JsonNode>(existingValues)
         buildJsonPatch(root, values)
-        val newValues = objectMapper.treeToValue<Map<String, Any?>>(root)
+        @Suppress("UNCHECKED_CAST")
+        val newValues = PLAIN_MAPPER.treeToValue(root, LinkedHashMap::class.java) as Map<String, Any?>
 
         runtimeService.setVariables(processInstanceId, newValues)
     }
@@ -117,7 +117,8 @@ class ProcessVariableValueResolverFactory(
     override fun preProcessValuesForNewCase(values: Map<String, Any?>): Map<String, Any> {
         val jsonNode = objectMapper.createObjectNode()
         buildJsonPatch(jsonNode, values)
-        return objectMapper.treeToValue(jsonNode)
+        @Suppress("UNCHECKED_CAST")
+        return PLAIN_MAPPER.treeToValue(jsonNode, LinkedHashMap::class.java) as Map<String, Any>
     }
 
     private fun buildJsonPatch(jsonNode: JsonNode, values: Map<String, Any?>) {
@@ -134,7 +135,7 @@ class ProcessVariableValueResolverFactory(
         return if (valueNode.isMissingNode) {
             null
         } else {
-            objectMapper.treeToValue(valueNode)
+            PLAIN_MAPPER.treeToValue(valueNode, Object::class.java)
         }
     }
 
@@ -153,5 +154,6 @@ class ProcessVariableValueResolverFactory(
     companion object {
         const val PREFIX = "pv"
         private val logger = KotlinLogging.logger {}
+        private val PLAIN_MAPPER = ObjectMapper()
     }
 }

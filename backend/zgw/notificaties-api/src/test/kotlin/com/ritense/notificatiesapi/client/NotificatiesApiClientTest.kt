@@ -17,11 +17,11 @@
 package com.ritense.notificatiesapi.client
 
 import com.fasterxml.jackson.databind.ObjectMapper
-import com.fasterxml.jackson.module.kotlin.readValue
 import com.ritense.notificatiesapi.NotificatiesApiAuthentication
 import com.ritense.notificatiesapi.domain.Abonnement
 import com.ritense.notificatiesapi.domain.Kanaal
 import com.ritense.plugin.domain.PluginConfigurationId
+import com.ritense.valtimo.Jackson2TestUtils
 import com.ritense.valtimo.contract.json.MapperSingleton
 import okhttp3.mockwebserver.MockResponse
 import okhttp3.mockwebserver.MockWebServer
@@ -49,7 +49,7 @@ class NotificatiesApiClientTest {
     fun setup() {
         mockNotificatiesApi = MockWebServer()
         mockNotificatiesApi.start()
-        restClientBuilder = RestClient.builder()
+        restClientBuilder = Jackson2TestUtils.restClientBuilder()
         objectMapper = MapperSingleton.get()
         client = NotificatiesApiClient(restClientBuilder, objectMapper)
     }
@@ -84,9 +84,11 @@ class NotificatiesApiClientTest {
             kanaal = Kanaal(naam = "Test Kanaal")
         )
         val recordedRequest = mockNotificatiesApi.takeRequest()
-        val requestBody = MapperSingleton.get().readValue<Map<String, Any>>(
-            recordedRequest.body.readUtf8()
-        )
+        @Suppress("UNCHECKED_CAST")
+        val requestBody: Map<String, Any> = PLAIN_MAPPER.readValue(
+            recordedRequest.body.readUtf8(),
+            LinkedHashMap::class.java
+        ) as Map<String, Any>
 
         assertEquals("Bearer test", recordedRequest.getHeader("Authorization"))
         assertEquals("/kanaal", recordedRequest.path)
@@ -195,9 +197,11 @@ class NotificatiesApiClientTest {
             )
         )
         val recordedRequest = mockNotificatiesApi.takeRequest()
-        val requestBody = MapperSingleton.get().readValue<Map<String, Any>>(
-            recordedRequest.body.readUtf8()
-        )
+        @Suppress("UNCHECKED_CAST")
+        val requestBody: Map<String, Any> = PLAIN_MAPPER.readValue(
+            recordedRequest.body.readUtf8(),
+            LinkedHashMap::class.java
+        ) as Map<String, Any>
 
         assertEquals("Bearer test", recordedRequest.getHeader("Authorization"))
         assertEquals("/abonnement", recordedRequest.path)
@@ -253,6 +257,10 @@ class NotificatiesApiClientTest {
         return MockResponse()
             .addHeader("Content-Type", "application/json")
             .setBody(body)
+    }
+
+    companion object {
+        private val PLAIN_MAPPER = ObjectMapper()
     }
 
     class TestAuthentication() : NotificatiesApiAuthentication {

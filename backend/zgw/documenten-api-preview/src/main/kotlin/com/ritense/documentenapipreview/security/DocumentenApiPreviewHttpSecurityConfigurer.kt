@@ -20,7 +20,7 @@ import com.ritense.valtimo.contract.security.config.HttpConfigurerConfigurationE
 import com.ritense.valtimo.contract.security.config.HttpSecurityConfigurer
 import org.springframework.http.HttpMethod.GET
 import org.springframework.security.config.annotation.web.builders.HttpSecurity
-import org.springframework.security.web.util.matcher.AntPathRequestMatcher.antMatcher
+import org.springframework.security.web.servlet.util.matcher.PathPatternRequestMatcher.pathPattern
 
 class DocumentenApiPreviewHttpSecurityConfigurer : HttpSecurityConfigurer {
 
@@ -28,7 +28,7 @@ class DocumentenApiPreviewHttpSecurityConfigurer : HttpSecurityConfigurer {
         try {
             http.authorizeHttpRequests { requests ->
                 requests
-                    .requestMatchers(antMatcher(GET, "/api/v1/documenten-api-preview/*/preview/*")).authenticated()
+                    .requestMatchers(pathPattern(GET, "/api/v1/documenten-api-preview/*/preview/*")).authenticated()
             }
         } catch (e: Exception) {
             throw HttpConfigurerConfigurationException(e)

@@ -29,26 +29,26 @@ class CaseTagHttpSecurityConfigurer : AuthorizeRequestsHttpSecurityConfigurer() 
 
     override fun authorizeHttpRequests(requests: AuthorizeHttpRequestsConfigurer<HttpSecurity>.AuthorizationManagerRequestMatcherRegistry) {
         requests
-            .antMatcher(GET, "/api/v1/case-definition/{caseDefinitionKey}/case-tag").authenticated()
-            .antMatcher(GET, "/api/v1/case-definition/{caseDefinitionKey}/version/{caseDefinitionVersionTag}/case-tag")
+            .pathPattern(GET, "/api/v1/case-definition/{caseDefinitionKey}/case-tag").authenticated()
+            .pathPattern(GET, "/api/v1/case-definition/{caseDefinitionKey}/version/{caseDefinitionVersionTag}/case-tag")
             .authenticated()
-            .antMatcher(
+            .pathPattern(
                 GET,
                 "/api/management/v1/case-definition/{caseDefinitionKey}/version/{caseDefinitionVersionTag}/case-tag"
             ).hasAuthority(ADMIN)
-            .antMatcher(
+            .pathPattern(
                 POST,
                 "/api/management/v1/case-definition/{caseDefinitionKey}/version/{caseDefinitionVersionTag}/case-tag"
             ).hasAuthority(ADMIN)
-            .antMatcher(
+            .pathPattern(
                 PUT,
                 "/api/management/v1/case-definition/{caseDefinitionKey}/version/{caseDefinitionVersionTag}/case-tag"
             ).hasAuthority(ADMIN)
-            .antMatcher(
+            .pathPattern(
                 PUT,
                 "/api/management/v1/case-definition/{caseDefinitionKey}/version/{caseDefinitionVersionTag}/case-tag/{caseTagKey}"
             ).hasAuthority(ADMIN)
-            .antMatcher(
+            .pathPattern(
                 DELETE,
                 "/api/management/v1/case-definition/{caseDefinitionKey}/version/{caseDefinitionVersionTag}/case-tag/{caseTagKey}"
             ).hasAuthority(ADMIN)

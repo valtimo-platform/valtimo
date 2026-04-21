@@ -26,7 +26,7 @@ class DocumentMigrationHttpSecurityConfigurer : AuthorizeRequestsHttpSecurityCon
 
     override fun authorizeHttpRequests(requests: AuthorizeHttpRequestsConfigurer<HttpSecurity>.AuthorizationManagerRequestMatcherRegistry) {
         requests
-            .antMatcher(POST, "/api/management/v1/document-definition/migration/conflicts").hasAuthority(ADMIN)
-            .antMatcher(POST, "/api/management/v1/document-definition/migrate").hasAuthority(ADMIN)
+            .pathPattern(POST, "/api/management/v1/document-definition/migration/conflicts").hasAuthority(ADMIN)
+            .pathPattern(POST, "/api/management/v1/document-definition/migrate").hasAuthority(ADMIN)
     }
 }

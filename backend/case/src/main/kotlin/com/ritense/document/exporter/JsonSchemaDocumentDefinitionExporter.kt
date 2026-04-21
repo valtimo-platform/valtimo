@@ -66,7 +66,7 @@ class JsonSchemaDocumentDefinitionExporter(
             exportFile,
             setOf(
                 FormDefinitionExportRequest(
-                    documentDefinition.id.name() + ".summary",
+                    documentDefinition.id!!.name() + ".summary",
                     request.caseDefinitionId,
                     false
                 )

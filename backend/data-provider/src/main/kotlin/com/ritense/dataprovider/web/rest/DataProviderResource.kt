@@ -57,7 +57,7 @@ class DataProviderResource(
         @PathVariable category: String,
         @RequestParam provider: String?,
         @RequestParam query: Map<String, Any> = emptyMap()
-    ): ResponseEntity<Any?> {
+    ): ResponseEntity<Any> {
         return ResponseEntity.ok(dataProviderService.getData(category, provider, query))
     }
 

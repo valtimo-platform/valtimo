@@ -20,15 +20,15 @@ import com.ritense.valtimo.contract.security.config.HttpSecurityConfigurer
 import org.springframework.http.HttpMethod.GET
 import org.springframework.http.HttpMethod.POST
 import org.springframework.security.config.annotation.web.builders.HttpSecurity
-import org.springframework.security.web.util.matcher.AntPathRequestMatcher.antMatcher
+import org.springframework.security.web.servlet.util.matcher.PathPatternRequestMatcher.pathPattern
 
 class URLProcessLinkSecurityConfigurer : HttpSecurityConfigurer {
 
     override fun configure(http: HttpSecurity) {
         http.authorizeHttpRequests { requests ->
             requests
-                .requestMatchers(antMatcher(POST, "/api/v1/process-link/url/{processLinkId}")).authenticated()
-                .requestMatchers(antMatcher(GET, "/api/v1/process-link/url/variables")).authenticated()
+                .requestMatchers(pathPattern(POST, "/api/v1/process-link/url/{processLinkId}")).authenticated()
+                .requestMatchers(pathPattern(GET, "/api/v1/process-link/url/variables")).authenticated()
         }
     }
 

@@ -21,25 +21,25 @@ import com.ritense.valtimo.contract.security.config.HttpConfigurerConfigurationE
 import com.ritense.valtimo.contract.security.config.HttpSecurityConfigurer
 import org.springframework.http.HttpMethod
 import org.springframework.security.config.annotation.web.builders.HttpSecurity
-import org.springframework.security.web.util.matcher.AntPathRequestMatcher.antMatcher
+import org.springframework.security.web.servlet.util.matcher.PathPatternRequestMatcher.pathPattern
 
 class SearchHttpSecurityConfigurer : HttpSecurityConfigurer {
 
     override fun configure(http: HttpSecurity) {
         try {
             http.authorizeHttpRequests { requests ->
-                requests.requestMatchers(antMatcher(HttpMethod.POST, "/api/v1/search/list-column/{ownerId}")).hasAuthority(AuthoritiesConstants.ADMIN)
-                    .requestMatchers(antMatcher(HttpMethod.GET, "/api/v1/search/list-column/{ownerId}")).authenticated()
-                    .requestMatchers(antMatcher(HttpMethod.PUT, "/api/v1/search/list-column/{ownerId}/{key}")).hasAuthority(AuthoritiesConstants.ADMIN)
-                    .requestMatchers(antMatcher(HttpMethod.PUT, "/api/v1/search/list-column/{ownerId}/search-list-columns")).hasAuthority(AuthoritiesConstants.ADMIN)
-                    .requestMatchers(antMatcher(HttpMethod.DELETE, "/api/v1/search/list-column/{ownerId}/{key}")).hasAuthority(AuthoritiesConstants.ADMIN)
-                    .requestMatchers(antMatcher(HttpMethod.POST, "/api/v1/search/field/{ownerId}")).hasAuthority(AuthoritiesConstants.ADMIN)
-                    .requestMatchers(antMatcher(HttpMethod.GET, "/api/v1/search/field/{ownerId}")).authenticated()
-                    .requestMatchers(antMatcher(HttpMethod.GET, "/api/v1/search/field/{ownerType}/{ownerId}")).authenticated()
-                    .requestMatchers(antMatcher(HttpMethod.PUT, "/api/v1/search/field/{ownerId}/{key}")).hasAuthority(AuthoritiesConstants.ADMIN)
-                    .requestMatchers(antMatcher(HttpMethod.PUT, "/api/v1/search/field/{ownerId}/fields")).hasAuthority(AuthoritiesConstants.ADMIN)
-                    .requestMatchers(antMatcher(HttpMethod.DELETE, "/api/v1/search/field/{ownerId}/{key}")).hasAuthority(AuthoritiesConstants.ADMIN)
-                    .requestMatchers(antMatcher(HttpMethod.DELETE, "/api/v1/search/field/{ownerType}/{ownerId}/{key}")).hasAuthority(AuthoritiesConstants.ADMIN)
+                requests.requestMatchers(pathPattern(HttpMethod.POST, "/api/v1/search/list-column/{ownerId}")).hasAuthority(AuthoritiesConstants.ADMIN)
+                    .requestMatchers(pathPattern(HttpMethod.GET, "/api/v1/search/list-column/{ownerId}")).authenticated()
+                    .requestMatchers(pathPattern(HttpMethod.PUT, "/api/v1/search/list-column/{ownerId}/{key}")).hasAuthority(AuthoritiesConstants.ADMIN)
+                    .requestMatchers(pathPattern(HttpMethod.PUT, "/api/v1/search/list-column/{ownerId}/search-list-columns")).hasAuthority(AuthoritiesConstants.ADMIN)
+                    .requestMatchers(pathPattern(HttpMethod.DELETE, "/api/v1/search/list-column/{ownerId}/{key}")).hasAuthority(AuthoritiesConstants.ADMIN)
+                    .requestMatchers(pathPattern(HttpMethod.POST, "/api/v1/search/field/{ownerId}")).hasAuthority(AuthoritiesConstants.ADMIN)
+                    .requestMatchers(pathPattern(HttpMethod.GET, "/api/v1/search/field/{ownerId}")).authenticated()
+                    .requestMatchers(pathPattern(HttpMethod.GET, "/api/v1/search/field/{ownerType}/{ownerId}")).authenticated()
+                    .requestMatchers(pathPattern(HttpMethod.PUT, "/api/v1/search/field/{ownerId}/{key}")).hasAuthority(AuthoritiesConstants.ADMIN)
+                    .requestMatchers(pathPattern(HttpMethod.PUT, "/api/v1/search/field/{ownerId}/fields")).hasAuthority(AuthoritiesConstants.ADMIN)
+                    .requestMatchers(pathPattern(HttpMethod.DELETE, "/api/v1/search/field/{ownerId}/{key}")).hasAuthority(AuthoritiesConstants.ADMIN)
+                    .requestMatchers(pathPattern(HttpMethod.DELETE, "/api/v1/search/field/{ownerType}/{ownerId}/{key}")).hasAuthority(AuthoritiesConstants.ADMIN)
             }
         } catch (e: Exception) {
             throw HttpConfigurerConfigurationException(e)

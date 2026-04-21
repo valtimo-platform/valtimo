@@ -47,6 +47,7 @@ import org.springframework.test.web.servlet.result.MockMvcResultHandlers.print
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 import org.springframework.test.web.servlet.setup.MockMvcBuilders
+import com.ritense.valtimo.Jackson2TestUtils
 
 class FormFlowResourceTest : BaseTest() {
     lateinit var mockMvc: MockMvc
@@ -90,7 +91,9 @@ class FormFlowResourceTest : BaseTest() {
         whenever(stepInstance.id).thenReturn(stepInstanceId)
         whenever(stepInstance.definition).thenReturn(step1)
 
-        mockMvc = MockMvcBuilders.standaloneSetup(formFlowResource).build()
+        mockMvc = MockMvcBuilders.standaloneSetup(formFlowResource)
+            .setMessageConverters(Jackson2TestUtils.jackson2Converter())
+            .build()
     }
 
     @Test

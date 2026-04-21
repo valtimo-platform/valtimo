@@ -42,7 +42,7 @@ data class Condition<T : Comparable<T>>(
     @JsonAlias("queryValue")
     @JsonDeserialize(using = ComparableDeserializer::class)
     val value: T
-) {
+) : java.io.Serializable {
 
     fun isValid(
         expressionResolver: (String) -> Any?
@@ -63,7 +63,7 @@ data class Condition<T : Comparable<T>>(
         val valueClass = if (resolvedValue != null) {
             resolvedValue::class.java as Class<T>
         } else {
-            Any::class.java as Class<T>
+            String::class.java as Class<T>
         }
 
         val expression = pathExpressionFunction(valueClass, path, root, criteriaBuilder)

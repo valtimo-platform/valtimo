@@ -18,8 +18,8 @@ package com.ritense.valtimo.contract.client
 
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import com.ritense.valtimo.contract.io.FindReplaceInputStream
-import org.springframework.boot.web.client.RestClientCustomizer
-import org.springframework.boot.web.client.RestTemplateCustomizer
+import org.springframework.boot.restclient.RestClientCustomizer
+import org.springframework.boot.restclient.RestTemplateCustomizer
 import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpRequest
 import org.springframework.http.MediaType.APPLICATION_JSON
@@ -115,7 +115,7 @@ class HostDockerInternalRestClientCustomizer(
             override fun getHeaders(): HttpHeaders {
                 val headers = HttpHeaders()
                 headers.addAll(super.getHeaders())
-                if (headers.contains("Content-Length")) {
+                if (headers.containsHeader("Content-Length")) {
                     headers["Content-Length"] = newBody.size.toString()
                 }
                 return headers

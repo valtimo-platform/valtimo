@@ -23,17 +23,17 @@ import org.springframework.http.HttpMethod.GET
 import org.springframework.http.HttpMethod.POST
 import org.springframework.http.HttpMethod.PUT
 import org.springframework.security.config.annotation.web.builders.HttpSecurity
-import org.springframework.security.web.util.matcher.AntPathRequestMatcher.antMatcher
+import org.springframework.security.web.servlet.util.matcher.PathPatternRequestMatcher.pathPattern
 
 class NoteHttpSecurityConfigurer : HttpSecurityConfigurer {
 
     override fun configure(http: HttpSecurity) {
         try {
             http.authorizeHttpRequests { requests ->
-                requests.requestMatchers(antMatcher(POST, "/api/v1/document/{document-id}/note")).authenticated()
-                    .requestMatchers(antMatcher(GET, "/api/v1/document/{document-id}/note")).authenticated()
-                    .requestMatchers(antMatcher(PUT, "/api/v1/note/{note-id}")).authenticated()
-                    .requestMatchers(antMatcher(DELETE, "/api/v1/note/{note-id}")).authenticated()
+                requests.requestMatchers(pathPattern(POST, "/api/v1/document/{document-id}/note")).authenticated()
+                    .requestMatchers(pathPattern(GET, "/api/v1/document/{document-id}/note")).authenticated()
+                    .requestMatchers(pathPattern(PUT, "/api/v1/note/{note-id}")).authenticated()
+                    .requestMatchers(pathPattern(DELETE, "/api/v1/note/{note-id}")).authenticated()
             }
         } catch (e: Exception) {
             throw HttpConfigurerConfigurationException(e)

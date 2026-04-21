@@ -17,7 +17,7 @@
 package com.ritense.valueresolver
 
 import com.fasterxml.jackson.databind.JsonNode
-import com.fasterxml.jackson.module.kotlin.convertValue
+import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
 import com.ritense.valtimo.contract.json.MapperSingleton
 import org.assertj.core.api.Assertions
@@ -121,7 +121,7 @@ internal class ProcessVariableValueResolverTest {
         Assertions.assertThat(resolver.apply("/person/location/streetName")).isEqualTo("Funenpark")
         Assertions.assertThat(resolver.apply("/person/location/streetNumber")).isEqualTo(1)
         Assertions.assertThat(resolver.apply("/person/location")).isEqualTo(mapOf("streetName" to "Funenpark", "streetNumber" to 1))
-        Assertions.assertThat(resolver.apply("/person")).isEqualTo(objectMapper.convertValue<Map<String, Any?>>(personVariable))
+        Assertions.assertThat(resolver.apply("/person")).isEqualTo(PLAIN_MAPPER.convertValue(personVariable, LinkedHashMap::class.java))
         Assertions.assertThat(resolver.apply("person.firstName")).isEqualTo("John")
         Assertions.assertThat(resolver.apply("person.birthDate")).isEqualTo("2000-01-01")
         Assertions.assertThat(resolver.apply("person.verified")).isEqualTo(true)
@@ -221,14 +221,14 @@ internal class ProcessVariableValueResolverTest {
         Assertions.assertThat(resolver.apply("/person/location/streetName")).isEqualTo("Funenpark")
         Assertions.assertThat(resolver.apply("/person/location/streetNumber")).isEqualTo(1)
         Assertions.assertThat(resolver.apply("/person/location")).isEqualTo(mapOf("streetName" to "Funenpark", "streetNumber" to 1))
-        Assertions.assertThat(resolver.apply("/person")).isEqualTo(objectMapper.convertValue<Map<String, Any?>>(personVariable))
+        Assertions.assertThat(resolver.apply("/person")).isEqualTo(PLAIN_MAPPER.convertValue(personVariable, LinkedHashMap::class.java))
         Assertions.assertThat(resolver.apply("person.firstName")).isEqualTo("John")
         Assertions.assertThat(resolver.apply("person.birthDate")).isEqualTo("2000-01-01")
         Assertions.assertThat(resolver.apply("person.verified")).isEqualTo(true)
         Assertions.assertThat(resolver.apply("person.location.streetName")).isEqualTo("Funenpark")
         Assertions.assertThat(resolver.apply("person.location.streetNumber")).isEqualTo(1)
         Assertions.assertThat(resolver.apply("person.location")).isEqualTo(mapOf("streetName" to "Funenpark", "streetNumber" to 1))
-        Assertions.assertThat(resolver.apply("person")).isEqualTo(objectMapper.convertValue<Map<String, Any?>>(personVariable))
+        Assertions.assertThat(resolver.apply("person")).isEqualTo(PLAIN_MAPPER.convertValue(personVariable, LinkedHashMap::class.java))
     }
 
     @Test
@@ -317,6 +317,10 @@ internal class ProcessVariableValueResolverTest {
             processInstanceId,
             mapOf("person" to mapOf("info" to mapOf("firstName" to "John", "lastName" to "Doe")))
         )
+    }
+
+    companion object {
+        private val PLAIN_MAPPER = ObjectMapper()
     }
 
     private fun mockTaskWithVariables(map: Map<String, Any?>): DelegateTask {

@@ -118,12 +118,8 @@ class IkoSearchActionService(
         applicationEventPublisher.publishEvent(
             IkoSearchActionPreDeleteEvent(ikoViewKey, key)
         )
-        ikoSearchActionRepository.delete(
-            getSpecification(
-                key = key,
-                ikoViewKey = ikoViewKey,
-            )
-        )
+        val entities = ikoSearchActionRepository.findAll(getSpecification(key = key, ikoViewKey = ikoViewKey))
+        ikoSearchActionRepository.deleteAll(entities)
     }
 
     private fun getSpecification(

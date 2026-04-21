@@ -2,6 +2,8 @@ package com.ritense.exact.client.endpoints
 
 import com.fasterxml.jackson.databind.JsonNode
 import com.ritense.exact.client.endpoints.structs.AuthorizedExactEndpoint
+import org.springframework.http.MediaType
+import org.springframework.http.StreamingHttpOutputMessage
 import org.springframework.web.client.RestClient
 
 class PutEndpoint(
@@ -13,6 +15,9 @@ class PutEndpoint(
         return client
             .put()
             .uri(uri)
-            .body(content)
+            .contentType(MediaType.APPLICATION_JSON)
+            .body(StreamingHttpOutputMessage.Body { outputStream ->
+                outputStream.write(content.toByteArray(Charsets.UTF_8))
+            })
     }
 }

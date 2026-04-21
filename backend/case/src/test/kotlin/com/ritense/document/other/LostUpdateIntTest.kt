@@ -64,7 +64,7 @@ internal class LostUpdateIntTest : BaseIntegrationTest() {
     @Test
     @WithMockUser(username = USERNAME, authorities = [ADMIN])
     fun `should throw when Lost Update`(): Unit = runBlocking {
-        val documentId = createDocument("""{}""").id
+        val documentId = createDocument("""{}""").id!!
 
         val exceptions = (1..100).map { i ->
             async(Dispatchers.IO) {

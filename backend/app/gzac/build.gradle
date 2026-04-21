@@ -23,6 +23,8 @@ dependencies {
     implementation(project(":backend:process-link-url"))
 
     implementation("io.github.oshai:kotlin-logging")
+    implementation "org.springframework.boot:spring-boot-starter-classic"
+    implementation "org.springframework.boot:spring-boot-jackson2"
     implementation "org.springframework.boot:spring-boot-starter-webflux"
     implementation "org.springframework.boot:spring-boot-starter-security"
 

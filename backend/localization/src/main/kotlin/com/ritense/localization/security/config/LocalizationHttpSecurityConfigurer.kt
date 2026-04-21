@@ -22,17 +22,17 @@ import com.ritense.valtimo.contract.security.config.HttpSecurityConfigurer
 import org.springframework.http.HttpMethod.GET
 import org.springframework.http.HttpMethod.PUT
 import org.springframework.security.config.annotation.web.builders.HttpSecurity
-import org.springframework.security.web.util.matcher.AntPathRequestMatcher.antMatcher
+import org.springframework.security.web.servlet.util.matcher.PathPatternRequestMatcher.pathPattern
 
 class LocalizationHttpSecurityConfigurer : HttpSecurityConfigurer {
 
     override fun configure(http: HttpSecurity) {
         try {
             http.authorizeHttpRequests { requests ->
-                requests.requestMatchers(antMatcher(GET, "/api/v1/localization")).authenticated()
-                    .requestMatchers(antMatcher(GET, "/api/v1/localization/{languageKey}")).authenticated()
-                    .requestMatchers(antMatcher(PUT, "/api/management/v1/localization/{languageKey}")).hasAuthority(ADMIN)
-                    .requestMatchers(antMatcher(PUT, "/api/management/v1/localization")).hasAuthority(ADMIN)
+                requests.requestMatchers(pathPattern(GET, "/api/v1/localization")).authenticated()
+                    .requestMatchers(pathPattern(GET, "/api/v1/localization/{languageKey}")).authenticated()
+                    .requestMatchers(pathPattern(PUT, "/api/management/v1/localization/{languageKey}")).hasAuthority(ADMIN)
+                    .requestMatchers(pathPattern(PUT, "/api/management/v1/localization")).hasAuthority(ADMIN)
             }
         } catch (e: Exception) {
             throw HttpConfigurerConfigurationException(e)

@@ -17,6 +17,7 @@
 package com.ritense.authorization.permission.condition
 
 import com.fasterxml.jackson.annotation.JsonPropertyOrder
+import com.fasterxml.jackson.annotation.JsonSubTypes
 import com.fasterxml.jackson.annotation.JsonTypeInfo
 import com.fasterxml.jackson.annotation.JsonView
 import com.ritense.authorization.permission.PermissionView
@@ -33,6 +34,11 @@ import java.lang.reflect.Field
     include = JsonTypeInfo.As.EXISTING_PROPERTY,
     property = "type",
     visible = true
+)
+@JsonSubTypes(
+    JsonSubTypes.Type(value = FieldPermissionCondition::class, name = "field"),
+    JsonSubTypes.Type(value = ContainerPermissionCondition::class, name = "container"),
+    JsonSubTypes.Type(value = ExpressionPermissionCondition::class, name = "expression")
 )
 @JsonPropertyOrder("type")
 abstract class PermissionCondition(

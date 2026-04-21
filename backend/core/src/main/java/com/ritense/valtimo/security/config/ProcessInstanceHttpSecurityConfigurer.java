@@ -17,7 +17,7 @@
 package com.ritense.valtimo.security.config;
 
 import static org.springframework.http.HttpMethod.POST;
-import static org.springframework.security.web.util.matcher.AntPathRequestMatcher.antMatcher;
+import static org.springframework.security.web.servlet.util.matcher.PathPatternRequestMatcher.pathPattern;
 
 import com.ritense.valtimo.contract.security.config.HttpConfigurerConfigurationException;
 import com.ritense.valtimo.contract.security.config.HttpSecurityConfigurer;
@@ -29,7 +29,7 @@ public class ProcessInstanceHttpSecurityConfigurer implements HttpSecurityConfig
     public void configure(HttpSecurity http) {
         try {
             http.authorizeHttpRequests(requests ->
-                requests.requestMatchers(antMatcher(POST, "/api/v1/process-instance/{id}/variables")).authenticated()
+                requests.requestMatchers(pathPattern(POST, "/api/v1/process-instance/{id}/variables")).authenticated()
             );
         } catch (Exception e) {
             throw new HttpConfigurerConfigurationException(e);

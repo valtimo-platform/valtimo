@@ -16,7 +16,6 @@
 
 package com.ritense.zakenapi
 
-import com.fasterxml.jackson.core.type.TypeReference
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.ritense.documentenapi.web.rest.dto.RelatedFileDto
 import com.ritense.plugin.service.PluginService
@@ -83,6 +82,7 @@ import org.mockito.kotlin.verifyNoMoreInteractions
 import org.mockito.kotlin.whenever
 import org.operaton.bpm.engine.delegate.DelegateExecution
 import org.springframework.transaction.PlatformTransactionManager
+import org.springframework.transaction.TransactionStatus
 import java.net.URI
 import java.time.LocalDate
 import java.util.UUID
@@ -1400,8 +1400,9 @@ internal class ZakenApiPluginTest {
         val captor = argumentCaptor<Any>()
         verify(executionMock).setVariable(eq(resultProcessVariable), captor.capture())
 
-        val expected: List<Map<String, Any?>> =
-            objectMapper.convertValue(relatedFiles, object : TypeReference<List<Map<String, Any?>>>() {})
+        val plainMapper = ObjectMapper()
+        val jsonNode = objectMapper.valueToTree<com.fasterxml.jackson.databind.JsonNode>(relatedFiles)
+        val expected = plainMapper.convertValue(jsonNode, Object::class.java)
         assertEquals(expected, captor.firstValue)
     }
 
@@ -1798,7 +1799,9 @@ internal class ZakenApiPluginTest {
         pluginService: PluginService = mock(),
         zaakHersteltermijnRepository: ZaakHersteltermijnRepository = mock(),
         zaakDocumentService: ZaakDocumentService = mock(),
-        platformTransactionManager: PlatformTransactionManager = mock(),
+        platformTransactionManager: PlatformTransactionManager = mock {
+            on { getTransaction(any()) } doReturn mock<TransactionStatus>()
+        },
         authenticationMock: ZakenApiAuthentication = mock(),
         valueResolverService: ValueResolverService = mock(),
         objectMapper: ObjectMapper = mock(),

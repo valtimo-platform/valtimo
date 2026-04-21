@@ -24,20 +24,20 @@ import org.springframework.http.HttpMethod.GET
 import org.springframework.http.HttpMethod.POST
 import org.springframework.http.HttpMethod.PUT
 import org.springframework.security.config.annotation.web.builders.HttpSecurity
-import org.springframework.security.web.util.matcher.AntPathRequestMatcher.antMatcher
+import org.springframework.security.web.servlet.util.matcher.PathPatternRequestMatcher.pathPattern
 
 class PluginHttpSecurityConfigurer: HttpSecurityConfigurer {
 
     override fun configure(http: HttpSecurity) {
         try {
             http.authorizeHttpRequests { requests ->
-                requests.requestMatchers(antMatcher(GET, "/api/v1/plugin/definition")).hasAuthority(ADMIN)
-                    .requestMatchers(antMatcher(GET, "/api/v1/plugin/configuration")).hasAuthority(ADMIN)
-                    .requestMatchers(antMatcher(POST, "/api/v1/plugin/configuration")).hasAuthority(ADMIN)
-                    .requestMatchers(antMatcher(PUT, "/api/v1/plugin/configuration/{pluginConfigurationId}")).hasAuthority(ADMIN)
-                    .requestMatchers(antMatcher(DELETE, "/api/v1/plugin/configuration/{pluginConfigurationId}")).hasAuthority(ADMIN)
-                    .requestMatchers(antMatcher(GET, "/api/v1/plugin/definition/{pluginDefinitionKey}/action")).hasAuthority(ADMIN)
-                    .requestMatchers(antMatcher(GET, "/api/v1/plugin/configuration/export")).hasAuthority(ADMIN)
+                requests.requestMatchers(pathPattern(GET, "/api/v1/plugin/definition")).hasAuthority(ADMIN)
+                    .requestMatchers(pathPattern(GET, "/api/v1/plugin/configuration")).hasAuthority(ADMIN)
+                    .requestMatchers(pathPattern(POST, "/api/v1/plugin/configuration")).hasAuthority(ADMIN)
+                    .requestMatchers(pathPattern(PUT, "/api/v1/plugin/configuration/{pluginConfigurationId}")).hasAuthority(ADMIN)
+                    .requestMatchers(pathPattern(DELETE, "/api/v1/plugin/configuration/{pluginConfigurationId}")).hasAuthority(ADMIN)
+                    .requestMatchers(pathPattern(GET, "/api/v1/plugin/definition/{pluginDefinitionKey}/action")).hasAuthority(ADMIN)
+                    .requestMatchers(pathPattern(GET, "/api/v1/plugin/configuration/export")).hasAuthority(ADMIN)
             }
         } catch(e: Exception) {
             throw HttpConfigurerConfigurationException(e)

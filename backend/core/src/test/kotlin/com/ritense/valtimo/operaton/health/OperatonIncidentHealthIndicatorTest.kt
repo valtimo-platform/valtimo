@@ -23,7 +23,7 @@ import org.junit.jupiter.api.Test
 import org.mockito.Mockito
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.whenever
-import org.springframework.boot.actuate.health.Health
+import org.springframework.boot.health.contributor.Health
 
 class OperatonIncidentHealthIndicatorTest {
     lateinit var runtimeService: RuntimeService

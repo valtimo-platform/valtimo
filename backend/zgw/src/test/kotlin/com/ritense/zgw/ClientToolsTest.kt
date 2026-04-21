@@ -123,7 +123,7 @@ class ClientToolsTest {
     fun `optionalQueryParam should not add param when null`() {
         val builder = mock<UriBuilder>()
         val result = builder.optionalQueryParam("test", null)
-        verify(builder, never()).queryParam(any(), any())
+        verify(builder, never()).queryParam(any<String>(), any<Any>())
         assertEquals(result, builder)
     }
 }

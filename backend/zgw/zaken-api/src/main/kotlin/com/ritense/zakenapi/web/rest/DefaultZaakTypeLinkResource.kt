@@ -32,7 +32,7 @@ class DefaultZaakTypeLinkResource(
     override fun get(
         @LoggableResource("caseDefinitionKey") caseDefinitionKey: String,
         @LoggableResource("versionTag") versionTag: String,
-    ): ResponseEntity<ZaakTypeLink?> {
+    ): ResponseEntity<ZaakTypeLink> {
         return when (val zaakTypeLink = zaakTypeLinkService.get(CaseDefinitionId(caseDefinitionKey, versionTag))) {
             null -> noContent().build()
             else -> ok(zaakTypeLink)
@@ -41,7 +41,7 @@ class DefaultZaakTypeLinkResource(
 
     override fun getByProcess(
         @LoggableResource("processDefinitionKey") processDefinitionKey: String
-    ): ResponseEntity<ZaakTypeLink?> {
+    ): ResponseEntity<ZaakTypeLink> {
         return ok(zaakTypeLinkService.getByProcess(processDefinitionKey))
     }
 

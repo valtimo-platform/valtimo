@@ -44,7 +44,7 @@ public class TaskCompletedJsonSerializingTest extends AbstractTestHelper {
 
     @BeforeEach
     public void setUp() throws IOException {
-        JacksonTester.initFields(this, objectMapper);
+        JacksonTester.initFields(this, tools.jackson.databind.json.JsonMapper.builder().build());
         jsonString = TestHelper.getResourceAsString("json/event/TaskCompletedEvent.json");
     }
 

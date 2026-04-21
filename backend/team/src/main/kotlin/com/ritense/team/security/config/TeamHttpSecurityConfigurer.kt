@@ -20,26 +20,26 @@ import com.ritense.valtimo.contract.security.config.HttpConfigurerConfigurationE
 import com.ritense.valtimo.contract.security.config.HttpSecurityConfigurer
 import org.springframework.http.HttpMethod
 import org.springframework.security.config.annotation.web.builders.HttpSecurity
-import org.springframework.security.web.util.matcher.AntPathRequestMatcher.antMatcher
+import org.springframework.security.web.servlet.util.matcher.PathPatternRequestMatcher.pathPattern
 
 class TeamHttpSecurityConfigurer : HttpSecurityConfigurer {
 
     override fun configure(http: HttpSecurity) {
         try {
             http.authorizeHttpRequests { requests ->
-                requests.requestMatchers(antMatcher(HttpMethod.GET, "/api/v1/team")).authenticated()
-                    .requestMatchers(antMatcher(HttpMethod.GET, "/api/v1/team/{id}")).authenticated()
-                    .requestMatchers(antMatcher(HttpMethod.POST, "/api/v1/team"))
+                requests.requestMatchers(pathPattern(HttpMethod.GET, "/api/v1/team")).authenticated()
+                    .requestMatchers(pathPattern(HttpMethod.GET, "/api/v1/team/{id}")).authenticated()
+                    .requestMatchers(pathPattern(HttpMethod.POST, "/api/v1/team"))
                     .authenticated()
-                    .requestMatchers(antMatcher(HttpMethod.PUT, "/api/v1/team/{id}"))
+                    .requestMatchers(pathPattern(HttpMethod.PUT, "/api/v1/team/{id}"))
                     .authenticated()
-                    .requestMatchers(antMatcher(HttpMethod.DELETE, "/api/v1/team/{id}"))
+                    .requestMatchers(pathPattern(HttpMethod.DELETE, "/api/v1/team/{id}"))
                     .authenticated()
-                    .requestMatchers(antMatcher(HttpMethod.GET, "/api/v1/team/{teamKey}/user")).authenticated()
-                    .requestMatchers(antMatcher(HttpMethod.POST, "/api/v1/team/{teamKey}/user")).authenticated()
-                    .requestMatchers(antMatcher(HttpMethod.DELETE, "/api/v1/team/{teamKey}/user/{userId}"))
+                    .requestMatchers(pathPattern(HttpMethod.GET, "/api/v1/team/{teamKey}/user")).authenticated()
+                    .requestMatchers(pathPattern(HttpMethod.POST, "/api/v1/team/{teamKey}/user")).authenticated()
+                    .requestMatchers(pathPattern(HttpMethod.DELETE, "/api/v1/team/{teamKey}/user/{userId}"))
                     .authenticated()
-                    .requestMatchers(antMatcher(HttpMethod.GET, "/api/v1/team/{teamKey}/candidate-user"))
+                    .requestMatchers(pathPattern(HttpMethod.GET, "/api/v1/team/{teamKey}/candidate-user"))
                     .authenticated()
             }
         } catch (e: Exception) {

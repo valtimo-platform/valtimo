@@ -21,7 +21,7 @@ import org.springframework.data.domain.PageImpl
 import org.springframework.data.domain.Pageable
 import org.springframework.data.domain.Sort
 
-class ResolvedPage<T>(
+class ResolvedPage<T : Any>(
     val content: List<T>,
     val first: Boolean,
     val last: Boolean,

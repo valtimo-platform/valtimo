@@ -40,7 +40,7 @@ class JsonSchemaDocumentDefinitionIdJsonSerializingTest {
     @BeforeEach
     void setUp() {
         ObjectMapper objectMapper = MapperSingleton.INSTANCE.get();
-        JacksonTester.initFields(this, objectMapper);
+        JacksonTester.initFields(this, tools.jackson.databind.json.JsonMapper.builder().build());
     }
 
     @Test

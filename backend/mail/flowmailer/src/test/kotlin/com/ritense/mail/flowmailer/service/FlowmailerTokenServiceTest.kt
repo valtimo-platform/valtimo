@@ -74,7 +74,7 @@ class FlowmailerTokenServiceTest : BaseTest() {
             scope = "api",
             tokenType = "testToken"
         )
-        val responseEntity = ResponseEntity(response, null, status)
+        val responseEntity = ResponseEntity.status(status).body(response)
         `when`(flowmailerProperties.clientId).thenReturn("clientId")
         `when`(flowmailerProperties.clientSecret).thenReturn("clientSecret")
         `when`(

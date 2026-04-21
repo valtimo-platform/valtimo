@@ -16,6 +16,7 @@
 
 package com.ritense.iko.client
 
+import com.ritense.valtimo.Jackson2TestUtils
 import com.ritense.valtimo.contract.json.MapperSingleton
 import okhttp3.mockwebserver.MockResponse
 import okhttp3.mockwebserver.MockWebServer
@@ -24,7 +25,6 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
-import org.springframework.web.client.RestClient
 import java.net.URI
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
@@ -44,7 +44,7 @@ class IkoClientTest {
 
     @Test
     fun `should get iko JSON by id`() {
-        val restClientBuilder = RestClient.builder()
+        val restClientBuilder = Jackson2TestUtils.restClientBuilder()
         val client = IkoClient(restClientBuilder, MapperSingleton.get())
 
         val responseBody = """
@@ -114,7 +114,7 @@ class IkoClientTest {
 
     @Test
     fun `should send create besluit request and parse response when vervalreden is null`() {
-        val restClientBuilder = RestClient.builder()
+        val restClientBuilder = Jackson2TestUtils.restClientBuilder()
         val client = IkoClient(restClientBuilder, MapperSingleton.get())
 
         val responseBody = """

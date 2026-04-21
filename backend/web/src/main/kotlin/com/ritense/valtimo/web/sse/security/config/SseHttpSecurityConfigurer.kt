@@ -20,7 +20,7 @@ import com.ritense.valtimo.contract.security.config.HttpConfigurerConfigurationE
 import com.ritense.valtimo.contract.security.config.HttpSecurityConfigurer
 import org.springframework.http.HttpMethod.GET
 import org.springframework.security.config.annotation.web.builders.HttpSecurity
-import org.springframework.security.web.util.matcher.AntPathRequestMatcher.antMatcher
+import org.springframework.security.web.servlet.util.matcher.PathPatternRequestMatcher.pathPattern
 
 class SseHttpSecurityConfigurer : HttpSecurityConfigurer {
 
@@ -28,8 +28,8 @@ class SseHttpSecurityConfigurer : HttpSecurityConfigurer {
         try {
             http.authorizeHttpRequests { requests ->
                 requests
-                    .requestMatchers(antMatcher(GET, "/api/v1/sse")).anonymous()
-                    .requestMatchers(antMatcher(GET, "/api/v1/sse/{subscriptionId}")).anonymous()
+                    .requestMatchers(pathPattern(GET, "/api/v1/sse")).anonymous()
+                    .requestMatchers(pathPattern(GET, "/api/v1/sse/{subscriptionId}")).anonymous()
             }
         } catch (e: Exception) {
             throw HttpConfigurerConfigurationException(e)

@@ -136,7 +136,8 @@ class OperatonTaskServiceTest {
                 null,
                 0,
                 null,
-                Set.of()
+                Set.of(),
+                null
             )
         );
         operatonTaskService = spy(

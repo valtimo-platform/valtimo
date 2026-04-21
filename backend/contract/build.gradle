@@ -41,7 +41,7 @@ dependencies {
     api "commons-codec:commons-codec:${commonsCodecVersion}"
     api "commons-validator:commons-validator:${commonsValidatorVersion}"
     api "com.fasterxml.jackson.module:jackson-module-kotlin"
-    api "io.hypersistence:hypersistence-utils-hibernate-62:${hypersistenceUtilsVersion}"
+    api "io.hypersistence:hypersistence-utils-hibernate-71:${hypersistenceUtilsVersion}"
 
     api "org.springframework.security:spring-security-core"
     api "org.springframework.boot:spring-boot"
@@ -56,6 +56,10 @@ dependencies {
     implementation "org.springframework.boot:spring-boot-starter-security"
     implementation "org.springframework.boot:spring-boot-starter-validation"
     implementation "org.springframework.boot:spring-boot-starter-oauth2-resource-server"
+    implementation "org.springframework.boot:spring-boot-security-oauth2-client"
+    api "org.springframework.boot:spring-boot-jackson2"
+    implementation "org.springframework.boot:spring-boot-restclient"
+    implementation "org.springframework.boot:spring-boot-webclient"
 
     implementation "com.fasterxml.jackson.module:jackson-module-blackbird"
     implementation "com.fasterxml.jackson.module:jackson-module-parameter-names"
@@ -79,6 +83,7 @@ dependencies {
     testImplementation "org.mockito.kotlin:mockito-kotlin:${mockitoKotlinVersion}"
 
     implementation "org.liquibase:liquibase-core:${liquibaseVersion}"
+    implementation "org.springframework.boot:spring-boot-liquibase"
 }
 
 apply from: "gradle/publishing.gradle"

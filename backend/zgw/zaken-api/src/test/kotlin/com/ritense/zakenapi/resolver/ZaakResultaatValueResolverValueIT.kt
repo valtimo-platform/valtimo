@@ -70,7 +70,7 @@ class ZaakResultaatValueResolverValueIT @Autowired constructor(
                     "1.0.0",
                     objectMapper.createObjectNode()
                 )
-            ).resultingDocument().get().id.id
+            ).resultingDocument().get().id!!.id
 
             // Create zaak instance link so the resolver can find the zaak URL
             zaakInstanceLinkService.createZaakInstanceLink(

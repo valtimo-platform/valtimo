@@ -22,18 +22,18 @@ import com.ritense.valtimo.contract.security.config.HttpSecurityConfigurer
 import org.springframework.http.HttpMethod.GET
 import org.springframework.http.HttpMethod.POST
 import org.springframework.security.config.annotation.web.builders.HttpSecurity
-import org.springframework.security.web.util.matcher.AntPathRequestMatcher.antMatcher
+import org.springframework.security.web.servlet.util.matcher.PathPatternRequestMatcher.pathPattern
 
 class NotificatiesApiHttpSecurityConfigurer : HttpSecurityConfigurer {
     override fun configure(http: HttpSecurity) {
         try {
             http.authorizeHttpRequests { requests ->
-                requests.requestMatchers(antMatcher(POST, "/api/v1/notificatiesapi/callback")).permitAll()
-                    .requestMatchers(antMatcher(GET, "/api/management/v1/notificatiesapi/inbound-events/failed"))
+                requests.requestMatchers(pathPattern(POST, "/api/v1/notificatiesapi/callback")).permitAll()
+                    .requestMatchers(pathPattern(GET, "/api/management/v1/notificatiesapi/inbound-events/failed"))
                     .hasAuthority(ADMIN)
-                    .requestMatchers(antMatcher(GET, "/api/management/v1/notificatiesapi/inbound-events/failed/count"))
+                    .requestMatchers(pathPattern(GET, "/api/management/v1/notificatiesapi/inbound-events/failed/count"))
                     .hasAuthority(ADMIN)
-                    .requestMatchers(antMatcher(POST, "/api/management/v1/notificatiesapi/inbound-events/*/retry"))
+                    .requestMatchers(pathPattern(POST, "/api/management/v1/notificatiesapi/inbound-events/*/retry"))
                     .hasAuthority(ADMIN)
             }
         } catch (e: Exception) {

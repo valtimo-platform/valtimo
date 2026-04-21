@@ -24,22 +24,22 @@ import org.springframework.http.HttpMethod.PATCH
 import org.springframework.http.HttpMethod.POST
 import org.springframework.http.HttpMethod.PUT
 import org.springframework.security.config.annotation.web.builders.HttpSecurity
-import org.springframework.security.web.util.matcher.AntPathRequestMatcher.antMatcher
+import org.springframework.security.web.servlet.util.matcher.PathPatternRequestMatcher.pathPattern
 
 class ObjectenApiHttpSecurityConfigurer : HttpSecurityConfigurer {
 
     override fun configure(http: HttpSecurity) {
         try {
             http.authorizeHttpRequests { requests ->
-                requests.requestMatchers(antMatcher(GET, "/api/v1/document/{documentId}/zaak/objecttype")).authenticated()
-                    .requestMatchers(antMatcher(GET, "/api/v1/document/{documentId}/zaak/object")).authenticated()
-                    .requestMatchers(antMatcher(GET, "/api/v1/document/{documentId}/zaak/object/form")).authenticated()
-                    .requestMatchers(antMatcher(POST, OBJECT_URL)).authenticated()
-                    .requestMatchers(antMatcher(PUT, OBJECT_URL)).authenticated()
-                    .requestMatchers(antMatcher(DELETE, OBJECT_URL)).authenticated()
-                    .requestMatchers(antMatcher(GET, "$OBJECT_URL/form")).authenticated()
-                    .requestMatchers(antMatcher(PATCH, OBJECT_URL)).authenticated()
-                    .requestMatchers(antMatcher(GET, OBJECT_URL)).authenticated()
+                requests.requestMatchers(pathPattern(GET, "/api/v1/document/{documentId}/zaak/objecttype")).authenticated()
+                    .requestMatchers(pathPattern(GET, "/api/v1/document/{documentId}/zaak/object")).authenticated()
+                    .requestMatchers(pathPattern(GET, "/api/v1/document/{documentId}/zaak/object/form")).authenticated()
+                    .requestMatchers(pathPattern(POST, OBJECT_URL)).authenticated()
+                    .requestMatchers(pathPattern(PUT, OBJECT_URL)).authenticated()
+                    .requestMatchers(pathPattern(DELETE, OBJECT_URL)).authenticated()
+                    .requestMatchers(pathPattern(GET, "$OBJECT_URL/form")).authenticated()
+                    .requestMatchers(pathPattern(PATCH, OBJECT_URL)).authenticated()
+                    .requestMatchers(pathPattern(GET, OBJECT_URL)).authenticated()
             }
         } catch (e: Exception) {
             throw HttpConfigurerConfigurationException(e)

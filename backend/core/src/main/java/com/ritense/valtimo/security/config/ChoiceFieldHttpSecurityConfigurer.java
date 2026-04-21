@@ -21,7 +21,7 @@ import static org.springframework.http.HttpMethod.DELETE;
 import static org.springframework.http.HttpMethod.GET;
 import static org.springframework.http.HttpMethod.POST;
 import static org.springframework.http.HttpMethod.PUT;
-import static org.springframework.security.web.util.matcher.AntPathRequestMatcher.antMatcher;
+import static org.springframework.security.web.servlet.util.matcher.PathPatternRequestMatcher.pathPattern;
 
 import com.ritense.valtimo.contract.security.config.HttpConfigurerConfigurationException;
 import com.ritense.valtimo.contract.security.config.HttpSecurityConfigurer;
@@ -34,24 +34,24 @@ public class ChoiceFieldHttpSecurityConfigurer implements HttpSecurityConfigurer
         try {
             http.authorizeHttpRequests(requests ->
                 requests.requestMatchers(
-                    antMatcher(GET, "/api/v1/choice-fields"),
-                    antMatcher(GET, "/api/v1/choice-fields/{id}"),
-                    antMatcher(GET, "/api/v1/choice-fields/name/{name}"),
-                    antMatcher(GET, "/api/v2/choice-fields")
+                    pathPattern(GET, "/api/v1/choice-fields"),
+                    pathPattern(GET, "/api/v1/choice-fields/{id}"),
+                    pathPattern(GET, "/api/v1/choice-fields/name/{name}"),
+                    pathPattern(GET, "/api/v2/choice-fields")
                 ).authenticated()
-                .requestMatchers(antMatcher(POST, "/api/v1/choice-fields")).hasAuthority(ADMIN)
-                .requestMatchers(antMatcher(PUT, "/api/v1/choice-fields")).hasAuthority(ADMIN)
-                .requestMatchers(antMatcher(DELETE, "/api/v1/choice-fields/{id}")).hasAuthority(ADMIN)
+                .requestMatchers(pathPattern(POST, "/api/v1/choice-fields")).hasAuthority(ADMIN)
+                .requestMatchers(pathPattern(PUT, "/api/v1/choice-fields")).hasAuthority(ADMIN)
+                .requestMatchers(pathPattern(DELETE, "/api/v1/choice-fields/{id}")).hasAuthority(ADMIN)
                 //choice-field-values
-                .requestMatchers(antMatcher(GET, "/api/v1/choice-field-values")).authenticated()
-                .requestMatchers(antMatcher(GET, "/api/v2/choice-field-values")).authenticated()
-                .requestMatchers(antMatcher(POST, "/api/v1/choice-field-values")).hasAuthority(ADMIN)
-                .requestMatchers(antMatcher(PUT, "/api/v1/choice-field-values")).hasAuthority(ADMIN)
-                .requestMatchers(antMatcher(GET, "/api/v1/choice-field-values/{id}")).authenticated()
-                .requestMatchers(antMatcher(DELETE, "/api/v1/choice-field-values/{id}")).hasAuthority(ADMIN)
-                .requestMatchers(antMatcher(GET, "/api/v1/choice-field-values/choice-field/{choicefield_name}/value/{value}")).authenticated()
-                .requestMatchers(antMatcher(GET, "/api/v1/choice-field-values/{choice_field_name}/values")).authenticated()
-                .requestMatchers(antMatcher(GET, "/api/v2/choice-field-values/{choice_field_name}/values")).authenticated()
+                .requestMatchers(pathPattern(GET, "/api/v1/choice-field-values")).authenticated()
+                .requestMatchers(pathPattern(GET, "/api/v2/choice-field-values")).authenticated()
+                .requestMatchers(pathPattern(POST, "/api/v1/choice-field-values")).hasAuthority(ADMIN)
+                .requestMatchers(pathPattern(PUT, "/api/v1/choice-field-values")).hasAuthority(ADMIN)
+                .requestMatchers(pathPattern(GET, "/api/v1/choice-field-values/{id}")).authenticated()
+                .requestMatchers(pathPattern(DELETE, "/api/v1/choice-field-values/{id}")).hasAuthority(ADMIN)
+                .requestMatchers(pathPattern(GET, "/api/v1/choice-field-values/choice-field/{choicefield_name}/value/{value}")).authenticated()
+                .requestMatchers(pathPattern(GET, "/api/v1/choice-field-values/{choice_field_name}/values")).authenticated()
+                .requestMatchers(pathPattern(GET, "/api/v2/choice-field-values/{choice_field_name}/values")).authenticated()
             );
         } catch (Exception e) {
             throw new HttpConfigurerConfigurationException(e);

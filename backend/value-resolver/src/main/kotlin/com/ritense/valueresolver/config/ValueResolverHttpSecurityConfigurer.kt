@@ -22,7 +22,7 @@ import com.ritense.valtimo.contract.security.config.HttpSecurityConfigurer
 import org.springframework.http.HttpMethod.GET
 import org.springframework.http.HttpMethod.POST
 import org.springframework.security.config.annotation.web.builders.HttpSecurity
-import org.springframework.security.web.util.matcher.AntPathRequestMatcher.antMatcher
+import org.springframework.security.web.servlet.util.matcher.PathPatternRequestMatcher.pathPattern
 
 class ValueResolverHttpSecurityConfigurer : HttpSecurityConfigurer {
 
@@ -30,9 +30,9 @@ class ValueResolverHttpSecurityConfigurer : HttpSecurityConfigurer {
         try {
             http.authorizeHttpRequests { requests ->
                 requests
-                    .requestMatchers(antMatcher(GET, "/api/management/v1/value-resolver")).hasAuthority(ADMIN)
-                    .requestMatchers(antMatcher(POST, "/api/management/v1/value-resolver/case-definition/{caseDefinitionKey}/keys")).hasAuthority(ADMIN)
-                    .requestMatchers(antMatcher(POST, "/api/management/v1/value-resolver/case-definition/{caseDefinitionKey}/version/{versionTag}/keys")).hasAuthority(ADMIN)
+                    .requestMatchers(pathPattern(GET, "/api/management/v1/value-resolver")).hasAuthority(ADMIN)
+                    .requestMatchers(pathPattern(POST, "/api/management/v1/value-resolver/case-definition/{caseDefinitionKey}/keys")).hasAuthority(ADMIN)
+                    .requestMatchers(pathPattern(POST, "/api/management/v1/value-resolver/case-definition/{caseDefinitionKey}/version/{versionTag}/keys")).hasAuthority(ADMIN)
             }
         } catch (e: Exception) {
             throw HttpConfigurerConfigurationException(e)

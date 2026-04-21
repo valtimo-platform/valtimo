@@ -53,7 +53,7 @@ class BuildingBlockJsonSchemaDocumentDefinitionExporter(
                 PATH.format(
                     request.buildingBlockDefinitionId.key,
                     formattedCaseDefinitionVersion,
-                    documentDefinition.id.name()
+                    documentDefinition.id!!.name()
                 ),
                 it.toByteArray()
             )

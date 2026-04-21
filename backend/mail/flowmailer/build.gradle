@@ -61,7 +61,8 @@ dependencies {
     testImplementation "org.springframework.boot:spring-boot-starter-test"
 
     implementation "org.springframework.boot:spring-boot-autoconfigure"
-    implementation "io.hypersistence:hypersistence-utils-hibernate-62:${hypersistenceUtilsVersion}"
+    implementation "org.springframework.boot:spring-boot-restclient"
+    implementation "io.hypersistence:hypersistence-utils-hibernate-71:${hypersistenceUtilsVersion}"
     implementation "com.fasterxml.jackson.module:jackson-module-kotlin"
     implementation "org.apache.tika:tika-core:${apacheTikaVersion}"
 

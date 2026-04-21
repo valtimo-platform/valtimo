@@ -29,6 +29,7 @@ import com.ritense.klantinteractiesapi.domain.PartijIdentificator
 import com.ritense.klantinteractiesapi.domain.PartijSoort
 import com.ritense.klantinteractiesapi.domain.PersoonPartijIndentificatie
 import com.ritense.klantinteractiesapi.domain.SoortObject
+import com.ritense.valtimo.Jackson2TestUtils
 import com.ritense.valtimo.contract.json.MapperSingleton
 import okhttp3.mockwebserver.MockResponse
 import okhttp3.mockwebserver.MockWebServer
@@ -55,7 +56,7 @@ class KlantinteractiesApiClientTest {
             this.registerSubtypes(NamedType(PersoonPartijIndentificatie::class.java))
         }
 
-        restClientBuilder = RestClient.builder().messageConverters { converters ->
+        restClientBuilder = Jackson2TestUtils.restClientBuilder().messageConverters { converters ->
             converters.forEach { converter ->
                 if (converter is MappingJackson2HttpMessageConverter) {
                     converter.setObjectMapper(objectMapper)

@@ -24,7 +24,7 @@ import org.springframework.http.HttpMethod.GET
 import org.springframework.http.HttpMethod.POST
 import org.springframework.http.HttpMethod.PUT
 import org.springframework.security.config.annotation.web.builders.HttpSecurity
-import org.springframework.security.web.util.matcher.AntPathRequestMatcher.antMatcher
+import org.springframework.security.web.servlet.util.matcher.PathPatternRequestMatcher.pathPattern
 
 class DocumentenApiHttpSecurityConfigurer : HttpSecurityConfigurer {
 
@@ -32,32 +32,32 @@ class DocumentenApiHttpSecurityConfigurer : HttpSecurityConfigurer {
         try {
             http.authorizeHttpRequests { requests ->
                 requests
-                    .requestMatchers(antMatcher(GET, "/api/v1/documenten-api/{pluginConfigurationId}/files/{documentId}/download")).authenticated()
-                    .requestMatchers(antMatcher(PUT, "/api/v1/documenten-api/{pluginConfigurationId}/files/{documentId}")).authenticated()
-                    .requestMatchers(antMatcher(DELETE, "/api/v1/documenten-api/{pluginConfigurationId}/files/{documentId}")).authenticated()
+                    .requestMatchers(pathPattern(GET, "/api/v1/documenten-api/{pluginConfigurationId}/files/{documentId}/download")).authenticated()
+                    .requestMatchers(pathPattern(PUT, "/api/v1/documenten-api/{pluginConfigurationId}/files/{documentId}")).authenticated()
+                    .requestMatchers(pathPattern(DELETE, "/api/v1/documenten-api/{pluginConfigurationId}/files/{documentId}")).authenticated()
 
-                    .requestMatchers(antMatcher(GET, "/api/v1/case-definition/{caseDefinitionName}/zgw-document-column")).authenticated()
-                    .requestMatchers(antMatcher(GET, "/api/v1/case-definition/{caseDefinitionName}/documenten-api/version")).authenticated()
-                    .requestMatchers(antMatcher(GET, "/api/v1/case-definition/{caseDefinitionName}/zgw-document/trefwoord")).authenticated()
-                    .requestMatchers(antMatcher(GET, "/api/v1/document/{documentId}/zgw-document/upload-field")).authenticated()
+                    .requestMatchers(pathPattern(GET, "/api/v1/case-definition/{caseDefinitionName}/zgw-document-column")).authenticated()
+                    .requestMatchers(pathPattern(GET, "/api/v1/case-definition/{caseDefinitionName}/documenten-api/version")).authenticated()
+                    .requestMatchers(pathPattern(GET, "/api/v1/case-definition/{caseDefinitionName}/zgw-document/trefwoord")).authenticated()
+                    .requestMatchers(pathPattern(GET, "/api/v1/document/{documentId}/zgw-document/upload-field")).authenticated()
 
-                    .requestMatchers(antMatcher(GET, "/api/management/v1/case-definition/{caseDefinitionName}/zgw-document/trefwoord")).hasAuthority(ADMIN)
-                    .requestMatchers(antMatcher(POST, "/api/management/v1/case-definition/{caseDefinitionName}/zgw-document/trefwoord/{trefwoord}")).hasAuthority(ADMIN)
-                    .requestMatchers(antMatcher(DELETE, "/api/management/v1/case-definition/{caseDefinitionName}/zgw-document/trefwoord/{trefwoord}")).hasAuthority(ADMIN)
-                    .requestMatchers(antMatcher(DELETE, "/api/management/v1/case-definition/{caseDefinitionName}/zgw-document/trefwoord")).hasAuthority(ADMIN)
+                    .requestMatchers(pathPattern(GET, "/api/management/v1/case-definition/{caseDefinitionName}/zgw-document/trefwoord")).hasAuthority(ADMIN)
+                    .requestMatchers(pathPattern(POST, "/api/management/v1/case-definition/{caseDefinitionName}/zgw-document/trefwoord/{trefwoord}")).hasAuthority(ADMIN)
+                    .requestMatchers(pathPattern(DELETE, "/api/management/v1/case-definition/{caseDefinitionName}/zgw-document/trefwoord/{trefwoord}")).hasAuthority(ADMIN)
+                    .requestMatchers(pathPattern(DELETE, "/api/management/v1/case-definition/{caseDefinitionName}/zgw-document/trefwoord")).hasAuthority(ADMIN)
 
-                    .requestMatchers(antMatcher(GET, "/api/management/v1/case-definition/{caseDefinitionName}/zgw-document-column-key")).hasAuthority(ADMIN)
-                    .requestMatchers(antMatcher(GET, "/api/management/v1/case-definition/{caseDefinitionName}/zgw-document-column")).hasAuthority(ADMIN)
-                    .requestMatchers(antMatcher(PUT, "/api/management/v1/case-definition/{caseDefinitionName}/zgw-document-column")).hasAuthority(ADMIN)
-                    .requestMatchers(antMatcher(PUT, "/api/management/v1/case-definition/{caseDefinitionName}/zgw-document-column/{key}")).hasAuthority(ADMIN)
-                    .requestMatchers(antMatcher(DELETE, "/api/management/v1/case-definition/{caseDefinitionName}/zgw-document-column/{key}")).hasAuthority(ADMIN)
+                    .requestMatchers(pathPattern(GET, "/api/management/v1/case-definition/{caseDefinitionName}/zgw-document-column-key")).hasAuthority(ADMIN)
+                    .requestMatchers(pathPattern(GET, "/api/management/v1/case-definition/{caseDefinitionName}/zgw-document-column")).hasAuthority(ADMIN)
+                    .requestMatchers(pathPattern(PUT, "/api/management/v1/case-definition/{caseDefinitionName}/zgw-document-column")).hasAuthority(ADMIN)
+                    .requestMatchers(pathPattern(PUT, "/api/management/v1/case-definition/{caseDefinitionName}/zgw-document-column/{key}")).hasAuthority(ADMIN)
+                    .requestMatchers(pathPattern(DELETE, "/api/management/v1/case-definition/{caseDefinitionName}/zgw-document-column/{key}")).hasAuthority(ADMIN)
 
-                    .requestMatchers(antMatcher(GET, "/api/management/v1/case-definition/{caseDefinitionName}/documenten-api/version")).hasAuthority(ADMIN)
-                    .requestMatchers(antMatcher(GET, "/api/management/v1/case-definition/{caseDefinitionName}/version/{caseDefinitionVersionTag}/documenten-api/version")).hasAuthority(ADMIN)
-                    .requestMatchers(antMatcher(GET, "/api/management/v1/documenten-api/versions")).hasAuthority(ADMIN)
+                    .requestMatchers(pathPattern(GET, "/api/management/v1/case-definition/{caseDefinitionName}/documenten-api/version")).hasAuthority(ADMIN)
+                    .requestMatchers(pathPattern(GET, "/api/management/v1/case-definition/{caseDefinitionName}/version/{caseDefinitionVersionTag}/documenten-api/version")).hasAuthority(ADMIN)
+                    .requestMatchers(pathPattern(GET, "/api/management/v1/documenten-api/versions")).hasAuthority(ADMIN)
 
-                    .requestMatchers(antMatcher(GET, "/api/management/v1/case-definition/{caseDefinitionName}/zgw-document/upload-field")).hasAuthority(ADMIN)
-                    .requestMatchers(antMatcher(PUT, "/api/management/v1/case-definition/{caseDefinitionName}/zgw-document/upload-field")).hasAuthority(ADMIN)
+                    .requestMatchers(pathPattern(GET, "/api/management/v1/case-definition/{caseDefinitionName}/zgw-document/upload-field")).hasAuthority(ADMIN)
+                    .requestMatchers(pathPattern(PUT, "/api/management/v1/case-definition/{caseDefinitionName}/zgw-document/upload-field")).hasAuthority(ADMIN)
             }
         } catch (e: Exception) {
             throw HttpConfigurerConfigurationException(e)

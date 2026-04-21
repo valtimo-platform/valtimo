@@ -46,7 +46,7 @@ class FormViewModelResource(
     fun getStartFormViewModel(
         @RequestParam processDefinitionKey: String,
         @RequestParam(required = false) documentId: UUID?
-    ): ResponseEntity<ViewModel?> {
+    ): ResponseEntity<ViewModel> {
         val viewModel = formViewModelService.getStartFormViewModel(
             processDefinitionKey = processDefinitionKey,
             documentId = documentId
@@ -54,19 +54,19 @@ class FormViewModelResource(
         return if (viewModel != null) {
             ResponseEntity.ok(viewModel)
         } else {
-            ResponseEntity.notFound().build()
+            ResponseEntity.notFound().build<ViewModel>()
         }
     }
 
     @GetMapping("/user-task")
     fun getUserTaskFormViewModel(
         @RequestParam taskInstanceId: String
-    ): ResponseEntity<ViewModel?> {
+    ): ResponseEntity<ViewModel> {
         return formViewModelService.getUserTaskFormViewModel(
             taskInstanceId = taskInstanceId,
         )?.let {
             ResponseEntity.ok(it)
-        } ?: ResponseEntity.notFound().build()
+        } ?: ResponseEntity.notFound().build<ViewModel>()
     }
 
     @PostMapping("/start-form")
@@ -83,7 +83,7 @@ class FormViewModelResource(
             documentId = documentId,
         )?.let {
             ResponseEntity.ok(it)
-        } ?: ResponseEntity.notFound().build()
+        } ?: ResponseEntity.notFound().build<ViewModel>()
     }
 
     @PostMapping("/user-task")
@@ -98,7 +98,7 @@ class FormViewModelResource(
             submission = submission
         )?.let {
             ResponseEntity.ok(it)
-        } ?: ResponseEntity.notFound().build()
+        } ?: ResponseEntity.notFound().build<ViewModel>()
     }
 
     @PostMapping("/submit/user-task")

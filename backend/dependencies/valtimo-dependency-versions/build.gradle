@@ -98,7 +98,7 @@ dependencies {
 
         api("org.liquibase:liquibase-core:${liquibaseVersion}")
 
-        api("org.liquibase.ext:liquibase-hibernate6:${liquibaseVersion}")
+        api("org.liquibase.ext:liquibase-hibernate7:${liquibaseHibernateVersion}")
         api("org.hibernate.orm:hibernate-core:${hibernateCoreVersion}")
 
         //ShedLock

@@ -53,7 +53,7 @@ import java.util.Optional;
 import org.operaton.bpm.engine.IdentityService;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.actuate.autoconfigure.endpoint.web.WebEndpointProperties;
-import org.springframework.boot.actuate.autoconfigure.health.HealthEndpointProperties;
+import org.springframework.boot.health.autoconfigure.actuate.endpoint.HealthEndpointProperties;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;

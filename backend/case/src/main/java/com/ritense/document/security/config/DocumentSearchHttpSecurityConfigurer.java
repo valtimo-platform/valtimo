@@ -21,7 +21,7 @@ import static org.springframework.http.HttpMethod.DELETE;
 import static org.springframework.http.HttpMethod.GET;
 import static org.springframework.http.HttpMethod.POST;
 import static org.springframework.http.HttpMethod.PUT;
-import static org.springframework.security.web.util.matcher.AntPathRequestMatcher.antMatcher;
+import static org.springframework.security.web.servlet.util.matcher.PathPatternRequestMatcher.pathPattern;
 
 import com.ritense.valtimo.contract.security.config.HttpConfigurerConfigurationException;
 import com.ritense.valtimo.contract.security.config.HttpSecurityConfigurer;
@@ -35,13 +35,13 @@ public class DocumentSearchHttpSecurityConfigurer implements HttpSecurityConfigu
     public void configure(HttpSecurity http) {
         try {
             http.authorizeHttpRequests(requests ->
-                requests.requestMatchers(antMatcher(POST, "/api/v1/document-search")).authenticated()
-                    .requestMatchers(antMatcher(POST, "/api/v1/document-definition/{name}/search")).authenticated()
-                    .requestMatchers(antMatcher(POST, FIELDS_URL)).hasAuthority(ADMIN)
-                    .requestMatchers(antMatcher(GET, FIELDS_URL)).authenticated()
-                    .requestMatchers(antMatcher(PUT, FIELDS_URL)).hasAuthority(ADMIN)
-                    .requestMatchers(antMatcher(DELETE, FIELDS_URL)).hasAuthority( ADMIN)
-                    .requestMatchers(antMatcher(
+                requests.requestMatchers(pathPattern(POST, "/api/v1/document-search")).authenticated()
+                    .requestMatchers(pathPattern(POST, "/api/v1/document-definition/{name}/search")).authenticated()
+                    .requestMatchers(pathPattern(POST, FIELDS_URL)).hasAuthority(ADMIN)
+                    .requestMatchers(pathPattern(GET, FIELDS_URL)).authenticated()
+                    .requestMatchers(pathPattern(PUT, FIELDS_URL)).hasAuthority(ADMIN)
+                    .requestMatchers(pathPattern(DELETE, FIELDS_URL)).hasAuthority( ADMIN)
+                    .requestMatchers(pathPattern(
                         GET, "/api/management/v1/document-search/{documentDefinitionName}/fields")).hasAuthority(ADMIN));
         } catch (Exception e) {
             throw new HttpConfigurerConfigurationException(e);

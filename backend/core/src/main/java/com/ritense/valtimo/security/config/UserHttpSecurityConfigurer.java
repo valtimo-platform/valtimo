@@ -21,7 +21,7 @@ import static org.springframework.http.HttpMethod.DELETE;
 import static org.springframework.http.HttpMethod.GET;
 import static org.springframework.http.HttpMethod.POST;
 import static org.springframework.http.HttpMethod.PUT;
-import static org.springframework.security.web.util.matcher.AntPathRequestMatcher.antMatcher;
+import static org.springframework.security.web.servlet.util.matcher.PathPatternRequestMatcher.pathPattern;
 
 import com.ritense.valtimo.contract.security.config.HttpConfigurerConfigurationException;
 import com.ritense.valtimo.contract.security.config.HttpSecurityConfigurer;
@@ -35,19 +35,19 @@ public class UserHttpSecurityConfigurer implements HttpSecurityConfigurer {
     public void configure(HttpSecurity http) {
         try {
             http.authorizeHttpRequests(requests ->
-                requests.requestMatchers(antMatcher(GET, USER_URL)).authenticated()
-                .requestMatchers(antMatcher(POST, USER_URL)).hasAuthority(ADMIN)
-                .requestMatchers(antMatcher(PUT, USER_URL)).hasAuthority(ADMIN)
-                .requestMatchers(antMatcher(PUT, USER_URL + "/{userId}/activate")).hasAuthority(ADMIN)
-                .requestMatchers(antMatcher(PUT, USER_URL + "/{userId}/deactivate")).hasAuthority(ADMIN)
-                .requestMatchers(antMatcher(GET, USER_URL + "/email/{email}/")).authenticated()
-                .requestMatchers(antMatcher(GET, USER_URL + "/{userId}")).authenticated()
-                .requestMatchers(antMatcher(GET, USER_URL + "/authority/{authority}")).authenticated()
-                .requestMatchers(antMatcher(DELETE, USER_URL + "/{userId}")).hasAuthority(ADMIN)
-                .requestMatchers(antMatcher(POST, USER_URL + "/send-verification-email/{userId}")).hasAuthority(ADMIN)
-                .requestMatchers(antMatcher(GET, "/api/v1/user/settings")).authenticated()
-                .requestMatchers(antMatcher(PUT, "/api/v1/user/settings")).authenticated()
-                .requestMatchers(antMatcher(GET, "/api/v1/user/team")).authenticated()
+                requests.requestMatchers(pathPattern(GET, USER_URL)).authenticated()
+                .requestMatchers(pathPattern(POST, USER_URL)).hasAuthority(ADMIN)
+                .requestMatchers(pathPattern(PUT, USER_URL)).hasAuthority(ADMIN)
+                .requestMatchers(pathPattern(PUT, USER_URL + "/{userId}/activate")).hasAuthority(ADMIN)
+                .requestMatchers(pathPattern(PUT, USER_URL + "/{userId}/deactivate")).hasAuthority(ADMIN)
+                .requestMatchers(pathPattern(GET, USER_URL + "/email/{email}/")).authenticated()
+                .requestMatchers(pathPattern(GET, USER_URL + "/{userId}")).authenticated()
+                .requestMatchers(pathPattern(GET, USER_URL + "/authority/{authority}")).authenticated()
+                .requestMatchers(pathPattern(DELETE, USER_URL + "/{userId}")).hasAuthority(ADMIN)
+                .requestMatchers(pathPattern(POST, USER_URL + "/send-verification-email/{userId}")).hasAuthority(ADMIN)
+                .requestMatchers(pathPattern(GET, "/api/v1/user/settings")).authenticated()
+                .requestMatchers(pathPattern(PUT, "/api/v1/user/settings")).authenticated()
+                .requestMatchers(pathPattern(GET, "/api/v1/user/team")).authenticated()
             );
         } catch (Exception e) {
             throw new HttpConfigurerConfigurationException(e);

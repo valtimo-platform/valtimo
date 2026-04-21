@@ -24,7 +24,7 @@ import org.springframework.http.HttpMethod.GET
 import org.springframework.http.HttpMethod.POST
 import org.springframework.http.HttpMethod.PUT
 import org.springframework.security.config.annotation.web.builders.HttpSecurity
-import org.springframework.security.web.util.matcher.AntPathRequestMatcher.antMatcher
+import org.springframework.security.web.servlet.util.matcher.PathPatternRequestMatcher.pathPattern
 
 class ZakenApiHttpSecurityConfigurer : HttpSecurityConfigurer {
 
@@ -32,38 +32,38 @@ class ZakenApiHttpSecurityConfigurer : HttpSecurityConfigurer {
         try {
             http.authorizeHttpRequests { requests ->
                 requests
-                    .requestMatchers(antMatcher(GET, "/api/v1/zaken-api/document/{documentId}/files")).authenticated()
-                    .requestMatchers(antMatcher(GET, "/api/v2/zaken-api/document/{documentId}/files")).authenticated()
-                    .requestMatchers(antMatcher(GET, "/api/v1/zaken-api/document/{documentId}/zaak")).authenticated()
-                    .requestMatchers(antMatcher(PUT, "/api/v1/zaken-api/{pluginConfigurationId}/case-document/{caseDocumentId}/files/{documentId}")).authenticated()
-                    .requestMatchers(antMatcher(DELETE, "/api/v1/zaken-api/{pluginConfigurationId}/case-document/{caseDocumentId}/files/{documentId}")).authenticated()
-                    .requestMatchers(antMatcher(GET, "/api/v1/zaken-api/{pluginConfigurationId}/case-document/{caseDocumentId}/files/{documentId}/download")).authenticated()
-                    .requestMatchers(antMatcher(GET, "/api/management/v1/zaak-type-link/{documentDefinitionName}")).hasAuthority(ADMIN)
+                    .requestMatchers(pathPattern(GET, "/api/v1/zaken-api/document/{documentId}/files")).authenticated()
+                    .requestMatchers(pathPattern(GET, "/api/v2/zaken-api/document/{documentId}/files")).authenticated()
+                    .requestMatchers(pathPattern(GET, "/api/v1/zaken-api/document/{documentId}/zaak")).authenticated()
+                    .requestMatchers(pathPattern(PUT, "/api/v1/zaken-api/{pluginConfigurationId}/case-document/{caseDocumentId}/files/{documentId}")).authenticated()
+                    .requestMatchers(pathPattern(DELETE, "/api/v1/zaken-api/{pluginConfigurationId}/case-document/{caseDocumentId}/files/{documentId}")).authenticated()
+                    .requestMatchers(pathPattern(GET, "/api/v1/zaken-api/{pluginConfigurationId}/case-document/{caseDocumentId}/files/{documentId}/download")).authenticated()
+                    .requestMatchers(pathPattern(GET, "/api/management/v1/zaak-type-link/{documentDefinitionName}")).hasAuthority(ADMIN)
                     .requestMatchers(
-                        antMatcher(
+                        pathPattern(
                             GET,
                             "/api/management/v1/zaak-type-link/process/{processDefinitionKey}"
                         )
                     ).hasAuthority(ADMIN)
-                    .requestMatchers(antMatcher(POST, "/api/management/v1/zaak-type-link")).hasAuthority(ADMIN)
-                    .requestMatchers(antMatcher(DELETE, "/api/management/v1/zaak-type-link/{documentDefinitionName}"))
+                    .requestMatchers(pathPattern(POST, "/api/management/v1/zaak-type-link")).hasAuthority(ADMIN)
+                    .requestMatchers(pathPattern(DELETE, "/api/management/v1/zaak-type-link/{documentDefinitionName}"))
                     .hasAuthority(ADMIN)
                     .requestMatchers(
-                        antMatcher(
+                        pathPattern(
                             GET,
                             "/api/management/v1/case-definition/{caseDefinitionKey}/version/{versionTag}/zaak-type-link"
                         )
                     ).hasAuthority(ADMIN)
-                    .requestMatchers(antMatcher(GET, "/api/management/v1/zaak-type-link/process/{processDefinitionId}"))
+                    .requestMatchers(pathPattern(GET, "/api/management/v1/zaak-type-link/process/{processDefinitionId}"))
                     .hasAuthority(ADMIN)
                     .requestMatchers(
-                        antMatcher(
+                        pathPattern(
                             POST,
                             "/api/management/v1/case-definition/{caseDefinitionKey}/version/{versionTag}/zaak-type-link"
                         )
                     ).hasAuthority(ADMIN)
                     .requestMatchers(
-                        antMatcher(
+                        pathPattern(
                             DELETE,
                             "/api/management/v1/case-definition/{caseDefinitionKey}/version/{versionTag}/zaak-type-link"
                         )

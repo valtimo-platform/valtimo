@@ -24,84 +24,84 @@ import org.springframework.http.HttpMethod.GET
 import org.springframework.http.HttpMethod.POST
 import org.springframework.http.HttpMethod.PUT
 import org.springframework.security.config.annotation.web.builders.HttpSecurity
-import org.springframework.security.web.util.matcher.AntPathRequestMatcher.antMatcher
+import org.springframework.security.web.servlet.util.matcher.PathPatternRequestMatcher.pathPattern
 
 class ProcessLinkHttpSecurityConfigurer : HttpSecurityConfigurer {
 
     override fun configure(http: HttpSecurity) {
         try {
             http.authorizeHttpRequests { requests ->
-                requests.requestMatchers(antMatcher(GET, PROCESS_LINK_URL)).hasAuthority(ADMIN)
-                    .requestMatchers(antMatcher(GET, "$PROCESS_LINK_URL/types")).hasAuthority(ADMIN)
-                    .requestMatchers(antMatcher(POST, PROCESS_LINK_URL)).hasAuthority(ADMIN)
-                    .requestMatchers(antMatcher(PUT, PROCESS_LINK_URL)).hasAuthority(ADMIN)
-                    .requestMatchers(antMatcher(GET, "$PROCESS_LINK_URL/export")).hasAuthority(ADMIN)
-                    .requestMatchers(antMatcher(DELETE, "$PROCESS_LINK_URL/{processLinkId}")).hasAuthority(ADMIN)
-                    .requestMatchers(antMatcher(POST, "/api/v1/process/definition/deployment/process-link"))
+                requests.requestMatchers(pathPattern(GET, PROCESS_LINK_URL)).hasAuthority(ADMIN)
+                    .requestMatchers(pathPattern(GET, "$PROCESS_LINK_URL/types")).hasAuthority(ADMIN)
+                    .requestMatchers(pathPattern(POST, PROCESS_LINK_URL)).hasAuthority(ADMIN)
+                    .requestMatchers(pathPattern(PUT, PROCESS_LINK_URL)).hasAuthority(ADMIN)
+                    .requestMatchers(pathPattern(GET, "$PROCESS_LINK_URL/export")).hasAuthority(ADMIN)
+                    .requestMatchers(pathPattern(DELETE, "$PROCESS_LINK_URL/{processLinkId}")).hasAuthority(ADMIN)
+                    .requestMatchers(pathPattern(POST, "/api/v1/process/definition/deployment/process-link"))
                     .hasAuthority(ADMIN)
-                    .requestMatchers(antMatcher(GET, "/api/v2/process-link/task/{taskId}")).authenticated()
-                    .requestMatchers(antMatcher(GET, "/api/v1/process-definition/{processDefinitionId}/start-form"))
+                    .requestMatchers(pathPattern(GET, "/api/v2/process-link/task/{taskId}")).authenticated()
+                    .requestMatchers(pathPattern(GET, "/api/v1/process-definition/{processDefinitionId}/start-form"))
                     .authenticated()
-                    .requestMatchers(antMatcher(GET, "/api/v1/process/{processInstanceId}/tasks/process-link"))
+                    .requestMatchers(pathPattern(GET, "/api/v1/process/{processInstanceId}/tasks/process-link"))
                     .authenticated()
                     .requestMatchers(
-                        antMatcher(
+                        pathPattern(
                             GET,
                             "/api/management/v1/case-definition/{caseDefinitionKey}/version/{versionTag}/process-definition"
                         )
                     )
                     .hasAuthority(ADMIN)
                     .requestMatchers(
-                        antMatcher(
+                        pathPattern(
                             POST,
                             "/api/management/v1/case-definition/{caseDefinitionKey}/version/{versionTag}/process-definition"
                         )
                     )
                     .hasAuthority(ADMIN)
                     .requestMatchers(
-                        antMatcher(
+                        pathPattern(
                             DELETE,
                             "/api/management/v1/case-definition/{caseDefinitionKey}/version/{versionTag}/process-definition/key/{processDefinitionKey}"
                         )
                     )
                     .hasAuthority(ADMIN)
                     .requestMatchers(
-                        antMatcher(
+                        pathPattern(
                             GET,
                             "/api/management/v1/case-definition/{caseDefinitionKey}/version/{versionTag}/process-definition/key/{processDefinitionKey}"
                         )
                     )
                     .hasAuthority(ADMIN)
                     .requestMatchers(
-                        antMatcher(
+                        pathPattern(
                             GET,
                             "/api/management/v1/process-definition"
                         )
                     )
                     .hasAuthority(ADMIN)
                     .requestMatchers(
-                        antMatcher(
+                        pathPattern(
                             GET,
                             "/api/management/v1/process-definition/{processDefinitionId}"
                         )
                     )
                     .hasAuthority(ADMIN)
                     .requestMatchers(
-                        antMatcher(
+                        pathPattern(
                             POST,
                             "/api/management/v1/process-definition"
                         )
                     )
                     .hasAuthority(ADMIN)
                     .requestMatchers(
-                        antMatcher(
+                        pathPattern(
                             DELETE,
                             "/api/management/v1/process-definition/key/{processDefinitionKey}"
                         )
                     )
                     .hasAuthority(ADMIN)
                     .requestMatchers(
-                        antMatcher(
+                        pathPattern(
                             GET,
                             "/api/management/v1/process-definition/key/{processDefinitionKey}"
                         )

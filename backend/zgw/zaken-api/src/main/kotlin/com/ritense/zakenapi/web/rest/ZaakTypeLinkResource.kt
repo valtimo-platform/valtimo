@@ -39,10 +39,10 @@ interface ZaakTypeLinkResource {
     fun get(
         @PathVariable(name = "caseDefinitionKey") caseDefinitionKey: String,
         @PathVariable(name = "versionTag") versionTag: String
-    ): ResponseEntity<ZaakTypeLink?>
+    ): ResponseEntity<ZaakTypeLink>
 
     @GetMapping("/v1/zaak-type-link/process/{processDefinitionId}")
-    fun getByProcess(@PathVariable(name = "processDefinitionId") processDefinitionId: String): ResponseEntity<ZaakTypeLink?>
+    fun getByProcess(@PathVariable(name = "processDefinitionId") processDefinitionId: String): ResponseEntity<ZaakTypeLink>
 
     @PostMapping("/v1/case-definition/{caseDefinitionKey}/version/{versionTag}/zaak-type-link")
     fun create(

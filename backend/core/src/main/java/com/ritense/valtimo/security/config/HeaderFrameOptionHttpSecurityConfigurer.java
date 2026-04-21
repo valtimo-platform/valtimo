@@ -25,7 +25,7 @@ public class HeaderFrameOptionHttpSecurityConfigurer implements HttpSecurityConf
     @Override
     public void configure(HttpSecurity http) {
         try {
-            http.headers().frameOptions().disable();
+            http.headers(headers -> headers.frameOptions(frameOptions -> frameOptions.disable()));
         } catch (Exception e) {
             throw new HttpConfigurerConfigurationException(e);
         }

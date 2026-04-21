@@ -73,7 +73,7 @@ class SearchListColumnDefinitionDeploymentService(
         )
     }
 
-    private fun loadResources(): Array<Resource?> {
+    private fun loadResources(): Array<Resource> {
         return try {
             ResourcePatternUtils.getResourcePatternResolver(resourceLoader).getResources(PATH)
         } catch (ioe: IOException) {

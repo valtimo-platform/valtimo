@@ -35,7 +35,7 @@ class UserProviderTest {
     @Test
     fun `getCurrentUserLogin should return username when authenticated`() {
         SecurityContextHolder.getContext().authentication =
-            TestingAuthenticationToken("john@example.com", null)
+            TestingAuthenticationToken("john@example.com", "credentials")
 
         assertThat(userProvider.getCurrentUserLogin()).isEqualTo("john@example.com")
     }
@@ -48,7 +48,7 @@ class UserProviderTest {
     @Test
     fun `getCurrentUserRoles should return authorities when authenticated`() {
         SecurityContextHolder.getContext().authentication =
-            TestingAuthenticationToken("user", null, listOf(
+            TestingAuthenticationToken("user", "credentials", listOf(
                 SimpleGrantedAuthority("ROLE_ADMIN"),
                 SimpleGrantedAuthority("ROLE_USER")
             ))
@@ -65,7 +65,7 @@ class UserProviderTest {
     @Test
     fun `getCurrentUserRoles should return empty list when no authorities`() {
         SecurityContextHolder.getContext().authentication =
-            TestingAuthenticationToken("user", null, emptyList())
+            TestingAuthenticationToken("user", "credentials", emptyList())
 
         assertThat(userProvider.getCurrentUserRoles()).isEmpty()
     }

@@ -97,7 +97,7 @@ class VerzoekPlugin(
                         val documentPath = it.target.substringAfter(delimiter = ":")
                         runWithoutAuthorization {
                             documentDefinitionService.validateJsonPointer(
-                                documentDefinition.id.name(),
+                                documentDefinition.id!!.name(),
                                 documentPath
                             )
                         }

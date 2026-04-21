@@ -24,6 +24,7 @@ import com.ritense.smartdocuments.domain.DocumentFormatOption
 import com.ritense.smartdocuments.domain.SmartDocumentsRequest
 import com.ritense.smartdocuments.domain.SmartDocumentsTemplateData
 import com.ritense.temporaryresource.repository.ResourceStorageMetadataRepository
+import com.ritense.valtimo.Jackson2TestUtils
 import com.ritense.valtimo.contract.json.MapperSingleton
 import com.ritense.valtimo.contract.upload.ValtimoUploadProperties
 import okhttp3.mockwebserver.MockResponse
@@ -45,7 +46,6 @@ import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
 import org.springframework.http.HttpStatus
 import org.springframework.web.client.HttpClientErrorException
-import org.springframework.web.client.RestClient
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 internal class SmartDocumentsClientTest : BaseTest() {
@@ -80,7 +80,7 @@ internal class SmartDocumentsClientTest : BaseTest() {
 
         client = spy(
             SmartDocumentsClient(
-                RestClient.builder(),
+                Jackson2TestUtils.restClientBuilder(),
                 5,
                 temporaryResourceStorageService,
             )

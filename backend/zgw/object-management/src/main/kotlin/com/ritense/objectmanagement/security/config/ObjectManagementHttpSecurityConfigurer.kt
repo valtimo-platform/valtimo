@@ -24,22 +24,22 @@ import org.springframework.http.HttpMethod.GET
 import org.springframework.http.HttpMethod.POST
 import org.springframework.http.HttpMethod.PUT
 import org.springframework.security.config.annotation.web.builders.HttpSecurity
-import org.springframework.security.web.util.matcher.AntPathRequestMatcher.antMatcher
+import org.springframework.security.web.servlet.util.matcher.PathPatternRequestMatcher.pathPattern
 
 class ObjectManagementHttpSecurityConfigurer : HttpSecurityConfigurer {
 
     override fun configure(http: HttpSecurity) {
         try {
             http.authorizeHttpRequests { requests ->
-                requests.requestMatchers(antMatcher(POST, CONFIGURATION_URL)).hasAuthority(ADMIN)
-                    .requestMatchers(antMatcher(GET, "$CONFIGURATION_URL/{id}")).hasAuthority(ADMIN)
-                    .requestMatchers(antMatcher(GET, CONFIGURATION_URL)).authenticated()
-                    .requestMatchers(antMatcher(PUT, CONFIGURATION_URL)).hasAuthority(ADMIN)
-                    .requestMatchers(antMatcher(DELETE, "$CONFIGURATION_URL/{id}")).hasAuthority(ADMIN)
-                    .requestMatchers(antMatcher(GET, "$CONFIGURATION_URL/{id}/object")).authenticated()
-                    .requestMatchers(antMatcher(POST, "$CONFIGURATION_URL/{id}/object")).authenticated()
+                requests.requestMatchers(pathPattern(POST, CONFIGURATION_URL)).hasAuthority(ADMIN)
+                    .requestMatchers(pathPattern(GET, "$CONFIGURATION_URL/{id}")).hasAuthority(ADMIN)
+                    .requestMatchers(pathPattern(GET, CONFIGURATION_URL)).authenticated()
+                    .requestMatchers(pathPattern(PUT, CONFIGURATION_URL)).hasAuthority(ADMIN)
+                    .requestMatchers(pathPattern(DELETE, "$CONFIGURATION_URL/{id}")).hasAuthority(ADMIN)
+                    .requestMatchers(pathPattern(GET, "$CONFIGURATION_URL/{id}/object")).authenticated()
+                    .requestMatchers(pathPattern(POST, "$CONFIGURATION_URL/{id}/object")).authenticated()
 
-                    .requestMatchers(antMatcher(GET, CONFIGURATION_MANAGEMENT_URL)).hasAuthority(ADMIN)
+                    .requestMatchers(pathPattern(GET, CONFIGURATION_MANAGEMENT_URL)).hasAuthority(ADMIN)
             }
         } catch (e: Exception) {
             throw HttpConfigurerConfigurationException(e)

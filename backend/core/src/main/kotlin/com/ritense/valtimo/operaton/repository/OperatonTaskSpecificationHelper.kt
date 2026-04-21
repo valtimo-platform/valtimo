@@ -184,45 +184,35 @@ class OperatonTaskSpecificationHelper {
         fun byActive() = bySuspensionState(SuspensionState.ACTIVE.stateCode)
 
         @JvmStatic
-        fun byTeamKeys(teamKeys: Collection<String>) = Specification<OperatonTask> { root, query, cb ->
+        fun byTeamKeys(teamKeys: Collection<String>) = Specification<OperatonTask> { root, _, cb ->
             if (teamKeys.isEmpty()) {
                 cb.equal(cb.literal(0), 1)
             } else {
-                val subquery = query!!.subquery(String::class.java)
-                val taskTeamRoot = subquery.from(TaskTeam::class.java)
-                subquery.select(taskTeamRoot.get("taskId"))
-                subquery.where(taskTeamRoot.get<Any>("teamKey").`in`(teamKeys))
-                root.get<Any>(ID).`in`(subquery)
+                val join = root.join<OperatonTask, TaskTeam>("taskTeam", jakarta.persistence.criteria.JoinType.INNER)
+                join.get<Any>("teamKey").`in`(teamKeys)
             }
         }
 
         @JvmStatic
-        fun byTeamKey(teamKey: String?) = Specification<OperatonTask> { root, query, cb ->
-            val subquery = query!!.subquery(String::class.java)
-            val taskTeamRoot = subquery.from(TaskTeam::class.java)
-            subquery.select(taskTeamRoot.get("taskId"))
+        fun byTeamKey(teamKey: String?) = Specification<OperatonTask> { root, _, cb ->
+            val join = root.join<OperatonTask, TaskTeam>("taskTeam", jakarta.persistence.criteria.JoinType.LEFT)
             if (teamKey == null) {
-                root.get<Any>(ID).`in`(subquery).not()
+                join.get<Any>("taskId").isNull
             } else {
-                subquery.where(cb.equal(taskTeamRoot.get<Any>("teamKey"), teamKey))
-                root.get<Any>(ID).`in`(subquery)
+                cb.equal(join.get<Any>("teamKey"), teamKey)
             }
         }
 
         @JvmStatic
-        fun byHasTeam() = Specification<OperatonTask> { root, query, _ ->
-            val subquery = query!!.subquery(String::class.java)
-            val taskTeamRoot = subquery.from(TaskTeam::class.java)
-            subquery.select(taskTeamRoot.get("taskId"))
-            root.get<Any>(ID).`in`(subquery)
+        fun byHasTeam() = Specification<OperatonTask> { root, _, _ ->
+            val join = root.join<OperatonTask, TaskTeam>("taskTeam", jakarta.persistence.criteria.JoinType.INNER)
+            join.get<Any>("taskId").isNotNull
         }
 
         @JvmStatic
-        fun byNoTeam() = Specification<OperatonTask> { root, query, _ ->
-            val subquery = query!!.subquery(String::class.java)
-            val taskTeamRoot = subquery.from(TaskTeam::class.java)
-            subquery.select(taskTeamRoot.get("taskId"))
-            root.get<Any>(ID).`in`(subquery).not()
+        fun byNoTeam() = Specification<OperatonTask> { root, _, _ ->
+            val join = root.join<OperatonTask, TaskTeam>("taskTeam", jakarta.persistence.criteria.JoinType.LEFT)
+            join.get<Any>("taskId").isNull
         }
 
     }

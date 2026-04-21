@@ -58,6 +58,7 @@ import org.springframework.beans.factory.ObjectProvider
 import org.springframework.data.domain.PageImpl
 import org.springframework.data.domain.Pageable
 import org.springframework.data.domain.Sort
+import org.springframework.data.jpa.domain.Specification
 import java.util.Optional
 import java.util.stream.Stream
 import kotlin.test.assertEquals
@@ -173,7 +174,7 @@ class CaseDefinitionServiceTest : BaseTest() {
         val spec = mock<AuthorizationSpecification<CaseDefinition>>()
         whenever(authorizationService.getAuthorizationSpecification<CaseDefinition>(any(), eq(null)))
             .thenReturn(spec)
-        whenever(spec.and(any())).thenReturn(spec)
+        whenever(spec.and(any<Specification<CaseDefinition>>())).thenReturn(spec)
 
 
         service.saveHiddenCaseListColumns(
@@ -203,7 +204,7 @@ class CaseDefinitionServiceTest : BaseTest() {
         val spec = mock<AuthorizationSpecification<CaseDefinition>>()
         whenever(authorizationService.getAuthorizationSpecification<CaseDefinition>(any(), eq(null)))
             .thenReturn(spec)
-        whenever(spec.and(any())).thenReturn(spec)
+        whenever(spec.and(any<Specification<CaseDefinition>>())).thenReturn(spec)
 
 
         service.saveHiddenCaseListColumns(
@@ -457,7 +458,7 @@ class CaseDefinitionServiceTest : BaseTest() {
         val spec = mock<AuthorizationSpecification<CaseDefinition>>()
         whenever(authorizationService.getAuthorizationSpecification<CaseDefinition>(any(), eq(null)))
             .thenReturn(spec)
-        whenever(spec.and(any())).thenReturn(spec)
+        whenever(spec.and(any<Specification<CaseDefinition>>())).thenReturn(spec)
 
         assertEquals(
             "Failed to delete case-definition. Case-definition with id: '$caseDefinitionId' is the global active version.",
@@ -478,7 +479,7 @@ class CaseDefinitionServiceTest : BaseTest() {
         val spec = mock<AuthorizationSpecification<CaseDefinition>>()
         whenever(authorizationService.getAuthorizationSpecification<CaseDefinition>(any(), eq(null)))
             .thenReturn(spec)
-        whenever(spec.and(any())).thenReturn(spec)
+        whenever(spec.and(any<Specification<CaseDefinition>>())).thenReturn(spec)
 
         service.deleteCaseDefinition(caseDefinitionId)
     }
@@ -488,7 +489,7 @@ class CaseDefinitionServiceTest : BaseTest() {
         val spec = mock<AuthorizationSpecification<CaseDefinition>>()
         whenever(authorizationService.getAuthorizationSpecification<CaseDefinition>(any(), eq(null)))
             .thenReturn(spec)
-        whenever(spec.and(any())).thenReturn(spec)
+        whenever(spec.and(any<Specification<CaseDefinition>>())).thenReturn(spec)
 
         val caseDefinitions = listOf(
             caseDefinition(name = "Alpha"),

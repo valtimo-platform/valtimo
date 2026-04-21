@@ -18,7 +18,7 @@ package com.ritense.valtimo.security
 
 import com.ritense.valtimo.contract.authentication.AuthoritiesConstants.ACTUATOR
 import org.springframework.boot.actuate.autoconfigure.endpoint.web.WebEndpointProperties
-import org.springframework.boot.actuate.autoconfigure.health.HealthEndpointProperties
+import org.springframework.boot.health.autoconfigure.actuate.endpoint.HealthEndpointProperties
 import org.springframework.boot.actuate.endpoint.Show
 import org.springframework.http.HttpMethod.GET
 import org.springframework.http.HttpMethod.POST
@@ -32,7 +32,7 @@ import org.springframework.security.core.userdetails.UserDetailsService
 import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.security.provisioning.InMemoryUserDetailsManager
 import org.springframework.security.web.SecurityFilterChain
-import org.springframework.security.web.util.matcher.AntPathRequestMatcher.antMatcher
+import org.springframework.security.web.servlet.util.matcher.PathPatternRequestMatcher.pathPattern
 import org.springframework.security.web.util.matcher.OrRequestMatcher
 
 class ActuatorSecurityFilterChainFactory {
@@ -86,9 +86,8 @@ class ActuatorSecurityFilterChainFactory {
         password: String
     ): AuthenticationManager {
         val userDetailsService: UserDetailsService = userDetailsService(passwordEncoder, username, password)
-        val authenticationProvider = DaoAuthenticationProvider()
+        val authenticationProvider = DaoAuthenticationProvider(userDetailsService)
         authenticationProvider.setPasswordEncoder(passwordEncoder)
-        authenticationProvider.setUserDetailsService(userDetailsService)
 
         return ProviderManager(authenticationProvider)
     }
@@ -109,20 +108,20 @@ class ActuatorSecurityFilterChainFactory {
 
     private fun getActuatorMatchers(actuatorPath: String) = arrayOf(
         *getPublicMatchers(actuatorPath),
-        antMatcher(GET, "${actuatorPath}/configprops"),
-        antMatcher(GET, "${actuatorPath}/env"),
-        antMatcher(GET, "${actuatorPath}/mappings"),
-        antMatcher(GET, "${actuatorPath}/logfile"),
-        antMatcher(GET, "${actuatorPath}/loggers"),
-        antMatcher(POST, "${actuatorPath}/loggers/**"),
-        antMatcher(GET, "${actuatorPath}/info"),
+        pathPattern(GET, "${actuatorPath}/configprops"),
+        pathPattern(GET, "${actuatorPath}/env"),
+        pathPattern(GET, "${actuatorPath}/mappings"),
+        pathPattern(GET, "${actuatorPath}/logfile"),
+        pathPattern(GET, "${actuatorPath}/loggers"),
+        pathPattern(POST, "${actuatorPath}/loggers/**"),
+        pathPattern(GET, "${actuatorPath}/info"),
     )
 
     private fun getPublicMatchers(actuatorPath: String) = arrayOf(
-        antMatcher(GET, actuatorPath),
-        antMatcher(GET, "${actuatorPath}/health"),
-        antMatcher(GET, "${actuatorPath}/health/liveness"),
-        antMatcher(GET, "${actuatorPath}/health/readiness"),
+        pathPattern(GET, actuatorPath),
+        pathPattern(GET, "${actuatorPath}/health"),
+        pathPattern(GET, "${actuatorPath}/health/liveness"),
+        pathPattern(GET, "${actuatorPath}/health/readiness"),
     )
 
     companion object {

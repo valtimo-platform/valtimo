@@ -24,29 +24,29 @@ import org.springframework.http.HttpMethod.GET
 import org.springframework.http.HttpMethod.POST
 import org.springframework.http.HttpMethod.PUT
 import org.springframework.security.config.annotation.web.builders.HttpSecurity
-import org.springframework.security.web.util.matcher.AntPathRequestMatcher.antMatcher
+import org.springframework.security.web.servlet.util.matcher.PathPatternRequestMatcher.pathPattern
 
 class ValtimoFormFlowHttpSecurityConfigurer : HttpSecurityConfigurer {
     override fun configure(http: HttpSecurity) {
         try {
             http.authorizeHttpRequests { requests ->
-                requests.requestMatchers(antMatcher(GET, "/api/v1/form-flow/{formFlowInstanceId}")).authenticated()
-                    .requestMatchers(antMatcher(POST, "/api/v1/form-flow/{formFlowId}/step/{stepInstanceId}")).authenticated()
-                    .requestMatchers(antMatcher(POST, "/api/v1/form-flow/{formFlowId}/back")).authenticated()
-                    .requestMatchers(antMatcher(POST, "/api/v1/form-flow/{formFlowId}/save")).authenticated()
-                    .requestMatchers(antMatcher(GET, "/api/v1/process-link/form-flow-definition")).hasAuthority(ADMIN)
-                    .requestMatchers(antMatcher(GET, "/api/v1/form-flow/instance/{formFlowInstanceId}")).authenticated()
-                    .requestMatchers(antMatcher(POST, "/api/v1/form-flow/instance/{formFlowId}/step/instance/{stepInstanceId}")).authenticated()
-                    .requestMatchers(antMatcher(POST, "/api/v1/form-flow/instance/{formFlowId}/back")).authenticated()
-                    .requestMatchers(antMatcher(POST, "/api/v1/form-flow/instance/{formFlowId}/save")).authenticated()
-                    .requestMatchers(antMatcher(POST, "/api/v1/form-flow/instance/{formFlowId}/step/instance/{stepInstanceId}/to/step/instance/{targetStepInstanceId}")).authenticated()
-                    .requestMatchers(antMatcher(GET, "/api/v1/form-flow/instance/{formFlowId}/breadcrumbs")).authenticated()
-                    .requestMatchers(antMatcher(GET, "/api/management/v1/case-definition/{caseDefinitionKey}/version/{versionTag}/form-flow-definition/process-link-option")).hasAuthority(ADMIN)
-                    .requestMatchers(antMatcher(GET, "/api/management/v1/case-definition/{caseDefinitionKey}/version/{versionTag}/form-flow-definition")).hasAuthority(ADMIN)
-                    .requestMatchers(antMatcher(GET, "/api/management/v1/case-definition/{caseDefinitionKey}/version/{versionTag}/form-flow-definition/{definitionKey}")).hasAuthority(ADMIN)
-                    .requestMatchers(antMatcher(DELETE, "/api/management/v1/case-definition/{caseDefinitionKey}/version/{versionTag}/form-flow-definition/{definitionKey}")).hasAuthority(ADMIN)
-                    .requestMatchers(antMatcher(POST, "/api/management/v1/case-definition/{caseDefinitionKey}/version/{versionTag}/form-flow-definition")).hasAuthority(ADMIN)
-                    .requestMatchers(antMatcher(PUT, "/api/management/v1/case-definition/{caseDefinitionKey}/version/{versionTag}/form-flow-definition/{definitionKey}")).hasAuthority(ADMIN)
+                requests.requestMatchers(pathPattern(GET, "/api/v1/form-flow/{formFlowInstanceId}")).authenticated()
+                    .requestMatchers(pathPattern(POST, "/api/v1/form-flow/{formFlowId}/step/{stepInstanceId}")).authenticated()
+                    .requestMatchers(pathPattern(POST, "/api/v1/form-flow/{formFlowId}/back")).authenticated()
+                    .requestMatchers(pathPattern(POST, "/api/v1/form-flow/{formFlowId}/save")).authenticated()
+                    .requestMatchers(pathPattern(GET, "/api/v1/process-link/form-flow-definition")).hasAuthority(ADMIN)
+                    .requestMatchers(pathPattern(GET, "/api/v1/form-flow/instance/{formFlowInstanceId}")).authenticated()
+                    .requestMatchers(pathPattern(POST, "/api/v1/form-flow/instance/{formFlowId}/step/instance/{stepInstanceId}")).authenticated()
+                    .requestMatchers(pathPattern(POST, "/api/v1/form-flow/instance/{formFlowId}/back")).authenticated()
+                    .requestMatchers(pathPattern(POST, "/api/v1/form-flow/instance/{formFlowId}/save")).authenticated()
+                    .requestMatchers(pathPattern(POST, "/api/v1/form-flow/instance/{formFlowId}/step/instance/{stepInstanceId}/to/step/instance/{targetStepInstanceId}")).authenticated()
+                    .requestMatchers(pathPattern(GET, "/api/v1/form-flow/instance/{formFlowId}/breadcrumbs")).authenticated()
+                    .requestMatchers(pathPattern(GET, "/api/management/v1/case-definition/{caseDefinitionKey}/version/{versionTag}/form-flow-definition/process-link-option")).hasAuthority(ADMIN)
+                    .requestMatchers(pathPattern(GET, "/api/management/v1/case-definition/{caseDefinitionKey}/version/{versionTag}/form-flow-definition")).hasAuthority(ADMIN)
+                    .requestMatchers(pathPattern(GET, "/api/management/v1/case-definition/{caseDefinitionKey}/version/{versionTag}/form-flow-definition/{definitionKey}")).hasAuthority(ADMIN)
+                    .requestMatchers(pathPattern(DELETE, "/api/management/v1/case-definition/{caseDefinitionKey}/version/{versionTag}/form-flow-definition/{definitionKey}")).hasAuthority(ADMIN)
+                    .requestMatchers(pathPattern(POST, "/api/management/v1/case-definition/{caseDefinitionKey}/version/{versionTag}/form-flow-definition")).hasAuthority(ADMIN)
+                    .requestMatchers(pathPattern(PUT, "/api/management/v1/case-definition/{caseDefinitionKey}/version/{versionTag}/form-flow-definition/{definitionKey}")).hasAuthority(ADMIN)
             }
         } catch (e: Exception) {
             throw HttpConfigurerConfigurationException(e)

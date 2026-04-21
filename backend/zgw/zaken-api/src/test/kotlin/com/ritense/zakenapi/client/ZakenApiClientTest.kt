@@ -21,6 +21,7 @@ import com.fasterxml.jackson.module.kotlin.readValue
 import com.ritense.authorization.AuthorizationService
 import com.ritense.outbox.OutboxService
 import com.ritense.outbox.domain.BaseEvent
+import com.ritense.valtimo.Jackson2TestUtils
 import com.ritense.valtimo.contract.json.MapperSingleton
 import com.ritense.zakenapi.ZakenApiAuthentication
 import com.ritense.zakenapi.domain.*
@@ -64,7 +65,7 @@ import kotlin.test.assertNull
 internal class ZakenApiClientTest {
 
     private val objectMapper: ObjectMapper = MapperSingleton.get()
-    private val restClientBuilder: RestClient.Builder = RestClient.builder()
+    private val restClientBuilder: RestClient.Builder = Jackson2TestUtils.restClientBuilder()
 
     private lateinit var mockApi: MockWebServer
     private lateinit var outboxService: OutboxService

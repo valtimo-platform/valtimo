@@ -37,7 +37,7 @@ class SpringContextHelper : ApplicationContextAware {
          * @param beanClass
          * @return Object
          */
-        fun <T : Any?> getBean(beanClass: Class<T>): T {
+        fun <T : Any> getBean(beanClass: Class<T>): T {
             logger.trace { "Retrieving bean $beanClass" }
             return context?.getBean(beanClass) ?: throw IllegalStateException("Cannot getBean $beanClass").also {
                 logger.error { it.message }

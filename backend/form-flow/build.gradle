@@ -61,8 +61,8 @@ dependencies {
     implementation "com.fasterxml.jackson.module:jackson-module-kotlin"
     implementation "com.fasterxml.jackson.datatype:jackson-datatype-jsr310"
 
-    implementation "org.liquibase.ext:liquibase-hibernate6:${liquibaseVersion}"
-    implementation "io.hypersistence:hypersistence-utils-hibernate-62:${hypersistenceUtilsVersion}"
+    implementation "org.liquibase.ext:liquibase-hibernate7:${liquibaseHibernateVersion}"
+    implementation "io.hypersistence:hypersistence-utils-hibernate-71:${hypersistenceUtilsVersion}"
     implementation "org.jetbrains.kotlin:kotlin-reflect"
     implementation "io.github.oshai:kotlin-logging:${kotlinLoggingVersion}"
     implementation "com.github.erosb:everit-json-schema:${everitJsonSchemaVersion}"

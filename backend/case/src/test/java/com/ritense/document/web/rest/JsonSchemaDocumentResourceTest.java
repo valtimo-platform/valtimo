@@ -42,6 +42,7 @@ import com.ritense.document.service.impl.JsonSchemaDocumentService;
 import com.ritense.document.web.rest.impl.JsonSchemaDocumentResource;
 import com.ritense.valtimo.contract.authentication.NamedUser;
 import com.ritense.valtimo.contract.authentication.Team;
+import com.ritense.valtimo.contract.json.MapperSingleton;
 import com.ritense.valtimo.contract.utils.TestUtil;
 import java.util.List;
 import java.util.Optional;
@@ -51,6 +52,7 @@ import org.springframework.data.domain.Pageable;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.data.web.PageableHandlerMethodArgumentResolver;
+import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
@@ -68,6 +70,7 @@ class JsonSchemaDocumentResourceTest extends BaseTest {
 
         mockMvc = MockMvcBuilders.standaloneSetup(documentResource)
             .setCustomArgumentResolvers(new PageableHandlerMethodArgumentResolver())
+            .setMessageConverters(new MappingJackson2HttpMessageConverter(MapperSingleton.INSTANCE.get()))
             .build();
 
         var content = new JsonDocumentContent("{\"firstName\": \"John\"}");

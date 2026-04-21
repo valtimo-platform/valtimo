@@ -23,7 +23,7 @@ import org.springframework.http.HttpMethod.DELETE
 import org.springframework.http.HttpMethod.GET
 import org.springframework.http.HttpMethod.PUT
 import org.springframework.security.config.annotation.web.builders.HttpSecurity
-import org.springframework.security.web.util.matcher.AntPathRequestMatcher.antMatcher
+import org.springframework.security.web.servlet.util.matcher.PathPatternRequestMatcher.pathPattern
 
 class ZaakDetailsHttpSecurityConfigurer : HttpSecurityConfigurer {
 
@@ -31,9 +31,9 @@ class ZaakDetailsHttpSecurityConfigurer : HttpSecurityConfigurer {
         try {
             http.authorizeHttpRequests { requests ->
                 requests
-                    .requestMatchers(antMatcher(GET, SYNC_MANAGEMENT_URL)).hasAuthority(ADMIN)
-                    .requestMatchers(antMatcher(PUT, SYNC_MANAGEMENT_URL)).hasAuthority(ADMIN)
-                    .requestMatchers(antMatcher(DELETE, SYNC_MANAGEMENT_URL)).hasAuthority(ADMIN)
+                    .requestMatchers(pathPattern(GET, SYNC_MANAGEMENT_URL)).hasAuthority(ADMIN)
+                    .requestMatchers(pathPattern(PUT, SYNC_MANAGEMENT_URL)).hasAuthority(ADMIN)
+                    .requestMatchers(pathPattern(DELETE, SYNC_MANAGEMENT_URL)).hasAuthority(ADMIN)
             }
         } catch (e: Exception) {
             throw HttpConfigurerConfigurationException(e)

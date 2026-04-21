@@ -82,7 +82,7 @@ class DefaultFormSubmissionServiceIntTest @Autowired constructor(
         }
 
         val document = runWithoutAuthorization { documentService.get(submissionResult.documentId()) }
-        val businessKey = document.id.id.toString()
+        val businessKey = document.id!!.id.toString()
         val json = objectMapper.writeValueAsString(document.content().asJson())
         assertThat(json, hasJsonPath("""${'$'}.personalInformation.firstName""", equalTo("John")))
         assertThat(json, hasJsonPath("""${'$'}.fruitTypes[0].apples""", equalTo(3)))

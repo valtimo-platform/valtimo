@@ -41,13 +41,13 @@ class DocumentObjectenApiSyncManagementResource(
     fun getSyncConfiguration(
         @PathVariable(name = "caseDefinitionKey") caseDefinitionKey: String,
         @PathVariable(name = "caseDefinitionVersionTag") caseDefinitionVersionTag: String,
-    ): ResponseEntity<DocumentObjectenApiSyncResponse?> {
+    ): ResponseEntity<DocumentObjectenApiSyncResponse> {
         val caseDefinitionId = CaseDefinitionId(caseDefinitionKey, caseDefinitionVersionTag)
         val syncConfiguration =
             documentObjectenApiSyncManagementService.getSyncConfiguration(caseDefinitionId)
-                ?: return ResponseEntity.ok(null)
+                ?: return ResponseEntity.noContent().build()
         val objectManagementConfigurationId = syncConfiguration.objectManagementConfigurationId
-            ?: return ResponseEntity.ok(null)
+            ?: return ResponseEntity.noContent().build()
         val objectManagementConfiguration =
             objectManagementInfoProvider.getObjectManagementInfo(objectManagementConfigurationId)
         return ResponseEntity.ok(

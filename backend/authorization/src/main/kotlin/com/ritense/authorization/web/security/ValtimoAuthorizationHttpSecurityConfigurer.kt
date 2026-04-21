@@ -24,20 +24,20 @@ import org.springframework.http.HttpMethod.GET
 import org.springframework.http.HttpMethod.POST
 import org.springframework.http.HttpMethod.PUT
 import org.springframework.security.config.annotation.web.builders.HttpSecurity
-import org.springframework.security.web.util.matcher.AntPathRequestMatcher.antMatcher
+import org.springframework.security.web.servlet.util.matcher.PathPatternRequestMatcher.pathPattern
 
 class ValtimoAuthorizationHttpSecurityConfigurer : HttpSecurityConfigurer {
     override fun configure(http: HttpSecurity) {
         try {
             http.authorizeHttpRequests { requests ->
-                requests.requestMatchers(antMatcher(GET, ROLES_URL)).hasAuthority(ADMIN)
-                    .requestMatchers(antMatcher(POST, ROLES_URL)).hasAuthority(ADMIN)
-                    .requestMatchers(antMatcher(PUT, "$ROLES_URL/{oldRoleKey}")).hasAuthority(ADMIN)
-                    .requestMatchers(antMatcher(DELETE, ROLES_URL)).hasAuthority(ADMIN)
-                    .requestMatchers(antMatcher(GET, "$ROLES_URL/{roleKey}/permissions")).hasAuthority(ADMIN)
-                    .requestMatchers(antMatcher(PUT, "$ROLES_URL/{roleKey}/permissions")).hasAuthority(ADMIN)
-                    .requestMatchers(antMatcher(POST, "/api/management/v1/permissions/search")).hasAuthority(ADMIN)
-                    .requestMatchers(antMatcher(POST, "/api/v1/permissions")).authenticated()
+                requests.requestMatchers(pathPattern(GET, ROLES_URL)).hasAuthority(ADMIN)
+                    .requestMatchers(pathPattern(POST, ROLES_URL)).hasAuthority(ADMIN)
+                    .requestMatchers(pathPattern(PUT, "$ROLES_URL/{oldRoleKey}")).hasAuthority(ADMIN)
+                    .requestMatchers(pathPattern(DELETE, ROLES_URL)).hasAuthority(ADMIN)
+                    .requestMatchers(pathPattern(GET, "$ROLES_URL/{roleKey}/permissions")).hasAuthority(ADMIN)
+                    .requestMatchers(pathPattern(PUT, "$ROLES_URL/{roleKey}/permissions")).hasAuthority(ADMIN)
+                    .requestMatchers(pathPattern(POST, "/api/management/v1/permissions/search")).hasAuthority(ADMIN)
+                    .requestMatchers(pathPattern(POST, "/api/v1/permissions")).authenticated()
             }
 
         } catch (e: Exception) {

@@ -21,19 +21,19 @@ import com.ritense.valtimo.contract.security.config.HttpSecurityConfigurer
 import org.springframework.http.HttpMethod.GET
 import org.springframework.http.HttpMethod.POST
 import org.springframework.security.config.annotation.web.builders.HttpSecurity
-import org.springframework.security.web.util.matcher.AntPathRequestMatcher.antMatcher
+import org.springframework.security.web.servlet.util.matcher.PathPatternRequestMatcher.pathPattern
 
 class FormViewModelHttpSecurityConfigurerKotlin : HttpSecurityConfigurer {
     override fun configure(http: HttpSecurity) {
         try {
             http.authorizeHttpRequests { requests ->
                 requests.requestMatchers(
-                    antMatcher(POST, "$BASE_URL/$START_FORM"),
-                    antMatcher(POST, "$BASE_URL/$USER_TASK"),
-                    antMatcher(GET, "$BASE_URL/$START_FORM"),
-                    antMatcher(GET, "$BASE_URL/$USER_TASK"),
-                    antMatcher(POST, "$BASE_URL/submit/$START_FORM"),
-                    antMatcher(POST, "$BASE_URL/submit/$USER_TASK")
+                    pathPattern(POST, "$BASE_URL/$START_FORM"),
+                    pathPattern(POST, "$BASE_URL/$USER_TASK"),
+                    pathPattern(GET, "$BASE_URL/$START_FORM"),
+                    pathPattern(GET, "$BASE_URL/$USER_TASK"),
+                    pathPattern(POST, "$BASE_URL/submit/$START_FORM"),
+                    pathPattern(POST, "$BASE_URL/submit/$USER_TASK")
                 ).authenticated()
             }
         } catch (e: Exception) {

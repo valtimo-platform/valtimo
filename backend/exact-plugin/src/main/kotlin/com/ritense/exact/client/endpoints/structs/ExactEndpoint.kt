@@ -4,7 +4,7 @@ import org.springframework.web.client.HttpClientErrorException
 import org.springframework.web.client.RestClient
 import org.springframework.web.client.RestClientResponseException
 
-abstract class ExactEndpoint<Response>(val type: Class<Response>) {
+abstract class ExactEndpoint<Response : Any>(val type: Class<Response>) {
 
     open fun call(client: RestClient): Response {
         try {

@@ -38,10 +38,10 @@ import org.springframework.boot.autoconfigure.AutoConfigureAfter
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
-import org.springframework.boot.autoconfigure.domain.EntityScan
-import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration
-import org.springframework.boot.autoconfigure.liquibase.LiquibaseProperties
-import org.springframework.boot.autoconfigure.orm.jpa.HibernateJpaAutoConfiguration
+import org.springframework.boot.persistence.autoconfigure.EntityScan
+import org.springframework.boot.jdbc.autoconfigure.DataSourceAutoConfiguration
+import org.springframework.boot.liquibase.autoconfigure.LiquibaseProperties
+import org.springframework.boot.hibernate.autoconfigure.HibernateJpaAutoConfiguration
 import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
@@ -128,7 +128,7 @@ class OutboxAutoConfiguration {
     }
 
     @Configuration
-    @ConditionalOnClass(name = ["org.springframework.boot.actuate.health.AbstractHealthIndicator"])
+    @ConditionalOnClass(name = ["org.springframework.boot.health.contributor.AbstractHealthIndicator"])
     class OutboxHealthIndicatorConfiguration {
         @Bean
         @ConditionalOnMissingBean(name = ["outboxPublisherHealthIndicator"])

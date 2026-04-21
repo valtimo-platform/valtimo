@@ -42,7 +42,7 @@ public class DocumentRelationListJsonSerializingTest {
     @BeforeEach
     public void setUp() {
         ObjectMapper objectMapper = MapperSingleton.INSTANCE.get();
-        JacksonTester.initFields(this, objectMapper);
+        JacksonTester.initFields(this, tools.jackson.databind.json.JsonMapper.builder().build());
         jsonString = """
             [{
             \t"id": "91e750e1-53ab-4922-9979-6a2dacd009cf",

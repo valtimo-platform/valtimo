@@ -36,6 +36,7 @@ dependencies {
     implementation "net.javacrumbs.shedlock:shedlock-spring:${shedlockVersion}"
     implementation "net.javacrumbs.shedlock:shedlock-provider-jdbc-template:${shedlockVersion}"
 
+    testImplementation project(':backend:test-utils-common')
     testImplementation "org.springframework.security:spring-security-test"
     testImplementation "org.mockito.kotlin:mockito-kotlin:${mockitoKotlinVersion}"
     testImplementation "org.jetbrains.kotlin:kotlin-test"

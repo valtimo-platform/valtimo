@@ -18,7 +18,7 @@ package com.ritense.valtimo.security.config;
 
 import static org.springframework.http.HttpMethod.GET;
 import static org.springframework.http.HttpMethod.POST;
-import static org.springframework.security.web.util.matcher.AntPathRequestMatcher.antMatcher;
+import static org.springframework.security.web.servlet.util.matcher.PathPatternRequestMatcher.pathPattern;
 
 import com.ritense.valtimo.contract.security.config.HttpConfigurerConfigurationException;
 import com.ritense.valtimo.contract.security.config.HttpSecurityConfigurer;
@@ -31,19 +31,19 @@ public class TaskHttpSecurityConfigurer implements HttpSecurityConfigurer {
     public void configure(HttpSecurity http) {
         try {
             http.authorizeHttpRequests(requests ->
-                requests.requestMatchers(antMatcher(GET, "/api/v1/task")).authenticated()
-                    .requestMatchers(antMatcher(GET, "/api/v2/task")).authenticated()
-                    .requestMatchers(antMatcher(POST, "/api/v1/task/assign/batch-assign")).authenticated()
-                    .requestMatchers(antMatcher(POST, "/api/v1/task/batch-complete")).authenticated()
-                    .requestMatchers(antMatcher(GET, "/api/v1/task/{taskId}")).authenticated()
-                    .requestMatchers(antMatcher(POST, "/api/v1/task/{taskId}/assign")).authenticated()
-                    .requestMatchers(antMatcher(GET, "/api/v1/task/{taskId}/comments")).authenticated()
-                    .requestMatchers(antMatcher(POST, "/api/v1/task/{taskId}/complete")).authenticated()
-                    .requestMatchers(antMatcher(POST, "/api/v1/task/{taskId}/unassign")).authenticated()
-                    .requestMatchers(antMatcher(GET, "/api/v1/task/{taskId}/candidate-user")).authenticated()
-                    .requestMatchers(antMatcher(GET, "/api/v2/task/{taskId}/candidate-user")).authenticated()
-                    .requestMatchers(antMatcher(POST, "/api/v1/task/{taskId}/set-due-date")).authenticated()
-                    .requestMatchers(antMatcher(GET, "/api/v1/task/{taskId}/candidate-team")).authenticated()
+                requests.requestMatchers(pathPattern(GET, "/api/v1/task")).authenticated()
+                    .requestMatchers(pathPattern(GET, "/api/v2/task")).authenticated()
+                    .requestMatchers(pathPattern(POST, "/api/v1/task/assign/batch-assign")).authenticated()
+                    .requestMatchers(pathPattern(POST, "/api/v1/task/batch-complete")).authenticated()
+                    .requestMatchers(pathPattern(GET, "/api/v1/task/{taskId}")).authenticated()
+                    .requestMatchers(pathPattern(POST, "/api/v1/task/{taskId}/assign")).authenticated()
+                    .requestMatchers(pathPattern(GET, "/api/v1/task/{taskId}/comments")).authenticated()
+                    .requestMatchers(pathPattern(POST, "/api/v1/task/{taskId}/complete")).authenticated()
+                    .requestMatchers(pathPattern(POST, "/api/v1/task/{taskId}/unassign")).authenticated()
+                    .requestMatchers(pathPattern(GET, "/api/v1/task/{taskId}/candidate-user")).authenticated()
+                    .requestMatchers(pathPattern(GET, "/api/v2/task/{taskId}/candidate-user")).authenticated()
+                    .requestMatchers(pathPattern(POST, "/api/v1/task/{taskId}/set-due-date")).authenticated()
+                    .requestMatchers(pathPattern(GET, "/api/v1/task/{taskId}/candidate-team")).authenticated()
 
             );
         } catch (Exception e) {

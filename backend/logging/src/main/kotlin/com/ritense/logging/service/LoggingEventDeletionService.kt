@@ -23,6 +23,7 @@ import com.ritense.logging.repository.LoggingEventPropertySpecificationHelper
 import com.ritense.logging.repository.LoggingEventRepository
 import com.ritense.logging.repository.LoggingEventSpecificationHelper
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
+import org.springframework.data.jpa.domain.DeleteSpecification
 import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -44,8 +45,8 @@ class LoggingEventDeletionService(
     )
     fun deleteOldLoggingEvents() {
         val retentionDateTime = LocalDateTime.now() - Duration.ofMinutes(retentionInMinutes)
-        loggingEventPropertyRepository.delete(LoggingEventPropertySpecificationHelper.byOlderThan(retentionDateTime))
-        loggingEventExceptionRepository.delete(LoggingEventExceptionSpecificationHelper.byOlderThan(retentionDateTime))
-        loggingEventRepository.delete(LoggingEventSpecificationHelper.byOlderThan(retentionDateTime))
+        loggingEventPropertyRepository.delete(LoggingEventPropertySpecificationHelper.deleteOlderThan(retentionDateTime))
+        loggingEventExceptionRepository.delete(LoggingEventExceptionSpecificationHelper.deleteOlderThan(retentionDateTime))
+        loggingEventRepository.delete(LoggingEventSpecificationHelper.deleteOlderThan(retentionDateTime))
     }
 }

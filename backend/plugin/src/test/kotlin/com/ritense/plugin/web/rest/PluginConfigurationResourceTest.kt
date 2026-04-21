@@ -44,6 +44,7 @@ import org.springframework.test.web.servlet.result.MockMvcResultHandlers.print
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 import org.springframework.test.web.servlet.setup.MockMvcBuilders
+import com.ritense.valtimo.Jackson2TestUtils
 import java.nio.charset.StandardCharsets
 import java.util.UUID
 
@@ -64,6 +65,7 @@ internal class PluginConfigurationResourceTest {
         mockMvc = MockMvcBuilders
             .standaloneSetup(pluginConfigurationResource)
             .setConversionService(formattingConversionService)
+            .setMessageConverters(Jackson2TestUtils.jackson2Converter())
             .build()
     }
 

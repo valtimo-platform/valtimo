@@ -62,7 +62,7 @@ class ObjectResource(
 
     @GetMapping
     fun getObjectByUrl(
-        @RequestParam(name = "objectUrl") objectUrl: URI): ResponseEntity<ObjectWrapper?> =
+        @RequestParam(name = "objectUrl") objectUrl: URI): ResponseEntity<ObjectWrapper> =
          ResponseEntity.ok(zaakObjectService.getObjectByObjectUrl(objectUrl))
 
 }

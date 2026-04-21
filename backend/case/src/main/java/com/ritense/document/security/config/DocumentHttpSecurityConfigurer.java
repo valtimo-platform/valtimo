@@ -20,7 +20,7 @@ import static org.springframework.http.HttpMethod.DELETE;
 import static org.springframework.http.HttpMethod.GET;
 import static org.springframework.http.HttpMethod.POST;
 import static org.springframework.http.HttpMethod.PUT;
-import static org.springframework.security.web.util.matcher.AntPathRequestMatcher.antMatcher;
+import static org.springframework.security.web.servlet.util.matcher.PathPatternRequestMatcher.pathPattern;
 
 import com.ritense.valtimo.contract.security.config.HttpConfigurerConfigurationException;
 import com.ritense.valtimo.contract.security.config.HttpSecurityConfigurer;
@@ -32,18 +32,18 @@ public class DocumentHttpSecurityConfigurer implements HttpSecurityConfigurer {
     public void configure(HttpSecurity http) {
         try {
             http.authorizeHttpRequests(requests ->
-                requests.requestMatchers(antMatcher(GET, "/api/v1/document/{id}")).authenticated()
-                .requestMatchers(antMatcher(DELETE, "/api/v1/document/{id}")).authenticated()
-                .requestMatchers(antMatcher(POST, "/api/v1/document")).authenticated()
-                .requestMatchers(antMatcher(PUT, "/api/v1/document")).authenticated()
-                .requestMatchers(antMatcher(POST, "/api/v1/document/{document-id}/resource/{resource-id}")).authenticated()
-                .requestMatchers(antMatcher(DELETE, "/api/v1/document/{document-id}/resource/{resource-id}")).authenticated()
-                .requestMatchers(antMatcher(POST, "/api/v1/document/{documentId}/assign")).authenticated()
-                .requestMatchers(antMatcher(POST, "/api/v1/document/assign")).authenticated()
-                .requestMatchers(antMatcher(POST, "/api/v1/document/{documentId}/unassign")).authenticated()
-                .requestMatchers(antMatcher(GET, "/api/v1/document/{document-id}/candidate-user")).authenticated()
-                .requestMatchers(antMatcher(POST, "/api/v1/document/candidate-user")).authenticated()
-                .requestMatchers(antMatcher(GET, "/api/v1/document/{document-id}/candidate-team")).authenticated());
+                requests.requestMatchers(pathPattern(GET, "/api/v1/document/{id}")).authenticated()
+                .requestMatchers(pathPattern(DELETE, "/api/v1/document/{id}")).authenticated()
+                .requestMatchers(pathPattern(POST, "/api/v1/document")).authenticated()
+                .requestMatchers(pathPattern(PUT, "/api/v1/document")).authenticated()
+                .requestMatchers(pathPattern(POST, "/api/v1/document/{document-id}/resource/{resource-id}")).authenticated()
+                .requestMatchers(pathPattern(DELETE, "/api/v1/document/{document-id}/resource/{resource-id}")).authenticated()
+                .requestMatchers(pathPattern(POST, "/api/v1/document/{documentId}/assign")).authenticated()
+                .requestMatchers(pathPattern(POST, "/api/v1/document/assign")).authenticated()
+                .requestMatchers(pathPattern(POST, "/api/v1/document/{documentId}/unassign")).authenticated()
+                .requestMatchers(pathPattern(GET, "/api/v1/document/{document-id}/candidate-user")).authenticated()
+                .requestMatchers(pathPattern(POST, "/api/v1/document/candidate-user")).authenticated()
+                .requestMatchers(pathPattern(GET, "/api/v1/document/{document-id}/candidate-team")).authenticated());
         } catch (Exception e) {
             throw new HttpConfigurerConfigurationException(e);
         }

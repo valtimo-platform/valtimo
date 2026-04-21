@@ -49,6 +49,7 @@ class IntermediateSubmissionResourceIntTest : BaseIntegrationTest() {
     internal fun init() {
         mockMvc = MockMvcBuilders.standaloneSetup(intermediateSubmissionResource)
             .setCustomArgumentResolvers(PageableHandlerMethodArgumentResolver())
+            .setMessageConverters(com.ritense.valtimo.Jackson2TestUtils.jackson2Converter())
             .alwaysDo<StandaloneMockMvcBuilder>(MockMvcResultHandlers.print())
             .build()
         val task: OperatonTask = mock()

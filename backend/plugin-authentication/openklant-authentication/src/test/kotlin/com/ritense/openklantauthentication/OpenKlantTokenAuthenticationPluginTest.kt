@@ -16,9 +16,9 @@
 
 package com.ritense.openklantauthentication
 
+import com.ritense.valtimo.Jackson2TestUtils
 import org.junit.jupiter.api.Test
 import org.springframework.http.HttpHeaders
-import org.springframework.web.client.RestClient
 import kotlin.test.assertEquals
 
 internal class OpenKlantTokenAuthenticationPluginTest {
@@ -26,7 +26,7 @@ internal class OpenKlantTokenAuthenticationPluginTest {
     fun `should add header to request`() {
         val plugin = OpenKlantTokenAuthenticationPlugin()
         plugin.token = "my-token"
-        val restClientBuilder = RestClient.builder()
+        val restClientBuilder = Jackson2TestUtils.restClientBuilder()
 
         plugin.applyAuth(restClientBuilder)
 

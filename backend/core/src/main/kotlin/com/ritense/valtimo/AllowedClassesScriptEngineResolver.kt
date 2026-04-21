@@ -40,6 +40,8 @@ class AllowedClassesScriptEngineResolver(
     companion object {
         private val ALLOWED = mutableSetOf<String?>(
             "java.util.ArrayList",
+            "java.util.HashMap",
+            "java.util.LinkedHashMap",
             "org.joda.time.DateTime",
             "java.util.Date",
             "java.lang.Math",

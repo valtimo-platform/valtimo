@@ -25,7 +25,7 @@ import liquibase.exception.DatabaseException
 import liquibase.exception.LiquibaseException
 import liquibase.resource.ClassLoaderResourceAccessor
 import org.springframework.beans.factory.InitializingBean
-import org.springframework.boot.autoconfigure.liquibase.LiquibaseProperties
+import org.springframework.boot.liquibase.autoconfigure.LiquibaseProperties
 import java.sql.SQLException
 import javax.sql.DataSource
 
@@ -33,7 +33,7 @@ class OutboxLiquibaseRunner(
     liquibaseProperties: LiquibaseProperties,
     private val datasource: DataSource,
 ) : InitializingBean {
-    private val context: Contexts = Contexts(liquibaseProperties.contexts)
+    private val context: Contexts = Contexts(liquibaseProperties.contexts?.joinToString(",") ?: "")
 
     @Throws(SQLException::class, DatabaseException::class)
     override fun afterPropertiesSet() {

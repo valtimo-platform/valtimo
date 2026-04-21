@@ -42,6 +42,7 @@ import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 import org.springframework.context.ApplicationEventPublisher
 import org.springframework.data.domain.Sort
+import org.springframework.data.jpa.domain.Specification
 import java.util.Optional
 
 
@@ -77,7 +78,7 @@ class CaseTabServiceTest(
 
         whenever(documentDefinitionService.findByBlueprintId(caseDefinitionId)).thenReturn(Optional.of(mock()))
         val specMock = mock<AuthorizationSpecification<CaseTab>>()
-        whenever(specMock.and(any())).thenReturn(specMock)
+        whenever(specMock.and(any<Specification<CaseTab>>())).thenReturn(specMock)
         whenever(authorizationService.getAuthorizationSpecification(any<EntityAuthorizationRequest<CaseTab>>(), anyOrNull())).thenReturn(specMock)
         whenever(caseTabRepository.findAll(any<AuthorizationSpecification<CaseTab>>(), any<Sort>())).thenReturn(emptyList())
         whenever(caseTabRepository.save(any<CaseTab>())).thenReturn(caseTab)

@@ -18,6 +18,7 @@ package com.ritense.logging.repository
 
 import com.ritense.logging.domain.LoggingEventProperty
 import com.ritense.logging.repository.LoggingEventSpecificationHelper.Companion.TIMESTAMP
+import org.springframework.data.jpa.domain.DeleteSpecification
 import org.springframework.data.jpa.domain.Specification
 import java.time.LocalDateTime
 import java.time.ZoneId
@@ -33,6 +34,12 @@ class LoggingEventPropertySpecificationHelper {
 
         @JvmStatic
         fun byOlderThan(localDateTime: LocalDateTime) = Specification<LoggingEventProperty> { root, _, cb ->
+            val timestamp = localDateTime.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli()
+            cb.lessThan(root.join<Any, Any>(EVENT)[TIMESTAMP], timestamp)
+        }
+
+        @JvmStatic
+        fun deleteOlderThan(localDateTime: LocalDateTime) = DeleteSpecification<LoggingEventProperty> { root, _, cb ->
             val timestamp = localDateTime.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli()
             cb.lessThan(root.join<Any, Any>(EVENT)[TIMESTAMP], timestamp)
         }

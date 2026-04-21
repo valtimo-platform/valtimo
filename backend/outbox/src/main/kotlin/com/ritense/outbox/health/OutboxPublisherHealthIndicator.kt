@@ -17,8 +17,8 @@
 package com.ritense.outbox.health
 
 import io.github.resilience4j.circuitbreaker.CircuitBreaker
-import org.springframework.boot.actuate.health.AbstractHealthIndicator
-import org.springframework.boot.actuate.health.Health
+import org.springframework.boot.health.contributor.AbstractHealthIndicator
+import org.springframework.boot.health.contributor.Health
 
 /**
  * Exposes the outbox publisher circuit breaker state via the /actuator/health endpoint.

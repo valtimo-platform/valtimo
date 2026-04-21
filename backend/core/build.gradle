@@ -81,6 +81,7 @@ dependencies {
     api ("org.operaton.bpm.springboot:operaton-bpm-spring-boot-starter-webapp:${operatonVersion}") {
         exclude group: "com.sun.xml.bind"
     }
+    api "org.springframework.boot:spring-boot-starter-jersey"
 
     // Operaton plugins
     implementation "org.operaton.bpm:operaton-engine-plugin-spin:${operatonVersion}"
@@ -100,7 +101,7 @@ dependencies {
     implementation "com.fasterxml.jackson.datatype:jackson-datatype-json-org"
     implementation "com.fasterxml.jackson.datatype:jackson-datatype-hppc"
     implementation "com.fasterxml.jackson.datatype:jackson-datatype-jsr310"
-    implementation "com.fasterxml.jackson.datatype:jackson-datatype-hibernate6"
+    implementation "com.fasterxml.jackson.datatype:jackson-datatype-hibernate7"
     implementation "com.fasterxml.jackson.dataformat:jackson-dataformat-xml"
     implementation "com.fasterxml.jackson.module:jackson-module-blackbird"
     implementation "com.fasterxml.jackson.module:jackson-module-parameter-names"

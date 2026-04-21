@@ -17,6 +17,7 @@
 package com.ritense.objecttypenapi.client
 
 import com.ritense.objecttypenapi.ObjecttypenApiAuthentication
+import com.ritense.valtimo.Jackson2TestUtils
 import okhttp3.mockwebserver.MockResponse
 import okhttp3.mockwebserver.MockWebServer
 import org.junit.jupiter.api.AfterAll
@@ -51,7 +52,7 @@ internal class ObjecttypenApiClientTest {
 
     @Test
     fun `should send get single objecttype request and parse response`() {
-        val restClientBuilder = RestClient.builder()
+        val restClientBuilder = Jackson2TestUtils.restClientBuilder()
         val client = ObjecttypenApiClient(restClientBuilder)
 
         val responseBody = """
@@ -122,7 +123,7 @@ internal class ObjecttypenApiClientTest {
 
     @Test
     fun `should send get multiple objecttypes request and parse response`() {
-        val restClientBuilder = RestClient.builder()
+        val restClientBuilder = Jackson2TestUtils.restClientBuilder()
         val client = ObjecttypenApiClient(restClientBuilder)
 
         val responseBody = """

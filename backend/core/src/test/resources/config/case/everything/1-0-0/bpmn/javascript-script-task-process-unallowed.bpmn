@@ -12,9 +12,9 @@
     <bpmn:scriptTask id="Activity_1wy7vpn" name="Sum" scriptFormat="javascript">
       <bpmn:incoming>Flow_0kymcf3</bpmn:incoming>
       <bpmn:outgoing>Flow_1muqoyt</bpmn:outgoing>
-      <bpmn:script>const HashMap = Java.type("java.util.HashMap");
+      <bpmn:script>const Runtime = Java.type("java.lang.Runtime");
 
-const result = new HashMap()</bpmn:script>
+const result = Runtime.getRuntime()</bpmn:script>
     </bpmn:scriptTask>
   </bpmn:process>
   <bpmndi:BPMNDiagram id="BPMNDiagram_1">

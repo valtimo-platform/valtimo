@@ -92,8 +92,8 @@ class RabbitMessagePublisherTest {
             whenever(rabbitTemplate.convertAndSend(any<String>(), eq("test"), any<String>(), any<CorrelationData>())).thenAnswer { answer ->
                 val message = MessageBuilder.withBody(answer.getArgument(2, String::class.java).toByteArray()).build()
                 val correlationData = answer.getArgument(3, CorrelationData::class.java)
-                correlationData.returned = ReturnedMessage(
-                    message, 0, "returned_message_not_null", "", "")
+                correlationData.setReturned(ReturnedMessage(
+                    message, 0, "returned_message_not_null", "", ""))
                 correlationData.future.complete(CorrelationData.Confirm(true, "reasons"))
             }
 
@@ -182,7 +182,7 @@ class RabbitMessagePublisherTest {
             val message = MessageBuilder.withBody(answer.getArgument(2, String::class.java).toByteArray()).build()
             val correlationData = answer.getArgument(3, CorrelationData::class.java)
             if (callCount == 1) {
-                correlationData.returned = ReturnedMessage(message, 312, "NO_ROUTE", "", "")
+                correlationData.setReturned(ReturnedMessage(message, 312, "NO_ROUTE", "", ""))
             }
             correlationData.future.complete(CorrelationData.Confirm(true, null))
         }

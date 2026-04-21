@@ -26,6 +26,7 @@ import org.mockito.kotlin.eq
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
+import com.ritense.valtimo.Jackson2TestUtils
 import org.springframework.context.ApplicationContext
 import org.springframework.web.client.RestClient
 
@@ -53,7 +54,10 @@ internal class ExactPluginTest {
     fun setUpEach() {
         exactService = mock()
         context = mock()
-        exactClient = ExactPluginAutoConfiguration().exactClient("http://localhost:${mockWebServer.port}")
+        exactClient = Jackson2TestUtils.restClientBuilder()
+            .baseUrl("http://localhost:${mockWebServer.port}")
+            .defaultHeader("Accept", "application/json")
+            .build()
         exactPlugin = ExactPlugin(exactService, exactClient, context)
     }
 

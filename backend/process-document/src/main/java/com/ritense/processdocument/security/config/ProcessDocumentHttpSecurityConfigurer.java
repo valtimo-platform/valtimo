@@ -21,7 +21,7 @@ import static org.springframework.http.HttpMethod.DELETE;
 import static org.springframework.http.HttpMethod.GET;
 import static org.springframework.http.HttpMethod.POST;
 import static org.springframework.http.HttpMethod.PUT;
-import static org.springframework.security.web.util.matcher.AntPathRequestMatcher.antMatcher;
+import static org.springframework.security.web.servlet.util.matcher.PathPatternRequestMatcher.pathPattern;
 
 import com.ritense.valtimo.contract.security.config.HttpConfigurerConfigurationException;
 import com.ritense.valtimo.contract.security.config.HttpSecurityConfigurer;
@@ -36,42 +36,42 @@ public class ProcessDocumentHttpSecurityConfigurer implements HttpSecurityConfig
     public void configure(HttpSecurity http) {
         try {
             http.authorizeHttpRequests(requests -> requests
-                .requestMatchers(antMatcher(GET, "/api/v1/case-definition/{caseDefinitionKey}/case-process-link"))
+                .requestMatchers(pathPattern(GET, "/api/v1/case-definition/{caseDefinitionKey}/case-process-link"))
                 .authenticated()
-                .requestMatchers(antMatcher(GET, "/api/v1/document-instance/{documentId}/case-process-link"))
+                .requestMatchers(pathPattern(GET, "/api/v1/document-instance/{documentId}/case-process-link"))
                 .authenticated()
-                .requestMatchers(antMatcher(GET, "/api/v1/process-instance/{processInstanceId}/case-process-link"))
+                .requestMatchers(pathPattern(GET, "/api/v1/process-instance/{processInstanceId}/case-process-link"))
                 .authenticated()
-                .requestMatchers(antMatcher(GET, "/api/v1/process-document/instance/document/{document-id}"))
+                .requestMatchers(pathPattern(GET, "/api/v1/process-document/instance/document/{document-id}"))
                 .authenticated()
-                .requestMatchers(antMatcher(GET, "/api/v2/process-document/instance/document/{document-id}"))
+                .requestMatchers(pathPattern(GET, "/api/v2/process-document/instance/document/{document-id}"))
                 .authenticated()
-                .requestMatchers(antMatcher(GET, "/api/v1/process-document/instance/document/{document-id}/audit"))
+                .requestMatchers(pathPattern(GET, "/api/v1/process-document/instance/document/{document-id}/audit"))
                 .authenticated()
-                .requestMatchers(antMatcher(POST, "/api/v1/process-document/operation/new-document-and-start-process"))
+                .requestMatchers(pathPattern(POST, "/api/v1/process-document/operation/new-document-and-start-process"))
                 .authenticated()
-                .requestMatchers(antMatcher(
+                .requestMatchers(pathPattern(
                     POST,
                     "/api/v1/process-document/operation/modify-document-and-complete-task"
                 ))
                 .authenticated()
-                .requestMatchers(antMatcher(
+                .requestMatchers(pathPattern(
                     POST,
                     "/api/v1/process-document/operation/modify-document-and-start-process"
                 ))
                 .authenticated()
-                .requestMatchers(antMatcher(POST, "/api/v3/task"))
+                .requestMatchers(pathPattern(POST, "/api/v3/task"))
                 .authenticated()
-                .requestMatchers(antMatcher(POST, "/api/v1/document-definition/{caseDefinitionName}/task/search"))
+                .requestMatchers(pathPattern(POST, "/api/v1/document-definition/{caseDefinitionName}/task/search"))
                 .authenticated()
                 //admin endpoints
-                .requestMatchers(antMatcher(GET, FEATURE_PROCESS_URL + "/{type}"))
+                .requestMatchers(pathPattern(GET, FEATURE_PROCESS_URL + "/{type}"))
                 .hasAuthority(ADMIN)
-                .requestMatchers(antMatcher(PUT, FEATURE_PROCESS_URL))
+                .requestMatchers(pathPattern(PUT, FEATURE_PROCESS_URL))
                 .hasAuthority(ADMIN)
-                .requestMatchers(antMatcher(DELETE, FEATURE_PROCESS_URL + "/{type}"))
+                .requestMatchers(pathPattern(DELETE, FEATURE_PROCESS_URL + "/{type}"))
                 .hasAuthority(ADMIN)
-                .requestMatchers(antMatcher(
+                .requestMatchers(pathPattern(
                     PUT,
                     "/api/management/v1/case-definition/{caseDefinitionKey}/version/{caseDefinitionVersionTag}/process/{processDefinitionId}/properties"
                 )).hasAuthority(ADMIN)

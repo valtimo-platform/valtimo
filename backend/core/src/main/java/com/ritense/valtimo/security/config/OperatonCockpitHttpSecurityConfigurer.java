@@ -16,7 +16,7 @@
 
 package com.ritense.valtimo.security.config;
 
-import static org.springframework.security.web.util.matcher.AntPathRequestMatcher.antMatcher;
+import static org.springframework.security.web.servlet.util.matcher.PathPatternRequestMatcher.pathPattern;
 
 import com.ritense.valtimo.contract.security.config.HttpConfigurerConfigurationException;
 import com.ritense.valtimo.contract.security.config.HttpSecurityConfigurer;
@@ -46,19 +46,19 @@ public class OperatonCockpitHttpSecurityConfigurer implements HttpSecurityConfig
             http.authorizeHttpRequests(requests ->
                 requests.requestMatchers(
                     whiteListed(
-                        antMatcher("/operaton-welcome/**"),
-                        antMatcher("/operaton/api/admin/**"),
-                        antMatcher("/operaton/api/cockpit/**"),
-                        antMatcher("/operaton/api/engine/**"),
-                        antMatcher("/operaton/api/tasklist/**"),
-                        antMatcher("/operaton/api/welcome/**"),
-                        antMatcher("/operaton/app/admin/**"),
-                        antMatcher("/operaton/app/cockpit/**"),
-                        antMatcher("/operaton/app/tasklist/**"),
-                        antMatcher("/operaton/app/welcome/**"),
-                        antMatcher("/operaton/assets/**"),
-                        antMatcher("/operaton/favicon.ico"),
-                        antMatcher("/operaton/lib/**")
+                        pathPattern("/operaton-welcome/**"),
+                        pathPattern("/operaton/api/admin/**"),
+                        pathPattern("/operaton/api/cockpit/**"),
+                        pathPattern("/operaton/api/engine/**"),
+                        pathPattern("/operaton/api/tasklist/**"),
+                        pathPattern("/operaton/api/welcome/**"),
+                        pathPattern("/operaton/app/admin/**"),
+                        pathPattern("/operaton/app/cockpit/**"),
+                        pathPattern("/operaton/app/tasklist/**"),
+                        pathPattern("/operaton/app/welcome/**"),
+                        pathPattern("/operaton/assets/**"),
+                        pathPattern("/operaton/favicon.ico"),
+                        pathPattern("/operaton/lib/**")
                     )
                 ).permitAll()
             );

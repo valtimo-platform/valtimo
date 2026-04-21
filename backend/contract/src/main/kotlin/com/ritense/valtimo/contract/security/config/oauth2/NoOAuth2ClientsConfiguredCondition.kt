@@ -18,14 +18,14 @@ package com.ritense.valtimo.contract.security.config.oauth2
 import org.springframework.boot.autoconfigure.condition.ConditionMessage
 import org.springframework.boot.autoconfigure.condition.ConditionOutcome
 import org.springframework.boot.autoconfigure.condition.SpringBootCondition
-import org.springframework.boot.autoconfigure.security.oauth2.client.OAuth2ClientProperties
+import org.springframework.boot.security.oauth2.client.autoconfigure.OAuth2ClientProperties
 import org.springframework.boot.context.properties.bind.Bindable
 import org.springframework.boot.context.properties.bind.Binder
 import org.springframework.context.annotation.ConditionContext
 import org.springframework.core.env.Environment
 import org.springframework.core.type.AnnotatedTypeMetadata
 
-// The opposite of: org.springframework.boot.autoconfigure.security.oauth2.client.ClientsConfiguredCondition
+// The opposite of: org.springframework.boot.security.oauth2.client.autoconfigure.ClientsConfiguredCondition
 class NoOAuth2ClientsConfiguredCondition : SpringBootCondition() {
     override fun getMatchOutcome(context: ConditionContext, metadata: AnnotatedTypeMetadata): ConditionOutcome {
         val message = ConditionMessage.forCondition("No OAuth2 Clients Configured Condition")
@@ -44,7 +44,7 @@ class NoOAuth2ClientsConfiguredCondition : SpringBootCondition() {
     private fun getRegistrations(environment: Environment): Map<String, OAuth2ClientProperties.Registration> {
         return Binder.get(environment)
             .bind("spring.security.oauth2.client.registration", STRING_REGISTRATION_MAP)
-            .orElse(emptyMap())
+            .orElse(emptyMap()) ?: emptyMap()
     }
 
     companion object {

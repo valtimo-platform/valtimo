@@ -21,7 +21,7 @@ import static org.springframework.http.HttpMethod.DELETE;
 import static org.springframework.http.HttpMethod.GET;
 import static org.springframework.http.HttpMethod.POST;
 import static org.springframework.http.HttpMethod.PUT;
-import static org.springframework.security.web.util.matcher.AntPathRequestMatcher.antMatcher;
+import static org.springframework.security.web.servlet.util.matcher.PathPatternRequestMatcher.pathPattern;
 
 import com.ritense.valtimo.contract.security.config.HttpConfigurerConfigurationException;
 import com.ritense.valtimo.contract.security.config.HttpSecurityConfigurer;
@@ -35,33 +35,33 @@ public class DocumentDefinitionHttpSecurityConfigurer implements HttpSecurityCon
     public void configure(HttpSecurity http) {
         try {
             http.authorizeHttpRequests(requests ->
-                requests.requestMatchers(antMatcher(GET, DEFINITION_URL))
+                requests.requestMatchers(pathPattern(GET, DEFINITION_URL))
                     .authenticated()
-                    .requestMatchers(antMatcher(GET, DEFINITION_URL))
+                    .requestMatchers(pathPattern(GET, DEFINITION_URL))
                     .authenticated()
-                    .requestMatchers(antMatcher(POST, "/api/management/v1/document-definition-template"))
+                    .requestMatchers(pathPattern(POST, "/api/management/v1/document-definition-template"))
                     .hasAuthority(ADMIN)
-                    .requestMatchers(antMatcher(GET, DEFINITION_URL + "/{name}"))
+                    .requestMatchers(pathPattern(GET, DEFINITION_URL + "/{name}"))
                     .authenticated()
-                    .requestMatchers(antMatcher(GET, DEFINITION_URL + "/open/count"))
+                    .requestMatchers(pathPattern(GET, DEFINITION_URL + "/open/count"))
                     .authenticated()
-                    .requestMatchers(antMatcher(GET, "/api/management/v1/document-definition"))
+                    .requestMatchers(pathPattern(GET, "/api/management/v1/document-definition"))
                     .hasAuthority(ADMIN)
-                    .requestMatchers(antMatcher(GET, "/api/management/v1/document-definition/{name}"))
+                    .requestMatchers(pathPattern(GET, "/api/management/v1/document-definition/{name}"))
                     .hasAuthority(ADMIN)
-                    .requestMatchers(antMatcher(GET, "/api/management/v1/case-definition/{caseDefinitionKey}/version/{versionTag}/document-definition"))
+                    .requestMatchers(pathPattern(GET, "/api/management/v1/case-definition/{caseDefinitionKey}/version/{versionTag}/document-definition"))
                     .hasAuthority(ADMIN)
-                    .requestMatchers(antMatcher(PUT, "/api/management/v1/case-definition/{caseDefinitionKey}/version/{versionTag}/document-definition"))
+                    .requestMatchers(pathPattern(PUT, "/api/management/v1/case-definition/{caseDefinitionKey}/version/{versionTag}/document-definition"))
                     .hasAuthority(ADMIN)
-                    .requestMatchers(antMatcher(GET, "/api/management/v1/document-definition/{name}/version"))
+                    .requestMatchers(pathPattern(GET, "/api/management/v1/document-definition/{name}/version"))
                     .hasAuthority(ADMIN)
-                    .requestMatchers(antMatcher(POST, DEFINITION_URL))
+                    .requestMatchers(pathPattern(POST, DEFINITION_URL))
                     .hasAuthority(ADMIN) // Deprecated since v11
-                    .requestMatchers(antMatcher(POST, "/api/management/v1/document-definition"))
+                    .requestMatchers(pathPattern(POST, "/api/management/v1/document-definition"))
                     .hasAuthority(ADMIN)
-                    .requestMatchers(antMatcher(DELETE, DEFINITION_URL + "/{name}"))
+                    .requestMatchers(pathPattern(DELETE, DEFINITION_URL + "/{name}"))
                     .hasAuthority(ADMIN) // Deprecated since v11
-                    .requestMatchers(antMatcher(DELETE, "/api/management/v1/document-definition/{name}"))
+                    .requestMatchers(pathPattern(DELETE, "/api/management/v1/document-definition/{name}"))
                     .hasAuthority(ADMIN)
             );
         } catch (Exception e) {

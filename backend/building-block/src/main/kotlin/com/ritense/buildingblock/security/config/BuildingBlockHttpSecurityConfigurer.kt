@@ -24,98 +24,98 @@ import org.springframework.http.HttpMethod.GET
 import org.springframework.http.HttpMethod.POST
 import org.springframework.http.HttpMethod.PUT
 import org.springframework.security.config.annotation.web.builders.HttpSecurity
-import org.springframework.security.web.util.matcher.AntPathRequestMatcher.antMatcher
+import org.springframework.security.web.servlet.util.matcher.PathPatternRequestMatcher.pathPattern
 
 class BuildingBlockHttpSecurityConfigurer : HttpSecurityConfigurer {
     override fun configure(http: HttpSecurity) {
         try {
             http.authorizeHttpRequests { requests ->
                 requests
-                    .requestMatchers(antMatcher(GET, MANAGEMENT_BASE_PATH)).hasAuthority(ADMIN)
-                    .requestMatchers(antMatcher(POST, MANAGEMENT_BASE_PATH)).hasAuthority(ADMIN)
-                    .requestMatchers(antMatcher(GET, "$MANAGEMENT_BASE_PATH/{key}/version")).hasAuthority(ADMIN)
-                    .requestMatchers(antMatcher(GET, "$MANAGEMENT_BASE_PATH/{key}/version/{versionTag}")).hasAuthority(ADMIN)
-                    .requestMatchers(antMatcher(PUT, "$MANAGEMENT_BASE_PATH/{key}/version/{versionTag}")).hasAuthority(ADMIN)
-                    .requestMatchers(antMatcher(GET, "$MANAGEMENT_BASE_PATH/{key}/version/{versionTag}/document")).hasAuthority(ADMIN)
-                    .requestMatchers(antMatcher(PUT, "$MANAGEMENT_BASE_PATH/{key}/version/{versionTag}/document")).hasAuthority(ADMIN)
-                    .requestMatchers(antMatcher(POST, "$MANAGEMENT_BASE_PATH/{key}/version/{versionTag}/draft")).hasAuthority(ADMIN)
-                    .requestMatchers(antMatcher(GET, "$MANAGEMENT_BASE_PATH/{key}/version/{versionTag}/export")).hasAuthority(ADMIN)
-                    .requestMatchers(antMatcher(POST, "$MANAGEMENT_BASE_PATH/{key}/version/{versionTag}/finalize")).hasAuthority(ADMIN)
-                    .requestMatchers(antMatcher(GET, "$MANAGEMENT_BASE_PATH/{key}/version/{versionTag}/plugin")).hasAuthority(ADMIN)
-                    .requestMatchers(antMatcher(GET, "$MANAGEMENT_BASE_PATH/{key}/version/{versionTag}/fields")).hasAuthority(ADMIN)
-                    .requestMatchers(antMatcher(GET, "$MANAGEMENT_BASE_PATH/process-definition/{processDefinitionId}/is-building-block")).hasAuthority(ADMIN)
-                    .requestMatchers(antMatcher(GET, "$MANAGEMENT_BASE_PATH/{key}/version/{versionTag}/process-definition")).hasAuthority(ADMIN)
+                    .requestMatchers(pathPattern(GET, MANAGEMENT_BASE_PATH)).hasAuthority(ADMIN)
+                    .requestMatchers(pathPattern(POST, MANAGEMENT_BASE_PATH)).hasAuthority(ADMIN)
+                    .requestMatchers(pathPattern(GET, "$MANAGEMENT_BASE_PATH/{key}/version")).hasAuthority(ADMIN)
+                    .requestMatchers(pathPattern(GET, "$MANAGEMENT_BASE_PATH/{key}/version/{versionTag}")).hasAuthority(ADMIN)
+                    .requestMatchers(pathPattern(PUT, "$MANAGEMENT_BASE_PATH/{key}/version/{versionTag}")).hasAuthority(ADMIN)
+                    .requestMatchers(pathPattern(GET, "$MANAGEMENT_BASE_PATH/{key}/version/{versionTag}/document")).hasAuthority(ADMIN)
+                    .requestMatchers(pathPattern(PUT, "$MANAGEMENT_BASE_PATH/{key}/version/{versionTag}/document")).hasAuthority(ADMIN)
+                    .requestMatchers(pathPattern(POST, "$MANAGEMENT_BASE_PATH/{key}/version/{versionTag}/draft")).hasAuthority(ADMIN)
+                    .requestMatchers(pathPattern(GET, "$MANAGEMENT_BASE_PATH/{key}/version/{versionTag}/export")).hasAuthority(ADMIN)
+                    .requestMatchers(pathPattern(POST, "$MANAGEMENT_BASE_PATH/{key}/version/{versionTag}/finalize")).hasAuthority(ADMIN)
+                    .requestMatchers(pathPattern(GET, "$MANAGEMENT_BASE_PATH/{key}/version/{versionTag}/plugin")).hasAuthority(ADMIN)
+                    .requestMatchers(pathPattern(GET, "$MANAGEMENT_BASE_PATH/{key}/version/{versionTag}/fields")).hasAuthority(ADMIN)
+                    .requestMatchers(pathPattern(GET, "$MANAGEMENT_BASE_PATH/process-definition/{processDefinitionId}/is-building-block")).hasAuthority(ADMIN)
+                    .requestMatchers(pathPattern(GET, "$MANAGEMENT_BASE_PATH/{key}/version/{versionTag}/process-definition")).hasAuthority(ADMIN)
                     .requestMatchers(
-                        antMatcher(
+                        pathPattern(
                             GET,
                             "$MANAGEMENT_BASE_PATH/{key}/version/{versionTag}/process-definition/{processDefinitionId}"
                         )
                     ).hasAuthority(ADMIN)
                     .requestMatchers(
-                        antMatcher(
+                        pathPattern(
                             POST,
                             "$MANAGEMENT_BASE_PATH/{key}/version/{versionTag}/process-definition/{processDefinitionId}"
                         )
                     ).hasAuthority(ADMIN)
-                    .requestMatchers(antMatcher(POST, "$MANAGEMENT_BASE_PATH/import")).hasAuthority(ADMIN)
-                    .requestMatchers(antMatcher(GET, "$MANAGEMENT_BASE_PATH/{key}/version/{versionTag}/artwork"))
+                    .requestMatchers(pathPattern(POST, "$MANAGEMENT_BASE_PATH/import")).hasAuthority(ADMIN)
+                    .requestMatchers(pathPattern(GET, "$MANAGEMENT_BASE_PATH/{key}/version/{versionTag}/artwork"))
                     .hasAuthority(ADMIN)
-                    .requestMatchers(antMatcher(POST, "$MANAGEMENT_BASE_PATH/{key}/version/{versionTag}/artwork"))
+                    .requestMatchers(pathPattern(POST, "$MANAGEMENT_BASE_PATH/{key}/version/{versionTag}/artwork"))
                     .hasAuthority(ADMIN)
-                    .requestMatchers(antMatcher(DELETE, "$MANAGEMENT_BASE_PATH/{key}/version/{versionTag}/artwork"))
+                    .requestMatchers(pathPattern(DELETE, "$MANAGEMENT_BASE_PATH/{key}/version/{versionTag}/artwork"))
                     .hasAuthority(ADMIN)
                     .requestMatchers(
-                        antMatcher(
+                        pathPattern(
                             GET,
                             "$MANAGEMENT_BASE_PATH/{key}/version/{versionTag}/process-definition/main/key"
                         )
                     ).hasAuthority(ADMIN)
                     .requestMatchers(
-                        antMatcher(
+                        pathPattern(
                             POST,
                             "$MANAGEMENT_BASE_PATH/{key}/version/{versionTag}/process-definition/{processDefinitionId}/main"
                         )
                     ).hasAuthority(ADMIN)
                     .requestMatchers(
-                        antMatcher(
+                        pathPattern(
                             DELETE,
                             "$MANAGEMENT_BASE_PATH/{key}/version/{versionTag}/process-definition/{processDefinitionId}"
                         )
                     ).hasAuthority(ADMIN)
                     .requestMatchers(
-                        antMatcher(
+                        pathPattern(
                             POST,
                             "$VALUE_RESOLVER_BASE_PATH/{key}/version/{versionTag}/keys"
                         )
                     ).hasAuthority(ADMIN)
                     // Form option endpoint
-                    .requestMatchers(antMatcher(GET, "$MANAGEMENT_BASE_PATH/{key}/version/{versionTag}/form-option"))
+                    .requestMatchers(pathPattern(GET, "$MANAGEMENT_BASE_PATH/{key}/version/{versionTag}/form-option"))
                     .hasAuthority(ADMIN)
                     // Form management endpoints
-                    .requestMatchers(antMatcher(GET, "$MANAGEMENT_BASE_PATH/{key}/version/{versionTag}/form"))
+                    .requestMatchers(pathPattern(GET, "$MANAGEMENT_BASE_PATH/{key}/version/{versionTag}/form"))
                     .hasAuthority(ADMIN)
-                    .requestMatchers(antMatcher(POST, "$MANAGEMENT_BASE_PATH/{key}/version/{versionTag}/form"))
+                    .requestMatchers(pathPattern(POST, "$MANAGEMENT_BASE_PATH/{key}/version/{versionTag}/form"))
                     .hasAuthority(ADMIN)
-                    .requestMatchers(antMatcher(GET, "$MANAGEMENT_BASE_PATH/{key}/version/{versionTag}/form/{formDefinitionId}"))
+                    .requestMatchers(pathPattern(GET, "$MANAGEMENT_BASE_PATH/{key}/version/{versionTag}/form/{formDefinitionId}"))
                     .hasAuthority(ADMIN)
-                    .requestMatchers(antMatcher(PUT, "$MANAGEMENT_BASE_PATH/{key}/version/{versionTag}/form/{formDefinitionId}"))
+                    .requestMatchers(pathPattern(PUT, "$MANAGEMENT_BASE_PATH/{key}/version/{versionTag}/form/{formDefinitionId}"))
                     .hasAuthority(ADMIN)
-                    .requestMatchers(antMatcher(DELETE, "$MANAGEMENT_BASE_PATH/{key}/version/{versionTag}/form/{formDefinitionId}"))
+                    .requestMatchers(pathPattern(DELETE, "$MANAGEMENT_BASE_PATH/{key}/version/{versionTag}/form/{formDefinitionId}"))
                     .hasAuthority(ADMIN)
-                    .requestMatchers(antMatcher(GET, "$MANAGEMENT_BASE_PATH/{key}/version/{versionTag}/form/name/{name}"))
+                    .requestMatchers(pathPattern(GET, "$MANAGEMENT_BASE_PATH/{key}/version/{versionTag}/form/name/{name}"))
                     .hasAuthority(ADMIN)
-                    .requestMatchers(antMatcher(GET, "$MANAGEMENT_BASE_PATH/{key}/version/{versionTag}/form/{name}/exists"))
+                    .requestMatchers(pathPattern(GET, "$MANAGEMENT_BASE_PATH/{key}/version/{versionTag}/form/{name}/exists"))
                     .hasAuthority(ADMIN)
                     // Form flow management endpoints
-                    .requestMatchers(antMatcher(GET, "$MANAGEMENT_BASE_PATH/{key}/version/{versionTag}/form-flow-definition"))
+                    .requestMatchers(pathPattern(GET, "$MANAGEMENT_BASE_PATH/{key}/version/{versionTag}/form-flow-definition"))
                     .hasAuthority(ADMIN)
-                    .requestMatchers(antMatcher(POST, "$MANAGEMENT_BASE_PATH/{key}/version/{versionTag}/form-flow-definition"))
+                    .requestMatchers(pathPattern(POST, "$MANAGEMENT_BASE_PATH/{key}/version/{versionTag}/form-flow-definition"))
                     .hasAuthority(ADMIN)
-                    .requestMatchers(antMatcher(GET, "$MANAGEMENT_BASE_PATH/{key}/version/{versionTag}/form-flow-definition/{definitionKey}"))
+                    .requestMatchers(pathPattern(GET, "$MANAGEMENT_BASE_PATH/{key}/version/{versionTag}/form-flow-definition/{definitionKey}"))
                     .hasAuthority(ADMIN)
-                    .requestMatchers(antMatcher(PUT, "$MANAGEMENT_BASE_PATH/{key}/version/{versionTag}/form-flow-definition/{definitionKey}"))
+                    .requestMatchers(pathPattern(PUT, "$MANAGEMENT_BASE_PATH/{key}/version/{versionTag}/form-flow-definition/{definitionKey}"))
                     .hasAuthority(ADMIN)
-                    .requestMatchers(antMatcher(DELETE, "$MANAGEMENT_BASE_PATH/{key}/version/{versionTag}/form-flow-definition/{definitionKey}"))
+                    .requestMatchers(pathPattern(DELETE, "$MANAGEMENT_BASE_PATH/{key}/version/{versionTag}/form-flow-definition/{definitionKey}"))
                     .hasAuthority(ADMIN)
             }
         } catch (e: Exception) {

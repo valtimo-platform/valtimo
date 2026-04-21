@@ -93,8 +93,8 @@ class FormResource(
         return ResponseEntity.ok(prefilledForm)
     }
 
-    fun <T : FormSubmissionResult?> applyResult(result: T): ResponseEntity<T> {
-        val httpStatus = if (result!!.errors().isEmpty()) HttpStatus.OK else HttpStatus.BAD_REQUEST
+    fun <T : FormSubmissionResult> applyResult(result: T): ResponseEntity<T> {
+        val httpStatus = if (result.errors().isEmpty()) HttpStatus.OK else HttpStatus.BAD_REQUEST
         return ResponseEntity.status(httpStatus).body(result)
     }
 }

@@ -23,17 +23,17 @@ import org.springframework.http.HttpMethod.DELETE
 import org.springframework.http.HttpMethod.GET
 import org.springframework.http.HttpMethod.POST
 import org.springframework.security.config.annotation.web.builders.HttpSecurity
-import org.springframework.security.web.util.matcher.AntPathRequestMatcher.antMatcher
+import org.springframework.security.web.servlet.util.matcher.PathPatternRequestMatcher.pathPattern
 
 class DecisionHttpSecurityConfigurer : HttpSecurityConfigurer {
     override fun configure(http: HttpSecurity) {
         try {
             http.authorizeHttpRequests { requests ->
-                requests.requestMatchers(antMatcher(GET, DECISION_MANAGEMENT_URL))
+                requests.requestMatchers(pathPattern(GET, DECISION_MANAGEMENT_URL))
                     .hasAuthority(ADMIN)
-                    .requestMatchers(antMatcher(POST, DECISION_MANAGEMENT_URL))
+                    .requestMatchers(pathPattern(POST, DECISION_MANAGEMENT_URL))
                     .hasAuthority(ADMIN)
-                    .requestMatchers(antMatcher(DELETE, "$DECISION_MANAGEMENT_URL/{decisionDefinitionId}"))
+                    .requestMatchers(pathPattern(DELETE, "$DECISION_MANAGEMENT_URL/{decisionDefinitionId}"))
                     .hasAuthority(ADMIN)
             }
         } catch (e: Exception) {

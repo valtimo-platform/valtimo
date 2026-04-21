@@ -16,7 +16,7 @@
 
 package com.ritense.valtimo.security.config;
 
-import static org.springframework.security.web.util.matcher.AntPathRequestMatcher.antMatcher;
+import static org.springframework.security.web.servlet.util.matcher.PathPatternRequestMatcher.pathPattern;
 
 import com.ritense.valtimo.contract.security.config.HttpConfigurerConfigurationException;
 import com.ritense.valtimo.contract.security.config.HttpSecurityConfigurer;
@@ -28,7 +28,7 @@ public class ApiLoginHttpSecurityConfigurer implements HttpSecurityConfigurer {
     public void configure(HttpSecurity http) {
         try {
             http.authorizeHttpRequests(requests ->
-                requests.requestMatchers(antMatcher("/api/v1/authenticate")).permitAll()
+                requests.requestMatchers(pathPattern("/api/v1/authenticate")).permitAll()
             );
         } catch (Exception e) {
             throw new HttpConfigurerConfigurationException(e);

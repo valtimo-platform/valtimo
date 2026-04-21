@@ -33,7 +33,7 @@ class SpelExpressionProcessor(
     private val contextMap: Map<String, Any> = mapOf()
 ) : ExpressionProcessor {
 
-    override fun <T> process(expression: String, resultType: Class<T>?): T? {
+    override fun <T : Any> process(expression: String, resultType: Class<T>?): T? {
         val spelExpression = parseSpelExpression(expression)
 
         return if (spelExpression != null) {

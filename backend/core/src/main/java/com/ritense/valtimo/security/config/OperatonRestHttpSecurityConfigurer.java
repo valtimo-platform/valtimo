@@ -17,7 +17,7 @@
 package com.ritense.valtimo.security.config;
 
 import static com.ritense.valtimo.contract.authentication.AuthoritiesConstants.ADMIN;
-import static org.springframework.security.web.util.matcher.AntPathRequestMatcher.antMatcher;
+import static org.springframework.security.web.servlet.util.matcher.PathPatternRequestMatcher.pathPattern;
 
 import com.ritense.valtimo.contract.security.config.HttpConfigurerConfigurationException;
 import com.ritense.valtimo.contract.security.config.HttpSecurityConfigurer;
@@ -29,7 +29,7 @@ public class OperatonRestHttpSecurityConfigurer implements HttpSecurityConfigure
     public void configure(HttpSecurity http) {
         try {
             http.authorizeHttpRequests(requests ->
-                requests.requestMatchers(antMatcher("/api/operaton-rest/**")).hasAuthority(ADMIN)
+                requests.requestMatchers(pathPattern("/api/operaton-rest/**")).hasAuthority(ADMIN)
             );
         } catch (Exception e) {
             throw new HttpConfigurerConfigurationException(e);

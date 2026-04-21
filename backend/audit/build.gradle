@@ -64,9 +64,9 @@ dependencies {
     implementation "org.springframework.boot:spring-boot-autoconfigure"
 
     implementation "org.liquibase:liquibase-core:${liquibaseVersion}"
-    implementation "org.liquibase.ext:liquibase-hibernate6:${liquibaseVersion}"
+    implementation "org.liquibase.ext:liquibase-hibernate7:${liquibaseHibernateVersion}"
 
-    implementation "io.hypersistence:hypersistence-utils-hibernate-62:${hypersistenceUtilsVersion}"
+    implementation "io.hypersistence:hypersistence-utils-hibernate-71:${hypersistenceUtilsVersion}"
 
     implementation "org.hibernate.orm:hibernate-core:${hibernateCoreVersion}"
 

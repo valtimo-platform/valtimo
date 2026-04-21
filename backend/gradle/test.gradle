@@ -42,6 +42,7 @@ tasks.register("integrationTesting") {
 
 tasks.register("integrationTestingPostgresql", Test) {
     group = 'verification'
+    maxHeapSize = '1g'
     systemProperty("spring.profiles.include", "inttest,postgresql")
     testLogging {
         events("passed", "skipped", "failed", "standardError")

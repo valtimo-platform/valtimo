@@ -19,9 +19,9 @@ package com.ritense.notificatiesapi.health
 import com.ritense.notificatiesapi.config.NotificatiesApiProcessingProperties
 import com.ritense.notificatiesapi.domain.NotificatiesApiInboundEventStatus
 import com.ritense.notificatiesapi.repository.NotificatiesApiInboundEventRepository
-import org.springframework.boot.actuate.health.AbstractHealthIndicator
-import org.springframework.boot.actuate.health.Health
-import org.springframework.boot.actuate.health.Status
+import org.springframework.boot.health.contributor.AbstractHealthIndicator
+import org.springframework.boot.health.contributor.Health
+import org.springframework.boot.health.contributor.Status
 
 class NotificatiesApiInboundEventHealthIndicator(
     private val inboundEventRepository: NotificatiesApiInboundEventRepository,

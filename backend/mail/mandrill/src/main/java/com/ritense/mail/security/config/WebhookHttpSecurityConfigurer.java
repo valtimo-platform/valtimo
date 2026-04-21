@@ -18,7 +18,7 @@ package com.ritense.mail.security.config;
 
 import static org.springframework.http.HttpMethod.GET;
 import static org.springframework.http.HttpMethod.POST;
-import static org.springframework.security.web.util.matcher.AntPathRequestMatcher.antMatcher;
+import static org.springframework.security.web.servlet.util.matcher.PathPatternRequestMatcher.pathPattern;
 
 import com.ritense.valtimo.contract.security.config.HttpConfigurerConfigurationException;
 import com.ritense.valtimo.contract.security.config.HttpSecurityConfigurer;
@@ -30,8 +30,8 @@ public class WebhookHttpSecurityConfigurer implements HttpSecurityConfigurer {
     public void configure(HttpSecurity http) {
         try {
             http.authorizeHttpRequests(requests -> requests
-                .requestMatchers(antMatcher(GET, "/api/v1/mandrill/webhook")).permitAll()
-                .requestMatchers(antMatcher(POST, "/api/v1/mandrill/webhook")).permitAll());
+                .requestMatchers(pathPattern(GET, "/api/v1/mandrill/webhook")).permitAll()
+                .requestMatchers(pathPattern(POST, "/api/v1/mandrill/webhook")).permitAll());
         } catch (Exception e) {
             throw new HttpConfigurerConfigurationException(e);
         }

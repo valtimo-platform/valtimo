@@ -173,7 +173,7 @@ class BuildingBlockFormDefinitionService(
                     "$sourceBuildingBlockDefinitionId to $targetBuildingBlockDefinitionId"
             }
             formDefinitionRepository.save(newForm)
-            mapping[oldForm.id] = newForm.id
+            mapping[oldForm.id!!] = newForm.id!!
         }
         return mapping
     }

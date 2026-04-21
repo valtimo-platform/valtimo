@@ -205,7 +205,7 @@ internal class FormProcessLinkMapperTest {
             processDefinitionId = "processDefinitionId",
             activityId = "activityId",
             activityType = USER_TASK_CREATE,
-            formDefinitionId = formDefinition.id,
+            formDefinitionId = formDefinition.id!!,
             viewModelEnabled = false
         )
 

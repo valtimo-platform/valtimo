@@ -170,7 +170,7 @@ class ZaakDocumentService(
         }
     }
 
-    private fun <T> toPage(list: List<T>, pageable: Pageable): Page<T> {
+    private fun <T : Any> toPage(list: List<T>, pageable: Pageable): Page<T> {
         val startIndex = pageable.offset.toInt()
         val endIndex = min(startIndex + pageable.pageSize, list.size)
         return PageImpl(list.subList(startIndex, endIndex), pageable, list.size.toLong())

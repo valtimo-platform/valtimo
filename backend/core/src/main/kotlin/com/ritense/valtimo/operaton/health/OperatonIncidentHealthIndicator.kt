@@ -17,9 +17,9 @@
 package com.ritense.valtimo.operaton.health
 
 import org.operaton.bpm.engine.RuntimeService
-import org.springframework.boot.actuate.health.AbstractHealthIndicator
-import org.springframework.boot.actuate.health.Health
-import org.springframework.boot.actuate.health.Status
+import org.springframework.boot.health.contributor.AbstractHealthIndicator
+import org.springframework.boot.health.contributor.Health
+import org.springframework.boot.health.contributor.Status
 
 class OperatonIncidentHealthIndicator (
     private val runtimeService: RuntimeService

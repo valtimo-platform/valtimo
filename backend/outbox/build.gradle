@@ -40,8 +40,9 @@ dependencies {
     implementation("org.springframework.security:spring-security-core")
 
     implementation "org.liquibase:liquibase-core:${liquibaseVersion}"
-    implementation "org.liquibase.ext:liquibase-hibernate6:$liquibaseVersion"
-    implementation "io.hypersistence:hypersistence-utils-hibernate-62:$hypersistenceUtilsVersion"
+    implementation "org.springframework.boot:spring-boot-liquibase"
+    implementation "org.liquibase.ext:liquibase-hibernate7:$liquibaseHibernateVersion"
+    implementation "io.hypersistence:hypersistence-utils-hibernate-71:$hypersistenceUtilsVersion"
     implementation "com.fasterxml.jackson.module:jackson-module-kotlin"
     implementation "com.fasterxml.jackson.datatype:jackson-datatype-jsr310"
     implementation "io.github.oshai:kotlin-logging:$kotlinLoggingVersion"
