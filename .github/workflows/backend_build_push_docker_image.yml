@@ -105,7 +105,8 @@ jobs:
         with:
           images: ghcr.io/${{ github.repository }}/gzac-backend
           tags: |
-            type=raw,value=${{ env.BRANCH_NAME }}-production.${{ github.run_number }}
+            type=raw,value=${{ inputs.release_image_tag }},enable=${{ inputs.release_image_tag != '' }}
+            type=raw,value=${{ env.BRANCH_NAME }}-production.${{ github.run_number }},enable=${{ inputs.release_image_tag == '' }}
             type=raw,value=commit-production-${{ github.sha }}
             type=raw,value=contents-production-${{ steps.backend_tree.outputs.tree }}
           flavor: |
