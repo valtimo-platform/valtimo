@@ -18,3 +18,9 @@ export const PROCESS_MANAGEMENT_LIST_TEST_IDS = {
   uploadButton: 'processManagementUploadButton',
   createProcessButton: 'processManagementCreateProcessButton',
 } as const;
+
+export const PROCESS_MANAGEMENT_BUILDER_TEST_IDS = {
+  startsCaseToggle: 'processManagementBuilderStartsCaseToggle',
+  startableByUserToggle: 'processManagementBuilderStartableByUserToggle',
+  deployButton: 'processManagementBuilderDeployButton',
+} as const;

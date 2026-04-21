@@ -26,6 +26,7 @@ import {
   ModalModule,
 } from 'carbon-components-angular';
 import {BehaviorSubject, combineLatest, switchMap, take} from 'rxjs';
+import {DECISION_UPLOAD_TEST_IDS} from '../constants';
 import {
   getBuildingBlockManagementRouteParams,
   getCaseManagementRouteParams,
@@ -55,6 +56,8 @@ export class DecisionDeployComponent {
   public dmn: File | null = null;
 
   public readonly modalOpen$ = new BehaviorSubject<boolean>(false);
+
+  protected readonly testIds = DECISION_UPLOAD_TEST_IDS;
 
   public readonly caseManagementRouteParams$ = getCaseManagementRouteParams(this.route);
   public readonly buildingBlockManagementRouteParams$ =

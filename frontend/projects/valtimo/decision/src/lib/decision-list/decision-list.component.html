@@ -27,6 +27,7 @@
       *ngIf="hasEditPermissions$ | async"
       cdsButton="primary"
       (click)="this.deploy.openModal()"
+      [attr.data-test-id]="testIds.uploadButton"
     >
       {{ 'Upload' | translate }}
 

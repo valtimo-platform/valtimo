@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<definitions xmlns="https://www.omg.org/spec/DMN/20191111/MODEL/" xmlns:dc="http://www.omg.org/spec/DMN/20180521/DC/" xmlns:dmndi="https://www.omg.org/spec/DMN/20191111/DMNDI/" xmlns:modeler="http://camunda.org/schema/modeler/1.0" xmlns:ns0="http://camunda.org/schema/1.0/dmn" id="Definitions_e2e_test" name="E2E Test Decision" namespace="http://camunda.org/schema/1.0/dmn" expressionLanguage="https://www.omg.org/spec/DMN/20191111/FEEL/" typeLanguage="https://www.omg.org/spec/DMN/20191111/FEEL/" exporter="Camunda Modeler" exporterVersion="5.23.0" modeler:executionPlatform="Camunda Platform" modeler:executionPlatformVersion="7.21.0">
+  <decision id="e2e-test-decision" name="E2E Test Decision">
+    <decisionTable id="DecisionTable_e2e" preferredOrientation="Rule-as-Row">
+      <input id="Input_1" label="Input value">
+        <inputExpression id="InputExpression_1" typeRef="integer" expressionLanguage="feel">
+          <text>input_value</text>
+        </inputExpression>
+      </input>
+      <output id="Output_1" label="Result" name="result" typeRef="boolean" />
+      <rule id="DecisionRule_1">
+        <inputEntry id="UnaryTests_1">
+          <text>&lt;3</text>
+        </inputEntry>
+        <outputEntry id="LiteralExpression_1">
+          <text>false</text>
+        </outputEntry>
+      </rule>
+      <rule id="DecisionRule_2">
+        <inputEntry id="UnaryTests_2">
+          <text>&gt;=3</text>
+        </inputEntry>
+        <outputEntry id="LiteralExpression_2">
+          <text>true</text>
+        </outputEntry>
+      </rule>
+    </decisionTable>
+  </decision>
+  <dmndi:DMNDI>
+    <dmndi:DMNDiagram>
+      <dmndi:DMNShape dmnElementRef="e2e-test-decision" isCollapsed="false">
+        <dc:Bounds height="80" width="180" x="160" y="100" />
+      </dmndi:DMNShape>
+    </dmndi:DMNDiagram>
+  </dmndi:DMNDI>
+</definitions>

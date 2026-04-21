@@ -37,7 +37,12 @@
       {{ 'interface.cancel' | translate }}
     </button>
 
-    <button cdsButton="primary" [disabled]="!selectedDmnFile" (click)="deployDmn()">
+    <button
+      cdsButton="primary"
+      [disabled]="!selectedDmnFile"
+      (click)="deployDmn()"
+      [attr.data-test-id]="testIds.submitButton"
+    >
       {{ 'interface.upload' | translate }}
     </button>
   </cds-modal-footer>
