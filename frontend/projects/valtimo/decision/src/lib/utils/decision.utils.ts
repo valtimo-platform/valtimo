@@ -14,13 +14,14 @@
  * limitations under the License.
  */
 
-const BUILDING_BLOCK_MANAGEMENT_TABS = {
-  GENERAL: 'general',
-  PROCESSES: 'process-definition',
-  DOCUMENT: 'document',
-  FORMS: 'forms',
-  FORM_FLOWS: 'form-flows',
-  DECISIONS: 'decisions',
-} as const;
+import {Decision} from '../models';
 
-export {BUILDING_BLOCK_MANAGEMENT_TABS};
+export function filterLatestDecisionVersions(decisions: Decision[]): Decision[] {
+  return decisions.reduce((acc: Decision[], curr: Decision) => {
+    const existing = acc.find(d => d.key === curr.key);
+    if (existing && existing.version >= curr.version) return acc;
+    if (existing && existing.version < curr.version)
+      return [...acc.filter(d => d.key !== curr.key), curr];
+    return [...acc, curr];
+  }, []);
+}

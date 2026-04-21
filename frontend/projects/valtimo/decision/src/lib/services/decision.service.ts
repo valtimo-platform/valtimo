@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -105,6 +105,48 @@ export class DecisionService extends BaseApiService {
     return this.httpClient.delete<any>(
       this.getApiUrl(
         `/management/v1/case-definition/${caseDefinitionKey}/version/${versionTag}/decision-definition/${decisionDefinitionKey}`
+      )
+    );
+  }
+
+  public listBuildingBlockDecisionDefinitions(
+    key: string,
+    versionTag: string
+  ): Observable<Decision[]> {
+    return this.httpClient.get<Decision[]>(
+      this.getApiUrl(
+        `/management/v1/building-block/${key}/version/${versionTag}/decision-definition`
+      )
+    );
+  }
+
+  public deployBuildingBlockDecisionDefinition(
+    key: string,
+    versionTag: string,
+    dmn: File
+  ): Observable<{identifier: string}> {
+    const formData = new FormData();
+    formData.append('file', dmn);
+
+    return this.httpClient.post<{identifier: string}>(
+      this.getApiUrl(
+        `/management/v1/building-block/${key}/version/${versionTag}/decision-definition`
+      ),
+      formData,
+      {
+        headers: new HttpHeaders().set(InterceptorSkip, '204'),
+      }
+    );
+  }
+
+  public deleteBuildingBlockDecisionDefinition(
+    key: string,
+    versionTag: string,
+    decisionDefinitionKey: string
+  ): Observable<any> {
+    return this.httpClient.delete<any>(
+      this.getApiUrl(
+        `/management/v1/building-block/${key}/version/${versionTag}/decision-definition/${decisionDefinitionKey}`
       )
     );
   }
