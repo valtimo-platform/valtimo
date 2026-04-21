@@ -23,6 +23,8 @@ import {StoreTempDocumentConfigurationComponent} from './components/store-temp-d
 import {StoreUploadedDocumentConfigurationComponent} from './components/store-uploaded-document/store-uploaded-document-configuration.component';
 import {DownloadDocumentConfigurationComponent} from './components/download-document/download-document-configuration.component';
 import {StoreUploadedDocumentInPartsConfigurationComponent} from './components/store-uploaded-document-in-parts/store-uploaded-document-in-parts-configuration.component';
+import {LinkDocumentToObjectConfigurationComponent} from './components/link-document-to-object/link-document-to-object-configuration.component';
+import {DeleteDocumentLinkConfigurationComponent} from './components/delete-document-link/delete-document-link-configuration.component';
 import {GetAuditTrailConfigurationComponent} from './components/get-audit-trail/get-audit-trail-configuration.component';
 
 @NgModule({
@@ -32,6 +34,8 @@ import {GetAuditTrailConfigurationComponent} from './components/get-audit-trail/
     StoreUploadedDocumentConfigurationComponent,
     StoreUploadedDocumentInPartsConfigurationComponent,
     DownloadDocumentConfigurationComponent,
+    LinkDocumentToObjectConfigurationComponent,
+    DeleteDocumentLinkConfigurationComponent,
     GetAuditTrailConfigurationComponent,
   ],
   imports: [
@@ -48,6 +52,8 @@ import {GetAuditTrailConfigurationComponent} from './components/get-audit-trail/
     StoreUploadedDocumentConfigurationComponent,
     StoreUploadedDocumentInPartsConfigurationComponent,
     DownloadDocumentConfigurationComponent,
+    LinkDocumentToObjectConfigurationComponent,
+    DeleteDocumentLinkConfigurationComponent,
     GetAuditTrailConfigurationComponent,
   ],
 })

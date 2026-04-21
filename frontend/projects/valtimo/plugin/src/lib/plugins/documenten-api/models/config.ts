@@ -51,10 +51,29 @@ interface StoreTempDocumentConfig {
 
 interface DocumentenApiManagementAllVersions {
   versions: Array<string>;
+  versionDetails: Array<DocumentenApiVersionDetails>;
+}
+
+export interface DocumentenApiVersionDetails {
+  version: string;
+  supportsObjectInformatieObjecten: boolean;
+  supportsTrefwoorden: boolean;
+  supportsUpdatingDefinitiveDocument: boolean;
+  supportsFilterableColumns: boolean;
+  supportsSortableColumns: boolean;
 }
 
 export interface DownloadDocumentConfig {
   processVariableName: string;
+}
+
+export interface LinkDocumentToObjectConfig {
+  objectUrl: string;
+  objectType: string;
+}
+
+export interface DeleteDocumentLinkConfig {
+  objectInformatieObjectUrl: string;
 }
 
 export interface GetAuditTrailConfig {
