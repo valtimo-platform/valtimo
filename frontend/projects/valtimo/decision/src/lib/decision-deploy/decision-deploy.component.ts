@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,8 +26,12 @@ import {
   ModalModule,
 } from 'carbon-components-angular';
 import {BehaviorSubject, combineLatest, switchMap, take} from 'rxjs';
-import {getCaseManagementRouteParams, getContextObservable} from '@valtimo/shared';
 import {DECISION_UPLOAD_TEST_IDS} from '../constants';
+import {
+  getBuildingBlockManagementRouteParams,
+  getCaseManagementRouteParams,
+  getContextObservable,
+} from '@valtimo/shared';
 import {DecisionService, DecisionStateService} from '../services';
 
 @Component({
@@ -56,6 +60,8 @@ export class DecisionDeployComponent {
   protected readonly testIds = DECISION_UPLOAD_TEST_IDS;
 
   public readonly caseManagementRouteParams$ = getCaseManagementRouteParams(this.route);
+  public readonly buildingBlockManagementRouteParams$ =
+    getBuildingBlockManagementRouteParams(this.route);
   public readonly context$ = getContextObservable(this.route);
 
   public readonly ACCEPTED_FILES: string[] = ['dmn'];
@@ -84,18 +90,36 @@ export class DecisionDeployComponent {
     const dmnFile = this.selectedDmnFile;
     if (!dmnFile) return;
 
-    combineLatest([this.caseManagementRouteParams$, this.context$])
+    this.context$
       .pipe(
         take(1),
-        switchMap(([params, context]) =>
-          context === 'case'
-            ? this.decisionService.deployCaseDecisionDefinition(
-                params.caseDefinitionKey,
-                params.caseDefinitionVersionTag,
-                dmnFile
+        switchMap(context => {
+          if (context === 'case') {
+            return this.caseManagementRouteParams$.pipe(
+              take(1),
+              switchMap(params =>
+                this.decisionService.deployCaseDecisionDefinition(
+                  params.caseDefinitionKey,
+                  params.caseDefinitionVersionTag,
+                  dmnFile
+                )
               )
-            : this.decisionService.deployDmn(dmnFile)
-        )
+            );
+          }
+          if (context === 'buildingBlock') {
+            return this.buildingBlockManagementRouteParams$.pipe(
+              take(1),
+              switchMap(params =>
+                this.decisionService.deployBuildingBlockDecisionDefinition(
+                  params.buildingBlockDefinitionKey,
+                  params.buildingBlockDefinitionVersionTag,
+                  dmnFile
+                )
+              )
+            );
+          }
+          return this.decisionService.deployDmn(dmnFile);
+        })
       )
       .subscribe(() => {
         this.closeModal();
