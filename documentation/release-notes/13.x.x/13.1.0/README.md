@@ -28,7 +28,7 @@ single subscription.
 
 #### Form.io translation mechanism
 
-A new way to translate Form.io forms has been introduced. When following the instructions [on this page](../../../features/forms/README.md),
+A new way to translate Form.io forms has been introduced. When following the instructions [on this page](../../../features/case/forms/README.md),
 forms rendered inside the application will be translated automatically, making use of the current application language
 and the translation resources configured in the application.
 

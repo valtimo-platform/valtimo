@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,9 +23,9 @@ import com.ritense.authorization.role.Role
 import com.ritense.authorization.role.RoleRepository
 import com.ritense.documentenapi.BaseIntegrationTest
 import com.ritense.documentenapi.DocumentenApiPlugin
+import com.ritense.documentenapi.authorization.ZgwDocument
+import com.ritense.documentenapi.authorization.ZgwDocumentActionProvider
 import com.ritense.documentenapi.web.rest.dto.DocumentSearchRequest
-import com.ritense.resource.authorization.ResourcePermission
-import com.ritense.resource.authorization.ResourcePermissionActionProvider
 import okhttp3.mockwebserver.Dispatcher
 import okhttp3.mockwebserver.MockResponse
 import okhttp3.mockwebserver.MockWebServer
@@ -81,8 +81,8 @@ internal class DocumentenApiClientIT @Autowired constructor(
         val permissions = listOf(
             Permission(
                 UUID.randomUUID(),
-                ResourcePermission::class.java,
-                ResourcePermissionActionProvider.CREATE,
+                ZgwDocument::class.java,
+                ZgwDocumentActionProvider.CREATE,
                 ConditionContainer(),
                 roleTest
             )
@@ -136,8 +136,8 @@ internal class DocumentenApiClientIT @Autowired constructor(
         val permissions = listOf(
             Permission(
                 UUID.randomUUID(),
-                ResourcePermission::class.java,
-                ResourcePermissionActionProvider.VIEW_LIST,
+                ZgwDocument::class.java,
+                ZgwDocumentActionProvider.VIEW_LIST,
                 ConditionContainer(),
                 roleTest
             )
@@ -181,8 +181,8 @@ internal class DocumentenApiClientIT @Autowired constructor(
         val permissions = listOf(
             Permission(
                 UUID.randomUUID(),
-                ResourcePermission::class.java,
-                ResourcePermissionActionProvider.VIEW,
+                ZgwDocument::class.java,
+                ZgwDocumentActionProvider.VIEW,
                 ConditionContainer(),
                 roleTest
             )
@@ -222,8 +222,8 @@ internal class DocumentenApiClientIT @Autowired constructor(
         val permissions = listOf(
             Permission(
                 UUID.randomUUID(),
-                ResourcePermission::class.java,
-                ResourcePermissionActionProvider.DELETE,
+                ZgwDocument::class.java,
+                ZgwDocumentActionProvider.DELETE,
                 ConditionContainer(),
                 roleTest
             )
@@ -259,8 +259,8 @@ internal class DocumentenApiClientIT @Autowired constructor(
         val permissions = listOf(
             Permission(
                 UUID.randomUUID(),
-                ResourcePermission::class.java,
-                ResourcePermissionActionProvider.MODIFY,
+                ZgwDocument::class.java,
+                ZgwDocumentActionProvider.MODIFY,
                 ConditionContainer(),
                 roleTest
             )

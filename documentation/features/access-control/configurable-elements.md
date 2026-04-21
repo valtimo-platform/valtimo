@@ -195,9 +195,9 @@ define what can be configured for that element.
 				<a href="../case/zgw/zgw-documents/access-control.md">Documents</a>
 			</td>
 			<td valign="top">
-				<code>com.ritense.resource.authorization.ResourcePermission</code>
+				<code>com.ritense.documentenapi.authorization.ZgwDocument</code>
 			</td>
-			<td valign="top">Resource</td>
+			<td valign="top">Documenten API</td>
 		</tr>
 	</tbody>
 </table>

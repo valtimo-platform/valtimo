@@ -30,6 +30,7 @@
       (loadingDocumentDefinition$ | async) || (selectedDocumentDefinition$ | async) === null
     "
     (click)="downloadDefinition()"
+    [attr.data-test-id]="testIds.downloadButton"
   >
     {{ 'interface.download' | translate }}
 

@@ -82,6 +82,7 @@ class ProcessLinkAutoConfiguration {
         operatonRepositoryService: OperatonRepositoryService,
         caseDefinitionChecker: CaseDefinitionChecker,
         buildingBlockDefinitionChecker: BuildingBlockDefinitionChecker,
+        applicationEventPublisher: ApplicationEventPublisher,
     ): ProcessLinkService {
         return ProcessLinkService(
             processLinkRepository,
@@ -89,7 +90,8 @@ class ProcessLinkAutoConfiguration {
             processLinkTypes,
             operatonRepositoryService,
             caseDefinitionChecker,
-            buildingBlockDefinitionChecker
+            buildingBlockDefinitionChecker,
+            applicationEventPublisher
         )
     }
 
