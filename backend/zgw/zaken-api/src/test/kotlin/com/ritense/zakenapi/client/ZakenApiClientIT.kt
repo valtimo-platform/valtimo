@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,8 +21,8 @@ import com.ritense.authorization.permission.Permission
 import com.ritense.authorization.permission.PermissionRepository
 import com.ritense.authorization.role.Role
 import com.ritense.authorization.role.RoleRepository
-import com.ritense.resource.authorization.ResourcePermission
-import com.ritense.resource.authorization.ResourcePermissionActionProvider
+import com.ritense.documentenapi.authorization.ZgwDocument
+import com.ritense.documentenapi.authorization.ZgwDocumentActionProvider
 import com.ritense.zakenapi.BaseIntegrationTest
 import com.ritense.zakenapi.ZakenApiPlugin
 import okhttp3.mockwebserver.Dispatcher
@@ -75,8 +75,8 @@ internal class ZakenApiClientIT @Autowired constructor(
         val permissions = listOf(
             Permission(
                 id = CASE_DOCUMENT_ID,
-                resourceType = ResourcePermission::class.java,
-                actions = mutableListOf(ResourcePermissionActionProvider.CREATE),
+                resourceType = ZgwDocument::class.java,
+                actions = mutableListOf(ZgwDocumentActionProvider.CREATE),
                 conditionContainer = ConditionContainer(),
                 role = roleTest,
                 contextResourceType = null,
@@ -126,8 +126,8 @@ internal class ZakenApiClientIT @Autowired constructor(
         val permissions = listOf(
             Permission(
                 id = CASE_DOCUMENT_ID,
-                resourceType = ResourcePermission::class.java,
-                actions = mutableListOf(ResourcePermissionActionProvider.VIEW),
+                resourceType = ZgwDocument::class.java,
+                actions = mutableListOf(ZgwDocumentActionProvider.VIEW),
                 conditionContainer = ConditionContainer(),
                 role = roleTest,
                 contextResourceType = null,
@@ -165,8 +165,8 @@ internal class ZakenApiClientIT @Autowired constructor(
         val permissions = listOf(
             Permission(
                 id = CASE_DOCUMENT_ID,
-                resourceType = ResourcePermission::class.java,
-                actions = mutableListOf(ResourcePermissionActionProvider.VIEW_LIST),
+                resourceType = ZgwDocument::class.java,
+                actions = mutableListOf(ZgwDocumentActionProvider.VIEW_LIST),
                 conditionContainer = ConditionContainer(),
                 role = roleTest,
                 contextResourceType = null,
