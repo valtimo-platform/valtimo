@@ -21,6 +21,7 @@ import {DocumentenApiConfigurationComponent} from './components/documenten-api-c
 import {StoreUploadedDocumentConfigurationComponent} from './components/store-uploaded-document/store-uploaded-document-configuration.component';
 import {DownloadDocumentConfigurationComponent} from './components/download-document/download-document-configuration.component';
 import {StoreUploadedDocumentInPartsConfigurationComponent} from './components/store-uploaded-document-in-parts/store-uploaded-document-in-parts-configuration.component';
+import {GetAuditTrailConfigurationComponent} from './components/get-audit-trail/get-audit-trail-configuration.component';
 
 const documentenApiPluginSpecification: PluginSpecification = {
   pluginId: 'documentenapi',
@@ -31,6 +32,7 @@ const documentenApiPluginSpecification: PluginSpecification = {
     'store-uploaded-document': StoreUploadedDocumentConfigurationComponent,
     'store-uploaded-document-in-parts': StoreUploadedDocumentInPartsConfigurationComponent,
     'download-document': DownloadDocumentConfigurationComponent,
+    'get-audit-trail': GetAuditTrailConfigurationComponent,
   },
   pluginTranslations: {
     nl: {
@@ -96,6 +98,13 @@ const documentenApiPluginSpecification: PluginSpecification = {
         'Het downloaden van een document vanuit de Documenten API vereist geen configuratie.',
       processVariableName:
         'Wat is de naam van de procesvariabele waarnaar u het document wilt downloaden?',
+      'get-audit-trail': 'Audit trail ophalen',
+      documentUrl: 'Document URL',
+      documentUrlTooltip:
+        'De volledige URL naar het enkelvoudiginformatieobject waarvoor de audit trail opgehaald moet worden',
+      auditTrailProcessVariableName: 'Naam procesvariabele voor audit trail',
+      auditTrailProcessVariableNameTooltip:
+        'De naam van de procesvariabele waarin het resultaat van de audit trail opgeslagen wordt als JSON',
     },
     en: {
       title: 'Documenten API',
@@ -160,6 +169,13 @@ const documentenApiPluginSpecification: PluginSpecification = {
         'Downloading a document form the Documenten API does not require any configuration.',
       processVariableName:
         'What is the name of the process variable you want to download the document to?',
+      'get-audit-trail': 'Get audit trail',
+      documentUrl: 'Document URL',
+      documentUrlTooltip:
+        'The full URL to the enkelvoudiginformatieobject for which to retrieve the audit trail',
+      auditTrailProcessVariableName: 'Process variable name for audit trail',
+      auditTrailProcessVariableNameTooltip:
+        'The name of the process variable in which the audit trail result will be stored as JSON',
     },
   },
 };

@@ -15,7 +15,7 @@
   [Building block decision tables](../../features/building-blocks/decision-tables.md) for more information.
 
 * **New Notificaties API plugin actions**
-  
+
   A new plugin action "Publiceer een notificatie" and "Ontvang een notificatie" have been added to the Notificaties API
   plugin. This action allows publishing and receiving notifications via the Notificaties API from a BPMN process.
   Documentation can be found in
@@ -29,6 +29,13 @@
   automatically reflect these permissions.
 
   For more information, see [ZGW Documents - Access control](../../../features/case/zgw/zgw-documents/access-control.md).
+
+* **New Documenten API plugin action**
+
+  A new plugin action "Get audit trail" has been added to the Documenten API plugin. This action retrieves the audit
+  trail for a document from the Documenten API and stores the result as a JSON string in a process variable, allowing
+  BPMN processes to inspect who changed what on a document, when, and why. Documentation can be found in
+  the [Documenten API plugin configuration guide](../../../features/plugins/configure-documenten-api-plugin.md).
 
 
 ## Bugfixes

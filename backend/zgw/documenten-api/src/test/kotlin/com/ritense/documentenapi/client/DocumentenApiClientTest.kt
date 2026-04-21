@@ -20,6 +20,7 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
 import com.ritense.authorization.AuthorizationService
 import com.ritense.documentenapi.DocumentenApiAuthentication
+import com.ritense.documentenapi.event.DocumentAuditTrailListed
 import com.ritense.documentenapi.event.DocumentDeleted
 import com.ritense.documentenapi.event.DocumentInformatieObjectDownloaded
 import com.ritense.documentenapi.event.DocumentInformatieObjectViewed
@@ -491,6 +492,138 @@ internal class DocumentenApiClientTest {
                 TestAuthentication(),
                 CASE_DOCUMENT_ID,
                 mockDocumentenApi.url("/zaakobjects").toUri(),
+            )
+        }
+
+        mockDocumentenApi.takeRequest()
+
+        verify(outboxService, times(0)).send(eventCapture.capture())
+    }
+
+    @Test
+    fun `should send get audit trail request and parse response`() {
+        val restClientBuilder = RestClient.builder()
+        val client = DocumentenApiClient(restClientBuilder, outboxService, objectMapper, mock(), authorizationService)
+
+        val responseBody = """
+            [
+              {
+                "uuid": "a3f7c823-1234-4abc-8def-000000000001",
+                "bron": "drc",
+                "applicatieId": "mijn-app",
+                "applicatieWeergave": "Mijn Applicatie",
+                "gebruikersId": "user-42",
+                "gebruikersWeergave": "Jan Jansen",
+                "actie": "create",
+                "actieWeergave": "",
+                "resultaat": 201,
+                "hoofdObject": "http://example.com/enkelvoudiginformatieobjecten/b1234567-0000-0000-0000-000000000001",
+                "resource": "enkelvoudiginformatieobject",
+                "resourceUrl": "http://example.com/enkelvoudiginformatieobjecten/b1234567-0000-0000-0000-000000000001",
+                "resourceWeergave": "document-2024-001.pdf",
+                "toelichting": "",
+                "aanmaakdatum": "2024-03-15T10:23:45.123456Z",
+                "wijzigingen": {
+                  "oud": null,
+                  "nieuw": {
+                    "url": "http://example.com/enkelvoudiginformatieobjecten/b1234567-0000-0000-0000-000000000001",
+                    "identificatie": "document-2024-001"
+                  }
+                }
+              }
+            ]
+        """.trimIndent()
+
+        mockDocumentenApi.enqueue(mockResponse(responseBody))
+
+        val documentUrl = mockDocumentenApi.url("/enkelvoudiginformatieobjecten/b1234567-0000-0000-0000-000000000001").toUri()
+        val result = client.getAuditTrail(
+            TestAuthentication(),
+            CASE_DOCUMENT_ID,
+            documentUrl
+        )
+
+        val recordedRequest = mockDocumentenApi.takeRequest()
+
+        assertEquals("Bearer test", recordedRequest.getHeader("Authorization"))
+        assertEquals("GET", recordedRequest.method)
+        assertTrue(recordedRequest.path!!.endsWith("/audittrail"))
+        assertEquals(1, result.size)
+        assertEquals(UUID.fromString("a3f7c823-1234-4abc-8def-000000000001"), result[0].uuid)
+        assertEquals("drc", result[0].bron)
+        assertEquals("create", result[0].actie)
+        assertEquals(201, result[0].resultaat)
+        assertEquals("document-2024-001.pdf", result[0].resourceWeergave)
+        val oud = result[0].wijzigingen.oud
+        assertThat(oud == null || oud.isNull).isTrue()
+        val nieuw = result[0].wijzigingen.nieuw
+        assertThat(nieuw).isNotNull()
+        assertThat(nieuw!!.isObject).isTrue()
+        assertThat(nieuw["identificatie"].asText()).isEqualTo("document-2024-001")
+    }
+
+    @Test
+    fun `should send outbox event on fetching audit trail`() {
+        val restClientBuilder = RestClient.builder()
+        val client = DocumentenApiClient(restClientBuilder, outboxService, objectMapper, mock(), authorizationService)
+
+        val responseBody = """
+            [
+              {
+                "uuid": "a3f7c823-1234-4abc-8def-000000000001",
+                "bron": "drc",
+                "actie": "create",
+                "resultaat": 201,
+                "hoofdObject": "http://example.com/enkelvoudiginformatieobjecten/b1234567-0000-0000-0000-000000000001",
+                "resource": "enkelvoudiginformatieobject",
+                "resourceUrl": "http://example.com/enkelvoudiginformatieobjecten/b1234567-0000-0000-0000-000000000001",
+                "resourceWeergave": "document-2024-001.pdf",
+                "aanmaakdatum": "2024-03-15T10:23:45.123456Z",
+                "wijzigingen": {
+                  "oud": null,
+                  "nieuw": null
+                }
+              }
+            ]
+        """.trimIndent()
+
+        mockDocumentenApi.enqueue(mockResponse(responseBody))
+
+        val documentUrl = mockDocumentenApi.url("/enkelvoudiginformatieobjecten/b1234567-0000-0000-0000-000000000001").toUri()
+        val eventCapture = argumentCaptor<Supplier<BaseEvent>>()
+
+        client.getAuditTrail(
+            TestAuthentication(),
+            CASE_DOCUMENT_ID,
+            documentUrl
+        )
+
+        mockDocumentenApi.takeRequest()
+
+        verify(outboxService).send(eventCapture.capture())
+        val event = eventCapture.firstValue.get()
+        assertThat(event).isInstanceOf(DocumentAuditTrailListed::class.java)
+        assertThat(event.resultId).contains("enkelvoudiginformatieobjecten")
+        assertEquals("List<com.ritense.documentenapi.client.AuditTrail>", event.resultType)
+        assertEquals("com.ritense.gzac.drc.enkelvoudiginformatieobject.audittrail.listed", event.type)
+        assertNotNull(event.result)
+    }
+
+    @Test
+    fun `should not send outbox event on error fetching audit trail`() {
+        val restClientBuilder = RestClient.builder()
+        val client = DocumentenApiClient(restClientBuilder, outboxService, objectMapper, mock(), authorizationService)
+
+        mockDocumentenApi.enqueue(mockResponse("").setResponseCode(400))
+
+        val documentUrl = mockDocumentenApi.url("/enkelvoudiginformatieobjecten/b1234567-0000-0000-0000-000000000001").toUri()
+        val eventCapture = argumentCaptor<Supplier<BaseEvent>>()
+
+        assertThrows<HttpClientErrorException> {
+            client.getAuditTrail(
+                TestAuthentication(),
+                CASE_DOCUMENT_ID,
+                documentUrl
             )
         }
 
