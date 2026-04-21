@@ -8,9 +8,9 @@ The Besluiten API plugin is used to store information about besluiten (decisions
 
 ## Configure the plugin
 
-A plugin configuration is required before the plugin can be used. A general description on how to configure plugins can be found [here](./#configuring-plugins).
+A plugin configuration is required before the plugin can be used. A general description on how to configure plugins can be found in the [plugin configuration guide](./#configuring-plugins).
 
-If the Besluiten API plugin is not visible in the plugin menu, it is possible the application is missing a dependency. Instructions on how to add the Besluiten API dependency can be found [here](../../fundamentals/getting-started/modules/zgw/besluiten-api.md).
+If the Besluiten API plugin is not visible in the plugin menu, it is possible the application is missing a dependency. Instructions on how to add the Besluiten API dependency can be found in the [Besluiten API module documentation](../../fundamentals/getting-started/modules/zgw/besluiten-api.md).
 
 To configure this plugin the following properties have to be entered:
 
@@ -27,7 +27,7 @@ An example plugin configuration:&#x20;
 
 The Besluiten API plugin supports the following actions that can be configured in process links in order to retrieve type data.
 
-A general description on how to create process links can be found [here](../process/process-link.md#creating-a-plugin-process-link).
+A general description on how to create process links can be found in the [process link documentation](../process/process-link.md#creating-a-plugin-process-link).
 
 ### Create besluit
 

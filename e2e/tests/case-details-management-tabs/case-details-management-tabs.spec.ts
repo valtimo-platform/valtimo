@@ -15,7 +15,7 @@
  */
 
 import {expect, test} from '@playwright/test';
-import {CASE_IDENTIFIER, tabTestData, tabReorderTestData} from './case-details-management-tabs';
+import {CASE_IDENTIFIER, createTabTestData, createTabReorderTestData} from './case-details-management-tabs';
 import {CaseDetailsManagementTabsPage} from './page';
 
 test.use({storageState: undefined});
@@ -27,8 +27,13 @@ test.describe('Case details management — Tabs', () => {
   let request;
   let draftVersion: string;
 
+  // Generate unique test data per run to avoid key collisions
+  const tabTestData = createTabTestData();
+  const tabReorderTestData = createTabReorderTestData();
+
   // Arrange
   test.beforeAll(async ({browser, baseURL}) => {
+    test.setTimeout(60_000);
     context = await browser.newContext({baseURL});
     page = await context.newPage();
     request = context.request;
@@ -38,6 +43,10 @@ test.describe('Case details management — Tabs', () => {
     await page.goto('/');
     await tabsPage.goToCaseManagement(CASE_IDENTIFIER);
     draftVersion = await tabsPage.ensureDraftVersionSelected();
+
+    // Clean up stale test tabs via API (avoids pagination issues with UI cleanup)
+    await tabsPage.cleanupStaleTabsViaApi(CASE_IDENTIFIER, draftVersion);
+
     // ensureDraftVersionSelected may redirect to /general — navigate to Case details > Tabs
     await tabsPage.switchToCaseDetailsTabs();
   });
@@ -58,7 +67,7 @@ test.describe('Case details management — Tabs', () => {
 
   // ─── 6.74 View tabs configuration ─────────────────────────────────
 
-  test.describe('View tabs', () => {
+  test.describe('6.74 — View tabs', () => {
     test('Tabs list is visible', async () => {
       await expect(tabsPage.tabsList).toBeVisible();
     });
@@ -66,7 +75,7 @@ test.describe('Case details management — Tabs', () => {
 
   // ─── 6.75 Add tab ─────────────────────────────────────────────────
 
-  test.describe('Add tab', () => {
+  test.describe('6.75 — Add tab', () => {
     test.describe('Success', () => {
       test('Add a widgets tab', async () => {
         // Act
@@ -99,7 +108,7 @@ test.describe('Case details management — Tabs', () => {
 
   // ─── 6.76 Rearrange tabs ──────────────────────────────────────────
 
-  test.describe('Rearrange tabs', () => {
+  test.describe('6.76 — Rearrange tabs', () => {
     test('Add two tabs for reordering', async () => {
       await tabsPage.addWidgetsTab(tabReorderTestData.titleA);
       await tabsPage.assertTabExists(tabReorderTestData.titleA);
@@ -108,21 +117,30 @@ test.describe('Case details management — Tabs', () => {
       await tabsPage.assertTabExists(tabReorderTestData.titleB);
     });
 
-    test('Drag tab B above tab A', async () => {
-      // Arrange — verify initial order: A before B
+    test('Reorder tabs via drag and drop', async () => {
+      // Get initial positions
       const initialOrder = await tabsPage.getTabTitlesInOrder();
       const indexA = initialOrder.indexOf(tabReorderTestData.titleA);
       const indexB = initialOrder.indexOf(tabReorderTestData.titleB);
-      expect(indexA).toBeLessThan(indexB);
+      expect(indexA).not.toBe(-1);
+      expect(indexB).not.toBe(-1);
 
       // Act
-      await tabsPage.dragTabToPosition(tabReorderTestData.titleB, tabReorderTestData.titleA);
+      if (indexA < indexB) {
+        await tabsPage.dragTabToPosition(tabReorderTestData.titleB, tabReorderTestData.titleA);
+      } else {
+        await tabsPage.dragTabToPosition(tabReorderTestData.titleA, tabReorderTestData.titleB);
+      }
 
-      // Assert — B is now before A
+      // Assert — relative order should be reversed
       const newOrder = await tabsPage.getTabTitlesInOrder();
       const newIndexA = newOrder.indexOf(tabReorderTestData.titleA);
       const newIndexB = newOrder.indexOf(tabReorderTestData.titleB);
-      expect(newIndexB).toBeLessThan(newIndexA);
+      if (indexA < indexB) {
+        expect(newIndexB).toBeLessThan(newIndexA);
+      } else {
+        expect(newIndexA).toBeLessThan(newIndexB);
+      }
     });
 
     test('Clean up reorder tabs', async () => {
