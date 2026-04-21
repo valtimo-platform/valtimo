@@ -50,6 +50,7 @@ export * from './lib/plugins/documenten-api/components/download-document/downloa
 export * from './lib/plugins/documenten-api/components/store-uploaded-document-in-parts/store-uploaded-document-in-parts-configuration.component';
 export * from './lib/plugins/documenten-api/components/link-document-to-object/link-document-to-object-configuration.component';
 export * from './lib/plugins/documenten-api/components/delete-document-link/delete-document-link-configuration.component';
+export * from './lib/plugins/documenten-api/components/get-audit-trail/get-audit-trail-configuration.component';
 /* documenten api preview plugin */
 export * from './lib/plugins/documenten-api-preview/documenten-api-preview-plugin.module';
 export * from './lib/plugins/documenten-api-preview/documenten-api-preview-plugin.specification';

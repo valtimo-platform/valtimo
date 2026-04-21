@@ -25,6 +25,7 @@ import {DownloadDocumentConfigurationComponent} from './components/download-docu
 import {StoreUploadedDocumentInPartsConfigurationComponent} from './components/store-uploaded-document-in-parts/store-uploaded-document-in-parts-configuration.component';
 import {LinkDocumentToObjectConfigurationComponent} from './components/link-document-to-object/link-document-to-object-configuration.component';
 import {DeleteDocumentLinkConfigurationComponent} from './components/delete-document-link/delete-document-link-configuration.component';
+import {GetAuditTrailConfigurationComponent} from './components/get-audit-trail/get-audit-trail-configuration.component';
 
 @NgModule({
   declarations: [
@@ -35,6 +36,7 @@ import {DeleteDocumentLinkConfigurationComponent} from './components/delete-docu
     DownloadDocumentConfigurationComponent,
     LinkDocumentToObjectConfigurationComponent,
     DeleteDocumentLinkConfigurationComponent,
+    GetAuditTrailConfigurationComponent,
   ],
   imports: [
     CommonModule,
@@ -52,6 +54,7 @@ import {DeleteDocumentLinkConfigurationComponent} from './components/delete-docu
     DownloadDocumentConfigurationComponent,
     LinkDocumentToObjectConfigurationComponent,
     DeleteDocumentLinkConfigurationComponent,
+    GetAuditTrailConfigurationComponent,
   ],
 })
 export class DocumentenApiPluginModule {}

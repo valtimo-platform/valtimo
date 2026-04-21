@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -678,6 +678,119 @@ internal class DocumentenApiPluginTest {
             )
         }
         assertEquals("InformatieObject 123 with status 'definitief' cannot be updated in Documenten API with '1.0.0'", exception.message)
+    }
+
+    @Test
+    fun `should call client to get audit trail`() {
+        val storageService: TemporaryResourceStorageService = mock()
+        val applicationEventPublisher: ApplicationEventPublisher = mock()
+        val authenticationMock = mock<DocumentenApiAuthentication>()
+        val documentenApiVersionService: DocumentenApiVersionService = mock()
+        val virusScanEnabledForDocumentenApiPlugin = false
+        val executionMock = mock<DelegateExecution>()
+        val documentUrl = URI("http://some-url/enkelvoudiginformatieobjecten/some-uuid")
+
+        whenever(executionMock.businessKey).thenReturn("123e4567-e89b-12d3-a456-426655440000")
+        whenever(client.getAuditTrail(any(), any(), any())).thenReturn(emptyList())
+
+        val plugin = DocumentenApiPlugin(
+            client,
+            storageService,
+            applicationEventPublisher,
+            MapperSingleton.get(),
+            listOf(),
+            documentenApiVersionService,
+            pluginService,
+            runtimeService,
+            virusScanService,
+            virusScanEnabledForDocumentenApiPlugin
+        )
+        plugin.url = URI("http://some-url")
+        plugin.authenticationPluginConfiguration = authenticationMock
+
+        plugin.getAuditTrail(
+            executionMock,
+            documentUrl,
+            "myAuditTrailVar"
+        )
+
+        verify(client).getAuditTrail(
+            eq(authenticationMock),
+            eq(UUID.fromString("123e4567-e89b-12d3-a456-426655440000")),
+            eq(documentUrl)
+        )
+        verify(executionMock).setVariable(eq("myAuditTrailVar"), any<String>())
+    }
+
+    @Test
+    fun `should throw error when document url does not belong to plugin`() {
+        val storageService: TemporaryResourceStorageService = mock()
+        val applicationEventPublisher: ApplicationEventPublisher = mock()
+        val documentenApiVersionService: DocumentenApiVersionService = mock()
+        val virusScanEnabledForDocumentenApiPlugin = false
+        val executionMock = mock<DelegateExecution>()
+        val documentUrl = URI("http://other-url/enkelvoudiginformatieobjecten/some-uuid")
+
+        val plugin = DocumentenApiPlugin(
+            client,
+            storageService,
+            applicationEventPublisher,
+            MapperSingleton.get(),
+            listOf(),
+            documentenApiVersionService,
+            pluginService,
+            runtimeService,
+            virusScanService,
+            virusScanEnabledForDocumentenApiPlugin
+        )
+        plugin.url = URI("http://some-url")
+
+        val exception = assertThrows<IllegalStateException> {
+            plugin.getAuditTrail(
+                executionMock,
+                documentUrl,
+                "myAuditTrailVar"
+            )
+        }
+        assertEquals(
+            "Failed to get audit trail for document with url 'http://other-url/enkelvoudiginformatieobjecten/some-uuid'. Document isn't part of Documenten API with url 'http://some-url'.",
+            exception.message
+        )
+    }
+
+    @Test
+    fun `should throw error when businessKey is null for audit trail`() {
+        val storageService: TemporaryResourceStorageService = mock()
+        val applicationEventPublisher: ApplicationEventPublisher = mock()
+        val documentenApiVersionService: DocumentenApiVersionService = mock()
+        val virusScanEnabledForDocumentenApiPlugin = false
+        val executionMock = mock<DelegateExecution>()
+        val documentUrl = URI("http://some-url/enkelvoudiginformatieobjecten/some-uuid")
+
+        whenever(executionMock.businessKey).thenReturn(null)
+
+        val plugin = DocumentenApiPlugin(
+            client,
+            storageService,
+            applicationEventPublisher,
+            MapperSingleton.get(),
+            listOf(),
+            documentenApiVersionService,
+            pluginService,
+            runtimeService,
+            virusScanService,
+            virusScanEnabledForDocumentenApiPlugin
+        )
+        plugin.url = URI("http://some-url")
+
+        val exception = assertThrows<IllegalArgumentException> {
+            plugin.getAuditTrail(
+                executionMock,
+                documentUrl,
+                "myAuditTrailVar"
+            )
+        }
+        assertEquals("Failed to get audit trail. Business key is null.", exception.message)
     }
 
     private fun createPlugin(
