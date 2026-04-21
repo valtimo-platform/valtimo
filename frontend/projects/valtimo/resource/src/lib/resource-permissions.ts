@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,33 +25,36 @@ enum PERMISSION_ACTION {
 }
 
 enum RESOURCE_PERMISSION_RESOURCE {
-  resourcePermission = 'com.ritense.resource.authorization.ResourcePermission',
+  // Kept as an alias of zgwDocument for transition; old code referencing resourcePermission
+  // will transparently carry the new FQCN.
+  resourcePermission = 'com.ritense.documentenapi.authorization.ZgwDocument',
+  zgwDocument = 'com.ritense.documentenapi.authorization.ZgwDocument',
   jsonSchemaDocument = 'com.ritense.document.domain.impl.JsonSchemaDocument',
 }
 
 const CAN_VIEW_RESOURCE_PERMISSION: PermissionRequest = {
   action: PERMISSION_ACTION.view,
-  resource: RESOURCE_PERMISSION_RESOURCE.resourcePermission,
+  resource: RESOURCE_PERMISSION_RESOURCE.zgwDocument,
 };
 
 const CAN_VIEW_LIST_RESOURCE_PERMISSION: PermissionRequest = {
   action: PERMISSION_ACTION.view_list,
-  resource: RESOURCE_PERMISSION_RESOURCE.resourcePermission,
+  resource: RESOURCE_PERMISSION_RESOURCE.zgwDocument,
 };
 
 const CAN_CREATE_RESOURCE_PERMISSION: PermissionRequest = {
   action: PERMISSION_ACTION.create,
-  resource: RESOURCE_PERMISSION_RESOURCE.resourcePermission,
+  resource: RESOURCE_PERMISSION_RESOURCE.zgwDocument,
 };
 
 const CAN_MODIFY_RESOURCE_PERMISSION: PermissionRequest = {
   action: PERMISSION_ACTION.modify,
-  resource: RESOURCE_PERMISSION_RESOURCE.resourcePermission,
+  resource: RESOURCE_PERMISSION_RESOURCE.zgwDocument,
 };
 
 const CAN_DELETE_RESOURCE_PERMISSION: PermissionRequest = {
   action: PERMISSION_ACTION.delete,
-  resource: RESOURCE_PERMISSION_RESOURCE.resourcePermission,
+  resource: RESOURCE_PERMISSION_RESOURCE.zgwDocument,
 };
 
 export {

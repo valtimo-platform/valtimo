@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,12 +16,16 @@
 
 package com.ritense.zakenapi.service
 
+import com.ritense.authorization.Action
 import com.ritense.authorization.AuthorizationService
+import com.ritense.authorization.permission.Permission
 import com.ritense.authorization.request.EntityAuthorizationRequest
 import com.ritense.catalogiapi.service.CatalogiService
 import com.ritense.document.domain.RelatedFile
 import com.ritense.document.domain.impl.JsonSchemaDocument
 import com.ritense.documentenapi.DocumentenApiPlugin
+import com.ritense.documentenapi.authorization.ZgwDocument
+import com.ritense.documentenapi.authorization.ZgwDocumentActionProvider
 import com.ritense.documentenapi.client.DocumentInformatieObject
 import com.ritense.documentenapi.domain.DocumentenApiColumnKey
 import com.ritense.documentenapi.domain.DocumentenApiColumnKey.AUTEUR
@@ -41,9 +45,8 @@ import com.ritense.logging.LoggableResource
 import com.ritense.plugin.domain.PluginConfiguration
 import com.ritense.plugin.domain.PluginConfigurationId
 import com.ritense.plugin.service.PluginService
-import com.ritense.resource.authorization.ResourcePermission
-import com.ritense.resource.authorization.ResourcePermissionActionProvider
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
+import com.ritense.valtimo.contract.utils.SecurityUtils
 import com.ritense.zakenapi.ExtractUuid.extractUuidFromUri
 import com.ritense.zakenapi.ZaakUrlProvider
 import com.ritense.zakenapi.ZakenApiPlugin
@@ -83,8 +86,10 @@ class ZaakDocumentService(
             )
         ) { "Could not find ${ZakenApiPlugin::class.simpleName} configuration for zaak with url: $zaakUri" }
 
+        val (viewPermissions, modifyPermissions, deletePermissions) = prefetchDocumentPermissions()
+
         return zakenApiPlugin.getZaakInformatieObjecten(caseDocumentId, zaakUri)
-            .map { getRelatedFiles(it) }
+            .map { getRelatedFiles(it, viewPermissions, modifyPermissions, deletePermissions) }
     }
 
     fun getInformatieObjectenAsRelatedFilesPage(
@@ -109,14 +114,16 @@ class ZaakDocumentService(
 
         if (!authorizationService.hasPermission(
                 EntityAuthorizationRequest(
-                    ResourcePermission::class.java,
-                    ResourcePermissionActionProvider.VIEW_LIST,
-                    ResourcePermission(caseDocumentId)
+                    ZgwDocument::class.java,
+                    ZgwDocumentActionProvider.VIEW_LIST,
+                    ZgwDocument(caseDocumentId = caseDocumentId)
                 )
             )
         ) {
             return Page.empty(pageable)
         }
+
+        val (viewPermissions, modifyPermissions, deletePermissions) = prefetchDocumentPermissions()
 
         return if (version.supportsFilterableColumns() && version.supportsSortableColumns()) {
             documentenApiService.getCaseInformatieObjecten(
@@ -124,12 +131,12 @@ class ZaakDocumentService(
                 documentSearchRequest.copy(zaakUrl = zaakUri),
                 pageable
             ).map {
-                mapDocumentenApiDocument(it, version)
+                mapDocumentenApiDocument(it, version, caseDocumentId, viewPermissions, modifyPermissions, deletePermissions)
             }
         } else {
             val zakenApiPlugin = getZakenApiPlugin(zaakUri)
             val documenten = zakenApiPlugin.getZaakInformatieObjecten(caseDocumentId, zaakUri)
-                .map { mapDocumentenApiDocument(it, version) }
+                .map { mapDocumentenApiDocument(it, version, viewPermissions, modifyPermissions, deletePermissions) }
             toPage(documenten, pageable)
         }
     }
@@ -176,18 +183,28 @@ class ZaakDocumentService(
         return PageImpl(list.subList(startIndex, endIndex), pageable, list.size.toLong())
     }
 
-    private fun getRelatedFiles(zaakInformatieObject: ZaakInformatieObject): RelatedFileDto {
+    private fun getRelatedFiles(
+        zaakInformatieObject: ZaakInformatieObject,
+        viewPermissions: List<Permission>,
+        modifyPermissions: List<Permission>,
+        deletePermissions: List<Permission>,
+    ): RelatedFileDto {
         val pluginConfiguration = getDocumentenApiPluginByInformatieobjectUrl(zaakInformatieObject.informatieobject)
         val plugin = pluginService.createInstance(pluginConfiguration) as DocumentenApiPlugin
         val caseDocumentId = extractUuidFromUri(zaakInformatieObject.zaak) ?: throw IllegalStateException("Could not extract caseDocumentId from zaakInformatieObject.zaak: ${zaakInformatieObject.zaak}")
         val informatieObject = plugin.getInformatieObject(zaakInformatieObject.informatieobject, caseDocumentId)
-        return mapRelatedFile(informatieObject, pluginConfiguration)
+        return mapRelatedFile(informatieObject, pluginConfiguration, caseDocumentId, viewPermissions, modifyPermissions, deletePermissions)
     }
 
     private fun mapRelatedFile(
         informatieObject: DocumentInformatieObject,
         pluginConfiguration: PluginConfiguration,
+        caseDocumentId: UUID,
+        viewPermissions: List<Permission>,
+        modifyPermissions: List<Permission>,
+        deletePermissions: List<Permission>,
     ): RelatedFileDto {
+        val zgwDocument = buildZgwDocument(informatieObject, caseDocumentId)
         return RelatedFileDto(
             fileId = UUID.fromString(informatieObject.url.path.substringAfterLast("/")),
             fileName = informatieObject.bestandsnaam,
@@ -209,13 +226,20 @@ class ZaakDocumentService(
             receiptDate = informatieObject.ontvangstdatum,
             confidentialityLevel = informatieObject.vertrouwelijkheidaanduiding?.key,
             version = informatieObject.versie,
-            indicationUsageRights = informatieObject.indicatieGebruiksrecht
+            indicationUsageRights = informatieObject.indicatieGebruiksrecht,
+            canView = evaluatePermission(zgwDocument, ZgwDocumentActionProvider.VIEW, viewPermissions),
+            canModify = evaluatePermission(zgwDocument, ZgwDocumentActionProvider.MODIFY, modifyPermissions),
+            canDelete = evaluatePermission(zgwDocument, ZgwDocumentActionProvider.DELETE, deletePermissions),
         )
     }
 
     private fun mapDocumentenApiDocument(
         informatieObject: DocumentInformatieObject,
         version: DocumentenApiVersion,
+        caseDocumentId: UUID,
+        viewPermissions: List<Permission>,
+        modifyPermissions: List<Permission>,
+        deletePermissions: List<Permission>,
     ): DocumentenApiDocumentDto {
         val pluginConfiguration = getDocumentenApiPluginByInformatieobjectUrl(informatieObject.url)
         val trefwoorden = if (version.supportsTrefwoorden) {
@@ -223,6 +247,7 @@ class ZaakDocumentService(
         } else {
             listOf()
         }
+        val zgwDocument = buildZgwDocument(informatieObject, caseDocumentId)
         return DocumentenApiDocumentDto(
             fileId = UUID.fromString(informatieObject.url.path.substringAfterLast("/")),
             pluginConfigurationId = pluginConfiguration.id.id,
@@ -243,13 +268,19 @@ class ZaakDocumentService(
             ontvangstdatum = informatieObject.ontvangstdatum,
             vertrouwelijkheidaanduiding = informatieObject.vertrouwelijkheidaanduiding?.key,
             versie = informatieObject.versie,
-            indicatieGebruiksrecht = informatieObject.indicatieGebruiksrecht
+            indicatieGebruiksrecht = informatieObject.indicatieGebruiksrecht,
+            canView = evaluatePermission(zgwDocument, ZgwDocumentActionProvider.VIEW, viewPermissions),
+            canModify = evaluatePermission(zgwDocument, ZgwDocumentActionProvider.MODIFY, modifyPermissions),
+            canDelete = evaluatePermission(zgwDocument, ZgwDocumentActionProvider.DELETE, deletePermissions),
         )
     }
 
     private fun mapDocumentenApiDocument(
         zaakInformatieObject: ZaakInformatieObject,
         version: DocumentenApiVersion,
+        viewPermissions: List<Permission>,
+        modifyPermissions: List<Permission>,
+        deletePermissions: List<Permission>,
     ): DocumentenApiDocumentDto {
         val pluginConfiguration = getDocumentenApiPluginByInformatieobjectUrl(zaakInformatieObject.informatieobject)
         val plugin = pluginService.createInstance(pluginConfiguration) as DocumentenApiPlugin
@@ -260,6 +291,7 @@ class ZaakDocumentService(
         } else {
             listOf()
         }
+        val zgwDocument = buildZgwDocument(informatieObject, caseDocumentId)
         return DocumentenApiDocumentDto(
             fileId = UUID.fromString(informatieObject.url.path.substringAfterLast("/")),
             pluginConfigurationId = pluginConfiguration.id.id,
@@ -280,8 +312,41 @@ class ZaakDocumentService(
             ontvangstdatum = informatieObject.ontvangstdatum,
             vertrouwelijkheidaanduiding = informatieObject.vertrouwelijkheidaanduiding?.key,
             versie = informatieObject.versie,
-            indicatieGebruiksrecht = informatieObject.indicatieGebruiksrecht
+            indicatieGebruiksrecht = informatieObject.indicatieGebruiksrecht,
+            canView = evaluatePermission(zgwDocument, ZgwDocumentActionProvider.VIEW, viewPermissions),
+            canModify = evaluatePermission(zgwDocument, ZgwDocumentActionProvider.MODIFY, modifyPermissions),
+            canDelete = evaluatePermission(zgwDocument, ZgwDocumentActionProvider.DELETE, deletePermissions),
         )
+    }
+
+    private fun prefetchDocumentPermissions(): Triple<List<Permission>, List<Permission>, List<Permission>> {
+        val userRoles = SecurityUtils.getCurrentUserRoles()
+        val viewPermissions = authorizationService.getPermissions(ZgwDocument::class.java, ZgwDocumentActionProvider.VIEW)
+            .filter { it.role.key in userRoles }
+        val modifyPermissions = authorizationService.getPermissions(ZgwDocument::class.java, ZgwDocumentActionProvider.MODIFY)
+            .filter { it.role.key in userRoles }
+        val deletePermissions = authorizationService.getPermissions(ZgwDocument::class.java, ZgwDocumentActionProvider.DELETE)
+            .filter { it.role.key in userRoles }
+        return Triple(viewPermissions, modifyPermissions, deletePermissions)
+    }
+
+    private fun buildZgwDocument(informatieObject: DocumentInformatieObject, caseDocumentId: UUID): ZgwDocument {
+        return ZgwDocument(
+            caseDocumentId = caseDocumentId,
+            vertrouwelijkheidaanduiding = informatieObject.vertrouwelijkheidaanduiding?.key,
+            status = informatieObject.status?.key,
+            informatieobjecttypeUrl = informatieObject.informatieobjecttype,
+            informatieobjecttypeOmschrijving = getInformatieobjecttypeOmschrijvingByUri(informatieObject.informatieobjecttype),
+        )
+    }
+
+    private fun evaluatePermission(
+        zgwDocument: ZgwDocument,
+        action: Action<ZgwDocument>,
+        permissions: List<Permission>,
+    ): Boolean {
+        val request = EntityAuthorizationRequest(ZgwDocument::class.java, action, zgwDocument)
+        return authorizationService.hasPermission(request, permissions)
     }
 
     private fun getInformatieobjecttypeOmschrijvingByUri(uri: String?): String? {
