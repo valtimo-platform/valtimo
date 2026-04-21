@@ -18,22 +18,24 @@ package com.ritense.documentenapi.web.rest.dto
 
 import com.ritense.documentenapi.domain.DocumentenApiVersion
 
-data class DocumentenApiVersionDto(
-    val selectedVersion: String? = null,
+data class DocumentenApiVersionDetailsDto(
+    val version: String,
     val supportsFilterableColumns: Boolean,
     val supportsSortableColumns: Boolean,
     val supportsTrefwoorden: Boolean,
     val supportsUpdatingDefinitiveDocument: Boolean,
     val supportsObjectInformatieObjecten: Boolean,
+    val experimentalVersion: Boolean,
 ) {
     companion object {
-        fun of(version: DocumentenApiVersion?) = DocumentenApiVersionDto(
-            selectedVersion = version?.version,
-            supportsFilterableColumns = version?.supportsFilterableColumns() ?: false,
-            supportsSortableColumns = version?.supportsSortableColumns() ?: false,
-            supportsTrefwoorden = version?.supportsTrefwoorden ?: false,
-            supportsUpdatingDefinitiveDocument = version?.supportsUpdatingDefinitiveDocument ?: false,
-            supportsObjectInformatieObjecten = version?.supportsObjectInformatieObjecten ?: false,
+        fun of(version: DocumentenApiVersion) = DocumentenApiVersionDetailsDto(
+            version = version.version,
+            supportsFilterableColumns = version.supportsFilterableColumns(),
+            supportsSortableColumns = version.supportsSortableColumns(),
+            supportsTrefwoorden = version.supportsTrefwoorden,
+            supportsUpdatingDefinitiveDocument = version.supportsUpdatingDefinitiveDocument,
+            supportsObjectInformatieObjecten = version.supportsObjectInformatieObjecten,
+            experimentalVersion = version.experimentalVersion,
         )
     }
 }
