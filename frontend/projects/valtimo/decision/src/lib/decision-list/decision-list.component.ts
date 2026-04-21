@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,10 +19,12 @@ import {CommonModule} from '@angular/common';
 import {ActivatedRoute, Router, RouterModule} from '@angular/router';
 import {BehaviorSubject, combineLatest, map, Observable, switchMap, take, tap} from 'rxjs';
 import {Decision} from '../models';
+import {filterLatestDecisionVersions} from '../utils/decision.utils';
 import {DecisionService} from '../services/decision.service';
 import {
   ConfigService,
   EditPermissionsService,
+  getBuildingBlockManagementRouteParams,
   getCaseManagementRouteParams,
   getContextObservable,
 } from '@valtimo/shared';
@@ -62,31 +64,36 @@ export class DecisionListComponent {
   readonly experimentalEditing!: boolean;
 
   public readonly caseManagementRouteParams$ = getCaseManagementRouteParams(this.route);
+  public readonly buildingBlockManagementRouteParams$ =
+    getBuildingBlockManagementRouteParams(this.route);
   public readonly context$ = getContextObservable(this.route);
 
   readonly decisionsLatestVersions$ = this.stateService.refreshDecisions$.pipe(
     switchMap(() => this.context$),
-    switchMap(context =>
-      context === 'case'
-        ? this.caseManagementRouteParams$.pipe(
-            switchMap(params =>
-              this.decisionService.listCaseDecisionDefinitions(
-                params.caseDefinitionKey,
-                params.caseDefinitionVersionTag
-              )
+    switchMap(context => {
+      if (context === 'case') {
+        return this.caseManagementRouteParams$.pipe(
+          switchMap(params =>
+            this.decisionService.listCaseDecisionDefinitions(
+              params.caseDefinitionKey,
+              params.caseDefinitionVersionTag
             )
           )
-        : this.decisionService.getDecisions()
-    ),
-    map(decisions =>
-      decisions.reduce((acc, curr) => {
-        const existing = acc.find(d => d.key === curr.key);
-        if (existing && existing.version > curr.version) return acc;
-        if (existing && existing.version < curr.version)
-          return [...acc.filter(d => d.key !== curr.key), curr];
-        return [...acc, curr];
-      }, [])
-    ),
+        );
+      }
+      if (context === 'buildingBlock') {
+        return this.buildingBlockManagementRouteParams$.pipe(
+          switchMap(params =>
+            this.decisionService.listBuildingBlockDecisionDefinitions(
+              params.buildingBlockDefinitionKey,
+              params.buildingBlockDefinitionVersionTag
+            )
+          )
+        );
+      }
+      return this.decisionService.getDecisions();
+    }),
+    map(filterLatestDecisionVersions),
     tap(() => {
       this.loading$.next(false);
       this.cdr.detectChanges();
@@ -121,6 +128,12 @@ export class DecisionListComponent {
       if (context === 'independent') {
         const basePath = this.experimentalEditing ? '/decision-tables/edit/' : '/decision-tables/';
         this.router.navigate([basePath + decision.id]);
+      } else if (context === 'buildingBlock') {
+        this.buildingBlockManagementRouteParams$.pipe(take(1)).subscribe(params => {
+          this.router.navigateByUrl(
+            `building-block-management/building-block/${params.buildingBlockDefinitionKey}/version/${params.buildingBlockDefinitionVersionTag}/decisions/${decision.id}`
+          );
+        });
       } else {
         this.caseManagementRouteParams$.pipe(take(1)).subscribe(params => {
           this.router.navigateByUrl(
