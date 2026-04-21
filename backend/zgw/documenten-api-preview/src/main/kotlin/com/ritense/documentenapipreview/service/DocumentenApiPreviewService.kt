@@ -29,6 +29,7 @@ import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.io.InputStream
+import java.util.UUID
 
 @Transactional(readOnly = true)
 @Service
@@ -38,11 +39,19 @@ class DocumentenApiPreviewService(
 ) {
     open fun generatePreview(
         @LoggableResource(resourceType = PluginConfigurationId::class) documentenApiConfigurationId: String,
+        caseDocumentId: UUID,
         @LoggableResource(resourceTypeName = DOCUMENTEN_API.ENKELVOUDIG_INFORMATIE_OBJECT) documentId: String
     ): PdfFile {
         val documentPreviewApiPlugin = getDocumentenApiPreviewPlugin(documentenApiConfigurationId)
 
-        return documentPreviewApiPlugin.generatePreview(documentId)
+        return documentPreviewApiPlugin.generatePreview(caseDocumentId, documentId)
+    }
+
+    open fun isPreviewConfigured(documentenApiConfigurationId: String): Boolean {
+        return pluginService.findPluginConfigurations(
+            DocumentenApiPreviewPlugin::class.java,
+            DocumentenApiPreviewPlugin.findConfigurationByDocumentenApiConfiguration(documentenApiConfigurationId)
+        ).isNotEmpty()
     }
 
     private fun getDocumentenApiPreviewPlugin(documentenApiConfigurationId: String): DocumentenApiPreviewPlugin {
