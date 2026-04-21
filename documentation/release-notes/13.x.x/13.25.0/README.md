@@ -21,6 +21,21 @@
   Documentation can be found in
   the [Notificaties API plugin configuration guide](../../../features/plugins/configure-notificaties-api-plugin.md).
 
+* **Documenten API plugin: link and unlink documents to objects (experimental)**
+
+  A new experimental Documenten API plugin version has been added with support for the
+  `objectinformatieobjecten` endpoint. This version introduces two new plugin actions:
+
+  - **Link document to object** — creates an `ObjectInformatieObject` link between a document
+    stored in the Documenten API and any ZGW object (e.g. a Zaak, Besluit, or custom object).
+    After linking, the process variables `objectInformatieObjectUrl` and `objectInformatieObjectId`
+    are set for downstream use.
+  - **Delete document link** — removes an existing `ObjectInformatieObject` link by its URL.
+
+  Both actions are only available when the configured Documenten API version supports the
+  `objectinformatieobjecten` API. Experimental versions are sorted to the end of the version
+  list in the plugin configurator.
+
 * **Document-level access control for ZGW documents**
 
   Permissions for ZGW documents can now include conditions on document properties such as confidentiality level,
