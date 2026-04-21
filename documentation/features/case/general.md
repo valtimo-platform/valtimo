@@ -31,7 +31,7 @@ It is possible to have user tasks be automatically assigned to a case assignee m
 {% endtab %}
 
 {% tab title="Via IDE" %}
-See [here](./#via-ide) for information on how to configure your case definition via the IDE.
+See the [Via IDE section](./#via-ide) for information on how to configure your case definition via the IDE.
 {% endtab %}
 {% endtabs %}
 
@@ -57,7 +57,7 @@ Automatic task assignment can be enabled when the case is configured to have a c
 {% endtab %}
 
 {% tab title="Via IDE" %}
-See [here](./#via-ide) for information on how to configure your case definition via the IDE.
+See the [Via IDE section](./#via-ide) for information on how to configure your case definition via the IDE.
 {% endtab %}
 {% endtabs %}
 
@@ -88,13 +88,13 @@ Valtimo comes with a system process called 'Upload Document'. This process is me
 
 By default, the Upload Document process does not do anything, so it will not upload anything yet. The process needs to be configured first.
 
-Process links can be used to configure the Upload Document process. The first service task called 'Upload document' can be linked to a Documenten API plugin action called 'Save uploaded document'. Look [here](https://docs.valtimo.nl/features/zgw/zgw-plugins/configure-documenten-api-plugin) for more information.
+Process links can be used to configure the Upload Document process. The first service task called 'Upload document' can be linked to a Documenten API plugin action called 'Save uploaded document'. Look at the [Documenten API plugin configuration](../plugins/configure-documenten-api-plugin.md) for more information.
 
 <figure><img src="https://docs.valtimo.nl/~gitbook/image?url=https%3A%2F%2F290147654-files.gitbook.io%2F%7E%2Ffiles%2Fv0%2Fb%2Fgitbook-x-prod.appspot.com%2Fo%2Fspaces%252FG2PoMeT8OSmMoaW7kF6t%252Fuploads%252Fgit-blob-d9e07ccaf4195444c8b61af934eff8babffe0657%252Fsave-uploaded-document.png%3Falt%3Dmedia&#x26;width=768&#x26;dpr=4&#x26;quality=100&#x26;sign=b9b7a41d&#x26;sv=2" alt="" width="375"><figcaption></figcaption></figure>
 
 Configuring the first service task of the Upload Document process is enough to let Valtimo users upload their documents to the Documenten API in Valtimo. But the documents will not be visible yet in case information within Valtimo. This is because the document has not been linked to any zaak.
 
-The second service task in the Upload Document process is called 'Link uploaded document to zaak'. The Zaken API plugin can take care of this action. Look [here](https://docs.valtimo.nl/features/zgw/zgw-plugins/configure-zaken-api-plugin) for more information.
+The second service task in the Upload Document process is called 'Link uploaded document to zaak'. The Zaken API plugin can take care of this action. Look at the [Zaken API plugin configuration](../plugins/configure-zaken-api-plugin.md) for more information.
 
 Plugin action: Link uploaded document to zaak
 

@@ -57,7 +57,7 @@ Case workers can access the IKO view in two ways:
 2. **Direct link from case**: On the case detail screen, a widget can be configured with a button that opens the IKO view. The identifier (such as BSN or KVK number) is automatically passed from the case document.
 
 {% hint style="info" %}
-Configuring a link from a case to an IKO view is done through the case detail tab configuration. See the [Case detail tabs](../cases/case-detail/tabs/README.md) documentation.
+Configuring a link from a case to an IKO view is done through the case detail tab configuration. See the [Case detail tabs](../case/case-detail/tabs/README.md) documentation.
 {% endhint %}
 
 ## In this section

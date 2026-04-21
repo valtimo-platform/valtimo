@@ -18,6 +18,7 @@ import {ChangeDetectionStrategy, Component, computed, Signal} from '@angular/cor
 import {TranslateModule} from '@ngx-translate/core';
 import {TilesModule} from 'carbon-components-angular';
 import {WidgetType, WidgetWidth} from '../../../../../models';
+import {WIDGET_WIZARD_WIDTH_TEST_IDS} from '../../../../../constants';
 import {WidgetWizardService} from '../../../../../services';
 
 @Component({
@@ -27,6 +28,8 @@ import {WidgetWizardService} from '../../../../../services';
   imports: [CommonModule, TranslateModule, TilesModule],
 })
 export class WidgetWizardWidthStepComponent {
+  protected readonly testIds = WIDGET_WIZARD_WIDTH_TEST_IDS;
+
   public readonly $fieldsColumnsLength: Signal<number> = computed(() =>
     this.widgetWizardService.$selectedWidget()?.type === WidgetType.FIELDS
       ? (this.widgetWizardService.$widgetContent()?.['columns']?.length ?? 0)

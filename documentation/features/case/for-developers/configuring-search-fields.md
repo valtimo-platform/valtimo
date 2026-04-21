@@ -41,7 +41,7 @@ Existing search fields can be updated with new values by using the endpoint belo
 ]
 ```
 
-The `dataType`, `fieldType` and `matchType` only allow for specific values. A list of these allowed values can be found [here](configuring-search-fields.md#allowed-values).
+The `dataType`, `fieldType` and `matchType` only allow for specific values. A list of these allowed values can be found in the [allowed values section](configuring-search-fields.md#allowed-values).
 
 ## Deleting an existing search field.
 

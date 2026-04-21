@@ -56,7 +56,7 @@ test.describe('Case management - Search Fields', () => {
   });
 
   test.describe('Success tests', () => {
-    test.describe('Search fields', () => {
+    test.describe('6.71, 6.72 — Search fields', () => {
       test.beforeAll(async () => {
         await testPage.searchFieldsTab.click();
       });
