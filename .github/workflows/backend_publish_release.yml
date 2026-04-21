@@ -93,7 +93,7 @@ jobs:
         env:
           ORG_GRADLE_PROJECT_sonatypeUsername: ${{ env.SONATYPE_USERNAME }}
           ORG_GRADLE_PROJECT_sonatypePassword: ${{ env.SONATYPE_PASSWORD }}
-        run: ./gradlew -PincludeDev=false :backend:jreleaserDeploy --stacktrace -PprojectVersion="${{ steps.version.outputs.version_release }}"
+        run: ./gradlew -PincludeDev=false :backend:jreleaserDeploy --stacktrace -PprojectVersion="${PROJECT_VERSION}"
 
       - name: Archive Reports
         if: always()
