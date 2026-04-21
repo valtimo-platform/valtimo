@@ -81,3 +81,18 @@ This process link does the following steps:
 1. Take the document URL that is saved in the process variable `documentUrl`.
 2. Download the document and saves it to a temporary file.
 3. Creates a new process variable with the name of your choosing, by default: `resourceId`, containing the temporary file ID.
+
+### Get audit trail
+
+The **Get audit trail** action retrieves the audit trail for a document from the Documenten API and stores the result as a JSON string in a process variable. This can be used to inspect who changed what on the document, when, and why.
+
+When creating a process link the following properties have to be entered:
+
+* **Document URL.** The full URL to the `enkelvoudiginformatieobject` for which to retrieve the audit trail. Must belong to the Documenten API instance configured on this plugin.
+* **Process variable name for audit trail.** The name of the process variable in which the audit trail result will be stored as a JSON string.
+
+This process link does the following steps:
+
+1. Validates that the provided document URL belongs to the configured Documenten API.
+2. Calls `GET {documentUrl}/audittrail` on the Documenten API.
+3. Stores the resulting list of audit trail entries as a JSON string in the chosen process variable.
