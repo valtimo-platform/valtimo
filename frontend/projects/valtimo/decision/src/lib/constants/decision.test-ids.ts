@@ -14,14 +14,15 @@
  * limitations under the License.
  */
 
-/*
- * Public API Surface of form-management
- */
+export const DECISION_LIST_TEST_IDS = {
+  uploadButton: 'decisionListUploadButton',
+} as const;
 
-export * from './lib/services/form-management.service';
-export * from './lib/components/form-management/form-management.component';
-export * from './lib/models';
-export * from './lib/form-management.module';
-export * from './lib/components/form-management-edit/form-management-edit.component';
-export * from './lib/components/form-management-create/form-management-create.component';
-export * from './lib/constants';
+export const DECISION_UPLOAD_TEST_IDS = {
+  submitButton: 'decisionUploadModalSubmitButton',
+} as const;
+
+export const DECISION_MODELER_TEST_IDS = {
+  deployButton: 'decisionModelerDeployButton',
+  backButton: 'decisionModelerBackButton',
+} as const;

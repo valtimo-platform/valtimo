@@ -34,6 +34,7 @@ import {IconService} from 'carbon-components-angular';
 import {BehaviorSubject, Observable} from 'rxjs';
 import {switchMap, take} from 'rxjs/operators';
 import {CaseDetailService} from '../../../../services';
+import {CASE_MANAGEMENT_DOCUMENT_TEST_IDS} from '../../../../constants';
 
 @Component({
   standalone: false,
@@ -47,6 +48,8 @@ export class CaseManagementDocumentDefinitionComponent {
   @Output() cancelRedirect = new EventEmitter();
   @Output() confirmRedirect = new EventEmitter();
   @Output() pendingChangesUpdate = new EventEmitter<boolean>();
+
+  protected readonly testIds = CASE_MANAGEMENT_DOCUMENT_TEST_IDS;
 
   public readonly loadingDocumentDefinition$ = this.caseDetailService.loadingDocumentDefinition$;
   private readonly _refreshEditor$ = new BehaviorSubject<null>(null);
