@@ -26,6 +26,7 @@ import com.ritense.documentenapi.authorization.ZgwDocument
 import com.ritense.documentenapi.authorization.ZgwDocumentActionProvider
 import com.ritense.documentenapi.domain.DocumentenApiColumnKey
 import com.ritense.documentenapi.domain.FileUploadPart
+import com.ritense.documentenapi.event.DocumentAuditTrailListed
 import com.ritense.documentenapi.event.DocumentDeleted
 import com.ritense.documentenapi.event.DocumentInformatieObjectDownloaded
 import com.ritense.documentenapi.event.DocumentInformatieObjectViewed
@@ -175,6 +176,39 @@ class DocumentenApiClient(
         outboxService.send {
             DocumentInformatieObjectViewed(
                 result.url.toString(),
+                objectMapper.valueToTree(result)
+            )
+        }
+
+        return result
+    }
+
+    fun getAuditTrail(
+        authentication: DocumentenApiAuthentication,
+        caseDocumentId: UUID?,
+        documentUrl: URI
+    ): List<AuditTrail> {
+        authorizationService.requirePermission(
+            EntityAuthorizationRequest(
+                ResourcePermission::class.java,
+                ResourcePermissionActionProvider.VIEW,
+                ResourcePermission(caseDocumentId)
+            )
+        )
+
+        val result = restClient(authentication)
+            .get()
+            .uri {
+                ClientTools.baseUrlToBuilder(it, documentUrl)
+                    .pathSegment("audittrail")
+                    .build()
+            }
+            .retrieve()
+            .body<List<AuditTrail>>()!!
+
+        outboxService.send {
+            DocumentAuditTrailListed(
+                documentUrl.toASCIIString(),
                 objectMapper.valueToTree(result)
             )
         }

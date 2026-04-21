@@ -48,6 +48,7 @@ export * from './lib/plugins/documenten-api/components/documenten-api-configurat
 export * from './lib/plugins/documenten-api/components/store-uploaded-document/store-uploaded-document-configuration.component';
 export * from './lib/plugins/documenten-api/components/download-document/download-document-configuration.component';
 export * from './lib/plugins/documenten-api/components/store-uploaded-document-in-parts/store-uploaded-document-in-parts-configuration.component';
+export * from './lib/plugins/documenten-api/components/get-audit-trail/get-audit-trail-configuration.component';
 /* documenten api preview plugin */
 export * from './lib/plugins/documenten-api-preview/documenten-api-preview-plugin.module';
 export * from './lib/plugins/documenten-api-preview/documenten-api-preview-plugin.specification';

@@ -1,0 +1,44 @@
+{
+  "display" : "form",
+  "components" : [
+    {
+      "key" : "pv:documentUrl",
+      "type" : "textfield",
+      "input" : true,
+      "label" : "Document URL",
+      "disabled" : true,
+      "tableView" : false,
+      "persistent" : "client-only",
+      "spellcheck" : false,
+      "applyMaskOn" : "change",
+      "attributes" : {
+        "data-testid" : "confirm-document-audit-trail-pv:documentUrl"
+      }
+    },
+    {
+      "key" : "pv:documentAuditTrail",
+      "rows" : 10,
+      "type" : "textarea",
+      "input" : true,
+      "label" : "Document Audit Trail",
+      "disabled" : true,
+      "tableView" : false,
+      "attributes" : {
+        "data-testid" : "confirm-document-audit-trail-pv:documentAuditTrail"
+      },
+      "autoExpand" : false,
+      "persistent" : "client-only",
+      "spellcheck" : false,
+      "applyMaskOn" : "change",
+      "clearOnHide" : false
+    },
+    {
+      "key" : "submit",
+      "type" : "button",
+      "input" : true,
+      "label" : "Submit",
+      "tableView" : false,
+      "disableOnInvalid" : true
+    }
+  ]
+}

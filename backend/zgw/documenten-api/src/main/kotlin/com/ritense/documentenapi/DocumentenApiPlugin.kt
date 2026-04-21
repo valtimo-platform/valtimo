@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,6 +21,7 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.convertValue
 import com.ritense.authorization.AuthorizationContext.Companion.runWithoutAuthorization
 import com.ritense.documentenapi.DocumentenApiPlugin.Companion.PLUGIN_KEY
+import com.ritense.documentenapi.client.AuditTrail
 import com.ritense.documentenapi.client.BestandsdelenRequest
 import com.ritense.documentenapi.client.CreateDocumentRequest
 import com.ritense.documentenapi.client.CreateDocumentResult
@@ -246,6 +247,35 @@ class DocumentenApiPlugin(
         execution.setVariable(processVariableName ?: RESOURCE_ID_PROCESS_VAR, tempResourceId)
 
         return tempResourceId
+    }
+
+    @PluginAction(
+        key = "get-audit-trail",
+        title = "Get audit trail",
+        description = "Get the audit trail for a document from the Documenten API",
+        activityTypes = [ActivityTypeWithEventName.SERVICE_TASK_START]
+    )
+    fun getAuditTrail(
+        execution: DelegateExecution,
+        @PluginActionProperty documentUrl: URI,
+        @PluginActionProperty processVariableName: String
+    ) {
+        check(documentUrl.toASCIIString().startsWith(url.toASCIIString())) {
+            "Failed to get audit trail for document with url '$documentUrl'. Document isn't part of Documenten API with url '$url'."
+        }
+
+        requireNotNull(execution.businessKey) {
+            "Failed to get audit trail. Business key is null."
+        }
+
+        getAuditTrail(documentUrl, UUID.fromString(execution.businessKey))
+            .let {
+                execution.setVariable(processVariableName, objectMapper.writeValueAsString(it))
+            }
+    }
+
+    fun getAuditTrail(documentUrl: URI, caseDocumentId: UUID?): List<AuditTrail> {
+        return client.getAuditTrail(authenticationPluginConfiguration, caseDocumentId, documentUrl)
     }
 
     fun downloadInformatieObject(caseDocumentId: UUID?, objectId: String): InputStream {

@@ -23,6 +23,7 @@ import {StoreTempDocumentConfigurationComponent} from './components/store-temp-d
 import {StoreUploadedDocumentConfigurationComponent} from './components/store-uploaded-document/store-uploaded-document-configuration.component';
 import {DownloadDocumentConfigurationComponent} from './components/download-document/download-document-configuration.component';
 import {StoreUploadedDocumentInPartsConfigurationComponent} from './components/store-uploaded-document-in-parts/store-uploaded-document-in-parts-configuration.component';
+import {GetAuditTrailConfigurationComponent} from './components/get-audit-trail/get-audit-trail-configuration.component';
 
 @NgModule({
   declarations: [
@@ -31,6 +32,7 @@ import {StoreUploadedDocumentInPartsConfigurationComponent} from './components/s
     StoreUploadedDocumentConfigurationComponent,
     StoreUploadedDocumentInPartsConfigurationComponent,
     DownloadDocumentConfigurationComponent,
+    GetAuditTrailConfigurationComponent,
   ],
   imports: [
     CommonModule,
@@ -46,6 +48,7 @@ import {StoreUploadedDocumentInPartsConfigurationComponent} from './components/s
     StoreUploadedDocumentConfigurationComponent,
     StoreUploadedDocumentInPartsConfigurationComponent,
     DownloadDocumentConfigurationComponent,
+    GetAuditTrailConfigurationComponent,
   ],
 })
 export class DocumentenApiPluginModule {}

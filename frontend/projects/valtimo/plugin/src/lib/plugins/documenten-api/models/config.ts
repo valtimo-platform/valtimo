@@ -57,6 +57,11 @@ export interface DownloadDocumentConfig {
   processVariableName: string;
 }
 
+export interface GetAuditTrailConfig {
+  documentUrl: string;
+  processVariableName: string;
+}
+
 export {
   DocumentenApiConfig,
   StoreTempDocumentConfig,
