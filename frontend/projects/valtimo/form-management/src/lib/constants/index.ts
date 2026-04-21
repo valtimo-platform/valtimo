@@ -14,14 +14,4 @@
  * limitations under the License.
  */
 
-/*
- * Public API Surface of form-management
- */
-
-export * from './lib/services/form-management.service';
-export * from './lib/components/form-management/form-management.component';
-export * from './lib/models';
-export * from './lib/form-management.module';
-export * from './lib/components/form-management-edit/form-management-edit.component';
-export * from './lib/components/form-management-create/form-management-create.component';
-export * from './lib/constants';
+export * from './form-management.test-ids';

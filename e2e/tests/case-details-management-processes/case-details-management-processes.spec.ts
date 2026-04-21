@@ -100,7 +100,7 @@ test.describe('Case details - Processes tab', () => {
     });
   });
 
-  test.describe('6.7, 6.8 — Create, edit and delete process', () => {
+  test.describe('6.7, 6.8, 6.9, 6.10, 6.11 — Create, edit, save and delete process', () => {
     test('Can upload a new process via the upload modal', async () => {
       await processesPage.uploadProcess();
 
@@ -124,8 +124,59 @@ test.describe('Case details - Processes tab', () => {
       await expect(processesPage.startableByUserToggle).toBeVisible();
     });
 
-    test('Can navigate back to the process list', async () => {
+    test('Can navigate back to the process list via the Back button', async () => {
       await processesPage.navigateBackFromBuilder();
+
+      const row = processesPage.carbonList.row(TEST_PROCESS_NAME);
+      await row.assertVisible();
+    });
+
+    test('Can reopen the uploaded process for editing', async () => {
+      await processesPage.clickProcessRow(TEST_PROCESS_NAME);
+      await page.waitForURL(/\/processes\//);
+
+      await expect(processesPage.builderContainer).toBeVisible();
+      await expect(processesPage.bpmnPalette).toBeVisible();
+    });
+
+    test('Save button is disabled before any changes are made', async () => {
+      await expect(processesPage.builderSaveButton).toBeDisabled();
+    });
+
+    test('6.9 — Can add a BPMN task element via the context pad', async () => {
+      const initialTaskCount = await processesPage.taskShapes.count();
+
+      await processesPage.appendTaskToStartEvent();
+
+      await expect(processesPage.taskShapes).toHaveCount(initialTaskCount + 1);
+      await expect(processesPage.builderSaveButton).toBeEnabled();
+    });
+
+    test('6.10 — Can enable "Starts case" process property', async () => {
+      const switchControl = processesPage.startsCaseToggle.getByRole('switch');
+      await expect(switchControl).not.toBeChecked();
+
+      await processesPage.clickStartsCaseToggle();
+
+      await expect(switchControl).toBeChecked();
+    });
+
+    test('6.10 — Can enable "Startable by user" process property', async () => {
+      const switchControl = processesPage.startableByUserToggle.getByRole('switch');
+      await expect(switchControl).not.toBeChecked();
+
+      await processesPage.clickStartableByUserToggle();
+
+      await expect(switchControl).toBeChecked();
+    });
+
+    test('6.11 — Can save process with success notification and navigate back to list', async () => {
+      await processesPage.saveProcess();
+      await expectNotificationMessage(page, 'deployed');
+
+      // Saving in case context auto-navigates back to the process list
+      await page.waitForURL(/\/processes$/);
+      await processesPage.carbonList.waitForLoaded();
 
       const row = processesPage.carbonList.row(TEST_PROCESS_NAME);
       await row.assertVisible();
