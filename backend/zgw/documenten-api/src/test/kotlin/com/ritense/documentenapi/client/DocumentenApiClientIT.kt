@@ -26,6 +26,8 @@ import com.ritense.documentenapi.DocumentenApiPlugin
 import com.ritense.documentenapi.authorization.ZgwDocument
 import com.ritense.documentenapi.authorization.ZgwDocumentActionProvider
 import com.ritense.documentenapi.web.rest.dto.DocumentSearchRequest
+import com.ritense.resource.authorization.ResourcePermission
+import com.ritense.resource.authorization.ResourcePermissionActionProvider
 import okhttp3.mockwebserver.Dispatcher
 import okhttp3.mockwebserver.MockResponse
 import okhttp3.mockwebserver.MockWebServer
