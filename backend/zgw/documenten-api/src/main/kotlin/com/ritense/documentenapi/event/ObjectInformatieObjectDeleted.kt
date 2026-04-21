@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2026 Ritense BV, the Netherlands.
+ * Copyright 2015-2024 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,17 +14,14 @@
  * limitations under the License.
  */
 
-interface SupportedDocumentenApiFeatures {
-  selectedVersion: string;
-  supportsFilterableColumns: boolean;
-  supportsSortableColumns: boolean;
-  supportsTrefwoorden: boolean;
-  supportsUpdatingDefinitiveDocument: boolean;
-  supportsObjectInformatieObjecten: boolean;
-}
+package com.ritense.documentenapi.event
 
-interface DocumentenApiManagementVersion extends SupportedDocumentenApiFeatures {
-  detectedVersions: string;
-}
+import com.ritense.outbox.domain.BaseEvent
 
-export {DocumentenApiManagementVersion, SupportedDocumentenApiFeatures};
+class ObjectInformatieObjectDeleted(objectInformatieObjectUrl: String) : BaseEvent(
+    type = "com.ritense.gzac.drc.objectinformatieobject.deleted",
+    resultType = "com.ritense.documentenapi.client.ObjectInformatieObject",
+    resultId = objectInformatieObjectUrl,
+    result = null
+)
+

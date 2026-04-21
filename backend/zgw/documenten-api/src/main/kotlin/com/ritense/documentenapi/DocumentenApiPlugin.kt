@@ -22,6 +22,7 @@ import com.fasterxml.jackson.module.kotlin.convertValue
 import com.ritense.authorization.AuthorizationContext.Companion.runWithoutAuthorization
 import com.ritense.documentenapi.DocumentenApiPlugin.Companion.PLUGIN_KEY
 import com.ritense.documentenapi.client.AuditTrail
+import com.ritense.logging.withLoggingContext
 import com.ritense.documentenapi.client.BestandsdelenRequest
 import com.ritense.documentenapi.client.CreateDocumentRequest
 import com.ritense.documentenapi.client.CreateDocumentResult
@@ -29,6 +30,8 @@ import com.ritense.documentenapi.client.DocumentInformatieObject
 import com.ritense.documentenapi.client.DocumentLock
 import com.ritense.documentenapi.client.DocumentStatusType
 import com.ritense.documentenapi.client.DocumentenApiClient
+import com.ritense.documentenapi.client.ObjectInformatieObject
+import com.ritense.documentenapi.client.ObjectInformatieObjectRequest
 import com.ritense.documentenapi.client.PatchDocumentRequest
 import com.ritense.documentenapi.event.DocumentCreated
 import com.ritense.documentenapi.service.DocumentDeleteHandler
@@ -347,6 +350,89 @@ class DocumentenApiPlugin(
         }
     }
 
+    @PluginAction(
+        key = "link-document-to-object",
+        title = "Link document to object (objectinformatieobject)",
+        description = "Creates an objectinformatieobject link between the uploaded document and a ZGW object",
+        activityTypes = [ActivityTypeWithEventName.SERVICE_TASK_START]
+    )
+    fun linkDocumentToObject(
+        execution: DelegateExecution,
+        @PluginActionProperty objectUrl: String,
+        @PluginActionProperty objectType: String,
+    ): ObjectInformatieObject {
+        requireObjectInformatieObjectenSupport()
+        val caseDocumentId = UUID.fromString(execution.businessKey
+            ?: throw IllegalStateException("Failed to link document. Business key is null."))
+        val documentUrl = execution.getVariable(DOCUMENT_URL_PROCESS_VAR) as String?
+            ?: throw IllegalStateException("Failed to link document. No process variable '$DOCUMENT_URL_PROCESS_VAR' found.")
+
+        withLoggingContext(
+            "OBJECT_INFORMATIE_OBJECT" to objectUrl
+        ) {
+            logger.debug { "Starting to link document with URL '$documentUrl' to object '$objectUrl' (type: '$objectType')" }
+
+            val request = ObjectInformatieObjectRequest(
+                informatieobject = URI(documentUrl),
+                `object` = URI(objectUrl),
+                objectType = objectType,
+            )
+            val result = client.linkDocument(authenticationPluginConfiguration, url, caseDocumentId, request)
+            execution.setVariable(OBJECT_INFORMATIE_OBJECT_URL_PROCESS_VAR, result.url.toString())
+            execution.setVariable(OBJECT_INFORMATIE_OBJECT_ID_PROCESS_VAR, result.url.toString().substringAfterLast('/'))
+
+            logger.info { "Document with URL '$documentUrl' linked successfully to object '$objectUrl' with link URL '${result.url}'" }
+            return result
+        }
+    }
+
+    fun linkDocumentToObject(caseDocumentId: UUID, request: ObjectInformatieObjectRequest): ObjectInformatieObject {
+        requireObjectInformatieObjectenSupport()
+        return client.linkDocument(authenticationPluginConfiguration, url, caseDocumentId, request)
+    }
+
+    @PluginAction(
+        key = "delete-document-link",
+        title = "Delete document link (objectinformatieobject)",
+        description = "Deletes an objectinformatieobject link by its URL",
+        activityTypes = [ActivityTypeWithEventName.SERVICE_TASK_START]
+    )
+    fun deleteDocumentLink(
+        execution: DelegateExecution,
+        @PluginActionProperty objectInformatieObjectUrl: String,
+    ) {
+        requireObjectInformatieObjectenSupport()
+        val caseDocumentId = UUID.fromString(execution.businessKey
+            ?: throw IllegalStateException("Failed to delete document link. Business key is null."))
+
+        withLoggingContext(
+            "OBJECT_INFORMATIE_OBJECT" to objectInformatieObjectUrl
+        ) {
+            logger.debug { "Starting to delete objectinformatieobject with URL '$objectInformatieObjectUrl'" }
+            client.deleteDocumentLink(authenticationPluginConfiguration, url, caseDocumentId, URI(objectInformatieObjectUrl))
+            logger.info { "Objectinformatieobject with URL '$objectInformatieObjectUrl' deleted successfully" }
+        }
+    }
+
+    fun deleteDocumentLink(caseDocumentId: UUID, objectInformatieObjectUrl: URI) {
+        requireObjectInformatieObjectenSupport()
+
+        withLoggingContext(
+            "OBJECT_INFORMATIE_OBJECT" to objectInformatieObjectUrl.toString()
+        ) {
+            logger.debug { "Starting to delete objectinformatieobject with URL '$objectInformatieObjectUrl'" }
+            client.deleteDocumentLink(authenticationPluginConfiguration, url, caseDocumentId, objectInformatieObjectUrl)
+            logger.info { "Objectinformatieobject with URL '$objectInformatieObjectUrl' deleted successfully" }
+        }
+    }
+
+
+    private fun requireObjectInformatieObjectenSupport() {
+        require(documentenApiVersionService.getVersionByTag(apiVersion).supportsObjectInformatieObjecten) {
+            "Documenten API version '$apiVersion' does not support objectinformatieobjecten"
+        }
+    }
+
     @PluginEvent(invokedOn = [EventType.CREATE, EventType.UPDATE])
     fun onSave() {
         logger.info { "Documenten API plugin saved" }
@@ -554,6 +640,8 @@ class DocumentenApiPlugin(
         const val DOCUMENT_URL_PROCESS_VAR = "documentUrl"
         const val DOCUMENT_ID_PROCESS_VAR = "documentId"
         const val DOWNLOAD_URL_PROCESS_VAR = "downloadUrl"
+        const val OBJECT_INFORMATIE_OBJECT_URL_PROCESS_VAR = "objectInformatieObjectUrl"
+        const val OBJECT_INFORMATIE_OBJECT_ID_PROCESS_VAR = "objectInformatieObjectId"
 
         val BESTANDSNAAM_FIELD = listOf("bestandsnaam", MetadataType.FILE_NAME.key)
         val TITEL_FIELD = listOf("title", "titel") + BESTANDSNAAM_FIELD

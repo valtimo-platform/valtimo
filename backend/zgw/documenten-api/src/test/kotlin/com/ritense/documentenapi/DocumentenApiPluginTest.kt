@@ -25,8 +25,11 @@ import com.ritense.documentenapi.client.DocumentLock
 import com.ritense.documentenapi.client.DocumentStatusType.DEFINITIEF
 import com.ritense.documentenapi.client.DocumentStatusType.IN_BEWERKING
 import com.ritense.documentenapi.client.DocumentenApiClient
+import com.ritense.documentenapi.client.ObjectInformatieObject
+import com.ritense.documentenapi.client.ObjectInformatieObjectRequest
 import com.ritense.documentenapi.client.PatchDocumentRequest
 import com.ritense.documentenapi.event.DocumentCreated
+import com.ritense.documentenapi.domain.DocumentenApiVersion
 import com.ritense.documentenapi.service.DocumentenApiVersionService
 import com.ritense.documentenapi.service.DocumentenApiVersionService.Companion.MINIMUM_VERSION
 import com.ritense.plugin.annotation.Plugin
@@ -788,5 +791,198 @@ internal class DocumentenApiPluginTest {
             )
         }
         assertEquals("Failed to get audit trail. Business key is null.", exception.message)
+    }
+
+    private fun createPlugin(
+        documentenApiVersionService: DocumentenApiVersionService,
+        authenticationMock: DocumentenApiAuthentication = mock(),
+        apiVersion: String? = null,
+    ): DocumentenApiPlugin {
+        val plugin = DocumentenApiPlugin(
+            client,
+            mock(),
+            mock(),
+            MapperSingleton.get(),
+            listOf(),
+            documentenApiVersionService,
+            pluginService,
+            runtimeService,
+            virusScanService,
+            false
+        )
+        plugin.url = URI("http://some-url")
+        plugin.bronorganisatie = "123456789"
+        plugin.authenticationPluginConfiguration = authenticationMock
+        plugin.apiVersion = apiVersion
+        return plugin
+    }
+
+    @Test
+    fun `should delegate linkDocumentToObject to client when feature is supported`() {
+        val authenticationMock = mock<DocumentenApiAuthentication>()
+        val documentenApiVersionService: DocumentenApiVersionService = mock()
+        val version = DocumentenApiVersion("1.5.0-baseflow", supportsObjectInformatieObjecten = true)
+        whenever(documentenApiVersionService.getVersionByTag("1.5.0-baseflow")).thenReturn(version)
+
+        val plugin = createPlugin(documentenApiVersionService, authenticationMock, "1.5.0-baseflow")
+
+        val request = ObjectInformatieObjectRequest(
+            informatieobject = URI("http://some-url/enkelvoudiginformatieobjecten/123"),
+            `object` = URI("http://some-url/zaken/456"),
+            objectType = "zaak",
+        )
+        val expectedResult = ObjectInformatieObject(
+            url = URI("http://some-url/objectinformatieobjecten/789"),
+            informatieobject = request.informatieobject,
+            `object` = request.`object`,
+            objectType = "zaak",
+        )
+        val caseDocumentId = UUID.randomUUID()
+        whenever(client.linkDocument(authenticationMock, plugin.url, caseDocumentId, request))
+            .thenReturn(expectedResult)
+
+        val result = plugin.linkDocumentToObject(caseDocumentId, request)
+
+        verify(client).linkDocument(authenticationMock, plugin.url, caseDocumentId, request)
+        assertEquals(expectedResult, result)
+    }
+
+    @Test
+    fun `should throw when linkDocumentToObject is called on unsupported version`() {
+        val documentenApiVersionService: DocumentenApiVersionService = mock()
+        whenever(documentenApiVersionService.getVersionByTag("1.0.0"))
+            .thenReturn(DocumentenApiVersion("1.0.0", supportsObjectInformatieObjecten = false))
+
+        val plugin = createPlugin(documentenApiVersionService, apiVersion = "1.0.0")
+
+        val exception = assertThrows<Exception> {
+            plugin.linkDocumentToObject(
+                UUID.randomUUID(),
+                ObjectInformatieObjectRequest(
+                    informatieobject = URI("http://some-url/enkelvoudiginformatieobjecten/123"),
+                    `object` = URI("http://some-url/zaken/456"),
+                    objectType = "zaak",
+                )
+            )
+        }
+        assertEquals("Documenten API version '1.0.0' does not support objectinformatieobjecten", exception.message)
+    }
+
+
+    @Test
+    fun `should delegate deleteDocumentLink to client when feature is supported`() {
+        val authenticationMock = mock<DocumentenApiAuthentication>()
+        val documentenApiVersionService: DocumentenApiVersionService = mock()
+        val version = DocumentenApiVersion("1.5.0-baseflow", supportsObjectInformatieObjecten = true)
+        whenever(documentenApiVersionService.getVersionByTag("1.5.0-baseflow")).thenReturn(version)
+
+        val plugin = createPlugin(documentenApiVersionService, authenticationMock, "1.5.0-baseflow")
+
+        val objectInformatieObjectUrl = URI("http://some-url/objectinformatieobjecten/789")
+        val caseDocumentId = UUID.randomUUID()
+
+        plugin.deleteDocumentLink(caseDocumentId, objectInformatieObjectUrl)
+
+        verify(client).deleteDocumentLink(authenticationMock, plugin.url, caseDocumentId, objectInformatieObjectUrl)
+    }
+
+    @Test
+    fun `should throw when deleteDocumentLink is called on unsupported version`() {
+        val documentenApiVersionService: DocumentenApiVersionService = mock()
+        whenever(documentenApiVersionService.getVersionByTag("1.0.0"))
+            .thenReturn(DocumentenApiVersion("1.0.0", supportsObjectInformatieObjecten = false))
+
+        val plugin = createPlugin(documentenApiVersionService, apiVersion = "1.0.0")
+
+        val exception = assertThrows<Exception> {
+            plugin.deleteDocumentLink(UUID.randomUUID(), URI("http://some-url/objectinformatieobjecten/789"))
+        }
+        assertEquals("Documenten API version '1.0.0' does not support objectinformatieobjecten", exception.message)
+    }
+
+    @Test
+    fun `should linkDocumentToObject via plugin action using documentUrl process variable`() {
+        val authenticationMock = mock<DocumentenApiAuthentication>()
+        val documentenApiVersionService: DocumentenApiVersionService = mock()
+        val version = DocumentenApiVersion("1.5.0-baseflow", supportsObjectInformatieObjecten = true)
+        whenever(documentenApiVersionService.getVersionByTag("1.5.0-baseflow")).thenReturn(version)
+
+        val plugin = createPlugin(documentenApiVersionService, authenticationMock, "1.5.0-baseflow")
+
+        val execution = mock<DelegateExecution>()
+        val caseDocumentId = UUID.fromString("123e4567-e89b-12d3-a456-426655440000")
+        whenever(execution.businessKey).thenReturn(caseDocumentId.toString())
+        whenever(execution.getVariable(DocumentenApiPlugin.DOCUMENT_URL_PROCESS_VAR))
+            .thenReturn("http://some-url/enkelvoudiginformatieobjecten/123")
+
+        val expectedResult = ObjectInformatieObject(
+            url = URI("http://some-url/objectinformatieobjecten/550e8400-e29b-41d4-a716-446655440000"),
+            informatieobject = URI("http://some-url/enkelvoudiginformatieobjecten/123"),
+            `object` = URI("http://some-url/zaken/456"),
+            objectType = "zaak",
+        )
+        whenever(client.linkDocument(eq(authenticationMock), eq(plugin.url), eq(caseDocumentId), any())).thenReturn(expectedResult)
+
+        val result = plugin.linkDocumentToObject(
+            execution,
+            objectUrl = "http://some-url/zaken/456",
+            objectType = "zaak",
+        )
+
+        val requestCaptor = argumentCaptor<ObjectInformatieObjectRequest>()
+        verify(client).linkDocument(eq(authenticationMock), eq(plugin.url), eq(caseDocumentId), requestCaptor.capture())
+        assertEquals(URI("http://some-url/enkelvoudiginformatieobjecten/123"), requestCaptor.firstValue.informatieobject)
+        assertEquals(URI("http://some-url/zaken/456"), requestCaptor.firstValue.`object`)
+        assertEquals("zaak", requestCaptor.firstValue.objectType)
+        assertEquals(expectedResult, result)
+
+        verify(execution).setVariable(
+            DocumentenApiPlugin.OBJECT_INFORMATIE_OBJECT_URL_PROCESS_VAR,
+            "http://some-url/objectinformatieobjecten/550e8400-e29b-41d4-a716-446655440000"
+        )
+        verify(execution).setVariable(
+            DocumentenApiPlugin.OBJECT_INFORMATIE_OBJECT_ID_PROCESS_VAR,
+            "550e8400-e29b-41d4-a716-446655440000"
+        )
+    }
+
+    @Test
+    fun `should throw when linkDocumentToObject plugin action has no documentUrl process variable`() {
+        val documentenApiVersionService: DocumentenApiVersionService = mock()
+        whenever(documentenApiVersionService.getVersionByTag("1.5.0-baseflow"))
+            .thenReturn(DocumentenApiVersion("1.5.0-baseflow", supportsObjectInformatieObjecten = true))
+
+        val plugin = createPlugin(documentenApiVersionService, apiVersion = "1.5.0-baseflow")
+
+        val execution = mock<DelegateExecution>()
+        whenever(execution.businessKey).thenReturn("123e4567-e89b-12d3-a456-426655440000")
+        whenever(execution.getVariable(DocumentenApiPlugin.DOCUMENT_URL_PROCESS_VAR)).thenReturn(null)
+
+        val exception = assertThrows<IllegalStateException> {
+            plugin.linkDocumentToObject(execution, "http://some-url/zaken/456", "zaak")
+        }
+        assertEquals(
+            "Failed to link document. No process variable '${DocumentenApiPlugin.DOCUMENT_URL_PROCESS_VAR}' found.",
+            exception.message
+        )
+    }
+
+    @Test
+    fun `should deleteDocumentLink via plugin action`() {
+        val authenticationMock = mock<DocumentenApiAuthentication>()
+        val documentenApiVersionService: DocumentenApiVersionService = mock()
+        val version = DocumentenApiVersion("1.5.0-baseflow", supportsObjectInformatieObjecten = true)
+        whenever(documentenApiVersionService.getVersionByTag("1.5.0-baseflow")).thenReturn(version)
+
+        val plugin = createPlugin(documentenApiVersionService, authenticationMock, "1.5.0-baseflow")
+
+        val execution = mock<DelegateExecution>()
+        val caseDocumentId = UUID.fromString("123e4567-e89b-12d3-a456-426655440000")
+        whenever(execution.businessKey).thenReturn(caseDocumentId.toString())
+        val linkUrl = "http://some-url/objectinformatieobjecten/789"
+
+        plugin.deleteDocumentLink(execution, linkUrl)
+
+        verify(client).deleteDocumentLink(authenticationMock, plugin.url, caseDocumentId, URI(linkUrl))
     }
 }
