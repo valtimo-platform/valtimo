@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,8 +21,8 @@ import com.ritense.authorization.permission.Permission
 import com.ritense.authorization.permission.PermissionRepository
 import com.ritense.authorization.role.Role
 import com.ritense.authorization.role.RoleRepository
-import com.ritense.resource.authorization.ResourcePermission
-import com.ritense.resource.authorization.ResourcePermissionActionProvider
+import com.ritense.documentenapi.authorization.ZgwDocument
+import com.ritense.documentenapi.authorization.ZgwDocumentActionProvider
 import com.ritense.zakenapi.BaseIntegrationTest
 import com.ritense.zakenapi.ZakenApiPlugin
 import okhttp3.mockwebserver.Dispatcher
@@ -75,8 +75,8 @@ internal class ZakenApiClientIT @Autowired constructor(
         val permissions = listOf(
             Permission(
                 id = CASE_DOCUMENT_ID,
-                resourceType = ResourcePermission::class.java,
-                actions = mutableListOf(ResourcePermissionActionProvider.VIEW_LIST),
+                resourceType = ZgwDocument::class.java,
+                actions = mutableListOf(ZgwDocumentActionProvider.CREATE),
                 conditionContainer = ConditionContainer(),
                 role = roleTest,
                 contextResourceType = null,
@@ -94,6 +94,8 @@ internal class ZakenApiClientIT @Autowired constructor(
                 zaak = "https://localhost:56273/zaken/1234",
                 titel = "titel",
                 beschrijving = "beschrijving",
+                vernietigingsdatum = null,
+                status = null
             )
         )
     }
@@ -111,7 +113,48 @@ internal class ZakenApiClientIT @Autowired constructor(
                     zaak = "https://localhost:56273/zaken/1234",
                     titel = "titel",
                     beschrijving = "beschrijving",
+                    vernietigingsdatum = null,
+                    status = null
                 )
+            )
+        }
+    }
+
+    @Test
+    @WithMockUser(authorities = ["ROLE_TEST"])
+    fun `should allow get single zaakinformatieobject by url`() {
+        val permissions = listOf(
+            Permission(
+                id = CASE_DOCUMENT_ID,
+                resourceType = ZgwDocument::class.java,
+                actions = mutableListOf(ZgwDocumentActionProvider.VIEW),
+                conditionContainer = ConditionContainer(),
+                role = roleTest,
+                contextResourceType = null,
+                contextConditionContainer = null
+            )
+        )
+        permissionRepository.saveAllAndFlush(permissions)
+
+        val result = zakenApiClient.getZaakInformatieObject(
+            authentication = zakenApiPlugin.authenticationPluginConfiguration,
+            baseUrl = zakenApiPlugin.url,
+            zaakInformatieobjectUrl = ZAAK_INFORMATIEOBJECT_URL,
+            caseDocumentId = CASE_DOCUMENT_ID
+        )
+
+        assertEquals(URI("https://example.com"), result.url)
+    }
+
+    @Test
+    @WithMockUser(authorities = ["ROLE_TEST"])
+    fun `should throw access denied for get single zaakinformatieobject by url when missing permission`() {
+        assertThrows<AccessDeniedException> {
+            zakenApiClient.getZaakInformatieObject(
+                authentication = zakenApiPlugin.authenticationPluginConfiguration,
+                baseUrl = zakenApiPlugin.url,
+                zaakInformatieobjectUrl = ZAAK_INFORMATIEOBJECT_URL,
+                caseDocumentId = CASE_DOCUMENT_ID
             )
         }
     }
@@ -122,8 +165,8 @@ internal class ZakenApiClientIT @Autowired constructor(
         val permissions = listOf(
             Permission(
                 id = CASE_DOCUMENT_ID,
-                resourceType = ResourcePermission::class.java,
-                actions = mutableListOf(ResourcePermissionActionProvider.VIEW_LIST),
+                resourceType = ZgwDocument::class.java,
+                actions = mutableListOf(ZgwDocumentActionProvider.VIEW_LIST),
                 conditionContainer = ConditionContainer(),
                 role = roleTest,
                 contextResourceType = null,
@@ -161,6 +204,7 @@ internal class ZakenApiClientIT @Autowired constructor(
                 return when (request.method + " " + request.path?.substringBefore('?')) {
                     "POST $ZAKEN_API_PATH/zaakinformatieobjecten" -> handleLinkDocumentRequest()
                     "GET $ZAKEN_API_PATH/zaakinformatieobjecten" -> handleListDocumentRequest()
+                    "GET $ZAKEN_API_PATH/zaakinformatieobjecten/$ZAAK_ID" -> handleGetSingleDocumentRequest()
                     else -> MockResponse().setResponseCode(404)
                 }
             }
@@ -169,6 +213,22 @@ internal class ZakenApiClientIT @Autowired constructor(
     }
 
     private fun handleLinkDocumentRequest(zone: String = "Z"): MockResponse {
+        val body = """
+            {
+                "url": "https://example.com",
+                "uuid": "095be615-a8ad-4c33-8e9c-c7612fbf6c9f",
+                "informatieobject": "https://example.com",
+                "zaak": "https://example.com",
+                "aardRelatieWeergave": "Hoort bij, omgekeerd: kent",
+                "titel": "string",
+                "beschrijving": "string",
+                "registratiedatum": "2019-08-24T14:15:22Z"
+            }
+        """.trimIndent()
+        return mockResponse(body)
+    }
+
+    private fun handleGetSingleDocumentRequest(): MockResponse {
         val body = """
             {
                 "url": "https://example.com",
@@ -209,5 +269,7 @@ internal class ZakenApiClientIT @Autowired constructor(
         val CASE_DOCUMENT_ID: UUID = UUID.fromString(ZAAK_ID)
 
         private val ZAAK_URL = URI("${ZAKEN_API_URL}/zaken/$ZAAK_ID")
+        val ZAAK_INFORMATIEOBJECT_URL = URI("${ZAKEN_API_URL}/zaakinformatieobjecten/$ZAAK_ID")
     }
+
 }

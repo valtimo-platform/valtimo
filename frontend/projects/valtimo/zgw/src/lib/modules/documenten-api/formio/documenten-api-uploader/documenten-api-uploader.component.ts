@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,7 +14,9 @@
  * limitations under the License.
  */
 import {Component, EventEmitter, Input, OnDestroy, OnInit, Output, signal} from '@angular/core';
+import {HttpErrorResponse} from '@angular/common/http';
 import {ActivatedRoute} from '@angular/router';
+import {TranslateService} from '@ngx-translate/core';
 import {
   FormioCustomComponent,
   FormIoDomService,
@@ -185,6 +187,7 @@ export class DocumentenApiUploaderComponent
   readonly fileToBeUploaded$ = new BehaviorSubject<File | null>(null);
   readonly modalDisabled$ = new BehaviorSubject<boolean>(false);
   readonly showModal = signal<boolean>(false);
+  readonly uploadError = signal<string | null>(null);
   readonly uploadProcessLinked$: Observable<boolean | string> =
     this.modalService.documentDefinitionName$.pipe(
       switchMap(documentDefinitionName =>
@@ -192,7 +195,7 @@ export class DocumentenApiUploaderComponent
       ),
       startWith('loading')
     );
-  readonly isAdmin$: Observable<boolean> = this.userProviderService
+  public readonly isAdmin$: Observable<boolean> = this.userProviderService
     .getUserSubject()
     .pipe(map(userIdentity => userIdentity?.roles.includes('ROLE_ADMIN')));
 
@@ -216,7 +219,8 @@ export class DocumentenApiUploaderComponent
     private readonly route: ActivatedRoute,
     private readonly documentenApiVersionService: DocumentenApiVersionService,
     private readonly stateService: FormIoStateService,
-    private readonly documentService: DocumentService
+    private readonly documentService: DocumentService,
+    private readonly translateService: TranslateService
   ) {}
 
   public ngOnInit(): void {
@@ -254,12 +258,13 @@ export class DocumentenApiUploaderComponent
   }
 
   closeMetadataModal(): void {
+    this.uploadError.set(null);
     this.showModal.set(false);
   }
 
   metadataSet(metadata: DocumentenApiMetadata): void {
+    this.uploadError.set(null);
     this.uploading$.next(true);
-    this.showModal.set(false);
     this.domService.toggleSubmitButton(true);
 
     this.fileToBeUploaded$
@@ -267,10 +272,21 @@ export class DocumentenApiUploaderComponent
         take(1),
         switchMap(file => this.uploadProviderService.uploadTempFileWithMetadata(file, metadata)),
         tap(result => {
+          this.showModal.set(false);
           this.domService.toggleSubmitButton(false);
           this.uploading$.next(false);
           this._value.push(result);
           this.valueChange.emit(this._value);
+        }),
+        catchError((error: HttpErrorResponse) => {
+          this.uploading$.next(false);
+          this.domService.toggleSubmitButton(false);
+          if (error.status === 403) {
+            this.uploadError.set(this.translateService.instant('document.uploadPermissionDenied'));
+          } else {
+            this.showModal.set(false);
+          }
+          return EMPTY;
         })
       )
       .subscribe();

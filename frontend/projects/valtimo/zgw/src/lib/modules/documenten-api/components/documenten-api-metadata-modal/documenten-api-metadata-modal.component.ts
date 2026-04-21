@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -71,6 +71,7 @@ import {
   LayerModule,
   ListItem,
   ModalModule,
+  NotificationModule,
   RadioModule,
   TagModule,
   TooltipModule,
@@ -96,6 +97,7 @@ import {DocumentenApiVersionService} from '../../services';
     InputLabelModule,
     InputModule,
     ModalModule,
+    NotificationModule,
     RadioModule,
     ReactiveFormsModule,
     SelectModule,
@@ -179,6 +181,7 @@ export class DocumentenApiMetadataModalComponent implements OnInit, OnDestroy {
     }
   }
   @Input() isEditMode: boolean;
+  @Input() uploadError: string | null = null;
 
   public readonly open$ = new BehaviorSubject<boolean>(false);
 
@@ -194,6 +197,7 @@ export class DocumentenApiMetadataModalComponent implements OnInit, OnDestroy {
 
   @Output() metadata: EventEmitter<DocumentenApiMetadata> = new EventEmitter();
   @Output() modalClose: EventEmitter<boolean> = new EventEmitter();
+  @Output() uploadErrorDismiss: EventEmitter<void> = new EventEmitter();
 
   public filenameExtension: string = '';
   public documentenApiMetadataForm: FormGroup = this.fb.group({
