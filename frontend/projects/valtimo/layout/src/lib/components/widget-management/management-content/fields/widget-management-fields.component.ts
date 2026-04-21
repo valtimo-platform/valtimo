@@ -39,6 +39,7 @@ import {
 } from 'carbon-components-angular';
 import {debounceTime, Subscription} from 'rxjs';
 import {FieldsWidgetValue, WidgetFieldsContent} from '../../../../models';
+import {WIDGET_CONTENT_FIELDS_TEST_IDS} from '../../../../constants';
 import {WidgetWizardService} from '../../../../services';
 import {WidgetManagementFieldsColumnComponent} from './column/widget-management-fields-column.component';
 
@@ -63,6 +64,8 @@ import {WidgetManagementFieldsColumnComponent} from './column/widget-management-
   ],
 })
 export class WidgetManagementFieldsComponent implements OnDestroy, OnInit, AfterViewInit {
+  protected readonly testIds = WIDGET_CONTENT_FIELDS_TEST_IDS;
+
   @HostBinding('class') public readonly class = 'valtimo-widget-management-fields';
   @ViewChild(Tab) private readonly _tab: Tab;
 

@@ -20,7 +20,10 @@ import BestandsdelenResult
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.ritense.authorization.AuthorizationService
 import com.ritense.authorization.request.EntityAuthorizationRequest
+import com.ritense.catalogiapi.service.CatalogiService
 import com.ritense.documentenapi.DocumentenApiAuthentication
+import com.ritense.documentenapi.authorization.ZgwDocument
+import com.ritense.documentenapi.authorization.ZgwDocumentActionProvider
 import com.ritense.documentenapi.domain.DocumentenApiColumnKey
 import com.ritense.documentenapi.domain.FileUploadPart
 import com.ritense.documentenapi.event.DocumentAuditTrailListed
@@ -32,8 +35,6 @@ import com.ritense.documentenapi.event.DocumentStored
 import com.ritense.documentenapi.event.DocumentUpdated
 import com.ritense.documentenapi.web.rest.dto.DocumentSearchRequest
 import com.ritense.outbox.OutboxService
-import com.ritense.resource.authorization.ResourcePermission
-import com.ritense.resource.authorization.ResourcePermissionActionProvider
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import com.ritense.zgw.ClientTools
 import com.ritense.zgw.ClientTools.Companion.optionalQueryParam
@@ -64,6 +65,7 @@ class DocumentenApiClient(
     private val objectMapper: ObjectMapper,
     private val platformTransactionManager: PlatformTransactionManager,
     private val authorizationService: AuthorizationService,
+    private val catalogiService: CatalogiService,
 ) {
     fun storeDocument(
         authentication: DocumentenApiAuthentication,
@@ -74,9 +76,15 @@ class DocumentenApiClient(
 
         authorizationService.requirePermission(
             EntityAuthorizationRequest(
-                ResourcePermission::class.java,
-                ResourcePermissionActionProvider.CREATE,
-                ResourcePermission(caseDocumentId)
+                ZgwDocument::class.java,
+                ZgwDocumentActionProvider.CREATE,
+                ZgwDocument(
+                    caseDocumentId = caseDocumentId,
+                    vertrouwelijkheidaanduiding = request.vertrouwelijkheidaanduiding?.key,
+                    status = request.status?.key,
+                    informatieobjecttypeUrl = request.informatieobjecttype,
+                    informatieobjecttypeOmschrijving = resolveOmschrijving(request.informatieobjecttype),
+                )
             )
         )
 
@@ -153,9 +161,15 @@ class DocumentenApiClient(
 
         authorizationService.requirePermission(
             EntityAuthorizationRequest(
-                ResourcePermission::class.java,
-                ResourcePermissionActionProvider.VIEW_LIST,
-                ResourcePermission(caseDocumentId)
+                ZgwDocument::class.java,
+                ZgwDocumentActionProvider.VIEW_LIST,
+                ZgwDocument(
+                    caseDocumentId = caseDocumentId,
+                    vertrouwelijkheidaanduiding = result.vertrouwelijkheidaanduiding?.key,
+                    status = result.status?.key,
+                    informatieobjecttypeUrl = result.informatieobjecttype,
+                    informatieobjecttypeOmschrijving = resolveOmschrijving(result.informatieobjecttype),
+                )
             )
         )
 
@@ -215,9 +229,9 @@ class DocumentenApiClient(
         requireNotNull(documentSearchRequest.zaakUrl) { "Zaak URL is required" }
         if (!authorizationService.hasPermission(
             EntityAuthorizationRequest(
-                ResourcePermission::class.java,
-                ResourcePermissionActionProvider.VIEW_LIST,
-                ResourcePermission(caseDocumentId)
+                ZgwDocument::class.java,
+                ZgwDocumentActionProvider.VIEW_LIST,
+                ZgwDocument(caseDocumentId = caseDocumentId)
             )
         )) {
             return org.springframework.data.domain.Page.empty(pageable)
@@ -293,11 +307,23 @@ class DocumentenApiClient(
         caseDocumentId: UUID?,
         objectUrl: URI
     ): InputStream {
+        val document = restClient(authentication)
+            .get()
+            .uri(objectUrl)
+            .retrieve()
+            .body<DocumentInformatieObject>()!!
+
         authorizationService.requirePermission(
             EntityAuthorizationRequest(
-                ResourcePermission::class.java,
-                ResourcePermissionActionProvider.VIEW,
-                ResourcePermission(caseDocumentId)
+                ZgwDocument::class.java,
+                ZgwDocumentActionProvider.VIEW,
+                ZgwDocument(
+                    caseDocumentId = caseDocumentId,
+                    vertrouwelijkheidaanduiding = document.vertrouwelijkheidaanduiding?.key,
+                    status = document.status?.key,
+                    informatieobjecttypeUrl = document.informatieobjecttype,
+                    informatieobjecttypeOmschrijving = resolveOmschrijving(document.informatieobjecttype),
+                )
             )
         )
 
@@ -358,11 +384,23 @@ class DocumentenApiClient(
 
     fun deleteInformatieObject(authentication: DocumentenApiAuthentication, caseDocumentId: UUID?, url: URI) {
 
+        val document = restClient(authentication)
+            .get()
+            .uri(url)
+            .retrieve()
+            .body<DocumentInformatieObject>()!!
+
         authorizationService.requirePermission(
             EntityAuthorizationRequest(
-                ResourcePermission::class.java,
-                ResourcePermissionActionProvider.DELETE,
-                ResourcePermission(caseDocumentId)
+                ZgwDocument::class.java,
+                ZgwDocumentActionProvider.DELETE,
+                ZgwDocument(
+                    caseDocumentId = caseDocumentId,
+                    vertrouwelijkheidaanduiding = document.vertrouwelijkheidaanduiding?.key,
+                    status = document.status?.key,
+                    informatieobjecttypeUrl = document.informatieobjecttype,
+                    informatieobjecttypeOmschrijving = resolveOmschrijving(document.informatieobjecttype),
+                )
             )
         )
 
@@ -381,11 +419,23 @@ class DocumentenApiClient(
         patchDocumentRequest: PatchDocumentRequest,
         caseDocumentId: UUID? = null
     ): DocumentInformatieObject {
+        val original = restClient(authentication)
+            .get()
+            .uri(documentUrl)
+            .retrieve()
+            .body<DocumentInformatieObject>()!!
+
         authorizationService.requirePermission(
             EntityAuthorizationRequest(
-                ResourcePermission::class.java,
-                ResourcePermissionActionProvider.MODIFY,
-                ResourcePermission(caseDocumentId)
+                ZgwDocument::class.java,
+                ZgwDocumentActionProvider.MODIFY,
+                ZgwDocument(
+                    caseDocumentId = caseDocumentId,
+                    vertrouwelijkheidaanduiding = original.vertrouwelijkheidaanduiding?.key,
+                    status = original.status?.key,
+                    informatieobjecttypeUrl = original.informatieobjecttype,
+                    informatieobjecttypeOmschrijving = resolveOmschrijving(original.informatieobjecttype),
+                )
             )
         )
 
@@ -401,6 +451,10 @@ class DocumentenApiClient(
         }
         return result
     }
+
+    private fun resolveOmschrijving(url: String?): String? =
+        url?.takeIf { it.isNotBlank() }
+            ?.let { catalogiService.getInformatieobjecttype(URI(it))?.omschrijving }
 
     private fun toObjectUrl(baseUrl: URI, objectId: String): URI {
         return UriComponentsBuilder

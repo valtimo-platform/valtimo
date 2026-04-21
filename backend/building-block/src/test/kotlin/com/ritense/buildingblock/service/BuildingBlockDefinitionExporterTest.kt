@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,6 +22,7 @@ import com.ritense.buildingblock.repository.BuildingBlockDefinitionRepository
 import com.ritense.document.domain.impl.JsonSchemaDocumentDefinition
 import com.ritense.document.domain.impl.JsonSchemaDocumentDefinitionId
 import com.ritense.document.service.DocumentDefinitionService
+import com.ritense.exporter.request.BuildingBlockDecisionDefinitionExportRequest
 import com.ritense.exporter.request.BuildingBlockDefinitionExportRequest
 import com.ritense.exporter.request.BuildingBlockDocumentDefinitionExportRequest
 import com.ritense.form.repository.FormDefinitionRepository
@@ -35,8 +36,10 @@ import org.mockito.Mock
 import org.mockito.Mockito.never
 import org.mockito.junit.jupiter.MockitoExtension
 import org.mockito.kotlin.any
+import org.mockito.kotlin.mock
 import org.mockito.kotlin.whenever
 import org.mockito.kotlin.verify
+import org.operaton.bpm.engine.repository.DecisionDefinition
 import java.util.Optional
 
 @ExtendWith(MockitoExtension::class)
@@ -44,6 +47,7 @@ class BuildingBlockDefinitionExporterTest(
     @Mock private val repository: BuildingBlockDefinitionRepository,
     @Mock private val documentDefinitionService: DocumentDefinitionService,
     @Mock private val formDefinitionRepository: FormDefinitionRepository,
+    @Mock private val buildingBlockDecisionService: BuildingBlockDecisionService,
 ) {
 
     private val objectMapper = ObjectMapper()
@@ -53,7 +57,9 @@ class BuildingBlockDefinitionExporterTest(
 
     @BeforeEach
     fun setUp() {
-        exporter = BuildingBlockDefinitionExporter(objectMapper, repository, documentDefinitionService, formDefinitionRepository)
+        exporter = BuildingBlockDefinitionExporter(
+            objectMapper, repository, documentDefinitionService, formDefinitionRepository, buildingBlockDecisionService
+        )
     }
 
     @Test
@@ -65,7 +71,7 @@ class BuildingBlockDefinitionExporterTest(
         )
 
         val documentDefinitionId = JsonSchemaDocumentDefinitionId.forBuildingBlock("document-definition", buildingBlockDefinitionId)
-        val documentDefinition = org.mockito.kotlin.mock<JsonSchemaDocumentDefinition>()
+        val documentDefinition = mock<JsonSchemaDocumentDefinition>()
         whenever(documentDefinition.id()).thenReturn(documentDefinitionId)
 
         whenever(repository.findById(buildingBlockDefinitionId)).thenReturn(Optional.of(definition))
@@ -75,6 +81,7 @@ class BuildingBlockDefinitionExporterTest(
             buildingBlockDefinitionId.key,
             buildingBlockDefinitionId.versionTag
         )).thenReturn(emptyList())
+        whenever(buildingBlockDecisionService.getDecisionDefinitions(buildingBlockDefinitionId)).thenReturn(emptyList())
 
         val result = exporter.export(BuildingBlockDefinitionExportRequest(buildingBlockDefinitionId))
 
@@ -91,6 +98,34 @@ class BuildingBlockDefinitionExporterTest(
 
         assertThat(result.relatedRequests).containsExactly(
             BuildingBlockDocumentDefinitionExportRequest("document-definition", buildingBlockDefinitionId)
+        )
+    }
+
+    @Test
+    fun `should export definition and include decision definition requests`() {
+        val definition = BuildingBlockDefinition(
+            id = buildingBlockDefinitionId,
+            name = "Test building block",
+            description = "Description"
+        )
+
+        whenever(repository.findById(buildingBlockDefinitionId)).thenReturn(Optional.of(definition))
+        whenever(documentDefinitionService.findByBlueprintId(buildingBlockDefinitionId)).thenReturn(Optional.empty())
+        whenever(formDefinitionRepository.findAllByBlueprintId(
+            BlueprintType.BUILDING_BLOCK,
+            buildingBlockDefinitionId.key,
+            buildingBlockDefinitionId.versionTag
+        )).thenReturn(emptyList())
+
+        val decisionDefinition = mock<DecisionDefinition>()
+        whenever(decisionDefinition.id).thenReturn("decision-def-id")
+        whenever(buildingBlockDecisionService.getDecisionDefinitions(buildingBlockDefinitionId))
+            .thenReturn(listOf(decisionDefinition))
+
+        val result = exporter.export(BuildingBlockDefinitionExportRequest(buildingBlockDefinitionId))
+
+        assertThat(result.relatedRequests).contains(
+            BuildingBlockDecisionDefinitionExportRequest("decision-def-id", buildingBlockDefinitionId)
         )
     }
 

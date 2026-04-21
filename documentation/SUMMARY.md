@@ -130,6 +130,7 @@
 * [🧱 Building blocks](features/building-blocks/README.md)
   * [Forms](features/building-blocks/forms.md)
   * [Form flows](features/building-blocks/form-flows.md)
+  * [Decision tables](features/building-blocks/decision-tables.md)
 * [📊 Dashboard](features/dashboard/README.md)
   * [Widget data sources](features/dashboard/dashboard.md)
   * [Widget display types](features/dashboard/widget-display-types.md)

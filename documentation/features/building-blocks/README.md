@@ -82,7 +82,8 @@ and outputs when you link them to a case.
 {% hint style="info" %}
 Building blocks support user tasks with form and form flow process links. Tasks from building blocks automatically
 appear in the case task list and support auto-assignment. To use forms in user tasks, first create them in the
-[Forms](forms.md) tab. To use form flows, create them in the [Form flows](form-flows.md) tab.
+[Forms](forms.md) tab. To use form flows, create them in the [Form flows](form-flows.md) tab. To use decision tables
+in business rule tasks, first deploy them in the [Decision tables](decision-tables.md) tab.
 {% endhint %}
 
 ### 5. Finalize the version
@@ -219,6 +220,8 @@ config/building-block/<key>/<version>/
 │   └── definition/<key>.schema.document-definition.json
 ├── bpmn/
 │   └── <process-key>.bpmn
+├── dmn/
+│   └── <decision-key>.dmn  (optional)
 ├── form/
 │   └── <form-name>.form.json
 ├── form-flow/
