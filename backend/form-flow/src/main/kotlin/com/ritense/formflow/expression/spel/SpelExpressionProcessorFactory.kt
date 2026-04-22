@@ -19,14 +19,14 @@ package com.ritense.formflow.expression.spel
 import com.ritense.formflow.expression.ExpressionProcessor
 import com.ritense.formflow.expression.ExpressionProcessorFactory
 import org.springframework.context.expression.MapAccessor
-import org.springframework.expression.spel.support.StandardEvaluationContext
+import org.springframework.expression.spel.support.SimpleEvaluationContext
 
 class SpelExpressionProcessorFactory : ExpressionProcessorFactory {
     lateinit var formFlowBeans: Map<String, Any>
     override fun create(variables: Map<String, Any>?): ExpressionProcessor {
-        val context = StandardEvaluationContext()
-        context.addPropertyAccessor(MapAccessor())
-        context.addPropertyAccessor(WritableJsonPropertyAccessor())
+        val context = SimpleEvaluationContext
+            .forPropertyAccessors(MapAccessor(), WritableJsonPropertyAccessor())
+            .build()
 
         val contextMap: MutableMap<String, Any> = formFlowBeans.toMutableMap()
 

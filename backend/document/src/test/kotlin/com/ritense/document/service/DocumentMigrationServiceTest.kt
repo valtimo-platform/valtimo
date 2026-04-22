@@ -30,6 +30,7 @@ import com.ritense.document.service.impl.JsonSchemaDocumentDefinitionService
 import com.ritense.valtimo.contract.json.MapperSingleton
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertThrows
 import org.mockito.Mockito.mock
 import org.mockito.kotlin.any
 import org.mockito.kotlin.argumentCaptor
@@ -39,6 +40,7 @@ import org.springframework.context.ApplicationContext
 import org.springframework.data.domain.PageImpl
 import org.springframework.data.domain.Pageable
 import org.springframework.data.jpa.domain.Specification
+import org.springframework.expression.spel.SpelEvaluationException
 import org.springframework.transaction.annotation.Transactional
 import java.net.URI
 import java.util.Optional
@@ -391,6 +393,96 @@ class DocumentMigrationServiceTest {
             """{"fullName":"John Doe","welcomeMsg":"Welcome John Doe"}""",
             documentContent
         )
+    }
+
+    @Test
+    fun `should block OS command execution via Runtime in SpEL expression`() {
+        assertThrows<SpelEvaluationException> {
+            documentMigrationService.handleSpelExpression(
+                "\${T(java.lang.Runtime).getRuntime().exec('id')}",
+                emptyMap()
+            )
+        }
+    }
+
+    @Test
+    fun `should block access to environment variables in SpEL expression`() {
+        assertThrows<SpelEvaluationException> {
+            documentMigrationService.handleSpelExpression(
+                "\${T(java.lang.System).getenv()}",
+                emptyMap()
+            )
+        }
+    }
+
+    @Test
+    fun `should block class loading via Class forName in SpEL expression`() {
+        assertThrows<SpelEvaluationException> {
+            documentMigrationService.handleSpelExpression(
+                "\${T(java.lang.Class).forName('java.lang.Runtime')}",
+                emptyMap()
+            )
+        }
+    }
+
+    @Test
+    fun `should block access to system properties in SpEL expression`() {
+        assertThrows<SpelEvaluationException> {
+            documentMigrationService.handleSpelExpression(
+                "\${T(java.lang.System).getProperties()}",
+                emptyMap()
+            )
+        }
+    }
+
+    @Test
+    fun `should block ProcessBuilder command execution in SpEL expression`() {
+        assertThrows<SpelEvaluationException> {
+            documentMigrationService.handleSpelExpression(
+                "\${new java.lang.ProcessBuilder('id').start()}",
+                emptyMap()
+            )
+        }
+    }
+
+    @Test
+    fun `should block arbitrary constructor invocation in SpEL expression`() {
+        assertThrows<SpelEvaluationException> {
+            documentMigrationService.handleSpelExpression(
+                "\${new java.io.File('/etc/passwd').exists()}",
+                emptyMap()
+            )
+        }
+    }
+
+    @Test
+    fun `should block class loader access in SpEL expression`() {
+        assertThrows<SpelEvaluationException> {
+            documentMigrationService.handleSpelExpression(
+                "\${T(java.lang.Thread).currentThread().getContextClassLoader()}",
+                emptyMap()
+            )
+        }
+    }
+
+    @Test
+    fun `should still allow safe property access in SpEL expression`() {
+        val contextMap = mapOf<String, Any?>("name" to "John")
+        val result = documentMigrationService.handleSpelExpression(
+            "\${name}",
+            contextMap
+        )
+        assertEquals("John", result)
+    }
+
+    @Test
+    fun `should allow string concatenation using context map values`() {
+        val contextMap = mapOf<String, Any?>("firstName" to "John", "lastName" to "Doe")
+        val result = documentMigrationService.handleSpelExpression(
+            "\${firstName + ' ' + lastName}",
+            contextMap
+        )
+        assertEquals("John Doe", result)
     }
 
     fun newDocument(definitionName: String, documentContent: String) {

@@ -25,11 +25,11 @@ import org.springframework.expression.ParseException
 import org.springframework.expression.ParserContext
 import org.springframework.expression.common.TemplateParserContext
 import org.springframework.expression.spel.standard.SpelExpressionParser
-import org.springframework.expression.spel.support.StandardEvaluationContext
+import org.springframework.expression.spel.support.SimpleEvaluationContext
 
 class SpelExpressionProcessor(
     private val parserContext: ParserContext = TemplateParserContext("\${", "}"),
-    private val evaluationContext: EvaluationContext = StandardEvaluationContext(),
+    private val evaluationContext: EvaluationContext = SimpleEvaluationContext.forReadOnlyDataBinding().build(),
     private val contextMap: Map<String, Any> = mapOf()
 ) : ExpressionProcessor {
 
