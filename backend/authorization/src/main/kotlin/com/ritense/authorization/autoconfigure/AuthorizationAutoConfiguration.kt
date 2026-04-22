@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,6 +26,8 @@ import com.ritense.authorization.ResourceActionProvider
 import com.ritense.authorization.ValtimoAuthorizationService
 import com.ritense.authorization.annotation.RunWithoutAuthorizationAspect
 import com.ritense.authorization.deployment.PermissionDeployer
+import com.ritense.authorization.deployment.PermissionResourceTypeMigrator
+import com.ritense.authorization.deployment.ResourceTypeRename
 import com.ritense.authorization.deployment.RoleDeployer
 import com.ritense.authorization.exporter.GlobalPermissionExporter
 import com.ritense.authorization.exporter.GlobalRoleExporter
@@ -62,6 +64,14 @@ class AuthorizationAutoConfiguration(
 
     init {
         UserManagementServiceHolder(userManagementService)
+    }
+
+    @Bean
+    @ConditionalOnMissingBean(PermissionResourceTypeMigrator::class)
+    fun permissionResourceTypeMigrator(
+        renames: List<ResourceTypeRename>
+    ): PermissionResourceTypeMigrator {
+        return PermissionResourceTypeMigrator(renames)
     }
 
     @Order(270)
@@ -128,18 +138,20 @@ class AuthorizationAutoConfiguration(
         permissionRepository: PermissionRepository,
         roleRepository: RoleRepository,
         changelogService: ChangelogService,
-        @Value("\${valtimo.changelog.pbac.clear-tables:false}") clearTables: Boolean
+        @Value("\${valtimo.changelog.pbac.clear-tables:false}") clearTables: Boolean,
+        migrator: PermissionResourceTypeMigrator
     ): PermissionDeployer {
-        return PermissionDeployer(objectMapper, permissionRepository, roleRepository, changelogService, clearTables)
+        return PermissionDeployer(objectMapper, permissionRepository, roleRepository, changelogService, clearTables, migrator)
     }
 
     @Bean
     @ConditionalOnMissingBean(RoleManagementResource::class)
     fun roleManagementResource(
         roleRepository: RoleRepository,
-        permissionRepository: PermissionRepository
+        permissionRepository: PermissionRepository,
+        migrator: PermissionResourceTypeMigrator
     ): RoleManagementResource {
-        return RoleManagementResource(roleRepository, permissionRepository)
+        return RoleManagementResource(roleRepository, permissionRepository, migrator)
     }
 
     @Bean
@@ -174,11 +186,13 @@ class AuthorizationAutoConfiguration(
         objectMapper: ObjectMapper,
         permissionRepository: PermissionRepository,
         roleRepository: RoleRepository,
+        migrator: PermissionResourceTypeMigrator,
     ): GlobalPermissionImporter {
         return GlobalPermissionImporter(
             objectMapper,
             permissionRepository,
             roleRepository,
+            migrator,
         )
     }
 

@@ -47,6 +47,7 @@ import {
   WidgetWizardCloseEvent,
   WidgetWizardCloseEventType,
 } from '../../../models';
+import {WIDGET_DIVIDER_MODAL_TEST_IDS} from '../../../constants';
 
 @Component({
   selector: 'valtimo-widget-management-divider-modal',
@@ -67,6 +68,8 @@ import {
   ],
 })
 export class WidgetManagementDividerModalComponent {
+  protected readonly testIds = WIDGET_DIVIDER_MODAL_TEST_IDS;
+
   private _modalMode: ModalMode;
   @Input()
   public set modalMode(value: ModalMode) {

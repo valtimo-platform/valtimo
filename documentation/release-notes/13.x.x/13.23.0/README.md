@@ -19,7 +19,7 @@
 * **Added the Documenten API Preview plugin**
 
   The new "Documenten API Preview" plugin allows users to preview documents stored via the "Documenten API".
-  Documentation on configuring the "Documenten API Preview" plugin can be found in the [Documenten API Preview plugin configuration guide](../../../features/zgw/zgw-plugins/configure-documenten-api-preview-plugin.md).
+  Documentation on configuring the "Documenten API Preview" plugin can be found in the [Documenten API Preview plugin configuration guide](../../../features/plugins/configure-documenten-api-preview-plugin.md).
 
 * **Cross-case message correlation**
 
@@ -30,7 +30,7 @@
   Teams are groups of users in Valtimo. They can be used to organize users and manage their access to resources.
   Teams can be used for case assignment and access control rules.
 
-  More information about teams can be found [here](../../../features/teams/README.md).
+  More information about teams can be found in the [teams documentation](../../../features/teams/README.md).
 
 * **Team cases tab in the case list**
 

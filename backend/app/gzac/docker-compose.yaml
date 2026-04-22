@@ -59,6 +59,8 @@ services:
     gzac-database-mysql:
         container_name: gzac-docker-compose-gzac-database-mysql
         image: mysql/mysql-server:8.0.28-1.2.7-server
+        profiles:
+            - mysql
         ports:
             - "33060:3306"
         environment:

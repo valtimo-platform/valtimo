@@ -14,9 +14,20 @@
  * limitations under the License.
  */
 
-const mapActivityTypeToActivityListenerType = (activityType: string): string => {
+const mapActivityTypeToActivityListenerType = (activityType: string, element?: any): string => {
   if (activityType === 'bpmn:UserTask') {
     return activityType + ':create';
+  }
+
+  if (activityType === 'bpmn:StartEvent' && element) {
+    const eventDefinitions = element.businessObject?.eventDefinitions;
+    if (eventDefinitions?.length > 0 && eventDefinitions[0].$type === 'bpmn:MessageEventDefinition') {
+      return 'bpmn:MessageStartEvent:start';
+    }
+  }
+
+  if (activityType === 'bpmn:ReceiveTask' || activityType === 'bpmn:IntermediateCatchEvent') {
+    return activityType + ':end';
   }
 
   return activityType + ':start';

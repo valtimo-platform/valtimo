@@ -20,6 +20,7 @@ interface SupportedDocumentenApiFeatures {
   supportsSortableColumns: boolean;
   supportsTrefwoorden: boolean;
   supportsUpdatingDefinitiveDocument: boolean;
+  supportsObjectInformatieObjecten: boolean;
 }
 
 interface DocumentenApiManagementVersion extends SupportedDocumentenApiFeatures {

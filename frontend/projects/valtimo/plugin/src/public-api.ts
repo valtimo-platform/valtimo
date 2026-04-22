@@ -48,6 +48,9 @@ export * from './lib/plugins/documenten-api/components/documenten-api-configurat
 export * from './lib/plugins/documenten-api/components/store-uploaded-document/store-uploaded-document-configuration.component';
 export * from './lib/plugins/documenten-api/components/download-document/download-document-configuration.component';
 export * from './lib/plugins/documenten-api/components/store-uploaded-document-in-parts/store-uploaded-document-in-parts-configuration.component';
+export * from './lib/plugins/documenten-api/components/link-document-to-object/link-document-to-object-configuration.component';
+export * from './lib/plugins/documenten-api/components/delete-document-link/delete-document-link-configuration.component';
+export * from './lib/plugins/documenten-api/components/get-audit-trail/get-audit-trail-configuration.component';
 /* documenten api preview plugin */
 export * from './lib/plugins/documenten-api-preview/documenten-api-preview-plugin.module';
 export * from './lib/plugins/documenten-api-preview/documenten-api-preview-plugin.specification';
@@ -116,6 +119,7 @@ export * from './lib/plugins/notificaties-api/notificaties-api-plugin.module';
 export * from './lib/plugins/notificaties-api/notificaties-api-plugin.specification';
 export * from './lib/plugins/notificaties-api/components/notificaties-api-configuration/notificaties-api-configuration.component';
 export * from './lib/plugins/notificaties-api/components/publish-notificatie/publish-notificatie-configuration.component';
+export * from './lib/plugins/notificaties-api/components/receive-notificatie/receive-notificatie-configuration.component';
 /* notificaties api authentication plugin */
 export * from './lib/plugins/notificaties-api-authentication/open-notificaties-plugin.module';
 export * from './lib/plugins/notificaties-api-authentication/open-notificaties-plugin.specification';

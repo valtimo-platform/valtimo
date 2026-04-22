@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,7 +14,16 @@
  * limitations under the License.
  */
 import {CommonModule} from '@angular/common';
-import {Component, ElementRef, OnDestroy, OnInit, TemplateRef, ViewChild} from '@angular/core';
+import {HttpErrorResponse} from '@angular/common/http';
+import {
+  Component,
+  ElementRef,
+  OnDestroy,
+  OnInit,
+  signal,
+  TemplateRef,
+  ViewChild,
+} from '@angular/core';
 import {ActivatedRoute, Router} from '@angular/router';
 import {Filter16, TagGroup16, Upload16} from '@carbon/icons';
 import {TranslateModule, TranslateService} from '@ngx-translate/core';
@@ -27,6 +36,7 @@ import {
   DEFAULT_PAGINATION,
   DEFAULT_PAGINATOR_CONFIG,
   DocumentenApiMetadata,
+  OverflowMenuComponent,
   Pagination,
   SortState,
   ViewType,
@@ -34,9 +44,6 @@ import {
 import {CaseSettings, DocumentService} from '@valtimo/document';
 import {
   CAN_CREATE_RESOURCE_PERMISSION,
-  CAN_DELETE_RESOURCE_PERMISSION,
-  CAN_MODIFY_RESOURCE_PERMISSION,
-  CAN_VIEW_RESOURCE_PERMISSION,
   DownloadService,
   RESOURCE_PERMISSION_RESOURCE,
   UploadProviderService,
@@ -44,7 +51,6 @@ import {
 import {UserProviderService} from '@valtimo/security';
 import {ConfigService, Direction} from '@valtimo/shared';
 import {ButtonModule, IconModule, IconService} from 'carbon-components-angular';
-import {OverflowMenuComponent} from '@valtimo/components';
 import {
   BehaviorSubject,
   combineLatest,
@@ -54,7 +60,7 @@ import {
   Subject,
   Subscription,
 } from 'rxjs';
-import {catchError, filter, map, switchMap, take, tap, shareReplay} from 'rxjs/operators';
+import {catchError, filter, map, shareReplay, switchMap, take, tap} from 'rxjs/operators';
 import {
   COLUMN_VIEW_TYPES,
   ConfiguredColumn,
@@ -68,9 +74,12 @@ import {
   DocumentenApiUploadFieldDefaultValues,
   DocumentenApiUploadFields,
 } from '../../models/documenten-api-upload-field.model';
-import {DocumentenApiColumnService, DocumentenApiVersionService} from '../../services';
-import {DocumentenApiDocumentService} from '../../services';
-import {DocumentenApiPreviewService} from '../../services';
+import {
+  DocumentenApiColumnService,
+  DocumentenApiDocumentService,
+  DocumentenApiPreviewService,
+  DocumentenApiVersionService,
+} from '../../services';
 import {DocumentenApiFilterComponent} from '../documenten-api-filter/documenten-api-filter.component';
 import {DocumentenApiMetadataModalComponent} from '../documenten-api-metadata-modal/documenten-api-metadata-modal.component';
 import {DocumentenApiPreviewModalComponent} from '../documenten-api-preview-modal/documenten-api-preview-modal.component';
@@ -205,6 +214,7 @@ export class CaseDetailTabDocumentenApiDocumentsComponent implements OnInit, OnD
   public readonly showModal$ = new Subject<null>();
   public readonly showPreviewModal$ = new BehaviorSubject<boolean>(false);
   public readonly showUploadModal$ = new BehaviorSubject<boolean>(false);
+  public readonly uploadError = signal<string | null>(null);
   public readonly showDeleteConfirmationModal$ = new BehaviorSubject<boolean>(false);
 
   public readonly uploading$ = new BehaviorSubject<boolean>(false);
@@ -362,46 +372,23 @@ export class CaseDetailTabDocumentenApiDocumentsComponent implements OnInit, OnD
     this.isUserAdmin();
     this.iconService.registerAll([Filter16, TagGroup16, Upload16]);
     this.registerPermissionSubscriptions();
-    this.documentenApiPreviewService.retrieveDocumentenApiPreviewPluginConfigurations();
   }
 
   public registerPermissionSubscriptions(): void {
     this._subscriptions.add(
-      combineLatest([this.relatedFiles$, this.documentId$])
-        .pipe(
-          switchMap(([files, documentId]) => {
-            const documentContext = {
-              resource: RESOURCE_PERMISSION_RESOURCE.jsonSchemaDocument,
-              identifier: documentId,
-            };
-
-            return combineLatest({
-              files: of(files),
-              canView: this.getPermissions(files, CAN_VIEW_RESOURCE_PERMISSION, documentContext),
-              canModify: this.getPermissions(
-                files,
-                CAN_MODIFY_RESOURCE_PERMISSION,
-                documentContext
-              ),
-              canDelete: this.getPermissions(
-                files,
-                CAN_DELETE_RESOURCE_PERMISSION,
-                documentContext
-              ),
-            });
-          })
-        )
-        .subscribe(permissions => {
-          const documentenApiFilePermissions: DocumentenApiFilePermissions = {};
-          permissions.files.forEach(file => {
-            documentenApiFilePermissions[file.fileId] = {
-              canView: permissions.canView[file.fileId],
-              canModify: permissions.canModify[file.fileId],
-              canDelete: permissions.canDelete[file.fileId],
+      combineLatest([this.relatedFiles$, this.enablePbacDocumentenApiDocuments$]).subscribe(
+        ([files, pbacEnabled]) => {
+          const permissions: DocumentenApiFilePermissions = {};
+          files.forEach(file => {
+            permissions[file.fileId] = {
+              canView: pbacEnabled ? file.canView !== false : true,
+              canModify: pbacEnabled ? file.canModify !== false : true,
+              canDelete: pbacEnabled ? file.canDelete !== false : true,
             };
           });
-          this.filePermissions$.next(documentenApiFilePermissions);
-        })
+          this.filePermissions$.next(permissions);
+        }
+      )
     );
   }
 
@@ -466,6 +453,7 @@ export class CaseDetailTabDocumentenApiDocumentsComponent implements OnInit, OnD
   }
 
   public metadataSet(metadata: DocumentenApiMetadata): void {
+    this.uploadError.set(null);
     this.uploading$.next(true);
 
     combineLatest([this.fileToBeUploaded$, this.documentId$])
@@ -476,23 +464,44 @@ export class CaseDetailTabDocumentenApiDocumentsComponent implements OnInit, OnD
           if (this.isEditMode$.getValue()) {
             this.documentenApiDocumentService.updateDocument(file, metadata, documentId).subscribe({
               next: () => {
+                this.showUploadModal$.next(false);
                 this.refetchDocuments();
                 this.uploading$.next(false);
                 this.fileToBeUploaded$.next(null);
               },
-              error: () => {
+              error: (error: HttpErrorResponse) => {
                 this.uploading$.next(false);
+                if (error.status === 403) {
+                  this.uploadError.set(
+                    this.translateService.instant('document.uploadPermissionDenied')
+                  );
+                } else {
+                  this.showUploadModal$.next(false);
+                }
               },
             });
           } else {
             this.uploadProviderService
               .uploadFileWithMetadata(file, documentId, metadata)
-              .subscribe(() => {
-                this.refetchDocuments();
-                this.filter$.next(null);
-                this.pagination$.next(DEFAULT_PAGINATION);
-                this.uploading$.next(false);
-                this.fileToBeUploaded$.next(null);
+              .subscribe({
+                next: () => {
+                  this.showUploadModal$.next(false);
+                  this.refetchDocuments();
+                  this.filter$.next(null);
+                  this.pagination$.next(DEFAULT_PAGINATION);
+                  this.uploading$.next(false);
+                  this.fileToBeUploaded$.next(null);
+                },
+                error: (error: HttpErrorResponse) => {
+                  this.uploading$.next(false);
+                  if (error.status === 403) {
+                    this.uploadError.set(
+                      this.translateService.instant('document.uploadPermissionDenied')
+                    );
+                  } else {
+                    this.showUploadModal$.next(false);
+                  }
+                },
               });
           }
         })
@@ -515,6 +524,7 @@ export class CaseDetailTabDocumentenApiDocumentsComponent implements OnInit, OnD
   }
 
   public closeMetadataModal(): void {
+    this.uploadError.set(null);
     this.showUploadModal$.next(false);
   }
 
@@ -700,28 +710,6 @@ export class CaseDetailTabDocumentenApiDocumentsComponent implements OnInit, OnD
     }
 
     return null;
-  }
-
-  private getPermissions(
-    files: DocumentenApiRelatedFile[],
-    permissionRequest: PermissionRequest,
-    context?: any
-  ): Observable<{
-    [key: string]: boolean;
-  }> {
-    return combineLatest(
-      files.map(file =>
-        this.getPermission(
-          permissionRequest,
-          context || {
-            resource: RESOURCE_PERMISSION_RESOURCE.resourcePermission,
-            identifier: file.fileId,
-          }
-        ).pipe(map(available => ({[file.fileId]: available})))
-      )
-    ).pipe(
-      map(permissions => permissions.reduce((acc, permission) => ({...acc, ...permission}), {}))
-    );
   }
 
   private getPermission(permissionRequest: PermissionRequest, context?: any): Observable<boolean> {

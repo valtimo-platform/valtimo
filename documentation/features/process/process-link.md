@@ -32,13 +32,13 @@ To configure process links, admin privileges are required.
 
 A form process link can be added to user-tasks. When the process reaches the user-task, a user will be presented with the configured form when opening it.
 
-More information about forms can be found [here](../case/forms/).
+More information about forms can be found in the [forms documentation](../case/forms/).
 
 #### Creating a form-flow process link
 
 A form-flow process link can be added to user-tasks. When the process reaches the user-task, an instance of the form-flow will be created and be made visible to the user.
 
-More information about form-flows can be found [here](../case/form-flow.md).
+More information about form-flows can be found in the [form-flow documentation](../case/form-flow.md).
 
 #### Creating a plugin process link
 

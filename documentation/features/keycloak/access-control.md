@@ -5,7 +5,7 @@ Available since Valtimo `13.20.0`.
 {% endhint %}
 
 Access to users in the `UserResource` can be configured through access control. More information about access control
-can be found [here](../access-control/).
+can be found in the [access control documentation](../access-control/).
 
 ### Resources and actions
 

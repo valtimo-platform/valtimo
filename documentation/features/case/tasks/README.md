@@ -16,7 +16,7 @@ As soon as the task detail modal is opened, the dot disappears. It is also clear
 
 ## Access control
 
-Access to the tasks can be configured through access control. More information about access control can be found [here](../../access-control/).
+Access to the tasks can be configured through access control. More information about access control can be found in the [access control documentation](../../access-control/).
 
 ### Resources and actions
 

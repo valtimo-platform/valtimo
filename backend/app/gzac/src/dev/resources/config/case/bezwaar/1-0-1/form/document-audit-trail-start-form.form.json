@@ -1,0 +1,28 @@
+{
+  "display" : "form",
+  "components" : [
+    {
+      "key" : "pv:documentUrl",
+      "type" : "textfield",
+      "input" : true,
+      "label" : "Document URL",
+      "validate" : {
+        "required" : true
+      },
+      "tableView" : false,
+      "spellcheck" : false,
+      "applyMaskOn" : "change",
+      "attributes" : {
+        "data-testid" : "document-audit-trail-start-form-pv:documentUrl"
+      }
+    },
+    {
+      "key" : "submit",
+      "type" : "button",
+      "input" : true,
+      "label" : "Submit",
+      "tableView" : false,
+      "disableOnInvalid" : true
+    }
+  ]
+}

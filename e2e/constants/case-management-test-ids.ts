@@ -11,4 +11,5 @@ export {
   CASE_MANAGEMENT_CASE_HANDLER_TEST_IDS,
   CASE_MANAGEMENT_TAGS_MODAL_TEST_IDS,
   CASE_MANAGEMENT_TAGS_TEST_IDS,
+  CASE_MANAGEMENT_DOCUMENT_TEST_IDS,
 } from '../../frontend/projects/valtimo/case-management/src/lib/constants/case-management.test-ids';

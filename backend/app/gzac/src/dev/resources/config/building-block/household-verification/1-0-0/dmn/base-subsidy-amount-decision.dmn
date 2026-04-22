@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<definitions xmlns="https://www.omg.org/spec/DMN/20191111/MODEL/" xmlns:dmndi="https://www.omg.org/spec/DMN/20191111/DMNDI/" xmlns:dc="http://www.omg.org/spec/DMN/20180521/DC/" xmlns:modeler="http://camunda.org/schema/modeler/1.0" xmlns:camunda="http://camunda.org/schema/1.0/dmn" id="Definitions_BaseSubsidyAmount" name="Base Subsidy Amount Decision" namespace="http://camunda.org/schema/1.0/dmn" exporter="Camunda Modeler" exporterVersion="5.28.0" modeler:executionPlatform="Camunda Platform" modeler:executionPlatformVersion="7.20.0">
+  <decision id="base-subsidy-amount-decision" name="Basisbedrag Subsidie Beslissing" camunda:historyTimeToLive="180">
+    <decisionTable id="DecisionTable_BaseSubsidyAmount" hitPolicy="FIRST">
+      <input id="Input_HouseholdSize" label="Huishoudgrootte" camunda:inputVariable="householdSize">
+        <inputExpression id="InputExpression_HouseholdSize" typeRef="integer">
+          <text>householdSize</text>
+        </inputExpression>
+      </input>
+      <output id="Output_BaseSubsidyAmount" label="Basisbedrag subsidie" name="baseSubsidyAmount" typeRef="integer" />
+      <rule id="Rule_SinglePerson">
+        <description>Alleenstaande: EUR 200</description>
+        <inputEntry id="UnaryTests_SinglePerson">
+          <text>1</text>
+        </inputEntry>
+        <outputEntry id="OutputEntry_SingleAmount">
+          <text>200</text>
+        </outputEntry>
+      </rule>
+      <rule id="Rule_TwoPersons">
+        <description>2 personen: EUR 350</description>
+        <inputEntry id="UnaryTests_TwoPersons">
+          <text>2</text>
+        </inputEntry>
+        <outputEntry id="OutputEntry_TwoAmount">
+          <text>350</text>
+        </outputEntry>
+      </rule>
+      <rule id="Rule_ThreePersons">
+        <description>3 personen: EUR 500</description>
+        <inputEntry id="UnaryTests_ThreePersons">
+          <text>3</text>
+        </inputEntry>
+        <outputEntry id="OutputEntry_ThreeAmount">
+          <text>500</text>
+        </outputEntry>
+      </rule>
+      <rule id="Rule_FourPersons">
+        <description>4 personen: EUR 650</description>
+        <inputEntry id="UnaryTests_FourPersons">
+          <text>4</text>
+        </inputEntry>
+        <outputEntry id="OutputEntry_FourAmount">
+          <text>650</text>
+        </outputEntry>
+      </rule>
+      <rule id="Rule_FiveOrMore">
+        <description>5+ personen: EUR 800</description>
+        <inputEntry id="UnaryTests_FiveOrMore">
+          <text>&gt;= 5</text>
+        </inputEntry>
+        <outputEntry id="OutputEntry_FiveOrMoreAmount">
+          <text>800</text>
+        </outputEntry>
+      </rule>
+    </decisionTable>
+  </decision>
+  <dmndi:DMNDI>
+    <dmndi:DMNDiagram>
+      <dmndi:DMNShape dmnElementRef="base-subsidy-amount-decision">
+        <dc:Bounds height="80" width="180" x="160" y="100" />
+      </dmndi:DMNShape>
+    </dmndi:DMNDiagram>
+  </dmndi:DMNDI>
+</definitions>

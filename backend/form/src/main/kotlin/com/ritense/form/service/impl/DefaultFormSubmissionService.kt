@@ -27,7 +27,6 @@ import com.ritense.authorization.AuthorizationService
 import com.ritense.authorization.request.AuthorizationResourceContext
 import com.ritense.authorization.request.EntityAuthorizationRequest
 import com.ritense.authorization.request.RelatedEntityAuthorizationRequest
-import com.ritense.case.service.CaseDefinitionService
 import com.ritense.document.domain.Document
 import com.ritense.document.domain.impl.JsonSchemaDocument
 import com.ritense.document.domain.impl.request.ModifyDocumentRequest
@@ -55,6 +54,7 @@ import com.ritense.processdocument.domain.request.Request
 import com.ritense.processdocument.exception.ProcessDocumentDefinitionNotFoundException
 import com.ritense.processdocument.service.ProcessDefinitionCaseDefinitionService
 import com.ritense.processdocument.service.ProcessDocumentService
+import com.ritense.processlink.domain.ActivityTypeWithEventName.MESSAGE_START_EVENT_START
 import com.ritense.processlink.domain.ActivityTypeWithEventName.START_EVENT_START
 import com.ritense.processlink.domain.ActivityTypeWithEventName.USER_TASK_CREATE
 import com.ritense.processlink.domain.ProcessLink
@@ -405,7 +405,7 @@ class DefaultFormSubmissionService(
         withProcessVars: Map<String, Any>,
         modifyDocumentWithJsonPatch: JsonPatch
     ): Request {
-        return if (processLink.activityType == START_EVENT_START) {
+        return if (processLink.activityType == START_EVENT_START || processLink.activityType == MESSAGE_START_EVENT_START) {
             check(taskInstanceId == null) {
                 "Process link configuration error: START_EVENT_START shouldn't be linked to a user-task. For process-definition: '${processLink.processDefinitionId}' with activity-id: '${processLink.activityId}'"
             }

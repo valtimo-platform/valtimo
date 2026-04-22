@@ -30,6 +30,7 @@ import {
 } from 'carbon-components-angular';
 import {switchMap, tap} from 'rxjs';
 import {filter, take} from 'rxjs/operators';
+import {FORM_MANAGEMENT_CREATE_TEST_IDS} from '../../constants';
 import {CreateFormDefinitionRequest} from '../../models';
 import {FormManagementService} from '../../services';
 import {getContextObservable, getFormManagementRouteParamsAndContext} from '../../utils';
@@ -70,6 +71,8 @@ export class FormManagementCreateComponent implements OnInit {
   );
 
   public form: FormGroup;
+
+  protected readonly testIds = FORM_MANAGEMENT_CREATE_TEST_IDS;
 
   constructor(
     private readonly formManagementService: FormManagementService,

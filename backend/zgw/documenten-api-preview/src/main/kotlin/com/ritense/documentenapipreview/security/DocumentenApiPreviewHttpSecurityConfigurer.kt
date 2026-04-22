@@ -28,7 +28,8 @@ class DocumentenApiPreviewHttpSecurityConfigurer : HttpSecurityConfigurer {
         try {
             http.authorizeHttpRequests { requests ->
                 requests
-                    .requestMatchers(antMatcher(GET, "/api/v1/documenten-api-preview/*/preview/*")).authenticated()
+                    .requestMatchers(antMatcher(GET, "/api/v1/documenten-api-preview/configuration-exists/*")).authenticated()
+                    .requestMatchers(antMatcher(GET, "/api/v1/documenten-api-preview/*/preview/*/*")).authenticated()
             }
         } catch (e: Exception) {
             throw HttpConfigurerConfigurationException(e)

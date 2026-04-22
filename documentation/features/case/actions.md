@@ -51,3 +51,76 @@ Running and completed building block instances appear in the case's progress ove
 A building block can only be used as an ad-hoc action when its main process has a start form process link on the
 `StartEvent`. See [Building blocks — Start form](../building-blocks/README.md#start-form).
 {% endhint %}
+
+## Import and export
+
+Actions are part of the case definition and are included in case definition import and export. The export of a case
+definition contains:
+
+* The processes that are marked _startable within an existing case_, via the case's process document link file.
+* The ad-hoc building block links, via the case's `*.case-building-block-links.json` file. The building block
+  definitions referenced by these links are exported alongside the case definition, even when no process in the case
+  uses them through a call activity.
+* The **order** of the actions on the **Actions** tab, via a dedicated `*.startable-items.json` file (see
+  [Auto-deployment](#auto-deployment) below).
+
+On import, the list of actions and their order are restored to what was exported.
+
+## Auto-deployment
+
+All parts of the Actions configuration can also be set via auto-deployment.
+
+### Process actions
+
+Processes are exposed as actions by setting `startableByUser: true` in the case's process document link file — see
+[Processes — Linking a process to the case definition](processes.md).
+
+### Building block actions
+
+Ad-hoc building block links are configured in a `*.case-building-block-links.json` file in the case's
+`building-block-link/` directory — see
+[Building blocks — Linking building blocks to a case](../building-blocks/README.md#linking-building-blocks-to-a-case).
+
+### Order of actions
+
+The order in which actions appear under the **Start** button is configured by a dedicated file in the case's
+`startable-item/` directory:
+
+```
+config/case/<case-key>/<version>/
+└── startable-item/
+    └── <name>.startable-items.json
+```
+
+The file is an array. The array position determines the order — the first entry appears first under the **Start**
+button. Each entry has a `type` (`PROCESS` or `BUILDING_BLOCK`) and a `key`, and for building blocks a `versionTag`:
+
+```json
+[
+    {
+        "type": "PROCESS",
+        "key": "change-name"
+    },
+    {
+        "type": "BUILDING_BLOCK",
+        "key": "income-check",
+        "versionTag": "1.0.0"
+    }
+]
+```
+
+| Field        | Description                                                                                 |
+|--------------|---------------------------------------------------------------------------------------------|
+| `type`       | `PROCESS` or `BUILDING_BLOCK`.                                                              |
+| `key`        | The process definition key, or the building block definition key.                           |
+| `versionTag` | Only required for `BUILDING_BLOCK` entries. The version of the building block to reference. |
+
+{% hint style="info" %}
+The referenced processes must be linked to the case via the process document link file, and the referenced building
+blocks must be linked via the `*.case-building-block-links.json` file. Entries without a matching link are ignored.
+{% endhint %}
+
+{% hint style="warning" %}
+On import, all existing ordering rows for the case definition are replaced with the contents of this file. An entry
+that is omitted will fall back to the default order (last, sorted by name).
+{% endhint %}
