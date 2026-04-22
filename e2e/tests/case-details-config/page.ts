@@ -241,6 +241,8 @@ export class CaseDetailsConfigPage {
 
   async deleteTag(title: string) {
     const row = this.page.locator(`tr:has(td:has-text("${title}"))`);
+    // Centre the row so the overflow menu has room to open without clipping off-screen
+    await row.evaluate(el => el.scrollIntoView({block: 'center'}));
     await row.locator('.v-overflow-menu__trigger').click();
     await this.page.getByRole('menu').getByRole('menuitem', {name: 'Delete'}).click();
     await this.page.getByRole('button', {name: 'Delete'}).click();
@@ -293,7 +295,7 @@ export class CaseDetailsConfigPage {
   ) {
     try {
       await ApiUtils.apiDelete(
-        `${endpoints.caseDefinition.caseTag(caseDefinitionKey)}/${tagKey}`
+        `${endpoints.caseDefinition.caseTagVersioned(caseDefinitionKey, versionTag)}/${tagKey}`
       );
     } catch {
       // Tag may already have been deleted by the test
@@ -304,14 +306,14 @@ export class CaseDetailsConfigPage {
    * Cleans up all stale test tags via API by listing all tags and deleting
    * any whose key contains 'e2e' or 'e\de-test-tag' patterns from previous runs.
    */
-  async cleanupStaleTagsViaApi(caseDefinitionKey: string) {
+  async cleanupStaleTagsViaApi(caseDefinitionKey: string, versionTag: string) {
     try {
       const tags = await ApiUtils.apiGet<Array<{key: string}>>(
-        `${endpoints.caseDefinition.caseTag(caseDefinitionKey)}`
+        endpoints.caseDefinition.caseTagVersioned(caseDefinitionKey, versionTag)
       );
       for (const tag of tags) {
         if (/e\d*e-/.test(tag.key)) {
-          await this.deleteTagViaApi(caseDefinitionKey, '', tag.key);
+          await this.deleteTagViaApi(caseDefinitionKey, versionTag, tag.key);
         }
       }
     } catch {

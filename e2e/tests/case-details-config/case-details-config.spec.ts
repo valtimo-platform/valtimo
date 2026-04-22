@@ -65,7 +65,7 @@ test.describe('Case details configuration', () => {
     await caseDetailsConfigPage.deleteStatusViaApi(CASE_IDENTIFIER, reorderKeyA);
     await caseDetailsConfigPage.deleteStatusViaApi(CASE_IDENTIFIER, reorderKeyB);
     // Clean up ALL stale test tags (catches accumulated tags from many previous runs)
-    await caseDetailsConfigPage.cleanupStaleTagsViaApi(CASE_IDENTIFIER);
+    await caseDetailsConfigPage.cleanupStaleTagsViaApi(CASE_IDENTIFIER, draftVersion);
   });
 
   test.afterAll(async () => {

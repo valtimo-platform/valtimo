@@ -23,6 +23,8 @@ export const endpoints = {
       `/api/management/v1/case-definition/${caseDefinitionName}/zgw-document-column`,
     caseTag: (caseDefinitionName: string) =>
       `/api/management/v1/case-definition/${caseDefinitionName}/case-tag`,
+    caseTagVersioned: (caseDefinitionName: string, version: string) =>
+      `/api/management/v1/case-definition/${caseDefinitionName}/version/${version}/case-tag`,
     documentenApiVersion: (caseDefinitionName: string) =>
       `/api/management/v1/case-definition/${caseDefinitionName}/documenten-api/version`,
     caseTab: (caseDefinitionName: string, version: string) =>
