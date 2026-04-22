@@ -128,8 +128,8 @@ class DocumentenApiManagementResource(
     @RunWithoutAuthorization
     @GetMapping("/v1/documenten-api/versions")
     fun getAllApiVersion(): ResponseEntity<DocumentenApiVersionsManagementDto> {
-        val versions = documentenApiVersionService.getAllVersions().map { it.version }
-        return ResponseEntity.ok(DocumentenApiVersionsManagementDto(versions))
+        val versions = documentenApiVersionService.getAllVersions()
+        return ResponseEntity.ok(DocumentenApiVersionsManagementDto.of(versions))
     }
 
     @RunWithoutAuthorization

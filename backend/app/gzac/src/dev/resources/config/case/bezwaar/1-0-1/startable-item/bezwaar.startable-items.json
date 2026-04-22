@@ -1,0 +1,30 @@
+[
+    {
+        "type": "PROCESS",
+        "key": "change-name"
+    },
+    {
+        "type": "PROCESS",
+        "key": "create-zaaknotitie"
+    },
+    {
+        "type": "PROCESS",
+        "key": "patch-zaaknotitie"
+    },
+    {
+        "type": "PROCESS",
+        "key": "patch-zaak"
+    },
+    {
+        "type": "PROCESS",
+        "key": "catalogi-get-typen"
+    },
+    {
+        "type": "PROCESS",
+        "key": "create-portaal-taak-process"
+    },
+    {
+        "type": "PROCESS",
+        "key": "vastleggen-besluit"
+    }
+]

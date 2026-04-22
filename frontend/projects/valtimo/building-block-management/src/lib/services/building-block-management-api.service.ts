@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,6 +31,7 @@ import {
   UpdateBuildingBlockDefinitionDto,
 } from '@valtimo/shared';
 import {catchError, Observable, of} from 'rxjs';
+import {Decision} from '@valtimo/decision';
 import {PluginsWithDependencies} from '@valtimo/process-link';
 import {FormFlowDefinition, ListFormFlowDefinition} from '@valtimo/form-flow-management';
 
@@ -321,6 +322,29 @@ export class BuildingBlockManagementApiService extends BaseApiService {
     return this.httpClient.delete<null>(
       this.getApiUrl(
         `management/v1/building-block/${key}/version/${versionTag}/form-flow-definition/${definitionKey}`
+      )
+    );
+  }
+
+  public getBuildingBlockDecisionDefinitions(
+    key: string,
+    versionTag: string
+  ): Observable<Decision[]> {
+    return this.httpClient.get<Decision[]>(
+      this.getApiUrl(
+        `management/v1/building-block/${key}/version/${versionTag}/decision-definition`
+      )
+    );
+  }
+
+  public deleteBuildingBlockDecisionDefinition(
+    key: string,
+    versionTag: string,
+    decisionDefinitionKey: string
+  ): Observable<void> {
+    return this.httpClient.delete<void>(
+      this.getApiUrl(
+        `management/v1/building-block/${key}/version/${versionTag}/decision-definition/${decisionDefinitionKey}`
       )
     );
   }

@@ -15,9 +15,9 @@ This page requires you to have knowledge on how to configure Objecten API.
 
 ## Configuring the plugin
 
-A plugin configuration is required before the plugin can be used. A general description on how to configure plugins can be found [here](./#configuring-plugins).
+A plugin configuration is required before the plugin can be used. A general description on how to configure plugins can be found in the [plugin configuration guide](./#configuring-plugins).
 
-If the Object Token Authentication plugin is not visible in the plugin menu, it is possible the application is missing a dependency. Instructions on how to add the Objecten API authentication dependency can be found [here](../../fundamentals/getting-started/modules/zgw/objecten-api-authentication.md).
+If the Object Token Authentication plugin is not visible in the plugin menu, it is possible the application is missing a dependency. Instructions on how to add the Objecten API authentication dependency can be found in the [Objecten API authentication module documentation](../../fundamentals/getting-started/modules/zgw/objecten-api-authentication.md).
 
 To configure this plugin the following properties have to be entered:
 

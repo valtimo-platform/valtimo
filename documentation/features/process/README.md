@@ -10,13 +10,13 @@ This section contains information on how to configure and use BPMN processes in 
 
 ## Access control
 
-Access to the processes can be configured through access control. More information about access control can be found [here](https://docs.valtimo.nl/features/access-control).
+Access to the processes can be configured through access control. More information about access control can be found in the [access control documentation](../access-control/README.md).
 
 ### Resources and actions
 
 <table><thead><tr><th width="329">Resource type</th><th width="143">Action</th><th>Effect</th></tr></thead><tbody><tr><td><code>com.ritense.valtimo.operaton.domain.OperatonExecution</code></td><td><code>create</code></td><td>Allows creating an execution for a process definition.</td></tr><tr><td><code>com.ritense.valtimo.operaton.domain.OperatonProcessDefinition</code></td><td>-</td><td>-</td></tr></tbody></table>
 
-Process definitions have no actions currently. As a result, they can only be used as part of container conditions. See the example [here](./#permission-to-start-a-process-for-one-specific-process-definition) on how to use this.
+Process definitions have no actions currently. As a result, they can only be used as part of container conditions. See the [example below](./#permission-to-start-a-process-for-one-specific-process-definition) on how to use this.
 
 ### Examples
 

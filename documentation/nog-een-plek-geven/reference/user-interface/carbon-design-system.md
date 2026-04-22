@@ -4,7 +4,7 @@ Carbon is IBM's open source design system, based on the IBM design language. As 
 
 ## Including Carbon in implementations
 
-In order to make Carbon work with implementations, some small adjustments need to be made. Please refer to [the release notes of major version 10](broken-reference) for instructions on making these adjustments.
+In order to make Carbon work with implementations, some small adjustments need to be made.
 
 ## Using Carbon
 
