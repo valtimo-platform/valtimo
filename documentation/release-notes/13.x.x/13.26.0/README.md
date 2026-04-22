@@ -6,15 +6,15 @@
 
 ## New Features
 
-* **New feature title**
+* **Support configuration of PDF archive methods**
 
-  New feature explanation.
+  The documenten-api-preview plugin now supports configuration of PDF archive methods. PDF archiving is turned off by default, but administrators can enable PDF archiving via the plugin configuration.
 
 ## Enhancements
 
-* **New enhancement title**
+* **Explanatory loading message**
 
-  New enhancement explanation.
+  The documenten-api-preview plugin will now show an explanatory loading message, above the loading spinner, when converting a document to a preview.
 
 ## Bugfixes
 
