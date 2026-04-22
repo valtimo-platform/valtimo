@@ -505,7 +505,7 @@ internal class DocumentenApiClientTest {
     @Test
     fun `should send get audit trail request and parse response`() {
         val restClientBuilder = RestClient.builder()
-        val client = DocumentenApiClient(restClientBuilder, outboxService, objectMapper, mock(), authorizationService)
+        val client = DocumentenApiClient(restClientBuilder, outboxService, objectMapper, mock(), authorizationService, mock())
 
         val responseBody = """
             [
@@ -567,7 +567,7 @@ internal class DocumentenApiClientTest {
     @Test
     fun `should send outbox event on fetching audit trail`() {
         val restClientBuilder = RestClient.builder()
-        val client = DocumentenApiClient(restClientBuilder, outboxService, objectMapper, mock(), authorizationService)
+        val client = DocumentenApiClient(restClientBuilder, outboxService, objectMapper, mock(), authorizationService, mock())
 
         val responseBody = """
             [
@@ -614,7 +614,7 @@ internal class DocumentenApiClientTest {
     @Test
     fun `should not send outbox event on error fetching audit trail`() {
         val restClientBuilder = RestClient.builder()
-        val client = DocumentenApiClient(restClientBuilder, outboxService, objectMapper, mock(), authorizationService)
+        val client = DocumentenApiClient(restClientBuilder, outboxService, objectMapper, mock(), authorizationService, mock())
 
         mockDocumentenApi.enqueue(mockResponse("").setResponseCode(400))
 
