@@ -53,6 +53,7 @@ import {
   ProcessLinkStateService,
   ProcessLinkStepService,
 } from '../../services';
+import {BB_MAPPINGS_TEST_IDS} from '../../constants';
 import {stripDocPrefix} from '../../utils';
 import {
   ButtonModule,
@@ -95,6 +96,8 @@ import {ActivatedRoute} from '@angular/router';
   ],
 })
 export class ConfigureBuildingBlockMappingsComponent implements OnInit, OnDestroy, AfterViewInit {
+  protected readonly testIds = BB_MAPPINGS_TEST_IDS;
+
   public readonly buildingBlockFields$ = this.buildingBlockStateService.buildingBlockFields$;
 
   public readonly buildingBlockFieldItems$: Observable<Array<SelectItem>> =
