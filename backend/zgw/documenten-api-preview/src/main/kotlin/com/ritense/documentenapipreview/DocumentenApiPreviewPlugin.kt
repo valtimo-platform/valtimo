@@ -50,8 +50,8 @@ class DocumentenApiPreviewPlugin(
     @PluginProperty(key = PDF_ARCHIVE_METHOD, secret = false, required = false)
     var pdfArchiveMethod: PdfArchiveMethod = PdfArchiveMethod.NONE
 
-    @PluginProperty(key = PDF_ARCHIVE_UNIVERSAL_ACCESSIBILITY, secret = false, required = false)
-    var pdfArchiveUniversalAccessibility: Boolean = false
+    @PluginProperty(key = PDF_UNIVERSAL_ACCESSIBILITY, secret = false, required = false)
+    var pdfUniversalAccessibility: Boolean = false
 
     fun generatePreview(caseDocumentId: UUID, documentId: String): PdfFile {
         val documentenApiPlugin = getDocumentenApiPlugin()
@@ -70,7 +70,7 @@ class DocumentenApiPreviewPlugin(
             documentStream,
             documentInformatieObject.bestandsnaam,
             pdfArchiveMethod,
-            pdfArchiveUniversalAccessibility)
+            pdfUniversalAccessibility)
 
         return PdfFile(createFilename(documentInformatieObject), pdfStream)
     }
@@ -91,7 +91,7 @@ class DocumentenApiPreviewPlugin(
         const val PDF_CONVERSION_URL_PROPERTY = "pdfConversionUrl"
         const val DOCUMENTEN_API_CONFIGURATION_ID = "documentenApiConfigurationId"
         const val PDF_ARCHIVE_METHOD = "pdfArchiveMethod"
-        const val PDF_ARCHIVE_UNIVERSAL_ACCESSIBILITY = "pdfArchiveUniversalAccessibility"
+        const val PDF_UNIVERSAL_ACCESSIBILITY = "pdfUniversalAccessibility"
 
 
         fun findConfigurationByDocumentenApiConfiguration(documentenApiConfigurationId: String) = { properties: JsonNode ->

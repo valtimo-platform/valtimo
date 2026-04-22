@@ -39,6 +39,7 @@ export class DocumentenApiPreviewConfigurationComponent
     new EventEmitter<DocumentenApiPreviewConfig>();
 
   private saveSubscription!: Subscription;
+  private _pdfUniversalAccessibilitySubscription!: Subscription;
 
   private readonly formValue$ = new BehaviorSubject<DocumentenApiPreviewConfig | null>(null);
   private readonly valid$ = new BehaviorSubject<boolean>(false);
@@ -49,6 +50,8 @@ export class DocumentenApiPreviewConfigurationComponent
     {id: 'PDF/A-2b', text: 'PDF/A-2b', translationKey: 'pdfArchiveMethodPDFA2b'},
     {id: 'PDF/A-3b', text: 'PDF/A-3b', translationKey: 'pdfArchiveMethodPDFA3b'},
   ];
+
+  public readonly pdfUniversalAccessibility$ = new BehaviorSubject<boolean>(false);
 
   public readonly documentenApiPluginSelectItems$: Observable<Array<{id: string; text: string}>> =
     combineLatest([
@@ -73,16 +76,39 @@ export class DocumentenApiPreviewConfigurationComponent
   ) {}
 
   ngOnInit(): void {
+    this.initPdfUniversalAccessibilityEnabled();
+    this.openPdfUniversalAccessibilitySubscription();
     this.openSaveSubscription();
   }
 
   ngOnDestroy() {
+    this._pdfUniversalAccessibilitySubscription.unsubscribe();
     this.saveSubscription?.unsubscribe();
   }
 
+  public onPdfArchiveUniversalAccessibilityChange(event: any): void {
+    this.pdfUniversalAccessibility$.next(event);
+  }
+
   formValueChange(formValue: DocumentenApiPreviewConfig): void {
-    this.formValue$.next(formValue);
-    this.handleValid(formValue);
+    const formValueIncludingToggle = {
+      ...formValue,
+      pdfUniversalAccessibility: this.pdfUniversalAccessibility$.getValue(),
+    };
+    this.formValue$.next(formValueIncludingToggle);
+    this.handleValid(formValueIncludingToggle);
+  }
+
+  private initPdfUniversalAccessibilityEnabled(): void {
+    this.prefillConfiguration$.pipe(take(1)).subscribe(configuration => {
+      this.pdfUniversalAccessibility$.next(configuration.pdfArchiveUniversalAccessibility);
+    });
+  }
+
+  private openPdfUniversalAccessibilitySubscription(): void {
+    this._pdfUniversalAccessibilitySubscription = this.pdfUniversalAccessibility$.subscribe(value => {
+      this.formValueChange(this.formValue$.getValue())
+    });
   }
 
   private handleValid(formValue: DocumentenApiPreviewConfig): void {

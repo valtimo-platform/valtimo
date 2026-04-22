@@ -39,7 +39,7 @@ class PdfConversionClient(
         document: InputStream,
         fileName: String? = null,
         pdfArchiveMethod: PdfArchiveMethod = PdfArchiveMethod.NONE,
-        pdfArchiveUniversalAccessibility: Boolean = false,
+        pdfUniversalAccessibility: Boolean = false,
     ): InputStream {
 
 
@@ -47,7 +47,7 @@ class PdfConversionClient(
             part("files", InputStreamResource(document)).filename(fileName ?: "file_name_unknown")
             part("exportFormFields", "false")
             part("pdfa", convertPdfArchiveMethodToGotenbergValue(pdfArchiveMethod))
-            if (pdfArchiveUniversalAccessibility) {
+            if (pdfUniversalAccessibility) {
                 part("pdfua", "true")
             } else {
                 part("pdfua", "false")
