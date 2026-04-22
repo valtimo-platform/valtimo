@@ -5,10 +5,10 @@
 | Category                    | Features | Functions | ✅ Covered | ❌ Not Covered |
 |-----------------------------|----------|-----------|------------|----------------|
 | User Features (ROLE_USER)   | 5        | 21        | 6          | 15             |
-| Admin Features (ROLE_ADMIN) | 15       | 328       | 96         | 230            |
-| **Total**                   | **20**   | **349**   | **102**    | **245**        |
+| Admin Features (ROLE_ADMIN) | 15       | 328       | 119        | 206            |
+| **Total**                   | **20**   | **349**   | **125**    | **221**        |
 
-**Coverage:** `102 / 349` — `29.2%`
+**Coverage:** `125 / 349` — `35.8%`
 
 ---
 
@@ -114,30 +114,30 @@
 
 | #    | Function                         | Test Scenarios                                   | Coverage | Notes                                           |
 |:-----|:---------------------------------|:-------------------------------------------------|:--------:|:------------------------------------------------|
-| 6.12 | Create process link              | Create process link via wizard                   |    ❌    |                                                 |
-| 6.13 | Configure Form link type         | Configure Form link type                         |    ❌    |                                                 |
-| 6.14 | Configure FormFlow link type     | Configure FormFlow link type                     |    ❌    |                                                 |
-| 6.15 | Configure Plugin link type       | Configure Plugin link type                       |    ❌    |                                                 |
-| 6.16 | Configure plugin action          | Configure plugin action                          |    ❌    |                                                 |
-| 6.17 | Configure Building block link    | Configure Building block link type               |    ❌    |                                                 |
-| 6.18 | Select building block            | Select building block from available list        |    ❌    |                                                 |
-| 6.19 | View building block descriptions | View building block descriptions with artwork    |    ❌    |                                                 |
-| 6.20 | Select building block version    | Select building block version                    |    ❌    |                                                 |
-| 6.21 | Configure plugin mapping         | Configure plugin mapping for building block      |    ❌    |                                                 |
-| 6.22 | Configure input mapping          | Configure input mapping (building block → case)  |    ❌    |                                                 |
-| 6.23 | Add input field mapping          | Add input field mapping                          |    ❌    |                                                 |
-| 6.24 | Select source path               | Select source path from building block document  |    ❌    |                                                 |
-| 6.25 | Map to target case field         | Map to target case field via dropdown            |    ❌    |                                                 |
-| 6.26 | Toggle mapping input mode        | Toggle between dropdown/manual input for mapping |    ❌    |                                                 |
-| 6.27 | Mark fields as required          | Mark input fields as required                    |    ❌    |                                                 |
-| 6.28 | Configure sync mapping           | Configure sync mapping (case → building block)   |    ❌    |                                                 |
-| 6.29 | Add sync field mapping           | Add sync field mapping                           |    ❌    |                                                 |
-| 6.30 | Select source field from case    | Select source field from case                    |    ❌    |                                                 |
-| 6.31 | Map to building block field      | Map to target building block field               |    ❌    |                                                 |
-| 6.32 | Delete mappings                  | Delete input/sync mappings                       |    ❌    |                                                 |
-| 6.33 | View dependency warnings         | View dependency warnings (push config needed)    |    ❌    |                                                 |
-| 6.34 | Complete building block config   | Complete building block configuration            |    ❌    |                                                 |
-| 6.35 | Save process link                | Save process link configuration                  |    ❌    |                                                 |
+| 6.12 | Create process link              | Create process link via wizard                   |    ✅    | case-details-management-process-links.spec.ts   |
+| 6.13 | Configure Form link type         | Configure Form link type                         |    ✅    | case-details-management-process-links.spec.ts   |
+| 6.14 | Configure FormFlow link type     | Configure FormFlow link type                     |    ⏳    | case-details-management-process-links.spec.ts (step visible; no seeded case-scoped flow) |
+| 6.15 | Configure Plugin link type       | Configure Plugin link type                       |    ✅    | case-details-management-process-links.spec.ts   |
+| 6.16 | Configure plugin action          | Configure plugin action                          |    ✅    | case-details-management-process-links.spec.ts   |
+| 6.17 | Configure Building block link    | Configure Building block link type               |    ✅    | case-details-management-process-links.spec.ts   |
+| 6.18 | Select building block            | Select building block from available list        |    ✅    | case-details-management-process-links.spec.ts   |
+| 6.19 | View building block descriptions | View building block descriptions with artwork    |    ✅    | case-details-management-process-links.spec.ts   |
+| 6.20 | Select building block version    | Select building block version                    |    ✅    | case-details-management-process-links.spec.ts   |
+| 6.21 | Configure plugin mapping         | Configure plugin mapping for building block      |    ✅    | case-details-management-process-links.spec.ts   |
+| 6.22 | Configure input mapping          | Configure input mapping (building block → case)  |    ✅    | case-details-management-process-links.spec.ts   |
+| 6.23 | Add input field mapping          | Add input field mapping                          |    ✅    | case-details-management-process-links.spec.ts   |
+| 6.24 | Select source path               | Select source path from building block document  |    ✅    | case-details-management-process-links.spec.ts   |
+| 6.25 | Map to target case field         | Map to target case field via dropdown            |    ✅    | case-details-management-process-links.spec.ts   |
+| 6.26 | Toggle mapping input mode        | Toggle between dropdown/manual input for mapping |    ✅    | case-details-management-process-links.spec.ts   |
+| 6.27 | Mark fields as required          | Mark input fields as required                    |    ✅    | case-details-management-process-links.spec.ts   |
+| 6.28 | Configure sync mapping           | Configure sync mapping (case → building block)   |    ✅    | case-details-management-process-links.spec.ts   |
+| 6.29 | Add sync field mapping           | Add sync field mapping                           |    ✅    | case-details-management-process-links.spec.ts   |
+| 6.30 | Select source field from case    | Select source field from case                    |    ✅    | case-details-management-process-links.spec.ts   |
+| 6.31 | Map to building block field      | Map to target building block field               |    ✅    | case-details-management-process-links.spec.ts   |
+| 6.32 | Delete mappings                  | Delete input/sync mappings                       |    ✅    | case-details-management-process-links.spec.ts   |
+| 6.33 | View dependency warnings         | View dependency warnings (push config needed)    |    ✅    | case-details-management-process-links.spec.ts   |
+| 6.34 | Complete building block config   | Complete building block configuration            |    ✅    | case-details-management-process-links.spec.ts   |
+| 6.35 | Save process link                | Save process link configuration                  |    ✅    | case-details-management-process-links.spec.ts   |
 
 #### 6D · Version Management
 
@@ -727,8 +727,8 @@
 |:-------------------------|:-------:|
 | Total Features           |   20    |
 | Total Functions          |   349   |
-| ✅ Covered by Playwright |   102   |
-| ❌ Not covered           |   245   |
-| ⏳ In progress           |    0    |
+| ✅ Covered by Playwright |   125   |
+| ❌ Not covered           |   221   |
+| ⏳ In progress           |    1    |
 | `N/A` Not applicable     |    2    |
-| **Coverage %**           | **29.2%** |
+| **Coverage %**           | **35.8%** |
