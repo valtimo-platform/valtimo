@@ -20,6 +20,7 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
 import com.ritense.authorization.AuthorizationSupportedHelper
 import com.ritense.authorization.deployment.PermissionDto
+import com.ritense.authorization.deployment.PermissionResourceTypeMigrator
 import com.ritense.authorization.permission.Permission
 import com.ritense.authorization.permission.PermissionRepository
 import com.ritense.authorization.role.RoleRepository
@@ -34,6 +35,7 @@ class GlobalPermissionImporter(
     private val objectMapper: ObjectMapper,
     private val permissionRepository: PermissionRepository,
     private val roleRepository: RoleRepository,
+    private val migrator: PermissionResourceTypeMigrator,
 ) : Importer {
     private val existingPermissionsThreadLocal = ThreadLocal<List<Permission>?>()
     private val importedPermissionsThreadLocal = ThreadLocal.withInitial { mutableSetOf<Permission>() }
@@ -52,7 +54,7 @@ class GlobalPermissionImporter(
         }
         val incomingPermissions = permissionDtos.map { permissionDto ->
             AuthorizationSupportedHelper.checkSupported(permissionDto.resourceType)
-            permissionDto.toPermission(roleRepository)
+            permissionDto.toPermission(roleRepository, migrator)
         }
 
         val permissionsToSave = incomingPermissions

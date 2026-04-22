@@ -1,0 +1,29 @@
+[
+    {
+        "version": "1.5.0-baseflow",
+        "filterableColumns": [
+            "auteur",
+            "beschrijving",
+            "creatiedatum",
+            "informatieobjecttypeOmschrijving",
+            "titel",
+            "vertrouwelijkheidaanduiding",
+            "trefwoorden"
+        ],
+        "sortableColumns": [
+            "auteur",
+            "bestandsomvang",
+            "creatiedatum",
+            "formaat",
+            "status",
+            "titel",
+            "vertrouwelijkheidaanduiding"
+        ],
+        "supportsTrefwoorden": true,
+        "supportsUpdatingDefinitiveDocument": true,
+        "supportsObjectInformatieObjecten": true,
+        "experimentalVersion": true
+    }
+]
+
+
