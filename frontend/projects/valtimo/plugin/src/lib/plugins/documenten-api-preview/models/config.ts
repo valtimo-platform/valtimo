@@ -20,7 +20,7 @@ interface DocumentenApiPreviewConfig extends PluginConfigurationData {
   pdfConversionUrl: string;
   documentenApiConfigurationId: string;
   pdfArchiveMethod: string;
-  pdfArchiveUniversalAccessibility: boolean;
+  pdfUniversalAccessibility: boolean;
 }
 
 export {DocumentenApiPreviewConfig};

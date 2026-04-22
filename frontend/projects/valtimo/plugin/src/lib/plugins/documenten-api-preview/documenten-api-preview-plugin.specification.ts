@@ -42,6 +42,11 @@ const documentenApiPreviewPluginSpecification: PluginSpecification = {
       pdfArchiveMethodPdfA1b: 'PDF/A-1b',
       pdfArchiveMethodPdfA2b: 'PDF/A-2b',
       pdfArchiveMethodPdfA3b: 'PDF/A-3b',
+      pdfUniversalAccessibility: 'Universele toegankelijkheid',
+      pdfUniversalAccessibilityTooltip:
+        'Schakel deze optie aan om het PDF document geschikt te maken voor ondersteunende technologieën zoals screen readers.',
+      'pdfUniversalAccessibility.toggleOn': 'Geactiveerd',
+      'pdfUniversalAccessibility.toggleOff': 'Gedeactiveerd',
     },
     en: {
       title: 'Documenten API Preview',
@@ -61,6 +66,11 @@ const documentenApiPreviewPluginSpecification: PluginSpecification = {
       pdfArchiveMethodPdfA1b: 'PDF/A-1b',
       pdfArchiveMethodPdfA2b: 'PDF/A-2b',
       pdfArchiveMethodPdfA3b: 'PDF/A-3b',
+      pdfUniversalAccessibility: 'Universal accessibility',
+      pdfUniversalAccessibilityTooltip:
+        'Enable this option to make the PDF document suitable for assistive technologies such as screen readers.',
+      'pdfUniversalAccessibility.toggleOn': 'Enabled',
+      'pdfUniversalAccessibility.toggleOff': 'Disabled',
     },
   },
 };

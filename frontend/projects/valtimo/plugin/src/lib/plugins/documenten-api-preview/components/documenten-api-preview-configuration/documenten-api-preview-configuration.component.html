@@ -20,6 +20,7 @@
     disabled: disabled$ | async,
     prefill: prefillConfiguration$ ? (prefillConfiguration$ | async) : null,
     documentenApiPluginSelectItems: documentenApiPluginSelectItems$ | async,
+    pdfUniversalAccessibility: pdfUniversalAccessibility$ | async,
   } as obs"
 >
   <v-input
@@ -35,6 +36,7 @@
     placeholder="Documenten API Preview Plugin"
   >
   </v-input>
+
   <v-input
     name="pdfConversionUrl"
     data-test-id="pdfConversionUrl"
@@ -48,6 +50,7 @@
     placeholder="https://gotenberg:3000/"
   >
   </v-input>
+
   <v-select
     [loading]="!obs.documentenApiPluginSelectItems"
     [items]="obs.documentenApiPluginSelectItems"
@@ -60,6 +63,7 @@
     [required]="true"
     [tooltip]="'documentenApiPluginConfigurationTooltip' | pluginTranslate: pluginId | async"
   ></v-select>
+
   <v-select
     [loading]="!pdfArchiveMethods"
     [items]="pdfArchiveMethods"
@@ -71,4 +75,20 @@
     [disabled]="obs.disabled"
     [required]="true"
   ></v-select>
+
+  <div class="input-toggle--small-margin">
+    <v-input-label
+      [title]="'pdfUniversalAccessibility' | pluginTranslate: pluginId | async"
+      [tooltip]="'pdfUniversalAccessibilityTooltip' | pluginTranslate: pluginId | async"
+    >
+    </v-input-label>
+
+    <cds-toggle
+      [checked]="obs.pdfUniversalAccessibility"
+      [disabled]="obs.disabled"
+      [onText]="'pdfUniversalAccessibility.toggleOn' | pluginTranslate: pluginId | async"
+      [offText]="'pdfUniversalAccessibility.toggleOff' | pluginTranslate: pluginId | async"
+      (checkedChange)="onPdfArchiveUniversalAccessibilityChange($event)"
+    ></cds-toggle>
+  </div>
 </v-form>
