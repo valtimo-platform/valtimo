@@ -16,7 +16,7 @@
 
 import {Component, EventEmitter, Input, OnDestroy, OnInit, Output} from '@angular/core';
 import {FunctionConfigurationComponent} from '../../../../models';
-import {BehaviorSubject, combineLatest, filter, map, Observable, Subscription, switchMap, take} from 'rxjs';
+import {BehaviorSubject, combineLatest, filter, map, Observable, of, Subscription, switchMap, take} from 'rxjs';
 import {IconService} from 'carbon-components-angular';
 import {Add16, TrashCan16} from '@carbon/icons';
 import {PatchZaakConfig, PropertyFormField} from '../../models';
@@ -69,6 +69,27 @@ export class PatchZaakConfigurationComponent
   public readonly propertyList: Array<PropertyFormField> = [];
 
   public readonly pluginId$ = new BehaviorSubject<string>('');
+  private readonly _propertyListChanged$ = new BehaviorSubject<void>(undefined);
+  public readonly sortedPropertyList$: Observable<PropertyFormField[]> = combineLatest([
+    this.pluginId$.pipe(filter(Boolean)),
+    this._propertyListChanged$,
+  ]).pipe(
+    switchMap(([pluginId]) => {
+      if (this.propertyList.length === 0) return of([]);
+      return combineLatest(
+        this.propertyList.map(p =>
+          this.pluginTranslatePipe.transform(p.translationKey, pluginId).pipe(
+            map(label => ({key: p.name, label}))
+          )
+        )
+      ).pipe(
+        map(labeledItems => {
+          const labelMap = new Map(labeledItems.map(i => [i.key, i.label]));
+          return this.sortPropertyListByLabel(this.propertyList, labelMap);
+        })
+      );
+    })
+  );
   public readonly sortedMenuPropertyOptions$: Observable<string[]> = this.pluginId$.pipe(
     filter(pluginId => !!pluginId),
     switchMap(pluginId =>
@@ -143,6 +164,7 @@ export class PatchZaakConfigurationComponent
     if (linked) {
       linked.forEach(p => this.addProperty(p));
     }
+    this._propertyListChanged$.next();
   }
 
   public removeProperty(property: string): void {
@@ -159,6 +181,7 @@ export class PatchZaakConfigurationComponent
     if (linked) {
       linked.forEach(p => this.removeProperty(p));
     }
+    this._propertyListChanged$.next();
   }
 
   public hasPropertyBeenAdded(property: string): boolean {
@@ -235,6 +258,33 @@ export class PatchZaakConfigurationComponent
       default:
         return [];
     }
+  }
+
+  private followersForHead(property: string): string[] {
+    if (this.LINKED_FIELD_GROUPS[property] && !this.GROUP_TRIGGERS.has(property)) {
+      return this.LINKED_FIELD_GROUPS[property];
+    }
+    for (const [trigger, followers] of Object.entries(this.LINKED_FIELD_GROUPS)) {
+      if (this.GROUP_TRIGGERS.has(trigger) && followers[0] === property) {
+        return followers.slice(1);
+      }
+    }
+    return [];
+  }
+
+  private sortPropertyListByLabel(
+    list: PropertyFormField[],
+    labels: Map<string, string>
+  ): PropertyFormField[] {
+    const propertyMap = new Map(list.map(p => [p.name, p]));
+    const heads = list.filter(p => !this.isLinkedFollower(p.name));
+    heads.sort((a, b) => (labels.get(a.name) ?? '').localeCompare(labels.get(b.name) ?? ''));
+    return heads.flatMap(head => {
+      const followers = this.followersForHead(head.name)
+        .map(n => propertyMap.get(n))
+        .filter((p): p is PropertyFormField => !!p);
+      return [head, ...followers];
+    });
   }
 
   private handleValid(formValue: PatchZaakConfig): void {

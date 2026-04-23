@@ -29,7 +29,7 @@
   </div>
 
   <v-form (valueChange)="onFormValueChanged($event)">
-    @for (property of propertyList; track property.name) {
+    @for (property of (sortedPropertyList$ | async) ?? []; track property.name) {
       <div class="row">
         <div class="col-11">
           <v-input
