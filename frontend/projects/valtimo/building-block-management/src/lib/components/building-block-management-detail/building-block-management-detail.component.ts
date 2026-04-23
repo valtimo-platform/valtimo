@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -32,6 +32,8 @@ import {of, take} from 'rxjs';
 import {BuildingBlockManagementProcessesComponent} from '../building-block-management-processes/building-block-management-processes.component';
 import {BuildingBlockManagementDetailActionsComponent} from '../building-block-management-detail-actions/building-block-management-detail-actions.component';
 import {BuildingBlockManagementFormsComponent} from '../building-block-management-forms/building-block-management-forms.component';
+import {BuildingBlockManagementFormFlowsComponent} from '../building-block-management-form-flows/building-block-management-form-flows.component';
+import {BuildingBlockManagementDecisionsComponent} from '../building-block-management-decisions/building-block-management-decisions.component';
 
 @Component({
   standalone: true,
@@ -49,6 +51,8 @@ import {BuildingBlockManagementFormsComponent} from '../building-block-managemen
     BuildingBlockManagementDocumentComponent,
     BuildingBlockManagementProcessesComponent,
     BuildingBlockManagementFormsComponent,
+    BuildingBlockManagementFormFlowsComponent,
+    BuildingBlockManagementDecisionsComponent,
     RenderInPageHeaderDirective,
     BuildingBlockManagementDetailActionsComponent,
     DialogModule,

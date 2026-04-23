@@ -1,0 +1,164 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  ~ Copyright 2015-2026 Ritense BV, the Netherlands.
+  ~
+  ~ Licensed under EUPL, Version 1.2 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~ https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" basis,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<databaseChangeLog
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd">
+
+    <changeSet author="Ritense" id="1">
+        <dropNotNullConstraint
+                tableName="building_block_instance"
+                columnName="activity_id"
+                columnDataType="VARCHAR(255)"/>
+    </changeSet>
+
+    <changeSet author="Ritense" id="2">
+        <addColumn tableName="building_block_instance">
+            <column name="process_instance_id" type="VARCHAR(64)"/>
+            <column name="caller_process_definition_id" type="VARCHAR(255)"/>
+            <column name="root_building_block_instance_id" type="${uuidType}"/>
+        </addColumn>
+    </changeSet>
+
+    <changeSet author="Ritense" id="3">
+        <sql>
+            UPDATE building_block_instance bbi
+            SET process_instance_id = (
+                SELECT MAX(pdi.camunda_process_instance_id)
+                FROM camunda_process_json_schema_document_instance pdi
+                WHERE pdi.json_schema_document_id = bbi.building_block_document_id
+            )
+            WHERE bbi.process_instance_id IS NULL
+        </sql>
+    </changeSet>
+
+    <changeSet author="Ritense" id="4" dbms="postgresql">
+        <sql>
+            UPDATE building_block_instance bbi
+            SET caller_process_definition_id = (
+                SELECT MAX(hv.PROC_DEF_ID_)
+                FROM ACT_HI_VARINST hv
+                WHERE hv.NAME_ = 'buildingBlockDocumentId'
+                  AND hv.TEXT_ = CAST(bbi.building_block_document_id AS VARCHAR(36))
+            )
+            WHERE bbi.caller_process_definition_id IS NULL
+              AND bbi.activity_id IS NOT NULL
+        </sql>
+    </changeSet>
+
+    <changeSet author="Ritense" id="4" dbms="mysql">
+        <sql>
+            UPDATE building_block_instance bbi
+            SET caller_process_definition_id = (
+                SELECT MAX(hv.PROC_DEF_ID_)
+                FROM ACT_HI_VARINST hv
+                WHERE hv.NAME_ = 'buildingBlockDocumentId'
+                  AND hv.TEXT_ = CAST(bbi.building_block_document_id AS CHAR(36))
+            )
+            WHERE bbi.caller_process_definition_id IS NULL
+              AND bbi.activity_id IS NOT NULL
+        </sql>
+    </changeSet>
+
+    <changeSet author="Ritense" id="5" dbms="postgresql">
+        <sql>
+            UPDATE building_block_instance bbi
+            SET caller_process_definition_id = (
+                SELECT MAX(rv.PROC_DEF_ID_)
+                FROM ACT_RU_VARIABLE rv
+                WHERE rv.NAME_ = 'buildingBlockDocumentId'
+                  AND rv.TEXT_ = CAST(bbi.building_block_document_id AS VARCHAR(36))
+            )
+            WHERE bbi.caller_process_definition_id IS NULL
+              AND bbi.activity_id IS NOT NULL
+        </sql>
+    </changeSet>
+
+    <changeSet author="Ritense" id="5" dbms="mysql">
+        <sql>
+            UPDATE building_block_instance bbi
+            SET caller_process_definition_id = (
+                SELECT MAX(rv.PROC_DEF_ID_)
+                FROM ACT_RU_VARIABLE rv
+                WHERE rv.NAME_ = 'buildingBlockDocumentId'
+                  AND rv.TEXT_ = CAST(bbi.building_block_document_id AS CHAR(36))
+            )
+            WHERE bbi.caller_process_definition_id IS NULL
+              AND bbi.activity_id IS NOT NULL
+        </sql>
+    </changeSet>
+
+    <!-- Repeated to handle multi-level nesting (each pass resolves one additional level) -->
+    <changeSet author="Ritense" id="6" dbms="postgresql">
+        <sql>
+            UPDATE building_block_instance bbi
+            SET root_building_block_instance_id = (
+                SELECT COALESCE(parent.root_building_block_instance_id, parent.id)
+                FROM building_block_instance parent
+                WHERE parent.id = bbi.parent_building_block_instance_id
+            )
+            WHERE bbi.parent_building_block_instance_id IS NOT NULL
+              AND bbi.root_building_block_instance_id IS NULL
+        </sql>
+        <sql>
+            UPDATE building_block_instance bbi
+            SET root_building_block_instance_id = (
+                SELECT COALESCE(parent.root_building_block_instance_id, parent.id)
+                FROM building_block_instance parent
+                WHERE parent.id = bbi.parent_building_block_instance_id
+            )
+            WHERE bbi.parent_building_block_instance_id IS NOT NULL
+              AND bbi.root_building_block_instance_id IS NULL
+        </sql>
+        <sql>
+            UPDATE building_block_instance bbi
+            SET root_building_block_instance_id = (
+                SELECT COALESCE(parent.root_building_block_instance_id, parent.id)
+                FROM building_block_instance parent
+                WHERE parent.id = bbi.parent_building_block_instance_id
+            )
+            WHERE bbi.parent_building_block_instance_id IS NOT NULL
+              AND bbi.root_building_block_instance_id IS NULL
+        </sql>
+    </changeSet>
+
+    <changeSet author="Ritense" id="6" dbms="mysql">
+        <sql>
+            UPDATE building_block_instance bbi
+            INNER JOIN building_block_instance parent ON parent.id = bbi.parent_building_block_instance_id
+            SET bbi.root_building_block_instance_id = COALESCE(parent.root_building_block_instance_id, parent.id)
+            WHERE bbi.parent_building_block_instance_id IS NOT NULL
+              AND bbi.root_building_block_instance_id IS NULL
+        </sql>
+        <sql>
+            UPDATE building_block_instance bbi
+            INNER JOIN building_block_instance parent ON parent.id = bbi.parent_building_block_instance_id
+            SET bbi.root_building_block_instance_id = COALESCE(parent.root_building_block_instance_id, parent.id)
+            WHERE bbi.parent_building_block_instance_id IS NOT NULL
+              AND bbi.root_building_block_instance_id IS NULL
+        </sql>
+        <sql>
+            UPDATE building_block_instance bbi
+            INNER JOIN building_block_instance parent ON parent.id = bbi.parent_building_block_instance_id
+            SET bbi.root_building_block_instance_id = COALESCE(parent.root_building_block_instance_id, parent.id)
+            WHERE bbi.parent_building_block_instance_id IS NOT NULL
+              AND bbi.root_building_block_instance_id IS NULL
+        </sql>
+    </changeSet>
+
+</databaseChangeLog>

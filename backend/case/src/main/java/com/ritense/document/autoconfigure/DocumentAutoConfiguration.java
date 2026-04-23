@@ -156,12 +156,10 @@ public class DocumentAutoConfiguration {
     @Bean
     @ConditionalOnMissingBean
     public CaseJsonSchemaDocumentDefinitionImporter documentDefinitionImporter(
-        JsonSchemaDocumentDefinitionService jsonSchemaDocumentDefinitionService,
-        ObjectMapper objectMapper
+        JsonSchemaDocumentDefinitionService jsonSchemaDocumentDefinitionService
     ) {
         return new CaseJsonSchemaDocumentDefinitionImporter(
-            jsonSchemaDocumentDefinitionService,
-            objectMapper
+            jsonSchemaDocumentDefinitionService
         );
     }
 

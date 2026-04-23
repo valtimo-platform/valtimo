@@ -58,6 +58,15 @@
 
     <cds-tab
       class="no-padding-left-right main-content"
+      [id]="TabEnum.ACTIONS"
+      [active]="obs.currentTab === TabEnum.ACTIONS"
+      [heading]="'caseManagement.tabs.actions' | translate"
+      (selected)="navigateToTab(TabEnum.ACTIONS)"
+    >
+    </cds-tab>
+
+    <cds-tab
+      class="no-padding-left-right main-content"
       [id]="TabEnum.DECISIONS"
       [active]="obs.currentTab === TabEnum.DECISIONS"
       [heading]="'caseManagement.tabs.decision' | translate"

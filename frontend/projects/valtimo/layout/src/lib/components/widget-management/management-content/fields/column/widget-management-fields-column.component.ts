@@ -68,7 +68,7 @@ import {
   TagModule,
 } from 'carbon-components-angular';
 import {debounceTime, map, Observable, startWith, Subscription, take, tap} from 'rxjs';
-import {WIDGET_MANAGEMENT_SERVICE} from '../../../../../constants';
+import {WIDGET_CONTENT_FIELDS_TEST_IDS, WIDGET_MANAGEMENT_SERVICE} from '../../../../../constants';
 import {IWidgetManagementService} from '../../../../../interfaces';
 import {
   FieldsWidgetValue,
@@ -110,6 +110,8 @@ import {WidgetFieldsService, WidgetWizardService} from '../../../../../services'
   ],
 })
 export class WidgetManagementFieldsColumnComponent implements OnInit, OnDestroy {
+  protected readonly testIds = WIDGET_CONTENT_FIELDS_TEST_IDS;
+
   @HostBinding('class') public readonly class = 'valtimo-widget-management-field-column';
   @Input({required: true}) public columnData: FieldsWidgetValue[];
   @Input() public addTranslateKey = 'widgetTabManagement.content.fields.add';

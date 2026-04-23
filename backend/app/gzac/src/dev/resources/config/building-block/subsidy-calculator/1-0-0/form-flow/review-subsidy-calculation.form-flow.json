@@ -1,0 +1,16 @@
+{
+    "startStep": "step1",
+    "steps": [
+        {
+            "key": "step1",
+            "nextSteps": [],
+            "onComplete": ["${valtimoFormFlow.completeTask(additionalProperties, step.submissionData)}"],
+            "type": {
+                "name": "form",
+                "properties": {
+                    "definition": "review-subsidy-calculation"
+                }
+            }
+        }
+    ]
+}

@@ -15,9 +15,11 @@
  */
 
 import {APIRequestContext, expect, Page} from '@playwright/test';
-import {CarbonList} from '../../shared/carbon-list/carbon-list.utils';
+import {CarbonList, CarbonListRow} from '../../shared/carbon-list/carbon-list.utils';
 import * as ApiUtils from '../../utils/api.utils';
-import {ensureDraftVersionSelected} from '../../utils/version.utils';
+import {ensureDraftVersionSelected, getVersionFromUrl} from '../../utils/version.utils';
+import {clearMonacoEditor, pasteToMonacoEditor} from '../../utils/monaco.utils';
+import {waitForResponse} from '../../components/request';
 
 export class CaseDetailsManagementFormFlowsPage {
   constructor(
@@ -36,6 +38,7 @@ export class CaseDetailsManagementFormFlowsPage {
 
   async switchToFormFlowsTab() {
     await this.page.getByRole('tab', {name: 'Form Flows'}).click();
+    await expect(this.formFlowsList).toBeVisible();
   }
 
   async ensureDraftVersionSelected(): Promise<string> {
@@ -69,12 +72,34 @@ export class CaseDetailsManagementFormFlowsPage {
     return this.page.locator('cds-modal-footer').getByRole('button', {name: 'Cancel'});
   }
 
+  // ─── Cleanup ───────────────────────────────────────────────────────
+
+  async cleanupStaleFormFlows() {
+    const staleRowLocator = this.formFlowsList.locator('tbody tr').filter({
+      has: this.page.locator('td', {hasText: 'e2e-'}),
+    });
+
+    let count = await staleRowLocator.count();
+    while (count > 0) {
+      const row = new CarbonListRow(this.page, staleRowLocator.first());
+      await row.clickAction('Delete');
+      await this.page.getByRole('button', {name: 'Delete'}).click();
+      await this.page.waitForTimeout(500);
+      count = await staleRowLocator.count();
+    }
+  }
+
   // ─── Actions ──────────────────────────────────────────────────────
 
   async createFormFlow(key: string) {
     await this.addFormFlowButton.click();
+    await expect(this.formFlowKeyInput).toBeVisible();
     await this.formFlowKeyInput.fill(key);
-    await this.createFormFlowButton.click();
+    await expect(this.createFormFlowButton).toBeEnabled();
+    await Promise.all([
+      this.page.waitForURL(new RegExp(`form-flows/${key}$`)),
+      this.createFormFlowButton.click(),
+    ]);
   }
 
   async deleteFormFlow(key: string) {
@@ -84,9 +109,55 @@ export class CaseDetailsManagementFormFlowsPage {
     await this.page.getByRole('button', {name: 'Delete'}).click();
   }
 
+  async navigateBackToFormFlowsList() {
+    await this.page.getByRole('button', {name: 'Back'}).click();
+    await expect(this.formFlowsList).toBeVisible();
+  }
+
   async openFormFlow(key: string) {
     const list = new CarbonList(this.page);
     await list.row(key).click();
+  }
+
+  // ─── Editor Elements ───────────────────────────────────────────────
+
+  get saveButton() {
+    return this.page.getByRole('button', {name: 'Save'});
+  }
+
+  get monacoEditor() {
+    return this.page.locator('.monaco-editor').first();
+  }
+
+  // ─── Save Actions ─────────────────────────────────────────────────
+
+  async editFormFlowJson(json: object) {
+    await clearMonacoEditor(this.page);
+    await pasteToMonacoEditor(this.page, JSON.stringify(json, null, 2));
+  }
+
+  async pasteRawTextInEditor(text: string) {
+    await clearMonacoEditor(this.page);
+    await pasteToMonacoEditor(this.page, text);
+  }
+
+  async saveFormFlow(formFlowKey: string, caseKey: string) {
+    const versionTag = await getVersionFromUrl(this.page);
+    const [response] = await Promise.all([
+      waitForResponse(
+        this.page,
+        'PUT',
+        `/api/management/v1/case-definition/${caseKey}/version/${versionTag}/form-flow-definition/${formFlowKey}`
+      ),
+      this.saveButton.click(),
+    ]);
+    return response;
+  }
+
+  async assertSaveSuccessNotification(key: string) {
+    await expect(
+      this.page.getByText(`${key} was saved successfully`).first()
+    ).toBeVisible({timeout: 15_000});
   }
 
   // ─── Assertions ───────────────────────────────────────────────────

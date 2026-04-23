@@ -7,8 +7,45 @@ A team has a unique key, a title, and a list of members.
 
 * **Case assignment**: Cases (documents) can be assigned to teams. This allows all members of the team to see and manage
   the case.
+* **Automatic task assignment**: When a case has an assignee or a team, tasks that belong to the case can be
+  automatically assigned to match. See [Automatic task assignment](#automatic-task-assignment) below.
 * **Access control**: Teams can be used in access control rules to grant or deny access to resources based on team
-  membership.
+  membership. For example, tasks can be restricted so that users only see tasks whose candidate group matches one of
+  their teams. See [Tasks access control](../case/tasks/README.md) for an example.
+
+## Automatic task assignment
+
+User tasks that belong to a case can inherit the case's user assignee and team assignee. This keeps tasks in sync
+with the case without manual intervention.
+
+Auto assignment is opt-in per case definition. Both of the following flags must be enabled on the case definition:
+
+* `canHaveAssignee` — the case supports an assignee or team.
+* `autoAssignTasks` — changes to the case's assignee/team are propagated to its tasks.
+
+When enabled, auto assignment kicks in for user tasks.
+
+### On task creation
+
+When a user task is created, Valtimo assigns a team based on the task's BPMN candidate groups:
+
+1. If the case has a team assigned and one of the task's candidate groups matches that team key, the case's team is
+   assigned to the task.
+2. Otherwise, the task is assigned to the first candidate group that contains a team.
+
+Tasks without any BPMN candidate groups are never auto-assigned.
+
+### On case assignee or team change
+
+When the assignee or team on the case changes, Valtimo re-syncs open tasks that belong to the case — but
+only those whose current value still matches the case's previous value. Tasks that have since been (re)assigned to a
+different user or team are left untouched.
+
+### On case unassign
+
+When the case's assignee or team is cleared, Valtimo clears the corresponding value on open tasks — but only on tasks
+that still hold the same assignee or team the case had. Tasks that were re-assigned individually in the meantime are
+left untouched.
 
 ## Access control
 

@@ -27,6 +27,8 @@ class DocumentenApiVersion(
     open val sortableColumns: List<String> = emptyList(),
     open val supportsTrefwoorden: Boolean = false,
     open val supportsUpdatingDefinitiveDocument: Boolean = false,
+    open val supportsObjectInformatieObjecten: Boolean = false,
+    open val experimentalVersion: Boolean = false,
 
     @JsonAnySetter
     @get:JsonAnyGetter
@@ -41,7 +43,14 @@ class DocumentenApiVersion(
 
     fun isColumnSortable(columnKey: DocumentenApiColumnKey) = sortableColumns.contains(columnKey.property)
 
-    override fun compareTo(other: DocumentenApiVersion) = version.compareTo(other.version)
+    override fun compareTo(other: DocumentenApiVersion): Int {
+        // Experimental versions sort before stable versions in natural order,
+        // so that sortedDescending() places them at the end of the list.
+        if (this.experimentalVersion != other.experimentalVersion) {
+            return if (this.experimentalVersion) -1 else 1
+        }
+        return version.compareTo(other.version)
+    }
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true

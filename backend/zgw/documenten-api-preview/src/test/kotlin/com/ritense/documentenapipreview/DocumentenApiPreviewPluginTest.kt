@@ -32,6 +32,7 @@ import java.net.URI
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.OffsetDateTime
+import java.util.UUID
 
 class DocumentenApiPreviewPluginTest {
     private lateinit var documentenApiPreviewPlugin: DocumentenApiPreviewPlugin
@@ -54,30 +55,30 @@ class DocumentenApiPreviewPluginTest {
 
         whenever(pluginService.createInstance<DocumentenApiPlugin>(documentenApiPreviewPlugin.documentenApiConfigurationId))
             .thenReturn(documentenApiPlugin)
-        whenever(documentenApiPlugin.downloadInformatieObject(null,MOCK_DOCUMENT_ID))
+        whenever(documentenApiPlugin.downloadInformatieObject(MOCK_CASE_DOCUMENT_ID, MOCK_DOCUMENT_ID))
             .thenReturn(mockDocumentStream)
-        whenever(documentenApiPlugin.getInformatieObject(MOCK_DOCUMENT_ID, null))
+        whenever(documentenApiPlugin.getInformatieObject(MOCK_DOCUMENT_ID, MOCK_CASE_DOCUMENT_ID))
             .thenReturn(MOCK_DOCUMENT_INFORMATIE_OBJECT)
         whenever(pdfConversionClient.convertDocument(any(), any(), any())).thenReturn(mockDocumentStream)
     }
 
     @Test
     fun `should call download on DocumentenApiPlugin`() {
-        documentenApiPreviewPlugin.generatePreview(MOCK_DOCUMENT_ID)
+        documentenApiPreviewPlugin.generatePreview(MOCK_CASE_DOCUMENT_ID, MOCK_DOCUMENT_ID)
 
-        verify(documentenApiPlugin).downloadInformatieObject(null,MOCK_DOCUMENT_ID)
+        verify(documentenApiPlugin).downloadInformatieObject(MOCK_CASE_DOCUMENT_ID, MOCK_DOCUMENT_ID)
     }
 
     @Test
     fun `should call getInformatieObject on DocumentenApiPlugin`() {
-        documentenApiPreviewPlugin.generatePreview(MOCK_DOCUMENT_ID)
+        documentenApiPreviewPlugin.generatePreview(MOCK_CASE_DOCUMENT_ID, MOCK_DOCUMENT_ID)
 
-        verify(documentenApiPlugin).getInformatieObject(MOCK_DOCUMENT_ID, null)
+        verify(documentenApiPlugin).getInformatieObject(MOCK_DOCUMENT_ID, MOCK_CASE_DOCUMENT_ID)
     }
 
     @Test
     fun `should call generatePreview on PdfConversionClient`() {
-        documentenApiPreviewPlugin.generatePreview(MOCK_DOCUMENT_ID)
+        documentenApiPreviewPlugin.generatePreview(MOCK_CASE_DOCUMENT_ID, MOCK_DOCUMENT_ID)
 
         verify(pdfConversionClient).convertDocument(
             documentenApiPreviewPlugin.pdfConversionUrl,
@@ -86,6 +87,7 @@ class DocumentenApiPreviewPluginTest {
     }
 
     companion object {
+        private val MOCK_CASE_DOCUMENT_ID = UUID.randomUUID()
         private val MOCK_DOCUMENT_ID = "mock_document_identifier"
 
         private val MOCK_DOCUMENT_INFORMATIE_OBJECT = DocumentInformatieObject(

@@ -48,11 +48,20 @@ class BuildingBlockInstance(
     @Column(name = "case_document_id", nullable = true)
     val caseDocumentId: UUID? = null,
 
-    @Column(name = "activity_id", nullable = false)
-    val activityId: String,
+    @Column(name = "activity_id", nullable = true)
+    val activityId: String? = null,
+
+    @Column(name = "caller_process_definition_id", nullable = true)
+    val callerProcessDefinitionId: String? = null,
+
+    @Column(name = "process_instance_id", nullable = true)
+    var processInstanceId: String? = null,
 
     @Column(name = "parent_building_block_instance_id", nullable = true)
     val parentBuildingBlockInstanceId: UUID? = null,
+
+    @Column(name = "root_building_block_instance_id", nullable = true)
+    val rootBuildingBlockInstanceId: UUID? = null,
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumns(

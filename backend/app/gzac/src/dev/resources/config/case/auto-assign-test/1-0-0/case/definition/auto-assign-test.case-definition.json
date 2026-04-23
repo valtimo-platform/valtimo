@@ -2,7 +2,7 @@
     "key": "auto-assign-test",
     "name": "Auto assign test",
     "versionTag": "1.0.0",
-    "final": true,
+    "final": false,
     "canHaveAssignee": true,
     "autoAssignTasks": true
 }

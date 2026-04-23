@@ -178,6 +178,7 @@
     "cancel": "Cancel",
     "upload": "Upload",
     "save": "Save",
+    "uploadPermissionDenied": "You do not have permission to upload a document with the selected metadata. Please adjust your selections and try again.",
     "size": "Size",
     "tags": "Tags (optional)",
     "tagsTooltip": "Tags are used for easy filtering and searching of documents. You can add multiple tags to a document",
@@ -420,7 +421,13 @@
     "deploy": "Save",
     "loadFailure": "Something went wrong with loading your decision table.",
     "deploySuccess": "Decision table has been deployed successfully.",
-    "deployFailure": "Something went wrong with deploying your decision table."
+    "deployFailure": "Something went wrong with deploying your decision table.",
+    "deleteSuccess": "Decision table has been deleted successfully.",
+    "deleteFailure": "Something went wrong with deleting the decision table.",
+    "deleteModal": {
+      "title": "Delete decision table",
+      "content": "Are you sure you want to delete this decision table? This action cannot be undone."
+    }
   },
   "message": {"empty": "No result found"},
   "cta": {"close": "Close", "moreDetails": "More details"},
@@ -632,6 +639,7 @@
       "general": "General",
       "cases": "Configuration",
       "processes": "Processes",
+      "actions": "Actions",
       "document": "Document",
       "zgw": "ZGW",
       "forms": "Forms",
@@ -715,6 +723,45 @@
       }
     },
     "tabType": {"custom": "Custom", "formio": "FormIO", "standard": "Standard"},
+    "actions": {
+      "columns": {
+        "name": "Name",
+        "type": "Type"
+      },
+      "addItem": "Add an action",
+      "noResults": "No actions configured",
+      "noResultsDescription": "No actions are configured for this case type.",
+      "infoNotification": {
+        "message": "Actions appear under the start button of an existing case and can be initiated at any time by the user."
+      },
+      "type": {
+        "PROCESS": "Process",
+        "BUILDING_BLOCK": "Building block"
+      },
+      "modal": {
+        "addTitle": "Add an action",
+        "addDescription": "Select a process or a building block for the user to start",
+        "addProcessTitle": "Add process as action",
+        "addBuildingBlockTitle": "Add building block as action",
+        "editProcessTitle": "Edit process action",
+        "editBuildingBlockTitle": "Edit building block action",
+        "selectProcess": "Select a process",
+        "selectBuildingBlock": "Select a building block",
+        "selectProcessDescription": "Select a process for the user to start",
+        "selectBuildingBlockDescription": "Select a building block for the user to start",
+        "filterPlaceholder": "Filter...",
+        "add": "Add",
+        "save": "Save",
+        "back": "Back",
+        "next": "Next",
+        "noProcessesAvailable": "No more processes available to configure as action",
+        "noBuildingBlocksAvailable": "No more building blocks available to configure as action"
+      },
+      "deleteModal": {
+        "title": "Delete action",
+        "content": "Are you sure you want to delete this action? This cannot be undone."
+      }
+    },
     "importDefinition": {
       "title": "Import case definition",
       "startUpload": "Start upload",
@@ -1902,7 +1949,7 @@
       "formDefinitionView": "The name of the form IO definition that will be used to display the object.",
       "formDefinitionEdit": "The name of the form IO definition that will be used to edit the object.",
       "showInDataMenu": "Indicates whether the object type is visible in the menu",
-      "suppressOutbox": "When enabled, read flows this objecttype skip outbox message creation."
+      "suppressOutbox": "When enabled, read flows for this object type skip outbox message creation."
     },
     "cancel": "Cancel",
     "add": "Add object",
@@ -1934,6 +1981,7 @@
   },
   "processLinkConfiguration": {
     "configureStep": "Configure process step",
+    "buildingBlockActionTitle": "Building block action: {{buildingBlockName}}",
     "modalTitle": "Process step: {{processStepName}}",
     "pluginConfiguration": "Plugin configuration: {{pluginConfigTitle}}",
     "chooseProcessLinkTypeDescription": "A process step can perform a variety of actions. Choose below to what type of action you would like to link this step.",
@@ -2338,7 +2386,9 @@
       "general": "General",
       "document": "Document",
       "processes": "Processes",
-      "forms": "Forms"
+      "forms": "Forms",
+      "formFlows": "Form flows",
+      "decisions": "Decision tables"
     },
     "formDefinition": {
       "name": "Name"

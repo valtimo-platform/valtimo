@@ -61,9 +61,9 @@ Thumbs.db
 
 /.nx
 
-# rebuild temp files
-
-.rebuilding-*
+# rebuild lock files (per-library)
+.rebuilding-*.lock
+.rebuilding.lock
 
 
 # other

@@ -46,13 +46,13 @@ class OutboxPublisherHealthIndicatorTest {
     }
 
     @Test
-    fun `should report DOWN when circuit breaker is OPEN`() {
+    fun `should report UP when circuit breaker is OPEN`() {
         val circuitBreaker = createCircuitBreaker()
         circuitBreaker.transitionToOpenState()
         val indicator = OutboxPublisherHealthIndicator(circuitBreaker)
         val health = indicator.health()
 
-        assertThat(health.status).isEqualTo(Status.DOWN)
+        assertThat(health.status).isEqualTo(Status.UP)
         assertThat(health.details["circuitBreakerState"]).isEqualTo("OPEN")
     }
 

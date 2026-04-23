@@ -53,6 +53,7 @@ dependencies {
     implementation project(":backend:process-document")
     implementation project(":backend:case")
     implementation project(":backend:form")
+    implementation project(":backend:form-flow")
     implementation project(":backend:process-link")
     implementation project(":backend:plugin")
     implementation project(":backend:plugin-valtimo")

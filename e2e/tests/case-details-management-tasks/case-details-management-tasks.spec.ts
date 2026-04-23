@@ -17,9 +17,9 @@
 import {expect, test} from '@playwright/test';
 import {
   CASE_IDENTIFIER,
-  taskColumnReorderTestData,
-  taskColumnTestData,
-  taskSearchFieldTestData,
+  createTaskColumnTestData,
+  createTaskColumnReorderTestData,
+  createTaskSearchFieldTestData,
 } from './case-details-management-tasks';
 import {CaseDetailsManagementTasksPage} from './page';
 
@@ -30,6 +30,11 @@ test.describe('Case details management — Tasks', () => {
   let page;
   let tasksPage: CaseDetailsManagementTasksPage;
   let request;
+
+  // Generate unique test data per run to avoid key collisions
+  const taskColumnTestData = createTaskColumnTestData();
+  const taskColumnReorderTestData = createTaskColumnReorderTestData();
+  const taskSearchFieldTestData = createTaskSearchFieldTestData();
 
   // Arrange
   test.beforeAll(async ({browser, baseURL}) => {
@@ -43,6 +48,7 @@ test.describe('Case details management — Tasks', () => {
     await tasksPage.goToCaseManagement(CASE_IDENTIFIER);
     await tasksPage.ensureDraftVersionSelected();
     await tasksPage.switchToTasksTab();
+    await tasksPage.cleanupStaleColumns();
   });
 
   test.afterAll(async () => {
@@ -56,7 +62,7 @@ test.describe('Case details management — Tasks', () => {
 
   // ─── 6.62 View task list columns ──────────────────────────────────
 
-  test.describe('View task list columns', () => {
+  test.describe('6.62 — View task list columns', () => {
     test('Columns list is visible', async () => {
       await expect(tasksPage.columnsList).toBeVisible();
     });
@@ -64,7 +70,7 @@ test.describe('Case details management — Tasks', () => {
 
   // ─── 6.63 Add task list column ────────────────────────────────────
 
-  test.describe('Add task list column', () => {
+  test.describe('6.63 — Add task list column', () => {
     test.describe('Success', () => {
       test('Add a column', async () => {
         // Act
@@ -86,7 +92,7 @@ test.describe('Case details management — Tasks', () => {
 
   // ─── 6.64 Rearrange task list columns ─────────────────────────────
 
-  test.describe('Rearrange task list columns', () => {
+  test.describe('6.64 — Rearrange task list columns', () => {
     test('Add two columns for reordering', async () => {
       await tasksPage.addColumn({
         title: taskColumnReorderTestData.titleA,
@@ -105,22 +111,34 @@ test.describe('Case details management — Tasks', () => {
       await tasksPage.assertColumnExists(taskColumnReorderTestData.keyB);
     });
 
-    test('Drag column B above column A', async () => {
-      // Arrange — verify initial order: A before B
+    test('Reorder columns via drag and drop', async () => {
+      // Get initial positions
       const indexA = await tasksPage.getColumnIndexInList(taskColumnReorderTestData.keyA);
       const indexB = await tasksPage.getColumnIndexInList(taskColumnReorderTestData.keyB);
-      expect(indexA).toBeLessThan(indexB);
+      expect(indexA).not.toBe(-1);
+      expect(indexB).not.toBe(-1);
 
-      // Act
-      await tasksPage.dragColumnToPosition(
-        taskColumnReorderTestData.keyB,
-        taskColumnReorderTestData.keyA
-      );
+      // Act — drag the later column above the earlier one
+      if (indexA < indexB) {
+        await tasksPage.dragColumnToPosition(
+          taskColumnReorderTestData.keyB,
+          taskColumnReorderTestData.keyA
+        );
+      } else {
+        await tasksPage.dragColumnToPosition(
+          taskColumnReorderTestData.keyA,
+          taskColumnReorderTestData.keyB
+        );
+      }
 
-      // Assert — B is now before A
+      // Assert — relative order should be reversed
       const newIndexA = await tasksPage.getColumnIndexInList(taskColumnReorderTestData.keyA);
       const newIndexB = await tasksPage.getColumnIndexInList(taskColumnReorderTestData.keyB);
-      expect(newIndexB).toBeLessThan(newIndexA);
+      if (indexA < indexB) {
+        expect(newIndexB).toBeLessThan(newIndexA);
+      } else {
+        expect(newIndexA).toBeLessThan(newIndexB);
+      }
     });
 
     test('Clean up reorder columns', async () => {
@@ -134,7 +152,7 @@ test.describe('Case details management — Tasks', () => {
 
   // ─── 6.65 View task search fields ────────────────────────────────
 
-  test.describe('View task search fields', () => {
+  test.describe('6.65 — View task search fields', () => {
     test('Switch to Search fields sub-tab', async () => {
       await tasksPage.switchToSearchFieldsSubTab();
     });
@@ -146,7 +164,7 @@ test.describe('Case details management — Tasks', () => {
 
   // ─── 6.66 Add task search field ──────────────────────────────────
 
-  test.describe('Add task search field', () => {
+  test.describe('6.66 — Add task search field', () => {
     test('Add a search field', async () => {
       // Act
       await tasksPage.addSearchField(taskSearchFieldTestData);

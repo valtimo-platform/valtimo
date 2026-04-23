@@ -9,7 +9,7 @@
 - **Enabling virus scanning**
 
 When enabled, files uploaded to the Documenten API or in temporary file storage will be scanned for viruses.
-More details can be found [here](../../../features/case/zgw/zgw-documents/README.md#enabling-virus-scanning)
+More details can be found in the [virus scanning documentation](../../../features/case/zgw/zgw-documents/README.md#enabling-virus-scanning)
 
 ## Bugfixes
 

@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,6 +27,8 @@ import {
   ProcessManagementRouteData,
 } from '@valtimo/process-management';
 import {FormManagementEditComponent} from '@valtimo/form-management';
+import {FormFlowEditorComponent} from '@valtimo/form-flow-management';
+import {DecisionModelerComponent} from '@valtimo/decision';
 
 const routes: Routes = [
   {
@@ -73,6 +75,28 @@ const routes: Routes = [
     canActivate: [AuthGuardService],
     data: {
       title: 'formManagement.edit.title',
+      roles: [ROLE_ADMIN],
+      customPageTitle: true,
+      context: 'buildingBlock',
+    },
+  },
+  {
+    path: `building-block-management/building-block/:buildingBlockDefinitionKey/version/:buildingBlockDefinitionVersionTag/${BUILDING_BLOCK_MANAGEMENT_TABS.FORM_FLOWS}/:formFlowDefinitionKey`,
+    component: FormFlowEditorComponent,
+    canActivate: [AuthGuardService],
+    data: {
+      title: 'formFlow.title',
+      roles: [ROLE_ADMIN],
+      customPageTitle: true,
+      context: 'buildingBlock',
+    },
+  },
+  {
+    path: `building-block-management/building-block/:buildingBlockDefinitionKey/version/:buildingBlockDefinitionVersionTag/${BUILDING_BLOCK_MANAGEMENT_TABS.DECISIONS}/:id`,
+    component: DecisionModelerComponent,
+    canActivate: [AuthGuardService],
+    data: {
+      title: 'Edit decision table',
       roles: [ROLE_ADMIN],
       customPageTitle: true,
       context: 'buildingBlock',

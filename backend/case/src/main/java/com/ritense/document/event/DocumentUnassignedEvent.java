@@ -20,6 +20,7 @@ import static com.ritense.valtimo.contract.utils.AssertionConcern.assertArgument
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonView;
 import com.ritense.valtimo.contract.audit.AuditEvent;
 import com.ritense.valtimo.contract.audit.AuditMetaData;
@@ -31,6 +32,8 @@ import java.util.UUID;
 public class DocumentUnassignedEvent extends AuditMetaData implements AuditEvent {
 
     private final UUID documentId;
+    private final String assigneeId;
+    private final String teamKey;
 
     @JsonCreator
     public DocumentUnassignedEvent(
@@ -38,11 +41,25 @@ public class DocumentUnassignedEvent extends AuditMetaData implements AuditEvent
         String origin,
         LocalDateTime occurredOn,
         String user,
-        UUID documentId
+        UUID documentId,
+        String assigneeId,
+        String teamKey
     ) {
         super(id, origin, occurredOn, user);
         assertArgumentNotNull(documentId, "documentId is required");
         this.documentId = documentId;
+        this.assigneeId = assigneeId;
+        this.teamKey = teamKey;
+    }
+
+    public DocumentUnassignedEvent(
+        UUID id,
+        String origin,
+        LocalDateTime occurredOn,
+        String user,
+        UUID documentId
+    ) {
+        this(id, origin, occurredOn, user, documentId, null, null);
     }
 
     @Override
@@ -50,6 +67,18 @@ public class DocumentUnassignedEvent extends AuditMetaData implements AuditEvent
     @JsonIgnore(false)
     public UUID getDocumentId() {
         return documentId;
+    }
+
+    @JsonProperty
+    @JsonView(AuditView.Public.class)
+    public String getAssigneeId() {
+        return assigneeId;
+    }
+
+    @JsonProperty
+    @JsonView(AuditView.Public.class)
+    public String getTeamKey() {
+        return teamKey;
     }
 
     @Override
@@ -64,11 +93,13 @@ public class DocumentUnassignedEvent extends AuditMetaData implements AuditEvent
             return false;
         }
         DocumentUnassignedEvent that = (DocumentUnassignedEvent) o;
-        return Objects.equals(documentId, that.documentId);
+        return Objects.equals(documentId, that.documentId)
+            && Objects.equals(assigneeId, that.assigneeId)
+            && Objects.equals(teamKey, that.teamKey);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(super.hashCode(), documentId);
+        return Objects.hash(super.hashCode(), documentId, assigneeId, teamKey);
     }
 }

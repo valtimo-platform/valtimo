@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@
 package com.ritense.authorization.web.request
 
 import com.ritense.authorization.Action
+import com.ritense.authorization.deployment.PermissionResourceTypeMigrator
 import com.ritense.authorization.permission.ConditionContainer
 import com.ritense.authorization.permission.Permission
 import com.ritense.authorization.permission.condition.PermissionCondition
@@ -29,14 +30,14 @@ data class UpdateRolePermissionRequest(
     val contextResourceType: Class<*>? = null,
     val contextConditions: List<PermissionCondition> = emptyList(),
 ) {
-    fun toPermission(role: Role): Permission {
+    fun toPermission(role: Role, migrator: PermissionResourceTypeMigrator): Permission {
         return Permission(
-            resourceType = resourceType,
+            resourceType = migrator.migrate(resourceType)!!,
             actions = actions.map { (Action<Any>(it)) }.toMutableList(),
-            conditionContainer = ConditionContainer(conditions),
+            conditionContainer = ConditionContainer(migrator.migrateConditions(conditions)),
             role = role,
-            contextResourceType = contextResourceType,
-            contextConditionContainer = ConditionContainer(contextConditions)
+            contextResourceType = migrator.migrate(contextResourceType),
+            contextConditionContainer = ConditionContainer(migrator.migrateConditions(contextConditions))
         )
     }
 }

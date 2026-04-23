@@ -22,9 +22,11 @@ import com.ritense.processdocument.domain.impl.OperatonProcessInstanceId;
 import com.ritense.processdocument.domain.listener.StartEventFromCallActivityListener;
 import com.ritense.processdocument.service.ProcessDocumentAssociationService;
 import com.ritense.processdocument.service.ProcessDocumentService;
+import com.ritense.valtimo.event.OperatonExecutionEvent;
 import org.operaton.bpm.engine.delegate.DelegateExecution;
 import org.operaton.bpm.model.bpmn.impl.instance.ProcessImpl;
 import org.springframework.context.event.EventListener;
+import org.springframework.core.annotation.Order;
 
 public class StartEventFromCallActivityListenerImpl implements StartEventFromCallActivityListener {
 
@@ -39,19 +41,25 @@ public class StartEventFromCallActivityListenerImpl implements StartEventFromCal
         this.processDocumentService = processDocumentService;
     }
 
+    @Order(200)
     @RunWithoutAuthorization
-    @EventListener(condition = "#execution.bpmnModelElementInstance != null " +
-        "&& #execution.bpmnModelElementInstance.elementType.typeName == T(org.operaton.bpm.engine.ActivityTypes).START_EVENT " +
-        "&& #execution.eventName == T(org.operaton.bpm.engine.delegate.ExecutionListener).EVENTNAME_START")
-    public void notify(DelegateExecution execution) {
+    @EventListener(condition = "#event.delegateExecution.bpmnModelElementInstance != null " +
+        "&& #event.delegateExecution.bpmnModelElementInstance.elementType.typeName == T(org.operaton.bpm.engine.ActivityTypes).START_EVENT " +
+        "&& #event.eventName == T(org.operaton.bpm.engine.delegate.ExecutionListener).EVENTNAME_START")
+    public void notify(OperatonExecutionEvent event) {
+        DelegateExecution execution = event.getDelegateExecution();
         Document.Id documentId = getDocumentId(execution);
-        if (documentId != null) {
+        if (documentId != null && !associationExists(execution.getProcessInstanceId())) {
             processDocumentAssociationService.createProcessDocumentInstance(
                 execution.getProcessInstanceId(),
                 documentId.getId(),
                 getProcessNameFrom(execution)
             );
         }
+    }
+
+    private boolean associationExists(String processInstanceId) {
+        return processDocumentAssociationService.findProcessDocumentInstance(new OperatonProcessInstanceId(processInstanceId)).isPresent();
     }
 
     /**

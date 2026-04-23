@@ -23,8 +23,11 @@ import com.ritense.exporter.ExportFile
 import com.ritense.exporter.ExportPrettyPrinter
 import com.ritense.exporter.ExportResult
 import com.ritense.exporter.Exporter
+import com.ritense.exporter.request.CaseDefinitionBuildingBlockLinkExportRequest
 import com.ritense.exporter.request.CaseDefinitionExportRequest
 import com.ritense.exporter.request.DocumentDefinitionExportRequest
+import com.ritense.exporter.request.ExportRequest
+import com.ritense.exporter.request.StartableItemExportRequest
 import com.ritense.valtimo.contract.case_.CaseDefinitionId
 import org.springframework.transaction.annotation.Transactional
 
@@ -64,7 +67,12 @@ class CaseDefinitionExporter(
                 )
         )
 
-        return ExportResult(caseDefinitionExport, createDocumentDefinitionExportRequest(caseDefinition.id))
+        val relatedRequests = mutableSetOf<ExportRequest>()
+        relatedRequests.addAll(createDocumentDefinitionExportRequest(caseDefinition.id))
+        relatedRequests.add(CaseDefinitionBuildingBlockLinkExportRequest(caseDefinition.id))
+        relatedRequests.add(StartableItemExportRequest(caseDefinition.id))
+
+        return ExportResult(caseDefinitionExport, relatedRequests)
     }
 
     private fun createDocumentDefinitionExportRequest(caseDefinitionId: CaseDefinitionId): Set<DocumentDefinitionExportRequest>  {

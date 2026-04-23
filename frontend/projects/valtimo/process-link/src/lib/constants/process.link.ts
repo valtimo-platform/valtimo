@@ -24,6 +24,6 @@ const formSizeToCarbonModalSizeMap: Record<FormSize, CarbonModalSize> = {
   large: 'lg',
 };
 
-const UNSUPPORTED_PROCESS_LINK_TYPES_IN_BUILDING_BLOCK = ['form-flow', 'ui-component'];
+const UNSUPPORTED_PROCESS_LINK_TYPES_IN_BUILDING_BLOCK = ['ui-component'];
 
 export {formSizeToCarbonModalSizeMap, UNSUPPORTED_PROCESS_LINK_TYPES_IN_BUILDING_BLOCK};

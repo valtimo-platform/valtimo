@@ -16,7 +16,7 @@ As soon as the task detail modal is opened, the dot disappears. It is also clear
 
 ## Access control
 
-Access to the tasks can be configured through access control. More information about access control can be found [here](../../access-control/).
+Access to the tasks can be configured through access control. More information about access control can be found in the [access control documentation](../../access-control/).
 
 ### Resources and actions
 
@@ -45,6 +45,39 @@ Task identity links have no actions currently. As a result, they can only be use
                     "field": "groupId",
                     "operator": "==",
                     "value": "ROLE_USER"
+                }
+            ]
+        }
+    ]
+}
+```
+{% endcode %}
+
+</details>
+
+<details>
+
+<summary>Permission to view and complete tasks assigned to the user's teams</summary>
+
+This example uses the `${currentUserTeams}` expression, which resolves to the team keys of the current user. When a
+BPMN user task has a candidate group that matches a team key, this condition grants access to members of that team.
+
+{% code overflow="wrap" %}
+```json
+{
+    "resourceType": "com.ritense.valtimo.operaton.domain.OperatonTask",
+    "actions": ["view_list", "view", "complete"],
+    "roleKey": "ROLE_USER",
+    "conditions": [
+        {
+            "type": "container",
+            "resourceType": "com.ritense.valtimo.operaton.domain.OperatonIdentityLink",
+            "conditions": [
+                {
+                    "type": "field",
+                    "field": "groupId",
+                    "operator": "in",
+                    "value": "${currentUserTeams}"
                 }
             ]
         }

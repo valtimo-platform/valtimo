@@ -1,0 +1,131 @@
+[
+    {
+        "buildingBlockDefinitionKey": "income-check",
+        "buildingBlockDefinitionVersionTag": "1.0.0",
+        "pluginConfigurationMappings": {
+            "zakenapi": "3079d6fe-42e3-4f8f-a9db-52ce2507b7ee"
+        },
+        "inputMappings": [
+            {
+                "source": "doc:/applicantName",
+                "target": "doc:/applicantName"
+            },
+            {
+                "source": "doc:/householdSize",
+                "target": "doc:/householdSize"
+            },
+            {
+                "source": "doc:/parentZaakOmschrijving",
+                "target": "doc:/grandparentZaakOmschrijving"
+            }
+        ],
+        "outputMappings": [
+            {
+                "source": "doc:/eligibilityResult",
+                "target": "doc:/incomeEligibilityResult"
+            },
+            {
+                "source": "doc:/zaakEinddatumGeplandBB3",
+                "target": "doc:/zaakEinddatumGeplandBB3"
+            }
+        ]
+    },
+    {
+        "buildingBlockDefinitionKey": "household-verification",
+        "buildingBlockDefinitionVersionTag": "1.0.0",
+        "pluginConfigurationMappings": {
+            "zakenapi": "3079d6fe-42e3-4f8f-a9db-52ce2507b7ee"
+        },
+        "inputMappings": [
+            {
+                "source": "doc:/applicantName",
+                "target": "doc:/applicantName"
+            },
+            {
+                "source": "doc:/householdSize",
+                "target": "doc:/householdSize"
+            },
+            {
+                "source": "doc:/zaakOmschrijvingFromZgw",
+                "target": "doc:/parentZaakOmschrijving"
+            }
+        ],
+        "outputMappings": [
+            {
+                "source": "doc:/verifiedApplicant",
+                "target": "doc:/verifiedApplicant"
+            },
+            {
+                "source": "doc:/baseSubsidyAmount",
+                "target": "doc:/baseSubsidyAmount"
+            },
+            {
+                "source": "doc:/incomeEligibilityResult",
+                "target": "doc:/eligibilityResult"
+            },
+            {
+                "source": "doc:/zaakToelichtingBB2",
+                "target": "doc:/zaakToelichtingBB2"
+            },
+            {
+                "source": "doc:/zaakEinddatumGeplandBB3",
+                "target": "doc:/zaakEinddatumGeplandBB3"
+            }
+        ]
+    },
+    {
+        "buildingBlockDefinitionKey": "subsidy-calculator",
+        "buildingBlockDefinitionVersionTag": "1.0.0",
+        "pluginConfigurationMappings": {
+            "zakenapi": "3079d6fe-42e3-4f8f-a9db-52ce2507b7ee"
+        },
+        "inputMappings": [
+            {
+                "source": "doc:/applicantName",
+                "target": "doc:/applicantName"
+            },
+            {
+                "source": "doc:/householdSize",
+                "target": "doc:/householdSize"
+            }
+        ],
+        "outputMappings": [
+            {
+                "source": "doc:/verifiedApplicant",
+                "target": "doc:/verifiedApplicant"
+            },
+            {
+                "source": "doc:/finalSubsidyAmount",
+                "target": "doc:/calculatedSubsidy"
+            },
+            {
+                "source": "doc:/eligibilityResult",
+                "target": "doc:/eligibilityResult"
+            },
+            {
+                "source": "doc:/zaakOmschrijvingFromZgw",
+                "target": "doc:/zaakOmschrijvingFromZgw"
+            },
+            {
+                "source": "doc:/zaakToelichtingBB2",
+                "target": "doc:/zaakToelichtingBB2"
+            },
+            {
+                "source": "doc:/zaakEinddatumGeplandBB3",
+                "target": "doc:/zaakEinddatumGeplandBB3"
+            },
+            {
+                "source": "doc:/zgwActionSummary",
+                "target": "doc:/zgwActionSummary"
+            },
+            {
+                "source": "doc:/reviewerRemarks",
+                "target": "doc:/reviewerRemarks"
+            },
+            {
+                "source": "doc:/approvalDecision",
+                "target": "doc:/approvalDecision"
+            }
+        ]
+    }
+]

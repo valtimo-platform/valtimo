@@ -52,6 +52,7 @@
         cdsButton="secondary"
         [size]="obs.compactMode ? 'sm' : 'md'"
         (click)="navigateBack(null)"
+        [attr.data-test-id]="testIds.backButton"
       >
         <svg class="cds--btn__icon" cdsIcon="arrow--left" size="16"></svg>
 
@@ -64,6 +65,7 @@
           cdsButton="primary"
           (click)="deploy()"
           [size]="obs.compactMode ? 'sm' : 'md'"
+          [attr.data-test-id]="testIds.deployButton"
         >
           {{ 'decisions.deploy' | translate }}
 
