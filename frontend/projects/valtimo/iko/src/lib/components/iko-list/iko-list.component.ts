@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 import {CommonModule} from '@angular/common';
-import {Component, EventEmitter, inject, Input, OnDestroy, Output} from '@angular/core';
+import {Component, EventEmitter, Input, OnDestroy, Output} from '@angular/core';
 import {takeUntilDestroyed} from '@angular/core/rxjs-interop';
 import {ActivatedRoute, Router} from '@angular/router';
 import {BreadcrumbService, CarbonListModule, ColumnConfig} from '@valtimo/components';
@@ -28,6 +28,7 @@ import {
   switchMap,
   tap,
 } from 'rxjs';
+import {IkoSearchParams} from '../../models';
 import {IkoApiService} from '../../services';
 import {TranslatePipe} from '@ngx-translate/core';
 
@@ -38,30 +39,16 @@ import {TranslatePipe} from '@ngx-translate/core';
   imports: [CommonModule, CarbonListModule, TranslatePipe],
 })
 export class IkoListComponent implements OnDestroy {
-  @Input() ikoViewKey: string;
-  @Input() set searchParams(params: {paramKey: string; filters: Record<string, any>} | null) {
-    if (params) {
-      this._searchParams$.next(params);
-    }
+  @Input() public ikoViewKey: string;
+  @Input() public set searchParams(params: IkoSearchParams | null) {
+    if (params) this._searchParams$.next(params);
   }
 
-  @Output() rowSelected = new EventEmitter<{id: string; label: string}>();
+  @Output() public rowSelectedEvent = new EventEmitter<{id: string; label: string}>();
 
   public readonly loading$ = new BehaviorSubject<boolean>(true);
 
-  private readonly _searchParams$ = new ReplaySubject<{
-    paramKey: string;
-    filters: Record<string, any>;
-  }>(1);
-
-  // Trigger from route params when no input-driven search params are provided
-  private readonly _routeParamsSub = combineLatest([this.route.params, this.route.queryParams])
-    .pipe(takeUntilDestroyed())
-    .subscribe(([params, queryParams]) => {
-      if (!this.ikoViewKey && params?.key && params?.searchKey) {
-        this._searchParams$.next({paramKey: params.searchKey, filters: queryParams});
-      }
-    });
+  private readonly _searchParams$ = new ReplaySubject<IkoSearchParams>(1);
 
   public readonly listConfig$: Observable<{fields: ColumnConfig[]; items: any[]}> =
     this._searchParams$.pipe(
@@ -128,15 +115,13 @@ export class IkoListComponent implements OnDestroy {
     private readonly route: ActivatedRoute,
     private readonly router: Router
   ) {
-    // Trigger from route params when no input-driven search params are provided
     combineLatest([this.route.params, this.route.queryParams])
       .pipe(takeUntilDestroyed())
       .subscribe(([params, queryParams]) => {
         if (!this.ikoViewKey && params?.key && params?.searchKey) {
           this._searchParams$.next({paramKey: params.searchKey, filters: queryParams});
         }
-      }
-    );
+      });
   }
 
   public ngOnDestroy(): void {
@@ -144,9 +129,9 @@ export class IkoListComponent implements OnDestroy {
   }
 
   public onRowClicked(item: any): void {
-    if (this.rowSelected.observed) {
+    if (this.rowSelectedEvent.observed) {
       const keys = Object.keys(item).filter(k => k !== 'id');
-      this.rowSelected.emit({id: item.id, label: keys.length > 0 ? item[keys[0]] : item.id});
+      this.rowSelectedEvent.emit({id: item.id, label: keys.length > 0 ? item[keys[0]] : item.id});
     } else {
       this.router.navigate([`details/${item.id}`], {
         relativeTo: this.route,

@@ -2252,7 +2252,10 @@
     "pageTitle": "Beelden",
     "searchVia": "Zoeken via",
     "formio": {
-      "back": "Terug"
+      "back": "Terug",
+      "selectResult": "Selecteer een resultaat",
+      "selectedResult": "Geselecteerd resultaat",
+      "openInNewTab": "Open in nieuw tabblad"
     }
   },
   "ikoManagement": {

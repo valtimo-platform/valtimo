@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 import {AsyncPipe, CommonModule, NgClass, NgIf, NgTemplateOutlet} from '@angular/common';
-import {Component, EventEmitter, Input, OnInit, OnDestroy, Output} from '@angular/core';
+import {ChangeDetectorRef, Component, EventEmitter, HostBinding, Input, OnInit, OnDestroy, Output} from '@angular/core';
 import {FormsModule, ReactiveFormsModule} from '@angular/forms';
 import {ActivatedRoute, Router} from '@angular/router';
 import {Search16} from '@carbon/icons';
@@ -50,13 +50,12 @@ import {
   of,
   switchMap,
   take,
+  tap,
 } from 'rxjs';
 import {HttpErrorResponse} from '@angular/common/http';
-import {IkoSearchActionUser} from '../../models';
+import {IkoSearchActionUser, IkoSearchParams, SearchFormValue} from '../../models';
 import {IkoApiService} from '../../services';
 import {validateBsn} from '@valtimo/shared';
-
-type SearchFormValue = string | boolean | string[] | null | undefined;
 
 @Component({
   selector: 'valtimo-iko-search',
@@ -89,13 +88,14 @@ type SearchFormValue = string | boolean | string[] | null | undefined;
   ],
 })
 export class IkoSearchComponent implements OnInit, OnDestroy {
-  @Input() searchTitle: string;
-  @Input() embedded = false;
-  @Output() searchSubmit = new EventEmitter<{paramKey: string; filters: Record<string, any>}>();
+  @Input() public searchTitle: string;
+  @HostBinding('class.embedded') @Input() public embedded = false;
+
+  @Output() public searchSubmitEvent = new EventEmitter<IkoSearchParams>();
 
   private readonly _ikoViewKey$ = new BehaviorSubject<string | null>(null);
 
-  @Input() set ikoViewKey(key: string) {
+  @Input() public set ikoViewKey(key: string) {
     this._ikoViewKey$.next(key);
   }
 
@@ -159,10 +159,12 @@ export class IkoSearchComponent implements OnInit, OnDestroy {
       }
 
       return ikoSearchActions;
-    })
+    }),
+    tap(() => this.cdr.detectChanges())
   );
 
   constructor(
+    private readonly cdr: ChangeDetectorRef,
     private readonly route: ActivatedRoute,
     private readonly router: Router,
     private readonly pageTitleService: PageTitleService,
@@ -224,8 +226,8 @@ export class IkoSearchComponent implements OnInit, OnDestroy {
         }
       }
 
-      if (this.searchSubmit.observed) {
-        this.searchSubmit.emit({paramKey, filters: queryParams});
+      if (this.searchSubmitEvent.observed) {
+        this.searchSubmitEvent.emit({paramKey, filters: queryParams});
       } else {
         this.router.navigate([paramKey], {
           relativeTo: this.route,

@@ -7,33 +7,14 @@
             "label": "Zoek in IKO",
             "hideLabel": true,
             "customOptions": {
-                "ikoViewKey": "demo"
+                "ikoViewKey": "demo",
+                "resultListLabel": "Selecteer een persoon",
+                "selectedLabel": "Geselecteerd persoon",
+                "openInNewTabLabel": "Open persoon in nieuw tabblad",
+                "openInNewTabUrl": "/iko/demo/bsn/details/{id}"
             },
             "input": true,
             "tableView": true
-        },
-        {
-            "type": "htmlelement",
-            "key": "detailLink",
-            "tag": "a",
-            "attrs": [
-                {"attr": "href", "value": "/iko/demo/bsn/details/{{ data.ikoSearchResult }}"},
-                {"attr": "target", "value": "_blank"}
-            ],
-            "content": "Open persoon in nieuw tabblad (BSN: {{ data.ikoSearchResult }})",
-            "conditional": {
-                "show": true,
-                "when": "ikoSearchResult",
-                "eq": ""
-            },
-            "customConditional": "show = !!data.ikoSearchResult;"
-        },
-        {
-            "type": "htmlelement",
-            "key": "spacer",
-            "tag": "div",
-            "content": "&nbsp;",
-            "className": ""
         },
         {
             "type": "button",

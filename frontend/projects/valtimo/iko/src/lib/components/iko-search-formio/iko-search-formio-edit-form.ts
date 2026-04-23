@@ -51,6 +51,42 @@ export const ikoSearchFormioEditForm = () => ({
       },
     },
     {
+      type: 'textfield',
+      input: true,
+      key: 'customOptions.resultListLabel',
+      label: 'Result List Label',
+      placeholder: 'Selecteer een persoon',
+      tooltip:
+        'Label shown above the results table after searching. Defaults to "Selecteer een resultaat".',
+    },
+    {
+      type: 'textfield',
+      input: true,
+      key: 'customOptions.selectedLabel',
+      label: 'Selected Item Label',
+      placeholder: 'Geselecteerd persoon',
+      tooltip:
+        'Label shown above the selection box after selecting a result. Defaults to "Geselecteerd resultaat".',
+    },
+    {
+      type: 'textfield',
+      input: true,
+      key: 'customOptions.openInNewTabLabel',
+      label: 'Open in New Tab Button Text',
+      placeholder: 'Open persoon in nieuw tabblad',
+      tooltip:
+        'Text for the open-in-new-tab button. Defaults to "Open in nieuw tabblad". Leave empty to hide the button.',
+    },
+    {
+      type: 'textfield',
+      input: true,
+      key: 'customOptions.openInNewTabUrl',
+      label: 'Open in New Tab URL',
+      placeholder: '/iko/personen/details/{id}',
+      tooltip:
+        'URL template for the open-in-new-tab button. Use {id} as placeholder for the selected item ID. Leave empty to hide the button.',
+    },
+    {
       key: 'tableView',
       type: 'checkbox',
       label: 'Table View',

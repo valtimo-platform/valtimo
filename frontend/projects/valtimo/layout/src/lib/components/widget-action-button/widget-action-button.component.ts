@@ -48,11 +48,11 @@ export class WidgetActionButtonComponent {
     }
   }
 
-  public getNavigateToUrl(buttonAction: WidgetAction): string {
+  public getNavigateToUrl(buttonAction: WidgetAction): string | null {
     return this.resolveProperty(buttonAction?.navigateTo, this.resolvedData);
   }
 
-  private resolveProperty(property: string, data: {[key: string]: any}): string {
+  private resolveProperty(property: string, data: {[key: string]: any}): string | null {
     if (!property) return null;
     const resolved = data?.resolved || data;
     if (!resolved) return property;

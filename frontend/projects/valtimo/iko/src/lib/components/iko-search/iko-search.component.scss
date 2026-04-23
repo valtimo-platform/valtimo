@@ -1,5 +1,5 @@
 /*!
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -100,4 +100,16 @@ v-input {
   .cds--tab-content {
     margin-top: 24px;
   }
+}
+
+:host.embedded {
+  gap: 8px;
+}
+
+:host.embedded ::ng-deep .iko-search-tabs .cds--tab-content {
+  padding: 0;
+}
+
+:host.embedded ::ng-deep .query-group__search-button {
+  margin-left: auto;
 }
