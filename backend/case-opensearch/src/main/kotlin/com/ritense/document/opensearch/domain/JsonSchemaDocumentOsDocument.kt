@@ -21,14 +21,16 @@ import org.springframework.data.elasticsearch.annotations.Document
 import org.springframework.data.elasticsearch.annotations.Field
 import org.springframework.data.elasticsearch.annotations.FieldType
 import org.springframework.data.elasticsearch.annotations.InnerField
+import org.springframework.data.elasticsearch.annotations.MultiField
 import java.time.LocalDateTime
 
 /**
  * OpenSearch read model for [com.ritense.document.domain.impl.JsonSchemaDocument].
  *
- * Uses [Map] types instead of Jackson [com.fasterxml.jackson.databind.JsonNode] / [com.fasterxml.jackson.databind.node.ObjectNode]
- * to avoid needing custom converters — Spring Data OpenSearch serializes Map fields
- * to nested JSON objects natively.
+ * Uses [Map] types for dynamic content and typed classes for known structure fields.
+ * [definitionId] uses [OsDefinitionId] / [OsBlueprintId] so sub-fields are mapped as
+ * [FieldType.Keyword] directly — avoids unnecessary text analysis and removes the need
+ * for `.keyword` suffix in term queries.
  *
  * The [contentText] field holds space-separated leaf values from [content] and is indexed
  * as both [FieldType.Text] (for analyzed search) and [FieldType.Keyword] (for wildcard search
@@ -38,7 +40,7 @@ import java.time.LocalDateTime
 data class JsonSchemaDocumentOsDocument(
     @Id val id: String,
     @Field(type = FieldType.Object) val content: Map<String, Any?>?,
-    @Field(type = FieldType.Object) val definitionId: Map<String, Any?>?,
+    @Field(type = FieldType.Object) val definitionId: OsDefinitionId?,
     @Field(type = FieldType.Date, format = [], pattern = ["uuuu-MM-dd'T'HH:mm:ss.SSS"]) val createdOn: LocalDateTime?,
     @Field(type = FieldType.Date, format = [], pattern = ["uuuu-MM-dd'T'HH:mm:ss.SSS"]) val modifiedOn: LocalDateTime?,
     @Field(type = FieldType.Keyword) val createdBy: String?,
@@ -47,13 +49,32 @@ data class JsonSchemaDocumentOsDocument(
     @Field(type = FieldType.Keyword) val assigneeId: String?,
     @Field(type = FieldType.Keyword) val assigneeFullName: String?,
     @Field(type = FieldType.Keyword) val internalStatus: String?,
-    @Field(type = FieldType.Object) val caseTags: List<Map<String, Any?>>?,
-    @Field(type = FieldType.Object) val relations: Any?,
-    @Field(type = FieldType.Object) val relatedFiles: Any?,
+    @Field(type = FieldType.Object) val caseTags: List<OsCaseTag>?,
+    @Field(type = FieldType.Object, enabled = false) val relations: Any?,
+    @Field(type = FieldType.Object, enabled = false) val relatedFiles: Any?,
     @Field(type = FieldType.Date, format = [], pattern = ["uuuu-MM-dd'T'HH:mm:ss.SSS"]) val retentionDate: LocalDateTime?,
-    @Field(
-        type = FieldType.Text,
-        fields = [InnerField(suffix = "keyword", type = FieldType.Keyword)],
+    @MultiField(
+        mainField = Field(type = FieldType.Text),
+        otherFields = [InnerField(suffix = "keyword", type = FieldType.Keyword)],
     )
     val contentText: String? = null,
+)
+
+data class OsDefinitionId(
+    @Field(type = FieldType.Keyword) val name: String?,
+    @Field(type = FieldType.Long) val version: Long?,
+    @Field(type = FieldType.Object) val blueprintId: OsBlueprintId?,
+)
+
+data class OsBlueprintId(
+    @Field(type = FieldType.Keyword) val blueprintType: String?,
+    @Field(type = FieldType.Keyword) val blueprintKey: String?,
+    @Field(type = FieldType.Keyword) val blueprintVersionTag: String?,
+    @Field(type = FieldType.Boolean) val isBuildingBlock: Boolean?,
+    @Field(type = FieldType.Boolean) val isCase: Boolean?,
+)
+
+data class OsCaseTag(
+    @Field(type = FieldType.Keyword) val key: String?,
+    @Field(type = FieldType.Keyword) val name: String?,
 )

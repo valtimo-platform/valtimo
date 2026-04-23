@@ -17,56 +17,152 @@
 package com.ritense.document.opensearch.service
 
 import com.fasterxml.jackson.databind.ObjectMapper
-import com.ritense.authorization.AuthorizationContext.Companion.runWithoutAuthorization
 import com.ritense.document.domain.impl.JsonSchemaDocument
 import com.ritense.document.opensearch.domain.JsonSchemaDocumentOsDocument
 import com.ritense.document.opensearch.repository.JsonSchemaDocumentOpenSearchRepository
-import com.ritense.document.repository.impl.JsonSchemaDocumentRepository
 import io.github.oshai.kotlinlogging.KotlinLogging
-import org.springframework.data.domain.PageRequest
-import org.springframework.transaction.annotation.Transactional
+import jakarta.persistence.EntityManager
+import org.opensearch.client.RequestOptions
+import org.opensearch.client.RestHighLevelClient
+import org.opensearch.common.settings.Settings
+import org.springframework.transaction.PlatformTransactionManager
+import org.springframework.transaction.support.TransactionTemplate
+import java.util.UUID
+import java.util.concurrent.atomic.AtomicBoolean
+import java.util.concurrent.atomic.AtomicLong
+import java.util.concurrent.atomic.AtomicReference
 
 open class DocumentOpenSearchBackfillService(
-    private val jpaRepository: JsonSchemaDocumentRepository,
+    private val entityManager: EntityManager,
     private val openSearchRepository: JsonSchemaDocumentOpenSearchRepository,
     private val objectMapper: ObjectMapper,
+    private val restHighLevelClient: RestHighLevelClient,
+    private val transactionManager: PlatformTransactionManager,
 ) {
+
+    private val running = AtomicBoolean(false)
+    private val migratedCount = AtomicLong(0)
+    private val startTimeMillis = AtomicLong(0)
+    private val lastError = AtomicReference<String?>(null)
+
+    fun start(pageSize: Int = DEFAULT_PAGE_SIZE): Boolean {
+        if (!running.compareAndSet(false, true)) return false
+        migratedCount.set(0)
+        startTimeMillis.set(System.currentTimeMillis())
+        lastError.set(null)
+
+        Thread.startVirtualThread {
+            try {
+                backfill(pageSize)
+            } catch (e: Exception) {
+                lastError.set(e.message)
+                logger.error(e) { "Backfill failed" }
+            } finally {
+                running.set(false)
+            }
+        }
+        return true
+    }
+
+    fun status(): Map<String, Any?> {
+        val isRunning = running.get()
+        val count = migratedCount.get()
+        val elapsed = if (startTimeMillis.get() > 0) {
+            (System.currentTimeMillis() - startTimeMillis.get()) / 1000
+        } else 0L
+
+        return mapOf(
+            "running" to isRunning,
+            "migratedCount" to count,
+            "elapsedSeconds" to elapsed,
+            "error" to lastError.get(),
+        )
+    }
 
     /**
      * Copies all existing [JsonSchemaDocument] rows from the relational database to OpenSearch.
-     * Processes documents in pages of [pageSize] to avoid loading the entire table into memory.
+     * Uses keyset (cursor) pagination on the primary key to avoid offset-based scans, and clears
+     * the persistence context after every batch to prevent memory buildup.
      *
-     * @return total number of documents migrated
+     * Each batch runs in its own short-lived read-only transaction to avoid long-lived
+     * transaction snapshots that would prevent PostgreSQL vacuum from reclaiming space.
      */
-    @Transactional(readOnly = true)
     open fun backfill(pageSize: Int = DEFAULT_PAGE_SIZE): Long {
-        var page = 0
-        var total = 0L
-        do {
-            val slice = runWithoutAuthorization { jpaRepository.findAll(PageRequest.of(page++, pageSize)) }
-            if (slice.isEmpty) break
+        setRefreshInterval("-1")
 
-            val docs = mutableListOf<JsonSchemaDocumentOsDocument>()
-            for (jpaDoc in slice.content) {
-                try {
-                    val tree = objectMapper.valueToTree<com.fasterxml.jackson.databind.JsonNode>(jpaDoc)
-                    val doc = objectMapper.treeToValue(tree, JsonSchemaDocumentOsDocument::class.java)
-                    docs.add(doc.copy(contentText = extractLeafValues(tree.get("content"))))
-                } catch (e: Exception) {
-                    logger.warn(e) { "Failed to convert document to OpenSearch document — skipping" }
+        var lastId: UUID? = null
+        var total = 0L
+        val startTime = System.currentTimeMillis()
+        val txTemplate = TransactionTemplate(transactionManager).apply { isReadOnly = true }
+
+        try {
+            while (true) {
+                val batch = txTemplate.execute {
+                    val result = fetchBatch(lastId, pageSize)
+                    entityManager.clear()
+                    result
+                } ?: break
+                if (batch.isEmpty()) break
+
+                val docs = mutableListOf<JsonSchemaDocumentOsDocument>()
+                for (jpaDoc in batch) {
+                    try {
+                        val tree = objectMapper.valueToTree<com.fasterxml.jackson.databind.JsonNode>(jpaDoc)
+                        val doc = objectMapper.treeToValue(tree, JsonSchemaDocumentOsDocument::class.java)
+                        docs.add(doc.copy(contentText = extractLeafValues(tree.get("content"))))
+                    } catch (e: Exception) {
+                        logger.warn(e) { "Failed to convert document — skipping" }
+                    }
+                }
+                openSearchRepository.saveAll(docs)
+                total += docs.size
+                migratedCount.set(total)
+                lastId = batch.last().id().id
+
+                if (total % LOG_INTERVAL == 0L) {
+                    val elapsed = (System.currentTimeMillis() - startTime) / 1000
+                    logger.info { "Backfill progress: $total documents indexed (${elapsed}s elapsed)" }
                 }
             }
-            openSearchRepository.saveAll(docs)
-            total += docs.size
-            logger.debug { "Backfilled page ${page - 1}: ${docs.size} documents (total so far: $total)" }
-        } while (slice.hasNext())
+        } finally {
+            setRefreshInterval("1s")
+        }
 
-        logger.info { "Backfill complete: $total documents migrated to OpenSearch" }
+        val elapsed = (System.currentTimeMillis() - startTime) / 1000
+        logger.info { "Backfill complete: $total documents migrated to OpenSearch in ${elapsed}s" }
         return total
+    }
+
+    private fun fetchBatch(lastId: UUID?, pageSize: Int): List<JsonSchemaDocument> {
+        val query = if (lastId == null) {
+            entityManager.createQuery(
+                "SELECT d FROM JsonSchemaDocument d ORDER BY d.id.id",
+                JsonSchemaDocument::class.java
+            )
+        } else {
+            entityManager.createQuery(
+                "SELECT d FROM JsonSchemaDocument d WHERE d.id.id > :lastId ORDER BY d.id.id",
+                JsonSchemaDocument::class.java
+            ).setParameter("lastId", lastId)
+        }
+        return query.setMaxResults(pageSize).resultList
+    }
+
+    private fun setRefreshInterval(interval: String) {
+        try {
+            val request = org.opensearch.action.admin.indices.settings.put.UpdateSettingsRequest(INDEX_NAME)
+            request.settings(Settings.builder().put("index.refresh_interval", interval))
+            restHighLevelClient.indices().putSettings(request, RequestOptions.DEFAULT)
+            logger.debug { "Set index refresh_interval to $interval" }
+        } catch (e: Exception) {
+            logger.warn(e) { "Failed to set refresh_interval to $interval — continuing" }
+        }
     }
 
     companion object {
         private val logger = KotlinLogging.logger {}
-        const val DEFAULT_PAGE_SIZE = 500
+        private const val INDEX_NAME = "json_schema_document"
+        const val DEFAULT_PAGE_SIZE = 5000
+        private const val LOG_INTERVAL = 50_000L
     }
 }

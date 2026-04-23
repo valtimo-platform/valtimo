@@ -80,17 +80,25 @@ services:
         volumes:
             - gzac-database-data-mysql:/var/lib/mysql # persist data even if container shuts down
 
-    gzac-mongodb:
-        container_name: gzac-docker-compose-gzac-mongodb
-        image: mongo:8.2.6
+    gzac-opensearch:
+        container_name: gzac-docker-compose-gzac-opensearch
+        image: opensearchproject/opensearch:2.19.2
         ports:
-            - "27017:27017"
+            - "9200:9200"
+            - "9600:9600"
         environment:
-            MONGO_INITDB_ROOT_USERNAME: gzac
-            MONGO_INITDB_ROOT_PASSWORD: password
-            MONGO_INITDB_DATABASE: gzac
+            - discovery.type=single-node
+            - DISABLE_SECURITY_PLUGIN=true
+            - DISABLE_INSTALL_DEMO_CONFIG=true
+            - OPENSEARCH_JAVA_OPTS=-Xms256m -Xmx256m
         volumes:
-            - gzac-mongodb-data:/data/db
+            - gzac-opensearch-data:/usr/share/opensearch/data
+        healthcheck:
+            test: [ "CMD-SHELL", "curl -sf http://localhost:9200/_cluster/health || exit 1" ]
+            interval: 10s
+            timeout: 5s
+            retries: 12
+            start_period: 30s
 
     gzac-rabbitmq:
         image: rabbitmq:4.1.0-management
@@ -732,4 +740,4 @@ services:
 volumes:
     gzac-database-data:
     gzac-database-data-mysql:
-    gzac-mongodb-data:
+    gzac-opensearch-data:

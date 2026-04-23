@@ -45,16 +45,15 @@ import com.ritense.valtimo.contract.blueprint.BlueprintType
 import com.ritense.valtimo.contract.utils.RequestHelper
 import com.ritense.valtimo.contract.utils.SecurityUtils
 import org.apache.commons.lang3.NotImplementedException
-import org.opensearch.client.opensearch._types.FieldValue
-import org.opensearch.client.opensearch._types.query_dsl.Query
-import org.opensearch.client.json.JsonData
+import org.opensearch.index.query.QueryBuilder
+import org.opensearch.index.query.QueryBuilders
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageImpl
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Pageable
 import org.springframework.data.domain.Sort
 import org.springframework.data.elasticsearch.core.ElasticsearchOperations
-import org.springframework.data.elasticsearch.core.query.NativeQuery
+import org.springframework.data.elasticsearch.core.query.StringQuery
 import java.util.regex.Pattern
 
 class JsonSchemaDocumentOpenSearchService(
@@ -73,25 +72,25 @@ class JsonSchemaDocumentOpenSearchService(
         blueprintType: BlueprintType,
         pageable: Pageable
     ): Page<JsonSchemaDocument> {
-        val parts = mutableListOf<Query>()
+        val parts = mutableListOf<QueryBuilder>()
 
         parts.add(buildAuthQuery(JsonSchemaDocumentActionProvider.VIEW_LIST))
-        parts.add(termQuery(BLUEPRINT_TYPE_FIELD, blueprintType.name))
+        parts.add(QueryBuilders.termQuery(BLUEPRINT_TYPE_FIELD, blueprintType.name))
 
         if (!searchRequest.documentDefinitionName.isNullOrEmpty()) {
-            parts.add(termQuery(DEFINITION_NAME_FIELD, searchRequest.documentDefinitionName))
+            parts.add(QueryBuilders.termQuery(DEFINITION_NAME_FIELD, searchRequest.documentDefinitionName))
         }
         if (!searchRequest.createdBy.isNullOrEmpty()) {
-            parts.add(termQuery("createdBy", searchRequest.createdBy))
+            parts.add(QueryBuilders.termQuery("createdBy", searchRequest.createdBy))
         }
         if (searchRequest.sequence != null) {
-            parts.add(Query.of { q -> q.term { t -> t.field("sequence").value(FieldValue.of(searchRequest.sequence)) } })
+            parts.add(QueryBuilders.termQuery("sequence", searchRequest.sequence))
         }
         if (!searchRequest.globalSearchFilter.isNullOrEmpty()) {
             throw NotImplementedException("globalSearchFilter is not supported in the simple search — use the advanced search overload")
         }
         searchRequest.otherFilters?.forEach { sc ->
-            parts.add(termQuery("content.${sc.path}", sc.value))
+            parts.add(QueryBuilders.termQuery("content.${sc.path}", sc.value))
         }
 
         return executeSearch(andAll(parts), pageable)
@@ -172,7 +171,7 @@ class JsonSchemaDocumentOpenSearchService(
             advancedSearchRequest,
             JsonSchemaDocumentActionProvider.VIEW_LIST
         )
-        val countQuery = NativeQuery.builder().withQuery(combinedQuery).build()
+        val countQuery = StringQuery(combinedQuery.toString())
         return elasticsearchOperations.count(countQuery, JsonSchemaDocumentOsDocument::class.java)
     }
 
@@ -193,14 +192,14 @@ class JsonSchemaDocumentOpenSearchService(
         blueprintType: BlueprintType,
         searchRequest: AdvancedSearchRequest,
         action: Action<JsonSchemaDocument>
-    ): Query {
-        val parts = mutableListOf<Query>()
+    ): QueryBuilder {
+        val parts = mutableListOf<QueryBuilder>()
 
         parts.add(buildAuthQuery(action))
-        parts.add(termQuery(BLUEPRINT_TYPE_FIELD, blueprintType.name))
+        parts.add(QueryBuilders.termQuery(BLUEPRINT_TYPE_FIELD, blueprintType.name))
 
         if (!documentDefinitionName.isNullOrEmpty()) {
-            parts.add(termQuery(DEFINITION_NAME_FIELD, documentDefinitionName))
+            parts.add(QueryBuilders.termQuery(DEFINITION_NAME_FIELD, documentDefinitionName))
         }
 
         if (searchRequest.assigneeFilter != null && searchRequest.assigneeFilter != AssigneeFilter.ALL) {
@@ -212,8 +211,7 @@ class JsonSchemaDocumentOpenSearchService(
         }
 
         if (!searchRequest.caseTagsFilter.isNullOrEmpty()) {
-            val tagValues = searchRequest.caseTagsFilter.map { FieldValue.of(it) }
-            parts.add(Query.of { q -> q.terms { t -> t.field("caseTags.key").terms { tv -> tv.value(tagValues) } } })
+            parts.add(QueryBuilders.termsQuery("caseTags.key", searchRequest.caseTagsFilter.toList()))
         }
 
         if (!searchRequest.otherFilters.isNullOrEmpty()) {
@@ -223,57 +221,59 @@ class JsonSchemaDocumentOpenSearchService(
         val globalFilter = searchRequest.globalSearchFilter?.takeIf { it.isNotEmpty() }
         if (globalFilter != null) {
             // Use wildcard on contentText.keyword for partial-match behaviour equivalent to MongoDB text index
-            parts.add(Query.of { q ->
-                q.wildcard { w -> w.field("contentText.keyword").value("*${globalFilter.trim()}*").caseInsensitive(true) }
-            })
+            parts.add(QueryBuilders.wildcardQuery("contentText.keyword", "*${globalFilter.trim()}*").caseInsensitive(true))
         }
 
         return andAll(parts)
     }
 
-    private fun buildAuthQuery(action: Action<JsonSchemaDocument>): Query {
+    private fun buildAuthQuery(action: Action<JsonSchemaDocument>): QueryBuilder {
         val userRoles = SecurityUtils.getCurrentUserRoles().toSet()
         val permissions = authorizationService.getPermissions(JsonSchemaDocument::class.java, action)
             .filter { it.role.key in userRoles }
         return translator.toQuery(permissions, action)
     }
 
-    private fun buildAssigneeFilterQuery(filter: AssigneeFilter): Query {
+    private fun buildAssigneeFilterQuery(filter: AssigneeFilter): QueryBuilder {
         val userId = userManagementService.currentUser.username
         return when (filter) {
-            AssigneeFilter.MINE -> termQuery("assigneeId", userId)
-            AssigneeFilter.OPEN -> Query.of { q ->
-                q.bool { b -> b.mustNot(Query.of { q2 -> q2.exists { e -> e.field("assigneeId") } }) }
-            }
-            else -> Query.of { q -> q.matchAll { m -> m } }
+            AssigneeFilter.MINE -> QueryBuilders.termQuery("assigneeId", userId)
+            AssigneeFilter.OPEN -> QueryBuilders.boolQuery().mustNot(QueryBuilders.existsQuery("assigneeId"))
+            else -> QueryBuilders.matchAllQuery()
         }
     }
 
-    private fun buildStatusFilterQuery(statusKeys: Set<String?>): Query {
+    private fun buildStatusFilterQuery(statusKeys: Set<String?>): QueryBuilder {
         val conditions = statusKeys.map { key ->
             if (key.isNullOrEmpty()) {
-                Query.of { q -> q.bool { b -> b.mustNot(Query.of { q2 -> q2.exists { e -> e.field("internalStatus") } }) } }
+                QueryBuilders.boolQuery().mustNot(QueryBuilders.existsQuery("internalStatus"))
             } else {
-                termQuery("internalStatus", key)
+                QueryBuilders.termQuery("internalStatus", key)
             }
         }
         return if (conditions.size == 1) conditions.first()
-        else Query.of { q -> q.bool { b -> b.should(conditions).minimumShouldMatch("1") } }
+        else QueryBuilders.boolQuery().apply {
+            conditions.forEach { should(it) }
+            minimumShouldMatch(1)
+        }
     }
 
     private fun buildOtherFiltersQuery(
         filters: List<AdvancedSearchRequest.OtherFilter>,
         operator: SearchOperator?
-    ): Query {
+    ): QueryBuilder {
         val filterQueries = filters.map { buildSingleFilterQuery(it) }
         return if (operator == SearchOperator.OR) {
-            Query.of { q -> q.bool { b -> b.should(filterQueries).minimumShouldMatch("1") } }
+            QueryBuilders.boolQuery().apply {
+                filterQueries.forEach { should(it) }
+                minimumShouldMatch(1)
+            }
         } else {
             andAll(filterQueries)
         }
     }
 
-    private fun buildSingleFilterQuery(filter: AdvancedSearchRequest.OtherFilter): Query {
+    private fun buildSingleFilterQuery(filter: AdvancedSearchRequest.OtherFilter): QueryBuilder {
         val isDocField = filter.path.startsWith(DOC_PREFIX)
         val baseField = when {
             isDocField -> "content.${filter.path.removePrefix(DOC_PREFIX)}"
@@ -281,77 +281,59 @@ class JsonSchemaDocumentOpenSearchService(
             else -> throw IllegalArgumentException("Search path doesn't start with known prefix: '${filter.path}'")
         }
         // For doc: fields, string equality/like/in queries should target the .keyword sub-field
-        // (OpenSearch auto-maps string content fields as text with .keyword sub-field)
         val keywordField = if (isDocField) "$baseField.keyword" else baseField
 
         return when (filter.searchType) {
             DatabaseSearchType.EQUAL -> {
                 val values = filter.getValues<Any>()
                 when {
-                    values.isEmpty() -> Query.of { q -> q.matchAll { m -> m } }
+                    values.isEmpty() -> QueryBuilders.matchAllQuery()
                     values.size == 1 -> applyEqualQuery(keywordField, baseField, values[0])
-                    else -> Query.of { q ->
-                        q.bool { b ->
-                            b.should(values.map { applyEqualQuery(keywordField, baseField, it) }).minimumShouldMatch("1")
-                        }
+                    else -> QueryBuilders.boolQuery().apply {
+                        values.forEach { should(applyEqualQuery(keywordField, baseField, it)) }
+                        minimumShouldMatch(1)
                     }
                 }
             }
             DatabaseSearchType.LIKE -> {
                 val values = filter.getValues<Any>()
                 when {
-                    values.isEmpty() -> Query.of { q -> q.matchAll { m -> m } }
+                    values.isEmpty() -> QueryBuilders.matchAllQuery()
                     values.size == 1 -> applyLikeQuery(keywordField, values[0])
-                    else -> Query.of { q ->
-                        q.bool { b ->
-                            b.should(values.map { applyLikeQuery(keywordField, it) }).minimumShouldMatch("1")
-                        }
+                    else -> QueryBuilders.boolQuery().apply {
+                        values.forEach { should(applyLikeQuery(keywordField, it)) }
+                        minimumShouldMatch(1)
                     }
                 }
             }
-            DatabaseSearchType.IN -> {
-                val fieldValues = filter.getValues<Any>().map { OpenSearchPermissionConditionTranslator.toFieldValue(it) }
-                Query.of { q -> q.terms { t -> t.field(keywordField).terms { tv -> tv.value(fieldValues) } } }
-            }
+            DatabaseSearchType.IN -> QueryBuilders.termsQuery(keywordField, filter.getValues<Any>())
             DatabaseSearchType.GREATER_THAN_OR_EQUAL_TO ->
-                Query.of { q -> q.range { r -> r.untyped { u -> u.field(baseField).gte(JsonData.of(filter.rangeFromValue()!!)) } } }
+                QueryBuilders.rangeQuery(baseField).gte(filter.rangeFromValue()!!)
             DatabaseSearchType.LESS_THAN_OR_EQUAL_TO ->
-                Query.of { q -> q.range { r -> r.untyped { u -> u.field(baseField).lte(JsonData.of(filter.rangeToValue()!!)) } } }
+                QueryBuilders.rangeQuery(baseField).lte(filter.rangeToValue()!!)
             DatabaseSearchType.BETWEEN ->
-                Query.of { q ->
-                    q.range { r ->
-                        r.untyped { u ->
-                            u.field(baseField)
-                                .gte(JsonData.of(filter.rangeFromValue()!!))
-                                .lte(JsonData.of(filter.rangeToValue()!!))
-                        }
-                    }
-                }
+                QueryBuilders.rangeQuery(baseField).gte(filter.rangeFromValue()!!).lte(filter.rangeToValue()!!)
             else -> throw NotImplementedException("Search type '${filter.searchType}' is not supported in the OpenSearch search service")
         }
     }
 
-    private fun applyEqualQuery(keywordField: String, baseField: String, value: Any?): Query {
+    private fun applyEqualQuery(keywordField: String, baseField: String, value: Any?): QueryBuilder {
         return if (value is String) {
-            // Case-insensitive exact match using TermQuery with caseInsensitive flag
-            Query.of { q ->
-                q.term { t -> t.field(keywordField).value(FieldValue.of(value.trim())).caseInsensitive(true) }
-            }
+            // Case-insensitive exact match using term query with caseInsensitive flag
+            QueryBuilders.termQuery(keywordField, value.trim()).caseInsensitive(true)
         } else {
-            Query.of { q -> q.term { t -> t.field(baseField).value(OpenSearchPermissionConditionTranslator.toFieldValue(value)) } }
+            QueryBuilders.termQuery(baseField, value)
         }
     }
 
-    private fun applyLikeQuery(keywordField: String, value: Any?): Query {
+    private fun applyLikeQuery(keywordField: String, value: Any?): QueryBuilder {
         if (value !is String) {
             throw IllegalArgumentException("LIKE search requires String values, got: ${value?.javaClass?.simpleName}")
         }
-        return Query.of { q ->
-            q.wildcard { w -> w.field(keywordField).value("*${value.trim()}*").caseInsensitive(true) }
-        }
+        return QueryBuilders.wildcardQuery(keywordField, "*${value.trim()}*").caseInsensitive(true)
     }
 
-    private fun executeSearch(combinedQuery: Query, pageable: Pageable): Page<JsonSchemaDocument> {
+    private fun executeSearch(combinedQuery: QueryBuilder, pageable: Pageable): Page<JsonSchemaDocument> {
         val translatedSort = translateSort(pageable.sort)
         val effectivePageable = if (pageable.isPaged) {
             PageRequest.of(pageable.pageNumber, pageable.pageSize, translatedSort)
@@ -359,12 +341,12 @@ class JsonSchemaDocumentOpenSearchService(
             Pageable.unpaged(translatedSort)
         }
 
-        val countQuery = NativeQuery.builder().withQuery(combinedQuery).build()
-        val dataQuery = NativeQuery.builder().withQuery(combinedQuery).withPageable(effectivePageable).build()
+        val queryJson = combinedQuery.toString()
+        val dataQuery = StringQuery(queryJson, effectivePageable)
 
-        val total = elasticsearchOperations.count(countQuery, JsonSchemaDocumentOsDocument::class.java)
         val hits = elasticsearchOperations.search(dataQuery, JsonSchemaDocumentOsDocument::class.java)
-        val ids = hits.searchHits.map { it.id }
+        val total = hits.totalHits
+        val ids: List<String> = hits.searchHits.mapNotNull { it.id }
 
         val docIds = ids.map { JsonSchemaDocumentId.existingId(it) }
         val entities = runWithoutAuthorization { jpaRepository.findAllById(docIds) }
@@ -388,9 +370,6 @@ class JsonSchemaDocumentOpenSearchService(
         }.toList()
         return Sort.by(orders)
     }
-
-    private fun termQuery(field: String, value: String): Query =
-        Query.of { q -> q.term { t -> t.field(field).value(FieldValue.of(value)) } }
 
     companion object {
         private const val DOC_PREFIX = "doc:"

@@ -16,7 +16,7 @@ dependencies {
     implementation(platform(project(":backend:dependencies:valtimo-dependency-versions")))
 
     implementation(project(":backend:dependencies:valtimo-gzac-dependencies"))
-    implementation(project(":backend:case-mongodb"))
+    implementation(project(":backend:case-opensearch"))
     implementation(project(":backend:mail:local-mail"))
     implementation(project(":backend:document-generation:smartdocuments"))
     implementation(project(":backend:zgw:portaaltaak"))

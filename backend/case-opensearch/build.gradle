@@ -39,7 +39,7 @@ dependencies {
     implementation "io.github.oshai:kotlin-logging:${kotlinLoggingVersion}"
 
     // OpenSearch via spring-data-opensearch (Apache 2.0 licensed)
-    implementation "org.opensearch.client:spring-data-opensearch-starter-spring-boot:${springDataOpenSearchVersion}"
+    implementation "org.opensearch.client:spring-data-opensearch-starter:${springDataOpenSearchVersion}"
 
     annotationProcessor "org.springframework.boot:spring-boot-autoconfigure-processor"
 

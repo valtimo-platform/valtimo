@@ -45,7 +45,7 @@ import org.mockito.kotlin.whenever
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.elasticsearch.core.ElasticsearchOperations
 import org.springframework.data.elasticsearch.core.SearchHits
-import org.springframework.data.elasticsearch.core.query.NativeQuery
+import org.springframework.data.elasticsearch.core.query.StringQuery
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
 import org.springframework.security.core.authority.SimpleGrantedAuthority
 import org.springframework.security.core.context.SecurityContextHolder
@@ -103,8 +103,8 @@ class JsonSchemaDocumentOpenSearchServiceTest {
 
         val emptySearchHits: SearchHits<JsonSchemaDocumentOsDocument> = mock()
         whenever(emptySearchHits.searchHits).thenReturn(emptyList())
-        whenever(elasticsearchOperations.count(any(), eq(JsonSchemaDocumentOsDocument::class.java))).thenReturn(0L)
-        whenever(elasticsearchOperations.search(any<NativeQuery>(), eq(JsonSchemaDocumentOsDocument::class.java))).thenReturn(emptySearchHits)
+        whenever(emptySearchHits.totalHits).thenReturn(0L)
+        whenever(elasticsearchOperations.search(any<StringQuery>(), eq(JsonSchemaDocumentOsDocument::class.java))).thenReturn(emptySearchHits)
         whenever(jpaRepository.findAllById(any())).thenReturn(emptyList())
     }
 
@@ -115,55 +115,55 @@ class JsonSchemaDocumentOpenSearchServiceTest {
 
     @Test
     fun `search with globalSearchFilter includes contentText in query`() {
-        val queryCaptor = argumentCaptor<NativeQuery>()
+        val queryCaptor = argumentCaptor<StringQuery>()
         val emptySearchHits: SearchHits<JsonSchemaDocumentOsDocument> = mock()
         whenever(emptySearchHits.searchHits).thenReturn(emptyList())
-        whenever(elasticsearchOperations.count(queryCaptor.capture(), eq(JsonSchemaDocumentOsDocument::class.java))).thenReturn(0L)
-        whenever(elasticsearchOperations.search(any<NativeQuery>(), eq(JsonSchemaDocumentOsDocument::class.java))).thenReturn(emptySearchHits)
+        whenever(emptySearchHits.totalHits).thenReturn(0L)
+        whenever(elasticsearchOperations.search(queryCaptor.capture(), eq(JsonSchemaDocumentOsDocument::class.java))).thenReturn(emptySearchHits)
 
         val request = AdvancedSearchRequest().globalSearchFilter("Amsterdam")
         service.search("house", BlueprintType.CASE, request, PageRequest.of(0, 10))
 
         val capturedQuery = queryCaptor.firstValue
-        assertThat(capturedQuery.query.toString()).contains("contentText")
+        assertThat(capturedQuery.source).contains("contentText")
     }
 
     @Test
     fun `search without globalSearchFilter does not include contentText in query`() {
-        val queryCaptor = argumentCaptor<NativeQuery>()
+        val queryCaptor = argumentCaptor<StringQuery>()
         val emptySearchHits: SearchHits<JsonSchemaDocumentOsDocument> = mock()
         whenever(emptySearchHits.searchHits).thenReturn(emptyList())
-        whenever(elasticsearchOperations.count(queryCaptor.capture(), eq(JsonSchemaDocumentOsDocument::class.java))).thenReturn(0L)
-        whenever(elasticsearchOperations.search(any<NativeQuery>(), eq(JsonSchemaDocumentOsDocument::class.java))).thenReturn(emptySearchHits)
+        whenever(emptySearchHits.totalHits).thenReturn(0L)
+        whenever(elasticsearchOperations.search(queryCaptor.capture(), eq(JsonSchemaDocumentOsDocument::class.java))).thenReturn(emptySearchHits)
 
         val request = AdvancedSearchRequest()
         service.search("house", BlueprintType.CASE, request, PageRequest.of(0, 10))
 
         val capturedQuery = queryCaptor.firstValue
-        assertThat(capturedQuery.query.toString()).doesNotContain("contentText")
+        assertThat(capturedQuery.source).doesNotContain("contentText")
     }
 
     @Test
     fun `search with empty globalSearchFilter does not include contentText in query`() {
-        val queryCaptor = argumentCaptor<NativeQuery>()
+        val queryCaptor = argumentCaptor<StringQuery>()
         val emptySearchHits: SearchHits<JsonSchemaDocumentOsDocument> = mock()
         whenever(emptySearchHits.searchHits).thenReturn(emptyList())
-        whenever(elasticsearchOperations.count(queryCaptor.capture(), eq(JsonSchemaDocumentOsDocument::class.java))).thenReturn(0L)
-        whenever(elasticsearchOperations.search(any<NativeQuery>(), eq(JsonSchemaDocumentOsDocument::class.java))).thenReturn(emptySearchHits)
+        whenever(emptySearchHits.totalHits).thenReturn(0L)
+        whenever(elasticsearchOperations.search(queryCaptor.capture(), eq(JsonSchemaDocumentOsDocument::class.java))).thenReturn(emptySearchHits)
 
         val request = AdvancedSearchRequest().globalSearchFilter("")
         service.search("house", BlueprintType.CASE, request, PageRequest.of(0, 10))
 
         val capturedQuery = queryCaptor.firstValue
-        assertThat(capturedQuery.query.toString()).doesNotContain("contentText")
+        assertThat(capturedQuery.source).doesNotContain("contentText")
     }
 
     @Test
     fun `search result uses count from opensearch`() {
-        val emptySearchHits: SearchHits<JsonSchemaDocumentOsDocument> = mock()
-        whenever(emptySearchHits.searchHits).thenReturn(emptyList())
-        whenever(elasticsearchOperations.count(any(), eq(JsonSchemaDocumentOsDocument::class.java))).thenReturn(5L)
-        whenever(elasticsearchOperations.search(any<NativeQuery>(), eq(JsonSchemaDocumentOsDocument::class.java))).thenReturn(emptySearchHits)
+        val searchHits: SearchHits<JsonSchemaDocumentOsDocument> = mock()
+        whenever(searchHits.searchHits).thenReturn(emptyList())
+        whenever(searchHits.totalHits).thenReturn(5L)
+        whenever(elasticsearchOperations.search(any<StringQuery>(), eq(JsonSchemaDocumentOsDocument::class.java))).thenReturn(searchHits)
 
         val request = AdvancedSearchRequest().globalSearchFilter("test")
         val page = service.search("house", BlueprintType.CASE, request, PageRequest.of(0, 10))

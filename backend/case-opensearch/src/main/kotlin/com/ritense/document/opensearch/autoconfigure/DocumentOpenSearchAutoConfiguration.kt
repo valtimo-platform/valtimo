@@ -17,6 +17,7 @@
 package com.ritense.document.opensearch.autoconfigure
 
 import com.fasterxml.jackson.databind.ObjectMapper
+import io.github.oshai.kotlinlogging.KotlinLogging
 import com.ritense.authorization.AuthorizationService
 import com.ritense.document.autoconfigure.DocumentAutoConfiguration
 import com.ritense.document.opensearch.authorization.OpenSearchAuthorizationEntityMapper
@@ -96,11 +97,13 @@ class DocumentOpenSearchAutoConfiguration {
     @Bean
     @ConditionalOnMissingBean
     fun documentOpenSearchBackfillService(
-        jpaRepository: JsonSchemaDocumentRepository,
+        entityManager: jakarta.persistence.EntityManager,
         openSearchRepository: JsonSchemaDocumentOpenSearchRepository,
         objectMapper: ObjectMapper,
+        restHighLevelClient: org.opensearch.client.RestHighLevelClient,
+        transactionManager: org.springframework.transaction.PlatformTransactionManager,
     ): DocumentOpenSearchBackfillService =
-        DocumentOpenSearchBackfillService(jpaRepository, openSearchRepository, objectMapper)
+        DocumentOpenSearchBackfillService(entityManager, openSearchRepository, objectMapper, restHighLevelClient, transactionManager)
 
     @Order(294)
     @Bean
@@ -146,10 +149,20 @@ class DocumentOpenSearchAutoConfiguration {
     @Bean
     fun documentOpenSearchIndexInitializer(elasticsearchOperations: ElasticsearchOperations): ApplicationRunner =
         ApplicationRunner {
-            val indexOps = elasticsearchOperations.indexOps(JsonSchemaDocumentOsDocument::class.java)
-            if (!indexOps.exists()) {
-                indexOps.create()
-                indexOps.putMapping(indexOps.createMapping(JsonSchemaDocumentOsDocument::class.java))
+            try {
+                val indexOps = elasticsearchOperations.indexOps(JsonSchemaDocumentOsDocument::class.java)
+                if (!indexOps.exists()) {
+                    val settings = org.springframework.data.elasticsearch.core.document.Document.create()
+                    settings["index.number_of_replicas"] = 0
+                    indexOps.create(settings)
+                    indexOps.putMapping(indexOps.createMapping(JsonSchemaDocumentOsDocument::class.java))
+                }
+            } catch (e: Exception) {
+                logger.warn(e) { "Failed to initialize OpenSearch index — is OpenSearch running?" }
             }
         }
+
+    companion object {
+        private val logger = KotlinLogging.logger {}
+    }
 }

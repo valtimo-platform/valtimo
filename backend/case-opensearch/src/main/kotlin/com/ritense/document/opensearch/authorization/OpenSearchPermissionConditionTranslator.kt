@@ -32,9 +32,9 @@ import com.ritense.document.domain.impl.JsonSchemaDocument
 import com.ritense.document.repository.impl.JsonSchemaDocumentRepository
 import com.ritense.valtimo.contract.authorization.CurrentUserExpressionHandler
 import io.github.oshai.kotlinlogging.KotlinLogging
-import org.opensearch.client.opensearch._types.FieldValue
-import org.opensearch.client.opensearch._types.query_dsl.Query
-import org.opensearch.client.json.JsonData
+import org.opensearch.index.query.BoolQueryBuilder
+import org.opensearch.index.query.QueryBuilder
+import org.opensearch.index.query.QueryBuilders
 
 class OpenSearchPermissionConditionTranslator(
     private val openSearchMappers: List<OpenSearchAuthorizationEntityMapper<*, *>>,
@@ -43,13 +43,13 @@ class OpenSearchPermissionConditionTranslator(
 ) {
 
     /**
-     * Translates a list of [Permission]s into a single OpenSearch [Query] that, when applied
+     * Translates a list of [Permission]s into a single OpenSearch [QueryBuilder] that, when applied
      * to a search, returns only the documents the current user is allowed to see for [action].
      *
      * Permissions are OR-ed; conditions within a permission are AND-ed.
      * Returns a deny-all query if no permissions match [action].
      */
-    fun toQuery(permissions: List<Permission>, action: Action<*>): Query {
+    fun toQuery(permissions: List<Permission>, action: Action<*>): QueryBuilder {
         val matching = permissions.filter {
             it.resourceType == JsonSchemaDocument::class.java && it.actions.contains(action)
         }
@@ -65,35 +65,41 @@ class OpenSearchPermissionConditionTranslator(
         val result = if (perPermissionQueries.size == 1) {
             perPermissionQueries.first()
         } else {
-            Query.of { q -> q.bool { b -> b.should(perPermissionQueries).minimumShouldMatch("1") } }
+            QueryBuilders.boolQuery().apply {
+                perPermissionQueries.forEach { should(it) }
+                minimumShouldMatch(1)
+            }
         }
         logger.debug { "toQuery: generated query for action=$action" }
         return result
     }
 
-    private fun translateCondition(condition: PermissionCondition): Query = when (condition) {
+    private fun translateCondition(condition: PermissionCondition): QueryBuilder = when (condition) {
         is FieldPermissionCondition<*>      -> translateField(condition)
         is ExpressionPermissionCondition<*> -> translateExpression(condition)
         is ContainerPermissionCondition<*>  -> translateContainer(condition)
         else -> throw IllegalArgumentException("Unknown permission condition type: ${condition::class.qualifiedName}")
     }
 
-    private fun translateField(cond: FieldPermissionCondition<*>): Query {
-        val osField = jpaToOsField(cond.field)
+    private fun translateField(cond: FieldPermissionCondition<*>): QueryBuilder {
+        val baseField = jpaToOsField(cond.field)
         val value = resolveFieldValue(cond)
+        val osField = if (isDynamicTextField(baseField, cond.operator, value)) "$baseField.keyword" else baseField
         return Companion.applyOperator(osField, cond.operator, value)
     }
 
-    private fun translateExpression(cond: ExpressionPermissionCondition<*>): Query {
+    private fun translateExpression(cond: ExpressionPermissionCondition<*>): QueryBuilder {
         val dotPath = cond.path.removePrefix("$.").replace("/", ".")
-        val osField = "${jpaToOsField(cond.field)}.$dotPath"
+        val baseField = "${jpaToOsField(cond.field)}.$dotPath"
         val value = CurrentUserExpressionHandler.resolveValue(cond.value)
+        // Content sub-fields are dynamically mapped as text — use .keyword for string term queries
+        val osField = if (isDynamicTextField(baseField, cond.operator, value)) "$baseField.keyword" else baseField
         logger.debug { "translateExpression: field=${cond.field} → osField=$osField, op=${cond.operator}, value=$value (${value?.javaClass?.simpleName})" }
         return Companion.applyOperator(osField, cond.operator, value)
     }
 
     @Suppress("UNCHECKED_CAST")
-    private fun translateContainer(cond: ContainerPermissionCondition<*>): Query {
+    private fun translateContainer(cond: ContainerPermissionCondition<*>): QueryBuilder {
         val osMapper = openSearchMappers.find {
             it.supports(JsonSchemaDocument::class.java, cond.resourceType)
         } as? OpenSearchAuthorizationEntityMapper<JsonSchemaDocument, Any>
@@ -115,7 +121,7 @@ class OpenSearchPermissionConditionTranslator(
      * [OpenSearchAuthorizationEntityMapper]. Uses JPA to find matching document IDs and
      * returns an `ids` query.
      */
-    private fun jpaFallback(cond: ContainerPermissionCondition<*>): Query {
+    private fun jpaFallback(cond: ContainerPermissionCondition<*>): QueryBuilder {
         val syntheticPermission = Permission(
             resourceType = JsonSchemaDocument::class.java,
             actions = mutableListOf(Action<Any>(Action.IGNORE)),
@@ -129,7 +135,7 @@ class OpenSearchPermissionConditionTranslator(
         val allowedIds: List<String> = runWithoutAuthorization {
             documentRepository.findAll(spec).map { doc -> doc.id().toString() }
         }
-        return Query.of { q -> q.ids { i -> i.values(allowedIds) } }
+        return QueryBuilders.idsQuery().addIds(*allowedIds.toTypedArray())
     }
 
     private fun resolveFieldValue(cond: FieldPermissionCondition<*>): Any? =
@@ -142,50 +148,38 @@ class OpenSearchPermissionConditionTranslator(
     companion object {
         private val logger = KotlinLogging.logger {}
 
-        fun applyOperator(field: String, op: PermissionConditionOperator, value: Any?): Query =
+        fun applyOperator(field: String, op: PermissionConditionOperator, value: Any?): QueryBuilder =
             when (op) {
                 PermissionConditionOperator.EQUAL_TO -> {
                     if (value == null) {
-                        Query.of { q -> q.bool { b -> b.mustNot(Query.of { q2 -> q2.exists { e -> e.field(field) } }) } }
+                        QueryBuilders.boolQuery().mustNot(QueryBuilders.existsQuery(field))
                     } else {
-                        Query.of { q -> q.term { t -> t.field(field).value(toFieldValue(value)) } }
+                        QueryBuilders.termQuery(field, value)
                     }
                 }
                 PermissionConditionOperator.NOT_EQUAL_TO -> {
                     if (value == null) {
-                        Query.of { q -> q.exists { e -> e.field(field) } }
+                        QueryBuilders.existsQuery(field)
                     } else {
-                        Query.of { q -> q.bool { b -> b.mustNot(Query.of { q2 -> q2.term { t -> t.field(field).value(toFieldValue(value)) } }) } }
+                        QueryBuilders.boolQuery().mustNot(QueryBuilders.termQuery(field, value))
                     }
                 }
                 PermissionConditionOperator.GREATER_THAN ->
-                    Query.of { q -> q.range { r -> r.untyped { u -> u.field(field).gt(JsonData.of(value)) } } }
+                    QueryBuilders.rangeQuery(field).gt(value)
                 PermissionConditionOperator.GREATER_THAN_OR_EQUAL_TO ->
-                    Query.of { q -> q.range { r -> r.untyped { u -> u.field(field).gte(JsonData.of(value)) } } }
+                    QueryBuilders.rangeQuery(field).gte(value)
                 PermissionConditionOperator.LESS_THAN ->
-                    Query.of { q -> q.range { r -> r.untyped { u -> u.field(field).lt(JsonData.of(value)) } } }
+                    QueryBuilders.rangeQuery(field).lt(value)
                 PermissionConditionOperator.LESS_THAN_OR_EQUAL_TO ->
-                    Query.of { q -> q.range { r -> r.untyped { u -> u.field(field).lte(JsonData.of(value)) } } }
+                    QueryBuilders.rangeQuery(field).lte(value)
                 PermissionConditionOperator.LIST_CONTAINS ->
-                    Query.of { q -> q.term { t -> t.field(field).value(toFieldValue(value)) } }
+                    QueryBuilders.termQuery(field, value)
                 PermissionConditionOperator.IN -> {
                     val collection = value as? Collection<*>
                         ?: throw IllegalArgumentException("IN operator requires a Collection value")
-                    val fieldValues = collection.map { toFieldValue(it) }
-                    Query.of { q -> q.terms { t -> t.field(field).terms { tv -> tv.value(fieldValues) } } }
+                    QueryBuilders.termsQuery(field, collection.toList())
                 }
             }
-
-        fun toFieldValue(value: Any?): FieldValue = when (value) {
-            null -> FieldValue.NULL
-            is String -> FieldValue.of(value)
-            is Boolean -> FieldValue.of(value)
-            is Long -> FieldValue.of(value)
-            is Int -> FieldValue.of(value.toLong())
-            is Double -> FieldValue.of(value)
-            is Float -> FieldValue.of(value.toDouble())
-            else -> FieldValue.of(value.toString())
-        }
 
         /**
          * Maps JPA entity field names (as used in [FieldPermissionCondition.field]) to
@@ -203,12 +197,29 @@ class OpenSearchPermissionConditionTranslator(
 
         fun jpaToOsField(jpaField: String): String = fieldMappings[jpaField] ?: jpaField
 
-        fun denyAll(): Query = Query.of { q -> q.ids { i -> i.values(emptyList()) } }
-        fun noFilter(): Query = Query.of { q -> q.matchAll { m -> m } }
-        fun andAll(list: List<Query>): Query = when {
+        /**
+         * Content sub-fields use dynamic mapping (text + keyword). String term queries
+         * (EQUAL_TO, NOT_EQUAL_TO, LIST_CONTAINS, IN) need the .keyword sub-field for exact match.
+         */
+        fun isDynamicTextField(field: String, op: PermissionConditionOperator, value: Any?): Boolean {
+            if (!field.startsWith("content.")) return false
+            if (value == null) return false
+            val isStringValue = value is String || (value is Collection<*> && value.firstOrNull() is String)
+            val isTermOp = op in setOf(
+                PermissionConditionOperator.EQUAL_TO,
+                PermissionConditionOperator.NOT_EQUAL_TO,
+                PermissionConditionOperator.LIST_CONTAINS,
+                PermissionConditionOperator.IN,
+            )
+            return isStringValue && isTermOp
+        }
+
+        fun denyAll(): QueryBuilder = QueryBuilders.idsQuery()
+        fun noFilter(): QueryBuilder = QueryBuilders.matchAllQuery()
+        fun andAll(list: List<QueryBuilder>): QueryBuilder = when {
             list.isEmpty() -> noFilter()
             list.size == 1 -> list.first()
-            else -> Query.of { q -> q.bool { b -> b.must(list) } }
+            else -> QueryBuilders.boolQuery().apply { list.forEach { must(it) } }
         }
     }
 }

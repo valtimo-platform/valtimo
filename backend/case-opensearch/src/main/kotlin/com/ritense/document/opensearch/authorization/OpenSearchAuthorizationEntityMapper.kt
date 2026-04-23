@@ -17,13 +17,13 @@
 package com.ritense.document.opensearch.authorization
 
 import com.ritense.authorization.permission.condition.PermissionCondition
-import org.opensearch.client.opensearch._types.query_dsl.Query
+import org.opensearch.index.query.QueryBuilder
 
 /**
  * OpenSearch equivalent of [com.ritense.authorization.AuthorizationEntityMapper].
  *
  * Translates a [com.ritense.authorization.permission.condition.ContainerPermissionCondition]
- * on entity type [TO] into an OpenSearch [Query] that filters [FROM] documents.
+ * on entity type [TO] into an OpenSearch [QueryBuilder] that filters [FROM] documents.
  *
  * Implement this interface and register the implementation as a Spring bean to add support
  * for a new container relationship without modifying the core translator.
@@ -31,11 +31,11 @@ import org.opensearch.client.opensearch._types.query_dsl.Query
 interface OpenSearchAuthorizationEntityMapper<FROM : Any, TO : Any> {
 
     /**
-     * Given conditions on the [TO] entity type, returns an OpenSearch [Query] that filters
+     * Given conditions on the [TO] entity type, returns an OpenSearch [QueryBuilder] that filters
      * [FROM] documents satisfying those conditions, or `null` if no filter is needed
      * (i.e. any [FROM] document qualifies regardless of [conditions]).
      */
-    fun mapQuery(conditions: List<PermissionCondition>): Query?
+    fun mapQuery(conditions: List<PermissionCondition>): QueryBuilder?
 
     fun supports(fromClass: Class<*>, toClass: Class<*>): Boolean
 }

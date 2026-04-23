@@ -2,7 +2,7 @@ logging:
     file:
         name: /tmp/spring.log
     level:
-        com.ritense.document.mongodb.authorization: DEBUG
+        com.ritense.document.opensearch: DEBUG
 
 management:
     endpoints:
@@ -31,9 +31,8 @@ spring:
             enabled: false
         livereload:
             enabled: false
-    data:
-        mongodb:
-            uri: ${SPRING_DATA_MONGODB_URI:mongodb://gzac:password@localhost:27017/gzac?authSource=admin}
+    elasticsearch:
+        uris: ${SPRING_ELASTICSEARCH_URIS:http://localhost:9200}
     datasource:
         type: com.zaxxer.hikari.HikariDataSource
         driver-class-name: ${SPRING_DATASOURCE_DRIVER_CLASS_NAME:org.postgresql.Driver}
@@ -121,6 +120,8 @@ spring:
     autoconfigure:
         exclude:
             - org.springframework.boot.actuate.autoconfigure.metrics.web.tomcat.TomcatMetricsAutoConfiguration
+            - org.springframework.boot.autoconfigure.data.elasticsearch.ElasticsearchDataAutoConfiguration
+            - org.springframework.boot.autoconfigure.elasticsearch.ElasticsearchClientAutoConfiguration
     cloud:
         function:
             definition: kotlinInboxCloudEventConsumer

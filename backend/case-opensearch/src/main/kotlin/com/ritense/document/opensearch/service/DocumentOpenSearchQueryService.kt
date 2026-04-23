@@ -24,13 +24,13 @@ import com.ritense.document.opensearch.authorization.OpenSearchPermissionConditi
 import com.ritense.document.opensearch.domain.JsonSchemaDocumentOsDocument
 import com.ritense.document.service.JsonSchemaDocumentActionProvider
 import com.ritense.valtimo.contract.utils.SecurityUtils
-import org.opensearch.client.opensearch._types.FieldValue
-import org.opensearch.client.opensearch._types.query_dsl.Query
+import org.opensearch.index.query.QueryBuilder
+import org.opensearch.index.query.QueryBuilders
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageImpl
 import org.springframework.data.domain.Pageable
 import org.springframework.data.elasticsearch.core.ElasticsearchOperations
-import org.springframework.data.elasticsearch.core.query.NativeQuery
+import org.springframework.data.elasticsearch.core.query.StringQuery
 
 class DocumentOpenSearchQueryService(
     private val elasticsearchOperations: ElasticsearchOperations,
@@ -44,17 +44,14 @@ class DocumentOpenSearchQueryService(
      */
     fun findAllByDefinitionName(definitionName: String, pageable: Pageable): Page<JsonSchemaDocumentOsDocument> {
         val authQuery = buildAuthQuery(JsonSchemaDocumentActionProvider.VIEW_LIST)
-        val definitionFilter = Query.of { q ->
-            q.term { t -> t.field("definitionId.name").value(FieldValue.of(definitionName)) }
-        }
+        val definitionFilter = QueryBuilders.termQuery("definitionId.name", definitionName)
         val combined = andAll(listOf(authQuery, definitionFilter))
 
-        val countQuery = NativeQuery.builder().withQuery(combined).build()
-        val dataQuery = NativeQuery.builder().withQuery(combined).withPageable(pageable).build()
+        val dataQuery = StringQuery(combined.toString(), pageable)
 
-        val total = elasticsearchOperations.count(countQuery, JsonSchemaDocumentOsDocument::class.java)
         val hits = elasticsearchOperations.search(dataQuery, JsonSchemaDocumentOsDocument::class.java)
-        val content = hits.searchHits.mapNotNull { it.content }
+        val total = hits.totalHits
+        val content = hits.searchHits.mapNotNull { hit -> hit.content }
         return PageImpl(content, pageable, total)
     }
 
@@ -64,15 +61,15 @@ class DocumentOpenSearchQueryService(
      */
     fun findById(id: String): JsonSchemaDocumentOsDocument? {
         val authQuery = buildAuthQuery(JsonSchemaDocumentActionProvider.VIEW)
-        val idFilter = Query.of { q -> q.ids { i -> i.values(listOf(id)) } }
+        val idFilter = QueryBuilders.idsQuery().addIds(id)
         val combined = andAll(listOf(authQuery, idFilter))
 
-        val query = NativeQuery.builder().withQuery(combined).build()
+        val query = StringQuery(combined.toString())
         val hits = elasticsearchOperations.search(query, JsonSchemaDocumentOsDocument::class.java)
         return hits.searchHits.firstOrNull()?.content
     }
 
-    private fun buildAuthQuery(action: Action<JsonSchemaDocument>): Query {
+    private fun buildAuthQuery(action: Action<JsonSchemaDocument>): QueryBuilder {
         val userRoles = SecurityUtils.getCurrentUserRoles().toSet()
         val permissions = authorizationService.getPermissions(JsonSchemaDocument::class.java, action)
             .filter { it.role.key in userRoles }

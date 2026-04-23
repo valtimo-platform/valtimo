@@ -24,7 +24,7 @@ import com.ritense.document.opensearch.authorization.OpenSearchAuthorizationEnti
 import com.ritense.document.opensearch.authorization.OpenSearchPermissionConditionTranslator.Companion.andAll
 import com.ritense.document.opensearch.authorization.OpenSearchPermissionConditionTranslator.Companion.applyOperator
 import com.ritense.valtimo.contract.authorization.CurrentUserExpressionHandler
-import org.opensearch.client.opensearch._types.query_dsl.Query
+import org.opensearch.index.query.QueryBuilder
 
 /**
  * Handles [com.ritense.authorization.permission.condition.ContainerPermissionCondition]
@@ -34,7 +34,7 @@ import org.opensearch.client.opensearch._types.query_dsl.Query
  */
 class JsonSchemaDocumentDefinitionOpenSearchMapper : OpenSearchAuthorizationEntityMapper<JsonSchemaDocument, JsonSchemaDocumentDefinition> {
 
-    override fun mapQuery(conditions: List<PermissionCondition>): Query? {
+    override fun mapQuery(conditions: List<PermissionCondition>): QueryBuilder? {
         if (conditions.isEmpty()) return null
 
         val queries = conditions.map { condition ->

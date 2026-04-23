@@ -22,6 +22,8 @@ import com.ritense.document.domain.impl.request.NewDocumentRequest
 import com.ritense.document.domain.search.AdvancedSearchRequest
 import com.ritense.document.opensearch.BaseOpenSearchIntegrationTest
 import com.ritense.document.opensearch.domain.JsonSchemaDocumentOsDocument
+import com.ritense.document.opensearch.domain.OsBlueprintId
+import com.ritense.document.opensearch.domain.OsDefinitionId
 import com.ritense.document.service.DocumentSearchService
 import com.ritense.valtimo.contract.blueprint.BlueprintType
 import org.assertj.core.api.Assertions.assertThat
@@ -120,9 +122,16 @@ class JsonSchemaDocumentOpenSearchServiceIntTest : BaseOpenSearchIntegrationTest
             JsonSchemaDocumentOsDocument(
                 id = jpaDoc.id().toString(),
                 content = mapOf("street" to street),
-                definitionId = mapOf(
-                    "name" to "house",
-                    "blueprintId" to mapOf("blueprintType" to "CASE"),
+                definitionId = OsDefinitionId(
+                    name = "house",
+                    version = null,
+                    blueprintId = OsBlueprintId(
+                        blueprintType = "CASE",
+                        blueprintKey = null,
+                        blueprintVersionTag = null,
+                        isBuildingBlock = null,
+                        isCase = null,
+                    ),
                 ),
                 createdOn = null,
                 modifiedOn = null,

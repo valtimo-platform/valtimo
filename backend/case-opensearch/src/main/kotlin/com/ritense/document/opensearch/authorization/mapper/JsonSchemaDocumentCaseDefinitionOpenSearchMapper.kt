@@ -24,8 +24,8 @@ import com.ritense.document.opensearch.authorization.OpenSearchAuthorizationEnti
 import com.ritense.document.opensearch.authorization.OpenSearchPermissionConditionTranslator.Companion.andAll
 import com.ritense.document.opensearch.authorization.OpenSearchPermissionConditionTranslator.Companion.applyOperator
 import com.ritense.valtimo.contract.authorization.CurrentUserExpressionHandler
-import org.opensearch.client.opensearch._types.FieldValue
-import org.opensearch.client.opensearch._types.query_dsl.Query
+import org.opensearch.index.query.QueryBuilder
+import org.opensearch.index.query.QueryBuilders
 
 /**
  * Handles [com.ritense.authorization.permission.condition.ContainerPermissionCondition]
@@ -35,7 +35,7 @@ import org.opensearch.client.opensearch._types.query_dsl.Query
  */
 class JsonSchemaDocumentCaseDefinitionOpenSearchMapper : OpenSearchAuthorizationEntityMapper<JsonSchemaDocument, CaseDefinition> {
 
-    override fun mapQuery(conditions: List<PermissionCondition>): Query? {
+    override fun mapQuery(conditions: List<PermissionCondition>): QueryBuilder? {
         if (conditions.isEmpty()) return null
 
         val conditionQueries = conditions.map { condition ->
@@ -54,10 +54,8 @@ class JsonSchemaDocumentCaseDefinitionOpenSearchMapper : OpenSearchAuthorization
         }
 
         // Constrain to CASE blueprint type to exclude BUILDING_BLOCK documents
-        val typeCriteria = Query.of { q ->
-            q.term { t -> t.field("definitionId.blueprintId.blueprintType").value(FieldValue.of("CASE")) }
-        }
-        return andAll(conditionQueries + typeCriteria)
+        val typeQuery = QueryBuilders.termQuery("definitionId.blueprintId.blueprintType", "CASE")
+        return andAll(conditionQueries + typeQuery)
     }
 
     override fun supports(fromClass: Class<*>, toClass: Class<*>): Boolean =

@@ -18,6 +18,7 @@ package com.ritense.document.opensearch.web
 
 import com.ritense.document.opensearch.service.DocumentOpenSearchBackfillService
 import org.springframework.http.ResponseEntity
+import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
@@ -29,17 +30,18 @@ class DocumentOpenSearchBackfillResource(
     private val backfillService: DocumentOpenSearchBackfillService,
 ) {
 
-    /**
-     * Triggers a full backfill of all [com.ritense.document.domain.impl.JsonSchemaDocument]
-     * records to the OpenSearch read model.
-     *
-     * Only accessible to users with ROLE_ADMIN.
-     */
     @PostMapping("/backfill")
     fun backfill(
         @RequestParam(defaultValue = "${DocumentOpenSearchBackfillService.DEFAULT_PAGE_SIZE}") pageSize: Int,
-    ): ResponseEntity<Map<String, Long>> {
-        val count = backfillService.backfill(pageSize)
-        return ResponseEntity.ok(mapOf("migratedCount" to count))
+    ): ResponseEntity<Map<String, Any>> {
+        if (!backfillService.start(pageSize)) {
+            return ResponseEntity.status(409).body(mapOf("error" to "Backfill already in progress" as Any))
+        }
+        return ResponseEntity.accepted().body(mapOf("status" to "started" as Any))
+    }
+
+    @GetMapping("/backfill/status")
+    fun status(): ResponseEntity<Map<String, Any?>> {
+        return ResponseEntity.ok(backfillService.status())
     }
 }
