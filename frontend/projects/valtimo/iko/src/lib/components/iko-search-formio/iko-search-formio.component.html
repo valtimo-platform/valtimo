@@ -14,19 +14,44 @@
   ~ limitations under the License.
   -->
 
-@if (selectedLabel) {
-  <p>selected: {{ selectedLabel }}</p>
+@if (selectedItemLabel) {
+  <span class="iko-search-formio__label">
+    {{ selectedLabel || ('iko.formio.selectedResult' | translate) }}
+  </span>
+
+  <div class="iko-search-formio__selected-box" [cdsLayer]="1">
+    <span class="iko-search-formio__selected-value">{{ selectedItemLabel }}</span>
+
+    @if (openInNewTabUrl) {
+      <button
+        [cdsLayer]="2"
+        cdsButton="ghost"
+        size="sm"
+        class="iko-search-formio__open-tab-button"
+        (click)="onOpenInNewTab()"
+      >
+        {{ openInNewTabLabel || ('iko.formio.openInNewTab' | translate) }}
+        <svg cdsIcon="launch" size="16"></svg>
+      </button>
+    }
+  </div>
+
   <div class="iko-search-formio__footer">
     <button cdsButton="tertiary" size="sm" (click)="backToList()">
       {{ 'iko.formio.back' | translate }}
     </button>
   </div>
 } @else if (searchParams) {
+  <span class="iko-search-formio__label">
+    {{ resultListLabel || ('iko.formio.selectResult' | translate) }}
+  </span>
+
   <valtimo-iko-list
     [ikoViewKey]="ikoViewKey"
     [searchParams]="searchParams"
-    (rowSelected)="onRowSelected($event)"
+    (rowSelectedEvent)="onRowSelected($event)"
   ></valtimo-iko-list>
+
   <div class="iko-search-formio__footer">
     <button cdsButton="tertiary" size="sm" (click)="backToSearch()">
       {{ 'iko.formio.back' | translate }}
@@ -37,6 +62,6 @@
     [ikoViewKey]="ikoViewKey"
     [searchTitle]="label"
     [embedded]="true"
-    (searchSubmit)="onSearchSubmit($event)"
+    (searchSubmitEvent)="onSearchSubmit($event)"
   ></valtimo-iko-search>
 }

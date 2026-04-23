@@ -16,7 +16,12 @@
 
 import {Injectable} from '@angular/core';
 import {HttpClient, HttpHeaders, HttpParams} from '@angular/common/http';
-import {BaseApiService, ConfigService, GlobalNotificationService, InterceptorSkip} from '@valtimo/shared';
+import {
+  BaseApiService,
+  ConfigService,
+  GlobalNotificationService,
+  InterceptorSkip,
+} from '@valtimo/shared';
 import {BehaviorSubject, Observable} from 'rxjs';
 import {IkoView, IkoSearchActionUser, IkoListResponse, IkoTab} from '../models';
 import {WidgetAction} from '@valtimo/layout';

@@ -14,8 +14,41 @@
  * limitations under the License.
  */
 
-.iko-search-formio__footer {
-  display: flex;
-  justify-content: flex-start;
-  margin-top: 16px;
+.iko-search-formio {
+  &__label {
+    display: block;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--cds-text-primary);
+    margin-bottom: 8px;
+  }
+
+  &__selected-box {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background-color: var(--cds-layer);
+    padding: 12px 16px;
+    min-height: 48px;
+  }
+
+  &__selected-value {
+    font-size: 14px;
+    color: var(--cds-text-primary);
+  }
+
+  &__open-tab-button {
+    flex-shrink: 0 !important;
+    margin-left: 8px !important;
+    display: flex !important;
+    gap: 8px !important;
+    justify-content: center !important;
+    align-items: center !important;
+  }
+
+  &__footer {
+    display: flex;
+    justify-content: flex-start;
+    margin-top: 16px;
+  }
 }

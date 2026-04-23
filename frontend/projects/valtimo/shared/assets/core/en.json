@@ -2210,7 +2210,10 @@
     "pageTitle": "Views",
     "searchVia": "Search via",
     "formio": {
-      "back": "Back"
+      "back": "Back",
+      "selectResult": "Select a result",
+      "selectedResult": "Selected result",
+      "openInNewTab": "Open in new tab"
     }
   },
   "ikoManagement": {

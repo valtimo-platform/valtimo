@@ -18,55 +18,81 @@ import {CommonModule} from '@angular/common';
 import {Component, EventEmitter, Input, Output} from '@angular/core';
 import {TranslateModule} from '@ngx-translate/core';
 import {FormioCustomComponent} from '@valtimo/components';
-import {ButtonModule} from 'carbon-components-angular';
+import {ButtonModule, IconModule, IconService, LayerModule} from 'carbon-components-angular';
+import {Launch16} from '@carbon/icons';
+import {IkoSearchParams} from '../../models';
 import {IkoListComponent} from '../iko-list/iko-list.component';
 import {IkoSearchComponent} from '../iko-search/iko-search.component';
 
 @Component({
   selector: 'valtimo-iko-search-formio',
   standalone: true,
-  imports: [CommonModule, IkoSearchComponent, IkoListComponent, ButtonModule, TranslateModule],
+  imports: [
+    CommonModule,
+    IkoSearchComponent,
+    IkoListComponent,
+    ButtonModule,
+    IconModule,
+    TranslateModule,
+    LayerModule,
+  ],
   templateUrl: './iko-search-formio.component.html',
   styleUrls: ['./iko-search-formio.component.scss'],
 })
 export class IkoSearchFormioComponent implements FormioCustomComponent<string> {
-  @Input() disabled: boolean;
-  @Input() ikoViewKey: string;
-  @Input() label: string;
-  @Output() valueChange = new EventEmitter<string>();
+  @Input() public disabled: boolean;
+  @Input() public ikoViewKey: string;
+  @Input() public label: string;
+  @Input() public resultListLabel: string;
+  @Input() public selectedLabel: string;
+  @Input() public openInNewTabLabel: string;
+  @Input() public openInNewTabUrl: string;
 
-  searchParams: {paramKey: string; filters: Record<string, any>} | null = null;
-  selectedLabel: string | null = null;
-
-  private _value: string;
-
-  @Input() set value(val: string) {
+  @Input() public set value(val: string) {
     this._value = val;
   }
 
-  get value(): string {
+  public get value(): string {
     return this._value;
   }
 
-  onSearchSubmit(event: {paramKey: string; filters: Record<string, any>}): void {
+  @Output() public valueChange = new EventEmitter<string>();
+
+  public searchParams: IkoSearchParams | null = null;
+  public selectedItemLabel: string | null = null;
+
+  private _value: string;
+
+  constructor(private readonly iconService: IconService) {
+    this.iconService.register(Launch16);
+  }
+
+  public onSearchSubmit(event: IkoSearchParams): void {
     this.searchParams = event;
   }
 
-  onRowSelected(item: {id: string; label: string}): void {
+  public onRowSelected(item: {id: string; label: string}): void {
     this._value = item.id;
-    this.selectedLabel = item.label;
+    this.selectedItemLabel = item.label;
     this.valueChange.emit(item.id);
   }
 
-  backToList(): void {
-    this.selectedLabel = null;
+  public onOpenInNewTab(): void {
+    if (this.openInNewTabUrl && this._value) {
+      const url = this.openInNewTabUrl.replace('{id}', this._value);
+      window.open(url, '_blank');
+    }
+  }
+
+  public backToList(): void {
+    this.selectedItemLabel = null;
     this._value = null;
     this.valueChange.emit(null);
   }
 
-  backToSearch(): void {
+  public backToSearch(): void {
     this.searchParams = null;
-    this.selectedLabel = null;
+    this.selectedItemLabel = null;
     this._value = null;
     this.valueChange.emit(null);
   }
