@@ -21,6 +21,7 @@
 >
   <cds-selection-tile
     class="valtimo-widget-wizard-step__tile"
+    [attr.data-test-id]="testIds.tileSmall"
     [value]="1"
     [selected]="$widgetWidth() === 1"
     [disabled]="$fieldsColumnsLength() > 1"
@@ -37,6 +38,7 @@
 
   <cds-selection-tile
     class="valtimo-widget-wizard-step__tile"
+    [attr.data-test-id]="testIds.tileMedium"
     [value]="2"
     [selected]="$widgetWidth() === 2"
     [disabled]="$fieldsColumnsLength() > 2"
@@ -53,6 +55,7 @@
 
   <cds-selection-tile
     class="valtimo-widget-wizard-step__tile"
+    [attr.data-test-id]="testIds.tileLarge"
     [value]="3"
     [selected]="$widgetWidth() === 3"
     [disabled]="$fieldsColumnsLength() > 3"
@@ -69,6 +72,7 @@
 
   <cds-selection-tile
     class="valtimo-widget-wizard-step__tile"
+    [attr.data-test-id]="testIds.tileXtraLarge"
     [value]="4"
     [selected]="$widgetWidth() === 4"
   >

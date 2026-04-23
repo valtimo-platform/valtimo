@@ -14,14 +14,23 @@
  * limitations under the License.
  */
 
+import {generateId} from '../../utils/dataGenerator';
+
 export const CASE_IDENTIFIER = 'bezwaar';
 
-export const tabTestData = {
-  title: 'E2e Test Tab',
-  updatedTitle: 'E2e Updated Tab',
-};
+export function createTabTestData() {
+  const id = generateId();
+  return {
+    title: `E2e Test Tab ${id}`,
+    updatedTitle: `E2e Updated Tab ${id}`,
+  };
+}
 
-export const tabReorderTestData = {
-  titleA: 'E2e Reorder Tab A',
-  titleB: 'E2e Reorder Tab B',
-};
+export function createTabReorderTestData() {
+  const idA = generateId();
+  const idB = generateId();
+  return {
+    titleA: `E2e Reorder Tab A ${idA}`,
+    titleB: `E2e Reorder Tab B ${idB}`,
+  };
+}

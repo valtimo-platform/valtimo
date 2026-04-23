@@ -45,8 +45,9 @@ class FormFlowInstance(
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumns(
         JoinColumn(name = "form_flow_definition_key", referencedColumnName = "form_flow_definition_key"),
-        JoinColumn(name = "case_definition_key", referencedColumnName = "case_definition_key"),
-        JoinColumn(name = "case_definition_version_tag", referencedColumnName = "case_definition_version_tag")
+        JoinColumn(name = "blueprint_type", referencedColumnName = "blueprint_type"),
+        JoinColumn(name = "blueprint_key", referencedColumnName = "blueprint_key"),
+        JoinColumn(name = "blueprint_version_tag", referencedColumnName = "blueprint_version_tag")
     )
     val formFlowDefinition: FormFlowDefinition,
     @Embedded
@@ -74,23 +75,24 @@ class FormFlowInstance(
     fun complete(
         currentFormFlowStepInstanceId: FormFlowStepInstanceId,
         submissionData: JSONObject
-    ): FormFlowStepInstance? {
+    ): FormFlowCompleteResult {
         return withLoggingContext(FormFlowStepInstance::class.java.canonicalName to currentFormFlowStepInstanceId.toString()) {
             if (this.currentFormFlowStepInstanceId != currentFormFlowStepInstanceId) {
-                return getCurrentStep()
+                return FormFlowCompleteResult(getCurrentStep(), emptyList())
             }
 
             val formFlowStepInstance = getCurrentStep()
 
-            formFlowStepInstance.complete(submissionData.toString())
+            val onCompleteResult = formFlowStepInstance.complete(submissionData.toString())
 
             val nextStep = navigateToNextStep()
             check(nextStep != null || formFlowStepInstance.definition.onComplete.isNotEmpty()) {
                 "Form flow end reached but no action was taken because the 'onComplete' is empty. For form flow step: '${formFlowStepInstance.definition.id}'"
             }
-            nextStep
+            FormFlowCompleteResult(nextStep, onCompleteResult)
         }
     }
+
 
     /**
      * This method navigates to the previous step (if present).

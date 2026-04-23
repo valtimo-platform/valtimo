@@ -38,5 +38,10 @@
         "processDefinitionKey": "vastleggen-besluit",
         "canInitializeDocument": false,
         "startableByUser": true
+    },
+    {
+        "processDefinitionKey": "document-audit-trail",
+        "canInitializeDocument": false,
+        "startableByUser": true
     }
 ]

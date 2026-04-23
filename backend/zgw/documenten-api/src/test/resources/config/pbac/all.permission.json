@@ -2,27 +2,27 @@
     "changesetId": "document-definitions-v1",
     "permissions": [
         {
-            "resourceType": "com.ritense.resource.authorization.ResourcePermission",
+            "resourceType": "com.ritense.documentenapi.authorization.ZgwDocument",
             "action": "view_list",
             "roleKey": "ROLE_USER"
         },
         {
-            "resourceType": "com.ritense.resource.authorization.ResourcePermission",
+            "resourceType": "com.ritense.documentenapi.authorization.ZgwDocument",
             "action": "view",
             "roleKey": "ROLE_USER"
         },
         {
-            "resourceType": "com.ritense.resource.authorization.ResourcePermission",
+            "resourceType": "com.ritense.documentenapi.authorization.ZgwDocument",
             "action": "create",
             "roleKey": "ROLE_USER"
         },
         {
-            "resourceType": "com.ritense.resource.authorization.ResourcePermission",
+            "resourceType": "com.ritense.documentenapi.authorization.ZgwDocument",
             "action": "modify",
             "roleKey": "ROLE_USER"
         },
         {
-            "resourceType": "com.ritense.resource.authorization.ResourcePermission",
+            "resourceType": "com.ritense.documentenapi.authorization.ZgwDocument",
             "action": "delete",
             "roleKey": "ROLE_USER"
         },

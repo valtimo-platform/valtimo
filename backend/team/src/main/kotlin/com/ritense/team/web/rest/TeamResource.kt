@@ -30,7 +30,6 @@ import com.ritense.valtimo.contract.authentication.ManageableUser
 import com.ritense.valtimo.contract.authentication.UserManagementService
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
-import org.springframework.data.domain.Sort
 import org.springframework.data.web.SortDefault
 import org.springframework.data.web.SortDefault.SortDefaults
 import org.springframework.http.HttpStatus
@@ -90,7 +89,7 @@ class TeamResource(
     fun getTeamUsers(
         @PathVariable teamKey: String,
         @RequestParam(required = false) username: String?,
-        pageable: Pageable
+        @SortDefaults(SortDefault(sort = ["id.username"])) pageable: Pageable
     ): Page<TeamUserResponseDto> {
         return teamManagementService.findAllTeamUsernames(teamKey = teamKey, username = username, pageable = pageable)
             .map { uname -> TeamUserResponseDto.from(userManagementService.findByUsername(uname)) }

@@ -15,7 +15,7 @@ This page requires knowledge on how to configure OpenZaak
 
 ## Configuring the plugin
 
-A plugin configuration is required before the plugin can be used. A general description on how to configure plugins can be found [here](./#configuring-plugins).
+A plugin configuration is required before the plugin can be used. A general description on how to configure plugins can be found in the [plugin configuration guide](./#configuring-plugins).
 
 If the OpenZaak plugin is not visible in the plugin menu, it is possible the application is missing a dependency.
 

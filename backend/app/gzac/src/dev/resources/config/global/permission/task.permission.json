@@ -3,21 +3,64 @@
         "resourceType": "com.ritense.valtimo.operaton.domain.OperatonTask",
         "actions": [
             "assign",
-            "assignable",
             "claim",
             "complete",
             "view_list",
-            "view",
-            "modify"
+            "view"
         ],
         "roleKey": "ROLE_ADMIN"
     },
     {
         "resourceType": "com.ritense.valtimo.operaton.domain.OperatonTask",
         "actions": [
+            "assignable"
+        ],
+        "roleKey": "ROLE_ADMIN",
+        "conditions": [
+            {
+                "type": "container",
+                "resourceType": "com.ritense.valtimo.operaton.domain.OperatonIdentityLink",
+                "conditions": [
+                    {
+                        "type": "field",
+                        "field": "groupId",
+                        "operator": "==",
+                        "value": "ROLE_ADMIN"
+                    }
+                ]
+            }
+        ]
+    },
+    {
+        "resourceType": "com.ritense.valtimo.operaton.domain.OperatonTask",
+        "actions": [
+            "assignable"
+        ],
+        "roleKey": "ROLE_ADMIN",
+        "conditions": [
+            {
+                "type": "container",
+                "resourceType": "com.ritense.valtimo.operaton.domain.OperatonIdentityLink",
+                "conditions": [
+                    {
+                        "type": "field",
+                        "field": "groupId",
+                        "operator": "in",
+                        "value": "${currentUserTeams}"
+                    }
+                ]
+            }
+        ]
+    },
+    {
+        "resourceType": "com.ritense.valtimo.operaton.domain.OperatonTask",
+        "actions": [
+            "assign",
+            "assignable",
+            "claim",
+            "complete",
             "view_list",
-            "view",
-            "complete"
+            "view"
         ],
         "roleKey": "ROLE_USER",
         "conditions": [
@@ -30,6 +73,32 @@
                         "field": "groupId",
                         "operator": "==",
                         "value": "ROLE_USER"
+                    }
+                ]
+            }
+        ]
+    },
+    {
+        "resourceType": "com.ritense.valtimo.operaton.domain.OperatonTask",
+        "actions": [
+            "assign",
+            "assignable",
+            "claim",
+            "complete",
+            "view_list",
+            "view"
+        ],
+        "roleKey": "ROLE_USER",
+        "conditions": [
+            {
+                "type": "container",
+                "resourceType": "com.ritense.valtimo.operaton.domain.OperatonIdentityLink",
+                "conditions": [
+                    {
+                        "type": "field",
+                        "field": "groupId",
+                        "operator": "in",
+                        "value": "${currentUserTeams}"
                     }
                 ]
             }

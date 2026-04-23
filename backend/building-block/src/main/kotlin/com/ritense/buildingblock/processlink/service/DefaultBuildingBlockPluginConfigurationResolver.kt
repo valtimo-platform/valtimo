@@ -16,89 +16,71 @@
 
 package com.ritense.buildingblock.processlink.service
 
+import com.ritense.buildingblock.domain.instance.BuildingBlockInstance
 import com.ritense.buildingblock.processlink.domain.BuildingBlockProcessLink
+import com.ritense.buildingblock.repository.CaseDefinitionBuildingBlockLinkRepository
 import com.ritense.buildingblock.service.BuildingBlockInstanceService
+import com.ritense.document.service.DocumentService
 import com.ritense.plugin.service.BuildingBlockPluginConfigurationResolver
 import com.ritense.processlink.service.ProcessLinkService
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
-import com.ritense.valtimo.contract.buildingblock.BuildingBlockConstants.Companion.BUILDING_BLOCK_DOCUMENT_ID_VARIABLE
+import java.util.UUID
 import org.operaton.bpm.engine.delegate.DelegateExecution
 import org.operaton.bpm.engine.delegate.DelegateTask
 import org.springframework.stereotype.Component
-import java.util.UUID
 
 @Component
 @SkipComponentScan
 class DefaultBuildingBlockPluginConfigurationResolver(
     private val buildingBlockInstanceService: BuildingBlockInstanceService,
     private val processLinkService: ProcessLinkService,
+    private val linkRepository: CaseDefinitionBuildingBlockLinkRepository,
+    private val documentService: DocumentService,
 ) : BuildingBlockPluginConfigurationResolver {
+
     override fun resolve(execution: DelegateExecution, pluginDefinitionKey: String): UUID? {
-        return findMappings(execution)[pluginDefinitionKey]
+        val instance = buildingBlockInstanceService.getByProcessInstanceId(execution.processInstanceId)
+            ?: return null
+        val root = findRootInstance(instance)
+
+        return findCallActivityMapping(root, pluginDefinitionKey)
+            ?: findCaseLinkMapping(root, pluginDefinitionKey)
     }
 
     override fun resolve(task: DelegateTask, pluginDefinitionKey: String): UUID? {
         return resolve(task.execution, pluginDefinitionKey)
     }
 
-    private fun findMappings(execution: DelegateExecution): Map<String, UUID> {
-        // Walk up to find the ROOT building block process link (the one in a case process)
-        // which contains the actual plugin configuration mappings
-        return findRootBuildingBlockMappings(execution)
-            ?: throw IllegalStateException("Could not find root building block process link with plugin configuration mappings")
+    private fun findRootInstance(instance: BuildingBlockInstance): BuildingBlockInstance {
+        val rootId = instance.rootBuildingBlockInstanceId ?: return instance
+        return buildingBlockInstanceService.get(rootId) ?: instance
     }
 
     /**
-     * Walks up the execution hierarchy to find the root building block process link.
-     * For nested building blocks (Case -> BB-A -> BB-B -> BB-C), this finds the process link
-     * from the case to BB-A, which contains the plugin configuration mappings.
+     * Resolves plugin configuration from the BuildingBlockProcessLink on the call activity
+     * that started the root building block.
      */
-    private fun findRootBuildingBlockMappings(execution: DelegateExecution): Map<String, UUID>? {
-        var current: DelegateExecution? = execution
-        var lastBuildingBlockDocumentId: UUID? = null
-        var lastProcessDefinitionId: String? = null
+    private fun findCallActivityMapping(instance: BuildingBlockInstance, pluginDefinitionKey: String): UUID? {
+        val activityId = instance.activityId ?: return null
+        val callerProcessDefinitionId = instance.callerProcessDefinitionId ?: return null
 
-        // Walk up to find the topmost building block instance (the root)
-        // The BUILDING_BLOCK_DOCUMENT_ID_VARIABLE contains the document ID of the building block
-        // The variable is set on the call activity execution in the PARENT process (by BuildingBlockCallActivityListener)
-        while (current != null) {
-            if (current.hasVariableLocal(BUILDING_BLOCK_DOCUMENT_ID_VARIABLE)) {
-                val variableValue = current.getVariableLocal(BUILDING_BLOCK_DOCUMENT_ID_VARIABLE)
-                lastBuildingBlockDocumentId = when (variableValue) {
-                    is UUID -> variableValue
-                    is String -> UUID.fromString(variableValue)
-                    else -> throw IllegalStateException("Unexpected type for $BUILDING_BLOCK_DOCUMENT_ID_VARIABLE: ${variableValue?.javaClass}")
-                }
-                // current is the call activity execution in the parent process, so its processDefinitionId
-                // is the parent process definition (the one that contains the building block process link)
-                lastProcessDefinitionId = current.processDefinitionId
-            }
-            // superExecution is only available on the process instance (root) execution.
-            // Navigate to the process instance first, then get the super execution (call activity in parent process).
-            current = current.processInstance?.superExecution
-        }
+        return processLinkService.getProcessLinks(callerProcessDefinitionId, activityId)
+            .filterIsInstance<BuildingBlockProcessLink>()
+            .firstOrNull()
+            ?.pluginConfigurationMappings
+            ?.get(pluginDefinitionKey)
+    }
 
-        if (lastBuildingBlockDocumentId == null) {
-            return null
-        }
+    private fun findCaseLinkMapping(instance: BuildingBlockInstance, pluginDefinitionKey: String): UUID? {
+        val caseDocumentId = instance.caseDocumentId ?: return null
+        val caseDocument = documentService.get(caseDocumentId.toString())
+        val caseDefinitionId = caseDocument.definitionId().caseDefinitionId()
 
-        val buildingBlockInstance = buildingBlockInstanceService.getByDocumentId(lastBuildingBlockDocumentId)
-            ?: throw IllegalStateException("No building block instance found for documentId '$lastBuildingBlockDocumentId'")
+        val link = linkRepository.findByCaseDefinitionIdAndBuildingBlockDefinitionId(
+            caseDefinitionId,
+            instance.definition.id
+        ) ?: return null
 
-        val processDefinitionId = lastProcessDefinitionId
-            ?: throw IllegalStateException("Parent process definition not found for building block with documentId '$lastBuildingBlockDocumentId'")
-
-        val processLinks = processLinkService.getProcessLinks(
-            processDefinitionId,
-            buildingBlockInstance.activityId
-        ).filterIsInstance<BuildingBlockProcessLink>()
-
-        val processLink = processLinks.singleOrNull()
-            ?: throw IllegalStateException(
-                "Expected a single building block process link for processDefinitionId '$processDefinitionId' " +
-                    "and activityId '${buildingBlockInstance.activityId}', but found ${processLinks.size}"
-            )
-
-        return processLink.pluginConfigurationMappings
+        return link.pluginConfigurationMappings[pluginDefinitionKey]
     }
 }

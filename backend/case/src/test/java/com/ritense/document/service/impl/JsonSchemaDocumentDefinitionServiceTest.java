@@ -36,6 +36,7 @@ import com.ritense.document.domain.impl.JsonSchemaDocumentDefinition;
 import com.ritense.document.domain.impl.JsonSchemaDocumentDefinitionId;
 import com.ritense.document.exception.DocumentDefinitionNameMismatchException;
 import com.ritense.document.repository.impl.JsonSchemaDocumentDefinitionRepository;
+import com.ritense.document.service.result.DeployDocumentDefinitionResultSucceeded;
 import com.ritense.valtimo.contract.case_.CaseDefinitionId;
 import jakarta.validation.ValidationException;
 import java.net.URI;
@@ -43,6 +44,7 @@ import java.util.Collections;
 import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
 import org.semver4j.Semver;
 import org.springframework.core.io.DefaultResourceLoader;
 import org.springframework.core.io.ResourceLoader;
@@ -96,6 +98,90 @@ class JsonSchemaDocumentDefinitionServiceTest extends BaseTest {
             DocumentDefinitionNameMismatchException.class,
             () -> new JsonSchemaDocumentDefinition(otherJsonSchemaDocumentDefinitionId, jsonSchema)
         );
+    }
+
+    @Test
+    void deployShouldOverrideSchemaIdWhenItDoesNotMatchCaseDefinitionKey() {
+        when(jsonSchemaDocumentDefinitionRepository.findOne(any(Specification.class)))
+            .thenReturn(Optional.empty());
+
+        var caseDefinitionId = CaseDefinitionId.of("person", "1.0.0");
+        var schema = JsonSchema.fromString(
+            "{"
+                + "\"$schema\": \"http://json-schema.org/draft-07/schema#\","
+                + "\"$id\": \"wrong-name.schema\","
+                + "\"type\": \"object\","
+                + "\"properties\": {}"
+                + "}"
+        );
+
+        var result = documentDefinitionService.deploy(schema, caseDefinitionId);
+
+        assertTrue(result instanceof DeployDocumentDefinitionResultSucceeded);
+        var captor = ArgumentCaptor.forClass(JsonSchemaDocumentDefinition.class);
+        verify(jsonSchemaDocumentDefinitionRepository).saveAndFlush(captor.capture());
+
+        var saved = captor.getValue();
+        assertEquals("person", saved.id().name());
+        assertEquals("person.schema", saved.getSchema().asJson().get("$id").asText());
+    }
+
+    @Test
+    void deployShouldAddSchemaIdWhenMissing() {
+        when(jsonSchemaDocumentDefinitionRepository.findOne(any(Specification.class)))
+            .thenReturn(Optional.empty());
+
+        var caseDefinitionId = CaseDefinitionId.of("person", "1.0.0");
+        var schema = JsonSchema.fromString(
+            "{"
+                + "\"$schema\": \"http://json-schema.org/draft-07/schema#\","
+                + "\"type\": \"object\","
+                + "\"properties\": {}"
+                + "}"
+        );
+
+        var result = documentDefinitionService.deploy(schema, caseDefinitionId);
+
+        assertTrue(result instanceof DeployDocumentDefinitionResultSucceeded);
+        var captor = ArgumentCaptor.forClass(JsonSchemaDocumentDefinition.class);
+        verify(jsonSchemaDocumentDefinitionRepository).saveAndFlush(captor.capture());
+
+        var saved = captor.getValue();
+        assertEquals("person", saved.id().name());
+        assertEquals("person.schema", saved.getSchema().asJson().get("$id").asText());
+    }
+
+    @Test
+    void deployShouldNotCreateDuplicateWhenSchemaIdDiffersFromCaseDefinitionKey() {
+        when(jsonSchemaDocumentDefinitionRepository.findOne(any(Specification.class)))
+            .thenReturn(Optional.empty());
+
+        var caseDefinitionId = CaseDefinitionId.of("person", "1.0.0");
+        var firstSchema = JsonSchema.fromString(
+            "{"
+                + "\"$schema\": \"http://json-schema.org/draft-07/schema#\","
+                + "\"$id\": \"person.schema\","
+                + "\"type\": \"object\","
+                + "\"properties\": {}"
+                + "}"
+        );
+        var secondSchema = JsonSchema.fromString(
+            "{"
+                + "\"$schema\": \"http://json-schema.org/draft-07/schema#\","
+                + "\"$id\": \"different-name.schema\","
+                + "\"type\": \"object\","
+                + "\"properties\": {}"
+                + "}"
+        );
+
+        documentDefinitionService.deploy(firstSchema, caseDefinitionId);
+        documentDefinitionService.deploy(secondSchema, caseDefinitionId);
+
+        var captor = ArgumentCaptor.forClass(JsonSchemaDocumentDefinition.class);
+        verify(jsonSchemaDocumentDefinitionRepository, times(2)).saveAndFlush(captor.capture());
+
+        assertEquals("person", captor.getAllValues().get(0).id().name());
+        assertEquals("person", captor.getAllValues().get(1).id().name());
     }
 
     @Test

@@ -67,7 +67,7 @@ class FormFlowManagementResource(
         @PathVariable("versionTag") versionTag: String,
     ): ResponseEntity<FormFlowDefinitionDto> {
         val caseDefinitionId = CaseDefinitionId(caseDefinitionKey, versionTag)
-        val definition = formFlowService.findDefinition(FormFlowDefinitionId(definitionKey, caseDefinitionId))
+        val definition = formFlowService.findDefinition(FormFlowDefinitionId.existingId(definitionKey, caseDefinitionId))
         val readOnly = formFlowDefinitionImporter.isAutoDeployed(definition.id.key)
         return ResponseEntity.ok(FormFlowDefinitionDto.of(definition, readOnly))
     }

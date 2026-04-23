@@ -40,7 +40,7 @@ class ZonedLocalDateTimeDeserializer : LocalDateTimeDeserializer() {
     override fun _fromString(p: JsonParser, ctxt: DeserializationContext?, value: String): LocalDateTime? {
         val stringValue = value.trim()
         if (stringValue.isEmpty()) {
-            return _fromEmptyString(p, ctxt, stringValue)
+            return null
         }
         return try {
             val result = DateTimeFormatter.ISO_DATE_TIME.parseBest(

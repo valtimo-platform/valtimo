@@ -26,5 +26,8 @@
     <include file="/13-18-0/13-18-0-master.xml" relativeToChangelogFile="true"/>
     <include file="/13-20-0/13-20-0-master.xml" relativeToChangelogFile="true"/>
     <include file="/13-22-0/13-22-0-master.xml" relativeToChangelogFile="true"/>
+    <include file="/13-23-0/13-23-0-master.xml" relativeToChangelogFile="true"/>
+    <include file="/13-24-0/13-24-0-master.xml" relativeToChangelogFile="true"/>
+    <include file="/13-25-0/13-25-0-master.xml" relativeToChangelogFile="true"/>
 
 </databaseChangeLog>

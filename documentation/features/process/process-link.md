@@ -32,13 +32,13 @@ To configure process links, admin privileges are required.
 
 A form process link can be added to user-tasks. When the process reaches the user-task, a user will be presented with the configured form when opening it.
 
-More information about forms can be found [here](../case/forms/).
+More information about forms can be found in the [forms documentation](../case/forms/).
 
 #### Creating a form-flow process link
 
 A form-flow process link can be added to user-tasks. When the process reaches the user-task, an instance of the form-flow will be created and be made visible to the user.
 
-More information about form-flows can be found [here](../case/form-flow.md).
+More information about form-flows can be found in the [form-flow documentation](../case/form-flow.md).
 
 #### Creating a plugin process link
 
@@ -94,6 +94,29 @@ This is an example of an auto-deployment file for two user task for a process:
          "objectUrl": "pv:myObjectUrl",
          "someOtherProperty": "${VALTIMO_MY_PROPERTY}"
       }
+   },
+   {
+      "activityId": "CallSubsidyCalculatorActivity",
+      "activityType": "bpmn:CallActivity:start",
+      "processLinkType": "building-block",
+      "buildingBlockDefinitionKey": "subsidy-calculator",
+      "buildingBlockDefinitionVersionTag": "1.0.0",
+      "pluginConfigurationMappings": {
+         "zakenapi": "3079d6fe-42e3-4f8f-a9db-52ce2507b7ee"
+      },
+      "inputMappings": [
+         {
+            "source": "doc:applicantName",
+            "target": "applicantName"
+         }
+      ],
+      "outputMappings": [
+         {
+            "source": "calculatedSubsidy",
+            "target": "doc:calculatedSubsidy",
+            "syncTiming": "END"
+         }
+      ]
    }
 ]
 ```

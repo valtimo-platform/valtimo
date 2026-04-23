@@ -83,10 +83,10 @@ class ProcessLinkActivityService(
         @LoggableResource("com.ritense.document.domain.impl.JsonSchemaDocument") documentId: UUID?,
         @LoggableResource("documentDefinitionName") documentDefinitionName: String?
     ): ProcessLinkActivityResult<*>? {
-        val processLink = processLinkService.getProcessLinksByProcessDefinitionIdAndActivityType(
+        val processLink = processLinkService.getProcessLinksByProcessDefinitionIdAndActivityTypes(
             processDefinitionId,
-            ActivityTypeWithEventName.START_EVENT_START
-        ) ?: return null
+            listOf(ActivityTypeWithEventName.START_EVENT_START, ActivityTypeWithEventName.MESSAGE_START_EVENT_START)
+        ).firstOrNull() ?: return null
 
         var authorizationRequest = RelatedEntityAuthorizationRequest<OperatonExecution>(
             OperatonExecution::class.java,

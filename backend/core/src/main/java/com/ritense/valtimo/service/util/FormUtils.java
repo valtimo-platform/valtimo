@@ -54,6 +54,9 @@ public class FormUtils {
         }
     }
 
+    // The text column in the Operaton variables table is of type varchar(4000)
+    private static final int MAX_STRING_LENGTH = 4000;
+
     public static VariableMap createTypedVariableMap(Map<String, Object> variables) {
         if (variables == null) {
             return Variables.createVariables();
@@ -70,6 +73,10 @@ public class FormUtils {
                 variableMap.putValueTyped(key, Variables.dateValue((Date) value));
             } else if (value instanceof ObjectValue) {
                 variableMap.putValueTyped(key, Variables.objectValue(value).create());
+            } else if (value instanceof String && ((String) value).length() > MAX_STRING_LENGTH) {
+                variableMap.putValueTyped(key, Variables.objectValue(value)
+                    .serializationDataFormat(Variables.SerializationDataFormats.JAVA)
+                    .create());
             } else {
                 variableMap.putValue(key, value);
             }

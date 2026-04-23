@@ -68,8 +68,8 @@ export class CarbonListRow {
    * Note: menu items are rendered in a portal/overlay, so we use page-scoped getByRole.
    */
   async clickAction(actionName: string) {
-    await this.locator.getByRole('menu').locator('button').click();
-    await this.page.getByRole('menuitem', {name: actionName}).click();
+    await this.locator.locator('.v-overflow-menu__trigger').click();
+    await this.page.getByRole('menu').getByRole('menuitem', {name: actionName}).click();
   }
 
   // ─── Selection (Checkboxes) ─────────────────────────────────────
@@ -276,17 +276,30 @@ export class CarbonList {
       throw new Error('Could not get bounding boxes for drag source/target');
     }
 
-    await this.page.mouse.move(
-      sourceBounds.x + sourceBounds.width / 2,
-      sourceBounds.y + sourceBounds.height / 2
-    );
+    const sourceX = sourceBounds.x + sourceBounds.width / 2;
+    const sourceY = sourceBounds.y + sourceBounds.height / 2;
+    const targetX = targetBounds.x + targetBounds.width / 2;
+    const targetY = targetBounds.y + targetBounds.height / 2;
+
+    await this.page.mouse.move(sourceX, sourceY);
     await this.page.mouse.down();
-    await this.page.mouse.move(
-      targetBounds.x + targetBounds.width / 2,
-      targetBounds.y + targetBounds.height / 2,
-      {steps: 10}
-    );
+
+    // Pause to let the drag-start event initialize
+    await this.page.waitForTimeout(200);
+
+    // Small initial move to trigger drag recognition
+    await this.page.mouse.move(sourceX, sourceY + 5, {steps: 2});
+
+    // Move to target position with enough steps for drag-over events
+    await this.page.mouse.move(targetX, targetY, {steps: 20});
+
+    // Pause to let the drop target register
+    await this.page.waitForTimeout(100);
+
     await this.page.mouse.up();
+
+    // Wait for the UI to process the reorder
+    await this.page.waitForTimeout(300);
   }
 
   // ─── Loading State ────────────────────────────────────────────────

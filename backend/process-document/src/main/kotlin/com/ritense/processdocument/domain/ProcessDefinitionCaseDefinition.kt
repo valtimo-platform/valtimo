@@ -44,4 +44,14 @@ class ProcessDefinitionCaseDefinition(
         " FROM     act_re_procdef " +
         " WHERE    act_re_procdef.id_ = process_definition_id)")
     var processDefinitionKey: String? = null
+
+    fun copy(
+        id: ProcessDefinitionCaseDefinitionId? = null,
+        canInitializeDocument: Boolean? = null,
+        startableByUser: Boolean? = null,
+    ) = ProcessDefinitionCaseDefinition(
+        id = id ?: this.id,
+        canInitializeDocument = canInitializeDocument ?: this.canInitializeDocument,
+        startableByUser = startableByUser ?: this.startableByUser
+    )
 }

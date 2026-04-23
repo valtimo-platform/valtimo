@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -105,6 +105,24 @@ class BuildingBlockHttpSecurityConfigurer : HttpSecurityConfigurer {
                     .requestMatchers(antMatcher(GET, "$MANAGEMENT_BASE_PATH/{key}/version/{versionTag}/form/name/{name}"))
                     .hasAuthority(ADMIN)
                     .requestMatchers(antMatcher(GET, "$MANAGEMENT_BASE_PATH/{key}/version/{versionTag}/form/{name}/exists"))
+                    .hasAuthority(ADMIN)
+                    // Form flow management endpoints
+                    .requestMatchers(antMatcher(GET, "$MANAGEMENT_BASE_PATH/{key}/version/{versionTag}/form-flow-definition"))
+                    .hasAuthority(ADMIN)
+                    .requestMatchers(antMatcher(POST, "$MANAGEMENT_BASE_PATH/{key}/version/{versionTag}/form-flow-definition"))
+                    .hasAuthority(ADMIN)
+                    .requestMatchers(antMatcher(GET, "$MANAGEMENT_BASE_PATH/{key}/version/{versionTag}/form-flow-definition/{definitionKey}"))
+                    .hasAuthority(ADMIN)
+                    .requestMatchers(antMatcher(PUT, "$MANAGEMENT_BASE_PATH/{key}/version/{versionTag}/form-flow-definition/{definitionKey}"))
+                    .hasAuthority(ADMIN)
+                    .requestMatchers(antMatcher(DELETE, "$MANAGEMENT_BASE_PATH/{key}/version/{versionTag}/form-flow-definition/{definitionKey}"))
+                    .hasAuthority(ADMIN)
+                    // Decision definition management endpoints
+                    .requestMatchers(antMatcher(GET, "$MANAGEMENT_BASE_PATH/{key}/version/{versionTag}/decision-definition"))
+                    .hasAuthority(ADMIN)
+                    .requestMatchers(antMatcher(POST, "$MANAGEMENT_BASE_PATH/{key}/version/{versionTag}/decision-definition"))
+                    .hasAuthority(ADMIN)
+                    .requestMatchers(antMatcher(DELETE, "$MANAGEMENT_BASE_PATH/{key}/version/{versionTag}/decision-definition/{decisionDefinitionKey}"))
                     .hasAuthority(ADMIN)
             }
         } catch (e: Exception) {

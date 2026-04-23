@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,7 +14,9 @@
  * limitations under the License.
  */
 import {Component, EventEmitter, Input, OnDestroy, OnInit, Output, signal} from '@angular/core';
+import {HttpErrorResponse} from '@angular/common/http';
 import {ActivatedRoute} from '@angular/router';
+import {TranslateService} from '@ngx-translate/core';
 import {
   FormioCustomComponent,
   FormIoDomService,
@@ -193,6 +195,7 @@ export class DocumentenApiUploaderComponent
   public readonly fileToBeUploaded$ = new BehaviorSubject<File | null>(null);
   public readonly modalDisabled$ = new BehaviorSubject<boolean>(false);
   public readonly showModal = signal<boolean>(false);
+  public readonly uploadError = signal<string | null>(null);
   public readonly uploadProcessLinked$: Observable<boolean | string> =
     this.modalService.caseDefinitionKey$.pipe(
       switchMap(caseDefinitionKey =>
@@ -224,7 +227,8 @@ export class DocumentenApiUploaderComponent
     private readonly route: ActivatedRoute,
     private readonly documentenApiVersionService: DocumentenApiVersionService,
     private readonly stateService: FormIoStateService,
-    private readonly documentService: DocumentService
+    private readonly documentService: DocumentService,
+    private readonly translateService: TranslateService
   ) {}
 
   public ngOnInit(): void {
@@ -262,12 +266,13 @@ export class DocumentenApiUploaderComponent
   }
 
   public closeMetadataModal(): void {
+    this.uploadError.set(null);
     this.showModal.set(false);
   }
 
   public metadataSet(metadata: DocumentenApiMetadata): void {
+    this.uploadError.set(null);
     this.uploading$.next(true);
-    this.showModal.set(false);
     this.domService.toggleSubmitButton(true);
 
     this.fileToBeUploaded$
@@ -281,10 +286,21 @@ export class DocumentenApiUploaderComponent
           })
         ),
         tap(result => {
+          this.showModal.set(false);
           this.domService.toggleSubmitButton(false);
           this.uploading$.next(false);
           this._value = [...this._value, result];
           this.valueChange.emit(this._value);
+        }),
+        catchError((error: HttpErrorResponse) => {
+          this.uploading$.next(false);
+          this.domService.toggleSubmitButton(false);
+          if (error.status === 403) {
+            this.uploadError.set(this.translateService.instant('document.uploadPermissionDenied'));
+          } else {
+            this.showModal.set(false);
+          }
+          return EMPTY;
         })
       )
       .subscribe();

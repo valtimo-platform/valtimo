@@ -296,6 +296,8 @@ export class ConfigureBuildingBlockPluginsComponent implements OnInit, OnDestroy
 
   public onVersionChange(versionTag: string): void {
     const normalizedValue = versionTag || null;
+    const currentVersion = this.buildingBlockStateService.getDefinitionSnapshot().versionTag;
+    if (normalizedValue === currentVersion) return;
     this.buildingBlockStateService.setPluginConfigurationMappings(undefined);
     this.buildingBlockStateService.setDefinitionVersionTag(normalizedValue);
   }
