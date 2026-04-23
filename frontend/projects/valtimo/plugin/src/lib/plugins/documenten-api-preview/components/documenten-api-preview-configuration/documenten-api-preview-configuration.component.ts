@@ -82,7 +82,7 @@ export class DocumentenApiPreviewConfigurationComponent
   }
 
   ngOnDestroy() {
-    this._pdfUniversalAccessibilitySubscription.unsubscribe();
+    this._pdfUniversalAccessibilitySubscription?.unsubscribe();
     this.saveSubscription?.unsubscribe();
   }
 
