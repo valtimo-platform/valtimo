@@ -17,6 +17,7 @@
 package com.ritense.formflow.expression
 
 import com.ritense.formflow.expression.spel.SpelExpressionProcessor
+import com.ritense.formflow.expression.spel.SpelExpressionProcessorFactory
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
@@ -56,4 +57,199 @@ internal class SpelExpressionProcessorTest {
             expressionProcessor.process<Number>("\${3 / 0}")
         }.message).isEqualTo("Error while executing expression: '\${3 / 0}'")
     }
+
+    @Test
+    fun `should block OS command execution via Runtime`() {
+        val expressionProcessor = SpelExpressionProcessor()
+
+        assertThrows<ExpressionExecutionException> {
+            expressionProcessor.process<Any>("\${T(java.lang.Runtime).getRuntime().exec('id')}")
+        }
+    }
+
+    @Test
+    fun `should block access to environment variables via System getenv`() {
+        val expressionProcessor = SpelExpressionProcessor()
+
+        assertThrows<ExpressionExecutionException> {
+            expressionProcessor.process<Any>("\${T(java.lang.System).getenv()}")
+        }
+    }
+
+    @Test
+    fun `should block class loading via Class forName`() {
+        val expressionProcessor = SpelExpressionProcessor()
+
+        assertThrows<ExpressionExecutionException> {
+            expressionProcessor.process<Any>("\${T(java.lang.Class).forName('java.lang.Runtime')}")
+        }
+    }
+
+    @Test
+    fun `should block access to system properties`() {
+        val expressionProcessor = SpelExpressionProcessor()
+
+        assertThrows<ExpressionExecutionException> {
+            expressionProcessor.process<Any>("\${T(java.lang.System).getProperties()}")
+        }
+    }
+
+    @Test
+    fun `should block ProcessBuilder command execution`() {
+        val expressionProcessor = SpelExpressionProcessor()
+
+        assertThrows<ExpressionExecutionException> {
+            expressionProcessor.process<Any>("\${new java.lang.ProcessBuilder('id').start()}")
+        }
+    }
+
+    @Test
+    fun `should block arbitrary constructor invocation`() {
+        val expressionProcessor = SpelExpressionProcessor()
+
+        assertThrows<ExpressionExecutionException> {
+            expressionProcessor.process<Any>("\${new java.io.File('/etc/passwd').exists()}")
+        }
+    }
+
+    @Test
+    fun `should block access to class loader`() {
+        val expressionProcessor = SpelExpressionProcessor()
+
+        assertThrows<ExpressionExecutionException> {
+            expressionProcessor.process<Any>("\${T(java.lang.Thread).currentThread().getContextClassLoader()}")
+        }
+    }
+
+    @Test
+    fun `should still allow safe string concatenation`() {
+        val expressionProcessor = SpelExpressionProcessor()
+
+        val result = expressionProcessor.process<String>("\${'Hello ' + 'World'}")
+
+        assertThat(result).isEqualTo("Hello World")
+    }
+
+    @Test
+    fun `should still allow safe arithmetic expressions`() {
+        val expressionProcessor = SpelExpressionProcessor()
+
+        val result = expressionProcessor.process<Number>("\${2 + 3}")
+
+        assertThat(result).isEqualTo(5)
+    }
+
+    @Test
+    fun `should allow accessing form flow beans from context map`() {
+        val factory = SpelExpressionProcessorFactory()
+        factory.formFlowBeans = mapOf("greeting" to "Hello World")
+        val processor = factory.create()
+
+        val result = processor.process<String>("\${greeting}")
+
+        assertThat(result).isEqualTo("Hello World")
+    }
+
+    @Test
+    fun `should allow accessing variables passed to the processor`() {
+        val factory = SpelExpressionProcessorFactory()
+        factory.formFlowBeans = emptyMap()
+        val processor = factory.create(mapOf("username" to "John"))
+
+        val result = processor.process<String>("\${username}")
+
+        assertThat(result).isEqualTo("John")
+    }
+
+    @Test
+    fun `factory processor should allow calling instance methods on beans`() {
+        val factory = SpelExpressionProcessorFactory()
+        factory.formFlowBeans = mapOf("testHelper" to FormFlowBeanTestHelper())
+        val processor = factory.create()
+
+        val result = processor.process<Boolean>("\${testHelper.returnTrue()}")
+
+        assertThat(result).isTrue()
+    }
+
+    @Test
+    fun `factory processor should allow calling instance methods with arguments`() {
+        val factory = SpelExpressionProcessorFactory()
+        factory.formFlowBeans = mapOf("testHelper" to FormFlowBeanTestHelper())
+        val processor = factory.create(mapOf("additionalProperties" to mapOf("key" to "value")))
+
+        val result = processor.process<Boolean>("\${testHelper.parseAdditionalProperties(additionalProperties)}")
+
+        assertThat(result).isTrue()
+    }
+
+    @Test
+    fun `factory processor should block OS command execution via Runtime`() {
+        val processor = createFactoryProcessor()
+
+        assertThrows<ExpressionExecutionException> {
+            processor.process<Any>("\${T(java.lang.Runtime).getRuntime().exec('id')}")
+        }
+    }
+
+    @Test
+    fun `factory processor should block access to environment variables via System getenv`() {
+        val processor = createFactoryProcessor()
+
+        assertThrows<ExpressionExecutionException> {
+            processor.process<Any>("\${T(java.lang.System).getenv()}")
+        }
+    }
+
+    @Test
+    fun `factory processor should block class loading via Class forName`() {
+        val processor = createFactoryProcessor()
+
+        assertThrows<ExpressionExecutionException> {
+            processor.process<Any>("\${T(java.lang.Class).forName('java.lang.Runtime')}")
+        }
+    }
+
+    @Test
+    fun `factory processor should block access to system properties`() {
+        val processor = createFactoryProcessor()
+
+        assertThrows<ExpressionExecutionException> {
+            processor.process<Any>("\${T(java.lang.System).getProperties()}")
+        }
+    }
+
+    @Test
+    fun `factory processor should block ProcessBuilder command execution`() {
+        val processor = createFactoryProcessor()
+
+        assertThrows<ExpressionExecutionException> {
+            processor.process<Any>("\${new java.lang.ProcessBuilder('id').start()}")
+        }
+    }
+
+    @Test
+    fun `factory processor should block arbitrary constructor invocation`() {
+        val processor = createFactoryProcessor()
+
+        assertThrows<ExpressionExecutionException> {
+            processor.process<Any>("\${new java.io.File('/etc/passwd').exists()}")
+        }
+    }
+
+    @Test
+    fun `factory processor should block access to class loader`() {
+        val processor = createFactoryProcessor()
+
+        assertThrows<ExpressionExecutionException> {
+            processor.process<Any>("\${T(java.lang.Thread).currentThread().getContextClassLoader()}")
+        }
+    }
+
+    private fun createFactoryProcessor(): ExpressionProcessor {
+        val factory = SpelExpressionProcessorFactory()
+        factory.formFlowBeans = mapOf("testHelper" to FormFlowBeanTestHelper())
+        return factory.create()
+    }
+
 }
