@@ -1,4 +1,4 @@
-/*!
+/*
  * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
@@ -14,21 +14,13 @@
  * limitations under the License.
  */
 
-button.delete-button {
-  height: 46px;
-  width: 46px;
-  margin-top: 20px;
-}
-
-button.delete-button:hover {
-  background-color: #e12717;
-}
-
-.add-button {
-  margin-block-end: var(--v-input-margin);
-}
-
-:host ::ng-deep .add-button .v-overflow-menu__pane {
-  max-height: 40vh;
-  overflow-y: auto;
-}
+export const CONFIDENTIALITY_TYPES: string[] = [
+  'openbaar',
+  'beperkt_openbaar',
+  'intern',
+  'zaakvertrouwelijk',
+  'vertrouwelijk',
+  'confidentieel',
+  'geheim',
+  'zeer_geheim',
+];

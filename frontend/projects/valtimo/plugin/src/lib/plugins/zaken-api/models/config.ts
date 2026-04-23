@@ -108,15 +108,41 @@ interface CreateZaakConfig {
   manualZaakTypeUrl: boolean;
   zaaktypeUrl: string;
   inputTypeZaakTypeToggle?: InputOption;
+  archiveActionDate?: string;
+  archiveNomination?: string;
+  archiveStatus?: string;
+  caseGeometryCoordinates?: string;
+  caseGeometryType?: string;
+  characteristics?: string;
+  commissioningOrganisation?: string;
+  communicationChannel?: string;
+  communicationChannelName?: string;
+  confidentiality?: string;
   description?: string;
   explanation?: string;
-  plannedEndDate?: string;
+  extensionDuration?: string;
+  extensionReason?: string;
   finalDeliveryDate?: string;
-  communicationChannel?: string;
-  paymentIndication?: string;
-  caseGeometryType?: string;
-  caseGeometryCoordinates?: string;
+  identification?: string;
+  lastOpenedDate?: string;
+  lastPaymentDate?: string;
   mainCase?: string;
+  paymentIndication?: string;
+  plannedEndDate?: string;
+  processObjectCategory?: string;
+  processObjectDateAttribute?: string;
+  processObjectIdentification?: string;
+  processObjectObjectType?: string;
+  processObjectRegistration?: string;
+  productsAndServices?: string;
+  publicationDate?: string;
+  registrationDate?: string;
+  relatedCases?: string;
+  relevantOtherCases?: string;
+  selectionListClass?: string;
+  startDateRetentionPeriod?: string;
+  suspensionIndication?: string;
+  suspensionReason?: string;
 }
 
 interface SetZaakopschortingConfig {

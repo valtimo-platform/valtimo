@@ -27,7 +27,7 @@ import {
   take,
   tap,
 } from 'rxjs';
-import {CreateZaakConfig, InputOption} from '../../models';
+import {CreateZaakConfig, InputOption, PropertyFormField} from '../../models';
 import {OpenZaakService, ZaakType, ZaakTypeLink} from '@valtimo/resource';
 import {ModalService, RadioValue, SelectItem} from '@valtimo/components';
 import {CaseManagementParams, ManagementContext} from '@valtimo/shared';
@@ -40,6 +40,9 @@ import {
 } from '../../models/create-zaak-properties';
 import {GEOMETRY_TYPES} from '../../models/geometry-types';
 import {PAYMENT_INDICATION_TYPES} from '../../models/payment-indication-types';
+import {CONFIDENTIALITY_TYPES} from '../../models/confidentiality-types';
+import {ARCHIVE_NOMINATION_TYPES} from '../../models/archive-nomination-types';
+import {ARCHIVE_STATUS_TYPES} from '../../models/archive-status-types';
 
 @Component({
   standalone: false,
@@ -59,10 +62,26 @@ export class CreateZaakConfigurationComponent
   @Output() valid: EventEmitter<boolean> = new EventEmitter<boolean>();
   @Output() configuration: EventEmitter<CreateZaakConfig> = new EventEmitter<CreateZaakConfig>();
 
-  public readonly propertyOptions: string[] = Object.values(CreateZaakExtraPropertyOptions);
-  public readonly propertyList: Array<CreateZaakExtraProperties> = [];
-  public readonly geometryTypes: string[] = GEOMETRY_TYPES;
-  public readonly paymentIndicationTypes: string[] = PAYMENT_INDICATION_TYPES;
+  private readonly LINKED_FIELD_GROUPS: Record<string, string[]> = {
+    caseGeometryType: ['caseGeometryCoordinates'],
+    verlenging: ['extensionReason', 'extensionDuration'],
+    opschorting: ['suspensionIndication', 'suspensionReason'],
+    processObject: [
+      'processObjectDateAttribute',
+      'processObjectIdentification',
+      'processObjectObjectType',
+      'processObjectRegistration',
+    ],
+  };
+
+  private readonly GROUP_TRIGGERS = new Set(['verlenging', 'opschorting', 'processObject']);
+
+  private readonly allLinkedFollowers: string[] = Object.values(this.LINKED_FIELD_GROUPS).flat();
+  public readonly menuPropertyOptions: string[] = [
+    ...CreateZaakExtraPropertyOptions.filter(p => !this.allLinkedFollowers.includes(p)),
+    ...Object.keys(this.LINKED_FIELD_GROUPS).filter(k => this.GROUP_TRIGGERS.has(k)),
+  ];
+  public readonly propertyList: Array<PropertyFormField> = [];
 
   public readonly pluginId$ = new BehaviorSubject<string>('');
   public readonly selectedInputOption$ = new BehaviorSubject<InputOption>('selection');
@@ -79,6 +98,19 @@ export class CreateZaakConfigurationComponent
       {value: 'selection', title: selectionTranslation},
       {value: 'text', title: textTranslation},
     ])
+  );
+  public readonly sortedMenuPropertyOptions$: Observable<string[]> = this.pluginId$.pipe(
+    filter(pluginId => !!pluginId),
+    switchMap(pluginId =>
+      combineLatest(
+        this.menuPropertyOptions.map(p =>
+          this.pluginTranslatePipe.transform(this.translationKeyFor(p), pluginId).pipe(
+            map(label => ({key: p, label}))
+          )
+        )
+      )
+    ),
+    map(items => [...items].sort((a, b) => a.label.localeCompare(b.label)).map(item => item.key))
   );
   public readonly zaakTypeItems$: Observable<Array<SelectItem>> = this.modalService.modalData$.pipe(
     switchMap(() => this.context$),
@@ -130,9 +162,7 @@ export class CreateZaakConfigurationComponent
     })
   );
 
-  protected readonly CASE_GEOMETRY_TYPE: string = 'caseGeometryType';
   protected readonly CASE_GEOMETRY_COORDINATES: string = 'caseGeometryCoordinates';
-  protected readonly PAYMENT_INDICATION_TYPE: string = 'paymentIndication';
 
   private readonly _formValue$ = new BehaviorSubject<CreateZaakConfig>(null);
   private readonly _properties = new Map<CreateZaakExtraProperties, string>();
@@ -149,11 +179,19 @@ export class CreateZaakConfigurationComponent
   }
 
   public ngOnInit(): void {
+    this.pluginId$.next(this.pluginId);
     this.openSaveSubscription();
 
     this.prefillConfiguration$.pipe(take(1)).subscribe(prefill => {
-      CreateZaakExtraPropertyOptions.filter(property => prefill && !!prefill[property]).forEach(
-        property => this.addProperty(property)
+      if (!prefill) return;
+      for (const [trigger, followers] of Object.entries(this.LINKED_FIELD_GROUPS)) {
+        if (this.GROUP_TRIGGERS.has(trigger) && followers.some(f => !!prefill[f])) {
+          this.addProperty(trigger);
+        }
+      }
+      const allFollowers = Object.values(this.LINKED_FIELD_GROUPS).flat();
+      CreateZaakExtraPropertyOptions.filter(p => !allFollowers.includes(p) && !!prefill[p]).forEach(
+        p => this.addProperty(p)
       );
     });
   }
@@ -191,37 +229,61 @@ export class CreateZaakConfigurationComponent
     return prefill !== null ? (prefill?.[property] ?? null) : null;
   }
 
-  public translationKeyFor(property: string): string {
-    return property === 'description' ? 'beschrijving' : property;
-  }
-
-  public translationKeyForPropertyList(property: string): string {
-    return property === this.CASE_GEOMETRY_TYPE ? 'caseGeometry' : this.translationKeyFor(property);
-  }
-
-  public addProperty(property: CreateZaakExtraProperties): void {
-    // only add the property to the list if it is not in the list
-    if (this.propertyList.indexOf(property) === -1) {
-      this.propertyList.push(property);
+  public addProperty(property: string): void {
+    if (!this.GROUP_TRIGGERS.has(property)) {
+      if (!this.hasPropertyBeenAdded(property)) {
+        this.propertyList.push(this.propertyFormFieldFor(property as CreateZaakExtraProperties));
+        this.onPropertyChanged(property as CreateZaakExtraProperties, undefined);
+      }
     }
-    if (property === this.CASE_GEOMETRY_TYPE) {
-      this.addProperty(this.CASE_GEOMETRY_COORDINATES as CreateZaakExtraProperties);
+    const linked = this.LINKED_FIELD_GROUPS[property];
+    if (linked) {
+      linked.forEach(p => this.addProperty(p));
     }
   }
 
-  public removeProperty(property: CreateZaakExtraProperties): void {
-    // only remove the property from the list if it is in the list
-    if (this.propertyList.indexOf(property) !== -1) {
-      this.propertyList.splice(this.propertyList.indexOf(property), 1);
-      this.onPropertyChanged(property, undefined);
+  public removeProperty(property: string): void {
+    if (!this.GROUP_TRIGGERS.has(property)) {
+      if (this.hasPropertyBeenAdded(property)) {
+        this.propertyList.splice(
+          this.propertyList.findIndex(item => item.name === property),
+          1
+        );
+        this.onPropertyChanged(property as CreateZaakExtraProperties, undefined);
+      }
     }
-    if (property === this.CASE_GEOMETRY_TYPE) {
-      this.removeProperty(this.CASE_GEOMETRY_COORDINATES as CreateZaakExtraProperties);
+    const linked = this.LINKED_FIELD_GROUPS[property];
+    if (linked) {
+      linked.forEach(p => this.removeProperty(p));
     }
   }
 
-  public hasPropertyBeenAdded(property: CreateZaakExtraProperties): boolean {
-    return this.propertyList.indexOf(property) !== -1;
+  public hasPropertyBeenAdded(property: string): boolean {
+    if (this.GROUP_TRIGGERS.has(property)) {
+      return this.LINKED_FIELD_GROUPS[property]?.some(p => this.hasPropertyBeenAdded(p)) ?? false;
+    }
+    return this.propertyList.findIndex(item => item.name === property) !== -1;
+  }
+
+  public isLinkedFollower(property: string): boolean {
+    for (const [trigger, followers] of Object.entries(this.LINKED_FIELD_GROUPS)) {
+      if (followers.includes(property)) {
+        if (this.GROUP_TRIGGERS.has(trigger)) {
+          return followers[0] !== property;
+        }
+        return true;
+      }
+    }
+    return false;
+  }
+
+  public groupTriggerFor(property: string): string | null {
+    for (const [trigger, followers] of Object.entries(this.LINKED_FIELD_GROUPS)) {
+      if (this.GROUP_TRIGGERS.has(trigger) && followers[0] === property) {
+        return trigger;
+      }
+    }
+    return null;
   }
 
   public onPropertyChanged(property: CreateZaakExtraProperties, value: any): void {
@@ -237,7 +299,7 @@ export class CreateZaakConfigurationComponent
   }
 
   private handleValid(formValue: CreateZaakConfig): void {
-    const isPropertyInvalid = this.propertyList.some(property => !!!formValue[property]);
+    const isPropertyInvalid = this.propertyList.some(property => !!!formValue[property.name]);
     const valid = !!(formValue.rsin && formValue.zaaktypeUrl) && !isPropertyInvalid;
 
     this._valid$.next(valid);
@@ -255,10 +317,54 @@ export class CreateZaakConfigurationComponent
               zaaktypeUrl: formValue.zaaktypeUrl,
               manualZaakTypeUrl: formValue.manualZaakTypeUrl,
             };
-            this.propertyList.forEach(property => (payload[property] = formValue[property]));
+            this.propertyList.forEach(property => (payload[property.name] = formValue[property.name]));
             this.configuration.emit(payload);
           }
         });
     });
+  }
+
+  private propertyFormFieldFor(property: CreateZaakExtraProperties): PropertyFormField {
+    return {
+      name: property,
+      translationKey: this.translationKeyFor(property),
+      tooltipTranslationKey: this.tooltipTranslationKeyFor(property),
+      presetOptions: this.presetOptionsForProperty(property),
+    };
+  }
+
+  public translationKeyFor(property: string): string {
+    if (property === 'description') return 'omschrijving';
+    if (property === 'caseGeometryType') return 'caseGeometry';
+    return property;
+  }
+
+  private tooltipTranslationKeyFor(property: string): string | null {
+    if (property.toLowerCase().includes('date')) {
+      return 'dateformatTooltip';
+    }
+    if (property === this.CASE_GEOMETRY_COORDINATES) {
+      return 'caseGeometryCoordinatesTooltip';
+    }
+    return null;
+  }
+
+  private presetOptionsForProperty(property: string): string[] {
+    switch (property) {
+      case 'caseGeometryType':
+        return GEOMETRY_TYPES;
+      case 'paymentIndication':
+        return PAYMENT_INDICATION_TYPES;
+      case 'confidentiality':
+        return CONFIDENTIALITY_TYPES;
+      case 'archiveNomination':
+        return ARCHIVE_NOMINATION_TYPES;
+      case 'archiveStatus':
+        return ARCHIVE_STATUS_TYPES;
+      case 'suspensionIndication':
+        return ['true', 'false'];
+      default:
+        return [];
+    }
   }
 }
