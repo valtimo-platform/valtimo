@@ -17,7 +17,7 @@
           <svg class="cds--btn__icon" cdsIcon="add" size="16"></svg>
         </button>
 
-        @for (propertyOption of menuPropertyOptions; track propertyOption) {
+        @for (propertyOption of sortedMenuPropertyOptions$ | async; track propertyOption) {
           @if (!hasPropertyBeenAdded(propertyOption)) {
             <v-overflow-menu-option (selected)="addProperty(propertyOption)">
               {{ translationKeyFor(propertyOption) | pluginTranslate: pluginId | async }}
