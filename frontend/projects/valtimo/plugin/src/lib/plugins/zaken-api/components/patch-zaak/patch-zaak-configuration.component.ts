@@ -16,7 +16,7 @@
 
 import {Component, EventEmitter, Input, OnDestroy, OnInit, Output} from '@angular/core';
 import {FunctionConfigurationComponent} from '../../../../models';
-import {BehaviorSubject, combineLatest, Observable, Subscription, take} from 'rxjs';
+import {BehaviorSubject, combineLatest, filter, map, Observable, Subscription, switchMap, take} from 'rxjs';
 import {IconService} from 'carbon-components-angular';
 import {Add16, TrashCan16} from '@carbon/icons';
 import {PatchZaakConfig, PropertyFormField} from '../../models';
@@ -26,12 +26,14 @@ import {PAYMENT_INDICATION_TYPES} from '../../models/payment-indication-types';
 import {CONFIDENTIALITY_TYPES} from '../../models/confidentiality-types';
 import {ARCHIVE_NOMINATION_TYPES} from '../../models/archive-nomination-types';
 import {ARCHIVE_STATUS_TYPES} from '../../models/archive-status-types';
+import {PluginTranslatePipe} from '../../../../pipes';
 
 @Component({
   standalone: false,
   selector: 'valtimo-patch-zaak-configuration',
   templateUrl: './patch-zaak-configuration.component.html',
   styleUrl: './patch-zaak-configuration.component.scss',
+  providers: [PluginTranslatePipe],
 })
 export class PatchZaakConfigurationComponent
   implements FunctionConfigurationComponent, OnInit, OnDestroy
@@ -66,16 +68,35 @@ export class PatchZaakConfigurationComponent
 
   public readonly propertyList: Array<PropertyFormField> = [];
 
+  public readonly pluginId$ = new BehaviorSubject<string>('');
+  public readonly sortedMenuPropertyOptions$: Observable<string[]> = this.pluginId$.pipe(
+    filter(pluginId => !!pluginId),
+    switchMap(pluginId =>
+      combineLatest(
+        this.menuPropertyOptions.map(p =>
+          this.pluginTranslatePipe.transform(this.translationKeyFor(p), pluginId).pipe(
+            map(label => ({key: p, label}))
+          )
+        )
+      )
+    ),
+    map(items => [...items].sort((a, b) => a.label.localeCompare(b.label)).map(item => item.key))
+  );
+
   private readonly _formValue$ = new BehaviorSubject<PatchZaakConfig>({});
   private readonly _properties = new Map<PatchZaakProperties, string>();
   private _saveSubscription!: Subscription;
   private readonly _valid$ = new BehaviorSubject<boolean>(false);
 
-  constructor(private readonly iconService: IconService) {
+  constructor(
+    private readonly iconService: IconService,
+    private readonly pluginTranslatePipe: PluginTranslatePipe
+  ) {
     this.iconService.registerAll([Add16, TrashCan16]);
   }
 
   public ngOnInit(): void {
+    this.pluginId$.next(this.pluginId);
     this.openSaveSubscription();
 
     this.prefillConfiguration$.pipe(take(1)).subscribe(prefill => {
