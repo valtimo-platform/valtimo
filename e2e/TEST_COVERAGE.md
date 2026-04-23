@@ -4,11 +4,11 @@
 
 | Category                    | Features | Functions | ✅ Covered | ❌ Not Covered |
 |-----------------------------|----------|-----------|------------|----------------|
-| User Features (ROLE_USER)   | 5        | 21        | 6          | 15             |
+| User Features (ROLE_USER)   | 5        | 21        | 11         | 10             |
 | Admin Features (ROLE_ADMIN) | 15       | 328       | 126        | 199            |
-| **Total**                   | **20**   | **349**   | **132**    | **214**        |
+| **Total**                   | **20**   | **349**   | **137**    | **209**        |
 
-**Coverage:** `132 / 349` — `37.8%`
+**Coverage:** `137 / 349` — `39.3%`
 
 ---
 
@@ -41,12 +41,12 @@
 
 | #   | Function                           | Test Scenarios                                        | Coverage | Notes                                           |
 |:----|:-----------------------------------|:------------------------------------------------------|:--------:|:------------------------------------------------|
-| 2.1 | View cases overview per definition | Display cases overview for specific definition        |    ❌    |                                                 |
-| 2.2 | View case details (tabs)           | Navigate and view case details with tabs              |    ❌    |                                                 |
+| 2.1 | View cases overview per definition | Display cases overview for specific definition        |    ✅    | user-cases.spec.ts                              |
+| 2.2 | View case details (tabs)           | Navigate and view case details with tabs              |    ✅    | user-cases.spec.ts                              |
 | 2.3 | Search/filter cases                | Search cases by criteria · Filter cases using filters |    ❌    |                                                 |
-| 2.4 | View case documents                | Display list of case documents                        |    ❌    |                                                 |
-| 2.5 | View case progress/status          | View current case progress and status                 |    ❌    |                                                 |
-| 2.6 | Execute tasks within case          | Execute task from case detail view                    |    ❌    |                                                 |
+| 2.4 | View case documents                | Display list of case documents                        |    ✅    | user-cases.spec.ts                              |
+| 2.5 | View case progress/status          | View current case progress and status                 |    ✅    | user-cases.spec.ts                              |
+| 2.6 | Execute tasks within case          | Execute task from case detail view                    |    ✅    | user-cases.spec.ts                              |
 
 ---
 
@@ -727,8 +727,8 @@
 |:-------------------------|:-------:|
 | Total Features           |   20    |
 | Total Functions          |   349   |
-| ✅ Covered by Playwright |   132   |
-| ❌ Not covered           |   214   |
+| ✅ Covered by Playwright |   137   |
+| ❌ Not covered           |   209   |
 | ⏳ In progress           |    1    |
 | `N/A` Not applicable     |    2    |
-| **Coverage %**           | **37.8%** |
+| **Coverage %**           | **39.3%** |
