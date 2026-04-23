@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,11 +14,20 @@
  * limitations under the License.
  */
 
-export * from './iko.model';
-export * from './iko-menu.model';
-export * from './iko-widget.model';
-export * from './iko-management.model';
-export * from './iko-management-list.model';
-export * from './iko-search-field.model';
-export * from './iko-search-params.model';
-export * from './iko-search-formio.model';
+interface IkoSearchFormioValue {
+  id: string;
+  [key: string]: any;
+}
+
+interface PropertyMapping {
+  propertyName: string;
+  ikoProperty: string;
+}
+
+interface IkoRowSelectedEvent {
+  id: string;
+  label: string;
+  rowData: Record<string, any>;
+}
+
+export {IkoSearchFormioValue, PropertyMapping, IkoRowSelectedEvent};

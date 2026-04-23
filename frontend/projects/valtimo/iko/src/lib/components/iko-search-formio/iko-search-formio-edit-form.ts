@@ -34,7 +34,8 @@ export const ikoSearchFormioEditForm = () => ({
       key: 'key',
       label: 'Property Name',
       placeholder: 'Property Name',
-      tooltip: 'The name of this field in the API endpoint.',
+      tooltip:
+        'Document path for the result object (ID + mapped properties). Dot notation, no prefixes. Example: ikoSearchResult or person.ikoResult.',
       validate: {
         required: true,
       },
@@ -57,7 +58,7 @@ export const ikoSearchFormioEditForm = () => ({
       label: 'Result List Label',
       placeholder: 'Selecteer een persoon',
       tooltip:
-        'Label shown above the results table after searching. Defaults to "Selecteer een resultaat".',
+        'Label shown above the results table after searching. Defaults to: Selecteer een resultaat.',
     },
     {
       type: 'textfield',
@@ -66,7 +67,7 @@ export const ikoSearchFormioEditForm = () => ({
       label: 'Selected Item Label',
       placeholder: 'Geselecteerd persoon',
       tooltip:
-        'Label shown above the selection box after selecting a result. Defaults to "Geselecteerd resultaat".',
+        'Label shown above the selection box after selecting a result. Defaults to: Geselecteerd resultaat.',
     },
     {
       type: 'textfield',
@@ -75,7 +76,7 @@ export const ikoSearchFormioEditForm = () => ({
       label: 'Open in New Tab Button Text',
       placeholder: 'Open persoon in nieuw tabblad',
       tooltip:
-        'Text for the open-in-new-tab button. Defaults to "Open in nieuw tabblad". Leave empty to hide the button.',
+        'Text for the open-in-new-tab button. Defaults to: Open in nieuw tabblad. Leave empty to hide.',
     },
     {
       type: 'textfield',
@@ -85,6 +86,35 @@ export const ikoSearchFormioEditForm = () => ({
       placeholder: '/iko/personen/details/{id}',
       tooltip:
         'URL template for the open-in-new-tab button. Use {id} as placeholder for the selected item ID. Leave empty to hide the button.',
+    },
+    {
+      type: 'datagrid',
+      input: true,
+      key: 'customOptions.propertyMappings',
+      label: 'Property Mappings',
+      tooltip:
+        'Maps table column values to document properties, stored alongside the ID on selection.',
+      reorder: false,
+      components: [
+        {
+          type: 'textfield',
+          input: true,
+          key: 'ikoProperty',
+          label: 'Table Column Key',
+          placeholder: 'geboortedatum',
+          tooltip:
+            'Exact column key from the IKO view config, no prefixes. Example: naam, adres.',
+        },
+        {
+          type: 'textfield',
+          input: true,
+          key: 'propertyName',
+          label: 'Document Property Name',
+          placeholder: 'geboortedatum',
+          tooltip:
+            'Property name in the document, relative to the component key. No prefixes. Example: geboortedatum stores at /ikoSearchResult/geboortedatum.',
+        },
+      ],
     },
     {
       key: 'tableView',

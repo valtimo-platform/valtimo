@@ -11,7 +11,21 @@
                 "resultListLabel": "Selecteer een persoon",
                 "selectedLabel": "Geselecteerd persoon",
                 "openInNewTabLabel": "Open persoon in nieuw tabblad",
-                "openInNewTabUrl": "/iko/demo/bsn/details/{id}"
+                "openInNewTabUrl": "/iko/demo/bsn/details/{id}",
+                "propertyMappings": [
+                    {
+                        "propertyName": "naam",
+                        "ikoProperty": "naam"
+                    },
+                    {
+                        "propertyName": "adres",
+                        "ikoProperty": "adres"
+                    },
+                    {
+                        "propertyName": "geboortedatum",
+                        "ikoProperty": "geboortedatum"
+                    }
+                ]
             },
             "input": true,
             "tableView": true

@@ -28,7 +28,7 @@ import {
   switchMap,
   tap,
 } from 'rxjs';
-import {IkoSearchParams} from '../../models';
+import {IkoRowSelectedEvent, IkoSearchParams} from '../../models';
 import {IkoApiService} from '../../services';
 import {TranslatePipe} from '@ngx-translate/core';
 
@@ -44,7 +44,7 @@ export class IkoListComponent implements OnDestroy {
     if (params) this._searchParams$.next(params);
   }
 
-  @Output() public rowSelectedEvent = new EventEmitter<{id: string; label: string}>();
+  @Output() public rowSelectedEvent = new EventEmitter<IkoRowSelectedEvent>();
 
   public readonly loading$ = new BehaviorSubject<boolean>(true);
 
@@ -131,7 +131,7 @@ export class IkoListComponent implements OnDestroy {
   public onRowClicked(item: any): void {
     if (this.rowSelectedEvent.observed) {
       const keys = Object.keys(item).filter(k => k !== 'id');
-      this.rowSelectedEvent.emit({id: item.id, label: keys.length > 0 ? item[keys[0]] : item.id});
+      this.rowSelectedEvent.emit({id: item.id, label: keys.length > 0 ? item[keys[0]] : item.id, rowData: item});
     } else {
       this.router.navigate([`details/${item.id}`], {
         relativeTo: this.route,

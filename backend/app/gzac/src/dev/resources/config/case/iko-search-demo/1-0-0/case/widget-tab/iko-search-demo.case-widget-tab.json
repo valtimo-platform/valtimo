@@ -12,12 +12,12 @@
                 "actions": [
                     {
                         "name": "Ga naar Klant",
-                        "navigateTo": "/iko/demo/bsn/details/${doc:ikoSearchResult}"
+                        "navigateTo": "/iko/demo/bsn/details/${doc:ikoSearchResult.id}"
                     }
                 ],
                 "displayConditions": [
                     {
-                        "path": "doc:ikoSearchResult",
+                        "path": "doc:ikoSearchResult.id",
                         "operator": ">",
                         "value": "0"
                     }
@@ -28,7 +28,16 @@
                             {
                                 "key": "naam",
                                 "title": "Naam",
-                                "value": "iko:/basisgegevens/naam?adp=demo&id=doc:ikoSearchResult",
+                                "value": "doc:ikoSearchResult.naam",
+                                "displayProperties": {
+                                    "type": "text",
+                                    "hideWhenEmpty": true
+                                }
+                            },
+                            {
+                                "key": "adres",
+                                "title": "Adres",
+                                "value": "doc:ikoSearchResult.adres",
                                 "displayProperties": {
                                     "type": "text",
                                     "hideWhenEmpty": true
@@ -37,17 +46,7 @@
                             {
                                 "key": "geboortedatum",
                                 "title": "Geboortedatum",
-                                "value": "iko:/basisgegevens/geboortedatum?adp=demo&id=doc:ikoSearchResult",
-                                "displayProperties": {
-                                    "type": "date",
-                                    "format": "DD-MM-YYYY",
-                                    "hideWhenEmpty": true
-                                }
-                            },
-                            {
-                                "key": "burgerservicenummer",
-                                "title": "Burgerservicenummer",
-                                "value": "iko:/basisgegevens/bsn?adp=demo&id=doc:ikoSearchResult",
+                                "value": "doc:ikoSearchResult.geboortedatum",
                                 "displayProperties": {
                                     "type": "text",
                                     "hideWhenEmpty": true
