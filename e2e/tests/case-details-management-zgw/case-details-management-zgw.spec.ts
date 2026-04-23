@@ -16,7 +16,7 @@
 
 import {expect, test} from '@playwright/test';
 import {ensureDraftVersionSelected} from '../../utils/version.utils';
-import {CaseDetailsManagementZgwPage} from './page';
+import {CaseDetailsManagementZgwPage, UPLOAD_FIELD_KEY_LABELS, UploadField} from './page';
 
 test.use({storageState: undefined});
 
@@ -159,6 +159,105 @@ test.describe('Case details management — ZGW', () => {
         // Persisted default sort shows up in the list (reloaded from real backend).
         await testPage.assertColumnVisible(SORT_COLUMN.label);
         await testPage.assertRowDefaultSort(SORT_COLUMN.label, 'Descending');
+      });
+    });
+  });
+
+  test.describe('6R — Document upload fields', () => {
+    let originalField: UploadField;
+    let targetLabel: string;
+
+    test.beforeAll(async () => {
+      const fields = await testPage.getUploadFields(CASE_KEY);
+      expect(fields.length).toBeGreaterThan(0);
+      originalField = {...fields[0]};
+      targetLabel = UPLOAD_FIELD_KEY_LABELS[originalField.key] ?? originalField.key;
+
+      await testPage.openDocumentUploadFieldsTab();
+    });
+
+    test.afterAll(async () => {
+      try {
+        await testPage.putUploadField(CASE_KEY, originalField);
+      } catch {
+        // If restoration fails (e.g. auth expired), let cleanup continue
+      }
+    });
+
+    test('Edit visible and readonly on the first upload field', async () => {
+      // List is not empty
+      expect(await testPage.uploadFieldsList.rows.count()).toBeGreaterThan(0);
+
+      // Verify the list cells reflect the captured original state
+      await testPage.assertUploadFieldRowBooleans(targetLabel, {
+        visible: originalField.visible,
+        readonly: originalField.readonly,
+      });
+
+      // Open edit modal for the first row
+      await testPage.openUploadFieldEditModal(targetLabel);
+
+      // Toggles start in sync with the current persisted values
+      expect(await testPage.uploadFieldVisibleSwitch.isChecked()).toBe(originalField.visible);
+      expect(await testPage.uploadFieldReadonlySwitch.isChecked()).toBe(originalField.readonly);
+
+      // Flip both toggles
+      await testPage.toggleUploadFieldVisible();
+      await testPage.toggleUploadFieldReadonly();
+
+      // Confirm the switches now hold the flipped values
+      await expect(testPage.uploadFieldVisibleSwitch).toBeChecked({checked: !originalField.visible});
+      await expect(testPage.uploadFieldReadonlySwitch).toBeChecked({
+        checked: !originalField.readonly,
+      });
+
+      await testPage.saveUploadFieldModal();
+
+      // The list should now reflect the flipped values
+      await testPage.assertUploadFieldRowBooleans(targetLabel, {
+        visible: !originalField.visible,
+        readonly: !originalField.readonly,
+      });
+
+      // The API returns the flipped values
+      const updatedFields = await testPage.getUploadFields(CASE_KEY);
+      const updatedField = updatedFields.find(f => f.key === originalField.key);
+      expect(updatedField?.visible).toBe(!originalField.visible);
+      expect(updatedField?.readonly).toBe(!originalField.readonly);
+    });
+
+    test.describe('6.108 — Set default value via combo-box', () => {
+      const COMBO_FIELD_KEY = 'taal';
+      const COMBO_FIELD_LABEL = UPLOAD_FIELD_KEY_LABELS[COMBO_FIELD_KEY];
+      let originalComboField: UploadField;
+
+      test.beforeAll(async () => {
+        const fields = await testPage.getUploadFields(CASE_KEY);
+        const field = fields.find(f => f.key === COMBO_FIELD_KEY);
+        expect(field, `${COMBO_FIELD_KEY} field should exist on ${CASE_KEY}`).toBeDefined();
+        originalComboField = {...(field as UploadField)};
+      });
+
+      test.afterAll(async () => {
+        try {
+          await testPage.putUploadField(CASE_KEY, originalComboField);
+        } catch {
+          // Restoration best-effort
+        }
+      });
+
+      test('Open combo-box, select the first option, and save', async () => {
+        await testPage.openUploadFieldEditModal(COMBO_FIELD_LABEL);
+        await expect(testPage.uploadFieldDefaultValueComboBox).toBeVisible();
+        await expect(testPage.uploadFieldDefaultValueInput).toHaveCount(0);
+
+        await testPage.selectFirstDefaultValueOption();
+        await testPage.saveUploadFieldModal();
+
+        const updatedFields = await testPage.getUploadFields(CASE_KEY);
+        const updatedField = updatedFields.find(f => f.key === COMBO_FIELD_KEY);
+        expect(updatedField?.defaultValue).toBeTruthy();
+        expect(['nld', 'eng', 'deu']).toContain(updatedField?.defaultValue);
       });
     });
   });
