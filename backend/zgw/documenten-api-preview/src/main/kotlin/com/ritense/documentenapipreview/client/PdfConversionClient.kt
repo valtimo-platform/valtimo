@@ -46,7 +46,9 @@ class PdfConversionClient(
         val bodyBuilder = MultipartBodyBuilder().apply {
             part("files", InputStreamResource(document)).filename(fileName ?: "file_name_unknown")
             part("exportFormFields", "false")
-            part("pdfa", convertPdfArchiveMethodToGotenbergValue(pdfArchiveMethod))
+            if (pdfArchiveMethod != PdfArchiveMethod.NONE) {
+                part("pdfa", convertPdfArchiveMethodToGotenbergValue(pdfArchiveMethod))
+            }
             if (pdfUniversalAccessibility) {
                 part("pdfua", "true")
             } else {
