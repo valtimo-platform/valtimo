@@ -343,6 +343,7 @@ class JsonSchemaDocumentOpenSearchService(
 
         val queryJson = combinedQuery.toString()
         val dataQuery = StringQuery(queryJson, effectivePageable)
+        dataQuery.setTrackTotalHitsUpTo(Int.MAX_VALUE)
 
         val hits = elasticsearchOperations.search(dataQuery, JsonSchemaDocumentOsDocument::class.java)
         val total = hits.totalHits
