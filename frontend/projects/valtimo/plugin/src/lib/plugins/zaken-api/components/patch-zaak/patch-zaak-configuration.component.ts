@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import {Component, EventEmitter, Input, OnDestroy, OnInit, Output} from '@angular/core';
+import {ChangeDetectionStrategy, Component, EventEmitter, Input, OnDestroy, OnInit, Output} from '@angular/core';
 import {FunctionConfigurationComponent} from '../../../../models';
 import {BehaviorSubject, combineLatest, filter, map, Observable, of, Subscription, switchMap, take} from 'rxjs';
 import {IconService} from 'carbon-components-angular';
@@ -34,6 +34,7 @@ import {PluginTranslatePipe} from '../../../../pipes';
   templateUrl: './patch-zaak-configuration.component.html',
   styleUrl: './patch-zaak-configuration.component.scss',
   providers: [PluginTranslatePipe],
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class PatchZaakConfigurationComponent
   implements FunctionConfigurationComponent, OnInit, OnDestroy
@@ -59,10 +60,10 @@ export class PatchZaakConfigurationComponent
 
   private readonly GROUP_TRIGGERS = new Set(['verlenging', 'opschorting', 'processObject']);
 
-  private readonly allLinkedFollowers: string[] = Object.values(this.LINKED_FIELD_GROUPS).flat();
+  private readonly _allLinkedFollowers: string[] = Object.values(this.LINKED_FIELD_GROUPS).flat();
 
   public readonly menuPropertyOptions: string[] = [
-    ...PatchZaakPropertyOptions.filter(p => !this.allLinkedFollowers.includes(p)),
+    ...PatchZaakPropertyOptions.filter(p => !this._allLinkedFollowers.includes(p)),
     ...Object.keys(this.LINKED_FIELD_GROUPS).filter(k => this.GROUP_TRIGGERS.has(k)),
   ];
 
