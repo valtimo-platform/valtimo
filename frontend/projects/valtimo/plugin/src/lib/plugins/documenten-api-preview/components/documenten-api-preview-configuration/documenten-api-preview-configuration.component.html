@@ -88,7 +88,7 @@
       [disabled]="obs.disabled"
       [onText]="'pdfUniversalAccessibility.toggleOn' | pluginTranslate: pluginId | async"
       [offText]="'pdfUniversalAccessibility.toggleOff' | pluginTranslate: pluginId | async"
-      (checkedChange)="onPdfArchiveUniversalAccessibilityChange($event)"
+      (checkedChange)="onPdfUniversalAccessibilityChange($event)"
     ></cds-toggle>
   </div>
 </v-form>

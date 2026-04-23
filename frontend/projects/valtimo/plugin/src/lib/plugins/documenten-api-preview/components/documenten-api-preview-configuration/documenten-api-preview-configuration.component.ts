@@ -86,8 +86,8 @@ export class DocumentenApiPreviewConfigurationComponent
     this.saveSubscription?.unsubscribe();
   }
 
-  public onPdfArchiveUniversalAccessibilityChange(event: any): void {
-    this.pdfUniversalAccessibility$.next(event);
+  public onPdfUniversalAccessibilityChange(checked: boolean): void {
+    this.pdfUniversalAccessibility$.next(checked);
   }
 
   formValueChange(formValue: DocumentenApiPreviewConfig): void {
