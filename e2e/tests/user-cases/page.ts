@@ -54,7 +54,7 @@ export class UserCasesPage {
     try {
       await apiDelete(`${USER_CASES_CONFIG.documentEndpoint}/${documentId}`);
     } catch {
-      // Already deleted or permission denied — ignore in cleanup
+      // Already deleted or permission denied
     }
   }
 
@@ -68,6 +68,71 @@ export class UserCasesPage {
   async selectCaseListTab(tabName: 'All cases' | 'My cases' | 'Unassigned cases' | 'Team cases') {
     await this.page.getByRole('tab', {name: tabName, exact: true}).click();
     await this.caseList.waitForLoaded();
+  }
+
+  // ─── Search / filter locators ────────────────────────────────────
+
+  get searchAccordionItem(): Locator {
+    return this.page.locator('valtimo-search-fields cds-accordion-item');
+  }
+
+  get searchAccordionButton(): Locator {
+    return this.searchAccordionItem.locator('button').first();
+  }
+
+  get statusSelectorDropdown(): Locator {
+    return this.page.locator('valtimo-status-selector cds-dropdown');
+  }
+
+  get statusSelectorTrigger(): Locator {
+    return this.statusSelectorDropdown.locator('.cds--list-box__field').first();
+  }
+
+  get statusSelectorOptions(): Locator {
+    return this.page.getByRole('listbox').getByRole('option');
+  }
+
+  async visibleStatusTagTexts(): Promise<string[]> {
+    const tags = this.caseList.rows.locator('cds-tag');
+    const texts = await tags.allInnerTexts();
+    return Array.from(new Set(texts.map(t => t.trim()).filter(Boolean)));
+  }
+
+  // ─── Search / filter actions ─────────────────────────────────────
+
+  async openSearchAccordion() {
+    const item = this.searchAccordionItem;
+    const isExpanded = (await item.getAttribute('ng-reflect-expanded')) === 'true';
+    if (!isExpanded) {
+      await this.searchAccordionButton.click();
+    }
+    await expect(this.statusSelectorDropdown).toBeVisible();
+  }
+
+  async isStatusDropdownOpen(): Promise<boolean> {
+    return (await this.statusSelectorOptions.first().isVisible()) === true;
+  }
+
+  async openStatusDropdown() {
+    if (!(await this.isStatusDropdownOpen())) {
+      await this.statusSelectorTrigger.click();
+    }
+    await expect(this.statusSelectorOptions.first()).toBeVisible();
+  }
+
+  async closeStatusDropdown() {
+    if (await this.isStatusDropdownOpen()) {
+      await this.page.keyboard.press('Escape');
+      await expect(this.statusSelectorOptions.first()).not.toBeVisible();
+    }
+  }
+
+  statusOptionByName(name: string): Locator {
+    return this.statusSelectorOptions.filter({hasText: name}).first();
+  }
+
+  async toggleStatusOption(name: string) {
+    await this.statusOptionByName(name).click();
   }
 
   async goToCaseDetail(documentId: string) {

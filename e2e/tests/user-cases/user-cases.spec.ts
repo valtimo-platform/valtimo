@@ -59,6 +59,50 @@ test.describe('Feature 2 — Cases (User)', () => {
     });
   });
 
+  test.describe('2.3 — Search/filter cases', () => {
+    let created: CreatedCase;
+
+    test.beforeAll(async () => {
+      created = await userCasesPage.createCaseViaApi();
+      createdCases.push(created);
+      await userCasesPage.goToCaseList();
+      await userCasesPage.selectCaseListTab('All cases');
+    });
+
+    test('deselecting a status in the filter hides matching rows and re-selecting restores them', async () => {
+      const initialStatuses = await userCasesPage.visibleStatusTagTexts();
+      expect(
+        initialStatuses.length,
+        'expected at least one status tag in the case list'
+      ).toBeGreaterThan(0);
+      const statusToToggle = initialStatuses[0];
+
+      await userCasesPage.openSearchAccordion();
+      await userCasesPage.openStatusDropdown();
+
+      // All statuses are selected by default, so the one we want must be present
+      await expect(userCasesPage.statusOptionByName(statusToToggle)).toBeVisible();
+
+      // Deselect the chosen status
+      await userCasesPage.toggleStatusOption(statusToToggle);
+      await userCasesPage.closeStatusDropdown();
+
+      // Verify no visible row carries the deselected status tag anymore
+      await expect
+        .poll(() => userCasesPage.visibleStatusTagTexts(), {timeout: 10_000})
+        .not.toContain(statusToToggle);
+
+      // Restore the original state
+      await userCasesPage.openStatusDropdown();
+      await userCasesPage.toggleStatusOption(statusToToggle);
+      await userCasesPage.closeStatusDropdown();
+
+      await expect
+        .poll(() => userCasesPage.visibleStatusTagTexts(), {timeout: 10_000})
+        .toContain(statusToToggle);
+    });
+  });
+
   test.describe('2.2 — View case details (tabs)', () => {
     let created: CreatedCase;
 
