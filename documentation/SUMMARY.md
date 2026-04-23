@@ -151,6 +151,7 @@
   * [List](features/iko/list.md)
   * [Tabs](features/iko/tabs.md)
   * [Widgets](features/iko/widgets.md)
+  * [Search FormIO component](features/iko/search-formio-component.md)
 * [🗝️ Keycloak](features/keycloak/README.md)
   * [Access control](features/keycloak/access-control.md)
 * [✉️ Outbox](features/outbox/README.md)
