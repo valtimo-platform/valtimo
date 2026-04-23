@@ -44,6 +44,7 @@ import {
 } from '../../models';
 import {DocumentenApiColumnService} from '../../services';
 import {CARBON_CONSTANTS} from '@valtimo/components';
+import {ZGW_DOCUMENT_COLUMNS_TEST_IDS} from '../../../../constants';
 
 @Component({
   selector: 'valtimo-documenten-api-column-modal',
@@ -146,6 +147,8 @@ export class DocumentenApiColumnModalComponent implements OnInit, OnDestroy {
   );
 
   public showRadioButtons = true;
+
+  public readonly testIds = ZGW_DOCUMENT_COLUMNS_TEST_IDS;
 
   private readonly _subscriptions = new Subscription();
 

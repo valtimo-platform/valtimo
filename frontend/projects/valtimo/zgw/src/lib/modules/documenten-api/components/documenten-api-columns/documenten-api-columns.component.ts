@@ -45,6 +45,7 @@ import {
 import {DocumentenApiColumnService} from '../../services';
 import {DocumentenApiColumnModalComponent} from '../documenten-api-column-modal/documenten-api-column-modal.component';
 import {take} from 'rxjs/operators';
+import {ZGW_DOCUMENT_COLUMNS_TEST_IDS} from '../../../../constants';
 
 @Component({
   selector: 'valtimo-documenten-api-columns',
@@ -145,6 +146,8 @@ export class DocumentenApiColumnsComponent implements AfterViewInit {
 
   public readonly columnToUpdate$ = new BehaviorSubject<ConfiguredColumn | undefined>(undefined);
   public readonly showDeleteModal$ = new BehaviorSubject<boolean>(false);
+
+  public readonly testIds = ZGW_DOCUMENT_COLUMNS_TEST_IDS;
 
   constructor(
     private readonly route: ActivatedRoute,
