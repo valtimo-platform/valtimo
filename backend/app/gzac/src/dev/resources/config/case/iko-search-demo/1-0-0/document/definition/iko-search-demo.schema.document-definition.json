@@ -5,8 +5,26 @@
     "type": "object",
     "properties": {
         "ikoSearchResult": {
-            "type": "string",
-            "description": "IKO zoekresultaat"
+            "type": "object",
+            "description": "IKO zoekresultaat",
+            "properties": {
+                "id": {
+                    "type": "string",
+                    "description": "ID van het geselecteerde IKO resultaat"
+                },
+                "naam": {
+                    "type": "string",
+                    "description": "Naam van de persoon"
+                },
+                "adres": {
+                    "type": "string",
+                    "description": "Adres van de persoon"
+                },
+                "geboortedatum": {
+                    "type": "string",
+                    "description": "Geboortedatum van de persoon"
+                }
+            }
         }
     }
 }

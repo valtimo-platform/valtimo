@@ -20,7 +20,7 @@ import {TranslateModule} from '@ngx-translate/core';
 import {FormioCustomComponent} from '@valtimo/components';
 import {ButtonModule, IconModule, IconService, LayerModule} from 'carbon-components-angular';
 import {Launch16} from '@carbon/icons';
-import {IkoSearchParams} from '../../models';
+import {IkoRowSelectedEvent, IkoSearchFormioValue, IkoSearchParams, PropertyMapping} from '../../models';
 import {IkoListComponent} from '../iko-list/iko-list.component';
 import {IkoSearchComponent} from '../iko-search/iko-search.component';
 
@@ -39,7 +39,7 @@ import {IkoSearchComponent} from '../iko-search/iko-search.component';
   templateUrl: './iko-search-formio.component.html',
   styleUrls: ['./iko-search-formio.component.scss'],
 })
-export class IkoSearchFormioComponent implements FormioCustomComponent<string> {
+export class IkoSearchFormioComponent implements FormioCustomComponent<IkoSearchFormioValue> {
   @Input() public disabled: boolean;
   @Input() public ikoViewKey: string;
   @Input() public label: string;
@@ -47,21 +47,22 @@ export class IkoSearchFormioComponent implements FormioCustomComponent<string> {
   @Input() public selectedLabel: string;
   @Input() public openInNewTabLabel: string;
   @Input() public openInNewTabUrl: string;
+  @Input() public propertyMappings: PropertyMapping[];
 
-  @Input() public set value(val: string) {
+  @Input() public set value(val: IkoSearchFormioValue) {
     this._value = val;
   }
 
-  public get value(): string {
+  public get value(): IkoSearchFormioValue {
     return this._value;
   }
 
-  @Output() public valueChange = new EventEmitter<string>();
+  @Output() public valueChange = new EventEmitter<IkoSearchFormioValue>();
 
   public searchParams: IkoSearchParams | null = null;
   public selectedItemLabel: string | null = null;
 
-  private _value: string;
+  private _value: IkoSearchFormioValue;
 
   constructor(private readonly iconService: IconService) {
     this.iconService.register(Launch16);
@@ -71,15 +72,16 @@ export class IkoSearchFormioComponent implements FormioCustomComponent<string> {
     this.searchParams = event;
   }
 
-  public onRowSelected(item: {id: string; label: string}): void {
-    this._value = item.id;
+  public onRowSelected(item: IkoRowSelectedEvent): void {
+    const resolved = this.resolvePropertyMappings(item.rowData);
+    this._value = {id: item.id, ...resolved};
     this.selectedItemLabel = item.label;
-    this.valueChange.emit(item.id);
+    this.valueChange.emit(this._value);
   }
 
   public onOpenInNewTab(): void {
-    if (this.openInNewTabUrl && this._value) {
-      const url = this.openInNewTabUrl.replace('{id}', this._value);
+    if (this.openInNewTabUrl && this._value?.id) {
+      const url = this.openInNewTabUrl.replace('{id}', this._value.id);
       window.open(url, '_blank');
     }
   }
@@ -95,5 +97,17 @@ export class IkoSearchFormioComponent implements FormioCustomComponent<string> {
     this.selectedItemLabel = null;
     this._value = null;
     this.valueChange.emit(null);
+  }
+
+  private resolvePropertyMappings(rowData: Record<string, any>): Record<string, any> {
+    if (!this.propertyMappings?.length) return {};
+
+    const resolved: Record<string, any> = {};
+    for (const mapping of this.propertyMappings) {
+      if (mapping.propertyName && mapping.ikoProperty) {
+        resolved[mapping.propertyName] = rowData[mapping.ikoProperty] ?? null;
+      }
+    }
+    return resolved;
   }
 }
