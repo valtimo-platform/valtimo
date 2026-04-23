@@ -77,9 +77,9 @@ export class CreateZaakConfigurationComponent
 
   private readonly GROUP_TRIGGERS = new Set(['verlenging', 'opschorting', 'processObject']);
 
-  private readonly allLinkedFollowers: string[] = Object.values(this.LINKED_FIELD_GROUPS).flat();
+  private readonly _allLinkedFollowers: string[] = Object.values(this.LINKED_FIELD_GROUPS).flat();
   public readonly menuPropertyOptions: string[] = [
-    ...CreateZaakExtraPropertyOptions.filter(p => !this.allLinkedFollowers.includes(p)),
+    ...CreateZaakExtraPropertyOptions.filter(p => !this._allLinkedFollowers.includes(p)),
     ...Object.keys(this.LINKED_FIELD_GROUPS).filter(k => this.GROUP_TRIGGERS.has(k)),
   ];
   public readonly propertyList: Array<PropertyFormField> = [];
@@ -188,7 +188,7 @@ export class CreateZaakConfigurationComponent
 
   private readonly _formValue$ = new BehaviorSubject<CreateZaakConfig>(null);
   private readonly _properties = new Map<CreateZaakExtraProperties, string>();
-  private saveSubscription!: Subscription;
+  private _saveSubscription!: Subscription;
   private readonly _valid$ = new BehaviorSubject<boolean>(false);
 
   constructor(
@@ -219,7 +219,7 @@ export class CreateZaakConfigurationComponent
   }
 
   public ngOnDestroy(): void {
-    this.saveSubscription?.unsubscribe();
+    this._saveSubscription?.unsubscribe();
   }
 
   public onFormValueChanged(formValue: CreateZaakConfig): void {
@@ -322,6 +322,12 @@ export class CreateZaakConfigurationComponent
       });
   }
 
+  public translationKeyFor(property: string): string {
+    if (property === 'description') return 'omschrijving';
+    if (property === 'caseGeometryType') return 'caseGeometry';
+    return property;
+  }
+
   private followersForHead(property: string): string[] {
     if (this.LINKED_FIELD_GROUPS[property] && !this.GROUP_TRIGGERS.has(property)) {
       return this.LINKED_FIELD_GROUPS[property];
@@ -358,7 +364,7 @@ export class CreateZaakConfigurationComponent
   }
 
   private openSaveSubscription(): void {
-    this.saveSubscription = this.save$?.subscribe(() => {
+    this._saveSubscription = this.save$?.subscribe(() => {
       combineLatest([this._formValue$, this._valid$])
         .pipe(take(1))
         .subscribe(([formValue, valid]) => {
@@ -382,12 +388,6 @@ export class CreateZaakConfigurationComponent
       tooltipTranslationKey: this.tooltipTranslationKeyFor(property),
       presetOptions: this.presetOptionsForProperty(property),
     };
-  }
-
-  public translationKeyFor(property: string): string {
-    if (property === 'description') return 'omschrijving';
-    if (property === 'caseGeometryType') return 'caseGeometry';
-    return property;
   }
 
   private tooltipTranslationKeyFor(property: string): string | null {
