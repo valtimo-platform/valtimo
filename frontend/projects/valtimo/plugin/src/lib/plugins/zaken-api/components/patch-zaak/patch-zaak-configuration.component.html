@@ -17,13 +17,10 @@
           <svg class="cds--btn__icon" cdsIcon="add" size="16"></svg>
         </button>
 
-        @for (propertyOption of propertyOptions; track propertyOption) {
-          @if (propertyOption !== CASE_GEOMETRY_COORDINATES) {
-            <v-overflow-menu-option
-              *ngIf="!hasPropertyBeenAdded(propertyOption)"
-              (selected)="addProperty(propertyOption)"
-            >
-              {{ translationKeyForPropertyList(propertyOption) | pluginTranslate: pluginId | async }}
+        @for (propertyOption of menuPropertyOptions; track propertyOption) {
+          @if (!hasPropertyBeenAdded(propertyOption)) {
+            <v-overflow-menu-option (selected)="addProperty(propertyOption)">
+              {{ translationKeyFor(propertyOption) | pluginTranslate: pluginId | async }}
             </v-overflow-menu-option>
           }
         }
@@ -32,7 +29,7 @@
   </div>
 
   <v-form (valueChange)="onFormValueChanged($event)">
-    @for (property of propertyList; track property) {
+    @for (property of propertyList; track property.name) {
       <div class="row">
         <div class="col-11">
           <v-input
@@ -51,8 +48,11 @@
           />
         </div>
         <div class="col-1">
-          @if (property.name !== CASE_GEOMETRY_COORDINATES) {
-            <button class="btn btn-space delete-button" (click)="removeProperty(property.name)">
+          @if (!isLinkedFollower(property.name)) {
+            <button
+              class="btn btn-space delete-button"
+              (click)="removeProperty(groupTriggerFor(property.name) ?? property.name)"
+            >
               <svg class="cds--btn__icon" cdsIcon="trash-can" size="16"></svg>
             </button>
           }
@@ -61,4 +61,3 @@
     }
   </v-form>
 </ng-container>
-
