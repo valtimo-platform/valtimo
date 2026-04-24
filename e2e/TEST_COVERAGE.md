@@ -5,10 +5,10 @@
 | Category                    | Features | Functions | ✅ Covered | ❌ Not Covered |
 |-----------------------------|----------|-----------|------------|----------------|
 | User Features (ROLE_USER)   | 5        | 21        | 6          | 15             |
-| Admin Features (ROLE_ADMIN) | 15       | 328       | 119        | 206            |
-| **Total**                   | **20**   | **349**   | **125**    | **221**        |
+| Admin Features (ROLE_ADMIN) | 15       | 328       | 123        | 202            |
+| **Total**                   | **20**   | **349**   | **129**    | **217**        |
 
-**Coverage:** `125 / 349` — `35.8%`
+**Coverage:** `129 / 349` — `37.0%`
 
 ---
 
@@ -272,12 +272,12 @@
 
 #### 6Q · ZGW — Document Columns
 
-| #     | Function              | Test Scenarios              | Coverage | Notes                                           |
-|:------|:----------------------|:----------------------------|:--------:|:------------------------------------------------|
-| 6.102 | View document columns | View document columns       |    ❌    |                                                 |
-| 6.103 | Add document column   | Add document column         |    ❌    |                                                 |
-| 6.104 | Set column sorting    | Set document column sorting |    ❌    |                                                 |
-| 6.105 | Rearrange doc columns | Rearrange document columns  |    ❌    |                                                 |
+| #     | Function              | Test Scenarios               | Coverage | Notes                                           |
+|:------|:----------------------|:-----------------------------|:--------:|:------------------------------------------------|
+| 6.102 | View document columns | View document columns        |    ✅    | case-details-management-zgw.spec.ts             |
+| 6.103 | Add document column   | Add document column          |    ✅    | case-details-management-zgw.spec.ts             |
+| 6.104 | Set column sorting    | Set document column sorting  |    ✅    | case-details-management-zgw.spec.ts             |
+| 6.105 | Rearrange doc columns | Rearrange document columns   |    ✅    | case-details-management-zgw.spec.ts             |
 
 #### 6R · ZGW — Upload Fields
 
@@ -727,8 +727,8 @@
 |:-------------------------|:-------:|
 | Total Features           |   20    |
 | Total Functions          |   349   |
-| ✅ Covered by Playwright |   125   |
-| ❌ Not covered           |   221   |
+| ✅ Covered by Playwright |   129   |
+| ❌ Not covered           |   217   |
 | ⏳ In progress           |    1    |
 | `N/A` Not applicable     |    2    |
-| **Coverage %**           | **35.8%** |
+| **Coverage %**           | **37.0%** |
