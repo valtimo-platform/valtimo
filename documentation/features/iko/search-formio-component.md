@@ -63,7 +63,7 @@ The component can be configured through the FormIO form builder or directly in t
 | IKO Beeld Key | Yes | The IKO view key used to load search actions (e.g. `demo`). |
 | Result List Label | No | Label shown above the results table. |
 | Selected Item Label | No | Label shown above the selection box. |
-| Open in New Tab Button Text | No | Text for the external link button. Leave empty to hide the button. |
+| Open in New Tab Button Text | No | Text for the external link button. If empty, the default label is used. |
 | Open in New Tab URL | No | URL template with `{id}` placeholder (e.g. `/iko/demo/bsn/details/{id}`). Leave empty to hide the button. |
 
 ### Property mappings
