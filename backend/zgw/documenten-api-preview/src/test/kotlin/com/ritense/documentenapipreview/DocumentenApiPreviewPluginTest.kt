@@ -59,7 +59,7 @@ class DocumentenApiPreviewPluginTest {
             .thenReturn(mockDocumentStream)
         whenever(documentenApiPlugin.getInformatieObject(MOCK_DOCUMENT_ID, MOCK_CASE_DOCUMENT_ID))
             .thenReturn(MOCK_DOCUMENT_INFORMATIE_OBJECT)
-        whenever(pdfConversionClient.convertDocument(any(), any(), any())).thenReturn(mockDocumentStream)
+        whenever(pdfConversionClient.convertDocument(any(), any(), any(), any(), any())).thenReturn(mockDocumentStream)
     }
 
     @Test
