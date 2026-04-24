@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,7 +27,6 @@ import org.springframework.http.client.ClientHttpResponse
 import org.springframework.stereotype.Component
 import org.springframework.web.client.HttpClientErrorException
 import org.springframework.web.client.RestClient
-import kotlin.text.Charsets.UTF_8
 
 @Component
 @SkipComponentScan
@@ -47,14 +46,10 @@ class LoggingRestClientCustomizer : RestClientCustomizer, ClientHttpRequestInter
         return CopiedHeadClientHttpResponse(response) { responseBodyHead ->
             logger.debug { createRequestReport(request, requestBodyHead, response, responseBodyHead) }
             if (response.statusCode.isError) {
-                val report = createRequestReport(request, requestBodyHead, response, responseBodyHead)
+                logger.debug { createRequestReport(request, requestBodyHead, response, responseBodyHead) }
                 throw HttpClientErrorException(
-                    report,
                     response.statusCode,
                     response.statusText,
-                    response.headers,
-                    responseBodyHead,
-                    UTF_8
                 )
             }
         }
