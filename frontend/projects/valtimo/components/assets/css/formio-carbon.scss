@@ -1,5 +1,5 @@
 /*!
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -263,13 +263,16 @@
     font-family: monospace, monospace;
     font-size: 1em;
   }
-  button,
+  button:not(.cds--btn),
   input,
   optgroup,
   select,
   textarea {
     color: inherit;
     font: inherit;
+    margin: 0;
+  }
+  button.cds--btn {
     margin: 0;
   }
   button {
@@ -338,8 +341,8 @@
     border-collapse: collapse;
     border-spacing: 0;
   }
-  td,
-  th {
+  td:not(.cds--data-table td),
+  th:not(.cds--data-table th) {
     padding: 0;
   }
   /*! Source: https://github.com/h5bp/html5-boilerplate/blob/master/src/css/main.css */
