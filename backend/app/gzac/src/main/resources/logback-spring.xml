@@ -22,7 +22,7 @@
     <include resource="config/logging/logback/valtimo-database-appender.xml" />
 
     <logger name="com.ritense.valtimo" level="#logback.loglevel#"/>
-    <logger name="com.ritense.valtimo.web.logging" level="INFO"/>
+    <logger name="com.ritense.valtimo.web.logging" level="DEBUG"/>
 
     <logger name="ch.qos.logback" level="WARN"/>
     <logger name="com.amazonaws" level="WARN"/>
