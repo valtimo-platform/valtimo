@@ -125,7 +125,9 @@ export class IkoListComponent implements OnDestroy {
   }
 
   public ngOnDestroy(): void {
-    this.breadcrumbService.clearSecondBreadcrumb();
+    if (!this.ikoViewKey) {
+      this.breadcrumbService.clearSecondBreadcrumb();
+    }
   }
 
   public onRowClicked(item: any): void {
