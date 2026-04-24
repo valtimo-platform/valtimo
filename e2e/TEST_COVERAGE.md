@@ -5,10 +5,10 @@
 | Category                    | Features | Functions | ✅ Covered | ❌ Not Covered |
 |-----------------------------|----------|-----------|------------|----------------|
 | User Features (ROLE_USER)   | 5        | 21        | 12         | 9              |
-| Admin Features (ROLE_ADMIN) | 15       | 328       | 126        | 199            |
-| **Total**                   | **20**   | **349**   | **138**    | **208**        |
+| Admin Features (ROLE_ADMIN) | 15       | 328       | 130        | 195            |
+| **Total**                   | **20**   | **349**   | **142**    | **204**        |
 
-**Coverage:** `138 / 349` — `39.5%`
+**Coverage:** `142 / 349` — `40.7%`
 
 ---
 
@@ -265,10 +265,10 @@
 
 | #     | Function            | Test Scenarios                         | Coverage | Notes                                           |
 |:------|:--------------------|:---------------------------------------|:--------:|:------------------------------------------------|
-| 6.98  | Configure case sync | Configure case details synchronization |    ❌    |                                                 |
-| 6.99  | Link case type      | Link case type                         |    ❌    |                                                 |
-| 6.100 | Edit case type      | Edit case type                         |    ❌    |                                                 |
-| 6.101 | Delete case type    | Delete case type                       |    ❌    |                                                 |
+| 6.98  | Configure case sync | Configure case details synchronization |    ✅    | case-details-management-zgw-general.spec.ts     |
+| 6.99  | Link case type      | Link case type                         |    ✅    | case-details-management-zgw-general.spec.ts     |
+| 6.100 | Edit case type      | Edit case type                         |    ✅    | case-details-management-zgw-general.spec.ts     |
+| 6.101 | Delete case type    | Delete case type                       |    ✅    | case-details-management-zgw-general.spec.ts     |
 
 #### 6Q · ZGW — Document Columns
 
@@ -727,8 +727,8 @@
 |:-------------------------|:-------:|
 | Total Features           |   20    |
 | Total Functions          |   349   |
-| ✅ Covered by Playwright |   138   |
-| ❌ Not covered           |   208   |
+| ✅ Covered by Playwright |   142   |
+| ❌ Not covered           |   204   |
 | ⏳ In progress           |    1    |
 | `N/A` Not applicable     |    2    |
-| **Coverage %**           | **39.5%** |
+| **Coverage %**           | **40.7%** |
