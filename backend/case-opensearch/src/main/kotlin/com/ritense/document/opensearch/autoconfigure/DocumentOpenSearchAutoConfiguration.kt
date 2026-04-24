@@ -28,16 +28,23 @@ import com.ritense.document.opensearch.domain.JsonSchemaDocumentOsDocument
 import com.ritense.document.opensearch.handler.DocumentOpenSearchEventHandler
 import com.ritense.document.opensearch.repository.JsonSchemaDocumentOpenSearchRepository
 import com.ritense.document.opensearch.security.DocumentOpenSearchHttpSecurityConfigurer
+import com.ritense.document.opensearch.service.DelegatingDocumentSearchService
 import com.ritense.document.opensearch.service.DocumentOpenSearchBackfillService
 import com.ritense.document.opensearch.service.DocumentOpenSearchQueryService
 import com.ritense.document.opensearch.service.DocumentOpenSearchSyncService
 import com.ritense.document.opensearch.service.JsonSchemaDocumentOpenSearchService
+import com.ritense.document.opensearch.service.SearchEngineToggle
 import com.ritense.document.opensearch.web.DocumentOpenSearchBackfillResource
+import com.ritense.document.opensearch.web.SearchEngineResource
 import com.ritense.document.repository.impl.JsonSchemaDocumentRepository
 import com.ritense.document.service.DocumentSearchService
+import com.ritense.document.service.impl.JsonSchemaDocumentDefinitionService
 import com.ritense.document.service.SearchFieldService
+import com.ritense.document.service.impl.JsonSchemaDocumentSearchService
+import com.ritense.valtimo.contract.database.QueryDialectHelper
 import com.ritense.outbox.OutboxService
 import com.ritense.valtimo.contract.authentication.UserManagementService
+import jakarta.persistence.EntityManager
 import org.springframework.boot.ApplicationRunner
 import org.springframework.boot.autoconfigure.AutoConfiguration
 import org.springframework.boot.autoconfigure.AutoConfigureBefore
@@ -97,7 +104,7 @@ class DocumentOpenSearchAutoConfiguration {
     @Bean
     @ConditionalOnMissingBean
     fun documentOpenSearchBackfillService(
-        entityManager: jakarta.persistence.EntityManager,
+        entityManager: EntityManager,
         openSearchRepository: JsonSchemaDocumentOpenSearchRepository,
         objectMapper: ObjectMapper,
         restHighLevelClient: org.opensearch.client.RestHighLevelClient,
@@ -111,9 +118,14 @@ class DocumentOpenSearchAutoConfiguration {
     fun documentOpenSearchHttpSecurityConfigurer(): DocumentOpenSearchHttpSecurityConfigurer =
         DocumentOpenSearchHttpSecurityConfigurer()
 
+    // --- Search engine toggle: both implementations + delegating service ---
+
     @Bean
-    @ConditionalOnMissingBean(DocumentSearchService::class)
-    fun documentSearchService(
+    @ConditionalOnMissingBean
+    fun searchEngineToggle(): SearchEngineToggle = SearchEngineToggle()
+
+    @Bean("openSearchDocumentSearchService")
+    fun openSearchDocumentSearchService(
         elasticsearchOperations: ElasticsearchOperations,
         translator: OpenSearchPermissionConditionTranslator,
         authorizationService: AuthorizationService,
@@ -124,15 +136,40 @@ class DocumentOpenSearchAutoConfiguration {
         objectMapper: ObjectMapper,
     ): JsonSchemaDocumentOpenSearchService =
         JsonSchemaDocumentOpenSearchService(
-            elasticsearchOperations,
-            translator,
-            authorizationService,
-            jpaRepository,
-            userManagementService,
-            searchFieldService,
-            outboxService,
-            objectMapper,
+            elasticsearchOperations, translator, authorizationService,
+            jpaRepository, userManagementService, searchFieldService, outboxService, objectMapper,
         )
+
+    @Bean("jpaDocumentSearchService")
+    fun jpaDocumentSearchService(
+        entityManager: EntityManager,
+        queryDialectHelper: QueryDialectHelper,
+        searchFieldService: SearchFieldService,
+        userManagementService: UserManagementService,
+        authorizationService: AuthorizationService,
+        outboxService: OutboxService,
+        jsonSchemaDocumentDefinitionService: JsonSchemaDocumentDefinitionService,
+        objectMapper: ObjectMapper,
+    ): JsonSchemaDocumentSearchService =
+        JsonSchemaDocumentSearchService(
+            entityManager, queryDialectHelper, searchFieldService,
+            userManagementService, authorizationService, outboxService,
+            jsonSchemaDocumentDefinitionService, objectMapper,
+        )
+
+    @Bean
+    @org.springframework.context.annotation.Primary
+    fun documentSearchService(
+        openSearchDocumentSearchService: JsonSchemaDocumentOpenSearchService,
+        jpaDocumentSearchService: JsonSchemaDocumentSearchService,
+        searchEngineToggle: SearchEngineToggle,
+    ): DelegatingDocumentSearchService =
+        DelegatingDocumentSearchService(openSearchDocumentSearchService, jpaDocumentSearchService, searchEngineToggle)
+
+    @Bean
+    @ConditionalOnMissingBean
+    fun searchEngineResource(toggle: SearchEngineToggle): SearchEngineResource =
+        SearchEngineResource(toggle)
 
     @Bean
     @ConditionalOnMissingBean
@@ -143,8 +180,6 @@ class DocumentOpenSearchAutoConfiguration {
 
     /**
      * Creates the OpenSearch index and mappings on startup if the index does not yet exist.
-     * Setting [com.ritense.document.opensearch.domain.JsonSchemaDocumentOsDocument]'s
-     * createIndex = false means spring-data-opensearch won't auto-create it, so we do it here.
      */
     @Bean
     fun documentOpenSearchIndexInitializer(elasticsearchOperations: ElasticsearchOperations): ApplicationRunner =

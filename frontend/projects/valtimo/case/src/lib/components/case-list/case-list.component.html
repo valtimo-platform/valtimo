@@ -122,6 +122,16 @@
     </ng-container>
 
     <div class="case-list-toolbar" carbonToolbarContent>
+      <button
+        cdsButton="ghost"
+        size="sm"
+        (click)="toggleSearchEngine()"
+        [title]="'Click to switch to ' + (searchEngine === 'OPENSEARCH' ? 'Postgres' : 'OpenSearch')"
+      >
+        {{ searchEngine === 'OPENSEARCH' ? 'OpenSearch' : 'Postgres' }}
+        <span *ngIf="searchDurationMs !== null" style="margin-left: 4px; opacity: 0.6">({{ searchDurationMs }}ms)</span>
+      </button>
+
       <valtimo-list-column-view
         [availableFields]="availableFields$ | async"
         [disabled]="!obs.hasApiColumnConfig"

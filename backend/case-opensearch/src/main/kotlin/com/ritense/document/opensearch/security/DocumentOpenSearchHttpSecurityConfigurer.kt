@@ -21,6 +21,7 @@ import com.ritense.valtimo.contract.security.config.HttpConfigurerConfigurationE
 import com.ritense.valtimo.contract.security.config.HttpSecurityConfigurer
 import org.springframework.http.HttpMethod.GET
 import org.springframework.http.HttpMethod.POST
+import org.springframework.http.HttpMethod.PUT
 import org.springframework.security.config.annotation.web.builders.HttpSecurity
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher.antMatcher
 
@@ -32,6 +33,10 @@ class DocumentOpenSearchHttpSecurityConfigurer : HttpSecurityConfigurer {
                 requests.requestMatchers(antMatcher(POST, "/api/management/v1/document-opensearch/backfill"))
                     .permitAll()
                 requests.requestMatchers(antMatcher(GET, "/api/management/v1/document-opensearch/backfill/status"))
+                    .permitAll()
+                requests.requestMatchers(antMatcher(GET, "/api/management/v1/search-engine"))
+                    .permitAll()
+                requests.requestMatchers(antMatcher(PUT, "/api/management/v1/search-engine"))
                     .permitAll()
             }
         } catch (e: Exception) {

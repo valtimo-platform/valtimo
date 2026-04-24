@@ -371,6 +371,12 @@ public class JsonSchemaDocumentSearchService implements DocumentSearchService {
             predicates.add(getCaseTagsFilterPredicate(cb, documentRoot, searchRequest.getCaseTagsFilter()));
         }
 
+        if (searchRequest.getGlobalSearchFilter() != null && !searchRequest.getGlobalSearchFilter().isBlank()) {
+            var pattern = "%" + searchRequest.getGlobalSearchFilter().trim().toLowerCase() + "%";
+            var contentAsText = cast(documentRoot.get(CONTENT).get(CONTENT), String.class);
+            predicates.add(cb.like(cb.lower(contentAsText), pattern));
+        }
+
         query.where(predicates.toArray(Predicate[]::new));
     }
 

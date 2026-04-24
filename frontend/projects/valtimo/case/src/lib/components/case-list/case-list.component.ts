@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 import {Component, Inject, OnDestroy, OnInit, ViewChild} from '@angular/core';
+import {HttpClient} from '@angular/common/http';
 import {ActivatedRoute, Params, Router} from '@angular/router';
 import {TranslateService} from '@ngx-translate/core';
 import {PermissionService} from '@valtimo/access-control';
@@ -136,6 +137,9 @@ export class CaseListComponent implements OnInit, OnDestroy {
   public canHaveAssignee!: boolean;
   public visibleCaseTabs: Array<CaseListTab> | null = null;
   public loadingExport = false;
+  public searchEngine: 'OPENSEARCH' | 'POSTGRES' = 'OPENSEARCH';
+  public searchDurationMs: number | null = null;
+  private searchStartTime = 0;
 
   public readonly defaultTabs = DEFAULT_CASE_LIST_TABS;
   public readonly tableTranslations = CASE_LIST_TABLE_TRANSLATIONS;
@@ -425,6 +429,8 @@ export class CaseListComponent implements OnInit, OnDestroy {
         ,
         globalSearchFilter,
       ]) => {
+        this.searchStartTime = performance.now();
+        this.searchDurationMs = null;
         const obsApi: Observable<boolean> = of(hasApiColumnConfig);
         const statusKeys: (string | null)[] =
           allStatuses.length === 1
@@ -486,6 +492,9 @@ export class CaseListComponent implements OnInit, OnDestroy {
         });
       }
     ),
+    tap(() => {
+      this.searchDurationMs = Math.round(performance.now() - this.searchStartTime);
+    }),
     switchMap(res =>
       combineLatest([
         of(res),
@@ -606,12 +615,32 @@ export class CaseListComponent implements OnInit, OnDestroy {
     private readonly caseListHiddenColumnsService: CaseListHiddenColumnsService,
     private readonly quickSearchStateService: QuickSearchStateService,
     @Inject(QUICK_SEARCH_SERVICE)
-    private readonly caseListQuickSearchService: IQuickSearchService<CaseListQuickSearchParams>
+    private readonly caseListQuickSearchService: IQuickSearchService<CaseListQuickSearchParams>,
+    private readonly http: HttpClient
   ) {}
 
   public ngOnInit(): void {
     this.setVisibleTabs();
     this.openCaseDefinitionKeySubscription();
+    this.loadSearchEngine();
+  }
+
+  public toggleSearchEngine(): void {
+    const next = this.searchEngine === 'OPENSEARCH' ? 'POSTGRES' : 'OPENSEARCH';
+    this.http
+      .put<{active: string}>('/api/management/v1/search-engine', {active: next})
+      .subscribe(res => {
+        this.searchEngine = res.active as 'OPENSEARCH' | 'POSTGRES';
+        this.listService.forceRefresh();
+      });
+  }
+
+  private loadSearchEngine(): void {
+    this.http
+      .get<{active: string}>('/api/management/v1/search-engine')
+      .subscribe(res => {
+        this.searchEngine = res.active as 'OPENSEARCH' | 'POSTGRES';
+      });
   }
 
   public ngOnDestroy(): void {
