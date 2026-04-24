@@ -31,6 +31,7 @@
       formControlName="column"
       [label]="'zgw.columns.column' | translate"
       [dropUp]="false"
+      [attr.data-test-id]="testIds.modalColumnDropdown"
     >
       <cds-dropdown-list
         [items]="!prefillColumn ? (availableColumns$ | async) : prefillColumn"
@@ -49,11 +50,20 @@
   </form>
 
   <cds-modal-footer [cdsLayer]="1">
-    <button cdsButton="secondary" (click)="onClose()">
+    <button
+      cdsButton="secondary"
+      [attr.data-test-id]="testIds.modalCancelButton"
+      (click)="onClose()"
+    >
       {{ 'interface.cancel' | translate }}
     </button>
 
-    <button cdsButton="primary" [disabled]="formGroup.invalid" (click)="updateColumn()">
+    <button
+      cdsButton="primary"
+      [disabled]="formGroup.invalid"
+      [attr.data-test-id]="testIds.modalSubmitButton"
+      (click)="updateColumn()"
+    >
       {{ (type === 'add' ? 'interface.add' : 'interface.save') | translate }}
     </button>
   </cds-modal-footer>
