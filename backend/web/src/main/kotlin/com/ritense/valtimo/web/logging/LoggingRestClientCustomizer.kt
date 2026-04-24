@@ -46,7 +46,6 @@ class LoggingRestClientCustomizer : RestClientCustomizer, ClientHttpRequestInter
         return CopiedHeadClientHttpResponse(response) { responseBodyHead ->
             logger.debug { createRequestReport(request, requestBodyHead, response, responseBodyHead) }
             if (response.statusCode.isError) {
-                logger.debug { createRequestReport(request, requestBodyHead, response, responseBodyHead) }
                 throw HttpClientErrorException(
                     response.statusCode,
                     response.statusText,
