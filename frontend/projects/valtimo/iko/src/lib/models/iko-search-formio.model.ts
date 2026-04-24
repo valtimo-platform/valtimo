@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,9 +14,20 @@
  * limitations under the License.
  */
 
-/*
- * Public API Surface of iko
- */
+interface IkoSearchFormioValue {
+  id: string;
+  [key: string]: any;
+}
 
-export * from './lib/iko.module';
-export * from './lib/components/iko-search-formio';
+interface PropertyMapping {
+  propertyName: string;
+  ikoProperty: string;
+}
+
+interface IkoRowSelectedEvent {
+  id: string;
+  label: string;
+  rowData: Record<string, any>;
+}
+
+export {IkoSearchFormioValue, PropertyMapping, IkoRowSelectedEvent};
