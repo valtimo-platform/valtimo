@@ -19,3 +19,4 @@
  */
 
 export * from './lib/iko.module';
+export * from './lib/components/iko-search-formio';

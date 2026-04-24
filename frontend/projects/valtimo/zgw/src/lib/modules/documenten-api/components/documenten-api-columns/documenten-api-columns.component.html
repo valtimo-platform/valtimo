@@ -71,6 +71,7 @@
     *ngIf="hasEditPermissions$ | async"
     cdsButton="primary"
     [disabled]="loading$ | async"
+    [attr.data-test-id]="testIds.addButton"
     (click)="openAddModal()"
   >
     <svg cdsIcon="add" size="16" class="cds--btn__icon"></svg>

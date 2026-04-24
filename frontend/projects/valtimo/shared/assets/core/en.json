@@ -2207,8 +2207,15 @@
   },
   "iko": {
     "searchFieldsNoResults": "No search fields found for this entity",
+    "viewNotFound": "IKO View for key '{{key}}' could not be found.",
     "pageTitle": "Views",
-    "searchVia": "Search via"
+    "searchVia": "Search via",
+    "formio": {
+      "back": "Back",
+      "selectResult": "Select a result",
+      "selectedResult": "Selected result",
+      "openInNewTab": "Open in new tab"
+    }
   },
   "ikoManagement": {
     "preparingDownload": "Preparing download",
