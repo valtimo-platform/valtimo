@@ -16,14 +16,9 @@
 
 import {expect, test} from '@playwright/test';
 import {ensureDraftVersionSelected} from '../../utils/version.utils';
-import {
-  CaseDetailsManagementZgwGeneralPage,
-  DocumentObjectenApiSync,
-  ObjectManagementConfiguration,
-  PluginConfiguration,
-  ZaakType,
-  ZaakTypeLink,
-} from './page';
+import {CaseDetailsManagementZgwGeneralPage} from './page';
+import {DocumentObjectenApiSync, ObjectManagementConfiguration} from './case-sync.types';
+import {PluginConfiguration, ZaakType, ZaakTypeLink} from './case-type-link.types';
 
 test.use({storageState: undefined});
 

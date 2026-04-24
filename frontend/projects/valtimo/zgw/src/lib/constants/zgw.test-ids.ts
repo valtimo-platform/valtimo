@@ -39,3 +39,11 @@ export const ZGW_CASE_TYPE_LINK_TEST_IDS = {
   modalSubmitButton: 'zgwCaseTypeLinkModalSubmitButton',
   modalCancelButton: 'zgwCaseTypeLinkModalCancelButton',
 } as const;
+
+export const ZGW_KEYWORDS_TEST_IDS = {
+  addButton: 'zgwKeywordsAddButton',
+  deleteMultipleButton: 'zgwKeywordsDeleteMultipleButton',
+  modalValueInput: 'zgwKeywordsModalValueInput',
+  modalSubmitButton: 'zgwKeywordsModalSubmitButton',
+  modalCancelButton: 'zgwKeywordsModalCancelButton',
+} as const;

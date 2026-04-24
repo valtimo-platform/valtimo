@@ -17,6 +17,8 @@
 import {APIRequestContext, expect, Locator, Page} from '@playwright/test';
 import {ZGW_CASE_SYNC_TEST_IDS, ZGW_CASE_TYPE_LINK_TEST_IDS} from '../../constants';
 import {apiDelete, apiGet, apiPost, apiPut} from '../../utils/api.utils';
+import {DocumentObjectenApiSync, ObjectManagementConfiguration} from './case-sync.types';
+import {PluginConfiguration, ZaakType, ZaakTypeLink} from './case-type-link.types';
 
 async function apiGetNullable<T>(url: string): Promise<T | null> {
   try {
@@ -26,37 +28,6 @@ async function apiGetNullable<T>(url: string): Promise<T | null> {
     if (err instanceof SyntaxError) return null;
     throw err;
   }
-}
-
-export interface DocumentObjectenApiSync {
-  objectManagementConfigurationId: string;
-  objectManagementConfigurationTitle?: string;
-  enabled: boolean;
-}
-
-export interface ObjectManagementConfiguration {
-  id: string;
-  title: string;
-}
-
-export interface ZaakType {
-  url: string;
-  omschrijving: string;
-}
-
-export interface ZaakTypeLink {
-  id?: string;
-  caseDefinitionKey?: string;
-  caseVersionTag?: string;
-  zaakTypeUrl: string;
-  zakenApiPluginConfigurationId?: string;
-  rsin?: string;
-  createWithDossier?: boolean;
-}
-
-export interface PluginConfiguration {
-  id: string;
-  title: string;
 }
 
 export class CaseDetailsManagementZgwGeneralPage {

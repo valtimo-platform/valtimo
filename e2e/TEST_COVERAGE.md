@@ -5,10 +5,10 @@
 | Category                    | Features | Functions | ✅ Covered | ❌ Not Covered |
 |-----------------------------|----------|-----------|------------|----------------|
 | User Features (ROLE_USER)   | 5        | 21        | 12         | 9              |
-| Admin Features (ROLE_ADMIN) | 15       | 328       | 130        | 195            |
-| **Total**                   | **20**   | **349**   | **142**    | **204**        |
+| Admin Features (ROLE_ADMIN) | 15       | 328       | 133        | 192            |
+| **Total**                   | **20**   | **349**   | **145**    | **201**        |
 
-**Coverage:** `142 / 349` — `40.7%`
+**Coverage:** `145 / 349` — `41.5%`
 
 ---
 
@@ -291,9 +291,9 @@
 
 | #     | Function        | Test Scenarios  | Coverage | Notes                                           |
 |:------|:----------------|:----------------|:--------:|:------------------------------------------------|
-| 6.109 | View keywords   | View keywords   |    ❌    |                                                 |
-| 6.110 | Add keyword     | Add keyword     |    ❌    |                                                 |
-| 6.111 | Search keywords | Search keywords |    ❌    |                                                 |
+| 6.109 | View keywords   | View keywords   |    ✅    | case-details-management-zgw-keywords.spec.ts    |
+| 6.110 | Add keyword     | Add keyword     |    ✅    | case-details-management-zgw-keywords.spec.ts    |
+| 6.111 | Search keywords | Search keywords |    ✅    | case-details-management-zgw-keywords.spec.ts    |
 
 ---
 
@@ -727,8 +727,8 @@
 |:-------------------------|:-------:|
 | Total Features           |   20    |
 | Total Functions          |   349   |
-| ✅ Covered by Playwright |   142   |
-| ❌ Not covered           |   204   |
+| ✅ Covered by Playwright |   145   |
+| ❌ Not covered           |   201   |
 | ⏳ In progress           |    1    |
 | `N/A` Not applicable     |    2    |
-| **Coverage %**           | **40.7%** |
+| **Coverage %**           | **41.5%** |
