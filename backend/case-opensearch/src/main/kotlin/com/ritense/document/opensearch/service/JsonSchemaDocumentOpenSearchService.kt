@@ -54,6 +54,7 @@ import org.springframework.data.domain.Pageable
 import org.springframework.data.domain.Sort
 import org.springframework.data.elasticsearch.core.ElasticsearchOperations
 import org.springframework.data.elasticsearch.core.query.StringQuery
+import org.apache.lucene.queryparser.classic.QueryParser
 import java.util.regex.Pattern
 
 class JsonSchemaDocumentOpenSearchService(
@@ -220,8 +221,31 @@ class JsonSchemaDocumentOpenSearchService(
 
         val globalFilter = searchRequest.globalSearchFilter?.takeIf { it.isNotEmpty() }
         if (globalFilter != null) {
-            // Use wildcard on contentText.keyword for partial-match behaviour equivalent to MongoDB text index
-            parts.add(QueryBuilders.wildcardQuery("contentText.keyword", "*${globalFilter.trim()}*").caseInsensitive(true))
+            val searchableFields = if (!documentDefinitionName.isNullOrEmpty()) {
+                runWithoutAuthorization {
+                    searchFieldService.getSearchFields(documentDefinitionName)
+                }
+                    .filter { it.path?.startsWith(DOC_PREFIX) == true }
+                    .map { "content.${it.path.removePrefix(DOC_PREFIX)}" }
+            } else {
+                emptyList()
+            }
+
+            if (searchableFields.isNotEmpty()) {
+                // query_string with lenient=true handles type mismatches gracefully
+                // (e.g. searching "doe" against a number field won't error, just won't match)
+                val escaped = QueryParser.escape(globalFilter.trim())
+                parts.add(
+                    QueryBuilders.queryStringQuery("*${escaped}*")
+                        .apply { searchableFields.forEach { field(it) } }
+                        .lenient(true)
+                        .analyzeWildcard(true)
+                )
+            } else {
+                // Fallback: search all content via contentText
+                val term = "*${globalFilter.trim()}*"
+                parts.add(QueryBuilders.wildcardQuery("contentText.keyword", term).caseInsensitive(true))
+            }
         }
 
         return andAll(parts)

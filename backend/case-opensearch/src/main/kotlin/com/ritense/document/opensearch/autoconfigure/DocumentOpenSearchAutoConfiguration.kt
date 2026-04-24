@@ -190,7 +190,21 @@ class DocumentOpenSearchAutoConfiguration {
                     val settings = org.springframework.data.elasticsearch.core.document.Document.create()
                     settings["index.number_of_replicas"] = 0
                     indexOps.create(settings)
-                    indexOps.putMapping(indexOps.createMapping(JsonSchemaDocumentOsDocument::class.java))
+
+                    // Merge annotated mapping with a dynamic template that forces all
+                    // content.* fields to text+keyword — enables wildcard search on numbers too
+                    val annotatedMapping = indexOps.createMapping(JsonSchemaDocumentOsDocument::class.java)
+                    val dynamicTemplates = listOf(
+                        mapOf("content_fields_as_text" to mapOf(
+                            "path_match" to "content.*",
+                            "mapping" to mapOf(
+                                "type" to "text",
+                                "fields" to mapOf("keyword" to mapOf("type" to "keyword", "ignore_above" to 256))
+                            )
+                        ))
+                    )
+                    annotatedMapping["dynamic_templates"] = dynamicTemplates
+                    indexOps.putMapping(annotatedMapping)
                 }
             } catch (e: Exception) {
                 logger.warn(e) { "Failed to initialize OpenSearch index — is OpenSearch running?" }

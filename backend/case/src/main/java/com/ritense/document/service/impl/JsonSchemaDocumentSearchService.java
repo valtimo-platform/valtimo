@@ -373,8 +373,28 @@ public class JsonSchemaDocumentSearchService implements DocumentSearchService {
 
         if (searchRequest.getGlobalSearchFilter() != null && !searchRequest.getGlobalSearchFilter().isBlank()) {
             var pattern = "%" + searchRequest.getGlobalSearchFilter().trim().toLowerCase() + "%";
-            var contentAsText = cast(documentRoot.get(CONTENT).get(CONTENT), String.class);
-            predicates.add(cb.like(cb.lower(contentAsText), pattern));
+            var searchableFields = !StringUtils.isEmpty(documentDefinitionName)
+                ? searchFieldService.getSearchFields(documentDefinitionName).stream()
+                    .filter(f -> f.getPath() != null && f.getPath().startsWith(DOC_PREFIX))
+                    .toList()
+                : List.<SearchField>of();
+
+            if (!searchableFields.isEmpty()) {
+                var fieldPredicates = searchableFields.stream()
+                    .map(f -> {
+                        var jsonPath = "$." + f.getPath().substring(DOC_PREFIX.length());
+                        Expression<String> expr = queryDialectHelper.getJsonValueExpression(
+                            cb, documentRoot.get(CONTENT).get(CONTENT), jsonPath, String.class
+                        );
+                        return cb.like(cb.lower(expr), pattern);
+                    })
+                    .toArray(Predicate[]::new);
+                predicates.add(cb.or(fieldPredicates));
+            } else {
+                // Fallback: search entire content as text
+                var contentAsText = cast(documentRoot.get(CONTENT).get(CONTENT), String.class);
+                predicates.add(cb.like(cb.lower(contentAsText), pattern));
+            }
         }
 
         query.where(predicates.toArray(Predicate[]::new));
