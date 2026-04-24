@@ -1,0 +1,7 @@
+[
+    {
+        "processDefinitionKey": "iko-search-demo",
+        "canInitializeDocument": true,
+        "startableByUser": false
+    }
+]

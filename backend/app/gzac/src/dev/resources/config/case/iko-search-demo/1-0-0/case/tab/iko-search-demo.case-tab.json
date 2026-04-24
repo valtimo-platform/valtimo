@@ -1,0 +1,16 @@
+[
+    {
+        "name": "Samenvatting",
+        "key": "summary",
+        "type": "widgets",
+        "contentKey": "-",
+        "showTasks": true
+    },
+    {
+        "name": "Voortgang",
+        "key": "progress",
+        "type": "standard",
+        "contentKey": "progress",
+        "showTasks": true
+    }
+]

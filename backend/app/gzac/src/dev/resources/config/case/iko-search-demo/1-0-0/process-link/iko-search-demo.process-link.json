@@ -1,0 +1,16 @@
+[
+    {
+        "activityId": "start-event",
+        "activityType": "bpmn:StartEvent:start",
+        "processLinkType": "form",
+        "formDefinitionName": "iko-search-demo-start-form"
+    },
+    {
+        "activityId": "iko-search-task",
+        "activityType": "bpmn:UserTask:create",
+        "processLinkType": "form",
+        "formDefinitionName": "iko-search-task-form",
+        "formDisplayType": "panel",
+        "formSize": "large"
+    }
+]
