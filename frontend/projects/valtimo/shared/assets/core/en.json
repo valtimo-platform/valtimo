@@ -1179,7 +1179,8 @@
         "modal": {
           "header": "Document preview"
         },
-        "pdfViewerNotSupported": "Your browser does not support PDF viewing."
+        "pdfViewerNotSupported": "Your browser does not support PDF viewing.",
+        "loading": "A preview version of the document is being generated. This may take a moment."
       }
     },
     "notifications": {
