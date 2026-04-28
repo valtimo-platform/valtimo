@@ -631,15 +631,29 @@ class ZakenApiPlugin(
             null
         }
 
-    private fun verlengingOrNullFrom(extensionReason: String?, extensionDuration: String?): Verlenging? =
-        if (extensionReason != null || extensionDuration != null)
-            Verlenging(reden = extensionReason, duur = extensionDuration)
-        else null
+    private fun verlengingOrNullFrom(extensionReason: String?, extensionDuration: String?): Verlenging? {
+        if (extensionReason == null && extensionDuration == null) return null
+        require(!extensionReason.isNullOrBlank() && !extensionDuration.isNullOrBlank()) {
+            "Both extensionReason and extensionDuration must be provided"
+        }
+        return Verlenging(reden = extensionReason, duur = extensionDuration)
+    }
 
-    private fun opschortingOrNullFrom(suspensionIndication: String?, suspensionReason: String?): Opschorting? =
-        if (suspensionIndication != null || suspensionReason != null)
-            Opschorting(indicatie = suspensionIndication?.toBoolean() ?: false, reden = suspensionReason ?: "")
-        else null
+    private fun opschortingOrNullFrom(suspensionIndication: String?, suspensionReason: String?): Opschorting? {
+        if (suspensionIndication == null && suspensionReason == null) return null
+        require(!suspensionIndication.isNullOrBlank() && !suspensionReason.isNullOrBlank()) {
+            "Both suspensionIndication and suspensionReason must be provided"
+        }
+        require(
+            suspensionIndication.equals("true", ignoreCase = true) || suspensionIndication.equals("false", ignoreCase = true)
+        ) {
+            "suspensionIndication must be either true or false"
+        }
+        return Opschorting(
+            indicatie = suspensionIndication.equals("true", ignoreCase = true),
+            reden = suspensionReason
+        )
+    }
 
     private fun processobjectOrNullFrom(
         processObjectDateAttribute: String?,
