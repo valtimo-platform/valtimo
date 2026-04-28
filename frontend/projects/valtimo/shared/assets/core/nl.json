@@ -1442,10 +1442,10 @@
       "buttonText": "Selecteer bestand",
       "success": "Deployment succesvol",
       "failure": "Deployment mislukt",
-      "duplicateKey": "Er bestaat al een proces met dezelfde sleutel in dit bouwblok",
+      "duplicateKey": "Er bestaat al een proces met dezelfde sleutel",
       "replaceTitle": "Bestaand proces vervangen?",
-      "replaceContent": "Er bestaat al een proces met dezelfde sleutel in dit bouwblok. Wilt u dit vervangen?",
-      "replaceContentWithDuplicates": "Er bestaat al een proces met dezelfde sleutel in dit bouwblok: {{duplicates}}. Wilt u dit vervangen?",
+      "replaceContent": "Er bestaat al een proces met dezelfde sleutel. Wilt u dit vervangen?",
+      "replaceContentWithDuplicates": "Er bestaat al een proces met dezelfde sleutel: {{duplicates}}. Wilt u dit vervangen?",
       "replaceConfirm": "Vervangen"
     },
     "canInitializeDocument": "Start een dossier",
