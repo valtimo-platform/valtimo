@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,9 +19,9 @@ package com.ritense.zakenapi.client
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.ritense.authorization.AuthorizationService
 import com.ritense.authorization.request.EntityAuthorizationRequest
+import com.ritense.documentenapi.authorization.ZgwDocument
+import com.ritense.documentenapi.authorization.ZgwDocumentActionProvider
 import com.ritense.outbox.OutboxService
-import com.ritense.resource.authorization.ResourcePermission
-import com.ritense.resource.authorization.ResourcePermissionActionProvider
 import com.ritense.zakenapi.ZakenApiAuthentication
 import com.ritense.zakenapi.domain.CreateZaakRequest
 import com.ritense.zakenapi.domain.CreateZaakResultaatRequest
@@ -73,14 +73,14 @@ import com.ritense.zakenapi.event.ZaakeigenschapUpdated
 import com.ritense.zakenapi.exception.ZaakRolNotUpdatedException
 import com.ritense.zgw.ClientTools
 import com.ritense.zgw.Page
-import java.net.URI
-import java.util.UUID
 import mu.KLogger
 import mu.KotlinLogging
 import org.springframework.http.HttpHeaders
 import org.springframework.http.MediaType
 import org.springframework.web.client.RestClient
 import org.springframework.web.client.body
+import java.net.URI
+import java.util.UUID
 
 class ZakenApiClient(
     private val restClientBuilder: RestClient.Builder,
@@ -98,9 +98,9 @@ class ZakenApiClient(
         if (authorizationEnabled) {
             authorizationService.requirePermission(
                 EntityAuthorizationRequest(
-                    ResourcePermission::class.java,
-                    ResourcePermissionActionProvider.CREATE,
-                    ResourcePermission(caseDocumentId)
+                    ZgwDocument::class.java,
+                    ZgwDocumentActionProvider.CREATE,
+                    ZgwDocument(caseDocumentId = caseDocumentId)
                 )
             )
         }
@@ -161,11 +161,12 @@ class ZakenApiClient(
             .retrieve()
             .body<Page<ZaakObject>>()!!
 
-        if(result.results.isNotEmpty()) {
+        if (result.results.isNotEmpty()) {
             outboxService.send { ZaakObjectViewed(objectMapper.valueToTree(result.results.first())) }
         }
         return result.results.firstOrNull()
     }
+
 
     fun getZaakInformatieObjecten(
         authentication: ZakenApiAuthentication,
@@ -174,14 +175,14 @@ class ZakenApiClient(
         zaakUrl: URI? = null,
         informatieobjectUrl: URI? = null,
     ): List<ZaakInformatieObject> {
-        if (authorizationEnabled && !authorizationService.hasPermission(
-            EntityAuthorizationRequest(
-                ResourcePermission::class.java,
-                ResourcePermissionActionProvider.VIEW_LIST,
-                ResourcePermission(caseDocumentId)
+        if (!authorizationService.hasPermission(
+                EntityAuthorizationRequest(
+                    ZgwDocument::class.java,
+                    ZgwDocumentActionProvider.VIEW_LIST,
+                    ZgwDocument(caseDocumentId = caseDocumentId)
+                )
             )
-        )
-            ) {
+        ) {
             return emptyList()
         }
 
@@ -624,9 +625,9 @@ class ZakenApiClient(
         if (authorizationEnabled) {
             authorizationService.requirePermission(
                 EntityAuthorizationRequest(
-                    ResourcePermission::class.java,
-                    ResourcePermissionActionProvider.DELETE,
-                    ResourcePermission(caseDocumentId)
+                    ZgwDocument::class.java,
+                    ZgwDocumentActionProvider.DELETE,
+                    ZgwDocument(caseDocumentId = caseDocumentId)
                 )
             )
         }

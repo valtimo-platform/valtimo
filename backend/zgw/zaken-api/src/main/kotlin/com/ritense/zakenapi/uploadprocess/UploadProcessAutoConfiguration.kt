@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@
 package com.ritense.zakenapi.uploadprocess
 
 import com.ritense.authorization.AuthorizationService
+import com.ritense.catalogiapi.service.CatalogiService
 import com.ritense.document.service.DocumentService
 import com.ritense.processdocument.service.DocumentDefinitionProcessLinkService
 import com.ritense.processdocument.service.ProcessDocumentService
@@ -48,12 +49,14 @@ class UploadProcessAutoConfiguration {
         authorizationService: AuthorizationService,
         @Value("\${valtimo.authorization.zgwDocuments.enabled:false}")
         authorizationEnabled: Boolean,
+        catalogiService: CatalogiService,
     ): ResourceUploadedToDocumentEventListener {
         return ResourceUploadedToDocumentEventListener(
             resourceService,
             uploadProcessService,
             authorizationService,
             authorizationEnabled,
+            catalogiService,
         )
     }
 

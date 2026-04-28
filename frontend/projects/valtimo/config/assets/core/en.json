@@ -199,6 +199,7 @@
     "cancel": "Cancel",
     "upload": "Upload",
     "save": "Save",
+    "uploadPermissionDenied": "You do not have permission to upload a document with the selected metadata. Please adjust your selections and try again.",
     "size": "Size",
     "tags": "Tags (optional)",
     "tagsTooltip": "Tags are used for easy filtering and searching of documents. You can add multiple tags to a document",
