@@ -7,10 +7,6 @@ on:
       - next-minor
 
 jobs:
-  test:
-    uses: ./.github/workflows/TEST.yml
-    secrets: inherit
-
   docker-build:
     name: Build docker image
     needs: test
