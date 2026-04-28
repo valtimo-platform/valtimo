@@ -121,18 +121,22 @@ export class PatchZaakConfigurationComponent
     this.pluginId$.next(this.pluginId);
     this.openSaveSubscription();
 
-    this.prefillConfiguration$.pipe(take(1)).subscribe(prefill => {
-      if (!prefill) return;
-      for (const [trigger, followers] of Object.entries(this.LINKED_FIELD_GROUPS)) {
-        if (this.GROUP_TRIGGERS.has(trigger) && followers.some(f => !!prefill[f])) {
-          this.addProperty(trigger);
+    this.prefillConfiguration$
+      .pipe(
+        filter((prefill): prefill is PatchZaakConfig => !!prefill),
+        take(1)
+      )
+      .subscribe(prefill => {
+        for (const [trigger, followers] of Object.entries(this.LINKED_FIELD_GROUPS)) {
+          if (this.GROUP_TRIGGERS.has(trigger) && followers.some(f => !!prefill[f])) {
+            this.addProperty(trigger);
+          }
         }
-      }
-      const allFollowers = Object.values(this.LINKED_FIELD_GROUPS).flat();
-      PatchZaakPropertyOptions.filter(p => !allFollowers.includes(p) && !!prefill[p]).forEach(
-        p => this.addProperty(p)
-      );
-    });
+        const allFollowers = Object.values(this.LINKED_FIELD_GROUPS).flat();
+        PatchZaakPropertyOptions.filter(p => !allFollowers.includes(p) && !!prefill[p]).forEach(
+          p => this.addProperty(p)
+        );
+      });
   }
 
   public ngOnDestroy(): void {
