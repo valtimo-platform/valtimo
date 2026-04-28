@@ -1,4 +1,4 @@
-name: 'Build docker container image'
+name: "Build docker container image"
 
 on:
   workflow_dispatch:
@@ -26,7 +26,9 @@ jobs:
         with:
           username: ${{ secrets.CG_ACR_USERNAME }}
           password: ${{ secrets.CG_ACR_PASSWORD }}
-          registry: 'commongroundacr.azurecr.io'
+          context: ./frontend
+          dockerfile: ./frontend/Dockerfile
+          registry: "commongroundacr.azurecr.io"
           push: ${{ github.event_name != 'pull_request' }}
           vulnerability_scan: false
           version: ${{ steps.get_version.outputs.version }}

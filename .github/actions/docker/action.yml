@@ -12,7 +12,7 @@ inputs:
     description: Defaults to the first Dockerfile found
     required: false
   context:
-    description: Defaults to repoistory root
+    description: Defaults to repository root
     required: false
     default: .
   push:
