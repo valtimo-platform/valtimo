@@ -16,6 +16,7 @@
 
 package com.ritense.zakenapi.domain
 
+import com.fasterxml.jackson.annotation.JsonFormat
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 import com.ritense.zgw.Rsin
 import com.ritense.zgw.domain.ArchiefStatus
@@ -42,7 +43,9 @@ data class ZaakResponse(
     val einddatumGepland: LocalDate? = null,
     val uiterlijkeEinddatumAfdoening: LocalDate? = null,
     val publicatiedatum: LocalDate? = null,
+    @JsonFormat(shape = JsonFormat.Shape.STRING)
     val laatstGemuteerd: LocalDateTime? = null,
+    @JsonFormat(shape = JsonFormat.Shape.STRING)
     val laatstGeopend: LocalDateTime? = null,
     val communicatiekanaal: URI? = null,
     val communicatiekanaalNaam: String? = null,

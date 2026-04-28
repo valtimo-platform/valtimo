@@ -16,6 +16,7 @@
 
 package com.ritense.zakenapi.domain
 
+import com.fasterxml.jackson.annotation.JsonFormat
 import com.fasterxml.jackson.annotation.JsonInclude
 import com.ritense.zgw.Rsin
 import com.ritense.zgw.domain.Archiefnominatie
@@ -37,6 +38,7 @@ data class CreateZaakRequest(
     val einddatumGepland: LocalDate? = null,
     val uiterlijkeEinddatumAfdoening: LocalDate? = null,
     val publicatiedatum: LocalDate? = null,
+    @JsonFormat(shape = JsonFormat.Shape.STRING)
     val laatstGeopend: LocalDateTime? = null,
     val communicatiekanaal: URI? = null,
     val communicatiekanaalNaam: String? = null,
