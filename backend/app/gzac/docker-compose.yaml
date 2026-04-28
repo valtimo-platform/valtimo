@@ -584,6 +584,8 @@ services:
         ports:
             - "6379:6379"
         container_name: iko-redis
+        profiles:
+            - iko
         healthcheck:
             test: [ "CMD", "redis-cli", "ping" ]
             interval: 10s
