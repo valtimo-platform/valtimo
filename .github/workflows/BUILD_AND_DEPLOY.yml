@@ -1,0 +1,49 @@
+name: 'Build docker container image'
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+      - develop
+    paths:
+      - 'src/**'
+      - 'Dockerfile'
+      - '.github/workflows/BUILD_AND_DEPLOY.yml'
+  pull_request:
+    branches:
+      - main
+    paths:
+      - 'src/**'
+      - 'Dockerfile'
+      - '.github/workflows/BUILD_AND_DEPLOY.yml'
+
+jobs:
+  test:
+    uses: ./.github/workflows/TEST.yml
+    secrets: inherit
+
+  docker-build:
+    name: Build docker image
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+        name: Checkout
+
+      - name: Get project version from build.gradle.kts
+        id: get_version
+        run: |
+          version=$(awk -F= '/^projectVersion/ {gsub(/^[ \t]+|[ \t]+$/, "", $2); print $2; exit}' gradle.properties)
+          echo "version=$version" >> $GITHUB_OUTPUT
+
+      - uses: ./.github/actions/docker
+        name: Build and push to Azure Container Registry
+        id: acr
+        with:
+          username: ${{ secrets.CG_ACR_USERNAME }}
+          password: ${{ secrets.CG_ACR_PASSWORD }}
+          registry: 'commongroundacr.azurecr.io'
+          push: ${{ github.event_name != 'pull_request' }}
+          vulnerability_scan: false
+          version: ${{ steps.get_version.outputs.version }}
