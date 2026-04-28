@@ -20,7 +20,6 @@
     xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd">
 
-    <include file="20260415-remove-duplicate-document-definitions.xml" relativeToChangelogFile="true"/>
-    <include file="20260416-resource-permission-to-zgw-document.xml" relativeToChangelogFile="true"/>
+    <include file="20260403-backfill-plugin-definition-key-on-fixed-refs.xml" relativeToChangelogFile="true"/>
 
 </databaseChangeLog>
