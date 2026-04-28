@@ -191,7 +191,10 @@ export class DocumentenApiMetadataModalComponent implements OnInit, OnDestroy {
     if (value) {
       this.modalService.openModal(this.metadataModal);
     } else {
-      this.modalService.closeModal();
+      this.modalService.closeModal(() => {
+        this.additionalDocumentDate$.next('neither');
+        this.clearForm();
+      });
     }
   }
 
@@ -549,8 +552,6 @@ export class DocumentenApiMetadataModalComponent implements OnInit, OnDestroy {
     ) as DocumentenApiMetadata;
 
     if (this.documentenApiMetadataForm.valid) this.metadata.emit(mappedRawValue);
-
-    this.closeModal();
   }
 
   public closeModal(): void {
