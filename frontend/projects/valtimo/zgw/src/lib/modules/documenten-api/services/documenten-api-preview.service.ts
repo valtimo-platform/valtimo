@@ -15,45 +15,28 @@
  */
 import {HttpClient} from '@angular/common/http';
 import {Injectable} from '@angular/core';
-import {BaseApiService, ConfigService, Page} from '@valtimo/shared';
-import {BehaviorSubject, map, Observable} from 'rxjs';
-import {PluginManagementService} from '@valtimo/plugin';
-import {PluginConfiguration} from '../../zaken-api';
+import {BaseApiService, ConfigService, InterceptorSkipHeader} from '@valtimo/shared';
+import {catchError, Observable, of} from 'rxjs';
 
 @Injectable({
   providedIn: 'root',
 })
 export class DocumentenApiPreviewService extends BaseApiService {
-  private _documentenApiPreviewPluginConfigurations$ = new BehaviorSubject<PluginConfiguration[]>(
-    []
-  );
-
   constructor(
     protected readonly httpClient: HttpClient,
-    protected readonly configService: ConfigService,
-    private readonly pluginManagementService: PluginManagementService
+    protected readonly configService: ConfigService
   ) {
     super(httpClient, configService);
   }
 
-  public retrieveDocumentenApiPreviewPluginConfigurations(): void {
-    this.pluginManagementService
-      .getPluginConfigurationsByPluginDefinitionKey('documentenapipreview')
-      .subscribe(configurations => {
-        this._documentenApiPreviewPluginConfigurations$.next(configurations);
-      });
-  }
-
   public canGeneratePreview(documentenApiPluginConfigurationId: string): Observable<boolean> {
-    return this._documentenApiPreviewPluginConfigurations$.pipe(
-      map(configurations =>
-        configurations.some(
-          configuration =>
-            'documentenApiConfigurationId' in configuration.properties &&
-            configuration.properties['documentenApiConfigurationId'] ===
-              documentenApiPluginConfigurationId
-        )
+    return this.httpClient
+      .get<boolean>(
+        this.getApiUrl(
+          `v1/documenten-api-preview/configuration-exists/${documentenApiPluginConfigurationId}`
+        ),
+        {headers: InterceptorSkipHeader}
       )
-    );
+      .pipe(catchError(() => of(false)));
   }
 }

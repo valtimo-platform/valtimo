@@ -130,6 +130,7 @@
 * [🧱 Building blocks](features/building-blocks/README.md)
   * [Forms](features/building-blocks/forms.md)
   * [Form flows](features/building-blocks/form-flows.md)
+  * [Decision tables](features/building-blocks/decision-tables.md)
 * [📊 Dashboard](features/dashboard/README.md)
   * [Widget data sources](features/dashboard/dashboard.md)
   * [Widget display types](features/dashboard/widget-display-types.md)
@@ -150,6 +151,7 @@
   * [List](features/iko/list.md)
   * [Tabs](features/iko/tabs.md)
   * [Widgets](features/iko/widgets.md)
+  * [Search FormIO component](features/iko/search-formio-component.md)
 * [🗝️ Keycloak](features/keycloak/README.md)
   * [Access control](features/keycloak/access-control.md)
 * [✉️ Outbox](features/outbox/README.md)
@@ -189,7 +191,8 @@
 ## Release notes
 
 * [Release notes](release-notes/release-notes.md)
-* [13.x.x](release-notes/13.x.x/README.md)
+* [13.x.x](release-notes/13.x.x/)
+  * [13.26.0](release-notes/13.x.x/13.26.0/README.md)
   * [13.25.0](release-notes/13.x.x/13.25.0/README.md)
   * [13.24.0](release-notes/13.x.x/13.24.0/README.md)
   * [13.23.0](release-notes/13.x.x/13.23.0/README.md)

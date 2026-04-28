@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" expressionLanguage="http://www.w3.org/1999/XPath" id="Definitions_1" targetNamespace="http://bpmn.io/schema/bpmn" typeLanguage="http://www.w3.org/2001/XMLSchema">
+    
+  <bpmn:process xmlns:camunda="http://camunda.org/schema/1.0/bpmn" camunda:versionTag="CD:bezwaar:1.0.1" id="document-audit-trail" isClosed="false" isExecutable="true" name="Document Audit Trail" processType="None">
+        
+    <bpmn:startEvent id="StartEvent_1" isInterrupting="true" parallelMultiple="false">
+            
+      <bpmn:outgoing>Flow_1ezeueg</bpmn:outgoing>
+          
+    </bpmn:startEvent>
+        
+    <bpmn:endEvent id="Event_1im266a">
+            
+      <bpmn:incoming>Flow_11f8sb0</bpmn:incoming>
+          
+    </bpmn:endEvent>
+        
+    <bpmn:sequenceFlow id="Flow_1trgcha" sourceRef="st-get-document-audit-trail" targetRef="ut_confirm-document-audit-trail"/>
+        
+    <bpmn:sequenceFlow id="Flow_1ezeueg" sourceRef="StartEvent_1" targetRef="st-get-document-audit-trail"/>
+        
+    <bpmn:serviceTask camunda:asyncAfter="true" camunda:expression="${null}" completionQuantity="1" id="st-get-document-audit-trail" implementation="##WebService" isForCompensation="false" name="Get Document Audit trail" startQuantity="1">
+            
+      <bpmn:incoming>Flow_1ezeueg</bpmn:incoming>
+            
+      <bpmn:outgoing>Flow_1trgcha</bpmn:outgoing>
+          
+    </bpmn:serviceTask>
+        
+    <bpmn:sequenceFlow id="Flow_11f8sb0" sourceRef="ut_confirm-document-audit-trail" targetRef="Event_1im266a"/>
+        
+    <bpmn:userTask completionQuantity="1" id="ut_confirm-document-audit-trail" implementation="##unspecified" isForCompensation="false" name="Confirm Audit Trail" startQuantity="1">
+            
+      <bpmn:incoming>Flow_1trgcha</bpmn:incoming>
+            
+      <bpmn:outgoing>Flow_11f8sb0</bpmn:outgoing>
+          
+    </bpmn:userTask>
+      
+  </bpmn:process>
+    
+  <bpmndi:BPMNDiagram id="BPMNDiagram_1">
+        
+    <bpmndi:BPMNPlane bpmnElement="document-audit-trail" id="BPMNPlane_1">
+            
+      <bpmndi:BPMNShape bpmnElement="StartEvent_1" id="_BPMNShape_StartEvent_2">
+                
+        <dc:Bounds height="36" width="36" x="173" y="102"/>
+              
+      </bpmndi:BPMNShape>
+            
+      <bpmndi:BPMNShape bpmnElement="Event_1im266a" id="Event_1im266a_di">
+                
+        <dc:Bounds height="36" width="36" x="602" y="102"/>
+              
+      </bpmndi:BPMNShape>
+            
+      <bpmndi:BPMNShape bpmnElement="st-get-document-audit-trail" id="Activity_0kbq88y_di">
+                
+        <dc:Bounds height="80" width="100" x="260" y="80"/>
+                
+        <bpmndi:BPMNLabel/>
+              
+      </bpmndi:BPMNShape>
+            
+      <bpmndi:BPMNShape bpmnElement="ut_confirm-document-audit-trail" id="Activity_198gtbr_di">
+                
+        <dc:Bounds height="80" width="100" x="430" y="80"/>
+                
+        <bpmndi:BPMNLabel/>
+              
+      </bpmndi:BPMNShape>
+            
+      <bpmndi:BPMNEdge bpmnElement="Flow_1trgcha" id="Flow_1trgcha_di">
+                
+        <di:waypoint x="360" y="120"/>
+                
+        <di:waypoint x="430" y="120"/>
+              
+      </bpmndi:BPMNEdge>
+            
+      <bpmndi:BPMNEdge bpmnElement="Flow_1ezeueg" id="Flow_1ezeueg_di">
+                
+        <di:waypoint x="209" y="120"/>
+                
+        <di:waypoint x="260" y="120"/>
+              
+      </bpmndi:BPMNEdge>
+            
+      <bpmndi:BPMNEdge bpmnElement="Flow_11f8sb0" id="Flow_11f8sb0_di">
+                
+        <di:waypoint x="530" y="120"/>
+                
+        <di:waypoint x="602" y="120"/>
+              
+      </bpmndi:BPMNEdge>
+          
+    </bpmndi:BPMNPlane>
+      
+  </bpmndi:BPMNDiagram>
+  
+</bpmn:definitions>

@@ -115,3 +115,7 @@ export const CASE_MANAGEMENT_TAGS_MODAL_TEST_IDS = {
 export const CASE_MANAGEMENT_TAGS_TEST_IDS = {
   addButton: 'caseTagAddButton',
 } as const;
+
+export const CASE_MANAGEMENT_DOCUMENT_TEST_IDS = {
+  downloadButton: 'caseManagementDocumentDownloadButton',
+} as const;

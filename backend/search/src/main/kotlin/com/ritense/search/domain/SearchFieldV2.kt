@@ -119,7 +119,7 @@ data class SearchFieldV2(
         } else if (fieldType == FieldType.MULTI_SELECT_DROPDOWN) {
             val listValue = value as? Collection<*> ?: listOf(value)
             dataFilters.add(DataFilter(path, IN, listValue))
-        } else if (matchType == SearchFieldMatchType.EXACT) {
+        } else if (matchType == null || matchType == SearchFieldMatchType.EXACT) {
             dataFilters.add(DataFilter(path, value))
         } else {
             error("Unsupported configuration of search field '$this'")

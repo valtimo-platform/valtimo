@@ -12,6 +12,12 @@
   after completing the last step. Previously, the user was returned to the case list without any indication of which case
   was created.
 
+* **Publish notification plugin action for Notificaties API**
+
+  A new plugin action "Publiceer een notificatie" has been added to the Notificaties API plugin. This action allows
+  publishing notifications via the Notificaties API from a BPMN process, for example from a send task or intermediate
+  throw event.
+
 * **Ad-hoc building blocks on a case**
 
   Case definitions now have an **Actions** tab in case configuration where administrators manage the items that are
@@ -20,11 +26,15 @@
 
   For more information, see [Actions](../../../features/case/actions.md).
 
-* **Publish notification plugin action for Notificaties API**
+* **Additional Documenten Plugin version added**
 
-  A new plugin action "Publiceer een notificatie" has been added to the Notificaties API plugin. This action allows
-  publishing notifications via the Notificaties API from a BPMN process, for example from a send task or intermediate
-  throw event.
+  A new plugin version has been added with **experimental** features for Gemeente Utrecht and Baseflow.
+  The version provides two new plugin actions:
+
+  - **Link document to object** — links a document to any ZGW object (e.g. a Zaak, Besluit, or custom object) via the objectinformatieobjecten API.
+  - **Delete document link** — removes an existing objectinformatieobject link by its URL.
+
+  Both actions are marked **experimental**
 
 ## Enhancements
 
