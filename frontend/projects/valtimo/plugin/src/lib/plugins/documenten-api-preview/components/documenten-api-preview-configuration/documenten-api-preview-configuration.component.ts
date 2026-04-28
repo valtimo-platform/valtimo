@@ -16,10 +16,11 @@
 
 import {Component, EventEmitter, Input, OnDestroy, OnInit, Output} from '@angular/core';
 import {PluginConfigurationComponent} from '../../../../models';
-import {BehaviorSubject, combineLatest, map, Observable, Subscription, take} from 'rxjs';
+import {BehaviorSubject, combineLatest, map, Observable, skip, Subscription, take} from 'rxjs';
 import {DocumentenApiPreviewConfig} from '../../models';
 import {PluginManagementService, PluginTranslationService} from '../../../../services';
 import {TranslateService} from '@ngx-translate/core';
+import {SelectItem} from '@valtimo/components';
 
 @Component({
   selector: 'valtimo-documenten-api-preview-configuration',
@@ -38,11 +39,21 @@ export class DocumentenApiPreviewConfigurationComponent
     new EventEmitter<DocumentenApiPreviewConfig>();
 
   private saveSubscription!: Subscription;
+  private _pdfUniversalAccessibilitySubscription!: Subscription;
 
   private readonly formValue$ = new BehaviorSubject<DocumentenApiPreviewConfig | null>(null);
   private readonly valid$ = new BehaviorSubject<boolean>(false);
 
-  readonly documentenApiPluginSelectItems$: Observable<Array<{id: string; text: string}>> =
+  public readonly pdfArchiveMethods: SelectItem[] = [
+    {id: 'none', text: 'None', translationKey: 'pdfArchiveMethodNone'},
+    {id: 'PDF/A-1b', text: 'PDF/A-1b', translationKey: 'pdfArchiveMethodPdfA1b'},
+    {id: 'PDF/A-2b', text: 'PDF/A-2b', translationKey: 'pdfArchiveMethodPdfA2b'},
+    {id: 'PDF/A-3b', text: 'PDF/A-3b', translationKey: 'pdfArchiveMethodPdfA3b'},
+  ];
+
+  public readonly pdfUniversalAccessibility$ = new BehaviorSubject<boolean>(false);
+
+  public readonly documentenApiPluginSelectItems$: Observable<Array<{id: string; text: string}>> =
     combineLatest([
       this.pluginManagementService.getPluginConfigurationsByPluginDefinitionKey('documentenapi'),
       this.translateService.stream('key'),
@@ -65,16 +76,44 @@ export class DocumentenApiPreviewConfigurationComponent
   ) {}
 
   ngOnInit(): void {
+    this.initPdfUniversalAccessibilityEnabled();
+    this.openPdfUniversalAccessibilitySubscription();
     this.openSaveSubscription();
   }
 
   ngOnDestroy() {
+    this._pdfUniversalAccessibilitySubscription?.unsubscribe();
     this.saveSubscription?.unsubscribe();
   }
 
+  public onPdfUniversalAccessibilityChange(checked: boolean): void {
+    this.pdfUniversalAccessibility$.next(checked);
+  }
+
   formValueChange(formValue: DocumentenApiPreviewConfig): void {
-    this.formValue$.next(formValue);
-    this.handleValid(formValue);
+    const formValueIncludingToggle = {
+      ...formValue,
+      pdfUniversalAccessibility: this.pdfUniversalAccessibility$.getValue(),
+    };
+    this.formValue$.next(formValueIncludingToggle);
+    this.handleValid(formValueIncludingToggle);
+  }
+
+  private initPdfUniversalAccessibilityEnabled(): void {
+    this.prefillConfiguration$?.pipe(take(1)).subscribe(configuration => {
+      this.pdfUniversalAccessibility$.next(!!configuration?.pdfUniversalAccessibility);
+    });
+  }
+
+  private openPdfUniversalAccessibilitySubscription(): void {
+    this._pdfUniversalAccessibilitySubscription = this.pdfUniversalAccessibility$
+      .pipe(skip(1))
+      .subscribe(() => {
+        const currentFormValue = this.formValue$.getValue();
+        if (currentFormValue) {
+          this.formValueChange(currentFormValue);
+        }
+      });
   }
 
   private handleValid(formValue: DocumentenApiPreviewConfig): void {

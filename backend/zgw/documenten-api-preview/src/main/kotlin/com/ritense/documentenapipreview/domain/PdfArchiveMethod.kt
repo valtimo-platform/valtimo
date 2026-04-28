@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2024 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,15 +14,20 @@
  * limitations under the License.
  */
 
-import {PluginConfigurationData} from '../../../models';
+package com.ritense.documentenapipreview.domain
 
-type PdfArchiveMethod = 'none' | 'PDF/A-1b' | 'PDF/A-2b' | 'PDF/A-3b';
+import com.fasterxml.jackson.annotation.JsonProperty
 
-interface DocumentenApiPreviewConfig extends PluginConfigurationData {
-  pdfConversionUrl: string;
-  documentenApiConfigurationId: string;
-  pdfArchiveMethod: PdfArchiveMethod;
-  pdfUniversalAccessibility: boolean;
+enum class PdfArchiveMethod {
+    @JsonProperty("none")
+    NONE,
+
+    @JsonProperty("PDF/A-1b")
+    PDFA1B,
+
+    @JsonProperty("PDF/A-2b")
+    PDFA2B,
+
+    @JsonProperty("PDF/A-3b")
+    PDFA3B,
 }
-
-export {DocumentenApiPreviewConfig};
