@@ -24,9 +24,10 @@
 }
 
 .loading-container {
-  display: flex;
   justify-content: center;
+  flex-direction: column;
   align-items: center;
   height: 88vh;
+  gap: 50px;
   width: 100%;
 }
