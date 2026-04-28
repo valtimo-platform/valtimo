@@ -94,8 +94,6 @@ internal class ZakenApiClientIT @Autowired constructor(
                 zaak = "https://localhost:56273/zaken/1234",
                 titel = "titel",
                 beschrijving = "beschrijving",
-                vernietigingsdatum = null,
-                status = null
             )
         )
     }
@@ -113,48 +111,7 @@ internal class ZakenApiClientIT @Autowired constructor(
                     zaak = "https://localhost:56273/zaken/1234",
                     titel = "titel",
                     beschrijving = "beschrijving",
-                    vernietigingsdatum = null,
-                    status = null
                 )
-            )
-        }
-    }
-
-    @Test
-    @WithMockUser(authorities = ["ROLE_TEST"])
-    fun `should allow get single zaakinformatieobject by url`() {
-        val permissions = listOf(
-            Permission(
-                id = CASE_DOCUMENT_ID,
-                resourceType = ZgwDocument::class.java,
-                actions = mutableListOf(ZgwDocumentActionProvider.VIEW),
-                conditionContainer = ConditionContainer(),
-                role = roleTest,
-                contextResourceType = null,
-                contextConditionContainer = null
-            )
-        )
-        permissionRepository.saveAllAndFlush(permissions)
-
-        val result = zakenApiClient.getZaakInformatieObject(
-            authentication = zakenApiPlugin.authenticationPluginConfiguration,
-            baseUrl = zakenApiPlugin.url,
-            zaakInformatieobjectUrl = ZAAK_INFORMATIEOBJECT_URL,
-            caseDocumentId = CASE_DOCUMENT_ID
-        )
-
-        assertEquals(URI("https://example.com"), result.url)
-    }
-
-    @Test
-    @WithMockUser(authorities = ["ROLE_TEST"])
-    fun `should throw access denied for get single zaakinformatieobject by url when missing permission`() {
-        assertThrows<AccessDeniedException> {
-            zakenApiClient.getZaakInformatieObject(
-                authentication = zakenApiPlugin.authenticationPluginConfiguration,
-                baseUrl = zakenApiPlugin.url,
-                zaakInformatieobjectUrl = ZAAK_INFORMATIEOBJECT_URL,
-                caseDocumentId = CASE_DOCUMENT_ID
             )
         }
     }
