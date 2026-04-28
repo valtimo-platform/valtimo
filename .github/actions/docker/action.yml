@@ -94,20 +94,7 @@ runs:
         echo "Branch name: $BRANCH_NAME"
         echo "Release version: $VERSION"
 
-        if [[ $INPUT_TAG != '' ]]; then
-          TAG="${IMAGE_NAME}:${INPUT_TAG}"
-        elif [[ "$BRANCH_NAME" == "main" ]]; then
-          if [[ $VERSION == '' ]]; then
-              printf '%s\n' "Test case x failed" >&2
-              exit 1
-          fi
-          TAG="${IMAGE_NAME}:${VERSION}"
-        elif [[ "$BRANCH_NAME" == "develop" ]] || [[ "$BRANCH_NAME" == release-* ]] || [[ "$BRANCH_NAME" == hotfix-* ]]; then
-          TAG="${IMAGE_NAME}:${BRANCH_NAME}-${DATE}"
-        else
-          TAG="${IMAGE_NAME}:${BRANCH_NAME}"
-        fi
-
+        TAG="${IMAGE_NAME}:${BRANCH_NAME}-${DATE}"
         echo "tag=${TAG}" >> $GITHUB_OUTPUT
 
     - name: Docker build image
