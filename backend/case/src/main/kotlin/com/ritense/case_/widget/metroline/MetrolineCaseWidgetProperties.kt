@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,17 +14,19 @@
  * limitations under the License.
  */
 
-package com.ritense.document.web.rest.dto
+package com.ritense.case_.widget.metroline
 
-import com.ritense.document.domain.InternalCaseStatusColor
-import com.ritense.valtimo.contract.Constants
-import jakarta.validation.constraints.Pattern
-
-data class InternalCaseStatusUpdateOrderRequestDto(
-    @field:Pattern(regexp = Constants.KEY_REGEX) val key: String,
-    val title: String,
-    val visibleInCaseListByDefault: Boolean,
-    val retentionPeriodInDays: Int,
-    val color: InternalCaseStatusColor,
-    val label: String? = null,
+data class MetrolineCaseWidgetProperties(
+    val orientation: MetrolineOrientation,
+    val mode: MetrolineMode,
 )
+
+enum class MetrolineOrientation {
+    HORIZONTAL,
+    VERTICAL,
+}
+
+enum class MetrolineMode {
+    INTERNAL_CASE_STATUS,
+    ZAAKSTATUS,
+}

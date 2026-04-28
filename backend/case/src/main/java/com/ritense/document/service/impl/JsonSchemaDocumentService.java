@@ -39,6 +39,7 @@ import com.ritense.authorization.request.EntityAuthorizationRequest;
 import com.ritense.authorization.role.Role;
 import com.ritense.authorization.specification.AuthorizationSpecification;
 import com.ritense.document.domain.Document;
+import com.ritense.document.domain.InternalCaseStatusHistory;
 import com.ritense.document.domain.RelatedFile;
 import com.ritense.document.domain.impl.JsonDocumentContent;
 import com.ritense.document.domain.impl.JsonSchemaDocument;
@@ -68,6 +69,7 @@ import com.ritense.document.event.DocumentsListed;
 import com.ritense.document.exception.DocumentNotFoundException;
 import com.ritense.document.exception.ModifyDocumentException;
 import com.ritense.document.exception.UnknownDocumentDefinitionException;
+import com.ritense.document.repository.InternalCaseStatusHistoryRepository;
 import com.ritense.document.repository.impl.JsonSchemaDocumentRepository;
 import com.ritense.document.service.CaseTagService;
 import com.ritense.document.service.DocumentService;
@@ -134,6 +136,8 @@ public class JsonSchemaDocumentService implements DocumentService {
 
     private final EntityManager entityManager;
 
+    private final InternalCaseStatusHistoryRepository internalCaseStatusHistoryRepository;
+
     public JsonSchemaDocumentService(
         JsonSchemaDocumentRepository documentRepository,
         JsonSchemaDocumentDefinitionService documentDefinitionService,
@@ -147,7 +151,8 @@ public class JsonSchemaDocumentService implements DocumentService {
         InternalCaseStatusService internalCaseStatusService,
         CaseTagService caseTagService,
         TeamManagementService teamManagementService,
-        EntityManager entityManager
+        EntityManager entityManager,
+        InternalCaseStatusHistoryRepository internalCaseStatusHistoryRepository
     ) {
         this.documentRepository = documentRepository;
         this.documentDefinitionService = documentDefinitionService;
@@ -162,6 +167,7 @@ public class JsonSchemaDocumentService implements DocumentService {
         this.caseTagService = caseTagService;
         this.teamManagementService = teamManagementService;
         this.entityManager = entityManager;
+        this.internalCaseStatusHistoryRepository = internalCaseStatusHistoryRepository;
     }
 
     @Override
@@ -958,6 +964,16 @@ public class JsonSchemaDocumentService implements DocumentService {
         document.setInternalStatus(internalCaseStatus);
 
         documentRepository.save(document);
+
+        if (internalStatusKey != null) {
+            internalCaseStatusHistoryRepository.save(new InternalCaseStatusHistory(
+                UUID.randomUUID(),
+                documentId.getId(),
+                document.definitionId().name(),
+                internalStatusKey,
+                LocalDateTime.now()
+            ));
+        }
 
         if (retentionDateSet && document.retentionDate().isEmpty()) {
             applicationEventPublisher.publishEvent(

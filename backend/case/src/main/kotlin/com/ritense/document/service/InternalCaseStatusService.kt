@@ -99,7 +99,8 @@ class InternalCaseStatusService(
                 request.visibleInCaseListByDefault,
                 currentInternalCaseStatuses.size,
                 request.retentionPeriodInDays,
-                request.color
+                request.color,
+                request.label,
             )
         )
     }
@@ -122,7 +123,8 @@ class InternalCaseStatusService(
                 title = request.title,
                 visibleInCaseListByDefault = request.visibleInCaseListByDefault,
                 retentionPeriodInDays = request.retentionPeriodInDays,
-                color = request.color
+                color = request.color,
+                label = request.label,
             )
         )
     }
@@ -151,7 +153,8 @@ class InternalCaseStatusService(
                 order = index,
                 visibleInCaseListByDefault = request.visibleInCaseListByDefault,
                 retentionPeriodInDays = request.retentionPeriodInDays,
-                color = request.color
+                color = request.color,
+                label = request.label,
             )
         }
 

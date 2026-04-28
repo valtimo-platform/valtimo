@@ -53,10 +53,15 @@ import com.ritense.case_.widget.fields.FieldsCaseWidgetMapper
 import com.ritense.case_.widget.fieldsheader.FieldsCaseHeaderWidgetDataProvider
 import com.ritense.case_.widget.map.MapCaseWidgetDataProvider
 import com.ritense.case_.widget.map.MapCaseWidgetMapper
+import com.ritense.case_.widget.metroline.MetrolineCaseWidgetDataProvider
+import com.ritense.case_.widget.metroline.MetrolineCaseWidgetMapper
+import com.ritense.case_.widget.metroline.ZaakMetrolineDataService
 import com.ritense.case_.widget.table.TableCaseWidgetDataProvider
 import com.ritense.case_.widget.table.TableCaseWidgetMapper
+import com.ritense.document.repository.InternalCaseStatusHistoryRepository
 import com.ritense.document.service.CaseTagService
 import com.ritense.document.service.DocumentService
+import com.ritense.document.service.InternalCaseStatusService
 import com.ritense.valtimo.contract.case_.CaseDefinitionChecker
 import com.ritense.valtimo.contract.database.QueryDialectHelper
 import com.ritense.valueresolver.ValueResolverService
@@ -67,6 +72,7 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.boot.autoconfigure.domain.EntityScan
 import org.springframework.context.ApplicationContext
 import org.springframework.context.annotation.Bean
+import java.util.Optional
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories
 
 @AutoConfiguration
@@ -295,4 +301,20 @@ class CaseWidgetAutoConfiguration {
         documentService: DocumentService,
         caseWidgetService: CaseWidgetService
     ) = CaseHeaderWidgetResource(caseHeaderWidgetService, documentService, caseWidgetService)
+
+    @ConditionalOnMissingBean(MetrolineCaseWidgetMapper::class)
+    @Bean
+    fun metrolineCaseWidgetMapper() = MetrolineCaseWidgetMapper()
+
+    @ConditionalOnMissingBean(MetrolineCaseWidgetDataProvider::class)
+    @Bean
+    fun metrolineCaseWidgetDataProvider(
+        internalCaseStatusService: InternalCaseStatusService,
+        internalCaseStatusHistoryRepository: InternalCaseStatusHistoryRepository,
+        zaakMetrolineDataService: Optional<ZaakMetrolineDataService>,
+    ) = MetrolineCaseWidgetDataProvider(
+        internalCaseStatusService,
+        internalCaseStatusHistoryRepository,
+        zaakMetrolineDataService.orElse(null),
+    )
 }

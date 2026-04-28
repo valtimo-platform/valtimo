@@ -42,6 +42,7 @@ import com.ritense.zakenapi.client.ZakenApiClient
 import com.ritense.zakenapi.exporter.ZaakTypeLinkExporter
 import com.ritense.zakenapi.ikorepository.ZakenApiIkoRepository
 import com.ritense.zakenapi.link.ZaakInstanceLinkService
+import com.ritense.zakenapi.widget.ZaakMetrolineDataServiceImpl
 import com.ritense.zakenapi.listener.ZaakNotitieEventListener
 import com.ritense.zakenapi.listener.ZaakTypeLinkConfigurationIssueListener
 import com.ritense.zakenapi.provider.BsnProvider
@@ -389,4 +390,14 @@ class ZakenApiAutoConfiguration {
     fun zaakTypeLinkConfigurationIssueListener(
         applicationEventPublisher: ApplicationEventPublisher
     ) = ZaakTypeLinkConfigurationIssueListener(applicationEventPublisher)
+
+    @Bean
+    @ConditionalOnMissingBean(ZaakMetrolineDataServiceImpl::class)
+    fun zaakMetrolineDataService(
+        zaakUrlProvider: ZaakUrlProvider,
+        pluginService: PluginService,
+    ) = ZaakMetrolineDataServiceImpl(
+        zaakUrlProvider,
+        pluginService,
+    )
 }
