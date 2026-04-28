@@ -53,6 +53,7 @@ import com.ritense.case_.widget.fields.FieldsCaseWidgetMapper
 import com.ritense.case_.widget.fieldsheader.FieldsCaseHeaderWidgetDataProvider
 import com.ritense.case_.widget.map.MapCaseWidgetDataProvider
 import com.ritense.case_.widget.map.MapCaseWidgetMapper
+import com.ritense.case_.rest.MetrolineManagementResource
 import com.ritense.case_.widget.metroline.MetrolineCaseWidgetDataProvider
 import com.ritense.case_.widget.metroline.MetrolineCaseWidgetMapper
 import com.ritense.case_.widget.metroline.ZaakMetrolineDataService
@@ -301,6 +302,14 @@ class CaseWidgetAutoConfiguration {
         documentService: DocumentService,
         caseWidgetService: CaseWidgetService
     ) = CaseHeaderWidgetResource(caseHeaderWidgetService, documentService, caseWidgetService)
+
+    @ConditionalOnMissingBean(MetrolineManagementResource::class)
+    @Bean
+    fun metrolineManagementResource(
+        zaakMetrolineDataService: Optional<ZaakMetrolineDataService>,
+    ) = MetrolineManagementResource(
+        zaakMetrolineDataService.orElse(null),
+    )
 
     @ConditionalOnMissingBean(MetrolineCaseWidgetMapper::class)
     @Bean
