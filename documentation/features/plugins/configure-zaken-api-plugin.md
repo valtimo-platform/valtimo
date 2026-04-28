@@ -100,10 +100,10 @@ Additional optional properties can be added via the **Add zaak property** menu. 
 * **Relevant other cases.** JSON array of other relevant zaken, each with a `url` and `aardRelatie` field.
 * **Selection list class.** URL reference to the applicable selectielijstklasse as defined in the VNG Selectielijst.
 * **Start date retention period.** The date that marks the start of the period by which the zaak file must be destroyed. Supports date/time in ISO 8601 format and process variables.
-* **Extension (Verlenging).** Indication that the period within which the zaak must be dealt with has been extended. Adding this property adds two linked fields:
+* **Extension.** Indication that the period within which the zaak must be dealt with has been extended. Adding this property adds two linked fields:
   * **Extension reason.** The reason for extending the handling period of the zaak.
   * **Extension duration.** The number of calendar days by which the handling period of the zaak has been extended.
-* **Suspension (Opschorting).** Indication that the handling of the zaak has been suspended. Adding this property adds two linked fields:
+* **Suspension.** Indication that the handling of the zaak has been suspended. Adding this property adds two linked fields:
   * **Suspension indication.** Whether the zaak is currently suspended. Options: `true`, `false`
   * **Suspension reason.** The reason for suspending the handling of the zaak.
 
@@ -150,10 +150,10 @@ The **Patch zaak** action updates a zaak in the zaken API. When creating a proce
 * **Selection list class.** URL reference to the applicable selectielijstklasse as defined in the VNG Selectielijst.
 * **Start date.** The date on which the execution of the zaak was started. Supports date/time in ISO 8601 format and process variables.
 * **Start date retention period.** The date that marks the start of the period by which the zaak file must be destroyed. Supports date/time in ISO 8601 format and process variables.
-* **Extension (Verlenging).** Indication that the period within which the zaak must be dealt with has been extended. Adding this property adds two linked fields:
+* **Extension.** Indication that the period within which the zaak must be dealt with has been extended. Adding this property adds two linked fields:
   * **Extension reason.** The reason for extending the handling period of the zaak.
   * **Extension duration.** The number of calendar days by which the handling period of the zaak has been extended.
-* **Suspension (Opschorting).** Indication that the handling of the zaak has been suspended. Adding this property adds two linked fields:
+* **Suspension.** Indication that the handling of the zaak has been suspended. Adding this property adds two linked fields:
   * **Suspension indication.** Whether the zaak is currently suspended. Options: `true`, `false`
   * **Suspension reason.** The reason for suspending the handling of the zaak.
 
