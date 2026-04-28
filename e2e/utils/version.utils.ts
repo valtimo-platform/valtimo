@@ -18,6 +18,19 @@ import {Page} from '@playwright/test';
 
 const VERSION_DROPDOWN_TEST_ID = 'caseVersionSelectDropdown';
 
+async function getDropdownText(page: Page): Promise<string> {
+  const dropdown = page.getByTestId(VERSION_DROPDOWN_TEST_ID);
+  await dropdown.waitFor({state: 'visible'});
+  await page.waitForFunction(
+    testId => {
+      const el = document.querySelector(`[data-test-id="${testId}"]`);
+      return el && /\d+\.\d+\.\d+/.test(el.textContent || '');
+    },
+    VERSION_DROPDOWN_TEST_ID
+  );
+  return dropdown.innerText();
+}
+
 /**
  * Ensures a draft version is selected in the case version dropdown.
  * If the currently selected version is already a draft, does nothing.
@@ -25,16 +38,17 @@ const VERSION_DROPDOWN_TEST_ID = 'caseVersionSelectDropdown';
  */
 export async function ensureDraftVersionSelected(page: Page): Promise<string> {
   const dropdown = page.getByTestId(VERSION_DROPDOWN_TEST_ID);
-  const selectedText = await dropdown.innerText();
+  const selectedText = await getDropdownText(page);
 
   if (!selectedText.includes('DRAFT')) {
+    const currentUrl = page.url();
     await dropdown.click();
     const draftOption = page
       .getByRole('listbox')
       .locator('[data-test-id^="caseVersion"]:has-text("DRAFT")')
       .first();
     await draftOption.click();
-    await page.waitForURL(/\/version\/[\d.]+/);
+    await page.waitForURL(url => url.toString() !== currentUrl);
   }
 
   return getVersionFromUrl(page);
@@ -47,16 +61,17 @@ export async function ensureDraftVersionSelected(page: Page): Promise<string> {
  */
 export async function ensureFinalVersionSelected(page: Page): Promise<string> {
   const dropdown = page.getByTestId(VERSION_DROPDOWN_TEST_ID);
-  const selectedText = await dropdown.innerText();
+  const selectedText = await getDropdownText(page);
 
   if (selectedText.includes('DRAFT')) {
+    const currentUrl = page.url();
     await dropdown.click();
     const finalOption = page
       .getByRole('listbox')
       .locator('[data-test-id^="caseVersion"]:not(:has-text("DRAFT"))')
       .first();
     await finalOption.click();
-    await page.waitForURL(/\/version\/[\d.]+/);
+    await page.waitForURL(url => url.toString() !== currentUrl);
   }
 
   return getVersionFromUrl(page);

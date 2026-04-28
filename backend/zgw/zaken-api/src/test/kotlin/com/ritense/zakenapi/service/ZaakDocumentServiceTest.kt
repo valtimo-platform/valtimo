@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -171,6 +171,12 @@ class ZaakDocumentServiceTest {
         whenever(
             authorizationService.hasPermission<Any>(any())
         ).thenReturn(true)
+        whenever(
+            authorizationService.hasPermission<Any>(any(), any())
+        ).thenReturn(true)
+        whenever(
+            authorizationService.getPermissions(any(), any())
+        ).thenReturn(emptyList())
 
         whenever(
             documentenApiService.getCaseInformatieObjecten(

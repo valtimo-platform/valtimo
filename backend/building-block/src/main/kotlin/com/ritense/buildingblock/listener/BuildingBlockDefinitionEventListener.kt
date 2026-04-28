@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,6 +23,7 @@ import com.ritense.buildingblock.domain.definition.BuildingBlockDefinitionArtwor
 import com.ritense.buildingblock.repository.BuildingBlockDefinitionArtworkRepository
 import com.ritense.buildingblock.repository.BuildingBlockDefinitionRepository
 import com.ritense.buildingblock.repository.ProcessDefinitionBuildingBlockDefinitionRepository
+import com.ritense.buildingblock.service.BuildingBlockDecisionService
 import com.ritense.buildingblock.service.BuildingBlockDocumentDefinitionService
 import com.ritense.buildingblock.service.BuildingBlockFormDefinitionService
 import com.ritense.buildingblock.service.BuildingBlockFormFlowDefinitionService
@@ -53,6 +54,7 @@ class BuildingBlockDefinitionEventListener(
     private val buildingBlockFormDefinitionService: BuildingBlockFormDefinitionService,
     private val buildingBlockFormFlowDefinitionService: BuildingBlockFormFlowDefinitionService,
     private val processLinkRepository: ProcessLinkRepository,
+    private val buildingBlockDecisionService: BuildingBlockDecisionService,
 ) {
 
     @EventListener(BuildingBlockDefinitionCreatedEvent::class)
@@ -62,6 +64,7 @@ class BuildingBlockDefinitionEventListener(
         val newId = event.buildingBlockDefinitionId
 
         copyDocumentDefinition(newId.key, basedOnId, newId)
+        copyDecisionDefinitions(basedOnId, newId)
         val formIdMapping = buildingBlockFormDefinitionService.copyFormDefinitions(basedOnId, newId)
         buildingBlockFormFlowDefinitionService.copyFormFlowDefinitions(basedOnId, newId)
         val newProcessDefinitionIds = copyProcessDefinitions(basedOnId, newId)
@@ -142,6 +145,20 @@ class BuildingBlockDefinitionEventListener(
                     val newFormId = formIdMapping[link.formDefinitionId] ?: return@forEach
                     processLinkRepository.save(link.copy(formDefinitionId = newFormId))
                 }
+        }
+    }
+
+    private fun copyDecisionDefinitions(
+        basedOnId: BuildingBlockDefinitionId,
+        newId: BuildingBlockDefinitionId
+    ) {
+        buildingBlockDecisionService.getDecisionDefinitions(basedOnId).forEach { oldDecision ->
+            operatonProcessService.deploy(
+                newId,
+                oldDecision.resourceName,
+                buildingBlockDecisionService.getDmnModel(oldDecision).inputStream()
+            )
+                ?: error { "Failed to duplicate decision ${oldDecision.key} for building block $newId" }
         }
     }
 

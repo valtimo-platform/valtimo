@@ -13,10 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import {Component, OnDestroy, OnInit} from '@angular/core';
-import {PluginDefinition, PluginFunction, PluginManagementService} from '@valtimo/plugin';
-import {combineLatest, Observable, of, Subscription} from 'rxjs';
-import {filter, switchMap, take, withLatestFrom} from 'rxjs/operators';
+import {Component, Injector, OnDestroy, OnInit} from '@angular/core';
+import {PluginDefinition, PluginFunction, PluginManagementService, PluginService} from '@valtimo/plugin';
+import {combineLatest, forkJoin, Observable, of, Subscription} from 'rxjs';
+import {filter, map, switchMap, take, withLatestFrom} from 'rxjs/operators';
 
 import {
   PluginStateService,
@@ -35,15 +35,32 @@ export class SelectPluginActionComponent implements OnInit, OnDestroy {
   public readonly pluginFunctions$: Observable<Array<PluginFunction> | undefined> = combineLatest([
     this.stateService.selectedPluginDefinition$,
     this.processLinkStateService.modalParams$,
+    this.stateService.selectedPluginConfiguration$,
+    this.pluginService.pluginSpecifications$,
   ]).pipe(
-    switchMap(([selectedDefinition, modalParams]) =>
-      selectedDefinition
-        ? this.pluginManagementService.getPluginFunctions(
-            selectedDefinition.key,
-            modalParams.element.activityListenerType
-          )
-        : of(undefined)
-    )
+    switchMap(([selectedDefinition, modalParams, selectedConfiguration, pluginSpecifications]) => {
+      if (!selectedDefinition) return of(undefined);
+
+      return this.pluginManagementService
+        .getPluginFunctions(selectedDefinition.key, modalParams.element.activityListenerType)
+        .pipe(
+          switchMap(functions => {
+            const specification = pluginSpecifications.find(
+              s => s.pluginId === selectedDefinition.key
+            );
+            if (!specification?.functionConfigurationComponentsFilter) return of(functions);
+
+            const props = (selectedConfiguration?.properties ?? {}) as {[key: string]: any};
+            const filterFn = specification.functionConfigurationComponentsFilter;
+
+            return forkJoin(
+              functions.map(fn =>
+                filterFn(props, fn.key, this.injector).pipe(map(visible => ({fn, visible})))
+              )
+            ).pipe(map(results => results.filter(r => r.visible).map(r => r.fn)));
+          })
+        );
+    })
   );
   public readonly selectedPluginDefinition$: Observable<PluginDefinition> =
     this.stateService.selectedPluginDefinition$;
@@ -54,7 +71,9 @@ export class SelectPluginActionComponent implements OnInit, OnDestroy {
 
   constructor(
     private readonly buttonService: ProcessLinkButtonService,
+    private readonly injector: Injector,
     private readonly pluginManagementService: PluginManagementService,
+    private readonly pluginService: PluginService,
     private readonly stateService: PluginStateService,
     private readonly stepService: ProcessLinkStepService,
     private readonly processLinkStateService: ProcessLinkStateService

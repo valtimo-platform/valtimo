@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<definitions xmlns="https://www.omg.org/spec/DMN/20191111/MODEL/" xmlns:dmndi="https://www.omg.org/spec/DMN/20191111/DMNDI/" xmlns:dc="http://www.omg.org/spec/DMN/20180521/DC/" xmlns:modeler="http://camunda.org/schema/modeler/1.0" xmlns:camunda="http://camunda.org/schema/1.0/dmn" id="Definitions_IncomeEligibility" name="Income Eligibility Decision" namespace="http://camunda.org/schema/1.0/dmn" exporter="Camunda Modeler" exporterVersion="5.28.0" modeler:executionPlatform="Camunda Platform" modeler:executionPlatformVersion="7.20.0">
+  <decision id="income-eligibility-decision" name="Inkomensgeschiktheid Beslissing" camunda:historyTimeToLive="180">
+    <decisionTable id="DecisionTable_IncomeEligibility" hitPolicy="FIRST">
+      <input id="Input_HouseholdSize" label="Huishoudgrootte" camunda:inputVariable="householdSize">
+        <inputExpression id="InputExpression_HouseholdSize" typeRef="integer">
+          <text>householdSize</text>
+        </inputExpression>
+      </input>
+      <output id="Output_EligibilityResult" label="Geschiktheidsresultaat" name="eligibilityResult" typeRef="string" />
+      <output id="Output_CheckStatus" label="Controlestatus" name="checkStatus" typeRef="string" />
+      <rule id="Rule_SinglePerson">
+        <description>Alleenstaande - standaard geschikt</description>
+        <inputEntry id="UnaryTests_SinglePerson">
+          <text>1</text>
+        </inputEntry>
+        <outputEntry id="OutputEntry_SingleEligibility">
+          <text>"Geschikt: alleenstaande aanvrager"</text>
+        </outputEntry>
+        <outputEntry id="OutputEntry_SingleStatus">
+          <text>"GOEDGEKEURD"</text>
+        </outputEntry>
+      </rule>
+      <rule id="Rule_SmallHousehold">
+        <description>Klein huishouden (2-3 personen)</description>
+        <inputEntry id="UnaryTests_SmallHousehold">
+          <text>[2..3]</text>
+        </inputEntry>
+        <outputEntry id="OutputEntry_SmallEligibility">
+          <text>"Geschikt: klein huishouden"</text>
+        </outputEntry>
+        <outputEntry id="OutputEntry_SmallStatus">
+          <text>"GOEDGEKEURD"</text>
+        </outputEntry>
+      </rule>
+      <rule id="Rule_MediumHousehold">
+        <description>Middelgroot huishouden (4-5 personen)</description>
+        <inputEntry id="UnaryTests_MediumHousehold">
+          <text>[4..5]</text>
+        </inputEntry>
+        <outputEntry id="OutputEntry_MediumEligibility">
+          <text>"Geschikt: middelgroot huishouden - extra toeslag"</text>
+        </outputEntry>
+        <outputEntry id="OutputEntry_MediumStatus">
+          <text>"GOEDGEKEURD"</text>
+        </outputEntry>
+      </rule>
+      <rule id="Rule_LargeHousehold">
+        <description>Groot huishouden (6+ personen)</description>
+        <inputEntry id="UnaryTests_LargeHousehold">
+          <text>&gt;= 6</text>
+        </inputEntry>
+        <outputEntry id="OutputEntry_LargeEligibility">
+          <text>"Geschikt: groot huishouden - maximale toeslag"</text>
+        </outputEntry>
+        <outputEntry id="OutputEntry_LargeStatus">
+          <text>"GOEDGEKEURD"</text>
+        </outputEntry>
+      </rule>
+      <rule id="Rule_Default">
+        <description>Ongeldige huishoudgrootte</description>
+        <inputEntry id="UnaryTests_Default">
+          <text></text>
+        </inputEntry>
+        <outputEntry id="OutputEntry_DefaultEligibility">
+          <text>"Niet geschikt: ongeldige huishoudgrootte"</text>
+        </outputEntry>
+        <outputEntry id="OutputEntry_DefaultStatus">
+          <text>"AFGEWEZEN"</text>
+        </outputEntry>
+      </rule>
+    </decisionTable>
+  </decision>
+  <dmndi:DMNDI>
+    <dmndi:DMNDiagram>
+      <dmndi:DMNShape dmnElementRef="income-eligibility-decision">
+        <dc:Bounds height="80" width="180" x="160" y="100" />
+      </dmndi:DMNShape>
+    </dmndi:DMNDiagram>
+  </dmndi:DMNDI>
+</definitions>

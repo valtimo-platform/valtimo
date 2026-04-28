@@ -26,7 +26,7 @@
   (rowClicked)="editWidget($event)"
 >
   <ng-container carbonToolbarContent>
-    <button *ngIf="enableWidgetDivider" cdsButton="ghost" (click)="openAddDividerModal()">
+    <button *ngIf="enableWidgetDivider" cdsButton="ghost" [attr.data-test-id]="testIds.addDividerButton" (click)="openAddDividerModal()">
       {{ 'widgetTabManagement.list.addDivider' | translate }}
 
       <svg class="cds--btn__icon" cdsIcon="drag--vertical" size="16"></svg>
@@ -55,6 +55,7 @@
 <ng-template #addWidgetButton>
   <button
     cdsButton="primary"
+    [attr.data-test-id]="testIds.addWidgetButton"
     (click)="openAddModal()"
     [disabled]="(singleWidget$ | async) && ((widgets$ | async) || []).length === 1"
   >

@@ -31,7 +31,7 @@ import {ButtonModule, IconModule, IconService, TabsModule} from 'carbon-componen
 import {cloneDeep} from 'lodash';
 import {BehaviorSubject, combineLatest, filter, map, Observable, switchMap, take, tap} from 'rxjs';
 
-import {WIDGET_MANAGEMENT_SERVICE} from '../../../constants';
+import {WIDGET_EDITOR_TEST_IDS, WIDGET_MANAGEMENT_SERVICE} from '../../../constants';
 import {IWidgetManagementService} from '../../../interfaces';
 import {
   AVAILABLE_WIDGETS,
@@ -69,6 +69,8 @@ import {WidgetManagementWizardComponent} from '../management-wizard/widget-manag
   ],
 })
 export class WidgetManagementEditorComponent implements OnDestroy {
+  protected readonly testIds = WIDGET_EDITOR_TEST_IDS;
+
   @Input() public enableWidgetDivider = true;
   @Input() public set params(value: any) {
     if (!value) return;

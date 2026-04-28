@@ -16,6 +16,17 @@
 
 package com.ritense.documentenapi.web.rest.dto
 
+import com.ritense.documentenapi.domain.DocumentenApiVersion
+
 data class DocumentenApiVersionsManagementDto(
-    val versions: List<String>
-)
+    val versions: List<String>,
+    val versionDetails: List<DocumentenApiVersionDetailsDto>,
+) {
+    companion object {
+        fun of(versions: List<DocumentenApiVersion>): DocumentenApiVersionsManagementDto =
+            DocumentenApiVersionsManagementDto(
+                versions = versions.map { it.version },
+                versionDetails = versions.map { DocumentenApiVersionDetailsDto.of(it) },
+            )
+    }
+}

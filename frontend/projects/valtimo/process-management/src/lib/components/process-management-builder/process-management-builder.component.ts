@@ -104,7 +104,7 @@ import {
   tap,
 } from 'rxjs';
 import {distinctUntilChanged} from 'rxjs/operators';
-import {EMPTY_BPMN} from '../../constants';
+import {EMPTY_BPMN, PROCESS_MANAGEMENT_BUILDER_TEST_IDS} from '../../constants';
 import {
   OpenProcessLinkModalEvent,
   ProcessDefinitionResult,
@@ -176,6 +176,8 @@ export class ProcessManagementBuilderComponent implements AfterViewInit, OnDestr
 
   public readonly canInitializeDocument$ = new BehaviorSubject<boolean>(false);
   public readonly startableByUser$ = new BehaviorSubject<boolean>(false);
+
+  protected readonly testIds = PROCESS_MANAGEMENT_BUILDER_TEST_IDS;
 
   public readonly selectedProcessDefinitionXml$ =
     this.processManagementEditorService.selectionProcessDefinition$.pipe(

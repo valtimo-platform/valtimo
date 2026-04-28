@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,6 +18,7 @@ package com.ritense.zakenapi.uploadprocess
 
 import com.ritense.authorization.AuthorizationService
 import com.ritense.case_.service.ActiveCaseDefinitionService
+import com.ritense.catalogiapi.service.CatalogiService
 import com.ritense.document.service.DocumentService
 import com.ritense.processdocument.service.CaseDefinitionProcessLinkService
 import com.ritense.processdocument.service.ProcessDocumentService
@@ -45,12 +46,14 @@ class UploadProcessAutoConfiguration {
     fun resourceUploadedEventListener(
         resourceService: TemporaryResourceStorageService,
         uploadProcessService: UploadProcessService,
-        authorizationService: AuthorizationService
+        authorizationService: AuthorizationService,
+        catalogiService: CatalogiService,
     ): ResourceUploadedToDocumentEventListener {
         return ResourceUploadedToDocumentEventListener(
             resourceService,
             uploadProcessService,
-            authorizationService
+            authorizationService,
+            catalogiService,
         )
     }
 

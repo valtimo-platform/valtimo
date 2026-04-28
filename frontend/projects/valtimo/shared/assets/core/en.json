@@ -178,6 +178,7 @@
     "cancel": "Cancel",
     "upload": "Upload",
     "save": "Save",
+    "uploadPermissionDenied": "You do not have permission to upload a document with the selected metadata. Please adjust your selections and try again.",
     "size": "Size",
     "tags": "Tags (optional)",
     "tagsTooltip": "Tags are used for easy filtering and searching of documents. You can add multiple tags to a document",
@@ -420,7 +421,13 @@
     "deploy": "Save",
     "loadFailure": "Something went wrong with loading your decision table.",
     "deploySuccess": "Decision table has been deployed successfully.",
-    "deployFailure": "Something went wrong with deploying your decision table."
+    "deployFailure": "Something went wrong with deploying your decision table.",
+    "deleteSuccess": "Decision table has been deleted successfully.",
+    "deleteFailure": "Something went wrong with deleting the decision table.",
+    "deleteModal": {
+      "title": "Delete decision table",
+      "content": "Are you sure you want to delete this decision table? This action cannot be undone."
+    }
   },
   "message": {"empty": "No result found"},
   "cta": {"close": "Close", "moreDetails": "More details"},
@@ -1172,7 +1179,8 @@
         "modal": {
           "header": "Document preview"
         },
-        "pdfViewerNotSupported": "Your browser does not support PDF viewing."
+        "pdfViewerNotSupported": "Your browser does not support PDF viewing.",
+        "loading": "A preview version of the document is being generated. This may take a moment."
       }
     },
     "notifications": {
@@ -2200,8 +2208,15 @@
   },
   "iko": {
     "searchFieldsNoResults": "No search fields found for this entity",
+    "viewNotFound": "IKO View for key '{{key}}' could not be found.",
     "pageTitle": "Views",
-    "searchVia": "Search via"
+    "searchVia": "Search via",
+    "formio": {
+      "back": "Back",
+      "selectResult": "Select a result",
+      "selectedResult": "Selected result",
+      "openInNewTab": "Open in new tab"
+    }
   },
   "ikoManagement": {
     "preparingDownload": "Preparing download",
@@ -2377,7 +2392,8 @@
       "document": "Document",
       "processes": "Processes",
       "forms": "Forms",
-      "formFlows": "Form flows"
+      "formFlows": "Form flows",
+      "decisions": "Decision tables"
     },
     "formDefinition": {
       "name": "Name"

@@ -1,0 +1,35 @@
+[
+  {
+    "activityId" : "st-get-document-audit-trail",
+    "activityType" : "bpmn:ServiceTask:start",
+    "pluginConfigurationId" : "5474fe57-532a-4050-8d89-32e62ca3e895",
+    "pluginActionDefinitionKey" : "get-audit-trail",
+    "actionProperties" : {
+      "documentUrl" : "pv:documentUrl",
+      "processVariableName" : "documentAuditTrail"
+    },
+    "referenceType" : "FIXED",
+    "pluginDefinitionKey" : null,
+    "processLinkType" : "plugin"
+  },
+  {
+    "activityId" : "StartEvent_1",
+    "activityType" : "bpmn:StartEvent:start",
+    "formDefinitionName" : "document-audit-trail-start-form",
+    "viewModelEnabled" : false,
+    "formDisplayType" : "modal",
+    "formSize" : "medium",
+    "subtitles" : null,
+    "processLinkType" : "form"
+  },
+  {
+    "activityId" : "ut_confirm-document-audit-trail",
+    "activityType" : "bpmn:UserTask:create",
+    "formDefinitionName" : "confirm-document-audit-trail",
+    "viewModelEnabled" : false,
+    "formDisplayType" : "modal",
+    "formSize" : "small",
+    "subtitles" : [],
+    "processLinkType" : "form"
+  }
+]

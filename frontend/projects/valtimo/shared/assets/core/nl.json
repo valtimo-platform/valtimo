@@ -184,6 +184,7 @@
     "cancel": "Annuleren",
     "upload": "Uploaden",
     "save": "Opslaan",
+    "uploadPermissionDenied": "U heeft geen toestemming om een document te uploaden met de geselecteerde metadata. Pas uw selecties aan en probeer het opnieuw.",
     "size": "Omvang",
     "tags": "Trefwoorden (optioneel)",
     "tagsTooltip": "Trefwoorden worden gebruikt voor het makkelijk zoeken en filteren van documenten. Je kunt meerdere trefwoorden aan een document toevoegen.",
@@ -424,9 +425,15 @@
     },
     "version": "Versie",
     "deploy": "Opslaan",
-    "loadFailure": "Er is iets misgegaan bij het laden van het beslistabel.",
-    "deploySuccess": "Het beslistabel is succesvol opgeslagen.",
-    "deployFailure": "Er is iets misgegaan bij het opslaan van het beslistabel."
+    "loadFailure": "Er is iets misgegaan bij het laden van de beslistabel.",
+    "deploySuccess": "De beslistabel is succesvol opgeslagen.",
+    "deployFailure": "Er is iets misgegaan bij het opslaan van de beslistabel.",
+    "deleteSuccess": "De beslistabel is succesvol verwijderd.",
+    "deleteFailure": "Er is iets misgegaan bij het verwijderen van de beslistabel.",
+    "deleteModal": {
+      "title": "Beslistabel verwijderen",
+      "content": "Weet u zeker dat u deze beslistabel wilt verwijderen? Deze actie kan niet ongedaan worden gemaakt."
+    }
   },
   "message": {"empty": "Geen resultaat gevonden"},
   "cta": {"close": "Sluiten", "moreDetails": "Meer details"},
@@ -1206,7 +1213,8 @@
         "modal": {
           "header": "Document weergave"
         },
-        "pdfViewerNotSupported": "Uw browser biedt geen ondersteuning voor het weergeven van PDF bestanden."
+        "pdfViewerNotSupported": "Uw browser biedt geen ondersteuning voor het weergeven van PDF bestanden.",
+        "loading": "Het document wordt geconverteerd voor weergave. Dit kan even duren."
       }
     },
     "notifications": {
@@ -2242,8 +2250,15 @@
   },
   "iko": {
     "searchFieldsNoResults": "Geen zoekvelden gevonden voor deze entiteit",
+    "viewNotFound": "IKO Beeld voor sleutel '{{key}}' kon niet worden gevonden.",
     "pageTitle": "Beelden",
-    "searchVia": "Zoeken via"
+    "searchVia": "Zoeken via",
+    "formio": {
+      "back": "Terug",
+      "selectResult": "Selecteer een resultaat",
+      "selectedResult": "Geselecteerd resultaat",
+      "openInNewTab": "Open in nieuw tabblad"
+    }
   },
   "ikoManagement": {
     "preparingDownload": "Download aan het voorbereiden",
@@ -2419,7 +2434,8 @@
       "document": "Document",
       "processes": "Processen",
       "forms": "Formulieren",
-      "formFlows": "Form flows"
+      "formFlows": "Form flows",
+      "decisions": "Beslistabellen"
     },
     "formDefinition": {
       "name": "Naam"

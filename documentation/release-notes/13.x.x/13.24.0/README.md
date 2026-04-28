@@ -18,13 +18,31 @@
   publishing notifications via the Notificaties API from a BPMN process, for example from a send task or intermediate
   throw event.
 
+* **Ad-hoc building blocks on a case**
+
+  Case definitions now have an **Actions** tab in case configuration where administrators manage the items that are
+  startable from the **Start** button on the case detail page. The tab lists both processes linked to the case definition
+  and ad-hoc building blocks, and allows their visibility and ordering to be managed from a single place.
+
+  For more information, see [Actions](../../../features/case/actions.md).
+
+* **Additional Documenten Plugin version added**
+
+  A new plugin version has been added with **experimental** features for Gemeente Utrecht and Baseflow.
+  The version provides two new plugin actions:
+
+  - **Link document to object** — links a document to any ZGW object (e.g. a Zaak, Besluit, or custom object) via the objectinformatieobjecten API.
+  - **Delete document link** — removes an existing objectinformatieobject link by its URL.
+
+  Both actions are marked **experimental**
+
 ## Enhancements
 
 * **Automatic team assignment via candidate groups**
 
   When a user task is created with a candidate group that matches the case's assigned team key, the team is now
   automatically assigned to the task. This requires the case definition to have `canHaveAssignee` and `autoAssignTasks`
-  enabled. See [Teams](../../features/teams/README.md) for more information.
+  enabled. See [Teams](../../../features/teams/README.md) for more information.
 
 * **Automatic user assignment changes**
 
