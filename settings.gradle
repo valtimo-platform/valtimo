@@ -38,6 +38,7 @@ include(
     ":backend:contract",
     ":backend:core",
     ":backend:dashboard",
+    ":backend:deployer",
     ":backend:data-provider",
     ":backend:document-generation",
     ":backend:document-generation:local-document-generation",

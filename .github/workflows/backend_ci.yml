@@ -1,15 +1,9 @@
-name: "Run backend CI"
+name: "Run backend CI (upstream - disabled)"
+
+# Disabled in deployer fork: use deployer_ci.yml instead.
+# Kept for merge compatibility with upstream valtimo repo.
 on:
-  push:
-    branches:
-      - next-minor
-    paths:
-      - .github/workflows/backend_*.yml
-      - backend/**
-  pull_request:
-    paths:
-      - .github/workflows/backend_*.yml
-      - backend/**
+  workflow_dispatch:
 
 permissions:
   actions: write
