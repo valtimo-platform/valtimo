@@ -1,14 +1,32 @@
+<<<<<<< release-notes/13.27.0
 # 13.27.0
 
 {% hint style="info" %}
 **Release date 06-05-2026**
+=======
+# 13.x.x
+
+{% hint style="info" %}
+**Release date xx-xx-2026**
+>>>>>>> next-minor
 {% endhint %}
 
 ## New Features
 
+<<<<<<< release-notes/13.27.0
 * **New feature title**
 
   New feature explanation.
+=======
+* **Plugin configuration mapping on import**
+
+  When importing a case definition that references plugin configurations from another environment, Valtimo now shows a
+  preview of the required plugin configurations and allows administrators to map them to existing configurations in the
+  target environment. This prevents broken process links after import and reduces manual configuration effort.
+  Note: this requires the export to be created with Valtimo 13.25.0 or later, as earlier exports do not include the
+  required plugin configuration metadata.
+  See the [import and export section](../../../features/case/README.md#import) for more information.
+>>>>>>> next-minor
 
 ## Enhancements
 
