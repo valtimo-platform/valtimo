@@ -1,5 +1,9 @@
 # 13.27.0
 
+{% hint style="info" %}
+**Release date 06-05-2026**
+{% endhint %}
+
 ## New Features
 
 * **New feature title**
