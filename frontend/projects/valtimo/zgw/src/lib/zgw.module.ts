@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,12 +28,12 @@ import {
 import {DocumentModule} from '@valtimo/document';
 import {ResourceModule} from '@valtimo/resource';
 import {
-  NotificatiesApiRoutingModule,
   CaseDetailTabDocumentenApiDocumentsComponent,
   CaseDetailTabObjectTypeComponent,
   CaseManagementLinkProcessComponent,
   DocumentenApiMetadataModalComponent,
   DocumentenApiUploaderComponent,
+  NotificatiesApiRoutingModule,
 } from './modules';
 import {CaseManagementZgwComponent} from './components';
 
@@ -59,6 +59,7 @@ import {CaseManagementZgwComponent} from './components';
         translationKey: 'caseManagement.tabs.zgw',
         component: CaseManagementZgwComponent,
         tabRoute: 'zgw',
+        issueTypes: ['zaak-type-link', 'zaakdetail-sync'],
       },
       multi: true,
     },

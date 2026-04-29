@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -182,12 +182,16 @@ class ProcessLinkAutoConfiguration {
         processLinkService: ProcessLinkService,
         repositoryService: OperatonRepositoryService,
         processDefinitionCaseDefinitionService: ProcessDefinitionCaseDefinitionService,
-        objectMapper: ObjectMapper
+        objectMapper: ObjectMapper,
+        processLinkMappers: List<ProcessLinkMapper>,
+        applicationEventPublisher: ApplicationEventPublisher,
     ) = ProcessLinkImporter(
         processLinkService,
         repositoryService,
         processDefinitionCaseDefinitionService,
-        objectMapper
+        objectMapper,
+        processLinkMappers,
+        applicationEventPublisher,
     )
 
     @Bean
@@ -196,12 +200,16 @@ class ProcessLinkAutoConfiguration {
         processLinkService: ProcessLinkService,
         repositoryService: OperatonRepositoryService,
         processDefinitionCaseDefinitionService: ProcessDefinitionCaseDefinitionService,
-        objectMapper: ObjectMapper
+        objectMapper: ObjectMapper,
+        processLinkMappers: List<ProcessLinkMapper>,
+        applicationEventPublisher: ApplicationEventPublisher,
     ) = GlobalProcessLinkImporter(
         processLinkService,
         repositoryService,
         processDefinitionCaseDefinitionService,
-        objectMapper
+        objectMapper,
+        processLinkMappers,
+        applicationEventPublisher,
     )
 
     @Bean
