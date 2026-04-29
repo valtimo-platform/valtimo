@@ -93,6 +93,7 @@ export class CaseManagementUploadComponent implements OnInit, OnDestroy {
   public readonly importWarning$ = new BehaviorSubject<IMPORT_WARNING>(IMPORT_WARNING.NONE);
   public readonly overrideConfirmed$ = new BehaviorSubject<boolean>(false);
   public readonly pluginMappingRows$ = new BehaviorSubject<PluginMappingRow[]>([]);
+  public readonly hasUnidentifiablePlugins$ = new BehaviorSubject<boolean>(false);
 
   public readonly backButtonEnabled$: Observable<boolean> = this.activeStep$.pipe(
     map((activeStep: UPLOAD_STEP) =>
@@ -292,7 +293,17 @@ export class CaseManagementUploadComponent implements OnInit, OnDestroy {
       }
     }
 
-    const uniqueConfigs = Array.from(uniqueById.values());
+    const allConfigs = Array.from(uniqueById.values());
+
+    // Configs with a known key can be mapped in the UI.
+    // Configs without a key but with a matching UUID in the target are fine as-is.
+    // Configs without a key and without a matching UUID are unidentifiable.
+    const hasUnidentifiable = allConfigs.some(
+      c => c.pluginDefinitionKey === null && !c.existsInTargetEnvironment
+    );
+    this.hasUnidentifiablePlugins$.next(hasUnidentifiable);
+
+    const uniqueConfigs = allConfigs.filter(c => c.pluginDefinitionKey !== null);
     if (uniqueConfigs.length === 0) {
       this.pluginMappingRows$.next([]);
       return;
@@ -500,6 +511,7 @@ export class CaseManagementUploadComponent implements OnInit, OnDestroy {
       this.importWarning$.next(IMPORT_WARNING.NONE);
       this.overrideConfirmed$.next(false);
       this.pluginMappingRows$.next([]);
+      this.hasUnidentifiablePlugins$.next(false);
       this.clearPluginMappingForm();
     }, CARBON_CONSTANTS.modalAnimationMs);
   }

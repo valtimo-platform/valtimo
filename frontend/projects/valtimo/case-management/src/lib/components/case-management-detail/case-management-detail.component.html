@@ -32,7 +32,6 @@
           showClose: false,
           lowContrast: true
         }"
-        (click)="navigateToTab('zgw')"
       ></cds-notification>
     }
   }
@@ -41,17 +40,7 @@
     <ng-template #generalTabHeading>
       {{ 'caseManagement.tabs.general' | translate }}
       @if (hasPluginProcessLinkIssue$ | async) {
-        <svg
-          class="tab-warning-icon"
-          xmlns="http://www.w3.org/2000/svg"
-          width="16"
-          height="16"
-          viewBox="0 0 32 32"
-          aria-hidden="true"
-          focusable="false"
-        >
-          <path fill="#f1c21b" d="M16 2L1 29h30zM17.5 25h-3v-3h3zm0-5h-3V13h3z"/>
-        </svg>
+        <svg cdsIcon="warning--filled" size="16" class="tab-warning-icon"></svg>
       }
     </ng-template>
 
@@ -148,10 +137,18 @@
 
     @for (injectedTab of obs.injectedTabs; track injectedTab.translationKey) {
       @if (injectedTab.enabled$ | async) {
+        <ng-template #injectedTabHeading>
+          {{ injectedTab.translationKey | translate }}
+          @if (injectedTab.issueTypes?.length && (hasTabIssues$(injectedTab.issueTypes) | async)) {
+            <svg cdsIcon="warning--filled" size="16" class="tab-warning-icon"></svg>
+          }
+        </ng-template>
+
         <cds-tab
           class="no-padding-left-right no-padding-top-bottom"
           [active]="obs.currentTab === (injectedTab.tabRoute ?? injectedTab.translationKey)"
-          [heading]="injectedTab.translationKey | translate"
+          [heading]="injectedTabHeading"
+          [title]="injectedTab.translationKey | translate"
           (selected)="navigateToTab(injectedTab.tabRoute ?? injectedTab.translationKey)"
         >
         </cds-tab>

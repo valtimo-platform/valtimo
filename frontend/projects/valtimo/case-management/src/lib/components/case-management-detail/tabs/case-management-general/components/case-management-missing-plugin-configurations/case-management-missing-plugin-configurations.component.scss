@@ -16,24 +16,12 @@
 
 .missing-plugin-configurations {
   background-color: var(--cds-layer);
-  border-left: 3px solid var(--cds-support-warning);
+  outline: 2px solid var(--cds-support-error, #da1e28);
   padding: 24px;
   margin-bottom: 16px;
   display: flex;
   flex-direction: column;
   gap: 1rem;
-
-  &__header {
-    display: flex;
-    gap: 0.75rem;
-    align-items: flex-start;
-  }
-
-  &__icon {
-    fill: var(--cds-support-warning);
-    flex-shrink: 0;
-    margin-top: 2px;
-  }
 
   &__title {
     font-size: 0.875rem;

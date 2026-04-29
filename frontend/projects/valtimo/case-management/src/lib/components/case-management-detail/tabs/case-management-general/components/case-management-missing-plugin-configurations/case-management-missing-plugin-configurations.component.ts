@@ -19,7 +19,7 @@ import {takeUntilDestroyed} from '@angular/core/rxjs-interop';
 import {CommonModule} from '@angular/common';
 import {ActivatedRoute} from '@angular/router';
 import {TranslateModule, TranslateService} from '@ngx-translate/core';
-import {ArrowRight16, Save16, WarningAltFilled16} from '@carbon/icons';
+import {ArrowRight16, Save16} from '@carbon/icons';
 import {SelectModule} from '@valtimo/components';
 import {
   ButtonModule,
@@ -65,6 +65,12 @@ import {
 export class CaseManagementMissingPluginConfigurationsComponent implements OnInit {
   public readonly hasIssue$ = this.configurationIssueService.hasIssue$('plugin-process-link');
   public readonly mappingRows$ = new BehaviorSubject<MappingRow[]>([]);
+  public readonly hasUnknownPluginConfigurations$ = new BehaviorSubject<boolean>(false);
+  public readonly visible$ = combineLatest([
+    this.hasIssue$,
+    this.mappingRows$,
+    this.hasUnknownPluginConfigurations$,
+  ]).pipe(map(([hasIssue, rows, hasUnknown]) => hasIssue && (rows?.length > 0 || hasUnknown)));
   public readonly visibleRows$ = combineLatest([this.hasIssue$, this.mappingRows$]).pipe(
     map(([hasIssue, rows]) => (hasIssue && rows?.length ? rows : null))
   );
@@ -88,7 +94,7 @@ export class CaseManagementMissingPluginConfigurationsComponent implements OnIni
     private readonly route: ActivatedRoute,
     private readonly translateService: TranslateService
   ) {
-    this.iconService.registerAll([WarningAltFilled16, Save16, ArrowRight16]);
+    this.iconService.registerAll([Save16, ArrowRight16]);
   }
 
   public ngOnInit(): void {
@@ -167,7 +173,11 @@ export class CaseManagementMissingPluginConfigurationsComponent implements OnIni
   }
 
   private loadMappingRows(dangling: DanglingPluginConfiguration[]): void {
-    if (dangling.length === 0) {
+    const knownKeyDangling = dangling.filter(d => d.pluginDefinitionKey !== null);
+    const hasUnknown = dangling.some(d => d.pluginDefinitionKey === null);
+    this.hasUnknownPluginConfigurations$.next(hasUnknown);
+
+    if (knownKeyDangling.length === 0) {
       this.mappingRows$.next([]);
       return;
     }
@@ -177,7 +187,7 @@ export class CaseManagementMissingPluginConfigurationsComponent implements OnIni
       .pipe(take(1))
       .subscribe(definitions => {
         const installedKeys = new Set(definitions.map(d => d.key));
-        this.loadPluginConfigurations(dangling, installedKeys);
+        this.loadPluginConfigurations(knownKeyDangling, installedKeys);
       });
   }
 

@@ -34,4 +34,8 @@ export class ConfigurationIssueService {
   public hasIssue$(issueType: string): Observable<boolean> {
     return this._unresolvedIssueTypes$.pipe(map(types => types.has(issueType)));
   }
+
+  public hasAnyOfIssues$(issueTypes: string[]): Observable<boolean> {
+    return this._unresolvedIssueTypes$.pipe(map(types => issueTypes.some(t => types.has(t))));
+  }
 }

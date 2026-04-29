@@ -840,7 +840,11 @@
         "noPlugins": "Er hoeven geen pluginconfiguraties te worden gekoppeld voor deze import.",
         "noPluginsTitle": "Geen plugins te configureren",
         "notInstalled": "Plugintype niet geïnstalleerd",
-        "noConfigurations": "Geen configuraties beschikbaar"
+        "noConfigurations": "Geen configuraties beschikbaar",
+        "unidentifiable": {
+          "title": "Niet-identificeerbare pluginconfiguraties",
+          "message": "Sommige pluginconfiguraties konden niet worden herleid uit het exportbestand. De import kan doorgaan, maar de betreffende process links moeten achteraf handmatig worden geconfigureerd."
+        }
       }
     },
     "missingPluginConfigurations": {
@@ -851,7 +855,11 @@
       "notInstalled": "Plugintype niet geïnstalleerd",
       "noConfigurations": "Geen configuraties beschikbaar",
       "saveSuccess": "Pluginconfiguratie-koppelingen succesvol opgeslagen",
-      "saveError": "Kon pluginconfiguratie-koppelingen niet opslaan"
+      "saveError": "Kon pluginconfiguratie-koppelingen niet opslaan",
+      "legacyExport": {
+        "title": "Niet-identificeerbare pluginconfiguraties",
+        "message": "Sommige processtappen verwijzen naar pluginconfiguraties die niet konden worden herleid uit het exportbestand. Configureer de betreffende process links handmatig."
+      }
     },
     "createDefinition": {
       "idError": "Deze naam voor de dossierdefinitie is al in gebruik. Kies een unieke naam.",

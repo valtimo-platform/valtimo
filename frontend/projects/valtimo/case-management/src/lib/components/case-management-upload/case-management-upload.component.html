@@ -168,6 +168,18 @@
         {{ 'caseManagement.importDefinition.plugins.description' | translate }}
       </p>
 
+      <ng-container *ngIf="hasUnidentifiablePlugins$ | async">
+        <cds-inline-notification
+          [notificationObj]="{
+            type: 'warning',
+            title: ('caseManagement.importDefinition.plugins.unidentifiable.title' | translate),
+            message: ('caseManagement.importDefinition.plugins.unidentifiable.message' | translate),
+            showClose: false,
+            lowContrast: true
+          }"
+        ></cds-inline-notification>
+      </ng-container>
+
       <ng-container *ngIf="(pluginMappingRows$ | async)?.length > 0; else noPlugins">
         <div class="valtimo-definition-uploader__plugins-header">
           <span>{{ 'caseManagement.importDefinition.plugins.source' | translate }}</span>
@@ -217,12 +229,14 @@
       </ng-container>
 
       <ng-template #noPlugins>
-        <valtimo-case-management-upload-step
-          [message]="'caseManagement.importDefinition.plugins.noPlugins' | translate"
-          [title]="'caseManagement.importDefinition.plugins.noPluginsTitle' | translate"
-          [illustration]="'valtimo-layout/img/plugins.svg'"
-        >
-        </valtimo-case-management-upload-step>
+        <ng-container *ngIf="!(hasUnidentifiablePlugins$ | async)">
+          <valtimo-case-management-upload-step
+            [message]="'caseManagement.importDefinition.plugins.noPlugins' | translate"
+            [title]="'caseManagement.importDefinition.plugins.noPluginsTitle' | translate"
+            [illustration]="'valtimo-layout/img/plugins.svg'"
+          >
+          </valtimo-case-management-upload-step>
+        </ng-container>
       </ng-template>
     </div>
 
