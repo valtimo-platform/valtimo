@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,12 +17,21 @@
 package com.ritense.valtimo.processlink
 
 import com.fasterxml.jackson.databind.ObjectMapper
+import com.ritense.plugin.domain.PluginConfigurationId
+import com.ritense.plugin.repository.PluginConfigurationRepository
 import com.ritense.plugin.repository.PluginProcessLinkRepository
 import com.ritense.plugin.service.PluginService
+import com.ritense.processdocument.service.ProcessDefinitionCaseDefinitionService
 import com.ritense.processlink.repository.ValtimoPluginProcessLinkRepository
 import com.ritense.processlink.service.ProcessLinkService
+import com.ritense.valtimo.contract.case_.CaseDefinitionChecker
+import com.ritense.valtimo.contract.plugin.PluginConfigurationExistenceChecker
+import com.ritense.valtimo.contract.plugin.PluginConfigurationMappingResolver
+import com.ritense.valtimo.processlink.listener.ProcessLinkChangedEventListener
 import com.ritense.valtimo.processlink.mapper.PluginProcessLinkMapper
+import com.ritense.valtimo.processlink.preview.PluginConfigurationImportPreviewContributor
 import com.ritense.valtimo.processlink.security.config.PluginProcessLinkHttpSecurityConfigurer
+import com.ritense.valtimo.processlink.service.PluginConfigurationMappingResolverImpl
 import com.ritense.valtimo.processlink.service.PluginProcessLinkService
 import com.ritense.valtimo.processlink.service.PluginProcessLinkServiceImpl
 import com.ritense.valtimo.processlink.service.PluginSupportedProcessLinksHandler
@@ -30,6 +39,7 @@ import com.ritense.valtimo.processlink.web.rest.PluginProcessLinkResource
 import com.ritense.valtimo.service.OperatonProcessService
 import org.springframework.boot.autoconfigure.AutoConfiguration
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
+import org.springframework.context.ApplicationEventPublisher
 import org.springframework.context.annotation.Bean
 import org.springframework.core.annotation.Order
 
@@ -134,9 +144,11 @@ class ProcessLinkAutoConfiguration {
     @Bean
     @ConditionalOnMissingBean(PluginProcessLinkMapper::class)
     fun pluginProcessLinkMapper(
-        objectMapper: ObjectMapper
+        objectMapper: ObjectMapper,
+        pluginConfigurationRepository: PluginConfigurationRepository,
+        pluginProcessLinkRepository: ValtimoPluginProcessLinkRepository,
     ): PluginProcessLinkMapper {
-        return PluginProcessLinkMapper(objectMapper)
+        return PluginProcessLinkMapper(objectMapper, pluginConfigurationRepository, pluginProcessLinkRepository)
     }
 
     @Bean
@@ -175,5 +187,50 @@ class ProcessLinkAutoConfiguration {
         pluginProcessLinkService: PluginProcessLinkService
     ): PluginProcessLinkResource {
         return PluginProcessLinkResource(pluginProcessLinkService)
+    }
+
+    @Bean
+    @ConditionalOnMissingBean(PluginConfigurationImportPreviewContributor::class)
+    fun pluginConfigurationImportPreviewContributor(
+        objectMapper: ObjectMapper,
+        pluginConfigurationExistenceChecker: PluginConfigurationExistenceChecker?,
+    ): PluginConfigurationImportPreviewContributor {
+        return PluginConfigurationImportPreviewContributor(objectMapper, pluginConfigurationExistenceChecker)
+    }
+
+    @Bean
+    @ConditionalOnMissingBean(PluginConfigurationExistenceChecker::class)
+    fun pluginConfigurationExistenceChecker(
+        pluginConfigurationRepository: PluginConfigurationRepository
+    ): PluginConfigurationExistenceChecker {
+        return PluginConfigurationExistenceChecker { uuid ->
+            pluginConfigurationRepository.existsById(PluginConfigurationId.existingId(uuid))
+        }
+    }
+
+    @Bean
+    @ConditionalOnMissingBean(ProcessLinkChangedEventListener::class)
+    fun processLinkChangedEventListener(
+        pluginConfigurationMappingResolver: PluginConfigurationMappingResolver,
+    ): ProcessLinkChangedEventListener {
+        return ProcessLinkChangedEventListener(pluginConfigurationMappingResolver)
+    }
+
+    @Bean
+    @ConditionalOnMissingBean(PluginConfigurationMappingResolver::class)
+    fun pluginConfigurationMappingResolver(
+        pluginProcessLinkRepository: ValtimoPluginProcessLinkRepository,
+        pluginConfigurationRepository: PluginConfigurationRepository,
+        processDefinitionCaseDefinitionService: ProcessDefinitionCaseDefinitionService,
+        caseDefinitionChecker: CaseDefinitionChecker,
+        applicationEventPublisher: ApplicationEventPublisher,
+    ): PluginConfigurationMappingResolver {
+        return PluginConfigurationMappingResolverImpl(
+            pluginProcessLinkRepository,
+            pluginConfigurationRepository,
+            processDefinitionCaseDefinitionService,
+            caseDefinitionChecker,
+            applicationEventPublisher,
+        )
     }
 }
