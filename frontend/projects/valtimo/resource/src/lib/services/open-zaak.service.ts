@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,8 +15,9 @@
  */
 
 import {Injectable} from '@angular/core';
-import {HttpClient} from '@angular/common/http';
+import {HttpClient, HttpHeaders} from '@angular/common/http';
 import {ConfigService} from '@valtimo/config';
+import {InterceptorSkip} from '@valtimo/security';
 import {Observable} from 'rxjs';
 import {
   CreateInformatieObjectTypeLinkRequest,
@@ -175,6 +176,7 @@ export class OpenZaakService {
     return this.http.post<void>(`${this.valtimoApiConfig.endpointUri}v1/resource/temp`, formData, {
       reportProgress: true,
       responseType: 'json',
+      headers: new HttpHeaders().set(InterceptorSkip, '403'),
     });
   }
 
@@ -199,6 +201,7 @@ export class OpenZaakService {
       {
         reportProgress: true,
         responseType: 'json',
+        headers: new HttpHeaders().set(InterceptorSkip, '403'),
       }
     );
   }

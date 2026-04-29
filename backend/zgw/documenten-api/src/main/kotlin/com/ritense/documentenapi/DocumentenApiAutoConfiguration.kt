@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,11 +18,15 @@ package com.ritense.documentenapi
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.ritense.authorization.AuthorizationService
+import com.ritense.authorization.deployment.ResourceTypeRename
 import com.ritense.catalogiapi.service.CatalogiService
 import com.ritense.document.repository.impl.JsonSchemaDocumentRepository
 import com.ritense.document.service.DocumentDefinitionService
 import com.ritense.document.service.DocumentService
 import com.ritense.document.service.impl.JsonSchemaDocumentDefinitionService
+import com.ritense.documentenapi.authorization.ZgwDocumentActionProvider
+import com.ritense.documentenapi.authorization.ZgwDocumentSpecificationFactory
+import com.ritense.documentenapi.authorization.ZgwDocumentToJsonSchemaDocumentMapper
 import com.ritense.documentenapi.authorization.ZgwResourceDocumentMapper
 import com.ritense.documentenapi.client.DocumentenApiClient
 import com.ritense.documentenapi.deployment.ZgwDocumentListColumnDeploymentService
@@ -71,12 +75,35 @@ import javax.sql.DataSource
 @EntityScan("com.ritense.documentenapi.domain")
 class DocumentenApiAutoConfiguration {
 
+    // Temporary rename for forward compatibility. Remove at next major release.
+    @Bean
+    fun resourcePermissionToZgwDocumentRename() = ResourceTypeRename(
+        oldName = "com.ritense.resource.authorization.ResourcePermission",
+        newName = "com.ritense.documentenapi.authorization.ZgwDocument"
+    )
+
     @Bean
     fun zgwResourceDocumentMapper(
         documentRepository: JsonSchemaDocumentRepository
     ): ZgwResourceDocumentMapper {
         return ZgwResourceDocumentMapper(documentRepository)
     }
+
+    @Bean
+    @ConditionalOnMissingBean(ZgwDocumentActionProvider::class)
+    fun zgwDocumentActionProvider(): ZgwDocumentActionProvider = ZgwDocumentActionProvider()
+
+    @Bean
+    @ConditionalOnMissingBean(ZgwDocumentSpecificationFactory::class)
+    fun zgwDocumentSpecificationFactory(): ZgwDocumentSpecificationFactory =
+        ZgwDocumentSpecificationFactory()
+
+    @Bean
+    @ConditionalOnMissingBean(ZgwDocumentToJsonSchemaDocumentMapper::class)
+    fun zgwDocumentToJsonSchemaDocumentMapper(
+        documentRepository: JsonSchemaDocumentRepository
+    ): ZgwDocumentToJsonSchemaDocumentMapper =
+        ZgwDocumentToJsonSchemaDocumentMapper(documentRepository)
 
     @Bean
     fun documentenApiClient(
@@ -87,6 +114,7 @@ class DocumentenApiAutoConfiguration {
         authorizationService: AuthorizationService,
         @Value("\${valtimo.authorization.zgwDocuments.enabled:false}")
         authorizationEnabled: Boolean,
+        catalogiService: CatalogiService,
     ) = DocumentenApiClient(
         restClientBuilder,
         outboxService,
@@ -94,6 +122,7 @@ class DocumentenApiAutoConfiguration {
         platformTransactionManager,
         authorizationService,
         authorizationEnabled,
+        catalogiService,
     )
 
     @Bean

@@ -267,7 +267,7 @@ valtimo:
         dashboard:
             enabled: true
         zgwDocuments:
-            enabled:true
+            enabled: true
     logging:
         retentionInMinutes: 1440
     docker:
