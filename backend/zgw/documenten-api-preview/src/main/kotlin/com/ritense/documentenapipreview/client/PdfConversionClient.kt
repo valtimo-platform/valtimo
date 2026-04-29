@@ -16,6 +16,7 @@
 
 package com.ritense.documentenapipreview.client
 
+import com.ritense.documentenapipreview.domain.PdfArchiveMethod
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import com.ritense.zgw.ClientTools
 import org.springframework.core.io.InputStreamResource
@@ -37,12 +38,16 @@ class PdfConversionClient(
         baseUrl: URI,
         document: InputStream,
         fileName: String? = null,
+        pdfArchiveMethod: PdfArchiveMethod = PdfArchiveMethod.NONE,
+        pdfUniversalAccessibility: Boolean = false,
     ): InputStream {
+
+
         val bodyBuilder = MultipartBodyBuilder().apply {
             part("files", InputStreamResource(document)).filename(fileName ?: "file_name_unknown")
             part("exportFormFields", "false")
-            part("pdfa", "PDF/A-1b")
-            part("pdfua", "true")
+            convertPdfArchiveMethodToGotenbergValue(pdfArchiveMethod)?.let { part("pdfa", it) }
+            part("pdfua", pdfUniversalAccessibility.toString())
         }
 
         val result = restClient()
@@ -57,6 +62,15 @@ class PdfConversionClient(
             .body<Resource>()!!
 
         return result.inputStream
+    }
+
+    private fun convertPdfArchiveMethodToGotenbergValue(pdfArchiveMethod: PdfArchiveMethod): String? {
+        return when (pdfArchiveMethod) {
+            PdfArchiveMethod.NONE -> null
+            PdfArchiveMethod.PDFA1B -> "PDF/A-1b"
+            PdfArchiveMethod.PDFA2B -> "PDF/A-2b"
+            PdfArchiveMethod.PDFA3B -> "PDF/A-3b"
+        }
     }
 
     private fun restClient(): RestClient {

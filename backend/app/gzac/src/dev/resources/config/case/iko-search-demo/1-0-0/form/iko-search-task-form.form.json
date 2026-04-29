@@ -1,0 +1,42 @@
+{
+    "display": "form",
+    "components": [
+        {
+            "type": "iko-search",
+            "key": "ikoSearchResult",
+            "label": "Zoek in IKO",
+            "hideLabel": true,
+            "customOptions": {
+                "ikoViewKey": "demo",
+                "resultListLabel": "Selecteer een persoon",
+                "selectedLabel": "Geselecteerd persoon",
+                "openInNewTabLabel": "Open persoon in nieuw tabblad",
+                "openInNewTabUrl": "/iko/demo/bsn/details/{id}",
+                "propertyMappings": [
+                    {
+                        "propertyName": "naam",
+                        "ikoProperty": "naam"
+                    },
+                    {
+                        "propertyName": "adres",
+                        "ikoProperty": "adres"
+                    },
+                    {
+                        "propertyName": "geboortedatum",
+                        "ikoProperty": "geboortedatum"
+                    }
+                ]
+            },
+            "input": true,
+            "tableView": true
+        },
+        {
+            "type": "button",
+            "key": "submit",
+            "label": "Versturen",
+            "input": true,
+            "action": "submit",
+            "disableOnInvalid": true
+        }
+    ]
+}

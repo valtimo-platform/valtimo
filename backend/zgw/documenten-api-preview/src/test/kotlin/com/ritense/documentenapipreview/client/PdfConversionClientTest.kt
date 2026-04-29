@@ -16,6 +16,7 @@
 
 package com.ritense.documentenapipreview.client
 
+import com.ritense.documentenapipreview.domain.PdfArchiveMethod
 import okhttp3.mockwebserver.MockResponse
 import okhttp3.mockwebserver.MockWebServer
 import okhttp3.mockwebserver.RecordedRequest
@@ -24,7 +25,6 @@ import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
-import org.junit.jupiter.api.assertNotNull
 import org.springframework.http.MediaType
 import org.springframework.web.client.RestClient
 import java.io.ByteArrayInputStream
@@ -33,6 +33,8 @@ import java.util.HashMap
 import java.util.concurrent.TimeUnit
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
+import kotlin.test.assertNull
+import kotlin.test.assertNotNull
 
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
@@ -71,7 +73,7 @@ internal class PdfConversionClientTest {
     }
 
     @Test
-    fun `should send request with correct form fields`() {
+    fun `should send request with default conversion parameters`() {
         val restClientBuilder = RestClient.builder()
         val client = PdfConversionClient(restClientBuilder)
 
@@ -82,7 +84,8 @@ internal class PdfConversionClientTest {
         client.convertDocument(
             mockPdfConversionApi.url("/").toUri(),
             "TEST_DOCUMENT".byteInputStream(),
-            "mock_document.txt")
+            "mock_document.txt"
+        )
 
         val recordedRequest = mockPdfConversionApi.takeRequest(5, TimeUnit.SECONDS)
         assertNotNull(recordedRequest)
@@ -92,8 +95,66 @@ internal class PdfConversionClientTest {
         assertTrue(recordedRequest.getHeader("Content-Type")?.startsWith("multipart/form-data") ?: false )
         assertEquals("TEST_DOCUMENT", formFields["files"])
         assertEquals("false",formFields["exportFormFields"])
-        assertEquals("PDF/A-1b", formFields["pdfa"])
+        assertNull(formFields["pdfa"])
+        assertEquals("false",formFields["pdfua"])
+    }
+
+    @Test
+    fun `should send request with PDF A-2b and PDF UA set to true`() {
+        val restClientBuilder = RestClient.builder()
+        val client = PdfConversionClient(restClientBuilder)
+
+        val responseBody = "TEST_PDF_CONTENT"
+
+        mockPdfConversionApi.enqueue(mockResponse(responseBody))
+
+        client.convertDocument(
+            mockPdfConversionApi.url("/").toUri(),
+            "TEST_DOCUMENT".byteInputStream(),
+            "mock_document.txt",
+            PdfArchiveMethod.PDFA2B,
+            true
+        )
+
+        val recordedRequest = mockPdfConversionApi.takeRequest(5, TimeUnit.SECONDS)
+        assertNotNull(recordedRequest)
+
+        val formFields = parseMultipartFormData(recordedRequest)
+
+        assertTrue(recordedRequest.getHeader("Content-Type")?.startsWith("multipart/form-data") ?: false )
+        assertEquals("TEST_DOCUMENT", formFields["files"])
+        assertEquals("false",formFields["exportFormFields"])
+        assertEquals("PDF/A-2b", formFields["pdfa"])
         assertEquals("true", formFields["pdfua"] )
+    }
+
+    @Test
+    fun `should send request with PDF A-3b and PDF UA set to false`() {
+        val restClientBuilder = RestClient.builder()
+        val client = PdfConversionClient(restClientBuilder)
+
+        val responseBody = "TEST_PDF_CONTENT"
+
+        mockPdfConversionApi.enqueue(mockResponse(responseBody))
+
+        client.convertDocument(
+            mockPdfConversionApi.url("/").toUri(),
+            "TEST_DOCUMENT".byteInputStream(),
+            "mock_document.txt",
+            PdfArchiveMethod.PDFA3B,
+            false
+        )
+
+        val recordedRequest = mockPdfConversionApi.takeRequest(5, TimeUnit.SECONDS)
+        assertNotNull(recordedRequest)
+
+        val formFields = parseMultipartFormData(recordedRequest)
+
+        assertTrue(recordedRequest.getHeader("Content-Type")?.startsWith("multipart/form-data") ?: false )
+        assertEquals("TEST_DOCUMENT", formFields["files"])
+        assertEquals("false",formFields["exportFormFields"])
+        assertEquals("PDF/A-3b", formFields["pdfa"])
+        assertEquals("false", formFields["pdfua"] )
     }
 
     private fun mockResponse(body: String): MockResponse {

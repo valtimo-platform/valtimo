@@ -16,9 +16,13 @@
 
 import {PluginConfigurationData} from '../../../models';
 
+type PdfArchiveMethod = 'none' | 'PDF/A-1b' | 'PDF/A-2b' | 'PDF/A-3b';
+
 interface DocumentenApiPreviewConfig extends PluginConfigurationData {
   pdfConversionUrl: string;
   documentenApiConfigurationId: string;
+  pdfArchiveMethod: PdfArchiveMethod;
+  pdfUniversalAccessibility: boolean;
 }
 
 export {DocumentenApiPreviewConfig};

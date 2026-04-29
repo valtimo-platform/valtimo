@@ -105,6 +105,8 @@ services:
         container_name: gotenberg-pdf-conversion-api
         ports:
             - "3000:3000"
+        environment:
+            API_TIMEOUT: "240s"
 
     # ZGW
 
@@ -584,6 +586,8 @@ services:
         ports:
             - "6379:6379"
         container_name: iko-redis
+        profiles:
+            - iko
         healthcheck:
             test: [ "CMD", "redis-cli", "ping" ]
             interval: 10s

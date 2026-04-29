@@ -19,6 +19,8 @@
   *ngIf="{
     disabled: disabled$ | async,
     prefill: prefillConfiguration$ ? (prefillConfiguration$ | async) : null,
+    documentenApiPluginSelectItems: documentenApiPluginSelectItems$ | async,
+    pdfUniversalAccessibility: pdfUniversalAccessibility$ | async,
   } as obs"
 >
   <v-input
@@ -34,6 +36,7 @@
     placeholder="Documenten API Preview Plugin"
   >
   </v-input>
+
   <v-input
     name="pdfConversionUrl"
     data-test-id="pdfConversionUrl"
@@ -47,22 +50,45 @@
     placeholder="https://gotenberg:3000/"
   >
   </v-input>
-  <ng-container
-    *ngIf="{
-      documentenApiPluginSelectItems: documentenApiPluginSelectItems$ | async,
-    } as documentenApiObs"
-  >
-    <v-select
-      [loading]="!documentenApiObs.documentenApiPluginSelectItems"
-      [items]="documentenApiObs.documentenApiPluginSelectItems"
-      [margin]="true"
-      name="documentenApiConfigurationId"
-      data-test-id="documentenPreviewDocumentenApiPluginConfiguration"
-      [title]="'documentenApiPluginConfiguration' | pluginTranslate: pluginId | async"
+
+  <v-select
+    [loading]="!obs.documentenApiPluginSelectItems"
+    [items]="obs.documentenApiPluginSelectItems"
+    [margin]="true"
+    name="documentenApiConfigurationId"
+    data-test-id="documentenPreviewDocumentenApiPluginConfiguration"
+    [title]="'documentenApiPluginConfiguration' | pluginTranslate: pluginId | async"
+    [disabled]="obs.disabled"
+    [defaultSelectionId]="obs.prefill?.documentenApiConfigurationId"
+    [required]="true"
+    [tooltip]="'documentenApiPluginConfigurationTooltip' | pluginTranslate: pluginId | async"
+  ></v-select>
+
+  <v-select
+    [loading]="!pdfArchiveMethods"
+    [items]="pdfArchiveMethods"
+    name="pdfArchiveMethod"
+    [title]="'pdfArchiveMethod' | pluginTranslate: pluginId | async"
+    [tooltip]="'pdfArchiveMethodTooltip' | pluginTranslate: pluginId | async"
+    [margin]="true"
+    [defaultSelectionId]="obs.prefill?.pdfArchiveMethod || 'none'"
+    [disabled]="obs.disabled"
+    [required]="true"
+  ></v-select>
+
+  <div class="input-toggle--small-margin">
+    <v-input-label
+      [title]="'pdfUniversalAccessibility' | pluginTranslate: pluginId | async"
+      [tooltip]="'pdfUniversalAccessibilityTooltip' | pluginTranslate: pluginId | async"
+    >
+    </v-input-label>
+
+    <cds-toggle
+      [checked]="obs.pdfUniversalAccessibility"
       [disabled]="obs.disabled"
-      [defaultSelectionId]="obs.prefill?.documentenApiConfigurationId"
-      [required]="true"
-      [tooltip]="'documentenApiPluginConfigurationTooltip' | pluginTranslate: pluginId | async"
-    ></v-select>
-  </ng-container>
+      [onText]="'pdfUniversalAccessibility.toggleOn' | pluginTranslate: pluginId | async"
+      [offText]="'pdfUniversalAccessibility.toggleOff' | pluginTranslate: pluginId | async"
+      (checkedChange)="onPdfUniversalAccessibilityChange($event)"
+    ></cds-toggle>
+  </div>
 </v-form>
