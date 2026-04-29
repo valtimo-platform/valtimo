@@ -1213,7 +1213,8 @@
         "modal": {
           "header": "Document weergave"
         },
-        "pdfViewerNotSupported": "Uw browser biedt geen ondersteuning voor het weergeven van PDF bestanden."
+        "pdfViewerNotSupported": "Uw browser biedt geen ondersteuning voor het weergeven van PDF bestanden.",
+        "loading": "Het document wordt geconverteerd voor weergave. Dit kan even duren."
       }
     },
     "notifications": {
@@ -2248,8 +2249,15 @@
   },
   "iko": {
     "searchFieldsNoResults": "Geen zoekvelden gevonden voor deze entiteit",
+    "viewNotFound": "IKO Beeld voor sleutel '{{key}}' kon niet worden gevonden.",
     "pageTitle": "Beelden",
-    "searchVia": "Zoeken via"
+    "searchVia": "Zoeken via",
+    "formio": {
+      "back": "Terug",
+      "selectResult": "Selecteer een resultaat",
+      "selectedResult": "Geselecteerd resultaat",
+      "openInNewTab": "Open in nieuw tabblad"
+    }
   },
   "ikoManagement": {
     "preparingDownload": "Download aan het voorbereiden",
