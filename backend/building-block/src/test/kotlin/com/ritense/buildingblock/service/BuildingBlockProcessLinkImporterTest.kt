@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,9 +23,11 @@ import com.ritense.importer.ImportRequest
 import com.ritense.importer.ValtimoImportTypes.Companion.BUILDING_BLOCK_PROCESS_DEFINITION
 import com.ritense.importer.ValtimoImportTypes.Companion.BUILDING_BLOCK_PROCESS_LINK
 import com.ritense.plugin.domain.PluginConfigurationReferenceType
+import com.ritense.plugin.repository.PluginConfigurationRepository
 import com.ritense.plugin.service.PluginService.Companion.PROCESS_LINK_TYPE_PLUGIN
 import com.ritense.plugin.web.rest.request.PluginProcessLinkCreateDto
 import com.ritense.processlink.domain.ProcessLink
+import com.ritense.processlink.repository.ValtimoPluginProcessLinkRepository
 import com.ritense.processlink.service.ProcessLinkService
 import com.ritense.processlink.web.rest.dto.ProcessLinkCreateRequestDto
 import com.ritense.valtimo.contract.buildingblock.BuildingBlockDefinitionId
@@ -42,7 +44,6 @@ import org.mockito.kotlin.argumentCaptor
 import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.eq
 import org.mockito.kotlin.isNotNull
-import org.mockito.kotlin.isNull
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
@@ -56,13 +57,19 @@ class BuildingBlockProcessLinkImporterTest {
     @Mock
     lateinit var buildingBlockDefinitionProcessDefinitionService: BuildingBlockDefinitionProcessDefinitionService
 
+    @Mock
+    lateinit var pluginConfigurationRepository: PluginConfigurationRepository
+
+    @Mock
+    lateinit var pluginProcessLinkRepository: ValtimoPluginProcessLinkRepository
+
     private lateinit var objectMapper: ObjectMapper
     private lateinit var importer: BuildingBlockProcessLinkImporter
 
     @BeforeEach
     fun setUp() {
         objectMapper = jacksonObjectMapper()
-        PluginProcessLinkMapper(objectMapper)
+        PluginProcessLinkMapper(objectMapper, pluginConfigurationRepository, pluginProcessLinkRepository)
 
         importer = BuildingBlockProcessLinkImporter(
             processLinkService = processLinkService,
@@ -127,7 +134,7 @@ class BuildingBlockProcessLinkImporterTest {
             )
         )
 
-        val pluginMapper = PluginProcessLinkMapper(objectMapper)
+        val pluginMapper = PluginProcessLinkMapper(objectMapper, pluginConfigurationRepository, pluginProcessLinkRepository)
         whenever(processLinkService.getProcessLinkMapper(eq(PROCESS_LINK_TYPE_PLUGIN))).thenReturn(pluginMapper)
 
         doReturn(mock<ProcessLink>()).whenever(processLinkService).createProcessLink(any(), anyOrNull())

@@ -19,6 +19,7 @@ package com.ritense.importer
 import com.ritense.valtimo.contract.BlueprintId
 import com.ritense.valtimo.contract.buildingblock.BuildingBlockDefinitionId
 import com.ritense.valtimo.contract.case_.CaseDefinitionId
+import java.util.UUID
 
 data class ImportRequest(
     val fileName: String,
@@ -27,6 +28,7 @@ data class ImportRequest(
     val buildingBlockDefinitionId: BuildingBlockDefinitionId? = null,
     val keyOverride: String? = null,
     val nameOverride: String? = null,
+    val pluginConfigurationMappings: Map<UUID, UUID?>? = null,
 ) {
     override fun equals(other: Any?): Boolean {
         if (this === other) return true

@@ -19,36 +19,60 @@ package com.ritense.case.service
 import CaseDefinitionDto
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.ritense.case.web.rest.dto.CaseDefinitionImportPreviewResponse
+import com.ritense.case.web.rest.dto.PluginConfigurationPreviewDto
 import com.ritense.importer.exception.ImportServiceException
+import com.ritense.valtimo.contract.importer.ImportPreviewContributor
 import java.io.InputStream
 import java.util.zip.ZipInputStream
 
 class CaseDefinitionImportPreviewService(
     private val objectMapper: ObjectMapper,
+    private val importPreviewContributors: List<ImportPreviewContributor>,
 ) {
     fun preview(inputStream: InputStream): CaseDefinitionImportPreviewResponse {
-        val caseDefContent = findCaseDefinitionEntry(inputStream)
+        val zipEntries = readZipEntries(inputStream)
+
+        val caseDefContent = zipEntries.entries
+            .firstOrNull { it.key.matches(CASE_DEFINITION_REGEX) }
+            ?.value
             ?: throw ImportServiceException("No .case-definition.json found in ZIP")
+
         val dto = objectMapper.readValue(caseDefContent, CaseDefinitionDto::class.java)
+
+        val pluginConfigs = importPreviewContributors.flatMap { it.contributePreview(zipEntries) }
+
         return CaseDefinitionImportPreviewResponse(
             key = dto.key,
             name = dto.name,
             versionTag = dto.versionTag,
             isFinal = dto.final,
+            pluginConfigurations = pluginConfigs.map {
+                PluginConfigurationPreviewDto(
+                    pluginConfigurationId = it.pluginConfigurationId,
+                    pluginDefinitionKey = it.pluginDefinitionKey,
+                    pluginActionDefinitionKey = it.pluginActionDefinitionKey,
+                    processDefinitionKey = it.processDefinitionKey,
+                    activityId = it.activityId,
+                    existsInTargetEnvironment = it.existsInTargetEnvironment,
+                )
+            },
         )
     }
 
-    private fun findCaseDefinitionEntry(inputStream: InputStream): ByteArray? {
+    private fun readZipEntries(inputStream: InputStream): Map<String, ByteArray> {
+        val entries = mutableMapOf<String, ByteArray>()
+
         ZipInputStream(inputStream).use { zis ->
             var entry = zis.nextEntry
             while (entry != null) {
-                if (!entry.isDirectory && entry.name.matches(CASE_DEFINITION_REGEX)) {
-                    return zis.readBytes()
+                if (!entry.isDirectory) {
+                    entries[entry.name] = zis.readBytes()
                 }
                 entry = zis.nextEntry
             }
         }
-        return null
+
+        return entries
     }
 
     private companion object {

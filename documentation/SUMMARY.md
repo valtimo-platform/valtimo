@@ -151,6 +151,7 @@
   * [List](features/iko/list.md)
   * [Tabs](features/iko/tabs.md)
   * [Widgets](features/iko/widgets.md)
+  * [Search FormIO component](features/iko/search-formio-component.md)
 * [🗝️ Keycloak](features/keycloak/README.md)
   * [Access control](features/keycloak/access-control.md)
 * [✉️ Outbox](features/outbox/README.md)
@@ -191,6 +192,7 @@
 
 * [Release notes](release-notes/release-notes.md)
 * [13.x.x](release-notes/13.x.x/)
+  * [13.27.0](release-notes/13.x.x/13.27.0/README.md)
   * [13.26.0](release-notes/13.x.x/13.26.0/README.md)
   * [13.25.0](release-notes/13.x.x/13.25.0/README.md)
   * [13.24.0](release-notes/13.x.x/13.24.0/README.md)
