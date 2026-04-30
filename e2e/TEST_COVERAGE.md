@@ -5,10 +5,10 @@
 | Category                    | Features | Functions | ✅ Covered | ❌ Not Covered |
 |-----------------------------|----------|-----------|------------|----------------|
 | User Features (ROLE_USER)   | 5        | 21        | 6          | 15             |
-| Admin Features (ROLE_ADMIN) | 15       | 328       | 123        | 202            |
-| **Total**                   | **20**   | **349**   | **129**    | **217**        |
+| Admin Features (ROLE_ADMIN) | 15       | 328       | 126        | 199            |
+| **Total**                   | **20**   | **349**   | **132**    | **214**        |
 
-**Coverage:** `129 / 349` — `37.0%`
+**Coverage:** `132 / 349` — `37.8%`
 
 ---
 
@@ -283,9 +283,9 @@
 
 | #     | Function                | Test Scenarios                 | Coverage | Notes                                           |
 |:------|:------------------------|:-------------------------------|:--------:|:------------------------------------------------|
-| 6.106 | View upload fields      | View upload fields             |    ❌    |                                                 |
-| 6.107 | Set field visibility    | Set upload field visibility    |    ❌    |                                                 |
-| 6.108 | Set field default value | Set upload field default value |    ❌    |                                                 |
+| 6.106 | View upload fields      | View upload fields             |    ✅    | case-details-management-zgw.spec.ts             |
+| 6.107 | Set field visibility    | Set upload field visibility    |    ✅    | case-details-management-zgw.spec.ts             |
+| 6.108 | Set field default value | Set upload field default value |    ✅    | case-details-management-zgw.spec.ts             |
 
 #### 6S · ZGW — Keywords
 
@@ -727,8 +727,8 @@
 |:-------------------------|:-------:|
 | Total Features           |   20    |
 | Total Functions          |   349   |
-| ✅ Covered by Playwright |   129   |
-| ❌ Not covered           |   217   |
+| ✅ Covered by Playwright |   132   |
+| ❌ Not covered           |   214   |
 | ⏳ In progress           |    1    |
 | `N/A` Not applicable     |    2    |
-| **Coverage %**           | **37.0%** |
+| **Coverage %**           | **37.8%** |
