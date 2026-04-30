@@ -25,7 +25,7 @@ import com.ritense.processdocument.repository.CaseDefinitionProcessLinkRepositor
 import com.ritense.valtimo.contract.case_.CaseDefinitionChecker
 import com.ritense.valtimo.contract.case_.CaseDefinitionId
 import com.ritense.valtimo.operaton.domain.OperatonProcessDefinition
-import com.ritense.valtimo.operaton.repository.OperatonProcessDefinitionSpecificationHelper.Companion.byCaseDefinitionId
+import com.ritense.valtimo.operaton.repository.OperatonProcessDefinitionSpecificationHelper.Companion.byBlueprintId
 import com.ritense.valtimo.operaton.repository.OperatonProcessDefinitionSpecificationHelper.Companion.byKey
 import com.ritense.valtimo.operaton.repository.OperatonProcessDefinitionSpecificationHelper.Companion.maxVersionOf
 import com.ritense.valtimo.operaton.repository.OperatonProcessDefinitionSpecificationHelper.Companion.byNotLinkedToCaseDefinition
@@ -131,7 +131,7 @@ open class CaseDefinitionProcessLinkService(
         return runWithoutAuthorization {
             repositoryService.findProcessDefinition(
                 byKey(processDefinitionKey)
-                    .and(byCaseDefinitionId(caseDefinitionId))
+                    .and(byBlueprintId(caseDefinitionId))
             )
                 // Needed when linking the 'document-upload' process:
                 ?: repositoryService.findProcessDefinition(

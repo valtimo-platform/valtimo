@@ -28,6 +28,7 @@
       *ngIf="hasEditPermissions$ | async"
       cdsButton="ghost"
       iconOnly="true"
+      [attr.data-test-id]="testIds.uploadButton"
       (click)="openModal()"
     >
       <svg cdsIcon="upload" size="16"></svg>
@@ -54,7 +55,7 @@
 ></valtimo-confirmation-modal>
 
 <ng-template #createProcess>
-  <button *ngIf="hasEditPermissions$ | async" cdsButton="primary" (click)="onCreateProcess()">
+  <button *ngIf="hasEditPermissions$ | async" cdsButton="primary" [attr.data-test-id]="testIds.createProcessButton" (click)="onCreateProcess()">
     {{ 'processManagement.createProcess' | translate }}
 
     <svg cdsIcon="add" size="16" class="cds--btn__icon"></svg>

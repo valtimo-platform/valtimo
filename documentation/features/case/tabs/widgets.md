@@ -10,7 +10,7 @@ Widget configuration is part of tab configuration for a case definition.
 * Go to the `Cases` menu and select the case to configure widgets for
 * Select the `Tabs` tab
 
-The list of configured tabs for a case is displayed within the case settings. To configure widgets, select an existing tab with its type set to Widgets, or add a new widget-type tab to the configuration by clicking the **Add tab** button as documented [here](./). Upon selection, the widget configuration for the chosen tab will open, displaying a list of widgets created for that tab.
+The list of configured tabs for a case is displayed within the case settings. To configure widgets, select an existing tab with its type set to Widgets, or add a new widget-type tab to the configuration by clicking the **Add tab** button as documented in the [tabs documentation](./). Upon selection, the widget configuration for the chosen tab will open, displaying a list of widgets created for that tab.
 
 <figure><img src="../../../.gitbook/assets/image (11).png" alt=""><figcaption><p>Widget configuration UI</p></figcaption></figure>
 
@@ -46,11 +46,10 @@ The widget can be configured to display on any number of columns between 1 and 4
 {% endstep %}
 
 {% step %}
-#### Choose widget style
+#### Choose widget appearance
 
-A widget can either have a "Default" color scheme or it can be "High Contrast" to attract focus to that widget and it's content.
+For the Fields, Collection and Table widgets an appearance color can be chosen in the Appearance tab. This color controls the background, accent and text colors rendered by the widget. The available options are Default, High Contrast, Blue, Periwinkle, Purple, Turquoise, Green, Brown, Red, Orange and Yellow.
 
-<figure><img src="../../../.gitbook/assets/image (23).png" alt=""><figcaption><p>Choosing widget style</p></figcaption></figure>
 {% endstep %}
 
 {% step %}
@@ -324,7 +323,7 @@ A collection widget can be used when arrays (lists) are stored in the case data 
 * **Path to collection data**\
   \_The exact path in the JSON document that contains the array with data._
 * **Card title display type**\
-  Same as each text field, the title of the card can also be set to a certain [display type](broken-reference).
+  Same as each text field, the title of the card can also be set to a certain [display type](widgets.md#display-types).
 
 ### Configuring cards
 
@@ -524,7 +523,7 @@ Widgets for a case can also be configured directly through a JSON editor. For pr
 
 ## Access control
 
-Access to the case widgets can be configured through access control. More information about access control can be found [here](https://docs.valtimo.nl/features/access-control).
+Access to the case widgets can be configured through access control. More information about access control can be found in the [access control documentation](../../access-control/README.md).
 
 ### Resources and actions
 

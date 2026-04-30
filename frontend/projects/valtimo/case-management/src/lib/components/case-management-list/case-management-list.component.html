@@ -1,5 +1,5 @@
 <!--
-  ~ Copyright 2015-2025 Ritense BV, the Netherlands.
+  ~ Copyright 2015-2026 Ritense BV, the Netherlands.
   ~
   ~ Licensed under EUPL, Version 1.2 (the "License");
   ~ you may not use this file except in compliance with the License.
@@ -16,7 +16,7 @@
 
 <valtimo-carbon-list
   [items]="caseListItems$ | async"
-  [fields]="FIELDS"
+  [fields]="fields$ | async"
   (rowClicked)="redirectToDetails($event)"
   [pagination]="pagination$ | async"
   paginationIdentifier="caseManagementList"
@@ -46,9 +46,22 @@
   (closeModal)="onCloseCreateModal($event)"
 ></valtimo-case-management-create>
 
+<ng-template #statusColumnTemplate let-data="data">
+  @if (!data?.item?.active) {
+    <cds-tag type="purple" class="cds-tag--no-margin">
+      {{ 'caseManagement.inactive' | translate }}
+    </cds-tag>
+  }
+  @if (data?.item?.hasConfigurationIssues) {
+    <cds-tag type="red" class="cds-tag--no-margin">
+      {{ 'caseManagement.needsConfiguration' | translate }}
+    </cds-tag>
+  }
+</ng-template>
+
 <ng-template #importCaseDefinitionButton>
   <div class="valtimo-case-management-list__actions">
-    <button cdsButton="ghost" (click)="showUploadModal()">
+    <button [attr.data-test-id]="testIds.uploadButton" cdsButton="ghost" (click)="showUploadModal()">
       {{ 'Upload' | translate }}
 
       <svg cdsIcon="upload" size="16" class="cds--btn__icon"></svg>
@@ -56,6 +69,7 @@
 
     <button
       *ngIf="canUpdateGlobalConfiguration$ | async"
+      [attr.data-test-id]="testIds.createButton"
       cdsButton="primary"
       (click)="showCreateModal()"
     >

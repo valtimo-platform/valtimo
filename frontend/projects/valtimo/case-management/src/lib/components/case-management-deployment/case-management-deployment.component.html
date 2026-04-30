@@ -1,5 +1,5 @@
 <!--
-  ~ Copyright 2015-2025 Ritense BV, the Netherlands.
+  ~ Copyright 2015-2026 Ritense BV, the Netherlands.
   ~
   ~ Licensed under EUPL, Version 1.2 (the "License");
   ~ you may not use this file except in compliance with the License.
@@ -22,8 +22,19 @@
     notificationContent: notificationContent$ | async,
     canUpdateGlobalConfiguration: canUpdateGlobalConfiguration$ | async,
     isGloballyActive: isGloballyActive$ | async,
+    caseDefinitionFinalizationCheckResult: caseDefinitionFinalizationCheckResult$ | async,
+    deploymentNotificationObject: deploymentNotificationObject$ | async,
+    importOriginEntries: importOriginEntries$ | async,
   } as obs"
 >
+  <cds-notification
+    *ngIf="
+      obs.canUpdateGlobalConfiguration && obs.isDraftVersion && obs.deploymentNotificationObject
+    "
+    class="deployment-warning-notification"
+    [notificationObj]="obs.deploymentNotificationObject"
+  ></cds-notification>
+
   <div class="header-buttons">
     <button cdsButton="secondary" (click)="goBack()">
       {{ 'caseManagement.deployment.buttons.back' | translate }}
@@ -41,7 +52,11 @@
             <svg cdsIcon="trash-can" size="16" class="cds--btn__icon"></svg>
           </button>
 
-          <button cdsButton="primary" (click)="openFinalizeDraftConfirmationModal()">
+          <button
+            cdsButton="primary"
+            (click)="openFinalizeDraftConfirmationModal()"
+            [disabled]="!obs?.caseDefinitionFinalizationCheckResult?.finalizable"
+          >
             {{ 'caseManagement.deployment.buttons.finalize' | translate }}
             <svg cdsIcon="save" size="16" class="cds--btn__icon"></svg>
           </button>
@@ -76,6 +91,23 @@
         context: {data: obs.releaseInformationDataEntries}
       "
     ></ng-container>
+
+    <div class="import-origin" *ngIf="obs.importOriginEntries?.length > 0">
+      <p class="deployment-panel-title">
+        {{ 'caseManagement.deployment.importOrigin.title' | translate }}
+      </p>
+
+      <div class="release-version-columns">
+        <div *ngFor="let entry of obs.importOriginEntries" class="release-version-data">
+          <label class="release-version-data__label">
+            {{ 'caseManagement.deployment.importOrigin.fields.' + entry.key | translate }}
+          </label>
+          <div class="release-version-data__value">
+            {{ entry.value }}
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
 </ng-container>
 

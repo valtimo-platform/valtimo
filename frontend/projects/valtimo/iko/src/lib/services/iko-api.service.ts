@@ -15,8 +15,13 @@
  */
 
 import {Injectable} from '@angular/core';
-import {HttpClient} from '@angular/common/http';
-import {BaseApiService, ConfigService, GlobalNotificationService} from '@valtimo/shared';
+import {HttpClient, HttpHeaders, HttpParams} from '@angular/common/http';
+import {
+  BaseApiService,
+  ConfigService,
+  GlobalNotificationService,
+  InterceptorSkip,
+} from '@valtimo/shared';
 import {BehaviorSubject, Observable} from 'rxjs';
 import {IkoView, IkoSearchActionUser, IkoListResponse, IkoTab} from '../models';
 import {WidgetAction} from '@valtimo/layout';
@@ -68,7 +73,8 @@ export class IkoApiService extends BaseApiService {
 
   public getIkoSearchActions(ikoViewKey: string): Observable<IkoSearchActionUser[]> {
     return this.httpClient.get<IkoSearchActionUser[]>(
-      this.getApiUrl(`/v1/iko-view/${ikoViewKey}/search-action`)
+      this.getApiUrl(`/v1/iko-view/${ikoViewKey}/search-action`),
+      {headers: new HttpHeaders().set(InterceptorSkip, '404')}
     );
   }
 
@@ -76,9 +82,17 @@ export class IkoApiService extends BaseApiService {
     return this.httpClient.get(this.getApiUrl(`/v1/iko-view/${ikoViewKey}/tab/${tabKey}/widget`));
   }
 
-  public getIkoWidgetData(ikoViewKey: string, tabKey: string, widgetId: string, id: string): any {
+  public getIkoWidgetData(
+    ikoViewKey: string,
+    tabKey: string,
+    widgetId: string,
+    id: string,
+    queryParams?: HttpParams
+  ): any {
     return this.httpClient.get(
-      this.getApiUrl(`/v1/iko-view/${ikoViewKey}/tab/${tabKey}/widget/${widgetId}/data?id=${id}`)
+      this.getApiUrl(
+        `/v1/iko-view/${ikoViewKey}/tab/${tabKey}/widget/${widgetId}/data?id=${id}${!queryParams ? '' : '&' + queryParams.toString()}`
+      )
     );
   }
 

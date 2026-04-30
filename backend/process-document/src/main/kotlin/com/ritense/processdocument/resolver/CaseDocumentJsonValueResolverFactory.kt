@@ -1,0 +1,398 @@
+/*
+ * Copyright 2015-2024 Ritense BV, the Netherlands.
+ *
+ * Licensed under EUPL, Version 1.2 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" basis,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package com.ritense.processdocument.resolver
+
+import com.fasterxml.jackson.core.JsonPointer
+import com.fasterxml.jackson.databind.JsonNode
+import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.databind.node.ObjectNode
+import com.jayway.jsonpath.InvalidPathException
+import com.jayway.jsonpath.JsonPath
+import com.jayway.jsonpath.PathNotFoundException
+import com.jayway.jsonpath.internal.path.PathCompiler
+import com.ritense.authorization.AuthorizationContext
+import com.ritense.document.config.DocumentProperties
+import com.ritense.document.domain.Document
+import com.ritense.document.domain.impl.JsonDocumentContent
+import com.ritense.document.domain.impl.JsonSchemaDocument
+import com.ritense.document.domain.impl.JsonSchemaDocumentDefinition
+import com.ritense.document.domain.impl.JsonSchemaDocumentId
+import com.ritense.document.domain.patch.JsonPatchService
+import com.ritense.document.exception.ModifyDocumentException
+import com.ritense.document.exception.UnknownDocumentDefinitionException
+import com.ritense.document.service.DocumentService
+import com.ritense.document.service.impl.JsonSchemaDocumentDefinitionService
+import com.ritense.processdocument.domain.impl.OperatonProcessInstanceId
+import com.ritense.processdocument.service.ProcessDocumentService
+import com.ritense.valtimo.contract.BlueprintId
+import com.ritense.valtimo.contract.case_.CaseDefinitionId
+import com.ritense.valtimo.contract.json.patch.JsonPatchBuilder
+import com.ritense.valueresolver.ValueResolverFactory
+import com.ritense.valueresolver.ValueResolverOption
+import com.ritense.valueresolver.ValueResolverOptionType
+import com.ritense.valueresolver.exception.ValueResolverValidationException
+import org.operaton.bpm.engine.delegate.VariableScope
+import org.springframework.dao.OptimisticLockingFailureException
+import java.util.UUID
+import java.util.function.Function
+import kotlin.random.Random
+
+/**
+ * This resolver can resolve requestedValues against the Document JSON content
+ *
+ * The value of the requestedValue should be in the format doc:some.json.path
+ */
+class CaseDocumentJsonValueResolverFactory(
+    private val processDocumentService: ProcessDocumentService,
+    private val documentService: DocumentService,
+    private val documentDefinitionService: JsonSchemaDocumentDefinitionService,
+    private val objectMapper: ObjectMapper,
+    private val documentProperties: DocumentProperties,
+) : ValueResolverFactory {
+
+    override fun supportedPrefix(): String {
+        return PREFIX
+    }
+
+    override fun createResolver(
+        processInstanceId: String,
+        variableScope: VariableScope
+    ): Function<String, Any?> {
+        val document = processDocumentService.getDocument(OperatonProcessInstanceId(processInstanceId), variableScope)
+        return createResolver(document)
+    }
+
+    override fun createValidator(documentDefinitionName: String): Function<String, Unit> {
+        val documentDefinition = documentDefinitionService.findActiveByName(documentDefinitionName)
+            .orElseThrow { UnknownDocumentDefinitionException(documentDefinitionName) }
+
+        return Function { requestedValue ->
+            if (isJsonPointer(requestedValue)) {
+                validateJsonPointer(documentDefinition, requestedValue)
+            } else {
+                validateJsonPath(documentDefinition, requestedValue)
+            }
+        }
+    }
+
+    override fun createResolver(documentId: String): Function<String, Any?> {
+        return createResolver(
+            AuthorizationContext.runWithoutAuthorization { documentService.get(documentId) }
+        )
+    }
+
+    override fun handleValues(
+        processInstanceId: String,
+        variableScope: VariableScope?,
+        values: Map<String, Any?>
+    ) {
+        if (documentProperties.locking.valueResolver.isPessimisticEnabled) {
+            handleValuesWithAtomicUpdate(processInstanceId, variableScope, values)
+        } else {
+            handleValuesWithOptimisticRetry(processInstanceId, variableScope, values)
+        }
+    }
+
+    private fun handleValuesWithAtomicUpdate(
+        processInstanceId: String,
+        variableScope: VariableScope?,
+        values: Map<String, Any?>
+    ) {
+        val documentId = AuthorizationContext.runWithoutAuthorization {
+            processDocumentService.getDocumentId(OperatonProcessInstanceId(processInstanceId), variableScope)
+        }
+
+        AuthorizationContext.runWithoutAuthorization {
+            documentService.modifyDocumentAtomic(documentId) { lockedDocument ->
+                val documentContent = lockedDocument.content().asJson()
+                buildJsonPatch(documentContent, values)
+
+                val jsonSchemaDoc = lockedDocument as JsonSchemaDocument
+                val documentDefinition = documentDefinitionService.findBy(jsonSchemaDoc.definitionId()).orElseThrow()
+                val modifiedContent = JsonDocumentContent.build(
+                    jsonSchemaDoc.content().asJson(),
+                    documentContent,
+                    null
+                )
+                val result = jsonSchemaDoc.applyModifiedContent(modifiedContent, documentDefinition)
+                result.resultingDocument().orElseThrow()
+            }
+        }
+    }
+
+    private fun handleValuesWithOptimisticRetry(
+        processInstanceId: String,
+        variableScope: VariableScope?,
+        values: Map<String, Any?>
+    ) {
+        var attempt = 0
+        val maxAttempts = 3
+
+        while (attempt < maxAttempts) {
+            try {
+                val document = AuthorizationContext.runWithoutAuthorization {
+                    processDocumentService.getDocument(OperatonProcessInstanceId(processInstanceId), variableScope)
+                }
+                val documentContent = document.content().asJson()
+                buildJsonPatch(documentContent, values)
+
+                //TODO: PBAC MODIFY check
+                AuthorizationContext.runWithoutAuthorization {
+                    documentService.modifyDocument(document, documentContent)
+                }
+                return // Success, exit retry loop
+            } catch (exception: ModifyDocumentException) {
+                val cause = exception.cause
+                if (cause is OptimisticLockingFailureException && attempt < maxAttempts - 1) {
+                    attempt++
+                    val delayMs = (50 * (1 shl attempt)) + Random.nextInt(50) // Exponential backoff with jitter
+                    Thread.sleep(delayMs.toLong())
+                } else {
+                    throw RuntimeException(
+                        "Failed to handle values for processInstance '$processInstanceId'. Values: ${values}. Attempts: ${attempt + 1}",
+                        exception
+                    )
+                }
+            }
+        }
+    }
+
+    override fun handleValues(documentId: UUID, values: Map<String, Any?>) {
+        if (documentProperties.locking.valueResolver.isPessimisticEnabled) {
+            handleValuesWithAtomicUpdate(documentId, values)
+        } else {
+            handleValuesWithOptimisticRetry(documentId, values)
+        }
+    }
+
+    private fun handleValuesWithAtomicUpdate(documentId: UUID, values: Map<String, Any?>) {
+        AuthorizationContext.runWithoutAuthorization {
+            documentService.modifyDocumentAtomic(JsonSchemaDocumentId.existingId(documentId)) { lockedDocument ->
+                val documentContent = lockedDocument.content().asJson()
+                buildJsonPatch(documentContent, values)
+
+                // Return the document with modified content
+                val jsonSchemaDoc = lockedDocument as JsonSchemaDocument
+                val documentDefinition = documentDefinitionService.findBy(jsonSchemaDoc.definitionId()).orElseThrow()
+                val modifiedContent = JsonDocumentContent.build(
+                    jsonSchemaDoc.content().asJson(),
+                    documentContent,
+                    null
+                )
+                val result = jsonSchemaDoc.applyModifiedContent(modifiedContent, documentDefinition)
+                result.resultingDocument().orElseThrow()
+            }
+        }
+    }
+
+    private fun handleValuesWithOptimisticRetry(documentId: UUID, values: Map<String, Any?>) {
+        var attempt = 0
+        val maxAttempts = 3
+
+        while (attempt < maxAttempts) {
+            try {
+                val document = AuthorizationContext.runWithoutAuthorization { documentService.get(documentId.toString()) }
+                val documentContent = document.content().asJson()
+                buildJsonPatch(documentContent, values)
+
+                AuthorizationContext.runWithoutAuthorization { documentService.modifyDocument(document, documentContent) }
+                return // Success, exit retry loop
+            } catch (exception: ModifyDocumentException) {
+                val cause = exception.cause
+                if (cause is OptimisticLockingFailureException && attempt < maxAttempts - 1) {
+                    attempt++
+                    val delayMs = (50 * (1 shl attempt)) + Random.nextInt(50) // Exponential backoff with jitter
+                    Thread.sleep(delayMs.toLong())
+                } else {
+                    throw RuntimeException(
+                        "Failed to handle values for document '$documentId'. Values: ${values}. Attempts: ${attempt + 1}",
+                        exception
+                    )
+                }
+            }
+        }
+    }
+
+    override fun preProcessValuesForNewCase(values: Map<String, Any?>): ObjectNode {
+        val emptyDocumentContent = objectMapper.createObjectNode()
+        buildJsonPatch(emptyDocumentContent, values)
+        return emptyDocumentContent
+    }
+
+    override fun getResolvableKeyOptions(caseDefinitionId: CaseDefinitionId): List<ValueResolverOption> {
+        val documentDefinition = documentDefinitionService.findByBlueprintId(caseDefinitionId).orElseThrow()
+        val schemaAsNode = documentDefinition.schema
+            .asJson() as ObjectNode
+        return getPropertyNamesFromObjectNode(documentDefinition, schemaAsNode, "$PREFIX:")
+    }
+
+    override fun getResolvableKeyOptions(caseDefinitionKey: String): List<ValueResolverOption> {
+        val documentDefinitionName = caseDefinitionKey
+        val documentDefinition = documentDefinitionService.findActiveByName(documentDefinitionName).orElseThrow()
+        val schemaAsNode = documentDefinition.schema
+            .asJson() as ObjectNode
+        return getPropertyNamesFromObjectNode(documentDefinition, schemaAsNode, "$PREFIX:")
+    }
+
+    override fun getResolvableKeyOptions(blueprintId: BlueprintId): List<ValueResolverOption> {
+        val documentDefinition = documentDefinitionService.findByBlueprintId(blueprintId).orElseThrow()
+        val schemaAsNode = documentDefinition.schema
+            .asJson() as ObjectNode
+        return getPropertyNamesFromObjectNode(documentDefinition, schemaAsNode, "$PREFIX:")
+    }
+
+    private fun buildJsonPatch(jsonNode: JsonNode, values: Map<String, Any?>) {
+        values.forEach {
+            val jsonPointer = toJsonPointer(it.key.substringAfter(":"))
+            val valueNode = toValueNode(it.value)
+            val jsonPatchBuilder = JsonPatchBuilder()
+            jsonPatchBuilder.addJsonNodeValue(jsonNode, jsonPointer, valueNode)
+            JsonPatchService.apply(jsonPatchBuilder.build(), jsonNode)
+        }
+    }
+
+    private fun toJsonPointer(path: String): JsonPointer {
+        var newPath: String = path
+        if (!path.startsWith('/')) {
+            newPath = "/${path}"
+        }
+        return JsonPointer.valueOf(newPath.replace('.', '/'))
+    }
+
+    private fun validateJsonPointer(documentDefinition: JsonSchemaDocumentDefinition, jsonPointer: String) {
+        if (!documentDefinition.schema.schema.definesProperty(jsonPointer)) {
+            throw ValueResolverValidationException(
+                "JsonPointer '$jsonPointer' doesn't point to any property inside document definition '${documentDefinition.id.name()}'"
+            )
+        }
+    }
+
+    private fun validateJsonPath(documentDefinition: JsonSchemaDocumentDefinition, jsonPathPostfix: String) {
+        val jsonPath = "$.$jsonPathPostfix"
+        try {
+            PathCompiler.compile(jsonPath)
+        } catch (e: InvalidPathException) {
+            throw ValueResolverValidationException(
+                "Failed to compile JsonPath '$jsonPath' for document definition '${documentDefinition.id.name()}'",
+                e
+            )
+        }
+        if (!documentDefinitionService.isValidJsonPath(documentDefinition, jsonPath)) {
+            throw ValueResolverValidationException(
+                "JsonPath '$jsonPath' doesn't point to any property inside document definition '${documentDefinition.id.name()}'"
+            )
+        }
+    }
+
+    private fun createResolver(document: Document): Function<String, Any?> {
+        return Function { requestedValue ->
+            if (isJsonPointer(requestedValue)) {
+                resolveForJsonPointer(document, requestedValue)
+            } else {
+                resolveForJsonPath(document, requestedValue)
+            }
+        }
+    }
+
+    private fun isJsonPointer(path: String) = path.startsWith("/")
+
+    private fun resolveForJsonPointer(document: Document, jsonPointer: String): Any? {
+        val node = document.content().getValueBy(JsonPointer.valueOf(jsonPointer)).orElse(null)
+        return if (node == null || node.isMissingNode || node.isNull) {
+            null
+        } else if (node.isValueNode || node.isArray || node.isObject) {
+            objectMapper.treeToValue(node, Object::class.java)
+        } else {
+            node.asText()
+        }
+    }
+
+    private fun resolveForJsonPath(document: Document, jsonPathPostfix: String): Any? {
+        return try {
+            JsonPath.read<Any?>(document.content().asJson().toString(), "$.$jsonPathPostfix")
+        } catch (ignore: PathNotFoundException) {
+            null
+        }
+    }
+
+    private fun toValueNode(value: Any?): JsonNode {
+        return objectMapper.valueToTree(value)
+    }
+
+    private fun getPropertyNamesFromObjectNode(
+        definition: JsonSchemaDocumentDefinition,
+        node: ObjectNode,
+        path: String
+    ): List<ValueResolverOption> {
+        val options: MutableList<ValueResolverOption> = mutableListOf()
+        if (node.has("type")) {
+            val typeNode = node["type"]
+            val propertyType = if (typeNode.isArray && typeNode.size() == 2 && typeNode.any { it.asText() == "null" }) {
+                typeNode.firstOrNull { it.asText() != "null" }?.asText() ?: ""
+            } else if (typeNode.isArray) {
+                ""
+            } else {
+                typeNode.asText()
+            }
+            if (isSimpleObject(propertyType)) {
+                options += ValueResolverOption(path, ValueResolverOptionType.FIELD)
+            } else if (propertyType == "object") {
+                node["properties"]?.fields()?.forEach { jsonNode ->
+                    options += getPropertyNamesFromObjectNode(
+                        definition,
+                        jsonNode.value as ObjectNode,
+                        "$path/${jsonNode.key}"
+                    )
+                }
+            } else if (propertyType == "array") {
+                options += ValueResolverOption(
+                    path,
+                    ValueResolverOptionType.COLLECTION,
+                    node["items"]?.let { getPropertyNamesFromObjectNode(definition, it as ObjectNode, "") }
+                )
+            }
+        } else if (node.has("oneOf") || node.has("anyOf")) {
+            val schemas = (node["oneOf"] ?: node["anyOf"])!!
+            val nonNullSchema = schemas.firstOrNull { it.has("type") && it["type"].asText() != "null" }
+            if (schemas.size() == 2 && schemas.any { it.has("type") && it["type"].asText() == "null" } && nonNullSchema != null) {
+                options += getPropertyNamesFromObjectNode(definition, nonNullSchema as ObjectNode, path)
+            }
+        } else if (node.has("\$ref")) {
+            val internalDefinition = node["\$ref"].asText().substring(1)
+            if (internalDefinition.startsWith("/")) {
+                val referencedNode = definition.schema().at(internalDefinition) as ObjectNode
+                options += getPropertyNamesFromObjectNode(
+                    definition,
+                    referencedNode,
+                    path
+                )
+            }
+        }
+
+        return options
+    }
+
+    private fun isSimpleObject(propertyType: String): Boolean {
+        val simpleTypes = listOf("string", "boolean", "integer", "number")
+        return simpleTypes.contains(propertyType)
+    }
+
+    companion object {
+        const val PREFIX = "doc"
+    }
+
+}

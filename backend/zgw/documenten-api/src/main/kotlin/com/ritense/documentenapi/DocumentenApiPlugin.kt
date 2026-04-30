@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,6 +21,8 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.convertValue
 import com.ritense.authorization.AuthorizationContext.Companion.runWithoutAuthorization
 import com.ritense.documentenapi.DocumentenApiPlugin.Companion.PLUGIN_KEY
+import com.ritense.documentenapi.client.AuditTrail
+import com.ritense.logging.withLoggingContext
 import com.ritense.documentenapi.client.BestandsdelenRequest
 import com.ritense.documentenapi.client.CreateDocumentRequest
 import com.ritense.documentenapi.client.CreateDocumentResult
@@ -28,6 +30,8 @@ import com.ritense.documentenapi.client.DocumentInformatieObject
 import com.ritense.documentenapi.client.DocumentLock
 import com.ritense.documentenapi.client.DocumentStatusType
 import com.ritense.documentenapi.client.DocumentenApiClient
+import com.ritense.documentenapi.client.ObjectInformatieObject
+import com.ritense.documentenapi.client.ObjectInformatieObjectRequest
 import com.ritense.documentenapi.client.PatchDocumentRequest
 import com.ritense.documentenapi.event.DocumentCreated
 import com.ritense.documentenapi.service.DocumentDeleteHandler
@@ -40,6 +44,7 @@ import com.ritense.plugin.annotation.PluginEvent
 import com.ritense.plugin.annotation.PluginProperty
 import com.ritense.plugin.domain.EventType
 import com.ritense.plugin.domain.PluginConfiguration
+import com.ritense.plugin.domain.PluginDependency
 import com.ritense.plugin.service.PluginService
 import com.ritense.processlink.domain.ActivityTypeWithEventName
 import com.ritense.resource.domain.MetadataType
@@ -53,8 +58,8 @@ import com.ritense.valtimo.operaton.service.OperatonRuntimeService
 import com.ritense.zgw.domain.Vertrouwelijkheid
 import io.github.oshai.kotlinlogging.KotlinLogging
 import jakarta.validation.ValidationException
-import org.operaton.bpm.engine.delegate.DelegateExecution
 import org.hibernate.validator.constraints.Length
+import org.operaton.bpm.engine.delegate.DelegateExecution
 import org.springframework.context.ApplicationEventPublisher
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
@@ -68,7 +73,8 @@ import java.util.UUID
 @Plugin(
     key = PLUGIN_KEY,
     title = "Documenten API",
-    description = "Connects to the Documenten API to store documents"
+    description = "Connects to the Documenten API to store documents",
+    dependencies = [PluginDependency.ZAAK_INSTANCE_LINK]
 )
 class DocumentenApiPlugin(
     private val client: DocumentenApiClient,
@@ -216,8 +222,19 @@ class DocumentenApiPlugin(
             ?: throw IllegalStateException("Failed to download document. No process variable '$DOCUMENT_URL_PROCESS_VAR' found.")
         check(documentUrlString.startsWith(url.toASCIIString())) { "Failed to download document with url '$documentUrlString'. Document isn't part of Documenten API with url '$url'." }
         val documentUrl = URI(documentUrlString)
-        val metaData = client.getInformatieObject(authenticationPluginConfiguration, documentUrl)
-        val content = client.downloadInformatieObjectContent(authenticationPluginConfiguration, documentUrl)
+        val caseDocumentId = UUID.fromString(execution.businessKey)
+            ?: throw IllegalStateException("Failed to store document. Business key is null.")
+
+        val metaData = client.getInformatieObject(
+            authenticationPluginConfiguration,
+            caseDocumentId,
+            documentUrl
+        )
+        val content = client.downloadInformatieObjectContent(
+            authenticationPluginConfiguration,
+            caseDocumentId,
+            documentUrl
+        )
 
         val metaDataMap = objectMapper.convertValue<MutableMap<String, Any>>(metaData)
         metaDataMap[MetadataType.DOCUMENT_ID.key] = execution.businessKey
@@ -235,29 +252,65 @@ class DocumentenApiPlugin(
         return tempResourceId
     }
 
-    fun downloadInformatieObject(objectId: String): InputStream {
-        return client.downloadInformatieObjectContent(authenticationPluginConfiguration, url, objectId)
+    @PluginAction(
+        key = "get-audit-trail",
+        title = "Get audit trail",
+        description = "Get the audit trail for a document from the Documenten API",
+        activityTypes = [ActivityTypeWithEventName.SERVICE_TASK_START]
+    )
+    fun getAuditTrail(
+        execution: DelegateExecution,
+        @PluginActionProperty documentUrl: URI,
+        @PluginActionProperty processVariableName: String
+    ) {
+        check(documentUrl.toASCIIString().startsWith(url.toASCIIString())) {
+            "Failed to get audit trail for document with url '$documentUrl'. Document isn't part of Documenten API with url '$url'."
+        }
+
+        requireNotNull(execution.businessKey) {
+            "Failed to get audit trail. Business key is null."
+        }
+
+        getAuditTrail(documentUrl, UUID.fromString(execution.businessKey))
+            .let {
+                execution.setVariable(processVariableName, objectMapper.writeValueAsString(it))
+            }
     }
 
-    fun getInformatieObject(objectId: String): DocumentInformatieObject {
-        return client.getInformatieObject(authenticationPluginConfiguration, url, objectId)
+    fun getAuditTrail(documentUrl: URI, caseDocumentId: UUID?): List<AuditTrail> {
+        return client.getAuditTrail(authenticationPluginConfiguration, caseDocumentId, documentUrl)
     }
 
-    fun getInformatieObject(objectUrl: URI): DocumentInformatieObject {
-        return client.getInformatieObject(authenticationPluginConfiguration, objectUrl)
+    fun downloadInformatieObject(caseDocumentId: UUID?, objectId: String): InputStream {
+        return client.downloadInformatieObjectContent(authenticationPluginConfiguration, url, objectId, caseDocumentId)
+    }
+
+    fun getInformatieObject(objectId: String, caseDocumentId: UUID?): DocumentInformatieObject {
+        return client.getInformatieObject(authenticationPluginConfiguration, url, caseDocumentId,objectId)
+    }
+
+    fun getInformatieObject(objectUrl: URI, caseDocumentId: UUID?): DocumentInformatieObject {
+        return client.getInformatieObject(authenticationPluginConfiguration, caseDocumentId, objectUrl)
     }
 
     fun getInformatieObjecten(
+        documentId: UUID,
         documentSearchRequest: DocumentSearchRequest,
         pageable: Pageable
     ): Page<DocumentInformatieObject> {
-        return client.getInformatieObjecten(authenticationPluginConfiguration, url, pageable, documentSearchRequest)
+        return client.getInformatieObjecten(
+            authenticationPluginConfiguration,
+            documentId,
+            url,
+            pageable,
+            documentSearchRequest
+        )
     }
 
-    fun deleteInformatieObject(objectUrl: URI) {
+    fun deleteInformatieObject(caseDocumentId: UUID?, objectUrl: URI) {
         logger.info { "Deleting informatie object from documenten API with url $objectUrl" }
-        documentDeleteHandlers.forEach { it.preDocumentDelete(objectUrl) }
-        client.deleteInformatieObject(authenticationPluginConfiguration, objectUrl)
+        documentDeleteHandlers.forEach { it.preDocumentDelete(objectUrl, caseDocumentId) }
+        client.deleteInformatieObject(authenticationPluginConfiguration, caseDocumentId, objectUrl)
     }
 
     fun createInformatieObjectUrl(objectId: String) = UriComponentsBuilder
@@ -266,7 +319,11 @@ class DocumentenApiPlugin(
         .build()
         .toUri()
 
-    fun modifyInformatieObject(documentUrl: URI, patchDocumentRequest: PatchDocumentRequest): DocumentInformatieObject {
+    fun modifyInformatieObject(
+        caseDocumentId: UUID?,
+        documentUrl: URI,
+        patchDocumentRequest: PatchDocumentRequest
+    ): DocumentInformatieObject {
         val documentLock = client.lockInformatieObject(authenticationPluginConfiguration, documentUrl)
         try {
             patchDocumentRequest.lock = documentLock.lock
@@ -274,17 +331,105 @@ class DocumentenApiPlugin(
             runWithoutAuthorization {
                 require(
                     documentenApiVersionService.getVersionByTag(apiVersion).supportsUpdatingDefinitiveDocument
-                        || getInformatieObject(documentUrl).status != DocumentStatusType.DEFINITIEF
+                        || getInformatieObject(objectUrl = documentUrl, caseDocumentId).status != DocumentStatusType.DEFINITIEF
                 ) {
                     "InformatieObject ${documentUrl.path.substringAfterLast("/")} with status 'definitief' cannot be updated in Documenten API with '$apiVersion'"
                 }
             }
 
             val modifiedDocument =
-                client.modifyInformatieObject(authenticationPluginConfiguration, documentUrl, patchDocumentRequest)
+                client.modifyInformatieObject(
+                    authenticationPluginConfiguration,
+                    documentUrl,
+                    patchDocumentRequest,
+                    caseDocumentId
+                )
             return modifiedDocument
         } finally {
             client.unlockInformatieObject(authenticationPluginConfiguration, documentUrl, documentLock)
+        }
+    }
+
+    @PluginAction(
+        key = "link-document-to-object",
+        title = "Link document to object (objectinformatieobject)",
+        description = "Creates an objectinformatieobject link between the uploaded document and a ZGW object",
+        activityTypes = [ActivityTypeWithEventName.SERVICE_TASK_START]
+    )
+    fun linkDocumentToObject(
+        execution: DelegateExecution,
+        @PluginActionProperty objectUrl: String,
+        @PluginActionProperty objectType: String,
+    ): ObjectInformatieObject {
+        requireObjectInformatieObjectenSupport()
+        val caseDocumentId = UUID.fromString(execution.businessKey
+            ?: throw IllegalStateException("Failed to link document. Business key is null."))
+        val documentUrl = execution.getVariable(DOCUMENT_URL_PROCESS_VAR) as String?
+            ?: throw IllegalStateException("Failed to link document. No process variable '$DOCUMENT_URL_PROCESS_VAR' found.")
+
+        withLoggingContext(
+            "OBJECT_INFORMATIE_OBJECT" to objectUrl
+        ) {
+            logger.debug { "Starting to link document with URL '$documentUrl' to object '$objectUrl' (type: '$objectType')" }
+
+            val request = ObjectInformatieObjectRequest(
+                informatieobject = URI(documentUrl),
+                `object` = URI(objectUrl),
+                objectType = objectType,
+            )
+            val result = client.linkDocument(authenticationPluginConfiguration, url, caseDocumentId, request)
+            execution.setVariable(OBJECT_INFORMATIE_OBJECT_URL_PROCESS_VAR, result.url.toString())
+            execution.setVariable(OBJECT_INFORMATIE_OBJECT_ID_PROCESS_VAR, result.url.toString().substringAfterLast('/'))
+
+            logger.info { "Document with URL '$documentUrl' linked successfully to object '$objectUrl' with link URL '${result.url}'" }
+            return result
+        }
+    }
+
+    fun linkDocumentToObject(caseDocumentId: UUID, request: ObjectInformatieObjectRequest): ObjectInformatieObject {
+        requireObjectInformatieObjectenSupport()
+        return client.linkDocument(authenticationPluginConfiguration, url, caseDocumentId, request)
+    }
+
+    @PluginAction(
+        key = "delete-document-link",
+        title = "Delete document link (objectinformatieobject)",
+        description = "Deletes an objectinformatieobject link by its URL",
+        activityTypes = [ActivityTypeWithEventName.SERVICE_TASK_START]
+    )
+    fun deleteDocumentLink(
+        execution: DelegateExecution,
+        @PluginActionProperty objectInformatieObjectUrl: String,
+    ) {
+        requireObjectInformatieObjectenSupport()
+        val caseDocumentId = UUID.fromString(execution.businessKey
+            ?: throw IllegalStateException("Failed to delete document link. Business key is null."))
+
+        withLoggingContext(
+            "OBJECT_INFORMATIE_OBJECT" to objectInformatieObjectUrl
+        ) {
+            logger.debug { "Starting to delete objectinformatieobject with URL '$objectInformatieObjectUrl'" }
+            client.deleteDocumentLink(authenticationPluginConfiguration, url, caseDocumentId, URI(objectInformatieObjectUrl))
+            logger.info { "Objectinformatieobject with URL '$objectInformatieObjectUrl' deleted successfully" }
+        }
+    }
+
+    fun deleteDocumentLink(caseDocumentId: UUID, objectInformatieObjectUrl: URI) {
+        requireObjectInformatieObjectenSupport()
+
+        withLoggingContext(
+            "OBJECT_INFORMATIE_OBJECT" to objectInformatieObjectUrl.toString()
+        ) {
+            logger.debug { "Starting to delete objectinformatieobject with URL '$objectInformatieObjectUrl'" }
+            client.deleteDocumentLink(authenticationPluginConfiguration, url, caseDocumentId, objectInformatieObjectUrl)
+            logger.info { "Objectinformatieobject with URL '$objectInformatieObjectUrl' deleted successfully" }
+        }
+    }
+
+
+    private fun requireObjectInformatieObjectenSupport() {
+        require(documentenApiVersionService.getVersionByTag(apiVersion).supportsObjectInformatieObjecten) {
+            "Documenten API version '$apiVersion' does not support objectinformatieobjecten"
         }
     }
 
@@ -339,6 +484,9 @@ class DocumentenApiPlugin(
             }
         } ?: (inhoudAsInputStream to metadata)
 
+        val caseDocumentId = execution.businessKey?.let { UUID.fromString(it) }
+            ?: throw IllegalStateException("Failed to store document. Business key is null.")
+
         val vertrouwelijkheidaanduidingEnum = Vertrouwelijkheid.fromKey(
             vertrouwelijkheidaanduiding ?: getUploadField(
                 augmentedMetadata,
@@ -363,19 +511,28 @@ class DocumentenApiPlugin(
             beschrijving = beschrijving ?: getUploadField(augmentedMetadata, BESCHRIJVING_FIELD),
             ontvangstdatum = getLocalDateFromMetaData(augmentedMetadata, ONTVANGSTDATUM_FIELD),
             verzenddatum = getLocalDateFromMetaData(augmentedMetadata, VERZENDDATUM_FIELD),
-            informatieobjecttype = informatieobjecttype ?: getUploadField(augmentedMetadata, INFORMATIEOBJECTTYPE_FIELD),
+            informatieobjecttype = informatieobjecttype ?: getUploadField(
+                augmentedMetadata,
+                INFORMATIEOBJECTTYPE_FIELD
+            ),
             formaat = getUploadField(augmentedMetadata, FORMAAT_FIELD),
             trefwoorden = trefwoorden,
         )
         logger.info { "Store document $request" }
-        val documentCreateResult = client.storeDocument(authenticationPluginConfiguration, url, request)
+
+        val documentCreateResult = client.storeDocument(
+            authenticationPluginConfiguration,
+            url,
+            caseDocumentId,
+            request
+        )
 
         val event = DocumentCreated(
             documentCreateResult.url,
             documentCreateResult.auteur,
             documentCreateResult.bestandsnaam,
             documentCreateResult.bestandsomvang,
-            documentCreateResult.beginRegistratie
+            documentCreateResult.beginRegistratie.toLocalDateTime()
         )
         applicationEventPublisher.publishEvent(event)
         execution.setVariable(storedDocumentKey, documentCreateResult.url)
@@ -483,6 +640,8 @@ class DocumentenApiPlugin(
         const val DOCUMENT_URL_PROCESS_VAR = "documentUrl"
         const val DOCUMENT_ID_PROCESS_VAR = "documentId"
         const val DOWNLOAD_URL_PROCESS_VAR = "downloadUrl"
+        const val OBJECT_INFORMATIE_OBJECT_URL_PROCESS_VAR = "objectInformatieObjectUrl"
+        const val OBJECT_INFORMATIE_OBJECT_ID_PROCESS_VAR = "objectInformatieObjectId"
 
         val BESTANDSNAAM_FIELD = listOf("bestandsnaam", MetadataType.FILE_NAME.key)
         val TITEL_FIELD = listOf("title", "titel") + BESTANDSNAAM_FIELD

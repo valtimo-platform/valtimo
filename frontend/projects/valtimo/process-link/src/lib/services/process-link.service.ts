@@ -15,22 +15,17 @@
  */
 import {HttpClient, HttpHeaders, HttpParams} from '@angular/common/http';
 import {Injectable} from '@angular/core';
-import {ConfigService} from '@valtimo/shared';
+import {ConfigService, InterceptorSkip} from '@valtimo/shared';
 import {map, Observable} from 'rxjs';
 
 import {
   CompatiblePluginProcessLinks,
-  FormFlowProcessLinkUpdateRequestDto,
-  FormProcessLinkUpdateRequestDto,
   FormSubmissionResult,
   GetProcessLinkRequest,
   GetProcessLinkResponse,
-  PluginProcessLinkUpdateDto,
   ProcessLinkCreateEvent,
   ProcessLinkType,
   TaskWithProcessLink,
-  UIComponentProcessLinkUpdateRequestDto,
-  URLProcessLinkUpdateRequestDto,
 } from '../models';
 import {URLVariables} from '../models/process-link-url.model';
 
@@ -68,31 +63,6 @@ export class ProcessLinkService {
     return this.http.get<GetProcessLinkResponse>(`${this.VALTIMO_ENDPOINT_URI}v1/process-link`, {
       params,
     });
-  }
-
-  public updateProcessLink(
-    updateProcessLinkRequest:
-      | PluginProcessLinkUpdateDto
-      | FormFlowProcessLinkUpdateRequestDto
-      | FormProcessLinkUpdateRequestDto
-      | URLProcessLinkUpdateRequestDto
-      | UIComponentProcessLinkUpdateRequestDto
-  ): Observable<null> {
-    return this.http.put<null>(
-      `${this.VALTIMO_ENDPOINT_URI}v1/process-link`,
-      this.emptyStringToNull(updateProcessLinkRequest)
-    );
-  }
-
-  public saveProcessLink(saveProcessLinkRequest: ProcessLinkCreateEvent): Observable<null> {
-    return this.http.post<null>(
-      `${this.VALTIMO_ENDPOINT_URI}v1/process-link`,
-      this.emptyStringToNull(saveProcessLinkRequest)
-    );
-  }
-
-  public deleteProcessLink(id: string): Observable<null> {
-    return this.http.delete<null>(`${this.VALTIMO_ENDPOINT_URI}v1/process-link/${id}`);
   }
 
   public getProcessLinkCandidates(activityType: string): Observable<Array<ProcessLinkType>> {
@@ -145,6 +115,43 @@ export class ProcessLinkService {
     return this.http.post(
       `${this.VALTIMO_ENDPOINT_URI}management/v1/case-definition/${caseDefinitionKey}/version/${caseDefinitionVersionTag}/process-definition`,
       formData
+    );
+  }
+
+  public deployProcessWithProcessLinksForBuildingBlock(
+    processLinks: ProcessLinkCreateEvent[] = [],
+    processDefinitionId: string | null,
+    processXml: string | null,
+    buildingBlockKey: string,
+    buildingBlockVersionTag: string,
+    replace: boolean = false
+  ) {
+    const formData = new FormData();
+    const processLinksBlob = new Blob(
+      [JSON.stringify(processLinks.map(processLink => this.emptyStringToNull(processLink)))],
+      {type: 'application/json'}
+    );
+
+    if (processXml) {
+      formData.append(
+        'file',
+        new File([processXml], `${buildingBlockKey}-${buildingBlockVersionTag}.bpmn`)
+      );
+    }
+
+    if (processDefinitionId) {
+      formData.append('processDefinitionId', processDefinitionId);
+    }
+
+    formData.append('processLinks', processLinksBlob);
+
+    return this.http.post(
+      `${this.VALTIMO_ENDPOINT_URI}management/v1/building-block/${buildingBlockKey}/version/${buildingBlockVersionTag}/process-definition/${processDefinitionId}`,
+      formData,
+      {
+        headers: new HttpHeaders().set(InterceptorSkip, '409'),
+        params: replace ? new HttpParams().set('replace', 'true') : undefined,
+      }
     );
   }
 

@@ -44,7 +44,7 @@
       *ngIf="enableIkoType"
       [invalid]="getControlInvalid('type')"
       formControlName="type"
-      [disabled]="true"
+      [disabled]="!enableIkoType"
       [items]="ikoRepositoryTypeSelectItems$ | async"
       [title]="'ikoManagement.typeTitle' | translate"
       [appendInline]="false"
@@ -59,7 +59,7 @@
   </form>
 
   <cds-modal-footer>
-    <button cdsButton="ghost" (click)="onCancel()">
+    <button cdsButton="secondary" (click)="onCancel()">
       {{ 'interface.cancel' | translate }}
     </button>
 

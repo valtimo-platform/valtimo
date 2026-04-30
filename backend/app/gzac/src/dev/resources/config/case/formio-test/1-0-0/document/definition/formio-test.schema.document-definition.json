@@ -1,0 +1,200 @@
+{
+    "$id": "formio-test.schema",
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "Form.io Test",
+    "type": "object",
+    "additionalProperties": true,
+    "properties": {
+        "textfield": {
+            "type": "string"
+        },
+        "number": {
+            "type": "number"
+        },
+        "select": {
+            "type": "string"
+        },
+        "checkbox": {
+            "type": "boolean"
+        },
+        "iban": {
+            "type": "string"
+        },
+        "files": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "additionalProperties": true
+            }
+        },
+        "currentUser": {
+            "type": "object",
+            "additionalProperties": true,
+            "properties": {
+                "id": {
+                    "type": "string"
+                },
+                "email": {
+                    "type": "string"
+                },
+                "lastName": {
+                    "type": "string"
+                },
+                "username": {
+                    "type": "string"
+                },
+                "firstName": {
+                    "type": "string"
+                },
+                "emailVerified": {
+                    "type": "boolean"
+                },
+                "userProfileMetadata": {
+                    "type": "object",
+                    "additionalProperties": true
+                }
+            }
+        },
+        "textarea": {
+            "type": "string"
+        },
+        "email": {
+            "type": "string"
+        },
+        "password": {
+            "type": "string"
+        },
+        "phoneNumber": {
+            "type": "string"
+        },
+        "datetime": {
+            "type": "string"
+        },
+        "day": {
+            "type": "string"
+        },
+        "time": {
+            "type": "string"
+        },
+        "currency": {
+            "type": "number"
+        },
+        "radio": {
+            "type": "string"
+        },
+        "selectboxes": {
+            "type": "object",
+            "additionalProperties": true
+        },
+        "resourceSelector": {
+            "type": "string"
+        },
+        "valueResolverSelector": {
+            "type": "string"
+        },
+        "documentenApiFiles": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "additionalProperties": true,
+                "properties": {
+                    "id": {
+                        "type": "string"
+                    },
+                    "filename": {
+                        "type": "string"
+                    },
+                    "sizeInBytes": {
+                        "type": "number"
+                    }
+                }
+            }
+        },
+        "url": {
+            "type": "string"
+        },
+        "tags": {
+            "type": "array",
+            "items": {
+                "type": "string"
+            }
+        },
+        "survey": {
+            "type": "object",
+            "additionalProperties": true
+        },
+        "signature": {
+            "type": "string"
+        },
+        "col1Text": {
+            "type": "string"
+        },
+        "col2Text": {
+            "type": "string"
+        },
+        "field1": {
+            "type": "string"
+        },
+        "panelField": {
+            "type": "string"
+        },
+        "r1c1": {
+            "type": "string"
+        },
+        "r1c2": {
+            "type": "string"
+        },
+        "r2c1": {
+            "type": "string"
+        },
+        "r2c2": {
+            "type": "string"
+        },
+        "tab1Field": {
+            "type": "string"
+        },
+        "tab2Field": {
+            "type": "string"
+        },
+        "wellField": {
+            "type": "string"
+        },
+        "container": {
+            "type": "object",
+            "additionalProperties": true,
+            "properties": {
+                "containerField": {
+                    "type": "string"
+                }
+            }
+        },
+        "datamap": {
+            "type": "object",
+            "additionalProperties": true
+        },
+        "datagrid": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "additionalProperties": true,
+                "properties": {
+                    "col1": {
+                        "type": "string"
+                    }
+                }
+            }
+        },
+        "editgrid": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "additionalProperties": true,
+                "properties": {
+                    "field": {
+                        "type": "string"
+                    }
+                }
+            }
+        }
+    }
+}

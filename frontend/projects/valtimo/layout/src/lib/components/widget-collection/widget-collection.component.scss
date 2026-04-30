@@ -1,5 +1,5 @@
 /*!
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,11 +16,18 @@
 
 .valtimo-widget-collection {
   padding: 24px;
+  color: var(--widget-text-color, var(--cds-text-primary));
 
   .cds--label {
     overflow: hidden;
     text-overflow: ellipsis;
     width: 100%;
+    color: inherit;
+
+    cds-skeleton-text {
+      margin: 16px 0 0 0;
+      display: block;
+    }
   }
 
   &__header {
@@ -33,10 +40,14 @@
     display: flex;
     align-items: center;
     gap: 8px;
+
+    valtimo-mdi-icon-viewer .mdi-icon-preview {
+      color:var(--widget-text-color, var(--cds-text-primary));
+    }
   }
 
   &__title {
-    color: var(--cds-text-primary);
+    color: var(--widget-text-color, var(--cds-text-primary));
     font-weight: 600;
     font-size: 16px;
     line-height: 24px;
@@ -59,18 +70,22 @@
     margin-top: 16px;
     display: flex;
     flex-flow: row wrap;
-    background-color: var(--cds-background);
+    background-color: var(--widget-layer-color, var(--cds-background));
     padding: 16px;
     width: 100%;
     gap: 16px;
 
     &-title {
-      color: var(--cds-text-primary);
+      color: var(--widget-text-color, var(--cds-text-primary));
       font-weight: 500;
       font-size: 14px;
       line-height: 22px;
       font-style: italic;
       width: 100%;
+
+      cds-skeleton-text {
+        display: block;
+      }
     }
 
     &-content {
@@ -102,12 +117,15 @@
     padding: 8px 0;
     display: flex;
     justify-content: center;
+    height: 64px;
+    align-items: center;
   }
 
   &__render {
     &-vertically,
     &-two-columns,
     &-three-columns {
+      display: grid;
       grid-gap: 16px;
       align-items: stretch;
       overflow: hidden;
@@ -116,7 +134,7 @@
     }
 
     &-vertically {
-      display: flex !important;
+      grid-template-columns: 1fr;
     }
 
     &-two-columns {
@@ -147,7 +165,7 @@
         &-content {
           padding-left: 16px;
           gap: 12px;
-          border-left: 1px solid var(--cds-border-subtle-01);
+          border-left: 1px solid var(--widget-accent-color, var(--cds-border-subtle-01));
         }
 
         &-input {
@@ -155,5 +173,9 @@
         }
       }
     }
+  }
+
+  .valtimo-no-results__content {
+    color: var(--widget-text-color, var(--cds-text-primary)) !important;
   }
 }

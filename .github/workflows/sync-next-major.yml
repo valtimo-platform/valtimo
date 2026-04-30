@@ -1,0 +1,69 @@
+name: Auto-sync next-major from next-minor
+run-name: Auto-sync next-major from next-minor (${{ github.run_started_at }})
+on:
+  push:
+    branches: [next-minor]
+  schedule:
+    - cron: "0 */6 * * *"  # every 6 hours as a safety net
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+  pull-requests: write
+
+concurrency:
+  group: sync-next-major
+  cancel-in-progress: false
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout full history
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.NEXT_MAJOR_BRANCH_SYNC_TOKEN }}
+
+      - name: Configure git identity
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Fetch branches
+        run: |
+          git fetch origin next-minor next-major
+
+      # Try merge directly into next-major and push
+      - name: Try merge next-minor -> next-major
+        id: try_merge
+        run: |
+          set -e
+          git checkout -B next-major origin/next-major
+
+          # Attempt a non-ff merge (keeps history clear). Use --ff-only if you prefer strict linear history.
+          if git merge --no-ff --no-edit origin/next-minor; then
+            git push origin next-major
+            echo "merged=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "merged=false" >> "$GITHUB_OUTPUT"
+            # Abort merge attempt to leave repo clean for next steps
+            git merge --abort || true
+            exit 0
+          fi
+
+      # Only if the merge failed, create/update a PR
+      - name: Create PR only if conflict
+        if: steps.try_merge.outputs.merged != 'true'
+        uses: peter-evans/create-pull-request@v6
+        with:
+          token: ${{ secrets.NEXT_MAJOR_BRANCH_SYNC_TOKEN }}
+          base: next-major
+          branch: automation/sync-next-major
+          title: "Conflict: sync next-minor → next-major"
+          body: |
+            Automated merge from `next-minor` into `next-major` failed (likely due to conflicts).
+            Please resolve the conflicts and merge this PR to re-sync.
+          labels: sync, conflict
+          delete-branch: true

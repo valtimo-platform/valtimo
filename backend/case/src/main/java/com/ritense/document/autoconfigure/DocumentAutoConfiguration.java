@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,12 +25,14 @@ import com.ritense.document.domain.impl.listener.DocumentRelatedFileSubmittedEve
 import com.ritense.document.domain.impl.listener.RelatedJsonSchemaDocumentAvailableEventListenerImpl;
 import com.ritense.document.domain.impl.sequence.JsonSchemaDocumentDefinitionSequenceRecord;
 import com.ritense.document.exporter.JsonSchemaDocumentDefinitionExporter;
-import com.ritense.document.importer.JsonSchemaDocumentDefinitionImporter;
+import com.ritense.document.importer.CaseJsonSchemaDocumentDefinitionImporter;
 import com.ritense.document.listener.DocumentDefinitionCaseEventListener;
+import com.ritense.document.listener.JsonSchemaDocumentTeamChangedListener;
 import com.ritense.document.repository.DocumentDefinitionRepository;
 import com.ritense.document.repository.DocumentDefinitionSequenceRepository;
 import com.ritense.document.repository.impl.JsonSchemaDocumentRepository;
 import com.ritense.document.service.CaseTagService;
+import com.ritense.document.service.DefaultCaseDocumentResolver;
 import com.ritense.document.service.DocumentDefinitionService;
 import com.ritense.document.service.DocumentSearchService;
 import com.ritense.document.service.DocumentSequenceGeneratorService;
@@ -55,8 +57,11 @@ import com.ritense.resource.service.ResourceService;
 import com.ritense.valtimo.contract.authentication.UserManagementService;
 import com.ritense.valtimo.contract.case_.CaseDefinitionChecker;
 import com.ritense.valtimo.contract.database.QueryDialectHelper;
+import com.ritense.valtimo.contract.document.BlueprintCaseDocumentResolver;
+import com.ritense.valtimo.contract.document.CaseDocumentResolver;
 import com.ritense.valtimo.web.sse.service.SseSubscriptionService;
 import jakarta.persistence.EntityManager;
+import com.ritense.valtimo.contract.authentication.TeamManagementService;
 import java.util.List;
 import java.util.Optional;
 import javax.annotation.Nullable;
@@ -91,6 +96,7 @@ public class DocumentAutoConfiguration {
         final ObjectMapper objectMapper,
         final InternalCaseStatusService internalCaseStatusService,
         final CaseTagService caseTagService,
+        final Optional<TeamManagementService> teamManagementService,
         final EntityManager entityManager
     ) {
         return new JsonSchemaDocumentService(
@@ -105,8 +111,18 @@ public class DocumentAutoConfiguration {
             objectMapper,
             internalCaseStatusService,
             caseTagService,
+            teamManagementService.orElse(null),
             entityManager
         );
+    }
+
+    @Bean
+    @ConditionalOnMissingBean(CaseDocumentResolver.class)
+    public CaseDocumentResolver caseDocumentResolver(
+        final DocumentService documentService,
+        final List<BlueprintCaseDocumentResolver> blueprintCaseDocumentResolvers
+    ) {
+        return new DefaultCaseDocumentResolver(documentService, blueprintCaseDocumentResolvers);
     }
 
     @Bean
@@ -139,10 +155,10 @@ public class DocumentAutoConfiguration {
 
     @Bean
     @ConditionalOnMissingBean
-    public JsonSchemaDocumentDefinitionImporter documentDefinitionImporter(
+    public CaseJsonSchemaDocumentDefinitionImporter documentDefinitionImporter(
         JsonSchemaDocumentDefinitionService jsonSchemaDocumentDefinitionService
     ) {
-        return new JsonSchemaDocumentDefinitionImporter(
+        return new CaseJsonSchemaDocumentDefinitionImporter(
             jsonSchemaDocumentDefinitionService
         );
     }
@@ -162,6 +178,7 @@ public class DocumentAutoConfiguration {
         final QueryDialectHelper queryDialectHelper,
         final SearchFieldService searchFieldService,
         final UserManagementService userManagementService,
+        final Optional<TeamManagementService> teamManagementService,
         final AuthorizationService authorizationService,
         final OutboxService outboxService,
         final JsonSchemaDocumentDefinitionService jsonSchemaDocumentDefinitionService,
@@ -172,6 +189,7 @@ public class DocumentAutoConfiguration {
             queryDialectHelper,
             searchFieldService,
             userManagementService,
+            teamManagementService.orElse(null),
             authorizationService,
             outboxService,
             jsonSchemaDocumentDefinitionService,
@@ -254,6 +272,16 @@ public class DocumentAutoConfiguration {
     ) {
         return new DocumentDefinitionCaseEventListener(
             documentDefinitionService
+        );
+    }
+
+    @Bean
+    @ConditionalOnMissingBean(JsonSchemaDocumentTeamChangedListener.class)
+    public JsonSchemaDocumentTeamChangedListener jsonSchemaDocumentTeamChangedListener(
+        JsonSchemaDocumentRepository jsonSchemaDocumentRepository
+    ) {
+        return new JsonSchemaDocumentTeamChangedListener(
+            jsonSchemaDocumentRepository
         );
     }
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,19 +15,16 @@
  */
 
 import {Injectable} from '@angular/core';
-import {HttpClient} from '@angular/common/http';
-import {ConfigService} from '@valtimo/shared';
-import {Observable} from 'rxjs';
+import {HttpClient, HttpHeaders} from '@angular/common/http';
+import {ConfigService, InterceptorSkip, Page} from '@valtimo/shared';
+import {map, Observable} from 'rxjs';
 import {
   CreateZaakTypeLinkRequest,
   DocumentenApiFileReference,
-  InformatieObjectType,
-  OpenZaakConfig,
-  OpenZaakResource,
   ResourceDto,
+  ResourceReference,
   ZaakType,
   ZaakTypeLink,
-  ZaakTypeRequest,
 } from '../models';
 
 @Injectable({
@@ -35,18 +32,12 @@ import {
 })
 export class OpenZaakService {
   private valtimoApiConfig: any;
-  private catalogus: string;
 
   constructor(
     private http: HttpClient,
     private configService: ConfigService
   ) {
     this.valtimoApiConfig = this.configService.config.valtimoApi;
-    this.catalogus = this.configService.config.openZaak.catalogus;
-  }
-
-  public getOpenZaakConfig(): Observable<OpenZaakConfig> {
-    return this.http.get<OpenZaakConfig>(`${this.valtimoApiConfig.endpointUri}v1/openzaak/config`);
   }
 
   public getResource(resourceId: string): Observable<ResourceDto> {
@@ -55,19 +46,24 @@ export class OpenZaakService {
     );
   }
 
+  public getResources(documentId: string): Observable<Array<ResourceReference>> {
+    return this.http
+      .get<
+        Page<any>
+      >(`${this.valtimoApiConfig.endpointUri}v2/zaken-api/document/${documentId}/files`)
+      .pipe(
+        map(page =>
+          page.content.map(file => ({
+            filename: file.bestandsnaam,
+            id: file.fileId,
+          }))
+        )
+      );
+  }
+
   public getZaakTypes(): Observable<ZaakType[]> {
     return this.http.get<ZaakType[]>(
       `${this.valtimoApiConfig.endpointUri}management/v1/zgw/zaaktype`
-    );
-  }
-
-  public getBesluittypen(): Observable<any> {
-    return this.http.get(`${this.valtimoApiConfig.endpointUri}v1/besluittype`);
-  }
-
-  public getInformatieObjectTypes(): Observable<InformatieObjectType[]> {
-    return this.http.get<InformatieObjectType[]>(
-      `${this.valtimoApiConfig.endpointUri}v1/openzaak/informatie-object-typen/${this.catalogus}`
     );
   }
 
@@ -100,33 +96,8 @@ export class OpenZaakService {
     );
   }
 
-  public getStatusTypes(zaakTypeRequest: ZaakTypeRequest): Observable<any> {
-    return this.http.post(
-      `${this.valtimoApiConfig.endpointUri}v1/openzaak/status`,
-      zaakTypeRequest
-    );
-  }
-
-  public getStatusResults(zaakTypeRequest): Observable<any> {
-    return this.http.post(
-      `${this.valtimoApiConfig.endpointUri}v1/openzaak/resultaat`,
-      zaakTypeRequest
-    );
-  }
-
-  public upload(file: File, documentDefinitionName: string): Observable<OpenZaakResource> {
-    const formData: FormData = new FormData();
-    formData.append('file', file);
-    formData.append('documentDefinitionName', documentDefinitionName);
-
-    return this.http.post<OpenZaakResource>(
-      `${this.valtimoApiConfig.endpointUri}v1/resource/upload-open-zaak`,
-      formData,
-      {
-        reportProgress: true,
-        responseType: 'json',
-      }
-    );
+  public upload(file: File, caseDefinitionKey: string): Observable<DocumentenApiFileReference> {
+    return this.uploadTempFileWithMetadata(file, {caseDefinitionKey});
   }
 
   public uploadWithMetadata(
@@ -149,6 +120,7 @@ export class OpenZaakService {
     return this.http.post<void>(`${this.valtimoApiConfig.endpointUri}v1/resource/temp`, formData, {
       reportProgress: true,
       responseType: 'json',
+      headers: new HttpHeaders().set(InterceptorSkip, '403'),
     });
   }
 
@@ -173,6 +145,7 @@ export class OpenZaakService {
       {
         reportProgress: true,
         responseType: 'json',
+        headers: new HttpHeaders().set(InterceptorSkip, '403'),
       }
     );
   }

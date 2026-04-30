@@ -14,6 +14,6 @@
  * limitations under the License.
  */
 
-type ManagementContext = 'case' | 'independent';
+type ManagementContext = 'case' | 'independent' | 'buildingBlock';
 
 export {ManagementContext};

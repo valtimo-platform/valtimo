@@ -48,12 +48,11 @@ import org.springframework.data.domain.PageImpl
 import org.springframework.data.domain.Pageable
 import java.net.URI
 import java.time.LocalDate
-import java.time.LocalDateTime
+import java.time.OffsetDateTime
 import java.util.UUID
 
 class DocumentenApiServiceTest {
     private lateinit var service: DocumentenApiService
-
     private lateinit var pluginService: PluginService
     private lateinit var catalogiService: CatalogiService
     private lateinit var documentenApiColumnRepository: DocumentenApiColumnRepository
@@ -93,13 +92,13 @@ class DocumentenApiServiceTest {
 
     @Test
     fun `getCaseInformatieObjecten should get informatieobjecten`() {
-        val documentId = UUID.randomUUID()
+        val caseDocumentId = UUID.randomUUID()
         val documentSearchRequest = DocumentSearchRequest()
         val pageable = Pageable.unpaged()
 
         val documentDefinitionId = JsonSchemaDocumentDefinitionId.existingId("some-document-name", caseDefinitionId)
         val document = mock<Document>()
-        whenever(valtimoDocumentService.get(documentId.toString())).thenReturn(document)
+        whenever(valtimoDocumentService.get(caseDocumentId.toString())).thenReturn(document)
         whenever(document.definitionId()).thenReturn(documentDefinitionId)
         val pluginConfigurationId = PluginConfigurationId.existingId(UUID.randomUUID())
         val pluginConfiguration = mock<PluginConfiguration>()
@@ -110,12 +109,12 @@ class DocumentenApiServiceTest {
         val plugin = mock<DocumentenApiPlugin>()
         val relatedFile = createDocumentInformatieObject()
         val page = PageImpl(listOf(relatedFile), pageable, 1)
-        whenever(plugin.getInformatieObjecten(documentSearchRequest, pageable)).thenReturn(page)
+        whenever(plugin.getInformatieObjecten(caseDocumentId, documentSearchRequest, pageable)).thenReturn(page)
         val version = DocumentenApiVersion("1.5.0-test-1.0.0", listOf("titel"), listOf("titel"))
         whenever(documentenApiVersionService.getPluginVersion("some-document-name"))
             .thenReturn(Triple(pluginConfiguration, plugin, version))
 
-        val resultPage = service.getCaseInformatieObjecten(documentId, documentSearchRequest, pageable)
+        val resultPage = service.getCaseInformatieObjecten(caseDocumentId, documentSearchRequest, pageable)
 
         assertEquals(1, resultPage.size)
         val firstResult = resultPage.content.first()
@@ -130,22 +129,24 @@ class DocumentenApiServiceTest {
 
     @Test
     fun `should call plugin to delete informatie object`() {
+        val caseDocumentId = UUID.randomUUID()
         val documentUrl = URI("http://some.url")
         val pluginInstance = mock<DocumentenApiPlugin>()
         whenever(pluginService.createInstance<DocumentenApiPlugin>(any(), any())).thenReturn(pluginInstance)
 
-        service.deleteInformatieObject(documentUrl)
+        service.deleteInformatieObject(documentUrl, caseDocumentId)
 
-        verify(pluginInstance).deleteInformatieObject(documentUrl)
+        verify(pluginInstance).deleteInformatieObject(caseDocumentId, documentUrl)
     }
 
     @Test
     fun `should throw exception when trying to delete informatie object but plugin does not exist`() {
+        val caseDocumentId = UUID.randomUUID()
         val documentUrl = URI("http://some.url")
         whenever(pluginService.createInstance<DocumentenApiPlugin>(any(), any())).thenReturn(null)
 
         val ex = assertThrows<IllegalArgumentException> {
-            service.deleteInformatieObject(documentUrl)
+            service.deleteInformatieObject(documentUrl, caseDocumentId)
         }
 
         assertEquals("Trying to delete informatie object by url, but could not find DocumentenApiPlugin instance for informatieobjectUrl http://some.url", ex.message)
@@ -155,7 +156,7 @@ class DocumentenApiServiceTest {
         url = URI("http://localhost/informatieobjecttype/0e757153-fce3-44bc-a47f-494840784a16"),
         bronorganisatie = Rsin("404797441"),
         auteur = "y",
-        beginRegistratie = LocalDateTime.now(),
+        beginRegistratie = OffsetDateTime.now(),
         creatiedatum = LocalDate.now(),
         taal = "nl",
         titel = "titel",

@@ -15,10 +15,17 @@
  */
 import {Component, OnDestroy, OnInit} from '@angular/core';
 import {ActivatedRoute} from '@angular/router';
-import {CaseManagementParams, getCaseManagementRouteParams, Page} from '@valtimo/shared';
+import {
+  BuildingBlockManagementParams,
+  CaseManagementParams,
+  getBuildingBlockManagementRouteParams,
+  getCaseManagementRouteParams,
+  getContextObservable,
+  Page,
+} from '@valtimo/shared';
 import {FormFlowService, ListFormFlowDefinition} from '@valtimo/form-flow-management';
-import {BehaviorSubject, combineLatest, map, Observable, Subscription, tap} from 'rxjs';
-import {switchMap, take} from 'rxjs/operators';
+import {BehaviorSubject, combineLatest, map, Observable, of, Subscription, tap} from 'rxjs';
+import {filter, switchMap, take, withLatestFrom} from 'rxjs/operators';
 
 import {
   FormDefinitionListItem,
@@ -26,7 +33,6 @@ import {
   FormFlowProcessLinkCreateRequestDto,
   FormFlowProcessLinkUpdateRequestDto,
   FormSize,
-  ProcessLinkEditMode,
 } from '../../models';
 import {
   ProcessLinkButtonService,
@@ -47,13 +53,28 @@ export class SelectFormFlowComponent implements OnInit, OnDestroy {
   public subtitlesValue: string[] = [];
   public readonly saving$ = this.stateService.saving$;
   private readonly formFlowDefinitions$: Observable<ListFormFlowDefinition[]> =
-    getCaseManagementRouteParams(this.route).pipe(
-      switchMap((params: CaseManagementParams | undefined) =>
-        this.formFlowService.getFormFlowDefinitions(
-          params?.caseDefinitionKey ?? '',
-          params?.caseDefinitionVersionTag ?? ''
-        )
-      ),
+    getContextObservable(this.route).pipe(
+      switchMap(context => {
+        if (context === 'buildingBlock') {
+          return getBuildingBlockManagementRouteParams(this.route).pipe(
+            switchMap((params: BuildingBlockManagementParams | undefined) =>
+              this.formFlowService.getBuildingBlockFormFlowDefinitions(
+                params?.buildingBlockDefinitionKey ?? '',
+                params?.buildingBlockDefinitionVersionTag ?? ''
+              )
+            )
+          );
+        }
+
+        return getCaseManagementRouteParams(this.route).pipe(
+          switchMap((params: CaseManagementParams | undefined) =>
+            this.formFlowService.getFormFlowDefinitions(
+              params?.caseDefinitionKey ?? '',
+              params?.caseDefinitionVersionTag ?? ''
+            )
+          )
+        );
+      }),
       map((formFlowDefinitions: Page<ListFormFlowDefinition>) => formFlowDefinitions.content)
     );
 
@@ -135,9 +156,14 @@ export class SelectFormFlowComponent implements OnInit, OnDestroy {
 
   private openBackButtonSubscription(): void {
     this._subscriptions.add(
-      this.buttonService.backButtonClick$.subscribe(() => {
-        this.stateService.setInitial();
-      })
+      this.buttonService.backButtonClick$
+        .pipe(
+          withLatestFrom(this.stateService.isEditing$),
+          filter(([, isEditing]) => !isEditing)
+        )
+        .subscribe(() => {
+          this.stateService.setInitial();
+        })
     );
   }
 
@@ -172,19 +198,7 @@ export class SelectFormFlowComponent implements OnInit, OnDestroy {
           ...(isUserTask && {subtitles: this.subtitlesValue}),
         };
 
-        if (this.stateService.processLinkEditMode === ProcessLinkEditMode.EMIT_EVENTS) {
-          this.stateService.sendProcessLinkUpdateEvent(updateProcessLinkRequest);
-          return;
-        }
-
-        this.processLinkService.updateProcessLink(updateProcessLinkRequest).subscribe({
-          next: () => {
-            this.stateService.closeModal();
-          },
-          error: () => {
-            this.stateService.stopSaving();
-          },
-        });
+        this.stateService.sendProcessLinkUpdateEvent(updateProcessLinkRequest);
       });
   }
 
@@ -209,19 +223,7 @@ export class SelectFormFlowComponent implements OnInit, OnDestroy {
           ...(isUserTask && {subtitles: this.subtitlesValue}),
         } as FormFlowProcessLinkCreateRequestDto;
 
-        if (this.stateService.processLinkEditMode === ProcessLinkEditMode.EMIT_EVENTS) {
-          this.stateService.sendProcessLinkCreateEvent(createRequest);
-          return;
-        }
-
-        this.processLinkService.saveProcessLink(createRequest).subscribe({
-          next: () => {
-            this.stateService.closeModal();
-          },
-          error: () => {
-            this.stateService.stopSaving();
-          },
-        });
+        this.stateService.sendProcessLinkCreateEvent(createRequest);
       });
   }
 }

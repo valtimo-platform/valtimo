@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 import {CommonModule} from '@angular/common';
 import {
   ChangeDetectionStrategy,
@@ -30,6 +31,7 @@ import {BehaviorSubject} from 'rxjs';
 import {EditorModel} from '../../models';
 import {ConfirmationModalModule} from '../confirmation-modal/confirmation-modal.module';
 import {EditorModule} from '../editor/editor.module';
+import {JSON_EDITOR_TEST_IDS} from '../../constants';
 
 @Component({
   selector: 'valtimo-json-editor',
@@ -72,6 +74,8 @@ export class JsonEditorComponent {
   @Output() public readonly discardEvent = new EventEmitter();
   @Output() public readonly keepEditingEvent = new EventEmitter();
   @Output() public readonly saveEvent = new EventEmitter<object>();
+
+  protected readonly testIds = JSON_EDITOR_TEST_IDS;
 
   public readonly isEditActive = signal<boolean>(false);
   public readonly isDisabled = computed(() => !this.isEditActive() || this._disabled());

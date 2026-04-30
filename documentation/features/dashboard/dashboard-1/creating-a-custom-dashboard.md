@@ -28,7 +28,7 @@ export class DashboardComponent implements OnInit {
 
 Create the html file that will serve your user interface. Note that the name of the file must be the same as in the templateUrl property in the example above.
 
-More information on angular components can be found [here](https://angular.io/guide/component-overview#creating-a-component)
+More information on angular components can be found in the [Angular component overview](https://angular.io/guide/component-overview#creating-a-component)
 
 ```html
 <div style="display: grid;grid-template-columns: auto auto auto;"> 
@@ -57,7 +57,7 @@ const routes: Routes = [{
 ```
 
 The path variable in the example above is the key for overriding components. As it stands the default Valtimo dashboard exists under the root path so the value must be an empty string.\
-The title property can be defined, and it will be shown in the header of the page, and the roles defines which role can access the page (more on roles [here](creating-a-custom-dashboard.md))
+The title property can be defined, and it will be shown in the header of the page, and the roles defines which role can access the page (more on roles in the [custom dashboard documentation](creating-a-custom-dashboard.md))
 
 #### Declaring the component
 

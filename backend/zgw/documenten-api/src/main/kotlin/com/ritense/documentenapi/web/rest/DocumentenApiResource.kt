@@ -39,6 +39,7 @@ import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
 import java.net.URLConnection
+import java.util.UUID
 
 @RestController
 @SkipComponentScan
@@ -47,14 +48,16 @@ class DocumentenApiResource(
     private val documentenApiService: DocumentenApiService,
     private val documentenApiVersionService: DocumentenApiVersionService
 ) {
+    @Deprecated("Will be removed in 14.0", ReplaceWith("ZaakDocumentResource.downloadDocument(pluginConfigurationId, caseDocumentId, documentId)"))
     @GetMapping("/v1/documenten-api/{pluginConfigurationId}/files/{documentId}/download")
     fun downloadDocument(
         @LoggableResource(resourceType = PluginConfiguration::class) @PathVariable(name = "pluginConfigurationId") pluginConfigurationId: String,
         @PathVariable(name = "documentId") documentId: String,
     ): ResponseEntity<InputStreamResource> {
 
-        val documentInputStream = documentenApiService.downloadInformatieObject(pluginConfigurationId, documentId)
-        val documentMetadata = documentenApiService.getInformatieObject(pluginConfigurationId, documentId)
+        val caseDocumentId: UUID? = null
+        val documentMetadata = documentenApiService.getInformatieObject(pluginConfigurationId, caseDocumentId,documentId)
+        val documentInputStream = documentenApiService.downloadInformatieObject(pluginConfigurationId, caseDocumentId, documentId)
 
         val responseHeaders = HttpHeaders()
         responseHeaders.set("Content-Disposition", "attachment; filename=\"${documentMetadata.bestandsnaam}\"")
@@ -71,23 +74,34 @@ class DocumentenApiResource(
             .body(InputStreamResource(documentInputStream))
     }
 
+    @Deprecated("Will be removed in 14.0", ReplaceWith("ZaakDocumentResource.modifyDocument(pluginConfigurationId, caseDocumentId, documentId)"))
     @PutMapping("/v1/documenten-api/{pluginConfigurationId}/files/{documentId}")
     fun modifyDocument(
         @LoggableResource(resourceType = PluginConfiguration::class) @PathVariable(name = "pluginConfigurationId") pluginConfigurationId: String,
         @PathVariable(name = "documentId") documentId: String,
         @RequestBody modifyDocumentRequest: ModifyDocumentRequest,
     ): ResponseEntity<RelatedFile> {
+        val caseDocumentId: UUID? = null
         return ResponseEntity
             .ok()
-            .body(documentenApiService.modifyInformatieObject(pluginConfigurationId, documentId, modifyDocumentRequest))
+            .body(
+                documentenApiService.modifyInformatieObject(
+                    pluginConfigurationId,
+                    caseDocumentId,
+                    documentId,
+                    modifyDocumentRequest
+                )
+            )
     }
 
+    @Deprecated("Will be removed in 14.0", ReplaceWith("ZaakDocumentResource.deleteDocument(pluginConfigurationId, caseDocumentId, documentId)"))
     @DeleteMapping("/v1/documenten-api/{pluginConfigurationId}/files/{documentId}")
     fun deleteDocument(
         @LoggableResource(resourceType = PluginConfiguration::class) @PathVariable(name = "pluginConfigurationId") pluginConfigurationId: String,
         @PathVariable(name = "documentId") documentId: String,
     ): ResponseEntity<Unit> {
-        documentenApiService.deleteInformatieObject(pluginConfigurationId, documentId)
+        val caseDocumentId: UUID? = null
+        documentenApiService.deleteInformatieObject(pluginConfigurationId, caseDocumentId, documentId)
         return ResponseEntity
             .noContent()
             .build()

@@ -26,10 +26,14 @@ import com.ritense.valtimo.operaton.dto.TaskExtended;
 import com.ritense.valtimo.contract.annotation.SkipComponentScan;
 import com.ritense.valtimo.contract.authentication.ManageableUser;
 import com.ritense.valtimo.contract.authentication.NamedUser;
+import com.ritense.valtimo.contract.authentication.UserManagementService;
+import com.ritense.valtimo.operaton.dto.TeamDto;
 import com.ritense.valtimo.security.exceptions.TaskNotFoundException;
 import com.ritense.valtimo.service.OperatonProcessService;
 import com.ritense.valtimo.service.OperatonTaskService;
+import com.ritense.valtimo.contract.utils.SecurityUtils;
 import com.ritense.valtimo.service.request.AssigneeRequest;
+import com.ritense.valtimo.task.service.UserTaskOpenedStatusService;
 import com.ritense.valtimo.service.request.SetDueDateRequest;
 import com.ritense.valtimo.web.rest.dto.BatchAssignTaskDTO;
 import com.ritense.valtimo.web.rest.dto.CustomTaskDto;
@@ -60,12 +64,17 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping(value = "/api", produces = APPLICATION_JSON_UTF8_VALUE)
 public class TaskResource extends AbstractTaskResource {
 
+    private final UserTaskOpenedStatusService userTaskOpenedStatusService;
+
     public TaskResource(
         final FormService formService,
         final OperatonTaskService operatonTaskService,
-        final OperatonProcessService operatonProcessService
+        final OperatonProcessService operatonProcessService,
+        final UserTaskOpenedStatusService userTaskOpenedStatusService,
+        final UserManagementService userManagementService
     ) {
-        super(formService, operatonTaskService, operatonProcessService);
+        super(formService, operatonTaskService, operatonProcessService, userManagementService);
+        this.userTaskOpenedStatusService = userTaskOpenedStatusService;
     }
 
     /**
@@ -104,6 +113,10 @@ public class TaskResource extends AbstractTaskResource {
         } catch (TaskNotFoundException e) {
             return ResponseEntity.noContent().build();
         }
+        var currentUserId = SecurityUtils.getCurrentUserLogin();
+        if (currentUserId != null) {
+            userTaskOpenedStatusService.markTaskAsOpened(taskId, currentUserId);
+        }
         return ResponseEntity.ok(customTaskDto);
     }
 
@@ -112,14 +125,35 @@ public class TaskResource extends AbstractTaskResource {
         @LoggableResource(resourceType = OperatonTask.class) @PathVariable String taskId,
         @RequestBody AssigneeRequest assigneeRequest
     ) {
-        operatonTaskService.assign(taskId, assigneeRequest.getAssignee());
+        if (assigneeRequest.getAssignee() != null) {
+            if (assigneeRequest.getAssignee().isEmpty()) {
+                operatonTaskService.unassign(taskId);
+            } else {
+                operatonTaskService.assign(taskId, assigneeRequest.getAssignee());
+            }
+        }
+        if (assigneeRequest.getAssignedTeamKey() != null) {
+            if (assigneeRequest.getAssignedTeamKey().isEmpty()) {
+                operatonTaskService.unassignTeamFromTask(taskId);
+            } else {
+                operatonTaskService.assignTeamToTask(taskId, assigneeRequest.getAssignedTeamKey());
+            }
+        }
         return ResponseEntity.ok().build();
     }
 
     @PostMapping("/v1/task/assign/batch-assign")
     public ResponseEntity<Void> batchClaim(@RequestBody BatchAssignTaskDTO batchAssignTaskDTO) {
         final String assignee = batchAssignTaskDTO.getAssignee();
-        batchAssignTaskDTO.getTasksIds().forEach(taskId -> operatonTaskService.assign(taskId, assignee));
+        final String assignedTeamKey = batchAssignTaskDTO.getAssignedTeamKey();
+        batchAssignTaskDTO.getTasksIds().forEach(taskId -> {
+            if (assignee != null) {
+                operatonTaskService.assign(taskId, assignee);
+            }
+            if (assignedTeamKey != null) {
+                operatonTaskService.assignTeamToTask(taskId, assignedTeamKey);
+            }
+        });
         return ResponseEntity.ok().build();
     }
 
@@ -128,6 +162,7 @@ public class TaskResource extends AbstractTaskResource {
         @LoggableResource(resourceType = OperatonTask.class) @PathVariable String taskId
     ) {
         operatonTaskService.unassign(taskId);
+        operatonTaskService.unassignTeamFromTask(taskId);
         return ResponseEntity.ok().build();
     }
 
@@ -197,6 +232,15 @@ public class TaskResource extends AbstractTaskResource {
     ) {
         List<NamedUser> users = operatonTaskService.getNamedCandidateUsers(taskId);
         return ResponseEntity.ok(users);
+    }
+
+    @GetMapping("/v1/task/{taskId}/candidate-team")
+    public ResponseEntity<Page<TeamDto>> getCandidateTeams(
+        @LoggableResource(resourceType = OperatonTask.class) @PathVariable String taskId,
+        Pageable pageable
+    ) {
+        Page<TeamDto> teams = operatonTaskService.getCandidateTeams(taskId, pageable).map(TeamDto::from);
+        return ResponseEntity.ok(teams);
     }
 
     // Overriding the default TaskFilter binder so it's not case sensitive

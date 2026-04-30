@@ -24,27 +24,29 @@
 >
   <v-input
     name="configurationTitle"
+    [attr.data-test-id]="testIds.configurationTitle"
     placeholder="Zaken API Plugin"
     [title]="'configurationTitle' | pluginTranslate: pluginId | async"
-    [tooltip]="'configurationTitleTooltip' | pluginTranslate: pluginId | async"
     [defaultValue]="obs.prefill?.configurationTitle"
     [disabled]="obs.disabled"
     [required]="true"
     [margin]="true"
     [trim]="true"
+    [tooltip]="'configurationTitleTooltip' | pluginTranslate: pluginId | async"
   >
   </v-input>
 
   <v-input
     name="url"
-    placeholder="https://openzaak.example.com/zaken/api/v1/ "
+    [attr.data-test-id]="testIds.url"
     [title]="'url' | pluginTranslate: pluginId | async"
-    [tooltip]="'urlTooltip' | pluginTranslate: pluginId | async"
     [defaultValue]="obs.prefill?.url"
     [disabled]="obs.disabled"
     [required]="true"
     [trim]="true"
     [margin]="true"
+    [tooltip]="'urlTooltip' | pluginTranslate: pluginId | async"
+    placeholder="https://openzaak.example.com/zaken/api/v1/ "
   >
   </v-input>
 
@@ -52,6 +54,7 @@
     *ngIf="{authenticationPluginSelectItems: authenticationPluginSelectItems$ | async} as authObs"
   >
     <v-select
+      [attr.data-test-id]="testIds.authenticationPluginConfiguration"
       name="authenticationPluginConfiguration"
       [title]="'authenticationPluginConfiguration' | pluginTranslate: pluginId | async"
       [tooltip]="'authenticationPluginConfigurationTooltip' | pluginTranslate: pluginId | async"

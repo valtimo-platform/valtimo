@@ -1,0 +1,59 @@
+<!--
+  ~ Copyright 2015-2026 Ritense BV, the Netherlands.
+  ~
+  ~ Licensed under EUPL, Version 1.2 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~ https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" basis,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<valtimo-carbon-list
+  [fields]="FIELDS"
+  [actionItems]="ACTION_ITEMS"
+  [items]="formFlowDefinitionItems$ | async"
+  [loading]="$loading()"
+  (rowClicked)="onRowClick($event)"
+>
+  <div carbonToolbarContent>
+    <ng-container [ngTemplateOutlet]="addFormFlowButton"></ng-container>
+  </div>
+
+  <valtimo-no-results
+    [action]="addFormFlowButton"
+    description="{{ 'formFlow.noResults.description' | translate }}"
+    title="{{ 'formFlow.noResults.title' | translate }}"
+  ></valtimo-no-results>
+</valtimo-carbon-list>
+
+<ng-template #addFormFlowButton>
+  <button
+    cdsButton="primary"
+    (click)="onCreateClick()"
+    [disabled]="(isFinal$ | async) || $loading()"
+  >
+    {{ 'formFlow.add' | translate }}
+
+    <svg cdsIcon="add" size="16" class="cds--btn__icon"></svg>
+  </button>
+</ng-template>
+
+<valtimo-new-form-flow-modal
+  [open]="showCreateModal$ | async"
+  (closeEvent)="onAdd($event)"
+></valtimo-new-form-flow-modal>
+
+<valtimo-confirmation-modal
+  confirmButtonTextTranslationKey="interface.delete"
+  confirmButtonType="danger"
+  contentTranslationKey="formFlow.deleteModalContent"
+  [showModalSubject$]="showDeleteModal$"
+  titleTranslationKey="interface.delete"
+  (confirmEvent)="onDeleteConfirm()"
+></valtimo-confirmation-modal>

@@ -24,19 +24,15 @@
     <property name="jsonType" value="JSON" dbms="mysql"/>
     <property name="jsonType" value="JSONB" dbms="postgresql"/>
 
-    <changeSet id="create-process-link-table" author="Ritense">
-        <createTable tableName="process_link">
-            <column name="id" type="${uuidType}">
-                <constraints primaryKey="true" nullable="false"/>
-            </column>
-            <column name="process_definition_id" type="varchar(64)">
-                <constraints nullable="false"/>
-            </column>
-            <column name="activity_id" type="varchar(64)">
-                <constraints nullable="false"/>
-            </column>
+    <changeSet id="update-process-link-table" author="Ritense">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <columnExists tableName="process_link" columnName="subtitles"/>
+            </not>
+        </preConditions>
+        <addColumn tableName="process_link">
             <column name="subtitles" type="${jsonType}"/>
-        </createTable>
+        </addColumn>
     </changeSet>
 
 </databaseChangeLog>

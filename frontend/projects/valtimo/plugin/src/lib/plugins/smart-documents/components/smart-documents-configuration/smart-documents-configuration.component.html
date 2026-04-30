@@ -23,7 +23,7 @@
 >
   <v-input
     name="configurationTitle"
-    data-test-id="smartDocumentsConfigurationTitle"
+    [attr.data-test-id]="testIds.configurationTitle"
     [title]="'configurationTitle' | pluginTranslate: pluginId | async"
     [margin]="true"
     [disabled]="obs.disabled"
@@ -36,7 +36,7 @@
   </v-input>
   <v-input
     name="url"
-    data-test-id="smartDocumentsUrl"
+    [attr.data-test-id]="testIds.url"
     [title]="'url' | pluginTranslate: pluginId | async"
     [margin]="true"
     [disabled]="obs.disabled"
@@ -48,7 +48,7 @@
   </v-input>
   <v-input
     name="username"
-    data-test-id="smartDocumentsUsername"
+    [attr.data-test-id]="testIds.username"
     [title]="'username' | pluginTranslate: pluginId | async"
     [margin]="true"
     [disabled]="obs.disabled"
@@ -60,7 +60,7 @@
   </v-input>
   <v-input
     name="password"
-    data-test-id="smartDocumentsPassword"
+    [attr.data-test-id]="testIds.password"
     type="password"
     [title]="'password' | pluginTranslate: pluginId | async"
     [margin]="true"

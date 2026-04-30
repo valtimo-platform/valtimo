@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,17 +14,32 @@
  * limitations under the License.
  */
 import {DatePipe, Location as AngularLocation} from '@angular/common';
-import {AfterViewInit, Component, OnInit, TemplateRef, ViewChild} from '@angular/core';
+import {AfterViewInit, Component, OnDestroy, OnInit, TemplateRef, ViewChild} from '@angular/core';
 import {ActivatedRoute, Router} from '@angular/router';
 import {Return16, Save16, TrashCan16} from '@carbon/icons';
 import {TranslateService} from '@ngx-translate/core';
 import {BreadcrumbService} from '@valtimo/components';
 import {EnvironmentService, GlobalNotificationService} from '@valtimo/shared';
-import {IconService, Notification} from 'carbon-components-angular';
-import {BehaviorSubject, combineLatest, map, Observable, switchMap} from 'rxjs';
-import {take, tap} from 'rxjs/operators';
+import {SseService} from '@valtimo/sse';
+import {IconService, Notification, NotificationContent} from 'carbon-components-angular';
+import {
+  BehaviorSubject,
+  catchError,
+  combineLatest,
+  filter,
+  map,
+  Observable,
+  of,
+  Subscription,
+  switchMap,
+} from 'rxjs';
+import {take, tap, withLatestFrom} from 'rxjs/operators';
 import * as semver from 'semver';
-import {CaseDefinition} from '../../models/case-deployment.model';
+import {
+  CaseDefinition,
+  CaseDefinitionFinalizationCheckResult,
+  ConfigurationIssueUpdatedSseEvent,
+} from '../../models';
 import {CaseManagementService} from '../../services';
 
 @Component({
@@ -32,7 +47,7 @@ import {CaseManagementService} from '../../services';
   templateUrl: './case-management-deployment.component.html',
   styleUrls: ['./case-management-deployment.component.scss'],
 })
-export class CaseManagementDeploymentComponent implements OnInit, AfterViewInit {
+export class CaseManagementDeploymentComponent implements OnInit, AfterViewInit, OnDestroy {
   @ViewChild('createDraftMessage')
   private readonly _createDraftMessageTemplateRef: TemplateRef<HTMLDivElement>;
 
@@ -48,6 +63,8 @@ export class CaseManagementDeploymentComponent implements OnInit, AfterViewInit 
   public readonly showFinalizeDraftConfirmationModal$ = new BehaviorSubject<boolean>(false);
   public readonly showCreateDraftVersionConfirmationModal$ = new BehaviorSubject<boolean>(false);
   private readonly refreshDraftVersion$ = new BehaviorSubject<null>(null);
+  private readonly _refreshFinalizationCheck$ = new BehaviorSubject<null>(null);
+  private readonly _subscriptions = new Subscription();
 
   public readonly params$: Observable<{
     caseDefinitionKey: string;
@@ -86,9 +103,11 @@ export class CaseManagementDeploymentComponent implements OnInit, AfterViewInit 
     'caseManagement.deployment.finalizeDraftConfirmationModal.description'
   );
 
-  public readonly globalActiveCase$: Observable<any> = this.caseDefinitionKey$.pipe(
+  public readonly globalActiveCase$: Observable<any | null> = this.caseDefinitionKey$.pipe(
     switchMap(caseDefinitionKey =>
-      this.caseManagementService.getGlobalActiveCase(caseDefinitionKey)
+      this.caseManagementService
+        .getGlobalActiveCase(caseDefinitionKey)
+        .pipe(catchError(() => of(null)))
     )
   );
 
@@ -99,14 +118,14 @@ export class CaseManagementDeploymentComponent implements OnInit, AfterViewInit 
   ]).pipe(
     map(([globalActiveCase, caseDefinitionKey, caseDefinitionVersionTag]) => {
       return (
-        globalActiveCase.caseDefinitionKey === caseDefinitionKey &&
-        globalActiveCase.caseDefinitionVersionTag === caseDefinitionVersionTag
+        globalActiveCase?.caseDefinitionKey === caseDefinitionKey &&
+        globalActiveCase?.caseDefinitionVersionTag === caseDefinitionVersionTag
       );
     })
   );
 
   public readonly _caseDefinitionTitle$: Observable<string> = this.globalActiveCase$.pipe(
-    map(result => result.name)
+    map(result => result?.name ?? '')
   );
 
   public readonly caseDefinition$: Observable<CaseDefinition> = combineLatest([
@@ -176,6 +195,20 @@ export class CaseManagementDeploymentComponent implements OnInit, AfterViewInit 
       })
     );
 
+  public readonly importOriginEntries$: Observable<{key: string; value: string}[]> =
+    this.caseDefinition$.pipe(
+      map(caseDefinition => {
+        const entries: {key: string; value: string}[] = [];
+        if (caseDefinition.originalName)
+          entries.push({key: 'originalName', value: caseDefinition.originalName});
+        if (caseDefinition.originalKey)
+          entries.push({key: 'originalKey', value: caseDefinition.originalKey});
+        if (caseDefinition.originalVersionTag)
+          entries.push({key: 'originalVersionTag', value: caseDefinition.originalVersionTag});
+        return entries;
+      })
+    );
+
   public readonly releaseInformationDataEntries$: Observable<
     {key: string; value: string | Date}[]
   > = this.caseDefinition$.pipe(
@@ -190,6 +223,46 @@ export class CaseManagementDeploymentComponent implements OnInit, AfterViewInit 
     })
   );
 
+  private readonly _deploymentNotificationObject$ = new BehaviorSubject<NotificationContent>(null);
+  public readonly deploymentNotificationObject$ =
+    this._deploymentNotificationObject$.asObservable();
+
+  public readonly caseDefinitionFinalizationCheckResult$: Observable<CaseDefinitionFinalizationCheckResult> =
+    combineLatest([
+      this.caseDefinitionKey$,
+      this.caseDefinitionVersionTag$,
+      this._refreshFinalizationCheck$,
+    ]).pipe(
+      switchMap(([caseDefinitionKey, caseDefinitionVersionTag]) =>
+        this.caseManagementService.getCaseDefinitionFinalizationCheck(
+          caseDefinitionKey,
+          caseDefinitionVersionTag
+        )
+      ),
+      switchMap(res =>
+        this.translateService.stream('key').pipe(
+          tap(() => {
+            if (res.finalizable) {
+              this._deploymentNotificationObject$.next(null);
+            } else {
+              this._deploymentNotificationObject$.next({
+                type: 'warning',
+                title: this.translateService.instant(
+                  'caseManagement.deployment.notFinalizableWarning.title'
+                ),
+                message: this.translateService.instant(
+                  `caseManagement.deployment.notFinalizableWarning.${res.code}`
+                ),
+                showClose: false,
+                lowContrast: true,
+              });
+            }
+          }),
+          map(() => res)
+        )
+      )
+    );
+
   private _currentNotification!: Notification;
 
   constructor(
@@ -202,6 +275,7 @@ export class CaseManagementDeploymentComponent implements OnInit, AfterViewInit 
     private readonly notificationService: GlobalNotificationService,
     private readonly route: ActivatedRoute,
     private readonly router: Router,
+    private readonly sseService: SseService,
     private readonly translateService: TranslateService
   ) {
     this.iconService.register(Return16);
@@ -213,6 +287,22 @@ export class CaseManagementDeploymentComponent implements OnInit, AfterViewInit 
     this.caseDefinitionVersions$.pipe(take(1)).subscribe(versions => {
       this.caseDefinitionVersions = versions || [];
     });
+
+    this._subscriptions.add(
+      this.sseService
+        .getSseEventObservable<ConfigurationIssueUpdatedSseEvent>('CONFIGURATION_ISSUE_UPDATED')
+        .pipe(
+          withLatestFrom(this.caseDefinitionKey$),
+          filter(([event, key]) => event.caseDefinitionKey === key)
+        )
+        .subscribe(() => {
+          this._refreshFinalizationCheck$.next(null);
+        })
+    );
+  }
+
+  public ngOnDestroy(): void {
+    this._subscriptions.unsubscribe();
   }
 
   public ngAfterViewInit(): void {
@@ -389,19 +479,21 @@ export class CaseManagementDeploymentComponent implements OnInit, AfterViewInit 
   }
 
   private initBreadcrumbs(): void {
-    combineLatest([this.params$, this._caseDefinitionTitle$])
-      .pipe(
-        tap(([{caseDefinitionKey, caseDefinitionVersionTag}, caseDefinitionTitle]) => {
-          const route = `/case-management/case/${caseDefinitionKey}/version/${caseDefinitionVersionTag}`;
+    this._subscriptions.add(
+      combineLatest([this.params$, this._caseDefinitionTitle$])
+        .pipe(
+          tap(([{caseDefinitionKey, caseDefinitionVersionTag}, caseDefinitionTitle]) => {
+            const route = `/case-management/case/${caseDefinitionKey}/version/${caseDefinitionVersionTag}`;
 
-          this.breadcrumbService.setThirdBreadcrumb({
-            route: [route],
-            content: `${caseDefinitionTitle} `,
-            href: route,
-          });
-        })
-      )
-      .subscribe();
+            this.breadcrumbService.setThirdBreadcrumb({
+              route: [route],
+              content: `${caseDefinitionTitle} `,
+              href: route,
+            });
+          })
+        )
+        .subscribe()
+    );
   }
 
   private closeCurrentNotification(): void {

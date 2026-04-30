@@ -17,17 +17,26 @@
 package com.ritense.processdocument.listener
 
 import com.ritense.authorization.AuthorizationContext.Companion.runWithoutAuthorization
+import com.ritense.authorization.AuthorizationService
+import com.ritense.authorization.request.DelegateUserEntityAuthorizationRequest
 import com.ritense.case.service.CaseDefinitionService
-import com.ritense.document.domain.Document
 import com.ritense.document.domain.impl.JsonSchemaDocumentId
 import com.ritense.document.service.DocumentService
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import com.ritense.valtimo.contract.authentication.UserManagementService
+import com.ritense.valtimo.contract.document.CaseDocumentResolutionException
+import com.ritense.valtimo.contract.document.CaseDocumentResolver
+import com.ritense.valtimo.event.OperatonTaskEvent
+import com.ritense.valtimo.operaton.authorization.OperatonTaskActionProvider
+import com.ritense.valtimo.operaton.domain.OperatonTask
+import com.ritense.valtimo.operaton.repository.OperatonTaskRepository
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.operaton.bpm.engine.TaskService
-import org.operaton.bpm.engine.delegate.DelegateTask
 import org.springframework.context.event.EventListener
+import org.springframework.security.access.AccessDeniedException
 import org.springframework.stereotype.Component
+import org.springframework.transaction.support.TransactionSynchronization
+import org.springframework.transaction.support.TransactionSynchronizationManager
 import java.util.UUID
 import kotlin.jvm.optionals.getOrNull
 
@@ -37,24 +46,30 @@ open class CaseAssigneeTaskCreatedListener(
     private val taskService: TaskService,
     private val documentService: DocumentService,
     private val caseDefinitionService: CaseDefinitionService,
-    private val userManagementService: UserManagementService
+    private val userManagementService: UserManagementService,
+    private val caseDocumentResolver: CaseDocumentResolver,
+    private val authorizationService: AuthorizationService,
+    private val operatonTaskRepository: OperatonTaskRepository,
 ) {
 
     @EventListener(
-        condition = """#delegateTask.bpmnModelElementInstance != null
-            && #delegateTask.bpmnModelElementInstance.elementType.typeName == T(org.operaton.bpm.engine.ActivityTypes).TASK_USER_TASK
-            && #delegateTask.eventName == T(org.operaton.bpm.engine.delegate.TaskListener).EVENTNAME_CREATE"""
+        condition = """#event.delegateTask.bpmnModelElementInstance != null
+            && #event.delegateTask.bpmnModelElementInstance.elementType.typeName == T(org.operaton.bpm.engine.ActivityTypes).TASK_USER_TASK
+            && #event.eventName == T(org.operaton.bpm.engine.delegate.TaskListener).EVENTNAME_CREATE"""
     )
-    fun notify(delegateTask: DelegateTask) {
-        val documentId = JsonSchemaDocumentId.existingId(UUID.fromString(delegateTask.execution.businessKey))
-        val document: Document? = runWithoutAuthorization {
-            documentService.findBy(documentId).getOrNull()
-        }
+    fun notify(event: OperatonTaskEvent) {
+        val delegateTask = event.delegateTask
+        val documentId = UUID.fromString(delegateTask.execution.businessKey)
 
-        document?.run {
+        try {
+            val caseDocument = runWithoutAuthorization {
+                val caseDocumentId = caseDocumentResolver.resolveCaseDocumentId(documentId)
+                documentService.findBy(JsonSchemaDocumentId.existingId(caseDocumentId)).getOrNull()
+            } ?: return
+
             val caseDefinition = runWithoutAuthorization {
                 caseDefinitionService.getCaseDefinition(
-                    document.definitionId().caseDefinitionId()
+                    caseDocument.definitionId().caseDefinitionId()
                 )
             }
 
@@ -62,20 +77,38 @@ open class CaseAssigneeTaskCreatedListener(
                 if (
                     caseDefinition.canHaveAssignee
                     && caseDefinition.autoAssignTasks
-                    && !this.assigneeId().isNullOrEmpty()
+                    && !caseDocument.assigneeId().isNullOrEmpty()
                 ) {
-                    val assignee = userManagementService.findByUsername(this.assigneeId())
+                    val assignee = runWithoutAuthorization { userManagementService.findByUsername(caseDocument.assigneeId()) }
+                    val taskId = delegateTask.id
 
-                    taskService
-                        .setAssignee(
-                            delegateTask.id,
-                            assignee.username
-                        )
-                        .also {
-                            logger.debug { "Setting assignee for task with id ${delegateTask.id}" }
+                    TransactionSynchronizationManager.registerSynchronization(object : TransactionSynchronization {
+                        override fun beforeCommit(readOnly: Boolean) {
+                            val operatonTask = runWithoutAuthorization {
+                                operatonTaskRepository.findById(taskId).getOrNull()
+                            } ?: return
+
+                            try {
+                                authorizationService.requirePermission(
+                                    DelegateUserEntityAuthorizationRequest(
+                                        OperatonTask::class.java,
+                                        OperatonTaskActionProvider.ASSIGNABLE,
+                                        assignee.username,
+                                        operatonTask
+                                    )
+                                )
+
+                                taskService.setAssignee(taskId, assignee.username)
+                                logger.debug { "Setting assignee for task with id $taskId" }
+                            } catch (_: AccessDeniedException) {
+                                logger.info { "Auto assigning user to task ${taskId} failed." }
+                            }
                         }
+                    })
                 }
             }
+        } catch (e: CaseDocumentResolutionException) {
+            logger.debug { "Could not resolve case document for document $documentId: ${e.message}" }
         }
     }
 

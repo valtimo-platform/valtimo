@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -47,6 +47,7 @@ import {
   WidgetWizardCloseEvent,
   WidgetWizardCloseEventType,
 } from '../../../models';
+import {WIDGET_DIVIDER_MODAL_TEST_IDS} from '../../../constants';
 
 @Component({
   selector: 'valtimo-widget-management-divider-modal',
@@ -67,6 +68,8 @@ import {
   ],
 })
 export class WidgetManagementDividerModalComponent {
+  protected readonly testIds = WIDGET_DIVIDER_MODAL_TEST_IDS;
+
   private _modalMode: ModalMode;
   @Input()
   public set modalMode(value: ModalMode) {

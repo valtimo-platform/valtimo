@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,10 +14,10 @@
  * limitations under the License.
  */
 import {CommonModule} from '@angular/common';
-import {Component, HostBinding, OnInit} from '@angular/core';
+import {Component, OnInit} from '@angular/core';
 import {FormsModule} from '@angular/forms';
 import {ActivatedRoute} from '@angular/router';
-import {Edit16, Save16, TrashCan16} from '@carbon/icons';
+import {Edit16, Save16, TrashCan16, WarningFilled16} from '@carbon/icons';
 import {TranslateModule, TranslateService} from '@ngx-translate/core';
 import {RenderInBodyComponent, SpinnerModule} from '@valtimo/components';
 import {PluginConfiguration} from '@valtimo/plugin';
@@ -30,6 +30,8 @@ import {
 } from '@valtimo/resource';
 import {
   CaseManagementParams,
+  ConfigurationIssueService,
+  DraftVersionService,
   getCaseManagementRouteParams,
   GlobalNotificationService,
 } from '@valtimo/shared';
@@ -45,7 +47,7 @@ import {
   TilesModule,
   ToggleModule,
 } from 'carbon-components-angular';
-import {BehaviorSubject, finalize, switchMap} from 'rxjs';
+import {BehaviorSubject, combineLatest, finalize, map, Observable, switchMap} from 'rxjs';
 import {ZakenApiZaaktypeLinkService} from '../../services';
 
 @Component({
@@ -84,8 +86,26 @@ export class ZakenApiZaaktypeLinkComponent implements OnInit {
   public readonly loading$ = new BehaviorSubject<boolean>(true);
   public readonly zaakTypeLink$ = new BehaviorSubject<ZaakTypeLink | null>(null);
   public readonly modalOpen$ = new BehaviorSubject<boolean>(false);
+  public readonly hasConfigurationIssue$ =
+    this.configurationIssueService.hasIssue$('zaak-type-link');
+  private readonly _params$: Observable<CaseManagementParams | undefined> =
+    getCaseManagementRouteParams(this.route);
+  private readonly _isDraftVersion$: Observable<boolean> = this._params$.pipe(
+    switchMap(params =>
+      this.draftVersionService.isDraftVersion(
+        params?.caseDefinitionKey ?? '',
+        params?.caseDefinitionVersionTag ?? ''
+      )
+    )
+  );
+  public readonly canEdit$: Observable<boolean> = combineLatest([
+    this._isDraftVersion$,
+    this.hasConfigurationIssue$,
+  ]).pipe(map(([isDraft, hasIssue]) => isDraft || hasIssue));
 
   constructor(
+    private readonly configurationIssueService: ConfigurationIssueService,
+    private readonly draftVersionService: DraftVersionService,
     private readonly globalNotificationService: GlobalNotificationService,
     private readonly iconService: IconService,
     private readonly openZaakService: OpenZaakService,
@@ -93,7 +113,7 @@ export class ZakenApiZaaktypeLinkComponent implements OnInit {
     private readonly translateService: TranslateService,
     private readonly zakenApiZaaktypeLinkService: ZakenApiZaaktypeLinkService
   ) {
-    this.iconService.registerAll([Edit16, TrashCan16, Save16]);
+    this.iconService.registerAll([Edit16, TrashCan16, Save16, WarningFilled16]);
   }
 
   public ngOnInit(): void {
@@ -148,14 +168,6 @@ export class ZakenApiZaaktypeLinkComponent implements OnInit {
         this.findPluginConfiguration(
           this.zaakTypeLink$.getValue()?.zakenApiPluginConfigurationId ?? ''
         );
-      });
-  }
-
-  public loadInformatieObjectTypeUrls(): void {
-    this.openZaakService
-      .getInformatieObjectTypes()
-      .subscribe((informatieObjectTypes: InformatieObjectType[]) => {
-        this.informatieObjectTypes = informatieObjectTypes;
       });
   }
 

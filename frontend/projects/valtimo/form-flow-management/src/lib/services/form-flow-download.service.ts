@@ -14,13 +14,13 @@
  * limitations under the License.
  */
 import {Injectable} from '@angular/core';
-import {CaseManagementParams} from '@valtimo/shared';
+import {FormFlowEditorParams} from '../models';
 
 @Injectable({providedIn: 'root'})
 export class FormFlowDownloadService {
   public downloadJson(
     json: object,
-    params: CaseManagementParams & {formFlowDefinitionKey: string}
+    params: FormFlowEditorParams
   ): void {
     const sJson = JSON.stringify(json, null, 2);
     const element = document.createElement('a');

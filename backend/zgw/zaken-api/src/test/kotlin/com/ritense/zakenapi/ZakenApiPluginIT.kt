@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2025 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,8 +25,8 @@ import com.ritense.document.domain.impl.request.NewDocumentRequest
 import com.ritense.document.service.DocumentService
 import com.ritense.plugin.domain.PluginConfiguration
 import com.ritense.plugin.domain.PluginConfigurationId
+import com.ritense.plugin.domain.PluginConfigurationReference
 import com.ritense.plugin.domain.PluginProcessLink
-import com.ritense.plugin.domain.PluginProcessLinkId
 import com.ritense.plugin.repository.PluginProcessLinkRepository
 import com.ritense.processdocument.domain.impl.request.NewDocumentAndStartProcessRequest
 import com.ritense.processdocument.service.ProcessDocumentService
@@ -40,15 +40,7 @@ import com.ritense.zakenapi.domain.zaakobjectrequest.ZaakObjectOverigeRequest
 import com.ritense.zakenapi.domain.zaakobjectrequest.ZaakObjectRequest
 import com.ritense.zakenapi.domain.zaakobjectrequest.ZaakObjectType
 import com.ritense.zakenapi.domain.zaakobjectrequest.ZaakObjectZakelijkRechtRequest
-import com.ritense.zakenapi.link.ZaakInstanceLinkService
 import com.ritense.zgw.Rsin
-import java.lang.Thread.sleep
-import java.net.URI
-import java.time.LocalDate
-import java.time.LocalDateTime
-import java.util.Optional
-import java.util.UUID
-import kotlin.test.assertEquals
 import okhttp3.mockwebserver.Dispatcher
 import okhttp3.mockwebserver.MockResponse
 import okhttp3.mockwebserver.MockWebServer
@@ -60,6 +52,7 @@ import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.mockito.kotlin.any
+import org.mockito.kotlin.doAnswer
 import org.mockito.kotlin.doCallRealMethod
 import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.eq
@@ -71,12 +64,20 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.HttpMethod
 import org.springframework.http.HttpMethod.PATCH
 import org.springframework.http.HttpMethod.POST
+import org.springframework.test.context.bean.override.mockito.MockitoSpyBean
 import org.springframework.transaction.annotation.Transactional
 import org.springframework.web.client.RestClient
 import org.springframework.web.reactive.function.client.ClientRequest
 import org.springframework.web.reactive.function.client.ClientResponse
 import org.springframework.web.reactive.function.client.ExchangeFunction
 import reactor.core.publisher.Mono
+import java.lang.Thread.sleep
+import java.net.URI
+import java.time.LocalDate
+import java.time.LocalDateTime
+import java.util.Optional
+import java.util.UUID
+import kotlin.test.assertEquals
 
 @Transactional
 class ZakenApiPluginIT : BaseIntegrationTest() {
@@ -87,14 +88,11 @@ class ZakenApiPluginIT : BaseIntegrationTest() {
     @Autowired
     lateinit var pluginProcessLinkRepository: PluginProcessLinkRepository
 
-    @Autowired
-    lateinit var procesDocumentService: ProcessDocumentService
+    @MockitoSpyBean
+    lateinit var processDocumentService: ProcessDocumentService
 
-    @Autowired
+    @MockitoSpyBean
     lateinit var documentService: DocumentService
-
-    @Autowired
-    lateinit var zaakInstanceLinkService: ZaakInstanceLinkService
 
     @Autowired
     lateinit var objectMapper: ObjectMapper
@@ -153,13 +151,14 @@ class ZakenApiPluginIT : BaseIntegrationTest() {
 
         pluginProcessLinkRepository.save(
             PluginProcessLink(
-                PluginProcessLinkId(UUID.randomUUID()),
-                processDefinitionId,
-                "LinkDocument",
-                objectMapper.readTree(actionPropertiesJson) as ObjectNode,
-                configuration.id,
-                "link-document-to-zaak",
-                ActivityTypeWithEventName.SERVICE_TASK_START
+                id = UUID.randomUUID(),
+                processDefinitionId = processDefinitionId,
+                activityId = "LinkDocument",
+                activityType = ActivityTypeWithEventName.SERVICE_TASK_START,
+                actionProperties = objectMapper.readTree(actionPropertiesJson) as ObjectNode,
+                pluginConfigurationId = configuration.id,
+                pluginConfigurationReference = PluginConfigurationReference(),
+                pluginActionDefinitionKey = "link-document-to-zaak"
             )
         )
     }
@@ -175,7 +174,7 @@ class ZakenApiPluginIT : BaseIntegrationTest() {
         val document = createDocument()
 
         zakenApiPlugin.createZaak(
-            documentId = document.id().id,
+            caseDocumentId = document.id().id,
             rsin = Rsin("155539620"),
             zaaktypeUrl = ZAAKTYPE_URL
         )
@@ -192,7 +191,7 @@ class ZakenApiPluginIT : BaseIntegrationTest() {
         val plannedEndDate = LocalDate.now().plusDays(10)
 
         zakenApiPlugin.createZaak(
-            documentId = document.id().id,
+            caseDocumentId = document.id().id,
             rsin = Rsin("155539620"),
             zaaktypeUrl = ZAAKTYPE_URL,
             description = description,
@@ -215,7 +214,7 @@ class ZakenApiPluginIT : BaseIntegrationTest() {
         val document = createDocument()
 
         zakenApiPlugin.createZaak(
-            documentId = document.id().id,
+            caseDocumentId = document.id().id,
             rsin = Rsin("155539620"),
             zaaktypeUrl = ZAAKTYPE_URL,
         )
@@ -240,11 +239,11 @@ class ZakenApiPluginIT : BaseIntegrationTest() {
         val newDocumentRequest = newDocumentRequest()
         val request = NewDocumentAndStartProcessRequest(PROCESS_DEFINITION_KEY, newDocumentRequest)
 
-        // Make a record in the database about a document that is matched to the open zaak
+        setupZaakInstanceLinkCreationOnDocumentCreate()
         setupResourceMock()
 
         // Start the process
-        val response = runWithoutAuthorization { procesDocumentService.newDocumentAndStartProcess(request) }
+        val response = runWithoutAuthorization { processDocumentService.newDocumentAndStartProcess(request) }
         assertTrue(response is NewDocumentAndStartProcessResultSucceeded)
 
         // Check the request that was sent to the open zaak api
@@ -271,11 +270,11 @@ class ZakenApiPluginIT : BaseIntegrationTest() {
         val newDocumentRequest = newDocumentRequest()
         val request = NewDocumentAndStartProcessRequest(PROCESS_DEFINITION_KEY, newDocumentRequest)
 
-        // Make a record in1 the database about a document that is matched to the open zaak
+        setupZaakInstanceLinkCreationOnDocumentCreate()
         setupResourceMock()
 
         // Start the process
-        val response = runWithoutAuthorization { procesDocumentService.newDocumentAndStartProcess(request) }
+        val response = runWithoutAuthorization { processDocumentService.newDocumentAndStartProcess(request) }
         assertTrue(response is NewDocumentAndStartProcessResultSucceeded)
 
         // Check the request that was sent to the open zaak api
@@ -430,6 +429,21 @@ class ZakenApiPluginIT : BaseIntegrationTest() {
             .thenReturn(resource)
         whenever(resourceProvider.getResource(any()))
             .thenReturn(resource)
+    }
+
+    private fun setupZaakInstanceLinkCreationOnDocumentCreate() {
+        doAnswer { invocation ->
+            val result = invocation.callRealMethod() as com.ritense.document.service.result.CreateDocumentResult
+            result.resultingDocument().ifPresent { document ->
+                zaakInstanceLinkService.createZaakInstanceLink(
+                    ZAAK_URL,
+                    UUID.fromString(ZAAK_ID),
+                    document.id().id,
+                    ZAAKTYPE_URL
+                )
+            }
+            result
+        }.whenever(documentService).createDocument(any())
     }
 
     private fun zakenApiPlugin() =

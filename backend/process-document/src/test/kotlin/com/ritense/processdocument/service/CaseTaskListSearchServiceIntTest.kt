@@ -36,6 +36,10 @@ import com.ritense.search.web.rest.dto.SearchFieldV2Dto
 import com.ritense.valtimo.contract.Constants
 import com.ritense.valtimo.contract.authentication.AuthoritiesConstants
 import com.ritense.valtimo.service.OperatonTaskService
+import com.ritense.valtimo.task.domain.TaskTeam
+import com.ritense.valtimo.task.repository.TaskTeamRepository
+import com.ritense.team.repository.TeamRepository
+import jakarta.persistence.EntityManager
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -60,6 +64,15 @@ class CaseTaskListSearchServiceIntTest : BaseIntegrationTest() {
 
     @Autowired
     lateinit var searchFieldV2Service: SearchFieldV2Service
+
+    @Autowired
+    lateinit var taskTeamRepository: TaskTeamRepository
+
+    @Autowired
+    lateinit var teamRepository: TeamRepository
+
+    @Autowired
+    lateinit var entityManager: EntityManager
 
     private var definition: JsonSchemaDocumentDefinition? = null
 
@@ -375,6 +388,77 @@ class CaseTaskListSearchServiceIntTest : BaseIntegrationTest() {
         )
         assertThat(searchResult.totalElements).isEqualTo(24)
         assertThat(searchResult.numberOfElements).isEqualTo(10)
+    }
+
+    private fun createTeamAndAssignToTask(taskId: String, teamKey: String, teamTitle: String) {
+        if (!teamRepository.existsById(teamKey)) {
+            teamRepository.save(com.ritense.team.domain.Team(key = teamKey, title = teamTitle))
+        }
+        taskTeamRepository.save(TaskTeam(taskId, teamKey, teamTitle))
+        entityManager.flush()
+    }
+
+    @Test
+    fun shouldReturnAssignedTeamTitleWhenTaskHasTeam() {
+        val filter = SearchWithConfigRequest.SearchWithConfigFilter()
+        filter.key = "street"
+        filter.setValues(listOf("Funenpark"))
+
+        val searchResult = searchTasks(filter)
+        assertThat(searchResult).hasSize(1)
+
+        val task = searchResult!!.content[0]
+        assertThat(task.assignedTeamTitle).isNull()
+
+        createTeamAndAssignToTask(task.taskId, "team-a", "Team Alpha")
+
+        val searchResultAfter = searchTasks(filter)
+        assertThat(searchResultAfter).hasSize(1)
+        assertThat(searchResultAfter!!.content[0].assignedTeamTitle).isEqualTo("Team Alpha")
+    }
+
+    @Test
+    fun shouldFilterByAssignedTeamTitle() {
+        val streetFilter = SearchWithConfigRequest.SearchWithConfigFilter()
+        streetFilter.key = "street"
+        streetFilter.setValues(listOf("Funenpark"))
+
+        val searchResult = searchTasks(streetFilter)
+        val task = searchResult!!.content[0]
+
+        createTeamAndAssignToTask(task.taskId, "team-a", "Team Alpha")
+
+        searchFieldV2Service.create(
+            SearchFieldV2Dto(
+                id = UUID.randomUUID(),
+                ownerId = definition!!.id!!.name(),
+                ownerType = SEARCH_FIELD_OWNER_TYPE,
+                key = "assignedTeamTitle",
+                title = "Assigned team title",
+                path = "task:assignedTeamTitle",
+                order = 1,
+                dataType = DataType.TEXT,
+                fieldType = FieldType.SINGLE,
+                matchType = SearchFieldMatchType.EXACT,
+                dropdownDataProvider = null
+            )
+        )
+
+        val filter = SearchWithConfigRequest.SearchWithConfigFilter()
+        filter.key = "assignedTeamTitle"
+        filter.setValues(listOf("Team Alpha"))
+
+        val filteredResult = searchTasks(filter)
+        assertThat(filteredResult).hasSize(1)
+        assertThat(filteredResult!!.content[0].assignedTeamTitle).isEqualTo("Team Alpha")
+
+        // Search for non-existing team title should return no results
+        val filterNoMatch = SearchWithConfigRequest.SearchWithConfigFilter()
+        filterNoMatch.key = "assignedTeamTitle"
+        filterNoMatch.setValues(listOf("Non-existing Team"))
+
+        val noMatchResult = searchTasks(filterNoMatch)
+        assertThat(noMatchResult).isEmpty()
     }
 
     private fun createDocumentAndTwoProcesses(streetName: String, documentName: String) {

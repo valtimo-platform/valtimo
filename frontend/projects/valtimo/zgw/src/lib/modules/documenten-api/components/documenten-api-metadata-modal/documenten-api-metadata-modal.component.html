@@ -1,5 +1,5 @@
 <!--
-  ~ Copyright 2015-2025 Ritense BV, the Netherlands.
+  ~ Copyright 2015-2026 Ritense BV, the Netherlands.
   ~
   ~ Licensed under EUPL, Version 1.2 (the "License");
   ~ you may not use this file except in compliance with the License.
@@ -46,6 +46,14 @@
   </div>
 
   <div role="content">
+    @if (uploadError) {
+      <cds-inline-notification
+        class="upload-error-notification"
+        [notificationObj]="{type: 'error', message: uploadError, lowContrast: true}"
+        (close)="uploadErrorDismiss.emit()"
+      ></cds-inline-notification>
+    }
+
     @if (obs.open) {
       <ng-container *ngTemplateOutlet="metadataForm; context: {obs: obs}"></ng-container>
     }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -70,8 +70,15 @@ class DocumentObjectenApiSyncService(
     }
 
     private fun sync(document: Document) {
-        val syncConfiguration = documentObjectenApiSyncManagementService.getSyncConfiguration(document.definitionId().caseDefinitionId())
-        if (syncConfiguration?.enabled == true) {
+        // TODO: Fix handling building blocks correctly
+        val caseDefinitionId = document.definitionId().caseDefinitionId()
+
+        if (caseDefinitionId == null) {
+            return
+        }
+
+        val syncConfiguration = documentObjectenApiSyncManagementService.getSyncConfiguration(caseDefinitionId)
+        if (syncConfiguration?.enabled == true && syncConfiguration.objectManagementConfigurationId != null) {
             logger.debug { "Sync configuration found for document ${document.id()}" }
             val objectManagementConfiguration =
                 objectObjectManagementInfoProvider.getObjectManagementInfo(syncConfiguration.objectManagementConfigurationId)
@@ -82,10 +89,10 @@ class DocumentObjectenApiSyncService(
 
             val objectRequest = getObjectRequest(document, objecttypenApiPlugin, objectManagementConfiguration)
 
-            val zaakdetailsObject: ZaakdetailsObject;
+            val zaakdetailsObject: ZaakdetailsObject
             val zaakdetailsObjectOptional = zaakdetailsObjectService.findByDocumentId(document.id().id)
 
-            val checkExistingZaakObjectBeforeCreating: Boolean;
+            val checkExistingZaakObjectBeforeCreating: Boolean
 
             if(zaakdetailsObjectOptional.isPresent) { //Zaakdetails object exists and reference has been stored: update
                 logger.debug { "Zaakdetails object already exists: update." }

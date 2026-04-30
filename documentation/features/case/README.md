@@ -223,12 +223,32 @@ The exported configuration serves as a portable package that can be used for ver
 
 <figure><img src="../../.gitbook/assets/image (15) (1).png" alt=""><figcaption><p>Importing a case definition</p></figcaption></figure>
 
+#### Plugin configuration mapping
+
+{% hint style="success" %}
+Available since Valtimo `13.25.0`
+{% endhint %}
+
+When the imported case definition contains process links that reference plugin configurations (e.g., a Zaken API or Documenten API plugin), the import wizard shows a preview of the required plugin configurations. If a referenced plugin configuration does not exist in the target environment, administrators can map it to an available configuration of the same plugin type.
+
+This ensures that process links remain functional after import without requiring manual reconfiguration.
+
+{% hint style="warning" %}
+This feature requires the export to contain plugin configuration metadata in its process link files. Only exports created with Valtimo **13.25.0 or later** include this data. Exports from earlier versions will not show the plugin configuration mapping step during import.
+{% endhint %}
+
+{% hint style="info" %}
+Only process links with a **fixed** plugin configuration reference are shown in the mapping step. Process links that use building block references are resolved automatically.
+{% endhint %}
+
+After import, any unresolved plugin configurations are shown as warnings on the case management **General** tab. These can be resolved by selecting a target configuration from the available options.
+
 {% hint style="warning" %}
 **Please note**
 
 * Importing a case definition always results in a _draft_ version, allowing final review and manual finalization before the configuration is used actively.
 * All existing configurations will be overwritten by the configurations in the import.
-* Access control and plugin configurations are not part of a case definition import/export and most likely need to be configured first for the newly imported case and process definitions. A full list of configurations and definitions that are included and excluded from imports and exports can be found [here](./#included-excluded-in-imports-exports).
+* Access control and plugin configurations are not part of a case definition import/export and most likely need to be configured first for the newly imported case and process definitions. Plugin configurations can be mapped during import using the mapping step described above. A full list of configurations and definitions that are included and excluded from imports and exports can be found in the [included/excluded in imports/exports section](./#included-excluded-in-imports-exports).
 {% endhint %}
 
 ### Recommended Workflow
@@ -301,7 +321,7 @@ Most configurations and definitions are included in exports and imports. Some re
 
 ## Access control
 
-Access to the case definitions can be configured through access control. More information about access control can be found [here](../../features/access-control).
+Access to the case definitions can be configured through access control. More information about access control can be found in the [access control documentation](../../features/access-control).
 
 ### Resources and actions
 
@@ -319,9 +339,23 @@ Access to the case definitions can be configured through access control. More in
     "resourceType": "com.ritense.case_.domain.definition.CaseDefinition",
     "action": "view_list",
     "roleKey": "ROLE_ADMIN",
-    "conditions": []
+    "conditions": [
+        {
+            "type": "field",
+            "field": "id.key",
+            "operator": "==",
+            "value": "dossier-x"
+        }
+    ]
 }
 ```
 {% endcode %}
 
 </details>
+
+### Retention date
+The _retention period_ is an internal status property that, when set, calculates the expiration date for the case. When that date is reached, the case and all associated processes (including process history) will be deleted. If present, the case is also removed from connected ZGW platforms (for example, case details, objects, and uploaded documents).
+See [Internal status](case-detail/statuses.md) for the configuration of the retention date.
+{% hint style="info" %}
+_**Note:** when the case internal status is set where the retention period is set to -1, the retention date of the case will not be calculated or cleared when set.
+{% endhint %}

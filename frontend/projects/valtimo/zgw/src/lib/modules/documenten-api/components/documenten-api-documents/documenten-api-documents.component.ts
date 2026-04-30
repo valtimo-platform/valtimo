@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,7 +14,16 @@
  * limitations under the License.
  */
 import {CommonModule} from '@angular/common';
-import {Component, ElementRef, OnDestroy, OnInit, TemplateRef, ViewChild} from '@angular/core';
+import {HttpErrorResponse} from '@angular/common/http';
+import {
+  Component,
+  ElementRef,
+  OnDestroy,
+  OnInit,
+  signal,
+  TemplateRef,
+  ViewChild,
+} from '@angular/core';
 import {ActivatedRoute, Router} from '@angular/router';
 import {Filter16, TagGroup16, Upload16} from '@carbon/icons';
 import {TranslateModule, TranslateService} from '@ngx-translate/core';
@@ -27,6 +36,7 @@ import {
   DEFAULT_PAGINATION,
   DEFAULT_PAGINATOR_CONFIG,
   DocumentenApiMetadata,
+  OverflowMenuComponent,
   Pagination,
   SortState,
   ViewType,
@@ -34,16 +44,13 @@ import {
 import {CaseSettings, DocumentService} from '@valtimo/document';
 import {
   CAN_CREATE_RESOURCE_PERMISSION,
-  CAN_DELETE_RESOURCE_PERMISSION,
-  CAN_MODIFY_RESOURCE_PERMISSION,
-  CAN_VIEW_RESOURCE_PERMISSION,
   DownloadService,
   RESOURCE_PERMISSION_RESOURCE,
   UploadProviderService,
 } from '@valtimo/resource';
 import {UserProviderService} from '@valtimo/security';
 import {ConfigService, Direction} from '@valtimo/shared';
-import {ButtonModule, DialogModule, IconModule, IconService} from 'carbon-components-angular';
+import {ButtonModule, IconModule, IconService} from 'carbon-components-angular';
 import {
   BehaviorSubject,
   combineLatest,
@@ -53,11 +60,12 @@ import {
   Subject,
   Subscription,
 } from 'rxjs';
-import {catchError, filter, map, switchMap, take, tap, shareReplay} from 'rxjs/operators';
+import {catchError, filter, map, shareReplay, switchMap, take, tap} from 'rxjs/operators';
 import {
   COLUMN_VIEW_TYPES,
   ConfiguredColumn,
   DOCUMENTEN_COLUMN_KEYS,
+  DocumentenApiFilePermissions,
   DocumentenApiFilterModel,
   DocumentenApiRelatedFile,
   SupportedDocumentenApiFeatures,
@@ -66,10 +74,15 @@ import {
   DocumentenApiUploadFieldDefaultValues,
   DocumentenApiUploadFields,
 } from '../../models/documenten-api-upload-field.model';
-import {DocumentenApiColumnService, DocumentenApiVersionService} from '../../services';
-import {DocumentenApiDocumentService} from '../../services/documenten-api-document.service';
+import {
+  DocumentenApiColumnService,
+  DocumentenApiDocumentService,
+  DocumentenApiPreviewService,
+  DocumentenApiVersionService,
+} from '../../services';
 import {DocumentenApiFilterComponent} from '../documenten-api-filter/documenten-api-filter.component';
 import {DocumentenApiMetadataModalComponent} from '../documenten-api-metadata-modal/documenten-api-metadata-modal.component';
+import {DocumentenApiPreviewModalComponent} from '../documenten-api-preview-modal/documenten-api-preview-modal.component';
 
 @Component({
   selector: 'valtimo-case-detail-tab-documenten-api-documents',
@@ -84,8 +97,9 @@ import {DocumentenApiMetadataModalComponent} from '../documenten-api-metadata-mo
     IconModule,
     TranslateModule,
     DocumentenApiFilterComponent,
-    DialogModule,
+    OverflowMenuComponent,
     ConfirmationModalModule,
+    DocumentenApiPreviewModalComponent,
   ],
 })
 export class CaseDetailTabDocumentenApiDocumentsComponent implements OnInit, OnDestroy {
@@ -153,21 +167,27 @@ export class CaseDetailTabDocumentenApiDocumentsComponent implements OnInit, OnD
   public document: DocumentenApiRelatedFile;
   public actionItems: ActionItem[] = [
     {
+      label: 'document.preview',
+      callback: this.onPreviewActionClick.bind(this),
+      disabled$: this.previewDisabled.bind(this),
+      type: 'normal',
+    },
+    {
       label: 'document.download',
       callback: this.onDownloadActionClick.bind(this),
-      disabledCallback: this.downloadDisabled.bind(this),
+      disabled$: this.downloadDisabled.bind(this),
       type: 'normal',
     },
     {
       label: 'document.edit',
       callback: this.onEditMetadata.bind(this),
-      disabledCallback: this.editDisabled.bind(this),
+      disabled$: this.editDisabled.bind(this),
       type: 'normal',
     },
     {
       label: 'document.delete',
       callback: this.onDeleteActionClick.bind(this),
-      disabledCallback: this.deleteDisabled.bind(this),
+      disabled$: this.deleteDisabled.bind(this),
       type: 'danger',
     },
   ];
@@ -189,9 +209,12 @@ export class CaseDetailTabDocumentenApiDocumentsComponent implements OnInit, OnD
   public readonly maxFileSize: number = this.configService?.config?.caseFileSizeUploadLimitMB || 5;
 
   public readonly fileToBeUploaded$ = new BehaviorSubject<File | null>(null);
+  public readonly documentToPreview$ = new BehaviorSubject<DocumentenApiRelatedFile | null>(null);
   public readonly modalDisabled$ = new BehaviorSubject<boolean>(false);
   public readonly showModal$ = new Subject<null>();
+  public readonly showPreviewModal$ = new BehaviorSubject<boolean>(false);
   public readonly showUploadModal$ = new BehaviorSubject<boolean>(false);
+  public readonly uploadError = signal<string | null>(null);
   public readonly showDeleteConfirmationModal$ = new BehaviorSubject<boolean>(false);
 
   public readonly uploading$ = new BehaviorSubject<boolean>(false);
@@ -306,9 +329,11 @@ export class CaseDetailTabDocumentenApiDocumentsComponent implements OnInit, OnD
   public readonly enablePbacDocumentenApiDocuments$: Observable<boolean> =
     this.configService.getFeatureToggleObservable('enablePbacDocumentenApiDocuments');
 
-  public filePermissions: {
-    [fileId: string]: {canView: boolean; canModify: boolean; canDelete: boolean};
-  } = {};
+  public filePermissions$ = new BehaviorSubject<DocumentenApiFilePermissions>({});
+
+  public get filePermissions(): DocumentenApiFilePermissions {
+    return this.filePermissions$.getValue();
+  }
 
   public readonly canCreateResource$: Observable<boolean> = this.documentId$.pipe(
     switchMap(documentId =>
@@ -325,6 +350,7 @@ export class CaseDetailTabDocumentenApiDocumentsComponent implements OnInit, OnD
     private readonly configService: ConfigService,
     private readonly documentenApiColumnService: DocumentenApiColumnService,
     private readonly documentenApiDocumentService: DocumentenApiDocumentService,
+    private readonly documentenApiPreviewService: DocumentenApiPreviewService,
     private readonly documentenApiVersionService: DocumentenApiVersionService,
     private readonly documentService: DocumentService,
     private readonly downloadService: DownloadService,
@@ -350,27 +376,19 @@ export class CaseDetailTabDocumentenApiDocumentsComponent implements OnInit, OnD
 
   public registerPermissionSubscriptions(): void {
     this._subscriptions.add(
-      this.relatedFiles$
-        .pipe(
-          switchMap(files =>
-            combineLatest({
-              files: of(files),
-              canView: this.getPermissions(files, CAN_VIEW_RESOURCE_PERMISSION),
-              canModify: this.getPermissions(files, CAN_MODIFY_RESOURCE_PERMISSION),
-              canDelete: this.getPermissions(files, CAN_DELETE_RESOURCE_PERMISSION),
-            })
-          )
-        )
-        .subscribe(permissions =>
-          permissions.files.map(
-            file =>
-              (this.filePermissions[file.fileId] = {
-                canView: permissions.canView[file.fileId],
-                canModify: permissions.canModify[file.fileId],
-                canDelete: permissions.canDelete[file.fileId],
-              })
-          )
-        )
+      combineLatest([this.relatedFiles$, this.enablePbacDocumentenApiDocuments$]).subscribe(
+        ([files, pbacEnabled]) => {
+          const permissions: DocumentenApiFilePermissions = {};
+          files.forEach(file => {
+            permissions[file.fileId] = {
+              canView: pbacEnabled ? file.canView !== false : true,
+              canModify: pbacEnabled ? file.canModify !== false : true,
+              canDelete: pbacEnabled ? file.canDelete !== false : true,
+            };
+          });
+          this.filePermissions$.next(permissions);
+        }
+      )
     );
   }
 
@@ -384,9 +402,16 @@ export class CaseDetailTabDocumentenApiDocumentsComponent implements OnInit, OnD
   }
 
   public deleteDocument(): void {
-    this._itemsLoading$.next(true);
-    this.documentenApiDocumentService.deleteDocument(this.document).subscribe(() => {
-      this.refetchDocuments();
+    this.documentId$.pipe(take(1)).subscribe(documentId => {
+      this._itemsLoading$.next(true);
+      this.documentenApiDocumentService.deleteDocument(this.document, documentId).subscribe({
+        next: () => {
+          this.refetchDocuments();
+        },
+        error: () => {
+          this._itemsLoading$.next(false);
+        },
+      });
     });
   }
 
@@ -428,6 +453,7 @@ export class CaseDetailTabDocumentenApiDocumentsComponent implements OnInit, OnD
   }
 
   public metadataSet(metadata: DocumentenApiMetadata): void {
+    this.uploadError.set(null);
     this.uploading$.next(true);
 
     combineLatest([this.fileToBeUploaded$, this.documentId$])
@@ -436,25 +462,55 @@ export class CaseDetailTabDocumentenApiDocumentsComponent implements OnInit, OnD
         tap(([file, documentId]) => {
           if (!file) return;
           if (this.isEditMode$.getValue()) {
-            this.documentenApiDocumentService.updateDocument(file, metadata).subscribe(() => {
-              this.refetchDocuments();
-              this.uploading$.next(false);
-              this.fileToBeUploaded$.next(null);
+            this.documentenApiDocumentService.updateDocument(file, metadata, documentId).subscribe({
+              next: () => {
+                this.showUploadModal$.next(false);
+                this.refetchDocuments();
+                this.uploading$.next(false);
+                this.fileToBeUploaded$.next(null);
+              },
+              error: (error: HttpErrorResponse) => {
+                this.uploading$.next(false);
+                if (error.status === 403) {
+                  this.uploadError.set(
+                    this.translateService.instant('document.uploadPermissionDenied')
+                  );
+                } else {
+                  this.showUploadModal$.next(false);
+                }
+              },
             });
           } else {
             this.uploadProviderService
               .uploadFileWithMetadata(file, documentId, metadata)
-              .subscribe(() => {
-                this.refetchDocuments();
-                this.filter$.next(null);
-                this.pagination$.next(DEFAULT_PAGINATION);
-                this.uploading$.next(false);
-                this.fileToBeUploaded$.next(null);
+              .subscribe({
+                next: () => {
+                  this.showUploadModal$.next(false);
+                  this.refetchDocuments();
+                  this.filter$.next(null);
+                  this.pagination$.next(DEFAULT_PAGINATION);
+                  this.uploading$.next(false);
+                  this.fileToBeUploaded$.next(null);
+                },
+                error: (error: HttpErrorResponse) => {
+                  this.uploading$.next(false);
+                  if (error.status === 403) {
+                    this.uploadError.set(
+                      this.translateService.instant('document.uploadPermissionDenied')
+                    );
+                  } else {
+                    this.showUploadModal$.next(false);
+                  }
+                },
               });
           }
         })
       )
       .subscribe();
+  }
+
+  public onPreviewActionClick(item: DocumentenApiRelatedFile): void {
+    this.previewDocument(item, false);
   }
 
   public onDownloadActionClick(file: DocumentenApiRelatedFile): void {
@@ -468,7 +524,12 @@ export class CaseDetailTabDocumentenApiDocumentsComponent implements OnInit, OnD
   }
 
   public closeMetadataModal(): void {
+    this.uploadError.set(null);
     this.showUploadModal$.next(false);
+  }
+
+  public closePreviewModal(): void {
+    this.showPreviewModal$.next(false);
   }
 
   public onFileSelected(event: any): void {
@@ -487,9 +548,15 @@ export class CaseDetailTabDocumentenApiDocumentsComponent implements OnInit, OnD
   }
 
   public onRowClick(event: any): void {
-    if (this.filePermissions[event.fileId]?.canView) {
-      this.downloadDocument(event, false);
-    }
+    this.previewDisabled(event)
+      .pipe(take(1))
+      .subscribe((previewDisabled: boolean) => {
+        if (!previewDisabled) {
+          this.previewDocument(event, false);
+        } else if (this.filePermissions[event.fileId]?.canView) {
+          this.downloadDocument(event, false);
+        }
+      });
   }
 
   public onPaginationClicked(page: number): void {
@@ -525,28 +592,51 @@ export class CaseDetailTabDocumentenApiDocumentsComponent implements OnInit, OnD
     this._refetch$.next(null);
   }
 
-  private downloadDisabled(file: DocumentenApiRelatedFile): boolean {
-    return !this.filePermissions[file.fileId]?.canView;
-  }
-
-  private editDisabled(file: DocumentenApiRelatedFile): boolean {
-    return (
-      (!this.supportedDocumentenApiFeatures$.value.supportsUpdatingDefinitiveDocument &&
-        file.status === 'definitief') ||
-      !this.filePermissions[file.fileId]?.canModify
+  private previewDisabled(file: DocumentenApiRelatedFile): Observable<boolean> {
+    return combineLatest([
+      this.documentenApiPreviewService.canGeneratePreview(file?.pluginConfigurationId),
+      this.filePermissions$,
+    ]).pipe(
+      map(
+        ([canGeneratePreview, permissions]) =>
+          !canGeneratePreview || !permissions[file.fileId]?.canView
+      )
     );
   }
 
-  private deleteDisabled(file: DocumentenApiRelatedFile): boolean {
-    return !this.filePermissions[file.fileId]?.canDelete;
+  private downloadDisabled(file: DocumentenApiRelatedFile): Observable<boolean> {
+    return this.filePermissions$.pipe(map(permissions => !permissions[file.fileId]?.canView));
+  }
+
+  private editDisabled(file: DocumentenApiRelatedFile): Observable<boolean> {
+    return combineLatest([this.filePermissions$, this.supportedDocumentenApiFeatures$]).pipe(
+      map(
+        ([permissions, supportedFeatures]) =>
+          file.status === 'definitief' ||
+          !permissions[file.fileId]?.canModify ||
+          !supportedFeatures.supportsUpdatingDefinitiveDocument
+      )
+    );
+  }
+
+  private deleteDisabled(file: DocumentenApiRelatedFile): Observable<boolean> {
+    return this.filePermissions$.pipe(map(permissions => !permissions[file.fileId]?.canDelete));
   }
 
   private downloadDocument(relatedFile: DocumentenApiRelatedFile, forceDownload: boolean): void {
-    this.downloadService.downloadFile(
-      `${this.valtimoEndpointUri}v1/documenten-api/${relatedFile.pluginConfigurationId}/files/${relatedFile.fileId}/download`,
-      relatedFile.bestandsnaam ?? '',
-      forceDownload
-    );
+    this.documentId$.pipe(take(1)).subscribe(documentId => {
+      this.downloadService.downloadFile(
+        `${this.valtimoEndpointUri}v1/zaken-api/${relatedFile.pluginConfigurationId}/case-document/${documentId}/files/${relatedFile.fileId}/download`,
+        relatedFile.bestandsnaam ?? '',
+        forceDownload
+      );
+    });
+  }
+
+  private previewDocument(item: DocumentenApiRelatedFile, forceDownload: boolean): void {
+    // Display preview model.
+    this.documentToPreview$.next(item);
+    this.showPreviewModal$.next(true);
   }
 
   private openQueryParamsSubscription(): void {
@@ -620,24 +710,6 @@ export class CaseDetailTabDocumentenApiDocumentsComponent implements OnInit, OnD
     }
 
     return null;
-  }
-
-  private getPermissions(
-    files: DocumentenApiRelatedFile[],
-    permissionRequest: PermissionRequest
-  ): Observable<{
-    [key: string]: boolean;
-  }> {
-    return combineLatest(
-      files.map(file =>
-        this.getPermission(permissionRequest, {
-          resource: RESOURCE_PERMISSION_RESOURCE.resourcePermission,
-          identifier: file.fileId,
-        }).pipe(map(available => ({[file.fileId]: available})))
-      )
-    ).pipe(
-      map(permissions => permissions.reduce((acc, permission) => ({...acc, ...permission}), {}))
-    );
   }
 
   private getPermission(permissionRequest: PermissionRequest, context?: any): Observable<boolean> {

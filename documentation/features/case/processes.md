@@ -43,6 +43,8 @@ Select this checkbox for processes that support a case during a specific period 
 Leave both checkboxes empty when a sub-process needs to be added to the case definition. In larger process models it's often helpful to move parts of the process to a sub process that can be activated via a so-called "Call activity" element in the main process.
 
 These sub-processes are not starting processes for the case and should not appear in the Case actions menu under the Start button in the case details UI. It is important to link these sub-processes to the Case definition in order to automatically store the data that is fetched by these processes in the JSON document of that case.
+
+For reusable sub-processes that should be shared across multiple cases, see [Building blocks](../building-blocks/README.md).
 {% endtab %}
 
 {% tab title="Via IDE" %}
@@ -65,5 +67,31 @@ In order to link processes to a case the following steps are necessary:
 ]
 ```
 {% endcode %}
+
+### Independent processes linked to a case
+
+Independent processes linked to a case can be configured to define the link type
+between a process and a case definition (e.g. `DOCUMENT_UPLOAD`). Create a JSON file under the following path:
+
+`*/resources/config/case/{case-definition-key}/{version-tag}/case-definition-process-link/`
+
+The file name should end with `.case-definition-process-link.json`.
+
+{% code title="example-case.case-definition-process-link.json" %}
+```json
+[
+    {
+        "processDefinitionKey": "document-upload",
+        "linkType": "DOCUMENT_UPLOAD"
+    }
+]
+```
+{% endcode %}
+
+| Property               | Description                                                  |
+| ---------------------- | ------------------------------------------------------------ |
+| `processDefinitionKey` | The key of the process definition to link.                   |
+| `linkType`             | The type of link (e.g. `DOCUMENT_UPLOAD`).                   |
+
 {% endtab %}
 {% endtabs %}

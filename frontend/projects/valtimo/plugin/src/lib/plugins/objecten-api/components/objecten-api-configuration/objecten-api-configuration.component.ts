@@ -20,6 +20,7 @@ import {BehaviorSubject, combineLatest, map, Observable, Subscription, take} fro
 import {ObjectenApiConfig} from '../../models';
 import {PluginManagementService, PluginTranslationService} from '../../../../services';
 import {TranslateService} from '@ngx-translate/core';
+import {OBJECTEN_API_CONFIGURATION_TEST_IDS} from '../../../../constants';
 
 @Component({
   standalone: false,
@@ -36,6 +37,7 @@ export class ObjectenApiConfigurationComponent
   @Input() prefillConfiguration$: Observable<ObjectenApiConfig>;
   @Output() valid: EventEmitter<boolean> = new EventEmitter<boolean>();
   @Output() configuration: EventEmitter<ObjectenApiConfig> = new EventEmitter<ObjectenApiConfig>();
+  protected readonly testIds = OBJECTEN_API_CONFIGURATION_TEST_IDS;
 
   private saveSubscription!: Subscription;
 

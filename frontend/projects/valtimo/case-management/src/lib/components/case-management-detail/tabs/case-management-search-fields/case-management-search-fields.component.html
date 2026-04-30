@@ -49,7 +49,7 @@
 
   <button
     cdsButton="primary"
-    data-testid="case-management-search-add"
+    data-test-id="case-management-search-add"
     *ngIf="obs.hasEditPermissions"
     [disabled]="loadingSearchFields || obs.disableInput"
     (click)="searchFieldClicked($event, true)"
@@ -63,6 +63,7 @@
 <ng-template #content let-obs="obs">
   @if (!jsonEditorActive()) {
     <valtimo-carbon-list
+      data-test-id="searchFieldsList"
       [actionItems]="actionItems"
       [showActionItems]="obs.hasEditPermissions"
       [fields]="fields"
@@ -281,7 +282,7 @@
 
 <ng-template #buttonsFooterModal let-obs="obs">
   <button
-    data-testid="case-management-search-close"
+    data-test-id="case-management-search-close"
     cdsButton="secondary"
     (click)="onModalClose()"
     [disabled]="obs.disableInput"
@@ -290,7 +291,7 @@
   </button>
 
   <button
-    data-testid="case-management-search-save"
+    data-test-id="case-management-search-save"
     cdsButton="primary"
     [disabled]="obs.disableInput || !obs.valid"
     (click)="saveSearchField(obs.caseDefinitionKey)"
@@ -303,7 +304,7 @@
   <cds-tooltip [description]="'JSON editor'">
     <button
       [cdsButton]="buttonTheme()"
-      data-testid="case-management-search-fields-switch-view"
+      data-test-id="case-management-search-fields-switch-view"
       iconOnly="true"
       (click)="switchView()"
     >
@@ -316,7 +317,7 @@
   <button
     cdsButton="ghost"
     iconOnly="true"
-    data-testid="case-management-search-download"
+    data-test-id="case-management-search-download"
     [disabled]="
       !obs.downloadUrl || !obs.downloadName || obs.searchFields?.length <= 0 || obs.disableInput
     "

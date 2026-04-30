@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,18 +18,23 @@ package com.ritense.zakenapi.uploadprocess
 
 import com.ritense.authorization.AuthorizationService
 import com.ritense.authorization.request.EntityAuthorizationRequest
-import com.ritense.resource.authorization.ResourcePermission
-import com.ritense.resource.authorization.ResourcePermissionActionProvider.Companion.CREATE
+import com.ritense.catalogiapi.service.CatalogiService
+import com.ritense.documentenapi.authorization.ZgwDocument
+import com.ritense.documentenapi.authorization.ZgwDocumentActionProvider.Companion.CREATE
+import com.ritense.documentenapi.domain.DocumentenApiUploadFieldKey
 import com.ritense.resource.domain.MetadataType
 import com.ritense.resource.domain.TemporaryResourceUploadedEvent
 import com.ritense.resource.service.TemporaryResourceStorageService
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.context.event.EventListener
+import java.net.URI
+import java.util.UUID
 
 class ResourceUploadedToDocumentEventListener(
     private val resourceService: TemporaryResourceStorageService,
     private val uploadProcessService: UploadProcessService,
-    private val authorizationService: AuthorizationService
+    private val authorizationService: AuthorizationService,
+    private val catalogiService: CatalogiService,
 ) {
 
     @EventListener(TemporaryResourceUploadedEvent::class)
@@ -37,18 +42,27 @@ class ResourceUploadedToDocumentEventListener(
         logger.debug { "Handling TemporaryResourceUploadedEvent with resourceId: ${event.resourceId}" }
 
         val metadata = resourceService.getResourceMetadata(event.resourceId)
-        val caseId = metadata[MetadataType.DOCUMENT_ID.key] as String?
+        val caseDocumentId = metadata[MetadataType.DOCUMENT_ID.key] as String?
 
-        if (caseId != null) {
+        if (caseDocumentId != null) {
+            val informatieobjecttypeUrl = metadata[DocumentenApiUploadFieldKey.INFORMATIEOBJECTTYPE.property] as String?
             authorizationService.requirePermission(
                 EntityAuthorizationRequest(
-                    ResourcePermission::class.java,
+                    ZgwDocument::class.java,
                     CREATE,
-                    ResourcePermission()
+                    ZgwDocument(
+                        caseDocumentId = UUID.fromString(caseDocumentId),
+                        vertrouwelijkheidaanduiding = metadata[DocumentenApiUploadFieldKey.VERTROUWELIJKHEIDAANDUIDING.property] as String?,
+                        status = metadata[DocumentenApiUploadFieldKey.STATUS.property] as String?,
+                        informatieobjecttypeUrl = informatieobjecttypeUrl,
+                        informatieobjecttypeOmschrijving = informatieobjecttypeUrl
+                            ?.takeIf { it.isNotBlank() }
+                            ?.let { catalogiService.getInformatieobjecttype(URI(it))?.omschrijving },
+                    )
                 )
             )
             logger.debug { "Uploading resource to document: ${event.resourceId}" }
-            uploadProcessService.startUploadResourceProcess(caseId, event.resourceId)
+            uploadProcessService.startUploadResourceProcess(caseDocumentId, event.resourceId)
         }
     }
 

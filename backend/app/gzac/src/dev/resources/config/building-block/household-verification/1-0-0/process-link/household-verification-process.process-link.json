@@ -1,0 +1,51 @@
+[
+    {
+        "activityId": "StartEvent",
+        "activityType": "bpmn:StartEvent:start",
+        "processLinkType": "form",
+        "formDefinitionName": "start-form-household-verification"
+    },
+    {
+        "activityId": "CallIncomeCheckActivity",
+        "activityType": "bpmn:CallActivity:start",
+        "processLinkType": "building-block",
+        "buildingBlockDefinitionKey": "income-check",
+        "buildingBlockDefinitionVersionTag": "1.0.0",
+        "inputMappings": [
+            {
+                "source": "doc:applicantName",
+                "target": "applicantName"
+            },
+            {
+                "source": "doc:householdSize",
+                "target": "householdSize"
+            },
+            {
+                "source": "doc:parentZaakOmschrijving",
+                "target": "grandparentZaakOmschrijving"
+            }
+        ],
+        "outputMappings": [
+            {
+                "source": "eligibilityResult",
+                "target": "doc:incomeEligibilityResult",
+                "syncTiming": "END"
+            },
+            {
+                "source": "zaakEinddatumGeplandBB3",
+                "target": "doc:zaakEinddatumGeplandBB3",
+                "syncTiming": "END"
+            }
+        ]
+    },
+    {
+        "activityId": "PatchZaakVerificationTask",
+        "activityType": "bpmn:ServiceTask:start",
+        "processLinkType": "plugin",
+        "pluginDefinitionKey": "zakenapi",
+        "pluginActionDefinitionKey": "patch-zaak",
+        "actionProperties": {
+            "explanation": "BB2: Huishouden verificatie voltooid - Toelichting"
+        }
+    }
+]

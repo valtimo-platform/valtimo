@@ -17,6 +17,8 @@
 package com.ritense.widget
 
 import com.ritense.valtimo.contract.authentication.UserManagementService
+import com.ritense.valtimo.contract.mail.MailSender
+import com.ritense.valtimo.service.ProcessDefinitionCaseDefinitionLinker
 import org.junit.jupiter.api.Tag
 import org.junit.jupiter.api.extension.ExtendWith
 import org.springframework.boot.test.context.SpringBootTest
@@ -29,5 +31,11 @@ import org.springframework.test.context.junit.jupiter.SpringExtension
 abstract class BaseIntegrationTest {
 
     @MockitoBean
-    protected var userManagementService: UserManagementService? = null
+    lateinit var processDefinitionCaseDefinitionLinker: ProcessDefinitionCaseDefinitionLinker
+
+    @MockitoBean
+    lateinit var userManagementService: UserManagementService
+
+    @MockitoBean
+    lateinit var mailSender: MailSender
 }

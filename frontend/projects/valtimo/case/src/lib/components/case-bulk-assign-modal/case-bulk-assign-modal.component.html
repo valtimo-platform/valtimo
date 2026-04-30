@@ -1,5 +1,5 @@
 <!--
-  ~ Copyright 2015-2025 Ritense BV, the Netherlands.
+  ~ Copyright 2015-2026 Ritense BV, the Netherlands.
   ~
   ~ Licensed under EUPL, Version 1.2 (the "License");
   ~ you may not use this file except in compliance with the License.
@@ -20,24 +20,78 @@
   </cds-modal-header>
 
   <section cdsModalContent>
-    <form *ngIf="candidateUsers$ | async as candidateUsers" [formGroup]="formGroup">
-      <cds-combo-box
-        formControlName="assignee"
-        [dropUp]="false"
-        [items]="candidateUsers"
-        [label]="'case.bulkAssign.modal.selectLabel' | translate"
-        [placeholder]="'case.bulkAssign.modal.selectPlaceholder' | translate"
-      >
-        <cds-dropdown-list></cds-dropdown-list>
-      </cds-combo-box>
-    </form>
+    <ng-container
+      *ngIf="{
+        candidateUserItems: candidateUserItems$ | async,
+        teamItems: teamItems$ | async,
+        canAssignAllDocuments: canAssignAllDocuments$ | async,
+        canAssignAnyDocuments: canAssignAnyDocuments$ | async,
+      } as obs"
+    >
+      <cds-inline-notification
+        *ngIf="!obs.canAssignAnyDocuments"
+        [notificationObj]="{
+          type: 'warning',
+          title: ('case.bulkAssign.modal.warningTitle' | translate),
+          message: ('case.bulkAssign.modal.cannotAssignAnyWarning' | translate),
+          showClose: false,
+          lowContrast: true,
+        }"
+      ></cds-inline-notification>
+
+      <cds-inline-notification
+        *ngIf="obs.canAssignAnyDocuments && !obs.canAssignAllDocuments"
+        [notificationObj]="{
+          type: 'warning',
+          title: ('case.bulkAssign.modal.warningTitle' | translate),
+          message: ('case.bulkAssign.modal.cannotAssignSomeWarning' | translate),
+          showClose: false,
+          lowContrast: true,
+        }"
+      ></cds-inline-notification>
+
+      <form *ngIf="obs.canAssignAnyDocuments && obs.candidateUserItems" [formGroup]="formGroup">
+        <cds-combo-box
+          formControlName="assignee"
+          [dropUp]="false"
+          [items]="obs.candidateUserItems"
+          [label]="'case.bulkAssign.modal.selectLabel' | translate"
+          [placeholder]="'case.bulkAssign.modal.selectPlaceholder' | translate"
+          [cdsLayer]="1"
+        >
+          <cds-dropdown-list></cds-dropdown-list>
+        </cds-combo-box>
+
+        <cds-combo-box
+          *ngIf="obs.teamItems?.length"
+          formControlName="team"
+          [dropUp]="false"
+          [items]="obs.teamItems"
+          [label]="'case.bulkAssign.modal.selectTeamLabel' | translate"
+          [placeholder]="'case.bulkAssign.modal.selectPlaceholder' | translate"
+          [cdsLayer]="1"
+        >
+          <cds-dropdown-list></cds-dropdown-list>
+        </cds-combo-box>
+      </form>
+    </ng-container>
   </section>
 
   <cds-modal-footer>
-    <button cdsButton="ghost" (click)="closeModal()">{{ 'interface.cancel' | translate }}</button>
+    <ng-container
+      *ngIf="{
+        canAssignAnyDocuments: canAssignAnyDocuments$ | async,
+      } as obs"
+    >
+      <button cdsButton="ghost" (click)="closeModal()">{{ 'interface.cancel' | translate }}</button>
 
-    <button cdsButton="primary" [disabled]="formGroup.invalid" (click)="closeModal(true)">
-      {{ 'case.bulkAssign.modal.confirm' | translate }}
-    </button>
+      <button
+        cdsButton="primary"
+        [disabled]="!isFormValid || !obs.canAssignAnyDocuments"
+        (click)="closeModal(true)"
+      >
+        {{ 'case.bulkAssign.modal.confirm' | translate }}
+      </button>
+    </ng-container>
   </cds-modal-footer>
 </cds-modal>

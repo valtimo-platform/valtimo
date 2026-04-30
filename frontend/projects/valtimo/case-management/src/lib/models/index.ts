@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,3 +18,6 @@ export * from './list-column.model';
 export * from './status.model';
 export * from './tab.model';
 export * from './case-list.model';
+export * from './case-deployment.model';
+export * from './startable-item.model';
+export * from './case-management-actions-modal.model';

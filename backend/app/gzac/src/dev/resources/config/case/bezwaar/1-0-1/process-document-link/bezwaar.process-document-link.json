@@ -15,12 +15,17 @@
         "startableByUser": true
     },
     {
-        "processDefinitionKey": "patch-zaak",
+        "processDefinitionKey": "create-portaal-taak-process",
         "canInitializeDocument": false,
         "startableByUser": true
     },
     {
         "processDefinitionKey": "create-zaaknotitie",
+        "canInitializeDocument": false,
+        "startableByUser": true
+    },
+    {
+        "processDefinitionKey": "patch-zaak",
         "canInitializeDocument": false,
         "startableByUser": true
     },
@@ -31,6 +36,11 @@
     },
     {
         "processDefinitionKey": "vastleggen-besluit",
+        "canInitializeDocument": false,
+        "startableByUser": true
+    },
+    {
+        "processDefinitionKey": "document-audit-trail",
         "canInitializeDocument": false,
         "startableByUser": true
     }

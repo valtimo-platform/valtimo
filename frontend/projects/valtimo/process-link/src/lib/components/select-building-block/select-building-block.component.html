@@ -1,0 +1,49 @@
+<!--
+  Copyright 2015-2025 Ritense BV
+  Licensed under the EUPL, Version 1.2
+-->
+
+<div class="select-building-block" *ngIf="!loading; else loadingState">
+  <ng-container *ngIf="buildingBlocks$ | async as buildingBlocks">
+    <ng-container *ngIf="buildingBlocks.length; else emptyState">
+      <div class="list-container">
+        <cds-structured-list (selected)="onSelectionChange($event)" selection="true">
+          <cds-list-header>
+            <cds-list-column nowrap="true"></cds-list-column>
+            <cds-list-column nowrap="true">
+              {{ 'processLinkConfiguration.buildingBlock.name' | translate }}
+            </cds-list-column>
+            <cds-list-column>
+              {{ 'processLinkConfiguration.buildingBlock.description' | translate }}
+            </cds-list-column>
+          </cds-list-header>
+          <cds-list-row *ngFor="let buildingBlock of buildingBlocks" [value]="buildingBlock">
+            <cds-list-column>
+              <div *ngIf="buildingBlock.imageBase64">
+                <img
+                  class="building-block-artwork"
+                  [src]="'data:image/png;base64,' + buildingBlock.imageBase64"
+                  [title]="buildingBlock.name"
+                />
+              </div>
+            </cds-list-column>
+            <cds-list-column>{{ buildingBlock.name }}</cds-list-column>
+            <cds-list-column>{{ buildingBlock.description }}</cds-list-column>
+          </cds-list-row>
+        </cds-structured-list>
+      </div>
+    </ng-container>
+  </ng-container>
+</div>
+
+<ng-template #loadingState>
+  <div class="loading-container">
+    <cds-loading></cds-loading>
+  </div>
+</ng-template>
+
+<ng-template #emptyState>
+  <div class="empty-state">
+    {{ 'processLinkConfiguration.buildingBlock.emptyState' | translate }}
+  </div>
+</ng-template>

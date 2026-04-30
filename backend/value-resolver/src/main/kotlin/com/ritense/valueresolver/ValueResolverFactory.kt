@@ -16,6 +16,7 @@
 
 package com.ritense.valueresolver
 
+import com.ritense.valtimo.contract.BlueprintId
 import com.ritense.valtimo.contract.case_.CaseDefinitionId
 import com.ritense.valueresolver.ValueResolverPropertyKey.Companion.DOCUMENT_ID
 import com.ritense.valueresolver.ValueResolverPropertyKey.Companion.PROCESS_INSTANCE_ID
@@ -151,6 +152,10 @@ interface ValueResolverFactory {
     }
 
     fun getResolvableKeyOptions(caseDefinitionKey: String): List<ValueResolverOption> {
+        return emptyList()
+    }
+
+    fun getResolvableKeyOptions(blueprintId: BlueprintId): List<ValueResolverOption> {
         return emptyList()
     }
 

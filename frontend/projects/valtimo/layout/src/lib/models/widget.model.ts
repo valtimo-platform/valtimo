@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 import {Type} from '@angular/core';
-import {Condition} from '@valtimo/shared';
+import {Condition, Direction} from '@valtimo/shared';
 import {
   WidgetCollectionContent,
   WidgetContentProperties,
@@ -37,6 +37,26 @@ enum WidgetType {
   MAP = 'map',
 }
 
+enum WidgetColor {
+  YELLOW = 'YELLOW',
+  ORANGE = 'ORANGE',
+  RED = 'RED',
+  BROWN = 'BROWN',
+  GREEN = 'GREEN',
+  TURQOISE = 'TURQOISE',
+  PURPLE = 'PURPLE',
+  PERIWINKLE = 'PERIWINKLE',
+  BLUE = 'BLUE',
+  WHITE = 'WHITE',
+  HIGHCONTRAST = 'HIGHCONTRAST',
+}
+
+interface WidgetColorTile {
+  color: WidgetColor;
+  labelKey: string;
+  illustration: string;
+}
+
 type WidgetWidth = 1 | 2 | 3 | 4;
 type CollectionFieldWidth = 'half' | 'full';
 
@@ -53,11 +73,12 @@ interface BasicWidget {
   icon?: string;
   width: WidgetWidth;
   highContrast: boolean;
+  color?: WidgetColor;
   key: string;
   properties?: WidgetContentProperties;
   isCompact?: boolean;
   actions?: WidgetAction[];
-  displayConditions: Array<Condition>;
+  displayConditions: Array<Condition<string>>;
 }
 
 interface FieldsWidgetValue {
@@ -66,6 +87,8 @@ interface FieldsWidgetValue {
   value: string;
   ellipsisCharacterLimit?: number;
   displayProperties?: WidgetDisplayType;
+  sortable?: boolean;
+  defaultSort?: Direction;
 }
 
 interface GeoJsonSource {
@@ -234,4 +257,6 @@ export {
   WidgetComponentMap,
   WidgetContext,
   WidgetGroup,
+  WidgetColor,
+  WidgetColorTile,
 };

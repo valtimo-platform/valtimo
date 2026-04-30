@@ -67,6 +67,7 @@
   <button
     *ngIf="hasEditPermissions$ | async"
     cdsButton="primary"
+    [attr.data-test-id]="testIds.addButton"
     [disabled]="loading$ | async"
     (click)="openAddModal()"
   >

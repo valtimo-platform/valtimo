@@ -57,11 +57,15 @@
           'valtimo-widget-collection__card--hidden': card.hidden,
         }"
       >
-        <span class="valtimo-widget-collection__card-title">{{ card.title }}</span>
+        <span class="valtimo-widget-collection__card-title">
+          @if (!obs.widgetData) {
+            <cds-skeleton-text [lines]="1" [maxLineWidth]="30"></cds-skeleton-text>
+          } @else {
+            {{ card.title }}
+          }
+        </span>
 
-        <section
-          class="valtimo-widget-collection__card-content"
-        >
+        <section class="valtimo-widget-collection__card-content">
           @for (field of card.fields; track field.key) {
             <div
               *ngIf="
@@ -79,12 +83,16 @@
               >
                 {{ field?.title }}
 
-                <input
-                  [value]="field?.value"
-                  [readonly]="true"
-                  class="valtimo-widget-collection__card-input"
-                  cdsText
-                />
+                @if (!obs.widgetData) {
+                  <cds-skeleton-text [lines]="1" [maxLineWidth]="30"></cds-skeleton-text>
+                } @else {
+                  <input
+                    [value]="field?.value"
+                    [readonly]="true"
+                    class="valtimo-widget-collection__card-input"
+                    cdsText
+                  />
+                }
               </cds-label>
             </div>
           }
@@ -101,11 +109,16 @@
     ></valtimo-no-results>
   }
 
-  <cds-pagination-nav
-    *ngIf="paginationModel() && (showPagination$ | async)"
-    class="valtimo-widget-collection__pagination"
-    [model]="paginationModel()"
-    (selectPage)="onSelectPage($event)"
-  >
-  </cds-pagination-nav>
+  @if ($paginationModel() && $showPagination()) {
+    <cds-pagination-nav
+      class="valtimo-widget-collection__pagination"
+      [model]="$paginationModel()"
+      (selectPage)="onSelectPage($event)"
+    >
+    </cds-pagination-nav>
+  } @else if (!obs.widgetData) {
+    <div class="valtimo-widget-collection__pagination">
+      <cds-skeleton-text [lines]="1" [maxLineWidth]="150" [minLineWidth]="150"></cds-skeleton-text>
+    </div>
+  }
 </ng-container>
