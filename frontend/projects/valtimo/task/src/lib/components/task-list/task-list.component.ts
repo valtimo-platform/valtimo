@@ -18,6 +18,7 @@ import {
   ChangeDetectionStrategy,
   Component,
   HostListener,
+  Inject,
   OnDestroy,
   OnInit,
   TemplateRef,
@@ -55,8 +56,10 @@ import {
   SortState,
   TaskListTab,
 } from '@valtimo/shared';
-import {ColumnConfig, ViewType} from '@valtimo/components';
+import {ColumnConfig, IQuickSearchService, QUICK_SEARCH_SERVICE, QuickSearchStateService, ViewType} from '@valtimo/components';
 import {DocumentService} from '@valtimo/document';
+import {TaskListQuickSearchService} from '../../services/task-list-quick-search.service';
+import {TaskListQuickSearchParams} from '../../models/task-list-quick-search.model';
 import {SseService} from '@valtimo/sse';
 import {distinctUntilChanged, filter, map, take} from 'rxjs/operators';
 import {PermissionService} from '@valtimo/access-control';
@@ -96,6 +99,10 @@ moment.locale(localStorage.getItem('langKey') || '');
     TaskListSortService,
     TaskListSearchService,
     TaskListQueryParamService,
+    {
+      provide: QUICK_SEARCH_SERVICE,
+      useClass: TaskListQuickSearchService,
+    },
   ],
 })
 export class TaskListComponent implements OnInit, OnDestroy {
@@ -291,8 +298,11 @@ export class TaskListComponent implements OnInit, OnDestroy {
     private readonly taskListSearchService: TaskListSearchService,
     private readonly taskListQueryParamService: TaskListQueryParamService,
     private readonly pageTitleService: PageTitleService,
+    private readonly quickSearchStateService: QuickSearchStateService,
     private readonly sseService: SseService,
-    private readonly teamsApiService: TeamsApiService
+    private readonly teamsApiService: TeamsApiService,
+    @Inject(QUICK_SEARCH_SERVICE)
+    private readonly quickSearchService: IQuickSearchService<TaskListQuickSearchParams>
   ) {}
 
   public ngOnInit(): void {
@@ -388,6 +398,9 @@ export class TaskListComponent implements OnInit, OnDestroy {
       this.taskListSortService.resetOverrideSortState();
       this.loadingTasks$.next(true);
       this.taskListService.setCaseDefinitionKey(definition.item.id);
+      if (definition.item.id !== this.ALL_CASES_ID) {
+        this.quickSearchService.initParams(definition.item.id);
+      }
     }
   }
 
@@ -400,6 +413,51 @@ export class TaskListComponent implements OnInit, OnDestroy {
     if (!searchFieldValues) return;
 
     this.taskListSearchService.setSearchFieldValues(searchFieldValues);
+  }
+
+  public onSaveSearchEvent(searchFieldValues: SearchFieldValues): void {
+    combineLatest([
+      this.taskListSortService.sortStringForCurrentTaskType$,
+      this.selectedTaskType$,
+    ])
+      .pipe(take(1))
+      .subscribe(([sort, selectedTaskType]) => {
+        const params: {[key: string]: string} = {};
+        if (searchFieldValues && Object.keys(searchFieldValues).length > 0) {
+          params['search'] = btoa(JSON.stringify(searchFieldValues));
+        }
+        if (selectedTaskType) {
+          params['selectedTaskType'] = selectedTaskType;
+        }
+        if (sort) {
+          params['sort'] = sort;
+        }
+        this.quickSearchStateService.openModal(params);
+      });
+  }
+
+  public onQuickSearchEvent(queryPath: string): void {
+    const queryParams = Object.fromEntries(new URLSearchParams(queryPath));
+
+    if (queryParams['search']) {
+      const searchFieldValues = JSON.parse(atob(queryParams['search'])) as SearchFieldValues;
+      this.setSearchFieldValuesSubject$.next(searchFieldValues);
+      this.taskListSearchService.setSearchFieldValues(searchFieldValues);
+    } else {
+      this.clearSearchFieldValuesSubject$.next(null);
+      this.taskListSearchService.setSearchFieldValues({});
+    }
+
+    if (queryParams['selectedTaskType']) {
+      this.taskListService.setSelectedTaskType(queryParams['selectedTaskType'] as TaskListTab);
+    }
+
+    if (queryParams['sort']) {
+      const stateFromSortString = this.taskListSortService.getSortStateFromSortString(
+        queryParams['sort']
+      );
+      if (stateFromSortString) this.taskListSortService.setOverrideSortState(stateFromSortString);
+    }
   }
 
   private updateTaskListPaginationAfterResponse(newCollectionSize: number): void {
@@ -556,6 +614,9 @@ export class TaskListComponent implements OnInit, OnDestroy {
     if (decodedParams.caseDefinitionKey) {
       this.taskListService.setCaseDefinitionKey(decodedParams.caseDefinitionKey);
       this._selectedCaseDefinitionId$.next(decodedParams.caseDefinitionKey);
+      if (decodedParams.caseDefinitionKey !== this.ALL_CASES_ID) {
+        this.quickSearchService.initParams(decodedParams.caseDefinitionKey);
+      }
     }
 
     if (decodedParams.otherFilters?.length > 0) {

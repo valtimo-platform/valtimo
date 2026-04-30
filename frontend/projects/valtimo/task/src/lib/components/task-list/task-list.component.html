@@ -42,6 +42,10 @@
           }
         "
       ></ng-container>
+
+      <div class="mb-3">
+        <valtimo-quick-search (quickSearchEvent)="onQuickSearchEvent($event)"></valtimo-quick-search>
+      </div>
     }
 
     <ng-container
@@ -186,12 +190,14 @@
 <ng-template #searchFields let-obs="obs">
   <div class="mb-3">
     <valtimo-search-fields
+      [canSaveSearch]="true"
       [searchFields]="obs.searchFields"
       [inputDisabled]="obs.loadingSearchFields"
       [caseDefinitionKey]="obs.caseDefinitionKey"
       [setValuesSubject$]="setSearchFieldValuesSubject$"
       [clearValuesSubject$]="clearSearchFieldValuesSubject$"
       (doSearch)="search($event)"
+      (saveSearchEvent)="onSaveSearchEvent($event)"
     >
     </valtimo-search-fields>
   </div>
