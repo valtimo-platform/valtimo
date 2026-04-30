@@ -21,6 +21,10 @@
 
   New enhancement explanation.
 
+* **Aligned dependency versions with Spring Boot BOM**
+
+  Updated Hibernate, MySQL driver, and Groovy to match the versions managed by the Spring Boot 3.5.14 BOM.
+
 ## Bugfixes
 
 * New bugfix.
