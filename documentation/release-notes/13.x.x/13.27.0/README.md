@@ -23,4 +23,4 @@
 
 ## Bugfixes
 
-* New bugfix.
+* Fixed BPMN diagram viewer pan and zoom not working on the Case details Progress tab and other diagram views.
