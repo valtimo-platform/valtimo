@@ -24,3 +24,16 @@
   display: flex;
   width: 250px;
 }
+
+.valtimo-task-list__unread-dot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background-color: var(--cds-link-primary);
+}
+
+::ng-deep .valtimo-task-list__unread-column {
+  width: 2rem;
+  padding-right: 0 !important;
+}

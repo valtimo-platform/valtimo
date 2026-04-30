@@ -17,13 +17,15 @@
 package com.ritense.valtimo.operaton.repository
 
 import com.ritense.valtimo.operaton.domain.OperatonTask
+import com.ritense.valtimo.task.domain.TaskTeam
+import com.ritense.valtimo.operaton.repository.OperatonProcessDefinitionSpecificationHelper.Companion.ID as PROCESS_DEFINITION_ID
 import com.ritense.valtimo.operaton.repository.OperatonProcessDefinitionSpecificationHelper.Companion.KEY
 import com.ritense.valtimo.operaton.repository.OperatonProcessInstanceSpecificationHelper.Companion.BUSINESS_KEY
+import com.ritense.valtimo.operaton.repository.OperatonProcessInstanceSpecificationHelper.Companion.ROOT_PROCESS_INSTANCE
+import com.ritense.valtimo.operaton.repository.OperatonProcessInstanceSpecificationHelper.Companion.ID as PROCESS_INSTANCE_ID
 import org.operaton.bpm.engine.impl.persistence.entity.SuspensionState
 import org.springframework.data.jpa.domain.Specification
 import java.time.LocalDateTime
-import com.ritense.valtimo.operaton.repository.OperatonProcessDefinitionSpecificationHelper.Companion.ID as PROCESS_DEFINITION_ID
-import com.ritense.valtimo.operaton.repository.OperatonProcessInstanceSpecificationHelper.Companion.ID as PROCESS_INSTANCE_ID
 
 class OperatonTaskSpecificationHelper {
 
@@ -69,9 +71,51 @@ class OperatonTaskSpecificationHelper {
             cb.equal(root.get<Any>(PROCESS_INSTANCE).get<Any>(PROCESS_INSTANCE_ID), processInstanceId)
         }
 
+        /**
+         * Matches on the task's own process instance business key.
+         * Note: For building blocks the, business key is the building block document ID (not the case document ID).
+         */
         @JvmStatic
         fun byProcessInstanceBusinessKey(businessKey: String) = Specification<OperatonTask> { root, _, cb ->
             cb.equal(root.get<Any>(PROCESS_INSTANCE).get<Any>(BUSINESS_KEY), businessKey)
+        }
+
+        /**
+         * Matches on the task's own process instance business key.
+         * Note: For building blocks, the business key is the building block document ID (not the case document ID).
+         */
+        @JvmStatic
+        fun byProcessInstanceBusinessKeys(businessKeys: Collection<String>) = Specification<OperatonTask> { root, _, cb ->
+            if (businessKeys.isEmpty()) {
+                cb.equal(cb.literal(0), 1)
+            } else {
+                root.get<Any>(PROCESS_INSTANCE).get<Any>(BUSINESS_KEY).`in`(businessKeys)
+            }
+        }
+
+        /**
+         * Note: For ad-hoc building blocks, the building block process is the root process,
+         * so the business key is the building block document ID (not the case document ID).
+         */
+        @JvmStatic
+        fun byRootProcessInstanceBusinessKey(businessKey: String) = Specification<OperatonTask> { root, _, cb ->
+            cb.equal(
+                root.get<Any>(PROCESS_INSTANCE).get<Any>(ROOT_PROCESS_INSTANCE).get<Any>(BUSINESS_KEY),
+                businessKey
+            )
+        }
+
+        /**
+         * Note: For ad-hoc building blocks, the building block process is the root process,
+         * so the business key is the building block document ID (not the case document ID).
+         */
+        @JvmStatic
+        fun byRootProcessInstanceBusinessKeys(businessKeys: Collection<String>) = Specification<OperatonTask> { root, _, cb ->
+            if (businessKeys.isEmpty()) {
+                cb.equal(cb.literal(0), 1)
+            } else {
+                root.get<Any>(PROCESS_INSTANCE).get<Any>(ROOT_PROCESS_INSTANCE).get<Any>(BUSINESS_KEY).`in`(businessKeys)
+            }
         }
 
         @JvmStatic
@@ -103,8 +147,12 @@ class OperatonTaskSpecificationHelper {
         }
 
         @JvmStatic
-        fun byAssignee(assignee: String) = Specification<OperatonTask> { root, _, cb ->
-            cb.equal(root.get<Any>(ASSIGNEE), assignee)
+        fun byAssignee(assignee: String?) = Specification<OperatonTask> { root, _, cb ->
+            if (assignee == null) {
+                root.get<Any>(ASSIGNEE).isNull
+            } else {
+                cb.equal(root.get<Any>(ASSIGNEE), assignee)
+            }
         }
 
         @JvmStatic
@@ -134,6 +182,48 @@ class OperatonTaskSpecificationHelper {
 
         @JvmStatic
         fun byActive() = bySuspensionState(SuspensionState.ACTIVE.stateCode)
+
+        @JvmStatic
+        fun byTeamKeys(teamKeys: Collection<String>) = Specification<OperatonTask> { root, query, cb ->
+            if (teamKeys.isEmpty()) {
+                cb.equal(cb.literal(0), 1)
+            } else {
+                val subquery = query!!.subquery(String::class.java)
+                val taskTeamRoot = subquery.from(TaskTeam::class.java)
+                subquery.select(taskTeamRoot.get("taskId"))
+                subquery.where(taskTeamRoot.get<Any>("teamKey").`in`(teamKeys))
+                root.get<Any>(ID).`in`(subquery)
+            }
+        }
+
+        @JvmStatic
+        fun byTeamKey(teamKey: String?) = Specification<OperatonTask> { root, query, cb ->
+            val subquery = query!!.subquery(String::class.java)
+            val taskTeamRoot = subquery.from(TaskTeam::class.java)
+            subquery.select(taskTeamRoot.get("taskId"))
+            if (teamKey == null) {
+                root.get<Any>(ID).`in`(subquery).not()
+            } else {
+                subquery.where(cb.equal(taskTeamRoot.get<Any>("teamKey"), teamKey))
+                root.get<Any>(ID).`in`(subquery)
+            }
+        }
+
+        @JvmStatic
+        fun byHasTeam() = Specification<OperatonTask> { root, query, _ ->
+            val subquery = query!!.subquery(String::class.java)
+            val taskTeamRoot = subquery.from(TaskTeam::class.java)
+            subquery.select(taskTeamRoot.get("taskId"))
+            root.get<Any>(ID).`in`(subquery)
+        }
+
+        @JvmStatic
+        fun byNoTeam() = Specification<OperatonTask> { root, query, _ ->
+            val subquery = query!!.subquery(String::class.java)
+            val taskTeamRoot = subquery.from(TaskTeam::class.java)
+            subquery.select(taskTeamRoot.get("taskId"))
+            root.get<Any>(ID).`in`(subquery).not()
+        }
 
     }
 

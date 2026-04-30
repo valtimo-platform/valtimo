@@ -28,6 +28,7 @@ import com.ritense.valtimo.contract.OauthConfigHolder
 import com.ritense.valtimo.contract.authentication.UserManagementService
 import com.ritense.valtimo.contract.authentication.model.ValtimoUserBuilder
 import com.ritense.valtimo.contract.config.ValtimoProperties.Oauth
+import com.ritense.valtimo.contract.document.CaseDocumentResolver
 import com.ritense.valtimo.contract.json.MapperSingleton
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
@@ -37,6 +38,7 @@ import org.mockito.kotlin.mock
 import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
+import org.mockito.kotlin.any as anyKt
 import org.operaton.bpm.engine.delegate.DelegateExecution
 import java.time.LocalDateTime
 import java.util.Optional
@@ -49,6 +51,7 @@ internal class DocumentDelegateServiceTest : BaseTest() {
     private lateinit var documentService: DocumentService
     private lateinit var jsonSchemaDocumentService: JsonSchemaDocumentService
     private lateinit var userManagementService: UserManagementService
+    private lateinit var caseDocumentResolver: CaseDocumentResolver
     private lateinit var documentDelegateService: DocumentDelegateService
 
     lateinit var definition: JsonSchemaDocumentDefinition
@@ -76,12 +79,15 @@ internal class DocumentDelegateServiceTest : BaseTest() {
         documentService = mock()
         jsonSchemaDocumentService = mock()
         jsonSchemaDocumentService = mock()
+        caseDocumentResolver = mock()
+        whenever(caseDocumentResolver.resolveCaseDocumentId(anyKt())).thenAnswer { it.arguments[0] }
         documentDelegateService = DocumentDelegateService(
             processDocumentService,
             documentService,
             jsonSchemaDocumentService,
             userManagementService,
-            MapperSingleton.get()
+            MapperSingleton.get(),
+            caseDocumentResolver
         )
         delegateExecution = mock<DelegateExecution>()
         whenever(delegateExecution.id).thenReturn("id")
@@ -274,12 +280,14 @@ internal class DocumentDelegateServiceTest : BaseTest() {
 
         documentDelegateService.setAssignee(delegateExecution, "john@example.com")
 
+        verify(caseDocumentResolver).resolveCaseDocumentId(UUID.fromString(documentId))
         verify(documentService, times(1)).assignUserToDocument(UUID.fromString(documentId), "anId")
     }
 
     @Test
     fun `should set status to document`() {
-        val documentId = JsonSchemaDocumentId.existingId(UUID.fromString("11111111-1111-1111-1111-111111111111"))
+        val documentUuid = UUID.fromString("11111111-1111-1111-1111-111111111111")
+        val documentId = JsonSchemaDocumentId.existingId(documentUuid)
         val processInstanceId = "00000000-0000-0000-0000-000000000000"
         val delegateExecution = mock<DelegateExecution>()
         whenever(delegateExecution.id).thenReturn("id")
@@ -292,12 +300,37 @@ internal class DocumentDelegateServiceTest : BaseTest() {
         val newStatus = "test"
         documentDelegateService.setInternalStatus(delegateExecution, newStatus)
 
+        verify(caseDocumentResolver).resolveCaseDocumentId(documentUuid)
         verify(documentService).setInternalStatus(documentId, newStatus)
     }
 
     @Test
+    fun `should set status to parent case document when called from building block`() {
+        val buildingBlockDocumentUuid = UUID.fromString("11111111-1111-1111-1111-111111111111")
+        val caseDocumentUuid = UUID.fromString("22222222-2222-2222-2222-222222222222")
+        val buildingBlockDocumentId = JsonSchemaDocumentId.existingId(buildingBlockDocumentUuid)
+        val caseDocumentId = JsonSchemaDocumentId.existingId(caseDocumentUuid)
+        val processInstanceId = "00000000-0000-0000-0000-000000000000"
+        val delegateExecution = mock<DelegateExecution>()
+        whenever(delegateExecution.id).thenReturn("id")
+        whenever(delegateExecution.processInstanceId).thenReturn(processInstanceId)
+        whenever(delegateExecution.processBusinessKey).thenReturn(buildingBlockDocumentUuid.toString())
+        whenever(
+            processDocumentService.getDocumentId(OperatonProcessInstanceId(processInstanceId), delegateExecution)
+        ).thenReturn(buildingBlockDocumentId)
+        whenever(caseDocumentResolver.resolveCaseDocumentId(buildingBlockDocumentUuid)).thenReturn(caseDocumentUuid)
+
+        val newStatus = "test"
+        documentDelegateService.setInternalStatus(delegateExecution, newStatus)
+
+        verify(caseDocumentResolver).resolveCaseDocumentId(buildingBlockDocumentUuid)
+        verify(documentService).setInternalStatus(caseDocumentId, newStatus)
+    }
+
+    @Test
     fun `should add case tag to document`() {
-        val documentId = JsonSchemaDocumentId.existingId(UUID.fromString("11111111-1111-1111-1111-111111111111"))
+        val documentUuid = UUID.fromString("11111111-1111-1111-1111-111111111111")
+        val documentId = JsonSchemaDocumentId.existingId(documentUuid)
         val processInstanceId = "00000000-0000-0000-0000-000000000000"
         val delegateExecution = mock<DelegateExecution>()
         whenever(delegateExecution.id).thenReturn("id")
@@ -309,12 +342,14 @@ internal class DocumentDelegateServiceTest : BaseTest() {
 
         documentDelegateService.addCaseTag(delegateExecution, "important")
 
+        verify(caseDocumentResolver).resolveCaseDocumentId(documentUuid)
         verify(documentService).addCaseTag(documentId, "important")
     }
 
     @Test
     fun `should remove case tag from document`() {
-        val documentId = JsonSchemaDocumentId.existingId(UUID.fromString("11111111-1111-1111-1111-111111111111"))
+        val documentUuid = UUID.fromString("11111111-1111-1111-1111-111111111111")
+        val documentId = JsonSchemaDocumentId.existingId(documentUuid)
         val processInstanceId = "00000000-0000-0000-0000-000000000000"
         val delegateExecution = mock<DelegateExecution>()
         whenever(delegateExecution.id).thenReturn("id")
@@ -326,6 +361,7 @@ internal class DocumentDelegateServiceTest : BaseTest() {
 
         documentDelegateService.removeCaseTag(delegateExecution, "important")
 
+        verify(caseDocumentResolver).resolveCaseDocumentId(documentUuid)
         verify(documentService).removeCaseTag(documentId, "important")
     }
 
@@ -343,6 +379,7 @@ internal class DocumentDelegateServiceTest : BaseTest() {
 
         documentDelegateService.unassign(delegateExecution)
 
+        verify(caseDocumentResolver).resolveCaseDocumentId(UUID.fromString(documentId))
         verify(documentService, times(1)).unassignUserFromDocument(UUID.fromString(documentId))
     }
 

@@ -30,34 +30,22 @@ import com.ritense.dashboard.web.rest.AdminDashboardResource
 import com.ritense.dashboard.web.rest.DashboardResource
 import com.ritense.valtimo.changelog.service.ChangelogService
 import com.ritense.valtimo.contract.authentication.UserManagementService
-import com.ritense.valtimo.contract.config.LiquibaseMasterChangeLogLocation
 import com.ritense.valtimo.contract.database.QueryDialectHelper
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.autoconfigure.AutoConfiguration
-import org.springframework.boot.autoconfigure.condition.ConditionalOnClass
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.boot.autoconfigure.domain.EntityScan
 import org.springframework.cache.annotation.EnableCaching
 import org.springframework.context.ApplicationContext
 import org.springframework.context.annotation.Bean
-import org.springframework.core.Ordered.HIGHEST_PRECEDENCE
 import org.springframework.core.annotation.Order
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories
-import javax.sql.DataSource
 
 @AutoConfiguration
 @EnableJpaRepositories(basePackages = ["com.ritense.dashboard.repository"])
 @EntityScan("com.ritense.dashboard.domain")
 @EnableCaching
 class DashboardAutoConfiguration {
-
-    @Order(HIGHEST_PRECEDENCE + 29)
-    @Bean
-    @ConditionalOnClass(DataSource::class)
-    @ConditionalOnMissingBean(name = ["dashboardLiquibaseMasterChangeLogLocation"])
-    fun dashboardLiquibaseMasterChangeLogLocation(): LiquibaseMasterChangeLogLocation {
-        return LiquibaseMasterChangeLogLocation("config/liquibase/dashboard-master.xml")
-    }
 
     @Order(270)
     @Bean

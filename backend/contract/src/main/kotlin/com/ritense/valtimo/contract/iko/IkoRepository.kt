@@ -33,7 +33,8 @@ interface IkoRepository {
     fun getIkoSearchActionPropertyFields(): List<PropertyField> =
         emptyList()
 
-    fun findAll(config: Map<String, Any?>, filters: List<DataFilter>, pageable: Pageable): Page<JsonNode>
+    fun getIkoTabPropertyFields(): List<PropertyField> =
+        emptyList()
 
-    fun findById(config: Map<String, Any?>, id: Any): JsonNode
+    fun findAll(config: Map<String, Any?>, filters: List<DataFilter>, pageable: Pageable): Page<JsonNode>
 }

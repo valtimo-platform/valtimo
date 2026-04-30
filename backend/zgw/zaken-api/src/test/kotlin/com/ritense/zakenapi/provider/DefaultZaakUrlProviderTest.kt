@@ -16,6 +16,8 @@
 
 package com.ritense.zakenapi.provider
 
+import com.ritense.valtimo.contract.document.CaseDocumentResolutionException
+import com.ritense.valtimo.contract.document.CaseDocumentResolver
 import com.ritense.zakenapi.domain.ZaakInstanceLink
 import com.ritense.zakenapi.domain.ZaakInstanceLinkId
 import com.ritense.zakenapi.link.ZaakInstanceLinkNotFoundException
@@ -34,17 +36,23 @@ class DefaultZaakUrlProviderTest {
     lateinit var zaakUrlProvider: DefaultZaakUrlProvider
 
     lateinit var zaakInstanceLinkService: ZaakInstanceLinkService
+    lateinit var caseDocumentResolver: CaseDocumentResolver
 
     @BeforeEach
     fun setup() {
         zaakInstanceLinkService = mock()
-        zaakUrlProvider = DefaultZaakUrlProvider(zaakInstanceLinkService)
+        caseDocumentResolver = mock()
+        zaakUrlProvider = DefaultZaakUrlProvider(
+            zaakInstanceLinkService,
+            caseDocumentResolver
+        )
     }
 
     @Test
     fun `should get zaak URL by document id`() {
         val documentId = UUID.randomUUID()
 
+        whenever(caseDocumentResolver.resolveCaseDocumentId(documentId)).thenReturn(documentId)
         val zaakInstanceLink = createZaakInstanceLink(documentId)
         whenever(zaakInstanceLinkService.getByDocumentId(documentId)).thenReturn(zaakInstanceLink)
         val zaakUrl = zaakUrlProvider.getZaakUrl(documentId)
@@ -56,12 +64,28 @@ class DefaultZaakUrlProviderTest {
     fun `should propagate exception from zaakInstanceLinkService`() {
         val documentId = UUID.randomUUID()
 
+        whenever(caseDocumentResolver.resolveCaseDocumentId(documentId)).thenReturn(documentId)
         whenever(zaakInstanceLinkService.getByDocumentId(documentId)).thenThrow(ZaakInstanceLinkNotFoundException("test"))
         val ex = assertThrows<ZaakInstanceLinkNotFoundException> {
             zaakUrlProvider.getZaakUrl(documentId)
         }
 
         assertThat(ex.message).isEqualTo("test")
+    }
+
+    @Test
+    fun `should propagate resolver exceptions`() {
+        val documentId = UUID.randomUUID()
+
+        whenever(caseDocumentResolver.resolveCaseDocumentId(documentId)).thenThrow(
+            CaseDocumentResolutionException("resolution failed")
+        )
+
+        val ex = assertThrows<CaseDocumentResolutionException> {
+            zaakUrlProvider.getZaakUrl(documentId)
+        }
+
+        assertThat(ex.message).contains("resolution failed")
     }
 
     private fun createZaakInstanceLink(documentId: UUID): ZaakInstanceLink {

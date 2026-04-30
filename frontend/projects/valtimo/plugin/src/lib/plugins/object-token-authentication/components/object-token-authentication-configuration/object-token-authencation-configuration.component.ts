@@ -18,6 +18,7 @@ import {Component, EventEmitter, Input, OnDestroy, OnInit, Output} from '@angula
 import {PluginConfigurationComponent} from '../../../../models';
 import {BehaviorSubject, combineLatest, Observable, Subscription, take} from 'rxjs';
 import {ObjectTokenAuthenticationConfig} from '../../models';
+import {OBJECT_TOKEN_AUTHENTICATION_CONFIGURATION_TEST_IDS} from '../../../../constants';
 
 @Component({
   selector: 'valtimo-object-token-authentication-configuration',
@@ -35,6 +36,7 @@ export class ObjectTokenAuthencationConfigurationComponent
   @Output() valid: EventEmitter<boolean> = new EventEmitter<boolean>();
   @Output() configuration: EventEmitter<ObjectTokenAuthenticationConfig> =
     new EventEmitter<ObjectTokenAuthenticationConfig>();
+  protected readonly testIds = OBJECT_TOKEN_AUTHENTICATION_CONFIGURATION_TEST_IDS;
 
   private saveSubscription!: Subscription;
 

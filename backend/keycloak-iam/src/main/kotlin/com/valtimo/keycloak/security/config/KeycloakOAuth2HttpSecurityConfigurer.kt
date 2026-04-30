@@ -25,7 +25,6 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity
 import org.springframework.security.core.authority.SimpleGrantedAuthority
 import org.springframework.security.oauth2.jwt.Jwt
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken
-import org.springframework.security.oauth2.server.resource.authentication.JwtGrantedAuthoritiesConverter
 
 class KeycloakOAuth2HttpSecurityConfigurer(
     private val keycloakService: KeycloakService
@@ -38,10 +37,8 @@ class KeycloakOAuth2HttpSecurityConfigurer(
     }
 
     override fun convert(source: Jwt): AbstractAuthenticationToken {
-        val defaultAuthorities = JwtGrantedAuthoritiesConverter().convert(source) ?: emptyList()
         val roleAuthorities = keycloakService.getRoles(source.claims).map { SimpleGrantedAuthority(it) }
         val email = keycloakService.getEmail(source.claims)
-        val authorities = defaultAuthorities + roleAuthorities
-        return JwtAuthenticationToken(source, authorities, email)
+        return JwtAuthenticationToken(source, roleAuthorities, email)
     }
 }

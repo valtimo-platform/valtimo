@@ -1,0 +1,94 @@
+<!--
+  ~ Copyright 2015-2025 Ritense BV, the Netherlands.
+  ~
+  ~ Licensed under EUPL, Version 1.2 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~ https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" basis,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<v-form
+  (valueChange)="formValueChange($event)"
+  *ngIf="{
+    disabled: disabled$ | async,
+    prefill: prefillConfiguration$ ? (prefillConfiguration$ | async) : null,
+    documentenApiPluginSelectItems: documentenApiPluginSelectItems$ | async,
+    pdfUniversalAccessibility: pdfUniversalAccessibility$ | async,
+  } as obs"
+>
+  <v-input
+    name="configurationTitle"
+    data-test-id="documentenApiPreviewConfigurationTitle"
+    [title]="'configurationTitle' | pluginTranslate: pluginId | async"
+    [margin]="true"
+    [disabled]="obs.disabled"
+    [defaultValue]="obs.prefill?.configurationTitle"
+    [required]="true"
+    [trim]="true"
+    [tooltip]="'configurationTitleTooltip' | pluginTranslate: pluginId | async"
+    placeholder="Documenten API Preview Plugin"
+  >
+  </v-input>
+
+  <v-input
+    name="pdfConversionUrl"
+    data-test-id="pdfConversionUrl"
+    [title]="'pdfConversionUrl' | pluginTranslate: pluginId | async"
+    [margin]="true"
+    [disabled]="obs.disabled"
+    [defaultValue]="obs.prefill?.pdfConversionUrl"
+    [required]="true"
+    [trim]="true"
+    [tooltip]="'pdfConversionUrlTooltip' | pluginTranslate: pluginId | async"
+    placeholder="https://gotenberg:3000/"
+  >
+  </v-input>
+
+  <v-select
+    [loading]="!obs.documentenApiPluginSelectItems"
+    [items]="obs.documentenApiPluginSelectItems"
+    [margin]="true"
+    name="documentenApiConfigurationId"
+    data-test-id="documentenPreviewDocumentenApiPluginConfiguration"
+    [title]="'documentenApiPluginConfiguration' | pluginTranslate: pluginId | async"
+    [disabled]="obs.disabled"
+    [defaultSelectionId]="obs.prefill?.documentenApiConfigurationId"
+    [required]="true"
+    [tooltip]="'documentenApiPluginConfigurationTooltip' | pluginTranslate: pluginId | async"
+  ></v-select>
+
+  <v-select
+    [loading]="!pdfArchiveMethods"
+    [items]="pdfArchiveMethods"
+    name="pdfArchiveMethod"
+    [title]="'pdfArchiveMethod' | pluginTranslate: pluginId | async"
+    [tooltip]="'pdfArchiveMethodTooltip' | pluginTranslate: pluginId | async"
+    [margin]="true"
+    [defaultSelectionId]="obs.prefill?.pdfArchiveMethod || 'none'"
+    [disabled]="obs.disabled"
+    [required]="true"
+  ></v-select>
+
+  <div class="input-toggle--small-margin">
+    <v-input-label
+      [title]="'pdfUniversalAccessibility' | pluginTranslate: pluginId | async"
+      [tooltip]="'pdfUniversalAccessibilityTooltip' | pluginTranslate: pluginId | async"
+    >
+    </v-input-label>
+
+    <cds-toggle
+      [checked]="obs.pdfUniversalAccessibility"
+      [disabled]="obs.disabled"
+      [onText]="'pdfUniversalAccessibility.toggleOn' | pluginTranslate: pluginId | async"
+      [offText]="'pdfUniversalAccessibility.toggleOff' | pluginTranslate: pluginId | async"
+      (checkedChange)="onPdfUniversalAccessibilityChange($event)"
+    ></cds-toggle>
+  </div>
+</v-form>

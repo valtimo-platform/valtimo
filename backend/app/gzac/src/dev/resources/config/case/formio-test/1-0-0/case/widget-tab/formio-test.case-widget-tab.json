@@ -1,0 +1,306 @@
+[
+    {
+        "key": "test-data",
+        "widgets": [
+            {
+                "key": "formio-test-fields",
+                "type": "fields",
+                "title": "Form.io Test Data",
+                "width": 1,
+                "highContrast": true,
+                "properties": {
+                    "columns": [
+                        [
+                            {
+                                "key": "textfield",
+                                "title": "Text Field",
+                                "value": "doc:textfield"
+                            },
+                            {
+                                "key": "number",
+                                "title": "Number",
+                                "value": "doc:number",
+                                "displayProperties": {
+                                    "type": "number"
+                                }
+                            },
+                            {
+                                "key": "checkbox",
+                                "title": "Checkbox",
+                                "value": "doc:checkbox",
+                                "displayProperties": {
+                                    "type": "boolean"
+                                }
+                            },
+                            {
+                                "key": "iban",
+                                "title": "IBAN",
+                                "value": "doc:iban"
+                            },
+                            {
+                                "key": "signature",
+                                "title": "Signature",
+                                "value": "doc:signature",
+                                "displayProperties": {
+                                    "type": "text",
+                                    "ellipsisCharacterLimit": 32,
+                                    "hideWhenEmpty": false
+                                }
+                            },
+                            {
+                                "key": "col1Text",
+                                "title": "Col 1 Text",
+                                "value": "doc:col1Text"
+                            },
+                            {
+                                "key": "col2Text",
+                                "title": "Col 2 Text",
+                                "value": "doc:col2Text"
+                            },
+                            {
+                                "key": "field1",
+                                "title": "Field 1",
+                                "value": "doc:field1"
+                            },
+                            {
+                                "key": "panelField",
+                                "title": "Panel Field",
+                                "value": "doc:panelField"
+                            },
+                            {
+                                "key": "r1c1",
+                                "title": "R1 C1",
+                                "value": "doc:r1c1"
+                            },
+                            {
+                                "key": "r1c2",
+                                "title": "R1 C2",
+                                "value": "doc:r1c2"
+                            },
+                            {
+                                "key": "r2c1",
+                                "title": "R2 C1",
+                                "value": "doc:r2c1"
+                            },
+                            {
+                                "key": "r2c2",
+                                "title": "R2 C2",
+                                "value": "doc:r2c2"
+                            },
+                            {
+                                "key": "tab1Field",
+                                "title": "Tab 1 Field",
+                                "value": "doc:tab1Field"
+                            },
+                            {
+                                "key": "tab2Field",
+                                "title": "Tab 2 Field",
+                                "value": "doc:tab2Field"
+                            },
+                            {
+                                "key": "wellField",
+                                "title": "Well Field",
+                                "value": "doc:wellField"
+                            }
+                        ]
+                    ]
+                }
+            },
+            {
+                "key": "current-user-fields",
+                "type": "fields",
+                "title": "Current User",
+                "width": 1,
+                "properties": {
+                    "columns": [
+                        [
+                            {
+                                "key": "id",
+                                "title": "ID",
+                                "value": "doc:currentUser.id"
+                            },
+                            {
+                                "key": "email",
+                                "title": "Email",
+                                "value": "doc:currentUser.email"
+                            },
+                            {
+                                "key": "username",
+                                "title": "Username",
+                                "value": "doc:currentUser.username"
+                            },
+                            {
+                                "key": "firstName",
+                                "title": "First Name",
+                                "value": "doc:currentUser.firstName"
+                            },
+                            {
+                                "key": "lastName",
+                                "title": "Last Name",
+                                "value": "doc:currentUser.lastName"
+                            },
+                            {
+                                "key": "emailVerified",
+                                "title": "Email Verified",
+                                "value": "doc:currentUser.emailVerified",
+                                "displayProperties": {
+                                    "type": "boolean"
+                                }
+                            }
+                        ]
+                    ]
+                }
+            },
+            {
+                "key": "selectboxes-fields",
+                "type": "fields",
+                "title": "Select Boxes",
+                "width": 1,
+                "properties": {
+                    "columns": [
+                        [
+                            {
+                                "key": "option1",
+                                "title": "Option 1",
+                                "value": "doc:selectboxes.option1",
+                                "displayProperties": {
+                                    "type": "boolean"
+                                }
+                            },
+                            {
+                                "key": "option2",
+                                "title": "Option 2",
+                                "value": "doc:selectboxes.option2",
+                                "displayProperties": {
+                                    "type": "boolean"
+                                }
+                            }
+                        ]
+                    ]
+                }
+            },
+            {
+                "key": "survey-fields",
+                "type": "fields",
+                "title": "Survey",
+                "width": 1,
+                "properties": {
+                    "columns": [
+                        [
+                            {
+                                "key": "q1",
+                                "title": "Question 1",
+                                "value": "doc:survey.q1"
+                            }
+                        ]
+                    ]
+                }
+            },
+            {
+                "key": "container-fields",
+                "type": "fields",
+                "title": "Container",
+                "width": 1,
+                "properties": {
+                    "columns": [
+                        [
+                            {
+                                "key": "containerField",
+                                "title": "Container Field",
+                                "value": "doc:container.containerField"
+                            }
+                        ]
+                    ]
+                }
+            },
+            {
+                "key": "files-table",
+                "type": "table",
+                "title": "Files",
+                "width": 3,
+                "properties": {
+                    "collection": "doc:files",
+                    "defaultPageSize": 5,
+                    "columns": [
+                        {
+                            "key": "fileId",
+                            "title": "File ID",
+                            "value": "fileId"
+                        },
+                        {
+                            "key": "fileName",
+                            "title": "File Name",
+                            "value": "fileName"
+                        },
+                        {
+                            "key": "sizeInBytes",
+                            "title": "Size (bytes)",
+                            "value": "sizeInBytes"
+                        }
+                    ]
+                }
+            },
+            {
+                "key": "documenten-api-files-table",
+                "type": "table",
+                "title": "Documenten API Files",
+                "width": 3,
+                "properties": {
+                    "collection": "doc:documentenApiFiles",
+                    "defaultPageSize": 5,
+                    "columns": [
+                        {
+                            "key": "id",
+                            "title": "ID",
+                            "value": "id"
+                        },
+                        {
+                            "key": "filename",
+                            "title": "Filename",
+                            "value": "filename"
+                        },
+                        {
+                            "key": "sizeInBytes",
+                            "title": "Size (bytes)",
+                            "value": "sizeInBytes"
+                        }
+                    ]
+                }
+            },
+            {
+                "key": "datagrid-table",
+                "type": "table",
+                "title": "Data Grid",
+                "width": 1,
+                "properties": {
+                    "collection": "doc:datagrid",
+                    "defaultPageSize": 5,
+                    "columns": [
+                        {
+                            "key": "col1",
+                            "title": "Column 1",
+                            "value": "col1"
+                        }
+                    ]
+                }
+            },
+            {
+                "key": "editgrid-table",
+                "type": "table",
+                "title": "Edit Grid",
+                "width": 1,
+                "properties": {
+                    "collection": "doc:editgrid",
+                    "defaultPageSize": 5,
+                    "columns": [
+                        {
+                            "key": "field",
+                            "title": "Field",
+                            "value": "field"
+                        }
+                    ]
+                }
+            }
+        ]
+    }
+]

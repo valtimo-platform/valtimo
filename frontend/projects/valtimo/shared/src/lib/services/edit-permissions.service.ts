@@ -21,6 +21,7 @@ import {combineLatest, map, Observable, of} from 'rxjs';
 import {EnvironmentService} from './environment.service';
 import {DraftVersionService} from './draft-version.service';
 import {Injectable} from '@angular/core';
+import {BuildingBlockManagementParams, CaseManagementParams} from '../models';
 
 @Injectable({
   providedIn: 'root',
@@ -46,14 +47,19 @@ export class EditPermissionsService extends BaseApiService {
   }
 
   public hasPermissionsToEditBasedOnContext(
-    caseDefinitionKey: string,
-    caseDefinitionVersionTag: string,
+    params: CaseManagementParams | BuildingBlockManagementParams,
     context: string
   ): Observable<boolean> {
     if (context === 'case') {
-      return this.hasEditPermissions(caseDefinitionKey, caseDefinitionVersionTag);
+      const caseManagementParams = params as CaseManagementParams;
+      return this.hasEditPermissions(
+        caseManagementParams.caseDefinitionKey,
+        caseManagementParams.caseDefinitionVersionTag
+      );
     } else if (context === 'independent') {
       return this.environmentService.canUpdateGlobalConfiguration();
+    } else if (context === 'buildingBlock') {
+      return of(true);
     }
     return of(false);
   }

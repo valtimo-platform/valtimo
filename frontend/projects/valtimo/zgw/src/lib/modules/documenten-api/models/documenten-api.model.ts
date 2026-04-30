@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -34,6 +34,9 @@ interface DocumentenApiRelatedFile extends RelatedFile {
   versie?: number;
   vertrouwelijkheidaanduiding?: string;
   tags?: {content: string}[];
+  canView?: boolean;
+  canModify?: boolean;
+  canDelete?: boolean;
 }
 
 enum DOCUMENTEN_COLUMN_KEYS {
@@ -56,4 +59,8 @@ enum DOCUMENTEN_COLUMN_KEYS {
   TAGS = 'tags',
 }
 
-export {DocumentenApiRelatedFile, DOCUMENTEN_COLUMN_KEYS};
+interface DocumentenApiFilePermissions {
+  [fileId: string]: {canView: boolean; canModify: boolean; canDelete: boolean};
+}
+
+export {DocumentenApiRelatedFile, DOCUMENTEN_COLUMN_KEYS, DocumentenApiFilePermissions};

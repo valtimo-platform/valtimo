@@ -18,13 +18,19 @@ package com.ritense.processdocument.web
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.ritense.authorization.AuthorizationContext
+import com.ritense.buildingblock.domain.definition.BuildingBlockDefinition
+import com.ritense.buildingblock.domain.instance.BuildingBlockInstance
+import com.ritense.buildingblock.repository.BuildingBlockDefinitionRepository
+import com.ritense.buildingblock.repository.BuildingBlockInstanceRepository
 import com.ritense.case.domain.ColumnDefaultSort
 import com.ritense.case.domain.TaskListColumn
 import com.ritense.case.domain.TaskListColumnId
 import com.ritense.case.repository.TaskListColumnRepository
 import com.ritense.document.domain.impl.request.NewDocumentRequest
+import com.ritense.document.service.DocumentService
 import com.ritense.processdocument.BaseIntegrationTest
 import com.ritense.processdocument.domain.impl.request.NewDocumentAndStartProcessRequest
+import com.ritense.processdocument.service.ProcessDocumentAssociationService
 import com.ritense.processdocument.service.SEARCH_FIELD_OWNER_TYPE
 import com.ritense.processdocument.tasksearch.SearchWithConfigRequest
 import com.ritense.processdocument.web.request.TaskListSearchDto
@@ -37,6 +43,7 @@ import com.ritense.search.domain.SearchFieldMatchType
 import com.ritense.search.service.SearchFieldV2Service
 import com.ritense.search.web.rest.dto.SearchFieldV2Dto
 import com.ritense.valtimo.contract.authentication.AuthoritiesConstants
+import com.ritense.valtimo.contract.buildingblock.BuildingBlockDefinitionId
 import com.ritense.valtimo.service.OperatonTaskService
 import org.assertj.core.api.Assertions.assertThat
 import org.hamcrest.Matchers.hasItems
@@ -82,6 +89,18 @@ class TaskListResourceIntTest : BaseIntegrationTest() {
 
     @Autowired
     lateinit var searchFieldV2Service: SearchFieldV2Service
+
+    @Autowired
+    lateinit var documentService: DocumentService
+
+    @Autowired
+    lateinit var processDocumentAssociationService: ProcessDocumentAssociationService
+
+    @Autowired
+    lateinit var buildingBlockDefinitionRepository: BuildingBlockDefinitionRepository
+
+    @Autowired
+    lateinit var buildingBlockInstanceRepository: BuildingBlockInstanceRepository
 
     @BeforeEach
     fun setUp() {
@@ -311,6 +330,74 @@ class TaskListResourceIntTest : BaseIntegrationTest() {
             .andExpect(jsonPath("$.totalElements").value(1))
             .andExpect(jsonPath("$.sort[0].property").value("doc:last-name"))
             .andExpect(jsonPath("$.sort[0].direction").value("ASC"))
+    }
+
+    @Test
+    @WithMockUser(username = "user@ritense.com", authorities = [AuthoritiesConstants.USER])
+    @Transactional
+    fun `should resolve building block task business key to case document id in unfiltered view`() {
+        val caseDocument = AuthorizationContext.runWithoutAuthorization {
+            documentService.createDocument(
+                NewDocumentRequest(
+                    "house",
+                    "house",
+                    "1.0.0",
+                    objectMapper.readTree("""{"street": "Main St", "houseNumber": 1}""")
+                )
+            ).resultingDocument().orElseThrow()
+        }
+
+        val bbDocument = AuthorizationContext.runWithoutAuthorization {
+            documentService.createDocument(
+                NewDocumentRequest(
+                    "house",
+                    "house",
+                    "1.0.0",
+                    objectMapper.readTree("""{"street": "BB St", "houseNumber": 2}""")
+                )
+            ).resultingDocument().orElseThrow()
+        }
+
+        val processInstance = runtimeService.startProcessInstanceByKey(
+            "bb-parent-process",
+            caseDocument.id().toString(),
+            mapOf("bbDocumentId" to bbDocument.id().id.toString())
+        )
+        AuthorizationContext.runWithoutAuthorization {
+            processDocumentAssociationService.createProcessDocumentInstance(
+                processInstance.id,
+                caseDocument.id().id,
+                "bb parent process"
+            )
+        }
+
+        val bbDefinition = buildingBlockDefinitionRepository.save(
+            BuildingBlockDefinition(
+                id = BuildingBlockDefinitionId("test-bb-int", "1.0.0"),
+                name = "Test BB Int"
+            )
+        )
+        buildingBlockInstanceRepository.save(
+            BuildingBlockInstance(
+                documentId = bbDocument.id().id,
+                caseDocumentId = caseDocument.id().id,
+                activityId = "bb-call-activity",
+                definition = bbDefinition
+            )
+        )
+
+        mockMvc.perform(
+            post("/api/v3/task")
+                .param("filter", OperatonTaskService.TaskFilter.ALL.toString())
+                .content(objectMapper.writeValueAsString(TaskListSearchDto(null)))
+                .characterEncoding(StandardCharsets.UTF_8)
+                .contentType(MediaType.APPLICATION_JSON_VALUE)
+        )
+            .andDo(MockMvcResultHandlers.print())
+            .andExpect(status().isOk)
+            .andExpect(jsonPath("$.content").isArray)
+            .andExpect(jsonPath("$.content[?(@.businessKey == '${bbDocument.id().id}')]").exists())
+            .andExpect(jsonPath("$.content[?(@.caseDocumentId == '${caseDocument.id().id}')]").exists())
     }
 
     private fun startNewProcessesWithTestData(): List<Map<String, Any?>> {

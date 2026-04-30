@@ -34,6 +34,9 @@ public class DocumentAssigneeChangedEvent extends AuditMetaData
 
     private String assigneeName;
     private UUID documentId;
+    private String assignedTeamTitle;
+    private String formerAssigneeId;
+    private String formerTeamKey;
 
     @JsonCreator
     public DocumentAssigneeChangedEvent(UUID id,
@@ -41,12 +44,36 @@ public class DocumentAssigneeChangedEvent extends AuditMetaData
                                         LocalDateTime occurredOn,
                                         String user,
                                         UUID documentId,
-                                        String assigneeName) {
+                                        String assigneeName,
+                                        String assignedTeamTitle,
+                                        String formerAssigneeId,
+                                        String formerTeamKey) {
         super(id, origin, occurredOn, user);
         assertArgumentNotNull(documentId, "documentId is required");
-        assertArgumentNotNull(assigneeName, "assignee name is required");
         this.documentId = documentId;
         this.assigneeName = assigneeName;
+        this.assignedTeamTitle = assignedTeamTitle;
+        this.formerAssigneeId = formerAssigneeId;
+        this.formerTeamKey = formerTeamKey;
+    }
+
+    public DocumentAssigneeChangedEvent(UUID id,
+                                        String origin,
+                                        LocalDateTime occurredOn,
+                                        String user,
+                                        UUID documentId,
+                                        String assigneeName,
+                                        String assignedTeamTitle) {
+        this(id, origin, occurredOn, user, documentId, assigneeName, assignedTeamTitle, null, null);
+    }
+
+    public DocumentAssigneeChangedEvent(UUID id,
+                                        String origin,
+                                        LocalDateTime occurredOn,
+                                        String user,
+                                        UUID documentId,
+                                        String assigneeName) {
+        this(id, origin, occurredOn, user, documentId, assigneeName, null, null, null);
     }
 
     public void setDocumentId(UUID documentId) {
@@ -72,6 +99,27 @@ public class DocumentAssigneeChangedEvent extends AuditMetaData
     }
 
 
+    @JsonProperty
+    @JsonView(AuditView.Public.class)
+    public String getAssignedTeamTitle() {
+        return assignedTeamTitle;
+    }
+
+    public void setAssignedTeamTitle(String assignedTeamTitle) {
+        this.assignedTeamTitle = assignedTeamTitle;
+    }
+
+    @JsonProperty
+    @JsonView(AuditView.Public.class)
+    public String getFormerAssigneeId() {
+        return formerAssigneeId;
+    }
+
+    @JsonProperty
+    @JsonView(AuditView.Public.class)
+    public String getFormerTeamKey() {
+        return formerTeamKey;
+    }
 
     @Override
     public boolean equals(Object o) {
@@ -87,11 +135,21 @@ public class DocumentAssigneeChangedEvent extends AuditMetaData
 
         DocumentAssigneeChangedEvent that = (DocumentAssigneeChangedEvent) o;
         return Objects.equals(assigneeName, that.assigneeName)
-            && Objects.equals(documentId, that.documentId);
+            && Objects.equals(documentId, that.documentId)
+            && Objects.equals(assignedTeamTitle, that.assignedTeamTitle)
+            && Objects.equals(formerAssigneeId, that.formerAssigneeId)
+            && Objects.equals(formerTeamKey, that.formerTeamKey);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(super.hashCode(), assigneeName, documentId);
+        return Objects.hash(
+            super.hashCode(),
+            assigneeName,
+            documentId,
+            assignedTeamTitle,
+            formerAssigneeId,
+            formerTeamKey
+        );
     }
 }

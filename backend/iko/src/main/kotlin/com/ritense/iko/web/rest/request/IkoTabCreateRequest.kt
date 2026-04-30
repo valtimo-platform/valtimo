@@ -16,7 +16,18 @@
 
 package com.ritense.iko.web.rest.request
 
+import com.ritense.tab.domain.Tab
+
 data class IkoTabCreateRequest(
     val title: String?,
     val type: String,
-)
+    val properties: Map<String, Any?> = emptyMap(),
+) {
+    fun toEntity(key: String) = Tab(
+        key = key,
+        title = title,
+        order = 0,
+        type = type,
+        properties = properties,
+    )
+}

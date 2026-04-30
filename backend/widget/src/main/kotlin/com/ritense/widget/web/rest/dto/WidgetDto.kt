@@ -20,6 +20,7 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo
 import com.ritense.valtimo.contract.conditions.Condition
 import com.ritense.widget.domain.Widget
 import com.ritense.widget.domain.WidgetAction
+import com.ritense.widget.domain.WidgetColor
 import jakarta.validation.constraints.Max
 import jakarta.validation.constraints.Min
 import jakarta.validation.constraints.NotBlank
@@ -31,6 +32,7 @@ interface WidgetDto {
     val key: String
     val title: String
     val icon: String?
+    val color: WidgetColor?
 
     @get:Min(1)
     @get:Max(4)

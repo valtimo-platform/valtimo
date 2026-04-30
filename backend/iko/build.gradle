@@ -34,17 +34,16 @@ dockerCompose {
 }
 
 dependencies {
-    implementation project(':authorization')
-    implementation project(':case')
-    implementation project(':contract')
-    implementation project(':core')
-    implementation project(':exporter')
-    implementation project(':importer')
-    implementation project(':plugin')
-    implementation project(':process-document')
-    implementation project(':search')
-    implementation project(':value-resolver')
-    implementation project(':widget')
+    implementation project(':backend:authorization')
+    implementation project(':backend:case')
+    implementation project(':backend:contract')
+    implementation project(':backend:core')
+    implementation project(':backend:exporter')
+    implementation project(':backend:importer')
+    implementation project(':backend:process-document')
+    implementation project(':backend:search')
+    implementation project(':backend:value-resolver')
+    implementation project(':backend:widget')
 
     implementation "org.springframework.boot:spring-boot-starter-data-jpa"
     implementation "org.springframework.boot:spring-boot-starter"
@@ -66,8 +65,9 @@ dependencies {
     implementation "com.github.erosb:everit-json-schema:${everitJsonSchemaVersion}"
     implementation "org.springframework:spring-expression"
 
-    testImplementation project(':resource')
-    testImplementation project(':test-utils-common')
+    testImplementation project(':backend:building-block')
+    testImplementation project(':backend:resource')
+    testImplementation project(':backend:test-utils-common')
 
     testImplementation "org.jetbrains.kotlin:kotlin-test"
     testImplementation "org.junit.jupiter:junit-jupiter"

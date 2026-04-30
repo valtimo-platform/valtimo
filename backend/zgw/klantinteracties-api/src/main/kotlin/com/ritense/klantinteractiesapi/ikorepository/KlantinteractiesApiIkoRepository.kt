@@ -85,14 +85,6 @@ class KlantinteractiesApiIkoRepository(
         return PageImpl(jsonPartijenList.toList(), pageable, partijenPage.count.toLong())
     }
 
-    override fun findById(config: Map<String, Any?>, id: Any): JsonNode {
-        val plugin = getPlugin(config)
-        val partij = getPlugin(config).getPartij(
-            partijUrl = plugin.getPartijUrl(UUID.fromString(id.toString())),
-        )
-        return objectMapper.valueToTree(partij)
-    }
-
     private fun getPlugin(config: Map<String, Any?>): KlantinteractiesApiPlugin {
         return pluginService.createInstance(config[PLUGIN_CONFIGURATION].toString())
     }

@@ -166,9 +166,6 @@ export class IkoManagementListModalComponent implements OnInit, OnDestroy {
     ViewType.DATE,
     ViewType.BOOLEAN,
     ViewType.ENUM,
-    ViewType.ARRAY_COUNT,
-    ViewType.UNDERSCORES_TO_SPACES,
-    ViewType.TAGS,
     ViewType.HIDDEN,
   ];
 

@@ -31,6 +31,14 @@ Permissions define whether a user with a specific role can access or act on the 
 
 Multiple permissions are evaluated as `OR`: The outcome of an authorization request is `true` when **any** of the permissions passes **all** the configured checks. When permissions are used to filter data from a list query, the result will contain every entry that passes the checks of **any** permission.
 
+Valtimo supports access control on several types of resources:
+- [Cases](../case/#access-control)
+- [Documents](../case/document-definition.md#access-control)
+- [Tasks](../case/tasks/#access-control)
+- [Teams](../teams/README.md)
+- [Users](../keycloak/access-control.md)
+- [ZGW Documents](../case/zgw/zgw-documents/access-control.md)
+
 When selecting applicable permissions for evaluation, the following checks are performed:
 
 * The user has the role that is configured for the permission.
@@ -42,7 +50,7 @@ When selecting applicable permissions for evaluation, the following checks are p
 
 Extra conditions can be applied to a permission to tighten the access to resources. These conditions are optional. Conditions are evaluated as `AND`, which means **all** configured conditions on a permission should evaluate to `true` to pass the permission checks.
 
-Conditions can also be nested by using a container. This allows you to join another resource to the root resource, which you can add conditions to as well. An example of this can be found [here](configuring-conditions.md).
+Conditions can also be nested by using a container. This allows you to join another resource to the root resource, which you can add conditions to as well. An example of this can be found in the [configuring conditions documentation](configuring-conditions.md).
 
 ## When is access control applied?
 

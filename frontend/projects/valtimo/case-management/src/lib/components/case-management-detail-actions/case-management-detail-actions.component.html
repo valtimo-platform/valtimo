@@ -1,5 +1,5 @@
 <!--
-  ~ Copyright 2015-2025 Ritense BV, the Netherlands.
+  ~ Copyright 2015-2026 Ritense BV, the Netherlands.
   ~
   ~ Licensed under EUPL, Version 1.2 (the "License");
   ~ you may not use this file except in compliance with the License.
@@ -23,6 +23,8 @@
     selectedDocumentDefinition: selectedDocumentDefinition$ | async,
     selectedDocumentDefinitionIsReadOnly: selectedDocumentDefinitionIsReadOnly$ | async,
     selectedVersionIsGloballyActive: selectedVersionIsGloballyActive$ | async,
+    setActiveDisabled: setActiveDisabled$ | async,
+    hasUnresolvedConfigurationIssues: hasUnresolvedConfigurationIssues$ | async,
     compactMode: compactMode$ | async,
   } as obs"
   [ngClass]="{'--compact': obs.compactMode}"
@@ -43,6 +45,7 @@
 <ng-template #versionSelection let-obs="obs">
   <cds-dropdown
     class="version-selector"
+    [attr.data-test-id]="testIds.versionSelectDropdown"
     selectionFeedback="fixed"
     [displayValue]="versionItemTemplate"
     [size]="obs.compactMode ? 'sm' : 'md'"
@@ -59,18 +62,26 @@
 </ng-template>
 
 <ng-template #versionItemTemplate let-item="item">
-  <ng-container *ngIf="item?.isAllVersionsOption; else regularVersionTemplate">
+  <div
+    [attr.data-test-id]="item?.['data-test-id']"
+    *ngIf="item?.isAllVersionsOption; else regularVersionTemplate"
+  >
     <span>{{ item?.content }}</span>
     <svg cdsIcon="version" size="16"></svg>
-  </ng-container>
+  </div>
 
   <ng-template #regularVersionTemplate>
-    <div class="version-selector-dropdown-template">
+    <div [attr.data-test-id]="item?.['data-test-id']" class="version-selector-dropdown-template">
       <cds-tag class="cds-tag--no-margin" [type]="item?.tagType" [title]="item?.content">
         {{ item?.draft ? 'DRAFT: ' + item?.content : item?.content }}
       </cds-tag>
 
-      <cds-tag *ngIf="item?.active" class="cds-tag--no-margin" type="high-contrast">
+      <cds-tag
+        *ngIf="item?.active"
+        [attr.data-test-id]="testIds.globallyActiveCaseVersion"
+        class="cds-tag--no-margin"
+        type="high-contrast"
+      >
         {{ 'caseManagement.globallyActive' | translate }}
       </cds-tag>
     </div>
@@ -80,6 +91,7 @@
 <ng-template #deploymentButton let-obs="obs">
   <button
     cdsButton="secondary"
+    [attr.data-test-id]="testIds.versionManagementButton"
     [size]="obs.compactMode ? 'sm' : 'md'"
     (click)="redirectToDeployment()"
   >
@@ -90,39 +102,38 @@
 </ng-template>
 
 <ng-template #exportMenu let-obs="obs">
-  <cds-overflow-menu
-    valtimoCdsOverflowButton
-    [width]="250"
-    [customTrigger]="customTrigger"
-    [offset]="{y: 48, x: 37}"
-    class="overflow-button"
-  >
-    <cds-overflow-menu-option
-      [id]="'exportDocumentDefinition'"
+  <v-overflow-menu [menuWidth]="250" placement="bottom-end" class="overflow-button">
+    <button
+      overflowTrigger
+      cdsButton="tertiary"
+      [attr.data-test-id]="testIds.moreButton"
+      [size]="(compactMode$ | async) ? 'sm' : 'md'"
+    >
+      {{ 'caseManagement.more' | translate }}
+
+      <svg
+        class="cds--btn__icon case-management-overflow-icon"
+        cdsIcon="overflow-menu--vertical"
+        size="16"
+      ></svg>
+    </button>
+
+    <v-overflow-menu-option
+      [attr.data-test-id]="testIds.exportButton"
+      optionId="exportDocumentDefinition"
       [disabled]="obs.exporting || obs.loadingVersion"
       (selected)="export()"
       >{{ 'caseManagement.export' | translate: {value: documentDefinitionTitle} }}
-    </cds-overflow-menu-option>
+    </v-overflow-menu-option>
 
-    <cds-overflow-menu-option
-      [id]="'setGlobalActiveVersion'"
-      [disabled]="obs.selectedVersionIsGloballyActive"
+    <v-overflow-menu-option
+      [attr.data-test-id]="testIds.setActiveVersionButton"
+      optionId="setGlobalActiveVersion"
+      [disabled]="obs.setActiveDisabled"
       (selected)="openGlobalActiveVersionModal()"
       >{{ 'caseManagement.setGlobalActiveVersion' | translate }}
-    </cds-overflow-menu-option>
-  </cds-overflow-menu>
-</ng-template>
-
-<ng-template #customTrigger>
-  <button cdsButton="tertiary" [size]="(compactMode$ | async) ? 'sm' : 'md'">
-    {{ 'caseManagement.more' | translate }}
-
-    <svg
-      class="cds--btn__icon case-management-overflow-icon"
-      cdsIcon="overflow-menu--vertical"
-      size="16"
-    ></svg>
-  </button>
+    </v-overflow-menu-option>
+  </v-overflow-menu>
 </ng-template>
 
 <ng-template #exportingMessage>

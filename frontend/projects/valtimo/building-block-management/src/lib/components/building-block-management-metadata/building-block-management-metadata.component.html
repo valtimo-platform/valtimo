@@ -1,0 +1,86 @@
+<!--
+  ~ Copyright 2015-2025 Ritense BV, the Netherlands.
+  ~
+  ~ Licensed under EUPL, Version 1.2 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~ https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" basis,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<form class="building-block-management-metadata" [formGroup]="formGroup" [cdsLayer]="1">
+  <h4 class="building-block-management-metadata__title">
+    {{ 'buildingBlockManagement.metadata.title' | translate }}
+  </h4>
+
+  <div class="cds--text-input__field-wrapper">
+    <cds-label [disabled]="formGroup.disabled" [invalid]="name.touched && name.invalid">
+      <span class="label-with-tooltip select-label">
+        {{ 'buildingBlockManagement.createDefinition.name' | translate }}
+
+        <v-tooltip-icon
+          [tooltip]="'buildingBlockManagement.createDefinition.nameTooltip' | translate"
+          [disabled]="formGroup.disabled"
+        ></v-tooltip-icon>
+      </span>
+
+      <input
+        formControlName="name"
+        cdsText
+        placeholder="{{ 'buildingBlockManagement.createDefinition.namePlaceholder' | translate }}"
+      />
+    </cds-label>
+  </div>
+
+  <div class="cds--text-input__field-wrapper">
+    <cds-label [disabled]="formGroup.disabled">
+      <span class="label-with-tooltip select-label">
+        {{ 'buildingBlockManagement.createDefinition.keyTitle' | translate }}
+      </span>
+
+      <input formControlName="key" cdsText valtimoReadOnly [isReadOnly]="true" />
+    </cds-label>
+  </div>
+
+  <div class="cds--text-input__field-wrapper">
+    <cds-label
+      [disabled]="formGroup.disabled"
+      [invalid]="description.touched && description.invalid"
+    >
+      <span class="label-with-tooltip select-label">
+        {{ 'buildingBlockManagement.createDefinition.description' | translate }}
+
+        <v-tooltip-icon
+          [tooltip]="'buildingBlockManagement.createDefinition.descriptionTooltip' | translate"
+          [disabled]="formGroup.disabled"
+        ></v-tooltip-icon>
+      </span>
+
+      <textarea
+        cdsTextArea
+        formControlName="description"
+        placeholder="{{
+          'buildingBlockManagement.createDefinition.descriptionPlaceholder' | translate
+        }}"
+        [rows]="3"
+        [cols]="150"
+      ></textarea>
+    </cds-label>
+  </div>
+
+  <div class="building-block-management-metadata__buttons">
+    <button
+      cdsButton="primary"
+      [disabled]="formGroup.disabled || formGroup.invalid || formGroup.pristine"
+      (click)="onSave()"
+    >
+      {{ 'interface.save' | translate }}
+    </button>
+  </div>
+</form>

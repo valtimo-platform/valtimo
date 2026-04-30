@@ -48,6 +48,7 @@ import {
   take,
   tap,
 } from 'rxjs';
+import {FORM_MANAGEMENT_LIST_TEST_IDS} from '../../constants';
 import {FormDefinition} from '../../models';
 import {FormManagementService} from '../../services';
 import {getContextObservable} from '../../utils';
@@ -86,6 +87,8 @@ export class FormManagementListComponent {
   public readonly loading$ = new BehaviorSubject<boolean>(true);
   public readonly searchTerm$ = new BehaviorSubject<string>('');
 
+  protected readonly testIds = FORM_MANAGEMENT_LIST_TEST_IDS;
+
   public readonly context$ = getContextObservable(this.route);
 
   public readonly caseManagementRouteParams$ = this.context$.pipe(
@@ -98,11 +101,7 @@ export class FormManagementListComponent {
     this.context$,
   ]).pipe(
     switchMap(([params, context]) =>
-      this.editPermissionsService.hasPermissionsToEditBasedOnContext(
-        params?.caseDefinitionKey,
-        params?.caseDefinitionVersionTag,
-        context
-      )
+      this.editPermissionsService.hasPermissionsToEditBasedOnContext(params, context)
     )
   );
 

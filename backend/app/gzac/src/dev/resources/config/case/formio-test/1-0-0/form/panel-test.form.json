@@ -1,0 +1,26 @@
+{
+    "display": "form",
+    "components": [
+        {
+            "title": "Panel",
+            "key": "panel",
+            "type": "panel",
+            "components": [
+                {
+                    "label": "Panel field",
+                    "key": "panelField",
+                    "type": "textfield",
+                    "input": true
+                }
+            ],
+            "input": false
+        },
+        {
+            "type": "button",
+            "label": "Submit",
+            "key": "submit",
+            "disableOnInvalid": true,
+            "input": true
+        }
+    ]
+}

@@ -29,10 +29,10 @@
 
   <div
     cdsToggletipContent
-    [attr.data-carbon-theme]="toggletipTheme$ | async"
     class="process-link-configuration-select"
   >
     <cds-dropdown
+      [attr.data-carbon-theme]="toggletipTheme$ | async"
       [label]="'processLinkConfiguration.process' | translate"
       [placeholder]="'processLinkConfiguration.selectProcess' | translate"
       (selected)="processSelected($event)"
@@ -46,6 +46,7 @@
     </cds-dropdown>
 
     <cds-dropdown
+      [attr.data-carbon-theme]="toggletipTheme$ | async"
       [label]="'processLinkConfiguration.version' | translate"
       [placeholder]="'processLinkConfiguration.selectVersion' | translate"
       [disabled]="!process.value"
@@ -60,6 +61,7 @@
     </cds-dropdown>
 
     <cds-dropdown
+      [attr.data-carbon-theme]="toggletipTheme$ | async"
       [label]="'processLinkConfiguration.activity' | translate"
       [placeholder]="'processLinkConfiguration.selectActivity' | translate"
       [disabled]="!process.value || !version.value"
@@ -73,7 +75,7 @@
       ></cds-dropdown-list>
     </cds-dropdown>
 
-    <button cdsButton [disabled]="!importPluginForm.valid" (click)="onSubmit()" [cdsLayer]="1">
+    <button cdsButton [attr.data-carbon-theme]="toggletipTheme$ | async" [disabled]="!importPluginForm.valid" (click)="onSubmit()" [cdsLayer]="1">
       {{ 'processLinkConfiguration.importConfiguration' | translate }}
     </button>
   </div>

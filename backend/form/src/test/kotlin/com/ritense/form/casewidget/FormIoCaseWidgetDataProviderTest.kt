@@ -22,6 +22,7 @@ import com.ritense.form.service.FormDefinitionService
 import com.ritense.form.service.PrefillFormService
 import com.ritense.valtimo.contract.json.MapperSingleton
 import com.ritense.valueresolver.ValueResolverService
+import com.ritense.widget.domain.WidgetColor
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
@@ -77,7 +78,17 @@ class FormIoCaseWidgetDataProviderTest(
 
         val data = dataProvider.getData(
             documentId, FormIoCaseWidget(
-                CaseWidgetTabWidgetId("k"), "t", "mdi-home", 0, 4, false, false, emptyList(), emptyList(), FormIoWidgetProperties(
+                CaseWidgetTabWidgetId("k"),
+                "t",
+                "mdi-home",
+                WidgetColor.WHITE,
+                0,
+                4,
+                false,
+                false,
+                emptyList(),
+                emptyList(),
+                FormIoWidgetProperties(
                     formDefinitionName
                 )
             ), Pageable.unpaged(), mock(defaultAnswer = Answers.RETURNS_DEEP_STUBS)
@@ -95,7 +106,17 @@ class FormIoCaseWidgetDataProviderTest(
 
         val data = dataProvider.getData(
             documentId, FormIoCaseWidget(
-                CaseWidgetTabWidgetId("k"), "t", "mdi-home", 0, 4, false, false, emptyList(), emptyList(), FormIoWidgetProperties(
+                CaseWidgetTabWidgetId("k"),
+                "t",
+                "mdi-home",
+                WidgetColor.WHITE,
+                0,
+                4,
+                false,
+                false,
+                emptyList(),
+                emptyList(),
+                FormIoWidgetProperties(
                     formDefinitionName
                 )
             ), Pageable.unpaged(), mock(defaultAnswer = Answers.RETURNS_DEEP_STUBS)

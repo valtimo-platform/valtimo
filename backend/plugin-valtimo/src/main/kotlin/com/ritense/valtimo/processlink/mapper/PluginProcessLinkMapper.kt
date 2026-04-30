@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,7 +20,10 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import com.ritense.logging.LoggableResource
 import com.ritense.logging.withLoggingContext
 import com.ritense.plugin.domain.PluginConfigurationId
+import com.ritense.plugin.domain.PluginConfigurationReference
+import com.ritense.plugin.domain.PluginConfigurationReferenceType
 import com.ritense.plugin.domain.PluginProcessLink
+import com.ritense.plugin.repository.PluginConfigurationRepository
 import com.ritense.plugin.service.PluginService.Companion.PROCESS_LINK_TYPE_PLUGIN
 import com.ritense.plugin.web.rest.request.PluginProcessLinkCreateDto
 import com.ritense.plugin.web.rest.request.PluginProcessLinkUpdateDto
@@ -28,17 +31,24 @@ import com.ritense.plugin.web.rest.result.PluginProcessLinkResultDto
 import com.ritense.processlink.autodeployment.ProcessLinkDeployDto
 import com.ritense.processlink.domain.ProcessLink
 import com.ritense.processlink.mapper.ProcessLinkMapper
+import com.ritense.processlink.repository.ValtimoPluginProcessLinkRepository
 import com.ritense.processlink.web.rest.dto.ProcessLinkCreateRequestDto
 import com.ritense.processlink.web.rest.dto.ProcessLinkUpdateRequestDto
+import com.ritense.valtimo.contract.BlueprintId
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import com.ritense.valtimo.contract.case_.CaseDefinitionId
+import com.ritense.valtimo.contract.event.CaseConfigurationIssueDetectedEvent
+import com.ritense.valtimo.contract.event.CaseConfigurationIssueResolvedEvent
+import org.springframework.context.ApplicationEventPublisher
 import org.springframework.stereotype.Component
 import java.util.UUID
 
 @Component
 @SkipComponentScan
 class PluginProcessLinkMapper(
-    objectMapper: ObjectMapper
+    objectMapper: ObjectMapper,
+    private val pluginConfigurationRepository: PluginConfigurationRepository,
+    private val pluginProcessLinkRepository: ValtimoPluginProcessLinkRepository,
 ) : ProcessLinkMapper {
 
     init {
@@ -61,14 +71,16 @@ class PluginProcessLinkMapper(
                 processDefinitionId = processLink.processDefinitionId,
                 activityId = processLink.activityId,
                 activityType = processLink.activityType,
-                pluginConfigurationId = processLink.pluginConfigurationId.id,
+                pluginConfigurationId = processLink.pluginConfigurationId?.id,
+                referenceType = processLink.pluginConfigurationReference.type,
+                pluginDefinitionKey = processLink.pluginConfigurationReference.pluginDefinitionKey,
                 pluginActionDefinitionKey = processLink.pluginActionDefinitionKey,
                 actionProperties = processLink.actionProperties,
             )
         }
     }
 
-    override fun toProcessLinkCreateRequestDto(deployDto: ProcessLinkDeployDto): PluginProcessLinkCreateDto {
+    override fun toProcessLinkCreateRequestDto(deployDto: ProcessLinkDeployDto, blueprintId: BlueprintId?): PluginProcessLinkCreateDto {
         deployDto as PluginProcessLinkDeployDto
         return PluginProcessLinkCreateDto(
             processDefinitionId = deployDto.processDefinitionId,
@@ -77,12 +89,15 @@ class PluginProcessLinkMapper(
             pluginActionDefinitionKey = deployDto.pluginActionDefinitionKey,
             actionProperties = deployDto.actionProperties,
             activityType = deployDto.activityType,
+            referenceType = deployDto.referenceType,
+            pluginDefinitionKey = deployDto.pluginDefinitionKey,
         )
     }
 
     override fun toProcessLinkUpdateRequestDto(
         deployDto: ProcessLinkDeployDto,
-        @LoggableResource(resourceType = ProcessLink::class) existingProcessLinkId: UUID
+        @LoggableResource(resourceType = ProcessLink::class) existingProcessLinkId: UUID,
+        blueprintId: BlueprintId?
     ): ProcessLinkUpdateRequestDto {
         deployDto as PluginProcessLinkDeployDto
         return PluginProcessLinkUpdateDto(
@@ -90,30 +105,44 @@ class PluginProcessLinkMapper(
             pluginConfigurationId = deployDto.pluginConfigurationId,
             pluginActionDefinitionKey = deployDto.pluginActionDefinitionKey,
             actionProperties = deployDto.actionProperties,
+            referenceType = deployDto.referenceType,
+            pluginDefinitionKey = deployDto.pluginDefinitionKey,
         )
     }
 
     override fun toProcessLinkExportResponseDto(processLink: ProcessLink): PluginProcessLinkExportResponseDto {
         return withLoggingContext(ProcessLink::class, processLink.id) {
             processLink as PluginProcessLink
+            val definitionKey = processLink.pluginConfigurationReference.pluginDefinitionKey
+                ?: processLink.pluginConfigurationId?.let { configId ->
+                    pluginConfigurationRepository.findById(configId)
+                        .map { it.pluginDefinition.key }
+                        .orElse(null)
+                }
             PluginProcessLinkExportResponseDto(
                 activityId = processLink.activityId,
                 activityType = processLink.activityType,
-                pluginConfigurationId = processLink.pluginConfigurationId.id,
+                pluginConfigurationId = processLink.pluginConfigurationId?.id,
                 pluginActionDefinitionKey = processLink.pluginActionDefinitionKey,
                 actionProperties = processLink.actionProperties,
+                referenceType = processLink.pluginConfigurationReference.type,
+                pluginDefinitionKey = definitionKey,
             )
         }
     }
 
-    override fun toNewProcessLink(createRequestDto: ProcessLinkCreateRequestDto, caseDefinitionId: CaseDefinitionId?): PluginProcessLink {
+    override fun toNewProcessLink(createRequestDto: ProcessLinkCreateRequestDto, blueprintId: BlueprintId?): PluginProcessLink {
         createRequestDto as PluginProcessLinkCreateDto
+        val reference = createReference(createRequestDto.referenceType, createRequestDto.pluginDefinitionKey)
+        val configurationId = createRequestDto.pluginConfigurationId?.let { PluginConfigurationId.existingId(it) }
+        validateReference(reference.type, configurationId)
         return PluginProcessLink(
             id = UUID.randomUUID(),
             processDefinitionId = createRequestDto.processDefinitionId,
             activityId = createRequestDto.activityId,
             activityType = createRequestDto.activityType,
-            pluginConfigurationId = PluginConfigurationId.existingId(createRequestDto.pluginConfigurationId),
+            pluginConfigurationId = configurationId,
+            pluginConfigurationReference = reference,
             pluginActionDefinitionKey = createRequestDto.pluginActionDefinitionKey,
             actionProperties = createRequestDto.actionProperties,
         )
@@ -122,19 +151,89 @@ class PluginProcessLinkMapper(
     override fun toUpdatedProcessLink(
         processLinkToUpdate: ProcessLink,
         updateRequestDto: ProcessLinkUpdateRequestDto,
-        caseDefinitionId: CaseDefinitionId?
+        blueprintId: BlueprintId?
     ): PluginProcessLink {
         return withLoggingContext(ProcessLink::class, processLinkToUpdate.id) {
             updateRequestDto as PluginProcessLinkUpdateDto
+            val reference = createReference(updateRequestDto.referenceType, updateRequestDto.pluginDefinitionKey)
+            val configurationId = updateRequestDto.pluginConfigurationId?.let { PluginConfigurationId.existingId(it) }
+            validateReference(reference.type, configurationId)
             PluginProcessLink(
                 id = updateRequestDto.id,
                 processDefinitionId = processLinkToUpdate.processDefinitionId,
                 activityId = processLinkToUpdate.activityId,
                 activityType = processLinkToUpdate.activityType,
-                pluginConfigurationId = PluginConfigurationId.existingId(updateRequestDto.pluginConfigurationId),
+                pluginConfigurationId = configurationId,
+                pluginConfigurationReference = reference,
                 pluginActionDefinitionKey = updateRequestDto.pluginActionDefinitionKey,
                 actionProperties = updateRequestDto.actionProperties,
             )
         }
+    }
+
+    private fun createReference(
+        type: PluginConfigurationReferenceType,
+        pluginDefinitionKey: String?
+    ): PluginConfigurationReference {
+        return when (type) {
+            PluginConfigurationReferenceType.FIXED -> PluginConfigurationReference(
+                type = type,
+                pluginDefinitionKey = pluginDefinitionKey,
+            )
+            PluginConfigurationReferenceType.BUILDING_BLOCK -> PluginConfigurationReference(
+                type = type,
+                pluginDefinitionKey = requireNotNull(pluginDefinitionKey) {
+                    "pluginDefinitionKey is required when reference type is BUILDING_BLOCK"
+                }
+            )
+        }
+    }
+
+    override fun afterImport(
+        caseDefinitionId: CaseDefinitionId,
+        processDefinitionIds: Set<String>,
+        applicationEventPublisher: ApplicationEventPublisher
+    ) {
+        val allPluginLinks = processDefinitionIds.flatMap { pdId ->
+            pluginProcessLinkRepository.findByProcessDefinitionId(pdId)
+        }
+
+        val hasIssue = allPluginLinks.any { link ->
+            if (link.pluginConfigurationReference.type != PluginConfigurationReferenceType.FIXED) {
+                return@any false
+            }
+
+            val configId = link.pluginConfigurationId ?: return@any true
+            val configuration = pluginConfigurationRepository.findById(configId).orElse(null) ?: return@any true
+            val expectedDefinitionKey = link.pluginConfigurationReference.pluginDefinitionKey
+
+            expectedDefinitionKey != null && configuration.pluginDefinition.key != expectedDefinitionKey
+        }
+
+        if (hasIssue) {
+            applicationEventPublisher.publishEvent(
+                CaseConfigurationIssueDetectedEvent(caseDefinitionId, ISSUE_TYPE)
+            )
+        } else {
+            applicationEventPublisher.publishEvent(
+                CaseConfigurationIssueResolvedEvent(caseDefinitionId, ISSUE_TYPE)
+            )
+        }
+    }
+
+    private fun validateReference(
+        type: PluginConfigurationReferenceType,
+        pluginConfigurationId: PluginConfigurationId?
+    ) {
+        when (type) {
+            PluginConfigurationReferenceType.FIXED -> {} // pluginConfigurationId may be null during import
+            PluginConfigurationReferenceType.BUILDING_BLOCK -> require(pluginConfigurationId == null) {
+                "pluginConfigurationId must be empty when reference type is BUILDING_BLOCK"
+            }
+        }
+    }
+
+    companion object {
+        const val ISSUE_TYPE = "plugin-process-link"
     }
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,21 +18,42 @@ package com.ritense.valtimo.autoconfigure;
 
 import static org.springframework.core.Ordered.HIGHEST_PRECEDENCE;
 
+import java.time.DateTimeException;
+import java.time.ZoneId;
+import java.util.TimeZone;
 import javax.sql.DataSource;
 import net.javacrumbs.shedlock.core.LockProvider;
 import net.javacrumbs.shedlock.provider.jdbctemplate.JdbcTemplateLockProvider;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.core.annotation.Order;
+import org.springframework.jdbc.core.JdbcTemplate;
 
 @AutoConfiguration
 @ConditionalOnClass(DataSource.class)
 public class SchedulerAutoConfiguration {
 
-    @Order(HIGHEST_PRECEDENCE + 13)
     @Bean
-    public LockProvider lockProvider(DataSource dataSource) {
-        return new JdbcTemplateLockProvider(dataSource);
+    @ConditionalOnMissingBean(LockProvider.class)
+    @Order(HIGHEST_PRECEDENCE + 13)
+    public LockProvider lockProvider(
+        final DataSource dataSource,
+        @Value("${timezone:UTC}") final String timeZone
+    ) {
+        final ZoneId zoneId;
+        try {
+            zoneId = ZoneId.of(timeZone);
+        } catch (DateTimeException ex) {
+            throw new IllegalArgumentException("Invalid timezone: " + timeZone, ex);
+        }
+        return new JdbcTemplateLockProvider(
+            JdbcTemplateLockProvider.Configuration.builder()
+                .withJdbcTemplate(new JdbcTemplate(dataSource))
+                .withTimeZone(TimeZone.getTimeZone(zoneId))
+                .build()
+        );
     }
 }

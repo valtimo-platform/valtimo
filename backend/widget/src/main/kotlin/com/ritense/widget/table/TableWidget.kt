@@ -20,6 +20,7 @@ import com.ritense.valtimo.contract.annotation.AllOpen
 import com.ritense.valtimo.contract.conditions.Condition
 import com.ritense.widget.domain.Widget
 import com.ritense.widget.domain.WidgetAction
+import com.ritense.widget.domain.WidgetColor
 import io.hypersistence.utils.hibernate.type.json.JsonType
 import jakarta.persistence.Column
 import jakarta.persistence.DiscriminatorValue
@@ -35,6 +36,7 @@ class TableWidget(
     key: String,
     title: String,
     icon: String? = null,
+    color: WidgetColor = WidgetColor.WHITE,
     order: Int,
     width: Int,
     highContrast: Boolean,
@@ -46,13 +48,14 @@ class TableWidget(
     @Column(name = "properties", nullable = false)
     val properties: TableWidgetProperties
 ) : Widget(
-    id, key, title, icon, order, width, highContrast, isCompact, actions, displayConditions
+    id, key, title, icon, color, order, width, highContrast, isCompact, actions, displayConditions
 ) {
     override fun copy(
         id: UUID,
         key: String,
         title: String,
         icon: String?,
+        color: WidgetColor,
         order: Int,
         width: Int,
         highContrast: Boolean,
@@ -64,6 +67,7 @@ class TableWidget(
         key = key,
         title = title,
         icon = icon,
+        color = color,
         order = order,
         width = width,
         highContrast = highContrast,
@@ -77,6 +81,7 @@ class TableWidget(
         key = this.key,
         title = this.title,
         icon = this.icon,
+        color = this.color,
         width = this.width,
         highContrast = this.highContrast,
         isCompact = this.isCompact,

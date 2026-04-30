@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,7 +17,11 @@
 package com.ritense.document.repository.impl.specification
 
 import com.ritense.case_.domain.definition.CaseDefinition
+import com.ritense.document.domain.JsonSchemaDocumentDefinitionBlueprintId
 import com.ritense.document.domain.impl.JsonSchemaDocumentDefinition
+import com.ritense.valtimo.contract.blueprint.BlueprintType
+import com.ritense.valtimo.contract.BlueprintId
+import com.ritense.valtimo.contract.buildingblock.BuildingBlockDefinitionId
 import com.ritense.valtimo.contract.case_.CaseDefinitionId
 import jakarta.persistence.criteria.CriteriaBuilder
 import jakarta.persistence.criteria.CriteriaQuery
@@ -36,52 +40,86 @@ class JsonSchemaDocumentDefinitionSpecificationHelper {
             }
         }
 
+        // TODO: make this dynamic, blueprint type should be able to be passed. Alternatively, separate methods
         @JvmStatic
         fun byLatestVersion(): Specification<JsonSchemaDocumentDefinition> {
             return Specification { root: Root<JsonSchemaDocumentDefinition>,
                                    query: CriteriaQuery<*>,
                                    cb: CriteriaBuilder ->
-                val caseDefinitionIdPath = root.get<Any>(ID).get<String>(CASE_DEFINITION_ID)
+                val blueprintPath = root.get<Any>(ID).get<Any>(BLUEPRINT_ID)
                 val subquery = query.subquery(Long::class.java)
                 val subRoot = subquery.from(CaseDefinition::class.java)
                 subquery.select(cb.max(subRoot.get<Any>(ID).get(VERSION_TAG)))
-                subquery.where(cb.equal(subRoot.get<Any>(ID).get<String>(KEY), caseDefinitionIdPath.get<Any>(KEY)))
+                subquery.where(cb.equal(subRoot.get<Any>(ID).get<String>(KEY), blueprintPath.get<String>(BLUEPRINT_KEY)))
 
-                cb.equal(subquery, caseDefinitionIdPath.get<Any>(VERSION_TAG))
-            }
-        }
-
-        @JvmStatic
-        fun byIdCaseDefinitionId(caseDefinitionId: CaseDefinitionId): Specification<JsonSchemaDocumentDefinition> {
-            return Specification { root: Root<JsonSchemaDocumentDefinition>,
-                                   _: CriteriaQuery<*>,
-                                   criteriaBuilder: CriteriaBuilder ->
-                val caseDefinitionIdPath = root.get<Any>(ID).get<String>(CASE_DEFINITION_ID)
-                criteriaBuilder.and(
-                    criteriaBuilder.equal(caseDefinitionIdPath.get<String>(KEY), caseDefinitionId.key),
-                    criteriaBuilder.equal(caseDefinitionIdPath.get<String>(VERSION_TAG), caseDefinitionId.versionTag)
+                cb.and(
+                    cb.equal(blueprintPath.get<BlueprintType>(BLUEPRINT_TYPE), BlueprintType.CASE),
+                    cb.equal(blueprintPath.get<String>(BLUEPRINT_VERSION_TAG), subquery)
                 )
             }
         }
 
+        // TODO: make this dynamic, blueprint type should be able to be passed. Alternatively, separate methods
+        @JvmStatic
+        fun byIdBlueprintId(blueprintId: BlueprintId): Specification<JsonSchemaDocumentDefinition> {
+            val blueprintId =  if (blueprintId is CaseDefinitionId) {
+                JsonSchemaDocumentDefinitionBlueprintId.forCase(blueprintId)
+            } else {
+                JsonSchemaDocumentDefinitionBlueprintId.forBuildingBlock(blueprintId as BuildingBlockDefinitionId)
+            }
+            return Specification { root: Root<JsonSchemaDocumentDefinition>,
+                                   _: CriteriaQuery<*>,
+                                   cb: CriteriaBuilder ->
+                val blueprintPath = root.get<Any>(ID).get<Any>(BLUEPRINT_ID)
+                cb.and(
+                    cb.equal(blueprintPath.get<BlueprintType>(BLUEPRINT_TYPE), blueprintId.blueprintType),
+                    cb.equal(blueprintPath.get<String>(BLUEPRINT_KEY), blueprintId.blueprintKey()),
+                    cb.equal(blueprintPath.get<String>(BLUEPRINT_VERSION_TAG), blueprintId.blueprintVersionTag())
+                )
+            }
+        }
+
+        // TODO: make this dynamic, blueprint type should be able to be passed. Alternatively, separate methods
+        @JvmStatic
+        fun byIdCaseDefinitionId(caseDefinitionId: CaseDefinitionId): Specification<JsonSchemaDocumentDefinition> {
+            val blueprintId = JsonSchemaDocumentDefinitionBlueprintId.forCase(caseDefinitionId)
+            return Specification { root: Root<JsonSchemaDocumentDefinition>,
+                                   _: CriteriaQuery<*>,
+                                   cb: CriteriaBuilder ->
+                val blueprintPath = root.get<Any>(ID).get<Any>(BLUEPRINT_ID)
+                cb.and(
+                    cb.equal(blueprintPath.get<BlueprintType>(BLUEPRINT_TYPE), BlueprintType.CASE),
+                    cb.equal(blueprintPath.get<String>(BLUEPRINT_KEY), blueprintId.blueprintKey()),
+                    cb.equal(blueprintPath.get<String>(BLUEPRINT_VERSION_TAG), blueprintId.blueprintVersionTag())
+                )
+            }
+        }
+
+        // TODO: make this dynamic, blueprint type should be able to be passed
         @JvmStatic
         fun byCaseDefinitionActive() = Specification<JsonSchemaDocumentDefinition> { root, query, cb ->
-            val caseDefinitionIdPath = root.get<Any>(ID).get<String>(CASE_DEFINITION_ID)
+            val blueprintPath = root.get<Any>(ID).get<Any>(BLUEPRINT_ID)
             val subquery = query.subquery(Long::class.java)
             val subRoot = subquery.from(CaseDefinition::class.java)
             subquery.select(cb.count(subRoot.get<Any>(ID).get<CaseDefinitionId>(KEY)))
             subquery.where(
                 cb.and(
                     cb.isTrue(subRoot["active"]),
-                    cb.equal(subRoot.get<Any>(ID).get<String>(KEY), caseDefinitionIdPath.get<Any>(KEY)),
-                    cb.equal(subRoot.get<Any>(ID).get<Any>(VERSION_TAG), caseDefinitionIdPath.get<Any>(VERSION_TAG)),
+                    cb.equal(subRoot.get<Any>(ID).get<String>(KEY), blueprintPath.get<String>(BLUEPRINT_KEY)),
+                    cb.equal(subRoot.get<Any>(ID).get<Any>(VERSION_TAG), blueprintPath.get<String>(BLUEPRINT_VERSION_TAG))
                 )
             )
-            cb.equal(subquery, 1L)
+            cb.and(
+                cb.equal(blueprintPath.get<BlueprintType>(BLUEPRINT_TYPE), BlueprintType.CASE),
+                cb.equal(subquery, 1L)
+            )
         }
 
         private const val ID: String = "id"
-        private const val CASE_DEFINITION_ID: String = "caseDefinitionId"
+        private const val BLUEPRINT_ID: String = "blueprintId"
+        private const val BLUEPRINT_TYPE: String = "blueprintType"
+        private const val BLUEPRINT_KEY: String = "blueprintKey"
+        private const val BLUEPRINT_VERSION_TAG: String = "blueprintVersionTag"
         private const val KEY: String = "key"
         private const val VERSION_TAG: String = "versionTag"
         private const val NAME: String = "name"

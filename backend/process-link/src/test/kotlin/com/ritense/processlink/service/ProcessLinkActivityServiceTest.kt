@@ -87,7 +87,7 @@ class ProcessLinkActivityServiceTest {
         whenever(task.taskDefinitionKey).thenReturn("some-activity")
 
         val processLink: ProcessLink = mock()
-        val processLinkActivityResult = ProcessLinkActivityResult<Map<String, Any>>(UUID.randomUUID(), "test", mapOf())
+        val processLinkActivityResult = ProcessLinkActivityResult<Map<String, Any>>(UUID.randomUUID(), "test", null, null, mapOf())
 
         whenever(taskService.findTaskOrThrow(any())).thenReturn(task)
         whenever(processLinkService.getProcessLinks(any(), any())).thenReturn(listOf(processLink))

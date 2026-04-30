@@ -39,6 +39,8 @@ class UIComponentProcessLinkActivityHandler : ProcessLinkActivityHandler<UICompo
         return ProcessLinkActivityResult(
             processLink.id,
             TYPE_UI_COMPONENT,
+            task.assignee,
+            task.dueDate,
             UIComponentActivityResultProperties(processLink.componentKey)
         )
     }
@@ -53,6 +55,8 @@ class UIComponentProcessLinkActivityHandler : ProcessLinkActivityHandler<UICompo
         return ProcessLinkActivityResult(
             processLink.id,
             TYPE_UI_COMPONENT,
+            null,
+            null,
             UIComponentActivityResultProperties(processLink.componentKey)
         )
     }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,13 +22,16 @@ import com.ritense.case_.repository.CaseDefinitionRepository
 import com.ritense.importer.ImportRequest
 import com.ritense.importer.Importer
 import com.ritense.importer.ValtimoImportTypes.Companion.CASE_DEFINITION
-import io.github.oshai.kotlinlogging.KotlinLogging
 import com.ritense.valtimo.contract.case_.CaseDefinitionChecker
+import com.ritense.valtimo.contract.event.CaseConfigurationIssuesResetEvent
+import io.github.oshai.kotlinlogging.KotlinLogging
+import org.springframework.context.ApplicationEventPublisher
 
 class CaseDefinitionImporter(
     private val objectMapper: ObjectMapper,
     private val caseDefinitionRepository: CaseDefinitionRepository,
     private val caseDefinitionChecker: CaseDefinitionChecker,
+    private val applicationEventPublisher: ApplicationEventPublisher,
 ) : Importer {
     override fun type() = CASE_DEFINITION
 
@@ -37,18 +40,23 @@ class CaseDefinitionImporter(
     override fun supports(fileName: String) = fileName.matches(FILENAME_REGEX)
 
     override fun import(request: ImportRequest) {
-        deploy(request.content.toString(Charsets.UTF_8))
+        deploy(request.content.toString(Charsets.UTF_8), request.keyOverride, request.nameOverride)
+        request.caseDefinitionId?.let {
+            applicationEventPublisher.publishEvent(CaseConfigurationIssuesResetEvent(it))
+        }
     }
 
     override fun afterImport(request: ImportRequest) {
         val caseDefinitionDto = toCaseDefinitionDto(request.content.toString(Charsets.UTF_8))
+            .let { applyOverrides(it, request.keyOverride, request.nameOverride) }
         if (caseDefinitionDto.final) {
             caseDefinitionRepository.save(caseDefinitionDto.toEntity())
         }
     }
 
-    private fun deploy(fileContent: String) {
+    private fun deploy(fileContent: String, keyOverride: String?, nameOverride: String?) {
         val caseDefinitionDto = toCaseDefinitionDto(fileContent)
+            .let { applyOverrides(it, keyOverride, nameOverride) }
         val caseDefinitionId = caseDefinitionDto.getCaseDefinitionId()
 
         caseDefinitionChecker.assertCanCreateOrUpdateCaseDefinition(caseDefinitionId, caseDefinitionDto.final)
@@ -59,6 +67,17 @@ class CaseDefinitionImporter(
 
         caseDefinitionRepository.save(caseDefinition)
         logger.debug { "Case definition with id '${caseDefinition.id}' was saved" }
+    }
+
+    private fun applyOverrides(dto: CaseDefinitionDto, keyOverride: String?, nameOverride: String?): CaseDefinitionDto {
+        if (keyOverride == null && nameOverride == null) return dto
+        return dto.copy(
+            key = keyOverride ?: dto.key,
+            name = nameOverride ?: dto.name,
+            originalKey = dto.key,
+            originalName = dto.name,
+            originalVersionTag = dto.versionTag,
+        )
     }
 
     private fun toCaseDefinitionDto(fileContent: String): CaseDefinitionDto {

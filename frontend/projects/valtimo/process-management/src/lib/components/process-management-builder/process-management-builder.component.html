@@ -113,6 +113,7 @@
                 !actionsObs.hasEditPermissions
               "
               (checkedChange)="onProcessToggleChange('canInitializeDocument', $event)"
+              [attr.data-test-id]="testIds.startsCaseToggle"
             ></cds-toggle>
           </cds-tooltip>
 
@@ -129,6 +130,7 @@
                 !actionsObs.hasEditPermissions
               "
               (checkedChange)="onProcessToggleChange('startableByUser', $event)"
+              [attr.data-test-id]="testIds.startableByUserToggle"
             ></cds-toggle
           ></cds-tooltip>
         }
@@ -153,19 +155,21 @@
               : deployNewProcessDefinition()
           "
           [size]="actionsObs.compactMode ? 'sm' : 'md'"
+          [attr.data-test-id]="testIds.deployButton"
         >
           {{ 'processManagement.deploy' | translate }}
 
           <svg class="cds--btn__icon" cdsIcon="deploy" size="16"></svg>
         </button>
 
-        <cds-overflow-menu class="overflow-button">
-          <cds-overflow-menu-option
+        <v-overflow-menu class="overflow-button" placement="bottom-end">
+          <v-overflow-menu-trigger overflowTrigger></v-overflow-menu-trigger>
+          <v-overflow-menu-option
             [disabled]="actionsObs.loading"
             (selected)="export(actionsObs.isReadOnlyProcess)"
             >{{ 'interface.export' | translate }}
-          </cds-overflow-menu-option>
-        </cds-overflow-menu>
+          </v-overflow-menu-option>
+        </v-overflow-menu>
       </div>
     </div>
   </ng-template>

@@ -14,14 +14,6 @@
  * limitations under the License.
  */
 
-export class OpenZaakConfig {
-  id: string;
-  url: string;
-  clientId: string;
-  secret: string;
-  rsin: string;
-}
-
 export interface ZaakType {
   url: string;
   omschrijving: string;

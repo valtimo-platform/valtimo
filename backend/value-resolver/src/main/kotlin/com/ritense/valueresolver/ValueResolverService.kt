@@ -16,6 +16,7 @@
 
 package com.ritense.valueresolver
 
+import com.ritense.valtimo.contract.BlueprintId
 import com.ritense.valtimo.contract.case_.CaseDefinitionId
 import org.operaton.bpm.engine.delegate.VariableScope
 import java.util.UUID
@@ -120,4 +121,6 @@ interface ValueResolverService {
     ): List<ValueResolverOption>
 
     fun getResolvableKeys(request: ValueResolverOptionRequest, caseDefinitionKey: String): List<ValueResolverOption>
+
+    fun getResolvableKeys(request: ValueResolverOptionRequest, blueprintId: BlueprintId): List<ValueResolverOption>
 }

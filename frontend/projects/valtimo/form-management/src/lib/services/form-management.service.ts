@@ -23,7 +23,7 @@ import {
   QueryFormsResponse,
 } from '../models';
 import {Observable, of} from 'rxjs';
-import {BaseApiService, ConfigService} from '@valtimo/shared';
+import {BaseApiService, ConfigService, Page} from '@valtimo/shared';
 
 @Injectable({
   providedIn: 'root',
@@ -143,6 +143,88 @@ export class FormManagementService extends BaseApiService {
     return this.httpClient.delete<void>(
       this.getApiUrl(
         `/management/v1/case-definition/${caseDefinitionKey}/version/${caseDefinitionVersionTag}/form/${formDefinitionId}`
+      )
+    );
+  }
+
+  // Building block form management methods
+
+  public getFormDefinitionBuildingBlock(
+    buildingBlockDefinitionKey: string,
+    buildingBlockDefinitionVersionTag: string,
+    formDefinitionId: string
+  ): Observable<FormDefinition> {
+    return this.httpClient.get<FormDefinition>(
+      this.getApiUrl(
+        `/management/v1/building-block/${buildingBlockDefinitionKey}/version/${buildingBlockDefinitionVersionTag}/form/${formDefinitionId}`
+      )
+    );
+  }
+
+  public existsFormDefinitionBuildingBlock(
+    buildingBlockDefinitionKey: string,
+    buildingBlockDefinitionVersionTag: string,
+    formDefinitionName: string
+  ): Observable<boolean> {
+    if (!formDefinitionName || !buildingBlockDefinitionKey || !buildingBlockDefinitionVersionTag)
+      return of(false);
+
+    return this.httpClient.get<boolean>(
+      this.getApiUrl(
+        `management/v1/building-block/${buildingBlockDefinitionKey}/version/${buildingBlockDefinitionVersionTag}/form/${formDefinitionName}/exists`
+      )
+    );
+  }
+
+  public queryFormDefinitionsBuildingBlock(
+    buildingBlockDefinitionKey: string,
+    buildingBlockDefinitionVersionTag: string,
+    params?: any
+  ): Observable<Page<FormDefinition>> {
+    return this.httpClient.get<Page<FormDefinition>>(
+      this.getApiUrl(
+        `/management/v1/building-block/${buildingBlockDefinitionKey}/version/${buildingBlockDefinitionVersionTag}/form`
+      ),
+      {
+        params,
+      }
+    );
+  }
+
+  public createFormDefinitionsBuildingBlock(
+    buildingBlockDefinitionKey: string,
+    buildingBlockDefinitionVersionTag: string,
+    request: CreateFormDefinitionRequest
+  ): Observable<FormDefinition> {
+    return this.httpClient.post<FormDefinition>(
+      this.getApiUrl(
+        `/management/v1/building-block/${buildingBlockDefinitionKey}/version/${buildingBlockDefinitionVersionTag}/form`
+      ),
+      request
+    );
+  }
+
+  public modifyFormDefinitionBuildingBlock(
+    buildingBlockDefinitionKey: string,
+    buildingBlockDefinitionVersionTag: string,
+    request: ModifyFormDefinitionRequest
+  ): Observable<FormDefinition> {
+    return this.httpClient.put<FormDefinition>(
+      this.getApiUrl(
+        `/management/v1/building-block/${buildingBlockDefinitionKey}/version/${buildingBlockDefinitionVersionTag}/form/${request.id}`
+      ),
+      request
+    );
+  }
+
+  public deleteFormDefinitionBuildingBlock(
+    buildingBlockDefinitionKey: string,
+    buildingBlockDefinitionVersionTag: string,
+    formDefinitionId: string
+  ): Observable<void> {
+    return this.httpClient.delete<void>(
+      this.getApiUrl(
+        `/management/v1/building-block/${buildingBlockDefinitionKey}/version/${buildingBlockDefinitionVersionTag}/form/${formDefinitionId}`
       )
     );
   }

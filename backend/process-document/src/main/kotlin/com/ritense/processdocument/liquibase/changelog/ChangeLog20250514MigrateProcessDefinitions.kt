@@ -17,7 +17,7 @@
 package com.ritense.processdocument.liquibase.changelog
 
 import com.ritense.valtimo.contract.case_.CaseDefinitionId
-import com.ritense.valtimo.service.OperatonProcessService.OPERATON_CASE_DEFINITION_VERSION_TAG_PREFIX
+import com.ritense.valtimo.contract.process.ProcessConstants.OPERATON_CASE_DEFINITION_VERSION_TAG_PREFIX
 import io.github.oshai.kotlinlogging.KotlinLogging
 import liquibase.change.custom.CustomTaskChange
 import liquibase.database.Database
@@ -37,7 +37,6 @@ import java.sql.ResultSet
 import java.sql.Timestamp
 import java.time.Instant
 import java.util.UUID
-import java.util.function.Consumer
 
 class ChangeLog20250514MigrateProcessDefinitions : CustomTaskChange {
 
@@ -1023,7 +1022,7 @@ class ChangeLog20250514MigrateProcessDefinitions : CustomTaskChange {
             // when the element binding is null, it means it's set to latest
             if (elementBinding == null || callActivity.operatonCalledElementVersionTag?.startsWith(OPERATON_CASE_DEFINITION_VERSION_TAG_PREFIX + caseDefinitionId.key) == true) {
                 callActivity.setOperatonCalledElementBinding("versionTag")
-                callActivity.setOperatonCalledElementVersionTag(OPERATON_CASE_DEFINITION_VERSION_TAG_PREFIX + caseDefinitionId)
+                callActivity.setOperatonCalledElementVersionTag(OPERATON_CASE_DEFINITION_VERSION_TAG_PREFIX+ caseDefinitionId)
                 referencedProcesses.add(callActivity.calledElement)
             }
         }

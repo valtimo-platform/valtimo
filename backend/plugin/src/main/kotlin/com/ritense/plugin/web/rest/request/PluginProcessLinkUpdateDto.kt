@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2025 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,6 +18,7 @@ package com.ritense.plugin.web.rest.request
 
 import com.fasterxml.jackson.annotation.JsonTypeName
 import com.fasterxml.jackson.databind.node.ObjectNode
+import com.ritense.plugin.domain.PluginConfigurationReferenceType
 import com.ritense.plugin.service.PluginService.Companion.PROCESS_LINK_TYPE_PLUGIN
 import com.ritense.processlink.web.rest.dto.ProcessLinkUpdateRequestDto
 import java.util.UUID
@@ -25,9 +26,11 @@ import java.util.UUID
 @JsonTypeName(PROCESS_LINK_TYPE_PLUGIN)
 data class PluginProcessLinkUpdateDto(
     override val id: UUID,
-    val pluginConfigurationId: UUID,
+    val pluginConfigurationId: UUID? = null,
     val pluginActionDefinitionKey: String,
-    val actionProperties: ObjectNode? = null
+    val actionProperties: ObjectNode? = null,
+    val referenceType: PluginConfigurationReferenceType = PluginConfigurationReferenceType.FIXED,
+    val pluginDefinitionKey: String? = null
 ) : ProcessLinkUpdateRequestDto {
     override val processLinkType: String
         get() = PROCESS_LINK_TYPE_PLUGIN

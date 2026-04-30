@@ -21,6 +21,7 @@ import com.ritense.document.domain.DocumentDefinition;
 import com.ritense.document.domain.impl.JsonSchemaDocumentDefinition;
 import com.ritense.document.domain.impl.JsonSchemaDocumentDefinitionId;
 import com.ritense.document.service.result.DeployDocumentDefinitionResult;
+import com.ritense.valtimo.contract.BlueprintId;
 import com.ritense.valtimo.contract.case_.CaseDefinitionId;
 import jakarta.validation.ValidationException;
 import java.util.List;
@@ -46,8 +47,8 @@ public interface DocumentDefinitionService {
 
     void requirePermission(String documentDefinitionName, Action action);
 
-    Optional<? extends DocumentDefinition> findByCaseDefinitionId(
-        CaseDefinitionId caseDefinitionId
+    Optional<? extends DocumentDefinition> findByBlueprintId(
+        BlueprintId blueprintId
     );
 
     Optional<? extends DocumentDefinition> findByNameAndCaseDefinitionId(

@@ -1,0 +1,224 @@
+[
+    {
+        "activityId": "StartEvent_1",
+        "activityType": "bpmn:StartEvent:start",
+        "processLinkType": "form",
+        "formDefinitionName": "submit-button"
+    },
+    {
+        "activityId": "Task_TextField",
+        "activityType": "bpmn:UserTask:create",
+        "formDefinitionName": "textfield-test",
+        "processLinkType": "form"
+    },
+    {
+        "activityId": "Task_Number",
+        "activityType": "bpmn:UserTask:create",
+        "formDefinitionName": "number-test",
+        "processLinkType": "form"
+    },
+    {
+        "activityId": "Task_Select",
+        "activityType": "bpmn:UserTask:create",
+        "formDefinitionName": "select-test",
+        "processLinkType": "form"
+    },
+    {
+        "activityId": "Task_Checkbox",
+        "activityType": "bpmn:UserTask:create",
+        "formDefinitionName": "checkbox-test",
+        "processLinkType": "form"
+    },
+    {
+        "activityId": "Task_Iban",
+        "activityType": "bpmn:UserTask:create",
+        "formDefinitionName": "iban-test",
+        "processLinkType": "form"
+    },
+    {
+        "activityId": "Task_CurrentUser",
+        "activityType": "bpmn:UserTask:create",
+        "formDefinitionName": "current-user-test",
+        "processLinkType": "form"
+    },
+    {
+        "activityId": "Task_Uploader",
+        "activityType": "bpmn:UserTask:create",
+        "formDefinitionName": "valtimo-file-uploader-test",
+        "processLinkType": "form"
+    },
+    {
+        "activityId": "Task_TextArea",
+        "activityType": "bpmn:UserTask:create",
+        "formDefinitionName": "textarea-test",
+        "processLinkType": "form"
+    },
+    {
+        "activityId": "Task_Email",
+        "activityType": "bpmn:UserTask:create",
+        "formDefinitionName": "email-test",
+        "processLinkType": "form"
+    },
+    {
+        "activityId": "Task_Password",
+        "activityType": "bpmn:UserTask:create",
+        "formDefinitionName": "password-test",
+        "processLinkType": "form"
+    },
+    {
+        "activityId": "Task_PhoneNumber",
+        "activityType": "bpmn:UserTask:create",
+        "formDefinitionName": "phoneNumber-test",
+        "processLinkType": "form"
+    },
+    {
+        "activityId": "Task_DateTime",
+        "activityType": "bpmn:UserTask:create",
+        "formDefinitionName": "datetime-test",
+        "processLinkType": "form"
+    },
+    {
+        "activityId": "Task_Day",
+        "activityType": "bpmn:UserTask:create",
+        "formDefinitionName": "day-test",
+        "processLinkType": "form"
+    },
+    {
+        "activityId": "Task_Time",
+        "activityType": "bpmn:UserTask:create",
+        "formDefinitionName": "time-test",
+        "processLinkType": "form"
+    },
+    {
+        "activityId": "Task_Currency",
+        "activityType": "bpmn:UserTask:create",
+        "formDefinitionName": "currency-test",
+        "processLinkType": "form"
+    },
+    {
+        "activityId": "Task_Radio",
+        "activityType": "bpmn:UserTask:create",
+        "formDefinitionName": "radio-test",
+        "processLinkType": "form"
+    },
+    {
+        "activityId": "Task_SelectBoxes",
+        "activityType": "bpmn:UserTask:create",
+        "formDefinitionName": "selectboxes-test",
+        "processLinkType": "form"
+    },
+    {
+        "activityId": "Task_Content",
+        "activityType": "bpmn:UserTask:create",
+        "formDefinitionName": "content-test",
+        "processLinkType": "form"
+    },
+    {
+        "activityId": "Task_HtmlElement",
+        "activityType": "bpmn:UserTask:create",
+        "formDefinitionName": "htmlelement-test",
+        "processLinkType": "form"
+    },
+    {
+        "activityId": "Task_ResourceSelector",
+        "activityType": "bpmn:UserTask:create",
+        "formDefinitionName": "resource-selector-test",
+        "processLinkType": "form"
+    },
+    {
+        "activityId": "Task_ValueResolverSelector",
+        "activityType": "bpmn:UserTask:create",
+        "formDefinitionName": "value-resolver-selector-test",
+        "processLinkType": "form"
+    },
+    {
+        "activityId": "Task_DocumentenApiUploader",
+        "activityType": "bpmn:UserTask:create",
+        "formDefinitionName": "documenten-api-uploader-test",
+        "processLinkType": "form"
+    },
+    {
+        "activityId": "Task_Url",
+        "activityType": "bpmn:UserTask:create",
+        "formDefinitionName": "url-test",
+        "processLinkType": "form"
+    },
+    {
+        "activityId": "Task_Tags",
+        "activityType": "bpmn:UserTask:create",
+        "formDefinitionName": "tags-test",
+        "processLinkType": "form"
+    },
+    {
+        "activityId": "Task_Survey",
+        "activityType": "bpmn:UserTask:create",
+        "formDefinitionName": "survey-test",
+        "processLinkType": "form"
+    },
+    {
+        "activityId": "Task_Signature",
+        "activityType": "bpmn:UserTask:create",
+        "formDefinitionName": "signature-test",
+        "processLinkType": "form"
+    },
+    {
+        "activityId": "Task_Columns",
+        "activityType": "bpmn:UserTask:create",
+        "formDefinitionName": "columns-test",
+        "processLinkType": "form"
+    },
+    {
+        "activityId": "Task_Fieldset",
+        "activityType": "bpmn:UserTask:create",
+        "formDefinitionName": "fieldset-test",
+        "processLinkType": "form"
+    },
+    {
+        "activityId": "Task_Panel",
+        "activityType": "bpmn:UserTask:create",
+        "formDefinitionName": "panel-test",
+        "processLinkType": "form"
+    },
+    {
+        "activityId": "Task_Table",
+        "activityType": "bpmn:UserTask:create",
+        "formDefinitionName": "table-test",
+        "processLinkType": "form"
+    },
+    {
+        "activityId": "Task_Tabs",
+        "activityType": "bpmn:UserTask:create",
+        "formDefinitionName": "tabs-test",
+        "processLinkType": "form"
+    },
+    {
+        "activityId": "Task_Well",
+        "activityType": "bpmn:UserTask:create",
+        "formDefinitionName": "well-test",
+        "processLinkType": "form"
+    },
+    {
+        "activityId": "Task_Container",
+        "activityType": "bpmn:UserTask:create",
+        "formDefinitionName": "container-test",
+        "processLinkType": "form"
+    },
+    {
+        "activityId": "Task_DataMap",
+        "activityType": "bpmn:UserTask:create",
+        "formDefinitionName": "datamap-test",
+        "processLinkType": "form"
+    },
+    {
+        "activityId": "Task_DataGrid",
+        "activityType": "bpmn:UserTask:create",
+        "formDefinitionName": "datagrid-test",
+        "processLinkType": "form"
+    },
+    {
+        "activityId": "Task_EditGrid",
+        "activityType": "bpmn:UserTask:create",
+        "formDefinitionName": "editgrid-test",
+        "processLinkType": "form"
+    }
+]

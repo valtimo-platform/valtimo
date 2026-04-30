@@ -1,0 +1,44 @@
+{
+    "display": "form",
+    "components": [
+        {
+            "label": "Tabs",
+            "key": "tabs",
+            "type": "tabs",
+            "components": [
+                {
+                    "label": "Tab 1",
+                    "key": "tab1",
+                    "components": [
+                        {
+                            "label": "Tab 1 Field",
+                            "key": "tab1Field",
+                            "type": "textfield",
+                            "input": true
+                        }
+                    ]
+                },
+                {
+                    "label": "Tab 2",
+                    "key": "tab2",
+                    "components": [
+                        {
+                            "label": "Tab 2 Field",
+                            "key": "tab2Field",
+                            "type": "textfield",
+                            "input": true
+                        }
+                    ]
+                }
+            ],
+            "input": false
+        },
+        {
+            "type": "button",
+            "label": "Submit",
+            "key": "submit",
+            "disableOnInvalid": true,
+            "input": true
+        }
+    ]
+}

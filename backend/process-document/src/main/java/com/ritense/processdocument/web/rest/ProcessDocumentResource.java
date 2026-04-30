@@ -74,13 +74,16 @@ public class ProcessDocumentResource {
         this.activeCaseDefinitionService = activeCaseDefinitionService;
     }
 
+    @Deprecated(since = "13.x", forRemoval = true)
     @GetMapping("/v1/case-definition/{caseDefinitionKey}/case-process-link")
     public ResponseEntity<List<ProcessDefinitionCaseDefinition>> findProcessDocumentDefinitions(
         @PathVariable(name = "caseDefinitionKey") String caseDefinitionKey,
         @RequestParam(value = "startableByUser", required = false) @Nullable Boolean startableByUser,
         @RequestParam(value = "canInitializeDocument", required = false) @Nullable Boolean canInitializeDocument
     ) {
-        CaseDefinitionId caseDefinitionId = activeCaseDefinitionService.getActiveCaseDefinition(caseDefinitionKey).getId();
+        CaseDefinitionId caseDefinitionId = runWithoutAuthorization(() ->
+            activeCaseDefinitionService.getActiveCaseDefinition(caseDefinitionKey).getId()
+        );
         List<ProcessDefinitionCaseDefinition> processDocumentDefinitions = processDefinitionCaseDefinitionService.findProcessDefinitionCaseDefinitions(
             caseDefinitionId,
             startableByUser,
@@ -90,6 +93,7 @@ public class ProcessDocumentResource {
         return ResponseEntity.ok(processDocumentDefinitions);
     }
 
+    @Deprecated(since = "13.x", forRemoval = true)
     @GetMapping("/v1/document-instance/{documentId}/case-process-link")
     public ResponseEntity<List<ProcessDefinitionCaseDefinition>> findProcessDocumentDefinitions(
         @PathVariable(name = "documentId") UUID documentId,
@@ -112,7 +116,16 @@ public class ProcessDocumentResource {
                 new OperatonProcessInstanceId(processInstanceId))));
     }
 
+    @Deprecated(since = "Since v13", forRemoval = true)
     @GetMapping("/v1/process-document/instance/document/{documentId}")
+    public ResponseEntity<List<? extends ProcessDocumentInstance>> findProcessDocumentInstancesV1(
+        @PathVariable UUID documentId
+    ) {
+        return ResponseEntity.ok(
+            processDocumentAssociationService.findProcessDocumentInstanceDtosWithoutBuildingBlocks(JsonSchemaDocumentId.existingId(documentId)));
+    }
+
+    @GetMapping("/v2/process-document/instance/document/{documentId}")
     public ResponseEntity<List<? extends ProcessDocumentInstance>> findProcessDocumentInstances(
         @PathVariable UUID documentId
     ) {

@@ -29,6 +29,7 @@
       "@valtimo/access-control": ["./projects/valtimo/access-control/src/public-api.ts"],
       "@valtimo/access-control-management": ["./projects/valtimo/access-control-management/src/public-api.ts"],
       "@valtimo/security": ["./projects/valtimo/security/src/public_api.ts"],
+      "@valtimo/building-blocks": ["./projects/valtimo/building-blocks/src/public_api.ts"],
       "@valtimo/case": ["./projects/valtimo/case/src/public_api.ts"],
       "@valtimo/process": ["./projects/valtimo/process/src/public_api.ts"],
       "@valtimo/dashboard": ["./projects/valtimo/dashboard/src/public_api.ts"],
@@ -60,7 +61,8 @@
       "@valtimo/plugin": ["./projects/valtimo/plugin/src/public-api.ts"],
       "@valtimo/zgw": ["./projects/valtimo/zgw/src/public_api.ts"],
       "@valtimo/logging": ["./projects/valtimo/logging/src/public_api.ts"],
-      "@valtimo/iko": ["./projects/valtimo/iko/src/public-api.ts"]
+      "@valtimo/iko": ["./projects/valtimo/iko/src/public-api.ts"],
+      "@valtimo/teams": ["./projects/valtimo/teams/src/public-api.ts"],
       "@e2e/constants": ["../e2e/constants"]
     }
   },
@@ -320,6 +322,18 @@
     },
     {
       "path": "./projects/valtimo/iko/tsconfig.spec.json"
+    },
+    {
+      "path": "./projects/valtimo/building-block-management/tsconfig.lib.json"
+    },
+    {
+      "path": "./projects/valtimo/building-block-management/tsconfig.spec.json"
+    },
+    {
+      "path": "./projects/valtimo/teams/tsconfig.lib.json"
+    },
+    {
+      "path": "./projects/valtimo/teams/tsconfig.spec.json"
     }
   ]
 }

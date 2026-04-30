@@ -39,6 +39,7 @@ import {IconService, ListItem} from 'carbon-components-angular';
 import {Edit16} from '@carbon/icons';
 import {TranslateService} from '@ngx-translate/core';
 import {TagColor} from '@valtimo/shared';
+import {CASE_MANAGEMENT_TAGS_MODAL_TEST_IDS} from '../../../../../constants';
 
 @Component({
   standalone: false,
@@ -48,12 +49,23 @@ import {TagColor} from '@valtimo/shared';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class CaseManagementTagsModalComponent implements OnInit, OnDestroy {
+  protected readonly testIds = CASE_MANAGEMENT_TAGS_MODAL_TEST_IDS;
+
+  private _closedAnimationTimeout: ReturnType<typeof setTimeout> | undefined;
+
   @Input() public set type(value: StatusModalType) {
     this._type$.next(value);
 
+    // Cancel any pending 'closed' animation delay
+    if (this._closedAnimationTimeout) {
+      clearTimeout(this._closedAnimationTimeout);
+      this._closedAnimationTimeout = undefined;
+    }
+
     if (value === 'closed') {
-      setTimeout(() => {
+      this._closedAnimationTimeout = setTimeout(() => {
         this._typeAnimationDelay$.next(value);
+        this._closedAnimationTimeout = undefined;
       }, CARBON_CONSTANTS.modalAnimationMs);
     } else {
       this._typeAnimationDelay$.next(value);

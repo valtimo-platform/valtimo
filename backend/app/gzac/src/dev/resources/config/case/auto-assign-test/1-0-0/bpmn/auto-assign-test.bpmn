@@ -1,0 +1,289 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL"
+                  xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI"
+                  xmlns:camunda="http://camunda.org/schema/1.0/bpmn" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC"
+                  xmlns:di="http://www.omg.org/spec/DD/20100524/DI" exporter="Camunda Modeler" exporterVersion="5.26.0"
+                  expressionLanguage="http://www.w3.org/1999/XPath" id="Definitions_1"
+                  targetNamespace="http://bpmn.io/schema/bpmn" typeLanguage="http://www.w3.org/2001/XMLSchema">
+    <bpmn:process camunda:versionTag="CD:auto-assign-test:2.0.1" id="auto-assign-test" isClosed="false"
+                  isExecutable="true" name="Auto assign test" processType="None">
+        <bpmn:startEvent id="start-event" isInterrupting="true" name="Start" parallelMultiple="false">
+            <bpmn:outgoing>Flow_start_to_fork</bpmn:outgoing>
+        </bpmn:startEvent>
+        <bpmn:parallelGateway gatewayDirection="Unspecified" id="fork" name="Fork">
+            <bpmn:incoming>Flow_start_to_fork</bpmn:incoming>
+            <bpmn:outgoing>Flow_fork_to_admin_task</bpmn:outgoing>
+            <bpmn:outgoing>Flow_0mu1kbg</bpmn:outgoing>
+            <bpmn:outgoing>Flow_06oc92f</bpmn:outgoing>
+            <bpmn:outgoing>Flow_0jqq2n1</bpmn:outgoing>
+            <bpmn:outgoing>Flow_1cart0i</bpmn:outgoing>
+            <bpmn:outgoing>Flow_0suxjbc</bpmn:outgoing>
+            <bpmn:outgoing>Flow_0en4j4q</bpmn:outgoing>
+            <bpmn:outgoing>Flow_1h4uliy</bpmn:outgoing>
+            <bpmn:outgoing>Flow_18i1w2j</bpmn:outgoing>
+            <bpmn:outgoing>Flow_1weapq6</bpmn:outgoing>
+        </bpmn:parallelGateway>
+        <bpmn:userTask camunda:candidateGroups="ROLE_ADMIN" completionQuantity="1" id="admin-role-task"
+                       implementation="##unspecified" isForCompensation="false" name="Task for ROLE_ADMIN"
+                       startQuantity="1">
+            <bpmn:incoming>Flow_fork_to_admin_task</bpmn:incoming>
+            <bpmn:outgoing>Flow_admin_task_to_join</bpmn:outgoing>
+        </bpmn:userTask>
+        <bpmn:parallelGateway gatewayDirection="Unspecified" id="join" name="Join">
+            <bpmn:incoming>Flow_admin_task_to_join</bpmn:incoming>
+            <bpmn:incoming>Flow_0dji20v</bpmn:incoming>
+            <bpmn:incoming>Flow_1k59g8w</bpmn:incoming>
+            <bpmn:incoming>Flow_00gvkkp</bpmn:incoming>
+            <bpmn:incoming>Flow_0gzoao9</bpmn:incoming>
+            <bpmn:incoming>Flow_1q0bqoq</bpmn:incoming>
+            <bpmn:incoming>Flow_1tskxk5</bpmn:incoming>
+            <bpmn:incoming>Flow_0omjsl0</bpmn:incoming>
+            <bpmn:incoming>Flow_0nvz90c</bpmn:incoming>
+            <bpmn:incoming>Flow_0xmqcyh</bpmn:incoming>
+            <bpmn:outgoing>Flow_join_to_end</bpmn:outgoing>
+        </bpmn:parallelGateway>
+        <bpmn:endEvent id="end-event" name="End">
+            <bpmn:incoming>Flow_join_to_end</bpmn:incoming>
+        </bpmn:endEvent>
+        <bpmn:sequenceFlow id="Flow_start_to_fork" sourceRef="start-event" targetRef="fork"/>
+        <bpmn:sequenceFlow id="Flow_fork_to_admin_task" sourceRef="fork" targetRef="admin-role-task"/>
+        <bpmn:sequenceFlow id="Flow_admin_task_to_join" sourceRef="admin-role-task" targetRef="join"/>
+        <bpmn:sequenceFlow id="Flow_join_to_end" sourceRef="join" targetRef="end-event"/>
+        <bpmn:sequenceFlow id="Flow_0mu1kbg" sourceRef="fork" targetRef="default-team-task"/>
+        <bpmn:sequenceFlow id="Flow_06oc92f" sourceRef="fork" targetRef="admin-and-default-team-task"/>
+        <bpmn:sequenceFlow id="Flow_0jqq2n1" sourceRef="fork" targetRef="other-role-task"/>
+        <bpmn:sequenceFlow id="Flow_1cart0i" sourceRef="fork" targetRef="another-team-task"/>
+        <bpmn:sequenceFlow id="Flow_0suxjbc" sourceRef="fork" targetRef="other-role-and-another-team-task"/>
+        <bpmn:sequenceFlow id="Flow_0dji20v" sourceRef="default-team-task" targetRef="join"/>
+        <bpmn:sequenceFlow id="Flow_1k59g8w" sourceRef="admin-and-default-team-task" targetRef="join"/>
+        <bpmn:sequenceFlow id="Flow_00gvkkp" sourceRef="other-role-task" targetRef="join"/>
+        <bpmn:sequenceFlow id="Flow_0gzoao9" sourceRef="another-team-task" targetRef="join"/>
+        <bpmn:sequenceFlow id="Flow_1q0bqoq" sourceRef="other-role-and-another-team-task" targetRef="join"/>
+        <bpmn:sequenceFlow id="Flow_0en4j4q" sourceRef="fork" targetRef="admin-and-another-team-task"/>
+        <bpmn:sequenceFlow id="Flow_1h4uliy" sourceRef="fork" targetRef="other-role-and-default-team-task"/>
+        <bpmn:sequenceFlow id="Flow_1tskxk5" sourceRef="admin-and-another-team-task" targetRef="join"/>
+        <bpmn:sequenceFlow id="Flow_0omjsl0" sourceRef="other-role-and-default-team-task" targetRef="join"/>
+        <bpmn:userTask camunda:candidateGroups="default-team" completionQuantity="1" id="default-team-task"
+                       implementation="##unspecified" isForCompensation="false" name="Task for default-team"
+                       startQuantity="1">
+            <bpmn:incoming>Flow_0mu1kbg</bpmn:incoming>
+            <bpmn:outgoing>Flow_0dji20v</bpmn:outgoing>
+        </bpmn:userTask>
+        <bpmn:userTask camunda:candidateGroups="ROLE_ADMIN,default-team" completionQuantity="1" id="admin-and-default-team-task"
+                       implementation="##unspecified" isForCompensation="false"
+                       name="Task for ROLE_ADMIN and default-team" startQuantity="1">
+            <bpmn:incoming>Flow_06oc92f</bpmn:incoming>
+            <bpmn:outgoing>Flow_1k59g8w</bpmn:outgoing>
+        </bpmn:userTask>
+        <bpmn:userTask camunda:candidateGroups="ROLE_OTHER" completionQuantity="1" id="other-role-task"
+                       implementation="##unspecified" isForCompensation="false" name="Task for ROLE_OTHER"
+                       startQuantity="1">
+            <bpmn:incoming>Flow_0jqq2n1</bpmn:incoming>
+            <bpmn:outgoing>Flow_00gvkkp</bpmn:outgoing>
+        </bpmn:userTask>
+        <bpmn:userTask camunda:candidateGroups="another-team" completionQuantity="1" id="another-team-task"
+                       implementation="##unspecified" isForCompensation="false" name="Task for another-team"
+                       startQuantity="1">
+            <bpmn:incoming>Flow_1cart0i</bpmn:incoming>
+            <bpmn:outgoing>Flow_0gzoao9</bpmn:outgoing>
+        </bpmn:userTask>
+        <bpmn:userTask camunda:candidateGroups="ROLE_OTHER,another-team" completionQuantity="1" id="other-role-and-another-team-task"
+                       implementation="##unspecified" isForCompensation="false"
+                       name="Task for ROLE_OTHER and another-team" startQuantity="1">
+            <bpmn:incoming>Flow_0suxjbc</bpmn:incoming>
+            <bpmn:outgoing>Flow_1q0bqoq</bpmn:outgoing>
+        </bpmn:userTask>
+        <bpmn:userTask camunda:candidateGroups="ROLE_ADMIN,another-team" completionQuantity="1" id="admin-and-another-team-task"
+                       implementation="##unspecified" isForCompensation="false"
+                       name="Task for ROLE_ADMIN and another-team" startQuantity="1">
+            <bpmn:incoming>Flow_0en4j4q</bpmn:incoming>
+            <bpmn:outgoing>Flow_1tskxk5</bpmn:outgoing>
+        </bpmn:userTask>
+        <bpmn:userTask camunda:candidateGroups="ROLE_OTHER,default-team" completionQuantity="1" id="other-role-and-default-team-task"
+                       implementation="##unspecified" isForCompensation="false"
+                       name="Task for ROLE_OTHER and default-team" startQuantity="1">
+            <bpmn:incoming>Flow_1h4uliy</bpmn:incoming>
+            <bpmn:outgoing>Flow_0omjsl0</bpmn:outgoing>
+        </bpmn:userTask>
+        <bpmn:sequenceFlow id="Flow_18i1w2j" sourceRef="fork" targetRef="no-candidate-group-task"/>
+        <bpmn:userTask completionQuantity="1" id="no-candidate-group-task" implementation="##unspecified"
+                       isForCompensation="false" name="Task with no candidate group" startQuantity="1">
+            <bpmn:incoming>Flow_18i1w2j</bpmn:incoming>
+            <bpmn:outgoing>Flow_0nvz90c</bpmn:outgoing>
+        </bpmn:userTask>
+        <bpmn:sequenceFlow id="Flow_0nvz90c" sourceRef="no-candidate-group-task" targetRef="join"/>
+        <bpmn:sequenceFlow id="Flow_1weapq6" sourceRef="fork" targetRef="all-groups-task"/>
+        <bpmn:userTask camunda:candidateGroups="ROLE_ADMIN,ROLE_OTHER,default-team,another-team" completionQuantity="1"
+                       id="all-groups-task" implementation="##unspecified" isForCompensation="false"
+                       name="Task for ROLE_ADMIN, ROLE_OTHER, default-team, another-team" startQuantity="1">
+            <bpmn:incoming>Flow_1weapq6</bpmn:incoming>
+            <bpmn:outgoing>Flow_0xmqcyh</bpmn:outgoing>
+        </bpmn:userTask>
+        <bpmn:sequenceFlow id="Flow_0xmqcyh" sourceRef="all-groups-task" targetRef="join"/>
+    </bpmn:process>
+    <bpmndi:BPMNDiagram id="BPMNDiagram_1">
+        <bpmndi:BPMNPlane bpmnElement="auto-assign-test" id="BPMNPlane_1">
+            <bpmndi:BPMNShape bpmnElement="start-event" id="start-event_di">
+                <dc:Bounds height="36" width="36" x="179" y="209"/>
+                <bpmndi:BPMNLabel>
+                    <dc:Bounds height="14" width="25" x="185" y="252"/>
+                </bpmndi:BPMNLabel>
+            </bpmndi:BPMNShape>
+            <bpmndi:BPMNShape bpmnElement="fork" id="fork_di">
+                <dc:Bounds height="50" width="50" x="275" y="202"/>
+                <bpmndi:BPMNLabel>
+                    <dc:Bounds height="14" width="22" x="289" y="178"/>
+                </bpmndi:BPMNLabel>
+            </bpmndi:BPMNShape>
+            <bpmndi:BPMNShape bpmnElement="join" id="join_di">
+                <dc:Bounds height="50" width="50" x="575" y="202"/>
+                <bpmndi:BPMNLabel>
+                    <dc:Bounds height="14" width="21" x="589" y="178"/>
+                </bpmndi:BPMNLabel>
+            </bpmndi:BPMNShape>
+            <bpmndi:BPMNShape bpmnElement="end-event" id="end-event_di">
+                <dc:Bounds height="36" width="36" x="692" y="209"/>
+                <bpmndi:BPMNLabel>
+                    <dc:Bounds height="14" width="20" x="700" y="252"/>
+                </bpmndi:BPMNLabel>
+            </bpmndi:BPMNShape>
+            <bpmndi:BPMNShape bpmnElement="admin-role-task" id="admin-role-task_di">
+                <dc:Bounds height="80" width="100" x="400" y="187"/>
+                <bpmndi:BPMNLabel/>
+            </bpmndi:BPMNShape>
+            <bpmndi:BPMNShape bpmnElement="default-team-task" id="Activity_0jdy6vf_di">
+                <dc:Bounds height="80" width="100" x="400" y="300"/>
+            </bpmndi:BPMNShape>
+            <bpmndi:BPMNShape bpmnElement="admin-and-default-team-task" id="Activity_1bmt3t7_di">
+                <dc:Bounds height="80" width="100" x="400" y="410"/>
+            </bpmndi:BPMNShape>
+            <bpmndi:BPMNShape bpmnElement="other-role-task" id="Activity_0x768mx_di">
+                <dc:Bounds height="80" width="100" x="400" y="520"/>
+            </bpmndi:BPMNShape>
+            <bpmndi:BPMNShape bpmnElement="another-team-task" id="Activity_0oqjzah_di">
+                <dc:Bounds height="80" width="100" x="400" y="630"/>
+            </bpmndi:BPMNShape>
+            <bpmndi:BPMNShape bpmnElement="other-role-and-another-team-task" id="Activity_03gjpwf_di">
+                <dc:Bounds height="80" width="100" x="400" y="740"/>
+            </bpmndi:BPMNShape>
+            <bpmndi:BPMNShape bpmnElement="admin-and-another-team-task" id="Activity_1rvbumx_di">
+                <dc:Bounds height="80" width="100" x="400" y="850"/>
+            </bpmndi:BPMNShape>
+            <bpmndi:BPMNShape bpmnElement="other-role-and-default-team-task" id="Activity_05gf4vj_di">
+                <dc:Bounds height="80" width="100" x="400" y="960"/>
+            </bpmndi:BPMNShape>
+            <bpmndi:BPMNShape bpmnElement="no-candidate-group-task" id="Activity_1flb3so_di">
+                <dc:Bounds height="80" width="100" x="400" y="1070"/>
+            </bpmndi:BPMNShape>
+            <bpmndi:BPMNShape bpmnElement="all-groups-task" id="Activity_02fumr4_di">
+                <dc:Bounds height="80" width="100" x="400" y="1180"/>
+            </bpmndi:BPMNShape>
+            <bpmndi:BPMNEdge bpmnElement="Flow_start_to_fork" id="Flow_start_to_fork_di">
+                <di:waypoint x="215" y="227"/>
+                <di:waypoint x="275" y="227"/>
+            </bpmndi:BPMNEdge>
+            <bpmndi:BPMNEdge bpmnElement="Flow_fork_to_admin_task" id="Flow_fork_to_admin_task_di">
+                <di:waypoint x="325" y="227"/>
+                <di:waypoint x="400" y="227"/>
+            </bpmndi:BPMNEdge>
+            <bpmndi:BPMNEdge bpmnElement="Flow_admin_task_to_join" id="Flow_admin_task_to_join_di">
+                <di:waypoint x="500" y="227"/>
+                <di:waypoint x="575" y="227"/>
+            </bpmndi:BPMNEdge>
+            <bpmndi:BPMNEdge bpmnElement="Flow_join_to_end" id="Flow_join_to_end_di">
+                <di:waypoint x="625" y="227"/>
+                <di:waypoint x="692" y="227"/>
+            </bpmndi:BPMNEdge>
+            <bpmndi:BPMNEdge bpmnElement="Flow_0mu1kbg" id="Flow_0mu1kbg_di">
+                <di:waypoint x="300" y="252"/>
+                <di:waypoint x="300" y="340"/>
+                <di:waypoint x="400" y="340"/>
+            </bpmndi:BPMNEdge>
+            <bpmndi:BPMNEdge bpmnElement="Flow_06oc92f" id="Flow_06oc92f_di">
+                <di:waypoint x="300" y="252"/>
+                <di:waypoint x="300" y="450"/>
+                <di:waypoint x="400" y="450"/>
+            </bpmndi:BPMNEdge>
+            <bpmndi:BPMNEdge bpmnElement="Flow_0jqq2n1" id="Flow_0jqq2n1_di">
+                <di:waypoint x="300" y="252"/>
+                <di:waypoint x="300" y="560"/>
+                <di:waypoint x="400" y="560"/>
+            </bpmndi:BPMNEdge>
+            <bpmndi:BPMNEdge bpmnElement="Flow_1cart0i" id="Flow_1cart0i_di">
+                <di:waypoint x="300" y="252"/>
+                <di:waypoint x="300" y="670"/>
+                <di:waypoint x="400" y="670"/>
+            </bpmndi:BPMNEdge>
+            <bpmndi:BPMNEdge bpmnElement="Flow_0suxjbc" id="Flow_0suxjbc_di">
+                <di:waypoint x="300" y="252"/>
+                <di:waypoint x="300" y="780"/>
+                <di:waypoint x="400" y="780"/>
+            </bpmndi:BPMNEdge>
+            <bpmndi:BPMNEdge bpmnElement="Flow_0dji20v" id="Flow_0dji20v_di">
+                <di:waypoint x="500" y="340"/>
+                <di:waypoint x="600" y="340"/>
+                <di:waypoint x="600" y="252"/>
+            </bpmndi:BPMNEdge>
+            <bpmndi:BPMNEdge bpmnElement="Flow_1k59g8w" id="Flow_1k59g8w_di">
+                <di:waypoint x="500" y="450"/>
+                <di:waypoint x="600" y="450"/>
+                <di:waypoint x="600" y="252"/>
+            </bpmndi:BPMNEdge>
+            <bpmndi:BPMNEdge bpmnElement="Flow_00gvkkp" id="Flow_00gvkkp_di">
+                <di:waypoint x="500" y="560"/>
+                <di:waypoint x="600" y="560"/>
+                <di:waypoint x="600" y="252"/>
+            </bpmndi:BPMNEdge>
+            <bpmndi:BPMNEdge bpmnElement="Flow_0gzoao9" id="Flow_0gzoao9_di">
+                <di:waypoint x="500" y="670"/>
+                <di:waypoint x="600" y="670"/>
+                <di:waypoint x="600" y="252"/>
+            </bpmndi:BPMNEdge>
+            <bpmndi:BPMNEdge bpmnElement="Flow_1q0bqoq" id="Flow_1q0bqoq_di">
+                <di:waypoint x="500" y="780"/>
+                <di:waypoint x="600" y="780"/>
+                <di:waypoint x="600" y="252"/>
+            </bpmndi:BPMNEdge>
+            <bpmndi:BPMNEdge bpmnElement="Flow_0en4j4q" id="Flow_0en4j4q_di">
+                <di:waypoint x="300" y="252"/>
+                <di:waypoint x="300" y="890"/>
+                <di:waypoint x="400" y="890"/>
+            </bpmndi:BPMNEdge>
+            <bpmndi:BPMNEdge bpmnElement="Flow_1h4uliy" id="Flow_1h4uliy_di">
+                <di:waypoint x="300" y="252"/>
+                <di:waypoint x="300" y="1000"/>
+                <di:waypoint x="400" y="1000"/>
+            </bpmndi:BPMNEdge>
+            <bpmndi:BPMNEdge bpmnElement="Flow_1tskxk5" id="Flow_1tskxk5_di">
+                <di:waypoint x="500" y="890"/>
+                <di:waypoint x="600" y="890"/>
+                <di:waypoint x="600" y="252"/>
+            </bpmndi:BPMNEdge>
+            <bpmndi:BPMNEdge bpmnElement="Flow_0omjsl0" id="Flow_0omjsl0_di">
+                <di:waypoint x="500" y="1000"/>
+                <di:waypoint x="600" y="1000"/>
+                <di:waypoint x="600" y="252"/>
+            </bpmndi:BPMNEdge>
+            <bpmndi:BPMNEdge bpmnElement="Flow_18i1w2j" id="Flow_18i1w2j_di">
+                <di:waypoint x="300" y="252"/>
+                <di:waypoint x="300" y="1110"/>
+                <di:waypoint x="400" y="1110"/>
+            </bpmndi:BPMNEdge>
+            <bpmndi:BPMNEdge bpmnElement="Flow_0nvz90c" id="Flow_0nvz90c_di">
+                <di:waypoint x="500" y="1110"/>
+                <di:waypoint x="600" y="1110"/>
+                <di:waypoint x="600" y="252"/>
+            </bpmndi:BPMNEdge>
+            <bpmndi:BPMNEdge bpmnElement="Flow_1weapq6" id="Flow_1weapq6_di">
+                <di:waypoint x="300" y="252"/>
+                <di:waypoint x="300" y="1220"/>
+                <di:waypoint x="400" y="1220"/>
+            </bpmndi:BPMNEdge>
+            <bpmndi:BPMNEdge bpmnElement="Flow_0xmqcyh" id="Flow_0xmqcyh_di">
+                <di:waypoint x="500" y="1220"/>
+                <di:waypoint x="600" y="1220"/>
+                <di:waypoint x="600" y="252"/>
+            </bpmndi:BPMNEdge>
+        </bpmndi:BPMNPlane>
+    </bpmndi:BPMNDiagram>
+</bpmn:definitions>

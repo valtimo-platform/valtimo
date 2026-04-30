@@ -21,6 +21,7 @@ import static com.ritense.logging.LoggingContextKt.withLoggingContext;
 import com.ritense.valtimo.operaton.domain.OperatonTask;
 import com.ritense.valtimo.contract.audit.utils.AuditHelper;
 import com.ritense.valtimo.contract.event.TaskCompletedEvent;
+import com.ritense.valtimo.event.OperatonTaskEvent;
 import com.ritense.valtimo.contract.utils.RequestHelper;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
@@ -37,10 +38,11 @@ public class TaskCompletedListener {
         this.applicationEventPublisher = applicationEventPublisher;
     }
 
-    @EventListener(condition = "#delegateTask.bpmnModelElementInstance != null " +
-        "&& #delegateTask.bpmnModelElementInstance.elementType.typeName == T(org.operaton.bpm.engine.ActivityTypes).TASK_USER_TASK " +
-        "&& #delegateTask.eventName == T(org.operaton.bpm.engine.delegate.TaskListener).EVENTNAME_COMPLETE")
-    public void notify(DelegateTask delegateTask) {
+    @EventListener(condition = "#event.delegateTask.bpmnModelElementInstance != null " +
+        "&& #event.delegateTask.bpmnModelElementInstance.elementType.typeName == T(org.operaton.bpm.engine.ActivityTypes).TASK_USER_TASK " +
+        "&& #event.eventName == T(org.operaton.bpm.engine.delegate.TaskListener).EVENTNAME_COMPLETE")
+    public void notify(OperatonTaskEvent event) {
+        DelegateTask delegateTask = event.getDelegateTask();
         withLoggingContext(OperatonTask.class, delegateTask.getId(), () ->
             applicationEventPublisher.publishEvent(
                 new TaskCompletedEvent(

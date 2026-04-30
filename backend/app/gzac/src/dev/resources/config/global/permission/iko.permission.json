@@ -1,0 +1,12 @@
+[
+    {
+        "resourceType": "com.ritense.iko.domain.IkoView",
+        "action": "view",
+        "roleKey": "ROLE_ADMIN"
+    },
+    {
+        "resourceType": "com.ritense.iko.domain.IkoView",
+        "action": "view_list",
+        "roleKey": "ROLE_ADMIN"
+    }
+]

@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,13 +29,16 @@ import {FileSizeModule} from '../file-size/file-size.module';
 import {ResourceModule} from '@valtimo/resource';
 import {RouterModule} from '@angular/router';
 import {FormIoCurrentUserComponent} from './components/form-io-current-user/form-io-current-user.component';
-import {ConfigService} from '@valtimo/shared';
 import {FormIoIbanComponent} from './components/form-io-iban/iban.component';
 import {ReactiveFormsModule} from '@angular/forms';
 import {FormioValueResolverSelectorComponent} from './components/formio-value-resolver-selector/formio-value-resolver-selector.component';
 import {FormioDummyComponent} from './components/form-io-dummy/dummy.component';
 import {LayerModule} from 'carbon-components-angular';
 import {FormIoCurrencyComponent} from './components/form-io-currency/currency.component';
+import {applyDataGridPatch} from './patches/patched-datagrid';
+
+// Apply FormIO patches before any form renders
+applyDataGridPatch();
 
 @NgModule({
   imports: [
@@ -73,8 +76,7 @@ import {FormIoCurrencyComponent} from './components/form-io-currency/currency.co
     FormIoDomService,
     {
       provide: FormioAppConfig,
-      deps: [ConfigService],
-      useFactory: (configService: ConfigService) => getFormioAppConfig(configService.config),
+      useFactory: () => getFormioAppConfig(),
     },
   ],
 })

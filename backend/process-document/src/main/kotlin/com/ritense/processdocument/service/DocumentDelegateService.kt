@@ -20,6 +20,7 @@ import com.fasterxml.jackson.core.JsonPointer
 import com.fasterxml.jackson.core.JsonProcessingException
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.ObjectMapper
+import com.ritense.authorization.AuthorizationContext.Companion.runWithoutAuthorization
 import com.ritense.document.domain.Document
 import com.ritense.document.domain.impl.JsonSchemaDocumentId
 import com.ritense.document.service.DocumentService
@@ -27,6 +28,7 @@ import com.ritense.document.service.impl.JsonSchemaDocumentService
 import com.ritense.processdocument.domain.impl.OperatonProcessInstanceId
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import com.ritense.valtimo.contract.authentication.UserManagementService
+import com.ritense.valtimo.contract.document.CaseDocumentResolver
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.operaton.bpm.engine.delegate.DelegateExecution
 import org.springframework.stereotype.Service
@@ -43,6 +45,7 @@ class DocumentDelegateService(
     private val jsonSchemaDocumentService: JsonSchemaDocumentService,
     private val userManagementService: UserManagementService,
     private val objectMapper: ObjectMapper,
+    private val caseDocumentResolver: CaseDocumentResolver,
 ) {
 
     fun getDocumentVersion(execution: DelegateExecution): Int? {
@@ -95,40 +98,41 @@ class DocumentDelegateService(
         }
         logger.debug("Assigning user {} to document {}", userEmail, execution.processBusinessKey)
 
-        val processInstanceId = OperatonProcessInstanceId(execution.processInstanceId)
-        val documentId = processDocumentService.getDocumentId(processInstanceId, execution)
-        val user = userManagementService.findByEmail(userEmail)
+        val caseDocumentId = getCaseDocumentId(execution)
+        val user = runWithoutAuthorization { userManagementService.findByEmail(userEmail) }
             .orElseThrow { IllegalArgumentException("No user found with email: $userEmail") }
-        documentService.assignUserToDocument(documentId.id, user.id)
+        documentService.assignUserToDocument(caseDocumentId, user.id)
     }
 
     fun setInternalStatus(execution: DelegateExecution, statusKey: String?) {
-        val processInstanceId = OperatonProcessInstanceId(execution.processInstanceId)
-        val documentId = processDocumentService.getDocumentId(processInstanceId, execution)
+        val caseDocumentId = getCaseDocumentId(execution)
 
-        documentService.setInternalStatus(documentId, statusKey)
+        documentService.setInternalStatus(JsonSchemaDocumentId.existingId(caseDocumentId), statusKey)
     }
 
     fun addCaseTag(execution: DelegateExecution, caseTagKey: String) {
-        val processInstanceId = OperatonProcessInstanceId(execution.processInstanceId)
-        val documentId = processDocumentService.getDocumentId(processInstanceId, execution)
+        val caseDocumentId = getCaseDocumentId(execution)
 
-        documentService.addCaseTag(documentId, caseTagKey)
+        documentService.addCaseTag(JsonSchemaDocumentId.existingId(caseDocumentId), caseTagKey)
     }
 
     fun removeCaseTag(execution: DelegateExecution, caseTagKey: String) {
-        val processInstanceId = OperatonProcessInstanceId(execution.processInstanceId)
-        val documentId = processDocumentService.getDocumentId(processInstanceId, execution)
+        val caseDocumentId = getCaseDocumentId(execution)
 
-        documentService.removeCaseTag(documentId, caseTagKey)
+        documentService.removeCaseTag(JsonSchemaDocumentId.existingId(caseDocumentId), caseTagKey)
     }
 
     fun unassign(execution: DelegateExecution) {
         logger.debug("Unassigning user from document {}", execution.processBusinessKey)
 
+        val caseDocumentId = getCaseDocumentId(execution)
+        documentService.unassignUserFromDocument(caseDocumentId)
+    }
+
+    private fun getCaseDocumentId(execution: DelegateExecution): UUID {
         val processInstanceId = OperatonProcessInstanceId(execution.processInstanceId)
         val documentId = processDocumentService.getDocumentId(processInstanceId, execution)
-        documentService.unassignUserFromDocument(documentId.id)
+        return caseDocumentResolver.resolveCaseDocumentId(documentId.id)
     }
 
     private fun findOptionalValueByJsonPointer(jsonPointer: String?, execution: DelegateExecution): Optional<Any> {

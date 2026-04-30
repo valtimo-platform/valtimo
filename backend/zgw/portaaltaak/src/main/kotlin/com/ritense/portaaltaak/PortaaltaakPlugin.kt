@@ -36,6 +36,7 @@ import com.ritense.plugin.annotation.PluginAction
 import com.ritense.plugin.annotation.PluginActionProperty
 import com.ritense.plugin.annotation.PluginProperty
 import com.ritense.plugin.domain.PluginConfigurationId
+import com.ritense.plugin.domain.PluginDependency
 import com.ritense.plugin.service.PluginService
 import com.ritense.portaaltaak.exception.CompleteTaakProcessVariableNotFoundException
 import com.ritense.processdocument.domain.impl.OperatonProcessInstanceId
@@ -62,7 +63,8 @@ import java.util.UUID
 @Plugin(
     key = "portaaltaak",
     title = "Portaaltaak",
-    description = "Enable interfacing with Portaaltaak specification compliant APIs"
+    description = "Enable interfacing with Portaaltaak specification compliant APIs",
+    dependencies = [PluginDependency.ZAAK_INSTANCE_LINK, PluginDependency.ZAAK_TYPE_LINK]
 )
 class PortaaltaakPlugin(
     private val objectManagementService: ObjectManagementService,
@@ -231,7 +233,7 @@ class PortaaltaakPlugin(
 
         val initiator = requireNotNull(
             zakenPlugin.getZaakRollen(zaakUrl, RolTypeGeneriekeBeschrijving.INITIATOR).firstOrNull()
-        ) { "No initiator role found for zaak with URL $zaakUrl" }
+        ) { "No role found for zaak with URL $zaakUrl that has omschrijvingGeneriek 'Initiator'" }
 
         return requireNotNull(
             initiator.betrokkeneIdentificatie.let {

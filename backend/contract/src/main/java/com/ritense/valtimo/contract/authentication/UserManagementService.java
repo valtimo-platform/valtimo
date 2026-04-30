@@ -26,16 +26,22 @@ import org.springframework.data.domain.Pageable;
 
 public interface UserManagementService {
 
+    @Deprecated(since = "Since 13.20.0", forRemoval = true)
     ManageableUser createUser(ManageableUser user);
 
+    @Deprecated(since = "Since 13.20.0", forRemoval = true)
     ManageableUser updateUser(ManageableUser user);
 
+    @Deprecated(since = "Since 13.20.0", forRemoval = true)
     void deleteUser(String userId);
 
+    @Deprecated(since = "Since 13.20.0", forRemoval = true)
     boolean resendVerificationEmail(String userId);
 
+    @Deprecated(since = "Since 13.20.0", forRemoval = true)
     void activateUser(String userId);
 
+    @Deprecated(since = "Since 13.20.0", forRemoval = true)
     void deactivateUser(String userId);
 
     Page<ManageableUser> getAllUsers(Pageable pageable);
@@ -45,18 +51,6 @@ public interface UserManagementService {
     Page<ManageableUser> queryUsers(String searchTerm, Pageable pageable);
 
     Optional<ManageableUser> findByEmail(String email);
-
-    Optional<NamedUser> findNamedUserByEmail(String email);
-
-    /**
-     * Find user by user identifier
-     *
-     * @deprecated Since 13.0.0.
-     */
-    @Deprecated(since = "Since 13.0.0", forRemoval = true)
-    default ManageableUser findByIdentifier(String userIdentifier) {
-        throw new NotImplementedException("Failed to get current user because method is not implemented.");
-    }
 
     default ManageableUser findByUsername(String username) {
         throw new NotImplementedException("Failed to get current user because method is not implemented.");
@@ -68,7 +62,7 @@ public interface UserManagementService {
 
     List<ManageableUser> findByRoles(SearchByUserGroupsCriteria groupsCriteria);
 
-    List<NamedUser> findNamedUserByRoles(Set<String> roles);
+    List<NamedUser> findNamedUserByRolesWithoutAuthorization(Set<String> roles);
 
     default ManageableUser getCurrentUser() {
         throw new NotImplementedException("Failed to get current user because method is not implemented.");
@@ -76,5 +70,9 @@ public interface UserManagementService {
 
     default String getCurrentUserId() {
         throw new NotImplementedException("Failed to get current user ID because method is not implemented.");
+    }
+
+    default List<String> getCurrentUserTeams() {
+        throw new NotImplementedException("Failed to get current user teams because method is not implemented.");
     }
 }

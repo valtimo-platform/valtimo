@@ -20,6 +20,7 @@ import {BehaviorSubject, combineLatest, map, Observable, Subscription, take} fro
 import {PluginManagementService, PluginTranslationService} from '../../../../services';
 import {TranslateService} from '@ngx-translate/core';
 import {ZakenApiConfig} from '../../models';
+import {ZAKEN_API_CONFIGURATION_TEST_IDS} from '../../../../constants';
 
 @Component({
   standalone: false,
@@ -36,6 +37,7 @@ export class ZakenApiConfigurationComponent
   @Input() public prefillConfiguration$: Observable<ZakenApiConfig>;
   @Output() public valid: EventEmitter<boolean> = new EventEmitter<boolean>();
   @Output() public configuration: EventEmitter<ZakenApiConfig> = new EventEmitter<ZakenApiConfig>();
+  protected readonly testIds = ZAKEN_API_CONFIGURATION_TEST_IDS;
 
   public readonly authenticationPluginSelectItems$: Observable<Array<{id: string; text: string}>> =
     combineLatest([

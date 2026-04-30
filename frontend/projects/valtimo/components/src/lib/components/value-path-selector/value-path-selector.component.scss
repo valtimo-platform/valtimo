@@ -42,7 +42,8 @@
     display: flex !important;
   }
 
-  ::ng-deep cds-dropdown {
+  ::ng-deep cds-dropdown,
+  ::ng-deep cds-combo-box {
     width: 100%;
     min-width: 0;
   }

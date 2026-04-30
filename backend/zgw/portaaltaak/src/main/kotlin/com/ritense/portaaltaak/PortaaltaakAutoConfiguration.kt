@@ -21,7 +21,6 @@ import com.ritense.document.service.DocumentService
 import com.ritense.objectmanagement.service.ObjectManagementService
 import com.ritense.plugin.service.PluginService
 import com.ritense.processdocument.service.ProcessDocumentService
-import com.ritense.valtimo.contract.config.LiquibaseMasterChangeLogLocation
 import com.ritense.valtimo.service.OperatonProcessService
 import com.ritense.valtimo.service.OperatonTaskService
 import com.ritense.valueresolver.ValueResolverService
@@ -30,8 +29,6 @@ import org.operaton.bpm.engine.RuntimeService
 import org.springframework.boot.autoconfigure.AutoConfiguration
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.context.annotation.Bean
-import org.springframework.core.Ordered
-import org.springframework.core.annotation.Order
 
 @AutoConfiguration
 class PortaaltaakAutoConfiguration {
@@ -81,10 +78,4 @@ class PortaaltaakAutoConfiguration {
         )
     }
 
-    @Order(Ordered.HIGHEST_PRECEDENCE + 20)
-    @Bean
-    @ConditionalOnMissingBean(name = ["portaaltaakLiquibaseMasterChangeLogLocation"])
-    fun portaaltaakLiquibaseMasterChangeLogLocation(): LiquibaseMasterChangeLogLocation {
-        return LiquibaseMasterChangeLogLocation("config/liquibase/portaaltaak-master.xml")
-    }
 }

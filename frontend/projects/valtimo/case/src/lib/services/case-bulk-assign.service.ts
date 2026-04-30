@@ -17,13 +17,11 @@
 import {HttpClient} from '@angular/common/http';
 import {Injectable} from '@angular/core';
 import {ConfigService} from '@valtimo/shared';
-import {BehaviorSubject, Observable, take} from 'rxjs';
+import {Observable} from 'rxjs';
 import {CandidateUser} from '../models';
 
 @Injectable()
 export class CaseBulkAssignService {
-  public readonly candidateUsers$ = new BehaviorSubject<CandidateUser[]>([]);
-
   private _valtimoEndpointUri: string;
 
   constructor(
@@ -33,21 +31,13 @@ export class CaseBulkAssignService {
     this._valtimoEndpointUri = `${this.configService.config.valtimoApi.endpointUri}v1/document/`;
   }
 
-  public bulkAssign(assigneeId: string, documentIds: string[]): Observable<void> {
-    return this.http.post<void>(`${this._valtimoEndpointUri}assign`, {assigneeId, documentIds});
+  public bulkAssign(documentIds: string[], assigneeId?: string, assignedTeamKey?: string): Observable<void> {
+    return this.http.post<void>(`${this._valtimoEndpointUri}assign`, {assigneeId, assignedTeamKey, documentIds});
   }
 
-  public loadCandidateUsers(documentIds: string[]): void {
-    this.http
-      .post<CandidateUser[]>(`${this._valtimoEndpointUri}candidate-user`, {documentIds})
-      .pipe(take(1))
-      .subscribe({
-        next: (candidateUsers: CandidateUser[]) => {
-          this.candidateUsers$.next(candidateUsers);
-        },
-        error: error => {
-          console.error(error);
-        },
-      });
+  public loadCandidateUsers(documentIds: string[]): Observable<CandidateUser[]> {
+    return this.http.post<CandidateUser[]>(`${this._valtimoEndpointUri}candidate-user`, {
+      documentIds: documentIds,
+    });
   }
 }

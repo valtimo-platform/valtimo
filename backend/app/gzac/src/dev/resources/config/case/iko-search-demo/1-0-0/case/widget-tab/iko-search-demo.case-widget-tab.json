@@ -1,0 +1,61 @@
+[
+    {
+        "key": "summary",
+        "widgets": [
+            {
+                "type": "fields",
+                "key": "aanvrager",
+                "title": "Aanvrager",
+                "width": 1,
+                "highContrast": true,
+                "isCompact": null,
+                "actions": [
+                    {
+                        "name": "Ga naar Klant",
+                        "navigateTo": "/iko/demo/bsn/details/${doc:ikoSearchResult.id}"
+                    }
+                ],
+                "displayConditions": [
+                    {
+                        "path": "doc:ikoSearchResult.id",
+                        "operator": ">",
+                        "value": "0"
+                    }
+                ],
+                "properties": {
+                    "columns": [
+                        [
+                            {
+                                "key": "naam",
+                                "title": "Naam",
+                                "value": "doc:ikoSearchResult.naam",
+                                "displayProperties": {
+                                    "type": "text",
+                                    "hideWhenEmpty": true
+                                }
+                            },
+                            {
+                                "key": "adres",
+                                "title": "Adres",
+                                "value": "doc:ikoSearchResult.adres",
+                                "displayProperties": {
+                                    "type": "text",
+                                    "hideWhenEmpty": true
+                                }
+                            },
+                            {
+                                "key": "geboortedatum",
+                                "title": "Geboortedatum",
+                                "value": "doc:ikoSearchResult.geboortedatum",
+                                "displayProperties": {
+                                    "type": "text",
+                                    "hideWhenEmpty": true
+                                }
+                            }
+                        ]
+                    ]
+                }
+            }
+        ]
+    }
+]

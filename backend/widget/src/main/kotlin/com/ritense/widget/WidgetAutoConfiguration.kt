@@ -18,7 +18,6 @@ package com.ritense.widget
 
 import ResolvedPageSerializer
 import com.fasterxml.jackson.databind.ObjectMapper
-import com.ritense.valtimo.contract.config.LiquibaseMasterChangeLogLocation
 import com.ritense.valueresolver.ValueResolverService
 import com.ritense.widget.collection.CollectionWidget
 import com.ritense.widget.collection.CollectionWidgetDataProvider
@@ -51,7 +50,6 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.boot.autoconfigure.domain.EntityScan
 import org.springframework.context.ApplicationContext
 import org.springframework.context.annotation.Bean
-import org.springframework.core.Ordered.HIGHEST_PRECEDENCE
 import org.springframework.core.annotation.Order
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories
 import javax.sql.DataSource
@@ -75,14 +73,6 @@ import javax.sql.DataSource
     ]
 )
 class WidgetAutoConfiguration {
-
-    @Order(HIGHEST_PRECEDENCE + 34)
-    @Bean
-    @ConditionalOnClass(DataSource::class)
-    @ConditionalOnMissingBean(name = ["widgetLiquibaseMasterChangeLogLocation"])
-    fun widgetLiquibaseMasterChangeLogLocation(): LiquibaseMasterChangeLogLocation {
-        return LiquibaseMasterChangeLogLocation("config/liquibase/widget-master.xml")
-    }
 
     @Bean
     @ConditionalOnClass(DataSource::class)

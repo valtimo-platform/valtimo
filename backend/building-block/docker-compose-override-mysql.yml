@@ -1,0 +1,6 @@
+services:
+    db:
+        ports:
+            - "3363:3306"
+        environment:
+            - MYSQL_DATABASE=building-block-test

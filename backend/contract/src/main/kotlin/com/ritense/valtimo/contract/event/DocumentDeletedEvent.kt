@@ -19,5 +19,5 @@ package com.ritense.valtimo.contract.event
 import java.util.UUID
 
 class DocumentDeletedEvent(
-    val documentId: UUID
+    val caseDocumentId: UUID
 )

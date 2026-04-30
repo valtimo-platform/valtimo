@@ -17,8 +17,10 @@
 import {ManagementContext} from '@valtimo/shared';
 
 interface FormManagementParams {
-  caseDefinitionKey: string;
-  caseDefinitionVersionTag: string;
+  caseDefinitionKey?: string;
+  caseDefinitionVersionTag?: string;
+  buildingBlockDefinitionKey?: string;
+  buildingBlockDefinitionVersionTag?: string;
 }
 
 interface FormManagementRouteData {

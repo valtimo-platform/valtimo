@@ -61,6 +61,7 @@ internal class IkoTabResourceTest {
             .andExpect(jsonPath("$[0].key").value("naam"))
             .andExpect(jsonPath("$[0].title").value("Naam"))
             .andExpect(jsonPath("$[0].type").value("widgets"))
+            .andExpect(jsonPath("$[0].properties.aggregatedDataProfileName").value("Personen"))
     }
 
     private fun tab() = Tab(
@@ -68,5 +69,8 @@ internal class IkoTabResourceTest {
         title = "Naam",
         type = "widgets",
         order = 0,
+        properties = mapOf (
+            "aggregatedDataProfileName" to "Personen"
+        )
     )
 }

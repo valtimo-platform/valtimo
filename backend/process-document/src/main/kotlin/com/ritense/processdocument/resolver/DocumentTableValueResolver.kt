@@ -87,8 +87,11 @@ class DocumentTableValueResolver(
             when (requestedValue) {
                 "assigneeFullName" -> document.assigneeFullName()
                 "assigneeId" -> document.assigneeId()
+                "assignedTeamKey" -> document.assignedTeamKey()
+                "assignedTeamTitle" -> document.assignedTeamTitle()
                 "createdBy" -> document.createdBy()
                 "createdOn" -> document.createdOn()
+                "retentionDate" -> document.retentionDate().orElse(null)
                 "documentDefinitionId" -> document.definitionId()
                 "documentDefinitionId.name" -> document.definitionId().name()
                 "definitionId.key" -> document.definitionId().caseDefinitionId().key
@@ -124,8 +127,11 @@ class DocumentTableValueResolver(
         val TABLE_COLUMN_LIST = listOf(
             "assigneeFullName",
             "assigneeId",
+            "assignedTeamKey",
+            "assignedTeamTitle",
             "createdBy",
             "createdOn",
+            "retentionDate",
             "definitionId.name",
             "definitionId.version",
             "documentDefinitionId",

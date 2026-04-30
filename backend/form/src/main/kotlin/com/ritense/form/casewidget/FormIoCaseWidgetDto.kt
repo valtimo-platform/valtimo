@@ -22,6 +22,7 @@ import com.ritense.form.validation.FormDefinitionExistsValidator
 import com.ritense.valtimo.contract.case_.CaseDefinitionId
 import com.ritense.valtimo.contract.conditions.Condition
 import com.ritense.widget.domain.WidgetAction
+import com.ritense.widget.domain.WidgetColor
 import jakarta.validation.Valid
 
 @JsonTypeName("formio")
@@ -29,6 +30,7 @@ data class FormIoCaseWidgetDto(
     override val key: String,
     override val title: String,
     override val icon: String?,
+    override val color: WidgetColor? = null,
     override val width: Int,
     override val highContrast: Boolean,
     override val isCompact: Boolean?,

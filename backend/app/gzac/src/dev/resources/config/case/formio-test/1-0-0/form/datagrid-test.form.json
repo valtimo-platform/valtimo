@@ -1,0 +1,29 @@
+{
+    "display": "form",
+    "components": [
+        {
+            "label": "Data Grid",
+            "key": "datagrid",
+            "type": "datagrid",
+            "components": [
+                {
+                    "label": "Column 1",
+                    "key": "col1",
+                    "type": "textfield",
+                    "input": true
+                }
+            ],
+            "validate": {
+                "required": true
+            },
+            "input": true
+        },
+        {
+            "type": "button",
+            "label": "Submit",
+            "key": "submit",
+            "disableOnInvalid": true,
+            "input": true
+        }
+    ]
+}

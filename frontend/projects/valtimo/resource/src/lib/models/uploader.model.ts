@@ -29,13 +29,9 @@ export interface Resource {
   createdOn?: Date;
 }
 
-export interface OpenZaakResource {
-  resourceId: string;
-  informatieObjectUrl: string;
-  createdOn: string;
-  name: string;
-  extension: string;
-  sizeInBytes: number;
+export interface ResourceReference {
+  filename: string;
+  id: string;
 }
 
 export class S3Resource implements Resource {

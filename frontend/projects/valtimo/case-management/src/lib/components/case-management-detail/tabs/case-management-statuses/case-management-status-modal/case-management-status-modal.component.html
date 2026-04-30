@@ -56,7 +56,7 @@
     <cds-label>
       {{ 'caseManagement.statuses.columns.title' | translate }}
 
-      <input cdsText formControlName="title" [attr.modal-primary-focus]="true" />
+      <input cdsText formControlName="title" [attr.data-test-id]="testIds.titleInput" [attr.modal-primary-focus]="true" />
     </cds-label>
 
     <cds-label>
@@ -66,6 +66,7 @@
         <input
           cdsText
           formControlName="key"
+          [attr.data-test-id]="testIds.keyInput"
           [readOnly]="!obs.editingKey"
           [placeholder]="
             obs.isAdd && !obs.editingKey
@@ -76,6 +77,7 @@
 
         <cds-icon-button
           *ngIf="!obs.editingKey && obs.isAdd"
+          [attr.data-test-id]="testIds.editKeyButton"
           [disabled]="obs.disabled"
           (click)="editKeyButtonClick()"
           kind="secondary"
@@ -91,6 +93,7 @@
 
         <cds-dropdown
           [id]="'status-color-dropdown'"
+          [attr.data-test-id]="testIds.colorDropdown"
           [appendInline]="false"
           [placeholder]="'caseManagement.statuses.colorPlaceholder' | translate"
           (selected)="colorDropdownChange($event)"
@@ -101,6 +104,7 @@
       </cds-label>
 
       <cds-toggle
+        [attr.data-test-id]="testIds.visibilityToggle"
         [label]="'caseManagement.statuses.visibleTitle' | translate"
         [onText]="'caseManagement.statuses.visible' | translate"
         [offText]="'caseManagement.statuses.invisible' | translate"
@@ -109,17 +113,52 @@
         (checkedChange)="toggleCheckedChange($event)"
       ></cds-toggle>
     </div>
+
+    <cds-toggle
+      [label]="'caseManagement.statuses.showRetentionPeriod' | translate"
+      [onText]="'interface.yes' | translate"
+      [offText]="'interface.no' | translate"
+      [disabled]="obs.disabled"
+      [checked]="showRetentionPeriod$ | async"
+      (checkedChange)="toggleRetentionPeriod($event)"
+    ></cds-toggle>
+
+    <cds-label class="status-form-retention-period__label" *ngIf="showRetentionPeriod$ | async">
+      <div>
+        {{ 'caseManagement.statuses.columns.retentionPeriod' | translate }}
+
+        <v-tooltip-icon
+          [tooltip]="'caseManagement.statuses.columns.retentionPeriodTooltip' | translate"
+        ></v-tooltip-icon>
+      </div>
+
+      <input cdsText formControlName="retentionPeriodInDays" />
+    </cds-label>
+
+    <cds-notification
+      class="deployment-warning-notification"
+      *ngIf="!obs.editingKey && !obs.isAdd"
+      [notificationObj]="{
+        type: 'warning',
+        message:
+          ('caseManagement.statuses.retentionPeriodExistingCasesWarning'
+          | translate: notificationContent),
+        showClose: false,
+        lowContrast: true,
+      }"
+    ></cds-notification>
   </form>
 </ng-template>
 
 <ng-template #buttons let-obs="obs">
-  <button cdsButton="secondary" (click)="onClose()" [disabled]="obs.disabled">
+  <button cdsButton="ghost" [attr.data-test-id]="testIds.cancelButton" (click)="onClose()" [disabled]="obs.disabled">
     {{ 'interface.cancel' | translate }}
   </button>
 
   <button
     *ngIf="obs.isAdd"
     cdsButton="primary"
+    [attr.data-test-id]="testIds.addConfirmButton"
     [disabled]="invalid || pristine || obs.disabled"
     (click)="addStatus()"
   >
@@ -129,6 +168,7 @@
   <button
     *ngIf="obs.isEdit"
     cdsButton="primary"
+    [attr.data-test-id]="testIds.saveButton"
     [disabled]="invalid || pristine || obs.disabled"
     (click)="editStatus()"
   >

@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,5 +24,11 @@ import java.util.UUID
 @NoRepositoryBean
 interface OutboxMessageRepository : JpaRepository<OutboxMessage, UUID> {
 
+    @Deprecated(
+        message = "Will be removed in 14.0. Use findOutboxMessages(batchSize) instead",
+        replaceWith = ReplaceWith("findOutboxMessages(1).firstOrNull()")
+    )
     fun findOutboxMessage(): OutboxMessage?
+
+    fun findOutboxMessages(batchSize: Int): List<OutboxMessage>
 }

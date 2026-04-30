@@ -32,13 +32,13 @@ class ZaakInstanceLinkServiceTest {
 
     @Test
     fun `getByDocumentId should throw exception when no link is found`() {
-        val documentId = UUID.randomUUID()
-        whenever(zaakInstanceLinkRepository.findByDocumentId(documentId)).thenReturn(null)
+        val caseDocumentId = UUID.randomUUID()
+        whenever(zaakInstanceLinkRepository.findByDocumentId(caseDocumentId)).thenReturn(null)
 
         val exception = assertThrows<ZaakInstanceLinkNotFoundException> {
-            service.getByDocumentId(documentId)
+            service.getByDocumentId(caseDocumentId)
         }
 
-        assertEquals("No ZaakInstanceLink found for document id $documentId", exception.message)
+        assertEquals("No ZaakInstanceLink found for case document id $caseDocumentId", exception.message)
     }
 }

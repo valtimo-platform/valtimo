@@ -16,7 +16,7 @@
 
 import {Injector} from '@angular/core';
 import {Components, Formio} from 'formiojs';
-import {DocumentService} from '@valtimo/document';
+import {UploadProviderService} from '@valtimo/resource';
 import {FormIoStateService} from '../../services/form-io-state.service';
 import {take} from 'rxjs/operators';
 import {ResourceOption} from '../../../../models';
@@ -24,7 +24,7 @@ import {ResourceOption} from '../../../../models';
 const SelectComponent = Components.components.select;
 
 export function registerFormioFileSelectorComponent(injector: Injector) {
-  const documentService = injector.get(DocumentService);
+  const uploadProviderService = injector.get(UploadProviderService);
   const stateService = injector.get(FormIoStateService);
 
   const unavailableMessage: ResourceOption = {
@@ -38,13 +38,13 @@ export function registerFormioFileSelectorComponent(injector: Injector) {
         resolve([unavailableMessage]);
       });
     }
-    return documentService
-      .getDocument(documentId)
+    return uploadProviderService
+      .getResources(documentId)
       .toPromise()
-      .then(document =>
-        document.relatedFiles.map(relatedFile => ({
-          label: relatedFile.fileName,
-          value: relatedFile.fileId,
+      .then(resources =>
+        resources.map(resourceReference => ({
+          label: resourceReference.filename,
+          value: resourceReference.id,
         }))
       )
       .catch(

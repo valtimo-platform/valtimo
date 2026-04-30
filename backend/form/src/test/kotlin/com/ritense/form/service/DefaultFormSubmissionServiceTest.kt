@@ -30,6 +30,7 @@ import com.ritense.document.exception.DocumentNotFoundException
 import com.ritense.document.service.DocumentSequenceGeneratorService
 import com.ritense.document.service.impl.JsonSchemaDocumentDefinitionService
 import com.ritense.document.service.impl.JsonSchemaDocumentService
+import com.ritense.form.domain.FormDefinitionBlueprintId
 import com.ritense.form.domain.FormIoFormDefinition
 import com.ritense.form.domain.FormProcessLink
 import com.ritense.form.service.impl.DefaultFormSubmissionService
@@ -88,7 +89,6 @@ class DefaultFormSubmissionServiceTest {
     lateinit var documentSequenceGeneratorService: DocumentSequenceGeneratorService
     lateinit var authorizationService: AuthorizationService
     lateinit var valueResolverService: ValueResolverService
-    lateinit var caseDefinitionService: CaseDefinitionService
 
     lateinit var formProcessLink: FormProcessLink
     lateinit var processDefinition: OperatonProcessDefinition
@@ -109,7 +109,6 @@ class DefaultFormSubmissionServiceTest {
         prefillFormService = mock()
         authorizationService = mock()
         valueResolverService = mock()
-        caseDefinitionService = mock()
         mockkObject(AuthorizationSupportedHelper)
         defaultFormSubmissionService = DefaultFormSubmissionService(
             processLinkService,
@@ -124,7 +123,6 @@ class DefaultFormSubmissionServiceTest {
             prefillFormService,
             authorizationService,
             valueResolverService,
-            caseDefinitionService,
             MapperSingleton.get()
         )
 
@@ -135,6 +133,7 @@ class DefaultFormSubmissionServiceTest {
 
         processDefinition = mock<OperatonProcessDefinition>()
         whenever(processDefinition.key).thenReturn("myProcessDefinitionKey")
+        whenever(processDefinition.getBlueprintId()).thenReturn(CaseDefinitionId("test", "1.0.0"))
         whenever(repositoryService.findProcessDefinitionById(formProcessLink.processDefinitionId))
             .thenReturn(processDefinition)
 
@@ -351,7 +350,7 @@ class DefaultFormSubmissionServiceTest {
 
     private fun formDefinitionOf(formDefinitionId: String, caseDefinitionId: CaseDefinitionId): FormIoFormDefinition {
         val formDefinition = rawFormDefinition(formDefinitionId)
-        return FormIoFormDefinition(UUID.randomUUID(), "form-example", formDefinition, caseDefinitionId, false)
+        return FormIoFormDefinition(UUID.randomUUID(), "form-example", formDefinition, FormDefinitionBlueprintId.forCase(caseDefinitionId), false)
     }
 
     private fun rawFormDefinition(formDefinitionId: String): String {

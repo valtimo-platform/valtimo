@@ -23,3 +23,4 @@ export * from './lib/services/process-management-state.service';
 export * from './lib/components/process-management/process-management.component';
 export * from './lib/components/process-management-builder/process-management-builder.component';
 export * from './lib/models';
+export * from './lib/constants/process-management.test-ids';

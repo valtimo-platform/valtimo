@@ -16,6 +16,7 @@
 
 package com.ritense.iko.client
 
+import com.ritense.valtimo.contract.json.MapperSingleton
 import okhttp3.mockwebserver.MockResponse
 import okhttp3.mockwebserver.MockWebServer
 import org.junit.jupiter.api.AfterAll
@@ -44,7 +45,7 @@ class IkoClientTest {
     @Test
     fun `should get iko JSON by id`() {
         val restClientBuilder = RestClient.builder()
-        val client = IkoClient(restClientBuilder)
+        val client = IkoClient(restClientBuilder, MapperSingleton.get())
 
         val responseBody = """
             {
@@ -114,7 +115,7 @@ class IkoClientTest {
     @Test
     fun `should send create besluit request and parse response when vervalreden is null`() {
         val restClientBuilder = RestClient.builder()
-        val client = IkoClient(restClientBuilder)
+        val client = IkoClient(restClientBuilder, MapperSingleton.get())
 
         val responseBody = """
             {

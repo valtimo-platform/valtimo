@@ -31,6 +31,7 @@ import {CaseStatusService, InternalCaseStatus, InternalCaseStatusUtils} from '@v
 import {BehaviorSubject, combineLatest, map, Observable, Subject, switchMap, take, tap} from 'rxjs';
 import {StatusModalCloseEvent, StatusModalType} from '../../../../models';
 import {CaseManagementService} from '../../../../services';
+import {CASE_MANAGEMENT_STATUSES_TEST_IDS} from '../../../../constants';
 
 @Component({
   standalone: false,
@@ -40,7 +41,10 @@ import {CaseManagementService} from '../../../../services';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class CaseManagementStatusesComponent implements AfterViewInit {
+  protected readonly testIds = CASE_MANAGEMENT_STATUSES_TEST_IDS;
+
   @ViewChild('colorColumnTemplate') colorColumnTemplate: TemplateRef<any>;
+  @ViewChild('retentionPeriodColumnTemplate') retentionPeriodColumnTemplate: TemplateRef<any>;
 
   private readonly _reload$ = new BehaviorSubject<null | 'noAnimation'>(null);
 
@@ -200,6 +204,12 @@ export class CaseManagementStatusesComponent implements AfterViewInit {
         key: 'visibleInCaseListByDefault',
         label: 'caseManagement.statuses.columns.visible',
         viewType: ViewType.BOOLEAN,
+      },
+      {
+        key: 'retentionPeriodInDays',
+        label: 'caseManagement.statuses.columns.retentionPeriod',
+        viewType: ViewType.TEMPLATE,
+        template: this.retentionPeriodColumnTemplate,
       },
       {
         viewType: ViewType.TEMPLATE,

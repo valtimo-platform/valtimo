@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,11 +23,14 @@ import com.ritense.authorization.request.EntityAuthorizationRequest
 import com.ritense.case.domain.CaseListColumnId
 import com.ritense.case.exception.InvalidListColumnException
 import com.ritense.case.exception.UnknownCaseDefinitionException
+import com.ritense.case.repository.CaseDefinitionConfigurationIssueRepository
 import com.ritense.case.repository.CaseDefinitionListColumnRepository
 import com.ritense.case.repository.CaseDefinitionSpecificationHelper.Companion.byActive
 import com.ritense.case.repository.CaseDefinitionSpecificationHelper.Companion.byCaseDefinitionKey
 import com.ritense.case.repository.CaseDefinitionSpecificationHelper.Companion.byCaseDefinitionVersionTag
 import com.ritense.case.repository.CaseDefinitionSpecificationHelper.Companion.byFinal
+import com.ritense.case.service.finalization.CaseDefinitionFinalizationCheckResult
+import com.ritense.case.service.finalization.CaseDefinitionFinalizationChecker
 import com.ritense.case.service.validations.CreateCaseListColumnValidator
 import com.ritense.case.service.validations.ListColumnValidator
 import com.ritense.case.service.validations.Operation
@@ -53,8 +56,10 @@ import com.ritense.valtimo.contract.utils.SecurityUtils
 import com.ritense.valueresolver.ValueResolverService
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.semver4j.Semver
+import org.springframework.beans.factory.ObjectProvider
 import org.springframework.context.ApplicationEventPublisher
 import org.springframework.data.domain.Page
+import org.springframework.data.domain.PageImpl
 import org.springframework.data.domain.Pageable
 import org.springframework.data.domain.Sort
 import org.springframework.data.jpa.domain.Specification
@@ -75,8 +80,10 @@ class CaseDefinitionService(
     valueResolverService: ValueResolverService,
     private val authorizationService: AuthorizationService,
     private val applicationEventPublisher: ApplicationEventPublisher,
-    private val caseDefinitionChecker: CaseDefinitionChecker
-) {
+    private val caseDefinitionChecker: CaseDefinitionChecker,
+    private val caseDefinitionFinalizationCheckersProvider: ObjectProvider<CaseDefinitionFinalizationChecker>,
+    private val configurationIssueRepository: CaseDefinitionConfigurationIssueRepository,
+    ) {
     var validators: Map<Operation, ListColumnValidator<CaseListColumnDto>> = mapOf(
         Operation.CREATE to CreateCaseListColumnValidator(
             caseDefinitionListColumnRepository,
@@ -230,6 +237,11 @@ class CaseDefinitionService(
         denyManagementOperation()
         val caseDefinition = runWithoutAuthorization { getCaseDefinition(caseDefinitionId) }
 
+        val unresolvedIssues = configurationIssueRepository.findUnresolvedByCaseDefinitionId(caseDefinitionId)
+        require(unresolvedIssues.isEmpty()) {
+            "Failed to set active case-definition. Case-definition with id: '$caseDefinitionId' has unresolved configuration issues."
+        }
+
         val activeCaseDefinition = caseDefinitionRepository.findByActiveIsTrueAndIdKey(caseDefinitionId.key)
         if (activeCaseDefinition != null && activeCaseDefinition.id != caseDefinitionId) {
             caseDefinitionRepository.save(activeCaseDefinition.copy(active = false))
@@ -240,10 +252,17 @@ class CaseDefinitionService(
 
     fun finalizeCaseDefinition(caseDefinitionId: CaseDefinitionId): CaseDefinition {
         denyManagementOperation()
+
+        val check = isCaseDefinitionFinalizable(caseDefinitionId)
+        require(check.finalizable) {
+            "Failed to finalize case-definition. Case-definition with id: '$caseDefinitionId' cannot be made definitive. Reason: '${check.code}'."
+        }
+
         val caseDefinition = getCaseDefinition(caseDefinitionId)
         require(!caseDefinition.final) {
             "Failed to finalize case-definition. Case-definition with id: '$caseDefinitionId' is already final."
         }
+
         return caseDefinitionRepository.save(caseDefinition.copy(final = true))
     }
 
@@ -422,13 +441,55 @@ class CaseDefinitionService(
     }
 
     fun setLatestToActiveIfNoneIsActive() {
-        caseDefinitionRepository.findAll()
+        val allCaseDefinitions = caseDefinitionRepository.findAll()
+        val caseDefinitionIdsWithIssues = configurationIssueRepository.findCaseDefinitionIdsWithUnresolvedIssues(
+            allCaseDefinitions.map { it.id }
+        )
+        allCaseDefinitions
             .groupBy { it.id.key }
             .map { it.value }
             .filter { caseDefinitions -> caseDefinitions.none { caseDefinition -> caseDefinition.active } }
-            .map { caseDefinitions -> caseDefinitions.maxBy { it.id.versionTag } }
+            .mapNotNull { caseDefinitions ->
+                caseDefinitions
+                    .filter { it.id !in caseDefinitionIdsWithIssues }
+                    .maxByOrNull { it.id.versionTag }
+            }
             .map { caseDefinition -> caseDefinition.copy(active = true) }
             .forEach { caseDefinition -> caseDefinitionRepository.save(caseDefinition) }
+    }
+
+    fun getCaseDefinitionsForManagement(
+        caseDefinitionKey: String? = null,
+        active: Boolean? = null,
+        final: Boolean? = null,
+        pageable: Pageable,
+    ): Page<CaseDefinition> {
+        denyManagementOperation()
+        val spec = getCaseDefinitionsQuery(
+            caseDefinitionKey = caseDefinitionKey,
+            active = active,
+            final = final,
+        )
+        val allCaseDefinitions = caseDefinitionRepository.findAll(spec, Sort.by(Sort.Order.asc("name"), Sort.Order.desc("active"), Sort.Order.desc("id.versionTag")))
+        val representativePerKey = allCaseDefinitions
+            .groupBy { it.id.key }
+            .map { (_, versions) ->
+                versions.find { it.active } ?: versions.maxBy { it.id.versionTag }
+            }
+            .sortedBy { it.name.lowercase() }
+
+        val start = pageable.offset.toInt().coerceAtMost(representativePerKey.size)
+        val end = (start + pageable.pageSize).coerceAtMost(representativePerKey.size)
+        return PageImpl(representativePerKey.subList(start, end), pageable, representativePerKey.size.toLong())
+    }
+
+    fun isCaseDefinitionFinalizable(caseDefinitionId: CaseDefinitionId): CaseDefinitionFinalizationCheckResult {
+        return caseDefinitionFinalizationCheckersProvider
+            .orderedStream()
+            .map { it.check(caseDefinitionId) }
+            .filter { !it.finalizable }
+            .findFirst()
+            .orElse(CaseDefinitionFinalizationCheckResult(finalizable = true))
     }
 
     private fun getCaseDefinitionsQuery(

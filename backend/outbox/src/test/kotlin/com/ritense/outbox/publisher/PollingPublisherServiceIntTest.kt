@@ -40,6 +40,7 @@ class PollingPublisherServiceIntTest : BaseIntegrationTest() {
 
         pollingPublisherService.pollAndPublishAll()
 
+        verify(messagePublisher, times(1)).publishBatch(any())
         verify(messagePublisher, times(1)).publish(any())
     }
 
@@ -48,19 +49,17 @@ class PollingPublisherServiceIntTest : BaseIntegrationTest() {
         insertOutboxMessage(OrderCreatedEvent("event 1"))
         insertOutboxMessage(OrderCreatedEvent("event 2"))
         whenever(messagePublisher.publish(any())).then { Thread.sleep(1000) }
-        verify(outboxMessageRepository, times(0)).findOutboxMessage()
+        verify(outboxMessageRepository, times(0)).findOutboxMessages(any())
 
         listOf(
             async(Dispatchers.IO) { pollingPublisherService.pollAndPublishAll() },
             async(Dispatchers.IO) { pollingPublisherService.pollAndPublishAll() }
         ).awaitAll()
 
-        // Number of database reads is 3 because:
-        // Poller 1: read database. Find event 1
+        // With batching: both events are fetched in a single batch
+        // Poller 1: read database. Find both events in one batch (batch < batchSize, so stop)
         // Poller 2: Polling is blocked. NO database read
-        // Poller 1: read database. Find event 2
-        // Poller 1: read database. Find NULL
-        verify(outboxMessageRepository, times(3)).findOutboxMessage()
+        verify(outboxMessageRepository, times(1)).findOutboxMessages(any())
     }
 
     @Test
@@ -68,16 +67,14 @@ class PollingPublisherServiceIntTest : BaseIntegrationTest() {
         insertOutboxMessage(OrderCreatedEvent("event 1"))
         insertOutboxMessage(OrderCreatedEvent("event 2"))
         whenever(messagePublisher.publish(any())).then { Thread.sleep(1000) }
-        verify(outboxMessageRepository, times(0)).findOutboxMessage()
+        verify(outboxMessageRepository, times(0)).findOutboxMessages(any())
 
         pollingPublisherService.pollAndPublishAll()
         pollingPublisherService.pollAndPublishAll()
 
-        // Number of database reads is 4 because:
-        // Poller 1: read database. Find event 1
-        // Poller 1: read database. Find event 2
-        // Poller 1: read database. Find NULL
-        // Poller 2: read database. Find NULL
-        verify(outboxMessageRepository, times(4)).findOutboxMessage()
+        // With batching: both events are fetched in a single batch
+        // Poller 1: read database. Find both events (batch < batchSize, so stop)
+        // Poller 2: read database. Find empty
+        verify(outboxMessageRepository, times(2)).findOutboxMessages(any())
     }
 }

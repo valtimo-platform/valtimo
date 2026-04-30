@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2025 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@
 package com.ritense.plugin.web.rest.result
 
 import com.fasterxml.jackson.databind.node.ObjectNode
+import com.ritense.plugin.domain.PluginConfigurationReferenceType
 import com.ritense.plugin.service.PluginService.Companion.PROCESS_LINK_TYPE_PLUGIN
 import com.ritense.processlink.domain.ActivityTypeWithEventName
 import com.ritense.processlink.web.rest.dto.ProcessLinkResponseDto
@@ -28,7 +29,9 @@ data class PluginProcessLinkResultDto(
     override val activityId: String,
     override val activityType: ActivityTypeWithEventName,
     override val processLinkType: String = PROCESS_LINK_TYPE_PLUGIN,
-    val pluginConfigurationId: UUID,
+    val pluginConfigurationId: UUID? = null,
+    val referenceType: PluginConfigurationReferenceType = PluginConfigurationReferenceType.FIXED,
+    val pluginDefinitionKey: String? = null,
     val pluginActionDefinitionKey: String,
     val actionProperties: ObjectNode? = null
 ) : ProcessLinkResponseDto

@@ -16,11 +16,13 @@
 
 package com.ritense.tab.domain
 
+import io.hypersistence.utils.hibernate.type.json.JsonType
 import jakarta.persistence.Column
 import jakarta.persistence.Entity
 import jakarta.persistence.Id
 import jakarta.persistence.Table
 import java.util.UUID
+import org.hibernate.annotations.Type
 
 @Entity
 @Table(name = "tab")
@@ -40,6 +42,10 @@ data class Tab(
 
     @Column(name = "type")
     val type: String,
+
+    @Type(value = JsonType::class)
+    @Column(name = "properties", nullable = false)
+    val properties: Map<String, Any?> = emptyMap(),
 ) {
 
     init {

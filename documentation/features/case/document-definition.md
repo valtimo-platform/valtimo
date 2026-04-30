@@ -12,7 +12,7 @@ This page requires:
 
 There are two ways of creating new document definitions in Valtimo.
 
-* Import a case definition, see [here](./#import-and-export).
+* Import a case definition, see the [import and export section](./#import-and-export).
 * Create an empty case via the UI
   * Place a valid JSON schema in the codebase via an IDE
 
@@ -82,7 +82,7 @@ To create a document definition, the following steps are necessary:
     ```
 
     \{% endcode %\}
-*   Properties as well as validation rules can be added to the definition as per the JSON schema standard as seen [here](https://json-schema.org/understanding-json-schema/index.html). Below is an example of what this definition could look like.
+*   Properties as well as validation rules can be added to the definition as per the [JSON schema standard](https://json-schema.org/understanding-json-schema/index.html). Below is an example of what this definition could look like.
 
     \{% code title="person.schema.document-definition.json" %\}
 
@@ -152,7 +152,7 @@ In edit mode, the UI editor will constantly validate the JSON file structure. Th
 {% tab title="Via IDE" %}
 **Edit the document definition in the codebase**
 
-Open the document definition in the IDE and edit the definition as per the JSON schema standard. More information on JSON schema can be found [here](https://json-schema.org/).\
+Open the document definition in the IDE and edit the definition as per the JSON schema standard. More information on JSON schema can be found at [json-schema.org](https://json-schema.org/).\
 \
 The location of the document definitions in the Valtimo Java/Kotlin backend: `*/resources/config/case/*/*/document/definition`\
 \
@@ -168,7 +168,7 @@ Changes to document definitions **have immediate effect on newly created cases**
 
 ## Access control
 
-Access to document definitions can be configured through access control. More information about access control can be found [here](../access-control/).
+Access to document definitions can be configured through access control. More information about access control can be found in the [access control documentation](../access-control/).
 
 ### Resources and actions
 

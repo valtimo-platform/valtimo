@@ -83,9 +83,12 @@ SELECT setval(pg_get_serial_sequence('catalogi_zaaktypeinformatieobjecttype', 'i
 
 UPDATE notifications_notificationsconfig SET api_root = 'http://host.docker.internal:8002/api/v1/';
 
-DELETE FROM zgw_consumers_service where id = 1;
-INSERT INTO zgw_consumers_service(id, uuid, label, api_type, api_root, client_id, secret, auth_type, header_key, header_value, oas, nlx, user_id, user_representation, oas_file) VALUES (1, uuid_generate_v4(), 'Open formulieren', 'nrc', 'http://host.docker.internal:8002/api/v1/', 'openzaak', 'openzaak', 'zgw', '', '', 'http://host.docker.internal:8002/api/v1/schema/openapi.yaml', '', '', '', '');
-SELECT setval(pg_get_serial_sequence('zgw_consumers_service', 'id'), 1, true);
+
+-- Objecten API service for zaakobject validation
+DELETE FROM zgw_consumers_service where slug = 'objecten-api';
+INSERT INTO zgw_consumers_service(id, uuid, label, api_type, api_root, client_id, secret, auth_type, header_key, header_value, oas, nlx, user_id, user_representation, oas_file, timeout, api_connection_check_path, slug) VALUES (10, uuid_generate_v4(), 'Objecten API', 'orc', 'http://host.docker.internal:8010/api/v2/', '', '', 'api_key', 'Authorization', 'Token 182c13e2209161852c53cef53a879f7a2f923430', 'http://host.docker.internal:8010/api/v2/schema/openapi.yaml', '', '', '', '', 10, '', 'objecten-api');
+
+SELECT setval(pg_get_serial_sequence('zgw_consumers_service', 'id'), 10, true);
 
 INSERT INTO zaken_zaakidentificatie(id, identificatie, bronorganisatie) VALUES (1, 'ZAAK-2024-0000000001', '000000000');
 SELECT setval(pg_get_serial_sequence('zaken_zaakidentificatie', 'id'), 1, true);

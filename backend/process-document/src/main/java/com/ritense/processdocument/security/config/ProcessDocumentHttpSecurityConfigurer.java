@@ -44,6 +44,8 @@ public class ProcessDocumentHttpSecurityConfigurer implements HttpSecurityConfig
                 .authenticated()
                 .requestMatchers(antMatcher(GET, "/api/v1/process-document/instance/document/{document-id}"))
                 .authenticated()
+                .requestMatchers(antMatcher(GET, "/api/v2/process-document/instance/document/{document-id}"))
+                .authenticated()
                 .requestMatchers(antMatcher(GET, "/api/v1/process-document/instance/document/{document-id}/audit"))
                 .authenticated()
                 .requestMatchers(antMatcher(POST, "/api/v1/process-document/operation/new-document-and-start-process"))

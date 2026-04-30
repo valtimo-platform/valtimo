@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2025 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,7 +21,13 @@ import static com.ritense.valtimo.contract.utils.AssertionConcern.assertArgument
 import static com.ritense.valtimo.contract.utils.AssertionConcern.assertArgumentTrue;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.ritense.authorization.permission.condition.AuthorizationFieldAlias;
 import com.ritense.document.domain.DocumentDefinition;
+import com.ritense.document.domain.JsonSchemaDocumentDefinitionBlueprintId;
+import com.ritense.valtimo.contract.blueprint.BlueprintType;
+import com.ritense.valtimo.contract.buildingblock.BuildingBlockDefinitionId;
 import com.ritense.valtimo.contract.case_.CaseDefinitionId;
 import com.ritense.valtimo.contract.domain.AbstractId;
 import jakarta.persistence.Column;
@@ -37,54 +43,79 @@ public class JsonSchemaDocumentDefinitionId extends AbstractId<JsonSchemaDocumen
     private String name;
 
     @Embedded
-    private CaseDefinitionId caseDefinitionId;
+    @AuthorizationFieldAlias(names = "caseDefinitionId")
+    private JsonSchemaDocumentDefinitionBlueprintId blueprintId;
 
     @JsonCreator
-    private JsonSchemaDocumentDefinitionId(String name, CaseDefinitionId caseDefinitionId) {
-        assertArgumentId(name, caseDefinitionId);
+    private JsonSchemaDocumentDefinitionId(
+        @JsonProperty("name") String name,
+        @JsonProperty("blueprintId") JsonSchemaDocumentDefinitionBlueprintId blueprintId
+    ) {
+        assertArgumentId(name, blueprintId);
         this.name = name;
-        this.caseDefinitionId = caseDefinitionId;
+        this.blueprintId = blueprintId;
     }
 
     private JsonSchemaDocumentDefinitionId() {
     }
 
-    private void assertArgumentId(String name, CaseDefinitionId caseDefinitionId) {
+    private void assertArgumentId(String name, JsonSchemaDocumentDefinitionBlueprintId ownerId) {
         assertArgumentNotNull(name, "name is required");
         assertArgumentLength(name, 1, 50, "name must be between 1-50 characters");
         assertArgumentTrue(name.matches("[A-z0-9-_.]+"), "name contains illegal character. For name: " + name);
-        assertArgumentNotNull(caseDefinitionId, "CaseDefinitionId is required");
-    }
-
-    /*
-     * @Deprecated This method is deprecated and should not be used. Use `of(String, CaseDefinitionId)` instead.
-     */
-    @Deprecated()
-    public static JsonSchemaDocumentDefinitionId existingId(String name, CaseDefinitionId caseDefinitionId) {
-        return new JsonSchemaDocumentDefinitionId(name, caseDefinitionId);
+        assertArgumentNotNull(ownerId, "ownerId is required");
     }
 
     public static JsonSchemaDocumentDefinitionId of(String name, CaseDefinitionId caseDefinitionId) {
-        return new JsonSchemaDocumentDefinitionId(name, caseDefinitionId);
+        return forCase(name, caseDefinitionId);
+    }
+
+    public static JsonSchemaDocumentDefinitionId forCase(String name, CaseDefinitionId caseDefinitionId) {
+        return new JsonSchemaDocumentDefinitionId(name, JsonSchemaDocumentDefinitionBlueprintId.Companion.forCase(caseDefinitionId));
+    }
+
+    public static JsonSchemaDocumentDefinitionId forBuildingBlock(String name, BuildingBlockDefinitionId buildingBlockDefinitionId) {
+        return new JsonSchemaDocumentDefinitionId(name, JsonSchemaDocumentDefinitionBlueprintId.Companion.forBuildingBlock(buildingBlockDefinitionId));
+    }
+
+    public static JsonSchemaDocumentDefinitionId existingId(String name, CaseDefinitionId caseDefinitionId) {
+        return forCase(name, caseDefinitionId);
     }
 
     public static JsonSchemaDocumentDefinitionId existingId(DocumentDefinition.Id documentDefinitionId) {
         return (JsonSchemaDocumentDefinitionId) documentDefinitionId;
     }
 
+    public BlueprintType ownerType() {
+        return blueprintId.blueprintType();
+    }
+
     @Override
+    @JsonProperty
     public String name() {
         return name;
     }
 
     @Override
+    @JsonIgnore
     public CaseDefinitionId caseDefinitionId() {
-        return caseDefinitionId;
+        return blueprintId.asCaseDefinitionId();
+    }
+
+    @Override
+    @JsonIgnore
+    public BuildingBlockDefinitionId buildingBlockDefinitionId() {
+        return blueprintId.asBuildingBlockDefinitionId();
+    }
+
+    @JsonProperty("blueprintId")
+    public JsonSchemaDocumentDefinitionBlueprintId blueprintId() {
+        return blueprintId;
     }
 
     @Override
     public String toString() {
-        return name + ":" + caseDefinitionId.toString();
+        return name + ":" + blueprintId.blueprintType() + ":" + blueprintId.blueprintKey() + ":" + blueprintId.blueprintVersionTag();
     }
 
     @Override
@@ -96,11 +127,11 @@ public class JsonSchemaDocumentDefinitionId extends AbstractId<JsonSchemaDocumen
             return false;
         }
         JsonSchemaDocumentDefinitionId that = (JsonSchemaDocumentDefinitionId) o;
-        return caseDefinitionId.equals(that.caseDefinitionId) && Objects.equals(name, that.name);
+        return Objects.equals(name, that.name) && Objects.equals(blueprintId, that.blueprintId);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(name, caseDefinitionId);
+        return Objects.hash(name, blueprintId);
     }
 }

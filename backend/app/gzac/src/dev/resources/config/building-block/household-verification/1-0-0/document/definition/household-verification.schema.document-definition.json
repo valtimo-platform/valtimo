@@ -1,0 +1,49 @@
+{
+    "$id": "household-verification.schema",
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "Huishouden Verificatie Document",
+    "type": "object",
+    "properties": {
+        "applicantName": {
+            "type": "string",
+            "description": "Naam van de aanvrager"
+        },
+        "householdSize": {
+            "type": "integer",
+            "description": "Aantal personen in het huishouden"
+        },
+        "formattedName": {
+            "type": "string",
+            "description": "Geformatteerde naam (hoofdletters)"
+        },
+        "brpVerifiedName": {
+            "type": "string",
+            "description": "Naam geverifieerd via BRP"
+        },
+        "verifiedApplicant": {
+            "type": "string",
+            "description": "Volledig geverifieerde aanvragergegevens"
+        },
+        "baseSubsidyAmount": {
+            "type": "integer",
+            "description": "Basisbedrag subsidie (huishoudgrootte x 2)"
+        },
+        "incomeEligibilityResult": {
+            "type": "string",
+            "description": "Resultaat van de inkomenstoets"
+        },
+        "parentZaakOmschrijving": {
+            "type": "string",
+            "description": "Zaak omschrijving ontvangen van parent BB (BB1)"
+        },
+        "zaakToelichtingBB2": {
+            "type": "string",
+            "description": "Zaak toelichting gelezen na ZGW patch-zaak actie in BB2"
+        },
+        "zaakEinddatumGeplandBB3": {
+            "type": "string",
+            "description": "Zaak einddatum gepland gelezen na ZGW patch-zaak actie in BB3"
+        }
+    },
+    "required": ["applicantName", "householdSize"]
+}

@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,18 +22,36 @@ import {
   ViewChildren,
 } from '@angular/core';
 import {ActivatedRoute, NavigationEnd, Router} from '@angular/router';
+import {WarningFilled16} from '@carbon/icons';
 import {PageTitleService} from '@valtimo/components';
 import {DocumentDefinition} from '@valtimo/document';
 import {
   CaseManagementParams,
   CaseManagementTabConfig,
   ConfigService,
+  ConfigurationIssueService,
   getCaseManagementRouteParams,
 } from '@valtimo/shared';
-import {Tab} from 'carbon-components-angular';
-import {combineLatest, filter, map, Observable, startWith, Subscription} from 'rxjs';
-import {TabEnum} from '../../models';
-import {CaseDetailService, TabService} from '../../services';
+import {SseService} from '@valtimo/sse';
+import {IconService, Tab} from 'carbon-components-angular';
+import {
+  BehaviorSubject,
+  combineLatest,
+  filter,
+  map,
+  Observable,
+  shareReplay,
+  startWith,
+  Subscription,
+  switchMap,
+} from 'rxjs';
+import {
+  CaseDefinitionConfigurationIssue,
+  ConfigurationIssueUpdatedSseEvent,
+  TabEnum,
+} from '../../models';
+import {CaseDetailService, CaseManagementService, TabService} from '../../services';
+import {CASE_MANAGEMENT_DETAIL_TEST_IDS} from '../../constants';
 
 @Component({
   standalone: false,
@@ -43,6 +61,8 @@ import {CaseDetailService, TabService} from '../../services';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class CaseManagementDetailComponent implements OnInit, OnDestroy {
+  protected readonly testIds = CASE_MANAGEMENT_DETAIL_TEST_IDS;
+
   @ViewChildren(Tab) private _tabs: QueryList<Tab>;
 
   private _params: CaseManagementParams | undefined;
@@ -79,15 +99,39 @@ export class CaseManagementDetailComponent implements OnInit, OnDestroy {
 
   private _activeVersion: string | null;
   private _subscriptions = new Subscription();
+  private readonly _refreshConfigurationIssues$ = new BehaviorSubject<null>(null);
+
+  public readonly hasPluginProcessLinkIssue$: Observable<boolean> =
+    this.configurationIssueService.hasIssue$('plugin-process-link');
+
+  private readonly _tabIssueCache = new Map<string, Observable<boolean>>();
+
+  public readonly configurationIssues$: Observable<CaseDefinitionConfigurationIssue[]> =
+    combineLatest([
+      this.caseDetailService.selectedCaseDefinitionKey$,
+      this.caseDetailService.selectedCaseDefinitionVersionTag$,
+      this._refreshConfigurationIssues$,
+    ]).pipe(
+      switchMap(([key, version]) =>
+        this.caseManagementService.getConfigurationIssues(key, version)
+      ),
+      map(issues => issues.filter(issue => !issue.resolved)),
+      shareReplay(1)
+    );
 
   constructor(
     private readonly route: ActivatedRoute,
     private readonly caseDetailService: CaseDetailService,
+    private readonly caseManagementService: CaseManagementService,
     private readonly configService: ConfigService,
+    private readonly configurationIssueService: ConfigurationIssueService,
+    private readonly iconService: IconService,
     private readonly pageTitleService: PageTitleService,
     private readonly router: Router,
+    private readonly sseService: SseService,
     private readonly tabService: TabService
   ) {
+    this.iconService.registerAll([WarningFilled16]);
     const featureToggles = this.configService.config.featureToggles;
     this.caseListColumn = featureToggles?.caseListColumn ?? true;
     this.tabManagementEnabled = featureToggles?.enableTabManagement ?? true;
@@ -104,6 +148,8 @@ export class CaseManagementDetailComponent implements OnInit, OnDestroy {
       )
     );
     this.openActiveVersionSubscription();
+    this.openConfigurationIssueSseSubscription();
+    this.openConfigurationIssueSubscription();
     this.pageTitleService.disableReset();
     this.openParamsSubscription();
   }
@@ -112,6 +158,17 @@ export class CaseManagementDetailComponent implements OnInit, OnDestroy {
     this.tabService.currentTab = TabEnum.GENERAL;
     this._subscriptions.unsubscribe();
     this.pageTitleService.enableReset();
+    this.configurationIssueService.setUnresolvedIssueTypes([]);
+  }
+
+  public hasTabIssues$(issueTypes: string[]): Observable<boolean> {
+    const cacheKey = issueTypes.slice().sort().join(',');
+    let cached = this._tabIssueCache.get(cacheKey);
+    if (!cached) {
+      cached = this.configurationIssueService.hasAnyOfIssues$(issueTypes);
+      this._tabIssueCache.set(cacheKey, cached);
+    }
+    return cached;
   }
 
   public navigateToTab(tab: TabEnum | string): void {
@@ -154,6 +211,29 @@ export class CaseManagementDetailComponent implements OnInit, OnDestroy {
           this._activeVersion = versionTag;
         }
       )
+    );
+  }
+
+  private openConfigurationIssueSubscription(): void {
+    this._subscriptions.add(
+      this.configurationIssues$.subscribe(issues =>
+        this.configurationIssueService.setUnresolvedIssueTypes(issues.map(issue => issue.issueType))
+      )
+    );
+  }
+
+  private openConfigurationIssueSseSubscription(): void {
+    this._subscriptions.add(
+      combineLatest([
+        this.caseDetailService.selectedCaseDefinitionKey$,
+        this.sseService.getSseEventObservable<ConfigurationIssueUpdatedSseEvent>(
+          'CONFIGURATION_ISSUE_UPDATED'
+        ),
+      ])
+        .pipe(filter(([key, event]) => event.caseDefinitionKey === key))
+        .subscribe(() => {
+          this._refreshConfigurationIssues$.next(null);
+        })
     );
   }
 

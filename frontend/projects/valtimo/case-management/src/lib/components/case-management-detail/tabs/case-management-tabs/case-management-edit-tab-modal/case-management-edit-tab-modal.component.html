@@ -24,7 +24,11 @@
     </h3>
   </cds-modal-header>
 
-  <section [formGroup]="form" cdsModalContent>
+  <section
+    [formGroup]="form"
+    cdsModalContent
+    [cdsLayer]="1"
+  >
     <valtimo-tab-form
       [configuredContentKeys]="configuredKeysForEdit"
       [tabType]="tab?.type"

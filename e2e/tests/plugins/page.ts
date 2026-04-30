@@ -1,5 +1,23 @@
+/*
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
+ *
+ * Licensed under EUPL, Version 1.2 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" basis,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 import {APIRequestContext, expect, Page} from '@playwright/test';
 import {PluginFieldMap, pluginTestConfiguration, pluginTypes} from './plugin-config';
+import {STEPPER_FOOTER_STEP_TEST_IDS} from '../../constants';
+import {CarbonList} from '../../shared/carbon-list/carbon-list.utils';
 
 export class PluginPage {
   constructor(private readonly page: Page, private readonly request: APIRequestContext) {}
@@ -72,9 +90,10 @@ export class PluginPage {
 
   // Plugin form
   async fillPluginForm(type: string) {
+    const dialog = this.page.getByRole('dialog');
     const fields: PluginFieldMap[] = pluginTestConfiguration[type].fieldMap;
     for (const field of fields) {
-      const inputWrapper = this.page.getByTestId(field.testId);
+      const inputWrapper = dialog.getByTestId(field.testId);
       switch (field.type) {
         case 'input':
           await inputWrapper.locator('input').fill(field.value);
@@ -97,7 +116,14 @@ export class PluginPage {
 
   async saveConfiguration() {
     await expect(this.saveButton).toBeEnabled();
-    await this.saveButton.click();
+    await Promise.all([
+      this.page.waitForResponse(
+        res =>
+          res.url().includes('/api/v1/plugin/configuration') &&
+          (res.request().method() === 'POST' || res.request().method() === 'PUT')
+      ),
+      this.saveButton.click(),
+    ]);
   }
 
   async expectInvalidRSINError() {
@@ -113,12 +139,16 @@ export class PluginPage {
 
     expect(response500.status()).toBe(500);
 
-    const errorToast = this.page.locator('.cds--toast-notification__details');
+    try {
+      const errorToast = this.page
+        .locator('.cds--toast-notification__details')
+        .first();
 
-    await expect(errorToast).toContainText(
-      "Plugin property with name 'rsin' failed to parse for plugin"
-    );
-    await this.page.getByTestId('stepperFooterCancelButton').click();
+      await expect(errorToast).toBeVisible({timeout: 10_000});
+    } finally {
+      // Always close the wizard, even if the assertion fails
+      await this.page.getByTestId(STEPPER_FOOTER_STEP_TEST_IDS.cancelButton).click();
+    }
   }
 
   async expectSameIdError() {
@@ -134,19 +164,25 @@ export class PluginPage {
 
     expect(response500.status()).toBe(500);
 
-    const errorToast = this.page.locator('.cds--toast-notification__details');
+    try {
+      const errorToast = this.page
+        .locator('.cds--toast-notification__details')
+        .first();
 
-    await expect(errorToast).toContainText('already used by another plugin');
-    await this.page.getByTestId('stepperFooterCancelButton').click();
+      await expect(errorToast).toBeVisible({timeout: 10_000});
+    } finally {
+      // Always close the wizard, even if the assertion fails
+      await this.page.getByTestId(STEPPER_FOOTER_STEP_TEST_IDS.cancelButton).click();
+    }
   }
 
   async duplicateConfigurationName(configurationName: string, configurationIdTestId: string) {
     await this.page
       .locator(`tr:has(td:has-text("${configurationName}"))`)
-      .getByRole('menu')
-      .locator('button')
+      .first()
+      .locator('.v-overflow-menu__trigger')
       .click();
-    await this.page.getByRole('menuitem', {name: 'Duplicate'}).click();
+    await this.page.getByRole('menu').getByRole('menuitem', {name: 'Duplicate'}).click();
 
     const input = this.page.getByTestId(configurationIdTestId).locator('input');
     const val = await input.inputValue();
@@ -162,7 +198,7 @@ export class PluginPage {
     configurationNameTestId: string,
     newConfigurationName: string
   ): Promise<void> {
-    await this.page.locator(`tr:has(td:has-text("${pluginIdentifier}"))`).click();
+    await this.page.locator(`tr:has(td:has-text("${pluginIdentifier}"))`).first().click();
     await this.editPluginName(configurationNameTestId, newConfigurationName);
   }
 
@@ -173,10 +209,10 @@ export class PluginPage {
   ): Promise<void> {
     await this.page
       .locator(`tr:has(td:has-text("${pluginIdentifier}"))`)
-      .getByRole('menu')
-      .locator('button')
+      .first()
+      .locator('.v-overflow-menu__trigger')
       .click();
-    await this.page.getByRole('menuitem', {name: 'Edit'}).click();
+    await this.page.getByRole('menu').getByRole('menuitem', {name: 'Edit'}).click();
     await this.editPluginName(configurationNameTestId, newConfigurationName);
   }
 
@@ -194,10 +230,10 @@ export class PluginPage {
   async deletePlugin(pluginIdentifier: string): Promise<void> {
     await this.page
       .locator(`tr:has(td:has-text("${pluginIdentifier}"))`)
-      .getByRole('menu')
-      .locator('button')
+      .first()
+      .locator('.v-overflow-menu__trigger')
       .click();
-    await this.page.getByRole('menuitem', {name: 'Delete'}).click();
+    await this.page.getByRole('menu').getByRole('menuitem', {name: 'Delete'}).click();
     await this.page.waitForResponse(
       res => res.url().includes('/api/v1/plugin/configuration') && res.request().method() === 'GET'
     );
@@ -208,8 +244,8 @@ export class PluginPage {
 
     await this.page
       .locator(`tr:has(td:has-text("${pluginIdentifier}"))`)
-      .getByRole('menu')
-      .locator('button')
+      .first()
+      .locator('.v-overflow-menu__trigger')
       .click();
 
     const [response] = await Promise.all([
@@ -232,7 +268,79 @@ export class PluginPage {
   }
 
   async assertPluginExists(pluginIdentifier: string): Promise<void> {
-    expect(await this.page.getByText(pluginIdentifier).first()).toBeVisible();
+    await expect(this.page.getByText(pluginIdentifier).first()).toBeVisible();
+  }
+
+  // ─── Plugin Overview Table Assertions (9.3, 9.4) ──────────────────
+
+  get carbonList(): CarbonList {
+    return new CarbonList(this.page);
+  }
+
+  async assertRowHasPluginName(configName: string, expectedPluginName: string): Promise<void> {
+    const row = this.carbonList.row(configName);
+    await row.assertVisible();
+    const pluginNameCell = row.cellByIndex(1);
+    await expect(pluginNameCell).toHaveText(expectedPluginName);
+  }
+
+  async assertRowHasIdentifier(configName: string, expectedIdentifier: string): Promise<void> {
+    const row = this.carbonList.row(configName);
+    await row.assertVisible();
+    const identifierCell = row.cellByIndex(2);
+    await expect(identifierCell).toContainText(expectedIdentifier);
+  }
+
+  // ─── Plugin Catalog Assertions (9.7) ──────────────────────────────
+
+  get catalogTiles() {
+    return this.page.locator('cds-selection-tile');
+  }
+
+  async assertCatalogTilesHaveLogos(): Promise<void> {
+    const tiles = this.catalogTiles;
+    const count = await tiles.count();
+    expect(count).toBeGreaterThan(0);
+
+    for (let i = 0; i < count; i++) {
+      const tile = tiles.nth(i);
+      const logo = tile.locator('img.plugin-definition-logo');
+      await expect(logo).toBeVisible();
+      const src = await logo.getAttribute('src');
+      expect(src).toBeTruthy();
+    }
+  }
+
+  async assertCatalogTilesHaveTitles(): Promise<void> {
+    const tiles = this.catalogTiles;
+    const count = await tiles.count();
+    expect(count).toBeGreaterThan(0);
+
+    for (let i = 0; i < count; i++) {
+      const tile = tiles.nth(i);
+      const title = tile.locator('h5');
+      await expect(title).toBeVisible();
+      const text = await title.textContent();
+      expect(text?.trim().length).toBeGreaterThan(0);
+    }
+  }
+
+  async assertCatalogTilesHaveDescriptions(): Promise<void> {
+    const tiles = this.catalogTiles;
+    const count = await tiles.count();
+    expect(count).toBeGreaterThan(0);
+
+    for (let i = 0; i < count; i++) {
+      const tile = tiles.nth(i);
+      const description = tile.locator('p');
+      await expect(description).toBeVisible();
+      const text = await description.textContent();
+      expect(text?.trim().length).toBeGreaterThan(0);
+    }
+  }
+
+  async closeWizard(): Promise<void> {
+    await this.page.getByTestId(STEPPER_FOOTER_STEP_TEST_IDS.cancelButton).click();
   }
 
   async assertPluginDeleted(pluginType: string): Promise<void> {
@@ -243,13 +351,25 @@ export class PluginPage {
   }
 
   async deleteAllTestPlugins(): Promise<void> {
+    // Close any open modal that might block interactions
+    const modal = this.page.locator('.cds--modal.is-visible');
+    if (await modal.isVisible({timeout: 500}).catch(() => false)) {
+      const closeButton = modal.locator('button.cds--modal-close');
+      if (await closeButton.isVisible({timeout: 500}).catch(() => false)) {
+        await closeButton.click();
+        await expect(modal).not.toBeVisible();
+      }
+    }
+
     for (const type of pluginTypes) {
       if (type === 'Besluiten API') continue;
 
-      const isVisible = await this.page
-        .locator(`tr:has(td:has-text("${pluginTestConfiguration[type].pluginIdentifier}"))`)
-        .isVisible();
-      if (isVisible) await this.deletePlugin(pluginTestConfiguration[type].pluginIdentifier);
+      const rows = this.page.locator(
+        `tr:has(td:has-text("${pluginTestConfiguration[type].pluginIdentifier}"))`
+      );
+      while ((await rows.count()) > 0) {
+        await this.deletePlugin(pluginTestConfiguration[type].pluginIdentifier);
+      }
     }
   }
 

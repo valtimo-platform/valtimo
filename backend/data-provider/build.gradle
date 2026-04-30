@@ -35,8 +35,8 @@ dockerCompose {
 
 dependencies {
 
-    implementation project(":contract")
-    implementation project(":web")
+    implementation project(":backend:contract")
+    implementation project(":backend:web")
 
     implementation "org.springframework.boot:spring-boot-starter-web"
     implementation "org.springframework.boot:spring-boot-starter-data-jpa"
@@ -45,9 +45,9 @@ dependencies {
     implementation "io.github.oshai:kotlin-logging:${kotlinLoggingVersion}"
     implementation "com.jayway.jsonpath:json-path:${jaywayJsonpathVersion}"
 
-    testImplementation project(":core")
-    testImplementation project(":resource:local-resource")
-    testImplementation project(":test-utils-common")
+    testImplementation project(":backend:core")
+    testImplementation project(":backend:resource:local-resource")
+    testImplementation project(":backend:test-utils-common")
 
     testImplementation "org.springframework.boot:spring-boot-starter-test"
     testImplementation "org.springframework.security:spring-security-test"

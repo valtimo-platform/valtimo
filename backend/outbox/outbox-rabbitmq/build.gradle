@@ -30,7 +30,7 @@ dockerCompose {
 }
 
 dependencies {
-    api project(":outbox")
+    api project(":backend:outbox")
 
     implementation "org.springframework.boot:spring-boot-starter"
     implementation "org.springframework.boot:spring-boot-starter-amqp"
@@ -41,7 +41,7 @@ dependencies {
 
     implementation "io.github.oshai:kotlin-logging:$kotlinLoggingVersion"
 
-    testImplementation project(':test-utils-common')
+    testImplementation project(':backend:test-utils-common')
     testImplementation "org.springframework.boot:spring-boot-starter-test"
     testImplementation "org.mockito.kotlin:mockito-kotlin:$mockitoKotlinVersion"
     testImplementation "org.jetbrains.kotlinx:kotlinx-coroutines-test:$kotlinCoroutinesVersion"

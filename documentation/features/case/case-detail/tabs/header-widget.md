@@ -20,7 +20,7 @@ To create it, click the **`Add widget`** button.
 You will then go through three setup steps:
 
 1. **Choose widget type**
-2. **Choose widget style**
+2. **Choose widget appearance**
 3. **Choose widget content**
 
 > Note: Case header widgets do **not** include width or condition settings.  
@@ -37,7 +37,7 @@ For a detailed explanation of these steps, see the [widget configuration documen
 ## Access Control
 
 Access to case header widgets can be managed through **access control settings**.  
-For more details, visit the [Access Control documentation](https://docs.valtimo.nl/features/access-control).
+For more details, visit the [Access Control documentation](../../../access-control/README.md).
 
 ### Resources and Actions
 
@@ -50,7 +50,7 @@ For more details, visit the [Access Control documentation](https://docs.valtimo.
 ## Autodeployment via IDE
 
 Case header widgets can also be **automatically deployed** through your IDE.  
-For more details, see the [Autodeployment documentation](https://docs.valtimo.nl/features/autodeployment).
+For more details, see the [Autodeployment documentation](../../../autodeployment/README.md).
 
 To autodeploy a case header widget, add a deployment file to the `header-widget` folder within your case definition.
 

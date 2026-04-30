@@ -20,7 +20,6 @@ import com.ritense.processdocument.service.CaseTaskListSearchService
 import com.ritense.processdocument.tasksearch.SearchWithConfigRequest
 import com.ritense.processdocument.web.request.TaskListSearchDto
 import com.ritense.processdocument.web.result.TaskListRowDto
-import com.ritense.valtimo.operaton.dto.TaskExtended
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import com.ritense.valtimo.contract.domain.ValtimoMediaType
 import com.ritense.valtimo.service.OperatonTaskService
@@ -39,7 +38,7 @@ import org.springframework.web.bind.annotation.RequestParam
 @RequestMapping("/api", produces = [ValtimoMediaType.APPLICATION_JSON_UTF8_VALUE])
 class TaskListResource (
     private val service: CaseTaskListSearchService,
-    private val operatonTaskService: OperatonTaskService
+    private val operatonTaskService: OperatonTaskService,
 ) {
 
     @PostMapping("/v3/task")
@@ -51,8 +50,7 @@ class TaskListResource (
         return if (taskListSearchDto.caseDefinitionKey != null) {
             ResponseEntity.ok().body(service.getTasksByCaseDefinition(taskListSearchDto.caseDefinitionKey, assignmentFilter, pageable))
         } else {
-            val page: Page<TaskExtended> = operatonTaskService.findTasksFiltered(assignmentFilter, pageable)
-            return ResponseEntity.ok(page)
+            ResponseEntity.ok(operatonTaskService.findTasksFiltered(assignmentFilter, pageable))
         }
     }
 

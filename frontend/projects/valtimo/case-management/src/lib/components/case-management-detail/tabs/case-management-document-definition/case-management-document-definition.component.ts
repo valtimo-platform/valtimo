@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -34,6 +34,7 @@ import {IconService} from 'carbon-components-angular';
 import {BehaviorSubject, Observable} from 'rxjs';
 import {switchMap, take} from 'rxjs/operators';
 import {CaseDetailService} from '../../../../services';
+import {CASE_MANAGEMENT_DOCUMENT_TEST_IDS} from '../../../../constants';
 
 @Component({
   standalone: false,
@@ -47,6 +48,8 @@ export class CaseManagementDocumentDefinitionComponent {
   @Output() cancelRedirect = new EventEmitter();
   @Output() confirmRedirect = new EventEmitter();
   @Output() pendingChangesUpdate = new EventEmitter<boolean>();
+
+  protected readonly testIds = CASE_MANAGEMENT_DOCUMENT_TEST_IDS;
 
   public readonly loadingDocumentDefinition$ = this.caseDetailService.loadingDocumentDefinition$;
   private readonly _refreshEditor$ = new BehaviorSubject<null>(null);
@@ -85,7 +88,7 @@ export class CaseManagementDocumentDefinitionComponent {
 
   public downloadDefinition(): void {
     this.selectedDocumentDefinition$.pipe(take(1)).subscribe(definition => {
-      const {key, versionTag} = definition.id.caseDefinitionId;
+      const {blueprintKey, blueprintVersionTag} = definition.id.blueprintId;
       const dataString =
         'data:text/json;charset=utf-8,' +
         encodeURIComponent(JSON.stringify(definition.schema, null, 2));
@@ -95,7 +98,10 @@ export class CaseManagementDocumentDefinitionComponent {
       }
 
       downloadAnchorElement.setAttribute('href', dataString);
-      downloadAnchorElement.setAttribute('download', `${key}-v${versionTag}.json`);
+      downloadAnchorElement.setAttribute(
+        'download',
+        `${blueprintKey}-v${blueprintVersionTag}.json`
+      );
       downloadAnchorElement.click();
     });
   }

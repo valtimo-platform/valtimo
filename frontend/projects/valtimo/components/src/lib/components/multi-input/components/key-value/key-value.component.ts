@@ -18,6 +18,7 @@ import {Component, EventEmitter, HostBinding, Input, Output} from '@angular/core
 import {MultiInputChangeEventType, MultiInputKeyValue} from '../../../../models';
 import {CommonModule} from '@angular/common';
 import {InputModule, LayerModule} from 'carbon-components-angular';
+import {KEY_VALUE_TEST_IDS} from '../../../../constants';
 
 @Component({
   selector: 'valtimo-key-value',
@@ -41,6 +42,8 @@ export class KeyValueComponent {
     inputValue: string;
     type: MultiInputChangeEventType;
   }> = new EventEmitter();
+
+  protected readonly testIds = KEY_VALUE_TEST_IDS;
 
   public onInputChange(type: MultiInputChangeEventType, inputValue: string): void {
     this.valueChange.emit({value: this.value, inputValue, type});

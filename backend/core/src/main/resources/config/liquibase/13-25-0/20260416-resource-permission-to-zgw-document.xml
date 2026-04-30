@@ -1,0 +1,64 @@
+<?xml version="1.1" encoding="UTF-8" standalone="no"?>
+<!--
+  ~ Copyright 2015-2026 Ritense BV, the Netherlands.
+  ~
+  ~ Licensed under EUPL, Version 1.2 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~ https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" basis,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.1.xsd"
+                   logicalFilePath="config/liquibase/changelog/20260416-resource-permission-to-zgw-document.xml">
+
+    <changeSet author="Ritense" id="1">
+        <preConditions onFail="MARK_RAN">
+            <dbms type="mysql"/>
+        </preConditions>
+        <sql>
+            UPDATE permission
+            SET resource_type = replace(resource_type,
+                    'com.ritense.resource.authorization.ResourcePermission',
+                    'com.ritense.documentenapi.authorization.ZgwDocument'),
+                conditions = replace(conditions,
+                    'com.ritense.resource.authorization.ResourcePermission',
+                    'com.ritense.documentenapi.authorization.ZgwDocument'),
+                context_resource_type = replace(context_resource_type,
+                    'com.ritense.resource.authorization.ResourcePermission',
+                    'com.ritense.documentenapi.authorization.ZgwDocument'),
+                context_conditions = replace(context_conditions,
+                    'com.ritense.resource.authorization.ResourcePermission',
+                    'com.ritense.documentenapi.authorization.ZgwDocument')
+        </sql>
+    </changeSet>
+
+    <changeSet author="Ritense" id="2">
+        <preConditions onFail="MARK_RAN">
+            <dbms type="postgresql"/>
+        </preConditions>
+        <sql>
+            UPDATE permission
+            SET resource_type = replace(resource_type,
+                    'com.ritense.resource.authorization.ResourcePermission',
+                    'com.ritense.documentenapi.authorization.ZgwDocument'),
+                conditions = replace(conditions::text,
+                    'com.ritense.resource.authorization.ResourcePermission',
+                    'com.ritense.documentenapi.authorization.ZgwDocument')::json,
+                context_resource_type = replace(context_resource_type,
+                    'com.ritense.resource.authorization.ResourcePermission',
+                    'com.ritense.documentenapi.authorization.ZgwDocument'),
+                context_conditions = replace(context_conditions::text,
+                    'com.ritense.resource.authorization.ResourcePermission',
+                    'com.ritense.documentenapi.authorization.ZgwDocument')::json
+        </sql>
+    </changeSet>
+
+</databaseChangeLog>

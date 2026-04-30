@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 import {AsyncPipe, CommonModule, NgClass, NgIf, NgTemplateOutlet} from '@angular/common';
-import {Component, OnInit, OnDestroy} from '@angular/core';
+import {ChangeDetectorRef, Component, EventEmitter, HostBinding, Input, OnInit, OnDestroy, Output} from '@angular/core';
 import {FormsModule, ReactiveFormsModule} from '@angular/forms';
 import {ActivatedRoute, Router} from '@angular/router';
 import {Search16} from '@carbon/icons';
@@ -40,12 +40,22 @@ import {
   TabsModule,
   TimePickerModule,
 } from 'carbon-components-angular';
-import {BehaviorSubject, combineLatest, filter, map, Observable, of, switchMap, take} from 'rxjs';
-import {IkoSearchActionUser} from '../../models';
+import {
+  BehaviorSubject,
+  catchError,
+  combineLatest,
+  filter,
+  map,
+  Observable,
+  of,
+  switchMap,
+  take,
+  tap,
+} from 'rxjs';
+import {HttpErrorResponse} from '@angular/common/http';
+import {IkoSearchActionUser, IkoSearchParams, SearchFormValue} from '../../models';
 import {IkoApiService} from '../../services';
 import {validateBsn} from '@valtimo/shared';
-
-type SearchFormValue = string | boolean | string[] | null | undefined;
 
 @Component({
   selector: 'valtimo-iko-search',
@@ -78,6 +88,17 @@ type SearchFormValue = string | boolean | string[] | null | undefined;
   ],
 })
 export class IkoSearchComponent implements OnInit, OnDestroy {
+  @Input() public searchTitle: string;
+  @HostBinding('class.embedded') @Input() public embedded = false;
+
+  @Output() public searchSubmitEvent = new EventEmitter<IkoSearchParams>();
+
+  private readonly _ikoViewKey$ = new BehaviorSubject<string | null>(null);
+
+  @Input() public set ikoViewKey(key: string) {
+    this._ikoViewKey$.next(key);
+  }
+
   public readonly formValues: Record<string, SearchFormValue> = {};
   public readonly dropdownSelectItemsMap: Map<string, Array<any>> = new Map();
   public readonly values$ = new BehaviorSubject<any>({});
@@ -100,30 +121,50 @@ export class IkoSearchComponent implements OnInit, OnDestroy {
     )
   );
 
-  private readonly _key$ = this.route.params.pipe(
-    map(params => params?.key),
-    filter(key => !!key)
+  private readonly _key$: Observable<string> = this._ikoViewKey$.pipe(
+    switchMap(ikoViewKey =>
+      ikoViewKey
+        ? of(ikoViewKey)
+        : this.route.params.pipe(
+            map(params => params?.key),
+            filter(key => !!key)
+          )
+    )
   );
+
+  public readonly notFoundKey$ = new BehaviorSubject<string | null>(null);
 
   public readonly ikoSearchActions$: Observable<IkoSearchActionUser[]> = this._key$.pipe(
     switchMap(key =>
       combineLatest([
         of(key),
         this.ikoApiService.cachedMenuItems$,
-        this.ikoApiService.getIkoSearchActions(key),
+        this.ikoApiService.getIkoSearchActions(key).pipe(
+          catchError((error: HttpErrorResponse) => {
+            if (error.status === 404) {
+              this.notFoundKey$.next(key);
+              return of([] as IkoSearchActionUser[]);
+            }
+            throw error;
+          })
+        ),
       ])
     ),
     map(([key, menuItems, ikoSearchActions]) => {
-      const currentMenuItem = menuItems.find(item => item.key === key);
+      if (!this.embedded) {
+        const currentMenuItem = menuItems.find(item => item.key === key);
 
-      if (currentMenuItem && currentMenuItem?.title)
-        this.pageTitleService.setCustomPageTitle(currentMenuItem.title, true);
+        if (currentMenuItem && currentMenuItem?.title)
+          this.pageTitleService.setCustomPageTitle(currentMenuItem.title, true);
+      }
 
       return ikoSearchActions;
-    })
+    }),
+    tap(() => this.cdr.detectChanges())
   );
 
   constructor(
+    private readonly cdr: ChangeDetectorRef,
     private readonly route: ActivatedRoute,
     private readonly router: Router,
     private readonly pageTitleService: PageTitleService,
@@ -139,7 +180,9 @@ export class IkoSearchComponent implements OnInit, OnDestroy {
   }
 
   public ngOnDestroy(): void {
-    this.pageTitleService.enableReset();
+    if (!this.embedded) {
+      this.pageTitleService.enableReset();
+    }
   }
 
   public searchDisabled(params: {key: string; required: boolean; dataType?: string}[]): boolean {
@@ -183,10 +226,14 @@ export class IkoSearchComponent implements OnInit, OnDestroy {
         }
       }
 
-      this.router.navigate([paramKey], {
-        relativeTo: this.route,
-        queryParams,
-      });
+      if (this.searchSubmitEvent.observed) {
+        this.searchSubmitEvent.emit({paramKey, filters: queryParams});
+      } else {
+        this.router.navigate([paramKey], {
+          relativeTo: this.route,
+          queryParams,
+        });
+      }
     });
   }
 

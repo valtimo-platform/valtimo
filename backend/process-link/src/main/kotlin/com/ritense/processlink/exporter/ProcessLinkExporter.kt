@@ -30,7 +30,8 @@ import com.ritense.valtimo.operaton.service.OperatonRepositoryService
 class ProcessLinkExporter(
     private val objectMapper: ObjectMapper,
     private val processLinkService: ProcessLinkService,
-    private val repositoryService: OperatonRepositoryService
+    private val repositoryService: OperatonRepositoryService,
+    private val buildingBlockMapper: BuildingBlockProcessLinkToBuildingBlockMapper
 ) : Exporter<ProcessDefinitionExportRequest> {
 
     override fun supports(): Class<ProcessDefinitionExportRequest> = ProcessDefinitionExportRequest::class.java
@@ -50,6 +51,8 @@ class ProcessLinkExporter(
 
             mapper.toProcessLinkExportResponseDto(processLink)
         }
+
+        relatedRequests.addAll(buildingBlockMapper.toBuildingBlockExportRequests(createDtos))
 
         val processDefinitionKey = getProcessDefinitionKey(request.processDefinitionId)
 

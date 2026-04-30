@@ -33,18 +33,19 @@
     [title]="'logging.noResults.title' | translate"
   ></valtimo-no-results>
 
-  <button
+  <v-overflow-menu
     carbonToolbarContent
-    [cdsOverflowMenu]="logSearch"
-    [customPane]="true"
-    [iconOnly]="true"
-    [flip]="true"
-    [offset]="{x: 0, y: 47}"
-    cdsButton="ghost"
-    placement="bottom"
+    placement="bottom-end"
+    [closeOnSelect]="false"
   >
-    <svg cdsIcon="filter" size="16"></svg>
-  </button>
+    <button overflowTrigger cdsButton="ghost" [iconOnly]="true">
+      <svg cdsIcon="filter" size="16"></svg>
+    </button>
+
+    <div overflowPane>
+      <ng-container *ngTemplateOutlet="logSearch"></ng-container>
+    </div>
+  </v-overflow-menu>
 </valtimo-carbon-list>
 
 <valtimo-log-details

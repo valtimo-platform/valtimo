@@ -35,10 +35,8 @@ import com.ritense.zakenapi.event.*
 import com.ritense.zgw.Rsin
 import okhttp3.mockwebserver.MockResponse
 import okhttp3.mockwebserver.MockWebServer
-import okhttp3.mockwebserver.QueueDispatcher
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.AfterAll
-import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.BeforeEach
@@ -47,7 +45,7 @@ import org.junit.jupiter.api.TestInstance
 import org.junit.jupiter.api.assertThrows
 import org.mockito.kotlin.*
 import org.springframework.context.ApplicationEventPublisher
-import org.springframework.http.HttpMethod
+import org.springframework.security.access.AccessDeniedException
 import org.springframework.web.client.HttpClientErrorException
 import org.springframework.web.client.RestClient
 import org.springframework.web.reactive.function.client.ClientRequest
@@ -116,12 +114,15 @@ internal class ZakenApiClientTest {
 
         val result = client.linkDocument(
             authentication = TestAuthentication(),
+            UUID.randomUUID(),
             baseUrl = zakenApiBaseUri(),
             request = LinkDocumentRequest(
                 informatieobject = HTTPS_EXAMPLE_COM,
                 zaak = zaakUrlAsString,
                 titel = "title",
-                beschrijving = "description"
+                beschrijving = "description",
+                vernietigingsdatum = null,
+                status = null
             )
         )
 
@@ -135,6 +136,8 @@ internal class ZakenApiClientTest {
         assertEquals(zaakUrlAsString, parsedOutput["zaak"])
         assertEquals("title", parsedOutput["titel"])
         assertEquals("description", parsedOutput["beschrijving"])
+        assertThat(parsedOutput).doesNotContainKey("vernietigingsdatum")
+        assertThat(parsedOutput).doesNotContainKey("status")
 
         assertEquals(HTTPS_EXAMPLE_COM, result.url)
         assertEquals(HTTPS_EXAMPLE_COM, result.informatieobject)
@@ -199,12 +202,15 @@ internal class ZakenApiClientTest {
 
         client.linkDocument(
             authentication = TestAuthentication(),
+            UUID.randomUUID(),
             baseUrl = zakenApiBaseUri(),
             request = LinkDocumentRequest(
                 informatieobject = HTTPS_EXAMPLE_COM,
                 zaak = zaakUri().toASCIIString(),
                 titel = "title",
-                beschrijving = "description"
+                beschrijving = "description",
+                vernietigingsdatum = null,
+                status = null
             )
         )
 
@@ -233,12 +239,15 @@ internal class ZakenApiClientTest {
         assertThrows<HttpClientErrorException> {
             client.linkDocument(
                 authentication = TestAuthentication(),
+                UUID.randomUUID(),
                 baseUrl = zakenApiBaseUri(),
                 request = LinkDocumentRequest(
                     informatieobject = HTTPS_EXAMPLE_COM,
                     zaak = zaakUri().toASCIIString(),
                     titel = "title",
-                    beschrijving = "description"
+                    beschrijving = "description",
+                    vernietigingsdatum = null,
+                    status = null
                 )
             )
         }
@@ -397,6 +406,7 @@ internal class ZakenApiClientTest {
 
         val result = client.getZaakInformatieObjecten(
             authentication = TestAuthentication(),
+            UUID.randomUUID(),
             baseUrl = zakenApiBaseUri(),
             zaakUrl = exampleUri()
         )
@@ -451,6 +461,7 @@ internal class ZakenApiClientTest {
 
         val result = client.getZaakInformatieObjecten(
             authentication = TestAuthentication(),
+            UUID.randomUUID(),
             baseUrl = zakenApiBaseUri(),
             zaakUrl = exampleUri()
         )
@@ -478,6 +489,7 @@ internal class ZakenApiClientTest {
         assertThrows<HttpClientErrorException> {
             client.getZaakInformatieObjecten(
                 authentication = TestAuthentication(),
+                UUID.randomUUID(),
                 baseUrl = zakenApiBaseUri(),
                 zaakUrl = exampleUri()
             )
@@ -1787,6 +1799,75 @@ internal class ZakenApiClientTest {
 
         mockApi.takeRequest()
 
+        verify(outboxService, times(0)).send(any())
+    }
+
+    @Test
+    fun `should send get zaakinformatieobject request, parse response and send outbox message`() {
+        val uuid = "095be615-a8ad-4c33-8e9c-c7612fbf6c9f"
+        val zaakInformatieobjectUrl = zakenApiBaseUri("/zaakinformatieobjecten/$uuid")
+        val caseDocumentId = UUID.randomUUID()
+        val client = zakenApiClient()
+
+        val responseBody = """
+            {
+                "url": "$zaakInformatieobjectUrl",
+                "uuid": "$uuid",
+                "informatieobject": "$HTTPS_EXAMPLE_COM",
+                "zaak": "${zaakUri()}",
+                "aardRelatieWeergave": "Hoort bij, omgekeerd: kent",
+                "titel": "test",
+                "beschrijving": "test omschrijving",
+                "registratiedatum": "2019-08-24T14:15:22Z"
+            }
+        """.trimIndent()
+
+        mockApi.enqueue(mockResponse(responseBody))
+
+        val result = client.getZaakInformatieObject(
+            authentication = TestAuthentication(),
+            baseUrl = zakenApiBaseUri(),
+            zaakInformatieobjectUrl = zaakInformatieobjectUrl,
+            caseDocumentId = caseDocumentId
+        )
+
+        val recordedRequest = mockApi.takeRequest()
+
+        assertEquals("Bearer test", recordedRequest.getHeader("Authorization"))
+        assertEquals(URI(zaakInformatieobjectUrl.toString()), result!!.url)
+        assertEquals(UUID.fromString(uuid), result.uuid)
+        assertEquals(URI(HTTPS_EXAMPLE_COM), result.informatieobject)
+        assertEquals("Hoort bij, omgekeerd: kent", result.aardRelatieWeergave)
+        assertEquals("test", result.titel)
+        assertEquals("test omschrijving", result.beschrijving)
+
+        argumentCaptor<Supplier<BaseEvent>> {
+            verify(outboxService).send(capture())
+            assertThat(firstValue.get()).isInstanceOf(ZaakInformatieObjectListed::class.java)
+        }
+    }
+
+    @Test
+    fun `should throw exception and not call api when not authorized to get zaakinformatieobject`() {
+        val zaakInformatieobjectUrl = zakenApiBaseUri("/zaakinformatieobjecten/095be615-a8ad-4c33-8e9c-c7612fbf6c9f")
+        val caseDocumentId = UUID.randomUUID()
+        val requestsBefore = mockApi.requestCount
+
+        authorizationService = mock {
+            on { this.requirePermission<Any>(any()) } doThrow AccessDeniedException("Unauthorized")
+        }
+        val client = zakenApiClient()
+
+        assertThrows<AccessDeniedException> {
+            client.getZaakInformatieObject(
+                authentication = TestAuthentication(),
+                baseUrl = zakenApiBaseUri(),
+                zaakInformatieobjectUrl = zaakInformatieobjectUrl,
+                caseDocumentId = caseDocumentId
+            )
+        }
+
+        assertEquals(requestsBefore, mockApi.requestCount)
         verify(outboxService, times(0)).send(any())
     }
 

@@ -51,4 +51,24 @@ export class DraftVersionService extends BaseApiService {
       )
       .pipe(map(caseDefinition => !caseDefinition.final));
   }
+
+  public isDraftVersionBuildingBlock(
+    buildingBlockDefinitionKey: string,
+    buildingBlockDefinitionVersionTag: string
+  ): Observable<boolean> {
+    if (!buildingBlockDefinitionKey || !buildingBlockDefinitionVersionTag) {
+      return of(false);
+    }
+
+    return this.httpClient
+      .get<any>(
+        this.getApiUrl(
+          `management/v1/building-block/${buildingBlockDefinitionKey}/version/${buildingBlockDefinitionVersionTag}`
+        ),
+        {
+          headers: new HttpHeaders().set(InterceptorSkip, '403'),
+        }
+      )
+      .pipe(map(buildingBlockDefinition => !buildingBlockDefinition.final));
+  }
 }

@@ -13,7 +13,7 @@ On the case management page, a setting can be changed to indicate that cases of 
 
 When the case handler option is selected the following changes are visible in the user interface:
 
-*   **The case list screen is divided in to three tabs**\\
+*   **The case list screen is divided in to tabs**\\
 
     <figure><img src="../../.gitbook/assets/image (35) (1).png" alt=""><figcaption><p>Case overview with case handler option selected<br></p></figcaption></figure>
 
@@ -22,8 +22,10 @@ When the case handler option is selected the following changes are visible in th
       _&#x41;ll cases are displayed on this tab._
     * **My cases**\
       _&#x4F;verview of cases that are assigned to the user that is currently logged in._
+    * **Team cases**\
+      _&#x4F;verview of cases that are assigned to a team that the user belongs to._
     * **Unassigned cases**\
-      _&#x4F;verview of cases that are not assigned to a case handler_\\
+      _&#x4F;verview of cases that are not assigned to a case handler or team_\\
 * **An "Assignee" column is automatically added to the case list columns**\
   This column displays the case handler assigned to each case in the overview. This column is fixed and can't be removed via the case list configuration page.\\
 * **An option to assign a case handler on the case details page.**\
@@ -31,7 +33,7 @@ When the case handler option is selected the following changes are visible in th
 * **An additional menu in which a case can be claimed.**\
   In this menu the logged in user has the possibility to immediately "claim" the case. Once a case is claimed, the unassign option removes the case handler that is currently assigned to the case. Who is allowed to claim, assign and unassign is all configured via [Access control](../access-control/README.md).
 
-Case settings can be configured as shown [here](README.md#creating-a-case-definition)
+Case settings can be configured as shown in the [creating a case definition section](README.md#creating-a-case-definition)
 
 ## Assigning a case handler
 
@@ -96,3 +98,39 @@ Automatic task assignment can be enabled when the case is configured to have a c
 
 * Only tasks that the user has access to (user has the required role) are assigned to the case assignee.
 * Tasks already loaded on a dossier detail page do not automatically show the new assignment. A component reload (switching tabs or reload the page) is required to see the up-to-date assignee in the task modal.
+
+## Configuring visible case list tabs
+
+When the case handler option is enabled, the case list shows tabs to filter cases by assignee. Which tabs are visible and in what order can be configured via the `visibleCaseListTabs` property in the Angular environment file (`src/environments/environment.ts`).
+
+The available tab values are defined by the `CaseListTab` enum:
+
+| Value  | Tab label        | Description                                            | Since   |
+|--------|------------------|--------------------------------------------------------|---------|
+| `ALL`  | All cases        | Shows all cases the user has access to.                |         |
+| `MINE` | My cases         | Shows cases assigned to the current user.              |         |
+| `TEAM` | Team cases       | Shows cases assigned to a team the user belongs to.    | 13.21.0 |
+| `OPEN` | Unassigned cases | Shows cases without an assigned handler or team.       |         |
+
+### Example configuration
+
+```typescript
+import {CaseListTab} from '@valtimo/shared';
+
+export const environment = {
+  // ...
+  visibleCaseListTabs: [CaseListTab.ALL, CaseListTab.MINE, CaseListTab.TEAM, CaseListTab.OPEN],
+};
+```
+
+To hide a tab, remove it from the array. For example, to only show "My cases" and "Team cases":
+
+```typescript
+visibleCaseListTabs: [CaseListTab.MINE, CaseListTab.TEAM],
+```
+
+The first tab in the array is selected by default when opening a case list.
+
+{% hint style="info" %}
+The `TEAM` tab requires the team library to be included in the backend. If the library is not present, selecting the tab will result in an error.
+{% endhint %}

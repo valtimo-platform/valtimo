@@ -34,14 +34,14 @@ dockerCompose {
 }
 
 dependencies {
-    implementation project(":case")
-    implementation project(":contract")
-    implementation project(":core")
-    implementation project(":exporter")
-    implementation project(":importer")
-    implementation project(":logging")
-    implementation project(":process-document")
-    implementation project(":web")
+    implementation project(":backend:case")
+    implementation project(":backend:contract")
+    implementation project(":backend:core")
+    implementation project(":backend:exporter")
+    implementation project(":backend:importer")
+    implementation project(":backend:logging")
+    implementation project(":backend:process-document")
+    implementation project(":backend:web")
 
     implementation "org.springframework.boot:spring-boot-starter-data-jpa"
     implementation "org.springframework.boot:spring-boot-starter"
@@ -57,7 +57,12 @@ dependencies {
     testImplementation "org.jetbrains.kotlin:kotlin-test"
     testImplementation "com.jayway.jsonpath:json-path-assert:${jaywayJsonpathVersion}"
 
-    testImplementation project(":test-utils-common")
+    testImplementation project(":backend:test-utils-common")
+    testImplementation(project(':backend:form'))
+    testImplementation(project(':backend:form-flow'))
+    testImplementation(project(':backend:building-block')) {
+        exclude(group: "com.ritense.valtimo", module: "process-link")
+    }
 
     jar {
         enabled = true

@@ -1,0 +1,33 @@
+{
+    "display": "form",
+    "components": [
+        {
+            "label": "Select",
+            "key": "select",
+            "type": "select",
+            "validate": {
+                "required": true
+            },
+            "input": true,
+            "data": {
+                "values": [
+                    {
+                        "label": "Option 1",
+                        "value": "opt1"
+                    },
+                    {
+                        "label": "Option 2",
+                        "value": "opt2"
+                    }
+                ]
+            }
+        },
+        {
+            "type": "button",
+            "label": "Submit",
+            "key": "submit",
+            "disableOnInvalid": true,
+            "input": true
+        }
+    ]
+}

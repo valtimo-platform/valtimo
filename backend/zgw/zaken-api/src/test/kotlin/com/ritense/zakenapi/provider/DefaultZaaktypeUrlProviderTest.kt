@@ -17,7 +17,11 @@
 package com.ritense.zakenapi.provider
 
 import com.ritense.catalogiapi.exception.ZaakTypeLinkNotFoundException
+import com.ritense.document.domain.impl.JsonSchemaDocument
+import com.ritense.document.domain.impl.JsonSchemaDocumentDefinitionId
+import com.ritense.document.service.impl.JsonSchemaDocumentService
 import com.ritense.valtimo.contract.case_.CaseDefinitionId
+import com.ritense.valtimo.contract.document.CaseDocumentResolver
 import com.ritense.zakenapi.domain.ZaakTypeLink
 import com.ritense.zakenapi.domain.ZaakTypeLinkId
 import com.ritense.zakenapi.service.ZaakTypeLinkService
@@ -35,11 +39,19 @@ class DefaultZaaktypeUrlProviderTest {
     lateinit var zaaktypeUrlProvider: DefaultZaaktypeUrlProvider
 
     lateinit var zaakTypeLinkService: ZaakTypeLinkService
+    lateinit var caseDocumentResolver: CaseDocumentResolver
+    lateinit var jsonSchemaDocumentService: JsonSchemaDocumentService
 
     @BeforeEach
     fun setup() {
         zaakTypeLinkService = mock()
-        zaaktypeUrlProvider = DefaultZaaktypeUrlProvider(zaakTypeLinkService)
+        caseDocumentResolver = mock()
+        jsonSchemaDocumentService = mock()
+        zaaktypeUrlProvider = DefaultZaaktypeUrlProvider(
+            zaakTypeLinkService,
+            caseDocumentResolver,
+            jsonSchemaDocumentService
+        )
     }
 
     @Test
@@ -67,9 +79,50 @@ class DefaultZaaktypeUrlProviderTest {
         assertThat(ex.message).endsWith("For case definition $caseDefinitionId")
     }
 
+    @Test
+    fun `should get zaaktype URL by document id`() {
+        val documentId = UUID.randomUUID()
+        val caseDocumentId = UUID.randomUUID()
+        val caseDefinitionId = CaseDefinitionId("test", "1.0.0")
+        val document = createCaseDocument(caseDocumentId, caseDefinitionId)
+        val zaakTypeLink = createZaakTypeLink(caseDefinitionId)
+
+        whenever(caseDocumentResolver.resolveCaseDocumentId(documentId)).thenReturn(caseDocumentId)
+        whenever(jsonSchemaDocumentService.get(caseDocumentId)).thenReturn(document)
+        whenever(zaakTypeLinkService.get(caseDefinitionId)).thenReturn(zaakTypeLink)
+
+        val result = zaaktypeUrlProvider.getZaaktypeUrl(documentId)
+
+        assertThat(result).isEqualTo(zaakTypeLink.zaakTypeUrl)
+    }
+
+    @Test
+    fun `should throw when zaaktype link missing for document`() {
+        val documentId = UUID.randomUUID()
+        val caseDocumentId = UUID.randomUUID()
+        val caseDefinitionId = CaseDefinitionId("test", "1.0.0")
+        val document = createCaseDocument(caseDocumentId, caseDefinitionId)
+
+        whenever(caseDocumentResolver.resolveCaseDocumentId(documentId)).thenReturn(caseDocumentId)
+        whenever(jsonSchemaDocumentService.get(caseDocumentId)).thenReturn(document)
+        whenever(zaakTypeLinkService.get(caseDefinitionId)).thenReturn(null)
+
+        assertThrows<ZaakTypeLinkNotFoundException> {
+            zaaktypeUrlProvider.getZaaktypeUrl(documentId)
+        }
+    }
+
     private fun createZaakTypeLink(caseDefinitionId: CaseDefinitionId) = ZaakTypeLink(
         ZaakTypeLinkId.newId(UUID.randomUUID()),
         caseDefinitionId,
         URI("http://localhost/${caseDefinitionId.key}")
     )
+
+    private fun createCaseDocument(documentId: UUID, caseDefinitionId: CaseDefinitionId): JsonSchemaDocument {
+        val document = mock<JsonSchemaDocument>()
+        val definitionId = JsonSchemaDocumentDefinitionId.forCase("definition", caseDefinitionId)
+        whenever(document.id()).thenReturn(com.ritense.document.domain.impl.JsonSchemaDocumentId.existingId(documentId))
+        whenever(document.definitionId()).thenReturn(definitionId)
+        return document
+    }
 }

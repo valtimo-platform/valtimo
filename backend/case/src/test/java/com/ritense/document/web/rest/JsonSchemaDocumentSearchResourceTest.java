@@ -97,7 +97,7 @@ class JsonSchemaDocumentSearchResourceTest extends BaseTest {
 
     @Test
     void shouldReturnOkWithSearchCriteria() throws Exception {
-        when(documentSearchService.search(any(), any())).thenReturn(Page.empty());
+        when(documentSearchService.search(any(), any(), any())).thenReturn(Page.empty());
 
         List<SearchCriteria> values = Arrays.asList(
             new SearchCriteria("aPath", "aValue"),
@@ -121,7 +121,7 @@ class JsonSchemaDocumentSearchResourceTest extends BaseTest {
 
     @Test
     void shouldReturnPagedRecordPageWithoutSearchParams() throws Exception {
-        when(documentSearchService.search(any(), any())).thenReturn(new PageImpl(List.of(document), Pageable.unpaged(), 1));
+        when(documentSearchService.search(any(), any(), any())).thenReturn(new PageImpl(List.of(document), Pageable.unpaged(), 1));
 
         mockMvc.perform(
             post("/api/v1/document-search", "definition")
@@ -147,7 +147,7 @@ class JsonSchemaDocumentSearchResourceTest extends BaseTest {
         statusFilter.add(null);
         request.setStatusFilter(statusFilter);
 
-        doReturn(documentPage).when(documentSearchService).search(any(), any(SearchWithConfigRequest.class), any());
+        doReturn(documentPage).when(documentSearchService).search(any(), any(), any(SearchWithConfigRequest.class), any());
 
         var jsonRequest = MapperSingleton.INSTANCE.get().writeValueAsString(request);
 

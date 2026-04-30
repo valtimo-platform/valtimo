@@ -31,6 +31,7 @@
       label="{{ 'caseManagement.externalStartForm.enabledToggle' | translate }}"
       onText="{{ 'caseManagement.externalStartForm.enabledToggleOn' | translate }}"
       offText="{{ 'caseManagement.externalStartForm.enabledToggleOff' | translate }}"
+      [attr.data-test-id]="testIds.hasExternalForm"
     ></cds-toggle>
 
     <cds-label>
@@ -42,6 +43,7 @@
         [isReadOnly]="isReadOnly"
         type="text"
         formControlName="externalFormUrl"
+        [attr.data-test-id]="testIds.externalFormUrl"
         [placeholder]="
           isReadOnly ? '-' : ('caseManagement.externalStartForm.externalUrlPlaceholder' | translate)
         "
@@ -58,6 +60,7 @@
         [isReadOnly]="isReadOnly"
         type="text"
         formControlName="description"
+        [attr.data-test-id]="testIds.externalFormDescription"
         [placeholder]="
           isReadOnly ? '-' : ('caseManagement.externalStartForm.descriptionPlaceholder' | translate)
         "
@@ -70,6 +73,7 @@
       cdsButton="primary"
       type="submit"
       [disabled]="!form.valid || isReadOnly"
+      [attr.data-test-id]="testIds.externalFormSave"
     >
       {{ 'caseManagement.externalStartForm.apply' | translate }}
     </button>

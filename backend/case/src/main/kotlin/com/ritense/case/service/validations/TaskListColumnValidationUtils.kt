@@ -87,7 +87,7 @@ open class TaskListColumnValidationUtils(
 
         if (path.startsWith(TASK_PREFIX, ignoreCase = true)) {
             val pathWithoutPrefix = path.substring(TASK_PREFIX.length)
-            if (!listOf("createTime", "name", "assignee", "dueDate").contains(pathWithoutPrefix)) {
+            if (!listOf("createTime", "name", "assignee", "dueDate", "assignedTeamTitle").contains(pathWithoutPrefix)) {
                 throw InvalidListColumnException("\"${pathWithoutPrefix}\" is not an option for the task: prefix.", Status.BAD_REQUEST)
             }
         } else {

@@ -37,6 +37,11 @@ data class ProcessDefinitionId(
     init {
         AssertionConcern.assertArgumentLength(id, 255, "id max length is 255")
     }
+
+    companion object {
+        @JvmStatic
+        fun of(id: String): ProcessDefinitionId = ProcessDefinitionId(id)
+    }
 }
 
 class ProcessDefinitionIdSerializer : JsonSerializer<ProcessDefinitionId>() {

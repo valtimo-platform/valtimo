@@ -30,7 +30,6 @@ import com.ritense.processlink.url.service.URLProcessLinkActivityHandler
 import com.ritense.processlink.url.service.URLProcessLinkService
 import com.ritense.processlink.url.service.URLSupportedProcessLinksHandler
 import com.ritense.processlink.url.web.rest.URLProcessLinkResource
-import com.ritense.valtimo.contract.config.LiquibaseMasterChangeLogLocation
 import com.ritense.valtimo.operaton.service.OperatonRepositoryService
 import com.ritense.valtimo.service.OperatonTaskService
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
@@ -42,13 +41,6 @@ import org.springframework.core.annotation.Order
 @Configuration
 @EntityScan("com.ritense.processlink.url.domain")
 class ProcessLinkUrlAutoConfiguration {
-
-    @Order(org.springframework.core.Ordered.HIGHEST_PRECEDENCE + 10)
-    @Bean
-    @ConditionalOnMissingBean(name = ["urlProcessLinkLiquibaseMasterChangeLogLocation"])
-    fun urlProcessLinkLiquibaseMasterChangeLogLocation(): LiquibaseMasterChangeLogLocation {
-        return LiquibaseMasterChangeLogLocation("config/liquibase/process-link-url-master.xml")
-    }
 
     @Bean
     @ConditionalOnMissingBean(URLProcessLinkMapper::class)

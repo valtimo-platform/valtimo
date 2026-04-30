@@ -23,6 +23,7 @@ import static org.mockito.Mockito.when;
 import com.ritense.document.domain.impl.JsonSchema;
 import com.ritense.document.domain.impl.JsonSchemaDocumentDefinition;
 import com.ritense.document.domain.impl.JsonSchemaDocumentDefinitionId;
+import com.ritense.form.domain.FormDefinitionBlueprintId;
 import com.ritense.form.domain.FormIoFormDefinition;
 import com.ritense.form.domain.FormSpringContextHelper;
 import com.ritense.valtimo.contract.case_.CaseDefinitionId;
@@ -48,7 +49,7 @@ public abstract class BaseTest {
     }
 
     protected FormIoFormDefinition formDefinition() {
-        return new FormIoFormDefinition(UUID.randomUUID(), DEFAULT_FORM_DEFINITION_NAME, "{}", CaseDefinitionId.of("person", "1.0.0"), false);
+        return new FormIoFormDefinition(UUID.randomUUID(), DEFAULT_FORM_DEFINITION_NAME, "{}", FormDefinitionBlueprintId.forCase(CaseDefinitionId.of("person", "1.0.0")), false);
     }
 
     protected FormIoFormDefinition formDefinition(UUID id, String formName) {
@@ -56,7 +57,10 @@ public abstract class BaseTest {
     }
 
     protected FormIoFormDefinition formDefinition(UUID id, String formName, CaseDefinitionId caseDefinitionId) {
-        return new FormIoFormDefinition(id, formName, "{}", caseDefinitionId, false);
+        FormDefinitionBlueprintId blueprintId = caseDefinitionId != null
+            ? FormDefinitionBlueprintId.forCase(caseDefinitionId)
+            : null;
+        return new FormIoFormDefinition(id, formName, "{}", blueprintId, false);
     }
 
     protected FormIoFormDefinition formDefinitionOf(String formDefinitionId) throws IOException {
@@ -64,7 +68,7 @@ public abstract class BaseTest {
             Thread.currentThread().getContextClassLoader().getResourceAsStream("config/case/person/1-0-0/form/" + formDefinitionId + ".form.json"),
             StandardCharsets.UTF_8
         );
-        return new FormIoFormDefinition(UUID.randomUUID(), "form-example", s, CaseDefinitionId.of("person", "1.0.0"), false);
+        return new FormIoFormDefinition(UUID.randomUUID(), "form-example", s, FormDefinitionBlueprintId.forCase(CaseDefinitionId.of("person", "1.0.0")), false);
     }
 
     protected JsonSchemaDocumentDefinition definition() {

@@ -16,11 +16,9 @@
 
 <valtimo-widget-custom
   *ngIf="{
-    widgetConfiguration: widgetConfig$ | async,
-    widgetData: widgetData$ | async,
+    widgetConfiguration: widgetConfig$ | async
   } as obs"
   [widgetConfiguration]="obs.widgetConfiguration"
-  [widgetData]="obs.widgetData"
   [widgetUuid]="widgetUuid"
 >
   @if (obs.widgetConfiguration?.actions?.length === 1) {

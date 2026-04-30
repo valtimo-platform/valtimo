@@ -31,7 +31,7 @@
     </h3>
   </cds-modal-header>
 
-  <div cdsModalContent>
+  <div cdsModalContent [cdsLayer]="1">
     <p class="valtimo-definition-create__description">{{ obs.createDraftDescription }}</p>
 
     <form [formGroup]="draftVersionForm" class="valtimo-definition-create__content">
@@ -114,7 +114,7 @@
   </div>
 
   <cds-modal-footer>
-    <button cdsButton="ghost" (click)="onCloseModal()">
+    <button cdsButton="secondary" (click)="onCloseModal()">
       {{ 'interface.cancel' | translate }}
     </button>
 

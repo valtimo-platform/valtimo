@@ -23,7 +23,7 @@ import jakarta.persistence.Column
 import jakarta.persistence.Embeddable
 
 @Embeddable
-class ZaakNotitieLinkId(
+data class ZaakNotitieLinkId(
     @Column(name = "zaak_notitie_link_id")
     @JsonValue
     val id: UUID

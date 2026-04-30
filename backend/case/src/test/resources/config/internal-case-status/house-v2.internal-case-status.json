@@ -5,6 +5,7 @@
             "key": "suspended",
             "caseDefinitionName": "house",
             "title": "Suspended",
+            "retentionPeriodInDays": 50,
             "visibleInCaseListByDefault": false,
             "color": "GRAY"
         },
@@ -12,6 +13,7 @@
             "key": "closed",
             "caseDefinitionName": "house",
             "title": "Closed",
+            "retentionPeriodInDays": 100,
             "visibleInCaseListByDefault": false,
             "color": "BLUE"
         },
@@ -19,6 +21,7 @@
             "key": "started",
             "caseDefinitionName": "house",
             "title": "Started",
+            "retentionPeriodInDays": -1,
             "visibleInCaseListByDefault": true,
             "color": "GRAY"
         }

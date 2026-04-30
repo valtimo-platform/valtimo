@@ -15,6 +15,8 @@
  */
 
 export * from './alert.model';
+export * from './assignment.model';
+export * from './blueprint-context.model';
 export * from './button.model';
 export * from './carbon-list.model';
 export * from './carbon-pagination.model';
@@ -35,7 +37,6 @@ export * from './pagination.model';
 export * from './quick-search.model';
 export * from './radio.model';
 export * from './right-sidebar.model';
-export * from './searchable-dropdown.model';
 export * from './select.model';
 export * from './sort.model';
 export * from './stepper.model';
@@ -48,3 +49,4 @@ export * from './value-path-selector.model';
 export * from './menu.model';
 export * from './list-hidden-column.model';
 export * from './version.model';
+export * from './schema-editor.model';

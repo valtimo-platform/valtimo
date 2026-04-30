@@ -85,6 +85,7 @@
         [modalClosed]="modalCloseEvent$ | async"
         (formSubmit)="onFormSubmit()"
         (closeModalEvent)="closeModal()"
+        (taskUpdated)="onTaskUpdated($event)"
       ></valtimo-task-detail-content>
     } @else {
       <valtimo-task-detail-content
@@ -92,6 +93,7 @@
         [modalClosed]="modalCloseEvent$ | async"
         (formSubmit)="onFormSubmit()"
         (closeModalEvent)="closeModal()"
+        (taskUpdated)="onTaskUpdated($event)"
       ></valtimo-task-detail-content>
     }
   </div>
@@ -116,17 +118,24 @@
     } as obs"
     class="task-actions"
   >
-    <valtimo-assign-user-to-task
+    <valtimo-assignment
       *ngIf="obs.task && assignmentOfTaskChanged"
-      [taskId]="obs.task.id"
+      mode="task"
       [assigneeId]="obs.task.assignee"
-      [canAssignUserToTask]="obs.canAssignUserToTask"
-      (assignmentOfTaskChanged)="assignmentOfTaskChanged.emit()"
-    ></valtimo-assign-user-to-task>
+      [assigneeFullName]="obs.task.valtimoAssignee?.fullName"
+      [assignedTeamKey]="obs.task.assignedTeam?.key"
+      [assignedTeamTitle]="obs.task.assignedTeam?.title"
+      [hasPermission]="obs.canAssignUserToTask"
+      [candidateUsers$]="candidateUsers$"
+      [candidateTeams$]="candidateTeams$"
+      (assignmentChangedEvent)="onAssignmentChanged($event)"
+      (unassignedEvent)="onUnassigned()"
+    ></valtimo-assignment>
 
     <valtimo-set-task-due-date
       [task]="obs.task"
       [canModifyTask]="obs.canModifyTask"
+      (dueDateChanged)="dueDateChanged.emit()"
     ></valtimo-set-task-due-date>
   </div>
 </ng-template>

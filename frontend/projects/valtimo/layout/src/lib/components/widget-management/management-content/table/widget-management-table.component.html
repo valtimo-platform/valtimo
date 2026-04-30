@@ -93,6 +93,7 @@
   [columnData]="$content()?.columns"
   (columnUpdateEvent)="onColumnUpdateEvent($event)"
   [selectedCollection]="selectedCollection$ | async"
+  [showSortableCheckbox]="sortableColumns"
 ></valtimo-widget-management-fields-column>
 
 <section *ngIf="showFirstColumnOption" class="valtimo-widget-management-table__toggle">

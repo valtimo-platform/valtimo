@@ -42,9 +42,13 @@ class PostgresFormFlowAdditionalPropertiesSearchRepository(
     ): Predicate {
         return criteriaBuilder.equal(
             criteriaBuilder.function(
-                "json_extract_path_text",
+                "jsonb_extract_path_text",
                 String::class.java,
-                root.get<Any>("additionalProperties"),
+                criteriaBuilder.function(
+                    "to_jsonb",
+                    Any::class.java,
+                    root.get<Any>("additionalProperties")
+                ),
                 criteriaBuilder.literal(key)
             ),
             if (value is String) value else objectMapper.writeValueAsString(value)

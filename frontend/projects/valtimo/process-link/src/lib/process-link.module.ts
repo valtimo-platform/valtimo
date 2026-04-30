@@ -22,15 +22,16 @@ import {FormsModule, ReactiveFormsModule} from '@angular/forms';
 import {
   CarbonMultiInputModule,
   FormIoModule,
+  InputLabelModule,
   ModalModule,
   ParagraphModule,
   RemoveClassnamesDirective,
   RenderInPageHeaderDirective,
-  SearchableDropdownSelectModule,
   StepperModule,
   TooltipIconModule,
   TooltipModule,
   ValtimoCdsModalDirective,
+  ValuePathSelectorComponent,
   VModalModule,
 } from '@valtimo/components';
 import {TranslateModule} from '@ngx-translate/core';
@@ -48,7 +49,9 @@ import {
   LayerModule,
   LoadingModule,
   ModalModule as CarbonModalModule,
+  NotificationModule,
   ProgressIndicatorModule,
+  RadioModule as CarbonRadioModule,
   SelectModule,
   StructuredListModule,
   TilesModule,
@@ -65,6 +68,9 @@ import {UrlResolverService} from './services/url-resolver.service';
 import {FormDisplayConfigurationComponent} from './components/form-display-configuration/form-display-configuration.component';
 import {ImportPluginConfigurationComponent} from './components/import-plugin-configuration/import-plugin-configuration.component';
 import {SelectUIComponentComponent} from './components/select-ui-component/select-ui-component.component';
+import {SelectBuildingBlockComponent} from './components/select-building-block';
+import {ConfigureBuildingBlockPluginsComponent} from './components/configure-building-block-plugins';
+import {ConfigureBuildingBlockMappingsComponent} from './components/configure-building-block-mappings/configure-building-block-mappings.component';
 
 @NgModule({
   declarations: [
@@ -82,6 +88,8 @@ import {SelectUIComponentComponent} from './components/select-ui-component/selec
     FormDisplayConfigurationComponent,
     SelectUIComponentComponent,
     ImportPluginConfigurationComponent,
+    SelectBuildingBlockComponent,
+    ConfigureBuildingBlockPluginsComponent,
   ],
   imports: [
     CommonModule,
@@ -89,7 +97,6 @@ import {SelectUIComponentComponent} from './components/select-ui-component/selec
     FormsModule,
     ReactiveFormsModule,
     ModalModule,
-    SearchableDropdownSelectModule,
     TranslateModule,
     StepperModule,
     VModalModule,
@@ -121,6 +128,11 @@ import {SelectUIComponentComponent} from './components/select-ui-component/selec
     ToggletipModule,
     RemoveClassnamesDirective,
     ReactiveFormsModule,
+    InputLabelModule,
+    CarbonRadioModule,
+    ValuePathSelectorComponent,
+    ConfigureBuildingBlockMappingsComponent,
+    NotificationModule,
   ],
   exports: [
     ProcessLinkComponent,

@@ -14,10 +14,18 @@
  * limitations under the License.
  */
 
-import {AfterViewInit, Directive, ElementRef, Input, OnDestroy, Renderer2} from '@angular/core';
+import {
+  AfterViewInit,
+  Directive,
+  ElementRef,
+  Input,
+  NgZone,
+  OnDestroy,
+  Renderer2,
+} from '@angular/core';
 import Muuri from 'muuri';
 import {BehaviorSubject, combineLatest, fromEvent, Observable, Subscription, switchMap} from 'rxjs';
-import {distinctUntilChanged, filter, tap} from 'rxjs/operators';
+import {distinctUntilChanged, filter, take, tap} from 'rxjs/operators';
 
 @Directive({
   selector: '[muuri]',
@@ -33,11 +41,13 @@ export class MuuriDirective implements AfterViewInit, OnDestroy {
   private resizeObserver?: ResizeObserver;
   private mutationObserver?: MutationObserver;
 
+  private readonly _subscriptions = new Subscription();
+
   private get _muuri$(): Observable<Muuri> {
-    return this._muuriSubject$.pipe(filter(muuri => !!muuri));
+    return this._muuriSubject$.pipe(filter((muuri): muuri is Muuri => !!muuri));
   }
 
-  private get _muuri(): Muuri {
+  private get _muuri(): Muuri | null {
     return this._muuriSubject$.getValue();
   }
 
@@ -45,31 +55,56 @@ export class MuuriDirective implements AfterViewInit, OnDestroy {
     return this._containerWidthSubject$.pipe(distinctUntilChanged());
   }
 
-  private readonly _subscriptions = new Subscription();
-
   constructor(
-    private readonly elementRef: ElementRef,
-    private readonly renderer: Renderer2
+    private readonly elementRef: ElementRef<HTMLElement>,
+    private readonly renderer: Renderer2,
+    private readonly ngZone: NgZone
   ) {}
 
   public ngAfterViewInit(): void {
     this.setContainerStyles();
     this.observeContainerWidthChanges();
     this.observeMutations();
-    this.initMuuri();
-    this.openContainerChangeSubscription();
-    this.setContainerStyles();
+
+    this.ngZone.runOutsideAngular(() => {
+      this.ngZone.onStable.pipe(take(1)).subscribe(() => {
+        const nativeElement = this.elementRef.nativeElement;
+
+        if (
+          !nativeElement ||
+          !(nativeElement instanceof HTMLElement) ||
+          !nativeElement.isConnected
+        ) {
+          console.warn(
+            'MuuriDirective: container element is not an attached HTMLElement; skipping Muuri init.'
+          );
+          return;
+        }
+
+        this.initMuuri();
+        this.openContainerChangeSubscription();
+        this._mutationTrigger$.next(null);
+      });
+    });
   }
 
   public ngOnDestroy(): void {
     this.resizeObserver?.disconnect();
     this.mutationObserver?.disconnect();
     this._subscriptions.unsubscribe();
+    this._muuriSubject$.value?.destroy?.();
   }
 
   private initMuuri(): void {
+    const nativeElement = this.elementRef.nativeElement;
+
+    if (!nativeElement || !(nativeElement instanceof HTMLElement)) {
+      console.warn('MuuriDirective: cannot initialize Muuri, nativeElement is not an HTMLElement.');
+      return;
+    }
+
     this._muuriSubject$.next(
-      new Muuri(this.elementRef.nativeElement, {
+      new Muuri(nativeElement, {
         layout: {
           fillGaps: true,
         },
@@ -86,15 +121,23 @@ export class MuuriDirective implements AfterViewInit, OnDestroy {
       this._containerWidthSubject$.next(width);
     };
 
-    this.resizeObserver = new ResizeObserver(() => getWidth());
-    this.resizeObserver.observe(nativeElement);
+    if (typeof ResizeObserver !== 'undefined') {
+      this.resizeObserver = new ResizeObserver(() => getWidth());
+      this.resizeObserver.observe(nativeElement);
+    }
 
-    this._subscriptions.add(fromEvent(window, 'resize').subscribe(() => getWidth()));
+    if (typeof window !== 'undefined') {
+      this._subscriptions.add(fromEvent(window, 'resize').subscribe(() => getWidth()));
+    }
 
     getWidth();
   }
 
   private observeMutations(): void {
+    if (typeof MutationObserver === 'undefined') {
+      return;
+    }
+
     const nativeElement = this.elementRef.nativeElement as HTMLElement;
 
     this.mutationObserver = new MutationObserver(() => {

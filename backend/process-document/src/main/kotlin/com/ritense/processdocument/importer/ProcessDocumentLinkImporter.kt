@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,7 +20,6 @@ import com.fasterxml.jackson.core.JsonProcessingException
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
 import com.ritense.authorization.AuthorizationContext.Companion.runWithoutAuthorization
-import com.ritense.document.service.DocumentDefinitionService
 import com.ritense.importer.ImportRequest
 import com.ritense.importer.Importer
 import com.ritense.importer.ValtimoImportTypes.Companion.CASE_DEFINITION
@@ -39,7 +38,6 @@ import org.springframework.transaction.annotation.Transactional
 @Transactional
 class ProcessDocumentLinkImporter(
     private val processDefinitionCaseDefinitionService: ProcessDefinitionCaseDefinitionService,
-    private val documentDefinitionService: DocumentDefinitionService,
     private val objectMapper: ObjectMapper,
     private val processService: OperatonProcessService,
 ) : Importer {
@@ -51,32 +49,25 @@ class ProcessDocumentLinkImporter(
     override fun supports(fileName: String) = fileName.matches(FILENAME_REGEX)
 
     override fun import(request: ImportRequest) {
-        val documentDefinitionName = FILENAME_REGEX.matchEntire(request.fileName)!!.groupValues[1]
-        deploy(request.caseDefinitionId!!, documentDefinitionName, request.content.toString(Charsets.UTF_8))
+        deploy(request.caseDefinitionId!!, request.content.toString(Charsets.UTF_8))
     }
 
     @Throws(JsonProcessingException::class)
-    fun deploy(caseDefinitionId: CaseDefinitionId, documentDefinitionName: String, content: String) {
+    fun deploy(caseDefinitionId: CaseDefinitionId, content: String) {
         val processDocumentLinkConfigItems: List<ProcessDocumentLinkConfigItem> = getJson(content)
-        val documentDefinitionOptional =
-            documentDefinitionService.findByNameAndCaseDefinitionId(documentDefinitionName, caseDefinitionId)
-        if (documentDefinitionOptional.isPresent()) {
-            processDocumentLinkConfigItems.forEach { item ->
-                createProcessDocumentLink(
-                    caseDefinitionId,
-                    documentDefinitionName,
-                    item
-                )
-            }
+        processDocumentLinkConfigItems.forEach { item ->
+            createProcessDocumentLink(
+                caseDefinitionId,
+                item
+            )
         }
     }
 
     private fun createProcessDocumentLink(
         caseDefinitionId: CaseDefinitionId,
-        documentDefinitionName: String,
         item: ProcessDocumentLinkConfigItem
     ) {
-        val processDefinition = processService.getDefinitionByKeyAndCaseDefinition(
+        val processDefinition = processService.getLatestDefinitionByKeyAndBlueprint(
             caseDefinitionId,
             item.processDefinitionKey
         )
@@ -96,10 +87,9 @@ class ProcessDocumentLinkImporter(
 
             if (existingAssociation != null) {
                 if (!item.equalsProcessDocumentDefinition(existingAssociation)) {
-                    logger.info(
-                        "Updating process-document-links from {}.json",
-                        documentDefinitionName
-                    )
+                    logger.info {
+                        "Updating process-document-links for case definition $caseDefinitionId"
+                    }
                     processDefinitionCaseDefinitionService.deleteProcessDefinitionCaseDefinition(
                         request.processDefinitionId,
                         request.caseDefinitionId
@@ -107,10 +97,9 @@ class ProcessDocumentLinkImporter(
                     processDefinitionCaseDefinitionService.createProcessDocumentDefinition(request)
                 }
             } else {
-                logger.info(
-                    "Deploying process-document-links from {}.json",
-                    documentDefinitionName
-                )
+                logger.info {
+                    "Deploying process-document-links for case definition $caseDefinitionId"
+                }
                 processDefinitionCaseDefinitionService.createProcessDocumentDefinition(request)
             }
         }

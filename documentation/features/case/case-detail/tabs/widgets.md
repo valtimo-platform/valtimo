@@ -11,7 +11,7 @@ Widget configuration is part of tab configuration for a case definition.
 * Select the `Case details` tab
 * Select the `Tabs` tab
 
-The list of configured tabs for a case is displayed within the case settings. To configure widgets, select an existing tab with its type set to Widgets, or add a new widget-type tab to the configuration by clicking the **Add tab** button as documented [here](./). Upon selection, the widget configuration for the chosen tab will open, displaying a list of widgets created for that tab.
+The list of configured tabs for a case is displayed within the case settings. To configure widgets, select an existing tab with its type set to Widgets, or add a new widget-type tab to the configuration by clicking the **Add tab** button as documented in the [tabs documentation](./). Upon selection, the widget configuration for the chosen tab will open, displaying a list of widgets created for that tab.
 
 <figure><img src="../../../../.gitbook/assets/image (11).png" alt=""><figcaption><p>Widget configuration UI</p></figcaption></figure>
 
@@ -46,11 +46,9 @@ The widget can be configured to display on any number of columns between 1 and 4
 {% endstep %}
 
 {% step %}
-**Choose widget style**
+**Choose widget appearance**
 
-A widget can either have a "Default" color scheme or it can be "High Contrast" to attract focus to that widget and it's content.
-
-<figure><img src="../../../../.gitbook/assets/image (23).png" alt=""><figcaption><p>Choosing widget style</p></figcaption></figure>
+For the Fields, Collection and Table widgets you can also choose an appearance color. This color controls the background, accent and text colors rendered by the widget. The available options are **Default**, **Blue**, **Periwinkle**, **Purple**, **Turqoise**, **Green**, **Brown**, **Red**, **Orange** and **Yellow**. The same value is stored in the widget configuration under the `color` property (using the enum names `WHITE`, `BLUE`, `PERIWINKLE`, etc.), so exported files and autodeploy definitions can set it directly as well.
 {% endstep %}
 
 {% step %}
@@ -446,7 +444,7 @@ Widgets for a case can also be configured directly through a JSON editor. For pr
 
 ## Access control
 
-Access to the case widgets can be configured through access control. More information about access control can be found [here](https://docs.valtimo.nl/features/access-control).
+Access to the case widgets can be configured through access control. More information about access control can be found in the [access control documentation](../../../access-control/README.md).
 
 ### Resources and actions
 

@@ -16,7 +16,6 @@
 
 package com.ritense.document.domain;
 
-import com.fasterxml.jackson.annotation.JsonFilter;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -42,6 +41,9 @@ public interface Document {
     String createdBy();
 
     @JsonProperty
+    Optional<LocalDateTime> retentionDate();
+
+    @JsonProperty
     Optional<LocalDateTime> modifiedOn();
 
     @JsonProperty
@@ -58,6 +60,12 @@ public interface Document {
 
     @JsonProperty
     String assigneeFullName();
+
+    @JsonProperty
+    String assignedTeamKey();
+
+    @JsonProperty
+    String assignedTeamTitle();
 
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = DocumentContentFilter.class)
     @JsonProperty

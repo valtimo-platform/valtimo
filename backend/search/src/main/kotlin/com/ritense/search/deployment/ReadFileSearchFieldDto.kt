@@ -19,6 +19,7 @@ package com.ritense.search.deployment
 import com.ritense.search.domain.DataType
 import com.ritense.search.domain.FieldType
 import com.ritense.search.domain.SearchFieldMatchType
+import com.ritense.search.domain.SearchFieldV2
 import com.ritense.search.web.rest.dto.SearchFieldV2Dto
 import java.util.UUID
 
@@ -47,5 +48,20 @@ class ReadFileSearchFieldDto(
             dropdownDataProvider = dropdownDataProvider,
             required = required,
         )
+    }
+
+    companion object {
+        fun from(searchField: SearchFieldV2): ReadFileSearchFieldDto {
+            return ReadFileSearchFieldDto(
+                searchField.key,
+                searchField.title,
+                searchField.path,
+                searchField.dataType,
+                searchField.fieldType,
+                searchField.matchType,
+                searchField.dropdownDataProvider,
+                searchField.required
+            )
+        }
     }
 }

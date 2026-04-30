@@ -1,0 +1,121 @@
+/*
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
+ *
+ * Licensed under EUPL, Version 1.2 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" basis,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+projectVersion = 1.0
+
+dockerCompose {
+    projectName = "building-block"
+
+    securityTesting {
+        isRequiredBy(project.tasks.securityTesting)
+        useComposeFiles.addAll("../docker-resources/docker-compose-base-test-postgresql.yml", "docker-compose-override-postgresql.yml")
+    }
+
+    integrationTestingPostgresql {
+        isRequiredBy(project.tasks.integrationTestingPostgresql)
+        useComposeFiles.addAll("../docker-resources/docker-compose-base-test-postgresql.yml", "docker-compose-override-postgresql.yml")
+    }
+
+    integrationTestingMysql {
+        isRequiredBy(project.tasks.integrationTestingMysql)
+        useComposeFiles.addAll("../docker-resources/docker-compose-base-test-mysql.yml", "docker-compose-override-mysql.yml")
+    }
+}
+
+dependencies {
+    implementation project(":backend:core")
+    implementation project(":backend:authorization")
+    implementation project(":backend:changelog")
+    api project(":backend:contract")
+    implementation project(":backend:data-provider")
+    implementation project(":backend:exporter")
+    implementation project(":backend:importer")
+    implementation project(":backend:logging")
+    implementation project(":backend:outbox")
+    implementation project(":backend:resource")
+    implementation project(":backend:search")
+    implementation project(":backend:value-resolver")
+    implementation project(":backend:web")
+    implementation project(":backend:widget")
+    implementation project(":backend:process-document")
+    implementation project(":backend:case")
+    implementation project(":backend:form")
+    implementation project(":backend:form-flow")
+    implementation project(":backend:process-link")
+    implementation project(":backend:plugin")
+    implementation project(":backend:plugin-valtimo")
+
+    api "org.springframework.security:spring-security-core"
+    api "org.springframework.boot:spring-boot"
+    api "org.springframework.data:spring-data-commons"
+
+    implementation "org.springframework.boot:spring-boot-starter"
+    implementation "org.springframework.boot:spring-boot-starter-web"
+    implementation "org.springframework.boot:spring-boot-starter-actuator"
+    implementation "org.springframework.boot:spring-boot-starter-data-jpa"
+    implementation "org.springframework.boot:spring-boot-starter-security"
+    implementation "org.springframework.boot:spring-boot-starter-web"
+    implementation "org.springframework.boot:spring-boot-starter-validation"
+    implementation "org.springframework.integration:spring-integration-core"
+
+    implementation "com.fasterxml.jackson.core:jackson-annotations"
+    implementation "com.fasterxml.jackson.module:jackson-module-blackbird"
+    implementation "com.fasterxml.jackson.module:jackson-module-parameter-names"
+    implementation "com.fasterxml.jackson.module:jackson-module-jaxb-annotations"
+    implementation "com.fasterxml.jackson.datatype:jackson-datatype-jsr310"
+
+    implementation "org.springframework.boot:spring-boot-autoconfigure"
+
+    implementation "org.liquibase:liquibase-core:${liquibaseVersion}"
+    implementation "org.liquibase.ext:liquibase-hibernate6:${liquibaseVersion}"
+
+    implementation "io.github.oshai:kotlin-logging:${kotlinLoggingVersion}"
+    implementation "com.github.erosb:everit-json-schema:${everitJsonSchemaVersion}"
+    implementation "com.flipkart.zjsonpatch:zjsonpatch:${zjsonpatchVersion}"
+    implementation "com.jayway.jsonpath:json-path:${jaywayJsonpathVersion}"
+    implementation "com.fasterxml.jackson.module:jackson-module-kotlin"
+
+    implementation "io.hypersistence:hypersistence-utils-hibernate-62:${hypersistenceUtilsVersion}"
+    implementation "org.hibernate.orm:hibernate-core:${hibernateCoreVersion}"
+
+    implementation "org.apache.commons:commons-lang3:${commonsLangVersion}"
+
+    implementation "org.springframework.retry:spring-retry:${springRetryVersion}"
+
+    annotationProcessor "org.springframework.boot:spring-boot-autoconfigure-processor"
+
+    testImplementation project(':backend:test-utils-common')
+
+    testImplementation "org.springframework.boot:spring-boot-starter-test"
+    testImplementation "org.jetbrains.kotlin:kotlin-test"
+    testImplementation "org.junit.jupiter:junit-jupiter"
+    testImplementation "org.springframework.boot:spring-boot-starter-test"
+    testImplementation "org.springframework.security:spring-security-test"
+    testImplementation "org.mockito:mockito-core"
+    testImplementation "org.mockito.kotlin:mockito-kotlin:${mockitoKotlinVersion}"
+    testImplementation "org.jetbrains.kotlinx:kotlinx-coroutines-test:${kotlinCoroutinesVersion}"
+    testImplementation "org.skyscreamer:jsonassert:${jsonassertVersion}"
+
+    jar {
+        enabled = true
+        manifest {
+            attributes("Implementation-Title": "Ritense case spring boot starter")
+            attributes("Implementation-Version": projectVersion)
+        }
+    }
+}
+
+apply from: "gradle/publishing.gradle"

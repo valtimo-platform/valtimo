@@ -37,6 +37,8 @@ interface FormFlowDefinition {
 interface FormFlowInstance {
   id: string;
   step?: FormFlowStep;
+  onOpenResult?: any[];
+  onCompleteResult?: any[];
 }
 
 interface FormFlowCreateRequest {

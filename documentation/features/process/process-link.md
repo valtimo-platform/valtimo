@@ -1,12 +1,13 @@
 # Process links
 
-Process actions can be attached to Camunda activities through process links. Configured actions will be executed when the process reached the desired activity. This makes it possible to extend the functionality of a process beyond what Camunda offers through BPMN.
+Process actions can be attached to Operaton activities through process links. Configured actions will be executed when the process reached the desired activity. This makes it possible to extend the functionality of a process beyond what Operaton offers through BPMN.
 
 Currently, the following types of process-links are supported by Valtimo:
 
 * Form
 * Form-flow
 * Plugin
+* Building block
 
 ## Creating process links
 
@@ -31,13 +32,13 @@ To configure process links, admin privileges are required.
 
 A form process link can be added to user-tasks. When the process reaches the user-task, a user will be presented with the configured form when opening it.
 
-More information about forms can be found [here](../case/forms/).
+More information about forms can be found in the [forms documentation](../case/forms/).
 
 #### Creating a form-flow process link
 
 A form-flow process link can be added to user-tasks. When the process reaches the user-task, an instance of the form-flow will be created and be made visible to the user.
 
-More information about form-flows can be found [here](../case/form-flow.md).
+More information about form-flows can be found in the [form-flow documentation](../case/form-flow.md).
 
 #### Creating a plugin process link
 
@@ -50,6 +51,12 @@ Any text fields for configuring the process link itself support several ways of 
 1. A fixed value. This value will be put directly into the template without alterations. For example `John`
 2. A value retrieved from the case-data. This value should start with `doc:` and should end with the path to the case-data property. For example `doc:/firstname`.
 3. A value retrieved from a process variable. This value should start with `pv:` and should end with the name of the process variable. For example `pv:firstname`.
+
+#### Creating a building block process link
+
+Building block process links are used on **Call activities** to start a reusable building block. In the wizard, you select the building block and version, configure plugin mappings, and map inputs and outputs.
+
+For a step-by-step guide, see [Building blocks](../building-blocks/README.md).
 {% endtab %}
 
 {% tab title="Via IDE" %}
@@ -87,6 +94,29 @@ This is an example of an auto-deployment file for two user task for a process:
          "objectUrl": "pv:myObjectUrl",
          "someOtherProperty": "${VALTIMO_MY_PROPERTY}"
       }
+   },
+   {
+      "activityId": "CallSubsidyCalculatorActivity",
+      "activityType": "bpmn:CallActivity:start",
+      "processLinkType": "building-block",
+      "buildingBlockDefinitionKey": "subsidy-calculator",
+      "buildingBlockDefinitionVersionTag": "1.0.0",
+      "pluginConfigurationMappings": {
+         "zakenapi": "3079d6fe-42e3-4f8f-a9db-52ce2507b7ee"
+      },
+      "inputMappings": [
+         {
+            "source": "doc:applicantName",
+            "target": "applicantName"
+         }
+      ],
+      "outputMappings": [
+         {
+            "source": "calculatedSubsidy",
+            "target": "doc:calculatedSubsidy",
+            "syncTiming": "END"
+         }
+      ]
    }
 ]
 ```
@@ -109,7 +139,7 @@ This ensures that only environment variables matching the given patterns are ava
 
 ## Editing process links
 
-Process links that have been attached to Camunda activities, can also be edited. Admin privileges are required to edit process links.
+Process links that have been attached to Operaton activities, can also be edited. Admin privileges are required to edit process links.
 
 * Go to the `Admin` menu
 * Go to the `Process links v2 (beta)` menu
@@ -123,7 +153,7 @@ Process links that have been attached to Camunda activities, can also be edited.
 
 ## Unlinking process links
 
-Process links that have been attached to Camunda activities, can also be unlinked (deleted). Admin privileges are required to unlink/delete process links.
+Process links that have been attached to Operaton activities, can also be unlinked (deleted). Admin privileges are required to unlink/delete process links.
 
 * Go to the `Admin` menu
 * Go to the `Process links v2 (beta)` menu

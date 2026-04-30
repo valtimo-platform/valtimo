@@ -29,6 +29,7 @@ import com.ritense.plugin.annotation.Plugin
 import com.ritense.plugin.annotation.PluginAction
 import com.ritense.plugin.annotation.PluginActionProperty
 import com.ritense.plugin.annotation.PluginProperty
+import com.ritense.plugin.domain.PluginDependency
 import com.ritense.processlink.domain.ActivityTypeWithEventName.SERVICE_TASK_START
 import com.ritense.valtimo.contract.validation.Url
 import com.ritense.zakenapi.ZaakUrlProvider
@@ -44,7 +45,8 @@ import java.util.UUID
 @Plugin(
     key = BesluitenApiPlugin.PLUGIN_KEY,
     title = "Besluiten API",
-    description = "Connects to the Besluiten API"
+    description = "Connects to the Besluiten API",
+    dependencies = [PluginDependency.ZAAK_INSTANCE_LINK]
 )
 class BesluitenApiPlugin(
     private val besluitenApiClient: BesluitenApiClient,

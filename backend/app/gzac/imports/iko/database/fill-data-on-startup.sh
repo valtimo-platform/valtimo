@@ -4,7 +4,7 @@ echo ">>>>  Waiting until IKO has initialized the database <<<<"
 #useradd iko
 while true
 do
-    verifier=$(psql -U iko -d iko -t -A -c "select count(checksum)>0 from flyway_schema_history")
+    verifier=$(psql -U iko -d iko -t -A -c "select count(checksum)>22 from flyway_schema_history")
     if [ "t" = $verifier ]
         then
             echo "Running database setup scripts"

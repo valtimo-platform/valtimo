@@ -16,8 +16,8 @@
 
 package com.ritense.document.exception;
 
+import com.ritense.document.domain.DocumentDefinition;
 import com.ritense.document.domain.impl.JsonSchema;
-import com.ritense.document.domain.impl.JsonSchemaDocumentDefinitionId;
 
 public class DocumentDefinitionNameMismatchException extends RuntimeException {
 
@@ -27,7 +27,7 @@ public class DocumentDefinitionNameMismatchException extends RuntimeException {
         super(message);
     }
 
-    public DocumentDefinitionNameMismatchException(JsonSchemaDocumentDefinitionId id, JsonSchema schema) {
+    public DocumentDefinitionNameMismatchException(DocumentDefinition.Id id, JsonSchema schema) {
         super(String.format(MESSAGE, id.toString(), schema.getSchema().getId()));
     }
 }

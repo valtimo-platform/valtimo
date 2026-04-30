@@ -17,16 +17,19 @@
 package com.ritense.form.mapper
 
 import com.ritense.exporter.request.FormDefinitionExportRequest
+import com.ritense.form.domain.FormDefinitionBlueprintId
 import com.ritense.form.domain.FormDisplayType
 import com.ritense.form.domain.FormIoFormDefinition
 import com.ritense.form.domain.FormProcessLink
 import com.ritense.form.domain.FormSizes
+import com.ritense.form.processlink.dto.FormProcessLinkDeployDto
 import com.ritense.form.service.FormDefinitionService
 import com.ritense.form.web.rest.dto.FormProcessLinkCreateRequestDto
 import com.ritense.form.web.rest.dto.FormProcessLinkResponseDto
 import com.ritense.form.web.rest.dto.FormProcessLinkUpdateRequestDto
-import com.ritense.processdocument.service.ProcessDefinitionCaseDefinitionService
 import com.ritense.processlink.domain.ActivityTypeWithEventName.USER_TASK_CREATE
+import com.ritense.valtimo.contract.BlueprintId
+import com.ritense.valtimo.contract.buildingblock.BuildingBlockDefinitionId
 import com.ritense.valtimo.contract.case_.CaseDefinitionId
 import com.ritense.valtimo.contract.json.MapperSingleton
 import org.assertj.core.api.Assertions.assertThat
@@ -48,10 +51,8 @@ internal class FormProcessLinkMapperTest {
 
     private lateinit var formProcessLinkMapper: FormProcessLinkMapper
 
-    @Mock
-    lateinit var processDefinitionCaseDefinitionService: ProcessDefinitionCaseDefinitionService
-
     val caseDefinitionId = CaseDefinitionId.of("person", "1.0.0")
+    val buildingBlockDefinitionId = BuildingBlockDefinitionId.of("subsidy-calculator", "1.0.0")
 
     @BeforeEach
     fun beforeEach() {
@@ -59,7 +60,6 @@ internal class FormProcessLinkMapperTest {
         formProcessLinkMapper = FormProcessLinkMapper(
             MapperSingleton.get(),
             formDefinitionService,
-            processDefinitionCaseDefinitionService,
         )
     }
 
@@ -197,7 +197,7 @@ internal class FormProcessLinkMapperTest {
             UUID.randomUUID(),
             "testing",
             "{}",
-            CaseDefinitionId.of("house", "1.0.0"),
+            FormDefinitionBlueprintId.forCase(CaseDefinitionId.of("house", "1.0.0")),
             true
         )
         val formProcessLink = FormProcessLink(
@@ -216,6 +216,143 @@ internal class FormProcessLinkMapperTest {
         assertThat(relatedExportRequests).contains(
             FormDefinitionExportRequest("testing", caseDefinitionId)
         )
+    }
+
+    @Test
+    fun `should resolve form definition by case blueprint for deploy dto`() {
+        val formDefinitionId = UUID.randomUUID()
+        val formDefinition = FormIoFormDefinition(
+            formDefinitionId,
+            "my-case-form",
+            "{}",
+            FormDefinitionBlueprintId.forCase(caseDefinitionId),
+            false
+        )
+        val deployDto = FormProcessLinkDeployDto(
+            processDefinitionId = "case-process-def:1:123",
+            activityId = "userTask1",
+            activityType = USER_TASK_CREATE,
+            formDefinitionName = "my-case-form",
+            subtitles = null
+        )
+
+        whenever(formDefinitionService.getFormDefinitionByName("my-case-form", caseDefinitionId as BlueprintId))
+            .thenReturn(Optional.of(formDefinition))
+
+        val result = formProcessLinkMapper.toProcessLinkCreateRequestDto(deployDto, caseDefinitionId)
+
+        assertTrue(result is FormProcessLinkCreateRequestDto)
+        assertEquals(formDefinitionId, result.formDefinitionId)
+        assertEquals("case-process-def:1:123", result.processDefinitionId)
+        assertEquals("userTask1", result.activityId)
+    }
+
+    @Test
+    fun `should resolve form definition by building block blueprint for deploy dto`() {
+        val formDefinitionId = UUID.randomUUID()
+        val formDefinition = FormIoFormDefinition(
+            formDefinitionId,
+            "my-bb-form",
+            "{}",
+            FormDefinitionBlueprintId.forBuildingBlock(buildingBlockDefinitionId),
+            false
+        )
+        val deployDto = FormProcessLinkDeployDto(
+            processDefinitionId = "bb-process-def:1:456",
+            activityId = "reviewTask",
+            activityType = USER_TASK_CREATE,
+            formDefinitionName = "my-bb-form",
+            subtitles = null
+        )
+
+        whenever(formDefinitionService.getFormDefinitionByName("my-bb-form", buildingBlockDefinitionId))
+            .thenReturn(Optional.of(formDefinition))
+
+        val result = formProcessLinkMapper.toProcessLinkCreateRequestDto(deployDto, buildingBlockDefinitionId)
+
+        assertTrue(result is FormProcessLinkCreateRequestDto)
+        assertEquals(formDefinitionId, result.formDefinitionId)
+        assertEquals("bb-process-def:1:456", result.processDefinitionId)
+        assertEquals("reviewTask", result.activityId)
+    }
+
+    @Test
+    fun `should throw when form definition not found for deploy dto`() {
+        val deployDto = FormProcessLinkDeployDto(
+            processDefinitionId = "unknown-process:1:789",
+            activityId = "someTask",
+            activityType = USER_TASK_CREATE,
+            formDefinitionName = "non-existent-form",
+            subtitles = null
+        )
+
+        whenever(formDefinitionService.getFormDefinitionByName("non-existent-form", caseDefinitionId as BlueprintId))
+            .thenReturn(Optional.empty())
+
+        val exception = assertThrows<IllegalStateException> {
+            formProcessLinkMapper.toProcessLinkCreateRequestDto(deployDto, caseDefinitionId)
+        }
+
+        assertEquals("Form definition non-existent-form not found", exception.message)
+    }
+
+    @Test
+    fun `should resolve form definition by building block blueprint for update dto`() {
+        val formDefinitionId = UUID.randomUUID()
+        val formDefinition = FormIoFormDefinition(
+            formDefinitionId,
+            "my-bb-form",
+            "{}",
+            FormDefinitionBlueprintId.forBuildingBlock(buildingBlockDefinitionId),
+            false
+        )
+        val existingProcessLinkId = UUID.randomUUID()
+        val deployDto = FormProcessLinkDeployDto(
+            processDefinitionId = "bb-process-def:1:456",
+            activityId = "reviewTask",
+            activityType = USER_TASK_CREATE,
+            formDefinitionName = "my-bb-form",
+            viewModelEnabled = false,
+            formDisplayType = FormDisplayType.panel,
+            formSize = FormSizes.medium,
+            subtitles = SUBTITLES
+        )
+
+        whenever(formDefinitionService.getFormDefinitionByName("my-bb-form", buildingBlockDefinitionId))
+            .thenReturn(Optional.of(formDefinition))
+
+        val result = formProcessLinkMapper.toProcessLinkUpdateRequestDto(deployDto, existingProcessLinkId, buildingBlockDefinitionId)
+
+        assertTrue(result is FormProcessLinkUpdateRequestDto)
+        assertEquals(existingProcessLinkId, result.id)
+        assertEquals(formDefinitionId, result.formDefinitionId)
+    }
+
+    @Test
+    fun `should resolve form definition without blueprint when blueprintId is null`() {
+        val formDefinitionId = UUID.randomUUID()
+        val formDefinition = FormIoFormDefinition(
+            formDefinitionId,
+            "global-form",
+            "{}",
+            null,
+            false
+        )
+        val deployDto = FormProcessLinkDeployDto(
+            processDefinitionId = "some-process:1:001",
+            activityId = "task1",
+            activityType = USER_TASK_CREATE,
+            formDefinitionName = "global-form",
+            subtitles = null
+        )
+
+        whenever(formDefinitionService.getFormDefinitionByName("global-form"))
+            .thenReturn(Optional.of(formDefinition))
+
+        val result = formProcessLinkMapper.toProcessLinkCreateRequestDto(deployDto, null)
+
+        assertTrue(result is FormProcessLinkCreateRequestDto)
+        assertEquals(formDefinitionId, result.formDefinitionId)
     }
 
     companion object {

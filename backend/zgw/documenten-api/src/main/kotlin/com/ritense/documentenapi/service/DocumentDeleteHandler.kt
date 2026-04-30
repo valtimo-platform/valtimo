@@ -17,7 +17,8 @@
 package com.ritense.documentenapi.service
 
 import java.net.URI
+import java.util.UUID
 
 interface DocumentDeleteHandler {
-    fun preDocumentDelete(documentUrl: URI)
+    fun preDocumentDelete(documentUrl: URI, caseDocumentId: UUID?)
 }

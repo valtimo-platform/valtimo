@@ -16,16 +16,13 @@
 
 package com.ritense.iko.service
 
-import com.fasterxml.jackson.databind.JsonNode
 import com.ritense.authorization.Action
 import com.ritense.authorization.Action.Companion.deny
-import com.ritense.authorization.AuthorizationContext.Companion.runWithoutAuthorization
 import com.ritense.authorization.AuthorizationService
 import com.ritense.authorization.request.EntityAuthorizationRequest
 import com.ritense.iko.authorization.IkoViewActionProvider
 import com.ritense.iko.domain.IkoView
 import com.ritense.iko.event.IkoViewPreDeleteEvent
-import com.ritense.iko.helper.MergeHelper.deepMerge
 import com.ritense.iko.repository.IkoViewRepository
 import com.ritense.iko.repository.IkoViewSpecificationHelper.Companion.byIkoRepositoryConfigKey
 import com.ritense.iko.repository.IkoViewSpecificationHelper.Companion.byKey
@@ -46,18 +43,6 @@ class IkoViewService(
     private val ikoRepositories: List<IkoRepository>,
     private val applicationEventPublisher: ApplicationEventPublisher,
 ) {
-
-    fun getDataById(key: String, id: String): JsonNode {
-        val ikoView = runWithoutAuthorization { getByKey(key) }
-        requirePermission(ikoView, IkoViewActionProvider.VIEW)
-        val ikoRepository = ikoRepositories.first {
-            it.getType() == ikoView.ikoRepositoryConfig.type
-        }
-        return ikoRepository.findById(
-            config = ikoView.ikoRepositoryConfig.properties.deepMerge(ikoView.properties),
-            id = id
-        )
-    }
 
     fun getIkoViewPropertyFields(type: Any): List<PropertyField> {
         denyAuthorization()

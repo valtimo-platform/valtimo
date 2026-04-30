@@ -76,6 +76,21 @@
                     ],
                     "firstColumnAsTitle": false
                 }
+            },
+            {
+                "type": "custom",
+                "key": "clock",
+                "title": "Clock",
+                "width": 1,
+                "highContrast": false,
+                "isCompact": null,
+                "properties": {
+                    "componentKey": "clock-widget",
+                    "componentValue": {
+                        "title": "Clock",
+                        "subtitle": "Live clock widget"
+                    }
+                }
             }
         ]
     }

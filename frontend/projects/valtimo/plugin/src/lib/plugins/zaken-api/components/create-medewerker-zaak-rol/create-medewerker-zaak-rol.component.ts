@@ -24,6 +24,7 @@ import {INDICATIE_MACHTIGING_VALUES} from '../../models/indicatie-machtiging-val
   standalone: false,
   selector: 'valtimo-create-medewerker-zaak-rol-configuration',
   templateUrl: './create-medewerker-zaak-rol.component.html',
+  styleUrls: ['./create-medewerker-zaak-rol.component.scss'],
 })
 export class CreateMedewerkerZaakRolComponent
   implements FunctionConfigurationComponent, OnInit, OnDestroy
@@ -59,9 +60,10 @@ export class CreateMedewerkerZaakRolComponent
     const valid = !!(
       formValue.rolToelichting &&
       formValue.roltypeUrl &&
-      formValue.identificatie &&
-      formValue.voorletters &&
-      formValue.achternaam
+      (
+        formValue.identificatie ||
+        formValue.achternaam
+      )
     );
     this._valid$.next(valid);
     this.valid.emit(valid);

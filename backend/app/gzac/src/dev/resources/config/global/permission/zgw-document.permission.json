@@ -1,0 +1,132 @@
+[
+    {
+        "resourceType": "com.ritense.documentenapi.authorization.ZgwDocument",
+        "action": "view_list",
+        "roleKey": "ROLE_ADMIN"
+    },
+    {
+        "resourceType": "com.ritense.documentenapi.authorization.ZgwDocument",
+        "action": "view",
+        "roleKey": "ROLE_ADMIN"
+    },
+    {
+        "resourceType": "com.ritense.documentenapi.authorization.ZgwDocument",
+        "action": "create",
+        "roleKey": "ROLE_ADMIN"
+    },
+    {
+        "resourceType": "com.ritense.documentenapi.authorization.ZgwDocument",
+        "action": "modify",
+        "roleKey": "ROLE_ADMIN"
+    },
+    {
+        "resourceType": "com.ritense.documentenapi.authorization.ZgwDocument",
+        "action": "delete",
+        "roleKey": "ROLE_ADMIN"
+    },
+    {
+        "resourceType": "com.ritense.documentenapi.authorization.ZgwDocument",
+        "action": "view_list",
+        "roleKey": "ROLE_USER",
+        "conditions": [
+            {
+                "type": "container",
+                "resourceType": "com.ritense.document.domain.impl.JsonSchemaDocument",
+                "conditions": [
+                    {
+                        "type": "field",
+                        "field": "documentDefinitionId.caseDefinitionId.key",
+                        "operator": "in",
+                        "value": [
+                            "bezwaar"
+                        ]
+                    }
+                ]
+            }
+        ]
+    },
+    {
+        "resourceType": "com.ritense.documentenapi.authorization.ZgwDocument",
+        "action": "view",
+        "roleKey": "ROLE_USER",
+        "conditions": [
+            {
+                "type": "container",
+                "resourceType": "com.ritense.document.domain.impl.JsonSchemaDocument",
+                "conditions": [
+                    {
+                        "type": "field",
+                        "field": "documentDefinitionId.caseDefinitionId.key",
+                        "operator": "in",
+                        "value": [
+                            "bezwaar"
+                        ]
+                    }
+                ]
+            }
+        ]
+    },
+    {
+        "resourceType": "com.ritense.documentenapi.authorization.ZgwDocument",
+        "action": "create",
+        "roleKey": "ROLE_USER",
+        "conditions": [
+            {
+                "type": "container",
+                "resourceType": "com.ritense.document.domain.impl.JsonSchemaDocument",
+                "conditions": [
+                    {
+                        "type": "field",
+                        "field": "documentDefinitionId.caseDefinitionId.key",
+                        "operator": "in",
+                        "value": [
+                            "bezwaar"
+                        ]
+                    }
+                ]
+            }
+        ]
+    },
+    {
+        "resourceType": "com.ritense.documentenapi.authorization.ZgwDocument",
+        "action": "modify",
+        "roleKey": "ROLE_USER",
+        "conditions": [
+            {
+                "type": "container",
+                "resourceType": "com.ritense.document.domain.impl.JsonSchemaDocument",
+                "conditions": [
+                    {
+                        "type": "field",
+                        "field": "documentDefinitionId.caseDefinitionId.key",
+                        "operator": "in",
+                        "value": [
+                            "bezwaar"
+                        ]
+                    }
+                ]
+            }
+        ]
+    },
+    {
+        "resourceType": "com.ritense.documentenapi.authorization.ZgwDocument",
+        "action": "delete",
+        "roleKey": "ROLE_USER",
+        "conditions": [
+            {
+                "type": "container",
+                "resourceType": "com.ritense.document.domain.impl.JsonSchemaDocument",
+                "conditions": [
+                    {
+                        "type": "field",
+                        "field": "documentDefinitionId.caseDefinitionId.key",
+                        "operator": "in",
+                        "value": [
+                            "bezwaar"
+                        ]
+                    }
+                ]
+            }
+        ]
+    }
+]

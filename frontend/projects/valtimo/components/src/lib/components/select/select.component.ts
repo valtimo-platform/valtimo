@@ -91,6 +91,8 @@ export class SelectComponent implements OnInit, OnChanges, OnDestroy {
   @Input() public smallMargin = false;
   @Input() public carbonTheme = 'g10';
   @Input() public appendInline = true;
+  @Input() public warn = false;
+  @Input() public warnText = '';
   @Input() public dataTestId?: string;
 
   @Output() public selectedChange: EventEmitter<SelectedValue> = new EventEmitter();
@@ -104,7 +106,9 @@ export class SelectComponent implements OnInit, OnChanges, OnDestroy {
   ]).pipe(
     map(([listItems, selected]) =>
       listItems.map(listItem => {
-        const translation = this.translateService.instant(listItem.content);
+        const translation = listItem.content
+          ? this.translateService.instant(listItem.content)
+          : '-';
         const isSelected: boolean = Array.isArray(selected)
           ? selected.includes(listItem.id)
           : selected === listItem.id;

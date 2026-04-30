@@ -36,6 +36,7 @@ import org.springframework.core.io.support.ResourcePatternUtils
 import org.springframework.stereotype.Service
 import java.io.IOException
 
+@Deprecated("Since 13.20.0", ReplaceWith("ObjectManagementImporter"))
 @Service
 @SkipComponentScan
 class ObjectManagementDefinitionDeploymentService(

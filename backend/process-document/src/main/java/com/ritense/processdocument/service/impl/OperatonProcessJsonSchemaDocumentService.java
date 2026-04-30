@@ -16,12 +16,6 @@
 
 package com.ritense.processdocument.service.impl;
 
-import static com.ritense.authorization.AuthorizationContext.runWithoutAuthorization;
-import static com.ritense.document.service.JsonSchemaDocumentActionProvider.CREATE;
-import static com.ritense.document.service.JsonSchemaDocumentActionProvider.MODIFY;
-import static com.ritense.document.service.JsonSchemaDocumentActionProvider.VIEW;
-import static com.ritense.valtimo.operaton.authorization.OperatonTaskActionProvider.COMPLETE;
-
 import com.ritense.authorization.Action;
 import com.ritense.authorization.AuthorizationContext;
 import com.ritense.authorization.AuthorizationService;
@@ -31,7 +25,6 @@ import com.ritense.document.domain.impl.JsonSchemaDocument;
 import com.ritense.document.domain.impl.JsonSchemaDocumentId;
 import com.ritense.document.service.impl.JsonSchemaDocumentService;
 import com.ritense.processdocument.domain.ProcessInstanceId;
-import com.ritense.processdocument.domain.impl.OperatonProcessDefinitionId;
 import com.ritense.processdocument.domain.impl.OperatonProcessInstanceId;
 import com.ritense.processdocument.domain.impl.OperatonProcessJsonSchemaDocumentInstanceId;
 import com.ritense.processdocument.domain.impl.request.ModifyDocumentAndCompleteTaskRequest;
@@ -58,11 +51,12 @@ import com.ritense.processdocument.service.result.ModifyDocumentAndStartProcessR
 import com.ritense.processdocument.service.result.NewDocumentAndStartProcessResult;
 import com.ritense.processdocument.service.result.NewDocumentForRunningProcessResult;
 import com.ritense.processdocument.service.result.StartProcessForDocumentResult;
+import com.ritense.valtimo.contract.document.CaseDocumentResolver;
+import com.ritense.valtimo.contract.result.FunctionResult;
+import com.ritense.valtimo.contract.result.OperationError;
 import com.ritense.valtimo.operaton.domain.OperatonExecution;
 import com.ritense.valtimo.operaton.domain.OperatonTask;
 import com.ritense.valtimo.operaton.domain.ProcessInstanceWithDefinition;
-import com.ritense.valtimo.contract.result.FunctionResult;
-import com.ritense.valtimo.contract.result.OperationError;
 import com.ritense.valtimo.service.OperatonProcessService;
 import com.ritense.valtimo.service.OperatonTaskService;
 import java.util.Map;
@@ -75,6 +69,12 @@ import org.slf4j.LoggerFactory;
 import org.springframework.lang.Nullable;
 import org.springframework.transaction.annotation.Transactional;
 
+import static com.ritense.authorization.AuthorizationContext.runWithoutAuthorization;
+import static com.ritense.document.service.JsonSchemaDocumentActionProvider.CREATE;
+import static com.ritense.document.service.JsonSchemaDocumentActionProvider.MODIFY;
+import static com.ritense.document.service.JsonSchemaDocumentActionProvider.VIEW;
+import static com.ritense.valtimo.operaton.authorization.OperatonTaskActionProvider.COMPLETE;
+
 public class OperatonProcessJsonSchemaDocumentService implements ProcessDocumentService {
 
     private static final Logger logger = LoggerFactory.getLogger(OperatonProcessJsonSchemaDocumentService.class);
@@ -83,18 +83,21 @@ public class OperatonProcessJsonSchemaDocumentService implements ProcessDocument
     private final OperatonProcessService operatonProcessService;
     private final ProcessDocumentAssociationService processDocumentAssociationService;
     private final AuthorizationService authorizationService;
+    private final CaseDocumentResolver caseDocumentResolver;
 
     public OperatonProcessJsonSchemaDocumentService(
         JsonSchemaDocumentService documentService, OperatonTaskService operatonTaskService,
         OperatonProcessService operatonProcessService,
         ProcessDocumentAssociationService processDocumentAssociationService,
-        AuthorizationService authorizationService
+        AuthorizationService authorizationService,
+        CaseDocumentResolver caseDocumentResolver
     ) {
         this.documentService = documentService;
         this.operatonTaskService = operatonTaskService;
         this.operatonProcessService = operatonProcessService;
         this.processDocumentAssociationService = processDocumentAssociationService;
         this.authorizationService = authorizationService;
+        this.caseDocumentResolver = caseDocumentResolver;
     }
 
     @Override
@@ -250,7 +253,7 @@ public class OperatonProcessJsonSchemaDocumentService implements ProcessDocument
             );
 
             final String processName = runWithoutAuthorization(
-                () -> operatonProcessService.getDefinitionByKeyAndCaseDefinition(request.newDocumentRequest().caseDefinitionId(), request.processDefinitionKey()).getName());
+                () -> operatonProcessService.getLatestDefinitionByKeyAndBlueprint(request.newDocumentRequest().blueprintId(), request.processDefinitionKey()).getName());
             processDocumentAssociationService.createProcessDocumentInstance(
                 request.processInstanceId(),
                 UUID.fromString(document.id().toString()),
@@ -301,11 +304,16 @@ public class OperatonProcessJsonSchemaDocumentService implements ProcessDocument
                 processInstanceWithDefinition.getProcessInstanceDto().getId()
             );
 
-            runWithoutAuthorization(() -> processDocumentAssociationService.createProcessDocumentInstance(
-                operatonProcessInstanceId.toString(),
-                UUID.fromString(document.id().toString()),
-                processInstanceWithDefinition.getProcessDefinition().getName()
-            ));
+            runWithoutAuthorization(() -> {
+                if (processDocumentAssociationService.findProcessDocumentInstance(operatonProcessInstanceId).isEmpty()) {
+                    processDocumentAssociationService.createProcessDocumentInstance(
+                        operatonProcessInstanceId.toString(),
+                        UUID.fromString(document.id().toString()),
+                        processInstanceWithDefinition.getProcessDefinition().getName()
+                    );
+                }
+                return null;
+            });
 
             return new ModifyDocumentAndStartProcessResultSucceeded(document, operatonProcessInstanceId);
         } catch (RuntimeException ex) {
@@ -355,11 +363,21 @@ public class OperatonProcessJsonSchemaDocumentService implements ProcessDocument
         }
     }
 
+    /**
+     * Gets the document ID for the given process instance.
+     * The document is determined by:
+     * 1. Looking up the ProcessDocumentInstance association (if it exists)
+     * 2. Falling back to the process's business key (which is set to the document ID)
+     *
+     * This works for both case processes (business key = case document ID) and
+     * building block processes (business key = building block document ID).
+     */
     public JsonSchemaDocumentId getDocumentId(
         ProcessInstanceId processInstanceId,
         @Nullable VariableScope variableScope
     ) {
         denyAuthorization();
+
         var processDocumentInstance = processDocumentAssociationService
             .findProcessDocumentInstance(processInstanceId)
             .orElse(null);
@@ -368,7 +386,8 @@ public class OperatonProcessJsonSchemaDocumentService implements ProcessDocument
             return JsonSchemaDocumentId.existingId(jsonSchemaDocumentId);
         } else {
             // In case a process has no token wait state ProcessDocumentInstance is not yet created,
-            // therefore out business-key is our last chance which is populated with the documentId also.
+            // therefore the business-key is our fallback which is populated with the documentId.
+            // This works for both case processes and building block processes.
             var businessKey = getBusinessKey(processInstanceId, variableScope);
             if (businessKey != null && businessKey.matches("[a-f0-9]{8}(?:-[a-f0-9]{4}){4}[a-f0-9]{8}")) {
                 return JsonSchemaDocumentId.existingId(businessKey);
@@ -392,6 +411,29 @@ public class OperatonProcessJsonSchemaDocumentService implements ProcessDocument
         );
 
         return document;
+    }
+
+    public JsonSchemaDocumentId getCaseDocumentId(
+        ProcessInstanceId processInstanceId,
+        @Nullable VariableScope variableScope
+    ) {
+        var documentId = getDocumentId(processInstanceId, variableScope);
+        if (documentId == null) {
+            return null;
+        }
+        var caseDocumentId = caseDocumentResolver.resolveCaseDocumentId(documentId.getId());
+        return JsonSchemaDocumentId.existingId(caseDocumentId);
+    }
+
+    public JsonSchemaDocument getCaseDocument(
+        ProcessInstanceId processInstanceId,
+        @Nullable VariableScope variableScope
+    ) {
+        var caseDocumentId = getCaseDocumentId(processInstanceId, variableScope);
+        if (caseDocumentId == null) {
+            return null;
+        }
+        return documentService.getDocumentBy(caseDocumentId);
     }
 
     private String getBusinessKey(ProcessInstanceId processInstanceId, VariableScope variableScope) {

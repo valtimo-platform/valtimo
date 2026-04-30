@@ -24,6 +24,7 @@ import com.ritense.case.domain.ColumnDefaultSort
 import com.ritense.case.repository.CaseDefinitionListColumnRepository
 import com.ritense.case.service.exception.ExportLimitExceedsException
 import com.ritense.case.web.rest.dto.CaseListRowDto
+import com.ritense.valtimo.contract.blueprint.BlueprintType
 import com.ritense.document.domain.impl.JsonSchemaDocument
 import com.ritense.document.domain.impl.JsonSchemaDocumentDefinition
 import com.ritense.document.domain.impl.JsonSchemaDocumentDefinitionId
@@ -118,7 +119,11 @@ class CaseExporterTest : BaseTest() {
         val docs = listOf(DOCUMENT, DOCUMENT2, DOCUMENT3)
 
         whenever(
-            documentSearchService.searchForExport(eq(CASE_DEFINITION_NAME), eq(searchRequest), any())
+            documentSearchService.searchForExport(
+                eq(CASE_DEFINITION_NAME), eq(
+                    BlueprintType.CASE
+                ), eq(searchRequest), any()
+            )
         ).thenReturn(PageImpl(docs))
 
         whenever(caseListRowMapper.toCaseListRowDto(eq(docs[0]), any())).thenReturn(
@@ -180,6 +185,7 @@ class CaseExporterTest : BaseTest() {
         whenever(
             documentSearchService.searchForExport(
                 eq(CASE_DEFINITION_NAME),
+                eq(BlueprintType.CASE),
                 eq(searchRequest),
                 any<Pageable>()
             )

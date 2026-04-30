@@ -17,12 +17,7 @@ import {CommonModule} from '@angular/common';
 import {ChangeDetectionStrategy, Component, Input, ViewEncapsulation} from '@angular/core';
 import {TranslateModule} from '@ngx-translate/core';
 import {CarbonListModule} from '@valtimo/components';
-import {
-  CollectionWidget,
-  WidgetAction,
-  WidgetCollectionComponent,
-  WidgetLayoutService,
-} from '@valtimo/layout';
+import {CollectionWidget, WidgetCollectionComponent, WidgetLayoutService} from '@valtimo/layout';
 import {
   ButtonModule,
   InputModule,
@@ -30,9 +25,10 @@ import {
   PaginationModule,
   TilesModule,
 } from 'carbon-components-angular';
-import {BehaviorSubject, combineLatest, of, switchMap, tap} from 'rxjs';
+import {BehaviorSubject, combineLatest, distinctUntilChanged, of, switchMap, tap} from 'rxjs';
 import {IkoWidgetParams} from '../../models';
 import {IkoApiService} from '../../services';
+import {HttpParams} from '@angular/common/http';
 
 @Component({
   selector: 'valtimo-iko-widget-collection',
@@ -66,20 +62,26 @@ export class IkoWidgetCollectionComponent {
 
   public readonly widgetConfiguration$ = new BehaviorSubject<CollectionWidget | null>(null);
 
-  private readonly _queryParams$ = new BehaviorSubject<string | null>(null);
+  private readonly _queryParams$ = new BehaviorSubject<HttpParams>(new HttpParams());
 
   public readonly widgetData$ = combineLatest([
     this.widgetConfiguration$,
     this._widgetParams$,
+    this._queryParams$.pipe(
+      distinctUntilChanged(
+        (prevParams, currParams) => prevParams.toString() === currParams.toString()
+      )
+    ),
   ]).pipe(
-    switchMap(([widgetConfiguration, widgetParams]) =>
+    switchMap(([widgetConfiguration, widgetParams, queryParams]) =>
       !widgetParams || !widgetConfiguration
         ? of(null)
         : this.ikoApiService.getIkoWidgetData(
             widgetParams.ikoViewKey,
             widgetParams.tabKey,
             widgetConfiguration.key,
-            widgetParams.entryId
+            widgetParams.entryId,
+            queryParams
           )
     ),
     tap(() => this.widgetLayoutService.setWidgetDataLoaded(this.widgetUuid))
@@ -91,6 +93,10 @@ export class IkoWidgetCollectionComponent {
   ) {}
 
   public onPaginationEvent(event: PaginationModel): void {
-    this._queryParams$.next(`page=${event.currentPage - 1}&size=${event.pageLength}`);
+    this._queryParams$.next(
+      new HttpParams()
+        .set('page', (event.currentPage - 1).toString())
+        .set('size', event.pageLength.toString())
+    );
   }
 }

@@ -16,6 +16,7 @@
 
 package com.ritense.formviewmodel
 
+import com.ritense.form.domain.FormDefinitionBlueprintId
 import com.ritense.form.domain.FormIoFormDefinition
 import com.ritense.valtimo.contract.case_.CaseDefinitionId
 import org.apache.commons.io.IOUtils
@@ -35,7 +36,7 @@ abstract class BaseTest {
             Thread.currentThread().contextClassLoader.getResourceAsStream("config/case/fvm/1-0-0/form/$formDefinitionId.form.json"),
             StandardCharsets.UTF_8
         )
-        return FormIoFormDefinition(UUID.randomUUID(), "form-example", s, CaseDefinitionId.of("fvm", "1.0.0"), false)
+        return FormIoFormDefinition(UUID.randomUUID(), "form-example", s, FormDefinitionBlueprintId.forCase(CaseDefinitionId.of("fvm", "1.0.0")), false)
     }
 
 }

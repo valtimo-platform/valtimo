@@ -1,0 +1,147 @@
+[
+    {
+        "resourceType": "com.ritense.document.domain.impl.JsonSchemaDocument",
+        "actions": [
+            "create"
+        ],
+        "roleKey": "ROLE_USER",
+        "conditions": [
+            {
+                "type": "container",
+                "resourceType": "com.ritense.document.domain.impl.JsonSchemaDocumentDefinition",
+                "conditions": [
+                    {
+                        "type": "field",
+                        "field": "id.name",
+                        "operator": "in",
+                        "value": [
+                            "leningen",
+                            "bezwaar"
+                        ]
+                    }
+                ]
+            }
+        ]
+    },
+    {
+        "resourceType": "com.ritense.document.domain.impl.JsonSchemaDocument",
+        "actions": [
+            "assignable",
+            "claim",
+            "assign"
+        ],
+        "roleKey": "ROLE_USER",
+        "conditions": [
+            {
+                "type": "field",
+                "field": "assigneeId",
+                "operator": "==",
+                "value": null
+            },
+            {
+                "type": "field",
+                "field": "assignedTeamKey",
+                "operator": "==",
+                "value": null
+            },
+            {
+                "type": "container",
+                "resourceType": "com.ritense.case_.domain.definition.CaseDefinition",
+                "conditions": [
+                    {
+                        "type": "field",
+                        "field": "id.key",
+                        "operator": "==",
+                        "value": "bezwaar"
+                    }
+                ]
+            }
+        ]
+    },
+    {
+        "resourceType": "com.ritense.document.domain.impl.JsonSchemaDocument",
+        "actions": [
+            "assignable",
+            "claim",
+            "assign"
+        ],
+        "roleKey": "ROLE_USER",
+        "conditions": [
+            {
+                "type": "field",
+                "field": "assigneeId",
+                "operator": "==",
+                "value": null
+            },
+            {
+                "type": "field",
+                "field": "assignedTeamKey",
+                "operator": "==",
+                "value": "${currentUserTeams}"
+            },
+            {
+                "type": "container",
+                "resourceType": "com.ritense.case_.domain.definition.CaseDefinition",
+                "conditions": [
+                    {
+                        "type": "field",
+                        "field": "id.key",
+                        "operator": "==",
+                        "value": "bezwaar"
+                    }
+                ]
+            }
+        ]
+    },
+    {
+        "resourceType": "com.ritense.document.domain.impl.JsonSchemaDocument",
+        "actions": [
+            "view",
+            "view_list",
+            "modify",
+            "export"
+        ],
+        "roleKey": "ROLE_USER",
+        "conditions": [
+            {
+                "type": "field",
+                "field": "assigneeId",
+                "operator": "==",
+                "value": "${currentUsername}"
+            },
+            {
+                "type": "field",
+                "field": "assignedTeamKey",
+                "operator": "in",
+                "value": "${currentUserTeams}"
+            },
+            {
+                "type": "container",
+                "resourceType": "com.ritense.case_.domain.definition.CaseDefinition",
+                "conditions": [
+                    {
+                        "type": "field",
+                        "field": "id.key",
+                        "operator": "==",
+                        "value": "bezwaar"
+                    }
+                ]
+            }
+        ]
+    },
+    {
+        "resourceType": "com.ritense.document.domain.impl.JsonSchemaDocument",
+        "actions": [
+            "view",
+            "view_list",
+            "create",
+            "modify",
+            "delete",
+            "claim",
+            "assign",
+            "assignable",
+            "export"
+        ],
+        "roleKey": "ROLE_ADMIN"
+    }
+]

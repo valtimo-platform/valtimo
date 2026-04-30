@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,7 +24,10 @@ import com.ritense.case.domain.CaseListColumnId
 import com.ritense.case.domain.ColumnDefaultSort
 import com.ritense.case.exception.InvalidListColumnException
 import com.ritense.case.exception.UnknownCaseDefinitionException
+import com.ritense.case.repository.CaseDefinitionConfigurationIssueRepository
 import com.ritense.case.repository.CaseDefinitionListColumnRepository
+import com.ritense.case.service.finalization.CaseDefinitionFinalizationCheckResult
+import com.ritense.case.service.finalization.CaseDefinitionFinalizationChecker
 import com.ritense.case.web.rest.dto.CaseListColumnDto
 import com.ritense.case.web.rest.dto.CaseSettingsDto
 import com.ritense.case.web.rest.dto.HiddenCaseListColumnDto
@@ -43,16 +46,20 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.mockito.ArgumentMatchers.anyList
 import org.mockito.kotlin.any
+import org.mockito.kotlin.argumentCaptor
 import org.mockito.kotlin.doAnswer
 import org.mockito.kotlin.doNothing
 import org.mockito.kotlin.eq
 import org.mockito.kotlin.mock
+import org.mockito.kotlin.never
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
+import org.springframework.beans.factory.ObjectProvider
 import org.springframework.data.domain.PageImpl
 import org.springframework.data.domain.Pageable
 import org.springframework.data.domain.Sort
 import java.util.Optional
+import java.util.stream.Stream
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
@@ -65,6 +72,8 @@ class CaseDefinitionServiceTest : BaseTest() {
     lateinit var valueResolverService: ValueResolverService
     lateinit var authorizationService: AuthorizationService
     lateinit var hiddenCaseListColumnRepository: HiddenCaseListColumnRepository
+    lateinit var caseDefinitionFinalizationCheckersProvider: ObjectProvider<CaseDefinitionFinalizationChecker>
+    lateinit var configurationIssueRepository: CaseDefinitionConfigurationIssueRepository
 
     @BeforeEach
     fun setUp() {
@@ -74,6 +83,8 @@ class CaseDefinitionServiceTest : BaseTest() {
         valueResolverService = mock()
         authorizationService = mock()
         hiddenCaseListColumnRepository = mock()
+        caseDefinitionFinalizationCheckersProvider = mock()
+        configurationIssueRepository = mock()
         service = CaseDefinitionService(
             caseDefinitionListColumnRepository,
             documentDefinitionService,
@@ -82,7 +93,9 @@ class CaseDefinitionServiceTest : BaseTest() {
             valueResolverService,
             authorizationService,
             mock(),
-            mock()
+            mock(),
+            caseDefinitionFinalizationCheckersProvider,
+            configurationIssueRepository
         )
     }
 
@@ -504,6 +517,148 @@ class CaseDefinitionServiceTest : BaseTest() {
             order = 1,
             exportable = false
         )
+    }
+
+    @Test
+    fun `isCaseDefinitionFinalizable should return OK when no checker blocks`() {
+        val caseDefinitionId = CaseDefinitionId.of("key", "1.0.0")
+
+        val checker = mock<CaseDefinitionFinalizationChecker>()
+        whenever(checker.check(caseDefinitionId)).thenReturn(
+            CaseDefinitionFinalizationCheckResult(finalizable = true) // code defaults to OK
+        )
+
+        whenever(caseDefinitionFinalizationCheckersProvider.orderedStream()).thenReturn(Stream.of(checker))
+
+        val result = service.isCaseDefinitionFinalizable(caseDefinitionId)
+
+        assertTrue(result.finalizable)
+        assertEquals("OK", result.code)
+        verify(checker).check(caseDefinitionId)
+    }
+
+    @Test
+    fun `isCaseDefinitionFinalizable should return first blocking result`() {
+        val caseDefinitionId = CaseDefinitionId.of("key", "1.0.0")
+
+        val okChecker = mock<CaseDefinitionFinalizationChecker>()
+        whenever(okChecker.check(caseDefinitionId)).thenReturn(
+            CaseDefinitionFinalizationCheckResult(finalizable = true)
+        )
+
+        val blockingChecker = mock<CaseDefinitionFinalizationChecker>()
+        whenever(blockingChecker.check(caseDefinitionId)).thenReturn(
+            CaseDefinitionFinalizationCheckResult(finalizable = false, code = "BUILDING_BLOCK_NOT_FINAL")
+        )
+
+        whenever(caseDefinitionFinalizationCheckersProvider.orderedStream()).thenReturn(
+            Stream.of(okChecker, blockingChecker)
+        )
+
+        val result = service.isCaseDefinitionFinalizable(caseDefinitionId)
+
+        assertFalse(result.finalizable)
+        assertEquals("BUILDING_BLOCK_NOT_FINAL", result.code)
+        verify(okChecker).check(caseDefinitionId)
+        verify(blockingChecker).check(caseDefinitionId)
+    }
+
+    @Test
+    fun `finalizeCaseDefinition should throw when not finalizable and should not save`() {
+        val caseDefinitionId = CaseDefinitionId.of("key", "1.0.0")
+
+        val blockingChecker = mock<CaseDefinitionFinalizationChecker>()
+        whenever(blockingChecker.check(caseDefinitionId)).thenReturn(
+            CaseDefinitionFinalizationCheckResult(finalizable = false, code = "BUILDING_BLOCK_NOT_FINAL")
+        )
+        whenever(caseDefinitionFinalizationCheckersProvider.orderedStream()).thenReturn(Stream.of(blockingChecker))
+
+        val ex = assertThrows<IllegalArgumentException> {
+            service.finalizeCaseDefinition(caseDefinitionId)
+        }
+
+        assertTrue(ex.message!!.contains("cannot be made definitive"))
+        assertTrue(ex.message!!.contains("BUILDING_BLOCK_NOT_FINAL"))
+
+        verify(caseDefinitionRepository, never()).findById(caseDefinitionId)
+        verify(caseDefinitionRepository, never()).save(any())
+    }
+
+    @Test
+    fun `finalizeCaseDefinition should save final case definition when finalizable`() {
+        val caseDefinitionId = CaseDefinitionId.of("key", "1.0.0")
+
+        val okChecker = mock<CaseDefinitionFinalizationChecker>()
+        whenever(okChecker.check(caseDefinitionId)).thenReturn(
+            CaseDefinitionFinalizationCheckResult(finalizable = true)
+        )
+        whenever(caseDefinitionFinalizationCheckersProvider.orderedStream()).thenReturn(Stream.of(okChecker))
+
+        val existing = caseDefinition(id = caseDefinitionId, final = false)
+        whenever(caseDefinitionRepository.findById(caseDefinitionId)).thenReturn(Optional.of(existing))
+
+        val captor = argumentCaptor<CaseDefinition>()
+        whenever(caseDefinitionRepository.save(captor.capture())).thenAnswer { it.arguments[0] as CaseDefinition }
+
+        val saved = service.finalizeCaseDefinition(caseDefinitionId)
+
+        assertTrue(saved.final)
+        assertTrue(captor.firstValue.final)
+        assertEquals(caseDefinitionId, captor.firstValue.id)
+    }
+
+    @Test
+    fun `setActiveCaseDefinition should throw when unresolved configuration issues exist`() {
+        val caseDefinitionId = CaseDefinitionId.of("key", "1.0.0")
+        val caseDefinition = caseDefinition(id = caseDefinitionId)
+
+        whenever(caseDefinitionRepository.findById(caseDefinitionId)).thenReturn(Optional.of(caseDefinition))
+        whenever(configurationIssueRepository.findUnresolvedByCaseDefinitionId(caseDefinitionId))
+            .thenReturn(listOf(mock()))
+
+        val ex = assertThrows<IllegalArgumentException> {
+            service.setActiveCaseDefinition(caseDefinitionId)
+        }
+
+        assertTrue(ex.message!!.contains("unresolved configuration issues"))
+        verify(caseDefinitionRepository, never()).save(any())
+    }
+
+    @Test
+    fun `setActiveCaseDefinition should succeed when no unresolved configuration issues exist`() {
+        val caseDefinitionId = CaseDefinitionId.of("key", "1.0.0")
+        val caseDefinition = caseDefinition(id = caseDefinitionId)
+
+        whenever(caseDefinitionRepository.findById(caseDefinitionId)).thenReturn(Optional.of(caseDefinition))
+        whenever(configurationIssueRepository.findUnresolvedByCaseDefinitionId(caseDefinitionId))
+            .thenReturn(emptyList())
+        whenever(caseDefinitionRepository.findByActiveIsTrueAndIdKey(caseDefinitionId.key))
+            .thenReturn(null)
+        whenever(caseDefinitionRepository.save(any())).thenAnswer { it.arguments[0] as CaseDefinition }
+
+        val result = service.setActiveCaseDefinition(caseDefinitionId)
+
+        assertTrue(result.active)
+    }
+
+    @Test
+    fun `setLatestToActiveIfNoneIsActive should skip definitions with unresolved issues`() {
+        val id1 = CaseDefinitionId.of("key", "1.0.0")
+        val id2 = CaseDefinitionId.of("key", "2.0.0")
+        val cd1 = caseDefinition(id = id1, active = false)
+        val cd2 = caseDefinition(id = id2, active = false)
+
+        whenever(caseDefinitionRepository.findAll()).thenReturn(listOf(cd1, cd2))
+        whenever(configurationIssueRepository.findCaseDefinitionIdsWithUnresolvedIssues(listOf(id1, id2)))
+            .thenReturn(setOf(id2))
+        whenever(caseDefinitionRepository.save(any())).thenAnswer { it.arguments[0] as CaseDefinition }
+
+        service.setLatestToActiveIfNoneIsActive()
+
+        val captor = argumentCaptor<CaseDefinition>()
+        verify(caseDefinitionRepository).save(captor.capture())
+        assertEquals(id1, captor.firstValue.id)
+        assertTrue(captor.firstValue.active)
     }
 
     private fun getListColumnDtoLastName(displayType: DisplayType): CaseListColumnDto {

@@ -21,13 +21,15 @@ import {
   CarbonListModule,
   ConfirmationModalModule,
   EditorModule,
+  OverflowMenuComponent,
+  OverflowMenuOptionComponent,
+  OverflowMenuTriggerComponent,
   RenderInPageHeaderDirective,
 } from '@valtimo/components';
 import {FormFlowOverviewComponent} from './components/overview/form-flow-overview.component';
 import {NewFormFlowModalComponent} from './components/new-form-flow-modal/new-form-flow-modal.component';
 import {
   ButtonModule,
-  DialogModule,
   DropdownModule,
   IconModule,
   InputModule,
@@ -42,7 +44,6 @@ import {DeleteFormFlowModalComponent} from './components/delete-form-flow-modal/
 @NgModule({
   declarations: [
     FormFlowOverviewComponent,
-    NewFormFlowModalComponent,
     FormFlowEditorComponent,
     DeleteFormFlowModalComponent,
   ],
@@ -60,11 +61,14 @@ import {DeleteFormFlowModalComponent} from './components/delete-form-flow-modal/
     RenderInPageHeaderDirective,
     LoadingModule,
     IconModule,
-    DialogModule,
+    OverflowMenuComponent,
+    OverflowMenuOptionComponent,
+    OverflowMenuTriggerComponent,
     NotificationModule,
     CarbonListModule,
     DropdownModule,
     ConfirmationModalModule,
+    NewFormFlowModalComponent,
   ],
 })
 export class FormFlowManagementModule {}

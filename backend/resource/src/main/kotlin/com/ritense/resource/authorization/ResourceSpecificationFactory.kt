@@ -29,12 +29,12 @@ class ResourceSpecificationFactory : AuthorizationSpecificationFactory<ResourceP
 
     override fun create(
         request: AuthorizationRequest<ResourcePermission>,
-        permissions: List<Permission>
+        permissionSupplier: () -> List<Permission>
     ): AuthorizationSpecification<ResourcePermission> {
-        return ResourceSpecification(request, permissions)
+        return ResourceSpecification(request, permissionSupplier)
     }
 
-    override fun canCreate(request: AuthorizationRequest<*>, permissions: List<Permission>): Boolean {
+    override fun canCreate(request: AuthorizationRequest<*>, permissionSupplier: () -> List<Permission>): Boolean {
         return ResourcePermission::class.java == request.resourceType
     }
 }

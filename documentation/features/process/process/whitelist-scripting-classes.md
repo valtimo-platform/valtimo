@@ -8,7 +8,7 @@ be used to the following by default:
 "org.joda.time.DateTime"
 "java.util.Date"
 "java.lang.Math"
-"org.camunda.spin.Spin"
+"org.operaton.spin.Spin"
 "java.time.Clock"
 "java.time.Duration"
 "java.time.Instant"
@@ -32,7 +32,7 @@ Note: more classes can be whitelisted by using the following Spring property:
 
 ```yaml
 valtimo:
-  camunda:
+  operaton:
     scripting:
       allowedClasses: java.util.UUID, java.net.URI
 ```

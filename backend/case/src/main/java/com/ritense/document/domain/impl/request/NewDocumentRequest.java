@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,6 +19,8 @@ package com.ritense.document.domain.impl.request;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.JsonNode;
+import com.ritense.valtimo.contract.BlueprintId;
+import com.ritense.valtimo.contract.buildingblock.BuildingBlockDefinitionId;
 import com.ritense.valtimo.contract.case_.CaseDefinitionId;
 import com.ritense.valtimo.contract.resource.Resource;
 import jakarta.validation.constraints.NotNull;
@@ -32,11 +34,16 @@ public class NewDocumentRequest {
     private final String documentDefinitionName;
 
     @JsonProperty
-    @NotNull
     private final String caseDefinitionKey;
 
     @JsonProperty
     private final String caseDefinitionVersionTag;
+
+    @JsonProperty("buildingBlockDefinitionKey")
+    private final String buildingBlockDefinitionKey;
+
+    @JsonProperty("buildingBlockDefinitionVersionTag")
+    private final String buildingBlockDefinitionVersionTag;
 
     @JsonProperty
     @NotNull
@@ -51,12 +58,29 @@ public class NewDocumentRequest {
         @JsonProperty(value = "definition", required = true) String documentDefinitionName,
         @JsonProperty(value = "caseDefinitionKey") String caseDefinitionKey,
         @JsonProperty(value = "caseDefinitionVersionTag") String caseDefinitionVersionTag,
+        @JsonProperty(value = "buildingBlockDefinitionKey") String buildingBlockDefinitionKey,
+        @JsonProperty(value = "buildingBlockDefinitionVersionTag") String buildingBlockDefinitionVersionTag,
         @JsonProperty(value = "content", required = true) JsonNode content
     ) {
         this.documentDefinitionName = documentDefinitionName;
         this.caseDefinitionKey = caseDefinitionKey;
         this.caseDefinitionVersionTag = caseDefinitionVersionTag;
+        this.buildingBlockDefinitionKey = buildingBlockDefinitionKey;
+        this.buildingBlockDefinitionVersionTag = buildingBlockDefinitionVersionTag;
         this.content = content;
+
+        if (hasCaseDefinition() == hasBuildingBlockDefinition()) {
+            throw new IllegalArgumentException("Either case definition details or building block definition details must be provided");
+        }
+    }
+
+    public NewDocumentRequest(
+        String documentDefinitionName,
+        String caseDefinitionKey,
+        String caseDefinitionVersionTag,
+        JsonNode content
+    ) {
+        this(documentDefinitionName, caseDefinitionKey, caseDefinitionVersionTag, null, null, content);
     }
 
     public String documentDefinitionName() {
@@ -75,12 +99,22 @@ public class NewDocumentRequest {
         return caseDefinitionVersionTag;
     }
 
-    public CaseDefinitionId caseDefinitionId() {
-        if (caseDefinitionKey == null || caseDefinitionVersionTag == null) {
-            return null;
-        } else {
-            return CaseDefinitionId.of(caseDefinitionKey, caseDefinitionVersionTag);
+    public String buildingBlockDefinitionKey() {
+        return buildingBlockDefinitionKey;
+    }
+
+    public String buildingBlockDefinitionVersionTag() {
+        return buildingBlockDefinitionVersionTag;
+    }
+
+    public BlueprintId blueprintId() {
+        if (hasBuildingBlockDefinition()) {
+            return BuildingBlockDefinitionId.of(buildingBlockDefinitionKey, buildingBlockDefinitionVersionTag);
         }
+        if (!hasCaseDefinition()) {
+            throw new IllegalStateException("Cannot determine blueprint id for document request");
+        }
+        return CaseDefinitionId.of(caseDefinitionKey, caseDefinitionVersionTag);
     }
 
     public NewDocumentRequest withDocumentRelation(DocumentRelationRequest documentRelation) {
@@ -99,5 +133,13 @@ public class NewDocumentRequest {
 
     public Set<Resource> getResources() {
         return this.resources;
+    }
+
+    private boolean hasCaseDefinition() {
+        return caseDefinitionKey != null && caseDefinitionVersionTag != null;
+    }
+
+    private boolean hasBuildingBlockDefinition() {
+        return buildingBlockDefinitionKey != null && buildingBlockDefinitionVersionTag != null;
     }
 }

@@ -22,6 +22,7 @@ import com.ritense.plugin.annotation.PluginActionProperty
 import com.ritense.plugin.annotation.PluginEvent
 import com.ritense.plugin.annotation.PluginProperty
 import com.ritense.plugin.domain.EventType
+import com.ritense.plugin.domain.PluginDependency
 import com.ritense.processlink.domain.ActivityTypeWithEventName
 import com.ritense.processlink.domain.ActivityTypeWithEventName.SERVICE_TASK_START
 import java.net.URI
@@ -29,7 +30,8 @@ import java.net.URI
 @Plugin(
     key = "test-plugin",
     title = "Test plugin",
-    description = "This is a test plugin used to verify plugin framework functionality"
+    description = "This is a test plugin used to verify plugin framework functionality",
+    dependencies = [PluginDependency.ZAAK_INSTANCE_LINK]
 )
 class TestPlugin(
     val someObject: String

@@ -58,10 +58,10 @@ class  ZaakInstanceLinkService(
 
     @Throws(ZaakInstanceLinkNotFoundException::class)
     fun getByDocumentId(
-        @LoggableResource(resourceType = JsonSchemaDocument::class) documentId: UUID
+        @LoggableResource(resourceType = JsonSchemaDocument::class) caseDocumentId: UUID
     ): ZaakInstanceLink {
-        return zaakInstanceLinkRepository.findByDocumentId(documentId)
-            ?: throw ZaakInstanceLinkNotFoundException("No ZaakInstanceLink found for document id $documentId")
+        return zaakInstanceLinkRepository.findByDocumentId(caseDocumentId)
+            ?: throw ZaakInstanceLinkNotFoundException("No ZaakInstanceLink found for case document id $caseDocumentId")
     }
 
     @Throws(ZaakInstanceLinkNotFoundException::class)

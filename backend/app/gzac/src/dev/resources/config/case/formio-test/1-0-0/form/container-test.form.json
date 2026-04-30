@@ -1,0 +1,29 @@
+{
+    "display": "form",
+    "components": [
+        {
+            "label": "Container",
+            "key": "container",
+            "type": "container",
+            "components": [
+                {
+                    "label": "Container field",
+                    "key": "containerField",
+                    "type": "textfield",
+                    "input": true
+                }
+            ],
+            "validate": {
+                "required": true
+            },
+            "input": true
+        },
+        {
+            "type": "button",
+            "label": "Submit",
+            "key": "submit",
+            "disableOnInvalid": true,
+            "input": true
+        }
+    ]
+}

@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -39,6 +39,14 @@ export class CdsThemeService implements OnDestroy {
     return this.currentTheme$.pipe(
       map(currentTheme =>
         currentTheme === CurrentCarbonTheme.G10 ? CurrentCarbonTheme.G90 : CurrentCarbonTheme.WHITE
+      )
+    );
+  }
+
+  public get toggletipDropdownTheme$(): Observable<CurrentCarbonTheme> {
+    return this.currentTheme$.pipe(
+      map(currentTheme =>
+        currentTheme === CurrentCarbonTheme.G10 ? CurrentCarbonTheme.G100 : CurrentCarbonTheme.G10
       )
     );
   }

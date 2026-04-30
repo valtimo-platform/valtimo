@@ -1,15 +1,15 @@
 import { Page, expect } from '@playwright/test';
 
-export async function expectErrorMessage(
+export async function expectNotificationMessage(
   page: Page,
   expectedText: string,
   options?: { exact?: boolean }
 ) {
   const errorLocator = options?.exact
-    ? page.getByText(expectedText, { exact: true })
-    : page.getByText(expectedText);
+    ? page.getByText(expectedText, { exact: true }).first()
+    : page.getByText(expectedText).first();
 
-  await expect(errorLocator).toBeVisible();
+  await expect(errorLocator).toBeVisible({timeout: 15_000});
   await expect(errorLocator).toContainText(expectedText);
 }
 

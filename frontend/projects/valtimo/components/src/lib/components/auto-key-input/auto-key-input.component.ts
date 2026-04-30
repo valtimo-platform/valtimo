@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -37,6 +37,7 @@ import {BehaviorSubject, combineLatest, Observable, Subscription} from 'rxjs';
 import {ModalMode} from '@valtimo/shared';
 import {Close16, Edit16} from '@carbon/icons';
 import {filter} from 'rxjs/operators';
+import {AUTO_KEY_INPUT_TEST_IDS} from '../../constants';
 
 @Component({
   selector: 'valtimo-auto-key-input',
@@ -70,6 +71,8 @@ export class AutoKeyInputComponent
 {
   @Input() public labelTranslationKey: string = 'Key';
   @Input() public placeholderTranslationKey: string = '';
+
+  protected readonly testIds = AUTO_KEY_INPUT_TEST_IDS;
 
   private readonly _mode$ = new BehaviorSubject<ModalMode | null>(null);
   @Input() public set mode(value: ModalMode) {

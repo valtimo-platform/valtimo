@@ -19,6 +19,7 @@ package com.ritense.form.service.impl;
 import static com.ritense.logging.LoggingContextKt.withLoggingContext;
 
 import com.ritense.form.domain.FormDefinition;
+import com.ritense.form.domain.FormDefinitionBlueprintId;
 import com.ritense.form.domain.FormIoFormDefinition;
 import com.ritense.form.domain.request.CreateFormDefinitionRequest;
 import com.ritense.form.domain.request.ModifyFormDefinitionRequest;
@@ -26,6 +27,9 @@ import com.ritense.form.repository.FormDefinitionRepository;
 import com.ritense.form.service.FormDefinitionService;
 import com.ritense.form.web.rest.dto.FormOption;
 import com.ritense.logging.LoggableResource;
+import com.ritense.valtimo.contract.BlueprintId;
+import com.ritense.valtimo.contract.blueprint.BlueprintType;
+import com.ritense.valtimo.contract.buildingblock.BuildingBlockDefinitionId;
 import com.ritense.valtimo.contract.case_.CaseDefinitionChecker;
 import com.ritense.valtimo.contract.case_.CaseDefinitionId;
 import java.util.List;
@@ -121,6 +125,23 @@ public class FormIoFormDefinitionService implements FormDefinitionService {
     }
 
     @Override
+    public Optional<FormIoFormDefinition> getFormDefinitionByName(
+        @LoggableResource("formDefinitionName") String name,
+        BlueprintId blueprintId
+    ) {
+        if (blueprintId instanceof CaseDefinitionId caseId) {
+            return formDefinitionRepository.findByNameAndBlueprintId(
+                name, BlueprintType.CASE, caseId.getKey(), caseId.getVersionTag()
+            );
+        } else if (blueprintId instanceof BuildingBlockDefinitionId bbId) {
+            return formDefinitionRepository.findByNameAndBlueprintId(
+                name, BlueprintType.BUILDING_BLOCK, bbId.getKey(), bbId.getVersionTag()
+            );
+        }
+        throw new IllegalArgumentException("Unsupported BlueprintId type: " + blueprintId.getClass());
+    }
+
+    @Override
     public Optional<FormIoFormDefinition> getFormDefinitionByNameIgnoringCase(
         @LoggableResource("formDefinitionName") String name
     ) {
@@ -143,7 +164,7 @@ public class FormIoFormDefinitionService implements FormDefinitionService {
                     UUID.randomUUID(),
                     request.getName(),
                     request.getFormDefinition(),
-                    null,
+                    (FormDefinitionBlueprintId) null,
                     request.isReadOnly()
                 )
             );
@@ -163,7 +184,7 @@ public class FormIoFormDefinitionService implements FormDefinitionService {
                 throw new IllegalArgumentException("Duplicate name for new form: " + request.getName());
             }
             return formDefinitionRepository.save(
-                new FormIoFormDefinition(
+                FormIoFormDefinition.forCase(
                     UUID.randomUUID(),
                     request.getName(),
                     request.getFormDefinition(),

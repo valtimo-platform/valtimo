@@ -17,6 +17,7 @@
 package com.ritense.form.web.rest.dto
 
 import com.fasterxml.jackson.databind.node.ObjectNode
+import com.ritense.authorization.AuthorizationContext.Companion.runWithoutAuthorization
 import com.ritense.form.domain.FormSpringContextHelper
 import com.ritense.valtimo.contract.authentication.UserManagementService
 import java.time.LocalDateTime
@@ -36,9 +37,9 @@ fun IntermediateSubmissionDomain.toResponse(): IntermediateSubmission {
     return IntermediateSubmission(
         submission = this.content,
         taskInstanceId = this.taskInstanceId,
-        createdBy = this.createdBy.let { userManagementService.findByUsername(it).fullName },
+        createdBy = this.createdBy.let { runWithoutAuthorization { userManagementService.findByUsername(it).fullName } },
         createdOn = this.createdOn,
-        editedBy = this.editedBy?.let { userManagementService.findByUsername(it).fullName },
+        editedBy = this.editedBy?.let { runWithoutAuthorization { userManagementService.findByUsername(it).fullName } },
         editedOn = this.editedOn
     )
 }

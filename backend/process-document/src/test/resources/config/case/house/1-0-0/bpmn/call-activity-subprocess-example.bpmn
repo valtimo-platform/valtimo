@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" id="Definitions_1otkihd" targetNamespace="http://bpmn.io/schema/bpmn" exporter="Camunda Modeler" exporterVersion="5.23.0">
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:camunda="http://camunda.org/schema/1.0/bpmn" id="Definitions_1otkihd" targetNamespace="http://bpmn.io/schema/bpmn" exporter="Camunda Modeler" exporterVersion="5.23.0">
   <bpmn:collaboration id="Collaboration_0jbsodk">
     <bpmn:participant id="Participant_1vf67p7" name="process 1" processRef="call-activity-subprocess-example" />
     <bpmn:participant id="Participant_063uqra" name="process 2" processRef="sub-process" />
@@ -16,6 +16,9 @@
       <bpmn:outgoing>SequenceFlow_1rlz5h0</bpmn:outgoing>
     </bpmn:userTask>
     <bpmn:callActivity id="Task_0iwv23o" name="Call process" calledElement="sub-process">
+      <bpmn:extensionElements>
+        <camunda:in businessKey="#{execution.processBusinessKey}" />
+      </bpmn:extensionElements>
       <bpmn:incoming>SequenceFlow_1rlz5h0</bpmn:incoming>
       <bpmn:outgoing>SequenceFlow_12s1xoa</bpmn:outgoing>
     </bpmn:callActivity>

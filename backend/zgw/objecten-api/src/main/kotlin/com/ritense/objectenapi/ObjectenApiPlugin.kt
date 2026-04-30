@@ -27,6 +27,7 @@ import com.ritense.plugin.annotation.Plugin
 import com.ritense.plugin.annotation.PluginAction
 import com.ritense.plugin.annotation.PluginActionProperty
 import com.ritense.plugin.annotation.PluginProperty
+import com.ritense.plugin.domain.PluginDependency
 import com.ritense.processlink.domain.ActivityTypeWithEventName
 import com.ritense.valtimo.contract.validation.Url
 import io.github.oshai.kotlinlogging.KotlinLogging
@@ -39,7 +40,8 @@ import java.util.UUID
 @Plugin(
     key = "objectenapi",
     title = "Objecten API",
-    description = "Connects to the Objecten API"
+    description = "Connects to the Objecten API",
+    dependencies = [PluginDependency.ZAAK_INSTANCE_LINK]
 )
 class ObjectenApiPlugin(
     private val objectenApiClient: ObjectenApiClient

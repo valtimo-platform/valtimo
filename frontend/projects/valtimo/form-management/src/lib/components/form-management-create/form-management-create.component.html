@@ -28,14 +28,13 @@
     </h3>
   </cds-modal-header>
 
-  <form *ngIf="form" [formGroup]="form" (ngSubmit)="createFormDefinition()">
+  <form *ngIf="form" [formGroup]="form" (ngSubmit)="onSubmit($event)">
     <section cdsModalContent [cdsLayer]="1">
       <cds-label
         [invalid]="formControls?.name?.touched && formControls?.name?.errors"
         [invalidText]="
           (formControls?.name?.errors?.required && ('formManagement.nameIsRequired' | translate)) ||
-          (formControls?.name?.errors?.duplicate && ('formManagement.nameIsInUse' | translate)) ||
-          'test'
+          (formControls?.name?.errors?.duplicate && ('formManagement.nameIsInUse' | translate))
         "
       >
         {{ 'formManagement.name' | translate }}
@@ -47,24 +46,24 @@
           formControlName="name"
           [invalid]="formControls?.name?.touched && formControls?.name?.errors"
           required
+          [attr.data-test-id]="testIds.nameInput"
         />
       </cds-label>
     </section>
 
     <cds-modal-footer [cdsLayer]="1">
-      <cds-modal-footer>
-        <button cdsButton="ghost" (click)="$event.preventDefault(); onBackButtonClick()">
-          {{ 'formManagement.back' | translate }}
-        </button>
+      <button cdsButton="secondary" (click)="$event.preventDefault(); onBackButtonClick()">
+        {{ 'interface.cancel' | translate }}
+      </button>
 
-        <button cdsButton="ghost" (click)="$event.preventDefault(); reset()">
-          {{ 'formManagement.reset' | translate | translate }}
-        </button>
-
-        <button [disabled]="form?.invalid" type="submit" cdsButton="primary">
-          {{ 'formManagement.submit' | translate }}
-        </button>
-      </cds-modal-footer>
+      <button
+        cdsButton="primary"
+        type="submit"
+        [disabled]="form?.invalid"
+        [attr.data-test-id]="testIds.submitButton"
+      >
+        {{ 'formManagement.submit' | translate }}
+      </button>
     </cds-modal-footer>
   </form>
 </cds-modal>

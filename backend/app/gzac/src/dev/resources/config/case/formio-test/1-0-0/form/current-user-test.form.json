@@ -1,0 +1,18 @@
+{
+    "display": "form",
+    "components": [
+        {
+            "label": "Current User",
+            "key": "currentUser",
+            "type": "valtimo-current-user",
+            "input": true
+        },
+        {
+            "type": "button",
+            "label": "Submit",
+            "key": "submit",
+            "disableOnInvalid": true,
+            "input": true
+        }
+    ]
+}

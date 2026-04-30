@@ -20,4 +20,10 @@ interface CandidateUser {
   lastName: string;
 }
 
-export {CandidateUser};
+interface BulkAssign {
+  ids: string[];
+  assigneeId?: string;
+  assignedTeamKey?: string;
+}
+
+export {CandidateUser, BulkAssign};

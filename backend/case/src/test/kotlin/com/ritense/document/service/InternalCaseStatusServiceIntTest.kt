@@ -66,6 +66,7 @@ class InternalCaseStatusServiceIntTest @Autowired constructor(
                     "house123",
                     "456",
                     true,
+                    500,
                     GRAY
                 )
             )
@@ -85,6 +86,36 @@ class InternalCaseStatusServiceIntTest @Autowired constructor(
         assertEquals(internalCaseCount - 1, internalCaseStatus.order)
     }
 
+
+    @Test
+    fun `should create status with retention period -1 when omitted in the dto`() {
+        AuthorizationContext.runWithoutAuthorization {
+            internalCaseStatusService.create(
+                "house",
+                InternalCaseStatusCreateRequestDto(
+                    key = "house123",
+                    title = "456",
+                    visibleInCaseListByDefault = true,
+                    color = GRAY
+                )
+            )
+        }
+
+        val internalCaseStatus = internalCaseStatusRepository
+            .findDistinctByIdCaseDefinitionKeyAndIdKey("house", "house123")
+
+        val internalCaseCount = internalCaseStatusRepository
+            .findByIdCaseDefinitionKeyOrderByOrder("house").size
+
+        assertNotNull(internalCaseStatus)
+        assertEquals("house", internalCaseStatus.id.caseDefinitionKey)
+        assertEquals("house123", internalCaseStatus.id.key)
+        assertEquals("456", internalCaseStatus.title)
+        assertEquals(-1, internalCaseStatus.retentionPeriodInDays)
+        assertTrue(internalCaseStatus.visibleInCaseListByDefault)
+        assertEquals(internalCaseCount - 1, internalCaseStatus.order)
+    }
+
     @Test
     fun `should throw error when creating status with invalid key`() {
         AuthorizationContext.runWithoutAuthorization {
@@ -95,6 +126,7 @@ class InternalCaseStatusServiceIntTest @Autowired constructor(
                         "@invalid.key&",
                         "456",
                         true,
+                        500,
                         GRAY
                     )
                 )
@@ -112,6 +144,7 @@ class InternalCaseStatusServiceIntTest @Autowired constructor(
                     "house123",
                     "456",
                     true,
+                    500,
                     GRAY
                 )
             )
@@ -128,6 +161,7 @@ class InternalCaseStatusServiceIntTest @Autowired constructor(
                         "test123",
                         "456",
                         true,
+                        500,
                         GRAY
                     )
                 )
@@ -144,6 +178,7 @@ class InternalCaseStatusServiceIntTest @Autowired constructor(
                     "house123",
                     "456",
                     true,
+                    500,
                     GRAY
                 )
             )
@@ -155,6 +190,7 @@ class InternalCaseStatusServiceIntTest @Autowired constructor(
                         "house123",
                         "456",
                         true,
+                        500,
                         GRAY
                     )
                 )
@@ -171,6 +207,7 @@ class InternalCaseStatusServiceIntTest @Autowired constructor(
                     "house123",
                     "456",
                     true,
+                    500,
                     GRAY
                 )
             )
@@ -182,6 +219,7 @@ class InternalCaseStatusServiceIntTest @Autowired constructor(
                     "house123",
                     "789",
                     false,
+                    123,
                     GRAY
                 )
             )
@@ -198,8 +236,49 @@ class InternalCaseStatusServiceIntTest @Autowired constructor(
         assertEquals("house123", internalCaseStatus.id.key)
         assertEquals("789", internalCaseStatus.title)
         assertFalse(internalCaseStatus.visibleInCaseListByDefault)
+        assertEquals(123, internalCaseStatus.retentionPeriodInDays)
         assertEquals(internalCaseCount - 1, internalCaseStatus.order)
+    }
 
+    @Test
+    fun `should update internal case status with retention period set to -1`() {
+        AuthorizationContext.runWithoutAuthorization {
+            internalCaseStatusService.create(
+                "house",
+                InternalCaseStatusCreateRequestDto(
+                    key = "house123",
+                    title = "456",
+                    visibleInCaseListByDefault = true,
+                    retentionPeriodInDays = 190,
+                    color = GRAY
+                )
+            )
+
+            internalCaseStatusService.update(
+                "house",
+                "house123",
+                InternalCaseStatusUpdateRequestDto(
+                    key = "house123",
+                    title = "789",
+                    visibleInCaseListByDefault = false,
+                    color = GRAY
+                )
+            )
+        }
+
+        val internalCaseStatus = internalCaseStatusRepository
+            .findDistinctByIdCaseDefinitionKeyAndIdKey("house", "house123")
+
+        val internalCaseCount = internalCaseStatusRepository
+            .findByIdCaseDefinitionKeyOrderByOrder("house").size
+
+        assertNotNull(internalCaseStatus)
+        assertEquals("house", internalCaseStatus.id.caseDefinitionKey)
+        assertEquals("house123", internalCaseStatus.id.key)
+        assertEquals("789", internalCaseStatus.title)
+        assertFalse(internalCaseStatus.visibleInCaseListByDefault)
+        assertEquals(-1, internalCaseStatus.retentionPeriodInDays)
+        assertEquals(internalCaseCount - 1, internalCaseStatus.order)
     }
 
     @Test
@@ -213,6 +292,7 @@ class InternalCaseStatusServiceIntTest @Autowired constructor(
                         "house123",
                         "789",
                         false,
+                        500,
                         GRAY
                     )
                 )
@@ -230,6 +310,7 @@ class InternalCaseStatusServiceIntTest @Autowired constructor(
                     "house123",
                     "789",
                     true,
+                    500,
                     GRAY
                 )
             )
@@ -247,6 +328,7 @@ class InternalCaseStatusServiceIntTest @Autowired constructor(
                     "house123",
                     "456",
                     true,
+                    500,
                     GRAY
                 )
             )
@@ -257,6 +339,7 @@ class InternalCaseStatusServiceIntTest @Autowired constructor(
                     "house124",
                     "457",
                     true,
+                    500,
                     GRAY
                 )
             )
@@ -267,6 +350,7 @@ class InternalCaseStatusServiceIntTest @Autowired constructor(
                     "house125",
                     "458",
                     false,
+                    500,
                     GRAY
                 )
             )
@@ -291,18 +375,21 @@ class InternalCaseStatusServiceIntTest @Autowired constructor(
                         "house123",
                         "456",
                         true,
+                        500,
                         GRAY
                     ),
                     InternalCaseStatusUpdateOrderRequestDto(
                         "house125",
                         "458",
                         true,
+                        500,
                         GRAY
                     ),
                     InternalCaseStatusUpdateOrderRequestDto(
                         "house124",
                         "457",
                         true,
+                        500,
                         GRAY
                     )
                 )
@@ -335,6 +422,7 @@ class InternalCaseStatusServiceIntTest @Autowired constructor(
                     "house123",
                     "456",
                     true,
+                    500,
                     GRAY
                 )
             )
@@ -345,6 +433,7 @@ class InternalCaseStatusServiceIntTest @Autowired constructor(
                     "house124",
                     "457",
                     true,
+                    500,
                     GRAY
                 )
             )
@@ -355,6 +444,7 @@ class InternalCaseStatusServiceIntTest @Autowired constructor(
                     "house125",
                     "458",
                     false,
+                    500,
                     GRAY
                 )
             )
@@ -380,6 +470,7 @@ class InternalCaseStatusServiceIntTest @Autowired constructor(
                             "house123",
                             "456",
                             true,
+                            500,
                             GRAY
                         )
                     )
@@ -398,6 +489,7 @@ class InternalCaseStatusServiceIntTest @Autowired constructor(
                         "house123",
                         "789",
                         true,
+                        500,
                         GRAY
                     )
                 )
@@ -414,6 +506,7 @@ class InternalCaseStatusServiceIntTest @Autowired constructor(
                     "house123",
                     "456",
                     true,
+                    500,
                     GRAY
                 )
             )

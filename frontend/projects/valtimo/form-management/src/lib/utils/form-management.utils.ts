@@ -14,12 +14,63 @@
  * limitations under the License.
  */
 import {ActivatedRoute} from '@angular/router';
-import {ManagementContext} from '@valtimo/shared';
-import {Observable} from 'rxjs';
-import {map} from 'rxjs/operators';
+import {
+  getBuildingBlockManagementRouteParams,
+  getCaseManagementRouteParams,
+  ManagementContext,
+} from '@valtimo/shared';
+import {combineLatest, Observable, of} from 'rxjs';
+import {distinctUntilChanged, map, switchMap} from 'rxjs/operators';
+import {FormManagementParams} from '../models';
 
-function getContextObservable(route: ActivatedRoute): Observable<ManagementContext | ''> {
-  return route.data.pipe(map(data => (data && (data['context'] as ManagementContext)) || ''));
+function getContextObservable(route: ActivatedRoute): Observable<ManagementContext | '' | null> {
+  return route.data.pipe(
+    map(data => (data && (data['context'] as ManagementContext)) || null),
+    distinctUntilChanged()
+  );
 }
 
-export {getContextObservable};
+function getFormManagementRouteParamsAndContext(
+  route: ActivatedRoute
+): Observable<[ManagementContext | null, FormManagementParams]> {
+  const context$ = getContextObservable(route);
+
+  return context$.pipe(
+    switchMap(context => {
+      if (context === 'case') {
+        return combineLatest([of(context), getCaseManagementRouteParams(route, true)]).pipe(
+          map(
+            ([ctx, params]) =>
+              [
+                ctx,
+                {
+                  caseDefinitionKey: params?.caseDefinitionKey,
+                  caseDefinitionVersionTag: params?.caseDefinitionVersionTag,
+                },
+              ] as [ManagementContext, FormManagementParams]
+          )
+        );
+      }
+
+      if (context === 'buildingBlock') {
+        return combineLatest([of(context), getBuildingBlockManagementRouteParams(route, true)]).pipe(
+          map(
+            ([ctx, params]) =>
+              [
+                ctx,
+                {
+                  buildingBlockDefinitionKey: params?.buildingBlockDefinitionKey,
+                  buildingBlockDefinitionVersionTag: params?.buildingBlockDefinitionVersionTag,
+                },
+              ] as [ManagementContext, FormManagementParams]
+          )
+        );
+      }
+
+      const fallbackParams: FormManagementParams = {};
+      return of([context, fallbackParams] as [ManagementContext | null, FormManagementParams]);
+    })
+  );
+}
+
+export {getContextObservable, getFormManagementRouteParamsAndContext};

@@ -23,17 +23,11 @@ import {
   PaginationModule,
   TilesModule,
 } from 'carbon-components-angular';
-import {BehaviorSubject, combineLatest, of, switchMap, tap} from 'rxjs';
-import {
-  TableWidget,
-  WidgetAction,
-  WidgetLayoutService,
-  WidgetTableComponent,
-  WidgetTableContent,
-  WidgetWithUuid,
-} from '@valtimo/layout';
+import {BehaviorSubject, combineLatest, distinctUntilChanged, of, switchMap, tap} from 'rxjs';
+import {TableWidget, WidgetLayoutService, WidgetTableComponent} from '@valtimo/layout';
 import {IkoWidgetParams} from '../../models';
 import {IkoApiService} from '../../services';
+import {HttpParams} from '@angular/common/http';
 
 @Component({
   selector: 'valtimo-iko-widget-table',
@@ -69,20 +63,26 @@ export class IkoWidgetTableComponent {
     this._widgetParams$.next(value);
   }
 
-  private readonly _queryParams$ = new BehaviorSubject<string | null>(null);
+  private readonly _queryParams$ = new BehaviorSubject<HttpParams>(new HttpParams());
 
   public readonly widgetData$ = combineLatest([
     this.widgetConfiguration$,
     this._widgetParams$,
+    this._queryParams$.pipe(
+      distinctUntilChanged(
+        (prevParams, currParams) => prevParams.toString() === currParams.toString()
+      )
+    ),
   ]).pipe(
-    switchMap(([widgetConfiguration, widgetParams]) =>
+    switchMap(([widgetConfiguration, widgetParams, queryParams]) =>
       !widgetParams || !widgetConfiguration
         ? of(null)
         : this.ikoApiService.getIkoWidgetData(
             widgetParams.ikoViewKey,
             widgetParams.tabKey,
             widgetConfiguration.key,
-            widgetParams.entryId
+            widgetParams.entryId,
+            queryParams
           )
     ),
     tap(() => this.widgetLayoutService.setWidgetDataLoaded(this.widgetUuid))
@@ -94,10 +94,10 @@ export class IkoWidgetTableComponent {
   ) {}
 
   public onPaginationEvent(event: PaginationModel): void {
-    this._queryParams$.next(`page=${event.currentPage - 1}&size=${event.pageLength}`);
-  }
-
-  private getPageSizeParam(widgetConfiguration: WidgetWithUuid): string {
-    return `size=${(widgetConfiguration.properties as WidgetTableContent).defaultPageSize}`;
+    this._queryParams$.next(
+      new HttpParams()
+        .set('page', (event.currentPage - 1).toString())
+        .set('size', event.pageLength.toString())
+    );
   }
 }

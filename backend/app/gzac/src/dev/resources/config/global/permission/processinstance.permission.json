@@ -1,0 +1,26 @@
+[
+    {
+        "resourceType": "com.ritense.valtimo.operaton.domain.OperatonExecution",
+        "action": "create",
+        "roleKey": "ROLE_USER",
+        "conditions": [
+            {
+                "type": "container",
+                "resourceType": "com.ritense.case_.domain.definition.CaseDefinition",
+                "conditions": [
+                    {
+                        "type": "field",
+                        "field": "id.key",
+                        "operator": "==",
+                        "value": "bezwaar"
+                    }
+                ]
+            }
+        ]
+    },
+    {
+        "resourceType": "com.ritense.valtimo.operaton.domain.OperatonExecution",
+        "action": "create",
+        "roleKey": "ROLE_ADMIN"
+    }
+]

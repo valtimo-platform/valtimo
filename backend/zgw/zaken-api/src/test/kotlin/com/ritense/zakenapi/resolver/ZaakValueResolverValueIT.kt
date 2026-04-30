@@ -80,6 +80,14 @@ class ZaakValueResolverValueIT @Autowired constructor(
                 )
             ).resultingDocument().get().id.id
 
+            // Create zaak instance link so the resolver can find the zaak URL
+            zaakInstanceLinkService.createZaakInstanceLink(
+                URI("http://localhost:56273$ZAKEN_API_PATH/zaken/57f66ff6-db7f-43bc-84ef-6847640d3609"),
+                java.util.UUID.fromString("57f66ff6-db7f-43bc-84ef-6847640d3609"),
+                documentId,
+                URI("http://localhost:56273/catalogi/e02753ba-9055-11ee-b9d1-0242ac120002")
+            )
+
             val formDefinition = formDefinitionRepository.findByNameAndCaseDefinitionId("form-with-zaak-fields", caseDefinitionId).get()
             val prefilledFormDefinition = prefillFormService.getPrefilledFormDefinition(
                 formDefinition.id!!,

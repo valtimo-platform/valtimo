@@ -17,28 +17,22 @@
 package com.ritense.notificatiesapi
 
 import com.ritense.notificatiesapi.client.NotificatiesApiClient
-import com.ritense.notificatiesapi.domain.Abonnement
 import com.ritense.notificatiesapi.domain.Kanaal
-import com.ritense.notificatiesapi.domain.NotificatiesApiAbonnementLink
 import com.ritense.notificatiesapi.domain.NotificatiesApiConfigurationId
 import com.ritense.notificatiesapi.repository.NotificatiesApiAbonnementLinkRepository
 import com.ritense.plugin.domain.PluginConfigurationId
+import com.ritense.plugin.repository.PluginProcessLinkRepository
+import com.ritense.valtimo.contract.json.MapperSingleton
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
-import org.mockito.ArgumentCaptor
 import org.mockito.kotlin.any
-import org.mockito.kotlin.eq
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.never
 import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
-import org.mockito.kotlin.verifyBlocking
 import org.mockito.kotlin.whenever
 import java.net.URI
-import java.util.Optional
 import java.util.UUID
-import kotlin.test.assertContains
-import kotlin.test.assertEquals
 
 internal class NotificatiesApiPluginTest {
     lateinit var notificatiesApiClient: NotificatiesApiClient
@@ -54,7 +48,7 @@ internal class NotificatiesApiPluginTest {
         pluginConfigurationId = PluginConfigurationId(UUID.randomUUID())
         notificatiesApiConfigurationId = NotificatiesApiConfigurationId(pluginConfigurationId.id)
 
-        plugin = NotificatiesApiPlugin(pluginConfigurationId, notificatiesApiClient, abonnementLinkRepository)
+        plugin = NotificatiesApiPlugin(pluginConfigurationId, notificatiesApiClient, MapperSingleton.get(), mock<PluginProcessLinkRepository>())
             .apply {
                 url = URI("http://example.com")
                 callbackUrl = URI("http://example.com/callback")

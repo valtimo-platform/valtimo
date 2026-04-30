@@ -16,15 +16,20 @@
 
 package com.ritense.iko.service
 
+import com.fasterxml.jackson.databind.JsonNode
 import com.ritense.authorization.AuthorizationContext.Companion.runWithoutAuthorization
+import com.ritense.iko.authorization.IkoViewActionProvider
 import com.ritense.iko.authorization.IkoViewActionProvider.Companion.VIEW
 import com.ritense.iko.domain.IkoViewTab
 import com.ritense.iko.domain.IkoViewTabId
 import com.ritense.iko.event.IkoViewTabPreDeleteEvent
+import com.ritense.iko.helper.MergeHelper.deepMerge
 import com.ritense.iko.repository.IkoViewTabRepository
 import com.ritense.tab.domain.Tab
 import com.ritense.tab.service.TabService
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
+import com.ritense.valtimo.contract.iko.IkoRepository
+import com.ritense.valtimo.contract.iko.PropertyField
 import org.springframework.context.ApplicationEventPublisher
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -37,7 +42,22 @@ class IkoTabService(
     private val ikoViewTabRepository: IkoViewTabRepository,
     private val ikoViewService: IkoViewService,
     private val applicationEventPublisher: ApplicationEventPublisher,
+    private val ikoRepositories: List<IkoRepository>,
 ) {
+
+    fun getIkoTabConfig(ikoViewKey: String, tabKey: String?): Map<String, Any?> {
+        val ikoView = runWithoutAuthorization { ikoViewService.getByKey(ikoViewKey) }
+        ikoViewService.requirePermission(ikoView, IkoViewActionProvider.VIEW)
+        val ikoTabProperties = tabKey?.let { getByKey(ikoViewKey, tabKey) }?.properties ?: emptyMap()
+        return ikoView.ikoRepositoryConfig.properties
+            .deepMerge(ikoView.properties)
+            .deepMerge(ikoTabProperties)
+    }
+
+    fun getIkoTabPropertyFields(type: Any): List<PropertyField> {
+        ikoViewService.denyAuthorization()
+        return ikoRepositories.single { it.getType() == type }.getIkoTabPropertyFields()
+    }
 
     fun findByKey(ikoViewKey: String, tabKey: String): Tab? {
         ikoViewService.requirePermission(ikoViewKey, VIEW)

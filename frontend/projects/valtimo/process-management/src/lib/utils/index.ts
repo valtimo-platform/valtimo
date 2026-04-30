@@ -16,3 +16,4 @@
 
 export * from './bpmn.utils';
 export * from './process-management.utils';
+export * from './process-management-builder.utils';

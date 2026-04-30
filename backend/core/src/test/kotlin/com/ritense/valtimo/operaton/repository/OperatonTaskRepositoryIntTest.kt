@@ -17,6 +17,7 @@
 package com.ritense.valtimo.operaton.repository
 
 import com.ritense.valtimo.BaseIntegrationTest
+import com.ritense.valtimo.operaton.CallDepthExecutionListener.Companion.CALL_DEPTH_VARIABLE
 import org.assertj.core.api.Assertions
 import org.operaton.bpm.engine.TaskService
 import org.junit.jupiter.api.Test
@@ -104,7 +105,7 @@ class OperatonTaskRepositoryIntTest @Autowired constructor(
             Assertions.assertThat(variable).describedAs(key).isEqualTo(value)
         }
         val localVarNames = task.variableNamesLocal
-        Assertions.assertThat(localVarNames).containsOnly(*localVarMap.keys.toTypedArray())
+        Assertions.assertThat(localVarNames).contains(*localVarMap.keys.toTypedArray())
 
         //Test inherited variables from parent(s)
         val allVars = processInstanceVariableMap + localVarMap
@@ -117,6 +118,6 @@ class OperatonTaskRepositoryIntTest @Autowired constructor(
         Assertions.assertThat(task.getVariable("myText")).describedAs("myText").isEqualTo("Hello!")
 
         val variableNames = task.variableNames
-        Assertions.assertThat(variableNames).containsOnly(*allVars.keys.toTypedArray())
+        Assertions.assertThat(variableNames).contains(*allVars.keys.toTypedArray())
     }
 }

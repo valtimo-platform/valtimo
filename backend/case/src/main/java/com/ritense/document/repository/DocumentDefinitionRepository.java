@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2025 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,9 +17,6 @@
 package com.ritense.document.repository;
 
 import com.ritense.document.domain.DocumentDefinition;
-import com.ritense.valtimo.contract.case_.CaseDefinitionId;
-import java.util.List;
-import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.repository.NoRepositoryBean;
@@ -28,12 +25,6 @@ import org.springframework.data.repository.NoRepositoryBean;
 public interface DocumentDefinitionRepository<T extends DocumentDefinition> extends
     JpaRepository<T, DocumentDefinition.Id>,
     JpaSpecificationExecutor<T> {
-
-    Optional<T> findFirstByIdNameOrderByIdCaseDefinitionIdVersionTagDesc(String documentDefinitionName);
-
-    Optional<T> findByIdCaseDefinitionId(CaseDefinitionId caseDefinitionId);
-
-    List<CaseDefinitionId> findVersionsByName(String documentDefinitionName);
 
     void deleteByIdName(String documentDefinitionName);
 }

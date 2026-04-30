@@ -20,12 +20,13 @@ import com.ritense.case.TestFormExporter
 import com.ritense.case_.TestResolverFactory
 import com.ritense.case_.widget.TestCaseWidgetDataProvider
 import com.ritense.case_.widget.TestCaseWidgetMapper
+import com.ritense.valtimo.contract.config.LiquibaseMasterChangeLogLocation
 import org.mockito.kotlin.spy
 import org.springframework.boot.autoconfigure.SpringBootApplication
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingClass
 import org.springframework.boot.runApplication
 import org.springframework.boot.test.context.TestConfiguration
 import org.springframework.context.annotation.Bean
-import org.springframework.test.context.bean.override.mockito.MockitoBean
 
 @SpringBootApplication
 class TestApplication {
@@ -37,13 +38,13 @@ class TestApplication {
 
     @TestConfiguration
     class TestConfig {
-
         @Bean
         fun testResolverFactory(): TestResolverFactory {
             return spy(TestResolverFactory())
         }
 
         @Bean
+        @ConditionalOnMissingClass("com.ritense.form.service.FormDefinitionImporter")
         fun fakeFormDefinitionImporter(): FakeFormDefinitionImporter = FakeFormDefinitionImporter()
 
         @Bean

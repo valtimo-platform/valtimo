@@ -24,6 +24,7 @@ import com.ritense.plugin.domain.PluginDefinition
 import com.ritense.plugin.domain.PluginProperty
 import com.ritense.plugin.service.PluginService
 import com.ritense.resource.service.TemporaryResourceStorageService
+import com.ritense.valtimo.contract.document.CaseDocumentResolver
 import com.ritense.valtimo.contract.json.MapperSingleton
 import com.ritense.valueresolver.ValueResolverService
 import com.ritense.zakenapi.client.ZakenApiClient
@@ -57,6 +58,7 @@ internal class ZakenApiPluginFactoryTest {
         val valueResolverService: ValueResolverService = mock()
         val objectMapper: ObjectMapper = mock()
         val zaakNotitieLinkRepository: ZaakNotitieLinkRepository = mock()
+        val caseDocumentResolver: CaseDocumentResolver = mock()
 
         val factory = ZakenApiPluginFactory(
             pluginService,
@@ -69,7 +71,8 @@ internal class ZakenApiPluginFactoryTest {
             platformTransactionManager,
             valueResolverService,
             objectMapper,
-            zaakNotitieLinkRepository
+            zaakNotitieLinkRepository,
+            caseDocumentResolver
         )
         val zakenApiPluginProperties: String = """
             {

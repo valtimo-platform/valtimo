@@ -1,0 +1,29 @@
+[
+    {
+        "name": "Test Data",
+        "key": "test-data",
+        "type": "widgets",
+        "contentKey": "-",
+        "showTasks": true
+    },
+    {
+        "name": "Progress",
+        "key": "progress",
+        "type": "standard",
+        "contentKey": "progress",
+        "showTasks": true
+    },
+    {
+        "name": "Audit",
+        "key": "audit",
+        "type": "standard",
+        "contentKey": "audit",
+        "showTasks": true
+    },
+    {
+        "name": "Documents",
+        "key": "documents",
+        "type": "standard",
+        "contentKey": "documents"
+    }
+]

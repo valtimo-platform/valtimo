@@ -1,0 +1,11 @@
+{
+  "display": "form",
+  "components": [
+    {
+      "label": "Straatnaam",
+      "key": "straatnaam",
+      "type": "textfield",
+      "input": true
+    }
+  ]
+}

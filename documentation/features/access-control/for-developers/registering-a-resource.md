@@ -7,8 +7,8 @@ Access control can be exercised over resources that have been registered. Valtim
 * `com.ritense.document.domain.impl.snapshot.JsonSchemaDocumentSnapshot`
 * `com.ritense.document.domain.impl.searchfield.SearchField`
 * `com.ritense.note.domain.Note`
-* `com.ritense.valtimo.camunda.domain.CamundaTask`
-* `com.ritense.valtimo.camunda.domain.CamundaIdentityLink`
+* `com.ritense.valtimo.operaton.domain.OperatonTask`
+* `com.ritense.valtimo.operaton.domain.OperatonIdentityLink`
 * `com.ritense.case.domain.CaseTab`
 
 The authorization module allows developers to register their own resources, which allows said resources to be used when configuring permissions.

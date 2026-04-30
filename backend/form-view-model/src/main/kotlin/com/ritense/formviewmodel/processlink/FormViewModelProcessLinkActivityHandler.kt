@@ -45,6 +45,8 @@ class FormViewModelProcessLinkActivityHandler(
         return ProcessLinkActivityResult(
             processLinkId = processLink.id,
             type = FORM_VIEW_MODEL_TASK_TYPE_KEY,
+            task.assignee,
+            task.dueDate,
             properties = FormViewModelTaskOpenResultProperties(
                 formDefinitionId = processLink.formDefinitionId,
                 formDefinition = formDefinition.asJson(),
@@ -67,6 +69,8 @@ class FormViewModelProcessLinkActivityHandler(
         return ProcessLinkActivityResult(
             processLink.id,
             FORM_VIEW_MODEL_TASK_TYPE_KEY,
+            null,
+            null,
             FormViewModelTaskOpenResultProperties(
                 formDefinitionId = processLink.formDefinitionId,
                 formDefinition = formDefinition.asJson(),

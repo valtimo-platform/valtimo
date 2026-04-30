@@ -60,6 +60,7 @@
     [modalSize]="formSize$ | async"
     (formSubmit)="onFormSubmit()"
     (assignmentOfTaskChanged)="refresh()"
+    (dueDateChanged)="refresh()"
   ></valtimo-task-detail-modal>
 </div>
 
@@ -69,13 +70,17 @@
       <div class="task__header">
         <span class="task__title">{{ taskWithProcessLink.task.name }}</span>
 
-        @if (!!taskWithProcessLink.task.assignee) {
+        @if (!!taskWithProcessLink.task.assignedTeam || !!taskWithProcessLink.task.assignee) {
           <cds-tag
             class="cds-tag--no-margin"
-            [ngbTooltip]="'summary.taskIsAssigned' | translate"
+            [ngbTooltip]="getAssigneeTooltip(taskWithProcessLink.task) || ('summary.taskIsAssigned' | translate)"
             [type]="'cool-gray'"
           >
-            <svg cdsIcon="user--filled" size="20"></svg>
+            @if (!!taskWithProcessLink.task.assignedTeam) {
+              <svg cdsIcon="group" size="20"></svg>
+            } @else {
+              <svg cdsIcon="user--filled" size="20"></svg>
+            }
           </cds-tag>
         }
         <cds-tag

@@ -16,10 +16,13 @@
 
 package com.ritense.processlink.web.rest.dto
 
+import java.time.LocalDateTime
 import java.util.UUID
 
 data class ProcessLinkActivityResult<T> (
     val processLinkId: UUID,
     val type: String,
+    val assignee: String?,
+    val due: LocalDateTime?,
     val properties: T
 )

@@ -21,6 +21,7 @@ import com.ritense.exporter.ExportResult
 import com.ritense.exporter.Exporter
 import com.ritense.exporter.request.DecisionDefinitionExportRequest
 import com.ritense.exporter.request.ProcessDefinitionExportRequest
+import com.ritense.valtimo.contract.buildingblock.BuildingBlockDefinitionId
 import com.ritense.valtimo.operaton.repository.OperatonDecisionDefinitionSpecificationHelper
 import com.ritense.valtimo.operaton.repository.OperatonProcessDefinitionSpecificationHelper.Companion.byKey
 import com.ritense.valtimo.operaton.repository.OperatonProcessDefinitionSpecificationHelper.Companion.byLatestVersion
@@ -28,6 +29,7 @@ import com.ritense.valtimo.operaton.repository.OperatonProcessDefinitionSpecific
 import com.ritense.valtimo.operaton.repository.OperatonProcessDefinitionSpecificationHelper.Companion.byVersionTag
 import com.ritense.valtimo.operaton.service.OperatonRepositoryService
 import com.ritense.valtimo.contract.case_.CaseDefinitionId
+import com.ritense.valtimo.contract.process.ProcessConstants.OPERATON_BUILDING_BLOCK_DEFINITION_VERSION_TAG_PREFIX
 import org.operaton.bpm.engine.RepositoryService
 import org.operaton.bpm.model.bpmn.Bpmn
 import org.operaton.bpm.model.bpmn.BpmnModelInstance
@@ -72,7 +74,7 @@ class ProcessDefinitionExporter(
 
     private fun getCallActivityProcessDefinitionExportRequests(bpmnModelInstance: BpmnModelInstance, caseDefinitionId: CaseDefinitionId): Set<ProcessDefinitionExportRequest> {
         return bpmnModelInstance.getModelElementsByType(CallActivity::class.java).mapNotNull {
-            if (it.calledElement != null) {
+            if (it.calledElement != null && !it.operatonCalledElementVersionTag.startsWith(OPERATON_BUILDING_BLOCK_DEFINITION_VERSION_TAG_PREFIX)) {
                 val spec = byKey(it.calledElement)
                 val processDefinitionId = checkNotNull(
                     when (it.operatonCalledElementBinding) {

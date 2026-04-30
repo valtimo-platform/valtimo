@@ -14,11 +14,32 @@
  * limitations under the License.
  */
 
-import {Injectable} from '@angular/core';
-import {Observable} from 'rxjs';
+import {Injectable, Injector} from '@angular/core';
+import {Observable, of} from 'rxjs';
+import {map} from 'rxjs/operators';
 import {HttpClient} from '@angular/common/http';
 import {ConfigService} from '@valtimo/shared';
-import {DocumentenApiManagementAllVersions} from '../models';
+import {DocumentenApiManagementAllVersions, DocumentenApiVersionDetails} from '../models';
+
+const OBJECT_INFORMATIE_OBJECT_ACTIONS = ['link-document-to-object', 'delete-document-link'];
+
+export function documentenApiActionFilterFunction(
+  pluginConfigurationProperties: {[key: string]: any},
+  functionKey: string,
+  injector: Injector
+): Observable<boolean> {
+  if (!OBJECT_INFORMATIE_OBJECT_ACTIONS.includes(functionKey)) {
+    return of(true);
+  }
+  const apiVersion = pluginConfigurationProperties['apiVersion'] as string | undefined;
+  if (!apiVersion) {
+    return of(false);
+  }
+  const documentenApiService = injector.get(DocumentenApiService);
+  return documentenApiService
+    .getVersionDetails(apiVersion)
+    .pipe(map(details => details?.supportsObjectInformatieObjecten === true));
+}
 
 @Injectable({
   providedIn: 'root',
@@ -36,6 +57,12 @@ export class DocumentenApiService {
   public getManagementApiAllVersions(): Observable<DocumentenApiManagementAllVersions> {
     return this.http.get<DocumentenApiManagementAllVersions>(
       `${this.valtimoEndpointUri}management/v1/documenten-api/versions`
+    );
+  }
+
+  public getVersionDetails(versionTag: string): Observable<DocumentenApiVersionDetails | undefined> {
+    return this.getManagementApiAllVersions().pipe(
+      map(response => response.versionDetails?.find(v => v.version === versionTag))
     );
   }
 }

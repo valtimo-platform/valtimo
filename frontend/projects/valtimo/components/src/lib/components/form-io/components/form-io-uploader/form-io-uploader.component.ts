@@ -71,8 +71,8 @@ export class FormIoUploaderComponent implements FormioCustomComponent<Array<Reso
   fileSelected(file: File) {
     this.domService.toggleSubmitButton(true);
     this.uploading$.next(true);
-    this.stateService.documentDefinitionName$.pipe(take(1)).subscribe(name => {
-      this.uploadProviderService.uploadFile(file, name).subscribe(result => {
+    this.stateService.caseDefinitionKey$.pipe(take(1)).subscribe(caseDefinitionKey => {
+      this.uploadProviderService.uploadFile(file, caseDefinitionKey).subscribe(result => {
         this.domService.toggleSubmitButton(false);
         this.uploading$.next(false);
         this._value.push(result);

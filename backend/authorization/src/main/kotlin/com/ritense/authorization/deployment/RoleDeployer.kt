@@ -18,12 +18,14 @@ package com.ritense.authorization.deployment
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
+import com.ritense.authorization.importer.GlobalRoleImporter
 import com.ritense.authorization.role.Role
 import com.ritense.authorization.role.RoleRepository
 import com.ritense.valtimo.changelog.domain.ChangesetDeployer
 import com.ritense.valtimo.changelog.domain.ChangesetDetails
 import com.ritense.valtimo.changelog.service.ChangelogService
 
+@Deprecated("Since 13.18.0", ReplaceWith("com.ritense.authorization.importer.GlobalRoleImporter"))
 class RoleDeployer(
     private val objectMapper: ObjectMapper,
     private val roleRepository: RoleRepository,
@@ -41,6 +43,10 @@ class RoleDeployer(
     }
 
     override fun getChangelogDetails(filename: String, content: String): List<ChangesetDetails> {
+        if (filename.substringAfter("/config").matches(GlobalRoleImporter.FILENAME_REGEX)) {
+            return emptyList()
+        }
+
         val changeset = objectMapper.readValue<RoleChangeset>(content)
         return listOf(
             ChangesetDetails(

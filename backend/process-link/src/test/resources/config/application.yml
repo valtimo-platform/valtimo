@@ -2,8 +2,7 @@ spring:
     datasource:
         type: com.zaxxer.hikari.HikariDataSource
     liquibase:
-        enabled: true
-        change-log: classpath:/config/liquibase/process-link-master.xml
+        enabled: false
     jpa:
         show_sql: true
         open-in-view: false
@@ -26,6 +25,8 @@ spring:
 
 valtimo:
     processlink:
+        encryption-secret: "abcdefghijklmnop"
+    plugin:
         encryption-secret: "abcdefghijklmnop"
 
 spring-actuator:
