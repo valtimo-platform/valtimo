@@ -31,6 +31,7 @@ import com.ritense.document.event.DocumentAssigneeChangedEvent;
 import com.ritense.document.event.DocumentRetentionPeriodSetEvent;
 import com.ritense.document.event.DocumentRetentionPeriodUnsetEvent;
 import com.ritense.document.event.DocumentUnassignedEvent;
+import com.ritense.document.event.InformatieObjectReceivedEvent;
 import com.ritense.document.service.impl.JsonSchemaDocumentService;
 import com.ritense.processdocument.event.BesluitAddedEvent;
 import com.ritense.processdocument.service.ProcessDocumentAuditService;
@@ -71,6 +72,7 @@ public class OperatonProcessJsonSchemaDocumentAuditService implements ProcessDoc
         final Pageable pageable
     ) {
         final List<Class<? extends AuditEvent>> eventTypes = List.of(
+            InformatieObjectReceivedEvent.class,
             JsonSchemaDocumentCreatedEvent.class,
             JsonSchemaDocumentModifiedEvent.class,
             DocumentRetentionPeriodSetEvent.class,

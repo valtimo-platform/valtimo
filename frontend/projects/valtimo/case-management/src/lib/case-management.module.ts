@@ -32,6 +32,8 @@ import {
   ModalModule,
   MultiselectDropdownModule,
   MuuriDirectiveModule,
+  OverflowMenuComponent,
+  OverflowMenuOptionComponent,
   ParagraphModule,
   ReadOnlyDirective,
   RenderInPageHeaderDirective,
@@ -40,8 +42,6 @@ import {
   TableModule,
   TooltipIconModule,
   ValtimoCdsModalDirective,
-  OverflowMenuComponent,
-  OverflowMenuOptionComponent,
   ValuePathSelectorComponent,
   WidgetModule,
 } from '@valtimo/components';
@@ -98,7 +98,9 @@ import {CaseManagementUploadComponent} from './components/case-management-upload
 import {CaseManagementUploadStepComponent} from './components/case-management-upload/step/case-management-upload-step.component';
 import {TabManagementService} from './services';
 import {CaseManagementDraftWarningComponent} from './components/case-management-draft-warning/case-management-draft-warning.component';
+import {CaseManagementActionsComponent} from './components/case-management-detail/tabs/case-management-actions/case-management-actions.component';
 import {CaseManagementHeaderComponent} from './components/case-management-detail/tabs/case-management-header/case-management-header.component';
+import {CaseManagementMissingPluginConfigurationsComponent} from './components/case-management-detail/tabs/case-management-general/components/case-management-missing-plugin-configurations/case-management-missing-plugin-configurations.component';
 
 @NgModule({
   declarations: [
@@ -186,8 +188,10 @@ import {CaseManagementHeaderComponent} from './components/case-management-detail
     ReadOnlyDirective,
     CaseManagementDraftWarningComponent,
     JsonEditorComponent,
+    CaseManagementActionsComponent,
     CaseManagementHeaderComponent,
     AutoKeyInputComponent,
+    CaseManagementMissingPluginConfigurationsComponent,
   ],
   providers: [TabManagementService],
 })

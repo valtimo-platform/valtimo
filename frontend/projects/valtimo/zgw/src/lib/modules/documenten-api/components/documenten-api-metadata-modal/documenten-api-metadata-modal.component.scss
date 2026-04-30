@@ -1,5 +1,5 @@
 /*!
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -44,6 +44,12 @@
 
 ::ng-deep .cds--date-picker.cds--date-picker--single .cds--date-picker__input {
   inline-size: 100%;
+}
+
+::ng-deep .upload-error-notification {
+  max-width: 100% !important;
+  max-inline-size: 100% !important;
+  margin-bottom: 24px !important;
 }
 
 .metadata-modal-footer {

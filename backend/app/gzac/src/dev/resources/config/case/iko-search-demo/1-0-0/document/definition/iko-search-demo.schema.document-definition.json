@@ -1,0 +1,30 @@
+{
+    "$id": "iko-search-demo.schema",
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "IKO zoek demo",
+    "type": "object",
+    "properties": {
+        "ikoSearchResult": {
+            "type": "object",
+            "description": "IKO zoekresultaat",
+            "properties": {
+                "id": {
+                    "type": "string",
+                    "description": "ID van het geselecteerde IKO resultaat"
+                },
+                "naam": {
+                    "type": "string",
+                    "description": "Naam van de persoon"
+                },
+                "adres": {
+                    "type": "string",
+                    "description": "Adres van de persoon"
+                },
+                "geboortedatum": {
+                    "type": "string",
+                    "description": "Geboortedatum van de persoon"
+                }
+            }
+        }
+    }
+}

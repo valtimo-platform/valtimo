@@ -1,0 +1,45 @@
+<?xml version="1.1" encoding="UTF-8" standalone="no"?>
+<!--
+  ~ Copyright 2015-2026 Ritense BV, the Netherlands.
+  ~
+  ~ Licensed under EUPL, Version 1.2 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~ https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" basis,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.6.xsd"
+                   logicalFilePath="config/liquibase/changelog/20260403-backfill-plugin-definition-key-on-fixed-refs.xml">
+
+    <changeSet id="1" author="Ritense" dbms="postgresql">
+        <sql>
+            UPDATE process_link
+            SET plugin_definition_key = pc.plugin_definition_key
+            FROM plugin_configuration pc
+            WHERE process_link.plugin_configuration_id = pc.plugin_configuration_id
+              AND process_link.reference_type = 'FIXED'
+              AND process_link.plugin_definition_key IS NULL
+        </sql>
+    </changeSet>
+
+    <changeSet id="1-mysql" author="Ritense" dbms="mysql">
+        <sql>
+            UPDATE process_link pl
+            INNER JOIN plugin_configuration pc
+                ON pl.plugin_configuration_id = pc.plugin_configuration_id
+            SET pl.plugin_definition_key = pc.plugin_definition_key
+            WHERE pl.reference_type = 'FIXED'
+              AND pl.plugin_definition_key IS NULL
+        </sql>
+    </changeSet>
+
+</databaseChangeLog>

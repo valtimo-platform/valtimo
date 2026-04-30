@@ -29,7 +29,7 @@ dependencies {
 
 ### Frontend
 
-A general instruction to add a front-end plugin to the implementation can be found [here](../core/plugin.md#adding-a-front-end-plugin-to-the-implementation).
+A general instruction to add a front-end plugin to the implementation can be found in the [plugin documentation](../core/plugin.md#adding-a-front-end-plugin-to-the-implementation).
 
 In order to use the Zaken API plugin in the frontend, the following can be added to your `app.module.ts`:
 
@@ -51,4 +51,4 @@ import {ZakenApiPluginModule, zakenApiPluginSpecification} from '@valtimo/plugin
 })
 ```
 
-Before the Zaken API plugin can be used, an authentication plugin is needed. One such authentication plugin is the OpenZaak plugin. Instructions on how to add this plugin can be found [here](broken-reference).
+Before the Zaken API plugin can be used, an authentication plugin is needed. One such authentication plugin is the OpenZaak plugin. Instructions on how to add this plugin can be found in the [OpenZaak plugin configuration guide](../../../../features/plugins/configure-openzaak-plugin.md).

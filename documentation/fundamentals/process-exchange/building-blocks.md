@@ -1,9 +1,9 @@
 # Building blocks
 
 Building blocks are a collection of files, that can be used to _supplement_ a process or other parts of an implementation. For information on how to get started with blueprints, see [this page](blueprints.md). These can consist of bpmn process definitions, forms, form flows, plugins, custom front-end, and back-end code.\
-For example, a plugin that allows sending messages via Slack could be a building block. Building blocks can be found on GitHub [here](https://github.com/generiekzaakafhandelcomponent/Bouwblokken).
+For example, a plugin that allows sending messages via Slack could be a building block. Building blocks can be found in the [Bouwblokken GitHub repository](https://github.com/generiekzaakafhandelcomponent/Bouwblokken).
 
-How to create a building block from an existing project can be found [here](building-blocks.md#creating-building-blocks).
+How to create a building block from an existing project can be found in the [creating building blocks](#creating-building-blocks) section.
 
 ### Prerequisites
 
@@ -90,7 +90,7 @@ This is a step-by-step guide on how to submit a building block to the git reposi
 
 #### Checkout the latest code
 
-You can find the latest version of the repository [here](https://github.com/generiekzaakafhandelcomponent/Bouwblokken).
+You can find the latest version of the [Bouwblokken GitHub repository](https://github.com/generiekzaakafhandelcomponent/Bouwblokken).
 
 After checking out the code, the folder structure should look similar to this:
 
@@ -162,4 +162,4 @@ In your new building block folder, create a README.md file. It should cover the 
 
 #### Pull request
 
-Create a pull request according to the contributing page found [here](https://github.com/generiekzaakafhandelcomponent/Bouwblokken/blob/main/CONTRIBUTING.md).
+Create a pull request according to the [contributing guidelines](https://github.com/generiekzaakafhandelcomponent/Bouwblokken/blob/main/CONTRIBUTING.md).

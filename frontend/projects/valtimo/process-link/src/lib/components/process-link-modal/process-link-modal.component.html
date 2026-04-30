@@ -32,16 +32,22 @@
     hideProgressIndicator: hideProgressIndicator$ | async,
     typeOfSelectedProgressLink: typeOfSelectedProcessLink$ | async,
     isEditing: isEditing$ | async,
+    isAdHocBuildingBlock: isAdHocBuildingBlock$ | async,
   } as obs"
 >
   <cds-modal valtimoCdsModal [open]="obs.showModal" size="lg" (close)="closeModal()">
     <cds-modal-header (closeSelect)="closeModal()">
-      <h2 cdsModalHeaderLabel>{{ 'processLinkConfiguration.configureStep' | translate }}</h2>
+      <h2 *ngIf="!obs.isAdHocBuildingBlock" cdsModalHeaderLabel>{{ 'processLinkConfiguration.configureStep' | translate }}</h2>
       <h3 cdsModalHeaderHeading>
-        {{
-          'processLinkConfiguration.modalTitle'
-                  | translate: {processStepName: obs.processStepName || '-'}
-        }}
+        <ng-container *ngIf="obs.isAdHocBuildingBlock; else defaultModalTitle">
+          {{ 'processLinkConfiguration.buildingBlockActionTitle' | translate: {buildingBlockName: obs.processStepName || '-'} }}
+        </ng-container>
+        <ng-template #defaultModalTitle>
+          {{
+            'processLinkConfiguration.modalTitle'
+                    | translate: {processStepName: obs.processStepName || '-'}
+          }}
+        </ng-template>
       </h3>
       <h4 cdsModalHeaderLabel *ngIf="obs.typeOfSelectedProgressLink === 'plugin'">
         {{

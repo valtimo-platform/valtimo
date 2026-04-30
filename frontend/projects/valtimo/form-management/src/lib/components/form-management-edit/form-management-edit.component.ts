@@ -68,6 +68,7 @@ import {
 } from 'carbon-components-angular';
 import {BehaviorSubject, combineLatest, map, Observable, of, Subscription} from 'rxjs';
 import {distinctUntilChanged, filter, switchMap, take, tap} from 'rxjs/operators';
+import {FORM_MANAGEMENT_EDIT_TEST_IDS} from '../../constants';
 import {EDIT_TABS, FormDefinition, ModifyFormDefinitionRequest} from '../../models';
 import {FormManagementService} from '../../services';
 import {getContextObservable, getFormManagementRouteParamsAndContext} from '../../utils';
@@ -123,6 +124,8 @@ export class FormManagementEditComponent implements OnInit, OnDestroy {
   public readonly TABS = EDIT_TABS;
 
   public activeTab = EDIT_TABS.BUILDER;
+
+  protected readonly testIds = FORM_MANAGEMENT_EDIT_TEST_IDS;
 
   public readonly editParam$: Observable<string | null> = this.route.paramMap.pipe(
     map(params => (params.has('formDefinitionId') ? params.get('formDefinitionId') : null))

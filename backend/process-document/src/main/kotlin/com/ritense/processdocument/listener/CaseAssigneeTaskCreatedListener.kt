@@ -62,8 +62,8 @@ open class CaseAssigneeTaskCreatedListener(
         val documentId = UUID.fromString(delegateTask.execution.businessKey)
 
         try {
-            val caseDocumentId = caseDocumentResolver.resolveCaseDocumentId(documentId)
             val caseDocument = runWithoutAuthorization {
+                val caseDocumentId = caseDocumentResolver.resolveCaseDocumentId(documentId)
                 documentService.findBy(JsonSchemaDocumentId.existingId(caseDocumentId)).getOrNull()
             } ?: return
 
@@ -84,7 +84,9 @@ open class CaseAssigneeTaskCreatedListener(
 
                     TransactionSynchronizationManager.registerSynchronization(object : TransactionSynchronization {
                         override fun beforeCommit(readOnly: Boolean) {
-                            val operatonTask = operatonTaskRepository.findById(taskId).getOrNull() ?: return
+                            val operatonTask = runWithoutAuthorization {
+                                operatonTaskRepository.findById(taskId).getOrNull()
+                            } ?: return
 
                             try {
                                 authorizationService.requirePermission(

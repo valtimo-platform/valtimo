@@ -31,6 +31,8 @@ export const CASE_MANAGEMENT_UPLOAD_TEST_IDS = {
   nameInput: 'importConfigureNameInput',
   versionTag: 'importConfigureVersionTag',
   overrideCheckbox: 'importConfigureOverrideCheckbox',
+  pluginMappingRow: 'pluginMappingRow',
+  pluginMappingDropdown: 'pluginMappingDropdown',
 } as const;
 
 export const CASE_MANAGEMENT_DETAIL_ACTIONS_TEST_IDS = {
@@ -112,4 +114,8 @@ export const CASE_MANAGEMENT_TAGS_MODAL_TEST_IDS = {
 
 export const CASE_MANAGEMENT_TAGS_TEST_IDS = {
   addButton: 'caseTagAddButton',
+} as const;
+
+export const CASE_MANAGEMENT_DOCUMENT_TEST_IDS = {
+  downloadButton: 'caseManagementDocumentDownloadButton',
 } as const;

@@ -184,6 +184,7 @@
     "cancel": "Annuleren",
     "upload": "Uploaden",
     "save": "Opslaan",
+    "uploadPermissionDenied": "U heeft geen toestemming om een document te uploaden met de geselecteerde metadata. Pas uw selecties aan en probeer het opnieuw.",
     "size": "Omvang",
     "tags": "Trefwoorden (optioneel)",
     "tagsTooltip": "Trefwoorden worden gebruikt voor het makkelijk zoeken en filteren van documenten. Je kunt meerdere trefwoorden aan een document toevoegen.",
@@ -424,9 +425,15 @@
     },
     "version": "Versie",
     "deploy": "Opslaan",
-    "loadFailure": "Er is iets misgegaan bij het laden van het beslistabel.",
-    "deploySuccess": "Het beslistabel is succesvol opgeslagen.",
-    "deployFailure": "Er is iets misgegaan bij het opslaan van het beslistabel."
+    "loadFailure": "Er is iets misgegaan bij het laden van de beslistabel.",
+    "deploySuccess": "De beslistabel is succesvol opgeslagen.",
+    "deployFailure": "Er is iets misgegaan bij het opslaan van de beslistabel.",
+    "deleteSuccess": "De beslistabel is succesvol verwijderd.",
+    "deleteFailure": "Er is iets misgegaan bij het verwijderen van de beslistabel.",
+    "deleteModal": {
+      "title": "Beslistabel verwijderen",
+      "content": "Weet u zeker dat u deze beslistabel wilt verwijderen? Deze actie kan niet ongedaan worden gemaakt."
+    }
   },
   "message": {"empty": "Geen resultaat gevonden"},
   "cta": {"close": "Sluiten", "moreDetails": "Meer details"},
@@ -504,7 +511,13 @@
     "setGlobalActiveVersionConfigurationIssuesWarning": "Deze versie heeft onopgeloste configuratieproblemen. Los deze op voordat u deze als actieve versie instelt.",
     "globallyActive": "Globaal actief",
     "unlinkProcess": "Ontkoppelen",
-    "listColumns": {"name": "Naam", "key": "Key", "version": "Versie", "draft": "Concept", "status": "Status"},
+    "listColumns": {
+      "name": "Naam",
+      "key": "Key",
+      "version": "Versie",
+      "draft": "Concept",
+      "status": "Status"
+    },
     "needsConfiguration": "Configuratie vereist",
     "inactive": "Inactief",
     "globalActiveVersionModal": {
@@ -642,6 +655,7 @@
       "general": "Algemeen",
       "cases": "Configuratie",
       "processes": "Processen",
+      "actions": "Acties",
       "document": "Document",
       "zgw": "ZGW",
       "forms": "Formulieren",
@@ -725,6 +739,45 @@
       }
     },
     "tabType": {"custom": "Inhoud", "formio": "FormIO", "standard": "Standaard"},
+    "actions": {
+      "columns": {
+        "name": "Naam",
+        "type": "Type"
+      },
+      "addItem": "Actie toevoegen",
+      "noResults": "Geen acties geconfigureerd",
+      "noResultsDescription": "Er zijn geen acties geconfigureerd voor dit dossiertype.",
+      "infoNotification": {
+        "message": "Acties verschijnen onder de startknop van een bestaand dossier en kunnen op elk moment door de gebruiker gestart worden."
+      },
+      "type": {
+        "PROCESS": "Proces",
+        "BUILDING_BLOCK": "Bouwblok"
+      },
+      "modal": {
+        "addTitle": "Actie toevoegen",
+        "addDescription": "Selecteer een proces of bouwblok dat de gebruiker kan starten",
+        "addProcessTitle": "Proces toevoegen als actie",
+        "addBuildingBlockTitle": "Bouwblok toevoegen als actie",
+        "editProcessTitle": "Procesactie bewerken",
+        "editBuildingBlockTitle": "Bouwblokactie bewerken",
+        "selectProcess": "Selecteer een proces",
+        "selectBuildingBlock": "Selecteer een bouwblok",
+        "selectProcessDescription": "Selecteer een proces dat de gebruiker kan starten",
+        "selectBuildingBlockDescription": "Selecteer een bouwblok dat de gebruiker kan starten",
+        "filterPlaceholder": "Filteren...",
+        "add": "Toevoegen",
+        "save": "Opslaan",
+        "back": "Terug",
+        "next": "Volgende",
+        "noProcessesAvailable": "Geen processen meer beschikbaar om als actie te configureren",
+        "noBuildingBlocksAvailable": "Geen bouwblokken meer beschikbaar om als actie te configureren"
+      },
+      "deleteModal": {
+        "title": "Actie verwijderen",
+        "content": "Weet u zeker dat u deze actie wilt verwijderen? Dit kan niet ongedaan worden gemaakt."
+      }
+    },
     "importDefinition": {
       "title": "Case-definitie importeren",
       "startUpload": "Begin het uploaden",
@@ -777,6 +830,35 @@
           "message": "Dit proces maakt mogelijk gebruik van plugins. Zorg dat je deze goed instelt.",
           "title": "Plugin configuraties"
         }
+      },
+      "plugins": {
+        "description": "Koppel de juiste pluginconfiguraties. Overeenkomende plugins worden automatisch ingevuld. Als een pluginconfiguratie ontbreekt, kun je toch doorgaan. Je kunt de plugin achteraf configureren en koppelen via de dossier configuratiepagina.",
+        "source": "Bron",
+        "target": "Doel",
+        "selectPlaceholder": "Selecteer pluginconfiguratie",
+        "unknownPlugin": "Onbekende plugin",
+        "noPlugins": "Er hoeven geen pluginconfiguraties te worden gekoppeld voor deze import.",
+        "noPluginsTitle": "Geen plugins te configureren",
+        "notInstalled": "Plugintype niet geïnstalleerd",
+        "noConfigurations": "Geen configuraties beschikbaar",
+        "unidentifiable": {
+          "title": "Niet-identificeerbare pluginconfiguraties",
+          "message": "Sommige pluginconfiguraties konden niet worden herleid uit het exportbestand. De import kan doorgaan, maar de betreffende process links moeten achteraf handmatig worden geconfigureerd."
+        }
+      }
+    },
+    "missingPluginConfigurations": {
+      "title": "Ontbrekende configuratie",
+      "description": "Er ontbreken pluginconfiguraties voor dit dossier. Koppel hieronder de vereiste pluginconfiguraties",
+      "selectPlaceholder": "Selecteer pluginconfiguratie",
+      "unknownPlugin": "Onbekende plugin",
+      "notInstalled": "Plugintype niet geïnstalleerd",
+      "noConfigurations": "Geen configuraties beschikbaar",
+      "saveSuccess": "Pluginconfiguratie-koppelingen succesvol opgeslagen",
+      "saveError": "Kon pluginconfiguratie-koppelingen niet opslaan",
+      "legacyExport": {
+        "title": "Niet-identificeerbare pluginconfiguraties",
+        "message": "Sommige processtappen verwijzen naar pluginconfiguraties die niet konden worden herleid uit het exportbestand. Configureer de betreffende process links handmatig."
       }
     },
     "createDefinition": {
@@ -1160,7 +1242,8 @@
         "modal": {
           "header": "Document weergave"
         },
-        "pdfViewerNotSupported": "Uw browser biedt geen ondersteuning voor het weergeven van PDF bestanden."
+        "pdfViewerNotSupported": "Uw browser biedt geen ondersteuning voor het weergeven van PDF bestanden.",
+        "loading": "Het document wordt geconverteerd voor weergave. Dit kan even duren."
       }
     },
     "notifications": {
@@ -1970,6 +2053,7 @@
   },
   "processLinkConfiguration": {
     "configureStep": "Processtap configureren",
+    "buildingBlockActionTitle": "Bouwblokactie: {{buildingBlockName}}",
     "modalTitle": "Processtap: {{processStepName}}",
     "pluginConfiguration": "Plugin configuratie: {{pluginConfigTitle}}",
     "chooseProcessLinkTypeDescription": "Een processtap kan verschillende acties uitvoeren. Kies hieronder aan welk type actie je deze stap wilt koppelen.",
@@ -2138,7 +2222,7 @@
     "savedSuccessTitleMessage": "{{key}} is succesvol opgeslagen",
     "noResults": {
       "description": "Klik op <strong>Nieuwe form flow toevoegen</strong> om te beginnen met het ontwerpen van je form flow",
-      "title": "Geen formulierstromen toegevoegd"
+      "title": "Geen form flows toegevoegd"
     }
   },
   "taskManagement": {
@@ -2194,8 +2278,15 @@
   },
   "iko": {
     "searchFieldsNoResults": "Geen zoekvelden gevonden voor deze entiteit",
+    "viewNotFound": "IKO Beeld voor sleutel '{{key}}' kon niet worden gevonden.",
     "pageTitle": "Beelden",
-    "searchVia": "Zoeken via"
+    "searchVia": "Zoeken via",
+    "formio": {
+      "back": "Terug",
+      "selectResult": "Selecteer een resultaat",
+      "selectedResult": "Geselecteerd resultaat",
+      "openInNewTab": "Open in nieuw tabblad"
+    }
   },
   "ikoManagement": {
     "preparingDownload": "Download aan het voorbereiden",
@@ -2371,7 +2462,8 @@
       "document": "Document",
       "processes": "Processen",
       "forms": "Formulieren",
-      "formFlows": "Form flows"
+      "formFlows": "Form flows",
+      "decisions": "Beslistabellen"
     },
     "formDefinition": {
       "name": "Naam"

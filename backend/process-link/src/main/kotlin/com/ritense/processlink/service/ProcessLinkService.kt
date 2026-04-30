@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,23 +22,27 @@ import com.ritense.processlink.domain.ActivityTypeWithEventName
 import com.ritense.processlink.domain.ProcessLink
 import com.ritense.processlink.domain.ProcessLinkType
 import com.ritense.processlink.domain.SupportedProcessLinkTypeHandler
+import com.ritense.processlink.event.ProcessLinkCreatedEvent
+import com.ritense.processlink.event.ProcessLinkDeletedEvent
+import com.ritense.processlink.event.ProcessLinkUpdatedEvent
 import com.ritense.processlink.exception.ProcessLinkExistsException
 import com.ritense.processlink.exception.ProcessLinkNotFoundException
 import com.ritense.processlink.mapper.ProcessLinkMapper
 import com.ritense.processlink.repository.ProcessLinkRepository
 import com.ritense.processlink.web.rest.dto.ProcessLinkCreateRequestDto
 import com.ritense.processlink.web.rest.dto.ProcessLinkUpdateRequestDto
-import com.ritense.valtimo.operaton.domain.OperatonProcessDefinition
-import com.ritense.valtimo.operaton.repository.OperatonProcessDefinitionSpecificationHelper.Companion.byKey
-import com.ritense.valtimo.operaton.repository.OperatonProcessDefinitionSpecificationHelper.Companion.byLatestVersion
-import com.ritense.valtimo.operaton.service.OperatonRepositoryService
 import com.ritense.valtimo.contract.BlueprintId
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import com.ritense.valtimo.contract.buildingblock.BuildingBlockDefinitionChecker
 import com.ritense.valtimo.contract.buildingblock.BuildingBlockDefinitionId
 import com.ritense.valtimo.contract.case_.CaseDefinitionChecker
 import com.ritense.valtimo.contract.case_.CaseDefinitionId
+import com.ritense.valtimo.operaton.domain.OperatonProcessDefinition
+import com.ritense.valtimo.operaton.repository.OperatonProcessDefinitionSpecificationHelper.Companion.byKey
+import com.ritense.valtimo.operaton.repository.OperatonProcessDefinitionSpecificationHelper.Companion.byLatestVersion
+import com.ritense.valtimo.operaton.service.OperatonRepositoryService
 import io.github.oshai.kotlinlogging.KotlinLogging
+import org.springframework.context.ApplicationEventPublisher
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -55,6 +59,7 @@ class ProcessLinkService(
     private val operatonRepositoryService: OperatonRepositoryService,
     private val caseDefinitionChecker: CaseDefinitionChecker,
     private val buildingBlockDefinitionChecker: BuildingBlockDefinitionChecker,
+    private val applicationEventPublisher: ApplicationEventPublisher,
 ) {
 
     fun <T : ProcessLink> getProcessLink(
@@ -98,6 +103,13 @@ class ProcessLinkService(
         return processLinkRepository.findByProcessDefinitionIdAndActivityType(processDefinitionId, activityType)
     }
 
+    fun getProcessLinksByProcessDefinitionIdAndActivityTypes(
+        @LoggableResource(resourceType = OperatonProcessDefinition::class) processDefinitionId: String,
+        activityTypes: List<ActivityTypeWithEventName>
+    ): List<ProcessLink> {
+        return processLinkRepository.findByProcessDefinitionIdAndActivityTypeIn(processDefinitionId, activityTypes)
+    }
+
     @Transactional(noRollbackFor = [ProcessLinkExistsException::class])
     @Throws(ProcessLinkExistsException::class)
     fun createProcessLink(createRequest: ProcessLinkCreateRequestDto, blueprintId: BlueprintId?): ProcessLink {
@@ -118,7 +130,9 @@ class ProcessLinkService(
                 )
             }
 
-            processLinkRepository.save(mapper.toNewProcessLink(createRequest, blueprintId))
+            processLinkRepository.save(mapper.toNewProcessLink(createRequest, blueprintId)).also {
+                applicationEventPublisher.publishEvent(ProcessLinkCreatedEvent(createRequest.processLinkType, it.processDefinitionId))
+            }
         }
     }
 
@@ -140,7 +154,9 @@ class ProcessLinkService(
                 // Hibernate does not allow 2 different objects with the same identifier in the session, so do delete + insert instead
                 processLinkRepository.delete(processLinkToUpdate)
             }
-            processLinkRepository.save(processLinkUpdated)
+            processLinkRepository.save(processLinkUpdated).also {
+                applicationEventPublisher.publishEvent(ProcessLinkUpdatedEvent(updateRequest.processLinkType, it.processDefinitionId))
+            }
         }
     }
 
@@ -148,7 +164,11 @@ class ProcessLinkService(
     fun deleteProcessLink(
         @LoggableResource(resourceType = ProcessLink::class) id: UUID
     ) {
+        val processLink = processLinkRepository.findByIdOrNull(id)
         processLinkRepository.deleteById(id)
+        if (processLink != null) {
+            applicationEventPublisher.publishEvent(ProcessLinkDeletedEvent(processLink.processLinkType, processLink.processDefinitionId))
+        }
     }
 
     fun deleteProcessLinksForProcessDefinition(processDefinitionId: String) {

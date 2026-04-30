@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,6 +19,7 @@ package com.ritense.authorization.web
 import com.fasterxml.jackson.annotation.JsonView
 import com.ritense.authorization.AuthorizationSupportedHelper
 import com.ritense.authorization.deployment.PermissionDto
+import com.ritense.authorization.deployment.PermissionResourceTypeMigrator
 import com.ritense.authorization.permission.PermissionRepository
 import com.ritense.authorization.permission.PermissionView
 import com.ritense.authorization.role.Role
@@ -47,7 +48,8 @@ import org.springframework.web.bind.annotation.RestController
 @RequestMapping("/api/management", produces = [ValtimoMediaType.APPLICATION_JSON_UTF8_VALUE])
 class RoleManagementResource(
     val roleRepository: RoleRepository,
-    val permissionRepository: PermissionRepository
+    val permissionRepository: PermissionRepository,
+    val migrator: PermissionResourceTypeMigrator
 ) {
     @GetMapping("/v1/roles")
     fun getRoles()
@@ -118,7 +120,7 @@ class RoleManagementResource(
             .saveAll(
                 rolePermissions.map {
                     AuthorizationSupportedHelper.checkSupported(it.resourceType)
-                    it.toPermission(role)
+                    it.toPermission(role, migrator)
                 }
             ).map { permission ->
                 PermissionDto(

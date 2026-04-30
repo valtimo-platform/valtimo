@@ -32,17 +32,24 @@
           showClose: false,
           lowContrast: true
         }"
-        (click)="navigateToTab('zgw')"
       ></cds-notification>
     }
   }
 
   <cds-tabs class="case-management-tabs" type="inline" [attr.data-test-id]="testIds.tabs">
+    <ng-template #generalTabHeading>
+      {{ 'caseManagement.tabs.general' | translate }}
+      @if (hasPluginProcessLinkIssue$ | async) {
+        <svg cdsIcon="warning--filled" size="16" class="tab-warning-icon"></svg>
+      }
+    </ng-template>
+
     <cds-tab
       class="no-padding-left-right main-content"
       [id]="TabEnum.GENERAL"
       [active]="obs.currentTab === TabEnum.GENERAL"
-      [heading]="'caseManagement.tabs.general' | translate"
+      [heading]="generalTabHeading"
+      [title]="'caseManagement.tabs.general' | translate"
       (selected)="navigateToTab(TabEnum.GENERAL)"
     >
     </cds-tab>
@@ -53,6 +60,15 @@
       [active]="obs.currentTab === TabEnum.PROCESSES"
       [heading]="'caseManagement.tabs.processes' | translate"
       (selected)="navigateToTab(TabEnum.PROCESSES)"
+    >
+    </cds-tab>
+
+    <cds-tab
+      class="no-padding-left-right main-content"
+      [id]="TabEnum.ACTIONS"
+      [active]="obs.currentTab === TabEnum.ACTIONS"
+      [heading]="'caseManagement.tabs.actions' | translate"
+      (selected)="navigateToTab(TabEnum.ACTIONS)"
     >
     </cds-tab>
 
@@ -121,10 +137,18 @@
 
     @for (injectedTab of obs.injectedTabs; track injectedTab.translationKey) {
       @if (injectedTab.enabled$ | async) {
+        <ng-template #injectedTabHeading>
+          {{ injectedTab.translationKey | translate }}
+          @if (injectedTab.issueTypes?.length && (hasTabIssues$(injectedTab.issueTypes) | async)) {
+            <svg cdsIcon="warning--filled" size="16" class="tab-warning-icon"></svg>
+          }
+        </ng-template>
+
         <cds-tab
           class="no-padding-left-right no-padding-top-bottom"
           [active]="obs.currentTab === (injectedTab.tabRoute ?? injectedTab.translationKey)"
-          [heading]="injectedTab.translationKey | translate"
+          [heading]="injectedTabHeading"
+          [title]="injectedTab.translationKey | translate"
           (selected)="navigateToTab(injectedTab.tabRoute ?? injectedTab.translationKey)"
         >
         </cds-tab>

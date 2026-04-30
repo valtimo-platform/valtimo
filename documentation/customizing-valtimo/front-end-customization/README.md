@@ -28,7 +28,7 @@ By default, various stylesheets need to be included in the `styles` array in the
 
 [Form.io](https://form.io/) is used throughout the application. By default, its components use Bootstrap 4 classes for styling. Out-of-the-box, Valtimo applies some styling to Form.io.
 
-Since [Valtimo 12.4.1](https://docs.valtimo.nl/release-notes/12.x.x/12.4.0/12.4.1), a Carbon Form.io theme has been included. Going forward, this is the officially supported Form.io look and feel. This theme can be applied by including `node_modules/@valtimo/components/assets/css/formio-carbon.scss` in the `styles`array of `angular.json.`
+Since [Valtimo 12.4.1](https://docs.valtimo.nl/v12/release-notes/12.x.x/12.4.0/12.4.1), a Carbon Form.io theme has been included. Going forward, this is the officially supported Form.io look and feel. This theme can be applied by including `node_modules/@valtimo/components/assets/css/formio-carbon.scss` in the `styles`array of `angular.json.`
 
 ## Customization
 
@@ -38,7 +38,7 @@ Out-of-the-box, a custom accent color used by Carbon components is supported. [R
 
 ### Custom logo
 
-The logo, displayed at the top left of the application, can be customized. More information can be found [here](./#custom-logo).
+The logo, displayed at the top left of the application, can be customized. More information can be found in the [custom logo section](./#custom-logo).
 
 ### Additional customization
 

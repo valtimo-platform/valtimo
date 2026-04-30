@@ -60,9 +60,13 @@ fun sendCatchEventMessage(message: String, businessKey: String)
 fun sendCatchEventMessage(message: String, businessKey: String, variables: Map<String, Any>?)
 fun sendCatchEventMessageToAll(message: String, businessKey: String)
 fun sendCatchEventMessageToAll(message: String, businessKey: String, variables: Map<String, Any>?)
+fun sendGlobalCatchEventMessage(message: String)
+fun sendGlobalCatchEventMessage(message: String, variables: Map<String, Any>?)
+fun sendGlobalCatchEventMessageToAll(message: String)
+fun sendGlobalCatchEventMessageToAll(message: String, variables: Map<String, Any>?)
 ```
 
-Information on all methods can be found [here](../../features/process/correlation-service.md).
+Information on all methods can be found in the [correlation service documentation](../../features/process/correlation-service.md).
 
 ## JobService
 
@@ -73,7 +77,7 @@ fun updateTimerDueDateByActivityId(dueDateString: String, activityId: String, ex
 fun addOffsetInMillisToTimerDueDateByActivityId(millisecondsToAdd: Long, activityId: String, execution: DelegateExecution)
 ```
 
-Information on all methods can be found [here](../../features/process/job-service.md).
+Information on all methods can be found in the [job service documentation](../../features/process/job-service.md).
 
 ## ProcessDocumentGenerator
 
@@ -191,7 +195,7 @@ Starts a new process and attaches it to the current document.
 
 ## ValueResolverDelegateService
 
-This process bean contains functions for accessing the Valtimo value resolver. More information [here](broken-reference)
+This process bean contains functions for accessing the Valtimo value resolver. More information in the [value resolver documentation](../../fundamentals/getting-started/modules/core/value-resolver.md)
 
 ### Resolve value
 
