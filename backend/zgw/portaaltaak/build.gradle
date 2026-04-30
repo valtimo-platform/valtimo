@@ -30,29 +30,29 @@ dockerCompose {
 }
 
 dependencies {
-    implementation project(":contract")
-    implementation project(':core')
-    implementation project(":document")
-    implementation project(':plugin')
-    implementation(project(":process-document"))
-    implementation project(":value-resolver")
-    implementation project(':zgw:object-management')
-    implementation project(':zgw:objecten-api')
-    implementation project(':zgw:objecttypen-api')
-    implementation project(':zgw:notificaties-api')
-    implementation project(':zgw:zaken-api')
-    implementation project(":logging")
+    implementation project(":backend:contract")
+    implementation project(':backend:core')
+    implementation project(":backend:document")
+    implementation project(':backend:plugin')
+    implementation(project(":backend:process-document"))
+    implementation project(":backend:value-resolver")
+    implementation project(':backend:zgw:object-management')
+    implementation project(':backend:zgw:objecten-api')
+    implementation project(':backend:zgw:objecttypen-api')
+    implementation project(':backend:zgw:notificaties-api')
+    implementation project(':backend:zgw:zaken-api')
+    implementation project(":backend:logging")
 
     implementation "io.github.microutils:kotlin-logging:${kotlinLoggingVersion}"
     implementation "org.springframework.boot:spring-boot-starter-webflux"
     implementation "org.springframework.boot:spring-boot-starter-security"
 
-    testImplementation project(":contract")
-    testImplementation project(":test-utils-common")
-    testImplementation project(":resource")
-    testImplementation project(":zgw:catalogi-api")
-    testImplementation project(':plugin-valtimo')
-    testImplementation project(':outbox')
+    testImplementation project(":backend:contract")
+    testImplementation project(":backend:test-utils-common")
+    testImplementation project(":backend:resource")
+    testImplementation project(":backend:zgw:catalogi-api")
+    testImplementation project(':backend:plugin-valtimo')
+    testImplementation project(':backend:outbox')
 
     testImplementation "org.jetbrains.kotlin:kotlin-test"
     testImplementation "org.junit.jupiter:junit-jupiter"
@@ -65,7 +65,7 @@ dependencies {
     //Kotlin
     testImplementation "org.mockito.kotlin:mockito-kotlin:${mockitoKotlinVersion}"
 
-    testImplementation project(":test-utils-common")
+    testImplementation project(":backend:test-utils-common")
     testImplementation("org.camunda.community.mockito:camunda-platform-7-mockito:${camundaMockitoVersion}")
 
 
