@@ -16,7 +16,7 @@
 
 import {Injectable} from '@angular/core';
 import {ConfigService, DefinitionColumn} from '@valtimo/shared';
-import {map, Observable} from 'rxjs';
+import {combineLatest, map, Observable} from 'rxjs';
 import {CaseListColumn, DocumentService} from '@valtimo/document';
 import {ListField} from '@valtimo/components';
 import {TranslateService} from '@ngx-translate/core';
@@ -32,13 +32,15 @@ export class CaseColumnService {
   public getDefinitionColumns(
     caseDefinitionKey: string
   ): Observable<{columns: Array<DefinitionColumn>; hasApiConfig: boolean}> {
-    const config = this.configService.config;
-    const defaultDefinitionTable = config.defaultDefinitionTable;
+    const defaultDefinitionTable = this.configService.config.defaultDefinitionTable;
 
-    return this.documentService.getCaseList(caseDefinitionKey).pipe(
-      map(caseListColumns => {
+    return combineLatest([
+      this.documentService.getCaseList(caseDefinitionKey),
+      this.configService.featureToggles$.pipe(map(t => t?.caseListColumn ?? true)),
+    ]).pipe(
+      map(([caseListColumns, caseListColumnEnabled]) => {
         const apiCaseListColumns =
-          (config.featureToggles?.caseListColumn ?? true) &&
+          caseListColumnEnabled &&
           caseListColumns &&
           Array.isArray(caseListColumns) &&
           caseListColumns.length > 0 &&

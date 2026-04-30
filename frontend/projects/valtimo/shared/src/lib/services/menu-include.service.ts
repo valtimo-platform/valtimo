@@ -15,24 +15,22 @@
  */
 
 import {Injectable} from '@angular/core';
-import {IncludeFunction, ValtimoConfig} from '../models';
+import {IncludeFunction} from '../models';
 import {ConfigService} from './config.service';
-import {Observable, of} from 'rxjs';
+import {map, Observable, of} from 'rxjs';
 
 @Injectable({
   providedIn: 'root',
 })
 export class MenuIncludeService {
-  private valtimoConfig!: ValtimoConfig;
-
-  constructor(private readonly configService: ConfigService) {
-    this.valtimoConfig = this.configService.config;
-  }
+  constructor(private readonly configService: ConfigService) {}
 
   getIncludeFunction(includeFunction: IncludeFunction): Observable<boolean> {
     switch (includeFunction) {
       case IncludeFunction.ObjectManagementEnabled:
-        return of(!!this.valtimoConfig?.featureToggles?.enableObjectManagement || true);
+        return this.configService.featureToggles$.pipe(
+          map(t => t?.enableObjectManagement ?? true)
+        );
       default:
         return of(true);
     }

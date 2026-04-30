@@ -50,8 +50,8 @@ export class ProcessLinkModalComponent {
   public readonly selectedPluginConfiguration$ =
     this.pluginStateService.selectedPluginConfiguration$;
 
-  public readonly showViewModelToggle =
-    this.configService.config.featureToggles.enableFormViewModel;
+  public readonly showViewModelToggle$ =
+    this.configService.getFeatureToggleObservable('enableFormViewModel');
 
   constructor(
     private readonly stateService: ProcessLinkStateService,

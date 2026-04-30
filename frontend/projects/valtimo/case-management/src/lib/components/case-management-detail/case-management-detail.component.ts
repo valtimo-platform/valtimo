@@ -73,8 +73,12 @@ export class CaseManagementDetailComponent implements OnInit, OnDestroy {
     map(params => params?.caseDefinitionKey ?? '')
   );
 
-  public caseListColumn!: boolean;
-  public tabManagementEnabled!: boolean;
+  public readonly caseListColumn$ = this.configService.featureToggles$.pipe(
+    map(t => t?.caseListColumn ?? true)
+  );
+  public readonly tabManagementEnabled$ = this.configService.featureToggles$.pipe(
+    map(t => t?.enableTabManagement ?? true)
+  );
 
   public _activeTab: TabEnum | string;
   public pendingTab: TabEnum | null | string;
@@ -124,9 +128,6 @@ export class CaseManagementDetailComponent implements OnInit, OnDestroy {
     private readonly sseService: SseService,
     private readonly tabService: TabService
   ) {
-    const featureToggles = this.configService.config.featureToggles;
-    this.caseListColumn = featureToggles?.caseListColumn ?? true;
-    this.tabManagementEnabled = featureToggles?.enableTabManagement ?? true;
   }
 
   public ngOnInit(): void {

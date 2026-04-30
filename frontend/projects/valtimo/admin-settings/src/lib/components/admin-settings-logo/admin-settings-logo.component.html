@@ -1,0 +1,86 @@
+<!--
+  ~ Copyright 2015-2026 Ritense BV, the Netherlands.
+  ~
+  ~ Licensed under EUPL, Version 1.2 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~ https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" basis,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<form
+  *ngIf="{
+    logo: logo$ | async,
+    loading: loading$ | async,
+  } as obs"
+  class="admin-settings-logo"
+  [formGroup]="formGroup"
+  [cdsLayer]="1"
+>
+  <h4 class="admin-settings-logo__title">
+    {{ titleTranslationKey | translate }}
+  </h4>
+
+  @if (obs.loading) {
+    <div class="loading-container"><cds-loading></cds-loading></div>
+  }
+
+  @if (!obs.loading && obs.logo) {
+    <div class="admin-settings-logo__preview">
+      <img
+        class="admin-settings-logo__image"
+        [src]="'data:image/png;base64,' + obs.logo.imageBase64"
+      />
+    </div>
+
+    <div class="admin-settings-logo__buttons">
+      <button cdsButton="danger" (click)="onDeleteButtonClick()" [disabled]="formGroup.disabled">
+        {{ 'interface.delete' | translate }}
+
+        <svg class="cds--btn__icon" cdsIcon="trash-can" size="16"></svg>
+      </button>
+    </div>
+  }
+
+  @if (!obs.loading && !obs.logo) {
+    <cds-file-uploader
+      [accept]="ACCEPTED_FILES"
+      [multiple]="false"
+      buttonType="primary"
+      [title]="'adminSettings.appearance.logo.fileUploaderTitle' | translate"
+      [description]="'adminSettings.appearance.logo.fileUploaderDescription' | translate"
+      [buttonText]="'adminSettings.appearance.logo.fileUploaderButton' | translate"
+      formControlName="file"
+    >
+    </cds-file-uploader>
+
+    <div class="admin-settings-logo__buttons">
+      <button
+        cdsButton="primary"
+        [disabled]="formGroup.disabled || formGroup.invalid || formGroup.pristine"
+        (click)="onSave()"
+      >
+        {{ 'interface.upload' | translate }}
+
+        <svg class="cds--btn__icon" cdsIcon="upload" size="16"></svg>
+      </button>
+    </div>
+  }
+</form>
+
+<valtimo-render-in-body>
+  <valtimo-confirmation-modal
+    confirmButtonTextTranslationKey="interface.delete"
+    confirmButtonType="danger"
+    contentTranslationKey="adminSettings.appearance.logo.deleteConfirmationModalText"
+    [showModalSubject$]="showDeleteConfirmationModal$"
+    titleTranslationKey="interface.delete"
+    (confirmEvent)="onDelete()"
+  ></valtimo-confirmation-modal>
+</valtimo-render-in-body>

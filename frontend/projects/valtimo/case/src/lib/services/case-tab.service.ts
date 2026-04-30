@@ -42,7 +42,10 @@ import {CaseDetailWidgetsComponent} from '../components/case-detail/tab/widgets/
 
 @Injectable()
 export class CaseTabService implements OnDestroy {
-  private readonly _tabManagementEnabled!: boolean;
+  private readonly _tabManagementEnabled$: Observable<boolean> =
+    this.configService.featureToggles$.pipe(
+      map(t => t?.enableTabManagement ?? true)
+    );
   private readonly _caseDefinitionKey$: Observable<string> = this.route.params.pipe(
     map(params => params?.caseDefinitionKey),
     filter(caseDefinitionKey => !!caseDefinitionKey)
@@ -93,8 +96,6 @@ export class CaseTabService implements OnDestroy {
     private readonly route: ActivatedRoute,
     private readonly caseTabApiService: CaseTabApiService
   ) {
-    this._tabManagementEnabled =
-      this.configService.config.featureToggles?.enableTabManagement ?? true;
     this.openCaseDefinitionKeySubscription();
   }
 
@@ -145,15 +146,14 @@ export class CaseTabService implements OnDestroy {
 
   private openCaseDefinitionKeySubscription(): void {
     this._subscriptions.add(
-      combineLatest([this._caseDefinitionKey$, this._documentId$]).subscribe(
-        ([caseDefinitionKey, documentId]) => {
-          if (this._tabManagementEnabled) {
+      combineLatest([this._caseDefinitionKey$, this._documentId$, this._tabManagementEnabled$])
+        .subscribe(([caseDefinitionKey, documentId, tabManagementEnabled]) => {
+          if (tabManagementEnabled) {
             this.setApiTabs(caseDefinitionKey, documentId);
           } else {
             this.setEnvironmentTabs(caseDefinitionKey);
           }
-        }
-      )
+        })
     );
   }
 
