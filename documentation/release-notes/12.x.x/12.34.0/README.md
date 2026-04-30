@@ -14,4 +14,4 @@
 
 ## Bugfixes
 
-* New bugfix.
+* Fix the documenten tab not showing any documents

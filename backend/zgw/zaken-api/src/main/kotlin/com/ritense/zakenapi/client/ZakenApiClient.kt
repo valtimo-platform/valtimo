@@ -175,7 +175,7 @@ class ZakenApiClient(
         zaakUrl: URI? = null,
         informatieobjectUrl: URI? = null,
     ): List<ZaakInformatieObject> {
-        if (!authorizationService.hasPermission(
+        if (authorizationEnabled && !authorizationService.hasPermission(
                 EntityAuthorizationRequest(
                     ZgwDocument::class.java,
                     ZgwDocumentActionProvider.VIEW_LIST,
