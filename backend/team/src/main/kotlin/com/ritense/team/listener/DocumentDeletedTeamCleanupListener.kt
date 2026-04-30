@@ -14,13 +14,20 @@
  * limitations under the License.
  */
 
-package com.ritense.valtimo.contract.authentication
+package com.ritense.team.listener
 
-import java.util.UUID
+import com.ritense.valtimo.contract.annotation.SkipComponentScan
+import com.ritense.valtimo.contract.authentication.TeamManagementService
+import com.ritense.valtimo.contract.event.DocumentDeletedEvent
+import org.springframework.context.event.EventListener
 
-interface Team {
-    val key: String
-    val title: String
-    val adHocCaseDocumentId: UUID? get() = null
-    val adHoc: Boolean get() = adHocCaseDocumentId != null
+@SkipComponentScan
+class DocumentDeletedTeamCleanupListener(
+    private val teamManagementService: TeamManagementService,
+) {
+
+    @EventListener
+    fun handle(event: DocumentDeletedEvent) {
+        teamManagementService.deleteAllByAdHocCaseDocumentId(event.caseDocumentId)
+    }
 }

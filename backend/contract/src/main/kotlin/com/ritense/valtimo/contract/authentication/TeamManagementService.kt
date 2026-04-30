@@ -18,6 +18,7 @@ package com.ritense.valtimo.contract.authentication
 
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
+import java.util.UUID
 
 interface TeamManagementService {
 
@@ -44,4 +45,20 @@ interface TeamManagementService {
     fun addUserToTeam(username: String, teamKey: String): String
 
     fun removeUserFromTeam(username: String, teamKey: String)
+
+    fun createAdHocTeam(adHocCaseDocumentId: UUID, title: String? = null): Team {
+        throw UnsupportedOperationException("Ad hoc teams are not supported by this implementation")
+    }
+
+    fun findAllByAdHocCaseDocumentId(
+        adHocCaseDocumentId: UUID,
+        titleContains: String? = null,
+        pageable: Pageable = Pageable.unpaged()
+    ): Page<Team> {
+        throw UnsupportedOperationException("Ad hoc teams are not supported by this implementation")
+    }
+
+    fun deleteAllByAdHocCaseDocumentId(adHocCaseDocumentId: UUID) {
+        throw UnsupportedOperationException("Ad hoc teams are not supported by this implementation")
+    }
 }
