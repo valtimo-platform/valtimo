@@ -157,11 +157,8 @@ allprojects {
                 //  of 03-02-2026
                 dependency "org.assertj:assertj-core:3.27.7"
 
-                // CVE overrides: Spring Boot 3.5.13 ships with vulnerable versions of these
-                // dependencies. Override until a new Spring Boot patch includes the fixes.
-                dependency "org.apache.tomcat.embed:tomcat-embed-core:${apacheTomcatEmbedVersion}"
-                dependency "org.apache.tomcat.embed:tomcat-embed-el:${apacheTomcatEmbedVersion}"
-                dependency "org.apache.tomcat.embed:tomcat-embed-websocket:${apacheTomcatEmbedVersion}"
+                // CVE overrides: Spring Boot 3.5.14 ships with log4j 2.24.3 which has
+                // vulnerabilities. Override until a new Spring Boot patch includes the fix.
                 dependency "org.apache.logging.log4j:log4j-api:${log4jVersion}"
                 dependency "org.apache.logging.log4j:log4j-core:${log4jVersion}"
                 dependency "org.apache.logging.log4j:log4j-jul:${log4jVersion}"
@@ -249,6 +246,14 @@ subprojects { subproject ->
             config project.resources.text.fromFile(rootProject.file("backend/ritense_valtimo_only_checks.xml"))
             ignoreFailures = false
             showViolations = true
+        }
+
+        // CVE override: checkstyle pulls in plexus-utils 3.3.0 transitively via doxia-core.
+        // Force upgrade to a patched version.
+        configurations.matching { it.name == 'checkstyle' }.configureEach {
+            resolutionStrategy {
+                force "org.codehaus.plexus:plexus-utils:${plexusUtilsVersion}"
+            }
         }
 
         tasks.withType(Checkstyle).configureEach {
