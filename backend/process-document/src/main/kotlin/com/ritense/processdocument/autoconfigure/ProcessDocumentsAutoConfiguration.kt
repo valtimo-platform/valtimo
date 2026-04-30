@@ -43,7 +43,9 @@ import com.ritense.processdocument.repository.OperatonProcessDefinitionCaseDefin
 import com.ritense.processdocument.repository.ProcessDefinitionCaseDefinitionRepository
 import com.ritense.processdocument.repository.ProcessDocumentInstanceRepository
 import com.ritense.processdocument.service.CaseDefinitionProcessLinkService
+import com.ritense.processdocument.repository.TaskQuickSearchRepository
 import com.ritense.processdocument.service.CaseTaskListSearchService
+import com.ritense.processdocument.service.TaskQuickSearchService
 import com.ritense.processdocument.service.CorrelationService
 import com.ritense.processdocument.service.CorrelationServiceImpl
 import com.ritense.processdocument.service.DefaultProcessDefinitionCaseDefinitionLinker
@@ -337,14 +339,30 @@ class ProcessDocumentsAutoConfiguration {
     }
 
     @Bean
+    @ConditionalOnMissingBean(TaskQuickSearchService::class)
+    fun taskQuickSearchService(
+        taskQuickSearchRepository: TaskQuickSearchRepository,
+        caseDefinitionService: CaseDefinitionService,
+        authorizationService: AuthorizationService,
+    ): TaskQuickSearchService {
+        return TaskQuickSearchService(
+            taskQuickSearchRepository,
+            caseDefinitionService,
+            authorizationService,
+        )
+    }
+
+    @Bean
     @ConditionalOnMissingBean(TaskListResource::class)
     fun processDocumentTaskListResource(
         caseTaskListSearchService: CaseTaskListSearchService,
         operatonTaskService: OperatonTaskService,
+        taskQuickSearchService: TaskQuickSearchService,
     ): TaskListResource {
         return TaskListResource(
             caseTaskListSearchService,
             operatonTaskService,
+            taskQuickSearchService,
         )
     }
 
