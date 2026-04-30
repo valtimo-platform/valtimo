@@ -43,9 +43,7 @@ import {CaseDetailWidgetsComponent} from '../components/case-detail/tab/widgets/
 @Injectable()
 export class CaseTabService implements OnDestroy {
   private readonly _tabManagementEnabled$: Observable<boolean> =
-    this.configService.featureToggles$.pipe(
-      map(t => t?.enableTabManagement ?? true)
-    );
+    this.configService.getFeatureToggleObservable('enableTabManagement', true);
   private readonly _caseDefinitionKey$: Observable<string> = this.route.params.pipe(
     map(params => params?.caseDefinitionKey),
     filter(caseDefinitionKey => !!caseDefinitionKey)

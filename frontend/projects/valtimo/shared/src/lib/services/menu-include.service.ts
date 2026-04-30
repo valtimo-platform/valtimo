@@ -17,7 +17,7 @@
 import {Injectable} from '@angular/core';
 import {IncludeFunction} from '../models';
 import {ConfigService} from './config.service';
-import {map, Observable, of} from 'rxjs';
+import {Observable, of} from 'rxjs';
 
 @Injectable({
   providedIn: 'root',
@@ -28,9 +28,7 @@ export class MenuIncludeService {
   getIncludeFunction(includeFunction: IncludeFunction): Observable<boolean> {
     switch (includeFunction) {
       case IncludeFunction.ObjectManagementEnabled:
-        return this.configService.featureToggles$.pipe(
-          map(t => t?.enableObjectManagement ?? true)
-        );
+        return this.configService.getFeatureToggleObservable('enableObjectManagement', true);
       default:
         return of(true);
     }

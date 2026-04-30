@@ -2349,7 +2349,7 @@
       "logo": {
         "title": "Logo",
         "fileUploaderTitle": "Upload logo",
-        "fileUploaderDescription": "Only PNG files are accepted. Max 10 MB.",
+        "fileUploaderDescription": "Only PNG and SVG files are accepted. Max 10 MB.",
         "fileUploaderButton": "Choose file",
         "deleteConfirmationModalText": "Are you sure you want to delete this logo?"
       },
@@ -2433,10 +2433,6 @@
         "enableIntermediateSave": {
           "title": "Enable intermediate save",
           "description": "Allow users to save task form progress without completing the task."
-        },
-        "enableTaskPanel": {
-          "title": "Enable task panel",
-          "description": "Show the task panel sidebar on case detail pages."
         },
         "enableFormFlowBreadcrumbs": {
           "title": "Enable form flow breadcrumbs",

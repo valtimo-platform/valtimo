@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import {Component} from '@angular/core';
+import {ChangeDetectionStrategy, Component} from '@angular/core';
 import {CommonModule} from '@angular/common';
 import {MuuriDirectiveModule} from '@valtimo/components';
 import {AdminSettingsLogoComponent} from '../admin-settings-logo/admin-settings-logo.component';
@@ -25,5 +25,6 @@ import {AdminSettingsLogoComponent} from '../admin-settings-logo/admin-settings-
   templateUrl: './admin-settings-appearance.component.html',
   styleUrls: ['./admin-settings-appearance.component.scss'],
   imports: [CommonModule, MuuriDirectiveModule, AdminSettingsLogoComponent],
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class AdminSettingsAppearanceComponent {}

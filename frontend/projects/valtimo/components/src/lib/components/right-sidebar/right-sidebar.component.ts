@@ -123,12 +123,10 @@ export class RightSidebarComponent implements OnInit, OnDestroy {
   );
 
   public overrideFeedbackMenuItemToMailTo!: FeedbackMailTo;
-  public readonly allowUserThemeSwitching$ = this.configService.featureToggles$.pipe(
-    map(t => (t?.hasOwnProperty('allowUserThemeSwitching') ? !!t.allowUserThemeSwitching : true))
-  );
-  public readonly enableCompactModeToggle$ = this.configService.featureToggles$.pipe(
-    map(t => (t?.hasOwnProperty('enableCompactModeToggle') ? !!t.enableCompactModeToggle : true))
-  );
+  public readonly allowUserThemeSwitching$ =
+    this.configService.getFeatureToggleObservable('allowUserThemeSwitching', true);
+  public readonly enableCompactModeToggle$ =
+    this.configService.getFeatureToggleObservable('enableCompactModeToggle', true);
   public readonly enableShowUserNameToggle$ =
     this.configService.getFeatureToggleObservable('enableUserNameInTopBarToggle');
   public readonly showPlantATreeButton$ =

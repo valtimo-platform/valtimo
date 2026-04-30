@@ -1,0 +1,13 @@
+{
+  "changesetId": "admin-settings-logo-v1",
+  "logos": [
+    {
+      "logoType": "LOGO",
+      "file": "logo.svg"
+    },
+    {
+      "logoType": "LOGO_DARK_MODE",
+      "file": "logo-dark-mode.svg"
+    }
+  ]
+}

@@ -121,10 +121,20 @@ export class TopbarComponent implements OnInit, AfterViewInit {
       currentTheme === CurrentCarbonTheme.G10 ? adminLogo : adminLogoDark;
 
     if (themeAdminLogo) {
-      return {isSvg: false, base64string: themeAdminLogo};
+      return {isSvg: this.isSvg(themeAdminLogo), base64string: themeAdminLogo};
     }
 
     return this.getConfigLogo(currentTheme);
+  }
+
+  private isSvg(base64: string): boolean {
+    try {
+      const decoded = atob(base64.substring(0, 64));
+      const trimmed = decoded.trimStart();
+      return trimmed.startsWith('<?xml') || trimmed.startsWith('<svg');
+    } catch {
+      return false;
+    }
   }
 
   private getConfigLogo(currentTheme: CurrentCarbonTheme): TopbarLogo {

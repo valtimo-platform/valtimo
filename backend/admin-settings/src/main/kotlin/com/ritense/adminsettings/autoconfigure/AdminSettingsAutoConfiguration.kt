@@ -17,6 +17,8 @@
 package com.ritense.adminsettings.autoconfigure
 
 import com.fasterxml.jackson.databind.ObjectMapper
+import com.ritense.adminsettings.deployment.AdminSettingsFeatureToggleDeployer
+import com.ritense.adminsettings.deployment.AdminSettingsLogoDeployer
 import com.ritense.adminsettings.repository.AdminSettingsLogoRepository
 import com.ritense.adminsettings.repository.FeatureToggleOverridesRepository
 import com.ritense.adminsettings.security.config.AdminSettingsHttpSecurityConfigurer
@@ -25,11 +27,14 @@ import com.ritense.adminsettings.service.FeatureToggleOverridesService
 import com.ritense.adminsettings.web.rest.AdminSettingsLogoResource
 import com.ritense.adminsettings.web.rest.FeatureToggleOverridesResource
 import com.ritense.authorization.AuthorizationService
+import com.ritense.valtimo.changelog.service.ChangelogService
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.autoconfigure.AutoConfiguration
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.boot.autoconfigure.domain.EntityScan
 import org.springframework.context.annotation.Bean
 import org.springframework.core.annotation.Order
+import org.springframework.core.io.support.ResourcePatternResolver
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories
 
 @AutoConfiguration
@@ -82,5 +87,39 @@ class AdminSettingsAutoConfiguration {
     @ConditionalOnMissingBean(AdminSettingsHttpSecurityConfigurer::class)
     fun adminSettingsHttpSecurityConfigurer(): AdminSettingsHttpSecurityConfigurer {
         return AdminSettingsHttpSecurityConfigurer()
+    }
+
+    @Bean
+    @ConditionalOnMissingBean(AdminSettingsFeatureToggleDeployer::class)
+    fun adminSettingsFeatureToggleDeployer(
+        objectMapper: ObjectMapper,
+        featureToggleOverridesService: FeatureToggleOverridesService,
+        changelogService: ChangelogService,
+        @Value("\${valtimo.changelog.admin-settings-feature-toggles.clear-tables:false}") clearTables: Boolean,
+    ): AdminSettingsFeatureToggleDeployer {
+        return AdminSettingsFeatureToggleDeployer(
+            objectMapper,
+            featureToggleOverridesService,
+            changelogService,
+            clearTables,
+        )
+    }
+
+    @Bean
+    @ConditionalOnMissingBean(AdminSettingsLogoDeployer::class)
+    fun adminSettingsLogoDeployer(
+        objectMapper: ObjectMapper,
+        adminSettingsLogoRepository: AdminSettingsLogoRepository,
+        changelogService: ChangelogService,
+        resourcePatternResolver: ResourcePatternResolver,
+        @Value("\${valtimo.changelog.admin-settings-logo.clear-tables:false}") clearTables: Boolean,
+    ): AdminSettingsLogoDeployer {
+        return AdminSettingsLogoDeployer(
+            objectMapper,
+            adminSettingsLogoRepository,
+            changelogService,
+            resourcePatternResolver,
+            clearTables,
+        )
     }
 }

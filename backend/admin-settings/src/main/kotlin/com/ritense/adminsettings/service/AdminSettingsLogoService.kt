@@ -28,11 +28,17 @@ import com.ritense.authorization.request.EntityAuthorizationRequest
 import com.ritense.valtimo.contract.media.ImageNormalizer
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.transaction.annotation.Transactional
+import java.util.Base64
 
 open class AdminSettingsLogoService(
     private val adminSettingsLogoRepository: AdminSettingsLogoRepository,
     private val authorizationService: AuthorizationService,
 ) {
+
+    companion object {
+        private const val MAX_MB = 10
+        private const val MAX_BYTES = MAX_MB * 1024 * 1024
+    }
 
     @Transactional(readOnly = true)
     open fun getLogos(): AdminSettingsLogosDto {
@@ -54,16 +60,16 @@ open class AdminSettingsLogoService(
     open fun uploadLogo(logoType: LogoType, dto: CreateAdminSettingsLogoDto): AdminSettingsLogoDto {
         denyAuthorization()
 
-        val normalizedBase64 = ImageNormalizer.normalizeAndValidateImage(dto.imageBase64)
+        val validatedBase64 = validateAndNormalizeImage(dto.imageBase64)
 
         val existing = adminSettingsLogoRepository.findByIdOrNull(logoType)
         val entity = if (existing != null) {
-            existing.imageBase64 = normalizedBase64
+            existing.imageBase64 = validatedBase64
             existing
         } else {
             AdminSettingsLogo(
                 logoType = logoType,
-                imageBase64 = normalizedBase64
+                imageBase64 = validatedBase64
             )
         }
 
@@ -78,6 +84,28 @@ open class AdminSettingsLogoService(
         if (adminSettingsLogoRepository.existsById(logoType)) {
             adminSettingsLogoRepository.deleteById(logoType)
         }
+    }
+
+    private fun validateAndNormalizeImage(base64: String): String {
+        val pureBase64 = base64.substringAfter(",", base64)
+        val bytes = try {
+            Base64.getDecoder().decode(pureBase64)
+        } catch (e: IllegalArgumentException) {
+            throw IllegalArgumentException("Invalid base64 image data", e)
+        }
+
+        require(bytes.size <= MAX_BYTES) { "Image is larger than $MAX_MB MB" }
+
+        return if (isSvg(bytes)) {
+            pureBase64
+        } else {
+            ImageNormalizer.normalizeAndValidateImage(pureBase64)
+        }
+    }
+
+    private fun isSvg(bytes: ByteArray): Boolean {
+        val header = String(bytes, 0, minOf(bytes.size, 256), Charsets.UTF_8).trimStart()
+        return header.startsWith("<?xml") || header.startsWith("<svg")
     }
 
     private fun denyAuthorization() {

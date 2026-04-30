@@ -20,7 +20,7 @@ import com.ritense.adminsettings.service.FeatureToggleOverridesService
 import com.ritense.adminsettings.web.rest.dto.FeatureToggleOverridesDto
 import com.ritense.adminsettings.web.rest.dto.UpdateFeatureToggleDto
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
-import org.springframework.http.MediaType
+import com.ritense.valtimo.contract.domain.ValtimoMediaType.APPLICATION_JSON_UTF8_VALUE
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
@@ -32,7 +32,7 @@ import org.springframework.web.bind.annotation.RestController
 
 @RestController
 @SkipComponentScan
-@RequestMapping("/api", produces = [MediaType.APPLICATION_JSON_UTF8_VALUE])
+@RequestMapping("/api", produces = [APPLICATION_JSON_UTF8_VALUE])
 class FeatureToggleOverridesResource(
     private val featureToggleOverridesService: FeatureToggleOverridesService
 ) {

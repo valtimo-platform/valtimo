@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import {Component, Input, OnDestroy, OnInit} from '@angular/core';
+import {ChangeDetectionStrategy, Component, Input, OnDestroy, OnInit} from '@angular/core';
 import {CommonModule} from '@angular/common';
 import {TranslatePipe} from '@ngx-translate/core';
 import {FormBuilder, FormControl, ReactiveFormsModule, Validators} from '@angular/forms';
@@ -52,12 +52,17 @@ import {AdminSettingsManagementApiService} from '../../services';
     ConfirmationModalModule,
     RenderInBodyComponent,
   ],
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class AdminSettingsLogoComponent implements OnInit, OnDestroy {
   @Input() public logoType!: string;
   @Input() public titleTranslationKey!: string;
 
-  public readonly ACCEPTED_FILES: string[] = ['png'];
+  public get previewTheme(): string {
+    return this.logoType === 'LOGO_DARK_MODE' ? 'g90' : 'g10';
+  }
+
+  public readonly ACCEPTED_FILES: string[] = ['png', 'svg'];
 
   public readonly formGroup = this._formBuilder.group({
     file: this._formBuilder.control(new Set<any>(), [Validators.required]),
@@ -104,19 +109,22 @@ export class AdminSettingsLogoComponent implements OnInit, OnDestroy {
 
     this.formGroup.disable();
 
-    this._adminSettingsManagementApiService
-      .uploadLogo(this.logoType, {imageBase64})
-      .subscribe({
-        next: () => {
-          this.loading$.next(true);
-          this._refresh$.next(null);
-          this._adminSettingsService.refreshLogos();
-          this.formGroup.enable();
-        },
-        error: () => {
-          this.formGroup.enable();
-        },
-      });
+    this._adminSettingsManagementApiService.uploadLogo(this.logoType, {imageBase64}).subscribe({
+      next: () => {
+        this.loading$.next(true);
+        this._refresh$.next(null);
+        this._adminSettingsService.refreshLogos();
+        this.formGroup.enable();
+      },
+      error: () => {
+        this.formGroup.enable();
+      },
+    });
+  }
+
+  public getImageSrc(imageBase64: string): string {
+    const mimeType = this._isSvg(imageBase64) ? 'image/svg+xml' : 'image/png';
+    return `data:${mimeType};base64,${imageBase64}`;
   }
 
   public onDeleteButtonClick(): void {
@@ -129,6 +137,16 @@ export class AdminSettingsLogoComponent implements OnInit, OnDestroy {
       this._refresh$.next(null);
       this._adminSettingsService.refreshLogos();
     });
+  }
+
+  private _isSvg(base64: string): boolean {
+    try {
+      const decoded = atob(base64.substring(0, 64));
+      const trimmed = decoded.trimStart();
+      return trimmed.startsWith('<?xml') || trimmed.startsWith('<svg');
+    } catch {
+      return false;
+    }
   }
 
   private async _fileToBase64(file: File): Promise<string> {

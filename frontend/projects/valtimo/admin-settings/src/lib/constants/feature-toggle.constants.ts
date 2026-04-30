@@ -35,7 +35,6 @@ const FEATURE_TOGGLE_DEFINITIONS: FeatureToggleDefinition[] = [
   {key: 'useStartEventNameAsStartFormTitle'},
   {key: 'enableFormViewModel'},
   {key: 'enableIntermediateSave'},
-  {key: 'enableTaskPanel'},
   {key: 'enableFormFlowBreadcrumbs'},
   {key: 'enablePbacDocumentenApiDocuments'},
   {key: 'enableSuppressDocumentError'},

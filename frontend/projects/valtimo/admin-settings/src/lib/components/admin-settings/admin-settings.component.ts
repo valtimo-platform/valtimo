@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import {Component} from '@angular/core';
+import {ChangeDetectionStrategy, Component} from '@angular/core';
 import {CommonModule} from '@angular/common';
 import {ActivatedRoute, Router} from '@angular/router';
 import {TranslatePipe} from '@ngx-translate/core';
@@ -36,6 +36,7 @@ import {AdminSettingsFeatureTogglesComponent} from '../admin-settings-feature-to
     AdminSettingsAppearanceComponent,
     AdminSettingsFeatureTogglesComponent,
   ],
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class AdminSettingsComponent {
   public readonly ADMIN_SETTINGS_TABS = ADMIN_SETTINGS_TABS;

@@ -2391,7 +2391,7 @@
       "logo": {
         "title": "Logo",
         "fileUploaderTitle": "Logo uploaden",
-        "fileUploaderDescription": "Alleen PNG-bestanden worden geaccepteerd. Max 10 MB.",
+        "fileUploaderDescription": "Alleen PNG- en SVG-bestanden worden geaccepteerd. Max 10 MB.",
         "fileUploaderButton": "Bestand kiezen",
         "deleteConfirmationModalText": "Weet u zeker dat u dit logo wilt verwijderen?"
       },
@@ -2475,10 +2475,6 @@
         "enableIntermediateSave": {
           "title": "Tussentijds opslaan inschakelen",
           "description": "Gebruikers toestaan taakformuliervoortgang op te slaan zonder de taak af te ronden."
-        },
-        "enableTaskPanel": {
-          "title": "Taakpaneel inschakelen",
-          "description": "Toon het taakpaneel in de zijbalk op zaakdetailpagina's."
         },
         "enableFormFlowBreadcrumbs": {
           "title": "Formulierstroom breadcrumbs inschakelen",

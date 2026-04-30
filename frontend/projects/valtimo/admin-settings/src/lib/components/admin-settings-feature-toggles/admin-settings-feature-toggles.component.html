@@ -14,18 +14,8 @@
   ~ limitations under the License.
   -->
 
-<div
-  *ngIf="{
-    merged: mergedToggles$ | async,
-    loading: loading$ | async
-  } as obs"
-  class="feature-toggles"
->
-  @if (obs.loading) {
-    <div class="loading-container"><cds-loading></cds-loading></div>
-  }
-
-  @if (!obs.loading && obs.merged) {
+@if (featureToggles$ | async; as toggles) {
+  <div class="feature-toggles">
     <div class="feature-toggles__list">
       @for (definition of TOGGLE_DEFINITIONS; track definition.key) {
         <div class="feature-toggles__item">
@@ -41,7 +31,7 @@
 
           <div class="feature-toggles__control">
             <cds-toggle
-              [checked]="getEffectiveValue(definition, obs.merged)"
+              [checked]="getEffectiveValue(definition, toggles)"
               [onText]="'interface.on' | translate"
               [offText]="'interface.off' | translate"
               [size]="'sm'"
@@ -51,5 +41,5 @@
         </div>
       }
     </div>
-  }
-</div>
+  </div>
+}

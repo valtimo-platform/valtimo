@@ -32,7 +32,8 @@
     display: flex;
     justify-content: center;
     align-items: center;
-    background-color: var(--cds-layer-02);
+    background-color: var(--cds-background);
+    border-radius: 4px;
     padding: 12px;
     min-height: 180px;
   }

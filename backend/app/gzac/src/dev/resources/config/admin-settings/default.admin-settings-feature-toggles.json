@@ -1,0 +1,22 @@
+{
+  "changesetId": "admin-settings-feature-toggles-v1",
+  "featureToggles": {
+    "showUserNameInTopBar": true,
+    "showPlantATreeButton": true,
+    "experimentalDmnEditing": true,
+    "largeLogoMargin": false,
+    "sortFilesByDate": true,
+    "disableCaseCount": false,
+    "returnToLastUrlAfterTokenExpiration": true,
+    "useStartEventNameAsStartFormTitle": true,
+    "allowUserThemeSwitching": true,
+    "enableUserNameInTopBarToggle": true,
+    "enableTabManagement": true,
+    "enableObjectManagement": true,
+    "enableFormViewModel": true,
+    "enableIntermediateSave": true,
+    "enableFormFlowBreadcrumbs": true,
+    "enablePbacDocumentenApiDocuments": true,
+    "enableSuppressDocumentError": false
+  }
+}

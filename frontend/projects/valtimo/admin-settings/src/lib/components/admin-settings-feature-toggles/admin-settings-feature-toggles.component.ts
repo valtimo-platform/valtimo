@@ -14,13 +14,12 @@
  * limitations under the License.
  */
 
-import {Component} from '@angular/core';
+import {ChangeDetectionStrategy, Component} from '@angular/core';
 import {CommonModule} from '@angular/common';
 import {TranslatePipe} from '@ngx-translate/core';
-import {ToggleModule, LoadingModule} from 'carbon-components-angular';
+import {ToggleModule} from 'carbon-components-angular';
 import {AdminSettingsService} from '@valtimo/components';
 import {ConfigService, ValtimoConfigFeatureToggles} from '@valtimo/shared';
-import {BehaviorSubject, map, switchMap, tap} from 'rxjs';
 import {AdminSettingsManagementApiService} from '../../services';
 import {FEATURE_TOGGLE_DEFINITIONS} from '../../constants';
 import {FeatureToggleDefinition} from '../../models';
@@ -34,24 +33,13 @@ import {FeatureToggleDefinition} from '../../models';
     CommonModule,
     TranslatePipe,
     ToggleModule,
-    LoadingModule,
   ],
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class AdminSettingsFeatureTogglesComponent {
   public readonly TOGGLE_DEFINITIONS = FEATURE_TOGGLE_DEFINITIONS;
 
-  public readonly loading$ = new BehaviorSubject<boolean>(true);
-
-  private readonly _refresh$ = new BehaviorSubject<null>(null);
-
-  public readonly mergedToggles$ = this._refresh$.pipe(
-    switchMap(() => this._adminSettingsManagementApiService.getFeatureToggleOverrides()),
-    map(dto => {
-      const envToggles = this._configService.config.featureToggles ?? {};
-      return {...envToggles, ...dto.overrides} as ValtimoConfigFeatureToggles;
-    }),
-    tap(() => this.loading$.next(false))
-  );
+  public readonly featureToggles$ = this._configService.featureToggles$;
 
   constructor(
     private readonly _adminSettingsManagementApiService: AdminSettingsManagementApiService,
@@ -61,9 +49,9 @@ export class AdminSettingsFeatureTogglesComponent {
 
   public getEffectiveValue(
     definition: FeatureToggleDefinition,
-    merged: ValtimoConfigFeatureToggles
+    toggles: ValtimoConfigFeatureToggles
   ): boolean {
-    return !!(merged as Record<string, boolean | undefined>)[definition.key];
+    return !!(toggles as Record<string, boolean | undefined>)[definition.key];
   }
 
   public onToggleChange(definition: FeatureToggleDefinition, newValue: boolean): void {
@@ -71,7 +59,6 @@ export class AdminSettingsFeatureTogglesComponent {
       .updateFeatureToggle({key: definition.key, enabled: newValue})
       .subscribe(() => {
         this._adminSettingsService.refreshFeatureToggles();
-        this._refresh$.next(null);
       });
   }
 }

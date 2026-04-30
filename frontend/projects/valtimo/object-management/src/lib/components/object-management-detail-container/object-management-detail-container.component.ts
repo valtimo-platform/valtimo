@@ -33,9 +33,8 @@ import {tap} from 'rxjs/operators';
 })
 export class ObjectManagementDetailContainerComponent implements OnInit, OnDestroy {
   public currentTab: TabEnum;
-  public readonly caseListColumn$ = this.configService.featureToggles$.pipe(
-    map(t => t?.caseListColumn ?? true)
-  );
+  public readonly caseListColumn$ =
+    this.configService.getFeatureToggleObservable('caseListColumn', true);
 
   private tabSubscription: Subscription;
 

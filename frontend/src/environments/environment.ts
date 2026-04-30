@@ -238,7 +238,6 @@ export const environment: ValtimoConfig = {
     enableFormViewModel: true,
     enableIntermediateSave: true,
     enableFormFlowBreadcrumbs: true,
-    enableTaskPanel: true,
     enablePbacDocumentenApiDocuments: true,
     enableSuppressDocumentError: false,
   },

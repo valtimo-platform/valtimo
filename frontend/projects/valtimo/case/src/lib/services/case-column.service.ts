@@ -36,7 +36,7 @@ export class CaseColumnService {
 
     return combineLatest([
       this.documentService.getCaseList(caseDefinitionKey),
-      this.configService.featureToggles$.pipe(map(t => t?.caseListColumn ?? true)),
+      this.configService.getFeatureToggleObservable('caseListColumn', true),
     ]).pipe(
       map(([caseListColumns, caseListColumnEnabled]) => {
         const apiCaseListColumns =

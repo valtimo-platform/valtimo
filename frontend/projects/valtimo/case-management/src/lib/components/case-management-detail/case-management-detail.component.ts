@@ -73,12 +73,10 @@ export class CaseManagementDetailComponent implements OnInit, OnDestroy {
     map(params => params?.caseDefinitionKey ?? '')
   );
 
-  public readonly caseListColumn$ = this.configService.featureToggles$.pipe(
-    map(t => t?.caseListColumn ?? true)
-  );
-  public readonly tabManagementEnabled$ = this.configService.featureToggles$.pipe(
-    map(t => t?.enableTabManagement ?? true)
-  );
+  public readonly caseListColumn$ =
+    this.configService.getFeatureToggleObservable('caseListColumn', true);
+  public readonly tabManagementEnabled$ =
+    this.configService.getFeatureToggleObservable('enableTabManagement', true);
 
   public _activeTab: TabEnum | string;
   public pendingTab: TabEnum | null | string;

@@ -24,7 +24,7 @@ import {
   ValtimoConfigFeatureToggles,
 } from '../models';
 import {UrlUtils} from '../utils';
-import {BehaviorSubject, map, Observable} from 'rxjs';
+import {BehaviorSubject, distinctUntilChanged, map, Observable} from 'rxjs';
 
 @Injectable({
   providedIn: 'root',
@@ -121,10 +121,16 @@ export class ConfigService {
   }
 
   public getFeatureToggleObservable(
-    featureToggle: keyof ValtimoConfigFeatureToggles
+    featureToggle: keyof ValtimoConfigFeatureToggles,
+    defaultValue = false
   ): Observable<boolean> {
     return this.featureToggles$.pipe(
-      map(featureToggles => !!(featureToggles && featureToggles[featureToggle]))
+      map(featureToggles =>
+        featureToggles?.hasOwnProperty(featureToggle)
+          ? !!featureToggles[featureToggle]
+          : defaultValue
+      ),
+      distinctUntilChanged()
     );
   }
 

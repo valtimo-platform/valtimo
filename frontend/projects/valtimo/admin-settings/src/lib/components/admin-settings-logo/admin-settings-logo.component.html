@@ -32,10 +32,10 @@
   }
 
   @if (!obs.loading && obs.logo) {
-    <div class="admin-settings-logo__preview">
+    <div class="admin-settings-logo__preview" [attr.data-carbon-theme]="previewTheme">
       <img
         class="admin-settings-logo__image"
-        [src]="'data:image/png;base64,' + obs.logo.imageBase64"
+        [src]="getImageSrc(obs.logo.imageBase64)"
       />
     </div>
 
