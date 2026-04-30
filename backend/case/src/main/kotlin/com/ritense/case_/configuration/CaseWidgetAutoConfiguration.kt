@@ -53,6 +53,8 @@ import com.ritense.case_.widget.fields.FieldsCaseWidgetMapper
 import com.ritense.case_.widget.fieldsheader.FieldsCaseHeaderWidgetDataProvider
 import com.ritense.case_.widget.map.MapCaseWidgetDataProvider
 import com.ritense.case_.widget.map.MapCaseWidgetMapper
+import com.ritense.case_.widget.personcard.PersonCardCaseWidgetDataProvider
+import com.ritense.case_.widget.personcard.PersonCardCaseWidgetMapper
 import com.ritense.case_.widget.table.TableCaseWidgetDataProvider
 import com.ritense.case_.widget.table.TableCaseWidgetMapper
 import com.ritense.document.service.CaseTagService
@@ -251,6 +253,17 @@ class CaseWidgetAutoConfiguration {
         valueResolverService: ValueResolverService,
         objectMapper: ObjectMapper
     ) = FieldsCaseHeaderWidgetDataProvider(valueResolverService, objectMapper)
+
+    @ConditionalOnMissingBean(PersonCardCaseWidgetMapper::class)
+    @Bean
+    fun personCardCaseWidgetMapper() = PersonCardCaseWidgetMapper()
+
+    @ConditionalOnMissingBean(PersonCardCaseWidgetDataProvider::class)
+    @Bean
+    fun personCardCaseWidgetDataProvider(
+        valueResolverService: ValueResolverService,
+        objectMapper: ObjectMapper
+    ) = PersonCardCaseWidgetDataProvider(valueResolverService, objectMapper)
 
     @ConditionalOnMissingBean(MapCaseWidgetMapper::class)
     @Bean
