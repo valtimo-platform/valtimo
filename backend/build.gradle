@@ -50,6 +50,12 @@ checkstyle {
     toolVersion = "12.3.1"
 }
 
+configurations.matching { it.name == 'checkstyle' }.configureEach {
+    resolutionStrategy {
+        force "org.codehaus.plexus:plexus-utils:${plexusUtilsVersion}"
+    }
+}
+
 def allTestCoverageFile = "${rootDir}/build/reports/jacoco/testCodeCoverageReport/testCodeCoverageReport.xml"
 dependencies {
     subprojects { subproject ->
