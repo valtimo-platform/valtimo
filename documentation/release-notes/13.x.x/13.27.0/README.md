@@ -17,9 +17,9 @@
 
 ## Enhancements
 
-* **New enhancement title**
+* **Dependency upgrades for CVE fixes**
 
-  New enhancement explanation.
+  Upgraded Spring Boot and other dependencies to resolve several HIGH-severity CVEs.
 
 ## Bugfixes
 
