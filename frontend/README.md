@@ -25,32 +25,16 @@ Starting up the Valtimo platform requires two steps:
 
 Run the following command to install the dependencies: `npm install`.
 
-#### Build libraries
-
-Run the following command to build all the Valtimo libraries: `npm run build`.
-
 #### Start application
 
 - Run the following command to start the Angular application: `npm start`.
 - When this command has been completed, navigate to `http://localhost:4200/`
+- Library source changes are picked up automatically (no separate build step needed for development).
 
-#### Development mode
+#### Build libraries (for publishing)
 
-- If you expect to make changes to multiple libraries at once, use the following commands:
-  - `npm run devMode` to build all libraries, watch them for changes and to start the Angular
-    application.
-  - `npm run devMode:skipLibsBuild`. Use this command if all libraries have already been built.
-    Watches all libraries for changes and starts the Angular application.
-
-### Making changes to the Valtimo frontend
-
-When making changes to the libraries, the modified libraries have to be rebuilt. The following
-command can be used to build one specific library: `npm run libs:build:libraryName`. Note: it is
-possible to `watch` for changes in a specific library, building it automatically after a change has
-been saved. For rebuilding automatically use the following command:
-`npm run libs:watch:libraryName`.
-
-The app will automatically reload if you change any of the source files.
+Run the following command to build all the Valtimo libraries: `npm run libs-build-all`.
+This is only needed for CI/CD and publishing, not for local development.
 
 ### Code quality
 
