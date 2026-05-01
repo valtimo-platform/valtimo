@@ -34,6 +34,7 @@ export const WIDGET_WIZARD_TYPE_TEST_IDS = {
   tileInteractiveTable: 'widgetWizardTypeTile-interactive-table',
   tileCollection: 'widgetWizardTypeTile-collection',
   tileMap: 'widgetWizardTypeTile-map',
+  tileMetroline: 'widgetWizardTypeTile-metroline',
 } as const;
 
 export const WIDGET_WIZARD_WIDTH_TEST_IDS = {
@@ -73,4 +74,10 @@ export const WIDGET_CONTENT_FIELDS_TEST_IDS = {
   fieldTitleInput: 'widgetContentFieldsFieldTitle',
   displayTypeDropdown: 'widgetContentFieldsDisplayType',
   valuePathSelector: 'widgetContentFieldsValuePath',
+} as const;
+
+export const WIDGET_CONTENT_METROLINE_TEST_IDS = {
+  widgetTitleInput: 'widgetContentMetrolineWidgetTitle',
+  displayTypeRadio: 'widgetContentMetrolineDisplayType',
+  statusSourceDropdown: 'widgetContentMetrolineStatusSource',
 } as const;

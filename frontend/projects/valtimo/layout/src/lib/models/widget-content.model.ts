@@ -114,6 +114,27 @@ interface WidgetMapContent {
   geoJsonSources: GeoJsonSource[];
 }
 
+enum MetrolineOrientation {
+  HORIZONTAL = 'HORIZONTAL',
+  VERTICAL = 'VERTICAL',
+}
+
+enum MetrolineMode {
+  INTERNAL_CASE_STATUS = 'INTERNAL_CASE_STATUS',
+  ZAAKSTATUS = 'ZAAKSTATUS',
+}
+
+interface WidgetMetrolineContent {
+  orientation: MetrolineOrientation;
+  mode: MetrolineMode;
+}
+
+interface MetrolineItem {
+  title: string;
+  label: string | null;
+  completed: boolean;
+}
+
 type WidgetDropdownValue = {[key: string]: string};
 
 type WidgetContentProperties =
@@ -123,7 +144,8 @@ type WidgetContentProperties =
   | WidgetCustomContent
   | WidgetFormioContent
   | WidgetCollectionContent
-  | WidgetMapContent;
+  | WidgetMapContent
+  | WidgetMetrolineContent;
 
 export {
   WidgetContentProperties,
@@ -134,6 +156,10 @@ export {
   WidgetInteractiveTableContent,
   WidgetCollectionContent,
   WidgetMapContent,
+  WidgetMetrolineContent,
+  MetrolineItem,
+  MetrolineMode,
+  MetrolineOrientation,
   WidgetInteractiveTableEventSearchRequest,
   WidgetFilter,
   WidgetDropdownValue,

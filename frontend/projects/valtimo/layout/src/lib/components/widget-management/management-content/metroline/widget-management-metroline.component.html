@@ -1,0 +1,74 @@
+<!--
+  ~ Copyright 2015-2026 Ritense BV, the Netherlands.
+  ~
+  ~ Licensed under EUPL, Version 1.2 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~ https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" basis,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<form
+  [formGroup]="form"
+  class="valtimo-widget-management-metroline__title-form"
+>
+  <cds-text-label class="valtimo-widget-management-metroline__title-input">
+    <v-input-label
+      [title]="'widgetTabManagement.content.widgetTitle' | translate"
+      [tooltip]="'widgetTabManagement.content.widgetTitleTooltip' | translate"
+    >
+    </v-input-label>
+
+    <input
+      formControlName="widgetTitle"
+      cdsText
+      [attr.data-test-id]="testIds.widgetTitleInput"
+      [placeholder]="'widgetTabManagement.content.widgetTitlePlaceholder' | translate"
+      type="text"
+    />
+  </cds-text-label>
+
+  <valtimo-mdi-icon-selector
+    [cdsLayer]="1"
+    formControlName="widgetIcon"
+  ></valtimo-mdi-icon-selector>
+</form>
+
+<ng-content></ng-content>
+
+<section
+  class="valtimo-widget-management-metroline__settings"
+  [formGroup]="form"
+>
+  <cds-radio-group
+    class="valtimo-widget-management-metroline__radio-group"
+    orientation="vertical"
+    formControlName="orientation"
+    [attr.data-test-id]="testIds.displayTypeRadio"
+    [legend]="'widgetTabManagement.content.metroline.displayType.label' | translate"
+  >
+    <cds-radio [value]="orientationOptions.HORIZONTAL">
+      {{ 'widgetTabManagement.content.metroline.displayType.horizontal' | translate }}
+    </cds-radio>
+    <cds-radio [value]="orientationOptions.VERTICAL">
+      {{ 'widgetTabManagement.content.metroline.displayType.vertical' | translate }}
+    </cds-radio>
+  </cds-radio-group>
+
+  <cds-dropdown
+    class="valtimo-widget-management-metroline__dropdown"
+    [appendInline]="false"
+    [attr.data-test-id]="testIds.statusSourceDropdown"
+    [label]="'widgetTabManagement.content.metroline.statusSource.label' | translate"
+    [placeholder]="'widgetTabManagement.content.metroline.statusSource.placeholder' | translate"
+    (selected)="onModeSelected($event)"
+  >
+    <cds-dropdown-list [items]="modeItems$ | async"></cds-dropdown-list>
+  </cds-dropdown>
+</section>

@@ -954,7 +954,11 @@
       },
       "collection": {"title": "Collection", "description": "Create a collection"},
       "divider": {"title": "Divider"},
-      "map": {"title": "Map", "description": "Create a map widget"}
+      "map": {"title": "Map", "description": "Create a map widget"},
+      "metroline": {
+        "title": "Metroline",
+        "description": "Show progression as a metroline"
+      }
     },
     "width": {
       "description": "Select the desired width for the widget.",
@@ -1083,6 +1087,19 @@
         "fieldWidthPlaceholder": "Choose field width",
         "titleTooltip": "Title for the property",
         "valueTooltip": "Name of the property you wish to access within the previously filled collection data path"
+      },
+      "metroline": {
+        "displayType": {
+          "label": "Display type",
+          "horizontal": "Horizontal",
+          "vertical": "Vertical"
+        },
+        "statusSource": {
+          "label": "Status source",
+          "placeholder": "Select a status source",
+          "internalStatus": "Internal status",
+          "zaakStatus": "Zaak status"
+        }
       }
     },
     "filters": {

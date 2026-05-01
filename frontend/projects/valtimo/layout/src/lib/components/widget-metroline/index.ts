@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,8 +14,4 @@
  * limitations under the License.
  */
 
-export * from './layout.service';
-export * from './metroline-widget-api.service';
-export * from './widget-fields.service';
-export * from './widget-interactive-table.service';
-export * from './widget-wizard.service';
+export * from './widget-metroline.component';

@@ -22,6 +22,7 @@ import {
   WidgetFieldsContent,
   WidgetInteractiveTableContent,
   WidgetMapContent,
+  WidgetMetrolineContent,
   WidgetTableContent,
 } from './widget-content.model';
 import {WidgetDisplayType} from './widget-display.model';
@@ -35,6 +36,7 @@ enum WidgetType {
   FORMIO = 'formio',
   DIVIDER = 'divider',
   MAP = 'map',
+  METROLINE = 'metroline',
 }
 
 enum WidgetColor {
@@ -145,6 +147,11 @@ interface MapWidget extends BasicWidget {
   properties: WidgetMapContent;
 }
 
+interface MetrolineWidget extends BasicWidget {
+  type: WidgetType.METROLINE;
+  properties: WidgetMetrolineContent;
+}
+
 type Widget =
   | FieldsWidget
   | CollectionWidget
@@ -153,7 +160,8 @@ type Widget =
   | InteractiveTableWidget
   | FormioWidget
   | DividerWidget
-  | MapWidget;
+  | MapWidget
+  | MetrolineWidget;
 
 type WidgetWithUuid = Widget & {
   uuid: string;
@@ -221,7 +229,7 @@ interface WidgetGroup {
   widgets: Widget[];
 }
 
-type WidgetComponentMap = Record<Exclude<WidgetType, WidgetType.DIVIDER>, Type<any>>;
+type WidgetComponentMap = Partial<Record<Exclude<WidgetType, WidgetType.DIVIDER>, Type<any>>>;
 
 type WidgetContext = 'case' | 'iko';
 
@@ -250,6 +258,7 @@ export {
   TableWidget,
   InteractiveTableWidget,
   MapWidget,
+  MetrolineWidget,
   WidgetPackResultItem,
   WidgetPackResultItemsByRow,
   FormioWidgetWidgetWithUuid,
