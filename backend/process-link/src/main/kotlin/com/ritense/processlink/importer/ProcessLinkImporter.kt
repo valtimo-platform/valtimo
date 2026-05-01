@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,9 +30,11 @@ import com.ritense.logging.withLoggingContext
 import com.ritense.processdocument.service.ProcessDefinitionCaseDefinitionService
 import com.ritense.processlink.autodeployment.ProcessLinkDeployDto
 import com.ritense.processlink.exception.ProcessLinkExistsException
+import com.ritense.processlink.mapper.ProcessLinkMapper
 import com.ritense.processlink.service.ProcessLinkService
 import com.ritense.valtimo.operaton.domain.OperatonProcessDefinition
 import com.ritense.valtimo.operaton.service.OperatonRepositoryService
+import org.springframework.context.ApplicationEventPublisher
 import org.springframework.transaction.annotation.Transactional
 
 @Transactional
@@ -40,7 +42,9 @@ open class ProcessLinkImporter(
     private val processLinkService: ProcessLinkService,
     private val repositoryService: OperatonRepositoryService,
     private val processDefinitionCaseDefinitionService: ProcessDefinitionCaseDefinitionService,
-    private val objectMapper: ObjectMapper
+    private val objectMapper: ObjectMapper,
+    private val processLinkMappers: List<ProcessLinkMapper>,
+    private val applicationEventPublisher: ApplicationEventPublisher,
 ) : Importer {
 
     override fun type() = PROCESS_LINK
@@ -71,6 +75,26 @@ open class ProcessLinkImporter(
 
                 if (!node.has("processDefinitionId")) {
                     node.set<ObjectNode>("processDefinitionId", TextNode.valueOf(processDefinitionId))
+                }
+
+                val mappings = request.pluginConfigurationMappings
+                if (mappings != null && node.has("pluginConfigurationId")) {
+                    val originalIdText = node.get("pluginConfigurationId").asText(null)
+                    if (originalIdText != null) {
+                        val originalId = try {
+                            java.util.UUID.fromString(originalIdText)
+                        } catch (_: IllegalArgumentException) {
+                            null
+                        }
+                        if (originalId != null && mappings.containsKey(originalId)) {
+                            val mappedId = mappings[originalId]
+                            if (mappedId != null) {
+                                node.set<ObjectNode>("pluginConfigurationId", TextNode.valueOf(mappedId.toString()))
+                            } else {
+                                node.putNull("pluginConfigurationId")
+                            }
+                        }
+                    }
                 }
 
                 val deployDto = objectMapper.treeToValue<ProcessLinkDeployDto>(node)
@@ -116,6 +140,19 @@ open class ProcessLinkImporter(
             )
 
         return latestCandidate.id
+    }
+
+    override fun afterImport(request: ImportRequest) {
+        val caseDefinitionId = request.caseDefinitionId ?: return
+        val processDefinitionIds = AuthorizationContext.runWithoutAuthorization {
+            processDefinitionCaseDefinitionService
+                .findProcessDefinitionCaseDefinitions(caseDefinitionId)
+                .mapNotNull { repositoryService.findProcessDefinitionById(it.id.processDefinitionId.id)?.id }
+                .toSet()
+        }
+        processLinkMappers.forEach { mapper ->
+            mapper.afterImport(caseDefinitionId, processDefinitionIds, applicationEventPublisher)
+        }
     }
 
     protected fun getFilenameRegexToImport(): Regex = FILENAME_REGEX

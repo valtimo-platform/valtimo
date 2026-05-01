@@ -814,6 +814,35 @@
           "message": "This process may use plugins. Make sure you configure them correctly.",
           "title": "Plugin Configuration"
         }
+      },
+      "plugins": {
+        "description": "Connect the correct plugin configurations. Matching plugins are filled automatically. If a plugin configuration is missing you can still continue. You can configure the plugin afterwards and connect it through the case configuration page.",
+        "source": "Source",
+        "target": "Target",
+        "selectPlaceholder": "Select plugin configuration",
+        "unknownPlugin": "Unknown plugin",
+        "noPlugins": "No plugin configurations need to be mapped for this import.",
+        "noPluginsTitle": "No plugins to configure",
+        "notInstalled": "Plugin type not installed",
+        "noConfigurations": "No configurations available",
+        "unidentifiable": {
+          "title": "Unidentified plugin configurations",
+          "message": "Some plugin configurations could not be identified from the export. The import can continue, but you will need to manually configure the affected process links afterwards."
+        }
+      }
+    },
+    "missingPluginConfigurations": {
+      "title": "Missing configuration",
+      "description": "There are missing plugin configurations for this case. Please link the required plugin configurations below",
+      "selectPlaceholder": "Select plugin configuration",
+      "unknownPlugin": "Unknown plugin",
+      "notInstalled": "Plugin type not installed",
+      "noConfigurations": "No configurations available",
+      "saveSuccess": "Plugin configuration mappings saved successfully",
+      "saveError": "Failed to save plugin configuration mappings",
+      "legacyExport": {
+        "title": "Unidentified plugin configurations",
+        "message": "Some process links reference plugin configurations that could not be identified from the export. Please manually reconfigure the affected process links."
       }
     },
     "createDefinition": {
@@ -1196,7 +1225,8 @@
         "modal": {
           "header": "Document preview"
         },
-        "pdfViewerNotSupported": "Your browser does not support PDF viewing."
+        "pdfViewerNotSupported": "Your browser does not support PDF viewing.",
+        "loading": "A preview version of the document is being generated. This may take a moment."
       }
     },
     "notifications": {

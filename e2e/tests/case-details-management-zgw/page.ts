@@ -16,8 +16,8 @@
 
 import {APIRequestContext, expect, Locator, Page} from '@playwright/test';
 import {CarbonList} from '../../shared/carbon-list/carbon-list.utils';
-import {ZGW_DOCUMENT_COLUMNS_TEST_IDS} from '../../constants';
-import {apiDelete, apiGet} from '../../utils/api.utils';
+import {ZGW_DOCUMENT_COLUMNS_TEST_IDS, ZGW_UPLOAD_FIELDS_TEST_IDS} from '../../constants';
+import {apiDelete, apiGet, apiPut} from '../../utils/api.utils';
 
 export interface ConfiguredColumn {
   key: string;
@@ -25,6 +25,29 @@ export interface ConfiguredColumn {
   filterable: boolean;
   defaultSort?: 'ASC' | 'DESC' | null;
 }
+
+export interface UploadField {
+  key: string;
+  defaultValue: string;
+  visible: boolean;
+  readonly: boolean;
+}
+
+export const UPLOAD_FIELD_KEY_LABELS: Record<string, string> = {
+  bestandsnaam: 'File Name',
+  titel: 'Title',
+  auteur: 'Author',
+  beschrijving: 'Description',
+  taal: 'Language',
+  vertrouwelijkheidaanduiding: 'Confidentiality Indication',
+  creatiedatum: 'Creation Date',
+  informatieobjecttype: 'Information Object Type',
+  status: 'Status',
+  verzenddatum: 'Send Date',
+  ontvangstdatum: 'Receive Date',
+  aanvullendeDatum: 'Additional Date',
+  trefwoorden: 'Tags',
+};
 
 export class CaseDetailsManagementZgwPage {
   constructor(
@@ -40,6 +63,10 @@ export class CaseDetailsManagementZgwPage {
 
   get documentColumnsTab(): Locator {
     return this.page.getByRole('tab', {name: 'Document columns'});
+  }
+
+  get documentUploadFieldsTab(): Locator {
+    return this.page.getByRole('tab', {name: 'Document upload fields'});
   }
 
   get addColumnButton(): Locator {
@@ -70,6 +97,63 @@ export class CaseDetailsManagementZgwPage {
     return new CarbonList(this.page, this.page.locator('valtimo-documenten-api-columns'));
   }
 
+  // ─── Upload fields locators ──────────────────────────────────────
+
+  get uploadFieldsList(): CarbonList {
+    return new CarbonList(
+      this.page,
+      this.page.locator('valtimo-documenten-api-upload-fields')
+    );
+  }
+
+  get uploadFieldsModal(): Locator {
+    return this.page.locator('valtimo-documenten-api-upload-field-modal cds-modal');
+  }
+
+  get uploadFieldVisibleToggleWrapper(): Locator {
+    return this.page.getByTestId(ZGW_UPLOAD_FIELDS_TEST_IDS.modalVisibleToggle);
+  }
+
+  get uploadFieldVisibleToggleSwitch(): Locator {
+    return this.uploadFieldVisibleToggleWrapper.locator('.cds--toggle__switch');
+  }
+
+  get uploadFieldVisibleSwitch(): Locator {
+    return this.uploadFieldVisibleToggleWrapper.getByRole('switch');
+  }
+
+  get uploadFieldReadonlyToggleWrapper(): Locator {
+    return this.page.getByTestId(ZGW_UPLOAD_FIELDS_TEST_IDS.modalReadonlyToggle);
+  }
+
+  get uploadFieldReadonlyToggleSwitch(): Locator {
+    return this.uploadFieldReadonlyToggleWrapper.locator('.cds--toggle__switch');
+  }
+
+  get uploadFieldReadonlySwitch(): Locator {
+    return this.uploadFieldReadonlyToggleWrapper.getByRole('switch');
+  }
+
+  get uploadFieldModalSubmitButton(): Locator {
+    return this.page.getByTestId(ZGW_UPLOAD_FIELDS_TEST_IDS.modalSubmitButton);
+  }
+
+  get uploadFieldModalCancelButton(): Locator {
+    return this.page.getByTestId(ZGW_UPLOAD_FIELDS_TEST_IDS.modalCancelButton);
+  }
+
+  get uploadFieldDefaultValueComboBox(): Locator {
+    return this.page.locator(
+      'valtimo-documenten-api-upload-field-modal .uploadField-form cds-combo-box'
+    );
+  }
+
+  get uploadFieldDefaultValueInput(): Locator {
+    return this.page.locator(
+      'valtimo-documenten-api-upload-field-modal .uploadField-form input[cdstext]'
+    );
+  }
+
   // ─── Navigation ──────────────────────────────────────────────────
 
   async goToCaseManagementForCase(caseIdentifier: string) {
@@ -83,6 +167,12 @@ export class CaseDetailsManagementZgwPage {
     await this.zgwTab.click();
     await this.documentColumnsTab.click();
     await this.columnsList.waitForLoaded();
+  }
+
+  async openDocumentUploadFieldsTab() {
+    await this.zgwTab.click();
+    await this.documentUploadFieldsTab.click();
+    await this.uploadFieldsList.waitForLoaded();
   }
 
   // ─── UI Actions ──────────────────────────────────────────────────
@@ -186,5 +276,68 @@ export class CaseDetailsManagementZgwPage {
     } catch {
       // Column may already be deleted or was never created — ignore.
     }
+  }
+
+  // ─── Upload fields: UI actions ───────────────────────────────────
+
+  uploadFieldRowByLabel(fieldLabel: string) {
+    return this.uploadFieldsList.row(fieldLabel);
+  }
+
+  async openUploadFieldEditModal(fieldLabel: string) {
+    await this.uploadFieldRowByLabel(fieldLabel).click();
+    await expect(this.uploadFieldVisibleToggleWrapper).toBeVisible();
+    await expect(this.uploadFieldReadonlyToggleWrapper).toBeVisible();
+  }
+
+  async toggleUploadFieldVisible() {
+    await this.uploadFieldVisibleToggleSwitch.click();
+  }
+
+  async toggleUploadFieldReadonly() {
+    await this.uploadFieldReadonlyToggleSwitch.click();
+  }
+
+  async saveUploadFieldModal() {
+    await expect(this.uploadFieldModalSubmitButton).toBeEnabled();
+    await this.uploadFieldModalSubmitButton.click();
+    await expect(this.uploadFieldVisibleToggleWrapper).not.toBeVisible();
+  }
+
+  async selectFirstDefaultValueOption(): Promise<string> {
+    await expect(this.uploadFieldDefaultValueComboBox).toBeVisible();
+    await this.uploadFieldDefaultValueComboBox.locator('.cds--list-box__field').first().click();
+    const firstOption = this.page.getByRole('listbox').getByRole('option').first();
+    await expect(firstOption).toBeVisible();
+    const label = ((await firstOption.textContent()) ?? '').trim();
+    await firstOption.click();
+    return label;
+  }
+
+  // ─── Upload fields: assertions ───────────────────────────────────
+
+  async assertUploadFieldRowBooleans(
+    fieldLabel: string,
+    expected: {visible: boolean; readonly: boolean}
+  ) {
+    // Columns: [field, defaultValue, visible, readonly, action overflow].
+    const row = this.uploadFieldRowByLabel(fieldLabel);
+    await expect(row.cellByIndex(2)).toHaveText(expected.visible ? 'Yes' : 'No');
+    await expect(row.cellByIndex(3)).toHaveText(expected.readonly ? 'Yes' : 'No');
+  }
+
+  // ─── Upload fields: API helpers ──────────────────────────────────
+
+  async getUploadFields(caseDefinitionKey: string): Promise<UploadField[]> {
+    return apiGet<UploadField[]>(
+      `/api/management/v1/case-definition/${caseDefinitionKey}/zgw-document/upload-field`
+    );
+  }
+
+  async putUploadField(caseDefinitionKey: string, field: UploadField) {
+    await apiPut(
+      `/api/management/v1/case-definition/${caseDefinitionKey}/zgw-document/upload-field`,
+      field
+    );
   }
 }

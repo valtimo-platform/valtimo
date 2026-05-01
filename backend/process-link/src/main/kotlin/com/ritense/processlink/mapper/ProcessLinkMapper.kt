@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,6 +25,7 @@ import com.ritense.processlink.web.rest.dto.ProcessLinkResponseDto
 import com.ritense.processlink.web.rest.dto.ProcessLinkUpdateRequestDto
 import com.ritense.valtimo.contract.BlueprintId
 import com.ritense.valtimo.contract.case_.CaseDefinitionId
+import org.springframework.context.ApplicationEventPublisher
 import java.util.UUID
 
 interface ProcessLinkMapper {
@@ -54,4 +55,18 @@ interface ProcessLinkMapper {
     fun createRelatedExportRequests(processLink: ProcessLink, caseDefinitionId: CaseDefinitionId): Set<ExportRequest> = setOf()
 
     fun getImporterType(): String? = null
+
+    /**
+     * Called after all imports for a case definition are complete.
+     * Used to check for configuration issues (e.g. missing plugin configurations).
+     *
+     * @param caseDefinitionId The case definition that was imported
+     * @param processDefinitionIds All process definition IDs linked to the case definition
+     * @param applicationEventPublisher Publisher for configuration issue events
+     */
+    fun afterImport(
+        caseDefinitionId: CaseDefinitionId,
+        processDefinitionIds: Set<String>,
+        applicationEventPublisher: ApplicationEventPublisher
+    ) { /* no-op default */ }
 }
