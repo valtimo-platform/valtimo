@@ -23,7 +23,6 @@ import {AdminSettingsLogoComponent} from '../admin-settings-logo/admin-settings-
   standalone: true,
   selector: 'valtimo-admin-settings-appearance',
   templateUrl: './admin-settings-appearance.component.html',
-  styleUrls: ['./admin-settings-appearance.component.scss'],
   imports: [CommonModule, MuuriDirectiveModule, AdminSettingsLogoComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })

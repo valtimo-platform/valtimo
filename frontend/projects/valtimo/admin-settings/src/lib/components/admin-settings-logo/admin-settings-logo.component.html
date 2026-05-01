@@ -29,9 +29,7 @@
 
   @if (obs.loading) {
     <div class="loading-container"><cds-loading></cds-loading></div>
-  }
-
-  @if (!obs.loading && obs.logo) {
+  } @else if (obs.logo) {
     <div class="admin-settings-logo__preview" [attr.data-carbon-theme]="previewTheme">
       <img
         class="admin-settings-logo__image"
@@ -46,9 +44,7 @@
         <svg class="cds--btn__icon" cdsIcon="trash-can" size="16"></svg>
       </button>
     </div>
-  }
-
-  @if (!obs.loading && !obs.logo) {
+  } @else {
     <cds-file-uploader
       [accept]="ACCEPTED_FILES"
       [multiple]="false"
