@@ -59,6 +59,8 @@ class CaseHttpSecurityConfigurer : HttpSecurityConfigurer {
                     .requestMatchers(antMatcher(GET, "/api/v1/case/{caseDefinitionKey}/hidden-list-column")).authenticated()
                     .requestMatchers(antMatcher(POST, "/api/v1/case/{caseDefinitionKey}/hidden-list-column")).authenticated()
                     .requestMatchers(antMatcher(GET, "/api/management/v1/case-definition/{caseDefinitionKey}/version/{caseDefinitionVersionTag}/configuration-issues")).hasAuthority(ADMIN)
+                    .requestMatchers(antMatcher(GET, "/api/management/v1/case-definition/{caseDefinitionKey}/version/{caseDefinitionVersionTag}/dangling-plugin-configurations")).hasAuthority(ADMIN)
+                    .requestMatchers(antMatcher(PUT, "/api/management/v1/case-definition/{caseDefinitionKey}/version/{caseDefinitionVersionTag}/plugin-configuration-mappings")).hasAuthority(ADMIN)
                     .requestMatchers(antMatcher(GET, "/api/management/v1/case-definition/{caseDefinitionKey}/version/{caseDefinitionVersionTag}/settings")).hasAuthority(ADMIN)
                     .requestMatchers(antMatcher(PATCH, "/api/management/v1/case-definition/{caseDefinitionKey}/version/{caseDefinitionVersionTag}/settings")).hasAuthority(ADMIN)
                     .requestMatchers(antMatcher(GET, "/api/management/v1/case-definition/{caseDefinitionKey}")).hasAuthority(ADMIN)

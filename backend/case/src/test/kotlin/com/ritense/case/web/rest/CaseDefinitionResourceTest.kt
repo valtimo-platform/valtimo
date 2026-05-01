@@ -93,6 +93,7 @@ class CaseDefinitionResourceTest : BaseTest() {
             caseDefinitionChecker,
             configurationIssueRepository,
             caseDefinitionImportPreviewService,
+            null,
         )
 
         mapper = MapperSingleton.get()
@@ -523,7 +524,7 @@ class CaseDefinitionResourceTest : BaseTest() {
     fun `should import with key and name overrides`() {
         val caseDefinitionId = CaseDefinitionId("new-key", "1.0.0")
         whenever(caseDefinitionRepository.findAllByFinalTrue()).thenReturn(emptyList())
-        whenever(importService.import(any(), any(), eq("new-key"), eq("New Name")))
+        whenever(importService.import(any(), any(), eq("new-key"), eq("New Name"), isNull()))
             .thenReturn(caseDefinitionId)
 
         val file = MockMultipartFile("file", "test.zip", "application/zip", byteArrayOf(1, 2, 3))
@@ -537,14 +538,14 @@ class CaseDefinitionResourceTest : BaseTest() {
             .andDo(print())
             .andExpect(status().isOk)
 
-        verify(importService).import(any(), any(), eq("new-key"), eq("New Name"))
+        verify(importService).import(any(), any(), eq("new-key"), eq("New Name"), isNull())
     }
 
     @Test
     fun `should import without overrides`() {
         val caseDefinitionId = CaseDefinitionId("original-key", "1.0.0")
         whenever(caseDefinitionRepository.findAllByFinalTrue()).thenReturn(emptyList())
-        whenever(importService.import(any(), any(), isNull(), isNull()))
+        whenever(importService.import(any(), any(), isNull(), isNull(), isNull()))
             .thenReturn(caseDefinitionId)
 
         val file = MockMultipartFile("file", "test.zip", "application/zip", byteArrayOf(1, 2, 3))
@@ -555,7 +556,7 @@ class CaseDefinitionResourceTest : BaseTest() {
             .andDo(print())
             .andExpect(status().isOk)
 
-        verify(importService).import(any(), any(), isNull(), isNull())
+        verify(importService).import(any(), any(), isNull(), isNull(), isNull())
     }
 
     companion object {

@@ -8,3 +8,12 @@ export const ZGW_DOCUMENT_COLUMNS_TEST_IDS = {
   modalSubmitButton: 'zgwDocumentColumnsModalSubmitButton',
   modalCancelButton: 'zgwDocumentColumnsModalCancelButton',
 } as const;
+
+export const ZGW_UPLOAD_FIELDS_TEST_IDS = {
+  modalVisibleToggle: 'zgwUploadFieldsModalVisibleToggle',
+  modalReadonlyToggle: 'zgwUploadFieldsModalReadonlyToggle',
+  modalDefaultValueComboBox: 'zgwUploadFieldsModalDefaultValueComboBox',
+  modalDefaultValueInput: 'zgwUploadFieldsModalDefaultValueInput',
+  modalSubmitButton: 'zgwUploadFieldsModalSubmitButton',
+  modalCancelButton: 'zgwUploadFieldsModalCancelButton',
+} as const;
