@@ -71,24 +71,111 @@ export class ProcessLinkService {
     );
   }
 
+  public createProcessDefinition(
+    processLinks: ProcessLinkCreateEvent[] = [],
+    processXml: string | null
+  ) {
+    return this.http.post(
+      `${this.VALTIMO_ENDPOINT_URI}management/v1/process-definition`,
+      this.buildProcessDefinitionFormData(processLinks, processXml, null),
+      {headers: new HttpHeaders().set(InterceptorSkip, '409')}
+    );
+  }
+
+  public updateProcessDefinition(
+    processLinks: ProcessLinkCreateEvent[] = [],
+    processDefinitionId: string,
+    processXml: string | null
+  ) {
+    return this.http.put(
+      `${this.VALTIMO_ENDPOINT_URI}management/v1/process-definition`,
+      this.buildProcessDefinitionFormData(processLinks, processXml, processDefinitionId)
+    );
+  }
+
+  public createProcessDefinitionForCase(
+    processLinks: ProcessLinkCreateEvent[] = [],
+    processXml: string | null,
+    caseDefinitionKey: string,
+    caseDefinitionVersionTag: string,
+    canInitializeDocument: boolean = false,
+    startableByUser: boolean = false
+  ) {
+    return this.http.post(
+      `${this.VALTIMO_ENDPOINT_URI}management/v1/case-definition/${caseDefinitionKey}/version/${caseDefinitionVersionTag}/process-definition`,
+      this.buildCaseProcessDefinitionFormData(
+        processLinks,
+        processXml,
+        null,
+        canInitializeDocument,
+        startableByUser
+      ),
+      {headers: new HttpHeaders().set(InterceptorSkip, '409')}
+    );
+  }
+
+  public updateProcessDefinitionForCase(
+    processLinks: ProcessLinkCreateEvent[] = [],
+    processDefinitionId: string,
+    processXml: string | null,
+    caseDefinitionKey: string,
+    caseDefinitionVersionTag: string,
+    canInitializeDocument: boolean = false,
+    startableByUser: boolean = false
+  ) {
+    return this.http.put(
+      `${this.VALTIMO_ENDPOINT_URI}management/v1/case-definition/${caseDefinitionKey}/version/${caseDefinitionVersionTag}/process-definition`,
+      this.buildCaseProcessDefinitionFormData(
+        processLinks,
+        processXml,
+        processDefinitionId,
+        canInitializeDocument,
+        startableByUser
+      )
+    );
+  }
+
+  public createProcessDefinitionForBuildingBlock(
+    processLinks: ProcessLinkCreateEvent[] = [],
+    processXml: string | null,
+    buildingBlockKey: string,
+    buildingBlockVersionTag: string
+  ) {
+    return this.http.post(
+      `${this.VALTIMO_ENDPOINT_URI}management/v1/building-block/${buildingBlockKey}/version/${buildingBlockVersionTag}/process-definition`,
+      this.buildBuildingBlockFormData(processLinks, processXml, buildingBlockKey, buildingBlockVersionTag),
+      {headers: new HttpHeaders().set(InterceptorSkip, '409')}
+    );
+  }
+
+  public updateProcessDefinitionForBuildingBlock(
+    processLinks: ProcessLinkCreateEvent[] = [],
+    processDefinitionId: string,
+    processXml: string | null,
+    buildingBlockKey: string,
+    buildingBlockVersionTag: string,
+    replace: boolean = false
+  ) {
+    return this.http.put(
+      `${this.VALTIMO_ENDPOINT_URI}management/v1/building-block/${buildingBlockKey}/version/${buildingBlockVersionTag}/process-definition/${processDefinitionId}`,
+      this.buildBuildingBlockFormData(processLinks, processXml, buildingBlockKey, buildingBlockVersionTag),
+      {params: replace ? new HttpParams().set('replace', 'true') : undefined}
+    );
+  }
+
+  /** @deprecated Use createProcessDefinition() or updateProcessDefinition() */
   public deployProcessWithProcessLinks(
     processLinks: ProcessLinkCreateEvent[] = [],
     processDefinitionId: string | null,
     processXml: string | null
   ) {
-    const formData = new FormData();
-    const processLinksBlob = new Blob(
-      [JSON.stringify(processLinks.map(processLink => this.emptyStringToNull(processLink)))],
-      {type: 'application/json'}
-    );
-
-    if (processXml) formData.append('file', new File([processXml], 'process.bpmn'));
-    if (processDefinitionId) formData.append('processDefinitionId', processDefinitionId);
-    formData.append('processLinks', processLinksBlob);
-
-    return this.http.post(`${this.VALTIMO_ENDPOINT_URI}management/v1/process-definition`, formData);
+    if (processDefinitionId) {
+      return this.updateProcessDefinition(processLinks, processDefinitionId, processXml);
+    }
+    return this.createProcessDefinition(processLinks, processXml);
   }
 
+  /** @deprecated Use createProcessDefinitionForCase() or updateProcessDefinitionForCase() */
   public deployProcessWithProcessLinksForCase(
     processLinks: ProcessLinkCreateEvent[] = [],
     processDefinitionId: string | null,
@@ -98,26 +185,28 @@ export class ProcessLinkService {
     canInitializeDocument: boolean = false,
     startableByUser: boolean = false
   ) {
-    const formData = new FormData();
-    const processLinksBlob = new Blob(
-      [JSON.stringify(processLinks.map(processLink => this.emptyStringToNull(processLink)))],
-      {type: 'application/json'}
-    );
-
-    if (processXml) formData.append('file', new File([processXml], 'process.bpmn'));
-
-    if (processDefinitionId) formData.append('processDefinitionId', processDefinitionId);
-
-    formData.append('processLinks', processLinksBlob);
-    formData.append('canInitializeDocument', String(canInitializeDocument));
-    formData.append('startableByUser', String(startableByUser));
-
-    return this.http.post(
-      `${this.VALTIMO_ENDPOINT_URI}management/v1/case-definition/${caseDefinitionKey}/version/${caseDefinitionVersionTag}/process-definition`,
-      formData
+    if (processDefinitionId) {
+      return this.updateProcessDefinitionForCase(
+        processLinks,
+        processDefinitionId,
+        processXml,
+        caseDefinitionKey,
+        caseDefinitionVersionTag,
+        canInitializeDocument,
+        startableByUser
+      );
+    }
+    return this.createProcessDefinitionForCase(
+      processLinks,
+      processXml,
+      caseDefinitionKey,
+      caseDefinitionVersionTag,
+      canInitializeDocument,
+      startableByUser
     );
   }
 
+  /** @deprecated Use createProcessDefinitionForBuildingBlock() or updateProcessDefinitionForBuildingBlock() */
   public deployProcessWithProcessLinksForBuildingBlock(
     processLinks: ProcessLinkCreateEvent[] = [],
     processDefinitionId: string | null,
@@ -126,32 +215,73 @@ export class ProcessLinkService {
     buildingBlockVersionTag: string,
     replace: boolean = false
   ) {
-    const formData = new FormData();
-    const processLinksBlob = new Blob(
-      [JSON.stringify(processLinks.map(processLink => this.emptyStringToNull(processLink)))],
-      {type: 'application/json'}
+    if (processDefinitionId) {
+      return this.updateProcessDefinitionForBuildingBlock(
+        processLinks,
+        processDefinitionId,
+        processXml,
+        buildingBlockKey,
+        buildingBlockVersionTag,
+        replace
+      );
+    }
+    return this.createProcessDefinitionForBuildingBlock(
+      processLinks,
+      processXml,
+      buildingBlockKey,
+      buildingBlockVersionTag
     );
+  }
 
+  private buildProcessDefinitionFormData(
+    processLinks: ProcessLinkCreateEvent[],
+    processXml: string | null,
+    processDefinitionId: string | null
+  ): FormData {
+    const formData = new FormData();
+    if (processXml) formData.append('file', new File([processXml], 'process.bpmn'));
+    if (processDefinitionId) formData.append('processDefinitionId', processDefinitionId);
+    formData.append('processLinks', this.toProcessLinksBlob(processLinks));
+    return formData;
+  }
+
+  private buildCaseProcessDefinitionFormData(
+    processLinks: ProcessLinkCreateEvent[],
+    processXml: string | null,
+    processDefinitionId: string | null,
+    canInitializeDocument: boolean,
+    startableByUser: boolean
+  ): FormData {
+    const formData = new FormData();
+    if (processXml) formData.append('file', new File([processXml], 'process.bpmn'));
+    if (processDefinitionId) formData.append('processDefinitionId', processDefinitionId);
+    formData.append('processLinks', this.toProcessLinksBlob(processLinks));
+    formData.append('canInitializeDocument', String(canInitializeDocument));
+    formData.append('startableByUser', String(startableByUser));
+    return formData;
+  }
+
+  private buildBuildingBlockFormData(
+    processLinks: ProcessLinkCreateEvent[],
+    processXml: string | null,
+    buildingBlockKey: string,
+    buildingBlockVersionTag: string
+  ): FormData {
+    const formData = new FormData();
     if (processXml) {
       formData.append(
         'file',
         new File([processXml], `${buildingBlockKey}-${buildingBlockVersionTag}.bpmn`)
       );
     }
+    formData.append('processLinks', this.toProcessLinksBlob(processLinks));
+    return formData;
+  }
 
-    if (processDefinitionId) {
-      formData.append('processDefinitionId', processDefinitionId);
-    }
-
-    formData.append('processLinks', processLinksBlob);
-
-    return this.http.post(
-      `${this.VALTIMO_ENDPOINT_URI}management/v1/building-block/${buildingBlockKey}/version/${buildingBlockVersionTag}/process-definition/${processDefinitionId}`,
-      formData,
-      {
-        headers: new HttpHeaders().set(InterceptorSkip, '409'),
-        params: replace ? new HttpParams().set('replace', 'true') : undefined,
-      }
+  private toProcessLinksBlob(processLinks: ProcessLinkCreateEvent[]): Blob {
+    return new Blob(
+      [JSON.stringify(processLinks.map(processLink => this.emptyStringToNull(processLink)))],
+      {type: 'application/json'}
     );
   }
 
