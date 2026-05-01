@@ -17,5 +17,6 @@
 package com.ritense.processlink.event
 
 class ProcessLinkUpdatedEvent(
-    val processLinkType: String
+    val processLinkType: String,
+    val processDefinitionId: String
 )

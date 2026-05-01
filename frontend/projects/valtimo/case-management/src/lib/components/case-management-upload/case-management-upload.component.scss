@@ -97,6 +97,73 @@
     }
   }
 
+  &__plugins {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  &__plugins-description {
+    font-size: 0.875rem;
+    line-height: 1.25rem;
+    color: var(--cds-text-secondary);
+  }
+
+  &__plugins-header {
+    display: grid;
+    grid-template-columns: 1fr 24px 1fr;
+    gap: 8px;
+    align-items: center;
+
+    span {
+      font-size: 0.75rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.32px;
+      color: var(--cds-text-secondary);
+    }
+  }
+
+  &__plugins-row {
+    display: grid;
+    grid-template-columns: 1fr 24px 1fr;
+    gap: 8px;
+    align-items: center;
+    padding: 12px;
+    background-color: var(--cds-layer);
+  }
+
+  &__plugins-source {
+    font-size: 0.875rem;
+    font-weight: 400;
+    padding: 0 1rem;
+    height: 2.5rem;
+    display: flex;
+    align-items: center;
+  }
+
+  &__plugins-arrow {
+    fill: var(--cds-text-secondary);
+    justify-self: center;
+  }
+
+  &__plugins-select {
+    width: 100%;
+  }
+
+  &__plugins-unavailable {
+    font-size: 0.875rem;
+    color: var(--cds-text-disabled);
+    padding: 0 1rem;
+    height: 2.5rem;
+    display: flex;
+    align-items: center;
+
+    &--error {
+      color: var(--cds-text-error);
+    }
+  }
+
   ::ng-deep .cds--modal-container {
     height: 550px;
   }
