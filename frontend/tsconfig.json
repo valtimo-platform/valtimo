@@ -1,5 +1,4 @@
 {
-  "extends": "./tsconfig.base.json",
   "compileOnSave": false,
   "compilerOptions": {
     "resolveJsonModule": true,
@@ -29,7 +28,7 @@
       "@valtimo/access-control": ["./projects/valtimo/access-control/src/public-api.ts"],
       "@valtimo/access-control-management": ["./projects/valtimo/access-control-management/src/public-api.ts"],
       "@valtimo/security": ["./projects/valtimo/security/src/public_api.ts"],
-      "@valtimo/building-blocks": ["./projects/valtimo/building-blocks/src/public_api.ts"],
+      "@valtimo/building-block-management": ["./projects/valtimo/building-block-management/src/public-api.ts"],
       "@valtimo/case": ["./projects/valtimo/case/src/public_api.ts"],
       "@valtimo/process": ["./projects/valtimo/process/src/public_api.ts"],
       "@valtimo/dashboard": ["./projects/valtimo/dashboard/src/public_api.ts"],

@@ -10,8 +10,7 @@
     "clean": "npx rimraf@6 dist .angular node_modules package-lock.json",
     "ng": "ng",
     "installDeps": "npm install",
-    "devMode": "node scripts/dev-mode.js",
-    "devMode:skipLibsBuild": "SKIP_BUILD=true node scripts/dev-mode.js",
+    "devMode": "npm run start",
     "syncLibDepsToRootDeps": "node scripts/sync-lib-deps.js && npm run prettier:write",
     "start": "node --max_old_space_size=8048 ./node_modules/@angular/cli/bin/ng serve --proxy-config proxy.conf.json",
     "startProd": "node --max_old_space_size=8048 ./node_modules/@angular/cli/bin/ng serve --proxy-config proxy.conf.json --configuration production",
@@ -289,7 +288,6 @@
     "zone.js": "0.15.0"
   },
   "devDependencies": {
-    "@angular-builders/custom-webpack": "19.0.1",
     "@angular-devkit/build-angular": "19.2.9",
     "@angular-eslint/builder": "19.3.0",
     "@angular-eslint/eslint-plugin": "19.3.0",

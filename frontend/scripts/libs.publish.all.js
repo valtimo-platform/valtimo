@@ -59,7 +59,7 @@ switch (destinationArg) {
     exit(1);
 }
 
-const distDir = './node_modules/@valtimo';
+const distDir = './dist/valtimo';
 fs.readdirSync(distDir).forEach(dir => {
   let cwd = process.cwd();
   process.chdir(path.resolve(`${distDir}/${dir}`));

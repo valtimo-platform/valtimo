@@ -15,11 +15,8 @@
       },
       "architect": {
         "build": {
-          "builder": "@angular-builders/custom-webpack:browser",
+          "builder": "@angular-devkit/build-angular:browser",
           "options": {
-            "customWebpackConfig": {
-              "path": "./webpack.config.js"
-            },
             "aot": false,
             "outputPath": "deployment/valtimo-angular-console",
             "index": "src/index.html",
@@ -153,7 +150,7 @@
           "defaultConfiguration": ""
         },
         "serve": {
-          "builder": "@angular-builders/custom-webpack:dev-server",
+          "builder": "@angular-devkit/build-angular:dev-server",
           "options": {
             "proxyConfig": "proxy.conf.json",
             "buildTarget": "valtimo-angular-console:build"
