@@ -1,0 +1,235 @@
+<!--
+  ~ Copyright 2015-2026 Ritense BV, the Netherlands.
+  ~
+  ~ Licensed under EUPL, Version 1.2 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~ https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" basis,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<ng-container *ngIf="{isAllCases: isAllCases$ | async} as mode">
+  <!-- All Cases mode -->
+  <ng-container *ngIf="mode.isAllCases">
+    <valtimo-carbon-list
+      [fields]="allCasesFields$ | async"
+      [header]="false"
+      [items]="(allCasesData$ | async)?.items"
+      [loading]="allCasesLoading$ | async"
+      [pagination]="(allCasesData$ | async)?.pagination"
+      paginationIdentifier="genericCaseList"
+      [tableTranslations]="tableTranslations"
+      (paginationClicked)="allCasesPageChange($event)"
+      (paginationSet)="allCasesPageSizeChange($event)"
+      (rowClicked)="allCasesRowClick($event)"
+      (sortChanged)="allCasesSortChanged($event)"
+    >
+      <valtimo-no-results
+        [description]="'case.noResults.ALL.description' | translate"
+        [title]="'case.noResults.ALL.title' | translate"
+      ></valtimo-no-results>
+
+      <div tabs *ngIf="visibleCaseTabs">
+        <valtimo-case-list-tabs
+          [assigneeFilter]="allCasesAssigneeFilter$ | async"
+          [selectedRowCount]="0"
+          [visibleTabs]="visibleCaseTabs"
+          (tabChangeEvent)="allCasesTabChange($event)"
+        ></valtimo-case-list-tabs>
+      </div>
+    </valtimo-carbon-list>
+  </ng-container>
+
+  <!-- Specific case definition mode -->
+  <ng-container *ngIf="!mode.isAllCases">
+    <ng-container
+      *ngIf="{
+        availableFields: orchestration.availableFields$ | async,
+        fields: orchestration.fields$ | async,
+        documentItems: orchestration.documentItems$ | async,
+        noResultsMessage: orchestration.noResultsMessage$ | async,
+        hasApiColumnConfig: orchestration.hasApiColumnConfig$ | async,
+        searchFields: orchestration.searchFields$ | async,
+        showAssignModal: showAssignModal$ | async,
+        selectedCaseIds: selectedCaseIds$ | async,
+        statuses: orchestration.statuses$ | async,
+        caseTags: orchestration.caseTags$ | async,
+        selectedStatusKeys: orchestration.selectedStatusKeys$ | async,
+        selectedCaseTagKeys: orchestration.selectedCaseTagKeys$ | async,
+        showStatusSelector: orchestration.showStatusSelector$ | async,
+        showCaseTagsSelector: orchestration.showCaseTagsSelector$ | async,
+        loaded: orchestration.loaded$ | async,
+        canCreate: orchestration.canCreateCase$ | async,
+        canExport: orchestration.canExportCase$ | async,
+        disableExport: orchestration.disableExportButton$ | async,
+        disableSaveSearch: orchestration.disableSaveSearch$ | async,
+        assigneeFilter: orchestration.assigneeFilter$ | async,
+        hiddenColumns: orchestration.hiddenColumns$ | async,
+        disableStartButton: disableStartButton$ | async,
+      } as obs"
+    >
+      <valtimo-case-list-actions
+        [loading]="!obs.loaded"
+        (formFlowComplete)="forceRefresh()"
+        (startButtonDisableEvent)="onStartButtonDisableEvent($event)"
+      ></valtimo-case-list-actions>
+
+      <ng-container *ngTemplateOutlet="searchFields; context: {obs: obs}"></ng-container>
+
+      <valtimo-quick-search
+        (quickSearchEvent)="onQuickSearchEvent($event)"
+      ></valtimo-quick-search>
+
+      <ng-container *ngIf="obs.loaded; else specificLoading">
+        <valtimo-carbon-list
+          #specificCaseList
+          [fields]="obs.fields"
+          [header]="false"
+          [initialSortState]="pagination?.sort"
+          [items]="obs.documentItems"
+          [pagination]="pagination"
+          paginationIdentifier="genericCaseListSpecific"
+          lockedTooltipTranslationKey="case.rowLocked"
+          [showSelectionColumn]="canHaveAssignee"
+          [tableTranslations]="tableTranslations"
+          (paginationClicked)="pageChange($event)"
+          (paginationSet)="pageSizeChange($event)"
+          (rowClicked)="rowClick($event)"
+          (sortChanged)="sortChanged($event)"
+        >
+          <ng-container carbonToolbarActions>
+            <button cdsButton="primary" (click)="showAssignModal()">
+              {{ 'case.bulkAssign.assign' | translate }}
+            </button>
+          </ng-container>
+
+          <div carbonToolbarContent>
+            <valtimo-case-list-toolbar
+              [availableFields]="obs.availableFields"
+              [canCreate]="obs.canCreate"
+              [canExport]="obs.canExport"
+              [disableExport]="obs.disableExport"
+              [disableStart]="obs.disableStartButton"
+              [hasApiColumnConfig]="obs.hasApiColumnConfig"
+              [hiddenColumns]="obs.hiddenColumns"
+              [loadingExport]="loadingExport"
+              (exportEvent)="export()"
+              (startCaseEvent)="startCase()"
+              (viewUpdateEvent)="onViewUpdateEvent($event)"
+            ></valtimo-case-list-toolbar>
+          </div>
+
+          <valtimo-no-results
+            [action]="obs.noResultsMessage?.isSearchResult ? null : caseListActionsNoResult"
+            [description]="obs.noResultsMessage?.description | translate"
+            [title]="obs.noResultsMessage?.title | translate"
+          ></valtimo-no-results>
+
+          <div tabs *ngIf="canHaveAssignee">
+            <valtimo-case-list-tabs
+              [assigneeFilter]="obs.assigneeFilter"
+              [selectedRowCount]="carbonList?.model?.selectedRowsCount() ?? 0"
+              [visibleTabs]="visibleCaseTabs"
+              (tabChangeEvent)="onTabChange($event)"
+            ></valtimo-case-list-tabs>
+          </div>
+        </valtimo-carbon-list>
+      </ng-container>
+
+      <ng-template #specificLoading>
+        <valtimo-carbon-list [loading]="true">
+          <div tabs *ngIf="canHaveAssignee">
+            <valtimo-case-list-tabs
+              [assigneeFilter]="orchestration.assigneeFilter$ | async"
+              [selectedRowCount]="0"
+              [visibleTabs]="visibleCaseTabs"
+              (tabChangeEvent)="onTabChange($event)"
+            ></valtimo-case-list-tabs>
+          </div>
+        </valtimo-carbon-list>
+      </ng-template>
+
+      <valtimo-case-bulk-assign-modal
+        [documentIds]="obs.selectedCaseIds"
+        [open]="obs.showAssignModal"
+        (closeEvent)="onCloseEvent($event)"
+      ></valtimo-case-bulk-assign-modal>
+
+      <valtimo-confirmation-modal
+        confirmButtonTextTranslationKey="case.changePageModal.confirm"
+        contentTranslationKey="case.changePageModal.content"
+        [outputOnConfirm]="paginationChange$ | async"
+        [showModalSubject$]="showChangePageModal$"
+        titleTranslationKey="case.changePageModal.title"
+        (confirmEvent)="onChangePageConfirm($event)"
+      ></valtimo-confirmation-modal>
+    </ng-container>
+  </ng-container>
+</ng-container>
+
+<ng-template #searchFields let-obs="obs">
+  <valtimo-search-fields
+    [disableSaveSearch]="obs.disableSaveSearch"
+    [canSaveSearch]="true"
+    [searchFields]="obs.searchFields"
+    [caseDefinitionKey]="orchestration.caseDefinitionKey$ | async"
+    [defaultValues]="orchestration.searchFieldValues$ | async"
+    [inputDisabled]="!obs.loaded"
+    [externalSearchField]="obs.showStatusSelector"
+    (clearEvent)="onClearEvent()"
+    (doSearch)="search($event)"
+    (saveSearchEvent)="onSaveSearchEvent($event)"
+  >
+    <valtimo-status-selector
+      *ngIf="obs.showStatusSelector"
+      [statuses]="obs.statuses"
+      [selectedStatusKeys]="obs.selectedStatusKeys"
+      [disabled]="!obs.loaded"
+      (selectedStatusesChangeEvent)="onSelectedStatusesChange($event)"
+    ></valtimo-status-selector>
+
+    <valtimo-case-tags-selector
+      *ngIf="obs.showCaseTagsSelector"
+      [caseTags]="obs.caseTags"
+      [selectedCaseTagKeys]="obs.selectedCaseTagKeys"
+      [disabled]="!obs.loaded"
+      (selectedCaseTagsChangeEvent)="onSelectedCaseTagsChange($event)"
+    ></valtimo-case-tags-selector>
+  </valtimo-search-fields>
+</ng-template>
+
+<ng-template #caseListActionsNoResult>
+  <button
+    *ngIf="orchestration.canCreateCase$ | async"
+    cdsButton="primary"
+    [disabled]="disableStartButton$ | async"
+    (click)="startCase()"
+  >
+    {{ 'Start Case' | translate }}
+    <svg cdsIcon="add" size="16" class="cds--btn__icon"></svg>
+  </button>
+</ng-template>
+
+<ng-container renderInPageHeader [fullWidth]="true">
+  <ng-template>
+    <cds-dropdown
+      class="case-definition-selection"
+      *ngIf="{
+        loadingCaseListItems: loadingCaseListItems$ | async,
+        caseListItems: caseListItems$ | async,
+      } as dropdownObs"
+      [attr.data-testid]="'generic-case-list-dropdown'"
+      [disabled]="dropdownObs.loadingCaseListItems || (dropdownObs.caseListItems || []).length === 1"
+      [skeleton]="dropdownObs.loadingCaseListItems"
+      (selected)="setCaseDefinition($event)"
+    >
+      <cds-dropdown-list [items]="dropdownObs.caseListItems || []"></cds-dropdown-list>
+    </cds-dropdown>
+  </ng-template>
+</ng-container>

@@ -38,6 +38,7 @@ export class DocumentSearchRequestHttpBody {
   sequence?: number;
   createdBy?: string;
   globalSearchFilter?: string;
+  assigneeFilter?: string;
   otherFilters?: Array<{path: string; value: string}>;
 }
 
@@ -49,6 +50,7 @@ export class DocumentSearchRequestImpl implements DocumentSearchRequest {
   createdBy?: string;
   globalSearchFilter?: string;
   sort?: SortState;
+  assigneeFilter?: string;
   otherFilters?: Array<{path: string; value: string}>;
 
   constructor(
@@ -59,7 +61,8 @@ export class DocumentSearchRequestImpl implements DocumentSearchRequest {
     createdBy?: string,
     globalSearchFilter?: string,
     sort?: SortState,
-    otherFilters?: Array<{path: string; value: string}>
+    otherFilters?: Array<{path: string; value: string}>,
+    assigneeFilter?: string
   ) {
     this.definitionName = definitionName;
     this.page = page;
@@ -69,6 +72,7 @@ export class DocumentSearchRequestImpl implements DocumentSearchRequest {
     this.globalSearchFilter = globalSearchFilter;
     this.sort = sort;
     this.otherFilters = otherFilters;
+    this.assigneeFilter = assigneeFilter;
   }
 
   asHttpBody(): DocumentSearchRequestHttpBody {
@@ -87,6 +91,9 @@ export class DocumentSearchRequestImpl implements DocumentSearchRequest {
     }
     if (this.otherFilters) {
       httpBody.otherFilters = this.otherFilters;
+    }
+    if (this.assigneeFilter) {
+      httpBody.assigneeFilter = this.assigneeFilter;
     }
 
     return httpBody;

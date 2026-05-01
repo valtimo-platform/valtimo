@@ -31,7 +31,9 @@ export class CaseListStatusService {
     this.caseListService.caseDefinitionKey$.pipe(
       switchMap(caseDefinitionKey =>
         combineLatest([
-          this.caseStatusService.getInternalCaseStatuses(caseDefinitionKey),
+          caseDefinitionKey
+            ? this.caseStatusService.getInternalCaseStatuses(caseDefinitionKey)
+            : this.caseStatusService.getAllInternalCaseStatuses(),
           this.caseParameterService.queryStatusParams$,
         ]).pipe(take(1))
       ),
