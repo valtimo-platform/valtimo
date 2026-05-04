@@ -309,6 +309,22 @@ interface PluginConfigurationViewModel {
   hasOptions: boolean;
 }
 
+interface DuplicateProcessDefinitionDescriptor {
+  key: string;
+  name?: string;
+  processDefinitionId: string;
+}
+
+interface BuildingBlockProcessDefinitionConflictResponse {
+  duplicateProcessDefinitions: DuplicateProcessDefinitionDescriptor[];
+}
+
+interface ProcessDefinitionConflictResponse {
+  processDefinitionKey: string;
+  processDefinitionId: string;
+  processDefinitionName?: string;
+}
+
 export {
   CompatiblePluginProcessLinks,
   CompatibleProcessVersion,
@@ -343,4 +359,7 @@ export {
   UIComponentProcessLinkUpdateRequestDto,
   URLProcessLinkCreateDto,
   URLProcessLinkUpdateRequestDto,
+  BuildingBlockProcessDefinitionConflictResponse,
+  DuplicateProcessDefinitionDescriptor,
+  ProcessDefinitionConflictResponse,
 };
