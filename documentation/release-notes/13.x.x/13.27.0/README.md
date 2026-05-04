@@ -23,4 +23,4 @@
 
 ## Bugfixes
 
-* New bugfix.
+* When sorting on dates in a document, the sorting was done based on the string rather than the date.
