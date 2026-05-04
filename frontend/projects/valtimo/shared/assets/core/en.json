@@ -2385,6 +2385,19 @@
       },
       "logoDarkMode": {
         "title": "Logo (dark mode)"
+      },
+      "colors": {
+        "title": "Colors",
+        "color10": "Color 10",
+        "color20": "Color 20",
+        "color30": "Color 30",
+        "color40": "Color 40",
+        "color50": "Color 50",
+        "color60": "Color 60",
+        "color70": "Color 70",
+        "color80": "Color 80",
+        "color90": "Color 90",
+        "color100": "Color 100"
       }
     },
     "featureToggles": {

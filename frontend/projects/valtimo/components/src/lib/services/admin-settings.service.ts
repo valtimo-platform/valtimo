@@ -28,12 +28,17 @@ interface FeatureToggleOverridesResponse {
   overrides: {[key: string]: boolean};
 }
 
+interface AccentColorsResponse {
+  colors: {[key: string]: string};
+}
+
 @Injectable({
   providedIn: 'root',
 })
 export class AdminSettingsService extends BaseApiService {
   private readonly _refreshLogos$ = new BehaviorSubject<null>(null);
   private readonly _refreshToggles$ = new BehaviorSubject<null>(null);
+  private readonly _refreshAccentColors$ = new BehaviorSubject<null>(null);
 
   private readonly _logos$: Observable<AdminSettingsLogosDto | null> = this._refreshLogos$.pipe(
     switchMap(() =>
@@ -57,6 +62,20 @@ export class AdminSettingsService extends BaseApiService {
           )
       ),
       tap(overrides => this.configService.patchFeatureToggles(overrides)),
+      shareReplay(1)
+    );
+
+  private readonly _accentColors$: Observable<{[key: string]: string}> =
+    this._refreshAccentColors$.pipe(
+      switchMap(() =>
+        this.httpClient
+          .get<AccentColorsResponse>(this.getApiUrl('/v1/admin-settings/accent-colors'))
+          .pipe(
+            map(response => response.colors),
+            catchError(() => of({}))
+          )
+      ),
+      tap(colors => this._applyAccentColors(colors)),
       shareReplay(1)
     );
 
@@ -88,5 +107,22 @@ export class AdminSettingsService extends BaseApiService {
 
   public refreshFeatureToggles(): void {
     this._refreshToggles$.next(null);
+  }
+
+  public getAccentColors(): Observable<{[key: string]: string}> {
+    return this._accentColors$;
+  }
+
+  public refreshAccentColors(): void {
+    this._refreshAccentColors$.next(null);
+  }
+
+  private _applyAccentColors(colors: {[key: string]: string}): void {
+    const root = document.documentElement;
+    Object.entries(colors).forEach(([cssVar, value]) => {
+      if (cssVar && value) {
+        root.style.setProperty(cssVar, value);
+      }
+    });
   }
 }

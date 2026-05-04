@@ -14,5 +14,9 @@
  * limitations under the License.
  */
 
-export * from './accent-colors.model';
-export * from './feature-toggle.model';
+package com.ritense.adminsettings.repository
+
+import com.ritense.adminsettings.domain.AccentColors
+import org.springframework.data.jpa.repository.JpaRepository
+
+interface AccentColorsRepository : JpaRepository<AccentColors, String>

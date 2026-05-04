@@ -24,7 +24,7 @@ import {
   ConfigService,
   CreateAdminSettingsLogoDto,
 } from '@valtimo/shared';
-import {FeatureToggleOverridesDto, UpdateFeatureToggleDto} from '../models';
+import {AccentColorsDto, FeatureToggleOverridesDto, UpdateFeatureToggleDto} from '../models';
 
 @Injectable({
   providedIn: 'root',
@@ -75,6 +75,19 @@ export class AdminSettingsManagementApiService extends BaseApiService {
   public removeFeatureToggle(key: string): Observable<FeatureToggleOverridesDto> {
     return this.httpClient.delete<FeatureToggleOverridesDto>(
       this.getApiUrl(`/management/v1/admin-settings/feature-toggles/${key}`)
+    );
+  }
+
+  public getAccentColors(): Observable<AccentColorsDto> {
+    return this.httpClient.get<AccentColorsDto>(
+      this.getApiUrl('/v1/admin-settings/accent-colors')
+    );
+  }
+
+  public updateAccentColors(dto: AccentColorsDto): Observable<AccentColorsDto> {
+    return this.httpClient.put<AccentColorsDto>(
+      this.getApiUrl('/management/v1/admin-settings/accent-colors'),
+      dto
     );
   }
 }

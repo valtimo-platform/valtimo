@@ -14,5 +14,8 @@
  * limitations under the License.
  */
 
-export * from './accent-colors.model';
-export * from './feature-toggle.model';
+package com.ritense.adminsettings.web.rest.dto
+
+data class AccentColorsDto(
+    val colors: Map<String, String>
+)

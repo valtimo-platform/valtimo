@@ -14,5 +14,9 @@
  * limitations under the License.
  */
 
-export * from './accent-colors.model';
-export * from './feature-toggle.model';
+package com.ritense.adminsettings.deployment
+
+data class AdminSettingsAccentColorsChangeset(
+    val changesetId: String,
+    val colors: Map<String, String>
+)

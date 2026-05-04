@@ -17,13 +17,17 @@
 package com.ritense.adminsettings.autoconfigure
 
 import com.fasterxml.jackson.databind.ObjectMapper
+import com.ritense.adminsettings.deployment.AdminSettingsAccentColorsDeployer
 import com.ritense.adminsettings.deployment.AdminSettingsFeatureToggleDeployer
 import com.ritense.adminsettings.deployment.AdminSettingsLogoDeployer
+import com.ritense.adminsettings.repository.AccentColorsRepository
 import com.ritense.adminsettings.repository.AdminSettingsLogoRepository
 import com.ritense.adminsettings.repository.FeatureToggleOverridesRepository
 import com.ritense.adminsettings.security.config.AdminSettingsHttpSecurityConfigurer
+import com.ritense.adminsettings.service.AccentColorsService
 import com.ritense.adminsettings.service.AdminSettingsLogoService
 import com.ritense.adminsettings.service.FeatureToggleOverridesService
+import com.ritense.adminsettings.web.rest.AccentColorsResource
 import com.ritense.adminsettings.web.rest.AdminSettingsLogoResource
 import com.ritense.adminsettings.web.rest.FeatureToggleOverridesResource
 import com.ritense.authorization.AuthorizationService
@@ -38,7 +42,7 @@ import org.springframework.core.io.support.ResourcePatternResolver
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories
 
 @AutoConfiguration
-@EnableJpaRepositories(basePackageClasses = [AdminSettingsLogoRepository::class, FeatureToggleOverridesRepository::class])
+@EnableJpaRepositories(basePackageClasses = [AdminSettingsLogoRepository::class, FeatureToggleOverridesRepository::class, AccentColorsRepository::class])
 @EntityScan(basePackages = ["com.ritense.adminsettings.domain"])
 class AdminSettingsAutoConfiguration {
 
@@ -100,6 +104,42 @@ class AdminSettingsAutoConfiguration {
         return AdminSettingsFeatureToggleDeployer(
             objectMapper,
             featureToggleOverridesService,
+            changelogService,
+            clearTables,
+        )
+    }
+
+    @Bean
+    @ConditionalOnMissingBean(AccentColorsService::class)
+    fun accentColorsService(
+        accentColorsRepository: AccentColorsRepository,
+        objectMapper: ObjectMapper,
+    ): AccentColorsService {
+        return AccentColorsService(
+            accentColorsRepository,
+            objectMapper,
+        )
+    }
+
+    @Bean
+    @ConditionalOnMissingBean(AccentColorsResource::class)
+    fun accentColorsResource(
+        accentColorsService: AccentColorsService
+    ): AccentColorsResource {
+        return AccentColorsResource(accentColorsService)
+    }
+
+    @Bean
+    @ConditionalOnMissingBean(AdminSettingsAccentColorsDeployer::class)
+    fun adminSettingsAccentColorsDeployer(
+        objectMapper: ObjectMapper,
+        accentColorsService: AccentColorsService,
+        changelogService: ChangelogService,
+        @Value("\${valtimo.changelog.admin-settings-accent-colors.clear-tables:false}") clearTables: Boolean,
+    ): AdminSettingsAccentColorsDeployer {
+        return AdminSettingsAccentColorsDeployer(
+            objectMapper,
+            accentColorsService,
             changelogService,
             clearTables,
         )

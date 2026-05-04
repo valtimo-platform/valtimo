@@ -1,6 +1,6 @@
 {
   "$schema": "../../../node_modules/ng-packagr/ng-package.schema.json",
-  "dest": "../../../dist/valtimo/admin-settings",
+  "dest": "../../../dist/.tmp-admin-settings",
   "lib": {
     "entryFile": "src/public-api.ts"
   }

@@ -73,6 +73,20 @@ export function initializerFactory(
     }
   });
 
+  // Fetch accent colors from the backend and apply them as CSS custom properties
+  // before other initializers run, so the UI renders with the correct colors immediately.
+  initializersArray.push(async () => {
+    try {
+      const adminSettingsService = injector.get(AdminSettingsService);
+      const colors = await firstValueFrom(adminSettingsService.getAccentColors());
+      if (colors && Object.keys(colors).length > 0) {
+        logger.debug('Accent colors applied', colors);
+      }
+    } catch (error) {
+      logger.warn('Failed to fetch accent colors, using defaults', error);
+    }
+  });
+
   // Use environment config initializers to be used in app startup.
   configService.initializers.forEach(initializer => {
     initializersArray.push(initializer(injector));

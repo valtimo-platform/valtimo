@@ -14,5 +14,21 @@
  * limitations under the License.
  */
 
-export * from './accent-colors.model';
-export * from './feature-toggle.model';
+package com.ritense.adminsettings.domain
+
+import jakarta.persistence.Column
+import jakarta.persistence.Entity
+import jakarta.persistence.Id
+import jakarta.persistence.Table
+
+@Entity
+@Table(name = "admin_settings_accent_colors")
+open class AccentColors(
+
+    @Id
+    @Column(name = "id", nullable = false)
+    open val id: String = "singleton",
+
+    @Column(name = "colors", columnDefinition = "TEXT", nullable = false)
+    open var colors: String = "{}"
+)

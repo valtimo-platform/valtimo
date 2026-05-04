@@ -14,5 +14,14 @@
  * limitations under the License.
  */
 
-export * from './accent-colors.model';
-export * from './feature-toggle.model';
+interface AccentColorsDto {
+  colors: {[key: string]: string};
+}
+
+interface AccentColorDefinition {
+  cssVar: string;
+  labelTranslationKey: string;
+  defaultValue: string;
+}
+
+export {AccentColorsDto, AccentColorDefinition};

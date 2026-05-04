@@ -18,12 +18,13 @@ import {ChangeDetectionStrategy, Component} from '@angular/core';
 import {CommonModule} from '@angular/common';
 import {MuuriDirectiveModule} from '@valtimo/components';
 import {AdminSettingsLogoComponent} from '../admin-settings-logo/admin-settings-logo.component';
+import {AdminSettingsColorComponent} from '../admin-settings-color/admin-settings-color.component';
 
 @Component({
   standalone: true,
   selector: 'valtimo-admin-settings-appearance',
   templateUrl: './admin-settings-appearance.component.html',
-  imports: [CommonModule, MuuriDirectiveModule, AdminSettingsLogoComponent],
+  imports: [CommonModule, MuuriDirectiveModule, AdminSettingsLogoComponent, AdminSettingsColorComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class AdminSettingsAppearanceComponent {}

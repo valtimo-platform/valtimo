@@ -2427,6 +2427,19 @@
       },
       "logoDarkMode": {
         "title": "Logo (donkere modus)"
+      },
+      "colors": {
+        "title": "Kleuren",
+        "color10": "Kleur 10",
+        "color20": "Kleur 20",
+        "color30": "Kleur 30",
+        "color40": "Kleur 40",
+        "color50": "Kleur 50",
+        "color60": "Kleur 60",
+        "color70": "Kleur 70",
+        "color80": "Kleur 80",
+        "color90": "Kleur 90",
+        "color100": "Kleur 100"
       }
     },
     "featureToggles": {
