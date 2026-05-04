@@ -38,7 +38,7 @@ export class WidgetActionButtonComponent {
     if (!navigateTo) {
       this.globalNotificationService.showToast({
         title: 'An unexpected error occurred',
-        caption: `Unable to navigate to ${navigateTo}`,
+        caption: 'Unable to navigate to the configured URL',
         type: 'error',
       });
       return;
