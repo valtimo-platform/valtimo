@@ -50,3 +50,4 @@ export * from './menu.model';
 export * from './list-hidden-column.model';
 export * from './version.model';
 export * from './schema-editor.model';
+export * from './color-picker.model';

@@ -39,6 +39,7 @@
     "muuri",
     "ajv",
     "vanilla-jsoneditor",
-    "@floating-ui/dom"
+    "@floating-ui/dom",
+    "@simonwep/pickr"
   ]
 }
