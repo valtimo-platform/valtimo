@@ -35,16 +35,19 @@ export class WidgetActionButtonComponent {
 
   public onNavigateButtonClick(buttonAction: WidgetAction): void {
     const navigateTo = this.getNavigateToUrl(buttonAction);
-    if (navigateTo?.startsWith(window.location.origin) || navigateTo?.startsWith('/')) {
-      window.open(navigateTo, '_self');
-    } else if (navigateTo?.startsWith('http')) {
-      window.open(navigateTo, '_blank');
-    } else {
+    if (!navigateTo) {
       this.globalNotificationService.showToast({
         title: 'An unexpected error occurred',
         caption: `Unable to navigate to ${navigateTo}`,
         type: 'error',
       });
+      return;
+    }
+
+    if (buttonAction?.openInNewTab) {
+      window.open(navigateTo, '_blank', 'noopener,noreferrer');
+    } else {
+      window.open(navigateTo, '_self');
     }
   }
 
