@@ -49,17 +49,16 @@ class MetrolineCaseWidgetDataProvider(
         caseDefinitionId: CaseDefinitionId,
     ): List<MetrolineItem> {
         val history = internalCaseStatusHistoryRepository.findByDocumentIdOrderByCreatedOn(documentId)
-        val statusKeys = history.map { it.internalCaseStatusKey }
 
         val statusesByKey = internalCaseStatusService.getInternalCaseStatuses(caseDefinitionId.key)
             .associateBy { it.id.key }
 
-        return statusKeys.map { key ->
-            val status = statusesByKey[key]
+        return history.map { entry ->
+            val status = statusesByKey[entry.internalCaseStatusKey]
             MetrolineItem(
-                title = status?.title ?: key,
+                title = status?.title ?: entry.internalCaseStatusKey,
                 label = status?.label,
-                completed = true,
+                completed = entry.createdOn,
             )
         }
     }

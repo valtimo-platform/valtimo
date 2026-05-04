@@ -41,13 +41,13 @@ class ZaakMetrolineDataServiceImpl(
         val statustypen = catalogiApiPlugin.getStatustypen(zaaktypeUrl).sortedBy { it.volgnummer }
 
         val zaakStatussen = zakenApiPlugin.getZaakStatussen(zaakUrl)
-        val completedStatustypeUrls = zaakStatussen.map { it.statustype }.toSet()
+        val completedByStatustypeUrl = zaakStatussen.associateBy({ it.statustype }, { it.datumStatusGezet })
 
         return statustypen.map { statustype ->
             MetrolineItem(
                 title = statustype.omschrijving,
                 label = statustype.toelichting,
-                completed = completedStatustypeUrls.contains(statustype.url),
+                completed = completedByStatustypeUrl[statustype.url],
             )
         }
     }

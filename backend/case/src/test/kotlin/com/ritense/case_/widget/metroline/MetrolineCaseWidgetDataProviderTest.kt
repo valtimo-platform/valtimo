@@ -89,10 +89,10 @@ class MetrolineCaseWidgetDataProviderTest {
         assertThat(result).hasSize(2)
         assertThat(result[0].title).isEqualTo("Open")
         assertThat(result[0].label).isEqualTo("Opened")
-        assertThat(result[0].completed).isTrue()
+        assertThat(result[0].completed).isEqualTo(LocalDateTime.of(2026, 1, 1, 10, 0))
         assertThat(result[1].title).isEqualTo("In progress")
         assertThat(result[1].label).isEqualTo("Started")
-        assertThat(result[1].completed).isTrue()
+        assertThat(result[1].completed).isEqualTo(LocalDateTime.of(2026, 1, 2, 10, 0))
     }
 
     @Test
@@ -133,7 +133,7 @@ class MetrolineCaseWidgetDataProviderTest {
         assertThat(result).hasSize(1)
         assertThat(result[0].title).isEqualTo("deleted-status")
         assertThat(result[0].label).isNull()
-        assertThat(result[0].completed).isTrue()
+        assertThat(result[0].completed).isEqualTo(LocalDateTime.of(2026, 1, 1, 10, 0))
     }
 
     @Test
@@ -168,8 +168,8 @@ class MetrolineCaseWidgetDataProviderTest {
     @Test
     fun `should delegate to zaak metroline data service for zaakstatus mode`() {
         val expected = listOf(
-            MetrolineItem("Zaak gestart", "Aanvraag ontvangen", true),
-            MetrolineItem("In behandeling", null, false),
+            MetrolineItem("Zaak gestart", "Aanvraag ontvangen", LocalDateTime.of(2026, 1, 1, 10, 0)),
+            MetrolineItem("In behandeling", null, null),
         )
         whenever(zaakMetrolineDataService.getMetrolineItems(documentId))
             .thenReturn(expected)

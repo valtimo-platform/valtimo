@@ -16,8 +16,10 @@
 
 package com.ritense.case_.widget.metroline
 
+import java.time.LocalDateTime
+
 data class MetrolineItem(
     val title: String,
     val label: String?,
-    val completed: Boolean,
+    val completed: LocalDateTime?,
 )

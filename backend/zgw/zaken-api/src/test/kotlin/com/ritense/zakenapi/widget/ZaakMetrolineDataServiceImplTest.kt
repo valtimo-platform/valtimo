@@ -66,12 +66,13 @@ class ZaakMetrolineDataServiceImplTest {
     }
 
     @Test
-    fun `should return all statustypen sorted by volgnummer with completed flag`() {
+    fun `should return all statustypen sorted by volgnummer with completed timestamp`() {
         setupPlugins()
 
         val statustypeUrl1 = URI("https://catalogi.example.com/api/v1/statustypen/1")
         val statustypeUrl2 = URI("https://catalogi.example.com/api/v1/statustypen/2")
         val statustypeUrl3 = URI("https://catalogi.example.com/api/v1/statustypen/3")
+        val datumGezet1 = LocalDateTime.of(2026, 1, 1, 10, 0)
 
         whenever(catalogiApiPlugin.getStatustypen(zaaktypeUrl)).thenReturn(listOf(
             statustype(statustypeUrl3, "Afgehandeld", "Zaak afgerond", 3),
@@ -80,7 +81,7 @@ class ZaakMetrolineDataServiceImplTest {
         ))
 
         whenever(zakenApiPlugin.getZaakStatussen(zaakUrl)).thenReturn(listOf(
-            zaakStatus(statustypeUrl1),
+            zaakStatus(statustypeUrl1, datumGezet1),
         ))
 
         val result = service.getMetrolineItems(documentId)
@@ -88,21 +89,23 @@ class ZaakMetrolineDataServiceImplTest {
         assertThat(result).hasSize(3)
         assertThat(result[0].title).isEqualTo("Zaak gestart")
         assertThat(result[0].label).isEqualTo("Aanvraag ontvangen")
-        assertThat(result[0].completed).isTrue()
+        assertThat(result[0].completed).isEqualTo(datumGezet1)
         assertThat(result[1].title).isEqualTo("In behandeling")
         assertThat(result[1].label).isNull()
-        assertThat(result[1].completed).isFalse()
+        assertThat(result[1].completed).isNull()
         assertThat(result[2].title).isEqualTo("Afgehandeld")
         assertThat(result[2].label).isEqualTo("Zaak afgerond")
-        assertThat(result[2].completed).isFalse()
+        assertThat(result[2].completed).isNull()
     }
 
     @Test
-    fun `should mark multiple statuses as completed`() {
+    fun `should mark multiple statuses as completed with timestamps`() {
         setupPlugins()
 
         val statustypeUrl1 = URI("https://catalogi.example.com/api/v1/statustypen/1")
         val statustypeUrl2 = URI("https://catalogi.example.com/api/v1/statustypen/2")
+        val datumGezet1 = LocalDateTime.of(2026, 1, 1, 10, 0)
+        val datumGezet2 = LocalDateTime.of(2026, 1, 2, 14, 30)
 
         whenever(catalogiApiPlugin.getStatustypen(zaaktypeUrl)).thenReturn(listOf(
             statustype(statustypeUrl1, "Zaak gestart", null, 1),
@@ -110,15 +113,15 @@ class ZaakMetrolineDataServiceImplTest {
         ))
 
         whenever(zakenApiPlugin.getZaakStatussen(zaakUrl)).thenReturn(listOf(
-            zaakStatus(statustypeUrl1),
-            zaakStatus(statustypeUrl2),
+            zaakStatus(statustypeUrl1, datumGezet1),
+            zaakStatus(statustypeUrl2, datumGezet2),
         ))
 
         val result = service.getMetrolineItems(documentId)
 
         assertThat(result).hasSize(2)
-        assertThat(result[0].completed).isTrue()
-        assertThat(result[1].completed).isTrue()
+        assertThat(result[0].completed).isEqualTo(datumGezet1)
+        assertThat(result[1].completed).isEqualTo(datumGezet2)
     }
 
     @Test
@@ -156,12 +159,12 @@ class ZaakMetrolineDataServiceImplTest {
             informeren = false,
         )
 
-    private fun zaakStatus(statustypeUrl: URI) =
+    private fun zaakStatus(statustypeUrl: URI, datumStatusGezet: LocalDateTime = LocalDateTime.now()) =
         ZaakStatus(
             url = URI("https://zaken.example.com/api/v1/statussen/${UUID.randomUUID()}"),
             uuid = UUID.randomUUID(),
             zaak = zaakUrl,
             statustype = statustypeUrl,
-            datumStatusGezet = LocalDateTime.now(),
+            datumStatusGezet = datumStatusGezet,
         )
 }
