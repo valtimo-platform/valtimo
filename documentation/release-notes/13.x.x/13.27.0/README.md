@@ -27,6 +27,14 @@
   When enabled, clicking the button opens the configured URL in a new browser tab instead of replacing
   the case detail page.
 
+* **Task list columns**
+
+  Task list columns can now also display the tags display type.
+
+* **Aligned dependency versions with Spring Boot BOM**
+
+  Updated Hibernate, MySQL driver, and Groovy to match the versions managed by the Spring Boot 3.5.14 BOM.
+
 ## Bugfixes
 
 * New bugfix.
