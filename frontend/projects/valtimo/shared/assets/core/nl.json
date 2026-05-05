@@ -2124,7 +2124,45 @@
     "form-flow": "FormFlow",
     "url": "URL",
     "ui-component": "UI Component",
-    "building-block": "Bouwblok"
+    "building-block": "Bouwblok",
+    "external_plugin": "Externe plugin"
+  },
+  "externalPlugin": {
+    "menuTitle": "Externe Plugins",
+    "host": {
+      "title": "Hosts",
+      "add": "Host toevoegen",
+      "name": "Naam",
+      "baseUrl": "Basis-URL",
+      "status": "Status",
+      "lastHealthCheck": "Laatste health check"
+    },
+    "definition": {
+      "title": "Plugin-definities",
+      "pluginId": "Plugin-ID",
+      "version": "Versie",
+      "name": "Naam",
+      "provider": "Leverancier",
+      "status": "Status"
+    },
+    "configuration": {
+      "title": "Configuraties",
+      "titleField": "Titel",
+      "add": "Configuratie toevoegen",
+      "definition": "Plugin-definitie",
+      "definitionPlaceholder": "Selecteer een plugin",
+      "definitionId": "Definitie",
+      "createdAt": "Aangemaakt op",
+      "properties": "Eigenschappen (JSON)",
+      "propertiesInvalidJson": "Eigenschappen moeten geldige JSON zijn"
+    },
+    "processLink": {
+      "configuration": "Plugin-configuratie",
+      "configurationPlaceholder": "Selecteer een configuratie",
+      "actionKey": "Actiesleutel",
+      "actionProperties": "Actie-eigenschappen (JSON)",
+      "actionPropertiesInvalidJson": "Actie-eigenschappen moeten geldige JSON zijn"
+    }
   },
   "processLinkSteps": {
     "chooseProcessLinkType": "Kies soort koppeling",
@@ -2157,7 +2195,8 @@
     "uiComponent": "Selecteer UI component",
     "selectBuildingBlock": "Selecteer bouwblok",
     "configureBuildingBlockPlugins": "Configureer plugin mappings",
-    "configureBuildingBlockMappings": "Input & Sync"
+    "configureBuildingBlockMappings": "Input & Sync",
+    "configureExternalPlugin": "Configureer externe plugin"
   },
   "processLinkTypeDisabledTooltip": {
     "plugin": "Er zijn geen plugin-configuraties beschikbaar. Maak een plugin-configuratie aan om deze te kunnen koppelen aan een processtap.",
