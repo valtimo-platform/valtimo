@@ -14,22 +14,32 @@
  * limitations under the License.
  */
 import {CommonModule, DatePipe} from '@angular/common';
-import {
-  AfterViewChecked,
-  ChangeDetectionStrategy,
-  Component,
-  ElementRef,
-  HostBinding,
-  Input,
-  OnDestroy,
-  ViewEncapsulation,
-} from '@angular/core';
+import {ChangeDetectionStrategy, Component, HostBinding, Input, ViewEncapsulation} from '@angular/core';
+import {Information16} from '@carbon/icons';
 import {TranslateModule} from '@ngx-translate/core';
-import {CarbonListModule, MdiIconViewerComponent} from '@valtimo/components';
-import {ProgressIndicatorModule, Step} from 'carbon-components-angular';
-import {BehaviorSubject, combineLatest, map, Observable, Subscription} from 'rxjs';
-import {MetrolineItem, MetrolineMode, MetrolineOrientation, MetrolineWidget} from '../../models';
+import {
+  CarbonListModule,
+  MdiIconViewerComponent,
+  RemoveClassnamesDirective,
+} from '@valtimo/components';
+import {I18n, IconModule, IconService, ToggletipModule} from 'carbon-components-angular';
+import {BehaviorSubject, combineLatest, map, Observable} from 'rxjs';
+import {
+  MetrolineItem,
+  MetrolineMode,
+  MetrolineOrientation,
+  MetrolineStep,
+  MetrolineStepState,
+  MetrolineWidget,
+} from '../../models';
 import {WidgetActionButtonComponent} from '../widget-action-button/widget-action-button.component';
+
+const STATUS_ICONS: Record<MetrolineStepState, string> = {
+  current: 'incomplete',
+  complete: 'checkmark--outline',
+  invalid: 'warning',
+  incomplete: 'circle-dash',
+};
 
 @Component({
   selector: 'valtimo-widget-metroline',
@@ -41,14 +51,16 @@ import {WidgetActionButtonComponent} from '../widget-action-button/widget-action
   imports: [
     CarbonListModule,
     CommonModule,
+    IconModule,
     MdiIconViewerComponent,
-    ProgressIndicatorModule,
+    RemoveClassnamesDirective,
+    ToggletipModule,
     TranslateModule,
     WidgetActionButtonComponent,
   ],
   providers: [DatePipe],
 })
-export class WidgetMetrolineComponent implements AfterViewChecked, OnDestroy {
+export class WidgetMetrolineComponent {
   @HostBinding('class') public readonly class = 'valtimo-widget-metroline';
 
   @Input() public set widgetConfiguration(value: MetrolineWidget) {
@@ -67,9 +79,10 @@ export class WidgetMetrolineComponent implements AfterViewChecked, OnDestroy {
     map(config => config?.properties?.mode ?? MetrolineMode.INTERNAL_CASE_STATUS)
   );
 
-  public readonly steps$: Observable<Step[]> = combineLatest([this.widgetData$, this.mode$]).pipe(
-    map(([items, mode]) => this.toSteps(items, mode))
-  );
+  public readonly steps$: Observable<MetrolineStep[]> = combineLatest([
+    this.widgetData$,
+    this.mode$,
+  ]).pipe(map(([items, mode]) => this.toSteps(items, mode)));
 
   public readonly currentStepIndex$: Observable<number> = combineLatest([
     this.widgetData$,
@@ -100,40 +113,57 @@ export class WidgetMetrolineComponent implements AfterViewChecked, OnDestroy {
     this.hasItems$,
     this.hasLoaded$,
   ]).pipe(
-    map(([widgetConfiguration, widgetData, steps, currentStepIndex, orientation, hasItems, hasLoaded]) => ({
-      widgetConfiguration,
-      widgetData,
-      steps,
-      currentStepIndex,
-      orientation,
-      hasItems,
-      hasLoaded,
-    }))
+    map(
+      ([
+        widgetConfiguration,
+        widgetData,
+        steps,
+        currentStepIndex,
+        orientation,
+        hasItems,
+        hasLoaded,
+      ]) => ({
+        widgetConfiguration,
+        widgetData,
+        steps,
+        currentStepIndex,
+        orientation,
+        hasItems,
+        hasLoaded,
+      })
+    )
   );
 
-  private readonly _subscriptions = new Subscription();
-  private _stepsSnapshot: Step[] = [];
-
   constructor(
-    private readonly elementRef: ElementRef<HTMLElement>,
-    private readonly datePipe: DatePipe
+    private readonly datePipe: DatePipe,
+    private readonly i18n: I18n,
+    private readonly iconService: IconService
   ) {
-    this._subscriptions.add(
-      this.steps$.subscribe(steps => {
-        this._stepsSnapshot = steps;
-      })
-    );
+    this.iconService.registerAll([Information16]);
   }
 
-  public ngAfterViewChecked(): void {
-    this.applyTooltips(this._stepsSnapshot);
+  public getStepState(
+    step: MetrolineStep,
+    index: number,
+    currentIndex: number
+  ): MetrolineStepState {
+    if (index === currentIndex) return 'current';
+    if (step.invalid) return 'invalid';
+    if (step.complete) return 'complete';
+    return 'incomplete';
   }
 
-  public ngOnDestroy(): void {
-    this._subscriptions.unsubscribe();
+  public getStepIcon(state: MetrolineStepState): string {
+    return STATUS_ICONS[state];
   }
 
-  private toSteps(items: MetrolineItem[] | null, mode: MetrolineMode): Step[] {
+  public getStepStateLabel(state: MetrolineStepState): string {
+    const translations = this.i18n.get().PROGRESS_INDICATOR;
+    const key = state.toUpperCase() as Uppercase<MetrolineStepState>;
+    return translations[key];
+  }
+
+  private toSteps(items: MetrolineItem[] | null, mode: MetrolineMode): MetrolineStep[] {
     if (!items?.length) return [];
 
     if (mode === MetrolineMode.ZAAKSTATUS) {
@@ -141,6 +171,7 @@ export class WidgetMetrolineComponent implements AfterViewChecked, OnDestroy {
         label: item.title,
         secondaryLabel: this.formatCompleted(item.completed),
         complete: item.completed != null,
+        itemLabel: item.label,
       }));
     }
 
@@ -149,6 +180,7 @@ export class WidgetMetrolineComponent implements AfterViewChecked, OnDestroy {
       label: item.title,
       secondaryLabel: this.formatCompleted(item.completed),
       complete: index < lastIndex,
+      itemLabel: item.label,
     }));
   }
 
@@ -166,30 +198,5 @@ export class WidgetMetrolineComponent implements AfterViewChecked, OnDestroy {
   private formatCompleted(completed: string | null): string | undefined {
     if (!completed) return undefined;
     return this.datePipe.transform(completed, 'dd-MM-yyyy HH:mm') ?? undefined;
-  }
-
-  private applyTooltips(steps: Step[]): void {
-    const buttons = this.elementRef.nativeElement.querySelectorAll<HTMLElement>(
-      '.cds--progress-step-button'
-    );
-    buttons.forEach((button, index) => {
-      const step = steps[index];
-      if (!step) return;
-
-      const labelEl = button.querySelector<HTMLElement>('.cds--progress-label');
-      const optionalEl = button.querySelector<HTMLElement>('.cds--progress-optional');
-
-      this.setTitleIfChanged(labelEl, step.label ?? '');
-      this.setTitleIfChanged(optionalEl, step.secondaryLabel ?? '');
-    });
-  }
-
-  private setTitleIfChanged(el: HTMLElement | null, value: string): void {
-    if (!el) return;
-    if (value) {
-      if (el.getAttribute('title') !== value) el.setAttribute('title', value);
-    } else if (el.hasAttribute('title')) {
-      el.removeAttribute('title');
-    }
   }
 }

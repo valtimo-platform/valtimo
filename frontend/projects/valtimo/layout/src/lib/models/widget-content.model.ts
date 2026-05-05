@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+import {Step} from 'carbon-components-angular';
 import {WidgetDisplayType} from './widget-display.model';
 import {FieldsWidgetValue, GeoJsonSource, WidgetAction} from './widget.model';
 
@@ -135,6 +136,12 @@ interface MetrolineItem {
   completed: string | null;
 }
 
+interface MetrolineStep extends Step {
+  itemLabel: string | null;
+}
+
+type MetrolineStepState = 'current' | 'complete' | 'incomplete' | 'invalid';
+
 type WidgetDropdownValue = {[key: string]: string};
 
 type WidgetContentProperties =
@@ -160,6 +167,8 @@ export {
   MetrolineItem,
   MetrolineMode,
   MetrolineOrientation,
+  MetrolineStep,
+  MetrolineStepState,
   WidgetInteractiveTableEventSearchRequest,
   WidgetFilter,
   WidgetDropdownValue,

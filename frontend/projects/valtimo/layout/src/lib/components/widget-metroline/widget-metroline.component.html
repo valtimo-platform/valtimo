@@ -47,12 +47,64 @@
         [smallPadding]="true"
       ></valtimo-no-results>
     } @else {
-      <cds-progress-indicator
-        [steps]="vm.steps"
-        [current]="vm.currentStepIndex"
-        [orientation]="vm.orientation"
-        spacing="equal"
-      ></cds-progress-indicator>
+      <ul
+        data-progress
+        data-progress-current
+        class="cds--progress"
+        [ngClass]="{
+          'cds--progress--vertical': vm.orientation === 'vertical',
+          'cds--progress--space-equal': vm.orientation !== 'vertical'
+        }"
+      >
+        <li
+          *ngFor="let step of vm.steps; let i = index"
+          class="cds--progress-step"
+          [ngClass]="{
+            'cds--progress-step--complete': step.complete,
+            'cds--progress-step--incomplete': !step.complete && i !== vm.currentStepIndex,
+            'cds--progress-step--current': i === vm.currentStepIndex
+          }"
+        >
+          <ng-container *ngIf="getStepState(step, i, vm.currentStepIndex) as state">
+            <div
+              class="cds--progress-step-button cds--progress-step-button--unclickable"
+              [title]="step.label"
+            >
+              <span class="cds--assistive-text">{{ getStepStateLabel(state) }}</span>
+              <svg
+                [cdsIcon]="getStepIcon(state)"
+                size="16"
+                [ngClass]="{'cds--progress__warning': step.invalid && i !== vm.currentStepIndex}"
+              ></svg>
+              <div class="cds--progress-text valtimo-widget-metroline__step-text">
+                <div class="valtimo-widget-metroline__step-label-row">
+                  <p class="cds--progress-label">{{ step.label }}</p>
+                  <cds-toggletip align="bottom" [autoAlign]="true">
+                    <button
+                      cdsToggletipButton
+                      [removeClassnames]="['cds--toggletip-button']"
+                      type="button"
+                      class="valtimo-widget-metroline__step-info"
+                    >
+                      <svg cdsIcon="information" size="16"></svg>
+                    </button>
+                    <div
+                      cdsToggletipContent
+                      class="valtimo-widget-metroline__step-toggletip-content"
+                    >
+                      {{ step.itemLabel || '-' }}
+                    </div>
+                  </cds-toggletip>
+                </div>
+                <p *ngIf="step.secondaryLabel" class="cds--progress-optional">
+                  {{ step.secondaryLabel }}
+                </p>
+              </div>
+              <span class="cds--progress-line"></span>
+            </div>
+          </ng-container>
+        </li>
+      </ul>
     }
   </div>
 </ng-container>
