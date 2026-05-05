@@ -56,7 +56,7 @@ import {
   SortState,
   TaskListTab,
 } from '@valtimo/shared';
-import {ColumnConfig, IQuickSearchService, QUICK_SEARCH_SERVICE, QuickSearchStateService, ViewType} from '@valtimo/components';
+import {ColumnConfig, IQuickSearchService, ListHiddenColumn, QUICK_SEARCH_SERVICE, QuickSearchStateService, ViewType} from '@valtimo/components';
 import {DocumentService} from '@valtimo/document';
 import {TaskListQuickSearchService} from '../../services/task-list-quick-search.service';
 import {TaskListQuickSearchParams} from '../../models/task-list-quick-search.model';
@@ -71,6 +71,7 @@ import {
 } from '../../task-permissions';
 import {
   TaskListColumnService,
+  TaskListHiddenColumnsService,
   TaskListPaginationService,
   TaskListQueryParamService,
   TaskListSearchService,
@@ -95,6 +96,7 @@ moment.locale(localStorage.getItem('langKey') || '');
   providers: [
     TaskListService,
     TaskListColumnService,
+    TaskListHiddenColumnsService,
     TaskListPaginationService,
     TaskListSortService,
     TaskListSearchService,
@@ -136,6 +138,9 @@ export class TaskListComponent implements OnInit, OnDestroy {
         }
     )
   );
+
+  public readonly availableFields$ = this.taskListColumnService.availableFields$;
+  public readonly hiddenColumns$ = this.taskListColumnService.hiddenColumns$;
 
   public readonly fields$ = this.taskListColumnService.fields$.pipe(
     map((fields: ColumnConfig[]) => [
@@ -434,6 +439,10 @@ export class TaskListComponent implements OnInit, OnDestroy {
         }
         this.quickSearchStateService.openModal(params);
       });
+  }
+
+  public onViewUpdateEvent(hiddenColumns: ListHiddenColumn[]): void {
+    this.taskListColumnService.saveHiddenColumns(hiddenColumns);
   }
 
   public onQuickSearchEvent(queryPath: string): void {

@@ -20,6 +20,8 @@
     selectedTaskType: selectedTaskType$ | async,
     tasks: tasks$ | async,
     fields: fields$ | async,
+    availableFields: availableFields$ | async,
+    hiddenColumns: hiddenColumns$ | async,
     visibleTabs: visibleTabs$ | async,
     pagination: paginationForCurrentTaskTypeForList$ | async,
     taskListColumnsForCase: taskListColumnsForCase$ | async,
@@ -143,6 +145,15 @@
           "
         ></ng-container>
       </ng-container>
+    </div>
+
+    <div carbonToolbarContent>
+      <valtimo-list-column-view
+        *ngIf="obs.caseDefinitionKey && obs.caseDefinitionKey !== ALL_CASES_ID"
+        [availableFields]="obs.availableFields"
+        [hiddenColumns]="obs.hiddenColumns"
+        (viewUpdateEvent)="onViewUpdateEvent($event)"
+      ></valtimo-list-column-view>
     </div>
 
     <valtimo-no-results
