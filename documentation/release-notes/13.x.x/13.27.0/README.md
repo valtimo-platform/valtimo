@@ -23,4 +23,5 @@
 
 ## Bugfixes
 
-* When sorting on dates in a document, the sorting was done based on the string rather than the date.
+* Sorting on document fields with type date, datetime, time, 
+  or number is now done numerically/chronologically instead of lexicographically.
