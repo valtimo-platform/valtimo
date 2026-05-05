@@ -8,9 +8,9 @@
 
 ## Enhancements
 
-* **New enhancement title**
+* **Task list columns**
 
-  New enhancement explanation.
+  Task list columns can now also display the tags display type.
 
 ## Bugfixes
 
