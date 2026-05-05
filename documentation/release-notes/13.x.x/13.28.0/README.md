@@ -6,15 +6,15 @@
 
 ## Enhancements
 
-* **Opt out of in-pod Liquibase migrations**
+* **Skip Valtimo's database migrations**
 
-  New `valtimo.liquibase.enabled` (default `true`); set to `false` to skip Valtimo's in-pod migration.
-  `spring.liquibase.enabled` is unchanged.
+  A new setting lets you disable Valtimo's built-in database migrations, so they can be run from
+  a separate job instead.
 
 ## Bugfixes
 
-* **Recovery from stale Liquibase changelog locks**
+* **Recover from stuck migration locks**
 
-  A hard-killed JVM could leave `DATABASECHANGELOGLOCK` held indefinitely, blocking subsequent instances.
-  `LiquibaseRunner` and `OutboxLiquibaseRunner` now force-release stale locks
-  (`valtimo.liquibase.stale-lock-threshold-minutes`, default 30) and release on graceful shutdown.
+  If an application instance was killed mid-migration, the migration lock could stay held and
+  prevent other instances from starting. Valtimo now releases such stale locks automatically on
+  startup and on graceful shutdown.
