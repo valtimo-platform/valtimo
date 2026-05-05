@@ -114,6 +114,29 @@ interface WidgetMapContent {
   geoJsonSources: GeoJsonSource[];
 }
 
+interface PersonCardContactField {
+  icon: string;
+  label: string;
+  sourcePath: string;
+}
+
+interface WidgetPersonCardContent {
+  avatar: {
+    firstInitialPath: string;
+    secondInitialPath: string;
+  };
+  heading: {
+    displayNamePath: string;
+    subtitlePath?: string;
+  };
+  contactFields: PersonCardContactField[];
+  household: {
+    arrayPath: string;
+    itemNamePath: string;
+    itemSubtitlePath?: string;
+  };
+}
+
 type WidgetDropdownValue = {[key: string]: string};
 
 type WidgetContentProperties =
@@ -123,7 +146,8 @@ type WidgetContentProperties =
   | WidgetCustomContent
   | WidgetFormioContent
   | WidgetCollectionContent
-  | WidgetMapContent;
+  | WidgetMapContent
+  | WidgetPersonCardContent;
 
 export {
   WidgetContentProperties,
@@ -134,6 +158,8 @@ export {
   WidgetInteractiveTableContent,
   WidgetCollectionContent,
   WidgetMapContent,
+  WidgetPersonCardContent,
+  PersonCardContactField,
   WidgetInteractiveTableEventSearchRequest,
   WidgetFilter,
   WidgetDropdownValue,

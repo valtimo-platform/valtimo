@@ -35,6 +35,7 @@ enum WidgetType {
   FORMIO = 'formio',
   DIVIDER = 'divider',
   MAP = 'map',
+  PERSON_CARD = 'person-card',
 }
 
 enum WidgetColor {

@@ -1011,7 +1011,8 @@
       },
       "collection": {"title": "Collectie", "description": "Maak een collectie aan"},
       "divider": {"title": "Scheidingslijn"},
-      "map": {"title": "Kaart", "description": "Maak een kaart widget aan"}
+      "map": {"title": "Kaart", "description": "Maak een kaart widget aan"},
+      "person-card": {"title": "Persoonskaart", "description": "Avatar, contactgegevens en huishouden"}
     },
     "width": {
       "description": "Selecteer de gewenste breedte voor de widget.",
@@ -1098,6 +1099,45 @@
         "key": "Pad naar GeoJSON data",
         "keyPlaceholder": "Bron pad",
         "keyTooltip": "Value resolver pad naar GeoJSON data"
+      },
+      "person-card": {
+        "avatar": {
+          "title": "Avatar",
+          "description": "In de avatar-bubble worden twee initialen weergegeven. Elke initiaal komt uit zijn eigen bronpad; de eerste letter van de waarde wordt gebruikt.",
+          "firstInitialLabel": "Eerste initiaal - bronpad",
+          "firstInitialPlaceholder": "bijv. case.aanvrager.firstName",
+          "secondInitialLabel": "Tweede initiaal - bronpad",
+          "secondInitialPlaceholder": "bijv. case.aanvrager.lastName"
+        },
+        "heading": {
+          "title": "Kop",
+          "description": "Naam en optionele ondertitel die naast de avatar worden weergegeven.",
+          "displayNameLabel": "Weergavenaam - bronpad",
+          "displayNamePlaceholder": "bijv. case.aanvrager.fullName",
+          "subtitleLabel": "Ondertitel - bronpad (optioneel)",
+          "subtitlePlaceholder": "bijv. case.aanvrager.role"
+        },
+        "contactInfo": {
+          "title": "Contactgegevens",
+          "description": "Elke regel bestaat uit één icoon + label + waarde. Gebruik iconen om telefoon, e-mail, adres, etc. te onderscheiden.",
+          "iconLabel": "Icoon",
+          "iconPlaceholder": "bijv. phone",
+          "contactLabel": "Label",
+          "contactLabelPlaceholder": "bijv. Telefoon",
+          "sourcePathLabel": "Bronpad",
+          "sourcePathPlaceholder": "bijv. case.aanvrager.phone",
+          "add": "Contactveld toevoegen"
+        },
+        "household": {
+          "title": "Huishouden",
+          "description": "Een lijst met gerelateerde personen (partner, kinderen…). Configureer waar de array staat en welke velden per item worden gebruikt.",
+          "arrayPathLabel": "Household array - bronpad",
+          "arrayPathPlaceholder": "bijv. case.aanvrager.household",
+          "itemNameLabel": "Naam item - bronpad",
+          "itemNamePlaceholder": "bijv. fullName",
+          "itemSubtitleLabel": "Ondertitel item - bronpad (optioneel)",
+          "itemSubtitlePlaceholder": "bijv. relation"
+        }
       },
       "displayType": {
         "text": "Tekst",

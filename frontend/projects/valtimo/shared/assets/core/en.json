@@ -983,7 +983,8 @@
       },
       "collection": {"title": "Collection", "description": "Create a collection"},
       "divider": {"title": "Divider"},
-      "map": {"title": "Map", "description": "Create a map widget"}
+      "map": {"title": "Map", "description": "Create a map widget"},
+      "person-card": {"title": "Person card", "description": "Avatar, contact info and household"}
     },
     "width": {
       "description": "Select the desired width for the widget.",
@@ -1067,6 +1068,45 @@
         "key": "Path to GeoJSON data",
         "keyPlaceholder": "Source path",
         "keyTooltip": "Value resolver path to GeoJSON data"
+      },
+      "person-card": {
+        "avatar": {
+          "title": "Avatar",
+          "description": "Two initials are rendered in the avatar bubble. Each comes from its own source path; the first character of the value is used.",
+          "firstInitialLabel": "First initial - source path",
+          "firstInitialPlaceholder": "e.g. case.aanvrager.firstName",
+          "secondInitialLabel": "Second initial - source path",
+          "secondInitialPlaceholder": "e.g. case.aanvrager.lastName"
+        },
+        "heading": {
+          "title": "Heading",
+          "description": "Name and optional subtitle shown next to the avatar.",
+          "displayNameLabel": "Display name - source path",
+          "displayNamePlaceholder": "e.g. case.aanvrager.fullName",
+          "subtitleLabel": "Subtitle - source path (Optional)",
+          "subtitlePlaceholder": "e.g. case.aanvrager.role"
+        },
+        "contactInfo": {
+          "title": "Contact information",
+          "description": "Each line is one icon + label + value. Use icons to distinguish phone, email, address, etc.",
+          "iconLabel": "Icon",
+          "iconPlaceholder": "e.g. phone",
+          "contactLabel": "Label",
+          "contactLabelPlaceholder": "e.g. Phone",
+          "sourcePathLabel": "Source path",
+          "sourcePathPlaceholder": "e.g. case.aanvrager.phone",
+          "add": "Add contact field"
+        },
+        "household": {
+          "title": "Household",
+          "description": "A list of related people (partner, children…). Configure where the array lives and which fields to use per item.",
+          "arrayPathLabel": "Household array - source path",
+          "arrayPathPlaceholder": "e.g. case.aanvrager.household",
+          "itemNameLabel": "Item name - source path",
+          "itemNamePlaceholder": "e.g. fullName",
+          "itemSubtitleLabel": "Item subtitle - source path (Optional)",
+          "itemSubtitlePlaceholder": "e.g. relation"
+        }
       },
       "displayType": {
         "text": "Text",
