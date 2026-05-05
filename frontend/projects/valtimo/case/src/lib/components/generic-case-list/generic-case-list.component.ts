@@ -152,11 +152,15 @@ export class GenericCaseListComponent implements OnInit, OnDestroy {
   private readonly _allCasesAssigneeFilter$ = new BehaviorSubject<AssigneeFilter>('ALL');
   public readonly allCasesAssigneeFilter$ = this._allCasesAssigneeFilter$.asObservable();
 
-  public readonly allCasesFields$: Observable<ListField[]> = of(
-    this.mapDefaultColumnsToListFields(
-      this.configService.config?.defaultDefinitionTable || []
-    )
-  );
+  public readonly allCasesFields$: Observable<ListField[]> = this.translateService
+    .stream('fieldLabels')
+    .pipe(
+      map(() =>
+        this.mapDefaultColumnsToListFields(
+          this.configService.config?.defaultDefinitionTable || []
+        )
+      )
+    );
 
   public readonly allCasesLoading$ = new BehaviorSubject<boolean>(true);
 
@@ -471,12 +475,17 @@ export class GenericCaseListComponent implements OnInit, OnDestroy {
   }
 
   private mapDefaultColumnsToListFields(columns: DefinitionColumn[]): ListField[] {
-    return columns.map(column => ({
-      key: column.propertyName,
-      label: column.translationKey,
-      sortable: column.sortable,
-      ...(column.viewType && {viewType: column.viewType as ViewType}),
-      ...(column.default && {default: column.default}),
-    }));
+    return columns.map(column => {
+      const translationKey = `fieldLabels.${column.translationKey}`;
+      const translation = this.translateService.instant(translationKey);
+      const validTranslation = translation !== translationKey && translation;
+      return {
+        key: column.propertyName,
+        label: validTranslation || column.translationKey,
+        sortable: column.sortable,
+        ...(column.viewType && {viewType: column.viewType as ViewType}),
+        ...(column.default && {default: column.default}),
+      };
+    });
   }
 }
