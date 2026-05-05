@@ -35,7 +35,7 @@ dockerCompose {
 
 dependencies {
 
-    implementation project(":contract")
+    implementation project(":backend:contract")
 
     implementation "org.springframework.boot:spring-boot-starter-data-jpa"
 
@@ -43,13 +43,13 @@ dependencies {
 
     implementation "org.liquibase:liquibase-core:${liquibaseVersion}"
 
-    testImplementation (project(":core")) {
+    testImplementation (project(":backend:core")) {
         exclude(group: "com.ritense.valtimo", module: "changelog")
     }
-    testImplementation (project(":resource:local-resource")) {
+    testImplementation (project(":backend:resource:local-resource")) {
         exclude(group: "com.ritense.valtimo", module: "changelog")
     }
-    testImplementation (project(":test-utils-common")) {
+    testImplementation (project(":backend:test-utils-common")) {
         exclude(group: "com.ritense.valtimo", module: "changelog")
     }
 

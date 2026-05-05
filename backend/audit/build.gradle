@@ -36,9 +36,9 @@ dockerCompose {
 }
 
 dependencies {
-    implementation project(':authorization')
-    implementation project(':contract')
-    implementation project(':document')
+    implementation project(':backend:authorization')
+    implementation project(':backend:contract')
+    implementation project(':backend:document')
 
     api "org.springframework.security:spring-security-core"
     api "org.springframework.boot:spring-boot"
@@ -78,12 +78,12 @@ dependencies {
     implementation "net.javacrumbs.shedlock:shedlock-spring:${shedlockVersion}"
     implementation "net.javacrumbs.shedlock:shedlock-provider-jdbc-template:${shedlockVersion}"
 
-    testImplementation project(':resource')
-    testImplementation project(':core')
+    testImplementation project(':backend:resource')
+    testImplementation project(':backend:core')
     testImplementation "org.jetbrains.kotlin:kotlin-test"
     testImplementation "org.junit.jupiter:junit-jupiter"
     testImplementation "org.springframework.boot:spring-boot-starter-test"
-    testImplementation project(':test-utils-common')
+    testImplementation project(':backend:test-utils-common')
 
     jar {
         enabled = true

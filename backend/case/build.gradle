@@ -36,16 +36,16 @@ dockerCompose {
 }
 
 dependencies {
-    implementation project(":authorization")
-    implementation project(":changelog")
-    implementation project(":contract")
-    implementation project(":document")
-    implementation project(":exporter")
-    implementation project(":importer")
-    implementation project(":logging")
-    implementation project(":outbox")
-    implementation project(":value-resolver")
-    implementation project(":web")
+    implementation project(":backend:authorization")
+    implementation project(":backend:changelog")
+    implementation project(":backend:contract")
+    implementation project(":backend:document")
+    implementation project(":backend:exporter")
+    implementation project(":backend:importer")
+    implementation project(":backend:logging")
+    implementation project(":backend:outbox")
+    implementation project(":backend:value-resolver")
+    implementation project(":backend:web")
 
     implementation "org.springframework.boot:spring-boot-starter"
     implementation "org.springframework.boot:spring-boot-starter-data-jpa"
@@ -57,10 +57,10 @@ dependencies {
     implementation "com.jayway.jsonpath:json-path:${jaywayJsonpathVersion}"
     implementation "com.fasterxml.jackson.module:jackson-module-kotlin"
 
-    testImplementation project(':changelog')
-    testImplementation project(':core')
-    testImplementation project(':resource')
-    testImplementation project(':test-utils-common')
+    testImplementation project(':backend:changelog')
+    testImplementation project(':backend:core')
+    testImplementation project(':backend:resource')
+    testImplementation project(':backend:test-utils-common')
 
     implementation "org.liquibase:liquibase-core:${liquibaseVersion}"
     implementation "org.liquibase.ext:liquibase-hibernate6:${liquibaseVersion}"

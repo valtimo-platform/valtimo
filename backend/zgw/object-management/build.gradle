@@ -30,30 +30,30 @@ dockerCompose {
 }
 
 dependencies {
-    implementation project(':authorization')
-    implementation project(':plugin')
-    implementation project(':contract')
-    implementation project(":web")
-    implementation project(":search")
-    implementation project(":plugin-authentication:objecten-api-authentication")
-    implementation project(':zgw')
-    implementation project(':zgw:objecttypen-api')
-    implementation project(':zgw:objecten-api')
-    implementation project(':logging')
-    implementation project(':outbox')
+    implementation project(':backend:authorization')
+    implementation project(':backend:plugin')
+    implementation project(':backend:contract')
+    implementation project(":backend:web")
+    implementation project(":backend:search")
+    implementation project(":backend:plugin-authentication:objecten-api-authentication")
+    implementation project(':backend:zgw')
+    implementation project(':backend:zgw:objecttypen-api')
+    implementation project(':backend:zgw:objecten-api')
+    implementation project(':backend:logging')
+    implementation project(':backend:outbox')
 
     implementation "io.github.microutils:kotlin-logging:${kotlinLoggingVersion}"
     implementation "org.springframework.boot:spring-boot-starter-webflux"
     implementation "org.springframework.boot:spring-boot-starter-security"
     implementation "org.springframework.boot:spring-boot-starter-data-jpa"
 
-    testImplementation project(":contract")
-    testImplementation project(':plugin-valtimo')
-    testImplementation project(":core")
-    testImplementation project(":resource:local-resource")
-    testImplementation project(":zgw:catalogi-api")
-    testImplementation project(':zgw:zaken-api')
-    testImplementation project(":test-utils-common")
+    testImplementation project(":backend:contract")
+    testImplementation project(':backend:plugin-valtimo')
+    testImplementation project(":backend:core")
+    testImplementation project(":backend:resource:local-resource")
+    testImplementation project(":backend:zgw:catalogi-api")
+    testImplementation project(':backend:zgw:zaken-api')
+    testImplementation project(":backend:test-utils-common")
 
     testImplementation "org.jetbrains.kotlin:kotlin-test"
     testImplementation "org.junit.jupiter:junit-jupiter"

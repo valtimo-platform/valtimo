@@ -36,8 +36,8 @@ dockerCompose {
 }
 
 dependencies {
-    implementation project(':contract')
-    implementation project(':openzaak')
+    implementation project(':backend:contract')
+    implementation project(':backend:openzaak')
 
     api "org.springframework.security:spring-security-core"
     api "org.springframework.boot:spring-boot"
@@ -73,18 +73,18 @@ dependencies {
     implementation "io.jsonwebtoken:jjwt-impl:${jjwtVersion}"
     implementation "io.jsonwebtoken:jjwt-jackson:${jjwtVersion}"
 
-    testImplementation project(':besluit')
-    testImplementation project(':connector')
-    testImplementation project(':core')
-    testImplementation project(':audit')
-    testImplementation project(':document')
-    testImplementation project(':openzaak')
-    testImplementation project(':process-document')
-    testImplementation project(':resource:openzaak-resource')
+    testImplementation project(':backend:besluit')
+    testImplementation project(':backend:connector')
+    testImplementation project(':backend:core')
+    testImplementation project(':backend:audit')
+    testImplementation project(':backend:document')
+    testImplementation project(':backend:openzaak')
+    testImplementation project(':backend:process-document')
+    testImplementation project(':backend:resource:openzaak-resource')
     testImplementation "com.squareup.okhttp3:mockwebserver:${okhttpVersion}"
     testImplementation "com.squareup.okhttp3:okhttp:${okhttpVersion}"
     testImplementation "org.mockito.kotlin:mockito-kotlin:${mockitoKotlinVersion}"
-    testImplementation project(":test-utils-common")
+    testImplementation project(":backend:test-utils-common")
 
     jar {
         enabled = true

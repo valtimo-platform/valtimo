@@ -134,6 +134,7 @@ export class TaskManagementColumnModalComponent {
     ViewType.BOOLEAN,
     ViewType.ENUM,
     ViewType.ARRAY_COUNT,
+    ViewType.TAGS,
     ViewType.UNDERSCORES_TO_SPACES,
   ];
 
