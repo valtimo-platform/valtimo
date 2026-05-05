@@ -54,7 +54,7 @@ class ExternalPluginManagementResource(
     @RunWithoutAuthorization
     @PostMapping("/host")
     fun createHost(@RequestBody request: HostCreateRequest): ResponseEntity<HostResponse> {
-        val host = hostService.register(request.name, request.baseUrl)
+        val host = hostService.register(request.name, request.baseUrl, request.secret)
         return ResponseEntity.status(HttpStatus.CREATED).body(HostResponse.from(host))
     }
 

@@ -20,7 +20,6 @@
     xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd">
 
-    <include file="20260504-create-external-plugin-tables.xml" relativeToChangelogFile="true"/>
-    <include file="20260504-add-external-plugin-process-link-columns.xml" relativeToChangelogFile="true"/>
+    <include file="20260504-external-plugin.xml" relativeToChangelogFile="true"/>
 
 </databaseChangeLog>

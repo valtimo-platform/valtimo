@@ -15,3 +15,4 @@
  */
 
 export * from './plugin-management-state.service';
+export * from './external-plugin.service';

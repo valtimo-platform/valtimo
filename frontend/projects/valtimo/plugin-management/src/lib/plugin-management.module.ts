@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@
 import {NgModule} from '@angular/core';
 import {PluginManagementRoutingModule} from './plugin-management-routing';
 import {CommonModule} from '@angular/common';
+import {ReactiveFormsModule} from '@angular/forms';
 import {TranslateModule} from '@ngx-translate/core';
 import {PluginManagementComponent} from './components/plugin-management/plugin-management.component';
 import {PluginAddModalComponent} from './components/plugin-add-modal/plugin-add-modal.component';
@@ -26,6 +27,7 @@ import {PluginConfigureComponent} from './components/plugin-configure/plugin-con
 import {PluginConfigurationContainerModule, PluginTranslatePipeModule} from '@valtimo/plugin';
 import {PluginEditModalComponent} from './components/plugin-edit-modal/plugin-edit-modal.component';
 import {PluginEditComponent} from './components/plugin-edit/plugin-edit.component';
+import {PluginHostModalComponent} from './components/plugin-host-modal/plugin-host-modal.component';
 import {
   CarbonListModule,
   ParagraphModule,
@@ -40,6 +42,7 @@ import {
   LayerModule,
   LoadingModule,
   ModalModule as CarbonModalModule,
+  TabsModule,
   TilesModule,
 } from 'carbon-components-angular';
 
@@ -55,6 +58,7 @@ import {
   ],
   imports: [
     CommonModule,
+    ReactiveFormsModule,
     PluginManagementRoutingModule,
     TranslateModule,
     ParagraphModule,
@@ -71,6 +75,8 @@ import {
     LayerModule,
     TilesModule,
     LoadingModule,
+    TabsModule,
+    PluginHostModalComponent,
   ],
   exports: [
     PluginManagementComponent,

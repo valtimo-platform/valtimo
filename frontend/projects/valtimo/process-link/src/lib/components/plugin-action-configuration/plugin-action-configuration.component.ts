@@ -26,6 +26,8 @@ import {BehaviorSubject, combineLatest, Observable, Subscription} from 'rxjs';
 import {filter, map, take, withLatestFrom} from 'rxjs/operators';
 import {PluginConfiguration, PluginConfigurationData} from '@valtimo/plugin';
 import {
+  ExternalPluginProcessLinkCreateDto,
+  ExternalPluginProcessLinkUpdateDto,
   PluginConfigurationReferenceType,
   PluginProcessLinkCreateDto,
   PluginProcessLinkUpdateDto,
@@ -48,6 +50,11 @@ export class PluginActionConfigurationComponent implements OnInit, OnDestroy {
   public readonly functionKey$ = this.pluginStateService.functionKey$;
   public readonly save$ = this.pluginStateService.save$;
   public readonly saving$ = this.stateService.saving$;
+
+  public readonly isExternalPlugin$: Observable<boolean> =
+    this.pluginStateService.selectedPluginConfiguration$.pipe(
+      map(config => !!(config as any)?._external)
+    );
 
   private readonly _prefillConfigurationSubject$ = new BehaviorSubject<
     ProcessLink['actionProperties'] | null
@@ -91,6 +98,15 @@ export class PluginActionConfigurationComponent implements OnInit, OnDestroy {
   ngOnInit(): void {
     this.openBackButtonSubscription();
     this.openSaveButtonSubscription();
+
+    // For external plugins, auto-enable save since there's no config form
+    this._subscriptions.add(
+      this.isExternalPlugin$.subscribe(isExternal => {
+        if (isExternal) {
+          this.buttonService.enableSaveButton();
+        }
+      })
+    );
   }
 
   ngOnDestroy(): void {
@@ -215,9 +231,55 @@ export class PluginActionConfigurationComponent implements OnInit, OnDestroy {
 
   private openSaveButtonSubscription(): void {
     this._subscriptions.add(
-      this.buttonService.saveButtonClick$.subscribe(() => {
-        this.pluginStateService.save();
+      this.buttonService.saveButtonClick$.pipe(
+        withLatestFrom(this.isExternalPlugin$)
+      ).subscribe(([, isExternal]) => {
+        if (isExternal) {
+          this.saveExternalPluginProcessLink();
+        } else {
+          this.pluginStateService.save();
+        }
       })
     );
+  }
+
+  private saveExternalPluginProcessLink(): void {
+    this.stateService.startSaving();
+
+    combineLatest([
+      this.stateService.modalParams$,
+      this.pluginStateService.selectedPluginConfiguration$,
+      this.pluginStateService.selectedPluginFunction$,
+      this.stateService.selectedProcessLink$,
+    ])
+      .pipe(take(1))
+      .subscribe(([modalData, selectedConfiguration, selectedFunction, selectedProcessLink]) => {
+        if (!selectedConfiguration || !selectedFunction) {
+          this.stateService.stopSaving();
+          return;
+        }
+
+        if (selectedProcessLink) {
+          const updateRequest: ExternalPluginProcessLinkUpdateDto = {
+            id: selectedProcessLink.id,
+            processLinkType: 'external_plugin',
+            externalPluginConfigurationId: selectedConfiguration.id,
+            actionKey: selectedFunction.key,
+            actionProperties: {},
+          };
+          this.stateService.sendProcessLinkUpdateEvent(updateRequest);
+        } else {
+          const createRequest: ExternalPluginProcessLinkCreateDto = {
+            processDefinitionId: modalData?.processDefinitionId,
+            activityId: modalData?.element?.id,
+            activityType: modalData?.element?.activityListenerType ?? '',
+            processLinkType: 'external_plugin',
+            externalPluginConfigurationId: selectedConfiguration.id,
+            actionKey: selectedFunction.key,
+            actionProperties: {},
+          };
+          this.stateService.sendProcessLinkCreateEvent(createRequest);
+        }
+      });
   }
 }

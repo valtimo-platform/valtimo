@@ -22,7 +22,8 @@ import { ConfigRegistry } from "../config-registry.js";
  * Plugin action execution endpoint.
  *
  * GZAC calls this when a process link fires on a service task.
- * The host looks up the configuration, injects decrypted properties
+ * The host looks up the configuration from its in-memory registry
+ * (pushed by GZAC on activation/startup), injects decrypted properties
  * into the Wasm function input, and returns variables to the process.
  *
  * POC: no token auth on this route. Production: service token + HMAC.
@@ -44,8 +45,9 @@ export async function pluginActionRoutes(
    *   properties: Record<string, unknown>
    * }
    *
-   * The host resolves the configuration from its registry and injects
-   * the decrypted properties into the Wasm call input.
+   * GZAC pushes configurations to the host on activation/startup via the
+   * configuration push API. At action time, only the configurationId is
+   * sent. The host looks up decrypted properties from its in-memory registry.
    */
   fastify.post<{
     Params: {
@@ -90,24 +92,32 @@ export async function pluginActionRoutes(
         return;
       }
 
-      // Look up configuration (injected by GZAC via push)
-      let configuration: Record<string, unknown> = {};
-      if (configurationId) {
-        const pluginConfig = configRegistry.get(configurationId);
-        if (pluginConfig) {
-          // Verify configuration targets the right plugin version
-          if (
-            pluginConfig.pluginId !== pluginId ||
-            pluginConfig.pluginVersion !== version
-          ) {
-            reply.code(400).send({
-              error: `Configuration ${configurationId} targets ${pluginConfig.pluginId}@${pluginConfig.pluginVersion}, not ${pluginId}@${version}`,
-            });
-            return;
-          }
-          configuration = pluginConfig.properties;
-        }
+      // Look up configuration from registry (pushed by GZAC on activation/startup)
+      if (!configurationId) {
+        reply.code(400).send({
+          error: "Missing required field: configurationId",
+        });
+        return;
       }
+
+      const pluginConfig = configRegistry.get(configurationId);
+      if (!pluginConfig) {
+        reply.code(404).send({
+          error: `Configuration not found: ${configurationId}. GZAC may need to re-sync configurations.`,
+        });
+        return;
+      }
+
+      if (
+        pluginConfig.pluginId !== pluginId ||
+        pluginConfig.pluginVersion !== version
+      ) {
+        reply.code(400).send({
+          error: `Configuration ${configurationId} targets ${pluginConfig.pluginId}@${pluginConfig.pluginVersion}, not ${pluginId}@${version}`,
+        });
+        return;
+      }
+      const configuration = pluginConfig.properties;
 
       try {
         const result = await pluginManager.callAction(
@@ -115,7 +125,7 @@ export async function pluginActionRoutes(
           version,
           actionKey,
           {
-            configurationId: configurationId || "",
+            configurationId,
             configuration,
             processInstanceId: processInstanceId || "",
             documentId: documentId || "",

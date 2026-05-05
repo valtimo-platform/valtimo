@@ -19,9 +19,9 @@ package com.ritense.externalplugin.client
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.node.ObjectNode
-import com.ritense.externalplugin.security.ExternalPluginHmacSigner
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import org.springframework.http.HttpHeaders
+import org.springframework.http.HttpMethod
 import org.springframework.http.MediaType
 import org.springframework.http.RequestEntity
 import org.springframework.stereotype.Component
@@ -30,19 +30,17 @@ import org.springframework.web.client.HttpServerErrorException
 import org.springframework.web.client.ResourceAccessException
 import org.springframework.web.client.RestTemplate
 import java.net.URI
-import java.time.Instant
 
 @Component
 @SkipComponentScan
 class ExternalPluginHostClient(
     private val restTemplate: RestTemplate,
-    private val signer: ExternalPluginHmacSigner,
     private val objectMapper: ObjectMapper,
 ) {
 
     fun health(baseUrl: String): Boolean = try {
-        val (uri, path) = buildUri(baseUrl, "/health")
-        val request = signedGet(uri, path)
+        val uri = buildUri(baseUrl, "/health")
+        val request = RequestEntity<Void>(HttpMethod.GET, uri)
         restTemplate.exchange(request, JsonNode::class.java).statusCode.is2xxSuccessful
     } catch (_: ResourceAccessException) {
         false
@@ -52,9 +50,12 @@ class ExternalPluginHostClient(
         false
     }
 
-    fun listPlugins(baseUrl: String): List<JsonNode> {
-        val (uri, path) = buildUri(baseUrl, "/api/host/plugins")
-        val request = signedGet(uri, path)
+    fun listPlugins(baseUrl: String, adminToken: String): List<JsonNode> {
+        val uri = buildUri(baseUrl, "/api/host/plugins")
+        val headers = HttpHeaders().apply {
+            setBearerAuth(adminToken)
+        }
+        val request = RequestEntity<Void>(headers, HttpMethod.GET, uri)
         val response = restTemplate.exchange(request, JsonNode::class.java).body
             ?: return emptyList()
         return when {
@@ -64,27 +65,58 @@ class ExternalPluginHostClient(
         }
     }
 
+    fun pushConfiguration(
+        baseUrl: String,
+        adminToken: String,
+        configId: String,
+        pluginId: String,
+        pluginVersion: String,
+        properties: ObjectNode,
+    ): Boolean = try {
+        val uri = buildUri(baseUrl, "/api/host/configurations/$configId")
+        val body = objectMapper.createObjectNode().apply {
+            put("pluginId", pluginId)
+            put("pluginVersion", pluginVersion)
+            set<ObjectNode>("properties", properties)
+        }
+        val headers = HttpHeaders().apply {
+            setBearerAuth(adminToken)
+            contentType = MediaType.APPLICATION_JSON
+        }
+        val request = RequestEntity(objectMapper.writeValueAsBytes(body), headers, HttpMethod.POST, uri)
+        restTemplate.exchange(request, JsonNode::class.java).statusCode.is2xxSuccessful
+    } catch (e: Exception) {
+        false
+    }
+
+    fun deleteConfiguration(baseUrl: String, adminToken: String, configId: String): Boolean = try {
+        val uri = buildUri(baseUrl, "/api/host/configurations/$configId")
+        val headers = HttpHeaders().apply {
+            setBearerAuth(adminToken)
+        }
+        val request = RequestEntity<Void>(headers, HttpMethod.DELETE, uri)
+        restTemplate.exchange(request, Void::class.java).statusCode.is2xxSuccessful
+    } catch (e: Exception) {
+        false
+    }
+
     fun invokeAction(
         baseUrl: String,
         pluginId: String,
+        version: String,
         actionKey: String,
         payload: ObjectNode,
     ): ActionResponse {
-        val (uri, path) = buildUri(baseUrl, "/plugins/$pluginId/actions/$actionKey")
+        val uri = buildUri(baseUrl, "/plugins/$pluginId/$version/actions/$actionKey")
         val body = objectMapper.writeValueAsBytes(payload)
-        val timestamp = Instant.now().toString()
-        val bodyHash = signer.bodyHash(body)
-        val signature = signer.sign("POST", path, timestamp, bodyHash)
 
         val headers = HttpHeaders().apply {
             contentType = MediaType.APPLICATION_JSON
-            add(ExternalPluginHmacSigner.TIMESTAMP_HEADER, timestamp)
-            add(ExternalPluginHmacSigner.SIGNATURE_HEADER, signature)
         }
 
         return try {
             val response = restTemplate.exchange(
-                RequestEntity(body, headers, org.springframework.http.HttpMethod.POST, uri),
+                RequestEntity(body, headers, HttpMethod.POST, uri),
                 JsonNode::class.java,
             )
             ActionResponse(status = response.statusCode.value(), body = response.body)
@@ -99,20 +131,9 @@ class ExternalPluginHostClient(
         null
     }
 
-    private fun signedGet(uri: URI, path: String): RequestEntity<Void> {
-        val timestamp = Instant.now().toString()
-        val bodyHash = signer.bodyHash(ByteArray(0))
-        val signature = signer.sign("GET", path, timestamp, bodyHash)
-        val headers = HttpHeaders().apply {
-            add(ExternalPluginHmacSigner.TIMESTAMP_HEADER, timestamp)
-            add(ExternalPluginHmacSigner.SIGNATURE_HEADER, signature)
-        }
-        return RequestEntity<Void>(headers, org.springframework.http.HttpMethod.GET, uri)
-    }
-
-    private fun buildUri(baseUrl: String, path: String): Pair<URI, String> {
+    private fun buildUri(baseUrl: String, path: String): URI {
         val cleanedBase = baseUrl.trimEnd('/')
-        return URI.create("$cleanedBase$path") to path
+        return URI.create("$cleanedBase$path")
     }
 
     data class ActionResponse(val status: Int, val body: JsonNode?)

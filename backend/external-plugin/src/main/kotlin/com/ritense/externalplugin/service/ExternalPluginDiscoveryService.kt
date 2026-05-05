@@ -23,6 +23,7 @@ import com.ritense.externalplugin.domain.ExternalPluginDefinition
 import com.ritense.externalplugin.domain.ExternalPluginDefinitionStatus
 import com.ritense.externalplugin.domain.ExternalPluginHost
 import com.ritense.externalplugin.domain.ExternalPluginHostStatus
+import com.ritense.externalplugin.repository.ExternalPluginConfigurationRepository
 import com.ritense.externalplugin.repository.ExternalPluginDefinitionRepository
 import com.ritense.externalplugin.repository.ExternalPluginHostRepository
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
@@ -38,6 +39,9 @@ import java.util.UUID
 class ExternalPluginDiscoveryService(
     private val hostRepository: ExternalPluginHostRepository,
     private val definitionRepository: ExternalPluginDefinitionRepository,
+    private val configurationRepository: ExternalPluginConfigurationRepository,
+    private val configurationService: ExternalPluginConfigurationService,
+    private val hostService: ExternalPluginHostService,
     private val hostClient: ExternalPluginHostClient,
     private val failureThreshold: Int,
 ) {
@@ -69,7 +73,8 @@ class ExternalPluginDiscoveryService(
         host.status = ExternalPluginHostStatus.CONNECTED
         hostRepository.save(host)
 
-        val plugins = hostClient.listPlugins(host.baseUrl)
+        val adminToken = hostService.decryptedSecret(host)
+        val plugins = hostClient.listPlugins(host.baseUrl, adminToken)
         val seenPluginIds = mutableSetOf<String>()
         plugins.forEach { manifest ->
             val pluginId = manifest.get("pluginId")?.asText()
@@ -79,9 +84,45 @@ class ExternalPluginDiscoveryService(
         }
 
         markMissingDefinitions(host, seenPluginIds)
+        syncConfigurations(host)
     }
 
-    private fun upsertDefinition(host: ExternalPluginHost, pluginId: String, manifest: JsonNode) {
+    private fun syncConfigurations(host: ExternalPluginHost) {
+        val definitions = definitionRepository.findAllByHostId(host.id)
+        if (definitions.isEmpty()) return
+
+        val adminToken = hostService.decryptedSecret(host)
+        definitions.forEach { definition ->
+            val configs = configurationRepository.findAllByDefinitionId(definition.id)
+            configs.forEach { config ->
+                try {
+                    val decrypted = configurationService.decryptedProperties(config)
+                    val pushed = hostClient.pushConfiguration(
+                        baseUrl = host.baseUrl,
+                        adminToken = adminToken,
+                        configId = config.id.toString(),
+                        pluginId = definition.pluginId,
+                        pluginVersion = definition.version,
+                        properties = decrypted,
+                    )
+                    if (pushed) {
+                        logger.debug { "Pushed configuration ${config.id} for plugin '${definition.pluginId}' to host ${host.id}" }
+                    } else {
+                        logger.warn { "Failed to push configuration ${config.id} for plugin '${definition.pluginId}' to host ${host.id}" }
+                    }
+                } catch (e: Exception) {
+                    logger.warn(e) { "Failed to push configuration ${config.id} for plugin '${definition.pluginId}' to host ${host.id}" }
+                }
+            }
+        }
+    }
+
+    private fun upsertDefinition(host: ExternalPluginHost, pluginId: String, pluginEntry: JsonNode) {
+        // Plugin-host returns: {pluginId, version, manifest: {pluginId, version, name, ...}}
+        // The detailed fields (name, description, etc.) are inside the nested manifest object.
+        val manifest = pluginEntry.get("manifest") ?: pluginEntry
+        val version = pluginEntry.get("version")?.asText() ?: manifest.get("version")?.asText() ?: "0.0.0"
+
         val existing = definitionRepository.findByPluginId(pluginId)
         if (existing != null && existing.hostId != host.id) {
             logger.warn {
@@ -93,13 +134,13 @@ class ExternalPluginDiscoveryService(
         val definition = existing ?: ExternalPluginDefinition(
             id = UUID.randomUUID(),
             pluginId = pluginId,
-            version = manifest.get("version")?.asText() ?: "0.0.0",
+            version = version,
             hostId = host.id,
             baseUrl = "${host.baseUrl}/plugins/$pluginId",
             status = ExternalPluginDefinitionStatus.AVAILABLE,
         )
 
-        definition.version = manifest.get("version")?.asText() ?: definition.version
+        definition.version = version
         definition.name = manifest.get("name")?.asText() ?: definition.name
         definition.description = manifest.get("description")?.asText() ?: definition.description
         definition.provider = manifest.get("provider")?.asText() ?: definition.provider

@@ -79,6 +79,7 @@ class ExternalPluginServiceTaskStartListener(
         val response = hostClient.invokeAction(
             baseUrl = host.baseUrl,
             pluginId = definition.pluginId,
+            version = definition.version,
             actionKey = processLink.actionKey,
             payload = payload,
         )
@@ -122,9 +123,7 @@ class ExternalPluginServiceTaskStartListener(
         properties: ObjectNode,
     ): ObjectNode {
         val payload = objectMapper.createObjectNode()
-        payload.put("actionKey", processLink.actionKey)
         payload.put("configurationId", configuration.id.toString())
-        payload.set<JsonNode>("configuration", configurationService.decryptedProperties(configuration))
         payload.put("processInstanceId", execution.processInstanceId)
         payload.put("activityId", execution.currentActivityId)
         execution.processBusinessKey?.let { payload.put("documentId", it) }
@@ -147,7 +146,7 @@ class ExternalPluginServiceTaskStartListener(
     ): BpmnError {
         val errorCode = response.body?.get("errorCode")?.asText()
             ?: "EXTERNAL_PLUGIN_${response.status}"
-        val message = response.body?.get("message")?.asText()
+        val message = (response.body?.get("errorMessage") ?: response.body?.get("message"))?.asText()
             ?: "External plugin '${definition.pluginId}' action '${processLink.actionKey}' returned ${response.status}"
         logger.warn { "External plugin returned 4xx: $message" }
         return BpmnError(errorCode, message)

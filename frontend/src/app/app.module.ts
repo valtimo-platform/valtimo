@@ -79,7 +79,6 @@ import {
 import {FormManagementModule} from '@valtimo/form-management';
 import {TranslateLoader, TranslateModule} from '@ngx-translate/core';
 import {PluginManagementModule} from '@valtimo/plugin-management';
-import {ExternalPluginModule} from '@valtimo/external-plugin';
 import {
   BesluitenApiPluginModule,
   besluitenApiPluginSpecification,
@@ -178,7 +177,6 @@ export function tabsFactory() {
     FormFlowManagementModule,
     CaseManagementModule,
     PluginManagementModule,
-    ExternalPluginModule,
     NotificatiesApiPluginModule,
     ObjectTokenAuthenticationPluginModule,
     OpenNotificatiesPluginModule,

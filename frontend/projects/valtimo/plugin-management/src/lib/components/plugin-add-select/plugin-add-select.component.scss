@@ -43,6 +43,13 @@
   object-fit: contain;
   height: 60px;
   width: 100%;
+
+  &--external {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--cds-icon-secondary);
+  }
 }
 
 .plugin-definition__grid {

@@ -74,7 +74,7 @@ export class ProcessLinkStateService implements OnDestroy {
             }))
           : types
         )
-          .filter(type => type.processLinkType !== 'url')
+          .filter(type => type.processLinkType !== 'url' && type.processLinkType !== 'external_plugin')
           .map(type =>
             context === 'buildingBlock' &&
             UNSUPPORTED_PROCESS_LINK_TYPES_IN_BUILDING_BLOCK.includes(type.processLinkType)

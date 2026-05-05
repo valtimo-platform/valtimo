@@ -24,6 +24,7 @@ import java.util.UUID
 data class HostCreateRequest(
     val name: String,
     val baseUrl: String,
+    val secret: String,
 )
 
 data class HostResponse(

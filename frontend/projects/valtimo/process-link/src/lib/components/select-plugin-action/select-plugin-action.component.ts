@@ -41,6 +41,21 @@ export class SelectPluginActionComponent implements OnInit, OnDestroy {
     switchMap(([selectedDefinition, modalParams, selectedConfiguration, pluginSpecifications]) => {
       if (!selectedDefinition) return of(undefined);
 
+      // External plugin: extract actions from the configuration's embedded definition manifest
+      if (selectedDefinition.key?.startsWith('external:')) {
+        const extDef = (selectedConfiguration as any)?._externalDefinition;
+        const manifest = extDef?.manifest as any;
+        if (manifest?.actions && Array.isArray(manifest.actions)) {
+          const functions: PluginFunction[] = manifest.actions.map((action: any) => ({
+            key: action.key,
+            title: action.title ?? action.key,
+            description: action.description ?? '',
+          }));
+          return of(functions);
+        }
+        return of([]);
+      }
+
       return this.pluginManagementService
         .getPluginFunctions(selectedDefinition.key, modalParams.element.activityListenerType)
         .pipe(

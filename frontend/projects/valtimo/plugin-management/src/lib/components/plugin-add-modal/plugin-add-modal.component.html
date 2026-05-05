@@ -1,5 +1,5 @@
 <!--
-  ~ Copyright 2015-2025 Ritense BV, the Netherlands.
+  ~ Copyright 2015-2026 Ritense BV, the Netherlands.
   ~
   ~ Licensed under EUPL, Version 1.2 (the "License");
   ~ you may not use this file except in compliance with the License.
@@ -30,10 +30,25 @@
           <valtimo-plugin-add-select></valtimo-plugin-add-select>
         </v-stepper-step>
         <v-stepper-step titleTranslationKey="pluginManagement.addSteps.step1">
-          <valtimo-plugin-configure
-            (valid)="onValid($event)"
-            (configuration)="onConfiguration($event)"
-          ></valtimo-plugin-configure>
+          <ng-container *ngIf="isExternalPlugin$ | async; else embeddedConfigure">
+            <form [formGroup]="externalForm">
+              <div class="cds--form-item">
+                <label class="cds--label">{{ 'pluginManagement.labels.configurationName' | translate }}</label>
+                <input class="cds--text-input" formControlName="title" />
+              </div>
+
+              <div class="cds--form-item">
+                <label class="cds--label">{{ 'pluginManagement.labels.properties' | translate }}</label>
+                <textarea class="cds--text-area" formControlName="properties" rows="10"></textarea>
+              </div>
+            </form>
+          </ng-container>
+          <ng-template #embeddedConfigure>
+            <valtimo-plugin-configure
+              (valid)="onValid($event)"
+              (configuration)="onConfiguration($event)"
+            ></valtimo-plugin-configure>
+          </ng-template>
         </v-stepper-step>
       </v-stepper-content>
     </section>

@@ -29,9 +29,12 @@
           *ngFor="let pluginFunction of pluginFunctions"
           [value]="stringify(pluginFunction)"
           [selected]="false"
-          >{{
+          ><ng-container *ngIf="obs.selectedPluginDefinition?.key?.startsWith('external:'); else embeddedLabel">{{
+            pluginFunction.title || pluginFunction.key
+          }}</ng-container>
+          <ng-template #embeddedLabel>{{
             pluginFunction.key | pluginTranslate: obs.selectedPluginDefinition.key | async
-          }}</cds-selection-tile
+          }}</ng-template></cds-selection-tile
         >
       </cds-tile-group>
     </div>
