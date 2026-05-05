@@ -24,6 +24,8 @@ import com.ritense.widget.collection.CollectionWidgetDataProvider
 import com.ritense.widget.custom.CustomWidget
 import com.ritense.widget.custom.CustomWidgetDataProvider
 import com.ritense.widget.divider.DividerWidget
+import com.ritense.widget.highlight.HighlightWidget
+import com.ritense.widget.highlight.HighlightWidgetDataProvider
 import com.ritense.widget.domain.Widget
 import com.ritense.widget.fields.FieldsWidget
 import com.ritense.widget.fields.FieldsWidgetDataProvider
@@ -66,6 +68,7 @@ import javax.sql.DataSource
         CustomWidget::class,
         DividerWidget::class,
         FieldsWidget::class,
+        HighlightWidget::class,
         InteractiveTableWidget::class,
         MapWidget::class,
         TableWidget::class,
@@ -125,6 +128,12 @@ class WidgetAutoConfiguration {
     fun customWidgetDataProvider(
         valueResolverService: ValueResolverService,
     ) = CustomWidgetDataProvider(valueResolverService)
+
+    @ConditionalOnMissingBean(HighlightWidgetDataProvider::class)
+    @Bean
+    fun highlightWidgetDataProvider(
+        valueResolverService: ValueResolverService,
+    ) = HighlightWidgetDataProvider(valueResolverService)
 
     @ConditionalOnMissingBean(ResolvedPageSerializer::class)
     @Bean
