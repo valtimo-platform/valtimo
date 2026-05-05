@@ -93,6 +93,8 @@
       "@valtimo/plugin-management/*": ["dist/valtimo/plugin-management/*"],
       "@valtimo/plugin": ["dist/valtimo/plugin"],
       "@valtimo/plugin/*": ["dist/valtimo/plugin/*"],
+      "@valtimo/external-plugin": ["dist/valtimo/external-plugin"],
+      "@valtimo/external-plugin/*": ["dist/valtimo/external-plugin/*"],
       "@valtimo/zgw": ["dist/valtimo/zgw"],
       "@valtimo/zgw/*": ["dist/valtimo/zgw/*"],
       "@valtimo/logging": ["dist/valtimo/logging"],
@@ -330,6 +332,12 @@
     },
     {
       "path": "./projects/valtimo/plugin/tsconfig.spec.json"
+    },
+    {
+      "path": "./projects/valtimo/external-plugin/tsconfig.lib.json"
+    },
+    {
+      "path": "./projects/valtimo/external-plugin/tsconfig.spec.json"
     },
     {
       "path": "./projects/valtimo/object-management/tsconfig.lib.json"

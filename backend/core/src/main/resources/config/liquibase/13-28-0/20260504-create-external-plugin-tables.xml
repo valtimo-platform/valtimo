@@ -1,0 +1,107 @@
+<?xml version="1.1" encoding="UTF-8" standalone="no"?>
+<!--
+  ~ Copyright 2015-2026 Ritense BV, the Netherlands.
+  ~
+  ~ Licensed under EUPL, Version 1.2 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~ https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" basis,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.6.xsd"
+                   logicalFilePath="config/liquibase/13-28-0/20260504-create-external-plugin-tables.xml">
+
+    <changeSet author="Ritense" id="1">
+        <createTable tableName="external_plugin_host">
+            <column name="id" type="${uuidType}">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="external_plugin_host_pk"/>
+            </column>
+            <column name="name" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="base_url" type="VARCHAR(1024)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="status" type="VARCHAR(32)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="last_health_check" type="DATETIME"/>
+            <column name="consecutive_failures" type="${intType}" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+
+    <changeSet author="Ritense" id="2">
+        <createTable tableName="external_plugin_definition">
+            <column name="id" type="${uuidType}">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="external_plugin_definition_pk"/>
+            </column>
+            <column name="plugin_id" type="VARCHAR(255)">
+                <constraints nullable="false" unique="true" uniqueConstraintName="external_plugin_definition_plugin_id_uq"/>
+            </column>
+            <column name="version" type="VARCHAR(64)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="name" type="VARCHAR(255)"/>
+            <column name="description" type="TEXT"/>
+            <column name="provider" type="VARCHAR(255)"/>
+            <column name="min_gzac_version" type="VARCHAR(64)"/>
+            <column name="max_gzac_version" type="VARCHAR(64)"/>
+            <column name="config_schema" type="${jsonType}"/>
+            <column name="manifest_json" type="${jsonType}"/>
+            <column name="host_id" type="${uuidType}">
+                <constraints nullable="false"/>
+            </column>
+            <column name="base_url" type="VARCHAR(1024)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="status" type="VARCHAR(32)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="consecutive_misses" type="${intType}" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+        <addForeignKeyConstraint baseTableName="external_plugin_definition"
+                                 baseColumnNames="host_id"
+                                 referencedTableName="external_plugin_host"
+                                 referencedColumnNames="id"
+                                 constraintName="external_plugin_definition_host_id_fk"/>
+    </changeSet>
+
+    <changeSet author="Ritense" id="3">
+        <createTable tableName="external_plugin_configuration">
+            <column name="id" type="${uuidType}">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="external_plugin_configuration_pk"/>
+            </column>
+            <column name="definition_id" type="${uuidType}">
+                <constraints nullable="false"/>
+            </column>
+            <column name="title" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="properties" type="${jsonType}"/>
+            <column name="created_at" type="DATETIME">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+        <addForeignKeyConstraint baseTableName="external_plugin_configuration"
+                                 baseColumnNames="definition_id"
+                                 referencedTableName="external_plugin_definition"
+                                 referencedColumnNames="id"
+                                 constraintName="external_plugin_configuration_definition_id_fk"/>
+    </changeSet>
+
+</databaseChangeLog>

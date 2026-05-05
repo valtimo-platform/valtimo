@@ -1,0 +1,87 @@
+<!--
+  ~ Copyright 2015-2026 Ritense BV, the Netherlands.
+  ~
+  ~ Licensed under EUPL, Version 1.2 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~ https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" basis,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<section [attr.data-test-id]="testIds.hostsSection">
+  <h3>{{ 'externalPlugin.host.title' | translate }}</h3>
+
+  <valtimo-carbon-list
+    [fields]="hostFields"
+    [items]="hosts$ | async"
+    [loading]="$hostsLoading()"
+    [header]="false"
+  >
+    <ng-container carbonToolbarContent [ngTemplateOutlet]="addHostButton"></ng-container>
+  </valtimo-carbon-list>
+</section>
+
+<section [attr.data-test-id]="testIds.definitionsSection">
+  <h3>{{ 'externalPlugin.definition.title' | translate }}</h3>
+
+  <valtimo-carbon-list
+    [fields]="definitionFields"
+    [items]="definitions$ | async"
+    [loading]="$definitionsLoading()"
+    [header]="false"
+  ></valtimo-carbon-list>
+</section>
+
+<section [attr.data-test-id]="testIds.configurationsSection">
+  <h3>{{ 'externalPlugin.configuration.title' | translate }}</h3>
+
+  <valtimo-carbon-list
+    [fields]="configurationFields"
+    [items]="configurations$ | async"
+    [loading]="$configurationsLoading()"
+    [header]="false"
+  >
+    <ng-container carbonToolbarContent [ngTemplateOutlet]="addConfigurationButton"></ng-container>
+  </valtimo-carbon-list>
+</section>
+
+<ng-template #addHostButton>
+  <button
+    cdsButton="primary"
+    [attr.data-test-id]="testIds.addHostButton"
+    (click)="openHostModal()"
+  >
+    {{ 'externalPlugin.host.add' | translate }}
+    <svg cdsIcon="add" size="16" class="cds--btn__icon"></svg>
+  </button>
+</ng-template>
+
+<ng-template #addConfigurationButton>
+  <button
+    cdsButton="primary"
+    [attr.data-test-id]="testIds.addConfigurationButton"
+    (click)="openConfigurationModal()"
+  >
+    {{ 'externalPlugin.configuration.add' | translate }}
+    <svg cdsIcon="add" size="16" class="cds--btn__icon"></svg>
+  </button>
+</ng-template>
+
+<valtimo-external-plugin-host-modal
+  [open]="$hostModalOpen()"
+  (closeEvent)="closeHostModal()"
+  (submitEvent)="submitHost($event)"
+></valtimo-external-plugin-host-modal>
+
+<valtimo-external-plugin-configuration-modal
+  [definitions]="(definitions$ | async) ?? []"
+  [open]="$configurationModalOpen()"
+  (closeEvent)="closeConfigurationModal()"
+  (submitEvent)="submitConfiguration($event)"
+></valtimo-external-plugin-configuration-modal>

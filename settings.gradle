@@ -44,6 +44,7 @@ include(
     ":backend:document-generation:smartdocuments",
     ":backend:exact-plugin",
     ":backend:exporter",
+    ":backend:external-plugin",
     ":backend:form",
     ":backend:form-flow",
     ":backend:form-view-model",

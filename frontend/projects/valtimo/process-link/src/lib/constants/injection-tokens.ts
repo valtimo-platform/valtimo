@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import {InjectionToken} from '@angular/core';
+import {InjectionToken, Type} from '@angular/core';
 import {FormCustomComponentConfig, FormFlowCustomComponentDefinition} from '../models';
 
 const FORM_FLOW_COMPONENT_TOKEN = new InjectionToken<Array<FormFlowCustomComponentDefinition>>(
@@ -26,4 +26,13 @@ const FORM_CUSTOM_COMPONENT_TOKEN = new InjectionToken<FormCustomComponentConfig
   'Custom component that can be used instead of FormIO or form-flow'
 );
 
-export {FORM_FLOW_COMPONENT_TOKEN, FORM_CUSTOM_COMPONENT_TOKEN};
+const EXTERNAL_PLUGIN_PROCESS_LINK_STEP_COMPONENT_TOKEN = new InjectionToken<Type<unknown>>(
+  'Standalone component rendered as the configuration step for the external_plugin process-link type',
+  {factory: () => null as unknown as Type<unknown>}
+);
+
+export {
+  FORM_FLOW_COMPONENT_TOKEN,
+  FORM_CUSTOM_COMPONENT_TOKEN,
+  EXTERNAL_PLUGIN_PROCESS_LINK_STEP_COMPONENT_TOKEN,
+};

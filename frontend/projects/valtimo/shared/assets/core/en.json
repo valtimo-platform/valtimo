@@ -2082,7 +2082,45 @@
     "form-flow": "FormFlow",
     "url": "URL",
     "ui-component": "UI Component",
-    "building-block": "Building block"
+    "building-block": "Building block",
+    "external_plugin": "External plugin"
+  },
+  "externalPlugin": {
+    "menuTitle": "External Plugins",
+    "host": {
+      "title": "Hosts",
+      "add": "Add host",
+      "name": "Name",
+      "baseUrl": "Base URL",
+      "status": "Status",
+      "lastHealthCheck": "Last health check"
+    },
+    "definition": {
+      "title": "Plugin definitions",
+      "pluginId": "Plugin ID",
+      "version": "Version",
+      "name": "Name",
+      "provider": "Provider",
+      "status": "Status"
+    },
+    "configuration": {
+      "title": "Configurations",
+      "titleField": "Title",
+      "add": "Add configuration",
+      "definition": "Plugin definition",
+      "definitionPlaceholder": "Select a plugin",
+      "definitionId": "Definition",
+      "createdAt": "Created at",
+      "properties": "Properties (JSON)",
+      "propertiesInvalidJson": "Properties must be valid JSON"
+    },
+    "processLink": {
+      "configuration": "Plugin configuration",
+      "configurationPlaceholder": "Select a configuration",
+      "actionKey": "Action key",
+      "actionProperties": "Action properties (JSON)",
+      "actionPropertiesInvalidJson": "Action properties must be valid JSON"
+    }
   },
   "processLinkSteps": {
     "chooseProcessLinkType": "Choose link type",
@@ -2115,7 +2153,8 @@
     "uiComponent": "Select UI component",
     "selectBuildingBlock": "Select building block",
     "configureBuildingBlockPlugins": "Configure plugin mappings",
-    "configureBuildingBlockMappings": "Input & Sync"
+    "configureBuildingBlockMappings": "Input & Sync",
+    "configureExternalPlugin": "Configure external plugin"
   },
   "processLinkTypeDisabledTooltip": {
     "plugin": "No plugin configurations are available. Create a plugin configuration to be able to link it to a process step.",
