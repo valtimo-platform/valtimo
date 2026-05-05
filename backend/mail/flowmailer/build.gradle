@@ -30,11 +30,11 @@ dockerCompose {
 }
 
 dependencies {
-    api project(":mail")
-    implementation project(":authorization")
-    implementation project(":connector")
-    implementation project(":document")
-    implementation project(":resource")
+    api project(":backend:mail")
+    implementation project(":backend:authorization")
+    implementation project(":backend:connector")
+    implementation project(":backend:document")
+    implementation project(":backend:resource")
 
     api "org.springframework.security:spring-security-core"
     api "org.springframework.boot:spring-boot"
@@ -69,10 +69,10 @@ dependencies {
 
     annotationProcessor "org.springframework.boot:spring-boot-autoconfigure-processor"
 
-    testImplementation project(":core")
-    testImplementation project(":test-utils-common")
-    testImplementation project(":mail")
-    testImplementation project(':resource')
+    testImplementation project(":backend:core")
+    testImplementation project(":backend:test-utils-common")
+    testImplementation project(":backend:mail")
+    testImplementation project(':backend:resource')
     testImplementation "org.springframework.security:spring-security-test"
     testImplementation "org.camunda.community.mockito:camunda-platform-7-mockito:${camundaMockitoVersion}"
 

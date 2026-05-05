@@ -1,20 +1,20 @@
 dependencies {
-    implementation(platform(project(":dependencies:valtimo-dependency-versions")))
+    implementation(platform(project(":backend:dependencies:valtimo-dependency-versions")))
 
-    implementation(project(":dependencies:valtimo-gzac-dependencies"))
-    implementation(project(":mail:local-mail"))
-    implementation(project(":document-generation:smartdocuments"))
-    implementation(project(":logging"))
-    implementation(project(":zgw:portaaltaak"))
+    implementation(project(":backend:dependencies:valtimo-gzac-dependencies"))
+    implementation(project(":backend:mail:local-mail"))
+    implementation(project(":backend:document-generation:smartdocuments"))
+    implementation(project(":backend:logging"))
+    implementation(project(":backend:zgw:portaaltaak"))
 
     implementation("io.github.microutils:kotlin-logging")
     implementation "org.springframework.boot:spring-boot-starter-webflux"
     implementation "org.springframework.boot:spring-boot-starter-security"
 
-    compileOnly(project(":besluit"))
-    compileOnly(project(":openzaak"))
-    compileOnly(project(":contactmoment"))
-    compileOnly(project(":objects-api"))
+    compileOnly(project(":backend:besluit"))
+    compileOnly(project(":backend:openzaak"))
+    compileOnly(project(":backend:contactmoment"))
+    compileOnly(project(":backend:objects-api"))
 
     // Database
     implementation group: 'org.postgresql', name: 'postgresql', version: postgresqlDriverVersion
@@ -62,4 +62,4 @@ tasks.register("bootRunWithDocker", tasks.named("bootRun").get().class) {
     }
 }
 
-apply from: "$rootProject.projectDir/gradle/dockerComposeGzac.gradle"
+apply from: "${rootProject.projectDir}/backend/gradle/dockerComposeGzac.gradle"

@@ -36,7 +36,7 @@ dockerCompose {
 }
 
 dependencies {
-    implementation project(':contract')
+    implementation project(':backend:contract')
 
     api "org.springframework.security:spring-security-core"
     api "org.springframework.boot:spring-boot"
@@ -68,7 +68,7 @@ dependencies {
     implementation "com.fasterxml.jackson.module:jackson-module-kotlin"
     implementation "io.hypersistence:hypersistence-utils-hibernate-62:${hypersistenceUtilsVersion}"
 
-    testImplementation project(':test-utils-common')
+    testImplementation project(':backend:test-utils-common')
 
     annotationProcessor "org.springframework.boot:spring-boot-autoconfigure-processor"
 

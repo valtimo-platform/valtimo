@@ -15,12 +15,12 @@
  */
 
 dependencies {
-    implementation project(':contract')
-    implementation project(':core')
-    implementation project(':document')
-    implementation project(':logging')
-    implementation project(':plugin')
-    implementation project(':zgw')
+    implementation project(':backend:contract')
+    implementation project(':backend:core')
+    implementation project(':backend:document')
+    implementation project(':backend:logging')
+    implementation project(':backend:plugin')
+    implementation project(':backend:zgw')
 
     implementation "io.github.microutils:kotlin-logging:${kotlinLoggingVersion}"
     implementation "org.springframework.boot:spring-boot-starter-webflux"

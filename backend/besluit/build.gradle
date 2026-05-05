@@ -34,13 +34,13 @@ dockerCompose {
 }
 
 dependencies {
-    implementation project(':core')
-    implementation project(':contract')
-    implementation project(':connector')
-    implementation project(':openzaak')
-    implementation project(':document')
-    implementation project(':process-document')
-    implementation project(':resource:openzaak-resource')
+    implementation project(':backend:core')
+    implementation project(':backend:contract')
+    implementation project(':backend:connector')
+    implementation project(':backend:openzaak')
+    implementation project(':backend:document')
+    implementation project(':backend:process-document')
+    implementation project(':backend:resource:openzaak-resource')
 
     api "org.springframework.security:spring-security-core"
     api "org.springframework.boot:spring-boot"
@@ -76,13 +76,13 @@ dependencies {
 
     annotationProcessor "org.springframework.boot:spring-boot-autoconfigure-processor"
 
-    testImplementation project(':document')
-    testImplementation project(':process-document')
+    testImplementation project(':backend:document')
+    testImplementation project(':backend:process-document')
 
     testImplementation "org.springframework.boot:spring-boot-starter-test"
     testImplementation "org.springframework.security:spring-security-test"
     testImplementation "org.jetbrains.kotlinx:kotlinx-coroutines-test:${kotlinCoroutinesVersion}"
-    testImplementation project(':test-utils-common')
+    testImplementation project(':backend:test-utils-common')
     testImplementation "com.squareup.okhttp3:mockwebserver:${okhttpVersion}"
     testImplementation "com.squareup.okhttp3:okhttp:${okhttpVersion}"
     testImplementation "org.mockito.kotlin:mockito-kotlin:${mockitoKotlinVersion}"

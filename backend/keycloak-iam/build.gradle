@@ -30,7 +30,7 @@ dockerCompose {
 }
 
 dependencies {
-    implementation project(':contract')
+    implementation project(':backend:contract')
 
     api "org.springframework.security:spring-security-core"
     api "org.springframework.boot:spring-boot"
@@ -68,8 +68,8 @@ dependencies {
 
     implementation "org.keycloak:keycloak-admin-client:${keycloakClientVersion}"
 
-    testImplementation project(":core")
-    testImplementation project(":test-utils-common")
+    testImplementation project(":backend:core")
+    testImplementation project(":backend:test-utils-common")
 
     testImplementation "io.jsonwebtoken:jjwt-impl:${jjwtVersion}"
     testImplementation "org.mockito.kotlin:mockito-kotlin:${mockitoKotlinVersion}"

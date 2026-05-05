@@ -15,11 +15,11 @@
  */
 
 dependencies {
-    implementation project(':contract')
-    implementation project(':core')
-    implementation project(':document')
-    implementation project(':process-document')
-    implementation project(':form')
+    implementation project(':backend:contract')
+    implementation project(':backend:core')
+    implementation project(':backend:document')
+    implementation project(':backend:process-document')
+    implementation project(':backend:form')
 
     api "org.springframework.security:spring-security-core"
     api "org.springframework.boot:spring-boot"
