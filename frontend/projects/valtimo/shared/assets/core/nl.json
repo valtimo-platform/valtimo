@@ -906,6 +906,7 @@
         "retentionPeriodTooltip": "0 of hoger: retentie is actief, de zaak wordt na het opgegeven aantal dagen verwijderd. -1: er is geen retentieperiode ingesteld, de zaak wordt niet automatisch verwijderd.",
         "deletedImmediately": "Wordt direct verwijderd",
         "key": "Status-key",
+        "label": "Label (Optioneel)",
         "visible": "Standaard zichtbaar",
         "color": "Kleur"
       },

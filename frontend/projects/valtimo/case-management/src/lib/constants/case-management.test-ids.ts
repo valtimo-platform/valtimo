@@ -68,6 +68,7 @@ export const CASE_MANAGEMENT_EXTERNAL_START_FORM_TEST_IDS = {
 export const CASE_MANAGEMENT_STATUS_MODAL_TEST_IDS = {
   titleInput: 'caseStatusTitleInput',
   keyInput: 'caseStatusKeyInput',
+  labelInput: 'caseStatusLabelInput',
   editKeyButton: 'caseStatusEditKeyButton',
   colorDropdown: 'caseStatusColorDropdown',
   visibilityToggle: 'caseStatusVisibilityToggle',

@@ -883,6 +883,7 @@
         "retentionPeriodTooltip": "0 or higher: retention is active, case will be deleted after the specified number of days, -1: no retention period is set, case will not be automatically deleted",
         "deletedImmediately": "Deleted immediately",
         "key": "Status key",
+        "label": "Label (Optional)",
         "visible": "Visible by default",
         "color": "Color"
       },
