@@ -26,6 +26,7 @@ import {
   CarbonListModule,
   ConfirmationModalModule,
   FormIoModule,
+  ListColumnViewComponent,
   PageHeaderModule,
   QuickSearchComponent,
   RenderInPageHeaderDirective,
@@ -94,6 +95,7 @@ import {TaskRoutingModule} from './task-routing.module';
     TaskDetailIntermediateSaveComponent,
     SetTaskDueDateComponent,
     ValtimoCdsModalDirective,
+    ListColumnViewComponent,
   ],
   exports: [TaskListComponent, TaskDetailModalComponent],
 })
