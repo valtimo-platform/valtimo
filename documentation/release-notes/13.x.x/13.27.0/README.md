@@ -21,6 +21,10 @@
 
   Upgraded Spring Boot and other dependencies to resolve several HIGH-severity CVEs.
 
+* **Task list columns**
+
+  Task list columns can now also display the tags display type.
+
 ## Bugfixes
 
 * New bugfix.
