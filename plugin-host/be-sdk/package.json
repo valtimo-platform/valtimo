@@ -1,0 +1,30 @@
+{
+  "name": "@valtimo/external-plugin-sdk-be",
+  "version": "0.1.0",
+  "description": "Valtimo External Plugin SDK for building WebAssembly plugins",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "bin": {
+    "valtimo-plugin-build": "./bin/valtimo-plugin-build.mjs",
+    "valtimo-plugin-pack": "./bin/valtimo-plugin-pack.mjs"
+  },
+  "scripts": {
+    "build": "tsc",
+    "prepublishOnly": "npm run build"
+  },
+  "files": [
+    "dist",
+    "bin"
+  ],
+  "dependencies": {
+    "@extism/js-pdk": "^1.1.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.4.0",
+    "@types/node": "^22.0.0"
+  },
+  "peerDependencies": {
+    "@extism/js-pdk": "^1.1.0"
+  },
+  "license": "EUPL-1.2"
+}
