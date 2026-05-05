@@ -1,0 +1,28 @@
+{
+  "name": "@valtimo/plugin-host",
+  "version": "0.1.0",
+  "description": "Valtimo External Plugin Host — Node.js + Fastify + Extism sidecar",
+  "type": "module",
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "dev": "tsx watch src/index.ts"
+  },
+  "dependencies": {
+    "@extism/extism": "^2.0.0-rc13",
+    "@fastify/multipart": "^10.0.0",
+    "fastify": "^5.8.5",
+    "pino": "^9.6.0",
+    "zod": "^3.24.4"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "tsx": "^4.19.0",
+    "typescript": "^5.4.0"
+  },
+  "engines": {
+    "node": ">=22.0.0"
+  },
+  "license": "EUPL-1.2"
+}

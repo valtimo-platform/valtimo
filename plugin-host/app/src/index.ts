@@ -1,0 +1,79 @@
+/*
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
+ *
+ * Licensed under EUPL, Version 1.2 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" basis,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+import Fastify from "fastify";
+import multipart from "@fastify/multipart";
+import { loadConfig } from "./config.js";
+import { PluginManager } from "./plugin-manager.js";
+import { ConfigRegistry } from "./config-registry.js";
+import { healthRoutes } from "./routes/health.js";
+import { hostManagementRoutes } from "./routes/host-management.js";
+import { hostConfigurationRoutes } from "./routes/host-configurations.js";
+import { pluginActionRoutes } from "./routes/plugin-actions.js";
+
+async function main(): Promise<void> {
+  const config = loadConfig();
+
+  const fastify = Fastify({
+    logger: {
+      level: config.LOG_LEVEL,
+    },
+  });
+
+  // Register multipart for file uploads
+  await fastify.register(multipart, {
+    limits: {
+      fileSize: 100 * 1024 * 1024, // 100 MB max plugin package size
+    },
+  });
+
+  // Initialize plugin manager and config registry
+  const pluginManager = new PluginManager(
+    config.PLUGIN_STORAGE_DIR,
+    fastify.log
+  );
+  const configRegistry = new ConfigRegistry();
+
+  // Load existing plugins from disk
+  await pluginManager.loadAllFromDisk();
+
+  // Register routes
+  await fastify.register(healthRoutes);
+  await fastify.register(hostManagementRoutes, {
+    pluginManager,
+    config,
+  });
+  await fastify.register(hostConfigurationRoutes, {
+    configRegistry,
+    pluginManager,
+    config,
+  });
+  await fastify.register(pluginActionRoutes, {
+    pluginManager,
+    configRegistry,
+  });
+
+  // Start server
+  try {
+    await fastify.listen({ port: config.PORT, host: "0.0.0.0" });
+    fastify.log.info(`Plugin Host listening on port ${config.PORT}`);
+  } catch (err) {
+    fastify.log.error(err);
+    process.exit(1);
+  }
+}
+
+main();
