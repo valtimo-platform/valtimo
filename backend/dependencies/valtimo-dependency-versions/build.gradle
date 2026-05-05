@@ -62,7 +62,7 @@ dependencies {
         api(project(":backend:process-link-url"))
         api(project(":backend:resource"))
         api(project(":backend:search"))
-        api(project(":backend:document-generation::smartdocuments"))
+        api(project(":backend:document-generation:smartdocuments"))
         api(project(":backend:resource:temporary-resource-storage"))
         api(project(":backend:test-utils-common"))
         api(project(":backend:value-resolver"))

@@ -67,7 +67,6 @@ dependencies {
     testImplementation project(":backend:mail:local-mail")
     testImplementation project(":backend:contract")
     testImplementation project(":backend:core")
-    testImplementation project(":backend:test-utils-common")
     testImplementation "org.apache.httpcomponents.client5:httpclient5"
     testImplementation "org.springframework.security:spring-security-test"
     testImplementation "org.mockito.kotlin:mockito-kotlin:${mockitoKotlinVersion}"
