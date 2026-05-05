@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,6 +18,8 @@ package com.ritense.valtimo.contract.config;
 
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.time.Duration;
+import java.time.Instant;
 import java.util.List;
 import java.util.stream.Stream;
 import javax.sql.DataSource;
@@ -33,6 +35,10 @@ import liquibase.database.DatabaseFactory;
 import liquibase.database.jvm.JdbcConnection;
 import liquibase.exception.DatabaseException;
 import liquibase.exception.LiquibaseException;
+import liquibase.exception.LockException;
+import liquibase.lockservice.DatabaseChangeLogLock;
+import liquibase.lockservice.LockService;
+import liquibase.lockservice.LockServiceFactory;
 import liquibase.resource.ClassLoaderResourceAccessor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -44,29 +50,34 @@ public class LiquibaseRunner {
     private final List<LiquibaseMasterChangeLogLocation> liquibaseMasterChangeLogLocations;
     private final Contexts context;
     private final DataSource datasource;
+    private final int staleLockThresholdMinutes;
 
     public LiquibaseRunner(
         final List<LiquibaseMasterChangeLogLocation> liquibaseMasterChangeLogLocations,
         final LiquibaseProperties liquibaseProperties,
-        final DataSource datasource
+        final DataSource datasource,
+        final int staleLockThresholdMinutes
     ) {
         this.liquibaseMasterChangeLogLocations = liquibaseMasterChangeLogLocations;
         this.datasource = datasource;
         this.context = new Contexts(liquibaseProperties.getContexts());
+        this.staleLockThresholdMinutes = staleLockThresholdMinutes;
     }
 
     public void run() throws SQLException, DatabaseException {
         Connection connection = datasource.getConnection();
         JdbcConnection jdbcConnection = new JdbcConnection(connection);
         Database database = DatabaseFactory.getInstance().findCorrectDatabaseImplementation(jdbcConnection);
+        LockService lockService = LockServiceFactory.getInstance().getLockService(database);
+        Thread shutdownHook = newShutdownHook(lockService);
         try {
-            for (LiquibaseMasterChangeLogLocation changeLogLocation : liquibaseMasterChangeLogLocations) {
-                disableFastCheckCaching();
-                runChangeLog(database, changeLogLocation.getFilePath());
-            }
+            forceReleaseStaleLock(lockService);
+            Runtime.getRuntime().addShutdownHook(shutdownHook);
+            executeMigrations(database, lockService);
         } catch (LiquibaseException liquibaseException) {
             throw new DatabaseException(liquibaseException);
         } finally {
+            deregisterShutdownHook(shutdownHook);
             try {
                 connection.rollback();
                 connection.close();
@@ -77,8 +88,79 @@ public class LiquibaseRunner {
         logger.info("Finished running liquibase");
     }
 
+    void executeMigrations(Database database, LockService lockService) throws LiquibaseException {
+        try {
+            for (LiquibaseMasterChangeLogLocation changeLogLocation : liquibaseMasterChangeLogLocations) {
+                disableFastCheckCaching();
+                runChangeLog(database, changeLogLocation.getFilePath());
+            }
+        } finally {
+            // liquibase.update() releases on its own happy path; this catches an iteration-time exception.
+            releaseLockQuietly(lockService);
+        }
+    }
+
+    /** Recovers from a stale lock left by a previous JVM that died (SIGKILL/OOM) without releasing it. */
+    void forceReleaseStaleLock(LockService lockService) throws LockException, DatabaseException {
+        DatabaseChangeLogLock[] locks = lockService.listLocks();
+        for (DatabaseChangeLogLock lock : locks) {
+            long heldForMinutes = Duration.between(lock.getLockGranted().toInstant(), Instant.now()).toMinutes();
+            if (heldForMinutes >= staleLockThresholdMinutes) {
+                logger.warn(
+                    "Force-releasing stale Liquibase changelog lock held by '{}' since {} ({} minutes ago, threshold {} min)",
+                    lock.getLockedBy(), lock.getLockGranted(), heldForMinutes, staleLockThresholdMinutes
+                );
+                lockService.forceReleaseLock();
+            }
+        }
+    }
+
+    /**
+     * Releases the lock on graceful SIGTERM if the migration is still in flight. Hard kills bypass
+     * shutdown hooks — {@link #forceReleaseStaleLock} covers those. Uses a fresh connection because
+     * the original is closed by the outer finally before this fires.
+     */
+    Thread newShutdownHook(LockService originalLockService) {
+        return new Thread(() -> {
+            if (!originalLockService.hasChangeLogLock()) {
+                return;
+            }
+            try (Connection conn = datasource.getConnection()) {
+                JdbcConnection jdbc = new JdbcConnection(conn);
+                Database db = DatabaseFactory.getInstance().findCorrectDatabaseImplementation(jdbc);
+                LockServiceFactory.getInstance().getLockService(db).forceReleaseLock();
+                conn.commit();
+                logger.warn("JVM shutdown: force-released Liquibase changelog lock");
+            } catch (Exception e) {
+                logger.warn("JVM shutdown: failed to release Liquibase changelog lock", e);
+            }
+        }, "liquibase-shutdown-hook");
+    }
+
+    private void deregisterShutdownHook(Thread hook) {
+        try {
+            Runtime.getRuntime().removeShutdownHook(hook);
+        } catch (IllegalStateException ignored) {
+            // JVM is already shutting down; the hook will fire (or has fired) and no-op via its hasChangeLogLock guard.
+        } catch (RuntimeException e) {
+            // Best-effort: must not abort the outer finally. Worst case the hook stays registered
+            // and no-ops on JVM exit via its hasChangeLogLock guard.
+            logger.warn("Failed to deregister Liquibase shutdown hook", e);
+        }
+    }
+
+    private void releaseLockQuietly(LockService lockService) {
+        try {
+            lockService.releaseLock();
+        } catch (LockException | RuntimeException e) {
+            // "Quietly": a throw here would mask the real migration exception. RuntimeException
+            // covers cases where Liquibase internals leak past the declared LockException.
+            logger.warn("Failed to release Liquibase changelog lock", e);
+        }
+    }
+
     @SuppressWarnings({"squid:S2095", "java:S2095"}) // Liquibase connection is closed elsewhere
-    private void runChangeLog(Database database, String filePath) throws LiquibaseException {
+    void runChangeLog(Database database, String filePath) throws LiquibaseException {
         Liquibase liquibase = new Liquibase(filePath, new ClassLoaderResourceAccessor(), database);
         logger.info("Running liquibase master changelog: {}", liquibase.getChangeLogFile());
         liquibase.update(context);
