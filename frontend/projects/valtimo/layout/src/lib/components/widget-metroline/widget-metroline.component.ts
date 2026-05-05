@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import {CommonModule} from '@angular/common';
+import {CommonModule, DatePipe} from '@angular/common';
 import {
   AfterViewChecked,
   ChangeDetectionStrategy,
@@ -46,6 +46,7 @@ import {WidgetActionButtonComponent} from '../widget-action-button/widget-action
     TranslateModule,
     WidgetActionButtonComponent,
   ],
+  providers: [DatePipe],
 })
 export class WidgetMetrolineComponent implements AfterViewChecked, OnDestroy {
   @HostBinding('class') public readonly class = 'valtimo-widget-metroline';
@@ -113,7 +114,10 @@ export class WidgetMetrolineComponent implements AfterViewChecked, OnDestroy {
   private readonly _subscriptions = new Subscription();
   private _stepsSnapshot: Step[] = [];
 
-  constructor(private readonly elementRef: ElementRef<HTMLElement>) {
+  constructor(
+    private readonly elementRef: ElementRef<HTMLElement>,
+    private readonly datePipe: DatePipe
+  ) {
     this._subscriptions.add(
       this.steps$.subscribe(steps => {
         this._stepsSnapshot = steps;
@@ -135,15 +139,15 @@ export class WidgetMetrolineComponent implements AfterViewChecked, OnDestroy {
     if (mode === MetrolineMode.ZAAKSTATUS) {
       return items.map(item => ({
         label: item.title,
-        secondaryLabel: item.label ?? undefined,
-        complete: item.completed,
+        secondaryLabel: this.formatCompleted(item.completed),
+        complete: item.completed != null,
       }));
     }
 
     const lastIndex = items.length - 1;
     return items.map((item, index) => ({
       label: item.title,
-      secondaryLabel: item.label ?? undefined,
+      secondaryLabel: this.formatCompleted(item.completed),
       complete: index < lastIndex,
     }));
   }
@@ -152,11 +156,16 @@ export class WidgetMetrolineComponent implements AfterViewChecked, OnDestroy {
     if (!items?.length) return 0;
 
     if (mode === MetrolineMode.ZAAKSTATUS) {
-      const firstNotCompleted = items.findIndex(item => !item.completed);
+      const firstNotCompleted = items.findIndex(item => item.completed == null);
       return firstNotCompleted === -1 ? items.length : firstNotCompleted;
     }
 
     return items.length - 1;
+  }
+
+  private formatCompleted(completed: string | null): string | undefined {
+    if (!completed) return undefined;
+    return this.datePipe.transform(completed, 'dd-MM-yyyy HH:mm') ?? undefined;
   }
 
   private applyTooltips(steps: Step[]): void {

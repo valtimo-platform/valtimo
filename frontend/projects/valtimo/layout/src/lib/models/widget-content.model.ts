@@ -132,7 +132,7 @@ interface WidgetMetrolineContent {
 interface MetrolineItem {
   title: string;
   label: string | null;
-  completed: boolean;
+  completed: string | null;
 }
 
 type WidgetDropdownValue = {[key: string]: string};
