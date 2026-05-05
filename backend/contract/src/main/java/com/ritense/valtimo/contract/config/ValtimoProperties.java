@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,9 +16,7 @@
 
 package com.ritense.valtimo.contract.config;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
 import com.ritense.valtimo.contract.OauthConfigHolder;
-import javax.annotation.Nonnull;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.context.properties.bind.ConstructorBinding;
 
@@ -35,19 +33,23 @@ public class ValtimoProperties {
 
     private final Process process;
 
+    private final Liquibase liquibase;
+
     @ConstructorBinding
     public ValtimoProperties(
         App app,
         Mandrill mandrill,
         Oauth oauth,
         Portal portal,
-        Process process
+        Process process,
+        Liquibase liquibase
     ) {
         this.app = app != null ? app : new App();
         this.mandrill = mandrill != null ? mandrill : new Mandrill();
         this.oauth = oauth != null ? oauth : new Oauth();
         this.portal = portal != null ? portal : new Portal();
         this.process = process != null ? process : new Process();
+        this.liquibase = liquibase != null ? liquibase : new Liquibase();
         new OauthConfigHolder(this.oauth);
     }
 
@@ -69,6 +71,10 @@ public class ValtimoProperties {
 
     public Process getProcess() {
         return process;
+    }
+
+    public Liquibase getLiquibase() {
+        return liquibase;
     }
 
     public static class App {
@@ -210,6 +216,27 @@ public class ValtimoProperties {
 
         public void setCallDepthWarningThreshold(int callDepthWarningThreshold) {
             this.callDepthWarningThreshold = callDepthWarningThreshold;
+        }
+    }
+
+    public static class Liquibase {
+        private boolean enabled = true;
+        private int staleLockThresholdMinutes = 30;
+
+        public boolean isEnabled() {
+            return enabled;
+        }
+
+        public void setEnabled(boolean enabled) {
+            this.enabled = enabled;
+        }
+
+        public int getStaleLockThresholdMinutes() {
+            return staleLockThresholdMinutes;
+        }
+
+        public void setStaleLockThresholdMinutes(int staleLockThresholdMinutes) {
+            this.staleLockThresholdMinutes = staleLockThresholdMinutes;
         }
     }
 }
