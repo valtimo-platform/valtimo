@@ -202,6 +202,24 @@ interface BuildingBlockProcessLinkUpdateDto {
   outputMappings: Array<BuildingBlockOutputMapping>;
 }
 
+interface ExternalPluginProcessLinkCreateDto {
+  processDefinitionId: string;
+  activityId: string;
+  activityType: string;
+  processLinkType: 'external_plugin';
+  externalPluginConfigurationId: string;
+  actionKey: string;
+  actionProperties?: object;
+}
+
+interface ExternalPluginProcessLinkUpdateDto {
+  id: string;
+  processLinkType: 'external_plugin';
+  externalPluginConfigurationId: string;
+  actionKey: string;
+  actionProperties?: object;
+}
+
 type BuildingBlockSyncTiming = 'CONTINUOUS' | 'END';
 
 interface BuildingBlockInputMapping {
@@ -246,7 +264,8 @@ type ProcessLinkUpdateEvent =
   | FormProcessLinkUpdateRequestDto
   | URLProcessLinkUpdateRequestDto
   | UIComponentProcessLinkUpdateRequestDto
-  | BuildingBlockProcessLinkUpdateDto;
+  | BuildingBlockProcessLinkUpdateDto
+  | ExternalPluginProcessLinkUpdateDto;
 
 interface ProcessLinkDeleteEvent {
   activityId: string;
@@ -268,7 +287,8 @@ type ProcessLinkCreateEvent =
   | PluginProcessLinkCreateDto
   | BuildingBlockProcessLinkCreateDto
   | URLProcessLinkCreateDto
-  | UIComponentProcessLinkCreateRequestDto;
+  | UIComponentProcessLinkCreateRequestDto
+  | ExternalPluginProcessLinkCreateDto;
 
 interface ProcessLinkDeleteEvent {
   activityId: string;
@@ -329,6 +349,8 @@ interface ProcessDefinitionConflictResponse {
 export {
   CompatiblePluginProcessLinks,
   CompatibleProcessVersion,
+  ExternalPluginProcessLinkCreateDto,
+  ExternalPluginProcessLinkUpdateDto,
   FormDisplayType,
   FormFlowProcessLinkCreateRequestDto,
   FormFlowProcessLinkUpdateRequestDto,

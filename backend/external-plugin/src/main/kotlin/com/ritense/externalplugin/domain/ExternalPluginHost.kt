@@ -39,6 +39,9 @@ class ExternalPluginHost(
     @Column(name = "base_url", nullable = false)
     var baseUrl: String,
 
+    @Column(name = "secret", nullable = false)
+    var secret: String,
+
     @Column(name = "status", nullable = false)
     @Enumerated(EnumType.STRING)
     var status: ExternalPluginHostStatus,

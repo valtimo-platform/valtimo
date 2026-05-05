@@ -25,7 +25,6 @@ import com.ritense.externalplugin.repository.ExternalPluginConfigurationReposito
 import com.ritense.externalplugin.repository.ExternalPluginDefinitionRepository
 import com.ritense.externalplugin.repository.ExternalPluginHostRepository
 import com.ritense.externalplugin.repository.ExternalPluginProcessLinkRepository
-import com.ritense.externalplugin.security.ExternalPluginHmacSigner
 import com.ritense.externalplugin.security.ExternalPluginHttpSecurityConfigurer
 import com.ritense.externalplugin.service.ExternalPluginConfigurationService
 import com.ritense.externalplugin.service.ExternalPluginDefinitionService
@@ -58,12 +57,6 @@ class ExternalPluginAutoConfiguration {
     fun externalPluginRestTemplate(builder: RestTemplateBuilder): RestTemplate = builder.build()
 
     @Bean
-    @ConditionalOnMissingBean(ExternalPluginHmacSigner::class)
-    fun externalPluginHmacSigner(
-        @Value("\${valtimo.external-plugin.host-secret:change-me-host-secret}") secret: String,
-    ) = ExternalPluginHmacSigner(secret)
-
-    @Bean
     @ConditionalOnMissingBean(PluginPropertyEncryptor::class)
     fun pluginPropertyEncryptor(encryptionService: EncryptionService) =
         PluginPropertyEncryptor(encryptionService)
@@ -72,14 +65,15 @@ class ExternalPluginAutoConfiguration {
     @ConditionalOnMissingBean(ExternalPluginHostClient::class)
     fun externalPluginHostClient(
         @org.springframework.beans.factory.annotation.Qualifier("externalPluginRestTemplate") restTemplate: RestTemplate,
-        signer: ExternalPluginHmacSigner,
         objectMapper: ObjectMapper,
-    ) = ExternalPluginHostClient(restTemplate, signer, objectMapper)
+    ) = ExternalPluginHostClient(restTemplate, objectMapper)
 
     @Bean
     @ConditionalOnMissingBean(ExternalPluginHostService::class)
-    fun externalPluginHostService(hostRepository: ExternalPluginHostRepository) =
-        ExternalPluginHostService(hostRepository)
+    fun externalPluginHostService(
+        hostRepository: ExternalPluginHostRepository,
+        encryptionService: EncryptionService,
+    ) = ExternalPluginHostService(hostRepository, encryptionService)
 
     @Bean
     @ConditionalOnMissingBean(ExternalPluginDefinitionService::class)
@@ -91,18 +85,24 @@ class ExternalPluginAutoConfiguration {
     fun externalPluginConfigurationService(
         configurationRepository: ExternalPluginConfigurationRepository,
         definitionRepository: ExternalPluginDefinitionRepository,
+        hostRepository: ExternalPluginHostRepository,
+        hostClient: ExternalPluginHostClient,
         propertyEncryptor: PluginPropertyEncryptor,
+        encryptionService: EncryptionService,
         objectMapper: ObjectMapper,
-    ) = ExternalPluginConfigurationService(configurationRepository, definitionRepository, propertyEncryptor, objectMapper)
+    ) = ExternalPluginConfigurationService(configurationRepository, definitionRepository, hostRepository, hostClient, propertyEncryptor, encryptionService, objectMapper)
 
     @Bean
     @ConditionalOnMissingBean(ExternalPluginDiscoveryService::class)
     fun externalPluginDiscoveryService(
         hostRepository: ExternalPluginHostRepository,
         definitionRepository: ExternalPluginDefinitionRepository,
+        configurationRepository: ExternalPluginConfigurationRepository,
+        configurationService: ExternalPluginConfigurationService,
+        hostService: ExternalPluginHostService,
         hostClient: ExternalPluginHostClient,
         @Value("\${valtimo.external-plugin.polling.failure-threshold:3}") failureThreshold: Int,
-    ) = ExternalPluginDiscoveryService(hostRepository, definitionRepository, hostClient, failureThreshold)
+    ) = ExternalPluginDiscoveryService(hostRepository, definitionRepository, configurationRepository, configurationService, hostService, hostClient, failureThreshold)
 
     @Bean
     @ConditionalOnMissingBean(ExternalPluginDiscoveryJob::class)

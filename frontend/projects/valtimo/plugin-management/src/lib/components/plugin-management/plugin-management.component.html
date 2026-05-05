@@ -1,5 +1,5 @@
 <!--
-  ~ Copyright 2015-2025 Ritense BV, the Netherlands.
+  ~ Copyright 2015-2026 Ritense BV, the Netherlands.
   ~
   ~ Licensed under EUPL, Version 1.2 (the "License");
   ~ you may not use this file except in compliance with the License.
@@ -13,36 +13,74 @@
   ~ See the License for the specific language governing permissions and
   ~ limitations under the License.
   -->
-<ng-container
-  *ngIf="{
-    pluginConfigurations: pluginConfigurations$ | async,
-    loading: loading$ | async,
-  } as obs"
->
-  <valtimo-carbon-list
-    [actionItems]="actionItems"
-    [loading]="obs.loading"
-    [items]="obs.pluginConfigurations"
-    [fields]="fields"
-    [header]="false"
-    (rowClicked)="editConfiguration($event)"
-  >
-    <ng-container carbonToolbarContent [ngTemplateOutlet]="configurePluginButton"></ng-container>
 
-    <valtimo-no-results
-      [action]="configurePluginButton"
-      [title]="'pages.plugins.noResults' | translate"
-    ></valtimo-no-results>
-  </valtimo-carbon-list>
+<cds-tabs>
+  <cds-tab [heading]="'pluginManagement.tabs.configurations' | translate">
+    <ng-container
+      *ngIf="{
+        pluginConfigurations: pluginConfigurations$ | async,
+        loading: loading$ | async,
+      } as obs"
+    >
+      <valtimo-carbon-list
+        [actionItems]="actionItems"
+        [loading]="obs.loading"
+        [items]="obs.pluginConfigurations"
+        [fields]="fields"
+        [header]="false"
+        (rowClicked)="editConfiguration($event)"
+      >
+        <ng-container
+          carbonToolbarContent
+          [ngTemplateOutlet]="configurePluginButton"
+        ></ng-container>
 
-  <ng-template #configurePluginButton>
-    <button cdsButton="primary" [disabled]="obs.loading" (click)="showAddModal()">
-      {{ 'pluginManagement.add' | translate }}
+        <valtimo-no-results
+          [action]="configurePluginButton"
+          [title]="'pages.plugins.noResults' | translate"
+        ></valtimo-no-results>
+      </valtimo-carbon-list>
 
-      <svg cdsIcon="add" size="16" class="cds--btn__icon"></svg>
-    </button>
-  </ng-template>
-</ng-container>
+      <ng-template #configurePluginButton>
+        <button cdsButton="primary" [disabled]="obs.loading" (click)="showAddModal()">
+          {{ 'pluginManagement.add' | translate }}
+
+          <svg cdsIcon="add" size="16" class="cds--btn__icon"></svg>
+        </button>
+      </ng-template>
+    </ng-container>
+  </cds-tab>
+
+  <cds-tab [heading]="'pluginManagement.tabs.pluginHosts' | translate">
+    <ng-container
+      *ngIf="{
+        hosts: hosts$ | async,
+      } as hostObs"
+    >
+      <valtimo-carbon-list
+        [loading]="$hostsLoading()"
+        [items]="hostObs.hosts"
+        [fields]="hostFields"
+        [header]="false"
+      >
+        <ng-container carbonToolbarContent [ngTemplateOutlet]="addHostButton"></ng-container>
+
+        <valtimo-no-results
+          [action]="addHostButton"
+          [title]="'pluginManagement.noHosts' | translate"
+        ></valtimo-no-results>
+      </valtimo-carbon-list>
+
+      <ng-template #addHostButton>
+        <button cdsButton="primary" [disabled]="$hostsLoading()" (click)="openHostModal()">
+          {{ 'pluginManagement.addHost' | translate }}
+
+          <svg cdsIcon="add" size="16" class="cds--btn__icon"></svg>
+        </button>
+      </ng-template>
+    </ng-container>
+  </cds-tab>
+</cds-tabs>
 
 <valtimo-plugin-add-modal
   [open]="showAddModal$ | async"
@@ -54,3 +92,9 @@
   [saveNewConfiguration]="saveNewConfiguration$ | async"
   (closeModal)="closeEditModal()"
 ></valtimo-plugin-edit-modal>
+
+<valtimo-plugin-host-modal
+  [open]="$hostModalOpen()"
+  (closeEvent)="closeHostModal()"
+  (submitEvent)="submitHost($event)"
+></valtimo-plugin-host-modal>

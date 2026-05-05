@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,9 +15,22 @@
  */
 
 import {Component, OnDestroy, OnInit} from '@angular/core';
-import {combineLatest, Subscription} from 'rxjs';
-import {PluginManagementStateService} from '../../services';
-import {PluginDefinition, PluginManagementService, PLUGIN_CATALOG_TEST_IDS} from '@valtimo/plugin';
+import {BehaviorSubject, combineLatest, Observable, of, Subscription} from 'rxjs';
+import {catchError, map} from 'rxjs/operators';
+import {ExternalPluginService, PluginManagementStateService} from '../../services';
+import {ExternalPluginDefinition} from '../../models';
+import {
+  PluginDefinition,
+  PluginDefinitionWithLogo,
+  PluginManagementService,
+  PLUGIN_CATALOG_TEST_IDS,
+} from '@valtimo/plugin';
+
+export interface UnifiedPluginDefinition extends PluginDefinitionWithLogo {
+  external?: boolean;
+  externalName?: string | null;
+  externalDescription?: string | null;
+}
 
 @Component({
   standalone: false,
@@ -28,19 +41,46 @@ import {PluginDefinition, PluginManagementService, PLUGIN_CATALOG_TEST_IDS} from
 export class PluginAddSelectComponent implements OnInit, OnDestroy {
   public readonly selectedPluginDefinition$ = this.stateService.selectedPluginDefinition$;
   public readonly disabled$ = this.stateService.inputDisabled$;
-  public readonly pluginDefinitionsWithLogos$ = this.stateService.pluginDefinitionsWithLogos$;
   public readonly testIds = PLUGIN_CATALOG_TEST_IDS;
+
+  private readonly _externalDefs$ = new BehaviorSubject<ExternalPluginDefinition[]>([]);
+
+  public readonly allDefinitions$: Observable<UnifiedPluginDefinition[] | undefined> =
+    combineLatest([
+      this.stateService.pluginDefinitionsWithLogos$,
+      this._externalDefs$.asObservable(),
+    ]).pipe(
+      map(([embedded, external]) => {
+        if (!embedded) return undefined;
+
+        const externalDefs: UnifiedPluginDefinition[] = external.map(def => ({
+          key: `external:${def.id}`,
+          title: def.name ?? def.pluginId,
+          description: def.description,
+          external: true,
+          externalName: def.name ?? def.pluginId,
+          externalDescription: def.description,
+        }));
+
+        return [
+          ...embedded.map(d => ({...d, external: false} as UnifiedPluginDefinition)),
+          ...externalDefs,
+        ];
+      })
+    );
 
   private refreshSubscription!: Subscription;
 
   constructor(
     private readonly pluginManagementService: PluginManagementService,
-    private readonly stateService: PluginManagementStateService
+    private readonly stateService: PluginManagementStateService,
+    private readonly externalPluginService: ExternalPluginService
   ) {}
 
   public ngOnInit(): void {
     this.openRefreshSubscription();
     this.getPluginDefinitions();
+    this.getExternalPluginDefinitions();
   }
 
   public ngOnDestroy(): void {
@@ -59,6 +99,15 @@ export class PluginAddSelectComponent implements OnInit, OnDestroy {
     this.pluginManagementService.getPluginDefinitions().subscribe(pluginDefinitions => {
       this.stateService.setPluginDefinitions(pluginDefinitions);
     });
+  }
+
+  private getExternalPluginDefinitions(): void {
+    this.externalPluginService
+      .getDefinitions()
+      .pipe(catchError(() => of([] as ExternalPluginDefinition[])))
+      .subscribe(definitions => {
+        this._externalDefs$.next(definitions);
+      });
   }
 
   private openRefreshSubscription(): void {

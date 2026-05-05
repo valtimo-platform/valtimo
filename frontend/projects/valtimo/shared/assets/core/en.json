@@ -1756,13 +1756,26 @@
   "pluginManagement": {
     "tableItemsText": "plugin configurations",
     "add": "Configure plugin",
+    "addHost": "Add host",
     "noDefinitions": "No plugin definitions found.",
+    "noHosts": "No plugin hosts configured.",
     "save": "Save configuration",
     "remove": "Delete configuration",
+    "tabs": {
+      "configurations": "Configurations",
+      "pluginHosts": "Plugin hosts"
+    },
     "labels": {
       "pluginName": "Plugin name",
       "identifier": "Identifier",
-      "configurationName": "Configuration name"
+      "configurationName": "Configuration name",
+      "name": "Name",
+      "baseUrl": "Base URL",
+      "status": "Status",
+      "lastHealthCheck": "Last health check",
+      "secret": "Secret",
+      "source": "Source",
+      "properties": "Properties (JSON)"
     },
     "addSteps": {
       "step0": "Choose your plugin",
@@ -2033,6 +2046,7 @@
       "checkboxDescription": "Enables Form View Model form processing"
     },
     "importConfiguration": "Import configuration",
+    "externalPluginNoConfig": "This external plugin action does not require additional configuration. Click save to create the process link.",
     "selectProcess": "Select process",
     "process": "Process",
     "version": "Version",

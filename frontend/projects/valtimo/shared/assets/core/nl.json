@@ -1792,13 +1792,26 @@
   "pluginManagement": {
     "tableItemsText": "plugin-configuraties",
     "add": "Plugin configureren",
+    "addHost": "Host toevoegen",
     "noDefinitions": "Geen plugin-definities gevonden.",
+    "noHosts": "Geen plugin-hosts geconfigureerd.",
     "save": "Configuratie opslaan",
     "remove": "Configuratie verwijderen",
+    "tabs": {
+      "configurations": "Configuraties",
+      "pluginHosts": "Plugin-hosts"
+    },
     "labels": {
       "pluginName": "Plugin naam",
       "identifier": "Identifier",
-      "configurationName": "Configuratienaam"
+      "configurationName": "Configuratienaam",
+      "name": "Naam",
+      "baseUrl": "Basis-URL",
+      "status": "Status",
+      "lastHealthCheck": "Laatste health check",
+      "secret": "Geheim",
+      "source": "Bron",
+      "properties": "Eigenschappen (JSON)"
     },
     "addSteps": {
       "step0": "Kies je plugin",
@@ -2075,6 +2088,7 @@
       "checkboxDescription": "Activeert Form View Model form afhandeling"
     },
     "importConfiguration": "Configuratie importeren",
+    "externalPluginNoConfig": "Deze externe plugin actie vereist geen aanvullende configuratie. Klik op opslaan om de processtap-koppeling aan te maken.",
     "selectProcess": "Selecteer een proces",
     "process": "Proces",
     "version": "Versie",

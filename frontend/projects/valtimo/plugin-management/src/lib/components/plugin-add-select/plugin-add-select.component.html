@@ -1,5 +1,5 @@
 <!--
-  ~ Copyright 2015-2025 Ritense BV, the Netherlands.
+  ~ Copyright 2015-2026 Ritense BV, the Netherlands.
   ~
   ~ Licensed under EUPL, Version 1.2 (the "License");
   ~ you may not use this file except in compliance with the License.
@@ -14,7 +14,7 @@
   ~ limitations under the License.
   -->
 
-<ng-container *ngIf="pluginDefinitionsWithLogos$ | async as pluginDefinitions; else loading">
+<ng-container *ngIf="allDefinitions$ | async as pluginDefinitions; else loading">
   <div class="plugin-definition__grid" [attr.data-test-id]="testIds.tileGrid">
     <ng-container
       *ngTemplateOutlet="pluginDefinitionsTemplate; context: {pluginDefinitions: pluginDefinitions}"
@@ -43,20 +43,36 @@
       [value]="pluginDefinition"
       [selected]="(selectedPluginDefinition$ | async)?.key === pluginDefinition.key"
     >
-      <img
-        class="plugin-definition-logo"
-        [title]="'title' | pluginTranslate: pluginDefinition.key | async"
-        [src]="pluginDefinition.pluginLogoBase64"
-        [attr.data-test-id]="testIds.tileLogo"
-      />
+      <ng-container *ngIf="!pluginDefinition.external; else externalTile">
+        <img
+          class="plugin-definition-logo"
+          [title]="'title' | pluginTranslate: pluginDefinition.key | async"
+          [src]="pluginDefinition.pluginLogoBase64"
+          [attr.data-test-id]="testIds.tileLogo"
+        />
 
-      <h5 [attr.data-test-id]="testIds.tileTitle">
-        {{ 'title' | pluginTranslate: pluginDefinition.key | async }}
-      </h5>
+        <h5 [attr.data-test-id]="testIds.tileTitle">
+          {{ 'title' | pluginTranslate: pluginDefinition.key | async }}
+        </h5>
 
-      <p [attr.data-test-id]="testIds.tileDescription">
-        {{ 'description' | pluginTranslate: pluginDefinition.key | async }}
-      </p>
+        <p [attr.data-test-id]="testIds.tileDescription">
+          {{ 'description' | pluginTranslate: pluginDefinition.key | async }}
+        </p>
+      </ng-container>
+
+      <ng-template #externalTile>
+        <div class="plugin-definition-logo plugin-definition-logo--external">
+          <svg cdsIcon="link" size="32"></svg>
+        </div>
+
+        <h5 [attr.data-test-id]="testIds.tileTitle">
+          {{ pluginDefinition.externalName }}
+        </h5>
+
+        <p [attr.data-test-id]="testIds.tileDescription">
+          {{ pluginDefinition.externalDescription }}
+        </p>
+      </ng-template>
     </cds-selection-tile>
   </cds-tile-group>
 </ng-template>

@@ -19,6 +19,7 @@ package com.ritense.externalplugin.service
 import com.ritense.externalplugin.domain.ExternalPluginHost
 import com.ritense.externalplugin.domain.ExternalPluginHostStatus
 import com.ritense.externalplugin.repository.ExternalPluginHostRepository
+import com.ritense.plugin.service.EncryptionService
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -29,6 +30,7 @@ import java.util.UUID
 @Transactional
 class ExternalPluginHostService(
     private val hostRepository: ExternalPluginHostRepository,
+    private val encryptionService: EncryptionService,
 ) {
 
     fun list(): List<ExternalPluginHost> = hostRepository.findAll()
@@ -36,11 +38,14 @@ class ExternalPluginHostService(
     fun get(id: UUID): ExternalPluginHost = hostRepository.findById(id)
         .orElseThrow { IllegalArgumentException("External plugin host $id not found") }
 
-    fun register(name: String, baseUrl: String): ExternalPluginHost {
+    fun decryptedSecret(host: ExternalPluginHost): String = encryptionService.decrypt(host.secret)
+
+    fun register(name: String, baseUrl: String, secret: String): ExternalPluginHost {
         val host = ExternalPluginHost(
             id = UUID.randomUUID(),
             name = name,
             baseUrl = baseUrl.trimEnd('/'),
+            secret = encryptionService.encrypt(secret),
             status = ExternalPluginHostStatus.UNREACHABLE,
         )
         return hostRepository.save(host)

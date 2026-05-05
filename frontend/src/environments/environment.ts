@@ -133,7 +133,6 @@ export const environment: ValtimoConfig = {
           },
           {link: ['/case-management'], title: 'Cases', sequence: 3},
           {link: ['/plugins'], title: 'Plugins', sequence: 4},
-          {link: ['/external-plugins'], title: 'External Plugins', sequence: 4},
           {link: ['/dashboard-management'], title: 'Dashboard', sequence: 5},
           {link: ['/access-control'], title: 'Access Control', sequence: 6},
           {link: ['/translation-management'], title: 'Translations', sequence: 7},

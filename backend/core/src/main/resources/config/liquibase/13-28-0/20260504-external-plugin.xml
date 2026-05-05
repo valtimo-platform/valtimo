@@ -18,7 +18,7 @@
 <databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
                    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
                    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.6.xsd"
-                   logicalFilePath="config/liquibase/13-28-0/20260504-create-external-plugin-tables.xml">
+                   logicalFilePath="config/liquibase/13-28-0/20260504-external-plugin.xml">
 
     <changeSet author="Ritense" id="1">
         <createTable tableName="external_plugin_host">
@@ -29,6 +29,9 @@
                 <constraints nullable="false"/>
             </column>
             <column name="base_url" type="VARCHAR(1024)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="secret" type="VARCHAR(1024)">
                 <constraints nullable="false"/>
             </column>
             <column name="status" type="VARCHAR(32)">
@@ -102,6 +105,17 @@
                                  referencedTableName="external_plugin_definition"
                                  referencedColumnNames="id"
                                  constraintName="external_plugin_configuration_definition_id_fk"/>
+    </changeSet>
+
+    <changeSet author="Ritense" id="4">
+        <preConditions onFail="CONTINUE">
+            <tableExists tableName="process_link"/>
+        </preConditions>
+        <addColumn tableName="process_link">
+            <column name="external_plugin_config_id" type="${uuidType}"/>
+            <column name="external_plugin_action_key" type="VARCHAR(255)"/>
+            <column name="external_plugin_action_properties" type="${jsonType}"/>
+        </addColumn>
     </changeSet>
 
 </databaseChangeLog>

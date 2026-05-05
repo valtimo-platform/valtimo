@@ -15,7 +15,7 @@
  */
 
 import {Component, OnDestroy, OnInit} from '@angular/core';
-import {filter, map, switchMap, take, withLatestFrom} from 'rxjs/operators';
+import {catchError, filter, map, switchMap, take, withLatestFrom} from 'rxjs/operators';
 import {PluginStateService} from '../../services/plugin-state.service';
 import {combineLatest, Observable, of, Subscription} from 'rxjs';
 import {
@@ -31,6 +31,7 @@ import {
   ProcessLinkStepService,
 } from '../../services';
 import {PluginListItem} from '../../models';
+import {ExternalPluginService} from '@valtimo/plugin-management';
 
 @Component({
   standalone: false,
@@ -86,24 +87,53 @@ export class SelectPluginConfigurationComponent implements OnInit, OnDestroy {
                 )
               : of(undefined),
             this.pluginService.availablePluginIds$,
+            this.externalPluginService.getConfigurations().pipe(catchError(() => of([]))),
+            this.externalPluginService.getDefinitions().pipe(catchError(() => of([]))),
           ]).pipe(
-            map(([configs, availablePluginIds]) =>
-              configs
-                ?.filter(configuration =>
-                  availablePluginIds.includes(configuration.pluginDefinition.key)
-                )
-                ?.map(configuration => ({
-                  id: configuration.id ?? configuration.title,
-                  title: configuration.title,
-                  description: this.pluginTranslationService.instant(
-                    'description',
-                    configuration.pluginDefinition.key
-                  ),
-                  logo: (configuration.pluginLogoBase64 as string) ?? null,
-                  payload: configuration,
+            map(([configs, availablePluginIds, externalConfigs, externalDefinitions]) => {
+              const embeddedItems: PluginListItem[] =
+                configs
+                  ?.filter(configuration =>
+                    availablePluginIds.includes(configuration.pluginDefinition.key)
+                  )
+                  ?.map(configuration => ({
+                    id: configuration.id ?? configuration.title,
+                    title: configuration.title,
+                    description: this.pluginTranslationService.instant(
+                      'description',
+                      configuration.pluginDefinition.key
+                    ),
+                    logo: (configuration.pluginLogoBase64 as string) ?? null,
+                    payload: configuration,
+                    isDefinition: false,
+                  })) ?? [];
+
+              const externalItems: PluginListItem[] = externalConfigs.map(extConfig => {
+                const def = externalDefinitions.find(d => d.id === extConfig.definitionId);
+                const fakeConfig: PluginConfiguration = {
+                  id: extConfig.id,
+                  title: extConfig.title,
+                  pluginDefinition: {
+                    key: `external:${extConfig.definitionId}`,
+                    title: def?.name ?? extConfig.definitionId,
+                    description: def?.description ?? '',
+                  } as PluginDefinition,
+                  properties: {},
+                  _external: true,
+                  _externalDefinition: def,
+                } as any;
+                return {
+                  id: extConfig.id,
+                  title: extConfig.title,
+                  description: def?.name ?? 'External plugin',
+                  logo: null,
+                  payload: fakeConfig,
                   isDefinition: false,
-                }))
-            )
+                };
+              });
+
+              return [...embeddedItems, ...externalItems];
+            })
           )
     )
   );
@@ -137,7 +167,8 @@ export class SelectPluginConfigurationComponent implements OnInit, OnDestroy {
     private readonly stateService: ProcessLinkStateService,
     private readonly buttonService: ProcessLinkButtonService,
     private readonly stepService: ProcessLinkStepService,
-    private readonly pluginTranslationService: PluginTranslationService
+    private readonly pluginTranslationService: PluginTranslationService,
+    private readonly externalPluginService: ExternalPluginService
   ) {}
 
   ngOnInit(): void {

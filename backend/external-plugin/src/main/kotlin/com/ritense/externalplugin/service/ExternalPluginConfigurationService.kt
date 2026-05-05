@@ -20,10 +20,14 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.node.ObjectNode
 import com.networknt.schema.JsonSchemaFactory
 import com.networknt.schema.SpecVersion
+import com.ritense.externalplugin.client.ExternalPluginHostClient
 import com.ritense.externalplugin.domain.ExternalPluginConfiguration
 import com.ritense.externalplugin.repository.ExternalPluginConfigurationRepository
 import com.ritense.externalplugin.repository.ExternalPluginDefinitionRepository
+import com.ritense.externalplugin.repository.ExternalPluginHostRepository
+import com.ritense.plugin.service.EncryptionService
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
+import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.time.Instant
@@ -35,7 +39,10 @@ import java.util.UUID
 class ExternalPluginConfigurationService(
     private val configurationRepository: ExternalPluginConfigurationRepository,
     private val definitionRepository: ExternalPluginDefinitionRepository,
+    private val hostRepository: ExternalPluginHostRepository,
+    private val hostClient: ExternalPluginHostClient,
     private val propertyEncryptor: PluginPropertyEncryptor,
+    private val encryptionService: EncryptionService,
     private val objectMapper: ObjectMapper,
 ) {
 
@@ -65,7 +72,51 @@ class ExternalPluginConfigurationService(
             properties = encrypted,
             createdAt = Instant.now(),
         )
-        return configurationRepository.save(configuration)
+        val saved = configurationRepository.save(configuration)
+
+        // Push decrypted config to the plugin host
+        try {
+            val host = hostRepository.findById(definition.hostId).orElse(null)
+            if (host != null) {
+                val adminToken = encryptionService.decrypt(host.secret)
+                val decrypted = propertyEncryptor.decryptSecretFields(properties.deepCopy(), definition.configSchema)
+                hostClient.pushConfiguration(
+                    baseUrl = host.baseUrl,
+                    adminToken = adminToken,
+                    configId = saved.id.toString(),
+                    pluginId = definition.pluginId,
+                    pluginVersion = definition.version,
+                    properties = decrypted,
+                )
+                logger.info { "Pushed configuration ${saved.id} for plugin '${definition.pluginId}' to host ${host.id}" }
+            }
+        } catch (e: Exception) {
+            logger.warn(e) { "Failed to push configuration ${saved.id} to plugin host (will be synced on next discovery)" }
+        }
+
+        return saved
+    }
+
+    fun delete(id: UUID) {
+        val config = configurationRepository.findById(id)
+            .orElseThrow { IllegalArgumentException("External plugin configuration $id not found") }
+        val definition = definitionRepository.findById(config.definitionId).orElse(null)
+
+        configurationRepository.delete(config)
+
+        // Remove config from the plugin host
+        if (definition != null) {
+            try {
+                val host = hostRepository.findById(definition.hostId).orElse(null)
+                if (host != null) {
+                    val adminToken = encryptionService.decrypt(host.secret)
+                    hostClient.deleteConfiguration(host.baseUrl, adminToken, id.toString())
+                    logger.info { "Deleted configuration $id from host ${host.id}" }
+                }
+            } catch (e: Exception) {
+                logger.warn(e) { "Failed to delete configuration $id from plugin host" }
+            }
+        }
     }
 
     @Transactional(readOnly = true)
@@ -85,5 +136,9 @@ class ExternalPluginConfigurationService(
             val message = errors.joinToString("; ") { it.message }
             throw IllegalArgumentException("Configuration does not match schema: $message")
         }
+    }
+
+    companion object {
+        private val logger = KotlinLogging.logger {}
     }
 }
