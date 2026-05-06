@@ -119,6 +119,7 @@
       * [Uploading to Documenten API with metadata](features/case/zgw/zgw-documents/upload-to-documenten-api-with-metadata.md)
     * [Creating extra case tabs for Zaakobjects](features/case/zgw/configure-tab-object-type.md)
     * [Zaakdetail sync](features/case/zgw/zaakdetail-sync.md)
+    * [Zaak sync](features/case/zgw/zaken-api-sync.md)
   * [For developers](features/case/for-developers/README.md)
     * [Search fields API](features/case/for-developers/configuring-search-fields.md)
     * [Case list tab order](features/case/for-developers/customizing-case-list-tabs.md)
