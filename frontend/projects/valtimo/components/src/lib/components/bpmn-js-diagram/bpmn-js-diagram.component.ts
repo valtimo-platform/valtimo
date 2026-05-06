@@ -25,7 +25,7 @@ import {
   Output,
   ViewChild,
 } from '@angular/core';
-import BpmnViewer from 'bpmn-js';
+import NavigatedViewer from 'bpmn-js/lib/NavigatedViewer';
 import heatmap from 'heatmap.js-fixed/build/heatmap.js';
 
 @Component({
@@ -35,7 +35,7 @@ import heatmap from 'heatmap.js-fixed/build/heatmap.js';
   standalone: false,
 })
 export class BpmnJsDiagramComponent implements OnInit, AfterContentInit, OnDestroy {
-  private bpmnViewer: BpmnViewer;
+  private bpmnViewer: NavigatedViewer;
   private heatMapInstance: any;
 
   @ViewChild('ref', {static: true}) public el: ElementRef;
@@ -53,7 +53,7 @@ export class BpmnJsDiagramComponent implements OnInit, AfterContentInit, OnDestr
   constructor() {}
 
   ngOnInit(): void {
-    this.bpmnViewer = new BpmnViewer();
+    this.bpmnViewer = new NavigatedViewer();
     this.bpmnViewer.on('import.done', (event: any) => {
       if (!event?.error) {
         const canvas = this.bpmnViewer.get('canvas') as any;
