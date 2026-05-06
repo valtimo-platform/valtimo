@@ -38,3 +38,6 @@
 
 * Widget fields and collections now use the configured widget accent color for their borders, and the widget text color
   is applied to the empty-state message in widget collections.
+  
+* When trying to create a new process definition, if that process definition key already exists in that context, an
+  error message will be shown instead of overwriting the existing process definition.
