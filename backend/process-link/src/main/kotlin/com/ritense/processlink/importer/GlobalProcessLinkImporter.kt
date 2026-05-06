@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,8 +20,10 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import com.ritense.importer.ValtimoImportTypes.Companion.GLOBAL_PROCESS_DEFINITION
 import com.ritense.importer.ValtimoImportTypes.Companion.GLOBAL_PROCESS_LINK
 import com.ritense.processdocument.service.ProcessDefinitionCaseDefinitionService
+import com.ritense.processlink.mapper.ProcessLinkMapper
 import com.ritense.processlink.service.ProcessLinkService
 import com.ritense.valtimo.operaton.service.OperatonRepositoryService
+import org.springframework.context.ApplicationEventPublisher
 import org.springframework.transaction.annotation.Transactional
 
 @Transactional
@@ -29,8 +31,10 @@ class GlobalProcessLinkImporter(
     private val processLinkService: ProcessLinkService,
     repositoryService: OperatonRepositoryService,
     processDefinitionCaseDefinitionService: ProcessDefinitionCaseDefinitionService,
-    objectMapper: ObjectMapper
-) : ProcessLinkImporter(processLinkService, repositoryService, processDefinitionCaseDefinitionService, objectMapper) {
+    objectMapper: ObjectMapper,
+    processLinkMappers: List<ProcessLinkMapper>,
+    applicationEventPublisher: ApplicationEventPublisher,
+) : ProcessLinkImporter(processLinkService, repositoryService, processDefinitionCaseDefinitionService, objectMapper, processLinkMappers, applicationEventPublisher) {
     override fun type() = GLOBAL_PROCESS_LINK
 
     override fun dependsOn(): Set<String> {
