@@ -1,11 +1,5 @@
 # 12.34.0
 
-## New Features
-
-* **New feature title**
-
-  New feature explanation.
-
 ## Enhancements
 
 * **Dependency upgrades for CVE fixes**
