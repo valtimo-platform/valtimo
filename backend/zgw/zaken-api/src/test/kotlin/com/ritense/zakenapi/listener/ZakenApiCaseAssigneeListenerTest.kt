@@ -96,23 +96,39 @@ class ZakenApiCaseAssigneeListenerTest {
     }
 
     @Test
-    fun `removes existing GZAC behandelaar and creates a new one on assign`() {
+    fun `upserts GZAC behandelaar atomically on assign`() {
         listener.handleAssigneeChanged(assigneeChangedEvent("alice"))
 
-        verify(zakenApiPlugin).removeGzacBehandelaarRollen(zaakUrl)
-        verify(zakenApiPlugin).createGzacBehandelaarRol(
+        verify(zakenApiPlugin).upsertGzacBehandelaarRol(
             zaakUrl = eq(zaakUrl),
             roltypeUrl = eq(behandelaarRoltypeUrl),
             username = eq("alice"),
         )
+        verify(zakenApiPlugin, never()).removeGzacBehandelaarRollen(any())
     }
 
     @Test
-    fun `unassign removes existing behandelaar but does not create a new one`() {
+    fun `unassign removes existing behandelaar but does not upsert a new one`() {
         listener.handleUnassigned(unassignedEvent("alice"))
 
         verify(zakenApiPlugin).removeGzacBehandelaarRollen(zaakUrl)
-        verify(zakenApiPlugin, never()).createGzacBehandelaarRol(any(), any(), any())
+        verify(zakenApiPlugin, never()).upsertGzacBehandelaarRol(any(), any(), any())
+    }
+
+    @Test
+    fun `does nothing when assignee sync is enabled but roltype is missing`() {
+        whenever(caseZakenApiSyncManagementService.getSyncConfiguration(eq(caseDefinitionId)))
+            .thenReturn(
+                CaseZakenApiSync(
+                    caseDefinitionId = caseDefinitionId,
+                    assigneeSyncEnabled = true,
+                    roltypeUrl = null,
+                )
+            )
+
+        listener.handleAssigneeChanged(assigneeChangedEvent("alice"))
+
+        verifyNoInteractions(zakenApiPlugin)
     }
 
     @Test

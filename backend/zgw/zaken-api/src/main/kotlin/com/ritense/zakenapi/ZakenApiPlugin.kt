@@ -1422,21 +1422,43 @@ class ZakenApiPlugin(
     }
 
     fun createGzacBehandelaarRol(zaakUrl: URI, roltypeUrl: URI, username: String): Rol {
-        val user = userManagementService.findByUsername(username)
         return client.createZaakRol(
             authentication = authenticationPluginConfiguration,
             baseUrl = url,
-            rol = Rol(
-                zaak = zaakUrl,
-                roltype = roltypeUrl,
-                roltoelichting = GZAC_BEHANDELAAR_TOELICHTING,
-                betrokkeneType = BetrokkeneType.MEDEWERKER,
-                betrokkeneIdentificatie = RolMedewerker(
-                    identificatie = username.take(IDENTIFICATIE_MAX_LENGTH),
-                    achternaam = user?.lastName,
-                ),
-                beginGeldigheid = LocalDate.now(),
-            )
+            rol = buildGzacBehandelaarRol(zaakUrl, roltypeUrl, username),
+        )
+    }
+
+    fun upsertGzacBehandelaarRol(zaakUrl: URI, roltypeUrl: URI, username: String): Rol {
+        val previousRollen = getZaakRollen(zaakUrl, RolTypeGeneriekeBeschrijving.BEHANDELAAR)
+            .filter { it.roltoelichting == GZAC_BEHANDELAAR_TOELICHTING }
+
+        val newRol = createGzacBehandelaarRol(zaakUrl, roltypeUrl, username)
+
+        previousRollen.forEach { rol ->
+            val rolUuid = rol.uuid
+            if (rolUuid == null) {
+                logger.warn { "Existing behandelaar rol on zaak '$zaakUrl' has no uuid. Skipping delete." }
+                return@forEach
+            }
+            client.deleteZaakRol(authenticationPluginConfiguration, url, rolUuid)
+        }
+
+        return newRol
+    }
+
+    private fun buildGzacBehandelaarRol(zaakUrl: URI, roltypeUrl: URI, username: String): Rol {
+        val user = userManagementService.findByUsername(username)
+        return Rol(
+            zaak = zaakUrl,
+            roltype = roltypeUrl,
+            roltoelichting = GZAC_BEHANDELAAR_TOELICHTING,
+            betrokkeneType = BetrokkeneType.MEDEWERKER,
+            betrokkeneIdentificatie = RolMedewerker(
+                identificatie = username.take(IDENTIFICATIE_MAX_LENGTH),
+                achternaam = user?.lastName,
+            ),
+            beginGeldigheid = LocalDate.now(),
         )
     }
 

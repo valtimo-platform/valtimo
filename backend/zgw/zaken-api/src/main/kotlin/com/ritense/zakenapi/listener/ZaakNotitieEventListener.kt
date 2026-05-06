@@ -21,7 +21,6 @@ import com.ritense.authorization.annotation.RunWithoutAuthorization
 import com.ritense.document.service.DocumentService
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import com.ritense.valtimo.contract.case_.CaseDefinitionId
-import com.ritense.valtimo.contract.document.CaseDocumentResolutionException
 import com.ritense.valtimo.contract.document.CaseDocumentResolver
 import com.ritense.valtimo.contract.event.NoteCreatedEvent
 import com.ritense.valtimo.contract.event.NoteDeletedEvent
@@ -72,7 +71,6 @@ class ZaakNotitieEventListener(
 
     private fun resolveActiveSyncConfig(documentId: UUID): CaseZakenApiSync? {
         val caseDefinitionId = resolveCaseDefinitionId(documentId)
-            ?: return null
         val syncConfig = caseZakenApiSyncManagementService.getSyncConfiguration(caseDefinitionId)
         if (syncConfig?.noteSyncEnabled != true) {
             logger.debug { "> Ignoring event as note sync is disabled for case definition '$caseDefinitionId'" }
@@ -81,15 +79,11 @@ class ZaakNotitieEventListener(
         return syncConfig
     }
 
-    private fun resolveCaseDefinitionId(documentId: UUID): CaseDefinitionId? = try {
+    private fun resolveCaseDefinitionId(documentId: UUID): CaseDefinitionId =
         runWithoutAuthorization {
             val caseDocumentId = caseDocumentResolver.resolveCaseDocumentId(documentId)
             documentService[caseDocumentId.toString()].definitionId().caseDefinitionId()
         }
-    } catch (e: CaseDocumentResolutionException) {
-        logger.debug { "Could not resolve case document for document '$documentId': ${e.message}" }
-        null
-    }
 
     companion object {
         private val logger = KotlinLogging.logger {}

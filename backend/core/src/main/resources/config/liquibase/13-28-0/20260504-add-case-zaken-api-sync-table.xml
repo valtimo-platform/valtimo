@@ -31,9 +31,7 @@
             <column name="assignee_sync_enabled" type="BOOLEAN" defaultValueBoolean="false">
                 <constraints nullable="false"/>
             </column>
-            <column name="roltype_url" type="VARCHAR(1000)">
-                <constraints nullable="false"/>
-            </column>
+            <column name="roltype_url" type="VARCHAR(1000)"/>
             <column name="note_sync_enabled" type="BOOLEAN" defaultValueBoolean="false">
                 <constraints nullable="false"/>
             </column>
@@ -63,7 +61,7 @@
                 ztl.case_definition_key,
                 ztl.case_definition_version_tag,
                 false,
-                '',
+                NULL,
                 true,
                 COALESCE(NULLIF(pc.properties->>'noteSubject', ''), 'Note created by Valtimo GZAC')
             FROM plugin_configuration pc
@@ -75,8 +73,7 @@
                 SELECT 1 FROM case_zaken_api_sync existing
                 WHERE existing.case_definition_key = ztl.case_definition_key
                   AND existing.case_definition_version_tag = ztl.case_definition_version_tag
-              )
-            GROUP BY ztl.case_definition_key, ztl.case_definition_version_tag, pc.properties->>'noteSubject';
+              );
         </sql>
     </changeSet>
 
@@ -97,10 +94,10 @@
                 ztl.case_definition_key,
                 ztl.case_definition_version_tag,
                 false,
-                '',
+                NULL,
                 true,
                 COALESCE(
-                    NULLIF(JSON_UNQUOTE(JSON_EXTRACT(pc.properties, '$.noteSubject')), 'null'),
+                    NULLIF(NULLIF(JSON_UNQUOTE(JSON_EXTRACT(pc.properties, '$.noteSubject')), 'null'), ''),
                     'Note created by Valtimo GZAC'
                 )
             FROM plugin_configuration pc
@@ -112,8 +109,7 @@
                 SELECT 1 FROM case_zaken_api_sync existing
                 WHERE existing.case_definition_key = ztl.case_definition_key
                   AND existing.case_definition_version_tag = ztl.case_definition_version_tag
-              )
-            GROUP BY ztl.case_definition_key, ztl.case_definition_version_tag, JSON_UNQUOTE(JSON_EXTRACT(pc.properties, '$.noteSubject'));
+              );
         </sql>
     </changeSet>
 
