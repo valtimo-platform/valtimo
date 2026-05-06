@@ -92,7 +92,7 @@ export const environment: ValtimoConfig = {
         children: [],
       },
       {
-        roles: [ROLE_ADMIN],
+        roles: [ROLE_USER],
         title: 'Objects',
         iconClass: 'icon mdi mdi-archive',
         sequence: 2,
@@ -144,7 +144,11 @@ export const environment: ValtimoConfig = {
           },
           {link: ['/object-management'], title: 'Objects', sequence: 10},
           {link: ['/form-management'], title: 'Forms', sequence: 11},
-          {link: ['/notifications-api/notifications/failed'], title: 'Notifications', sequence: 12},
+          {
+            link: ['/notifications-api/notifications/failed'],
+            title: 'Failed notifications',
+            sequence: 12,
+          },
           {
             title: 'System processes',
             textClass: 'text-dark font-weight-bold c-default',
@@ -156,19 +160,12 @@ export const environment: ValtimoConfig = {
           {link: ['/logging'], title: 'Logs', sequence: 17},
           {link: ['/case-migration'], title: 'Case migration (beta)', sequence: 18},
           {link: ['/process-migration'], title: 'Process migration', sequence: 19},
-          {link: ['/task-management'], title: 'Tasks (legacy)', sequence: 20},
-          {
-            title: 'Valtimo test tools',
-            textClass: 'text-dark font-weight-bold c-default',
-            sequence: 21,
-          },
-          {link: ['/notification-test'], title: 'Send notification', sequence: 22},
         ],
       },
       {
-        roles: [ROLE_DEVELOPER, ROLE_ADMIN],
+        roles: [ROLE_DEVELOPER],
         title: 'Development',
-        iconClass: 'icon mdi mdi-xml',
+        iconClass: 'icon mdi mdi-code',
         sequence: 7,
         children: [
           {link: ['/swagger'], title: 'Swagger', iconClass: 'icon mdi mdi-dot-circle', sequence: 1},
@@ -205,8 +202,8 @@ export const environment: ValtimoConfig = {
   defaultDefinitionTable: defaultDefinitionColumns,
   caseFileUploadAcceptedFiles:
     'image/png, image/jpeg, text/plain, application/pdf, application/vnd.openxmlformats-officedocument.wordprocessingml.document, application/xml',
-  visibleTaskListTabs: [TaskListTab.MINE, TaskListTab.TEAM, TaskListTab.OPEN, TaskListTab.ALL],
-  visibleCaseListTabs: [CaseListTab.ALL, CaseListTab.MINE, CaseListTab.TEAM, CaseListTab.OPEN],
+  visibleTaskListTabs: [TaskListTab.MINE, TaskListTab.OPEN, TaskListTab.ALL],
+  visibleCaseListTabs: [CaseListTab.ALL, CaseListTab.MINE, CaseListTab.OPEN],
   customTaskList: {
     fields: [
       {

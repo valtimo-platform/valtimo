@@ -18,7 +18,7 @@
     "startAot": "ng serve --proxy-config proxy.conf.json --aot",
     "startHmr": "ng serve --proxy-config proxy.conf.json --hmr",
     "buildTest": "ng build --configuration production --configuration=test",
-    "build": "ng build --configuration production",
+    "build": "ng build --configuration production --output-path=deployment/dist",
     "test": "ng test",
     "lint": "ng lint",
     "prettier:check": "prettier --check .",

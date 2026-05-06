@@ -1,6 +1,5 @@
 FROM eclipse-temurin:21-jdk-alpine
 
-ARG SEMVER_VERSION
-ADD build/libs/gzac-*.*.*.war /app.war
+ADD build/libs/gzac-backend.war /app.jar
 
-ENTRYPOINT ["java", "-jar", "/app.war"]
+ENTRYPOINT ["java", "-jar", "/app.jar"]

@@ -58,8 +58,9 @@ jobs:
 
       - name: Prepare deployment folder
         run: |
-          mkdir backend/deployment
-          mv backend/app/gzac/build/ backend/app/gzac/Dockerfile backend/deployment/
+          mkdir -p backend/deployment/build/libs
+          cp backend/app/gzac/build/libs/gzac-backend.war backend/deployment/build/libs/
+          cp backend/app/gzac/Dockerfile backend/deployment/
 
       - name: Archive deployment folder
         uses: actions/upload-artifact@v4
@@ -73,6 +74,7 @@ jobs:
     outputs:
       test_tags: ${{ steps.generate_tags_test.outputs.tags }}
       production_tags: ${{ steps.generate_tags_production.outputs.tags }}
+      production_dockerhub_tags: ${{ steps.generate_tags_production_dockerhub.outputs.tags }}
       test_primary_tag: ${{ steps.primary_tag_test.outputs.tag }}
       production_primary_tag: ${{ steps.primary_tag_production.outputs.tag }}
     steps:
@@ -118,6 +120,17 @@ jobs:
           full_tag='${{ fromJson(steps.generate_tags_production.outputs.json).tags[0] }}'
           echo "tag=${full_tag##*:}" >> "$GITHUB_OUTPUT"
 
+      - name: Generate image tags (production - Docker Hub)
+        id: generate_tags_production_dockerhub
+        if: ${{ inputs.push_to_dockerhub }}
+        uses: docker/metadata-action@v5
+        with:
+          images: docker.io/ritense/gzac-backend
+          tags: |
+            type=raw,value=${{ inputs.release_image_tag }}
+          flavor: |
+            latest=false
+
   build_image:
     strategy:
       matrix:
@@ -149,6 +162,13 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Log in to Docker Hub
+        if: ${{ inputs.push_to_dockerhub && matrix.build_type == 'production' }}
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_HUB_USERNAME }}
+          password: ${{ secrets.DOCKER_HUB_PASSWORD }}
+
       - name: Download deployment artifact
         uses: actions/download-artifact@v4
         with:
@@ -168,6 +188,8 @@ jobs:
           context: backend/deployment/
           platforms: linux/amd64,linux/arm64/v8
           push: true
-          tags: ${{ matrix.build_type == 'production' && needs.generate_tags.outputs.production_tags || needs.generate_tags.outputs.test_tags }}
+          tags: |
+            ${{ matrix.build_type == 'production' && needs.generate_tags.outputs.production_tags || needs.generate_tags.outputs.test_tags }}
+            ${{ matrix.build_type == 'production' && inputs.push_to_dockerhub && needs.generate_tags.outputs.production_dockerhub_tags || '' }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
