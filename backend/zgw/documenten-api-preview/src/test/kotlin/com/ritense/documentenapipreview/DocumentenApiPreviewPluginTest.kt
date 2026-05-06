@@ -19,6 +19,7 @@ package com.ritense.documentenapipreview
 import com.ritense.documentenapi.DocumentenApiPlugin
 import com.ritense.documentenapi.client.DocumentInformatieObject
 import com.ritense.documentenapipreview.client.PdfConversionClient
+import com.ritense.documentenapipreview.domain.PdfArchiveMethod
 import com.ritense.plugin.service.PluginService
 import com.ritense.zgw.Rsin
 import org.junit.jupiter.api.BeforeEach
@@ -35,6 +36,7 @@ import java.time.OffsetDateTime
 import java.util.UUID
 
 class DocumentenApiPreviewPluginTest {
+    private val documentenApiConfigurationId: String = "mock_documenten_api_preview_configuration_id"
     private lateinit var documentenApiPreviewPlugin: DocumentenApiPreviewPlugin
     private lateinit var documentenApiPlugin: DocumentenApiPlugin
     private lateinit var pdfConversionClient: PdfConversionClient
@@ -47,23 +49,23 @@ class DocumentenApiPreviewPluginTest {
         pdfConversionClient = mock<PdfConversionClient>()
         pluginService = mock<PluginService>()
 
-        documentenApiPreviewPlugin = DocumentenApiPreviewPlugin(pdfConversionClient, pluginService)
-        documentenApiPreviewPlugin.documentenApiConfigurationId = "mock_documenten_api_configuration_id"
-        documentenApiPreviewPlugin.pdfConversionUrl = URI("http://mock.url")
-
         mockDocumentStream = "TEST_DOCUMENT".byteInputStream()
 
-        whenever(pluginService.createInstance<DocumentenApiPlugin>(documentenApiPreviewPlugin.documentenApiConfigurationId))
+        whenever(pluginService.createInstance<DocumentenApiPlugin>(documentenApiConfigurationId))
             .thenReturn(documentenApiPlugin)
         whenever(documentenApiPlugin.downloadInformatieObject(MOCK_CASE_DOCUMENT_ID, MOCK_DOCUMENT_ID))
             .thenReturn(mockDocumentStream)
         whenever(documentenApiPlugin.getInformatieObject(MOCK_DOCUMENT_ID, MOCK_CASE_DOCUMENT_ID))
             .thenReturn(MOCK_DOCUMENT_INFORMATIE_OBJECT)
-        whenever(pdfConversionClient.convertDocument(any(), any(), any())).thenReturn(mockDocumentStream)
+        whenever(pdfConversionClient.convertDocument(any(), any(), any(), any(), any())).thenReturn(mockDocumentStream)
     }
 
     @Test
     fun `should call download on DocumentenApiPlugin`() {
+        documentenApiPreviewPlugin = DocumentenApiPreviewPlugin(pdfConversionClient, pluginService)
+        documentenApiPreviewPlugin.documentenApiConfigurationId = documentenApiConfigurationId
+        documentenApiPreviewPlugin.pdfConversionUrl = URI("http://mock.url")
+
         documentenApiPreviewPlugin.generatePreview(MOCK_CASE_DOCUMENT_ID, MOCK_DOCUMENT_ID)
 
         verify(documentenApiPlugin).downloadInformatieObject(MOCK_CASE_DOCUMENT_ID, MOCK_DOCUMENT_ID)
@@ -71,19 +73,47 @@ class DocumentenApiPreviewPluginTest {
 
     @Test
     fun `should call getInformatieObject on DocumentenApiPlugin`() {
+        documentenApiPreviewPlugin = DocumentenApiPreviewPlugin(pdfConversionClient, pluginService)
+        documentenApiPreviewPlugin.documentenApiConfigurationId = documentenApiConfigurationId
+        documentenApiPreviewPlugin.pdfConversionUrl = URI("http://mock.url")
+
         documentenApiPreviewPlugin.generatePreview(MOCK_CASE_DOCUMENT_ID, MOCK_DOCUMENT_ID)
 
         verify(documentenApiPlugin).getInformatieObject(MOCK_DOCUMENT_ID, MOCK_CASE_DOCUMENT_ID)
     }
 
     @Test
-    fun `should call generatePreview on PdfConversionClient`() {
+    fun `should call generatePreview on PdfConversionClient with default parameters`() {
+        documentenApiPreviewPlugin = DocumentenApiPreviewPlugin(pdfConversionClient, pluginService)
+        documentenApiPreviewPlugin.documentenApiConfigurationId = documentenApiConfigurationId
+        documentenApiPreviewPlugin.pdfConversionUrl = URI("http://mock.url")
+
         documentenApiPreviewPlugin.generatePreview(MOCK_CASE_DOCUMENT_ID, MOCK_DOCUMENT_ID)
 
         verify(pdfConversionClient).convertDocument(
             documentenApiPreviewPlugin.pdfConversionUrl,
             mockDocumentStream,
-            MOCK_DOCUMENT_INFORMATIE_OBJECT.bestandsnaam)
+            MOCK_DOCUMENT_INFORMATIE_OBJECT.bestandsnaam,
+            PdfArchiveMethod.NONE,
+            false)
+    }
+
+    @Test
+    fun `should call generatePreview on PdfConversionClient with custom parameters`() {
+        documentenApiPreviewPlugin = DocumentenApiPreviewPlugin(pdfConversionClient, pluginService)
+        documentenApiPreviewPlugin.documentenApiConfigurationId = documentenApiConfigurationId
+        documentenApiPreviewPlugin.pdfConversionUrl = URI("http://mock.url")
+        documentenApiPreviewPlugin.pdfArchiveMethod = PdfArchiveMethod.PDFA2B
+        documentenApiPreviewPlugin.pdfUniversalAccessibility = true
+
+        documentenApiPreviewPlugin.generatePreview(MOCK_CASE_DOCUMENT_ID, MOCK_DOCUMENT_ID)
+
+        verify(pdfConversionClient).convertDocument(
+            documentenApiPreviewPlugin.pdfConversionUrl,
+            mockDocumentStream,
+            MOCK_DOCUMENT_INFORMATIE_OBJECT.bestandsnaam,
+            documentenApiPreviewPlugin.pdfArchiveMethod,
+            documentenApiPreviewPlugin.pdfUniversalAccessibility)
     }
 
     companion object {

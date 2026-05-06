@@ -179,8 +179,10 @@ test.describe('Case details management — ZGW', () => {
     test.afterAll(async () => {
       try {
         await testPage.putUploadField(CASE_KEY, originalField);
-      } catch {
-        // If restoration fails (e.g. auth expired), let cleanup continue
+      } catch (error) {
+        throw new Error(
+          `Failed to restore upload field '${originalField.key}' on ${CASE_KEY}: ${error}`,
+        );
       }
     });
 
@@ -241,8 +243,10 @@ test.describe('Case details management — ZGW', () => {
       test.afterAll(async () => {
         try {
           await testPage.putUploadField(CASE_KEY, originalComboField);
-        } catch {
-          // Restoration best-effort
+        } catch (error) {
+          throw new Error(
+            `Failed to restore upload field '${originalComboField.key}' on ${CASE_KEY}: ${error}`,
+          );
         }
       });
 

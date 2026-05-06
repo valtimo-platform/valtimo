@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL"
+                  xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI"
+                  xmlns:dc="http://www.omg.org/spec/DD/20100524/DC"
+                  xmlns:di="http://www.omg.org/spec/DD/20100524/DI"
+                  xmlns:camunda="http://camunda.org/schema/1.0/bpmn"
+                  id="Definitions_1"
+                  targetNamespace="http://bpmn.io/schema/bpmn"
+                  exporter="Camunda Modeler"
+                  exporterVersion="5.0.0">
+  <bpmn:process id="iko-search-demo" name="IKO zoek demo" isExecutable="true">
+    <bpmn:startEvent id="start-event" name="Start">
+      <bpmn:outgoing>Flow_start_to_task</bpmn:outgoing>
+    </bpmn:startEvent>
+    <bpmn:userTask id="iko-search-task" name="IKO zoektaak" camunda:candidateGroups="ROLE_USER">
+      <bpmn:incoming>Flow_start_to_task</bpmn:incoming>
+      <bpmn:outgoing>Flow_task_to_end</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:endEvent id="end-event" name="End">
+      <bpmn:incoming>Flow_task_to_end</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:sequenceFlow id="Flow_start_to_task" sourceRef="start-event" targetRef="iko-search-task" />
+    <bpmn:sequenceFlow id="Flow_task_to_end" sourceRef="iko-search-task" targetRef="end-event" />
+  </bpmn:process>
+  <bpmndi:BPMNDiagram id="BPMNDiagram_1">
+    <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="iko-search-demo">
+      <bpmndi:BPMNShape id="Event_start_di" bpmnElement="start-event">
+        <dc:Bounds x="179" y="99" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="185" y="142" width="25" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_task_di" bpmnElement="iko-search-task">
+        <dc:Bounds x="270" y="77" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_end_di" bpmnElement="end-event">
+        <dc:Bounds x="432" y="99" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="440" y="142" width="20" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="Flow_start_to_task_di" bpmnElement="Flow_start_to_task">
+        <di:waypoint x="215" y="117" />
+        <di:waypoint x="270" y="117" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_task_to_end_di" bpmnElement="Flow_task_to_end">
+        <di:waypoint x="370" y="117" />
+        <di:waypoint x="432" y="117" />
+      </bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</bpmn:definitions>

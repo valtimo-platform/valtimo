@@ -38,6 +38,14 @@ export class ProcessManagementService extends BaseApiService {
   private readonly _definitionKey$ = new BehaviorSubject<string | null>(null);
   private readonly _versionTag$ = new BehaviorSubject<string | null>(null);
 
+  public get caseDefinitionKey(): string {
+    return this._definitionKey$.getValue() ?? '';
+  }
+
+  public get caseDefinitionVersionTag(): string {
+    return this._versionTag$.getValue() ?? '';
+  }
+
   private _$context = signal<ManagementContext>('independent');
   public set context(value: ManagementContext) {
     this._$context.set(value);

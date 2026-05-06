@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -42,8 +42,6 @@ import com.ritense.plugin.domain.PluginProcessLinkId
 import com.ritense.plugin.domain.PluginProperty
 import com.ritense.plugin.events.PluginConfigurationDeletedEvent
 import com.ritense.plugin.events.PluginConfigurationIdUpdatedEvent
-import com.ritense.processlink.event.ProcessLinkCreatedEvent
-import com.ritense.processlink.event.ProcessLinkUpdatedEvent
 import com.ritense.plugin.exception.PluginEventInvocationException
 import com.ritense.plugin.exception.PluginPropertyParseException
 import com.ritense.plugin.exception.PluginPropertyRequiredException
@@ -60,6 +58,9 @@ import com.ritense.plugin.web.rest.result.PluginProcessLinkResultDto
 import com.ritense.plugin.web.rest.result.PluginWithDependenciesDto
 import com.ritense.processlink.domain.ActivityTypeWithEventName
 import com.ritense.processlink.domain.ProcessLink
+import com.ritense.processlink.event.ProcessLinkCreatedEvent
+import com.ritense.processlink.event.ProcessLinkDeletedEvent
+import com.ritense.processlink.event.ProcessLinkUpdatedEvent
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import com.ritense.valtimo.contract.case_.CaseDefinitionChecker
 import com.ritense.valtimo.contract.event.PluginsDeployedEvent
@@ -374,8 +375,9 @@ class PluginService(
             pluginActionDefinitionKey = processLink.pluginActionDefinitionKey,
             activityType = processLink.activityType
         )
-        pluginProcessLinkRepository.save(newProcessLink)
-        applicationEventPublisher.publishEvent(ProcessLinkCreatedEvent(PROCESS_LINK_TYPE_PLUGIN))
+        pluginProcessLinkRepository.save(newProcessLink).also {
+            applicationEventPublisher.publishEvent(ProcessLinkCreatedEvent(PROCESS_LINK_TYPE_PLUGIN, it.processDefinitionId))
+        }
     }
 
     @Deprecated("Marked for removal since 10.6.0", ReplaceWith("processLinkService.updateProcessLink(i)"))
@@ -394,8 +396,9 @@ class PluginService(
                 pluginConfigurationReference = PluginConfigurationReference(),
                 pluginActionDefinitionKey = processLink.pluginActionDefinitionKey
             )
-            pluginProcessLinkRepository.save(link)
-            applicationEventPublisher.publishEvent(ProcessLinkUpdatedEvent(PROCESS_LINK_TYPE_PLUGIN))
+            pluginProcessLinkRepository.save(link).also {
+                applicationEventPublisher.publishEvent(ProcessLinkUpdatedEvent(PROCESS_LINK_TYPE_PLUGIN, it.processDefinitionId))
+            }
         }
     }
 
@@ -404,7 +407,12 @@ class PluginService(
         @LoggableResource(resourceType = ProcessLink::class) id: UUID
     ) {
         caseDefinitionChecker.assertCanUpdateGlobalConfiguration()
-        pluginProcessLinkRepository.deleteById(PluginProcessLinkId.existingId(id))
+        val pluginProcessLinkId = PluginProcessLinkId.existingId(id)
+        val processLink = try { pluginProcessLinkRepository. getById(pluginProcessLinkId) } catch (_: Exception) { null }
+        pluginProcessLinkRepository.deleteById(pluginProcessLinkId)
+        if (processLink != null) {
+            applicationEventPublisher.publishEvent(ProcessLinkDeletedEvent(PROCESS_LINK_TYPE_PLUGIN, processLink.processDefinitionId))
+        }
     }
 
     private fun resolvePluginConfigurationId(

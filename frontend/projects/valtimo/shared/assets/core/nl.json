@@ -830,6 +830,35 @@
           "message": "Dit proces maakt mogelijk gebruik van plugins. Zorg dat je deze goed instelt.",
           "title": "Plugin configuraties"
         }
+      },
+      "plugins": {
+        "description": "Koppel de juiste pluginconfiguraties. Overeenkomende plugins worden automatisch ingevuld. Als een pluginconfiguratie ontbreekt, kun je toch doorgaan. Je kunt de plugin achteraf configureren en koppelen via de dossier configuratiepagina.",
+        "source": "Bron",
+        "target": "Doel",
+        "selectPlaceholder": "Selecteer pluginconfiguratie",
+        "unknownPlugin": "Onbekende plugin",
+        "noPlugins": "Er hoeven geen pluginconfiguraties te worden gekoppeld voor deze import.",
+        "noPluginsTitle": "Geen plugins te configureren",
+        "notInstalled": "Plugintype niet geïnstalleerd",
+        "noConfigurations": "Geen configuraties beschikbaar",
+        "unidentifiable": {
+          "title": "Niet-identificeerbare pluginconfiguraties",
+          "message": "Sommige pluginconfiguraties konden niet worden herleid uit het exportbestand. De import kan doorgaan, maar de betreffende process links moeten achteraf handmatig worden geconfigureerd."
+        }
+      }
+    },
+    "missingPluginConfigurations": {
+      "title": "Ontbrekende configuratie",
+      "description": "Er ontbreken pluginconfiguraties voor dit dossier. Koppel hieronder de vereiste pluginconfiguraties",
+      "selectPlaceholder": "Selecteer pluginconfiguratie",
+      "unknownPlugin": "Onbekende plugin",
+      "notInstalled": "Plugintype niet geïnstalleerd",
+      "noConfigurations": "Geen configuraties beschikbaar",
+      "saveSuccess": "Pluginconfiguratie-koppelingen succesvol opgeslagen",
+      "saveError": "Kon pluginconfiguratie-koppelingen niet opslaan",
+      "legacyExport": {
+        "title": "Niet-identificeerbare pluginconfiguraties",
+        "message": "Sommige processtappen verwijzen naar pluginconfiguraties die niet konden worden herleid uit het exportbestand. Configureer de betreffende process links handmatig."
       }
     },
     "createDefinition": {
@@ -1213,7 +1242,8 @@
         "modal": {
           "header": "Document weergave"
         },
-        "pdfViewerNotSupported": "Uw browser biedt geen ondersteuning voor het weergeven van PDF bestanden."
+        "pdfViewerNotSupported": "Uw browser biedt geen ondersteuning voor het weergeven van PDF bestanden.",
+        "loading": "Het document wordt geconverteerd voor weergave. Dit kan even duren."
       }
     },
     "notifications": {
@@ -1432,6 +1462,7 @@
     },
     "successNotification": "Proces succesvol gepubliceerd",
     "errorNotification": "Er ging iets mis bij het publiceren van het proces",
+    "alreadyExistsNotification": "Procesdefinitie bestaat al",
     "deleteNotification": "Proces succesvol verwijderd",
     "upload": {
       "modalTitle": "Upload procesdefinitie",
@@ -1440,10 +1471,10 @@
       "buttonText": "Selecteer bestand",
       "success": "Deployment succesvol",
       "failure": "Deployment mislukt",
-      "duplicateKey": "Er bestaat al een proces met dezelfde sleutel in dit bouwblok",
+      "duplicateKey": "Er bestaat al een proces met dezelfde sleutel",
       "replaceTitle": "Bestaand proces vervangen?",
-      "replaceContent": "Er bestaat al een proces met dezelfde sleutel in dit bouwblok. Wilt u dit vervangen?",
-      "replaceContentWithDuplicates": "Er bestaat al een proces met dezelfde sleutel in dit bouwblok: {{duplicates}}. Wilt u dit vervangen?",
+      "replaceContent": "Er bestaat al een proces met dezelfde sleutel. Wilt u dit vervangen?",
+      "replaceContentWithDuplicates": "Er bestaat al een proces met dezelfde sleutel: {{duplicates}}. Wilt u dit vervangen?",
       "replaceConfirm": "Vervangen"
     },
     "canInitializeDocument": "Start een dossier",
@@ -2248,8 +2279,15 @@
   },
   "iko": {
     "searchFieldsNoResults": "Geen zoekvelden gevonden voor deze entiteit",
+    "viewNotFound": "IKO Beeld voor sleutel '{{key}}' kon niet worden gevonden.",
     "pageTitle": "Beelden",
-    "searchVia": "Zoeken via"
+    "searchVia": "Zoeken via",
+    "formio": {
+      "back": "Terug",
+      "selectResult": "Selecteer een resultaat",
+      "selectedResult": "Geselecteerd resultaat",
+      "openInNewTab": "Open in nieuw tabblad"
+    }
   },
   "ikoManagement": {
     "preparingDownload": "Download aan het voorbereiden",

@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -32,10 +32,7 @@ data class PluginConfigurationReference(
 ) {
     init {
         when (type) {
-            PluginConfigurationReferenceType.FIXED -> require(pluginDefinitionKey == null) {
-                "pluginDefinitionKey must be null when reference type is FIXED"
-            }
-
+            PluginConfigurationReferenceType.FIXED -> { /* pluginDefinitionKey is optional for FIXED */ }
             PluginConfigurationReferenceType.BUILDING_BLOCK -> require(!pluginDefinitionKey.isNullOrBlank()) {
                 "pluginDefinitionKey is required when reference type is BUILDING_BLOCK"
             }
