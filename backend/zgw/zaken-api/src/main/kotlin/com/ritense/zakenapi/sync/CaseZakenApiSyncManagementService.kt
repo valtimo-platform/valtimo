@@ -47,16 +47,11 @@ class CaseZakenApiSyncManagementService(
         require(sync.assigneeSyncEnabled || sync.noteSyncEnabled) {
             "At least one zaken-api sync option must be enabled"
         }
+        require(!sync.assigneeSyncEnabled || sync.roltypeUrl != null) {
+            "A roltype URL must be configured when assignee sync is enabled"
+        }
         caseDefinitionChecker.assertCanUpdateCaseDefinitionConfiguration(sync.caseDefinitionId, ISSUE_TYPE)
-        val modifiedSync = getSyncConfiguration(sync.caseDefinitionId)
-            ?.copy(
-                assigneeSyncEnabled = sync.assigneeSyncEnabled,
-                roltypeUrl = sync.roltypeUrl,
-                noteSyncEnabled = sync.noteSyncEnabled,
-                noteSubject = sync.noteSubject,
-            )
-            ?: sync
-        caseZakenApiSyncRepository.save(modifiedSync)
+        caseZakenApiSyncRepository.save(sync)
         applicationEventPublisher.publishEvent(
             CaseConfigurationIssueResolvedEvent(
                 sync.caseDefinitionId,

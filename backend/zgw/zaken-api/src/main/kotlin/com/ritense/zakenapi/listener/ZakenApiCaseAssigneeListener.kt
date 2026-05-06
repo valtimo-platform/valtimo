@@ -22,7 +22,6 @@ import com.ritense.document.service.DocumentService
 import com.ritense.plugin.service.PluginService
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import com.ritense.valtimo.contract.case_.CaseDefinitionId
-import com.ritense.valtimo.contract.document.CaseDocumentResolutionException
 import com.ritense.valtimo.contract.document.CaseDocumentResolver
 import com.ritense.zakenapi.ZakenApiPlugin
 import com.ritense.zakenapi.domain.ZaakInstanceLink
@@ -53,10 +52,14 @@ class ZakenApiCaseAssigneeListener(
     }
 
     private fun synchroniseAssigneeRol(documentId: UUID, newAssigneeUsername: String?) {
-        val caseDefinitionId = resolveCaseDefinitionId(documentId) ?: return
+        val caseDefinitionId = resolveCaseDefinitionId(documentId)
 
         val syncConfig = caseZakenApiSyncManagementService.getSyncConfiguration(caseDefinitionId)
         if (syncConfig?.assigneeSyncEnabled != true) {
+            return
+        }
+        val roltypeUrl = syncConfig.roltypeUrl ?: run {
+            logger.warn { "Assignee sync enabled without a roltype URL for case definition '$caseDefinitionId'. Skipping." }
             return
         }
 
@@ -71,27 +74,23 @@ class ZakenApiCaseAssigneeListener(
         }
 
         runWithoutAuthorization {
-            zakenApiPlugin.removeGzacBehandelaarRollen(link.zaakInstanceUrl)
-
             if (newAssigneeUsername != null) {
-                zakenApiPlugin.createGzacBehandelaarRol(
+                zakenApiPlugin.upsertGzacBehandelaarRol(
                     zaakUrl = link.zaakInstanceUrl,
-                    roltypeUrl = syncConfig.roltypeUrl,
+                    roltypeUrl = roltypeUrl,
                     username = newAssigneeUsername,
                 )
+            } else {
+                zakenApiPlugin.removeGzacBehandelaarRollen(link.zaakInstanceUrl)
             }
         }
     }
 
-    private fun resolveCaseDefinitionId(documentId: UUID): CaseDefinitionId? = try {
+    private fun resolveCaseDefinitionId(documentId: UUID): CaseDefinitionId =
         runWithoutAuthorization {
             val caseDocumentId = caseDocumentResolver.resolveCaseDocumentId(documentId)
             documentService[caseDocumentId.toString()].definitionId().caseDefinitionId()
         }
-    } catch (e: CaseDocumentResolutionException) {
-        logger.debug { "Could not resolve case document for document '$documentId': ${e.message}" }
-        null
-    }
 
     private fun resolveLink(documentId: UUID): ZaakInstanceLink? = try {
         zaakInstanceLinkService.getByDocumentId(documentId)

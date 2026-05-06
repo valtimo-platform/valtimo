@@ -104,7 +104,7 @@ class CaseZakenApiSyncExporterTest {
             """
                 {
                   "assigneeSyncEnabled": false,
-                  "roltypeUrl": "",
+                  "roltypeUrl": null,
                   "noteSyncEnabled": false,
                   "noteSubject": "Note created by Valtimo GZAC"
                 }

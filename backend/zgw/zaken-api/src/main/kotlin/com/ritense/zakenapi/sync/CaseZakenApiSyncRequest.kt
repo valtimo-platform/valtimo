@@ -21,7 +21,7 @@ import java.net.URI
 
 data class CaseZakenApiSyncRequest(
     val assigneeSyncEnabled: Boolean = false,
-    val roltypeUrl: URI = URI(""),
+    val roltypeUrl: URI? = null,
     val noteSyncEnabled: Boolean = false,
     val noteSubject: String = CaseZakenApiSync.DEFAULT_NOTE_SUBJECT,
 ) {

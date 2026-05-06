@@ -30,6 +30,7 @@ import org.mockito.kotlin.mock
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 import org.springframework.context.ApplicationEventPublisher
+import java.net.URI
 
 class CaseZakenApiSyncManagementServiceTest {
 
@@ -43,6 +44,7 @@ class CaseZakenApiSyncManagementServiceTest {
     )
 
     private val caseDefinitionId = CaseDefinitionId("house", "1.0.0")
+    private val roltypeUrl = URI("http://catalogi.local/roltypen/behandelaar")
 
     @BeforeEach
     fun setUp() {
@@ -61,7 +63,11 @@ class CaseZakenApiSyncManagementServiceTest {
 
     @Test
     fun `saveSyncConfiguration creates a new record when none exists`() {
-        val sync = CaseZakenApiSync(caseDefinitionId = caseDefinitionId, assigneeSyncEnabled = true)
+        val sync = CaseZakenApiSync(
+            caseDefinitionId = caseDefinitionId,
+            assigneeSyncEnabled = true,
+            roltypeUrl = roltypeUrl,
+        )
         whenever(repository.findByCaseDefinitionId(eq(caseDefinitionId))).thenReturn(null)
 
         service.saveSyncConfiguration(sync)
@@ -94,6 +100,7 @@ class CaseZakenApiSyncManagementServiceTest {
         val update = CaseZakenApiSync(
             caseDefinitionId = caseDefinitionId,
             assigneeSyncEnabled = true,
+            roltypeUrl = roltypeUrl,
             noteSyncEnabled = false,
             noteSubject = "new subject",
         )
@@ -117,6 +124,18 @@ class CaseZakenApiSyncManagementServiceTest {
         )
 
         assertThatThrownBy { service.saveSyncConfiguration(empty) }
+            .isInstanceOf(IllegalArgumentException::class.java)
+    }
+
+    @Test
+    fun `saveSyncConfiguration rejects assignee sync enabled without roltypeUrl`() {
+        val invalid = CaseZakenApiSync(
+            caseDefinitionId = caseDefinitionId,
+            assigneeSyncEnabled = true,
+            roltypeUrl = null,
+        )
+
+        assertThatThrownBy { service.saveSyncConfiguration(invalid) }
             .isInstanceOf(IllegalArgumentException::class.java)
     }
 

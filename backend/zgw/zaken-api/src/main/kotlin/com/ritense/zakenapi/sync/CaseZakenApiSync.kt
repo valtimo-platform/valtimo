@@ -37,7 +37,7 @@ data class CaseZakenApiSync(
 
     @Convert(converter = UriAttributeConverter::class)
     @Column(name = "roltype_url")
-    val roltypeUrl: URI = URI(""),
+    val roltypeUrl: URI? = null,
 
     @Column(name = "note_sync_enabled")
     val noteSyncEnabled: Boolean = false,

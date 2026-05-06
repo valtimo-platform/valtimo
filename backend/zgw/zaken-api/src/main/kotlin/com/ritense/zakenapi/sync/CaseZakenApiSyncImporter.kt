@@ -49,20 +49,8 @@ class CaseZakenApiSyncImporter(
         val caseDefinitionId = request.caseDefinitionId!!
         val content = request.content.toString(Charsets.UTF_8)
         val syncRequest: CaseZakenApiSyncRequest = objectMapper.readValue(content)
-        deploy(caseDefinitionId, syncRequest)
+        caseZakenApiSyncRepository.save(syncRequest.toEntity(caseDefinitionId))
         checkForConfigurationIssues(caseDefinitionId, syncRequest)
-    }
-
-    private fun deploy(caseDefinitionId: CaseDefinitionId, syncRequest: CaseZakenApiSyncRequest) {
-        val existingSync = caseZakenApiSyncRepository.findByCaseDefinitionId(caseDefinitionId)
-        val syncToSave = existingSync?.copy(
-            assigneeSyncEnabled = syncRequest.assigneeSyncEnabled,
-            roltypeUrl = syncRequest.roltypeUrl,
-            noteSyncEnabled = syncRequest.noteSyncEnabled,
-            noteSubject = syncRequest.noteSubject,
-        ) ?: syncRequest.toEntity(caseDefinitionId)
-
-        caseZakenApiSyncRepository.save(syncToSave)
     }
 
     private fun checkForConfigurationIssues(
@@ -83,10 +71,10 @@ class CaseZakenApiSyncImporter(
         caseDefinitionId: CaseDefinitionId,
         syncRequest: CaseZakenApiSyncRequest,
     ): Boolean {
-        if (syncRequest.roltypeUrl.toString().isBlank()) return false
+        val roltypeUrl = syncRequest.roltypeUrl ?: return false
         return try {
             catalogiService.getRoltypes(caseDefinitionId)
-                .any { it.url == syncRequest.roltypeUrl }
+                .any { it.url == roltypeUrl }
         } catch (e: Exception) {
             logger.warn(e) { "Could not validate roltype URL for caseDefinitionId=$caseDefinitionId" }
             false
