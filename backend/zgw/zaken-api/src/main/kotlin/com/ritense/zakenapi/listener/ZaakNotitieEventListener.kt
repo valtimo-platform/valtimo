@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,75 +16,80 @@
 
 package com.ritense.zakenapi.listener
 
+import com.ritense.authorization.AuthorizationContext.Companion.runWithoutAuthorization
 import com.ritense.authorization.annotation.RunWithoutAuthorization
-import com.ritense.plugin.service.PluginService
-import com.ritense.valtimo.contract.event.NoteCreatedEvent
-import com.ritense.valtimo.contract.event.NoteUpdatedEvent
-import com.ritense.valtimo.contract.event.NoteDeletedEvent
+import com.ritense.document.service.DocumentService
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
-import com.ritense.zakenapi.ZaakUrlProvider
-import com.ritense.zakenapi.ZakenApiPlugin
+import com.ritense.valtimo.contract.case_.CaseDefinitionId
+import com.ritense.valtimo.contract.document.CaseDocumentResolutionException
+import com.ritense.valtimo.contract.document.CaseDocumentResolver
+import com.ritense.valtimo.contract.event.NoteCreatedEvent
+import com.ritense.valtimo.contract.event.NoteDeletedEvent
+import com.ritense.valtimo.contract.event.NoteUpdatedEvent
 import com.ritense.zakenapi.service.ZaakNotitieService
+import com.ritense.zakenapi.sync.CaseZakenApiSync
+import com.ritense.zakenapi.sync.CaseZakenApiSyncManagementService
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.context.event.EventListener
-import org.springframework.stereotype.Component
 import org.springframework.transaction.annotation.Transactional
 import java.util.UUID
 
 @Transactional
-@Component
 @SkipComponentScan
 class ZaakNotitieEventListener(
-    private val zaakUrlProvider: ZaakUrlProvider,
-    private val pluginService: PluginService,
-    private val zaakNotitieService: ZaakNotitieService
+    private val zaakNotitieService: ZaakNotitieService,
+    private val caseZakenApiSyncManagementService: CaseZakenApiSyncManagementService,
+    private val documentService: DocumentService,
+    private val caseDocumentResolver: CaseDocumentResolver,
 ) {
 
     @RunWithoutAuthorization
     @EventListener(NoteCreatedEvent::class)
     fun handleNoteCreatedEvent(event: NoteCreatedEvent) {
         logger.debug { "Note created event received: $event" }
-        if (noteEventListenerEnabled(event.noteDocumentId!!)) {
-            zaakNotitieService.createZaakNotitieFrom(event)
-        }
+        val syncConfig = resolveActiveSyncConfig(event.noteDocumentId!!)
+            ?: return
+        zaakNotitieService.createZaakNotitieFrom(event, syncConfig.noteSubject)
     }
 
     @RunWithoutAuthorization
     @EventListener(NoteUpdatedEvent::class)
     fun handleNoteUpdatedEvent(event: NoteUpdatedEvent) {
         logger.debug { "Note updated event received: $event" }
-        if (noteEventListenerEnabled(event.noteDocumentId!!)) {
-            zaakNotitieService.updateZaakNotitieFrom(event)
-        }
+        val syncConfig = resolveActiveSyncConfig(event.noteDocumentId!!)
+            ?: return
+        zaakNotitieService.updateZaakNotitieFrom(event, syncConfig.noteSubject)
     }
 
     @RunWithoutAuthorization
     @EventListener(NoteDeletedEvent::class)
     fun handleNoteDeletedEvent(event: NoteDeletedEvent) {
         logger.debug { "Note deleted event received: $event" }
-        if (noteEventListenerEnabled(event.noteDocumentId!!)) {
-            zaakNotitieService.deleteZaakNotitieFrom(event)
-        }
+        resolveActiveSyncConfig(event.noteDocumentId!!)
+            ?: return
+        zaakNotitieService.deleteZaakNotitieFrom(event)
     }
 
-    private fun noteEventListenerEnabled(documentId: UUID): Boolean =
-        (zakenApiPluginInstanceFrom(documentId)?.noteEventListenerEnabled ?: false).also { enabled ->
-            if (!enabled) {
-                logger.debug { "> Ignoring event as note event listener is disabled in Zaken API plugin configuration" }
-            }
+    private fun resolveActiveSyncConfig(documentId: UUID): CaseZakenApiSync? {
+        val caseDefinitionId = resolveCaseDefinitionId(documentId)
+            ?: return null
+        val syncConfig = caseZakenApiSyncManagementService.getSyncConfiguration(caseDefinitionId)
+        if (syncConfig?.noteSyncEnabled != true) {
+            logger.debug { "> Ignoring event as note sync is disabled for case definition '$caseDefinitionId'" }
+            return null
         }
+        return syncConfig
+    }
 
-    private fun zakenApiPluginInstanceFrom(documentId: UUID): ZakenApiPlugin? =
-        zaakUrlProvider.getZaakUrl(documentId).let { zaakUrl ->
-            pluginService.createInstance(
-                clazz = ZakenApiPlugin::class.java,
-                configurationFilter = ZakenApiPlugin.findConfigurationByUrl(zaakUrl)
-            ).also {
-                if (it == null) {
-                    logger.warn { "Zaken API plugin has not been configured: Unable to fulfill requested action!" }
-                }
-            }
+    private fun resolveCaseDefinitionId(documentId: UUID): CaseDefinitionId? = try {
+        runWithoutAuthorization {
+            val caseDocumentId = caseDocumentResolver.resolveCaseDocumentId(documentId)
+            documentService[caseDocumentId.toString()].definitionId().caseDefinitionId()
         }
+    } catch (e: CaseDocumentResolutionException) {
+        logger.debug { "Could not resolve case document for document '$documentId': ${e.message}" }
+        null
+    }
 
     companion object {
         private val logger = KotlinLogging.logger {}

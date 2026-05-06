@@ -1539,6 +1539,25 @@
     },
     "configurationIssue": "Deze configuratie is niet volledig. Controleer en werk de instellingen bij zodat ze overeenkomen met deze omgeving."
   },
+  "zakenApiSync": {
+    "title": "Zaak-synchronisatie",
+    "yes": "Ja",
+    "no": "Nee",
+    "assigneeSyncEnabled": "Behandelaar synchroniseren",
+    "roltypeUrl": "Roltype URL",
+    "noteSyncEnabled": "Notities synchroniseren",
+    "submitButton": "Configureer zaak-synchronisatie",
+    "editModal": {
+      "title": "Zaak-synchronisatie",
+      "assigneeSyncEnabled": "Dossier behandelaar synchroniseren als ZaakRol",
+      "roltypeUrl": "Roltype URL",
+      "roltypeUrlPlaceholder": "Voer een roltype URL in",
+      "noteSyncEnabled": "Dossier notities synchroniseren als ZaakNotitie",
+      "noteSubject": "Onderwerp van ZaakNotitie",
+      "noteSubjectPlaceholder": "Voer een onderwerp in"
+    },
+    "configurationIssue": "Deze configuratie is niet volledig. Controleer en werk de instellingen bij zodat ze overeenkomen met deze omgeving."
+  },
   "interface": {
     "icon": "Icoon",
     "iconPlaceholder": "Selecteer een icoon",

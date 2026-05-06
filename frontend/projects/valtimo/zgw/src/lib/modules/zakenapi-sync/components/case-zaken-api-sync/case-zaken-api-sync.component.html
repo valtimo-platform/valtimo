@@ -1,0 +1,146 @@
+<!--
+  ~ Copyright 2015-2026 Ritense BV, the Netherlands.
+  ~
+  ~ Licensed under EUPL, Version 1.2 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~ https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" basis,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<cds-tile [class.tile--danger]="hasConfigurationIssue$ | async">
+  <h2 class="valtimo-zakenapi-sync__title">{{ 'zakenApiSync.title' | translate }}</h2>
+
+  @if (loading$ | async) {
+    <valtimo-spinner></valtimo-spinner>
+  } @else {
+    @if (caseZakenApiSync$ | async; as caseZakenApiSync) {
+      <section class="valtimo-zakenapi-sync__card-header">
+        @if (canEdit$ | async) {
+          <div class="valtimo-zakenapi-sync__card-controls">
+            <button cdsButton="tertiary" (click)="showModal()">
+              {{ 'interface.edit' | translate }}
+
+              <svg class="cds--btn__icon" cdsIcon="edit" size="16"></svg>
+            </button>
+
+            <button cdsButton="danger" (click)="remove()">
+              {{ 'interface.delete' | translate }}
+
+              <svg class="cds--btn__icon" cdsIcon="trash-can" size="16"></svg>
+            </button>
+          </div>
+        }
+      </section>
+
+      <section class="valtimo-zakenapi-sync__card-body">
+        <div>
+          <strong>{{ 'zakenApiSync.assigneeSyncEnabled' | translate }}</strong>
+
+          {{
+            caseZakenApiSync.assigneeSyncEnabled
+              ? ('zakenApiSync.yes' | translate)
+              : ('zakenApiSync.no' | translate)
+          }}
+        </div>
+
+        <div>
+          <strong>{{ 'zakenApiSync.noteSyncEnabled' | translate }}</strong>
+
+          {{
+            caseZakenApiSync.noteSyncEnabled
+              ? ('zakenApiSync.yes' | translate)
+              : ('zakenApiSync.no' | translate)
+          }}
+        </div>
+      </section>
+    } @else if (canEdit$ | async) {
+      <button cdsButton="primary" (click)="showModal()">
+        {{ 'zakenApiSync.submitButton' | translate }}
+
+        <svg class="cds--btn__icon" cdsIcon="add" size="16"></svg>
+      </button>
+    }
+  }
+
+  @if (hasConfigurationIssue$ | async) {
+    <div class="tile-error-message">
+      <svg cdsIcon="warning--filled" size="16" class="tile-error-message__icon"></svg>
+      <span class="tile-error-message__text">{{
+        'zakenApiSync.configurationIssue' | translate
+      }}</span>
+    </div>
+  }
+</cds-tile>
+
+<valtimo-render-in-body>
+  <cds-modal
+    valtimoCdsModal
+    [open]="modalShowing$ | async"
+    [title]="'zakenApiSync.editModal.title' | translate"
+    showFooter="true"
+    (close)="onModalClose()"
+  >
+    <cds-modal-header [showCloseButton]="true" (closeSelect)="onModalClose()">
+      <h3 cdsModalHeaderHeading>
+        {{ 'zakenApiSync.editModal.title' | translate }}
+      </h3>
+    </cds-modal-header>
+
+    <section cdsModalContent [cdsLayer]="1">
+      <form [formGroup]="formGroup">
+        <cds-toggle
+          formControlName="assigneeSyncEnabled"
+          [label]="'zakenApiSync.editModal.assigneeSyncEnabled' | translate"
+          [onText]="'interface.on' | translate"
+          [offText]="'interface.off' | translate"
+        ></cds-toggle>
+
+        <cds-dropdown
+          [label]="'zakenApiSync.editModal.roltypeUrl' | translate"
+          [placeholder]="'zakenApiSync.editModal.roltypeUrlPlaceholder' | translate"
+          [dropUp]="false"
+          (selected)="onRoltypeSelected($event)"
+        >
+          <cds-dropdown-list [items]="roltypeListItems$ | async"></cds-dropdown-list>
+        </cds-dropdown>
+
+        <cds-toggle
+          formControlName="noteSyncEnabled"
+          [label]="'zakenApiSync.editModal.noteSyncEnabled' | translate"
+          [onText]="'interface.on' | translate"
+          [offText]="'interface.off' | translate"
+        ></cds-toggle>
+
+        <cds-label>
+          {{ 'zakenApiSync.editModal.noteSubject' | translate }}
+          <input
+            cdsText
+            formControlName="noteSubject"
+            [placeholder]="'zakenApiSync.editModal.noteSubjectPlaceholder' | translate"
+          />
+        </cds-label>
+      </form>
+    </section>
+
+    <cds-modal-footer>
+      <button cdsButton="secondary" (click)="onModalClose()" [disabled]="false">
+        {{ 'interface.cancel' | translate }}
+      </button>
+
+      <button
+        cdsButton="primary"
+        [disabled]="!formGroup.valid"
+        (click)="submit()"
+      >
+        {{ 'searchFieldsOverview.submit' | translate }}
+      </button>
+    </cds-modal-footer>
+  </cds-modal>
+</valtimo-render-in-body>
