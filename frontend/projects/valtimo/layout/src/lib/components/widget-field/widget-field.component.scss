@@ -70,7 +70,7 @@
     &-value {
       color: var(--widget-text-color, var(--cds-text-primary));
       padding: 8px 16px;
-      border-bottom: 1px solid var(--cds-border-subtle-01);
+      border-bottom: 1px solid var(--widget-accent-color, var(--cds-border-subtle-01));
       font-size: 14px;
 
       cds-skeleton-text {
