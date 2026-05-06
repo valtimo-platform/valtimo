@@ -36,18 +36,18 @@ dockerCompose {
 }
 
 dependencies {
-    implementation project(':connector')
-    implementation project(':contract')
-    implementation project(':core')
-    implementation project(':document')
-    implementation project(':process-document')
-    implementation project(':resource')
+    implementation project(':backend:connector')
+    implementation project(':backend:contract')
+    implementation project(':backend:core')
+    implementation project(':backend:document')
+    implementation project(':backend:process-document')
+    implementation project(':backend:resource')
 
-    implementation project(':plugin')
-    implementation project(':zgw:documenten-api')
-    api project(':zgw:catalogi-api')
-    api project(":zgw:zaken-api")
-    api project(":zgw:besluiten-api")
+    implementation project(':backend:plugin')
+    implementation project(':backend:zgw:documenten-api')
+    api project(':backend:zgw:catalogi-api')
+    api project(":backend:zgw:zaken-api")
+    api project(":backend:zgw:besluiten-api")
 
     api "org.springframework.security:spring-security-core"
     api "org.springframework.boot:spring-boot"
@@ -94,7 +94,7 @@ dependencies {
     testImplementation "org.mockito.kotlin:mockito-kotlin:${mockitoKotlinVersion}"
     testImplementation "org.mockito:mockito-inline:${mockitoInlineVersion}"
 
-    testImplementation project(':test-utils-common')
+    testImplementation project(':backend:test-utils-common')
 
     jar {
         enabled = true

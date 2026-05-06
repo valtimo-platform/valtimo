@@ -14,3 +14,9 @@
 .DS_Store
 
 .claude
+
+# E2E
+e2e/test-results/
+e2e/playwright-report/
+e2e/playwright/
+e2e/.env.properties

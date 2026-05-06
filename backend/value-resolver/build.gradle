@@ -36,8 +36,8 @@ dockerCompose {
 }
 
 dependencies {
-    implementation(project(":contract"))
-    implementation(project(":logging"))
+    implementation(project(":backend:contract"))
+    implementation(project(":backend:logging"))
 
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
     implementation "org.jetbrains.kotlin:kotlin-reflect"
@@ -54,7 +54,7 @@ dependencies {
 
     implementation "com.flipkart.zjsonpatch:zjsonpatch:${zjsonpatchVersion}"
 
-    testImplementation project(':test-utils-common')
+    testImplementation project(':backend:test-utils-common')
     testImplementation "org.jetbrains.kotlin:kotlin-test"
     testImplementation "org.junit.jupiter:junit-jupiter"
     testImplementation "org.springframework.boot:spring-boot-starter-test"

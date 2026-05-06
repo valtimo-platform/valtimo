@@ -15,11 +15,11 @@
  */
 
 dependencies {
-    api project(':resource')
-    api project(':openzaak')
+    api project(':backend:resource')
+    api project(':backend:openzaak')
 
-    implementation project(':zgw:documenten-api')
-    implementation project(':zgw:zaken-api')
+    implementation project(':backend:zgw:documenten-api')
+    implementation project(':backend:zgw:zaken-api')
 
     api "org.springframework.security:spring-security-core"
     api "org.springframework.boot:spring-boot"
@@ -62,8 +62,8 @@ dependencies {
     //Kotlin
     testImplementation "org.mockito.kotlin:mockito-kotlin:${mockitoKotlinVersion}"
 
-    testImplementation project(':zgw:documenten-api')
-    testImplementation project(':zgw:zaken-api')
+    testImplementation project(':backend:zgw:documenten-api')
+    testImplementation project(':backend:zgw:zaken-api')
 
 
     jar {

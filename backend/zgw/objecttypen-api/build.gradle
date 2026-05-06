@@ -30,14 +30,14 @@ dockerCompose {
 }
 
 dependencies {
-    implementation project(":contract")
-    implementation project(':plugin')
-    implementation project(':logging')
+    implementation project(":backend:contract")
+    implementation project(':backend:plugin')
+    implementation project(':backend:logging')
 
     implementation "io.github.microutils:kotlin-logging:${kotlinLoggingVersion}"
     implementation "org.springframework.boot:spring-boot-starter-webflux"
 
-    testImplementation project(':test-utils-common')
+    testImplementation project(':backend:test-utils-common')
 
     testImplementation "org.jetbrains.kotlin:kotlin-test"
     testImplementation "org.junit.jupiter:junit-jupiter"

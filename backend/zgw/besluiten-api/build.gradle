@@ -30,17 +30,17 @@ dockerCompose {
 }
 
 dependencies {
-    implementation project(":contract")
-    implementation project(":core")
-    implementation project(":plugin")
-    implementation project(":zgw")
-    implementation project(":zgw:zaken-api")
-    implementation project(":logging")
+    implementation project(":backend:contract")
+    implementation project(":backend:core")
+    implementation project(":backend:plugin")
+    implementation project(":backend:zgw")
+    implementation project(":backend:zgw:zaken-api")
+    implementation project(":backend:logging")
 
     implementation "io.github.microutils:kotlin-logging:${kotlinLoggingVersion}"
     implementation "org.springframework.boot:spring-boot-starter-webflux"
 
-    testImplementation project(':test-utils-common')
+    testImplementation project(':backend:test-utils-common')
     testImplementation "org.junit.jupiter:junit-jupiter"
     //Kotlin
     testImplementation "org.mockito.kotlin:mockito-kotlin:${mockitoKotlinVersion}"

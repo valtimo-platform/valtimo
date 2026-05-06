@@ -29,15 +29,15 @@ dockerCompose {
 }
 
 dependencies {
-    implementation project(":authorization")
-    implementation project(":command-handling")
-    implementation project(":contract")
-    implementation project(":core")
-    implementation project(":document")
-    implementation project(":form")
-    implementation project(":process-document")
-    implementation project(":process-link")
-    implementation project(":web")
+    implementation project(":backend:authorization")
+    implementation project(":backend:command-handling")
+    implementation project(":backend:contract")
+    implementation project(":backend:core")
+    implementation project(":backend:document")
+    implementation project(":backend:form")
+    implementation project(":backend:process-document")
+    implementation project(":backend:process-link")
+    implementation project(":backend:web")
 
     api "org.springframework.security:spring-security-core"
     api "org.springframework.boot:spring-boot"
@@ -62,12 +62,11 @@ dependencies {
 
     annotationProcessor "org.springframework.boot:spring-boot-autoconfigure-processor"
 
-    testImplementation project(':test-utils-common')
-    testImplementation project(":keycloak-iam")
-    testImplementation project(":mail:local-mail")
-    testImplementation project(":contract")
-    testImplementation project(":core")
-    testImplementation project(":test-utils-common")
+    testImplementation project(':backend:test-utils-common')
+    testImplementation project(":backend:keycloak-iam")
+    testImplementation project(":backend:mail:local-mail")
+    testImplementation project(":backend:contract")
+    testImplementation project(":backend:core")
     testImplementation "org.apache.httpcomponents.client5:httpclient5"
     testImplementation "org.springframework.security:spring-security-test"
     testImplementation "org.mockito.kotlin:mockito-kotlin:${mockitoKotlinVersion}"

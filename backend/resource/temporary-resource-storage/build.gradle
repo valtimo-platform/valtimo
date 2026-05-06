@@ -15,7 +15,7 @@
  */
 
 dependencies {
-    api project(':contract')
+    api project(':backend:contract')
 
     implementation "org.springframework.boot:spring-boot-starter-data-jpa"
     implementation "org.springframework.boot:spring-boot-starter-web"
@@ -30,7 +30,7 @@ dependencies {
     testImplementation "org.springframework.security:spring-security-test"
     testImplementation "org.mockito.kotlin:mockito-kotlin:${mockitoKotlinVersion}"
 
-    testImplementation project(':test-utils-common')
+    testImplementation project(':backend:test-utils-common')
 
     jar {
         enabled = true

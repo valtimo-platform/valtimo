@@ -30,9 +30,9 @@ dockerCompose {
 }
 
 dependencies {
-    api project(":mail")
-    implementation project(":connector")
-    implementation project(":document")
+    api project(":backend:mail")
+    implementation project(":backend:connector")
+    implementation project(":backend:document")
 
     api "org.springframework.security:spring-security-core"
     api "org.springframework.boot:spring-boot"
@@ -63,11 +63,11 @@ dependencies {
     implementation "org.springframework.boot:spring-boot-autoconfigure"
     implementation "org.springframework.boot:spring-boot-starter-webflux"
 
-    testImplementation project(":core")
-    testImplementation project(":mail")
-    testImplementation project(":connector")
-    testImplementation project(":test-utils-common")
-    testImplementation project(":resource:local-resource")
+    testImplementation project(":backend:core")
+    testImplementation project(":backend:mail")
+    testImplementation project(":backend:connector")
+    testImplementation project(":backend:test-utils-common")
+    testImplementation project(":backend:resource:local-resource")
 
     //Kotlin
     testImplementation "org.mockito.kotlin:mockito-kotlin:${mockitoKotlinVersion}"
