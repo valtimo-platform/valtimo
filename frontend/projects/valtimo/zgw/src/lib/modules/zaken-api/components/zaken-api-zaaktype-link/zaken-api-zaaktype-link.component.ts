@@ -49,6 +49,7 @@ import {
 } from 'carbon-components-angular';
 import {BehaviorSubject, combineLatest, finalize, map, Observable, switchMap} from 'rxjs';
 import {ZakenApiZaaktypeLinkService} from '../../services';
+import {ZGW_CASE_TYPE_LINK_TEST_IDS} from '../../../../constants';
 
 @Component({
   selector: 'valtimo-zaken-api-zaaktype-link',
@@ -73,6 +74,7 @@ import {ZakenApiZaaktypeLinkService} from '../../services';
   ],
 })
 export class ZakenApiZaaktypeLinkComponent implements OnInit {
+  public readonly testIds = ZGW_CASE_TYPE_LINK_TEST_IDS;
   public zaakTypes: ZaakType[];
   public pluginConfigurations: PluginConfiguration[];
   public zaakTypeLinkRequest: CreateZaakTypeLinkRequest;

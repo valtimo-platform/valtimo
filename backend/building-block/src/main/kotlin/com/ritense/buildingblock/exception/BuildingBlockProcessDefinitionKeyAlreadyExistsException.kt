@@ -23,7 +23,8 @@ import org.zalando.problem.Status
 
 data class DuplicateProcessDefinitionDescriptor(
     val key: String,
-    val name: String? = null
+    val name: String? = null,
+    val processDefinitionId: String
 )
 
 class BuildingBlockProcessDefinitionKeyAlreadyExistsException(
