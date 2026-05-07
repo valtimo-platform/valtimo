@@ -847,6 +847,7 @@ internal class CatalogiApiPluginTest : BaseTest() {
         omschrijvingGeneriek = null,
         statustekst = null,
         volgnummer = 0,
+        toelichting = null,
         isEindstatus = null,
         informeren = null
     )
