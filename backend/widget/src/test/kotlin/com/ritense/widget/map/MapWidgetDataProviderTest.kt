@@ -23,6 +23,7 @@ import com.ritense.widget.map.geojson.GeoJson
 import com.ritense.widget.map.geojson.GeoJsonGeometryMapper
 import com.ritense.widget.map.geojson.GeoJsonMapper
 import com.ritense.widget.map.geojson.GeoJsonNullMapper
+import com.ritense.widget.map.geojson.Wgs84FeatureNormalizer
 import org.junit.jupiter.api.Test
 import org.mockito.kotlin.any
 import org.mockito.kotlin.anyOrNull
@@ -36,7 +37,13 @@ class MapWidgetDataProviderTest {
     private val valueResolverService: ValueResolverService = mock()
     private val objectMapper = MapperSingleton.get()
     private val geoJsonMappers: List<GeoJsonMapper> = listOf(GeoJsonGeometryMapper(objectMapper), GeoJsonNullMapper())
-    private val dataProvider = MapWidgetDataProvider(valueResolverService, objectMapper, geoJsonMappers)
+    private val wgs84FeatureNormalizer = Wgs84FeatureNormalizer()
+    private val dataProvider = MapWidgetDataProvider(
+        valueResolverService,
+        objectMapper,
+        geoJsonMappers,
+        wgs84FeatureNormalizer,
+    )
 
     @Test
     fun `getData includes resolved values in output`() {
