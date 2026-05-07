@@ -2493,8 +2493,8 @@
           "description": "Schakel de experimentele DMN-beslissingstabeleditor in."
         },
         "disableCaseCount": {
-          "title": "Zaaktelling uitschakelen",
-          "description": "Verberg het aantal zaken in het menu."
+          "title": "Dossiertelling uitschakelen",
+          "description": "Verberg het aantal dossiers in het menu."
         },
         "enableObjectManagement": {
           "title": "Objectbeheer inschakelen",
@@ -2502,7 +2502,7 @@
         },
         "sortFilesByDate": {
           "title": "Bestanden op datum sorteren",
-          "description": "Sorteer zaakgerelateerde bestanden standaard op datum in aflopende volgorde."
+          "description": "Sorteer dossiergerelateerde bestanden standaard op datum in aflopende volgorde."
         },
         "returnToLastUrlAfterTokenExpiration": {
           "title": "Terugkeren naar laatste URL na inloggen",
