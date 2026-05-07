@@ -46,6 +46,7 @@ class DocumentZakenApiSyncCaseEventListenerTest {
         listener.handleCaseDefinitionCreatedEvent(
             CaseDefinitionCreatedEvent(
                 caseDefinitionId = targetId,
+                caseDefinitionName = "house",
                 duplicate = true,
                 basedOnCaseDefinitionId = sourceId,
             )
@@ -61,7 +62,7 @@ class DocumentZakenApiSyncCaseEventListenerTest {
     @Test
     fun `does nothing when create event is not a duplicate`() {
         listener.handleCaseDefinitionCreatedEvent(
-            CaseDefinitionCreatedEvent(caseDefinitionId = targetId, duplicate = false)
+            CaseDefinitionCreatedEvent(caseDefinitionId = targetId, caseDefinitionName = "house", duplicate = false)
         )
 
         verify(service, never()).saveSyncConfiguration(any())
@@ -74,6 +75,7 @@ class DocumentZakenApiSyncCaseEventListenerTest {
         listener.handleCaseDefinitionCreatedEvent(
             CaseDefinitionCreatedEvent(
                 caseDefinitionId = targetId,
+                caseDefinitionName = "house",
                 duplicate = true,
                 basedOnCaseDefinitionId = sourceId,
             )

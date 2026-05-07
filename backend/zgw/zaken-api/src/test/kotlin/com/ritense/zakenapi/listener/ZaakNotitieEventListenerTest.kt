@@ -130,13 +130,23 @@ internal class ZaakNotitieEventListenerTest {
     }
 
     @Test
-    fun `should not delete ZaakNotitie when note sync is disabled`() {
+    fun `should still delete ZaakNotitie when note sync is disabled to avoid orphaned ZaakNotities`() {
         whenever(caseZakenApiSyncManagementService.getSyncConfiguration(eq(caseDefinitionId)))
             .thenReturn(activeSyncConfig.copy(noteSyncEnabled = false))
 
         zaakNotitieEventListener.handleNoteDeletedEvent(noteDeletedEvent())
 
-        verifyNoInteractions(zaakNotitieService)
+        verify(zaakNotitieService).deleteZaakNotitieFrom(any())
+    }
+
+    @Test
+    fun `should swallow exceptions from delete to avoid blocking local note deletion`() {
+        whenever(zaakNotitieService.deleteZaakNotitieFrom(any()))
+            .thenThrow(RuntimeException("Open Zaak unreachable"))
+
+        zaakNotitieEventListener.handleNoteDeletedEvent(noteDeletedEvent())
+
+        verify(zaakNotitieService).deleteZaakNotitieFrom(any())
     }
 
     private fun noteCreatedEvent(): NoteCreatedEvent = mock {
