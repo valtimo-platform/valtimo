@@ -15,16 +15,17 @@
  */
 
 .valtimo-widget-person-card {
+  container-type: inline-size;
   display: flex;
   flex-direction: row;
   align-items: flex-start;
-  gap: 24px;
-  padding: 24px;
+  gap: 16px;
+  padding: 16px;
 
   &__avatar {
     flex: 0 0 auto;
-    width: 96px;
-    height: 96px;
+    width: 64px;
+    height: 64px;
     border-radius: 50%;
     background-color: var(--widget-background-color, #d5d3f0);
     display: flex;
@@ -33,7 +34,7 @@
   }
 
   &__initials {
-    font-size: 32px;
+    font-size: 22px;
     font-weight: 600;
     line-height: 1;
     color: var(--widget-text-color, #1a146a);
@@ -45,36 +46,35 @@
     min-width: 0;
     display: flex;
     flex-direction: column;
-    gap: 8px;
+    gap: 4px;
     color: var(--widget-text-color, var(--cds-text-primary));
   }
 
   &__name {
     margin: 0;
-    font-size: 24px;
+    font-size: 18px;
     font-weight: 600;
-    line-height: 32px;
+    line-height: 24px;
   }
 
   &__subtitle {
-    margin: 0 0 8px;
-    font-size: 16px;
-    line-height: 24px;
+    margin: 0;
+    font-size: 14px;
+    line-height: 20px;
     color: var(--widget-text-color, var(--cds-text-secondary));
   }
 
   &__grid {
-    margin: 0;
+    margin: 4px 0 0;
     display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    column-gap: 32px;
-    row-gap: 12px;
+    grid-template-columns: 1fr;
+    row-gap: 6px;
   }
 
   &__field {
     display: flex;
     align-items: center;
-    gap: 12px;
+    gap: 8px;
     min-width: 0;
   }
 
@@ -96,10 +96,57 @@
   }
 
   &__field-value {
-    font-size: 16px;
-    line-height: 24px;
+    font-size: 14px;
+    line-height: 20px;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
+  }
+}
+
+@container (min-width: 480px) {
+  .valtimo-widget-person-card {
+    gap: 24px;
+    padding: 24px;
+
+    &__avatar {
+      width: 96px;
+      height: 96px;
+    }
+
+    &__initials {
+      font-size: 32px;
+    }
+
+    &__body {
+      gap: 6px;
+    }
+
+    &__name {
+      font-size: 24px;
+      line-height: 32px;
+    }
+
+    &__subtitle {
+      font-size: 16px;
+      line-height: 24px;
+    }
+
+    &__grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      grid-template-rows: repeat(2, auto);
+      grid-auto-flow: column;
+      column-gap: 32px;
+      row-gap: 8px;
+    }
+
+    &__field {
+      gap: 12px;
+    }
+
+    &__field-value {
+      font-size: 16px;
+      line-height: 24px;
+    }
   }
 }

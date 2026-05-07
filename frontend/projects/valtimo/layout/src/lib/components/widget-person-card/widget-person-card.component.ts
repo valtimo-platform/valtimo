@@ -25,7 +25,8 @@ import {
   ViewEncapsulation,
 } from '@angular/core';
 import {TranslateModule, TranslateService} from '@ngx-translate/core';
-import {IconModule, SkeletonModule} from 'carbon-components-angular';
+import {IconModule, IconService, SkeletonModule} from 'carbon-components-angular';
+import {Calendar20, Email20, Phone20} from '@carbon/icons';
 import {Subscription} from 'rxjs';
 import {PersonCardWidget} from '../../models';
 
@@ -97,18 +98,22 @@ export class WidgetPersonCardComponent implements OnDestroy {
 
   public readonly $subtitle = computed(() => {
     const ageValue = this.$age();
-    const city = this.$widgetData()?.city;
-    const parts: string[] = [];
-    if (ageValue !== null) {
-      parts.push(this.translateService.instant('widgets.personCard.age', {age: ageValue}));
-    }
-    if (city) parts.push(city);
-    return parts.join(' · ');
+    const city = this.$widgetData()?.city?.trim();
+    const ageLabel =
+      ageValue !== null
+        ? this.translateService.instant('widgets.personCard.age', {age: ageValue})
+        : '-';
+    const cityLabel = city || '-';
+    return `${ageLabel} · ${cityLabel}`;
   });
 
   private readonly _subscriptions = new Subscription();
 
-  constructor(private readonly translateService: TranslateService) {
+  constructor(
+    private readonly translateService: TranslateService,
+    private readonly iconService: IconService
+  ) {
+    this.iconService.registerAll([Phone20, Email20, Calendar20]);
     this._subscriptions.add(
       this.translateService.onLangChange.subscribe(event => this.$currentLang.set(event.lang))
     );
