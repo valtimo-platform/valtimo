@@ -25,7 +25,7 @@ Administrators can upload a custom logo for the application top bar. Two logo sl
 2. Click **Add file** and select a PNG or SVG image (max 10 MB).
 3. Click **Upload**.
 
-The new logo is applied immediately across all sessions. A preview is shown on a background that matches where the logo
+The new logo is applied immediately. A preview is shown on a background that matches where the logo
 will appear (light or dark), so you can verify contrast and readability before uploading.
 
 #### Deleting a logo
@@ -42,8 +42,8 @@ configured in the front-end environment file.
 
 ### Accent colors
 
-The accent colors section allows administrators to customize the application's color scheme by overriding the VCDS
-(Valtimo Carbon Design System) accent color palette. Ten color levels are available, ranging from the darkest shade
+The accent colors section allows administrators to customize the application's color scheme by overriding the CDS
+(Carbon Design System) accent color palette. Ten color levels are available, ranging from the darkest shade
 (color 100) to the lightest (color 10).
 
 Each color is shown with a preview swatch and a hex color code. Click the swatch or the hex code to open a color picker.
@@ -71,9 +71,6 @@ Feature toggles are resolved from two sources, merged at runtime:
    values that ship with the application.
 2. **Back-end overrides** — Stored in the database and managed through the admin settings page or via
    auto-deployment. When an override exists for a toggle, it takes precedence over the front-end default.
-
-The merged result is exposed as a reactive observable via `ConfigService.getFeatureToggleObservable()`. Components that
-subscribe to it receive updates automatically when an administrator changes a toggle.
 
 ## Auto-deployment
 
@@ -111,11 +108,6 @@ Create a JSON file matching the pattern `<name>.feature-toggles.json`.
 
 The file is a flat JSON map of feature toggle keys to boolean values. Each key-value pair sets the corresponding
 back-end override. Only listed toggles are affected.
-
-{% hint style="info" %}
-Toggles not included in the file are left unchanged. To reset a toggle to the front-end default, remove its
-back-end override via the admin settings page.
-{% endhint %}
 
 ### Accent colors deployment
 
