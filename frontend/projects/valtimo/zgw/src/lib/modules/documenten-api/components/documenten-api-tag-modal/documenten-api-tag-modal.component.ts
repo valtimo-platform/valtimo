@@ -38,6 +38,7 @@ import {
 import {TranslateModule} from '@ngx-translate/core';
 import {CommonModule} from '@angular/common';
 import {DocumentenApiTagService} from '../../services/documenten-api-tag.service';
+import {ZGW_KEYWORDS_TEST_IDS} from '../../../../constants';
 
 @Component({
   selector: 'valtimo-documenten-api-tag-modal',
@@ -58,6 +59,7 @@ import {DocumentenApiTagService} from '../../services/documenten-api-tag.service
   ],
 })
 export class DocumentenApiTagModalComponent implements OnDestroy {
+  public readonly testIds = ZGW_KEYWORDS_TEST_IDS;
   @Input() public caseDefinitionKey!: string;
   @Input() public open = false;
 
