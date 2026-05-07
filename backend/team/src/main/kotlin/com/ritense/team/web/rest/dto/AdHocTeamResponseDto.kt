@@ -14,13 +14,24 @@
  * limitations under the License.
  */
 
-package com.ritense.valtimo.contract.authentication
+package com.ritense.team.web.rest.dto
 
+import com.ritense.team.domain.Team
 import java.util.UUID
+import com.ritense.valtimo.contract.authentication.Team as TeamInterface
 
-interface Team {
-    val key: String
-    val title: String
-    val adHocCaseDocumentId: UUID? get() = null
-    val adHoc: Boolean get() = adHocCaseDocumentId != null
+data class AdHocTeamResponseDto(
+    val key: String,
+    val title: String,
+    val adHocCaseDocumentId: UUID?,
+    val userCount: Int,
+) {
+    companion object {
+        fun from(team: TeamInterface) = AdHocTeamResponseDto(
+            key = team.key,
+            title = team.title,
+            adHocCaseDocumentId = team.adHocCaseDocumentId,
+            userCount = if (team is Team) team.users.size else 0
+        )
+    }
 }

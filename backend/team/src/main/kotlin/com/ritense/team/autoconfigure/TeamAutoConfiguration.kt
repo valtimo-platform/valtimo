@@ -21,11 +21,13 @@ import com.ritense.authorization.AuthorizationService
 import com.ritense.team.authorization.TeamSpecificationFactory
 import com.ritense.team.exporter.TeamExporter
 import com.ritense.team.importer.TeamImporter
+import com.ritense.team.listener.DocumentDeletedTeamCleanupListener
 import com.ritense.team.repository.TeamRepository
 import com.ritense.team.repository.TeamUserRepository
 import com.ritense.team.security.config.TeamHttpSecurityConfigurer
 import com.ritense.team.service.TeamActionProvider
 import com.ritense.team.service.TeamManagementServiceImpl
+import com.ritense.team.web.rest.AdHocTeamResource
 import com.ritense.team.web.rest.TeamResource
 import com.ritense.valtimo.contract.authentication.TeamManagementService
 import com.ritense.valtimo.contract.authentication.UserManagementService
@@ -101,6 +103,22 @@ class TeamAutoConfiguration {
         teamManagementService: TeamManagementService
     ): TeamImporter {
         return TeamImporter(objectMapper, teamManagementService)
+    }
+
+    @Bean
+    @ConditionalOnMissingBean(AdHocTeamResource::class)
+    fun adHocTeamResource(
+        teamManagementService: TeamManagementService,
+    ): AdHocTeamResource {
+        return AdHocTeamResource(teamManagementService)
+    }
+
+    @Bean
+    @ConditionalOnMissingBean(DocumentDeletedTeamCleanupListener::class)
+    fun documentDeletedTeamCleanupListener(
+        teamManagementService: TeamManagementService,
+    ): DocumentDeletedTeamCleanupListener {
+        return DocumentDeletedTeamCleanupListener(teamManagementService)
     }
 
     @Bean

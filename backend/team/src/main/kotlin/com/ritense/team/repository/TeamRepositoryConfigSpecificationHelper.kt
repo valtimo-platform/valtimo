@@ -19,12 +19,14 @@ package com.ritense.team.repository
 import com.ritense.team.domain.Team
 import jakarta.persistence.criteria.JoinType
 import org.springframework.data.jpa.domain.Specification
+import java.util.UUID
 
 class TeamRepositoryConfigSpecificationHelper {
 
     companion object {
 
         const val TITLE: String = "title"
+        const val AD_HOC_CASE_DOCUMENT_ID: String = "adHocCaseDocumentId"
 
         @JvmStatic
         fun byTitleContains(titlePart: String) = Specification<Team> { root, _, cb ->
@@ -37,6 +39,16 @@ class TeamRepositoryConfigSpecificationHelper {
                 root.fetch<Team, String>("users", JoinType.LEFT)
             }
             null
+        }
+
+        @JvmStatic
+        fun byAdHocCaseDocumentIdIsNull() = Specification<Team> { root, _, cb ->
+            cb.isNull(root.get<UUID>(AD_HOC_CASE_DOCUMENT_ID))
+        }
+
+        @JvmStatic
+        fun byAdHocCaseDocumentId(adHocCaseDocumentId: UUID) = Specification<Team> { root, _, cb ->
+            cb.equal(root.get<UUID>(AD_HOC_CASE_DOCUMENT_ID), adHocCaseDocumentId)
         }
     }
 }

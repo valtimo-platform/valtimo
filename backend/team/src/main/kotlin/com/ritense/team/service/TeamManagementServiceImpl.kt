@@ -36,6 +36,7 @@ import org.springframework.data.domain.Pageable
 import org.springframework.data.jpa.domain.Specification
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import java.util.UUID
 import com.ritense.valtimo.contract.authentication.Team as TeamInterface
 
 @Service
@@ -59,6 +60,8 @@ class TeamManagementServiceImpl(
                 TeamActionProvider.VIEW_LIST
             )
         )
+
+        specification = specification.and(TeamRepositoryConfigSpecificationHelper.byAdHocCaseDocumentIdIsNull())
 
         if (titleContains != null) {
             specification = specification.and(TeamRepositoryConfigSpecificationHelper.byTitleContains(titleContains))
@@ -146,6 +149,44 @@ class TeamManagementServiceImpl(
 
     override fun findAll(pageable: Pageable): Page<TeamInterface> {
         return findAll(titleContains = null, pageable = pageable)
+    }
+
+    override fun createAdHocTeam(adHocCaseDocumentId: UUID, title: String?): TeamInterface {
+        val generatedKey = "adhoc-${UUID.randomUUID()}"
+        val generatedTitle = title ?: "Ad hoc team"
+        val team = Team(
+            key = generatedKey,
+            title = generatedTitle,
+            adHocCaseDocumentId = adHocCaseDocumentId
+        )
+        requirePermission(team, TeamActionProvider.CREATE)
+        return teamRepository.save(team)
+    }
+
+    @Transactional(readOnly = true)
+    override fun findAllByAdHocCaseDocumentId(
+        adHocCaseDocumentId: UUID,
+        titleContains: String?,
+        pageable: Pageable
+    ): Page<TeamInterface> {
+        var specification: Specification<Team> = authorizationService.getAuthorizationSpecification(
+            EntityAuthorizationRequest(
+                Team::class.java,
+                TeamActionProvider.VIEW_LIST
+            )
+        )
+
+        specification = specification.and(TeamRepositoryConfigSpecificationHelper.byAdHocCaseDocumentId(adHocCaseDocumentId))
+
+        if (titleContains != null) {
+            specification = specification.and(TeamRepositoryConfigSpecificationHelper.byTitleContains(titleContains))
+        }
+        specification = specification.and(TeamRepositoryConfigSpecificationHelper.fetchUsers())
+        return teamRepository.findAll(specification, pageable).map { it as TeamInterface }
+    }
+
+    override fun deleteAllByAdHocCaseDocumentId(adHocCaseDocumentId: UUID) {
+        teamRepository.deleteByAdHocCaseDocumentId(adHocCaseDocumentId)
     }
 
     private fun requirePermission(team: Team, action: Action<Team>) {

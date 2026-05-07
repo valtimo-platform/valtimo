@@ -24,6 +24,7 @@ import jakarta.persistence.FetchType
 import jakarta.persistence.Id
 import jakarta.persistence.JoinColumn
 import jakarta.persistence.Table
+import java.util.UUID
 import com.ritense.valtimo.contract.authentication.Team as TeamInterface
 
 @Entity
@@ -39,5 +40,8 @@ data class Team(
     @ElementCollection(fetch = FetchType.LAZY)
     @CollectionTable(name = "team_user", joinColumns = [JoinColumn(name = "team_key")])
     @Column(name = "username")
-    var users: List<String> = emptyList()
+    var users: List<String> = emptyList(),
+
+    @Column(name = "ad_hoc_case_document_id")
+    override val adHocCaseDocumentId: UUID? = null
 ) : TeamInterface

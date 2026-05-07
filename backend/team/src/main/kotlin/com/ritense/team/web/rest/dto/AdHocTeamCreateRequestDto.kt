@@ -14,13 +14,11 @@
  * limitations under the License.
  */
 
-package com.ritense.valtimo.contract.authentication
+package com.ritense.team.web.rest.dto
 
-import java.util.UUID
+import jakarta.validation.constraints.Size
 
-interface Team {
-    val key: String
-    val title: String
-    val adHocCaseDocumentId: UUID? get() = null
-    val adHoc: Boolean get() = adHocCaseDocumentId != null
-}
+data class AdHocTeamCreateRequestDto(
+    @field:Size(max = 255)
+    val title: String? = null
+)

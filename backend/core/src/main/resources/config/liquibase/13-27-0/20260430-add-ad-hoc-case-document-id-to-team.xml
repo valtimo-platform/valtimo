@@ -16,11 +16,20 @@
   -->
 
 <databaseChangeLog
-    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd">
 
-    <include file="20260403-backfill-plugin-definition-key-on-fixed-refs.xml" relativeToChangelogFile="true"/>
-    <include file="20260430-add-ad-hoc-case-document-id-to-team.xml" relativeToChangelogFile="true"/>
+    <changeSet id="1" author="Ritense">
+        <addColumn tableName="team">
+            <column name="ad_hoc_case_document_id" type="${uuidType}">
+                <constraints nullable="true"/>
+            </column>
+        </addColumn>
+
+        <createIndex tableName="team" indexName="idx_team_ad_hoc_case_document_id">
+            <column name="ad_hoc_case_document_id"/>
+        </createIndex>
+    </changeSet>
 
 </databaseChangeLog>

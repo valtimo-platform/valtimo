@@ -21,10 +21,13 @@ import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor
 import org.springframework.data.jpa.repository.Query
 import java.util.Optional
+import java.util.UUID
 
 interface TeamRepository : JpaRepository<Team, String>, JpaSpecificationExecutor<Team> {
     fun findByTitleContainingIgnoreCase(title: String): List<Team>
 
     @Query("SELECT t FROM Team t LEFT JOIN FETCH t.users WHERE t.key = :key")
     fun findByKeyWithUsers(key: String): Optional<Team>
+
+    fun deleteByAdHocCaseDocumentId(adHocCaseDocumentId: UUID)
 }
