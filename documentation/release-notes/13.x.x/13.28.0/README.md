@@ -18,4 +18,4 @@
 
 ## Bugfixes
 
-* New bugfix.
+* When a header widget was configured, it was not possible to edit the header widget.
