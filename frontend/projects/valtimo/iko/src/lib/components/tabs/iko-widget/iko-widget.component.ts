@@ -16,7 +16,12 @@
 import {CommonModule} from '@angular/common';
 import {ChangeDetectionStrategy, Component, Input} from '@angular/core';
 import {FitPageDirective} from '@valtimo/components';
-import {WidgetComponentMap, WidgetContainerComponent, WidgetType} from '@valtimo/layout';
+import {
+  WidgetComponentMap,
+  WidgetContainerComponent,
+  WidgetPersonCardComponent,
+  WidgetType,
+} from '@valtimo/layout';
 import {NGXLogger} from 'ngx-logger';
 import {BehaviorSubject, combineLatest, filter, map, Observable, switchMap, tap} from 'rxjs';
 import {IkoWidgetParams} from '../../../models';
@@ -78,6 +83,7 @@ export class IkoWidgetComponent {
     [WidgetType.INTERACTIVE_TABLE]: IkoWidgetInteractiveTableComponent,
     [WidgetType.COLLECTION]: IkoWidgetCollectionComponent,
     [WidgetType.MAP]: IkoWidgetMapComponent,
+    [WidgetType.PERSON_CARD]: WidgetPersonCardComponent,
   };
 
   constructor(

@@ -1,0 +1,83 @@
+<!--
+  ~ Copyright 2015-2026 Ritense BV, the Netherlands.
+  ~
+  ~ Licensed under EUPL, Version 1.2 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~ https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" basis,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+@let data = $widgetData();
+
+<div class="valtimo-widget-person-card__avatar" [attr.aria-hidden]="true">
+  @if (data) {
+    <span class="valtimo-widget-person-card__initials">{{ $initials() }}</span>
+  } @else {
+    <cds-skeleton-text [lines]="1" [maxLineWidth]="60"></cds-skeleton-text>
+  }
+</div>
+
+<div class="valtimo-widget-person-card__body">
+  <h3 class="valtimo-widget-person-card__name">
+    @if (data) {
+      {{ data.fullName }}
+    } @else {
+      <cds-skeleton-text [lines]="1" [maxLineWidth]="60"></cds-skeleton-text>
+    }
+  </h3>
+
+  @if ($subtitle()) {
+    <p class="valtimo-widget-person-card__subtitle">{{ $subtitle() }}</p>
+  }
+
+  <dl class="valtimo-widget-person-card__grid">
+    @if (data?.phone) {
+      <div class="valtimo-widget-person-card__field">
+        <svg
+          class="valtimo-widget-person-card__field-icon"
+          cdsIcon="phone"
+          size="20"
+        ></svg>
+        <span class="valtimo-widget-person-card__field-value">{{ data?.phone }}</span>
+      </div>
+    }
+
+    @if (data?.bsn) {
+      <div class="valtimo-widget-person-card__field">
+        <span class="valtimo-widget-person-card__field-icon valtimo-widget-person-card__bsn-icon">
+          BSN
+        </span>
+        <span class="valtimo-widget-person-card__field-value">{{ data?.bsn }}</span>
+      </div>
+    }
+
+    @if (data?.email) {
+      <div class="valtimo-widget-person-card__field">
+        <svg
+          class="valtimo-widget-person-card__field-icon"
+          cdsIcon="email"
+          size="20"
+        ></svg>
+        <span class="valtimo-widget-person-card__field-value">{{ data?.email }}</span>
+      </div>
+    }
+
+    @if ($formattedBirthDate()) {
+      <div class="valtimo-widget-person-card__field">
+        <svg
+          class="valtimo-widget-person-card__field-icon"
+          cdsIcon="calendar"
+          size="20"
+        ></svg>
+        <span class="valtimo-widget-person-card__field-value">{{ $formattedBirthDate() }}</span>
+      </div>
+    }
+  </dl>
+</div>

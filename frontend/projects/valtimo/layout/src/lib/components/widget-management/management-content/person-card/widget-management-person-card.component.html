@@ -15,368 +15,215 @@
   -->
 
 <form [formGroup]="form">
-  <div
+  <p class="valtimo-widget-management-person-card__description">
+    {{ 'widgetTabManagement.content.person-card.description' | translate }}
+  </p>
+
+  <section
     *ngIf="$showTitleInput()"
-    class="valtimo-widget-management-person-card__title-form"
+    class="valtimo-widget-management-person-card__section valtimo-widget-management-person-card__section--title"
   >
-    <cds-text-label class="valtimo-widget-management-person-card__input">
+    <div class="valtimo-widget-management-person-card__field">
+      <cds-text-label class="valtimo-widget-management-person-card__title-input">
+        <v-input-label
+          [title]="'widgetTabManagement.content.widgetTitle' | translate"
+          [tooltip]="'widgetTabManagement.content.widgetTitleTooltip' | translate"
+        >
+        </v-input-label>
+
+        <input
+          formControlName="widgetTitle"
+          cdsText
+          [attr.data-test-id]="testIds.widgetTitleInput"
+          [placeholder]="'widgetTabManagement.content.widgetTitlePlaceholder' | translate"
+          type="text"
+        />
+      </cds-text-label>
+    </div>
+
+    <div class="valtimo-widget-management-person-card__field">
+      <valtimo-mdi-icon-selector
+        [cdsLayer]="1"
+        formControlName="widgetIcon"
+      ></valtimo-mdi-icon-selector>
+    </div>
+  </section>
+
+  <div class="valtimo-widget-management-person-card__action-button-section">
+    <ng-content></ng-content>
+  </div>
+
+  <section class="valtimo-widget-management-person-card__section">
+    <div
+      class="valtimo-widget-management-person-card__field valtimo-widget-management-person-card__field--full"
+    >
       <v-input-label
-        [title]="'widgetTabManagement.content.widgetTitle' | translate"
-        [tooltip]="'widgetTabManagement.content.widgetTitleTooltip' | translate"
+        [title]="'widgetTabManagement.content.person-card.fullNameLabel' | translate"
       >
       </v-input-label>
 
-      <input
-        formControlName="widgetTitle"
-        cdsText
-        [attr.data-test-id]="testIds.widgetTitleInput"
-        [placeholder]="'widgetTabManagement.content.widgetTitlePlaceholder' | translate"
-        type="text"
-      />
-    </cds-text-label>
-
-    <valtimo-mdi-icon-selector
-      [cdsLayer]="1"
-      formControlName="widgetIcon"
-    ></valtimo-mdi-icon-selector>
-  </div>
-
-  <ng-content></ng-content>
-
-  <section class="valtimo-widget-management-person-card__section">
-    <h3 class="valtimo-widget-management-person-card__section-title">
-      {{ 'widgetTabManagement.content.person-card.avatar.title' | translate }}
-    </h3>
-
-    <p class="valtimo-widget-management-person-card__section-description">
-      {{ 'widgetTabManagement.content.person-card.avatar.description' | translate }}
-    </p>
-
-    <div class="valtimo-widget-management-person-card__row">
-      <div class="valtimo-widget-management-person-card__field">
-        <v-input-label
-          [title]="
-            'widgetTabManagement.content.person-card.avatar.firstInitialLabel' | translate
-          "
-        >
-        </v-input-label>
-
-        @if ($widgetContext() === 'case') {
-          <valtimo-value-path-selector
-            *ngIf="params$ | async as params"
-            [attr.data-test-id]="testIds.firstInitialInput"
-            formControlName="firstInitialPath"
-            [caseDefinitionKey]="params?.caseDefinitionKey"
-            [caseDefinitionVersionTag]="params?.caseDefinitionVersionTag"
-          ></valtimo-value-path-selector>
-        } @else {
-          <cds-text-label>
-            <input
-              cdsText
-              [attr.data-test-id]="testIds.firstInitialInput"
-              formControlName="firstInitialPath"
-              [placeholder]="
-                'widgetTabManagement.content.person-card.avatar.firstInitialPlaceholder'
-                  | translate
-              "
-              type="text"
-            />
-          </cds-text-label>
-        }
-      </div>
-
-      <div class="valtimo-widget-management-person-card__field">
-        <v-input-label
-          [title]="
-            'widgetTabManagement.content.person-card.avatar.secondInitialLabel' | translate
-          "
-        >
-        </v-input-label>
-
-        @if ($widgetContext() === 'case') {
-          <valtimo-value-path-selector
-            *ngIf="params$ | async as params"
-            [attr.data-test-id]="testIds.secondInitialInput"
-            formControlName="secondInitialPath"
-            [caseDefinitionKey]="params?.caseDefinitionKey"
-            [caseDefinitionVersionTag]="params?.caseDefinitionVersionTag"
-          ></valtimo-value-path-selector>
-        } @else {
-          <cds-text-label>
-            <input
-              cdsText
-              [attr.data-test-id]="testIds.secondInitialInput"
-              formControlName="secondInitialPath"
-              [placeholder]="
-                'widgetTabManagement.content.person-card.avatar.secondInitialPlaceholder'
-                  | translate
-              "
-              type="text"
-            />
-          </cds-text-label>
-        }
-      </div>
-    </div>
-  </section>
-
-  <section class="valtimo-widget-management-person-card__section">
-    <h3 class="valtimo-widget-management-person-card__section-title">
-      {{ 'widgetTabManagement.content.person-card.heading.title' | translate }}
-    </h3>
-
-    <p class="valtimo-widget-management-person-card__section-description">
-      {{ 'widgetTabManagement.content.person-card.heading.description' | translate }}
-    </p>
-
-    <div class="valtimo-widget-management-person-card__row">
-      <div class="valtimo-widget-management-person-card__field">
-        <v-input-label
-          [title]="
-            'widgetTabManagement.content.person-card.heading.displayNameLabel' | translate
-          "
-        >
-        </v-input-label>
-
-        @if ($widgetContext() === 'case') {
-          <valtimo-value-path-selector
-            *ngIf="params$ | async as params"
-            [attr.data-test-id]="testIds.displayNameInput"
-            formControlName="displayNamePath"
-            [caseDefinitionKey]="params?.caseDefinitionKey"
-            [caseDefinitionVersionTag]="params?.caseDefinitionVersionTag"
-          ></valtimo-value-path-selector>
-        } @else {
-          <cds-text-label>
-            <input
-              cdsText
-              [attr.data-test-id]="testIds.displayNameInput"
-              formControlName="displayNamePath"
-              [placeholder]="
-                'widgetTabManagement.content.person-card.heading.displayNamePlaceholder'
-                  | translate
-              "
-              type="text"
-            />
-          </cds-text-label>
-        }
-      </div>
-
-      <div class="valtimo-widget-management-person-card__field">
-        <v-input-label
-          [title]="
-            'widgetTabManagement.content.person-card.heading.subtitleLabel' | translate
-          "
-        >
-        </v-input-label>
-
-        @if ($widgetContext() === 'case') {
-          <valtimo-value-path-selector
-            *ngIf="params$ | async as params"
-            [attr.data-test-id]="testIds.subtitleInput"
-            formControlName="subtitlePath"
-            [caseDefinitionKey]="params?.caseDefinitionKey"
-            [caseDefinitionVersionTag]="params?.caseDefinitionVersionTag"
-          ></valtimo-value-path-selector>
-        } @else {
-          <cds-text-label>
-            <input
-              cdsText
-              [attr.data-test-id]="testIds.subtitleInput"
-              formControlName="subtitlePath"
-              [placeholder]="
-                'widgetTabManagement.content.person-card.heading.subtitlePlaceholder' | translate
-              "
-              type="text"
-            />
-          </cds-text-label>
-        }
-      </div>
-    </div>
-  </section>
-
-  <section class="valtimo-widget-management-person-card__section">
-    <h3 class="valtimo-widget-management-person-card__section-title">
-      {{ 'widgetTabManagement.content.person-card.contactInfo.title' | translate }}
-    </h3>
-
-    <p class="valtimo-widget-management-person-card__section-description">
-      {{ 'widgetTabManagement.content.person-card.contactInfo.description' | translate }}
-    </p>
-
-    <div formArrayName="contactFields" class="valtimo-widget-management-person-card__contact-list">
-      @for (contactField of contactFields.controls; track $index) {
-        <div
-          [formGroupName]="$index"
-          class="valtimo-widget-management-person-card__contact-row"
-        >
-          <div class="valtimo-widget-management-person-card__field">
-            <v-input-label
-              [title]="
-                'widgetTabManagement.content.person-card.contactInfo.iconLabel' | translate
-              "
-            >
-            </v-input-label>
-
-            <cds-text-label>
-              <input
-                cdsText
-                [attr.data-test-id]="testIds.contactIconInput"
-                formControlName="icon"
-                [placeholder]="
-                  'widgetTabManagement.content.person-card.contactInfo.iconPlaceholder' | translate
-                "
-                type="text"
-              />
-            </cds-text-label>
-          </div>
-
-          <div class="valtimo-widget-management-person-card__field">
-            <v-input-label
-              [title]="
-                'widgetTabManagement.content.person-card.contactInfo.contactLabel' | translate
-              "
-            >
-            </v-input-label>
-
-            <cds-text-label>
-              <input
-                cdsText
-                [attr.data-test-id]="testIds.contactLabelInput"
-                formControlName="label"
-                [placeholder]="
-                  'widgetTabManagement.content.person-card.contactInfo.contactLabelPlaceholder'
-                    | translate
-                "
-                type="text"
-              />
-            </cds-text-label>
-          </div>
-
-          <div class="valtimo-widget-management-person-card__field">
-            <v-input-label
-              [title]="
-                'widgetTabManagement.content.person-card.contactInfo.sourcePathLabel' | translate
-              "
-            >
-            </v-input-label>
-
-            <cds-text-label>
-              <input
-                cdsText
-                [attr.data-test-id]="testIds.contactSourcePathInput"
-                formControlName="sourcePath"
-                [placeholder]="
-                  'widgetTabManagement.content.person-card.contactInfo.sourcePathPlaceholder'
-                    | translate
-                "
-                type="text"
-              />
-            </cds-text-label>
-          </div>
-
-          <button
-            cdsButton="danger--ghost"
-            [iconOnly]="true"
-            [attr.data-test-id]="testIds.deleteContactFieldButton"
-            class="valtimo-widget-management-person-card__delete-button"
-            (click)="onDeleteContactFieldClick($index)"
-          >
-            <svg cdsIcon="trash-can" size="16"></svg>
-          </button>
-        </div>
+      @if ($widgetContext() === 'case') {
+        <valtimo-value-path-selector
+          *ngIf="params$ | async as params"
+          [attr.data-test-id]="testIds.fullNameInput"
+          formControlName="fullName"
+          [caseDefinitionKey]="params?.caseDefinitionKey"
+          [caseDefinitionVersionTag]="params?.caseDefinitionVersionTag"
+        ></valtimo-value-path-selector>
+      } @else {
+        <cds-text-label>
+          <input
+            cdsText
+            [attr.data-test-id]="testIds.fullNameInput"
+            formControlName="fullName"
+            [placeholder]="
+              'widgetTabManagement.content.person-card.pathPlaceholder' | translate
+            "
+            type="text"
+          />
+        </cds-text-label>
       }
     </div>
 
-    <div class="valtimo-widget-management-person-card__add-button">
-      <button
-        cdsButton="primary"
-        size="sm"
-        [attr.data-test-id]="testIds.addContactFieldButton"
-        (click)="onAddContactFieldClick()"
+    <div class="valtimo-widget-management-person-card__field">
+      <v-input-label
+        [title]="'widgetTabManagement.content.person-card.birthDateLabel' | translate"
       >
-        {{ 'widgetTabManagement.content.person-card.contactInfo.add' | translate }}
+      </v-input-label>
 
-        <svg class="cds--btn__icon" cdsIcon="add" size="16"></svg>
-      </button>
-    </div>
-  </section>
-
-  <section class="valtimo-widget-management-person-card__section">
-    <h3 class="valtimo-widget-management-person-card__section-title">
-      {{ 'widgetTabManagement.content.person-card.household.title' | translate }}
-    </h3>
-
-    <p class="valtimo-widget-management-person-card__section-description">
-      {{ 'widgetTabManagement.content.person-card.household.description' | translate }}
-    </p>
-
-    <div class="valtimo-widget-management-person-card__row">
-      <div class="valtimo-widget-management-person-card__field">
-        <v-input-label
-          [title]="
-            'widgetTabManagement.content.person-card.household.arrayPathLabel' | translate
-          "
-        >
-        </v-input-label>
-
+      @if ($widgetContext() === 'case') {
+        <valtimo-value-path-selector
+          *ngIf="params$ | async as params"
+          [attr.data-test-id]="testIds.birthDateInput"
+          formControlName="birthDate"
+          [caseDefinitionKey]="params?.caseDefinitionKey"
+          [caseDefinitionVersionTag]="params?.caseDefinitionVersionTag"
+        ></valtimo-value-path-selector>
+      } @else {
         <cds-text-label>
           <input
             cdsText
-            [attr.data-test-id]="testIds.householdArrayPathInput"
-            formControlName="householdArrayPath"
+            [attr.data-test-id]="testIds.birthDateInput"
+            formControlName="birthDate"
             [placeholder]="
-              'widgetTabManagement.content.person-card.household.arrayPathPlaceholder'
-                | translate
+              'widgetTabManagement.content.person-card.pathPlaceholder' | translate
             "
             type="text"
           />
         </cds-text-label>
-      </div>
+      }
     </div>
 
-    <div class="valtimo-widget-management-person-card__row">
-      <div class="valtimo-widget-management-person-card__field">
-        <v-input-label
-          [title]="
-            'widgetTabManagement.content.person-card.household.itemNameLabel' | translate
-          "
-        >
-        </v-input-label>
+    <div class="valtimo-widget-management-person-card__field">
+      <v-input-label [title]="'widgetTabManagement.content.person-card.bsnLabel' | translate">
+      </v-input-label>
 
+      @if ($widgetContext() === 'case') {
+        <valtimo-value-path-selector
+          *ngIf="params$ | async as params"
+          [attr.data-test-id]="testIds.bsnInput"
+          formControlName="bsn"
+          [caseDefinitionKey]="params?.caseDefinitionKey"
+          [caseDefinitionVersionTag]="params?.caseDefinitionVersionTag"
+        ></valtimo-value-path-selector>
+      } @else {
         <cds-text-label>
           <input
             cdsText
-            [attr.data-test-id]="testIds.householdItemNameInput"
-            formControlName="householdItemNamePath"
+            [attr.data-test-id]="testIds.bsnInput"
+            formControlName="bsn"
             [placeholder]="
-              'widgetTabManagement.content.person-card.household.itemNamePlaceholder' | translate
+              'widgetTabManagement.content.person-card.pathPlaceholder' | translate
             "
             type="text"
           />
         </cds-text-label>
-      </div>
+      }
+    </div>
 
-      <div class="valtimo-widget-management-person-card__field">
-        <v-input-label
-          [title]="
-            'widgetTabManagement.content.person-card.household.itemSubtitleLabel' | translate
-          "
-        >
-        </v-input-label>
+    <div class="valtimo-widget-management-person-card__field">
+      <v-input-label
+        [title]="'widgetTabManagement.content.person-card.phoneLabel' | translate"
+      >
+      </v-input-label>
 
+      @if ($widgetContext() === 'case') {
+        <valtimo-value-path-selector
+          *ngIf="params$ | async as params"
+          [attr.data-test-id]="testIds.phoneInput"
+          formControlName="phone"
+          [caseDefinitionKey]="params?.caseDefinitionKey"
+          [caseDefinitionVersionTag]="params?.caseDefinitionVersionTag"
+        ></valtimo-value-path-selector>
+      } @else {
         <cds-text-label>
           <input
             cdsText
-            [attr.data-test-id]="testIds.householdItemSubtitleInput"
-            formControlName="householdItemSubtitlePath"
+            [attr.data-test-id]="testIds.phoneInput"
+            formControlName="phone"
             [placeholder]="
-              'widgetTabManagement.content.person-card.household.itemSubtitlePlaceholder'
-                | translate
+              'widgetTabManagement.content.person-card.pathPlaceholder' | translate
             "
             type="text"
           />
         </cds-text-label>
-      </div>
+      }
+    </div>
+
+    <div class="valtimo-widget-management-person-card__field">
+      <v-input-label
+        [title]="'widgetTabManagement.content.person-card.emailLabel' | translate"
+      >
+      </v-input-label>
+
+      @if ($widgetContext() === 'case') {
+        <valtimo-value-path-selector
+          *ngIf="params$ | async as params"
+          [attr.data-test-id]="testIds.emailInput"
+          formControlName="email"
+          [caseDefinitionKey]="params?.caseDefinitionKey"
+          [caseDefinitionVersionTag]="params?.caseDefinitionVersionTag"
+        ></valtimo-value-path-selector>
+      } @else {
+        <cds-text-label>
+          <input
+            cdsText
+            [attr.data-test-id]="testIds.emailInput"
+            formControlName="email"
+            [placeholder]="
+              'widgetTabManagement.content.person-card.pathPlaceholder' | translate
+            "
+            type="text"
+          />
+        </cds-text-label>
+      }
+    </div>
+
+    <div class="valtimo-widget-management-person-card__field">
+      <v-input-label [title]="'widgetTabManagement.content.person-card.cityLabel' | translate">
+      </v-input-label>
+
+      @if ($widgetContext() === 'case') {
+        <valtimo-value-path-selector
+          *ngIf="params$ | async as params"
+          [attr.data-test-id]="testIds.cityInput"
+          formControlName="city"
+          [caseDefinitionKey]="params?.caseDefinitionKey"
+          [caseDefinitionVersionTag]="params?.caseDefinitionVersionTag"
+        ></valtimo-value-path-selector>
+      } @else {
+        <cds-text-label>
+          <input
+            cdsText
+            [attr.data-test-id]="testIds.cityInput"
+            formControlName="city"
+            [placeholder]="
+              'widgetTabManagement.content.person-card.pathPlaceholder' | translate
+            "
+            type="text"
+          />
+        </cds-text-label>
+      }
     </div>
   </section>
 </form>

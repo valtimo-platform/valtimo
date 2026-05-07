@@ -22,6 +22,7 @@ import {
   WidgetFieldsContent,
   WidgetInteractiveTableContent,
   WidgetMapContent,
+  WidgetPersonCardContent,
   WidgetTableContent,
 } from './widget-content.model';
 import {WidgetDisplayType} from './widget-display.model';
@@ -146,6 +147,11 @@ interface MapWidget extends BasicWidget {
   properties: WidgetMapContent;
 }
 
+interface PersonCardWidget extends BasicWidget {
+  type: WidgetType.PERSON_CARD;
+  properties: WidgetPersonCardContent;
+}
+
 type Widget =
   | FieldsWidget
   | CollectionWidget
@@ -154,7 +160,8 @@ type Widget =
   | InteractiveTableWidget
   | FormioWidget
   | DividerWidget
-  | MapWidget;
+  | MapWidget
+  | PersonCardWidget;
 
 type WidgetWithUuid = Widget & {
   uuid: string;
@@ -251,6 +258,7 @@ export {
   TableWidget,
   InteractiveTableWidget,
   MapWidget,
+  PersonCardWidget,
   WidgetPackResultItem,
   WidgetPackResultItemsByRow,
   FormioWidgetWidgetWithUuid,

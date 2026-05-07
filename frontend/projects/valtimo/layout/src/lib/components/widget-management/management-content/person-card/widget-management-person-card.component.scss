@@ -17,78 +17,45 @@
 .valtimo-widget-management-person-card {
   display: flex;
   flex-direction: column;
-  gap: 16px;
 
-  &__title-form {
-    padding: 8px 0 16px 16px;
-    background: var(--cds-layer);
-    display: flex;
-    gap: 16px;
-  }
-
-  &__input {
-    max-width: 288px;
-
-    input {
-      background: var(--cds-layer-02);
-    }
-  }
-
-  &__section {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-    padding: 0 16px;
-  }
-
-  &__section-title {
-    font-size: 16px;
-    font-weight: 600;
-    line-height: 22px;
-    margin: 0;
-  }
-
-  &__section-description {
+  &__description {
     font-size: 14px;
     line-height: 20px;
     margin: 0;
+    padding: 0 16px 16px;
     color: var(--cds-text-secondary);
+    border-bottom: 1px solid var(--cds-border-subtle-01);
   }
 
-  &__row {
-    display: flex;
-    gap: 16px;
-    flex-wrap: wrap;
-    margin-top: 8px;
+  &__section {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    column-gap: 16px;
+    row-gap: 16px;
+    padding: 16px;
+    border-bottom: 1px solid var(--cds-border-subtle-01);
+
+    &:last-child {
+      border-bottom: none;
+    }
+  }
+
+  &__action-button-section {
+    border-bottom: 1px solid var(--cds-border-subtle-01);
   }
 
   &__field {
-    flex: 1 1 0;
-    min-width: 240px;
     display: flex;
     flex-direction: column;
     gap: 4px;
+    min-width: 0;
+
+    &--full {
+      grid-column: 1 / -1;
+    }
   }
 
-  &__contact-list {
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-  }
-
-  &__contact-row {
-    display: flex;
-    align-items: flex-end;
-    gap: 16px;
-    flex-wrap: wrap;
-  }
-
-  &__delete-button {
-    flex: 0 0 auto;
-    align-self: flex-end;
-  }
-
-  &__add-button {
-    margin-top: 8px;
+  &__title-input {
+    width: 100%;
   }
 }
