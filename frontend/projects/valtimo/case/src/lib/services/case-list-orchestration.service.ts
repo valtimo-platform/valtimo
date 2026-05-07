@@ -186,8 +186,8 @@ export class CaseListOrchestrationService {
         return res.columns;
       }),
       tap(columns => {
-        this.listService.caseDefinitionKey$.pipe(take(1)).subscribe(_ => {
-          this.paginationService.setPagination(columns);
+        this.listService.caseDefinitionKey$.pipe(take(1)).subscribe(caseDefinitionKey => {
+          this.paginationService.setPagination(columns, caseDefinitionKey);
         });
       })
     );

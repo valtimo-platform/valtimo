@@ -14,12 +14,12 @@
   See the [Map widget documentation](../../../features/case/tabs/widgets.md) for the full list of recognised fields and
   a configuration example.
 
-
 ## Enhancements
 
-* **New enhancement title**
+* **Persistent page sizes per case definition for task list and case list**
 
-  New enhancement explanation.
+  When a user configures the page size for a case definition, either for the task or case list, this is remembered.
+  Next time they visit the task or case list for that case definition, the same page size is shown.
 
 ## Bugfixes
 
