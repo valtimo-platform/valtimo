@@ -7,7 +7,7 @@
   },
   "scripts": {
     "reset": "npx --yes npm-run-all clean installDeps devMode",
-    "clean": "npx rimraf@6 dist .angular dist node_modules package-lock.json",
+    "clean": "npx rimraf@6 dist .angular node_modules package-lock.json",
     "ng": "ng",
     "installDeps": "npm install",
     "devMode": "npm run start",
