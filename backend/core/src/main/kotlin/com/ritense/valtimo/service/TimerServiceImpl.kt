@@ -88,14 +88,13 @@ class TimerServiceImpl(
         }
 
     private fun resolveActivityId(job: Job): String? =
-        job.jobDefinitionId
-            ?.let { jobDefinitionId ->
-                managementService
-                    .createJobDefinitionQuery()
-                    .jobDefinitionId(jobDefinitionId)
-                    .singleResult()
-                    ?.activityId
-            }
+        job.jobDefinitionId?.let { jobDefinitionId ->
+            managementService
+                .createJobDefinitionQuery()
+                .jobDefinitionId(jobDefinitionId)
+                .singleResult()
+                ?.activityId
+        }
 
     private fun parseDueDate(newDate: String): Date =
         try {
