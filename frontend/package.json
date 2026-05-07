@@ -18,6 +18,7 @@
     "startAot": "ng serve --proxy-config proxy.conf.json --aot",
     "startHmr": "ng serve --proxy-config proxy.conf.json --hmr",
     "buildTest": "ng build --configuration production --configuration=test",
+    "prebuild": "test -d dist/valtimo/shared || npm run libs-build-all-cicd",
     "build": "ng build --configuration production",
     "test": "ng test",
     "lint": "ng lint",
