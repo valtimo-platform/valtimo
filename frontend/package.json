@@ -7,11 +7,12 @@
   },
   "scripts": {
     "reset": "npx --yes npm-run-all clean installDeps devMode",
-    "clean": "npx rimraf@6 dist .angular node_modules package-lock.json",
+    "clean": "npx rimraf@6 dist .angular dist node_modules package-lock.json",
     "ng": "ng",
     "installDeps": "npm install",
     "devMode": "npm run start",
     "syncLibDepsToRootDeps": "node scripts/sync-lib-deps.js && npm run prettier:write",
+    "prestart": "test -d dist/valtimo/shared || npm run libs-build-all",
     "start": "node --max_old_space_size=8048 ./node_modules/@angular/cli/bin/ng serve --proxy-config proxy.conf.json",
     "startProd": "node --max_old_space_size=8048 ./node_modules/@angular/cli/bin/ng serve --proxy-config proxy.conf.json --configuration production",
     "startAot": "ng serve --proxy-config proxy.conf.json --aot",
