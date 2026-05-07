@@ -243,7 +243,7 @@ ${timerService.updateActiveTimers(execution.processBusinessKey, execution.getVar
 ### Update specific active timers
 
 ```kotlin
-fun updateActiveTimers(businessKey: String, newDate: String, vararg activityIds: String)
+fun updateActiveTimers(businessKey: String, newDate: String, vararg activityIds: String): Int
 ```
 
 Same as above but restricts the update to timer jobs whose BPMN activity ID is in the supplied list.
