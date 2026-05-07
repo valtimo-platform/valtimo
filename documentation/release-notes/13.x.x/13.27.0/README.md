@@ -31,4 +31,7 @@
 
 ## Bugfixes
 
-* New bugfix.
+* Fixed BPMN diagram viewer pan and zoom not working on the Case details Progress tab and other diagram views.
+
+* Sorting on document fields with type date, datetime, time,
+  or number is now done numerically/chronologically instead of lexicographically.
