@@ -27,6 +27,7 @@ import com.ritense.document.service.result.CreateDocumentResult
 import com.ritense.processdocument.BaseIntegrationTest
 import com.ritense.processdocument.domain.CaseTask
 import com.ritense.processdocument.domain.impl.request.StartProcessForDocumentRequest
+import com.ritense.processdocument.tasksearch.AdvancedSearchRequest
 import com.ritense.processdocument.tasksearch.SearchWithConfigRequest
 import com.ritense.search.domain.DataType
 import com.ritense.search.domain.FieldType
@@ -46,6 +47,7 @@ import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageRequest
+import org.springframework.data.domain.Sort
 import org.springframework.security.test.context.support.WithMockUser
 import org.springframework.transaction.annotation.Transactional
 import java.util.UUID
@@ -459,6 +461,198 @@ class CaseTaskListSearchServiceIntTest : BaseIntegrationTest() {
 
         val noMatchResult = searchTasks(filterNoMatch)
         assertThat(noMatchResult).isEmpty()
+    }
+
+    @Test
+    fun shouldSortTasksByDateFieldChronologicallyAsc() {
+        searchFieldV2Service.create(
+            SearchFieldV2Dto(
+                id = UUID.randomUUID(),
+                ownerId = definition!!.id!!.name(),
+                ownerType = SEARCH_FIELD_OWNER_TYPE,
+                key = "buildDate",
+                title = "Build date",
+                path = "doc:buildDate",
+                order = 5,
+                dataType = DataType.DATE,
+                fieldType = FieldType.SINGLE,
+                matchType = SearchFieldMatchType.EXACT,
+                dropdownDataProvider = null
+            )
+        )
+
+        val docId1 = createDocumentWithProcess("{\"street\": \"A\", \"buildDate\": \"2024-12-01\"}")
+        val docId2 = createDocumentWithProcess("{\"street\": \"B\", \"buildDate\": \"2023-06-15\"}")
+        val docId3 = createDocumentWithProcess("{\"street\": \"C\", \"buildDate\": \"2024-01-20\"}")
+
+        val result = runWithoutAuthorization {
+            caseTaskListSearchService.search(
+                "house",
+                AdvancedSearchRequest(),
+                PageRequest.of(0, 10, Sort.by(Sort.Direction.ASC, "doc:buildDate"))
+            )
+        }
+
+        val docIds = result.content.map { it.documentInstanceId }
+        assertThat(docIds).containsSubsequence(docId2, docId3, docId1)
+    }
+
+    @Test
+    fun shouldSortTasksByDateFieldChronologicallyDesc() {
+        searchFieldV2Service.create(
+            SearchFieldV2Dto(
+                id = UUID.randomUUID(),
+                ownerId = definition!!.id!!.name(),
+                ownerType = SEARCH_FIELD_OWNER_TYPE,
+                key = "buildDate",
+                title = "Build date",
+                path = "doc:buildDate",
+                order = 5,
+                dataType = DataType.DATE,
+                fieldType = FieldType.SINGLE,
+                matchType = SearchFieldMatchType.EXACT,
+                dropdownDataProvider = null
+            )
+        )
+
+        val docId1 = createDocumentWithProcess("{\"street\": \"A\", \"buildDate\": \"2024-12-01\"}")
+        val docId2 = createDocumentWithProcess("{\"street\": \"B\", \"buildDate\": \"2023-06-15\"}")
+        val docId3 = createDocumentWithProcess("{\"street\": \"C\", \"buildDate\": \"2024-01-20\"}")
+
+        val result = runWithoutAuthorization {
+            caseTaskListSearchService.search(
+                "house",
+                AdvancedSearchRequest(),
+                PageRequest.of(0, 10, Sort.by(Sort.Direction.DESC, "doc:buildDate"))
+            )
+        }
+
+        val docIds = result.content.map { it.documentInstanceId }
+        assertThat(docIds).containsSubsequence(docId1, docId3, docId2)
+    }
+
+    @Test
+    fun shouldSortTasksByDateTimeFieldChronologicallyAsc() {
+        searchFieldV2Service.create(
+            SearchFieldV2Dto(
+                id = UUID.randomUUID(),
+                ownerId = definition!!.id!!.name(),
+                ownerType = SEARCH_FIELD_OWNER_TYPE,
+                key = "inspectionDateTime",
+                title = "Inspection date time",
+                path = "doc:inspectionDateTime",
+                order = 6,
+                dataType = DataType.DATETIME,
+                fieldType = FieldType.SINGLE,
+                matchType = SearchFieldMatchType.EXACT,
+                dropdownDataProvider = null
+            )
+        )
+
+        val docId1 = createDocumentWithProcess("{\"street\": \"A\", \"inspectionDateTime\": \"2024-01-01T23:00:00\"}")
+        val docId2 = createDocumentWithProcess("{\"street\": \"B\", \"inspectionDateTime\": \"2024-01-01T08:30:00\"}")
+        val docId3 = createDocumentWithProcess("{\"street\": \"C\", \"inspectionDateTime\": \"2024-01-01T15:45:00\"}")
+
+        val result = runWithoutAuthorization {
+            caseTaskListSearchService.search(
+                "house",
+                AdvancedSearchRequest(),
+                PageRequest.of(0, 10, Sort.by(Sort.Direction.ASC, "doc:inspectionDateTime"))
+            )
+        }
+
+        val docIds = result.content.map { it.documentInstanceId }
+        assertThat(docIds).containsSubsequence(docId2, docId3, docId1)
+    }
+
+    @Test
+    fun shouldSortTasksByNumberFieldNumericallyAsc() {
+        searchFieldV2Service.create(
+            SearchFieldV2Dto(
+                id = UUID.randomUUID(),
+                ownerId = definition!!.id!!.name(),
+                ownerType = SEARCH_FIELD_OWNER_TYPE,
+                key = "floorCount",
+                title = "Floor count",
+                path = "doc:floorCount",
+                order = 7,
+                dataType = DataType.NUMBER,
+                fieldType = FieldType.SINGLE,
+                matchType = SearchFieldMatchType.EXACT,
+                dropdownDataProvider = null
+            )
+        )
+
+        val docId1 = createDocumentWithProcess("{\"street\": \"A\", \"floorCount\": 3}")
+        val docId2 = createDocumentWithProcess("{\"street\": \"B\", \"floorCount\": 20}")
+        val docId3 = createDocumentWithProcess("{\"street\": \"C\", \"floorCount\": 10}")
+
+        val result = runWithoutAuthorization {
+            caseTaskListSearchService.search(
+                "house",
+                AdvancedSearchRequest(),
+                PageRequest.of(0, 10, Sort.by(Sort.Direction.ASC, "doc:floorCount"))
+            )
+        }
+
+        // Without numeric sorting, string order would be "10", "20", "3"
+        val docIds = result.content.map { it.documentInstanceId }
+        assertThat(docIds).containsSubsequence(docId1, docId3, docId2)
+    }
+
+    @Test
+    fun shouldSortTasksByNumberFieldNumericallyDesc() {
+        searchFieldV2Service.create(
+            SearchFieldV2Dto(
+                id = UUID.randomUUID(),
+                ownerId = definition!!.id!!.name(),
+                ownerType = SEARCH_FIELD_OWNER_TYPE,
+                key = "floorCount",
+                title = "Floor count",
+                path = "doc:floorCount",
+                order = 7,
+                dataType = DataType.NUMBER,
+                fieldType = FieldType.SINGLE,
+                matchType = SearchFieldMatchType.EXACT,
+                dropdownDataProvider = null
+            )
+        )
+
+        val docId1 = createDocumentWithProcess("{\"street\": \"A\", \"floorCount\": 3}")
+        val docId2 = createDocumentWithProcess("{\"street\": \"B\", \"floorCount\": 20}")
+        val docId3 = createDocumentWithProcess("{\"street\": \"C\", \"floorCount\": 10}")
+
+        val result = runWithoutAuthorization {
+            caseTaskListSearchService.search(
+                "house",
+                AdvancedSearchRequest(),
+                PageRequest.of(0, 10, Sort.by(Sort.Direction.DESC, "doc:floorCount"))
+            )
+        }
+
+        val docIds = result.content.map { it.documentInstanceId }
+        assertThat(docIds).containsSubsequence(docId2, docId3, docId1)
+    }
+
+    private fun createDocumentWithProcess(contentJson: String): UUID {
+        val content = JsonDocumentContent(contentJson)
+        val document = runWithoutAuthorization {
+            documentService.createDocument(
+                NewDocumentRequest(
+                    definition!!.id().name(),
+                    definition!!.id.caseDefinitionId().key,
+                    definition!!.id.caseDefinitionId().versionTag.version,
+                    content.asJson()
+                )
+            )
+        }
+        val docId = document.resultingDocument().orElseThrow().id()
+        runWithoutAuthorization {
+            operatonProcessJsonSchemaDocumentService.startProcessForDocument(
+                StartProcessForDocumentRequest(docId, "loan-process-demo", mapOf())
+            )
+        }
+        return docId.id
     }
 
     private fun createDocumentAndTwoProcesses(streetName: String, documentName: String) {

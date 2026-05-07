@@ -4,11 +4,11 @@
 
 | Category                    | Features | Functions | ✅ Covered | ❌ Not Covered |
 |-----------------------------|----------|-----------|------------|----------------|
-| User Features (ROLE_USER)   | 5        | 21        | 6          | 15             |
-| Admin Features (ROLE_ADMIN) | 15       | 328       | 126        | 199            |
-| **Total**                   | **20**   | **349**   | **132**    | **214**        |
+| User Features (ROLE_USER)   | 5        | 21        | 12         | 9              |
+| Admin Features (ROLE_ADMIN) | 15       | 328       | 133        | 192            |
+| **Total**                   | **20**   | **349**   | **145**    | **201**        |
 
-**Coverage:** `132 / 349` — `37.8%`
+**Coverage:** `145 / 349` — `41.5%`
 
 ---
 
@@ -41,12 +41,12 @@
 
 | #   | Function                           | Test Scenarios                                        | Coverage | Notes                                           |
 |:----|:-----------------------------------|:------------------------------------------------------|:--------:|:------------------------------------------------|
-| 2.1 | View cases overview per definition | Display cases overview for specific definition        |    ❌    |                                                 |
-| 2.2 | View case details (tabs)           | Navigate and view case details with tabs              |    ❌    |                                                 |
-| 2.3 | Search/filter cases                | Search cases by criteria · Filter cases using filters |    ❌    |                                                 |
-| 2.4 | View case documents                | Display list of case documents                        |    ❌    |                                                 |
-| 2.5 | View case progress/status          | View current case progress and status                 |    ❌    |                                                 |
-| 2.6 | Execute tasks within case          | Execute task from case detail view                    |    ❌    |                                                 |
+| 2.1 | View cases overview per definition | Display cases overview for specific definition        |    ✅    | user-cases.spec.ts                              |
+| 2.2 | View case details (tabs)           | Navigate and view case details with tabs              |    ✅    | user-cases.spec.ts                              |
+| 2.3 | Search/filter cases                | Search cases by criteria · Filter cases using filters |    ✅    | user-cases.spec.ts                              |
+| 2.4 | View case documents                | Display list of case documents                        |    ✅    | user-cases.spec.ts                              |
+| 2.5 | View case progress/status          | View current case progress and status                 |    ✅    | user-cases.spec.ts                              |
+| 2.6 | Execute tasks within case          | Execute task from case detail view                    |    ✅    | user-cases.spec.ts                              |
 
 ---
 
@@ -265,10 +265,10 @@
 
 | #     | Function            | Test Scenarios                         | Coverage | Notes                                           |
 |:------|:--------------------|:---------------------------------------|:--------:|:------------------------------------------------|
-| 6.98  | Configure case sync | Configure case details synchronization |    ❌    |                                                 |
-| 6.99  | Link case type      | Link case type                         |    ❌    |                                                 |
-| 6.100 | Edit case type      | Edit case type                         |    ❌    |                                                 |
-| 6.101 | Delete case type    | Delete case type                       |    ❌    |                                                 |
+| 6.98  | Configure case sync | Configure case details synchronization |    ✅    | case-details-management-zgw-general.spec.ts     |
+| 6.99  | Link case type      | Link case type                         |    ✅    | case-details-management-zgw-general.spec.ts     |
+| 6.100 | Edit case type      | Edit case type                         |    ✅    | case-details-management-zgw-general.spec.ts     |
+| 6.101 | Delete case type    | Delete case type                       |    ✅    | case-details-management-zgw-general.spec.ts     |
 
 #### 6Q · ZGW — Document Columns
 
@@ -291,9 +291,9 @@
 
 | #     | Function        | Test Scenarios  | Coverage | Notes                                           |
 |:------|:----------------|:----------------|:--------:|:------------------------------------------------|
-| 6.109 | View keywords   | View keywords   |    ❌    |                                                 |
-| 6.110 | Add keyword     | Add keyword     |    ❌    |                                                 |
-| 6.111 | Search keywords | Search keywords |    ❌    |                                                 |
+| 6.109 | View keywords   | View keywords   |    ✅    | case-details-management-zgw-keywords.spec.ts    |
+| 6.110 | Add keyword     | Add keyword     |    ✅    | case-details-management-zgw-keywords.spec.ts    |
+| 6.111 | Search keywords | Search keywords |    ✅    | case-details-management-zgw-keywords.spec.ts    |
 
 ---
 
@@ -727,8 +727,8 @@
 |:-------------------------|:-------:|
 | Total Features           |   20    |
 | Total Functions          |   349   |
-| ✅ Covered by Playwright |   132   |
-| ❌ Not covered           |   214   |
+| ✅ Covered by Playwright |   145   |
+| ❌ Not covered           |   201   |
 | ⏳ In progress           |    1    |
 | `N/A` Not applicable     |    2    |
-| **Coverage %**           | **37.8%** |
+| **Coverage %**           | **41.5%** |
