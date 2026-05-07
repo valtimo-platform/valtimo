@@ -1443,6 +1443,7 @@
     },
     "successNotification": "Process deployed successfully",
     "errorNotification": "Process failed to deploy",
+    "alreadyExistsNotification": "Process definition already exists",
     "deleteNotification": "Process deleted successfully",
     "upload": {
       "modalTitle": "Upload process definition",
@@ -1451,10 +1452,10 @@
       "buttonText": "Select file",
       "success": "Deployment successful",
       "failure": "Deployment failed",
-      "duplicateKey": "A process with the same key already exists in this building block",
+      "duplicateKey": "A process with the same key already exists",
       "replaceTitle": "Replace existing process?",
-      "replaceContent": "A process with the same key already exists in this building block. Do you want to replace it?",
-      "replaceContentWithDuplicates": "A process with the same key already exists in this building block: {{duplicates}}. Do you want to replace it?",
+      "replaceContent": "A process with the same key already exists. Do you want to replace it?",
+      "replaceContentWithDuplicates": "A process with the same key already exists: {{duplicates}}. Do you want to replace it?",
       "replaceConfirm": "Replace"
     },
     "canInitializeDocument": "Starts case",
