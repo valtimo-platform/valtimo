@@ -70,7 +70,7 @@ Information on all methods can be found in the [correlation service documentatio
 
 ## JobService
 
-This process bean provides a way to manipulate jobs within the current process or related to a specific case (business key).
+This process bean provides a way to manipulate jobs within the current process.
 
 ```kotlin
 fun updateTimerDueDateByActivityId(dueDateString: String, activityId: String, execution: DelegateExecution)
