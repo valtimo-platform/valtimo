@@ -13,3 +13,14 @@
   the [PDOK Locatieserver](https://api.pdok.nl/bzk/locatieserver/search/v3_1/ui/) and renders the result as a `Point`.
   See the [Map widget documentation](../../../features/case/tabs/widgets.md) for the full list of recognised fields and
   a configuration example.
+
+
+## Enhancements
+
+* **New enhancement title**
+
+  New enhancement explanation.
+
+## Bugfixes
+
+* New bugfix.
