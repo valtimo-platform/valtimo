@@ -265,7 +265,7 @@ export const environment: ValtimoConfig = {
     enableTaskPanel: true,
     enablePbacDocumentenApiDocuments: true,
     enableSuppressDocumentError: false,
-    enableGenericCaseList: true,
+    enableGenericCaseList: false,
   },
   csp: cspHeaderParamsDev,
   formioOptions: {
