@@ -57,6 +57,7 @@ import {BehaviorSubject, combineLatest, map, Observable, switchMap, take, tap} f
 import {DocumentObjectenApiSync} from '../../models';
 import {DocumentObjectenApiSyncService} from '../../services';
 import {filter} from 'rxjs/operators';
+import {ZGW_CASE_SYNC_TEST_IDS} from '../../../../constants';
 
 @Component({
   selector: 'valtimo-document-objecten-api-sync',
@@ -121,6 +122,7 @@ export class DocumentObjectenApiSyncComponent implements OnInit {
     return this.formGroup.get('enabled') ?? null;
   }
 
+  public readonly testIds = ZGW_CASE_SYNC_TEST_IDS;
   public readonly valid$ = new BehaviorSubject<boolean>(false);
   public readonly hasConfigurationIssue$ =
     this.configurationIssueService.hasIssue$('zaakdetail-sync');

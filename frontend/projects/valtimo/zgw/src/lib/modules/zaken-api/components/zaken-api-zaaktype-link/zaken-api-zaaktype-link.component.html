@@ -28,13 +28,21 @@
 
         @if (canEdit$ | async) {
           <div class="valtimo-zaak-type-link__card-controls">
-            <button cdsButton="tertiary" (click)="openModal(zaakTypeLink)">
+            <button
+              cdsButton="tertiary"
+              [attr.data-test-id]="testIds.editButton"
+              (click)="openModal(zaakTypeLink)"
+            >
               {{ 'interface.edit' | translate }}
 
               <svg cdsIcon="edit" size="16" class="cds--btn__icon"></svg>
             </button>
 
-            <button cdsButton="danger" (click)="removeZaakTypeLink()">
+            <button
+              cdsButton="danger"
+              [attr.data-test-id]="testIds.deleteButton"
+              (click)="removeZaakTypeLink()"
+            >
               {{ 'interface.delete' | translate }}
 
               <svg cdsIcon="trash-can" size="16" class="cds--btn__icon"></svg>
@@ -70,6 +78,7 @@
       <button
         cdsButton="primary"
         class="valtimo-zaak-type-link__link-button"
+        [attr.data-test-id]="testIds.linkButton"
         (click)="openModal(null)"
       >
         {{ 'openZaak.linkZaakType' | translate }}
@@ -98,6 +107,7 @@
     <section cdsModalContent class="valtimo-zaak-type-link-modal__content">
       <cds-select
         [label]="'openZaak.selectZaakTypeForCase' | translate"
+        [attr.data-test-id]="testIds.modalZaakTypeSelect"
         [(ngModel)]="this.zaakTypeLinkRequest.zaakTypeUrl"
       >
         <option value="default">{{ 'openZaak.selectZaakType' | translate }}</option>
@@ -111,6 +121,7 @@
 
       <cds-select
         [label]="'openZaak.selectZakenApiPluginForCase' | translate"
+        [attr.data-test-id]="testIds.modalPluginSelect"
         [(ngModel)]="this.zaakTypeLinkRequest.zakenApiPluginConfigurationId"
       >
         <option value="default">{{ 'openZaak.selectZakenApiPlugin' | translate }}</option>
@@ -134,12 +145,14 @@
           cdsLayer="1"
           placeholder="RSIN"
           type="text"
+          [attr.data-test-id]="testIds.modalRsinInput"
           [(ngModel)]="this.zaakTypeLinkRequest.rsin"
         />
       </cds-text-label>
 
       <cds-toggle
         [label]="'openZaak.autoCreateForCase' | translate"
+        [attr.data-test-id]="testIds.modalAutoCreateToggle"
         [checked]="this.zaakTypeLinkRequest.createWithDossier"
         (checkedChange)="onCheckedChange($event)"
       >
@@ -147,12 +160,17 @@
     </section>
 
     <cds-modal-footer>
-      <button cdsButton="secondary" (click)="closeModal()">
+      <button
+        cdsButton="secondary"
+        [attr.data-test-id]="testIds.modalCancelButton"
+        (click)="closeModal()"
+      >
         {{ 'interface.cancel' | translate }}
       </button>
 
       <button
         cdsButton="primary"
+        [attr.data-test-id]="testIds.modalSubmitButton"
         [disabled]="!this.zaakTypeLinkRequest.zaakTypeUrl"
         (click)="submit()"
       >

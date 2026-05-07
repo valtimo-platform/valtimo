@@ -34,6 +34,7 @@ import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
+import org.springframework.web.bind.annotation.PutMapping
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RequestPart
@@ -90,17 +91,45 @@ class BuildingBlockProcessResource(
     }
 
     @PostMapping(
+        value = ["/{key}/version/{versionTag}/process-definition"],
+        consumes = [MediaType.MULTIPART_FORM_DATA_VALUE],
+        produces = [MediaType.APPLICATION_JSON_VALUE]
+    )
+    @Transactional
+    fun createProcessDefinitionForBuildingBlock(
+        @PathVariable key: String,
+        @PathVariable versionTag: String,
+        @RequestPart(name = "file") bpmn: MultipartFile,
+        @RequestPart(name = "processLinks") processLinks: List<ProcessLinkCreateRequestDto>,
+        @RequestPart(name = "main", required = false) main: Boolean? = false
+    ): ResponseEntity<Any> {
+        runWithoutAuthorization {
+            buildingBlockDefinitionProcessDefinitionService.deployProcessDefinitionAndProcessLinks(
+                key,
+                versionTag,
+                bpmn,
+                processLinks,
+                null,
+                main ?: false,
+                false
+            )
+        }
+
+        return ResponseEntity.status(HttpStatus.NO_CONTENT).build()
+    }
+
+    @PutMapping(
         value = ["/{key}/version/{versionTag}/process-definition/{processDefinitionId}"],
         consumes = [MediaType.MULTIPART_FORM_DATA_VALUE],
         produces = [MediaType.APPLICATION_JSON_VALUE]
     )
     @Transactional
-    fun deployProcessDefinitionAndProcessLinksForBuildingBlock(
+    fun updateProcessDefinitionForBuildingBlock(
         @PathVariable key: String,
         @PathVariable versionTag: String,
+        @PathVariable processDefinitionId: String,
         @RequestPart(name = "file") bpmn: MultipartFile,
         @RequestPart(name = "processLinks") processLinks: List<ProcessLinkCreateRequestDto>,
-        @RequestPart(name = "processDefinitionId") processDefinitionId: String?,
         @RequestPart(name = "main", required = false) main: Boolean? = false,
         @RequestParam(name = "replace", required = false) replace: Boolean? = false
     ): ResponseEntity<Any> {
