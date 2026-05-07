@@ -28,13 +28,23 @@ Run the following command to install the dependencies: `npm install`.
 #### Start application
 
 - Run the following command to start the Angular application: `npm start`.
+  - The first run will build all libraries into `dist/` (this can take a few minutes).
+    Subsequent runs skip this step as long as `dist/valtimo/shared` exists.
 - When this command has been completed, navigate to `http://localhost:4200/`
-- Library source changes are picked up automatically (no separate build step needed for development).
+- Edits to library `*.ts` source files are picked up automatically by `ng serve` —
+  no manual rebuild required.
 
-#### Build libraries (for publishing)
+#### Rebuilding libraries
 
-Run the following command to build all the Valtimo libraries: `npm run libs-build-all`.
-This is only needed for CI/CD and publishing, not for local development.
+The libraries are wired in via npm workspaces (`projects/valtimo/*` is symlinked into
+`node_modules/@valtimo/*`), so most source changes are picked up live. You only need
+to rebuild a library manually when:
+
+- you change a library's `package.json`, `ng-package.json`, or assets, or
+- you want to refresh the published artifacts in `dist/`.
+
+Use `npm run libs:build:libraryName` for a single library or `npm run libs-build-all`
+to rebuild every library. `npm run libs-build-all` is also what CI/CD and publishing use.
 
 ### Code quality
 
