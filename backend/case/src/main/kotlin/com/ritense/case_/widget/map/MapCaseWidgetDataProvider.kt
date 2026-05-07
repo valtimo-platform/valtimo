@@ -26,6 +26,7 @@ import com.ritense.valueresolver.ValueResolverPropertyKey.Companion.PAGEABLE
 import com.ritense.valueresolver.ValueResolverService
 import com.ritense.widget.map.geojson.GeoJson
 import com.ritense.widget.map.geojson.GeoJsonMapper
+import com.ritense.widget.map.geojson.Wgs84FeatureNormalizer
 import java.util.UUID
 import org.springframework.data.domain.Pageable
 
@@ -33,6 +34,7 @@ class MapCaseWidgetDataProvider(
     private val valueResolverService: ValueResolverService,
     private val objectMapper: ObjectMapper,
     private val geoJsonMappers: List<GeoJsonMapper>,
+    private val wgs84FeatureNormalizer: Wgs84FeatureNormalizer,
 ) : CaseWidgetDataProvider {
 
     override fun supports(widget: Any): Boolean = widget is MapCaseWidget
@@ -52,7 +54,7 @@ class MapCaseWidgetDataProvider(
             val geoJsonNode = objectMapper.convertValue<JsonNode>(resolvedValues[geoJsonSrc.key])
             val mapper = geoJsonMappers.firstOrNull { mapper -> mapper.supports(geoJsonNode) }
                 ?: error("unsupported widget map data: $geoJsonNode")
-            mapper.mapToFeatures(geoJsonNode)
+            mapper.mapToFeatures(geoJsonNode).map(wgs84FeatureNormalizer::normalize)
         }
 
         return widget.getExposedValues { path -> resolvedValues[path] } + mapOf(
