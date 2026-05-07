@@ -23,4 +23,4 @@
 
 ## Bugfixes
 
-* New bugfix.
+* **SmartDocuments compatibility with newer SmartDocuments versions**
