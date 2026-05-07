@@ -17,6 +17,11 @@
 
 ## Enhancements
 
+* **Faster Case Progress tab**
+
+  The Progress tab on the case details page now loads noticeably faster, especially for cases with many associated
+  processes.
+
 * **New enhancement title**
 
   New enhancement explanation.
