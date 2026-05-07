@@ -9,7 +9,7 @@ definition. The sync is one-way (Valtimo → Zaken API) and currently covers two
   corresponding `ZaakNotitie` on the linked zaak.
 
 Both toggles are stored per case definition, so different case types served by the same Zaken API plugin can
-have different sync behaviour.
+have different sync behavior.
 
 ## Configuring zaak sync
 
