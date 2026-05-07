@@ -70,7 +70,7 @@ Information on all methods can be found in the [correlation service documentatio
 
 ## JobService
 
-This process bean provides a way to manipulate jobs within the current process.
+This process bean provides a way to manipulate jobs within the current process or related to a specific case (business key).
 
 ```kotlin
 fun updateTimerDueDateByActivityId(dueDateString: String, activityId: String, execution: DelegateExecution)
@@ -219,4 +219,43 @@ Handles a value for a specified target. The example below shows how a process-va
 
 ```spel
 ${valueResolverDelegateService.handleValue(execution, 'doc:person.firstName', execution.getVariable('firstName'))}
+```
+
+## TimerService
+
+Reschedules active BPMN timer jobs belonging to a case to a new due date. Useful for flows where a case-level date (e.g. exam date) changes and timer-driven activities need to be realigned.
+
+### Update all active timers
+
+```kotlin
+fun updateActiveTimers(businessKey: String, newDate: String): Int
+```
+
+Reschedules every active timer job across all running process instances that share the given business key.
+
+- `businessKey`: the process business key (typically the document/case ID).
+- `newDate`: the new due date as an ISO-8601 instant (e.g. `2026-05-01T00:00:00Z`).
+
+```spel
+${timerService.updateActiveTimers(execution.processBusinessKey, execution.getVariable('newDate'))}
+```
+
+### Update specific active timers
+
+```kotlin
+fun updateActiveTimers(businessKey: String, newDate: String, vararg activityIds: String)
+```
+
+Same as above but restricts the update to timer jobs whose BPMN activity ID is in the supplied list.
+
+- `businessKey`: the process business key (typically the document/case ID).
+- `newDate`: the new due date as an ISO-8601 instant.
+- `activityIds`: one or more BPMN activity IDs to limit which timer jobs are rescheduled.
+
+```spel
+${timerService.updateActiveTimers(execution.processBusinessKey, execution.getVariable('newDate'), 'exam-logistics-wait-for-allocate-students-and-rooms')}
+```
+
+```spel
+${timerService.updateActiveTimers(execution.processBusinessKey, execution.getVariable('newDate'), 'exam-logistics-timer_6_weeks_prior_to_exam_date', 'exam-logistics-timer_4_weeks_prior_to_exam_date')}
 ```
