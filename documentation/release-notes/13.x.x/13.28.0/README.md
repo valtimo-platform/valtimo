@@ -26,3 +26,7 @@
   connection settings; per-case-definition policy lives in the new "Zaak-synchronisatie" panel.
 
   See the [Zaak sync section](../../../features/case/zgw/zaken-api-sync.md) for details.
+
+## Bugfixes
+
+* New bugfix.
