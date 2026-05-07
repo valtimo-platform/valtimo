@@ -17,31 +17,41 @@
 .valtimo-widget-management-person-card {
   display: flex;
   flex-direction: column;
+  gap: 16px;
 
-  &__description {
-    font-size: 14px;
-    line-height: 20px;
-    margin: 0;
-    padding: 0 16px 16px;
-    color: var(--cds-text-secondary);
-    border-bottom: 1px solid var(--cds-border-subtle-01);
+  > form {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
   }
 
-  &__section {
+  &__title-form {
+    padding: 8px 0 16px 16px;
+    background: var(--cds-layer);
+    display: flex;
+    gap: 16px;
+  }
+
+  &__title-input {
+    max-width: 288px;
+
+    input {
+      background: var(--cds-layer-02);
+    }
+  }
+
+  &__person-fields {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
     column-gap: 16px;
     row-gap: 16px;
     padding: 16px;
-    border-bottom: 1px solid var(--cds-border-subtle-01);
+    background: var(--cds-layer);
 
-    &:last-child {
-      border-bottom: none;
+    .cds--text-input,
+    .cds--list-box {
+      background: var(--cds-layer-02);
     }
-  }
-
-  &__action-button-section {
-    border-bottom: 1px solid var(--cds-border-subtle-01);
   }
 
   &__field {
@@ -53,9 +63,5 @@
     &--full {
       grid-column: 1 / -1;
     }
-  }
-
-  &__title-input {
-    width: 100%;
   }
 }

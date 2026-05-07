@@ -61,7 +61,6 @@ export class WidgetManagementPersonCardComponent implements OnInit, OnDestroy {
   @HostBinding('class') public readonly class = 'valtimo-widget-management-person-card';
 
   public readonly $showTitleInput = signal<boolean>(true);
-  public readonly $widgetContext = this.widgetWizardService.$widgetContext;
   public readonly params$ = this.widgetManagementService.params$;
 
   private get person() {

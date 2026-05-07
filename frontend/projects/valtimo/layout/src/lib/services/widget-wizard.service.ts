@@ -118,12 +118,7 @@ export class WidgetWizardService {
         const selectedType = this.$selectedWidget()?.type;
         return (
           !!selectedType &&
-          [
-            WidgetType.FIELDS,
-            WidgetType.COLLECTION,
-            WidgetType.TABLE,
-            WidgetType.PERSON_CARD,
-          ].includes(selectedType)
+          [WidgetType.FIELDS, WidgetType.COLLECTION, WidgetType.TABLE].includes(selectedType)
         );
       },
     },
