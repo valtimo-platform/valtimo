@@ -499,7 +499,8 @@ class BuildingBlockDefinitionProcessDefinitionService(
                 .map { link ->
                     DuplicateProcessDefinitionDescriptor(
                         key = link.processDefinitionKey!!,
-                        name = link.processDefinitionName
+                        name = link.processDefinitionName,
+                        processDefinitionId = link.id.processDefinitionId.id
                     )
                 }
             throw BuildingBlockProcessDefinitionKeyAlreadyExistsException(
