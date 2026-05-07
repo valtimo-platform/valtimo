@@ -20,16 +20,26 @@ package com.ritense.valtimo.autoconfiguration
 import com.ritense.valtimo.contract.annotation.ProcessBean
 import com.ritense.valtimo.service.JobService
 import com.ritense.valtimo.service.JobServiceImpl
+import com.ritense.valtimo.service.TimerService
+import com.ritense.valtimo.service.TimerServiceImpl
 import org.operaton.bpm.engine.ManagementService
+import org.operaton.bpm.engine.RuntimeService
 import org.springframework.boot.autoconfigure.AutoConfiguration
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.context.annotation.Bean
 
 @AutoConfiguration
-class JobAutoConfiguration {
+class ProcessBeanAutoConfiguration {
 
     @Bean
     @ProcessBean
     @ConditionalOnMissingBean(JobService::class)
-    fun jobService(managementService: ManagementService) = JobServiceImpl(managementService)
+    fun jobService(managementService: ManagementService): JobService =
+        JobServiceImpl(managementService)
+
+    @Bean
+    @ProcessBean
+    @ConditionalOnMissingBean(TimerService::class)
+    fun timerService(managementService: ManagementService, runtimeService: RuntimeService): TimerService =
+        TimerServiceImpl(managementService, runtimeService)
 }
