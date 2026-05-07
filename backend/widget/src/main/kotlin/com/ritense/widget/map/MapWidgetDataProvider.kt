@@ -23,11 +23,13 @@ import com.ritense.valueresolver.ValueResolverService
 import com.ritense.widget.WidgetDataProvider
 import com.ritense.widget.map.geojson.GeoJson
 import com.ritense.widget.map.geojson.GeoJsonMapper
+import com.ritense.widget.map.geojson.Wgs84FeatureNormalizer
 
 class MapWidgetDataProvider(
     private val valueResolverService: ValueResolverService,
     private val objectMapper: ObjectMapper,
     private val geoJsonMappers: List<GeoJsonMapper>,
+    private val wgs84FeatureNormalizer: Wgs84FeatureNormalizer,
 ) : WidgetDataProvider<MapWidget> {
 
     override fun supportedWidgetType() = MapWidget::class.java
@@ -39,7 +41,7 @@ class MapWidgetDataProvider(
             val geoJsonNode = objectMapper.convertValue<JsonNode>(resolvedValues[geoJsonSrc.key])
             val mapper = geoJsonMappers.firstOrNull { mapper -> mapper.supports(geoJsonNode) }
                 ?: error("unsupported widget map data: $geoJsonNode")
-            mapper.mapToFeatures(geoJsonNode)
+            mapper.mapToFeatures(geoJsonNode).map(wgs84FeatureNormalizer::normalize)
         }
 
         return widget.getExposedValues { path -> resolvedValues[path] } + mapOf(
