@@ -114,26 +114,15 @@ interface WidgetMapContent {
   geoJsonSources: GeoJsonSource[];
 }
 
-interface PersonCardContactField {
-  icon: string;
-  label: string;
-  sourcePath: string;
-}
-
 interface WidgetPersonCardContent {
-  avatar: {
-    firstInitialPath: string;
-    secondInitialPath: string;
-  };
-  heading: {
-    displayNamePath: string;
-    subtitlePath?: string;
-  };
-  contactFields: PersonCardContactField[];
-  household: {
-    arrayPath: string;
-    itemNamePath: string;
-    itemSubtitlePath?: string;
+  icon?: string;
+  person: {
+    fullName: string;
+    birthDate?: string;
+    bsn?: string;
+    phone?: string;
+    email?: string;
+    city?: string;
   };
 }
 
@@ -159,7 +148,6 @@ export {
   WidgetCollectionContent,
   WidgetMapContent,
   WidgetPersonCardContent,
-  PersonCardContactField,
   WidgetInteractiveTableEventSearchRequest,
   WidgetFilter,
   WidgetDropdownValue,

@@ -78,16 +78,10 @@ export const WIDGET_CONTENT_FIELDS_TEST_IDS = {
 
 export const WIDGET_CONTENT_PERSON_CARD_TEST_IDS = {
   widgetTitleInput: 'widgetContentPersonCardWidgetTitle',
-  firstInitialInput: 'widgetContentPersonCardFirstInitial',
-  secondInitialInput: 'widgetContentPersonCardSecondInitial',
-  displayNameInput: 'widgetContentPersonCardDisplayName',
-  subtitleInput: 'widgetContentPersonCardSubtitle',
-  contactIconInput: 'widgetContentPersonCardContactIcon',
-  contactLabelInput: 'widgetContentPersonCardContactLabel',
-  contactSourcePathInput: 'widgetContentPersonCardContactSourcePath',
-  addContactFieldButton: 'widgetContentPersonCardAddContactField',
-  deleteContactFieldButton: 'widgetContentPersonCardDeleteContactField',
-  householdArrayPathInput: 'widgetContentPersonCardHouseholdArrayPath',
-  householdItemNameInput: 'widgetContentPersonCardHouseholdItemName',
-  householdItemSubtitleInput: 'widgetContentPersonCardHouseholdItemSubtitle',
+  fullNameInput: 'widgetContentPersonCardFullName',
+  birthDateInput: 'widgetContentPersonCardBirthDate',
+  bsnInput: 'widgetContentPersonCardBsn',
+  phoneInput: 'widgetContentPersonCardPhone',
+  emailInput: 'widgetContentPersonCardEmail',
+  cityInput: 'widgetContentPersonCardCity',
 } as const;

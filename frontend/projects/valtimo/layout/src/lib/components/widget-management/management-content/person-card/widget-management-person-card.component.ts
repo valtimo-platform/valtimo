@@ -24,25 +24,18 @@ import {
   signal,
   ViewEncapsulation,
 } from '@angular/core';
-import {
-  AbstractControl,
-  FormArray,
-  FormBuilder,
-  FormGroup,
-  ReactiveFormsModule,
-  Validators,
-} from '@angular/forms';
+import {AbstractControl, FormBuilder, ReactiveFormsModule, Validators} from '@angular/forms';
 import {TranslateModule} from '@ngx-translate/core';
 import {
   InputLabelModule,
   MdiIconSelectorComponent,
   ValuePathSelectorComponent,
 } from '@valtimo/components';
-import {ButtonModule, IconModule, InputModule, LayerModule} from 'carbon-components-angular';
+import {InputModule, LayerModule} from 'carbon-components-angular';
 import {debounceTime, Subscription} from 'rxjs';
 import {WIDGET_CONTENT_PERSON_CARD_TEST_IDS, WIDGET_MANAGEMENT_SERVICE} from '../../../../constants';
 import {IWidgetManagementService} from '../../../../interfaces';
-import {PersonCardContactField, WidgetPersonCardContent} from '../../../../models';
+import {WidgetPersonCardContent} from '../../../../models';
 import {WidgetWizardService} from '../../../../services';
 
 @Component({
@@ -60,8 +53,6 @@ import {WidgetWizardService} from '../../../../services';
     MdiIconSelectorComponent,
     ValuePathSelectorComponent,
     LayerModule,
-    ButtonModule,
-    IconModule,
   ],
 })
 export class WidgetManagementPersonCardComponent implements OnInit, OnDestroy {
@@ -73,48 +64,20 @@ export class WidgetManagementPersonCardComponent implements OnInit, OnDestroy {
   public readonly $widgetContext = this.widgetWizardService.$widgetContext;
   public readonly params$ = this.widgetManagementService.params$;
 
+  private get person() {
+    return (this.widgetWizardService.$widgetContent() as WidgetPersonCardContent | null)?.person;
+  }
+
   public form = this.fb.group({
     widgetTitle: this.fb.control(this.widgetWizardService.$widgetTitle(), Validators.required),
     widgetIcon: this.fb.control(this.widgetWizardService.$widgetIcon()),
-    firstInitialPath: this.fb.control(
-      (this.widgetWizardService.$widgetContent() as WidgetPersonCardContent)?.avatar
-        ?.firstInitialPath ?? '',
-      Validators.required
-    ),
-    secondInitialPath: this.fb.control(
-      (this.widgetWizardService.$widgetContent() as WidgetPersonCardContent)?.avatar
-        ?.secondInitialPath ?? '',
-      Validators.required
-    ),
-    displayNamePath: this.fb.control(
-      (this.widgetWizardService.$widgetContent() as WidgetPersonCardContent)?.heading
-        ?.displayNamePath ?? '',
-      Validators.required
-    ),
-    subtitlePath: this.fb.control(
-      (this.widgetWizardService.$widgetContent() as WidgetPersonCardContent)?.heading
-        ?.subtitlePath ?? ''
-    ),
-    contactFields: this.fb.array<FormGroup>([]),
-    householdArrayPath: this.fb.control(
-      (this.widgetWizardService.$widgetContent() as WidgetPersonCardContent)?.household
-        ?.arrayPath ?? '',
-      Validators.required
-    ),
-    householdItemNamePath: this.fb.control(
-      (this.widgetWizardService.$widgetContent() as WidgetPersonCardContent)?.household
-        ?.itemNamePath ?? '',
-      Validators.required
-    ),
-    householdItemSubtitlePath: this.fb.control(
-      (this.widgetWizardService.$widgetContent() as WidgetPersonCardContent)?.household
-        ?.itemSubtitlePath ?? ''
-    ),
+    fullName: this.fb.control(this.person?.fullName ?? '', Validators.required),
+    birthDate: this.fb.control(this.person?.birthDate ?? ''),
+    bsn: this.fb.control(this.person?.bsn ?? ''),
+    phone: this.fb.control(this.person?.phone ?? ''),
+    email: this.fb.control(this.person?.email ?? ''),
+    city: this.fb.control(this.person?.city ?? ''),
   });
-
-  public get contactFields(): FormArray {
-    return this.form.get('contactFields') as FormArray;
-  }
 
   private readonly _subscriptions = new Subscription();
 
@@ -128,8 +91,6 @@ export class WidgetManagementPersonCardComponent implements OnInit, OnDestroy {
   public ngOnInit(): void {
     if (this.widgetWizardService.$disableTitleInput()) this.hideTitleInput();
 
-    this.initContactFields();
-
     this.widgetWizardService.$widgetContentValid.set(this.form.valid);
 
     this._subscriptions.add(
@@ -137,19 +98,13 @@ export class WidgetManagementPersonCardComponent implements OnInit, OnDestroy {
         this.widgetWizardService.$widgetTitle.set(formValue.widgetTitle ?? '');
         this.widgetWizardService.$widgetIcon.set(formValue.widgetIcon ?? '');
         this.widgetWizardService.$widgetContent.set({
-          avatar: {
-            firstInitialPath: formValue.firstInitialPath ?? '',
-            secondInitialPath: formValue.secondInitialPath ?? '',
-          },
-          heading: {
-            displayNamePath: formValue.displayNamePath ?? '',
-            subtitlePath: formValue.subtitlePath ?? '',
-          },
-          contactFields: (formValue.contactFields ?? []) as PersonCardContactField[],
-          household: {
-            arrayPath: formValue.householdArrayPath ?? '',
-            itemNamePath: formValue.householdItemNamePath ?? '',
-            itemSubtitlePath: formValue.householdItemSubtitlePath ?? '',
+          person: {
+            fullName: formValue.fullName ?? '',
+            birthDate: formValue.birthDate || undefined,
+            bsn: formValue.bsn || undefined,
+            phone: formValue.phone || undefined,
+            email: formValue.email || undefined,
+            city: formValue.city || undefined,
           },
         } as WidgetPersonCardContent);
         this.widgetWizardService.$widgetContentValid.set(this.form.valid);
@@ -160,32 +115,6 @@ export class WidgetManagementPersonCardComponent implements OnInit, OnDestroy {
   public ngOnDestroy(): void {
     this._subscriptions.unsubscribe();
     this.form.reset();
-  }
-
-  public onAddContactFieldClick(): void {
-    this.contactFields.push(this.buildContactFieldGroup());
-  }
-
-  public onDeleteContactFieldClick(index: number): void {
-    this.contactFields.removeAt(index);
-  }
-
-  private initContactFields(): void {
-    const existing = (this.widgetWizardService.$widgetContent() as WidgetPersonCardContent)
-      ?.contactFields;
-    if (!existing?.length) return;
-
-    existing.forEach(field =>
-      this.contactFields.push(this.buildContactFieldGroup(field), {emitEvent: false})
-    );
-  }
-
-  private buildContactFieldGroup(field?: PersonCardContactField): FormGroup {
-    return this.fb.group({
-      icon: this.fb.control(field?.icon ?? '', Validators.required),
-      label: this.fb.control(field?.label ?? '', Validators.required),
-      sourcePath: this.fb.control(field?.sourcePath ?? '', Validators.required),
-    });
   }
 
   private hideTitleInput(): void {
