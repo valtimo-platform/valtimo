@@ -26,6 +26,14 @@
   required plugin configuration metadata.
   See the [import and export section](../../../features/case/README.md#import) for more information.
 
+* **Reschedule active timer jobs via TimerService process bean**
+
+  A new `timerService` process bean is available with `updateActiveTimers` methods that reschedule all active BPMN timer 
+  jobs belonging to process instances with a given business key. An optional list of activity IDs can be supplied to limit 
+  which timers are updated. Failed timer jobs (retries exhausted) are skipped automatically. The method returns the number 
+  of timers rescheduled.
+  See the [process beans documentation](../../../nog-een-plek-geven/reference/process-beans.md#timerservice) for usage examples.
+
 ## Enhancements
 
 * **Dependency upgrades for CVE fixes**
