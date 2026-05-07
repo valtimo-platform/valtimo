@@ -17,8 +17,9 @@
 
 package com.ritense.valtimo.autoconfiguration
 
-import com.ritense.valtimo.JobService
 import com.ritense.valtimo.contract.annotation.ProcessBean
+import com.ritense.valtimo.service.JobService
+import com.ritense.valtimo.service.JobServiceImpl
 import org.operaton.bpm.engine.ManagementService
 import org.springframework.boot.autoconfigure.AutoConfiguration
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
@@ -30,8 +31,5 @@ class JobAutoConfiguration {
     @Bean
     @ProcessBean
     @ConditionalOnMissingBean(JobService::class)
-    fun jobService(managementService: ManagementService): JobService {
-        return JobService(managementService)
-    }
-
+    fun jobService(managementService: ManagementService) = JobServiceImpl(managementService)
 }
