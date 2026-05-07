@@ -2250,6 +2250,14 @@
     "noCustomComponentDescription": "The custom component configured for this widget is not available.",
     "map": {
       "title": "Map"
+    },
+    "metroline": {
+      "stepState": {
+        "current": "Current",
+        "complete": "Complete",
+        "incomplete": "Incomplete",
+        "invalid": "Invalid"
+      }
     }
   },
   "iko": {

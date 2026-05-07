@@ -17,10 +17,23 @@
 import {MetrolineStepState} from '../models';
 
 const METROLINE_STEP_ICONS: Record<MetrolineStepState, string> = {
-  current: 'incomplete',
-  complete: 'checkmark--outline',
-  invalid: 'warning',
-  incomplete: 'circle-dash',
+  [MetrolineStepState.CURRENT]: 'incomplete',
+  [MetrolineStepState.COMPLETE]: 'checkmark--outline',
+  [MetrolineStepState.INVALID]: 'warning',
+  [MetrolineStepState.INCOMPLETE]: 'circle-dash',
 };
 
-export {METROLINE_STEP_ICONS};
+const METROLINE_STEP_STATE_TRANSLATION_KEYS: Record<MetrolineStepState, string> = {
+  [MetrolineStepState.CURRENT]: 'widgets.metroline.stepState.current',
+  [MetrolineStepState.COMPLETE]: 'widgets.metroline.stepState.complete',
+  [MetrolineStepState.INVALID]: 'widgets.metroline.stepState.invalid',
+  [MetrolineStepState.INCOMPLETE]: 'widgets.metroline.stepState.incomplete',
+};
+
+const METROLINE_SKELETON_STEP_COUNT = 4;
+
+export {
+  METROLINE_SKELETON_STEP_COUNT,
+  METROLINE_STEP_ICONS,
+  METROLINE_STEP_STATE_TRANSLATION_KEYS,
+};

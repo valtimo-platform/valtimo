@@ -14,109 +14,129 @@
   ~ limitations under the License.
   -->
 
-<ng-container *ngIf="viewModel$ | async as vm">
-  <section *ngIf="vm.widgetConfiguration?.title" class="valtimo-widget-metroline__header">
-    <div class="valtimo-widget-metroline__title-container">
-      <valtimo-mdi-icon-viewer
-        *ngIf="vm.widgetConfiguration?.icon"
-        [mdiIcon]="vm.widgetConfiguration.icon"
-      ></valtimo-mdi-icon-viewer>
+<ng-container
+  *ngIf="{
+    widgetConfiguration: widgetConfiguration$ | async,
+    widgetData: widgetData$ | async,
+    displayState: displayState$ | async,
+    orientation: orientation$ | async,
+    isEmptyWidgetData: isEmptyWidgetData$ | async,
+  } as obs"
+>
+  @if (obs.widgetConfiguration?.title) {
+    <section class="valtimo-widget-metroline__header">
+      <div class="valtimo-widget-metroline__title-container">
+        @if (obs.widgetConfiguration?.icon) {
+          <valtimo-mdi-icon-viewer
+            [mdiIcon]="obs.widgetConfiguration.icon"
+          ></valtimo-mdi-icon-viewer>
+        }
 
-      <h4 class="valtimo-widget-metroline__title">{{ vm.widgetConfiguration?.title }}</h4>
-    </div>
+        <h4 class="valtimo-widget-metroline__title">{{ obs.widgetConfiguration?.title }}</h4>
+      </div>
 
-    <ng-content></ng-content>
+      <ng-content></ng-content>
 
-    <valtimo-widget-action-button
-      *ngIf="vm.widgetConfiguration"
-      [widgetConfiguration]="vm.widgetConfiguration"
-      [resolvedData]="vm.widgetData"
-    ></valtimo-widget-action-button>
-  </section>
+      @if (obs.widgetConfiguration) {
+        <valtimo-widget-action-button
+          [widgetConfiguration]="obs.widgetConfiguration"
+          [resolvedData]="obs.widgetData"
+        ></valtimo-widget-action-button>
+      }
+    </section>
+  }
 
   <div
     class="valtimo-widget-metroline__body"
-    [class.valtimo-widget-metroline__body--vertical]="vm.orientation === 'vertical'"
+    [class.valtimo-widget-metroline__body--vertical]="obs.orientation === 'vertical'"
   >
-    @if (vm.isEmptyWidgetData) {
+    @if (obs.isEmptyWidgetData) {
       <valtimo-no-results
         [collapseVertically]="true"
         [description]="'widgets.noData' | translate"
         [smallPadding]="true"
       ></valtimo-no-results>
+    } @else if (obs.widgetData === null) {
+      <ul
+        data-progress
+        data-progress-current
+        class="cds--progress"
+        [class.cds--progress--vertical]="obs.orientation === 'vertical'"
+        [class.cds--progress--space-equal]="obs.orientation !== 'vertical'"
+      >
+        @for (placeholder of skeletonSteps; track $index) {
+          <li class="cds--progress-step cds--progress-step--incomplete">
+            <div class="cds--progress-step-button cds--progress-step-button--unclickable">
+              <svg cdsIcon="circle-dash" size="16"></svg>
+              <div class="cds--progress-text valtimo-widget-metroline__step-text">
+                <cds-skeleton-text [lines]="1" [maxLineWidth]="80"></cds-skeleton-text>
+              </div>
+              <span class="cds--progress-line"></span>
+            </div>
+          </li>
+        }
+      </ul>
     } @else {
       <ul
         data-progress
         data-progress-current
         class="cds--progress"
-        [ngClass]="{
-          'cds--progress--vertical': vm.orientation === 'vertical',
-          'cds--progress--space-equal': vm.orientation !== 'vertical'
-        }"
+        [class.cds--progress--vertical]="obs.orientation === 'vertical'"
+        [class.cds--progress--space-equal]="obs.orientation !== 'vertical'"
       >
-        @if (!vm.widgetData) {
-          @for (placeholder of skeletonSteps; track $index) {
-            <li class="cds--progress-step cds--progress-step--incomplete">
-              <div class="cds--progress-step-button cds--progress-step-button--unclickable">
-                <svg cdsIcon="circle-dash" size="16"></svg>
-                <div class="cds--progress-text valtimo-widget-metroline__step-text">
-                  <cds-skeleton-text [lines]="1" [maxLineWidth]="80"></cds-skeleton-text>
-                </div>
-                <span class="cds--progress-line"></span>
-              </div>
-            </li>
-          }
-        } @else {
-          @for (step of vm.steps; track step.label; let i = $index) {
-            @let state = getStepState(step, i, vm.currentStepIndex);
-            <li
-              class="cds--progress-step"
-              [ngClass]="{
-                'cds--progress-step--complete': step.complete,
-                'cds--progress-step--incomplete': !step.complete && i !== vm.currentStepIndex,
-                'cds--progress-step--current': i === vm.currentStepIndex
-              }"
+        @for (step of obs.displayState?.steps ?? []; track $index; let i = $index) {
+          @let state = getStepState(step, i, obs.displayState?.currentStepIndex ?? 0);
+          <li
+            class="cds--progress-step"
+            [class.cds--progress-step--complete]="step.complete"
+            [class.cds--progress-step--incomplete]="
+              !step.complete && i !== obs.displayState?.currentStepIndex
+            "
+            [class.cds--progress-step--current]="i === obs.displayState?.currentStepIndex"
+          >
+            <div
+              class="cds--progress-step-button cds--progress-step-button--unclickable"
+              [title]="step.label"
             >
-              <div
-                class="cds--progress-step-button cds--progress-step-button--unclickable"
-                [title]="step.label"
-              >
-                <span class="cds--assistive-text">{{ getStepStateLabel(state) }}</span>
-                <svg
-                  [cdsIcon]="stepIcons[state]"
-                  size="16"
-                  [ngClass]="{'cds--progress__warning': step.invalid && i !== vm.currentStepIndex}"
-                ></svg>
-                <div class="cds--progress-text valtimo-widget-metroline__step-text">
-                  <div class="valtimo-widget-metroline__step-label-row">
-                    <p class="cds--progress-label">{{ step.label }}</p>
-                    <cds-toggletip align="bottom" [autoAlign]="true">
-                      <button
-                        cdsToggletipButton
-                        [removeClassnames]="['cds--toggletip-button']"
-                        type="button"
-                        class="valtimo-widget-metroline__step-info"
-                      >
-                        <svg cdsIcon="information" size="16"></svg>
-                      </button>
-                      <div
-                        cdsToggletipContent
-                        class="valtimo-widget-metroline__step-toggletip-content"
-                      >
-                        {{ step.itemLabel || '-' }}
-                      </div>
-                    </cds-toggletip>
-                  </div>
-                  @if (step.secondaryLabel) {
-                    <p class="cds--progress-optional">
-                      {{ step.secondaryLabel }}
-                    </p>
-                  }
+              <span class="cds--assistive-text">
+                {{ stepStateTranslationKeys[state] | translate }}
+              </span>
+              <svg
+                [cdsIcon]="stepIcons[state]"
+                size="16"
+                [class.cds--progress__warning]="
+                  step.invalid && i !== obs.displayState?.currentStepIndex
+                "
+              ></svg>
+              <div class="cds--progress-text valtimo-widget-metroline__step-text">
+                <div class="valtimo-widget-metroline__step-label-row">
+                  <p class="cds--progress-label">{{ step.label }}</p>
+                  <cds-toggletip align="bottom" [autoAlign]="true">
+                    <button
+                      cdsToggletipButton
+                      [removeClassnames]="['cds--toggletip-button']"
+                      type="button"
+                      class="valtimo-widget-metroline__step-info"
+                    >
+                      <svg cdsIcon="information" size="16"></svg>
+                    </button>
+                    <div
+                      cdsToggletipContent
+                      class="valtimo-widget-metroline__step-toggletip-content"
+                    >
+                      {{ step.itemLabel || '-' }}
+                    </div>
+                  </cds-toggletip>
                 </div>
-                <span class="cds--progress-line"></span>
+                @if (step.secondaryLabel) {
+                  <p class="cds--progress-optional">
+                    {{ step.secondaryLabel }}
+                  </p>
+                }
               </div>
-            </li>
-          }
+              <span class="cds--progress-line"></span>
+            </div>
+          </li>
         }
       </ul>
     }

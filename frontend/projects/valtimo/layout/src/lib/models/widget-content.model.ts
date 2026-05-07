@@ -127,7 +127,7 @@ enum MetrolineMode {
 
 interface WidgetMetrolineContent {
   orientation: MetrolineOrientation;
-  mode: MetrolineMode;
+  mode: MetrolineMode | null;
 }
 
 interface MetrolineItem {
@@ -140,7 +140,12 @@ interface MetrolineStep extends Step {
   itemLabel: string | null;
 }
 
-type MetrolineStepState = 'current' | 'complete' | 'incomplete' | 'invalid';
+enum MetrolineStepState {
+  CURRENT = 'current',
+  COMPLETE = 'complete',
+  INCOMPLETE = 'incomplete',
+  INVALID = 'invalid',
+}
 
 type WidgetDropdownValue = {[key: string]: string};
 

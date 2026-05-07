@@ -14,7 +14,14 @@
  * limitations under the License.
  */
 import {CommonModule} from '@angular/common';
-import {Component, HostBinding, OnDestroy, OnInit, ViewEncapsulation} from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  HostBinding,
+  OnDestroy,
+  OnInit,
+  ViewEncapsulation,
+} from '@angular/core';
 import {FormBuilder, ReactiveFormsModule, Validators} from '@angular/forms';
 import {TranslateModule, TranslateService} from '@ngx-translate/core';
 import {InputLabelModule, MdiIconSelectorComponent} from '@valtimo/components';
@@ -37,6 +44,7 @@ import {MetrolineWidgetApiService, WidgetWizardService} from '../../../../servic
 @Component({
   templateUrl: './widget-management-metroline.component.html',
   styleUrl: './widget-management-metroline.component.scss',
+  changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
   standalone: true,
   imports: [
@@ -57,18 +65,19 @@ export class WidgetManagementMetrolineComponent implements OnDestroy, OnInit {
   protected readonly testIds = WIDGET_CONTENT_METROLINE_TEST_IDS;
   protected readonly orientationOptions = MetrolineOrientation;
 
+  private readonly _initialContent = this.widgetWizardService.$widgetContent() as
+    | WidgetMetrolineContent
+    | null;
+
   public readonly form = this.fb.group({
     widgetTitle: this.fb.control(this.widgetWizardService.$widgetTitle(), Validators.required),
     widgetIcon: this.fb.control(this.widgetWizardService.$widgetIcon()),
     orientation: this.fb.control<MetrolineOrientation>(
-      (this.widgetWizardService.$widgetContent() as WidgetMetrolineContent | null)?.orientation ??
-        MetrolineOrientation.HORIZONTAL,
+      this._initialContent?.orientation ?? MetrolineOrientation.HORIZONTAL,
       Validators.required
     ),
     mode: this.fb.control<MetrolineMode | null>(
-      this.widgetWizardService.$editMode()
-        ? (this.widgetWizardService.$widgetContent() as WidgetMetrolineContent | null)?.mode ?? null
-        : null,
+      this._initialContent?.mode ?? null,
       Validators.required
     ),
   });
@@ -115,8 +124,8 @@ export class WidgetManagementMetrolineComponent implements OnDestroy, OnInit {
     this.widgetWizardService.$widgetTitle.set(value.widgetTitle ?? '');
     this.widgetWizardService.$widgetIcon.set(value.widgetIcon ?? '');
     this.widgetWizardService.$widgetContent.set({
-      orientation: value.orientation!,
-      mode: value.mode!,
+      orientation: value.orientation ?? MetrolineOrientation.HORIZONTAL,
+      mode: value.mode,
     });
   }
 

@@ -2292,6 +2292,14 @@
     "noCustomComponentDescription": "De component die geconfigureerd is voor deze widget kon niet gevonden worden.",
     "map": {
       "title": "Kaart"
+    },
+    "metroline": {
+      "stepState": {
+        "current": "Huidig",
+        "complete": "Voltooid",
+        "incomplete": "Onvolledig",
+        "invalid": "Ongeldig"
+      }
     }
   },
   "iko": {

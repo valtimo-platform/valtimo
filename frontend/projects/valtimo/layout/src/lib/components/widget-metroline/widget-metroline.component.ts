@@ -23,14 +23,17 @@ import {
   RemoveClassnamesDirective,
 } from '@valtimo/components';
 import {
-  I18n,
   IconModule,
   IconService,
   SkeletonModule,
   ToggletipModule,
 } from 'carbon-components-angular';
 import {BehaviorSubject, combineLatest, map, Observable} from 'rxjs';
-import {METROLINE_STEP_ICONS} from '../../constants';
+import {
+  METROLINE_SKELETON_STEP_COUNT,
+  METROLINE_STEP_ICONS,
+  METROLINE_STEP_STATE_TRANSLATION_KEYS,
+} from '../../constants';
 import {
   MetrolineItem,
   MetrolineMode,
@@ -40,6 +43,11 @@ import {
   MetrolineWidget,
 } from '../../models';
 import {WidgetActionButtonComponent} from '../widget-action-button/widget-action-button.component';
+
+interface MetrolineDisplayState {
+  steps: MetrolineStep[];
+  currentStepIndex: number;
+}
 
 @Component({
   selector: 'valtimo-widget-metroline',
@@ -70,25 +78,11 @@ export class WidgetMetrolineComponent {
   }
 
   @Input() public set widgetData(value: object | null) {
-    this.widgetData$.next((value as MetrolineItem[] | null) ?? null);
+    this.widgetData$.next(value as MetrolineItem[] | null);
   }
 
   public readonly widgetConfiguration$ = new BehaviorSubject<MetrolineWidget | null>(null);
   public readonly widgetData$ = new BehaviorSubject<MetrolineItem[] | null>(null);
-
-  private readonly mode$: Observable<MetrolineMode> = this.widgetConfiguration$.pipe(
-    map(config => config?.properties?.mode ?? MetrolineMode.INTERNAL_CASE_STATUS)
-  );
-
-  public readonly steps$: Observable<MetrolineStep[]> = combineLatest([
-    this.widgetData$,
-    this.mode$,
-  ]).pipe(map(([items, mode]) => this.toSteps(items, mode)));
-
-  public readonly currentStepIndex$: Observable<number> = combineLatest([
-    this.widgetData$,
-    this.mode$,
-  ]).pipe(map(([items, mode]) => this.toCurrentStepIndex(items, mode)));
 
   public readonly orientation$: Observable<'horizontal' | 'vertical'> =
     this.widgetConfiguration$.pipe(
@@ -97,43 +91,29 @@ export class WidgetMetrolineComponent {
       )
     );
 
+  public readonly displayState$: Observable<MetrolineDisplayState> = combineLatest([
+    this.widgetData$,
+    this.widgetConfiguration$,
+  ]).pipe(
+    map(([items, config]) => {
+      const mode = config?.properties?.mode ?? MetrolineMode.INTERNAL_CASE_STATUS;
+      return {
+        steps: this.toSteps(items, mode),
+        currentStepIndex: this.toCurrentStepIndex(items, mode),
+      };
+    })
+  );
+
   public readonly isEmptyWidgetData$: Observable<boolean> = this.widgetData$.pipe(
     map(items => Array.isArray(items) && items.length === 0)
   );
 
-  public readonly viewModel$ = combineLatest([
-    this.widgetConfiguration$,
-    this.widgetData$,
-    this.steps$,
-    this.currentStepIndex$,
-    this.orientation$,
-    this.isEmptyWidgetData$,
-  ]).pipe(
-    map(
-      ([
-        widgetConfiguration,
-        widgetData,
-        steps,
-        currentStepIndex,
-        orientation,
-        isEmptyWidgetData,
-      ]) => ({
-        widgetConfiguration,
-        widgetData,
-        steps,
-        currentStepIndex,
-        orientation,
-        isEmptyWidgetData,
-      })
-    )
-  );
-
-  protected readonly skeletonSteps = Array.from({length: 4});
+  protected readonly skeletonSteps = Array.from({length: METROLINE_SKELETON_STEP_COUNT});
   protected readonly stepIcons = METROLINE_STEP_ICONS;
+  protected readonly stepStateTranslationKeys = METROLINE_STEP_STATE_TRANSLATION_KEYS;
 
   constructor(
     private readonly datePipe: DatePipe,
-    private readonly i18n: I18n,
     private readonly iconService: IconService
   ) {
     this.iconService.registerAll([Information16]);
@@ -144,16 +124,10 @@ export class WidgetMetrolineComponent {
     index: number,
     currentIndex: number
   ): MetrolineStepState {
-    if (index === currentIndex) return 'current';
-    if (step.invalid) return 'invalid';
-    if (step.complete) return 'complete';
-    return 'incomplete';
-  }
-
-  public getStepStateLabel(state: MetrolineStepState): string {
-    const translations = this.i18n.get().PROGRESS_INDICATOR;
-    const key = state.toUpperCase() as Uppercase<MetrolineStepState>;
-    return translations[key];
+    if (index === currentIndex) return MetrolineStepState.CURRENT;
+    if (step.invalid) return MetrolineStepState.INVALID;
+    if (step.complete) return MetrolineStepState.COMPLETE;
+    return MetrolineStepState.INCOMPLETE;
   }
 
   private toSteps(items: MetrolineItem[] | null, mode: MetrolineMode): MetrolineStep[] {

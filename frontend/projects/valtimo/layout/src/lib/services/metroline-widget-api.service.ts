@@ -17,7 +17,7 @@
 import {HttpClient} from '@angular/common/http';
 import {Injectable} from '@angular/core';
 import {BaseApiService, ConfigService} from '@valtimo/shared';
-import {catchError, Observable, of} from 'rxjs';
+import {Observable} from 'rxjs';
 import {MetrolineMode} from '../models';
 
 @Injectable({
@@ -32,8 +32,8 @@ export class MetrolineWidgetApiService extends BaseApiService {
   }
 
   public getAvailableModes(): Observable<MetrolineMode[]> {
-    return this.httpClient
-      .get<MetrolineMode[]>(this.getApiUrl('management/v1/metroline/available-modes'))
-      .pipe(catchError(() => of([MetrolineMode.INTERNAL_CASE_STATUS])));
+    return this.httpClient.get<MetrolineMode[]>(
+      this.getApiUrl('management/v1/metroline/available-modes')
+    );
   }
 }
