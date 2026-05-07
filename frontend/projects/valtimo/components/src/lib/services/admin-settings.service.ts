@@ -23,14 +23,7 @@ import {
   ConfigService,
   ValtimoConfigFeatureToggles,
 } from '@valtimo/shared';
-
-interface FeatureToggleOverridesResponse {
-  overrides: {[key: string]: boolean};
-}
-
-interface AccentColorsResponse {
-  colors: {[key: string]: string};
-}
+import {AccentColorsResponse, FeatureToggleOverridesResponse} from '../models';
 
 @Injectable({
   providedIn: 'root',
