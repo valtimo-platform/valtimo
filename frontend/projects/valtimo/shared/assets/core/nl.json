@@ -2431,6 +2431,9 @@
       },
       "colors": {
         "title": "Kleuren",
+        "infoMessage": "Deze kleuren bepalen het accentkleurenpalet dat in de hele applicatie wordt gebruikt.",
+        "infoLinkText": "Meer info over het genereren van een kleurenschema",
+        "reset": "Herstellen",
         "color10": "Kleur 10",
         "color20": "Kleur 20",
         "color30": "Kleur 30",
@@ -2440,7 +2443,12 @@
         "color70": "Kleur 70",
         "color80": "Kleur 80",
         "color90": "Kleur 90",
-        "color100": "Kleur 100"
+        "color100": "Kleur 100",
+        "pickr": {
+          "save": "OK",
+          "cancel": "Annuleren",
+          "clear": "Wissen"
+        }
       }
     },
     "featureToggles": {

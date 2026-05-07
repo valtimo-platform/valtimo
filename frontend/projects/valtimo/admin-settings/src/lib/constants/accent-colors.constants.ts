@@ -20,52 +20,42 @@ const ACCENT_COLOR_DEFINITIONS: AccentColorDefinition[] = [
   {
     cssVar: '--vcds-color-100',
     labelTranslationKey: 'adminSettings.appearance.colors.color100',
-    defaultValue: '#002547',
   },
   {
     cssVar: '--vcds-color-90',
     labelTranslationKey: 'adminSettings.appearance.colors.color90',
-    defaultValue: '#002c54',
   },
   {
     cssVar: '--vcds-color-80',
     labelTranslationKey: 'adminSettings.appearance.colors.color80',
-    defaultValue: '#003361',
   },
   {
     cssVar: '--vcds-color-70',
     labelTranslationKey: 'adminSettings.appearance.colors.color70',
-    defaultValue: '#286198',
   },
   {
     cssVar: '--vcds-color-60',
     labelTranslationKey: 'adminSettings.appearance.colors.color60',
-    defaultValue: '#2b79bd',
   },
   {
     cssVar: '--vcds-color-50',
     labelTranslationKey: 'adminSettings.appearance.colors.color50',
-    defaultValue: '#61aedf',
   },
   {
     cssVar: '--vcds-color-40',
     labelTranslationKey: 'adminSettings.appearance.colors.color40',
-    defaultValue: '#8acff2',
   },
   {
     cssVar: '--vcds-color-30',
     labelTranslationKey: 'adminSettings.appearance.colors.color30',
-    defaultValue: '#aadcf6',
   },
   {
     cssVar: '--vcds-color-20',
     labelTranslationKey: 'adminSettings.appearance.colors.color20',
-    defaultValue: '#c9e9f9',
   },
   {
     cssVar: '--vcds-color-10',
     labelTranslationKey: 'adminSettings.appearance.colors.color10',
-    defaultValue: '#e9f6fd',
   },
 ];
 

@@ -25,4 +25,10 @@ interface ColorPickerConfig {
   lockOpacity?: boolean;
 }
 
-export {ColorPickerConfig};
+interface ColorPickerI18n {
+  save?: string;
+  cancel?: string;
+  clear?: string;
+}
+
+export {ColorPickerConfig, ColorPickerI18n};

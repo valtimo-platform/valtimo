@@ -17,9 +17,9 @@
 package com.ritense.adminsettings.autoconfigure
 
 import com.fasterxml.jackson.databind.ObjectMapper
-import com.ritense.adminsettings.deployment.AdminSettingsAccentColorsDeployer
-import com.ritense.adminsettings.deployment.AdminSettingsFeatureToggleDeployer
-import com.ritense.adminsettings.deployment.AdminSettingsLogoDeployer
+import com.ritense.adminsettings.importer.AdminSettingsAccentColorsImporter
+import com.ritense.adminsettings.importer.AdminSettingsFeatureToggleImporter
+import com.ritense.adminsettings.importer.AdminSettingsLogoImporter
 import com.ritense.adminsettings.repository.AccentColorsRepository
 import com.ritense.adminsettings.repository.AdminSettingsLogoRepository
 import com.ritense.adminsettings.repository.FeatureToggleOverridesRepository
@@ -31,14 +31,11 @@ import com.ritense.adminsettings.web.rest.AccentColorsResource
 import com.ritense.adminsettings.web.rest.AdminSettingsLogoResource
 import com.ritense.adminsettings.web.rest.FeatureToggleOverridesResource
 import com.ritense.authorization.AuthorizationService
-import com.ritense.valtimo.changelog.service.ChangelogService
-import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.autoconfigure.AutoConfiguration
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.boot.autoconfigure.domain.EntityScan
 import org.springframework.context.annotation.Bean
 import org.springframework.core.annotation.Order
-import org.springframework.core.io.support.ResourcePatternResolver
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories
 
 @AutoConfiguration
@@ -94,22 +91,6 @@ class AdminSettingsAutoConfiguration {
     }
 
     @Bean
-    @ConditionalOnMissingBean(AdminSettingsFeatureToggleDeployer::class)
-    fun adminSettingsFeatureToggleDeployer(
-        objectMapper: ObjectMapper,
-        featureToggleOverridesService: FeatureToggleOverridesService,
-        changelogService: ChangelogService,
-        @Value("\${valtimo.changelog.admin-settings-feature-toggles.clear-tables:false}") clearTables: Boolean,
-    ): AdminSettingsFeatureToggleDeployer {
-        return AdminSettingsFeatureToggleDeployer(
-            objectMapper,
-            featureToggleOverridesService,
-            changelogService,
-            clearTables,
-        )
-    }
-
-    @Bean
     @ConditionalOnMissingBean(AccentColorsService::class)
     fun accentColorsService(
         accentColorsRepository: AccentColorsRepository,
@@ -130,36 +111,36 @@ class AdminSettingsAutoConfiguration {
     }
 
     @Bean
-    @ConditionalOnMissingBean(AdminSettingsAccentColorsDeployer::class)
-    fun adminSettingsAccentColorsDeployer(
+    @ConditionalOnMissingBean(AdminSettingsFeatureToggleImporter::class)
+    fun adminSettingsFeatureToggleImporter(
         objectMapper: ObjectMapper,
-        accentColorsService: AccentColorsService,
-        changelogService: ChangelogService,
-        @Value("\${valtimo.changelog.admin-settings-accent-colors.clear-tables:false}") clearTables: Boolean,
-    ): AdminSettingsAccentColorsDeployer {
-        return AdminSettingsAccentColorsDeployer(
+        featureToggleOverridesService: FeatureToggleOverridesService,
+    ): AdminSettingsFeatureToggleImporter {
+        return AdminSettingsFeatureToggleImporter(
             objectMapper,
-            accentColorsService,
-            changelogService,
-            clearTables,
+            featureToggleOverridesService,
         )
     }
 
     @Bean
-    @ConditionalOnMissingBean(AdminSettingsLogoDeployer::class)
-    fun adminSettingsLogoDeployer(
+    @ConditionalOnMissingBean(AdminSettingsAccentColorsImporter::class)
+    fun adminSettingsAccentColorsImporter(
         objectMapper: ObjectMapper,
-        adminSettingsLogoRepository: AdminSettingsLogoRepository,
-        changelogService: ChangelogService,
-        resourcePatternResolver: ResourcePatternResolver,
-        @Value("\${valtimo.changelog.admin-settings-logo.clear-tables:false}") clearTables: Boolean,
-    ): AdminSettingsLogoDeployer {
-        return AdminSettingsLogoDeployer(
+        accentColorsService: AccentColorsService,
+    ): AdminSettingsAccentColorsImporter {
+        return AdminSettingsAccentColorsImporter(
             objectMapper,
+            accentColorsService,
+        )
+    }
+
+    @Bean
+    @ConditionalOnMissingBean(AdminSettingsLogoImporter::class)
+    fun adminSettingsLogoImporter(
+        adminSettingsLogoRepository: AdminSettingsLogoRepository,
+    ): AdminSettingsLogoImporter {
+        return AdminSettingsLogoImporter(
             adminSettingsLogoRepository,
-            changelogService,
-            resourcePatternResolver,
-            clearTables,
         )
     }
 }

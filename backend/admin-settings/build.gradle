@@ -30,8 +30,8 @@ dockerCompose {
 
 dependencies {
     implementation project(":backend:authorization")
-    implementation project(":backend:changelog")
     implementation project(":backend:contract")
+    implementation project(":backend:importer")
     implementation project(":backend:web")
 
     implementation "org.springframework.boot:spring-boot-starter-web"

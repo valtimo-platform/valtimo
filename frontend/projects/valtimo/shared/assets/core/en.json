@@ -2389,6 +2389,9 @@
       },
       "colors": {
         "title": "Colors",
+        "infoMessage": "These colors define the accent color palette used throughout the application.",
+        "infoLinkText": "More info on generating a color scheme",
+        "reset": "Reset",
         "color10": "Color 10",
         "color20": "Color 20",
         "color30": "Color 30",
@@ -2398,7 +2401,12 @@
         "color70": "Color 70",
         "color80": "Color 80",
         "color90": "Color 90",
-        "color100": "Color 100"
+        "color100": "Color 100",
+        "pickr": {
+          "save": "OK",
+          "cancel": "Cancel",
+          "clear": "Clear"
+        }
       }
     },
     "featureToggles": {

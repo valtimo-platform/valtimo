@@ -23,9 +23,11 @@ import {
   EventEmitter,
   forwardRef,
   Input,
+  OnChanges,
   OnDestroy,
   Output,
   signal,
+  SimpleChanges,
   ViewChild,
   ViewEncapsulation,
 } from '@angular/core';
@@ -34,7 +36,7 @@ import {TranslateModule} from '@ngx-translate/core';
 import {InputModule} from 'carbon-components-angular';
 import Pickr from '@simonwep/pickr';
 import {Subscription} from 'rxjs';
-import {ColorPickerConfig} from '../../models';
+import {ColorPickerConfig, ColorPickerI18n} from '../../models';
 import {CdsThemeService} from '../../services';
 import {CurrentCarbonTheme} from '../../models';
 import {COLOR_PICKER_TEST_IDS} from '../../constants';
@@ -55,11 +57,15 @@ import {COLOR_PICKER_TEST_IDS} from '../../constants';
     },
   ],
 })
-export class ColorPickerComponent implements AfterViewInit, OnDestroy, ControlValueAccessor {
+export class ColorPickerComponent
+  implements AfterViewInit, OnChanges, OnDestroy, ControlValueAccessor
+{
+  @ViewChild('pickrContainer', {static: true}) public pickrContainerRef!: ElementRef<HTMLDivElement>;
   @ViewChild('pickrAnchor', {static: true}) public pickrAnchorRef!: ElementRef<HTMLDivElement>;
 
   @Input() public labelTranslationKey = 'colorPicker.label';
   @Input() public config: ColorPickerConfig = {};
+  @Input() public i18n: ColorPickerI18n | null = null;
 
   @Output() public colorChangeEvent = new EventEmitter<string>();
 
@@ -85,6 +91,12 @@ export class ColorPickerComponent implements AfterViewInit, OnDestroy, ControlVa
         this._applyThemeToPickr(theme);
       })
     );
+  }
+
+  public ngOnChanges(changes: SimpleChanges): void {
+    if (changes['i18n'] && !changes['i18n'].firstChange && this._initialized) {
+      this._reinitPickr();
+    }
   }
 
   public ngOnDestroy(): void {
@@ -176,9 +188,9 @@ export class ColorPickerComponent implements AfterViewInit, OnDestroy, ControlVa
       },
 
       i18n: {
-        'btn:save': 'OK',
-        'btn:cancel': 'Cancel',
-        'btn:clear': 'Clear',
+        'btn:save': this.i18n?.save || 'OK',
+        'btn:cancel': this.i18n?.cancel || 'Cancel',
+        'btn:clear': this.i18n?.clear || 'Clear',
       },
     });
 
@@ -203,6 +215,23 @@ export class ColorPickerComponent implements AfterViewInit, OnDestroy, ControlVa
     this._pickr.on('hide', () => {
       this._onTouchedFn();
     });
+  }
+
+  private _reinitPickr(): void {
+    // Pickr.create() replaces the target element via parentElement.replaceChild().
+    // After destroyAndRemove() the replaced element is gone, so we must insert a
+    // fresh anchor into the stable container for the next Pickr.create() call.
+    if (this._pickr) {
+      this._pickr.destroyAndRemove();
+      this._pickr = null;
+      this._initialized = false;
+    }
+    const container = this.pickrContainerRef.nativeElement;
+    const anchor = document.createElement('div');
+    container.innerHTML = '';
+    container.appendChild(anchor);
+    (this.pickrAnchorRef as any).nativeElement = anchor;
+    this._initPickr();
   }
 
   private _destroyPickr(): void {

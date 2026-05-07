@@ -17,7 +17,7 @@
 <cds-label [attr.data-test-id]="testIds.label">
   {{ labelTranslationKey | translate }}
 
-  <div class="valtimo-color-picker" [attr.data-test-id]="testIds.container">
+  <div #pickrContainer class="valtimo-color-picker" [attr.data-test-id]="testIds.container">
     <div #pickrAnchor [attr.data-test-id]="testIds.trigger"></div>
   </div>
 </cds-label>

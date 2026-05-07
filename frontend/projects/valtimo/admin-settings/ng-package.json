@@ -1,6 +1,7 @@
 {
+  "deleteDestPath": false,
   "$schema": "../../../node_modules/ng-packagr/ng-package.schema.json",
-  "dest": "../../../dist/.tmp-admin-settings",
+  "dest": "../../../dist/valtimo/admin-settings",
   "lib": {
     "entryFile": "src/public-api.ts"
   }

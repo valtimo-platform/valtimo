@@ -75,7 +75,7 @@ export class AdminSettingsService extends BaseApiService {
             catchError(() => of({}))
           )
       ),
-      tap(colors => this._applyAccentColors(colors)),
+      tap(colors => this.applyAccentColors(colors)),
       shareReplay(1)
     );
 
@@ -117,12 +117,16 @@ export class AdminSettingsService extends BaseApiService {
     this._refreshAccentColors$.next(null);
   }
 
-  private _applyAccentColors(colors: {[key: string]: string}): void {
+  public applyAccentColors(colors: {[key: string]: string}): void {
     const root = document.documentElement;
     Object.entries(colors).forEach(([cssVar, value]) => {
       if (cssVar && value) {
         root.style.setProperty(cssVar, value);
       }
     });
+  }
+
+  public getComputedAccentColor(cssVar: string): string {
+    return getComputedStyle(document.documentElement).getPropertyValue(cssVar).trim();
   }
 }

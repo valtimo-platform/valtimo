@@ -42,6 +42,6 @@
     "muuri": "0.9.5",
     "ajv": "8.17.1",
     "vanilla-jsoneditor": "3.10.0",
-    "@simonwep/pickr": "1.9.1"
+    "@simonwep/pickr": "^1.9.1"
   }
 }

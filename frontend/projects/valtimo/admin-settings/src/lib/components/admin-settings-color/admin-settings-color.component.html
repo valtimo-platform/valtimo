@@ -19,6 +19,7 @@
     colors: colors$ | async,
     loading: loading$ | async,
     saving: saving$ | async,
+    pickrI18n: pickrI18n$ | async,
   } as obs"
   class="admin-settings-color"
   [formGroup]="formGroup"
@@ -28,16 +29,50 @@
     {{ 'adminSettings.appearance.colors.title' | translate }}
   </h4>
 
+  <ng-template #infoNotification>
+    <p>
+      {{ 'adminSettings.appearance.colors.infoMessage' | translate }}
+
+      <a [href]="DOCS_URL" target="_blank" rel="noopener noreferrer" cdsLink>
+        {{ 'adminSettings.appearance.colors.infoLinkText' | translate }}
+      </a>
+    </p>
+  </ng-template>
+
+  <cds-inline-notification
+    [notificationObj]="{
+      type: 'info',
+      title: '',
+      template: infoNotification,
+      showClose: false,
+      lowContrast: true,
+    }"
+  ></cds-inline-notification>
+
   @if (obs.loading) {
     <div class="loading-container"><cds-loading></cds-loading></div>
   } @else {
     <div class="admin-settings-color__grid">
       @for (def of ACCENT_COLOR_DEFINITIONS; track def.cssVar) {
-        <valtimo-color-picker
-          [formControlName]="def.cssVar"
-          [labelTranslationKey]="def.labelTranslationKey"
-          [config]="{opacity: false, lockOpacity: true}"
-        ></valtimo-color-picker>
+        <div class="admin-settings-color__field">
+          <valtimo-color-picker
+            [formControlName]="def.cssVar"
+            [labelTranslationKey]="def.labelTranslationKey"
+            [config]="{opacity: false, lockOpacity: true}"
+            [i18n]="obs.pickrI18n"
+          ></valtimo-color-picker>
+
+          <button
+            cdsButton="ghost"
+            [disabled]="isDefaultColor(def)"
+            [iconOnly]="true"
+            size="sm"
+            (click)="onReset(def)"
+            class="admin-settings-color__reset"
+          >
+            <svg cdsIcon="reset" size="16"></svg>
+          </button>
+        </div>
       }
     </div>
 

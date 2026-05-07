@@ -21,7 +21,6 @@ interface AccentColorsDto {
 interface AccentColorDefinition {
   cssVar: string;
   labelTranslationKey: string;
-  defaultValue: string;
 }
 
 export {AccentColorsDto, AccentColorDefinition};

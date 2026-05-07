@@ -17,10 +17,19 @@
 import {ChangeDetectionStrategy, Component, OnDestroy, OnInit} from '@angular/core';
 import {CommonModule} from '@angular/common';
 import {FormBuilder, FormGroup, ReactiveFormsModule} from '@angular/forms';
-import {TranslatePipe} from '@ngx-translate/core';
-import {ButtonModule, LayerModule, LoadingModule} from 'carbon-components-angular';
-import {AdminSettingsService, ColorPickerComponent} from '@valtimo/components';
-import {BehaviorSubject, Subscription, switchMap, tap} from 'rxjs';
+import {TranslateModule, TranslateService} from '@ngx-translate/core';
+import {
+  ButtonModule,
+  IconModule,
+  IconService,
+  LayerModule,
+  LinkModule,
+  LoadingModule,
+  NotificationModule,
+} from 'carbon-components-angular';
+import {Reset16} from '@carbon/icons';
+import {AdminSettingsService, ColorPickerComponent, ColorPickerI18n} from '@valtimo/components';
+import {BehaviorSubject, map, Observable, Subscription, switchMap, tap} from 'rxjs';
 import {AdminSettingsManagementApiService} from '../../services';
 import {ACCENT_COLOR_DEFINITIONS} from '../../constants';
 import {AccentColorDefinition} from '../../models';
@@ -32,24 +41,29 @@ import {AccentColorDefinition} from '../../models';
   styleUrls: ['./admin-settings-color.component.scss'],
   imports: [
     CommonModule,
-    TranslatePipe,
+    TranslateModule,
     ReactiveFormsModule,
     LayerModule,
     ButtonModule,
+    IconModule,
     LoadingModule,
+    LinkModule,
+    NotificationModule,
     ColorPickerComponent,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class AdminSettingsColorComponent implements OnInit, OnDestroy {
   public readonly ACCENT_COLOR_DEFINITIONS: AccentColorDefinition[] = ACCENT_COLOR_DEFINITIONS;
-
+  public readonly DOCS_URL =
+    'https://docs.valtimo.nl/customizing-valtimo/front-end-customization/customizing-carbon-theme';
   public readonly formGroup: FormGroup;
 
   public readonly loading$ = new BehaviorSubject<boolean>(true);
   public readonly saving$ = new BehaviorSubject<boolean>(false);
 
   private readonly _refresh$ = new BehaviorSubject<null>(null);
+  private readonly _cssDefaults: {[cssVar: string]: string} = {};
 
   public readonly colors$ = this._refresh$.pipe(
     switchMap(() => this._adminSettingsManagementApiService.getAccentColors()),
@@ -59,13 +73,26 @@ export class AdminSettingsColorComponent implements OnInit, OnDestroy {
     })
   );
 
+  public readonly pickrI18n$: Observable<ColorPickerI18n> =
+    this._translateService.stream('adminSettings.appearance.colors.pickr').pipe(
+      map(pickr => ({
+        save: pickr?.save || 'OK',
+        cancel: pickr?.cancel || 'Cancel',
+        clear: pickr?.clear || 'Clear',
+      }))
+    );
+
   private readonly _subscriptions = new Subscription();
 
   constructor(
     private readonly _adminSettingsManagementApiService: AdminSettingsManagementApiService,
     private readonly _adminSettingsService: AdminSettingsService,
-    private readonly _formBuilder: FormBuilder
+    private readonly _formBuilder: FormBuilder,
+    private readonly _iconService: IconService,
+    private readonly _translateService: TranslateService
   ) {
+    this._iconService.register(Reset16);
+    this._snapshotCssDefaults();
     this.formGroup = this._buildForm();
   }
 
@@ -81,7 +108,8 @@ export class AdminSettingsColorComponent implements OnInit, OnDestroy {
     const colors: {[key: string]: string} = {};
 
     for (const def of ACCENT_COLOR_DEFINITIONS) {
-      colors[def.cssVar] = this.formGroup.get(def.cssVar)?.value || def.defaultValue;
+      const raw = this.formGroup.get(def.cssVar)?.value || this._getCssDefault(def.cssVar);
+      colors[def.cssVar] = this._normalizeHex(raw);
     }
 
     this.saving$.next(true);
@@ -89,6 +117,7 @@ export class AdminSettingsColorComponent implements OnInit, OnDestroy {
 
     this._adminSettingsManagementApiService.updateAccentColors({colors}).subscribe({
       next: () => {
+        this._adminSettingsService.applyAccentColors(colors);
         this.saving$.next(false);
         this.formGroup.enable();
         this.formGroup.markAsPristine();
@@ -101,10 +130,20 @@ export class AdminSettingsColorComponent implements OnInit, OnDestroy {
     });
   }
 
+  public isDefaultColor(def: AccentColorDefinition): boolean {
+    const value = this.formGroup.get(def.cssVar)?.value || '';
+    return value.toLowerCase() === this._getCssDefault(def.cssVar).toLowerCase();
+  }
+
+  public onReset(def: AccentColorDefinition): void {
+    this.formGroup.get(def.cssVar)?.setValue(this._getCssDefault(def.cssVar));
+    this.formGroup.markAsDirty();
+  }
+
   private _buildForm(): FormGroup {
     const controls: {[key: string]: any} = {};
     for (const def of ACCENT_COLOR_DEFINITIONS) {
-      controls[def.cssVar] = this._formBuilder.control(def.defaultValue);
+      controls[def.cssVar] = this._formBuilder.control(this._getCssDefault(def.cssVar));
     }
     return this._formBuilder.group(controls);
   }
@@ -112,9 +151,30 @@ export class AdminSettingsColorComponent implements OnInit, OnDestroy {
   private _patchForm(colors: {[key: string]: string}): void {
     const patch: {[key: string]: string} = {};
     for (const def of ACCENT_COLOR_DEFINITIONS) {
-      patch[def.cssVar] = colors[def.cssVar] || def.defaultValue;
+      patch[def.cssVar] = colors[def.cssVar] || this._getCssDefault(def.cssVar);
     }
     this.formGroup.patchValue(patch, {emitEvent: false});
     this.formGroup.markAsPristine();
+  }
+
+  private _snapshotCssDefaults(): void {
+    for (const def of ACCENT_COLOR_DEFINITIONS) {
+      this._cssDefaults[def.cssVar] =
+        this._adminSettingsService.getComputedAccentColor(def.cssVar);
+    }
+  }
+
+  private _getCssDefault(cssVar: string): string {
+    return this._cssDefaults[cssVar] || '';
+  }
+
+  private _normalizeHex(value: string): string {
+    if (!value) return value;
+
+    const upper = value.toUpperCase();
+    if (upper.length === 9 && upper.endsWith('FF')) {
+      return value.substring(0, 7);
+    }
+    return value;
   }
 }

@@ -80,6 +80,7 @@ export function initializerFactory(
       const adminSettingsService = injector.get(AdminSettingsService);
       const colors = await firstValueFrom(adminSettingsService.getAccentColors());
       if (colors && Object.keys(colors).length > 0) {
+        adminSettingsService.applyAccentColors(colors);
         logger.debug('Accent colors applied', colors);
       }
     } catch (error) {
