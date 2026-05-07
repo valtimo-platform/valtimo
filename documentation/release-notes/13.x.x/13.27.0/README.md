@@ -15,6 +15,14 @@
   required plugin configuration metadata.
   See the [import and export section](../../../features/case/README.md#import) for more information.
 
+* **Highlight widget**
+
+  A new compact case-detail widget that emphasises a single value. The widget renders the value at a configured path;
+  if the path resolves to an array, the number of items is shown instead. Highlight widgets are always rendered one
+  column wide and support an accent colour, an optional icon and an action button (process or link), matching the
+  styling of the other case-detail widgets. See the
+  [widgets documentation](../../../features/case/case-detail/tabs/widgets.md) for configuration details.
+
 ## Enhancements
 
 * **Dependency upgrades for CVE fixes**

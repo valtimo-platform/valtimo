@@ -983,7 +983,11 @@
       },
       "collection": {"title": "Collection", "description": "Create a collection"},
       "divider": {"title": "Divider"},
-      "map": {"title": "Map", "description": "Create a map widget"}
+      "map": {"title": "Map", "description": "Create a map widget"},
+      "highlight": {
+        "title": "Highlight",
+        "description": "A small widget that highlights a single value or a count"
+      }
     },
     "width": {
       "description": "Select the desired width for the widget.",
@@ -1112,6 +1116,15 @@
         "fieldWidthPlaceholder": "Choose field width",
         "titleTooltip": "Title for the property",
         "valueTooltip": "Name of the property you wish to access within the previously filled collection data path"
+      },
+      "highlight": {
+        "identitySection": "Widget identity",
+        "actionSection": "Action",
+        "valueAndAccentSection": "Value & Accent color",
+        "value": "Value",
+        "valuePlaceholder": "Select or type a path",
+        "valueHelper": "Shows the value at this path. If it resolves to an array, the count of items is shown instead.",
+        "accentColor": "Accent color"
       }
     },
     "filters": {
@@ -2233,6 +2246,9 @@
     "noCustomComponentDescription": "The custom component configured for this widget is not available.",
     "map": {
       "title": "Map"
+    },
+    "highlight": {
+      "noValue": "No value"
     }
   },
   "iko": {

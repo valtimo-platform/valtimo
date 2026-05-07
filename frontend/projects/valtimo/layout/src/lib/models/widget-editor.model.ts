@@ -30,6 +30,7 @@ const WidgetTypeTags: {[key: string]: TagType} = {
   [WidgetType.TABLE]: 'purple',
   [WidgetType.INTERACTIVE_TABLE]: 'red',
   [WidgetType.MAP]: 'cyan',
+  [WidgetType.HIGHLIGHT]: 'warm-gray',
 };
 
 export {WidgetManagementTab, WidgetTypeTags};

@@ -20,6 +20,7 @@ import {
   WidgetContentProperties,
   WidgetCustomContent,
   WidgetFieldsContent,
+  WidgetHighlightContent,
   WidgetInteractiveTableContent,
   WidgetMapContent,
   WidgetTableContent,
@@ -35,6 +36,7 @@ enum WidgetType {
   FORMIO = 'formio',
   DIVIDER = 'divider',
   MAP = 'map',
+  HIGHLIGHT = 'highlight',
 }
 
 enum WidgetColor {
@@ -145,6 +147,11 @@ interface MapWidget extends BasicWidget {
   properties: WidgetMapContent;
 }
 
+interface HighlightWidget extends BasicWidget {
+  type: WidgetType.HIGHLIGHT;
+  properties: WidgetHighlightContent;
+}
+
 type Widget =
   | FieldsWidget
   | CollectionWidget
@@ -153,7 +160,8 @@ type Widget =
   | InteractiveTableWidget
   | FormioWidget
   | DividerWidget
-  | MapWidget;
+  | MapWidget
+  | HighlightWidget;
 
 type WidgetWithUuid = Widget & {
   uuid: string;
@@ -221,7 +229,7 @@ interface WidgetGroup {
   widgets: Widget[];
 }
 
-type WidgetComponentMap = Record<Exclude<WidgetType, WidgetType.DIVIDER>, Type<any>>;
+type WidgetComponentMap = Partial<Record<Exclude<WidgetType, WidgetType.DIVIDER>, Type<any>>>;
 
 type WidgetContext = 'case' | 'iko';
 
@@ -250,6 +258,7 @@ export {
   TableWidget,
   InteractiveTableWidget,
   MapWidget,
+  HighlightWidget,
   WidgetPackResultItem,
   WidgetPackResultItemsByRow,
   FormioWidgetWidgetWithUuid,

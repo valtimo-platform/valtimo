@@ -21,7 +21,7 @@ Click **Add widget** to open the create new widget modal that will guide the wid
 {% step %}
 **Choose widget type**
 
-Five types of widgets are currently supported:
+The following widget types are currently supported:
 
 * **Fields**\
   _&#x41; set of single data elements in a widget._
@@ -33,6 +33,10 @@ Five types of widgets are currently supported:
   _&#x50;resent array case data in a table within a widget._
 * **Collection**\
   _&#x50;resent array case data in a collection of cards within a widget._
+* **Map**\
+  _&#x52;ender geographic data on a map using GeoJSON sources._
+* **Highlight**\
+  _&#x41; compact widget that highlights a single value or the count of items in a collection._
 
 <figure><img src="../../../../.gitbook/assets/image (21).png" alt=""><figcaption><p>Choosing widget type</p></figcaption></figure>
 {% endstep %}
@@ -508,5 +512,40 @@ Access to the case widgets can be configured through access control. More inform
 }
 ```
 {% endcode %}
+
+</details>
+
+<details>
+
+<summary>Highlight widget</summary>
+
+The highlight widget is a compact widget that draws attention to a single value or to the count of items in a
+collection. It is rendered one column wide and has a coloured accent border on the left.
+
+**Configuration**
+
+The widget configuration is split into three sections:
+
+1. **Widget identity**
+   * **Widget title** — the label displayed at the top of the widget.
+   * **Icon** — an optional MDI icon, identical to the icon picker used by the other widgets.
+2. **Action**
+   * **Action button type** — choose between a process action (start a process from the widget) or an external link,
+     identical to the action button on the other widgets.
+3. **Value & Accent color**
+   * **Value** — the value resolver path that will be displayed (for example `doc:/customer/firstName` or
+     `doc:/uploadedFiles`). If the path resolves to a single primitive value (string, number, boolean) the value
+     itself is rendered. If it resolves to an array, the number of items in the array is rendered instead.
+   * **Accent color** — the same colour palette that is available for the other widgets. The selected colour is
+     used for the left-hand border, the title and the value text.
+
+The widget width is fixed to one column for highlight widgets and the width step in the wizard is hidden
+accordingly.
+
+**Empty / invalid path handling**
+
+When the configured path does not resolve to a value (path missing in the document, value is `null`/`undefined`,
+or the resolved value is a non-primitive object), the widget renders a discreet "No value" placeholder rather
+than a stringified representation of the underlying object.
 
 </details>

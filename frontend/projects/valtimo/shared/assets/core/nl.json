@@ -1011,7 +1011,11 @@
       },
       "collection": {"title": "Collectie", "description": "Maak een collectie aan"},
       "divider": {"title": "Scheidingslijn"},
-      "map": {"title": "Kaart", "description": "Maak een kaart widget aan"}
+      "map": {"title": "Kaart", "description": "Maak een kaart widget aan"},
+      "highlight": {
+        "title": "Markering",
+        "description": "Een kleine widget die één waarde of een aantal benadrukt"
+      }
     },
     "width": {
       "description": "Selecteer de gewenste breedte voor de widget.",
@@ -1146,6 +1150,15 @@
         "fieldWidthPlaceholder": "Kies veldbreedte",
         "titleTooltip": "Titel van de eigenschap",
         "valueTooltip": "Naam van de eigenschap waartoe u toegang wilt krijgen binnen het eerder ingevulde collectiegegevens-pad"
+      },
+      "highlight": {
+        "identitySection": "Widget-identiteit",
+        "actionSection": "Actie",
+        "valueAndAccentSection": "Waarde & Accentkleur",
+        "value": "Waarde",
+        "valuePlaceholder": "Selecteer of typ een pad",
+        "valueHelper": "Toont de waarde op dit pad. Als het een array is, wordt het aantal elementen weergegeven.",
+        "accentColor": "Accentkleur"
       }
     },
     "filters": {
@@ -2275,6 +2288,9 @@
     "noCustomComponentDescription": "De component die geconfigureerd is voor deze widget kon niet gevonden worden.",
     "map": {
       "title": "Kaart"
+    },
+    "highlight": {
+      "noValue": "Geen waarde"
     }
   },
   "iko": {

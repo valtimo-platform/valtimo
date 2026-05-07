@@ -103,6 +103,10 @@ export class WidgetWizardService {
   public readonly $widgetWizardStepEnableCondition: Signal<
     Record<any, {dependingStep: WidgetWizardStep; condition: () => boolean}>
   > = computed(() => ({
+    [WidgetWizardStep.WIDTH]: {
+      dependingStep: WidgetWizardStep.TYPE,
+      condition: () => this.$selectedWidget()?.type !== WidgetType.HIGHLIGHT,
+    },
     [WidgetWizardStep.DENSITY]: {
       dependingStep: WidgetWizardStep.TYPE,
       condition: () => {

@@ -114,6 +114,21 @@ interface WidgetMapContent {
   geoJsonSources: GeoJsonSource[];
 }
 
+enum HighlightDisplayType {
+  TEXT = 'text',
+  NUMBER = 'number',
+  ARRAY_COUNT = 'array-count',
+}
+
+interface HighlightDisplayProperties {
+  type: HighlightDisplayType;
+}
+
+interface WidgetHighlightContent {
+  value: string;
+  displayProperties: HighlightDisplayProperties;
+}
+
 type WidgetDropdownValue = {[key: string]: string};
 
 type WidgetContentProperties =
@@ -123,7 +138,8 @@ type WidgetContentProperties =
   | WidgetCustomContent
   | WidgetFormioContent
   | WidgetCollectionContent
-  | WidgetMapContent;
+  | WidgetMapContent
+  | WidgetHighlightContent;
 
 export {
   WidgetContentProperties,
@@ -134,6 +150,9 @@ export {
   WidgetInteractiveTableContent,
   WidgetCollectionContent,
   WidgetMapContent,
+  WidgetHighlightContent,
+  HighlightDisplayProperties,
+  HighlightDisplayType,
   WidgetInteractiveTableEventSearchRequest,
   WidgetFilter,
   WidgetDropdownValue,

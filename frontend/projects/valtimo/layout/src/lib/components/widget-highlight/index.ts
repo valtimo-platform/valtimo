@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,9 +14,4 @@
  * limitations under the License.
  */
 
-export * from './fields/widget-management-fields.component';
-export * from './table/widget-management-table.component';
-export * from './collection/widget-management-collection.component';
-export * from './custom/widget-management-custom.component';
-export * from './map/widget-management-map.component';
-export * from './highlight/widget-management-highlight.component';
+export * from './widget-highlight.component';

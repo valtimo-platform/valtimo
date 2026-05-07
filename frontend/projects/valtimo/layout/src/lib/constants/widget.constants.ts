@@ -20,6 +20,7 @@ import {
   WidgetCustomComponent,
   WidgetFieldComponent,
   WidgetFormioComponent,
+  WidgetHighlightComponent,
   WidgetMapComponent,
   WidgetTableComponent,
 } from '../components';
@@ -36,6 +37,7 @@ const DEFAULT_WIDGET_COMPONENT_MAP: WidgetComponentMap = {
   [WidgetType.INTERACTIVE_TABLE]: WidgetInteractiveTableComponent,
   [WidgetType.FIELDS]: WidgetFieldComponent,
   [WidgetType.MAP]: WidgetMapComponent,
+  [WidgetType.HIGHLIGHT]: WidgetHighlightComponent,
 };
 
 export {WIDGET_WIDTH_1X, WIDGET_HEIGHT_1X, DEFAULT_WIDGET_COMPONENT_MAP};
