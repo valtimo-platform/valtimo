@@ -14,10 +14,17 @@
  * limitations under the License.
  */
 
-export * from './custom-widget-token';
-export * from './layout.test-ids';
-export * from './widget.constants';
-export * from './widget-management.constants';
-export * from './widget-management-metroline.constants';
-export * from './widget-metroline.constants';
-export * from './widget-color.constants';
+import {MetrolineMode} from '../models';
+
+const METROLINE_MODE_OPTIONS: MetrolineMode[] = [
+  MetrolineMode.INTERNAL_CASE_STATUS,
+  MetrolineMode.ZAAKSTATUS,
+];
+
+const METROLINE_MODE_TRANSLATION_KEYS: Record<MetrolineMode, string> = {
+  [MetrolineMode.INTERNAL_CASE_STATUS]:
+    'widgetTabManagement.content.metroline.statusSource.internalStatus',
+  [MetrolineMode.ZAAKSTATUS]: 'widgetTabManagement.content.metroline.statusSource.zaakStatus',
+};
+
+export {METROLINE_MODE_OPTIONS, METROLINE_MODE_TRANSLATION_KEYS};

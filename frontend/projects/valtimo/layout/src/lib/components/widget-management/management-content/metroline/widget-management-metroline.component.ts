@@ -26,20 +26,13 @@ import {
   RadioModule,
 } from 'carbon-components-angular';
 import {combineLatest, debounceTime, map, Observable, Subscription} from 'rxjs';
-import {WIDGET_CONTENT_METROLINE_TEST_IDS} from '../../../../constants';
+import {
+  METROLINE_MODE_OPTIONS,
+  METROLINE_MODE_TRANSLATION_KEYS,
+  WIDGET_CONTENT_METROLINE_TEST_IDS,
+} from '../../../../constants';
 import {MetrolineMode, MetrolineOrientation, WidgetMetrolineContent} from '../../../../models';
 import {MetrolineWidgetApiService, WidgetWizardService} from '../../../../services';
-
-const KNOWN_MODES: MetrolineMode[] = [
-  MetrolineMode.INTERNAL_CASE_STATUS,
-  MetrolineMode.ZAAKSTATUS,
-];
-
-const MODE_TRANSLATION_KEYS: Record<MetrolineMode, string> = {
-  [MetrolineMode.INTERNAL_CASE_STATUS]:
-    'widgetTabManagement.content.metroline.statusSource.internalStatus',
-  [MetrolineMode.ZAAKSTATUS]: 'widgetTabManagement.content.metroline.statusSource.zaakStatus',
-};
 
 @Component({
   templateUrl: './widget-management-metroline.component.html',
@@ -132,8 +125,8 @@ export class WidgetManagementMetrolineComponent implements OnDestroy, OnInit {
     const visible = new Set<MetrolineMode>(availableModes);
     if (current) visible.add(current);
 
-    return KNOWN_MODES.filter(mode => visible.has(mode)).map(mode => ({
-      content: this.translateService.instant(MODE_TRANSLATION_KEYS[mode]),
+    return METROLINE_MODE_OPTIONS.filter(mode => visible.has(mode)).map(mode => ({
+      content: this.translateService.instant(METROLINE_MODE_TRANSLATION_KEYS[mode]),
       id: mode,
       selected: current === mode,
     }));

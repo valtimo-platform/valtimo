@@ -14,10 +14,13 @@
  * limitations under the License.
  */
 
-export * from './custom-widget-token';
-export * from './layout.test-ids';
-export * from './widget.constants';
-export * from './widget-management.constants';
-export * from './widget-management-metroline.constants';
-export * from './widget-metroline.constants';
-export * from './widget-color.constants';
+import {MetrolineStepState} from '../models';
+
+const METROLINE_STEP_ICONS: Record<MetrolineStepState, string> = {
+  current: 'incomplete',
+  complete: 'checkmark--outline',
+  invalid: 'warning',
+  incomplete: 'circle-dash',
+};
+
+export {METROLINE_STEP_ICONS};

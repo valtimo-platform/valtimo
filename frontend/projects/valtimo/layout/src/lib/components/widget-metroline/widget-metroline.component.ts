@@ -22,8 +22,15 @@ import {
   MdiIconViewerComponent,
   RemoveClassnamesDirective,
 } from '@valtimo/components';
-import {I18n, IconModule, IconService, ToggletipModule} from 'carbon-components-angular';
+import {
+  I18n,
+  IconModule,
+  IconService,
+  SkeletonModule,
+  ToggletipModule,
+} from 'carbon-components-angular';
 import {BehaviorSubject, combineLatest, map, Observable} from 'rxjs';
+import {METROLINE_STEP_ICONS} from '../../constants';
 import {
   MetrolineItem,
   MetrolineMode,
@@ -33,13 +40,6 @@ import {
   MetrolineWidget,
 } from '../../models';
 import {WidgetActionButtonComponent} from '../widget-action-button/widget-action-button.component';
-
-const STATUS_ICONS: Record<MetrolineStepState, string> = {
-  current: 'incomplete',
-  complete: 'checkmark--outline',
-  invalid: 'warning',
-  incomplete: 'circle-dash',
-};
 
 @Component({
   selector: 'valtimo-widget-metroline',
@@ -54,6 +54,7 @@ const STATUS_ICONS: Record<MetrolineStepState, string> = {
     IconModule,
     MdiIconViewerComponent,
     RemoveClassnamesDirective,
+    SkeletonModule,
     ToggletipModule,
     TranslateModule,
     WidgetActionButtonComponent,
@@ -96,12 +97,8 @@ export class WidgetMetrolineComponent {
       )
     );
 
-  public readonly hasItems$: Observable<boolean> = this.widgetData$.pipe(
-    map(items => Array.isArray(items) && items.length > 0)
-  );
-
-  public readonly hasLoaded$: Observable<boolean> = this.widgetData$.pipe(
-    map(items => items !== null)
+  public readonly isEmptyWidgetData$: Observable<boolean> = this.widgetData$.pipe(
+    map(items => Array.isArray(items) && items.length === 0)
   );
 
   public readonly viewModel$ = combineLatest([
@@ -110,8 +107,7 @@ export class WidgetMetrolineComponent {
     this.steps$,
     this.currentStepIndex$,
     this.orientation$,
-    this.hasItems$,
-    this.hasLoaded$,
+    this.isEmptyWidgetData$,
   ]).pipe(
     map(
       ([
@@ -120,19 +116,20 @@ export class WidgetMetrolineComponent {
         steps,
         currentStepIndex,
         orientation,
-        hasItems,
-        hasLoaded,
+        isEmptyWidgetData,
       ]) => ({
         widgetConfiguration,
         widgetData,
         steps,
         currentStepIndex,
         orientation,
-        hasItems,
-        hasLoaded,
+        isEmptyWidgetData,
       })
     )
   );
+
+  protected readonly skeletonSteps = Array.from({length: 4});
+  protected readonly stepIcons = METROLINE_STEP_ICONS;
 
   constructor(
     private readonly datePipe: DatePipe,
@@ -151,10 +148,6 @@ export class WidgetMetrolineComponent {
     if (step.invalid) return 'invalid';
     if (step.complete) return 'complete';
     return 'incomplete';
-  }
-
-  public getStepIcon(state: MetrolineStepState): string {
-    return STATUS_ICONS[state];
   }
 
   public getStepStateLabel(state: MetrolineStepState): string {
