@@ -25,7 +25,7 @@ import {
 } from '@angular/core';
 import {ProcessDefinition, ProcessService} from '@valtimo/process';
 import {Heatpoint} from '../models';
-import BpmnViewer from 'bpmn-js';
+import NavigatedViewer from 'bpmn-js/lib/NavigatedViewer';
 import heatmap from 'heatmap.js-fixed/build/heatmap.js';
 import {PageTitleService} from '@valtimo/components';
 
@@ -36,7 +36,7 @@ import {PageTitleService} from '@valtimo/components';
   styleUrls: ['./analyse-process-diagram.component.scss'],
 })
 export class AnalyseProcessDiagramComponent implements OnInit, OnDestroy {
-  private bpmnViewer: BpmnViewer;
+  private bpmnViewer: NavigatedViewer;
   private heatMapInstance: any;
 
   @ViewChild('ref') public el: ElementRef;
@@ -74,11 +74,11 @@ export class AnalyseProcessDiagramComponent implements OnInit, OnDestroy {
           this.loadProcessDefinitionFromKey(this.processDefinitionKey);
         }
       });
-    this.createBpmnViewerInstance();
+    this.createNavigatedViewerInstance();
   }
 
-  private createBpmnViewerInstance() {
-    this.bpmnViewer = new BpmnViewer();
+  private createNavigatedViewerInstance() {
+    this.bpmnViewer = new NavigatedViewer();
     this.bpmnViewer.on('import.done', ({error}: any) => {
       if (!error && !this.initialized) {
         const canvas = this.bpmnViewer.get('canvas') as any;
