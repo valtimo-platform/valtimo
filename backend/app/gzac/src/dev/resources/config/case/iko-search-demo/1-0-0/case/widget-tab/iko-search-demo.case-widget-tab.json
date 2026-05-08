@@ -12,7 +12,8 @@
                 "actions": [
                     {
                         "name": "Ga naar Klant",
-                        "navigateTo": "/iko/demo/bsn/details/${doc:ikoSearchResult.id}"
+                        "navigateTo": "/iko/demo/bsn/details/${doc:ikoSearchResult.id}",
+                        "openInNewTab": true
                     }
                 ],
                 "displayConditions": [
