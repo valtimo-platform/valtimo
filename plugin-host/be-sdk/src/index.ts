@@ -18,6 +18,7 @@
 export { action } from "./actions.js";
 export { config } from "./config.js";
 export { log } from "./host-functions.js";
+export { gzacApi } from "./gzac-api.js";
 export { setManifest } from "./runtime.js";
 export { handleAction, handleGetManifest, handle_action } from "./runtime.js";
 
@@ -29,4 +30,8 @@ export type {
   PluginManifest,
   ManifestAction,
   ManifestActionProperty,
+  GzacApiResponse,
+  Document,
+  DocumentContent,
+  DocumentDefinitionId,
 } from "./models/index.js";

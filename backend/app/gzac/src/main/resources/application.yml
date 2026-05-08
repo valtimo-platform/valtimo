@@ -176,6 +176,10 @@ valtimo:
     plugin:
         encryption-secret: ${VALTIMO_PLUGIN_ENCRYPTIONSECRET}
 
+    external-plugin:
+        service-token-secret: ${VALTIMO_EXTERNAL_PLUGIN_SERVICE_TOKEN_SECRET:change-me-please-use-32-bytes-or-more}
+        gzac-base-url: ${VALTIMO_EXTERNAL_PLUGIN_GZAC_BASE_URL:http://localhost:8080}
+
     notificaties-api:
         processing:
             batch-size: 50

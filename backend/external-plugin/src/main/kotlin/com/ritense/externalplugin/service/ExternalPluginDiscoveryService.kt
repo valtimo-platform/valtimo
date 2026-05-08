@@ -91,23 +91,12 @@ class ExternalPluginDiscoveryService(
         val definitions = definitionRepository.findAllByHostId(host.id)
         if (definitions.isEmpty()) return
 
-        val adminToken = hostService.decryptedSecret(host)
         definitions.forEach { definition ->
             val configs = configurationRepository.findAllByDefinitionId(definition.id)
             configs.forEach { config ->
                 try {
-                    val decrypted = configurationService.decryptedProperties(config)
-                    val pushed = hostClient.pushConfiguration(
-                        baseUrl = host.baseUrl,
-                        adminToken = adminToken,
-                        configId = config.id.toString(),
-                        pluginId = definition.pluginId,
-                        pluginVersion = definition.version,
-                        properties = decrypted,
-                    )
-                    if (pushed) {
-                        logger.debug { "Pushed configuration ${config.id} for plugin '${definition.pluginId}' to host ${host.id}" }
-                    } else {
+                    val pushed = configurationService.pushToHost(config, definition, host)
+                    if (!pushed) {
                         logger.warn { "Failed to push configuration ${config.id} for plugin '${definition.pluginId}' to host ${host.id}" }
                     }
                 } catch (e: Exception) {

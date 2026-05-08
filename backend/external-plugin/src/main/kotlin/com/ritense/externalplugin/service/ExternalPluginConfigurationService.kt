@@ -22,6 +22,8 @@ import com.networknt.schema.JsonSchemaFactory
 import com.networknt.schema.SpecVersion
 import com.ritense.externalplugin.client.ExternalPluginHostClient
 import com.ritense.externalplugin.domain.ExternalPluginConfiguration
+import com.ritense.externalplugin.domain.ExternalPluginDefinition
+import com.ritense.externalplugin.domain.ExternalPluginHost
 import com.ritense.externalplugin.repository.ExternalPluginConfigurationRepository
 import com.ritense.externalplugin.repository.ExternalPluginDefinitionRepository
 import com.ritense.externalplugin.repository.ExternalPluginHostRepository
@@ -44,6 +46,8 @@ class ExternalPluginConfigurationService(
     private val propertyEncryptor: PluginPropertyEncryptor,
     private val encryptionService: EncryptionService,
     private val objectMapper: ObjectMapper,
+    private val serviceTokenService: ExternalPluginServiceTokenService,
+    private val gzacBaseUrl: String,
 ) {
 
     @Transactional(readOnly = true)
@@ -78,23 +82,42 @@ class ExternalPluginConfigurationService(
         try {
             val host = hostRepository.findById(definition.hostId).orElse(null)
             if (host != null) {
-                val adminToken = encryptionService.decrypt(host.secret)
-                val decrypted = propertyEncryptor.decryptSecretFields(properties.deepCopy(), definition.configSchema)
-                hostClient.pushConfiguration(
-                    baseUrl = host.baseUrl,
-                    adminToken = adminToken,
-                    configId = saved.id.toString(),
-                    pluginId = definition.pluginId,
-                    pluginVersion = definition.version,
-                    properties = decrypted,
-                )
-                logger.info { "Pushed configuration ${saved.id} for plugin '${definition.pluginId}' to host ${host.id}" }
+                pushToHost(saved, definition, host)
             }
         } catch (e: Exception) {
             logger.warn(e) { "Failed to push configuration ${saved.id} to plugin host (will be synced on next discovery)" }
         }
 
         return saved
+    }
+
+    /**
+     * Pushes a configuration to its plugin host along with a freshly-issued service token and the
+     * GZAC base URL the host should call back on. Used both for new configurations and for the
+     * discovery service's periodic re-sync.
+     */
+    fun pushToHost(
+        configuration: ExternalPluginConfiguration,
+        definition: ExternalPluginDefinition,
+        host: ExternalPluginHost,
+    ): Boolean {
+        val adminToken = encryptionService.decrypt(host.secret)
+        val decrypted = decryptedProperties(configuration)
+        val serviceToken = serviceTokenService.issue(configuration, definition)
+        val pushed = hostClient.pushConfiguration(
+            baseUrl = host.baseUrl,
+            adminToken = adminToken,
+            configId = configuration.id.toString(),
+            pluginId = definition.pluginId,
+            pluginVersion = definition.version,
+            properties = decrypted,
+            serviceToken = serviceToken,
+            gzacBaseUrl = gzacBaseUrl,
+        )
+        if (pushed) {
+            logger.info { "Pushed configuration ${configuration.id} for plugin '${definition.pluginId}' to host ${host.id}" }
+        }
+        return pushed
     }
 
     fun delete(id: UUID) {

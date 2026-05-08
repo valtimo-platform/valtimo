@@ -19,4 +19,14 @@ export interface PluginConfiguration {
   pluginId: string;
   pluginVersion: string;
   properties: Record<string, unknown>;
+  /**
+   * Service token GZAC issues for this configuration. The host attaches it as a Bearer token
+   * on outbound `gzac_api` callbacks.
+   */
+  serviceToken: string;
+  /**
+   * Base URL of the GZAC instance that owns this configuration. The host appends the path the
+   * plugin requests in `gzac_api` to this URL.
+   */
+  gzacBaseUrl: string;
 }

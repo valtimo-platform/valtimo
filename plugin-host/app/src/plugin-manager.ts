@@ -14,12 +14,13 @@
  * limitations under the License.
  */
 
+import type {Plugin as ExtismPlugin} from "@extism/extism";
 import createPlugin from "@extism/extism";
-import type { Plugin as ExtismPlugin } from "@extism/extism";
-import { readFile, writeFile, mkdir, rm, readdir } from "node:fs/promises";
-import { join } from "node:path";
-import { existsSync } from "node:fs";
-import type { HostLogger, PluginManifest } from "./models/index.js";
+import {mkdir, readdir, readFile, rm, writeFile} from "node:fs/promises";
+import {join} from "node:path";
+import {existsSync} from "node:fs";
+import type {HostLogger, PluginManifest} from "./models/index.js";
+import {createGzacApiHostFunction, GzacApiCallContext,} from "./host-functions/gzac-api.js";
 
 interface LoadedPlugin {
   pluginId: string;
@@ -156,7 +157,12 @@ export class PluginManager {
 
   /**
    * Get or create the Extism plugin instance for a loaded plugin.
+   *
    * Plugin uses WASI for stdio (console.log from QuickJS goes to stdout).
+   *
+   * `runInWorker: true` is required so that async host functions (e.g. `gzac_api`, which fetches
+   * from GZAC) can suspend the Wasm call until the JS promise resolves. Without this, async host
+   * functions only work on Node 23+ via JSPI.
    */
   private async getOrCreateExtismPlugin(
     loaded: LoadedPlugin
@@ -168,6 +174,12 @@ export class PluginManager {
     const plugin = await createPlugin(loaded.wasmPath, {
       useWasi: true,
       enableWasiOutput: true,
+      runInWorker: true,
+      functions: {
+        "extism:host/user": {
+          gzac_api: createGzacApiHostFunction(this.logger),
+        },
+      },
     });
 
     loaded.extismPlugin = plugin;
@@ -176,6 +188,10 @@ export class PluginManager {
 
   /**
    * Call the handle_action exported function on a plugin.
+   *
+   * `serviceToken` and `gzacBaseUrl` are passed via Extism's per-call host context — they are
+   * never serialized into the Wasm input. Host functions (e.g. `gzac_api`) read them via
+   * `callContext.hostContext()`.
    */
   async callAction(
     pluginId: string,
@@ -188,6 +204,8 @@ export class PluginManager {
       documentId: string;
       activityId: string;
       properties: Record<string, unknown>;
+      serviceToken: string;
+      gzacBaseUrl: string;
     }
   ): Promise<{
     status: string;
@@ -204,17 +222,27 @@ export class PluginManager {
 
     const plugin = await this.getOrCreateExtismPlugin(loaded);
 
+    // Wasm input excludes serviceToken / gzacBaseUrl — they're host-only.
+    const { serviceToken, gzacBaseUrl, ...wasmFields } = input;
     const wasmInput = JSON.stringify({
       actionKey,
-      ...input,
+      ...wasmFields,
     });
+
+    const hostCtx: GzacApiCallContext = {
+      configurationId: input.configurationId,
+      pluginId,
+      pluginVersion: version,
+      serviceToken,
+      gzacBaseUrl,
+    };
 
     this.logger.debug(
       { pluginId, version, actionKey },
       "Calling handle_action"
     );
 
-    const result = await plugin.call("handle_action", wasmInput);
+    const result = await plugin.call("handle_action", wasmInput, hostCtx);
 
     if (!result) {
       throw new Error(

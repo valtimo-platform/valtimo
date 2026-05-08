@@ -1,0 +1,34 @@
+{
+  "pluginId": "case-summary",
+  "version": "0.1.0",
+  "name": "Case Summary",
+  "description": "POC plugin that builds a one-line summary from the running case's document",
+  "provider": "Ritense",
+  "compatibility": {
+    "minGzacVersion": "12.0.0"
+  },
+  "configurationSchema": {
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "type": "object",
+    "properties": {
+      "currency": {
+        "type": "string",
+        "title": "Currency code",
+        "default": "EUR"
+      }
+    },
+    "additionalProperties": false
+  },
+  "actions": [
+    {
+      "key": "case-summary",
+      "title": "Build Case Summary",
+      "description": "Reads the running case's document and writes a one-line summary as a process variable",
+      "activityTypes": ["SERVICE_TASK_START"],
+      "properties": [
+        { "key": "titleField", "type": "string", "required": true },
+        { "key": "amountField", "type": "string", "required": false }
+      ]
+    }
+  ]
+}
