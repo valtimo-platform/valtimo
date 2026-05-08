@@ -113,4 +113,29 @@ class OutboxLiquibaseRunnerTest {
         verify(lockService).hasChangeLogLock()
         verify(datasource, never()).connection
     }
+
+    @Test
+    fun `executeMigration throws and skips applyChangeLog when abort flag set`() {
+        val hookLockService = mock<LockService>()
+        whenever(hookLockService.hasChangeLogLock()).thenReturn(false)
+        val loopLockService = mock<LockService>()
+        val database = mock<Database>()
+
+        val abortingRunner = object : OutboxLiquibaseRunner(LiquibaseProperties(), mock<DataSource>(), thresholdMinutes) {
+            override fun applyChangeLog(database: Database) {
+                throw AssertionError("applyChangeLog must not be called once aborting=true")
+            }
+        }
+
+        val hook = abortingRunner.newShutdownHook(hookLockService)
+        hook.start()
+        hook.join()
+
+        assertThatThrownBy { abortingRunner.executeMigration(database, loopLockService) }
+            .isInstanceOf(LiquibaseException::class.java)
+            .hasMessageContaining("aborted by JVM shutdown signal")
+            .hasMessageContaining("outbox-master.xml")
+
+        verify(loopLockService).releaseLock()
+    }
 }

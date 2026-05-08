@@ -42,6 +42,9 @@ open class OutboxLiquibaseRunner(
 ) : InitializingBean {
     private val context: Contexts = Contexts(liquibaseProperties.contexts)
 
+    @Volatile
+    private var aborting = false
+
     @Throws(SQLException::class, DatabaseException::class)
     override fun afterPropertiesSet() {
         val connection = datasource.connection
@@ -68,6 +71,11 @@ open class OutboxLiquibaseRunner(
 
     internal open fun executeMigration(database: Database, lockService: LockService) {
         try {
+            if (aborting) {
+                throw LiquibaseException(
+                    "Outbox Liquibase migration aborted by JVM shutdown signal before: $LIQUIBASE_CHANGE_LOG_LOCATION",
+                )
+            }
             applyChangeLog(database)
         } finally {
             // liquibase.update() releases on its own happy path; this catches an exception escaping the call.
@@ -102,6 +110,9 @@ open class OutboxLiquibaseRunner(
      */
     internal fun newShutdownHook(originalLockService: LockService): Thread {
         return Thread({
+            // Set unconditionally so executeMigration() skips applyChangeLog if invoked after this point,
+            // even if the lock has already been released between phases.
+            aborting = true
             if (!originalLockService.hasChangeLogLock()) {
                 return@Thread
             }
