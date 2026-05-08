@@ -15,7 +15,11 @@
  */
 
 import {expect, type Page} from '@playwright/test';
-import {DASHBOARD_MANAGEMENT_TEST_IDS} from '../../constants';
+import {
+  DASHBOARD_MANAGEMENT_TEST_IDS,
+  VALUE_PATH_SELECTOR_TEST_IDS,
+  VALUE_PATH_SELECTOR_DROPDOWN_VALUE_TEST_IDS,
+} from '../../constants';
 import {CarbonList} from '../../shared/carbon-list/carbon-list.utils';
 import * as ApiUtils from '../../utils/api.utils';
 import {endpoints} from '../../api/endpoints';
@@ -320,6 +324,64 @@ export class DashboardManagementPage {
     const sourceRow = list.row(sourceTitle);
     const targetRow = list.row(targetTitle);
     await list.dragRow(sourceRow, targetRow);
+  }
+
+  // ─── Widget Configuration Form Helpers ─────────────────────────────
+
+  async selectDataSource(label: string) {
+    await this.widgetDataSourceDropdown.click();
+    await this.page.getByText(label, {exact: true}).click();
+  }
+
+  async selectCaseType(caseType: string) {
+    const caseTypeDropdown = this.page.locator('valtimo-widget-configuration-container cds-dropdown').first();
+    await expect(caseTypeDropdown).toBeVisible({timeout: 5_000});
+    await caseTypeDropdown.click();
+    await this.page.getByText(caseType, {exact: true}).click();
+  }
+
+  async selectDisplayType(label: string) {
+    await expect(this.widgetDisplayTypeDropdown).toBeEnabled({timeout: 5_000});
+    await this.widgetDisplayTypeDropdown.click();
+    await this.page.getByText(label, {exact: true}).click();
+  }
+
+  async addConditionRow() {
+    const conditionsSection = this.page.locator('.conditions-multi-input');
+    await conditionsSection.getByRole('button', {name: /add condition/i}).click();
+  }
+
+  conditionRow(index: number) {
+    return this.page.getByTestId(`multiInputValuePathSelectorDropdownValue-${index}`);
+  }
+
+  async fillConditionPath(rowIndex: number, pathValue: string) {
+    const row = this.conditionRow(rowIndex);
+    const pathSelector = row.locator('valtimo-value-path-selector');
+    const input = pathSelector.getByTestId(VALUE_PATH_SELECTOR_TEST_IDS.input);
+
+    // If manual input is not visible, toggle from dropdown to manual mode
+    if (!(await input.isVisible())) {
+      const toggle = pathSelector.getByTestId(VALUE_PATH_SELECTOR_TEST_IDS.toggle);
+      await toggle.click();
+      await expect(input).toBeVisible();
+    }
+
+    await input.fill(pathValue);
+  }
+
+  async selectConditionOperator(rowIndex: number, operator: string) {
+    const row = this.conditionRow(rowIndex);
+    const dropdown = row.getByTestId(VALUE_PATH_SELECTOR_DROPDOWN_VALUE_TEST_IDS.dropdown);
+    await dropdown.click();
+    await this.page.getByText(operator, {exact: true}).click({force: true});
+  }
+
+  async fillConditionValue(rowIndex: number, value: string) {
+    const row = this.conditionRow(rowIndex);
+    const input = row.getByTestId(VALUE_PATH_SELECTOR_DROPDOWN_VALUE_TEST_IDS.valueInput);
+    await input.click();
+    await input.fill(value);
   }
 
   // ─── API Helpers ──────────────────────────────────────────────────

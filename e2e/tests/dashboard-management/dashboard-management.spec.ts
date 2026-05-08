@@ -390,4 +390,71 @@ test.describe('Dashboard management — Widget management', () => {
       await dashboardPage.cancelWidgetModal();
     });
   });
+
+  // ─── Widget configuration form ────────────────────────────────────
+
+  test.describe('Widget configuration form', () => {
+    test.beforeAll(async () => {
+      await dashboardPage.openAddWidgetModal();
+    });
+
+    test.afterAll(async () => {
+      await dashboardPage.cancelWidgetModal();
+    });
+
+    test('Enter widget title', async () => {
+      await dashboardPage.widgetTitleInput.fill('E2e Form Test Widget');
+      await expect(dashboardPage.widgetTitleInput).toHaveValue('E2e Form Test Widget');
+    });
+
+    test('Select data source', async () => {
+      await dashboardPage.selectDataSource('Case count');
+      await expect(dashboardPage.widgetDataSourceDropdown).toContainText('Case count');
+    });
+
+    test('Select case type', async () => {
+      await dashboardPage.selectCaseType(CASE_DEFINITION_KEY);
+      const caseTypeDropdown = page.locator('valtimo-widget-configuration-container cds-dropdown').first();
+      await expect(caseTypeDropdown).toContainText(CASE_DEFINITION_KEY);
+    });
+
+    test('Select widget display type', async () => {
+      await dashboardPage.selectDisplayType('Big number');
+      await expect(dashboardPage.widgetDisplayTypeDropdown).toContainText('Big number');
+    });
+
+    test('Add conditions', async () => {
+      await dashboardPage.addConditionRow();
+      await expect(dashboardPage.conditionRow(0)).toBeVisible();
+    });
+
+    test('Configure condition path', async () => {
+      await dashboardPage.fillConditionPath(0, 'doc:someField');
+      const row = dashboardPage.conditionRow(0);
+      const pathInput = row.locator('valtimo-value-path-selector').getByTestId('valuePathSelectorInput');
+      await expect(pathInput).toHaveValue('doc:someField');
+    });
+
+    test('Configure condition operator', async () => {
+      await dashboardPage.selectConditionOperator(0, 'Equal to');
+      const row = dashboardPage.conditionRow(0);
+      const dropdown = row.getByTestId('valuePathSelectorDropdownValueDropDown');
+      await expect(dropdown).toContainText('Equal to');
+    });
+
+    test('Configure condition value', async () => {
+      await dashboardPage.fillConditionValue(0, 'testValue');
+      const row = dashboardPage.conditionRow(0);
+      const input = row.getByTestId('valuePathSelectorDropdownValueValueInput');
+      await expect(input).toHaveValue('testValue');
+    });
+
+    test('Use placeholders in conditions', async () => {
+      const row = dashboardPage.conditionRow(0);
+      const input = row.getByTestId('valuePathSelectorDropdownValueValueInput');
+      await input.clear();
+      await input.fill('${currentUserId}');
+      await expect(input).toHaveValue('${currentUserId}');
+    });
+  });
 });
