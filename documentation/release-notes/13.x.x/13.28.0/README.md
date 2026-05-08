@@ -6,9 +6,22 @@
 
 ## New Features
 
-* **New feature title**
+* **Dutch address support in map widgets**
 
-  New feature explanation.
+  The map widget can now render a layer that points at a Dutch address object instead of a GeoJSON geometry. Valtimo
+  geocodes the address to a WGS84 coordinate via
+  the [PDOK Locatieserver](https://api.pdok.nl/bzk/locatieserver/search/v3_1/ui/) and renders the result as a `Point`.
+  See the [Map widget documentation](../../../features/case/tabs/widgets.md) for the full list of recognised fields and
+  a configuration example.
+
+* **Person card widget**
+
+  A new `person-card` widget type displays personal data for a single person (full name, birthdate, BSN, phone, email
+  and city) in a compact card format on the case detail page. Field values are configured as JSON paths into the case
+  document, and only the full name is required — empty fields are hidden in the rendered card. See the
+  [Person card widget documentation](../../../features/case/case-detail/tabs/widgets.md) for the full list of fields
+  and a configuration example.
+
 
 ## Enhancements
 
@@ -29,7 +42,13 @@
   callers. They are now also reduced to status-only for unauthenticated
   requests. Authenticate with the actuator role to keep seeing details.
   {% endhint %}
+  
+* **Open widget link in a new browser tab**
+
+  Link-type action buttons on case widgets now support an "Open in new tab" option in widget management.
+  When enabled, clicking the button opens the configured URL in a new browser tab instead of replacing
+  the case detail page.
 
 ## Bugfixes
 
-* New bugfix.
+* When a header widget was configured, it was not possible to edit the header widget.
