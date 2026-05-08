@@ -120,6 +120,43 @@ class ExternalPluginConfigurationService(
         return pushed
     }
 
+    fun update(id: UUID, title: String, properties: ObjectNode): ExternalPluginConfiguration {
+        val config = configurationRepository.findById(id)
+            .orElseThrow { IllegalArgumentException("External plugin configuration $id not found") }
+        val definition = definitionRepository.findById(config.definitionId)
+            .orElseThrow { IllegalArgumentException("External plugin definition ${config.definitionId} not found") }
+
+        validateAgainstSchema(properties, definition.configSchema)
+
+        val encrypted = propertyEncryptor.encryptSecretFields(properties.deepCopy(), definition.configSchema)
+
+        config.title = title
+        config.properties = encrypted
+        val saved = configurationRepository.save(config)
+
+        // Push updated decrypted config to the plugin host
+        try {
+            val host = hostRepository.findById(definition.hostId).orElse(null)
+            if (host != null) {
+                val adminToken = encryptionService.decrypt(host.secret)
+                val decrypted = propertyEncryptor.decryptSecretFields(properties.deepCopy(), definition.configSchema)
+                hostClient.pushConfiguration(
+                    baseUrl = host.baseUrl,
+                    adminToken = adminToken,
+                    configId = saved.id.toString(),
+                    pluginId = definition.pluginId,
+                    pluginVersion = definition.version,
+                    properties = decrypted,
+                )
+                logger.info { "Pushed updated configuration ${saved.id} for plugin '${definition.pluginId}' to host ${host.id}" }
+            }
+        } catch (e: Exception) {
+            logger.warn(e) { "Failed to push updated configuration ${saved.id} to plugin host (will be synced on next discovery)" }
+        }
+
+        return saved
+    }
+
     fun delete(id: UUID) {
         val config = configurationRepository.findById(id)
             .orElseThrow { IllegalArgumentException("External plugin configuration $id not found") }

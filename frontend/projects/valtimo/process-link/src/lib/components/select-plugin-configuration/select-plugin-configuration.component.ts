@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,11 +19,15 @@ import {catchError, filter, map, switchMap, take, withLatestFrom} from 'rxjs/ope
 import {PluginStateService} from '../../services/plugin-state.service';
 import {combineLatest, Observable, of, Subscription} from 'rxjs';
 import {
+  ExternalPluginConfiguration,
+  ExternalPluginDefinition,
+  ExternalPluginService,
   PluginConfiguration,
   PluginDefinition,
   PluginManagementService,
   PluginService,
   PluginTranslationService,
+  toExternalPluginKey,
 } from '@valtimo/plugin';
 import {
   ProcessLinkButtonService,
@@ -31,7 +35,6 @@ import {
   ProcessLinkStepService,
 } from '../../services';
 import {PluginListItem} from '../../models';
-import {ExternalPluginService} from '@valtimo/plugin-management';
 
 @Component({
   standalone: false,
@@ -40,55 +43,55 @@ import {ExternalPluginService} from '@valtimo/plugin-management';
   styleUrls: ['./select-plugin-configuration.component.scss'],
 })
 export class SelectPluginConfigurationComponent implements OnInit, OnDestroy {
-  readonly isBuildingBlockContext$ = this.stateService.context$.pipe(
+  public readonly isBuildingBlockContext$ = this._stateService.context$.pipe(
     map(context => context === 'buildingBlock')
   );
 
-  readonly listItems$: Observable<PluginListItem[] | undefined> = combineLatest([
+  public readonly listItems$: Observable<PluginListItem[] | undefined> = combineLatest([
     this.isBuildingBlockContext$,
-    this.stateService.modalParams$,
+    this._stateService.modalParams$,
   ]).pipe(
     switchMap(([isBuildingBlock, modalData]) =>
       isBuildingBlock
         ? combineLatest([
-            this.pluginManagementService.getPluginDefinitions(
+            this._pluginManagementService.getPluginDefinitions(
               modalData?.element?.activityListenerType
             ),
-            this.pluginService.pluginSpecifications$,
+            this._pluginService.pluginSpecifications$,
           ]).pipe(
             map(([definitions, specs]) => {
               const limitedDefinitions =
                 definitions?.filter(definition =>
                   specs.some(spec => spec.pluginId === definition.key)
                 ) ?? [];
-              const enriched = limitedDefinitions.map(definition => {
+              const enriched: PluginListItem[] = limitedDefinitions.map(definition => {
                 const spec = specs.find(item => item.pluginId === definition.key);
                 return {
                   id: definition.key,
                   title:
-                    this.pluginTranslationService.instant('title', definition.key) ||
+                    this._pluginTranslationService.instant('title', definition.key) ||
                     definition.title,
                   description:
-                    this.pluginTranslationService.instant('description', definition.key) ||
+                    this._pluginTranslationService.instant('description', definition.key) ||
                     definition.description,
                   logo: spec?.pluginLogoBase64 ?? null,
                   payload: definition.key,
                   isDefinition: true,
-                } as PluginListItem;
+                };
               });
-              this.pluginDefinitionsCache = limitedDefinitions;
+              this._pluginDefinitionsCache = limitedDefinitions;
               return enriched;
             })
           )
         : combineLatest([
             modalData?.element?.type
-              ? this.pluginManagementService.getAllPluginConfigurationsWithLogos(
+              ? this._pluginManagementService.getAllPluginConfigurationsWithLogos(
                   modalData?.element?.activityListenerType
                 )
               : of(undefined),
-            this.pluginService.availablePluginIds$,
-            this.externalPluginService.getConfigurations().pipe(catchError(() => of([]))),
-            this.externalPluginService.getDefinitions().pipe(catchError(() => of([]))),
+            this._pluginService.availablePluginIds$,
+            this._externalPluginService.getConfigurations().pipe(catchError(() => of([] as ExternalPluginConfiguration[]))),
+            this._externalPluginService.getDefinitions().pipe(catchError(() => of([] as ExternalPluginDefinition[]))),
           ]).pipe(
             map(([configs, availablePluginIds, externalConfigs, externalDefinitions]) => {
               const embeddedItems: PluginListItem[] =
@@ -99,7 +102,7 @@ export class SelectPluginConfigurationComponent implements OnInit, OnDestroy {
                   ?.map(configuration => ({
                     id: configuration.id ?? configuration.title,
                     title: configuration.title,
-                    description: this.pluginTranslationService.instant(
+                    description: this._pluginTranslationService.instant(
                       'description',
                       configuration.pluginDefinition.key
                     ),
@@ -110,25 +113,25 @@ export class SelectPluginConfigurationComponent implements OnInit, OnDestroy {
 
               const externalItems: PluginListItem[] = externalConfigs.map(extConfig => {
                 const def = externalDefinitions.find(d => d.id === extConfig.definitionId);
-                const fakeConfig: PluginConfiguration = {
-                  id: extConfig.id,
-                  title: extConfig.title,
-                  pluginDefinition: {
-                    key: `external:${extConfig.definitionId}`,
-                    title: def?.name ?? extConfig.definitionId,
-                    description: def?.description ?? '',
-                  } as PluginDefinition,
-                  properties: {},
-                  _external: true,
-                  _externalDefinition: def,
-                } as any;
                 return {
                   id: extConfig.id,
                   title: extConfig.title,
                   description: def?.name ?? 'External plugin',
                   logo: null,
-                  payload: fakeConfig,
+                  payload: {
+                    id: extConfig.id,
+                    title: extConfig.title,
+                    pluginDefinition: {
+                      key: toExternalPluginKey(extConfig.definitionId),
+                      title: def?.name ?? extConfig.definitionId,
+                      description: def?.description ?? '',
+                    },
+                    properties: {},
+                  } as PluginConfiguration,
                   isDefinition: false,
+                  external: true,
+                  externalConfigurationId: extConfig.id,
+                  externalDefinitionId: extConfig.definitionId,
                 };
               });
 
@@ -138,7 +141,7 @@ export class SelectPluginConfigurationComponent implements OnInit, OnDestroy {
     )
   );
 
-  readonly pageHeaderText$ = this.isBuildingBlockContext$.pipe(
+  public readonly pageHeaderText$ = this.isBuildingBlockContext$.pipe(
     map(isBuildingBlock =>
       isBuildingBlock
         ? 'processLinkConfiguration.choosePluginDefinitionDescription'
@@ -146,7 +149,7 @@ export class SelectPluginConfigurationComponent implements OnInit, OnDestroy {
     )
   );
 
-  readonly columnHeaderText$ = this.isBuildingBlockContext$.pipe(
+  public readonly columnHeaderText$ = this.isBuildingBlockContext$.pipe(
     map(isBuildingBlock =>
       isBuildingBlock
         ? 'pluginManagement.labels.pluginName'
@@ -154,81 +157,81 @@ export class SelectPluginConfigurationComponent implements OnInit, OnDestroy {
     )
   );
 
-  readonly selectedPluginConfiguration$ = this.pluginStateService.selectedPluginConfiguration$;
-  readonly selectedPluginDefinition$ = this.pluginStateService.selectedPluginDefinition$;
+  public readonly selectedPluginConfiguration$ = this._pluginStateService.selectedPluginConfiguration$;
+  public readonly selectedPluginDefinition$ = this._pluginStateService.selectedPluginDefinition$;
 
-  private _subscriptions = new Subscription();
-  private pluginDefinitionsCache: PluginDefinition[] = [];
+  private readonly _subscriptions = new Subscription();
+  private _pluginDefinitionsCache: PluginDefinition[] = [];
 
   constructor(
-    private readonly pluginManagementService: PluginManagementService,
-    private readonly pluginStateService: PluginStateService,
-    private readonly pluginService: PluginService,
-    private readonly stateService: ProcessLinkStateService,
-    private readonly buttonService: ProcessLinkButtonService,
-    private readonly stepService: ProcessLinkStepService,
-    private readonly pluginTranslationService: PluginTranslationService,
-    private readonly externalPluginService: ExternalPluginService
+    private readonly _pluginManagementService: PluginManagementService,
+    private readonly _pluginStateService: PluginStateService,
+    private readonly _pluginService: PluginService,
+    private readonly _stateService: ProcessLinkStateService,
+    private readonly _buttonService: ProcessLinkButtonService,
+    private readonly _stepService: ProcessLinkStepService,
+    private readonly _pluginTranslationService: PluginTranslationService,
+    private readonly _externalPluginService: ExternalPluginService
   ) {}
 
-  ngOnInit(): void {
-    this.openBackButtonSubscription();
-    this.openNextButtonSubscription();
+  public ngOnInit(): void {
+    this._openBackButtonSubscription();
+    this._openNextButtonSubscription();
   }
 
-  ngOnDestroy(): void {
+  public ngOnDestroy(): void {
     this._subscriptions.unsubscribe();
   }
 
-  selected(event: {value: PluginConfiguration | string}): void {
+  public selected(event: {value: PluginConfiguration | string}): void {
     this.isBuildingBlockContext$.pipe(take(1)).subscribe(isBuildingBlock => {
       if (isBuildingBlock) {
         const definitionKey = event.value as string;
-        const definition = this.pluginDefinitionsCache.find(def => def.key === definitionKey);
-        this.selectDefinition(definition);
+        const definition = this._pluginDefinitionsCache.find(def => def.key === definitionKey);
+        this._selectDefinition(definition);
       } else {
-        this.selectConfiguration(event.value as PluginConfiguration);
+        this._selectConfiguration(event.value as PluginConfiguration);
       }
-      this.buttonService.enableNextButton();
+      this._buttonService.enableNextButton();
     });
   }
 
-  private selectConfiguration(configuration: PluginConfiguration): void {
+  private _selectConfiguration(configuration: PluginConfiguration): void {
     if (!configuration) return;
     if (configuration.pluginDefinition) {
-      this.pluginStateService.selectPluginDefinition(configuration.pluginDefinition);
+      this._pluginStateService.selectPluginDefinition(configuration.pluginDefinition);
     }
-    this.pluginStateService.selectPluginConfiguration(configuration);
+    this._pluginStateService.selectPluginConfiguration(configuration);
   }
 
-  private selectDefinition(definition: PluginDefinition | undefined): void {
+  private _selectDefinition(definition: PluginDefinition | undefined): void {
     if (!definition) return;
-    this.pluginStateService.selectPluginDefinition(definition);
-    this.pluginStateService.selectPluginConfiguration(undefined);
+    this._pluginStateService.selectPluginDefinition(definition);
+    this._pluginStateService.selectPluginConfiguration(undefined);
   }
 
-  private openBackButtonSubscription(): void {
+  private _openBackButtonSubscription(): void {
     this._subscriptions.add(
-      this.buttonService.backButtonClick$
+      this._buttonService.backButtonClick$
         .pipe(
-          withLatestFrom(this.stateService.isEditing$),
+          withLatestFrom(this._stateService.isEditing$),
           filter(([, isEditing]) => !isEditing)
         )
         .subscribe(() => {
-          this.stateService.setInitial();
+          this._stateService.setInitial();
         })
     );
   }
 
-  private openNextButtonSubscription(): void {
+  private _openNextButtonSubscription(): void {
     this._subscriptions.add(
-      this.buttonService.nextButtonClick$
+      this._buttonService.nextButtonClick$
         .pipe(
-          withLatestFrom(this.stateService.isEditing$),
+          withLatestFrom(this._stateService.isEditing$),
           filter(([, isEditing]) => !isEditing)
         )
         .subscribe(() => {
-          this.stepService.setChoosePluginActionSteps();
+          this._stepService.setChoosePluginActionSteps();
         })
     );
   }

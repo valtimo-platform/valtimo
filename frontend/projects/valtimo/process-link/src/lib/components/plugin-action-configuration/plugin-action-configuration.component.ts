@@ -24,7 +24,7 @@ import {
 } from '../../services';
 import {BehaviorSubject, combineLatest, Observable, Subscription} from 'rxjs';
 import {filter, map, take, withLatestFrom} from 'rxjs/operators';
-import {PluginConfiguration, PluginConfigurationData} from '@valtimo/plugin';
+import {isExternalPluginKey, PluginConfiguration, PluginConfigurationData} from '@valtimo/plugin';
 import {
   ExternalPluginProcessLinkCreateDto,
   ExternalPluginProcessLinkUpdateDto,
@@ -41,36 +41,38 @@ import {
   styleUrls: ['./plugin-action-configuration.component.scss'],
 })
 export class PluginActionConfigurationComponent implements OnInit, OnDestroy {
-  @Input() selectedPluginConfiguration$: Observable<PluginConfiguration>;
-  @Output() valid: EventEmitter<boolean> = new EventEmitter<boolean>();
-  @Output() configuration: EventEmitter<PluginConfigurationData> =
+  @Input() public selectedPluginConfiguration$: Observable<PluginConfiguration>;
+  @Output() public valid: EventEmitter<boolean> = new EventEmitter<boolean>();
+  @Output() public configuration: EventEmitter<PluginConfigurationData> =
     new EventEmitter<PluginConfigurationData>();
 
-  public readonly pluginDefinitionKey$ = this.pluginStateService.pluginDefinitionKey$;
-  public readonly functionKey$ = this.pluginStateService.functionKey$;
-  public readonly save$ = this.pluginStateService.save$;
-  public readonly saving$ = this.stateService.saving$;
+  public readonly pluginDefinitionKey$ = this._pluginStateService.pluginDefinitionKey$;
+  public readonly functionKey$ = this._pluginStateService.functionKey$;
+  public readonly save$ = this._pluginStateService.save$;
+  public readonly saving$ = this._stateService.saving$;
 
   public readonly isExternalPlugin$: Observable<boolean> =
-    this.pluginStateService.selectedPluginConfiguration$.pipe(
-      map(config => !!(config as any)?._external)
+    this._pluginStateService.selectedPluginDefinition$.pipe(
+      map(definition => isExternalPluginKey(definition?.key))
     );
+
+  public externalActionProperties: Record<string, unknown> = {};
+  public externalActionPropertiesJson = '{}';
+  public externalActionPropertiesValid = true;
 
   private readonly _prefillConfigurationSubject$ = new BehaviorSubject<
     ProcessLink['actionProperties'] | null
   >(null);
-  // Only prefill if the action key hasn't changed from what's saved in the process link
   private readonly _prefillConfiguration$ = combineLatest([
-    this.stateService.selectedProcessLink$,
-    this.pluginStateService.selectedPluginFunction$,
+    this._stateService.selectedProcessLink$,
+    this._pluginStateService.selectedPluginFunction$,
   ]).pipe(
     map(([processLink, selectedFunction]) => {
       if (!processLink) return undefined;
-      // Only prefill if the action hasn't been changed
       const savedActionKey = processLink.pluginActionDefinitionKey;
       const currentActionKey = selectedFunction?.key;
       if (currentActionKey && savedActionKey !== currentActionKey) {
-        return undefined; // Action changed, don't prefill old configuration
+        return undefined;
       }
       return processLink.actionProperties;
     })
@@ -88,22 +90,31 @@ export class PluginActionConfigurationComponent implements OnInit, OnDestroy {
   private _subscriptions = new Subscription();
 
   constructor(
-    private readonly stateService: ProcessLinkStateService,
-    private readonly pluginStateService: PluginStateService,
-    private readonly buttonService: ProcessLinkButtonService,
-    private readonly stepService: ProcessLinkStepService,
-    private readonly processLinkService: ProcessLinkService
+    private readonly _stateService: ProcessLinkStateService,
+    private readonly _pluginStateService: PluginStateService,
+    private readonly _buttonService: ProcessLinkButtonService,
+    private readonly _stepService: ProcessLinkStepService,
+    private readonly _processLinkService: ProcessLinkService
   ) {}
 
   ngOnInit(): void {
     this.openBackButtonSubscription();
     this.openSaveButtonSubscription();
 
-    // For external plugins, auto-enable save since there's no config form
     this._subscriptions.add(
       this.isExternalPlugin$.subscribe(isExternal => {
         if (isExternal) {
-          this.buttonService.enableSaveButton();
+          this._buttonService.enableSaveButton();
+        }
+      })
+    );
+
+    this._subscriptions.add(
+      this._stateService.selectedProcessLink$.pipe(take(1)).subscribe(processLink => {
+        if (processLink?.actionProperties) {
+          const json = JSON.stringify(processLink.actionProperties, null, 2);
+          this.externalActionPropertiesJson = json;
+          this.externalActionProperties = processLink.actionProperties;
         }
       })
     );
@@ -114,14 +125,14 @@ export class PluginActionConfigurationComponent implements OnInit, OnDestroy {
   }
 
   onValid(valid: boolean): void {
-    if (valid) this.buttonService.enableSaveButton();
-    else this.buttonService.disableSaveButton();
+    if (valid) this._buttonService.enableSaveButton();
+    else this._buttonService.disableSaveButton();
   }
 
   onConfiguration(configuration: PluginConfigurationData): void {
-    this.stateService.startSaving();
+    this._stateService.startSaving();
 
-    this.stateService.selectedProcessLink$.pipe(take(1)).subscribe(selectedProcessLink => {
+    this._stateService.selectedProcessLink$.pipe(take(1)).subscribe(selectedProcessLink => {
       if (selectedProcessLink) {
         this.updateProcessLink(configuration);
       } else {
@@ -134,10 +145,22 @@ export class PluginActionConfigurationComponent implements OnInit, OnDestroy {
     this._prefillConfigurationSubject$.next(configuration);
   }
 
+  public onExternalActionPropertiesChange(value: string): void {
+    this.externalActionPropertiesJson = value;
+    try {
+      this.externalActionProperties = JSON.parse(value);
+      this.externalActionPropertiesValid = true;
+      this._buttonService.enableSaveButton();
+    } catch {
+      this.externalActionPropertiesValid = false;
+      this._buttonService.disableSaveButton();
+    }
+  }
+
   private updateProcessLink(configuration: PluginConfigurationData): void {
     combineLatest([
-      this.stateService.selectedProcessLink$,
-      this.pluginStateService.selectedPluginFunction$,
+      this._stateService.selectedProcessLink$,
+      this._pluginStateService.selectedPluginFunction$,
     ])
       .pipe(take(1))
       .subscribe(([selectedProcessLink, selectedFunction]) => {
@@ -148,8 +171,8 @@ export class PluginActionConfigurationComponent implements OnInit, OnDestroy {
           inferredReferenceType === 'FIXED'
             ? (selectedProcessLink.pluginConfigurationId ?? '')
             : undefined;
-        // Use the currently selected function key (user may have changed it)
-        const actionKey = selectedFunction?.key ?? selectedProcessLink.pluginActionDefinitionKey ?? '';
+        const actionKey =
+          selectedFunction?.key ?? selectedProcessLink.pluginActionDefinitionKey ?? '';
         const updateProcessLinkRequest: PluginProcessLinkUpdateDto = {
           id: selectedProcessLink.id,
           pluginConfigurationId,
@@ -160,17 +183,17 @@ export class PluginActionConfigurationComponent implements OnInit, OnDestroy {
           pluginDefinitionKey: selectedProcessLink.pluginDefinitionKey,
         };
 
-        this.stateService.sendProcessLinkUpdateEvent(updateProcessLinkRequest);
+        this._stateService.sendProcessLinkUpdateEvent(updateProcessLinkRequest);
       });
   }
 
   private saveNewProcessLink(configuration: PluginConfigurationData): void {
     combineLatest([
-      this.stateService.modalParams$,
-      this.pluginStateService.selectedPluginConfiguration$,
-      this.pluginStateService.selectedPluginFunction$,
-      this.stateService.selectedProcessLinkTypeId$,
-      this.pluginStateService.selectedPluginDefinition$,
+      this._stateService.modalParams$,
+      this._pluginStateService.selectedPluginConfiguration$,
+      this._pluginStateService.selectedPluginFunction$,
+      this._stateService.selectedProcessLinkTypeId$,
+      this._pluginStateService.selectedPluginDefinition$,
     ])
       .pipe(take(1))
       .subscribe(
@@ -181,17 +204,17 @@ export class PluginActionConfigurationComponent implements OnInit, OnDestroy {
           selectedProcessLinkTypeId,
           selectedDefinition,
         ]) => {
-          const isBuildingBlock = this.stateService.isBuildingBlockContext();
+          const isBuildingBlock = this._stateService.isBuildingBlockContext();
           const pluginDefinitionKey =
             selectedConfiguration?.pluginDefinition?.key || selectedDefinition?.key;
 
           if (!selectedFunction || (isBuildingBlock && !pluginDefinitionKey)) {
-            this.stateService.stopSaving();
+            this._stateService.stopSaving();
             return;
           }
 
           if (!isBuildingBlock && !selectedConfiguration) {
-            this.stateService.stopSaving();
+            this._stateService.stopSaving();
             return;
           }
 
@@ -211,53 +234,55 @@ export class PluginActionConfigurationComponent implements OnInit, OnDestroy {
             pluginDefinitionKey,
           };
 
-          this.stateService.sendProcessLinkCreateEvent(processLinkRequest);
+          this._stateService.sendProcessLinkCreateEvent(processLinkRequest);
         }
       );
   }
 
   private openBackButtonSubscription(): void {
     this._subscriptions.add(
-      this.buttonService.backButtonClick$
+      this._buttonService.backButtonClick$
         .pipe(
-          withLatestFrom(this.stateService.isEditing$),
+          withLatestFrom(this._stateService.isEditing$),
           filter(([, isEditing]) => !isEditing)
         )
         .subscribe(() => {
-          this.stepService.setChoosePluginActionSteps();
+          this._stepService.setChoosePluginActionSteps();
         })
     );
   }
 
   private openSaveButtonSubscription(): void {
     this._subscriptions.add(
-      this.buttonService.saveButtonClick$.pipe(
-        withLatestFrom(this.isExternalPlugin$)
-      ).subscribe(([, isExternal]) => {
-        if (isExternal) {
-          this.saveExternalPluginProcessLink();
-        } else {
-          this.pluginStateService.save();
-        }
-      })
+      this._buttonService.saveButtonClick$
+        .pipe(withLatestFrom(this.isExternalPlugin$))
+        .subscribe(([, isExternal]) => {
+          if (isExternal) {
+            this.saveExternalPluginProcessLink();
+          } else {
+            this._pluginStateService.save();
+          }
+        })
     );
   }
 
   private saveExternalPluginProcessLink(): void {
-    this.stateService.startSaving();
+    this._stateService.startSaving();
 
     combineLatest([
-      this.stateService.modalParams$,
-      this.pluginStateService.selectedPluginConfiguration$,
-      this.pluginStateService.selectedPluginFunction$,
-      this.stateService.selectedProcessLink$,
+      this._stateService.modalParams$,
+      this._pluginStateService.selectedPluginConfiguration$,
+      this._pluginStateService.selectedPluginFunction$,
+      this._stateService.selectedProcessLink$,
     ])
       .pipe(take(1))
       .subscribe(([modalData, selectedConfiguration, selectedFunction, selectedProcessLink]) => {
         if (!selectedConfiguration || !selectedFunction) {
-          this.stateService.stopSaving();
+          this._stateService.stopSaving();
           return;
         }
+
+        const actionProperties = this.externalActionProperties;
 
         if (selectedProcessLink) {
           const updateRequest: ExternalPluginProcessLinkUpdateDto = {
@@ -265,9 +290,9 @@ export class PluginActionConfigurationComponent implements OnInit, OnDestroy {
             processLinkType: 'external_plugin',
             externalPluginConfigurationId: selectedConfiguration.id,
             actionKey: selectedFunction.key,
-            actionProperties: {},
+            actionProperties,
           };
-          this.stateService.sendProcessLinkUpdateEvent(updateRequest);
+          this._stateService.sendProcessLinkUpdateEvent(updateRequest);
         } else {
           const createRequest: ExternalPluginProcessLinkCreateDto = {
             processDefinitionId: modalData?.processDefinitionId,
@@ -276,9 +301,9 @@ export class PluginActionConfigurationComponent implements OnInit, OnDestroy {
             processLinkType: 'external_plugin',
             externalPluginConfigurationId: selectedConfiguration.id,
             actionKey: selectedFunction.key,
-            actionProperties: {},
+            actionProperties,
           };
-          this.stateService.sendProcessLinkCreateEvent(createRequest);
+          this._stateService.sendProcessLinkCreateEvent(createRequest);
         }
       });
   }

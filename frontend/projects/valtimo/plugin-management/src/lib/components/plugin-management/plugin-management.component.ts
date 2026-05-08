@@ -13,10 +13,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import {Component, signal} from '@angular/core';
+import {Component} from '@angular/core';
 import {TranslateService} from '@ngx-translate/core';
 import {ActionItem, ColumnConfig, ViewType} from '@valtimo/components';
 import {
+  ExternalPluginConfiguration,
+  ExternalPluginDefinition,
+  ExternalPluginHost,
+  ExternalPluginHostCreateRequest,
+  ExternalPluginService,
   PluginConfiguration,
   PluginManagementService,
   PluginTranslationService,
@@ -24,13 +29,8 @@ import {
 import {NGXLogger} from 'ngx-logger';
 import {BehaviorSubject, combineLatest, Observable, of} from 'rxjs';
 import {catchError, map, switchMap, take, tap} from 'rxjs/operators';
-import {ExternalPluginService, PluginManagementStateService} from '../../services';
-import {
-  ExternalPluginConfiguration,
-  ExternalPluginDefinition,
-  ExternalPluginHost,
-  ExternalPluginHostCreateRequest,
-} from '../../models';
+import {PluginManagementStateService} from '../../services';
+import {UnifiedPluginConfigurationRow} from '../../models';
 import {cloneDeep} from 'lodash';
 import {v4 as uuidv4} from 'uuid';
 
@@ -59,9 +59,9 @@ export class PluginManagementComponent {
       viewType: ViewType.TEXT,
     },
     {
-      key: 'sourceTag',
+      key: 'sourceLabel',
       label: 'pluginManagement.labels.source',
-      viewType: ViewType.TEXT,
+      viewType: ViewType.TAGS,
     },
   ];
 
@@ -73,6 +73,7 @@ export class PluginManagementComponent {
     {
       label: 'interface.duplicate',
       callback: this.duplicateConfiguration.bind(this),
+      disabledCallback: (row: UnifiedPluginConfigurationRow) => row.source === 'external',
     },
     {
       callback: this.deleteConfiguration.bind(this),
@@ -84,35 +85,47 @@ export class PluginManagementComponent {
   public readonly loading$ = new BehaviorSubject<boolean>(true);
   public readonly showEditModal$ = new BehaviorSubject<boolean>(false);
   public readonly showAddModal$ = new BehaviorSubject<boolean>(false);
-  public readonly pluginConfigurations$: Observable<Array<PluginConfiguration & {pluginName: string; definitionKey: string; sourceTag: string}>> =
-    this.stateService.refresh$.pipe(
+  public readonly pluginConfigurations$: Observable<Array<UnifiedPluginConfigurationRow>> =
+    this._stateService.refresh$.pipe(
       switchMap(() =>
         combineLatest([
-          this.pluginManagementService.getAllPluginConfigurations(),
-          this.externalPluginService.getConfigurations().pipe(catchError(() => of([] as ExternalPluginConfiguration[]))),
-          this.externalPluginService.getDefinitions().pipe(catchError(() => of([] as ExternalPluginDefinition[]))),
-          this.translateService.stream('key'),
+          this._pluginManagementService.getAllPluginConfigurations(),
+          this._externalPluginService
+            .getConfigurations()
+            .pipe(catchError(() => of([] as ExternalPluginConfiguration[]))),
+          this._externalPluginService
+            .getDefinitions()
+            .pipe(catchError(() => of([] as ExternalPluginDefinition[]))),
+          this._translateService.stream('key'),
         ]).pipe(
           map(([pluginConfigurations, externalConfigurations, externalDefinitions]) => {
-            const embedded = pluginConfigurations.map(configuration => ({
-              ...configuration,
-              pluginName: this.pluginTranslationService.instant(
-                'title',
-                configuration.pluginDefinition?.key ?? ''
-              ),
-              definitionKey: configuration.pluginDefinition?.key ?? '',
-              sourceTag: 'Ingebed',
-            }));
+            const embedded: UnifiedPluginConfigurationRow[] = pluginConfigurations.map(
+              configuration => ({
+                id: configuration.id,
+                title: configuration.title,
+                pluginName: this._pluginTranslationService.instant(
+                  'title',
+                  configuration.pluginDefinition?.key ?? ''
+                ),
+                definitionKey: configuration.pluginDefinition?.key ?? '',
+                source: 'embedded',
+                sourceLabel: this._translateService.instant('pluginManagement.source.embedded'),
+                pluginDefinition: configuration.pluginDefinition,
+                properties: configuration.properties,
+              })
+            );
 
-            const external = externalConfigurations.map(config => {
+            const external: UnifiedPluginConfigurationRow[] = externalConfigurations.map(config => {
               const definition = externalDefinitions.find(d => d.id === config.definitionId);
               return {
                 id: config.id,
                 title: config.title,
                 pluginName: definition?.name ?? definition?.pluginId ?? '',
                 definitionKey: definition?.pluginId ?? '',
-                sourceTag: 'Extern',
-              } as PluginConfiguration & {pluginName: string; definitionKey: string; sourceTag: string};
+                source: 'external',
+                sourceLabel: this._translateService.instant('pluginManagement.source.external'),
+                externalDefinitionId: config.definitionId,
+              };
             });
 
             return [...embedded, ...external];
@@ -150,23 +163,31 @@ export class PluginManagementComponent {
     },
   ];
 
-  public readonly $hostsLoading = signal(true);
-  public readonly $hostModalOpen = signal(false);
+  // --- External plugin edit modal ---
+  public readonly showExternalEditModal$ = new BehaviorSubject<boolean>(false);
+  public readonly selectedExternalConfiguration$ =
+    new BehaviorSubject<UnifiedPluginConfigurationRow | null>(null);
+
+  // --- Plugin hosts tab ---
+  public readonly hostsLoading$ = new BehaviorSubject<boolean>(true);
+  public readonly hostModalOpen$ = new BehaviorSubject<boolean>(false);
 
   private readonly _refreshHosts$ = new BehaviorSubject<void>(undefined);
 
   public readonly hosts$: Observable<Array<ExternalPluginHost>> = this._refreshHosts$.pipe(
-    switchMap(() => this.externalPluginService.getHosts()),
-    tap(() => this.$hostsLoading.set(false)),
+    switchMap(() =>
+      this._externalPluginService.getHosts().pipe(catchError(() => of([] as ExternalPluginHost[])))
+    ),
+    tap(() => this.hostsLoading$.next(false))
   );
 
   constructor(
-    private readonly logger: NGXLogger,
-    private readonly pluginManagementService: PluginManagementService,
-    private readonly pluginTranslationService: PluginTranslationService,
-    private readonly stateService: PluginManagementStateService,
-    private readonly translateService: TranslateService,
-    private readonly externalPluginService: ExternalPluginService
+    private readonly _logger: NGXLogger,
+    private readonly _pluginManagementService: PluginManagementService,
+    private readonly _pluginTranslationService: PluginTranslationService,
+    private readonly _stateService: PluginManagementStateService,
+    private readonly _translateService: TranslateService,
+    private readonly _externalPluginService: ExternalPluginService
   ) {}
 
   // --- Configurations tab methods ---
@@ -175,26 +196,48 @@ export class PluginManagementComponent {
     this.showAddModal$.next(true);
   }
 
-  public editConfiguration(configuration: PluginConfiguration): void {
+  public editConfiguration(configuration: UnifiedPluginConfigurationRow): void {
+    if (configuration.source === 'external') {
+      this.selectedExternalConfiguration$.next(configuration);
+      this.showExternalEditModal$.next(true);
+      return;
+    }
+
     this.showEditModal$.next(true);
     this.saveNewConfiguration$.next(false);
-    this.stateService.selectPluginConfiguration(configuration);
+    this._stateService.selectPluginConfiguration(configuration as unknown as PluginConfiguration);
   }
 
-  public deleteConfiguration(configuration: PluginConfiguration): void {
+  public deleteConfiguration(configuration: UnifiedPluginConfigurationRow): void {
     if (!configuration.id) return;
 
-    this.pluginManagementService
-      .deletePluginConfiguration(configuration.id)
-      .pipe(take(1))
-      .subscribe({
-        next: () => {
-          this.stateService.refresh();
-        },
-        error: () => {
-          this.logger.error('Something went wrong with deleting the plugin configuration.');
-        },
-      });
+    if (configuration.source === 'external') {
+      this._externalPluginService
+        .deleteConfiguration(configuration.id)
+        .pipe(take(1))
+        .subscribe({
+          next: () => {
+            this._stateService.refresh();
+          },
+          error: () => {
+            this._logger.error(
+              'Something went wrong with deleting the external plugin configuration.'
+            );
+          },
+        });
+    } else {
+      this._pluginManagementService
+        .deletePluginConfiguration(configuration.id)
+        .pipe(take(1))
+        .subscribe({
+          next: () => {
+            this._stateService.refresh();
+          },
+          error: () => {
+            this._logger.error('Something went wrong with deleting the plugin configuration.');
+          },
+        });
+    }
   }
 
   public closeEditModal(): void {
@@ -205,33 +248,65 @@ export class PluginManagementComponent {
     this.showAddModal$.next(false);
   }
 
-  public duplicateConfiguration(configuration: PluginConfiguration): void {
+  public duplicateConfiguration(configuration: UnifiedPluginConfigurationRow): void {
+    if (configuration.source === 'external') return;
+
     const configurationClone = cloneDeep(configuration);
     configurationClone.id = uuidv4();
     this.showEditModal$.next(true);
     this.saveNewConfiguration$.next(true);
-    this.stateService.selectPluginConfiguration(configurationClone);
+    this._stateService.selectPluginConfiguration(
+      configurationClone as unknown as PluginConfiguration
+    );
+  }
+
+  // --- External plugin edit modal methods ---
+
+  public closeExternalEditModal(): void {
+    this.showExternalEditModal$.next(false);
+    this.selectedExternalConfiguration$.next(null);
+  }
+
+  public onExternalConfigSaved(): void {
+    this.showExternalEditModal$.next(false);
+    this.selectedExternalConfiguration$.next(null);
+    this._stateService.refresh();
+  }
+
+  public onExternalConfigDeleted(configurationId: string): void {
+    this._externalPluginService.deleteConfiguration(configurationId).subscribe({
+      next: () => {
+        this.showExternalEditModal$.next(false);
+        this.selectedExternalConfiguration$.next(null);
+        this._stateService.refresh();
+      },
+      error: () => {
+        this._logger.error(
+          'Something went wrong with deleting the external plugin configuration.'
+        );
+      },
+    });
   }
 
   // --- Plugin hosts tab methods ---
 
   public openHostModal(): void {
-    this.$hostModalOpen.set(true);
+    this.hostModalOpen$.next(true);
   }
 
   public closeHostModal(): void {
-    this.$hostModalOpen.set(false);
+    this.hostModalOpen$.next(false);
   }
 
   public submitHost(request: ExternalPluginHostCreateRequest): void {
-    this.externalPluginService.createHost(request).subscribe({
+    this._externalPluginService.createHost(request).subscribe({
       next: () => {
-        this.$hostModalOpen.set(false);
-        this.$hostsLoading.set(true);
+        this.hostModalOpen$.next(false);
+        this.hostsLoading$.next(true);
         this._refreshHosts$.next();
       },
       error: () => {
-        this.logger.error('Something went wrong with creating the plugin host.');
+        this._logger.error('Something went wrong with creating the plugin host.');
       },
     });
   }

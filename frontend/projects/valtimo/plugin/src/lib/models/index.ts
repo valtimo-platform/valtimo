@@ -15,3 +15,4 @@
  */
 
 export * from './plugin';
+export * from './external-plugin.model';

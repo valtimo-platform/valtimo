@@ -43,6 +43,8 @@ interface ProcessLink {
   pluginConfigurationMappings?: Record<string, string>;
   inputMappings?: Array<BuildingBlockInputMapping>;
   outputMappings?: Array<BuildingBlockOutputMapping>;
+  externalPluginConfigurationId?: string;
+  actionKey?: string;
 }
 
 type GetProcessLinkResponse = Array<ProcessLink>;
@@ -321,6 +323,9 @@ type PluginListItem = {
   logo?: string | null;
   payload: PluginConfiguration | string;
   isDefinition: boolean;
+  external?: boolean;
+  externalConfigurationId?: string;
+  externalDefinitionId?: string;
 };
 
 interface PluginConfigurationViewModel {

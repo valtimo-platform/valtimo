@@ -13,6 +13,16 @@
             "description": "house number must be equal to or greater than zero.",
             "type": "integer",
             "minimum": 0
+        },
+        "buildDate": {
+            "type": "string",
+            "format": "date"
+        },
+        "inspectionDateTime": {
+            "type": "string"
+        },
+        "floorCount": {
+            "type": "number"
         }
     }
 }
