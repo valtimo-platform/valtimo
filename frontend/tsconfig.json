@@ -101,6 +101,8 @@
       "@valtimo/iko/*": ["dist/valtimo/iko/*"],
       "@valtimo/teams": ["dist/valtimo/teams"],
       "@valtimo/teams/*": ["dist/valtimo/teams/*"],
+      "@valtimo/admin-settings": ["dist/valtimo/admin-settings"],
+      "@valtimo/admin-settings/*": ["dist/valtimo/admin-settings/*"],
       "@e2e/constants": ["../e2e/constants"]
     }
   },
@@ -372,6 +374,9 @@
     },
     {
       "path": "./projects/valtimo/teams/tsconfig.spec.json"
+    },
+    {
+      "path": "./projects/valtimo/admin-settings/tsconfig.lib.json"
     }
   ]
 }

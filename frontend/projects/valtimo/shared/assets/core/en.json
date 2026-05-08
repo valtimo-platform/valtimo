@@ -2371,6 +2371,141 @@
     "deleteHelperText": "After creating a quick search item, you can delete it by right-clicking on it",
     "duplicateError": "A quick search item with this title already exists"
   },
+  "adminSettings": {
+    "title": "Settings",
+    "tabs": {
+      "appearance": "Appearance",
+      "featureToggles": "Feature toggles"
+    },
+    "appearance": {
+      "logo": {
+        "title": "Logo",
+        "fileUploaderTitle": "Upload logo",
+        "fileUploaderDescription": "Only PNG and SVG files are accepted. Max 10 MB.",
+        "fileUploaderButton": "Choose file",
+        "deleteConfirmationModalText": "Are you sure you want to delete this logo?"
+      },
+      "logoDarkMode": {
+        "title": "Logo (dark mode)"
+      },
+      "colors": {
+        "title": "Colors",
+        "infoMessage": "These colors define the accent color palette used throughout the application.",
+        "infoLinkText": "More info on generating a color scheme",
+        "reset": "Reset",
+        "color10": "Color 10",
+        "color20": "Color 20",
+        "color30": "Color 30",
+        "color40": "Color 40",
+        "color50": "Color 50",
+        "color60": "Color 60",
+        "color70": "Color 70",
+        "color80": "Color 80",
+        "color90": "Color 90",
+        "color100": "Color 100",
+        "pickr": {
+          "save": "OK",
+          "cancel": "Cancel",
+          "clear": "Clear"
+        }
+      }
+    },
+    "featureToggles": {
+      "refreshRequired": "Refresh required",
+      "refreshModalText": "This setting requires a page refresh to take effect. Do you want to refresh now?",
+      "refreshNow": "Refresh now",
+      "toggles": {
+        "allowUserThemeSwitching": {
+          "title": "Allow user theme switching",
+          "description": "Let users switch between light and dark mode from the top bar."
+        },
+        "enableCompactModeToggle": {
+          "title": "Enable compact mode toggle",
+          "description": "Show a compact mode toggle in the top bar for users to reduce interface spacing."
+        },
+        "compactModeOnByDefault": {
+          "title": "Compact mode on by default",
+          "description": "Enable compact mode for all users by default."
+        },
+        "enableUserNameInTopBarToggle": {
+          "title": "Enable user name display toggle",
+          "description": "Allow users to toggle their name display in the top bar."
+        },
+        "showUserNameInTopBar": {
+          "title": "Show user name in top bar",
+          "description": "Display the current user's name next to their avatar in the top bar."
+        },
+        "showPlantATreeButton": {
+          "title": "Show 'Plant a tree' button",
+          "description": "Display the 'Plant a tree' sustainability button in the interface."
+        },
+        "largeLogoMargin": {
+          "title": "Large logo margin",
+          "description": "Add extra margin around the logo in the top bar."
+        },
+        "applicationTitleAsSuffix": {
+          "title": "Application title as suffix",
+          "description": "Append the application title as a suffix to the browser tab title."
+        },
+        "experimentalDmnEditing": {
+          "title": "Experimental DMN editing",
+          "description": "Enable the experimental DMN decision table editor."
+        },
+        "disableCaseCount": {
+          "title": "Disable case count",
+          "description": "Hide the case count badge in the menu sidebar."
+        },
+        "enableObjectManagement": {
+          "title": "Enable object management",
+          "description": "Show the Objects menu item in the sidebar."
+        },
+        "sortFilesByDate": {
+          "title": "Sort files by date",
+          "description": "Sort case-related files by date in descending order by default."
+        },
+        "returnToLastUrlAfterTokenExpiration": {
+          "title": "Return to last URL after login",
+          "description": "Redirect users back to their last visited page after re-authenticating."
+        },
+        "enableTabManagement": {
+          "title": "Enable tab management",
+          "description": "When enabled, tabs are loaded from the API. When disabled, tabs are loaded from the environment configuration."
+        },
+        "hideValtimoVersionsForNonAdmins": {
+          "title": "Hide version info for non-admins",
+          "description": "Hide the Valtimo version information from non-admin users."
+        },
+        "useStartEventNameAsStartFormTitle": {
+          "title": "Use start event name as form title",
+          "description": "Display the BPMN start event name as the start form title instead of the default."
+        },
+        "enableFormViewModel": {
+          "title": "Enable form view model",
+          "description": "Use the form view model for rendering forms."
+        },
+        "enableIntermediateSave": {
+          "title": "Enable intermediate save",
+          "description": "Allow users to save task form progress without completing the task."
+        },
+        "enableFormFlowBreadcrumbs": {
+          "title": "Enable form flow breadcrumbs",
+          "description": "Show step-by-step breadcrumbs in multi-step form flows."
+        },
+        "enablePbacDocumentenApiDocuments": {
+          "title": "Enable PBAC for Documenten API",
+          "description": "Use policy-based access control for Documenten API document management."
+        },
+        "enableSuppressDocumentError": {
+          "title": "Suppress document errors",
+          "description": "Suppress error messages when document retrieval fails silently."
+        },
+        "enableIkoType": {
+          "title": "Enable IKO type",
+          "description": "Enable the IKO (Informatie Kanaal Objecten) integration type."
+        }
+      }
+    }
+  },
   "buildingBlockManagement": {
     "title": "Building blocks",
     "listColumns": {
