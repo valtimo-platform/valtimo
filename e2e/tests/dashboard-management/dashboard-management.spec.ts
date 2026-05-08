@@ -233,6 +233,7 @@ test.describe('Dashboard management — Widget management', () => {
     await dashboardPage.cleanupTestWidgetsViaApi(dashboardKey, 'E2e Test Widget');
     await dashboardPage.cleanupTestWidgetsViaApi(dashboardKey, 'E2e Edited Widget');
     await dashboardPage.cleanupTestWidgetsViaApi(dashboardKey, 'E2e Reorder Widget');
+    await dashboardPage.cleanupTestWidgetsViaApi(dashboardKey, 'E2e Config');
 
     // Navigate to the dashboard details page
     await dashboardPage.goToDashboardManagement();
@@ -249,6 +250,7 @@ test.describe('Dashboard management — Widget management', () => {
     await dashboardPage.cleanupTestWidgetsViaApi(dashboardKey, 'E2e Test Widget');
     await dashboardPage.cleanupTestWidgetsViaApi(dashboardKey, 'E2e Edited Widget');
     await dashboardPage.cleanupTestWidgetsViaApi(dashboardKey, 'E2e Reorder Widget');
+    await dashboardPage.cleanupTestWidgetsViaApi(dashboardKey, 'E2e Config');
 
     // Delete the test dashboard
     await dashboardPage.deleteDashboardViaApi(dashboardKey);
@@ -455,6 +457,73 @@ test.describe('Dashboard management — Widget management', () => {
       await input.clear();
       await input.fill('${currentUserId}');
       await expect(input).toHaveValue('${currentUserId}');
+    });
+  });
+
+  // ─── Widget data source configuration ─────────────────────────────
+
+  test.describe('Widget data source configuration', () => {
+    test.afterEach(async () => {
+      // Track created widgets for cleanup
+      const widgets = await dashboardPage.getWidgetsViaApi(dashboardKey);
+      for (const w of widgets) {
+        if (w.title.startsWith('E2e Config') && !createdWidgetKeys.includes(w.key)) {
+          createdWidgetKeys.push(w.key);
+        }
+      }
+    });
+
+    test('Configure case count widget', async () => {
+      await dashboardPage.openAddWidgetModal();
+      await dashboardPage.widgetTitleInput.fill('E2e Config Case Count');
+      await dashboardPage.selectDataSource('Case count');
+      await dashboardPage.selectCaseType(CASE_DEFINITION_KEY);
+      await dashboardPage.selectDisplayType('Big number');
+      await dashboardPage.fillDisplayTypeTitle('Test title');
+      await dashboardPage.saveWidget();
+      await dashboardPage.assertWidgetVisible('E2e Config Case Count');
+    });
+
+    test('Configure multiple counts widget', async () => {
+      await dashboardPage.openAddWidgetModal();
+      await dashboardPage.widgetTitleInput.fill('E2e Config Case Counts');
+      await dashboardPage.selectDataSource('Multiple case counts');
+      await dashboardPage.selectCaseType(CASE_DEFINITION_KEY);
+
+      // Fill tile 0: label + condition
+      await dashboardPage.fillCaseCountsTileLabel(0, 'Open');
+      await dashboardPage.fillCaseCountsTileCondition(0, 0, 'case:status', 'Equal to', 'open');
+
+      // Fill tile 1: label + condition
+      await dashboardPage.fillCaseCountsTileLabel(1, 'Closed');
+      await dashboardPage.fillCaseCountsTileCondition(1, 0, 'case:status', 'Equal to', 'closed');
+
+      await dashboardPage.selectDisplayType('Donut chart');
+      await dashboardPage.fillDisplayTypeTitle('Test title');
+      await dashboardPage.saveWidget();
+      await dashboardPage.assertWidgetVisible('E2e Config Case Counts');
+    });
+
+    test('Configure group by widget', async () => {
+      await dashboardPage.openAddWidgetModal();
+      await dashboardPage.widgetTitleInput.fill('E2e Config Group By');
+      await dashboardPage.selectDataSource('Group by');
+      await dashboardPage.selectCaseType(CASE_DEFINITION_KEY);
+      await dashboardPage.fillGroupByPath('case:status');
+      await dashboardPage.selectDisplayType('Donut chart');
+      await dashboardPage.fillDisplayTypeTitle('Test title');
+      await dashboardPage.saveWidget();
+      await dashboardPage.assertWidgetVisible('E2e Config Group By');
+    });
+
+    test('Configure task count widget', async () => {
+      await dashboardPage.openAddWidgetModal();
+      await dashboardPage.widgetTitleInput.fill('E2e Config Task Count');
+      await dashboardPage.selectDataSource('Task count');
+      await dashboardPage.selectDisplayType('Big number');
+      await dashboardPage.fillDisplayTypeTitle('Test title');
+      await dashboardPage.saveWidget();
+      await dashboardPage.assertWidgetVisible('E2e Config Task Count');
     });
   });
 });

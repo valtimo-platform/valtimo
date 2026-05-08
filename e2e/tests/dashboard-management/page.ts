@@ -19,6 +19,7 @@ import {
   DASHBOARD_MANAGEMENT_TEST_IDS,
   VALUE_PATH_SELECTOR_TEST_IDS,
   VALUE_PATH_SELECTOR_DROPDOWN_VALUE_TEST_IDS,
+  KEY_DROPDOWN_VALUE_TEST_IDS,
 } from '../../constants';
 import {CarbonList} from '../../shared/carbon-list/carbon-list.utils';
 import * as ApiUtils from '../../utils/api.utils';
@@ -382,6 +383,93 @@ export class DashboardManagementPage {
     const input = row.getByTestId(VALUE_PATH_SELECTOR_DROPDOWN_VALUE_TEST_IDS.valueInput);
     await input.click();
     await input.fill(value);
+  }
+
+  // ─── Display Type Configuration Helpers ─────────────────────────────
+
+  async fillDisplayTypeTitle(title: string) {
+    const displayTypeConfig = this.page.locator('valtimo-widget-configuration-container').last();
+    const titleInput = displayTypeConfig.getByRole('textbox', {name: /Title/});
+    await expect(titleInput).toBeVisible({timeout: 5_000});
+    await titleInput.fill(title);
+  }
+
+  // ─── Case Counts Configuration Helpers ─────────────────────────────
+
+  async fillCaseCountsTileLabel(tileIndex: number, label: string) {
+    const tile = this.page.locator('cds-tile.count-tile').nth(tileIndex);
+    await expect(tile).toBeVisible({timeout: 5_000});
+    const labelInput = tile.locator('v-input').getByRole('textbox');
+    await labelInput.fill(label);
+  }
+
+  async fillCaseCountsTileCondition(
+    tileIndex: number,
+    conditionIndex: number,
+    path: string,
+    operator: string,
+    value: string
+  ) {
+    const tile = this.page.locator('cds-tile.count-tile').nth(tileIndex);
+    const row = tile.getByTestId(`multiInputValuePathSelectorDropdownValue-${conditionIndex}`);
+    await expect(row).toBeVisible({timeout: 5_000});
+
+    // Fill path (toggle to manual mode if needed)
+    const pathSelector = row.locator('valtimo-value-path-selector');
+    const pathInput = pathSelector.getByTestId(VALUE_PATH_SELECTOR_TEST_IDS.input);
+    if (!(await pathInput.isVisible())) {
+      const toggle = pathSelector.getByTestId(VALUE_PATH_SELECTOR_TEST_IDS.toggle);
+      await toggle.click();
+      await expect(pathInput).toBeVisible();
+    }
+    await pathInput.fill(path);
+
+    // Select operator — scope to this row's dropdown to avoid ambiguity with other tiles
+    const operatorDropdown = row.getByTestId(VALUE_PATH_SELECTOR_DROPDOWN_VALUE_TEST_IDS.dropdown);
+    await operatorDropdown.click();
+    await operatorDropdown.locator('cds-dropdown-list').getByText(operator, {exact: true}).click({force: true});
+
+    // Fill value
+    const valueInput = row.getByTestId(VALUE_PATH_SELECTOR_DROPDOWN_VALUE_TEST_IDS.valueInput);
+    await valueInput.fill(value);
+  }
+
+  // ─── Case Group By Configuration Helpers ───────────────────────────
+
+  async fillGroupByPath(pathValue: string) {
+    const dataSourceConfig = this.page.locator('valtimo-widget-configuration-container').first();
+    // The group-by path selector is a standalone valtimo-value-path-selector (not inside a multi-input)
+    const pathSelector = dataSourceConfig.locator('cds-label valtimo-value-path-selector');
+    const input = pathSelector.getByTestId(VALUE_PATH_SELECTOR_TEST_IDS.input);
+
+    if (!(await input.isVisible())) {
+      const toggle = pathSelector.getByTestId(VALUE_PATH_SELECTOR_TEST_IDS.toggle);
+      await toggle.click();
+      await expect(input).toBeVisible();
+    }
+
+    await input.fill(pathValue);
+  }
+
+  // ─── Task Count Configuration Helpers ──────────────────────────────
+
+  async addTaskCountConditionRow() {
+    const conditionsSection = this.page.locator('.conditions-multi-input');
+    await conditionsSection.getByRole('button', {name: /add condition/i}).click();
+  }
+
+  async fillTaskCountCondition(path: string, operator: string, value: string) {
+    const conditionsSection = this.page.locator('.conditions-multi-input');
+
+    const keyInput = conditionsSection.getByTestId(KEY_DROPDOWN_VALUE_TEST_IDS.keyInput);
+    await keyInput.fill(path);
+
+    const operatorDropdown = conditionsSection.getByTestId(KEY_DROPDOWN_VALUE_TEST_IDS.dropdown);
+    await operatorDropdown.click();
+    await this.page.getByText(operator, {exact: true}).click({force: true});
+
+    const valueInput = conditionsSection.getByTestId(KEY_DROPDOWN_VALUE_TEST_IDS.valueInput);
+    await valueInput.fill(value);
   }
 
   // ─── API Helpers ──────────────────────────────────────────────────
