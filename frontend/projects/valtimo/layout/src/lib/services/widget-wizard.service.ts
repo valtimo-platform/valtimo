@@ -116,7 +116,10 @@ export class WidgetWizardService {
       dependingStep: WidgetWizardStep.TYPE,
       condition: () => {
         const selectedType = this.$selectedWidget()?.type;
-        return !!selectedType && [WidgetType.FIELDS, WidgetType.COLLECTION, WidgetType.TABLE].includes(selectedType);
+        return (
+          !!selectedType &&
+          [WidgetType.FIELDS, WidgetType.COLLECTION, WidgetType.TABLE].includes(selectedType)
+        );
       },
     },
     [WidgetWizardStep.FILTERS]: {

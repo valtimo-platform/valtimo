@@ -1011,7 +1011,8 @@
       },
       "collection": {"title": "Collectie", "description": "Maak een collectie aan"},
       "divider": {"title": "Scheidingslijn"},
-      "map": {"title": "Kaart", "description": "Maak een kaart widget aan"}
+      "map": {"title": "Kaart", "description": "Maak een kaart widget aan"},
+      "person-card": {"title": "Persoonskaart", "description": "Een persoon met de belangrijkste gegevens en contactinformatie"}
     },
     "width": {
       "description": "Selecteer de gewenste breedte voor de widget.",
@@ -1098,6 +1099,16 @@
         "key": "Pad naar GeoJSON data",
         "keyPlaceholder": "Bron pad",
         "keyTooltip": "Value resolver pad naar GeoJSON data"
+      },
+      "person-card": {
+        "description": "Kies het pictogram en de bronpaden voor elk persoonsveld.",
+        "fullNameLabel": "Volledige naam",
+        "birthDateLabel": "Geboortedatum (optioneel)",
+        "bsnLabel": "BSN (optioneel)",
+        "phoneLabel": "Telefoon (optioneel)",
+        "emailLabel": "E-mail (optioneel)",
+        "cityLabel": "Plaats (optioneel)",
+        "pathPlaceholder": "Selecteer of typ een pad"
       },
       "displayType": {
         "text": "Tekst",
@@ -2276,6 +2287,9 @@
     "noCustomComponentDescription": "De component die geconfigureerd is voor deze widget kon niet gevonden worden.",
     "map": {
       "title": "Kaart"
+    },
+    "personCard": {
+      "age": "{{age}} jaar"
     }
   },
   "iko": {
