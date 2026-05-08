@@ -14,65 +14,81 @@
  * limitations under the License.
  */
 
-import {type APIRequestContext, expect, type Page} from '@playwright/test';
-import * as ApiUtils from '../../utils/api.utils';
-import {CarbonList} from '../../shared/carbon-list/carbon-list.utils';
+import {expect, type Page} from '@playwright/test';
 import {DASHBOARD_MANAGEMENT_TEST_IDS} from '../../constants';
+import {CarbonList} from '../../shared/carbon-list/carbon-list.utils';
+import * as ApiUtils from '../../utils/api.utils';
 import {endpoints} from '../../api/endpoints';
 
+interface DashboardListItem {
+  key: string;
+  title: string;
+  description: string;
+}
+
 export class DashboardManagementPage {
-  constructor(
-    private readonly page: Page,
-    private readonly request: APIRequestContext
-  ) {}
+  readonly carbonList: CarbonList;
 
-  // ─── Navigation ───────────────────────────────────────────────────
-
-  async goToDashboardManagement() {
-    await this.page.getByRole('button', {name: 'Admin'}).click();
-    // Scope to the admin sidebar to avoid matching the top-level "Dashboard" nav item.
-    // The sidebar uses data-testid (not data-test-id), so use locator() directly.
-    await this.page.locator('[data-testid="sidenav-item-Admin"]').getByRole('link', {name: 'Dashboard'}).click();
-    await this.page.waitForSelector('valtimo-carbon-list');
+  constructor(private readonly page: Page) {
+    this.carbonList = new CarbonList(this.page);
   }
 
-  async goToDashboardDetails(dashboardTitle: string) {
-    const list = new CarbonList(this.page);
-    await list.waitForLoaded();
-    const row = list.row(dashboardTitle);
-    await row.click();
-    // Wait for the widget list to load on the details page
-    await this.page.waitForSelector('valtimo-carbon-list');
-    const detailList = new CarbonList(this.page);
-    await detailList.waitForLoaded();
-  }
-
-  // ─── Dashboard List UI Elements ────────────────────────────────────
+  // ─── Locators ─────────────────────────────────────────────────────
 
   get addDashboardButton() {
-    return this.page.getByTestId(DASHBOARD_MANAGEMENT_TEST_IDS.addDashboardButton);
+    return this.page.getByTestId(DASHBOARD_MANAGEMENT_TEST_IDS.addButton);
   }
 
-  get dashboardNameInput() {
-    return this.page.getByTestId(DASHBOARD_MANAGEMENT_TEST_IDS.dashboardNameInput);
+  get createTitleInput() {
+    return this.page.getByTestId(DASHBOARD_MANAGEMENT_TEST_IDS.createTitleInput);
   }
 
-  get dashboardDescriptionInput() {
-    return this.page.getByTestId(DASHBOARD_MANAGEMENT_TEST_IDS.dashboardDescriptionInput);
+  get createDescriptionInput() {
+    return this.page.getByTestId(DASHBOARD_MANAGEMENT_TEST_IDS.createDescriptionInput);
   }
 
-  get createDashboardButton() {
-    return this.page.getByTestId(DASHBOARD_MANAGEMENT_TEST_IDS.createDashboardButton);
+  get createButton() {
+    return this.page.getByTestId(DASHBOARD_MANAGEMENT_TEST_IDS.createButton);
   }
 
-  // ─── Widget List UI Elements ───────────────────────────────────────
+  get editButton() {
+    return this.page.getByTestId(DASHBOARD_MANAGEMENT_TEST_IDS.editButton);
+  }
+
+  get editTitleInput() {
+    return this.page.getByTestId(DASHBOARD_MANAGEMENT_TEST_IDS.editTitleInput);
+  }
+
+  get editDescriptionInput() {
+    return this.page.getByTestId(DASHBOARD_MANAGEMENT_TEST_IDS.editDescriptionInput);
+  }
+
+  get completeButton() {
+    return this.page.getByTestId(DASHBOARD_MANAGEMENT_TEST_IDS.completeButton);
+  }
+
+  get switchViewButton() {
+    return this.page.getByTestId(DASHBOARD_MANAGEMENT_TEST_IDS.switchViewButton);
+  }
+
+  get pageSubtitle() {
+    return this.page.locator('span.page-subtitle');
+  }
+
+  get monacoEditor() {
+    return this.page.locator('.monaco-editor');
+  }
+
+  get widgetList() {
+    return this.page.locator('valtimo-carbon-list');
+  }
+
+  // ─── Widget Locators ──────────────────────────────────────────────
 
   get addWidgetButton() {
     // Scope to toolbar to avoid matching the duplicate button in the no-results panel
     return this.page.getByLabel('Table action bar').getByTestId(DASHBOARD_MANAGEMENT_TEST_IDS.addWidgetButton);
   }
-
-  // ─── Widget Modal UI Elements ──────────────────────────────────────
 
   get widgetTitleInput() {
     return this.page.getByTestId(DASHBOARD_MANAGEMENT_TEST_IDS.widgetTitleInput);
@@ -100,6 +116,84 @@ export class DashboardManagementPage {
 
   get widgetDeleteButton() {
     return this.page.getByTestId(DASHBOARD_MANAGEMENT_TEST_IDS.widgetDeleteButton);
+  }
+
+  // ─── Navigation ───────────────────────────────────────────────────
+
+  async goToDashboardManagement() {
+    const adminButton = this.page.getByRole('button', {name: 'Admin'});
+    if ((await adminButton.getAttribute('aria-expanded')) !== 'true') {
+      await adminButton.click();
+    }
+    await this.page
+      .locator('[data-testid="sidenav-item-Admin"]')
+      .getByRole('link', {name: 'Dashboard'})
+      .click();
+    await this.carbonList.waitForLoaded();
+  }
+
+  async goToDashboardDetails(dashboardTitle: string) {
+    await this.carbonList.waitForLoaded();
+    const row = this.carbonList.row(dashboardTitle);
+    await row.click();
+    // Wait for the widget list to load on the details page
+    await this.page.waitForSelector('valtimo-carbon-list');
+    const detailList = new CarbonList(this.page);
+    await detailList.waitForLoaded();
+  }
+
+  // ─── Dashboard Actions ────────────────────────────────────────────
+
+  async createDashboard(title: string, description: string) {
+    await this.addDashboardButton.click();
+    await expect(this.createTitleInput).toBeVisible();
+
+    await this.createTitleInput.fill(title);
+    await this.createDescriptionInput.fill(description);
+
+    const [response] = await Promise.all([
+      this.page.waitForResponse(
+        res =>
+          res.url().includes('/api/management/v1/dashboard') &&
+          res.request().method() === 'POST' &&
+          res.ok()
+      ),
+      this.createButton.click(),
+    ]);
+
+    return response;
+  }
+
+  async editDashboard(title: string, description: string) {
+    await this.editButton.click();
+    await expect(this.editTitleInput).toBeVisible();
+
+    await this.editTitleInput.clear();
+    await this.editTitleInput.fill(title);
+    await this.editDescriptionInput.clear();
+    await this.editDescriptionInput.fill(description);
+
+    const [response] = await Promise.all([
+      this.page.waitForResponse(
+        res =>
+          res.url().includes('/api/management/v1/dashboard') &&
+          res.request().method() === 'PUT' &&
+          res.ok()
+      ),
+      this.completeButton.click(),
+    ]);
+
+    return response;
+  }
+
+  async switchToJsonEditor() {
+    await this.switchViewButton.click();
+    await expect(this.monacoEditor).toBeVisible();
+  }
+
+  async switchToVisualEditor() {
+    await this.switchViewButton.click();
+    await this.page.waitForSelector('valtimo-carbon-list');
   }
 
   // ─── Widget Modal Actions ─────────────────────────────────────────
@@ -238,11 +332,24 @@ export class DashboardManagementPage {
     return result.key;
   }
 
-  async deleteDashboardViaApi(dashboardKey: string) {
+  async deleteDashboardViaApi(key: string) {
     try {
-      await ApiUtils.apiDelete(endpoints.dashboard.delete(dashboardKey));
+      await ApiUtils.apiDelete(endpoints.dashboard.delete(key));
     } catch {
       // May already be deleted
+    }
+  }
+
+  async deleteTestDashboardsViaApi(titlePrefix: string) {
+    try {
+      const dashboards = await ApiUtils.apiGet<DashboardListItem[]>(endpoints.dashboard.getAll);
+      for (const dashboard of dashboards) {
+        if (dashboard.title.startsWith(titlePrefix)) {
+          await this.deleteDashboardViaApi(dashboard.key);
+        }
+      }
+    } catch {
+      // Dashboards may not exist
     }
   }
 

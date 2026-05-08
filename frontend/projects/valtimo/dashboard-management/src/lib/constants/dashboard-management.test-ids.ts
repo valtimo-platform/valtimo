@@ -16,14 +16,19 @@
 
 export const DASHBOARD_MANAGEMENT_TEST_IDS = {
   // Dashboard list page
-  addDashboardButton: 'dashboardManagementAddDashboardButton',
-  dashboardNameInput: 'dashboardManagementDashboardNameInput',
-  dashboardDescriptionInput: 'dashboardManagementDashboardDescriptionInput',
-  createDashboardButton: 'dashboardManagementCreateDashboardButton',
+  addButton: 'dashboardManagementAddButton',
+  createTitleInput: 'dashboardManagementCreateTitleInput',
+  createDescriptionInput: 'dashboardManagementCreateDescriptionInput',
+  createButton: 'dashboardManagementCreateButton',
   cancelDashboardButton: 'dashboardManagementCancelDashboardButton',
+  // Dashboard details page — edit dashboard
+  editButton: 'dashboardManagementEditButton',
+  editTitleInput: 'dashboardManagementEditTitleInput',
+  editDescriptionInput: 'dashboardManagementEditDescriptionInput',
+  completeButton: 'dashboardManagementCompleteButton',
+  switchViewButton: 'dashboardDetailsSwitchView',
   // Widget list page (dashboard details)
   addWidgetButton: 'dashboardManagementAddWidgetButton',
-  switchViewButton: 'dashboardManagementSwitchViewButton',
   // Widget modal
   widgetTitleInput: 'dashboardManagementWidgetTitleInput',
   widgetDataSourceDropdown: 'dashboardManagementWidgetDataSourceDropdown',

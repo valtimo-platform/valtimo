@@ -40,7 +40,7 @@ import {DashboardManagementService} from '../../services/dashboard-management.se
   encapsulation: ViewEncapsulation.None,
 })
 export class DashboardDetailsComponent implements AfterViewInit {
-  public readonly testIds = DASHBOARD_MANAGEMENT_TEST_IDS;
+  protected readonly testIds = DASHBOARD_MANAGEMENT_TEST_IDS;
   public modalType: WidgetModalType = 'create';
   public fields!: ColumnConfig[];
   public readonly actionItems: ActionItem[] = [

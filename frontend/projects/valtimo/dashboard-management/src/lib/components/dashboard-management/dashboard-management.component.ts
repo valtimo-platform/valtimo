@@ -30,7 +30,7 @@ import {DashboardManagementService} from '../../services/dashboard-management.se
   encapsulation: ViewEncapsulation.None,
 })
 export class DashboardManagementComponent implements OnInit {
-  public readonly testIds = DASHBOARD_MANAGEMENT_TEST_IDS;
+  protected readonly testIds = DASHBOARD_MANAGEMENT_TEST_IDS;
   public readonly deleteRowKey$: BehaviorSubject<string> = new BehaviorSubject('');
   public readonly openModal$: BehaviorSubject<boolean> = new BehaviorSubject(false);
   public readonly showDeleteModal$: BehaviorSubject<boolean> = new BehaviorSubject(false);
