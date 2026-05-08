@@ -53,22 +53,21 @@
     <div class="loading-container"><cds-loading></cds-loading></div>
   } @else {
     <div class="admin-settings-color__grid">
-      @for (row of colorRows; track row.def.cssVar) {
+      @for (def of ACCENT_COLOR_DEFINITIONS; track def.cssVar) {
         <div class="admin-settings-color__field">
           <valtimo-color-picker
-            [formControlName]="row.def.cssVar"
-            [labelTranslationKey]="row.def.labelTranslationKey"
+            [formControlName]="def.cssVar"
+            [labelTranslationKey]="def.labelTranslationKey"
             [config]="{opacity: false, lockOpacity: true}"
             [i18n]="obs.pickrI18n"
-            [defaultColor]="row.defaultColor"
           ></valtimo-color-picker>
 
           <button
             cdsButton="ghost"
-            [disabled]="isDefaultColor(row.def)"
+            [disabled]="isDefaultColor(def)"
             [iconOnly]="true"
             size="sm"
-            (click)="onReset(row.def)"
+            (click)="onReset(def)"
             class="admin-settings-color__reset"
           >
             <svg cdsIcon="reset" size="16"></svg>

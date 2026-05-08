@@ -58,7 +58,6 @@ export class AdminSettingsColorComponent implements OnInit, OnDestroy {
   public readonly DOCS_URL =
     'https://docs.valtimo.nl/customizing-valtimo/front-end-customization/customizing-carbon-theme';
   public readonly formGroup: FormGroup;
-  public colorRows: Array<{def: AccentColorDefinition; defaultColor: string}> = [];
 
   public readonly loading$ = new BehaviorSubject<boolean>(true);
   public readonly saving$ = new BehaviorSubject<boolean>(false);
@@ -94,10 +93,6 @@ export class AdminSettingsColorComponent implements OnInit, OnDestroy {
   ) {
     this._iconService.register(Reset16);
     this._snapshotCssDefaults();
-    this.colorRows = ACCENT_COLOR_DEFINITIONS.map(def => ({
-      def,
-      defaultColor: this._getCssDefault(def.cssVar),
-    }));
     this.formGroup = this._buildForm();
   }
 

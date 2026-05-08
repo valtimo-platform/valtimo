@@ -66,7 +66,6 @@ export class ColorPickerComponent
   @Input() public labelTranslationKey = 'colorPicker.label';
   @Input() public config: ColorPickerConfig = {};
   @Input() public i18n: ColorPickerI18n | null = null;
-  @Input() public defaultColor: string | null = null;
 
   @Output() public colorChangeEvent = new EventEmitter<string>();
 
@@ -208,14 +207,6 @@ export class ColorPickerComponent
     });
 
     this._pickr.on('clear', () => {
-      if (this.defaultColor) {
-        this._value = this.defaultColor;
-        this._pickr?.setColor(this.defaultColor);
-        this._onChangeFn(this.defaultColor);
-        this.colorChangeEvent.emit(this.defaultColor);
-        return;
-      }
-
       this._value = null;
       this._onChangeFn(null);
       this.colorChangeEvent.emit('');
