@@ -121,6 +121,17 @@ export const endpoints = {
       `/api/v1/case-definition/${caseDefinitionName}/zgw-document-column`,
   },
 
+  choiceField: {
+    getAll: '/api/v1/choice-fields',
+    create: '/api/v1/choice-fields',
+    update: '/api/v1/choice-fields',
+    delete: (id: string) => `/api/v1/choice-fields/${id}`,
+    getByName: (name: string) => `/api/v1/choice-fields/name/${name}`,
+    values: (keyName: string) => `/api/v1/choice-field-values/${keyName}/values`,
+    createValue: (keyName: string) => `/api/v1/choice-field-values?choice_field_name=${keyName}`,
+    updateValue: (keyName: string) => `/api/v1/choice-field-values?choice_field_name=${keyName}`,
+  },
+
   version: {
     get: '/api/v1/valtimo/version',
   },

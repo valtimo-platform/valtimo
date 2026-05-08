@@ -5,10 +5,10 @@
 | Category                    | Features | Functions | ✅ Covered | ❌ Not Covered |
 |-----------------------------|----------|-----------|------------|----------------|
 | User Features (ROLE_USER)   | 5        | 21        | 12         | 9              |
-| Admin Features (ROLE_ADMIN) | 15       | 335       | 162        | 170            |
-| **Total**                   | **20**   | **356**   | **174**    | **179**        |
+| Admin Features (ROLE_ADMIN) | 15       | 335       | 164        | 168            |
+| **Total**                   | **20**   | **356**   | **176**    | **177**        |
 
-**Coverage:** `174 / 356` — `48.9%`
+**Coverage:** `176 / 356` — `49.4%`
 
 ---
 
@@ -679,8 +679,8 @@
 
 | #    | Function                        | Test Scenarios                           | Coverage | Notes                                           |
 |:-----|:--------------------------------|:-----------------------------------------|:--------:|:------------------------------------------------|
-| 16.1 | Manage choice field definitions | Manage choice field definitions          |    ❌    |                                                 |
-| 16.2 | Add/edit/delete choice options  | Add / edit / delete choice field options |    ❌    |                                                 |
+| 16.1 | Manage choice field definitions | Manage choice field definitions          |    ✅    | choice-field-management.spec.ts                 |
+| 16.2 | Add/edit/delete choice options  | Add / edit / delete choice field options |    ✅    | choice-field-management.spec.ts                 |
 
 ---
 
@@ -727,8 +727,8 @@
 |:-------------------------|:-------:|
 | Total Features           |   20    |
 | Total Functions          |   356   |
-| ✅ Covered by Playwright |   174   |
-| ❌ Not covered           |   179   |
+| ✅ Covered by Playwright |   176   |
+| ❌ Not covered           |   177   |
 | ⏳ In progress           |    1    |
 | `N/A` Not applicable     |    2    |
-| **Coverage %**           | **48.9%** |
+| **Coverage %**           | **49.4%** |
