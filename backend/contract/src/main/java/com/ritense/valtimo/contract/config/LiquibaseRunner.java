@@ -175,6 +175,12 @@ public class LiquibaseRunner {
         liquibase.update(context);
     }
 
+    /**
+     * Liquibase's fast-check optimization caches "already executed" state on pipeline objects
+     * that live on the Liquibase Scope and are shared across {@link Liquibase#update} calls.
+     * We run multiple master changelogs in sequence, so the cache from one update leaks into the
+     * next and can incorrectly skip newly-added changesets. Disable it before every update.
+     */
     private void disableFastCheckCaching() {
         CommandFactory commandFactory = Scope.getCurrentScope().getSingleton(CommandFactory.class);
         Stream.of(UpdateSqlCommandStep.COMMAND_NAME, UpdateCommandStep.COMMAND_NAME)
