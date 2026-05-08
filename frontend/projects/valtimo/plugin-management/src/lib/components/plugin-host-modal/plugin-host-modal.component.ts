@@ -20,7 +20,7 @@ import {TranslateModule} from '@ngx-translate/core';
 import {FormControl, FormGroup, ReactiveFormsModule, Validators} from '@angular/forms';
 import {ButtonModule, ModalModule} from 'carbon-components-angular';
 import {ValtimoCdsModalDirective} from '@valtimo/components';
-import {ExternalPluginHostCreateRequest} from '../../models';
+import {ExternalPluginHostCreateRequest} from '@valtimo/plugin';
 
 @Component({
   standalone: true,

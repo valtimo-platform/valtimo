@@ -21,6 +21,8 @@ import {Observable} from 'rxjs';
 import {
   ExternalPluginConfiguration,
   ExternalPluginConfigurationCreateRequest,
+  ExternalPluginConfigurationDetail,
+  ExternalPluginConfigurationUpdateRequest,
   ExternalPluginDefinition,
   ExternalPluginHost,
   ExternalPluginHostCreateRequest,
@@ -33,31 +35,47 @@ export class ExternalPluginService {
   private readonly _baseUrl: string;
 
   constructor(
-    private readonly http: HttpClient,
+    private readonly _http: HttpClient,
     configService: ConfigService
   ) {
     this._baseUrl = `${configService.config.valtimoApi.endpointUri}management/v1/external-plugin`;
   }
 
   public getHosts(): Observable<Array<ExternalPluginHost>> {
-    return this.http.get<Array<ExternalPluginHost>>(`${this._baseUrl}/host`);
+    return this._http.get<Array<ExternalPluginHost>>(`${this._baseUrl}/host`);
   }
 
   public createHost(request: ExternalPluginHostCreateRequest): Observable<ExternalPluginHost> {
-    return this.http.post<ExternalPluginHost>(`${this._baseUrl}/host`, request);
+    return this._http.post<ExternalPluginHost>(`${this._baseUrl}/host`, request);
   }
 
   public getDefinitions(): Observable<Array<ExternalPluginDefinition>> {
-    return this.http.get<Array<ExternalPluginDefinition>>(`${this._baseUrl}/definition`);
+    return this._http.get<Array<ExternalPluginDefinition>>(`${this._baseUrl}/definition`);
+  }
+
+  public getDefinition(definitionId: string): Observable<ExternalPluginDefinition> {
+    return this._http.get<ExternalPluginDefinition>(`${this._baseUrl}/definition/${definitionId}`);
+  }
+
+  public getConfiguration(configurationId: string): Observable<ExternalPluginConfigurationDetail> {
+    return this._http.get<ExternalPluginConfigurationDetail>(`${this._baseUrl}/configuration/${configurationId}`);
   }
 
   public getConfigurations(definitionId?: string): Observable<Array<ExternalPluginConfiguration>> {
     let params = new HttpParams();
     if (definitionId) params = params.set('definitionId', definitionId);
-    return this.http.get<Array<ExternalPluginConfiguration>>(`${this._baseUrl}/configuration`, {params});
+    return this._http.get<Array<ExternalPluginConfiguration>>(`${this._baseUrl}/configuration`, {params});
   }
 
   public createConfiguration(request: ExternalPluginConfigurationCreateRequest): Observable<ExternalPluginConfiguration> {
-    return this.http.post<ExternalPluginConfiguration>(`${this._baseUrl}/configuration`, request);
+    return this._http.post<ExternalPluginConfiguration>(`${this._baseUrl}/configuration`, request);
+  }
+
+  public updateConfiguration(configurationId: string, request: ExternalPluginConfigurationUpdateRequest): Observable<ExternalPluginConfiguration> {
+    return this._http.put<ExternalPluginConfiguration>(`${this._baseUrl}/configuration/${configurationId}`, request);
+  }
+
+  public deleteConfiguration(configurationId: string): Observable<void> {
+    return this._http.delete<void>(`${this._baseUrl}/configuration/${configurationId}`);
   }
 }

@@ -193,6 +193,7 @@ export class OverflowMenuComponent implements OnInit, AfterContentInit, OnChange
     this._cleanupAutoUpdate = autoUpdate(reference, menu, () => {
       computePosition(reference, menu, {
         placement: this.placement,
+        strategy: 'fixed',
         middleware: [
           offset({mainAxis: this.offsetY, crossAxis: this.offsetX}),
           flip(),

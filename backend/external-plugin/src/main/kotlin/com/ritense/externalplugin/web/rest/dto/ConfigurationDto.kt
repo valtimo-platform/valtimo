@@ -27,6 +27,11 @@ data class ConfigurationCreateRequest(
     val properties: ObjectNode,
 )
 
+data class ConfigurationUpdateRequest(
+    val title: String,
+    val properties: ObjectNode,
+)
+
 data class ConfigurationResponse(
     val id: UUID,
     val definitionId: UUID,
@@ -42,3 +47,11 @@ data class ConfigurationResponse(
         )
     }
 }
+
+data class ConfigurationDetailResponse(
+    val id: UUID,
+    val definitionId: UUID,
+    val title: String,
+    val properties: ObjectNode,
+    val createdAt: Instant,
+)
