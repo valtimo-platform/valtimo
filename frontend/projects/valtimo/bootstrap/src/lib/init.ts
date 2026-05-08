@@ -19,7 +19,8 @@ import {TranslateService} from '@ngx-translate/core';
 import {accountInitializer} from '@valtimo/account';
 import {Injector} from '@angular/core';
 import {ConfigService} from '@valtimo/shared';
-import {menuInitializer} from '@valtimo/components';
+import {AdminSettingsService, menuInitializer} from '@valtimo/components';
+import {firstValueFrom} from 'rxjs';
 
 export function initialize(
   // eslint-disable-next-line
@@ -56,6 +57,36 @@ export function initializerFactory(
 
   // Auth-initializer
   initializersArray.push(configService.config.authentication.initializer(injector));
+
+  // Fetch feature toggle overrides from the backend and patch them into the config
+  // before other initializers run, so all reactive consumers see the correct merged values.
+  initializersArray.push(async () => {
+    try {
+      const adminSettingsService = injector.get(AdminSettingsService);
+      const overrides = await firstValueFrom(adminSettingsService.getFeatureToggleOverrides());
+      if (overrides && Object.keys(overrides).length > 0) {
+        configService.patchFeatureToggles(overrides);
+        logger.debug('Feature toggle overrides applied', overrides);
+      }
+    } catch (error) {
+      logger.warn('Failed to fetch feature toggle overrides, using defaults', error);
+    }
+  });
+
+  // Fetch accent colors from the backend and apply them as CSS custom properties
+  // before other initializers run, so the UI renders with the correct colors immediately.
+  initializersArray.push(async () => {
+    try {
+      const adminSettingsService = injector.get(AdminSettingsService);
+      const colors = await firstValueFrom(adminSettingsService.getAccentColors());
+      if (colors && Object.keys(colors).length > 0) {
+        adminSettingsService.applyAccentColors(colors);
+        logger.debug('Accent colors applied', colors);
+      }
+    } catch (error) {
+      logger.warn('Failed to fetch accent colors, using defaults', error);
+    }
+  });
 
   // Use environment config initializers to be used in app startup.
   configService.initializers.forEach(initializer => {

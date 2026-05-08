@@ -77,5 +77,7 @@ export class CaseManagementHeaderComponent
 
   public ngOnDestroy(): void {
     this._subscriptions.unsubscribe();
+    this.widgetWizardService.$disableActionButton.set(false);
+    this.setTitleDisabled(false);
   }
 }

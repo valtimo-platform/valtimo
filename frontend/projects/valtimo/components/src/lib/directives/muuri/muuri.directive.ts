@@ -38,8 +38,10 @@ export class MuuriDirective implements AfterViewInit, OnDestroy {
   private readonly _containerWidthSubject$ = new BehaviorSubject<number>(0);
   private readonly _mutationTrigger$ = new BehaviorSubject<null>(null);
 
-  private resizeObserver?: ResizeObserver;
-  private mutationObserver?: MutationObserver;
+  private _containerResizeObserver?: ResizeObserver;
+  private _itemResizeObserver?: ResizeObserver;
+  private _mutationObserver?: MutationObserver;
+  private _layoutDebounceTimer: ReturnType<typeof setTimeout> | null = null;
 
   private readonly _subscriptions = new Subscription();
 
@@ -82,6 +84,7 @@ export class MuuriDirective implements AfterViewInit, OnDestroy {
         }
 
         this.initMuuri();
+        this.initItemResizeObserver();
         this.openContainerChangeSubscription();
         this._mutationTrigger$.next(null);
       });
@@ -89,8 +92,10 @@ export class MuuriDirective implements AfterViewInit, OnDestroy {
   }
 
   public ngOnDestroy(): void {
-    this.resizeObserver?.disconnect();
-    this.mutationObserver?.disconnect();
+    this._containerResizeObserver?.disconnect();
+    this._itemResizeObserver?.disconnect();
+    this._mutationObserver?.disconnect();
+    if (this._layoutDebounceTimer) clearTimeout(this._layoutDebounceTimer);
     this._subscriptions.unsubscribe();
     this._muuriSubject$.value?.destroy?.();
   }
@@ -113,6 +118,51 @@ export class MuuriDirective implements AfterViewInit, OnDestroy {
     );
   }
 
+  /**
+   * Create a ResizeObserver that watches each direct child (Muuri item) for
+   * size changes. This catches image loads, async content rendering, font
+   * loading, and any other change that alters an item's height without
+   * triggering a DOM mutation.
+   */
+  private initItemResizeObserver(): void {
+    if (typeof ResizeObserver === 'undefined') return;
+
+    this._itemResizeObserver = new ResizeObserver(() => {
+      this.debouncedLayout();
+    });
+
+    this.observeCurrentItems();
+  }
+
+  /**
+   * Start observing all current direct children that are not yet observed.
+   * Called on init and whenever the MutationObserver detects new children.
+   */
+  private observeCurrentItems(): void {
+    if (!this._itemResizeObserver) return;
+
+    const container = this.elementRef.nativeElement as HTMLElement;
+    Array.from(container.children).forEach(child => {
+      this._itemResizeObserver!.observe(child);
+    });
+  }
+
+  /**
+   * Debounced refresh + layout to batch rapid item size changes (e.g. multiple
+   * images loading in quick succession) into a single Muuri re-layout.
+   */
+  private debouncedLayout(): void {
+    if (this._layoutDebounceTimer) clearTimeout(this._layoutDebounceTimer);
+
+    this._layoutDebounceTimer = setTimeout(() => {
+      this._layoutDebounceTimer = null;
+      if (this._muuri) {
+        this._muuri.refreshItems();
+        this._muuri.layout(true);
+      }
+    }, 50);
+  }
+
   private observeContainerWidthChanges(): void {
     const nativeElement = this.elementRef.nativeElement as HTMLElement;
 
@@ -122,8 +172,8 @@ export class MuuriDirective implements AfterViewInit, OnDestroy {
     };
 
     if (typeof ResizeObserver !== 'undefined') {
-      this.resizeObserver = new ResizeObserver(() => getWidth());
-      this.resizeObserver.observe(nativeElement);
+      this._containerResizeObserver = new ResizeObserver(() => getWidth());
+      this._containerResizeObserver.observe(nativeElement);
     }
 
     if (typeof window !== 'undefined') {
@@ -140,7 +190,7 @@ export class MuuriDirective implements AfterViewInit, OnDestroy {
 
     const nativeElement = this.elementRef.nativeElement as HTMLElement;
 
-    this.mutationObserver = new MutationObserver(() => {
+    this._mutationObserver = new MutationObserver(() => {
       if (!this._muuri) return;
 
       const container = this.elementRef.nativeElement as HTMLElement;
@@ -152,10 +202,13 @@ export class MuuriDirective implements AfterViewInit, OnDestroy {
         this._muuri.add(items);
       }
 
+      // Ensure newly added items are observed for size changes
+      this.observeCurrentItems();
+
       this._mutationTrigger$.next(null);
     });
 
-    this.mutationObserver.observe(nativeElement, {
+    this._mutationObserver.observe(nativeElement, {
       childList: true,
       subtree: true,
     });
