@@ -21,7 +21,9 @@ import com.ritense.externalplugin.service.ExternalPluginConfigurationService
 import com.ritense.externalplugin.service.ExternalPluginDefinitionService
 import com.ritense.externalplugin.service.ExternalPluginHostService
 import com.ritense.externalplugin.web.rest.dto.ConfigurationCreateRequest
+import com.ritense.externalplugin.web.rest.dto.ConfigurationDetailResponse
 import com.ritense.externalplugin.web.rest.dto.ConfigurationResponse
+import com.ritense.externalplugin.web.rest.dto.ConfigurationUpdateRequest
 import com.ritense.externalplugin.web.rest.dto.DefinitionResponse
 import com.ritense.externalplugin.web.rest.dto.HostCreateRequest
 import com.ritense.externalplugin.web.rest.dto.HostResponse
@@ -31,7 +33,10 @@ import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.stereotype.Controller
 import org.springframework.web.bind.annotation.GetMapping
+import org.springframework.web.bind.annotation.PathVariable
+import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.PostMapping
+import org.springframework.web.bind.annotation.PutMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
@@ -64,11 +69,34 @@ class ExternalPluginManagementResource(
         ResponseEntity.ok(definitionService.list().map(DefinitionResponse::from))
 
     @RunWithoutAuthorization
+    @GetMapping("/definition/{definitionId}")
+    fun getDefinition(@PathVariable definitionId: UUID): ResponseEntity<DefinitionResponse> =
+        ResponseEntity.ok(DefinitionResponse.from(definitionService.get(definitionId)))
+
+    @RunWithoutAuthorization
     @GetMapping("/configuration")
     fun listConfigurations(
         @RequestParam(required = false) definitionId: UUID?,
     ): ResponseEntity<List<ConfigurationResponse>> =
         ResponseEntity.ok(configurationService.list(definitionId).map(ConfigurationResponse::from))
+
+    @RunWithoutAuthorization
+    @GetMapping("/configuration/{configurationId}")
+    fun getConfiguration(
+        @PathVariable configurationId: UUID,
+    ): ResponseEntity<ConfigurationDetailResponse> {
+        val configuration = configurationService.get(configurationId)
+        val decrypted = configurationService.decryptedProperties(configuration)
+        return ResponseEntity.ok(
+            ConfigurationDetailResponse(
+                id = configuration.id,
+                definitionId = configuration.definitionId,
+                title = configuration.title,
+                properties = decrypted,
+                createdAt = configuration.createdAt,
+            )
+        )
+    }
 
     @RunWithoutAuthorization
     @PostMapping("/configuration")
@@ -77,5 +105,24 @@ class ExternalPluginManagementResource(
     ): ResponseEntity<ConfigurationResponse> {
         val configuration = configurationService.create(request.definitionId, request.title, request.properties)
         return ResponseEntity.status(HttpStatus.CREATED).body(ConfigurationResponse.from(configuration))
+    }
+
+    @RunWithoutAuthorization
+    @PutMapping("/configuration/{configurationId}")
+    fun updateConfiguration(
+        @PathVariable configurationId: UUID,
+        @RequestBody request: ConfigurationUpdateRequest,
+    ): ResponseEntity<ConfigurationResponse> {
+        val configuration = configurationService.update(configurationId, request.title, request.properties)
+        return ResponseEntity.ok(ConfigurationResponse.from(configuration))
+    }
+
+    @RunWithoutAuthorization
+    @DeleteMapping("/configuration/{configurationId}")
+    fun deleteConfiguration(
+        @PathVariable configurationId: UUID,
+    ): ResponseEntity<Void> {
+        configurationService.delete(configurationId)
+        return ResponseEntity.noContent().build()
     }
 }

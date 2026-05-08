@@ -58,7 +58,7 @@
       } as hostObs"
     >
       <valtimo-carbon-list
-        [loading]="$hostsLoading()"
+        [loading]="hostsLoading$ | async"
         [items]="hostObs.hosts"
         [fields]="hostFields"
         [header]="false"
@@ -72,7 +72,7 @@
       </valtimo-carbon-list>
 
       <ng-template #addHostButton>
-        <button cdsButton="primary" [disabled]="$hostsLoading()" (click)="openHostModal()">
+        <button cdsButton="primary" [disabled]="hostsLoading$ | async" (click)="openHostModal()">
           {{ 'pluginManagement.addHost' | translate }}
 
           <svg cdsIcon="add" size="16" class="cds--btn__icon"></svg>
@@ -93,8 +93,16 @@
   (closeModal)="closeEditModal()"
 ></valtimo-plugin-edit-modal>
 
+<valtimo-plugin-external-edit-modal
+  [open]="showExternalEditModal$ | async"
+  [configuration]="selectedExternalConfiguration$ | async"
+  (closeEvent)="closeExternalEditModal()"
+  (savedEvent)="onExternalConfigSaved()"
+  (deleteEvent)="onExternalConfigDeleted($event)"
+></valtimo-plugin-external-edit-modal>
+
 <valtimo-plugin-host-modal
-  [open]="$hostModalOpen()"
+  [open]="hostModalOpen$ | async"
   (closeEvent)="closeHostModal()"
   (submitEvent)="submitHost($event)"
 ></valtimo-plugin-host-modal>

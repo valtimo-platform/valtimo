@@ -27,6 +27,7 @@ import {PluginConfigureComponent} from './components/plugin-configure/plugin-con
 import {PluginConfigurationContainerModule, PluginTranslatePipeModule} from '@valtimo/plugin';
 import {PluginEditModalComponent} from './components/plugin-edit-modal/plugin-edit-modal.component';
 import {PluginEditComponent} from './components/plugin-edit/plugin-edit.component';
+import {PluginExternalEditModalComponent} from './components/plugin-external-edit-modal/plugin-external-edit-modal.component';
 import {PluginHostModalComponent} from './components/plugin-host-modal/plugin-host-modal.component';
 import {
   CarbonListModule,
@@ -76,6 +77,7 @@ import {
     TilesModule,
     LoadingModule,
     TabsModule,
+    PluginExternalEditModalComponent,
     PluginHostModalComponent,
   ],
   exports: [

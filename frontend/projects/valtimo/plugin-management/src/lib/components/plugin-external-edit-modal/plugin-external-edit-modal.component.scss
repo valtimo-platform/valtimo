@@ -14,9 +14,8 @@
  * limitations under the License.
  */
 
-const baseConfig = require('../../../karma.conf.js');
-
-module.exports = function (config) {
-  // load shared base
-  baseConfig(config);
-};
+.plugin-external-edit-modal__properties-textarea {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.8125rem;
+  resize: vertical;
+}
