@@ -51,6 +51,7 @@ public class LiquibaseRunner {
     private final Contexts context;
     private final DataSource datasource;
     private final int staleLockThresholdMinutes;
+    private volatile boolean aborting = false;
 
     public LiquibaseRunner(
         final List<LiquibaseMasterChangeLogLocation> liquibaseMasterChangeLogLocations,
@@ -91,6 +92,11 @@ public class LiquibaseRunner {
     void executeMigrations(Database database, LockService lockService) throws LiquibaseException {
         try {
             for (LiquibaseMasterChangeLogLocation changeLogLocation : liquibaseMasterChangeLogLocations) {
+                if (aborting) {
+                    throw new LiquibaseException(
+                        "Liquibase migration aborted by JVM shutdown signal before: "
+                            + changeLogLocation.getFilePath());
+                }
                 disableFastCheckCaching();
                 runChangeLog(database, changeLogLocation.getFilePath());
             }
@@ -122,6 +128,9 @@ public class LiquibaseRunner {
      */
     Thread newShutdownHook(LockService originalLockService) {
         return new Thread(() -> {
+            // Set unconditionally so the iteration loop in executeMigrations() skips remaining
+            // master changelogs even if the lock has already been released between iterations.
+            aborting = true;
             if (!originalLockService.hasChangeLogLock()) {
                 return;
             }

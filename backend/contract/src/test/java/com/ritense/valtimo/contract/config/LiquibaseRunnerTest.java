@@ -132,4 +132,38 @@ class LiquibaseRunnerTest {
         verify(lockService).hasChangeLogLock();
         verify(datasource, never()).getConnection();
     }
+
+    @Test
+    void executeMigrationsBreaksWhenAbortFlagSet() throws Exception {
+        LockService hookLockService = mock(LockService.class);
+        when(hookLockService.hasChangeLogLock()).thenReturn(false);
+        LockService loopLockService = mock(LockService.class);
+        Database database = mock(Database.class);
+        LiquibaseMasterChangeLogLocation first = mock(LiquibaseMasterChangeLogLocation.class);
+        when(first.getFilePath()).thenReturn("first-master.xml");
+        LiquibaseMasterChangeLogLocation second = mock(LiquibaseMasterChangeLogLocation.class);
+
+        LiquibaseRunner abortingRunner = new LiquibaseRunner(
+            List.of(first, second),
+            new LiquibaseProperties(),
+            mock(DataSource.class),
+            THRESHOLD_MINUTES
+        ) {
+            @Override
+            void runChangeLog(Database db, String filePath) {
+                throw new AssertionError("runChangeLog must not be called once aborting=true");
+            }
+        };
+
+        Thread hook = abortingRunner.newShutdownHook(hookLockService);
+        hook.start();
+        hook.join();
+
+        assertThatThrownBy(() -> abortingRunner.executeMigrations(database, loopLockService))
+            .isInstanceOf(LiquibaseException.class)
+            .hasMessageContaining("aborted by JVM shutdown signal")
+            .hasMessageContaining("first-master.xml");
+
+        verify(loopLockService).releaseLock();
+    }
 }
