@@ -1420,43 +1420,6 @@
         }
       }
     },
-    "@valtimo/external-plugin": {
-      "projectType": "library",
-      "root": "projects/valtimo/external-plugin",
-      "sourceRoot": "projects/valtimo/external-plugin/src",
-      "prefix": "valtimo",
-      "architect": {
-        "build": {
-          "builder": "@angular-devkit/build-angular:ng-packagr",
-          "options": {
-            "tsConfig": "projects/valtimo/external-plugin/tsconfig.lib.json",
-            "project": "projects/valtimo/external-plugin/ng-package.json"
-          },
-          "configurations": {
-            "production": {
-              "tsConfig": "projects/valtimo/external-plugin/tsconfig.lib.prod.json"
-            }
-          }
-        },
-        "test": {
-          "builder": "@angular-devkit/build-angular:karma",
-          "options": {
-            "main": "src/test.ts",
-            "tsConfig": "projects/valtimo/external-plugin/tsconfig.spec.json",
-            "karmaConfig": "projects/valtimo/external-plugin/karma.conf.js"
-          }
-        },
-        "lint": {
-          "builder": "@angular-eslint/builder:lint",
-          "options": {
-            "lintFilePatterns": [
-              "projects/valtimo/external-plugin/src/**/*.ts",
-              "projects/valtimo/external-plugin/src/**/*.html"
-            ]
-          }
-        }
-      }
-    },
     "@valtimo/plugin-management": {
       "projectType": "library",
       "root": "projects/valtimo/plugin-management",

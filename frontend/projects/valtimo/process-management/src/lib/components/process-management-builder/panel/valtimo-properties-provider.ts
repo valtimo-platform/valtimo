@@ -271,6 +271,41 @@ const CustomRootElement = (props: {
     </div>`;
   }
 
+  const externalActionKey = processLink?.actionKey;
+
+  if (processLink?.processLinkType === 'external_plugin' && externalActionKey) {
+    return html`<div class="process-link-properties-panel">
+      <div class="process-link-properties-panel__header">
+        <span class="process-link-properties-panel__title-container">
+          <span class="process-link-properties-panel__title">${externalActionKey}</span>
+        </span>
+
+        <cds-tag
+          class="cds--tag cds--tag--purple cds--tag--md cds--layout--size-md  cds-tag--no-margin"
+          ><span class="cds--tag__label">
+            ${translateService.instant('processLinkType.plugin')}
+          </span>
+        </cds-tag>
+      </div>
+
+      <div class="process-link-properties-panel__buttons">
+        <button
+          class="cds--btn cds--btn--danger cds--btn--sm cds--layout--side-md"
+          onClick=${handleUnlinkClick}
+        >
+          ${unlinkText}
+        </button>
+
+        <button
+          class="cds--btn cds--btn--primary cds--btn--sm cds--layout--size-md"
+          onClick=${handleEditClick}
+        >
+          ${editProcessLinkText}
+        </button>
+      </div>
+    </div>`;
+  }
+
   const pluginActionKey = processLink?.pluginActionDefinitionKey;
   const pluginActionTranslation =
     pluginTranslationService.instantByPluginActionKey(pluginActionKey);

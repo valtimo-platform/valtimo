@@ -15,4 +15,4 @@
  */
 
 export * from './plugin-modal.model';
-export * from './external-plugin.model';
+export * from './unified-plugin-definition.model';

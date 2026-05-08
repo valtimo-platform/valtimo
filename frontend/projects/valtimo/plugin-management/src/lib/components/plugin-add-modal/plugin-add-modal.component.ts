@@ -15,10 +15,16 @@
  */
 
 import {Component, EventEmitter, Input, OnDestroy, OnInit, Output} from '@angular/core';
-import {ExternalPluginService, PluginManagementStateService} from '../../services';
+import {PluginManagementStateService} from '../../services';
 import {map, take} from 'rxjs/operators';
 import {BehaviorSubject, Observable, Subject, Subscription} from 'rxjs';
-import {PluginConfigurationData, PluginManagementService} from '@valtimo/plugin';
+import {
+  ExternalPluginService,
+  extractExternalDefinitionId,
+  isExternalPluginKey,
+  PluginConfigurationData,
+  PluginManagementService,
+} from '@valtimo/plugin';
 import {NGXLogger} from 'ngx-logger';
 import {CARBON_CONSTANTS} from '@valtimo/components';
 import {FormControl, FormGroup, Validators} from '@angular/forms';
@@ -30,17 +36,17 @@ import {FormControl, FormGroup, Validators} from '@angular/forms';
   styleUrls: ['./plugin-add-modal.component.scss'],
 })
 export class PluginAddModalComponent implements OnInit, OnDestroy {
-  @Input() open = false;
+  @Input() public open = false;
 
-  @Output() closeModal: EventEmitter<boolean> = new EventEmitter();
+  @Output() public closeModal = new EventEmitter<boolean>();
 
-  public readonly inputDisabled$ = this.stateService.inputDisabled$;
-  public readonly selectedPluginDefinition$ = this.stateService.selectedPluginDefinition$;
+  public readonly inputDisabled$ = this._stateService.inputDisabled$;
+  public readonly selectedPluginDefinition$ = this._stateService.selectedPluginDefinition$;
   public readonly configurationValid$ = new BehaviorSubject<boolean>(false);
   public readonly returnToFirstStepSubject$ = new Subject<boolean>();
 
   public readonly isExternalPlugin$: Observable<boolean> = this.selectedPluginDefinition$.pipe(
-    map(def => !!def?.key?.startsWith('external:'))
+    map(def => isExternalPluginKey(def?.key))
   );
 
   public readonly externalForm = new FormGroup({
@@ -48,31 +54,33 @@ export class PluginAddModalComponent implements OnInit, OnDestroy {
     properties: new FormControl('{}'),
   });
 
-  private externalFormSubscription: Subscription | undefined;
+  private readonly _subscriptions = new Subscription();
 
   constructor(
-    private readonly stateService: PluginManagementStateService,
-    private readonly pluginManagementService: PluginManagementService,
-    private readonly externalPluginService: ExternalPluginService,
-    private readonly logger: NGXLogger
+    private readonly _stateService: PluginManagementStateService,
+    private readonly _pluginManagementService: PluginManagementService,
+    private readonly _externalPluginService: ExternalPluginService,
+    private readonly _logger: NGXLogger
   ) {}
 
   public ngOnInit(): void {
-    this.externalFormSubscription = this.externalForm.valueChanges.subscribe(() => {
-      this.validateExternalForm();
-    });
+    this._subscriptions.add(
+      this.externalForm.valueChanges.subscribe(() => {
+        this._validateExternalForm();
+      })
+    );
   }
 
   public ngOnDestroy(): void {
-    this.externalFormSubscription?.unsubscribe();
+    this._subscriptions.unsubscribe();
   }
 
   public complete(): void {
     this.selectedPluginDefinition$.pipe(take(1)).subscribe(def => {
-      if (def?.key?.startsWith('external:')) {
-        this.saveExternalConfiguration(def.key);
+      if (isExternalPluginKey(def?.key)) {
+        this._saveExternalConfiguration(def.key);
       } else {
-        this.stateService.save();
+        this._stateService.save();
       }
     });
   }
@@ -81,9 +89,9 @@ export class PluginAddModalComponent implements OnInit, OnDestroy {
     this.closeModal.emit();
 
     setTimeout(() => {
-      this.returnToFirstStep();
-      this.stateService.enableInput();
-      this.stateService.clear();
+      this._returnToFirstStep();
+      this._stateService.enableInput();
+      this._stateService.clear();
       this.externalForm.reset({title: '', properties: '{}'});
       this.configurationValid$.next(false);
     }, CARBON_CONSTANTS.modalAnimationMs);
@@ -93,7 +101,35 @@ export class PluginAddModalComponent implements OnInit, OnDestroy {
     this.configurationValid$.next(valid);
   }
 
-  private validateExternalForm(): void {
+  public onConfiguration(configuration: PluginConfigurationData): void {
+    const pluginConfiguration = {...configuration};
+    delete pluginConfiguration['configurationId'];
+    delete pluginConfiguration['configurationTitle'];
+
+    this._stateService.disableInput();
+
+    this._stateService.selectedPluginDefinition$.pipe(take(1)).subscribe(selectedDefinition => {
+      this._pluginManagementService
+        .savePluginConfiguration({
+          id: configuration.configurationId,
+          definitionKey: selectedDefinition.key,
+          title: configuration.configurationTitle,
+          properties: pluginConfiguration,
+        })
+        .subscribe({
+          next: () => {
+            this._stateService.refresh();
+            this.hide();
+          },
+          error: () => {
+            this._logger.error('Something went wrong with saving the plugin configuration.');
+            this._stateService.enableInput();
+          },
+        });
+    });
+  }
+
+  private _validateExternalForm(): void {
     const titleValid = !!this.externalForm.value.title?.trim();
     let jsonValid = true;
     const props = this.externalForm.value.properties?.trim();
@@ -107,36 +143,8 @@ export class PluginAddModalComponent implements OnInit, OnDestroy {
     this.configurationValid$.next(titleValid && jsonValid);
   }
 
-  public onConfiguration(configuration: PluginConfigurationData): void {
-    const pluginConfiguration = {...configuration};
-    delete pluginConfiguration['configurationId'];
-    delete pluginConfiguration['configurationTitle'];
-
-    this.stateService.disableInput();
-
-    this.stateService.selectedPluginDefinition$.pipe(take(1)).subscribe(selectedDefinition => {
-      this.pluginManagementService
-        .savePluginConfiguration({
-          id: configuration.configurationId,
-          definitionKey: selectedDefinition.key,
-          title: configuration.configurationTitle,
-          properties: pluginConfiguration,
-        })
-        .subscribe({
-          next: () => {
-            this.stateService.refresh();
-            this.hide();
-          },
-          error: () => {
-            this.logger.error('Something went wrong with saving the plugin configuration.');
-            this.stateService.enableInput();
-          },
-        });
-    });
-  }
-
-  private saveExternalConfiguration(key: string): void {
-    const definitionId = key.replace('external:', '');
+  private _saveExternalConfiguration(key: string): void {
+    const definitionId = extractExternalDefinitionId(key);
     const title = this.externalForm.value.title?.trim() ?? '';
     let properties: Record<string, unknown> = {};
     const propsStr = this.externalForm.value.properties?.trim();
@@ -148,23 +156,23 @@ export class PluginAddModalComponent implements OnInit, OnDestroy {
       }
     }
 
-    this.stateService.disableInput();
+    this._stateService.disableInput();
 
-    this.externalPluginService
+    this._externalPluginService
       .createConfiguration({definitionId, title, properties})
       .subscribe({
         next: () => {
-          this.stateService.refresh();
+          this._stateService.refresh();
           this.hide();
         },
         error: () => {
-          this.logger.error('Something went wrong with saving the external plugin configuration.');
-          this.stateService.enableInput();
+          this._logger.error('Something went wrong with saving the external plugin configuration.');
+          this._stateService.enableInput();
         },
       });
   }
 
-  private returnToFirstStep(): void {
+  private _returnToFirstStep(): void {
     this.returnToFirstStepSubject$.next(true);
   }
 }

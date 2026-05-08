@@ -17,20 +17,16 @@
 import {Component, OnDestroy, OnInit} from '@angular/core';
 import {BehaviorSubject, combineLatest, Observable, of, Subscription} from 'rxjs';
 import {catchError, map} from 'rxjs/operators';
-import {ExternalPluginService, PluginManagementStateService} from '../../services';
-import {ExternalPluginDefinition} from '../../models';
+import {PluginManagementStateService} from '../../services';
+import {UnifiedPluginDefinition} from '../../models';
 import {
+  ExternalPluginDefinition,
+  ExternalPluginService,
   PluginDefinition,
-  PluginDefinitionWithLogo,
   PluginManagementService,
+  toExternalPluginKey,
   PLUGIN_CATALOG_TEST_IDS,
 } from '@valtimo/plugin';
-
-export interface UnifiedPluginDefinition extends PluginDefinitionWithLogo {
-  external?: boolean;
-  externalName?: string | null;
-  externalDescription?: string | null;
-}
 
 @Component({
   standalone: false,
@@ -39,70 +35,71 @@ export interface UnifiedPluginDefinition extends PluginDefinitionWithLogo {
   styleUrls: ['./plugin-add-select.component.scss'],
 })
 export class PluginAddSelectComponent implements OnInit, OnDestroy {
-  public readonly selectedPluginDefinition$ = this.stateService.selectedPluginDefinition$;
-  public readonly disabled$ = this.stateService.inputDisabled$;
+  public readonly selectedPluginDefinition$ = this._stateService.selectedPluginDefinition$;
+  public readonly disabled$ = this._stateService.inputDisabled$;
   public readonly testIds = PLUGIN_CATALOG_TEST_IDS;
 
   private readonly _externalDefs$ = new BehaviorSubject<ExternalPluginDefinition[]>([]);
 
   public readonly allDefinitions$: Observable<UnifiedPluginDefinition[] | undefined> =
     combineLatest([
-      this.stateService.pluginDefinitionsWithLogos$,
+      this._stateService.pluginDefinitionsWithLogos$,
       this._externalDefs$.asObservable(),
     ]).pipe(
       map(([embedded, external]) => {
         if (!embedded) return undefined;
 
         const externalDefs: UnifiedPluginDefinition[] = external.map(def => ({
-          key: `external:${def.id}`,
+          key: toExternalPluginKey(def.id),
           title: def.name ?? def.pluginId,
           description: def.description,
-          external: true,
+          source: 'external',
+          externalDefinitionId: def.id,
           externalName: def.name ?? def.pluginId,
           externalDescription: def.description,
         }));
 
         return [
-          ...embedded.map(d => ({...d, external: false} as UnifiedPluginDefinition)),
+          ...embedded.map(d => ({...d, source: 'embedded'} as UnifiedPluginDefinition)),
           ...externalDefs,
         ];
       })
     );
 
-  private refreshSubscription!: Subscription;
+  private readonly _subscriptions = new Subscription();
 
   constructor(
-    private readonly pluginManagementService: PluginManagementService,
-    private readonly stateService: PluginManagementStateService,
-    private readonly externalPluginService: ExternalPluginService
+    private readonly _pluginManagementService: PluginManagementService,
+    private readonly _stateService: PluginManagementStateService,
+    private readonly _externalPluginService: ExternalPluginService
   ) {}
 
   public ngOnInit(): void {
-    this.openRefreshSubscription();
-    this.getPluginDefinitions();
-    this.getExternalPluginDefinitions();
+    this._openRefreshSubscription();
+    this._getPluginDefinitions();
+    this._getExternalPluginDefinitions();
   }
 
   public ngOnDestroy(): void {
-    this.refreshSubscription?.unsubscribe();
+    this._subscriptions.unsubscribe();
   }
 
   public selectPluginDefinition(event: {value: PluginDefinition}): void {
-    this.stateService.selectPluginDefinition(event.value);
+    this._stateService.selectPluginDefinition(event.value);
   }
 
   public deselectPluginDefinition(): void {
-    this.stateService.clearSelectedPluginDefinition();
+    this._stateService.clearSelectedPluginDefinition();
   }
 
-  private getPluginDefinitions(): void {
-    this.pluginManagementService.getPluginDefinitions().subscribe(pluginDefinitions => {
-      this.stateService.setPluginDefinitions(pluginDefinitions);
+  private _getPluginDefinitions(): void {
+    this._pluginManagementService.getPluginDefinitions().subscribe(pluginDefinitions => {
+      this._stateService.setPluginDefinitions(pluginDefinitions);
     });
   }
 
-  private getExternalPluginDefinitions(): void {
-    this.externalPluginService
+  private _getExternalPluginDefinitions(): void {
+    this._externalPluginService
       .getDefinitions()
       .pipe(catchError(() => of([] as ExternalPluginDefinition[])))
       .subscribe(definitions => {
@@ -110,12 +107,14 @@ export class PluginAddSelectComponent implements OnInit, OnDestroy {
       });
   }
 
-  private openRefreshSubscription(): void {
-    this.refreshSubscription = combineLatest([
-      this.stateService.showModal$,
-      this.stateService.refresh$,
-    ]).subscribe(() => {
-      this.stateService.clearSelectedPluginDefinition();
-    });
+  private _openRefreshSubscription(): void {
+    this._subscriptions.add(
+      combineLatest([
+        this._stateService.showModal$,
+        this._stateService.refresh$,
+      ]).subscribe(() => {
+        this._stateService.clearSelectedPluginDefinition();
+      })
+    );
   }
 }

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import {Component, Inject, Optional, Type} from '@angular/core';
+import {Component} from '@angular/core';
 import {
   PluginStateService,
   ProcessLinkButtonService,
@@ -23,7 +23,6 @@ import {
 } from '../../services';
 import {take} from 'rxjs/operators';
 import {ConfigService} from '@valtimo/shared';
-import {EXTERNAL_PLUGIN_PROCESS_LINK_STEP_COMPONENT_TOKEN} from '../../constants';
 
 @Component({
   standalone: false,
@@ -60,10 +59,7 @@ export class ProcessLinkModalComponent {
     private readonly buttonService: ProcessLinkButtonService,
     private readonly pluginStateService: PluginStateService,
     private readonly processLinkStateService: ProcessLinkStateService,
-    private readonly configService: ConfigService,
-    @Optional()
-    @Inject(EXTERNAL_PLUGIN_PROCESS_LINK_STEP_COMPONENT_TOKEN)
-    public readonly externalPluginStepComponent: Type<unknown> | null
+    private readonly configService: ConfigService
   ) {}
 
   closeModal(): void {

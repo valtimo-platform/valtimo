@@ -1813,6 +1813,12 @@
       "source": "Bron",
       "properties": "Eigenschappen (JSON)"
     },
+    "source": {
+      "embedded": "Ingebed",
+      "external": "Extern"
+    },
+    "editExternalConfiguration": "Externe plugin-configuratie bewerken",
+    "invalidJson": "Ongeldige JSON",
     "addSteps": {
       "step0": "Kies je plugin",
       "step1": "Gegevens invullen",
@@ -2088,7 +2094,9 @@
       "checkboxDescription": "Activeert Form View Model form afhandeling"
     },
     "importConfiguration": "Configuratie importeren",
-    "externalPluginNoConfig": "Deze externe plugin actie vereist geen aanvullende configuratie. Klik op opslaan om de processtap-koppeling aan te maken.",
+    "externalPluginActionProperties": "Configureer de actie-eigenschappen voor deze externe plugin actie als JSON. Klik op opslaan wanneer gereed.",
+    "actionPropertiesJson": "Actie-eigenschappen (JSON)",
+    "invalidJson": "Ongeldige JSON",
     "selectProcess": "Selecteer een proces",
     "process": "Proces",
     "version": "Versie",

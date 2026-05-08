@@ -19,8 +19,10 @@ package com.ritense.externalplugin.security
 import com.ritense.valtimo.contract.authentication.AuthoritiesConstants.ADMIN
 import com.ritense.valtimo.contract.security.config.HttpConfigurerConfigurationException
 import com.ritense.valtimo.contract.security.config.HttpSecurityConfigurer
+import org.springframework.http.HttpMethod.DELETE
 import org.springframework.http.HttpMethod.GET
 import org.springframework.http.HttpMethod.POST
+import org.springframework.http.HttpMethod.PUT
 import org.springframework.security.config.annotation.web.builders.HttpSecurity
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher.antMatcher
 
@@ -33,8 +35,12 @@ class ExternalPluginHttpSecurityConfigurer : HttpSecurityConfigurer {
                     .requestMatchers(antMatcher(GET, "/api/management/v1/external-plugin/host")).hasAuthority(ADMIN)
                     .requestMatchers(antMatcher(POST, "/api/management/v1/external-plugin/host")).hasAuthority(ADMIN)
                     .requestMatchers(antMatcher(GET, "/api/management/v1/external-plugin/definition")).hasAuthority(ADMIN)
+                    .requestMatchers(antMatcher(GET, "/api/management/v1/external-plugin/definition/*")).hasAuthority(ADMIN)
                     .requestMatchers(antMatcher(GET, "/api/management/v1/external-plugin/configuration")).hasAuthority(ADMIN)
+                    .requestMatchers(antMatcher(GET, "/api/management/v1/external-plugin/configuration/*")).hasAuthority(ADMIN)
                     .requestMatchers(antMatcher(POST, "/api/management/v1/external-plugin/configuration")).hasAuthority(ADMIN)
+                    .requestMatchers(antMatcher(PUT, "/api/management/v1/external-plugin/configuration/*")).hasAuthority(ADMIN)
+                    .requestMatchers(antMatcher(DELETE, "/api/management/v1/external-plugin/configuration/*")).hasAuthority(ADMIN)
             }
         } catch (e: Exception) {
             throw HttpConfigurerConfigurationException(e)

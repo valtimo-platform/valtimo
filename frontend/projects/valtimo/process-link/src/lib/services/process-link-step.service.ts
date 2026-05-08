@@ -521,6 +521,15 @@ export class ProcessLinkStepService {
         this._currentStepIndex$.next(bbIndex);
         break;
       }
+      case 'external_plugin':
+        // External plugin has 3 steps same as plugin: select config, select action, configure action
+        this._steps$.next([
+          {label: 'choosePluginConfiguration'},
+          {label: 'choosePluginAction'},
+          {label: 'configurePluginAction'},
+        ]);
+        this._currentStepIndex$.next(2); // Start at last step (configure action)
+        break;
       case 'ui-component':
         // Single step for UI component
         this._steps$.next([{label: 'uiComponent'}]);

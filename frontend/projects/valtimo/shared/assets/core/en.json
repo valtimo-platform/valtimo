@@ -1777,6 +1777,12 @@
       "source": "Source",
       "properties": "Properties (JSON)"
     },
+    "source": {
+      "embedded": "Embedded",
+      "external": "External"
+    },
+    "editExternalConfiguration": "Edit external plugin configuration",
+    "invalidJson": "Invalid JSON",
     "addSteps": {
       "step0": "Choose your plugin",
       "step1": "Enter data",
@@ -2046,7 +2052,9 @@
       "checkboxDescription": "Enables Form View Model form processing"
     },
     "importConfiguration": "Import configuration",
-    "externalPluginNoConfig": "This external plugin action does not require additional configuration. Click save to create the process link.",
+    "externalPluginActionProperties": "Configure the action properties for this external plugin action as JSON. Click save when done.",
+    "actionPropertiesJson": "Action properties (JSON)",
+    "invalidJson": "Invalid JSON",
     "selectProcess": "Select process",
     "process": "Process",
     "version": "Version",

@@ -15,9 +15,24 @@
   -->
 
 <ng-container *ngIf="isExternalPlugin$ | async; else embeddedConfig">
-  <p class="step-description">
-    {{ 'processLinkConfiguration.externalPluginNoConfig' | translate }}
-  </p>
+  <div class="external-action-config">
+    <p class="step-description">
+      {{ 'processLinkConfiguration.externalPluginActionProperties' | translate }}
+    </p>
+    <div class="cds--form-item">
+      <label class="cds--label">{{ 'processLinkConfiguration.actionPropertiesJson' | translate }}</label>
+      <textarea
+        class="cds--text-area"
+        rows="10"
+        [ngModel]="externalActionPropertiesJson"
+        (ngModelChange)="onExternalActionPropertiesChange($event)"
+        [class.cds--text-area--invalid]="!externalActionPropertiesValid"
+      ></textarea>
+      <div *ngIf="!externalActionPropertiesValid" class="cds--form-requirement">
+        {{ 'processLinkConfiguration.invalidJson' | translate }}
+      </div>
+    </div>
+  </div>
 </ng-container>
 
 <ng-template #embeddedConfig>
