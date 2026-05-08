@@ -14,9 +14,9 @@
  * limitations under the License.
  */
 
-import { FastifyInstance } from "fastify";
-import { PluginManager } from "../plugin-manager.js";
-import { ConfigRegistry } from "../config-registry.js";
+import {FastifyInstance} from "fastify";
+import {PluginManager} from "../plugin-manager.js";
+import {ConfigRegistry} from "../config-registry.js";
 
 /**
  * Plugin action execution endpoint.
@@ -117,6 +117,16 @@ export async function pluginActionRoutes(
         });
         return;
       }
+
+      if (!pluginConfig.serviceToken || !pluginConfig.gzacBaseUrl) {
+        reply.code(500).send({
+          status: "error",
+          errorCode: "MISSING_CALLBACK_CONTEXT",
+          errorMessage: `Configuration ${configurationId} is missing serviceToken or gzacBaseUrl. GZAC must re-push the configuration before this plugin can call back.`,
+        });
+        return;
+      }
+
       const configuration = pluginConfig.properties;
 
       try {
@@ -131,6 +141,8 @@ export async function pluginActionRoutes(
             documentId: documentId || "",
             activityId: activityId || "",
             properties: properties || {},
+            serviceToken: pluginConfig.serviceToken,
+            gzacBaseUrl: pluginConfig.gzacBaseUrl,
           }
         );
 

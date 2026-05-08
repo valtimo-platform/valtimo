@@ -60,3 +60,42 @@ export interface PluginManifest {
   configurationSchema?: Record<string, unknown>;
   actions: ManifestAction[];
 }
+
+/**
+ * Generic shape of a `gzac_api` callback response. Mirrors the host's response envelope.
+ */
+export interface GzacApiResponse<T = unknown> {
+  status: number;
+  headers: Record<string, string>;
+  body: T;
+}
+
+/**
+ * Minimal Valtimo document shape — only the fields plugins typically read.
+ *
+ * Returned by GZAC's `GET /api/v1/document/{id}`. The full response from GZAC carries additional
+ * fields; declare extra properties on your own type if you need them.
+ */
+export interface DocumentContent {
+  [key: string]: unknown;
+}
+
+export interface DocumentDefinitionId {
+  name: string;
+  version: number;
+}
+
+export interface Document {
+  id: string;
+  /**
+   * Serialized as `definitionId` on GZAC's `GET /api/v1/document/{id}` response — see
+   * {@link https://...} `com.ritense.document.domain.Document.definitionId()`.
+   */
+  definitionId: DocumentDefinitionId;
+  content: DocumentContent;
+  createdBy?: string;
+  createdOn?: string;
+  modifiedOn?: string;
+  assigneeId?: string | null;
+  assigneeFullName?: string | null;
+}

@@ -72,12 +72,16 @@ class ExternalPluginHostClient(
         pluginId: String,
         pluginVersion: String,
         properties: ObjectNode,
+        serviceToken: String,
+        gzacBaseUrl: String,
     ): Boolean = try {
         val uri = buildUri(baseUrl, "/api/host/configurations/$configId")
         val body = objectMapper.createObjectNode().apply {
             put("pluginId", pluginId)
             put("pluginVersion", pluginVersion)
             set<ObjectNode>("properties", properties)
+            put("serviceToken", serviceToken)
+            put("gzacBaseUrl", gzacBaseUrl)
         }
         val headers = HttpHeaders().apply {
             setBearerAuth(adminToken)

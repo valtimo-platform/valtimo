@@ -14,15 +14,18 @@
  * limitations under the License.
  */
 
-export type {
-  ActionInput,
-  ActionOutput,
-  ActionHandler,
-  PluginManifest,
-  ManifestAction,
-  ManifestActionProperty,
-  GzacApiResponse,
-  Document,
-  DocumentContent,
-  DocumentDefinitionId,
-} from "./types.js";
+package com.ritense.externalplugin.security
+
+import java.util.UUID
+
+/**
+ * Spring Security principal representing an external plugin service-token caller. Carries no roles —
+ * endpoint access is enforced by [ExternalPluginEndpointAllowlistFilter].
+ */
+data class ExternalPluginServicePrincipal(
+    val pluginConfigId: UUID,
+    val pluginId: String,
+    val pluginVersion: String,
+) {
+    override fun toString(): String = "external-plugin:$pluginId:$pluginConfigId"
+}

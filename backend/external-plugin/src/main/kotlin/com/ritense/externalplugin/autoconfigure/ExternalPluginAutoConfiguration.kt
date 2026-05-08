@@ -25,12 +25,18 @@ import com.ritense.externalplugin.repository.ExternalPluginConfigurationReposito
 import com.ritense.externalplugin.repository.ExternalPluginDefinitionRepository
 import com.ritense.externalplugin.repository.ExternalPluginHostRepository
 import com.ritense.externalplugin.repository.ExternalPluginProcessLinkRepository
+import com.ritense.externalplugin.security.ExternalPluginCallbackHttpSecurityConfigurer
+import com.ritense.externalplugin.security.ExternalPluginEndpointAllowlistFilter
 import com.ritense.externalplugin.security.ExternalPluginHttpSecurityConfigurer
+import com.ritense.externalplugin.security.ExternalPluginServiceTokenAuthenticator
+import com.ritense.externalplugin.security.ExternalPluginServiceTokenFilter
+import com.ritense.externalplugin.security.ExternalPluginServiceTokenKeyProvider
 import com.ritense.externalplugin.service.ExternalPluginConfigurationService
 import com.ritense.externalplugin.service.ExternalPluginDefinitionService
 import com.ritense.externalplugin.service.ExternalPluginDiscoveryJob
 import com.ritense.externalplugin.service.ExternalPluginDiscoveryService
 import com.ritense.externalplugin.service.ExternalPluginHostService
+import com.ritense.externalplugin.service.ExternalPluginServiceTokenService
 import com.ritense.externalplugin.service.PluginPropertyEncryptor
 import com.ritense.externalplugin.web.rest.ExternalPluginManagementResource
 import com.ritense.plugin.service.EncryptionService
@@ -81,6 +87,41 @@ class ExternalPluginAutoConfiguration {
         ExternalPluginDefinitionService(definitionRepository)
 
     @Bean
+    @ConditionalOnMissingBean(ExternalPluginServiceTokenKeyProvider::class)
+    fun externalPluginServiceTokenKeyProvider(
+        @Value("\${valtimo.external-plugin.service-token-secret}") secret: String,
+    ) = ExternalPluginServiceTokenKeyProvider(secret)
+
+    @Bean
+    @ConditionalOnMissingBean(ExternalPluginServiceTokenService::class)
+    fun externalPluginServiceTokenService(
+        keyProvider: ExternalPluginServiceTokenKeyProvider,
+    ) = ExternalPluginServiceTokenService(keyProvider)
+
+    @Bean
+    @ConditionalOnMissingBean(ExternalPluginServiceTokenAuthenticator::class)
+    fun externalPluginServiceTokenAuthenticator() = ExternalPluginServiceTokenAuthenticator()
+
+    @Bean
+    @ConditionalOnMissingBean(ExternalPluginEndpointAllowlistFilter::class)
+    fun externalPluginEndpointAllowlistFilter() = ExternalPluginEndpointAllowlistFilter()
+
+    @Bean
+    @ConditionalOnMissingBean(ExternalPluginServiceTokenFilter::class)
+    fun externalPluginServiceTokenFilter(
+        keyProvider: ExternalPluginServiceTokenKeyProvider,
+        authenticator: ExternalPluginServiceTokenAuthenticator,
+    ) = ExternalPluginServiceTokenFilter(keyProvider, authenticator)
+
+    @Bean
+    @Order(450)
+    @ConditionalOnMissingBean(ExternalPluginCallbackHttpSecurityConfigurer::class)
+    fun externalPluginCallbackHttpSecurityConfigurer(
+        serviceTokenFilter: ExternalPluginServiceTokenFilter,
+        allowlistFilter: ExternalPluginEndpointAllowlistFilter,
+    ) = ExternalPluginCallbackHttpSecurityConfigurer(serviceTokenFilter, allowlistFilter)
+
+    @Bean
     @ConditionalOnMissingBean(ExternalPluginConfigurationService::class)
     fun externalPluginConfigurationService(
         configurationRepository: ExternalPluginConfigurationRepository,
@@ -90,7 +131,19 @@ class ExternalPluginAutoConfiguration {
         propertyEncryptor: PluginPropertyEncryptor,
         encryptionService: EncryptionService,
         objectMapper: ObjectMapper,
-    ) = ExternalPluginConfigurationService(configurationRepository, definitionRepository, hostRepository, hostClient, propertyEncryptor, encryptionService, objectMapper)
+        serviceTokenService: ExternalPluginServiceTokenService,
+        @Value("\${valtimo.external-plugin.gzac-base-url}") gzacBaseUrl: String,
+    ) = ExternalPluginConfigurationService(
+        configurationRepository,
+        definitionRepository,
+        hostRepository,
+        hostClient,
+        propertyEncryptor,
+        encryptionService,
+        objectMapper,
+        serviceTokenService,
+        gzacBaseUrl,
+    )
 
     @Bean
     @ConditionalOnMissingBean(ExternalPluginDiscoveryService::class)

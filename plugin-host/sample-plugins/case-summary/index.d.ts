@@ -14,15 +14,12 @@
  * limitations under the License.
  */
 
-export type {
-  ActionInput,
-  ActionOutput,
-  ActionHandler,
-  PluginManifest,
-  ManifestAction,
-  ManifestActionProperty,
-  GzacApiResponse,
-  Document,
-  DocumentContent,
-  DocumentDefinitionId,
-} from "./types.js";
+declare module "main" {
+  export function handle_action(): I32;
+}
+
+declare module "extism:host" {
+  interface user {
+    gzac_api(input: PTR): PTR;
+  }
+}

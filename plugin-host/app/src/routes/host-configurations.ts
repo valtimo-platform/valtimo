@@ -14,10 +14,10 @@
  * limitations under the License.
  */
 
-import { FastifyInstance, FastifyRequest, FastifyReply } from "fastify";
-import { ConfigRegistry } from "../config-registry.js";
-import { PluginManager } from "../plugin-manager.js";
-import { AppConfig } from "../config.js";
+import {FastifyInstance, FastifyReply, FastifyRequest} from "fastify";
+import {ConfigRegistry} from "../config-registry.js";
+import {PluginManager} from "../plugin-manager.js";
+import {AppConfig} from "../config.js";
 
 /**
  * Configuration push endpoints.
@@ -64,10 +64,26 @@ export async function hostConfigurationRoutes(
       pluginId: string;
       pluginVersion: string;
       properties: Record<string, unknown>;
+      serviceToken: string;
+      gzacBaseUrl: string;
     };
   }>("/api/host/configurations/:configId", async (request, reply) => {
     const { configId } = request.params;
-    const { pluginId, pluginVersion, properties } = request.body;
+    const { pluginId, pluginVersion, properties, serviceToken, gzacBaseUrl } =
+      request.body;
+
+    if (!serviceToken || typeof serviceToken !== "string") {
+      reply
+        .code(400)
+        .send({ error: "Missing required field: serviceToken" });
+      return;
+    }
+    if (!gzacBaseUrl || typeof gzacBaseUrl !== "string") {
+      reply
+        .code(400)
+        .send({ error: "Missing required field: gzacBaseUrl" });
+      return;
+    }
 
     // Verify the plugin is loaded
     const manifest = pluginManager.getManifest(pluginId, pluginVersion);
@@ -83,10 +99,12 @@ export async function hostConfigurationRoutes(
       pluginId,
       pluginVersion,
       properties: properties || {},
+      serviceToken,
+      gzacBaseUrl,
     });
 
     request.log.info(
-      { configId, pluginId, pluginVersion },
+      { configId, pluginId, pluginVersion, gzacBaseUrl },
       "Configuration pushed"
     );
     reply.code(201).send({ configurationId: configId });
@@ -97,7 +115,11 @@ export async function hostConfigurationRoutes(
    */
   fastify.put<{
     Params: { configId: string };
-    Body: { properties: Record<string, unknown> };
+    Body: {
+      properties: Record<string, unknown>;
+      serviceToken?: string;
+      gzacBaseUrl?: string;
+    };
   }>("/api/host/configurations/:configId", async (request, reply) => {
     const { configId } = request.params;
     const existing = configRegistry.get(configId);
@@ -110,6 +132,8 @@ export async function hostConfigurationRoutes(
     configRegistry.set(configId, {
       ...existing,
       properties: request.body.properties || {},
+      serviceToken: request.body.serviceToken ?? existing.serviceToken,
+      gzacBaseUrl: request.body.gzacBaseUrl ?? existing.gzacBaseUrl,
     });
 
     reply.code(200).send({ configurationId: configId });
