@@ -513,6 +513,60 @@ For a layer in the map widget, the following configuration needs to be done.
 }
 ```
 
+### Dutch address support
+
+The map widget can also render a layer when the data referenced by the path is a Dutch address object instead of a
+GeoJSON geometry. Valtimo will geocode the address to a WGS84 coordinate via the
+[PDOK Locatieserver](https://api.pdok.nl/bzk/locatieserver/search/v3_1/ui/) (the standard free geocoding service of the
+Dutch government, based on BAG data) and render the result as a `Point` feature on the map.
+
+**Recognised fields** (BAG naming):
+
+* `straatnaam` — street name
+* `huisnummer` — house number (number or string)
+* `huisletter` — optional house letter
+* `huisnummertoevoeging` — optional house number addition
+* `postcode` — postal code (e.g. `1011AB`)
+* `woonplaats` — city
+
+**Supported field combinations.** A layer is rendered when the address object contains one of:
+
+* `postcode` + `huisnummer`
+* `straatnaam` + `huisnummer` + (`postcode` or `woonplaats`)
+* `straatnaam` + `woonplaats` (street-level match without a house number)
+* `postcode` + `woonplaats` (postcode-area match without a house number)
+
+**Example.** With a path of `doc:/address`, the document below renders a marker at Damrak 1, Amsterdam:
+
+```json
+{
+  ...
+  "address": {
+    "straatnaam": "Damrak",
+    "huisnummer": 1,
+    "postcode": "1012LG",
+    "woonplaats": "Amsterdam"
+  }
+}
+```
+
+{% hint style="info" %}
+PDOK Locatieserver is a free public service with best-effort availability. If a request fails or the address cannot be
+geocoded, the layer is silently dropped — other layers on the map continue to render.
+
+To use a different geocoding provider, override the `PdokLocatieserverClient` Spring bean.
+{% endhint %}
+
+{% hint style="warning" %}
+**Privacy and data residency**
+
+Address data referenced by a map widget layer is sent to PDOK Locatieserver, an external service hosted by the Dutch
+government (Kadaster). For installations with strict data-residency or privacy requirements, point Valtimo at an
+alternative endpoint by setting the `valtimo.pdok.locatieserver.base-url` property in `application.yml` (for example to
+a self-hosted PDOK mirror or a caching proxy), or replace the geocoder entirely by providing your own
+`PdokLocatieserverClient` bean.
+{% endhint %}
+
 </details>
 
 ## JSON Editor
