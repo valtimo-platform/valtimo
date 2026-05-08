@@ -248,16 +248,7 @@ public class ValtimoProperties {
     }
 
     public static class Liquibase {
-        private boolean enabled = true;
         private int staleLockThresholdMinutes = 30;
-
-        public boolean isEnabled() {
-            return enabled;
-        }
-
-        public void setEnabled(boolean enabled) {
-            this.enabled = enabled;
-        }
 
         public int getStaleLockThresholdMinutes() {
             return staleLockThresholdMinutes;

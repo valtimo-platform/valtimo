@@ -21,7 +21,6 @@ import javax.sql.DataSource;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.AutoConfigureAfter;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
 import org.springframework.boot.autoconfigure.liquibase.LiquibaseProperties;
 import org.springframework.boot.autoconfigure.orm.jpa.HibernateJpaAutoConfiguration;
@@ -38,14 +37,8 @@ import org.springframework.context.annotation.Bean;
 @EnableConfigurationProperties({LiquibaseProperties.class, ValtimoProperties.class})
 public class LiquibaseRunnerAutoConfiguration {
 
-    /**
-     * Uses {@code valtimo.liquibase.enabled} (not {@code spring.liquibase.enabled}) — the latter
-     * is already used by consumers to disable Spring Boot's SpringLiquibase, which would otherwise
-     * race with this runner.
-     */
     @Bean
     @ConditionalOnMissingBean(LiquibaseRunner.class)
-    @ConditionalOnProperty(name = "valtimo.liquibase.enabled", havingValue = "true", matchIfMissing = true)
     public LiquibaseRunner liquibaseRunner(
         final List<LiquibaseMasterChangeLogLocation> liquibaseMasterChangeLogLocations,
         final LiquibaseProperties liquibaseProperties,

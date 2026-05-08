@@ -16,11 +16,6 @@
 
   Task list columns can now also display the tags display type.
 
-* **Skip Valtimo's database migrations**
-
-  A new setting lets you disable Valtimo's built-in database migrations, so they can be run from
-  a separate job instead.
-
 ## Bugfixes
 
 * **Recover from stuck migration locks**
