@@ -17,7 +17,6 @@
 package com.ritense.valtimo.web.rest.actuator
 
 import com.ritense.valtimo.contract.authentication.UserManagementService
-import com.ritense.valtimo.service.ProcessDefinitionCaseDefinitionLinker
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Tag
 import org.junit.jupiter.api.Test
@@ -54,8 +53,7 @@ import java.util.Base64
 )
 class ActuatorSecurityRealTomcatIntTest @Autowired constructor(
     @LocalServerPort private val serverPort: Int,
-    @MockitoBean private val userManagementService: UserManagementService,
-    @MockitoBean private val processDefinitionCaseDefinitionLinker: ProcessDefinitionCaseDefinitionLinker
+    @MockitoBean private val userManagementService: UserManagementService
 ) {
 
     @Test
