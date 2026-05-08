@@ -67,6 +67,7 @@ interface WidgetAction {
   processDefinitionKey?: string;
   caseDefinitionKey?: string;
   navigateTo?: string;
+  openInNewTab?: boolean;
 }
 
 interface BasicWidget {

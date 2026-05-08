@@ -213,7 +213,7 @@ export type TabsFactory = () => Map<string, object>;
     CaseListActionsComponent,
     AssignmentComponent,
   ],
-  exports: [CaseListComponent, CaseDetailComponent],
+  exports: [CaseListComponent, CaseDetailComponent, CaseSupportingProcessStartModalComponent],
 })
 export class CaseModule {
   static forRoot(tabsFactory: TabsFactory): ModuleWithProviders<CaseModule> {

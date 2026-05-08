@@ -118,7 +118,8 @@ export class CaseDetailsTaskDetailComponent implements OnDestroy {
     shareReplay(1)
   );
 
-  public enableIntermediateSave = false;
+  public readonly enableIntermediateSave$ =
+    this.configService.getFeatureToggleObservable('enableIntermediateSave');
 
   constructor(
     private readonly configService: ConfigService,
@@ -126,9 +127,7 @@ export class CaseDetailsTaskDetailComponent implements OnDestroy {
     private readonly permissionService: PermissionService,
     private readonly translateService: TranslateService,
     private readonly taskService: TaskService
-  ) {
-    this.enableIntermediateSave = !!this.configService.featureToggles?.enableIntermediateSave;
-  }
+  ) {}
 
   public ngOnDestroy(): void {
     this.closeEvent.emit();

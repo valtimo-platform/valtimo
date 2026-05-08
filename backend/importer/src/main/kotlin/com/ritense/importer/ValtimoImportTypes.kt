@@ -75,5 +75,10 @@ class ValtimoImportTypes {
 
         // TEAM
         const val TEAM = "team"
+
+        // ADMIN SETTINGS
+        const val ADMIN_SETTINGS_FEATURE_TOGGLES = "adminsettingsfeaturetoggles"
+        const val ADMIN_SETTINGS_ACCENT_COLORS = "adminsettingsaccentcolors"
+        const val ADMIN_SETTINGS_LOGO = "adminsettingslogo"
     }
 }
