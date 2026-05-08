@@ -125,7 +125,10 @@ public class LiquibaseRunner {
      * next startup.
      */
     Thread newShutdownHook() {
-        return new Thread(() -> aborting = true, "liquibase-shutdown-hook");
+        return new Thread(() -> {
+            logger.warn("JVM shutdown signal received; Liquibase migration will abort at the next changelog boundary");
+            aborting = true;
+        }, "liquibase-shutdown-hook");
     }
 
     private void deregisterShutdownHook(Thread hook) {

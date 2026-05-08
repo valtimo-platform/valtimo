@@ -108,7 +108,10 @@ open class OutboxLiquibaseRunner(
      * next startup.
      */
     internal fun newShutdownHook(): Thread {
-        return Thread({ aborting = true }, "outbox-liquibase-shutdown-hook")
+        return Thread({
+            logger.warn { "JVM shutdown signal received; Outbox Liquibase migration will abort before the changelog runs" }
+            aborting = true
+        }, "outbox-liquibase-shutdown-hook")
     }
 
     private fun deregisterShutdownHook(hook: Thread) {
