@@ -95,7 +95,7 @@
 </ng-container>
 
 <ng-template #addWidgetButton>
-  <button cdsButton="primary" [disabled]="loading$ | async" (click)="addWidget()">
+  <button cdsButton="primary" [attr.data-test-id]="testIds.addWidgetButton" [disabled]="loading$ | async" (click)="addWidget()">
     {{ 'dashboardManagement.widgets.add' | translate }}
 
     <svg class="cds--btn__icon" cdsIcon="add" size="16"></svg>
@@ -106,7 +106,7 @@
   <cds-tooltip [description]="'JSON editor'">
     <button
       [cdsButton]="$buttonTheme()"
-      data-testid="dashboard-details-switch-view"
+      [attr.data-test-id]="testIds.switchViewButton"
       iconOnly="true"
       (click)="switchView()"
     >

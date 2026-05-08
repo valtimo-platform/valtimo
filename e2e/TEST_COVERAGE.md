@@ -5,10 +5,10 @@
 | Category                    | Features | Functions | ✅ Covered | ❌ Not Covered |
 |-----------------------------|----------|-----------|------------|----------------|
 | User Features (ROLE_USER)   | 5        | 21        | 12         | 9              |
-| Admin Features (ROLE_ADMIN) | 15       | 328       | 133        | 192            |
-| **Total**                   | **20**   | **349**   | **145**    | **201**        |
+| Admin Features (ROLE_ADMIN) | 15       | 328       | 138        | 187            |
+| **Total**                   | **20**   | **349**   | **150**    | **196**        |
 
-**Coverage:** `145 / 349` — `41.5%`
+**Coverage:** `150 / 349` — `43.0%`
 
 ---
 
@@ -383,11 +383,11 @@
 
 | #     | Function                  | Test Scenarios                  | Coverage | Notes                                           |
 |:------|:--------------------------|:--------------------------------|:--------:|:------------------------------------------------|
-| 10.7  | View widgets list         | Display widgets list            |    ❌    |                                                 |
-| 10.8  | Add new widget            | Add new widget to dashboard     |    ❌    |                                                 |
-| 10.9  | Rearrange widgets         | Rearrange widgets via drag-drop |    ❌    |                                                 |
-| 10.10 | Delete widget             | Delete widget from dashboard    |    ❌    |                                                 |
-| 10.11 | Edit widget configuration | Edit widget configuration       |    ❌    |                                                 |
+| 10.7  | View widgets list         | Display widgets list            |    ✅    | dashboard-management.spec.ts                    |
+| 10.8  | Add new widget            | Add new widget to dashboard     |    ✅    | dashboard-management.spec.ts                    |
+| 10.9  | Rearrange widgets         | Rearrange widgets via drag-drop |    ✅    | dashboard-management.spec.ts                    |
+| 10.10 | Delete widget             | Delete widget from dashboard    |    ✅    | dashboard-management.spec.ts                    |
+| 10.11 | Edit widget configuration | Edit widget configuration       |    ✅    | dashboard-management.spec.ts                    |
 
 #### 10C · Widget Config — Data
 
@@ -727,8 +727,8 @@
 |:-------------------------|:-------:|
 | Total Features           |   20    |
 | Total Functions          |   349   |
-| ✅ Covered by Playwright |   145   |
-| ❌ Not covered           |   201   |
+| ✅ Covered by Playwright |   150   |
+| ❌ Not covered           |   196   |
 | ⏳ In progress           |    1    |
 | `N/A` Not applicable     |    2    |
-| **Coverage %**           | **41.5%** |
+| **Coverage %**           | **43.0%** |

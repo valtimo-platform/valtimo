@@ -55,6 +55,7 @@
         {{ 'dashboardManagement.addModal.name' | translate }}
 
         <input
+          [attr.data-test-id]="testIds.dashboardNameInput"
           [attr.modal-primary-focus]="true"
           [invalid]="getControlInvalid('title')"
           formControlName="title"
@@ -70,6 +71,7 @@
         {{ 'dashboardManagement.description' | translate }}
 
         <input
+          [attr.data-test-id]="testIds.dashboardDescriptionInput"
           [invalid]="getControlInvalid('description')"
           formControlName="description"
           cdsText
@@ -80,11 +82,11 @@
   </section>
 
   <cds-modal-footer>
-    <button cdsButton="ghost" (click)="closeModal()">
+    <button cdsButton="ghost" [attr.data-test-id]="testIds.cancelDashboardButton" (click)="closeModal()">
       {{ 'dashboardManagement.cancel' | translate }}
     </button>
 
-    <button [disabled]="this.form.invalid" cdsButton="primary" (click)="createDashboard()">
+    <button [attr.data-test-id]="testIds.createDashboardButton" [disabled]="this.form.invalid" cdsButton="primary" (click)="createDashboard()">
       {{ 'dashboardManagement.create' | translate }}
     </button>
   </cds-modal-footer>
@@ -101,7 +103,7 @@
 ></valtimo-confirmation-modal>
 
 <ng-template #addDashboardButton>
-  <button cdsButton="primary" (click)="openModal()">
+  <button cdsButton="primary" [attr.data-test-id]="testIds.addDashboardButton" (click)="openModal()">
     {{ 'dashboardManagement.addDashboard' | translate }}
 
     <svg cdsIcon="add" size="16" class="cds--btn__icon"></svg>

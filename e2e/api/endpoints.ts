@@ -1,4 +1,16 @@
 export const endpoints = {
+  dashboard: {
+    getAll: '/api/management/v1/dashboard',
+    get: (key: string) => `/api/management/v1/dashboard/${key}`,
+    create: '/api/management/v1/dashboard',
+    delete: (key: string) => `/api/management/v1/dashboard/${key}`,
+    widgetConfigurations: (dashboardKey: string) =>
+      `/api/management/v1/dashboard/${dashboardKey}/widget-configuration`,
+    widgetConfiguration: (dashboardKey: string, widgetKey: string) =>
+      `/api/management/v1/dashboard/${dashboardKey}/widget-configuration/${widgetKey}`,
+    dataSources: '/api/management/v1/dashboard/widget-data-sources',
+  },
+
   formFlow: {
     getAll: '/api/management/v1/form-flow/definition',
     getByKeyAndVersion: (key: string, version: number) =>

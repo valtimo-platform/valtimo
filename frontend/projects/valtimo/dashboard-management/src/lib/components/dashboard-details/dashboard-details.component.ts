@@ -29,6 +29,7 @@ import {
 import {DashboardWidgetConfiguration} from '@valtimo/dashboard';
 import {IconService} from 'carbon-components-angular';
 import {BehaviorSubject, combineLatest, map, Observable, switchMap, tap} from 'rxjs';
+import {DASHBOARD_MANAGEMENT_TEST_IDS} from '../../constants/dashboard-management.test-ids';
 import {DashboardItem, DashboardWidget, WidgetModalType} from '../../models';
 import {DashboardManagementService} from '../../services/dashboard-management.service';
 
@@ -39,6 +40,7 @@ import {DashboardManagementService} from '../../services/dashboard-management.se
   encapsulation: ViewEncapsulation.None,
 })
 export class DashboardDetailsComponent implements AfterViewInit {
+  public readonly testIds = DASHBOARD_MANAGEMENT_TEST_IDS;
   public modalType: WidgetModalType = 'create';
   public fields!: ColumnConfig[];
   public readonly actionItems: ActionItem[] = [
