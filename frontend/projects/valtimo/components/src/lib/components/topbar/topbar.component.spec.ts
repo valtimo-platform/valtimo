@@ -21,6 +21,8 @@ import {KeycloakService} from 'keycloak-angular';
 import {MockIconService, MockKeycloakService, VALTIMO_CONFIG} from '@valtimo/shared';
 import {environment} from '@src/environments/environment';
 import {IconService} from 'carbon-components-angular';
+import {provideHttpClient, withInterceptorsFromDi} from '@angular/common/http';
+import {provideHttpClientTesting} from '@angular/common/http/testing';
 
 describe('TopbarComponent', () => {
   let component: TopbarComponent;
@@ -34,6 +36,8 @@ describe('TopbarComponent', () => {
         {provide: KeycloakService, useClass: MockKeycloakService},
         {provide: VALTIMO_CONFIG, useValue: environment},
         {provide: IconService, useClass: MockIconService},
+        provideHttpClient(withInterceptorsFromDi()),
+        provideHttpClientTesting(),
       ],
     }).compileComponents();
   }));
