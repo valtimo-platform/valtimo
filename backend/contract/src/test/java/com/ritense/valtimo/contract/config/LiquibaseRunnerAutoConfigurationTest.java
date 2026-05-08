@@ -52,4 +52,11 @@ class LiquibaseRunnerAutoConfigurationTest {
                 assertThat(properties.getLiquibase().getStaleLockThresholdMinutes()).isEqualTo(5);
             });
     }
+
+    @Test
+    void staleLockThresholdRejectsNonPositiveValues() {
+        contextRunner
+            .withPropertyValues("valtimo.liquibase.stale-lock-threshold-minutes=0")
+            .run(context -> assertThat(context).hasFailed());
+    }
 }

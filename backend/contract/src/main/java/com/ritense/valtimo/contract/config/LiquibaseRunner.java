@@ -70,14 +70,25 @@ public class LiquibaseRunner {
         JdbcConnection jdbcConnection = new JdbcConnection(connection);
         Database database = DatabaseFactory.getInstance().findCorrectDatabaseImplementation(jdbcConnection);
         LockService lockService = LockServiceFactory.getInstance().getLockService(database);
-        Thread shutdownHook = newShutdownHook(lockService);
+        Thread shutdownHook = newShutdownHook();
         try {
             forceReleaseStaleLock(lockService);
             Runtime.getRuntime().addShutdownHook(shutdownHook);
-            executeMigrations(database, lockService);
+            for (LiquibaseMasterChangeLogLocation changeLogLocation : liquibaseMasterChangeLogLocations) {
+                if (aborting) {
+                    logger.warn("Liquibase migration aborted by JVM shutdown signal before: {}",
+                        changeLogLocation.getFilePath());
+                    break;
+                }
+                disableFastCheckCaching();
+                runChangeLog(database, changeLogLocation.getFilePath());
+            }
         } catch (LiquibaseException liquibaseException) {
             throw new DatabaseException(liquibaseException);
         } finally {
+            // liquibase.update() releases on its own happy path; this covers an iteration-time
+            // exception or a shutdown-triggered break before the next changelog runs.
+            releaseLockQuietly(lockService);
             deregisterShutdownHook(shutdownHook);
             try {
                 connection.rollback();
@@ -87,23 +98,6 @@ public class LiquibaseRunner {
             }
         }
         logger.info("Finished running liquibase");
-    }
-
-    void executeMigrations(Database database, LockService lockService) throws LiquibaseException {
-        try {
-            for (LiquibaseMasterChangeLogLocation changeLogLocation : liquibaseMasterChangeLogLocations) {
-                if (aborting) {
-                    throw new LiquibaseException(
-                        "Liquibase migration aborted by JVM shutdown signal before: "
-                            + changeLogLocation.getFilePath());
-                }
-                disableFastCheckCaching();
-                runChangeLog(database, changeLogLocation.getFilePath());
-            }
-        } finally {
-            // liquibase.update() releases on its own happy path; this catches an iteration-time exception.
-            releaseLockQuietly(lockService);
-        }
     }
 
     /** Recovers from a stale lock left by a previous JVM that died (SIGKILL/OOM) without releasing it. */
@@ -122,38 +116,25 @@ public class LiquibaseRunner {
     }
 
     /**
-     * Releases the lock on graceful SIGTERM if the migration is still in flight. Hard kills bypass
-     * shutdown hooks — {@link #forceReleaseStaleLock} covers those. Uses a fresh connection because
-     * the original is closed by the outer finally before this fires.
+     * Signals an in-flight migration to abort at the next iteration boundary. The hook intentionally
+     * does no DB I/O: releasing the lock here would let another pod acquire it and start its own DDL
+     * while this pod's in-flight {@link Liquibase#update} is still executing against the same
+     * database. Lock release is deferred to the main thread, which breaks out of the iteration loop
+     * once the current changeset finishes and releases the lock in {@link #run()}'s {@code finally}.
+     * Hard kills bypass shutdown hooks entirely — {@link #forceReleaseStaleLock} covers those on the
+     * next startup.
      */
-    Thread newShutdownHook(LockService originalLockService) {
-        return new Thread(() -> {
-            // Set unconditionally so the iteration loop in executeMigrations() skips remaining
-            // master changelogs even if the lock has already been released between iterations.
-            aborting = true;
-            if (!originalLockService.hasChangeLogLock()) {
-                return;
-            }
-            try (Connection conn = datasource.getConnection()) {
-                JdbcConnection jdbc = new JdbcConnection(conn);
-                Database db = DatabaseFactory.getInstance().findCorrectDatabaseImplementation(jdbc);
-                LockServiceFactory.getInstance().getLockService(db).forceReleaseLock();
-                conn.commit();
-                logger.warn("JVM shutdown: force-released Liquibase changelog lock");
-            } catch (Exception e) {
-                logger.warn("JVM shutdown: failed to release Liquibase changelog lock", e);
-            }
-        }, "liquibase-shutdown-hook");
+    Thread newShutdownHook() {
+        return new Thread(() -> aborting = true, "liquibase-shutdown-hook");
     }
 
     private void deregisterShutdownHook(Thread hook) {
         try {
             Runtime.getRuntime().removeShutdownHook(hook);
         } catch (IllegalStateException ignored) {
-            // JVM is already shutting down; the hook will fire (or has fired) and no-op via its hasChangeLogLock guard.
+            // JVM is already shutting down; the hook has fired (or is firing) and the abort flag is set.
         } catch (RuntimeException e) {
-            // Best-effort: must not abort the outer finally. Worst case the hook stays registered
-            // and no-ops on JVM exit via its hasChangeLogLock guard.
+            // Best-effort: must not abort the outer finally.
             logger.warn("Failed to deregister Liquibase shutdown hook", e);
         }
     }
