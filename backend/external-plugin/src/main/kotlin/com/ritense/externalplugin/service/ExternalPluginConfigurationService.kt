@@ -140,6 +140,7 @@ class ExternalPluginConfigurationService(
             if (host != null) {
                 val adminToken = encryptionService.decrypt(host.secret)
                 val decrypted = propertyEncryptor.decryptSecretFields(properties.deepCopy(), definition.configSchema)
+                val serviceToken = serviceTokenService.issue(config, definition)
                 hostClient.pushConfiguration(
                     baseUrl = host.baseUrl,
                     adminToken = adminToken,
@@ -147,6 +148,8 @@ class ExternalPluginConfigurationService(
                     pluginId = definition.pluginId,
                     pluginVersion = definition.version,
                     properties = decrypted,
+                    serviceToken = serviceToken,
+                    gzacBaseUrl = gzacBaseUrl
                 )
                 logger.info { "Pushed updated configuration ${saved.id} for plugin '${definition.pluginId}' to host ${host.id}" }
             }
