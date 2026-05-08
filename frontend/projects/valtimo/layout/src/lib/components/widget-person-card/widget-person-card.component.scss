@@ -27,7 +27,7 @@
     width: 64px;
     height: 64px;
     border-radius: 50%;
-    background-color: var(--widget-background-color, #d5d3f0);
+    background-color: #d5d3f0;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -37,7 +37,7 @@
     font-size: 22px;
     font-weight: 600;
     line-height: 1;
-    color: var(--widget-text-color, #1a146a);
+    color: #1a146a;
     text-transform: uppercase;
   }
 
