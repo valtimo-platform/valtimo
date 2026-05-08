@@ -83,6 +83,7 @@
 <ng-container renderInPageHeader>
   <ng-template>
     <button
+      [attr.data-test-id]="testIds.editButton"
       cdsButton="tertiary"
       [size]="(compactMode$ | async) ? 'sm' : 'md'"
       (click)="editDashboard()"
@@ -106,7 +107,7 @@
   <cds-tooltip [description]="'JSON editor'">
     <button
       [cdsButton]="$buttonTheme()"
-      data-testid="dashboard-details-switch-view"
+      [attr.data-test-id]="testIds.switchViewButton"
       iconOnly="true"
       (click)="switchView()"
     >

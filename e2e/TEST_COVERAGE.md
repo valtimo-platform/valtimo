@@ -5,10 +5,10 @@
 | Category                    | Features | Functions | ✅ Covered | ❌ Not Covered |
 |-----------------------------|----------|-----------|------------|----------------|
 | User Features (ROLE_USER)   | 5        | 21        | 12         | 9              |
-| Admin Features (ROLE_ADMIN) | 15       | 328       | 133        | 192            |
-| **Total**                   | **20**   | **349**   | **145**    | **201**        |
+| Admin Features (ROLE_ADMIN) | 15       | 328       | 139        | 186            |
+| **Total**                   | **20**   | **349**   | **151**    | **195**        |
 
-**Coverage:** `145 / 349` — `41.5%`
+**Coverage:** `151 / 349` — `43.3%`
 
 ---
 
@@ -372,12 +372,12 @@
 
 | #    | Function                  | Test Scenarios                                        | Coverage | Notes                                           |
 |:-----|:--------------------------|:------------------------------------------------------|:--------:|:------------------------------------------------|
-| 10.1 | View dashboard list       | Display list of dashboards                            |    ❌    |                                                 |
-| 10.2 | Create dashboard          | Create new dashboard                                  |    ❌    |                                                 |
-| 10.3 | Edit dashboard            | Edit existing dashboard                               |    ❌    |                                                 |
-| 10.4 | View dashboard metadata   | View metadata (created by, created on, dashboard key) |    ❌    |                                                 |
-| 10.5 | Toggle JSON/visual editor | Toggle between JSON and visual editor                 |    ❌    |                                                 |
-| 10.6 | Edit dashboard JSON       | Edit dashboard JSON directly                          |    ❌    |                                                 |
+| 10.1 | View dashboard list       | Display list of dashboards                            |    ✅    | dashboard-management.spec.ts                    |
+| 10.2 | Create dashboard          | Create new dashboard                                  |    ✅    | dashboard-management.spec.ts                    |
+| 10.3 | Edit dashboard            | Edit existing dashboard                               |    ✅    | dashboard-management.spec.ts                    |
+| 10.4 | View dashboard metadata   | View metadata (created by, created on, dashboard key) |    ✅    | dashboard-management.spec.ts                    |
+| 10.5 | Toggle JSON/visual editor | Toggle between JSON and visual editor                 |    ✅    | dashboard-management.spec.ts                    |
+| 10.6 | Edit dashboard JSON       | Edit dashboard JSON directly                          |    ✅    | dashboard-management.spec.ts                    |
 
 #### 10B · Widget Management
 
@@ -727,8 +727,8 @@
 |:-------------------------|:-------:|
 | Total Features           |   20    |
 | Total Functions          |   349   |
-| ✅ Covered by Playwright |   145   |
-| ❌ Not covered           |   201   |
+| ✅ Covered by Playwright |   151   |
+| ❌ Not covered           |   195   |
 | ⏳ In progress           |    1    |
 | `N/A` Not applicable     |    2    |
-| **Coverage %**           | **41.5%** |
+| **Coverage %**           | **43.3%** |
