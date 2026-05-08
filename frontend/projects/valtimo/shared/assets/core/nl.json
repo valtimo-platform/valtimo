@@ -1197,7 +1197,8 @@
       "linkLabel": "Link-URL (met variabelen)",
       "linkPlaceholder": "https://ritense.nl/zaak/${doc:/zaak/id}",
       "buttonTextLabel": "Knoptekst",
-      "buttonTextPlaceholder": "'Ga naar zaak'"
+      "buttonTextPlaceholder": "'Ga naar zaak'",
+      "openInNewTabLabel": "Open in nieuw tabblad"
     },
     "saveModalContent": "Weet je zeker dat je de widget configuratie wilt opslaan?"
   },
