@@ -255,6 +255,11 @@ public class ValtimoProperties {
         }
 
         public void setStaleLockThresholdMinutes(int staleLockThresholdMinutes) {
+            if (staleLockThresholdMinutes <= 0) {
+                throw new IllegalArgumentException(
+                    "valtimo.liquibase.stale-lock-threshold-minutes must be > 0, was: " + staleLockThresholdMinutes
+                );
+            }
             this.staleLockThresholdMinutes = staleLockThresholdMinutes;
         }
     }
