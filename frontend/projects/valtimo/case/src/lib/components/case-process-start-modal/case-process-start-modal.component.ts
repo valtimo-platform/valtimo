@@ -84,7 +84,9 @@ export class CaseProcessStartModalComponent implements OnInit, OnDestroy {
   public caseDefinitionKey: string;
   public processName: string;
   private _startEventName: string;
-  private readonly _useStartEventNameAsStartFormTitle!: boolean;
+  private get _useStartEventNameAsStartFormTitle(): boolean {
+    return !!this.configService.featureToggles?.useStartEventNameAsStartFormTitle;
+  }
   public formDefinition: FormioForm;
   public formName: string;
   public formFlowInstanceId: string;
@@ -126,9 +128,6 @@ export class CaseProcessStartModalComponent implements OnInit, OnDestroy {
     private readonly formCustomComponentConfig: FormCustomComponentConfig,
     private urlResolverService: UrlResolverService
   ) {
-    this._useStartEventNameAsStartFormTitle =
-      this.configService.config.featureToggles?.useStartEventNameAsStartFormTitle;
-
     this._formCustomComponentConfig$.next(formCustomComponentConfig);
   }
 

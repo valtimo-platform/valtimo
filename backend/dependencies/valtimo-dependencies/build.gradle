@@ -15,6 +15,7 @@
  */
 
 dependencies {
+    api(project(":backend:admin-settings"))
     api(project(":backend:audit"))
     api(project(":backend:authorization"))
     api(project(":backend:building-block"))
