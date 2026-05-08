@@ -5,10 +5,10 @@
 | Category                    | Features | Functions | ✅ Covered | ❌ Not Covered |
 |-----------------------------|----------|-----------|------------|----------------|
 | User Features (ROLE_USER)   | 5        | 21        | 12         | 9              |
-| Admin Features (ROLE_ADMIN) | 15       | 335       | 143        | 189            |
-| **Total**                   | **20**   | **356**   | **155**    | **198**        |
+| Admin Features (ROLE_ADMIN) | 15       | 335       | 158        | 174            |
+| **Total**                   | **20**   | **356**   | **170**    | **183**        |
 
-**Coverage:** `155 / 356` — `43.5%`
+**Coverage:** `170 / 356` — `47.8%`
 
 ---
 
@@ -393,22 +393,22 @@
 
 | #     | Function                     | Test Scenarios                                                                        | Coverage | Notes                                           |
 |:------|:-----------------------------|:--------------------------------------------------------------------------------------|:--------:|:------------------------------------------------|
-| 10.12 | Select widget type           | Select widget type (Case count / Multiple / Group by / Task count)                    |    ❌    |                                                 |
-| 10.13 | Enter widget title           | Enter widget title                                                                    |    ❌    |                                                 |
-| 10.14 | Select data source           | Select data source (Case count / Case counts / Task count)                            |    ❌    |                                                 |
-| 10.15 | Select case type             | Select case type for case count widgets                                               |    ❌    |                                                 |
-| 10.16 | Add conditions               | Add conditions to filter data                                                         |    ❌    |                                                 |
-| 10.17 | Configure condition path     | Configure condition query path                                                        |    ❌    |                                                 |
-| 10.18 | Configure condition operator | Configure condition query operator                                                    |    ❌    |                                                 |
-| 10.19 | Configure condition value    | Configure condition query value                                                       |    ❌    |                                                 |
-| 10.20 | Use placeholders             | Use placeholders in conditions (`${null}`, `${currentUserId}`, `${currentUserEmail}`) |    ❌    |                                                 |
+| 10.12 | Select widget type           | Select widget type (Case count / Multiple / Group by / Task count)                    |    ✅    | dashboard-management.spec.ts                    |
+| 10.13 | Enter widget title           | Enter widget title                                                                    |    ✅    | dashboard-management.spec.ts                    |
+| 10.14 | Select data source           | Select data source (Case count / Case counts / Task count)                            |    ✅    | dashboard-management.spec.ts                    |
+| 10.15 | Select case type             | Select case type for case count widgets                                               |    ✅    | dashboard-management.spec.ts                    |
+| 10.16 | Add conditions               | Add conditions to filter data                                                         |    ✅    | dashboard-management.spec.ts                    |
+| 10.17 | Configure condition path     | Configure condition query path                                                        |    ✅    | dashboard-management.spec.ts                    |
+| 10.18 | Configure condition operator | Configure condition query operator                                                    |    ✅    | dashboard-management.spec.ts                    |
+| 10.19 | Configure condition value    | Configure condition query value                                                       |    ✅    | dashboard-management.spec.ts                    |
+| 10.20 | Use placeholders             | Use placeholders in conditions (`${null}`, `${currentUserId}`, `${currentUserEmail}`) |    ✅    | dashboard-management.spec.ts                    |
 
 #### 10D · Widget Config — Display
 
 | #     | Function                   | Test Scenarios                           | Coverage | Notes                                           |
 |:------|:---------------------------|:-----------------------------------------|:--------:|:------------------------------------------------|
-| 10.21 | Select display type        | Select display type (Big number / Gauge) |    ❌    |                                                 |
-| 10.22 | Configure display title    | Configure display type title             |    ❌    |                                                 |
+| 10.21 | Select display type        | Select display type (Big number / Gauge) |    ✅    | dashboard-management.spec.ts                    |
+| 10.22 | Configure display title    | Configure display type title             |    ✅    | dashboard-management.spec.ts                    |
 | 10.23 | Configure display subtitle | Configure display type subtitle          |    ❌    |                                                 |
 | 10.24 | Configure display label    | Configure display type label             |    ❌    |                                                 |
 | 10.25 | Toggle KPI usage           | Toggle KPI usage                         |    ❌    |                                                 |
@@ -418,10 +418,10 @@
 
 | #     | Function                    | Test Scenarios                                       | Coverage | Notes                                           |
 |:------|:----------------------------|:-----------------------------------------------------|:--------:|:------------------------------------------------|
-| 10.27 | Configure Case count widget | Configure Case count widget (single case type count) |    ❌    |                                                 |
-| 10.28 | Configure Multiple counts   | Configure Multiple case counts widget                |    ❌    |                                                 |
-| 10.29 | Configure Group by widget   | Configure Group by widget                            |    ❌    |                                                 |
-| 10.30 | Configure Task count widget | Configure Task count widget                          |    ❌    |                                                 |
+| 10.27 | Configure Case count widget | Configure Case count widget (single case type count) |    ✅    | dashboard-management.spec.ts                    |
+| 10.28 | Configure Multiple counts   | Configure Multiple case counts widget                |    ✅    | dashboard-management.spec.ts                    |
+| 10.29 | Configure Group by widget   | Configure Group by widget                            |    ✅    | dashboard-management.spec.ts                    |
+| 10.30 | Configure Task count widget | Configure Task count widget                          |    ✅    | dashboard-management.spec.ts                    |
 
 ---
 
@@ -727,8 +727,8 @@
 |:-------------------------|:-------:|
 | Total Features           |   20    |
 | Total Functions          |   356   |
-| ✅ Covered by Playwright |   155   |
-| ❌ Not covered           |   198   |
+| ✅ Covered by Playwright |   170   |
+| ❌ Not covered           |   183   |
 | ⏳ In progress           |    1    |
 | `N/A` Not applicable     |    2    |
-| **Coverage %**           | **43.5%** |
+| **Coverage %**           | **47.8%** |
