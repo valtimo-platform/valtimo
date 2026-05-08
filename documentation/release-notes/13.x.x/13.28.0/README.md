@@ -23,11 +23,6 @@
   When enabled, clicking the button opens the configured URL in a new browser tab instead of replacing
   the case detail page.
 
-* **Skip Valtimo's database migrations**
-
-  A new setting lets you disable Valtimo's built-in database migrations, so they can be run from
-  a separate job instead.
-
 ## Bugfixes
 
 * When a header widget was configured, it was not possible to edit the header widget.

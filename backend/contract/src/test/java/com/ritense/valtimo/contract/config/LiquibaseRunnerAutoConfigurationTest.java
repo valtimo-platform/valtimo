@@ -36,25 +36,10 @@ class LiquibaseRunnerAutoConfigurationTest {
     }
 
     @Test
-    void liquibaseRunnerIsCreatedWhenExplicitlyEnabled() {
-        contextRunner
-            .withPropertyValues("valtimo.liquibase.enabled=true")
-            .run(context -> assertThat(context).hasSingleBean(LiquibaseRunner.class));
-    }
-
-    @Test
-    void liquibaseRunnerIsNotCreatedWhenDisabled() {
-        contextRunner
-            .withPropertyValues("valtimo.liquibase.enabled=false")
-            .run(context -> assertThat(context).doesNotHaveBean(LiquibaseRunner.class));
-    }
-
-    @Test
     void staleLockThresholdDefaultsToThirtyMinutes() {
         contextRunner.run(context -> {
             ValtimoProperties properties = context.getBean(ValtimoProperties.class);
             assertThat(properties.getLiquibase().getStaleLockThresholdMinutes()).isEqualTo(30);
-            assertThat(properties.getLiquibase().isEnabled()).isTrue();
         });
     }
 
