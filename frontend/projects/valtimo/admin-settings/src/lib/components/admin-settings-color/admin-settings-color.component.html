@@ -60,6 +60,7 @@
             [labelTranslationKey]="def.labelTranslationKey"
             [config]="{opacity: false, lockOpacity: true}"
             [i18n]="obs.pickrI18n"
+            (clearEvent)="onReset(def)"
           ></valtimo-color-picker>
 
           <button

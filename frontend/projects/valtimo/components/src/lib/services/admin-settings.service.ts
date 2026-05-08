@@ -32,6 +32,7 @@ export class AdminSettingsService extends BaseApiService {
   private readonly _refreshLogos$ = new BehaviorSubject<null>(null);
   private readonly _refreshToggles$ = new BehaviorSubject<null>(null);
   private readonly _refreshAccentColors$ = new BehaviorSubject<null>(null);
+  private readonly _accentColorDefaults: {[key: string]: string} = {};
 
   private readonly _logos$: Observable<AdminSettingsLogosDto | null> = this._refreshLogos$.pipe(
     switchMap(() =>
@@ -114,6 +115,13 @@ export class AdminSettingsService extends BaseApiService {
     const root = document.documentElement;
     Object.entries(colors).forEach(([cssVar, value]) => {
       if (cssVar && value) {
+        // Snapshot the stylesheet default before the first inline override is written,
+        // so consumers can later distinguish the FE default from the currently applied value.
+        if (!(cssVar in this._accentColorDefaults)) {
+          this._accentColorDefaults[cssVar] = getComputedStyle(root)
+            .getPropertyValue(cssVar)
+            .trim();
+        }
         root.style.setProperty(cssVar, value);
       }
     });
@@ -121,5 +129,12 @@ export class AdminSettingsService extends BaseApiService {
 
   public getComputedAccentColor(cssVar: string): string {
     return getComputedStyle(document.documentElement).getPropertyValue(cssVar).trim();
+  }
+
+  public getDefaultAccentColor(cssVar: string): string {
+    if (cssVar in this._accentColorDefaults) {
+      return this._accentColorDefaults[cssVar];
+    }
+    return this.getComputedAccentColor(cssVar);
   }
 }

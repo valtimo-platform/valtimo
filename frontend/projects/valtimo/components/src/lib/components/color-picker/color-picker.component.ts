@@ -68,6 +68,7 @@ export class ColorPickerComponent
   @Input() public i18n: ColorPickerI18n | null = null;
 
   @Output() public colorChangeEvent = new EventEmitter<string>();
+  @Output() public clearEvent = new EventEmitter<void>();
 
   public readonly $disabled = signal<boolean>(false);
 
@@ -210,6 +211,7 @@ export class ColorPickerComponent
       this._value = null;
       this._onChangeFn(null);
       this.colorChangeEvent.emit('');
+      this.clearEvent.emit();
     });
 
     this._pickr.on('hide', () => {

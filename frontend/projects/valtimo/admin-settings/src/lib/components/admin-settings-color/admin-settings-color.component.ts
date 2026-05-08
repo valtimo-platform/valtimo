@@ -160,7 +160,7 @@ export class AdminSettingsColorComponent implements OnInit, OnDestroy {
   private _snapshotCssDefaults(): void {
     for (const def of ACCENT_COLOR_DEFINITIONS) {
       this._cssDefaults[def.cssVar] =
-        this._adminSettingsService.getComputedAccentColor(def.cssVar);
+        this._adminSettingsService.getDefaultAccentColor(def.cssVar);
     }
   }
 
