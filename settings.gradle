@@ -29,6 +29,7 @@ include(
     ":backend",
     ":backend:app",
     ":backend:app:gzac",
+    ":backend:admin-settings",
     ":backend:audit",
     ":backend:authorization",
     ":backend:building-block",

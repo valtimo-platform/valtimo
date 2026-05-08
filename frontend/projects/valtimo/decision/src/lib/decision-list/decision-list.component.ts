@@ -62,7 +62,8 @@ export class DecisionListComponent {
   ];
 
   readonly loading$ = new BehaviorSubject<boolean>(true);
-  readonly experimentalEditing!: boolean;
+  readonly experimentalEditing$ =
+    this.configService.getFeatureToggleObservable('experimentalDmnEditing');
 
   protected readonly testIds = DECISION_LIST_TEST_IDS;
 
@@ -123,13 +124,14 @@ export class DecisionListComponent {
     private readonly editPermissionsService: EditPermissionsService
   ) {
     this.iconService.registerAll([Upload16]);
-    this.experimentalEditing = this.configService.config.featureToggles.experimentalDmnEditing;
   }
 
   public viewDecisionTable(decision: Decision): void {
-    this.context$.pipe(take(1)).subscribe(context => {
+    combineLatest([this.context$, this.experimentalEditing$])
+      .pipe(take(1))
+      .subscribe(([context, experimentalEditing]) => {
       if (context === 'independent') {
-        const basePath = this.experimentalEditing ? '/decision-tables/edit/' : '/decision-tables/';
+        const basePath = experimentalEditing ? '/decision-tables/edit/' : '/decision-tables/';
         this.router.navigate([basePath + decision.id]);
       } else if (context === 'buildingBlock') {
         this.buildingBlockManagementRouteParams$.pipe(take(1)).subscribe(params => {

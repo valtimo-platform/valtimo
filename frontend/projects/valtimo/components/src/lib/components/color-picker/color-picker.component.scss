@@ -1,0 +1,222 @@
+/*!
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
+ *
+ * Licensed under EUPL, Version 1.2 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+@import '@simonwep/pickr/dist/themes/monolith.min.css';
+
+.valtimo-color-picker {
+  display: inline-block;
+}
+
+// -- Pickr button (trigger) theming --
+
+.valtimo-pickr .pcr-button {
+  width: 32px;
+  height: 32px;
+  border-radius: 0;
+  border: 1px solid var(--cds-border-strong);
+  cursor: pointer;
+  transition: border-color 70ms cubic-bezier(0.2, 0, 0.38, 0.9);
+
+  &:hover {
+    border-color: var(--cds-border-inverse);
+  }
+
+  &:focus {
+    outline: 2px solid var(--cds-focus);
+    outline-offset: 1px;
+  }
+
+  &::after {
+    border-radius: 0;
+  }
+
+  &::before {
+    border-radius: 0;
+  }
+}
+
+// -- Pickr app (popup) base Carbon theming --
+
+.valtimo-pickr .pcr-app {
+  border-radius: 0;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+  font-family: 'IBM Plex Sans', 'Helvetica Neue', Arial, sans-serif;
+  font-size: 0.875rem;
+
+  // -- Light mode (default) --
+
+  background: var(--cds-layer);
+  color: var(--cds-text-primary);
+  border: 1px solid var(--cds-border-subtle);
+
+  .pcr-selection {
+    .pcr-color-preview {
+      .pcr-last-color,
+      .pcr-current-color {
+        border-radius: 0;
+        border: 1px solid var(--cds-border-subtle);
+      }
+    }
+
+    .pcr-color-chooser,
+    .pcr-color-opacity {
+      .pcr-slider {
+        border-radius: 0;
+      }
+
+      .pcr-picker {
+        border: 2px solid var(--cds-icon-primary);
+        border-radius: 50%;
+        background: transparent;
+      }
+    }
+
+    .pcr-color-palette {
+      .pcr-palette {
+        border-radius: 0;
+        border: 1px solid var(--cds-border-subtle);
+
+        .pcr-picker {
+          border: 2px solid var(--cds-icon-primary);
+          border-radius: 50%;
+          background: transparent;
+        }
+      }
+    }
+  }
+
+  .pcr-swatches {
+    > button {
+      border-radius: 0;
+      border: 1px solid var(--cds-border-subtle);
+      transition: border-color 70ms cubic-bezier(0.2, 0, 0.38, 0.9);
+
+      &:hover {
+        border-color: var(--cds-border-inverse);
+      }
+
+      &:focus {
+        outline: 2px solid var(--cds-focus);
+        outline-offset: 1px;
+      }
+    }
+  }
+
+  .pcr-interaction {
+    input {
+      background: var(--cds-field);
+      color: var(--cds-text-primary);
+      border: none;
+      border-bottom: 1px solid var(--cds-border-strong);
+      border-radius: 0;
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 0.875rem;
+      padding: 0 1rem;
+      height: 2rem;
+      transition:
+        border-color 70ms cubic-bezier(0.2, 0, 0.38, 0.9),
+        outline 70ms cubic-bezier(0.2, 0, 0.38, 0.9);
+
+      &:hover {
+        border-bottom-color: var(--cds-border-inverse);
+      }
+
+      &:focus {
+        outline: 2px solid var(--cds-focus);
+        outline-offset: -2px;
+        border-bottom-color: var(--cds-focus);
+      }
+    }
+
+    .pcr-type {
+      background: var(--cds-button-tertiary);
+      color: var(--cds-text-on-color);
+      border: none;
+      border-radius: 0;
+      font-family: 'IBM Plex Sans', 'Helvetica Neue', Arial, sans-serif;
+      font-size: 0.75rem;
+      font-weight: 600;
+      letter-spacing: 0.32px;
+      height: 2rem;
+      padding: 0 1rem;
+      cursor: pointer;
+      transition: background-color 70ms cubic-bezier(0.2, 0, 0.38, 0.9);
+
+      &:hover {
+        background: var(--cds-button-tertiary-hover);
+      }
+
+      &:focus {
+        outline: 2px solid var(--cds-focus);
+        outline-offset: -2px;
+      }
+    }
+
+    .pcr-save {
+      background: var(--cds-button-primary);
+      color: var(--cds-text-on-color);
+      border: none;
+      border-radius: 0;
+      font-family: 'IBM Plex Sans', 'Helvetica Neue', Arial, sans-serif;
+      font-size: 0.875rem;
+      font-weight: 400;
+      letter-spacing: 0.16px;
+      height: 2rem;
+      padding: 0 1rem;
+      cursor: pointer;
+      transition: background-color 70ms cubic-bezier(0.2, 0, 0.38, 0.9);
+
+      &:hover {
+        background: var(--cds-button-primary-hover);
+      }
+
+      &:focus {
+        outline: 2px solid var(--cds-focus);
+        outline-offset: -2px;
+      }
+    }
+
+    .pcr-clear {
+      background: var(--cds-button-danger-primary);
+      color: var(--cds-text-on-color);
+      border: none;
+      border-radius: 0;
+      font-family: 'IBM Plex Sans', 'Helvetica Neue', Arial, sans-serif;
+      font-size: 0.875rem;
+      font-weight: 400;
+      letter-spacing: 0.16px;
+      height: 2rem;
+      padding: 0 1rem;
+      cursor: pointer;
+      transition: background-color 70ms cubic-bezier(0.2, 0, 0.38, 0.9);
+
+      &:hover {
+        background: var(--cds-button-danger-hover);
+      }
+
+      &:focus {
+        outline: 2px solid var(--cds-focus);
+        outline-offset: -2px;
+      }
+    }
+  }
+
+  // -- Dark mode overrides --
+
+  &.valtimo-pickr--dark {
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.6);
+  }
+}

@@ -26,7 +26,7 @@
 >
   <section class="valtimo-case-detail-task-detail__header">
     <valtimo-task-detail-intermediate-save
-      *ngIf="enableIntermediateSave"
+      *ngIf="enableIntermediateSave$ | async"
       [taskAndProcessLink]="obs.taskAndProcessLink"
       (currentIntermediateSaveEvent)="onCurrentIntermediateSaveEvent($event)"
     ></valtimo-task-detail-intermediate-save>

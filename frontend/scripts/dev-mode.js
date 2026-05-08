@@ -18,10 +18,26 @@
  * Dev mode coordinator — builds libraries in dependency order, watches for changes,
  * and rebuilds in the correct order with per-library locks and a centralized queue.
  *
- * Key improvements over the previous approach:
- * - Single process coordinates all rebuilds (no race conditions between separate rebuild-lib.js processes)
+ * Rebuild strategy:
+ * Libraries are built directly into their real dist/ directory. After the initial
+ * build, deleteDestPath is set to false globally for all libraries so ng-packagr
+ * overwrites files in place instead of deleting the entire output directory first.
+ * This produces a single burst of file-system events instead of two waves (delete +
+ * write) which would cause webpack to compile twice.
+ *
+ * Webpack is prevented from compiling mid-build by two mechanisms:
+ * 1. Per-library lock files (.rebuilding-<lib>.lock) signal individual builds
+ * 2. A batch lock file (.rebuilding-batch.lock) stays alive for the entire duration
+ *    of a batch of sequential/parallel rebuilds, preventing webpack from starting
+ *    compilation in the gap between individual lib builds.
+ *
+ * The WaitForRebuildLockPlugin (webpack.config.js) pauses webpack compilation
+ * while any .rebuilding-*.lock file exists.
+ *
+ * Key features:
+ * - Single process coordinates all rebuilds (no race conditions)
  * - Dependency graph parsed at runtime from package.json build scripts
- * - Per-library lock files (.rebuilding-<lib>.lock) prevent concurrent builds of the same library
+ * - Per-library + batch lock files pause webpack during builds
  * - Dependency-aware queue: a library only builds after all its dependencies finish
  * - Debouncing: rapid file changes are coalesced into a single rebuild
  * - Cascade: when a library finishes rebuilding, dependents that need rebuilding are queued
@@ -68,16 +84,17 @@ let isCleaningUp = false;
 
 // Build queue state
 const building = new Set(); // libs currently building
-const queued = new Map(); // lib -> {resolve, reject} or just a boolean; libs waiting to build
+const queued = new Map(); // lib -> true; libs waiting to build
 const debounceTimers = new Map(); // lib -> timer
 const pendingRebuilds = new Set(); // libs that need a rebuild (debounced, waiting to enter queue)
-const swappedLibs = new Set(); // libs whose dist was swapped since the last webpack notification
 
 // ── Lock file helpers ──────────────────────────────────────────────────────────
 
 function lockFilePath(libName) {
   return path.join(LOCK_DIR, `.rebuilding-${libName}.lock`);
 }
+
+const BATCH_LOCK_PATH = path.join(LOCK_DIR, '.rebuilding-batch.lock');
 
 function createLock(libName) {
   try {
@@ -97,9 +114,107 @@ function removeLock(libName) {
   }
 }
 
+/**
+ * Create the batch lock — stays alive for the entire duration of a batch of
+ * sequential rebuilds so webpack never sees a gap between individual builds.
+ */
+function createBatchLock() {
+  try {
+    if (!fs.existsSync(BATCH_LOCK_PATH)) {
+      fs.writeFileSync(BATCH_LOCK_PATH, `batch:${Date.now()}`);
+    }
+  } catch (err) {
+    console.error(`  ⚠ Failed to create batch lock: ${err.message}`);
+  }
+}
+
+/**
+ * Remove the batch lock only when no builds are active or queued.
+ */
+function removeBatchLockIfIdle() {
+  if (building.size === 0 && queued.size === 0) {
+    try {
+      if (fs.existsSync(BATCH_LOCK_PATH)) {
+        fs.rmSync(BATCH_LOCK_PATH);
+      }
+    } catch {
+      // Ignore
+    }
+  }
+}
+
 function removeAllLocks() {
   for (const lib of allLibs) {
     removeLock(lib);
+  }
+  try {
+    if (fs.existsSync(BATCH_LOCK_PATH)) {
+      fs.rmSync(BATCH_LOCK_PATH);
+    }
+  } catch {
+    // Ignore
+  }
+}
+
+// ── ng-package.json helpers ────────────────────────────────────────────────────
+
+function ngPackagePath(libName) {
+  return path.join(FRONTEND_ROOT, 'projects', 'valtimo', libName, 'ng-package.json');
+}
+
+/**
+ * Set deleteDestPath in ng-package.json. When false, ng-packagr overwrites files
+ * in-place instead of deleting the entire output directory first. This is critical
+ * for rebuilds: it produces a single burst of FS events rather than two waves
+ * (delete all + write all), preventing webpack from compiling twice.
+ */
+function setDeleteDestPath(libName, value) {
+  const filePath = ngPackagePath(libName);
+  if (!fs.existsSync(filePath)) return;
+
+  try {
+    const content = fs.readFileSync(filePath, 'utf8');
+
+    if (value === false) {
+      // Add "deleteDestPath": false right after the opening brace using string manipulation.
+      // This avoids JSON.parse which fails on files with trailing commas.
+      if (content.includes('"deleteDestPath"')) return; // already set
+      const replaced = content.replace(/^\{/, '{\n  "deleteDestPath": false,');
+      fs.writeFileSync(filePath, replaced);
+    } else {
+      // Remove the deleteDestPath line to restore default behavior.
+      // Handle both cases: line with trailing comma, and line without.
+      const lines = content.split('\n');
+      const filtered = lines.filter(line => !line.match(/^\s*"deleteDestPath"\s*:/));
+
+      // Fix trailing comma on the line before the closing brace
+      let result = filtered.join('\n');
+      result = result.replace(/,(\s*\n\s*\})/, '$1');
+
+      fs.writeFileSync(filePath, result);
+    }
+  } catch (err) {
+    console.error(`  ⚠ Failed to update ng-package.json for ${libName}: ${err.message}`);
+  }
+}
+
+/**
+ * Set deleteDestPath for all libraries at once. Called once after the initial build
+ * to switch to in-place overwrites for all subsequent rebuilds.
+ */
+function setDeleteDestPathAll(value) {
+  for (const libName of allLibs) {
+    setDeleteDestPath(libName, value);
+  }
+}
+
+/**
+ * Reset all ng-package.json files to remove any deleteDestPath overrides
+ * left behind by an interrupted run.
+ */
+function resetAllNgPackageJson() {
+  for (const libName of allLibs) {
+    setDeleteDestPath(libName, true);
   }
 }
 
@@ -120,45 +235,20 @@ function checkPortInUse(port) {
 // ── Build a single library ─────────────────────────────────────────────────────
 
 /**
- * Build a library. When `safeSwap` is true (used during watcher rebuilds), the build
- * writes to a temporary directory and then atomically swaps it into the real dist folder.
- * This prevents the dev server from seeing a deleted dist directory mid-build and
- * triggers only a single recompilation instead of multiple.
+ * Build a library directly into its dist/ directory. The lock file ensures
+ * webpack's WaitForRebuildLockPlugin pauses compilation until the build finishes.
+ *
+ * For rebuilds (after initial build), deleteDestPath is already set to false
+ * globally via setDeleteDestPathAll(false) — ng-packagr overwrites files in place
+ * instead of deleting the output directory. This prevents two waves of FS events
+ * (delete + write) that cause double webpack compilations.
  */
-function buildLib(libName, {safeSwap = false} = {}) {
+function buildLib(libName) {
   const fullName = `@valtimo/${libName}`;
-  const realDest = path.join(FRONTEND_ROOT, 'dist', 'valtimo', libName);
-  const tmpDest = path.join(FRONTEND_ROOT, 'dist', `.tmp-${libName}`);
-  const ngPackagePath = path.join(FRONTEND_ROOT, 'projects', 'valtimo', libName, 'ng-package.json');
 
   return new Promise((resolve, reject) => {
     console.log(`  🔨 Building ${fullName}...`);
     createLock(libName);
-
-    let originalNgPackage = null;
-
-    // If safeSwap, redirect the build output to a temp directory by patching the
-    // "dest" field in ng-package.json. Uses string replacement to preserve the
-    // original file format (trailing commas, comments, etc.).
-    if (safeSwap) {
-      try {
-        originalNgPackage = fs.readFileSync(ngPackagePath, 'utf8');
-        const relativeTmpDest = path.relative(path.dirname(ngPackagePath), tmpDest);
-        const patched = originalNgPackage.replace(
-          /("dest"\s*:\s*)"[^"]*"/,
-          `$1"${relativeTmpDest}"`
-        );
-        if (patched === originalNgPackage) {
-          throw new Error('Could not find "dest" field in ng-package.json');
-        }
-        fs.writeFileSync(ngPackagePath, patched);
-      } catch (err) {
-        console.error(`  ⚠ Failed to set up temp dest for ${libName}: ${err.message}`);
-        // Fall back to normal build
-        safeSwap = false;
-        originalNgPackage = null;
-      }
-    }
 
     const buildProc = spawn(NG_BIN, ['build', fullName], {
       shell: true,
@@ -177,70 +267,17 @@ function buildLib(libName, {safeSwap = false} = {}) {
       stderr += data.toString();
     });
 
-    function restoreNgPackage() {
-      if (originalNgPackage !== null) {
-        try {
-          fs.writeFileSync(ngPackagePath, originalNgPackage);
-        } catch (err) {
-          console.error(`  ⚠ Failed to restore ng-package.json for ${libName}: ${err.message}`);
-        }
-      }
-    }
-
-    function swapDist() {
-      if (!safeSwap) return;
-      try {
-        // Atomic swap: rename real dist out, rename temp dist in, remove old.
-        // This avoids the window where dist is deleted (which crashes webpack).
-        const backupDest = `${realDest}.old`;
-        if (fs.existsSync(realDest)) {
-          fs.renameSync(realDest, backupDest);
-        }
-        fs.renameSync(tmpDest, realDest);
-        // Clean up old dist
-        if (fs.existsSync(backupDest)) {
-          fs.rmSync(backupDest, {recursive: true, force: true});
-        }
-        // Track this lib for a batched webpack notification later.
-        // We don't touch files here — instead we wait until the entire queue drains
-        // so webpack gets a single recompilation trigger rather than one per library.
-        swappedLibs.add(libName);
-      } catch (err) {
-        console.error(`  ⚠ Failed to swap dist for ${libName}: ${err.message}`);
-        // Fallback: try to restore the old dist if the swap failed halfway
-        const backupDest = `${realDest}.old`;
-        try {
-          if (!fs.existsSync(realDest) && fs.existsSync(backupDest)) {
-            fs.renameSync(backupDest, realDest);
-          }
-        } catch {
-          /* best effort */
-        }
-      }
-    }
-
     buildProc.on('error', err => {
-      restoreNgPackage();
       removeLock(libName);
       reject(err);
     });
 
     buildProc.on('exit', code => {
-      restoreNgPackage();
       if (code === 0 || stdout.includes('Built Angular Package')) {
-        swapDist();
         removeLock(libName);
         console.log(`  ✅ Built ${fullName}`);
         resolve();
       } else {
-        // Clean up temp on failure
-        if (safeSwap) {
-          try {
-            fs.rmSync(tmpDest, {recursive: true, force: true});
-          } catch {
-            // ignore
-          }
-        }
         removeLock(libName);
         console.error(`  ❌ Build failed for ${fullName} (exit code ${code})`);
         if (stderr) {
@@ -357,34 +394,6 @@ async function initialBuildAll() {
 // ── Rebuild queue ──────────────────────────────────────────────────────────────
 
 /**
- * Notify webpack that rebuilt libraries have new output. Touches the entry file of
- * every library that was swapped since the last notification. Called once when the
- * queue is fully drained (nothing building, nothing queued) so that webpack
- * recompiles exactly once rather than once per library.
- */
-function notifyWebpack() {
-  if (swappedLibs.size === 0) return;
-  const now = new Date();
-  // Libraries use either public_api.d.ts or public-api.d.ts (inconsistent naming).
-  const candidates = ['public_api.d.ts', 'public-api.d.ts', 'index.d.ts'];
-  for (const libName of swappedLibs) {
-    const libDist = path.join(FRONTEND_ROOT, 'dist', 'valtimo', libName);
-    for (const candidate of candidates) {
-      const entryFile = path.join(libDist, candidate);
-      try {
-        if (fs.existsSync(entryFile)) {
-          fs.utimesSync(entryFile, now, now);
-          break;
-        }
-      } catch {
-        // ignore — best effort
-      }
-    }
-  }
-  swappedLibs.clear();
-}
-
-/**
  * Check whether all dependencies of `libName` are done (not building and not queued).
  */
 function depsReady(libName) {
@@ -402,12 +411,14 @@ function depsReady(libName) {
  */
 function processQueue() {
   if (queued.size === 0) {
-    // Queue drained — if nothing is building either, notify webpack once for all swapped libs.
-    if (building.size === 0) {
-      notifyWebpack();
-    }
+    removeBatchLockIfIdle();
     return;
   }
+
+  // Ensure the batch lock is present for the entire duration of queued builds.
+  // This prevents webpack from seeing a gap between individual lib builds and
+  // starting compilation prematurely.
+  createBatchLock();
 
   for (const [libName] of queued) {
     if (building.size >= MAX_PARALLEL_BUILDS) break;
@@ -418,9 +429,16 @@ function processQueue() {
     queued.delete(libName);
     building.add(libName);
 
-    buildLib(libName, {safeSwap: true})
+    buildLib(libName)
       .then(() => {
         building.delete(libName);
+
+        // If this library had another source change while building, re-enqueue it
+        if (pendingRebuilds.has(libName)) {
+          pendingRebuilds.delete(libName);
+          enqueue(libName);
+        }
+
         // Queue dependents that were also pending
         const deps = dependents.get(libName);
         if (deps) {
@@ -435,6 +453,13 @@ function processQueue() {
       })
       .catch(() => {
         building.delete(libName);
+
+        // Even on failure, re-enqueue if another change came in during the build
+        if (pendingRebuilds.has(libName)) {
+          pendingRebuilds.delete(libName);
+          enqueue(libName);
+        }
+
         processQueue();
       });
   }
@@ -461,11 +486,14 @@ function enqueue(libName) {
 
 /**
  * Called when a source file changes for a library. Debounces and enqueues.
- * Ignores events for libraries that are already building or queued to avoid
- * spurious re-triggers from intermediate build artifacts.
+ * If the library is already building or queued, marks it as needing another
+ * rebuild after the current one finishes (so changes are never silently dropped).
  */
 function onLibSourceChange(libName) {
   if (building.has(libName) || queued.has(libName)) {
+    // Library is already building or queued — schedule a re-rebuild after it finishes
+    // so that the new source change is not lost.
+    pendingRebuilds.add(libName);
     return;
   }
 
@@ -484,7 +512,7 @@ function onLibSourceChange(libName) {
   );
 }
 
-// ── File watchers using chokidar ───────────────────────────────────────────────
+// ── File watchers ──────────────────────────────────────────────────────────────
 
 function startWatchers() {
   console.log('👀 Starting file watchers for all libraries...\n');
@@ -512,7 +540,7 @@ function startWatchers() {
         ) {
           return;
         }
-        // Ignore spec files, test files, and ng-package.json (modified during safeSwap builds)
+        // Ignore spec files, test files, and ng-package.json (modified during builds)
         if (filename.endsWith('.spec.ts')) return;
         if (filename === 'ng-package.json') return;
 
@@ -578,6 +606,7 @@ function cleanup() {
   }
 
   removeAllLocks();
+  resetAllNgPackageJson();
   process.exit();
 }
 
@@ -587,10 +616,18 @@ process.on('SIGTERM', cleanup);
 // ── Main ───────────────────────────────────────────────────────────────────────
 
 async function main() {
-  // Clean any stale lock files from previous runs
+  // Clean any stale lock files and ng-package.json overrides from previous runs
   removeAllLocks();
+  resetAllNgPackageJson();
 
   await initialBuildAll();
+
+  // After the initial build, set deleteDestPath:false for all libs so subsequent
+  // rebuilds overwrite files in-place instead of deleting the output directory.
+  // This is done once globally to avoid per-build ng-package.json writes that
+  // would trigger unwanted webpack recompilations.
+  setDeleteDestPathAll(false);
+
   startWatchers();
   await startDevServer();
 
