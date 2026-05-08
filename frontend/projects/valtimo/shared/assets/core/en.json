@@ -983,7 +983,8 @@
       },
       "collection": {"title": "Collection", "description": "Create a collection"},
       "divider": {"title": "Divider"},
-      "map": {"title": "Map", "description": "Create a map widget"}
+      "map": {"title": "Map", "description": "Create a map widget"},
+      "person-card": {"title": "Person card", "description": "A person with their key details and contact info"}
     },
     "width": {
       "description": "Select the desired width for the widget.",
@@ -1067,6 +1068,16 @@
         "key": "Path to GeoJSON data",
         "keyPlaceholder": "Source path",
         "keyTooltip": "Value resolver path to GeoJSON data"
+      },
+      "person-card": {
+        "description": "Pick the icon and the source paths for each person field.",
+        "fullNameLabel": "Full name",
+        "birthDateLabel": "Birth date (Optional)",
+        "bsnLabel": "BSN (Optional)",
+        "phoneLabel": "Phone (Optional)",
+        "emailLabel": "Email (Optional)",
+        "cityLabel": "City (Optional)",
+        "pathPlaceholder": "Select or type a path"
       },
       "displayType": {
         "text": "Text",
@@ -2234,6 +2245,9 @@
     "noCustomComponentDescription": "The custom component configured for this widget is not available.",
     "map": {
       "title": "Map"
+    },
+    "personCard": {
+      "age": "{{age}} yr"
     }
   },
   "iko": {
