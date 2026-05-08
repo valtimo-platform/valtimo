@@ -185,6 +185,11 @@ export class CaseDetailTabDocumentenApiDocumentsComponent implements OnInit, OnD
       type: 'normal',
     },
     {
+      label: 'document.editContent',
+      callback: this.onEditContent.bind(this),
+      type: 'normal',
+    },
+    {
       label: 'document.delete',
       callback: this.onDeleteActionClick.bind(this),
       disabled$: this.deleteDisabled.bind(this),
@@ -521,6 +526,28 @@ export class CaseDetailTabDocumentenApiDocumentsComponent implements OnInit, OnD
     this.isEditMode$.next(true);
     this.fileToBeUploaded$.next(file);
     this.showUploadModal$.next(true);
+  }
+
+  public onEditContent(file: DocumentenApiRelatedFile): void {
+    const wopiSrc = encodeURIComponent(
+      `https://cg-dmf.dev.baseflow.com/wopi/api/v1/files/${file.fileId}`
+    );
+    const url = `https://collabora.dev.baseflow.com/browser/4610258811/cool.html?WOPISrc=${wopiSrc}`;
+
+    const form = document.createElement('form');
+    form.method = 'POST';
+    form.action = url;
+    form.target = '_blank';
+
+    const tokenInput = document.createElement('input');
+    tokenInput.type = 'hidden';
+    tokenInput.name = 'access_token';
+    tokenInput.value = 'test';
+    form.appendChild(tokenInput);
+
+    document.body.appendChild(form);
+    form.submit();
+    document.body.removeChild(form);
   }
 
   public closeMetadataModal(): void {
