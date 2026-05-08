@@ -5,10 +5,10 @@
 | Category                    | Features | Functions | ✅ Covered | ❌ Not Covered |
 |-----------------------------|----------|-----------|------------|----------------|
 | User Features (ROLE_USER)   | 5        | 21        | 12         | 9              |
-| Admin Features (ROLE_ADMIN) | 15       | 335       | 158        | 174            |
-| **Total**                   | **20**   | **356**   | **170**    | **183**        |
+| Admin Features (ROLE_ADMIN) | 15       | 335       | 162        | 170            |
+| **Total**                   | **20**   | **356**   | **174**    | **179**        |
 
-**Coverage:** `170 / 356` — `47.8%`
+**Coverage:** `174 / 356` — `48.9%`
 
 ---
 
@@ -409,10 +409,10 @@
 |:------|:---------------------------|:-----------------------------------------|:--------:|:------------------------------------------------|
 | 10.21 | Select display type        | Select display type (Big number / Gauge) |    ✅    | dashboard-management.spec.ts                    |
 | 10.22 | Configure display title    | Configure display type title             |    ✅    | dashboard-management.spec.ts                    |
-| 10.23 | Configure display subtitle | Configure display type subtitle          |    ❌    |                                                 |
-| 10.24 | Configure display label    | Configure display type label             |    ❌    |                                                 |
-| 10.25 | Toggle KPI usage           | Toggle KPI usage                         |    ❌    |                                                 |
-| 10.26 | Set URL path               | Set URL path for widget click navigation |    ❌    |                                                 |
+| 10.23 | Configure display subtitle | Configure display type subtitle          |    ✅    | dashboard-management.spec.ts                    |
+| 10.24 | Configure display label    | Configure display type label             |    ✅    | dashboard-management.spec.ts                    |
+| 10.25 | Toggle KPI usage           | Toggle KPI usage                         |    ✅    | dashboard-management.spec.ts                    |
+| 10.26 | Set URL path               | Set URL path for widget click navigation |    ✅    | dashboard-management.spec.ts                    |
 
 #### 10E · Widget Types
 
@@ -727,8 +727,8 @@
 |:-------------------------|:-------:|
 | Total Features           |   20    |
 | Total Functions          |   356   |
-| ✅ Covered by Playwright |   170   |
-| ❌ Not covered           |   183   |
+| ✅ Covered by Playwright |   174   |
+| ❌ Not covered           |   179   |
 | ⏳ In progress           |    1    |
 | `N/A` Not applicable     |    2    |
-| **Coverage %**           | **47.8%** |
+| **Coverage %**           | **48.9%** |

@@ -327,6 +327,28 @@ export class DashboardManagementPage {
     await list.dragRow(sourceRow, targetRow);
   }
 
+  // ─── Display Type Configuration Locators ────────────────────────────
+
+  get displayTypeConfig() {
+    return this.page.locator('valtimo-widget-configuration-container').last();
+  }
+
+  get displayTypeTitleInput() {
+    return this.displayTypeConfig.getByRole('textbox', {name: /Title/});
+  }
+
+  get displayTypeSubtitleInput() {
+    return this.displayTypeConfig.getByRole('textbox', {name: /Subtitle/});
+  }
+
+  get displayTypeLabelInput() {
+    return this.displayTypeConfig.getByRole('textbox', {name: /Label/});
+  }
+
+  get useKpiCheckbox() {
+    return this.displayTypeConfig.locator('cds-checkbox');
+  }
+
   // ─── Widget Configuration Form Helpers ─────────────────────────────
 
   async selectDataSource(label: string) {

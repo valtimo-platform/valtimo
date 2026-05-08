@@ -458,6 +458,38 @@ test.describe('Dashboard management — Widget management', () => {
       await input.fill('${currentUserId}');
       await expect(input).toHaveValue('${currentUserId}');
     });
+
+    test('Select display type', async () => {
+      // Big number was selected in a prior test — verify it's still selected
+      await expect(dashboardPage.widgetDisplayTypeDropdown).toContainText('Big number');
+    });
+
+    test('Configure display type title', async () => {
+      await dashboardPage.displayTypeTitleInput.fill('E2e Display Title');
+      await expect(dashboardPage.displayTypeTitleInput).toHaveValue('E2e Display Title');
+    });
+
+    test('Configure display subtitle', async () => {
+      await dashboardPage.displayTypeSubtitleInput.fill('E2e Subtitle');
+      await expect(dashboardPage.displayTypeSubtitleInput).toHaveValue('E2e Subtitle');
+    });
+
+    test('Configure display label', async () => {
+      await dashboardPage.displayTypeLabelInput.fill('E2e Label');
+      await expect(dashboardPage.displayTypeLabelInput).toHaveValue('E2e Label');
+    });
+
+    test('Toggle KPI usage', async () => {
+      await dashboardPage.displayTypeConfig.getByText('Use KPI').click();
+      // KPI threshold fields should appear
+      const lowThreshold = dashboardPage.displayTypeConfig.locator('input[type="number"]').first();
+      await expect(lowThreshold).toBeVisible();
+    });
+
+    test('Set URL path', async () => {
+      await dashboardPage.widgetUrlInput.fill('/cases');
+      await expect(dashboardPage.widgetUrlInput).toHaveValue('/cases');
+    });
   });
 
   // ─── Widget data source configuration ─────────────────────────────
