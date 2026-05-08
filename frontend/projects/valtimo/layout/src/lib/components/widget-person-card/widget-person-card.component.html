@@ -16,9 +16,16 @@
 
 @let data = $widgetData();
 
-<div class="valtimo-widget-person-card__avatar" [attr.aria-hidden]="true">
+<div
+  class="valtimo-widget-person-card__avatar"
+  [attr.aria-hidden]="true"
+  [style.background-color]="$avatarColors().background"
+>
   @if (data) {
-    <span class="valtimo-widget-person-card__initials">{{ $initials() }}</span>
+    <span
+      class="valtimo-widget-person-card__initials"
+      [style.color]="$avatarColors().text"
+    >{{ $initials() }}</span>
   } @else {
     <cds-skeleton-text [lines]="1" [maxLineWidth]="60"></cds-skeleton-text>
   }

@@ -25,19 +25,13 @@ import {
   ViewEncapsulation,
 } from '@angular/core';
 import {TranslateModule, TranslateService} from '@ngx-translate/core';
+import {CdsThemeService, CurrentCarbonTheme} from '@valtimo/components';
 import {IconModule, IconService, SkeletonModule} from 'carbon-components-angular';
 import {Calendar20, Email20, Phone20} from '@carbon/icons';
 import {Subscription} from 'rxjs';
-import {PersonCardWidget} from '../../models';
-
-interface PersonCardWidgetData {
-  fullName?: string;
-  birthDate?: string;
-  bsn?: string;
-  phone?: string;
-  email?: string;
-  city?: string;
-}
+import {type WidgetColorThemeVariant} from '../../constants';
+import {getAvatarColorVariant} from './widget-person-card-color.util';
+import {type PersonCardWidgetData} from './widget-person-card.model';
 
 @Component({
   selector: 'valtimo-widget-person-card',
@@ -53,11 +47,11 @@ export class WidgetPersonCardComponent implements OnDestroy {
 
   public readonly $widgetData = signal<PersonCardWidgetData | null>(null);
   public readonly $currentLang = signal(this.translateService.currentLang || 'en');
+  public readonly $themeVariant = signal<WidgetColorThemeVariant>('light');
 
-  @Input() public set widgetConfiguration(_value: PersonCardWidget) {
-    // Configuration is not needed at render time — the BE resolves source paths to values
-    // and exposes them via widgetData.
-  }
+  public readonly $avatarColors = computed(() =>
+    getAvatarColorVariant(this.$widgetData()?.fullName ?? '', this.$themeVariant())
+  );
 
   @Input() public set widgetData(value: PersonCardWidgetData | null) {
     this.$widgetData.set(value ?? null);
@@ -111,11 +105,17 @@ export class WidgetPersonCardComponent implements OnDestroy {
 
   constructor(
     private readonly translateService: TranslateService,
-    private readonly iconService: IconService
+    private readonly iconService: IconService,
+    private readonly cdsThemeService: CdsThemeService
   ) {
     this.iconService.registerAll([Phone20, Email20, Calendar20]);
     this._subscriptions.add(
       this.translateService.onLangChange.subscribe(event => this.$currentLang.set(event.lang))
+    );
+    this._subscriptions.add(
+      this.cdsThemeService.currentTheme$.subscribe(theme =>
+        this.$themeVariant.set(theme === CurrentCarbonTheme.G10 ? 'light' : 'dark')
+      )
     );
   }
 
