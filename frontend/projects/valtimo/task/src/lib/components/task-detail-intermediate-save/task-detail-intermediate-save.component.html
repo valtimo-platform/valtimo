@@ -14,7 +14,7 @@
   ~ limitations under the License.
   -->
 
-@if (intermediateSaveEnabled && (formFlowInstanceId$ | async) === undefined) {
+@if ((intermediateSaveEnabled$ | async) && (formFlowInstanceId$ | async) === undefined) {
   <button
     cdsButton="ghost"
     iconOnly="true"
