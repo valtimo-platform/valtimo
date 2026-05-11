@@ -21,6 +21,7 @@ import {
   WidgetManagementCustomComponent,
   WidgetManagementFieldsComponent,
   WidgetManagementMapComponent,
+  WidgetManagementPersonCardComponent,
   WidgetManagementTableComponent,
 } from '../components/widget-management/management-content';
 import {WidgetManagementInteractiveTableComponent} from '../components/widget-management/management-content/interactive-table/widget-management-interactive-table.component';
@@ -127,6 +128,13 @@ const AVAILABLE_WIDGETS: WidgetTypeSelection[] = [
     illustrationUrl: 'valtimo-layout/img/widget-management/types/map.svg',
     type: WidgetType.MAP,
     component: WidgetManagementMapComponent,
+  },
+  {
+    titleKey: 'widgetTabManagement.type.person-card.title',
+    descriptionKey: 'widgetTabManagement.type.person-card.description',
+    illustrationUrl: 'valtimo-layout/img/widget-management/types/person.svg',
+    type: WidgetType.PERSON_CARD,
+    component: WidgetManagementPersonCardComponent,
   },
 ];
 

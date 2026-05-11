@@ -114,6 +114,18 @@ interface WidgetMapContent {
   geoJsonSources: GeoJsonSource[];
 }
 
+interface WidgetPersonCardContent {
+  icon?: string;
+  person: {
+    fullName: string;
+    birthDate?: string;
+    bsn?: string;
+    phone?: string;
+    email?: string;
+    city?: string;
+  };
+}
+
 type WidgetDropdownValue = {[key: string]: string};
 
 type WidgetContentProperties =
@@ -123,7 +135,8 @@ type WidgetContentProperties =
   | WidgetCustomContent
   | WidgetFormioContent
   | WidgetCollectionContent
-  | WidgetMapContent;
+  | WidgetMapContent
+  | WidgetPersonCardContent;
 
 export {
   WidgetContentProperties,
@@ -134,6 +147,7 @@ export {
   WidgetInteractiveTableContent,
   WidgetCollectionContent,
   WidgetMapContent,
+  WidgetPersonCardContent,
   WidgetInteractiveTableEventSearchRequest,
   WidgetFilter,
   WidgetDropdownValue,
