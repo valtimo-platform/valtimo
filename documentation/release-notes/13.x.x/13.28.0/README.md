@@ -22,31 +22,12 @@
   [Person card widget documentation](../../../features/case/case-detail/tabs/widgets.md) for the full list of fields
   and a configuration example.
 
-* **Zaak sync (per case definition)**
-
-  A new "Zaak-synchronisatie" admin panel under `Admin > Cases > {Case name} > [ZGW]` configures how Valtimo
-  propagates case changes to the linked zaak in the Zaken API, scoped per case definition. Two one-way
-  synchronisations (Valtimo → Zaken API) are now available:
-    - **Behandelaar sync** — when the dossier assignee changes, the linked zaak gets a behandelaar rol matching the
-      assignee.
-    - **Note sync** — Valtimo notes on the case are mirrored as `ZaakNotitie` on the linked zaak.
-
-  See the [Zaak sync section](../../../features/case/zgw/zaken-api-sync.md) for details.
-
 ## Enhancements
 
 * **Faster Case Progress tab**
 
   The Progress tab on the case details page now loads noticeably faster, especially for cases with many associated
   processes.
-
-* **`noteEventListenerEnabled` and `noteSubject` removed from the Zaken API plugin**
-
-  These two properties moved off the Zaken API plugin and onto the new per-case-definition Zaak sync
-  configuration (renamed to `noteSyncEnabled` and `noteSubject` respectively). The plugin now only owns
-  connection settings; per-case-definition policy lives in the new "Zaak-synchronisatie" panel.
-
-  See the [Zaak sync section](../../../features/case/zgw/zaken-api-sync.md) for details.
 
 * **Open widget link in a new browser tab**
 
