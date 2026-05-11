@@ -18,24 +18,30 @@
   &__form {
     display: flex;
     flex-direction: column;
-    gap: 24px;
+    gap: 16px;
   }
 
-  &__section {
+  &__panel {
     display: flex;
     flex-direction: column;
     gap: 12px;
+    padding: 16px;
+    background: var(--cds-layer);
   }
 
-  &__section-title {
-    font-size: 14px;
-    font-weight: 600;
-    color: var(--cds-text-primary);
-    margin: 0;
+  &__identity-row {
+    display: flex;
+    gap: 16px;
+    align-items: flex-end;
   }
 
-  &__input {
-    width: 100%;
+  &__title-input {
+    max-width: 288px;
+    flex: 1 1 auto;
+
+    input {
+      background: var(--cds-layer-02);
+    }
   }
 
   &__row {
@@ -47,11 +53,29 @@
 
   &__row-item {
     width: 100%;
+
+    .cds--list-box,
+    .cds--text-input,
+    input.cds--text-input {
+      background: var(--cds-layer-02);
+    }
+  }
+
+  &__value {
+    display: flex;
+    flex-direction: column;
   }
 
   &__helper {
     margin-top: 4px;
     font-size: 12px;
     color: var(--cds-text-helper);
+  }
+
+  &__color-tag.cds--tag {
+    background-color: var(--widget-color-tag-bg, var(--cds-layer-02));
+    color: var(--widget-color-tag-fg, var(--cds-text-primary));
+    box-shadow: inset 3px 0 0 0 var(--widget-color-tag-accent, var(--cds-border-subtle-01));
+    padding-left: 12px;
   }
 }

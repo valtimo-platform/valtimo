@@ -171,10 +171,25 @@ export class WidgetManagementWizardComponent implements OnDestroy {
     })
   );
 
-  public readonly stepLabel$ = toObservable(this.widgetWizardService.$currentStep).pipe(
-    switchMap((step: WidgetWizardStep) =>
-      this.translateService.stream(`widgetTabManagement.${step}.description`)
-    )
+  public readonly stepLabel$ = combineLatest([
+    toObservable(this.widgetWizardService.$currentStep),
+    toObservable(this.widgetWizardService.$selectedWidget),
+  ]).pipe(
+    switchMap(([step, selectedWidget]) => {
+      const widgetType = selectedWidget?.type;
+      const specificKey = widgetType
+        ? `widgetTabManagement.${step}.${widgetType}.description`
+        : null;
+      const defaultKey = `widgetTabManagement.${step}.description`;
+
+      return this.translateService.stream([specificKey, defaultKey].filter(Boolean) as string[]).pipe(
+        map((translations: Record<string, string>) => {
+          const specific = specificKey ? translations[specificKey] : undefined;
+          if (specific !== undefined && specific !== specificKey) return specific;
+          return translations[defaultKey];
+        })
+      );
+    })
   );
 
   public readonly $backButtonDisabled: Signal<boolean> = computed(

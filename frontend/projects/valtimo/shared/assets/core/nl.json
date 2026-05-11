@@ -1152,9 +1152,7 @@
         "valueTooltip": "Naam van de eigenschap waartoe u toegang wilt krijgen binnen het eerder ingevulde collectiegegevens-pad"
       },
       "highlight": {
-        "identitySection": "Widget-identiteit",
-        "actionSection": "Actie",
-        "valueAndAccentSection": "Waarde & Accentkleur",
+        "description": "",
         "value": "Waarde",
         "valuePlaceholder": "Selecteer of typ een pad",
         "valueHelper": "Toont de waarde op dit pad. Als het een array is, wordt het aantal elementen weergegeven.",

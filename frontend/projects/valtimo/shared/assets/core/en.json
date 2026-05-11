@@ -1118,9 +1118,7 @@
         "valueTooltip": "Name of the property you wish to access within the previously filled collection data path"
       },
       "highlight": {
-        "identitySection": "Widget identity",
-        "actionSection": "Action",
-        "valueAndAccentSection": "Value & Accent color",
+        "description": "",
         "value": "Value",
         "valuePlaceholder": "Select or type a path",
         "valueHelper": "Shows the value at this path. If it resolves to an array, the count of items is shown instead.",
