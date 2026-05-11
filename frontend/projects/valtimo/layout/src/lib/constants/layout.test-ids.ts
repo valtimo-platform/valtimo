@@ -34,6 +34,7 @@ export const WIDGET_WIZARD_TYPE_TEST_IDS = {
   tileInteractiveTable: 'widgetWizardTypeTile-interactive-table',
   tileCollection: 'widgetWizardTypeTile-collection',
   tileMap: 'widgetWizardTypeTile-map',
+  tilePersonCard: 'widgetWizardTypeTile-person-card',
   tileMetroline: 'widgetWizardTypeTile-metroline',
 } as const;
 
@@ -74,6 +75,16 @@ export const WIDGET_CONTENT_FIELDS_TEST_IDS = {
   fieldTitleInput: 'widgetContentFieldsFieldTitle',
   displayTypeDropdown: 'widgetContentFieldsDisplayType',
   valuePathSelector: 'widgetContentFieldsValuePath',
+} as const;
+
+export const WIDGET_CONTENT_PERSON_CARD_TEST_IDS = {
+  widgetTitleInput: 'widgetContentPersonCardWidgetTitle',
+  fullNameInput: 'widgetContentPersonCardFullName',
+  birthDateInput: 'widgetContentPersonCardBirthDate',
+  bsnInput: 'widgetContentPersonCardBsn',
+  phoneInput: 'widgetContentPersonCardPhone',
+  emailInput: 'widgetContentPersonCardEmail',
+  cityInput: 'widgetContentPersonCardCity',
 } as const;
 
 export const WIDGET_CONTENT_METROLINE_TEST_IDS = {

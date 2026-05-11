@@ -65,8 +65,8 @@ export class PageTitleComponent implements OnInit, AfterViewInit, OnDestroy {
   public readonly translatedTitle$ = new BehaviorSubject<string>('');
   public readonly smallTitle$ = this.pageHeaderService.smallTitle$;
 
-  private appTitleAsSuffix =
-    this.configService?.config?.featureToggles?.applicationTitleAsSuffix || false;
+  private readonly _appTitleAsSuffix$ =
+    this.configService.getFeatureToggleObservable('applicationTitleAsSuffix');
   private readonly _subscriptions = new Subscription();
   private readonly _hidePageTitle$: Observable<boolean> = this.router.events.pipe(
     startWith(this.router),
@@ -106,7 +106,8 @@ export class PageTitleComponent implements OnInit, AfterViewInit, OnDestroy {
       combineLatest([
         this.router.events.pipe(startWith(null)),
         this.translateService.stream('key'),
-      ]).subscribe(() => {
+        this._appTitleAsSuffix$,
+      ]).subscribe(([, , appTitleAsSuffix]) => {
         const routeTitle =
           this.activatedRoute?.snapshot?.firstChild?.data?.title ||
           this.activatedRoute?.snapshot?.firstChild?.children[0]?.data?.title;
@@ -126,7 +127,7 @@ export class PageTitleComponent implements OnInit, AfterViewInit, OnDestroy {
         if (translatedRouteTitle) {
           this.logger.debug('PageTitle: setTitle translated async', translatedRouteTitle);
           this.translatedTitle$.next(translatedRouteTitle);
-          if (this.appTitleAsSuffix) {
+          if (appTitleAsSuffix) {
             this.titleService.setTitle(translatedRouteTitle + ' - ' + this.appTitle);
           } else {
             this.titleService.setTitle(this.appTitle + ' - ' + translatedRouteTitle);

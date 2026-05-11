@@ -147,6 +147,18 @@ enum MetrolineStepState {
   INVALID = 'invalid',
 }
 
+interface WidgetPersonCardContent {
+  icon?: string;
+  person: {
+    fullName: string;
+    birthDate?: string;
+    bsn?: string;
+    phone?: string;
+    email?: string;
+    city?: string;
+  };
+}
+
 type WidgetDropdownValue = {[key: string]: string};
 
 type WidgetContentProperties =
@@ -157,7 +169,8 @@ type WidgetContentProperties =
   | WidgetFormioContent
   | WidgetCollectionContent
   | WidgetMapContent
-  | WidgetMetrolineContent;
+  | WidgetMetrolineContent
+  | WidgetPersonCardContent;
 
 export {
   WidgetContentProperties,
@@ -174,6 +187,7 @@ export {
   MetrolineOrientation,
   MetrolineStep,
   MetrolineStepState,
+  WidgetPersonCardContent,
   WidgetInteractiveTableEventSearchRequest,
   WidgetFilter,
   WidgetDropdownValue,

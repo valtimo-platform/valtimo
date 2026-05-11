@@ -25,7 +25,7 @@ import {
 } from '@angular/core';
 import {ProcessDefinition, ProcessService} from '@valtimo/process';
 
-import BpmnViewer from 'bpmn-js';
+import NavigatedViewer from 'bpmn-js/lib/NavigatedViewer';
 import {ActivatedRoute} from '@angular/router';
 import {combineLatest} from 'rxjs';
 import {map} from 'rxjs/operators';
@@ -38,7 +38,7 @@ import {PageTitleService} from '@valtimo/components';
   styleUrls: ['./form-link-process-diagram.component.scss'],
 })
 export class FormLinkProcessDiagramComponent implements OnInit, OnDestroy {
-  private bpmnViewer: BpmnViewer;
+  private bpmnViewer: NavigatedViewer;
 
   @ViewChild('ref') public el: ElementRef;
   @Output() public bpmnElementModalOpen: EventEmitter<any> = new EventEmitter();
@@ -82,7 +82,7 @@ export class FormLinkProcessDiagramComponent implements OnInit, OnDestroy {
           this.loadProcessDefinitionFromKey(this.processDefinitionKey);
         }
       });
-    this.bpmnViewer = new BpmnViewer({});
+    this.bpmnViewer = new NavigatedViewer({});
     this.bpmnViewer.on('import.done', ({error}: any) => {
       if (!error) {
         const canvas = this.bpmnViewer.get('canvas') as any;

@@ -21,6 +21,7 @@ import {
   WidgetManagementCustomComponent,
   WidgetManagementFieldsComponent,
   WidgetManagementMapComponent,
+  WidgetManagementPersonCardComponent,
   WidgetManagementMetrolineComponent,
   WidgetManagementTableComponent,
 } from '../components/widget-management/management-content';
@@ -135,6 +136,13 @@ const AVAILABLE_WIDGETS: WidgetTypeSelection[] = [
     illustrationUrl: 'valtimo-layout/img/widget-management/types/metroline.svg',
     type: WidgetType.METROLINE,
     component: WidgetManagementMetrolineComponent,
+  },
+  {
+    titleKey: 'widgetTabManagement.type.person-card.title',
+    descriptionKey: 'widgetTabManagement.type.person-card.description',
+    illustrationUrl: 'valtimo-layout/img/widget-management/types/person.svg',
+    type: WidgetType.PERSON_CARD,
+    component: WidgetManagementPersonCardComponent,
   },
 ];
 
