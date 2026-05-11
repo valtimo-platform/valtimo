@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -35,19 +35,23 @@ public class ValtimoProperties {
 
     private final Process process;
 
+    private final Liquibase liquibase;
+
     @ConstructorBinding
     public ValtimoProperties(
         App app,
         Mandrill mandrill,
         Oauth oauth,
         Portal portal,
-        Process process
+        Process process,
+        Liquibase liquibase
     ) {
         this.app = app != null ? app : new App();
         this.mandrill = mandrill != null ? mandrill : new Mandrill();
         this.oauth = oauth != null ? oauth : new Oauth();
         this.portal = portal != null ? portal : new Portal();
         this.process = process != null ? process : new Process();
+        this.liquibase = liquibase != null ? liquibase : new Liquibase();
         new OauthConfigHolder(this.oauth);
     }
 
@@ -69,6 +73,10 @@ public class ValtimoProperties {
 
     public Process getProcess() {
         return process;
+    }
+
+    public Liquibase getLiquibase() {
+        return liquibase;
     }
 
     public static class App {
@@ -239,4 +247,20 @@ public class ValtimoProperties {
         }
     }
 
+    public static class Liquibase {
+        private int staleLockThresholdMinutes = 30;
+
+        public int getStaleLockThresholdMinutes() {
+            return staleLockThresholdMinutes;
+        }
+
+        public void setStaleLockThresholdMinutes(int staleLockThresholdMinutes) {
+            if (staleLockThresholdMinutes <= 0) {
+                throw new IllegalArgumentException(
+                    "valtimo.liquibase.stale-lock-threshold-minutes must be > 0, was: " + staleLockThresholdMinutes
+                );
+            }
+            this.staleLockThresholdMinutes = staleLockThresholdMinutes;
+        }
+    }
 }
