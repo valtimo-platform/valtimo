@@ -21,7 +21,6 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd">
 
     <include file="20260403-backfill-plugin-definition-key-on-fixed-refs.xml" relativeToChangelogFile="true"/>
-    <include file="20260430-add-task-quick-search-table.xml" relativeToChangelogFile="true"/>
-    <include file="20260505-add-hidden-task-list-column.xml" relativeToChangelogFile="true"/>
+    <include file="20260428-create-admin-settings-tables.xml" relativeToChangelogFile="true"/>
 
 </databaseChangeLog>
