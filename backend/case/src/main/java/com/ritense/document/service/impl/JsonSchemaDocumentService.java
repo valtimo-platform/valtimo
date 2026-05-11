@@ -677,7 +677,7 @@ public class JsonSchemaDocumentService implements DocumentService {
         documentRepository.save(document);
 
         // Publish an event to update the audit log
-        publishDocumentAssigneeChangedEvent(documentId, assignee.getFullName(), null, formerAssigneeId, formerTeamKey);
+        publishDocumentAssigneeChangedEvent(documentId, assignee.getUsername(), assignee.getFullName(), null, formerAssigneeId, formerTeamKey);
 
         outboxService.send(() ->
             new DocumentAssigned(
@@ -752,7 +752,7 @@ public class JsonSchemaDocumentService implements DocumentService {
         documentRepository.save(document);
 
         // Publish an event to update the audit log
-        publishDocumentAssigneeChangedEvent(documentId, assignee.getFullName(), null, formerAssigneeId, formerTeamKey);
+        publishDocumentAssigneeChangedEvent(documentId, assignee.getUsername(), assignee.getFullName(), null, formerAssigneeId, formerTeamKey);
 
         outboxService.send(() ->
             new DocumentAssigned(
@@ -830,7 +830,7 @@ public class JsonSchemaDocumentService implements DocumentService {
         documentRepository.save(document);
 
         // Publish an event to update the audit log
-        publishDocumentAssigneeChangedEvent(documentId, null, teamTitle, formerAssigneeId, formerTeamKey);
+        publishDocumentAssigneeChangedEvent(documentId, null, null, teamTitle, formerAssigneeId, formerTeamKey);
 
         outboxService.send(() ->
             new DocumentUpdated(
@@ -876,6 +876,7 @@ public class JsonSchemaDocumentService implements DocumentService {
         documents.forEach(document -> {
             publishDocumentAssigneeChangedEvent(
                 document.id().getId(),
+                null,
                 null,
                 teamTitle,
                 formerAssigneeIdByDocumentId.get(document.id().getId()),
@@ -1070,6 +1071,7 @@ public class JsonSchemaDocumentService implements DocumentService {
 
     private void publishDocumentAssigneeChangedEvent(
         @LoggableResource(resourceType = JsonSchemaDocument.class) UUID documentId,
+        String assigneeId,
         String assigneeFullName,
         String teamTitle,
         String formerAssigneeId,
@@ -1082,6 +1084,7 @@ public class JsonSchemaDocumentService implements DocumentService {
                 LocalDateTime.now(),
                 AuditHelper.getActor(),
                 documentId,
+                assigneeId,
                 assigneeFullName,
                 teamTitle,
                 formerAssigneeId,
@@ -1240,6 +1243,7 @@ public class JsonSchemaDocumentService implements DocumentService {
         documents.forEach(document -> {
             publishDocumentAssigneeChangedEvent(
                 document.id().getId(),
+                assigneeUsername,
                 assignee.getFullName(),
                 null,
                 formerAssigneeIdByDocumentId.get(document.id().getId()),

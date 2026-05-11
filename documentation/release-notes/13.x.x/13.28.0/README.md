@@ -22,7 +22,6 @@
   [Person card widget documentation](../../../features/case/case-detail/tabs/widgets.md) for the full list of fields
   and a configuration example.
 
-
 ## Enhancements
 
 * **Faster Case Progress tab**
