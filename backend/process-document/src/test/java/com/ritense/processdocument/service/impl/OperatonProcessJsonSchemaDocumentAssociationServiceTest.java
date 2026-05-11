@@ -37,6 +37,7 @@ import com.ritense.valtimo.contract.result.FunctionResult;
 import com.ritense.valtimo.contract.result.OperationError;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import org.operaton.bpm.engine.HistoryService;
 import org.operaton.bpm.engine.RuntimeService;
 import org.junit.jupiter.api.BeforeEach;
@@ -195,10 +196,11 @@ public class OperatonProcessJsonSchemaDocumentAssociationServiceTest extends Bas
 
         // Mock history service
         when(historyService.createHistoricProcessInstanceQuery()).thenReturn(historicProcessInstanceQuery);
-        when(historicProcessInstanceQuery.processInstanceId(processInstanceId.toString())).thenReturn(historicProcessInstanceQuery);
-        when(historicProcessInstanceQuery.singleResult()).thenReturn(historicProcessInstance);
+        when(historicProcessInstanceQuery.processInstanceIds(Set.of(processInstanceId.toString()))).thenReturn(historicProcessInstanceQuery);
+        when(historicProcessInstanceQuery.list()).thenReturn(List.of(historicProcessInstance));
 
         // Mock historic process instance
+        when(historicProcessInstance.getId()).thenReturn(processInstanceId.toString());
         when(historicProcessInstance.getEndTime()).thenReturn(null); // Process is active
         when(historicProcessInstance.getProcessDefinitionKey()).thenReturn("test-process-key");
         when(historicProcessInstance.getStartTime()).thenReturn(java.util.Date.from(java.time.Instant.now()));
@@ -206,7 +208,8 @@ public class OperatonProcessJsonSchemaDocumentAssociationServiceTest extends Bas
         when(historicProcessInstance.getProcessDefinitionVersion()).thenReturn(2);
 
         // Mock repository service
-        when(repositoryService.findProcessDefinition(any())).thenReturn(operatonProcessDefinition);
+        when(repositoryService.findProcessDefinitions(any())).thenReturn(List.of(operatonProcessDefinition));
+        when(operatonProcessDefinition.getKey()).thenReturn("test-process-key");
         when(operatonProcessDefinition.getVersion()).thenReturn(3);
 
         // Mock user management service

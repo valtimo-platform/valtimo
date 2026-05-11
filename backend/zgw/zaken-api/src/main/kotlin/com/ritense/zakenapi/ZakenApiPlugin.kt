@@ -34,6 +34,7 @@ import com.ritense.plugin.service.PluginService
 import com.ritense.processlink.domain.ActivityTypeWithEventName.SERVICE_TASK_START
 import com.ritense.processlink.domain.ActivityTypeWithEventName.USER_TASK_CREATE
 import com.ritense.resource.service.TemporaryResourceStorageService
+import com.ritense.valtimo.contract.authentication.UserManagementService
 import com.ritense.valtimo.contract.document.CaseDocumentResolver
 import com.ritense.valtimo.contract.validation.Url
 import com.ritense.valueresolver.ValueResolverService
@@ -122,7 +123,8 @@ class ZakenApiPlugin(
     private val valueResolverService: ValueResolverService,
     private val objectMapper: ObjectMapper,
     private val zaakNotitieLinkRepository: ZaakNotitieLinkRepository,
-    private val caseDocumentResolver: CaseDocumentResolver
+    private val caseDocumentResolver: CaseDocumentResolver,
+    private val userManagementService: UserManagementService,
 ) {
     @Url
     @PluginProperty(key = URL_PROPERTY, secret = false)
@@ -130,22 +132,6 @@ class ZakenApiPlugin(
 
     @PluginProperty(key = "authenticationPluginConfiguration", secret = false)
     lateinit var authenticationPluginConfiguration: ZakenApiAuthentication
-
-    @PluginProperty(
-        key = "noteEventListenerEnabled",
-        title = "When enabled acts on Note events resulting in create, update or delete of ZaakNotitie",
-        required = false,
-        secret = false
-    )
-    var noteEventListenerEnabled: Boolean = false
-
-    @PluginProperty(
-        key = "noteSubject",
-        title = "Contains the fixed value for 'onderwerp' of the ZaakNotitie",
-        required = false,
-        secret = false
-    )
-    var noteSubject: String = "Note created by Valtimo GZAC"
 
     @PluginAction(
         key = "link-document-to-zaak",
@@ -1427,6 +1413,65 @@ class ZakenApiPlugin(
         return client.getZaak(authenticationPluginConfiguration, zaakUrl)
     }
 
+    /**
+     * Removes every behandelaar rol on the given zaak that was created by GZAC.
+     * Identification is done via the [GZAC_BEHANDELAAR_TOELICHTING] marker on `roltoelichting`,
+     * so behandelaar rollen created by other systems are left untouched.
+     */
+    fun removeGzacBehandelaarRollen(zaakUrl: URI) {
+        getZaakRollen(zaakUrl, RolTypeGeneriekeBeschrijving.BEHANDELAAR)
+            .filter { it.roltoelichting == GZAC_BEHANDELAAR_TOELICHTING }
+            .forEach { rol ->
+                val rolUuid = rol.uuid
+                if (rolUuid == null) {
+                    logger.warn { "Existing behandelaar rol on zaak '$zaakUrl' has no uuid. Skipping delete." }
+                    return@forEach
+                }
+                client.deleteZaakRol(authenticationPluginConfiguration, url, rolUuid)
+            }
+    }
+
+    fun createGzacBehandelaarRol(zaakUrl: URI, roltypeUrl: URI, username: String): Rol {
+        return client.createZaakRol(
+            authentication = authenticationPluginConfiguration,
+            baseUrl = url,
+            rol = buildGzacBehandelaarRol(zaakUrl, roltypeUrl, username),
+        )
+    }
+
+    fun upsertGzacBehandelaarRol(zaakUrl: URI, roltypeUrl: URI, username: String): Rol {
+        val previousRollen = getZaakRollen(zaakUrl, RolTypeGeneriekeBeschrijving.BEHANDELAAR)
+            .filter { it.roltoelichting == GZAC_BEHANDELAAR_TOELICHTING }
+
+        val newRol = createGzacBehandelaarRol(zaakUrl, roltypeUrl, username)
+
+        previousRollen.forEach { rol ->
+            val rolUuid = rol.uuid
+            if (rolUuid == null) {
+                logger.warn { "Existing behandelaar rol on zaak '$zaakUrl' has no uuid. Skipping delete." }
+                return@forEach
+            }
+            client.deleteZaakRol(authenticationPluginConfiguration, url, rolUuid)
+        }
+
+        return newRol
+    }
+
+    private fun buildGzacBehandelaarRol(zaakUrl: URI, roltypeUrl: URI, username: String): Rol {
+        val user = userManagementService.findByUsername(username)
+        return Rol(
+            zaak = zaakUrl,
+            roltype = roltypeUrl,
+            roltoelichting = GZAC_BEHANDELAAR_TOELICHTING,
+            betrokkeneType = BetrokkeneType.MEDEWERKER,
+            betrokkeneIdentificatie = RolMedewerker(
+                identificatie = username.take(IDENTIFICATIE_MAX_LENGTH),
+                achternaam = user?.lastName,
+            ),
+            beginGeldigheid = LocalDate.now(),
+        )
+    }
+
     fun searchZaken(searchParameters: List<SearchParameter>, pageable: Pageable): Page<ZaakResponse> {
         logger.debug { "Searching zaken with query '$searchParameters'" }
         return client.searchZaken(authenticationPluginConfiguration, url, searchParameters, pageable)
@@ -1651,6 +1696,12 @@ class ZakenApiPlugin(
         const val URL_PROPERTY = "url"
         const val RESOURCE_ID_PROCESS_VAR = "resourceId"
         const val DOCUMENT_URL_PROCESS_VAR = "documentUrl"
+
+        // Marker stored in roltoelichting so we only delete behandelaar rollen created by GZAC.
+        const val GZAC_BEHANDELAAR_TOELICHTING = "GZAC dossier assignee"
+
+        // RolMedewerker.identificatie has a max length of 24 in the OpenZaak API.
+        private const val IDENTIFICATIE_MAX_LENGTH = 24
 
         fun findConfigurationByUrl(url: URI) = { properties: JsonNode ->
             url.toString().startsWith(properties[URL_PROPERTY].textValue())

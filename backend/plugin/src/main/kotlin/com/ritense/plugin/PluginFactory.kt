@@ -25,6 +25,7 @@ import com.ritense.plugin.domain.PluginConfiguration
 import com.ritense.plugin.domain.PluginConfigurationId
 import com.ritense.plugin.domain.PluginProperty
 import com.ritense.plugin.service.PluginService
+import io.github.oshai.kotlinlogging.KotlinLogging
 import org.apache.commons.lang3.reflect.FieldUtils
 import java.util.UUID
 import kotlin.reflect.KClass
@@ -90,7 +91,13 @@ abstract class PluginFactory<T : Any>(
             }
 
             val propertyDefinition = pluginDefinition.findPluginProperty(configuredPropertyEntry.key)
-                ?: throw IllegalStateException("Error while creating plugin '${configuration.title}'. Unknown property '${configuredPropertyEntry.key}'.")
+            if (propertyDefinition == null) {
+                logger.error {
+                    "Ignoring unknown property '${configuredPropertyEntry.key}' on plugin '${configuration.title}'. " +
+                        "It is no longer defined by plugin '${pluginDefinition.key}' and can be removed from the configuration."
+                }
+                continue
+            }
 
             setProperty(instance, propertyDefinition, configuredPropertyEntry.value, mapper)
         }
@@ -140,5 +147,9 @@ abstract class PluginFactory<T : Any>(
     ): JavaType {
         val field = pluginClass.memberProperties.single { field -> field.name == fieldName }
         return mapper.constructType(field.returnType.javaType)
+    }
+
+    private companion object {
+        private val logger = KotlinLogging.logger {}
     }
 }

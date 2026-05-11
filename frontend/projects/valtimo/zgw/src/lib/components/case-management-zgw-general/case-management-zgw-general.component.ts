@@ -17,6 +17,7 @@ import {CommonModule} from '@angular/common';
 import {ChangeDetectionStrategy, Component} from '@angular/core';
 import {MuuriDirectiveModule} from '@valtimo/components';
 import {
+  CaseZakenApiSyncComponent,
   DocumentenApiVersionComponent,
   DocumentObjectenApiSyncComponent,
   ZakenApiZaaktypeLinkComponent,
@@ -29,6 +30,7 @@ import {
   standalone: true,
   imports: [
     CommonModule,
+    CaseZakenApiSyncComponent,
     ZakenApiZaaktypeLinkComponent,
     DocumentObjectenApiSyncComponent,
     MuuriDirectiveModule,
