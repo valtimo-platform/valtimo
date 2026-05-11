@@ -34,3 +34,9 @@
 ## Bugfixes
 
 * When a header widget was configured, it was not possible to edit the header widget.
+
+* **Recover from stuck migration locks**
+
+  If an application instance was killed mid-migration, the migration lock could stay held and
+  prevent other instances from starting. Valtimo now releases such stale locks automatically on
+  startup and on graceful shutdown.
