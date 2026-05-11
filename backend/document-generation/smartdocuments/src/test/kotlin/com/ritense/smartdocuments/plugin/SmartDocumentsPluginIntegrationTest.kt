@@ -130,7 +130,7 @@ class SmartDocumentsPluginIntegrationTest @Autowired constructor(
         // then
         val requestBody =
             findRequestBody(HttpMethod.POST, "/wsxmldeposit/deposit/unattended", SmartDocumentsRequest::class.java)
-        assertThat(requestBody.smartDocument.selection.templateGroup).isNotEqualTo("test-template-group")
+        assertThat(requestBody.smartDocument.selection.templateGroup).isEqualTo("test-template-group")
         assertThat(requestBody.smartDocument.selection.template).isEqualTo("test-template-name")
         assertThat(requestBody.customerData).isEqualTo(
             mapOf(

@@ -31,7 +31,6 @@ import {
   UserIdentity,
   UserSettings,
   UserSettingsService,
-  ValtimoConfig,
   VERSIONS,
 } from '@valtimo/shared';
 import {UserProviderService} from '@valtimo/security';
@@ -124,13 +123,17 @@ export class RightSidebarComponent implements OnInit, OnDestroy {
   );
 
   public overrideFeedbackMenuItemToMailTo!: FeedbackMailTo;
-  public allowUserThemeSwitching = true;
-  public enableCompactModeToggle = true;
-  public enableShowUserNameToggle = false;
-  public showPlantATreeButton = false;
+  public readonly allowUserThemeSwitching$ =
+    this.configService.getFeatureToggleObservable('allowUserThemeSwitching', true);
+  public readonly enableCompactModeToggle$ =
+    this.configService.getFeatureToggleObservable('enableCompactModeToggle', true);
+  public readonly enableShowUserNameToggle$ =
+    this.configService.getFeatureToggleObservable('enableUserNameInTopBarToggle');
+  public readonly showPlantATreeButton$ =
+    this.configService.getFeatureToggleObservable('showPlantATreeButton');
+  public readonly hideValtimoVersionsForNonAdmins$ =
+    this.configService.getFeatureToggleObservable('hideValtimoVersionsForNonAdmins');
   public resetUrl!: string;
-
-  private _hideValtimoVersionsForNonAdmins = false;
 
   private readonly _isAdmin$: Observable<boolean> = this.userProviderService
     .getUserSubject()
@@ -152,7 +155,7 @@ export class RightSidebarComponent implements OnInit, OnDestroy {
   ) {}
 
   public ngOnInit(): void {
-    this.initSettings();
+    this.initNonToggleSettings();
     this.initFrontendVersion();
     this.openShowVersionsSubscription();
     this.setLanguage();
@@ -209,18 +212,16 @@ export class RightSidebarComponent implements OnInit, OnDestroy {
     selectedTheme: string | {item?: {key?: string}},
     saveSettings = true
   ): void {
-    if (this.allowUserThemeSwitching) {
-      if ((selectedTheme as any)?.item?.key) {
-        this.cdsThemeService.setPreferredTheme(
-          (selectedTheme as any).item?.key as SelectableCarbonTheme
-        );
-      } else {
-        this.cdsThemeService.setPreferredTheme(selectedTheme as SelectableCarbonTheme);
-      }
+    if ((selectedTheme as any)?.item?.key) {
+      this.cdsThemeService.setPreferredTheme(
+        (selectedTheme as any).item?.key as SelectableCarbonTheme
+      );
+    } else {
+      this.cdsThemeService.setPreferredTheme(selectedTheme as SelectableCarbonTheme);
+    }
 
-      if (saveSettings) {
-        this.saveUserSettings();
-      }
+    if (saveSettings) {
+      this.saveUserSettings();
     }
   }
 
@@ -228,27 +229,10 @@ export class RightSidebarComponent implements OnInit, OnDestroy {
     this.userProviderService.logout();
   }
 
-  private initSettings(): void {
-    const config: ValtimoConfig = this.configService?.config;
-    const featureToggles = config?.featureToggles || {};
-
+  private initNonToggleSettings(): void {
+    const config = this.configService?.config;
     this.resetUrl = config?.changePasswordUrl?.endpointUri;
     this.overrideFeedbackMenuItemToMailTo = config?.overrideFeedbackMenuItemToMailTo;
-
-    this.enableShowUserNameToggle = !!featureToggles.enableUserNameInTopBarToggle;
-    this.showPlantATreeButton = !!featureToggles.showPlantATreeButton;
-
-    if (featureToggles.hasOwnProperty('allowUserThemeSwitching')) {
-      this.allowUserThemeSwitching = !!featureToggles.allowUserThemeSwitching;
-    }
-
-    if (featureToggles.hasOwnProperty('enableCompactModeToggle')) {
-      this.enableCompactModeToggle = !!featureToggles.enableCompactModeToggle;
-    }
-
-    if (featureToggles.hasOwnProperty('hideValtimoVersionsForNonAdmins')) {
-      this._hideValtimoVersionsForNonAdmins = !!featureToggles.hideValtimoVersionsForNonAdmins;
-    }
   }
 
   private initFrontendVersion(): void {
@@ -293,6 +277,9 @@ export class RightSidebarComponent implements OnInit, OnDestroy {
       this.compactMode$,
       this.showUserNameInTopBar$,
       this._preferredTheme$,
+      this.enableCompactModeToggle$,
+      this.enableShowUserNameToggle$,
+      this.allowUserThemeSwitching$,
     ])
       .pipe(
         take(1),
@@ -303,13 +290,16 @@ export class RightSidebarComponent implements OnInit, OnDestroy {
             compactMode,
             showUserNameInTopBar,
             preferredTheme,
+            enableCompactModeToggle,
+            enableShowUserNameToggle,
+            allowUserThemeSwitching,
           ]) =>
             this.userSettingsService.saveUserSettings({
               collapsibleWidescreenMenu,
               languageCode,
-              ...(this.enableCompactModeToggle && {compactMode}),
-              ...(this.enableShowUserNameToggle && {showUserNameInTopBar}),
-              ...(this.allowUserThemeSwitching && {preferredTheme}),
+              ...(enableCompactModeToggle && {compactMode}),
+              ...(enableShowUserNameToggle && {showUserNameInTopBar}),
+              ...(allowUserThemeSwitching && {preferredTheme}),
             })
         )
       )
@@ -322,20 +312,29 @@ export class RightSidebarComponent implements OnInit, OnDestroy {
     this._selectedLanguage$.next(settings.languageCode);
     this.updateUserLanguage(settings.languageCode, false);
     this.setCollapsibleWidescreenMenu(settings.collapsibleWidescreenMenu, false);
-    if (this.enableCompactModeToggle) this.setCompactMode(settings.compactMode, false);
-    if (this.enableShowUserNameToggle) this.setShowUserName(settings.showUserNameInTopBar, false);
-    if (settings.preferredTheme && this.allowUserThemeSwitching) {
-      this.setPreferredTheme(settings.preferredTheme, false);
-    }
+
+    combineLatest([
+      this.enableCompactModeToggle$,
+      this.enableShowUserNameToggle$,
+      this.allowUserThemeSwitching$,
+    ])
+      .pipe(take(1))
+      .subscribe(([enableCompactModeToggle, enableShowUserNameToggle, allowUserThemeSwitching]) => {
+        if (enableCompactModeToggle) this.setCompactMode(settings.compactMode, false);
+        if (enableShowUserNameToggle) this.setShowUserName(settings.showUserNameInTopBar, false);
+        if (settings.preferredTheme && allowUserThemeSwitching) {
+          this.setPreferredTheme(settings.preferredTheme, false);
+        }
+      });
   }
 
   private openShowVersionsSubscription(): void {
     this._subscriptions.add(
-      this._isAdmin$.subscribe(isAdmin => {
-        if (this._hideValtimoVersionsForNonAdmins && !isAdmin) {
-          this.showValtimoVersions = false;
+      combineLatest([this._isAdmin$, this.hideValtimoVersionsForNonAdmins$]).subscribe(
+        ([isAdmin, hideForNonAdmins]) => {
+          this.showValtimoVersions = !(hideForNonAdmins && !isAdmin);
         }
-      })
+      )
     );
   }
 }
