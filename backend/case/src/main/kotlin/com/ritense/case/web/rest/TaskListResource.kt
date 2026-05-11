@@ -98,7 +98,6 @@ class TaskListResource(
     }
 
     @GetMapping("/v1/case/{caseDefinitionName}/hidden-task-list-column")
-    @RunWithoutAuthorization
     fun getHiddenTaskListColumns(
         @LoggableResource("documentDefinitionName") @PathVariable caseDefinitionName: String
     ): ResponseEntity<List<TaskListColumnDto>> {
@@ -107,7 +106,6 @@ class TaskListResource(
     }
 
     @PostMapping("/v1/case/{caseDefinitionName}/hidden-task-list-column")
-    @RunWithoutAuthorization
     fun saveHiddenTaskListColumns(
         @LoggableResource("documentDefinitionName") @PathVariable caseDefinitionName: String,
         @RequestBody hiddenTaskListColumnDtoList: List<HiddenTaskListColumnDto>
