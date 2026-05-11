@@ -124,6 +124,6 @@ class CallDepthExecutionListenerTest {
         val process = ValtimoProperties.Process().apply {
             this.callDepthWarningThreshold = callDepthWarningThreshold
         }
-        return ValtimoProperties(null, null, null, null, process)
+        return ValtimoProperties(null, null, null, null, process, null)
     }
 }

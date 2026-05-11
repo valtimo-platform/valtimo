@@ -95,7 +95,9 @@ export class IkoManagementRepositoryModalComponent {
     return this.formGroup.get('title') as AbstractControl<string>;
   }
 
-  public enableIkoType = false;
+  public get enableIkoType(): boolean {
+    return this.configService.getFeatureToggle('enableIkoType');
+  }
   public readonly disabled$ = new BehaviorSubject(true);
   private readonly _ikoRepositoryTypes$ = this.ikoManagementApiService.getIkoRepositoryTypes();
 
@@ -131,7 +133,6 @@ export class IkoManagementRepositoryModalComponent {
     private readonly ikoManagementApiService: IkoManagementApiService,
     private readonly configService: ConfigService
   ) {
-    this.enableIkoType = this.configService.getFeatureToggle('enableIkoType');
     if (this.enableIkoType) {
       this.formGroup.get('type').enable({emitEvent: false});
     }

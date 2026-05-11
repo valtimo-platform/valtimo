@@ -190,6 +190,18 @@ const WIDGET_COLOR_THEME_MAP: Record<WidgetColor, WidgetColorTheme> = {
   },
 };
 
+const AVATAR_COLOR_PALETTE: WidgetColor[] = [
+  WidgetColor.BLUE,
+  WidgetColor.PERIWINKLE,
+  WidgetColor.PURPLE,
+  WidgetColor.TURQOISE,
+  WidgetColor.GREEN,
+  WidgetColor.BROWN,
+  WidgetColor.RED,
+  WidgetColor.ORANGE,
+  WidgetColor.YELLOW,
+];
+
 const WIDGET_COLOR_ILLUSTRATION_MAP: Record<WidgetColor, string> = {
   [WidgetColor.YELLOW]: 'valtimo-layout/img/widget-management/color/yellow.svg',
   [WidgetColor.ORANGE]: 'valtimo-layout/img/widget-management/color/orange.svg',
@@ -205,6 +217,7 @@ const WIDGET_COLOR_ILLUSTRATION_MAP: Record<WidgetColor, string> = {
 };
 
 export {
+  AVATAR_COLOR_PALETTE,
   WIDGET_COLOR_ILLUSTRATION_MAP,
   WIDGET_COLOR_ITEMS,
   WIDGET_COLOR_THEME_MAP,

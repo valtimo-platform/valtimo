@@ -33,6 +33,7 @@ import org.apache.commons.io.FilenameUtils
 import org.springframework.core.io.Resource
 import org.springframework.http.converter.ResourceHttpMessageConverter
 import org.springframework.stereotype.Component
+import org.springframework.web.client.HttpClientErrorException
 import org.springframework.web.client.RestClient
 import org.springframework.web.client.body
 import java.io.InputStream
@@ -57,13 +58,11 @@ class SmartDocumentsClient(
     }
 
     fun generateDocument(authentication: SmartDocumentsAuthentication, smartDocumentsRequest: SmartDocumentsRequest): FilesResponse {
-        return restClient(authentication)
-            .post()
-            .uri { it.pathSegment("wsxmldeposit", "deposit", "unattended").build() }
-            .contentType(APPLICATION_JSON_UTF8)
-            .body(fixRequest(smartDocumentsRequest))
-            .retrieve()
-            .body<FilesResponse>()!!
+        return try {
+            postDepositForFiles(authentication, smartDocumentsRequest)
+        } catch (e: HttpClientErrorException.BadRequest) {
+            postDepositForFiles(authentication, fixRequest(smartDocumentsRequest))
+        }
     }
 
     fun generateDocumentStream(
@@ -72,13 +71,11 @@ class SmartDocumentsClient(
         outputFormat: DocumentFormatOption,
     ): FileStreamResponse {
         // Stream complete response (json) to a Resource
-        val result = restClient(authentication)
-            .post()
-            .uri { it.pathSegment("wsxmldeposit", "deposit", "unattended").build() }
-            .contentType(APPLICATION_JSON_UTF8)
-            .body(fixRequest(smartDocumentsRequest))
-            .retrieve()
-            .body<Resource>()!!
+        val result = try {
+            postDepositForResource(authentication, smartDocumentsRequest)
+        } catch (e: HttpClientErrorException.BadRequest) {
+            postDepositForResource(authentication, fixRequest(smartDocumentsRequest))
+        }
 
         val responseResourceId = temporaryResourceStorageService.store(result.inputStream)
         val parsedResponse = temporaryResourceStorageService.getResourceContentAsInputStream(responseResourceId)
@@ -94,9 +91,35 @@ class SmartDocumentsClient(
         )
     }
 
+    private fun postDepositForFiles(
+        authentication: SmartDocumentsAuthentication,
+        smartDocumentsRequest: SmartDocumentsRequest,
+    ): FilesResponse {
+        return restClient(authentication)
+            .post()
+            .uri { it.pathSegment("wsxmldeposit", "deposit", "unattended").build() }
+            .contentType(APPLICATION_JSON_UTF8)
+            .body(smartDocumentsRequest)
+            .retrieve()
+            .body<FilesResponse>()!!
+    }
+
+    private fun postDepositForResource(
+        authentication: SmartDocumentsAuthentication,
+        smartDocumentsRequest: SmartDocumentsRequest,
+    ): Resource {
+        return restClient(authentication)
+            .post()
+            .uri { it.pathSegment("wsxmldeposit", "deposit", "unattended").build() }
+            .contentType(APPLICATION_JSON_UTF8)
+            .body(smartDocumentsRequest)
+            .retrieve()
+            .body<Resource>()!!
+    }
+
+    // Fallback for older SmartDocuments versions that reject an existing templateGroup.
+    // Newer versions (2026.2.x+) validate the templateGroup, so we only apply this on a 400.
     private fun fixRequest(smartDocumentsRequest: SmartDocumentsRequest): SmartDocumentsRequest {
-        // Bugfix: SmartDocuments throws an error when using an existing templateGroup
-        // Note: The templateGroup doesn't have to exist in SmartDocuments for it to generate a document
         return smartDocumentsRequest.copy(
             smartDocument = smartDocumentsRequest.smartDocument.copy(
                 selection = smartDocumentsRequest.smartDocument.selection.copy(

@@ -22,6 +22,7 @@ import {
   WidgetFieldsContent,
   WidgetInteractiveTableContent,
   WidgetMapContent,
+  WidgetPersonCardContent,
   WidgetTableContent,
 } from './widget-content.model';
 import {WidgetDisplayType} from './widget-display.model';
@@ -35,6 +36,7 @@ enum WidgetType {
   FORMIO = 'formio',
   DIVIDER = 'divider',
   MAP = 'map',
+  PERSON_CARD = 'person-card',
 }
 
 enum WidgetColor {
@@ -65,6 +67,7 @@ interface WidgetAction {
   processDefinitionKey?: string;
   caseDefinitionKey?: string;
   navigateTo?: string;
+  openInNewTab?: boolean;
 }
 
 interface BasicWidget {
@@ -145,6 +148,11 @@ interface MapWidget extends BasicWidget {
   properties: WidgetMapContent;
 }
 
+interface PersonCardWidget extends BasicWidget {
+  type: WidgetType.PERSON_CARD;
+  properties: WidgetPersonCardContent;
+}
+
 type Widget =
   | FieldsWidget
   | CollectionWidget
@@ -153,7 +161,8 @@ type Widget =
   | InteractiveTableWidget
   | FormioWidget
   | DividerWidget
-  | MapWidget;
+  | MapWidget
+  | PersonCardWidget;
 
 type WidgetWithUuid = Widget & {
   uuid: string;
@@ -221,7 +230,8 @@ interface WidgetGroup {
   widgets: Widget[];
 }
 
-type WidgetComponentMap = Record<Exclude<WidgetType, WidgetType.DIVIDER>, Type<any>>;
+type WidgetComponentMap = Record<Exclude<WidgetType, WidgetType.DIVIDER | WidgetType.PERSON_CARD>, Type<any>> &
+  Partial<Record<WidgetType.PERSON_CARD, Type<any>>>;
 
 type WidgetContext = 'case' | 'iko';
 
@@ -250,6 +260,7 @@ export {
   TableWidget,
   InteractiveTableWidget,
   MapWidget,
+  PersonCardWidget,
   WidgetPackResultItem,
   WidgetPackResultItemsByRow,
   FormioWidgetWidgetWithUuid,
