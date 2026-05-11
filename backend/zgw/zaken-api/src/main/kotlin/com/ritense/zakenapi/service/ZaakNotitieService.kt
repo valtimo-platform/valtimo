@@ -37,7 +37,7 @@ class ZaakNotitieService(
     private val zaakNotitieLinkRepository: ZaakNotitieLinkRepository
 ) {
 
-    fun createZaakNotitieFrom(event: NoteCreatedEvent) {
+    fun createZaakNotitieFrom(event: NoteCreatedEvent, noteSubject: String) {
         logger.info {
             "Trying to create ZaakNotitie from NoteCreatedEvent for " +
                 "Note(id=${event.noteId}, documentId=${event.noteDocumentId})"
@@ -47,7 +47,7 @@ class ZaakNotitieService(
             if (!zaakNotitieLinkRepository.existsByNoteId(event.noteId)) {
                 zakenApiPluginInstanceFor(zaakUrl)?.let { zakenApiPlugin ->
                     zakenApiPlugin.createZaakNotitie(
-                        onderwerp = zakenApiPlugin.noteSubject,
+                        onderwerp = noteSubject,
                         tekst = event.noteContent!!,
                         zaakUrl = zaakUrl,
                         aangemaaktDoor = event.noteCreatedByUserFullName
@@ -73,7 +73,7 @@ class ZaakNotitieService(
         }
     }
 
-    fun updateZaakNotitieFrom(event: NoteUpdatedEvent) {
+    fun updateZaakNotitieFrom(event: NoteUpdatedEvent, noteSubject: String) {
         logger.info {
             "Trying to update ZaakNotitie from NoteUpdatedEvent for " +
                 "Note(id=${event.noteId}, documentId=${event.noteDocumentId})"
@@ -85,7 +85,7 @@ class ZaakNotitieService(
                     zakenApiPluginInstanceFor(zaakUrl)?.let { zakenApiPlugin ->
                         zakenApiPlugin.updateZaakNotitie(
                             zaakNotitieUrl = zaakNotitieLink.zaakNotitieUrl,
-                            onderwerp = zakenApiPlugin.noteSubject,
+                            onderwerp = noteSubject,
                             tekst = event.noteContent!!,
                             zaakUrl = zaakUrl
                         ).also {

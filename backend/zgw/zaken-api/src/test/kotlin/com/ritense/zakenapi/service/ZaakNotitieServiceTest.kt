@@ -54,9 +54,7 @@ internal class ZaakNotitieServiceTest {
 
     @Before
     fun setup() {
-        zakenApiPlugin = mock {
-            on { this.noteSubject } doReturn noteSubject()
-        }
+        zakenApiPlugin = mock()
         zaakUrlProvider = mock {
             on { getZaakUrl(eq(documentId())) } doReturn zaakUrl()
         }
@@ -93,7 +91,7 @@ internal class ZaakNotitieServiceTest {
             .thenReturn(false)
 
         // when
-        zaakNotitieService.createZaakNotitieFrom(event)
+        zaakNotitieService.createZaakNotitieFrom(event, noteSubject())
 
         // then
         verify(zakenApiPlugin).createZaakNotitie(
@@ -120,7 +118,7 @@ internal class ZaakNotitieServiceTest {
         whenever(zaakNotitieLinkRepository.existsByNoteId(event.noteId))
             .thenReturn(true)
 
-        zaakNotitieService.createZaakNotitieFrom(event)
+        zaakNotitieService.createZaakNotitieFrom(event, noteSubject())
 
         verifyNoInteractions(pluginService)
         verify(zaakNotitieLinkRepository, never()).save(any())
@@ -150,7 +148,7 @@ internal class ZaakNotitieServiceTest {
             .thenReturn(zaakNotitieLink)
 
         // when
-        zaakNotitieService.updateZaakNotitieFrom(event)
+        zaakNotitieService.updateZaakNotitieFrom(event, noteSubject())
 
         // then
         verify(zakenApiPlugin).updateZaakNotitie(
@@ -173,7 +171,7 @@ internal class ZaakNotitieServiceTest {
             .thenReturn(false)
 
         // when
-        zaakNotitieService.updateZaakNotitieFrom(event)
+        zaakNotitieService.updateZaakNotitieFrom(event, noteSubject())
 
         // then
         verifyNoInteractions(pluginService)
