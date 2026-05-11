@@ -21,14 +21,13 @@ import {map, Observable, startWith, switchMap} from 'rxjs';
 import {ActivatedRoute, Router} from '@angular/router';
 import {PageHeaderService, PageTitleService} from '../../services';
 import {RenderPageSubtitleDirective} from '../../directives/render-page-subtitle/render-page-subtitle.directive';
-import {RenderPageHeaderDirective} from '../../directives/render-page-header/render-page-header.directive';
 
 @Component({
   selector: 'valtimo-page-subtitle',
   templateUrl: './page-subtitle.component.html',
   styleUrls: ['./page-subtitle.component.scss'],
   standalone: true,
-  imports: [CommonModule, SkeletonModule, RenderPageSubtitleDirective, RenderPageHeaderDirective],
+  imports: [CommonModule, SkeletonModule, RenderPageSubtitleDirective],
   encapsulation: ViewEncapsulation.None,
 })
 export class PageSubtitleComponent {
