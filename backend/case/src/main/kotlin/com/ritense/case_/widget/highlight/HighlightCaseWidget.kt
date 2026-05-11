@@ -14,12 +14,13 @@
  * limitations under the License.
  */
 
-package com.ritense.widget.highlight
+package com.ritense.case_.widget.highlight
 
 import com.fasterxml.jackson.annotation.JsonIgnore
+import com.ritense.case_.domain.tab.CaseWidgetTabWidget
+import com.ritense.case_.domain.tab.CaseWidgetTabWidgetId
 import com.ritense.valtimo.contract.annotation.AllOpen
 import com.ritense.valtimo.contract.conditions.Condition
-import com.ritense.widget.domain.Widget
 import com.ritense.widget.domain.WidgetAction
 import com.ritense.widget.domain.WidgetColor
 import io.hypersistence.utils.hibernate.type.json.JsonType
@@ -27,45 +28,30 @@ import jakarta.persistence.Column
 import jakarta.persistence.DiscriminatorValue
 import jakarta.persistence.Entity
 import org.hibernate.annotations.Type
-import java.util.UUID
 
 @AllOpen
 @Entity
 @DiscriminatorValue("highlight")
-class HighlightWidget(
-    id: UUID = UUID.randomUUID(),
-    key: String,
+class HighlightCaseWidget(
+    id: CaseWidgetTabWidgetId,
     title: String,
     icon: String? = null,
     color: WidgetColor = WidgetColor.WHITE,
     order: Int,
     width: Int,
     highContrast: Boolean,
-    isCompact: Boolean? = null,
-    actions: List<WidgetAction> = emptyList(),
-    displayConditions: List<Condition<*>> = emptyList(),
+    isCompact: Boolean?,
+    actions: List<WidgetAction>,
+    displayConditions: List<Condition<*>>,
 
     @Type(value = JsonType::class)
     @Column(name = "properties", nullable = false)
     val properties: HighlightWidgetProperties
-) : Widget(
-    id, key, title, icon, color, order, width, highContrast, isCompact, actions, displayConditions
+) : CaseWidgetTabWidget(
+    id, title, icon, color, order, width, highContrast, isCompact, actions, displayConditions
 ) {
-    override fun copy(
-        id: UUID,
-        key: String,
-        title: String,
-        icon: String?,
-        color: WidgetColor,
-        order: Int,
-        width: Int,
-        highContrast: Boolean,
-        isCompact: Boolean?,
-        actions: List<WidgetAction>,
-        displayConditions: List<Condition<*>>,
-    ) = HighlightWidget(
+    override fun copy(id: CaseWidgetTabWidgetId) = HighlightCaseWidget(
         id = id,
-        key = key,
         title = title,
         icon = icon,
         color = color,
@@ -75,20 +61,7 @@ class HighlightWidget(
         isCompact = isCompact,
         actions = actions,
         displayConditions = displayConditions,
-        properties = properties,
-    )
-
-    override fun toDto() = HighlightWidgetDto(
-        key = this.key,
-        title = this.title,
-        icon = this.icon,
-        color = this.color,
-        width = this.width,
-        highContrast = this.highContrast,
-        isCompact = this.isCompact,
-        actions = this.actions,
-        displayConditions = this.displayConditions,
-        properties = this.properties,
+        properties = properties
     )
 
     @JsonIgnore

@@ -50,6 +50,8 @@ import com.ritense.case_.widget.custom.CustomCaseWidgetMapper
 import com.ritense.case_.widget.divider.DividerCaseWidgetMapper
 import com.ritense.case_.widget.fields.FieldsCaseWidgetDataProvider
 import com.ritense.case_.widget.fields.FieldsCaseWidgetMapper
+import com.ritense.case_.widget.highlight.HighlightCaseWidgetDataProvider
+import com.ritense.case_.widget.highlight.HighlightCaseWidgetMapper
 import com.ritense.case_.widget.fieldsheader.FieldsCaseHeaderWidgetDataProvider
 import com.ritense.case_.widget.map.MapCaseWidgetDataProvider
 import com.ritense.case_.widget.map.MapCaseWidgetMapper
@@ -215,6 +217,16 @@ class CaseWidgetAutoConfiguration {
     fun customCaseWidgetDataProvider(
         valueResolverService: ValueResolverService,
     ) = CustomCaseWidgetDataProvider(valueResolverService)
+
+    @ConditionalOnMissingBean(HighlightCaseWidgetMapper::class)
+    @Bean
+    fun highlightCaseWidgetMapper() = HighlightCaseWidgetMapper()
+
+    @ConditionalOnMissingBean(HighlightCaseWidgetDataProvider::class)
+    @Bean
+    fun highlightCaseWidgetDataProvider(
+        valueResolverService: ValueResolverService,
+    ) = HighlightCaseWidgetDataProvider(valueResolverService)
 
     @ConditionalOnMissingBean(DividerCaseWidgetMapper::class)
     @Bean

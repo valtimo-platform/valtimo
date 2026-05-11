@@ -14,20 +14,17 @@
  * limitations under the License.
  */
 
-package com.ritense.widget.highlight
+package com.ritense.case_.widget.highlight
 
 import com.fasterxml.jackson.annotation.JsonTypeName
+import com.ritense.case_.rest.dto.CaseWidgetTabWidgetDto
 import com.ritense.valtimo.contract.conditions.Condition
-import com.ritense.widget.domain.Widget
 import com.ritense.widget.domain.WidgetAction
 import com.ritense.widget.domain.WidgetColor
-import com.ritense.widget.domain.resolveWidgetColor
-import com.ritense.widget.web.rest.dto.WidgetDto
 import jakarta.validation.Valid
-import java.util.UUID
 
 @JsonTypeName("highlight")
-data class HighlightWidgetDto(
+data class HighlightCaseWidgetDto(
     override val key: String,
     override val title: String,
     override val icon: String?,
@@ -35,22 +32,7 @@ data class HighlightWidgetDto(
     override val width: Int,
     override val highContrast: Boolean,
     override val isCompact: Boolean?,
-    override val actions: List<WidgetAction> = emptyList(),
+    override val actions: List<WidgetAction>? = emptyList(),
     override val displayConditions: List<Condition<*>> = emptyList(),
     @field:Valid val properties: HighlightWidgetProperties
-) : WidgetDto {
-    override fun toEntity(id: UUID, order: Int): Widget = HighlightWidget(
-        id = id,
-        key = key,
-        title = title,
-        icon = icon,
-        color = resolveWidgetColor(color, highContrast),
-        width = width,
-        order = order,
-        highContrast = highContrast,
-        isCompact = isCompact,
-        actions = actions,
-        displayConditions = displayConditions,
-        properties = properties,
-    )
-}
+) : CaseWidgetTabWidgetDto

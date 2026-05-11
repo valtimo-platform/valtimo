@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.ritense.widget.highlight
+package com.ritense.case_.widget.highlight
 
 import com.fasterxml.jackson.annotation.JsonValue
 import jakarta.validation.Valid

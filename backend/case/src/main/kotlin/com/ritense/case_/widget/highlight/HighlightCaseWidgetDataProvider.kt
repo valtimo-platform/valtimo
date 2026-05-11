@@ -14,20 +14,34 @@
  * limitations under the License.
  */
 
-package com.ritense.widget.highlight
+package com.ritense.case_.widget.highlight
 
 import com.fasterxml.jackson.databind.node.ArrayNode
+import com.ritense.case_.widget.CaseWidgetDataProvider
+import com.ritense.valtimo.contract.case_.CaseDefinitionId
+import com.ritense.valueresolver.ValueResolverPropertyKey.Companion.DOCUMENT_ID
+import com.ritense.valueresolver.ValueResolverPropertyKey.Companion.PAGEABLE
 import com.ritense.valueresolver.ValueResolverService
-import com.ritense.widget.WidgetDataProvider
+import java.util.UUID
+import org.springframework.data.domain.Pageable
 
-class HighlightWidgetDataProvider(
+class HighlightCaseWidgetDataProvider(
     private val valueResolverService: ValueResolverService,
-) : WidgetDataProvider<HighlightWidget> {
+) : CaseWidgetDataProvider {
 
-    override fun supportedWidgetType() = HighlightWidget::class.java
+    override fun supports(widget: Any): Boolean = widget is HighlightCaseWidget
 
-    override fun getData(widget: HighlightWidget, properties: Map<String, Any>): Any {
-        val resolvedValues = valueResolverService.resolveValues(properties, widget.getUnresolvedValues())
+    override fun getData(
+        documentId: UUID,
+        widget: Any,
+        pageable: Pageable,
+        caseDefinitionId: CaseDefinitionId
+    ): Any {
+        widget as HighlightCaseWidget
+        val resolvedValues = valueResolverService.resolveValues(
+            mapOf(DOCUMENT_ID to documentId.toString(), PAGEABLE to pageable),
+            widget.getUnresolvedValues()
+        )
         val rawValue = resolvedValues[widget.properties.value]
 
         val transformedValue = when (widget.properties.displayProperties.type) {
