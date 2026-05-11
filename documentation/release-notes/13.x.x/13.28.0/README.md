@@ -14,8 +14,20 @@
   See the [Map widget documentation](../../../features/case/tabs/widgets.md) for the full list of recognised fields and
   a configuration example.
 
+* **Person card widget**
+
+  A new `person-card` widget type displays personal data for a single person (full name, birthdate, BSN, phone, email
+  and city) in a compact card format on the case detail page. Field values are configured as JSON paths into the case
+  document, and only the full name is required — empty fields are hidden in the rendered card. See the
+  [Person card widget documentation](../../../features/case/case-detail/tabs/widgets.md) for the full list of fields
+  and a configuration example.
 
 ## Enhancements
+
+* **Faster Case Progress tab**
+
+  The Progress tab on the case details page now loads noticeably faster, especially for cases with many associated
+  processes.
 
 * **Open widget link in a new browser tab**
 
@@ -25,4 +37,11 @@
 
 ## Bugfixes
 
+* SmartDocuments compatibility with newer SmartDocuments versions.
 * When a header widget was configured, it was not possible to edit the header widget.
+
+* **Recover from stuck migration locks**
+
+  If an application instance was killed mid-migration, the migration lock could stay held and
+  prevent other instances from starting. Valtimo now releases such stale locks automatically on
+  startup and on graceful shutdown.
