@@ -33,6 +33,8 @@
 
 ## Bugfixes
 
+
+* SmartDocuments compatibility with newer SmartDocuments versions.
 * When a header widget was configured, it was not possible to edit the header widget.
 
 * **Recover from stuck migration locks**
