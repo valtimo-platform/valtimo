@@ -29,7 +29,6 @@ import {CaseDefinition} from '@valtimo/document';
 import {
   InteractiveTableWidget,
   WidgetAction,
-  WidgetFormioComponent,
   WidgetInteractiveTableComponent,
   WidgetLayoutService,
 } from '@valtimo/layout';
@@ -55,7 +54,6 @@ import {IkoApiService} from '../../services';
     WidgetInteractiveTableComponent,
     CaseListActionsComponent,
     ModalModule,
-    WidgetFormioComponent,
   ],
   providers: [CaseListService],
 })
