@@ -255,7 +255,7 @@ class CaseTaskTeamAutoAssignListenerTest {
         whenever(operatonTaskService.findTasks(any())).thenReturn(listOf(task1, task2))
 
         val event = DocumentAssigneeChangedEvent(
-            UUID.randomUUID(), "test", LocalDateTime.now(), "admin", documentId, null, "Intake Team"
+            UUID.randomUUID(), "test", LocalDateTime.now(), "admin", documentId, null, null, "Intake Team"
         )
         listener.updateTeamOnTasksForDocument(event)
 
@@ -269,7 +269,7 @@ class CaseTaskTeamAutoAssignListenerTest {
         whenever(caseDocument.assignedTeamKey()).thenReturn(null)
 
         val event = DocumentAssigneeChangedEvent(
-            UUID.randomUUID(), "test", LocalDateTime.now(), "admin", documentId, null
+            UUID.randomUUID(), "test", LocalDateTime.now(), "admin", documentId, null, null
         )
         listener.updateTeamOnTasksForDocument(event)
 
@@ -283,7 +283,7 @@ class CaseTaskTeamAutoAssignListenerTest {
             .thenReturn(caseDefinitionWithSettings(autoAssignTasks = false))
 
         val event = DocumentAssigneeChangedEvent(
-            UUID.randomUUID(), "test", LocalDateTime.now(), "admin", documentId, null, "Intake Team"
+            UUID.randomUUID(), "test", LocalDateTime.now(), "admin", documentId, null, null, "Intake Team"
         )
         listener.updateTeamOnTasksForDocument(event)
 
@@ -299,7 +299,7 @@ class CaseTaskTeamAutoAssignListenerTest {
         )
 
         val event = DocumentAssigneeChangedEvent(
-            UUID.randomUUID(), "test", LocalDateTime.now(), "admin", documentId, null, "Intake Team"
+            UUID.randomUUID(), "test", LocalDateTime.now(), "admin", documentId, null, null, "Intake Team"
         )
         listenerWithoutTeams.updateTeamOnTasksForDocument(event)
 
