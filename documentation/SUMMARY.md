@@ -81,6 +81,7 @@
     * [Creating a resource](features/access-control/for-developers/registering-a-resource.md)
     * [Creating a relation to another resource](features/access-control/for-developers/create-relation-between-resources.md)
     * [Running custom code without access control](features/access-control/for-developers/run-without-access-control.md)
+* [⚙️ Admin settings](features/admin-settings/README.md)
 * [🗃️ Cases](features/case/README.md)
   * [Configuration](features/case/configuration.md)
   * [General](features/case/general.md)
@@ -192,7 +193,9 @@
 
 * [Release notes](release-notes/release-notes.md)
 * [13.x.x](release-notes/13.x.x/)
+  * [13.28.0](release-notes/13.x.x/13.28.0/README.md)
   * [13.27.0](release-notes/13.x.x/13.27.0/README.md)
+    * [Front-end migration](release-notes/13.x.x/13.27.0/front-end-migration.md)
   * [13.26.0](release-notes/13.x.x/13.26.0/README.md)
   * [13.25.0](release-notes/13.x.x/13.25.0/README.md)
   * [13.24.0](release-notes/13.x.x/13.24.0/README.md)
