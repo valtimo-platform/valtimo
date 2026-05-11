@@ -148,7 +148,8 @@
           "builder": "@angular-devkit/build-angular:dev-server",
           "options": {
             "proxyConfig": "proxy.conf.json",
-            "buildTarget": "valtimo-angular-console:build"
+            "buildTarget": "valtimo-angular-console:build",
+            "hmr": false
           },
           "configurations": {
             "production": {
