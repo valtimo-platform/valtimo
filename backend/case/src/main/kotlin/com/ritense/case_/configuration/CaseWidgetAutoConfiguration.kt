@@ -53,6 +53,8 @@ import com.ritense.case_.widget.fields.FieldsCaseWidgetMapper
 import com.ritense.case_.widget.fieldsheader.FieldsCaseHeaderWidgetDataProvider
 import com.ritense.case_.widget.map.MapCaseWidgetDataProvider
 import com.ritense.case_.widget.map.MapCaseWidgetMapper
+import com.ritense.case_.widget.personcard.PersonCardCaseWidgetDataProvider
+import com.ritense.case_.widget.personcard.PersonCardCaseWidgetMapper
 import com.ritense.case_.widget.table.TableCaseWidgetDataProvider
 import com.ritense.case_.widget.table.TableCaseWidgetMapper
 import com.ritense.document.service.CaseTagService
@@ -61,6 +63,7 @@ import com.ritense.valtimo.contract.case_.CaseDefinitionChecker
 import com.ritense.valtimo.contract.database.QueryDialectHelper
 import com.ritense.valueresolver.ValueResolverService
 import com.ritense.widget.map.geojson.GeoJsonMapper
+import com.ritense.widget.map.geojson.Wgs84FeatureNormalizer
 import jakarta.validation.Validator
 import org.springframework.boot.autoconfigure.AutoConfiguration
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
@@ -252,6 +255,17 @@ class CaseWidgetAutoConfiguration {
         objectMapper: ObjectMapper
     ) = FieldsCaseHeaderWidgetDataProvider(valueResolverService, objectMapper)
 
+    @ConditionalOnMissingBean(PersonCardCaseWidgetMapper::class)
+    @Bean
+    fun personCardCaseWidgetMapper() = PersonCardCaseWidgetMapper()
+
+    @ConditionalOnMissingBean(PersonCardCaseWidgetDataProvider::class)
+    @Bean
+    fun personCardCaseWidgetDataProvider(
+        valueResolverService: ValueResolverService,
+        objectMapper: ObjectMapper
+    ) = PersonCardCaseWidgetDataProvider(valueResolverService, objectMapper)
+
     @ConditionalOnMissingBean(MapCaseWidgetMapper::class)
     @Bean
     fun mapCaseWidgetMapper() = MapCaseWidgetMapper()
@@ -262,10 +276,12 @@ class CaseWidgetAutoConfiguration {
         valueResolverService: ValueResolverService,
         objectMapper: ObjectMapper,
         geoJsonMappers: List<GeoJsonMapper>,
+        wgs84FeatureNormalizer: Wgs84FeatureNormalizer,
     ) = MapCaseWidgetDataProvider(
         valueResolverService,
         objectMapper,
         geoJsonMappers,
+        wgs84FeatureNormalizer,
     )
 
     @ConditionalOnMissingBean(CaseHeaderWidgetCaseEventListener::class)

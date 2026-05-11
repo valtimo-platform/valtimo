@@ -31,7 +31,8 @@ import {TabService} from '../../services/tab.service';
 })
 export class ObjectDetailContainerComponent implements OnInit, OnDestroy {
   public currentTab: TabEnum;
-  public caseListColumn!: boolean;
+  public readonly caseListColumn$ =
+    this.configService.getFeatureToggleObservable('caseListColumn', true);
 
   private tabSubscription: Subscription;
 
@@ -48,7 +49,6 @@ export class ObjectDetailContainerComponent implements OnInit, OnDestroy {
     private readonly configService: ConfigService,
     private readonly tabService: TabService
   ) {
-    this.caseListColumn = this.configService.config.featureToggles?.caseListColumn ?? true;
   }
 
   ngOnInit(): void {

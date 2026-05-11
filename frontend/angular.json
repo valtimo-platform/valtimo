@@ -1718,6 +1718,35 @@
           }
         }
       }
+    },
+    "@valtimo/admin-settings": {
+      "root": "projects/valtimo/admin-settings",
+      "sourceRoot": "projects/valtimo/admin-settings/src",
+      "projectType": "library",
+      "prefix": "valtimo",
+      "architect": {
+        "build": {
+          "builder": "@angular-devkit/build-angular:ng-packagr",
+          "options": {
+            "tsConfig": "projects/valtimo/admin-settings/tsconfig.lib.json",
+            "project": "projects/valtimo/admin-settings/ng-package.json"
+          },
+          "configurations": {
+            "production": {
+              "tsConfig": "projects/valtimo/admin-settings/tsconfig.lib.prod.json"
+            }
+          }
+        },
+        "lint": {
+          "builder": "@angular-eslint/builder:lint",
+          "options": {
+            "lintFilePatterns": [
+              "projects/valtimo/admin-settings/src/**/*.ts",
+              "projects/valtimo/admin-settings/src/**/*.html"
+            ]
+          }
+        }
+      }
     }
   },
   "cli": {

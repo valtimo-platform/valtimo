@@ -148,7 +148,9 @@ export class TaskDetailContentComponent implements OnInit, OnDestroy, AfterViewI
   public readonly submission$ = new BehaviorSubject<any>(null);
   public readonly task$ = new BehaviorSubject<Task | null>(null);
   public readonly taskInstanceId$ = new BehaviorSubject<string | null>(null);
-  public intermediateSaveEnabled = false;
+  public get intermediateSaveEnabled(): boolean {
+    return !!this.configService.featureToggles?.enableIntermediateSave;
+  }
 
   private readonly _taskProcessLinkType$ = new BehaviorSubject<TaskProcessLinkType | null>(null);
   public readonly processLinkIsForm$ = this._taskProcessLinkType$.pipe(
@@ -234,8 +236,6 @@ export class TaskDetailContentComponent implements OnInit, OnDestroy, AfterViewI
     private readonly formCustomComponentConfig: FormCustomComponentConfig,
     private readonly urlResolverService: UrlResolverService
   ) {
-    this.intermediateSaveEnabled = !!this.configService.featureToggles?.enableIntermediateSave;
-
     this.iconService.registerAll([RecentlyViewed16]);
 
     const options = new FormioOptionsImpl();
