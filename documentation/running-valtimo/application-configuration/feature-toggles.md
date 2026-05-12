@@ -60,6 +60,9 @@ In the frontend, feature toggles can be configured under the `featureToggles` ke
 
     If enabled, access to the list of uploaded documents now requires permissions. Additionally, the backend requires the following property to be set in `application.yml`:\
     `valtimo.authorization.zgwDocuments.enabled`
+* **`enableGenericCaseList`**
+
+    If enabled, the case list is displayed similar to the task list, with an overview of all cases across all case definitions. This helps keep the sidebar organized when you have a lot of case definitions.
 
 ## Backend
 
