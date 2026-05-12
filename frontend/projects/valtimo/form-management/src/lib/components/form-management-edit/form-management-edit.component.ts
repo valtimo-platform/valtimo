@@ -46,7 +46,6 @@ import {
   RenderInPageHeaderDirective,
   ShellService,
   SpinnerModule,
-  ValtimoCdsModalDirective,
   WidgetModule,
 } from '@valtimo/components';
 import {
@@ -91,7 +90,6 @@ import {FormManagementUploadComponent} from '../form-management-upload';
     FormsModule,
     WidgetModule,
     CarbonListModule,
-    ValtimoCdsModalDirective,
     TabsModule,
     EditorModule,
     FormIoModule,

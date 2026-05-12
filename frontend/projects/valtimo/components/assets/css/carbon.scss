@@ -14,6 +14,10 @@
  * limitations under the License.
  */
 
+@use 'sass:map';
+@use '@carbon/styles/scss/config' with (
+  $font-path: '@ibm/plex'
+);
 @use '@carbon/styles/scss/themes';
 @use '@carbon/colors';
 
@@ -90,7 +94,7 @@ $darkThemeOverwriteVariables: (
 );
 
 @use '@carbon/styles/scss/theme' with (
-  $theme: map-merge(themes.$g10, $lightThemeOverwriteVariables)
+  $theme: map.merge(themes.$g10, $lightThemeOverwriteVariables)
 );
 
 @use '@carbon/styles/scss/components/button/tokens' as button-tokens with (
@@ -118,7 +122,7 @@ $darkThemeOverwriteVariables: (
   }
 }
 
-@import '~node_modules/@carbon/charts-angular/styles.min.css';
+@import 'node_modules/@carbon/charts-angular/styles.min.css';
 
 /* default Valtimo colors */
 
