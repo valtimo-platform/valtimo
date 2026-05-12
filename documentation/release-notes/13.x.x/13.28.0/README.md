@@ -69,6 +69,7 @@
 * SmartDocuments compatibility with newer SmartDocuments versions.
 * When a header widget was configured, it was not possible to edit the header widget.
 * Fixed a permission issue on the task endpoint that prevented assignee details from being resolved for users without permission to look up other users.
+* Fixed a bug where the enumeration display type when configuring task columns was not editable.
 
 * **Recover from stuck migration locks**
 
