@@ -14,8 +14,8 @@
  * limitations under the License.
  */
 
-import type {ActionInput, Document} from "@valtimo/external-plugin-sdk-be";
-import {action, config, gzacApi, handle_action, log,} from "@valtimo/external-plugin-sdk-be";
+import type {ActionInput, Document} from "@valtimo/plugin-sdk";
+import {action, config, gzacApi, handle_action, log,} from "@valtimo/plugin-sdk";
 
 action("case-summary", (input: ActionInput) => {
   const titleField = (input.properties.titleField as string) || "/applicantName";

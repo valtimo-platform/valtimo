@@ -14,13 +14,13 @@
  * limitations under the License.
  */
 
-import type { ActionInput } from "@valtimo/external-plugin-sdk-be";
+import type { ActionInput } from "@valtimo/plugin-sdk";
 import {
   action,
   config,
   handle_action,
   log,
-} from "@valtimo/external-plugin-sdk-be";
+} from "@valtimo/plugin-sdk";
 
 action("say-hello", (input: ActionInput) => {
   const greeting = (config.get("greeting") as string) || "Hello";
