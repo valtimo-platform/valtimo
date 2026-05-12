@@ -16,6 +16,7 @@
 
 package com.ritense.document.service.impl;
 
+import com.ritense.document.domain.search.AssigneeFilter;
 import java.util.List;
 import java.util.Objects;
 
@@ -25,6 +26,7 @@ public class SearchRequest {
     private String globalSearchFilter;
     private Long sequence;
     private String assigneeId;
+    private AssigneeFilter assigneeFilter;
     private List<SearchCriteria> otherFilters;
 
     public SearchRequest() {
@@ -53,6 +55,14 @@ public class SearchRequest {
 
     public void setAssigneeId(String assigneeId) {
         this.assigneeId = assigneeId;
+    }
+
+    public AssigneeFilter getAssigneeFilter() {
+        return assigneeFilter;
+    }
+
+    public void setAssigneeFilter(AssigneeFilter assigneeFilter) {
+        this.assigneeFilter = assigneeFilter;
     }
 
     public List<SearchCriteria> getOtherFilters() {

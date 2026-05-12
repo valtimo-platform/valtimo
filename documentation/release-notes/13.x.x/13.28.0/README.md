@@ -28,6 +28,31 @@
   [Person card widget documentation](../../../features/case/case-detail/tabs/widgets.md) for the full list of fields
   and a configuration example.
 
+## Enhancements
+
+* **Generic case list**
+
+  A generic case list can be used instead of the default case list with case definitions listed in the sidebar. The
+  generic case list shows cases across all case definitions similar to the task list. This feature needs to be enabled
+  in the angular configuration file(s) in order to make use of it, via the `enableGenericCaseList` property.
+* **Improved actuator endpoint security**
+
+  Endpoints added to `management.endpoints.web.exposure.include` are now
+  automatically protected — no filter chain override needed.
+
+* **Hardened anonymous health responses**
+
+  Anonymous calls to `/actuator/health` only return the overall status;
+  component details require the actuator role. Kubernetes probes and load
+  balancers are unaffected.
+
+  {% hint style="warning" %}
+  Health groups (e.g. `liveness`, `readiness`) configured with
+  `show-details: ALWAYS` previously exposed component details to anonymous
+  callers. They are now also reduced to status-only for unauthenticated
+  requests. Authenticate with the actuator role to keep seeing details.
+  {% endhint %}
+  
 * **Faster Case Progress tab**
 
   The Progress tab on the case details page now loads noticeably faster, especially for cases with many associated
