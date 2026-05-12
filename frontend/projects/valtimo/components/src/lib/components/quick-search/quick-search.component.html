@@ -20,6 +20,7 @@
   @for (item of obs.quickSearchItems; track item.title) {
     <cds-tooltip
       autoAlign="true"
+      align="bottom-left"
       [description]="'quickSearch.rightClickTooltip' | translate"
       [enterDelayMs]="TOOLTIP_DELAY"
     >
