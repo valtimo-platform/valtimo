@@ -134,15 +134,18 @@ test.describe('Dashboard management', () => {
     test('Edit dashboard JSON', async () => {
       await dashboardPage.switchToJsonEditor();
 
-      // Use the shared JsonEditor util to save an empty widget array
-      await jsonEditor.saveChanges([]);
-
-      // Wait for the PUT response on widget-configuration
-      await page.waitForResponse(
+      // Set up response listener BEFORE triggering the save
+      const responsePromise = page.waitForResponse(
         res =>
           res.url().includes(`/api/management/v1/dashboard/${createdKey}/widget-configuration`) &&
           res.request().method() === 'PUT'
       );
+
+      // Use the shared JsonEditor util to save an empty widget array
+      await jsonEditor.saveChanges([]);
+
+      // Wait for the PUT response on widget-configuration
+      await responsePromise;
 
       // Switch back to visual to verify
       await dashboardPage.switchToVisualEditor();
