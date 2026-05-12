@@ -42,7 +42,7 @@ The output `dist/say-hello-0.1.0.zip` can be uploaded to the Plugin Host.
 
 ## How the Plugin Code Works
 
-`src/plugin.ts` imports everything from the SDK (`@valtimo/external-plugin-sdk-be`):
+`src/plugin.ts` imports everything from the SDK (`@valtimo/plugin-sdk`):
 
 1. **`action(key, handler)`** — registers a handler for an action key
 2. **`config.get(key)`** — reads a value from the plugin configuration (injected per call)

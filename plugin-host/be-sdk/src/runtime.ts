@@ -111,7 +111,7 @@ declare const Host: {
  * to the registered action handler, and writes the output back.
  *
  * Plugin usage:
- *   import { action, handle_action } from "@valtimo/external-plugin-sdk-be";
+ *   import { action, handle_action } from "@valtimo/plugin-sdk";
  *   action("my-action", (input) => { ... });
  *   module.exports = { handle_action };
  */

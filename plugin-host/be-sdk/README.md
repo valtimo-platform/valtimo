@@ -1,6 +1,6 @@
 # External Plugin SDK (Backend)
 
-NPM package (`@valtimo/external-plugin-sdk-be`) for building Valtimo external plugins that compile to WebAssembly.
+NPM package (`@valtimo/plugin-sdk`) for building Valtimo external plugins that compile to WebAssembly.
 
 ## What It Provides
 
@@ -75,7 +75,7 @@ Reads `pluginId` and `version` from `manifest.json` and produces `{pluginId}-{ve
 ## SDK API (for plugin authors)
 
 ```typescript
-import { action, config, log } from "@valtimo/external-plugin-sdk-be";
+import { action, config, log } from "@valtimo/plugin-sdk";
 
 // Register an action handler
 action("my-action", (input) => {

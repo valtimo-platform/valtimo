@@ -9,7 +9,7 @@
     "build:pack": "npm run build && npm run pack"
   },
   "devDependencies": {
-    "@valtimo/external-plugin-sdk-be": "file:../../be-sdk",
+    "@valtimo/plugin-sdk": "file:../../be-sdk",
     "esbuild": "^0.25.0",
     "@extism/js-pdk": "^1.1.0",
     "typescript": "^5.4.0"
