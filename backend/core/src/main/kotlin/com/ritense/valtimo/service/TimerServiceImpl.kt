@@ -41,51 +41,62 @@ class TimerServiceImpl(
         businessKey: String,
         newDate: String,
         vararg activityIds: String,
-    ): Int =
-        parseDueDate(newDate).let { dueDate ->
-            runtimeService
-                .createProcessInstanceQuery()
-                .processInstanceBusinessKey(businessKey)
-                .active()
-                .list()
-                .ifEmpty {
-                    logger.info {
-                        "updateActiveTimers(): no active process instances for businessKey='$businessKey' — nothing to update"
-                    }
-                    emptyList()
-                }.flatMap { pi ->
-                    managementService
-                        .createJobQuery()
-                        .timers()
-                        .active()
-                        .processInstanceId(pi.id)
-                        .list()
-                }.let { jobs -> jobs.map { it to resolveActivityId(it) } }
-                .filter { (_, activityId) ->
-                    activityIds.isEmpty() || (activityId != null && activityIds.contains(activityId))
-                }.partition { (job, _) -> job.retries <= 0 }
-                .let { (failed, updatable) ->
-                    failed.onEach { (job, activityId) ->
-                        logger.info {
-                            "=> skipping failed timer job(id=${job.id}, activityId=$activityId, " +
-                                "processInstanceId=${job.processInstanceId}, " +
-                                "exception='${job.exceptionMessage}') — retries exhausted"
-                        }
-                    }
-                    updatable
-                        .onEach { (job, activityId) ->
-                            logger.debug { "=> rescheduling timer job(id=${job.id}, activityId=$activityId) to $newDate" }
-                            managementService.setJobDuedate(job.id, dueDate)
-                        }.size
-                        .also { updatedCount ->
-                            logger.info {
-                                "updateActiveTimers(): businessKey='$businessKey', newDate='$newDate', " +
-                                    "activityIdFilter=${activityIds.toList()}, " +
-                                    "skippedFailed=${failed.size}, updated=$updatedCount"
-                            }
-                        }
-                }
+    ): Int {
+        val dueDate = parseDueDate(newDate)
+
+        val processInstances = runtimeService
+            .createProcessInstanceQuery()
+            .processInstanceBusinessKey(businessKey)
+            .active()
+            .list()
+
+        if (processInstances.isEmpty()) {
+            logger.info {
+                "updateActiveTimers(): no active process instances for businessKey='$businessKey' — nothing to update"
+            }
+            return 0
         }
+
+        val timerJobs = processInstances.flatMap { pi ->
+            managementService
+                .createJobQuery()
+                .timers()
+                .active()
+                .processInstanceId(pi.id)
+                .list()
+        }
+
+        val jobsWithActivityId = timerJobs.map { job -> job to resolveActivityId(job) }
+
+        val filteredJobs = jobsWithActivityId.filter { (_, activityId) ->
+            activityIds.isEmpty() || (activityId != null && activityIds.contains(activityId))
+        }
+
+        val (failedJobs, updatableJobs) = filteredJobs.partition { (job, _) -> job.retries <= 0 }
+
+        failedJobs.forEach { (job, activityId) ->
+            logger.debug {
+                "=> skipping failed timer job(id=${job.id}, activityId=$activityId, " +
+                    "processInstanceId=${job.processInstanceId}, " +
+                    "exception='${job.exceptionMessage}') — retries exhausted"
+            }
+        }
+
+        updatableJobs.forEach { (job, activityId) ->
+            logger.debug { "=> rescheduling timer job(id=${job.id}, activityId=$activityId) to $newDate" }
+            managementService.setJobDuedate(job.id, dueDate)
+        }
+
+        val updatedCount = updatableJobs.size
+
+        logger.info {
+            "updateActiveTimers(): businessKey='$businessKey', newDate='$newDate', " +
+                "activityIdFilter=${activityIds.toList()}, " +
+                "skippedFailed=${failedJobs.size}, updated=$updatedCount"
+        }
+
+        return updatedCount
+    }
 
     private fun resolveActivityId(job: Job): String? =
         job.jobDefinitionId?.let { jobDefinitionId ->
