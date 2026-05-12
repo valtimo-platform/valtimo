@@ -37,8 +37,18 @@ interface ExternalPluginAction {
   description?: string;
 }
 
+type ExternalPluginFrontendBundleType = 'config' | 'process-link-action' | 'case-tab' | 'case-widget' | 'page';
+
+interface ExternalPluginFrontendBundle {
+  type: ExternalPluginFrontendBundleType;
+  key?: string;
+  title?: string;
+  path: string;
+}
+
 interface ExternalPluginManifest {
   actions?: Array<ExternalPluginAction>;
+  frontendBundles?: Array<ExternalPluginFrontendBundle>;
 }
 
 interface ExternalPluginDefinition {
@@ -98,6 +108,8 @@ function extractExternalDefinitionId(key: string): string {
 export {
   EXTERNAL_PLUGIN_KEY_PREFIX,
   ExternalPluginAction,
+  ExternalPluginFrontendBundle,
+  ExternalPluginFrontendBundleType,
   ExternalPluginManifest,
   ExternalPluginHostStatus,
   ExternalPluginDefinitionStatus,

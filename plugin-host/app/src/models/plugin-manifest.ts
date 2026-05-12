@@ -14,6 +14,17 @@
  * limitations under the License.
  */
 
+interface FrontendBundle {
+  type: "config" | "process-link-action" | "case-tab" | "case-widget" | "page";
+  key?: string;
+  title?: string;
+  path: string;
+  activityTypes?: string[];
+  menuIcon?: string;
+  menuPosition?: string;
+  renderMode?: "bundle" | "htmx";
+}
+
 export interface PluginManifest {
   pluginId: string;
   version: string;
@@ -25,6 +36,7 @@ export interface PluginManifest {
     maxGzacVersion?: string;
   };
   configurationSchema?: Record<string, unknown>;
+  frontendBundles?: Array<FrontendBundle>;
   actions: Array<{
     key: string;
     title: string;
@@ -37,3 +49,5 @@ export interface PluginManifest {
     }>;
   }>;
 }
+
+export type { FrontendBundle };

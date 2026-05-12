@@ -6,8 +6,9 @@
   "main": "dist/index.js",
   "scripts": {
     "build": "tsc",
+    "installDeps": "npm i",
     "start": "node dist/index.js",
-    "dev": "tsx watch src/index.ts"
+    "dev": "ADMIN_TOKEN=test-secret tsx watch src/index.ts"
   },
   "dependencies": {
     "@extism/extism": "^2.0.0-rc13",

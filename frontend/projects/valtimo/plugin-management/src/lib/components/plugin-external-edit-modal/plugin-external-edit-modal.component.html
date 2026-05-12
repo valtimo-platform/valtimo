@@ -27,15 +27,18 @@
   </cds-modal-header>
 
   <section cdsModalContent>
-    <ng-container
-      *ngIf="{
-        loading: _$loading(),
-        schema: _$configurationSchema()
-      } as obs"
-    >
-      <cds-loading *ngIf="obs.loading" [isActive]="true" size="sm"></cds-loading>
+    <cds-loading *ngIf="_$loading()" [isActive]="true" size="sm"></cds-loading>
 
-      <ng-container *ngIf="!obs.loading">
+    <ng-container *ngIf="!_$loading()">
+      <ng-container *ngIf="_$configBundleUrl() as bundleUrl; else jsonForm">
+        <valtimo-external-plugin-iframe
+          [bundleUrl]="bundleUrl"
+          [prefillConfiguration]="_$prefillConfiguration()"
+          (configurationChangedEvent)="onIframeConfigurationChanged($event)"
+        ></valtimo-external-plugin-iframe>
+      </ng-container>
+
+      <ng-template #jsonForm>
         <form [formGroup]="_form">
           <div class="cds--form-item">
             <label class="cds--label">{{ 'pluginManagement.labels.configurationName' | translate }}</label>
@@ -56,7 +59,7 @@
             </div>
           </div>
         </form>
-      </ng-container>
+      </ng-template>
     </ng-container>
   </section>
 
@@ -70,11 +73,22 @@
     </button>
 
     <button
+      *ngIf="_$configBundleUrl(); else jsonSaveButton"
       cdsButton="primary"
-      [disabled]="_form.invalid || _$propertiesInvalid() || _$loading()"
+      [disabled]="!_$iframeValid() || _$loading()"
       (click)="onSave()"
     >
       {{ 'pluginManagement.save' | translate }}
     </button>
+
+    <ng-template #jsonSaveButton>
+      <button
+        cdsButton="primary"
+        [disabled]="_form.invalid || _$propertiesInvalid() || _$loading()"
+        (click)="onSave()"
+      >
+        {{ 'pluginManagement.save' | translate }}
+      </button>
+    </ng-template>
   </cds-modal-footer>
 </cds-modal>

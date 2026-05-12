@@ -78,4 +78,10 @@ export class ExternalPluginService {
   public deleteConfiguration(configurationId: string): Observable<void> {
     return this._http.delete<void>(`${this._baseUrl}/configuration/${configurationId}`);
   }
+
+  public uploadPlugin(hostId: string, file: File): Observable<unknown> {
+    const formData = new FormData();
+    formData.append('file', file, file.name);
+    return this._http.post(`${this._baseUrl}/host/${hostId}/upload`, formData);
+  }
 }

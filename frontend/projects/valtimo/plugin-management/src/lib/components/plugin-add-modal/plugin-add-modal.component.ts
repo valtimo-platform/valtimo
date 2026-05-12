@@ -14,20 +14,18 @@
  * limitations under the License.
  */
 
-import {Component, EventEmitter, Input, OnDestroy, OnInit, Output} from '@angular/core';
+import {Component, EventEmitter, Input, Output} from '@angular/core';
 import {PluginManagementStateService} from '../../services';
 import {map, take} from 'rxjs/operators';
-import {BehaviorSubject, Observable, Subject, Subscription} from 'rxjs';
+import {BehaviorSubject, Observable, Subject} from 'rxjs';
 import {
   ExternalPluginService,
-  extractExternalDefinitionId,
   isExternalPluginKey,
   PluginConfigurationData,
   PluginManagementService,
 } from '@valtimo/plugin';
 import {NGXLogger} from 'ngx-logger';
 import {CARBON_CONSTANTS} from '@valtimo/components';
-import {FormControl, FormGroup, Validators} from '@angular/forms';
 
 @Component({
   standalone: false,
@@ -35,7 +33,7 @@ import {FormControl, FormGroup, Validators} from '@angular/forms';
   templateUrl: './plugin-add-modal.component.html',
   styleUrls: ['./plugin-add-modal.component.scss'],
 })
-export class PluginAddModalComponent implements OnInit, OnDestroy {
+export class PluginAddModalComponent {
   @Input() public open = false;
 
   @Output() public closeModal = new EventEmitter<boolean>();
@@ -49,13 +47,6 @@ export class PluginAddModalComponent implements OnInit, OnDestroy {
     map(def => isExternalPluginKey(def?.key))
   );
 
-  public readonly externalForm = new FormGroup({
-    title: new FormControl('', Validators.required),
-    properties: new FormControl('{}'),
-  });
-
-  private readonly _subscriptions = new Subscription();
-
   constructor(
     private readonly _stateService: PluginManagementStateService,
     private readonly _pluginManagementService: PluginManagementService,
@@ -63,26 +54,8 @@ export class PluginAddModalComponent implements OnInit, OnDestroy {
     private readonly _logger: NGXLogger
   ) {}
 
-  public ngOnInit(): void {
-    this._subscriptions.add(
-      this.externalForm.valueChanges.subscribe(() => {
-        this._validateExternalForm();
-      })
-    );
-  }
-
-  public ngOnDestroy(): void {
-    this._subscriptions.unsubscribe();
-  }
-
   public complete(): void {
-    this.selectedPluginDefinition$.pipe(take(1)).subscribe(def => {
-      if (isExternalPluginKey(def?.key)) {
-        this._saveExternalConfiguration(def.key);
-      } else {
-        this._stateService.save();
-      }
-    });
+    this._stateService.save();
   }
 
   public hide(): void {
@@ -92,7 +65,6 @@ export class PluginAddModalComponent implements OnInit, OnDestroy {
       this._returnToFirstStep();
       this._stateService.enableInput();
       this._stateService.clear();
-      this.externalForm.reset({title: '', properties: '{}'});
       this.configurationValid$.next(false);
     }, CARBON_CONSTANTS.modalAnimationMs);
   }
@@ -129,37 +101,15 @@ export class PluginAddModalComponent implements OnInit, OnDestroy {
     });
   }
 
-  private _validateExternalForm(): void {
-    const titleValid = !!this.externalForm.value.title?.trim();
-    let jsonValid = true;
-    const props = this.externalForm.value.properties?.trim();
-    if (props) {
-      try {
-        JSON.parse(props);
-      } catch {
-        jsonValid = false;
-      }
-    }
-    this.configurationValid$.next(titleValid && jsonValid);
-  }
-
-  private _saveExternalConfiguration(key: string): void {
-    const definitionId = extractExternalDefinitionId(key);
-    const title = this.externalForm.value.title?.trim() ?? '';
-    let properties: Record<string, unknown> = {};
-    const propsStr = this.externalForm.value.properties?.trim();
-    if (propsStr) {
-      try {
-        properties = JSON.parse(propsStr);
-      } catch {
-        return;
-      }
-    }
-
+  public onExternalSave(event: {definitionId: string; title: string; properties: Record<string, unknown>}): void {
     this._stateService.disableInput();
 
     this._externalPluginService
-      .createConfiguration({definitionId, title, properties})
+      .createConfiguration({
+        definitionId: event.definitionId,
+        title: event.title,
+        properties: event.properties,
+      })
       .subscribe({
         next: () => {
           this._stateService.refresh();

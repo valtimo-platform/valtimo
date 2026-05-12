@@ -1824,6 +1824,13 @@
     "tableItemsText": "plugin-configuraties",
     "add": "Plugin configureren",
     "addHost": "Host toevoegen",
+    "uploadPlugin": "Plugin uploaden",
+    "selectHost": "Selecteer een plugin-host",
+    "upload": {
+      "title": "Plugin-bundel",
+      "buttonText": "Bestand kiezen",
+      "description": "Alleen .zip-bestanden worden geaccepteerd"
+    },
     "noDefinitions": "Geen plugin-definities gevonden.",
     "noHosts": "Geen plugin-hosts geconfigureerd.",
     "save": "Configuratie opslaan",
@@ -1842,7 +1849,8 @@
       "lastHealthCheck": "Laatste health check",
       "secret": "Geheim",
       "source": "Bron",
-      "properties": "Eigenschappen (JSON)"
+      "properties": "Eigenschappen (JSON)",
+      "pluginHost": "Plugin-host"
     },
     "source": {
       "embedded": "Ingebed",

@@ -29,20 +29,15 @@
         <v-stepper-step titleTranslationKey="pluginManagement.addSteps.step0">
           <valtimo-plugin-add-select></valtimo-plugin-add-select>
         </v-stepper-step>
+
         <v-stepper-step titleTranslationKey="pluginManagement.addSteps.step1">
           <ng-container *ngIf="isExternalPlugin$ | async; else embeddedConfigure">
-            <form [formGroup]="externalForm">
-              <div class="cds--form-item">
-                <label class="cds--label">{{ 'pluginManagement.labels.configurationName' | translate }}</label>
-                <input class="cds--text-input" formControlName="title" />
-              </div>
-
-              <div class="cds--form-item">
-                <label class="cds--label">{{ 'pluginManagement.labels.properties' | translate }}</label>
-                <textarea class="cds--text-area" formControlName="properties" rows="10"></textarea>
-              </div>
-            </form>
+            <valtimo-plugin-external-configure
+              (validEvent)="onValid($event)"
+              (saveEvent)="onExternalSave($event)"
+            ></valtimo-plugin-external-configure>
           </ng-container>
+
           <ng-template #embeddedConfigure>
             <valtimo-plugin-configure
               (valid)="onValid($event)"
@@ -58,6 +53,7 @@
           nextButtonTranslationKey="pluginManagement.addSteps.step1"
           [nextButtonEnabled]="selectedPluginDefinition$ | async"
         ></v-stepper-footer-step>
+
         <v-stepper-footer-step
           completeButtonTranslationKey="pluginManagement.addSteps.complete"
           [completeButtonEnabled]="configurationValid$ | async"

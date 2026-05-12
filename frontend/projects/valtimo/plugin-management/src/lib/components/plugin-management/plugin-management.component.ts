@@ -288,6 +288,28 @@ export class PluginManagementComponent {
     });
   }
 
+  // --- Plugin upload modal ---
+  public readonly uploadModalOpen$ = new BehaviorSubject<boolean>(false);
+  public readonly connectedHosts$: Observable<Array<ExternalPluginHost>> = this.hosts$.pipe(
+    map(hosts => hosts.filter(h => h.status === 'CONNECTED'))
+  );
+  public readonly hasConnectedHosts$: Observable<boolean> = this.connectedHosts$.pipe(
+    map(hosts => hosts.length > 0)
+  );
+
+  public openUploadModal(): void {
+    this.uploadModalOpen$.next(true);
+  }
+
+  public closeUploadModal(): void {
+    this.uploadModalOpen$.next(false);
+  }
+
+  public onPluginUploaded(): void {
+    this.uploadModalOpen$.next(false);
+    this._stateService.refresh();
+  }
+
   // --- Plugin hosts tab methods ---
 
   public openHostModal(): void {

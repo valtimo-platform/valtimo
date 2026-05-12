@@ -23,6 +23,7 @@ import { healthRoutes } from "./routes/health.js";
 import { hostManagementRoutes } from "./routes/host-management.js";
 import { hostConfigurationRoutes } from "./routes/host-configurations.js";
 import { pluginActionRoutes } from "./routes/plugin-actions.js";
+import { pluginBundleRoutes } from "./routes/plugin-bundles.js";
 
 async function main(): Promise<void> {
   const config = loadConfig();
@@ -64,6 +65,9 @@ async function main(): Promise<void> {
   await fastify.register(pluginActionRoutes, {
     pluginManager,
     configRegistry,
+  });
+  await fastify.register(pluginBundleRoutes, {
+    pluginManager,
   });
 
   // Start server

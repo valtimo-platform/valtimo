@@ -1797,6 +1797,13 @@
     "tableItemsText": "plugin configurations",
     "add": "Configure plugin",
     "addHost": "Add host",
+    "uploadPlugin": "Upload plugin",
+    "selectHost": "Select a plugin host",
+    "upload": {
+      "title": "Plugin bundle",
+      "buttonText": "Choose file",
+      "description": "Only .zip files are accepted"
+    },
     "noDefinitions": "No plugin definitions found.",
     "noHosts": "No plugin hosts configured.",
     "save": "Save configuration",
@@ -1815,7 +1822,8 @@
       "lastHealthCheck": "Last health check",
       "secret": "Secret",
       "source": "Source",
-      "properties": "Properties (JSON)"
+      "properties": "Properties (JSON)",
+      "pluginHost": "Plugin host"
     },
     "source": {
       "embedded": "Embedded",
