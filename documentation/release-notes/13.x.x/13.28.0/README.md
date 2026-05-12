@@ -22,7 +22,6 @@
   [Person card widget documentation](../../../features/case/case-detail/tabs/widgets.md) for the full list of fields
   and a configuration example.
 
-
 ## Enhancements
 
 * **Improved actuator endpoint security**
@@ -43,6 +42,11 @@
   requests. Authenticate with the actuator role to keep seeing details.
   {% endhint %}
   
+* **Faster Case Progress tab**
+
+  The Progress tab on the case details page now loads noticeably faster, especially for cases with many associated
+  processes.
+
 * **Open widget link in a new browser tab**
 
   Link-type action buttons on case widgets now support an "Open in new tab" option in widget management.
@@ -51,4 +55,11 @@
 
 ## Bugfixes
 
+* SmartDocuments compatibility with newer SmartDocuments versions.
 * When a header widget was configured, it was not possible to edit the header widget.
+
+* **Recover from stuck migration locks**
+
+  If an application instance was killed mid-migration, the migration lock could stay held and
+  prevent other instances from starting. Valtimo now releases such stale locks automatically on
+  startup and on graceful shutdown.
