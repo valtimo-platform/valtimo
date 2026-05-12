@@ -24,17 +24,17 @@ Click **Add widget** to open the create new widget modal that will guide the wid
 Six types of widgets are currently supported:
 
 * **Fields**\
-  _&#x41; set of single data elements in a widget._
+  _A set of single data elements in a widget._
 * **Custom component**\
-  _&#x41;n option to direct to a custom Angular component in de codebase._
+  _An option to direct to a custom Angular component in de codebase._
 * **Form.io form**\
-  _&#x54;his type makes is possible to display a Form.io form within a widget. The form is prefilled with case data._
+  _This type makes is possible to display a Form.io form within a widget. The form is prefilled with case data._
 * **Table**\
-  _&#x50;resent array case data in a table within a widget._
+  _Present array case data in a table within a widget._
 * **Collection**\
-  _&#x50;resent array case data in a collection of cards within a widget._
+  _Present array case data in a collection of cards within a widget._
 * **Metroline**\
-  _&#x56;isualise the progression of a case as an ordered set of steps, driven either by the internal case status history or by the zaak status._
+  _Visualise the progression of a case as an ordered set of steps, driven either by the internal case status history or by the zaak status._
 * **Person card**\
   _&#x44;isplay personal data for a single person (full name, birth date, BSN, phone, email and city) in a compact card._
 
@@ -534,10 +534,9 @@ Each step in the rendered metroline is in one of the following states:
 * **Current** — the step the case is currently on. Highlighted with a distinct icon and styling.
 * **Complete** — a step the case has already passed. Displays the completion date and time.
 * **Incomplete** — a step the case has not yet reached. Only relevant for the Zaak status source, where future steps are known up-front.
-* **Invalid** — a step that cannot be completed in the current flow (for example, a status that was skipped). Reserved for future use.
 
 {% hint style="info" %}
-The metroline widget does not use the **Appearance** (color) or **Density** (compact) options from the widget creation wizard — those steps are still shown but their values do not affect the metroline rendering.
+The metroline widget does not use the **Appearance** (color) or **Density** (compact) options from the widget creation wizard. Those steps are still shown but do not affect the metroline rendering.
 {% endhint %}
 
 </details>
