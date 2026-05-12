@@ -20,6 +20,9 @@ import {accountInitializer} from '@valtimo/account';
 import {Injector} from '@angular/core';
 import {ConfigService} from '@valtimo/shared';
 import {AdminSettingsService, menuInitializer} from '@valtimo/components';
+import {initializeCsp} from '@valtimo/security';
+import {HttpClient} from '@angular/common/http';
+import {DomSanitizer} from '@angular/platform-browser';
 import {firstValueFrom} from 'rxjs';
 
 export function initialize(
@@ -49,7 +52,9 @@ export function initializerFactory(
   configService: ConfigService,
   injector: Injector,
   logger: NGXLogger,
-  translateService: TranslateService
+  translateService: TranslateService,
+  document: Document,
+  domSanitizer: DomSanitizer
 ) {
   logger.debug('Provided app initializers ', configService.initializers);
 
@@ -86,6 +91,34 @@ export function initializerFactory(
     } catch (error) {
       logger.warn('Failed to fetch accent colors, using defaults', error);
     }
+  });
+
+  // Initialize CSP after auth so we can fetch external plugin hosts and add their
+  // origins to frame-src before the meta tag is inserted (CSP meta is immutable once parsed).
+  initializersArray.push(async () => {
+    let pluginHostOrigins: string[] = [];
+    try {
+      const http = injector.get(HttpClient);
+      const apiBase = configService.config?.valtimoApi?.endpointUri;
+      if (apiBase) {
+        const hosts = await firstValueFrom(
+          http.get<Array<{baseUrl?: string}>>(`${apiBase}management/v1/external-plugin/host`)
+        );
+        pluginHostOrigins = hosts
+          .map(h => {
+            try {
+              return new URL(h.baseUrl).origin;
+            } catch {
+              return null;
+            }
+          })
+          .filter((o): o is string => !!o);
+      }
+    } catch (error) {
+      logger.debug('No external plugin hosts found for CSP augmentation:', error);
+    }
+
+    await initializeCsp(logger, configService, document, domSanitizer, pluginHostOrigins)();
   });
 
   // Use environment config initializers to be used in app startup.

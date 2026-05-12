@@ -19,6 +19,12 @@
     },
     "additionalProperties": false
   },
+  "frontendBundles": [
+    {
+      "type": "config",
+      "path": "/bundles/config.html"
+    }
+  ],
   "actions": [
     {
       "key": "case-summary",

@@ -27,7 +27,7 @@ dist/             # Build output (gitignored)
 - Node.js 18+
 - **`extism-js` CLI** — Download from [extism/js-pdk releases](https://github.com/extism/js-pdk/releases) and place on `PATH` or in `plugin-host/.bin/`
 - **`binaryen`** — `brew install binaryen` (macOS) or `apt install binaryen` (Linux)
-- **SDK built** — Run `npm install && npm run build` in `../../be-sdk` first
+- **SDK built** — Run `npm install && npm run build` in `../../plugin-sdk` first
 
 ## Build & Pack
 

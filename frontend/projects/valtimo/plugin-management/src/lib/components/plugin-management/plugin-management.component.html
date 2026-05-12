@@ -20,6 +20,7 @@
       *ngIf="{
         pluginConfigurations: pluginConfigurations$ | async,
         loading: loading$ | async,
+        hasConnectedHosts: hasConnectedHosts$ | async,
       } as obs"
     >
       <valtimo-carbon-list
@@ -32,16 +33,27 @@
       >
         <ng-container
           carbonToolbarContent
-          [ngTemplateOutlet]="configurePluginButton"
+          [ngTemplateOutlet]="toolbarButtons"
         ></ng-container>
 
         <valtimo-no-results
-          [action]="configurePluginButton"
+          [action]="toolbarButtons"
           [title]="'pages.plugins.noResults' | translate"
         ></valtimo-no-results>
       </valtimo-carbon-list>
 
-      <ng-template #configurePluginButton>
+      <ng-template #toolbarButtons>
+        <button
+          *ngIf="obs.hasConnectedHosts"
+          cdsButton="tertiary"
+          [disabled]="obs.loading"
+          (click)="openUploadModal()"
+        >
+          {{ 'pluginManagement.uploadPlugin' | translate }}
+
+          <svg cdsIcon="upload" size="16" class="cds--btn__icon"></svg>
+        </button>
+
         <button cdsButton="primary" [disabled]="obs.loading" (click)="showAddModal()">
           {{ 'pluginManagement.add' | translate }}
 
@@ -106,3 +118,10 @@
   (closeEvent)="closeHostModal()"
   (submitEvent)="submitHost($event)"
 ></valtimo-plugin-host-modal>
+
+<valtimo-plugin-upload-modal
+  [hosts]="connectedHosts$ | async"
+  [open]="uploadModalOpen$ | async"
+  (closeEvent)="closeUploadModal()"
+  (uploadedEvent)="onPluginUploaded()"
+></valtimo-plugin-upload-modal>

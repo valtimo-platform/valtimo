@@ -19,7 +19,7 @@ import { z } from "zod";
 export const envSchema = z.object({
   PORT: z.coerce.number().default(8090),
   ADMIN_TOKEN: z.string().min(1),
-  PLUGIN_STORAGE_DIR: z.string().default("/plugins"),
+  PLUGIN_STORAGE_DIR: z.string().default("./plugins"),
   LOG_LEVEL: z.enum(["debug", "info", "warn", "error"]).default("info"),
 });
 

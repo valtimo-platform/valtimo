@@ -60,12 +60,22 @@ export const initializeCsp =
     logger: NGXLogger,
     configService: ConfigService,
     document: Document,
-    domSanitizer: DomSanitizer
+    domSanitizer: DomSanitizer,
+    additionalFrameSrcOrigins?: string[]
   ): (() => Promise<boolean>) =>
   async (): Promise<boolean> => {
     const cspHeaderParams = configService?.config?.csp;
 
     if (cspHeaderParams) {
+      if (additionalFrameSrcOrigins?.length > 0) {
+        const frameSrc = cspHeaderParams.directives?.['frame-src'];
+        if (Array.isArray(frameSrc)) {
+          const unique = additionalFrameSrcOrigins.filter(o => !frameSrc.includes(o));
+          frameSrc.push(...unique);
+          logger.log('CSP frame-src augmented with:', unique);
+        }
+      }
+
       logger.log('Create CSP header element from:', cspHeaderParams);
 
       const cspHeaderElement = getCspHeaderElement(cspHeaderParams, domSanitizer, document);

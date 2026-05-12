@@ -40,6 +40,8 @@ import org.springframework.web.bind.annotation.PutMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
+import org.springframework.web.multipart.MultipartFile
+import com.fasterxml.jackson.databind.JsonNode
 import java.util.UUID
 
 @Controller
@@ -61,6 +63,16 @@ class ExternalPluginManagementResource(
     fun createHost(@RequestBody request: HostCreateRequest): ResponseEntity<HostResponse> {
         val host = hostService.register(request.name, request.baseUrl, request.secret)
         return ResponseEntity.status(HttpStatus.CREATED).body(HostResponse.from(host))
+    }
+
+    @RunWithoutAuthorization
+    @PostMapping("/host/{hostId}/upload", consumes = ["multipart/form-data"])
+    fun uploadPlugin(
+        @PathVariable hostId: UUID,
+        @RequestParam("file") file: MultipartFile,
+    ): ResponseEntity<JsonNode> {
+        val result = hostService.uploadPlugin(hostId, file.originalFilename ?: "plugin.zip", file.bytes)
+        return ResponseEntity.status(HttpStatus.CREATED).body(result)
     }
 
     @RunWithoutAuthorization

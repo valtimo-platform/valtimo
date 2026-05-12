@@ -14,8 +14,11 @@
  * limitations under the License.
  */
 
-export type { AppConfig } from "./app-config.js";
-export { envSchema } from "./app-config.js";
-export type { HostLogger } from "./host-logger.js";
-export type { PluginConfiguration } from "./plugin-configuration.js";
-export type { PluginManifest, FrontendBundle } from "./plugin-manifest.js";
+export {
+  ValtimoPluginSDK,
+  PluginContext,
+  ParentToIframeEvents,
+  IframeToParentEvents,
+  ParentEventType,
+  IframeEventType,
+} from "./plugin-frontend-sdk.js";

@@ -28,7 +28,9 @@ import {PluginConfigurationContainerModule, PluginTranslatePipeModule} from '@va
 import {PluginEditModalComponent} from './components/plugin-edit-modal/plugin-edit-modal.component';
 import {PluginEditComponent} from './components/plugin-edit/plugin-edit.component';
 import {PluginExternalEditModalComponent} from './components/plugin-external-edit-modal/plugin-external-edit-modal.component';
+import {PluginExternalConfigureComponent} from './components/plugin-external-configure/plugin-external-configure.component';
 import {PluginHostModalComponent} from './components/plugin-host-modal/plugin-host-modal.component';
+import {PluginUploadModalComponent} from './components/plugin-upload-modal/plugin-upload-modal.component';
 import {
   CarbonListModule,
   ParagraphModule,
@@ -78,7 +80,9 @@ import {
     LoadingModule,
     TabsModule,
     PluginExternalEditModalComponent,
+    PluginExternalConfigureComponent,
     PluginHostModalComponent,
+    PluginUploadModalComponent,
   ],
   exports: [
     PluginManagementComponent,

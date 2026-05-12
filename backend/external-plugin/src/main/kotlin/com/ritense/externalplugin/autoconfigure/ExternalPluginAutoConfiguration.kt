@@ -79,7 +79,8 @@ class ExternalPluginAutoConfiguration {
     fun externalPluginHostService(
         hostRepository: ExternalPluginHostRepository,
         encryptionService: EncryptionService,
-    ) = ExternalPluginHostService(hostRepository, encryptionService)
+        hostClient: ExternalPluginHostClient,
+    ) = ExternalPluginHostService(hostRepository, encryptionService, hostClient)
 
     @Bean
     @ConditionalOnMissingBean(ExternalPluginDefinitionService::class)

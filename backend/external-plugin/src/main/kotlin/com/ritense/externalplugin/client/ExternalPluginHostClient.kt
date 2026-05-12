@@ -28,6 +28,8 @@ import org.springframework.stereotype.Component
 import org.springframework.web.client.HttpClientErrorException
 import org.springframework.web.client.HttpServerErrorException
 import org.springframework.web.client.ResourceAccessException
+import org.springframework.core.io.ByteArrayResource
+import org.springframework.util.LinkedMultiValueMap
 import org.springframework.web.client.RestTemplate
 import java.net.URI
 
@@ -127,6 +129,28 @@ class ExternalPluginHostClient(
         } catch (e: HttpClientErrorException) {
             ActionResponse(status = e.statusCode.value(), body = parseBody(e.responseBodyAsByteArray))
         }
+    }
+
+    fun uploadPlugin(
+        baseUrl: String,
+        adminToken: String,
+        fileName: String,
+        fileBytes: ByteArray,
+    ): JsonNode {
+        val uri = buildUri(baseUrl, "/api/host/plugins")
+        val resource = object : ByteArrayResource(fileBytes) {
+            override fun getFilename(): String = fileName
+        }
+        val body = LinkedMultiValueMap<String, Any>().apply {
+            add("file", resource)
+        }
+        val headers = HttpHeaders().apply {
+            setBearerAuth(adminToken)
+            contentType = MediaType.MULTIPART_FORM_DATA
+        }
+        val request = RequestEntity(body, headers, HttpMethod.POST, uri)
+        return restTemplate.exchange(request, JsonNode::class.java).body
+            ?: objectMapper.createObjectNode()
     }
 
     private fun parseBody(bytes: ByteArray): JsonNode? = if (bytes.isEmpty()) null else try {

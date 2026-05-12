@@ -16,6 +16,8 @@
 
 package com.ritense.externalplugin.service
 
+import com.fasterxml.jackson.databind.JsonNode
+import com.ritense.externalplugin.client.ExternalPluginHostClient
 import com.ritense.externalplugin.domain.ExternalPluginHost
 import com.ritense.externalplugin.domain.ExternalPluginHostStatus
 import com.ritense.externalplugin.repository.ExternalPluginHostRepository
@@ -31,6 +33,7 @@ import java.util.UUID
 class ExternalPluginHostService(
     private val hostRepository: ExternalPluginHostRepository,
     private val encryptionService: EncryptionService,
+    private val hostClient: ExternalPluginHostClient,
 ) {
 
     fun list(): List<ExternalPluginHost> = hostRepository.findAll()
@@ -49,5 +52,11 @@ class ExternalPluginHostService(
             status = ExternalPluginHostStatus.UNREACHABLE,
         )
         return hostRepository.save(host)
+    }
+
+    fun uploadPlugin(hostId: UUID, fileName: String, fileBytes: ByteArray): JsonNode {
+        val host = get(hostId)
+        val adminToken = decryptedSecret(host)
+        return hostClient.uploadPlugin(host.baseUrl, adminToken, fileName, fileBytes)
     }
 }

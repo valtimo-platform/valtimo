@@ -117,12 +117,14 @@ export class PluginManager {
 
   /**
    * Store a plugin package to disk and load it.
+   * If frontendDir is provided, copies the frontend directory into the plugin storage.
    */
   async storeAndLoad(
     pluginId: string,
     version: string,
     manifestJson: string,
-    wasmBuffer: Buffer
+    wasmBuffer: Buffer,
+    frontendDir?: string
   ): Promise<PluginManifest> {
     const pluginDir = join(this.storageDir, pluginId, version);
     await mkdir(pluginDir, { recursive: true });
@@ -130,8 +132,22 @@ export class PluginManager {
     await writeFile(join(pluginDir, "manifest.json"), manifestJson);
     await writeFile(join(pluginDir, "plugin.wasm"), wasmBuffer);
 
+    if (frontendDir && existsSync(frontendDir)) {
+      const { cp } = await import("node:fs/promises");
+      const destFrontendDir = join(pluginDir, "frontend");
+      await cp(frontendDir, destFrontendDir, { recursive: true });
+      this.logger.info({ pluginId, version }, "Frontend assets stored");
+    }
+
     await this.loadPlugin(pluginId, version);
     return JSON.parse(manifestJson);
+  }
+
+  /**
+   * Get the storage directory path for a plugin version.
+   */
+  getPluginDir(pluginId: string, version: string): string {
+    return join(this.storageDir, pluginId, version);
   }
 
   /**

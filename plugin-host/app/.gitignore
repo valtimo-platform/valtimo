@@ -3,3 +3,9 @@ node_modules/
 
 # Build output
 dist/
+
+# Temp upload directory
+.tmp/
+
+# Plugin storage (local dev)
+plugins/

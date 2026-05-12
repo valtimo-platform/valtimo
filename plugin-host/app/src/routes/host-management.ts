@@ -19,9 +19,9 @@ import { PluginManager } from "../plugin-manager.js";
 import { AppConfig } from "../config.js";
 import { Readable } from "node:stream";
 import { createWriteStream } from "node:fs";
-import { mkdtemp, readFile, readdir, rm } from "node:fs/promises";
-import { tmpdir } from "node:os";
-import { join } from "node:path";
+import { mkdir, mkdtemp, readFile, readdir, rm } from "node:fs/promises";
+import { join, dirname } from "node:path";
+import { fileURLToPath } from "node:url";
 import { execSync } from "node:child_process";
 
 /**
@@ -83,8 +83,11 @@ export async function hostManagementRoutes(
       return;
     }
 
-    // Write uploaded file to temp directory
-    const tempDir = await mkdtemp(join(tmpdir(), "plugin-upload-"));
+    // Write uploaded file to temp directory inside plugin-host/app/.tmp/
+    const appRoot = join(dirname(fileURLToPath(import.meta.url)), "..", "..");
+    const tmpBase = join(appRoot, ".tmp");
+    await mkdir(tmpBase, { recursive: true });
+    const tempDir = await mkdtemp(join(tmpBase, "plugin-upload-"));
     const zipPath = join(tempDir, "plugin.zip");
 
     try {
@@ -119,12 +122,16 @@ export async function hostManagementRoutes(
       const wasmPath = join(extractDir, "plugin.wasm");
       const wasmBuffer = await readFile(wasmPath);
 
-      // Store and load
+      // Check for frontend directory
+      const frontendDir = join(extractDir, "frontend");
+
+      // Store and load (includes frontend assets if present)
       const result = await pluginManager.storeAndLoad(
         manifest.pluginId,
         manifest.version,
         manifestJson,
-        wasmBuffer
+        wasmBuffer,
+        frontendDir
       );
 
       reply.code(201).send({

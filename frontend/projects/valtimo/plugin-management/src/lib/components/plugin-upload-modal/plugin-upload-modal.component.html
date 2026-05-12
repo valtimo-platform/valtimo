@@ -1,0 +1,70 @@
+<!--
+  ~ Copyright 2015-2026 Ritense BV, the Netherlands.
+  ~
+  ~ Licensed under EUPL, Version 1.2 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~ https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" basis,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<cds-modal
+  *ngIf="open"
+  [open]="open"
+  size="sm"
+  valtimoCdsModal
+>
+  <cds-modal-header (closeSelect)="onClose()">
+    <h3 cdsModalHeaderHeading>{{ 'pluginManagement.uploadPlugin' | translate }}</h3>
+  </cds-modal-header>
+
+  <section cdsModalContent [cdsLayer]="1">
+    <cds-dropdown
+      [appendInline]="true"
+      [label]="'pluginManagement.labels.pluginHost' | translate"
+      [placeholder]="'pluginManagement.selectHost' | translate"
+      (selected)="onHostSelected($event)"
+    >
+      <cds-dropdown-list [items]="_$hostItems()"></cds-dropdown-list>
+    </cds-dropdown>
+
+    <div [formGroup]="_fileForm">
+      <cds-file-uploader
+        [accept]="['zip']"
+        [buttonText]="'pluginManagement.upload.buttonText' | translate"
+        [description]="'pluginManagement.upload.description' | translate"
+        [disabled]="_$uploading()"
+        [multiple]="false"
+        [title]="'pluginManagement.upload.title' | translate"
+        buttonType="primary"
+        formControlName="file"
+      >
+      </cds-file-uploader>
+    </div>
+  </section>
+
+  <cds-modal-footer>
+    <button
+      cdsButton="secondary"
+      [disabled]="_$uploading()"
+      (click)="onClose()"
+    >
+      {{ 'interface.cancel' | translate }}
+    </button>
+
+    <button
+      cdsButton="primary"
+      [disabled]="!_$selectedHostId() || (_fileSelected$ | async) === false || _$uploading()"
+      (click)="onUpload()"
+    >
+      <cds-loading *ngIf="_$uploading()" [isActive]="true" size="sm"></cds-loading>
+      {{ 'interface.upload' | translate }}
+    </button>
+  </cds-modal-footer>
+</cds-modal>
