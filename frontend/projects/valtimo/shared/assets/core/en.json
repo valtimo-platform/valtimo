@@ -18,6 +18,7 @@
     "TaskDueDateSetEvent": "Task due date set > {{taskName}}"
   },
   "case": {
+    "allCases": "All cases",
     "exportButtonTooltip": "Export current case list",
     "summaryFormNotFound": "Summary form not found for '{{caseDefinitionKey}}'. A form named '{{caseDefinitionKey}}.summary' must exist using the case definition key.",
     "bulkAssign": {
@@ -47,7 +48,10 @@
       "ALL": {"description": "There is nothing to do here.", "title": "There are no cases"},
       "MINE": {"description": "Time for a short break.", "title": "No cases assigned to you"},
       "OPEN": {"description": "Come back later.", "title": "All cases have been assigned"},
-      "TEAM": {"description": "No cases have been assigned to your teams yet.", "title": "No team cases"},
+      "TEAM": {
+        "description": "No cases have been assigned to your teams yet.",
+        "title": "No team cases"
+      },
       "search": {
         "description": "There are no cases that match your search criteria.",
         "title": "No cases found"
@@ -501,7 +505,13 @@
     "setGlobalActiveVersionConfigurationIssuesWarning": "This version has unresolved configuration issues. Resolve them before setting it as the active version.",
     "globallyActive": "Globally active",
     "unlinkProcess": "Unlink",
-    "listColumns": {"name": "Name", "key": "Key", "version": "Version", "draft": "Draft", "status": "Status"},
+    "listColumns": {
+      "name": "Name",
+      "key": "Key",
+      "version": "Version",
+      "draft": "Draft",
+      "status": "Status"
+    },
     "needsConfiguration": "Needs configuration",
     "inactive": "Inactive",
     "globalActiveVersionModal": {
@@ -1511,6 +1521,25 @@
       "objectManagementConfiguration": "Object management configuration",
       "objectManagementConfigurationPlaceholder": "Select an object management configuration",
       "enabled": "Enabled"
+    },
+    "configurationIssue": "This configuration is incomplete. Please review and update the settings to match this environment."
+  },
+  "zakenApiSync": {
+    "title": "Zaak synchronisation",
+    "yes": "Yes",
+    "no": "No",
+    "assigneeSyncEnabled": "Sync assignee",
+    "roltypeUrl": "Roltype URL",
+    "noteSyncEnabled": "Sync notes",
+    "submitButton": "Configure zaak synchronisation",
+    "editModal": {
+      "title": "Zaak synchronisation",
+      "assigneeSyncEnabled": "Sync case assignee as ZaakRol",
+      "roltypeUrl": "Roltype URL",
+      "roltypeUrlPlaceholder": "Enter a roltype URL",
+      "noteSyncEnabled": "Sync case notes as ZaakNotitie",
+      "noteSubject": "ZaakNotitie subject",
+      "noteSubjectPlaceholder": "Enter a subject"
     },
     "configurationIssue": "This configuration is incomplete. Please review and update the settings to match this environment."
   },

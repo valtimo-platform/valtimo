@@ -14,6 +14,12 @@
   See the [Map widget documentation](../../../features/case/tabs/widgets.md) for the full list of recognised fields and
   a configuration example.
 
+## Enhancements
+
+* **Persistent page sizes per case definition for task list and case list**
+
+  When a user configures the page size for a case definition, either for the task or case list, this is remembered.
+  Next time they visit the task or case list for that case definition, the same page size is shown.
 * **Person card widget**
 
   A new `person-card` widget type displays personal data for a single person (full name, birthdate, BSN, phone, email
@@ -22,9 +28,31 @@
   [Person card widget documentation](../../../features/case/case-detail/tabs/widgets.md) for the full list of fields
   and a configuration example.
 
-
 ## Enhancements
 
+* **Generic case list**
+
+  A generic case list can be used instead of the default case list with case definitions listed in the sidebar. The
+  generic case list shows cases across all case definitions similar to the task list. This feature needs to be enabled
+  in the angular configuration file(s) in order to make use of it, via the `enableGenericCaseList` property.
+* **Improved actuator endpoint security**
+
+  Endpoints added to `management.endpoints.web.exposure.include` are now
+  automatically protected — no filter chain override needed.
+
+* **Hardened anonymous health responses**
+
+  Anonymous calls to `/actuator/health` only return the overall status;
+  component details require the actuator role. Kubernetes probes and load
+  balancers are unaffected.
+
+  {% hint style="warning" %}
+  Health groups (e.g. `liveness`, `readiness`) configured with
+  `show-details: ALWAYS` previously exposed component details to anonymous
+  callers. They are now also reduced to status-only for unauthenticated
+  requests. Authenticate with the actuator role to keep seeing details.
+  {% endhint %}
+  
 * **Faster Case Progress tab**
 
   The Progress tab on the case details page now loads noticeably faster, especially for cases with many associated
@@ -40,6 +68,7 @@
 
 * SmartDocuments compatibility with newer SmartDocuments versions.
 * When a header widget was configured, it was not possible to edit the header widget.
+* Fixed a permission issue on the task endpoint that prevented assignee details from being resolved for users without permission to look up other users.
 
 * **Recover from stuck migration locks**
 
