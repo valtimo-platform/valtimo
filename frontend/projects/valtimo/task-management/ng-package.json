@@ -1,6 +1,7 @@
 {
+  "deleteDestPath": false,
   "$schema": "../../../node_modules/ng-packagr/ng-package.schema.json",
-  "dest": "../../../dist/valtimo/task-management",
+  "dest": "../../../dist/.tmp-task-management",
   "lib": {
     "entryFile": "src/public_api.ts"
   },

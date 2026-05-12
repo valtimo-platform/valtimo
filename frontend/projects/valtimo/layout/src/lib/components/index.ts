@@ -28,5 +28,6 @@ export * from './widget-block';
 export * from './widget-container';
 export * from './widget-management';
 export * from './widget-map';
+export * from './widget-person-card';
 export * from './widget-highlight';
 export * from './widget-action-button/widget-action-button.component';

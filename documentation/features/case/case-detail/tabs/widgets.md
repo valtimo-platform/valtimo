@@ -37,6 +37,8 @@ The following widget types are currently supported:
   _&#x52;ender geographic data on a map using GeoJSON sources._
 * **Highlight**\
   _&#x41; compact widget that highlights a single value or the count of items in a collection._
+* **Person card**\
+  _&#x44;isplay personal data for a single person (full name, birth date, BSN, phone, email and city) in a compact card._
 
 <figure><img src="../../../../.gitbook/assets/image (21).png" alt=""><figcaption><p>Choosing widget type</p></figcaption></figure>
 {% endstep %}
@@ -437,6 +439,70 @@ Below the JSON a screenprint of the configuration in the Widget configuration UI
 See below screenshot for the presentation result of a collection. 6 files where uploaded for this example so 3 pages of each 2 cards are shown in the widget.\
 \
 ![](<../../../../.gitbook/assets/image (27).png>)
+
+</details>
+
+<details>
+
+<summary>Person card widget</summary>
+
+{% hint style="info" %}
+**Knowledge requirements**
+
+* Basic knowledge of JSON file structure.
+{% endhint %}
+
+A person card widget displays personal data for a single person in a compact card. It is intended for cases that revolve around a natural person (for example a citizen) and surfaces the most common identifying details next to each other.
+
+The following fields can be configured. Each field accepts a value path into the case document (for example `doc:/applicant/fullName`) — the widget resolves the path and renders the resulting value.
+
+* **Widget title** _(required)_\
+  _&#x54;he widget title is presented in the UI at the top-left corner of the widget and should describe the content for that widget._
+* **Widget icon** _(optional)_\
+  _&#x41;n MDI icon shown next to the widget title._
+* **Full name** _(required)_\
+  _&#x50;ath to the person's full name. This is the only required person field; the widget cannot be saved without it._
+* **Birth date** _(optional)_\
+  _&#x50;ath to the person's birth date._
+* **BSN** _(optional)_\
+  _&#x50;ath to the Dutch citizen service number (Burgerservicenummer)._
+* **Phone** _(optional)_\
+  _&#x50;ath to the person's phone number._
+* **Email** _(optional)_\
+  _&#x50;ath to the person's e-mail address._
+* **City** _(optional)_\
+  _&#x50;ath to the person's city of residence._
+
+Optional fields that resolve to an empty value are hidden in the rendered card, so the widget only shows fields that are actually filled in for the case.
+
+{% hint style="info" %}
+*Field paths:**
+
+`doc:/applicant/fullName`
+
+`doc:/applicant/birthDate`
+
+`doc:/applicant/bsn`
+
+`doc:/applicant/phone`
+
+`doc:/applicant/email`
+
+`doc:/applicant/city`
+
+This configuration is based on below JSON.
+
+```json
+"applicant": {
+  "fullName": "Jan de Vries",
+  "birthDate": "1985-03-12",
+  "bsn": "123456789",
+  "phone": "+31 6 12345678",
+  "email": "jan.devries@example.com",
+  "city": "Amsterdam"
+}
+```
+{% endhint %}
 
 </details>
 

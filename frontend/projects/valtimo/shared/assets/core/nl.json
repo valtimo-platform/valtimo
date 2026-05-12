@@ -18,6 +18,7 @@
     "TaskDueDateSetEvent": "Taak einddatum ingesteld > {{taskName}}"
   },
   "case": {
+    "allCases": "Alle dossiers",
     "exportButtonTooltip": "Exporteer huidige dossier lijst",
     "summaryFormNotFound": "Formulier niet gevonden voor '{{caseDefinitionKey}}'. Er moet een formulier bestaan met de naam '{{caseDefinitionKey}}.summary'.",
     "bulkAssign": {
@@ -1012,6 +1013,7 @@
       "collection": {"title": "Collectie", "description": "Maak een collectie aan"},
       "divider": {"title": "Scheidingslijn"},
       "map": {"title": "Kaart", "description": "Maak een kaart widget aan"},
+      "person-card": {"title": "Persoonskaart", "description": "Een persoon met de belangrijkste gegevens en contactinformatie"},
       "highlight": {
         "title": "Markering",
         "description": "Een kleine widget die één waarde of een aantal benadrukt"
@@ -1102,6 +1104,16 @@
         "key": "Pad naar GeoJSON data",
         "keyPlaceholder": "Bron pad",
         "keyTooltip": "Value resolver pad naar GeoJSON data"
+      },
+      "person-card": {
+        "description": "Kies het pictogram en de bronpaden voor elk persoonsveld.",
+        "fullNameLabel": "Volledige naam",
+        "birthDateLabel": "Geboortedatum (optioneel)",
+        "bsnLabel": "BSN (optioneel)",
+        "phoneLabel": "Telefoon (optioneel)",
+        "emailLabel": "E-mail (optioneel)",
+        "cityLabel": "Plaats (optioneel)",
+        "pathPlaceholder": "Selecteer of typ een pad"
       },
       "displayType": {
         "text": "Tekst",
@@ -1207,7 +1219,8 @@
       "linkLabel": "Link-URL (met variabelen)",
       "linkPlaceholder": "https://ritense.nl/zaak/${doc:/zaak/id}",
       "buttonTextLabel": "Knoptekst",
-      "buttonTextPlaceholder": "'Ga naar zaak'"
+      "buttonTextPlaceholder": "'Ga naar zaak'",
+      "openInNewTabLabel": "Open in nieuw tabblad"
     },
     "saveModalContent": "Weet je zeker dat je de widget configuratie wilt opslaan?"
   },
@@ -1547,6 +1560,25 @@
       "objectManagementConfiguration": "Object management-configuratie",
       "objectManagementConfigurationPlaceholder": "Selecteer een object management-configuratie",
       "enabled": "Ingeschakeld"
+    },
+    "configurationIssue": "Deze configuratie is niet volledig. Controleer en werk de instellingen bij zodat ze overeenkomen met deze omgeving."
+  },
+  "zakenApiSync": {
+    "title": "Zaak-synchronisatie",
+    "yes": "Ja",
+    "no": "Nee",
+    "assigneeSyncEnabled": "Behandelaar synchroniseren",
+    "roltypeUrl": "Roltype URL",
+    "noteSyncEnabled": "Notities synchroniseren",
+    "submitButton": "Configureer zaak-synchronisatie",
+    "editModal": {
+      "title": "Zaak-synchronisatie",
+      "assigneeSyncEnabled": "Dossier behandelaar synchroniseren als ZaakRol",
+      "roltypeUrl": "Roltype URL",
+      "roltypeUrlPlaceholder": "Voer een roltype URL in",
+      "noteSyncEnabled": "Dossier notities synchroniseren als ZaakNotitie",
+      "noteSubject": "Onderwerp van ZaakNotitie",
+      "noteSubjectPlaceholder": "Voer een onderwerp in"
     },
     "configurationIssue": "Deze configuratie is niet volledig. Controleer en werk de instellingen bij zodat ze overeenkomen met deze omgeving."
   },
@@ -2287,6 +2319,9 @@
     "map": {
       "title": "Kaart"
     },
+    "personCard": {
+      "age": "{{age}} jaar"
+    },
     "highlight": {
       "noValue": "Geen waarde"
     }
@@ -2425,6 +2460,141 @@
     "rightClickTooltip": "Klik met de rechtermuisknop voor opties",
     "deleteHelperText": "Nadat je een snelzoekitem hebt gemaakt, kun je het verwijderen door er met de rechtermuisknop op te klikken",
     "duplicateError": "Er bestaat al een snelzoekitem met deze titel"
+  },
+  "adminSettings": {
+    "title": "Instellingen",
+    "tabs": {
+      "appearance": "Weergave",
+      "featureToggles": "Functie-instellingen"
+    },
+    "appearance": {
+      "logo": {
+        "title": "Logo",
+        "fileUploaderTitle": "Logo uploaden",
+        "fileUploaderDescription": "Alleen PNG- en SVG-bestanden worden geaccepteerd. Max 10 MB.",
+        "fileUploaderButton": "Bestand kiezen",
+        "deleteConfirmationModalText": "Weet u zeker dat u dit logo wilt verwijderen?"
+      },
+      "logoDarkMode": {
+        "title": "Logo (donkere modus)"
+      },
+      "colors": {
+        "title": "Kleuren",
+        "infoMessage": "Deze kleuren bepalen het accentkleurenpalet dat in de hele applicatie wordt gebruikt.",
+        "infoLinkText": "Meer info over het genereren van een kleurenschema",
+        "reset": "Herstellen",
+        "color10": "Kleur 10",
+        "color20": "Kleur 20",
+        "color30": "Kleur 30",
+        "color40": "Kleur 40",
+        "color50": "Kleur 50",
+        "color60": "Kleur 60",
+        "color70": "Kleur 70",
+        "color80": "Kleur 80",
+        "color90": "Kleur 90",
+        "color100": "Kleur 100",
+        "pickr": {
+          "save": "OK",
+          "cancel": "Annuleren",
+          "clear": "Wissen"
+        }
+      }
+    },
+    "featureToggles": {
+      "refreshRequired": "Vernieuwing vereist",
+      "refreshModalText": "Deze instelling vereist een paginavernieuwing om effect te hebben. Wilt u nu vernieuwen?",
+      "refreshNow": "Nu vernieuwen",
+      "toggles": {
+        "allowUserThemeSwitching": {
+          "title": "Thema wisselen toestaan",
+          "description": "Gebruikers laten schakelen tussen lichte en donkere modus via de bovenbalk."
+        },
+        "enableCompactModeToggle": {
+          "title": "Compacte modus schakelaar inschakelen",
+          "description": "Toon een compacte modus schakelaar in de bovenbalk waarmee gebruikers de interface-afstand kunnen verkleinen."
+        },
+        "compactModeOnByDefault": {
+          "title": "Compacte modus standaard aan",
+          "description": "Schakel compacte modus standaard in voor alle gebruikers."
+        },
+        "enableUserNameInTopBarToggle": {
+          "title": "Gebruikersnaam weergave schakelaar inschakelen",
+          "description": "Gebruikers toestaan hun naamweergave in de bovenbalk aan of uit te zetten."
+        },
+        "showUserNameInTopBar": {
+          "title": "Gebruikersnaam in bovenbalk tonen",
+          "description": "Toon de naam van de huidige gebruiker naast het avatar in de bovenbalk."
+        },
+        "showPlantATreeButton": {
+          "title": "'Plant een boom' knop tonen",
+          "description": "Toon de 'Plant een boom' duurzaamheidsknop in de interface."
+        },
+        "largeLogoMargin": {
+          "title": "Grote logomarge",
+          "description": "Voeg extra marge toe rond het logo in de bovenbalk."
+        },
+        "applicationTitleAsSuffix": {
+          "title": "Applicatietitel als achtervoegsel",
+          "description": "Voeg de applicatietitel toe als achtervoegsel aan de browsertabtitel."
+        },
+        "experimentalDmnEditing": {
+          "title": "Experimentele DMN-bewerking",
+          "description": "Schakel de experimentele DMN-beslissingstabeleditor in."
+        },
+        "disableCaseCount": {
+          "title": "Dossiertelling uitschakelen",
+          "description": "Verberg het aantal dossiers in het menu."
+        },
+        "enableObjectManagement": {
+          "title": "Objectbeheer inschakelen",
+          "description": "Toon het menu-item Objecten in de zijbalk."
+        },
+        "sortFilesByDate": {
+          "title": "Bestanden op datum sorteren",
+          "description": "Sorteer dossiergerelateerde bestanden standaard op datum in aflopende volgorde."
+        },
+        "returnToLastUrlAfterTokenExpiration": {
+          "title": "Terugkeren naar laatste URL na inloggen",
+          "description": "Stuur gebruikers terug naar hun laatst bezochte pagina na herauthenticatie."
+        },
+        "enableTabManagement": {
+          "title": "Tabbladbeheer inschakelen",
+          "description": "Indien ingeschakeld worden tabbladen geladen via de API. Indien uitgeschakeld worden tabbladen geladen uit de omgevingsconfiguratie."
+        },
+        "hideValtimoVersionsForNonAdmins": {
+          "title": "Versie-informatie verbergen voor niet-beheerders",
+          "description": "Verberg de Valtimo-versie-informatie voor niet-beheerders."
+        },
+        "useStartEventNameAsStartFormTitle": {
+          "title": "Startgebeurteningsnaam als formuliertitel",
+          "description": "Toon de BPMN-startgebeurteningsnaam als startformuliertitel in plaats van de standaard."
+        },
+        "enableFormViewModel": {
+          "title": "Formulier view model inschakelen",
+          "description": "Gebruik het formulier view model voor het renderen van formulieren."
+        },
+        "enableIntermediateSave": {
+          "title": "Tussentijds opslaan inschakelen",
+          "description": "Gebruikers toestaan taakformuliervoortgang op te slaan zonder de taak af te ronden."
+        },
+        "enableFormFlowBreadcrumbs": {
+          "title": "Formulierstroom breadcrumbs inschakelen",
+          "description": "Toon stapsgewijze breadcrumbs in meerstaps-formulierstromen."
+        },
+        "enablePbacDocumentenApiDocuments": {
+          "title": "PBAC voor Documenten API inschakelen",
+          "description": "Gebruik op beleid gebaseerde toegangscontrole voor Documenten API-documentbeheer."
+        },
+        "enableSuppressDocumentError": {
+          "title": "Documentfouten onderdrukken",
+          "description": "Onderdrukt foutmeldingen wanneer het ophalen van documenten stil mislukt."
+        },
+        "enableIkoType": {
+          "title": "IKO-type inschakelen",
+          "description": "Schakel het IKO (Informatie Kanaal Objecten) integratietype in."
+        }
+      }
+    }
   },
   "buildingBlockManagement": {
     "title": "Bouwblokken",

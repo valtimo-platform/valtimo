@@ -114,6 +114,18 @@ interface WidgetMapContent {
   geoJsonSources: GeoJsonSource[];
 }
 
+interface WidgetPersonCardContent {
+  icon?: string;
+  person: {
+    fullName: string;
+    birthDate?: string;
+    bsn?: string;
+    phone?: string;
+    email?: string;
+    city?: string;
+  };
+}
+
 enum HighlightDisplayType {
   TEXT = 'text',
   NUMBER = 'number',
@@ -138,6 +150,7 @@ type WidgetContentProperties =
   | WidgetCustomContent
   | WidgetFormioContent
   | WidgetCollectionContent
+  | WidgetPersonCardContent
   | WidgetMapContent
   | WidgetHighlightContent;
 
@@ -153,6 +166,7 @@ export {
   WidgetHighlightContent,
   HighlightDisplayProperties,
   HighlightDisplayType,
+  WidgetPersonCardContent,
   WidgetInteractiveTableEventSearchRequest,
   WidgetFilter,
   WidgetDropdownValue,

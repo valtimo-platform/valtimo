@@ -112,6 +112,7 @@ import {AngularSplitModule} from 'angular-split';
 import {CaseDetailHeaderWidgetComponent} from './components/case-detail-header-widget/case-detail-header-widget.component';
 import {CaseListTabsComponent} from './components/case-list-tabs/case-list-tabs.component';
 import {CaseListToolbarComponent} from './components/case-list-toolbar/case-list-toolbar.component';
+import {GenericCaseListComponent} from './components/generic-case-list/generic-case-list.component';
 
 export type TabsFactory = () => Map<string, object>;
 
@@ -133,6 +134,7 @@ export type TabsFactory = () => Map<string, object>;
     CaseDetailTabFormioComponent,
     CaseListTabsComponent,
     CaseListToolbarComponent,
+    GenericCaseListComponent,
   ],
   imports: [
     CommonModule,
@@ -213,7 +215,7 @@ export type TabsFactory = () => Map<string, object>;
     CaseListActionsComponent,
     AssignmentComponent,
   ],
-  exports: [CaseListComponent, CaseDetailComponent],
+  exports: [CaseListComponent, CaseDetailComponent, CaseSupportingProcessStartModalComponent],
 })
 export class CaseModule {
   static forRoot(tabsFactory: TabsFactory): ModuleWithProviders<CaseModule> {
