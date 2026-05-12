@@ -17,8 +17,8 @@
 import {Injectable} from '@angular/core';
 import {TaskPageParams} from '../models';
 import {BehaviorSubject, combineLatest, Observable} from 'rxjs';
-import {TaskListTab} from '@valtimo/shared';
-import {map, take} from 'rxjs/operators';
+import {TaskListTab, UserSettingsService} from '@valtimo/shared';
+import {map, switchMap, take} from 'rxjs/operators';
 import {TaskListService} from './task-list.service';
 
 @Injectable()
@@ -45,7 +45,12 @@ export class TaskListPaginationService {
     );
   }
 
-  constructor(private readonly taskListService: TaskListService) {}
+  private _caseDefinitionKey: string | null = null;
+
+  constructor(
+    private readonly taskListService: TaskListService,
+    private readonly userSettingsService: UserSettingsService
+  ) {}
 
   public updateTaskPagination(
     taskType: TaskListTab,
@@ -74,6 +79,38 @@ export class TaskListPaginationService {
 
   private isNumber(value: any): boolean {
     return typeof value === 'number';
+  }
+
+  public loadPageSizeForCaseDefinition(caseDefinitionKey: string | null): void {
+    this._caseDefinitionKey = caseDefinitionKey;
+
+    if (!caseDefinitionKey) return;
+
+    this.userSettingsService.getUserSettings().pipe(take(1)).subscribe(settings => {
+      const savedSize = settings?.taskListPageSizes?.[caseDefinitionKey];
+      if (savedSize) {
+        this._pagination$.pipe(take(1)).subscribe(pagination => {
+          const updated = {...pagination};
+          for (const tab of Object.values(TaskListTab)) {
+            updated[tab] = {...updated[tab], size: savedSize, page: 0};
+          }
+          this._pagination$.next(updated);
+        });
+      }
+    });
+  }
+
+  public savePageSizePreference(size: number): void {
+    if (!this._caseDefinitionKey) return;
+
+    const caseDefinitionKey = this._caseDefinitionKey;
+    this.userSettingsService.getUserSettings().pipe(
+      take(1),
+      switchMap(settings => {
+        const pageSizes = {...(settings?.taskListPageSizes || {}), [caseDefinitionKey]: size};
+        return this.userSettingsService.saveUserSettings({...settings, taskListPageSizes: pageSizes});
+      })
+    ).subscribe();
   }
 
   private getDefaultPagination(): TaskPageParams {
