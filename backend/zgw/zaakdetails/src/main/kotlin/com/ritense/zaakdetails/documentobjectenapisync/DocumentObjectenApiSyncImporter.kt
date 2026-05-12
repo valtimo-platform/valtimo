@@ -21,6 +21,7 @@ import com.fasterxml.jackson.module.kotlin.readValue
 import com.ritense.importer.ImportRequest
 import com.ritense.importer.Importer
 import com.ritense.importer.ValtimoImportTypes.Companion.DOCUMENT_DEFINITION
+import com.ritense.importer.ValtimoImportTypes.Companion.OBJECT_MANAGEMENT
 import com.ritense.importer.ValtimoImportTypes.Companion.ZGW_ZAAKDETAIL_SYNC
 import com.ritense.objectmanagement.repository.ObjectManagementRepository
 import com.ritense.valtimo.contract.case_.CaseDefinitionId
@@ -40,7 +41,7 @@ class DocumentObjectenApiSyncImporter(
 
     override fun type(): String = ZGW_ZAAKDETAIL_SYNC
 
-    override fun dependsOn(): Set<String> = setOf(DOCUMENT_DEFINITION)
+    override fun dependsOn(): Set<String> = setOf(DOCUMENT_DEFINITION, OBJECT_MANAGEMENT)
 
     override fun supports(fileName: String): Boolean = fileName.matches(FILENAME_REGEX)
 
