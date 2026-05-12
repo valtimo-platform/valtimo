@@ -111,22 +111,24 @@
               <div class="cds--progress-text valtimo-widget-metroline__step-text">
                 <div class="valtimo-widget-metroline__step-label-row">
                   <p class="cds--progress-label">{{ step.label }}</p>
-                  <cds-toggletip align="bottom" [autoAlign]="true">
-                    <button
-                      cdsToggletipButton
-                      [removeClassnames]="['cds--toggletip-button']"
-                      type="button"
-                      class="valtimo-widget-metroline__step-info"
-                    >
-                      <svg cdsIcon="information" size="16"></svg>
-                    </button>
-                    <div
-                      cdsToggletipContent
-                      class="valtimo-widget-metroline__step-toggletip-content"
-                    >
-                      {{ step.itemLabel || '-' }}
-                    </div>
-                  </cds-toggletip>
+                  @if (step.itemLabel) {
+                    <cds-toggletip align="bottom" [autoAlign]="true">
+                      <button
+                        cdsToggletipButton
+                        [removeClassnames]="['cds--toggletip-button']"
+                        type="button"
+                        class="valtimo-widget-metroline__step-info"
+                      >
+                        <svg cdsIcon="information" size="16"></svg>
+                      </button>
+                      <div
+                        cdsToggletipContent
+                        class="valtimo-widget-metroline__step-toggletip-content"
+                      >
+                        {{ step.itemLabel }}
+                      </div>
+                    </cds-toggletip>
+                  }
                 </div>
                 @if (step.secondaryLabel) {
                   <p class="cds--progress-optional">

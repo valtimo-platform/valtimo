@@ -994,7 +994,7 @@
       "collection": {"title": "Collection", "description": "Create a collection"},
       "divider": {"title": "Divider"},
       "map": {"title": "Map", "description": "Create a map widget"},
-      "person-card": {"title": "Person card", "description": "A person with their key details and contact info"}
+      "person-card": {"title": "Person card", "description": "A person with their key details and contact info"},
       "metroline": {
         "title": "Metroline",
         "description": "Show progression as a metroline"

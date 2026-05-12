@@ -23,7 +23,6 @@ import {DocumentService} from '@valtimo/document';
 import {
   MetrolineWidget,
   WidgetAction,
-  WidgetActionButtonComponent,
   WidgetLayoutService,
   WidgetMetrolineComponent,
 } from '@valtimo/layout';
@@ -53,7 +52,6 @@ import {WidgetProcess} from '../widget-process/widget-process';
     CarbonListModule,
     CommonModule,
     TranslateModule,
-    WidgetActionButtonComponent,
     WidgetMetrolineComponent,
   ],
 })
