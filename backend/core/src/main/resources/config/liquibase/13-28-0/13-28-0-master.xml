@@ -22,5 +22,6 @@ xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liqui
 
     <include file="20260430-add-task-quick-search-table.xml" relativeToChangelogFile="true"/>
     <include file="20260505-add-hidden-task-list-column.xml" relativeToChangelogFile="true"/>
+    <include file="20260504-add-case-zaken-api-sync-table.xml" relativeToChangelogFile="true"/>
 
 </databaseChangeLog>
