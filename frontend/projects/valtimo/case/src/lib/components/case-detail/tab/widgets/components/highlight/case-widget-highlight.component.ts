@@ -19,7 +19,6 @@ import {ChangeDetectionStrategy, Component, Input} from '@angular/core';
 import {TranslateModule} from '@ngx-translate/core';
 import {
   HighlightWidget,
-  WidgetActionButtonComponent,
   WidgetHighlightComponent,
   WidgetLayoutService,
 } from '@valtimo/layout';
@@ -33,12 +32,7 @@ import {WidgetsService} from '../../widgets.service';
   templateUrl: './case-widget-highlight.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: true,
-  imports: [
-    CommonModule,
-    TranslateModule,
-    WidgetHighlightComponent,
-    WidgetActionButtonComponent,
-  ],
+  imports: [CommonModule, TranslateModule, WidgetHighlightComponent],
 })
 export class CaseWidgetHighlightComponent {
   private readonly _documentId$ = new BehaviorSubject<string>('');

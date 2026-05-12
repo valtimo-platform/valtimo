@@ -169,8 +169,7 @@ type Widget =
   | FormioWidget
   | DividerWidget
   | MapWidget
-  | PersonCardWidget;
-  | MapWidget
+  | PersonCardWidget
   | HighlightWidget;
 
 type WidgetWithUuid = Widget & {
@@ -239,8 +238,11 @@ interface WidgetGroup {
   widgets: Widget[];
 }
 
-type WidgetComponentMap = Record<Exclude<WidgetType, WidgetType.DIVIDER | WidgetType.PERSON_CARD>, Type<any>> &
-  Partial<Record<WidgetType.PERSON_CARD, Type<any>>>;
+type WidgetComponentMap = Record<
+  Exclude<WidgetType, WidgetType.DIVIDER | WidgetType.PERSON_CARD | WidgetType.HIGHLIGHT>,
+  Type<any>
+> &
+  Partial<Record<WidgetType.PERSON_CARD | WidgetType.HIGHLIGHT, Type<any>>>;
 
 type WidgetContext = 'case' | 'iko';
 

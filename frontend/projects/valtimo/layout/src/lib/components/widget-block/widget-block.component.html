@@ -19,6 +19,7 @@
 <div
   class="widget-block"
   [attr.data-carbon-theme]="theme$ | async"
+  [attr.data-widget-type]="(widget$ | async)?.type"
   [style.--widget-background-color]="widgetColors?.background"
   [style.--widget-layer-color]="widgetColors?.layer"
   [style.--widget-text-color]="widgetColors?.text"

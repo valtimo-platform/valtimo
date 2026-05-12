@@ -92,13 +92,22 @@
 </form>
 
 <ng-template #colorDropdownItemTemplate let-item="item">
-  <cds-tag
-    *ngIf="item && item.content"
-    class="valtimo-widget-management-highlight__color-tag"
-    [style.--widget-color-tag-bg]="item.tagBackground"
-    [style.--widget-color-tag-fg]="item.tagText"
-    [style.--widget-color-tag-accent]="item.tagAccent"
-  >
-    {{ item.content }}
-  </cds-tag>
+  <ng-container *ngIf="item && item.content">
+    <cds-tag
+      *ngIf="item.tagType; else customColorTag"
+      class="cds-tag--no-margin"
+      [type]="item.tagType"
+    >
+      {{ item.content }}
+    </cds-tag>
+    <ng-template #customColorTag>
+      <cds-tag
+        class="cds-tag--no-margin valtimo-widget-management-highlight__color-tag"
+        [style.--widget-color-tag-bg]="item.tagBackground"
+        [style.--widget-color-tag-fg]="item.tagText"
+      >
+        {{ item.content }}
+      </cds-tag>
+    </ng-template>
+  </ng-container>
 </ng-template>

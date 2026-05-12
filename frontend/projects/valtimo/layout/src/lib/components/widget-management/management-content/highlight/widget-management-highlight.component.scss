@@ -75,7 +75,6 @@
   &__color-tag.cds--tag {
     background-color: var(--widget-color-tag-bg, var(--cds-layer-02));
     color: var(--widget-color-tag-fg, var(--cds-text-primary));
-    box-shadow: inset 3px 0 0 0 var(--widget-color-tag-accent, var(--cds-border-subtle-01));
-    padding-left: 12px;
+    border: none;
   }
 }

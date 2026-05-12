@@ -23,9 +23,9 @@
   } as obs"
 >
   <header class="valtimo-widget-highlight__header">
-    <h4 class="valtimo-widget-highlight__title" [attr.title]="obs.widgetConfiguration?.title">
+    <p class="valtimo-widget-highlight__title" [attr.title]="obs.widgetConfiguration?.title">
       {{ obs.widgetConfiguration?.title }}
-    </h4>
+    </p>
 
     <span *ngIf="obs.widgetConfiguration?.icon" class="valtimo-widget-highlight__icon">
       <valtimo-mdi-icon-viewer
@@ -42,7 +42,7 @@
         obs.displayValue
       }}</span>
     } @else {
-      <span class="valtimo-widget-highlight__value-empty">{{
+      <span class="valtimo-widget-highlight__value-text">{{
         'widgets.highlight.noValue' | translate
       }}</span>
     }

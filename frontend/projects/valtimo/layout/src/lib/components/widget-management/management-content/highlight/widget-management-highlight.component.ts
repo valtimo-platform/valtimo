@@ -54,11 +54,11 @@ import {
 import {
   WIDGET_COLOR_ITEMS,
   WIDGET_COLOR_THEME_MAP,
+  WIDGET_COLOR_TO_TAG_TYPE,
   WIDGET_MANAGEMENT_SERVICE,
 } from '../../../../constants';
 import {IWidgetManagementService} from '../../../../interfaces';
 import {WidgetWizardService} from '../../../../services';
-import {WidgetManagementActionButtonComponent} from '../../management-action-button/widget-management-action-button.component';
 
 @Component({
   templateUrl: './widget-management-highlight.component.html',
@@ -79,7 +79,6 @@ import {WidgetManagementActionButtonComponent} from '../../management-action-but
     TagModule,
     MdiIconSelectorComponent,
     ValuePathSelectorComponent,
-    WidgetManagementActionButtonComponent,
   ],
 })
 export class WidgetManagementHighlightComponent implements OnInit, OnDestroy {
@@ -106,13 +105,14 @@ export class WidgetManagementHighlightComponent implements OnInit, OnDestroy {
     const themeType = this.$isLightTheme() ? 'light' : 'dark';
     return this.colorTiles.map(tile => {
       const variant = WIDGET_COLOR_THEME_MAP[tile.color][themeType];
+      const tagType = WIDGET_COLOR_TO_TAG_TYPE[tile.color];
       return {
         content: this.translateService.instant(tile.labelKey),
         key: tile.color,
         selected: tile.color === selectedColor,
+        tagType,
         tagBackground: variant.background,
         tagText: variant.text,
-        tagAccent: variant.accent,
       };
     });
   });
