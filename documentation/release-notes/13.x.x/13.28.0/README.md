@@ -40,6 +40,7 @@
 
 * SmartDocuments compatibility with newer SmartDocuments versions.
 * When a header widget was configured, it was not possible to edit the header widget.
+* Fixed a permission issue on the task endpoint that prevented assignee details from being resolved for users without permission to look up other users.
 
 * **Recover from stuck migration locks**
 
