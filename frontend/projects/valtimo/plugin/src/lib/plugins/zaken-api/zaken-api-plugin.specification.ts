@@ -89,12 +89,6 @@ const zakenApiPluginSpecification: PluginSpecification = {
       configurationTitle: 'Configuratienaam',
       configurationTitleTooltip:
         'Onder deze naam zal de plugin te herkennen zijn in de rest van de applicatie',
-      noteEventListenerEnabled: 'Synchroniseer Dossier notitie als Zaak-notitie naar de Zaak',
-      noteEventListenerEnabledTooltip:
-        'Wanneer geactiveerd zal bij het aanmaken, updaten of verwijderen van een Dossier notitie deze ook als Zaak-notitie worden gesynchroniseerd naar de Zaak (aangemaakt, bijgewerkt of verwijderd).',
-      'noteEventListenerEnabled.toggleOn': 'Geactiveerd',
-      'noteEventListenerEnabled.toggleOff': 'Gedeactiveerd',
-      noteSubject: 'De vaste onderwerp tekst van de Zaak-notitie',
       documentUrl: 'URL naar het document',
       documentUrlTooltip:
         'Dit veld ondersteunt URLs en proces variabelen. Gebruik pv:variable om een proces variabele uit te lezen',
@@ -189,7 +183,7 @@ const zakenApiPluginSpecification: PluginSpecification = {
         'Een, voor de initiator van de zaak relevante, toelichting op de status van een zaak.',
       'create-zaakresultaat': 'Zaakresultaat aanmaken',
       'delete-zaakresultaten': 'Zaakresultaten verwijderen',
-      'deleteZaakResultatenMessage': 'Zaakresultaten verwijderen heeft geen configuratie nodig.',
+      deleteZaakResultatenMessage: 'Zaakresultaten verwijderen heeft geen configuratie nodig.',
       resultaattypeUrl: 'Zaakresultaat type URL',
       resultaattypeUrlTooltip: 'URL-referentie naar het resultaattype.',
       resultaattoelichting: 'Zaakresultaat toelichting',
@@ -340,12 +334,6 @@ const zakenApiPluginSpecification: PluginSpecification = {
       configurationTitle: 'Configuration name',
       configurationTitleTooltip:
         'With this name the plugin will be recognizable in the rest of the application',
-      noteEventListenerEnabled: 'Synchronise Case note as Zaak-notitie to the Zaak',
-      noteEventListenerEnabledTooltip:
-        'When enabled, when creating, updating or deleting a Case note it will also be synchronized as a Zaak-notitie to the Zaak (created, updated or deleted)',
-      'noteEventListenerEnabled.toggleOn': 'Enabled',
-      'noteEventListenerEnabled.toggleOff': 'Disabled',
-      noteSubject: 'The fixed subject text of the Zaak-notitie',
       documentUrl: 'URL to the document',
       documentUrlTooltip:
         'This field supports URLs and process variables. Use pv:variable to read a process variable',
@@ -440,7 +428,7 @@ const zakenApiPluginSpecification: PluginSpecification = {
         'An explanation of the status of a zaak that is relevant to the initiator of the zaak.',
       'create-zaakresultaat': 'Create Zaakresultaat',
       'delete-zaakresultaten': 'Delete Zaakresultaten',
-      'deleteZaakResultatenMessage': 'Delete Zaakresultaten does not require any configuration.',
+      deleteZaakResultatenMessage: 'Delete Zaakresultaten does not require any configuration.',
       resultaattypeUrl: 'Zaakresultaat type URL',
       resultaattypeUrlTooltip: 'URL reference to the resultaat type.',
       resultaattoelichting: 'Zaakresultaat explanation',

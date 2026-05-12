@@ -273,7 +273,7 @@ class PluginConfigurationMappingResolverImplTest {
     fun `recheckIssuesForProcessDefinition emits resolved event when all links are valid`() {
         val pdId = ProcessDefinitionId.of("pd-1")
         val link = processDefinitionCaseDefinition("pd-1")
-        whenever(processDefinitionCaseDefinitionService.findByProcessDefinitionId(eq(pdId))).thenReturn(link)
+        whenever(processDefinitionCaseDefinitionService.findByProcessDefinitionIdOrNull(eq(pdId))).thenReturn(link)
         whenever(processDefinitionCaseDefinitionService.findProcessDefinitionCaseDefinitions(eq(caseDefinitionId)))
             .thenReturn(listOf(link))
         whenever(pluginProcessLinkRepository.findByProcessDefinitionId("pd-1")).thenReturn(emptyList())
