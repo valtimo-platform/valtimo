@@ -1,4 +1,5 @@
 {
+  "deleteDestPath": false,
   "$schema": "../../../node_modules/ng-packagr/ng-package.schema.json",
   "dest": "../../../dist/valtimo/logging",
   "lib": {

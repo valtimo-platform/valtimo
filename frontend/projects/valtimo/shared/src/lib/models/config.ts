@@ -70,7 +70,6 @@ interface OverrideFormioOptions extends FormioOptions {
 
 interface ValtimoConfigFeatureToggles {
   applicationTitleAsSuffix?: boolean;
-  enableHackathonCasesPage?: boolean;
   showUserNameInTopBar?: boolean;
   showPlantATreeButton?: boolean;
   experimentalDmnEditing?: boolean;

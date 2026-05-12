@@ -68,9 +68,17 @@ class ZakenApiHttpSecurityConfigurer : HttpSecurityConfigurer {
                             "/api/management/v1/case-definition/{caseDefinitionKey}/version/{versionTag}/zaak-type-link"
                         )
                     ).hasAuthority(ADMIN)
+                    .requestMatchers(antMatcher(GET, ZAKEN_API_SYNC_MANAGEMENT_URL)).hasAuthority(ADMIN)
+                    .requestMatchers(antMatcher(PUT, ZAKEN_API_SYNC_MANAGEMENT_URL)).hasAuthority(ADMIN)
+                    .requestMatchers(antMatcher(DELETE, ZAKEN_API_SYNC_MANAGEMENT_URL)).hasAuthority(ADMIN)
             }
         } catch (e: Exception) {
             throw HttpConfigurerConfigurationException(e)
         }
+    }
+
+    companion object {
+        private const val ZAKEN_API_SYNC_MANAGEMENT_URL =
+            "/api/management/v1/case-definition/{caseDefinitionKey}/version/{caseDefinitionVersionTag}/zaken-api-sync"
     }
 }
