@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,11 +14,12 @@
  * limitations under the License.
  */
 
-package com.ritense.valtimo.web.rest
+package com.ritense.valtimo.web.rest.actuator
 
 import com.jayway.jsonpath.JsonPath.read
 import com.jayway.jsonpath.PathNotFoundException
 import com.ritense.valtimo.contract.authentication.AuthoritiesConstants
+import com.ritense.valtimo.web.rest.SecuritySpecificEndpointIntegrationTest
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
@@ -34,7 +35,11 @@ import java.util.Base64
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.CsvSource
 
-@TestPropertySource(properties = ["management.port=0"])
+@TestPropertySource(properties = [
+    "management.port=0",
+    "management.endpoints.web.exposure.include=health,configprops,env,info,mappings,loggers,logfile",
+    "logging.file.name=build/test-actuator.log"
+])
 class ActuatorSecurityIntTest : SecuritySpecificEndpointIntegrationTest() {
 
     @Test
@@ -147,6 +152,92 @@ class ActuatorSecurityIntTest : SecuritySpecificEndpointIntegrationTest() {
         val request = MockMvcRequestBuilders.request(HttpMethod.GET, "/actuator/configprops")
             .init()
         assertHttpStatus(request, HttpStatus.FORBIDDEN)
+    }
+
+    @Test
+    fun `unauthenticated user should get 401 on protected actuator endpoint`() {
+        val request = MockMvcRequestBuilders.request(HttpMethod.GET, "/actuator/configprops")
+            .init()
+        assertHttpStatus(request, HttpStatus.UNAUTHORIZED)
+    }
+
+    @Test
+    fun `unauthenticated request should include actuator realm in WWW-Authenticate header`() {
+        val request = MockMvcRequestBuilders.request(HttpMethod.GET, "/actuator/configprops")
+            .init()
+
+        val response = mockMvc.perform(request).andReturn().response
+        assertThat(response.status).isEqualTo(HttpStatus.UNAUTHORIZED.value())
+        assertThat(response.getHeader("WWW-Authenticate"))
+            .isNotNull()
+            .contains("realm=\"Actuator realm\"")
+    }
+
+    @Test
+    fun `request with wrong basic auth credentials should return 401`() {
+        val wrongCredentials = Base64.getEncoder().encodeToString("test:wrong-password".toByteArray())
+        val request = MockMvcRequestBuilders.request(HttpMethod.GET, "/actuator/configprops")
+            .init()
+            .header("Authorization", "Basic $wrongCredentials")
+
+        assertHttpStatus(request, HttpStatus.UNAUTHORIZED)
+    }
+
+    @Test
+    fun `actuator user should have access to actuator discovery endpoint`() {
+        val request = MockMvcRequestBuilders.request(HttpMethod.GET, "/actuator")
+            .init()
+            .withBasicTestUser()
+        assertHttpStatus(request, HttpStatus.OK)
+    }
+
+    @Test
+    fun `unauthenticated user should have access to actuator discovery endpoint when health details are gated to actuator role`() {
+        val request = MockMvcRequestBuilders.request(HttpMethod.GET, "/actuator")
+            .init()
+        assertHttpStatus(request, HttpStatus.OK)
+    }
+
+    @ParameterizedTest
+    @CsvSource("/actuator/env", "/actuator/info", "/actuator/mappings", "/actuator/loggers")
+    fun `actuator user should have access to protected actuator endpoint`(path: String) {
+        val request = MockMvcRequestBuilders.request(HttpMethod.GET, path)
+            .init()
+            .withBasicTestUser()
+        assertHttpStatus(request, HttpStatus.OK)
+    }
+
+    @ParameterizedTest
+    @CsvSource("/actuator/env", "/actuator/info", "/actuator/mappings", "/actuator/loggers", "/actuator/logfile")
+    @WithMockUser(authorities = [AuthoritiesConstants.USER])
+    fun `non-actuator authenticated user should get 403 on protected actuator endpoint`(path: String) {
+        val request = MockMvcRequestBuilders.request(HttpMethod.GET, path)
+            .init()
+        assertHttpStatus(request, HttpStatus.FORBIDDEN)
+    }
+
+    @ParameterizedTest
+    @CsvSource("/actuator/env", "/actuator/info", "/actuator/mappings", "/actuator/loggers", "/actuator/logfile")
+    fun `unauthenticated user should get 401 on protected actuator endpoint`(path: String) {
+        val request = MockMvcRequestBuilders.request(HttpMethod.GET, path)
+            .init()
+        assertHttpStatus(request, HttpStatus.UNAUTHORIZED)
+    }
+
+    @Test
+    fun `actuator user can POST to loggers without CSRF token`() {
+        val request = MockMvcRequestBuilders.request(HttpMethod.POST, "/actuator/loggers/com.ritense.valtimo")
+            .accept(MediaType.APPLICATION_JSON)
+            .contentType(MediaType.APPLICATION_JSON)
+            .content("{}")
+            .with { r: MockHttpServletRequest ->
+                r.remoteAddr = "8.8.8.8"
+                r
+            }
+            .withBasicTestUser()
+
+        val response = mockMvc.perform(request).andReturn().response
+        assertThat(response.status).isEqualTo(HttpStatus.NO_CONTENT.value())
     }
 
     fun MockHttpServletRequestBuilder.init() =
