@@ -23,6 +23,7 @@ import com.ritense.valtimo.BaseIntegrationTest;
 import com.ritense.valtimo.contract.authentication.model.ValtimoUser;
 import com.ritense.valtimo.domain.user.UserSettings;
 import com.ritense.valtimo.repository.UserSettingsRepository;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 import org.junit.jupiter.api.Test;
@@ -81,5 +82,30 @@ class UserSettingsServiceIntTest extends BaseIntegrationTest {
         assertTrue(foundUserSettings.isPresent());
         assertThat(foundUserSettings.get().getUsername()).isEqualTo("example");
         assertThat(foundUserSettings.get().getSettings()).isEqualTo(userSettings.getSettings());
+    }
+
+    @Test
+    void saveUserSettingsShouldMergeWithExisting() {
+        // given
+        ValtimoUser user = new ValtimoUser();
+        user.setUsername("merge-test");
+
+        userSettingsService.saveUserSettings(user, new HashMap<>(Map.of(
+            "languageCode", "nl",
+            "preferredTheme", "white"
+        )));
+
+        // when
+        userSettingsService.saveUserSettings(user, new HashMap<>(Map.of(
+            "caseListPageSizes", Map.of("invoices", 25)
+        )));
+
+        // then
+        Optional<UserSettings> result = userSettingsRepository.findById("merge-test");
+        assertTrue(result.isPresent());
+        Map<String, Object> settings = result.get().getSettings();
+        assertThat(settings.get("languageCode")).isEqualTo("nl");
+        assertThat(settings.get("preferredTheme")).isEqualTo("white");
+        assertThat(settings.get("caseListPageSizes")).isEqualTo(Map.of("invoices", 25));
     }
 }

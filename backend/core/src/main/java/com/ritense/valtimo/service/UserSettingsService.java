@@ -19,6 +19,7 @@ package com.ritense.valtimo.service;
 import com.ritense.valtimo.contract.authentication.ManageableUser;
 import com.ritense.valtimo.domain.user.UserSettings;
 import com.ritense.valtimo.repository.UserSettingsRepository;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 
@@ -35,6 +36,11 @@ public class UserSettingsService {
     }
 
     public void saveUserSettings(ManageableUser user, Map<String, Object> settings) {
-        userSettingsRepository.save(new UserSettings(user.getUsername(), settings));
+        Map<String, Object> existing = userSettingsRepository.findById(user.getUsername())
+            .map(UserSettings::getSettings)
+            .map(HashMap::new)
+            .orElseGet(HashMap::new);
+        existing.putAll(settings);
+        userSettingsRepository.save(new UserSettings(user.getUsername(), existing));
     }
 }
