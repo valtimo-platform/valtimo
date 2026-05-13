@@ -22,6 +22,15 @@
   [Person card widget documentation](../../../features/case/case-detail/tabs/widgets.md) for the full list of fields
   and a configuration example.
 
+* **Highlight widget**
+
+  A new `highlight` widget type emphasises a single value or the count of items in a collection on the case detail
+  page. The configured JSON path resolves to a primitive value (string, number, boolean). Highlight widgets are
+  always one column wide, use the selected accent colour for the left border and optional icon, and can include an
+  optional action button (process or link). See the
+  [Highlight widget documentation](../../../features/case/case-detail/tabs/widgets.md) for the full list of
+  configuration options.
+
 ## Enhancements
 
 * **Generic case list**

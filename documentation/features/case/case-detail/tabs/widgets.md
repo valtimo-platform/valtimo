@@ -594,16 +594,21 @@ The widget configuration is split into three sections:
 
 1. **Widget identity**
    * **Widget title** — the label displayed at the top of the widget.
-   * **Icon** — an optional MDI icon, identical to the icon picker used by the other widgets.
+   * **Icon** — an optional MDI icon, identical to the icon picker used by the other widgets. The icon is
+     rendered in the selected accent color in the top-right corner of the widget.
 2. **Action**
-   * **Action button type** — choose between a process action (start a process from the widget) or an external link,
-     identical to the action button on the other widgets.
+   * **Action button type** — optionally choose between a process action (start a process from the widget) or an
+     external link, identical to the action button on the other widgets.
 3. **Value & Accent color**
    * **Value** — the value resolver path that will be displayed (for example `doc:/customer/firstName` or
      `doc:/uploadedFiles`). If the path resolves to a single primitive value (string, number, boolean) the value
      itself is rendered. If it resolves to an array, the number of items in the array is rendered instead.
-   * **Accent color** — the same colour palette that is available for the other widgets. The selected colour is
-     used for the left-hand border, the title and the value text.
+   * **Accent color** — the same color palette that is available for the other widgets. The selected color is
+     applied to the left-hand border and to the icon. The title and value text keep the default text colors so
+     the highlighted value stays legible against any accent. In the color picker, colors that have a Carbon tag
+     equivalent (Blue, Purple, Turquoise, Green, Brown, Red, High contrast) are previewed using the same canonical
+     Carbon tones as the case status tags; the remaining colors (Periwinkle, Orange, Yellow, Default) keep their
+     widget-specific tones.
 
 The widget width is fixed to one column for highlight widgets and the width step in the wizard is hidden
 accordingly.
