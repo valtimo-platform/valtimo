@@ -64,7 +64,7 @@ class DocumentObjectenApiSyncImporterTest {
 
     @Test
     fun `should depend on documentdefinition`() {
-        assertThat(importer.dependsOn()).contains("documentdefinition")
+        assertThat(importer.dependsOn()).contains("documentdefinition", "objectmanagement")
     }
 
     @Test

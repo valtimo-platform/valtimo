@@ -287,3 +287,6 @@ export * from './lib/interfaces';
 
 // assignment
 export * from './lib/components/assign-user/assignment.component';
+
+// Color picker
+export * from './lib/components/color-picker/color-picker.component';

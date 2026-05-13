@@ -80,3 +80,9 @@ export const RIGHT_SIDEBAR_TEST_IDS = {
   languageDropdown: 'rightSidebarLanguageDropdown',
   themeDropdown: 'rightSidebarThemeDropdown',
 } as const;
+
+export const COLOR_PICKER_TEST_IDS = {
+  label: 'colorPickerLabel',
+  container: 'colorPickerContainer',
+  trigger: 'colorPickerTrigger',
+} as const;

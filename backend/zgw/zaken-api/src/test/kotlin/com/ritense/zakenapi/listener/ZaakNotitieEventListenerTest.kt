@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,15 +16,19 @@
 
 package com.ritense.zakenapi.listener
 
-import com.ritense.plugin.service.PluginService
+import com.ritense.document.domain.Document
+import com.ritense.document.domain.impl.JsonSchemaDocumentDefinitionId
+import com.ritense.document.service.DocumentService
+import com.ritense.valtimo.contract.case_.CaseDefinitionId
+import com.ritense.valtimo.contract.document.CaseDocumentResolver
 import com.ritense.valtimo.contract.event.NoteCreatedEvent
 import com.ritense.valtimo.contract.event.NoteDeletedEvent
 import com.ritense.valtimo.contract.event.NoteUpdatedEvent
-import com.ritense.zakenapi.ZaakUrlProvider
-import com.ritense.zakenapi.ZakenApiPlugin
 import com.ritense.zakenapi.service.ZaakNotitieService
-import org.junit.Before
-import org.junit.Test
+import com.ritense.zakenapi.sync.CaseZakenApiSync
+import com.ritense.zakenapi.sync.CaseZakenApiSyncManagementService
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Test
 import org.mockito.kotlin.any
 import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.eq
@@ -32,117 +36,108 @@ import org.mockito.kotlin.mock
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.verifyNoInteractions
 import org.mockito.kotlin.whenever
-import java.net.URI
 import java.util.UUID
 
 internal class ZaakNotitieEventListenerTest {
 
-    private lateinit var zakenApiPlugin: ZakenApiPlugin
-    private lateinit var zaakUrlProvider: ZaakUrlProvider
-    private lateinit var pluginService: PluginService
+    private val noteDocumentId = UUID.fromString("8f40482d-5598-48e0-9b26-c59e33e9ac0c")
+    private val caseDefinitionId = CaseDefinitionId("house", "1.0.0")
+    private val activeSyncConfig = CaseZakenApiSync(
+        caseDefinitionId = caseDefinitionId,
+        noteSyncEnabled = true,
+        noteSubject = "Test subject",
+    )
+
     private lateinit var zaakNotitieService: ZaakNotitieService
+    private lateinit var caseZakenApiSyncManagementService: CaseZakenApiSyncManagementService
+    private lateinit var documentService: DocumentService
+    private lateinit var caseDocumentResolver: CaseDocumentResolver
 
     private lateinit var zaakNotitieEventListener: ZaakNotitieEventListener
 
-    @Before
+    @BeforeEach
     fun setup() {
-        zakenApiPlugin = mock {
-            on { noteEventListenerEnabled } doReturn true
-        }
-        zaakUrlProvider = mock {
-            on { getZaakUrl(eq(documentId())) } doReturn zaakUrl()
-        }
-        pluginService = mock {
-            on {
-                createInstance(
-                    clazz = eq(ZakenApiPlugin::class.java),
-                    configurationFilter = any()
-                )
-            } doReturn zakenApiPlugin
-        }
         zaakNotitieService = mock()
+        caseZakenApiSyncManagementService = mock {
+            on { getSyncConfiguration(eq(caseDefinitionId)) } doReturn activeSyncConfig
+        }
+        caseDocumentResolver = mock {
+            on { resolveCaseDocumentId(eq(noteDocumentId)) } doReturn noteDocumentId
+        }
+        val definitionId = JsonSchemaDocumentDefinitionId.existingId("house", caseDefinitionId)
+        val document = mock<Document> { on { definitionId() } doReturn definitionId }
+        documentService = mock {
+            on { get(eq(noteDocumentId.toString())) } doReturn document
+        }
 
-        zaakNotitieEventListener = ZaakNotitieEventListener(zaakUrlProvider, pluginService, zaakNotitieService)
+        zaakNotitieEventListener = ZaakNotitieEventListener(
+            zaakNotitieService,
+            caseZakenApiSyncManagementService,
+            documentService,
+            caseDocumentResolver,
+        )
     }
 
     @Test
-    fun `should handle NoteCreatedEvent and trigger create ZaakNotitie when plugin property noteEventListenerEnabled is true`() {
-        // when
+    fun `should create ZaakNotitie when note sync is enabled`() {
         zaakNotitieEventListener.handleNoteCreatedEvent(noteCreatedEvent())
 
-        // then
-        verify(zaakNotitieService).createZaakNotitieFrom(any())
+        verify(zaakNotitieService).createZaakNotitieFrom(any(), eq("Test subject"))
     }
 
     @Test
-    fun `should handle NoteCreatedEvent and not trigger create ZaakNotitie when plugin property noteEventListenerEnabled is false`() {
-        // given
-        whenever(zakenApiPlugin.noteEventListenerEnabled)
-            .thenReturn(false)
+    fun `should not create ZaakNotitie when note sync is disabled`() {
+        whenever(caseZakenApiSyncManagementService.getSyncConfiguration(eq(caseDefinitionId)))
+            .thenReturn(activeSyncConfig.copy(noteSyncEnabled = false))
 
-        // when
         zaakNotitieEventListener.handleNoteCreatedEvent(noteCreatedEvent())
 
-        // then
         verifyNoInteractions(zaakNotitieService)
     }
 
     @Test
-    fun `should handle NoteCreatedUpdated and trigger update ZaakNotitie when plugin property noteEventListenerEnabled is true`() {
-        // when
-        zaakNotitieEventListener.handleNoteUpdatedEvent(noteUpdatedEvent())
+    fun `should not create ZaakNotitie when no sync config exists for case definition`() {
+        whenever(caseZakenApiSyncManagementService.getSyncConfiguration(eq(caseDefinitionId)))
+            .thenReturn(null)
 
-        // then
-        verify(zaakNotitieService).updateZaakNotitieFrom(any())
-    }
+        zaakNotitieEventListener.handleNoteCreatedEvent(noteCreatedEvent())
 
-    @Test
-    fun `should handle NoteCreatedUpdated and not trigger update ZaakNotitie when plugin property noteEventListenerEnabled is false`() {
-        // given
-        whenever(zakenApiPlugin.noteEventListenerEnabled)
-            .thenReturn(false)
-
-        // when
-        zaakNotitieEventListener.handleNoteUpdatedEvent(noteUpdatedEvent())
-
-        // then
         verifyNoInteractions(zaakNotitieService)
     }
 
     @Test
-    fun `should handle NoteCreatedDeleted and trigger delete ZaakNotitie when plugin property noteEventListenerEnabled is true`() {
-        // when
+    fun `should update ZaakNotitie when note sync is enabled`() {
+        zaakNotitieEventListener.handleNoteUpdatedEvent(noteUpdatedEvent())
+
+        verify(zaakNotitieService).updateZaakNotitieFrom(any(), eq("Test subject"))
+    }
+
+    @Test
+    fun `should not update ZaakNotitie when note sync is disabled`() {
+        whenever(caseZakenApiSyncManagementService.getSyncConfiguration(eq(caseDefinitionId)))
+            .thenReturn(activeSyncConfig.copy(noteSyncEnabled = false))
+
+        zaakNotitieEventListener.handleNoteUpdatedEvent(noteUpdatedEvent())
+
+        verifyNoInteractions(zaakNotitieService)
+    }
+
+    @Test
+    fun `should delete ZaakNotitie when note sync is enabled`() {
         zaakNotitieEventListener.handleNoteDeletedEvent(noteDeletedEvent())
 
-        // then
         verify(zaakNotitieService).deleteZaakNotitieFrom(any())
     }
 
-    @Test
-    fun `should handle NoteCreatedDeleted and not trigger delete ZaakNotitie when plugin property noteEventListenerEnabled is false`() {
-        // given
-        whenever(zakenApiPlugin.noteEventListenerEnabled)
-            .thenReturn(false)
-
-        // when
-        zaakNotitieEventListener.handleNoteDeletedEvent(noteDeletedEvent())
-
-        // then
-        verifyNoInteractions(zaakNotitieService)
-    }
-
-    private fun documentId() = UUID.fromString("8f40482d-5598-48e0-9b26-c59e33e9ac0c")
-    private fun zaakUrl() = URI.create("https://zakenapi.com/zaken/a03bdcec-fbff-4856-852b-0a089ae9e2af")
-
     private fun noteCreatedEvent(): NoteCreatedEvent = mock {
-        on { this.noteDocumentId } doReturn documentId()
+        on { this.noteDocumentId } doReturn noteDocumentId
     }
 
     private fun noteUpdatedEvent(): NoteUpdatedEvent = mock {
-        on { this.noteDocumentId } doReturn documentId()
+        on { this.noteDocumentId } doReturn noteDocumentId
     }
 
     private fun noteDeletedEvent(): NoteDeletedEvent = mock {
-        on { this.noteDocumentId } doReturn documentId()
+        on { this.noteDocumentId } doReturn noteDocumentId
     }
 }

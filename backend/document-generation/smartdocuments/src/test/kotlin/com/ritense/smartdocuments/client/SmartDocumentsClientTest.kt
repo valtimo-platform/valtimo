@@ -46,6 +46,7 @@ import org.mockito.kotlin.verify
 import org.springframework.http.HttpStatus
 import org.springframework.web.client.HttpClientErrorException
 import org.springframework.web.client.RestClient
+import java.util.concurrent.TimeUnit
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 internal class SmartDocumentsClientTest : BaseTest() {
@@ -90,7 +91,14 @@ internal class SmartDocumentsClientTest : BaseTest() {
     @BeforeEach
     fun resetMocks() {
         Mockito.reset(temporaryResourceStorageService, client)
+        // Drain any pending recorded requests from previous tests so each test sees a clean queue
+        while (mockDocumentenApi.takeRequest(1, TimeUnit.MILLISECONDS) != null) { /* drain */ }
+        requestCountBaseline = mockDocumentenApi.requestCount
     }
+
+    private var requestCountBaseline: Int = 0
+    private val requestsThisTest: Int
+        get() = mockDocumentenApi.requestCount - requestCountBaseline
 
     @AfterAll
     fun tearDown() {
@@ -203,6 +211,8 @@ internal class SmartDocumentsClientTest : BaseTest() {
             </html>
         """.trimIndent()
 
+        // First attempt and fallback attempt both fail with 400 → exception is propagated
+        mockDocumentenApi.enqueue(mockResponse(responseBody, "text/html; charset=utf-8", 400))
         mockDocumentenApi.enqueue(mockResponse(responseBody, "text/html; charset=utf-8", 400))
 
         val exception = assertThrows(HttpClientErrorException::class.java) {
@@ -220,6 +230,83 @@ internal class SmartDocumentsClientTest : BaseTest() {
             )
         }
         assertThat(exception.statusCode).isEqualTo(HttpStatus.BAD_REQUEST)
+        assertThat(requestsThisTest).isEqualTo(2)
+    }
+
+    @Test
+    fun `200 ok response should send the original templateGroup unchanged`() {
+        val responseBody = """
+            {
+                "file": [
+                    {
+                        "filename": "test.pdf",
+                        "document": { "data": "Y29udGVudA==" },
+                        "outputFormat": "PDF"
+                    }
+                ]
+            }
+        """.trimIndent()
+
+        mockDocumentenApi.enqueue(mockResponse(responseBody))
+
+        client.generateDocument(
+            authentication,
+            SmartDocumentsRequest(
+                emptyMap(),
+                SmartDocumentsRequest.SmartDocument(
+                    SmartDocumentsRequest.Selection("my-real-template-group", "template")
+                )
+            )
+        )
+
+        assertThat(requestsThisTest).isEqualTo(1)
+        val sentBody = mockDocumentenApi.takeRequest().body.readUtf8()
+        assertThat(sentBody).contains("\"TemplateGroup\":\"my-real-template-group\"")
+    }
+
+    @Test
+    fun `400 Bad Request on first attempt should fall back to a random templateGroup and succeed`() {
+        val errorBody = """
+            <!doctype html>
+            <html lang="en"><head><title>HTTP Status 400 – Bad Request</title></head>
+            <body><h1>HTTP Status 400 – Bad Request</h1></body></html>
+        """.trimIndent()
+        val successBody = """
+            {
+                "file": [
+                    {
+                        "filename": "test.pdf",
+                        "document": { "data": "Y29udGVudA==" },
+                        "outputFormat": "PDF"
+                    }
+                ]
+            }
+        """.trimIndent()
+
+        mockDocumentenApi.enqueue(mockResponse(errorBody, "text/html; charset=utf-8", 400))
+        mockDocumentenApi.enqueue(mockResponse(successBody))
+
+        val response = client.generateDocument(
+            authentication,
+            SmartDocumentsRequest(
+                emptyMap(),
+                SmartDocumentsRequest.SmartDocument(
+                    SmartDocumentsRequest.Selection("my-real-template-group", "template")
+                )
+            )
+        )
+
+        assertEquals(1, response.file.size)
+        assertEquals("test.pdf", response.file[0].filename)
+
+        assertThat(requestsThisTest).isEqualTo(2)
+        val firstBody = mockDocumentenApi.takeRequest().body.readUtf8()
+        val fallbackBody = mockDocumentenApi.takeRequest().body.readUtf8()
+        assertThat(firstBody).contains("\"TemplateGroup\":\"my-real-template-group\"")
+        assertThat(fallbackBody).doesNotContain("\"TemplateGroup\":\"my-real-template-group\"")
+        assertThat(fallbackBody).containsPattern(
+            "\"TemplateGroup\":\"[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\""
+        )
     }
 
     @Test
@@ -260,6 +347,8 @@ internal class SmartDocumentsClientTest : BaseTest() {
     @Test
     fun `400 Bad Request response should throw exception when generating document stream`() {
         val responseBody = readFileAsString("/data/post-generate-document-400-error-response.html")
+        // First attempt and fallback attempt both fail with 400 → exception is propagated
+        mockDocumentenApi.enqueue(mockResponse(responseBody, "text/html; charset=utf-8", 400))
         mockDocumentenApi.enqueue(mockResponse(responseBody, "text/html; charset=utf-8", 400))
 
         val exception = assertThrows(HttpClientErrorException::class.java) {
@@ -276,6 +365,7 @@ internal class SmartDocumentsClientTest : BaseTest() {
         }
 
         assertThat(exception.statusCode).isEqualTo(HttpStatus.BAD_REQUEST)
+        assertThat(requestsThisTest).isEqualTo(2)
         verify(temporaryResourceStorageService, never()).store(any(), any())
     }
 

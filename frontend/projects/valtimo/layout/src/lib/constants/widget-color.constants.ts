@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+import {TagType} from 'carbon-components-angular';
 import {WidgetColor} from '../models';
 
 type WidgetColorThemeVariant = 'light' | 'dark';
@@ -190,6 +191,28 @@ const WIDGET_COLOR_THEME_MAP: Record<WidgetColor, WidgetColorTheme> = {
   },
 };
 
+const WIDGET_COLOR_TO_TAG_TYPE: Partial<Record<WidgetColor, TagType>> = {
+  [WidgetColor.HIGHCONTRAST]: 'high-contrast',
+  [WidgetColor.BLUE]: 'blue',
+  [WidgetColor.PURPLE]: 'purple',
+  [WidgetColor.TURQOISE]: 'teal',
+  [WidgetColor.GREEN]: 'green',
+  [WidgetColor.BROWN]: 'warm-gray',
+  [WidgetColor.RED]: 'red',
+};
+
+const AVATAR_COLOR_PALETTE: WidgetColor[] = [
+  WidgetColor.BLUE,
+  WidgetColor.PERIWINKLE,
+  WidgetColor.PURPLE,
+  WidgetColor.TURQOISE,
+  WidgetColor.GREEN,
+  WidgetColor.BROWN,
+  WidgetColor.RED,
+  WidgetColor.ORANGE,
+  WidgetColor.YELLOW,
+];
+
 const WIDGET_COLOR_ILLUSTRATION_MAP: Record<WidgetColor, string> = {
   [WidgetColor.YELLOW]: 'valtimo-layout/img/widget-management/color/yellow.svg',
   [WidgetColor.ORANGE]: 'valtimo-layout/img/widget-management/color/orange.svg',
@@ -205,9 +228,11 @@ const WIDGET_COLOR_ILLUSTRATION_MAP: Record<WidgetColor, string> = {
 };
 
 export {
+  AVATAR_COLOR_PALETTE,
   WIDGET_COLOR_ILLUSTRATION_MAP,
   WIDGET_COLOR_ITEMS,
   WIDGET_COLOR_THEME_MAP,
+  WIDGET_COLOR_TO_TAG_TYPE,
   type WidgetColorThemeVariant,
   type WidgetColorVariant,
 };

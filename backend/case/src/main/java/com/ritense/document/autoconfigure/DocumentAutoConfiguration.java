@@ -29,6 +29,7 @@ import com.ritense.document.importer.CaseJsonSchemaDocumentDefinitionImporter;
 import com.ritense.document.listener.DocumentDefinitionCaseEventListener;
 import com.ritense.document.listener.JsonSchemaDocumentTeamChangedListener;
 import com.ritense.document.repository.DocumentDefinitionRepository;
+import com.ritense.document.repository.InternalCaseStatusHistoryRepository;
 import com.ritense.document.repository.DocumentDefinitionSequenceRepository;
 import com.ritense.document.repository.impl.JsonSchemaDocumentRepository;
 import com.ritense.document.service.CaseTagService;
@@ -97,7 +98,8 @@ public class DocumentAutoConfiguration {
         final InternalCaseStatusService internalCaseStatusService,
         final CaseTagService caseTagService,
         final Optional<TeamManagementService> teamManagementService,
-        final EntityManager entityManager
+        final EntityManager entityManager,
+        final InternalCaseStatusHistoryRepository internalCaseStatusHistoryRepository
     ) {
         return new JsonSchemaDocumentService(
             documentRepository,
@@ -112,7 +114,8 @@ public class DocumentAutoConfiguration {
             internalCaseStatusService,
             caseTagService,
             teamManagementService.orElse(null),
-            entityManager
+            entityManager,
+            internalCaseStatusHistoryRepository
         );
     }
 

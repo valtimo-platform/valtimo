@@ -102,7 +102,8 @@ open class PluginConfigurationMappingResolverImpl(
 
     override fun recheckIssuesForProcessDefinition(processDefinitionId: String) {
         val link = processDefinitionCaseDefinitionService
-            .findByProcessDefinitionId(ProcessDefinitionId.of(processDefinitionId))
+            .findByProcessDefinitionIdOrNull(ProcessDefinitionId.of(processDefinitionId))
+            ?: return
         val caseDefinitionId = link.id.caseDefinitionId
 
         val processDefinitionIds = processDefinitionCaseDefinitionService

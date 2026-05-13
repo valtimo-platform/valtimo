@@ -21,6 +21,8 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import com.ritense.documentenapi.web.rest.dto.RelatedFileDto
 import com.ritense.plugin.service.PluginService
 import com.ritense.resource.service.TemporaryResourceStorageService
+import com.ritense.valtimo.contract.authentication.UserManagementService
+import com.ritense.valtimo.contract.authentication.model.ValtimoUser
 import com.ritense.valtimo.contract.document.CaseDocumentResolver
 import com.ritense.valtimo.contract.json.MapperSingleton
 import com.ritense.valueresolver.ValueResolverService
@@ -54,8 +56,10 @@ import com.ritense.zakenapi.domain.ZaakResultaat
 import com.ritense.zakenapi.domain.ZaakbesluitResponse
 import com.ritense.zakenapi.domain.ZaakeigenschapResponse
 import com.ritense.zakenapi.domain.ZaakopschortingRequest
+import com.ritense.zakenapi.domain.rol.BetrokkeneType
 import com.ritense.zakenapi.domain.rol.Rol
 import com.ritense.zakenapi.domain.rol.RolMedewerker
+import com.ritense.zakenapi.domain.rol.RolTypeGeneriekeBeschrijving
 import com.ritense.zakenapi.domain.rol.RolNatuurlijkPersoon
 import com.ritense.zakenapi.domain.rol.RolNietNatuurlijkPersoon
 import com.ritense.zakenapi.domain.rol.RolOrganisatorischeEenheid
@@ -77,6 +81,7 @@ import org.mockito.kotlin.doThrow
 import org.springframework.security.access.AccessDeniedException
 import org.mockito.kotlin.eq
 import org.mockito.kotlin.mock
+import org.mockito.kotlin.never
 import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.verifyNoMoreInteractions
@@ -1789,6 +1794,85 @@ internal class ZakenApiPluginTest {
         }
     }
 
+    @Test
+    fun `removeGzacBehandelaarRollen deletes only rollen tagged with the GZAC marker`() {
+        val zakenApiClient: ZakenApiClient = mock()
+        val authenticationMock: ZakenApiAuthentication = mock()
+        val zaakUrl = zaakUri()
+        val gzacRolUuid = UUID.randomUUID()
+        val externalRolUuid = UUID.randomUUID()
+        val noUuidRolUrl = URI("${zakenApiUrl()}/zaken/api/v1/rollen/no-uuid")
+
+        whenever(zakenApiClient.getZaakRollen(eq(authenticationMock), any(), eq(zaakUrl), eq(1), eq(RolTypeGeneriekeBeschrijving.BEHANDELAAR)))
+            .thenReturn(
+                Page(
+                    3, null, null,
+                    listOf(
+                        behandelaarRol(uuid = gzacRolUuid, toelichting = ZakenApiPlugin.GZAC_BEHANDELAAR_TOELICHTING),
+                        behandelaarRol(uuid = externalRolUuid, toelichting = "Manually added"),
+                        behandelaarRol(uuid = null, url = noUuidRolUrl, toelichting = ZakenApiPlugin.GZAC_BEHANDELAAR_TOELICHTING),
+                    )
+                )
+            )
+
+        val plugin = zakenApiPlugin(zakenApiClient = zakenApiClient, authenticationMock = authenticationMock)
+
+        plugin.removeGzacBehandelaarRollen(zaakUrl)
+
+        verify(zakenApiClient).deleteZaakRol(eq(authenticationMock), eq(zakenApiUri()), eq(gzacRolUuid))
+        verify(zakenApiClient, never()).deleteZaakRol(any(), any(), eq(externalRolUuid))
+    }
+
+    @Test
+    fun `createGzacBehandelaarRol creates a MEDEWERKER rol with the GZAC marker and truncates identificatie`() {
+        val zakenApiClient: ZakenApiClient = mock()
+        val authenticationMock: ZakenApiAuthentication = mock()
+        val userManagementService: UserManagementService = mock()
+        val plugin = zakenApiPlugin(
+            zakenApiClient = zakenApiClient,
+            authenticationMock = authenticationMock,
+            userManagementService = userManagementService,
+        )
+        val zaakUrl = zaakUri()
+        val roltypeUrl = URI("${zakenApiUrl()}/catalogi/api/v1/roltypen/abc")
+        val longUsername = "very-long-keycloak-username-exceeding-limit"
+        whenever(userManagementService.findByUsername(longUsername)).thenReturn(
+            ValtimoUser().apply {
+                setUsername(longUsername)
+                setLastName("Anderson")
+            }
+        )
+
+        plugin.createGzacBehandelaarRol(
+            zaakUrl = zaakUrl,
+            roltypeUrl = roltypeUrl,
+            username = longUsername,
+        )
+
+        val captor = argumentCaptor<Rol>()
+        verify(zakenApiClient).createZaakRol(eq(authenticationMock), eq(zakenApiUri()), captor.capture())
+        val rol = captor.firstValue
+        assertEquals(zaakUrl, rol.zaak)
+        assertEquals(roltypeUrl, rol.roltype)
+        assertEquals(BetrokkeneType.MEDEWERKER, rol.betrokkeneType)
+        assertEquals(ZakenApiPlugin.GZAC_BEHANDELAAR_TOELICHTING, rol.roltoelichting)
+        val medewerker = rol.betrokkeneIdentificatie as RolMedewerker
+        assertEquals(24, medewerker.identificatie!!.length)
+        assertEquals(longUsername.take(24), medewerker.identificatie)
+        assertEquals("Anderson", medewerker.achternaam)
+    }
+
+    private fun behandelaarRol(uuid: UUID?, toelichting: String, url: URI? = uuid?.let { URI("${zakenApiUrl()}/zaken/api/v1/rollen/$uuid") }) =
+        Rol(
+            url = url,
+            uuid = uuid,
+            zaak = zaakUri(),
+            roltype = URI("${zakenApiUrl()}/catalogi/api/v1/roltypen/behandelaar"),
+            roltoelichting = toelichting,
+            betrokkeneType = BetrokkeneType.MEDEWERKER,
+            betrokkeneIdentificatie = RolMedewerker(identificatie = "x", achternaam = "y"),
+        )
+
     private fun zakenApiPlugin(
         url: URI = zakenApiUri(),
         zaakUrlProvider: ZaakUrlProvider = mock(),
@@ -1803,7 +1887,8 @@ internal class ZakenApiPluginTest {
         valueResolverService: ValueResolverService = mock(),
         objectMapper: ObjectMapper = mock(),
         zaakNotitieLinkRepository: ZaakNotitieLinkRepository = mock(),
-        caseDocumentResolver: CaseDocumentResolver = mock()
+        caseDocumentResolver: CaseDocumentResolver = mock(),
+        userManagementService: UserManagementService = mock(),
     ): ZakenApiPlugin {
         return ZakenApiPlugin(
             client = zakenApiClient,
@@ -1817,7 +1902,8 @@ internal class ZakenApiPluginTest {
             valueResolverService = valueResolverService,
             objectMapper = objectMapper,
             zaakNotitieLinkRepository = zaakNotitieLinkRepository,
-            caseDocumentResolver = caseDocumentResolver
+            caseDocumentResolver = caseDocumentResolver,
+            userManagementService = userManagementService,
         ).apply {
             this.url = url
             this.authenticationPluginConfiguration = authenticationMock

@@ -16,8 +16,6 @@ To configure this plugin the following properties have to be entered:
 
 * **URL.** Contains the complete base URL of the Zaken API to connect to. This generally includes the path `/api/v1/`.
 * **Authentication plugin configuration.** Reference to another plugin configuration that will be used to add authentication to any request performed on the Zaken API. If no option is available in this field a plugin has to be configured that is able to authenticate for the specific application that hosts the Zaken API. (e.g. OpenZaak)
-* **Synchronise Case note as Zaak-notitie to the Zaak.** .
-* **ZaakNotitie subject.** The fixed value which will be used for the 'onderwerp' when a Zaak-notitie is created/updated.
 
 An example plugin configuration:
 
