@@ -95,10 +95,7 @@ export class WidgetBlockComponent implements AfterViewInit, OnDestroy {
   ]).pipe(
     filter(([contentHeight]) => contentHeight !== 0),
     tap(([contentHeight, viewRef, widget]) => {
-      const blockHeight =
-        widget.type === WidgetType.HIGHLIGHT
-          ? 148
-          : Math.ceil((contentHeight + 16) / WIDGET_HEIGHT_1X) * WIDGET_HEIGHT_1X;
+      const blockHeight = Math.ceil((contentHeight + 16) / WIDGET_HEIGHT_1X) * WIDGET_HEIGHT_1X;
 
       this.renderer.setStyle(viewRef.element.nativeElement, 'height', `${blockHeight}px`);
       this.widgetLayoutService.triggerMuuriLayout();
