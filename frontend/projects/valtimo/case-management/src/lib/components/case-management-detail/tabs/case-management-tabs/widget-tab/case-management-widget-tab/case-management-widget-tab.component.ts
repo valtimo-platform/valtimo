@@ -142,6 +142,7 @@ export class CaseManagementWidgetTabComponent
     WidgetType.MAP,
     WidgetType.PERSON_CARD,
     WidgetType.METROLINE,
+    WidgetType.HIGHLIGHT,
   ];
 
   constructor(

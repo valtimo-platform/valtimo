@@ -1018,6 +1018,10 @@
       "metroline": {
         "title": "Metrolijn",
         "description": "Toon de voortgang van een zaak als een metrolijn"
+      },
+      "highlight": {
+        "title": "Markering",
+        "description": "Een kleine widget die één waarde of een aantal benadrukt"
       }
     },
     "width": {
@@ -1176,6 +1180,13 @@
           "internalStatus": "Interne status",
           "zaakStatus": "Zaakstatus"
         }
+      },
+      "highlight": {
+        "description": "",
+        "value": "Waarde",
+        "valuePlaceholder": "Selecteer of typ een pad",
+        "valueHelper": "Toont de waarde op dit pad. Als het een array is, wordt het aantal elementen weergegeven.",
+        "accentColor": "Accentkleur"
       }
     },
     "filters": {
@@ -2336,6 +2347,9 @@
         "incomplete": "Onvolledig",
         "invalid": "Ongeldig"
       }
+    },
+    "highlight": {
+      "noValue": "Geen waarde"
     }
   },
   "iko": {

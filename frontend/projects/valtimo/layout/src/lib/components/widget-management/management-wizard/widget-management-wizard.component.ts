@@ -176,14 +176,34 @@ export class WidgetManagementWizardComponent implements OnDestroy {
     toObservable(this.widgetWizardService.$currentStep),
     toObservable(this.widgetWizardService.$selectedWidget),
   ]).pipe(
-    switchMap(([step, selected]) => {
+    switchMap(([step, selectedWidget]) => {
       if (
         step === WidgetWizardStep.CONTENT &&
-        selected?.type === WidgetType.METROLINE
+        selectedWidget?.type === WidgetType.METROLINE
       ) {
         return of('');
       }
-      return this.translateService.stream(`widgetTabManagement.${step}.description`);
+
+      const widgetType = selectedWidget?.type;
+      const specificKey = widgetType
+        ? `widgetTabManagement.${step}.${widgetType}.description`
+        : null;
+
+      const defaultKey = `widgetTabManagement.${step}.description`;
+
+      return this.translateService
+        .stream([specificKey, defaultKey].filter(Boolean) as string[])
+        .pipe(
+          map((translations: Record<string, string>) => {
+            const specific = specificKey
+              ? translations[specificKey]
+              : undefined;
+
+            return specific !== undefined && specific !== specificKey
+              ? specific
+              : translations[defaultKey];
+          })
+        );
     })
   );
 
