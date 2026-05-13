@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import {Component} from '@angular/core';
+import {Component, OnDestroy} from '@angular/core';
 import {TranslateService} from '@ngx-translate/core';
 import {ActionItem, ColumnConfig, ViewType} from '@valtimo/components';
 import {
@@ -27,8 +27,8 @@ import {
   PluginTranslationService,
 } from '@valtimo/plugin';
 import {NGXLogger} from 'ngx-logger';
-import {BehaviorSubject, combineLatest, Observable, of} from 'rxjs';
-import {catchError, map, switchMap, take, tap} from 'rxjs/operators';
+import {BehaviorSubject, combineLatest, merge, Observable, of, Subject, timer} from 'rxjs';
+import {catchError, map, switchMap, take, takeUntil, tap} from 'rxjs/operators';
 import {PluginManagementStateService} from '../../services';
 import {UnifiedPluginConfigurationRow} from '../../models';
 import {cloneDeep} from 'lodash';
@@ -40,7 +40,8 @@ import {v4 as uuidv4} from 'uuid';
   templateUrl: './plugin-management.component.html',
   styleUrls: ['./plugin-management.component.scss'],
 })
-export class PluginManagementComponent {
+export class PluginManagementComponent implements OnDestroy {
+  private readonly _destroy$ = new Subject<void>();
   // --- Configurations tab ---
   public readonly fields: ColumnConfig[] = [
     {
@@ -172,9 +173,13 @@ export class PluginManagementComponent {
   public readonly hostsLoading$ = new BehaviorSubject<boolean>(true);
   public readonly hostModalOpen$ = new BehaviorSubject<boolean>(false);
 
-  private readonly _refreshHosts$ = new BehaviorSubject<void>(undefined);
+  private readonly _refreshHosts$ = new Subject<void>();
 
-  public readonly hosts$: Observable<Array<ExternalPluginHost>> = this._refreshHosts$.pipe(
+  public readonly hosts$: Observable<Array<ExternalPluginHost>> = merge(
+    timer(0, 5000),
+    this._refreshHosts$
+  ).pipe(
+    takeUntil(this._destroy$),
     switchMap(() =>
       this._externalPluginService.getHosts().pipe(catchError(() => of([] as ExternalPluginHost[])))
     ),
@@ -189,6 +194,11 @@ export class PluginManagementComponent {
     private readonly _translateService: TranslateService,
     private readonly _externalPluginService: ExternalPluginService
   ) {}
+
+  public ngOnDestroy(): void {
+    this._destroy$.next();
+    this._destroy$.complete();
+  }
 
   // --- Configurations tab methods ---
 
