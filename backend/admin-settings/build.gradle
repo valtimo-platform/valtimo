@@ -17,6 +17,11 @@
 dockerCompose {
     projectName = "admin-settings"
 
+    securityTesting {
+        isRequiredBy(project.tasks.securityTesting)
+        useComposeFiles.addAll("../docker-resources/docker-compose-base-test-postgresql.yml", "docker-compose-override-postgresql.yml")
+    }
+
     integrationTestingPostgresql {
         isRequiredBy(project.tasks.integrationTestingPostgresql)
         useComposeFiles.addAll("../docker-resources/docker-compose-base-test-postgresql.yml", "docker-compose-override-postgresql.yml")
