@@ -1,5 +1,5 @@
 <!--
-  ~ Copyright 2015-2025 Ritense BV, the Netherlands.
+  ~ Copyright 2015-2026 Ritense BV, the Netherlands.
   ~
   ~ Licensed under EUPL, Version 1.2 (the "License");
   ~ you may not use this file except in compliance with the License.
@@ -25,9 +25,9 @@
     showEnum: showEnum$ | async,
     showYesNo: showYesNo$ | async,
     disableDefaultSort: disableDefaultSort$ | async,
-    enumValues: enumValues$ | async,
+    enumInitialValues: enumInitialValues$ | async,
     enumValid: enumValid$ | async,
-    yesNoValues: yesNoValues$ | async,
+    yesNoInitialValues: yesNoInitialValues$ | async,
     viewTypeItems: viewTypeItems$ | async,
     sortItems: sortItems$ | async,
   } as obs"
@@ -145,7 +145,7 @@
             *ngIf="obs.showEnum"
             [fullWidth]="true"
             [carbonTheme]="CARBON_THEME_WHITE"
-            [defaultValues]="obs.enumValues"
+            [defaultValues]="obs.enumInitialValues"
             type="keyValue"
             (valueChange)="enumValueChange($event)"
           ></valtimo-carbon-multi-input>
@@ -166,7 +166,7 @@
           <valtimo-carbon-multi-input
             *ngIf="obs.showYesNo"
             [fullWidth]="true"
-            [defaultValues]="obs.yesNoValues"
+            [defaultValues]="obs.yesNoInitialValues"
             type="keyValue"
             [hideAddButton]="true"
             [hideDeleteButton]="true"
