@@ -30,6 +30,7 @@ import {WidgetsService} from '../../widgets.service';
 @Component({
   selector: 'valtimo-case-widget-highlight',
   templateUrl: './case-widget-highlight.component.html',
+  styleUrls: ['./case-widget-highlight.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: true,
   imports: [CommonModule, TranslateModule, WidgetHighlightComponent],

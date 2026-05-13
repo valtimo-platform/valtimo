@@ -19,6 +19,7 @@ import {
   ChangeDetectionStrategy,
   Component,
   ElementRef,
+  HostBinding,
   Input,
   OnDestroy,
   Renderer2,
@@ -74,6 +75,11 @@ export class WidgetBlockComponent implements AfterViewInit, OnDestroy {
     return this._widget$.pipe(filter(widget => widget !== null));
   }
 
+  @HostBinding('attr.data-widget-type')
+  public get widgetTypeAttr(): string | null {
+    return this._widget$.value?.type ?? null;
+  }
+
   private readonly _viewContainerRefSubject$ = new BehaviorSubject<ViewContainerRef | null>(null);
 
   private get _viewContainerRef$(): Observable<ViewContainerRef> {
@@ -91,7 +97,7 @@ export class WidgetBlockComponent implements AfterViewInit, OnDestroy {
     tap(([contentHeight, viewRef, widget]) => {
       const blockHeight =
         widget.type === WidgetType.HIGHLIGHT
-          ? 100
+          ? 148
           : Math.ceil((contentHeight + 16) / WIDGET_HEIGHT_1X) * WIDGET_HEIGHT_1X;
 
       this.renderer.setStyle(viewRef.element.nativeElement, 'height', `${blockHeight}px`);
