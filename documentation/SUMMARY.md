@@ -169,8 +169,8 @@
 
 * [Release notes](release-notes/release-notes.md)
 * [12.x.x](release-notes/12.x.x/README.md)
-* * [12.36.0](release-notes/12.x.x/12.36.0/README.md)
-* * [12.35.0](release-notes/12.x.x/12.35.0/README.md)
+  * [12.36.0](release-notes/12.x.x/12.36.0/README.md)
+  * [12.35.0](release-notes/12.x.x/12.35.0/README.md)
   * [12.34.0](release-notes/12.x.x/12.34.0/README.md)
   * [12.33.0](release-notes/12.x.x/12.33.0/README.md)
     * [12.33.1](release-notes/12.x.x/12.33.0/12.33.1.md)
