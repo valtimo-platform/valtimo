@@ -1,4 +1,4 @@
-/*
+/*!
  * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
@@ -14,19 +14,13 @@
  * limitations under the License.
  */
 
-package com.ritense.zakenapi.sync
+:host {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
 
-data class DocumentZakenApiSyncResponse(
-    val syncAssigneeAsBehandelaar: Boolean,
-    val noteSyncEnabled: Boolean,
-    val noteSubject: String,
-) {
-    companion object {
-        fun of(sync: DocumentZakenApiSync): DocumentZakenApiSyncResponse =
-            DocumentZakenApiSyncResponse(
-                syncAssigneeAsBehandelaar = sync.syncAssigneeAsBehandelaar,
-                noteSyncEnabled = sync.noteSyncEnabled,
-                noteSubject = sync.noteSubject,
-            )
-    }
+.case-definition-selection {
+  display: flex;
+  width: 250px;
 }
