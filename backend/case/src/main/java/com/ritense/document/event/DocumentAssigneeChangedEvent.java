@@ -32,6 +32,7 @@ import java.util.UUID;
 public class DocumentAssigneeChangedEvent extends AuditMetaData
     implements AuditEvent {
 
+    private String assigneeId;
     private String assigneeName;
     private UUID documentId;
     private String assignedTeamTitle;
@@ -44,6 +45,7 @@ public class DocumentAssigneeChangedEvent extends AuditMetaData
                                         LocalDateTime occurredOn,
                                         String user,
                                         UUID documentId,
+                                        String assigneeId,
                                         String assigneeName,
                                         String assignedTeamTitle,
                                         String formerAssigneeId,
@@ -51,6 +53,7 @@ public class DocumentAssigneeChangedEvent extends AuditMetaData
         super(id, origin, occurredOn, user);
         assertArgumentNotNull(documentId, "documentId is required");
         this.documentId = documentId;
+        this.assigneeId = assigneeId;
         this.assigneeName = assigneeName;
         this.assignedTeamTitle = assignedTeamTitle;
         this.formerAssigneeId = formerAssigneeId;
@@ -62,9 +65,10 @@ public class DocumentAssigneeChangedEvent extends AuditMetaData
                                         LocalDateTime occurredOn,
                                         String user,
                                         UUID documentId,
+                                        String assigneeId,
                                         String assigneeName,
                                         String assignedTeamTitle) {
-        this(id, origin, occurredOn, user, documentId, assigneeName, assignedTeamTitle, null, null);
+        this(id, origin, occurredOn, user, documentId, assigneeId, assigneeName, assignedTeamTitle, null, null);
     }
 
     public DocumentAssigneeChangedEvent(UUID id,
@@ -72,8 +76,9 @@ public class DocumentAssigneeChangedEvent extends AuditMetaData
                                         LocalDateTime occurredOn,
                                         String user,
                                         UUID documentId,
+                                        String assigneeId,
                                         String assigneeName) {
-        this(id, origin, occurredOn, user, documentId, assigneeName, null, null, null);
+        this(id, origin, occurredOn, user, documentId, assigneeId, assigneeName, null, null, null);
     }
 
     public void setDocumentId(UUID documentId) {
@@ -87,6 +92,16 @@ public class DocumentAssigneeChangedEvent extends AuditMetaData
         return documentId;
     }
 
+
+    @JsonProperty
+    @JsonView(AuditView.Public.class)
+    public String getAssigneeId() {
+        return assigneeId;
+    }
+
+    public void setAssigneeId(String assigneeId) {
+        this.assigneeId = assigneeId;
+    }
 
     @JsonProperty
     @JsonView(AuditView.Public.class)
@@ -134,7 +149,8 @@ public class DocumentAssigneeChangedEvent extends AuditMetaData
         }
 
         DocumentAssigneeChangedEvent that = (DocumentAssigneeChangedEvent) o;
-        return Objects.equals(assigneeName, that.assigneeName)
+        return Objects.equals(assigneeId, that.assigneeId)
+            && Objects.equals(assigneeName, that.assigneeName)
             && Objects.equals(documentId, that.documentId)
             && Objects.equals(assignedTeamTitle, that.assignedTeamTitle)
             && Objects.equals(formerAssigneeId, that.formerAssigneeId)
@@ -145,6 +161,7 @@ public class DocumentAssigneeChangedEvent extends AuditMetaData
     public int hashCode() {
         return Objects.hash(
             super.hashCode(),
+            assigneeId,
             assigneeName,
             documentId,
             assignedTeamTitle,

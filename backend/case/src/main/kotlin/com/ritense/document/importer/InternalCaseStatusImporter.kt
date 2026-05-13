@@ -55,7 +55,8 @@ class InternalCaseStatusImporter(
                             it.title,
                             it.visibleInCaseListByDefault,
                             it.retentionPeriodInDays,
-                            it.color
+                            it.color,
+                            it.label,
                         )
                     )
                 } else {
@@ -67,7 +68,8 @@ class InternalCaseStatusImporter(
                             it.title,
                             it.visibleInCaseListByDefault,
                             it.retentionPeriodInDays,
-                            it.color
+                            it.color,
+                            it.label,
                         )
                     )
                 }

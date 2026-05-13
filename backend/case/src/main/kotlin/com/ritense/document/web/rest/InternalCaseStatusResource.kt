@@ -44,6 +44,12 @@ class InternalCaseStatusResource(
     private val internalCaseStatusService: InternalCaseStatusService
 ) {
 
+    @GetMapping("/v1/internal-status")
+    fun getAllInternalCaseStatuses(): ResponseEntity<List<InternalCaseStatusResponseDto>> {
+        val internalCaseStatuses = internalCaseStatusService.getAllInternalCaseStatuses()
+        return ResponseEntity.ok(internalCaseStatuses.map { InternalCaseStatusResponseDto(it) })
+    }
+
     @GetMapping("/v1/case-definition/{caseDefinitionName}/internal-status")
     fun getInternalCaseStatuses(
         @LoggableResource("documentDefinitionName") @PathVariable caseDefinitionName: String

@@ -130,11 +130,14 @@ export class CaseListOrchestrationService {
   public readonly hiddenColumns$: Observable<ListField[]> = this._refreshHiddenColumns$.pipe(
     switchMap(() => this.caseDefinitionKey$),
     switchMap((caseDefinitionKey: string) =>
-      this.caseListHiddenColumnsService.getHiddenColumns(caseDefinitionKey)
+      caseDefinitionKey
+        ? this.caseListHiddenColumnsService.getHiddenColumns(caseDefinitionKey)
+        : of([])
     )
   );
 
   public readonly schema$ = this.listService.caseDefinitionKey$.pipe(
+    filter(caseDefinitionKey => !!caseDefinitionKey),
     switchMap(caseDefinitionKey => this.documentService.getDocumentDefinition(caseDefinitionKey)),
     map(caseDefinition => caseDefinition?.schema),
     tap(schema => {
@@ -146,22 +149,26 @@ export class CaseListOrchestrationService {
 
   public readonly canCreateCase$: Observable<boolean> = this.caseDefinitionKey$.pipe(
     switchMap(caseDefinitionKey =>
-      this.permissionService.requestPermission(CAN_CREATE_CASE_PERMISSION, {
-        resource: CASE_DETAIL_PERMISSION_RESOURCE.jsonSchemaDocumentDefinition,
-        identifier: caseDefinitionKey,
-      })
+      caseDefinitionKey
+        ? this.permissionService.requestPermission(CAN_CREATE_CASE_PERMISSION, {
+            resource: CASE_DETAIL_PERMISSION_RESOURCE.jsonSchemaDocumentDefinition,
+            identifier: caseDefinitionKey,
+          })
+        : of(false)
     )
   );
 
   public readonly canExportCase$: Observable<boolean> = this.caseDefinitionKey$.pipe(
     switchMap(caseDefinitionKey =>
-      combineLatest([
-        this.permissionService.requestPermission(CAN_EXPORT_CASE_PERMISSION, {
-          resource: CASE_DETAIL_PERMISSION_RESOURCE.jsonSchemaDocumentDefinition,
-          identifier: caseDefinitionKey,
-        }),
-        this.documentService.getCaseList(caseDefinitionKey),
-      ])
+      caseDefinitionKey
+        ? combineLatest([
+            this.permissionService.requestPermission(CAN_EXPORT_CASE_PERMISSION, {
+              resource: CASE_DETAIL_PERMISSION_RESOURCE.jsonSchemaDocumentDefinition,
+              identifier: caseDefinitionKey,
+            }),
+            this.documentService.getCaseList(caseDefinitionKey),
+          ])
+        : of([false, []] as [boolean, any[]])
     ),
     switchMap(([canExportPermission, caseList]) => {
       const isExportableColumns = caseList.some(caseListitem => caseListitem.exportable);
@@ -180,14 +187,18 @@ export class CaseListOrchestrationService {
 
   private readonly _columns$: Observable<Array<DefinitionColumn>> =
     this.listService.caseDefinitionKey$.pipe(
-      switchMap(caseDefinitionKey => this.columnService.getDefinitionColumns(caseDefinitionKey)),
+      switchMap(caseDefinitionKey =>
+        caseDefinitionKey
+          ? this.columnService.getDefinitionColumns(caseDefinitionKey)
+          : of({hasApiConfig: false, columns: []})
+      ),
       map(res => {
         this.hasApiColumnConfig$.next(res.hasApiConfig);
         return res.columns;
       }),
       tap(columns => {
-        this.listService.caseDefinitionKey$.pipe(take(1)).subscribe(_ => {
-          this.paginationService.setPagination(columns);
+        this.listService.caseDefinitionKey$.pipe(take(1)).subscribe(caseDefinitionKey => {
+          this.paginationService.setPagination(columns, caseDefinitionKey);
         });
       })
     );
@@ -295,7 +306,7 @@ export class CaseListOrchestrationService {
 
   private readonly _documentSearchRequest$: Observable<AdvancedDocumentSearchRequest> =
     combineLatest([this.pagination$, this.listService.caseDefinitionKey$]).pipe(
-      filter(([pagination]) => !!pagination),
+      filter(([pagination, caseDefinitionKey]) => !!pagination && !!caseDefinitionKey),
       map(([pagination, caseDefinitionKey]) => {
         const page = pagination.page - 1;
         return new AdvancedDocumentSearchRequestImpl(

@@ -1,0 +1,106 @@
+<?xml version="1.1" encoding="UTF-8" standalone="no"?>
+<!--
+  ~ Copyright 2015-2026 Ritense BV, the Netherlands.
+  ~
+  ~ Licensed under EUPL, Version 1.2 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~ https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" basis,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<!--
+  Migrates the previous Zaken API plugin properties `noteEventListenerEnabled` and `noteSubject`
+  (removed in this release) to the new per-case-definition `case_zaken_api_sync` table.
+
+  For every plugin_configuration of plugin_definition_key='zakenapi' where
+  `noteEventListenerEnabled = true`, we look up the case definitions linked to that plugin via
+  `zaak_type_link`, and create a `case_zaken_api_sync` row for each, copying over `noteSubject`
+  (defaulting to "Note created by Valtimo GZAC" when null/missing).
+
+  The migration is idempotent: rows are only inserted when none already exists for the case
+  definition, so manual configurations or auto-deployment files are never overwritten.
+-->
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.8.xsd"
+                   logicalFilePath="config/liquibase/changelog/20260504-migrate-zakenapi-note-properties-to-case-zaken-api-sync.xml">
+
+    <changeSet id="1-postgres" author="Ritense">
+        <preConditions onFail="MARK_RAN">
+            <dbms type="postgresql"/>
+        </preConditions>
+        <sql>
+            INSERT INTO case_zaken_api_sync (
+                id,
+                case_definition_key,
+                case_definition_version_tag,
+                sync_assignee_as_behandelaar,
+                note_sync_enabled,
+                note_subject
+            )
+            SELECT
+                gen_random_uuid(),
+                ztl.case_definition_key,
+                ztl.case_definition_version_tag,
+                false,
+                true,
+                COALESCE(NULLIF(pc.properties->>'noteSubject', ''), 'Note created by Valtimo GZAC')
+            FROM plugin_configuration pc
+            JOIN zaak_type_link ztl
+                ON ztl.zaken_api_plugin_configuration_id = pc.plugin_configuration_id
+            WHERE pc.plugin_definition_key = 'zakenapi'
+              AND (pc.properties->>'noteEventListenerEnabled')::boolean = true
+              AND NOT EXISTS (
+                SELECT 1 FROM case_zaken_api_sync existing
+                WHERE existing.case_definition_key = ztl.case_definition_key
+                  AND existing.case_definition_version_tag = ztl.case_definition_version_tag
+              )
+            GROUP BY ztl.case_definition_key, ztl.case_definition_version_tag, pc.properties->>'noteSubject';
+        </sql>
+    </changeSet>
+
+    <changeSet id="1-mysql" author="Ritense">
+        <preConditions onFail="MARK_RAN">
+            <dbms type="mysql"/>
+        </preConditions>
+        <sql>
+            INSERT INTO case_zaken_api_sync (
+                id,
+                case_definition_key,
+                case_definition_version_tag,
+                sync_assignee_as_behandelaar,
+                note_sync_enabled,
+                note_subject
+            )
+            SELECT
+                UUID_TO_BIN(UUID()),
+                ztl.case_definition_key,
+                ztl.case_definition_version_tag,
+                false,
+                true,
+                COALESCE(
+                    NULLIF(JSON_UNQUOTE(JSON_EXTRACT(pc.properties, '$.noteSubject')), 'null'),
+                    'Note created by Valtimo GZAC'
+                )
+            FROM plugin_configuration pc
+            JOIN zaak_type_link ztl
+                ON ztl.zaken_api_plugin_configuration_id = pc.plugin_configuration_id
+            WHERE pc.plugin_definition_key = 'zakenapi'
+              AND JSON_EXTRACT(pc.properties, '$.noteEventListenerEnabled') = TRUE
+              AND NOT EXISTS (
+                SELECT 1 FROM case_zaken_api_sync existing
+                WHERE existing.case_definition_key = ztl.case_definition_key
+                  AND existing.case_definition_version_tag = ztl.case_definition_version_tag
+              )
+            GROUP BY ztl.case_definition_key, ztl.case_definition_version_tag, JSON_UNQUOTE(JSON_EXTRACT(pc.properties, '$.noteSubject'));
+        </sql>
+    </changeSet>
+
+</databaseChangeLog>
