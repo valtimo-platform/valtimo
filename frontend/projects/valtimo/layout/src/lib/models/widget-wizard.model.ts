@@ -20,6 +20,7 @@ import {
   WidgetManagementCollectionComponent,
   WidgetManagementCustomComponent,
   WidgetManagementFieldsComponent,
+  WidgetManagementHighlightComponent,
   WidgetManagementMapComponent,
   WidgetManagementPersonCardComponent,
   WidgetManagementMetrolineComponent,
@@ -143,6 +144,13 @@ const AVAILABLE_WIDGETS: WidgetTypeSelection[] = [
     illustrationUrl: 'valtimo-layout/img/widget-management/types/person.svg',
     type: WidgetType.PERSON_CARD,
     component: WidgetManagementPersonCardComponent,
+  },
+  {
+    titleKey: 'widgetTabManagement.type.highlight.title',
+    descriptionKey: 'widgetTabManagement.type.highlight.description',
+    illustrationUrl: 'valtimo-layout/img/widget-management/types/highlight.svg',
+    type: WidgetType.HIGHLIGHT,
+    component: WidgetManagementHighlightComponent,
   },
 ];
 

@@ -999,6 +999,10 @@
       "metroline": {
         "title": "Metroline",
         "description": "Show progression as a metroline"
+      },
+      "highlight": {
+        "title": "Highlight",
+        "description": "A small widget that highlights a single value or a count"
       }
     },
     "width": {
@@ -1151,6 +1155,13 @@
           "internalStatus": "Internal status",
           "zaakStatus": "Zaak status"
         }
+      },
+      "highlight": {
+        "description": "",
+        "value": "Value",
+        "valuePlaceholder": "Select or type a path",
+        "valueHelper": "Shows the value at this path. If it resolves to an array, the count of items is shown instead.",
+        "accentColor": "Accent color"
       }
     },
     "filters": {
@@ -2303,6 +2314,9 @@
         "incomplete": "Incomplete",
         "invalid": "Invalid"
       }
+    },
+    "highlight": {
+      "noValue": "No value"
     }
   },
   "iko": {
