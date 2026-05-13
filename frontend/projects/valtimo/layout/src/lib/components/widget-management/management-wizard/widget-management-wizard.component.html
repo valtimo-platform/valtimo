@@ -37,9 +37,6 @@
     >
     </cds-progress-indicator>
 
-    @if (stepLabel$ | async; as label) {
-      <p>{{ label }}</p>
-    }
     @if (stepLabel$ | async; as stepLabel) {
       <p>{{ stepLabel }}</p>
     }
