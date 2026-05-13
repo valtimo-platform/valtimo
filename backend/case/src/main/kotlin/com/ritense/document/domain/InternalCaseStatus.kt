@@ -44,6 +44,9 @@ data class InternalCaseStatus(
     @Column(name = "internal_case_status_color")
     @Enumerated(EnumType.STRING)
     val color: InternalCaseStatusColor,
+
+    @Column(name = "status_label")
+    val label: String? = null,
 ) {
     init {
         require(title.isNotBlank()) { "title was blank!" }
