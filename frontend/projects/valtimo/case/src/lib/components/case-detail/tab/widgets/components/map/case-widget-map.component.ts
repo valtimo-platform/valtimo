@@ -18,11 +18,12 @@ import {HttpErrorResponse} from '@angular/common/http';
 import {ChangeDetectionStrategy, Component, Input} from '@angular/core';
 import {TranslateModule} from '@ngx-translate/core';
 import {PermissionService} from '@valtimo/access-control';
-import {CarbonListModule} from '@valtimo/components';
+import {CarbonListModule, EllipsisPipe} from '@valtimo/components';
 import {DocumentService} from '@valtimo/document';
 import {
   MapWidget,
   WidgetAction,
+  WidgetActionButtonComponent,
   WidgetMapComponent,
   WidgetLayoutService,
 } from '@valtimo/layout';
@@ -52,8 +53,10 @@ import {WidgetProcess} from '../widget-process/widget-process';
     InputModule,
     TranslateModule,
     CarbonListModule,
+    EllipsisPipe,
     ButtonModule,
     WidgetMapComponent,
+    WidgetActionButtonComponent,
   ],
 })
 export class CaseWidgetMapComponent extends WidgetProcess {

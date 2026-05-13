@@ -23,6 +23,7 @@ import {
   DocumentObjectenApiSyncRequest,
   ObjectManagementConfiguration,
 } from '../models';
+import {DocumentDefinition} from '@valtimo/document/public_api';
 
 @Injectable({
   providedIn: 'root',

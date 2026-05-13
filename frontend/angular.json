@@ -15,14 +15,16 @@
       },
       "architect": {
         "build": {
-          "builder": "@angular-devkit/build-angular:application",
+          "builder": "@angular-builders/custom-webpack:browser",
           "options": {
-            "outputPath": {
-              "base": "deployment/valtimo-angular-console"
+            "customWebpackConfig": {
+              "path": "./webpack.config.js"
             },
+            "aot": false,
+            "outputPath": "deployment/valtimo-angular-console",
             "index": "src/index.html",
-            "browser": "src/main.ts",
-            "polyfills": ["src/polyfills.ts"],
+            "main": "src/main.ts",
+            "polyfills": "src/polyfills.ts",
             "tsConfig": "src/tsconfig.app.json",
             "assets": [
               "src/favicon.ico",
@@ -64,15 +66,15 @@
               "node_modules/bpmn-js/dist/assets/bpmn-font/css/bpmn-embedded.css",
               "node_modules/@bpmn-io/properties-panel/dist/assets/properties-panel.css",
               "node_modules/ol/ol.css",
-              "node_modules/@valtimo/components/assets/css/ng-multiselect-dropdown.theme.scss",
-              "node_modules/@valtimo/layout/assets/css/app.css",
+              "dist/valtimo/components/assets/css/ng-multiselect-dropdown.theme.scss",
+              "dist/valtimo/layout/assets/css/app.css",
               "src/styles.scss",
               "node_modules/flatpickr/dist/flatpickr.css",
-              "node_modules/@valtimo/components/assets/css/carbon.scss",
-              "node_modules/@valtimo/components/assets/css/color.scss",
-              "node_modules/@valtimo/components/assets/css/compatibility.scss",
-              "node_modules/@valtimo/components/assets/css/design-tokens.css",
-              "node_modules/@valtimo/components/assets/css/formio-carbon.scss"
+              "dist/valtimo/components/assets/css/carbon.scss",
+              "dist/valtimo/components/assets/css/color.scss",
+              "dist/valtimo/components/assets/css/compatibility.scss",
+              "dist/valtimo/components/assets/css/design-tokens.css",
+              "dist/valtimo/components/assets/css/formio-carbon.scss"
             ],
             "scripts": [
               "node_modules/jquery/dist/jquery.min.js",
@@ -82,7 +84,7 @@
               "node_modules/@foxythemes/bootstrap-datetime-picker-bs4/js/bootstrap-datetimepicker.min.js",
               "node_modules/perfect-scrollbar/dist/perfect-scrollbar.min.js",
               "node_modules/select2/dist/js/select2.min.js",
-              "node_modules/@valtimo/layout/assets/js/app.js",
+              "dist/valtimo/layout/assets/js/app.js",
               "src/assets/bpmn/ValtimoBPMNModeler.js",
               "node_modules/@webcomponents/custom-elements/src/native-shim.js",
               "node_modules/dmn-js/dist/dmn-modeler.development.js"
@@ -96,7 +98,9 @@
               "object-refs",
               "heatmap.js-fixed"
             ],
+            "vendorChunk": true,
             "extractLicenses": false,
+            "buildOptimizer": false,
             "sourceMap": true,
             "optimization": false,
             "namedChunks": true
@@ -117,7 +121,10 @@
               "outputHashing": "all",
               "sourceMap": false,
               "namedChunks": false,
+              "aot": true,
               "extractLicenses": true,
+              "vendorChunk": false,
+              "buildOptimizer": true,
               "budgets": [
                 {
                   "type": "anyComponentStyle",
@@ -129,6 +136,7 @@
               "outputHashing": "all",
               "sourceMap": false,
               "extractLicenses": true,
+              "vendorChunk": false,
               "budgets": [
                 {
                   "type": "initial",
@@ -145,11 +153,10 @@
           "defaultConfiguration": ""
         },
         "serve": {
-          "builder": "@angular-devkit/build-angular:dev-server",
+          "builder": "@angular-builders/custom-webpack:dev-server",
           "options": {
             "proxyConfig": "proxy.conf.json",
-            "buildTarget": "valtimo-angular-console:build",
-            "hmr": false
+            "buildTarget": "valtimo-angular-console:build"
           },
           "configurations": {
             "production": {

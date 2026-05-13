@@ -29750,6 +29750,7 @@ fieldset[disabled] .full-calendar .fc-button.active {
   [Wizard]
 */
 .fuelux .wizard {
+  *zoom: 1;
   border: 1px solid #d4d4d4;
   border-radius: 4px;
   box-shadow: 0 1px 4px rgba(0, 0, 0, 0.065);

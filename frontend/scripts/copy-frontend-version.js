@@ -19,7 +19,7 @@ const fsPromises = require('fs').promises;
 let version;
 
 fsPromises
-  .readFile('./node_modules/@valtimo/shared/package.json', 'utf8')
+  .readFile('./dist/valtimo/shared/package.json', 'utf8')
   .then(packageJsonString => {
     const packageJson = JSON.parse(packageJsonString);
 

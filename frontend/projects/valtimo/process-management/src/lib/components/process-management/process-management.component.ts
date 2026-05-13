@@ -25,6 +25,7 @@ import {distinctUntilChanged, filter} from 'rxjs/operators';
 import {ProcessDefinitionResult} from '../../models';
 import {ProcessManagementService} from '../../services';
 import {getContextObservable} from '../../utils';
+import {ProcessManagementBuilderComponent} from '../process-management-builder/process-management-builder.component';
 import {ProcessManagementListComponent} from '../process-management-list/process-management-list.component';
 import {ProcessManagementUploadComponent} from '../process-management-upload/process-management-upload.component';
 
@@ -38,6 +39,7 @@ import {ProcessManagementUploadComponent} from '../process-management-upload/pro
     CommonModule,
     ProcessManagementListComponent,
     ProcessManagementUploadComponent,
+    ProcessManagementBuilderComponent,
     LoadingModule,
     NotificationModule,
   ],

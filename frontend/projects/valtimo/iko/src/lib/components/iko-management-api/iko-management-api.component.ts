@@ -23,6 +23,7 @@ import {
   PageTitleService,
   SelectItem,
   SelectModule,
+  ValtimoCdsModalDirective,
 } from '@valtimo/components';
 import {IkoManagementApiService} from '../../services';
 import {BehaviorSubject, Observable, switchMap, take, tap} from 'rxjs';
@@ -61,6 +62,7 @@ import {ModalMode} from '@valtimo/shared';
     FormsModule,
     InputModule,
     ReactiveFormsModule,
+    ValtimoCdsModalDirective,
     LayerModule,
     SelectModule,
     ConfirmationModalModule,
