@@ -24,21 +24,23 @@ Click **Add widget** to open the create new widget modal that will guide the wid
 The following widget types are currently supported:
 
 * **Fields**\
-  _&#x41; set of single data elements in a widget._
+  _A set of single data elements in a widget._
 * **Custom component**\
-  _&#x41;n option to direct to a custom Angular component in de codebase._
+  _An option to direct to a custom Angular component in de codebase._
 * **Form.io form**\
-  _&#x54;his type makes is possible to display a Form.io form within a widget. The form is prefilled with case data._
+  _This type makes is possible to display a Form.io form within a widget. The form is prefilled with case data._
 * **Table**\
-  _&#x50;resent array case data in a table within a widget._
+  _Present array case data in a table within a widget._
 * **Collection**\
-  _&#x50;resent array case data in a collection of cards within a widget._
+  _Present array case data in a collection of cards within a widget._
 * **Map**\
-  _&#x52;ender geographic data on a map using GeoJSON sources._
-* **Highlight**\
-  _&#x41; compact widget that highlights a single value or the count of items in a collection._
+  _Render geographic data on a map using GeoJSON sources._
+* **Metroline**\
+  _Visualise the progression of a case as an ordered set of steps, driven either by the internal case status history or by the zaak status._
 * **Person card**\
-  _&#x44;isplay personal data for a single person (full name, birth date, BSN, phone, email and city) in a compact card._
+  _Display personal data for a single person (full name, birth date, BSN, phone, email and city) in a compact card._
+* **Highlight**\
+  _Compact widget that highlights a single value or the count of items in a collection._
 
 <figure><img src="../../../../.gitbook/assets/image (21).png" alt=""><figcaption><p>Choosing widget type</p></figcaption></figure>
 {% endstep %}
@@ -502,6 +504,43 @@ This configuration is based on below JSON.
   "city": "Amsterdam"
 }
 ```
+{% endhint %}
+
+</details>
+
+<details>
+
+<summary>Metroline widget</summary>
+
+The metroline widget shows the progression of a case as an ordered set of steps, similar to a metro-line diagram. Each step represents a status the case has gone through or still needs to go through, and the currently active step is highlighted. Completed steps display the date and time they were reached.
+
+**Widget configuration**
+
+The metroline widget requires the following fields to be configured.
+
+* **Widget title**\
+  _&#x54;he widget title is presented in the UI at the top-left corner of the widget and should describe the content for that widget._
+* **Widget icon** _(optional)_\
+  _&#x41;n MDI icon shown next to the widget title._
+* **Orientation**\
+  _&#x44;etermines how the steps are laid out in the widget. Choose between **Horizontal** (steps run left-to-right) and **Vertical** (steps run top-to-bottom)._
+* **Status source**\
+  _&#x44;etermines where the steps and their completion data come from. See the section below for the available sources._
+
+**Status sources**
+
+<table><thead><tr><th width="171" valign="top">Status source</th><th valign="top">Description</th></tr></thead><tbody><tr><td valign="top"><strong>Internal status</strong></td><td valign="top">The steps are derived from the case's <a href="../statuses.md">internal case status</a> history. Each entry in the history becomes a step, in chronological order. The most recent entry is rendered as the current step; all earlier entries are rendered as completed and show the date and time at which the case moved into that status. The step title comes from the configured internal status title, with the status label shown in an info toggletip next to the step.</td></tr><tr><td valign="top"><strong>Zaak status</strong></td><td valign="top">The steps are derived from the statustypen of the zaaktype linked to the case. All statustypen for the zaaktype are rendered in their defined order, so future statuses are visible up-front as incomplete steps. A step is marked complete once the matching status has been set on the zaak, and shows the date and time it was reached. The first not-yet-reached status is rendered as the current step. This source is only selectable when the <code>zaken-api</code> module is on the classpath; without it, the status source dropdown will not offer this option and the widget will fail to load data if it has been configured for it via JSON or autodeploy.</td></tr></tbody></table>
+
+**Step states**
+
+Each step in the rendered metroline is in one of the following states:
+
+* **Current** — the step the case is currently on. Highlighted with a distinct icon and styling.
+* **Complete** — a step the case has already passed. Displays the completion date and time.
+* **Incomplete** — a step the case has not yet reached. Only relevant for the Zaak status source, where future steps are known up-front.
+
+{% hint style="info" %}
+The metroline widget does not use the **Appearance** (color) or **Density** (compact) options from the widget creation wizard. Those steps are still shown but do not affect the metroline rendering.
 {% endhint %}
 
 </details>

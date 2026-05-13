@@ -30,4 +30,5 @@ export * from './widget-management';
 export * from './widget-map';
 export * from './widget-person-card';
 export * from './widget-highlight';
+export * from './widget-metroline';
 export * from './widget-action-button/widget-action-button.component';

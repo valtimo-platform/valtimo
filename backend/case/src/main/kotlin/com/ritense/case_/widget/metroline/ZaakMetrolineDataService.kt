@@ -14,19 +14,10 @@
  * limitations under the License.
  */
 
-package com.ritense.zakenapi.sync
+package com.ritense.case_.widget.metroline
 
-data class DocumentZakenApiSyncResponse(
-    val syncAssigneeAsBehandelaar: Boolean,
-    val noteSyncEnabled: Boolean,
-    val noteSubject: String,
-) {
-    companion object {
-        fun of(sync: DocumentZakenApiSync): DocumentZakenApiSyncResponse =
-            DocumentZakenApiSyncResponse(
-                syncAssigneeAsBehandelaar = sync.syncAssigneeAsBehandelaar,
-                noteSyncEnabled = sync.noteSyncEnabled,
-                noteSubject = sync.noteSubject,
-            )
-    }
+import java.util.UUID
+
+interface ZaakMetrolineDataService {
+    fun getMetrolineItems(documentId: UUID): List<MetrolineItem>
 }

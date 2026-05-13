@@ -14,6 +14,12 @@
   See the [Map widget documentation](../../../features/case/tabs/widgets.md) for the full list of recognised fields and
   a configuration example.
 
+## Enhancements
+
+* **Persistent page sizes per case definition for task list and case list**
+
+  When a user configures the page size for a case definition, either for the task or case list, this is remembered.
+  Next time they visit the task or case list for that case definition, the same page size is shown.
 * **Person card widget**
 
   A new `person-card` widget type displays personal data for a single person (full name, birthdate, BSN, phone, email
@@ -21,6 +27,16 @@
   document, and only the full name is required — empty fields are hidden in the rendered card. See the
   [Person card widget documentation](../../../features/case/case-detail/tabs/widgets.md) for the full list of fields
   and a configuration example.
+
+* **Metroline widget**
+
+  A new `metroline` widget type visualises the progression of a status as an ordered set of steps, similar to a
+  metro-line diagram. The currently active step is highlighted and completed steps display the date and time
+  they were reached. When a label is available for a step, an info toggletip is shown next to it so the label
+  can be read on demand. Steps can be laid out horizontally or vertically, and are driven either by the internal
+  case status history or, when the `zaken-api` module is on the classpath, by the statustypen of the linked
+  zaaktype. See the
+  [Metroline widget documentation](../../../features/case/case-detail/tabs/widgets.md) for the full configuration.
 
 * **Highlight widget**
 
@@ -71,6 +87,9 @@
 
 * SmartDocuments compatibility with newer SmartDocuments versions.
 * When a header widget was configured, it was not possible to edit the header widget.
+* Fixed a permission issue on the task endpoint that prevented assignee details from being resolved for users without permission to look up other users.
+* Fixed a bug where the enumeration display type when configuring task columns was not editable.
+* Quick search tooltip on the case list no longer gets cut off when the trigger is near the viewport edge; the tooltip now repositions automatically to stay on screen.
 
 * **Recover from stuck migration locks**
 

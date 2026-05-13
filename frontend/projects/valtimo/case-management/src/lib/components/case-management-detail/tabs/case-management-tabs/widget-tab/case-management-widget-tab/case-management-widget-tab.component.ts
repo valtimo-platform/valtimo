@@ -141,6 +141,7 @@ export class CaseManagementWidgetTabComponent
     WidgetType.TABLE,
     WidgetType.MAP,
     WidgetType.PERSON_CARD,
+    WidgetType.METROLINE,
     WidgetType.HIGHLIGHT,
   ];
 

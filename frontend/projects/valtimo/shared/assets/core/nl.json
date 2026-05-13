@@ -907,6 +907,7 @@
         "retentionPeriodTooltip": "0 of hoger: retentie is actief, de zaak wordt na het opgegeven aantal dagen verwijderd. -1: er is geen retentieperiode ingesteld, de zaak wordt niet automatisch verwijderd.",
         "deletedImmediately": "Wordt direct verwijderd",
         "key": "Status-key",
+        "label": "Label (Optioneel)",
         "visible": "Standaard zichtbaar",
         "color": "Kleur"
       },
@@ -1014,6 +1015,10 @@
       "divider": {"title": "Scheidingslijn"},
       "map": {"title": "Kaart", "description": "Maak een kaart widget aan"},
       "person-card": {"title": "Persoonskaart", "description": "Een persoon met de belangrijkste gegevens en contactinformatie"},
+      "metroline": {
+        "title": "Metrolijn",
+        "description": "Toon de voortgang van een zaak als een metrolijn"
+      },
       "highlight": {
         "title": "Markering",
         "description": "Een kleine widget die één waarde of een aantal benadrukt"
@@ -1162,6 +1167,19 @@
         "fieldWidthPlaceholder": "Kies veldbreedte",
         "titleTooltip": "Titel van de eigenschap",
         "valueTooltip": "Naam van de eigenschap waartoe u toegang wilt krijgen binnen het eerder ingevulde collectiegegevens-pad"
+      },
+      "metroline": {
+        "displayType": {
+          "label": "Weergavetype",
+          "horizontal": "Horizontaal",
+          "vertical": "Verticaal"
+        },
+        "statusSource": {
+          "label": "Statusbron",
+          "placeholder": "Selecteer een statusbron",
+          "internalStatus": "Interne status",
+          "zaakStatus": "Zaakstatus"
+        }
       },
       "highlight": {
         "description": "",
@@ -2321,6 +2339,14 @@
     },
     "personCard": {
       "age": "{{age}} jaar"
+    },
+    "metroline": {
+      "stepState": {
+        "current": "Huidig",
+        "complete": "Voltooid",
+        "incomplete": "Onvolledig",
+        "invalid": "Ongeldig"
+      }
     },
     "highlight": {
       "noValue": "Geen waarde"
