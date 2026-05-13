@@ -93,6 +93,7 @@ interface ValtimoConfigFeatureToggles {
   enablePbacDocumentenApiDocuments?: boolean;
   enableSuppressDocumentError?: boolean;
   enableIkoType?: boolean;
+  enableGenericCaseList?: boolean;
 }
 
 interface ValtimoConfig {

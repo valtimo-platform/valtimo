@@ -1,5 +1,5 @@
-/*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+/*!
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,14 +14,13 @@
  * limitations under the License.
  */
 
-interface UserSettings {
-  collapsibleWidescreenMenu?: boolean;
-  languageCode?: string;
-  compactMode?: boolean;
-  showUserNameInTopBar?: boolean;
-  preferredTheme?: string;
-  caseListPageSizes?: {[key: string]: number};
-  taskListPageSizes?: {[key: string]: number};
+:host {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
 }
 
-export {UserSettings};
+.case-definition-selection {
+  display: flex;
+  width: 250px;
+}
