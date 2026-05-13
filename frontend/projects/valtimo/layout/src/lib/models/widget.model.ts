@@ -23,6 +23,7 @@ import {
   WidgetInteractiveTableContent,
   WidgetMapContent,
   WidgetPersonCardContent,
+  WidgetMetrolineContent,
   WidgetTableContent,
 } from './widget-content.model';
 import {WidgetDisplayType} from './widget-display.model';
@@ -36,6 +37,7 @@ enum WidgetType {
   FORMIO = 'formio',
   DIVIDER = 'divider',
   MAP = 'map',
+  METROLINE = 'metroline',
   PERSON_CARD = 'person-card',
 }
 
@@ -153,6 +155,11 @@ interface PersonCardWidget extends BasicWidget {
   properties: WidgetPersonCardContent;
 }
 
+interface MetrolineWidget extends BasicWidget {
+  type: WidgetType.METROLINE;
+  properties: WidgetMetrolineContent;
+}
+
 type Widget =
   | FieldsWidget
   | CollectionWidget
@@ -161,8 +168,9 @@ type Widget =
   | InteractiveTableWidget
   | FormioWidget
   | DividerWidget
+  | PersonCardWidget
   | MapWidget
-  | PersonCardWidget;
+  | MetrolineWidget;
 
 type WidgetWithUuid = Widget & {
   uuid: string;
@@ -230,8 +238,8 @@ interface WidgetGroup {
   widgets: Widget[];
 }
 
-type WidgetComponentMap = Record<Exclude<WidgetType, WidgetType.DIVIDER | WidgetType.PERSON_CARD>, Type<any>> &
-  Partial<Record<WidgetType.PERSON_CARD, Type<any>>>;
+type WidgetComponentMap = Record<Exclude<WidgetType, WidgetType.DIVIDER | WidgetType.PERSON_CARD | WidgetType.METROLINE>, Type<any>> &
+  Partial<Record<WidgetType.PERSON_CARD | WidgetType.METROLINE, Type<any>>>;
 
 type WidgetContext = 'case' | 'iko';
 
@@ -261,6 +269,7 @@ export {
   InteractiveTableWidget,
   MapWidget,
   PersonCardWidget,
+  MetrolineWidget,
   WidgetPackResultItem,
   WidgetPackResultItemsByRow,
   FormioWidgetWidgetWithUuid,
