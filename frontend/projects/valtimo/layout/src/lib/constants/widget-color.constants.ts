@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+import {TagType} from 'carbon-components-angular';
 import {WidgetColor} from '../models';
 
 type WidgetColorThemeVariant = 'light' | 'dark';
@@ -190,6 +191,16 @@ const WIDGET_COLOR_THEME_MAP: Record<WidgetColor, WidgetColorTheme> = {
   },
 };
 
+const WIDGET_COLOR_TO_TAG_TYPE: Partial<Record<WidgetColor, TagType>> = {
+  [WidgetColor.HIGHCONTRAST]: 'high-contrast',
+  [WidgetColor.BLUE]: 'blue',
+  [WidgetColor.PURPLE]: 'purple',
+  [WidgetColor.TURQOISE]: 'teal',
+  [WidgetColor.GREEN]: 'green',
+  [WidgetColor.BROWN]: 'warm-gray',
+  [WidgetColor.RED]: 'red',
+};
+
 const AVATAR_COLOR_PALETTE: WidgetColor[] = [
   WidgetColor.BLUE,
   WidgetColor.PERIWINKLE,
@@ -221,6 +232,7 @@ export {
   WIDGET_COLOR_ILLUSTRATION_MAP,
   WIDGET_COLOR_ITEMS,
   WIDGET_COLOR_THEME_MAP,
+  WIDGET_COLOR_TO_TAG_TYPE,
   type WidgetColorThemeVariant,
   type WidgetColorVariant,
 };

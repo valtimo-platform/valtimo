@@ -1,4 +1,4 @@
-/*!
+/*
  * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
@@ -14,26 +14,4 @@
  * limitations under the License.
  */
 
-:host {
-  display: block;
-  position: absolute;
-}
-
-:host[data-widget-type='highlight'] .widget-block__content {
-  height: 100%;
-}
-
-.widget-block {
-  width: 100%;
-  height: 100%;
-  box-sizing: border-box;
-  padding: 8px;
-  overflow-wrap: break-word;
-  background-color: var(--widget-background-color, var(--cds-layer-01));
-  background-clip: content-box;
-  color: var(--widget-text-color, var(--cds-text-primary));
-
-  &__not-available {
-    padding: 16px;
-  }
-}
+export * from './widget-highlight.component';

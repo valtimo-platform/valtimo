@@ -20,6 +20,7 @@ import {
   WidgetCustomComponent,
   WidgetFieldComponent,
   WidgetFormioComponent,
+  WidgetHighlightComponent,
   WidgetMapComponent,
   WidgetPersonCardComponent,
   WidgetMetrolineComponent,
@@ -40,6 +41,7 @@ const DEFAULT_WIDGET_COMPONENT_MAP: WidgetComponentMap = {
   [WidgetType.MAP]: WidgetMapComponent,
   [WidgetType.METROLINE]: WidgetMetrolineComponent,
   [WidgetType.PERSON_CARD]: WidgetPersonCardComponent,
+  [WidgetType.HIGHLIGHT]: WidgetHighlightComponent,
 };
 
 export {WIDGET_WIDTH_1X, WIDGET_HEIGHT_1X, DEFAULT_WIDGET_COMPONENT_MAP};
