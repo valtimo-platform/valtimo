@@ -6,17 +6,6 @@
 
 ## New Features
 
-* **Admin settings**
-
-  A new admin settings page is available under the Admin menu for managing the application logo (light and dark mode,
-  PNG or SVG), customizing the accent color palette, and toggling front-end feature flags at runtime. The accent colors
-  section lets administrators override the ten CDS color levels (color 100 through color 10) with a color picker.
-  Changes take effect immediately in the current session; other sessions pick up the new values on their next page load.
-  Logos, accent colors, and feature toggle overrides can be auto-deployed from classpath resource files using the
-  importer framework.
-  See the [admin settings documentation](../../../features/admin-settings/README.md) for details and the
-  [front-end migration guide](front-end-migration.md) for setup instructions.
-
 * **Plugin configuration mapping on import**
 
   When importing a case definition that references plugin configurations from another environment, Valtimo now shows a
