@@ -37,7 +37,9 @@
     >
     </cds-progress-indicator>
 
-    <p>{{ stepLabel$ | async }}</p>
+    @if (stepLabel$ | async; as label) {
+      <p>{{ label }}</p>
+    }
 
     <ng-template #wizardStepRenderer></ng-template>
   </section>

@@ -28,6 +28,16 @@
   [Person card widget documentation](../../../features/case/case-detail/tabs/widgets.md) for the full list of fields
   and a configuration example.
 
+* **Metroline widget**
+
+  A new `metroline` widget type visualises the progression of a status as an ordered set of steps, similar to a
+  metro-line diagram. The currently active step is highlighted and completed steps display the date and time
+  they were reached. When a label is available for a step, an info toggletip is shown next to it so the label
+  can be read on demand. Steps can be laid out horizontally or vertically, and are driven either by the internal
+  case status history or, when the `zaken-api` module is on the classpath, by the statustypen of the linked
+  zaaktype. See the
+  [Metroline widget documentation](../../../features/case/case-detail/tabs/widgets.md) for the full configuration.
+
 ## Enhancements
 
 * **Generic case list**

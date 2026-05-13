@@ -25,5 +25,6 @@ data class InternalCaseStatusUpdateOrderRequestDto(
     val title: String,
     val visibleInCaseListByDefault: Boolean,
     val retentionPeriodInDays: Int,
-    val color: InternalCaseStatusColor
+    val color: InternalCaseStatusColor,
+    val label: String? = null,
 )

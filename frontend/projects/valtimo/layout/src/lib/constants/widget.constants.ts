@@ -22,6 +22,7 @@ import {
   WidgetFormioComponent,
   WidgetMapComponent,
   WidgetPersonCardComponent,
+  WidgetMetrolineComponent,
   WidgetTableComponent,
 } from '../components';
 import {WidgetInteractiveTableComponent} from '../components/widget-interactive-table';
@@ -37,6 +38,7 @@ const DEFAULT_WIDGET_COMPONENT_MAP: WidgetComponentMap = {
   [WidgetType.INTERACTIVE_TABLE]: WidgetInteractiveTableComponent,
   [WidgetType.FIELDS]: WidgetFieldComponent,
   [WidgetType.MAP]: WidgetMapComponent,
+  [WidgetType.METROLINE]: WidgetMetrolineComponent,
   [WidgetType.PERSON_CARD]: WidgetPersonCardComponent,
 };
 

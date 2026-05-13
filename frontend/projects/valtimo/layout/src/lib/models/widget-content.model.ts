@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+import {Step} from 'carbon-components-angular';
 import {WidgetDisplayType} from './widget-display.model';
 import {FieldsWidgetValue, GeoJsonSource, WidgetAction} from './widget.model';
 
@@ -114,6 +115,38 @@ interface WidgetMapContent {
   geoJsonSources: GeoJsonSource[];
 }
 
+enum MetrolineOrientation {
+  HORIZONTAL = 'HORIZONTAL',
+  VERTICAL = 'VERTICAL',
+}
+
+enum MetrolineMode {
+  INTERNAL_CASE_STATUS = 'INTERNAL_CASE_STATUS',
+  ZAAKSTATUS = 'ZAAKSTATUS',
+}
+
+interface WidgetMetrolineContent {
+  orientation: MetrolineOrientation;
+  mode: MetrolineMode | null;
+}
+
+interface MetrolineItem {
+  title: string;
+  label: string | null;
+  completed: string | null;
+}
+
+interface MetrolineStep extends Step {
+  itemLabel: string | null;
+}
+
+enum MetrolineStepState {
+  CURRENT = 'current',
+  COMPLETE = 'complete',
+  INCOMPLETE = 'incomplete',
+  INVALID = 'invalid',
+}
+
 interface WidgetPersonCardContent {
   icon?: string;
   person: {
@@ -136,6 +169,7 @@ type WidgetContentProperties =
   | WidgetFormioContent
   | WidgetCollectionContent
   | WidgetMapContent
+  | WidgetMetrolineContent
   | WidgetPersonCardContent;
 
 export {
@@ -147,6 +181,12 @@ export {
   WidgetInteractiveTableContent,
   WidgetCollectionContent,
   WidgetMapContent,
+  WidgetMetrolineContent,
+  MetrolineItem,
+  MetrolineMode,
+  MetrolineOrientation,
+  MetrolineStep,
+  MetrolineStepState,
   WidgetPersonCardContent,
   WidgetInteractiveTableEventSearchRequest,
   WidgetFilter,

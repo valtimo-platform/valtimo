@@ -116,7 +116,8 @@ class JsonSchemaDocumentServiceTest extends BaseTest {
             internalCaseStatusService,
             caseTagService,
             teamManagementService,
-            entityManager
+            entityManager,
+            mock()
         ));
 
         var content = new JsonDocumentContent("{\"firstname\": \"aName\"}");
