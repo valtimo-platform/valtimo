@@ -11,13 +11,13 @@ Add the following dependency to `package.json`:
 ```json
 {
   "dependencies": {
-    "@valtimo/admin-settings": "13.28.0"
+    "@valtimo/admin-settings": "13.28.1"
   }
 }
 ```
 
 {% hint style="info" %}
-Replace `13.28.0` with the Valtimo version you are upgrading to, or use the appropriate package URL.
+Replace `13.28.1` with the Valtimo version you are upgrading to, or use the appropriate package URL.
 {% endhint %}
 
 ### 2. Import AdminSettingsModule

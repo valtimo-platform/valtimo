@@ -1,7 +1,7 @@
-# 13.28.0
+# 13.28.1
 
 {% hint style="info" %}
-**Release date 13-05-2026**
+**Release date 18-05-2026**
 {% endhint %}
 
 ## New Features
@@ -119,6 +119,7 @@
 * Fixed a permission issue on the task endpoint that prevented assignee details from being resolved for users without permission to look up other users.
 * Fixed a bug where the enumeration display type when configuring task columns was not editable.
 * Quick search tooltip on the case list no longer gets cut off when the trigger is near the viewport edge; the tooltip now repositions automatically to stay on screen.
+* Fixed a bug where the frontend code could not be compiled because of error: `Can't resolve ...@ibm/plex...`
 
 * **Recover from stuck migration locks**
 
