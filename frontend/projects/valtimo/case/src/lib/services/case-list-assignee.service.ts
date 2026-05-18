@@ -15,7 +15,7 @@
  */
 
 import {Injectable} from '@angular/core';
-import {BehaviorSubject, Subject, map, Observable, switchMap, take, tap, combineLatest} from 'rxjs';
+import {BehaviorSubject, Subject, map, Observable, of, switchMap, take, tap, combineLatest} from 'rxjs';
 import {CaseListService} from './case-list.service';
 import {DocumentService} from '@valtimo/document';
 import {AssigneeFilter, ConfigService, DefinitionColumn} from '@valtimo/shared';
@@ -31,7 +31,11 @@ export class CaseListAssigneeService {
 
   public readonly canHaveAssignee$: Observable<boolean> =
     this.caseListService.caseDefinitionKey$.pipe(
-      switchMap(caseDefinitionKey => this.documentService.getCaseSettings(caseDefinitionKey)),
+      switchMap(caseDefinitionKey =>
+        caseDefinitionKey
+          ? this.documentService.getCaseSettings(caseDefinitionKey)
+          : of({canHaveAssignee: false})
+      ),
       map(caseSettings => caseSettings?.canHaveAssignee),
       tap(canHaveAssignee => {
         const visibleTabs: AssigneeFilter[] = this.configService.config.visibleCaseListTabs ?? [];

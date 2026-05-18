@@ -24,7 +24,7 @@ import {
   ValtimoConfigFeatureToggles,
 } from '../models';
 import {UrlUtils} from '../utils';
-import {map, Observable, of} from 'rxjs';
+import {BehaviorSubject, distinctUntilChanged, map, Observable} from 'rxjs';
 
 @Injectable({
   providedIn: 'root',
@@ -33,6 +33,13 @@ export class ConfigService {
   private readonly extensionLoader: ExtensionLoader;
   private readonly extensions: Array<Extension> = [];
   private readonly DEFAULT_APPLICATION_TITLE = 'Valtimo';
+
+  private readonly _featureToggles$ = new BehaviorSubject<ValtimoConfigFeatureToggles>(
+    this.valtimoConfig?.featureToggles ?? ({} as ValtimoConfigFeatureToggles)
+  );
+
+  public readonly featureToggles$: Observable<ValtimoConfigFeatureToggles> =
+    this._featureToggles$.asObservable();
 
   constructor(
     @Inject(VALTIMO_CONFIG) private valtimoConfig: ValtimoConfig,
@@ -72,16 +79,14 @@ export class ConfigService {
     };
   }
 
-  public get featureToggles(): ValtimoConfig['featureToggles'] {
-    return this.config.featureToggles;
+  public get featureToggles(): ValtimoConfigFeatureToggles {
+    return this._featureToggles$.value;
   }
 
   public get config$(): Observable<ValtimoConfig> {
-    return of(this.config);
-  }
-
-  public get featureToggles$(): Observable<ValtimoConfig['featureToggles']> {
-    return of(this.config.featureToggles);
+    return this._featureToggles$.pipe(
+      map(featureToggles => ({...this.config, featureToggles}))
+    );
   }
 
   public get initializers() {
@@ -116,14 +121,32 @@ export class ConfigService {
   }
 
   public getFeatureToggleObservable(
-    featureToggle: keyof ValtimoConfigFeatureToggles
+    featureToggle: keyof ValtimoConfigFeatureToggles,
+    defaultValue = false
   ): Observable<boolean> {
     return this.featureToggles$.pipe(
-      map(featureToggles => !!(featureToggles && featureToggles[featureToggle]))
+      map(featureToggles =>
+        featureToggles?.hasOwnProperty(featureToggle)
+          ? !!featureToggles[featureToggle]
+          : defaultValue
+      ),
+      distinctUntilChanged()
     );
   }
 
   public getFeatureToggle(featureToggle: keyof ValtimoConfigFeatureToggles): boolean {
     return !!(this.featureToggles && this.featureToggles[featureToggle]);
+  }
+
+  public patchFeatureToggles(overrides: Partial<ValtimoConfigFeatureToggles>): void {
+    const merged = {
+      ...this._featureToggles$.value,
+      ...overrides,
+    };
+    this.valtimoConfig = {
+      ...this.valtimoConfig,
+      featureToggles: merged,
+    };
+    this._featureToggles$.next(merged as ValtimoConfigFeatureToggles);
   }
 }

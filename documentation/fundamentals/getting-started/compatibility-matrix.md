@@ -21,6 +21,7 @@ Mixing versions is not recommended. Valtimo is always tested according to the ma
 
 | Valtimo backend libraries | Valtimo frontend libraries | Java | Kotlin | Spring Boot | Node   | Operaton     | Angular                                                                        |
 |---------------------------|----------------------------|------|--------|-------------|--------|--------------|--------------------------------------------------------------------------------|
+| 13.27.0                   | 13.27.0                    | 21   | 2.1.20 | 3.5.14      | 20 LTS | 1.0.3        | 19 ([browser support](https://angular.dev/reference/versions#browser-support)) |
 | 13.23.0                   | 13.23.0                    | 21   | 2.1.20 | 3.5.13      | 20 LTS | 1.0.3        | 19 ([browser support](https://angular.dev/reference/versions#browser-support)) |
 | 13.11.0                   | 13.11.0                    | 21   | 2.1.20 | 3.5.7       | 20 LTS | 1.0.0-rc-1   | 19 ([browser support](https://angular.dev/reference/versions#browser-support)) |
 | 13.0.0                    | 13.0.0                     | 21   | 2.1.20 | 3.4.5       | 20 LTS | 1.0.0-beta-4 | 19 ([browser support](https://angular.dev/reference/versions#browser-support)) |
