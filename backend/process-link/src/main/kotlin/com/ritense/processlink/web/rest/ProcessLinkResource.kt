@@ -147,7 +147,7 @@ class ProcessLinkResource(
     ): ResponseEntity<List<CaseProcessDefinitionResponseDto>> {
         val definitions = runWithoutAuthorization {
             operatonProcessService
-                .getDeployedDefinitions(CaseDefinitionId.of(caseDefinitionKey, versionTag))
+                .getAllDefinitions(CaseDefinitionId.of(caseDefinitionKey, versionTag))
                 .stream()
                 .map { definition: OperatonProcessDefinition? ->
                     CaseProcessDefinitionResponseDto(
@@ -160,12 +160,7 @@ class ProcessLinkResource(
                         processLinkService.getProcessLinks(definition.id).map {
                             getProcessLinkMapper(it.processLinkType).toProcessLinkResponseDto(it)
                         },
-                        String(
-                            IoUtil.readInputStream(
-                                repositoryService.getProcessModel(definition.id),
-                                "processModelBpmn20Xml"
-                            ), StandardCharsets.UTF_8
-                        )
+                        getBpmnXml(definition)
                     )
                 }
                 .collect(Collectors.toList())
@@ -187,12 +182,7 @@ class ProcessLinkResource(
                         processLinkService.getProcessLinks(definition.id).map {
                             getProcessLinkMapper(it.processLinkType).toProcessLinkResponseDto(it)
                         },
-                        String(
-                            IoUtil.readInputStream(
-                                repositoryService.getProcessModel(definition.id),
-                                "processModelBpmn20Xml"
-                            ), StandardCharsets.UTF_8
-                        )
+                        getBpmnXml(definition)
                     )
                 }
                 .collect(Collectors.toList())
@@ -216,12 +206,7 @@ class ProcessLinkResource(
                 processLinkService.getProcessLinks(definition.id).map {
                     getProcessLinkMapper(it.processLinkType).toProcessLinkResponseDto(it)
                 },
-                String(
-                    IoUtil.readInputStream(
-                        repositoryService.getProcessModel(definition.id),
-                        "processModelBpmn20Xml"
-                    ), StandardCharsets.UTF_8
-                )
+                getBpmnXml(definition)
             )
         }.sortedBy { it.processDefinition.version }
 
@@ -248,12 +233,7 @@ class ProcessLinkResource(
             processLinkService.getProcessLinks(definition.id).map {
                 getProcessLinkMapper(it.processLinkType).toProcessLinkResponseDto(it)
             },
-            String(
-                IoUtil.readInputStream(
-                    repositoryService.getProcessModel(definition.id),
-                    "processModelBpmn20Xml"
-                ), StandardCharsets.UTF_8
-            )
+            getBpmnXml(definition)
         )
 
         return ResponseEntity.ok(responseDto)
@@ -266,18 +246,13 @@ class ProcessLinkResource(
     ): ResponseEntity<List<ProcessDefinitionResponseDto>> {
         val definitions = operatonProcessService.getGlobalDefinitionsByKey(processDefinitionKey)
 
-        val responseDto = definitions.map {
+        val responseDto = definitions.map { definition ->
             ProcessDefinitionResponseDto(
-                ProcessDefinitionWithPropertiesDto.fromProcessDefinition(it),
-                processLinkService.getProcessLinks(it.id).map {
+                ProcessDefinitionWithPropertiesDto.fromProcessDefinition(definition),
+                processLinkService.getProcessLinks(definition.id).map {
                     getProcessLinkMapper(it.processLinkType).toProcessLinkResponseDto(it)
                 },
-                String(
-                    IoUtil.readInputStream(
-                        repositoryService.getProcessModel(it.id),
-                        "processModelBpmn20Xml"
-                    ), StandardCharsets.UTF_8
-                )
+                getBpmnXml(definition)
             )
         }.sortedBy { it.processDefinition.version }
 
@@ -310,12 +285,7 @@ class ProcessLinkResource(
             processLinkService.getProcessLinks(definition.id).map {
                 getProcessLinkMapper(it.processLinkType).toProcessLinkResponseDto(it)
             },
-            String(
-                IoUtil.readInputStream(
-                    repositoryService.getProcessModel(definition.id),
-                    "processModelBpmn20Xml"
-                ), StandardCharsets.UTF_8
-            )
+            getBpmnXml(definition)
         )
 
         return ResponseEntity.ok(responseDto)
@@ -478,5 +448,18 @@ class ProcessLinkResource(
     private fun getProcessLinkMapper(processLinkType: String): ProcessLinkMapper {
         return processLinkMappers.singleOrNull { it.supportsProcessLinkType(processLinkType) }
             ?: throw IllegalStateException("No ProcessLinkMapper found for processLinkType $processLinkType")
+    }
+
+    private fun getBpmnXml(definition: OperatonProcessDefinition): String {
+        val xml = String(
+            IoUtil.readInputStream(
+                repositoryService.getProcessModel(definition.id),
+                "processModelBpmn20Xml"
+            ), StandardCharsets.UTF_8
+        )
+        if (definition.isSuspended()) {
+            return xml.replace("isExecutable=\"true\"", "isExecutable=\"false\"")
+        }
+        return xml
     }
 }

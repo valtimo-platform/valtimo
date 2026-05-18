@@ -40,6 +40,7 @@ class StartableProcessItemProviderTest {
 
     private lateinit var repository: ProcessDefinitionCaseDefinitionRepository
     private lateinit var authorizationService: AuthorizationService
+    private lateinit var repositoryService: com.ritense.valtimo.operaton.service.OperatonRepositoryService
     private lateinit var provider: StartableProcessItemProvider
 
     private val caseDefinitionId = CaseDefinitionId("my-case", "1.0.0")
@@ -48,6 +49,7 @@ class StartableProcessItemProviderTest {
     fun setUp() {
         repository = mock()
         authorizationService = mock()
+        repositoryService = mock()
 
         val applicationContext = mock<ApplicationContext>()
         whenever(applicationContext.getBeanNamesForType(any<ResolvableType>()))
@@ -56,9 +58,14 @@ class StartableProcessItemProviderTest {
 
         whenever(authorizationService.hasPermission<Any>(any())).thenReturn(true)
 
+        val activeProcessDefinition = mock<com.ritense.valtimo.operaton.domain.OperatonProcessDefinition>()
+        whenever(activeProcessDefinition.isSuspended()).thenReturn(false)
+        whenever(repositoryService.findProcessDefinitionById(any())).thenReturn(activeProcessDefinition)
+
         provider = StartableProcessItemProvider(
             processDefinitionCaseDefinitionRepository = repository,
-            authorizationService = authorizationService
+            authorizationService = authorizationService,
+            repositoryService = repositoryService
         )
     }
 

@@ -34,8 +34,10 @@ import com.ritense.processlink.service.ProcessDeploymentService
 import com.ritense.processlink.service.ProcessLinkActivityHandler
 import com.ritense.processlink.service.ProcessLinkActivityService
 import com.ritense.processlink.service.ProcessLinkService
+import com.ritense.processlink.validation.ProcessDefinitionValidator
 import com.ritense.processlink.web.rest.ProcessLinkResource
 import com.ritense.processlink.web.rest.ProcessLinkTaskResource
+import com.ritense.processlink.web.rest.error.ProcessDefinitionValidationExceptionTranslator
 import com.ritense.valtimo.autoconfiguration.ValtimoOperatonAutoConfiguration
 import com.ritense.valtimo.contract.buildingblock.BuildingBlockDefinitionChecker
 import com.ritense.valtimo.contract.case_.CaseDefinitionChecker
@@ -220,16 +222,32 @@ class ProcessLinkAutoConfiguration {
     ) = ProcessDefinitionDeletedEventListener(processDefinitionCaseDefinitionService, processLinkService)
 
     @Bean
+    @ConditionalOnMissingBean(ProcessDefinitionValidator::class)
+    fun processDefinitionValidator(): ProcessDefinitionValidator {
+        return ProcessDefinitionValidator()
+    }
+
+    @Bean
+    @ConditionalOnMissingBean(ProcessDefinitionValidationExceptionTranslator::class)
+    fun processDefinitionValidationExceptionTranslator(): ProcessDefinitionValidationExceptionTranslator {
+        return ProcessDefinitionValidationExceptionTranslator()
+    }
+
+    @Bean
     @ConditionalOnMissingBean(ProcessDeploymentService::class)
     fun processDeploymentService(
         operatonProcessService: OperatonProcessService,
         processDefinitionCaseDefinitionService: ProcessDefinitionCaseDefinitionService,
         processLinkService: ProcessLinkService,
+        processDefinitionValidator: ProcessDefinitionValidator,
+        repositoryService: RepositoryService,
     ): ProcessDeploymentService {
         return ProcessDeploymentService(
             operatonProcessService,
             processDefinitionCaseDefinitionService,
-            processLinkService
+            processLinkService,
+            processDefinitionValidator,
+            repositoryService
         )
     }
 }

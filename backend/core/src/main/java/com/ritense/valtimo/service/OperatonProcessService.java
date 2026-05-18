@@ -364,6 +364,14 @@ public class OperatonProcessService {
         ));
     }
 
+    public List<OperatonProcessDefinition> getAllDefinitions(CaseDefinitionId caseDefinitionId) {
+        denyAuthorization();
+        return AuthorizationContext.runWithoutAuthorization(() -> operatonRepositoryService.findProcessDefinitions(
+            byBlueprintId(caseDefinitionId),
+            Sort.by(NAME)
+        ));
+    }
+
     public List<OperatonProcessDefinition> getUnlinkedDeployedDefinitions() {
         denyAuthorization();
         return AuthorizationContext.runWithoutAuthorization(() ->
@@ -480,6 +488,7 @@ public class OperatonProcessService {
         ByteArrayInputStream fileInput,
         boolean skipProcessLinksCopy,
         boolean skipIsDeployableCheck,
+        boolean setExecutable,
         @Nullable String originalVersionTag,
         @Nullable String originalProcessDefinitionId
     ) throws ProcessNotDeployableException, FileExtensionNotSupportedException, NoFileExtensionFoundException {
@@ -495,7 +504,9 @@ public class OperatonProcessService {
             updateCaseDefinitionProcessesVersionTags(bpmnModel, blueprintId);
             updateBuildingBlockDefinitionProcessesVersionTags(bpmnModel, blueprintId);
 
-            setProcessesExecutable(bpmnModel);
+            if (setExecutable) {
+                setProcessesExecutable(bpmnModel);
+            }
             setToNullWhenServiceTaskExpressionIsEmpty(bpmnModel);
             setToNullWhenSendTaskExpressionIsEmpty(bpmnModel);
             setToCorrelateAllWhenMessageSendEventExpressionIsEmpty(bpmnModel);
@@ -585,6 +596,19 @@ public class OperatonProcessService {
     public DeploymentWithDefinitions deploy(
         BlueprintId blueprintId,
         String fileName,
+        ByteArrayInputStream fileInput,
+        boolean skipProcessLinksCopy,
+        boolean skipIsDeployableCheck,
+        @Nullable String originalVersionTag,
+        @Nullable String originalProcessDefinitionId
+    ) throws ProcessNotDeployableException, FileExtensionNotSupportedException, NoFileExtensionFoundException {
+        return deploy(blueprintId, fileName, fileInput, skipProcessLinksCopy, skipIsDeployableCheck, true, originalVersionTag, originalProcessDefinitionId);
+    }
+
+    @Transactional
+    public DeploymentWithDefinitions deploy(
+        BlueprintId blueprintId,
+        String fileName,
         ByteArrayInputStream fileInput
     ) throws ProcessNotDeployableException, FileExtensionNotSupportedException, NoFileExtensionFoundException {
         return deploy(
@@ -593,6 +617,7 @@ public class OperatonProcessService {
             fileInput,
             false,
             false,
+            true,
             null,
             null
         );
@@ -606,7 +631,19 @@ public class OperatonProcessService {
         boolean skipProcessLinksCopy,
         boolean skipIsDeployableCheck
     ) throws ProcessNotDeployableException, FileExtensionNotSupportedException, NoFileExtensionFoundException {
-        return deploy(blueprintId, fileName, fileInput, skipProcessLinksCopy, skipIsDeployableCheck, null, null);
+        return deploy(blueprintId, fileName, fileInput, skipProcessLinksCopy, skipIsDeployableCheck, true, null, null);
+    }
+
+    @Transactional
+    public DeploymentWithDefinitions deploy(
+        BlueprintId blueprintId,
+        String fileName,
+        ByteArrayInputStream fileInput,
+        boolean skipProcessLinksCopy,
+        boolean skipIsDeployableCheck,
+        boolean setExecutable
+    ) throws ProcessNotDeployableException, FileExtensionNotSupportedException, NoFileExtensionFoundException {
+        return deploy(blueprintId, fileName, fileInput, skipProcessLinksCopy, skipIsDeployableCheck, setExecutable, null, null);
     }
 
     private boolean isProcessDefinitionPreviouslyDeployed(
@@ -657,7 +694,6 @@ public class OperatonProcessService {
 
         List<OperatonProcessDefinition> processDefinition = operatonRepositoryService.findProcessDefinitions(
             byKey(processDefinitionKey)
-                .and(byActive())
                 .and(blueprintId == null ? byNotLinkedToCaseDefinition() : byVersionTag(
                     blueprintId.getTagPrefix() + blueprintId))
             ,

@@ -31,11 +31,14 @@ import com.ritense.processlink.repository.ProcessLinkRepository
 import com.ritense.valtimo.contract.case_.CaseDefinitionId
 import com.ritense.valtimo.contract.domain.ValtimoMediaType
 import com.ritense.valtimo.service.OperatonProcessService
+import org.assertj.core.api.Assertions.assertThat
 import org.hamcrest.Matchers.hasSize
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.operaton.bpm.engine.RepositoryService
 import org.semver4j.Semver
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.http.HttpMethod
 import org.springframework.http.MediaType
 import org.springframework.mock.web.MockMultipartFile
 import org.springframework.test.web.servlet.MockMvc
@@ -62,6 +65,7 @@ internal class ProcessLinkResourceIT @Autowired constructor(
     private val processLinkRepository: ProcessLinkRepository,
     private val operatonProcessService: OperatonProcessService,
     private val processDefinitionCaseDefinitionService: ProcessDefinitionCaseDefinitionService,
+    private val repositoryService: RepositoryService,
 ) : BaseIntegrationTest() {
 
     lateinit var mockMvc: MockMvc
@@ -288,6 +292,300 @@ internal class ProcessLinkResourceIT @Autowired constructor(
 
             assertEquals("autodeploy", processCaseLink.id.caseDefinitionId.key)
             assertEquals(Semver("1.0.0"), processCaseLink.id.caseDefinitionId.versionTag)
+        }
+    }
+
+    @Test
+    fun `should deploy non-executable process definition as suspended`() {
+        val bpmnXml = """
+        <?xml version="1.0" encoding="UTF-8"?>
+        <bpmn:definitions xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                          xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL"
+                          xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI"
+                          xmlns:dc="http://www.omg.org/spec/DD/20100524/DC"
+                          xmlns:di="http://www.omg.org/spec/DD/20100524/DI"
+                          id="Definitions_1"
+                          targetNamespace="http://bpmn.io/schema/bpmn">
+            <bpmn:process id="non-exec-process" name="Non Executable Process" isExecutable="false">
+                <bpmn:startEvent id="StartEvent_1">
+                    <bpmn:outgoing>Flow_1</bpmn:outgoing>
+                </bpmn:startEvent>
+                <bpmn:sequenceFlow id="Flow_1" sourceRef="StartEvent_1" targetRef="Activity_1" />
+                <bpmn:endEvent id="EndEvent_1">
+                    <bpmn:incoming>Flow_2</bpmn:incoming>
+                </bpmn:endEvent>
+                <bpmn:sequenceFlow id="Flow_2" sourceRef="Activity_1" targetRef="EndEvent_1" />
+                <bpmn:userTask id="Activity_1" name="Unconfigured User Task">
+                    <bpmn:incoming>Flow_1</bpmn:incoming>
+                    <bpmn:outgoing>Flow_2</bpmn:outgoing>
+                </bpmn:userTask>
+            </bpmn:process>
+        </bpmn:definitions>
+        """.trimIndent()
+
+        val bpmnFile = MockMultipartFile(
+            "file",
+            "non-exec-process.bpmn",
+            MediaType.APPLICATION_XML_VALUE,
+            bpmnXml.toByteArray()
+        )
+
+        val processLinksJson = ObjectMapper().writeValueAsString(emptyList<Any>())
+
+        mockMvc.perform(
+            MockMvcRequestBuilders.multipart(
+                "/api/management/v1/case-definition/{caseDefinitionKey}/version/{caseDefinitionVersionTag}/process-definition",
+                "autodeploy", "1.0.0"
+            )
+                .file(bpmnFile)
+                .file(
+                    MockMultipartFile(
+                        "processLinks",
+                        "processLinks.json",
+                        MediaType.APPLICATION_JSON_VALUE,
+                        processLinksJson.toByteArray()
+                    )
+                )
+                .param("canInitializeDocument", "true")
+                .param("startableByUser", "true")
+                .contentType(MediaType.MULTIPART_FORM_DATA_VALUE)
+                .accept(MediaType.APPLICATION_JSON_VALUE)
+        )
+            .andDo(print())
+            .andExpect(status().isNoContent)
+
+        runWithoutAuthorization {
+            val deployedProcess = operatonProcessService.getProcessDefinition("non-exec-process")
+            assertEquals(true, deployedProcess.isSuspended())
+        }
+    }
+
+    @Test
+    fun `should return isExecutable false in BPMN XML for suspended definition`() {
+        val bpmnXml = """
+        <?xml version="1.0" encoding="UTF-8"?>
+        <bpmn:definitions xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                          xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL"
+                          id="Definitions_1"
+                          targetNamespace="http://bpmn.io/schema/bpmn">
+            <bpmn:process id="suspended-process" name="Suspended Process" isExecutable="false">
+                <bpmn:startEvent id="StartEvent_1">
+                    <bpmn:outgoing>Flow_1</bpmn:outgoing>
+                </bpmn:startEvent>
+                <bpmn:sequenceFlow id="Flow_1" sourceRef="StartEvent_1" targetRef="Activity_1" />
+                <bpmn:endEvent id="EndEvent_1">
+                    <bpmn:incoming>Flow_2</bpmn:incoming>
+                </bpmn:endEvent>
+                <bpmn:sequenceFlow id="Flow_2" sourceRef="Activity_1" targetRef="EndEvent_1" />
+                <bpmn:userTask id="Activity_1" name="Unconfigured User Task">
+                    <bpmn:incoming>Flow_1</bpmn:incoming>
+                    <bpmn:outgoing>Flow_2</bpmn:outgoing>
+                </bpmn:userTask>
+            </bpmn:process>
+        </bpmn:definitions>
+        """.trimIndent()
+
+        val bpmnFile = MockMultipartFile(
+            "file",
+            "suspended-process.bpmn",
+            MediaType.APPLICATION_XML_VALUE,
+            bpmnXml.toByteArray()
+        )
+
+        val processLinksJson = ObjectMapper().writeValueAsString(emptyList<Any>())
+
+        mockMvc.perform(
+            MockMvcRequestBuilders.multipart(
+                "/api/management/v1/case-definition/{caseDefinitionKey}/version/{caseDefinitionVersionTag}/process-definition",
+                "autodeploy", "1.0.0"
+            )
+                .file(bpmnFile)
+                .file(
+                    MockMultipartFile(
+                        "processLinks",
+                        "processLinks.json",
+                        MediaType.APPLICATION_JSON_VALUE,
+                        processLinksJson.toByteArray()
+                    )
+                )
+                .param("canInitializeDocument", "true")
+                .param("startableByUser", "true")
+                .contentType(MediaType.MULTIPART_FORM_DATA_VALUE)
+                .accept(MediaType.APPLICATION_JSON_VALUE)
+        )
+            .andExpect(status().isNoContent)
+
+        val result = mockMvc.perform(
+            get(
+                "/api/management/v1/case-definition/{caseDefinitionKey}/version/{caseDefinitionVersionTag}/process-definition",
+                "autodeploy", "1.0.0"
+            )
+                .accept(MediaType.APPLICATION_JSON_VALUE)
+        )
+            .andDo(print())
+            .andExpect(status().isOk)
+            .andReturn()
+
+        val responseBody = result.response.contentAsString
+        val objectMapper = ObjectMapper()
+        val definitions = objectMapper.readTree(responseBody)
+        val suspendedDef = definitions.find { it.get("processDefinition").get("key").asText() == "suspended-process" }
+
+        assertThat(suspendedDef).isNotNull
+        val bpmnXmlContent = suspendedDef!!.get("bpmn20Xml").asText()
+        assertThat(bpmnXmlContent).contains("isExecutable=\"false\"")
+        assertThat(bpmnXmlContent).doesNotContain("isExecutable=\"true\"")
+    }
+
+    @Test
+    fun `should reject executable process definition with unconfigured user task`() {
+        val bpmnXml = """
+        <?xml version="1.0" encoding="UTF-8"?>
+        <bpmn:definitions xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                          xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL"
+                          id="Definitions_1"
+                          targetNamespace="http://bpmn.io/schema/bpmn">
+            <bpmn:process id="exec-invalid-process" name="Executable Invalid Process" isExecutable="true">
+                <bpmn:startEvent id="StartEvent_1">
+                    <bpmn:outgoing>Flow_1</bpmn:outgoing>
+                </bpmn:startEvent>
+                <bpmn:sequenceFlow id="Flow_1" sourceRef="StartEvent_1" targetRef="Activity_1" />
+                <bpmn:endEvent id="EndEvent_1">
+                    <bpmn:incoming>Flow_2</bpmn:incoming>
+                </bpmn:endEvent>
+                <bpmn:sequenceFlow id="Flow_2" sourceRef="Activity_1" targetRef="EndEvent_1" />
+                <bpmn:userTask id="Activity_1" name="Unconfigured User Task">
+                    <bpmn:incoming>Flow_1</bpmn:incoming>
+                    <bpmn:outgoing>Flow_2</bpmn:outgoing>
+                </bpmn:userTask>
+            </bpmn:process>
+        </bpmn:definitions>
+        """.trimIndent()
+
+        val bpmnFile = MockMultipartFile(
+            "file",
+            "exec-invalid-process.bpmn",
+            MediaType.APPLICATION_XML_VALUE,
+            bpmnXml.toByteArray()
+        )
+
+        val processLinksJson = ObjectMapper().writeValueAsString(emptyList<Any>())
+
+        mockMvc.perform(
+            MockMvcRequestBuilders.multipart(
+                "/api/management/v1/case-definition/{caseDefinitionKey}/version/{caseDefinitionVersionTag}/process-definition",
+                "autodeploy", "1.0.0"
+            )
+                .file(bpmnFile)
+                .file(
+                    MockMultipartFile(
+                        "processLinks",
+                        "processLinks.json",
+                        MediaType.APPLICATION_JSON_VALUE,
+                        processLinksJson.toByteArray()
+                    )
+                )
+                .param("canInitializeDocument", "true")
+                .param("startableByUser", "true")
+                .contentType(MediaType.MULTIPART_FORM_DATA_VALUE)
+                .accept(MediaType.APPLICATION_JSON_VALUE)
+        )
+            .andDo(print())
+            .andExpect(status().isBadRequest)
+            .andExpect(jsonPath("$.errors").isArray)
+            .andExpect(jsonPath("$.errors", hasSize<Any>(1)))
+            .andExpect(jsonPath("$.errors[0].elementId").value("Activity_1"))
+            .andExpect(jsonPath("$.errors[0].elementType").value("UserTask"))
+    }
+
+    @Test
+    fun `should replace suspended process definition when redeploying non-executable process`() {
+        val processLinksJson = ObjectMapper().writeValueAsString(emptyList<Any>())
+
+        val firstBpmnXml = """
+        <?xml version="1.0" encoding="UTF-8"?>
+        <bpmn:definitions xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                          xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL"
+                          id="Definitions_1"
+                          targetNamespace="http://bpmn.io/schema/bpmn">
+            <bpmn:process id="redeploy-process" name="Redeploy Process" isExecutable="false">
+                <bpmn:startEvent id="StartEvent_1">
+                    <bpmn:outgoing>Flow_1</bpmn:outgoing>
+                </bpmn:startEvent>
+                <bpmn:sequenceFlow id="Flow_1" sourceRef="StartEvent_1" targetRef="EndEvent_1" />
+                <bpmn:endEvent id="EndEvent_1">
+                    <bpmn:incoming>Flow_1</bpmn:incoming>
+                </bpmn:endEvent>
+            </bpmn:process>
+        </bpmn:definitions>
+        """.trimIndent()
+
+        mockMvc.perform(
+            MockMvcRequestBuilders.multipart(
+                "/api/management/v1/case-definition/{caseDefinitionKey}/version/{caseDefinitionVersionTag}/process-definition",
+                "autodeploy", "1.0.0"
+            )
+                .file(MockMultipartFile("file", "redeploy-process.bpmn", MediaType.APPLICATION_XML_VALUE, firstBpmnXml.toByteArray()))
+                .file(MockMultipartFile("processLinks", "processLinks.json", MediaType.APPLICATION_JSON_VALUE, processLinksJson.toByteArray()))
+                .param("canInitializeDocument", "true")
+                .param("startableByUser", "true")
+                .contentType(MediaType.MULTIPART_FORM_DATA_VALUE)
+                .accept(MediaType.APPLICATION_JSON_VALUE)
+        )
+            .andExpect(status().isNoContent)
+
+        val secondBpmnXml = """
+        <?xml version="1.0" encoding="UTF-8"?>
+        <bpmn:definitions xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                          xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL"
+                          id="Definitions_1"
+                          targetNamespace="http://bpmn.io/schema/bpmn">
+            <bpmn:process id="redeploy-process" name="Redeploy Process Modified" isExecutable="false">
+                <bpmn:startEvent id="StartEvent_1">
+                    <bpmn:outgoing>Flow_1</bpmn:outgoing>
+                </bpmn:startEvent>
+                <bpmn:sequenceFlow id="Flow_1" sourceRef="StartEvent_1" targetRef="Activity_1" />
+                <bpmn:endEvent id="EndEvent_1">
+                    <bpmn:incoming>Flow_2</bpmn:incoming>
+                </bpmn:endEvent>
+                <bpmn:sequenceFlow id="Flow_2" sourceRef="Activity_1" targetRef="EndEvent_1" />
+                <bpmn:userTask id="Activity_1" name="New Task">
+                    <bpmn:incoming>Flow_1</bpmn:incoming>
+                    <bpmn:outgoing>Flow_2</bpmn:outgoing>
+                </bpmn:userTask>
+            </bpmn:process>
+        </bpmn:definitions>
+        """.trimIndent()
+
+        mockMvc.perform(
+            MockMvcRequestBuilders.multipart(
+                HttpMethod.PUT,
+                "/api/management/v1/case-definition/{caseDefinitionKey}/version/{caseDefinitionVersionTag}/process-definition",
+                "autodeploy", "1.0.0"
+            )
+                .file(MockMultipartFile("file", "redeploy-process.bpmn", MediaType.APPLICATION_XML_VALUE, secondBpmnXml.toByteArray()))
+                .file(MockMultipartFile("processLinks", "processLinks.json", MediaType.APPLICATION_JSON_VALUE, processLinksJson.toByteArray()))
+                .param("canInitializeDocument", "true")
+                .param("startableByUser", "true")
+                .contentType(MediaType.MULTIPART_FORM_DATA_VALUE)
+                .accept(MediaType.APPLICATION_JSON_VALUE)
+        )
+            .andExpect(status().isNoContent)
+
+        runWithoutAuthorization {
+            val allVersions = repositoryService.createProcessDefinitionQuery()
+                .processDefinitionKey("redeploy-process")
+                .list()
+
+            val activeVersions = allVersions.filter { !it.isSuspended }
+            val versionTaggedVersions = allVersions.filter { it.versionTag == "CD:autodeploy:1.0.0" }
+
+            assertEquals(1, versionTaggedVersions.size,
+                "Expected exactly one definition with the case version tag, but found ${versionTaggedVersions.size}")
+            assertEquals(true, versionTaggedVersions.first().isSuspended,
+                "Redeployed non-executable definition should be suspended")
+            assertEquals(0, activeVersions.size,
+                "No active versions should exist for a non-executable process")
         }
     }
 

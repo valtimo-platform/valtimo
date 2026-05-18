@@ -31,6 +31,7 @@ import com.ritense.valtimo.contract.case_.CaseDefinitionId
 import com.ritense.valtimo.operaton.authorization.OperatonExecutionActionProvider
 import com.ritense.valtimo.operaton.domain.OperatonExecution
 import com.ritense.valtimo.operaton.domain.OperatonProcessDefinition
+import com.ritense.valtimo.operaton.service.OperatonRepositoryService
 import org.springframework.stereotype.Component
 
 @SkipComponentScan
@@ -38,6 +39,7 @@ import org.springframework.stereotype.Component
 class StartableProcessItemProvider(
     private val processDefinitionCaseDefinitionRepository: ProcessDefinitionCaseDefinitionRepository,
     private val authorizationService: AuthorizationService,
+    private val repositoryService: OperatonRepositoryService,
 ) : StartableItemProvider {
 
     override val type: StartableItemType = StartableItemType.PROCESS
@@ -48,6 +50,7 @@ class StartableProcessItemProvider(
     ): List<StartableItemDto> {
         return processDefinitionCaseDefinitionRepository
             .findAll(caseDefinitionId, startableByUser = true, canInitializeDocument = null)
+            .filter { isProcessDefinitionActive(it.id.processDefinitionId.id) }
             .filter { hasExecutionPermission(it.id.processDefinitionId.id, document) }
             .map { pdcd ->
                 StartableItemDto(
@@ -120,6 +123,13 @@ class StartableProcessItemProvider(
             .forEach { pdcd ->
                 processDefinitionCaseDefinitionRepository.save(pdcd.copy(startableByUser = false))
             }
+    }
+
+    private fun isProcessDefinitionActive(processDefinitionId: String): Boolean {
+        val definition = com.ritense.authorization.AuthorizationContext.runWithoutAuthorization {
+            repositoryService.findProcessDefinitionById(processDefinitionId)
+        }
+        return definition != null && !definition.isSuspended()
     }
 
     private fun hasExecutionPermission(processDefinitionId: String, document: Document?): Boolean {

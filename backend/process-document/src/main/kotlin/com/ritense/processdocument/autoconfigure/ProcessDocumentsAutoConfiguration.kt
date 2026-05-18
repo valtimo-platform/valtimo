@@ -508,10 +508,12 @@ class ProcessDocumentsAutoConfiguration {
     fun startableProcessItemProvider(
         processDefinitionCaseDefinitionRepository: ProcessDefinitionCaseDefinitionRepository,
         authorizationService: AuthorizationService,
+        repositoryService: OperatonRepositoryService,
     ): StartableProcessItemProvider {
         return StartableProcessItemProvider(
             processDefinitionCaseDefinitionRepository,
             authorizationService,
+            repositoryService,
         )
     }
 }
