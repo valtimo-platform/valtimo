@@ -20,3 +20,4 @@ export * from './task-list.model';
 export * from './task-intermediate-save.model';
 export * from './task-list-search-field.model';
 export * from './task-sse-event.model';
+export * from './task-list-quick-search.model';
