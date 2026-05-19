@@ -19,6 +19,10 @@
   position: absolute;
 }
 
+:host[data-widget-type='highlight'] .widget-block__content {
+  height: 100%;
+}
+
 .widget-block {
   width: 100%;
   height: 100%;

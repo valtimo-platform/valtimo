@@ -358,6 +358,7 @@ export class TaskListComponent implements OnInit, OnDestroy {
             pagination.collectionSize
           ),
         });
+        this.taskListPaginationService.savePageSizePreference(Number(newSize));
       });
   }
 
@@ -406,6 +407,7 @@ export class TaskListComponent implements OnInit, OnDestroy {
       if (definition.item.id !== this.ALL_CASES_ID) {
         this.quickSearchService.initParams(definition.item.id);
       }
+      this.taskListPaginationService.loadPageSizeForCaseDefinition(definition.item.id);
     }
   }
 
@@ -626,6 +628,7 @@ export class TaskListComponent implements OnInit, OnDestroy {
       if (decodedParams.caseDefinitionKey !== this.ALL_CASES_ID) {
         this.quickSearchService.initParams(decodedParams.caseDefinitionKey);
       }
+      this.taskListPaginationService.loadPageSizeForCaseDefinition(decodedParams.caseDefinitionKey);
     }
 
     if (decodedParams.otherFilters?.length > 0) {

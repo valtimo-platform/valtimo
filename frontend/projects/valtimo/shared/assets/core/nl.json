@@ -18,6 +18,7 @@
     "TaskDueDateSetEvent": "Taak einddatum ingesteld > {{taskName}}"
   },
   "case": {
+    "allCases": "Alle dossiers",
     "exportButtonTooltip": "Exporteer huidige dossier lijst",
     "summaryFormNotFound": "Formulier niet gevonden voor '{{caseDefinitionKey}}'. Er moet een formulier bestaan met de naam '{{caseDefinitionKey}}.summary'.",
     "bulkAssign": {
@@ -906,6 +907,7 @@
         "retentionPeriodTooltip": "0 of hoger: retentie is actief, de zaak wordt na het opgegeven aantal dagen verwijderd. -1: er is geen retentieperiode ingesteld, de zaak wordt niet automatisch verwijderd.",
         "deletedImmediately": "Wordt direct verwijderd",
         "key": "Status-key",
+        "label": "Label (Optioneel)",
         "visible": "Standaard zichtbaar",
         "color": "Kleur"
       },
@@ -1012,7 +1014,15 @@
       "collection": {"title": "Collectie", "description": "Maak een collectie aan"},
       "divider": {"title": "Scheidingslijn"},
       "map": {"title": "Kaart", "description": "Maak een kaart widget aan"},
-      "person-card": {"title": "Persoonskaart", "description": "Een persoon met de belangrijkste gegevens en contactinformatie"}
+      "person-card": {"title": "Persoonskaart", "description": "Een persoon met de belangrijkste gegevens en contactinformatie"},
+      "metroline": {
+        "title": "Metrolijn",
+        "description": "Toon de voortgang van een zaak als een metrolijn"
+      },
+      "highlight": {
+        "title": "Markering",
+        "description": "Een kleine widget die één waarde of een aantal benadrukt"
+      }
     },
     "width": {
       "description": "Selecteer de gewenste breedte voor de widget.",
@@ -1157,6 +1167,26 @@
         "fieldWidthPlaceholder": "Kies veldbreedte",
         "titleTooltip": "Titel van de eigenschap",
         "valueTooltip": "Naam van de eigenschap waartoe u toegang wilt krijgen binnen het eerder ingevulde collectiegegevens-pad"
+      },
+      "metroline": {
+        "displayType": {
+          "label": "Weergavetype",
+          "horizontal": "Horizontaal",
+          "vertical": "Verticaal"
+        },
+        "statusSource": {
+          "label": "Statusbron",
+          "placeholder": "Selecteer een statusbron",
+          "internalStatus": "Interne status",
+          "zaakStatus": "Zaakstatus"
+        }
+      },
+      "highlight": {
+        "description": "",
+        "value": "Waarde",
+        "valuePlaceholder": "Selecteer of typ een pad",
+        "valueHelper": "Toont de waarde op dit pad. Als het een array is, wordt het aantal elementen weergegeven.",
+        "accentColor": "Accentkleur"
       }
     },
     "filters": {
@@ -2309,6 +2339,17 @@
     },
     "personCard": {
       "age": "{{age}} jaar"
+    },
+    "metroline": {
+      "stepState": {
+        "current": "Huidig",
+        "complete": "Voltooid",
+        "incomplete": "Onvolledig",
+        "invalid": "Ongeldig"
+      }
+    },
+    "highlight": {
+      "noValue": "Geen waarde"
     }
   },
   "iko": {
