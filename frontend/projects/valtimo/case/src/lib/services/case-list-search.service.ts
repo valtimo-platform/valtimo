@@ -15,7 +15,7 @@
  */
 
 import {Injectable} from '@angular/core';
-import {Observable, switchMap} from 'rxjs';
+import {Observable, of, switchMap} from 'rxjs';
 import {SearchField, SearchFieldValues, SearchFilter, SearchFilterRange} from '@valtimo/shared';
 import {CaseListService} from './case-list.service';
 import {DocumentService} from '@valtimo/document';
@@ -26,7 +26,9 @@ export class CaseListSearchService {
   private readonly _documentSearchFields$: Observable<Array<SearchField> | null> =
     this.caseListService.caseDefinitionKey$.pipe(
       switchMap(caseDefinitionKey =>
-        this.documentService.getDocumentSearchFields(caseDefinitionKey)
+        caseDefinitionKey
+          ? this.documentService.getDocumentSearchFields(caseDefinitionKey)
+          : of([])
       )
     );
 

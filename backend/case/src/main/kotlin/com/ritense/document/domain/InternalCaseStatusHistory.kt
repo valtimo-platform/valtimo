@@ -14,37 +14,31 @@
  * limitations under the License.
  */
 
-package com.ritense.zakenapi.sync
+package com.ritense.document.domain
 
-import com.ritense.valtimo.contract.case_.CaseDefinitionId
 import jakarta.persistence.Column
-import jakarta.persistence.Embedded
 import jakarta.persistence.Entity
 import jakarta.persistence.Id
 import jakarta.persistence.Table
+import java.time.LocalDateTime
 import java.util.UUID
 
 @Entity
-@Table(name = "document_zaken_api_sync")
-data class DocumentZakenApiSync(
-
+@Table(name = "internal_case_status_history")
+data class InternalCaseStatusHistory(
     @Id
     @Column(name = "id")
     val id: UUID = UUID.randomUUID(),
 
-    @Embedded
-    val caseDefinitionId: CaseDefinitionId,
+    @Column(name = "document_id", nullable = false)
+    val documentId: UUID,
 
-    @Column(name = "sync_assignee_as_behandelaar")
-    val syncAssigneeAsBehandelaar: Boolean = false,
+    @Column(name = "case_definition_key", nullable = false)
+    val caseDefinitionKey: String,
 
-    @Column(name = "note_sync_enabled")
-    val noteSyncEnabled: Boolean = false,
+    @Column(name = "internal_case_status_key", nullable = false)
+    val internalCaseStatusKey: String,
 
-    @Column(name = "note_subject")
-    val noteSubject: String = DEFAULT_NOTE_SUBJECT,
-) {
-    companion object {
-        const val DEFAULT_NOTE_SUBJECT = "Note created by Valtimo GZAC"
-    }
-}
+    @Column(name = "created_on", nullable = false)
+    val createdOn: LocalDateTime = LocalDateTime.now(),
+)

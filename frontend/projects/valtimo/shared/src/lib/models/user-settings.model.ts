@@ -20,6 +20,8 @@ interface UserSettings {
   compactMode?: boolean;
   showUserNameInTopBar?: boolean;
   preferredTheme?: string;
+  caseListPageSizes?: {[key: string]: number};
+  taskListPageSizes?: {[key: string]: number};
 }
 
 export {UserSettings};

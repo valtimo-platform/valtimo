@@ -420,6 +420,10 @@ public class JsonSchemaDocumentSearchService implements DocumentSearchService {
         if (!StringUtils.isEmpty(searchRequest.getGlobalSearchFilter())) {
             predicates.add(findJsonValue(cb, root, searchRequest.getGlobalSearchFilter()));
         }
+
+        if (searchRequest.getAssigneeFilter() != null && searchRequest.getAssigneeFilter() != AssigneeFilter.ALL) {
+            predicates.add(getAssigneeFilterPredicate(cb, root, searchRequest.getAssigneeFilter()));
+        }
     }
 
     private void addJsonFieldPredicates(

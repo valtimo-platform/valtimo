@@ -240,6 +240,7 @@ export const environment: ValtimoConfig = {
     enableFormFlowBreadcrumbs: true,
     enablePbacDocumentenApiDocuments: true,
     enableSuppressDocumentError: false,
+    enableGenericCaseList: false,
   },
   csp: cspHeaderParamsDev,
   formioOptions: {

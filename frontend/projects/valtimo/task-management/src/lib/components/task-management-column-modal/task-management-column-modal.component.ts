@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -315,10 +315,30 @@ export class TaskManagementColumnModalComponent {
     return this.enumValues$.pipe(map(values => this.getValidEnumValues(values).length > 0));
   }
 
+  private readonly _enumInitialValues$ = new BehaviorSubject<MultiInputValues>(
+    this._DEFAULT_ENUM_VALUES
+  );
+
+  public get enumInitialValues$(): Observable<MultiInputValues> {
+    return this._enumInitialValues$.pipe(
+      distinctUntilChanged((previous, current) => isEqual(previous, current))
+    );
+  }
+
   private readonly _yesNoValues$ = new BehaviorSubject<MultiInputValues>(this._DEFAULT_ENUM_VALUES);
 
   public get yesNoValues$(): Observable<MultiInputValues> {
     return this._yesNoValues$.pipe(
+      distinctUntilChanged((previous, current) => isEqual(previous, current))
+    );
+  }
+
+  private readonly _yesNoInitialValues$ = new BehaviorSubject<MultiInputValues>(
+    this._DEFAULT_ENUM_VALUES
+  );
+
+  public get yesNoInitialValues$(): Observable<MultiInputValues> {
+    return this._yesNoInitialValues$.pipe(
       distinctUntilChanged((previous, current) => isEqual(previous, current))
     );
   }
@@ -361,10 +381,12 @@ export class TaskManagementColumnModalComponent {
 
   private resetEnumValues(): void {
     this._enumValues$.next(this._DEFAULT_ENUM_VALUES);
+    this._enumInitialValues$.next(this._DEFAULT_ENUM_VALUES);
   }
 
   private resetYesNoValues(): void {
     this._yesNoValues$.next(this._DEFAULT_ENUM_VALUES);
+    this._yesNoInitialValues$.next(this._DEFAULT_ENUM_VALUES);
   }
 
   private resetFormAfterTimeout(): void {
@@ -467,22 +489,22 @@ export class TaskManagementColumnModalComponent {
       column?.displayType?.type === ViewType.ENUM &&
       column?.displayType?.displayTypeParameters?.enum
     ) {
-      this._enumValues$.next(
-        this.getMultiInputValuesFromTaskListColumnEnum(
-          column.displayType.displayTypeParameters.enum
-        )
+      const prefilledEnum = this.getMultiInputValuesFromTaskListColumnEnum(
+        column.displayType.displayTypeParameters.enum
       );
+      this._enumValues$.next(prefilledEnum);
+      this._enumInitialValues$.next(prefilledEnum);
     }
 
     if (
       column?.displayType?.type === ViewType.BOOLEAN &&
       column?.displayType?.displayTypeParameters?.enum
     ) {
-      this._yesNoValues$.next(
-        this.getMultiInputValuesFromTaskListColumnEnum(
-          column.displayType.displayTypeParameters.enum
-        )
+      const prefilledYesNo = this.getMultiInputValuesFromTaskListColumnEnum(
+        column.displayType.displayTypeParameters.enum
       );
+      this._yesNoValues$.next(prefilledYesNo);
+      this._yesNoInitialValues$.next(prefilledYesNo);
     }
 
     this.formGroup.patchValue({

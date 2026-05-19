@@ -25,6 +25,7 @@ class Statustype(
     val omschrijvingGeneriek: String?,
     val statustekst: String?,
     val volgnummer: Int,
+    val toelichting: String?,
     val isEindstatus: Boolean?,
     val informeren: Boolean?,
 )

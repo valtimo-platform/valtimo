@@ -14,21 +14,19 @@
  * limitations under the License.
  */
 
-package com.ritense.zakenapi.sync
+package com.ritense.case_.widget.metroline
 
-import com.ritense.valtimo.contract.case_.CaseDefinitionId
+data class MetrolineCaseWidgetProperties(
+    val orientation: MetrolineOrientation,
+    val mode: MetrolineMode,
+)
 
-data class DocumentZakenApiSyncRequest(
-    val syncAssigneeAsBehandelaar: Boolean = false,
-    val noteSyncEnabled: Boolean = false,
-    val noteSubject: String = DocumentZakenApiSync.DEFAULT_NOTE_SUBJECT,
-) {
+enum class MetrolineOrientation {
+    HORIZONTAL,
+    VERTICAL,
+}
 
-    fun toEntity(caseDefinitionId: CaseDefinitionId): DocumentZakenApiSync =
-        DocumentZakenApiSync(
-            caseDefinitionId = caseDefinitionId,
-            syncAssigneeAsBehandelaar = syncAssigneeAsBehandelaar,
-            noteSyncEnabled = noteSyncEnabled,
-            noteSubject = noteSubject,
-        )
+enum class MetrolineMode {
+    INTERNAL_CASE_STATUS,
+    ZAAKSTATUS,
 }

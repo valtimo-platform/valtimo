@@ -130,6 +130,10 @@ export class CaseListComponent implements OnInit, OnDestroy {
     this.subscribeToCanHaveAssignee();
     this.subscribeToSearchFields();
     this.resolveVisibleCaseTabs();
+
+    if (!this.configService.config?.featureToggles?.enableGenericCaseList) {
+      this.breadcrumbService.suppressSecondBreadcrumb();
+    }
   }
 
   public ngOnDestroy(): void {
@@ -138,6 +142,7 @@ export class CaseListComponent implements OnInit, OnDestroy {
     this._canHaveAssigneeSubscription?.unsubscribe();
     this._searchFieldsSubscription?.unsubscribe();
     this.pageTitleService.enableReset();
+    this.breadcrumbService.unsuppressSecondBreadcrumb();
   }
 
   // --- Search ---

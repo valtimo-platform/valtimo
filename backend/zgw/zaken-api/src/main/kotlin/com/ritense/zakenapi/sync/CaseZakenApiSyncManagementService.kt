@@ -44,9 +44,6 @@ class CaseZakenApiSyncManagementService(
 
     fun saveSyncConfiguration(sync: CaseZakenApiSync) {
         logger.info { "Save zaken-api sync configuration caseDefinitionId=${sync.caseDefinitionId}" }
-        require(sync.assigneeSyncEnabled || sync.noteSyncEnabled) {
-            "At least one zaken-api sync option must be enabled"
-        }
         require(!sync.assigneeSyncEnabled || sync.roltypeUrl != null) {
             "A roltype URL must be configured when assignee sync is enabled"
         }

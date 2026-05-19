@@ -20,9 +20,11 @@ import {
   WidgetContentProperties,
   WidgetCustomContent,
   WidgetFieldsContent,
+  WidgetHighlightContent,
   WidgetInteractiveTableContent,
   WidgetMapContent,
   WidgetPersonCardContent,
+  WidgetMetrolineContent,
   WidgetTableContent,
 } from './widget-content.model';
 import {WidgetDisplayType} from './widget-display.model';
@@ -36,6 +38,8 @@ enum WidgetType {
   FORMIO = 'formio',
   DIVIDER = 'divider',
   MAP = 'map',
+  METROLINE = 'metroline',
+  HIGHLIGHT = 'highlight',
   PERSON_CARD = 'person-card',
 }
 
@@ -148,9 +152,19 @@ interface MapWidget extends BasicWidget {
   properties: WidgetMapContent;
 }
 
+interface HighlightWidget extends BasicWidget {
+  type: WidgetType.HIGHLIGHT;
+  properties: WidgetHighlightContent;
+}
+
 interface PersonCardWidget extends BasicWidget {
   type: WidgetType.PERSON_CARD;
   properties: WidgetPersonCardContent;
+}
+
+interface MetrolineWidget extends BasicWidget {
+  type: WidgetType.METROLINE;
+  properties: WidgetMetrolineContent;
 }
 
 type Widget =
@@ -161,8 +175,10 @@ type Widget =
   | InteractiveTableWidget
   | FormioWidget
   | DividerWidget
+  | PersonCardWidget
   | MapWidget
-  | PersonCardWidget;
+  | MetrolineWidget
+  | HighlightWidget;
 
 type WidgetWithUuid = Widget & {
   uuid: string;
@@ -230,8 +246,14 @@ interface WidgetGroup {
   widgets: Widget[];
 }
 
-type WidgetComponentMap = Record<Exclude<WidgetType, WidgetType.DIVIDER | WidgetType.PERSON_CARD>, Type<any>> &
-  Partial<Record<WidgetType.PERSON_CARD, Type<any>>>;
+type OptionalWidgets =
+  | WidgetType.PERSON_CARD
+  | WidgetType.METROLINE
+  | WidgetType.HIGHLIGHT;
+
+type WidgetComponentMap =
+  Record<Exclude<WidgetType, WidgetType.DIVIDER | OptionalWidgets>, Type<any>> &
+  Partial<Record<OptionalWidgets, Type<any>>>;
 
 type WidgetContext = 'case' | 'iko';
 
@@ -261,6 +283,8 @@ export {
   InteractiveTableWidget,
   MapWidget,
   PersonCardWidget,
+  HighlightWidget,
+  MetrolineWidget,
   WidgetPackResultItem,
   WidgetPackResultItemsByRow,
   FormioWidgetWidgetWithUuid,

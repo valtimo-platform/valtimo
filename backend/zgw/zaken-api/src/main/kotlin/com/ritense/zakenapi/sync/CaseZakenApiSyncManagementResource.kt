@@ -16,6 +16,7 @@
 
 package com.ritense.zakenapi.sync
 
+import com.ritense.authorization.annotation.RunWithoutAuthorization
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import com.ritense.valtimo.contract.case_.CaseDefinitionId
 import com.ritense.valtimo.contract.domain.ValtimoMediaType.APPLICATION_JSON_UTF8_VALUE
@@ -35,6 +36,7 @@ class CaseZakenApiSyncManagementResource(
     private val caseZakenApiSyncManagementService: CaseZakenApiSyncManagementService,
 ) {
 
+    @RunWithoutAuthorization
     @GetMapping("/v1/case-definition/{caseDefinitionKey}/version/{caseDefinitionVersionTag}/zaken-api-sync")
     fun getSyncConfiguration(
         @PathVariable("caseDefinitionKey") caseDefinitionKey: String,
@@ -46,6 +48,7 @@ class CaseZakenApiSyncManagementResource(
         return ResponseEntity.ok(CaseZakenApiSyncResponse.of(sync))
     }
 
+    @RunWithoutAuthorization
     @PutMapping("/v1/case-definition/{caseDefinitionKey}/version/{caseDefinitionVersionTag}/zaken-api-sync")
     fun createOrUpdateSyncConfiguration(
         @PathVariable("caseDefinitionKey") caseDefinitionKey: String,
@@ -57,6 +60,7 @@ class CaseZakenApiSyncManagementResource(
         return ResponseEntity.ok().build()
     }
 
+    @RunWithoutAuthorization
     @DeleteMapping("/v1/case-definition/{caseDefinitionKey}/version/{caseDefinitionVersionTag}/zaken-api-sync")
     fun deleteSyncConfiguration(
         @PathVariable("caseDefinitionKey") caseDefinitionKey: String,
