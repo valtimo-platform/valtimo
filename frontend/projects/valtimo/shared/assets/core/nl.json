@@ -1022,6 +1022,14 @@
       "highlight": {
         "title": "Markering",
         "description": "Een kleine widget die één waarde of een aantal benadrukt"
+      },
+      "generic": {
+        "title": "Generieke widgets",
+        "description": "Breed toepasbaar — koppel ze aan elke gegevensstructuur (velden, tabellen, collecties). Meer configuratie, maar geen beperkingen op wat ze kunnen tonen."
+      },
+      "specific": {
+        "title": "Specifieke widgets",
+        "description": "Elk is gebouwd voor één soort gegeven — een persoon, een aantal, een enkele waarde. Minder opties om te configureren, maar alleen geschikt voor dat doel."
       }
     },
     "width": {

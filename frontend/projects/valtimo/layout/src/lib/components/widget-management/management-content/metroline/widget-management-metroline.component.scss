@@ -21,7 +21,7 @@
 
   &__title-form {
     padding: 8px 0 16px 16px;
-    background: var(--cds-layer);
+    background: var(--cds-layer-02);
     display: flex;
     gap: 16px;
   }
@@ -30,7 +30,7 @@
     max-width: 300px;
 
     input {
-      background: var(--cds-layer-02);
+      background: var(--cds-layer-01);
     }
   }
 
@@ -40,7 +40,7 @@
     align-items: center;
     gap: 24px;
     padding: 16px;
-    background: var(--cds-layer);
+    background: var(--cds-layer-02);
 
     > * {
       flex: 0 0 auto;
@@ -51,7 +51,7 @@
     width: 300px;
 
     .cds--list-box {
-      background: var(--cds-layer-02);
+      background: var(--cds-layer-01);
     }
   }
 }

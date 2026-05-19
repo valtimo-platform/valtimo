@@ -1003,6 +1003,14 @@
       "highlight": {
         "title": "Highlight",
         "description": "A small widget that highlights a single value or a count"
+      },
+      "generic": {
+        "title": "Generic widgets",
+        "description": "Broadly applicable — wire them up to any data structure (fields, tables, collections). More configuration, but no limits on what they can show."
+      },
+      "specific": {
+        "title": "Specific widgets",
+        "description": "Each is built for one kind of data — a person, a count, a single value. Fewer options to configure, but only suitable for that purpose."
       }
     },
     "width": {

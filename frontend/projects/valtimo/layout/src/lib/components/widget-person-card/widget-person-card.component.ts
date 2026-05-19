@@ -62,6 +62,7 @@ export class WidgetPersonCardComponent implements OnDestroy {
     if (!fullName) return '';
     return fullName
       .split(/\s+/)
+      .slice(0, 2)
       .map(word => word.charAt(0).toUpperCase())
       .join('');
   });

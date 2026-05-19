@@ -26,14 +26,14 @@
 
   &__title-form {
     padding: 8px 0 16px 16px;
-    background: var(--cds-layer);
+    background: var(--cds-layer-02);
   }
 
   &__input {
     max-width: 288px;
 
     input {
-      background: var(--cds-layer-02);
+      background: var(--cds-layer-01);
     }
   }
 
@@ -109,6 +109,6 @@
 
   .cds--text-input,
   .cds--list-box {
-    background: var(--cds-layer-02);
+    background: var(--cds-layer-01);
   }
 }
