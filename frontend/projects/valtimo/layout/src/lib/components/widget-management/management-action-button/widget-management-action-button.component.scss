@@ -16,7 +16,7 @@
 
 .valtimo-widget-management-action-button {
   padding: 12px 0 16px 16px;
-  background: var(--cds-layer);
+  background: var(--cds-layer-02);
   display: flex;
   gap: 16px;
 
@@ -27,7 +27,7 @@
 
   &__type .cds--list-box,
   &__form .cds--text-input {
-    background: var(--cds-layer-02);
+    background: var(--cds-layer-01);
   }
 
   &__type {

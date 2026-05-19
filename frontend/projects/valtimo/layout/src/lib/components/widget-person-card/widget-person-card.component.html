@@ -43,40 +43,46 @@
   <p class="valtimo-widget-person-card__subtitle">{{ $subtitle() }}</p>
 
   <dl class="valtimo-widget-person-card__grid">
-    <div class="valtimo-widget-person-card__field">
-      <svg
-        class="valtimo-widget-person-card__field-icon"
-        cdsIcon="phone"
-        size="20"
-      ></svg>
-      <span class="valtimo-widget-person-card__field-value">{{ data?.phone || '-' }}</span>
-    </div>
+    @if (data?.phone) {
+      <div class="valtimo-widget-person-card__field">
+        <svg
+          class="valtimo-widget-person-card__field-icon"
+          cdsIcon="phone"
+          size="20"
+        ></svg>
+        <span class="valtimo-widget-person-card__field-value">{{ data?.phone }}</span>
+      </div>
+    }
 
-    <div class="valtimo-widget-person-card__field">
-      <svg
-        class="valtimo-widget-person-card__field-icon"
-        cdsIcon="email"
-        size="20"
-      ></svg>
-      <span class="valtimo-widget-person-card__field-value">{{ data?.email || '-' }}</span>
-    </div>
+    @if (data?.email) {
+      <div class="valtimo-widget-person-card__field">
+        <svg
+          class="valtimo-widget-person-card__field-icon"
+          cdsIcon="email"
+          size="20"
+        ></svg>
+        <span class="valtimo-widget-person-card__field-value">{{ data?.email }}</span>
+      </div>
+    }
 
-    <div class="valtimo-widget-person-card__field">
-      <span class="valtimo-widget-person-card__field-icon valtimo-widget-person-card__bsn-icon">
-        BSN
-      </span>
-      <span class="valtimo-widget-person-card__field-value">{{ data?.bsn || '-' }}</span>
-    </div>
+    @if (data?.bsn) {
+      <div class="valtimo-widget-person-card__field">
+        <span class="valtimo-widget-person-card__field-icon valtimo-widget-person-card__bsn-icon">
+          BSN
+        </span>
+        <span class="valtimo-widget-person-card__field-value">{{ data?.bsn }}</span>
+      </div>
+    }
 
-    <div class="valtimo-widget-person-card__field">
-      <svg
-        class="valtimo-widget-person-card__field-icon"
-        cdsIcon="calendar"
-        size="20"
-      ></svg>
-      <span class="valtimo-widget-person-card__field-value">{{
-        $formattedBirthDate() || '-'
-      }}</span>
-    </div>
+    @if ($formattedBirthDate()) {
+      <div class="valtimo-widget-person-card__field">
+        <svg
+          class="valtimo-widget-person-card__field-icon"
+          cdsIcon="calendar"
+          size="20"
+        ></svg>
+        <span class="valtimo-widget-person-card__field-value">{{ $formattedBirthDate() }}</span>
+      </div>
+    }
   </dl>
 </div>
