@@ -35,6 +35,7 @@ export const WIDGET_WIZARD_TYPE_TEST_IDS = {
   tileCollection: 'widgetWizardTypeTile-collection',
   tileMap: 'widgetWizardTypeTile-map',
   tilePersonCard: 'widgetWizardTypeTile-person-card',
+  tileMetroline: 'widgetWizardTypeTile-metroline',
 } as const;
 
 export const WIDGET_WIZARD_WIDTH_TEST_IDS = {
@@ -84,4 +85,10 @@ export const WIDGET_CONTENT_PERSON_CARD_TEST_IDS = {
   phoneInput: 'widgetContentPersonCardPhone',
   emailInput: 'widgetContentPersonCardEmail',
   cityInput: 'widgetContentPersonCardCity',
+} as const;
+
+export const WIDGET_CONTENT_METROLINE_TEST_IDS = {
+  widgetTitleInput: 'widgetContentMetrolineWidgetTitle',
+  displayTypeRadio: 'widgetContentMetrolineDisplayType',
+  statusSourceDropdown: 'widgetContentMetrolineStatusSource',
 } as const;

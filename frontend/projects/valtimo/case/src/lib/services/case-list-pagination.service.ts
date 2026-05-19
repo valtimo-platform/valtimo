@@ -15,11 +15,11 @@
  */
 
 import {Injectable} from '@angular/core';
-import {BehaviorSubject, filter, map, Observable, take, tap} from 'rxjs';
+import {BehaviorSubject, combineLatest, filter, map, Observable, switchMap, take, tap} from 'rxjs';
 import {Pagination} from '@valtimo/components';
 import {NGXLogger} from 'ngx-logger';
 import {CaseParameterService} from './case-parameter.service';
-import {DefinitionColumn} from '@valtimo/shared';
+import {DefinitionColumn, UserSettingsService} from '@valtimo/shared';
 import {CaseService} from './case.service';
 import {Documents, SortState, SpecifiedDocuments} from '@valtimo/document';
 
@@ -31,6 +31,8 @@ export class CaseListPaginationService {
     size: 10,
     sort: undefined,
   };
+
+  private _caseDefinitionKey: string;
 
   private readonly _pagination$ = new BehaviorSubject<Pagination | undefined>(undefined);
 
@@ -47,7 +49,8 @@ export class CaseListPaginationService {
   constructor(
     private readonly logger: NGXLogger,
     private readonly caseParameterService: CaseParameterService,
-    private readonly caseService: CaseService
+    private readonly caseService: CaseService,
+    private readonly userSettingsService: UserSettingsService
   ) {}
 
   public pageChange(newPage: number): void {
@@ -68,6 +71,7 @@ export class CaseListPaginationService {
 
         this.logger.debug(`Page size change. New Page: ${newPage} New page size: ${newPageSize}`);
         this._pagination$.next({...pagination, size: newPageSize, page: newPage});
+        this.savePageSizePreference(newPageSize);
       }
     });
   }
@@ -119,17 +123,27 @@ export class CaseListPaginationService {
     this._pagination$.next(undefined);
   }
 
-  public setPagination(columns: Array<DefinitionColumn>): void {
-    this.caseParameterService.queryPaginationParams$
-      .pipe(take(1))
-      .subscribe(queryPaginationParams => {
-        const defaultPagination: Pagination = this.getDefaultPagination(columns);
-        const paginationToUse = queryPaginationParams || defaultPagination;
+  public setPagination(columns: Array<DefinitionColumn>, caseDefinitionKey: string): void {
+    this._caseDefinitionKey = caseDefinitionKey;
 
-        this.logger.debug(`Set pagination: ${JSON.stringify(paginationToUse)}`);
+    combineLatest([
+      this.caseParameterService.queryPaginationParams$.pipe(take(1)),
+      this.userSettingsService.getUserSettings().pipe(take(1)),
+    ]).subscribe(([queryPaginationParams, userSettings]) => {
+      const defaultPagination: Pagination = this.getDefaultPagination(columns);
 
-        this._pagination$.next(paginationToUse);
-      });
+      if (queryPaginationParams) {
+        this._pagination$.next(queryPaginationParams);
+      } else {
+        const savedSize = userSettings?.caseListPageSizes?.[caseDefinitionKey];
+        const pagination = savedSize
+          ? {...defaultPagination, size: savedSize}
+          : defaultPagination;
+        this._pagination$.next(pagination);
+      }
+
+      this.logger.debug(`Set pagination: ${JSON.stringify(this._pagination$.getValue())}`);
+    });
   }
 
   private getDefaultPagination(columns: Array<DefinitionColumn>): Pagination {
@@ -139,5 +153,18 @@ export class CaseListPaginationService {
       ...this.DEFAULT_PAGINATION,
       sort: defaultSortState,
     };
+  }
+
+  private savePageSizePreference(size: number): void {
+    if (!this._caseDefinitionKey) return;
+
+    const caseDefinitionKey = this._caseDefinitionKey;
+    this.userSettingsService.getUserSettings().pipe(
+      take(1),
+      switchMap(settings => {
+        const pageSizes = {...(settings?.caseListPageSizes || {}), [caseDefinitionKey]: size};
+        return this.userSettingsService.saveUserSettings({...settings, caseListPageSizes: pageSizes});
+      })
+    ).subscribe();
   }
 }

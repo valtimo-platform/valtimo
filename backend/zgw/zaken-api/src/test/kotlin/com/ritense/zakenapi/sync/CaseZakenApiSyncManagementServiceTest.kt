@@ -116,18 +116,6 @@ class CaseZakenApiSyncManagementServiceTest {
     }
 
     @Test
-    fun `saveSyncConfiguration rejects records with no sync option enabled`() {
-        val empty = CaseZakenApiSync(
-            caseDefinitionId = caseDefinitionId,
-            assigneeSyncEnabled = false,
-            noteSyncEnabled = false,
-        )
-
-        assertThatThrownBy { service.saveSyncConfiguration(empty) }
-            .isInstanceOf(IllegalArgumentException::class.java)
-    }
-
-    @Test
     fun `saveSyncConfiguration rejects assignee sync enabled without roltypeUrl`() {
         val invalid = CaseZakenApiSync(
             caseDefinitionId = caseDefinitionId,

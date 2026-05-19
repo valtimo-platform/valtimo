@@ -1388,6 +1388,16 @@ class ZakenApiPlugin(
         }
     }
 
+    fun getZaakStatussen(zaakUrl: URI): List<ZaakStatus> {
+        logger.debug { "Fetching zaak statussen for zaak with URL '$zaakUrl'" }
+        return Page.getAll(100) { page ->
+            client.getZaakStatussen(
+                authenticationPluginConfiguration,
+                url, zaakUrl, page
+            )
+        }
+    }
+
     fun getZaakResultaat(zaakUrl: URI): ZaakResultaat? {
         logger.debug { "Fetching zaak resultaat for zaak with URL '$zaakUrl'" }
         val zaak = getZaak(zaakUrl)

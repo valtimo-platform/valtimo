@@ -16,7 +16,7 @@
 
 import {Injectable} from '@angular/core';
 import {CaseTag, CaseTagService} from '@valtimo/document';
-import {BehaviorSubject, combineLatest, map, Observable, switchMap, take, tap} from 'rxjs';
+import {BehaviorSubject, combineLatest, map, Observable, of, switchMap, take, tap} from 'rxjs';
 import {CaseListService} from './case-list.service';
 import {CaseParameterService} from './case-parameter.service';
 
@@ -28,10 +28,12 @@ export class CaseListCaseTagService {
 
   private readonly _caseTags$: Observable<CaseTag[]> = this.caseListService.caseDefinitionKey$.pipe(
     switchMap(caseDefinitionKey =>
-      combineLatest([
-        this.caseTagsService.getCaseTags(caseDefinitionKey),
-        this.caseParameterService.queryCaseTagsParams$,
-      ]).pipe(take(1))
+      caseDefinitionKey
+        ? combineLatest([
+            this.caseTagsService.getCaseTags(caseDefinitionKey),
+            this.caseParameterService.queryCaseTagsParams$,
+          ]).pipe(take(1))
+        : of<[CaseTag[], null]>([[], null])
     ),
     tap(([caseTags, queryCaseTags]) => {
       let selectedCaseTags;
