@@ -34,4 +34,10 @@
             </column>
         </createTable>
     </changeSet>
+    <changeSet id="2" author="Ritense">
+        <createIndex tableName="hidden_task_list_column" indexName="idx_hidden_task_list_col_user_case">
+            <column name="user_id"/>
+            <column name="case_definition_name"/>
+        </createIndex>
+    </changeSet>
 </databaseChangeLog>
