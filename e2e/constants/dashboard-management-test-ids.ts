@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,9 +14,4 @@
  * limitations under the License.
  */
 
-/*
- * Public API Surface of dashboard-management
- */
-
-export * from './lib/constants/dashboard-management.test-ids';
-export * from './lib/dashboard-management.module';
+export {DASHBOARD_MANAGEMENT_TEST_IDS} from '../../frontend/projects/valtimo/dashboard-management/src/lib/constants/dashboard-management.test-ids';

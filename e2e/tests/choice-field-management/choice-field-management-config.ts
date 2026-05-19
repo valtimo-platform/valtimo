@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,9 +14,23 @@
  * limitations under the License.
  */
 
-/*
- * Public API Surface of dashboard-management
- */
+import {generateId} from '../../utils/dataGenerator';
 
-export * from './lib/constants/dashboard-management.test-ids';
-export * from './lib/dashboard-management.module';
+export function createChoiceFieldTestData() {
+  const id = generateId();
+  return {
+    keyName: `e2e_test_${id}`,
+    title: `E2e Test Choice Field ${id}`,
+    editedTitle: `E2e Edited Choice Field ${id}`,
+  };
+}
+
+export function createChoiceFieldValueTestData() {
+  const id = generateId();
+  return {
+    name: `e2e_value_${id}`,
+    value: `E2e Test Value ${id}`,
+    editedValue: `E2e Edited Value ${id}`,
+    sortOrder: '1',
+  };
+}
