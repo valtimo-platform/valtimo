@@ -151,6 +151,7 @@ allprojects {
                 mavenBom "software.amazon.awssdk:bom:${awssdkVersion}"
                 mavenBom "com.fasterxml.jackson:jackson-bom:${jacksonVersion}"
                 mavenBom "org.junit:junit-bom:${junitVersion}"
+                mavenBom "io.netty:netty-bom:4.1.133.Final"
             }
             dependencies {
                 dependency "org.hibernate.orm:hibernate-core:${hibernateCoreVersion}"
