@@ -1,0 +1,244 @@
+<!--
+  ~ Copyright 2015-2026 Ritense BV, the Netherlands.
+  ~
+  ~ Licensed under EUPL, Version 1.2 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~ https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" basis,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<section class="case-inspection-process-detail">
+  <header class="case-inspection-process-detail__header">
+    <h3>
+      {{ row.processName || row.processDefinitionKey }}
+      <small>{{ 'case.inspection.processes.version' | translate }} {{ row.version }}</small>
+    </h3>
+
+    <div class="case-inspection-process-detail__tags">
+      <cds-tag
+        size="sm"
+        [type]="row.active ? 'green' : 'cool-gray'"
+        [title]="
+          row.active
+            ? ('case.inspection.processes.active' | translate)
+            : ('case.inspection.processes.completed' | translate)
+        "
+      >
+        {{
+          row.active
+            ? ('case.inspection.processes.active' | translate)
+            : ('case.inspection.processes.completed' | translate)
+        }}
+      </cds-tag>
+
+      <cds-tag
+        *ngIf="row.buildingBlock as bb"
+        size="sm"
+        type="purple"
+        [title]="'case.inspection.processes.buildingBlockTagTooltip' | translate"
+      >
+        {{ 'case.inspection.processes.buildingBlockTag' | translate }}: {{ bb.definitionKey }} {{ bb.definitionVersionTag }}
+      </cds-tag>
+    </div>
+
+    <dl class="case-inspection-process-detail__meta">
+      <dt>{{ 'case.inspection.processes.instanceId' | translate }}</dt>
+      <dd><code>{{ row.processInstanceId }}</code></dd>
+
+      <dt>{{ 'case.inspection.processes.startedBy' | translate }}</dt>
+      <dd>{{ row.startedBy || row.startedByUserId || '—' }}</dd>
+
+      <dt>{{ 'case.inspection.processes.startedOn' | translate }}</dt>
+      <dd>{{ row.startedOn | date: 'medium' }}</dd>
+
+      <ng-container *ngIf="row.buildingBlock as bb">
+        <dt>{{ 'case.inspection.processes.buildingBlock' | translate }}</dt>
+        <dd>
+          <button
+            type="button"
+            class="case-inspection-process-detail__bb-link"
+            (click)="onViewBuildingBlock(bb)"
+          >
+            {{ bb.definitionKey }} {{ bb.definitionVersionTag }}
+            <span aria-hidden="true">→</span>
+          </button>
+        </dd>
+      </ng-container>
+    </dl>
+  </header>
+
+  <cds-tabs type="contained">
+    <cds-tab
+      [active]="$activeTab() === ProcessDetailTab.DETAILS"
+      [heading]="'case.inspection.processes.detailsTab' | translate"
+      (selected)="onSelectTab(ProcessDetailTab.DETAILS)"
+    >
+      <div class="case-inspection-process-detail__pane">
+        <ng-container *ngIf="row.incidents.length > 0">
+          <h4 class="case-inspection-process-detail__subhead">
+            {{ 'case.inspection.processes.incidentsHeader' | translate }}
+          </h4>
+
+          <cds-structured-list>
+            <cds-list-header>
+              <cds-list-column>{{
+                'case.inspection.processes.incidentType' | translate
+              }}</cds-list-column>
+              <cds-list-column>{{
+                'case.inspection.processes.activity' | translate
+              }}</cds-list-column>
+              <cds-list-column>{{
+                'case.inspection.processes.message' | translate
+              }}</cds-list-column>
+              <cds-list-column>{{
+                'case.inspection.processes.timestamp' | translate
+              }}</cds-list-column>
+            </cds-list-header>
+
+            <cds-list-row *ngFor="let incident of row.incidents">
+              <cds-list-column>{{ incident.incidentType }}</cds-list-column>
+              <cds-list-column>{{ incident.activityId || '—' }}</cds-list-column>
+              <cds-list-column>{{ incident.incidentMessage || '—' }}</cds-list-column>
+              <cds-list-column>{{ incident.incidentTimestamp | date: 'medium' }}</cds-list-column>
+            </cds-list-row>
+          </cds-structured-list>
+        </ng-container>
+
+        <h4 class="case-inspection-process-detail__subhead">
+          {{ 'case.inspection.processes.tasksHeader' | translate }}
+        </h4>
+
+        <ng-container *ngIf="row.tasks.length > 0; else noTasks">
+          <cds-structured-list>
+            <cds-list-header>
+              <cds-list-column>{{
+                'case.inspection.processes.taskName' | translate
+              }}</cds-list-column>
+              <cds-list-column>{{
+                'case.inspection.processes.taskAssignee' | translate
+              }}</cds-list-column>
+              <cds-list-column>{{
+                'case.inspection.processes.taskCreated' | translate
+              }}</cds-list-column>
+            </cds-list-header>
+
+            <cds-list-row *ngFor="let task of row.tasks">
+              <cds-list-column>{{ task.name }}</cds-list-column>
+              <cds-list-column>{{ task.assignee || '—' }}</cds-list-column>
+              <cds-list-column>{{ task.created | date: 'medium' }}</cds-list-column>
+            </cds-list-row>
+          </cds-structured-list>
+        </ng-container>
+
+        <ng-template #noTasks>
+          <p class="case-inspection-process-detail__empty">
+            {{ 'case.inspection.processes.noTasks' | translate }}
+          </p>
+        </ng-template>
+
+        <h4 class="case-inspection-process-detail__subhead">
+          {{ 'case.inspection.processes.variablesHeader' | translate }}
+        </h4>
+
+        <ng-container *ngIf="row.variables.length > 0; else noVariables">
+          <cds-structured-list>
+            <cds-list-header>
+              <cds-list-column>{{
+                'case.inspection.processes.variableName' | translate
+              }}</cds-list-column>
+              <cds-list-column>{{
+                'case.inspection.processes.variableType' | translate
+              }}</cds-list-column>
+              <cds-list-column>{{
+                'case.inspection.processes.variableValue' | translate
+              }}</cds-list-column>
+            </cds-list-header>
+
+            <cds-list-row *ngFor="let variable of row.variables">
+              <cds-list-column>
+                <code>{{ variable.name }}</code>
+              </cds-list-column>
+              <cds-list-column>{{ variable.type }}</cds-list-column>
+              <cds-list-column>
+                <code class="case-inspection-process-detail__variable-value">{{
+                  formatVariableValue(variable)
+                }}</code>
+              </cds-list-column>
+            </cds-list-row>
+          </cds-structured-list>
+        </ng-container>
+
+        <ng-template #noVariables>
+          <p class="case-inspection-process-detail__empty">
+            {{ 'case.inspection.processes.noVariables' | translate }}
+          </p>
+        </ng-template>
+
+        <h4 class="case-inspection-process-detail__subhead">
+          {{ 'case.inspection.processes.jobsHeader' | translate }}
+        </h4>
+
+        <ng-container *ngIf="row.jobs.length > 0; else noJobs">
+          <cds-structured-list>
+            <cds-list-header>
+              <cds-list-column>{{
+                'case.inspection.processes.jobType' | translate
+              }}</cds-list-column>
+              <cds-list-column>{{
+                'case.inspection.processes.jobActivity' | translate
+              }}</cds-list-column>
+              <cds-list-column>{{
+                'case.inspection.processes.jobRetries' | translate
+              }}</cds-list-column>
+              <cds-list-column>{{
+                'case.inspection.processes.jobDueDate' | translate
+              }}</cds-list-column>
+              <cds-list-column>{{
+                'case.inspection.processes.jobException' | translate
+              }}</cds-list-column>
+            </cds-list-header>
+
+            <cds-list-row *ngFor="let job of row.jobs">
+              <cds-list-column>
+                {{ 'case.inspection.processes.jobTypeLabel.' + job.jobType | translate }}
+              </cds-list-column>
+              <cds-list-column>
+                <code *ngIf="job.activityId; else noActivity">{{ job.activityId }}</code>
+                <ng-template #noActivity>—</ng-template>
+              </cds-list-column>
+              <cds-list-column>{{ job.retries }}</cds-list-column>
+              <cds-list-column>{{ job.dueDate | date: 'medium' }}</cds-list-column>
+              <cds-list-column>{{ job.exceptionMessage || '—' }}</cds-list-column>
+            </cds-list-row>
+          </cds-structured-list>
+        </ng-container>
+
+        <ng-template #noJobs>
+          <p class="case-inspection-process-detail__empty">
+            {{ 'case.inspection.processes.noJobs' | translate }}
+          </p>
+        </ng-template>
+      </div>
+    </cds-tab>
+
+    <cds-tab
+      [active]="$activeTab() === ProcessDetailTab.DIAGRAM"
+      [heading]="'case.inspection.processes.diagramTab' | translate"
+      (selected)="onSelectTab(ProcessDetailTab.DIAGRAM)"
+    >
+      <div class="case-inspection-process-detail__pane case-inspection-process-detail__diagram">
+        <valtimo-process-diagram
+          *ngIf="$activeTab() === ProcessDetailTab.DIAGRAM"
+          [processInstanceId]="row.processInstanceId"
+        ></valtimo-process-diagram>
+      </div>
+    </cds-tab>
+  </cds-tabs>
+</section>

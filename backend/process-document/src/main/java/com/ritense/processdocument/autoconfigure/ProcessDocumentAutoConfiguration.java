@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -35,6 +35,7 @@ import com.ritense.processdocument.repository.CaseDefinitionProcessLinkRepositor
 import com.ritense.processdocument.repository.ProcessDocumentInstanceRepository;
 import com.ritense.processdocument.resolver.CaseDocumentJsonValueResolverFactory;
 import com.ritense.processdocument.resolver.DocumentTableValueResolver;
+import com.ritense.processdocument.service.BuildingBlockProcessLookup;
 import com.ritense.processdocument.service.CaseDefinitionProcessLinkService;
 import com.ritense.processdocument.service.ProcessDefinitionCaseDefinitionService;
 import com.ritense.processdocument.service.ProcessDocumentAssociationService;
@@ -42,14 +43,16 @@ import com.ritense.processdocument.service.ProcessDocumentService;
 import com.ritense.processdocument.service.impl.OperatonProcessJsonSchemaDocumentAssociationService;
 import com.ritense.processdocument.service.impl.OperatonProcessJsonSchemaDocumentService;
 import com.ritense.processdocument.web.rest.ProcessDocumentResource;
-import com.ritense.valtimo.contract.document.CaseDocumentResolver;
-import com.ritense.valtimo.operaton.service.OperatonRepositoryService;
+import com.ritense.processdocument.web.rest.ProcessInspectionResource;
 import com.ritense.valtimo.contract.authentication.UserManagementService;
 import com.ritense.valtimo.contract.case_.CaseDefinitionChecker;
+import com.ritense.valtimo.contract.document.CaseDocumentResolver;
+import com.ritense.valtimo.operaton.service.OperatonRepositoryService;
 import com.ritense.valtimo.service.OperatonProcessService;
 import com.ritense.valtimo.service.OperatonTaskService;
 import com.ritense.valueresolver.ValueResolverFactory;
 import org.operaton.bpm.engine.HistoryService;
+import org.operaton.bpm.engine.ManagementService;
 import org.operaton.bpm.engine.RuntimeService;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
@@ -178,6 +181,30 @@ public class ProcessDocumentAutoConfiguration {
             processDocumentAssociationService,
             processDefinitionCaseDefinitionService,
             activeCaseDefinitionService
+        );
+    }
+
+    @Bean
+    @ConditionalOnMissingBean(ProcessInspectionResource.class)
+    public ProcessInspectionResource processInspectionResource(
+        DocumentService documentService,
+        AuthorizationService authorizationService,
+        ProcessDocumentAssociationService processDocumentAssociationService,
+        RuntimeService runtimeService,
+        HistoryService historyService,
+        ManagementService managementService,
+        OperatonTaskService operatonTaskService,
+        java.util.Optional<BuildingBlockProcessLookup> buildingBlockProcessLookup
+    ) {
+        return new ProcessInspectionResource(
+            documentService,
+            authorizationService,
+            processDocumentAssociationService,
+            runtimeService,
+            historyService,
+            managementService,
+            operatonTaskService,
+            buildingBlockProcessLookup.orElse(null)
         );
     }
 

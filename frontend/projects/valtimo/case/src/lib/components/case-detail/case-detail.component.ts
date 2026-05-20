@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -81,6 +81,7 @@ import {
   CAN_ASSIGN_CASE_PERMISSION,
   CAN_CLAIM_CASE_PERMISSION,
   CAN_DELETE_CASE_PERMISSION,
+  CAN_INSPECT_CASE_PERMISSION,
   CAN_VIEW_CASE_PERMISSION,
   CASE_DETAIL_PERMISSION_RESOURCE,
 } from '../../permissions';
@@ -284,6 +285,15 @@ export class CaseDetailComponent implements AfterViewInit, OnDestroy {
     )
   );
 
+  public readonly canInspect$: Observable<boolean> = this.route.paramMap.pipe(
+    switchMap((params: ParamMap) =>
+      this.permissionService.requestPermission(CAN_INSPECT_CASE_PERMISSION, {
+        resource: CASE_DETAIL_PERMISSION_RESOURCE.jsonSchemaDocument,
+        identifier: params.get('documentId') ?? '',
+      })
+    )
+  );
+
   public readonly loadingTabs$ = new BehaviorSubject<boolean>(true);
   public readonly noTabsConfigured$ = new BehaviorSubject<boolean>(false);
   public readonly showNoAccess$ = new BehaviorSubject<boolean>(false);
@@ -466,6 +476,10 @@ export class CaseDetailComponent implements AfterViewInit, OnDestroy {
 
   public deleteDocument(): void {
     this.showDeleteModal$.next(true);
+  }
+
+  public navigateToInspection(): void {
+    this.router.navigate(['/case-inspection', this.documentId]);
   }
 
   public onConfirmDelete(): void {

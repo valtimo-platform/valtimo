@@ -107,6 +107,11 @@ class BuildingBlockInstanceService(
     }
 
     @Transactional(readOnly = true)
+    fun findAllByCaseDocumentId(caseDocumentId: UUID): List<BuildingBlockInstance> {
+        return buildingBlockInstanceRepository.findAllByCaseDocumentId(caseDocumentId)
+    }
+
+    @Transactional(readOnly = true)
     fun list(): List<BuildingBlockInstance> {
         return buildingBlockInstanceRepository.findAll()
     }
