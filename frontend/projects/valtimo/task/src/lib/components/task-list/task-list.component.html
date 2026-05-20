@@ -20,6 +20,8 @@
     selectedTaskType: selectedTaskType$ | async,
     tasks: tasks$ | async,
     fields: fields$ | async,
+    availableFields: availableFields$ | async,
+    hiddenColumns: hiddenColumns$ | async,
     visibleTabs: visibleTabs$ | async,
     pagination: paginationForCurrentTaskTypeForList$ | async,
     taskListColumnsForCase: taskListColumnsForCase$ | async,
@@ -42,6 +44,10 @@
           }
         "
       ></ng-container>
+
+      <div class="mb-3">
+        <valtimo-quick-search (quickSearchEvent)="onQuickSearchEvent($event)"></valtimo-quick-search>
+      </div>
     }
 
     <ng-container
@@ -141,6 +147,15 @@
       </ng-container>
     </div>
 
+    <div carbonToolbarContent>
+      <valtimo-list-column-view
+        *ngIf="obs.caseDefinitionKey && obs.caseDefinitionKey !== ALL_CASES_ID"
+        [availableFields]="obs.availableFields"
+        [hiddenColumns]="obs.hiddenColumns"
+        (viewUpdateEvent)="onViewUpdateEvent($event)"
+      ></valtimo-list-column-view>
+    </div>
+
     <valtimo-no-results
       [description]="obs.noResultsMessage.description | translate"
       [title]="obs.noResultsMessage.title | translate"
@@ -186,12 +201,14 @@
 <ng-template #searchFields let-obs="obs">
   <div class="mb-3">
     <valtimo-search-fields
+      [canSaveSearch]="true"
       [searchFields]="obs.searchFields"
       [inputDisabled]="obs.loadingSearchFields"
       [caseDefinitionKey]="obs.caseDefinitionKey"
       [setValuesSubject$]="setSearchFieldValuesSubject$"
       [clearValuesSubject$]="clearSearchFieldValuesSubject$"
       (doSearch)="search($event)"
+      (saveSearchEvent)="onSaveSearchEvent($event)"
     >
     </valtimo-search-fields>
   </div>

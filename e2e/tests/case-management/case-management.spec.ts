@@ -126,7 +126,6 @@ test.describe('Case management', () => {
     test('Configure step shows pre-filled name and key', async () => {
       await caseManagementPage.goToCaseManagement();
       await caseManagementPage.uploadCaseButton.click();
-      await caseManagementPage.pluginConfigurationStep();
       await caseManagementPage.uploadFileStep('test-case-import-success_1.0.0.case.zip');
 
       // Assert: configure step is pre-filled with values from the archive
@@ -143,27 +142,30 @@ test.describe('Case management', () => {
     test('Upload with custom name and key', async () => {
       await caseManagementPage.goToCaseManagement();
       await caseManagementPage.uploadCaseButton.click();
-      await caseManagementPage.pluginConfigurationStep();
       await caseManagementPage.uploadFileStep('test-case-import-success_1.0.0.case.zip');
 
       // Act: change name and key on the configure step
-      const result = await caseManagementPage.configureStepWithCustomKey(
+      const {key, name} = await caseManagementPage.configureStepWithCustomKey(
         'Custom Import Name',
         'custom-import-key'
       );
-      createdKeys.push(result.key);
+      createdKeys.push(key);
 
-      if (result.response.status() === 200) {
-        await caseManagementPage.uploadWizardNextButton.click();
+      // Plugin step triggers the import
+      const response = await caseManagementPage.pluginConfigurationStep();
+
+      if (response.status() === 200) {
+        await caseManagementPage.fileUploadStep();
         await caseManagementPage.accessControlStep();
         await caseManagementPage.dashboardStep();
 
         // Assert: the case appears in the list under the actual name used
-        await expect(page.getByRole('cell', {name: result.name, exact: true}).first()).toBeVisible({timeout: 15_000});
+        await expect(page.getByRole('cell', {name, exact: true}).first()).toBeVisible({timeout: 15_000});
       }
     });
 
     test('Existing draft override warning', async () => {
+      test.slow();
       // Arrange: import a case (creates a draft)
       await caseManagementPage.goToCaseManagement();
       const {key: importedKey} = await caseManagementPage.uploadCase();
@@ -172,8 +174,11 @@ test.describe('Case management', () => {
       // Act: import the same archive again — same key + same version as existing draft
       await caseManagementPage.goToCaseManagement();
       await caseManagementPage.uploadCaseButton.click();
-      await caseManagementPage.pluginConfigurationStep();
       await caseManagementPage.uploadFileStep('test-case-import-success_1.0.0.case.zip');
+
+      // Wait for the configure step to render and initial validation to settle
+      await expect(caseManagementPage.configureNameInput).toBeVisible();
+      await caseManagementPage.awaitConfigureValidation();
 
       // The configure step pre-fills with the archive key
       const cannotImportVisible = await page
@@ -205,29 +210,30 @@ test.describe('Case management', () => {
       const uniqueKey = `e2e-final-test-${Date.now().toString(36)}`;
       await caseManagementPage.goToCaseManagement();
       await caseManagementPage.uploadCaseButton.click();
-      await caseManagementPage.pluginConfigurationStep();
       await caseManagementPage.uploadFileStep('test-case-import-success_1.0.0.case.zip');
-      const firstImport = await caseManagementPage.configureStepWithCustomKey(
+      const {key: firstImportKey} = await caseManagementPage.configureStepWithCustomKey(
         'E2e Final Version Test',
         uniqueKey
       );
-      createdKeys.push(firstImport.key);
+      createdKeys.push(firstImportKey);
 
-      if (firstImport.response.status() === 200) {
-        await caseManagementPage.uploadWizardNextButton.click();
+      const firstImportResponse = await caseManagementPage.pluginConfigurationStep();
+
+      if (firstImportResponse.status() === 200) {
+        await caseManagementPage.fileUploadStep();
         await caseManagementPage.accessControlStep();
         await caseManagementPage.dashboardStep();
       }
 
       // Finalize the version
       await ApiUtils.apiPost(
-        `/api/management/v1/case-definition/${firstImport.key}/version/1.0.0/finalize`,
+        `/api/management/v1/case-definition/${firstImportKey}/version/1.0.0/finalize`,
         {}
       );
 
       // Verify finalization succeeded before proceeding
       const versions = await ApiUtils.apiGet<Array<{versionTag: string; final: boolean}>>(
-        `/api/management/v1/case-definition/${firstImport.key}/version`
+        `/api/management/v1/case-definition/${firstImportKey}/version`
       );
       const finalVersion = versions.find(v => v.versionTag === '1.0.0');
       expect(finalVersion?.final).toBeTruthy();
@@ -235,7 +241,6 @@ test.describe('Case management', () => {
       // Act: try to import the same archive again, setting the key to the finalized one
       await caseManagementPage.goToCaseManagement();
       await caseManagementPage.uploadCaseButton.click();
-      await caseManagementPage.pluginConfigurationStep();
       await caseManagementPage.uploadFileStep('test-case-import-success_1.0.0.case.zip');
 
       // Wait for the configure step to render and initial validation to settle
@@ -244,8 +249,8 @@ test.describe('Case management', () => {
       await caseManagementPage.awaitConfigureValidation();
 
       // Change the key to the finalized one and wait for its specific validation response
-      const validationPromise = caseManagementPage.waitForKeyValidationResponse(firstImport.key);
-      await caseManagementPage.changeConfigureKey(firstImport.key);
+      const validationPromise = caseManagementPage.waitForKeyValidationResponse(firstImportKey);
+      await caseManagementPage.changeConfigureKey(firstImportKey);
       await validationPromise;
 
       // Wait for the UI to reflect the validation result

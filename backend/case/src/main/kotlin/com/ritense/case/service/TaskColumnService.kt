@@ -20,13 +20,16 @@ import com.ritense.authorization.Action
 import com.ritense.authorization.AuthorizationContext.Companion.runWithoutAuthorization
 import com.ritense.authorization.AuthorizationService
 import com.ritense.authorization.request.EntityAuthorizationRequest
+import com.ritense.case.domain.HiddenTaskListColumn
 import com.ritense.case.domain.TaskListColumnId
 import com.ritense.case.exception.InvalidListColumnException
 import com.ritense.case.exception.UnknownCaseDefinitionException
+import com.ritense.case.repository.HiddenTaskListColumnRepository
 import com.ritense.case.repository.TaskListColumnRepository
 import com.ritense.case.service.validations.ListColumnValidator
 import com.ritense.case.service.validations.Operation
 import com.ritense.case.service.validations.SaveTaskListColumnValidator
+import com.ritense.case.web.rest.dto.HiddenTaskListColumnDto
 import com.ritense.case.web.rest.dto.TaskListColumnDto
 import com.ritense.case.web.rest.mapper.TaskListColumnMapper
 import com.ritense.document.domain.DocumentDefinition
@@ -45,6 +48,7 @@ import kotlin.jvm.optionals.getOrNull
 @SkipComponentScan
 class TaskColumnService(
     private val taskListColumnRepository: TaskListColumnRepository,
+    private val hiddenTaskListColumnRepository: HiddenTaskListColumnRepository,
     private val documentDefinitionService: DocumentDefinitionService,
     valueResolverService: ValueResolverService,
     private val authorizationService: AuthorizationService,
@@ -149,6 +153,44 @@ class TaskColumnService(
     }
 
     @Throws(UnknownDocumentDefinitionException::class)
+    fun getHiddenTaskListColumns(caseDefinitionName: String, userId: String): List<TaskListColumnDto> {
+        assertDocumentDefinitionExists(caseDefinitionName)
+
+        return TaskListColumnMapper.toDtoList(
+            hiddenTaskListColumnRepository.findAllByUserIdAndTaskListColumnIdCaseDefinitionName(
+                userId,
+                caseDefinitionName
+            ).map(HiddenTaskListColumn::taskListColumn)
+        )
+    }
+
+    @Throws(UnknownDocumentDefinitionException::class)
+    fun saveHiddenTaskListColumns(
+        caseDefinitionName: String,
+        hiddenTaskListColumnDtoList: List<HiddenTaskListColumnDto>,
+        userId: String
+    ) {
+        assertDocumentDefinitionExists(caseDefinitionName)
+
+        hiddenTaskListColumnRepository.deleteAllByUserIdAndTaskListColumnIdCaseDefinitionName(
+            userId,
+            caseDefinitionName
+        )
+
+        val entities = hiddenTaskListColumnDtoList.mapNotNull {
+            taskListColumnRepository.findByIdCaseDefinitionNameAndIdKey(
+                caseDefinitionName,
+                it.columnKey
+            )
+        }
+        hiddenTaskListColumnRepository.saveAll(
+            entities.map {
+                HiddenTaskListColumn(taskListColumn = it, userId = userId)
+            }
+        )
+    }
+
+    @Throws(UnknownDocumentDefinitionException::class)
     fun deleteTaskListColumn(caseDefinitionName: String, columnKey: String) {
         denyManagementOperation()
         caseDefinitionChecker.assertCanUpdateGlobalConfiguration()
@@ -157,8 +199,11 @@ class TaskColumnService(
 
         val taskListColumn = taskListColumnRepository.findByIdCaseDefinitionNameAndIdKey(caseDefinitionName, columnKey)
         if (taskListColumn != null) {
+            hiddenTaskListColumnRepository.deleteAllByTaskListColumnIdCaseDefinitionNameAndTaskListColumnIdKey(
+                caseDefinitionName,
+                columnKey
+            )
             taskListColumnRepository.decrementOrderDueToColumnDeletion(taskListColumn.id.caseDefinitionName, taskListColumn.order)
-
             taskListColumnRepository.delete(taskListColumn)
         }
     }

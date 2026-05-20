@@ -51,6 +51,7 @@
         {{ 'dashboardManagement.widgets.form.dashboardTitle' | translate }}
 
         <input
+          [attr.data-test-id]="testIds.editTitleInput"
           cdsText
           [disabled]="obs.disabled"
           [invalid]="dashboardTitle.dirty && dashboardTitle.invalid"
@@ -72,6 +73,7 @@
         {{ 'dashboardManagement.widgets.form.dashboardDescription' | translate }}
 
         <input
+          [attr.data-test-id]="testIds.editDescriptionInput"
           cdsText
           [disabled]="obs.disabled"
           [invalid]="dashboardDescription.dirty && dashboardDescription.invalid"
@@ -88,6 +90,7 @@
   </button>
 
   <button
+    [attr.data-test-id]="testIds.completeButton"
     cdsButton="primary"
     [disabled]="editDashboardForm.invalid || obs.disabled"
     (click)="saveDashboard()"

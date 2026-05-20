@@ -1,7 +1,7 @@
-# 13.28.0
+# 13.28.1
 
 {% hint style="info" %}
-**Release date 13-05-2026**
+**Release date 18-05-2026**
 {% endhint %}
 
 ## New Features
@@ -24,6 +24,17 @@
   - **Note sync** — Valtimo notes on the case are mirrored as `ZaakNotitie` on the linked zaak.
 
   See the [Zaak sync section](../../../features/case/zgw/zaken-api-sync.md) for details.
+
+* **Admin settings**
+
+  A new admin settings page is available under the Admin menu for managing the application logo (light and dark mode,
+  PNG or SVG), customizing the accent color palette, and toggling front-end feature flags at runtime. The accent colors
+  section lets administrators override the ten CDS color levels (color 100 through color 10) with a color picker.
+  Changes take effect immediately in the current session; other sessions pick up the new values on their next page load.
+  Logos, accent colors, and feature toggle overrides can be auto-deployed from classpath resource files using the
+  importer framework.
+  See the [admin settings documentation](../../../features/admin-settings/README.md) for details and the
+  [front-end migration guide](front-end-migration.md) for setup instructions.
 
 ## Enhancements
 
@@ -58,13 +69,12 @@
   [Highlight widget documentation](../../../features/case/case-detail/tabs/widgets.md) for the full list of
   configuration options.
 
-## Enhancements
-
 * **Generic case list**
 
   A generic case list can be used instead of the default case list with case definitions listed in the sidebar. The
   generic case list shows cases across all case definitions similar to the task list. This feature needs to be enabled
   in the angular configuration file(s) in order to make use of it, via the `enableGenericCaseList` property.
+
 * **Improved actuator endpoint security**
 
   Endpoints added to `management.endpoints.web.exposure.include` are now
@@ -109,6 +119,7 @@
 * Fixed a permission issue on the task endpoint that prevented assignee details from being resolved for users without permission to look up other users.
 * Fixed a bug where the enumeration display type when configuring task columns was not editable.
 * Quick search tooltip on the case list no longer gets cut off when the trigger is near the viewport edge; the tooltip now repositions automatically to stay on screen.
+* Fixed a bug where the frontend code could not be compiled because of error: `Can't resolve ...@ibm/plex...`
 
 * **Recover from stuck migration locks**
 
