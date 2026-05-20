@@ -24,6 +24,7 @@ import {
   ViewEncapsulation,
 } from '@angular/core';
 import {BehaviorSubject, Observable, Subscription} from 'rxjs';
+import {DASHBOARD_MANAGEMENT_TEST_IDS} from '../../constants/dashboard-management.test-ids';
 import {DashboardItem} from '../../models';
 import {FormBuilder, Validators} from '@angular/forms';
 import {CARBON_CONSTANTS} from '@valtimo/components';
@@ -39,6 +40,7 @@ import {ConfigurationOutput} from '@valtimo/dashboard';
   standalone: false,
 })
 export class EditDashboardModalComponent implements OnInit {
+  protected readonly testIds = DASHBOARD_MANAGEMENT_TEST_IDS;
   @Input() public showModal$: Observable<boolean>;
   @Input() public dashboard: DashboardItem;
   @Output() public saveEvent = new EventEmitter<ConfigurationOutput>();
