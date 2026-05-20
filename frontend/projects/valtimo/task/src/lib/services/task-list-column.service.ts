@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,12 +15,14 @@
  */
 
 import {Injectable} from '@angular/core';
-import {ColumnConfig, ViewType} from '@valtimo/components';
-import {BehaviorSubject, filter, Observable, switchMap, tap} from 'rxjs';
+import {ColumnConfig, ListField, ListHiddenColumn, ViewType} from '@valtimo/components';
+import {BehaviorSubject, combineLatest, filter, Observable, of, Subject, switchMap, take, tap} from 'rxjs';
+import {map} from 'rxjs/operators';
 import {TaskService} from './task.service';
 import {TaskListColumn} from '../models';
 import {TaskListService} from './task-list.service';
 import {TaskListSortService} from './task-list-sort.service';
+import {TaskListHiddenColumnsService} from './task-list-hidden-columns.service';
 
 @Injectable()
 export class TaskListColumnService {
@@ -82,50 +84,74 @@ export class TaskListColumnService {
     },
   ];
 
-  private readonly _fields$ = new BehaviorSubject<ColumnConfig[]>(this._DEFAULT_TASK_LIST_FIELDS);
+  private readonly _availableFields$ = new BehaviorSubject<ColumnConfig[]>(this._DEFAULT_TASK_LIST_FIELDS);
+  private readonly _refreshHiddenColumns$ = new Subject<void>();
 
   private get hasCustomConfigTaskList(): boolean {
     return !!this.taskService.getConfigCustomTaskList();
   }
 
-  public get fields$(): Observable<ColumnConfig[]> {
-    return this._fields$.asObservable();
+  public get availableFields$(): Observable<ColumnConfig[]> {
+    return this._availableFields$.asObservable();
   }
 
-  public get taskListColumnsForCase$(): Observable<TaskListColumn[]> {
-    return this.taskListService.caseDefinitionKey$.pipe(
-      tap(caseDefinitionName => {
-        if (caseDefinitionName === this.taskListService.ALL_CASES_ID) {
-          this.resetTaskListFields();
+  public readonly hiddenColumns$: Observable<ListField[]> = this.taskListService.caseDefinitionKey$.pipe(
+    switchMap(caseDefinitionKey => {
+      if (!caseDefinitionKey || caseDefinitionKey === this.taskListService.ALL_CASES_ID) {
+        return of([]);
+      }
+      return this._refreshHiddenColumns$.pipe(
+        switchMap(() => this.hiddenColumnsService.getHiddenColumns(caseDefinitionKey))
+      );
+    })
+  );
+
+  public get fields$(): Observable<ColumnConfig[]> {
+    return combineLatest([this._availableFields$, this.hiddenColumns$]).pipe(
+      map(([availableFields, hiddenColumns]) => {
+        if (!hiddenColumns || hiddenColumns.length === 0) {
+          return availableFields;
         }
-      }),
-      filter(
-        caseDefinitionName =>
-          !!caseDefinitionName && caseDefinitionName !== this.taskListService.ALL_CASES_ID
-      ),
-      switchMap(caseDefinitionName => this.taskService.getTaskListColumns(caseDefinitionName)),
-      tap(taskListColumns => {
-        if (taskListColumns.length === 0) {
-          this.taskListSortService.updateSortStates({
-            isSorting: true,
-            state: {
-              name: this._DEFAULT_SPECIFIED_TASK_LIST_FIELDS[0].key,
-              direction: 'DESC',
-            },
-          });
-          this._fields$.next(this._DEFAULT_SPECIFIED_TASK_LIST_FIELDS);
-        } else {
-          this._fields$.next(this.mapTaskListColumnToColumnConfig(taskListColumns));
-        }
-      }),
-      tap(() => this.taskListService.setLoadingStateForCaseDefinition(false))
+        const hiddenKeys = new Set(hiddenColumns.map(col => col.key));
+        return availableFields.filter(field => !hiddenKeys.has(field.key));
+      })
     );
   }
+
+  public readonly taskListColumnsForCase$: Observable<TaskListColumn[]> = this.taskListService.caseDefinitionKey$.pipe(
+    tap(caseDefinitionName => {
+      if (caseDefinitionName === this.taskListService.ALL_CASES_ID) {
+        this.resetTaskListFields();
+      }
+    }),
+    filter(
+      caseDefinitionName =>
+        !!caseDefinitionName && caseDefinitionName !== this.taskListService.ALL_CASES_ID
+    ),
+    switchMap(caseDefinitionName => this.taskService.getTaskListColumns(caseDefinitionName)),
+    tap(taskListColumns => {
+      if (taskListColumns.length === 0) {
+        this.taskListSortService.updateSortStates({
+          isSorting: true,
+          state: {
+            name: this._DEFAULT_SPECIFIED_TASK_LIST_FIELDS[0].key,
+            direction: 'DESC',
+          },
+        });
+        this._availableFields$.next(this._DEFAULT_SPECIFIED_TASK_LIST_FIELDS);
+      } else {
+        this._availableFields$.next(this.mapTaskListColumnToColumnConfig(taskListColumns));
+      }
+      this._refreshHiddenColumns$.next();
+    }),
+    tap(() => this.taskListService.setLoadingStateForCaseDefinition(false))
+  );
 
   constructor(
     private readonly taskService: TaskService,
     private readonly taskListService: TaskListService,
-    private readonly taskListSortService: TaskListSortService
+    private readonly taskListSortService: TaskListSortService,
+    private readonly hiddenColumnsService: TaskListHiddenColumnsService
   ) {}
 
   public resetTaskListFields(): void {
@@ -139,11 +165,21 @@ export class TaskListColumnService {
     this.taskListService.setLoadingStateForCaseDefinition(false);
   }
 
+  public saveHiddenColumns(hiddenColumns: ListHiddenColumn[]): void {
+    this.taskListService.caseDefinitionKey$.pipe(take(1)).subscribe(caseDefinitionKey => {
+      if (caseDefinitionKey && caseDefinitionKey !== this.taskListService.ALL_CASES_ID) {
+        this.hiddenColumnsService
+          .saveHiddenColumns(caseDefinitionKey, hiddenColumns)
+          .subscribe(() => this._refreshHiddenColumns$.next());
+      }
+    });
+  }
+
   private setFieldsToCustomTaskListFields(): void {
     const customTaskListFields = this.taskService.getConfigCustomTaskList().fields;
 
     if (customTaskListFields) {
-      this._fields$.next(
+      this._availableFields$.next(
         customTaskListFields.map((column, index) => ({
           key: column.propertyName,
           label: `task-list.fieldLabels.${column.translationKey}`,
@@ -156,7 +192,7 @@ export class TaskListColumnService {
   }
 
   private setFieldsToDefaultTaskListFields(): void {
-    this._fields$.next(this._DEFAULT_TASK_LIST_FIELDS);
+    this._availableFields$.next(this._DEFAULT_TASK_LIST_FIELDS);
   }
 
   private mapTaskListColumnToColumnConfig(

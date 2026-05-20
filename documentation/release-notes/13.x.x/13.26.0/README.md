@@ -35,8 +35,4 @@
 
   The detailed request and response information is now only available at `DEBUG` log level, which is typically disabled
   in production. The exception itself only contains the HTTP status code and status text. See
-  [REST client logging](../../features/logging/for-developers.md#rest-client-logging) for configuration details.
-
-## Bugfixes
-
-* New bugfix.
+  [REST client logging](../../../features/logging/for-developers.md#rest-client-logging) for configuration details.
