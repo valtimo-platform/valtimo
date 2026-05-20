@@ -16,7 +16,12 @@
 
 package com.ritense.processdocument.web
 
+import com.ritense.processdocument.domain.TaskQuickSearch
 import com.ritense.processdocument.service.CaseTaskListSearchService
+import com.ritense.processdocument.service.TaskQuickSearchService
+import com.ritense.processdocument.web.request.TaskQuickSearchDto
+import com.ritense.valtimo.contract.authentication.UserManagementService
+import com.ritense.valtimo.contract.authorization.UserManagementServiceHolder
 import com.ritense.valtimo.operaton.dto.TaskExtended
 import com.ritense.valtimo.service.OperatonTaskService
 import org.junit.jupiter.api.BeforeEach
@@ -34,13 +39,19 @@ class TaskListResourceTest {
 
     lateinit var service: CaseTaskListSearchService
     lateinit var operatonTaskService: OperatonTaskService
+    lateinit var taskQuickSearchService: TaskQuickSearchService
     lateinit var taskListResource: TaskListResource
 
     @BeforeEach
     fun setUp() {
         service = mock()
         operatonTaskService = mock()
-        taskListResource = TaskListResource(service, operatonTaskService)
+        taskQuickSearchService = mock()
+        taskListResource = TaskListResource(service, operatonTaskService, taskQuickSearchService)
+
+        val userManagementService = mock<UserManagementService>()
+        whenever(userManagementService.currentUserId).thenReturn("test-user")
+        UserManagementServiceHolder(userManagementService)
     }
 
     @Test
@@ -77,6 +88,45 @@ class TaskListResourceTest {
         verify(service).getTasksByCaseDefinition(any(), any(), any())
         val page = response.body!!
         assertEquals(0, page.content.size)
+    }
+
+    @Test
+    fun `should save task quick search`() {
+        val caseDefinitionKey = "my-case"
+        val request = TaskQuickSearchDto("search=test", "my-search")
+
+        val response = taskListResource.saveQuickSearch(caseDefinitionKey, request)
+
+        verify(taskQuickSearchService).storeQuickSearch(any(), any(), any())
+        assertEquals(200, response.statusCode.value())
+    }
+
+    @Test
+    fun `should get task quick search list`() {
+        val caseDefinitionKey = "my-case"
+        whenever(taskQuickSearchService.getQuickSearchList(any(), any()))
+            .thenReturn(listOf(
+                TaskQuickSearch(queryPath = "search=test", title = "my-search", caseDefinitionKey = caseDefinitionKey, userId = "user")
+            ))
+
+        val response = taskListResource.getQuickSearchList(caseDefinitionKey)
+
+        verify(taskQuickSearchService).getQuickSearchList(any(), any())
+        assertEquals(200, response.statusCode.value())
+        assertEquals(1, response.body!!.size)
+        assertEquals("my-search", response.body!![0].title)
+        assertEquals("search=test", response.body!![0].queryPath)
+    }
+
+    @Test
+    fun `should delete task quick search`() {
+        val caseDefinitionKey = "my-case"
+        val title = "my-search"
+
+        val response = taskListResource.deleteQuickSearch(caseDefinitionKey, title)
+
+        verify(taskQuickSearchService).deleteQuickSearch(any(), any(), any())
+        assertEquals(204, response.statusCode.value())
     }
 
     private fun createTaskExtended(businessKey: String?): TaskExtended {

@@ -45,7 +45,7 @@ export class TaskListPage {
   }
 
   get assignmentPill() {
-    return this.page.locator('.assignment-pill');
+    return this.page.locator('.assignment-pill').first();
   }
 
   // ─── Navigation & Waiting ──────────────────────────────────────────
@@ -70,7 +70,7 @@ export class TaskListPage {
   async openTaskByName(taskName: string) {
     const row = this.page
       .locator('valtimo-carbon-list tbody tr')
-      .filter({has: this.page.locator(`td:has-text("${taskName}")`)})
+      .filter({has: this.page.getByRole('cell', {name: taskName, exact: true})})
       .first();
     await row.click();
     await expect(this.taskDetailDialog.getByText(taskName)).toBeVisible({timeout: 10_000});
@@ -98,11 +98,16 @@ export class TaskListPage {
   }
 
   async submitEmptyForm() {
-    await this.page.getByRole('button', {name: 'Submit'}).click();
+    const submitButton = this.taskDetailDialog.getByRole('button', {name: 'Submit'});
+    await expect(submitButton).toBeVisible({timeout: 10_000});
+    await submitButton.click();
+    // Wait for the modal to close after submission
+    await expect(this.taskDetailDialog).not.toBeVisible({timeout: 15_000});
   }
 
   async assertTaskCompletedNotification(taskName: string) {
-    await expect(this.page.getByRole('heading', {name: `${taskName} has`})).toBeVisible({
+    // Toast notification shows "{taskName} has successfully been completed"
+    await expect(this.page.getByText(`${taskName} has successfully been completed`).first()).toBeVisible({
       timeout: 15_000,
     });
   }
