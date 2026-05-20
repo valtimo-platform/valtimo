@@ -20,6 +20,7 @@ import com.ritense.valtimo.contract.hardening.service.HardeningService;
 import com.ritense.valtimo.contract.security.config.HttpSecurityConfigurer;
 import com.ritense.valtimo.contract.security.config.oauth2.NoOAuth2ClientsConfiguredCondition;
 import com.ritense.valtimo.contract.web.rest.error.ExceptionTranslator;
+import com.ritense.valtimo.security.ActuatorRoleHealthEndpointGroups;
 import com.ritense.valtimo.security.ActuatorSecurityFilterChainFactory;
 import com.ritense.valtimo.security.CoreSecurityFactory;
 import com.ritense.valtimo.security.Http401UnauthorizedEntryPoint;
@@ -52,8 +53,10 @@ import java.util.List;
 import java.util.Optional;
 import org.camunda.bpm.engine.IdentityService;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.beans.factory.config.BeanPostProcessor;
 import org.springframework.boot.actuate.autoconfigure.endpoint.web.WebEndpointProperties;
 import org.springframework.boot.actuate.autoconfigure.health.HealthEndpointProperties;
+import org.springframework.boot.actuate.health.HealthEndpointGroups;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -300,6 +303,25 @@ public class HttpSecurityAutoConfiguration {
             username,
             password
         );
+    }
+
+    // Wraps the auto-configured HealthEndpointGroups so /actuator/health responses only include
+    // components/details when the caller is authenticated and holds ROLE_ACTUATOR. This is a
+    // code-level override of management.endpoint.health.{show-details,roles} and per-group
+    // equivalents — application.yml cannot relax it. Defense-in-depth alongside the conditional
+    // permitAll in ActuatorSecurityFilterChainFactory.
+    @Bean
+    public static BeanPostProcessor actuatorRoleHealthEndpointGroupsPostProcessor() {
+        return new BeanPostProcessor() {
+            @Override
+            public Object postProcessAfterInitialization(Object bean, String beanName) {
+                if (bean instanceof HealthEndpointGroups groups
+                        && !(bean instanceof ActuatorRoleHealthEndpointGroups)) {
+                    return new ActuatorRoleHealthEndpointGroups(groups);
+                }
+                return bean;
+            }
+        };
     }
 
     @Order(100)
