@@ -1,0 +1,77 @@
+<!--
+  ~ Copyright 2015-2026 Ritense BV, the Netherlands.
+  ~
+  ~ Licensed under EUPL, Version 1.2 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~ https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" basis,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<div
+  *ngIf="{
+    filteredModel: filteredModel$ | async,
+    editorDisabled: editorDisabled$ | async,
+  } as obs"
+  class="json-editor-tab"
+>
+  <div class="json-editor-tab__toolbar">
+    <v-overflow-menu placement="bottom-end" [closeOnSelect]="false">
+      <button
+        overflowTrigger
+        cdsButton="ghost"
+        class="json-editor-tab__filter-trigger"
+        [class.json-editor-tab__filter-trigger--active]="isFilterActive$ | async"
+        [iconOnly]="true"
+      >
+        <svg cdsIcon="filter" size="16"></svg>
+      </button>
+
+      <div overflowPane>
+        <ng-container *ngTemplateOutlet="filterPane"></ng-container>
+      </div>
+    </v-overflow-menu>
+  </div>
+
+  <valtimo-editor
+    [disabled]="obs.editorDisabled || disabled"
+    [fitPage]="true"
+    [model]="obs.filteredModel"
+    (validEvent)="onValid($event)"
+    (valueChangeEvent)="onValueChange($event)"
+  ></valtimo-editor>
+</div>
+
+<ng-template #filterPane>
+  <form class="json-editor-tab__filter" (click)="$event.stopImmediatePropagation()">
+    <cds-dropdown
+      [appendInline]="true"
+      [label]="'accessControl.filter.resourceType' | translate"
+      [placeholder]="'accessControl.filter.allResourceTypes' | translate"
+      (selected)="onResourceTypeSelected($event)"
+    >
+      <cds-dropdown-list [items]="resourceTypeItems$ | async"></cds-dropdown-list>
+    </cds-dropdown>
+
+    <cds-dropdown
+      [appendInline]="true"
+      [label]="'accessControl.filter.action' | translate"
+      [placeholder]="'accessControl.filter.allActions' | translate"
+      (selected)="onActionSelected($event)"
+    >
+      <cds-dropdown-list [items]="actionItems$ | async"></cds-dropdown-list>
+    </cds-dropdown>
+
+    <button cdsButton="tertiary" type="button" (click)="onClearFilter()">
+      {{ 'interface.clear' | translate }}
+
+      <svg class="cds--btn__icon" cdsIcon="trash-can" size="16"></svg>
+    </button>
+  </form>
+</ng-template>
