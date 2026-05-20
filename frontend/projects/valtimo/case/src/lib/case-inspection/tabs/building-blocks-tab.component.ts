@@ -19,8 +19,10 @@ import {HttpErrorResponse} from '@angular/common/http';
 import {
   ChangeDetectionStrategy,
   Component,
+  EventEmitter,
   Input,
   OnChanges,
+  Output,
   signal,
   SimpleChanges,
 } from '@angular/core';
@@ -40,6 +42,8 @@ import {CaseInspectionService} from '../services/case-inspection.service';
 export class CaseInspectionBuildingBlocksTabComponent implements OnChanges {
   @Input() public documentId!: string;
   @Input() public pendingInstanceId: string | null = null;
+
+  @Output() public readonly viewProcessLogsEvent = new EventEmitter<string>();
 
   public readonly $loading = signal<boolean>(true);
   public readonly $instances = signal<BuildingBlockInstance[]>([]);

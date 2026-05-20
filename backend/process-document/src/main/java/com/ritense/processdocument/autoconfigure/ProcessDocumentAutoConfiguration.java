@@ -24,6 +24,7 @@ import com.ritense.document.service.DocumentDefinitionService;
 import com.ritense.document.service.DocumentService;
 import com.ritense.document.service.impl.JsonSchemaDocumentDefinitionService;
 import com.ritense.document.service.impl.JsonSchemaDocumentService;
+import com.ritense.logging.service.LoggingEventService;
 import com.ritense.processdocument.domain.delegate.ProcessDocumentStartEventMessageDelegate;
 import com.ritense.processdocument.domain.impl.delegate.ProcessDocumentStartEventMessageDelegateImpl;
 import com.ritense.processdocument.domain.impl.listener.StartEventFromCallActivityListenerImpl;
@@ -42,6 +43,7 @@ import com.ritense.processdocument.service.ProcessDocumentAssociationService;
 import com.ritense.processdocument.service.ProcessDocumentService;
 import com.ritense.processdocument.service.impl.OperatonProcessJsonSchemaDocumentAssociationService;
 import com.ritense.processdocument.service.impl.OperatonProcessJsonSchemaDocumentService;
+import com.ritense.processdocument.web.rest.LogInspectionResource;
 import com.ritense.processdocument.web.rest.ProcessDocumentResource;
 import com.ritense.processdocument.web.rest.ProcessInspectionResource;
 import com.ritense.valtimo.contract.authentication.UserManagementService;
@@ -205,6 +207,20 @@ public class ProcessDocumentAutoConfiguration {
             managementService,
             operatonTaskService,
             buildingBlockProcessLookup.orElse(null)
+        );
+    }
+
+    @Bean
+    @ConditionalOnMissingBean(LogInspectionResource.class)
+    public LogInspectionResource logInspectionResource(
+        DocumentService documentService,
+        AuthorizationService authorizationService,
+        LoggingEventService loggingEventService
+    ) {
+        return new LogInspectionResource(
+            documentService,
+            authorizationService,
+            loggingEventService
         );
     }
 

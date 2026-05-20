@@ -14,12 +14,14 @@
  * limitations under the License.
  */
 
-import {HttpClient} from '@angular/common/http';
+import {HttpClient, HttpParams} from '@angular/common/http';
 import {Injectable} from '@angular/core';
-import {ConfigService} from '@valtimo/shared';
+import {ConfigService, Page} from '@valtimo/shared';
 import {Observable} from 'rxjs';
 import {
   BuildingBlockInstance,
+  CaseInspectionLoggingEvent,
+  CaseInspectionLogSearchRequest,
   DocumentInspection,
   ModifyDocumentRequest,
   ModifyDocumentResult,
@@ -60,6 +62,20 @@ export class CaseInspectionService {
   public getBuildingBlockInstances(caseId: string): Observable<BuildingBlockInstance[]> {
     return this.http.get<BuildingBlockInstance[]>(
       `${this._baseUrl}management/v1/case/${caseId}/building-blocks`
+    );
+  }
+
+  public searchCaseLogs(
+    caseId: string,
+    request: CaseInspectionLogSearchRequest,
+    page: number,
+    size: number
+  ): Observable<Page<CaseInspectionLoggingEvent>> {
+    const params = new HttpParams({fromObject: {page: String(page), size: String(size)}});
+    return this.http.post<Page<CaseInspectionLoggingEvent>>(
+      `${this._baseUrl}management/v1/case/${caseId}/logs`,
+      request,
+      {params}
     );
   }
 }

@@ -18,8 +18,10 @@ import {CommonModule} from '@angular/common';
 import {
   ChangeDetectionStrategy,
   Component,
+  EventEmitter,
   Input,
   OnChanges,
+  Output,
   signal,
   SimpleChanges,
 } from '@angular/core';
@@ -46,6 +48,8 @@ import {CaseInspectionService} from '../services/case-inspection.service';
 export class CaseInspectionBuildingBlockDetailComponent implements OnChanges {
   @Input() public instance!: BuildingBlockInstance;
 
+  @Output() public readonly viewProcessLogsEvent = new EventEmitter<string>();
+
   public readonly $loading = signal<boolean>(true);
   public readonly $errorMessage = signal<string | null>(null);
   public readonly $canInspectModify = signal<boolean>(false);
@@ -63,6 +67,12 @@ export class CaseInspectionBuildingBlockDetailComponent implements OnChanges {
     if (changes.instance && this.instance) {
       this.loadDocument();
       this.loadPermission();
+    }
+  }
+
+  public onViewProcessLogs(): void {
+    if (this.instance.processInstanceId) {
+      this.viewProcessLogsEvent.emit(this.instance.processInstanceId);
     }
   }
 

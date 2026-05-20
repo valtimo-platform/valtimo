@@ -128,6 +128,43 @@ interface ModifyDocumentResult {
   errors?: string[];
 }
 
+enum CaseInspectionLogLevel {
+  TRACE = 'TRACE',
+  DEBUG = 'DEBUG',
+  INFO = 'INFO',
+  WARN = 'WARN',
+  ERROR = 'ERROR',
+}
+
+const CASE_INSPECTION_LOG_LEVEL_TAG: Record<string, string> = {
+  TRACE: 'gray',
+  DEBUG: 'teal',
+  INFO: 'blue',
+  WARN: 'purple',
+  ERROR: 'red',
+};
+
+interface CaseInspectionLoggingEventProperty {
+  key: string;
+  value: string;
+}
+
+interface CaseInspectionLoggingEvent {
+  timestamp: string;
+  formattedMessage: string;
+  level: string;
+  properties: CaseInspectionLoggingEventProperty[];
+  stacktrace: string | null;
+}
+
+interface CaseInspectionLogSearchRequest {
+  level?: string;
+  likeFormattedMessage?: string;
+  afterTimestamp?: string;
+  beforeTimestamp?: string;
+  additionalProperties?: CaseInspectionLoggingEventProperty[];
+}
+
 export {
   Incident,
   ProcessVariable,
@@ -140,4 +177,9 @@ export {
   DocumentInspection,
   ModifyDocumentRequest,
   ModifyDocumentResult,
+  CaseInspectionLogLevel,
+  CASE_INSPECTION_LOG_LEVEL_TAG,
+  CaseInspectionLoggingEvent,
+  CaseInspectionLoggingEventProperty,
+  CaseInspectionLogSearchRequest,
 };

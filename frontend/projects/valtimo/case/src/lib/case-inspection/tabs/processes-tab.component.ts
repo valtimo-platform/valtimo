@@ -48,6 +48,7 @@ export class CaseInspectionProcessesTabComponent implements OnChanges {
 
   @Output() public readonly viewBuildingBlockEvent =
     new EventEmitter<BuildingBlockProcessReference>();
+  @Output() public readonly viewProcessLogsEvent = new EventEmitter<string>();
 
   public readonly $loading = signal<boolean>(true);
   public readonly $rows = signal<ProcessInstanceInspection[]>([]);

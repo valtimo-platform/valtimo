@@ -54,6 +54,7 @@
         <valtimo-case-inspection-building-block-detail
           *ngIf="$selected() as selected"
           [instance]="selected"
+          (viewProcessLogsEvent)="viewProcessLogsEvent.emit($event)"
         ></valtimo-case-inspection-building-block-detail>
       </article>
     </div>

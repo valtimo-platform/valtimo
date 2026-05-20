@@ -65,6 +65,7 @@ export class CaseInspectionProcessDetailComponent {
 
   @Output() public readonly viewBuildingBlockEvent =
     new EventEmitter<BuildingBlockProcessReference>();
+  @Output() public readonly viewProcessLogsEvent = new EventEmitter<string>();
 
   public readonly $activeTab = signal<ProcessDetailTab>(ProcessDetailTab.DETAILS);
   public readonly ProcessDetailTab = ProcessDetailTab;
@@ -75,6 +76,10 @@ export class CaseInspectionProcessDetailComponent {
 
   public onViewBuildingBlock(bb: BuildingBlockProcessReference): void {
     this.viewBuildingBlockEvent.emit(bb);
+  }
+
+  public onViewProcessLogs(): void {
+    this.viewProcessLogsEvent.emit(this.row.processInstanceId);
   }
 
   public formatVariableValue(variable: ProcessVariable): string {

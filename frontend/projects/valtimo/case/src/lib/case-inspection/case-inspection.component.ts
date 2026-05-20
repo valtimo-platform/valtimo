@@ -19,8 +19,9 @@ import {ChangeDetectionStrategy, Component, OnDestroy, OnInit, signal} from '@an
 import {ActivatedRoute, ParamMap, Router} from '@angular/router';
 import {TranslateModule, TranslateService} from '@ngx-translate/core';
 import {PermissionService} from '@valtimo/access-control';
-import {PageTitleService} from '@valtimo/components';
-import {Subscription, switchMap, take} from 'rxjs';
+import {BreadcrumbService, PageTitleService} from '@valtimo/components';
+import {DocumentService} from '@valtimo/document';
+import {map, Subscription, switchMap, take} from 'rxjs';
 import {TabsModule} from 'carbon-components-angular';
 import {
   CAN_INSPECT_CASE_PERMISSION,
@@ -28,6 +29,7 @@ import {
 } from '../permissions/case-detail.permissions';
 import {CaseInspectionBuildingBlocksTabComponent} from './tabs/building-blocks-tab.component';
 import {CaseInspectionDocumentTabComponent} from './tabs/document-tab.component';
+import {CaseInspectionLogsTabComponent} from './tabs/logs-tab.component';
 import {CaseInspectionMetadataTabComponent} from './tabs/metadata-tab.component';
 import {CaseInspectionProcessesTabComponent} from './tabs/processes-tab.component';
 import {BuildingBlockProcessReference} from './models/case-inspection.models';
@@ -45,6 +47,7 @@ import {CaseInspectionTab} from './case-inspection-tab.enum';
     CaseInspectionDocumentTabComponent,
     CaseInspectionProcessesTabComponent,
     CaseInspectionBuildingBlocksTabComponent,
+    CaseInspectionLogsTabComponent,
     CaseInspectionMetadataTabComponent,
   ],
 })
@@ -54,6 +57,7 @@ export class CaseInspectionComponent implements OnInit, OnDestroy {
   public readonly $loading = signal<boolean>(true);
   public readonly $accessDenied = signal<boolean>(false);
   public readonly $pendingBuildingBlockInstanceId = signal<string | null>(null);
+  public readonly $pendingProcessInstanceLogFilter = signal<string | null>(null);
 
   public readonly CaseInspectionTab = CaseInspectionTab;
 
@@ -66,7 +70,9 @@ export class CaseInspectionComponent implements OnInit, OnDestroy {
     private readonly router: Router,
     private readonly permissionService: PermissionService,
     private readonly pageTitleService: PageTitleService,
-    private readonly translateService: TranslateService
+    private readonly translateService: TranslateService,
+    private readonly breadcrumbService: BreadcrumbService,
+    private readonly documentService: DocumentService
   ) {}
 
   public ngOnInit(): void {
@@ -100,12 +106,15 @@ export class CaseInspectionComponent implements OnInit, OnDestroy {
             return;
           }
           this.$loading.set(false);
+          this.setBreadcrumbs();
         })
     );
   }
 
   public ngOnDestroy(): void {
     this.pageTitleService.enableReset();
+    this.breadcrumbService.clearSecondBreadcrumb();
+    this.breadcrumbService.clearThirdBreadcrumb();
     this._subscriptions.unsubscribe();
   }
 
@@ -124,10 +133,47 @@ export class CaseInspectionComponent implements OnInit, OnDestroy {
     this.onTabSelected(CaseInspectionTab.BUILDING_BLOCKS);
   }
 
+  public onViewProcessLogs(processInstanceId: string): void {
+    this.$pendingProcessInstanceLogFilter.set(processInstanceId);
+    this.onTabSelected(CaseInspectionTab.LOGS);
+  }
+
   private restoreTabFromQueryParam(): void {
     const requested = this.route.snapshot.queryParamMap.get('tab') as CaseInspectionTab | null;
     if (requested && this._validTabs.includes(requested)) {
       this.$activeTab.set(requested);
     }
+  }
+
+  private setBreadcrumbs(): void {
+    const documentId = this.$documentId();
+    if (!documentId) return;
+
+    this.documentService
+      .getDocument(documentId)
+      .pipe(
+        switchMap(document =>
+          this.documentService
+            .getDocumentDefinition(document.definitionId?.name ?? document.definitionName)
+            .pipe(map(definition => ({document, definition})))
+        )
+      )
+      .subscribe(({document, definition}) => {
+        const caseDefinitionKey = document.definitionId?.name ?? document.definitionName;
+        const caseRoute = `/cases/${caseDefinitionKey}`;
+        const caseDetailRoute = `/cases/${caseDefinitionKey}/document/${documentId}`;
+
+        this.breadcrumbService.setSecondBreadcrumb({
+          route: [caseRoute],
+          content: definition.schema.title,
+          href: caseRoute,
+        });
+
+        this.breadcrumbService.setThirdBreadcrumb({
+          route: [caseDetailRoute],
+          content: this.translateService.instant('Case details'),
+          href: caseDetailRoute,
+        });
+      });
   }
 }

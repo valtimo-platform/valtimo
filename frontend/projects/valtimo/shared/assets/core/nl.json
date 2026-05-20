@@ -181,6 +181,7 @@
         "document": "Document",
         "processes": "Processen",
         "buildingBlocks": "Bouwblokken",
+        "logs": "Logs",
         "metadata": "Metadata"
       },
       "document": {
@@ -244,7 +245,34 @@
         },
         "noJobs": "Geen jobs.",
         "startedBy": "Gestart door",
-        "startedOn": "Gestart op"
+        "startedOn": "Gestart op",
+        "viewLogs": "Logs bekijken"
+      },
+      "logs": {
+        "loading": "Logs laden...",
+        "empty": "Er zijn geen logregels opgeslagen voor dit dossier.",
+        "emptyFiltered": "Geen logregels die aan de huidige filters voldoen.",
+        "filters": {
+          "message": "Bericht bevat",
+          "messagePlaceholder": "Zoek in bericht...",
+          "level": "Minimaal niveau",
+          "levelPlaceholder": "Alle niveaus",
+          "after": "Vanaf",
+          "before": "Tot",
+          "apply": "Toepassen",
+          "reset": "Reset",
+          "processInstanceChip": "Procesinstantie",
+          "clearProcessInstance": "Procesfilter wissen"
+        },
+        "columns": {
+          "timestamp": "Tijdstip",
+          "level": "Niveau",
+          "message": "Bericht"
+        },
+        "detail": {
+          "properties": "Context (MDC)",
+          "stacktrace": "Stacktrace"
+        }
       },
       "metadata": {
         "loading": "Metadata laden...",

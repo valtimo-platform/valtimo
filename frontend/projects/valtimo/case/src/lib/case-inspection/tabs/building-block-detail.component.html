@@ -32,6 +32,13 @@
       <dd>
         <ng-container *ngIf="instance.processInstanceId; else noProcess">
           <code>{{ instance.processInstanceId }}</code>
+          <button
+            class="case-inspection-bb-detail__view-logs"
+            type="button"
+            (click)="onViewProcessLogs()"
+          >
+            {{ 'case.inspection.processes.viewLogs' | translate }}
+          </button>
         </ng-container>
 
         <ng-template #noProcess>—</ng-template>

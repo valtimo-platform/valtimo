@@ -1,0 +1,176 @@
+<!--
+  ~ Copyright 2015-2026 Ritense BV, the Netherlands.
+  ~
+  ~ Licensed under EUPL, Version 1.2 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~ https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" basis,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<section class="case-inspection-logs-tab">
+  <form
+    class="case-inspection-logs-tab__filters"
+    [formGroup]="formGroup"
+    (ngSubmit)="onApplyFilter()"
+  >
+    <cds-text-label class="case-inspection-logs-tab__filter case-inspection-logs-tab__filter--message">
+      {{ 'case.inspection.logs.filters.message' | translate }}
+      <input
+        cdsText
+        formControlName="likeFormattedMessage"
+        [placeholder]="'case.inspection.logs.filters.messagePlaceholder' | translate"
+      />
+    </cds-text-label>
+
+    <cds-dropdown
+      class="case-inspection-logs-tab__filter case-inspection-logs-tab__filter--level"
+      formControlName="level"
+      [label]="'case.inspection.logs.filters.level' | translate"
+      [placeholder]="'case.inspection.logs.filters.levelPlaceholder' | translate"
+    >
+      <cds-dropdown-list [items]="logLevelItems"></cds-dropdown-list>
+    </cds-dropdown>
+
+    <cds-date-picker
+      #afterPicker
+      class="case-inspection-logs-tab__filter"
+      [label]="'case.inspection.logs.filters.after' | translate"
+      [dateFormat]="'d-m-Y'"
+      placeholder="DD-MM-YYYY"
+      (valueChange)="onAfterDateSelected($event)"
+    ></cds-date-picker>
+
+    <cds-date-picker
+      #beforePicker
+      class="case-inspection-logs-tab__filter"
+      [label]="'case.inspection.logs.filters.before' | translate"
+      [dateFormat]="'d-m-Y'"
+      placeholder="DD-MM-YYYY"
+      (valueChange)="onBeforeDateSelected($event)"
+    ></cds-date-picker>
+
+    <div class="case-inspection-logs-tab__filter-actions">
+      <button cdsButton="primary" size="md" type="submit">
+        {{ 'case.inspection.logs.filters.apply' | translate }}
+      </button>
+
+      <button cdsButton="tertiary" size="md" type="button" (click)="onResetFilter()">
+        {{ 'case.inspection.logs.filters.reset' | translate }}
+      </button>
+    </div>
+  </form>
+
+  <ng-container *ngIf="$activeProcessInstanceFilter() as processInstanceId">
+    <div class="case-inspection-logs-tab__chip-row">
+      <cds-tag type="purple" size="md">
+        {{ 'case.inspection.logs.filters.processInstanceChip' | translate }}:
+        <code>{{ processInstanceId }}</code>
+      </cds-tag>
+
+      <button
+        cdsButton="ghost"
+        size="sm"
+        type="button"
+        (click)="onClearProcessInstanceFilter()"
+      >
+        {{ 'case.inspection.logs.filters.clearProcessInstance' | translate }}
+      </button>
+    </div>
+  </ng-container>
+
+  <ng-container *ngIf="$errorMessage() as message">
+    <p class="case-inspection-logs-tab__error">{{ message }}</p>
+  </ng-container>
+
+  <ng-container *ngIf="$loading()">
+    <p>{{ 'case.inspection.logs.loading' | translate }}</p>
+  </ng-container>
+
+  <ng-container *ngIf="!$loading() && !$errorMessage()">
+    <p
+      *ngIf="$rows().length === 0"
+      class="case-inspection-logs-tab__empty"
+    >
+      {{
+        ($hasActiveSearch()
+          ? 'case.inspection.logs.emptyFiltered'
+          : 'case.inspection.logs.empty'
+        ) | translate
+      }}
+    </p>
+
+    <div *ngIf="$rows().length > 0" class="case-inspection-logs-tab__layout">
+      <div class="case-inspection-logs-tab__list-panel">
+        <cds-structured-list>
+          <cds-list-header>
+            <cds-list-column class="case-inspection-logs-tab__col-timestamp">
+              {{ 'case.inspection.logs.columns.timestamp' | translate }}
+            </cds-list-column>
+            <cds-list-column class="case-inspection-logs-tab__col-level">
+              {{ 'case.inspection.logs.columns.level' | translate }}
+            </cds-list-column>
+            <cds-list-column class="case-inspection-logs-tab__col-message">
+              {{ 'case.inspection.logs.columns.message' | translate }}
+            </cds-list-column>
+          </cds-list-header>
+
+          <cds-list-row
+            *ngFor="let row of $rows()"
+            class="case-inspection-logs-tab__row"
+            [class.case-inspection-logs-tab__row--selected]="isSelected(row)"
+            (click)="onSelectRow(row)"
+          >
+            <cds-list-column class="case-inspection-logs-tab__col-timestamp">
+              {{ row.timestamp | date: 'dd-MM HH:mm:ss' }}
+            </cds-list-column>
+            <cds-list-column class="case-inspection-logs-tab__col-level">
+              <cds-tag size="sm" [type]="LEVEL_TAG[row.level] || 'gray'">
+                {{ row.level }}
+              </cds-tag>
+            </cds-list-column>
+            <cds-list-column class="case-inspection-logs-tab__col-message">
+              <span class="case-inspection-logs-tab__message-cell">{{ row.formattedMessage }}</span>
+            </cds-list-column>
+          </cds-list-row>
+        </cds-structured-list>
+
+        <cds-pagination
+          class="case-inspection-logs-tab__pagination"
+          [model]="buildPaginationModel()"
+          (selectPage)="onPageSelected($event)"
+        ></cds-pagination>
+      </div>
+
+      <aside class="case-inspection-logs-tab__detail" *ngIf="$selected() as selected">
+        <header class="case-inspection-logs-tab__detail-header">
+          <cds-tag size="sm" [type]="LEVEL_TAG[selected.level] || 'gray'">{{ selected.level }}</cds-tag>
+          <span class="case-inspection-logs-tab__detail-timestamp">
+            {{ selected.timestamp | date: 'dd-MM-yyyy HH:mm:ss' }}
+          </span>
+        </header>
+
+        <pre class="case-inspection-logs-tab__detail-message">{{ selected.formattedMessage }}</pre>
+
+        <h4>{{ 'case.inspection.logs.detail.properties' | translate }}</h4>
+        <dl class="case-inspection-logs-tab__detail-properties">
+          <ng-container *ngFor="let prop of selected.properties">
+            <dt><code>{{ prop.key }}</code></dt>
+            <dd><code>{{ prop.value }}</code></dd>
+          </ng-container>
+        </dl>
+
+        <ng-container *ngIf="selected.stacktrace">
+          <h4>{{ 'case.inspection.logs.detail.stacktrace' | translate }}</h4>
+          <pre class="case-inspection-logs-tab__detail-stacktrace">{{ selected.stacktrace }}</pre>
+        </ng-container>
+      </aside>
+    </div>
+  </ng-container>
+</section>

@@ -178,6 +178,7 @@
         "document": "Document",
         "processes": "Processes",
         "buildingBlocks": "Building blocks",
+        "logs": "Logs",
         "metadata": "Metadata"
       },
       "document": {
@@ -241,7 +242,34 @@
         },
         "noJobs": "No jobs.",
         "startedBy": "Started by",
-        "startedOn": "Started on"
+        "startedOn": "Started on",
+        "viewLogs": "View logs"
+      },
+      "logs": {
+        "loading": "Loading logs...",
+        "empty": "No log entries are stored for this case.",
+        "emptyFiltered": "No log entries match the current filters.",
+        "filters": {
+          "message": "Message contains",
+          "messagePlaceholder": "Search message...",
+          "level": "Minimum level",
+          "levelPlaceholder": "All levels",
+          "after": "From",
+          "before": "Until",
+          "apply": "Apply",
+          "reset": "Reset",
+          "processInstanceChip": "Process instance",
+          "clearProcessInstance": "Clear process filter"
+        },
+        "columns": {
+          "timestamp": "Timestamp",
+          "level": "Level",
+          "message": "Message"
+        },
+        "detail": {
+          "properties": "Context (MDC)",
+          "stacktrace": "Stacktrace"
+        }
       },
       "metadata": {
         "loading": "Loading metadata...",

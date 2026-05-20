@@ -95,6 +95,7 @@
           *ngIf="$selected() as selected"
           [row]="selected"
           (viewBuildingBlockEvent)="viewBuildingBlockEvent.emit($event)"
+          (viewProcessLogsEvent)="viewProcessLogsEvent.emit($event)"
         ></valtimo-case-inspection-process-detail>
       </article>
     </div>

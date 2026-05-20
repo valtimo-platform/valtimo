@@ -62,4 +62,18 @@
   &__error {
     color: var(--cds-text-error, #da1e28);
   }
+
+  &__view-logs {
+    background: none;
+    border: none;
+    color: var(--cds-link-primary, #0f62fe);
+    cursor: pointer;
+    font-size: 0.75rem;
+    padding: 0 0 0 0.5rem;
+    text-decoration: underline;
+
+    &:hover {
+      color: var(--cds-link-primary-hover, #0043ce);
+    }
+  }
 }

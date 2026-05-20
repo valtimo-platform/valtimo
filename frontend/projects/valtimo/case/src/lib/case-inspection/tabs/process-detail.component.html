@@ -46,6 +46,15 @@
       >
         {{ 'case.inspection.processes.buildingBlockTag' | translate }}: {{ bb.definitionKey }} {{ bb.definitionVersionTag }}
       </cds-tag>
+
+      <button
+        cdsButton="ghost"
+        size="sm"
+        type="button"
+        (click)="onViewProcessLogs()"
+      >
+        {{ 'case.inspection.processes.viewLogs' | translate }}
+      </button>
     </div>
 
     <dl class="case-inspection-process-detail__meta">

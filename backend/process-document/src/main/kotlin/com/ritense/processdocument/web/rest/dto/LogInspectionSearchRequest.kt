@@ -14,12 +14,15 @@
  * limitations under the License.
  */
 
-enum CaseInspectionTab {
-  DOCUMENT = 'document',
-  PROCESSES = 'processes',
-  BUILDING_BLOCKS = 'building-blocks',
-  LOGS = 'logs',
-  METADATA = 'metadata',
-}
+package com.ritense.processdocument.web.rest.dto
 
-export {CaseInspectionTab};
+import com.ritense.logging.web.rest.dto.LoggingEventPropertyDto
+import java.time.LocalDateTime
+
+data class LogInspectionSearchRequest(
+    val level: String? = null,
+    val likeFormattedMessage: String? = null,
+    val afterTimestamp: LocalDateTime? = null,
+    val beforeTimestamp: LocalDateTime? = null,
+    val additionalProperties: List<LoggingEventPropertyDto> = emptyList(),
+)
