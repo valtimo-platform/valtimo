@@ -13,10 +13,6 @@
 
 ## Enhancements
 
-* **New enhancement title**
+* **Dependency upgrades for CVE fixes**
 
-  New enhancement explanation.
-
-## Bugfixes
-
-* New bugfix.
+  Upgraded dependency to resolve several CVEs.
