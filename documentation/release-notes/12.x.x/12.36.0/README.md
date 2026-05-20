@@ -1,11 +1,5 @@
 # 12.36.0
 
-## New Features
-
-* **New feature title**
-
-  New feature explanation.
-
 ## Enhancements
 
 * **Improved actuator endpoint security**
@@ -26,6 +20,8 @@
   requests. Authenticate with the actuator role to keep seeing details.
   {% endhint %}
 
-## Bugfixes
+* **Dependency upgrades for CVE fixes**
 
-* New bugfix.
+  Upgraded dependency to resolve several CVEs.
+
+
