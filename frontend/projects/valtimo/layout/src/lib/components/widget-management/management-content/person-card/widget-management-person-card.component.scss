@@ -26,7 +26,6 @@
   }
 
   &__title-form {
-    padding: 8px 0 16px 16px;
     background: var(--cds-layer-02);
     display: flex;
     gap: 16px;
@@ -45,7 +44,6 @@
     grid-template-columns: repeat(2, minmax(0, 1fr));
     column-gap: 16px;
     row-gap: 16px;
-    padding: 16px;
     background: var(--cds-layer-02);
 
     .cds--text-input,

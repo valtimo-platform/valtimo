@@ -25,7 +25,6 @@
   gap: 16px;
 
   &__title-form {
-    padding: 8px 0 16px 16px;
     background: var(--cds-layer-02);
   }
 
@@ -109,6 +108,6 @@
 
   .cds--text-input,
   .cds--list-box {
-    background: var(--cds-layer-01);
+    background: var(--cds-layer-02);
   }
 }
