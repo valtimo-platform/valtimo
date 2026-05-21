@@ -40,7 +40,9 @@
     }
   </h3>
 
-  <p class="valtimo-widget-person-card__subtitle">{{ $subtitle() }}</p>
+  @if ($subtitle()) {
+    <p class="valtimo-widget-person-card__subtitle">{{ $subtitle() }}</p>
+  }
 
   <dl class="valtimo-widget-person-card__grid">
     @if (data?.phone) {
@@ -48,7 +50,7 @@
         <svg
           class="valtimo-widget-person-card__field-icon"
           cdsIcon="phone"
-          size="20"
+          size="16"
         ></svg>
         <span class="valtimo-widget-person-card__field-value">{{ data?.phone }}</span>
       </div>
@@ -59,7 +61,7 @@
         <svg
           class="valtimo-widget-person-card__field-icon"
           cdsIcon="email"
-          size="20"
+          size="16"
         ></svg>
         <span class="valtimo-widget-person-card__field-value">{{ data?.email }}</span>
       </div>
@@ -79,7 +81,7 @@
         <svg
           class="valtimo-widget-person-card__field-icon"
           cdsIcon="calendar"
-          size="20"
+          size="16"
         ></svg>
         <span class="valtimo-widget-person-card__field-value">{{ $formattedBirthDate() }}</span>
       </div>

@@ -20,7 +20,7 @@
   flex-direction: row;
   align-items: flex-start;
   gap: 16px;
-  padding: 16px;
+  padding: 24px;
 
   &__avatar {
     flex: 0 0 auto;
@@ -34,9 +34,9 @@
   }
 
   &__initials {
-    font-size: 22px;
+    font-size: 24px;
     font-weight: 600;
-    line-height: 1;
+    line-height: 24px;
     color: #1a146a;
     text-transform: uppercase;
   }
@@ -61,7 +61,7 @@
     margin: 0;
     font-size: 14px;
     line-height: 20px;
-    color: var(--widget-text-color, var(--cds-text-secondary));
+    color: var(--widget-text-color, var(--cds-text-primary));
   }
 
   &__grid {
@@ -80,8 +80,8 @@
 
   &__field-icon {
     flex: 0 0 auto;
-    width: 20px;
-    height: 20px;
+    width: 16px;
+    height: 16px;
     color: var(--widget-text-color, var(--cds-text-primary));
   }
 
@@ -110,12 +110,8 @@
     padding: 24px;
 
     &__avatar {
-      width: 96px;
-      height: 96px;
-    }
-
-    &__initials {
-      font-size: 32px;
+      width: 64px;
+      height: 64px;
     }
 
     &__body {
@@ -123,8 +119,8 @@
     }
 
     &__name {
-      font-size: 24px;
-      line-height: 32px;
+      font-size: 20px;
+      line-height: 28px;
     }
 
     &__subtitle {
@@ -140,13 +136,9 @@
       row-gap: 8px;
     }
 
-    &__field {
-      gap: 12px;
-    }
-
     &__field-value {
-      font-size: 16px;
-      line-height: 24px;
+      font-size: 14px;
+      line-height: 20px;
     }
   }
 }

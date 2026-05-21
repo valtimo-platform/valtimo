@@ -2313,7 +2313,7 @@
       "title": "Map"
     },
     "personCard": {
-      "age": "{{age}} yr"
+      "age": "{{age}} year"
     },
     "metroline": {
       "stepState": {
