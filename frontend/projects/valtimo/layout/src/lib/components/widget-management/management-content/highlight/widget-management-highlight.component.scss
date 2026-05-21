@@ -63,10 +63,18 @@
   &__value {
     display: flex;
     flex-direction: column;
+    padding: 8px;
+    background: var(--cds-layer-01);
+
+    .cds--list-box,
+    .cds--text-input,
+    input.cds--text-input {
+      background: var(--cds-layer-02);
+    }
   }
 
   &__helper {
-    margin-top: 4px;
+    margin-top: 8px;
     font-size: 12px;
     color: var(--cds-text-helper);
   }
