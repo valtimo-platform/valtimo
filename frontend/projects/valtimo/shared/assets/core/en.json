@@ -1097,7 +1097,7 @@
         "keyTooltip": "Value resolver path to GeoJSON data"
       },
       "person-card": {
-        "description": "Pick the icon and the source paths for each person field.",
+        "description": "Choose the person to render and which sections to show on the card.",
         "fullNameLabel": "Full name",
         "birthDateLabel": "Birth date (Optional)",
         "bsnLabel": "BSN (Optional)",

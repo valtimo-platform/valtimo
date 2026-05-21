@@ -23,7 +23,6 @@
     gap: 16px;
     grid-template-columns: repeat(3, 1fr);
     align-items: flex-end;
-    padding: 16px;
     background-color: var(--cds-layer-02);
   }
 
@@ -44,8 +43,8 @@
     flex-direction: column;
   }
 
-  .cds--text-input,
-  .cds--list-box {
+  ::ng-deep .cds--text-input,
+  ::ng-deep .cds--list-box {
     background: var(--cds-layer-01);
   }
 }

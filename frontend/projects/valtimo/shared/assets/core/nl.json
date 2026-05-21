@@ -1119,7 +1119,7 @@
         "keyTooltip": "Value resolver pad naar GeoJSON data"
       },
       "person-card": {
-        "description": "Kies het pictogram en de bronpaden voor elk persoonsveld.",
+        "description": "Kies de persoon die getoond wordt en welke onderdelen op de kaart verschijnen.",
         "fullNameLabel": "Volledige naam",
         "birthDateLabel": "Geboortedatum (optioneel)",
         "bsnLabel": "BSN (optioneel)",
