@@ -18,20 +18,12 @@
   display: flex;
   flex-direction: column;
   gap: 16px;
-  padding: 16px;
 
-  ::ng-deep > *:not(:last-child) {
-    padding: 16px;
-    background: var(--cds-layer-02);
-  }
-
-  ::ng-deep.v-multi-input__row {
-    padding: 16px;
-    background: var(--cds-layer-02);
-
-    .cds--text-input {
-      background: var(--cds-layer-01);
-    }
+  ::ng-deep .cds--text-input,
+  ::ng-deep .cds--list-box,
+  ::ng-deep .cds--list-box__field,
+  ::ng-deep .cds--dropdown {
+    background-color: var(--cds-layer-02);
   }
 
   ::ng-deep.dropdown-label {
