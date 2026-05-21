@@ -4,18 +4,8 @@
 **Release date 27-05-2026**
 {% endhint %}
 
-## New Features
-
-* **New feature title**
-
-  New feature explanation.
-
 ## Enhancements
 
-* **New enhancement title**
+* **Autocomplete suggestions for form flow and access control**
 
-  New enhancement explanation.
-
-## Bugfixes
-
-* New bugfix.
+  The form flow and access control editors now offer autocomplete suggestions and inline documentation while editing.

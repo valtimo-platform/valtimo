@@ -1,0 +1,3073 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "$id": "access-control-permissions.json",
+    "type": "array",
+    "title": "Role permissions",
+    "description": "Permissions for the selected role. Each entry in the list grants the role one or more actions on a particular kind of resource in Valtimo (for example: 'view cases of type loans', or 'complete tasks where you are the assignee'). Multiple entries are combined with OR — the user is allowed to perform an action if ANY entry permits it.",
+    "items": {
+        "type": "object",
+        "required": [
+            "resourceType"
+        ],
+        "properties": {
+            "resourceType": {
+                "type": "string",
+                "description": "What this permission applies to. Pick the kind of thing in Valtimo (for example a case, a task, a document, a dashboard) that the role should be allowed to act on. Each option in the dropdown represents one type of resource.",
+                "oneOf": [
+                    {
+                        "const": "com.ritense.case.domain.CaseTab",
+                        "title": "Case tab",
+                        "description": "A tab inside the case detail view (for example the documents tab, tasks tab, or a custom tab). Grant access here to control which tabs a role can see when opening a case."
+                    },
+                    {
+                        "const": "com.ritense.case_.domain.definition.CaseDefinition",
+                        "title": "Case definition",
+                        "description": "A case type — the template that describes a particular kind of case (for example 'Loan request' or 'Objection'). Grant access here to control which case types a role can see or work with."
+                    },
+                    {
+                        "const": "com.ritense.case_.domain.tab.CaseWidgetTabWidget",
+                        "title": "Case widget",
+                        "description": "An individual widget shown on a case tab (for example a fields widget, table, or custom block). Grant access here to control which widgets a role can see inside a case."
+                    },
+                    {
+                        "const": "com.ritense.dashboard.domain.Dashboard",
+                        "title": "Dashboard",
+                        "description": "A dashboard page with widgets and metrics. Grant access here to control which dashboards a role can open."
+                    },
+                    {
+                        "const": "com.ritense.document.domain.impl.JsonSchemaDocument",
+                        "title": "Document (case)",
+                        "description": "An individual case record. Documents hold the data of a single case instance and are what users actually open, edit, and complete. Grant access here to control which cases a role can view, create, modify, assign, or delete."
+                    },
+                    {
+                        "const": "com.ritense.document.domain.impl.JsonSchemaDocumentDefinition",
+                        "title": "Document definition",
+                        "description": "The schema/template that describes the structure of a case document. Grant access here to control which case definitions a role can use, for example when starting a new case."
+                    },
+                    {
+                        "const": "com.ritense.document.domain.impl.searchfield.SearchField",
+                        "title": "Search field",
+                        "description": "A configurable search field shown above a case list, used to filter cases. Grant access here to control which search fields a role can see and use."
+                    },
+                    {
+                        "const": "com.ritense.document.domain.impl.snapshot.JsonSchemaDocumentSnapshot",
+                        "title": "Document snapshot",
+                        "description": "A historical, point-in-time copy of a case document, recorded each time it changes. Grant access here to control which roles can browse the audit history of a case."
+                    },
+                    {
+                        "const": "com.ritense.documentenapi.authorization.ZgwDocument",
+                        "title": "ZGW document",
+                        "description": "A document stored in an external Documenten API (the Dutch ZGW document store), typically linked to a case. Grant access here to control who can read, upload, or modify these documents."
+                    },
+                    {
+                        "const": "com.ritense.iko.domain.IkoView",
+                        "title": "IKO view",
+                        "description": "An IKO (Informatie Knooppunt Omgevingswet) view — a saved query into the IKO information hub. Grant access here to control which IKO views a role can open."
+                    },
+                    {
+                        "const": "com.ritense.note.domain.Note",
+                        "title": "Case note",
+                        "description": "A free-text note attached to a case, used for collaboration between case workers. Grant access here to control who can read, create, edit, or delete notes."
+                    },
+                    {
+                        "const": "com.ritense.objectenapi.security.Object",
+                        "title": "Object (Objecten API)",
+                        "description": "A record stored in an external Objecten API. Grant access here to control which objects a role can read or modify via the Objecten API integration."
+                    },
+                    {
+                        "const": "com.ritense.resource.authorization.ResourcePermission",
+                        "title": "Uploaded resource",
+                        "description": "An uploaded file or attachment stored by Valtimo. Grant access here to control who can view or download these files."
+                    },
+                    {
+                        "const": "com.ritense.team.domain.Team",
+                        "title": "Team",
+                        "description": "A team of users that can be assigned to cases or tasks. Grant access here to control which teams a role can see or be assigned to."
+                    },
+                    {
+                        "const": "com.ritense.valtimo.contract.authentication.User",
+                        "title": "User",
+                        "description": "A user account known to Valtimo (typically synchronised from Keycloak). Grant access here to control which users a role can see, for example in assignee pickers."
+                    },
+                    {
+                        "const": "com.ritense.valtimo.operaton.domain.OperatonExecution",
+                        "title": "Process instance",
+                        "description": "A running process — one specific execution of a BPMN process definition. Grant access here to control who can start or interact with a process for a case."
+                    },
+                    {
+                        "const": "com.ritense.valtimo.operaton.domain.OperatonIdentityLink",
+                        "title": "Process identity link",
+                        "description": "The link between a process task and a candidate user or candidate group. Typically used together with task permissions to honour the BPMN 'Candidate groups' configuration."
+                    },
+                    {
+                        "const": "com.ritense.valtimo.operaton.domain.OperatonProcessDefinition",
+                        "title": "Process definition",
+                        "description": "A BPMN process model — the template that describes a workflow. Grant access here to control which processes a role can start or view."
+                    },
+                    {
+                        "const": "com.ritense.valtimo.operaton.domain.OperatonTask",
+                        "title": "User task",
+                        "description": "A task that a user has to complete inside a running process. Grant access here to control which tasks a role can see, claim, assign, or complete."
+                    }
+                ]
+            },
+            "roleKey": {
+                "type": "string",
+                "description": "The role this permission belongs to. Must exactly match the role key as it is configured in Keycloak, for example 'ROLE_USER' or 'ROLE_ADMIN'. When this field is omitted in the editor the permission is saved against the role you are currently editing."
+            },
+            "action": {
+                "type": "string",
+                "description": "DEPRECATED — kept for older configurations. Use 'actions' instead, which lets you grant several actions at once. If both are set, 'actions' wins."
+            },
+            "actions": {
+                "type": "array",
+                "description": "Which actions the role is allowed to perform on the chosen resource. Common actions are 'view', 'view_list', 'create', 'modify', 'delete', 'assign', 'assignable' and 'claim'. The list of allowed actions depends on the resource type — only actions that make sense for that resource can be used.",
+                "items": {
+                    "type": "string"
+                }
+            },
+            "conditions": {
+                "type": "array",
+                "description": "Extra rules that narrow when this permission applies. All conditions in the list must be true (AND) for the permission to be granted. Conditions can compare a field on the resource, evaluate a JSON path inside a document, or reach into a related resource via a container. Leave empty to grant the actions unconditionally."
+            },
+            "contextResourceType": {
+                "type": "string",
+                "description": "Optional. Only apply this permission when the action happens inside the context of another resource — for example: 'only allow starting a process when the surrounding case is of a certain type'. Use the special value 'com.ritense.authorization.NoContext' to require that NO context is provided."
+            },
+            "contextConditions": {
+                "type": "array",
+                "description": "Rules that the context resource (selected in 'contextResourceType') must satisfy. Works the same as 'conditions' but is evaluated against the surrounding context instead of the resource itself. All entries must be true (AND)."
+            }
+        },
+        "allOf": [
+            {
+                "if": {
+                    "required": [
+                        "resourceType"
+                    ],
+                    "properties": {
+                        "resourceType": {
+                            "const": "com.ritense.case.domain.CaseTab"
+                        }
+                    }
+                },
+                "then": {
+                    "properties": {
+                        "action": {
+                            "type": "string",
+                            "enum": [
+                                "view"
+                            ]
+                        },
+                        "actions": {
+                            "type": "array",
+                            "items": {
+                                "type": "string",
+                                "enum": [
+                                    "view"
+                                ]
+                            }
+                        },
+                        "conditions": {
+                            "$ref": "#/definitions/condList.com.ritense.case.domain.CaseTab"
+                        },
+                        "contextResourceType": {
+                            "type": "string",
+                            "enum": [
+                                "com.ritense.authorization.NoContext",
+                                "com.ritense.case_.domain.definition.CaseDefinition",
+                                "com.ritense.document.domain.impl.JsonSchemaDocument",
+                                "com.ritense.document.domain.impl.JsonSchemaDocumentDefinition"
+                            ]
+                        },
+                        "contextConditions": {
+                            "$ref": "#/definitions/conditions"
+                        }
+                    }
+                }
+            },
+            {
+                "if": {
+                    "required": [
+                        "resourceType"
+                    ],
+                    "properties": {
+                        "resourceType": {
+                            "const": "com.ritense.case_.domain.definition.CaseDefinition"
+                        }
+                    }
+                },
+                "then": {
+                    "properties": {
+                        "action": {
+                            "type": "string",
+                            "enum": [
+                                "view",
+                                "view_list"
+                            ]
+                        },
+                        "actions": {
+                            "type": "array",
+                            "items": {
+                                "type": "string",
+                                "enum": [
+                                    "view",
+                                    "view_list"
+                                ]
+                            }
+                        },
+                        "conditions": {
+                            "$ref": "#/definitions/condList.com.ritense.case_.domain.definition.CaseDefinition"
+                        },
+                        "contextResourceType": {
+                            "type": "string",
+                            "enum": [
+                                "com.ritense.authorization.NoContext"
+                            ]
+                        },
+                        "contextConditions": {
+                            "$ref": "#/definitions/conditions"
+                        }
+                    }
+                }
+            },
+            {
+                "if": {
+                    "required": [
+                        "resourceType"
+                    ],
+                    "properties": {
+                        "resourceType": {
+                            "const": "com.ritense.case_.domain.tab.CaseWidgetTabWidget"
+                        }
+                    }
+                },
+                "then": {
+                    "properties": {
+                        "action": {
+                            "type": "string",
+                            "enum": [
+                                "view"
+                            ]
+                        },
+                        "actions": {
+                            "type": "array",
+                            "items": {
+                                "type": "string",
+                                "enum": [
+                                    "view"
+                                ]
+                            }
+                        },
+                        "conditions": {
+                            "$ref": "#/definitions/condList.com.ritense.case_.domain.tab.CaseWidgetTabWidget"
+                        },
+                        "contextResourceType": {
+                            "type": "string",
+                            "enum": [
+                                "com.ritense.authorization.NoContext",
+                                "com.ritense.case_.domain.definition.CaseDefinition",
+                                "com.ritense.document.domain.impl.JsonSchemaDocument",
+                                "com.ritense.document.domain.impl.JsonSchemaDocumentDefinition"
+                            ]
+                        },
+                        "contextConditions": {
+                            "$ref": "#/definitions/conditions"
+                        }
+                    }
+                }
+            },
+            {
+                "if": {
+                    "required": [
+                        "resourceType"
+                    ],
+                    "properties": {
+                        "resourceType": {
+                            "const": "com.ritense.dashboard.domain.Dashboard"
+                        }
+                    }
+                },
+                "then": {
+                    "properties": {
+                        "action": {
+                            "type": "string",
+                            "enum": [
+                                "view",
+                                "view_list"
+                            ]
+                        },
+                        "actions": {
+                            "type": "array",
+                            "items": {
+                                "type": "string",
+                                "enum": [
+                                    "view",
+                                    "view_list"
+                                ]
+                            }
+                        },
+                        "conditions": {
+                            "$ref": "#/definitions/condList.com.ritense.dashboard.domain.Dashboard"
+                        },
+                        "contextResourceType": {
+                            "type": "string",
+                            "enum": [
+                                "com.ritense.authorization.NoContext"
+                            ]
+                        },
+                        "contextConditions": {
+                            "$ref": "#/definitions/conditions"
+                        }
+                    }
+                }
+            },
+            {
+                "if": {
+                    "required": [
+                        "resourceType"
+                    ],
+                    "properties": {
+                        "resourceType": {
+                            "const": "com.ritense.document.domain.impl.JsonSchemaDocument"
+                        }
+                    }
+                },
+                "then": {
+                    "properties": {
+                        "action": {
+                            "type": "string",
+                            "enum": [
+                                "assign",
+                                "assignable",
+                                "claim",
+                                "create",
+                                "delete",
+                                "export",
+                                "modify",
+                                "view",
+                                "view_list"
+                            ]
+                        },
+                        "actions": {
+                            "type": "array",
+                            "items": {
+                                "type": "string",
+                                "enum": [
+                                    "assign",
+                                    "assignable",
+                                    "claim",
+                                    "create",
+                                    "delete",
+                                    "export",
+                                    "modify",
+                                    "view",
+                                    "view_list"
+                                ]
+                            }
+                        },
+                        "conditions": {
+                            "$ref": "#/definitions/condList.com.ritense.document.domain.impl.JsonSchemaDocument"
+                        },
+                        "contextResourceType": {
+                            "type": "string",
+                            "enum": [
+                                "com.ritense.authorization.NoContext",
+                                "com.ritense.case_.domain.definition.CaseDefinition",
+                                "com.ritense.document.domain.impl.JsonSchemaDocument",
+                                "com.ritense.document.domain.impl.JsonSchemaDocumentDefinition"
+                            ]
+                        },
+                        "contextConditions": {
+                            "$ref": "#/definitions/conditions"
+                        }
+                    }
+                }
+            },
+            {
+                "if": {
+                    "required": [
+                        "resourceType"
+                    ],
+                    "properties": {
+                        "resourceType": {
+                            "const": "com.ritense.document.domain.impl.JsonSchemaDocumentDefinition"
+                        }
+                    }
+                },
+                "then": {
+                    "properties": {
+                        "action": {
+                            "type": "string",
+                            "enum": [
+                                "create",
+                                "delete",
+                                "modify",
+                                "view",
+                                "view_list"
+                            ]
+                        },
+                        "actions": {
+                            "type": "array",
+                            "items": {
+                                "type": "string",
+                                "enum": [
+                                    "create",
+                                    "delete",
+                                    "modify",
+                                    "view",
+                                    "view_list"
+                                ]
+                            }
+                        },
+                        "conditions": {
+                            "$ref": "#/definitions/condList.com.ritense.document.domain.impl.JsonSchemaDocumentDefinition"
+                        },
+                        "contextResourceType": {
+                            "type": "string",
+                            "enum": [
+                                "com.ritense.authorization.NoContext",
+                                "com.ritense.case_.domain.definition.CaseDefinition"
+                            ]
+                        },
+                        "contextConditions": {
+                            "$ref": "#/definitions/conditions"
+                        }
+                    }
+                }
+            },
+            {
+                "if": {
+                    "required": [
+                        "resourceType"
+                    ],
+                    "properties": {
+                        "resourceType": {
+                            "const": "com.ritense.document.domain.impl.searchfield.SearchField"
+                        }
+                    }
+                },
+                "then": {
+                    "properties": {
+                        "action": {
+                            "type": "string",
+                            "enum": [
+                                "view_list"
+                            ]
+                        },
+                        "actions": {
+                            "type": "array",
+                            "items": {
+                                "type": "string",
+                                "enum": [
+                                    "view_list"
+                                ]
+                            }
+                        },
+                        "conditions": {
+                            "$ref": "#/definitions/condList.com.ritense.document.domain.impl.searchfield.SearchField"
+                        },
+                        "contextResourceType": {
+                            "type": "string",
+                            "enum": [
+                                "com.ritense.authorization.NoContext"
+                            ]
+                        },
+                        "contextConditions": {
+                            "$ref": "#/definitions/conditions"
+                        }
+                    }
+                }
+            },
+            {
+                "if": {
+                    "required": [
+                        "resourceType"
+                    ],
+                    "properties": {
+                        "resourceType": {
+                            "const": "com.ritense.document.domain.impl.snapshot.JsonSchemaDocumentSnapshot"
+                        }
+                    }
+                },
+                "then": {
+                    "properties": {
+                        "action": {
+                            "type": "string",
+                            "enum": [
+                                "view",
+                                "view_list"
+                            ]
+                        },
+                        "actions": {
+                            "type": "array",
+                            "items": {
+                                "type": "string",
+                                "enum": [
+                                    "view",
+                                    "view_list"
+                                ]
+                            }
+                        },
+                        "conditions": {
+                            "$ref": "#/definitions/condList.com.ritense.document.domain.impl.snapshot.JsonSchemaDocumentSnapshot"
+                        },
+                        "contextResourceType": {
+                            "type": "string",
+                            "enum": [
+                                "com.ritense.authorization.NoContext"
+                            ]
+                        },
+                        "contextConditions": {
+                            "$ref": "#/definitions/conditions"
+                        }
+                    }
+                }
+            },
+            {
+                "if": {
+                    "required": [
+                        "resourceType"
+                    ],
+                    "properties": {
+                        "resourceType": {
+                            "const": "com.ritense.documentenapi.authorization.ZgwDocument"
+                        }
+                    }
+                },
+                "then": {
+                    "properties": {
+                        "action": {
+                            "type": "string",
+                            "enum": [
+                                "create",
+                                "delete",
+                                "modify",
+                                "view",
+                                "view_list"
+                            ]
+                        },
+                        "actions": {
+                            "type": "array",
+                            "items": {
+                                "type": "string",
+                                "enum": [
+                                    "create",
+                                    "delete",
+                                    "modify",
+                                    "view",
+                                    "view_list"
+                                ]
+                            }
+                        },
+                        "conditions": {
+                            "$ref": "#/definitions/condList.com.ritense.documentenapi.authorization.ZgwDocument"
+                        },
+                        "contextResourceType": {
+                            "type": "string",
+                            "enum": [
+                                "com.ritense.authorization.NoContext",
+                                "com.ritense.document.domain.impl.JsonSchemaDocument"
+                            ]
+                        },
+                        "contextConditions": {
+                            "$ref": "#/definitions/conditions"
+                        }
+                    }
+                }
+            },
+            {
+                "if": {
+                    "required": [
+                        "resourceType"
+                    ],
+                    "properties": {
+                        "resourceType": {
+                            "const": "com.ritense.iko.domain.IkoView"
+                        }
+                    }
+                },
+                "then": {
+                    "properties": {
+                        "action": {
+                            "type": "string",
+                            "enum": [
+                                "view",
+                                "view_list"
+                            ]
+                        },
+                        "actions": {
+                            "type": "array",
+                            "items": {
+                                "type": "string",
+                                "enum": [
+                                    "view",
+                                    "view_list"
+                                ]
+                            }
+                        },
+                        "conditions": {
+                            "$ref": "#/definitions/condList.com.ritense.iko.domain.IkoView"
+                        },
+                        "contextResourceType": {
+                            "type": "string",
+                            "enum": [
+                                "com.ritense.authorization.NoContext"
+                            ]
+                        },
+                        "contextConditions": {
+                            "$ref": "#/definitions/conditions"
+                        }
+                    }
+                }
+            },
+            {
+                "if": {
+                    "required": [
+                        "resourceType"
+                    ],
+                    "properties": {
+                        "resourceType": {
+                            "const": "com.ritense.note.domain.Note"
+                        }
+                    }
+                },
+                "then": {
+                    "properties": {
+                        "action": {
+                            "type": "string",
+                            "enum": [
+                                "create",
+                                "delete",
+                                "modify",
+                                "view_list"
+                            ]
+                        },
+                        "actions": {
+                            "type": "array",
+                            "items": {
+                                "type": "string",
+                                "enum": [
+                                    "create",
+                                    "delete",
+                                    "modify",
+                                    "view_list"
+                                ]
+                            }
+                        },
+                        "conditions": {
+                            "$ref": "#/definitions/condList.com.ritense.note.domain.Note"
+                        },
+                        "contextResourceType": {
+                            "type": "string",
+                            "enum": [
+                                "com.ritense.authorization.NoContext",
+                                "com.ritense.document.domain.impl.JsonSchemaDocument"
+                            ]
+                        },
+                        "contextConditions": {
+                            "$ref": "#/definitions/conditions"
+                        }
+                    }
+                }
+            },
+            {
+                "if": {
+                    "required": [
+                        "resourceType"
+                    ],
+                    "properties": {
+                        "resourceType": {
+                            "const": "com.ritense.objectenapi.security.Object"
+                        }
+                    }
+                },
+                "then": {
+                    "properties": {
+                        "action": {
+                            "type": "string",
+                            "enum": [
+                                "create",
+                                "delete",
+                                "modify",
+                                "view",
+                                "view_list"
+                            ]
+                        },
+                        "actions": {
+                            "type": "array",
+                            "items": {
+                                "type": "string",
+                                "enum": [
+                                    "create",
+                                    "delete",
+                                    "modify",
+                                    "view",
+                                    "view_list"
+                                ]
+                            }
+                        },
+                        "conditions": {
+                            "$ref": "#/definitions/condList.com.ritense.objectenapi.security.Object"
+                        },
+                        "contextResourceType": {
+                            "type": "string",
+                            "enum": [
+                                "com.ritense.authorization.NoContext"
+                            ]
+                        },
+                        "contextConditions": {
+                            "$ref": "#/definitions/conditions"
+                        }
+                    }
+                }
+            },
+            {
+                "if": {
+                    "required": [
+                        "resourceType"
+                    ],
+                    "properties": {
+                        "resourceType": {
+                            "const": "com.ritense.resource.authorization.ResourcePermission"
+                        }
+                    }
+                },
+                "then": {
+                    "properties": {
+                        "action": {
+                            "type": "string",
+                            "enum": [
+                                "create",
+                                "delete",
+                                "modify",
+                                "view",
+                                "view_list"
+                            ]
+                        },
+                        "actions": {
+                            "type": "array",
+                            "items": {
+                                "type": "string",
+                                "enum": [
+                                    "create",
+                                    "delete",
+                                    "modify",
+                                    "view",
+                                    "view_list"
+                                ]
+                            }
+                        },
+                        "conditions": {
+                            "$ref": "#/definitions/condList.com.ritense.resource.authorization.ResourcePermission"
+                        },
+                        "contextResourceType": {
+                            "type": "string",
+                            "enum": [
+                                "com.ritense.authorization.NoContext",
+                                "com.ritense.document.domain.impl.JsonSchemaDocument"
+                            ]
+                        },
+                        "contextConditions": {
+                            "$ref": "#/definitions/conditions"
+                        }
+                    }
+                }
+            },
+            {
+                "if": {
+                    "required": [
+                        "resourceType"
+                    ],
+                    "properties": {
+                        "resourceType": {
+                            "const": "com.ritense.team.domain.Team"
+                        }
+                    }
+                },
+                "then": {
+                    "properties": {
+                        "action": {
+                            "type": "string",
+                            "enum": [
+                                "assign",
+                                "create",
+                                "delete",
+                                "modify",
+                                "view",
+                                "view_list"
+                            ]
+                        },
+                        "actions": {
+                            "type": "array",
+                            "items": {
+                                "type": "string",
+                                "enum": [
+                                    "assign",
+                                    "create",
+                                    "delete",
+                                    "modify",
+                                    "view",
+                                    "view_list"
+                                ]
+                            }
+                        },
+                        "conditions": {
+                            "$ref": "#/definitions/condList.com.ritense.team.domain.Team"
+                        },
+                        "contextResourceType": {
+                            "type": "string",
+                            "enum": [
+                                "com.ritense.authorization.NoContext"
+                            ]
+                        },
+                        "contextConditions": {
+                            "$ref": "#/definitions/conditions"
+                        }
+                    }
+                }
+            },
+            {
+                "if": {
+                    "required": [
+                        "resourceType"
+                    ],
+                    "properties": {
+                        "resourceType": {
+                            "const": "com.ritense.valtimo.contract.authentication.User"
+                        }
+                    }
+                },
+                "then": {
+                    "properties": {
+                        "action": {
+                            "type": "string",
+                            "enum": [
+                                "view",
+                                "view_list"
+                            ]
+                        },
+                        "actions": {
+                            "type": "array",
+                            "items": {
+                                "type": "string",
+                                "enum": [
+                                    "view",
+                                    "view_list"
+                                ]
+                            }
+                        },
+                        "conditions": {
+                            "$ref": "#/definitions/condList.com.ritense.valtimo.contract.authentication.User"
+                        },
+                        "contextResourceType": {
+                            "type": "string",
+                            "enum": [
+                                "com.ritense.authorization.NoContext"
+                            ]
+                        },
+                        "contextConditions": {
+                            "$ref": "#/definitions/conditions"
+                        }
+                    }
+                }
+            },
+            {
+                "if": {
+                    "required": [
+                        "resourceType"
+                    ],
+                    "properties": {
+                        "resourceType": {
+                            "const": "com.ritense.valtimo.operaton.domain.OperatonExecution"
+                        }
+                    }
+                },
+                "then": {
+                    "properties": {
+                        "action": {
+                            "type": "string",
+                            "enum": [
+                                "create"
+                            ]
+                        },
+                        "actions": {
+                            "type": "array",
+                            "items": {
+                                "type": "string",
+                                "enum": [
+                                    "create"
+                                ]
+                            }
+                        },
+                        "conditions": {
+                            "$ref": "#/definitions/condList.com.ritense.valtimo.operaton.domain.OperatonExecution"
+                        },
+                        "contextResourceType": {
+                            "type": "string",
+                            "enum": [
+                                "com.ritense.authorization.NoContext",
+                                "com.ritense.case_.domain.definition.CaseDefinition",
+                                "com.ritense.document.domain.impl.JsonSchemaDocument",
+                                "com.ritense.document.domain.impl.JsonSchemaDocumentDefinition",
+                                "com.ritense.valtimo.operaton.domain.OperatonProcessDefinition"
+                            ]
+                        },
+                        "contextConditions": {
+                            "$ref": "#/definitions/conditions"
+                        }
+                    }
+                }
+            },
+            {
+                "if": {
+                    "required": [
+                        "resourceType"
+                    ],
+                    "properties": {
+                        "resourceType": {
+                            "const": "com.ritense.valtimo.operaton.domain.OperatonTask"
+                        }
+                    }
+                },
+                "then": {
+                    "properties": {
+                        "action": {
+                            "type": "string",
+                            "enum": [
+                                "assign",
+                                "assignable",
+                                "claim",
+                                "complete",
+                                "view",
+                                "view_list"
+                            ]
+                        },
+                        "actions": {
+                            "type": "array",
+                            "items": {
+                                "type": "string",
+                                "enum": [
+                                    "assign",
+                                    "assignable",
+                                    "claim",
+                                    "complete",
+                                    "view",
+                                    "view_list"
+                                ]
+                            }
+                        },
+                        "conditions": {
+                            "$ref": "#/definitions/condList.com.ritense.valtimo.operaton.domain.OperatonTask"
+                        },
+                        "contextResourceType": {
+                            "type": "string",
+                            "enum": [
+                                "com.ritense.authorization.NoContext",
+                                "com.ritense.document.domain.impl.JsonSchemaDocument",
+                                "com.ritense.valtimo.operaton.domain.OperatonIdentityLink"
+                            ]
+                        },
+                        "contextConditions": {
+                            "$ref": "#/definitions/conditions"
+                        }
+                    }
+                }
+            }
+        ],
+        "description": "A single permission. Choose what kind of resource it applies to ('resourceType'), which actions it grants ('actions'), and optionally add 'conditions' that narrow when the permission applies."
+    },
+    "definitions": {
+        "conditions": {
+            "type": "array",
+            "items": {
+                "oneOf": [
+                    {
+                        "$ref": "#/definitions/fieldCondition"
+                    },
+                    {
+                        "$ref": "#/definitions/expressionCondition"
+                    },
+                    {
+                        "$ref": "#/definitions/containerCondition"
+                    }
+                ]
+            },
+            "description": "A list of conditions. Each entry is either a 'field' condition (compare a property of the resource), an 'expression' condition (compare a value at a JSON path inside a document), or a 'container' condition (hop to a related resource and apply more conditions there). All conditions in the list must be true (AND)."
+        },
+        "fieldCondition": {
+            "type": "object",
+            "required": [
+                "type",
+                "field",
+                "operator"
+            ],
+            "properties": {
+                "type": {
+                    "const": "field",
+                    "description": "Identifies this entry as a 'field' condition — a direct comparison on a property of the resource."
+                },
+                "field": {
+                    "type": "string",
+                    "description": "Name of the field on the resource to compare. Dots can be used to dive into related entities, for example 'assigneeId' for the assignee of a case, or 'documentDefinitionId.name' for the name of the case type."
+                },
+                "operator": {
+                    "type": "string",
+                    "enum": [
+                        "!=",
+                        "==",
+                        ">",
+                        ">=",
+                        "<",
+                        "<=",
+                        "list_contains",
+                        "in"
+                    ],
+                    "description": "How the values are compared. Available operators:\n- `!=` — Not equal to.\n- `==` — Equal to.\n- `>` — Greater than.\n- `>=` — Greater than or equal to.\n- `<` — Less than.\n- `<=` — Less than or equal to.\n- `list_contains` — The field is a list, and contains the given value.\n- `in` — The given value is one of the values in the provided list."
+                },
+                "value": {
+                    "description": "The value the field is compared against. May be a literal (string, number, boolean) or a list. Placeholders such as ${currentUserId}, ${currentUserEmail}, ${currentUsername}, ${currentUserRoles} and ${currentUserTeams} are replaced at evaluation time with information about the user making the request.",
+                    "examples": [
+                        "${currentUserId}",
+                        "${currentUserEmail}",
+                        "${currentUserRoles}",
+                        "${currentUsername}",
+                        "${currentUserTeams}"
+                    ]
+                }
+            },
+            "description": "A 'field' condition: compare a property of the resource directly to a configured value. Use this for simple checks like 'assignee equals the current user' or 'case type equals loans'."
+        },
+        "expressionCondition": {
+            "type": "object",
+            "required": [
+                "type",
+                "field",
+                "path",
+                "operator",
+                "clazz"
+            ],
+            "properties": {
+                "type": {
+                    "const": "expression",
+                    "description": "Identifies this entry as an 'expression' condition — a JSON-path lookup into a JSON document stored on the resource."
+                },
+                "field": {
+                    "type": "string",
+                    "description": "Name of the field on the resource that holds the JSON document to inspect, for example 'content.content' on a case."
+                },
+                "path": {
+                    "type": "string",
+                    "description": "JSON path inside that document, always starting with '$'. For example '$.height' or '$.address.city'. The value found at this path is what gets compared.",
+                    "pattern": "^\\$"
+                },
+                "operator": {
+                    "type": "string",
+                    "enum": [
+                        "!=",
+                        "==",
+                        ">",
+                        ">=",
+                        "<",
+                        "<=",
+                        "list_contains",
+                        "in"
+                    ],
+                    "description": "How the values are compared. Available operators:\n- `!=` — Not equal to.\n- `==` — Equal to.\n- `>` — Greater than.\n- `>=` — Greater than or equal to.\n- `<` — Less than.\n- `<=` — Less than or equal to.\n- `list_contains` — The field is a list, and contains the given value.\n- `in` — The given value is one of the values in the provided list."
+                },
+                "clazz": {
+                    "type": "string",
+                    "description": "The data type the value at the JSON path should be read as. Pick the type that matches what is actually in the document — for example 'java.lang.Integer' for whole numbers or 'java.util.Collection' for lists.",
+                    "enum": [
+                        "java.lang.String",
+                        "java.lang.Integer",
+                        "java.lang.Long",
+                        "java.lang.Boolean",
+                        "java.util.Collection"
+                    ]
+                },
+                "value": {
+                    "description": "The value the resolved JSON value is compared against. May be a literal or a list, and supports placeholders such as ${currentUserId} that are replaced with information about the user making the request.",
+                    "examples": [
+                        "${currentUserId}",
+                        "${currentUserEmail}",
+                        "${currentUserRoles}",
+                        "${currentUsername}",
+                        "${currentUserTeams}"
+                    ]
+                }
+            },
+            "description": "An 'expression' condition: reach into a JSON document on the resource using a JSON path, and compare the value found there. Use this for checks that depend on the case data, like 'the funds in the form are below 5000'."
+        },
+        "containerCondition": {
+            "type": "object",
+            "required": [
+                "type",
+                "resourceType",
+                "conditions"
+            ],
+            "properties": {
+                "type": {
+                    "const": "container",
+                    "description": "Identifies this entry as a 'container' condition — a way to hop from the resource to a related resource and apply conditions there."
+                },
+                "resourceType": {
+                    "type": "string",
+                    "description": "The related resource type the nested conditions are evaluated against. Only resource types that Valtimo knows how to reach from the parent resource can be used here — for example a task can hop to its surrounding case, and a document can hop to its case definition.",
+                    "oneOf": [
+                        {
+                            "const": "com.ritense.case.domain.CaseTab",
+                            "title": "Case tab",
+                            "description": "A tab inside the case detail view (for example the documents tab, tasks tab, or a custom tab). Grant access here to control which tabs a role can see when opening a case."
+                        },
+                        {
+                            "const": "com.ritense.case_.domain.definition.CaseDefinition",
+                            "title": "Case definition",
+                            "description": "A case type — the template that describes a particular kind of case (for example 'Loan request' or 'Objection'). Grant access here to control which case types a role can see or work with."
+                        },
+                        {
+                            "const": "com.ritense.case_.domain.tab.CaseWidgetTabWidget",
+                            "title": "Case widget",
+                            "description": "An individual widget shown on a case tab (for example a fields widget, table, or custom block). Grant access here to control which widgets a role can see inside a case."
+                        },
+                        {
+                            "const": "com.ritense.dashboard.domain.Dashboard",
+                            "title": "Dashboard",
+                            "description": "A dashboard page with widgets and metrics. Grant access here to control which dashboards a role can open."
+                        },
+                        {
+                            "const": "com.ritense.document.domain.impl.JsonSchemaDocument",
+                            "title": "Document (case)",
+                            "description": "An individual case record. Documents hold the data of a single case instance and are what users actually open, edit, and complete. Grant access here to control which cases a role can view, create, modify, assign, or delete."
+                        },
+                        {
+                            "const": "com.ritense.document.domain.impl.JsonSchemaDocumentDefinition",
+                            "title": "Document definition",
+                            "description": "The schema/template that describes the structure of a case document. Grant access here to control which case definitions a role can use, for example when starting a new case."
+                        },
+                        {
+                            "const": "com.ritense.document.domain.impl.searchfield.SearchField",
+                            "title": "Search field",
+                            "description": "A configurable search field shown above a case list, used to filter cases. Grant access here to control which search fields a role can see and use."
+                        },
+                        {
+                            "const": "com.ritense.document.domain.impl.snapshot.JsonSchemaDocumentSnapshot",
+                            "title": "Document snapshot",
+                            "description": "A historical, point-in-time copy of a case document, recorded each time it changes. Grant access here to control which roles can browse the audit history of a case."
+                        },
+                        {
+                            "const": "com.ritense.documentenapi.authorization.ZgwDocument",
+                            "title": "ZGW document",
+                            "description": "A document stored in an external Documenten API (the Dutch ZGW document store), typically linked to a case. Grant access here to control who can read, upload, or modify these documents."
+                        },
+                        {
+                            "const": "com.ritense.iko.domain.IkoView",
+                            "title": "IKO view",
+                            "description": "An IKO (Informatie Knooppunt Omgevingswet) view — a saved query into the IKO information hub. Grant access here to control which IKO views a role can open."
+                        },
+                        {
+                            "const": "com.ritense.note.domain.Note",
+                            "title": "Case note",
+                            "description": "A free-text note attached to a case, used for collaboration between case workers. Grant access here to control who can read, create, edit, or delete notes."
+                        },
+                        {
+                            "const": "com.ritense.objectenapi.security.Object",
+                            "title": "Object (Objecten API)",
+                            "description": "A record stored in an external Objecten API. Grant access here to control which objects a role can read or modify via the Objecten API integration."
+                        },
+                        {
+                            "const": "com.ritense.resource.authorization.ResourcePermission",
+                            "title": "Uploaded resource",
+                            "description": "An uploaded file or attachment stored by Valtimo. Grant access here to control who can view or download these files."
+                        },
+                        {
+                            "const": "com.ritense.team.domain.Team",
+                            "title": "Team",
+                            "description": "A team of users that can be assigned to cases or tasks. Grant access here to control which teams a role can see or be assigned to."
+                        },
+                        {
+                            "const": "com.ritense.valtimo.contract.authentication.User",
+                            "title": "User",
+                            "description": "A user account known to Valtimo (typically synchronised from Keycloak). Grant access here to control which users a role can see, for example in assignee pickers."
+                        },
+                        {
+                            "const": "com.ritense.valtimo.operaton.domain.OperatonExecution",
+                            "title": "Process instance",
+                            "description": "A running process — one specific execution of a BPMN process definition. Grant access here to control who can start or interact with a process for a case."
+                        },
+                        {
+                            "const": "com.ritense.valtimo.operaton.domain.OperatonIdentityLink",
+                            "title": "Process identity link",
+                            "description": "The link between a process task and a candidate user or candidate group. Typically used together with task permissions to honour the BPMN 'Candidate groups' configuration."
+                        },
+                        {
+                            "const": "com.ritense.valtimo.operaton.domain.OperatonProcessDefinition",
+                            "title": "Process definition",
+                            "description": "A BPMN process model — the template that describes a workflow. Grant access here to control which processes a role can start or view."
+                        },
+                        {
+                            "const": "com.ritense.valtimo.operaton.domain.OperatonTask",
+                            "title": "User task",
+                            "description": "A task that a user has to complete inside a running process. Grant access here to control which tasks a role can see, claim, assign, or complete."
+                        }
+                    ]
+                },
+                "conditions": {
+                    "$ref": "#/definitions/conditions",
+                    "description": "Conditions applied to the related (container) resource. All conditions in the list must be true (AND) for this container condition to pass."
+                }
+            },
+            "description": "A 'container' condition: hop from this resource to a related resource and evaluate more conditions there. Use this for checks that involve another part of the case, like 'the surrounding case is of type loans' or 'the task belongs to a candidate group I am part of'."
+        },
+        "condList.com.ritense.case.domain.CaseTab": {
+            "type": "array",
+            "items": {
+                "oneOf": [
+                    {
+                        "allOf": [
+                            {
+                                "$ref": "#/definitions/fieldCondition"
+                            },
+                            {
+                                "properties": {
+                                    "field": {
+                                        "type": "string",
+                                        "enum": [
+                                            "contentKey",
+                                            "createdBy",
+                                            "createdOn",
+                                            "id.caseDefinitionId.key",
+                                            "id.caseDefinitionId.versionTag",
+                                            "id.key",
+                                            "name",
+                                            "showTasks",
+                                            "tabOrder",
+                                            "type"
+                                        ]
+                                    }
+                                }
+                            }
+                        ]
+                    },
+                    {
+                        "allOf": [
+                            {
+                                "$ref": "#/definitions/expressionCondition"
+                            },
+                            {
+                                "properties": {
+                                    "field": {
+                                        "type": "string",
+                                        "enum": [
+                                            "contentKey",
+                                            "createdBy",
+                                            "createdOn",
+                                            "id.caseDefinitionId.key",
+                                            "id.caseDefinitionId.versionTag",
+                                            "id.key",
+                                            "name",
+                                            "showTasks",
+                                            "tabOrder",
+                                            "type"
+                                        ]
+                                    }
+                                }
+                            }
+                        ]
+                    },
+                    {
+                        "type": "object",
+                        "required": [
+                            "type",
+                            "resourceType",
+                            "conditions"
+                        ],
+                        "properties": {
+                            "type": {
+                                "const": "container"
+                            },
+                            "resourceType": {
+                                "type": "string",
+                                "enum": [
+                                    "com.ritense.document.domain.impl.JsonSchemaDocumentDefinition"
+                                ]
+                            },
+                            "conditions": {
+                                "$ref": "#/definitions/condList.com.ritense.document.domain.impl.JsonSchemaDocumentDefinition"
+                            }
+                        }
+                    }
+                ]
+            }
+        },
+        "condList.com.ritense.case_.domain.definition.CaseDefinition": {
+            "type": "array",
+            "items": {
+                "oneOf": [
+                    {
+                        "allOf": [
+                            {
+                                "$ref": "#/definitions/fieldCondition"
+                            },
+                            {
+                                "properties": {
+                                    "field": {
+                                        "type": "string",
+                                        "enum": [
+                                            "active",
+                                            "autoAssignTasks",
+                                            "basedOnVersionTag",
+                                            "canHaveAssignee",
+                                            "createdBy",
+                                            "createdDate",
+                                            "description",
+                                            "externalStartFormDescription",
+                                            "externalStartFormUrl",
+                                            "final",
+                                            "hasExternalStartForm",
+                                            "id.key",
+                                            "id.versionTag",
+                                            "name",
+                                            "originalKey",
+                                            "originalName",
+                                            "originalVersionTag"
+                                        ]
+                                    }
+                                }
+                            }
+                        ]
+                    },
+                    {
+                        "allOf": [
+                            {
+                                "$ref": "#/definitions/expressionCondition"
+                            },
+                            {
+                                "properties": {
+                                    "field": {
+                                        "type": "string",
+                                        "enum": [
+                                            "active",
+                                            "autoAssignTasks",
+                                            "basedOnVersionTag",
+                                            "canHaveAssignee",
+                                            "createdBy",
+                                            "createdDate",
+                                            "description",
+                                            "externalStartFormDescription",
+                                            "externalStartFormUrl",
+                                            "final",
+                                            "hasExternalStartForm",
+                                            "id.key",
+                                            "id.versionTag",
+                                            "name",
+                                            "originalKey",
+                                            "originalName",
+                                            "originalVersionTag"
+                                        ]
+                                    }
+                                }
+                            }
+                        ]
+                    }
+                ]
+            }
+        },
+        "condList.com.ritense.case_.domain.tab.CaseWidgetTabWidget": {
+            "type": "array",
+            "items": {
+                "oneOf": [
+                    {
+                        "allOf": [
+                            {
+                                "$ref": "#/definitions/fieldCondition"
+                            },
+                            {
+                                "properties": {
+                                    "field": {
+                                        "type": "string",
+                                        "enum": [
+                                            "actions",
+                                            "color",
+                                            "displayConditions",
+                                            "highContrast",
+                                            "icon",
+                                            "id.caseWidgetTab.id.caseDefinitionId.key",
+                                            "id.caseWidgetTab.id.caseDefinitionId.versionTag",
+                                            "id.caseWidgetTab.id.key",
+                                            "id.caseWidgetTab.widgets",
+                                            "id.key",
+                                            "isCompact",
+                                            "order",
+                                            "title",
+                                            "width"
+                                        ]
+                                    }
+                                }
+                            }
+                        ]
+                    },
+                    {
+                        "allOf": [
+                            {
+                                "$ref": "#/definitions/expressionCondition"
+                            },
+                            {
+                                "properties": {
+                                    "field": {
+                                        "type": "string",
+                                        "enum": [
+                                            "actions",
+                                            "color",
+                                            "displayConditions",
+                                            "highContrast",
+                                            "icon",
+                                            "id.caseWidgetTab.id.caseDefinitionId.key",
+                                            "id.caseWidgetTab.id.caseDefinitionId.versionTag",
+                                            "id.caseWidgetTab.id.key",
+                                            "id.caseWidgetTab.widgets",
+                                            "id.key",
+                                            "isCompact",
+                                            "order",
+                                            "title",
+                                            "width"
+                                        ]
+                                    }
+                                }
+                            }
+                        ]
+                    }
+                ]
+            }
+        },
+        "condList.com.ritense.dashboard.domain.Dashboard": {
+            "type": "array",
+            "items": {
+                "oneOf": [
+                    {
+                        "allOf": [
+                            {
+                                "$ref": "#/definitions/fieldCondition"
+                            },
+                            {
+                                "properties": {
+                                    "field": {
+                                        "type": "string",
+                                        "enum": [
+                                            "createdBy",
+                                            "createdOn",
+                                            "description",
+                                            "key",
+                                            "order",
+                                            "title",
+                                            "widgetConfigurations"
+                                        ]
+                                    }
+                                }
+                            }
+                        ]
+                    },
+                    {
+                        "allOf": [
+                            {
+                                "$ref": "#/definitions/expressionCondition"
+                            },
+                            {
+                                "properties": {
+                                    "field": {
+                                        "type": "string",
+                                        "enum": [
+                                            "createdBy",
+                                            "createdOn",
+                                            "description",
+                                            "key",
+                                            "order",
+                                            "title",
+                                            "widgetConfigurations"
+                                        ]
+                                    }
+                                }
+                            }
+                        ]
+                    }
+                ]
+            }
+        },
+        "condList.com.ritense.document.domain.impl.JsonSchemaDocument": {
+            "type": "array",
+            "items": {
+                "oneOf": [
+                    {
+                        "allOf": [
+                            {
+                                "$ref": "#/definitions/fieldCondition"
+                            },
+                            {
+                                "properties": {
+                                    "field": {
+                                        "type": "string",
+                                        "enum": [
+                                            "assignedTeamKey",
+                                            "assignedTeamTitle",
+                                            "assigneeFullName",
+                                            "assigneeId",
+                                            "caseTags",
+                                            "content.content",
+                                            "createdBy",
+                                            "createdOn",
+                                            "documentDefinitionId.blueprintId.blueprintKey",
+                                            "documentDefinitionId.blueprintId.blueprintType",
+                                            "documentDefinitionId.blueprintId.blueprintVersionTag",
+                                            "documentDefinitionId.blueprintId.key",
+                                            "documentDefinitionId.blueprintId.versionTag",
+                                            "documentDefinitionId.caseDefinitionId.blueprintKey",
+                                            "documentDefinitionId.caseDefinitionId.blueprintType",
+                                            "documentDefinitionId.caseDefinitionId.blueprintVersionTag",
+                                            "documentDefinitionId.caseDefinitionId.key",
+                                            "documentDefinitionId.caseDefinitionId.versionTag",
+                                            "documentDefinitionId.name",
+                                            "documentRelations",
+                                            "id.id",
+                                            "internalStatus.color",
+                                            "internalStatus.id.caseDefinitionKey",
+                                            "internalStatus.id.key",
+                                            "internalStatus.label",
+                                            "internalStatus.order",
+                                            "internalStatus.retentionPeriodInDays",
+                                            "internalStatus.title",
+                                            "internalStatus.visibleInCaseListByDefault",
+                                            "modifiedOn",
+                                            "relatedFiles",
+                                            "retentionDate",
+                                            "sequence",
+                                            "version"
+                                        ]
+                                    }
+                                }
+                            }
+                        ]
+                    },
+                    {
+                        "allOf": [
+                            {
+                                "$ref": "#/definitions/expressionCondition"
+                            },
+                            {
+                                "properties": {
+                                    "field": {
+                                        "type": "string",
+                                        "enum": [
+                                            "assignedTeamKey",
+                                            "assignedTeamTitle",
+                                            "assigneeFullName",
+                                            "assigneeId",
+                                            "caseTags",
+                                            "content.content",
+                                            "createdBy",
+                                            "createdOn",
+                                            "documentDefinitionId.blueprintId.blueprintKey",
+                                            "documentDefinitionId.blueprintId.blueprintType",
+                                            "documentDefinitionId.blueprintId.blueprintVersionTag",
+                                            "documentDefinitionId.blueprintId.key",
+                                            "documentDefinitionId.blueprintId.versionTag",
+                                            "documentDefinitionId.caseDefinitionId.blueprintKey",
+                                            "documentDefinitionId.caseDefinitionId.blueprintType",
+                                            "documentDefinitionId.caseDefinitionId.blueprintVersionTag",
+                                            "documentDefinitionId.caseDefinitionId.key",
+                                            "documentDefinitionId.caseDefinitionId.versionTag",
+                                            "documentDefinitionId.name",
+                                            "documentRelations",
+                                            "id.id",
+                                            "internalStatus.color",
+                                            "internalStatus.id.caseDefinitionKey",
+                                            "internalStatus.id.key",
+                                            "internalStatus.label",
+                                            "internalStatus.order",
+                                            "internalStatus.retentionPeriodInDays",
+                                            "internalStatus.title",
+                                            "internalStatus.visibleInCaseListByDefault",
+                                            "modifiedOn",
+                                            "relatedFiles",
+                                            "retentionDate",
+                                            "sequence",
+                                            "version"
+                                        ]
+                                    }
+                                }
+                            }
+                        ]
+                    },
+                    {
+                        "type": "object",
+                        "required": [
+                            "type",
+                            "resourceType",
+                            "conditions"
+                        ],
+                        "properties": {
+                            "type": {
+                                "const": "container"
+                            },
+                            "resourceType": {
+                                "type": "string",
+                                "enum": [
+                                    "com.ritense.case_.domain.definition.CaseDefinition",
+                                    "com.ritense.document.domain.impl.JsonSchemaDocumentDefinition"
+                                ]
+                            }
+                        },
+                        "allOf": [
+                            {
+                                "if": {
+                                    "properties": {
+                                        "resourceType": {
+                                            "const": "com.ritense.case_.domain.definition.CaseDefinition"
+                                        }
+                                    }
+                                },
+                                "then": {
+                                    "properties": {
+                                        "conditions": {
+                                            "$ref": "#/definitions/condList.com.ritense.case_.domain.definition.CaseDefinition"
+                                        }
+                                    }
+                                }
+                            },
+                            {
+                                "if": {
+                                    "properties": {
+                                        "resourceType": {
+                                            "const": "com.ritense.document.domain.impl.JsonSchemaDocumentDefinition"
+                                        }
+                                    }
+                                },
+                                "then": {
+                                    "properties": {
+                                        "conditions": {
+                                            "$ref": "#/definitions/condList.com.ritense.document.domain.impl.JsonSchemaDocumentDefinition"
+                                        }
+                                    }
+                                }
+                            }
+                        ]
+                    }
+                ]
+            }
+        },
+        "condList.com.ritense.document.domain.impl.JsonSchemaDocumentDefinition": {
+            "type": "array",
+            "items": {
+                "oneOf": [
+                    {
+                        "allOf": [
+                            {
+                                "$ref": "#/definitions/fieldCondition"
+                            },
+                            {
+                                "properties": {
+                                    "field": {
+                                        "type": "string",
+                                        "enum": [
+                                            "createdOn",
+                                            "id.blueprintId.blueprintKey",
+                                            "id.blueprintId.blueprintType",
+                                            "id.blueprintId.blueprintVersionTag",
+                                            "id.blueprintId.key",
+                                            "id.blueprintId.versionTag",
+                                            "id.caseDefinitionId.blueprintKey",
+                                            "id.caseDefinitionId.blueprintType",
+                                            "id.caseDefinitionId.blueprintVersionTag",
+                                            "id.caseDefinitionId.key",
+                                            "id.caseDefinitionId.versionTag",
+                                            "id.name",
+                                            "schema.schema"
+                                        ]
+                                    }
+                                }
+                            }
+                        ]
+                    },
+                    {
+                        "allOf": [
+                            {
+                                "$ref": "#/definitions/expressionCondition"
+                            },
+                            {
+                                "properties": {
+                                    "field": {
+                                        "type": "string",
+                                        "enum": [
+                                            "createdOn",
+                                            "id.blueprintId.blueprintKey",
+                                            "id.blueprintId.blueprintType",
+                                            "id.blueprintId.blueprintVersionTag",
+                                            "id.blueprintId.key",
+                                            "id.blueprintId.versionTag",
+                                            "id.caseDefinitionId.blueprintKey",
+                                            "id.caseDefinitionId.blueprintType",
+                                            "id.caseDefinitionId.blueprintVersionTag",
+                                            "id.caseDefinitionId.key",
+                                            "id.caseDefinitionId.versionTag",
+                                            "id.name",
+                                            "schema.schema"
+                                        ]
+                                    }
+                                }
+                            }
+                        ]
+                    },
+                    {
+                        "type": "object",
+                        "required": [
+                            "type",
+                            "resourceType",
+                            "conditions"
+                        ],
+                        "properties": {
+                            "type": {
+                                "const": "container"
+                            },
+                            "resourceType": {
+                                "type": "string",
+                                "enum": [
+                                    "com.ritense.case_.domain.definition.CaseDefinition"
+                                ]
+                            },
+                            "conditions": {
+                                "$ref": "#/definitions/condList.com.ritense.case_.domain.definition.CaseDefinition"
+                            }
+                        }
+                    }
+                ]
+            }
+        },
+        "condList.com.ritense.document.domain.impl.searchfield.SearchField": {
+            "type": "array",
+            "items": {
+                "oneOf": [
+                    {
+                        "allOf": [
+                            {
+                                "$ref": "#/definitions/fieldCondition"
+                            },
+                            {
+                                "properties": {
+                                    "field": {
+                                        "type": "string",
+                                        "enum": [
+                                            "dataType",
+                                            "dropdownDataProvider",
+                                            "fieldType",
+                                            "id.caseDefinitionKey",
+                                            "id.id",
+                                            "key",
+                                            "matchType",
+                                            "order",
+                                            "path",
+                                            "title"
+                                        ]
+                                    }
+                                }
+                            }
+                        ]
+                    },
+                    {
+                        "allOf": [
+                            {
+                                "$ref": "#/definitions/expressionCondition"
+                            },
+                            {
+                                "properties": {
+                                    "field": {
+                                        "type": "string",
+                                        "enum": [
+                                            "dataType",
+                                            "dropdownDataProvider",
+                                            "fieldType",
+                                            "id.caseDefinitionKey",
+                                            "id.id",
+                                            "key",
+                                            "matchType",
+                                            "order",
+                                            "path",
+                                            "title"
+                                        ]
+                                    }
+                                }
+                            }
+                        ]
+                    }
+                ]
+            }
+        },
+        "condList.com.ritense.document.domain.impl.snapshot.JsonSchemaDocumentSnapshot": {
+            "type": "array",
+            "items": {
+                "oneOf": [
+                    {
+                        "allOf": [
+                            {
+                                "$ref": "#/definitions/fieldCondition"
+                            },
+                            {
+                                "properties": {
+                                    "field": {
+                                        "type": "string",
+                                        "enum": [
+                                            "createdBy",
+                                            "createdOn",
+                                            "document.assignedTeamKey",
+                                            "document.assignedTeamTitle",
+                                            "document.assigneeFullName",
+                                            "document.assigneeId",
+                                            "document.content.content",
+                                            "document.createdBy",
+                                            "document.createdOn",
+                                            "document.documentDefinitionId.blueprintId.blueprintKey",
+                                            "document.documentDefinitionId.blueprintId.blueprintType",
+                                            "document.documentDefinitionId.blueprintId.blueprintVersionTag",
+                                            "document.documentDefinitionId.blueprintId.key",
+                                            "document.documentDefinitionId.blueprintId.versionTag",
+                                            "document.documentDefinitionId.caseDefinitionId.blueprintKey",
+                                            "document.documentDefinitionId.caseDefinitionId.blueprintType",
+                                            "document.documentDefinitionId.caseDefinitionId.blueprintVersionTag",
+                                            "document.documentDefinitionId.caseDefinitionId.key",
+                                            "document.documentDefinitionId.caseDefinitionId.versionTag",
+                                            "document.documentDefinitionId.name",
+                                            "document.documentRelations",
+                                            "document.id.id",
+                                            "document.internalStatus.caseDefinitionKey",
+                                            "document.internalStatus.key",
+                                            "document.modifiedOn",
+                                            "document.relatedFiles",
+                                            "document.retentionDate",
+                                            "document.sequence",
+                                            "id.id"
+                                        ]
+                                    }
+                                }
+                            }
+                        ]
+                    },
+                    {
+                        "allOf": [
+                            {
+                                "$ref": "#/definitions/expressionCondition"
+                            },
+                            {
+                                "properties": {
+                                    "field": {
+                                        "type": "string",
+                                        "enum": [
+                                            "createdBy",
+                                            "createdOn",
+                                            "document.assignedTeamKey",
+                                            "document.assignedTeamTitle",
+                                            "document.assigneeFullName",
+                                            "document.assigneeId",
+                                            "document.content.content",
+                                            "document.createdBy",
+                                            "document.createdOn",
+                                            "document.documentDefinitionId.blueprintId.blueprintKey",
+                                            "document.documentDefinitionId.blueprintId.blueprintType",
+                                            "document.documentDefinitionId.blueprintId.blueprintVersionTag",
+                                            "document.documentDefinitionId.blueprintId.key",
+                                            "document.documentDefinitionId.blueprintId.versionTag",
+                                            "document.documentDefinitionId.caseDefinitionId.blueprintKey",
+                                            "document.documentDefinitionId.caseDefinitionId.blueprintType",
+                                            "document.documentDefinitionId.caseDefinitionId.blueprintVersionTag",
+                                            "document.documentDefinitionId.caseDefinitionId.key",
+                                            "document.documentDefinitionId.caseDefinitionId.versionTag",
+                                            "document.documentDefinitionId.name",
+                                            "document.documentRelations",
+                                            "document.id.id",
+                                            "document.internalStatus.caseDefinitionKey",
+                                            "document.internalStatus.key",
+                                            "document.modifiedOn",
+                                            "document.relatedFiles",
+                                            "document.retentionDate",
+                                            "document.sequence",
+                                            "id.id"
+                                        ]
+                                    }
+                                }
+                            }
+                        ]
+                    }
+                ]
+            }
+        },
+        "condList.com.ritense.documentenapi.authorization.ZgwDocument": {
+            "type": "array",
+            "items": {
+                "oneOf": [
+                    {
+                        "allOf": [
+                            {
+                                "$ref": "#/definitions/fieldCondition"
+                            }
+                        ]
+                    },
+                    {
+                        "allOf": [
+                            {
+                                "$ref": "#/definitions/expressionCondition"
+                            }
+                        ]
+                    },
+                    {
+                        "type": "object",
+                        "required": [
+                            "type",
+                            "resourceType",
+                            "conditions"
+                        ],
+                        "properties": {
+                            "type": {
+                                "const": "container"
+                            },
+                            "resourceType": {
+                                "type": "string",
+                                "enum": [
+                                    "com.ritense.document.domain.impl.JsonSchemaDocument"
+                                ]
+                            },
+                            "conditions": {
+                                "$ref": "#/definitions/condList.com.ritense.document.domain.impl.JsonSchemaDocument"
+                            }
+                        }
+                    }
+                ]
+            }
+        },
+        "condList.com.ritense.iko.domain.IkoView": {
+            "type": "array",
+            "items": {
+                "oneOf": [
+                    {
+                        "allOf": [
+                            {
+                                "$ref": "#/definitions/fieldCondition"
+                            },
+                            {
+                                "properties": {
+                                    "field": {
+                                        "type": "string",
+                                        "enum": [
+                                            "ikoRepositoryConfig.key",
+                                            "ikoRepositoryConfig.properties",
+                                            "ikoRepositoryConfig.title",
+                                            "ikoRepositoryConfig.type",
+                                            "key",
+                                            "properties",
+                                            "title"
+                                        ]
+                                    }
+                                }
+                            }
+                        ]
+                    },
+                    {
+                        "allOf": [
+                            {
+                                "$ref": "#/definitions/expressionCondition"
+                            },
+                            {
+                                "properties": {
+                                    "field": {
+                                        "type": "string",
+                                        "enum": [
+                                            "ikoRepositoryConfig.key",
+                                            "ikoRepositoryConfig.properties",
+                                            "ikoRepositoryConfig.title",
+                                            "ikoRepositoryConfig.type",
+                                            "key",
+                                            "properties",
+                                            "title"
+                                        ]
+                                    }
+                                }
+                            }
+                        ]
+                    }
+                ]
+            }
+        },
+        "condList.com.ritense.note.domain.Note": {
+            "type": "array",
+            "items": {
+                "oneOf": [
+                    {
+                        "allOf": [
+                            {
+                                "$ref": "#/definitions/fieldCondition"
+                            },
+                            {
+                                "properties": {
+                                    "field": {
+                                        "type": "string",
+                                        "enum": [
+                                            "content",
+                                            "createdByUserFullName",
+                                            "createdByUserId",
+                                            "createdDate",
+                                            "documentId",
+                                            "id"
+                                        ]
+                                    }
+                                }
+                            }
+                        ]
+                    },
+                    {
+                        "allOf": [
+                            {
+                                "$ref": "#/definitions/expressionCondition"
+                            },
+                            {
+                                "properties": {
+                                    "field": {
+                                        "type": "string",
+                                        "enum": [
+                                            "content",
+                                            "createdByUserFullName",
+                                            "createdByUserId",
+                                            "createdDate",
+                                            "documentId",
+                                            "id"
+                                        ]
+                                    }
+                                }
+                            }
+                        ]
+                    },
+                    {
+                        "type": "object",
+                        "required": [
+                            "type",
+                            "resourceType",
+                            "conditions"
+                        ],
+                        "properties": {
+                            "type": {
+                                "const": "container"
+                            },
+                            "resourceType": {
+                                "type": "string",
+                                "enum": [
+                                    "com.ritense.document.domain.impl.JsonSchemaDocument"
+                                ]
+                            },
+                            "conditions": {
+                                "$ref": "#/definitions/condList.com.ritense.document.domain.impl.JsonSchemaDocument"
+                            }
+                        }
+                    }
+                ]
+            }
+        },
+        "condList.com.ritense.objectenapi.security.Object": {
+            "type": "array",
+            "items": {
+                "oneOf": [
+                    {
+                        "allOf": [
+                            {
+                                "$ref": "#/definitions/fieldCondition"
+                            }
+                        ]
+                    },
+                    {
+                        "allOf": [
+                            {
+                                "$ref": "#/definitions/expressionCondition"
+                            }
+                        ]
+                    }
+                ]
+            }
+        },
+        "condList.com.ritense.resource.authorization.ResourcePermission": {
+            "type": "array",
+            "items": {
+                "oneOf": [
+                    {
+                        "allOf": [
+                            {
+                                "$ref": "#/definitions/fieldCondition"
+                            }
+                        ]
+                    },
+                    {
+                        "allOf": [
+                            {
+                                "$ref": "#/definitions/expressionCondition"
+                            }
+                        ]
+                    },
+                    {
+                        "type": "object",
+                        "required": [
+                            "type",
+                            "resourceType",
+                            "conditions"
+                        ],
+                        "properties": {
+                            "type": {
+                                "const": "container"
+                            },
+                            "resourceType": {
+                                "type": "string",
+                                "enum": [
+                                    "com.ritense.document.domain.impl.JsonSchemaDocument"
+                                ]
+                            },
+                            "conditions": {
+                                "$ref": "#/definitions/condList.com.ritense.document.domain.impl.JsonSchemaDocument"
+                            }
+                        }
+                    }
+                ]
+            }
+        },
+        "condList.com.ritense.team.domain.Team": {
+            "type": "array",
+            "items": {
+                "oneOf": [
+                    {
+                        "allOf": [
+                            {
+                                "$ref": "#/definitions/fieldCondition"
+                            },
+                            {
+                                "properties": {
+                                    "field": {
+                                        "type": "string",
+                                        "enum": [
+                                            "key",
+                                            "title",
+                                            "users"
+                                        ]
+                                    }
+                                }
+                            }
+                        ]
+                    },
+                    {
+                        "allOf": [
+                            {
+                                "$ref": "#/definitions/expressionCondition"
+                            },
+                            {
+                                "properties": {
+                                    "field": {
+                                        "type": "string",
+                                        "enum": [
+                                            "key",
+                                            "title",
+                                            "users"
+                                        ]
+                                    }
+                                }
+                            }
+                        ]
+                    }
+                ]
+            }
+        },
+        "condList.com.ritense.valtimo.contract.authentication.User": {
+            "type": "array",
+            "items": {
+                "oneOf": [
+                    {
+                        "allOf": [
+                            {
+                                "$ref": "#/definitions/fieldCondition"
+                            }
+                        ]
+                    },
+                    {
+                        "allOf": [
+                            {
+                                "$ref": "#/definitions/expressionCondition"
+                            }
+                        ]
+                    }
+                ]
+            }
+        },
+        "condList.com.ritense.valtimo.operaton.domain.OperatonExecution": {
+            "type": "array",
+            "items": {
+                "oneOf": [
+                    {
+                        "allOf": [
+                            {
+                                "$ref": "#/definitions/fieldCondition"
+                            },
+                            {
+                                "properties": {
+                                    "field": {
+                                        "type": "string",
+                                        "enum": [
+                                            "active",
+                                            "activityId",
+                                            "activityInstanceId",
+                                            "businessKey",
+                                            "cachedEntityState",
+                                            "caseInstanceId",
+                                            "concurrent",
+                                            "eventScope",
+                                            "id",
+                                            "parent",
+                                            "processDefinition.category",
+                                            "processDefinition.deploymentId",
+                                            "processDefinition.diagramResourceName",
+                                            "processDefinition.hasStartFormKey",
+                                            "processDefinition.historyTimeToLive",
+                                            "processDefinition.id",
+                                            "processDefinition.isStartableInTasklist",
+                                            "processDefinition.key",
+                                            "processDefinition.name",
+                                            "processDefinition.resourceName",
+                                            "processDefinition.revision",
+                                            "processDefinition.suspensionState",
+                                            "processDefinition.tenantId",
+                                            "processDefinition.version",
+                                            "processDefinition.versionTag",
+                                            "processInstance",
+                                            "revision",
+                                            "rootProcessInstance",
+                                            "scope",
+                                            "sequenceCounter",
+                                            "superCaseExecutionId",
+                                            "superExecution",
+                                            "suspensionState",
+                                            "tenantId",
+                                            "variableInstances"
+                                        ]
+                                    }
+                                }
+                            }
+                        ]
+                    },
+                    {
+                        "allOf": [
+                            {
+                                "$ref": "#/definitions/expressionCondition"
+                            },
+                            {
+                                "properties": {
+                                    "field": {
+                                        "type": "string",
+                                        "enum": [
+                                            "active",
+                                            "activityId",
+                                            "activityInstanceId",
+                                            "businessKey",
+                                            "cachedEntityState",
+                                            "caseInstanceId",
+                                            "concurrent",
+                                            "eventScope",
+                                            "id",
+                                            "parent",
+                                            "processDefinition.category",
+                                            "processDefinition.deploymentId",
+                                            "processDefinition.diagramResourceName",
+                                            "processDefinition.hasStartFormKey",
+                                            "processDefinition.historyTimeToLive",
+                                            "processDefinition.id",
+                                            "processDefinition.isStartableInTasklist",
+                                            "processDefinition.key",
+                                            "processDefinition.name",
+                                            "processDefinition.resourceName",
+                                            "processDefinition.revision",
+                                            "processDefinition.suspensionState",
+                                            "processDefinition.tenantId",
+                                            "processDefinition.version",
+                                            "processDefinition.versionTag",
+                                            "processInstance",
+                                            "revision",
+                                            "rootProcessInstance",
+                                            "scope",
+                                            "sequenceCounter",
+                                            "superCaseExecutionId",
+                                            "superExecution",
+                                            "suspensionState",
+                                            "tenantId",
+                                            "variableInstances"
+                                        ]
+                                    }
+                                }
+                            }
+                        ]
+                    },
+                    {
+                        "type": "object",
+                        "required": [
+                            "type",
+                            "resourceType",
+                            "conditions"
+                        ],
+                        "properties": {
+                            "type": {
+                                "const": "container"
+                            },
+                            "resourceType": {
+                                "type": "string",
+                                "enum": [
+                                    "com.ritense.case_.domain.definition.CaseDefinition",
+                                    "com.ritense.document.domain.impl.JsonSchemaDocument",
+                                    "com.ritense.valtimo.operaton.domain.OperatonProcessDefinition"
+                                ]
+                            }
+                        },
+                        "allOf": [
+                            {
+                                "if": {
+                                    "properties": {
+                                        "resourceType": {
+                                            "const": "com.ritense.case_.domain.definition.CaseDefinition"
+                                        }
+                                    }
+                                },
+                                "then": {
+                                    "properties": {
+                                        "conditions": {
+                                            "$ref": "#/definitions/condList.com.ritense.case_.domain.definition.CaseDefinition"
+                                        }
+                                    }
+                                }
+                            },
+                            {
+                                "if": {
+                                    "properties": {
+                                        "resourceType": {
+                                            "const": "com.ritense.document.domain.impl.JsonSchemaDocument"
+                                        }
+                                    }
+                                },
+                                "then": {
+                                    "properties": {
+                                        "conditions": {
+                                            "$ref": "#/definitions/condList.com.ritense.document.domain.impl.JsonSchemaDocument"
+                                        }
+                                    }
+                                }
+                            },
+                            {
+                                "if": {
+                                    "properties": {
+                                        "resourceType": {
+                                            "const": "com.ritense.valtimo.operaton.domain.OperatonProcessDefinition"
+                                        }
+                                    }
+                                },
+                                "then": {
+                                    "properties": {
+                                        "conditions": {
+                                            "$ref": "#/definitions/condList.com.ritense.valtimo.operaton.domain.OperatonProcessDefinition"
+                                        }
+                                    }
+                                }
+                            }
+                        ]
+                    }
+                ]
+            }
+        },
+        "condList.com.ritense.valtimo.operaton.domain.OperatonIdentityLink": {
+            "type": "array",
+            "items": {
+                "oneOf": [
+                    {
+                        "allOf": [
+                            {
+                                "$ref": "#/definitions/fieldCondition"
+                            },
+                            {
+                                "properties": {
+                                    "field": {
+                                        "type": "string",
+                                        "enum": [
+                                            "groupId",
+                                            "id",
+                                            "processDefinition.category",
+                                            "processDefinition.deploymentId",
+                                            "processDefinition.diagramResourceName",
+                                            "processDefinition.hasStartFormKey",
+                                            "processDefinition.historyTimeToLive",
+                                            "processDefinition.id",
+                                            "processDefinition.isStartableInTasklist",
+                                            "processDefinition.key",
+                                            "processDefinition.name",
+                                            "processDefinition.resourceName",
+                                            "processDefinition.revision",
+                                            "processDefinition.suspensionState",
+                                            "processDefinition.tenantId",
+                                            "processDefinition.version",
+                                            "processDefinition.versionTag",
+                                            "revision",
+                                            "task.assignee",
+                                            "task.caseDefinitionId",
+                                            "task.caseExecutionId",
+                                            "task.caseInstanceId",
+                                            "task.createTime",
+                                            "task.delegationState",
+                                            "task.description",
+                                            "task.dueDate",
+                                            "task.execution.active",
+                                            "task.execution.activityId",
+                                            "task.execution.activityInstanceId",
+                                            "task.execution.businessKey",
+                                            "task.execution.cachedEntityState",
+                                            "task.execution.caseInstanceId",
+                                            "task.execution.concurrent",
+                                            "task.execution.eventScope",
+                                            "task.execution.id",
+                                            "task.execution.parent",
+                                            "task.execution.processDefinition.category",
+                                            "task.execution.processDefinition.deploymentId",
+                                            "task.execution.processDefinition.diagramResourceName",
+                                            "task.execution.processDefinition.hasStartFormKey",
+                                            "task.execution.processDefinition.historyTimeToLive",
+                                            "task.execution.processDefinition.id",
+                                            "task.execution.processDefinition.isStartableInTasklist",
+                                            "task.execution.processDefinition.key",
+                                            "task.execution.processDefinition.name",
+                                            "task.execution.processDefinition.resourceName",
+                                            "task.execution.processDefinition.revision",
+                                            "task.execution.processDefinition.suspensionState",
+                                            "task.execution.processDefinition.tenantId",
+                                            "task.execution.processDefinition.version",
+                                            "task.execution.processDefinition.versionTag",
+                                            "task.execution.processInstance",
+                                            "task.execution.revision",
+                                            "task.execution.rootProcessInstance",
+                                            "task.execution.scope",
+                                            "task.execution.sequenceCounter",
+                                            "task.execution.superCaseExecutionId",
+                                            "task.execution.superExecution",
+                                            "task.execution.suspensionState",
+                                            "task.execution.tenantId",
+                                            "task.execution.variableInstances",
+                                            "task.followUpDate",
+                                            "task.id",
+                                            "task.identityLinks",
+                                            "task.lastUpdated",
+                                            "task.name",
+                                            "task.owner",
+                                            "task.parentTask",
+                                            "task.priority",
+                                            "task.processDefinition.category",
+                                            "task.processDefinition.deploymentId",
+                                            "task.processDefinition.diagramResourceName",
+                                            "task.processDefinition.hasStartFormKey",
+                                            "task.processDefinition.historyTimeToLive",
+                                            "task.processDefinition.id",
+                                            "task.processDefinition.isStartableInTasklist",
+                                            "task.processDefinition.key",
+                                            "task.processDefinition.name",
+                                            "task.processDefinition.resourceName",
+                                            "task.processDefinition.revision",
+                                            "task.processDefinition.suspensionState",
+                                            "task.processDefinition.tenantId",
+                                            "task.processDefinition.version",
+                                            "task.processDefinition.versionTag",
+                                            "task.processInstance.active",
+                                            "task.processInstance.activityId",
+                                            "task.processInstance.activityInstanceId",
+                                            "task.processInstance.businessKey",
+                                            "task.processInstance.cachedEntityState",
+                                            "task.processInstance.caseInstanceId",
+                                            "task.processInstance.concurrent",
+                                            "task.processInstance.eventScope",
+                                            "task.processInstance.id",
+                                            "task.processInstance.parent",
+                                            "task.processInstance.processDefinition.category",
+                                            "task.processInstance.processDefinition.deploymentId",
+                                            "task.processInstance.processDefinition.diagramResourceName",
+                                            "task.processInstance.processDefinition.hasStartFormKey",
+                                            "task.processInstance.processDefinition.historyTimeToLive",
+                                            "task.processInstance.processDefinition.id",
+                                            "task.processInstance.processDefinition.isStartableInTasklist",
+                                            "task.processInstance.processDefinition.key",
+                                            "task.processInstance.processDefinition.name",
+                                            "task.processInstance.processDefinition.resourceName",
+                                            "task.processInstance.processDefinition.revision",
+                                            "task.processInstance.processDefinition.suspensionState",
+                                            "task.processInstance.processDefinition.tenantId",
+                                            "task.processInstance.processDefinition.version",
+                                            "task.processInstance.processDefinition.versionTag",
+                                            "task.processInstance.processInstance",
+                                            "task.processInstance.revision",
+                                            "task.processInstance.rootProcessInstance",
+                                            "task.processInstance.scope",
+                                            "task.processInstance.sequenceCounter",
+                                            "task.processInstance.superCaseExecutionId",
+                                            "task.processInstance.superExecution",
+                                            "task.processInstance.suspensionState",
+                                            "task.processInstance.tenantId",
+                                            "task.processInstance.variableInstances",
+                                            "task.revision",
+                                            "task.subtitles",
+                                            "task.suspensionState",
+                                            "task.taskDefinitionKey",
+                                            "task.tenantId",
+                                            "task.variableInstances",
+                                            "tenantId",
+                                            "type",
+                                            "userId"
+                                        ]
+                                    }
+                                }
+                            }
+                        ]
+                    },
+                    {
+                        "allOf": [
+                            {
+                                "$ref": "#/definitions/expressionCondition"
+                            },
+                            {
+                                "properties": {
+                                    "field": {
+                                        "type": "string",
+                                        "enum": [
+                                            "groupId",
+                                            "id",
+                                            "processDefinition.category",
+                                            "processDefinition.deploymentId",
+                                            "processDefinition.diagramResourceName",
+                                            "processDefinition.hasStartFormKey",
+                                            "processDefinition.historyTimeToLive",
+                                            "processDefinition.id",
+                                            "processDefinition.isStartableInTasklist",
+                                            "processDefinition.key",
+                                            "processDefinition.name",
+                                            "processDefinition.resourceName",
+                                            "processDefinition.revision",
+                                            "processDefinition.suspensionState",
+                                            "processDefinition.tenantId",
+                                            "processDefinition.version",
+                                            "processDefinition.versionTag",
+                                            "revision",
+                                            "task.assignee",
+                                            "task.caseDefinitionId",
+                                            "task.caseExecutionId",
+                                            "task.caseInstanceId",
+                                            "task.createTime",
+                                            "task.delegationState",
+                                            "task.description",
+                                            "task.dueDate",
+                                            "task.execution.active",
+                                            "task.execution.activityId",
+                                            "task.execution.activityInstanceId",
+                                            "task.execution.businessKey",
+                                            "task.execution.cachedEntityState",
+                                            "task.execution.caseInstanceId",
+                                            "task.execution.concurrent",
+                                            "task.execution.eventScope",
+                                            "task.execution.id",
+                                            "task.execution.parent",
+                                            "task.execution.processDefinition.category",
+                                            "task.execution.processDefinition.deploymentId",
+                                            "task.execution.processDefinition.diagramResourceName",
+                                            "task.execution.processDefinition.hasStartFormKey",
+                                            "task.execution.processDefinition.historyTimeToLive",
+                                            "task.execution.processDefinition.id",
+                                            "task.execution.processDefinition.isStartableInTasklist",
+                                            "task.execution.processDefinition.key",
+                                            "task.execution.processDefinition.name",
+                                            "task.execution.processDefinition.resourceName",
+                                            "task.execution.processDefinition.revision",
+                                            "task.execution.processDefinition.suspensionState",
+                                            "task.execution.processDefinition.tenantId",
+                                            "task.execution.processDefinition.version",
+                                            "task.execution.processDefinition.versionTag",
+                                            "task.execution.processInstance",
+                                            "task.execution.revision",
+                                            "task.execution.rootProcessInstance",
+                                            "task.execution.scope",
+                                            "task.execution.sequenceCounter",
+                                            "task.execution.superCaseExecutionId",
+                                            "task.execution.superExecution",
+                                            "task.execution.suspensionState",
+                                            "task.execution.tenantId",
+                                            "task.execution.variableInstances",
+                                            "task.followUpDate",
+                                            "task.id",
+                                            "task.identityLinks",
+                                            "task.lastUpdated",
+                                            "task.name",
+                                            "task.owner",
+                                            "task.parentTask",
+                                            "task.priority",
+                                            "task.processDefinition.category",
+                                            "task.processDefinition.deploymentId",
+                                            "task.processDefinition.diagramResourceName",
+                                            "task.processDefinition.hasStartFormKey",
+                                            "task.processDefinition.historyTimeToLive",
+                                            "task.processDefinition.id",
+                                            "task.processDefinition.isStartableInTasklist",
+                                            "task.processDefinition.key",
+                                            "task.processDefinition.name",
+                                            "task.processDefinition.resourceName",
+                                            "task.processDefinition.revision",
+                                            "task.processDefinition.suspensionState",
+                                            "task.processDefinition.tenantId",
+                                            "task.processDefinition.version",
+                                            "task.processDefinition.versionTag",
+                                            "task.processInstance.active",
+                                            "task.processInstance.activityId",
+                                            "task.processInstance.activityInstanceId",
+                                            "task.processInstance.businessKey",
+                                            "task.processInstance.cachedEntityState",
+                                            "task.processInstance.caseInstanceId",
+                                            "task.processInstance.concurrent",
+                                            "task.processInstance.eventScope",
+                                            "task.processInstance.id",
+                                            "task.processInstance.parent",
+                                            "task.processInstance.processDefinition.category",
+                                            "task.processInstance.processDefinition.deploymentId",
+                                            "task.processInstance.processDefinition.diagramResourceName",
+                                            "task.processInstance.processDefinition.hasStartFormKey",
+                                            "task.processInstance.processDefinition.historyTimeToLive",
+                                            "task.processInstance.processDefinition.id",
+                                            "task.processInstance.processDefinition.isStartableInTasklist",
+                                            "task.processInstance.processDefinition.key",
+                                            "task.processInstance.processDefinition.name",
+                                            "task.processInstance.processDefinition.resourceName",
+                                            "task.processInstance.processDefinition.revision",
+                                            "task.processInstance.processDefinition.suspensionState",
+                                            "task.processInstance.processDefinition.tenantId",
+                                            "task.processInstance.processDefinition.version",
+                                            "task.processInstance.processDefinition.versionTag",
+                                            "task.processInstance.processInstance",
+                                            "task.processInstance.revision",
+                                            "task.processInstance.rootProcessInstance",
+                                            "task.processInstance.scope",
+                                            "task.processInstance.sequenceCounter",
+                                            "task.processInstance.superCaseExecutionId",
+                                            "task.processInstance.superExecution",
+                                            "task.processInstance.suspensionState",
+                                            "task.processInstance.tenantId",
+                                            "task.processInstance.variableInstances",
+                                            "task.revision",
+                                            "task.subtitles",
+                                            "task.suspensionState",
+                                            "task.taskDefinitionKey",
+                                            "task.tenantId",
+                                            "task.variableInstances",
+                                            "tenantId",
+                                            "type",
+                                            "userId"
+                                        ]
+                                    }
+                                }
+                            }
+                        ]
+                    }
+                ]
+            }
+        },
+        "condList.com.ritense.valtimo.operaton.domain.OperatonProcessDefinition": {
+            "type": "array",
+            "items": {
+                "oneOf": [
+                    {
+                        "allOf": [
+                            {
+                                "$ref": "#/definitions/fieldCondition"
+                            },
+                            {
+                                "properties": {
+                                    "field": {
+                                        "type": "string",
+                                        "enum": [
+                                            "category",
+                                            "deploymentId",
+                                            "diagramResourceName",
+                                            "hasStartFormKey",
+                                            "historyTimeToLive",
+                                            "id",
+                                            "isStartableInTasklist",
+                                            "key",
+                                            "name",
+                                            "resourceName",
+                                            "revision",
+                                            "suspensionState",
+                                            "tenantId",
+                                            "version",
+                                            "versionTag"
+                                        ]
+                                    }
+                                }
+                            }
+                        ]
+                    },
+                    {
+                        "allOf": [
+                            {
+                                "$ref": "#/definitions/expressionCondition"
+                            },
+                            {
+                                "properties": {
+                                    "field": {
+                                        "type": "string",
+                                        "enum": [
+                                            "category",
+                                            "deploymentId",
+                                            "diagramResourceName",
+                                            "hasStartFormKey",
+                                            "historyTimeToLive",
+                                            "id",
+                                            "isStartableInTasklist",
+                                            "key",
+                                            "name",
+                                            "resourceName",
+                                            "revision",
+                                            "suspensionState",
+                                            "tenantId",
+                                            "version",
+                                            "versionTag"
+                                        ]
+                                    }
+                                }
+                            }
+                        ]
+                    },
+                    {
+                        "type": "object",
+                        "required": [
+                            "type",
+                            "resourceType",
+                            "conditions"
+                        ],
+                        "properties": {
+                            "type": {
+                                "const": "container"
+                            },
+                            "resourceType": {
+                                "type": "string",
+                                "enum": [
+                                    "com.ritense.case_.domain.definition.CaseDefinition"
+                                ]
+                            },
+                            "conditions": {
+                                "$ref": "#/definitions/condList.com.ritense.case_.domain.definition.CaseDefinition"
+                            }
+                        }
+                    }
+                ]
+            }
+        },
+        "condList.com.ritense.valtimo.operaton.domain.OperatonTask": {
+            "type": "array",
+            "items": {
+                "oneOf": [
+                    {
+                        "allOf": [
+                            {
+                                "$ref": "#/definitions/fieldCondition"
+                            },
+                            {
+                                "properties": {
+                                    "field": {
+                                        "type": "string",
+                                        "enum": [
+                                            "assignee",
+                                            "caseDefinitionId",
+                                            "caseExecutionId",
+                                            "caseInstanceId",
+                                            "createTime",
+                                            "delegationState",
+                                            "description",
+                                            "dueDate",
+                                            "execution.active",
+                                            "execution.activityId",
+                                            "execution.activityInstanceId",
+                                            "execution.businessKey",
+                                            "execution.cachedEntityState",
+                                            "execution.caseInstanceId",
+                                            "execution.concurrent",
+                                            "execution.eventScope",
+                                            "execution.id",
+                                            "execution.parent",
+                                            "execution.processDefinition.category",
+                                            "execution.processDefinition.deploymentId",
+                                            "execution.processDefinition.diagramResourceName",
+                                            "execution.processDefinition.hasStartFormKey",
+                                            "execution.processDefinition.historyTimeToLive",
+                                            "execution.processDefinition.id",
+                                            "execution.processDefinition.isStartableInTasklist",
+                                            "execution.processDefinition.key",
+                                            "execution.processDefinition.name",
+                                            "execution.processDefinition.resourceName",
+                                            "execution.processDefinition.revision",
+                                            "execution.processDefinition.suspensionState",
+                                            "execution.processDefinition.tenantId",
+                                            "execution.processDefinition.version",
+                                            "execution.processDefinition.versionTag",
+                                            "execution.processInstance",
+                                            "execution.revision",
+                                            "execution.rootProcessInstance",
+                                            "execution.scope",
+                                            "execution.sequenceCounter",
+                                            "execution.superCaseExecutionId",
+                                            "execution.superExecution",
+                                            "execution.suspensionState",
+                                            "execution.tenantId",
+                                            "execution.variableInstances",
+                                            "followUpDate",
+                                            "id",
+                                            "identityLinks",
+                                            "lastUpdated",
+                                            "name",
+                                            "owner",
+                                            "parentTask",
+                                            "priority",
+                                            "processDefinition.category",
+                                            "processDefinition.deploymentId",
+                                            "processDefinition.diagramResourceName",
+                                            "processDefinition.hasStartFormKey",
+                                            "processDefinition.historyTimeToLive",
+                                            "processDefinition.id",
+                                            "processDefinition.isStartableInTasklist",
+                                            "processDefinition.key",
+                                            "processDefinition.name",
+                                            "processDefinition.resourceName",
+                                            "processDefinition.revision",
+                                            "processDefinition.suspensionState",
+                                            "processDefinition.tenantId",
+                                            "processDefinition.version",
+                                            "processDefinition.versionTag",
+                                            "processInstance.active",
+                                            "processInstance.activityId",
+                                            "processInstance.activityInstanceId",
+                                            "processInstance.businessKey",
+                                            "processInstance.cachedEntityState",
+                                            "processInstance.caseInstanceId",
+                                            "processInstance.concurrent",
+                                            "processInstance.eventScope",
+                                            "processInstance.id",
+                                            "processInstance.parent",
+                                            "processInstance.processDefinition.category",
+                                            "processInstance.processDefinition.deploymentId",
+                                            "processInstance.processDefinition.diagramResourceName",
+                                            "processInstance.processDefinition.hasStartFormKey",
+                                            "processInstance.processDefinition.historyTimeToLive",
+                                            "processInstance.processDefinition.id",
+                                            "processInstance.processDefinition.isStartableInTasklist",
+                                            "processInstance.processDefinition.key",
+                                            "processInstance.processDefinition.name",
+                                            "processInstance.processDefinition.resourceName",
+                                            "processInstance.processDefinition.revision",
+                                            "processInstance.processDefinition.suspensionState",
+                                            "processInstance.processDefinition.tenantId",
+                                            "processInstance.processDefinition.version",
+                                            "processInstance.processDefinition.versionTag",
+                                            "processInstance.processInstance",
+                                            "processInstance.revision",
+                                            "processInstance.rootProcessInstance",
+                                            "processInstance.scope",
+                                            "processInstance.sequenceCounter",
+                                            "processInstance.superCaseExecutionId",
+                                            "processInstance.superExecution",
+                                            "processInstance.suspensionState",
+                                            "processInstance.tenantId",
+                                            "processInstance.variableInstances",
+                                            "revision",
+                                            "subtitles",
+                                            "suspensionState",
+                                            "taskDefinitionKey",
+                                            "tenantId",
+                                            "variableInstances"
+                                        ]
+                                    }
+                                }
+                            }
+                        ]
+                    },
+                    {
+                        "allOf": [
+                            {
+                                "$ref": "#/definitions/expressionCondition"
+                            },
+                            {
+                                "properties": {
+                                    "field": {
+                                        "type": "string",
+                                        "enum": [
+                                            "assignee",
+                                            "caseDefinitionId",
+                                            "caseExecutionId",
+                                            "caseInstanceId",
+                                            "createTime",
+                                            "delegationState",
+                                            "description",
+                                            "dueDate",
+                                            "execution.active",
+                                            "execution.activityId",
+                                            "execution.activityInstanceId",
+                                            "execution.businessKey",
+                                            "execution.cachedEntityState",
+                                            "execution.caseInstanceId",
+                                            "execution.concurrent",
+                                            "execution.eventScope",
+                                            "execution.id",
+                                            "execution.parent",
+                                            "execution.processDefinition.category",
+                                            "execution.processDefinition.deploymentId",
+                                            "execution.processDefinition.diagramResourceName",
+                                            "execution.processDefinition.hasStartFormKey",
+                                            "execution.processDefinition.historyTimeToLive",
+                                            "execution.processDefinition.id",
+                                            "execution.processDefinition.isStartableInTasklist",
+                                            "execution.processDefinition.key",
+                                            "execution.processDefinition.name",
+                                            "execution.processDefinition.resourceName",
+                                            "execution.processDefinition.revision",
+                                            "execution.processDefinition.suspensionState",
+                                            "execution.processDefinition.tenantId",
+                                            "execution.processDefinition.version",
+                                            "execution.processDefinition.versionTag",
+                                            "execution.processInstance",
+                                            "execution.revision",
+                                            "execution.rootProcessInstance",
+                                            "execution.scope",
+                                            "execution.sequenceCounter",
+                                            "execution.superCaseExecutionId",
+                                            "execution.superExecution",
+                                            "execution.suspensionState",
+                                            "execution.tenantId",
+                                            "execution.variableInstances",
+                                            "followUpDate",
+                                            "id",
+                                            "identityLinks",
+                                            "lastUpdated",
+                                            "name",
+                                            "owner",
+                                            "parentTask",
+                                            "priority",
+                                            "processDefinition.category",
+                                            "processDefinition.deploymentId",
+                                            "processDefinition.diagramResourceName",
+                                            "processDefinition.hasStartFormKey",
+                                            "processDefinition.historyTimeToLive",
+                                            "processDefinition.id",
+                                            "processDefinition.isStartableInTasklist",
+                                            "processDefinition.key",
+                                            "processDefinition.name",
+                                            "processDefinition.resourceName",
+                                            "processDefinition.revision",
+                                            "processDefinition.suspensionState",
+                                            "processDefinition.tenantId",
+                                            "processDefinition.version",
+                                            "processDefinition.versionTag",
+                                            "processInstance.active",
+                                            "processInstance.activityId",
+                                            "processInstance.activityInstanceId",
+                                            "processInstance.businessKey",
+                                            "processInstance.cachedEntityState",
+                                            "processInstance.caseInstanceId",
+                                            "processInstance.concurrent",
+                                            "processInstance.eventScope",
+                                            "processInstance.id",
+                                            "processInstance.parent",
+                                            "processInstance.processDefinition.category",
+                                            "processInstance.processDefinition.deploymentId",
+                                            "processInstance.processDefinition.diagramResourceName",
+                                            "processInstance.processDefinition.hasStartFormKey",
+                                            "processInstance.processDefinition.historyTimeToLive",
+                                            "processInstance.processDefinition.id",
+                                            "processInstance.processDefinition.isStartableInTasklist",
+                                            "processInstance.processDefinition.key",
+                                            "processInstance.processDefinition.name",
+                                            "processInstance.processDefinition.resourceName",
+                                            "processInstance.processDefinition.revision",
+                                            "processInstance.processDefinition.suspensionState",
+                                            "processInstance.processDefinition.tenantId",
+                                            "processInstance.processDefinition.version",
+                                            "processInstance.processDefinition.versionTag",
+                                            "processInstance.processInstance",
+                                            "processInstance.revision",
+                                            "processInstance.rootProcessInstance",
+                                            "processInstance.scope",
+                                            "processInstance.sequenceCounter",
+                                            "processInstance.superCaseExecutionId",
+                                            "processInstance.superExecution",
+                                            "processInstance.suspensionState",
+                                            "processInstance.tenantId",
+                                            "processInstance.variableInstances",
+                                            "revision",
+                                            "subtitles",
+                                            "suspensionState",
+                                            "taskDefinitionKey",
+                                            "tenantId",
+                                            "variableInstances"
+                                        ]
+                                    }
+                                }
+                            }
+                        ]
+                    },
+                    {
+                        "type": "object",
+                        "required": [
+                            "type",
+                            "resourceType",
+                            "conditions"
+                        ],
+                        "properties": {
+                            "type": {
+                                "const": "container"
+                            },
+                            "resourceType": {
+                                "type": "string",
+                                "enum": [
+                                    "com.ritense.document.domain.impl.JsonSchemaDocument",
+                                    "com.ritense.valtimo.operaton.domain.OperatonIdentityLink"
+                                ]
+                            }
+                        },
+                        "allOf": [
+                            {
+                                "if": {
+                                    "properties": {
+                                        "resourceType": {
+                                            "const": "com.ritense.document.domain.impl.JsonSchemaDocument"
+                                        }
+                                    }
+                                },
+                                "then": {
+                                    "properties": {
+                                        "conditions": {
+                                            "$ref": "#/definitions/condList.com.ritense.document.domain.impl.JsonSchemaDocument"
+                                        }
+                                    }
+                                }
+                            },
+                            {
+                                "if": {
+                                    "properties": {
+                                        "resourceType": {
+                                            "const": "com.ritense.valtimo.operaton.domain.OperatonIdentityLink"
+                                        }
+                                    }
+                                },
+                                "then": {
+                                    "properties": {
+                                        "conditions": {
+                                            "$ref": "#/definitions/condList.com.ritense.valtimo.operaton.domain.OperatonIdentityLink"
+                                        }
+                                    }
+                                }
+                            }
+                        ]
+                    }
+                ]
+            }
+        }
+    }
+}
