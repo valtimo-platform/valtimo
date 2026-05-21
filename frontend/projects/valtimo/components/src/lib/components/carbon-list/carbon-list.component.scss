@@ -88,37 +88,21 @@ td:first-child {
   ::ng-deep .cds--tag--orange {
     background-color: #ffe5cc;
     color: #673d13;
-
-    &:hover {
-      background-color: #fff1e4;
-    }
   }
 
   ::ng-deep .cds--tag--light-green {
     background-color: #e8f3e8;
     color: #245b25;
-
-    &:hover {
-      background-color: #f8fff8;
-    }
   }
 
   ::ng-deep .cds--tag--yellow {
     background-color: #fef6e0;
     color: #6f5c29;
-
-    &:hover {
-      background-color: #fffbf1;
-    }
   }
 
   ::ng-deep .cds--tag--periwinkle {
     background-color: #d5d3f0;
     color: #1a146a;
-
-    &:hover {
-      background-color: #ebeafd;
-    }
   }
 
   label {
