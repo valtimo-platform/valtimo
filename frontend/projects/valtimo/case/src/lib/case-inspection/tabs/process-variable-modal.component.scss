@@ -14,17 +14,10 @@
  * limitations under the License.
  */
 
-.case-inspection-metadata-tab {
-  &__list ul {
-    margin: 0;
-    padding-left: var(--cds-spacing-06, 1.25rem);
-  }
-
-  &__error {
-    color: var(--cds-text-error, #da1e28);
-  }
-
-  &__empty {
-    color: var(--cds-text-helper, #6f6f6f);
+.case-inspection-variable-modal {
+  &__form {
+    display: flex;
+    flex-direction: column;
+    gap: var(--cds-spacing-06, 1.5rem);
   }
 }

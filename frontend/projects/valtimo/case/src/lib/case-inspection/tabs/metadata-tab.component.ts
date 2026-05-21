@@ -24,7 +24,7 @@ import {
   SimpleChanges,
 } from '@angular/core';
 import {TranslateModule} from '@ngx-translate/core';
-import {TagModule} from 'carbon-components-angular';
+import {StructuredListModule, TagModule} from 'carbon-components-angular';
 import {DocumentInspection} from '../models/case-inspection.models';
 import {CaseInspectionService} from '../services/case-inspection.service';
 
@@ -34,7 +34,7 @@ import {CaseInspectionService} from '../services/case-inspection.service';
   templateUrl: './metadata-tab.component.html',
   styleUrl: './metadata-tab.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, TranslateModule, TagModule],
+  imports: [CommonModule, TranslateModule, StructuredListModule, TagModule],
 })
 export class CaseInspectionMetadataTabComponent implements OnChanges {
   @Input() public documentId!: string;

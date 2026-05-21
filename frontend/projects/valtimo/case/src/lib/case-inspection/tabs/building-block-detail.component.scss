@@ -16,47 +16,29 @@
 
 .case-inspection-bb-detail {
   &__header {
-    margin-bottom: 1rem;
+    margin-bottom: var(--cds-spacing-05, 1rem);
 
     h3 {
       margin: 0;
 
       small {
         font-weight: 400;
-        opacity: 0.7;
-        margin-left: 0.5rem;
-        font-size: 0.875rem;
+        color: var(--cds-text-helper, #6f6f6f);
+        margin-left: var(--cds-spacing-03, 0.5rem);
+        font-size: var(--cds-body-compact-01-font-size, 0.875rem);
       }
     }
   }
 
-  &__meta {
-    display: grid;
-    grid-template-columns: max-content 1fr;
-    gap: 0.25rem 1rem;
-    margin: 0.75rem 0 0;
-
-    dt {
-      font-weight: 600;
-      font-size: 0.875rem;
-    }
-
-    dd {
-      margin: 0;
-      font-size: 0.875rem;
-
-      code {
-        word-break: break-all;
-      }
-    }
+  &__meta code {
+    word-break: break-all;
   }
 
   &__subhead {
-    margin: 1.25rem 0 0.5rem;
-    font-size: 0.875rem;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-    opacity: 0.7;
+    margin: var(--cds-spacing-06, 1.25rem) 0 var(--cds-spacing-03, 0.5rem);
+    font-size: var(--cds-body-compact-01-font-size, 0.875rem);
+    font-weight: 600;
+    color: var(--cds-text-secondary, #525252);
   }
 
   &__error {

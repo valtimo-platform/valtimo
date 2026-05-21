@@ -57,6 +57,14 @@ interface ProcessVariable {
   value: unknown;
 }
 
+type ProcessVariableType = 'STRING' | 'INTEGER' | 'LONG' | 'DOUBLE' | 'BOOLEAN' | 'JSON';
+
+interface ProcessVariableMutationRequest {
+  name: string;
+  type: ProcessVariableType;
+  value: unknown;
+}
+
 type ProcessJobType = 'TIMER' | 'ASYNC_CONTINUATION' | 'MESSAGE' | 'BATCH' | 'OTHER';
 
 interface ProcessJob {
@@ -131,6 +139,8 @@ interface ModifyDocumentResult {
 export {
   Incident,
   ProcessVariable,
+  ProcessVariableMutationRequest,
+  ProcessVariableType,
   ProcessJob,
   ProcessJobType,
   ProcessTask,

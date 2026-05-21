@@ -48,30 +48,36 @@
       </cds-tag>
     </div>
 
-    <dl class="case-inspection-process-detail__meta">
-      <dt>{{ 'case.inspection.processes.instanceId' | translate }}</dt>
-      <dd><code>{{ row.processInstanceId }}</code></dd>
+    <cds-structured-list class="case-inspection-process-detail__meta" [condensed]="true">
+      <cds-list-row>
+        <cds-list-column>{{ 'case.inspection.processes.instanceId' | translate }}</cds-list-column>
+        <cds-list-column><code>{{ row.processInstanceId }}</code></cds-list-column>
+      </cds-list-row>
 
-      <dt>{{ 'case.inspection.processes.startedBy' | translate }}</dt>
-      <dd>{{ row.startedBy || row.startedByUserId || '—' }}</dd>
+      <cds-list-row>
+        <cds-list-column>{{ 'case.inspection.processes.startedBy' | translate }}</cds-list-column>
+        <cds-list-column>{{ row.startedBy || row.startedByUserId || '—' }}</cds-list-column>
+      </cds-list-row>
 
-      <dt>{{ 'case.inspection.processes.startedOn' | translate }}</dt>
-      <dd>{{ row.startedOn | date: 'medium' }}</dd>
+      <cds-list-row>
+        <cds-list-column>{{ 'case.inspection.processes.startedOn' | translate }}</cds-list-column>
+        <cds-list-column>{{ row.startedOn | date: 'medium' }}</cds-list-column>
+      </cds-list-row>
 
-      <ng-container *ngIf="row.buildingBlock as bb">
-        <dt>{{ 'case.inspection.processes.buildingBlock' | translate }}</dt>
-        <dd>
-          <button
-            type="button"
-            class="case-inspection-process-detail__bb-link"
-            (click)="onViewBuildingBlock(bb)"
+      <cds-list-row *ngIf="row.buildingBlock as bb">
+        <cds-list-column>{{ 'case.inspection.processes.buildingBlock' | translate }}</cds-list-column>
+        <cds-list-column>
+          <a
+            cdsLink
+            href="javascript:void(0)"
+            (click)="onViewBuildingBlock(bb); $event.preventDefault()"
           >
             {{ bb.definitionKey }} {{ bb.definitionVersionTag }}
             <span aria-hidden="true">→</span>
-          </button>
-        </dd>
-      </ng-container>
-    </dl>
+          </a>
+        </cds-list-column>
+      </cds-list-row>
+    </cds-structured-list>
   </header>
 
   <cds-tabs type="contained">
@@ -143,9 +149,22 @@
           </p>
         </ng-template>
 
-        <h4 class="case-inspection-process-detail__subhead">
-          {{ 'case.inspection.processes.variablesHeader' | translate }}
-        </h4>
+        <div class="case-inspection-process-detail__subhead-row">
+          <h4 class="case-inspection-process-detail__subhead">
+            {{ 'case.inspection.processes.variablesHeader' | translate }}
+          </h4>
+
+          <button
+            *ngIf="$canMutate()"
+            cdsButton="ghost"
+            size="sm"
+            type="button"
+            (click)="onAddVariable()"
+          >
+            {{ 'case.inspection.processes.variableActions.add' | translate }}
+            <svg cdsIcon="add" size="16" class="cds--btn__icon"></svg>
+          </button>
+        </div>
 
         <ng-container *ngIf="row.variables.length > 0; else noVariables">
           <cds-structured-list>
@@ -167,9 +186,38 @@
               </cds-list-column>
               <cds-list-column>{{ variable.type }}</cds-list-column>
               <cds-list-column>
-                <code class="case-inspection-process-detail__variable-value">{{
-                  formatVariableValue(variable)
-                }}</code>
+                <div class="case-inspection-process-detail__variable-row">
+                  <code class="case-inspection-process-detail__variable-value">{{
+                    formatVariableValue(variable)
+                  }}</code>
+
+                  <div
+                    *ngIf="$canMutate()"
+                    class="case-inspection-process-detail__variable-actions"
+                  >
+                    <button
+                      cdsButton="ghost"
+                      size="sm"
+                      type="button"
+                      [iconOnly]="true"
+                      [title]="'case.inspection.processes.variableActions.edit' | translate"
+                      (click)="onEditVariable(variable)"
+                    >
+                      <svg cdsIcon="edit" size="16" class="cds--btn__icon"></svg>
+                    </button>
+
+                    <button
+                      cdsButton="danger--ghost"
+                      size="sm"
+                      type="button"
+                      [iconOnly]="true"
+                      [title]="'case.inspection.processes.variableActions.delete' | translate"
+                      (click)="onRequestDelete(variable)"
+                    >
+                      <svg cdsIcon="trash-can" size="16" class="cds--btn__icon"></svg>
+                    </button>
+                  </div>
+                </div>
               </cds-list-column>
             </cds-list-row>
           </cds-structured-list>
@@ -242,3 +290,23 @@
     </cds-tab>
   </cds-tabs>
 </section>
+
+<valtimo-case-inspection-process-variable-modal
+  [open]="$modalOpen()"
+  [mode]="$modalMode()"
+  [initialVariable]="$modalInitial()"
+  (modalClosed)="onModalClosed($event)"
+></valtimo-case-inspection-process-variable-modal>
+
+<valtimo-confirmation-modal
+  confirmButtonTextTranslationKey="case.inspection.processes.variableActions.delete"
+  confirmButtonType="danger"
+  titleTranslationKey="case.inspection.processes.variableActions.deleteConfirmTitle"
+  [content]="
+    'case.inspection.processes.variableActions.deleteConfirmContent'
+      | translate: {name: (pendingDeleteName$ | async) ?? ''}
+  "
+  [showModalSubject$]="showConfirmDelete$"
+  (cancelEvent)="onCancelDelete()"
+  (confirmEvent)="onConfirmDelete()"
+></valtimo-confirmation-modal>

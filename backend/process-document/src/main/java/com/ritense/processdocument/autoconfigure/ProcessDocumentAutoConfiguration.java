@@ -194,7 +194,9 @@ public class ProcessDocumentAutoConfiguration {
         HistoryService historyService,
         ManagementService managementService,
         OperatonTaskService operatonTaskService,
-        java.util.Optional<BuildingBlockProcessLookup> buildingBlockProcessLookup
+        java.util.Optional<BuildingBlockProcessLookup> buildingBlockProcessLookup,
+        ApplicationEventPublisher eventPublisher,
+        ObjectMapper objectMapper
     ) {
         return new ProcessInspectionResource(
             documentService,
@@ -204,7 +206,9 @@ public class ProcessDocumentAutoConfiguration {
             historyService,
             managementService,
             operatonTaskService,
-            buildingBlockProcessLookup.orElse(null)
+            buildingBlockProcessLookup.orElse(null),
+            eventPublisher,
+            objectMapper
         );
     }
 

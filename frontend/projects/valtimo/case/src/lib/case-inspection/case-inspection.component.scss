@@ -23,10 +23,10 @@
 .case-inspection {
   &__pane {
     background-color: var(--cds-layer);
-    padding: 1.5rem;
+    padding: var(--cds-spacing-06, 1.5rem);
   }
 }
 
 .case-inspection-tab-placeholder {
-  padding: 1rem;
+  padding: var(--cds-spacing-05, 1rem);
 }

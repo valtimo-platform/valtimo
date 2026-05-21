@@ -1,4 +1,4 @@
-/*!
+/*
  * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
@@ -14,17 +14,13 @@
  * limitations under the License.
  */
 
-.case-inspection-metadata-tab {
-  &__list ul {
-    margin: 0;
-    padding-left: var(--cds-spacing-06, 1.25rem);
-  }
+package com.ritense.valtimo.web.rest.dto;
 
-  &__error {
-    color: var(--cds-text-error, #da1e28);
-  }
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 
-  &__empty {
-    color: var(--cds-text-helper, #6f6f6f);
-  }
-}
+public record ProcessVariableMutationRequest(
+    @NotBlank String name,
+    @NotNull ProcessVariableType type,
+    Object value
+) {}

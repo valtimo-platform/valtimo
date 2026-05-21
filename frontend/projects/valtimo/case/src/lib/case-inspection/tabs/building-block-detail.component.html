@@ -21,31 +21,47 @@
       <small>{{ instance.definitionVersionTag }}</small>
     </h3>
 
-    <dl class="case-inspection-bb-detail__meta">
-      <dt>{{ 'case.inspection.buildingBlocks.detail.instanceId' | translate }}</dt>
-      <dd><code>{{ instance.id }}</code></dd>
+    <cds-structured-list class="case-inspection-bb-detail__meta" [condensed]="true">
+      <cds-list-row>
+        <cds-list-column>{{
+          'case.inspection.buildingBlocks.detail.instanceId' | translate
+        }}</cds-list-column>
+        <cds-list-column><code>{{ instance.id }}</code></cds-list-column>
+      </cds-list-row>
 
-      <dt>{{ 'case.inspection.buildingBlocks.detail.documentId' | translate }}</dt>
-      <dd><code>{{ instance.documentId }}</code></dd>
+      <cds-list-row>
+        <cds-list-column>{{
+          'case.inspection.buildingBlocks.detail.documentId' | translate
+        }}</cds-list-column>
+        <cds-list-column><code>{{ instance.documentId }}</code></cds-list-column>
+      </cds-list-row>
 
-      <dt>{{ 'case.inspection.buildingBlocks.detail.processInstance' | translate }}</dt>
-      <dd>
-        <ng-container *ngIf="instance.processInstanceId; else noProcess">
-          <code>{{ instance.processInstanceId }}</code>
-        </ng-container>
+      <cds-list-row>
+        <cds-list-column>{{
+          'case.inspection.buildingBlocks.detail.processInstance' | translate
+        }}</cds-list-column>
+        <cds-list-column>
+          <ng-container *ngIf="instance.processInstanceId; else noProcess">
+            <code>{{ instance.processInstanceId }}</code>
+          </ng-container>
 
-        <ng-template #noProcess>—</ng-template>
-      </dd>
+          <ng-template #noProcess>—</ng-template>
+        </cds-list-column>
+      </cds-list-row>
 
-      <dt>{{ 'case.inspection.buildingBlocks.detail.parent' | translate }}</dt>
-      <dd>
-        <ng-container *ngIf="instance.parentBuildingBlockInstanceId; else noParent">
-          <code>{{ instance.parentBuildingBlockInstanceId }}</code>
-        </ng-container>
+      <cds-list-row>
+        <cds-list-column>{{
+          'case.inspection.buildingBlocks.detail.parent' | translate
+        }}</cds-list-column>
+        <cds-list-column>
+          <ng-container *ngIf="instance.parentBuildingBlockInstanceId; else noParent">
+            <code>{{ instance.parentBuildingBlockInstanceId }}</code>
+          </ng-container>
 
-        <ng-template #noParent>—</ng-template>
-      </dd>
-    </dl>
+          <ng-template #noParent>—</ng-template>
+        </cds-list-column>
+      </cds-list-row>
+    </cds-structured-list>
   </header>
 
   <ng-container *ngIf="$errorMessage() as message">

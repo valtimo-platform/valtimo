@@ -24,106 +24,130 @@
   </ng-container>
 
   <ng-container *ngIf="$document() as document">
-    <dl class="case-inspection-metadata-tab__list">
-      <dt>{{ 'case.inspection.metadata.documentId' | translate }}</dt>
-      <dd>
-        <code>{{ document.id }}</code>
-      </dd>
+    <cds-structured-list class="case-inspection-metadata-tab__list" [condensed]="true">
+      <cds-list-row>
+        <cds-list-column>{{ 'case.inspection.metadata.documentId' | translate }}</cds-list-column>
+        <cds-list-column><code>{{ document.id }}</code></cds-list-column>
+      </cds-list-row>
 
-      <dt>{{ 'case.inspection.metadata.definitionName' | translate }}</dt>
-      <dd>{{ document.definitionId?.name }}</dd>
+      <cds-list-row>
+        <cds-list-column>{{ 'case.inspection.metadata.definitionName' | translate }}</cds-list-column>
+        <cds-list-column>{{ document.definitionId?.name }}</cds-list-column>
+      </cds-list-row>
 
-      <dt>{{ 'case.inspection.metadata.sequence' | translate }}</dt>
-      <dd>{{ document.sequence }}</dd>
+      <cds-list-row>
+        <cds-list-column>{{ 'case.inspection.metadata.sequence' | translate }}</cds-list-column>
+        <cds-list-column>{{ document.sequence }}</cds-list-column>
+      </cds-list-row>
 
-      <dt>{{ 'case.inspection.metadata.version' | translate }}</dt>
-      <dd>{{ document.version }}</dd>
+      <cds-list-row>
+        <cds-list-column>{{ 'case.inspection.metadata.version' | translate }}</cds-list-column>
+        <cds-list-column>{{ document.version }}</cds-list-column>
+      </cds-list-row>
 
-      <dt>{{ 'case.inspection.metadata.createdBy' | translate }}</dt>
-      <dd>{{ document.createdBy }}</dd>
+      <cds-list-row>
+        <cds-list-column>{{ 'case.inspection.metadata.createdBy' | translate }}</cds-list-column>
+        <cds-list-column>{{ document.createdBy }}</cds-list-column>
+      </cds-list-row>
 
-      <dt>{{ 'case.inspection.metadata.createdOn' | translate }}</dt>
-      <dd>{{ document.createdOn | date: 'medium' }}</dd>
+      <cds-list-row>
+        <cds-list-column>{{ 'case.inspection.metadata.createdOn' | translate }}</cds-list-column>
+        <cds-list-column>{{ document.createdOn | date: 'medium' }}</cds-list-column>
+      </cds-list-row>
 
-      <dt>{{ 'case.inspection.metadata.modifiedOn' | translate }}</dt>
-      <dd>{{ document.modifiedOn | date: 'medium' }}</dd>
+      <cds-list-row>
+        <cds-list-column>{{ 'case.inspection.metadata.modifiedOn' | translate }}</cds-list-column>
+        <cds-list-column>{{ document.modifiedOn | date: 'medium' }}</cds-list-column>
+      </cds-list-row>
 
-      <dt>{{ 'case.inspection.metadata.assignee' | translate }}</dt>
-      <dd>
-        <ng-container *ngIf="document.assigneeFullName; else noAssignee">
-          {{ document.assigneeFullName }}
-        </ng-container>
+      <cds-list-row>
+        <cds-list-column>{{ 'case.inspection.metadata.assignee' | translate }}</cds-list-column>
+        <cds-list-column>
+          <ng-container *ngIf="document.assigneeFullName; else noAssignee">
+            {{ document.assigneeFullName }}
+          </ng-container>
 
-        <ng-template #noAssignee>
-          <span class="case-inspection-metadata-tab__empty">
-            {{ 'case.inspection.metadata.unassigned' | translate }}
-          </span>
-        </ng-template>
-      </dd>
+          <ng-template #noAssignee>
+            <span class="case-inspection-metadata-tab__empty">
+              {{ 'case.inspection.metadata.unassigned' | translate }}
+            </span>
+          </ng-template>
+        </cds-list-column>
+      </cds-list-row>
 
-      <dt>{{ 'case.inspection.metadata.assignedTeam' | translate }}</dt>
-      <dd>
-        <ng-container *ngIf="document.assignedTeamTitle; else noTeam">
-          {{ document.assignedTeamTitle }}
-        </ng-container>
+      <cds-list-row>
+        <cds-list-column>{{ 'case.inspection.metadata.assignedTeam' | translate }}</cds-list-column>
+        <cds-list-column>
+          <ng-container *ngIf="document.assignedTeamTitle; else noTeam">
+            {{ document.assignedTeamTitle }}
+          </ng-container>
 
-        <ng-template #noTeam>
-          <span class="case-inspection-metadata-tab__empty">
-            {{ 'case.inspection.metadata.unassigned' | translate }}
-          </span>
-        </ng-template>
-      </dd>
+          <ng-template #noTeam>
+            <span class="case-inspection-metadata-tab__empty">
+              {{ 'case.inspection.metadata.unassigned' | translate }}
+            </span>
+          </ng-template>
+        </cds-list-column>
+      </cds-list-row>
 
-      <dt>{{ 'case.inspection.metadata.internalStatus' | translate }}</dt>
-      <dd>
-        <ng-container *ngIf="document.internalStatus; else noStatus">
-          {{ document.internalStatus }}
-        </ng-container>
+      <cds-list-row>
+        <cds-list-column>{{ 'case.inspection.metadata.internalStatus' | translate }}</cds-list-column>
+        <cds-list-column>
+          <ng-container *ngIf="document.internalStatus; else noStatus">
+            {{ document.internalStatus }}
+          </ng-container>
 
-        <ng-template #noStatus>
-          <span class="case-inspection-metadata-tab__empty">
-            {{ 'case.inspection.metadata.noStatus' | translate }}
-          </span>
-        </ng-template>
-      </dd>
+          <ng-template #noStatus>
+            <span class="case-inspection-metadata-tab__empty">
+              {{ 'case.inspection.metadata.noStatus' | translate }}
+            </span>
+          </ng-template>
+        </cds-list-column>
+      </cds-list-row>
 
-      <dt>{{ 'case.inspection.metadata.tags' | translate }}</dt>
-      <dd>
-        <ng-container *ngIf="document.caseTags?.length; else noTags">
-          <cds-tag
-            *ngFor="let tag of document.caseTags"
-            [title]="tag.title"
-            size="sm"
-            type="cool-gray"
-          >
-            {{ tag.title }}
-          </cds-tag>
-        </ng-container>
+      <cds-list-row>
+        <cds-list-column>{{ 'case.inspection.metadata.tags' | translate }}</cds-list-column>
+        <cds-list-column>
+          <ng-container *ngIf="document.caseTags?.length; else noTags">
+            <cds-tag
+              *ngFor="let tag of document.caseTags"
+              [title]="tag.title"
+              size="sm"
+              type="cool-gray"
+            >
+              {{ tag.title }}
+            </cds-tag>
+          </ng-container>
 
-        <ng-template #noTags>
-          <span class="case-inspection-metadata-tab__empty">
-            {{ 'case.inspection.metadata.noTags' | translate }}
-          </span>
-        </ng-template>
-      </dd>
+          <ng-template #noTags>
+            <span class="case-inspection-metadata-tab__empty">
+              {{ 'case.inspection.metadata.noTags' | translate }}
+            </span>
+          </ng-template>
+        </cds-list-column>
+      </cds-list-row>
 
-      <dt>{{ 'case.inspection.metadata.relations' | translate }}</dt>
-      <dd>
-        <ng-container *ngIf="document.relations?.length; else noRelations">
-          <ul>
-            <li *ngFor="let relation of document.relations">{{ relation }}</li>
-          </ul>
-        </ng-container>
+      <cds-list-row>
+        <cds-list-column>{{ 'case.inspection.metadata.relations' | translate }}</cds-list-column>
+        <cds-list-column>
+          <ng-container *ngIf="document.relations?.length; else noRelations">
+            <ul>
+              <li *ngFor="let relation of document.relations">{{ relation }}</li>
+            </ul>
+          </ng-container>
 
-        <ng-template #noRelations>
-          <span class="case-inspection-metadata-tab__empty">
-            {{ 'case.inspection.metadata.noRelations' | translate }}
-          </span>
-        </ng-template>
-      </dd>
+          <ng-template #noRelations>
+            <span class="case-inspection-metadata-tab__empty">
+              {{ 'case.inspection.metadata.noRelations' | translate }}
+            </span>
+          </ng-template>
+        </cds-list-column>
+      </cds-list-row>
 
-      <dt>{{ 'case.inspection.metadata.relatedFiles' | translate }}</dt>
-      <dd>{{ document.relatedFiles?.length || 0 }}</dd>
-    </dl>
+      <cds-list-row>
+        <cds-list-column>{{ 'case.inspection.metadata.relatedFiles' | translate }}</cds-list-column>
+        <cds-list-column>{{ document.relatedFiles?.length || 0 }}</cds-list-column>
+      </cds-list-row>
+    </cds-structured-list>
   </ng-container>
 </section>
