@@ -45,11 +45,6 @@
     column-gap: 16px;
     row-gap: 16px;
     background: var(--cds-layer-02);
-
-    .cds--text-input,
-    .cds--list-box {
-      background: var(--cds-layer-01);
-    }
   }
 
   &__field {
@@ -57,6 +52,13 @@
     flex-direction: column;
     gap: 4px;
     min-width: 0;
+    padding: 8px;
+    background: var(--cds-layer-01);
+
+    .cds--text-input,
+    .cds--list-box {
+      background: var(--cds-layer-02);
+    }
 
     &--full {
       grid-column: 1 / -1;
