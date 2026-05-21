@@ -110,6 +110,94 @@
   }
 }
 
+::ng-deep .highlight-overlay-error:not(.djs-connection) .djs-visual > :nth-child(1) {
+  stroke: var(--cds-support-error, #da1e28) !important;
+}
+
+::ng-deep .djs-overlay-validation-error {
+  overflow: visible !important;
+  pointer-events: all !important;
+}
+
+::ng-deep .validation-error-overlay {
+  position: relative;
+  cursor: pointer;
+  pointer-events: all;
+
+  &__icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    background-color: var(--cds-support-error, #da1e28);
+    color: var(--cds-text-on-color, #ffffff);
+    font-size: 14px;
+    font-weight: 700;
+    line-height: 1;
+  }
+
+  &__text {
+    display: none;
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    margin-bottom: 4px;
+    border: 1px solid var(--cds-support-error, #da1e28);
+    color: var(--cds-support-error, #da1e28);
+    background-color: var(--cds-layer, #ffffff);
+    padding: 4px 8px;
+    border-radius: 2px;
+    font-size: 14px;
+    white-space: nowrap;
+    max-width: 350px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    z-index: 10;
+  }
+
+  &:hover &__text,
+  &--active &__text {
+    display: block;
+  }
+}
+
+::ng-deep .validation-errors-panel {
+  padding: 8px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+
+  &__item {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+  }
+
+  &__icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 18px;
+    height: 18px;
+    min-width: 18px;
+    border-radius: 50%;
+    background-color: var(--cds-support-error, #da1e28);
+    color: var(--cds-text-on-color, #ffffff);
+    font-size: 12px;
+    font-weight: 700;
+    line-height: 1;
+  }
+
+  &__reason {
+    color: var(--cds-support-error, #da1e28);
+    font-size: 13px;
+    line-height: 18px;
+  }
+}
+
 ::ng-deep .process-link-properties-panel {
   padding: 8px 12px 16px 12px;
   width: 100%;

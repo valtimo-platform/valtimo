@@ -59,7 +59,27 @@ class ValtimoPropertiesProvider {
         processLink => processLink.activityId === element.id
       ) || null;
 
+    const elementErrors = this.processManagementEditorService.validationErrors.filter(
+      error => error.elementId === element.id
+    );
+
     return (groups: any[]) => {
+      if (elementErrors.length > 0) {
+        const errorGroup = {
+          id: 'validationErrorsGroup',
+          label: this.translateService.instant('processManagement.validationErrors'),
+          entries: [
+            {
+              id: 'validationErrorsEntry',
+              errors: elementErrors,
+              component: ValidationErrorsElement,
+            },
+          ],
+          shouldOpen: true,
+        };
+        groups.unshift(errorGroup);
+      }
+
       if (
         is(element, 'bpmn:UserTask') ||
         is(element, 'bpmn:StartEvent') ||
@@ -375,6 +395,20 @@ const CustomRootElement = (props: {
   </div>`;
 
   return processLink ? genericLinkedPanel : genericCreatePanel;
+};
+
+const ValidationErrorsElement = (props: {
+  errors: Array<{elementId: string; elementType: string; elementName?: string; reason: string}>;
+}): VNode => {
+  return html`<div class="validation-errors-panel">
+    ${props.errors.map(
+      error =>
+        html`<div class="validation-errors-panel__item">
+          <span class="validation-errors-panel__icon">!</span>
+          <span class="validation-errors-panel__reason">${error.reason}</span>
+        </div>`
+    )}
+  </div>`;
 };
 
 const ValtimoPropertiesProviderModule = {

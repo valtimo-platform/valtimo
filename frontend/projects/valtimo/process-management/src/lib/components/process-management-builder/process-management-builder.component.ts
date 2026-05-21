@@ -170,6 +170,9 @@ export class ProcessManagementBuilderComponent implements AfterViewInit, OnDestr
 
   private _bpmnModeler!: Modeler;
   private _bpmnViewer!: NavigatedViewer;
+  private _validationErrorElementIds: string[] = [];
+  private _validationHoverHandler: ((event: any) => void) | null = null;
+  private _validationOutHandler: ((event: any) => void) | null = null;
 
   public readonly isReadOnlyProcess$ = new BehaviorSubject<boolean>(false);
   public readonly isSystemProcess$ = new BehaviorSubject<boolean>(false);
@@ -391,6 +394,7 @@ export class ProcessManagementBuilderComponent implements AfterViewInit, OnDestr
       )
       .subscribe({
         next: context => {
+          this.clearValidationErrors();
           if (context === 'independent') {
             this.reload();
             this.showNotification('success');
@@ -398,8 +402,13 @@ export class ProcessManagementBuilderComponent implements AfterViewInit, OnDestr
             this.navigateBack('success');
           }
         },
-        error: () => {
-          this.showNotification('error');
+        error: (error: unknown) => {
+          if (this.isValidationError(error)) {
+            this.highlightValidationErrors((error as HttpErrorResponse).error.errors);
+            this.showNotification('validationError');
+          } else {
+            this.showNotification('error');
+          }
         },
       });
   }
@@ -448,11 +457,15 @@ export class ProcessManagementBuilderComponent implements AfterViewInit, OnDestr
       )
       .subscribe({
         next: () => {
+          this.clearValidationErrors();
           this.navigateBack('success');
         },
         error: (error: unknown) => {
           if (this.isProcessDefinitionAlreadyExistsError(error)) {
             this.showNotification('alreadyExists');
+          } else if (this.isValidationError(error)) {
+            this.highlightValidationErrors((error as HttpErrorResponse).error.errors);
+            this.showNotification('validationError');
           } else {
             this.showNotification('error');
           }
@@ -502,8 +515,10 @@ export class ProcessManagementBuilderComponent implements AfterViewInit, OnDestr
     processManagementWindow.pluginTranslationService = this.pluginTranslationService;
   }
 
-  private showNotification(notification: null | 'success' | 'error' | 'alreadyExists'): void {
-    const type = notification === 'alreadyExists' ? 'error' : notification;
+  private showNotification(
+    notification: null | 'success' | 'error' | 'alreadyExists' | 'validationError'
+  ): void {
+    const type = notification === 'alreadyExists' || notification === 'validationError' ? 'error' : notification;
     this.notificationService.showToast({
       caption: this.translateService.instant(`processManagement.${notification}Notification`),
       type,
@@ -517,6 +532,110 @@ export class ProcessManagementBuilderComponent implements AfterViewInit, OnDestr
     if ((body as ProcessDefinitionConflictResponse)?.processDefinitionId) return true;
     const bbBody = body as BuildingBlockProcessDefinitionConflictResponse;
     return Array.isArray(bbBody?.duplicateProcessDefinitions) && bbBody.duplicateProcessDefinitions.length > 0;
+  }
+
+  private isValidationError(error: unknown): boolean {
+    return (
+      error instanceof HttpErrorResponse &&
+      error.status === 422 &&
+      Array.isArray(error.error?.errors)
+    );
+  }
+
+  private highlightValidationErrors(
+    errors: Array<{elementId: string; elementType: string; elementName?: string; reason: string}>
+  ): void {
+    this.clearValidationErrors();
+    this.processManagementEditorService.setValidationErrors(errors);
+
+    const modeler = this.isReadOnlyProcess$.getValue()
+      ? this._bpmnViewer
+      : this._bpmnModeler;
+    const canvas = modeler.get('canvas') as any;
+    const overlays = modeler.get('overlays') as any;
+
+    const errorElementIds = new Set<string>();
+
+    for (const error of errors) {
+      try {
+        this._validationErrorElementIds.push(error.elementId);
+        errorElementIds.add(error.elementId);
+        canvas.addMarker(error.elementId, 'highlight-overlay-error');
+
+        overlays.add(error.elementId, 'validation-error', {
+          position: {top: -12, left: -12},
+          html: `<div class="validation-error-overlay" data-element-id="${error.elementId}"><span class="validation-error-overlay__icon">!</span><span class="validation-error-overlay__text">${error.reason}</span></div>`,
+        });
+      } catch (e) {
+        // Element may not exist on the canvas (e.g. process-level errors)
+      }
+    }
+
+    const eventBus = modeler.get('eventBus') as any;
+    this._validationHoverHandler = (event: any) => {
+      const id = event.element?.id;
+      if (id && errorElementIds.has(id)) {
+        document
+          .querySelector(`.validation-error-overlay[data-element-id="${id}"]`)
+          ?.classList.add('validation-error-overlay--active');
+      }
+    };
+    this._validationOutHandler = (event: any) => {
+      const id = event.element?.id;
+      if (id && errorElementIds.has(id)) {
+        document
+          .querySelector(`.validation-error-overlay[data-element-id="${id}"]`)
+          ?.classList.remove('validation-error-overlay--active');
+      }
+    };
+    eventBus.on('element.hover', this._validationHoverHandler);
+    eventBus.on('element.out', this._validationOutHandler);
+
+    const selection = modeler.get('selection') as any;
+    const selected = selection.get();
+    if (selected?.length > 0) {
+      const current = selected[0];
+      selection.deselect(current);
+      selection.select(current);
+    }
+  }
+
+  private clearValidationErrors(): void {
+    const modeler = this.isReadOnlyProcess$.getValue()
+      ? this._bpmnViewer
+      : this._bpmnModeler;
+
+    if (!modeler) return;
+
+    this.processManagementEditorService.setValidationErrors([]);
+
+    const canvas = modeler.get('canvas') as any;
+    const overlays = modeler.get('overlays') as any;
+
+    const eventBus = modeler.get('eventBus') as any;
+    if (this._validationHoverHandler) {
+      eventBus.off('element.hover', this._validationHoverHandler);
+      this._validationHoverHandler = null;
+    }
+    if (this._validationOutHandler) {
+      eventBus.off('element.out', this._validationOutHandler);
+      this._validationOutHandler = null;
+    }
+
+    for (const elementId of this._validationErrorElementIds) {
+      try {
+        canvas.removeMarker(elementId, 'highlight-overlay-error');
+      } catch (e) {
+        // ignore
+      }
+    }
+    this._validationErrorElementIds = [];
+
+    try {
+      overlays.remove({type: 'validation-error'});
+    } catch (e) {
+      // ignore
+    }
   }
 
   private setSelectedProcessDefinitionToLatest(

@@ -86,6 +86,25 @@ export class ProcessManagementEditorService implements OnDestroy {
     return this._formDefinitionOptions$.getValue();
   }
 
+  private readonly _validationErrors$ = new BehaviorSubject<
+    Array<{elementId: string; elementType: string; elementName?: string; reason: string}>
+  >([]);
+
+  public get validationErrors(): Array<{
+    elementId: string;
+    elementType: string;
+    elementName?: string;
+    reason: string;
+  }> {
+    return this._validationErrors$.getValue();
+  }
+
+  public setValidationErrors(
+    errors: Array<{elementId: string; elementType: string; elementName?: string; reason: string}>
+  ): void {
+    this._validationErrors$.next(errors);
+  }
+
   private _updateBpmnViewFunction!: () => void;
 
   private _updatingBpmnView = false;

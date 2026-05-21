@@ -491,7 +491,7 @@ internal class ProcessLinkResourceIT @Autowired constructor(
                 .accept(MediaType.APPLICATION_JSON_VALUE)
         )
             .andDo(print())
-            .andExpect(status().isBadRequest)
+            .andExpect(status().isUnprocessableEntity)
             .andExpect(jsonPath("$.errors").isArray)
             .andExpect(jsonPath("$.errors", hasSize<Any>(1)))
             .andExpect(jsonPath("$.errors[0].elementId").value("Activity_1"))

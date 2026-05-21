@@ -37,7 +37,7 @@ class ProcessDefinitionValidationExceptionTranslator {
         request: NativeWebRequest
     ): ResponseEntity<ProcessDefinitionValidationErrorResponse> {
         return ResponseEntity
-            .badRequest()
+            .unprocessableEntity()
             .body(ProcessDefinitionValidationErrorResponse(ex.errors))
     }
 
