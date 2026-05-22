@@ -177,6 +177,7 @@ export class ProcessManagementBuilderComponent implements AfterViewInit, OnDestr
   public readonly isReadOnlyProcess$ = new BehaviorSubject<boolean>(false);
   public readonly isSystemProcess$ = new BehaviorSubject<boolean>(false);
 
+  public readonly draft$ = new BehaviorSubject<boolean>(false);
   public readonly canInitializeDocument$ = new BehaviorSubject<boolean>(false);
   public readonly startableByUser$ = new BehaviorSubject<boolean>(false);
   public readonly validationErrors$ = this.processManagementEditorService.validationErrors$;
@@ -198,6 +199,7 @@ export class ProcessManagementBuilderComponent implements AfterViewInit, OnDestr
         this.cleanUpListenersOnModeler();
         this._bpmnModeler?.importXML(result.bpmn20Xml);
         this._bpmnViewer?.importXML(result.bpmn20Xml);
+        this.draft$.next(!result.bpmn20Xml.includes('isExecutable="true"'));
         this.isReadOnlyProcess$.next(result.readOnly);
         this.isSystemProcess$.next(result.systemProcess);
         this.loading$.next(false);
@@ -359,13 +361,15 @@ export class ProcessManagementBuilderComponent implements AfterViewInit, OnDestr
       .pipe(
         take(1),
         switchMap(([result, processLinks, selectedProcessDefinition, context, params]) => {
+          const xml = !isReadOnlyProcess ? this.applyDraftState(result?.xml ?? '') : null;
+
           if (context === 'case') {
             const caseManagementParams = params as CaseManagementParams;
 
             return this.processLinkService.updateProcessDefinitionForCase(
               processLinks as ProcessLinkCreateEvent[],
               selectedProcessDefinition.id,
-              !isReadOnlyProcess ? (result?.xml ?? '') : null,
+              xml,
               caseManagementParams?.caseDefinitionKey ?? '',
               caseManagementParams?.caseDefinitionVersionTag ?? '',
               this.canInitializeDocument$.getValue(),
@@ -379,7 +383,7 @@ export class ProcessManagementBuilderComponent implements AfterViewInit, OnDestr
             return this.processLinkService.updateProcessDefinitionForBuildingBlock(
               processLinks as ProcessLinkCreateEvent[],
               selectedProcessDefinition.id,
-              result?.xml,
+              this.applyDraftState(result?.xml),
               buildingBlockManagementParams.buildingBlockDefinitionKey,
               buildingBlockManagementParams.buildingBlockDefinitionVersionTag
             );
@@ -388,7 +392,7 @@ export class ProcessManagementBuilderComponent implements AfterViewInit, OnDestr
           return this.processLinkService.updateProcessDefinition(
             processLinks as ProcessLinkCreateEvent[],
             selectedProcessDefinition.id,
-            !isReadOnlyProcess ? (result?.xml ?? '') : null
+            xml
           );
         }),
         switchMap(() => this.context$)
@@ -424,6 +428,7 @@ export class ProcessManagementBuilderComponent implements AfterViewInit, OnDestr
       .pipe(
         take(1),
         switchMap(([result, processLinks, context, params]) => {
+          const xml = this.applyDraftState(result.xml ?? '');
           const mappedProcessLinks = processLinks.map(link => ({
             ...link,
             processDefinitionId: '-',
@@ -433,13 +438,13 @@ export class ProcessManagementBuilderComponent implements AfterViewInit, OnDestr
             case 'independent':
               return this.processLinkService.createProcessDefinition(
                 mappedProcessLinks,
-                result.xml ?? ''
+                xml
               );
             case 'buildingBlock':
               const buildingBlockParams = params as BuildingBlockManagementParams;
               return this.processLinkService.createProcessDefinitionForBuildingBlock(
                 mappedProcessLinks,
-                result.xml ?? '',
+                xml,
                 buildingBlockParams.buildingBlockDefinitionKey,
                 buildingBlockParams.buildingBlockDefinitionVersionTag
               );
@@ -447,7 +452,7 @@ export class ProcessManagementBuilderComponent implements AfterViewInit, OnDestr
               const caseManagementParams = params as CaseManagementParams;
               return this.processLinkService.createProcessDefinitionForCase(
                 mappedProcessLinks,
-                result.xml ?? '',
+                xml,
                 caseManagementParams.caseDefinitionKey,
                 caseManagementParams.caseDefinitionVersionTag,
                 this.canInitializeDocument$.getValue(),
@@ -513,9 +518,10 @@ export class ProcessManagementBuilderComponent implements AfterViewInit, OnDestr
   }
 
   public onProcessToggleChange(
-    field: keyof UpdateProcessDefinitionCaseDefinitionRequest,
+    field: keyof UpdateProcessDefinitionCaseDefinitionRequest | 'draft',
     value: boolean
   ): void {
+    if (field === 'draft') this.draft$.next(value);
     if (field === 'canInitializeDocument') this.canInitializeDocument$.next(value);
     if (field === 'startableByUser') this.startableByUser$.next(value);
     this.changesPending$.next(true);
@@ -548,6 +554,14 @@ export class ProcessManagementBuilderComponent implements AfterViewInit, OnDestr
     if ((body as ProcessDefinitionConflictResponse)?.processDefinitionId) return true;
     const bbBody = body as BuildingBlockProcessDefinitionConflictResponse;
     return Array.isArray(bbBody?.duplicateProcessDefinitions) && bbBody.duplicateProcessDefinitions.length > 0;
+  }
+
+  private applyDraftState(xml: string | null | undefined): string | null {
+    if (!xml) return null;
+    if (this.draft$.getValue()) {
+      return xml.replace(/isExecutable="true"/g, 'isExecutable="false"');
+    }
+    return xml.replace(/isExecutable="false"/g, 'isExecutable="true"');
   }
 
   private isValidationError(error: unknown): boolean {
@@ -899,6 +913,9 @@ export class ProcessManagementBuilderComponent implements AfterViewInit, OnDestr
           this._bpmnModeler?.importXML(processDefinitionResult.bpmn20Xml);
           this._bpmnViewer?.importXML(processDefinitionResult.bpmn20Xml);
 
+          this.draft$.next(
+            !processDefinitionResult.bpmn20Xml.includes('isExecutable="true"')
+          );
           this.canInitializeDocument$.next(
             !!processDefinitionResult?.processCaseLink?.canInitializeDocument
           );

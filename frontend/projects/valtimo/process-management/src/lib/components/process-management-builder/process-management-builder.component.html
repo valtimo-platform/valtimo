@@ -94,6 +94,7 @@
         creatingNewProcess: creatingNewProcess$ | async,
         context: context$ | async,
         hasEditPermissions: hasEditPermissions$ | async,
+        draft: draft$ | async,
         canInitializeDocument: canInitializeDocument$ | async,
         startableByUser: startableByUser$ | async,
         updatingProcessDefinitionCaseDefinition: updatingProcessDefinitionCaseDefinition$ | async,
@@ -131,6 +132,21 @@
 
       <div class="page-header-actions__buttons">
         @if (actionsObs.context === 'case') {
+          <cds-tooltip
+            [description]="'processManagement.draftTooltip' | translate"
+          >
+            <cds-toggle
+              [onText]="'processManagement.draft' | translate"
+              [offText]="'processManagement.draft' | translate"
+              [checked]="actionsObs.draft"
+              [disabled]="
+                actionsObs.loading ||
+                !actionsObs.hasEditPermissions
+              "
+              (checkedChange)="onProcessToggleChange('draft', $event)"
+            ></cds-toggle>
+          </cds-tooltip>
+
           <cds-tooltip
             [description]="'processCaseConnection.processCreatesCaseTooltip' | translate"
           >

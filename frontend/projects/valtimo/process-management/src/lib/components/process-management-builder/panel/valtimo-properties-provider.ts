@@ -64,6 +64,13 @@ class ValtimoPropertiesProvider {
     );
 
     return (groups: any[]) => {
+      const generalGroup = groups.find((g: any) => g.id === 'general');
+      if (generalGroup) {
+        generalGroup.entries = generalGroup.entries.filter(
+          (entry: any) => entry.id !== 'isExecutable'
+        );
+      }
+
       if (elementErrors.length > 0) {
         const errorGroup = {
           id: 'validationErrorsGroup',

@@ -780,6 +780,7 @@ export interface CaseProcessDefinitionResponseDto {
     processCaseLink: ProcessDefinitionCaseDefinition;
     processLinks: ProcessLinkResponseDto[];
     bpmn20Xml: string;
+    draft: boolean;
 }
 
 export interface ProcessDefinitionResponseDto {

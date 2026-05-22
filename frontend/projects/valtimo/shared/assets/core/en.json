@@ -1476,6 +1476,8 @@
     },
     "successNotification": "Process deployed successfully",
     "errorNotification": "Process failed to deploy",
+    "draft": "Draft",
+    "draftTooltip": "When enabled, the process definition is saved as a draft. Draft definitions are not validated and cannot be started.",
     "validationErrors": "Validation errors",
     "validationErrorsCount": "Validation errors ({{count}})",
     "validationErrorNotification": "Process definition has validation errors. Check the highlighted elements.",
