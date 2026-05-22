@@ -14,12 +14,14 @@
  * limitations under the License.
  */
 
-enum CaseInspectionTab {
-  DOCUMENT = 'document',
-  PROCESSES = 'processes',
-  BUILDING_BLOCKS = 'building-blocks',
-  ZGW = 'zgw',
-  METADATA = 'metadata',
-}
+package com.ritense.zakenapi.web.rest.dto
 
-export {CaseInspectionTab};
+import com.fasterxml.jackson.databind.JsonNode
+import java.net.URI
+
+data class ZaakobjectResolveResultDto(
+    val resolved: Boolean,
+    val record: JsonNode?,
+    val message: String?,
+    val objectUrl: URI,
+)

@@ -14,12 +14,14 @@
  * limitations under the License.
  */
 
-enum CaseInspectionTab {
-  DOCUMENT = 'document',
-  PROCESSES = 'processes',
-  BUILDING_BLOCKS = 'building-blocks',
-  ZGW = 'zgw',
-  METADATA = 'metadata',
+import {InjectionToken, Type} from '@angular/core';
+
+interface ZgwCaseInspectionTabComponent {
+  documentId: string;
 }
 
-export {CaseInspectionTab};
+const ZGW_CASE_INSPECTION_TAB_TOKEN = new InjectionToken<Type<ZgwCaseInspectionTabComponent>>(
+  'Component contributed by @valtimo/zgw to render the ZGW tab on the case inspection screen.'
+);
+
+export {ZGW_CASE_INSPECTION_TAB_TOKEN, ZgwCaseInspectionTabComponent};
