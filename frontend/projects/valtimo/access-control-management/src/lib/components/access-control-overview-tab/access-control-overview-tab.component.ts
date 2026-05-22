@@ -29,13 +29,7 @@ import {
 } from '../../models';
 import {ResourceTypeLabelPipe} from '../../pipes';
 import {PermissionSchemaMetadataService} from '../../services';
-import {
-  formatField,
-  formatOperator,
-  formatValue,
-  isFieldLabelKnown,
-  isResourceTypeKnown,
-} from '../../utils';
+import {formatField, formatOperator, formatValue} from '../../utils';
 
 interface FormattedFieldCondition {
   kind: 'field';
@@ -176,7 +170,7 @@ export class AccessControlOverviewTabComponent {
       field: formatField(this.translateService, resourceType, condition.field),
       operator: formatOperator(this.translateService, condition.operator),
       value: formatValue(this.translateService, condition.value),
-      customField: !isFieldLabelKnown(resourceType, condition.field),
+      customField: !this.metadataService.isFieldKnown(resourceType, condition.field),
     };
   }
 
@@ -191,7 +185,7 @@ export class AccessControlOverviewTabComponent {
       operator: formatOperator(this.translateService, condition.operator),
       value: formatValue(this.translateService, condition.value),
       clazz: condition.clazz,
-      customField: !isFieldLabelKnown(resourceType, condition.field),
+      customField: !this.metadataService.isFieldKnown(resourceType, condition.field),
     };
   }
 
@@ -200,7 +194,7 @@ export class AccessControlOverviewTabComponent {
       kind: 'container',
       resourceType: condition.resourceType,
       conditions: condition.conditions ?? [],
-      customResource: !isResourceTypeKnown(condition.resourceType),
+      customResource: !this.metadataService.isResourceTypeKnown(condition.resourceType),
     };
   }
 }

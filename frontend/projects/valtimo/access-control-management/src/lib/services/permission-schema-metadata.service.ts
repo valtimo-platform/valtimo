@@ -15,24 +15,24 @@
  */
 
 import {Injectable} from '@angular/core';
-import {map, Observable, shareReplay} from 'rxjs';
-import {PermissionSchema} from '../models';
+import {BehaviorSubject, map, Observable, shareReplay, tap} from 'rxjs';
+import {PermissionSchema, SchemaShape} from '../models';
 import {AccessControlService} from './access-control.service';
-
-interface SchemaAllOfBranch {
-  if?: {properties?: {resourceType?: {const?: string}}};
-  then?: {properties?: {action?: {enum?: string[]}}};
-}
-
-interface SchemaShape {
-  items?: {allOf?: SchemaAllOfBranch[]};
-}
 
 @Injectable({providedIn: 'root'})
 export class PermissionSchemaMetadataService {
+  private readonly _knownResourceTypes$ = new BehaviorSubject<Set<string>>(new Set());
+  private readonly _fieldsByResourceType$ = new BehaviorSubject<Record<string, Set<string>>>({});
+
   public readonly schema$: Observable<PermissionSchema> = this.accessControlService
     .getPermissionSchema()
-    .pipe(shareReplay({bufferSize: 1, refCount: false}));
+    .pipe(
+      tap(schema => {
+        this._knownResourceTypes$.next(this.extractKnownResourceTypes(schema));
+        this._fieldsByResourceType$.next(this.extractFieldsByResourceType(schema));
+      }),
+      shareReplay({bufferSize: 1, refCount: false})
+    );
 
   public readonly actionsByResourceType$: Observable<Record<string, string[]>> =
     this.schema$.pipe(map(schema => this.extractActionsByResourceType(schema)));
@@ -43,6 +43,14 @@ export class PermissionSchemaMetadataService {
 
   constructor(private readonly accessControlService: AccessControlService) {}
 
+  public isResourceTypeKnown(fqn: string): boolean {
+    return this._knownResourceTypes$.value.has(fqn);
+  }
+
+  public isFieldKnown(resourceType: string, field: string): boolean {
+    return this._fieldsByResourceType$.value[resourceType]?.has(field) ?? false;
+  }
+
   private extractActionsByResourceType(schema: PermissionSchema): Record<string, string[]> {
     const branches = (schema as SchemaShape)?.items?.allOf ?? [];
     const result: Record<string, string[]> = {};
@@ -52,6 +60,32 @@ export class PermissionSchemaMetadataService {
       if (resourceType && Array.isArray(actions)) {
         result[resourceType] = [...actions];
       }
+    }
+    return result;
+  }
+
+  private extractKnownResourceTypes(schema: PermissionSchema): Set<string> {
+    const entries = (schema as SchemaShape)?.items?.properties?.resourceType?.oneOf ?? [];
+    const result = new Set<string>();
+    for (const entry of entries) {
+      if (entry?.const) result.add(entry.const);
+    }
+    return result;
+  }
+
+  private extractFieldsByResourceType(schema: PermissionSchema): Record<string, Set<string>> {
+    const definitions = (schema as SchemaShape)?.definitions ?? {};
+    const result: Record<string, Set<string>> = {};
+    for (const [key, def] of Object.entries(definitions)) {
+      if (!key.startsWith('condList.')) continue;
+      const resourceType = key.substring('condList.'.length);
+      const fields = new Set<string>();
+      for (const variant of def?.items?.oneOf ?? []) {
+        for (const part of variant?.allOf ?? []) {
+          for (const f of part?.properties?.field?.enum ?? []) fields.add(f);
+        }
+      }
+      result[resourceType] = fields;
     }
     return result;
   }

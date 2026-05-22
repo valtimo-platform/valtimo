@@ -2223,14 +2223,15 @@
       "caseWidget": "Case widget",
       "caseWidgetTabWidget": "Case tab widget",
       "dashboard": "Dashboard",
-      "document": "Document",
-      "documentDefinition": "Document definition",
-      "documentSnapshot": "Document snapshot",
+      "jsonSchemaDocument": "Document",
+      "jsonSchemaDocumentDefinition": "Document definition",
+      "jsonSchemaDocumentSnapshot": "Document snapshot",
       "searchField": "Search field",
       "zgwDocument": "ZGW document",
       "ikoView": "IKO view",
       "note": "Note",
       "object": "Objecten API Object",
+      "resourcePermission": "Uploaded resource",
       "team": "Team",
       "user": "User",
       "operatonExecution": "Process instance",
@@ -2316,8 +2317,8 @@
           "createdDate": "created date"
         },
         "caseTab": {
-          "caseDefinitionKey": "case definition key",
-          "caseDefinitionVersionTag": "case definition version",
+          "idCaseDefinitionIdKey": "case definition key",
+          "idCaseDefinitionIdVersionTag": "case definition version",
           "idKey": "tab key",
           "name": "tab name",
           "tabOrder": "tab order",
@@ -2344,7 +2345,7 @@
           "createdBy": "created by",
           "createdOn": "created on"
         },
-        "document": {
+        "jsonSchemaDocument": {
           "id": "document ID",
           "contentContent": "document content",
           "assigneeId": "assignee",
@@ -2363,12 +2364,12 @@
           "internalStatus": "internal status",
           "retentionDate": "retention date"
         },
-        "documentDefinition": {
+        "jsonSchemaDocumentDefinition": {
           "idName": "document definition name",
           "idVersion": "document definition version",
           "createdOn": "created on"
         },
-        "documentSnapshot": {
+        "jsonSchemaDocumentSnapshot": {
           "id": "snapshot ID",
           "createdOn": "created on",
           "createdBy": "created by"

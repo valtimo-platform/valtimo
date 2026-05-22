@@ -15,24 +15,52 @@
  */
 
 import {TranslateService} from '@ngx-translate/core';
-import {
-  FIELD_LABEL,
-  OPERATOR_LABEL,
-  RESOURCE_TYPE_LABEL,
-  SPECIAL_VALUE_LABEL,
-} from '../constants';
+import {OPERATOR_LABEL} from '../constants';
 import {ConditionOperator} from '../models';
 
+const SPECIAL_VALUE_PATTERN = /^\$\{([A-Za-z_$][A-Za-z0-9_$]*)\}$/;
+
+function lowerFirst(s: string): string {
+  return s.charAt(0).toLowerCase() + s.slice(1);
+}
+
+function upperFirst(s: string): string {
+  return s.charAt(0).toUpperCase() + s.slice(1);
+}
+
+function resourceTypeI18nKey(fqn: string): string | null {
+  const lastSegment = fqn.split('.').pop();
+  if (!lastSegment) return null;
+  return `accessControl.resourceTypes.${lowerFirst(lastSegment)}`;
+}
+
+function fieldI18nKey(resourceType: string, field: string): string | null {
+  const resourceSegment = resourceType.split('.').pop();
+  if (!resourceSegment || !field) return null;
+  const fieldSegment = field
+    .split('.')
+    .map((part, i) => (i === 0 ? part : upperFirst(part)))
+    .join('');
+  return `accessControl.overview.fields.${lowerFirst(resourceSegment)}.${fieldSegment}`;
+}
+
+function tryTranslate(translate: TranslateService, key: string): string | null {
+  const translated = translate.instant(key);
+  return translated === key ? null : translated;
+}
+
 function formatResourceType(translate: TranslateService, fqn: string): string {
-  const key = RESOURCE_TYPE_LABEL[fqn];
-  if (key) return translate.instant(key);
+  const key = resourceTypeI18nKey(fqn);
+  const translated = key ? tryTranslate(translate, key) : null;
+  if (translated !== null) return translated;
   const segments = fqn.split('.');
   return segments[segments.length - 1] || fqn;
 }
 
 function formatField(translate: TranslateService, resourceType: string, field: string): string {
-  const key = FIELD_LABEL[resourceType]?.[field];
-  if (key) return translate.instant(key);
+  const key = fieldI18nKey(resourceType, field);
+  const translated = key ? tryTranslate(translate, key) : null;
+  if (translated !== null) return translated;
   return humanizeFieldPath(field);
 }
 
@@ -47,8 +75,12 @@ function formatValue(translate: TranslateService, value: unknown): string {
   }
   if (typeof value === 'string') {
     if (value === '') return translate.instant('accessControl.overview.specialValues.empty');
-    const specialKey = SPECIAL_VALUE_LABEL[value];
-    if (specialKey) return translate.instant(specialKey);
+    const match = SPECIAL_VALUE_PATTERN.exec(value);
+    if (match) {
+      const key = `accessControl.overview.specialValues.${match[1]}`;
+      const translated = tryTranslate(translate, key);
+      if (translated !== null) return translated;
+    }
     return value;
   }
   if (Array.isArray(value)) {
@@ -64,20 +96,4 @@ function humanizeFieldPath(field: string): string {
     .join(' ');
 }
 
-function isFieldLabelKnown(resourceType: string, field: string): boolean {
-  return !!FIELD_LABEL[resourceType]?.[field];
-}
-
-function isResourceTypeKnown(fqn: string): boolean {
-  return !!RESOURCE_TYPE_LABEL[fqn];
-}
-
-export {
-  formatField,
-  formatOperator,
-  formatResourceType,
-  formatValue,
-  humanizeFieldPath,
-  isFieldLabelKnown,
-  isResourceTypeKnown,
-};
+export {formatField, formatOperator, formatResourceType, formatValue, humanizeFieldPath};

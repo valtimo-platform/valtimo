@@ -18,4 +18,29 @@
 // JSON editor (via valtimo-editor [jsonSchema]) to drive validation and autocomplete.
 type PermissionSchema = object;
 
-export {PermissionSchema};
+interface SchemaAllOfBranch {
+  if?: {properties?: {resourceType?: {const?: string}}};
+  then?: {properties?: {action?: {enum?: string[]}}};
+}
+
+interface SchemaOneOfEntry {
+  const?: string;
+}
+
+interface SchemaCondListVariant {
+  allOf?: Array<{$ref?: string; properties?: {field?: {enum?: string[]}}}>;
+}
+
+interface SchemaCondListDefinition {
+  items?: {oneOf?: SchemaCondListVariant[]};
+}
+
+interface SchemaShape {
+  items?: {
+    allOf?: SchemaAllOfBranch[];
+    properties?: {resourceType?: {oneOf?: SchemaOneOfEntry[]}};
+  };
+  definitions?: Record<string, SchemaCondListDefinition>;
+}
+
+export {PermissionSchema, SchemaShape};

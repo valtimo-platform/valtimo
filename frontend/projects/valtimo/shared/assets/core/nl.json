@@ -2256,14 +2256,15 @@
       "caseWidget": "Zaakdossier-widget",
       "caseWidgetTabWidget": "Zaakdossier-tab-widget",
       "dashboard": "Dashboard",
-      "document": "Document",
-      "documentDefinition": "Documentdefinitie",
-      "documentSnapshot": "Documentmomentopname",
+      "jsonSchemaDocument": "Document",
+      "jsonSchemaDocumentDefinition": "Documentdefinitie",
+      "jsonSchemaDocumentSnapshot": "Documentmomentopname",
       "searchField": "Zoekveld",
       "zgwDocument": "ZGW-document",
       "ikoView": "IKO-weergave",
       "note": "Notitie",
       "object": "Objecten API Object",
+      "resourcePermission": "Geüpload bestand",
       "team": "Team",
       "user": "Gebruiker",
       "operatonExecution": "Procesinstantie",
@@ -2349,8 +2350,8 @@
           "createdDate": "aanmaakdatum"
         },
         "caseTab": {
-          "caseDefinitionKey": "zaakdossier-definitie-sleutel",
-          "caseDefinitionVersionTag": "zaakdossier-definitie-versie",
+          "idCaseDefinitionIdKey": "zaakdossier-definitie-sleutel",
+          "idCaseDefinitionIdVersionTag": "zaakdossier-definitie-versie",
           "idKey": "tab-sleutel",
           "name": "tab-naam",
           "tabOrder": "tab-volgorde",
@@ -2377,7 +2378,7 @@
           "createdBy": "aangemaakt door",
           "createdOn": "aangemaakt op"
         },
-        "document": {
+        "jsonSchemaDocument": {
           "id": "document-ID",
           "contentContent": "documentinhoud",
           "assigneeId": "behandelaar",
@@ -2396,12 +2397,12 @@
           "internalStatus": "interne status",
           "retentionDate": "bewaartermijn"
         },
-        "documentDefinition": {
+        "jsonSchemaDocumentDefinition": {
           "idName": "documentdefinitie-naam",
           "idVersion": "documentdefinitie-versie",
           "createdOn": "aangemaakt op"
         },
-        "documentSnapshot": {
+        "jsonSchemaDocumentSnapshot": {
           "id": "momentopname-ID",
           "createdOn": "aangemaakt op",
           "createdBy": "aangemaakt door"
