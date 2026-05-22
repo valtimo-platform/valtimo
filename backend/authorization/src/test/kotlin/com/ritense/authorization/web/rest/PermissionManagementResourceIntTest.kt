@@ -26,6 +26,7 @@ import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.MediaType.APPLICATION_JSON_VALUE
 import org.springframework.test.web.servlet.MockMvc
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post
 import org.springframework.test.web.servlet.result.MockMvcResultHandlers.print
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath
@@ -45,6 +46,16 @@ class PermissionManagementResourceIntTest : BaseIntegrationTest() {
         mockMvc = MockMvcBuilders
             .webAppContextSetup(this.webApplicationContext)
             .build()
+    }
+
+    @Test
+    fun `should return permission schema`() {
+        mockMvc
+            .perform(get("/api/management/v1/permissions/schema"))
+            .andDo(print())
+            .andExpect(status().isOk)
+            .andExpect(jsonPath("$.title").value("Role permissions"))
+            .andExpect(jsonPath("$.items.properties.resourceType").exists())
     }
 
     @Test

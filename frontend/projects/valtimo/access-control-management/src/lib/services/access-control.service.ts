@@ -103,6 +103,10 @@ export class AccessControlService {
     );
   }
 
+  public getPermissionSchema(): Observable<PermissionSchema> {
+    return this.http.get<PermissionSchema>(`${this.valtimoEndpointUri}v1/permissions/schema`);
+  }
+
   public updateRole(roleKey: string, request: Role): Observable<object> {
     return this.http.put<object>(`${this.valtimoEndpointUri}v1/roles/${roleKey}`, request);
   }

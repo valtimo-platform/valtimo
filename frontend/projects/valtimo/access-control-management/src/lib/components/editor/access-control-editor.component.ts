@@ -228,9 +228,11 @@ export class AccessControlEditorComponent implements OnInit, OnDestroy {
   }
 
   private setModel(permissions: object): void {
+    const roleKey = this.roleKey$.value ?? 'unknown';
     this.model$.next({
       value: JSON.stringify(permissions),
       language: 'json',
+      uri: `inmemory://access-control/role-${roleKey}.access-control-permissions.json`,
     });
     this.permissions$.next(Array.isArray(permissions) ? (permissions as Permission[]) : null);
   }
