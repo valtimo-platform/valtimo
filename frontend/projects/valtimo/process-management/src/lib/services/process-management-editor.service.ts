@@ -90,6 +90,8 @@ export class ProcessManagementEditorService implements OnDestroy {
     Array<{elementId: string; elementType: string; elementName?: string; reason: string}>
   >([]);
 
+  public readonly validationErrors$ = this._validationErrors$.asObservable();
+
   public get validationErrors(): Array<{
     elementId: string;
     elementType: string;

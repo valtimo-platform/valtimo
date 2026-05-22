@@ -179,6 +179,7 @@ export class ProcessManagementBuilderComponent implements AfterViewInit, OnDestr
 
   public readonly canInitializeDocument$ = new BehaviorSubject<boolean>(false);
   public readonly startableByUser$ = new BehaviorSubject<boolean>(false);
+  public readonly validationErrors$ = this.processManagementEditorService.validationErrors$;
 
   protected readonly testIds = PROCESS_MANAGEMENT_BUILDER_TEST_IDS;
 
@@ -496,6 +497,21 @@ export class ProcessManagementBuilderComponent implements AfterViewInit, OnDestr
     this.showNotification(notification);
   }
 
+  public onValidationErrorClick(elementId: string): void {
+    const modeler = this.isReadOnlyProcess$.getValue()
+      ? this._bpmnViewer
+      : this._bpmnModeler;
+    const elementRegistry = modeler.get('elementRegistry') as any;
+    const selection = modeler.get('selection') as any;
+    const canvas = modeler.get('canvas') as any;
+
+    const element = elementRegistry.get(elementId);
+    if (element) {
+      selection.select(element);
+      canvas.scrollToElement(element);
+    }
+  }
+
   public onProcessToggleChange(
     field: keyof UpdateProcessDefinitionCaseDefinitionRequest,
     value: boolean
@@ -558,16 +574,24 @@ export class ProcessManagementBuilderComponent implements AfterViewInit, OnDestr
 
     for (const error of errors) {
       try {
+        if (error.elementType === 'Process') {
+          // No visual element on canvas — only shown in error summary list
+          continue;
+        }
+
         this._validationErrorElementIds.push(error.elementId);
         errorElementIds.add(error.elementId);
         canvas.addMarker(error.elementId, 'highlight-overlay-error');
 
+        const position =
+          error.elementType === 'Participant' ? {top: 5, left: 5} : {top: -12, left: -12};
+
         overlays.add(error.elementId, 'validation-error', {
-          position: {top: -12, left: -12},
+          position,
           html: `<div class="validation-error-overlay" data-element-id="${error.elementId}"><span class="validation-error-overlay__icon">!</span><span class="validation-error-overlay__text">${error.reason}</span></div>`,
         });
       } catch (e) {
-        // Element may not exist on the canvas (e.g. process-level errors)
+        // Element may not exist on the canvas
       }
     }
 

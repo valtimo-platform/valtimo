@@ -44,6 +44,7 @@
 
   &__modeler-canvas {
     width: 100%;
+    position: relative;
   }
 
   &__modeler-panel {
@@ -107,6 +108,112 @@
 
   &__actions > *:not(:last-child) {
     margin-right: 8px;
+  }
+}
+
+.validation-errors-list {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  z-index: 10;
+  width: 320px;
+  max-height: 250px;
+  overflow-y: auto;
+  border: 1px solid var(--cds-border-subtle);
+  background-color: var(--cds-layer);
+  border-radius: 4px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+
+  details {
+    &[open] > summary .validation-errors-list__arrow {
+      transform: rotate(90deg);
+    }
+  }
+
+  &__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 16px;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--cds-support-error, #da1e28);
+    cursor: pointer;
+    list-style: none;
+    user-select: none;
+
+    &::-webkit-details-marker {
+      display: none;
+    }
+  }
+
+  &__arrow {
+    display: inline-flex;
+    width: 16px;
+    height: 16px;
+    fill: currentColor;
+    transition: transform 0.15s ease;
+    flex-shrink: 0;
+  }
+
+  &__items {
+    display: flex;
+    flex-direction: column;
+    border-top: 1px solid var(--cds-border-subtle);
+  }
+
+  &__item {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 10px 16px;
+    border: none;
+    border-bottom: 1px solid var(--cds-border-subtle);
+    background: none;
+    text-align: left;
+    cursor: pointer;
+    font-family: inherit;
+
+    &:last-child {
+      border-bottom: none;
+    }
+
+    &:hover {
+      background-color: var(--cds-layer-hover);
+    }
+  }
+
+  &__icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 18px;
+    height: 18px;
+    min-width: 18px;
+    margin-top: 1px;
+    border-radius: 50%;
+    background-color: var(--cds-support-error, #da1e28);
+    color: var(--cds-text-on-color, #ffffff);
+    font-size: 12px;
+    font-weight: 700;
+    line-height: 1;
+  }
+
+  &__details {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  &__element {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--cds-text-primary);
+  }
+
+  &__reason {
+    font-size: 13px;
+    color: var(--cds-support-error, #da1e28);
   }
 }
 

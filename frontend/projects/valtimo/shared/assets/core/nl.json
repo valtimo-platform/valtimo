@@ -1505,6 +1505,7 @@
     "successNotification": "Proces succesvol gepubliceerd",
     "errorNotification": "Er ging iets mis bij het publiceren van het proces",
     "validationErrors": "Validatiefouten",
+    "validationErrorsCount": "Validatiefouten ({{count}})",
     "validationErrorNotification": "Procesdefinitie bevat validatiefouten. Controleer de gemarkeerde elementen.",
     "alreadyExistsNotification": "Procesdefinitie bestaat al",
     "deleteNotification": "Proces succesvol verwijderd",

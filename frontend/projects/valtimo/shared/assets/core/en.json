@@ -1477,6 +1477,7 @@
     "successNotification": "Process deployed successfully",
     "errorNotification": "Process failed to deploy",
     "validationErrors": "Validation errors",
+    "validationErrorsCount": "Validation errors ({{count}})",
     "validationErrorNotification": "Process definition has validation errors. Check the highlighted elements.",
     "alreadyExistsNotification": "Process definition already exists",
     "deleteNotification": "Process deleted successfully",
