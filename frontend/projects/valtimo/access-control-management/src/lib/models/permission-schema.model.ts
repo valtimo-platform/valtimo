@@ -14,9 +14,8 @@
  * limitations under the License.
  */
 
-// JSON Schema returned by GET /api/management/v1/permissions/schema. Treated as an opaque
-// object by Monaco. Auxiliary parsers (see PermissionSchemaMetadataService) extract the
-// resource type and action lists when other UI surfaces need them.
+// JSON Schema returned by GET /api/management/v1/permissions/schema. Passed to the Monaco
+// JSON editor (via valtimo-editor [jsonSchema]) to drive validation and autocomplete.
 type PermissionSchema = object;
 
 export {PermissionSchema};

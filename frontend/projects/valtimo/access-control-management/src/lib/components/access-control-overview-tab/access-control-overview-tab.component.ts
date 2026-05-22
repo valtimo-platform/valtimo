@@ -18,11 +18,8 @@ import {CommonModule} from '@angular/common';
 import {ChangeDetectionStrategy, Component, Input} from '@angular/core';
 import {RouterModule} from '@angular/router';
 import {TranslateModule, TranslateService} from '@ngx-translate/core';
-import {
-  ALL_RESOURCE_TYPES,
-  NO_CONTEXT_RESOURCE_TYPE,
-  RESOURCE_TYPE_ACTIONS,
-} from '../../constants';
+import {BehaviorSubject, combineLatest, map, Observable} from 'rxjs';
+import {NO_CONTEXT_RESOURCE_TYPE} from '../../constants';
 import {
   ContainerCondition,
   ExpressionCondition,
@@ -31,6 +28,7 @@ import {
   PermissionCondition,
 } from '../../models';
 import {ResourceTypeLabelPipe} from '../../pipes';
+import {PermissionSchemaMetadataService} from '../../services';
 import {
   formatField,
   formatOperator,
@@ -93,15 +91,25 @@ export class AccessControlOverviewTabComponent {
 
   @Input()
   public set permissions(value: Permission[] | null) {
-    this._permissions = value ?? [];
-    this.overview = this.buildOverview(this._permissions);
+    this._permissions$.next(value ?? []);
   }
 
-  public overview: ResourceOverview[] = this.buildOverview([]);
+  private readonly _permissions$ = new BehaviorSubject<Permission[]>([]);
 
-  private _permissions: Permission[] = [];
+  public readonly overview$: Observable<ResourceOverview[]> = combineLatest([
+    this._permissions$,
+    this.metadataService.allResourceTypes$,
+    this.metadataService.actionsByResourceType$,
+  ]).pipe(
+    map(([permissions, allResourceTypes, actionsByResourceType]) =>
+      this.buildOverview(permissions, allResourceTypes, actionsByResourceType)
+    )
+  );
 
-  constructor(private readonly translateService: TranslateService) {}
+  constructor(
+    private readonly metadataService: PermissionSchemaMetadataService,
+    private readonly translateService: TranslateService
+  ) {}
 
   public formatConditions(
     conditions: PermissionCondition[] | null | undefined,
@@ -114,16 +122,20 @@ export class AccessControlOverviewTabComponent {
     return contextResourceType === NO_CONTEXT_RESOURCE_TYPE;
   }
 
-  private buildOverview(permissions: Permission[]): ResourceOverview[] {
-    const knownResourceTypes = new Set(ALL_RESOURCE_TYPES);
+  private buildOverview(
+    permissions: Permission[],
+    allResourceTypes: string[],
+    actionsByResourceType: Record<string, string[]>
+  ): ResourceOverview[] {
+    const knownResourceTypes = new Set(allResourceTypes);
     const extraResourceTypes = permissions
       .map(p => p.resourceType)
       .filter(rt => !!rt && !knownResourceTypes.has(rt));
-    const resourceTypes = [...ALL_RESOURCE_TYPES, ...Array.from(new Set(extraResourceTypes))];
+    const resourceTypes = [...allResourceTypes, ...Array.from(new Set(extraResourceTypes))];
 
     return resourceTypes.map(resourceType => {
       const forResource = permissions.filter(p => p.resourceType === resourceType);
-      const allowedActions = RESOURCE_TYPE_ACTIONS[resourceType] ?? [];
+      const allowedActions = actionsByResourceType[resourceType] ?? [];
       const allowedSet = new Set(allowedActions);
       const extraActions = forResource
         .flatMap(p => [...(p.actions ?? []), ...(p.action ? [p.action] : [])])

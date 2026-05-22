@@ -18,6 +18,7 @@
   *ngIf="{
     filteredModel: filteredModel$ | async,
     editorDisabled: editorDisabled$ | async,
+    permissionSchema: permissionSchema$ | async,
   } as obs"
   class="json-editor-tab"
 >
@@ -40,8 +41,10 @@
   </div>
 
   <valtimo-editor
+    *ngIf="obs.permissionSchema"
     [disabled]="obs.editorDisabled || disabled"
     [fitPage]="true"
+    [jsonSchema]="obs.permissionSchema"
     [model]="obs.filteredModel"
     (validEvent)="onValid($event)"
     (valueChangeEvent)="onValueChange($event)"

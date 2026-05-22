@@ -243,68 +243,7 @@ const FIELD_LABEL: Record<string, Record<string, string>> = {
   },
 };
 
-// Mirrors the action whitelists declared by the backend ResourceActionProvider
-// implementations. Resource types not in this map (e.g. OperatonProcessDefinition,
-// OperatonIdentityLink, CaseWidget) only appear inside container conditions and
-// cannot be granted directly.
-const RESOURCE_TYPE_ACTIONS: Record<string, string[]> = {
-  'com.ritense.case_.domain.definition.CaseDefinition': ['view_list', 'view'],
-  'com.ritense.case.domain.CaseTab': ['view'],
-  'com.ritense.case_.domain.tab.CaseWidgetTabWidget': ['view'],
-  'com.ritense.dashboard.domain.Dashboard': ['view', 'view_list'],
-  'com.ritense.document.domain.impl.JsonSchemaDocument': [
-    'view',
-    'view_list',
-    'create',
-    'modify',
-    'delete',
-    'claim',
-    'assign',
-    'assignable',
-    'export',
-  ],
-  'com.ritense.document.domain.impl.JsonSchemaDocumentDefinition': [
-    'view',
-    'view_list',
-    'create',
-    'modify',
-    'delete',
-  ],
-  'com.ritense.document.domain.impl.snapshot.JsonSchemaDocumentSnapshot': ['view', 'view_list'],
-  'com.ritense.document.domain.impl.searchfield.SearchField': ['view_list'],
-  'com.ritense.documentenapi.authorization.ZgwDocument': [
-    'view',
-    'view_list',
-    'create',
-    'modify',
-    'delete',
-  ],
-  'com.ritense.iko.domain.IkoView': ['view', 'view_list'],
-  'com.ritense.note.domain.Note': ['view_list', 'create', 'modify', 'delete'],
-  'com.ritense.objectenapi.security.Object': ['view', 'view_list', 'create', 'modify', 'delete'],
-  'com.ritense.team.domain.Team': ['view', 'view_list', 'create', 'modify', 'delete', 'assign'],
-  'com.ritense.valtimo.contract.authentication.User': ['view', 'view_list'],
-  'com.ritense.valtimo.operaton.domain.OperatonExecution': ['create'],
-  'com.ritense.valtimo.operaton.domain.OperatonTask': [
-    'assign',
-    'assignable',
-    'claim',
-    'complete',
-    'view_list',
-    'view',
-  ],
-};
-
-const ALL_RESOURCE_TYPES: string[] = Object.keys(RESOURCE_TYPE_ACTIONS);
-
 const NO_CONTEXT_RESOURCE_TYPE = 'com.ritense.authorization.NoContext';
 
 export {NO_CONTEXT_RESOURCE_TYPE};
-export {
-  ALL_RESOURCE_TYPES,
-  FIELD_LABEL,
-  OPERATOR_LABEL,
-  RESOURCE_TYPE_ACTIONS,
-  RESOURCE_TYPE_LABEL,
-  SPECIAL_VALUE_LABEL,
-};
+export {FIELD_LABEL, OPERATOR_LABEL, RESOURCE_TYPE_LABEL, SPECIAL_VALUE_LABEL};

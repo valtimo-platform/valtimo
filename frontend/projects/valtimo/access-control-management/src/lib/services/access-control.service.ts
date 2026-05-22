@@ -18,7 +18,7 @@ import {HttpClient} from '@angular/common/http';
 import {Injectable} from '@angular/core';
 import {ConfigService} from '@valtimo/shared';
 import {BehaviorSubject, catchError, Observable, of, switchMap, take, tap} from 'rxjs';
-import {DeleteRolesRequest, Permission, Role} from '../models';
+import {DeleteRolesRequest, Permission, PermissionSchema, Role} from '../models';
 
 @Injectable({providedIn: 'root'})
 export class AccessControlService {

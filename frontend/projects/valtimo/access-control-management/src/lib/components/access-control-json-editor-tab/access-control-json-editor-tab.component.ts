@@ -38,7 +38,8 @@ import {
   ListItem,
 } from 'carbon-components-angular';
 import {BehaviorSubject, combineLatest, map, Observable, skip, Subscription, take} from 'rxjs';
-import {AccessControlFilter, Permission} from '../../models';
+import {AccessControlFilter, Permission, PermissionSchema} from '../../models';
+import {PermissionSchemaMetadataService} from '../../services';
 import {formatResourceType} from '../../utils';
 
 @Component({
@@ -146,9 +147,12 @@ export class AccessControlJsonEditorTabComponent implements OnInit, OnChanges, O
     map(({resourceType, action}) => !!resourceType || !!action)
   );
 
+  public readonly permissionSchema$: Observable<PermissionSchema> = this.metadataService.schema$;
+
   constructor(
     private readonly activatedRoute: ActivatedRoute,
     private readonly iconService: IconService,
+    private readonly metadataService: PermissionSchemaMetadataService,
     private readonly router: Router,
     private readonly translateService: TranslateService
   ) {
