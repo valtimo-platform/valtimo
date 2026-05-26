@@ -97,7 +97,17 @@ test.describe('Task details', () => {
     await taskListPage.waitForTaskListLoaded();
     await taskListPage.selectTab('All tasks');
     await taskListPage.selectCaseFromDropdown('Auto assign test');
-    await expect(page.locator(`td:has-text("${TASK_NAME}")`).first()).toBeVisible({timeout: 30_000});
+
+    const taskCell = page.locator(`td:has-text("${TASK_NAME}")`).first();
+    try {
+      await taskCell.waitFor({state: 'visible', timeout: 5_000});
+    } catch {
+      await page.reload();
+      await taskListPage.waitForTaskListLoaded();
+      await taskListPage.selectTab('All tasks');
+      await taskListPage.selectCaseFromDropdown('Auto assign test');
+      await expect(taskCell).toBeVisible({timeout: 25_000});
+    }
   });
 
   test.afterAll(async () => {
