@@ -19,4 +19,5 @@ package com.ritense.zakenapi.domain
 data class Opschorting(
     val indicatie: Boolean,
     val reden: String,
+    val eerdereOpschorting: Boolean? = null,
 )

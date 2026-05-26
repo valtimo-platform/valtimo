@@ -16,6 +16,7 @@
 
 package com.ritense.zakenapi.domain
 
+import com.fasterxml.jackson.annotation.JsonFormat
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 import com.ritense.zgw.Rsin
 import com.ritense.zgw.domain.ArchiefStatus
@@ -23,6 +24,7 @@ import com.ritense.zgw.domain.Archiefnominatie
 import com.ritense.zgw.domain.Vertrouwelijkheid
 import java.net.URI
 import java.time.LocalDate
+import java.time.LocalDateTime
 import java.util.UUID
 
 @JsonIgnoreProperties(ignoreUnknown = true)
@@ -41,7 +43,12 @@ data class ZaakResponse(
     val einddatumGepland: LocalDate? = null,
     val uiterlijkeEinddatumAfdoening: LocalDate? = null,
     val publicatiedatum: LocalDate? = null,
+    @JsonFormat(shape = JsonFormat.Shape.STRING)
+    val laatstGemuteerd: LocalDateTime? = null,
+    @JsonFormat(shape = JsonFormat.Shape.STRING)
+    val laatstGeopend: LocalDateTime? = null,
     val communicatiekanaal: URI? = null,
+    val communicatiekanaalNaam: String? = null,
     val productenOfDiensten: List<URI>? = null,
     val vertrouwelijkheidaanduiding: Vertrouwelijkheid? = null,
     val betalingsindicatie: Betalingsindicatie? = null,
@@ -54,9 +61,10 @@ data class ZaakResponse(
     val hoofdzaak: URI? = null,
     val deelzaken: List<URI>? = null,
     val relevanteAndereZaken: List<RelevanteZaak>? = null,
+    val gerelateerdeZaken: List<GerelateerdeZaak>? = null,
     val eigenschappen: List<URI>? = null,
-    val rollen: List<URI?>? = null,
-    val status: String? = null,
+    val rollen: List<URI>? = null,
+    val status: URI? = null,
     val zaakinformatieobjecten: List<URI>? = null,
     val zaakobjecten: List<URI>? = null,
     val kenmerken: List<Kenmerk>? = null,
@@ -64,8 +72,9 @@ data class ZaakResponse(
     val archiefstatus: ArchiefStatus? = null,
     val archiefactiedatum: LocalDate? = null,
     val resultaat: URI? = null,
+    val resultaattoelichting: String? = null,
     val opdrachtgevendeOrganisatie: String? = null,
     val processobjectaard: String? = null,
-    val resultaattoelichting: String? = null,
-    val startdatumBewaartermijn: LocalDate? = null
+    val startdatumBewaartermijn: LocalDate? = null,
+    val processobject: Processobject? = null,
 )

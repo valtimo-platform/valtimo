@@ -14,12 +14,9 @@
  * limitations under the License.
  */
 
-export const PAYMENT_INDICATION_TYPES: string[] = [
-  'nvt',
-  'gefactureerd',
-  'gecrediteerd',
-  'betaald',
-  'nog_niet',  // Deprecated
-  'gedeeltelijk',  // Deprecated
-  'geheel',  // Deprecated
+export const ARCHIVE_STATUS_TYPES: string[] = [
+  'nog_te_archiveren',
+  'gearchiveerd',
+  'gearchiveerd_procestermijn_onbekend',
+  'overgedragen',
 ];

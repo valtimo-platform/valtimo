@@ -14,12 +14,10 @@
  * limitations under the License.
  */
 
-export const PAYMENT_INDICATION_TYPES: string[] = [
-  'nvt',
-  'gefactureerd',
-  'gecrediteerd',
-  'betaald',
-  'nog_niet',  // Deprecated
-  'gedeeltelijk',  // Deprecated
-  'geheel',  // Deprecated
-];
+package com.ritense.zakenapi.domain
+
+import java.net.URI
+
+data class GerelateerdeZaak(
+    val url: URI
+)
