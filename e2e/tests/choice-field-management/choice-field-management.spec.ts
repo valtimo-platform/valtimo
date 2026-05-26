@@ -66,56 +66,71 @@ test.describe('Choice field management — Manage definitions', () => {
     createdId = created!.id;
   });
 
-  test('View choice field in list', async () => {
-    await choiceFieldPage.goToChoiceFields();
-    const list = new CarbonList(page);
-    await list.waitForLoaded();
-    await list.setPageSize(50);
-    await list.waitForLoaded();
+  // Each of the View/Edit/Delete tests creates its own choice field via API
+  // and cleans it up. We cannot rely on the Create test's field persisting
+  // across tests in the same describe: with Playwright's `fullyParallel: true`
+  // and `workers: 1`, each test runs as a separate task that re-evaluates this
+  // module file — so beforeAll re-runs (wiping `e2e_test_` fields via the
+  // prefix cleanup) and the module-level `testData` regenerates.
 
-    const row = list.row(testData.keyName);
-    await row.assertVisible();
+  test('View choice field in list', async () => {
+    const data = createChoiceFieldTestData();
+    const created = await choiceFieldPage.createChoiceFieldViaApi(data.keyName, data.title);
+    try {
+      await choiceFieldPage.goToChoiceFields();
+      const list = new CarbonList(page);
+      await list.waitForLoaded();
+      await list.setPageSize(50);
+      await list.waitForLoaded();
+
+      const row = list.row(data.keyName);
+      await row.assertVisible();
+    } finally {
+      await choiceFieldPage.deleteChoiceFieldViaApi(created.id);
+    }
   });
 
   test('Edit choice field title', async () => {
-    const list = new CarbonList(page);
-    await list.setPageSize(50);
-    await list.waitForLoaded();
+    const data = createChoiceFieldTestData();
+    const created = await choiceFieldPage.createChoiceFieldViaApi(data.keyName, data.title);
+    try {
+      await choiceFieldPage.goToChoiceFields();
+      const list = new CarbonList(page);
+      await list.setPageSize(50);
+      await list.waitForLoaded();
 
-    const row = list.row(testData.keyName);
-    await row.click();
+      const row = list.row(data.keyName);
+      await row.click();
 
-    await choiceFieldPage.editChoiceFieldTitle(testData.editedTitle);
+      await choiceFieldPage.editChoiceFieldTitle(data.editedTitle);
 
-    // Navigate back to list and verify
-    await choiceFieldPage.goToChoiceFields();
-    const updatedList = new CarbonList(page);
-    await updatedList.waitForLoaded();
-    await updatedList.setPageSize(50);
-    await updatedList.waitForLoaded();
-
-    const updatedRow = updatedList.row(testData.keyName);
-    await updatedRow.assertVisible();
+      // Verify the title was persisted by re-fetching via API (cheaper and more
+      // reliable than navigating back to the list and searching the UI again).
+      const fields = await choiceFieldPage.getChoiceFieldsViaApi();
+      const updated = fields.find(f => f.id === created.id);
+      expect(updated?.title).toBe(data.editedTitle);
+    } finally {
+      await choiceFieldPage.deleteChoiceFieldViaApi(created.id);
+    }
   });
 
   test('Delete choice field', async () => {
+    const data = createChoiceFieldTestData();
+    const created = await choiceFieldPage.createChoiceFieldViaApi(data.keyName, data.title);
+
+    await choiceFieldPage.goToChoiceFields();
     const list = new CarbonList(page);
     await list.setPageSize(50);
     await list.waitForLoaded();
 
-    const row = list.row(testData.keyName);
+    const row = list.row(data.keyName);
     await row.click();
 
     await choiceFieldPage.deleteChoiceField();
 
-    const updatedList = new CarbonList(page);
-    await updatedList.setPageSize(50);
-    await updatedList.waitForLoaded();
-
-    const deletedRow = updatedList.row(testData.keyName);
-    await deletedRow.assertNotVisible();
-
-    createdId = ''; // Already deleted
+    // Verify deletion via API — the list UI may be stale immediately after delete.
+    const fields = await choiceFieldPage.getChoiceFieldsViaApi();
+    expect(fields.find(f => f.id === created.id)).toBeUndefined();
   });
 });
 

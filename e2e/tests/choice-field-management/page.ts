@@ -89,6 +89,8 @@ export class ChoiceFieldManagementPage {
       .locator('[data-testid="sidenav-item-Admin"]')
       .getByRole('link', {name: 'Choice fields'})
       .click();
+
+    await this.page.waitForURL(/\/choice-fields($|\?)/, {timeout: 10_000});
     await this.carbonList.waitForLoaded();
   }
 
