@@ -12,7 +12,7 @@
         },
         {
             "label": "Omschrijving",
-            "key": "pv:description",
+            "key": "pv.description",
             "type": "textfield",
             "input": true,
             "validate": {
@@ -22,7 +22,7 @@
         },
         {
             "label": "Toelichting",
-            "key": "pv:explanation",
+            "key": "pv.explanation",
             "type": "textfield",
             "input": true,
             "validate": {
@@ -52,7 +52,7 @@
         },
         {
             "label": "Geplande eind-datum",
-            "key": "pv:plannedEndDate",
+            "key": "pv.plannedEndDate",
             "type": "textfield",
             "input": true,
             "validate": {
@@ -62,7 +62,7 @@
         },
         {
             "label": "Betalingsindicatie",
-            "key": "pv:paymentIndication",
+            "key": "pv.paymentIndication",
             "type": "textfield",
             "input": true,
             "validate": {
@@ -72,7 +72,7 @@
         },
         {
             "label": "Case Geometry type",
-            "key": "pv:caseGeometryType",
+            "key": "pv.caseGeometryType",
             "type": "textfield",
             "input": true,
             "validate": {
@@ -82,7 +82,7 @@
         },
         {
             "label": "Case Geometry Coordinaten",
-            "key": "pv:caseGeometryCoordinates",
+            "key": "pv.caseGeometryCoordinates",
             "type": "textfield",
             "input": true,
             "validate": {
