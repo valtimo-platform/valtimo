@@ -71,7 +71,7 @@ test.describe('3.1, 3.2 — Task list', () => {
 });
 
 test.describe('Task details', () => {
-  const ADMIN_TASK_NAME = 'Task for ROLE_ADMIN';
+  const TASK_NAME = 'Task for ROLE_USER';
   let context;
   let page;
   let taskListPage: TaskListPage;
@@ -97,7 +97,7 @@ test.describe('Task details', () => {
     await taskListPage.waitForTaskListLoaded();
     await taskListPage.selectTab('All tasks');
     await taskListPage.selectCaseFromDropdown('Auto assign test');
-    await expect(page.locator(`td:has-text("${ADMIN_TASK_NAME}")`).first()).toBeVisible({timeout: 30_000});
+    await expect(page.locator(`td:has-text("${TASK_NAME}")`).first()).toBeVisible({timeout: 30_000});
   });
 
   test.afterAll(async () => {
@@ -106,8 +106,8 @@ test.describe('Task details', () => {
 
   test.describe('3.3 — View task details', () => {
     test('opens task detail modal when clicking a task row', async () => {
-      await taskListPage.openTaskByName(ADMIN_TASK_NAME);
-      await taskListPage.assertTaskDetailVisible(ADMIN_TASK_NAME);
+      await taskListPage.openTaskByName(TASK_NAME);
+      await taskListPage.assertTaskDetailVisible(TASK_NAME);
       await taskListPage.closeTaskDetailModal();
     });
   });
@@ -115,12 +115,12 @@ test.describe('Task details', () => {
   test.describe('3.4 — Claim task, 3.5 + 3.6 — Complete task', () => {
     test('can claim, submit, and complete a task', async () => {
       test.slow();
-      await taskListPage.openTaskByName(ADMIN_TASK_NAME);
-      await taskListPage.assertTaskDetailVisible(ADMIN_TASK_NAME);
+      await taskListPage.openTaskByName(TASK_NAME);
+      await taskListPage.assertTaskDetailVisible(TASK_NAME);
       await taskListPage.claimTask();
       await taskListPage.assertTaskAssigned();
       await taskListPage.submitEmptyForm();
-      await taskListPage.assertTaskCompletedNotification(ADMIN_TASK_NAME);
+      await taskListPage.assertTaskCompletedNotification(TASK_NAME);
     });
   });
 });
