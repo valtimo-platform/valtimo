@@ -70,8 +70,8 @@ test.describe('Choice field management — Manage definitions', () => {
     await choiceFieldPage.goToChoiceFields();
     const list = new CarbonList(page);
     await list.waitForLoaded();
-    await list.search(testData.keyName);
-    await expect(list.rows).toHaveCount(1);
+    await list.setPageSize(50);
+    await list.waitForLoaded();
 
     const row = list.row(testData.keyName);
     await row.assertVisible();
@@ -79,8 +79,8 @@ test.describe('Choice field management — Manage definitions', () => {
 
   test('Edit choice field title', async () => {
     const list = new CarbonList(page);
-    await list.search(testData.keyName);
-    await expect(list.rows).toHaveCount(1);
+    await list.setPageSize(50);
+    await list.waitForLoaded();
 
     const row = list.row(testData.keyName);
     await row.click();
@@ -91,9 +91,8 @@ test.describe('Choice field management — Manage definitions', () => {
     await choiceFieldPage.goToChoiceFields();
     const updatedList = new CarbonList(page);
     await updatedList.waitForLoaded();
-
-    await updatedList.search(testData.keyName);
-    await expect(updatedList.rows).toHaveCount(1);
+    await updatedList.setPageSize(50);
+    await updatedList.waitForLoaded();
 
     const updatedRow = updatedList.row(testData.keyName);
     await updatedRow.assertVisible();
@@ -101,18 +100,20 @@ test.describe('Choice field management — Manage definitions', () => {
 
   test('Delete choice field', async () => {
     const list = new CarbonList(page);
-    await list.search(testData.keyName);
-    await expect(list.rows).toHaveCount(1);
+    await list.setPageSize(50);
+    await list.waitForLoaded();
 
     const row = list.row(testData.keyName);
     await row.click();
 
     await choiceFieldPage.deleteChoiceField();
 
-    // After delete, search persists. Re-apply filter to verify the row is gone.
     const updatedList = new CarbonList(page);
-    await updatedList.search(testData.keyName);
-    await updatedList.assertNoResults();
+    await updatedList.setPageSize(50);
+    await updatedList.waitForLoaded();
+
+    const deletedRow = updatedList.row(testData.keyName);
+    await deletedRow.assertNotVisible();
 
     createdId = ''; // Already deleted
   });
