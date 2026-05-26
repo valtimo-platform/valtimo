@@ -26,6 +26,15 @@
     background-color: var(--cds-layer-02);
   }
 
+  ::ng-deep .v-multi-input__row {
+    padding: 12px 16px 16px 16px;
+    background-color: var(--cds-layer-02);
+
+    .cds--text-input {
+      background-color: var(--cds-layer-01);
+    }
+  }
+
   ::ng-deep.dropdown-label {
     label {
       display: flex;
