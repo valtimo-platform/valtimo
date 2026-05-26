@@ -26,8 +26,10 @@ import com.ritense.valtimo.contract.buildingblock.BuildingBlockDefinitionId
 import com.ritense.valtimo.contract.case_.CaseDefinitionId
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
+import org.mockito.kotlin.any
 import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.mock
+import org.mockito.kotlin.never
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 import org.operaton.bpm.engine.delegate.DelegateExecution
@@ -154,8 +156,7 @@ class DefaultBuildingBlockPluginConfigurationResolverTest {
             definition = definition
         )
 
-        // The sub-process has no row of its own; only the BB main process does.
-        whenever(buildingBlockInstanceService.getByProcessInstanceId(subProcessInstanceId)).thenReturn(null)
+        // Only the BB main process has a row; the sub-process does not.
         whenever(buildingBlockInstanceService.getByDocumentId(buildingBlockDocumentId)).thenReturn(bbInstance)
 
         whenever(processLinkService.getProcessLinks(callerProcessDefinitionId, activityId)).thenReturn(
@@ -175,6 +176,9 @@ class DefaultBuildingBlockPluginConfigurationResolverTest {
         val resolved = resolver.resolve(execution, "plugin-definition")
 
         assertThat(resolved).isEqualTo(pluginConfigurationId)
+        // Document-id path resolves the instance; processInstanceId fallback must not be consulted.
+        verify(buildingBlockInstanceService).getByDocumentId(buildingBlockDocumentId)
+        verify(buildingBlockInstanceService, never()).getByProcessInstanceId(any())
     }
 
     @Test
