@@ -91,6 +91,20 @@ export class PatchZaakConfigurationComponent
       );
     })
   );
+  public readonly sortedPropertyListGroups$: Observable<PropertyFormField[][]> =
+    this.sortedPropertyList$.pipe(
+      map(list => {
+        const groups: PropertyFormField[][] = [];
+        for (const property of list) {
+          if (!this.isLinkedFollower(property.name)) {
+            groups.push([property]);
+          } else {
+            groups[groups.length - 1].push(property);
+          }
+        }
+        return groups;
+      })
+    );
   public readonly sortedMenuPropertyOptions$: Observable<string[]> = this.pluginId$.pipe(
     filter(pluginId => !!pluginId),
     switchMap(pluginId =>

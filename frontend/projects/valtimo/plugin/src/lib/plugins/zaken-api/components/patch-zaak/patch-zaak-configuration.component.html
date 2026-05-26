@@ -29,34 +29,38 @@
   </div>
 
   <v-form (valueChange)="onFormValueChanged($event)">
-    @for (property of (sortedPropertyList$ | async) ?? []; track property.name) {
-      <div class="row">
-        <div class="col-11">
-          <v-input
-            [name]="property.name"
-            [title]="property.translationKey | pluginTranslate: pluginId | async"
-            [tooltip]="
-              property.tooltipTranslationKey !== null
-                ? (property.tooltipTranslationKey | pluginTranslate: pluginId | async)
-                : null
-            "
-            [required]="true"
-            [defaultValue]="prefillValueFor(property.name, obs.prefill)"
-            [margin]="true"
-            [presetOptions]="property.presetOptions"
-            (valueChange)="onPropertyChanged(property.name, $event)"
-          />
-        </div>
-        <div class="col-1">
-          @if (!isLinkedFollower(property.name)) {
-            <button
-              class="btn btn-space delete-button"
-              (click)="removeProperty(groupTriggerFor(property.name) ?? property.name)"
-            >
-              <svg class="cds--btn__icon" cdsIcon="trash-can" size="16"></svg>
-            </button>
-          }
-        </div>
+    @for (group of (sortedPropertyListGroups$ | async) ?? []; track group[0].name) {
+      <div [class.property-group]="group.length > 1">
+        @for (property of group; track property.name) {
+          <div class="row">
+            <div class="col-11">
+              <v-input
+                [name]="property.name"
+                [title]="property.translationKey | pluginTranslate: pluginId | async"
+                [tooltip]="
+                  property.tooltipTranslationKey !== null
+                    ? (property.tooltipTranslationKey | pluginTranslate: pluginId | async)
+                    : null
+                "
+                [required]="true"
+                [defaultValue]="prefillValueFor(property.name, obs.prefill)"
+                [margin]="true"
+                [presetOptions]="property.presetOptions"
+                (valueChange)="onPropertyChanged(property.name, $event)"
+              />
+            </div>
+            <div class="col-1">
+              @if (!isLinkedFollower(property.name)) {
+                <button
+                  class="btn btn-space delete-button"
+                  (click)="removeProperty(groupTriggerFor(property.name) ?? property.name)"
+                >
+                  <svg class="cds--btn__icon" cdsIcon="trash-can" size="16"></svg>
+                </button>
+              }
+            </div>
+          </div>
+        }
       </div>
     }
   </v-form>
