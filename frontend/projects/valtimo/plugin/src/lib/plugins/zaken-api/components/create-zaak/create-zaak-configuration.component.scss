@@ -14,6 +14,21 @@
  * limitations under the License.
  */
 
+.property-group {
+  background: var(--cds-layer-02);
+  padding: 1rem;
+  margin-block-end: var(--v-input-margin);
+}
+
+:host ::ng-deep .property-group > .row:last-child .v-input--margin {
+  margin-block-end: 0;
+}
+
+:host ::ng-deep .property-group .cds--text-input,
+:host ::ng-deep .property-group .cds--list-box__field {
+  background-color: #ffffff;
+}
+
 button.delete-button {
   height: 46px;
   width: 46px;
@@ -21,6 +36,14 @@ button.delete-button {
 }
 
 button.delete-button:hover {
+  background-color: #e12717;
+}
+
+.property-group button.delete-button {
+  background-color: #ffffff;
+}
+
+.property-group button.delete-button:hover {
   background-color: #e12717;
 }
 
