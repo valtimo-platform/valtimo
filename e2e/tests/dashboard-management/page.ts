@@ -360,7 +360,10 @@ export class DashboardManagementPage {
     const caseTypeDropdown = this.page.locator('valtimo-widget-configuration-container cds-dropdown').first();
     await expect(caseTypeDropdown).toBeVisible({timeout: 5_000});
     await caseTypeDropdown.click();
-    await this.page.getByText(caseType, {exact: true}).click();
+    // Scope to the open listbox: case type names like "bezwaar" also appear
+    // in the breadcrumb and sidenav, and a page-scoped getByText will pick
+    // one of those and navigate away from the dashboard config.
+    await this.page.getByRole('listbox').getByText(caseType, {exact: true}).click();
   }
 
   async selectDisplayType(label: string) {

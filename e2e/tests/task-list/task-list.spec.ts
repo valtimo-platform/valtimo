@@ -71,7 +71,7 @@ test.describe('3.1, 3.2 — Task list', () => {
 });
 
 test.describe('Task details', () => {
-  const TASK_NAME = 'Task for ROLE_USER';
+  const TASK_NAME = 'Task for ROLE_ADMIN';
   let context;
   let page;
   let taskListPage: TaskListPage;
