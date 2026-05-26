@@ -123,6 +123,61 @@ class DefaultBuildingBlockPluginConfigurationResolverTest {
     }
 
     @Test
+    fun `should resolve plugin via business key when called from sub-process inside a building block`() {
+        // Scenario: BB main process started ad-hoc -> plain callActivity to a sub-process that has
+        // a plugin process link. The sub-process has its own processInstanceId and no BB instance
+        // row of its own; resolution must succeed via the business key (= BB document id) which the
+        // call activity propagates per Valtimo convention.
+        val subProcessInstanceId = "sub-process-instance"
+        val buildingBlockDocumentId = UUID.randomUUID()
+        val callerProcessDefinitionId = "case-process-def"
+        val activityId = "callBB"
+        val pluginConfigurationId = UUID.randomUUID()
+
+        val execution = mock<DelegateExecution> {
+            on { processInstanceId } doReturn subProcessInstanceId
+            on { processBusinessKey } doReturn buildingBlockDocumentId.toString()
+        }
+
+        val buildingBlockDefinitionId = BuildingBlockDefinitionId.of("bb-key", "1.0.0")
+        val definition = BuildingBlockDefinition(
+            buildingBlockDefinitionId, "Test block", "desc", "tester",
+            LocalDateTime.now(), null, false
+        )
+
+        val bbInstance = BuildingBlockInstance(
+            documentId = buildingBlockDocumentId,
+            caseDocumentId = UUID.randomUUID(),
+            processInstanceId = "bb-main-process-instance",
+            activityId = activityId,
+            callerProcessDefinitionId = callerProcessDefinitionId,
+            definition = definition
+        )
+
+        // The sub-process has no row of its own; only the BB main process does.
+        whenever(buildingBlockInstanceService.getByProcessInstanceId(subProcessInstanceId)).thenReturn(null)
+        whenever(buildingBlockInstanceService.getByDocumentId(buildingBlockDocumentId)).thenReturn(bbInstance)
+
+        whenever(processLinkService.getProcessLinks(callerProcessDefinitionId, activityId)).thenReturn(
+            listOf(
+                BuildingBlockProcessLink(
+                    id = UUID.randomUUID(),
+                    processDefinitionId = callerProcessDefinitionId,
+                    activityId = activityId,
+                    activityType = ActivityTypeWithEventName.CALL_ACTIVITY_START,
+                    buildingBlockDefinitionId = buildingBlockDefinitionId,
+                    pluginConfigurationMappings = mapOf("plugin-definition" to pluginConfigurationId),
+                    inputMappings = emptyList()
+                )
+            )
+        )
+
+        val resolved = resolver.resolve(execution, "plugin-definition")
+
+        assertThat(resolved).isEqualTo(pluginConfigurationId)
+    }
+
+    @Test
     fun `should resolve from case link when no call activity mapping exists`() {
         val bbProcessInstanceId = "bb-process-instance"
         val caseDocumentId = UUID.randomUUID()
