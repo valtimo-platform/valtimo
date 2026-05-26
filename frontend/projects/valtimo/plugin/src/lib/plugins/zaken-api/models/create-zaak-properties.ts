@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,14 +15,41 @@
  */
 
 export const CreateZaakExtraPropertyOptions = [
+  'archiveActionDate',
+  'archiveNomination',
+  'archiveStatus',
+  'caseGeometryCoordinates',
+  'caseGeometryType',
+  'characteristics',
+  'commissioningOrganisation',
+  'communicationChannel',
+  'communicationChannelName',
+  'confidentiality',
   'description',
   'explanation',
-  'plannedEndDate',
+  'extensionDuration',
+  'extensionReason',
   'finalDeliveryDate',
-  'communicationChannel',
-  'paymentIndication',
-  'caseGeometryType',
-  'caseGeometryCoordinates',
+  'identification',
+  'lastOpenedDate',
+  'lastPaymentDate',
   'mainCase',
+  'paymentIndication',
+  'plannedEndDate',
+  'processObjectCategory',
+  'processObjectDateAttribute',
+  'processObjectIdentification',
+  'processObjectObjectType',
+  'processObjectRegistration',
+  'productsAndServices',
+  'publicationDate',
+  'registrationDate',
+  'relatedCases',
+  'relevantOtherCases',
+  'selectionListClass',
+  'startDateRetentionPeriod',
+  'suspensionIndication',
+  'suspensionReason',
 ] as const;
+
 export type CreateZaakExtraProperties = (typeof CreateZaakExtraPropertyOptions)[number];
