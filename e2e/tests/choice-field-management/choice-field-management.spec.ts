@@ -70,6 +70,8 @@ test.describe('Choice field management — Manage definitions', () => {
     await choiceFieldPage.goToChoiceFields();
     const list = new CarbonList(page);
     await list.waitForLoaded();
+    await list.search(testData.keyName);
+    await expect(list.rows).toHaveCount(1);
 
     const row = list.row(testData.keyName);
     await row.assertVisible();
@@ -77,6 +79,9 @@ test.describe('Choice field management — Manage definitions', () => {
 
   test('Edit choice field title', async () => {
     const list = new CarbonList(page);
+    await list.search(testData.keyName);
+    await expect(list.rows).toHaveCount(1);
+
     const row = list.row(testData.keyName);
     await row.click();
 
@@ -87,21 +92,27 @@ test.describe('Choice field management — Manage definitions', () => {
     const updatedList = new CarbonList(page);
     await updatedList.waitForLoaded();
 
+    await updatedList.search(testData.keyName);
+    await expect(updatedList.rows).toHaveCount(1);
+
     const updatedRow = updatedList.row(testData.keyName);
     await updatedRow.assertVisible();
   });
 
   test('Delete choice field', async () => {
     const list = new CarbonList(page);
+    await list.search(testData.keyName);
+    await expect(list.rows).toHaveCount(1);
+
     const row = list.row(testData.keyName);
     await row.click();
 
     await choiceFieldPage.deleteChoiceField();
 
-    // Verify removed from list
+    // After delete, search persists. Re-apply filter to verify the row is gone.
     const updatedList = new CarbonList(page);
-    const deletedRow = updatedList.row(testData.keyName);
-    await deletedRow.assertNotVisible();
+    await updatedList.search(testData.keyName);
+    await updatedList.assertNoResults();
 
     createdId = ''; // Already deleted
   });
