@@ -27,10 +27,12 @@ import com.ritense.logging.domain.LoggingEventPropertyId
 import com.ritense.logging.repository.LoggingEventPropertyRepository
 import com.ritense.logging.repository.LoggingEventRepository
 import com.ritense.processdocument.BaseIntegrationTest
+import com.ritense.processdocument.service.ProcessDocumentAssociationService
 import com.ritense.valtimo.contract.authentication.AuthoritiesConstants.ADMIN
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.operaton.bpm.engine.RuntimeService
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.MediaType
 import org.springframework.security.test.context.support.WithMockUser
@@ -65,6 +67,12 @@ class LogInspectionResourceIT : BaseIntegrationTest() {
 
     @Autowired
     private lateinit var transactionTemplate: TransactionTemplate
+
+    @Autowired
+    private lateinit var runtimeService: RuntimeService
+
+    @Autowired
+    private lateinit var processDocumentAssociationService: ProcessDocumentAssociationService
 
     private lateinit var mockMvc: MockMvc
     private lateinit var caseId: UUID
@@ -149,6 +157,47 @@ class LogInspectionResourceIT : BaseIntegrationTest() {
             .andExpect(status().isOk)
             .andExpect(jsonPath("$.totalElements").value(1))
             .andExpect(jsonPath("$.content[0].formattedMessage").value("for-this-case"))
+    }
+
+    @Test
+    @WithMockUser(username = "admin@test.com", authorities = [ADMIN])
+    fun `should include logs tagged only with a process instance id associated with the case`() {
+        // Start a real BPMN process linked to the case so the ProcessDocumentCaseLogScopeContributor finds it
+        val processInstanceId = transactionTemplate.execute {
+            val pi = runtimeService.startProcessInstanceByKey(
+                "single-user-task-process",
+                caseId.toString()
+            )
+            runWithoutAuthorization {
+                processDocumentAssociationService.createProcessDocumentInstance(
+                    pi.id,
+                    caseId,
+                    "single user task process",
+                )
+            }
+            pi.id
+        }!!
+
+        // Seed two log rows: one tagged only with processInstanceId (no JsonSchemaDocument MDC), one unrelated
+        val seeded = transactionTemplate.execute {
+            val piOnly = saveLogEvent("pi-only-event", "INFO")
+            saveProperty(piOnly, "processInstanceId", processInstanceId)
+
+            val unrelated = saveLogEvent("unrelated-event", "INFO")
+            saveProperty(unrelated, "processInstanceId", "some-other-pi")
+
+            listOf(piOnly.id, unrelated.id)
+        }!!
+        seededEventIds.addAll(seeded)
+
+        mockMvc.perform(
+            post("/api/management/v1/case/{caseId}/logs", caseId)
+                .contentType(MediaType.APPLICATION_JSON_VALUE)
+                .content("{}")
+        )
+            .andExpect(status().isOk)
+            .andExpect(jsonPath("$.totalElements").value(1))
+            .andExpect(jsonPath("$.content[0].formattedMessage").value("pi-only-event"))
     }
 
     @Test

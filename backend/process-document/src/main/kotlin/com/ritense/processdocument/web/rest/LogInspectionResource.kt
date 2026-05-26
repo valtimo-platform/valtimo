@@ -24,10 +24,16 @@ import com.ritense.document.domain.impl.JsonSchemaDocumentId
 import com.ritense.document.service.DocumentService
 import com.ritense.document.service.JsonSchemaDocumentActionProvider
 import com.ritense.logging.LoggableResource
+import com.ritense.logging.repository.LoggingEventSpecificationHelper.Companion.byAnyOfProperties
+import com.ritense.logging.repository.LoggingEventSpecificationHelper.Companion.byLikeFormattedMessage
+import com.ritense.logging.repository.LoggingEventSpecificationHelper.Companion.byMinimumLevel
+import com.ritense.logging.repository.LoggingEventSpecificationHelper.Companion.byNewerThan
+import com.ritense.logging.repository.LoggingEventSpecificationHelper.Companion.byOlderThan
+import com.ritense.logging.repository.LoggingEventSpecificationHelper.Companion.byProperty
+import com.ritense.logging.repository.LoggingEventSpecificationHelper.Companion.query
+import com.ritense.logging.scope.CaseLogScopeContributor
 import com.ritense.logging.service.LoggingEventService
-import com.ritense.logging.web.rest.dto.LoggingEventPropertyDto
 import com.ritense.logging.web.rest.dto.LoggingEventResponse
-import com.ritense.logging.web.rest.dto.LoggingEventSearchRequest
 import com.ritense.processdocument.web.rest.dto.LogInspectionSearchRequest
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import com.ritense.valtimo.contract.domain.ValtimoMediaType.APPLICATION_JSON_UTF8_VALUE
@@ -52,6 +58,7 @@ class LogInspectionResource(
     private val documentService: DocumentService,
     private val authorizationService: AuthorizationService,
     private val loggingEventService: LoggingEventService,
+    private val scopeContributors: List<CaseLogScopeContributor>,
 ) {
 
     @Transactional(readOnly = true)
@@ -73,23 +80,43 @@ class LogInspectionResource(
             )
         )
 
-        val casePropertyKey = JsonSchemaDocument::class.java.canonicalName
-        val casePin = LoggingEventPropertyDto(casePropertyKey, caseId.toString())
+        val spec = buildSpec(caseId, request)
 
-        val properties = request.additionalProperties
-            .filterNot { it.key == casePropertyKey }
-            .plus(casePin)
-
-        val searchRequest = LoggingEventSearchRequest(
-            afterTimestamp = request.afterTimestamp,
-            beforeTimestamp = request.beforeTimestamp,
-            level = request.level,
-            likeFormattedMessage = request.likeFormattedMessage,
-            properties = properties,
-        )
-
-        val page = loggingEventService.searchLoggingEvents(searchRequest, pageable)
+        val page = loggingEventService.searchLoggingEvents(spec, pageable)
         val responses = LoggingEventResponse.of(page.content)
         return ResponseEntity.ok(PageImpl(responses, pageable, page.totalElements))
+    }
+
+    private fun buildSpec(
+        caseId: UUID,
+        request: LogInspectionSearchRequest,
+    ) = buildList<org.springframework.data.jpa.domain.Specification<com.ritense.logging.domain.LoggingEvent>> {
+        add(query())
+        add(byAnyOfProperties(buildScope(caseId)))
+
+        request.afterTimestamp?.let { add(byNewerThan(it)) }
+        request.beforeTimestamp?.let { add(byOlderThan(it)) }
+        request.level?.let { add(byMinimumLevel(it)) }
+        request.likeFormattedMessage?.let { add(byLikeFormattedMessage(it)) }
+
+        request.additionalProperties
+            .filterNot { it.key == JSON_SCHEMA_DOCUMENT_KEY }
+            .forEach { add(byProperty(it.key, it.value)) }
+    }.reduce { acc, next -> acc.and(next) }
+
+    private fun buildScope(caseId: UUID): Map<String, Collection<String>> {
+        val scope = mutableMapOf<String, MutableSet<String>>()
+        scope.getOrPut(JSON_SCHEMA_DOCUMENT_KEY) { mutableSetOf() } += caseId.toString()
+
+        scopeContributors.forEach { contributor ->
+            contributor.scopeFor(caseId).forEach { entry ->
+                scope.getOrPut(entry.key) { mutableSetOf() } += entry.values
+            }
+        }
+        return scope
+    }
+
+    companion object {
+        val JSON_SCHEMA_DOCUMENT_KEY: String = JsonSchemaDocument::class.java.canonicalName
     }
 }

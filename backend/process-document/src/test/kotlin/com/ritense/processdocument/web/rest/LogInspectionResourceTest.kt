@@ -23,9 +23,9 @@ import com.ritense.document.domain.Document
 import com.ritense.document.domain.impl.JsonSchemaDocument
 import com.ritense.document.service.DocumentService
 import com.ritense.logging.domain.LoggingEvent
+import com.ritense.logging.scope.CaseLogScopeContributor
+import com.ritense.logging.scope.MdcScopeEntry
 import com.ritense.logging.service.LoggingEventService
-import com.ritense.logging.web.rest.dto.LoggingEventPropertyDto
-import com.ritense.logging.web.rest.dto.LoggingEventSearchRequest
 import com.ritense.processdocument.web.rest.dto.LogInspectionSearchRequest
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -40,36 +40,41 @@ import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 import org.springframework.data.domain.PageImpl
 import org.springframework.data.domain.PageRequest
-import java.time.LocalDateTime
+import org.springframework.data.jpa.domain.Specification
 import java.util.Optional
 import java.util.UUID
 import kotlin.test.assertEquals
-import kotlin.test.assertTrue
 
 class LogInspectionResourceTest {
 
     private lateinit var documentService: DocumentService
     private lateinit var authorizationService: AuthorizationService
     private lateinit var loggingEventService: LoggingEventService
+    private lateinit var contributorA: CaseLogScopeContributor
+    private lateinit var contributorB: CaseLogScopeContributor
     private lateinit var resource: LogInspectionResource
 
     private val caseId: UUID = UUID.randomUUID()
-    private val caseKey: String = JsonSchemaDocument::class.java.canonicalName
 
     @BeforeEach
     fun setUp() {
         documentService = mock()
         authorizationService = mock()
         loggingEventService = mock()
+        contributorA = mock()
+        contributorB = mock()
 
         resource = LogInspectionResource(
             documentService = documentService,
             authorizationService = authorizationService,
             loggingEventService = loggingEventService,
+            scopeContributors = listOf(contributorA, contributorB),
         )
 
         whenever(documentService.findBy(any<Document.Id>())).thenReturn(Optional.of(mock<JsonSchemaDocument>()))
-        whenever(loggingEventService.searchLoggingEvents(any(), any()))
+        whenever(contributorA.scopeFor(any())).thenReturn(emptyList())
+        whenever(contributorB.scopeFor(any())).thenReturn(emptyList())
+        whenever(loggingEventService.searchLoggingEvents(any<Specification<LoggingEvent>>(), any()))
             .thenReturn(PageImpl(emptyList<LoggingEvent>()))
     }
 
@@ -83,7 +88,7 @@ class LogInspectionResourceTest {
     }
 
     @Test
-    fun `should propagate authorization failure without querying logs`() {
+    fun `should propagate authorization failure without invoking contributors or service`() {
         doThrow(RuntimeException("denied")).whenever(authorizationService)
             .requirePermission(any<AuthorizationRequest<JsonSchemaDocument>>())
 
@@ -91,84 +96,30 @@ class LogInspectionResourceTest {
             resource.searchCaseLogs(caseId, LogInspectionSearchRequest(), PageRequest.of(0, 20))
         }
 
-        verify(loggingEventService, never()).searchLoggingEvents(any(), any())
+        verify(contributorA, never()).scopeFor(any())
+        verify(contributorB, never()).scopeFor(any())
+        verify(loggingEventService, never()).searchLoggingEvents(any<Specification<LoggingEvent>>(), any())
     }
 
     @Test
-    fun `should always pin the JsonSchemaDocument property to this case`() {
+    fun `should call every registered contributor with the inspected case id`() {
+        whenever(contributorA.scopeFor(caseId))
+            .thenReturn(listOf(MdcScopeEntry("processInstanceId", listOf("pi-1"))))
+        whenever(contributorB.scopeFor(caseId))
+            .thenReturn(listOf(MdcScopeEntry("com.ritense.document.domain.impl.JsonSchemaDocument", listOf("bb-doc-1"))))
+
         resource.searchCaseLogs(caseId, LogInspectionSearchRequest(), PageRequest.of(0, 20))
 
-        val captor = argumentCaptor<LoggingEventSearchRequest>()
-        verify(loggingEventService).searchLoggingEvents(captor.capture(), any())
-
-        val properties = captor.firstValue.properties
-        assertEquals(1, properties.size)
-        assertEquals(caseKey, properties.single().key)
-        assertEquals(caseId.toString(), properties.single().value)
+        verify(contributorA).scopeFor(caseId)
+        verify(contributorB).scopeFor(caseId)
     }
 
     @Test
-    fun `should append additional properties on top of the case pin`() {
-        val extra = LoggingEventPropertyDto("processInstanceId", "pi-123")
+    fun `should dispatch to the spec-based searchLoggingEvents overload with the supplied pageable`() {
+        val pageable = PageRequest.of(2, 50)
 
-        resource.searchCaseLogs(
-            caseId,
-            LogInspectionSearchRequest(additionalProperties = listOf(extra)),
-            PageRequest.of(0, 20),
-        )
+        resource.searchCaseLogs(caseId, LogInspectionSearchRequest(), pageable)
 
-        val captor = argumentCaptor<LoggingEventSearchRequest>()
-        verify(loggingEventService).searchLoggingEvents(captor.capture(), any())
-
-        val properties = captor.firstValue.properties
-        assertEquals(2, properties.size)
-        assertTrue(properties.contains(extra))
-        assertTrue(properties.any { it.key == caseKey && it.value == caseId.toString() })
-    }
-
-    @Test
-    fun `should overwrite a client-supplied JsonSchemaDocument filter with this case`() {
-        val otherCase = UUID.randomUUID()
-        val tampered = LoggingEventPropertyDto(caseKey, otherCase.toString())
-
-        resource.searchCaseLogs(
-            caseId,
-            LogInspectionSearchRequest(additionalProperties = listOf(tampered)),
-            PageRequest.of(0, 20),
-        )
-
-        val captor = argumentCaptor<LoggingEventSearchRequest>()
-        verify(loggingEventService).searchLoggingEvents(captor.capture(), any())
-
-        val properties = captor.firstValue.properties
-        assertEquals(1, properties.size)
-        assertEquals(caseKey, properties.single().key)
-        assertEquals(caseId.toString(), properties.single().value)
-    }
-
-    @Test
-    fun `should forward level message and time range filters as-is`() {
-        val after = LocalDateTime.parse("2026-05-01T00:00:00")
-        val before = LocalDateTime.parse("2026-05-20T00:00:00")
-
-        resource.searchCaseLogs(
-            caseId,
-            LogInspectionSearchRequest(
-                level = "WARN",
-                likeFormattedMessage = "boom",
-                afterTimestamp = after,
-                beforeTimestamp = before,
-            ),
-            PageRequest.of(0, 20),
-        )
-
-        val captor = argumentCaptor<LoggingEventSearchRequest>()
-        verify(loggingEventService).searchLoggingEvents(captor.capture(), eq(PageRequest.of(0, 20)))
-
-        val req = captor.firstValue
-        assertEquals("WARN", req.level)
-        assertEquals("boom", req.likeFormattedMessage)
-        assertEquals(after, req.afterTimestamp)
-        assertEquals(before, req.beforeTimestamp)
+        verify(loggingEventService).searchLoggingEvents(any<Specification<LoggingEvent>>(), eq(pageable))
     }
 }

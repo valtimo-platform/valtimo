@@ -24,6 +24,7 @@ import com.ritense.document.service.DocumentDefinitionService;
 import com.ritense.document.service.DocumentService;
 import com.ritense.document.service.impl.JsonSchemaDocumentDefinitionService;
 import com.ritense.document.service.impl.JsonSchemaDocumentService;
+import com.ritense.logging.scope.CaseLogScopeContributor;
 import com.ritense.logging.service.LoggingEventService;
 import com.ritense.processdocument.domain.delegate.ProcessDocumentStartEventMessageDelegate;
 import com.ritense.processdocument.domain.impl.delegate.ProcessDocumentStartEventMessageDelegateImpl;
@@ -40,6 +41,7 @@ import com.ritense.processdocument.service.BuildingBlockProcessLookup;
 import com.ritense.processdocument.service.CaseDefinitionProcessLinkService;
 import com.ritense.processdocument.service.ProcessDefinitionCaseDefinitionService;
 import com.ritense.processdocument.service.ProcessDocumentAssociationService;
+import com.ritense.processdocument.service.ProcessDocumentCaseLogScopeContributor;
 import com.ritense.processdocument.service.ProcessDocumentService;
 import com.ritense.processdocument.service.impl.OperatonProcessJsonSchemaDocumentAssociationService;
 import com.ritense.processdocument.service.impl.OperatonProcessJsonSchemaDocumentService;
@@ -215,13 +217,23 @@ public class ProcessDocumentAutoConfiguration {
     public LogInspectionResource logInspectionResource(
         DocumentService documentService,
         AuthorizationService authorizationService,
-        LoggingEventService loggingEventService
+        LoggingEventService loggingEventService,
+        java.util.List<CaseLogScopeContributor> scopeContributors
     ) {
         return new LogInspectionResource(
             documentService,
             authorizationService,
-            loggingEventService
+            loggingEventService,
+            scopeContributors
         );
+    }
+
+    @Bean
+    @ConditionalOnMissingBean(ProcessDocumentCaseLogScopeContributor.class)
+    public ProcessDocumentCaseLogScopeContributor processDocumentCaseLogScopeContributor(
+        ProcessDocumentAssociationService processDocumentAssociationService
+    ) {
+        return new ProcessDocumentCaseLogScopeContributor(processDocumentAssociationService);
     }
 
     @Bean
