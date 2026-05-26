@@ -91,8 +91,11 @@ export class TaskListPage {
       return;
     }
     await assignButton.click();
-    const userCombobox = this.page.getByRole('combobox', {name: 'Select user'});
-    await userCombobox.click();
+    await this.page.getByRole('combobox', {name: 'Select user'}).click();
+    await this.page.getByRole('listbox').getByRole('option').first().click();
+    // The assignment dialog requires both a user and a team — Confirm stays
+    // disabled until both are picked.
+    await this.page.getByRole('combobox', {name: 'Select team'}).click();
     await this.page.getByRole('listbox').getByRole('option').first().click();
     await this.page.getByRole('button', {name: 'Confirm', exact: true}).click();
   }
