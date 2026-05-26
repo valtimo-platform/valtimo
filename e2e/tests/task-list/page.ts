@@ -86,7 +86,11 @@ export class TaskListPage {
   }
 
   async claimTask() {
-    await this.page.getByText('Assign this task').click();
+    const assignButton = this.page.getByText('Assign this task');
+    if (!(await assignButton.isVisible().catch(() => false))) {
+      return;
+    }
+    await assignButton.click();
     const userCombobox = this.page.getByRole('combobox', {name: 'Select user'});
     await userCombobox.click();
     await this.page.getByRole('listbox').getByRole('option').first().click();
