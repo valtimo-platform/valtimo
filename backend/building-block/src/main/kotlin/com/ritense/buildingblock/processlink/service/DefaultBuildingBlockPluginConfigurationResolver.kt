@@ -24,10 +24,10 @@ import com.ritense.document.service.DocumentService
 import com.ritense.plugin.service.BuildingBlockPluginConfigurationResolver
 import com.ritense.processlink.service.ProcessLinkService
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
-import java.util.UUID
 import org.operaton.bpm.engine.delegate.DelegateExecution
 import org.operaton.bpm.engine.delegate.DelegateTask
 import org.springframework.stereotype.Component
+import java.util.UUID
 
 @Component
 @SkipComponentScan
@@ -39,8 +39,7 @@ class DefaultBuildingBlockPluginConfigurationResolver(
 ) : BuildingBlockPluginConfigurationResolver {
 
     override fun resolve(execution: DelegateExecution, pluginDefinitionKey: String): UUID? {
-        val instance = buildingBlockInstanceService.getByProcessInstanceId(execution.processInstanceId)
-            ?: return null
+        val instance = findInstance(execution) ?: return null
         val root = findRootInstance(instance)
 
         return findCallActivityMapping(root, pluginDefinitionKey)
@@ -49,6 +48,28 @@ class DefaultBuildingBlockPluginConfigurationResolver(
 
     override fun resolve(task: DelegateTask, pluginDefinitionKey: String): UUID? {
         return resolve(task.execution, pluginDefinitionKey)
+    }
+
+    /**
+     * Prefer the BB document id (Valtimo convention: business key == document id, propagated through
+     * `<camunda:in businessKey="..."/>` on call activities). This makes the resolver work from any
+     * process started by the BB — including sub-processes called via plain `<callActivity>` from
+     * the BB main process, which have their own [DelegateExecution.getProcessInstanceId] and no BB
+     * instance row. Falls back to processInstanceId for legacy paths where the business key isn't set.
+     */
+    private fun findInstance(execution: DelegateExecution): BuildingBlockInstance? {
+        execution.processBusinessKey
+            ?.toUuidOrNull()
+            ?.let { buildingBlockInstanceService.getByDocumentId(it) }
+            ?.let { return it }
+
+        return buildingBlockInstanceService.getByProcessInstanceId(execution.processInstanceId)
+    }
+
+    private fun String.toUuidOrNull(): UUID? = try {
+        UUID.fromString(this)
+    } catch (_: IllegalArgumentException) {
+        null
     }
 
     private fun findRootInstance(instance: BuildingBlockInstance): BuildingBlockInstance {

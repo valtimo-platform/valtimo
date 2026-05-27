@@ -49,11 +49,10 @@ export class IkoMenuService {
             title: this._IKO_MENU_ITEM_TITLE_TRANSLATION_KEY,
             iconClass: 'icon mdi mdi-account',
             show: true,
-            sequence: this.getIkoSequenceAfterCases(menuItems),
             children: ikoSubMenu,
           };
 
-          updatedMenuItems = [...menuItems, ikoMenu].sort((a, b) => a.sequence - b.sequence);
+          updatedMenuItems = this.insertAfterCases(updatedMenuItems, ikoMenu);
         }
 
         const adminMenuItem = updatedMenuItems.find(
@@ -61,16 +60,12 @@ export class IkoMenuService {
             item.title.toUpperCase().includes('ADMIN') && !item.title.toUpperCase().includes('IKO')
         );
 
-        if (adminMenuItem && !adminMenuItem.children.some(item => item.title === 'IKO')) {
-          adminMenuItem.children = [
-            ...adminMenuItem.children,
-            {
-              title: 'IKO',
-              show: true,
-              sequence: this.getIkoSequenceAfterCases(adminMenuItem.children ?? []),
-              link: ['/iko-management'],
-            },
-          ].sort((a, b) => a.sequence - b.sequence);
+        if (adminMenuItem && !adminMenuItem.children?.some(item => item.title === 'IKO')) {
+          adminMenuItem.children = this.insertAfterCases(adminMenuItem.children ?? [], {
+            title: 'IKO',
+            show: true,
+            link: ['/iko-management'],
+          });
         }
 
         return updatedMenuItems;
@@ -78,8 +73,33 @@ export class IkoMenuService {
     );
   };
 
-  private getIkoSequenceAfterCases(menuItems: MenuItem[]): number {
-    const casesItem = menuItems.find(item => item.title === 'Cases' || item.title === 'Dossiers');
-    return Number(casesItem?.sequence ?? 0) + 0.5;
+  private insertAfterCases(menuItems: MenuItem[], newItem: MenuItem): MenuItem[] {
+    const casesIndex = menuItems.findIndex(
+      item => item.title === 'Cases' || item.title === 'Dossiers'
+    );
+    if (casesIndex === -1) {
+      const lastSequence = menuItems[menuItems.length - 1]?.sequence;
+      return [
+        ...menuItems,
+        {...newItem, sequence: lastSequence !== undefined ? lastSequence + 1 : undefined},
+      ];
+    }
+    const itemWithSequence: MenuItem = {
+      ...newItem,
+      sequence: this.sequenceBetween(menuItems[casesIndex], menuItems[casesIndex + 1]),
+    };
+    return [
+      ...menuItems.slice(0, casesIndex + 1),
+      itemWithSequence,
+      ...menuItems.slice(casesIndex + 1),
+    ];
+  }
+
+  private sequenceBetween(prev: MenuItem, next?: MenuItem): number | undefined {
+    if (prev.sequence === undefined) return undefined;
+    if (next?.sequence !== undefined && next.sequence > prev.sequence) {
+      return (prev.sequence + next.sequence) / 2;
+    }
+    return prev.sequence;
   }
 }
