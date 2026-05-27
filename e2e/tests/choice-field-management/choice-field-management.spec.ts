@@ -66,13 +66,6 @@ test.describe('Choice field management — Manage definitions', () => {
     createdId = created!.id;
   });
 
-  // Each of the View/Edit/Delete tests creates its own choice field via API
-  // and cleans it up. We cannot rely on the Create test's field persisting
-  // across tests in the same describe: with Playwright's `fullyParallel: true`
-  // and `workers: 1`, each test runs as a separate task that re-evaluates this
-  // module file — so beforeAll re-runs (wiping `e2e_test_` fields via the
-  // prefix cleanup) and the module-level `testData` regenerates.
-
   test('View choice field in list', async () => {
     const data = createChoiceFieldTestData();
     const created = await choiceFieldPage.createChoiceFieldViaApi(data.keyName, data.title);
@@ -104,8 +97,6 @@ test.describe('Choice field management — Manage definitions', () => {
 
       await choiceFieldPage.editChoiceFieldTitle(data.editedTitle);
 
-      // Verify the title was persisted by re-fetching via API (cheaper and more
-      // reliable than navigating back to the list and searching the UI again).
       const fields = await choiceFieldPage.getChoiceFieldsViaApi();
       const updated = fields.find(f => f.id === created.id);
       expect(updated?.title).toBe(data.editedTitle);
