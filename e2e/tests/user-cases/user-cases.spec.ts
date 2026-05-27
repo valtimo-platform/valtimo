@@ -85,11 +85,6 @@ test.describe('Feature 2 — Cases (User)', () => {
     });
 
     test('deselecting a status in the filter hides matching rows and re-selecting restores them', async () => {
-      // The test inspects status tags rendered in the case list rows. Some
-      // envs have a bezwaar list-column config without a status column (e.g.
-      // the local DB sometimes ends up with test columns from earlier suites),
-      // in which case no cds-tag is rendered and there's nothing meaningful
-      // to assert against — skip rather than fail loudly.
       const firstTag = userCasesPage.caseList.rows.locator('cds-tag').first();
       const hasStatusTags = await firstTag
         .waitFor({state: 'visible', timeout: 5_000})
