@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,12 +16,14 @@
 
 package com.ritense.zakenapi.domain
 
+import com.fasterxml.jackson.annotation.JsonFormat
 import com.fasterxml.jackson.annotation.JsonInclude
 import com.ritense.zgw.Rsin
 import com.ritense.zgw.domain.Archiefnominatie
 import com.ritense.zgw.domain.Vertrouwelijkheid
 import java.net.URI
 import java.time.LocalDate
+import java.time.LocalDateTime
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 data class CreateZaakRequest(
@@ -36,7 +38,10 @@ data class CreateZaakRequest(
     val einddatumGepland: LocalDate? = null,
     val uiterlijkeEinddatumAfdoening: LocalDate? = null,
     val publicatiedatum: LocalDate? = null,
+    @JsonFormat(shape = JsonFormat.Shape.STRING)
+    val laatstGeopend: LocalDateTime? = null,
     val communicatiekanaal: URI? = null,
+    val communicatiekanaalNaam: String? = null,
     val productenOfDiensten: List<URI>? = null,
     val vertrouwelijkheidaanduiding: Vertrouwelijkheid? = null,
     val betalingsindicatie: Betalingsindicatie? = null,
@@ -47,9 +52,13 @@ data class CreateZaakRequest(
     val selectielijstklasse: URI? = null,
     val hoofdzaak: URI? = null,
     val relevanteAndereZaken: List<RelevanteZaak>? = null,
+    val gerelateerdeZaken: List<GerelateerdeZaak>? = null,
     val kenmerken: List<Kenmerk>? = null,
     val archiefnominatie: Archiefnominatie? = null,
     val archiefstatus: Archiefstatus? = null,
     val archiefactiedatum: LocalDate? = null,
     val opdrachtgevendeOrganisatie: String? = null,
+    val processobjectaard: String? = null,
+    val startdatumBewaartermijn: LocalDate? = null,
+    val processobject: Processobject? = null,
 )

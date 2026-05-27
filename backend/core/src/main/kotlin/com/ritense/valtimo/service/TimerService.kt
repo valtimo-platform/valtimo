@@ -14,12 +14,17 @@
  * limitations under the License.
  */
 
-export const PAYMENT_INDICATION_TYPES: string[] = [
-  'nvt',
-  'gefactureerd',
-  'gecrediteerd',
-  'betaald',
-  'nog_niet',  // Deprecated
-  'gedeeltelijk',  // Deprecated
-  'geheel',  // Deprecated
-];
+package com.ritense.valtimo.service
+
+interface TimerService {
+    fun updateActiveTimers(
+        businessKey: String,
+        newDate: String,
+    ): Int
+
+    fun updateActiveTimers(
+        businessKey: String,
+        newDate: String,
+        vararg activityIds: String,
+    ): Int
+}

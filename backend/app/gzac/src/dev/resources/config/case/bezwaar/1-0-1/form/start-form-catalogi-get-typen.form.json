@@ -12,7 +12,7 @@
         },
         {
             "label": "Proces variabele - Status typen",
-            "key": "pv:statusTypenPV",
+            "key": "pv.statusTypenPV",
             "type": "textfield",
             "input": true,
             "validate": {
@@ -23,7 +23,7 @@
         },
         {
             "label": "Proces variabele - Resultaat typen",
-            "key": "pv:resultaatTypenPV",
+            "key": "pv.resultaatTypenPV",
             "type": "textfield",
             "input": true,
             "validate": {

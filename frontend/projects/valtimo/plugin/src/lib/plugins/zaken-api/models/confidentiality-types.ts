@@ -14,12 +14,13 @@
  * limitations under the License.
  */
 
-export const PAYMENT_INDICATION_TYPES: string[] = [
-  'nvt',
-  'gefactureerd',
-  'gecrediteerd',
-  'betaald',
-  'nog_niet',  // Deprecated
-  'gedeeltelijk',  // Deprecated
-  'geheel',  // Deprecated
+export const CONFIDENTIALITY_TYPES: string[] = [
+  'openbaar',
+  'beperkt_openbaar',
+  'intern',
+  'zaakvertrouwelijk',
+  'vertrouwelijk',
+  'confidentieel',
+  'geheim',
+  'zeer_geheim',
 ];
