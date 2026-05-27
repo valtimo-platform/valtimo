@@ -17,7 +17,7 @@
 import {expect, test} from '@playwright/test';
 import {TaskListPage} from './page';
 import {TASK_CONFIG} from './task-config';
-import {apiPost} from '../../utils/api.utils';
+import {apiDelete, apiPost} from '../../utils/api.utils';
 
 test.describe('3.1, 3.2 — Task list', () => {
   let taskListPage: TaskListPage;
@@ -75,6 +75,7 @@ test.describe('Task details', () => {
   let context;
   let page;
   let taskListPage: TaskListPage;
+  let createdDocumentId: string | undefined;
 
   test.beforeAll(async ({browser, baseURL}) => {
     test.setTimeout(60_000);
@@ -83,7 +84,7 @@ test.describe('Task details', () => {
     taskListPage = new TaskListPage(page);
 
     // Create a case with the auto-assign-test process to generate simple tasks
-    await apiPost(TASK_CONFIG.processDocumentEndpoint, {
+    const created = await apiPost<{document: {id: string}}>(TASK_CONFIG.processDocumentEndpoint, {
       processDefinitionKey: TASK_CONFIG.autoAssignProcess,
       request: {
         definition: TASK_CONFIG.autoAssignProcess,
@@ -92,6 +93,7 @@ test.describe('Task details', () => {
         content: {},
       },
     });
+    createdDocumentId = created?.document?.id;
 
     await page.goto('/tasks');
     await taskListPage.waitForTaskListLoaded();
@@ -111,6 +113,13 @@ test.describe('Task details', () => {
   });
 
   test.afterAll(async () => {
+    if (createdDocumentId) {
+      try {
+        await apiDelete(`${TASK_CONFIG.documentEndpoint}/${createdDocumentId}`);
+      } catch {
+        // Already deleted or permission denied — best-effort cleanup
+      }
+    }
     await context.close();
   });
 

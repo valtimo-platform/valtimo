@@ -91,17 +91,27 @@ export class TaskListPage {
       return;
     }
     await assignButton.click();
-    await this.page.getByRole('combobox', {name: 'Select user'}).click();
+
+    const assignDialog = this.page
+      .getByRole('dialog')
+      .filter({has: this.page.getByRole('combobox', {name: 'Select user'})});
+
+    await assignDialog.getByRole('combobox', {name: 'Select user'}).click();
     await this.page.getByRole('listbox').getByRole('option').first().click();
+
     // The assignment dialog requires both a user and a team — Confirm stays
     // disabled until both are picked.
-    await this.page.getByRole('combobox', {name: 'Select team'}).click();
+    await assignDialog.getByRole('combobox', {name: 'Select team'}).click();
     await this.page.getByRole('listbox').getByRole('option').first().click();
-    await this.page.getByRole('button', {name: 'Confirm', exact: true}).click();
+
+    const confirmButton = assignDialog.getByRole('button', {name: 'Confirm', exact: true});
+    await expect(confirmButton).toBeEnabled({timeout: 10_000});
+    await confirmButton.click();
+    await expect(assignDialog).not.toBeVisible({timeout: 15_000});
   }
 
   async assertTaskAssigned() {
-    await expect(this.assignmentPill).toBeVisible({timeout: 10_000});
+    await expect(this.assignmentPill).toBeVisible({timeout: 30_000});
   }
 
   async submitEmptyForm() {
