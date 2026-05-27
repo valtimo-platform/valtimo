@@ -1,21 +1,15 @@
 # 13.29.0
 
 {% hint style="info" %}
-**Release date TBD**
+**Release date 20-05-2026**
 {% endhint %}
 
 ## New Features
 
-* **Zaak sync (per case definition)**
+* **Quick search for tasks**
 
-  A new "Zaak-synchronisatie" admin panel under `Admin > Cases > {Case name} > [ZGW]` configures how Valtimo
-  propagates case changes to the linked zaak in the Zaken API, scoped per case definition. Two one-way
-  synchronisations (Valtimo → Zaken API) are now available:
-    - **Behandelaar sync** — when the dossier assignee changes, the linked zaak gets a behandelaar rol matching the
-      assignee.
-    - **Note sync** — Valtimo notes on the case are mirrored as `ZaakNotitie` on the linked zaak.
-
-  See the [Zaak sync section](../../../features/case/zgw/zaken-api-sync.md) for details.
+  Quick search items have been added to the task list. Now, when filling in search values, they can be saved under a
+  quick search item. When clicking on the item, the search will automatically be filled in and executed.
 
 * **Reschedule active timer jobs via TimerService process bean**
 
@@ -27,13 +21,6 @@
 
 ## Enhancements
 
-* **`noteEventListenerEnabled` and `noteSubject` removed from the Zaken API plugin**
+* **Dependency upgrades for CVE fixes**
 
-  These two properties moved off the Zaken API plugin and onto the new per-case-definition Zaak sync
-  configuration (renamed to `noteSyncEnabled` and `noteSubject` respectively). The plugin now only owns
-  connection settings; per-case-definition policy lives in the new "Zaak-synchronisatie" panel.
-
-  See the [Zaak sync section](../../../features/case/zgw/zaken-api-sync.md) for details.
-
-## Bugfixes
-
+  Upgraded dependency to resolve several CVEs.

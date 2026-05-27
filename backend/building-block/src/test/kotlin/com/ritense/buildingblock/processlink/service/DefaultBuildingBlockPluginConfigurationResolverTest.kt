@@ -26,8 +26,10 @@ import com.ritense.valtimo.contract.buildingblock.BuildingBlockDefinitionId
 import com.ritense.valtimo.contract.case_.CaseDefinitionId
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
+import org.mockito.kotlin.any
 import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.mock
+import org.mockito.kotlin.never
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 import org.operaton.bpm.engine.delegate.DelegateExecution
@@ -120,6 +122,63 @@ class DefaultBuildingBlockPluginConfigurationResolverTest {
 
         val resolved = resolver.resolve(execution, "any")
         assertThat(resolved).isNull()
+    }
+
+    @Test
+    fun `should resolve plugin via business key when called from sub-process inside a building block`() {
+        // Scenario: BB main process started ad-hoc -> plain callActivity to a sub-process that has
+        // a plugin process link. The sub-process has its own processInstanceId and no BB instance
+        // row of its own; resolution must succeed via the business key (= BB document id) which the
+        // call activity propagates per Valtimo convention.
+        val subProcessInstanceId = "sub-process-instance"
+        val buildingBlockDocumentId = UUID.randomUUID()
+        val callerProcessDefinitionId = "case-process-def"
+        val activityId = "callBB"
+        val pluginConfigurationId = UUID.randomUUID()
+
+        val execution = mock<DelegateExecution> {
+            on { processInstanceId } doReturn subProcessInstanceId
+            on { processBusinessKey } doReturn buildingBlockDocumentId.toString()
+        }
+
+        val buildingBlockDefinitionId = BuildingBlockDefinitionId.of("bb-key", "1.0.0")
+        val definition = BuildingBlockDefinition(
+            buildingBlockDefinitionId, "Test block", "desc", "tester",
+            LocalDateTime.now(), null, false
+        )
+
+        val bbInstance = BuildingBlockInstance(
+            documentId = buildingBlockDocumentId,
+            caseDocumentId = UUID.randomUUID(),
+            processInstanceId = "bb-main-process-instance",
+            activityId = activityId,
+            callerProcessDefinitionId = callerProcessDefinitionId,
+            definition = definition
+        )
+
+        // Only the BB main process has a row; the sub-process does not.
+        whenever(buildingBlockInstanceService.getByDocumentId(buildingBlockDocumentId)).thenReturn(bbInstance)
+
+        whenever(processLinkService.getProcessLinks(callerProcessDefinitionId, activityId)).thenReturn(
+            listOf(
+                BuildingBlockProcessLink(
+                    id = UUID.randomUUID(),
+                    processDefinitionId = callerProcessDefinitionId,
+                    activityId = activityId,
+                    activityType = ActivityTypeWithEventName.CALL_ACTIVITY_START,
+                    buildingBlockDefinitionId = buildingBlockDefinitionId,
+                    pluginConfigurationMappings = mapOf("plugin-definition" to pluginConfigurationId),
+                    inputMappings = emptyList()
+                )
+            )
+        )
+
+        val resolved = resolver.resolve(execution, "plugin-definition")
+
+        assertThat(resolved).isEqualTo(pluginConfigurationId)
+        // Document-id path resolves the instance; processInstanceId fallback must not be consulted.
+        verify(buildingBlockInstanceService).getByDocumentId(buildingBlockDocumentId)
+        verify(buildingBlockInstanceService, never()).getByProcessInstanceId(any())
     }
 
     @Test

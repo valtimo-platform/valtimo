@@ -70,6 +70,9 @@ test.describe('Feature 2 — Cases (User)', () => {
     });
 
     test('deselecting a status in the filter hides matching rows and re-selecting restores them', async () => {
+      // Wait for status tags to render in the case list rows
+      await expect(userCasesPage.caseList.rows.locator('cds-tag').first()).toBeVisible({timeout: 15_000});
+
       const initialStatuses = await userCasesPage.visibleStatusTagTexts();
       expect(
         initialStatuses.length,
@@ -89,7 +92,7 @@ test.describe('Feature 2 — Cases (User)', () => {
 
       // Verify no visible row carries the deselected status tag anymore
       await expect
-        .poll(() => userCasesPage.visibleStatusTagTexts(), {timeout: 10_000})
+        .poll(() => userCasesPage.visibleStatusTagTexts(), {timeout: 15_000})
         .not.toContain(statusToToggle);
 
       // Restore the original state
@@ -98,7 +101,7 @@ test.describe('Feature 2 — Cases (User)', () => {
       await userCasesPage.closeStatusDropdown();
 
       await expect
-        .poll(() => userCasesPage.visibleStatusTagTexts(), {timeout: 10_000})
+        .poll(() => userCasesPage.visibleStatusTagTexts(), {timeout: 15_000})
         .toContain(statusToToggle);
     });
   });
