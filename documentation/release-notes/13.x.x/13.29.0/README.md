@@ -10,7 +10,7 @@
 
   Quick search items have been added to the task list. Now, when filling in search values, they can be saved under a
   quick search item. When clicking on the item, the search will automatically be filled in and executed.
-
+  
 ## Enhancements
 
 * **Dependency upgrades for CVE fixes**
