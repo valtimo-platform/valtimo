@@ -87,9 +87,14 @@ export class TaskListPage {
 
   async claimTask() {
     const assignButton = this.page.getByText('Assign this task');
-    if (!(await assignButton.isVisible().catch(() => false))) {
+
+    await expect(assignButton.or(this.assignmentPill)).toBeVisible({timeout: 15_000});
+
+    // Already assigned — nothing to claim.
+    if (await this.assignmentPill.isVisible()) {
       return;
     }
+
     await assignButton.click();
 
     const assignDialog = this.page
