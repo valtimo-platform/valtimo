@@ -5,10 +5,10 @@
 | Category                    | Features | Functions | ✅ Covered | ❌ Not Covered |
 |-----------------------------|----------|-----------|------------|----------------|
 | User Features (ROLE_USER)   | 5        | 21        | 12         | 9              |
-| Admin Features (ROLE_ADMIN) | 15       | 335       | 187        | 145            |
-| **Total**                   | **20**   | **356**   | **199**    | **154**        |
+| Admin Features (ROLE_ADMIN) | 15       | 335       | 199        | 133            |
+| **Total**                   | **20**   | **356**   | **211**    | **142**        |
 
-**Coverage:** `199 / 356` — `55.9%`
+**Coverage:** `211 / 356` — `59.3%`
 
 ---
 
@@ -629,18 +629,18 @@
 
 | #     | Function                 | Test Scenarios                                        | Coverage | Notes                                           |
 |:------|:-------------------------|:------------------------------------------------------|:--------:|:------------------------------------------------|
-| 15.43 | View list tab            | View list tab                                         |    ❌    |                                                 |
-| 15.44 | View list columns        | View list columns (Title, Key, Path, Display Type, …) |    ❌    |                                                 |
-| 15.45 | Add column               | Add column                                            |    ❌    |                                                 |
-| 15.46 | Enter column title       | Enter column title                                    |    ❌    |                                                 |
-| 15.47 | Auto-generate column key | Auto-generate column key                              |    ❌    |                                                 |
-| 15.48 | Enter column path        | Enter column path (e.g. `/basisgegevens/bsn`)         |    ❌    |                                                 |
-| 15.49 | Toggle sorting enabled   | Toggle sorting enabled                                |    ❌    |                                                 |
-| 15.50 | Select default sort      | Select default sort                                   |    ❌    |                                                 |
-| 15.51 | Select display type      | Select display type (`hidden`, `Text`)                |    ❌    |                                                 |
-| 15.52 | Save column              | Save column                                           |    ❌    |                                                 |
-| 15.53 | Edit column              | Edit column                                           |    ❌    |                                                 |
-| 15.54 | Reorder columns          | Reorder columns (drag handle)                         |    ❌    |                                                 |
+| 15.43 | View list tab            | View list tab                                         |    ✅    | iko-list-column.spec.ts                         |
+| 15.44 | View list columns        | View list columns (Title, Key, Path, Display Type, …) |    ✅    | iko-list-column.spec.ts                         |
+| 15.45 | Add column               | Add column                                            |    ✅    | iko-list-column.spec.ts                         |
+| 15.46 | Enter column title       | Enter column title                                    |    ✅    | iko-list-column.spec.ts                         |
+| 15.47 | Auto-generate column key | Auto-generate column key                              |    ✅    | iko-list-column.spec.ts                         |
+| 15.48 | Enter column path        | Enter column path (e.g. `/basisgegevens/bsn`)         |    ✅    | iko-list-column.spec.ts                         |
+| 15.49 | Toggle sorting enabled   | Toggle sorting enabled                                |    ✅    | iko-list-column.spec.ts                         |
+| 15.50 | Select default sort      | Select default sort                                   |    ✅    | iko-list-column.spec.ts                         |
+| 15.51 | Select display type      | Select display type (`hidden`, `Text`)                |    ✅    | iko-list-column.spec.ts                         |
+| 15.52 | Save column              | Save column                                           |    ✅    | iko-list-column.spec.ts                         |
+| 15.53 | Edit column              | Edit column                                           |    ✅    | iko-list-column.spec.ts                         |
+| 15.54 | Reorder columns          | Reorder columns (drag handle)                         |    ✅    | iko-list-column.spec.ts                         |
 
 #### 15F · Tabs
 
@@ -727,8 +727,8 @@
 |:-------------------------|:-------:|
 | Total Features           |   20    |
 | Total Functions          |   356   |
-| ✅ Covered by Playwright |   199   |
-| ❌ Not covered           |   154   |
+| ✅ Covered by Playwright |   211   |
+| ❌ Not covered           |   142   |
 | ⏳ In progress           |    1    |
 | `N/A` Not applicable     |    2    |
-| **Coverage %**           | **55.9%** |
+| **Coverage %**           | **59.3%** |

@@ -57,3 +57,17 @@ export const IKO_VIEW_MODAL_TEST_IDS = {
   saveButton: 'ikoViewModalSaveButton',
   cancelButton: 'ikoViewModalCancelButton',
 } as const;
+
+export const IKO_LIST_MANAGEMENT_TEST_IDS = {
+  addColumnButton: 'ikoAddColumnButton',
+} as const;
+
+export const IKO_COLUMN_MODAL_TEST_IDS = {
+  titleInput: 'ikoColumnModalTitleInput',
+  pathInput: 'ikoColumnModalPathInput',
+  sortableToggle: 'ikoColumnModalSortableToggle',
+  defaultSortSelect: 'ikoColumnModalDefaultSortSelect',
+  displayTypeSelect: 'ikoColumnModalDisplayTypeSelect',
+  saveButton: 'ikoColumnModalSaveButton',
+  cancelButton: 'ikoColumnModalCancelButton',
+} as const;

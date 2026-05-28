@@ -23,7 +23,7 @@ import {
   IKO_VIEW_MANAGEMENT_TEST_IDS,
   IKO_VIEW_MODAL_TEST_IDS,
 } from '../../constants';
-import {apiDelete, apiGet} from '../../utils/api.utils';
+import {apiDelete, apiGet, apiPost} from '../../utils/api.utils';
 import {ikoViewConfig} from './iko-view-config';
 
 interface IkoViewListResponse {
@@ -215,6 +215,30 @@ export class IkoViewPage {
   }
 
   // ─── API helpers (setup / cleanup) ──────────────────────────────────
+
+  /**
+   * Create a view directly via the management API. Use this for parent setup
+   * in suites that test things nested under a view (columns, tabs, …). The
+   * key is slugified from the title, mirroring the modal's auto-key logic.
+   * Returns the slugified key.
+   */
+  async createViewViaApi(repositoryConfigKey: string, title: string): Promise<string> {
+    const key = title
+      .toLowerCase()
+      .replace(/[^a-z0-9-_]+|-[^a-z0-9]+/g, '-')
+      .replace(/^[^a-z]+/g, '');
+    await apiPost(`/api/management/v1/iko-view/${key}`, {
+      ikoRepositoryConfigKey: repositoryConfigKey,
+      title,
+      properties: {
+        connectorTag: 'example-connector',
+        connectorInstanceTag: 'example-instance',
+        endpointOperation: 'example-endpoint',
+        endpointQueryParameters: {type: 'ZoekMetGeslachtsnaamEnGeboortedatum'},
+      },
+    });
+    return key;
+  }
 
   async getViewsViaApi(repositoryConfigKey: string): Promise<Array<{key: string; title: string}>> {
     const res = await apiGet<IkoViewListResponse>(

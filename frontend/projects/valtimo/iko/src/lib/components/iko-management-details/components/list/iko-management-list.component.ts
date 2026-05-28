@@ -39,6 +39,7 @@ import {getDisplayTypeParametersView, ModalCloseEvent, ModalMode} from '@valtimo
 import {ListColumnDto} from '../../../../models';
 import {IkoManagementListModalComponent} from '../list-modal/list-modal.component';
 import {toObservable} from '@angular/core/rxjs-interop';
+import {IKO_LIST_MANAGEMENT_TEST_IDS} from '../../../../constants';
 
 @Component({
   standalone: true,
@@ -57,6 +58,7 @@ import {toObservable} from '@angular/core/rxjs-interop';
   ],
 })
 export class IkoManagementListComponent implements OnInit, OnDestroy {
+  public readonly testIds = IKO_LIST_MANAGEMENT_TEST_IDS;
   public readonly $openModal = signal<boolean>(false);
   public readonly openConfirmationModal$ = new BehaviorSubject<boolean>(false);
   public readonly $loading = signal<boolean>(true);

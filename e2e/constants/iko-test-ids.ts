@@ -23,4 +23,6 @@ export {
   IKO_UPLOAD_MODAL_TEST_IDS,
   IKO_VIEW_MANAGEMENT_TEST_IDS,
   IKO_VIEW_MODAL_TEST_IDS,
+  IKO_LIST_MANAGEMENT_TEST_IDS,
+  IKO_COLUMN_MODAL_TEST_IDS,
 } from '../../frontend/projects/valtimo/iko/src/lib/constants/iko.test-ids';
