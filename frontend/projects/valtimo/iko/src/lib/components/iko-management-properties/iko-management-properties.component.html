@@ -26,7 +26,12 @@
           {{ propertyField.title }}
           @if (propertyField.tooltip) {
             <cds-tooltip [caret]="true" [description]="propertyField.tooltip">
-              <svg class="tooltip-trigger" cdsIcon="information" size="16"></svg>
+              <svg
+                class="tooltip-trigger"
+                cdsIcon="information"
+                size="16"
+                [attr.data-test-id]="testIds.tooltipPrefix + propertyField.key"
+              ></svg>
             </cds-tooltip>
           }
           <input
@@ -58,7 +63,12 @@
               {{ propertyField.title }}
               @if (propertyField.tooltip) {
                 <cds-tooltip [caret]="true" [description]="propertyField.tooltip">
-                  <svg class="tooltip-trigger" cdsIcon="information" size="16"></svg>
+                  <svg
+                    class="tooltip-trigger"
+                    cdsIcon="information"
+                    size="16"
+                    [attr.data-test-id]="testIds.tooltipPrefix + propertyField.key"
+                  ></svg>
                 </cds-tooltip>
               }
 
@@ -68,6 +78,7 @@
                   cdsText
                   cdsLayer
                   [placeholder]="'interface.key' | translate"
+                  [attr.data-test-id]="testIds.kvKeyPrefix + propertyField.key"
                   [attr.modal-primary-focus]="true"
                 />
                 <input
@@ -75,12 +86,14 @@
                   cdsText
                   cdsLayer
                   [placeholder]="'interface.value' | translate"
+                  [attr.data-test-id]="testIds.kvValuePrefix + propertyField.key"
                   [attr.modal-primary-focus]="true"
                 />
                 <button
                   cdsButton="danger--ghost"
                   [disabled]="$count === 1"
                   [iconOnly]="true"
+                  [attr.data-test-id]="testIds.kvRemoveRowPrefix + propertyField.key"
                   (click)="onDeleteRowClick(propertyField.key, $index)"
                 >
                   <svg cdsIcon="trash-can" size="16"></svg>
@@ -91,6 +104,7 @@
 
           <button
             cdsButton="primary"
+            [attr.data-test-id]="testIds.kvAddRowPrefix + propertyField.key"
             (click)="onAddKeyValue(propertyField.key, propertyField.required)"
           >
             Add Key Value

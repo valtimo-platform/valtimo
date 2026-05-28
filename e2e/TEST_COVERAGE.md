@@ -5,10 +5,10 @@
 | Category                    | Features | Functions | ✅ Covered | ❌ Not Covered |
 |-----------------------------|----------|-----------|------------|----------------|
 | User Features (ROLE_USER)   | 5        | 21        | 12         | 9              |
-| Admin Features (ROLE_ADMIN) | 15       | 335       | 176        | 156            |
-| **Total**                   | **20**   | **356**   | **188**    | **165**        |
+| Admin Features (ROLE_ADMIN) | 15       | 335       | 187        | 145            |
+| **Total**                   | **20**   | **356**   | **199**    | **154**        |
 
-**Coverage:** `188 / 356` — `52.8%`
+**Coverage:** `199 / 356` — `55.9%`
 
 ---
 
@@ -584,17 +584,17 @@
 
 | #     | Function                     | Test Scenarios                     | Coverage | Notes                                           |
 |:------|:-----------------------------|:-----------------------------------|:--------:|:------------------------------------------------|
-| 15.13 | View IKO views list          | View IKO views list                |    ❌    |                                                 |
-| 15.14 | Add view                     | Add view                           |    ❌    |                                                 |
-| 15.15 | Enter view title             | Enter view title                   |    ❌    |                                                 |
-| 15.16 | Auto-generate view key       | Auto-generate view key             |    ❌    |                                                 |
-| 15.17 | Enter connector reference    | Enter connector reference          |    ❌    |                                                 |
-| 15.18 | Enter connector instance ref | Enter connector instance reference |    ❌    |                                                 |
-| 15.19 | Enter endpoint reference     | Enter endpoint reference           |    ❌    |                                                 |
-| 15.20 | Add key value pairs          | Add key value pairs                |    ❌    |                                                 |
-| 15.21 | Save view                    | Save view                          |    ❌    |                                                 |
-| 15.22 | Edit view                    | Edit view                          |    ❌    |                                                 |
-| 15.23 | Delete view                  | Delete view                        |    ❌    |                                                 |
+| 15.13 | View IKO views list          | View IKO views list                |    ✅    | iko-view.spec.ts                                |
+| 15.14 | Add view                     | Add view                           |    ✅    | iko-view.spec.ts                                |
+| 15.15 | Enter view title             | Enter view title                   |    ✅    | iko-view.spec.ts                                |
+| 15.16 | Auto-generate view key       | Auto-generate view key             |    ✅    | iko-view.spec.ts                                |
+| 15.17 | Enter connector reference    | Enter connector reference          |    ✅    | iko-view.spec.ts                                |
+| 15.18 | Enter connector instance ref | Enter connector instance reference |    ✅    | iko-view.spec.ts                                |
+| 15.19 | Enter endpoint reference     | Enter endpoint reference           |    ✅    | iko-view.spec.ts                                |
+| 15.20 | Add key value pairs          | Add key value pairs                |    ✅    | iko-view.spec.ts                                |
+| 15.21 | Save view                    | Save view                          |    ✅    | iko-view.spec.ts                                |
+| 15.22 | Edit view                    | Edit view                          |    ✅    | iko-view.spec.ts                                |
+| 15.23 | Delete view                  | Delete view                        |    ✅    | iko-view.spec.ts                                |
 
 #### 15C · Search Actions
 
@@ -727,8 +727,8 @@
 |:-------------------------|:-------:|
 | Total Features           |   20    |
 | Total Functions          |   356   |
-| ✅ Covered by Playwright |   188   |
-| ❌ Not covered           |   165   |
+| ✅ Covered by Playwright |   199   |
+| ❌ Not covered           |   154   |
 | ⏳ In progress           |    1    |
 | `N/A` Not applicable     |    2    |
-| **Coverage %**           | **52.8%** |
+| **Coverage %**           | **55.9%** |

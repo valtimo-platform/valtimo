@@ -44,7 +44,7 @@
 </ng-template>
 
 <ng-template #addViewButton>
-  <button cdsButton="primary" (click)="openAddModal()">
+  <button cdsButton="primary" [attr.data-test-id]="viewTestIds.addViewButton" (click)="openAddModal()">
     {{ 'ikoManagement.views.add' | translate }}
 
     <svg class="cds--btn__icon" cdsIcon="add" size="16"></svg>

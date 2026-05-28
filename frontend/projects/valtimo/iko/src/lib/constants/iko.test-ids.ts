@@ -25,10 +25,20 @@ export const IKO_REPOSITORY_MODAL_TEST_IDS = {
   cancelButton: 'ikoRepositoryModalCancelButton',
 } as const;
 
+/**
+ * Test-id prefixes for the dynamic property form. Each rendered property
+ * field appends its `key` to the prefix, so e.g. the URL input on the IKO
+ * server modal resolves to `ikoPropertyInput-ikoServerUrl` and the tooltip
+ * trigger for the "Connector Reference" view field resolves to
+ * `ikoPropertyTooltip-connectorTag`.
+ */
 export const IKO_PROPERTIES_TEST_IDS = {
-  // Dynamic property inputs are suffixed with the property field key,
-  // e.g. `ikoPropertyInput-ikoServerUrl`.
   inputPrefix: 'ikoPropertyInput-',
+  tooltipPrefix: 'ikoPropertyTooltip-',
+  kvKeyPrefix: 'ikoPropertyKvKey-',
+  kvValuePrefix: 'ikoPropertyKvValue-',
+  kvAddRowPrefix: 'ikoPropertyKvAddRow-',
+  kvRemoveRowPrefix: 'ikoPropertyKvRemoveRow-',
 } as const;
 
 export const IKO_UPLOAD_MODAL_TEST_IDS = {
@@ -36,4 +46,14 @@ export const IKO_UPLOAD_MODAL_TEST_IDS = {
   overwriteCheckbox: 'ikoUploadOverwriteCheckbox',
   startUploadButton: 'ikoUploadStartButton',
   cancelButton: 'ikoUploadCancelButton',
+} as const;
+
+export const IKO_VIEW_MANAGEMENT_TEST_IDS = {
+  addViewButton: 'ikoAddViewButton',
+} as const;
+
+export const IKO_VIEW_MODAL_TEST_IDS = {
+  titleInput: 'ikoViewModalTitleInput',
+  saveButton: 'ikoViewModalSaveButton',
+  cancelButton: 'ikoViewModalCancelButton',
 } as const;

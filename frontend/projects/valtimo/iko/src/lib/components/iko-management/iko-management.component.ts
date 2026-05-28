@@ -27,7 +27,11 @@ import {
 import {ButtonModule, IconModule, IconService} from 'carbon-components-angular';
 import {BehaviorSubject, combineLatest, filter, switchMap, take, tap} from 'rxjs';
 import {map} from 'rxjs/operators';
-import {IKO_MANAGEMENT_TABS, IKO_MANAGEMENT_TEST_IDS} from '../../constants';
+import {
+  IKO_MANAGEMENT_TABS,
+  IKO_MANAGEMENT_TEST_IDS,
+  IKO_VIEW_MANAGEMENT_TEST_IDS,
+} from '../../constants';
 import {IkoViewResponse} from '../../models';
 import {IkoManagementApiService} from '../../services';
 import {IkoManagementViewModalComponent} from './view-modal/iko-management-view-modal.component';
@@ -53,6 +57,7 @@ import {ModalMode} from '@valtimo/shared';
 })
 export class IkoManagementComponent implements OnInit, OnDestroy {
   public readonly testIds = IKO_MANAGEMENT_TEST_IDS;
+  public readonly viewTestIds = IKO_VIEW_MANAGEMENT_TEST_IDS;
   public readonly $loading = signal<boolean>(true);
   public readonly usedKeys$ = new BehaviorSubject<string[]>([]);
   public readonly apiKey$ = this.route.params.pipe(

@@ -24,7 +24,7 @@ import {
   IKO_REPOSITORY_MODAL_TEST_IDS,
   IKO_UPLOAD_MODAL_TEST_IDS,
 } from '../../constants';
-import {apiDelete, apiGet} from '../../utils/api.utils';
+import {apiDelete, apiGet, apiPost} from '../../utils/api.utils';
 import {ikoServerConfig} from './iko-server-config';
 
 interface IkoRepositoryConfigListResponse {
@@ -221,6 +221,26 @@ export class IkoServerPage {
   async getServersViaApi(): Promise<Array<{key: string; title: string}>> {
     const res = await apiGet<IkoRepositoryConfigListResponse>('/api/management/v1/iko');
     return res.content ?? [];
+  }
+
+  /**
+   * Create an IKO server directly via the management API. Use this for
+   * setup in `beforeAll` hooks when the UI side of the modal is not what's
+   * under test — it's faster and avoids any UI-side races.
+   * Returns the slugified key used by the server.
+   */
+  async createServerViaApi(title: string, url: string): Promise<string> {
+    const key = title
+      .toLowerCase()
+      .replace(/[^a-z0-9-_]+|-[^a-z0-9]+/g, '-')
+      .replace(/^[^a-z]+/g, '');
+    await apiPost(`/api/management/v1/iko/${key}`, {
+      key,
+      title,
+      type: 'iko',
+      properties: {[ikoServerConfig.serverUrlPropertyKey]: url},
+    });
+    return key;
   }
 
   async deleteServerViaApi(key: string): Promise<void> {
