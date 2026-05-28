@@ -15,8 +15,6 @@
  */
 
 .valtimo-widget-management-action-button {
-  padding: 12px 0 16px 16px;
-  background: var(--cds-layer);
   display: flex;
   gap: 16px;
 
@@ -25,9 +23,9 @@
     width: 100%;
   }
 
-  &__type .cds--list-box,
-  &__form .cds--text-input {
-    background: var(--cds-layer-02);
+  ::ng-deep &__type .cds--list-box,
+  ::ng-deep &__form .cds--text-input {
+    background: var(--cds-layer-01);
   }
 
   &__type {
