@@ -33,6 +33,7 @@
             [formControlName]="propertyField.key"
             cdsText
             cdsLayer
+            [attr.data-test-id]="testIds.inputPrefix + propertyField.key"
             [attr.modal-primary-focus]="true"
           />
         </cds-label>

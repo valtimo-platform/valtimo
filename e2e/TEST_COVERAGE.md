@@ -5,10 +5,10 @@
 | Category                    | Features | Functions | ✅ Covered | ❌ Not Covered |
 |-----------------------------|----------|-----------|------------|----------------|
 | User Features (ROLE_USER)   | 5        | 21        | 12         | 9              |
-| Admin Features (ROLE_ADMIN) | 15       | 335       | 164        | 168            |
-| **Total**                   | **20**   | **356**   | **176**    | **177**        |
+| Admin Features (ROLE_ADMIN) | 15       | 335       | 176        | 156            |
+| **Total**                   | **20**   | **356**   | **188**    | **165**        |
 
-**Coverage:** `176 / 356` — `49.4%`
+**Coverage:** `188 / 356` — `52.8%`
 
 ---
 
@@ -567,18 +567,18 @@
 
 | #     | Function                 | Test Scenarios                          | Coverage | Notes                                           |
 |:------|:-------------------------|:----------------------------------------|:--------:|:------------------------------------------------|
-| 15.1  | View IKO servers list    | View IKO servers list                   |    ❌    |                                                 |
-| 15.2  | Configure IKO server     | Configure IKO server                    |    ❌    |                                                 |
-| 15.3  | Enter server title       | Enter server title                      |    ❌    |                                                 |
-| 15.4  | Auto-generate server key | Auto-generate server key                |    ❌    |                                                 |
-| 15.5  | Enter IKO server URL     | Enter IKO server URL                    |    ❌    |                                                 |
-| 15.6  | Save IKO server config   | Save IKO server configuration           |    ❌    |                                                 |
-| 15.7  | Edit IKO server          | Edit IKO server                         |    ❌    |                                                 |
-| 15.8  | Delete IKO server        | Delete IKO server                       |    ❌    |                                                 |
-| 15.9  | View delete confirmation | View delete confirmation dialog         |    ❌    |                                                 |
-| 15.10 | Import IKO definition    | Import IKO definition (ZIP, max 500 kb) |    ❌    |                                                 |
-| 15.11 | Select file for import   | Select file for import                  |    ❌    |                                                 |
-| 15.12 | Cancel import            | Cancel import                           |    ❌    |                                                 |
+| 15.1  | View IKO servers list    | View IKO servers list                   |    ✅    | iko-server.spec.ts                              |
+| 15.2  | Configure IKO server     | Configure IKO server                    |    ✅    | iko-server.spec.ts                              |
+| 15.3  | Enter server title       | Enter server title                      |    ✅    | iko-server.spec.ts                              |
+| 15.4  | Auto-generate server key | Auto-generate server key                |    ✅    | iko-server.spec.ts                              |
+| 15.5  | Enter IKO server URL     | Enter IKO server URL                    |    ✅    | iko-server.spec.ts                              |
+| 15.6  | Save IKO server config   | Save IKO server configuration           |    ✅    | iko-server.spec.ts                              |
+| 15.7  | Edit IKO server          | Edit IKO server                         |    ✅    | iko-server.spec.ts                              |
+| 15.8  | Delete IKO server        | Delete IKO server                       |    ✅    | iko-server.spec.ts                              |
+| 15.9  | View delete confirmation | View delete confirmation dialog         |    ✅    | iko-server.spec.ts                              |
+| 15.10 | Import IKO definition    | Import IKO definition (ZIP, max 500 kb) |    ✅    | iko-server.spec.ts                              |
+| 15.11 | Select file for import   | Select file for import                  |    ✅    | iko-server.spec.ts                              |
+| 15.12 | Cancel import            | Cancel import                           |    ✅    | iko-server.spec.ts                              |
 
 #### 15B · View Management
 
@@ -727,8 +727,8 @@
 |:-------------------------|:-------:|
 | Total Features           |   20    |
 | Total Functions          |   356   |
-| ✅ Covered by Playwright |   176   |
-| ❌ Not covered           |   177   |
+| ✅ Covered by Playwright |   188   |
+| ❌ Not covered           |   165   |
 | ⏳ In progress           |    1    |
 | `N/A` Not applicable     |    2    |
-| **Coverage %**           | **49.4%** |
+| **Coverage %**           | **52.8%** |
