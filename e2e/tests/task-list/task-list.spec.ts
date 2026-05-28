@@ -17,7 +17,7 @@
 import {expect, test} from '@playwright/test';
 import {TaskListPage} from './page';
 import {TASK_CONFIG} from './task-config';
-import {apiPost} from '../../utils/api.utils';
+import {apiDelete, apiPost} from '../../utils/api.utils';
 
 test.describe('3.1, 3.2 — Task list', () => {
   let taskListPage: TaskListPage;
@@ -71,10 +71,11 @@ test.describe('3.1, 3.2 — Task list', () => {
 });
 
 test.describe('Task details', () => {
-  const ADMIN_TASK_NAME = 'Task for ROLE_ADMIN';
+  const TASK_NAME = 'Task for ROLE_ADMIN';
   let context;
   let page;
   let taskListPage: TaskListPage;
+  let createdDocumentId: string | undefined;
 
   test.beforeAll(async ({browser, baseURL}) => {
     test.setTimeout(60_000);
@@ -83,7 +84,7 @@ test.describe('Task details', () => {
     taskListPage = new TaskListPage(page);
 
     // Create a case with the auto-assign-test process to generate simple tasks
-    await apiPost(TASK_CONFIG.processDocumentEndpoint, {
+    const created = await apiPost<{document: {id: string}}>(TASK_CONFIG.processDocumentEndpoint, {
       processDefinitionKey: TASK_CONFIG.autoAssignProcess,
       request: {
         definition: TASK_CONFIG.autoAssignProcess,
@@ -92,22 +93,40 @@ test.describe('Task details', () => {
         content: {},
       },
     });
+    createdDocumentId = created?.document?.id;
 
     await page.goto('/tasks');
     await taskListPage.waitForTaskListLoaded();
     await taskListPage.selectTab('All tasks');
     await taskListPage.selectCaseFromDropdown('Auto assign test');
-    await expect(page.locator(`td:has-text("${ADMIN_TASK_NAME}")`).first()).toBeVisible({timeout: 30_000});
+
+    const taskCell = page.locator(`td:has-text("${TASK_NAME}")`).first();
+    try {
+      await taskCell.waitFor({state: 'visible', timeout: 5_000});
+    } catch {
+      await page.reload();
+      await taskListPage.waitForTaskListLoaded();
+      await taskListPage.selectTab('All tasks');
+      await taskListPage.selectCaseFromDropdown('Auto assign test');
+      await expect(taskCell).toBeVisible({timeout: 25_000});
+    }
   });
 
   test.afterAll(async () => {
+    if (createdDocumentId) {
+      try {
+        await apiDelete(`${TASK_CONFIG.documentEndpoint}/${createdDocumentId}`);
+      } catch {
+        // Already deleted or permission denied — best-effort cleanup
+      }
+    }
     await context.close();
   });
 
   test.describe('3.3 — View task details', () => {
     test('opens task detail modal when clicking a task row', async () => {
-      await taskListPage.openTaskByName(ADMIN_TASK_NAME);
-      await taskListPage.assertTaskDetailVisible(ADMIN_TASK_NAME);
+      await taskListPage.openTaskByName(TASK_NAME);
+      await taskListPage.assertTaskDetailVisible(TASK_NAME);
       await taskListPage.closeTaskDetailModal();
     });
   });
@@ -115,12 +134,12 @@ test.describe('Task details', () => {
   test.describe('3.4 — Claim task, 3.5 + 3.6 — Complete task', () => {
     test('can claim, submit, and complete a task', async () => {
       test.slow();
-      await taskListPage.openTaskByName(ADMIN_TASK_NAME);
-      await taskListPage.assertTaskDetailVisible(ADMIN_TASK_NAME);
+      await taskListPage.openTaskByName(TASK_NAME);
+      await taskListPage.assertTaskDetailVisible(TASK_NAME);
       await taskListPage.claimTask();
       await taskListPage.assertTaskAssigned();
       await taskListPage.submitEmptyForm();
-      await taskListPage.assertTaskCompletedNotification(ADMIN_TASK_NAME);
+      await taskListPage.assertTaskCompletedNotification(TASK_NAME);
     });
   });
 });

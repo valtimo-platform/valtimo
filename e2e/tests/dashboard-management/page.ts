@@ -360,7 +360,7 @@ export class DashboardManagementPage {
     const caseTypeDropdown = this.page.locator('valtimo-widget-configuration-container cds-dropdown').first();
     await expect(caseTypeDropdown).toBeVisible({timeout: 5_000});
     await caseTypeDropdown.click();
-    await this.page.getByText(caseType, {exact: true}).click();
+    await this.page.getByRole('listbox').getByText(caseType, {exact: true}).click();
   }
 
   async selectDisplayType(label: string) {
