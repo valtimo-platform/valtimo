@@ -62,10 +62,7 @@ test.describe('Case details - Process links', () => {
 
   test.beforeEach(async () => {
     await processLinksPage.clearInMemoryProcessLinks();
-    const modalOpen = await processLinksPage.modal
-      .getAttribute('ng-reflect-open')
-      .catch(() => null);
-    if (modalOpen === 'true') {
+    if (await processLinksPage.isModalOpen()) {
       await processLinksPage.cancelModal();
     }
   });

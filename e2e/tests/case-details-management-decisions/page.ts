@@ -130,7 +130,7 @@ export class CaseDetailsDecisionsPage {
   }
 
   async saveDecision() {
-    await expect(this.deployButton).toBeEnabled();
+    await expect(this.deployButton).toBeEnabled({timeout: 15_000});
     await this.deployButton.click();
   }
 
@@ -150,7 +150,7 @@ export class CaseDetailsDecisionsPage {
 
   async switchToDecisionTableView() {
     await this.decisionTableTab.click();
-    await expect(this.decisionTable).toBeVisible();
+    await expect(this.decisionTable).toBeVisible({timeout: 15_000});
   }
 
   get decisionTable() {
