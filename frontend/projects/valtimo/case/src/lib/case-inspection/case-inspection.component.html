@@ -21,12 +21,10 @@
       [heading]="'case.inspection.tabs.document' | translate"
       (selected)="onTabSelected(CaseInspectionTab.DOCUMENT)"
     >
-      <div cdsLayer class="case-inspection__pane">
-        <valtimo-case-inspection-document
-          *ngIf="$activeTab() === CaseInspectionTab.DOCUMENT"
-          [documentId]="$documentId()"
-        ></valtimo-case-inspection-document>
-      </div>
+      <valtimo-case-inspection-document
+        *ngIf="$activeTab() === CaseInspectionTab.DOCUMENT"
+        [documentId]="$documentId()"
+      ></valtimo-case-inspection-document>
     </cds-tab>
 
     <cds-tab

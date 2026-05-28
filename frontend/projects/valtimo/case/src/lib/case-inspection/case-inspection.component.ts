@@ -19,8 +19,9 @@ import {ChangeDetectionStrategy, Component, OnDestroy, OnInit, signal} from '@an
 import {ActivatedRoute, ParamMap, Router} from '@angular/router';
 import {TranslateModule, TranslateService} from '@ngx-translate/core';
 import {PermissionService} from '@valtimo/access-control';
-import {PageTitleService} from '@valtimo/components';
-import {Subscription, switchMap, take} from 'rxjs';
+import {BreadcrumbService, PageTitleService} from '@valtimo/components';
+import {DocumentService} from '@valtimo/document';
+import {map, Subscription, switchMap, take} from 'rxjs';
 import {TabsModule} from 'carbon-components-angular';
 import {
   CAN_INSPECT_CASE_PERMISSION,
@@ -32,6 +33,7 @@ import {CaseInspectionMetadataTabComponent} from './tabs/metadata-tab.component'
 import {CaseInspectionProcessesTabComponent} from './tabs/processes-tab.component';
 import {BuildingBlockProcessReference} from './models/case-inspection.models';
 import {CaseInspectionTab} from './case-inspection-tab.enum';
+import {CaseInspectionService} from './services/case-inspection.service';
 
 @Component({
   standalone: true,
@@ -66,7 +68,10 @@ export class CaseInspectionComponent implements OnInit, OnDestroy {
     private readonly router: Router,
     private readonly permissionService: PermissionService,
     private readonly pageTitleService: PageTitleService,
-    private readonly translateService: TranslateService
+    private readonly translateService: TranslateService,
+    private readonly breadcrumbService: BreadcrumbService,
+    private readonly documentService: DocumentService,
+    private readonly caseInspectionService: CaseInspectionService
   ) {}
 
   public ngOnInit(): void {
@@ -100,12 +105,15 @@ export class CaseInspectionComponent implements OnInit, OnDestroy {
             return;
           }
           this.$loading.set(false);
+          this.initBreadcrumbs();
         })
     );
   }
 
   public ngOnDestroy(): void {
     this.pageTitleService.enableReset();
+    this.breadcrumbService.clearSecondBreadcrumb();
+    this.breadcrumbService.clearThirdBreadcrumb();
     this._subscriptions.unsubscribe();
   }
 
@@ -122,6 +130,36 @@ export class CaseInspectionComponent implements OnInit, OnDestroy {
   public onViewBuildingBlock(bb: BuildingBlockProcessReference): void {
     this.$pendingBuildingBlockInstanceId.set(bb.instanceId);
     this.onTabSelected(CaseInspectionTab.BUILDING_BLOCKS);
+  }
+
+  private initBreadcrumbs(): void {
+    const documentId = this.$documentId();
+    this._subscriptions.add(
+      this.caseInspectionService.getDocument(documentId).pipe(
+        switchMap(inspection => {
+          const caseDefinitionKey = inspection.definitionId.name;
+          return this.documentService.getDocumentDefinition(caseDefinitionKey).pipe(
+            take(1),
+            map(definition => ({
+              caseDefinitionKey,
+              caseDefinitionTitle: definition.schema.title,
+            }))
+          );
+        })
+      ).subscribe(({caseDefinitionKey, caseDefinitionTitle}) => {
+        const documentId = this.$documentId();
+        this.breadcrumbService.setSecondBreadcrumb({
+          route: [`/cases/${caseDefinitionKey}`],
+          content: caseDefinitionTitle,
+          href: `/cases/${caseDefinitionKey}`,
+        });
+        this.breadcrumbService.setThirdBreadcrumb({
+          route: [`/cases/${caseDefinitionKey}/document/${documentId}`],
+          content: this.translateService.instant('Case details'),
+          href: `/cases/${caseDefinitionKey}/document/${documentId}`,
+        });
+      })
+    );
   }
 
   private restoreTabFromQueryParam(): void {
