@@ -3,6 +3,7 @@ on:
   push:
     branches:
       - next-minor
+      - iko-demo
     paths:
       - .github/workflows/backend_*.yml
       - backend/**
