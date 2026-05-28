@@ -404,7 +404,7 @@ class CaseDefinitionResource(
         @RequestParam("key", required = false) key: String?,
         @RequestParam("name", required = false) name: String?,
         @RequestPart("pluginConfigurationMappings", required = false) pluginConfigurationMappingsJson: String?,
-    ): ResponseEntity<CaseDefinitionImportResponse> {
+    ): ResponseEntity<*> {
         return try {
             val pluginConfigurationMappings: Map<UUID, UUID?>? = pluginConfigurationMappingsJson?.let {
                 jacksonObjectMapper().readValue<Map<UUID, UUID?>>(it)
@@ -419,9 +419,10 @@ class CaseDefinitionResource(
             )
             service.setLatestToActiveIfNoneIsActive()
             ResponseEntity.ok(CaseDefinitionImportResponse(caseDefinitionId))
-        } catch (exception: ImportServiceException) {
+        } catch (exception: Exception) {
             logger.info(exception) { "Import failed" }
-            ResponseEntity.badRequest().build()
+            val errorMessage = exception.message ?: "An unknown error occurred during import"
+            ResponseEntity.badRequest().body(mapOf("errors" to errorMessage))
         }
     }
 
