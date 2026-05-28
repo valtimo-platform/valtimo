@@ -15,115 +15,67 @@
   -->
 
 <section class="case-inspection-metadata-tab">
-  <ng-container *ngIf="$loading()">
+  @if ($loading()) {
     <p>{{ 'case.inspection.metadata.loading' | translate }}</p>
-  </ng-container>
+  }
 
-  <ng-container *ngIf="$errorMessage() as message">
+  @if ($errorMessage(); as message) {
     <p class="case-inspection-metadata-tab__error">{{ message }}</p>
-  </ng-container>
+  }
 
-  <ng-container *ngIf="$document() as document">
+  @if ($document()) {
     <dl class="case-inspection-metadata-tab__list">
-      <dt>{{ 'case.inspection.metadata.documentId' | translate }}</dt>
-      <dd>
-        <code>{{ document.id }}</code>
-      </dd>
-
-      <dt>{{ 'case.inspection.metadata.definitionName' | translate }}</dt>
-      <dd>{{ document.definitionId?.name }}</dd>
-
-      <dt>{{ 'case.inspection.metadata.sequence' | translate }}</dt>
-      <dd>{{ document.sequence }}</dd>
-
-      <dt>{{ 'case.inspection.metadata.version' | translate }}</dt>
-      <dd>{{ document.version }}</dd>
-
-      <dt>{{ 'case.inspection.metadata.createdBy' | translate }}</dt>
-      <dd>{{ document.createdBy }}</dd>
-
-      <dt>{{ 'case.inspection.metadata.createdOn' | translate }}</dt>
-      <dd>{{ document.createdOn | date: 'medium' }}</dd>
-
-      <dt>{{ 'case.inspection.metadata.modifiedOn' | translate }}</dt>
-      <dd>{{ document.modifiedOn | date: 'medium' }}</dd>
-
-      <dt>{{ 'case.inspection.metadata.assignee' | translate }}</dt>
-      <dd>
-        <ng-container *ngIf="document.assigneeFullName; else noAssignee">
-          {{ document.assigneeFullName }}
-        </ng-container>
-
-        <ng-template #noAssignee>
-          <span class="case-inspection-metadata-tab__empty">
-            {{ 'case.inspection.metadata.unassigned' | translate }}
-          </span>
-        </ng-template>
-      </dd>
-
-      <dt>{{ 'case.inspection.metadata.assignedTeam' | translate }}</dt>
-      <dd>
-        <ng-container *ngIf="document.assignedTeamTitle; else noTeam">
-          {{ document.assignedTeamTitle }}
-        </ng-container>
-
-        <ng-template #noTeam>
-          <span class="case-inspection-metadata-tab__empty">
-            {{ 'case.inspection.metadata.unassigned' | translate }}
-          </span>
-        </ng-template>
-      </dd>
-
-      <dt>{{ 'case.inspection.metadata.internalStatus' | translate }}</dt>
-      <dd>
-        <ng-container *ngIf="document.internalStatus; else noStatus">
-          {{ document.internalStatus }}
-        </ng-container>
-
-        <ng-template #noStatus>
-          <span class="case-inspection-metadata-tab__empty">
-            {{ 'case.inspection.metadata.noStatus' | translate }}
-          </span>
-        </ng-template>
-      </dd>
-
-      <dt>{{ 'case.inspection.metadata.tags' | translate }}</dt>
-      <dd>
-        <ng-container *ngIf="document.caseTags?.length; else noTags">
-          <cds-tag
-            *ngFor="let tag of document.caseTags"
-            [title]="tag.title"
-            size="sm"
-            type="cool-gray"
-          >
-            {{ tag.title }}
-          </cds-tag>
-        </ng-container>
-
-        <ng-template #noTags>
-          <span class="case-inspection-metadata-tab__empty">
-            {{ 'case.inspection.metadata.noTags' | translate }}
-          </span>
-        </ng-template>
-      </dd>
-
-      <dt>{{ 'case.inspection.metadata.relations' | translate }}</dt>
-      <dd>
-        <ng-container *ngIf="document.relations?.length; else noRelations">
-          <ul>
-            <li *ngFor="let relation of document.relations">{{ relation }}</li>
-          </ul>
-        </ng-container>
-
-        <ng-template #noRelations>
-          <span class="case-inspection-metadata-tab__empty">
-            {{ 'case.inspection.metadata.noRelations' | translate }}
-          </span>
-        </ng-template>
-      </dd>
-
-      <dt>{{ 'case.inspection.metadata.relatedFiles' | translate }}</dt>
-      <dd>{{ document.relatedFiles?.length || 0 }}</dd>
+      @for (field of $fields(); track field.label) {
+        <dt>{{ field.label | translate }}</dt>
+        <dd>
+          @switch (field.type) {
+            @case ('code') {
+              <code>{{ field.value }}</code>
+            }
+            @case ('date') {
+              {{ field.value | date: 'medium' }}
+            }
+            @case ('count') {
+              {{ field.value?.length || 0 }}
+            }
+            @case ('tags') {
+              @if (field.value?.length) {
+                @for (tag of field.value; track tag.title) {
+                  <cds-tag [title]="tag.title" size="sm" type="cool-gray">
+                    {{ tag.title }}
+                  </cds-tag>
+                }
+              } @else {
+                <span class="case-inspection-metadata-tab__empty">
+                  {{ field.emptyKey | translate }}
+                </span>
+              }
+            }
+            @case ('relations') {
+              @if (field.value?.length) {
+                <ul>
+                  @for (relation of field.value; track relation) {
+                    <li>{{ relation }}</li>
+                  }
+                </ul>
+              } @else {
+                <span class="case-inspection-metadata-tab__empty">
+                  {{ field.emptyKey | translate }}
+                </span>
+              }
+            }
+            @default {
+              @if (field.value !== null && field.value !== undefined && field.value !== '') {
+                {{ field.value }}
+              } @else if (field.emptyKey) {
+                <span class="case-inspection-metadata-tab__empty">
+                  {{ field.emptyKey | translate }}
+                </span>
+              }
+            }
+          }
+        </dd>
+      }
     </dl>
-  </ng-container>
+  }
 </section>

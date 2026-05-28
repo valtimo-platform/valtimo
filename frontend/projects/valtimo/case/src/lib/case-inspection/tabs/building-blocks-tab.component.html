@@ -35,7 +35,10 @@
     </p>
 
     <div *ngIf="instances.length > 0" class="case-inspection-bb__layout">
-      <nav class="case-inspection-bb__list" aria-label="Building blocks">
+      <nav
+        class="case-inspection-bb__list"
+        [attr.aria-label]="'case.inspection.buildingBlocks.listAriaLabel' | translate"
+      >
         <button
           *ngFor="let instance of instances"
           type="button"

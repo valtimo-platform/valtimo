@@ -16,15 +16,9 @@
 
 package com.ritense.buildingblock.web.rest
 
-import com.ritense.authorization.AuthorizationContext.Companion.runWithoutAuthorization
-import com.ritense.authorization.AuthorizationService
-import com.ritense.authorization.request.EntityAuthorizationRequest
 import com.ritense.buildingblock.service.BuildingBlockInstanceService
 import com.ritense.buildingblock.web.rest.dto.BuildingBlockInstanceDto
 import com.ritense.document.domain.impl.JsonSchemaDocument
-import com.ritense.document.domain.impl.JsonSchemaDocumentId
-import com.ritense.document.service.DocumentService
-import com.ritense.document.service.JsonSchemaDocumentActionProvider
 import com.ritense.logging.LoggableResource
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import com.ritense.valtimo.contract.domain.ValtimoMediaType.APPLICATION_JSON_UTF8_VALUE
@@ -40,26 +34,12 @@ import java.util.UUID
 @RequestMapping("/api/management", produces = [APPLICATION_JSON_UTF8_VALUE])
 class BuildingBlockInstanceResource(
     private val buildingBlockInstanceService: BuildingBlockInstanceService,
-    private val documentService: DocumentService,
-    private val authorizationService: AuthorizationService,
 ) {
 
     @GetMapping("/v1/case/{caseId}/building-blocks")
     fun getInstancesForCase(
         @LoggableResource(resourceType = JsonSchemaDocument::class) @PathVariable caseId: UUID
     ): ResponseEntity<List<BuildingBlockInstanceDto>> {
-        val document = runWithoutAuthorization {
-            documentService.findBy(JsonSchemaDocumentId.existingId(caseId)).orElseThrow()
-        } as JsonSchemaDocument
-
-        authorizationService.requirePermission(
-            EntityAuthorizationRequest(
-                JsonSchemaDocument::class.java,
-                JsonSchemaDocumentActionProvider.INSPECT,
-                document,
-            )
-        )
-
         val instances = buildingBlockInstanceService.findAllByCaseDocumentId(caseId)
             .map(BuildingBlockInstanceDto::from)
         return ResponseEntity.ok(instances)

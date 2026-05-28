@@ -61,15 +61,16 @@ export class CaseInspectionBuildingBlockDetailComponent implements OnChanges {
 
   public ngOnChanges(changes: SimpleChanges): void {
     if (changes.instance && this.instance) {
-      this.loadDocument();
-      this.loadPermission();
+      this.loadDocument(this.instance.documentId);
+      this.loadPermission(this.instance.documentId);
     }
   }
 
   public onSaveEvent(content: object): void {
+    const documentId = this.instance.documentId;
     this.caseInspectionService
-      .modifyDocumentForInspection(this.instance.documentId, {
-        documentId: this.instance.documentId,
+      .modifyDocumentForInspection(documentId, {
+        documentId,
         content,
       })
       .subscribe({
@@ -84,7 +85,7 @@ export class CaseInspectionBuildingBlockDetailComponent implements OnChanges {
             title: this.translateService.instant('case.inspection.buildingBlocks.saved'),
             message: '',
           });
-          this.loadDocument();
+          this.loadDocument(documentId);
         },
         error: err => {
           this.$errorMessage.set(err?.error?.message ?? err?.message ?? 'Save failed');
@@ -92,11 +93,16 @@ export class CaseInspectionBuildingBlockDetailComponent implements OnChanges {
       });
   }
 
-  private loadDocument(): void {
+  private loadDocument(documentId: string): void {
     this.$loading.set(true);
     this.$errorMessage.set(null);
-    this.caseInspectionService.getDocument(this.instance.documentId).subscribe({
+    this.$document.set(null);
+    this.model$.next(null);
+    this.caseInspectionService.getDocument(documentId).subscribe({
       next: document => {
+        if (documentId !== this.instance.documentId) {
+          return;
+        }
         this.$document.set(document);
         this.model$.next({
           value: JSON.stringify(document.content ?? {}, null, 2),
@@ -105,6 +111,9 @@ export class CaseInspectionBuildingBlockDetailComponent implements OnChanges {
         this.$loading.set(false);
       },
       error: err => {
+        if (documentId !== this.instance.documentId) {
+          return;
+        }
         this.$errorMessage.set(
           err?.error?.message ?? err?.message ?? 'Failed to load building block'
         );
@@ -113,12 +122,25 @@ export class CaseInspectionBuildingBlockDetailComponent implements OnChanges {
     });
   }
 
-  private loadPermission(): void {
+  private loadPermission(documentId: string): void {
     this.permissionService
       .requestPermission(CAN_INSPECT_MODIFY_CASE_PERMISSION, {
         resource: CASE_DETAIL_PERMISSION_RESOURCE.jsonSchemaDocument,
-        identifier: this.instance.documentId,
+        identifier: documentId,
       })
-      .subscribe((allowed: boolean) => this.$canInspectModify.set(allowed));
+      .subscribe({
+        next: (allowed: boolean) => {
+          if (documentId !== this.instance.documentId) {
+            return;
+          }
+          this.$canInspectModify.set(allowed);
+        },
+        error: () => {
+          if (documentId !== this.instance.documentId) {
+            return;
+          }
+          this.$canInspectModify.set(false);
+        },
+      });
   }
 }

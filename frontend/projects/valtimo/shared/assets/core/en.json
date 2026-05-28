@@ -189,6 +189,7 @@
         "empty": "This case has no building block instances.",
         "notEnabled": "Building blocks are not enabled for this Valtimo installation.",
         "saved": "Building block document updated",
+        "listAriaLabel": "Building blocks",
         "detail": {
           "instanceId": "Instance ID",
           "documentId": "Document ID",
@@ -201,6 +202,7 @@
       "processes": {
         "loading": "Loading processes...",
         "empty": "No process instances are associated with this case.",
+        "listAriaLabel": "Process instances",
         "buildingBlockTag": "BB",
         "buildingBlockTagTooltip": "This process belongs to a building block",
         "instanceId": "Instance ID",

@@ -103,7 +103,7 @@ class JsonSchemaDocumentInspectionResourceTest extends BaseTest {
 
     @Test
     void modifyForInspectionShouldRequireInspectModifyPermissionAndPublishEvent() throws Exception {
-        UUID caseId = UUID.randomUUID();
+        UUID caseId = document.id().getId();
         doReturn(Optional.of(document)).when(documentService).findBy(any());
 
         var newJson = new ObjectMapper().readTree("{\"firstName\":\"Jane\"}");
@@ -139,7 +139,7 @@ class JsonSchemaDocumentInspectionResourceTest extends BaseTest {
 
     @Test
     void modifyForInspectionShouldReturnBadRequestAndNotPublishEventWhenServiceFails() throws Exception {
-        UUID caseId = UUID.randomUUID();
+        UUID caseId = document.id().getId();
         doReturn(Optional.of(document)).when(documentService).findBy(any());
 
         var newJson = new ObjectMapper().readTree("{\"firstName\":\"Jane\"}");
@@ -156,16 +156,31 @@ class JsonSchemaDocumentInspectionResourceTest extends BaseTest {
 
     @Test
     void modifyForInspectionShouldPropagateAuthorizationFailureWithoutModifying() {
+        UUID caseId = document.id().getId();
         doReturn(Optional.of(document)).when(documentService).findBy(any());
         doThrow(new RuntimeException("denied")).when(authorizationService).requirePermission(any());
 
         var newJson = new ObjectMapper().createObjectNode().put("firstName", "Jane");
         var modifyRequest = new ModifyDocumentRequest(document.id().toString(), newJson);
 
-        assertThatThrownBy(() -> resource.modifyForInspection(UUID.randomUUID(), modifyRequest))
+        assertThatThrownBy(() -> resource.modifyForInspection(caseId, modifyRequest))
             .isInstanceOf(RuntimeException.class)
             .hasMessage("denied");
 
+        verify(documentService, never()).modifyDocument(any(ModifyDocumentRequest.class));
+        verify(eventPublisher, never()).publishEvent(any(JsonSchemaDocumentInspectionEditedEvent.class));
+    }
+
+    @Test
+    void modifyForInspectionShouldRejectWhenPathAndBodyDocumentIdsMismatch() {
+        var newJson = new ObjectMapper().createObjectNode().put("firstName", "Jane");
+        var modifyRequest = new ModifyDocumentRequest(document.id().toString(), newJson);
+        UUID differentCaseId = UUID.randomUUID();
+
+        assertThatThrownBy(() -> resource.modifyForInspection(differentCaseId, modifyRequest))
+            .isInstanceOf(IllegalArgumentException.class);
+
+        verify(authorizationService, never()).requirePermission(any());
         verify(documentService, never()).modifyDocument(any(ModifyDocumentRequest.class));
         verify(eventPublisher, never()).publishEvent(any(JsonSchemaDocumentInspectionEditedEvent.class));
     }

@@ -245,12 +245,14 @@ class BuildingBlockAutoConfiguration {
     fun buildingBlockInstanceService(
         buildingBlockInstanceRepository: BuildingBlockInstanceRepository,
         buildingBlockDefinitionRepository: BuildingBlockDefinitionRepository,
-        documentService: DocumentService
+        documentService: DocumentService,
+        authorizationService: AuthorizationService
     ): BuildingBlockInstanceService {
         return BuildingBlockInstanceService(
             buildingBlockInstanceRepository,
             buildingBlockDefinitionRepository,
-            documentService
+            documentService,
+            authorizationService
         )
     }
 
@@ -360,13 +362,9 @@ class BuildingBlockAutoConfiguration {
     @ConditionalOnMissingBean(BuildingBlockInstanceResource::class)
     fun buildingBlockInstanceResource(
         buildingBlockInstanceService: BuildingBlockInstanceService,
-        documentService: DocumentService,
-        authorizationService: AuthorizationService,
     ): BuildingBlockInstanceResource {
         return BuildingBlockInstanceResource(
             buildingBlockInstanceService,
-            documentService,
-            authorizationService,
         )
     }
 

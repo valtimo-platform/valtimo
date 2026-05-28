@@ -37,11 +37,7 @@ import {
   ProcessInstanceInspection,
   ProcessVariable,
 } from '../models/case-inspection.models';
-
-enum ProcessDetailTab {
-  DETAILS = 'details',
-  DIAGRAM = 'diagram',
-}
+import {ProcessDetailTab} from './process-detail-tab.enum';
 
 @Component({
   standalone: true,
@@ -68,6 +64,33 @@ export class CaseInspectionProcessDetailComponent {
 
   public readonly $activeTab = signal<ProcessDetailTab>(ProcessDetailTab.DETAILS);
   public readonly ProcessDetailTab = ProcessDetailTab;
+
+  public readonly incidentColumns: readonly string[] = [
+    'case.inspection.processes.incidentType',
+    'case.inspection.processes.activity',
+    'case.inspection.processes.message',
+    'case.inspection.processes.timestamp',
+  ];
+
+  public readonly taskColumns: readonly string[] = [
+    'case.inspection.processes.taskName',
+    'case.inspection.processes.taskAssignee',
+    'case.inspection.processes.taskCreated',
+  ];
+
+  public readonly variableColumns: readonly string[] = [
+    'case.inspection.processes.variableName',
+    'case.inspection.processes.variableType',
+    'case.inspection.processes.variableValue',
+  ];
+
+  public readonly jobColumns: readonly string[] = [
+    'case.inspection.processes.jobType',
+    'case.inspection.processes.jobActivity',
+    'case.inspection.processes.jobRetries',
+    'case.inspection.processes.jobDueDate',
+    'case.inspection.processes.jobException',
+  ];
 
   public onSelectTab(tab: ProcessDetailTab): void {
     this.$activeTab.set(tab);

@@ -63,8 +63,8 @@ export class CaseInspectionDocumentTabComponent implements OnChanges, OnDestroy 
 
   public ngOnChanges(changes: SimpleChanges): void {
     if (changes.documentId && this.documentId) {
-      this.loadDocument();
-      this.loadPermission();
+      this.loadDocument(this.documentId);
+      this.loadPermission(this.documentId);
     }
   }
 
@@ -87,7 +87,7 @@ export class CaseInspectionDocumentTabComponent implements OnChanges, OnDestroy 
             title: this.translateService.instant('case.inspection.document.saved'),
             message: '',
           });
-          this.loadDocument();
+          this.loadDocument(this.documentId);
         },
         error: err => {
           this.$errorMessage.set(err?.error?.message ?? err?.message ?? 'Save failed');
@@ -95,10 +95,15 @@ export class CaseInspectionDocumentTabComponent implements OnChanges, OnDestroy 
       });
   }
 
-  private loadDocument(): void {
+  private loadDocument(documentId: string): void {
     this.$loading.set(true);
-    this.caseInspectionService.getDocument(this.documentId).subscribe({
+    this.$errorMessage.set(null);
+    this.model$.next(null);
+    this.caseInspectionService.getDocument(documentId).subscribe({
       next: (document: DocumentInspection) => {
+        if (documentId !== this.documentId) {
+          return;
+        }
         this.model$.next({
           value: JSON.stringify(document.content ?? {}, null, 2),
           language: 'json',
@@ -106,18 +111,34 @@ export class CaseInspectionDocumentTabComponent implements OnChanges, OnDestroy 
         this.$loading.set(false);
       },
       error: err => {
+        if (documentId !== this.documentId) {
+          return;
+        }
         this.$errorMessage.set(err?.error?.message ?? err?.message ?? 'Failed to load document');
         this.$loading.set(false);
       },
     });
   }
 
-  private loadPermission(): void {
+  private loadPermission(documentId: string): void {
     this.permissionService
       .requestPermission(CAN_INSPECT_MODIFY_CASE_PERMISSION, {
         resource: CASE_DETAIL_PERMISSION_RESOURCE.jsonSchemaDocument,
-        identifier: this.documentId,
+        identifier: documentId,
       })
-      .subscribe((allowed: boolean) => this.$canInspectModify.set(allowed));
+      .subscribe({
+        next: (allowed: boolean) => {
+          if (documentId !== this.documentId) {
+            return;
+          }
+          this.$canInspectModify.set(allowed);
+        },
+        error: () => {
+          if (documentId !== this.documentId) {
+            return;
+          }
+          this.$canInspectModify.set(false);
+        },
+      });
   }
 }

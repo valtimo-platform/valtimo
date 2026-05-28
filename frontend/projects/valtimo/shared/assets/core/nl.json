@@ -192,11 +192,12 @@
         "empty": "Dit dossier heeft geen bouwblok-instanties.",
         "notEnabled": "Bouwblokken zijn niet ingeschakeld voor deze Valtimo-installatie.",
         "saved": "Bouwblok-document bijgewerkt",
+        "listAriaLabel": "Bouwblokken",
         "detail": {
           "instanceId": "Instantie-ID",
           "documentId": "Document-ID",
           "processInstance": "Procesinstantie",
-          "parent": "Parent",
+          "parent": "Bovenliggend",
           "content": "Documentinhoud",
           "loading": "Bouwblok laden..."
         }
@@ -204,6 +205,7 @@
       "processes": {
         "loading": "Processen laden...",
         "empty": "Er zijn geen procesinstanties gekoppeld aan dit dossier.",
+        "listAriaLabel": "Procesinstanties",
         "buildingBlockTag": "Bouwblok",
         "buildingBlockTagTooltip": "Dit proces hoort bij een bouwblok",
         "instanceId": "Instantie-ID",

@@ -68,13 +68,18 @@ export class CaseInspectionBuildingBlocksTabComponent implements OnChanges {
   }
 
   private load(): void {
+    const requestedDocumentId = this.documentId;
     this.$loading.set(true);
     this.$errorMessage.set(null);
     this.$notSupported.set(false);
     this.$selected.set(null);
+    this.$instances.set([]);
 
-    this.caseInspectionService.getBuildingBlockInstances(this.documentId).subscribe({
+    this.caseInspectionService.getBuildingBlockInstances(requestedDocumentId).subscribe({
       next: instances => {
+        if (requestedDocumentId !== this.documentId) {
+          return;
+        }
         this.$instances.set(instances);
         if (instances.length > 0) {
           this.$selected.set(this.findMatchingInstance(instances) ?? instances[0]);
@@ -82,6 +87,9 @@ export class CaseInspectionBuildingBlocksTabComponent implements OnChanges {
         this.$loading.set(false);
       },
       error: (err: HttpErrorResponse) => {
+        if (requestedDocumentId !== this.documentId) {
+          return;
+        }
         if (err.status === 404) {
           this.$notSupported.set(true);
         } else {
