@@ -36,7 +36,7 @@ import {TranslatePipe} from '@ngx-translate/core';
 import {PropertyField} from '../../models';
 import {computed, effect} from '@angular/core';
 import {Information16} from '@carbon/icons';
-import {IKO_PROPERTIES_TEST_IDS} from '../../constants';
+import {IKO_PROPERTIES_TEST_IDS} from '../../constants/iko.test-ids';
 
 @Component({
   selector: 'valtimo-iko-management-properties',

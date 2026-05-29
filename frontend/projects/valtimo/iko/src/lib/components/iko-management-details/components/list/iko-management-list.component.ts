@@ -39,7 +39,7 @@ import {getDisplayTypeParametersView, ModalCloseEvent, ModalMode} from '@valtimo
 import {ListColumnDto} from '../../../../models';
 import {IkoManagementListModalComponent} from '../list-modal/list-modal.component';
 import {toObservable} from '@angular/core/rxjs-interop';
-import {IKO_LIST_MANAGEMENT_TEST_IDS} from '../../../../constants';
+import {IKO_LIST_MANAGEMENT_TEST_IDS} from '../../../../constants/iko.test-ids';
 
 @Component({
   standalone: true,

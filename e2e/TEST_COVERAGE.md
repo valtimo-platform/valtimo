@@ -5,10 +5,10 @@
 | Category                    | Features | Functions | ✅ Covered | ❌ Not Covered |
 |-----------------------------|----------|-----------|------------|----------------|
 | User Features (ROLE_USER)   | 5        | 21        | 12         | 9              |
-| Admin Features (ROLE_ADMIN) | 15       | 335       | 199        | 133            |
-| **Total**                   | **20**   | **356**   | **211**    | **142**        |
+| Admin Features (ROLE_ADMIN) | 15       | 335       | 239        | 96             |
+| **Total**                   | **20**   | **356**   | **251**    | **105**        |
 
-**Coverage:** `211 / 356` — `59.3%`
+**Coverage:** `251 / 356` — `70.5%`
 
 ---
 
@@ -600,30 +600,30 @@
 
 | #     | Function                   | Test Scenarios             | Coverage | Notes                                           |
 |:------|:---------------------------|:---------------------------|:--------:|:------------------------------------------------|
-| 15.24 | View search actions tab    | View search actions tab    |    ❌    |                                                 |
-| 15.25 | View search actions list   | View search actions list   |    ❌    |                                                 |
-| 15.26 | Add search action          | Add search action          |    ❌    |                                                 |
-| 15.27 | Enter search action title  | Enter search action title  |    ❌    |                                                 |
-| 15.28 | Enter search action key    | Enter search action key    |    ❌    |                                                 |
-| 15.29 | Delete search action       | Delete search action       |    ❌    |                                                 |
-| 15.30 | View search action details | View search action details |    ❌    |                                                 |
+| 15.24 | View search actions tab    | View search actions tab    |    ✅    | iko-search-action.spec.ts                       |
+| 15.25 | View search actions list   | View search actions list   |    ✅    | iko-search-action.spec.ts                       |
+| 15.26 | Add search action          | Add search action          |    ✅    | iko-search-action.spec.ts                       |
+| 15.27 | Enter search action title  | Enter search action title  |    ✅    | iko-search-action.spec.ts                       |
+| 15.28 | Enter search action key    | Enter search action key    |    ✅    | iko-search-action.spec.ts                       |
+| 15.29 | Delete search action       | Delete search action       |    ✅    | iko-search-action.spec.ts                       |
+| 15.30 | View search action details | View search action details |    ✅    | iko-search-action.spec.ts                       |
 
 #### 15D · Search Fields
 
 | #     | Function                | Test Scenarios                                | Coverage | Notes                                           |
 |:------|:------------------------|:----------------------------------------------|:--------:|:------------------------------------------------|
-| 15.31 | View search fields list | View search fields list                       |    ❌    |                                                 |
-| 15.32 | Add search field        | Add search field                              |    ❌    |                                                 |
-| 15.33 | Enter field title       | Enter field title (e.g. `BSN`)                |    ❌    |                                                 |
-| 15.34 | Enter field key         | Enter field key (e.g. `bsn`)                  |    ❌    |                                                 |
-| 15.35 | Enter field path        | Enter field path (e.g. `burgerservicenummer`) |    ❌    |                                                 |
-| 15.36 | Select data type        | Select data type dropdown (`Text`)            |    ❌    |                                                 |
-| 15.37 | Select match type       | Select match type (`Exact`)                   |    ❌    |                                                 |
-| 15.38 | Select field type       | Select field type (`Single`)                  |    ❌    |                                                 |
-| 15.39 | Set field as required   | Set field as required (toggle)                |    ❌    |                                                 |
-| 15.40 | Save search field       | Save search field                             |    ❌    |                                                 |
-| 15.41 | Edit search field       | Edit search field                             |    ❌    |                                                 |
-| 15.42 | Delete search field     | Delete search field                           |    ❌    |                                                 |
+| 15.31 | View search fields list | View search fields list                       |    ✅    | iko-search-field.spec.ts                        |
+| 15.32 | Add search field        | Add search field                              |    ✅    | iko-search-field.spec.ts                        |
+| 15.33 | Enter field title       | Enter field title (e.g. `BSN`)                |    ✅    | iko-search-field.spec.ts                        |
+| 15.34 | Enter field key         | Enter field key (e.g. `bsn`)                  |    ✅    | iko-search-field.spec.ts                        |
+| 15.35 | Enter field path        | Enter field path (e.g. `burgerservicenummer`) |    ✅    | iko-search-field.spec.ts                        |
+| 15.36 | Select data type        | Select data type dropdown (`Text`)            |    ✅    | iko-search-field.spec.ts                        |
+| 15.37 | Select match type       | Select match type (`Exact`)                   |    ✅    | iko-search-field.spec.ts                        |
+| 15.38 | Select field type       | Select field type (`Single`)                  |    ✅    | iko-search-field.spec.ts                        |
+| 15.39 | Set field as required   | Set field as required (toggle)                |    ✅    | iko-search-field.spec.ts                        |
+| 15.40 | Save search field       | Save search field                             |    ✅    | iko-search-field.spec.ts                        |
+| 15.41 | Edit search field       | Edit search field                             |    ✅    | iko-search-field.spec.ts                        |
+| 15.42 | Delete search field     | Delete search field                           |    ✅    | iko-search-field.spec.ts                        |
 
 #### 15E · List Columns
 
@@ -646,32 +646,32 @@
 
 | #     | Function                | Test Scenarios                                        | Coverage | Notes                                           |
 |:------|:------------------------|:------------------------------------------------------|:--------:|:------------------------------------------------|
-| 15.55 | View tabs tab           | View tabs tab                                         |    ❌    |                                                 |
-| 15.56 | View tabs list          | View tabs list (Key, Tab title, Tab type, Properties) |    ❌    |                                                 |
-| 15.57 | Add tab                 | Add tab                                               |    ❌    |                                                 |
-| 15.58 | Enter tab title         | Enter tab title                                       |    ❌    |                                                 |
-| 15.59 | Auto-generate tab key   | Auto-generate tab key                                 |    ❌    |                                                 |
-| 15.60 | Select tab type         | Select tab type dropdown                              |    ❌    |                                                 |
-| 15.61 | Enter data profile name | Enter aggregated data profile name (optional)         |    ❌    |                                                 |
-| 15.62 | Save tab                | Save tab                                              |    ❌    |                                                 |
-| 15.63 | Edit tab                | Edit tab                                              |    ❌    |                                                 |
-| 15.64 | Delete tab              | Delete tab                                            |    ❌    |                                                 |
+| 15.55 | View tabs tab           | View tabs tab                                         |    ✅    | iko-tab.spec.ts                                 |
+| 15.56 | View tabs list          | View tabs list (Key, Tab title, Tab type, Properties) |    ✅    | iko-tab.spec.ts                                 |
+| 15.57 | Add tab                 | Add tab                                               |    ✅    | iko-tab.spec.ts                                 |
+| 15.58 | Enter tab title         | Enter tab title                                       |    ✅    | iko-tab.spec.ts                                 |
+| 15.59 | Auto-generate tab key   | Auto-generate tab key                                 |    ✅    | iko-tab.spec.ts                                 |
+| 15.60 | Select tab type         | Select tab type dropdown                              |    ✅    | iko-tab.spec.ts                                 |
+| 15.61 | Enter data profile name | Enter aggregated data profile name (optional)         |    ✅    | iko-tab.spec.ts                                 |
+| 15.62 | Save tab                | Save tab                                              |    ✅    | iko-tab.spec.ts                                 |
+| 15.63 | Edit tab                | Edit tab                                              |    ✅    | iko-tab.spec.ts                                 |
+| 15.64 | Delete tab              | Delete tab                                            |    ✅    | iko-tab.spec.ts                                 |
 
 #### 15G · IKO Widgets
 
 | #     | Function                  | Test Scenarios                                                             | Coverage | Notes                                           |
 |:------|:--------------------------|:---------------------------------------------------------------------------|:--------:|:------------------------------------------------|
-| 15.65 | View widget details page  | View IKO widget details page                                               |    ❌    |                                                 |
-| 15.66 | View widgets list         | View widgets list                                                          |    ❌    |                                                 |
-| 15.67 | View widget properties    | View widget properties (Title, Type, Key, Width, Density, High contrast)   |    ❌    |                                                 |
-| 15.68 | Toggle visual/JSON editor | Toggle visual/JSON editor                                                  |    ❌    |                                                 |
-| 15.69 | Edit widgets JSON         | Edit widgets in JSON editor                                                |    ❌    |                                                 |
-| 15.70 | Add widget divider        | Add widget divider                                                         |    ❌    |                                                 |
-| 15.71 | Enter divider title       | Enter divider title (optional)                                             |    ❌    |                                                 |
-| 15.72 | Auto-generate divider key | Auto-generate divider key                                                  |    ❌    |                                                 |
-| 15.73 | Create widget             | Create widget                                                              |    ❌    |                                                 |
-| 15.74 | Choose widget type        | Choose widget type (Fields / Table / Interactive table / Collection / Map) |    ❌    |                                                 |
-| 15.75 | Save widget configuration | Save widget configuration                                                  |    ❌    |                                                 |
+| 15.65 | View widget details page  | View IKO widget details page                                               |    ✅    | iko-widget.spec.ts                              |
+| 15.66 | View widgets list         | View widgets list                                                          |    ✅    | iko-widget.spec.ts                              |
+| 15.67 | View widget properties    | View widget properties (Title, Type, Key, Width, Density, High contrast)   |    ✅    | iko-widget.spec.ts                              |
+| 15.68 | Toggle visual/JSON editor | Toggle visual/JSON editor                                                  |    ✅    | iko-widget.spec.ts                              |
+| 15.69 | Edit widgets JSON         | Edit widgets in JSON editor                                                |    ✅    | iko-widget.spec.ts                              |
+| 15.70 | Add widget divider        | Add widget divider                                                         |    ✅    | iko-widget.spec.ts                              |
+| 15.71 | Enter divider title       | Enter divider title (optional)                                             |    ✅    | iko-widget.spec.ts                              |
+| 15.72 | Auto-generate divider key | Auto-generate divider key                                                  |    ✅    | iko-widget.spec.ts                              |
+| 15.73 | Create widget             | Create widget                                                              |    ✅    | iko-widget.spec.ts                              |
+| 15.74 | Choose widget type        | Choose widget type (Fields / Table / Interactive table / Collection / Map) |    ✅    | iko-widget.spec.ts (all 5 types created)        |
+| 15.75 | Save widget configuration | Save widget configuration                                                  |    ✅    | iko-widget.spec.ts (create + edit + delete all) |
 
 ---
 
@@ -727,8 +727,8 @@
 |:-------------------------|:-------:|
 | Total Features           |   20    |
 | Total Functions          |   356   |
-| ✅ Covered by Playwright |   211   |
-| ❌ Not covered           |   142   |
+| ✅ Covered by Playwright |   251   |
+| ❌ Not covered           |   105   |
 | ⏳ In progress           |    1    |
 | `N/A` Not applicable     |    2    |
-| **Coverage %**           | **59.3%** |
+| **Coverage %**           | **70.5%** |

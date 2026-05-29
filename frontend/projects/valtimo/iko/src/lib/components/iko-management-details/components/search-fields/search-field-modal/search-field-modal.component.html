@@ -29,7 +29,14 @@
       >
       </v-input-label>
 
-      <input data-testid="-search-title" cdsText type="text" formControlName="title" cdsLayer />
+      <input
+        data-testid="-search-title"
+        [attr.data-test-id]="testIds.titleInput"
+        cdsText
+        type="text"
+        formControlName="title"
+        cdsLayer
+      />
     </div>
 
     <div class="valtimo-search-fields-modal__input">
@@ -51,7 +58,14 @@
       >
       </v-input-label>
 
-      <input cdsLayer data-testid="iko-search-key" cdsText type="text" formControlName="path" />
+      <input
+        cdsLayer
+        data-testid="iko-search-key"
+        [attr.data-test-id]="testIds.pathInput"
+        cdsText
+        type="text"
+        formControlName="path"
+      />
 
       <!-- TODO: When BE value resolver is in place -->
       <!-- <valtimo-value-path-selector
@@ -68,9 +82,11 @@
       >
       </v-input-label>
 
-      <cds-dropdown cdsLayer data-testid="-search-dataType" formControlName="dataType">
-        <cds-dropdown-list [items]="dataTypeItems$ | async"></cds-dropdown-list>
-      </cds-dropdown>
+      <div [attr.data-test-id]="testIds.dataTypeDropdown">
+        <cds-dropdown cdsLayer data-testid="-search-dataType" formControlName="dataType">
+          <cds-dropdown-list [items]="dataTypeItems$ | async"></cds-dropdown-list>
+        </cds-dropdown>
+      </div>
     </div>
 
     @if (dataTypeValue === SearchFieldDataType.TEXT) {
@@ -81,9 +97,11 @@
         >
         </v-input-label>
 
-        <cds-dropdown cdsLayer data-testid="-search-matchType" formControlName="matchType">
-          <cds-dropdown-list [items]="matchTypeItems$ | async"></cds-dropdown-list>
-        </cds-dropdown>
+        <div [attr.data-test-id]="testIds.matchTypeDropdown">
+          <cds-dropdown cdsLayer data-testid="-search-matchType" formControlName="matchType">
+            <cds-dropdown-list [items]="matchTypeItems$ | async"></cds-dropdown-list>
+          </cds-dropdown>
+        </div>
       </div>
     }
 
@@ -94,18 +112,24 @@
       >
       </v-input-label>
 
-      <cds-dropdown cdsLayer data-testid="-search-fieldType" formControlName="fieldType">
-        <cds-dropdown-list [items]="fieldTypeItems$ | async"></cds-dropdown-list>
-      </cds-dropdown>
+      <div [attr.data-test-id]="testIds.fieldTypeDropdown">
+        <cds-dropdown cdsLayer data-testid="-search-fieldType" formControlName="fieldType">
+          <cds-dropdown-list [items]="fieldTypeItems$ | async"></cds-dropdown-list>
+        </cds-dropdown>
+      </div>
     </div>
 
-    <cds-toggle
+    <div
       class="valtimo-search-fields-modal__input"
-      formControlName="required"
-      [label]="'searchFieldsOverview.required' | translate"
-      [onText]="'searchFieldsOverview.requiredEnabled' | translate"
-      [offText]="'searchFieldsOverview.requiredDisabled' | translate"
-    ></cds-toggle>
+      [attr.data-test-id]="testIds.requiredToggle"
+    >
+      <cds-toggle
+        formControlName="required"
+        [label]="'searchFieldsOverview.required' | translate"
+        [onText]="'searchFieldsOverview.requiredEnabled' | translate"
+        [offText]="'searchFieldsOverview.requiredDisabled' | translate"
+      ></cds-toggle>
+    </div>
 
     @if (
       dataTypeValue === SearchFieldDataType.TEXT &&
@@ -190,12 +214,18 @@
   </form>
 
   <cds-modal-footer>
-    <button data-testid="-search-cancel" cdsButton="secondary" (click)="onCancel()">
+    <button
+      data-testid="-search-cancel"
+      [attr.data-test-id]="testIds.cancelButton"
+      cdsButton="secondary"
+      (click)="onCancel()"
+    >
       {{ 'interface.cancel' | translate }}
     </button>
 
     <button
       data-testid="-search-save"
+      [attr.data-test-id]="testIds.saveButton"
       cdsButton="primary"
       [disabled]="formGroup.invalid"
       (click)="onSave()"

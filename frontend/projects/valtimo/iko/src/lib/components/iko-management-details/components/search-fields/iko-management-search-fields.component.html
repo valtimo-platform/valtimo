@@ -55,7 +55,11 @@
 ></valtimo-confirmation-modal>
 
 <ng-template #addFieldButton>
-  <button cdsButton="primary" (click)="openAddModal()">
+  <button
+    cdsButton="primary"
+    [attr.data-test-id]="testIds.addFieldButton"
+    (click)="openAddModal()"
+  >
     {{ 'searchFieldsOverview.add' | translate }}
 
     <svg class="cds--btn__icon" cdsIcon="add" size="16"></svg>

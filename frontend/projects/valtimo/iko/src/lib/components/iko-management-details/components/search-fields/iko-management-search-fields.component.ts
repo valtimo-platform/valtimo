@@ -50,6 +50,7 @@ import {
 import {IkoManagementApiService} from '../../../../services';
 import {IkoManagementSearchFieldModalComponent} from './search-field-modal/search-field-modal.component';
 import {ModalMode} from '@valtimo/shared';
+import {IKO_SEARCH_FIELDS_TEST_IDS} from '../../../../constants/iko.test-ids';
 
 @Component({
   selector: 'valtimo-iko-management-search-fields',
@@ -67,6 +68,8 @@ import {ModalMode} from '@valtimo/shared';
   ],
 })
 export class IkoManagementSearchFieldsComponent implements OnInit, OnDestroy {
+  public readonly testIds = IKO_SEARCH_FIELDS_TEST_IDS;
+
   public readonly $modalMode = signal<ModalMode>('add');
   private readonly _refresh$ = new BehaviorSubject<null>(null);
   public readonly params$: Observable<IkoManagementParams> = this.route.params.pipe(

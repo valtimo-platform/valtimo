@@ -71,3 +71,39 @@ export const IKO_COLUMN_MODAL_TEST_IDS = {
   saveButton: 'ikoColumnModalSaveButton',
   cancelButton: 'ikoColumnModalCancelButton',
 } as const;
+
+export const IKO_SEARCH_ACTIONS_TEST_IDS = {
+  addActionButton: 'ikoSearchActionAddButton',
+} as const;
+
+export const IKO_SEARCH_ACTION_MODAL_TEST_IDS = {
+  titleInput: 'ikoSearchActionModalTitleInput',
+  saveButton: 'ikoSearchActionModalSaveButton',
+  cancelButton: 'ikoSearchActionModalCancelButton',
+} as const;
+
+export const IKO_TABS_TEST_IDS = {
+  addTabButton: 'ikoTabAddButton',
+} as const;
+
+export const IKO_TAB_DETAILS_MODAL_TEST_IDS = {
+  titleInput: 'ikoTabModalTitleInput',
+  typeSelect: 'ikoTabModalTypeSelect',
+  saveButton: 'ikoTabModalSaveButton',
+  cancelButton: 'ikoTabModalCancelButton',
+} as const;
+
+export const IKO_SEARCH_FIELDS_TEST_IDS = {
+  addFieldButton: 'ikoSearchFieldAddButton',
+} as const;
+
+export const IKO_SEARCH_FIELD_MODAL_TEST_IDS = {
+  titleInput: 'ikoSearchFieldModalTitleInput',
+  pathInput: 'ikoSearchFieldModalPathInput',
+  dataTypeDropdown: 'ikoSearchFieldModalDataTypeDropdown',
+  matchTypeDropdown: 'ikoSearchFieldModalMatchTypeDropdown',
+  fieldTypeDropdown: 'ikoSearchFieldModalFieldTypeDropdown',
+  requiredToggle: 'ikoSearchFieldModalRequiredToggle',
+  saveButton: 'ikoSearchFieldModalSaveButton',
+  cancelButton: 'ikoSearchFieldModalCancelButton',
+} as const;
