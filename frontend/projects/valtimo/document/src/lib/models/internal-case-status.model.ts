@@ -23,6 +23,7 @@ interface InternalCaseStatus {
   retentionPeriodInDays: number;
   visibleInCaseListByDefault: boolean;
   color: TagColor;
+  label?: string;
   documentDefinitionName?: string;
   order?: number;
   tagType?: TagType;

@@ -1,0 +1,146 @@
+<!--
+  ~ Copyright 2015-2026 Ritense BV, the Netherlands.
+  ~
+  ~ Licensed under EUPL, Version 1.2 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~ https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" basis,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<ng-container
+  *ngIf="{
+    widgetConfiguration: widgetConfiguration$ | async,
+    widgetData: widgetData$ | async,
+    displayState: displayState$ | async,
+    orientation: orientation$ | async,
+    isEmptyWidgetData: isEmptyWidgetData$ | async,
+  } as obs"
+>
+  @if (obs.widgetConfiguration?.title) {
+    <section class="valtimo-widget-metroline__header">
+      <div class="valtimo-widget-metroline__title-container">
+        @if (obs.widgetConfiguration?.icon) {
+          <valtimo-mdi-icon-viewer
+            [mdiIcon]="obs.widgetConfiguration.icon"
+          ></valtimo-mdi-icon-viewer>
+        }
+
+        <h4 class="valtimo-widget-metroline__title">{{ obs.widgetConfiguration?.title }}</h4>
+      </div>
+
+      <ng-content></ng-content>
+
+      @if (obs.widgetConfiguration) {
+        <valtimo-widget-action-button
+          [widgetConfiguration]="obs.widgetConfiguration"
+          [resolvedData]="obs.widgetData"
+        ></valtimo-widget-action-button>
+      }
+    </section>
+  }
+
+  <div
+    class="valtimo-widget-metroline__body"
+    [class.valtimo-widget-metroline__body--vertical]="obs.orientation === 'vertical'"
+  >
+    @if (obs.isEmptyWidgetData) {
+      <valtimo-no-results
+        [collapseVertically]="true"
+        [description]="'widgets.noData' | translate"
+        [smallPadding]="true"
+      ></valtimo-no-results>
+    } @else if (obs.widgetData === null) {
+      <ul
+        data-progress
+        data-progress-current
+        class="cds--progress"
+        [class.cds--progress--vertical]="obs.orientation === 'vertical'"
+        [class.cds--progress--space-equal]="obs.orientation !== 'vertical'"
+      >
+        @for (placeholder of skeletonSteps; track $index) {
+          <li class="cds--progress-step cds--progress-step--incomplete">
+            <div class="cds--progress-step-button cds--progress-step-button--unclickable">
+              <svg cdsIcon="circle-dash" size="16"></svg>
+              <div class="cds--progress-text valtimo-widget-metroline__step-text">
+                <cds-skeleton-text [lines]="1" [maxLineWidth]="80"></cds-skeleton-text>
+              </div>
+              <span class="cds--progress-line"></span>
+            </div>
+          </li>
+        }
+      </ul>
+    } @else {
+      <ul
+        data-progress
+        data-progress-current
+        class="cds--progress"
+        [class.cds--progress--vertical]="obs.orientation === 'vertical'"
+        [class.cds--progress--space-equal]="obs.orientation !== 'vertical'"
+      >
+        @for (step of obs.displayState?.steps ?? []; track $index; let i = $index) {
+          @let state = getStepState(step, i, obs.displayState?.currentStepIndex ?? 0);
+          <li
+            class="cds--progress-step"
+            [class.cds--progress-step--complete]="step.complete"
+            [class.cds--progress-step--incomplete]="
+              !step.complete && i !== obs.displayState?.currentStepIndex
+            "
+            [class.cds--progress-step--current]="i === obs.displayState?.currentStepIndex"
+          >
+            <div
+              class="cds--progress-step-button cds--progress-step-button--unclickable"
+              [title]="step.label"
+            >
+              <span class="cds--assistive-text">
+                {{ stepStateTranslationKeys[state] | translate }}
+              </span>
+              <svg
+                [cdsIcon]="stepIcons[state]"
+                size="16"
+                [class.cds--progress__warning]="
+                  step.invalid && i !== obs.displayState?.currentStepIndex
+                "
+              ></svg>
+              <div class="cds--progress-text valtimo-widget-metroline__step-text">
+                <div class="valtimo-widget-metroline__step-label-row">
+                  <p class="cds--progress-label">{{ step.label }}</p>
+                  @if (step.itemLabel) {
+                    <cds-toggletip align="bottom" [autoAlign]="true">
+                      <button
+                        cdsToggletipButton
+                        [removeClassnames]="['cds--toggletip-button']"
+                        type="button"
+                        class="valtimo-widget-metroline__step-info"
+                      >
+                        <svg cdsIcon="information" size="16"></svg>
+                      </button>
+                      <div
+                        cdsToggletipContent
+                        class="valtimo-widget-metroline__step-toggletip-content"
+                      >
+                        {{ step.itemLabel }}
+                      </div>
+                    </cds-toggletip>
+                  }
+                </div>
+                @if (step.secondaryLabel) {
+                  <p class="cds--progress-optional">
+                    {{ step.secondaryLabel }}
+                  </p>
+                }
+              </div>
+              <span class="cds--progress-line"></span>
+            </div>
+          </li>
+        }
+      </ul>
+    }
+  </div>
+</ng-container>

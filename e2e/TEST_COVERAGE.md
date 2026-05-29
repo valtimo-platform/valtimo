@@ -5,10 +5,10 @@
 | Category                    | Features | Functions | ✅ Covered | ❌ Not Covered |
 |-----------------------------|----------|-----------|------------|----------------|
 | User Features (ROLE_USER)   | 5        | 21        | 12         | 9              |
-| Admin Features (ROLE_ADMIN) | 15       | 328       | 133        | 192            |
-| **Total**                   | **20**   | **349**   | **145**    | **201**        |
+| Admin Features (ROLE_ADMIN) | 15       | 335       | 164        | 168            |
+| **Total**                   | **20**   | **356**   | **176**    | **177**        |
 
-**Coverage:** `145 / 349` — `41.5%`
+**Coverage:** `176 / 356` — `49.4%`
 
 ---
 
@@ -372,56 +372,56 @@
 
 | #    | Function                  | Test Scenarios                                        | Coverage | Notes                                           |
 |:-----|:--------------------------|:------------------------------------------------------|:--------:|:------------------------------------------------|
-| 10.1 | View dashboard list       | Display list of dashboards                            |    ❌    |                                                 |
-| 10.2 | Create dashboard          | Create new dashboard                                  |    ❌    |                                                 |
-| 10.3 | Edit dashboard            | Edit existing dashboard                               |    ❌    |                                                 |
-| 10.4 | View dashboard metadata   | View metadata (created by, created on, dashboard key) |    ❌    |                                                 |
-| 10.5 | Toggle JSON/visual editor | Toggle between JSON and visual editor                 |    ❌    |                                                 |
-| 10.6 | Edit dashboard JSON       | Edit dashboard JSON directly                          |    ❌    |                                                 |
+| 10.1 | View dashboard list       | Display list of dashboards                            |    ✅    | dashboard-management.spec.ts                    |
+| 10.2 | Create dashboard          | Create new dashboard                                  |    ✅    | dashboard-management.spec.ts                    |
+| 10.3 | Edit dashboard            | Edit existing dashboard                               |    ✅    | dashboard-management.spec.ts                    |
+| 10.4 | View dashboard metadata   | View metadata (created by, created on, dashboard key) |    ✅    | dashboard-management.spec.ts                    |
+| 10.5 | Toggle JSON/visual editor | Toggle between JSON and visual editor                 |    ✅    | dashboard-management.spec.ts                    |
+| 10.6 | Edit dashboard JSON       | Edit dashboard JSON directly                          |    ✅    | dashboard-management.spec.ts                    |
 
 #### 10B · Widget Management
 
 | #     | Function                  | Test Scenarios                  | Coverage | Notes                                           |
 |:------|:--------------------------|:--------------------------------|:--------:|:------------------------------------------------|
-| 10.7  | View widgets list         | Display widgets list            |    ❌    |                                                 |
-| 10.8  | Add new widget            | Add new widget to dashboard     |    ❌    |                                                 |
-| 10.9  | Rearrange widgets         | Rearrange widgets via drag-drop |    ❌    |                                                 |
-| 10.10 | Delete widget             | Delete widget from dashboard    |    ❌    |                                                 |
-| 10.11 | Edit widget configuration | Edit widget configuration       |    ❌    |                                                 |
+| 10.7  | View widgets list         | Display widgets list            |    ✅    | dashboard-management.spec.ts                    |
+| 10.8  | Add new widget            | Add new widget to dashboard     |    ✅    | dashboard-management.spec.ts                    |
+| 10.9  | Rearrange widgets         | Rearrange widgets via drag-drop |    ✅    | dashboard-management.spec.ts                    |
+| 10.10 | Delete widget             | Delete widget from dashboard    |    ✅    | dashboard-management.spec.ts                    |
+| 10.11 | Edit widget configuration | Edit widget configuration       |    ✅    | dashboard-management.spec.ts                    |
 
 #### 10C · Widget Config — Data
 
 | #     | Function                     | Test Scenarios                                                                        | Coverage | Notes                                           |
 |:------|:-----------------------------|:--------------------------------------------------------------------------------------|:--------:|:------------------------------------------------|
-| 10.12 | Select widget type           | Select widget type (Case count / Multiple / Group by / Task count)                    |    ❌    |                                                 |
-| 10.13 | Enter widget title           | Enter widget title                                                                    |    ❌    |                                                 |
-| 10.14 | Select data source           | Select data source (Case count / Case counts / Task count)                            |    ❌    |                                                 |
-| 10.15 | Select case type             | Select case type for case count widgets                                               |    ❌    |                                                 |
-| 10.16 | Add conditions               | Add conditions to filter data                                                         |    ❌    |                                                 |
-| 10.17 | Configure condition path     | Configure condition query path                                                        |    ❌    |                                                 |
-| 10.18 | Configure condition operator | Configure condition query operator                                                    |    ❌    |                                                 |
-| 10.19 | Configure condition value    | Configure condition query value                                                       |    ❌    |                                                 |
-| 10.20 | Use placeholders             | Use placeholders in conditions (`${null}`, `${currentUserId}`, `${currentUserEmail}`) |    ❌    |                                                 |
+| 10.12 | Select widget type           | Select widget type (Case count / Multiple / Group by / Task count)                    |    ✅    | dashboard-management.spec.ts                    |
+| 10.13 | Enter widget title           | Enter widget title                                                                    |    ✅    | dashboard-management.spec.ts                    |
+| 10.14 | Select data source           | Select data source (Case count / Case counts / Task count)                            |    ✅    | dashboard-management.spec.ts                    |
+| 10.15 | Select case type             | Select case type for case count widgets                                               |    ✅    | dashboard-management.spec.ts                    |
+| 10.16 | Add conditions               | Add conditions to filter data                                                         |    ✅    | dashboard-management.spec.ts                    |
+| 10.17 | Configure condition path     | Configure condition query path                                                        |    ✅    | dashboard-management.spec.ts                    |
+| 10.18 | Configure condition operator | Configure condition query operator                                                    |    ✅    | dashboard-management.spec.ts                    |
+| 10.19 | Configure condition value    | Configure condition query value                                                       |    ✅    | dashboard-management.spec.ts                    |
+| 10.20 | Use placeholders             | Use placeholders in conditions (`${null}`, `${currentUserId}`, `${currentUserEmail}`) |    ✅    | dashboard-management.spec.ts                    |
 
 #### 10D · Widget Config — Display
 
 | #     | Function                   | Test Scenarios                           | Coverage | Notes                                           |
 |:------|:---------------------------|:-----------------------------------------|:--------:|:------------------------------------------------|
-| 10.21 | Select display type        | Select display type (Big number / Gauge) |    ❌    |                                                 |
-| 10.22 | Configure display title    | Configure display type title             |    ❌    |                                                 |
-| 10.23 | Configure display subtitle | Configure display type subtitle          |    ❌    |                                                 |
-| 10.24 | Configure display label    | Configure display type label             |    ❌    |                                                 |
-| 10.25 | Toggle KPI usage           | Toggle KPI usage                         |    ❌    |                                                 |
-| 10.26 | Set URL path               | Set URL path for widget click navigation |    ❌    |                                                 |
+| 10.21 | Select display type        | Select display type (Big number / Gauge) |    ✅    | dashboard-management.spec.ts                    |
+| 10.22 | Configure display title    | Configure display type title             |    ✅    | dashboard-management.spec.ts                    |
+| 10.23 | Configure display subtitle | Configure display type subtitle          |    ✅    | dashboard-management.spec.ts                    |
+| 10.24 | Configure display label    | Configure display type label             |    ✅    | dashboard-management.spec.ts                    |
+| 10.25 | Toggle KPI usage           | Toggle KPI usage                         |    ✅    | dashboard-management.spec.ts                    |
+| 10.26 | Set URL path               | Set URL path for widget click navigation |    ✅    | dashboard-management.spec.ts                    |
 
 #### 10E · Widget Types
 
 | #     | Function                    | Test Scenarios                                       | Coverage | Notes                                           |
 |:------|:----------------------------|:-----------------------------------------------------|:--------:|:------------------------------------------------|
-| 10.27 | Configure Case count widget | Configure Case count widget (single case type count) |    ❌    |                                                 |
-| 10.28 | Configure Multiple counts   | Configure Multiple case counts widget                |    ❌    |                                                 |
-| 10.29 | Configure Group by widget   | Configure Group by widget                            |    ❌    |                                                 |
-| 10.30 | Configure Task count widget | Configure Task count widget                          |    ❌    |                                                 |
+| 10.27 | Configure Case count widget | Configure Case count widget (single case type count) |    ✅    | dashboard-management.spec.ts                    |
+| 10.28 | Configure Multiple counts   | Configure Multiple case counts widget                |    ✅    | dashboard-management.spec.ts                    |
+| 10.29 | Configure Group by widget   | Configure Group by widget                            |    ✅    | dashboard-management.spec.ts                    |
+| 10.30 | Configure Task count widget | Configure Task count widget                          |    ✅    | dashboard-management.spec.ts                    |
 
 ---
 
@@ -679,8 +679,8 @@
 
 | #    | Function                        | Test Scenarios                           | Coverage | Notes                                           |
 |:-----|:--------------------------------|:-----------------------------------------|:--------:|:------------------------------------------------|
-| 16.1 | Manage choice field definitions | Manage choice field definitions          |    ❌    |                                                 |
-| 16.2 | Add/edit/delete choice options  | Add / edit / delete choice field options |    ❌    |                                                 |
+| 16.1 | Manage choice field definitions | Manage choice field definitions          |    ✅    | choice-field-management.spec.ts                 |
+| 16.2 | Add/edit/delete choice options  | Add / edit / delete choice field options |    ✅    | choice-field-management.spec.ts                 |
 
 ---
 
@@ -726,9 +726,9 @@
 | Metric                   |  Count  |
 |:-------------------------|:-------:|
 | Total Features           |   20    |
-| Total Functions          |   349   |
-| ✅ Covered by Playwright |   145   |
-| ❌ Not covered           |   201   |
+| Total Functions          |   356   |
+| ✅ Covered by Playwright |   176   |
+| ❌ Not covered           |   177   |
 | ⏳ In progress           |    1    |
 | `N/A` Not applicable     |    2    |
-| **Coverage %**           | **41.5%** |
+| **Coverage %**           | **49.4%** |

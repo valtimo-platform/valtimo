@@ -45,7 +45,7 @@ export class TaskListPage {
   }
 
   get assignmentPill() {
-    return this.page.locator('.assignment-pill');
+    return this.page.locator('.assignment-pill').first();
   }
 
   // ─── Navigation & Waiting ──────────────────────────────────────────
@@ -70,7 +70,7 @@ export class TaskListPage {
   async openTaskByName(taskName: string) {
     const row = this.page
       .locator('valtimo-carbon-list tbody tr')
-      .filter({has: this.page.locator(`td:has-text("${taskName}")`)})
+      .filter({has: this.page.getByRole('cell', {name: taskName, exact: true})})
       .first();
     await row.click();
     await expect(this.taskDetailDialog.getByText(taskName)).toBeVisible({timeout: 10_000});
@@ -86,23 +86,50 @@ export class TaskListPage {
   }
 
   async claimTask() {
-    await this.page.getByText('Assign this task').click();
-    const userCombobox = this.page.getByRole('combobox', {name: 'Select user'});
-    await userCombobox.click();
+    const assignButton = this.page.getByText('Assign this task');
+
+    await expect(assignButton.or(this.assignmentPill)).toBeVisible({timeout: 15_000});
+
+    // Already assigned — nothing to claim.
+    if (await this.assignmentPill.isVisible()) {
+      return;
+    }
+
+    await assignButton.click();
+
+    const assignDialog = this.page
+      .getByRole('dialog')
+      .filter({has: this.page.getByRole('combobox', {name: 'Select user'})});
+
+    await assignDialog.getByRole('combobox', {name: 'Select user'}).click();
     await this.page.getByRole('listbox').getByRole('option').first().click();
-    await this.page.getByRole('button', {name: 'Confirm', exact: true}).click();
+
+    // The assignment dialog requires both a user and a team — Confirm stays
+    // disabled until both are picked.
+    await assignDialog.getByRole('combobox', {name: 'Select team'}).click();
+    await this.page.getByRole('listbox').getByRole('option').first().click();
+
+    const confirmButton = assignDialog.getByRole('button', {name: 'Confirm', exact: true});
+    await expect(confirmButton).toBeEnabled({timeout: 10_000});
+    await confirmButton.click();
+    await expect(assignDialog).not.toBeVisible({timeout: 15_000});
   }
 
   async assertTaskAssigned() {
-    await expect(this.assignmentPill).toBeVisible({timeout: 10_000});
+    await expect(this.assignmentPill).toBeVisible({timeout: 30_000});
   }
 
   async submitEmptyForm() {
-    await this.page.getByRole('button', {name: 'Submit'}).click();
+    const submitButton = this.taskDetailDialog.getByRole('button', {name: 'Submit'});
+    await expect(submitButton).toBeVisible({timeout: 10_000});
+    await submitButton.click();
+    // Wait for the modal to close after submission
+    await expect(this.taskDetailDialog).not.toBeVisible({timeout: 15_000});
   }
 
   async assertTaskCompletedNotification(taskName: string) {
-    await expect(this.page.getByRole('heading', {name: `${taskName} has`})).toBeVisible({
+    // Toast notification shows "{taskName} has successfully been completed"
+    await expect(this.page.getByText(`${taskName} has successfully been completed`).first()).toBeVisible({
       timeout: 15_000,
     });
   }

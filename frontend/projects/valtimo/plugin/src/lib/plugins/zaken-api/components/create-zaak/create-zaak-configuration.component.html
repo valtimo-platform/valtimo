@@ -1,5 +1,5 @@
 <!--
-  ~ Copyright 2015-2025 Ritense BV, the Netherlands.
+  ~ Copyright 2015-2026 Ritense BV, the Netherlands.
   ~
   ~ Licensed under EUPL, Version 1.2 (the "License");
   ~ you may not use this file except in compliance with the License.
@@ -91,89 +91,61 @@
         "
         [widthInPx]="350"
       ></v-select>
+    </v-form>
 
-      <div class="property-row">
-        <div class="property-input-col">
-          <v-overflow-menu placement="bottom-start" class="add-button">
-            <button overflowTrigger cdsButton="primary" [size]="'md'">
-              {{ 'addZaakProperty' | pluginTranslate: pluginId | async }}
+    <div class="row">
+      <div class="col-12">
+        <v-overflow-menu placement="bottom-start" class="add-button">
+          <button overflowTrigger cdsButton="primary" [size]="'md'">
+            {{ 'addZaakProperty' | pluginTranslate: pluginId | async }}
 
-              <svg class="cds--btn__icon" cdsIcon="add" size="16"></svg>
-            </button>
+            <svg class="cds--btn__icon" cdsIcon="add" size="16"></svg>
+          </button>
 
-            @for (propertyOption of propertyOptions; track propertyOption) {
-              @if (propertyOption !== CASE_GEOMETRY_COORDINATES && !hasPropertyBeenAdded(propertyOption)) {
-                <v-overflow-menu-option (selected)="addProperty(propertyOption)">
-                  {{ translationKeyForPropertyList(propertyOption) | pluginTranslate: pluginId | async }}
-                </v-overflow-menu-option>
-              }
+          @for (propertyOption of sortedMenuPropertyOptions$ | async; track propertyOption) {
+            @if (!hasPropertyBeenAdded(propertyOption)) {
+              <v-overflow-menu-option (selected)="addProperty(propertyOption)">
+                {{ translationKeyFor(propertyOption) | pluginTranslate: pluginId | async }}
+              </v-overflow-menu-option>
             }
-          </v-overflow-menu>
-        </div>
+          }
+        </v-overflow-menu>
       </div>
+    </div>
 
-      @for (property of propertyList; track property) {
-        <div class="property-row">
-          <div class="property-input-col">
-            @switch (property) {
-              @case (CASE_GEOMETRY_TYPE) {
+    <v-form (valueChange)="onFormValueChanged($event)">
+      @for (group of (sortedPropertyListGroups$ | async) ?? []; track group[0].name) {
+        <div [class.property-group]="group.length > 1">
+          @for (property of group; track property.name) {
+            <div class="row">
+              <div class="col-11">
                 <v-input
-                  [name]="CASE_GEOMETRY_TYPE"
-                  [title]="
-                    translationKeyFor(CASE_GEOMETRY_TYPE) | pluginTranslate: pluginId | async
-                  "
-                  [defaultValue]="prefillValueFor(CASE_GEOMETRY_TYPE, obs.prefill)"
-                  (valueChange)="onPropertyChanged(CASE_GEOMETRY_TYPE, $event)"
-                  [required]="true"
-                  [margin]="true"
-                  [presetOptions]="geometryTypes"
-                />
-              }
-              @case (CASE_GEOMETRY_COORDINATES) {
-                <v-input
-                  [name]="CASE_GEOMETRY_COORDINATES"
-                  [title]="
-                    translationKeyFor(CASE_GEOMETRY_COORDINATES) | pluginTranslate: pluginId | async
-                  "
-                  [tooltip]="translationKeyFor(`${CASE_GEOMETRY_COORDINATES}Tooltip`) | pluginTranslate: pluginId | async"
-                  [defaultValue]="prefillValueFor(CASE_GEOMETRY_COORDINATES, obs.prefill)"
-                  (valueChange)="onPropertyChanged(CASE_GEOMETRY_COORDINATES, $event)"
-                  [required]="true"
-                  [margin]="true"
-                />
-              }
-              @default {
-                <v-input
-                  [name]="property"
-                  [title]="translationKeyFor(property) | pluginTranslate: pluginId | async"
+                  [name]="property.name"
+                  [title]="property.translationKey | pluginTranslate: pluginId | async"
                   [tooltip]="
-                    property.includes('Date')
-                      ? ('dateformatTooltip' | pluginTranslate: pluginId | async)
+                    property.tooltipTranslationKey !== null
+                      ? (property.tooltipTranslationKey | pluginTranslate: pluginId | async)
                       : null
                   "
-                  [defaultValue]="prefillValueFor(property, obs.prefill)"
-                  (valueChange)="onPropertyChanged(property, $event)"
+                  [defaultValue]="prefillValueFor(property.name, obs.prefill)"
+                  (valueChange)="onPropertyChanged(property.name, $event)"
                   [required]="true"
                   [margin]="true"
                   [trim]="true"
-                  [presetOptions]="
-                    property === PAYMENT_INDICATION_TYPE ? paymentIndicationTypes : []
-                  "
+                  [presetOptions]="property.presetOptions"
                 />
-              }
-            }
-          </div>
-
-          <div class="property-delete-col">
-            @if (property !== CASE_GEOMETRY_COORDINATES) {
-              <button class="btn btn-space delete-button" (click)="removeProperty(property)">
-                <svg class="cds--btn__icon" cdsIcon="trash-can" size="16"></svg>
-              </button>
-            }
-          </div>
+              </div>
+              <div class="col-1">
+                @if (!isLinkedFollower(property.name)) {
+                  <button class="btn btn-space delete-button" (click)="removeProperty(groupTriggerFor(property.name) ?? property.name)">
+                    <svg class="cds--btn__icon" cdsIcon="trash-can" size="16"></svg>
+                  </button>
+                }
+              </div>
+            </div>
+          }
         </div>
       }
     </v-form>
   }
 </ng-container>
-

@@ -230,6 +230,7 @@ export class WidgetManagementEditorComponent implements OnDestroy {
     WidgetType.FIELDS,
     WidgetType.COLLECTION,
     WidgetType.TABLE,
+    WidgetType.HIGHLIGHT,
   ];
 
   constructor(

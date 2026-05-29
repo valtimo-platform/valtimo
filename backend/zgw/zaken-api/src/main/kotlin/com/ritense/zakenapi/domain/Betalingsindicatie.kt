@@ -21,9 +21,12 @@ import com.fasterxml.jackson.annotation.JsonValue
 
 enum class Betalingsindicatie(@JsonValue val key: String) {
     NVT("nvt"),
-    NOG_NIET("nog_niet"),
-    GEDEELTELIJK("gedeeltelijk"),
-    GEHEEL("geheel");
+    GEFACTUREERD("gefactureerd"),
+    GECREDITEERD("gecrediteerd"),
+    BETAALD("betaald"),
+    NOG_NIET("nog_niet"), // Deprecated
+    GEDEELTELIJK("gedeeltelijk"), // Deprecated
+    GEHEEL("geheel");  // Deprecated
 
     companion object {
         /**
@@ -32,7 +35,7 @@ enum class Betalingsindicatie(@JsonValue val key: String) {
         @JvmStatic
         @JsonCreator(mode = JsonCreator.Mode.DELEGATING)
         fun create(key: String?): Betalingsindicatie? {
-            return Betalingsindicatie.values().find { it.key == key }
+            return entries.find { it.key == key }
         }
     }
 }

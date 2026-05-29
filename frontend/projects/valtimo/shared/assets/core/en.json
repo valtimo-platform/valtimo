@@ -893,6 +893,7 @@
         "retentionPeriodTooltip": "0 or higher: retention is active, case will be deleted after the specified number of days, -1: no retention period is set, case will not be automatically deleted",
         "deletedImmediately": "Deleted immediately",
         "key": "Status key",
+        "label": "Label (Optional)",
         "visible": "Visible by default",
         "color": "Color"
       },
@@ -994,7 +995,23 @@
       "collection": {"title": "Collection", "description": "Create a collection"},
       "divider": {"title": "Divider"},
       "map": {"title": "Map", "description": "Create a map widget"},
-      "person-card": {"title": "Person card", "description": "A person with their key details and contact info"}
+      "person-card": {"title": "Person card", "description": "A person with their key details and contact info"},
+      "metroline": {
+        "title": "Metroline",
+        "description": "Show progression as a metroline"
+      },
+      "highlight": {
+        "title": "Highlight",
+        "description": "A small widget that highlights a single value or a count"
+      },
+      "generic": {
+        "title": "Generic widgets",
+        "description": "Broadly applicable — wire them up to any data structure (fields, tables, collections). More configuration, but no limits on what they can show."
+      },
+      "specific": {
+        "title": "Specific widgets",
+        "description": "Each is built for one kind of data — a person, a count, a single value. Fewer options to configure, but only suitable for that purpose."
+      }
     },
     "width": {
       "description": "Select the desired width for the widget.",
@@ -1080,7 +1097,7 @@
         "keyTooltip": "Value resolver path to GeoJSON data"
       },
       "person-card": {
-        "description": "Pick the icon and the source paths for each person field.",
+        "description": "Choose the person to render and which sections to show on the card.",
         "fullNameLabel": "Full name",
         "birthDateLabel": "Birth date (Optional)",
         "bsnLabel": "BSN (Optional)",
@@ -1133,6 +1150,26 @@
         "fieldWidthPlaceholder": "Choose field width",
         "titleTooltip": "Title for the property",
         "valueTooltip": "Name of the property you wish to access within the previously filled collection data path"
+      },
+      "metroline": {
+        "displayType": {
+          "label": "Display type",
+          "horizontal": "Horizontal",
+          "vertical": "Vertical"
+        },
+        "statusSource": {
+          "label": "Status source",
+          "placeholder": "Select a status source",
+          "internalStatus": "Internal status",
+          "zaakStatus": "Zaak status"
+        }
+      },
+      "highlight": {
+        "description": "",
+        "value": "Value",
+        "valuePlaceholder": "Select or type a path",
+        "valueHelper": "Shows the value at this path. If it resolves to an array, the count of items is shown instead.",
+        "accentColor": "Accent color"
       }
     },
     "filters": {
@@ -2345,7 +2382,18 @@
       "title": "Map"
     },
     "personCard": {
-      "age": "{{age}} yr"
+      "age": "{{age}} year"
+    },
+    "metroline": {
+      "stepState": {
+        "current": "Current",
+        "complete": "Complete",
+        "incomplete": "Incomplete",
+        "invalid": "Invalid"
+      }
+    },
+    "highlight": {
+      "noValue": "No value"
     }
   },
   "iko": {

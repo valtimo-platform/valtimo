@@ -1,0 +1,113 @@
+<!--
+  ~ Copyright 2015-2026 Ritense BV, the Netherlands.
+  ~
+  ~ Licensed under EUPL, Version 1.2 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~ https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" basis,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<form
+  *ngIf="{params: params$ | async} as data"
+  [formGroup]="form"
+  class="valtimo-widget-management-highlight__form"
+>
+  <section class="valtimo-widget-management-highlight__panel">
+    <div class="valtimo-widget-management-highlight__identity-row">
+      <cds-text-label class="valtimo-widget-management-highlight__title-input">
+        <v-input-label
+          [title]="'widgetTabManagement.content.widgetTitle' | translate"
+          [tooltip]="'widgetTabManagement.content.widgetTitleTooltip' | translate"
+        ></v-input-label>
+
+        <input
+          formControlName="widgetTitle"
+          cdsText
+          type="text"
+          [placeholder]="'widgetTabManagement.content.widgetTitlePlaceholder' | translate"
+        />
+      </cds-text-label>
+
+      <valtimo-mdi-icon-selector
+        [cdsLayer]="1"
+        formControlName="widgetIcon"
+      ></valtimo-mdi-icon-selector>
+    </div>
+  </section>
+
+  <ng-content></ng-content>
+
+  <section class="valtimo-widget-management-highlight__panel">
+    <div class="valtimo-widget-management-highlight__row">
+      <div
+        class="valtimo-widget-management-highlight__row-item valtimo-widget-management-highlight__value"
+      >
+        @if ($widgetContext() === 'case') {
+          <valtimo-value-path-selector
+            formControlName="value"
+            [label]="'widgetTabManagement.content.highlight.value' | translate"
+            [caseDefinitionKey]="data.params?.caseDefinitionKey"
+            [caseDefinitionVersionTag]="data.params?.caseDefinitionVersionTag"
+          ></valtimo-value-path-selector>
+        } @else {
+          <cds-text-label>
+            <v-input-label
+              [title]="'widgetTabManagement.content.highlight.value' | translate"
+            ></v-input-label>
+
+            <input
+              formControlName="value"
+              cdsText
+              type="text"
+              [placeholder]="'widgetTabManagement.content.highlight.valuePlaceholder' | translate"
+            />
+          </cds-text-label>
+        }
+
+        <span class="valtimo-widget-management-highlight__helper">
+          {{ 'widgetTabManagement.content.highlight.valueHelper' | translate }}
+        </span>
+      </div>
+
+      <cds-dropdown
+        class="valtimo-widget-management-highlight__row-item"
+        [label]="'widgetTabManagement.content.highlight.accentColor' | translate"
+        (selected)="onColorSelected($event)"
+        [dropUp]="false"
+      >
+        <cds-dropdown-list
+          [items]="$colorItems()"
+          [listTpl]="colorDropdownItemTemplate"
+        ></cds-dropdown-list>
+      </cds-dropdown>
+    </div>
+  </section>
+</form>
+
+<ng-template #colorDropdownItemTemplate let-item="item">
+  <ng-container *ngIf="item && item.content">
+    <cds-tag
+      *ngIf="item.tagType; else customColorTag"
+      class="cds-tag--no-margin"
+      [type]="item.tagType"
+    >
+      {{ item.content }}
+    </cds-tag>
+    <ng-template #customColorTag>
+      <cds-tag
+        class="cds-tag--no-margin valtimo-widget-management-highlight__color-tag"
+        [style.--widget-color-tag-bg]="item.tagBackground"
+        [style.--widget-color-tag-fg]="item.tagText"
+      >
+        {{ item.content }}
+      </cds-tag>
+    </ng-template>
+  </ng-container>
+</ng-template>

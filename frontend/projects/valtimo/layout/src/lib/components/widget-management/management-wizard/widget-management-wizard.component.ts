@@ -34,11 +34,12 @@ import {TranslateModule, TranslateService} from '@ngx-translate/core';
 import {CARBON_CONSTANTS, KeyGeneratorService} from '@valtimo/components';
 import {WIDGET_WIZARD_TEST_IDS} from '../../../constants';
 import {ButtonModule, ModalModule, ProgressIndicatorModule, Step} from 'carbon-components-angular';
-import {combineLatest, filter, map, Observable, Subscription, switchMap, take} from 'rxjs';
+import {combineLatest, filter, map, Observable, of, Subscription, switchMap, take} from 'rxjs';
 import {
   WIDGET_COLOR_LABELS,
   WIDGET_DENSITY_LABELS,
   WIDGET_WIDTH_LABELS,
+  WidgetType,
   WidgetWizardCloseEvent,
   WidgetWizardCloseEventType,
   WidgetWizardStep,
@@ -171,10 +172,39 @@ export class WidgetManagementWizardComponent implements OnDestroy {
     })
   );
 
-  public readonly stepLabel$ = toObservable(this.widgetWizardService.$currentStep).pipe(
-    switchMap((step: WidgetWizardStep) =>
-      this.translateService.stream(`widgetTabManagement.${step}.description`)
-    )
+  public readonly stepLabel$ = combineLatest([
+    toObservable(this.widgetWizardService.$currentStep),
+    toObservable(this.widgetWizardService.$selectedWidget),
+  ]).pipe(
+    switchMap(([step, selectedWidget]) => {
+      if (
+        step === WidgetWizardStep.CONTENT &&
+        selectedWidget?.type === WidgetType.METROLINE
+      ) {
+        return of('');
+      }
+
+      const widgetType = selectedWidget?.type;
+      const specificKey = widgetType
+        ? `widgetTabManagement.${step}.${widgetType}.description`
+        : null;
+
+      const defaultKey = `widgetTabManagement.${step}.description`;
+
+      return this.translateService
+        .stream([specificKey, defaultKey].filter(Boolean) as string[])
+        .pipe(
+          map((translations: Record<string, string>) => {
+            const specific = specificKey
+              ? translations[specificKey]
+              : undefined;
+
+            return specific !== undefined && specific !== specificKey
+              ? specific
+              : translations[defaultKey];
+          })
+        );
+    })
   );
 
   public readonly $backButtonDisabled: Signal<boolean> = computed(

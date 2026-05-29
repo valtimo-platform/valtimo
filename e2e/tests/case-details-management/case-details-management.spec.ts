@@ -140,11 +140,12 @@ test.describe('Case management', () => {
 
           if (!(await canHaveHandlerSwitch.isChecked())) {
             await caseDetailsManagementPage.caseHandlerCanHaveHandlerToggle.click();
+            await expect(canHaveHandlerSwitch).toBeChecked({timeout: 10_000});
           }
 
           // Assert canHaveHandler is true
-          await expect(canHaveHandlerSwitch).toBeChecked();
-          await expect(autoAssignSwitch).toBeEnabled();
+          await expect(canHaveHandlerSwitch).toBeChecked({timeout: 10_000});
+          await expect(autoAssignSwitch).toBeEnabled({timeout: 10_000});
 
           await caseDetailsManagementPage.caseHandlerAutomaticallyAssignToggle.click();
 

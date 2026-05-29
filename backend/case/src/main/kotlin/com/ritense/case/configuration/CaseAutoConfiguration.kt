@@ -29,6 +29,7 @@ import com.ritense.case.repository.CaseTabRepository
 import com.ritense.case.repository.CaseTabSpecificationFactory
 import com.ritense.case.repository.QuickSearchRepository
 import com.ritense.case.repository.StartableItemRepository
+import com.ritense.case.repository.HiddenTaskListColumnRepository
 import com.ritense.case.repository.TaskListColumnRepository
 import com.ritense.case.security.config.CaseHttpSecurityConfigurer
 import com.ritense.case.service.CaseDefinitionCheckerImpl
@@ -270,6 +271,7 @@ class CaseAutoConfiguration {
     @Bean
     fun taskColumnService(
         repository: TaskListColumnRepository,
+        hiddenTaskListColumnRepository: HiddenTaskListColumnRepository,
         documentDefinitionService: DocumentDefinitionService,
         valueResolverService: ValueResolverService,
         authorizationService: AuthorizationService,
@@ -277,6 +279,7 @@ class CaseAutoConfiguration {
     ): TaskColumnService {
         return TaskColumnService(
             repository,
+            hiddenTaskListColumnRepository,
             documentDefinitionService,
             valueResolverService,
             authorizationService,
