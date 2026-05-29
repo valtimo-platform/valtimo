@@ -17,12 +17,19 @@ import {CommonModule} from '@angular/common';
 import {ChangeDetectionStrategy, Component, computed, ViewEncapsulation} from '@angular/core';
 import {TranslateModule} from '@ngx-translate/core';
 import {TilesModule} from 'carbon-components-angular';
-import {AVAILABLE_WIDGETS, WidgetTypeSelection} from '../../../../../models';
+import {AVAILABLE_WIDGETS, WidgetType, WidgetTypeSelection} from '../../../../../models';
 import {WIDGET_WIZARD_TYPE_TEST_IDS} from '../../../../../constants';
 import {WidgetWizardService} from '../../../../../services';
 
+const SPECIFIC_WIDGET_TYPES: ReadonlySet<WidgetType> = new Set([
+  WidgetType.METROLINE,
+  WidgetType.PERSON_CARD,
+  WidgetType.HIGHLIGHT,
+]);
+
 @Component({
   templateUrl: './widget-wizard-type-step.component.html',
+  styleUrl: './widget-wizard-type-step.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
   standalone: true,
@@ -39,6 +46,15 @@ export class WidgetWizardTypeStepComponent {
           availableTypes.includes(typeSelection.type)
         );
   });
+
+  public readonly $genericWidgetTypes = computed(() =>
+    this.$availableWidgetTypes().filter(w => !SPECIFIC_WIDGET_TYPES.has(w.type))
+  );
+
+  public readonly $specificWidgetTypes = computed(() =>
+    this.$availableWidgetTypes().filter(w => SPECIFIC_WIDGET_TYPES.has(w.type))
+  );
+
   public readonly $selectedWidget = this.widgetWizardService.$selectedWidget;
 
   constructor(private readonly widgetWizardService: WidgetWizardService) {}

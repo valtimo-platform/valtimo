@@ -12,7 +12,7 @@
             "refreshOnChange": false
         },
         {
-            "key": "pv:besluit",
+            "key": "pv.besluit",
             "type": "container",
             "input": true,
             "label": "Besluit data",

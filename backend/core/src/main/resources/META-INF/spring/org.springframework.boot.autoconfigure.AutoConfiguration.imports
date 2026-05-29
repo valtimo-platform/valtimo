@@ -10,7 +10,7 @@ com.ritense.valtimo.autoconfigure.HibernateJsonMapperConfiguration
 com.ritense.valtimo.autoconfigure.SchedulerAutoConfiguration
 com.ritense.valtimo.contract.config.LiquibaseRunnerAutoConfiguration
 com.ritense.valtimo.autoconfigure.OperatonContextConfiguration
-com.ritense.valtimo.autoconfiguration.JobAutoConfiguration
+com.ritense.valtimo.autoconfiguration.ProcessBeanAutoConfiguration
 com.ritense.valtimo.autoconfiguration.ValtimoOperatonAutoConfiguration
 com.ritense.valtimo.autoconfiguration.ExportAutoConfiguration
 com.ritense.valtimo.autoconfiguration.ImportAutoConfiguration

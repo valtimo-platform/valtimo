@@ -17,7 +17,15 @@
   &__content {
     display: flex;
     flex-direction: column;
-    gap: 32px;
+
+    cds-progress-indicator {
+      margin-bottom: 32px;
+    }
+
+    > p {
+      margin: 0;
+      padding-bottom: 16px;
+    }
   }
 
   &__footer footer {

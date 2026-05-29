@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 
+@use '@carbon/colors';
+
 .clickable {
   cursor: pointer;
 }
@@ -83,6 +85,26 @@ td:first-child {
 
   &__expand-tag {
     cursor: pointer;
+  }
+
+  ::ng-deep .cds--tag--orange {
+    background-color: colors.$orange-20;
+    color: colors.$orange-70;
+  }
+
+  ::ng-deep .cds--tag--light-green {
+    background-color: colors.$green-20;
+    color: colors.$green-70;
+  }
+
+  ::ng-deep .cds--tag--yellow {
+    background-color: colors.$yellow-20;
+    color: colors.$yellow-70;
+  }
+
+  ::ng-deep .cds--tag--periwinkle {
+    background-color: colors.$purple-20;
+    color: colors.$purple-70;
   }
 
   label {
