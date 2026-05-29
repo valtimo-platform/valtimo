@@ -461,13 +461,16 @@ export class CaseDetailsProcessLinksPage {
 
   async cancelModal() {
     await this.cancelModalButton.click();
-    await expect(this.modal).toHaveAttribute('ng-reflect-open', 'false');
-    await this.page.waitForTimeout(300);
+    await this.waitForModalClosed();
   }
 
   async waitForModalClosed() {
-    await expect(this.modal).toHaveAttribute('ng-reflect-open', 'false', {timeout: 10_000});
+    await expect(this.modalFooter).not.toBeVisible({timeout: 10_000});
     await this.page.waitForTimeout(300);
+  }
+
+  async isModalOpen(): Promise<boolean> {
+    return this.modalFooter.isVisible();
   }
 
   // ─── Assertions ───────────────────────────────────────────────────
