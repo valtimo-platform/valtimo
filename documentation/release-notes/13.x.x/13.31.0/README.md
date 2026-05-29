@@ -18,4 +18,8 @@
 
 ## Bugfixes
 
-* New bugfix.
+* **Clearer error messages for plugin and building block failures**
+
+  When a plugin could not be created or a building block decision could not be duplicated, the resulting error message
+  was unreadable and showed internal placeholder text instead of the actual reason. These errors now show the intended,
+  human-readable message, making it easier to understand what went wrong.
