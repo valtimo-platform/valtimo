@@ -24,8 +24,6 @@ import {
   PageTitleService,
 } from '@valtimo/components';
 import {
-  BuildingBlockManagementParams,
-  CaseManagementParams,
   getBuildingBlockManagementRouteParams,
   getCaseManagementRouteParams,
   getContextObservable,
@@ -33,21 +31,21 @@ import {
   ManagementContext,
 } from '@valtimo/shared';
 import {IconService} from 'carbon-components-angular';
+import {editor} from 'monaco-editor';
 import {
   BehaviorSubject,
   combineLatest,
   finalize,
   map,
   Observable,
-  of,
+  shareReplay,
   switchMap,
   take,
   tap,
 } from 'rxjs';
-import {FormFlowDefinition, FormFlowDefinitionId, FormFlowEditorParams, FormFlowRouteParams} from '../../models';
+import {FormFlowDefinition, FormFlowEditorParams, FormFlowRouteParams} from '../../models';
 import {FormFlowService} from '../../services';
 import {FormFlowDownloadService} from '../../services/form-flow-download.service';
-import formFlowSchemaJson from './formflow.schema.json';
 
 @Component({
   standalone: false,
@@ -60,7 +58,6 @@ export class FormFlowEditorComponent implements OnDestroy {
   public readonly valid$ = new BehaviorSubject<boolean>(false);
   public readonly loading$ = new BehaviorSubject<boolean>(true);
   public readonly showDeleteModal$ = new BehaviorSubject<boolean>(false);
-  public readonly formFlowDefinitionId$ = new BehaviorSubject<FormFlowDefinitionId | null>(null);
   public readonly CARBON_THEME = 'g10';
 
   private readonly _context$: Observable<ManagementContext | null> = getContextObservable(
@@ -94,7 +91,13 @@ export class FormFlowEditorComponent implements OnDestroy {
     })
   );
 
-  public readonly formFlowSchemaJson = formFlowSchemaJson;
+  public readonly formFlowSchemaJson$: Observable<object> = this.formFlowService
+    .getFormFlowDefinitionSchema()
+    .pipe(shareReplay(1));
+
+  public readonly editorOptions: editor.IEditorOptions = {
+    quickSuggestions: {other: true, comments: false, strings: true},
+  };
 
   private readonly _formFlowDefinition2$ = combineLatest([this._params$, this._context$]).pipe(
     tap(() => this.loading$.next(true)),
@@ -242,6 +245,7 @@ export class FormFlowEditorComponent implements OnDestroy {
     return {
       value: JSON.stringify(clone),
       language: 'json',
+      uri: `inmemory://form-flow/${formFlowDefinition.key}.formflow.json`,
     };
   }
 
@@ -255,10 +259,7 @@ export class FormFlowEditorComponent implements OnDestroy {
     });
   }
 
-  private initBreadcrumbs(
-    params: FormFlowEditorParams,
-    context: ManagementContext | null
-  ): void {
+  private initBreadcrumbs(params: FormFlowEditorParams, context: ManagementContext | null): void {
     if (context === 'buildingBlock') {
       const route = `/building-block-management/building-block/${params.caseDefinitionKey}/version/${params.caseDefinitionVersionTag}`;
       const generalRoute = `${route}/general`;
