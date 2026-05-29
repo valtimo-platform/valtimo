@@ -18,4 +18,6 @@ export * from './custom-widget-token';
 export * from './layout.test-ids';
 export * from './widget.constants';
 export * from './widget-management.constants';
+export * from './widget-management-metroline.constants';
+export * from './widget-metroline.constants';
 export * from './widget-color.constants';

@@ -430,6 +430,25 @@ class ZakenApiClient(
         return result
     }
 
+    fun getZaakStatussen(
+        authentication: ZakenApiAuthentication,
+        baseUrl: URI,
+        zaakUrl: URI,
+        page: Int = 1,
+    ): Page<ZaakStatus> {
+        return buildRestClient(authentication)
+            .get()
+            .uri {
+                ClientTools.baseUrlToBuilder(it, baseUrl)
+                    .path("statussen")
+                    .queryParam("page", page)
+                    .queryParam("zaak", zaakUrl)
+                    .build()
+            }
+            .retrieve()
+            .body<Page<ZaakStatus>>()!!
+    }
+
     fun getZaakResultaat(
         authentication: ZakenApiAuthentication,
         zaakResultaatUrl: URI,

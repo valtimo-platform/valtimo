@@ -16,7 +16,8 @@
 
 @use 'sass:map';
 @use '@carbon/styles/scss/config' with (
-  $font-path: '@ibm/plex'
+  $font-path: '@ibm/plex',
+  $use-akamai-cdn: true
 );
 @use '@carbon/styles/scss/themes';
 @use '@carbon/colors';
