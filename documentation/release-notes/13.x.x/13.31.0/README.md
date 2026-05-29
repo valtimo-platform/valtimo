@@ -18,4 +18,8 @@
 
 ## Bugfixes
 
-* New bugfix.
+* **Auto-assign now includes the first open task when a case assignee is set**
+
+  When a case with `autoAssignTasks` enabled was assigned to a user, any task that already existed at that moment was not
+  assigned to the new case owner. Only tasks created after the assignment were auto-assigned. The first open task now
+  correctly receives the case assignee, matching the behaviour of subsequently created tasks.

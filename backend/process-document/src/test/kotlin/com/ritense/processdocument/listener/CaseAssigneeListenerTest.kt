@@ -32,6 +32,7 @@ import com.ritense.valtimo.contract.document.CaseDocumentResolver
 import com.ritense.valtimo.operaton.authorization.OperatonTaskActionProvider
 import com.ritense.valtimo.operaton.domain.OperatonTask
 import com.ritense.valtimo.service.OperatonTaskService
+import jakarta.persistence.EntityManager
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.mockito.kotlin.any
@@ -44,6 +45,7 @@ import org.mockito.kotlin.never
 import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
+import org.operaton.bpm.engine.TaskService
 import org.springframework.security.access.AccessDeniedException
 import java.time.LocalDateTime
 import java.util.UUID
@@ -52,19 +54,23 @@ import kotlin.test.assertEquals
 class CaseAssigneeListenerTest {
 
     private val operatonTaskService: OperatonTaskService = mock()
+    private val taskService: TaskService = mock()
     private val documentService: DocumentService = mock()
     private val caseDefinitionService: CaseDefinitionService = mock()
     private val userManagementService: UserManagementService = mock()
     private val caseDocumentResolver: CaseDocumentResolver = mock()
     private val authorizationService: AuthorizationService = mock()
+    private val entityManager: EntityManager = mock()
 
     private val listener = CaseAssigneeListener(
         operatonTaskService,
+        taskService,
         documentService,
         caseDefinitionService,
         userManagementService,
         caseDocumentResolver,
-        authorizationService
+        authorizationService,
+        entityManager
     )
 
     private val documentId: UUID = UUID.randomUUID()
@@ -123,7 +129,7 @@ class CaseAssigneeListenerTest {
 
         listener.updateAssigneeOnTasks(assigneeChangedEvent())
 
-        verify(operatonTaskService).assign("task-id-1", assigneeId)
+        verify(taskService).setAssignee("task-id-1", assigneeUsername)
     }
 
     @Test
@@ -153,7 +159,7 @@ class CaseAssigneeListenerTest {
 
         listener.updateAssigneeOnTasks(assigneeChangedEvent())
 
-        verify(operatonTaskService, never()).assign(any(), any())
+        verify(taskService, never()).setAssignee(any(), any())
     }
 
     @Test
@@ -164,7 +170,7 @@ class CaseAssigneeListenerTest {
         listener.updateAssigneeOnTasks(assigneeChangedEvent())
 
         verify(authorizationService, never()).requirePermission<Any>(any())
-        verify(operatonTaskService, never()).assign(any(), any())
+        verify(taskService, never()).setAssignee(any(), any())
     }
 
     @Test
@@ -179,12 +185,12 @@ class CaseAssigneeListenerTest {
         listener.updateAssigneeOnTasks(assigneeChangedEvent())
 
         verify(authorizationService, times(2)).requirePermission<OperatonTask>(any())
-        verify(operatonTaskService).assign("task-id-1", assigneeId)
-        verify(operatonTaskService).assign("task-id-2", assigneeId)
+        verify(taskService).setAssignee("task-id-1", assigneeUsername)
+        verify(taskService).setAssignee("task-id-2", assigneeUsername)
     }
 
     @Test
-    fun `should assign first task but stop when second task lacks permission`() {
+    fun `should assign first task but skip when second task lacks permission`() {
         val task1 = mock<OperatonTask>()
         whenever(task1.id).thenReturn("task-id-1")
         val task2 = mock<OperatonTask>()
@@ -196,8 +202,8 @@ class CaseAssigneeListenerTest {
 
         listener.updateAssigneeOnTasks(assigneeChangedEvent())
 
-        verify(operatonTaskService).assign("task-id-1", assigneeId)
-        verify(operatonTaskService, never()).assign(eq("task-id-2"), any())
+        verify(taskService).setAssignee("task-id-1", assigneeUsername)
+        verify(taskService, never()).setAssignee(eq("task-id-2"), any())
     }
 
     @Test
@@ -209,7 +215,7 @@ class CaseAssigneeListenerTest {
 
         verify(operatonTaskService, never()).findTasks(any())
         verify(authorizationService, never()).requirePermission<Any>(any())
-        verify(operatonTaskService, never()).assign(any(), any())
+        verify(taskService, never()).setAssignee(any(), any())
     }
 
     @Test
@@ -221,7 +227,7 @@ class CaseAssigneeListenerTest {
 
         verify(operatonTaskService, never()).findTasks(any())
         verify(authorizationService, never()).requirePermission<Any>(any())
-        verify(operatonTaskService, never()).assign(any(), any())
+        verify(taskService, never()).setAssignee(any(), any())
     }
 
     @Test
@@ -233,6 +239,6 @@ class CaseAssigneeListenerTest {
 
         verify(operatonTaskService, never()).findTasks(any())
         verify(authorizationService, never()).requirePermission<Any>(any())
-        verify(operatonTaskService, never()).assign(any(), any())
+        verify(taskService, never()).setAssignee(any(), any())
     }
 }
