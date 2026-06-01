@@ -18,6 +18,7 @@ package com.ritense.catalogiapi
 
 import com.ritense.case.service.CaseDefinitionService
 import com.ritense.case_.service.ActiveCaseDefinitionService
+import com.ritense.catalogiapi.endpoint.CatalogiApiEndpointDescriptionProvider
 import com.ritense.catalogiapi.client.CatalogiApiClient
 import com.ritense.catalogiapi.security.CatalogiApiHttpSecurityConfigurer
 import com.ritense.catalogiapi.service.CatalogiService
@@ -84,4 +85,8 @@ class CatalogiApiAutoConfiguration {
     fun catalogiApiHttpSecurityConfigurer(): CatalogiApiHttpSecurityConfigurer {
         return CatalogiApiHttpSecurityConfigurer()
     }
+
+    @Bean
+    @ConditionalOnMissingBean(CatalogiApiEndpointDescriptionProvider::class)
+    fun catalogiApiEndpointDescriptionProvider() = CatalogiApiEndpointDescriptionProvider()
 }

@@ -17,6 +17,8 @@
 package com.ritense.externalplugin.web.rest
 
 import com.ritense.authorization.annotation.RunWithoutAuthorization
+import com.ritense.externalplugin.service.EndpointDescriptionService
+import com.ritense.externalplugin.service.EndpointQuery
 import com.ritense.externalplugin.service.ExternalPluginConfigurationService
 import com.ritense.externalplugin.service.ExternalPluginDefinitionService
 import com.ritense.externalplugin.service.ExternalPluginHostService
@@ -25,6 +27,7 @@ import com.ritense.externalplugin.web.rest.dto.ConfigurationDetailResponse
 import com.ritense.externalplugin.web.rest.dto.ConfigurationResponse
 import com.ritense.externalplugin.web.rest.dto.ConfigurationUpdateRequest
 import com.ritense.externalplugin.web.rest.dto.DefinitionResponse
+import com.ritense.externalplugin.web.rest.dto.GrantedEndpointResponse
 import com.ritense.externalplugin.web.rest.dto.HostCreateRequest
 import com.ritense.externalplugin.web.rest.dto.HostResponse
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
@@ -51,6 +54,7 @@ class ExternalPluginManagementResource(
     private val hostService: ExternalPluginHostService,
     private val definitionService: ExternalPluginDefinitionService,
     private val configurationService: ExternalPluginConfigurationService,
+    private val endpointDescriptionService: EndpointDescriptionService,
 ) {
 
     @RunWithoutAuthorization
@@ -99,12 +103,14 @@ class ExternalPluginManagementResource(
     ): ResponseEntity<ConfigurationDetailResponse> {
         val configuration = configurationService.get(configurationId)
         val decrypted = configurationService.decryptedProperties(configuration)
+        val grantedEndpoints = configurationService.getGrantedEndpoints(configurationId)
         return ResponseEntity.ok(
             ConfigurationDetailResponse(
                 id = configuration.id,
                 definitionId = configuration.definitionId,
                 title = configuration.title,
                 properties = decrypted,
+                grantedEndpoints = grantedEndpoints.map(GrantedEndpointResponse::from),
                 createdAt = configuration.createdAt,
             )
         )
@@ -115,7 +121,12 @@ class ExternalPluginManagementResource(
     fun createConfiguration(
         @RequestBody request: ConfigurationCreateRequest,
     ): ResponseEntity<ConfigurationResponse> {
-        val configuration = configurationService.create(request.definitionId, request.title, request.properties)
+        val configuration = configurationService.create(
+            request.definitionId,
+            request.title,
+            request.properties,
+            request.grantedEndpoints,
+        )
         return ResponseEntity.status(HttpStatus.CREATED).body(ConfigurationResponse.from(configuration))
     }
 
@@ -125,7 +136,12 @@ class ExternalPluginManagementResource(
         @PathVariable configurationId: UUID,
         @RequestBody request: ConfigurationUpdateRequest,
     ): ResponseEntity<ConfigurationResponse> {
-        val configuration = configurationService.update(configurationId, request.title, request.properties)
+        val configuration = configurationService.update(
+            configurationId,
+            request.title,
+            request.properties,
+            request.grantedEndpoints,
+        )
         return ResponseEntity.ok(ConfigurationResponse.from(configuration))
     }
 
@@ -137,4 +153,12 @@ class ExternalPluginManagementResource(
         configurationService.delete(configurationId)
         return ResponseEntity.noContent().build()
     }
+
+    @RunWithoutAuthorization
+    @PostMapping("/endpoint-descriptions")
+    fun resolveEndpointDescriptions(
+        @RequestBody endpoints: List<EndpointQuery>,
+        @RequestParam(defaultValue = "en") locale: String,
+    ): ResponseEntity<List<com.ritense.externalplugin.service.EndpointDescription>> =
+        ResponseEntity.ok(endpointDescriptionService.resolveDescriptions(endpoints, locale))
 }

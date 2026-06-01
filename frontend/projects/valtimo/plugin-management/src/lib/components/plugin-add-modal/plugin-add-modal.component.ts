@@ -14,16 +14,19 @@
  * limitations under the License.
  */
 
-import {Component, EventEmitter, Input, Output} from '@angular/core';
+import {Component, EventEmitter, Input, Output, ViewChild} from '@angular/core';
 import {PluginManagementStateService} from '../../services';
 import {map, take} from 'rxjs/operators';
 import {BehaviorSubject, Observable, Subject} from 'rxjs';
 import {
+  ExternalPluginGrantedEndpointEntry,
+  ExternalPluginManagementEndpoint,
   ExternalPluginService,
   isExternalPluginKey,
   PluginConfigurationData,
   PluginManagementService,
 } from '@valtimo/plugin';
+import {PluginExternalConfigureComponent} from '../plugin-external-configure/plugin-external-configure.component';
 import {NGXLogger} from 'ngx-logger';
 import {CARBON_CONSTANTS} from '@valtimo/components';
 
@@ -47,6 +50,15 @@ export class PluginAddModalComponent {
     map(def => isExternalPluginKey(def?.key))
   );
 
+  public readonly managementEndpoints$ = new BehaviorSubject<Array<ExternalPluginManagementEndpoint>>([]);
+  public readonly hasPermissionsStep$ = this.managementEndpoints$.pipe(
+    map(endpoints => endpoints.length > 0)
+  );
+  public readonly permissionsValid$ = new BehaviorSubject<boolean>(false);
+
+  @ViewChild(PluginExternalConfigureComponent)
+  private _externalConfigureComponent: PluginExternalConfigureComponent | undefined;
+
   constructor(
     private readonly _stateService: PluginManagementStateService,
     private readonly _pluginManagementService: PluginManagementService,
@@ -66,6 +78,8 @@ export class PluginAddModalComponent {
       this._stateService.enableInput();
       this._stateService.clear();
       this.configurationValid$.next(false);
+      this.managementEndpoints$.next([]);
+      this.permissionsValid$.next(false);
     }, CARBON_CONSTANTS.modalAnimationMs);
   }
 
@@ -101,7 +115,20 @@ export class PluginAddModalComponent {
     });
   }
 
-  public onExternalSave(event: {definitionId: string; title: string; properties: Record<string, unknown>}): void {
+  public onManagementEndpointsResolved(endpoints: Array<ExternalPluginManagementEndpoint>): void {
+    this.managementEndpoints$.next(endpoints);
+    this.permissionsValid$.next(endpoints.length === 0);
+  }
+
+  public onPermissionsValid(valid: boolean): void {
+    this.permissionsValid$.next(valid);
+  }
+
+  public onGrantedEndpointsChange(endpoints: Array<ExternalPluginGrantedEndpointEntry>): void {
+    this._externalConfigureComponent?.setGrantedEndpoints(endpoints);
+  }
+
+  public onExternalSave(event: {definitionId: string; title: string; properties: Record<string, unknown>; grantedEndpoints: Array<ExternalPluginGrantedEndpointEntry>}): void {
     this._stateService.disableInput();
 
     this._externalPluginService
@@ -109,6 +136,7 @@ export class PluginAddModalComponent {
         definitionId: event.definitionId,
         title: event.title,
         properties: event.properties,
+        grantedEndpoints: event.grantedEndpoints,
       })
       .subscribe({
         next: () => {

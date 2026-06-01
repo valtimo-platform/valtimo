@@ -46,9 +46,19 @@ interface ExternalPluginFrontendBundle {
   path: string;
 }
 
+interface ExternalPluginManagementEndpoint {
+  method: string;
+  pattern: string;
+}
+
+interface ExternalPluginPermissions {
+  managementEndpoints?: Array<ExternalPluginManagementEndpoint>;
+}
+
 interface ExternalPluginManifest {
   actions?: Array<ExternalPluginAction>;
   frontendBundles?: Array<ExternalPluginFrontendBundle>;
+  permissions?: ExternalPluginPermissions;
 }
 
 interface ExternalPluginDefinition {
@@ -72,11 +82,36 @@ interface ExternalPluginConfiguration {
   createdAt: string;
 }
 
+interface ExternalPluginGrantedEndpointEntry {
+  method: string;
+  pattern: string;
+}
+
+interface ExternalPluginGrantedEndpointResponse {
+  id: string;
+  configurationId: string;
+  httpMethod: string;
+  endpointPattern: string;
+  grantedAt: string;
+}
+
+interface ExternalPluginEndpointDescriptionQuery {
+  method: string;
+  pattern: string;
+}
+
+interface ExternalPluginEndpointDescription {
+  method: string;
+  pattern: string;
+  description: string | null;
+}
+
 interface ExternalPluginConfigurationDetail {
   id: string;
   definitionId: string;
   title: string;
   properties: Record<string, unknown>;
+  grantedEndpoints: Array<ExternalPluginGrantedEndpointResponse>;
   createdAt: string;
 }
 
@@ -84,11 +119,13 @@ interface ExternalPluginConfigurationCreateRequest {
   definitionId: string;
   title: string;
   properties: Record<string, unknown>;
+  grantedEndpoints: Array<ExternalPluginGrantedEndpointEntry>;
 }
 
 interface ExternalPluginConfigurationUpdateRequest {
   title: string;
   properties: Record<string, unknown>;
+  grantedEndpoints?: Array<ExternalPluginGrantedEndpointEntry>;
 }
 
 const EXTERNAL_PLUGIN_KEY_PREFIX = 'external:';
@@ -110,6 +147,8 @@ export {
   ExternalPluginAction,
   ExternalPluginFrontendBundle,
   ExternalPluginFrontendBundleType,
+  ExternalPluginManagementEndpoint,
+  ExternalPluginPermissions,
   ExternalPluginManifest,
   ExternalPluginHostStatus,
   ExternalPluginDefinitionStatus,
@@ -120,6 +159,10 @@ export {
   ExternalPluginConfigurationDetail,
   ExternalPluginConfigurationCreateRequest,
   ExternalPluginConfigurationUpdateRequest,
+  ExternalPluginGrantedEndpointEntry,
+  ExternalPluginGrantedEndpointResponse,
+  ExternalPluginEndpointDescriptionQuery,
+  ExternalPluginEndpointDescription,
   isExternalPluginKey,
   toExternalPluginKey,
   extractExternalDefinitionId,

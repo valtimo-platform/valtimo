@@ -22,6 +22,7 @@ import com.ritense.objectmanagement.repository.ObjectManagementRepository
 import com.ritense.plugin.service.PluginService
 import com.ritense.valtimo.contract.case_.CaseDefinitionChecker
 import com.fasterxml.jackson.databind.ObjectMapper
+import com.ritense.zaakdetails.endpoint.ZaakDetailsEndpointDescriptionProvider
 import com.ritense.zaakdetails.documentobjectenapisync.DocumentObjectenApiSyncCaseEventListener
 import com.ritense.zaakdetails.documentobjectenapisync.DocumentObjectenApiSyncExporter
 import com.ritense.zaakdetails.documentobjectenapisync.DocumentObjectenApiSyncImporter
@@ -154,4 +155,8 @@ class ZaakDetailsAutoConfiguration {
     fun documentObjectenApiSyncConfigurationIssueListener(
         applicationEventPublisher: ApplicationEventPublisher
     ) = DocumentObjectenApiSyncConfigurationIssueListener(applicationEventPublisher)
+
+    @Bean
+    @ConditionalOnMissingBean(ZaakDetailsEndpointDescriptionProvider::class)
+    fun zaakDetailsEndpointDescriptionProvider() = ZaakDetailsEndpointDescriptionProvider()
 }

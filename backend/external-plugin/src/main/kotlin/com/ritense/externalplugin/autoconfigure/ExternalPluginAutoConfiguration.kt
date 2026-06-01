@@ -17,12 +17,14 @@
 package com.ritense.externalplugin.autoconfigure
 
 import com.fasterxml.jackson.databind.ObjectMapper
+import com.ritense.externalplugin.endpoint.ExternalPluginEndpointDescriptionProvider
 import com.ritense.externalplugin.client.ExternalPluginHostClient
 import com.ritense.externalplugin.processlink.ExternalPluginProcessLinkMapper
 import com.ritense.externalplugin.processlink.ExternalPluginServiceTaskStartListener
 import com.ritense.externalplugin.processlink.ExternalPluginSupportedProcessLinkTypeHandler
 import com.ritense.externalplugin.repository.ExternalPluginConfigurationRepository
 import com.ritense.externalplugin.repository.ExternalPluginDefinitionRepository
+import com.ritense.externalplugin.repository.ExternalPluginGrantedEndpointRepository
 import com.ritense.externalplugin.repository.ExternalPluginHostRepository
 import com.ritense.externalplugin.repository.ExternalPluginProcessLinkRepository
 import com.ritense.externalplugin.security.ExternalPluginCallbackHttpSecurityConfigurer
@@ -31,6 +33,8 @@ import com.ritense.externalplugin.security.ExternalPluginHttpSecurityConfigurer
 import com.ritense.externalplugin.security.ExternalPluginServiceTokenAuthenticator
 import com.ritense.externalplugin.security.ExternalPluginServiceTokenFilter
 import com.ritense.externalplugin.security.ExternalPluginServiceTokenKeyProvider
+import com.ritense.externalplugin.service.EndpointDescriptionService
+import com.ritense.valtimo.contract.endpoint.EndpointDescriptionProvider
 import com.ritense.externalplugin.service.ExternalPluginConfigurationService
 import com.ritense.externalplugin.service.ExternalPluginDefinitionService
 import com.ritense.externalplugin.service.ExternalPluginDiscoveryJob
@@ -105,7 +109,9 @@ class ExternalPluginAutoConfiguration {
 
     @Bean
     @ConditionalOnMissingBean(ExternalPluginEndpointAllowlistFilter::class)
-    fun externalPluginEndpointAllowlistFilter() = ExternalPluginEndpointAllowlistFilter()
+    fun externalPluginEndpointAllowlistFilter(
+        grantedEndpointRepository: ExternalPluginGrantedEndpointRepository,
+    ) = ExternalPluginEndpointAllowlistFilter(grantedEndpointRepository)
 
     @Bean
     @ConditionalOnMissingBean(ExternalPluginServiceTokenFilter::class)
@@ -128,6 +134,7 @@ class ExternalPluginAutoConfiguration {
         configurationRepository: ExternalPluginConfigurationRepository,
         definitionRepository: ExternalPluginDefinitionRepository,
         hostRepository: ExternalPluginHostRepository,
+        grantedEndpointRepository: ExternalPluginGrantedEndpointRepository,
         hostClient: ExternalPluginHostClient,
         propertyEncryptor: PluginPropertyEncryptor,
         encryptionService: EncryptionService,
@@ -138,6 +145,7 @@ class ExternalPluginAutoConfiguration {
         configurationRepository,
         definitionRepository,
         hostRepository,
+        grantedEndpointRepository,
         hostClient,
         propertyEncryptor,
         encryptionService,
@@ -164,12 +172,19 @@ class ExternalPluginAutoConfiguration {
         ExternalPluginDiscoveryJob(discoveryService)
 
     @Bean
+    @ConditionalOnMissingBean(EndpointDescriptionService::class)
+    fun endpointDescriptionService(
+        providers: List<EndpointDescriptionProvider>,
+    ) = EndpointDescriptionService(providers)
+
+    @Bean
     @ConditionalOnMissingBean(ExternalPluginManagementResource::class)
     fun externalPluginManagementResource(
         hostService: ExternalPluginHostService,
         definitionService: ExternalPluginDefinitionService,
         configurationService: ExternalPluginConfigurationService,
-    ) = ExternalPluginManagementResource(hostService, definitionService, configurationService)
+        endpointDescriptionService: EndpointDescriptionService,
+    ) = ExternalPluginManagementResource(hostService, definitionService, configurationService, endpointDescriptionService)
 
     @Bean
     @ConditionalOnMissingBean(ExternalPluginProcessLinkMapper::class)
@@ -205,4 +220,8 @@ class ExternalPluginAutoConfiguration {
     @Order(430)
     @ConditionalOnMissingBean(ExternalPluginHttpSecurityConfigurer::class)
     fun externalPluginHttpSecurityConfigurer() = ExternalPluginHttpSecurityConfigurer()
+
+    @Bean
+    @ConditionalOnMissingBean(ExternalPluginEndpointDescriptionProvider::class)
+    fun externalPluginEndpointDescriptionProvider() = ExternalPluginEndpointDescriptionProvider()
 }

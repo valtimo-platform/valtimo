@@ -20,6 +20,7 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import com.ritense.authorization.AuthorizationService
 import com.ritense.case_.service.CaseWidgetService
 import com.ritense.exporter.ExportService
+import com.ritense.iko.endpoint.IkoEndpointDescriptionProvider
 import com.ritense.iko.IkoServerRepository
 import com.ritense.iko.IkoValueResolverFactory
 import com.ritense.iko.authorization.IkoViewSpecificationFactory
@@ -576,5 +577,9 @@ class IkoAutoConfiguration {
             ikoWidgetService,
         )
     }
+
+    @Bean
+    @ConditionalOnMissingBean(IkoEndpointDescriptionProvider::class)
+    fun ikoEndpointDescriptionProvider() = IkoEndpointDescriptionProvider()
 
 }

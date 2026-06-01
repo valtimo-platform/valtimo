@@ -21731,6 +21731,7 @@
       this._theme = null;
       this._locale = null;
       this._handlers = /* @__PURE__ */ new Map();
+      this._bufferedEvents = [];
       this._parentOrigin = null;
       window.addEventListener("message", this._onMessage.bind(this));
     }
@@ -21790,6 +21791,16 @@
       const handlers = this._handlers.get(event) ?? [];
       handlers.push(handler);
       this._handlers.set(event, handlers);
+      const remaining = [];
+      for (const buffered of this._bufferedEvents) {
+        if (buffered.event === event) {
+          handler(buffered.payload);
+        } else {
+          remaining.push(buffered);
+        }
+      }
+      this._bufferedEvents.length = 0;
+      this._bufferedEvents.push(...remaining);
     }
     _onMessage(event) {
       const data = event.data;
@@ -21812,10 +21823,12 @@
         this._theme = payload.theme;
       }
       const handlers = this._handlers.get(eventType);
-      if (handlers) {
+      if (handlers && handlers.length > 0) {
         for (const handler of handlers) {
           handler(payload);
         }
+      } else {
+        this._bufferedEvents.push({ event: eventType, payload });
       }
     }
     /** Clean up event listener. Call this if you need to destroy the SDK instance. */
@@ -21832,7 +21845,7 @@
     const [currency, setCurrency] = (0, import_react.useState)("EUR");
     (0, import_react.useEffect)(() => {
       sdk.onPrefillConfiguration((config) => {
-        if (config.title) setTitle(config.title);
+        if (config.configurationTitle) setTitle(config.configurationTitle);
         if (config.currency) setCurrency(config.currency);
       });
       sdk.onSave(() => {

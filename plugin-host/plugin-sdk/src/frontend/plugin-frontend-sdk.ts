@@ -67,6 +67,7 @@ class ValtimoPluginSDK {
   private _theme: string | null = null;
   private _locale: string | null = null;
   private readonly _handlers = new Map<string, Array<EventHandler<unknown>>>();
+  private readonly _bufferedEvents: Array<{ event: string; payload: unknown }> = [];
   private _parentOrigin: string | null = null;
 
   constructor() {
@@ -146,6 +147,18 @@ class ValtimoPluginSDK {
     const handlers = this._handlers.get(event) ?? [];
     handlers.push(handler as EventHandler<unknown>);
     this._handlers.set(event, handlers);
+
+    // Replay any buffered events that arrived before this handler was registered
+    const remaining: Array<{ event: string; payload: unknown }> = [];
+    for (const buffered of this._bufferedEvents) {
+      if (buffered.event === event) {
+        (handler as EventHandler<unknown>)(buffered.payload);
+      } else {
+        remaining.push(buffered);
+      }
+    }
+    this._bufferedEvents.length = 0;
+    this._bufferedEvents.push(...remaining);
   }
 
   private _onMessage(event: MessageEvent): void {
@@ -173,12 +186,14 @@ class ValtimoPluginSDK {
       this._theme = (payload as ParentToIframeEvents["themeChanged"]).theme;
     }
 
-    // Dispatch to registered handlers
+    // Dispatch to registered handlers, or buffer if none registered yet
     const handlers = this._handlers.get(eventType);
-    if (handlers) {
+    if (handlers && handlers.length > 0) {
       for (const handler of handlers) {
         handler(payload);
       }
+    } else {
+      this._bufferedEvents.push({ event: eventType, payload });
     }
   }
 

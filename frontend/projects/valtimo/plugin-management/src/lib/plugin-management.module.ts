@@ -29,6 +29,7 @@ import {PluginEditModalComponent} from './components/plugin-edit-modal/plugin-ed
 import {PluginEditComponent} from './components/plugin-edit/plugin-edit.component';
 import {PluginExternalEditModalComponent} from './components/plugin-external-edit-modal/plugin-external-edit-modal.component';
 import {PluginExternalConfigureComponent} from './components/plugin-external-configure/plugin-external-configure.component';
+import {PluginExternalPermissionsComponent} from './components/plugin-external-permissions/plugin-external-permissions.component';
 import {PluginHostModalComponent} from './components/plugin-host-modal/plugin-host-modal.component';
 import {PluginUploadModalComponent} from './components/plugin-upload-modal/plugin-upload-modal.component';
 import {
@@ -81,6 +82,7 @@ import {
     TabsModule,
     PluginExternalEditModalComponent,
     PluginExternalConfigureComponent,
+    PluginExternalPermissionsComponent,
     PluginHostModalComponent,
     PluginUploadModalComponent,
   ],

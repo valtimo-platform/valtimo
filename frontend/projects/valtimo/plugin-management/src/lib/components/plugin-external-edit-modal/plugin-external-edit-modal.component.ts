@@ -183,7 +183,10 @@ export class PluginExternalEditModalComponent implements OnChanges {
           this._resolveConfigBundleUrl(definition);
 
           if (this._$configBundleUrl()) {
-            this._$prefillConfiguration.set(configDetail.properties ?? {});
+            this._$prefillConfiguration.set({
+              configurationTitle: configDetail.title,
+              ...(configDetail.properties ?? {}),
+            });
           } else {
             this._form.patchValue({
               title: configDetail.title,

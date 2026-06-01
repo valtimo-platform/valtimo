@@ -33,6 +33,7 @@
         <v-stepper-step titleTranslationKey="pluginManagement.addSteps.step1">
           <ng-container *ngIf="isExternalPlugin$ | async; else embeddedConfigure">
             <valtimo-plugin-external-configure
+              (managementEndpointsResolved)="onManagementEndpointsResolved($event)"
               (validEvent)="onValid($event)"
               (saveEvent)="onExternalSave($event)"
             ></valtimo-plugin-external-configure>
@@ -45,6 +46,14 @@
             ></valtimo-plugin-configure>
           </ng-template>
         </v-stepper-step>
+
+        <v-stepper-step titleTranslationKey="pluginManagement.addSteps.step2">
+          <valtimo-plugin-external-permissions
+            [endpoints]="managementEndpoints$ | async"
+            (validEvent)="onPermissionsValid($event)"
+            (grantedEndpointsChange)="onGrantedEndpointsChange($event)"
+          ></valtimo-plugin-external-permissions>
+        </v-stepper-step>
       </v-stepper-content>
     </section>
     <cds-modal-footer>
@@ -55,8 +64,13 @@
         ></v-stepper-footer-step>
 
         <v-stepper-footer-step
+          nextButtonTranslationKey="pluginManagement.addSteps.step2"
+          [nextButtonEnabled]="configurationValid$ | async"
+        ></v-stepper-footer-step>
+
+        <v-stepper-footer-step
           completeButtonTranslationKey="pluginManagement.addSteps.complete"
-          [completeButtonEnabled]="configurationValid$ | async"
+          [completeButtonEnabled]="permissionsValid$ | async"
         ></v-stepper-footer-step>
       </v-stepper-footer>
     </cds-modal-footer>
