@@ -21,6 +21,7 @@ import com.fasterxml.jackson.databind.jsontype.NamedType
 import com.ritense.document.service.DocumentService
 import com.ritense.form.service.PrefillFormService
 import com.ritense.form.service.impl.FormIoFormDefinitionService
+import com.ritense.formflow.endpoint.FormFlowEndpointDescriptionProvider
 import com.ritense.formflow.FormFlowProcessLinkActivityHandler
 import com.ritense.formflow.FormFlowTaskOpenResultProperties
 import com.ritense.formflow.common.ValtimoFormFlow
@@ -337,4 +338,8 @@ class FormFlowAutoConfiguration {
     fun formFlowCaseEventListener(service: FormFlowService): FormFlowCaseEventListener {
         return FormFlowCaseEventListener(service)
     }
+
+    @Bean
+    @ConditionalOnMissingBean(FormFlowEndpointDescriptionProvider::class)
+    fun formFlowEndpointDescriptionProvider() = FormFlowEndpointDescriptionProvider()
 }

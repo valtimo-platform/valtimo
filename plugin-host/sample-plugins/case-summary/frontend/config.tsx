@@ -27,7 +27,7 @@ function ConfigForm() {
   // On prefill (edit mode), populate form fields
   useEffect(() => {
     sdk.onPrefillConfiguration((config) => {
-      if (config.title) setTitle(config.title as string);
+      if (config.configurationTitle) setTitle(config.configurationTitle as string);
       if (config.currency) setCurrency(config.currency as string);
     });
 

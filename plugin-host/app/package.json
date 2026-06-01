@@ -8,7 +8,8 @@
     "build": "tsc",
     "installDeps": "npm i",
     "start": "node dist/index.js",
-    "dev": "ADMIN_TOKEN=test-secret tsx watch src/index.ts"
+    "dev": "ADMIN_TOKEN=test-secret tsx watch src/index.ts",
+    "clean": "rm -rf dist .tmp plugins"
   },
   "dependencies": {
     "@extism/extism": "^2.0.0-rc13",

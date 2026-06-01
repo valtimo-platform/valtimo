@@ -23,10 +23,13 @@ import com.networknt.schema.SpecVersion
 import com.ritense.externalplugin.client.ExternalPluginHostClient
 import com.ritense.externalplugin.domain.ExternalPluginConfiguration
 import com.ritense.externalplugin.domain.ExternalPluginDefinition
+import com.ritense.externalplugin.domain.ExternalPluginGrantedEndpoint
 import com.ritense.externalplugin.domain.ExternalPluginHost
 import com.ritense.externalplugin.repository.ExternalPluginConfigurationRepository
 import com.ritense.externalplugin.repository.ExternalPluginDefinitionRepository
+import com.ritense.externalplugin.repository.ExternalPluginGrantedEndpointRepository
 import com.ritense.externalplugin.repository.ExternalPluginHostRepository
+import com.ritense.externalplugin.web.rest.dto.GrantedEndpointEntry
 import com.ritense.plugin.service.EncryptionService
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import io.github.oshai.kotlinlogging.KotlinLogging
@@ -42,6 +45,7 @@ class ExternalPluginConfigurationService(
     private val configurationRepository: ExternalPluginConfigurationRepository,
     private val definitionRepository: ExternalPluginDefinitionRepository,
     private val hostRepository: ExternalPluginHostRepository,
+    private val grantedEndpointRepository: ExternalPluginGrantedEndpointRepository,
     private val hostClient: ExternalPluginHostClient,
     private val propertyEncryptor: PluginPropertyEncryptor,
     private val encryptionService: EncryptionService,
@@ -61,11 +65,17 @@ class ExternalPluginConfigurationService(
     fun get(id: UUID): ExternalPluginConfiguration = configurationRepository.findById(id)
         .orElseThrow { IllegalArgumentException("External plugin configuration $id not found") }
 
-    fun create(definitionId: UUID, title: String, properties: ObjectNode): ExternalPluginConfiguration {
+    fun create(
+        definitionId: UUID,
+        title: String,
+        properties: ObjectNode,
+        grantedEndpoints: List<GrantedEndpointEntry>,
+    ): ExternalPluginConfiguration {
         val definition = definitionRepository.findById(definitionId)
             .orElseThrow { IllegalArgumentException("External plugin definition $definitionId not found") }
 
         validateAgainstSchema(properties, definition.configSchema)
+        validateGrantedEndpointsCoverManifest(grantedEndpoints, definition)
 
         val encrypted = propertyEncryptor.encryptSecretFields(properties.deepCopy(), definition.configSchema)
 
@@ -77,6 +87,8 @@ class ExternalPluginConfigurationService(
             createdAt = Instant.now(),
         )
         val saved = configurationRepository.save(configuration)
+
+        saveGrantedEndpoints(saved.id, grantedEndpoints)
 
         // Push decrypted config to the plugin host
         try {
@@ -120,13 +132,24 @@ class ExternalPluginConfigurationService(
         return pushed
     }
 
-    fun update(id: UUID, title: String, properties: ObjectNode): ExternalPluginConfiguration {
+    fun update(
+        id: UUID,
+        title: String,
+        properties: ObjectNode,
+        grantedEndpoints: List<GrantedEndpointEntry>? = null,
+    ): ExternalPluginConfiguration {
         val config = configurationRepository.findById(id)
             .orElseThrow { IllegalArgumentException("External plugin configuration $id not found") }
         val definition = definitionRepository.findById(config.definitionId)
             .orElseThrow { IllegalArgumentException("External plugin definition ${config.definitionId} not found") }
 
         validateAgainstSchema(properties, definition.configSchema)
+
+        if (grantedEndpoints != null) {
+            validateGrantedEndpointsCoverManifest(grantedEndpoints, definition)
+            grantedEndpointRepository.deleteAllByConfigurationId(id)
+            saveGrantedEndpoints(id, grantedEndpoints)
+        }
 
         val encrypted = propertyEncryptor.encryptSecretFields(properties.deepCopy(), definition.configSchema)
 
@@ -165,6 +188,7 @@ class ExternalPluginConfigurationService(
             .orElseThrow { IllegalArgumentException("External plugin configuration $id not found") }
         val definition = definitionRepository.findById(config.definitionId).orElse(null)
 
+        grantedEndpointRepository.deleteAllByConfigurationId(id)
         configurationRepository.delete(config)
 
         // Remove config from the plugin host
@@ -183,11 +207,53 @@ class ExternalPluginConfigurationService(
     }
 
     @Transactional(readOnly = true)
+    fun getGrantedEndpoints(configurationId: UUID): List<ExternalPluginGrantedEndpoint> =
+        grantedEndpointRepository.findAllByConfigurationId(configurationId)
+
+    @Transactional(readOnly = true)
     fun decryptedProperties(configuration: ExternalPluginConfiguration): ObjectNode {
         val definition = definitionRepository.findById(configuration.definitionId)
             .orElseThrow { IllegalArgumentException("External plugin definition ${configuration.definitionId} not found") }
         val source = configuration.properties ?: objectMapper.createObjectNode()
         return propertyEncryptor.decryptSecretFields(source.deepCopy(), definition.configSchema)
+    }
+
+    private fun saveGrantedEndpoints(configurationId: UUID, endpoints: List<GrantedEndpointEntry>) {
+        endpoints.forEach { entry ->
+            grantedEndpointRepository.save(
+                ExternalPluginGrantedEndpoint(
+                    id = UUID.randomUUID(),
+                    configurationId = configurationId,
+                    httpMethod = entry.method.uppercase(),
+                    endpointPattern = entry.pattern,
+                )
+            )
+        }
+    }
+
+    private fun validateGrantedEndpointsCoverManifest(
+        grantedEndpoints: List<GrantedEndpointEntry>,
+        definition: ExternalPluginDefinition,
+    ) {
+        val manifest = definition.manifestJson ?: return
+        val permissions = manifest.get("permissions") ?: return
+        val managementEndpoints = permissions.get("managementEndpoints") ?: return
+        if (!managementEndpoints.isArray) return
+
+        val grantedKeys = grantedEndpoints.map { "${it.method.uppercase()}:${it.pattern}" }.toSet()
+        val requiredKeys = managementEndpoints.mapNotNull { ep ->
+            val method = ep.get("method")?.asText() ?: return@mapNotNull null
+            val pattern = ep.get("pattern")?.asText() ?: return@mapNotNull null
+            "${method.uppercase()}:$pattern"
+        }.toSet()
+
+        val missing = requiredKeys - grantedKeys
+        if (missing.isNotEmpty()) {
+            throw IllegalArgumentException(
+                "All management endpoints declared in the plugin manifest must be granted. " +
+                    "Missing: ${missing.joinToString(", ")}"
+            )
+        }
     }
 
     private fun validateAgainstSchema(properties: ObjectNode, schemaNode: com.fasterxml.jackson.databind.node.ObjectNode?) {

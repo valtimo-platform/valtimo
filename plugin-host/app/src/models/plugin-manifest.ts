@@ -25,6 +25,11 @@ interface FrontendBundle {
   renderMode?: "bundle" | "htmx";
 }
 
+interface ManagementEndpoint {
+  method: string;
+  pattern: string;
+}
+
 export interface PluginManifest {
   pluginId: string;
   version: string;
@@ -36,6 +41,9 @@ export interface PluginManifest {
     maxGzacVersion?: string;
   };
   configurationSchema?: Record<string, unknown>;
+  permissions?: {
+    managementEndpoints?: Array<ManagementEndpoint>;
+  };
   frontendBundles?: Array<FrontendBundle>;
   actions: Array<{
     key: string;
@@ -50,4 +58,4 @@ export interface PluginManifest {
   }>;
 }
 
-export type { FrontendBundle };
+export type { FrontendBundle, ManagementEndpoint };

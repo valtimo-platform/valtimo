@@ -18,6 +18,7 @@ package com.ritense.case.configuration
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.ritense.authorization.AuthorizationService
+import com.ritense.case.endpoint.CaseEndpointDescriptionProvider
 import com.ritense.case.deployment.CaseTabDeploymentService
 import com.ritense.case.listener.CaseDefinitionConfigurationIssueListener
 import com.ritense.case.listener.StartableItemCaseEventListener
@@ -538,4 +539,8 @@ class CaseAutoConfiguration {
         objectMapper: ObjectMapper,
         startableItemRepository: StartableItemRepository,
     ) = StartableItemImporter(objectMapper, startableItemRepository)
+
+    @Bean
+    @ConditionalOnMissingBean(CaseEndpointDescriptionProvider::class)
+    fun caseEndpointDescriptionProvider() = CaseEndpointDescriptionProvider()
 }

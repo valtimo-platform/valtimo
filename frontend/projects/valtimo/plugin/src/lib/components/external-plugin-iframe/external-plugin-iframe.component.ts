@@ -44,7 +44,10 @@ export class ExternalPluginIframeComponent implements OnInit, OnDestroy {
   @Input() public context: Record<string, unknown> = {};
   @Input() public prefillConfiguration: Record<string, unknown> | null = null;
 
-  @Output() public configurationChangedEvent = new EventEmitter<{valid: boolean; data: Record<string, unknown>}>();
+  @Output() public configurationChangedEvent = new EventEmitter<{
+    valid: boolean;
+    data: Record<string, unknown>;
+  }>();
   @Output() public readyEvent = new EventEmitter<void>();
 
   public readonly _$trustedUrl = signal<SafeResourceUrl | null>(null);
@@ -72,29 +75,21 @@ export class ExternalPluginIframeComponent implements OnInit, OnDestroy {
     window.removeEventListener('message', this._onMessageBound);
   }
 
-  /** Send a save trigger to the iframe. */
   public triggerSave(): void {
     this._postToIframe('save', {});
   }
 
-  /** Send prefill configuration to the iframe. */
   public sendPrefillConfiguration(configuration: Record<string, unknown>): void {
     this._postToIframe('prefillConfiguration', {configuration});
   }
 
   public onIframeLoad(): void {
-    // Send init event with context once iframe is loaded
     this._postToIframe('init', {
       context: this.context,
       accessToken: '',
       theme: 'white',
       locale: 'en',
     });
-
-    // Send prefill if available
-    if (this.prefillConfiguration) {
-      this.sendPrefillConfiguration(this.prefillConfiguration);
-    }
   }
 
   private _postToIframe(event: string, payload: unknown): void {
@@ -111,12 +106,14 @@ export class ExternalPluginIframeComponent implements OnInit, OnDestroy {
     const data = event.data;
     if (!data || typeof data !== 'object' || data.source !== 'valtimo-plugin') return;
 
-    // Optionally verify origin
     if (this._iframeOrigin && event.origin !== this._iframeOrigin) return;
 
     switch (data.event) {
       case 'ready':
         this.readyEvent.emit();
+        if (this.prefillConfiguration) {
+          this.sendPrefillConfiguration(this.prefillConfiguration);
+        }
         break;
       case 'configurationChanged':
         this.configurationChangedEvent.emit(data.payload);

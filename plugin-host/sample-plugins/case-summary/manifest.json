@@ -19,6 +19,11 @@
     },
     "additionalProperties": false
   },
+  "permissions": {
+    "managementEndpoints": [
+      { "method": "GET", "pattern": "/api/v1/document/*" }
+    ]
+  },
   "frontendBundles": [
     {
       "type": "config",

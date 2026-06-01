@@ -17,6 +17,7 @@
 package com.ritense.localization.autoconfigure
 
 import com.fasterxml.jackson.databind.ObjectMapper
+import com.ritense.localization.endpoint.LocalizationEndpointDescriptionProvider
 import com.ritense.localization.repository.LocalizationRepository
 import com.ritense.localization.security.config.LocalizationHttpSecurityConfigurer
 import com.ritense.localization.service.LocalizationService
@@ -70,4 +71,8 @@ class LocalizationAutoConfiguration {
     ): AdminLocalizationResource {
         return AdminLocalizationResource(localizationService)
     }
+
+    @Bean
+    @ConditionalOnMissingBean(LocalizationEndpointDescriptionProvider::class)
+    fun localizationEndpointDescriptionProvider() = LocalizationEndpointDescriptionProvider()
 }

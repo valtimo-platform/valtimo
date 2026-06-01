@@ -16,24 +16,21 @@
 
 package com.ritense.externalplugin.security
 
+import com.ritense.externalplugin.repository.ExternalPluginGrantedEndpointRepository
 import jakarta.servlet.FilterChain
 import jakarta.servlet.http.HttpServletRequest
 import jakarta.servlet.http.HttpServletResponse
-import org.springframework.http.HttpMethod
 import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher
 import org.springframework.web.filter.OncePerRequestFilter
 
 /**
- * Restricts external plugin service tokens (principal: [ExternalPluginServicePrincipal]) to a
- * hardcoded set of GZAC endpoints. Other authenticated principals (Keycloak users, etc.) are
- * unaffected.
- *
- * v12 §11.3 envisions a per-configuration allowlist table; for the PoC scope only the document
- * read endpoint is exposed.
+ * Restricts external plugin service tokens (principal: [ExternalPluginServicePrincipal]) to the
+ * endpoints that were explicitly granted for the plugin configuration. Other authenticated
+ * principals (Keycloak users, etc.) are unaffected.
  */
 class ExternalPluginEndpointAllowlistFilter(
-    private val allowedEndpoints: List<AntPathRequestMatcher> = DEFAULT_ALLOWLIST,
+    private val grantedEndpointRepository: ExternalPluginGrantedEndpointRepository,
 ) : OncePerRequestFilter() {
 
     override fun doFilterInternal(
@@ -48,7 +45,12 @@ class ExternalPluginEndpointAllowlistFilter(
             return
         }
 
-        val matched = allowedEndpoints.any { it.matches(request) }
+        val grantedEndpoints = grantedEndpointRepository.findAllByConfigurationId(principal.pluginConfigId)
+        val matchers = grantedEndpoints.map {
+            AntPathRequestMatcher(it.endpointPattern, it.httpMethod)
+        }
+
+        val matched = matchers.any { it.matches(request) }
         if (!matched) {
             response.sendError(
                 HttpServletResponse.SC_FORBIDDEN,
@@ -58,11 +60,5 @@ class ExternalPluginEndpointAllowlistFilter(
         }
 
         filterChain.doFilter(request, response)
-    }
-
-    companion object {
-        val DEFAULT_ALLOWLIST: List<AntPathRequestMatcher> = listOf(
-            AntPathRequestMatcher("/api/v1/document/*", HttpMethod.GET.name()),
-        )
     }
 }

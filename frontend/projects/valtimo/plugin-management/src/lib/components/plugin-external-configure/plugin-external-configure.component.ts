@@ -31,7 +31,9 @@ import {Subscription} from 'rxjs';
 import {map, switchMap} from 'rxjs/operators';
 import {
   ExternalPluginDefinition,
+  ExternalPluginGrantedEndpointEntry,
   ExternalPluginIframeComponent,
+  ExternalPluginManagementEndpoint,
   ExternalPluginService,
   extractExternalDefinitionId,
   isExternalPluginKey,
@@ -42,6 +44,7 @@ interface ExternalPluginSaveEvent {
   definitionId: string;
   title: string;
   properties: Record<string, unknown>;
+  grantedEndpoints: Array<ExternalPluginGrantedEndpointEntry>;
 }
 
 @Component({
@@ -61,6 +64,7 @@ interface ExternalPluginSaveEvent {
 export class PluginExternalConfigureComponent implements OnInit, OnDestroy {
   @Output() public validEvent = new EventEmitter<boolean>();
   @Output() public saveEvent = new EventEmitter<ExternalPluginSaveEvent>();
+  @Output() public managementEndpointsResolved = new EventEmitter<Array<ExternalPluginManagementEndpoint>>();
 
   public readonly _$configBundleUrl = signal<string | null>(null);
   public readonly _$loading = signal(true);
@@ -72,6 +76,7 @@ export class PluginExternalConfigureComponent implements OnInit, OnDestroy {
 
   private _definitionId: string | null = null;
   private _iframeConfigData: Record<string, unknown> | null = null;
+  private _grantedEndpoints: Array<ExternalPluginGrantedEndpointEntry> = [];
   private readonly _subscriptions = new Subscription();
 
   constructor(
@@ -88,6 +93,7 @@ export class PluginExternalConfigureComponent implements OnInit, OnDestroy {
               this._definitionId = null;
               this._$configBundleUrl.set(null);
               this._$loading.set(false);
+              this.managementEndpointsResolved.emit([]);
               return [];
             }
 
@@ -107,6 +113,9 @@ export class PluginExternalConfigureComponent implements OnInit, OnDestroy {
                 } else {
                   this._$configBundleUrl.set(null);
                 }
+
+                const endpoints = definition.manifest?.permissions?.managementEndpoints ?? [];
+                this.managementEndpointsResolved.emit(endpoints);
 
                 this._$loading.set(false);
               })
@@ -132,6 +141,10 @@ export class PluginExternalConfigureComponent implements OnInit, OnDestroy {
   public onIframeConfigurationChanged(event: {valid: boolean; data: Record<string, unknown>}): void {
     this._iframeConfigData = event.data;
     this.validEvent.emit(event.valid);
+  }
+
+  public setGrantedEndpoints(endpoints: Array<ExternalPluginGrantedEndpointEntry>): void {
+    this._grantedEndpoints = endpoints;
   }
 
   private _validateForm(): void {
@@ -162,6 +175,7 @@ export class PluginExternalConfigureComponent implements OnInit, OnDestroy {
         definitionId: this._definitionId,
         title,
         properties,
+        grantedEndpoints: this._grantedEndpoints,
       });
       return;
     }
@@ -181,6 +195,7 @@ export class PluginExternalConfigureComponent implements OnInit, OnDestroy {
       definitionId: this._definitionId,
       title,
       properties,
+      grantedEndpoints: this._grantedEndpoints,
     });
   }
 }

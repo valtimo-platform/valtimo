@@ -4,6 +4,11 @@
   "description": "Valtimo External Plugin SDK for building WebAssembly plugins",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc && tsc -p tsconfig.frontend.json",
+    "installDeps": "npm install",
+    "prepublishOnly": "npm run build"
+  },
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
@@ -17,11 +22,6 @@
   "bin": {
     "valtimo-plugin-build": "./bin/valtimo-plugin-build.mjs",
     "valtimo-plugin-pack": "./bin/valtimo-plugin-pack.mjs"
-  },
-  "scripts": {
-    "build": "tsc && tsc -p tsconfig.frontend.json",
-    "installDeps": "npm install",
-    "prepublishOnly": "npm run build"
   },
   "files": [
     "dist",

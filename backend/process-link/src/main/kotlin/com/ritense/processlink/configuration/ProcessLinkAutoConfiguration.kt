@@ -21,6 +21,7 @@ import com.ritense.authorization.AuthorizationService
 import com.ritense.document.service.DocumentService
 import com.ritense.processdocument.service.ProcessDefinitionCaseDefinitionService
 import com.ritense.processlink.domain.SupportedProcessLinkTypeHandler
+import com.ritense.processlink.endpoint.ProcessLinkEndpointDescriptionProvider
 import com.ritense.processlink.exporter.BuildingBlockProcessLinkToBuildingBlockMapper
 import com.ritense.processlink.exporter.ProcessLinkExporter
 import com.ritense.processlink.importer.GlobalProcessLinkImporter
@@ -232,4 +233,8 @@ class ProcessLinkAutoConfiguration {
             processLinkService
         )
     }
+
+    @Bean
+    @ConditionalOnMissingBean(ProcessLinkEndpointDescriptionProvider::class)
+    fun processLinkEndpointDescriptionProvider() = ProcessLinkEndpointDescriptionProvider()
 }

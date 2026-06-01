@@ -1899,7 +1899,12 @@
     "addSteps": {
       "step0": "Kies je plugin",
       "step1": "Gegevens invullen",
+      "step2": "Rechten",
       "complete": "Configuratie opslaan"
+    },
+    "permissions": {
+      "description": "Selecteer de beheer-endpoints waar deze plugin toegang toe krijgt.",
+      "noEndpoints": "Deze plugin heeft geen beheer-endpoint-rechten nodig."
     }
   },
   "customerCases": {

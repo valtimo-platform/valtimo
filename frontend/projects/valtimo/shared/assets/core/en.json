@@ -1872,7 +1872,12 @@
     "addSteps": {
       "step0": "Choose your plugin",
       "step1": "Enter data",
+      "step2": "Permissions",
       "complete": "Save configuration"
+    },
+    "permissions": {
+      "description": "Select the management endpoints this plugin is allowed to access.",
+      "noEndpoints": "This plugin does not require any management endpoint permissions."
     }
   },
   "customerCases": {

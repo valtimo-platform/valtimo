@@ -24,6 +24,8 @@ import {
   ExternalPluginConfigurationDetail,
   ExternalPluginConfigurationUpdateRequest,
   ExternalPluginDefinition,
+  ExternalPluginEndpointDescription,
+  ExternalPluginEndpointDescriptionQuery,
   ExternalPluginHost,
   ExternalPluginHostCreateRequest,
 } from '../models';
@@ -77,6 +79,18 @@ export class ExternalPluginService {
 
   public deleteConfiguration(configurationId: string): Observable<void> {
     return this._http.delete<void>(`${this._baseUrl}/configuration/${configurationId}`);
+  }
+
+  public getEndpointDescriptions(
+    endpoints: Array<ExternalPluginEndpointDescriptionQuery>,
+    locale: string = 'en'
+  ): Observable<Array<ExternalPluginEndpointDescription>> {
+    const params = new HttpParams().set('locale', locale);
+    return this._http.post<Array<ExternalPluginEndpointDescription>>(
+      `${this._baseUrl}/endpoint-descriptions`,
+      endpoints,
+      {params}
+    );
   }
 
   public uploadPlugin(hostId: string, file: File): Observable<unknown> {
