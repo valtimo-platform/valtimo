@@ -28,9 +28,9 @@
  * Usage: valtimo-plugin-build [--input src/plugin.ts] [--output plugin.wasm]
  */
 
-import { execSync } from "node:child_process";
-import { existsSync, readFileSync, writeFileSync, mkdirSync } from "node:fs";
-import { resolve, dirname, join } from "node:path";
+import { execFileSync } from "node:child_process";
+import { existsSync, mkdirSync } from "node:fs";
+import { resolve, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const __filename = fileURLToPath(import.meta.url);
@@ -61,10 +61,13 @@ mkdirSync(dirname(bundlePath), { recursive: true });
 // Step 1: Bundle with esbuild to a single JS file
 // We use the Extism JS PDK's expected format: module-level code that registers handlers
 try {
-  execSync(
-    `npx esbuild "${inputPath}" --bundle --outfile="${bundlePath}" --format=cjs --target=es2020 --platform=neutral --main-fields=main --external:@extism/js-pdk`,
-    { cwd, stdio: "inherit" }
-  );
+  execFileSync("npx", [
+    "esbuild", inputPath,
+    "--bundle", `--outfile=${bundlePath}`,
+    "--format=cjs", "--target=es2020",
+    "--platform=neutral", "--main-fields=main",
+    "--external:@extism/js-pdk",
+  ], { cwd, stdio: "inherit" });
 } catch (err) {
   console.error("[valtimo-plugin-build] esbuild bundling failed");
   process.exit(1);
@@ -76,7 +79,7 @@ console.log(`[valtimo-plugin-build] Compiling to WebAssembly ...`);
 // Resolve extism-js binary: check PATH first, then known local locations
 function findExtismJs() {
   try {
-    execSync("extism-js --version", { stdio: "pipe" });
+    execFileSync("extism-js", ["--version"], { stdio: "pipe" });
     return "extism-js";
   } catch {}
 
@@ -107,11 +110,11 @@ if (!extismJsBin) {
 try {
   // Look for index.d.ts in the plugin directory (declares exported functions)
   const interfaceFile = resolve(cwd, "index.d.ts");
-  const iFlag = existsSync(interfaceFile) ? `-i "${interfaceFile}"` : "";
-  execSync(`"${extismJsBin}" "${bundlePath}" -o "${outputPath}" ${iFlag}`, {
-    cwd,
-    stdio: "inherit",
-  });
+  const extismArgs = [bundlePath, "-o", outputPath];
+  if (existsSync(interfaceFile)) {
+    extismArgs.push("-i", interfaceFile);
+  }
+  execFileSync(extismJsBin, extismArgs, { cwd, stdio: "inherit" });
   console.log(`[valtimo-plugin-build] Built: ${output}`);
 } catch (err) {
   console.error("[valtimo-plugin-build] extism-js compilation failed");

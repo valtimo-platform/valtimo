@@ -75,6 +75,7 @@ export class PluginExternalConfigureComponent implements OnInit, OnDestroy {
   });
 
   private _definitionId: string | null = null;
+  private _iframeConfigTitle: string = '';
   private _iframeConfigData: Record<string, unknown> | null = null;
   private _grantedEndpoints: Array<ExternalPluginGrantedEndpointEntry> = [];
   private readonly _subscriptions = new Subscription();
@@ -138,7 +139,12 @@ export class PluginExternalConfigureComponent implements OnInit, OnDestroy {
     this._subscriptions.unsubscribe();
   }
 
-  public onIframeConfigurationChanged(event: {valid: boolean; data: Record<string, unknown>}): void {
+  public onIframeConfigurationChanged(event: {
+    valid: boolean;
+    title: string;
+    data: Record<string, unknown>;
+  }): void {
+    this._iframeConfigTitle = event.title;
     this._iframeConfigData = event.data;
     this.validEvent.emit(event.valid);
   }
@@ -167,14 +173,10 @@ export class PluginExternalConfigureComponent implements OnInit, OnDestroy {
     if (!this._definitionId) return;
 
     if (this._iframeConfigData) {
-      const title = (this._iframeConfigData['configurationTitle'] as string) ?? '';
-      const properties = {...this._iframeConfigData};
-      delete properties['configurationTitle'];
-
       this.saveEvent.emit({
         definitionId: this._definitionId,
-        title,
-        properties,
+        title: this._iframeConfigTitle,
+        properties: this._iframeConfigData,
         grantedEndpoints: this._grantedEndpoints,
       });
       return;

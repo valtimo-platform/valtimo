@@ -40,6 +40,23 @@ dependencies {
     testImplementation "org.jetbrains.kotlin:kotlin-test"
     testImplementation project(":backend:test-utils-common")
 
+    // All modules with EndpointDescriptionProviders — needed by the translation coverage test
+    testImplementation project(":backend:case")
+    testImplementation project(":backend:process-document")
+    testImplementation project(":backend:form")
+    testImplementation project(":backend:form-flow")
+    testImplementation project(":backend:dashboard")
+    testImplementation project(":backend:localization")
+    testImplementation project(":backend:admin-settings")
+    testImplementation project(":backend:building-block")
+    testImplementation project(":backend:iko")
+    testImplementation project(":backend:zgw:zaken-api")
+    testImplementation project(":backend:zgw:documenten-api")
+    testImplementation project(":backend:zgw:catalogi-api")
+    testImplementation project(":backend:zgw:notificaties-api")
+    testImplementation project(":backend:zgw:object-management")
+    testImplementation project(":backend:zgw:zaakdetails")
+
     jar {
         enabled = true
         manifest {

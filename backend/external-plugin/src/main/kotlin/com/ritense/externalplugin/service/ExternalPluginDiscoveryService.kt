@@ -75,15 +75,15 @@ class ExternalPluginDiscoveryService(
 
         val adminToken = hostService.decryptedSecret(host)
         val plugins = hostClient.listPlugins(host.baseUrl, adminToken)
-        val seenPluginIds = mutableSetOf<String>()
+        val seenDefinitionIds = mutableSetOf<UUID>()
         plugins.forEach { manifest ->
             val pluginId = manifest.get("pluginId")?.asText()
             if (pluginId.isNullOrBlank()) return@forEach
-            seenPluginIds += pluginId
-            upsertDefinition(host, pluginId, manifest)
+            val defId = upsertDefinition(host, pluginId, manifest)
+            if (defId != null) seenDefinitionIds += defId
         }
 
-        markMissingDefinitions(host, seenPluginIds)
+        markMissingDefinitions(host, seenDefinitionIds)
         syncConfigurations(host)
     }
 
@@ -106,18 +106,18 @@ class ExternalPluginDiscoveryService(
         }
     }
 
-    private fun upsertDefinition(host: ExternalPluginHost, pluginId: String, pluginEntry: JsonNode) {
+    private fun upsertDefinition(host: ExternalPluginHost, pluginId: String, pluginEntry: JsonNode): UUID? {
         // Plugin-host returns: {pluginId, version, manifest: {pluginId, version, name, ...}}
         // The detailed fields (name, description, etc.) are inside the nested manifest object.
         val manifest = pluginEntry.get("manifest") ?: pluginEntry
         val version = pluginEntry.get("version")?.asText() ?: manifest.get("version")?.asText() ?: "0.0.0"
 
-        val existing = definitionRepository.findByPluginId(pluginId)
+        val existing = definitionRepository.findByPluginIdAndVersion(pluginId, version)
         if (existing != null && existing.hostId != host.id) {
             logger.warn {
-                "External plugin '$pluginId' already registered on host ${existing.hostId}; ignoring discovery from host ${host.id}"
+                "External plugin '$pluginId@$version' already registered on host ${existing.hostId}; ignoring discovery from host ${host.id}"
             }
-            return
+            return null
         }
 
         val definition = existing ?: ExternalPluginDefinition(
@@ -129,7 +129,6 @@ class ExternalPluginDiscoveryService(
             status = ExternalPluginDefinitionStatus.AVAILABLE,
         )
 
-        definition.version = version
         definition.name = manifest.get("name")?.asText() ?: definition.name
         definition.description = manifest.get("description")?.asText() ?: definition.description
         definition.provider = manifest.get("provider")?.asText() ?: definition.provider
@@ -142,11 +141,12 @@ class ExternalPluginDiscoveryService(
         definition.consecutiveMisses = 0
 
         definitionRepository.save(definition)
+        return definition.id
     }
 
-    private fun markMissingDefinitions(host: ExternalPluginHost, seenPluginIds: Set<String>) {
+    private fun markMissingDefinitions(host: ExternalPluginHost, seenDefinitionIds: Set<UUID>) {
         definitionRepository.findAllByHostId(host.id).forEach { definition ->
-            if (definition.pluginId in seenPluginIds) return@forEach
+            if (definition.id in seenDefinitionIds) return@forEach
             definition.consecutiveMisses += 1
             if (definition.consecutiveMisses >= failureThreshold) {
                 definition.status = ExternalPluginDefinitionStatus.UNAVAILABLE

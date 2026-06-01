@@ -21,6 +21,7 @@ import io.jsonwebtoken.Claims
 import io.jsonwebtoken.SignatureAlgorithm
 import io.jsonwebtoken.security.Keys
 import java.security.Key
+import javax.crypto.SecretKey
 
 class ExternalPluginServiceTokenKeyProvider(secret: String) : SecretKeyProvider {
 
@@ -31,13 +32,15 @@ class ExternalPluginServiceTokenKeyProvider(secret: String) : SecretKeyProvider 
         }
     }
 
-    private val key: Key = Keys.hmacShaKeyFor(secret.toByteArray(Charsets.UTF_8))
+    val signingKey: SecretKey = Keys.hmacShaKeyFor(secret.toByteArray(Charsets.UTF_8))
 
+    @Suppress("DEPRECATION")
     override fun supports(algorithm: SignatureAlgorithm, claims: Claims): Boolean =
         algorithm == SignatureAlgorithm.HS256 && TOKEN_TYPE == claims[TYPE_CLAIM]
 
+    @Suppress("DEPRECATION")
     override fun getKey(algorithm: SignatureAlgorithm): Key? =
-        if (algorithm == SignatureAlgorithm.HS256) key else null
+        if (algorithm == SignatureAlgorithm.HS256) signingKey else null
 
     companion object {
         const val TYPE_CLAIM = "type"

@@ -17,12 +17,10 @@
 import { FastifyInstance, FastifyRequest, FastifyReply } from "fastify";
 import { PluginManager } from "../plugin-manager.js";
 import { AppConfig } from "../config.js";
-import { Readable } from "node:stream";
-import { createWriteStream } from "node:fs";
-import { mkdir, mkdtemp, readFile, readdir, rm } from "node:fs/promises";
+import { mkdir, mkdtemp, readFile, rm } from "node:fs/promises";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
-import { execSync } from "node:child_process";
+import AdmZip from "adm-zip";
 
 /**
  * Admin-authenticated plugin management routes.
@@ -88,7 +86,6 @@ export async function hostManagementRoutes(
     const tmpBase = join(appRoot, ".tmp");
     await mkdir(tmpBase, { recursive: true });
     const tempDir = await mkdtemp(join(tmpBase, "plugin-upload-"));
-    const zipPath = join(tempDir, "plugin.zip");
 
     try {
       // Collect the stream into a buffer
@@ -97,14 +94,11 @@ export async function hostManagementRoutes(
         chunks.push(chunk);
       }
       const zipBuffer = Buffer.concat(chunks);
-      const { writeFile: wf } = await import("node:fs/promises");
-      await wf(zipPath, zipBuffer);
 
       // Extract zip
       const extractDir = join(tempDir, "extracted");
-      execSync(`mkdir -p "${extractDir}" && unzip -o "${zipPath}" -d "${extractDir}"`, {
-        stdio: "pipe",
-      });
+      const zip = new AdmZip(zipBuffer);
+      zip.extractAllTo(extractDir, true);
 
       // Read manifest
       const manifestPath = join(extractDir, "manifest.json");

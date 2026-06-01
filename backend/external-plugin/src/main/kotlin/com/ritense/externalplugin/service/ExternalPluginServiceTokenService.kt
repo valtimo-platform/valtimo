@@ -21,7 +21,6 @@ import com.ritense.externalplugin.domain.ExternalPluginDefinition
 import com.ritense.externalplugin.security.ExternalPluginServiceTokenKeyProvider
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import io.jsonwebtoken.Jwts
-import io.jsonwebtoken.SignatureAlgorithm
 import org.springframework.stereotype.Service
 import java.time.Duration
 import java.time.Instant
@@ -42,19 +41,17 @@ class ExternalPluginServiceTokenService(
 
     fun issue(configuration: ExternalPluginConfiguration, definition: ExternalPluginDefinition): String {
         val now = Instant.now()
-        val key = keyProvider.getKey(SignatureAlgorithm.HS256)
-            ?: error("Service token signing key unavailable")
 
         return Jwts.builder()
-            .setSubject("external-plugin:${definition.pluginId}:${configuration.id}")
+            .subject("external-plugin:${definition.pluginId}:${configuration.id}")
             .claim(ExternalPluginServiceTokenKeyProvider.TYPE_CLAIM, ExternalPluginServiceTokenKeyProvider.TOKEN_TYPE)
             .claim(PLUGIN_CONFIG_ID_CLAIM, configuration.id.toString())
             .claim(PLUGIN_ID_CLAIM, definition.pluginId)
             .claim(PLUGIN_VERSION_CLAIM, definition.version)
-            .setIssuer(ISSUER)
-            .setIssuedAt(Date.from(now))
-            .setExpiration(Date.from(now.plus(tokenTtl)))
-            .signWith(key, SignatureAlgorithm.HS256)
+            .issuer(ISSUER)
+            .issuedAt(Date.from(now))
+            .expiration(Date.from(now.plus(tokenTtl)))
+            .signWith(keyProvider.signingKey, Jwts.SIG.HS256)
             .compact()
     }
 

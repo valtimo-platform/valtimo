@@ -37,8 +37,6 @@ import org.operaton.bpm.engine.delegate.BpmnError
 import org.operaton.bpm.engine.delegate.DelegateExecution
 import org.springframework.context.event.EventListener
 import org.springframework.stereotype.Component
-import org.springframework.transaction.annotation.Transactional
-
 @Component
 @SkipComponentScan
 class ExternalPluginServiceTaskStartListener(
@@ -51,7 +49,6 @@ class ExternalPluginServiceTaskStartListener(
     private val objectMapper: ObjectMapper,
 ) {
 
-    @Transactional
     @EventListener(
         condition = """#event.delegateExecution.bpmnModelElementInstance != null
             && #event.delegateExecution.bpmnModelElementInstance.elementType.typeName == T(org.operaton.bpm.engine.ActivityTypes).TASK_SERVICE
@@ -79,7 +76,7 @@ class ExternalPluginServiceTaskStartListener(
         val response = hostClient.invokeAction(
             baseUrl = host.baseUrl,
             pluginId = definition.pluginId,
-            version = definition.version,
+            version = processLink.pluginVersion,
             actionKey = processLink.actionKey,
             payload = payload,
         )

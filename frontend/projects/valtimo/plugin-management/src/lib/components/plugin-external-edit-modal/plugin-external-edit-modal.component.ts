@@ -71,9 +71,13 @@ export class PluginExternalEditModalComponent implements OnChanges {
   public readonly _$propertiesInvalid = signal(false);
   public readonly _$configurationSchema = signal<unknown | null>(null);
   public readonly _$configBundleUrl = signal<string | null>(null);
-  public readonly _$prefillConfiguration = signal<Record<string, unknown> | null>(null);
+  public readonly _$prefillConfiguration = signal<{
+    title: string;
+    configuration: Record<string, unknown>;
+  } | null>(null);
   public readonly _$iframeValid = signal(false);
 
+  private _iframeConfigTitle: string = '';
   private _iframeConfigData: Record<string, unknown> | null = null;
 
   constructor(private readonly _externalPluginService: ExternalPluginService) {}
@@ -130,7 +134,12 @@ export class PluginExternalEditModalComponent implements OnChanges {
     this._resetForm();
   }
 
-  public onIframeConfigurationChanged(event: {valid: boolean; data: Record<string, unknown>}): void {
+  public onIframeConfigurationChanged(event: {
+    valid: boolean;
+    title: string;
+    data: Record<string, unknown>;
+  }): void {
+    this._iframeConfigTitle = event.title;
     this._iframeConfigData = event.data;
     this._$iframeValid.set(event.valid);
   }
@@ -138,14 +147,12 @@ export class PluginExternalEditModalComponent implements OnChanges {
   private _saveFromIframe(): void {
     if (!this._iframeConfigData || !this.configuration?.id) return;
 
-    const title = (this._iframeConfigData['configurationTitle'] as string) ?? this.configuration.title;
-    const properties = {...this._iframeConfigData};
-    delete properties['configurationTitle'];
+    const title = this._iframeConfigTitle || this.configuration.title;
 
     this._$loading.set(true);
 
     this._externalPluginService
-      .updateConfiguration(this.configuration.id, {title, properties})
+      .updateConfiguration(this.configuration.id, {title, properties: this._iframeConfigData})
       .subscribe({
         next: () => {
           this._$loading.set(false);
@@ -184,8 +191,8 @@ export class PluginExternalEditModalComponent implements OnChanges {
 
           if (this._$configBundleUrl()) {
             this._$prefillConfiguration.set({
-              configurationTitle: configDetail.title,
-              ...(configDetail.properties ?? {}),
+              title: configDetail.title,
+              configuration: configDetail.properties ?? {},
             });
           } else {
             this._form.patchValue({

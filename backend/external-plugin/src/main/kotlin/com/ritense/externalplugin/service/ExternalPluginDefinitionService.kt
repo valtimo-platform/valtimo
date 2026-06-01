@@ -35,6 +35,6 @@ class ExternalPluginDefinitionService(
     fun get(id: UUID): ExternalPluginDefinition = definitionRepository.findById(id)
         .orElseThrow { IllegalArgumentException("External plugin definition $id not found") }
 
-    fun getByPluginId(pluginId: String): ExternalPluginDefinition = definitionRepository.findByPluginId(pluginId)
-        ?: throw IllegalArgumentException("External plugin definition with pluginId '$pluginId' not found")
+    fun getAllByPluginId(pluginId: String): List<ExternalPluginDefinition> =
+        definitionRepository.findAllByPluginId(pluginId)
 }

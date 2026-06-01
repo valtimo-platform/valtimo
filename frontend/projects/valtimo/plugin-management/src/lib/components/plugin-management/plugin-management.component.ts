@@ -27,8 +27,8 @@ import {
   PluginTranslationService,
 } from '@valtimo/plugin';
 import {NGXLogger} from 'ngx-logger';
-import {BehaviorSubject, combineLatest, merge, Observable, of, Subject, timer} from 'rxjs';
-import {catchError, map, switchMap, take, takeUntil, tap} from 'rxjs/operators';
+import {BehaviorSubject, combineLatest, EMPTY, fromEvent, merge, Observable, of, Subject, timer} from 'rxjs';
+import {catchError, map, startWith, switchMap, take, takeUntil, tap} from 'rxjs/operators';
 import {PluginManagementStateService} from '../../services';
 import {UnifiedPluginConfigurationRow} from '../../models';
 import {cloneDeep} from 'lodash';
@@ -175,8 +175,15 @@ export class PluginManagementComponent implements OnDestroy {
 
   private readonly _refreshHosts$ = new Subject<void>();
 
+  private readonly _tabVisible$: Observable<boolean> = fromEvent(document, 'visibilitychange').pipe(
+    startWith(null),
+    map(() => document.visibilityState === 'visible')
+  );
+
   public readonly hosts$: Observable<Array<ExternalPluginHost>> = merge(
-    timer(0, 5000),
+    this._tabVisible$.pipe(
+      switchMap(visible => (visible ? timer(0, 5000) : EMPTY))
+    ),
     this._refreshHosts$
   ).pipe(
     takeUntil(this._destroy$),

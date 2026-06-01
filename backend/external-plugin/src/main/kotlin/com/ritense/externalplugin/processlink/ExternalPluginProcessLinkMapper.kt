@@ -59,6 +59,7 @@ class ExternalPluginProcessLinkMapper(
             activityType = processLink.activityType,
             externalPluginConfigurationId = processLink.externalPluginConfigurationId,
             actionKey = processLink.actionKey,
+            pluginVersion = processLink.pluginVersion,
             actionProperties = processLink.actionProperties,
         )
     }
@@ -72,6 +73,7 @@ class ExternalPluginProcessLinkMapper(
             activityType = createRequestDto.activityType,
             externalPluginConfigurationId = createRequestDto.externalPluginConfigurationId,
             actionKey = createRequestDto.actionKey,
+            pluginVersion = createRequestDto.pluginVersion,
             actionProperties = createRequestDto.actionProperties,
         )
     }
@@ -90,6 +92,7 @@ class ExternalPluginProcessLinkMapper(
             activityType = processLinkToUpdate.activityType,
             externalPluginConfigurationId = updateRequestDto.externalPluginConfigurationId,
             actionKey = updateRequestDto.actionKey,
+            pluginVersion = updateRequestDto.pluginVersion,
             actionProperties = updateRequestDto.actionProperties,
         )
     }
@@ -102,6 +105,7 @@ class ExternalPluginProcessLinkMapper(
             activityType = deployDto.activityType,
             externalPluginConfigurationId = deployDto.externalPluginConfigurationId,
             actionKey = deployDto.actionKey,
+            pluginVersion = deployDto.pluginVersion,
             actionProperties = deployDto.actionProperties,
         )
     }
@@ -116,6 +120,7 @@ class ExternalPluginProcessLinkMapper(
             id = existingProcessLinkId,
             externalPluginConfigurationId = deployDto.externalPluginConfigurationId,
             actionKey = deployDto.actionKey,
+            pluginVersion = deployDto.pluginVersion,
             actionProperties = deployDto.actionProperties,
         )
     }
@@ -127,6 +132,7 @@ class ExternalPluginProcessLinkMapper(
             activityType = processLink.activityType,
             externalPluginConfigurationId = processLink.externalPluginConfigurationId,
             actionKey = processLink.actionKey,
+            pluginVersion = processLink.pluginVersion,
             actionProperties = processLink.actionProperties,
         )
     }

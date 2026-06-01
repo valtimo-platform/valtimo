@@ -41,6 +41,9 @@ class ExternalPluginProcessLink(
     @Column(name = "external_plugin_action_key")
     val actionKey: String,
 
+    @Column(name = "external_plugin_version")
+    val pluginVersion: String,
+
     @Type(value = JsonType::class)
     @Column(name = "external_plugin_action_properties", columnDefinition = "JSON")
     val actionProperties: ObjectNode? = null,
@@ -65,6 +68,7 @@ class ExternalPluginProcessLink(
         activityType: ActivityTypeWithEventName = this.activityType,
         externalPluginConfigurationId: UUID = this.externalPluginConfigurationId,
         actionKey: String = this.actionKey,
+        pluginVersion: String = this.pluginVersion,
         actionProperties: ObjectNode? = this.actionProperties,
     ) = ExternalPluginProcessLink(
         id = id,
@@ -73,6 +77,7 @@ class ExternalPluginProcessLink(
         activityType = activityType,
         externalPluginConfigurationId = externalPluginConfigurationId,
         actionKey = actionKey,
+        pluginVersion = pluginVersion,
         actionProperties = actionProperties,
     )
 

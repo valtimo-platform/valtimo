@@ -30,6 +30,7 @@ data class ExternalPluginProcessLinkCreateRequestDto(
     override val activityType: ActivityTypeWithEventName,
     val externalPluginConfigurationId: UUID,
     val actionKey: String,
+    val pluginVersion: String,
     val actionProperties: ObjectNode? = null,
 ) : ProcessLinkCreateRequestDto {
     override val processLinkType: String

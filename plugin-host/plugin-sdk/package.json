@@ -28,11 +28,12 @@
     "bin"
   ],
   "dependencies": {
-    "@extism/js-pdk": "^1.1.0"
+    "@extism/js-pdk": "^1.1.0",
+    "adm-zip": "^0.5.17"
   },
   "devDependencies": {
-    "typescript": "^5.4.0",
-    "@types/node": "^22.0.0"
+    "@types/node": "^22.0.0",
+    "typescript": "^5.4.0"
   },
   "peerDependencies": {
     "@extism/js-pdk": "^1.1.0"

@@ -50,7 +50,7 @@
                 <constraints nullable="false" primaryKey="true" primaryKeyName="external_plugin_definition_pk"/>
             </column>
             <column name="plugin_id" type="VARCHAR(255)">
-                <constraints nullable="false" unique="true" uniqueConstraintName="external_plugin_definition_plugin_id_uq"/>
+                <constraints nullable="false"/>
             </column>
             <column name="version" type="VARCHAR(64)">
                 <constraints nullable="false"/>
@@ -75,6 +75,10 @@
                 <constraints nullable="false"/>
             </column>
         </createTable>
+
+        <addUniqueConstraint tableName="external_plugin_definition"
+                             columnNames="plugin_id, version"
+                             constraintName="external_plugin_definition_plugin_id_version_uq"/>
 
         <addForeignKeyConstraint baseTableName="external_plugin_definition"
                                  baseColumnNames="host_id"
@@ -114,6 +118,7 @@
         <addColumn tableName="process_link">
             <column name="external_plugin_config_id" type="${uuidType}"/>
             <column name="external_plugin_action_key" type="VARCHAR(255)"/>
+            <column name="external_plugin_version" type="VARCHAR(64)"/>
             <column name="external_plugin_action_properties" type="${jsonType}"/>
         </addColumn>
     </changeSet>

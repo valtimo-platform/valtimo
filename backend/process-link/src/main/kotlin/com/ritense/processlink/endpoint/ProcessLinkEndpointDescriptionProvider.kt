@@ -25,6 +25,7 @@ class ProcessLinkEndpointDescriptionProvider : EndpointDescriptionProvider {
 
     override fun getEndpointDescriptors(): List<EndpointDescriptor> = listOf(
         endpoint("GET", "/api/management/v1/case-definition/{caseDefinitionKey}/version/{versionTag}/process-definition", "List process definitions for case version", "Procesdefinities voor dossierversie ophalen"),
+        endpoint("GET", "/api/management/v1/case-definition/{caseDefinitionKey}/version/{versionTag}/process-definition/{processDefinitionId}", "Get process definition with links for case version", "Procesdefinitie met koppelingen voor dossierversie ophalen"),
         endpoint("POST", "/api/management/v1/case-definition/{caseDefinitionKey}/version/{versionTag}/process-definition", "Create process definition for case version", "Procesdefinitie voor dossierversie aanmaken"),
         endpoint("PUT", "/api/management/v1/case-definition/{caseDefinitionKey}/version/{versionTag}/process-definition", "Update process definition for case version", "Procesdefinitie voor dossierversie bijwerken"),
         endpoint("DELETE", "/api/management/v1/case-definition/{caseDefinitionKey}/version/{versionTag}/process-definition/key/{processDefinitionKey}", "Delete process definition for case version", "Procesdefinitie voor dossierversie verwijderen"),

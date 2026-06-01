@@ -24,22 +24,31 @@ import jakarta.persistence.EnumType
 import jakarta.persistence.Enumerated
 import jakarta.persistence.Id
 import jakarta.persistence.Table
+import jakarta.persistence.UniqueConstraint
 import org.hibernate.annotations.Type
 import java.util.UUID
 
 @Entity
-@Table(name = "external_plugin_definition")
+@Table(
+    name = "external_plugin_definition",
+    uniqueConstraints = [
+        UniqueConstraint(
+            name = "external_plugin_definition_plugin_id_version_uq",
+            columnNames = ["plugin_id", "version"]
+        )
+    ]
+)
 class ExternalPluginDefinition(
 
     @Id
     @Column(name = "id")
     val id: UUID,
 
-    @Column(name = "plugin_id", nullable = false, unique = true)
+    @Column(name = "plugin_id", nullable = false)
     val pluginId: String,
 
     @Column(name = "version", nullable = false)
-    var version: String,
+    val version: String,
 
     @Column(name = "name")
     var name: String? = null,

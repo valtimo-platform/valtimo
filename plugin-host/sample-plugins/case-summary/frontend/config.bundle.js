@@ -21749,7 +21749,7 @@
     /** Register handler for configuration prefill (edit mode). */
     onPrefillConfiguration(handler) {
       this._on("prefillConfiguration", (payload) => {
-        handler(payload.configuration);
+        handler({ title: payload.title, configuration: payload.configuration });
       });
     }
     /** Register handler for theme changes. */
@@ -21765,9 +21765,9 @@
         return;
       window.parent.postMessage({ source: "valtimo-plugin", event, payload }, this._parentOrigin ?? "*");
     }
-    /** Convenience: emit configurationChanged with validity and data. */
-    setConfiguration(valid, data) {
-      this.emit("configurationChanged", { valid, data });
+    /** Convenience: emit configurationChanged with validity, title, and data. */
+    setConfiguration(valid, title, data) {
+      this.emit("configurationChanged", { valid, title, data });
     }
     // ---- Accessors ----
     /** Get the current access token (refreshed automatically). */
@@ -21844,9 +21844,9 @@
     const [title, setTitle] = (0, import_react.useState)("");
     const [currency, setCurrency] = (0, import_react.useState)("EUR");
     (0, import_react.useEffect)(() => {
-      sdk.onPrefillConfiguration((config) => {
-        if (config.configurationTitle) setTitle(config.configurationTitle);
-        if (config.currency) setCurrency(config.currency);
+      sdk.onPrefillConfiguration(({ title: prefillTitle, configuration }) => {
+        if (prefillTitle) setTitle(prefillTitle);
+        if (configuration.currency) setCurrency(configuration.currency);
       });
       sdk.onSave(() => {
       });
@@ -21855,8 +21855,7 @@
     const emitConfig = (0, import_react.useCallback)(
       (newTitle, newCurrency) => {
         const valid = newTitle.trim().length > 0;
-        sdk.setConfiguration(valid, {
-          configurationTitle: newTitle.trim(),
+        sdk.setConfiguration(valid, newTitle.trim(), {
           currency: newCurrency.trim() || "EUR"
         });
       },
