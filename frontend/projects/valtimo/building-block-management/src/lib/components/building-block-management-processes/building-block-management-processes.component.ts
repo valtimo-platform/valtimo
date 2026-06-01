@@ -93,6 +93,11 @@ export class BuildingBlockManagementProcessesComponent implements OnInit, OnDest
     {key: 'name', label: 'buildingBlockManagement.processDefinition.name'},
     {key: 'key', label: 'buildingBlockManagement.processDefinition.key'},
     {
+      key: 'draft',
+      label: 'processManagement.draft',
+      viewType: ViewType.BOOLEAN,
+    },
+    {
       key: 'mainText',
       label: '',
       viewType: ViewType.TAGS,

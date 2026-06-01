@@ -183,7 +183,8 @@ class ProcessLinkResource(
                         processLinkService.getProcessLinks(definition.id).map {
                             getProcessLinkMapper(it.processLinkType).toProcessLinkResponseDto(it)
                         },
-                        getBpmnXml(definition)
+                        getBpmnXml(definition),
+                        draft = definition.isSuspended()
                     )
                 }
                 .collect(Collectors.toList())
@@ -207,7 +208,8 @@ class ProcessLinkResource(
                 processLinkService.getProcessLinks(definition.id).map {
                     getProcessLinkMapper(it.processLinkType).toProcessLinkResponseDto(it)
                 },
-                getBpmnXml(definition)
+                getBpmnXml(definition),
+                draft = definition.isSuspended()
             )
         }.sortedBy { it.processDefinition.version }
 

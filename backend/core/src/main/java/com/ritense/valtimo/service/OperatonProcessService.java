@@ -376,7 +376,7 @@ public class OperatonProcessService {
         denyAuthorization();
         return AuthorizationContext.runWithoutAuthorization(() ->
             operatonRepositoryService.findProcessDefinitions(
-                    byActive().and(byNotLinkedToCaseDefinition()).and(byNotLinkedToBuildingBlock()),
+                    byNotLinkedToCaseDefinition().and(byNotLinkedToBuildingBlock()),
                     Sort.by(NAME)
                 ).stream()
                 .collect(Collectors.groupingBy(
@@ -394,7 +394,7 @@ public class OperatonProcessService {
         denyAuthorization();
         return AuthorizationContext.runWithoutAuthorization(() ->
             operatonRepositoryService.findProcessDefinitions(
-                    byActive().and(byKey(processDefinitionKey)),
+                    byKey(processDefinitionKey),
                     Sort.by(NAME)
                 ).stream()
                 .filter(def -> def.getVersionTag() == null || !def.getVersionTag()

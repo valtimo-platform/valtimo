@@ -99,13 +99,13 @@ export class ProcessManagementListComponent {
       label: 'processManagement.readOnly',
       viewType: ViewType.BOOLEAN,
     },
+    {
+      key: 'draft',
+      label: 'processManagement.draft',
+      viewType: ViewType.BOOLEAN,
+    },
     ...(this.processManagementService.$context() === 'case'
       ? [
-          {
-            key: 'draft',
-            label: 'processManagement.draft',
-            viewType: ViewType.BOOLEAN,
-          },
           {
             key: 'processCaseLink.canInitializeDocument',
             label: 'processManagement.canInitializeDocument',
