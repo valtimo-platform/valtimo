@@ -34,14 +34,14 @@ interface ParentToIframeEvents {
   save: {};
   tokenRefresh: { accessToken: string };
   themeChanged: { theme: string };
-  prefillConfiguration: { configuration: Record<string, unknown> };
+  prefillConfiguration: { title: string; configuration: Record<string, unknown> };
 }
 
 /** Events sent from the plugin iframe to the Angular parent. */
 interface IframeToParentEvents {
   ready: {};
   resize: { height: number };
-  configurationChanged: { valid: boolean; data: Record<string, unknown> };
+  configurationChanged: { valid: boolean; title: string; data: Record<string, unknown> };
   navigate: { route: string };
   notification: { type: "success" | "warning" | "error" | "info"; message: string };
 }
@@ -89,9 +89,9 @@ class ValtimoPluginSDK {
   }
 
   /** Register handler for configuration prefill (edit mode). */
-  public onPrefillConfiguration(handler: EventHandler<Record<string, unknown>>): void {
+  public onPrefillConfiguration(handler: EventHandler<{ title: string; configuration: Record<string, unknown> }>): void {
     this._on("prefillConfiguration", (payload: ParentToIframeEvents["prefillConfiguration"]) => {
-      handler(payload.configuration);
+      handler({ title: payload.title, configuration: payload.configuration });
     });
   }
 
@@ -114,9 +114,9 @@ class ValtimoPluginSDK {
     );
   }
 
-  /** Convenience: emit configurationChanged with validity and data. */
-  public setConfiguration(valid: boolean, data: Record<string, unknown>): void {
-    this.emit("configurationChanged", { valid, data });
+  /** Convenience: emit configurationChanged with validity, title, and data. */
+  public setConfiguration(valid: boolean, title: string, data: Record<string, unknown>): void {
+    this.emit("configurationChanged", { valid, title, data });
   }
 
   // ---- Accessors ----

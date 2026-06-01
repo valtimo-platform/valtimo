@@ -42,10 +42,12 @@ export class ExternalPluginIframeComponent implements OnInit, OnDestroy {
 
   @Input() public bundleUrl!: string;
   @Input() public context: Record<string, unknown> = {};
-  @Input() public prefillConfiguration: Record<string, unknown> | null = null;
+  @Input() public prefillConfiguration: {title: string; configuration: Record<string, unknown>} | null =
+    null;
 
   @Output() public configurationChangedEvent = new EventEmitter<{
     valid: boolean;
+    title: string;
     data: Record<string, unknown>;
   }>();
   @Output() public readyEvent = new EventEmitter<void>();
@@ -79,8 +81,14 @@ export class ExternalPluginIframeComponent implements OnInit, OnDestroy {
     this._postToIframe('save', {});
   }
 
-  public sendPrefillConfiguration(configuration: Record<string, unknown>): void {
-    this._postToIframe('prefillConfiguration', {configuration});
+  public sendPrefillConfiguration(prefill: {
+    title: string;
+    configuration: Record<string, unknown>;
+  }): void {
+    this._postToIframe('prefillConfiguration', {
+      title: prefill.title,
+      configuration: prefill.configuration,
+    });
   }
 
   public onIframeLoad(): void {

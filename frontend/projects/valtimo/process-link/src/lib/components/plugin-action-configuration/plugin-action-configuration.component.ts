@@ -22,9 +22,15 @@ import {
   ProcessLinkStateService,
   ProcessLinkStepService,
 } from '../../services';
-import {BehaviorSubject, combineLatest, Observable, Subscription} from 'rxjs';
-import {filter, map, take, withLatestFrom} from 'rxjs/operators';
-import {isExternalPluginKey, PluginConfiguration, PluginConfigurationData} from '@valtimo/plugin';
+import {BehaviorSubject, combineLatest, Observable, of, Subscription} from 'rxjs';
+import {filter, map, switchMap, take, withLatestFrom} from 'rxjs/operators';
+import {
+  ExternalPluginService,
+  extractExternalDefinitionId,
+  isExternalPluginKey,
+  PluginConfiguration,
+  PluginConfigurationData,
+} from '@valtimo/plugin';
 import {
   ExternalPluginProcessLinkCreateDto,
   ExternalPluginProcessLinkUpdateDto,
@@ -94,7 +100,8 @@ export class PluginActionConfigurationComponent implements OnInit, OnDestroy {
     private readonly _pluginStateService: PluginStateService,
     private readonly _buttonService: ProcessLinkButtonService,
     private readonly _stepService: ProcessLinkStepService,
-    private readonly _processLinkService: ProcessLinkService
+    private readonly _processLinkService: ProcessLinkService,
+    private readonly _externalPluginService: ExternalPluginService
   ) {}
 
   ngOnInit(): void {
@@ -274,14 +281,32 @@ export class PluginActionConfigurationComponent implements OnInit, OnDestroy {
       this._pluginStateService.selectedPluginConfiguration$,
       this._pluginStateService.selectedPluginFunction$,
       this._stateService.selectedProcessLink$,
+      this._pluginStateService.selectedPluginDefinition$,
     ])
-      .pipe(take(1))
-      .subscribe(([modalData, selectedConfiguration, selectedFunction, selectedProcessLink]) => {
-        if (!selectedConfiguration || !selectedFunction) {
-          this._stateService.stopSaving();
-          return;
-        }
+      .pipe(
+        take(1),
+        switchMap(([modalData, selectedConfiguration, selectedFunction, selectedProcessLink, selectedDefinition]) => {
+          if (!selectedConfiguration || !selectedFunction || !selectedDefinition) {
+            this._stateService.stopSaving();
+            return of(null);
+          }
 
+          const definitionId = extractExternalDefinitionId(selectedDefinition.key);
+          return this._externalPluginService.getDefinition(definitionId).pipe(
+            map(definition => ({
+              modalData,
+              selectedConfiguration,
+              selectedFunction,
+              selectedProcessLink,
+              pluginVersion: definition.version,
+            }))
+          );
+        })
+      )
+      .subscribe(result => {
+        if (!result) return;
+
+        const {modalData, selectedConfiguration, selectedFunction, selectedProcessLink, pluginVersion} = result;
         const actionProperties = this.externalActionProperties;
 
         if (selectedProcessLink) {
@@ -290,6 +315,7 @@ export class PluginActionConfigurationComponent implements OnInit, OnDestroy {
             processLinkType: 'external_plugin',
             externalPluginConfigurationId: selectedConfiguration.id,
             actionKey: selectedFunction.key,
+            pluginVersion,
             actionProperties,
           };
           this._stateService.sendProcessLinkUpdateEvent(updateRequest);
@@ -301,6 +327,7 @@ export class PluginActionConfigurationComponent implements OnInit, OnDestroy {
             processLinkType: 'external_plugin',
             externalPluginConfigurationId: selectedConfiguration.id,
             actionKey: selectedFunction.key,
+            pluginVersion,
             actionProperties,
           };
           this._stateService.sendProcessLinkCreateEvent(createRequest);

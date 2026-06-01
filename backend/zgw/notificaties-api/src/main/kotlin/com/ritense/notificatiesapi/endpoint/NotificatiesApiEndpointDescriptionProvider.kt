@@ -26,7 +26,7 @@ class NotificatiesApiEndpointDescriptionProvider : EndpointDescriptionProvider {
     override fun getEndpointDescriptors(): List<EndpointDescriptor> = listOf(
         endpoint("GET", "/api/management/v1/notificatiesapi/inbound-events/failed", "List failed inbound events", "Mislukte inkomende gebeurtenissen ophalen"),
         endpoint("GET", "/api/management/v1/notificatiesapi/inbound-events/failed/count", "Count failed inbound events", "Mislukte inkomende gebeurtenissen tellen"),
-        endpoint("POST", "/api/management/v1/notificatiesapi/inbound-events/*/retry", "Retry failed inbound event", "Mislukte inkomende gebeurtenis opnieuw proberen"),
+        endpoint("POST", "/api/management/v1/notificatiesapi/inbound-events/{id}/retry", "Retry failed inbound event", "Mislukte inkomende gebeurtenis opnieuw proberen"),
     )
 
     private companion object {

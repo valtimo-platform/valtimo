@@ -35,6 +35,7 @@ class BuildingBlockEndpointDescriptionProvider : EndpointDescriptionProvider {
         endpoint("GET", "/api/management/v1/building-block/{key}/version/{versionTag}/export", "Export building block", "Bouwblok exporteren"),
         endpoint("POST", "/api/management/v1/building-block/{key}/version/{versionTag}/finalize", "Finalize building block", "Bouwblok afronden"),
         endpoint("GET", "/api/management/v1/building-block/{key}/version/{versionTag}/plugin", "Get building block plugins", "Bouwblokplugins ophalen"),
+        endpoint("GET", "/api/management/v1/building-block/{key}/version/{versionTag}/process-definition/{processDefinitionId}/plugin", "Get plugin definitions for process definition", "Plugindefinities voor procesdefinitie ophalen"),
         endpoint("GET", "/api/management/v1/building-block/{key}/version/{versionTag}/fields", "Get building block fields", "Bouwblokvelden ophalen"),
         endpoint("GET", "/api/management/v1/building-block/process-definition/{processDefinitionId}/is-building-block", "Check if process is a building block", "Controleren of proces een bouwblok is"),
         endpoint("GET", "/api/management/v1/building-block/{key}/version/{versionTag}/process-definition", "List building block process definitions", "Bouwblokprocesdefinities ophalen"),

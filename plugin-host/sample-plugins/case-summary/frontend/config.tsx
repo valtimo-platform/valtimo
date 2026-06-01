@@ -26,9 +26,9 @@ function ConfigForm() {
 
   // On prefill (edit mode), populate form fields
   useEffect(() => {
-    sdk.onPrefillConfiguration((config) => {
-      if (config.configurationTitle) setTitle(config.configurationTitle as string);
-      if (config.currency) setCurrency(config.currency as string);
+    sdk.onPrefillConfiguration(({title: prefillTitle, configuration}) => {
+      if (prefillTitle) setTitle(prefillTitle);
+      if (configuration.currency) setCurrency(configuration.currency as string);
     });
 
     // On save trigger from parent, the parent reads the last emitted configurationChanged
@@ -44,8 +44,7 @@ function ConfigForm() {
   const emitConfig = useCallback(
     (newTitle: string, newCurrency: string) => {
       const valid = newTitle.trim().length > 0;
-      sdk.setConfiguration(valid, {
-        configurationTitle: newTitle.trim(),
+      sdk.setConfiguration(valid, newTitle.trim(), {
         currency: newCurrency.trim() || "EUR",
       });
     },

@@ -20,7 +20,6 @@ import com.ritense.authorization.AuthorizationContext
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.jsonwebtoken.JwtException
 import io.jsonwebtoken.Jwts
-import io.jsonwebtoken.SignatureAlgorithm
 import jakarta.servlet.FilterChain
 import jakarta.servlet.http.HttpServletRequest
 import jakarta.servlet.http.HttpServletRequestWrapper
@@ -48,7 +47,7 @@ class ExternalPluginServiceTokenFilter(
 ) : OncePerRequestFilter() {
 
     private val parser = Jwts.parser()
-        .setSigningKey(keyProvider.getKey(SignatureAlgorithm.HS256))
+        .verifyWith(keyProvider.signingKey)
         .build()
 
     override fun doFilterInternal(
@@ -64,7 +63,7 @@ class ExternalPluginServiceTokenFilter(
 
         val token = authHeader.removePrefix("Bearer ").trim()
         val claims = try {
-            parser.parseClaimsJws(token).body
+            parser.parseSignedClaims(token).payload
         } catch (_: JwtException) {
             // Either not our token (signed with another key/algorithm) or invalid. Either way,
             // let the downstream filter chain handle it.

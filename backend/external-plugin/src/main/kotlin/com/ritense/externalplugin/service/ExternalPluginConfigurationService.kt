@@ -161,20 +161,7 @@ class ExternalPluginConfigurationService(
         try {
             val host = hostRepository.findById(definition.hostId).orElse(null)
             if (host != null) {
-                val adminToken = encryptionService.decrypt(host.secret)
-                val decrypted = propertyEncryptor.decryptSecretFields(properties.deepCopy(), definition.configSchema)
-                val serviceToken = serviceTokenService.issue(config, definition)
-                hostClient.pushConfiguration(
-                    baseUrl = host.baseUrl,
-                    adminToken = adminToken,
-                    configId = saved.id.toString(),
-                    pluginId = definition.pluginId,
-                    pluginVersion = definition.version,
-                    properties = decrypted,
-                    serviceToken = serviceToken,
-                    gzacBaseUrl = gzacBaseUrl
-                )
-                logger.info { "Pushed updated configuration ${saved.id} for plugin '${definition.pluginId}' to host ${host.id}" }
+                pushToHost(saved, definition, host)
             }
         } catch (e: Exception) {
             logger.warn(e) { "Failed to push updated configuration ${saved.id} to plugin host (will be synced on next discovery)" }

@@ -22,7 +22,9 @@ import java.util.UUID
 
 interface ExternalPluginDefinitionRepository : JpaRepository<ExternalPluginDefinition, UUID> {
 
-    fun findByPluginId(pluginId: String): ExternalPluginDefinition?
+    fun findByPluginIdAndVersion(pluginId: String, version: String): ExternalPluginDefinition?
+
+    fun findAllByPluginId(pluginId: String): List<ExternalPluginDefinition>
 
     fun findAllByHostId(hostId: UUID): List<ExternalPluginDefinition>
 }

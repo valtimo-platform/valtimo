@@ -23,12 +23,7 @@ import com.ritense.valtimo.contract.endpoint.EndpointDescriptor
 @SkipComponentScan
 class ExternalPluginEndpointDescriptionProvider : EndpointDescriptionProvider {
 
-    override fun getEndpointDescriptors(): List<EndpointDescriptor> = listOf(
-        endpoint("POST", "/api/management/v1/external-plugin/endpoint-descriptions", "Get endpoint descriptions", "Endpoint-beschrijvingen ophalen"),
-    )
-
-    private companion object {
-        fun endpoint(method: String, pattern: String, en: String, nl: String) =
-            EndpointDescriptor(method, pattern, mapOf("en" to en, "nl" to nl))
-    }
+    // External plugin management endpoints are inherently blocked for external plugin service tokens
+    // (see ExternalPluginEndpointAllowlistFilter) and therefore do not need endpoint descriptors.
+    override fun getEndpointDescriptors(): List<EndpointDescriptor> = emptyList()
 }

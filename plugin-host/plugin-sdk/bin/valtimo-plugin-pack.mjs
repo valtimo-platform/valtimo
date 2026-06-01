@@ -29,9 +29,12 @@
  * Usage: valtimo-plugin-pack [--wasm plugin.wasm] [--manifest manifest.json] [--output .]
  */
 
-import { execSync } from "node:child_process";
-import { existsSync, readFileSync, mkdirSync } from "node:fs";
-import { resolve, basename } from "node:path";
+import { existsSync, readFileSync, mkdirSync, unlinkSync } from "node:fs";
+import { resolve } from "node:path";
+import { createRequire } from "node:module";
+
+const require = createRequire(import.meta.url);
+const AdmZip = require("adm-zip");
 
 const args = process.argv.slice(2);
 
@@ -74,38 +77,26 @@ console.log(`[valtimo-plugin-pack] Packing ${pluginId}@${version} ...`);
 
 mkdirSync(outputDir, { recursive: true });
 
-// Build the zip — include manifest.json and plugin.wasm, plus frontend/ if it exists
 const frontendDir = resolve(cwd, "frontend");
 const hasFrontend = existsSync(frontendDir);
 
-const filesToZip = [`"${manifestPath}" "${wasmPath}"`];
-
 try {
-  // Use a temp staging approach for clean zip structure
-  const stagingDir = resolve(cwd, ".plugin-pack-staging");
-  execSync(`rm -rf "${stagingDir}" && mkdir -p "${stagingDir}"`, { cwd });
-  execSync(`cp "${manifestPath}" "${stagingDir}/manifest.json"`, { cwd });
-  execSync(`cp "${wasmPath}" "${stagingDir}/plugin.wasm"`, { cwd });
+  const zip = new AdmZip();
+  zip.addLocalFile(manifestPath, "", "manifest.json");
+  zip.addLocalFile(wasmPath, "", "plugin.wasm");
 
   if (hasFrontend) {
-    execSync(`cp -r "${frontendDir}" "${stagingDir}/frontend"`, { cwd });
+    zip.addLocalFolder(frontendDir, "frontend");
   }
 
-  // Create zip from staging directory
-  execSync(`cd "${stagingDir}" && zip -r "${zipPath}" .`, {
-    cwd,
-    stdio: "inherit",
-  });
-
-  // Cleanup staging dir
-  execSync(`rm -rf "${stagingDir}"`, { cwd });
+  zip.writeZip(zipPath);
 
   // Remove intermediate build artifacts from the output directory
   const bundlePath = resolve(outputDir, "_plugin_bundle.js");
   const wasmInOutput = resolve(outputDir, "plugin.wasm");
   for (const artifact of [bundlePath, wasmInOutput]) {
     if (existsSync(artifact)) {
-      execSync(`rm "${artifact}"`, { cwd });
+      unlinkSync(artifact);
     }
   }
 

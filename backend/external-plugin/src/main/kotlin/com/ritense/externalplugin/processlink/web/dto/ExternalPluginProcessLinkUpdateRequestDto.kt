@@ -27,6 +27,7 @@ data class ExternalPluginProcessLinkUpdateRequestDto(
     override val id: UUID,
     val externalPluginConfigurationId: UUID,
     val actionKey: String,
+    val pluginVersion: String,
     val actionProperties: ObjectNode? = null,
 ) : ProcessLinkUpdateRequestDto {
     override val processLinkType: String

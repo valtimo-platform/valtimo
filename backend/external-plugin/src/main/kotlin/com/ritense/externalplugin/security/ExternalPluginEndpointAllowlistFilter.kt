@@ -33,6 +33,10 @@ class ExternalPluginEndpointAllowlistFilter(
     private val grantedEndpointRepository: ExternalPluginGrantedEndpointRepository,
 ) : OncePerRequestFilter() {
 
+    companion object {
+        private val BLOCKED_PATTERN = AntPathRequestMatcher("/api/management/v1/external-plugin/**")
+    }
+
     override fun doFilterInternal(
         request: HttpServletRequest,
         response: HttpServletResponse,
@@ -42,6 +46,15 @@ class ExternalPluginEndpointAllowlistFilter(
         val principal = authentication?.principal
         if (principal !is ExternalPluginServicePrincipal) {
             filterChain.doFilter(request, response)
+            return
+        }
+
+        // External plugins must never access their own management endpoints
+        if (BLOCKED_PATTERN.matches(request)) {
+            response.sendError(
+                HttpServletResponse.SC_FORBIDDEN,
+                "External plugins cannot access external-plugin management endpoints",
+            )
             return
         }
 

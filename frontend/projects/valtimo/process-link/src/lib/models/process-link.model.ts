@@ -45,6 +45,7 @@ interface ProcessLink {
   outputMappings?: Array<BuildingBlockOutputMapping>;
   externalPluginConfigurationId?: string;
   actionKey?: string;
+  pluginVersion?: string;
 }
 
 type GetProcessLinkResponse = Array<ProcessLink>;
@@ -211,6 +212,7 @@ interface ExternalPluginProcessLinkCreateDto {
   processLinkType: 'external_plugin';
   externalPluginConfigurationId: string;
   actionKey: string;
+  pluginVersion: string;
   actionProperties?: object;
 }
 
@@ -219,6 +221,7 @@ interface ExternalPluginProcessLinkUpdateDto {
   processLinkType: 'external_plugin';
   externalPluginConfigurationId: string;
   actionKey: string;
+  pluginVersion: string;
   actionProperties?: object;
 }
 
