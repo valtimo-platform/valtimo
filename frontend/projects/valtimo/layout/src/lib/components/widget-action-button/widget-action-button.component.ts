@@ -50,6 +50,8 @@ export class WidgetActionButtonComponent {
 
     if (buttonAction?.openInNewTab) {
       window.open(navigateTo, '_blank', 'noopener,noreferrer');
+    } else if (navigateTo.startsWith(window.location.origin) || navigateTo.startsWith('/')) {
+      this.router.navigateByUrl(navigateTo);
     } else {
       window.open(navigateTo, '_self');
     }
