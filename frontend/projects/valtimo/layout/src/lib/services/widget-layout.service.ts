@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -138,7 +138,7 @@ export class WidgetLayoutService implements OnDestroy {
   private openMuuriSubscription(): void {
     this._subscriptions.add(
       combineLatest([this._muuri$, this._triggerMuuriLayout$])
-        .pipe(debounceTime(150))
+        .pipe(debounceTime(400))
         .subscribe(([muuri]) => {
           muuri.refreshItems();
           muuri.layout();

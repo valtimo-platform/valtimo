@@ -26,6 +26,7 @@ import {
 import {TranslatePipe} from '@ngx-translate/core';
 import {CarbonListModule} from '@valtimo/components';
 import {LoadingModule} from 'carbon-components-angular';
+import {muuriGapFreeLayout} from '@valtimo/components';
 import Muuri from 'muuri';
 import {BehaviorSubject, delay, merge, Observable, Subject, Subscription, take} from 'rxjs';
 import {filter} from 'rxjs/operators';
@@ -125,9 +126,7 @@ export class WidgetContainerComponent implements AfterViewInit, OnDestroy {
     this.widgetLayoutService.loaded$.pipe(take(1), delay(300)).subscribe(() => {
       this.widgetLayoutService.setMuuri(
         new Muuri(this._widgetsContainerRef.nativeElement, {
-          layout: {
-            fillGaps: true,
-          },
+          layout: muuriGapFreeLayout,
           layoutOnResize: false,
         })
       );
