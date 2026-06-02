@@ -146,7 +146,9 @@ export class IkoApiService extends BaseApiService {
   }
 
   private navigateTo(navigateTo: string) {
-    if (navigateTo.startsWith(window.location.origin) || navigateTo.startsWith('/')) {
+    if (navigateTo.startsWith(window.location.origin)) {
+      this.router.navigateByUrl(navigateTo.substring(window.location.origin.length));
+    } else if (navigateTo.startsWith('/')) {
       this.router.navigateByUrl(navigateTo);
     } else if (navigateTo.startsWith('http')) {
       window.open(navigateTo, '_blank');
