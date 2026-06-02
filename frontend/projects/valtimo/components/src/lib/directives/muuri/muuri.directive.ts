@@ -26,6 +26,7 @@ import {
 import Muuri from 'muuri';
 import {BehaviorSubject, combineLatest, fromEvent, Observable, Subscription, switchMap} from 'rxjs';
 import {distinctUntilChanged, filter, take, tap} from 'rxjs/operators';
+import {muuriGapFreeLayout} from './muuri-gap-free-layout';
 
 @Directive({
   selector: '[muuri]',
@@ -110,9 +111,7 @@ export class MuuriDirective implements AfterViewInit, OnDestroy {
 
     this._muuriSubject$.next(
       new Muuri(nativeElement, {
-        layout: {
-          fillGaps: true,
-        },
+        layout: muuriGapFreeLayout,
         layoutOnResize: false,
       })
     );
@@ -160,7 +159,7 @@ export class MuuriDirective implements AfterViewInit, OnDestroy {
         this._muuri.refreshItems();
         this._muuri.layout(true);
       }
-    }, 50);
+    }, 200);
   }
 
   private observeContainerWidthChanges(): void {
