@@ -21,6 +21,7 @@ import com.ritense.externalplugin.service.EndpointDescriptionService
 import com.ritense.externalplugin.service.EndpointQuery
 import com.ritense.externalplugin.service.ExternalPluginConfigurationService
 import com.ritense.externalplugin.service.ExternalPluginDefinitionService
+import com.ritense.externalplugin.service.ExternalPluginDiscoveryService
 import com.ritense.externalplugin.service.ExternalPluginHostService
 import com.ritense.externalplugin.web.rest.dto.ConfigurationCreateRequest
 import com.ritense.externalplugin.web.rest.dto.ConfigurationDetailResponse
@@ -55,6 +56,7 @@ class ExternalPluginManagementResource(
     private val definitionService: ExternalPluginDefinitionService,
     private val configurationService: ExternalPluginConfigurationService,
     private val endpointDescriptionService: EndpointDescriptionService,
+    private val discoveryService: ExternalPluginDiscoveryService,
 ) {
 
     @RunWithoutAuthorization
@@ -76,6 +78,7 @@ class ExternalPluginManagementResource(
         @RequestParam("file") file: MultipartFile,
     ): ResponseEntity<JsonNode> {
         val result = hostService.uploadPlugin(hostId, file.originalFilename ?: "plugin.zip", file.bytes)
+        discoveryService.discoverAll()
         return ResponseEntity.status(HttpStatus.CREATED).body(result)
     }
 

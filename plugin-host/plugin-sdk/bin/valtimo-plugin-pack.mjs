@@ -24,13 +24,19 @@
  *   - plugin.wasm (from project root or dist/)
  *   - frontend/ directory (if present)
  *
+ * Frontend bundles are built automatically: for every .html file in frontend/
+ * that references a <script src="*.bundle.js">, the pack script looks for a
+ * matching source file (.tsx, .ts, .jsx, .js) and compiles it with esbuild.
+ * The generated .bundle.js files are included in the zip and removed afterwards.
+ *
  * Output: {pluginId}-{version}.zip
  *
  * Usage: valtimo-plugin-pack [--wasm plugin.wasm] [--manifest manifest.json] [--output .]
  */
 
-import { existsSync, readFileSync, mkdirSync, unlinkSync } from "node:fs";
-import { resolve } from "node:path";
+import { execFileSync } from "node:child_process";
+import { existsSync, readFileSync, readdirSync, mkdirSync, unlinkSync } from "node:fs";
+import { resolve, join, basename, extname } from "node:path";
 import { createRequire } from "node:module";
 
 const require = createRequire(import.meta.url);
@@ -80,6 +86,61 @@ mkdirSync(outputDir, { recursive: true });
 const frontendDir = resolve(cwd, "frontend");
 const hasFrontend = existsSync(frontendDir);
 
+// ---- Build frontend bundles ----
+
+const SOURCE_EXTENSIONS = [".tsx", ".ts", ".jsx", ".js"];
+const builtBundles = [];
+
+if (hasFrontend) {
+  const htmlFiles = readdirSync(frontendDir).filter(f => f.endsWith(".html"));
+
+  for (const htmlFile of htmlFiles) {
+    const htmlContent = readFileSync(join(frontendDir, htmlFile), "utf-8");
+    const scriptMatch = htmlContent.match(/<script\s+src="([^"]+\.bundle\.js)"/);
+    if (!scriptMatch) continue;
+
+    const bundleName = scriptMatch[1]; // e.g. "config.bundle.js"
+    const baseName = bundleName.replace(".bundle.js", ""); // e.g. "config"
+
+    // Find matching source file
+    let sourceFile = null;
+    for (const ext of SOURCE_EXTENSIONS) {
+      const candidate = join(frontendDir, baseName + ext);
+      if (existsSync(candidate)) {
+        sourceFile = candidate;
+        break;
+      }
+    }
+
+    if (!sourceFile) continue;
+
+    const outFile = join(frontendDir, bundleName);
+    const sourceExt = extname(sourceFile);
+    const loader = sourceExt === ".tsx" ? "tsx" : sourceExt === ".jsx" ? "jsx" : "ts";
+
+    console.log(`[valtimo-plugin-pack] Building frontend bundle: ${baseName}${sourceExt} -> ${bundleName}`);
+
+    try {
+      execFileSync("npx", [
+        "esbuild", sourceFile,
+        "--bundle", `--outfile=${outFile}`,
+        "--format=iife", "--target=es2020",
+        "--jsx=automatic", `--loader:${sourceExt}=${loader}`,
+      ], { cwd, stdio: "inherit" });
+      builtBundles.push(outFile);
+    } catch (err) {
+      console.error(`[valtimo-plugin-pack] Failed to build frontend bundle: ${bundleName}`);
+      // Clean up any bundles built so far
+      for (const built of builtBundles) {
+        if (existsSync(built)) unlinkSync(built);
+      }
+      process.exit(1);
+    }
+  }
+}
+
+// ---- Create zip ----
+
 try {
   const zip = new AdmZip();
   zip.addLocalFile(manifestPath, "", "manifest.json");
@@ -100,8 +161,19 @@ try {
     }
   }
 
+  // Clean up generated frontend bundles
+  for (const built of builtBundles) {
+    if (existsSync(built)) {
+      unlinkSync(built);
+    }
+  }
+
   console.log(`[valtimo-plugin-pack] Created: ${zipName}`);
 } catch (err) {
+  // Clean up generated frontend bundles on error too
+  for (const built of builtBundles) {
+    if (existsSync(built)) unlinkSync(built);
+  }
   console.error("[valtimo-plugin-pack] Packaging failed:", err.message);
   process.exit(1);
 }

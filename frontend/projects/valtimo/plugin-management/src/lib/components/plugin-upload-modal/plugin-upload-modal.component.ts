@@ -86,10 +86,11 @@ export class PluginUploadModalComponent implements OnChanges {
 
   public ngOnChanges(changes: SimpleChanges): void {
     if (changes['hosts']) {
+      const selectedHostId = this._$selectedHostId();
       this._$hostItems.set(
         (this.hosts ?? []).map(host => ({
           content: `${host.name} (${host.baseUrl})`,
-          selected: false,
+          selected: host.id === selectedHostId,
           hostId: host.id,
         }))
       );

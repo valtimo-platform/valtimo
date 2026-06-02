@@ -184,7 +184,8 @@ class ExternalPluginAutoConfiguration {
         definitionService: ExternalPluginDefinitionService,
         configurationService: ExternalPluginConfigurationService,
         endpointDescriptionService: EndpointDescriptionService,
-    ) = ExternalPluginManagementResource(hostService, definitionService, configurationService, endpointDescriptionService)
+        discoveryService: ExternalPluginDiscoveryService,
+    ) = ExternalPluginManagementResource(hostService, definitionService, configurationService, endpointDescriptionService, discoveryService)
 
     @Bean
     @ConditionalOnMissingBean(ExternalPluginProcessLinkMapper::class)

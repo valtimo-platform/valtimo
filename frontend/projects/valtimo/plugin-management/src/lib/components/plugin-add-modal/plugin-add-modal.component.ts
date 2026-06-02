@@ -14,10 +14,10 @@
  * limitations under the License.
  */
 
-import {Component, EventEmitter, Input, Output, ViewChild} from '@angular/core';
+import {Component, EventEmitter, Input, OnDestroy, Output, ViewChild} from '@angular/core';
 import {PluginManagementStateService} from '../../services';
 import {map, take} from 'rxjs/operators';
-import {BehaviorSubject, Observable, Subject} from 'rxjs';
+import {BehaviorSubject, Observable, Subscription} from 'rxjs';
 import {
   ExternalPluginGrantedEndpointEntry,
   ExternalPluginManagementEndpoint,
@@ -29,6 +29,7 @@ import {
 import {PluginExternalConfigureComponent} from '../plugin-external-configure/plugin-external-configure.component';
 import {NGXLogger} from 'ngx-logger';
 import {CARBON_CONSTANTS} from '@valtimo/components';
+import {TranslateService} from '@ngx-translate/core';
 
 @Component({
   standalone: false,
@@ -36,7 +37,7 @@ import {CARBON_CONSTANTS} from '@valtimo/components';
   templateUrl: './plugin-add-modal.component.html',
   styleUrls: ['./plugin-add-modal.component.scss'],
 })
-export class PluginAddModalComponent {
+export class PluginAddModalComponent implements OnDestroy {
   @Input() public open = false;
 
   @Output() public closeModal = new EventEmitter<boolean>();
@@ -44,27 +45,53 @@ export class PluginAddModalComponent {
   public readonly inputDisabled$ = this._stateService.inputDisabled$;
   public readonly selectedPluginDefinition$ = this._stateService.selectedPluginDefinition$;
   public readonly configurationValid$ = new BehaviorSubject<boolean>(false);
-  public readonly returnToFirstStepSubject$ = new Subject<boolean>();
 
   public readonly isExternalPlugin$: Observable<boolean> = this.selectedPluginDefinition$.pipe(
     map(def => isExternalPluginKey(def?.key))
   );
 
-  public readonly managementEndpoints$ = new BehaviorSubject<Array<ExternalPluginManagementEndpoint>>([]);
-  public readonly hasPermissionsStep$ = this.managementEndpoints$.pipe(
-    map(endpoints => endpoints.length > 0)
-  );
+  public readonly managementEndpoints$ = new BehaviorSubject<
+    Array<ExternalPluginManagementEndpoint>
+  >([]);
   public readonly permissionsValid$ = new BehaviorSubject<boolean>(false);
+
+  public currentStepIndex = 0;
+  public isExternal = false;
+  public progressSteps: Array<{label: string}> = [];
 
   @ViewChild(PluginExternalConfigureComponent)
   private _externalConfigureComponent: PluginExternalConfigureComponent | undefined;
+
+  private readonly _subscriptions = new Subscription();
 
   constructor(
     private readonly _stateService: PluginManagementStateService,
     private readonly _pluginManagementService: PluginManagementService,
     private readonly _externalPluginService: ExternalPluginService,
-    private readonly _logger: NGXLogger
-  ) {}
+    private readonly _logger: NGXLogger,
+    private readonly _translateService: TranslateService
+  ) {
+    this._buildProgressSteps();
+    this._subscriptions.add(
+      this._translateService.onLangChange.subscribe(() => this._buildProgressSteps())
+    );
+    this._subscriptions.add(
+      this.isExternalPlugin$.subscribe(isExternal => {
+        this.isExternal = isExternal;
+        this._buildProgressSteps();
+      })
+    );
+  }
+
+  ngOnDestroy(): void {
+    this._subscriptions.unsubscribe();
+  }
+
+  public goToNextStep(): void {
+    if (this.currentStepIndex < this.progressSteps.length - 1) {
+      this.currentStepIndex++;
+    }
+  }
 
   public complete(): void {
     this._stateService.save();
@@ -74,12 +101,14 @@ export class PluginAddModalComponent {
     this.closeModal.emit();
 
     setTimeout(() => {
-      this._returnToFirstStep();
+      this.currentStepIndex = 0;
+      this.isExternal = false;
       this._stateService.enableInput();
       this._stateService.clear();
       this.configurationValid$.next(false);
       this.managementEndpoints$.next([]);
       this.permissionsValid$.next(false);
+      this._buildProgressSteps();
     }, CARBON_CONSTANTS.modalAnimationMs);
   }
 
@@ -115,7 +144,9 @@ export class PluginAddModalComponent {
     });
   }
 
-  public onManagementEndpointsResolved(endpoints: Array<ExternalPluginManagementEndpoint>): void {
+  public onManagementEndpointsResolved(
+    endpoints: Array<ExternalPluginManagementEndpoint>
+  ): void {
     this.managementEndpoints$.next(endpoints);
     this.permissionsValid$.next(endpoints.length === 0);
   }
@@ -128,7 +159,12 @@ export class PluginAddModalComponent {
     this._externalConfigureComponent?.setGrantedEndpoints(endpoints);
   }
 
-  public onExternalSave(event: {definitionId: string; title: string; properties: Record<string, unknown>; grantedEndpoints: Array<ExternalPluginGrantedEndpointEntry>}): void {
+  public onExternalSave(event: {
+    definitionId: string;
+    title: string;
+    properties: Record<string, unknown>;
+    grantedEndpoints: Array<ExternalPluginGrantedEndpointEntry>;
+  }): void {
     this._stateService.disableInput();
 
     this._externalPluginService
@@ -144,13 +180,26 @@ export class PluginAddModalComponent {
           this.hide();
         },
         error: () => {
-          this._logger.error('Something went wrong with saving the external plugin configuration.');
+          this._logger.error(
+            'Something went wrong with saving the external plugin configuration.'
+          );
           this._stateService.enableInput();
         },
       });
   }
 
-  private _returnToFirstStep(): void {
-    this.returnToFirstStepSubject$.next(true);
+  private _buildProgressSteps(): void {
+    const steps = [
+      {label: this._translateService.instant('pluginManagement.addSteps.step0')},
+      {label: this._translateService.instant('pluginManagement.addSteps.step1')},
+    ];
+
+    if (this.isExternal) {
+      steps.push({
+        label: this._translateService.instant('pluginManagement.addSteps.step2'),
+      });
+    }
+
+    this.progressSteps = steps;
   }
 }

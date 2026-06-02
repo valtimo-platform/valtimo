@@ -28,6 +28,12 @@
     {
       "type": "config",
       "path": "/bundles/config.html"
+    },
+    {
+      "type": "process-link-action",
+      "key": "case-summary",
+      "title": "Build Case Summary",
+      "path": "/bundles/action-config.html"
     }
   ],
   "actions": [
@@ -38,7 +44,9 @@
       "activityTypes": ["SERVICE_TASK_START"],
       "properties": [
         { "key": "titleField", "type": "string", "required": true },
-        { "key": "amountField", "type": "string", "required": false }
+        { "key": "amountField", "type": "string", "required": false },
+        { "key": "summaryVariable", "type": "string", "required": false },
+        { "key": "definitionKeyVariable", "type": "string", "required": false }
       ]
     }
   ]

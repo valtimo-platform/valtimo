@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,6 +25,7 @@ import {
 import {BehaviorSubject, combineLatest, Observable, of, Subscription} from 'rxjs';
 import {filter, map, switchMap, take, withLatestFrom} from 'rxjs/operators';
 import {
+  ExternalPluginDefinition,
   ExternalPluginService,
   extractExternalDefinitionId,
   isExternalPluginKey,
@@ -65,6 +66,21 @@ export class PluginActionConfigurationComponent implements OnInit, OnDestroy {
   public externalActionProperties: Record<string, unknown> = {};
   public externalActionPropertiesJson = '{}';
   public externalActionPropertiesValid = true;
+
+  /** URL for the process-link-action iframe bundle: undefined = loading, null = no bundle, string = bundle URL */
+  public readonly externalActionBundleUrl$ = new BehaviorSubject<string | null | undefined>(
+    undefined
+  );
+
+  /** Emits true once the bundle URL lookup has completed */
+  public readonly externalBundleResolved$: Observable<boolean> =
+    this.externalActionBundleUrl$.pipe(map(url => url !== undefined));
+
+  /** Prefill data for the iframe when editing an existing process link */
+  public readonly externalActionPrefill$ = new BehaviorSubject<{
+    title: string;
+    configuration: Record<string, unknown>;
+  } | null>(null);
 
   private readonly _prefillConfigurationSubject$ = new BehaviorSubject<
     ProcessLink['actionProperties'] | null
@@ -125,6 +141,8 @@ export class PluginActionConfigurationComponent implements OnInit, OnDestroy {
         }
       })
     );
+
+    this.resolveExternalActionBundleUrl();
   }
 
   ngOnDestroy(): void {
@@ -162,6 +180,73 @@ export class PluginActionConfigurationComponent implements OnInit, OnDestroy {
       this.externalActionPropertiesValid = false;
       this._buttonService.disableSaveButton();
     }
+  }
+
+  public onIframeConfigurationChanged(event: {
+    valid: boolean;
+    title: string;
+    data: Record<string, unknown>;
+  }): void {
+    this.externalActionProperties = event.data;
+    this.externalActionPropertiesJson = JSON.stringify(event.data, null, 2);
+    this.externalActionPropertiesValid = event.valid;
+
+    if (event.valid) {
+      this._buttonService.enableSaveButton();
+    } else {
+      this._buttonService.disableSaveButton();
+    }
+  }
+
+  private resolveExternalActionBundleUrl(): void {
+    this._subscriptions.add(
+      combineLatest([
+        this._pluginStateService.selectedPluginDefinition$,
+        this._pluginStateService.selectedPluginFunction$,
+        this._stateService.selectedProcessLink$,
+      ])
+        .pipe(
+          switchMap(([definition, selectedFunction, selectedProcessLink]) => {
+            if (!definition?.key || !isExternalPluginKey(definition.key)) {
+              return of(null);
+            }
+
+            const actionKey =
+              selectedFunction?.key || selectedProcessLink?.actionKey || null;
+
+            const definitionId = extractExternalDefinitionId(definition.key);
+            return this._externalPluginService.getDefinition(definitionId).pipe(
+              map((extDef: ExternalPluginDefinition) => ({extDef, actionKey}))
+            );
+          })
+        )
+        .subscribe(result => {
+          if (!result) {
+            this.externalActionBundleUrl$.next(null);
+            return;
+          }
+
+          const {extDef, actionKey} = result;
+          const actionBundle = extDef.manifest?.frontendBundles?.find(
+            b => b.type === 'process-link-action' && (!b.key || b.key === actionKey)
+          );
+
+          if (actionBundle) {
+            const bundleUrl = `${extDef.baseUrl}/${extDef.version}${actionBundle.path}`;
+            this.externalActionBundleUrl$.next(bundleUrl);
+
+            // Set up prefill for editing existing process links
+            if (this.externalActionProperties && Object.keys(this.externalActionProperties).length > 0) {
+              this.externalActionPrefill$.next({
+                title: '',
+                configuration: this.externalActionProperties,
+              });
+            }
+          } else {
+            this.externalActionBundleUrl$.next(null);
+          }
+        })
+    );
   }
 
   private updateProcessLink(configuration: PluginConfigurationData): void {

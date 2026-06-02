@@ -18,7 +18,7 @@ import {ChangeDetectionStrategy, Component, EventEmitter, Input, Output} from '@
 import {CommonModule} from '@angular/common';
 import {TranslateModule} from '@ngx-translate/core';
 import {FormControl, FormGroup, ReactiveFormsModule, Validators} from '@angular/forms';
-import {ButtonModule, ModalModule} from 'carbon-components-angular';
+import {ButtonModule, InputModule, LayerModule, ModalModule} from 'carbon-components-angular';
 import {ValtimoCdsModalDirective} from '@valtimo/components';
 import {ExternalPluginHostCreateRequest} from '@valtimo/plugin';
 
@@ -26,6 +26,7 @@ import {ExternalPluginHostCreateRequest} from '@valtimo/plugin';
   standalone: true,
   selector: 'valtimo-plugin-host-modal',
   templateUrl: './plugin-host-modal.component.html',
+  styleUrls: ['./plugin-host-modal.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     CommonModule,
@@ -33,6 +34,8 @@ import {ExternalPluginHostCreateRequest} from '@valtimo/plugin';
     ReactiveFormsModule,
     ModalModule,
     ButtonModule,
+    InputModule,
+    LayerModule,
     ValtimoCdsModalDirective,
   ],
 })
