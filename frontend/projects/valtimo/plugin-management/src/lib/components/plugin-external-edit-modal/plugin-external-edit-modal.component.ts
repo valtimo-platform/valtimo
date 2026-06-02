@@ -20,22 +20,31 @@ import {
   EventEmitter,
   Input,
   OnChanges,
+  OnDestroy,
   Output,
   signal,
   SimpleChanges,
 } from '@angular/core';
 import {CommonModule} from '@angular/common';
-import {TranslateModule} from '@ngx-translate/core';
+import {TranslateModule, TranslateService} from '@ngx-translate/core';
 import {FormControl, FormGroup, ReactiveFormsModule, Validators} from '@angular/forms';
-import {ButtonModule, LoadingModule, ModalModule} from 'carbon-components-angular';
-import {ValtimoCdsModalDirective} from '@valtimo/components';
+import {
+  ButtonModule,
+  LoadingModule,
+  ModalModule,
+  ProgressIndicatorModule,
+} from 'carbon-components-angular';
+import {CARBON_CONSTANTS, ValtimoCdsModalDirective} from '@valtimo/components';
 import {
   ExternalPluginDefinition,
+  ExternalPluginGrantedEndpointEntry,
   ExternalPluginIframeComponent,
+  ExternalPluginManagementEndpoint,
   ExternalPluginService,
 } from '@valtimo/plugin';
 import {UnifiedPluginConfigurationRow} from '../../models';
-import {forkJoin} from 'rxjs';
+import {forkJoin, Subscription} from 'rxjs';
+import {PluginExternalPermissionsComponent} from '../plugin-external-permissions/plugin-external-permissions.component';
 
 @Component({
   standalone: true,
@@ -50,11 +59,13 @@ import {forkJoin} from 'rxjs';
     ModalModule,
     ButtonModule,
     LoadingModule,
+    ProgressIndicatorModule,
     ValtimoCdsModalDirective,
     ExternalPluginIframeComponent,
+    PluginExternalPermissionsComponent,
   ],
 })
-export class PluginExternalEditModalComponent implements OnChanges {
+export class PluginExternalEditModalComponent implements OnChanges, OnDestroy {
   @Input() public open = false;
   @Input() public configuration: UnifiedPluginConfigurationRow | null = null;
 
@@ -77,14 +88,45 @@ export class PluginExternalEditModalComponent implements OnChanges {
   } | null>(null);
   public readonly _$iframeValid = signal(false);
 
+  public readonly _$managementEndpoints = signal<Array<ExternalPluginManagementEndpoint>>([]);
+  public readonly _$grantedEndpoints = signal<Array<ExternalPluginGrantedEndpointEntry> | null>(
+    null
+  );
+  public readonly _$permissionsValid = signal(false);
+  public readonly _$hasPermissionsStep = signal(false);
+
+  public currentStepIndex = 0;
+  public progressSteps: Array<{label: string}> = [];
+
   private _iframeConfigTitle: string = '';
   private _iframeConfigData: Record<string, unknown> | null = null;
+  private _currentGrantedEndpoints: Array<ExternalPluginGrantedEndpointEntry> = [];
 
-  constructor(private readonly _externalPluginService: ExternalPluginService) {}
+  private readonly _subscriptions = new Subscription();
+
+  constructor(
+    private readonly _externalPluginService: ExternalPluginService,
+    private readonly _translateService: TranslateService
+  ) {
+    this._buildProgressSteps();
+    this._subscriptions.add(
+      this._translateService.onLangChange.subscribe(() => this._buildProgressSteps())
+    );
+  }
+
+  public ngOnDestroy(): void {
+    this._subscriptions.unsubscribe();
+  }
 
   public ngOnChanges(changes: SimpleChanges): void {
     if (changes['open'] && this.open && this.configuration) {
       this._initForm();
+    }
+  }
+
+  public goToNextStep(): void {
+    if (this.currentStepIndex < this.progressSteps.length - 1) {
+      this.currentStepIndex++;
     }
   }
 
@@ -112,6 +154,7 @@ export class PluginExternalEditModalComponent implements OnChanges {
       .updateConfiguration(this.configuration.id, {
         title: this._form.value.title ?? '',
         properties,
+        grantedEndpoints: this._currentGrantedEndpoints,
       })
       .subscribe({
         next: () => {
@@ -131,7 +174,9 @@ export class PluginExternalEditModalComponent implements OnChanges {
 
   public onClose(): void {
     this.closeEvent.emit();
-    this._resetForm();
+    setTimeout(() => {
+      this._resetForm();
+    }, CARBON_CONSTANTS.modalAnimationMs);
   }
 
   public onIframeConfigurationChanged(event: {
@@ -144,15 +189,36 @@ export class PluginExternalEditModalComponent implements OnChanges {
     this._$iframeValid.set(event.valid);
   }
 
-  private _saveFromIframe(): void {
-    if (!this._iframeConfigData || !this.configuration?.id) return;
+  public onPermissionsValid(valid: boolean): void {
+    this._$permissionsValid.set(valid);
+  }
 
-    const title = this._iframeConfigTitle || this.configuration.title;
+  public onGrantedEndpointsChange(endpoints: Array<ExternalPluginGrantedEndpointEntry>): void {
+    this._currentGrantedEndpoints = endpoints;
+  }
+
+  public get configValid(): boolean {
+    if (this._$configBundleUrl()) {
+      return this._$iframeValid();
+    }
+    return this._form.valid && !this._$propertiesInvalid();
+  }
+
+  private _saveFromIframe(): void {
+    if (!this.configuration?.id) return;
+
+    const prefill = this._$prefillConfiguration();
+    const title = this._iframeConfigTitle || prefill?.title || this.configuration.title;
+    const properties = this._iframeConfigData ?? prefill?.configuration ?? {};
 
     this._$loading.set(true);
 
     this._externalPluginService
-      .updateConfiguration(this.configuration.id, {title, properties: this._iframeConfigData})
+      .updateConfiguration(this.configuration.id, {
+        title,
+        properties,
+        grantedEndpoints: this._currentGrantedEndpoints,
+      })
       .subscribe({
         next: () => {
           this._$loading.set(false);
@@ -165,6 +231,7 @@ export class PluginExternalEditModalComponent implements OnChanges {
   }
 
   private _initForm(): void {
+    this.currentStepIndex = 0;
     this._form.reset({
       title: this.configuration?.title ?? '',
       properties: '{}',
@@ -175,6 +242,11 @@ export class PluginExternalEditModalComponent implements OnChanges {
     this._$prefillConfiguration.set(null);
     this._$iframeValid.set(false);
     this._iframeConfigData = null;
+    this._$managementEndpoints.set([]);
+    this._$grantedEndpoints.set(null);
+    this._$permissionsValid.set(false);
+    this._$hasPermissionsStep.set(false);
+    this._currentGrantedEndpoints = [];
 
     const configId = this.configuration?.id;
     const definitionId = this.configuration?.externalDefinitionId;
@@ -201,6 +273,25 @@ export class PluginExternalEditModalComponent implements OnChanges {
             });
           }
 
+          const endpoints = definition.manifest?.permissions?.managementEndpoints ?? [];
+          this._$managementEndpoints.set(endpoints);
+
+          const hasEndpoints = endpoints.length > 0;
+          this._$hasPermissionsStep.set(hasEndpoints);
+
+          if (hasEndpoints && configDetail.grantedEndpoints) {
+            const mapped: Array<ExternalPluginGrantedEndpointEntry> =
+              configDetail.grantedEndpoints.map(ge => ({
+                method: ge.httpMethod.toUpperCase(),
+                pattern: ge.endpointPattern,
+              }));
+            this._$grantedEndpoints.set(mapped);
+            this._currentGrantedEndpoints = mapped;
+          } else {
+            this._$permissionsValid.set(true);
+          }
+
+          this._buildProgressSteps();
           this._$loading.set(false);
         },
         error: () => {
@@ -213,12 +304,23 @@ export class PluginExternalEditModalComponent implements OnChanges {
         next: definition => {
           this._$configurationSchema.set(definition.configurationSchema);
           this._resolveConfigBundleUrl(definition);
+
+          const endpoints = definition.manifest?.permissions?.managementEndpoints ?? [];
+          this._$managementEndpoints.set(endpoints);
+          this._$hasPermissionsStep.set(endpoints.length > 0);
+          if (endpoints.length === 0) {
+            this._$permissionsValid.set(true);
+          }
+
+          this._buildProgressSteps();
           this._$loading.set(false);
         },
         error: () => {
           this._$loading.set(false);
         },
       });
+    } else {
+      this._buildProgressSteps();
     }
 
     this._form.get('properties')?.valueChanges.subscribe(value => {
@@ -240,7 +342,22 @@ export class PluginExternalEditModalComponent implements OnChanges {
     }
   }
 
+  private _buildProgressSteps(): void {
+    const steps = [
+      {label: this._translateService.instant('pluginManagement.editSteps.step0')},
+    ];
+
+    if (this._$hasPermissionsStep()) {
+      steps.push({
+        label: this._translateService.instant('pluginManagement.editSteps.step1'),
+      });
+    }
+
+    this.progressSteps = steps;
+  }
+
   private _resetForm(): void {
+    this.currentStepIndex = 0;
     this._form.reset({title: '', properties: '{}'});
     this._$propertiesInvalid.set(false);
     this._$configurationSchema.set(null);
@@ -248,5 +365,11 @@ export class PluginExternalEditModalComponent implements OnChanges {
     this._$prefillConfiguration.set(null);
     this._$iframeValid.set(false);
     this._iframeConfigData = null;
+    this._$managementEndpoints.set([]);
+    this._$grantedEndpoints.set(null);
+    this._$permissionsValid.set(false);
+    this._$hasPermissionsStep.set(false);
+    this._currentGrantedEndpoints = [];
+    this._buildProgressSteps();
   }
 }

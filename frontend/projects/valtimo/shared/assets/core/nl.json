@@ -1902,6 +1902,11 @@
       "step2": "Rechten",
       "complete": "Configuratie opslaan"
     },
+    "editSteps": {
+      "step0": "Gegevens invullen",
+      "step1": "Rechten",
+      "save": "Configuratie opslaan"
+    },
     "permissions": {
       "description": "Selecteer de beheer-endpoints waar deze plugin toegang toe krijgt.",
       "noEndpoints": "Deze plugin heeft geen beheer-endpoint-rechten nodig."
