@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,5 +14,9 @@
  * limitations under the License.
  */
 
-export * from './permission-schema.model';
-export * from './role.model';
+// JSON Schema returned by GET /api/management/v1/permissions/schema. Treated as an opaque
+// object by Monaco. Auxiliary parsers (see PermissionSchemaMetadataService) extract the
+// resource type and action lists when other UI surfaces need them.
+type PermissionSchema = object;
+
+export {PermissionSchema};

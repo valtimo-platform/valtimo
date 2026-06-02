@@ -14,15 +14,20 @@
   ~ limitations under the License.
   -->
 
-<ng-container *ngIf="model$ | async as model; else loading">
-  <valtimo-editor
-    [disabled]="editorDisabled$ | async"
-    [model]="model"
-    (validEvent)="onValid($event)"
-    (valueChangeEvent)="onValueChange($event)"
-    [fitPage]="true"
-  ></valtimo-editor>
-</ng-container>
+@if ({model: model$ | async, schema: schema$ | async}; as obs) {
+  @if (obs.model && obs.schema) {
+    <valtimo-editor
+      [disabled]="editorDisabled$ | async"
+      [model]="obs.model"
+      [jsonSchema]="obs.schema"
+      (validEvent)="onValid($event)"
+      (valueChangeEvent)="onValueChange($event)"
+      [fitPage]="true"
+    ></valtimo-editor>
+  } @else {
+    <ng-container *ngTemplateOutlet="loading"></ng-container>
+  }
+}
 
 <ng-container renderInPageHeader>
   <ng-template>
