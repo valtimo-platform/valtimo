@@ -16,10 +16,14 @@
 
 .plugin-add-modal__progress {
   width: 100%;
-  margin-top: 16px;
-  margin-bottom: 8px;
+  display: block;
+  padding-bottom: 8px;
 }
 
 .add-plugin-modal-header {
   margin-bottom: 16px;
+}
+
+.cds--modal-content {
+  overflow-x: hidden;
 }

@@ -24,43 +24,62 @@
     <h3 cdsModalHeaderHeading>
       {{ 'pluginManagement.editExternalConfiguration' | translate }}
     </h3>
+
+    <cds-progress-indicator
+      *ngIf="progressSteps.length > 1"
+      [steps]="progressSteps"
+      [current]="currentStepIndex"
+      spacing="equal"
+      class="plugin-external-edit-modal__progress"
+    ></cds-progress-indicator>
   </cds-modal-header>
 
   <section cdsModalContent>
     <cds-loading *ngIf="_$loading()" [isActive]="true" size="sm"></cds-loading>
 
-    <ng-container *ngIf="!_$loading()">
-      <ng-container *ngIf="_$configBundleUrl() as bundleUrl; else jsonForm">
-        <valtimo-external-plugin-iframe
-          [bundleUrl]="bundleUrl"
-          [prefillConfiguration]="_$prefillConfiguration()"
-          (configurationChangedEvent)="onIframeConfigurationChanged($event)"
-        ></valtimo-external-plugin-iframe>
-      </ng-container>
+    <div [hidden]="currentStepIndex !== 0 || _$loading()">
+      <ng-container *ngIf="!_$loading()">
+        <ng-container *ngIf="_$configBundleUrl() as bundleUrl; else jsonForm">
+          <valtimo-external-plugin-iframe
+            [bundleUrl]="bundleUrl"
+            [prefillConfiguration]="_$prefillConfiguration()"
+            (configurationChangedEvent)="onIframeConfigurationChanged($event)"
+          ></valtimo-external-plugin-iframe>
+        </ng-container>
 
-      <ng-template #jsonForm>
-        <form [formGroup]="_form">
-          <div class="cds--form-item">
-            <label class="cds--label">{{ 'pluginManagement.labels.configurationName' | translate }}</label>
-            <input class="cds--text-input" formControlName="title" />
-          </div>
-
-          <div class="cds--form-item">
-            <label class="cds--label">{{ 'pluginManagement.labels.properties' | translate }}</label>
-
-            <textarea
-              class="cds--text-area plugin-external-edit-modal__properties-textarea"
-              formControlName="properties"
-              rows="12"
-            ></textarea>
-
-            <div *ngIf="_$propertiesInvalid()" class="cds--form-requirement">
-              {{ 'pluginManagement.invalidJson' | translate }}
+        <ng-template #jsonForm>
+          <form [formGroup]="_form">
+            <div class="cds--form-item">
+              <label class="cds--label">{{ 'pluginManagement.labels.configurationName' | translate }}</label>
+              <input class="cds--text-input" formControlName="title" />
             </div>
-          </div>
-        </form>
-      </ng-template>
-    </ng-container>
+
+            <div class="cds--form-item">
+              <label class="cds--label">{{ 'pluginManagement.labels.properties' | translate }}</label>
+
+              <textarea
+                class="cds--text-area plugin-external-edit-modal__properties-textarea"
+                formControlName="properties"
+                rows="12"
+              ></textarea>
+
+              <div *ngIf="_$propertiesInvalid()" class="cds--form-requirement">
+                {{ 'pluginManagement.invalidJson' | translate }}
+              </div>
+            </div>
+          </form>
+        </ng-template>
+      </ng-container>
+    </div>
+
+    <div *ngIf="_$hasPermissionsStep()" [hidden]="currentStepIndex !== 1">
+      <valtimo-plugin-external-permissions
+        [endpoints]="_$managementEndpoints()"
+        [grantedEndpoints]="_$grantedEndpoints()"
+        (validEvent)="onPermissionsValid($event)"
+        (grantedEndpointsChange)="onGrantedEndpointsChange($event)"
+      ></valtimo-plugin-external-permissions>
+    </div>
   </section>
 
   <cds-modal-footer>
@@ -73,22 +92,30 @@
     </button>
 
     <button
-      *ngIf="_$configBundleUrl(); else jsonSaveButton"
+      *ngIf="currentStepIndex === 0 && _$hasPermissionsStep()"
       cdsButton="primary"
-      [disabled]="!_$iframeValid() || _$loading()"
-      (click)="onSave()"
+      [disabled]="_$loading()"
+      (click)="goToNextStep()"
     >
-      {{ 'pluginManagement.save' | translate }}
+      {{ 'pluginManagement.editSteps.step1' | translate }}
     </button>
 
-    <ng-template #jsonSaveButton>
-      <button
-        cdsButton="primary"
-        [disabled]="_form.invalid || _$propertiesInvalid() || _$loading()"
-        (click)="onSave()"
-      >
-        {{ 'pluginManagement.save' | translate }}
-      </button>
-    </ng-template>
+    <button
+      *ngIf="currentStepIndex === 0 && !_$hasPermissionsStep()"
+      cdsButton="primary"
+      [disabled]="!configValid || _$loading()"
+      (click)="onSave()"
+    >
+      {{ 'pluginManagement.editSteps.save' | translate }}
+    </button>
+
+    <button
+      *ngIf="currentStepIndex === 1 && _$hasPermissionsStep()"
+      cdsButton="primary"
+      [disabled]="!_$permissionsValid() || _$loading()"
+      (click)="onSave()"
+    >
+      {{ 'pluginManagement.editSteps.save' | translate }}
+    </button>
   </cds-modal-footer>
 </cds-modal>

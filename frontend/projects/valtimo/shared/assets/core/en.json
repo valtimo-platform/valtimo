@@ -1875,6 +1875,11 @@
       "step2": "Permissions",
       "complete": "Save configuration"
     },
+    "editSteps": {
+      "step0": "Enter data",
+      "step1": "Permissions",
+      "save": "Save configuration"
+    },
     "permissions": {
       "description": "Select the management endpoints this plugin is allowed to access.",
       "noEndpoints": "This plugin does not require any management endpoint permissions."
