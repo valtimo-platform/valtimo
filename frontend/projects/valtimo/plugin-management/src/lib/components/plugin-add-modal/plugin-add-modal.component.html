@@ -14,65 +14,88 @@
   ~ limitations under the License.
   -->
 
-<v-stepper-container
-  (completeEvent)="complete()"
-  (cancelClickEvent)="hide()"
-  [disabled]="inputDisabled$ | async"
-  [returnToFirstStepSubject$]="returnToFirstStepSubject$"
->
-  <cds-modal valtimoCdsModal #pluginAddModal [open]="open" (close)="hide()">
-    <cds-modal-header [showCloseButton]="true" (closeSelect)="hide()">
-      <v-stepper-header></v-stepper-header>
-    </cds-modal-header>
-    <section cdsModalContent>
-      <v-stepper-content>
-        <v-stepper-step titleTranslationKey="pluginManagement.addSteps.step0">
-          <valtimo-plugin-add-select></valtimo-plugin-add-select>
-        </v-stepper-step>
+<cds-modal valtimoCdsModal [open]="open" size="lg" (close)="hide()">
+  <cds-modal-header [showCloseButton]="true" (closeSelect)="hide()">
+    <h3 cdsModalHeaderHeading class="add-plugin-modal-header">
+      {{ 'pluginManagement.add' | translate }}
+    </h3>
 
-        <v-stepper-step titleTranslationKey="pluginManagement.addSteps.step1">
-          <ng-container *ngIf="isExternalPlugin$ | async; else embeddedConfigure">
-            <valtimo-plugin-external-configure
-              (managementEndpointsResolved)="onManagementEndpointsResolved($event)"
-              (validEvent)="onValid($event)"
-              (saveEvent)="onExternalSave($event)"
-            ></valtimo-plugin-external-configure>
-          </ng-container>
+    <cds-progress-indicator
+      [steps]="progressSteps"
+      [current]="currentStepIndex"
+      spacing="equal"
+      class="plugin-add-modal__progress"
+    ></cds-progress-indicator>
+  </cds-modal-header>
+  <section cdsModalContent [cdsLayer]="1">
+    <div [hidden]="currentStepIndex !== 0">
+      <valtimo-plugin-add-select></valtimo-plugin-add-select>
+    </div>
 
-          <ng-template #embeddedConfigure>
-            <valtimo-plugin-configure
-              (valid)="onValid($event)"
-              (configuration)="onConfiguration($event)"
-            ></valtimo-plugin-configure>
-          </ng-template>
-        </v-stepper-step>
+    <div [hidden]="currentStepIndex !== 1">
+      <ng-container *ngIf="isExternalPlugin$ | async; else embeddedConfigure">
+        <valtimo-plugin-external-configure
+          (managementEndpointsResolved)="onManagementEndpointsResolved($event)"
+          (validEvent)="onValid($event)"
+          (saveEvent)="onExternalSave($event)"
+        ></valtimo-plugin-external-configure>
+      </ng-container>
 
-        <v-stepper-step titleTranslationKey="pluginManagement.addSteps.step2">
-          <valtimo-plugin-external-permissions
-            [endpoints]="managementEndpoints$ | async"
-            (validEvent)="onPermissionsValid($event)"
-            (grantedEndpointsChange)="onGrantedEndpointsChange($event)"
-          ></valtimo-plugin-external-permissions>
-        </v-stepper-step>
-      </v-stepper-content>
-    </section>
-    <cds-modal-footer>
-      <v-stepper-footer class="stepper-footer">
-        <v-stepper-footer-step
-          nextButtonTranslationKey="pluginManagement.addSteps.step1"
-          [nextButtonEnabled]="selectedPluginDefinition$ | async"
-        ></v-stepper-footer-step>
+      <ng-template #embeddedConfigure>
+        <valtimo-plugin-configure
+          (valid)="onValid($event)"
+          (configuration)="onConfiguration($event)"
+        ></valtimo-plugin-configure>
+      </ng-template>
+    </div>
 
-        <v-stepper-footer-step
-          nextButtonTranslationKey="pluginManagement.addSteps.step2"
-          [nextButtonEnabled]="configurationValid$ | async"
-        ></v-stepper-footer-step>
+    <div *ngIf="isExternal" [hidden]="currentStepIndex !== 2">
+      <valtimo-plugin-external-permissions
+        [endpoints]="managementEndpoints$ | async"
+        (validEvent)="onPermissionsValid($event)"
+        (grantedEndpointsChange)="onGrantedEndpointsChange($event)"
+      ></valtimo-plugin-external-permissions>
+    </div>
+  </section>
+  <cds-modal-footer>
+    <button cdsButton="ghost" (click)="hide()" [disabled]="inputDisabled$ | async">
+      {{ 'stepper.cancelButtonText' | translate }}
+    </button>
 
-        <v-stepper-footer-step
-          completeButtonTranslationKey="pluginManagement.addSteps.complete"
-          [completeButtonEnabled]="permissionsValid$ | async"
-        ></v-stepper-footer-step>
-      </v-stepper-footer>
-    </cds-modal-footer>
-  </cds-modal>
-</v-stepper-container>
+    <button
+      *ngIf="currentStepIndex === 0"
+      cdsButton="primary"
+      [disabled]="!(selectedPluginDefinition$ | async) || (inputDisabled$ | async)"
+      (click)="goToNextStep()"
+    >
+      {{ 'pluginManagement.addSteps.step1' | translate }}
+    </button>
+
+    <button
+      *ngIf="currentStepIndex === 1 && isExternal"
+      cdsButton="primary"
+      [disabled]="!(configurationValid$ | async) || (inputDisabled$ | async)"
+      (click)="goToNextStep()"
+    >
+      {{ 'pluginManagement.addSteps.step2' | translate }}
+    </button>
+
+    <button
+      *ngIf="currentStepIndex === 1 && !isExternal"
+      cdsButton="primary"
+      [disabled]="!(configurationValid$ | async) || (inputDisabled$ | async)"
+      (click)="complete()"
+    >
+      {{ 'pluginManagement.addSteps.complete' | translate }}
+    </button>
+
+    <button
+      *ngIf="currentStepIndex === 2 && isExternal"
+      cdsButton="primary"
+      [disabled]="!(permissionsValid$ | async) || (inputDisabled$ | async)"
+      (click)="complete()"
+    >
+      {{ 'pluginManagement.addSteps.complete' | translate }}
+    </button>
+  </cds-modal-footer>
+</cds-modal>

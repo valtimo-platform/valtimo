@@ -37,7 +37,11 @@ import {
 import {TranslateModule} from '@ngx-translate/core';
 import {SelectPluginConfigurationComponent} from './components/select-plugin-configuration/select-plugin-configuration.component';
 import {SelectPluginActionComponent} from './components/select-plugin-action/select-plugin-action.component';
-import {PluginConfigurationContainerModule, PluginTranslatePipeModule} from '@valtimo/plugin';
+import {
+  ExternalPluginIframeComponent,
+  PluginConfigurationContainerModule,
+  PluginTranslatePipeModule,
+} from '@valtimo/plugin';
 import {PluginActionConfigurationComponent} from './components/plugin-action-configuration/plugin-action-configuration.component';
 import {ProcessLinkComponent} from './components/process-link/process-link.component';
 import {ProcessLinkModalComponent} from './components/process-link-modal/process-link-modal.component';
@@ -133,6 +137,7 @@ import {ConfigureBuildingBlockMappingsComponent} from './components/configure-bu
     ValuePathSelectorComponent,
     ConfigureBuildingBlockMappingsComponent,
     NotificationModule,
+    ExternalPluginIframeComponent,
   ],
   exports: [
     ProcessLinkComponent,

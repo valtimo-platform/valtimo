@@ -171,9 +171,11 @@ export class PluginManagementComponent implements OnDestroy {
 
   // --- Plugin hosts tab ---
   public readonly hostsLoading$ = new BehaviorSubject<boolean>(true);
+  public readonly hostsRefreshing$ = new BehaviorSubject<boolean>(false);
   public readonly hostModalOpen$ = new BehaviorSubject<boolean>(false);
 
   private readonly _refreshHosts$ = new Subject<void>();
+  private _hostsInitialLoad = true;
 
   private readonly _tabVisible$: Observable<boolean> = fromEvent(document, 'visibilitychange').pipe(
     startWith(null),
@@ -187,10 +189,19 @@ export class PluginManagementComponent implements OnDestroy {
     this._refreshHosts$
   ).pipe(
     takeUntil(this._destroy$),
+    tap(() => {
+      if (!this._hostsInitialLoad) {
+        this.hostsRefreshing$.next(true);
+      }
+    }),
     switchMap(() =>
       this._externalPluginService.getHosts().pipe(catchError(() => of([] as ExternalPluginHost[])))
     ),
-    tap(() => this.hostsLoading$.next(false))
+    tap(() => {
+      this._hostsInitialLoad = false;
+      this.hostsLoading$.next(false);
+      this.hostsRefreshing$.next(false);
+    })
   );
 
   constructor(

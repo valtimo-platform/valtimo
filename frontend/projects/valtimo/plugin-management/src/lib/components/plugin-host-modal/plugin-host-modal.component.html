@@ -24,38 +24,34 @@
     <h3 cdsModalHeaderHeading>{{ 'pluginManagement.addHost' | translate }}</h3>
   </cds-modal-header>
 
-  <section cdsModalContent>
-    <form [formGroup]="form">
-      <div class="cds--form-item">
-        <label class="cds--label">{{ 'pluginManagement.labels.name' | translate }}</label>
-        <input class="cds--text-input" formControlName="name" placeholder="my-plugin-host" />
-      </div>
+  <form
+    [formGroup]="form"
+    cdsModalContent
+    [cdsLayer]="1"
+    class="plugin-host-modal__content"
+  >
+    <cds-label>
+      {{ 'pluginManagement.labels.name' | translate }}
+      <input cdsText formControlName="name" placeholder="my-plugin-host" />
+    </cds-label>
 
-      <div class="cds--form-item">
-        <label class="cds--label">{{ 'pluginManagement.labels.baseUrl' | translate }}</label>
-        <input class="cds--text-input" formControlName="baseUrl" placeholder="https://plugin-host.internal:8090" />
-      </div>
+    <cds-label>
+      {{ 'pluginManagement.labels.baseUrl' | translate }}
+      <input cdsText formControlName="baseUrl" placeholder="https://plugin-host.internal:8090" />
+    </cds-label>
 
-      <div class="cds--form-item">
-        <label class="cds--label">{{ 'pluginManagement.labels.secret' | translate }}</label>
-        <input class="cds--text-input" formControlName="secret" placeholder="admin-token" />
-      </div>
-    </form>
-  </section>
+    <cds-label>
+      {{ 'pluginManagement.labels.secret' | translate }}
+      <input cdsText formControlName="secret" type="password" placeholder="admin-token" />
+    </cds-label>
+  </form>
 
   <cds-modal-footer>
-    <button
-      cdsButton="secondary"
-      (click)="onClose()"
-    >
+    <button cdsButton="secondary" (click)="onClose()">
       {{ 'interface.cancel' | translate }}
     </button>
 
-    <button
-      cdsButton="primary"
-      [disabled]="form.invalid"
-      (click)="onSubmit()"
-    >
+    <button cdsButton="primary" [disabled]="form.invalid" (click)="onSubmit()">
       {{ 'interface.save' | translate }}
     </button>
   </cds-modal-footer>

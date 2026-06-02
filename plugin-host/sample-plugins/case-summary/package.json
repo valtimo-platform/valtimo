@@ -6,9 +6,8 @@
   "scripts": {
     "installDeps": "npm install",
     "build": "valtimo-plugin-build --input src/plugin.ts --output dist/plugin.wasm",
-    "build:frontend": "esbuild frontend/config.tsx --bundle --outfile=frontend/config.bundle.js --format=iife --target=es2020 --jsx=automatic --loader:.tsx=tsx",
     "pack": "valtimo-plugin-pack --wasm dist/plugin.wasm --output dist",
-    "build:pack": "npm run build && npm run build:frontend && npm run pack"
+    "build:pack": "npm run build && npm run pack"
   },
   "devDependencies": {
     "@valtimo/plugin-sdk": "file:../../plugin-sdk",

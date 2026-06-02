@@ -67,6 +67,7 @@
     <ng-container
       *ngIf="{
         hosts: hosts$ | async,
+        refreshing: hostsRefreshing$ | async,
       } as hostObs"
     >
       <valtimo-carbon-list
@@ -75,7 +76,20 @@
         [fields]="hostFields"
         [header]="false"
       >
-        <ng-container carbonToolbarContent [ngTemplateOutlet]="addHostButton"></ng-container>
+        <ng-container carbonToolbarContent>
+          <cds-loading
+            *ngIf="hostObs.refreshing"
+            size="sm"
+            [isActive]="true"
+            class="plugin-management__hosts-spinner"
+          ></cds-loading>
+
+          <button cdsButton="primary" [disabled]="hostsLoading$ | async" (click)="openHostModal()">
+            {{ 'pluginManagement.addHost' | translate }}
+
+            <svg cdsIcon="add" size="16" class="cds--btn__icon"></svg>
+          </button>
+        </ng-container>
 
         <valtimo-no-results
           [action]="addHostButton"

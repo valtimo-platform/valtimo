@@ -35,7 +35,6 @@ import {PluginUploadModalComponent} from './components/plugin-upload-modal/plugi
 import {
   CarbonListModule,
   ParagraphModule,
-  StepperModule,
   TableModule,
   ValtimoCdsModalDirective,
   VModalModule,
@@ -46,6 +45,7 @@ import {
   LayerModule,
   LoadingModule,
   ModalModule as CarbonModalModule,
+  ProgressIndicatorModule,
   TabsModule,
   TilesModule,
 } from 'carbon-components-angular';
@@ -67,7 +67,7 @@ import {
     TranslateModule,
     ParagraphModule,
     TableModule,
-    StepperModule,
+    ProgressIndicatorModule,
     VModalModule,
     PluginTranslatePipeModule,
     PluginConfigurationContainerModule,

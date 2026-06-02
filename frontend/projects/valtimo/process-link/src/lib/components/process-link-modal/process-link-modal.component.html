@@ -37,22 +37,27 @@
 >
   <cds-modal valtimoCdsModal [open]="obs.showModal" size="lg" (close)="closeModal()">
     <cds-modal-header (closeSelect)="closeModal()">
-      <h2 *ngIf="!obs.isAdHocBuildingBlock" cdsModalHeaderLabel>{{ 'processLinkConfiguration.configureStep' | translate }}</h2>
+      <h2 *ngIf="!obs.isAdHocBuildingBlock" cdsModalHeaderLabel>
+        {{ 'processLinkConfiguration.configureStep' | translate }}
+      </h2>
       <h3 cdsModalHeaderHeading>
         <ng-container *ngIf="obs.isAdHocBuildingBlock; else defaultModalTitle">
-          {{ 'processLinkConfiguration.buildingBlockActionTitle' | translate: {buildingBlockName: obs.processStepName || '-'} }}
+          {{
+            'processLinkConfiguration.buildingBlockActionTitle'
+              | translate: {buildingBlockName: obs.processStepName || '-'}
+          }}
         </ng-container>
         <ng-template #defaultModalTitle>
           {{
             'processLinkConfiguration.modalTitle'
-                    | translate: {processStepName: obs.processStepName || '-'}
+              | translate: {processStepName: obs.processStepName || '-'}
           }}
         </ng-template>
       </h3>
       <h4 cdsModalHeaderLabel *ngIf="obs.typeOfSelectedProgressLink === 'plugin'">
         {{
           'processLinkConfiguration.pluginConfiguration'
-                  | translate: {pluginConfigTitle: obs.selectedPluginConfiguration?.title || '-'}
+            | translate: {pluginConfigTitle: obs.selectedPluginConfiguration?.title || '-'}
         }}
       </h4>
       <div class="process-link-progress">
@@ -79,7 +84,7 @@
   <div class="cds-loading-container" *ngIf="obs.saving">
     <cds-loading></cds-loading>
   </div>
-  <div [ngClass]="{hidden: obs.saving}">
+  <div [ngClass]="{hidden: obs.saving}" class="step-content">
     <ng-container>
       <ng-container *ngIf="obs.currentStepId === 'chooseProcessLinkType'">
         <valtimo-choose-process-link-type></valtimo-choose-process-link-type>
@@ -135,7 +140,6 @@
     <ng-container *ngIf="obs.currentStepId === 'uiComponent'">
       <valtimo-select-ui-component></valtimo-select-ui-component>
     </ng-container>
-
   </div>
 </ng-template>
 
@@ -145,11 +149,7 @@
       {{ 'processLinkConfiguration.cancel' | translate }}
     </button>
     <div class="footer-spacer"></div>
-    <button
-      cdsButton="danger--primary"
-      *ngIf="obs.isEditing"
-      (click)="unlinkButtonClick()"
-    >
+    <button cdsButton="danger--primary" *ngIf="obs.isEditing" (click)="unlinkButtonClick()">
       {{ 'processLinkConfiguration.unlink' | translate }}
     </button>
     <button

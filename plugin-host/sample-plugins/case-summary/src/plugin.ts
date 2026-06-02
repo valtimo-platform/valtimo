@@ -20,6 +20,8 @@ import {action, config, gzacApi, handle_action, log,} from "@valtimo/plugin-sdk"
 action("case-summary", (input: ActionInput) => {
   const titleField = (input.properties.titleField as string) || "/applicantName";
   const amountField = input.properties.amountField as string | undefined;
+  const summaryVariable = (input.properties.summaryVariable as string) || "caseSummary";
+  const definitionKeyVariable = (input.properties.definitionKeyVariable as string) || "caseDefinitionKey";
   const currency = (config.get("currency") as string) || "EUR";
 
   if (!input.documentId) {
@@ -60,8 +62,8 @@ action("case-summary", (input: ActionInput) => {
   return {
     status: "completed" as const,
     variables: {
-      caseSummary: summary,
-      caseDefinitionKey: document.definitionId?.name,
+      [summaryVariable]: summary,
+      [definitionKeyVariable]: document.definitionId?.name,
     },
   };
 });
