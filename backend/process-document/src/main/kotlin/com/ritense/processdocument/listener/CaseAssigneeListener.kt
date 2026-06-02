@@ -35,8 +35,6 @@ import com.ritense.valtimo.operaton.repository.OperatonTaskSpecificationHelper.C
 import com.ritense.valtimo.operaton.repository.OperatonTaskSpecificationHelper.Companion.byUnassigned
 import com.ritense.valtimo.service.OperatonTaskService
 import io.github.oshai.kotlinlogging.KotlinLogging
-import jakarta.persistence.EntityManager
-import org.operaton.bpm.engine.TaskService
 import org.springframework.context.event.EventListener
 import org.springframework.security.access.AccessDeniedException
 import org.springframework.stereotype.Component
@@ -45,13 +43,11 @@ import org.springframework.stereotype.Component
 @SkipComponentScan
 class CaseAssigneeListener(
     private val operatonTaskService: OperatonTaskService,
-    private val taskService: TaskService,
     private val documentService: DocumentService,
     private val caseDefinitionService: CaseDefinitionService,
     private val userManagementService: UserManagementService,
     private val caseDocumentResolver: CaseDocumentResolver,
     private val authorizationService: AuthorizationService,
-    private val entityManager: EntityManager,
 ) {
 
     @EventListener(DocumentAssigneeChangedEvent::class)
@@ -90,8 +86,9 @@ class CaseAssigneeListener(
                                 )
                             )
 
-                            taskService.setAssignee(task.id, assignee.username)
-                            entityManager.detach(task)
+                            runWithoutAuthorization {
+                                operatonTaskService.autoAssign(task, assignee.username)
+                            }
                             logger.debug { "Setting assignee for task with id ${task.id}" }
                         } catch (_: AccessDeniedException) {
                             logger.info { "Auto assigning user to task ${task.id} failed." }

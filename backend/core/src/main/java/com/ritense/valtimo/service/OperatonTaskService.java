@@ -45,6 +45,7 @@ import static java.util.stream.Collectors.toSet;
 import static org.springframework.data.domain.Sort.Direction.DESC;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.ritense.authorization.Action;
 import com.ritense.authorization.AuthorizationContext;
 import com.ritense.authorization.AuthorizationService;
@@ -238,6 +239,26 @@ public class OperatonTaskService {
             } catch (ProcessEngineException ex) {
                 throw new IllegalStateException("An error occurred while assigning the task", ex);
             }
+        }
+    }
+
+    /**
+     * Assigns a task without interactive permission checks or ID resolution.
+     * Callers are responsible for authorization. Still publishes events and outbox messages.
+     */
+    @Transactional
+    public void autoAssign(OperatonTask task, String assigneeUsername) {
+        final String currentAssignee = task.getAssignee();
+        try {
+            taskService.setAssignee(task.getId(), assigneeUsername);
+            publishTaskAssignedEvent(task, currentAssignee, assigneeUsername);
+            var taskJson = objectMapper.<ObjectNode>valueToTree(task);
+            entityManager.detach(task);
+            outboxService.send(() -> new TaskAssigned(task.getId(), taskJson));
+        } catch (AuthorizationException ex) {
+            throw new IllegalStateException("Cannot assign task: the user has no permission.", ex);
+        } catch (ProcessEngineException ex) {
+            throw new IllegalStateException("An error occurred while assigning the task", ex);
         }
     }
 

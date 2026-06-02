@@ -212,23 +212,19 @@ class ProcessDocumentsAutoConfiguration {
     @Bean
     fun caseAssigneeListener(
         operatonTaskService: OperatonTaskService,
-        taskService: org.operaton.bpm.engine.TaskService,
         documentService: DocumentService,
         caseDefinitionService: CaseDefinitionService,
         userManagementService: UserManagementService,
         caseDocumentResolver: CaseDocumentResolver,
         authorizationService: AuthorizationService,
-        entityManager: jakarta.persistence.EntityManager,
     ): CaseAssigneeListener {
         return CaseAssigneeListener(
             operatonTaskService,
-            taskService,
             documentService,
             caseDefinitionService,
             userManagementService,
             caseDocumentResolver,
             authorizationService,
-            entityManager
         )
     }
 
