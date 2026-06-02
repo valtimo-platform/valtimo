@@ -56,7 +56,7 @@ export class EditorComponent implements AfterViewInit, OnDestroy {
   @Input() widthPx!: number;
   @Input() heightPx!: number;
   @Input() heightStyle!: string;
-  @Input() jsonSchema?: string;
+  @Input() jsonSchema?: object;
   @Input() fitPage = false;
   @Input() fitPageSpaceAdjustment = 0;
 
@@ -162,7 +162,7 @@ export class EditorComponent implements AfterViewInit, OnDestroy {
 
   private checkValidity(): void {
     const markers = monaco.editor.getModelMarkers() || [];
-    const valid = markers.length === 0;
+    const valid = !markers.some(m => m.severity === monaco.MarkerSeverity.Error);
 
     this.validEvent.emit(valid);
   }
@@ -213,6 +213,7 @@ export class EditorComponent implements AfterViewInit, OnDestroy {
       const key = id.split('.')[0];
       monaco.languages.json.jsonDefaults.setDiagnosticsOptions({
         validate: true,
+        schemaValidation: 'warning',
         schemas: [
           {
             uri: id,

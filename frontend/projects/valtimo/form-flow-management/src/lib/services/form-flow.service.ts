@@ -31,6 +31,10 @@ export class FormFlowService extends BaseApiService {
     super(httpClient, configService);
   }
 
+  public getFormFlowDefinitionSchema(): Observable<object> {
+    return this.httpClient.get<object>(this.getApiUrl('management/v1/form-flow-definition/schema'));
+  }
+
   public getFormFlowDefinitions(
     caseDefinitionKey: string,
     caseVersionTag: string

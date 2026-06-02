@@ -2,104 +2,199 @@
     "$schema": "http://json-schema.org/draft-07/schema#",
     "$id": "formflow.schema",
     "title": "Form flow definition",
-    "description": "Representation of a form flow definition",
+    "description": "A form flow guides the user through a sequence of forms — like a wizard. Use it to break a single task into several screens, to branch based on user input (for example show different follow-up forms for approved and denied requests), and to run actions when a step opens, completes, or the user goes back. A form flow is normally linked to a BPMN user task. Each step is identified by a key; `startStep` says which step is shown first, and every step lists the possible next steps.",
     "type": "object",
-    "properties": {
-        "startStep": {
-            "type": "string",
-            "description": "This must contain the key of the first step of the form flow"
-        },
-        "steps": {
-            "type": "array",
-            "description": "This array should contain all the possible steps of the form flow",
-            "items": {
-                "type": "object",
-                "properties": {
-                    "key": {
-                        "type": "string",
-                        "description": "The identifying human readable key of the step"
-                    },
-                    "title": {
-                        "type": "string",
-                        "description": "The title of the step"
-                    },
-                    "type": {
-                        "type": "object",
-                        "description": "The type of form that should be displayed",
-                        "properties": {
-                            "name": {
-                                "type": "string",
-                                "description": "This defines the type of the step, for instance: 'form'"
-                            },
-                            "properties": {
-                                "type": "object",
-                                "description": "This object holds additional properties for the specified type"
-                            }
-                        },
-                        "required": [
-                            "name",
-                            "properties"
-                        ]
-                    },
-                    "onOpen": {
-                        "type": "array",
-                        "description": "An array of expressions which are executed in order when opening the step",
-                        "items": {
-                            "type": "string",
-                            "description": "An expression that is executed when opening the step"
-                        }
-                    },
-                    "onBack": {
-                        "type": "array",
-                        "description": "An array of expressions which are executed in order when navigating to the previous step",
-                        "items": {
-                            "type": "string",
-                            "description": "An expression that is executed when going to the previous step"
-                        }
-                    },
-                    "onComplete": {
-                        "type": "array",
-                        "description": "An array of expressions which are executed in order when completing the step",
-                        "items": {
-                            "type": "string",
-                            "description": "An expression that is executed when completing the step"
-                        }
-                    },
-                    "nextSteps": {
-                        "type": "array",
-                        "description": "The possible next steps. A condition must be added on all steps but one. The step without a condition is the default step that will be used when all conditions fail",
-                        "items": {
-                            "type": "object",
-                            "properties": {
-                                "step": {
-                                    "type": "string",
-                                    "title": "The key of the next step. This should match one of the keys in the steps array"
-                                },
-                                "condition": {
-                                    "type": [
-                                        "string",
-                                        "null"
-                                    ],
-                                    "title": "This should contain an expression telling what condition should be met to go to this next step. If there is no condition this is the default next step."
-                                }
-                            },
-                            "required": [
-                                "step"
-                            ]
-                        }
-                    }
-                },
-                "required": [
-                    "key",
-                    "type"
-                ]
-            },
-            "minItems": 1,
-            "uniqueItems": true
-        }
-    },
+    "additionalProperties": false,
     "required": [
         "startStep",
         "steps"
-    ]
+    ],
+    "properties": {
+        "key": {
+            "type": "string",
+            "description": "Identifier of this form flow definition. When you save through the editor this value is overwritten with the key from the URL, so you don't need to edit it manually here."
+        },
+        "startStep": {
+            "type": "string",
+            "description": "The step that is shown first when the form flow starts. Must match the `key` of one of the entries in `steps`."
+        },
+        "steps": {
+            "type": "array",
+            "description": "All steps in this form flow. A step represents one screen shown to the user (typically a form). At least one step is required, and step keys must be unique.",
+            "minItems": 1,
+            "uniqueItems": true,
+            "items": {
+                "$ref": "#/definitions/step"
+            }
+        }
+    },
+    "definitions": {
+        "step": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+                "key",
+                "type"
+            ],
+            "properties": {
+                "key": {
+                    "type": "string",
+                    "description": "Identifier of this step, used to reference it from `startStep` and from the `step` field of next-step transitions. Pick something readable like `personalDetailsStep`."
+                },
+                "title": {
+                    "type": "string",
+                    "description": "Optional. Title of the step shown in the breadcrumb trail at the top of the form flow (visible when the `enableFormFlowBreadCrumbs` feature toggle is on). When left empty, Valtimo falls back to the matching translation from `en.json` / `nl.json` in the frontend."
+                },
+                "type": {
+                    "$ref": "#/definitions/stepType"
+                },
+                "nextStep": {
+                    "type": "string",
+                    "description": "Legacy single next step — the `key` of the step that follows this one. Prefer `nextSteps` instead, which supports multiple branches with conditions."
+                },
+                "nextSteps": {
+                    "type": "array",
+                    "description": "Where the user can go after completing this step. Each entry points to another step, optionally guarded by a condition. Entries are evaluated in order; the first one whose condition is true is taken. At most one entry may omit its condition — that entry is the default, used when none of the conditions match. If no entry matches, the form flow ends.",
+                    "items": {
+                        "$ref": "#/definitions/nextStep"
+                    }
+                },
+                "onOpen": {
+                    "type": "array",
+                    "description": "Actions to run when the user opens this step. Each entry is a Spring Expression Language (SpEL) expression wrapped in `${ ... }`, evaluated in the order listed. Typical use: pre-fill the form with data fetched from an external service, or clear out previous submission data. Example: `${someService.retrieveData(additionalProperties)}`.",
+                    "items": {
+                        "type": "string",
+                        "description": "A SpEL expression evaluated when the step opens, written between `${` and `}`."
+                    }
+                },
+                "onBack": {
+                    "type": "array",
+                    "description": "Actions to run when the user navigates back from this step to the previous one. Each entry is a SpEL expression wrapped in `${ ... }`, evaluated in order. Typical use: clean up data that should not be kept when the user changes their mind.",
+                    "items": {
+                        "type": "string",
+                        "description": "A SpEL expression evaluated when the user goes back, written between `${` and `}`."
+                    }
+                },
+                "onComplete": {
+                    "type": "array",
+                    "description": "Actions to run when the user completes this step (clicks the Submit button on the form). Each entry is a SpEL expression wrapped in `${ ... }`, evaluated in order. Typical use: store the submitted data in a document or external system, or complete the surrounding BPMN task.",
+                    "items": {
+                        "type": "string",
+                        "description": "A SpEL expression evaluated when the step is completed, written between `${` and `}`.",
+                        "examples": [
+                            "${valtimoFormFlow.completeTask(additionalProperties, step.submissionData)}",
+                            "${valtimoFormFlow.startCase(instance.id, {'doc:/target':'/source'})}",
+                            "${valtimoFormFlow.startSupportingProcess(instance.id, {'doc:/target':'/source'})}"
+                        ]
+                    }
+                }
+            },
+            "description": "A single step in the form flow — typically one form shown to the user. Configure what to render with `type`, where the user can go next with `nextStep` / `nextSteps`, and optional actions that run on opening, going back, or completing the step."
+        },
+        "stepType": {
+            "type": "object",
+            "description": "What is rendered for this step. Pick `form` to show a Form.io form, or `custom-component` to render a custom Angular component. The shape of `properties` depends on the chosen `name`.",
+            "required": [
+                "name",
+                "properties"
+            ],
+            "properties": {
+                "name": {
+                    "type": "string",
+                    "description": "Which kind of step to render. Built-in choices are `form` (a Form.io form) and `custom-component` (a custom Angular component). Custom step types are supported too — pick any other name and Valtimo will look up a matching handler.",
+                    "examples": [
+                        "form",
+                        "custom-component"
+                    ]
+                },
+                "properties": {
+                    "type": "object",
+                    "description": "Configuration for the chosen step type. The expected fields differ per step type: for `form` you set `definition`; for `custom-component` you set `componentId`."
+                }
+            },
+            "oneOf": [
+                {
+                    "properties": {
+                        "name": {
+                            "const": "form"
+                        },
+                        "properties": {
+                            "$ref": "#/definitions/formStepTypeProperties"
+                        }
+                    }
+                },
+                {
+                    "properties": {
+                        "name": {
+                            "const": "custom-component"
+                        },
+                        "properties": {
+                            "$ref": "#/definitions/customComponentStepTypeProperties"
+                        }
+                    }
+                },
+                {
+                    "properties": {
+                        "name": {
+                            "not": {
+                                "enum": [
+                                    "form",
+                                    "custom-component"
+                                ]
+                            }
+                        }
+                    }
+                }
+            ]
+        },
+        "formStepTypeProperties": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+                "definition"
+            ],
+            "properties": {
+                "definition": {
+                    "type": "string",
+                    "description": "Key of the Form.io form to render for this step. Must match the key of a form defined elsewhere in the application."
+                }
+            },
+            "description": "Configuration for a `form` step — a Form.io form."
+        },
+        "customComponentStepTypeProperties": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+                "componentId"
+            ],
+            "properties": {
+                "componentId": {
+                    "type": "string",
+                    "description": "Identifier of the custom Angular component to render for this step, as registered in the frontend."
+                }
+            },
+            "description": "Configuration for a `custom-component` step — a custom Angular component rendered instead of a Form.io form."
+        },
+        "nextStep": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+                "step"
+            ],
+            "properties": {
+                "step": {
+                    "type": "string",
+                    "description": "The `key` of the step to go to next. Must match the key of one of the entries in the top-level `steps` array."
+                },
+                "condition": {
+                    "type": [
+                        "string",
+                        "null"
+                    ],
+                    "description": "Optional. A SpEL expression wrapped in `${ ... }` that decides whether this transition is taken. Evaluated against the SpEL context, which includes the current step's submission data (e.g. `${step.submissionData.personalDetails.age >= 21}`). Omit (or leave null) to make this entry the default transition used when no other condition matches."
+                }
+            },
+            "description": "One possible transition out of a step. Points to another step by key, optionally guarded by a condition. The first entry whose condition evaluates to true is taken; an entry without a condition is the default."
+        }
+    }
 }

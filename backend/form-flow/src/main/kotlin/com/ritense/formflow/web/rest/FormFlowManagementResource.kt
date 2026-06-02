@@ -24,6 +24,8 @@ import com.ritense.logging.LoggableResource
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import com.ritense.valtimo.contract.case_.CaseDefinitionId
 import com.ritense.valtimo.contract.domain.ValtimoMediaType.APPLICATION_JSON_UTF8_VALUE
+import org.springframework.core.io.ClassPathResource
+import org.springframework.core.io.Resource
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.data.web.PageableDefault
@@ -44,8 +46,12 @@ import org.springframework.web.bind.annotation.RestController
 @RequestMapping("/api/management", produces = [APPLICATION_JSON_UTF8_VALUE])
 class FormFlowManagementResource(
     private val formFlowService: FormFlowService,
-    private val formFlowDefinitionImporter: FormFlowDefinitionImporter
+    private val formFlowDefinitionImporter: FormFlowDefinitionImporter,
 ) {
+    @GetMapping("/v1/form-flow-definition/schema")
+    fun getFormFlowDefinitionSchema(): ResponseEntity<Resource> =
+        ResponseEntity.ok(ClassPathResource(FORM_FLOW_SCHEMA_PATH))
+
     @GetMapping("/v1/case-definition/{caseDefinitionKey}/version/{versionTag}/form-flow-definition")
     @Transactional
     fun getAllFormFlowDefinitions(
@@ -118,5 +124,9 @@ class FormFlowManagementResource(
 
         val newDefinition = formFlowService.save(definitionDto.toEntity(caseDefinitionId))
         return ResponseEntity.ok(FormFlowDefinitionDto.of(newDefinition, false))
+    }
+
+    private companion object {
+        private const val FORM_FLOW_SCHEMA_PATH = "config/form-flow/schema/formflow.schema.json"
     }
 }
