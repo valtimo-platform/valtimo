@@ -12,9 +12,9 @@
 
 ## Enhancements
 
-* **New enhancement title**
+* **Autocomplete suggestions for form-flow and access-control**
 
-  New enhancement explanation.
+  The form flow and access control editors now offer autocomplete suggestions and inline documentation while editing.
 
 ## Bugfixes
 
