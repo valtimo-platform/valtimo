@@ -25,6 +25,7 @@ import {
 import {BehaviorSubject, Observable} from 'rxjs';
 import {IkoView, IkoSearchActionUser, IkoListResponse, IkoTab} from '../models';
 import {WidgetAction} from '@valtimo/layout';
+import {Router} from '@angular/router';
 
 @Injectable({
   providedIn: 'root',
@@ -43,7 +44,8 @@ export class IkoApiService extends BaseApiService {
   constructor(
     protected readonly httpClient: HttpClient,
     protected readonly configService: ConfigService,
-    protected readonly globalNotificationService: GlobalNotificationService
+    protected readonly globalNotificationService: GlobalNotificationService,
+    protected readonly router: Router
   ) {
     super(httpClient, configService);
   }
@@ -145,7 +147,7 @@ export class IkoApiService extends BaseApiService {
 
   private navigateTo(navigateTo: string) {
     if (navigateTo.startsWith(window.location.origin) || navigateTo.startsWith('/')) {
-      window.open(navigateTo, '_self');
+      this.router.navigateByUrl(navigateTo);
     } else if (navigateTo.startsWith('http')) {
       window.open(navigateTo, '_blank');
     } else {

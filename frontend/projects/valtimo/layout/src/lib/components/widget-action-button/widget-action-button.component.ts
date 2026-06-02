@@ -19,6 +19,7 @@ import {Component, Input} from '@angular/core';
 import {ButtonModule} from 'carbon-components-angular';
 import {BasicWidget, WidgetAction} from '../../models';
 import {GlobalNotificationService} from '@valtimo/shared';
+import {Router} from '@angular/router';
 
 @Component({
   selector: 'valtimo-widget-action-button',
@@ -31,7 +32,10 @@ export class WidgetActionButtonComponent {
   @Input() public widgetConfiguration: BasicWidget;
   @Input() public resolvedData: object;
 
-  constructor(private readonly globalNotificationService: GlobalNotificationService) {}
+  constructor(
+    private readonly globalNotificationService: GlobalNotificationService,
+    private readonly router: Router
+  ) {}
 
   public onNavigateButtonClick(buttonAction: WidgetAction): void {
     const navigateTo = this.getNavigateToUrl(buttonAction);
