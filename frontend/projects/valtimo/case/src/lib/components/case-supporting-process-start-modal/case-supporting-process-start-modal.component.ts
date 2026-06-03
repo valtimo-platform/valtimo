@@ -106,6 +106,8 @@ export class CaseSupportingProcessStartModalComponent implements OnDestroy {
 
   private loadProcessLink(): void {
     this.startProcessLinkType$.next(null);
+    this.formViewModelDynamicContainer?.clear();
+    this.formCustomComponentDynamicContainer?.clear();
 
     combineLatest([this.processDefinitionId$, this.documentId$])
       .pipe(
@@ -266,7 +268,7 @@ export class CaseSupportingProcessStartModalComponent implements OnDestroy {
       formViewModelComponent.destroy();
     });
 
-    this.isLoading$.next(true);
+    this.isLoading$.next(false);
   }
 
   private setFormCustomComponent(formCustomComponentKey: string): void {

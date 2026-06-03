@@ -143,6 +143,8 @@ export class CaseProcessStartModalComponent implements OnInit, OnDestroy {
     this.processLinkId = null;
     this.formDefinition = null;
     this.formFlowInstanceId = null;
+    this.formViewModelDynamicContainer?.clear();
+    this.formCustomComponentDynamicContainer?.clear();
     if (this._useStartEventNameAsStartFormTitle) {
       this.processService.getProcessDefinitionXml(this.processDefinitionId).subscribe(result => {
         this._startEventName = this.startModalService.getStandardStartEventTitle(result.bpmn20Xml);
