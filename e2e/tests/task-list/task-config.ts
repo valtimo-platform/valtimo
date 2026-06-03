@@ -21,6 +21,8 @@ export const TASK_CONFIG = {
   formioTestProcess: 'formio-test',
   /** API endpoint to create a new case and start its process */
   processDocumentEndpoint: '/api/v1/process-document/operation/new-document-and-start-process',
+  /** API endpoint to delete a created document by id */
+  documentEndpoint: '/api/v1/document',
   /** Task name from formio-test that has a required text field */
   textFieldTaskName: 'Test Text Field',
 };

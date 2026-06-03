@@ -8,44 +8,31 @@
  * https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
  *
  * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
+ * distributed under the License is distributed on an "AS IS" basis,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
 
-.mdi-icon-selector {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  width: 350px;
-
-  cds-combo-box {
-    flex: 1 1 auto;
-    min-width: 0;
+.valtimo-widget-wizard-type-step {
+  &__group + &__group {
+    margin-top: 24px;
   }
-}
 
-:host ::ng-deep .cds--list-box {
-  background: var(--cds-layer-01);
-}
+  &__group-title {
+    font-weight: 600;
+    margin-bottom: 4px;
+  }
 
-.mdi-icon-preview {
-  width: 24px;
-  height: 24px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 18px;
-}
+  &__group-description {
+    margin-bottom: 12px;
+    font-size: 0.875rem;
+    line-height: 1.25rem;
+    letter-spacing: 0.16px;
+    color: #525252;
+  }
 
-.mdi-list-item {
-  display: flex;
-  flex-direction: row;
-  gap: 8px;
-  align-items: center;
-
-  .mdi {
-    font-size: 16px;
+  &__group cds-selection-tile {
+    position: relative;
   }
 }
