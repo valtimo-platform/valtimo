@@ -370,6 +370,7 @@ export class FormViewModelComponent implements OnInit, OnDestroy {
   public loadInitialViewModel(): void {
     combineLatest([this.formName$, this.taskInstanceId$])
       .pipe(
+        filter(([formName, taskInstanceId]) => !!formName && !!taskInstanceId),
         take(1),
         switchMap(([formName, taskInstanceId]) =>
           this.viewModelService.getViewModel(formName, taskInstanceId).pipe(
