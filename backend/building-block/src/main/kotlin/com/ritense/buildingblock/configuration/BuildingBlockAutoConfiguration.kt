@@ -246,12 +246,14 @@ class BuildingBlockAutoConfiguration {
     fun buildingBlockInstanceService(
         buildingBlockInstanceRepository: BuildingBlockInstanceRepository,
         buildingBlockDefinitionRepository: BuildingBlockDefinitionRepository,
-        documentService: DocumentService
+        documentService: DocumentService,
+        authorizationService: AuthorizationService
     ): BuildingBlockInstanceService {
         return BuildingBlockInstanceService(
             buildingBlockInstanceRepository,
             buildingBlockDefinitionRepository,
-            documentService
+            documentService,
+            authorizationService
         )
     }
 

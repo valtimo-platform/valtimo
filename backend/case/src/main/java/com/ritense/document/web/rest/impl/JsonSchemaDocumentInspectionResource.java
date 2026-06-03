@@ -86,6 +86,11 @@ public class JsonSchemaDocumentInspectionResource {
         @LoggableResource(resourceType = JsonSchemaDocument.class) @PathVariable("caseId") UUID caseId,
         @RequestBody @Valid ModifyDocumentRequest request
     ) {
+        if (!caseId.toString().equals(request.documentId())) {
+            throw new IllegalArgumentException(
+                "Document id in request body does not match case id in path"
+            );
+        }
         JsonSchemaDocument document = loadDocument(caseId);
         authorizationService.requirePermission(
             new EntityAuthorizationRequest<>(

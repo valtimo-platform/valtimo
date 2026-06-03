@@ -102,14 +102,7 @@ export class CaseManagementPage {
   // Navigation
   async goToCaseManagement() {
     console.log('Navigate to Case Management...');
-    const adminButton = this.page.getByRole('button', {name: 'Admin'});
-    if ((await adminButton.getAttribute('aria-expanded')) !== 'true') {
-      await adminButton.click();
-    }
-    await this.page
-      .locator('[data-testid="sidenav-item-Admin"]')
-      .getByRole('link', {name: 'Cases'})
-      .click();
+    await this.page.goto('/case-management');
     await this.page.waitForSelector('valtimo-carbon-list');
   }
 
@@ -153,13 +146,13 @@ export class CaseManagementPage {
   async uploadCase(options?: UploadCaseOptions): Promise<ConfigureStepResult> {
     const archiveName = options?.archiveName ?? DEFAULT_CASE_ARCHIVE;
     await this.uploadCaseButton.click();
-    await this.pluginConfigurationStep();
     await this.uploadFileStep(archiveName);
-    const result = await this.configureStep();
+    const {key, name} = await this.configureStep();
+    const response = await this.pluginConfigurationStep();
 
-    if (result.response.status() === 200) {
-      // Success: click Next to advance through remaining steps
-      await this.uploadWizardNextButton.click();
+    if (response.status() === 200) {
+      // FILE_UPLOAD step: wait for import to finish, then advance
+      await this.fileUploadStep();
       await this.accessControlStep();
       await this.dashboardStep();
     } else {
@@ -168,13 +161,12 @@ export class CaseManagementPage {
       await this.uploadWizardFinishButton.click();
     }
 
-    return result;
+    return {response, key, name};
   }
 
   async uploadInvalidCase(options?: UploadCaseOptions) {
     const archiveName = options?.archiveName ?? DEFAULT_CASE_ARCHIVE;
     await this.uploadCaseButton.click();
-    await this.pluginConfigurationStep();
     await this.uploadInvalidFileStep(archiveName);
     await this.closeUploadWizard();
   }
@@ -190,11 +182,19 @@ export class CaseManagementPage {
   }
 
   // Upload steps
-  async pluginConfigurationStep() {
-    await expect(this.page.getByText('Plugin Configuration')).toBeVisible();
-    await expect(
-      this.page.getByText('This process may use plugins. Make sure you configure them correctly.')
-    ).toBeVisible();
+  async pluginConfigurationStep(): Promise<Awaited<ReturnType<Page['waitForResponse']>>> {
+    await expect(this.page.getByText('Plugin Configuration').first()).toBeVisible({timeout: 10_000});
+
+    const responsePromise = this.page.waitForResponse(
+      res =>
+        res.url().includes('/api/management/v1/case/import') && res.request().method() === 'POST'
+    );
+    await this.uploadWizardNextButton.click();
+    return responsePromise;
+  }
+
+  async fileUploadStep() {
+    await expect(this.uploadWizardNextButton).toBeEnabled({timeout: 30_000});
     await this.uploadWizardNextButton.click();
   }
 
@@ -218,7 +218,7 @@ export class CaseManagementPage {
     await expect(this.uploadWizardNextButton).toBeDisabled();
   }
 
-  async configureStep(): Promise<ConfigureStepResult> {
+  async configureStep(): Promise<{key: string; name: string}> {
     const initialValidation = this.waitForKeyValidationResponse();
 
     await expect(this.configureNameInput).toBeVisible();
@@ -246,17 +246,13 @@ export class CaseManagementPage {
     const key = await this.configureKeyInput.inputValue();
     const name = await this.configureNameInput.inputValue();
 
-    const responsePromise = this.page.waitForResponse(
-      res =>
-        res.url().includes('/api/management/v1/case/import') && res.request().method() === 'POST'
-    );
     await expect(this.uploadWizardNextButton).toBeEnabled({timeout: 10_000});
     await this.uploadWizardNextButton.click();
 
-    return {response: await responsePromise, key, name};
+    return {key, name};
   }
 
-  async configureStepWithCustomKey(name: string, key: string): Promise<ConfigureStepResult> {
+  async configureStepWithCustomKey(name: string, key: string): Promise<{key: string; name: string}> {
     await expect(this.configureNameInput).toBeVisible();
 
     // Clear and fill custom name
@@ -285,14 +281,10 @@ export class CaseManagementPage {
     const actualKey = await this.configureKeyInput.inputValue();
     const actualName = await this.configureNameInput.inputValue();
 
-    const responsePromise = this.page.waitForResponse(
-      res =>
-        res.url().includes('/api/management/v1/case/import') && res.request().method() === 'POST'
-    );
     await expect(this.uploadWizardNextButton).toBeEnabled({timeout: 10_000});
     await this.uploadWizardNextButton.click();
 
-    return {response: await responsePromise, key: actualKey, name: actualName};
+    return {key: actualKey, name: actualName};
   }
 
   waitForKeyValidationResponse(key?: string) {

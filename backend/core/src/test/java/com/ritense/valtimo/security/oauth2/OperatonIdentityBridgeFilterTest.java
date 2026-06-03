@@ -16,6 +16,7 @@
 
 package com.ritense.valtimo.security.oauth2;
 
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.inOrder;
@@ -103,11 +104,7 @@ class OperatonIdentityBridgeFilterTest {
         );
         doThrow(new ServletException("boom")).when(chain).doFilter(request, response);
 
-        try {
-            filter.doFilter(request, response, chain);
-        } catch (ServletException expected) {
-            // pass-through
-        }
+        assertThrows(ServletException.class, () -> filter.doFilter(request, response, chain));
 
         verify(identityService).setAuthenticatedUserId("bob");
         verify(identityService).clearAuthentication();

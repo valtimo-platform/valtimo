@@ -34,6 +34,7 @@ import {CaseInspectionMetadataTabComponent} from './tabs/metadata-tab.component'
 import {CaseInspectionProcessesTabComponent} from './tabs/processes-tab.component';
 import {BuildingBlockProcessReference} from './models/case-inspection.models';
 import {CaseInspectionTab} from './case-inspection-tab.enum';
+import {CaseInspectionService} from './services/case-inspection.service';
 
 @Component({
   standalone: true,
@@ -72,7 +73,8 @@ export class CaseInspectionComponent implements OnInit, OnDestroy {
     private readonly pageTitleService: PageTitleService,
     private readonly translateService: TranslateService,
     private readonly breadcrumbService: BreadcrumbService,
-    private readonly documentService: DocumentService
+    private readonly documentService: DocumentService,
+    private readonly caseInspectionService: CaseInspectionService
   ) {}
 
   public ngOnInit(): void {
@@ -106,7 +108,7 @@ export class CaseInspectionComponent implements OnInit, OnDestroy {
             return;
           }
           this.$loading.set(false);
-          this.setBreadcrumbs();
+          this.initBreadcrumbs();
         })
     );
   }
@@ -138,42 +140,40 @@ export class CaseInspectionComponent implements OnInit, OnDestroy {
     this.onTabSelected(CaseInspectionTab.LOGS);
   }
 
+  private initBreadcrumbs(): void {
+    const documentId = this.$documentId();
+    this._subscriptions.add(
+      this.caseInspectionService.getDocument(documentId).pipe(
+        switchMap(inspection => {
+          const caseDefinitionKey = inspection.definitionId.name;
+          return this.documentService.getDocumentDefinition(caseDefinitionKey).pipe(
+            take(1),
+            map(definition => ({
+              caseDefinitionKey,
+              caseDefinitionTitle: definition.schema.title,
+            }))
+          );
+        })
+      ).subscribe(({caseDefinitionKey, caseDefinitionTitle}) => {
+        const documentId = this.$documentId();
+        this.breadcrumbService.setSecondBreadcrumb({
+          route: [`/cases/${caseDefinitionKey}`],
+          content: caseDefinitionTitle,
+          href: `/cases/${caseDefinitionKey}`,
+        });
+        this.breadcrumbService.setThirdBreadcrumb({
+          route: [`/cases/${caseDefinitionKey}/document/${documentId}`],
+          content: this.translateService.instant('Case details'),
+          href: `/cases/${caseDefinitionKey}/document/${documentId}`,
+        });
+      })
+    );
+  }
+
   private restoreTabFromQueryParam(): void {
     const requested = this.route.snapshot.queryParamMap.get('tab') as CaseInspectionTab | null;
     if (requested && this._validTabs.includes(requested)) {
       this.$activeTab.set(requested);
     }
-  }
-
-  private setBreadcrumbs(): void {
-    const documentId = this.$documentId();
-    if (!documentId) return;
-
-    this.documentService
-      .getDocument(documentId)
-      .pipe(
-        switchMap(document =>
-          this.documentService
-            .getDocumentDefinition(document.definitionId?.name ?? document.definitionName)
-            .pipe(map(definition => ({document, definition})))
-        )
-      )
-      .subscribe(({document, definition}) => {
-        const caseDefinitionKey = document.definitionId?.name ?? document.definitionName;
-        const caseRoute = `/cases/${caseDefinitionKey}`;
-        const caseDetailRoute = `/cases/${caseDefinitionKey}/document/${documentId}`;
-
-        this.breadcrumbService.setSecondBreadcrumb({
-          route: [caseRoute],
-          content: definition.schema.title,
-          href: caseRoute,
-        });
-
-        this.breadcrumbService.setThirdBreadcrumb({
-          route: [caseDetailRoute],
-          content: this.translateService.instant('Case details'),
-          href: caseDetailRoute,
-        });
-      });
   }
 }

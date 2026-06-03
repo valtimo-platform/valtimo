@@ -47,19 +47,27 @@ export class CaseInspectionMetadataTabComponent implements OnChanges {
 
   public ngOnChanges(changes: SimpleChanges): void {
     if (changes.documentId && this.documentId) {
-      this.loadDocument();
+      this.loadDocument(this.documentId);
     }
   }
 
-  private loadDocument(): void {
+  private loadDocument(documentId: string): void {
     this.$loading.set(true);
     this.$errorMessage.set(null);
-    this.caseInspectionService.getDocument(this.documentId).subscribe({
+    this.$document.set(null);
+    this.caseInspectionService.getDocument(documentId).subscribe({
       next: document => {
+        if (documentId !== this.documentId) {
+          return;
+        }
         this.$document.set(document);
         this.$loading.set(false);
       },
       error: err => {
+        if (documentId !== this.documentId) {
+          return;
+        }
+        this.$document.set(null);
         this.$errorMessage.set(err?.error?.message ?? err?.message ?? 'Failed to load metadata');
         this.$loading.set(false);
       },

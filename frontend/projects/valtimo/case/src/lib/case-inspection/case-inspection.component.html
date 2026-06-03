@@ -21,12 +21,10 @@
       [heading]="'case.inspection.tabs.document' | translate"
       (selected)="onTabSelected(CaseInspectionTab.DOCUMENT)"
     >
-      <div cdsLayer class="case-inspection__pane">
-        <valtimo-case-inspection-document
-          *ngIf="$activeTab() === CaseInspectionTab.DOCUMENT"
-          [documentId]="$documentId()"
-        ></valtimo-case-inspection-document>
-      </div>
+      <valtimo-case-inspection-document
+        *ngIf="$activeTab() === CaseInspectionTab.DOCUMENT"
+        [documentId]="$documentId()"
+      ></valtimo-case-inspection-document>
     </cds-tab>
 
     <cds-tab
@@ -34,14 +32,12 @@
       [heading]="'case.inspection.tabs.processes' | translate"
       (selected)="onTabSelected(CaseInspectionTab.PROCESSES)"
     >
-      <div cdsLayer class="case-inspection__pane">
-        <valtimo-case-inspection-processes
-          *ngIf="$activeTab() === CaseInspectionTab.PROCESSES"
-          [documentId]="$documentId()"
-          (viewBuildingBlockEvent)="onViewBuildingBlock($event)"
-          (viewProcessLogsEvent)="onViewProcessLogs($event)"
-        ></valtimo-case-inspection-processes>
-      </div>
+      <valtimo-case-inspection-processes
+        *ngIf="$activeTab() === CaseInspectionTab.PROCESSES"
+        [documentId]="$documentId()"
+        (viewBuildingBlockEvent)="onViewBuildingBlock($event)"
+        (viewProcessLogsEvent)="onViewProcessLogs($event)"
+      ></valtimo-case-inspection-processes>
     </cds-tab>
 
     <cds-tab
@@ -49,14 +45,12 @@
       [heading]="'case.inspection.tabs.buildingBlocks' | translate"
       (selected)="onTabSelected(CaseInspectionTab.BUILDING_BLOCKS)"
     >
-      <div cdsLayer class="case-inspection__pane">
-        <valtimo-case-inspection-building-blocks
-          *ngIf="$activeTab() === CaseInspectionTab.BUILDING_BLOCKS"
-          [documentId]="$documentId()"
-          [pendingInstanceId]="$pendingBuildingBlockInstanceId()"
-          (viewProcessLogsEvent)="onViewProcessLogs($event)"
-        ></valtimo-case-inspection-building-blocks>
-      </div>
+      <valtimo-case-inspection-building-blocks
+        *ngIf="$activeTab() === CaseInspectionTab.BUILDING_BLOCKS"
+        [documentId]="$documentId()"
+        [pendingInstanceId]="$pendingBuildingBlockInstanceId()"
+        (viewProcessLogsEvent)="onViewProcessLogs($event)"
+      ></valtimo-case-inspection-building-blocks>
     </cds-tab>
 
     <cds-tab
@@ -64,13 +58,11 @@
       [heading]="'case.inspection.tabs.logs' | translate"
       (selected)="onTabSelected(CaseInspectionTab.LOGS)"
     >
-      <div cdsLayer class="case-inspection__pane">
-        <valtimo-case-inspection-logs
-          *ngIf="$activeTab() === CaseInspectionTab.LOGS"
-          [documentId]="$documentId()"
-          [pendingProcessInstanceId]="$pendingProcessInstanceLogFilter()"
-        ></valtimo-case-inspection-logs>
-      </div>
+      <valtimo-case-inspection-logs
+        *ngIf="$activeTab() === CaseInspectionTab.LOGS"
+        [documentId]="$documentId()"
+        [pendingProcessInstanceId]="$pendingProcessInstanceLogFilter()"
+      ></valtimo-case-inspection-logs>
     </cds-tab>
 
     <cds-tab
@@ -78,12 +70,10 @@
       [heading]="'case.inspection.tabs.metadata' | translate"
       (selected)="onTabSelected(CaseInspectionTab.METADATA)"
     >
-      <div cdsLayer class="case-inspection__pane">
-        <valtimo-case-inspection-metadata
-          *ngIf="$activeTab() === CaseInspectionTab.METADATA"
-          [documentId]="$documentId()"
-        ></valtimo-case-inspection-metadata>
-      </div>
+      <valtimo-case-inspection-metadata
+        *ngIf="$activeTab() === CaseInspectionTab.METADATA"
+        [documentId]="$documentId()"
+      ></valtimo-case-inspection-metadata>
     </cds-tab>
   </cds-tabs>
 </ng-container>

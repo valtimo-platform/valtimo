@@ -68,6 +68,12 @@ public class ProcessDocumentHttpSecurityConfigurer implements HttpSecurityConfig
                 .authenticated()
                 .requestMatchers(antMatcher(POST, "/api/v1/document-definition/{caseDefinitionName}/task/search"))
                 .authenticated()
+                .requestMatchers(antMatcher(POST, "/api/v1/task/{caseDefinitionKey}/stored-quick-search"))
+                .authenticated()
+                .requestMatchers(antMatcher(GET, "/api/v1/task/{caseDefinitionKey}/stored-quick-search"))
+                .authenticated()
+                .requestMatchers(antMatcher(DELETE, "/api/v1/task/{caseDefinitionKey}/stored-quick-search/{title}"))
+                .authenticated()
                 //admin endpoints
                 .requestMatchers(antMatcher(GET, FEATURE_PROCESS_URL + "/{type}"))
                 .hasAuthority(ADMIN)

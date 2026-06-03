@@ -38,23 +38,22 @@
         }}
       </cds-tag>
 
-      <cds-tag
-        *ngIf="row.buildingBlock as bb"
-        size="sm"
-        type="purple"
-        [title]="'case.inspection.processes.buildingBlockTagTooltip' | translate"
-      >
-        {{ 'case.inspection.processes.buildingBlockTag' | translate }}: {{ bb.definitionKey }} {{ bb.definitionVersionTag }}
-      </cds-tag>
+      @if (row.buildingBlock; as bb) {
+        <cds-tag
+          size="sm"
+          type="purple"
+          [title]="'case.inspection.processes.buildingBlockTagTooltip' | translate"
+        >
+          {{ 'case.inspection.processes.buildingBlockTag' | translate }}: {{ bb.definitionKey }} {{ bb.definitionVersionTag }}
+        </cds-tag>
+      }
 
       <button
-        cdsButton="ghost"
-        size="sm"
-        type="button"
-        (click)="onViewProcessLogs()"
+              cdsButton="ghost"
+              size="sm"
+              type="button"
+              (click)="onViewProcessLogs()"
       >
-        {{ 'case.inspection.processes.viewLogs' | translate }}
-      </button>
     </div>
 
     <dl class="case-inspection-process-detail__meta">
@@ -67,7 +66,7 @@
       <dt>{{ 'case.inspection.processes.startedOn' | translate }}</dt>
       <dd>{{ row.startedOn | date: 'medium' }}</dd>
 
-      <ng-container *ngIf="row.buildingBlock as bb">
+      @if (row.buildingBlock; as bb) {
         <dt>{{ 'case.inspection.processes.buildingBlock' | translate }}</dt>
         <dd>
           <button
@@ -79,7 +78,7 @@
             <span aria-hidden="true">→</span>
           </button>
         </dd>
-      </ng-container>
+      }
     </dl>
   </header>
 
@@ -90,150 +89,122 @@
       (selected)="onSelectTab(ProcessDetailTab.DETAILS)"
     >
       <div class="case-inspection-process-detail__pane">
-        <ng-container *ngIf="row.incidents.length > 0">
+        @if (row.incidents.length > 0) {
           <h4 class="case-inspection-process-detail__subhead">
             {{ 'case.inspection.processes.incidentsHeader' | translate }}
           </h4>
 
           <cds-structured-list>
             <cds-list-header>
-              <cds-list-column>{{
-                'case.inspection.processes.incidentType' | translate
-              }}</cds-list-column>
-              <cds-list-column>{{
-                'case.inspection.processes.activity' | translate
-              }}</cds-list-column>
-              <cds-list-column>{{
-                'case.inspection.processes.message' | translate
-              }}</cds-list-column>
-              <cds-list-column>{{
-                'case.inspection.processes.timestamp' | translate
-              }}</cds-list-column>
+              @for (column of incidentColumns; track column) {
+                <cds-list-column>{{ column | translate }}</cds-list-column>
+              }
             </cds-list-header>
 
-            <cds-list-row *ngFor="let incident of row.incidents">
-              <cds-list-column>{{ incident.incidentType }}</cds-list-column>
-              <cds-list-column>{{ incident.activityId || '—' }}</cds-list-column>
-              <cds-list-column>{{ incident.incidentMessage || '—' }}</cds-list-column>
-              <cds-list-column>{{ incident.incidentTimestamp | date: 'medium' }}</cds-list-column>
-            </cds-list-row>
+            @for (incident of row.incidents; track incident.id) {
+              <cds-list-row>
+                <cds-list-column>{{ incident.incidentType }}</cds-list-column>
+                <cds-list-column>{{ incident.activityId || '—' }}</cds-list-column>
+                <cds-list-column>{{ incident.incidentMessage || '—' }}</cds-list-column>
+                <cds-list-column>{{ incident.incidentTimestamp | date: 'medium' }}</cds-list-column>
+              </cds-list-row>
+            }
           </cds-structured-list>
-        </ng-container>
+        }
 
         <h4 class="case-inspection-process-detail__subhead">
           {{ 'case.inspection.processes.tasksHeader' | translate }}
         </h4>
 
-        <ng-container *ngIf="row.tasks.length > 0; else noTasks">
+        @if (row.tasks.length > 0) {
           <cds-structured-list>
             <cds-list-header>
-              <cds-list-column>{{
-                'case.inspection.processes.taskName' | translate
-              }}</cds-list-column>
-              <cds-list-column>{{
-                'case.inspection.processes.taskAssignee' | translate
-              }}</cds-list-column>
-              <cds-list-column>{{
-                'case.inspection.processes.taskCreated' | translate
-              }}</cds-list-column>
+              @for (column of taskColumns; track column) {
+                <cds-list-column>{{ column | translate }}</cds-list-column>
+              }
             </cds-list-header>
 
-            <cds-list-row *ngFor="let task of row.tasks">
-              <cds-list-column>{{ task.name }}</cds-list-column>
-              <cds-list-column>{{ task.assignee || '—' }}</cds-list-column>
-              <cds-list-column>{{ task.created | date: 'medium' }}</cds-list-column>
-            </cds-list-row>
+            @for (task of row.tasks; track task.id) {
+              <cds-list-row>
+                <cds-list-column>{{ task.name }}</cds-list-column>
+                <cds-list-column>{{ task.assignee || '—' }}</cds-list-column>
+                <cds-list-column>{{ task.created | date: 'medium' }}</cds-list-column>
+              </cds-list-row>
+            }
           </cds-structured-list>
-        </ng-container>
-
-        <ng-template #noTasks>
+        } @else {
           <p class="case-inspection-process-detail__empty">
             {{ 'case.inspection.processes.noTasks' | translate }}
           </p>
-        </ng-template>
+        }
 
         <h4 class="case-inspection-process-detail__subhead">
           {{ 'case.inspection.processes.variablesHeader' | translate }}
         </h4>
 
-        <ng-container *ngIf="row.variables.length > 0; else noVariables">
+        @if (row.variables.length > 0) {
           <cds-structured-list>
             <cds-list-header>
-              <cds-list-column>{{
-                'case.inspection.processes.variableName' | translate
-              }}</cds-list-column>
-              <cds-list-column>{{
-                'case.inspection.processes.variableType' | translate
-              }}</cds-list-column>
-              <cds-list-column>{{
-                'case.inspection.processes.variableValue' | translate
-              }}</cds-list-column>
+              @for (column of variableColumns; track column) {
+                <cds-list-column>{{ column | translate }}</cds-list-column>
+              }
             </cds-list-header>
 
-            <cds-list-row *ngFor="let variable of row.variables">
-              <cds-list-column>
-                <code>{{ variable.name }}</code>
-              </cds-list-column>
-              <cds-list-column>{{ variable.type }}</cds-list-column>
-              <cds-list-column>
-                <code class="case-inspection-process-detail__variable-value">{{
-                  formatVariableValue(variable)
-                }}</code>
-              </cds-list-column>
-            </cds-list-row>
+            @for (variable of row.variables; track variable.name) {
+              <cds-list-row>
+                <cds-list-column>
+                  <code>{{ variable.name }}</code>
+                </cds-list-column>
+                <cds-list-column>{{ variable.type }}</cds-list-column>
+                <cds-list-column>
+                  <code class="case-inspection-process-detail__variable-value">{{
+                    formatVariableValue(variable)
+                  }}</code>
+                </cds-list-column>
+              </cds-list-row>
+            }
           </cds-structured-list>
-        </ng-container>
-
-        <ng-template #noVariables>
+        } @else {
           <p class="case-inspection-process-detail__empty">
             {{ 'case.inspection.processes.noVariables' | translate }}
           </p>
-        </ng-template>
+        }
 
         <h4 class="case-inspection-process-detail__subhead">
           {{ 'case.inspection.processes.jobsHeader' | translate }}
         </h4>
 
-        <ng-container *ngIf="row.jobs.length > 0; else noJobs">
+        @if (row.jobs.length > 0) {
           <cds-structured-list>
             <cds-list-header>
-              <cds-list-column>{{
-                'case.inspection.processes.jobType' | translate
-              }}</cds-list-column>
-              <cds-list-column>{{
-                'case.inspection.processes.jobActivity' | translate
-              }}</cds-list-column>
-              <cds-list-column>{{
-                'case.inspection.processes.jobRetries' | translate
-              }}</cds-list-column>
-              <cds-list-column>{{
-                'case.inspection.processes.jobDueDate' | translate
-              }}</cds-list-column>
-              <cds-list-column>{{
-                'case.inspection.processes.jobException' | translate
-              }}</cds-list-column>
+              @for (column of jobColumns; track column) {
+                <cds-list-column>{{ column | translate }}</cds-list-column>
+              }
             </cds-list-header>
 
-            <cds-list-row *ngFor="let job of row.jobs">
-              <cds-list-column>
-                {{ 'case.inspection.processes.jobTypeLabel.' + job.jobType | translate }}
-              </cds-list-column>
-              <cds-list-column>
-                <code *ngIf="job.activityId; else noActivity">{{ job.activityId }}</code>
-                <ng-template #noActivity>—</ng-template>
-              </cds-list-column>
-              <cds-list-column>{{ job.retries }}</cds-list-column>
-              <cds-list-column>{{ job.dueDate | date: 'medium' }}</cds-list-column>
-              <cds-list-column>{{ job.exceptionMessage || '—' }}</cds-list-column>
-            </cds-list-row>
+            @for (job of row.jobs; track job.id) {
+              <cds-list-row>
+                <cds-list-column>
+                  {{ 'case.inspection.processes.jobTypeLabel.' + job.jobType | translate }}
+                </cds-list-column>
+                <cds-list-column>
+                  @if (job.activityId) {
+                    <code>{{ job.activityId }}</code>
+                  } @else {
+                    —
+                  }
+                </cds-list-column>
+                <cds-list-column>{{ job.retries }}</cds-list-column>
+                <cds-list-column>{{ job.dueDate | date: 'medium' }}</cds-list-column>
+                <cds-list-column>{{ job.exceptionMessage || '—' }}</cds-list-column>
+              </cds-list-row>
+            }
           </cds-structured-list>
-        </ng-container>
-
-        <ng-template #noJobs>
+        } @else {
           <p class="case-inspection-process-detail__empty">
             {{ 'case.inspection.processes.noJobs' | translate }}
           </p>
-        </ng-template>
+        }
       </div>
     </cds-tab>
 
@@ -243,10 +214,11 @@
       (selected)="onSelectTab(ProcessDetailTab.DIAGRAM)"
     >
       <div class="case-inspection-process-detail__pane case-inspection-process-detail__diagram">
-        <valtimo-process-diagram
-          *ngIf="$activeTab() === ProcessDetailTab.DIAGRAM"
-          [processInstanceId]="row.processInstanceId"
-        ></valtimo-process-diagram>
+        @if ($activeTab() === ProcessDetailTab.DIAGRAM) {
+          <valtimo-process-diagram
+            [processInstanceId]="row.processInstanceId"
+          ></valtimo-process-diagram>
+        }
       </div>
     </cds-tab>
   </cds-tabs>

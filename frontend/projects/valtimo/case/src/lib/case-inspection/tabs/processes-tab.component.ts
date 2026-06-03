@@ -77,12 +77,17 @@ export class CaseInspectionProcessesTabComponent implements OnChanges {
   }
 
   private load(): void {
+    const requestedDocumentId = this.documentId;
     this.$loading.set(true);
     this.$errorMessage.set(null);
     this.$selected.set(null);
+    this.$rows.set([]);
 
-    this.caseInspectionService.getProcessInspection(this.documentId).subscribe({
+    this.caseInspectionService.getProcessInspection(requestedDocumentId).subscribe({
       next: rows => {
+        if (requestedDocumentId !== this.documentId) {
+          return;
+        }
         this.$rows.set(rows);
         if (rows.length > 0) {
           this.$selected.set(rows[0]);
@@ -90,6 +95,9 @@ export class CaseInspectionProcessesTabComponent implements OnChanges {
         this.$loading.set(false);
       },
       error: err => {
+        if (requestedDocumentId !== this.documentId) {
+          return;
+        }
         this.$errorMessage.set(err?.error?.message ?? err?.message ?? 'Failed to load processes');
         this.$loading.set(false);
       },

@@ -18,4 +18,5 @@
  * Public API Surface of dashboard-management
  */
 
+export * from './lib/constants/dashboard-management.test-ids';
 export * from './lib/dashboard-management.module';

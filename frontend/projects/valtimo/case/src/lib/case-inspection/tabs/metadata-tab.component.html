@@ -15,13 +15,13 @@
   -->
 
 <section class="case-inspection-metadata-tab">
-  <ng-container *ngIf="$loading()">
+  @if ($loading()) {
     <p>{{ 'case.inspection.metadata.loading' | translate }}</p>
-  </ng-container>
+  }
 
-  <ng-container *ngIf="$errorMessage() as message">
+  @if ($errorMessage(); as message) {
     <p class="case-inspection-metadata-tab__error">{{ message }}</p>
-  </ng-container>
+  }
 
   <ng-container *ngIf="$document() as document">
     <dl class="case-inspection-metadata-tab__list">

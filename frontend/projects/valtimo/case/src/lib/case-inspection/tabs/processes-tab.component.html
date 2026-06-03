@@ -29,7 +29,10 @@
     </p>
 
     <div *ngIf="rows.length > 0" class="case-inspection-processes-tab__layout">
-      <nav class="case-inspection-processes-tab__list" aria-label="Process instances">
+      <nav
+        class="case-inspection-processes-tab__list"
+        [attr.aria-label]="'case.inspection.processes.listAriaLabel' | translate"
+      >
         <button
           *ngFor="let row of rows"
           type="button"
