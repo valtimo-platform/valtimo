@@ -34,22 +34,23 @@ import org.everit.json.schema.StringSchema
  * Walks the typed everit [Schema] tree and produces the list of resolvable options.
  */
 @JvmOverloads
-fun Schema.collectResolvableOptions(prefix: String = ""): List<ValueResolverOption> =
-    walkResolvableOptions(prefix, "")
+fun Schema.collectValueResolverOptions(prefix: String = ""): List<ValueResolverOption> =
+    walkValueResolverOptions(prefix, "")
 
-private fun Schema.walkResolvableOptions(prefix: String, path: String): List<ValueResolverOption> {
+private fun Schema.walkValueResolverOptions(prefix: String, path: String): List<ValueResolverOption> {
     return when (this) {
         is ObjectSchema ->
-            propertySchemas.flatMap { (key, sub) -> sub.walkResolvableOptions(prefix, "$path/$key") }
+            propertySchemas.flatMap { (key, sub) -> sub.walkValueResolverOptions(prefix, "$path/$key") }
 
-        is ArraySchema ->
-            listOf(ValueResolverOption("$prefix$path", COLLECTION, allItemSchema?.collectResolvableOptions().orEmpty()))
+        is ArraySchema -> listOf(
+            ValueResolverOption("$prefix$path", COLLECTION, allItemSchema?.collectValueResolverOptions().orEmpty())
+        )
 
         is ReferenceSchema ->
-            referredSchema?.walkResolvableOptions(prefix, path).orEmpty()
+            referredSchema?.walkValueResolverOptions(prefix, path).orEmpty()
 
         is CombinedSchema ->
-            subschemas.flatMap { it.walkResolvableOptions(prefix, path) }.distinctBy { it.path }
+            subschemas.flatMap { it.walkValueResolverOptions(prefix, path) }.distinctBy { it.path }
 
         is StringSchema, is NumberSchema, is BooleanSchema, is EnumSchema, is ConstSchema ->
             listOf(ValueResolverOption("$prefix$path", FIELD))

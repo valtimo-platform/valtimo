@@ -27,7 +27,7 @@ import com.jayway.jsonpath.internal.path.PathCompiler
 import com.ritense.authorization.AuthorizationContext
 import com.ritense.document.config.DocumentProperties
 import com.ritense.document.domain.Document
-import com.ritense.document.domain.collectResolvableOptions
+import com.ritense.document.domain.collectValueResolverOptions
 import com.ritense.document.domain.impl.JsonDocumentContent
 import com.ritense.document.domain.impl.JsonSchemaDocument
 import com.ritense.document.domain.impl.JsonSchemaDocumentDefinition
@@ -235,17 +235,17 @@ class CaseDocumentJsonValueResolverFactory(
 
     override fun getResolvableKeyOptions(caseDefinitionId: CaseDefinitionId): List<ValueResolverOption> {
         val documentDefinition = documentDefinitionService.findByBlueprintId(caseDefinitionId).orElseThrow()
-        return documentDefinition.schema.schema.collectResolvableOptions("$PREFIX:")
+        return documentDefinition.schema.schema.collectValueResolverOptions("$PREFIX:")
     }
 
     override fun getResolvableKeyOptions(caseDefinitionKey: String): List<ValueResolverOption> {
         val documentDefinition = documentDefinitionService.findActiveByName(caseDefinitionKey).orElseThrow()
-        return documentDefinition.schema.schema.collectResolvableOptions("$PREFIX:")
+        return documentDefinition.schema.schema.collectValueResolverOptions("$PREFIX:")
     }
 
     override fun getResolvableKeyOptions(blueprintId: BlueprintId): List<ValueResolverOption> {
         val documentDefinition = documentDefinitionService.findByBlueprintId(blueprintId).orElseThrow()
-        return documentDefinition.schema.schema.collectResolvableOptions("$PREFIX:")
+        return documentDefinition.schema.schema.collectValueResolverOptions("$PREFIX:")
     }
 
     private fun buildJsonPatch(jsonNode: JsonNode, values: Map<String, Any?>) {
