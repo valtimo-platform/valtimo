@@ -93,7 +93,7 @@ export class CaseInspectionProcessVariableModalComponent implements OnChanges {
   }));
 
   public readonly formGroup = this.fb.group({
-    name: this.fb.control('', Validators.required),
+    name: this.fb.control('', [Validators.required, Validators.pattern(/\S/)]),
     type: this.fb.control<ProcessVariableType>('STRING', Validators.required),
     valueText: this.fb.control(''),
     valueNumber: this.fb.control<number | null>(null),

@@ -98,6 +98,9 @@ export class CaseInspectionProcessesTabComponent implements OnChanges {
         const next = rows.find(r => r.processInstanceId === selectedId) ?? rows[0] ?? null;
         this.$selected.set(next);
       },
+      error: err => {
+        this.$errorMessage.set(err?.error?.message ?? err?.message ?? 'Failed to reload processes');
+      },
     });
   }
 
@@ -130,11 +133,15 @@ export class CaseInspectionProcessesTabComponent implements OnChanges {
   }
 
   private loadPermission(): void {
+    this.$canInspectModify.set(false);
     this.permissionService
       .requestPermission(CAN_INSPECT_MODIFY_CASE_PERMISSION, {
         resource: CASE_DETAIL_PERMISSION_RESOURCE.jsonSchemaDocument,
         identifier: this.documentId,
       })
-      .subscribe(allowed => this.$canInspectModify.set(allowed));
+      .subscribe({
+        next: allowed => this.$canInspectModify.set(allowed),
+        error: () => this.$canInspectModify.set(false),
+      });
   }
 }

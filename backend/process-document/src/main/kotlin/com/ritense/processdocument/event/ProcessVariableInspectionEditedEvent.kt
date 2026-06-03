@@ -53,11 +53,11 @@ class ProcessVariableInspectionEditedEvent @JsonCreator constructor(
     fun getMutation(): Mutation = mutation
 
     @JsonProperty
-    @JsonView(AuditView.Public::class)
+    @JsonView(AuditView.Internal::class)
     fun getPreviousValue(): String? = previousValue
 
     @JsonProperty
-    @JsonView(AuditView.Public::class)
+    @JsonView(AuditView.Internal::class)
     fun getNewValue(): String? = newValue
 
     enum class Mutation { CREATE, UPDATE, DELETE }

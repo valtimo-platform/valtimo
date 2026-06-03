@@ -122,14 +122,22 @@ export class CaseInspectionComponent implements OnInit, OnDestroy {
             });
           })
         )
-        .subscribe(allowed => {
-          if (!allowed) {
+        .subscribe({
+          next: allowed => {
+            if (!allowed) {
+              this.$accessDenied.set(true);
+              this.$loading.set(false);
+              this.router.navigate(['/cases']);
+              return;
+            }
+            this.$loading.set(false);
+            this.initBreadcrumbs();
+          },
+          error: () => {
             this.$accessDenied.set(true);
+            this.$loading.set(false);
             this.router.navigate(['/cases']);
-            return;
-          }
-          this.$loading.set(false);
-          this.initBreadcrumbs();
+          },
         })
     );
   }
@@ -164,30 +172,33 @@ export class CaseInspectionComponent implements OnInit, OnDestroy {
   private initBreadcrumbs(): void {
     const documentId = this.$documentId();
     this._subscriptions.add(
-      this.caseInspectionService.getDocument(documentId).pipe(
-        switchMap(inspection => {
-          const caseDefinitionKey = inspection.definitionId.name;
-          return this.documentService.getDocumentDefinition(caseDefinitionKey).pipe(
-            take(1),
-            map(definition => ({
-              caseDefinitionKey,
-              caseDefinitionTitle: definition.schema.title,
-            }))
-          );
+      this.caseInspectionService
+        .getDocument(documentId)
+        .pipe(
+          switchMap(inspection => {
+            const caseDefinitionKey = inspection.definitionId.name;
+            return this.documentService.getDocumentDefinition(caseDefinitionKey).pipe(
+              take(1),
+              map(definition => ({
+                caseDefinitionKey,
+                caseDefinitionTitle: definition.schema.title,
+              }))
+            );
+          })
+        )
+        .subscribe(({caseDefinitionKey, caseDefinitionTitle}) => {
+          const documentId = this.$documentId();
+          this.breadcrumbService.setSecondBreadcrumb({
+            route: [`/cases/${caseDefinitionKey}`],
+            content: caseDefinitionTitle,
+            href: `/cases/${caseDefinitionKey}`,
+          });
+          this.breadcrumbService.setThirdBreadcrumb({
+            route: [`/cases/${caseDefinitionKey}/document/${documentId}`],
+            content: this.translateService.instant('Case details'),
+            href: `/cases/${caseDefinitionKey}/document/${documentId}`,
+          });
         })
-      ).subscribe(({caseDefinitionKey, caseDefinitionTitle}) => {
-        const documentId = this.$documentId();
-        this.breadcrumbService.setSecondBreadcrumb({
-          route: [`/cases/${caseDefinitionKey}`],
-          content: caseDefinitionTitle,
-          href: `/cases/${caseDefinitionKey}`,
-        });
-        this.breadcrumbService.setThirdBreadcrumb({
-          route: [`/cases/${caseDefinitionKey}/document/${documentId}`],
-          content: this.translateService.instant('Case details'),
-          href: `/cases/${caseDefinitionKey}/document/${documentId}`,
-        });
-      })
     );
   }
 

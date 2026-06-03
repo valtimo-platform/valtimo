@@ -107,7 +107,7 @@ class ProcessInspectionResource(
         requireActive(processInstanceId)
 
         val existing = runWithoutAuthorization {
-            runtimeService.getVariable(processInstanceId, request.name())
+            findVariableInstance(processInstanceId, request.name())
         }
         if (existing != null) {
             return ResponseEntity.status(HttpStatus.CONFLICT).build()
@@ -140,8 +140,8 @@ class ProcessInspectionResource(
         requireBelongsToCase(caseId, processInstanceId)
         requireActive(processInstanceId)
 
-        val previous = runWithoutAuthorization {
-            runtimeService.getVariable(processInstanceId, name)
+        val previousInstance = runWithoutAuthorization {
+            findVariableInstance(processInstanceId, name)
         } ?: return ResponseEntity.status(HttpStatus.NOT_FOUND).build()
 
         runWithoutAuthorization {
@@ -153,7 +153,7 @@ class ProcessInspectionResource(
             processInstanceId = processInstanceId,
             variableName = name,
             mutation = ProcessVariableInspectionEditedEvent.Mutation.UPDATE,
-            previousValue = previous,
+            previousValue = previousInstance.value,
             newValue = request.value(),
         )
 
@@ -170,8 +170,8 @@ class ProcessInspectionResource(
         requireBelongsToCase(caseId, processInstanceId)
         requireActive(processInstanceId)
 
-        val previous = runWithoutAuthorization {
-            runtimeService.getVariable(processInstanceId, name)
+        val previousInstance = runWithoutAuthorization {
+            findVariableInstance(processInstanceId, name)
         } ?: return ResponseEntity.status(HttpStatus.NOT_FOUND).build()
 
         runWithoutAuthorization {
@@ -183,7 +183,7 @@ class ProcessInspectionResource(
             processInstanceId = processInstanceId,
             variableName = name,
             mutation = ProcessVariableInspectionEditedEvent.Mutation.DELETE,
-            previousValue = previous,
+            previousValue = previousInstance.value,
             newValue = null,
         )
 
@@ -223,6 +223,12 @@ class ProcessInspectionResource(
             )
         }
     }
+
+    private fun findVariableInstance(processInstanceId: String, name: String) =
+        runtimeService.createVariableInstanceQuery()
+            .processInstanceIdIn(processInstanceId)
+            .variableName(name)
+            .singleResult()
 
     private fun requireActive(processInstanceId: String) {
         val active = runWithoutAuthorization {
