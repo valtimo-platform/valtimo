@@ -26,6 +26,7 @@ import {
   ModifyDocumentRequest,
   ModifyDocumentResult,
   ProcessInstanceInspection,
+  ProcessVariableMutationRequest,
 } from '../models/case-inspection.models';
 
 @Injectable({providedIn: 'root'})
@@ -76,6 +77,39 @@ export class CaseInspectionService {
       `${this._baseUrl}management/v1/case/${caseId}/logs`,
       request,
       {params}
+    );
+  }
+
+  public createProcessVariable(
+    caseId: string,
+    processInstanceId: string,
+    request: ProcessVariableMutationRequest
+  ): Observable<void> {
+    return this.http.post<void>(
+      `${this._baseUrl}management/v1/case/${caseId}/process-instance/${processInstanceId}/variables`,
+      request
+    );
+  }
+
+  public updateProcessVariable(
+    caseId: string,
+    processInstanceId: string,
+    name: string,
+    request: ProcessVariableMutationRequest
+  ): Observable<void> {
+    return this.http.put<void>(
+      `${this._baseUrl}management/v1/case/${caseId}/process-instance/${processInstanceId}/variables/${encodeURIComponent(name)}`,
+      request
+    );
+  }
+
+  public deleteProcessVariable(
+    caseId: string,
+    processInstanceId: string,
+    name: string
+  ): Observable<void> {
+    return this.http.delete<void>(
+      `${this._baseUrl}management/v1/case/${caseId}/process-instance/${processInstanceId}/variables/${encodeURIComponent(name)}`
     );
   }
 }

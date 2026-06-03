@@ -16,79 +16,60 @@
 
 .case-inspection-process-detail {
   &__header {
-    margin-bottom: 1rem;
+    margin-bottom: var(--cds-spacing-05, 1rem);
 
     h3 {
       margin: 0;
 
       small {
         font-weight: 400;
-        opacity: 0.7;
-        margin-left: 0.5rem;
-        font-size: 0.875rem;
+        color: var(--cds-text-helper, #6f6f6f);
+        margin-left: var(--cds-spacing-03, 0.5rem);
+        font-size: var(--cds-body-compact-01-font-size, 0.875rem);
       }
     }
   }
 
   &__tags {
     display: flex;
-    gap: 0.5rem;
+    gap: var(--cds-spacing-03, 0.5rem);
     flex-wrap: wrap;
-    margin-top: 0.5rem;
+    margin-top: var(--cds-spacing-03, 0.5rem);
   }
 
-  &__meta {
-    display: grid;
-    grid-template-columns: max-content 1fr;
-    gap: 0.25rem 1rem;
-    margin: 0.75rem 0 0;
-
-    dt {
-      font-weight: 600;
-      font-size: 0.875rem;
-    }
-
-    dd {
-      margin: 0;
-      font-size: 0.875rem;
-
-      code {
-        word-break: break-all;
-      }
-    }
+  &__meta code {
+    word-break: break-all;
   }
 
   &__subhead {
-    margin: 1.25rem 0 0.5rem;
-    font-size: 0.875rem;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-    opacity: 0.7;
+    margin: var(--cds-spacing-06, 1.25rem) 0 var(--cds-spacing-03, 0.5rem);
+    font-size: var(--cds-body-compact-01-font-size, 0.875rem);
+    font-weight: 600;
+    color: var(--cds-text-secondary, #525252);
+  }
+
+  &__subhead-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--cds-spacing-05, 1rem);
+  }
+
+  &__variable-row {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: var(--cds-spacing-05, 1rem);
+  }
+
+  &__variable-actions {
+    display: flex;
+    flex-shrink: 0;
+    gap: var(--cds-spacing-02, 0.25rem);
   }
 
   &__empty {
-    opacity: 0.7;
-    font-style: italic;
-  }
-
-  &__bb-link {
-    appearance: none;
-    background: transparent;
-    border: 0;
-    padding: 0;
-    cursor: pointer;
-    color: var(--cds-link-primary, #0f62fe);
-    font-family: inherit;
-    font-size: 0.875rem;
-    text-decoration: underline;
-
-    &:hover {
-      color: var(--cds-link-primary-hover, #0043ce);
-    }
-
-    span {
-      margin-left: 0.25rem;
-    }
+    color: var(--cds-text-helper, #6f6f6f);
   }
 
   &__variable-value {
@@ -98,11 +79,12 @@
     overflow: hidden;
     display: -webkit-box;
     -webkit-line-clamp: 4;
+    line-clamp: 4;
     -webkit-box-orient: vertical;
   }
 
   &__pane {
-    padding-top: 1rem;
+    padding-top: var(--cds-spacing-05, 1rem);
   }
 
   &__diagram {

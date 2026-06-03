@@ -248,7 +248,40 @@
         "noJobs": "Geen jobs.",
         "startedBy": "Gestart door",
         "startedOn": "Gestart op",
-        "viewLogs": "Logs bekijken"
+        "viewLogs": "Logs bekijken",
+        "variableActions": {
+          "add": "Variabele toevoegen",
+          "edit": "Bewerken",
+          "delete": "Verwijderen",
+          "deleteConfirmTitle": "Variabele verwijderen",
+          "deleteConfirmContent": "Weet je zeker dat je de variabele '{{name}}' wil verwijderen? Dit heeft effect op het lopende proces.",
+          "createdToast": "Variabele '{{name}}' toegevoegd",
+          "updatedToast": "Variabele '{{name}}' bijgewerkt",
+          "deletedToast": "Variabele '{{name}}' verwijderd",
+          "createFailed": "Toevoegen van variabele mislukt",
+          "updateFailed": "Bijwerken van variabele mislukt",
+          "deleteFailed": "Verwijderen van variabele mislukt",
+          "alreadyExists": "Er bestaat al een variabele met deze naam"
+        },
+        "variableModal": {
+          "addTitle": "Procesvariabele toevoegen",
+          "editTitle": "Procesvariabele bewerken",
+          "name": "Naam",
+          "type": "Type",
+          "value": "Waarde",
+          "invalidJson": "Waarde is geen geldige JSON",
+          "invalidNumber": "Waarde is geen geldig getal",
+          "save": "Opslaan",
+          "cancel": "Annuleren",
+          "types": {
+            "STRING": "Tekst",
+            "INTEGER": "Geheel getal",
+            "LONG": "Long",
+            "DOUBLE": "Decimaal getal",
+            "BOOLEAN": "Boolean",
+            "JSON": "JSON / Object"
+          }
+        }
       },
       "logs": {
         "loading": "Logs laden...",

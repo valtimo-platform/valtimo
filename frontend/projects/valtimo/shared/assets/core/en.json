@@ -245,7 +245,40 @@
         "noJobs": "No jobs.",
         "startedBy": "Started by",
         "startedOn": "Started on",
-        "viewLogs": "View logs"
+        "viewLogs": "View logs",
+        "variableActions": {
+          "add": "Add variable",
+          "edit": "Edit",
+          "delete": "Delete",
+          "deleteConfirmTitle": "Delete variable",
+          "deleteConfirmContent": "Are you sure you want to delete the variable '{{name}}'? This affects the running process.",
+          "createdToast": "Variable '{{name}}' created",
+          "updatedToast": "Variable '{{name}}' updated",
+          "deletedToast": "Variable '{{name}}' deleted",
+          "createFailed": "Failed to create variable",
+          "updateFailed": "Failed to update variable",
+          "deleteFailed": "Failed to delete variable",
+          "alreadyExists": "A variable with this name already exists"
+        },
+        "variableModal": {
+          "addTitle": "Add process variable",
+          "editTitle": "Edit process variable",
+          "name": "Name",
+          "type": "Type",
+          "value": "Value",
+          "invalidJson": "Value is not valid JSON",
+          "invalidNumber": "Value is not a valid number",
+          "save": "Save",
+          "cancel": "Cancel",
+          "types": {
+            "STRING": "String",
+            "INTEGER": "Integer",
+            "LONG": "Long",
+            "DOUBLE": "Double",
+            "BOOLEAN": "Boolean",
+            "JSON": "JSON / Object"
+          }
+        }
       },
       "logs": {
         "loading": "Loading logs...",

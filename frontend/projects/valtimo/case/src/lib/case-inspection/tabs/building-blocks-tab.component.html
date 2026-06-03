@@ -35,14 +35,17 @@
     </p>
 
     <div *ngIf="instances.length > 0" class="case-inspection-bb__layout">
-      <nav
+      <div
         class="case-inspection-bb__list"
+        role="listbox"
         [attr.aria-label]="'case.inspection.buildingBlocks.listAriaLabel' | translate"
       >
         <button
           *ngFor="let instance of instances"
           type="button"
+          role="option"
           class="case-inspection-bb__list-item"
+          [attr.aria-selected]="isSelected(instance)"
           [class.case-inspection-bb__list-item--selected]="isSelected(instance)"
           (click)="onSelect(instance)"
         >
@@ -51,7 +54,7 @@
             {{ instance.definitionVersionTag }}
           </span>
         </button>
-      </nav>
+      </div>
 
       <article class="case-inspection-bb__detail">
         <valtimo-case-inspection-building-block-detail

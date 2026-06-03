@@ -29,24 +29,28 @@
     </p>
 
     <div *ngIf="rows.length > 0" class="case-inspection-processes-tab__layout">
-      <nav
+      <div
         class="case-inspection-processes-tab__list"
+        role="listbox"
         [attr.aria-label]="'case.inspection.processes.listAriaLabel' | translate"
       >
         <button
           *ngFor="let row of rows"
           type="button"
+          role="option"
           class="case-inspection-processes-tab__list-item"
+          [attr.aria-selected]="isSelected(row)"
           [class.case-inspection-processes-tab__list-item--selected]="isSelected(row)"
           (click)="onSelect(row)"
         >
           <span class="case-inspection-processes-tab__list-item-title">
             {{ row.processName || row.processDefinitionKey }}
 
-            <span
+            <cds-tag
               *ngIf="row.buildingBlock as bb"
-              class="case-inspection-processes-tab__list-item-bb"
-              [attr.title]="
+              size="sm"
+              type="purple"
+              [title]="
                 ('case.inspection.processes.buildingBlockTagTooltip' | translate) +
                 ': ' +
                 bb.definitionKey +
@@ -55,7 +59,7 @@
               "
             >
               {{ 'case.inspection.processes.buildingBlockTag' | translate }}
-            </span>
+            </cds-tag>
           </span>
           <span class="case-inspection-processes-tab__list-item-meta">
             <code>{{ row.processInstanceId }}</code>
@@ -91,12 +95,15 @@
             </ng-template>
           </span>
         </button>
-      </nav>
+      </div>
 
       <article class="case-inspection-processes-tab__detail">
         <valtimo-case-inspection-process-detail
           *ngIf="$selected() as selected"
+          [canInspectModify]="$canInspectModify()"
+          [documentId]="documentId"
           [row]="selected"
+          (variablesChangedEvent)="reloadSelected()"
           (viewBuildingBlockEvent)="viewBuildingBlockEvent.emit($event)"
           (viewProcessLogsEvent)="viewProcessLogsEvent.emit($event)"
         ></valtimo-case-inspection-process-detail>

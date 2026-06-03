@@ -20,23 +20,21 @@
   }
 
   &__empty {
-    opacity: 0.7;
-    font-style: italic;
+    color: var(--cds-text-helper, #6f6f6f);
   }
 
   &__layout {
     display: grid;
     grid-template-columns: minmax(260px, 1fr) 3fr;
-    gap: 1.5rem;
+    gap: var(--cds-spacing-06, 1.5rem);
     align-items: stretch;
   }
 
   &__list {
     display: flex;
     flex-direction: column;
-    gap: 0.25rem;
     border-right: 1px solid var(--cds-border-subtle, #e0e0e0);
-    padding-right: 1rem;
+    padding-right: var(--cds-spacing-05, 1rem);
   }
 
   &__list-item {
@@ -44,13 +42,12 @@
     background: transparent;
     border: 0;
     text-align: left;
-    padding: 0.75rem 0.75rem;
+    padding: var(--cds-spacing-04, 0.75rem);
     cursor: pointer;
-    border-radius: 4px;
     display: grid;
     grid-template-columns: 1fr auto;
     grid-template-rows: auto auto;
-    gap: 0.125rem 0.5rem;
+    gap: var(--cds-spacing-01, 0.125rem) var(--cds-spacing-03, 0.5rem);
     color: inherit;
     font-family: inherit;
 
@@ -65,31 +62,17 @@
   }
 
   &__list-item-title {
-    font-size: 0.9375rem;
+    font-size: var(--cds-body-compact-01-font-size, 0.875rem);
     grid-column: 1;
     grid-row: 1;
     display: inline-flex;
     align-items: center;
-    gap: 0.4rem;
-  }
-
-  &__list-item-bb {
-    display: inline-flex;
-    align-items: center;
-    padding: 0 0.4rem;
-    border-radius: 9999px;
-    background-color: var(--cds-tag-background-purple, #e8daff);
-    color: var(--cds-tag-color-purple, #491d8b);
-    font-size: 0.625rem;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-    line-height: 1.4;
+    gap: var(--cds-spacing-03, 0.5rem);
   }
 
   &__list-item-meta {
-    font-size: 0.75rem;
-    opacity: 0.7;
+    font-size: var(--cds-helper-text-01-font-size, 0.75rem);
+    color: var(--cds-text-helper, #6f6f6f);
     grid-column: 1;
     grid-row: 2;
     font-weight: 400;
@@ -109,7 +92,7 @@
   &__row-incident {
     display: inline-flex;
     align-items: center;
-    gap: 0.25rem;
+    gap: var(--cds-spacing-02, 0.25rem);
     color: var(--cds-text-error, #da1e28);
     font-weight: 600;
   }

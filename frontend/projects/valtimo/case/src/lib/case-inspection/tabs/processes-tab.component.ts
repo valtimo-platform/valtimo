@@ -26,14 +26,19 @@ import {
   SimpleChanges,
 } from '@angular/core';
 import {TranslateModule} from '@ngx-translate/core';
+import {PermissionService} from '@valtimo/access-control';
 import {CheckmarkFilled16, CheckmarkOutline16, WarningAltFilled16} from '@carbon/icons';
-import {IconModule, IconService} from 'carbon-components-angular';
+import {IconModule, IconService, TagModule} from 'carbon-components-angular';
 import {CaseInspectionProcessDetailComponent} from './process-detail.component';
 import {CaseInspectionService} from '../services/case-inspection.service';
 import {
   BuildingBlockProcessReference,
   ProcessInstanceInspection,
 } from '../models/case-inspection.models';
+import {
+  CAN_INSPECT_MODIFY_CASE_PERMISSION,
+  CASE_DETAIL_PERMISSION_RESOURCE,
+} from '../../permissions/case-detail.permissions';
 
 @Component({
   standalone: true,
@@ -41,7 +46,13 @@ import {
   templateUrl: './processes-tab.component.html',
   styleUrl: './processes-tab.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, TranslateModule, IconModule, CaseInspectionProcessDetailComponent],
+  imports: [
+    CommonModule,
+    TranslateModule,
+    IconModule,
+    TagModule,
+    CaseInspectionProcessDetailComponent,
+  ],
 })
 export class CaseInspectionProcessesTabComponent implements OnChanges {
   @Input() public documentId!: string;
@@ -54,9 +65,11 @@ export class CaseInspectionProcessesTabComponent implements OnChanges {
   public readonly $rows = signal<ProcessInstanceInspection[]>([]);
   public readonly $errorMessage = signal<string | null>(null);
   public readonly $selected = signal<ProcessInstanceInspection | null>(null);
+  public readonly $canInspectModify = signal<boolean>(false);
 
   constructor(
     private readonly caseInspectionService: CaseInspectionService,
+    private readonly permissionService: PermissionService,
     private readonly iconService: IconService
   ) {
     this.iconService.registerAll([WarningAltFilled16, CheckmarkFilled16, CheckmarkOutline16]);
@@ -65,6 +78,7 @@ export class CaseInspectionProcessesTabComponent implements OnChanges {
   public ngOnChanges(changes: SimpleChanges): void {
     if (changes.documentId && this.documentId) {
       this.load();
+      this.loadPermission();
     }
   }
 
@@ -74,6 +88,17 @@ export class CaseInspectionProcessesTabComponent implements OnChanges {
 
   public isSelected(row: ProcessInstanceInspection): boolean {
     return this.$selected()?.processInstanceId === row.processInstanceId;
+  }
+
+  public reloadSelected(): void {
+    const selectedId = this.$selected()?.processInstanceId;
+    this.caseInspectionService.getProcessInspection(this.documentId).subscribe({
+      next: rows => {
+        this.$rows.set(rows);
+        const next = rows.find(r => r.processInstanceId === selectedId) ?? rows[0] ?? null;
+        this.$selected.set(next);
+      },
+    });
   }
 
   private load(): void {
@@ -102,5 +127,14 @@ export class CaseInspectionProcessesTabComponent implements OnChanges {
         this.$loading.set(false);
       },
     });
+  }
+
+  private loadPermission(): void {
+    this.permissionService
+      .requestPermission(CAN_INSPECT_MODIFY_CASE_PERMISSION, {
+        resource: CASE_DETAIL_PERMISSION_RESOURCE.jsonSchemaDocument,
+        identifier: this.documentId,
+      })
+      .subscribe(allowed => this.$canInspectModify.set(allowed));
   }
 }
