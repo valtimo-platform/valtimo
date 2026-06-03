@@ -4,12 +4,6 @@
 **Release date 03-06-2026**
 {% endhint %}
 
-## New Features
-
-* **New feature title**
-
-  New feature explanation.
-
 ## Enhancements
 
 * **Autocomplete suggestions for form-flow and access-control**
