@@ -28,11 +28,13 @@ import com.ritense.document.service.JsonSchemaDocumentActionProvider
 import com.ritense.logging.LoggableResource
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import com.ritense.valtimo.contract.domain.ValtimoMediaType.APPLICATION_JSON_UTF8_VALUE
+import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
+import org.springframework.web.server.ResponseStatusException
 import java.util.UUID
 
 @RestController
@@ -49,8 +51,13 @@ class BuildingBlockInstanceResource(
         @LoggableResource(resourceType = JsonSchemaDocument::class) @PathVariable caseId: UUID
     ): ResponseEntity<List<BuildingBlockInstanceDto>> {
         val document = runWithoutAuthorization {
-            documentService.findBy(JsonSchemaDocumentId.existingId(caseId)).orElseThrow()
-        } as JsonSchemaDocument
+            documentService.findBy(JsonSchemaDocumentId.existingId(caseId)).orElseThrow {
+                ResponseStatusException(HttpStatus.NOT_FOUND, "Case document not found: $caseId")
+            }
+        } as? JsonSchemaDocument ?: throw ResponseStatusException(
+            HttpStatus.BAD_REQUEST,
+            "Case document is not a JsonSchemaDocument: $caseId"
+        )
 
         authorizationService.requirePermission(
             EntityAuthorizationRequest(

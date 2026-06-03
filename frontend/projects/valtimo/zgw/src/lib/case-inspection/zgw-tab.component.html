@@ -52,6 +52,7 @@
             cdsButton="ghost"
             size="sm"
             [iconOnly]="true"
+            [attr.aria-label]="'case.inspection.zgw.actions.copy' | translate"
             (click)="onCopy(zgw.zaakInstanceLink.zaakInstanceUrl)"
           >
             <svg cdsIcon="copy" size="16"></svg>
@@ -61,6 +62,7 @@
             size="sm"
             target="_blank"
             rel="noopener"
+            [attr.aria-label]="'case.inspection.zgw.actions.openExternal' | translate"
             [href]="zgw.zaakInstanceLink.zaakInstanceUrl"
           >
             <svg cdsIcon="launch" size="16"></svg>
@@ -106,6 +108,7 @@
                 cdsButton="ghost"
                 size="sm"
                 [iconOnly]="true"
+                [attr.aria-label]="'case.inspection.zgw.actions.copy' | translate"
                 (click)="onCopy(zgw.zaakInstanceLink!.zaakInstanceUrl)"
               >
                 <svg cdsIcon="copy" size="16"></svg>
@@ -115,6 +118,7 @@
                 size="sm"
                 target="_blank"
                 rel="noopener"
+                [attr.aria-label]="'case.inspection.zgw.actions.openExternal' | translate"
                 [href]="zgw.zaakInstanceLink!.zaakInstanceUrl"
               >
                 <svg cdsIcon="launch" size="16"></svg>
@@ -140,6 +144,7 @@
                   cdsButton="ghost"
                   size="sm"
                   [iconOnly]="true"
+                  [attr.aria-label]="'case.inspection.zgw.actions.copy' | translate"
                   (click)="onCopy(zgw.zaakInstanceLink!.zaakTypeUrl)"
                 >
                   <svg cdsIcon="copy" size="16"></svg>
@@ -194,6 +199,7 @@
                   cdsButton="ghost"
                   size="sm"
                   [iconOnly]="true"
+                  [attr.aria-label]="'case.inspection.zgw.actions.copy' | translate"
                   (click)="onCopy(resultaat.resultaattype)"
                 >
                   <svg cdsIcon="copy" size="16"></svg>
@@ -229,6 +235,7 @@
                     cdsButton="ghost"
                     size="sm"
                     [iconOnly]="true"
+                    [attr.aria-label]="'case.inspection.zgw.actions.copy' | translate"
                     (click)="onCopy(e.eigenschap)"
                   >
                     <svg cdsIcon="copy" size="16"></svg>
@@ -236,7 +243,7 @@
                 </cds-list-column>
                 <cds-list-column>
                   <code>{{ e.url }}</code>
-                  <button cdsButton="ghost" size="sm" [iconOnly]="true" (click)="onCopy(e.url)">
+                  <button cdsButton="ghost" size="sm" [iconOnly]="true" [attr.aria-label]="'case.inspection.zgw.actions.copy' | translate" (click)="onCopy(e.url)">
                     <svg cdsIcon="copy" size="16"></svg>
                   </button>
                 </cds-list-column>
@@ -279,6 +286,7 @@
                       cdsButton="ghost"
                       size="sm"
                       [iconOnly]="true"
+                      [attr.aria-label]="'case.inspection.zgw.actions.copy' | translate"
                       (click)="onCopy(r.url)"
                     >
                       <svg cdsIcon="copy" size="16"></svg>
@@ -313,6 +321,7 @@
                     cdsButton="ghost"
                     size="sm"
                     [iconOnly]="true"
+                    [attr.aria-label]="'case.inspection.zgw.actions.copy' | translate"
                     (click)="onCopy(s.statustype)"
                   >
                     <svg cdsIcon="copy" size="16"></svg>
@@ -342,6 +351,7 @@
                       cdsButton="ghost"
                       size="sm"
                       [iconOnly]="true"
+                      [attr.aria-label]="'case.inspection.zgw.actions.copy' | translate"
                       (click)="onCopy(o.objectUrl)"
                     >
                       <svg cdsIcon="copy" size="16"></svg>
@@ -430,6 +440,7 @@
                     cdsButton="ghost"
                     size="sm"
                     [iconOnly]="true"
+                    [attr.aria-label]="'case.inspection.zgw.actions.copy' | translate"
                     (click)="onCopy(z.informatieobject)"
                   >
                     <svg cdsIcon="copy" size="16"></svg>
@@ -460,6 +471,7 @@
                     cdsButton="ghost"
                     size="sm"
                     [iconOnly]="true"
+                    [attr.aria-label]="'case.inspection.zgw.actions.copy' | translate"
                     (click)="onCopy(b.besluit)"
                   >
                     <svg cdsIcon="copy" size="16"></svg>
@@ -511,6 +523,7 @@
                   cdsButton="ghost"
                   size="sm"
                   [iconOnly]="true"
+                  [attr.aria-label]="'case.inspection.zgw.actions.copy' | translate"
                   (click)="onCopy(zo.objectUrl)"
                 >
                   <svg cdsIcon="copy" size="16"></svg>

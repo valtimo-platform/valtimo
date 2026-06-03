@@ -107,7 +107,6 @@ interface ZaakdetailsObjectDto {
 interface CaseZaakdetailsInspectionDto {
   syncConfig: ZaakdetailsSyncConfigDto | null;
   zaakdetailsObject: ZaakdetailsObjectDto | null;
-  warnings: string[];
 }
 
 interface ZaakdetailsObjectContentDto {

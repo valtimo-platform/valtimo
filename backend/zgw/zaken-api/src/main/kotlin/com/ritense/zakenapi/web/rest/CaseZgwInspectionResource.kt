@@ -38,6 +38,7 @@ import com.ritense.zakenapi.domain.ZaakStatus
 import com.ritense.zakenapi.domain.ZaakbesluitResponse
 import com.ritense.zakenapi.domain.ZaakeigenschapResponse
 import com.ritense.zakenapi.domain.rol.Rol
+import com.ritense.zakenapi.link.ZaakInstanceLinkNotFoundException
 import com.ritense.zakenapi.link.ZaakInstanceLinkService
 import com.ritense.zakenapi.web.rest.dto.CaseZgwInspectionDto
 import com.ritense.zakenapi.web.rest.dto.ZaakBesluitDto
@@ -48,6 +49,7 @@ import com.ritense.zakenapi.web.rest.dto.ZaakObjectDto
 import com.ritense.zakenapi.web.rest.dto.ZaakResultaatDto
 import com.ritense.zakenapi.web.rest.dto.ZaakRolDto
 import com.ritense.zakenapi.web.rest.dto.ZaakStatusDto
+import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.http.ResponseEntity
 import org.springframework.transaction.annotation.Transactional
 import org.springframework.web.bind.annotation.GetMapping
@@ -94,8 +96,11 @@ class CaseZgwInspectionResource(
     private fun buildInspectionDto(caseId: UUID): CaseZgwInspectionDto {
         val warnings = mutableListOf<String>()
 
-        val link = runCatching { zaakInstanceLinkService.getByDocumentId(caseId) }.getOrNull()
-            ?: return emptyInspection()
+        val link = try {
+            zaakInstanceLinkService.getByDocumentId(caseId)
+        } catch (e: ZaakInstanceLinkNotFoundException) {
+            return emptyInspection()
+        }
 
         val plugin = pluginService.createInstance(
             ZakenApiPlugin::class.java,
@@ -181,7 +186,8 @@ class CaseZgwInspectionResource(
     ): T? = try {
         block()
     } catch (e: Exception) {
-        warnings += "$name: ${e.message ?: e.javaClass.simpleName}"
+        logger.warn(e) { "Failed to load ZGW inspection section: $name" }
+        warnings += "$name: failed to load"
         null
     }
 
@@ -240,4 +246,8 @@ class CaseZgwInspectionResource(
         url = url,
         besluit = besluit,
     )
+
+    companion object {
+        private val logger = KotlinLogging.logger {}
+    }
 }

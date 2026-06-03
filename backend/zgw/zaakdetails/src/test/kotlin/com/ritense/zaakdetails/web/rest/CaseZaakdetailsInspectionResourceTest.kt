@@ -154,7 +154,6 @@ class CaseZaakdetailsInspectionResourceTest {
         assertEquals(caseId, body.zaakdetailsObject!!.documentId)
         assertEquals(objectUrl, body.zaakdetailsObject.objectUrl)
         assertTrue(body.zaakdetailsObject.linkedToZaak)
-        assertTrue(body.warnings.isEmpty())
     }
 
     @Test
@@ -166,20 +165,6 @@ class CaseZaakdetailsInspectionResourceTest {
 
         assertNull(body.syncConfig)
         assertNull(body.zaakdetailsObject)
-        assertTrue(body.warnings.isEmpty())
-    }
-
-    @Test
-    fun `should add warning if syncConfig lookup throws`() {
-        whenever(documentObjectenApiSyncManagementService.getSyncConfiguration(caseDefinitionId))
-            .thenThrow(RuntimeException("db unavailable"))
-        whenever(zaakdetailsObjectService.findByDocumentId(caseId)).thenReturn(Optional.empty())
-
-        val body = resource.getZaakdetailsInspection(caseId).body!!
-
-        assertNull(body.syncConfig)
-        assertEquals(1, body.warnings.size)
-        assertTrue(body.warnings.single().startsWith("syncConfig:"))
     }
 
     // ---------- getZaakdetailsObjectContent ----------

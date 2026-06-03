@@ -23,7 +23,6 @@ import java.util.UUID
 data class CaseZaakdetailsInspectionDto(
     val syncConfig: ZaakdetailsSyncConfigDto?,
     val zaakdetailsObject: ZaakdetailsObjectDto?,
-    val warnings: List<String>,
 )
 
 data class ZaakdetailsSyncConfigDto(

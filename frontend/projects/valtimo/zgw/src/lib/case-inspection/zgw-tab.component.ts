@@ -123,18 +123,34 @@ export class CaseInspectionZgwTabComponent implements OnChanges {
 
   public onResolveZaakobject(objectUrl: string): void {
     this.$resolvedObjects.update(current => ({...current, [objectUrl]: 'loading'}));
-    this.zgwCaseInspectionService
-      .resolveZaakobjectContent(this.documentId, objectUrl)
-      .subscribe(result => {
+    this.zgwCaseInspectionService.resolveZaakobjectContent(this.documentId, objectUrl).subscribe({
+      next: result => {
         this.$resolvedObjects.update(current => ({...current, [objectUrl]: result}));
-      });
+      },
+      error: err => {
+        this.$resolvedObjects.update(current => {
+          const copy = {...current};
+          delete copy[objectUrl];
+          return copy;
+        });
+        this.$errorMessage.set(
+          err?.error?.message ?? err?.message ?? 'Failed to resolve zaakobject'
+        );
+      },
+    });
   }
 
   public onResolveZaakdetailsContent(): void {
     this.$zaakdetailsContent.set('loading');
-    this.zgwCaseInspectionService
-      .getZaakdetailsObjectContent(this.documentId)
-      .subscribe(result => this.$zaakdetailsContent.set(result));
+    this.zgwCaseInspectionService.getZaakdetailsObjectContent(this.documentId).subscribe({
+      next: result => this.$zaakdetailsContent.set(result),
+      error: err => {
+        this.$zaakdetailsContent.set(null);
+        this.$errorMessage.set(
+          err?.error?.message ?? err?.message ?? 'Failed to load zaakdetails content'
+        );
+      },
+    });
   }
 
   public objectResolveState(
@@ -144,16 +160,24 @@ export class CaseInspectionZgwTabComponent implements OnChanges {
   }
 
   private load(): void {
+    const requestedDocumentId = this.documentId;
     this.$loading.set(true);
     this.$errorMessage.set(null);
+    this.$zgw.set(null);
+    this.$zaakdetails.set(null);
+    this.$resolvedObjects.set({});
+    this.$zaakdetailsContent.set(null);
 
     forkJoin({
-      zgw: this.zgwCaseInspectionService.getZgwInspection(this.documentId),
+      zgw: this.zgwCaseInspectionService.getZgwInspection(requestedDocumentId),
       zaakdetails: this.zgwCaseInspectionService
-        .getZaakdetailsInspection(this.documentId)
+        .getZaakdetailsInspection(requestedDocumentId)
         .pipe(catchError(() => of<CaseZaakdetailsInspectionDto | null>(null))),
     }).subscribe({
       next: ({zgw, zaakdetails}) => {
+        if (requestedDocumentId !== this.documentId) {
+          return;
+        }
         this.$zgw.set(zgw);
         this.$zaakdetails.set(zaakdetails);
         this.$showZaakdetails.set(
@@ -162,6 +186,9 @@ export class CaseInspectionZgwTabComponent implements OnChanges {
         this.$loading.set(false);
       },
       error: err => {
+        if (requestedDocumentId !== this.documentId) {
+          return;
+        }
         this.$errorMessage.set(err?.error?.message ?? err?.message ?? 'Failed to load ZGW data');
         this.$loading.set(false);
       },

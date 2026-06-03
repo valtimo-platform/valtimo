@@ -39,6 +39,7 @@ import com.ritense.zaakdetails.web.rest.dto.ZaakdetailsObjectContentDto
 import com.ritense.zaakdetails.web.rest.dto.ZaakdetailsObjectDto
 import com.ritense.zaakdetails.web.rest.dto.ZaakdetailsSyncConfigDto
 import com.ritense.zakenapi.web.rest.dto.ZaakobjectResolveResultDto
+import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.http.ResponseEntity
 import org.springframework.transaction.annotation.Transactional
 import org.springframework.web.bind.annotation.GetMapping
@@ -68,16 +69,10 @@ class CaseZaakdetailsInspectionResource(
         @LoggableResource(resourceType = JsonSchemaDocument::class) @PathVariable caseId: UUID,
     ): ResponseEntity<CaseZaakdetailsInspectionDto> {
         val document = loadDocumentAndCheckPermission(caseId)
-        val warnings = mutableListOf<String>()
 
-        val syncConfig = runCatching {
-            documentObjectenApiSyncManagementService.getSyncConfiguration(
-                document.definitionId().caseDefinitionId()
-            )
-        }.getOrElse {
-            warnings += "syncConfig: ${it.message ?: it.javaClass.simpleName}"
-            null
-        }
+        val syncConfig = documentObjectenApiSyncManagementService.getSyncConfiguration(
+            document.definitionId().caseDefinitionId()
+        )
 
         val zaakdetailsObject = zaakdetailsObjectService.findByDocumentId(caseId).orElse(null)
 
@@ -85,7 +80,6 @@ class CaseZaakdetailsInspectionResource(
             CaseZaakdetailsInspectionDto(
                 syncConfig = syncConfig?.toDto(),
                 zaakdetailsObject = zaakdetailsObject?.toDto(),
-                warnings = warnings,
             )
         )
     }
@@ -130,10 +124,11 @@ class CaseZaakdetailsInspectionResource(
                     )
                 }
                 .getOrElse { error ->
+                    logger.warn(error) { "Failed to resolve zaakdetails object at $objectUrl" }
                     ZaakdetailsObjectContentDto(
                         resolved = false,
                         record = null,
-                        message = "Failed to resolve object: ${error.message ?: error.javaClass.simpleName}",
+                        message = "Failed to resolve object",
                         objectUrl = objectUrl,
                     )
                 }
@@ -171,10 +166,11 @@ class CaseZaakdetailsInspectionResource(
                     )
                 }
                 .getOrElse { error ->
+                    logger.warn(error) { "Failed to resolve zaakobject at $objectUrl" }
                     ZaakobjectResolveResultDto(
                         resolved = false,
                         record = null,
-                        message = "Failed to resolve object: ${error.message ?: error.javaClass.simpleName}",
+                        message = "Failed to resolve object",
                         objectUrl = objectUrl,
                     )
                 }
@@ -212,4 +208,8 @@ class CaseZaakdetailsInspectionResource(
         objectUrl = objectURI,
         linkedToZaak = linkedToZaak,
     )
+
+    companion object {
+        private val logger = KotlinLogging.logger {}
+    }
 }
