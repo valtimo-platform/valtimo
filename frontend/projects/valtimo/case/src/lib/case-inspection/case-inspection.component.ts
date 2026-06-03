@@ -14,8 +14,17 @@
  * limitations under the License.
  */
 
-import {CommonModule} from '@angular/common';
-import {ChangeDetectionStrategy, Component, OnDestroy, OnInit, signal} from '@angular/core';
+import {CommonModule, NgComponentOutlet} from '@angular/common';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  Inject,
+  OnDestroy,
+  OnInit,
+  Optional,
+  signal,
+  Type,
+} from '@angular/core';
 import {ActivatedRoute, ParamMap, Router} from '@angular/router';
 import {TranslateModule, TranslateService} from '@ngx-translate/core';
 import {PermissionService} from '@valtimo/access-control';
@@ -35,6 +44,10 @@ import {CaseInspectionProcessesTabComponent} from './tabs/processes-tab.componen
 import {BuildingBlockProcessReference} from './models/case-inspection.models';
 import {CaseInspectionTab} from './case-inspection-tab.enum';
 import {CaseInspectionService} from './services/case-inspection.service';
+import {
+  ZGW_CASE_INSPECTION_TAB_TOKEN,
+  ZgwCaseInspectionTabComponent,
+} from './case-inspection.tokens';
 
 @Component({
   standalone: true,
@@ -43,6 +56,7 @@ import {CaseInspectionService} from './services/case-inspection.service';
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     CommonModule,
+    NgComponentOutlet,
     TranslateModule,
     TabsModule,
     CaseInspectionDocumentTabComponent,
@@ -62,9 +76,13 @@ export class CaseInspectionComponent implements OnInit, OnDestroy {
 
   public readonly CaseInspectionTab = CaseInspectionTab;
 
-  private readonly _validTabs: readonly CaseInspectionTab[] = Object.values(CaseInspectionTab);
-
   private readonly _subscriptions = new Subscription();
+
+  private get _validTabs(): readonly CaseInspectionTab[] {
+    return this.zgwTabComponent
+      ? Object.values(CaseInspectionTab)
+      : Object.values(CaseInspectionTab).filter(tab => tab !== CaseInspectionTab.ZGW);
+  }
 
   constructor(
     private readonly route: ActivatedRoute,
@@ -74,7 +92,10 @@ export class CaseInspectionComponent implements OnInit, OnDestroy {
     private readonly translateService: TranslateService,
     private readonly breadcrumbService: BreadcrumbService,
     private readonly documentService: DocumentService,
-    private readonly caseInspectionService: CaseInspectionService
+    private readonly caseInspectionService: CaseInspectionService,
+    @Optional()
+    @Inject(ZGW_CASE_INSPECTION_TAB_TOKEN)
+    public readonly zgwTabComponent: Type<ZgwCaseInspectionTabComponent> | null
   ) {}
 
   public ngOnInit(): void {

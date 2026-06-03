@@ -1,0 +1,579 @@
+<!--
+  ~ Copyright 2015-2026 Ritense BV, the Netherlands.
+  ~
+  ~ Licensed under EUPL, Version 1.2 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~ https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" basis,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<section class="case-inspection-zgw-tab">
+  <ng-container *ngIf="$loading()">
+    <p>{{ 'case.inspection.zgw.loading' | translate }}</p>
+  </ng-container>
+
+  <ng-container *ngIf="$errorMessage() as message">
+    <p class="case-inspection-zgw-tab__error">{{ message }}</p>
+  </ng-container>
+
+  <ng-container *ngIf="!$loading() && $zgw() as zgw">
+    <!-- State 1: case is not linked to a zaak (neutral info) -->
+    <ng-container *ngIf="!zgw.zaakInstanceLink">
+      <p class="case-inspection-zgw-tab__empty">
+        {{ 'case.inspection.zgw.empty' | translate }}
+      </p>
+    </ng-container>
+
+    <!-- State 2: link present but zaak could not be loaded (error notification) -->
+    <ng-container *ngIf="zgw.zaakInstanceLink && !zgw.zaak">
+      <cds-inline-notification
+        class="case-inspection-zgw-tab__warnings"
+        [notificationObj]="{
+          type: 'error',
+          title: 'case.inspection.zgw.zaakUnreachable.title' | translate,
+          message: 'case.inspection.zgw.zaakUnreachable.message' | translate,
+          showClose: false,
+          lowContrast: true
+        }"
+      ></cds-inline-notification>
+
+      <dl class="case-inspection-zgw-tab__list">
+        <dt>{{ 'case.inspection.zgw.zaak.url' | translate }}</dt>
+        <dd>
+          <code>{{ zgw.zaakInstanceLink.zaakInstanceUrl }}</code>
+          <button
+            cdsButton="ghost"
+            size="sm"
+            [iconOnly]="true"
+            (click)="onCopy(zgw.zaakInstanceLink.zaakInstanceUrl)"
+          >
+            <svg cdsIcon="copy" size="16"></svg>
+          </button>
+          <a
+            cdsButton="ghost"
+            size="sm"
+            target="_blank"
+            rel="noopener"
+            [href]="zgw.zaakInstanceLink.zaakInstanceUrl"
+          >
+            <svg cdsIcon="launch" size="16"></svg>
+          </a>
+        </dd>
+
+        <ng-container *ngIf="zgw.warnings.length">
+          <dt>{{ 'case.inspection.zgw.zaakUnreachable.details' | translate }}</dt>
+          <dd>
+            <ul class="case-inspection-zgw-tab__warning-list">
+              <li *ngFor="let w of zgw.warnings">{{ w }}</li>
+            </ul>
+          </dd>
+        </ng-container>
+      </dl>
+    </ng-container>
+
+    <!-- State 3: link + zaak loaded (full accordion) -->
+    <ng-container *ngIf="zgw.zaakInstanceLink && zgw.zaak">
+      <cds-inline-notification
+        *ngIf="zgw.warnings.length"
+        class="case-inspection-zgw-tab__warnings"
+        [notificationObj]="{
+          type: 'warning',
+          title: 'case.inspection.zgw.warnings.title' | translate,
+          message: zgw.warnings.join(' • '),
+          showClose: false,
+          lowContrast: true
+        }"
+      ></cds-inline-notification>
+
+      <cds-accordion align="start" size="sm">
+        <!-- Zaak header -->
+        <cds-accordion-item
+          [title]="'case.inspection.zgw.zaak.title' | translate"
+          [expanded]="true"
+        >
+          <dl class="case-inspection-zgw-tab__list">
+            <dt>{{ 'case.inspection.zgw.zaak.url' | translate }}</dt>
+            <dd>
+              <code>{{ zgw.zaakInstanceLink!.zaakInstanceUrl }}</code>
+              <button
+                cdsButton="ghost"
+                size="sm"
+                [iconOnly]="true"
+                (click)="onCopy(zgw.zaakInstanceLink!.zaakInstanceUrl)"
+              >
+                <svg cdsIcon="copy" size="16"></svg>
+              </button>
+              <a
+                cdsButton="ghost"
+                size="sm"
+                target="_blank"
+                rel="noopener"
+                [href]="zgw.zaakInstanceLink!.zaakInstanceUrl"
+              >
+                <svg cdsIcon="launch" size="16"></svg>
+              </a>
+            </dd>
+
+            <dt>{{ 'case.inspection.zgw.zaak.uuid' | translate }}</dt>
+            <dd>
+              <code>{{ zgw.zaakInstanceLink!.zaakInstanceId }}</code>
+            </dd>
+
+            <ng-container *ngIf="zgw.zaak as zaakBody">
+              <dt>{{ 'case.inspection.zgw.zaak.identificatie' | translate }}</dt>
+              <dd>{{ zaakBody.identificatie || '-' }}</dd>
+
+              <dt>{{ 'case.inspection.zgw.zaak.bronorganisatie' | translate }}</dt>
+              <dd>{{ zaakBody.bronorganisatie || '-' }}</dd>
+
+              <dt>{{ 'case.inspection.zgw.zaak.zaaktype' | translate }}</dt>
+              <dd>
+                <code>{{ zgw.zaakInstanceLink!.zaakTypeUrl }}</code>
+                <button
+                  cdsButton="ghost"
+                  size="sm"
+                  [iconOnly]="true"
+                  (click)="onCopy(zgw.zaakInstanceLink!.zaakTypeUrl)"
+                >
+                  <svg cdsIcon="copy" size="16"></svg>
+                </button>
+              </dd>
+
+              <dt>{{ 'case.inspection.zgw.zaak.registratiedatum' | translate }}</dt>
+              <dd>{{ zaakBody.registratiedatum || '-' }}</dd>
+
+              <dt>{{ 'case.inspection.zgw.zaak.startdatum' | translate }}</dt>
+              <dd>{{ zaakBody.startdatum || '-' }}</dd>
+
+              <dt>{{ 'case.inspection.zgw.zaak.einddatum' | translate }}</dt>
+              <dd>{{ zaakBody.einddatum || '-' }}</dd>
+
+              <dt>{{ 'case.inspection.zgw.zaak.einddatumGepland' | translate }}</dt>
+              <dd>{{ zaakBody.einddatumGepland || '-' }}</dd>
+
+              <dt>{{ 'case.inspection.zgw.zaak.uiterlijkeEinddatumAfdoening' | translate }}</dt>
+              <dd>{{ zaakBody.uiterlijkeEinddatumAfdoening || '-' }}</dd>
+
+              <dt>{{ 'case.inspection.zgw.zaak.vertrouwelijkheidaanduiding' | translate }}</dt>
+              <dd>
+                <cds-tag *ngIf="zaakBody.vertrouwelijkheidaanduiding" size="sm" type="cool-gray">
+                  {{ zaakBody.vertrouwelijkheidaanduiding }}
+                </cds-tag>
+                <span *ngIf="!zaakBody.vertrouwelijkheidaanduiding">-</span>
+              </dd>
+
+              <dt>{{ 'case.inspection.zgw.zaak.archiefstatus' | translate }}</dt>
+              <dd>
+                <cds-tag *ngIf="zaakBody.archiefstatus" size="sm" type="cool-gray">
+                  {{ zaakBody.archiefstatus }}
+                </cds-tag>
+                <span *ngIf="!zaakBody.archiefstatus">-</span>
+              </dd>
+
+              <dt>{{ 'case.inspection.zgw.zaak.betalingsindicatie' | translate }}</dt>
+              <dd>
+                <cds-tag *ngIf="zaakBody.betalingsindicatie" size="sm" type="cool-gray">
+                  {{ zaakBody.betalingsindicatie }}
+                </cds-tag>
+                <span *ngIf="!zaakBody.betalingsindicatie">-</span>
+              </dd>
+            </ng-container>
+
+            <dt>{{ 'case.inspection.zgw.zaak.currentResultaat' | translate }}</dt>
+            <dd>
+              <ng-container *ngIf="zgw.resultaat as resultaat; else noResultaat">
+                <code>{{ resultaat.resultaattype }}</code>
+                <button
+                  cdsButton="ghost"
+                  size="sm"
+                  [iconOnly]="true"
+                  (click)="onCopy(resultaat.resultaattype)"
+                >
+                  <svg cdsIcon="copy" size="16"></svg>
+                </button>
+                <span *ngIf="resultaat.toelichting">— {{ resultaat.toelichting }}</span>
+              </ng-container>
+              <ng-template #noResultaat>
+                <span class="case-inspection-zgw-tab__empty">
+                  {{ 'case.inspection.zgw.zaak.noResultaat' | translate }}
+                </span>
+              </ng-template>
+            </dd>
+          </dl>
+        </cds-accordion-item>
+
+        <!-- Eigenschappen -->
+        <cds-accordion-item [title]="'case.inspection.zgw.eigenschappen.title' | translate">
+          <ng-container *ngIf="zgw.eigenschappen.length; else noEigenschappen">
+            <cds-structured-list [condensed]="true">
+              <cds-list-header>
+                <cds-list-column>{{ 'case.inspection.zgw.eigenschappen.naam' | translate }}</cds-list-column>
+                <cds-list-column>{{ 'case.inspection.zgw.eigenschappen.waarde' | translate }}</cds-list-column>
+                <cds-list-column>{{ 'case.inspection.zgw.eigenschappen.eigenschapUrl' | translate }}</cds-list-column>
+                <cds-list-column>{{ 'case.inspection.zgw.eigenschappen.zaakeigenschapUrl' | translate }}</cds-list-column>
+              </cds-list-header>
+
+              <cds-list-row *ngFor="let e of zgw.eigenschappen">
+                <cds-list-column>{{ e.naam || '-' }}</cds-list-column>
+                <cds-list-column>{{ e.waarde }}</cds-list-column>
+                <cds-list-column>
+                  <code>{{ e.eigenschap }}</code>
+                  <button
+                    cdsButton="ghost"
+                    size="sm"
+                    [iconOnly]="true"
+                    (click)="onCopy(e.eigenschap)"
+                  >
+                    <svg cdsIcon="copy" size="16"></svg>
+                  </button>
+                </cds-list-column>
+                <cds-list-column>
+                  <code>{{ e.url }}</code>
+                  <button cdsButton="ghost" size="sm" [iconOnly]="true" (click)="onCopy(e.url)">
+                    <svg cdsIcon="copy" size="16"></svg>
+                  </button>
+                </cds-list-column>
+              </cds-list-row>
+            </cds-structured-list>
+          </ng-container>
+          <ng-template #noEigenschappen>
+            <p class="case-inspection-zgw-tab__empty">
+              {{ 'case.inspection.zgw.eigenschappen.empty' | translate }}
+            </p>
+          </ng-template>
+        </cds-accordion-item>
+
+        <!-- Rollen -->
+        <cds-accordion-item [title]="'case.inspection.zgw.rollen.title' | translate">
+          <ng-container *ngIf="zgw.rollen.length; else noRollen">
+            <cds-structured-list [condensed]="true">
+              <cds-list-header>
+                <cds-list-column>{{ 'case.inspection.zgw.rollen.betrokkeneType' | translate }}</cds-list-column>
+                <cds-list-column>{{ 'case.inspection.zgw.rollen.roltype' | translate }}</cds-list-column>
+                <cds-list-column>{{ 'case.inspection.zgw.rollen.identificatie' | translate }}</cds-list-column>
+                <cds-list-column>{{ 'case.inspection.zgw.rollen.indicatieMachtiging' | translate }}</cds-list-column>
+                <cds-list-column>{{ 'case.inspection.zgw.rollen.url' | translate }}</cds-list-column>
+              </cds-list-header>
+
+              <cds-list-row *ngFor="let r of zgw.rollen">
+                <cds-list-column>{{ r.betrokkeneType }}</cds-list-column>
+                <cds-list-column>{{ r.omschrijving || r.omschrijvingGeneriek || '-' }}</cds-list-column>
+                <cds-list-column>
+                  <code *ngIf="r.betrokkeneIdentificatie">
+                    {{ r.betrokkeneIdentificatie | json }}
+                  </code>
+                  <span *ngIf="!r.betrokkeneIdentificatie">-</span>
+                </cds-list-column>
+                <cds-list-column>{{ r.indicatieMachtiging || '-' }}</cds-list-column>
+                <cds-list-column>
+                  <ng-container *ngIf="r.url">
+                    <code>{{ r.url }}</code>
+                    <button
+                      cdsButton="ghost"
+                      size="sm"
+                      [iconOnly]="true"
+                      (click)="onCopy(r.url)"
+                    >
+                      <svg cdsIcon="copy" size="16"></svg>
+                    </button>
+                  </ng-container>
+                </cds-list-column>
+              </cds-list-row>
+            </cds-structured-list>
+          </ng-container>
+          <ng-template #noRollen>
+            <p class="case-inspection-zgw-tab__empty">
+              {{ 'case.inspection.zgw.rollen.empty' | translate }}
+            </p>
+          </ng-template>
+        </cds-accordion-item>
+
+        <!-- Status history -->
+        <cds-accordion-item [title]="'case.inspection.zgw.statusHistory.title' | translate">
+          <ng-container *ngIf="zgw.statusHistory.length; else noStatuses">
+            <cds-structured-list [condensed]="true">
+              <cds-list-header>
+                <cds-list-column>{{ 'case.inspection.zgw.statusHistory.datumStatusGezet' | translate }}</cds-list-column>
+                <cds-list-column>{{ 'case.inspection.zgw.statusHistory.statustype' | translate }}</cds-list-column>
+                <cds-list-column>{{ 'case.inspection.zgw.statusHistory.statustoelichting' | translate }}</cds-list-column>
+              </cds-list-header>
+
+              <cds-list-row *ngFor="let s of zgw.statusHistory">
+                <cds-list-column>{{ s.datumStatusGezet | date: 'medium' }}</cds-list-column>
+                <cds-list-column>
+                  <code>{{ s.statustype }}</code>
+                  <button
+                    cdsButton="ghost"
+                    size="sm"
+                    [iconOnly]="true"
+                    (click)="onCopy(s.statustype)"
+                  >
+                    <svg cdsIcon="copy" size="16"></svg>
+                  </button>
+                </cds-list-column>
+                <cds-list-column>{{ s.statustoelichting || '-' }}</cds-list-column>
+              </cds-list-row>
+            </cds-structured-list>
+          </ng-container>
+          <ng-template #noStatuses>
+            <p class="case-inspection-zgw-tab__empty">
+              {{ 'case.inspection.zgw.statusHistory.empty' | translate }}
+            </p>
+          </ng-template>
+        </cds-accordion-item>
+
+        <!-- Zaakobjecten -->
+        <cds-accordion-item [title]="'case.inspection.zgw.zaakobjecten.title' | translate">
+          <ng-container *ngIf="zgw.zaakObjecten.length; else noZaakObjecten">
+            <ul class="case-inspection-zgw-tab__cards">
+              <li *ngFor="let o of zgw.zaakObjecten" class="case-inspection-zgw-tab__card">
+                <dl>
+                  <dt>{{ 'case.inspection.zgw.zaakobjecten.objectUrl' | translate }}</dt>
+                  <dd>
+                    <code>{{ o.objectUrl }}</code>
+                    <button
+                      cdsButton="ghost"
+                      size="sm"
+                      [iconOnly]="true"
+                      (click)="onCopy(o.objectUrl)"
+                    >
+                      <svg cdsIcon="copy" size="16"></svg>
+                    </button>
+                  </dd>
+
+                  <dt>{{ 'case.inspection.zgw.zaakobjecten.objectType' | translate }}</dt>
+                  <dd>{{ o.objectTypeOverige || o.objectType }}</dd>
+
+                  <dt
+                    *ngIf="o.relatieomschrijving"
+                  >{{ 'case.inspection.zgw.zaakobjecten.relatieomschrijving' | translate }}</dt>
+                  <dd *ngIf="o.relatieomschrijving">{{ o.relatieomschrijving }}</dd>
+                </dl>
+
+                <ng-container [ngSwitch]="objectResolveState(o.objectUrl)">
+                  <button
+                    *ngSwitchCase="undefined"
+                    cdsButton="tertiary"
+                    size="sm"
+                    (click)="onResolveZaakobject(o.objectUrl)"
+                  >
+                    {{ 'case.inspection.zgw.actions.resolveContent' | translate }}
+                  </button>
+                  <p *ngSwitchCase="'loading'">
+                    {{ 'case.inspection.zgw.zaakobjecten.resolveLoading' | translate }}
+                  </p>
+                </ng-container>
+
+                <ng-container
+                  *ngIf="
+                    objectResolveState(o.objectUrl) !== undefined &&
+                    objectResolveState(o.objectUrl) !== 'loading'
+                  "
+                >
+                  <ng-container *ngIf="$resolvedObjects()[o.objectUrl] as resolved">
+                    <ng-container *ngIf="resolved !== 'loading'">
+                      <cds-inline-notification
+                        *ngIf="!resolved.resolved"
+                        [notificationObj]="{
+                          type: 'info',
+                          title: 'case.inspection.zgw.zaakobjecten.notResolved' | translate,
+                          message: resolved.message,
+                          showClose: false,
+                          lowContrast: true
+                        }"
+                      ></cds-inline-notification>
+
+                      <valtimo-json-editor
+                        *ngIf="resolved.resolved && $resolvedRecordModels()[o.objectUrl] as model"
+                        [model]="model"
+                        [showEditButton]="false"
+                        [heightPx]="320"
+                      ></valtimo-json-editor>
+                    </ng-container>
+                  </ng-container>
+                </ng-container>
+              </li>
+            </ul>
+          </ng-container>
+          <ng-template #noZaakObjecten>
+            <p class="case-inspection-zgw-tab__empty">
+              {{ 'case.inspection.zgw.zaakobjecten.empty' | translate }}
+            </p>
+          </ng-template>
+        </cds-accordion-item>
+
+        <!-- Zaakinformatieobjecten -->
+        <cds-accordion-item
+          [title]="'case.inspection.zgw.zaakinformatieobjecten.title' | translate"
+        >
+          <ng-container *ngIf="zgw.zaakInformatieObjecten.length; else noZios">
+            <cds-structured-list [condensed]="true">
+              <cds-list-header>
+                <cds-list-column>{{ 'case.inspection.zgw.zaakinformatieobjecten.titel' | translate }}</cds-list-column>
+                <cds-list-column>{{ 'case.inspection.zgw.zaakinformatieobjecten.registratiedatum' | translate }}</cds-list-column>
+                <cds-list-column>{{ 'case.inspection.zgw.zaakinformatieobjecten.url' | translate }}</cds-list-column>
+              </cds-list-header>
+
+              <cds-list-row *ngFor="let z of zgw.zaakInformatieObjecten">
+                <cds-list-column>{{ z.titel || '-' }}</cds-list-column>
+                <cds-list-column>{{ z.registratiedatum | date: 'medium' }}</cds-list-column>
+                <cds-list-column>
+                  <code>{{ z.informatieobject }}</code>
+                  <button
+                    cdsButton="ghost"
+                    size="sm"
+                    [iconOnly]="true"
+                    (click)="onCopy(z.informatieobject)"
+                  >
+                    <svg cdsIcon="copy" size="16"></svg>
+                  </button>
+                </cds-list-column>
+              </cds-list-row>
+            </cds-structured-list>
+          </ng-container>
+          <ng-template #noZios>
+            <p class="case-inspection-zgw-tab__empty">
+              {{ 'case.inspection.zgw.zaakinformatieobjecten.empty' | translate }}
+            </p>
+          </ng-template>
+        </cds-accordion-item>
+
+        <!-- Besluiten -->
+        <cds-accordion-item [title]="'case.inspection.zgw.besluiten.title' | translate">
+          <ng-container *ngIf="zgw.besluiten.length; else noBesluiten">
+            <cds-structured-list [condensed]="true">
+              <cds-list-header>
+                <cds-list-column>{{ 'case.inspection.zgw.besluiten.url' | translate }}</cds-list-column>
+              </cds-list-header>
+
+              <cds-list-row *ngFor="let b of zgw.besluiten">
+                <cds-list-column>
+                  <code>{{ b.besluit }}</code>
+                  <button
+                    cdsButton="ghost"
+                    size="sm"
+                    [iconOnly]="true"
+                    (click)="onCopy(b.besluit)"
+                  >
+                    <svg cdsIcon="copy" size="16"></svg>
+                  </button>
+                </cds-list-column>
+              </cds-list-row>
+            </cds-structured-list>
+          </ng-container>
+          <ng-template #noBesluiten>
+            <p class="case-inspection-zgw-tab__empty">
+              {{ 'case.inspection.zgw.besluiten.empty' | translate }}
+            </p>
+          </ng-template>
+        </cds-accordion-item>
+
+        <!-- Zaakdetails sync object -->
+        <cds-accordion-item
+          *ngIf="$showZaakdetails()"
+          [title]="'case.inspection.zgw.zaakdetails.title' | translate"
+        >
+          <ng-container *ngIf="$zaakdetails() as zd">
+            <dl class="case-inspection-zgw-tab__list" *ngIf="zd.syncConfig as cfg">
+              <dt>{{ 'case.inspection.zgw.zaakdetails.caseDefinitionKey' | translate }}</dt>
+              <dd>{{ cfg.caseDefinitionKey }}:{{ cfg.caseDefinitionVersionTag }}</dd>
+
+              <dt>{{ 'case.inspection.zgw.zaakdetails.objectManagementTitle' | translate }}</dt>
+              <dd>{{ cfg.objectManagementTitle || '-' }}</dd>
+
+              <dt>{{ 'case.inspection.zgw.zaakdetails.enabled' | translate }}</dt>
+              <dd>
+                <cds-tag size="sm" [type]="cfg.enabled ? 'green' : 'cool-gray'">
+                  {{ (cfg.enabled ? 'case.inspection.zgw.yes' : 'case.inspection.zgw.no') | translate }}
+                </cds-tag>
+              </dd>
+            </dl>
+
+            <p
+              *ngIf="!zd.syncConfig"
+              class="case-inspection-zgw-tab__empty"
+            >
+              {{ 'case.inspection.zgw.zaakdetails.notConfigured' | translate }}
+            </p>
+
+            <dl class="case-inspection-zgw-tab__list" *ngIf="zd.zaakdetailsObject as zo">
+              <dt>{{ 'case.inspection.zgw.zaakdetails.objectUrl' | translate }}</dt>
+              <dd>
+                <code>{{ zo.objectUrl }}</code>
+                <button
+                  cdsButton="ghost"
+                  size="sm"
+                  [iconOnly]="true"
+                  (click)="onCopy(zo.objectUrl)"
+                >
+                  <svg cdsIcon="copy" size="16"></svg>
+                </button>
+              </dd>
+
+              <dt>{{ 'case.inspection.zgw.zaakdetails.linkedToZaak' | translate }}</dt>
+              <dd>
+                <cds-tag size="sm" [type]="zo.linkedToZaak ? 'green' : 'cool-gray'">
+                  {{ (zo.linkedToZaak ? 'case.inspection.zgw.yes' : 'case.inspection.zgw.no') | translate }}
+                </cds-tag>
+              </dd>
+            </dl>
+
+            <ng-container *ngIf="zd.zaakdetailsObject">
+              <button
+                *ngIf="!$zaakdetailsContent()"
+                cdsButton="tertiary"
+                size="sm"
+                (click)="onResolveZaakdetailsContent()"
+              >
+                {{ 'case.inspection.zgw.actions.viewLatestContent' | translate }}
+              </button>
+
+              <p *ngIf="$zaakdetailsContent() === 'loading'">
+                {{ 'case.inspection.zgw.zaakdetails.contentLoading' | translate }}
+              </p>
+
+              <ng-container *ngIf="$zaakdetailsContent() as content">
+                <ng-container *ngIf="content !== 'loading'">
+                  <cds-inline-notification
+                    *ngIf="!content.resolved"
+                    [notificationObj]="{
+                      type: 'info',
+                      title: 'case.inspection.zgw.zaakdetails.contentNotResolved' | translate,
+                      message: content.message,
+                      showClose: false,
+                      lowContrast: true
+                    }"
+                  ></cds-inline-notification>
+
+                  <valtimo-json-editor
+                    *ngIf="content.resolved && $zaakdetailsContentModel() as model"
+                    [model]="model"
+                    [showEditButton]="false"
+                    [heightPx]="320"
+                  ></valtimo-json-editor>
+                </ng-container>
+              </ng-container>
+            </ng-container>
+          </ng-container>
+        </cds-accordion-item>
+
+        <!-- Raw zaak JSON -->
+        <cds-accordion-item [title]="'case.inspection.zgw.rawJson.title' | translate">
+          <valtimo-json-editor
+            *ngIf="$rawZaakModel() as model"
+            [model]="model"
+            [showEditButton]="false"
+            [heightPx]="500"
+          ></valtimo-json-editor>
+        </cds-accordion-item>
+      </cds-accordion>
+    </ng-container>
+  </ng-container>
+</section>

@@ -182,6 +182,7 @@
         "processes": "Processen",
         "buildingBlocks": "Bouwblokken",
         "logs": "Logs",
+        "zgw": "ZGW",
         "metadata": "Metadata"
       },
       "document": {
@@ -328,6 +329,111 @@
         "noStatus": "Geen status",
         "noTags": "Geen tags",
         "noRelations": "Geen relaties"
+      },
+      "zgw": {
+        "loading": "ZGW-informatie laden...",
+        "empty": "Dit dossier is niet gekoppeld aan een zaak.",
+        "yes": "Ja",
+        "no": "Nee",
+        "zaakUnreachable": {
+          "title": "Zaak laden mislukt",
+          "message": "De zaak die aan dit dossier is gekoppeld kon niet geladen worden. De koppeling kan verouderd zijn, de Zaken API-plugin kan verkeerd geconfigureerd zijn, of de zaak is verwijderd.",
+          "details": "Foutdetails"
+        },
+        "warnings": {
+          "title": "Enkele secties konden niet geladen worden"
+        },
+        "actions": {
+          "copy": "Kopiëren",
+          "openExternal": "Openen in extern systeem",
+          "resolveContent": "Inhoud ophalen",
+          "viewLatestContent": "Laatste inhoud bekijken"
+        },
+        "zaak": {
+          "title": "Zaak",
+          "identificatie": "Identificatie",
+          "uuid": "UUID",
+          "url": "Zaak-URL",
+          "bronorganisatie": "Bronorganisatie",
+          "zaaktype": "Zaaktype",
+          "registratiedatum": "Registratiedatum",
+          "startdatum": "Startdatum",
+          "einddatum": "Einddatum",
+          "einddatumGepland": "Einddatum (gepland)",
+          "uiterlijkeEinddatumAfdoening": "Uiterlijke einddatum afdoening",
+          "vertrouwelijkheidaanduiding": "Vertrouwelijkheidaanduiding",
+          "archiefstatus": "Archiefstatus",
+          "betalingsindicatie": "Betalingsindicatie",
+          "currentStatus": "Huidige status",
+          "currentResultaat": "Huidig resultaat",
+          "noStatus": "Geen status ingesteld",
+          "noResultaat": "Geen resultaat ingesteld"
+        },
+        "eigenschappen": {
+          "title": "Eigenschappen",
+          "empty": "Geen eigenschappen voor deze zaak.",
+          "naam": "Naam",
+          "waarde": "Waarde",
+          "eigenschapUrl": "Eigenschap",
+          "zaakeigenschapUrl": "Zaakeigenschap"
+        },
+        "rollen": {
+          "title": "Rollen",
+          "empty": "Geen rollen voor deze zaak.",
+          "betrokkeneType": "Type betrokkene",
+          "roltype": "Roltype",
+          "identificatie": "Identificatie (BSN / KvK)",
+          "indicatieMachtiging": "Indicatie machtiging",
+          "url": "Rol-URL"
+        },
+        "statusHistory": {
+          "title": "Statusgeschiedenis",
+          "empty": "Geen statussen geregistreerd.",
+          "datumStatusGezet": "Datum status gezet",
+          "statustype": "Statustype",
+          "statustoelichting": "Statustoelichting"
+        },
+        "resultaat": {
+          "title": "Resultaat",
+          "empty": "Geen resultaat voor deze zaak.",
+          "resultaattype": "Resultaattype",
+          "toelichting": "Toelichting"
+        },
+        "zaakobjecten": {
+          "title": "Zaakobjecten",
+          "empty": "Geen zaakobjecten gekoppeld aan deze zaak.",
+          "objectUrl": "Object-URL",
+          "objectType": "Objecttype",
+          "relatieomschrijving": "Relatieomschrijving",
+          "resolveLoading": "Inhoud ophalen...",
+          "notResolved": "Kan inhoud niet ophalen"
+        },
+        "zaakinformatieobjecten": {
+          "title": "Zaakinformatieobjecten",
+          "empty": "Geen documenten gekoppeld aan deze zaak.",
+          "titel": "Titel",
+          "url": "Document-URL",
+          "registratiedatum": "Registratiedatum"
+        },
+        "besluiten": {
+          "title": "Besluiten",
+          "empty": "Geen besluiten gekoppeld aan deze zaak.",
+          "url": "Besluit-URL"
+        },
+        "zaakdetails": {
+          "title": "Zaakdetails sync-object",
+          "notConfigured": "Geen portaal-synchronisatie geconfigureerd voor dit zaaktype.",
+          "objectManagementTitle": "Objectbeheer-configuratie",
+          "caseDefinitionKey": "Dossierdefinitie",
+          "enabled": "Ingeschakeld",
+          "objectUrl": "Zaakdetails object-URL",
+          "linkedToZaak": "Gekoppeld aan zaak",
+          "contentLoading": "Inhoud ophalen...",
+          "contentNotResolved": "Kan inhoud niet ophalen"
+        },
+        "rawJson": {
+          "title": "Ruwe zaak-JSON"
+        }
       }
     }
   },

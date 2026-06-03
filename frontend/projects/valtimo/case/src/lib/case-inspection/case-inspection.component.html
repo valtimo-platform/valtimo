@@ -66,6 +66,21 @@
     </cds-tab>
 
     <cds-tab
+      *ngIf="zgwTabComponent"
+      [active]="$activeTab() === CaseInspectionTab.ZGW"
+      [heading]="'case.inspection.tabs.zgw' | translate"
+      (selected)="onTabSelected(CaseInspectionTab.ZGW)"
+    >
+      <div cdsLayer class="case-inspection__pane">
+        <ng-container
+          *ngIf="$activeTab() === CaseInspectionTab.ZGW"
+          [ngComponentOutlet]="zgwTabComponent"
+          [ngComponentOutletInputs]="{documentId: $documentId()}"
+        ></ng-container>
+      </div>
+    </cds-tab>
+
+    <cds-tab
       [active]="$activeTab() === CaseInspectionTab.METADATA"
       [heading]="'case.inspection.tabs.metadata' | translate"
       (selected)="onTabSelected(CaseInspectionTab.METADATA)"
