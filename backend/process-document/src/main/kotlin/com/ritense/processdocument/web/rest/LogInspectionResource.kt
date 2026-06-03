@@ -24,6 +24,7 @@ import com.ritense.document.domain.impl.JsonSchemaDocumentId
 import com.ritense.document.service.DocumentService
 import com.ritense.document.service.JsonSchemaDocumentActionProvider
 import com.ritense.logging.LoggableResource
+import com.ritense.logging.repository.LoggingEventSpecificationHelper.Companion.LOG_LEVELS
 import com.ritense.logging.repository.LoggingEventSpecificationHelper.Companion.byAnyOfProperties
 import com.ritense.logging.repository.LoggingEventSpecificationHelper.Companion.byLikeFormattedMessage
 import com.ritense.logging.repository.LoggingEventSpecificationHelper.Companion.byMinimumLevel
@@ -42,6 +43,7 @@ import org.springframework.data.domain.PageImpl
 import org.springframework.data.domain.Pageable
 import org.springframework.data.domain.Sort
 import org.springframework.data.web.PageableDefault
+import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.transaction.annotation.Transactional
 import org.springframework.web.bind.annotation.PathVariable
@@ -49,6 +51,7 @@ import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
+import org.springframework.web.server.ResponseStatusException
 import java.util.UUID
 
 @RestController
@@ -96,7 +99,12 @@ class LogInspectionResource(
 
         request.afterTimestamp?.let { add(byNewerThan(it)) }
         request.beforeTimestamp?.let { add(byOlderThan(it)) }
-        request.level?.let { add(byMinimumLevel(it)) }
+        request.level?.let { level ->
+            if (level.uppercase() !in LOG_LEVELS) {
+                throw ResponseStatusException(HttpStatus.BAD_REQUEST, "Unsupported log level: $level")
+            }
+            add(byMinimumLevel(level))
+        }
         request.likeFormattedMessage?.let { add(byLikeFormattedMessage(it)) }
 
         request.additionalProperties

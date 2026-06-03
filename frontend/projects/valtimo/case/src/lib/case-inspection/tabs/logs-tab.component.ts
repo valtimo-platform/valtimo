@@ -123,7 +123,7 @@ export class CaseInspectionLogsTabComponent implements OnInit, OnChanges {
       this.load();
       return;
     }
-    if (changes.pendingProcessInstanceId && this.pendingProcessInstanceId) {
+    if (changes.pendingProcessInstanceId && !changes.pendingProcessInstanceId.firstChange) {
       this.$page.set(1);
       this.applyPendingProcessInstanceFilter();
       this.load();
@@ -196,9 +196,7 @@ export class CaseInspectionLogsTabComponent implements OnInit, OnChanges {
   }
 
   private applyPendingProcessInstanceFilter(): void {
-    if (this.pendingProcessInstanceId) {
-      this.$activeProcessInstanceFilter.set(this.pendingProcessInstanceId);
-    }
+    this.$activeProcessInstanceFilter.set(this.pendingProcessInstanceId ?? null);
   }
 
   private buildSearchRequest(): CaseInspectionLogSearchRequest {
