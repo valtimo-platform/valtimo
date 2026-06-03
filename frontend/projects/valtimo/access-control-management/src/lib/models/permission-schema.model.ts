@@ -1,5 +1,5 @@
-/*!
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+/*
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,30 +14,9 @@
  * limitations under the License.
  */
 
-.valtimo-widget-management-action-button {
-  display: flex;
-  gap: 16px;
+// JSON Schema returned by GET /api/management/v1/permissions/schema. Treated as an opaque
+// object by Monaco. Auxiliary parsers (see PermissionSchemaMetadataService) extract the
+// resource type and action lists when other UI surfaces need them.
+type PermissionSchema = object;
 
-  valtimo-widget-management-process-selector {
-    padding-right: 16px;
-    width: 100%;
-  }
-
-  ::ng-deep &__type .cds--list-box,
-  ::ng-deep &__form .cds--text-input {
-    background: var(--cds-layer-01);
-  }
-
-  &__type {
-    width: 300px;
-  }
-
-  &__form {
-    padding-right: 16px;
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 16px;
-    align-items: flex-end;
-    width: 100%;
-  }
-}
+export {PermissionSchema};

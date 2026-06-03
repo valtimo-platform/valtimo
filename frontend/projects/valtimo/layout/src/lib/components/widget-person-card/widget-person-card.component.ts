@@ -27,7 +27,7 @@ import {
 import {TranslateModule, TranslateService} from '@ngx-translate/core';
 import {CdsThemeService, CurrentCarbonTheme} from '@valtimo/components';
 import {IconModule, IconService, SkeletonModule} from 'carbon-components-angular';
-import {Calendar20, Email20, Phone20} from '@carbon/icons';
+import {Calendar16, Email16, Phone16} from '@carbon/icons';
 import {Subscription} from 'rxjs';
 import {type WidgetColorThemeVariant} from '../../constants';
 import {getAvatarColorVariant} from './widget-person-card-color.util';
@@ -62,6 +62,7 @@ export class WidgetPersonCardComponent implements OnDestroy {
     if (!fullName) return '';
     return fullName
       .split(/\s+/)
+      .slice(0, 2)
       .map(word => word.charAt(0).toUpperCase())
       .join('');
   });
@@ -93,12 +94,14 @@ export class WidgetPersonCardComponent implements OnDestroy {
   public readonly $subtitle = computed(() => {
     const ageValue = this.$age();
     const city = this.$widgetData()?.city?.trim();
-    const ageLabel =
-      ageValue !== null
-        ? this.translateService.instant('widgets.personCard.age', {age: ageValue})
-        : '-';
-    const cityLabel = city || '-';
-    return `${ageLabel} · ${cityLabel}`;
+    const parts: string[] = [];
+    if (ageValue !== null) {
+      parts.push(this.translateService.instant('widgets.personCard.age', {age: ageValue}));
+    }
+    if (city) {
+      parts.push(city);
+    }
+    return parts.join(' · ');
   });
 
   private readonly _subscriptions = new Subscription();
@@ -108,7 +111,7 @@ export class WidgetPersonCardComponent implements OnDestroy {
     private readonly iconService: IconService,
     private readonly cdsThemeService: CdsThemeService
   ) {
-    this.iconService.registerAll([Phone20, Email20, Calendar20]);
+    this.iconService.registerAll([Phone16, Email16, Calendar16]);
     this._subscriptions.add(
       this.translateService.onLangChange.subscribe(event => this.$currentLang.set(event.lang))
     );

@@ -8,34 +8,56 @@ async function fetchFreshToken(): Promise<string> {
   const keycloakUrl = process.env.KEYCLOAK_URL ?? 'http://localhost:8081';
   const keycloakRealm = process.env.KEYCLOAK_REALM ?? 'valtimo';
   const tokenUrl = `${keycloakUrl}/auth/realms/${keycloakRealm}/protocol/openid-connect/token`;
+  const clientId = process.env.KC_CLIENT_ID ?? 'valtimo-console';
+  const clientSecret = process.env.KC_CLIENT_SECRET ?? 'secret';
+
+  async function postToken(form: Record<string, string>) {
+    const ctx = await request.newContext();
+    const resp = await ctx.post(tokenUrl, {
+      form,
+      headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+    });
+    const ok = resp.ok();
+    const status = resp.status();
+    const body = ok ? await resp.json() : await resp.text();
+    await ctx.dispose();
+    return {ok, status, body} as {ok: boolean; status: number; body: any};
+  }
+
+  const refreshToken = process.env.PLAYWRIGHT_REFRESH_TOKEN;
+  if (refreshToken) {
+    const r = await postToken({
+      client_id: clientId,
+      client_secret: clientSecret,
+      grant_type: 'refresh_token',
+      refresh_token: refreshToken,
+    });
+    if (r.ok) {
+      if (r.body.refresh_token) process.env.PLAYWRIGHT_REFRESH_TOKEN = r.body.refresh_token;
+      return r.body.access_token as string;
+    }
+    // Refresh token rejected (expired/revoked). Drop it and fall through.
+    delete process.env.PLAYWRIGHT_REFRESH_TOKEN;
+  }
 
   const form: Record<string, string> = {
-    client_id: process.env.KC_CLIENT_ID ?? 'valtimo-console',
-    client_secret: process.env.KC_CLIENT_SECRET ?? 'secret',
+    client_id: clientId,
+    client_secret: clientSecret,
     grant_type: 'password',
     username: process.env.qa_admin_username ?? 'admin',
     password: process.env.qa_admin_password ?? 'admin',
     scope: 'openid',
   };
-
   if (process.env.qa_admin_otp_url) {
     const totp = OTPAuth.URI.parse(process.env.qa_admin_otp_url);
     form.otp = totp.generate();
   }
-
-  const ctx = await request.newContext();
-  const resp = await ctx.post(tokenUrl, {
-    form,
-    headers: {'Content-Type': 'application/x-www-form-urlencoded'},
-  });
-
-  if (!resp.ok()) {
-    throw new Error(`[api] Token refresh failed (${resp.status()}): ${(await resp.text()).slice(0, 120)}`);
+  const r = await postToken(form);
+  if (!r.ok) {
+    throw new Error(`[api] Token refresh failed (${r.status}): ${String(r.body).slice(0, 120)}`);
   }
-
-  const {access_token} = (await resp.json()) as {access_token: string};
-  await ctx.dispose();
-  return access_token;
+  if (r.body.refresh_token) process.env.PLAYWRIGHT_REFRESH_TOKEN = r.body.refresh_token;
+  return r.body.access_token as string;
 }
 
 /**
