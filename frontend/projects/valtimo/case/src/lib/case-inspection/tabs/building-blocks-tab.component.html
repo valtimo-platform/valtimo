@@ -1,0 +1,64 @@
+<!--
+  ~ Copyright 2015-2026 Ritense BV, the Netherlands.
+  ~
+  ~ Licensed under EUPL, Version 1.2 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~ https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" basis,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<section class="case-inspection-bb">
+  <ng-container *ngIf="$errorMessage() as message">
+    <p class="case-inspection-bb__error">{{ message }}</p>
+  </ng-container>
+
+  <ng-container *ngIf="$notSupported()">
+    <p class="case-inspection-bb__notice">
+      {{ 'case.inspection.buildingBlocks.notEnabled' | translate }}
+    </p>
+  </ng-container>
+
+  <ng-container *ngIf="$loading()">
+    <p>{{ 'case.inspection.buildingBlocks.loading' | translate }}</p>
+  </ng-container>
+
+  <ng-container *ngIf="!$loading() && !$notSupported() && $instances() as instances">
+    <p *ngIf="instances.length === 0" class="case-inspection-bb__empty">
+      {{ 'case.inspection.buildingBlocks.empty' | translate }}
+    </p>
+
+    <div *ngIf="instances.length > 0" class="case-inspection-bb__layout">
+      <nav
+        class="case-inspection-bb__list"
+        [attr.aria-label]="'case.inspection.buildingBlocks.listAriaLabel' | translate"
+      >
+        <button
+          *ngFor="let instance of instances"
+          type="button"
+          class="case-inspection-bb__list-item"
+          [class.case-inspection-bb__list-item--selected]="isSelected(instance)"
+          (click)="onSelect(instance)"
+        >
+          <span class="case-inspection-bb__list-item-title">{{ instance.definitionKey }}</span>
+          <span class="case-inspection-bb__list-item-meta">
+            {{ instance.definitionVersionTag }}
+          </span>
+        </button>
+      </nav>
+
+      <article class="case-inspection-bb__detail">
+        <valtimo-case-inspection-building-block-detail
+          *ngIf="$selected() as selected"
+          [instance]="selected"
+        ></valtimo-case-inspection-building-block-detail>
+      </article>
+    </div>
+  </ng-container>
+</section>

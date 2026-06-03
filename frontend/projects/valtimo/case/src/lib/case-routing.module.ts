@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,9 +21,9 @@ import {AuthGuardService} from '@valtimo/security';
 import {CaseDetailComponent} from './components/case-detail/case-detail.component';
 import {CaseUpdateComponent} from './components/case-update/case-update.component';
 import {ROLE_USER} from '@valtimo/shared';
+import {CaseInspectionComponent} from './case-inspection/case-inspection.component';
 import {CaseListComponent} from './components/case-list/case-list.component';
 import {GenericCaseListComponent} from './components/generic-case-list/generic-case-list.component';
-import {pendingChangesGuard} from '@valtimo/components';
 
 const routes: Routes = [
   {
@@ -69,6 +69,16 @@ const routes: Routes = [
       title: 'Task details',
       parentPath: 'cases/:caseDefinitionKey/document/:documentId/:tab',
       roles: [ROLE_USER],
+    },
+  },
+  {
+    path: 'case-inspection/:documentId',
+    component: CaseInspectionComponent,
+    canActivate: [AuthGuardService],
+    data: {
+      title: 'Case inspection',
+      roles: [ROLE_USER],
+      customPageTitle: true,
     },
   },
 ];

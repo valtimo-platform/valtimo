@@ -169,7 +169,103 @@
       "noFormSpecified": "No form definition has been specified for this tab.",
       "formNotFound": "The form definition '{{formDefinitionName}}' could not be found."
     },
-    "rowLocked": "You don't have access to this case"
+    "rowLocked": "You don't have access to this case",
+    "inspection": {
+      "openInspector": "Inspect case",
+      "pageTitle": "Case inspection",
+      "placeholder": "This tab will be populated in a later phase.",
+      "tabs": {
+        "document": "Document",
+        "processes": "Processes",
+        "buildingBlocks": "Building blocks",
+        "metadata": "Metadata"
+      },
+      "document": {
+        "loading": "Loading document...",
+        "saved": "Document updated"
+      },
+      "buildingBlocks": {
+        "loading": "Loading building blocks...",
+        "empty": "This case has no building block instances.",
+        "notEnabled": "Building blocks are not enabled for this Valtimo installation.",
+        "saved": "Building block document updated",
+        "listAriaLabel": "Building blocks",
+        "detail": {
+          "instanceId": "Instance ID",
+          "documentId": "Document ID",
+          "processInstance": "Process instance",
+          "parent": "Parent",
+          "content": "Document content",
+          "loading": "Loading building block..."
+        }
+      },
+      "processes": {
+        "loading": "Loading processes...",
+        "empty": "No process instances are associated with this case.",
+        "listAriaLabel": "Process instances",
+        "buildingBlockTag": "BB",
+        "buildingBlockTagTooltip": "This process belongs to a building block",
+        "instanceId": "Instance ID",
+        "buildingBlock": "Building block",
+        "detailsTab": "Details",
+        "diagramTab": "Diagram",
+        "version": "Version",
+        "active": "Active",
+        "completed": "Completed",
+        "incidentsHeader": "Incidents",
+        "incidentTooltip": "Active incidents on this instance",
+        "incidentType": "Type",
+        "activity": "Activity",
+        "message": "Message",
+        "timestamp": "Timestamp",
+        "tasksHeader": "Tasks",
+        "taskName": "Task",
+        "taskAssignee": "Assignee",
+        "taskCreated": "Created",
+        "noTasks": "No active tasks.",
+        "variablesHeader": "Variables",
+        "variableName": "Name",
+        "variableType": "Type",
+        "variableValue": "Value",
+        "noVariables": "No variables.",
+        "jobsHeader": "Jobs",
+        "jobType": "Type",
+        "jobActivity": "Activity",
+        "jobRetries": "Retries left",
+        "jobDueDate": "Due",
+        "jobException": "Exception",
+        "jobTypeLabel": {
+          "TIMER": "Timer",
+          "ASYNC_CONTINUATION": "Async continuation",
+          "MESSAGE": "Message",
+          "BATCH": "Batch",
+          "OTHER": "Other"
+        },
+        "noJobs": "No jobs.",
+        "startedBy": "Started by",
+        "startedOn": "Started on"
+      },
+      "metadata": {
+        "loading": "Loading metadata...",
+        "documentId": "Document ID",
+        "definitionName": "Definition",
+        "sequence": "Sequence",
+        "version": "Version",
+        "createdBy": "Created by",
+        "createdOn": "Created on",
+        "modifiedOn": "Modified on",
+        "assignee": "Assignee",
+        "assignedTeam": "Assigned team",
+        "internalStatus": "Internal status",
+        "tags": "Tags",
+        "relations": "Relations",
+        "relatedFiles": "Related files",
+        "unassigned": "Unassigned",
+        "noStatus": "No status",
+        "noTags": "No tags",
+        "noRelations": "No relations"
+      }
+    }
   },
   "document": {
     "title": {"single": "Document", "plural": "Documents"},
@@ -995,7 +1091,10 @@
       "collection": {"title": "Collection", "description": "Create a collection"},
       "divider": {"title": "Divider"},
       "map": {"title": "Map", "description": "Create a map widget"},
-      "person-card": {"title": "Person card", "description": "A person with their key details and contact info"},
+      "person-card": {
+        "title": "Person card",
+        "description": "A person with their key details and contact info"
+      },
       "metroline": {
         "title": "Metroline",
         "description": "Show progression as a metroline"

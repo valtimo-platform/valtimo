@@ -172,7 +172,103 @@
       "noFormSpecified": "Voor dit tabblad is geen formulierdefinitie opgegeven.",
       "formNotFound": "De formulierdefinitie '{{formDefinitionName}}' kan niet worden gevonden."
     },
-    "rowLocked": "Je hebt geen toegang tot dit dossier"
+    "rowLocked": "Je hebt geen toegang tot dit dossier",
+    "inspection": {
+      "openInspector": "Dossier inspecteren",
+      "pageTitle": "Dossier inspectie",
+      "placeholder": "Dit tabblad wordt in een latere fase ingevuld.",
+      "tabs": {
+        "document": "Document",
+        "processes": "Processen",
+        "buildingBlocks": "Bouwblokken",
+        "metadata": "Metadata"
+      },
+      "document": {
+        "loading": "Document laden...",
+        "saved": "Document bijgewerkt"
+      },
+      "buildingBlocks": {
+        "loading": "Bouwblokken laden...",
+        "empty": "Dit dossier heeft geen bouwblok-instanties.",
+        "notEnabled": "Bouwblokken zijn niet ingeschakeld voor deze Valtimo-installatie.",
+        "saved": "Bouwblok-document bijgewerkt",
+        "listAriaLabel": "Bouwblokken",
+        "detail": {
+          "instanceId": "Instantie-ID",
+          "documentId": "Document-ID",
+          "processInstance": "Procesinstantie",
+          "parent": "Bovenliggend",
+          "content": "Documentinhoud",
+          "loading": "Bouwblok laden..."
+        }
+      },
+      "processes": {
+        "loading": "Processen laden...",
+        "empty": "Er zijn geen procesinstanties gekoppeld aan dit dossier.",
+        "listAriaLabel": "Procesinstanties",
+        "buildingBlockTag": "Bouwblok",
+        "buildingBlockTagTooltip": "Dit proces hoort bij een bouwblok",
+        "instanceId": "Instantie-ID",
+        "buildingBlock": "Bouwblok",
+        "detailsTab": "Details",
+        "diagramTab": "Diagram",
+        "version": "Versie",
+        "active": "Actief",
+        "completed": "Afgerond",
+        "incidentsHeader": "Incidenten",
+        "incidentTooltip": "Actieve incidenten op deze instantie",
+        "incidentType": "Type",
+        "activity": "Activiteit",
+        "message": "Bericht",
+        "timestamp": "Tijdstip",
+        "tasksHeader": "Taken",
+        "taskName": "Taak",
+        "taskAssignee": "Behandelaar",
+        "taskCreated": "Aangemaakt",
+        "noTasks": "Geen actieve taken.",
+        "variablesHeader": "Variabelen",
+        "variableName": "Naam",
+        "variableType": "Type",
+        "variableValue": "Waarde",
+        "noVariables": "Geen variabelen.",
+        "jobsHeader": "Jobs",
+        "jobType": "Type",
+        "jobActivity": "Activiteit",
+        "jobRetries": "Pogingen over",
+        "jobDueDate": "Vervaldatum",
+        "jobException": "Foutmelding",
+        "jobTypeLabel": {
+          "TIMER": "Timer",
+          "ASYNC_CONTINUATION": "Asynchrone continuatie",
+          "MESSAGE": "Bericht",
+          "BATCH": "Batch",
+          "OTHER": "Anders"
+        },
+        "noJobs": "Geen jobs.",
+        "startedBy": "Gestart door",
+        "startedOn": "Gestart op"
+      },
+      "metadata": {
+        "loading": "Metadata laden...",
+        "documentId": "Document ID",
+        "definitionName": "Definitie",
+        "sequence": "Volgnummer",
+        "version": "Versie",
+        "createdBy": "Aangemaakt door",
+        "createdOn": "Aangemaakt op",
+        "modifiedOn": "Gewijzigd op",
+        "assignee": "Behandelaar",
+        "assignedTeam": "Toegewezen team",
+        "internalStatus": "Interne status",
+        "tags": "Tags",
+        "relations": "Relaties",
+        "relatedFiles": "Gerelateerde bestanden",
+        "unassigned": "Niet toegewezen",
+        "noStatus": "Geen status",
+        "noTags": "Geen tags",
+        "noRelations": "Geen relaties"
+      }
+    }
   },
   "document": {
     "title": {"single": "Document", "plural": "Document's"},
@@ -1014,7 +1110,10 @@
       "collection": {"title": "Collectie", "description": "Maak een collectie aan"},
       "divider": {"title": "Scheidingslijn"},
       "map": {"title": "Kaart", "description": "Maak een kaart widget aan"},
-      "person-card": {"title": "Persoonskaart", "description": "Een persoon met de belangrijkste gegevens en contactinformatie"},
+      "person-card": {
+        "title": "Persoonskaart",
+        "description": "Een persoon met de belangrijkste gegevens en contactinformatie"
+      },
       "metroline": {
         "title": "Metrolijn",
         "description": "Toon de voortgang van een zaak als een metrolijn"

@@ -1,0 +1,171 @@
+/*
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
+ *
+ * Licensed under EUPL, Version 1.2 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" basis,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+import {CommonModule} from '@angular/common';
+import {ChangeDetectionStrategy, Component, OnDestroy, OnInit, signal} from '@angular/core';
+import {ActivatedRoute, ParamMap, Router} from '@angular/router';
+import {TranslateModule, TranslateService} from '@ngx-translate/core';
+import {PermissionService} from '@valtimo/access-control';
+import {BreadcrumbService, PageTitleService} from '@valtimo/components';
+import {DocumentService} from '@valtimo/document';
+import {map, Subscription, switchMap, take} from 'rxjs';
+import {TabsModule} from 'carbon-components-angular';
+import {
+  CAN_INSPECT_CASE_PERMISSION,
+  CASE_DETAIL_PERMISSION_RESOURCE,
+} from '../permissions/case-detail.permissions';
+import {CaseInspectionBuildingBlocksTabComponent} from './tabs/building-blocks-tab.component';
+import {CaseInspectionDocumentTabComponent} from './tabs/document-tab.component';
+import {CaseInspectionMetadataTabComponent} from './tabs/metadata-tab.component';
+import {CaseInspectionProcessesTabComponent} from './tabs/processes-tab.component';
+import {BuildingBlockProcessReference} from './models/case-inspection.models';
+import {CaseInspectionTab} from './case-inspection-tab.enum';
+import {CaseInspectionService} from './services/case-inspection.service';
+
+@Component({
+  standalone: true,
+  templateUrl: './case-inspection.component.html',
+  styleUrls: ['./case-inspection.component.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  imports: [
+    CommonModule,
+    TranslateModule,
+    TabsModule,
+    CaseInspectionDocumentTabComponent,
+    CaseInspectionProcessesTabComponent,
+    CaseInspectionBuildingBlocksTabComponent,
+    CaseInspectionMetadataTabComponent,
+  ],
+})
+export class CaseInspectionComponent implements OnInit, OnDestroy {
+  public readonly $documentId = signal<string>('');
+  public readonly $activeTab = signal<CaseInspectionTab>(CaseInspectionTab.DOCUMENT);
+  public readonly $loading = signal<boolean>(true);
+  public readonly $accessDenied = signal<boolean>(false);
+  public readonly $pendingBuildingBlockInstanceId = signal<string | null>(null);
+
+  public readonly CaseInspectionTab = CaseInspectionTab;
+
+  private readonly _validTabs: readonly CaseInspectionTab[] = Object.values(CaseInspectionTab);
+
+  private readonly _subscriptions = new Subscription();
+
+  constructor(
+    private readonly route: ActivatedRoute,
+    private readonly router: Router,
+    private readonly permissionService: PermissionService,
+    private readonly pageTitleService: PageTitleService,
+    private readonly translateService: TranslateService,
+    private readonly breadcrumbService: BreadcrumbService,
+    private readonly documentService: DocumentService,
+    private readonly caseInspectionService: CaseInspectionService
+  ) {}
+
+  public ngOnInit(): void {
+    this.pageTitleService.disableReset();
+
+    this._subscriptions.add(
+      this.translateService
+        .stream('case.inspection.pageTitle')
+        .subscribe(title => this.pageTitleService.setCustomPageTitle(title, true))
+    );
+
+    this.restoreTabFromQueryParam();
+
+    this._subscriptions.add(
+      this.route.paramMap
+        .pipe(
+          take(1),
+          switchMap((params: ParamMap) => {
+            const documentId = params.get('documentId') ?? '';
+            this.$documentId.set(documentId);
+            return this.permissionService.requestPermission(CAN_INSPECT_CASE_PERMISSION, {
+              resource: CASE_DETAIL_PERMISSION_RESOURCE.jsonSchemaDocument,
+              identifier: documentId,
+            });
+          })
+        )
+        .subscribe(allowed => {
+          if (!allowed) {
+            this.$accessDenied.set(true);
+            this.router.navigate(['/cases']);
+            return;
+          }
+          this.$loading.set(false);
+          this.initBreadcrumbs();
+        })
+    );
+  }
+
+  public ngOnDestroy(): void {
+    this.pageTitleService.enableReset();
+    this.breadcrumbService.clearSecondBreadcrumb();
+    this.breadcrumbService.clearThirdBreadcrumb();
+    this._subscriptions.unsubscribe();
+  }
+
+  public onTabSelected(tab: CaseInspectionTab): void {
+    this.$activeTab.set(tab);
+    this.router.navigate([], {
+      relativeTo: this.route,
+      queryParams: {tab},
+      queryParamsHandling: 'merge',
+      replaceUrl: true,
+    });
+  }
+
+  public onViewBuildingBlock(bb: BuildingBlockProcessReference): void {
+    this.$pendingBuildingBlockInstanceId.set(bb.instanceId);
+    this.onTabSelected(CaseInspectionTab.BUILDING_BLOCKS);
+  }
+
+  private initBreadcrumbs(): void {
+    const documentId = this.$documentId();
+    this._subscriptions.add(
+      this.caseInspectionService.getDocument(documentId).pipe(
+        switchMap(inspection => {
+          const caseDefinitionKey = inspection.definitionId.name;
+          return this.documentService.getDocumentDefinition(caseDefinitionKey).pipe(
+            take(1),
+            map(definition => ({
+              caseDefinitionKey,
+              caseDefinitionTitle: definition.schema.title,
+            }))
+          );
+        })
+      ).subscribe(({caseDefinitionKey, caseDefinitionTitle}) => {
+        const documentId = this.$documentId();
+        this.breadcrumbService.setSecondBreadcrumb({
+          route: [`/cases/${caseDefinitionKey}`],
+          content: caseDefinitionTitle,
+          href: `/cases/${caseDefinitionKey}`,
+        });
+        this.breadcrumbService.setThirdBreadcrumb({
+          route: [`/cases/${caseDefinitionKey}/document/${documentId}`],
+          content: this.translateService.instant('Case details'),
+          href: `/cases/${caseDefinitionKey}/document/${documentId}`,
+        });
+      })
+    );
+  }
+
+  private restoreTabFromQueryParam(): void {
+    const requested = this.route.snapshot.queryParamMap.get('tab') as CaseInspectionTab | null;
+    if (requested && this._validTabs.includes(requested)) {
+      this.$activeTab.set(requested);
+    }
+  }
+}

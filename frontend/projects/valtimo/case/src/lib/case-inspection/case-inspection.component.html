@@ -1,0 +1,71 @@
+<!--
+  ~ Copyright 2015-2026 Ritense BV, the Netherlands.
+  ~
+  ~ Licensed under EUPL, Version 1.2 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~ https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" basis,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<ng-container *ngIf="!$loading() && !$accessDenied()">
+  <cds-tabs type="contained">
+    <cds-tab
+      [active]="$activeTab() === CaseInspectionTab.DOCUMENT"
+      [heading]="'case.inspection.tabs.document' | translate"
+      (selected)="onTabSelected(CaseInspectionTab.DOCUMENT)"
+    >
+      <valtimo-case-inspection-document
+        *ngIf="$activeTab() === CaseInspectionTab.DOCUMENT"
+        [documentId]="$documentId()"
+      ></valtimo-case-inspection-document>
+    </cds-tab>
+
+    <cds-tab
+      [active]="$activeTab() === CaseInspectionTab.PROCESSES"
+      [heading]="'case.inspection.tabs.processes' | translate"
+      (selected)="onTabSelected(CaseInspectionTab.PROCESSES)"
+    >
+      <div cdsLayer class="case-inspection__pane">
+        <valtimo-case-inspection-processes
+          *ngIf="$activeTab() === CaseInspectionTab.PROCESSES"
+          [documentId]="$documentId()"
+          (viewBuildingBlockEvent)="onViewBuildingBlock($event)"
+        ></valtimo-case-inspection-processes>
+      </div>
+    </cds-tab>
+
+    <cds-tab
+      [active]="$activeTab() === CaseInspectionTab.BUILDING_BLOCKS"
+      [heading]="'case.inspection.tabs.buildingBlocks' | translate"
+      (selected)="onTabSelected(CaseInspectionTab.BUILDING_BLOCKS)"
+    >
+      <div cdsLayer class="case-inspection__pane">
+        <valtimo-case-inspection-building-blocks
+          *ngIf="$activeTab() === CaseInspectionTab.BUILDING_BLOCKS"
+          [documentId]="$documentId()"
+          [pendingInstanceId]="$pendingBuildingBlockInstanceId()"
+        ></valtimo-case-inspection-building-blocks>
+      </div>
+    </cds-tab>
+
+    <cds-tab
+      [active]="$activeTab() === CaseInspectionTab.METADATA"
+      [heading]="'case.inspection.tabs.metadata' | translate"
+      (selected)="onTabSelected(CaseInspectionTab.METADATA)"
+    >
+      <div cdsLayer class="case-inspection__pane">
+        <valtimo-case-inspection-metadata
+          *ngIf="$activeTab() === CaseInspectionTab.METADATA"
+          [documentId]="$documentId()"
+        ></valtimo-case-inspection-metadata>
+      </div>
+    </cds-tab>
+  </cds-tabs>
+</ng-container>

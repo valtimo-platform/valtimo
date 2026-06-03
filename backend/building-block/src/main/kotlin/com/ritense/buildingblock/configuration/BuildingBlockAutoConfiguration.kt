@@ -18,12 +18,12 @@ package com.ritense.buildingblock.configuration
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.ritense.authorization.AuthorizationService
-import com.ritense.buildingblock.listener.CaseDefinitionBuildingBlockLinkCaseEventListener
 import com.ritense.buildingblock.listener.BuildingBlockCaseAssigneeListener
 import com.ritense.buildingblock.listener.BuildingBlockDefinitionEventListener
-import com.ritense.buildingblock.listener.BuildingBlockTaskTeamAutoAssignListener
 import com.ritense.buildingblock.listener.BuildingBlockEndEventListener
 import com.ritense.buildingblock.listener.BuildingBlockStartEventListener
+import com.ritense.buildingblock.listener.BuildingBlockTaskTeamAutoAssignListener
+import com.ritense.buildingblock.listener.CaseDefinitionBuildingBlockLinkCaseEventListener
 import com.ritense.buildingblock.processlink.mapper.BuildingBlockProcessLinkMapper
 import com.ritense.buildingblock.processlink.service.BuildingBlockCallActivityListener
 import com.ritense.buildingblock.processlink.service.BuildingBlockSupportedProcessLinksHandler
@@ -67,17 +67,19 @@ import com.ritense.buildingblock.service.BuildingBlockProcessDefinitionExporter
 import com.ritense.buildingblock.service.BuildingBlockProcessDefinitionLinkExporter
 import com.ritense.buildingblock.service.BuildingBlockProcessLinkExporter
 import com.ritense.buildingblock.service.BuildingBlockProcessLinkImporter
+import com.ritense.buildingblock.service.BuildingBlockProcessLookupImpl
 import com.ritense.buildingblock.service.CaseDefinitionBuildingBlockLinkExporter
 import com.ritense.buildingblock.service.CaseDefinitionBuildingBlockLinkImporter
 import com.ritense.buildingblock.service.CaseDefinitionBuildingBlockLinkService
 import com.ritense.buildingblock.service.ProcessDefinitionBuildingBlockDefinitionImporter
 import com.ritense.buildingblock.service.StartableBuildingBlockItemProvider
-import com.ritense.buildingblock.web.rest.BuildingBlockDefinitionArtworkResource
 import com.ritense.buildingblock.web.rest.BuildingBlockDecisionManagementResource
+import com.ritense.buildingblock.web.rest.BuildingBlockDefinitionArtworkResource
 import com.ritense.buildingblock.web.rest.BuildingBlockDocumentDefinitionResource
 import com.ritense.buildingblock.web.rest.BuildingBlockFieldResource
 import com.ritense.buildingblock.web.rest.BuildingBlockFormFlowManagementResource
 import com.ritense.buildingblock.web.rest.BuildingBlockFormManagementResource
+import com.ritense.buildingblock.web.rest.BuildingBlockInstanceResource
 import com.ritense.buildingblock.web.rest.BuildingBlockManagementResource
 import com.ritense.buildingblock.web.rest.BuildingBlockProcessResource
 import com.ritense.buildingblock.web.rest.BuildingBlockValueResolverResource
@@ -96,6 +98,7 @@ import com.ritense.importer.ImportService
 import com.ritense.importer.ValtimoImportService
 import com.ritense.plugin.service.BuildingBlockPluginConfigurationResolver
 import com.ritense.plugin.service.PluginService
+import com.ritense.processdocument.service.BuildingBlockProcessLookup
 import com.ritense.processdocument.service.ProcessDocumentAssociationService
 import com.ritense.processdocument.service.ProcessDocumentService
 import com.ritense.processlink.exporter.BuildingBlockProcessLinkToBuildingBlockMapper
@@ -242,12 +245,14 @@ class BuildingBlockAutoConfiguration {
     fun buildingBlockInstanceService(
         buildingBlockInstanceRepository: BuildingBlockInstanceRepository,
         buildingBlockDefinitionRepository: BuildingBlockDefinitionRepository,
-        documentService: DocumentService
+        documentService: DocumentService,
+        authorizationService: AuthorizationService
     ): BuildingBlockInstanceService {
         return BuildingBlockInstanceService(
             buildingBlockInstanceRepository,
             buildingBlockDefinitionRepository,
-            documentService
+            documentService,
+            authorizationService
         )
     }
 
@@ -343,6 +348,24 @@ class BuildingBlockAutoConfiguration {
         buildingBlockFieldService: BuildingBlockFieldService
     ): BuildingBlockFieldResource {
         return BuildingBlockFieldResource(buildingBlockFieldService)
+    }
+
+    @Bean
+    @ConditionalOnMissingBean(BuildingBlockProcessLookup::class)
+    fun buildingBlockProcessLookup(
+        buildingBlockInstanceRepository: BuildingBlockInstanceRepository,
+    ): BuildingBlockProcessLookup {
+        return BuildingBlockProcessLookupImpl(buildingBlockInstanceRepository)
+    }
+
+    @Bean
+    @ConditionalOnMissingBean(BuildingBlockInstanceResource::class)
+    fun buildingBlockInstanceResource(
+        buildingBlockInstanceService: BuildingBlockInstanceService,
+    ): BuildingBlockInstanceResource {
+        return BuildingBlockInstanceResource(
+            buildingBlockInstanceService,
+        )
     }
 
     @Bean

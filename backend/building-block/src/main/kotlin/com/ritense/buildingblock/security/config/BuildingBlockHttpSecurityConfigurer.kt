@@ -130,6 +130,8 @@ class BuildingBlockHttpSecurityConfigurer : HttpSecurityConfigurer {
                     .hasAuthority(ADMIN)
                     .requestMatchers(antMatcher(DELETE, "$MANAGEMENT_BASE_PATH/{key}/version/{versionTag}/decision-definition/{decisionDefinitionKey}"))
                     .hasAuthority(ADMIN)
+                    .requestMatchers(antMatcher(GET, "/api/management/v1/case/{caseId}/building-blocks"))
+                    .authenticated()
             }
         } catch (e: Exception) {
             throw HttpConfigurerConfigurationException(e)
