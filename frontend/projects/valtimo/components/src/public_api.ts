@@ -276,6 +276,7 @@ export * from './lib/directives/remove-classnames/remove-classnames.directive';
 export * from './lib/directives/muuri/muuri-directive.module';
 export * from './lib/directives/muuri/muuri.directive';
 export * from './lib/directives/muuri/muuri-item.component';
+export * from './lib/directives/muuri/muuri-gap-free-layout';
 // read-only
 export * from './lib/directives/read-only.directive';
 // observe size
