@@ -85,6 +85,7 @@ export class FormViewModelComponent implements OnInit, OnDestroy {
   }
 
   @Input() set isStartForm(isStartFormValue: boolean) {
+    this._isStartFormInputReceived = true;
     this.isStartForm$.next(isStartFormValue);
   }
 
@@ -107,6 +108,7 @@ export class FormViewModelComponent implements OnInit, OnDestroy {
   private _preventNextPage = false;
   private _preventPreviousPage = false;
   private _isWizard: boolean = false;
+  private _isStartFormInputReceived = false;
 
   public pendingUpdateSubscription: Subscription | null = null;
 
@@ -177,11 +179,16 @@ export class FormViewModelComponent implements OnInit, OnDestroy {
   ) {}
 
   public ngOnInit(): void {
-    if (this.isStartForm$.value) {
-      this.loadInitialViewModelForStartForm();
-    } else {
-      this.loadInitialViewModel();
-    }
+    this.isStartForm$.pipe(
+      filter(() => this._isStartFormInputReceived),
+      take(1),
+    ).subscribe(isStartForm => {
+      if (isStartForm) {
+        this.loadInitialViewModelForStartForm();
+      } else {
+        this.loadInitialViewModel();
+      }
+    });
 
     this.focusSubscription = this.focus$
       .pipe(
