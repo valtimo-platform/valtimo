@@ -16,16 +16,19 @@
 
 package com.ritense.gzac.fvm
 
-import com.ritense.commandhandling.dispatchCommand
+import com.ritense.authorization.AuthorizationContext.Companion.runWithoutAuthorization
 import com.ritense.document.domain.impl.JsonSchemaDocument
-import com.ritense.formviewmodel.commandhandling.StartProcessCommand
 import com.ritense.formviewmodel.submission.FormViewModelStartFormSubmissionHandler
 import com.ritense.formviewmodel.web.rest.dto.StartFormSubmissionResult
+import com.ritense.processdocument.domain.impl.request.StartProcessForDocumentRequest
+import com.ritense.processdocument.service.ProcessDocumentService
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.stereotype.Component
 
 @Component
-class BezwaarAdHocFvmStartFormSubmissionHandler : FormViewModelStartFormSubmissionHandler<BezwaarAdHocFvmViewModel> {
+class BezwaarAdHocFvmStartFormSubmissionHandler(
+    private val processDocumentService: ProcessDocumentService
+) : FormViewModelStartFormSubmissionHandler<BezwaarAdHocFvmViewModel> {
 
     override fun supports(formName: String): Boolean = formName == "bezwaar-ad-hoc-fvm-start"
 
@@ -43,21 +46,28 @@ class BezwaarAdHocFvmStartFormSubmissionHandler : FormViewModelStartFormSubmissi
         }
 
         requireNotNull(document) { "Document is required for supporting process start" }
-        val caseInstanceId = document.id.id
 
-        dispatchCommand(
-            StartProcessCommand(
-                caseInstanceId = caseInstanceId,
-                processDefinitionKey = processDefinitionKey,
-                businessKey = caseInstanceId.toString(),
-                processVariables = mapOf(
-                    "omschrijving" to (viewModel.omschrijving ?: ""),
-                    "toelichting" to (viewModel.toelichting ?: ""),
-                )
+        val request = StartProcessForDocumentRequest(
+            document.id,
+            processDefinitionKey,
+            mapOf(
+                "omschrijving" to (viewModel.omschrijving ?: ""),
+                "toelichting" to (viewModel.toelichting ?: ""),
             )
         )
 
-        return StartFormSubmissionResult(caseInstanceId)
+        val result = runWithoutAuthorization {
+            processDocumentService.startProcessForDocument(request)
+        }
+
+        if (result.errors().isNotEmpty()) {
+            throw RuntimeException(
+                "Could not start process $processDefinitionKey for document ${document.id}: " +
+                    result.errors().joinToString(separator = "\n - ")
+            )
+        }
+
+        return StartFormSubmissionResult(document.id.id)
     }
 
     companion object {
