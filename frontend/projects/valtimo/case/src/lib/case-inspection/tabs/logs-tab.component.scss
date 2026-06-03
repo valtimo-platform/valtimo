@@ -21,13 +21,29 @@
 
   &__filters {
     display: grid;
-    grid-template-columns: minmax(200px, 1fr) minmax(140px, 200px) 180px 180px auto;
+    grid-template-columns: minmax(200px, 1fr) minmax(140px, 200px) 220px 220px auto;
     gap: 0.75rem;
     align-items: end;
   }
 
   &__filter {
     min-width: 0;
+  }
+
+  cds-date-picker {
+    display: block;
+    width: 100%;
+
+    ::ng-deep {
+      .cds--date-picker,
+      .cds--date-picker--single,
+      .cds--date-picker-container,
+      .cds--date-picker-input,
+      input.cds--date-picker__input {
+        width: 100%;
+        min-width: 0;
+      }
+    }
   }
 
   &__filter-actions {

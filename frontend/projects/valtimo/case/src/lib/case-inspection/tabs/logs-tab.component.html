@@ -42,8 +42,9 @@
       #afterPicker
       class="case-inspection-logs-tab__filter"
       [label]="'case.inspection.logs.filters.after' | translate"
-      [dateFormat]="'d-m-Y'"
-      placeholder="DD-MM-YYYY"
+      [dateFormat]="'d-m-Y H:i'"
+      [flatpickrOptions]="{enableTime: true, time_24hr: true}"
+      placeholder="DD-MM-YYYY HH:mm"
       (valueChange)="onAfterDateSelected($event)"
     ></cds-date-picker>
 
@@ -51,8 +52,9 @@
       #beforePicker
       class="case-inspection-logs-tab__filter"
       [label]="'case.inspection.logs.filters.before' | translate"
-      [dateFormat]="'d-m-Y'"
-      placeholder="DD-MM-YYYY"
+      [dateFormat]="'d-m-Y H:i'"
+      [flatpickrOptions]="{enableTime: true, time_24hr: true}"
+      placeholder="DD-MM-YYYY HH:mm"
       (valueChange)="onBeforeDateSelected($event)"
     ></cds-date-picker>
 
@@ -108,7 +110,7 @@
 
     <div *ngIf="$rows().length > 0" class="case-inspection-logs-tab__layout">
       <div class="case-inspection-logs-tab__list-panel">
-        <cds-structured-list>
+        <cds-structured-list [condensed]="true">
           <cds-list-header>
             <cds-list-column class="case-inspection-logs-tab__col-timestamp">
               {{ 'case.inspection.logs.columns.timestamp' | translate }}
@@ -144,6 +146,7 @@
         <cds-pagination
           class="case-inspection-logs-tab__pagination"
           [model]="buildPaginationModel()"
+          [itemsPerPageOptions]="[pageSize]"
           (selectPage)="onPageSelected($event)"
         ></cds-pagination>
       </div>

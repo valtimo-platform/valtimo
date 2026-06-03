@@ -131,12 +131,12 @@ export class CaseInspectionLogsTabComponent implements OnInit, OnChanges {
   }
 
   public onAfterDateSelected(event: Date[]): void {
-    const value = event[0] ? this.startOfDay(event[0]).toISOString() : '';
+    const value = event[0] ? event[0].toISOString() : '';
     this.formGroup.get('afterTimestamp')?.setValue(value);
   }
 
   public onBeforeDateSelected(event: Date[]): void {
-    const value = event[0] ? this.endOfDay(event[0]).toISOString() : '';
+    const value = event[0] ? event[0].toISOString() : '';
     this.formGroup.get('beforeTimestamp')?.setValue(value);
   }
 
@@ -169,13 +169,7 @@ export class CaseInspectionLogsTabComponent implements OnInit, OnChanges {
   }
 
   public isSelected(row: CaseInspectionLoggingEvent): boolean {
-    const current = this.$selected();
-    return (
-      !!current &&
-      current.timestamp === row.timestamp &&
-      current.formattedMessage === row.formattedMessage &&
-      current.level === row.level
-    );
+    return this.$selected() === row;
   }
 
   public onPageSelected(page: number): void {
@@ -236,12 +230,6 @@ export class CaseInspectionLogsTabComponent implements OnInit, OnChanges {
     );
   }
 
-  private endOfDay(date: Date): Date {
-    const copy = new Date(date);
-    copy.setHours(23, 59, 59, 999);
-    return copy;
-  }
-
   private load(): void {
     if (!this.documentId) return;
 
@@ -266,11 +254,5 @@ export class CaseInspectionLogsTabComponent implements OnInit, OnChanges {
           this.$loading.set(false);
         },
       });
-  }
-
-  private startOfDay(date: Date): Date {
-    const copy = new Date(date);
-    copy.setHours(0, 0, 0, 0);
-    return copy;
   }
 }
