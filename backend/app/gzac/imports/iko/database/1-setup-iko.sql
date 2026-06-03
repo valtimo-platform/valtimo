@@ -1,4 +1,20 @@
 /*
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
+ *
+ * Licensed under EUPL, Version 1.2 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" basis,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+/*
  * Copyright 2015-2025 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
@@ -108,6 +124,43 @@ INSERT INTO connector(id,name,tag,connector_code) VALUES ('bc18d7dd-84b5-4097-95
             "nationaliteit":"Nederlands",
             "burgerlijke_staat":"Alleenstaand"
          },
+         "statushistorie":[
+            {
+               "statustype":{
+                  "omschrijving":"Aanvraag ontvangen",
+                  "toelichting":"De aanvraag is binnengekomen en geregistreerd."
+               },
+               "datumStatusGezet":"2025-08-15T10:30:00"
+            },
+            {
+               "statustype":{
+                  "omschrijving":"In behandeling",
+                  "toelichting":"Een behandelaar is toegewezen en bekijkt de aanvraag."
+               },
+               "datumStatusGezet":"2025-09-02T14:15:00"
+            },
+            {
+               "statustype":{
+                  "omschrijving":"Aanvullende informatie opgevraagd",
+                  "toelichting":"Er is om aanvullende informatie gevraagd bij de klant."
+               },
+               "datumStatusGezet":"2025-09-20T09:00:00"
+            },
+            {
+               "statustype":{
+                  "omschrijving":"Beoordeling",
+                  "toelichting":"De aanvraag wordt beoordeeld op rechtmatigheid en doelmatigheid."
+               },
+               "datumStatusGezet":null
+            },
+            {
+               "statustype":{
+                  "omschrijving":"Besluit",
+                  "toelichting":"Het definitieve besluit wordt genomen en gecommuniceerd."
+               },
+               "datumStatusGezet":null
+            }
+         ],
          "werkprofiel":{
             "huidig_dienstverband":{
                "werkgever":"Kinderdagverblijf zonnestraal",
