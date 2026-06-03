@@ -49,11 +49,6 @@ import {CaseInspectionService} from '../services/case-inspection.service';
 import {CaseInspectionProcessVariableModalComponent} from './process-variable-modal.component';
 import {ProcessDetailTab} from './process-detail-tab.enum';
 
-enum ProcessDetailTab {
-  DETAILS = 'details',
-  DIAGRAM = 'diagram',
-}
-
 @Component({
   standalone: true,
   selector: 'valtimo-case-inspection-process-detail',
