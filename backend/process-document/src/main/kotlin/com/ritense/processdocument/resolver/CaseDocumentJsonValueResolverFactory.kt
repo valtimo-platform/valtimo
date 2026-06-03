@@ -27,6 +27,7 @@ import com.jayway.jsonpath.internal.path.PathCompiler
 import com.ritense.authorization.AuthorizationContext
 import com.ritense.document.config.DocumentProperties
 import com.ritense.document.domain.Document
+import com.ritense.document.domain.collectResolvableOptions
 import com.ritense.document.domain.impl.JsonDocumentContent
 import com.ritense.document.domain.impl.JsonSchemaDocument
 import com.ritense.document.domain.impl.JsonSchemaDocumentDefinition
@@ -43,7 +44,6 @@ import com.ritense.valtimo.contract.case_.CaseDefinitionId
 import com.ritense.valtimo.contract.json.patch.JsonPatchBuilder
 import com.ritense.valueresolver.ValueResolverFactory
 import com.ritense.valueresolver.ValueResolverOption
-import com.ritense.valueresolver.ValueResolverOptionType
 import com.ritense.valueresolver.exception.ValueResolverValidationException
 import org.operaton.bpm.engine.delegate.VariableScope
 import org.springframework.dao.OptimisticLockingFailureException
@@ -235,24 +235,17 @@ class CaseDocumentJsonValueResolverFactory(
 
     override fun getResolvableKeyOptions(caseDefinitionId: CaseDefinitionId): List<ValueResolverOption> {
         val documentDefinition = documentDefinitionService.findByBlueprintId(caseDefinitionId).orElseThrow()
-        val schemaAsNode = documentDefinition.schema
-            .asJson() as ObjectNode
-        return getPropertyNamesFromObjectNode(documentDefinition, schemaAsNode, "$PREFIX:")
+        return documentDefinition.schema.schema.collectResolvableOptions("$PREFIX:")
     }
 
     override fun getResolvableKeyOptions(caseDefinitionKey: String): List<ValueResolverOption> {
-        val documentDefinitionName = caseDefinitionKey
-        val documentDefinition = documentDefinitionService.findActiveByName(documentDefinitionName).orElseThrow()
-        val schemaAsNode = documentDefinition.schema
-            .asJson() as ObjectNode
-        return getPropertyNamesFromObjectNode(documentDefinition, schemaAsNode, "$PREFIX:")
+        val documentDefinition = documentDefinitionService.findActiveByName(caseDefinitionKey).orElseThrow()
+        return documentDefinition.schema.schema.collectResolvableOptions("$PREFIX:")
     }
 
     override fun getResolvableKeyOptions(blueprintId: BlueprintId): List<ValueResolverOption> {
         val documentDefinition = documentDefinitionService.findByBlueprintId(blueprintId).orElseThrow()
-        val schemaAsNode = documentDefinition.schema
-            .asJson() as ObjectNode
-        return getPropertyNamesFromObjectNode(documentDefinition, schemaAsNode, "$PREFIX:")
+        return documentDefinition.schema.schema.collectResolvableOptions("$PREFIX:")
     }
 
     private fun buildJsonPatch(jsonNode: JsonNode, values: Map<String, Any?>) {
@@ -331,64 +324,6 @@ class CaseDocumentJsonValueResolverFactory(
 
     private fun toValueNode(value: Any?): JsonNode {
         return objectMapper.valueToTree(value)
-    }
-
-    private fun getPropertyNamesFromObjectNode(
-        definition: JsonSchemaDocumentDefinition,
-        node: ObjectNode,
-        path: String
-    ): List<ValueResolverOption> {
-        val options: MutableList<ValueResolverOption> = mutableListOf()
-        if (node.has("type")) {
-            val typeNode = node["type"]
-            val propertyType = if (typeNode.isArray && typeNode.size() == 2 && typeNode.any { it.asText() == "null" }) {
-                typeNode.firstOrNull { it.asText() != "null" }?.asText() ?: ""
-            } else if (typeNode.isArray) {
-                ""
-            } else {
-                typeNode.asText()
-            }
-            if (isSimpleObject(propertyType)) {
-                options += ValueResolverOption(path, ValueResolverOptionType.FIELD)
-            } else if (propertyType == "object") {
-                node["properties"]?.fields()?.forEach { jsonNode ->
-                    options += getPropertyNamesFromObjectNode(
-                        definition,
-                        jsonNode.value as ObjectNode,
-                        "$path/${jsonNode.key}"
-                    )
-                }
-            } else if (propertyType == "array") {
-                options += ValueResolverOption(
-                    path,
-                    ValueResolverOptionType.COLLECTION,
-                    node["items"]?.let { getPropertyNamesFromObjectNode(definition, it as ObjectNode, "") }
-                )
-            }
-        } else if (node.has("oneOf") || node.has("anyOf")) {
-            val schemas = (node["oneOf"] ?: node["anyOf"])!!
-            val nonNullSchema = schemas.firstOrNull { it.has("type") && it["type"].asText() != "null" }
-            if (schemas.size() == 2 && schemas.any { it.has("type") && it["type"].asText() == "null" } && nonNullSchema != null) {
-                options += getPropertyNamesFromObjectNode(definition, nonNullSchema as ObjectNode, path)
-            }
-        } else if (node.has("\$ref")) {
-            val internalDefinition = node["\$ref"].asText().substring(1)
-            if (internalDefinition.startsWith("/")) {
-                val referencedNode = definition.schema().at(internalDefinition) as ObjectNode
-                options += getPropertyNamesFromObjectNode(
-                    definition,
-                    referencedNode,
-                    path
-                )
-            }
-        }
-
-        return options
-    }
-
-    private fun isSimpleObject(propertyType: String): Boolean {
-        val simpleTypes = listOf("string", "boolean", "integer", "number")
-        return simpleTypes.contains(propertyType)
     }
 
     companion object {
