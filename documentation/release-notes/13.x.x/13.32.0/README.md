@@ -8,4 +8,9 @@
 
 ## Enhancements
 
+* **Server-side input validation hardening (NCSC U/WA.03-1)**
+
+  REST controllers across the backend now apply Bean Validation (`@Valid`) to every endpoint that accepts a request
+  body.
+
 ## Bugfixes

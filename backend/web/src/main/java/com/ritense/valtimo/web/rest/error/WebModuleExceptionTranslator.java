@@ -60,17 +60,17 @@ public class WebModuleExceptionTranslator extends ExceptionTranslator {
     @Override
     public ResponseEntity<Problem> handleMethodArgumentNotValid(MethodArgumentNotValidException ex, @Nonnull NativeWebRequest request) {
         BindingResult result = ex.getBindingResult();
-        List<FieldErrorVM> fieldErrors = result.getFieldErrors()
+        List<String> fieldErrors = result.getFieldErrors()
             .stream()
-            .map(f -> new FieldErrorVM(f.getObjectName(), f.getField(), f.getCode()))
-            .collect(Collectors.toList());
+                .map(f -> f.getObjectName() + "." + f.getField() + ": " + f.getDefaultMessage())
+                .collect(Collectors.toList());
 
         Problem problem = Problem.builder()
             .withType(ErrorConstants.CONSTRAINT_VIOLATION_TYPE)
             .withTitle("Method argument not valid")
             .withStatus(defaultConstraintViolationStatus())
             .with(MESSAGE, ErrorConstants.ERR_VALIDATION)
-            .with("fieldErrors", fieldErrors)
+            .with("errors", fieldErrors)
             .build();
         return create(ex, problem, request);
     }
