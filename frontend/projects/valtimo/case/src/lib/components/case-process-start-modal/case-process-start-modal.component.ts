@@ -329,6 +329,7 @@ export class CaseProcessStartModalComponent implements OnInit, OnDestroy {
 
       renderedComponent.instance.processDefinitionKey = this.processDefinitionKey;
       renderedComponent.instance.documentDefinitionName = this.caseDefinitionKey;
+      renderedComponent.instance.documentId = null;
 
       renderedComponent.instance.submittedEvent.subscribe(() => {
         this.closeCdsModal();

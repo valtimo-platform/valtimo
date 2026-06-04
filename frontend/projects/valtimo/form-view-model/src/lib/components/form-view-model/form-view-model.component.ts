@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -42,7 +42,7 @@ import {FormIoStateService, ValtimoFormioOptions} from '@valtimo/components';
 import {TranslateService} from '@ngx-translate/core';
 import {HttpErrorResponse} from '@angular/common/http';
 import {CommonModule} from '@angular/common';
-import {LayerModule} from 'carbon-components-angular';
+import {LayerModule, LoadingModule} from 'carbon-components-angular';
 
 moment.defaultFormat = 'DD MMM YYYY HH:mm';
 
@@ -51,7 +51,7 @@ moment.defaultFormat = 'DD MMM YYYY HH:mm';
   templateUrl: './form-view-model.component.html',
   styleUrls: ['./form-view-model.component.css'],
   standalone: true,
-  imports: [CommonModule, FormioModule, LayerModule],
+  imports: [CommonModule, FormioModule, LayerModule, LoadingModule],
 })
 export class FormViewModelComponent implements OnInit, OnDestroy {
   @ViewChild('formio') formio: FormioComponent;
@@ -179,16 +179,18 @@ export class FormViewModelComponent implements OnInit, OnDestroy {
   ) {}
 
   public ngOnInit(): void {
-    this.isStartForm$.pipe(
-      filter(() => this._isStartFormInputReceived),
-      take(1),
-    ).subscribe(isStartForm => {
-      if (isStartForm) {
-        this.loadInitialViewModelForStartForm();
-      } else {
-        this.loadInitialViewModel();
-      }
-    });
+    this.isStartForm$
+      .pipe(
+        filter(() => this._isStartFormInputReceived),
+        take(1)
+      )
+      .subscribe(isStartForm => {
+        if (isStartForm) {
+          this.loadInitialViewModelForStartForm();
+        } else {
+          this.loadInitialViewModel();
+        }
+      });
 
     this.focusSubscription = this.focus$
       .pipe(
