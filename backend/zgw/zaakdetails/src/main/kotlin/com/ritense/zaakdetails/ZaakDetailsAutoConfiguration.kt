@@ -34,9 +34,11 @@ import com.ritense.zaakdetails.documentobjectenapisync.DocumentObjectenApiSyncSe
 import com.ritense.zaakdetails.documentobjectenapisync.listener.DocumentObjectenApiSyncConfigurationIssueListener
 import com.ritense.zaakdetails.repository.ZaakdetailsObjectRepository
 import com.ritense.zaakdetails.security.ZaakDetailsHttpSecurityConfigurer
+import com.ritense.zaakdetails.service.CaseZaakdetailsInspectionService
 import com.ritense.zaakdetails.service.ZaakdetailsObjectService
 import com.ritense.zaakdetails.web.rest.CaseZaakdetailsInspectionResource
 import com.ritense.zakenapi.ZaakUrlProvider
+import com.ritense.zakenapi.link.ZaakInstanceLinkService
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.autoconfigure.AutoConfiguration
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
@@ -100,23 +102,33 @@ class ZaakDetailsAutoConfiguration {
     }
 
     @Bean
-    @ConditionalOnMissingBean(CaseZaakdetailsInspectionResource::class)
-    fun caseZaakdetailsInspectionResource(
+    @ConditionalOnMissingBean(CaseZaakdetailsInspectionService::class)
+    fun caseZaakdetailsInspectionService(
         documentService: DocumentService,
-        authorizationService: AuthorizationService,
         zaakdetailsObjectService: ZaakdetailsObjectService,
         documentObjectenApiSyncManagementService: DocumentObjectenApiSyncManagementService,
         objectManagementService: ObjectManagementService,
         pluginService: PluginService,
+        zaakInstanceLinkService: ZaakInstanceLinkService,
         objectMapper: ObjectMapper,
-    ) = CaseZaakdetailsInspectionResource(
+    ) = CaseZaakdetailsInspectionService(
         documentService,
-        authorizationService,
         zaakdetailsObjectService,
         documentObjectenApiSyncManagementService,
         objectManagementService,
         pluginService,
+        zaakInstanceLinkService,
         objectMapper,
+    )
+
+    @Bean
+    @ConditionalOnMissingBean(CaseZaakdetailsInspectionResource::class)
+    fun caseZaakdetailsInspectionResource(
+        authorizationService: AuthorizationService,
+        caseZaakdetailsInspectionService: CaseZaakdetailsInspectionService,
+    ) = CaseZaakdetailsInspectionResource(
+        authorizationService,
+        caseZaakdetailsInspectionService,
     )
 
     @Order(400)

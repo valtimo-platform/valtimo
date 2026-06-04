@@ -143,6 +143,7 @@ class ProcessInspectionResource(
         val previousInstance = runWithoutAuthorization {
             findVariableInstance(processInstanceId, name)
         } ?: return ResponseEntity.status(HttpStatus.NOT_FOUND).build()
+        val previousValue = runCatching { previousInstance.value }.getOrNull()
 
         runWithoutAuthorization {
             runtimeService.setVariable(processInstanceId, name, request.type().toTypedValue(request.value()))
@@ -153,7 +154,7 @@ class ProcessInspectionResource(
             processInstanceId = processInstanceId,
             variableName = name,
             mutation = ProcessVariableInspectionEditedEvent.Mutation.UPDATE,
-            previousValue = previousInstance.value,
+            previousValue = previousValue,
             newValue = request.value(),
         )
 
@@ -173,6 +174,7 @@ class ProcessInspectionResource(
         val previousInstance = runWithoutAuthorization {
             findVariableInstance(processInstanceId, name)
         } ?: return ResponseEntity.status(HttpStatus.NOT_FOUND).build()
+        val previousValue = runCatching { previousInstance.value }.getOrNull()
 
         runWithoutAuthorization {
             runtimeService.removeVariables(processInstanceId, listOf(name))
@@ -183,7 +185,7 @@ class ProcessInspectionResource(
             processInstanceId = processInstanceId,
             variableName = name,
             mutation = ProcessVariableInspectionEditedEvent.Mutation.DELETE,
-            previousValue = previousInstance.value,
+            previousValue = previousValue,
             newValue = null,
         )
 

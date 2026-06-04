@@ -16,30 +16,17 @@
 
 package com.ritense.zaakdetails.web.rest
 
-import com.fasterxml.jackson.databind.ObjectMapper
-import com.ritense.authorization.AuthorizationContext.Companion.runWithoutAuthorization
 import com.ritense.authorization.AuthorizationService
 import com.ritense.authorization.request.EntityAuthorizationRequest
 import com.ritense.document.domain.impl.JsonSchemaDocument
-import com.ritense.document.domain.impl.JsonSchemaDocumentId
-import com.ritense.document.service.DocumentService
 import com.ritense.document.service.JsonSchemaDocumentActionProvider
 import com.ritense.logging.LoggableResource
-import com.ritense.objectenapi.ObjectenApiPlugin
-import com.ritense.objectmanagement.service.ObjectManagementService
-import com.ritense.plugin.service.PluginService
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import com.ritense.valtimo.contract.domain.ValtimoMediaType.APPLICATION_JSON_UTF8_VALUE
-import com.ritense.zaakdetails.documentobjectenapisync.DocumentObjectenApiSync
-import com.ritense.zaakdetails.documentobjectenapisync.DocumentObjectenApiSyncManagementService
-import com.ritense.zaakdetails.domain.ZaakdetailsObject
-import com.ritense.zaakdetails.service.ZaakdetailsObjectService
+import com.ritense.zaakdetails.service.CaseZaakdetailsInspectionService
 import com.ritense.zaakdetails.web.rest.dto.CaseZaakdetailsInspectionDto
 import com.ritense.zaakdetails.web.rest.dto.ZaakdetailsObjectContentDto
-import com.ritense.zaakdetails.web.rest.dto.ZaakdetailsObjectDto
-import com.ritense.zaakdetails.web.rest.dto.ZaakdetailsSyncConfigDto
 import com.ritense.zakenapi.web.rest.dto.ZaakobjectResolveResultDto
-import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.http.ResponseEntity
 import org.springframework.transaction.annotation.Transactional
 import org.springframework.web.bind.annotation.GetMapping
@@ -54,13 +41,8 @@ import java.util.UUID
 @SkipComponentScan
 @RequestMapping("/api/management", produces = [APPLICATION_JSON_UTF8_VALUE])
 class CaseZaakdetailsInspectionResource(
-    private val documentService: DocumentService,
     private val authorizationService: AuthorizationService,
-    private val zaakdetailsObjectService: ZaakdetailsObjectService,
-    private val documentObjectenApiSyncManagementService: DocumentObjectenApiSyncManagementService,
-    private val objectManagementService: ObjectManagementService,
-    private val pluginService: PluginService,
-    private val objectMapper: ObjectMapper,
+    private val caseZaakdetailsInspectionService: CaseZaakdetailsInspectionService,
 ) {
 
     @GetMapping("/v1/case/{caseId}/zgw/zaakdetails")
@@ -68,20 +50,9 @@ class CaseZaakdetailsInspectionResource(
     fun getZaakdetailsInspection(
         @LoggableResource(resourceType = JsonSchemaDocument::class) @PathVariable caseId: UUID,
     ): ResponseEntity<CaseZaakdetailsInspectionDto> {
-        val document = loadDocumentAndCheckPermission(caseId)
-
-        val syncConfig = documentObjectenApiSyncManagementService.getSyncConfiguration(
-            document.definitionId().caseDefinitionId()
-        )
-
-        val zaakdetailsObject = zaakdetailsObjectService.findByDocumentId(caseId).orElse(null)
-
-        return ResponseEntity.ok(
-            CaseZaakdetailsInspectionDto(
-                syncConfig = syncConfig?.toDto(),
-                zaakdetailsObject = zaakdetailsObject?.toDto(),
-            )
-        )
+        val document = caseZaakdetailsInspectionService.loadDocument(caseId)
+        requireInspectPermission(document)
+        return ResponseEntity.ok(caseZaakdetailsInspectionService.getInspection(caseId, document))
     }
 
     @GetMapping("/v1/case/{caseId}/zgw/zaakdetails/object")
@@ -89,50 +60,9 @@ class CaseZaakdetailsInspectionResource(
     fun getZaakdetailsObjectContent(
         @LoggableResource(resourceType = JsonSchemaDocument::class) @PathVariable caseId: UUID,
     ): ResponseEntity<ZaakdetailsObjectContentDto> {
-        loadDocumentAndCheckPermission(caseId)
-        val zaakdetailsObject = zaakdetailsObjectService.findByDocumentId(caseId).orElse(null)
-            ?: return ResponseEntity.ok(
-                ZaakdetailsObjectContentDto(
-                    resolved = false,
-                    record = null,
-                    message = "No zaakdetails object stored for this case",
-                    objectUrl = null,
-                )
-            )
-
-        val objectUrl = zaakdetailsObject.objectURI
-        val plugin = pluginService.createInstance(
-            ObjectenApiPlugin::class.java,
-            ObjectenApiPlugin.findConfigurationByUrl(objectUrl),
-        ) ?: return ResponseEntity.ok(
-            ZaakdetailsObjectContentDto(
-                resolved = false,
-                record = null,
-                message = "No Objecten API plugin configured for host ${objectUrl.host}",
-                objectUrl = objectUrl,
-            )
-        )
-
-        return ResponseEntity.ok(
-            runCatching { plugin.getObject(objectUrl) }
-                .map { wrapper ->
-                    ZaakdetailsObjectContentDto(
-                        resolved = true,
-                        record = objectMapper.valueToTree(wrapper),
-                        message = null,
-                        objectUrl = objectUrl,
-                    )
-                }
-                .getOrElse { error ->
-                    logger.warn(error) { "Failed to resolve zaakdetails object at $objectUrl" }
-                    ZaakdetailsObjectContentDto(
-                        resolved = false,
-                        record = null,
-                        message = "Failed to resolve object",
-                        objectUrl = objectUrl,
-                    )
-                }
-        )
+        val document = caseZaakdetailsInspectionService.loadDocument(caseId)
+        requireInspectPermission(document)
+        return ResponseEntity.ok(caseZaakdetailsInspectionService.getZaakdetailsObjectContent(caseId))
     }
 
     @GetMapping("/v1/case/{caseId}/zgw/zaakobject/resolve")
@@ -141,47 +71,12 @@ class CaseZaakdetailsInspectionResource(
         @LoggableResource(resourceType = JsonSchemaDocument::class) @PathVariable caseId: UUID,
         @RequestParam objectUrl: URI,
     ): ResponseEntity<ZaakobjectResolveResultDto> {
-        loadDocumentAndCheckPermission(caseId)
-
-        val plugin = pluginService.createInstance(
-            ObjectenApiPlugin::class.java,
-            ObjectenApiPlugin.findConfigurationByUrl(objectUrl),
-        ) ?: return ResponseEntity.ok(
-            ZaakobjectResolveResultDto(
-                resolved = false,
-                record = null,
-                message = "No Objecten API plugin configured for host ${objectUrl.host}",
-                objectUrl = objectUrl,
-            )
-        )
-
-        return ResponseEntity.ok(
-            runCatching { plugin.getObject(objectUrl) }
-                .map { wrapper ->
-                    ZaakobjectResolveResultDto(
-                        resolved = true,
-                        record = objectMapper.valueToTree(wrapper),
-                        message = null,
-                        objectUrl = objectUrl,
-                    )
-                }
-                .getOrElse { error ->
-                    logger.warn(error) { "Failed to resolve zaakobject at $objectUrl" }
-                    ZaakobjectResolveResultDto(
-                        resolved = false,
-                        record = null,
-                        message = "Failed to resolve object",
-                        objectUrl = objectUrl,
-                    )
-                }
-        )
+        val document = caseZaakdetailsInspectionService.loadDocument(caseId)
+        requireInspectPermission(document)
+        return ResponseEntity.ok(caseZaakdetailsInspectionService.resolveZaakobjectContent(caseId, objectUrl))
     }
 
-    private fun loadDocumentAndCheckPermission(caseId: UUID): JsonSchemaDocument {
-        val document = runWithoutAuthorization {
-            documentService.findBy(JsonSchemaDocumentId.existingId(caseId)).orElseThrow()
-        } as JsonSchemaDocument
-
+    private fun requireInspectPermission(document: JsonSchemaDocument) {
         authorizationService.requirePermission(
             EntityAuthorizationRequest(
                 JsonSchemaDocument::class.java,
@@ -189,27 +84,5 @@ class CaseZaakdetailsInspectionResource(
                 document,
             )
         )
-        return document
-    }
-
-    private fun DocumentObjectenApiSync.toDto(): ZaakdetailsSyncConfigDto {
-        val title = objectManagementConfigurationId?.let { objectManagementService.getById(it)?.title }
-        return ZaakdetailsSyncConfigDto(
-            caseDefinitionKey = caseDefinitionId.key,
-            caseDefinitionVersionTag = caseDefinitionId.versionTag.toString(),
-            objectManagementConfigurationId = objectManagementConfigurationId,
-            objectManagementTitle = title,
-            enabled = enabled,
-        )
-    }
-
-    private fun ZaakdetailsObject.toDto() = ZaakdetailsObjectDto(
-        documentId = documentId,
-        objectUrl = objectURI,
-        linkedToZaak = linkedToZaak,
-    )
-
-    companion object {
-        private val logger = KotlinLogging.logger {}
     }
 }

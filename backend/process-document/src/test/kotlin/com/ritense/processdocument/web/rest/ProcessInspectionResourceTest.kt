@@ -51,6 +51,7 @@ import org.operaton.bpm.engine.ManagementService
 import org.operaton.bpm.engine.RuntimeService
 import org.operaton.bpm.engine.history.HistoricProcessInstance
 import org.operaton.bpm.engine.runtime.ProcessInstance
+import org.operaton.bpm.engine.runtime.VariableInstance
 import org.operaton.bpm.engine.variable.value.IntegerValue
 import org.operaton.bpm.engine.variable.value.StringValue
 import org.operaton.bpm.engine.variable.value.TypedValue
@@ -218,7 +219,7 @@ class ProcessInspectionResourceTest {
     fun `create should require INSPECT_MODIFY permission`() {
         val processInstanceId = associateInstance()
         stubActiveInstance(processInstanceId)
-        whenever(runtimeService.getVariable(processInstanceId, "foo")).thenReturn(null)
+        stubVariable(processInstanceId, "foo", null)
 
         resource.createVariable(
             caseId,
@@ -235,7 +236,7 @@ class ProcessInspectionResourceTest {
     fun `update should require INSPECT_MODIFY permission`() {
         val processInstanceId = associateInstance()
         stubActiveInstance(processInstanceId)
-        whenever(runtimeService.getVariable(processInstanceId, "foo")).thenReturn("old")
+        stubVariable(processInstanceId, "foo", "old")
 
         resource.updateVariable(
             caseId,
@@ -253,7 +254,7 @@ class ProcessInspectionResourceTest {
     fun `delete should require INSPECT_MODIFY permission`() {
         val processInstanceId = associateInstance()
         stubActiveInstance(processInstanceId)
-        whenever(runtimeService.getVariable(processInstanceId, "foo")).thenReturn("old")
+        stubVariable(processInstanceId, "foo", "old")
 
         resource.deleteVariable(caseId, processInstanceId, "foo")
 
@@ -301,7 +302,7 @@ class ProcessInspectionResourceTest {
     fun `create should return 409 when variable already exists`() {
         val processInstanceId = associateInstance()
         stubActiveInstance(processInstanceId)
-        whenever(runtimeService.getVariable(processInstanceId, "foo")).thenReturn("already-here")
+        stubVariable(processInstanceId, "foo", "already-here")
 
         val response = resource.createVariable(
             caseId,
@@ -318,7 +319,7 @@ class ProcessInspectionResourceTest {
     fun `create should call runtimeService setVariable with the typed value`() {
         val processInstanceId = associateInstance()
         stubActiveInstance(processInstanceId)
-        whenever(runtimeService.getVariable(processInstanceId, "count")).thenReturn(null)
+        stubVariable(processInstanceId, "count", null)
 
         val response = resource.createVariable(
             caseId,
@@ -337,7 +338,7 @@ class ProcessInspectionResourceTest {
     fun `update should call runtimeService setVariable and capture previous`() {
         val processInstanceId = associateInstance()
         stubActiveInstance(processInstanceId)
-        whenever(runtimeService.getVariable(processInstanceId, "name")).thenReturn("old")
+        stubVariable(processInstanceId, "name", "old")
 
         val response = resource.updateVariable(
             caseId,
@@ -363,7 +364,7 @@ class ProcessInspectionResourceTest {
     fun `update should return 404 when variable does not exist`() {
         val processInstanceId = associateInstance()
         stubActiveInstance(processInstanceId)
-        whenever(runtimeService.getVariable(processInstanceId, "missing")).thenReturn(null)
+        stubVariable(processInstanceId, "missing", null)
 
         val response = resource.updateVariable(
             caseId,
@@ -381,7 +382,7 @@ class ProcessInspectionResourceTest {
     fun `delete should call runtimeService removeVariables and publish event`() {
         val processInstanceId = associateInstance()
         stubActiveInstance(processInstanceId)
-        whenever(runtimeService.getVariable(processInstanceId, "foo")).thenReturn("bye")
+        stubVariable(processInstanceId, "foo", "bye")
 
         val response = resource.deleteVariable(caseId, processInstanceId, "foo")
 
@@ -403,13 +404,25 @@ class ProcessInspectionResourceTest {
     fun `delete should return 404 when variable does not exist`() {
         val processInstanceId = associateInstance()
         stubActiveInstance(processInstanceId)
-        whenever(runtimeService.getVariable(processInstanceId, "missing")).thenReturn(null)
+        stubVariable(processInstanceId, "missing", null)
 
         val response = resource.deleteVariable(caseId, processInstanceId, "missing")
 
         assertEquals(404, response.statusCode.value())
         verify(runtimeService, never()).removeVariables(any<String>(), any<Collection<String>>())
         verify(eventPublisher, never()).publishEvent(any<Any>())
+    }
+
+    private fun stubVariable(processInstanceId: String, name: String, value: Any?) {
+        val instance = value?.let {
+            mock<VariableInstance>().also { v -> whenever(v.value).thenReturn(it) }
+        }
+        whenever(
+            runtimeService.createVariableInstanceQuery()
+                .processInstanceIdIn(processInstanceId)
+                .variableName(name)
+                .singleResult()
+        ).thenReturn(instance)
     }
 
     private fun associateInstance(): String {
