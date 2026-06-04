@@ -1,0 +1,6069 @@
+[
+  {
+    "key": "personal-info",
+    "widgets": [
+      {
+        "type": "divider",
+        "key": "personal-info-divider-1",
+        "title": "Persoonsgegevens",
+        "width": 4,
+        "highContrast": false
+      },
+      {
+        "type": "fields",
+        "key": "personal-info-naam",
+        "title": "Naam",
+        "width": 2,
+        "highContrast": true,
+        "properties": {
+          "columns": [
+            [
+              {
+                "key": "firstName",
+                "title": "Voornaam",
+                "value": "doc:firstName"
+              },
+              {
+                "key": "lastName",
+                "title": "Achternaam",
+                "value": "doc:lastName"
+              }
+            ]
+          ]
+        }
+      },
+      {
+        "type": "fields",
+        "key": "personal-info-geboortedatum",
+        "title": "Geboortedatum",
+        "width": 1,
+        "highContrast": false,
+        "properties": {
+          "columns": [
+            [
+              {
+                "key": "dateOfBirth",
+                "title": "Geboortedatum",
+                "value": "doc:dateOfBirth",
+                "displayProperties": {
+                  "type": "date",
+                  "format": "DD-MM-YYYY"
+                }
+              }
+            ]
+          ]
+        }
+      },
+      {
+        "type": "fields",
+        "key": "personal-info-geslacht",
+        "title": "Geslacht",
+        "width": 1,
+        "highContrast": true,
+        "properties": {
+          "columns": [
+            [
+              {
+                "key": "gender",
+                "title": "Geslacht",
+                "value": "doc:gender"
+              }
+            ]
+          ]
+        }
+      },
+      {
+        "type": "divider",
+        "key": "personal-info-divider-2",
+        "title": "Identificatie",
+        "width": 4,
+        "highContrast": false
+      },
+      {
+        "type": "fields",
+        "key": "personal-info-bsn",
+        "title": "BSN",
+        "width": 1,
+        "highContrast": false,
+        "properties": {
+          "columns": [
+            [
+              {
+                "key": "bsn",
+                "title": "BSN",
+                "value": "doc:bsn"
+              }
+            ]
+          ]
+        }
+      },
+      {
+        "type": "fields",
+        "key": "personal-info-nationaliteit",
+        "title": "Nationaliteit",
+        "width": 1,
+        "highContrast": true,
+        "properties": {
+          "columns": [
+            [
+              {
+                "key": "nationality",
+                "title": "Nationaliteit",
+                "value": "doc:nationality"
+              }
+            ]
+          ]
+        }
+      },
+      {
+        "type": "fields",
+        "key": "personal-info-email-highlight",
+        "title": "E-mail",
+        "width": 1,
+        "highContrast": false,
+        "properties": {
+          "columns": [
+            [
+              {
+                "key": "email",
+                "title": "E-mailadres",
+                "value": "doc:email"
+              }
+            ]
+          ]
+        }
+      },
+      {
+        "type": "fields",
+        "key": "personal-info-telefoon-highlight",
+        "title": "Telefoon",
+        "width": 1,
+        "highContrast": true,
+        "properties": {
+          "columns": [
+            [
+              {
+                "key": "phone",
+                "title": "Telefoonnummer",
+                "value": "doc:phone"
+              }
+            ]
+          ]
+        }
+      },
+      {
+        "type": "divider",
+        "key": "personal-info-divider-3",
+        "title": "Contactgegevens",
+        "width": 4,
+        "highContrast": false
+      },
+      {
+        "type": "fields",
+        "key": "personal-info-contact-overzicht",
+        "title": "Contactoverzicht",
+        "width": 3,
+        "highContrast": false,
+        "properties": {
+          "columns": [
+            [
+              {
+                "key": "email2",
+                "title": "E-mailadres",
+                "value": "doc:email"
+              },
+              {
+                "key": "phone2",
+                "title": "Telefoonnummer",
+                "value": "doc:phone"
+              }
+            ],
+            [
+              {
+                "key": "firstName2",
+                "title": "Voornaam",
+                "value": "doc:firstName"
+              },
+              {
+                "key": "lastName2",
+                "title": "Achternaam",
+                "value": "doc:lastName"
+              }
+            ]
+          ]
+        }
+      },
+      {
+        "type": "fields",
+        "key": "personal-info-noodcontact-naam",
+        "title": "Noodcontact",
+        "width": 2,
+        "highContrast": true,
+        "properties": {
+          "columns": [
+            [
+              {
+                "key": "emergencyContactName",
+                "title": "Naam noodcontact",
+                "value": "doc:emergencyContactName"
+              }
+            ],
+            [
+              {
+                "key": "emergencyContactPhone",
+                "title": "Telefoon noodcontact",
+                "value": "doc:emergencyContactPhone"
+              }
+            ]
+          ]
+        }
+      },
+      {
+        "type": "divider",
+        "key": "personal-info-divider-4",
+        "title": "Noodcontact details",
+        "width": 4,
+        "highContrast": false
+      },
+      {
+        "type": "fields",
+        "key": "personal-info-noodcontact-relatie",
+        "title": "Relatie noodcontact",
+        "width": 1,
+        "highContrast": false,
+        "properties": {
+          "columns": [
+            [
+              {
+                "key": "emergencyContactRelation",
+                "title": "Relatie",
+                "value": "doc:emergencyContactRelation"
+              }
+            ]
+          ]
+        }
+      },
+      {
+        "type": "fields",
+        "key": "personal-info-persoonsoverzicht",
+        "title": "Persoonsoverzicht",
+        "width": 2,
+        "highContrast": true,
+        "properties": {
+          "columns": [
+            [
+              {
+                "key": "firstName3",
+                "title": "Voornaam",
+                "value": "doc:firstName"
+              },
+              {
+                "key": "lastName3",
+                "title": "Achternaam",
+                "value": "doc:lastName"
+              },
+              {
+                "key": "dateOfBirth2",
+                "title": "Geboortedatum",
+                "value": "doc:dateOfBirth",
+                "displayProperties": {
+                  "type": "date",
+                  "format": "DD-MM-YYYY"
+                }
+              }
+            ]
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "key": "address-contact",
+    "widgets": [
+      {
+        "type": "divider",
+        "key": "address-contact-divider-1",
+        "title": "Adresgegevens",
+        "width": 4,
+        "highContrast": false
+      },
+      {
+        "type": "fields",
+        "key": "address-contact-straat-huisnr",
+        "title": "Straat en huisnummer",
+        "width": 2,
+        "highContrast": true,
+        "properties": {
+          "columns": [
+            [
+              {
+                "key": "street",
+                "title": "Straat",
+                "value": "doc:street"
+              }
+            ],
+            [
+              {
+                "key": "houseNumber",
+                "title": "Huisnummer",
+                "value": "doc:houseNumber"
+              }
+            ]
+          ]
+        }
+      },
+      {
+        "type": "fields",
+        "key": "address-contact-postcode",
+        "title": "Postcode",
+        "width": 1,
+        "highContrast": false,
+        "properties": {
+          "columns": [
+            [
+              {
+                "key": "postalCode",
+                "title": "Postcode",
+                "value": "doc:postalCode"
+              }
+            ]
+          ]
+        }
+      },
+      {
+        "type": "fields",
+        "key": "address-contact-woonplaats",
+        "title": "Woonplaats",
+        "width": 1,
+        "highContrast": true,
+        "properties": {
+          "columns": [
+            [
+              {
+                "key": "city",
+                "title": "Woonplaats",
+                "value": "doc:city"
+              }
+            ]
+          ]
+        }
+      },
+      {
+        "type": "divider",
+        "key": "address-contact-divider-2",
+        "title": "Regio",
+        "width": 4,
+        "highContrast": false
+      },
+      {
+        "type": "fields",
+        "key": "address-contact-provincie",
+        "title": "Provincie",
+        "width": 1,
+        "highContrast": false,
+        "properties": {
+          "columns": [
+            [
+              {
+                "key": "province",
+                "title": "Provincie",
+                "value": "doc:province"
+              }
+            ]
+          ]
+        }
+      },
+      {
+        "type": "fields",
+        "key": "address-contact-land",
+        "title": "Land",
+        "width": 1,
+        "highContrast": true,
+        "properties": {
+          "columns": [
+            [
+              {
+                "key": "country",
+                "title": "Land",
+                "value": "doc:country"
+              }
+            ]
+          ]
+        }
+      },
+      {
+        "type": "fields",
+        "key": "address-contact-volledig-adres",
+        "title": "Volledig adres",
+        "width": 3,
+        "highContrast": false,
+        "properties": {
+          "columns": [
+            [
+              {
+                "key": "street2",
+                "title": "Straat",
+                "value": "doc:street"
+              },
+              {
+                "key": "houseNumber2",
+                "title": "Huisnummer",
+                "value": "doc:houseNumber"
+              },
+              {
+                "key": "postalCode2",
+                "title": "Postcode",
+                "value": "doc:postalCode"
+              }
+            ],
+            [
+              {
+                "key": "city2",
+                "title": "Woonplaats",
+                "value": "doc:city"
+              },
+              {
+                "key": "province2",
+                "title": "Provincie",
+                "value": "doc:province"
+              },
+              {
+                "key": "country2",
+                "title": "Land",
+                "value": "doc:country"
+              }
+            ]
+          ]
+        }
+      },
+      {
+        "type": "divider",
+        "key": "address-contact-divider-3",
+        "title": "Contactinformatie",
+        "width": 4,
+        "highContrast": false
+      },
+      {
+        "type": "fields",
+        "key": "address-contact-email",
+        "title": "E-mailadres",
+        "width": 2,
+        "highContrast": true,
+        "properties": {
+          "columns": [
+            [
+              {
+                "key": "email",
+                "title": "E-mailadres",
+                "value": "doc:email"
+              }
+            ]
+          ]
+        }
+      },
+      {
+        "type": "fields",
+        "key": "address-contact-telefoon",
+        "title": "Telefoonnummer",
+        "width": 1,
+        "highContrast": false,
+        "properties": {
+          "columns": [
+            [
+              {
+                "key": "phone",
+                "title": "Telefoonnummer",
+                "value": "doc:phone"
+              }
+            ]
+          ]
+        }
+      },
+      {
+        "type": "fields",
+        "key": "address-contact-contact-samenvatting",
+        "title": "Contactsamenvatting",
+        "width": 2,
+        "highContrast": true,
+        "properties": {
+          "columns": [
+            [
+              {
+                "key": "email3",
+                "title": "E-mail",
+                "value": "doc:email"
+              },
+              {
+                "key": "phone3",
+                "title": "Telefoon",
+                "value": "doc:phone"
+              }
+            ]
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "key": "employment",
+    "widgets": [
+      {
+        "type": "divider",
+        "key": "employment-divider-1",
+        "title": "Werkgever",
+        "width": 4,
+        "highContrast": false
+      },
+      {
+        "type": "fields",
+        "key": "employment-bedrijfsnaam",
+        "title": "Bedrijfsnaam",
+        "width": 2,
+        "highContrast": true,
+        "properties": {
+          "columns": [
+            [
+              {
+                "key": "companyName",
+                "title": "Bedrijfsnaam",
+                "value": "doc:companyName"
+              }
+            ]
+          ]
+        }
+      },
+      {
+        "type": "fields",
+        "key": "employment-afdeling",
+        "title": "Afdeling",
+        "width": 1,
+        "highContrast": false,
+        "properties": {
+          "columns": [
+            [
+              {
+                "key": "department",
+                "title": "Afdeling",
+                "value": "doc:department"
+              }
+            ]
+          ]
+        }
+      },
+      {
+        "type": "fields",
+        "key": "employment-functie",
+        "title": "Functie",
+        "width": 1,
+        "highContrast": true,
+        "properties": {
+          "columns": [
+            [
+              {
+                "key": "jobTitle",
+                "title": "Functie",
+                "value": "doc:jobTitle"
+              }
+            ]
+          ]
+        }
+      },
+      {
+        "type": "fields",
+        "key": "employment-medewerker-id",
+        "title": "Medewerker-ID",
+        "width": 1,
+        "highContrast": false,
+        "properties": {
+          "columns": [
+            [
+              {
+                "key": "employeeId",
+                "title": "Medewerker-ID",
+                "value": "doc:employeeId"
+              }
+            ]
+          ]
+        }
+      },
+      {
+        "type": "divider",
+        "key": "employment-divider-2",
+        "title": "Contractinformatie",
+        "width": 4,
+        "highContrast": false
+      },
+      {
+        "type": "fields",
+        "key": "employment-startdatum",
+        "title": "Startdatum",
+        "width": 1,
+        "highContrast": true,
+        "properties": {
+          "columns": [
+            [
+              {
+                "key": "startDate",
+                "title": "Startdatum",
+                "value": "doc:startDate",
+                "displayProperties": {
+                  "type": "date",
+                  "format": "DD-MM-YYYY"
+                }
+              }
+            ]
+          ]
+        }
+      },
+      {
+        "type": "fields",
+        "key": "employment-contracttype",
+        "title": "Contracttype",
+        "width": 1,
+        "highContrast": false,
+        "properties": {
+          "columns": [
+            [
+              {
+                "key": "contractType",
+                "title": "Contracttype",
+                "value": "doc:contractType"
+              }
+            ]
+          ]
+        }
+      },
+      {
+        "type": "fields",
+        "key": "employment-salaris",
+        "title": "Salaris",
+        "width": 1,
+        "highContrast": true,
+        "properties": {
+          "columns": [
+            [
+              {
+                "key": "salary",
+                "title": "Salaris",
+                "value": "doc:salary",
+                "displayProperties": {
+                  "type": "currency",
+                  "currencyCode": "EUR"
+                }
+              }
+            ]
+          ]
+        }
+      },
+      {
+        "type": "fields",
+        "key": "employment-uren-per-week",
+        "title": "Uren per week",
+        "width": 1,
+        "highContrast": false,
+        "properties": {
+          "columns": [
+            [
+              {
+                "key": "hoursPerWeek",
+                "title": "Uren per week",
+                "value": "doc:hoursPerWeek",
+                "displayProperties": {
+                  "type": "number"
+                }
+              }
+            ]
+          ]
+        }
+      },
+      {
+        "type": "divider",
+        "key": "employment-divider-3",
+        "title": "Verlof en vrije dagen",
+        "width": 4,
+        "highContrast": false
+      },
+      {
+        "type": "fields",
+        "key": "employment-vakantiedagen",
+        "title": "Vakantiedagen",
+        "width": 1,
+        "highContrast": true,
+        "properties": {
+          "columns": [
+            [
+              {
+                "key": "vacationDays",
+                "title": "Vakantiedagen",
+                "value": "doc:vacationDays",
+                "displayProperties": {
+                  "type": "number"
+                }
+              }
+            ]
+          ]
+        }
+      },
+      {
+        "type": "fields",
+        "key": "employment-contract-overzicht",
+        "title": "Contractoverzicht",
+        "width": 3,
+        "highContrast": false,
+        "properties": {
+          "columns": [
+            [
+              {
+                "key": "contractType2",
+                "title": "Contracttype",
+                "value": "doc:contractType"
+              },
+              {
+                "key": "startDate2",
+                "title": "Startdatum",
+                "value": "doc:startDate",
+                "displayProperties": {
+                  "type": "date",
+                  "format": "DD-MM-YYYY"
+                }
+              }
+            ],
+            [
+              {
+                "key": "salary2",
+                "title": "Salaris",
+                "value": "doc:salary",
+                "displayProperties": {
+                  "type": "currency",
+                  "currencyCode": "EUR"
+                }
+              },
+              {
+                "key": "hoursPerWeek2",
+                "title": "Uren/week",
+                "value": "doc:hoursPerWeek",
+                "displayProperties": {
+                  "type": "number"
+                }
+              }
+            ]
+          ]
+        }
+      },
+      {
+        "type": "divider",
+        "key": "employment-divider-4",
+        "title": "Opleiding en vaardigheden",
+        "width": 4,
+        "highContrast": false
+      },
+      {
+        "type": "fields",
+        "key": "employment-opleiding",
+        "title": "Opleidingsniveau",
+        "width": 1,
+        "highContrast": true,
+        "properties": {
+          "columns": [
+            [
+              {
+                "key": "educationLevel",
+                "title": "Opleidingsniveau",
+                "value": "doc:educationLevel"
+              }
+            ]
+          ]
+        }
+      },
+      {
+        "type": "fields",
+        "key": "employment-universiteit",
+        "title": "Universiteit",
+        "width": 2,
+        "highContrast": false,
+        "properties": {
+          "columns": [
+            [
+              {
+                "key": "university",
+                "title": "Universiteit",
+                "value": "doc:university"
+              }
+            ],
+            [
+              {
+                "key": "graduationYear",
+                "title": "Afstudeerjaar",
+                "value": "doc:graduationYear",
+                "displayProperties": {
+                  "type": "number"
+                }
+              }
+            ]
+          ]
+        }
+      },
+      {
+        "type": "fields",
+        "key": "employment-studierichting",
+        "title": "Studierichting",
+        "width": 1,
+        "highContrast": true,
+        "properties": {
+          "columns": [
+            [
+              {
+                "key": "fieldOfStudy",
+                "title": "Studierichting",
+                "value": "doc:fieldOfStudy"
+              }
+            ]
+          ]
+        }
+      },
+      {
+        "type": "fields",
+        "key": "employment-rijbewijs-auto",
+        "title": "Rijbewijs en auto",
+        "width": 2,
+        "highContrast": false,
+        "properties": {
+          "columns": [
+            [
+              {
+                "key": "driverLicense",
+                "title": "Rijbewijs",
+                "value": "doc:driverLicense",
+                "displayProperties": {
+                  "type": "boolean"
+                }
+              }
+            ],
+            [
+              {
+                "key": "ownsCar",
+                "title": "Eigen auto",
+                "value": "doc:ownsCar",
+                "displayProperties": {
+                  "type": "boolean"
+                }
+              }
+            ]
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "key": "request-info",
+    "widgets": [
+      {
+        "type": "divider",
+        "key": "request-info-divider-1",
+        "title": "Aanvraagoverzicht",
+        "width": 4,
+        "highContrast": false
+      },
+      {
+        "type": "fields",
+        "key": "request-info-type",
+        "title": "Aanvraagtype",
+        "width": 1,
+        "highContrast": true,
+        "properties": {
+          "columns": [
+            [
+              {
+                "key": "requestType",
+                "title": "Type",
+                "value": "doc:requestType"
+              }
+            ]
+          ]
+        }
+      },
+      {
+        "type": "fields",
+        "key": "request-info-datum",
+        "title": "Aanvraagdatum",
+        "width": 1,
+        "highContrast": false,
+        "properties": {
+          "columns": [
+            [
+              {
+                "key": "requestDate",
+                "title": "Datum",
+                "value": "doc:requestDate",
+                "displayProperties": {
+                  "type": "date",
+                  "format": "DD-MM-YYYY"
+                }
+              }
+            ]
+          ]
+        }
+      },
+      {
+        "type": "fields",
+        "key": "request-info-prioriteit",
+        "title": "Prioriteit",
+        "width": 1,
+        "highContrast": true,
+        "properties": {
+          "columns": [
+            [
+              {
+                "key": "requestPriority",
+                "title": "Prioriteit",
+                "value": "doc:requestPriority"
+              }
+            ]
+          ]
+        }
+      },
+      {
+        "type": "fields",
+        "key": "request-info-status",
+        "title": "Status",
+        "width": 1,
+        "highContrast": false,
+        "properties": {
+          "columns": [
+            [
+              {
+                "key": "requestStatus",
+                "title": "Status",
+                "value": "doc:requestStatus"
+              }
+            ]
+          ]
+        }
+      },
+      {
+        "type": "divider",
+        "key": "request-info-divider-2",
+        "title": "Beschrijving",
+        "width": 4,
+        "highContrast": false
+      },
+      {
+        "type": "fields",
+        "key": "request-info-beschrijving",
+        "title": "Beschrijving",
+        "width": 4,
+        "highContrast": true,
+        "properties": {
+          "columns": [
+            [
+              {
+                "key": "requestDescription",
+                "title": "Beschrijving",
+                "value": "doc:requestDescription"
+              }
+            ]
+          ]
+        }
+      },
+      {
+        "type": "fields",
+        "key": "request-info-categorie",
+        "title": "Categorie",
+        "width": 1,
+        "highContrast": false,
+        "properties": {
+          "columns": [
+            [
+              {
+                "key": "requestCategory",
+                "title": "Categorie",
+                "value": "doc:requestCategory"
+              }
+            ]
+          ]
+        }
+      },
+      {
+        "type": "fields",
+        "key": "request-info-subcategorie",
+        "title": "Subcategorie",
+        "width": 1,
+        "highContrast": true,
+        "properties": {
+          "columns": [
+            [
+              {
+                "key": "requestSubCategory",
+                "title": "Subcategorie",
+                "value": "doc:requestSubCategory"
+              }
+            ]
+          ]
+        }
+      },
+      {
+        "type": "divider",
+        "key": "request-info-divider-3",
+        "title": "Toewijzing",
+        "width": 4,
+        "highContrast": false
+      },
+      {
+        "type": "fields",
+        "key": "request-info-team",
+        "title": "Toegewezen team",
+        "width": 2,
+        "highContrast": false,
+        "properties": {
+          "columns": [
+            [
+              {
+                "key": "assignedTeam",
+                "title": "Team",
+                "value": "doc:assignedTeam"
+              }
+            ]
+          ]
+        }
+      },
+      {
+        "type": "fields",
+        "key": "request-info-agent",
+        "title": "Toegewezen medewerker",
+        "width": 2,
+        "highContrast": true,
+        "properties": {
+          "columns": [
+            [
+              {
+                "key": "assignedAgent",
+                "title": "Medewerker",
+                "value": "doc:assignedAgent"
+              }
+            ]
+          ]
+        }
+      },
+      {
+        "type": "divider",
+        "key": "request-info-divider-4",
+        "title": "Deadlines",
+        "width": 4,
+        "highContrast": false
+      },
+      {
+        "type": "fields",
+        "key": "request-info-deadline",
+        "title": "Uiterste datum",
+        "width": 1,
+        "highContrast": false,
+        "properties": {
+          "columns": [
+            [
+              {
+                "key": "dueDate",
+                "title": "Uiterste datum",
+                "value": "doc:dueDate",
+                "displayProperties": {
+                  "type": "date",
+                  "format": "DD-MM-YYYY"
+                }
+              }
+            ]
+          ]
+        }
+      },
+      {
+        "type": "fields",
+        "key": "request-info-afrondingsdatum",
+        "title": "Afrondingsdatum",
+        "width": 1,
+        "highContrast": true,
+        "properties": {
+          "columns": [
+            [
+              {
+                "key": "completionDate",
+                "title": "Afrondingsdatum",
+                "value": "doc:completionDate",
+                "displayProperties": {
+                  "type": "date",
+                  "format": "DD-MM-YYYY"
+                }
+              }
+            ]
+          ]
+        }
+      },
+      {
+        "type": "fields",
+        "key": "request-info-voortgang",
+        "title": "Voortgang",
+        "width": 1,
+        "highContrast": false,
+        "properties": {
+          "columns": [
+            [
+              {
+                "key": "completionPercentage",
+                "title": "Voortgang %",
+                "value": "doc:completionPercentage",
+                "displayProperties": {
+                  "type": "percent"
+                }
+              }
+            ]
+          ]
+        }
+      },
+      {
+        "type": "divider",
+        "key": "request-info-divider-5",
+        "title": "Risico en goedkeuring",
+        "width": 4,
+        "highContrast": false
+      },
+      {
+        "type": "fields",
+        "key": "request-info-risico",
+        "title": "Risiconiveau",
+        "width": 1,
+        "highContrast": true,
+        "properties": {
+          "columns": [
+            [
+              {
+                "key": "riskLevel",
+                "title": "Risiconiveau",
+                "value": "doc:riskLevel"
+              }
+            ]
+          ]
+        }
+      },
+      {
+        "type": "fields",
+        "key": "request-info-risico-beschrijving",
+        "title": "Risicobeschrijving",
+        "width": 3,
+        "highContrast": false,
+        "properties": {
+          "columns": [
+            [
+              {
+                "key": "riskDescription",
+                "title": "Beschrijving",
+                "value": "doc:riskDescription"
+              }
+            ],
+            [
+              {
+                "key": "mitigationPlan",
+                "title": "Mitigatieplan",
+                "value": "doc:mitigationPlan"
+              }
+            ]
+          ]
+        }
+      },
+      {
+        "type": "fields",
+        "key": "request-info-goedkeuring-status",
+        "title": "Goedkeuringsstatus",
+        "width": 1,
+        "highContrast": true,
+        "properties": {
+          "columns": [
+            [
+              {
+                "key": "approvalStatus",
+                "title": "Status",
+                "value": "doc:approvalStatus"
+              }
+            ]
+          ]
+        }
+      },
+      {
+        "type": "fields",
+        "key": "request-info-goedgekeurd-detail",
+        "title": "Goedkeuringsdetails",
+        "width": 2,
+        "highContrast": false,
+        "properties": {
+          "columns": [
+            [
+              {
+                "key": "approvedBy",
+                "title": "Goedgekeurd door",
+                "value": "doc:approvedBy"
+              }
+            ],
+            [
+              {
+                "key": "approvalDate",
+                "title": "Datum",
+                "value": "doc:approvalDate",
+                "displayProperties": {
+                  "type": "date",
+                  "format": "DD-MM-YYYY"
+                }
+              }
+            ]
+          ]
+        }
+      },
+      {
+        "type": "fields",
+        "key": "request-info-goedkeuring-opmerkingen",
+        "title": "Opmerkingen",
+        "width": 2,
+        "highContrast": false,
+        "properties": {
+          "columns": [
+            [
+              {
+                "key": "approvalRemarks",
+                "title": "Opmerkingen",
+                "value": "doc:approvalRemarks"
+              }
+            ]
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "key": "project-budget",
+    "widgets": [
+      {
+        "type": "divider",
+        "key": "project-budget-divider-1",
+        "title": "Projectoverzicht",
+        "width": 4,
+        "highContrast": false
+      },
+      {
+        "type": "fields",
+        "key": "project-budget-projectnaam",
+        "title": "Projectnaam",
+        "width": 2,
+        "highContrast": true,
+        "properties": {
+          "columns": [
+            [
+              {
+                "key": "projectName",
+                "title": "Projectnaam",
+                "value": "doc:projectName"
+              }
+            ]
+          ]
+        }
+      },
+      {
+        "type": "fields",
+        "key": "project-budget-projectfase",
+        "title": "Fase",
+        "width": 1,
+        "highContrast": false,
+        "properties": {
+          "columns": [
+            [
+              {
+                "key": "projectPhase",
+                "title": "Fase",
+                "value": "doc:projectPhase"
+              }
+            ]
+          ]
+        }
+      },
+      {
+        "type": "fields",
+        "key": "project-budget-projectmanager",
+        "title": "Projectmanager",
+        "width": 1,
+        "highContrast": true,
+        "properties": {
+          "columns": [
+            [
+              {
+                "key": "projectManager",
+                "title": "Projectmanager",
+                "value": "doc:projectManager"
+              }
+            ]
+          ]
+        }
+      },
+      {
+        "type": "fields",
+        "key": "project-budget-project-start",
+        "title": "Startdatum",
+        "width": 1,
+        "highContrast": false,
+        "properties": {
+          "columns": [
+            [
+              {
+                "key": "projectStartDate",
+                "title": "Startdatum",
+                "value": "doc:projectStartDate",
+                "displayProperties": {
+                  "type": "date",
+                  "format": "DD-MM-YYYY"
+                }
+              }
+            ]
+          ]
+        }
+      },
+      {
+        "type": "fields",
+        "key": "project-budget-project-eind",
+        "title": "Einddatum",
+        "width": 1,
+        "highContrast": true,
+        "properties": {
+          "columns": [
+            [
+              {
+                "key": "projectEndDate",
+                "title": "Einddatum",
+                "value": "doc:projectEndDate",
+                "displayProperties": {
+                  "type": "date",
+                  "format": "DD-MM-YYYY"
+                }
+              }
+            ]
+          ]
+        }
+      },
+      {
+        "type": "divider",
+        "key": "project-budget-divider-2",
+        "title": "Taken",
+        "width": 4,
+        "highContrast": false
+      },
+      {
+        "type": "fields",
+        "key": "project-budget-totaal-taken",
+        "title": "Totaal taken",
+        "width": 1,
+        "highContrast": false,
+        "properties": {
+          "columns": [
+            [
+              {
+                "key": "totalTasks",
+                "title": "Totaal",
+                "value": "doc:totalTasks",
+                "displayProperties": {
+                  "type": "number"
+                }
+              }
+            ]
+          ]
+        }
+      },
+      {
+        "type": "fields",
+        "key": "project-budget-afgerond-taken",
+        "title": "Afgeronde taken",
+        "width": 1,
+        "highContrast": true,
+        "properties": {
+          "columns": [
+            [
+              {
+                "key": "completedTasks",
+                "title": "Afgerond",
+                "value": "doc:completedTasks",
+                "displayProperties": {
+                  "type": "number"
+                }
+              }
+            ]
+          ]
+        }
+      },
+      {
+        "type": "fields",
+        "key": "project-budget-open-taken",
+        "title": "Open taken",
+        "width": 1,
+        "highContrast": false,
+        "properties": {
+          "columns": [
+            [
+              {
+                "key": "openTasks",
+                "title": "Open",
+                "value": "doc:openTasks",
+                "displayProperties": {
+                  "type": "number"
+                }
+              }
+            ]
+          ]
+        }
+      },
+      {
+        "type": "fields",
+        "key": "project-budget-geblokkeerd-taken",
+        "title": "Geblokkeerde taken",
+        "width": 1,
+        "highContrast": true,
+        "properties": {
+          "columns": [
+            [
+              {
+                "key": "blockedTasks",
+                "title": "Geblokkeerd",
+                "value": "doc:blockedTasks",
+                "displayProperties": {
+                  "type": "number"
+                }
+              }
+            ]
+          ]
+        }
+      },
+      {
+        "type": "fields",
+        "key": "project-budget-taken-overzicht",
+        "title": "Takenoverzicht",
+        "width": 3,
+        "highContrast": false,
+        "properties": {
+          "columns": [
+            [
+              {
+                "key": "totalTasks2",
+                "title": "Totaal",
+                "value": "doc:totalTasks",
+                "displayProperties": {
+                  "type": "number"
+                }
+              },
+              {
+                "key": "completedTasks2",
+                "title": "Afgerond",
+                "value": "doc:completedTasks",
+                "displayProperties": {
+                  "type": "number"
+                }
+              }
+            ],
+            [
+              {
+                "key": "openTasks2",
+                "title": "Open",
+                "value": "doc:openTasks",
+                "displayProperties": {
+                  "type": "number"
+                }
+              },
+              {
+                "key": "blockedTasks2",
+                "title": "Geblokkeerd",
+                "value": "doc:blockedTasks",
+                "displayProperties": {
+                  "type": "number"
+                }
+              }
+            ]
+          ]
+        }
+      },
+      {
+        "type": "divider",
+        "key": "project-budget-divider-3",
+        "title": "Budget",
+        "width": 4,
+        "highContrast": false
+      },
+      {
+        "type": "fields",
+        "key": "project-budget-budget-toegekend",
+        "title": "Toegekend budget",
+        "width": 1,
+        "highContrast": true,
+        "properties": {
+          "columns": [
+            [
+              {
+                "key": "budgetAllocated",
+                "title": "Toegekend",
+                "value": "doc:budgetAllocated",
+                "displayProperties": {
+                  "type": "currency",
+                  "currencyCode": "EUR"
+                }
+              }
+            ]
+          ]
+        }
+      },
+      {
+        "type": "fields",
+        "key": "project-budget-budget-besteed",
+        "title": "Besteed budget",
+        "width": 1,
+        "highContrast": false,
+        "properties": {
+          "columns": [
+            [
+              {
+                "key": "budgetSpent",
+                "title": "Besteed",
+                "value": "doc:budgetSpent",
+                "displayProperties": {
+                  "type": "currency",
+                  "currencyCode": "EUR"
+                }
+              }
+            ]
+          ]
+        }
+      },
+      {
+        "type": "fields",
+        "key": "project-budget-budget-resterend",
+        "title": "Resterend budget",
+        "width": 1,
+        "highContrast": true,
+        "properties": {
+          "columns": [
+            [
+              {
+                "key": "budgetRemaining",
+                "title": "Resterend",
+                "value": "doc:budgetRemaining",
+                "displayProperties": {
+                  "type": "currency",
+                  "currencyCode": "EUR"
+                }
+              }
+            ]
+          ]
+        }
+      },
+      {
+        "type": "fields",
+        "key": "project-budget-budget-samenvatting",
+        "title": "Budgetoverzicht",
+        "width": 3,
+        "highContrast": false,
+        "properties": {
+          "columns": [
+            [
+              {
+                "key": "budgetAllocated2",
+                "title": "Toegekend",
+                "value": "doc:budgetAllocated",
+                "displayProperties": {
+                  "type": "currency",
+                  "currencyCode": "EUR"
+                }
+              },
+              {
+                "key": "budgetSpent2",
+                "title": "Besteed",
+                "value": "doc:budgetSpent",
+                "displayProperties": {
+                  "type": "currency",
+                  "currencyCode": "EUR"
+                }
+              },
+              {
+                "key": "budgetRemaining2",
+                "title": "Resterend",
+                "value": "doc:budgetRemaining",
+                "displayProperties": {
+                  "type": "currency",
+                  "currencyCode": "EUR"
+                }
+              }
+            ]
+          ]
+        }
+      },
+      {
+        "type": "divider",
+        "key": "project-budget-divider-4",
+        "title": "Factuurgegevens",
+        "width": 4,
+        "highContrast": false
+      },
+      {
+        "type": "fields",
+        "key": "project-budget-factuurnummer",
+        "title": "Factuurnummer",
+        "width": 1,
+        "highContrast": true,
+        "properties": {
+          "columns": [
+            [
+              {
+                "key": "invoiceNumber",
+                "title": "Factuurnummer",
+                "value": "doc:invoiceNumber"
+              }
+            ]
+          ]
+        }
+      },
+      {
+        "type": "fields",
+        "key": "project-budget-factuurdatum",
+        "title": "Factuurdatum",
+        "width": 1,
+        "highContrast": false,
+        "properties": {
+          "columns": [
+            [
+              {
+                "key": "invoiceDate",
+                "title": "Factuurdatum",
+                "value": "doc:invoiceDate",
+                "displayProperties": {
+                  "type": "date",
+                  "format": "DD-MM-YYYY"
+                }
+              }
+            ]
+          ]
+        }
+      },
+      {
+        "type": "fields",
+        "key": "project-budget-factuurbedrag",
+        "title": "Factuurbedrag",
+        "width": 1,
+        "highContrast": true,
+        "properties": {
+          "columns": [
+            [
+              {
+                "key": "invoiceAmount",
+                "title": "Bedrag",
+                "value": "doc:invoiceAmount",
+                "displayProperties": {
+                  "type": "currency",
+                  "currencyCode": "EUR"
+                }
+              }
+            ]
+          ]
+        }
+      },
+      {
+        "type": "fields",
+        "key": "project-budget-factuur-btw",
+        "title": "BTW",
+        "width": 1,
+        "highContrast": false,
+        "properties": {
+          "columns": [
+            [
+              {
+                "key": "invoiceTax",
+                "title": "BTW",
+                "value": "doc:invoiceTax",
+                "displayProperties": {
+                  "type": "currency",
+                  "currencyCode": "EUR"
+                }
+              }
+            ]
+          ]
+        }
+      },
+      {
+        "type": "fields",
+        "key": "project-budget-factuur-totaal",
+        "title": "Totaalbedrag",
+        "width": 1,
+        "highContrast": true,
+        "properties": {
+          "columns": [
+            [
+              {
+                "key": "invoiceTotal",
+                "title": "Totaal",
+                "value": "doc:invoiceTotal",
+                "displayProperties": {
+                  "type": "currency",
+                  "currencyCode": "EUR"
+                }
+              }
+            ]
+          ]
+        }
+      },
+      {
+        "type": "divider",
+        "key": "project-budget-divider-5",
+        "title": "Betalingen",
+        "width": 4,
+        "highContrast": false
+      },
+      {
+        "type": "fields",
+        "key": "project-budget-betaalmethode",
+        "title": "Betaalmethode",
+        "width": 1,
+        "highContrast": false,
+        "properties": {
+          "columns": [
+            [
+              {
+                "key": "paymentMethod",
+                "title": "Methode",
+                "value": "doc:paymentMethod"
+              }
+            ]
+          ]
+        }
+      },
+      {
+        "type": "fields",
+        "key": "project-budget-betaaldatum",
+        "title": "Betaaldatum",
+        "width": 1,
+        "highContrast": true,
+        "properties": {
+          "columns": [
+            [
+              {
+                "key": "paymentDate",
+                "title": "Datum",
+                "value": "doc:paymentDate",
+                "displayProperties": {
+                  "type": "date",
+                  "format": "DD-MM-YYYY"
+                }
+              }
+            ]
+          ]
+        }
+      },
+      {
+        "type": "fields",
+        "key": "project-budget-betaalreferentie",
+        "title": "Betaalreferentie",
+        "width": 2,
+        "highContrast": false,
+        "properties": {
+          "columns": [
+            [
+              {
+                "key": "paymentReference",
+                "title": "Referentie",
+                "value": "doc:paymentReference"
+              }
+            ]
+          ]
+        }
+      },
+      {
+        "type": "divider",
+        "key": "project-budget-divider-6",
+        "title": "Risico",
+        "width": 4,
+        "highContrast": false
+      },
+      {
+        "type": "fields",
+        "key": "project-budget-risico-niveau",
+        "title": "Risiconiveau",
+        "width": 1,
+        "highContrast": true,
+        "properties": {
+          "columns": [
+            [
+              {
+                "key": "riskLevel",
+                "title": "Niveau",
+                "value": "doc:riskLevel"
+              }
+            ]
+          ]
+        }
+      },
+      {
+        "type": "fields",
+        "key": "project-budget-risico-detail",
+        "title": "Risicodetails",
+        "width": 3,
+        "highContrast": false,
+        "properties": {
+          "columns": [
+            [
+              {
+                "key": "riskDescription",
+                "title": "Beschrijving",
+                "value": "doc:riskDescription"
+              }
+            ],
+            [
+              {
+                "key": "mitigationPlan",
+                "title": "Mitigatieplan",
+                "value": "doc:mitigationPlan"
+              }
+            ]
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "key": "financial",
+    "widgets": [
+      {
+        "type": "fields",
+        "key": "financial-bankrekening",
+        "title": "Bankrekening",
+        "width": 2,
+        "highContrast": true,
+        "properties": {
+          "columns": [
+            [
+              {
+                "key": "bankAccount",
+                "title": "Bankrekening",
+                "value": "doc:bankAccount"
+              }
+            ]
+          ]
+        }
+      },
+      {
+        "type": "fields",
+        "key": "financial-belasting-id",
+        "title": "Belasting-ID",
+        "width": 1,
+        "highContrast": false,
+        "properties": {
+          "columns": [
+            [
+              {
+                "key": "taxId",
+                "title": "Belasting-ID",
+                "value": "doc:taxId"
+              }
+            ]
+          ]
+        }
+      },
+      {
+        "type": "fields",
+        "key": "financial-verzekeringsnummer",
+        "title": "Verzekeringsnummer",
+        "width": 1,
+        "highContrast": true,
+        "properties": {
+          "columns": [
+            [
+              {
+                "key": "insuranceNumber",
+                "title": "Verzekeringsnummer",
+                "value": "doc:insuranceNumber"
+              }
+            ]
+          ]
+        }
+      },
+      {
+        "type": "fields",
+        "key": "financial-salaris",
+        "title": "Salaris",
+        "width": 1,
+        "highContrast": false,
+        "properties": {
+          "columns": [
+            [
+              {
+                "key": "salary",
+                "title": "Salaris",
+                "value": "doc:salary",
+                "displayProperties": {
+                  "type": "currency",
+                  "currencyCode": "EUR"
+                }
+              }
+            ]
+          ]
+        }
+      },
+      {
+        "type": "fields",
+        "key": "financial-budget-toegekend",
+        "title": "Toegekend budget",
+        "width": 1,
+        "highContrast": true,
+        "properties": {
+          "columns": [
+            [
+              {
+                "key": "budgetAllocated",
+                "title": "Toegekend",
+                "value": "doc:budgetAllocated",
+                "displayProperties": {
+                  "type": "currency",
+                  "currencyCode": "EUR"
+                }
+              }
+            ]
+          ]
+        }
+      },
+      {
+        "type": "fields",
+        "key": "financial-budget-besteed",
+        "title": "Besteed budget",
+        "width": 1,
+        "highContrast": false,
+        "properties": {
+          "columns": [
+            [
+              {
+                "key": "budgetSpent",
+                "title": "Besteed",
+                "value": "doc:budgetSpent",
+                "displayProperties": {
+                  "type": "currency",
+                  "currencyCode": "EUR"
+                }
+              }
+            ]
+          ]
+        }
+      },
+      {
+        "type": "fields",
+        "key": "financial-budget-resterend",
+        "title": "Resterend budget",
+        "width": 1,
+        "highContrast": true,
+        "properties": {
+          "columns": [
+            [
+              {
+                "key": "budgetRemaining",
+                "title": "Resterend",
+                "value": "doc:budgetRemaining",
+                "displayProperties": {
+                  "type": "currency",
+                  "currencyCode": "EUR"
+                }
+              }
+            ]
+          ]
+        }
+      },
+      {
+        "type": "fields",
+        "key": "financial-factuurnummer",
+        "title": "Factuurnummer",
+        "width": 1,
+        "highContrast": false,
+        "properties": {
+          "columns": [
+            [
+              {
+                "key": "invoiceNumber",
+                "title": "Factuurnummer",
+                "value": "doc:invoiceNumber"
+              }
+            ]
+          ]
+        }
+      },
+      {
+        "type": "fields",
+        "key": "financial-factuurdatum",
+        "title": "Factuurdatum",
+        "width": 1,
+        "highContrast": true,
+        "properties": {
+          "columns": [
+            [
+              {
+                "key": "invoiceDate",
+                "title": "Datum",
+                "value": "doc:invoiceDate",
+                "displayProperties": {
+                  "type": "date",
+                  "format": "DD-MM-YYYY"
+                }
+              }
+            ]
+          ]
+        }
+      },
+      {
+        "type": "fields",
+        "key": "financial-factuurbedrag",
+        "title": "Factuurbedrag",
+        "width": 1,
+        "highContrast": false,
+        "properties": {
+          "columns": [
+            [
+              {
+                "key": "invoiceAmount",
+                "title": "Bedrag",
+                "value": "doc:invoiceAmount",
+                "displayProperties": {
+                  "type": "currency",
+                  "currencyCode": "EUR"
+                }
+              }
+            ]
+          ]
+        }
+      },
+      {
+        "type": "fields",
+        "key": "financial-factuur-btw",
+        "title": "BTW",
+        "width": 1,
+        "highContrast": true,
+        "properties": {
+          "columns": [
+            [
+              {
+                "key": "invoiceTax",
+                "title": "BTW",
+                "value": "doc:invoiceTax",
+                "displayProperties": {
+                  "type": "currency",
+                  "currencyCode": "EUR"
+                }
+              }
+            ]
+          ]
+        }
+      },
+      {
+        "type": "fields",
+        "key": "financial-factuur-totaal",
+        "title": "Factuurtotaal",
+        "width": 1,
+        "highContrast": false,
+        "properties": {
+          "columns": [
+            [
+              {
+                "key": "invoiceTotal",
+                "title": "Totaal",
+                "value": "doc:invoiceTotal",
+                "displayProperties": {
+                  "type": "currency",
+                  "currencyCode": "EUR"
+                }
+              }
+            ]
+          ]
+        }
+      },
+      {
+        "type": "fields",
+        "key": "financial-betaalmethode",
+        "title": "Betaalmethode",
+        "width": 2,
+        "highContrast": true,
+        "properties": {
+          "columns": [
+            [
+              {
+                "key": "paymentMethod",
+                "title": "Methode",
+                "value": "doc:paymentMethod"
+              }
+            ]
+          ]
+        }
+      },
+      {
+        "type": "fields",
+        "key": "financial-betaaldatum",
+        "title": "Betaaldatum",
+        "width": 1,
+        "highContrast": false,
+        "properties": {
+          "columns": [
+            [
+              {
+                "key": "paymentDate",
+                "title": "Datum",
+                "value": "doc:paymentDate",
+                "displayProperties": {
+                  "type": "date",
+                  "format": "DD-MM-YYYY"
+                }
+              }
+            ]
+          ]
+        }
+      },
+      {
+        "type": "fields",
+        "key": "financial-betaalreferentie",
+        "title": "Betaalreferentie",
+        "width": 1,
+        "highContrast": true,
+        "properties": {
+          "columns": [
+            [
+              {
+                "key": "paymentReference",
+                "title": "Referentie",
+                "value": "doc:paymentReference"
+              }
+            ]
+          ]
+        }
+      },
+      {
+        "type": "fields",
+        "key": "financial-eenheidsprijs",
+        "title": "Eenheidsprijs",
+        "width": 1,
+        "highContrast": false,
+        "properties": {
+          "columns": [
+            [
+              {
+                "key": "unitPrice",
+                "title": "Eenheidsprijs",
+                "value": "doc:unitPrice",
+                "displayProperties": {
+                  "type": "currency",
+                  "currencyCode": "EUR"
+                }
+              }
+            ]
+          ]
+        }
+      },
+      {
+        "type": "fields",
+        "key": "financial-aantal",
+        "title": "Aantal",
+        "width": 1,
+        "highContrast": true,
+        "properties": {
+          "columns": [
+            [
+              {
+                "key": "quantity",
+                "title": "Aantal",
+                "value": "doc:quantity",
+                "displayProperties": {
+                  "type": "number"
+                }
+              }
+            ]
+          ]
+        }
+      },
+      {
+        "type": "fields",
+        "key": "financial-korting",
+        "title": "Korting",
+        "width": 1,
+        "highContrast": false,
+        "properties": {
+          "columns": [
+            [
+              {
+                "key": "discount",
+                "title": "Korting",
+                "value": "doc:discount",
+                "displayProperties": {
+                  "type": "percent"
+                }
+              }
+            ]
+          ]
+        }
+      },
+      {
+        "type": "fields",
+        "key": "financial-totaalprijs",
+        "title": "Totaalprijs",
+        "width": 1,
+        "highContrast": true,
+        "properties": {
+          "columns": [
+            [
+              {
+                "key": "totalPrice",
+                "title": "Totaalprijs",
+                "value": "doc:totalPrice",
+                "displayProperties": {
+                  "type": "currency",
+                  "currencyCode": "EUR"
+                }
+              }
+            ]
+          ]
+        }
+      },
+      {
+        "type": "fields",
+        "key": "financial-factuur-overzicht",
+        "title": "Factuuroverzicht",
+        "width": 3,
+        "highContrast": false,
+        "properties": {
+          "columns": [
+            [
+              {
+                "key": "invoiceNumber2",
+                "title": "Nummer",
+                "value": "doc:invoiceNumber"
+              },
+              {
+                "key": "invoiceDate2",
+                "title": "Datum",
+                "value": "doc:invoiceDate",
+                "displayProperties": {
+                  "type": "date",
+                  "format": "DD-MM-YYYY"
+                }
+              },
+              {
+                "key": "invoiceAmount2",
+                "title": "Bedrag",
+                "value": "doc:invoiceAmount",
+                "displayProperties": {
+                  "type": "currency",
+                  "currencyCode": "EUR"
+                }
+              }
+            ],
+            [
+              {
+                "key": "invoiceTax2",
+                "title": "BTW",
+                "value": "doc:invoiceTax",
+                "displayProperties": {
+                  "type": "currency",
+                  "currencyCode": "EUR"
+                }
+              },
+              {
+                "key": "invoiceTotal2",
+                "title": "Totaal",
+                "value": "doc:invoiceTotal",
+                "displayProperties": {
+                  "type": "currency",
+                  "currencyCode": "EUR"
+                }
+              }
+            ]
+          ]
+        }
+      },
+      {
+        "type": "fields",
+        "key": "financial-budget-overzicht",
+        "title": "Budgetoverzicht",
+        "width": 3,
+        "highContrast": true,
+        "properties": {
+          "columns": [
+            [
+              {
+                "key": "budgetAllocated2",
+                "title": "Toegekend",
+                "value": "doc:budgetAllocated",
+                "displayProperties": {
+                  "type": "currency",
+                  "currencyCode": "EUR"
+                }
+              },
+              {
+                "key": "budgetSpent2",
+                "title": "Besteed",
+                "value": "doc:budgetSpent",
+                "displayProperties": {
+                  "type": "currency",
+                  "currencyCode": "EUR"
+                }
+              }
+            ],
+            [
+              {
+                "key": "budgetRemaining2",
+                "title": "Resterend",
+                "value": "doc:budgetRemaining",
+                "displayProperties": {
+                  "type": "currency",
+                  "currencyCode": "EUR"
+                }
+              }
+            ]
+          ]
+        }
+      },
+      {
+        "type": "fields",
+        "key": "financial-betaling-overzicht",
+        "title": "Betalingsoverzicht",
+        "width": 4,
+        "highContrast": false,
+        "properties": {
+          "columns": [
+            [
+              {
+                "key": "paymentMethod2",
+                "title": "Methode",
+                "value": "doc:paymentMethod"
+              },
+              {
+                "key": "paymentDate2",
+                "title": "Datum",
+                "value": "doc:paymentDate",
+                "displayProperties": {
+                  "type": "date",
+                  "format": "DD-MM-YYYY"
+                }
+              },
+              {
+                "key": "paymentReference2",
+                "title": "Referentie",
+                "value": "doc:paymentReference"
+              }
+            ]
+          ]
+        }
+      },
+      {
+        "type": "fields",
+        "key": "financial-leverancier-naam",
+        "title": "Leveranciersnaam",
+        "width": 2,
+        "highContrast": true,
+        "properties": {
+          "columns": [
+            [
+              {
+                "key": "vendorName",
+                "title": "Leverancier",
+                "value": "doc:vendorName"
+              }
+            ]
+          ]
+        }
+      },
+      {
+        "type": "fields",
+        "key": "financial-leverancier-contact",
+        "title": "Leverancierscontact",
+        "width": 2,
+        "highContrast": false,
+        "properties": {
+          "columns": [
+            [
+              {
+                "key": "vendorContact",
+                "title": "Contactpersoon",
+                "value": "doc:vendorContact"
+              }
+            ],
+            [
+              {
+                "key": "vendorEmail",
+                "title": "E-mail",
+                "value": "doc:vendorEmail"
+              }
+            ]
+          ]
+        }
+      },
+      {
+        "type": "fields",
+        "key": "financial-leverancier-telefoon",
+        "title": "Leverancierstelefoon",
+        "width": 1,
+        "highContrast": true,
+        "properties": {
+          "columns": [
+            [
+              {
+                "key": "vendorPhone",
+                "title": "Telefoon",
+                "value": "doc:vendorPhone"
+              }
+            ]
+          ]
+        }
+      },
+      {
+        "type": "fields",
+        "key": "financial-financieel-risico",
+        "title": "Financieel risico",
+        "width": 2,
+        "highContrast": false,
+        "properties": {
+          "columns": [
+            [
+              {
+                "key": "riskLevel",
+                "title": "Risiconiveau",
+                "value": "doc:riskLevel"
+              }
+            ],
+            [
+              {
+                "key": "riskDescription",
+                "title": "Beschrijving",
+                "value": "doc:riskDescription"
+              }
+            ]
+          ]
+        }
+      },
+      {
+        "type": "fields",
+        "key": "financial-goedkeuring-status",
+        "title": "Goedkeuringsstatus",
+        "width": 1,
+        "highContrast": true,
+        "properties": {
+          "columns": [
+            [
+              {
+                "key": "approvalStatus",
+                "title": "Status",
+                "value": "doc:approvalStatus"
+              }
+            ]
+          ]
+        }
+      },
+      {
+        "type": "fields",
+        "key": "financial-goedgekeurd-door",
+        "title": "Goedgekeurd door",
+        "width": 1,
+        "highContrast": false,
+        "properties": {
+          "columns": [
+            [
+              {
+                "key": "approvedBy",
+                "title": "Door",
+                "value": "doc:approvedBy"
+              }
+            ]
+          ]
+        }
+      },
+      {
+        "type": "fields",
+        "key": "financial-goedkeuring-datum",
+        "title": "Goedkeuringsdatum",
+        "width": 1,
+        "highContrast": true,
+        "properties": {
+          "columns": [
+            [
+              {
+                "key": "approvalDate",
+                "title": "Datum",
+                "value": "doc:approvalDate",
+                "displayProperties": {
+                  "type": "date",
+                  "format": "DD-MM-YYYY"
+                }
+              }
+            ]
+          ]
+        }
+      },
+      {
+        "type": "fields",
+        "key": "financial-goedkeuring-opmerkingen",
+        "title": "Goedkeuringsopmerkingen",
+        "width": 3,
+        "highContrast": false,
+        "properties": {
+          "columns": [
+            [
+              {
+                "key": "approvalRemarks",
+                "title": "Opmerkingen",
+                "value": "doc:approvalRemarks"
+              }
+            ]
+          ]
+        }
+      },
+      {
+        "type": "fields",
+        "key": "financial-prijs-detail",
+        "title": "Prijsdetails",
+        "width": 2,
+        "highContrast": true,
+        "properties": {
+          "columns": [
+            [
+              {
+                "key": "unitPrice2",
+                "title": "Eenheidsprijs",
+                "value": "doc:unitPrice",
+                "displayProperties": {
+                  "type": "currency",
+                  "currencyCode": "EUR"
+                }
+              },
+              {
+                "key": "quantity2",
+                "title": "Aantal",
+                "value": "doc:quantity",
+                "displayProperties": {
+                  "type": "number"
+                }
+              }
+            ],
+            [
+              {
+                "key": "discount2",
+                "title": "Korting",
+                "value": "doc:discount",
+                "displayProperties": {
+                  "type": "percent"
+                }
+              },
+              {
+                "key": "totalPrice2",
+                "title": "Totaal",
+                "value": "doc:totalPrice",
+                "displayProperties": {
+                  "type": "currency",
+                  "currencyCode": "EUR"
+                }
+              }
+            ]
+          ]
+        }
+      },
+      {
+        "type": "fields",
+        "key": "financial-salaris-detail",
+        "title": "Salarisdetails",
+        "width": 2,
+        "highContrast": false,
+        "properties": {
+          "columns": [
+            [
+              {
+                "key": "salary2",
+                "title": "Salaris",
+                "value": "doc:salary",
+                "displayProperties": {
+                  "type": "currency",
+                  "currencyCode": "EUR"
+                }
+              },
+              {
+                "key": "hoursPerWeek",
+                "title": "Uren/week",
+                "value": "doc:hoursPerWeek",
+                "displayProperties": {
+                  "type": "number"
+                }
+              }
+            ]
+          ]
+        }
+      },
+      {
+        "type": "fields",
+        "key": "financial-financieel-samenvatting",
+        "title": "Financiële samenvatting",
+        "width": 4,
+        "highContrast": true,
+        "properties": {
+          "columns": [
+            [
+              {
+                "key": "bankAccount2",
+                "title": "Bankrekening",
+                "value": "doc:bankAccount"
+              },
+              {
+                "key": "taxId2",
+                "title": "Belasting-ID",
+                "value": "doc:taxId"
+              },
+              {
+                "key": "insuranceNumber2",
+                "title": "Verzekeringsnr.",
+                "value": "doc:insuranceNumber"
+              }
+            ],
+            [
+              {
+                "key": "salary3",
+                "title": "Salaris",
+                "value": "doc:salary",
+                "displayProperties": {
+                  "type": "currency",
+                  "currencyCode": "EUR"
+                }
+              },
+              {
+                "key": "budgetAllocated3",
+                "title": "Budget",
+                "value": "doc:budgetAllocated",
+                "displayProperties": {
+                  "type": "currency",
+                  "currencyCode": "EUR"
+                }
+              }
+            ]
+          ]
+        }
+      },
+      {
+        "type": "fields",
+        "key": "financial-mitigatie",
+        "title": "Mitigatieplan",
+        "width": 2,
+        "highContrast": false,
+        "properties": {
+          "columns": [
+            [
+              {
+                "key": "mitigationPlan",
+                "title": "Plan",
+                "value": "doc:mitigationPlan"
+              }
+            ]
+          ]
+        }
+      },
+      {
+        "type": "fields",
+        "key": "financial-netto-overzicht",
+        "title": "Netto-overzicht",
+        "width": 1,
+        "highContrast": true,
+        "properties": {
+          "columns": [
+            [
+              {
+                "key": "invoiceTotal3",
+                "title": "Netto totaal",
+                "value": "doc:invoiceTotal",
+                "displayProperties": {
+                  "type": "currency",
+                  "currencyCode": "EUR"
+                }
+              }
+            ]
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "key": "logistics",
+    "widgets": [
+      {
+        "type": "fields",
+        "key": "logistics-leverancier-naam",
+        "title": "Leverancier",
+        "width": 2,
+        "highContrast": true,
+        "properties": {
+          "columns": [
+            [
+              {
+                "key": "vendorName",
+                "title": "Leverancier",
+                "value": "doc:vendorName"
+              }
+            ]
+          ]
+        }
+      },
+      {
+        "type": "fields",
+        "key": "logistics-leverancier-contact",
+        "title": "Contactpersoon",
+        "width": 1,
+        "highContrast": false,
+        "properties": {
+          "columns": [
+            [
+              {
+                "key": "vendorContact",
+                "title": "Contactpersoon",
+                "value": "doc:vendorContact"
+              }
+            ]
+          ]
+        }
+      },
+      {
+        "type": "fields",
+        "key": "logistics-leverancier-email",
+        "title": "E-mail leverancier",
+        "width": 1,
+        "highContrast": true,
+        "properties": {
+          "columns": [
+            [
+              {
+                "key": "vendorEmail",
+                "title": "E-mail",
+                "value": "doc:vendorEmail"
+              }
+            ]
+          ]
+        }
+      },
+      {
+        "type": "fields",
+        "key": "logistics-leverancier-telefoon",
+        "title": "Telefoon leverancier",
+        "width": 1,
+        "highContrast": false,
+        "properties": {
+          "columns": [
+            [
+              {
+                "key": "vendorPhone",
+                "title": "Telefoon",
+                "value": "doc:vendorPhone"
+              }
+            ]
+          ]
+        }
+      },
+      {
+        "type": "fields",
+        "key": "logistics-afleveradres",
+        "title": "Afleveradres",
+        "width": 3,
+        "highContrast": true,
+        "properties": {
+          "columns": [
+            [
+              {
+                "key": "deliveryAddress",
+                "title": "Afleveradres",
+                "value": "doc:deliveryAddress"
+              }
+            ]
+          ]
+        }
+      },
+      {
+        "type": "fields",
+        "key": "logistics-leverdatum",
+        "title": "Leverdatum",
+        "width": 1,
+        "highContrast": false,
+        "properties": {
+          "columns": [
+            [
+              {
+                "key": "deliveryDate",
+                "title": "Leverdatum",
+                "value": "doc:deliveryDate",
+                "displayProperties": {
+                  "type": "date",
+                  "format": "DD-MM-YYYY"
+                }
+              }
+            ]
+          ]
+        }
+      },
+      {
+        "type": "fields",
+        "key": "logistics-leverstatus",
+        "title": "Leverstatus",
+        "width": 1,
+        "highContrast": true,
+        "properties": {
+          "columns": [
+            [
+              {
+                "key": "deliveryStatus",
+                "title": "Status",
+                "value": "doc:deliveryStatus"
+              }
+            ]
+          ]
+        }
+      },
+      {
+        "type": "fields",
+        "key": "logistics-trackingnummer",
+        "title": "Trackingnummer",
+        "width": 2,
+        "highContrast": false,
+        "properties": {
+          "columns": [
+            [
+              {
+                "key": "trackingNumber",
+                "title": "Trackingnummer",
+                "value": "doc:trackingNumber"
+              }
+            ]
+          ]
+        }
+      },
+      {
+        "type": "fields",
+        "key": "logistics-magazijnlocatie",
+        "title": "Magazijnlocatie",
+        "width": 1,
+        "highContrast": true,
+        "properties": {
+          "columns": [
+            [
+              {
+                "key": "warehouseLocation",
+                "title": "Locatie",
+                "value": "doc:warehouseLocation"
+              }
+            ]
+          ]
+        }
+      },
+      {
+        "type": "fields",
+        "key": "logistics-voorraadniveau",
+        "title": "Voorraadniveau",
+        "width": 1,
+        "highContrast": false,
+        "properties": {
+          "columns": [
+            [
+              {
+                "key": "stockLevel",
+                "title": "Voorraad",
+                "value": "doc:stockLevel",
+                "displayProperties": {
+                  "type": "number"
+                }
+              }
+            ]
+          ]
+        }
+      },
+      {
+        "type": "fields",
+        "key": "logistics-bestelpunt",
+        "title": "Bestelpunt",
+        "width": 1,
+        "highContrast": true,
+        "properties": {
+          "columns": [
+            [
+              {
+                "key": "reorderPoint",
+                "title": "Bestelpunt",
+                "value": "doc:reorderPoint",
+                "displayProperties": {
+                  "type": "number"
+                }
+              }
+            ]
+          ]
+        }
+      },
+      {
+        "type": "fields",
+        "key": "logistics-eenheidsprijs",
+        "title": "Eenheidsprijs",
+        "width": 1,
+        "highContrast": false,
+        "properties": {
+          "columns": [
+            [
+              {
+                "key": "unitPrice",
+                "title": "Prijs",
+                "value": "doc:unitPrice",
+                "displayProperties": {
+                  "type": "currency",
+                  "currencyCode": "EUR"
+                }
+              }
+            ]
+          ]
+        }
+      },
+      {
+        "type": "fields",
+        "key": "logistics-aantal",
+        "title": "Aantal",
+        "width": 1,
+        "highContrast": true,
+        "properties": {
+          "columns": [
+            [
+              {
+                "key": "quantity",
+                "title": "Aantal",
+                "value": "doc:quantity",
+                "displayProperties": {
+                  "type": "number"
+                }
+              }
+            ]
+          ]
+        }
+      },
+      {
+        "type": "fields",
+        "key": "logistics-korting",
+        "title": "Korting",
+        "width": 1,
+        "highContrast": false,
+        "properties": {
+          "columns": [
+            [
+              {
+                "key": "discount",
+                "title": "Korting",
+                "value": "doc:discount",
+                "displayProperties": {
+                  "type": "percent"
+                }
+              }
+            ]
+          ]
+        }
+      },
+      {
+        "type": "fields",
+        "key": "logistics-totaalprijs",
+        "title": "Totaalprijs",
+        "width": 1,
+        "highContrast": true,
+        "properties": {
+          "columns": [
+            [
+              {
+                "key": "totalPrice",
+                "title": "Totaalprijs",
+                "value": "doc:totalPrice",
+                "displayProperties": {
+                  "type": "currency",
+                  "currencyCode": "EUR"
+                }
+              }
+            ]
+          ]
+        }
+      },
+      {
+        "type": "fields",
+        "key": "logistics-levering-overzicht",
+        "title": "Leveringsoverzicht",
+        "width": 3,
+        "highContrast": false,
+        "properties": {
+          "columns": [
+            [
+              {
+                "key": "deliveryAddress2",
+                "title": "Adres",
+                "value": "doc:deliveryAddress"
+              },
+              {
+                "key": "deliveryDate2",
+                "title": "Datum",
+                "value": "doc:deliveryDate",
+                "displayProperties": {
+                  "type": "date",
+                  "format": "DD-MM-YYYY"
+                }
+              }
+            ],
+            [
+              {
+                "key": "deliveryStatus2",
+                "title": "Status",
+                "value": "doc:deliveryStatus"
+              },
+              {
+                "key": "trackingNumber2",
+                "title": "Tracking",
+                "value": "doc:trackingNumber"
+              }
+            ]
+          ]
+        }
+      },
+      {
+        "type": "fields",
+        "key": "logistics-voorraad-overzicht",
+        "title": "Voorraadoverzicht",
+        "width": 2,
+        "highContrast": true,
+        "properties": {
+          "columns": [
+            [
+              {
+                "key": "stockLevel2",
+                "title": "Voorraad",
+                "value": "doc:stockLevel",
+                "displayProperties": {
+                  "type": "number"
+                }
+              },
+              {
+                "key": "reorderPoint2",
+                "title": "Bestelpunt",
+                "value": "doc:reorderPoint",
+                "displayProperties": {
+                  "type": "number"
+                }
+              }
+            ]
+          ]
+        }
+      },
+      {
+        "type": "fields",
+        "key": "logistics-prijs-overzicht",
+        "title": "Prijsoverzicht",
+        "width": 2,
+        "highContrast": false,
+        "properties": {
+          "columns": [
+            [
+              {
+                "key": "unitPrice2",
+                "title": "Eenheidsprijs",
+                "value": "doc:unitPrice",
+                "displayProperties": {
+                  "type": "currency",
+                  "currencyCode": "EUR"
+                }
+              },
+              {
+                "key": "quantity2",
+                "title": "Aantal",
+                "value": "doc:quantity",
+                "displayProperties": {
+                  "type": "number"
+                }
+              }
+            ],
+            [
+              {
+                "key": "discount2",
+                "title": "Korting",
+                "value": "doc:discount",
+                "displayProperties": {
+                  "type": "percent"
+                }
+              },
+              {
+                "key": "totalPrice2",
+                "title": "Totaal",
+                "value": "doc:totalPrice",
+                "displayProperties": {
+                  "type": "currency",
+                  "currencyCode": "EUR"
+                }
+              }
+            ]
+          ]
+        }
+      },
+      {
+        "type": "fields",
+        "key": "logistics-leverancier-overzicht",
+        "title": "Leveranciersoverzicht",
+        "width": 4,
+        "highContrast": true,
+        "properties": {
+          "columns": [
+            [
+              {
+                "key": "vendorName2",
+                "title": "Naam",
+                "value": "doc:vendorName"
+              },
+              {
+                "key": "vendorContact2",
+                "title": "Contact",
+                "value": "doc:vendorContact"
+              },
+              {
+                "key": "vendorEmail2",
+                "title": "E-mail",
+                "value": "doc:vendorEmail"
+              },
+              {
+                "key": "vendorPhone2",
+                "title": "Telefoon",
+                "value": "doc:vendorPhone"
+              }
+            ]
+          ]
+        }
+      },
+      {
+        "type": "fields",
+        "key": "logistics-factuur-nummer",
+        "title": "Factuurnummer",
+        "width": 1,
+        "highContrast": false,
+        "properties": {
+          "columns": [
+            [
+              {
+                "key": "invoiceNumber",
+                "title": "Nummer",
+                "value": "doc:invoiceNumber"
+              }
+            ]
+          ]
+        }
+      },
+      {
+        "type": "fields",
+        "key": "logistics-factuur-bedrag",
+        "title": "Factuurbedrag",
+        "width": 1,
+        "highContrast": true,
+        "properties": {
+          "columns": [
+            [
+              {
+                "key": "invoiceAmount",
+                "title": "Bedrag",
+                "value": "doc:invoiceAmount",
+                "displayProperties": {
+                  "type": "currency",
+                  "currencyCode": "EUR"
+                }
+              }
+            ]
+          ]
+        }
+      },
+      {
+        "type": "fields",
+        "key": "logistics-betaalmethode",
+        "title": "Betaalmethode",
+        "width": 1,
+        "highContrast": false,
+        "properties": {
+          "columns": [
+            [
+              {
+                "key": "paymentMethod",
+                "title": "Methode",
+                "value": "doc:paymentMethod"
+              }
+            ]
+          ]
+        }
+      },
+      {
+        "type": "fields",
+        "key": "logistics-betaaldatum",
+        "title": "Betaaldatum",
+        "width": 1,
+        "highContrast": true,
+        "properties": {
+          "columns": [
+            [
+              {
+                "key": "paymentDate",
+                "title": "Datum",
+                "value": "doc:paymentDate",
+                "displayProperties": {
+                  "type": "date",
+                  "format": "DD-MM-YYYY"
+                }
+              }
+            ]
+          ]
+        }
+      },
+      {
+        "type": "fields",
+        "key": "logistics-magazijn-detail",
+        "title": "Magazijndetails",
+        "width": 3,
+        "highContrast": false,
+        "properties": {
+          "columns": [
+            [
+              {
+                "key": "warehouseLocation2",
+                "title": "Locatie",
+                "value": "doc:warehouseLocation"
+              },
+              {
+                "key": "stockLevel3",
+                "title": "Voorraad",
+                "value": "doc:stockLevel",
+                "displayProperties": {
+                  "type": "number"
+                }
+              },
+              {
+                "key": "reorderPoint3",
+                "title": "Bestelpunt",
+                "value": "doc:reorderPoint",
+                "displayProperties": {
+                  "type": "number"
+                }
+              }
+            ]
+          ]
+        }
+      },
+      {
+        "type": "fields",
+        "key": "logistics-logistiek-samenvatting",
+        "title": "Logistieke samenvatting",
+        "width": 2,
+        "highContrast": true,
+        "properties": {
+          "columns": [
+            [
+              {
+                "key": "deliveryStatus3",
+                "title": "Leverstatus",
+                "value": "doc:deliveryStatus"
+              },
+              {
+                "key": "trackingNumber3",
+                "title": "Tracking",
+                "value": "doc:trackingNumber"
+              }
+            ]
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "key": "quality-sla",
+    "widgets": [
+      {
+        "type": "divider",
+        "key": "quality-sla-divider-1",
+        "title": "SLA-overzicht",
+        "width": 4,
+        "highContrast": false
+      },
+      {
+        "type": "fields",
+        "key": "quality-sla-responstijd",
+        "title": "Responstijd",
+        "width": 1,
+        "highContrast": true,
+        "properties": {
+          "columns": [
+            [
+              {
+                "key": "responseTime",
+                "title": "Responstijd",
+                "value": "doc:responseTime",
+                "displayProperties": {
+                  "type": "number"
+                }
+              }
+            ]
+          ]
+        }
+      },
+      {
+        "type": "fields",
+        "key": "quality-sla-oplostijd",
+        "title": "Oplostijd",
+        "width": 1,
+        "highContrast": false,
+        "properties": {
+          "columns": [
+            [
+              {
+                "key": "resolutionTime",
+                "title": "Oplostijd",
+                "value": "doc:resolutionTime",
+                "displayProperties": {
+                  "type": "number"
+                }
+              }
+            ]
+          ]
+        }
+      },
+      {
+        "type": "fields",
+        "key": "quality-sla-sla-status",
+        "title": "SLA-status",
+        "width": 1,
+        "highContrast": true,
+        "properties": {
+          "columns": [
+            [
+              {
+                "key": "slaStatus",
+                "title": "Status",
+                "value": "doc:slaStatus"
+              }
+            ]
+          ]
+        }
+      },
+      {
+        "type": "fields",
+        "key": "quality-sla-sla-deadline",
+        "title": "SLA-deadline",
+        "width": 1,
+        "highContrast": false,
+        "properties": {
+          "columns": [
+            [
+              {
+                "key": "slaDeadline",
+                "title": "Deadline",
+                "value": "doc:slaDeadline",
+                "displayProperties": {
+                  "type": "date",
+                  "format": "DD-MM-YYYY"
+                }
+              }
+            ]
+          ]
+        }
+      },
+      {
+        "type": "fields",
+        "key": "quality-sla-escalatieniveau",
+        "title": "Escalatieniveau",
+        "width": 1,
+        "highContrast": true,
+        "properties": {
+          "columns": [
+            [
+              {
+                "key": "escalationLevel",
+                "title": "Niveau",
+                "value": "doc:escalationLevel",
+                "displayProperties": {
+                  "type": "number"
+                }
+              }
+            ]
+          ]
+        }
+      },
+      {
+        "type": "divider",
+        "key": "quality-sla-divider-2",
+        "title": "Klanttevredenheid",
+        "width": 4,
+        "highContrast": false
+      },
+      {
+        "type": "fields",
+        "key": "quality-sla-tevredenheid",
+        "title": "Klanttevredenheid",
+        "width": 1,
+        "highContrast": false,
+        "properties": {
+          "columns": [
+            [
+              {
+                "key": "customerSatisfaction",
+                "title": "Score",
+                "value": "doc:customerSatisfaction",
+                "displayProperties": {
+                  "type": "number"
+                }
+              }
+            ]
+          ]
+        }
+      },
+      {
+        "type": "fields",
+        "key": "quality-sla-nps",
+        "title": "NPS-score",
+        "width": 1,
+        "highContrast": true,
+        "properties": {
+          "columns": [
+            [
+              {
+                "key": "npsScore",
+                "title": "NPS",
+                "value": "doc:npsScore",
+                "displayProperties": {
+                  "type": "number"
+                }
+              }
+            ]
+          ]
+        }
+      },
+      {
+        "type": "fields",
+        "key": "quality-sla-feedback-tekst",
+        "title": "Feedbacktekst",
+        "width": 3,
+        "highContrast": false,
+        "properties": {
+          "columns": [
+            [
+              {
+                "key": "feedbackText",
+                "title": "Feedback",
+                "value": "doc:feedbackText"
+              }
+            ]
+          ]
+        }
+      },
+      {
+        "type": "fields",
+        "key": "quality-sla-feedback-datum",
+        "title": "Feedbackdatum",
+        "width": 1,
+        "highContrast": true,
+        "properties": {
+          "columns": [
+            [
+              {
+                "key": "feedbackDate",
+                "title": "Datum",
+                "value": "doc:feedbackDate",
+                "displayProperties": {
+                  "type": "date",
+                  "format": "DD-MM-YYYY"
+                }
+              }
+            ]
+          ]
+        }
+      },
+      {
+        "type": "fields",
+        "key": "quality-sla-feedback-categorie",
+        "title": "Feedbackcategorie",
+        "width": 1,
+        "highContrast": false,
+        "properties": {
+          "columns": [
+            [
+              {
+                "key": "feedbackCategory",
+                "title": "Categorie",
+                "value": "doc:feedbackCategory"
+              }
+            ]
+          ]
+        }
+      },
+      {
+        "type": "divider",
+        "key": "quality-sla-divider-3",
+        "title": "Incidenten",
+        "width": 4,
+        "highContrast": false
+      },
+      {
+        "type": "fields",
+        "key": "quality-sla-incident-type",
+        "title": "Incidenttype",
+        "width": 1,
+        "highContrast": true,
+        "properties": {
+          "columns": [
+            [
+              {
+                "key": "incidentType",
+                "title": "Type",
+                "value": "doc:incidentType"
+              }
+            ]
+          ]
+        }
+      },
+      {
+        "type": "fields",
+        "key": "quality-sla-incident-ernst",
+        "title": "Ernst",
+        "width": 1,
+        "highContrast": false,
+        "properties": {
+          "columns": [
+            [
+              {
+                "key": "incidentSeverity",
+                "title": "Ernst",
+                "value": "doc:incidentSeverity"
+              }
+            ]
+          ]
+        }
+      },
+      {
+        "type": "fields",
+        "key": "quality-sla-incident-datum",
+        "title": "Incidentdatum",
+        "width": 1,
+        "highContrast": true,
+        "properties": {
+          "columns": [
+            [
+              {
+                "key": "incidentDate",
+                "title": "Datum",
+                "value": "doc:incidentDate",
+                "displayProperties": {
+                  "type": "date",
+                  "format": "DD-MM-YYYY"
+                }
+              }
+            ]
+          ]
+        }
+      },
+      {
+        "type": "fields",
+        "key": "quality-sla-incident-locatie",
+        "title": "Locatie",
+        "width": 1,
+        "highContrast": false,
+        "properties": {
+          "columns": [
+            [
+              {
+                "key": "incidentLocation",
+                "title": "Locatie",
+                "value": "doc:incidentLocation"
+              }
+            ]
+          ]
+        }
+      },
+      {
+        "type": "fields",
+        "key": "quality-sla-incident-beschrijving",
+        "title": "Beschrijving",
+        "width": 3,
+        "highContrast": true,
+        "properties": {
+          "columns": [
+            [
+              {
+                "key": "incidentDescription",
+                "title": "Beschrijving",
+                "value": "doc:incidentDescription"
+              }
+            ]
+          ]
+        }
+      },
+      {
+        "type": "divider",
+        "key": "quality-sla-divider-4",
+        "title": "Oorzaakanalyse",
+        "width": 4,
+        "highContrast": false
+      },
+      {
+        "type": "fields",
+        "key": "quality-sla-grondoorzaak",
+        "title": "Grondoorzaak",
+        "width": 2,
+        "highContrast": false,
+        "properties": {
+          "columns": [
+            [
+              {
+                "key": "rootCause",
+                "title": "Grondoorzaak",
+                "value": "doc:rootCause"
+              }
+            ]
+          ]
+        }
+      },
+      {
+        "type": "fields",
+        "key": "quality-sla-corrigerende-actie",
+        "title": "Corrigerende actie",
+        "width": 2,
+        "highContrast": true,
+        "properties": {
+          "columns": [
+            [
+              {
+                "key": "correctiveAction",
+                "title": "Actie",
+                "value": "doc:correctiveAction"
+              }
+            ]
+          ]
+        }
+      },
+      {
+        "type": "fields",
+        "key": "quality-sla-preventieve-actie",
+        "title": "Preventieve actie",
+        "width": 2,
+        "highContrast": false,
+        "properties": {
+          "columns": [
+            [
+              {
+                "key": "preventiveAction",
+                "title": "Actie",
+                "value": "doc:preventiveAction"
+              }
+            ]
+          ]
+        }
+      },
+      {
+        "type": "divider",
+        "key": "quality-sla-divider-5",
+        "title": "SLA-details",
+        "width": 4,
+        "highContrast": false
+      },
+      {
+        "type": "fields",
+        "key": "quality-sla-sla-overzicht",
+        "title": "SLA-overzicht",
+        "width": 3,
+        "highContrast": true,
+        "properties": {
+          "columns": [
+            [
+              {
+                "key": "responseTime2",
+                "title": "Responstijd",
+                "value": "doc:responseTime",
+                "displayProperties": {
+                  "type": "number"
+                }
+              },
+              {
+                "key": "resolutionTime2",
+                "title": "Oplostijd",
+                "value": "doc:resolutionTime",
+                "displayProperties": {
+                  "type": "number"
+                }
+              }
+            ],
+            [
+              {
+                "key": "slaStatus2",
+                "title": "Status",
+                "value": "doc:slaStatus"
+              },
+              {
+                "key": "slaDeadline2",
+                "title": "Deadline",
+                "value": "doc:slaDeadline",
+                "displayProperties": {
+                  "type": "date",
+                  "format": "DD-MM-YYYY"
+                }
+              }
+            ]
+          ]
+        }
+      },
+      {
+        "type": "fields",
+        "key": "quality-sla-feedback-overzicht",
+        "title": "Feedbackoverzicht",
+        "width": 3,
+        "highContrast": false,
+        "properties": {
+          "columns": [
+            [
+              {
+                "key": "customerSatisfaction2",
+                "title": "Tevredenheid",
+                "value": "doc:customerSatisfaction",
+                "displayProperties": {
+                  "type": "number"
+                }
+              },
+              {
+                "key": "npsScore2",
+                "title": "NPS",
+                "value": "doc:npsScore",
+                "displayProperties": {
+                  "type": "number"
+                }
+              }
+            ],
+            [
+              {
+                "key": "feedbackDate2",
+                "title": "Datum",
+                "value": "doc:feedbackDate",
+                "displayProperties": {
+                  "type": "date",
+                  "format": "DD-MM-YYYY"
+                }
+              },
+              {
+                "key": "feedbackCategory2",
+                "title": "Categorie",
+                "value": "doc:feedbackCategory"
+              }
+            ]
+          ]
+        }
+      },
+      {
+        "type": "divider",
+        "key": "quality-sla-divider-6",
+        "title": "Incident details",
+        "width": 4,
+        "highContrast": false
+      },
+      {
+        "type": "fields",
+        "key": "quality-sla-incident-overzicht",
+        "title": "Incidentoverzicht",
+        "width": 4,
+        "highContrast": true,
+        "properties": {
+          "columns": [
+            [
+              {
+                "key": "incidentType2",
+                "title": "Type",
+                "value": "doc:incidentType"
+              },
+              {
+                "key": "incidentSeverity2",
+                "title": "Ernst",
+                "value": "doc:incidentSeverity"
+              },
+              {
+                "key": "incidentDate2",
+                "title": "Datum",
+                "value": "doc:incidentDate",
+                "displayProperties": {
+                  "type": "date",
+                  "format": "DD-MM-YYYY"
+                }
+              },
+              {
+                "key": "incidentLocation2",
+                "title": "Locatie",
+                "value": "doc:incidentLocation"
+              }
+            ]
+          ]
+        }
+      },
+      {
+        "type": "fields",
+        "key": "quality-sla-actie-overzicht",
+        "title": "Actieoverzicht",
+        "width": 4,
+        "highContrast": false,
+        "properties": {
+          "columns": [
+            [
+              {
+                "key": "rootCause2",
+                "title": "Oorzaak",
+                "value": "doc:rootCause"
+              },
+              {
+                "key": "correctiveAction2",
+                "title": "Corrigerend",
+                "value": "doc:correctiveAction"
+              }
+            ],
+            [
+              {
+                "key": "preventiveAction2",
+                "title": "Preventief",
+                "value": "doc:preventiveAction"
+              }
+            ]
+          ]
+        }
+      },
+      {
+        "type": "fields",
+        "key": "quality-sla-escalatie-highlight",
+        "title": "Escalatie",
+        "width": 1,
+        "highContrast": true,
+        "properties": {
+          "columns": [
+            [
+              {
+                "key": "escalationLevel2",
+                "title": "Escalatieniveau",
+                "value": "doc:escalationLevel",
+                "displayProperties": {
+                  "type": "number"
+                }
+              }
+            ]
+          ]
+        }
+      },
+      {
+        "type": "divider",
+        "key": "quality-sla-divider-7",
+        "title": "Rapportage",
+        "width": 4,
+        "highContrast": false
+      },
+      {
+        "type": "fields",
+        "key": "quality-sla-responstijd-highlight",
+        "title": "Responstijd",
+        "width": 1,
+        "highContrast": false,
+        "properties": {
+          "columns": [
+            [
+              {
+                "key": "responseTime3",
+                "title": "Responstijd",
+                "value": "doc:responseTime",
+                "displayProperties": {
+                  "type": "number"
+                }
+              }
+            ]
+          ]
+        }
+      },
+      {
+        "type": "fields",
+        "key": "quality-sla-oplostijd-highlight",
+        "title": "Oplostijd",
+        "width": 1,
+        "highContrast": true,
+        "properties": {
+          "columns": [
+            [
+              {
+                "key": "resolutionTime3",
+                "title": "Oplostijd",
+                "value": "doc:resolutionTime",
+                "displayProperties": {
+                  "type": "number"
+                }
+              }
+            ]
+          ]
+        }
+      },
+      {
+        "type": "fields",
+        "key": "quality-sla-tevredenheid-highlight",
+        "title": "Tevredenheid",
+        "width": 1,
+        "highContrast": false,
+        "properties": {
+          "columns": [
+            [
+              {
+                "key": "customerSatisfaction3",
+                "title": "Score",
+                "value": "doc:customerSatisfaction",
+                "displayProperties": {
+                  "type": "number"
+                }
+              }
+            ]
+          ]
+        }
+      },
+      {
+        "type": "fields",
+        "key": "quality-sla-nps-highlight",
+        "title": "NPS",
+        "width": 1,
+        "highContrast": true,
+        "properties": {
+          "columns": [
+            [
+              {
+                "key": "npsScore3",
+                "title": "NPS",
+                "value": "doc:npsScore",
+                "displayProperties": {
+                  "type": "number"
+                }
+              }
+            ]
+          ]
+        }
+      },
+      {
+        "type": "fields",
+        "key": "quality-sla-kwaliteit-samenvatting",
+        "title": "Kwaliteitssamenvatting",
+        "width": 2,
+        "highContrast": false,
+        "properties": {
+          "columns": [
+            [
+              {
+                "key": "slaStatus3",
+                "title": "SLA-status",
+                "value": "doc:slaStatus"
+              },
+              {
+                "key": "escalationLevel3",
+                "title": "Escalatie",
+                "value": "doc:escalationLevel",
+                "displayProperties": {
+                  "type": "number"
+                }
+              }
+            ],
+            [
+              {
+                "key": "customerSatisfaction4",
+                "title": "Tevredenheid",
+                "value": "doc:customerSatisfaction",
+                "displayProperties": {
+                  "type": "number"
+                }
+              },
+              {
+                "key": "npsScore4",
+                "title": "NPS",
+                "value": "doc:npsScore",
+                "displayProperties": {
+                  "type": "number"
+                }
+              }
+            ]
+          ]
+        }
+      },
+      {
+        "type": "fields",
+        "key": "quality-sla-incident-samenvatting",
+        "title": "Incidentsamenvatting",
+        "width": 2,
+        "highContrast": true,
+        "properties": {
+          "columns": [
+            [
+              {
+                "key": "incidentType3",
+                "title": "Type",
+                "value": "doc:incidentType"
+              },
+              {
+                "key": "incidentSeverity3",
+                "title": "Ernst",
+                "value": "doc:incidentSeverity"
+              }
+            ]
+          ]
+        }
+      },
+      {
+        "type": "fields",
+        "key": "quality-sla-sla-trend",
+        "title": "SLA-trend",
+        "width": 2,
+        "highContrast": false,
+        "properties": {
+          "columns": [
+            [
+              {
+                "key": "responseTime4",
+                "title": "Respons",
+                "value": "doc:responseTime",
+                "displayProperties": {
+                  "type": "number"
+                }
+              },
+              {
+                "key": "resolutionTime4",
+                "title": "Oplossing",
+                "value": "doc:resolutionTime",
+                "displayProperties": {
+                  "type": "number"
+                }
+              }
+            ]
+          ]
+        }
+      },
+      {
+        "type": "fields",
+        "key": "quality-sla-feedback-score",
+        "title": "Feedbackscore",
+        "width": 1,
+        "highContrast": true,
+        "properties": {
+          "columns": [
+            [
+              {
+                "key": "customerSatisfaction5",
+                "title": "Score",
+                "value": "doc:customerSatisfaction",
+                "displayProperties": {
+                  "type": "number"
+                }
+              }
+            ]
+          ]
+        }
+      },
+      {
+        "type": "fields",
+        "key": "quality-sla-sla-deadline-highlight",
+        "title": "SLA-deadline",
+        "width": 1,
+        "highContrast": false,
+        "properties": {
+          "columns": [
+            [
+              {
+                "key": "slaDeadline3",
+                "title": "Deadline",
+                "value": "doc:slaDeadline",
+                "displayProperties": {
+                  "type": "date",
+                  "format": "DD-MM-YYYY"
+                }
+              }
+            ]
+          ]
+        }
+      },
+      {
+        "type": "fields",
+        "key": "quality-sla-incident-datum-highlight",
+        "title": "Incidentdatum",
+        "width": 1,
+        "highContrast": true,
+        "properties": {
+          "columns": [
+            [
+              {
+                "key": "incidentDate3",
+                "title": "Datum",
+                "value": "doc:incidentDate",
+                "displayProperties": {
+                  "type": "date",
+                  "format": "DD-MM-YYYY"
+                }
+              }
+            ]
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "key": "compliance-audit",
+    "widgets": [
+      {
+        "type": "fields",
+        "key": "compliance-audit-audit-datum",
+        "title": "Auditdatum",
+        "width": 1,
+        "highContrast": true,
+        "properties": {
+          "columns": [
+            [
+              {
+                "key": "auditDate",
+                "title": "Datum",
+                "value": "doc:auditDate",
+                "displayProperties": {
+                  "type": "date",
+                  "format": "DD-MM-YYYY"
+                }
+              }
+            ]
+          ]
+        }
+      },
+      {
+        "type": "fields",
+        "key": "compliance-audit-auditor",
+        "title": "Auditor",
+        "width": 1,
+        "highContrast": false,
+        "properties": {
+          "columns": [
+            [
+              {
+                "key": "auditorName",
+                "title": "Auditor",
+                "value": "doc:auditorName"
+              }
+            ]
+          ]
+        }
+      },
+      {
+        "type": "fields",
+        "key": "compliance-audit-audit-resultaat",
+        "title": "Auditresultaat",
+        "width": 1,
+        "highContrast": true,
+        "properties": {
+          "columns": [
+            [
+              {
+                "key": "auditResult",
+                "title": "Resultaat",
+                "value": "doc:auditResult"
+              }
+            ]
+          ]
+        }
+      },
+      {
+        "type": "fields",
+        "key": "compliance-audit-audit-score",
+        "title": "Auditscore",
+        "width": 1,
+        "highContrast": false,
+        "properties": {
+          "columns": [
+            [
+              {
+                "key": "auditScore",
+                "title": "Score",
+                "value": "doc:auditScore",
+                "displayProperties": {
+                  "type": "number"
+                }
+              }
+            ]
+          ]
+        }
+      },
+      {
+        "type": "fields",
+        "key": "compliance-audit-audit-opmerkingen",
+        "title": "Auditopmerkingen",
+        "width": 3,
+        "highContrast": true,
+        "properties": {
+          "columns": [
+            [
+              {
+                "key": "auditRemarks",
+                "title": "Opmerkingen",
+                "value": "doc:auditRemarks"
+              }
+            ]
+          ]
+        }
+      },
+      {
+        "type": "fields",
+        "key": "compliance-audit-compliance-status",
+        "title": "Compliancestatus",
+        "width": 1,
+        "highContrast": false,
+        "properties": {
+          "columns": [
+            [
+              {
+                "key": "complianceStatus",
+                "title": "Status",
+                "value": "doc:complianceStatus"
+              }
+            ]
+          ]
+        }
+      },
+      {
+        "type": "fields",
+        "key": "compliance-audit-toezichthouder",
+        "title": "Toezichthouder",
+        "width": 2,
+        "highContrast": true,
+        "properties": {
+          "columns": [
+            [
+              {
+                "key": "regulatoryBody",
+                "title": "Toezichthouder",
+                "value": "doc:regulatoryBody"
+              }
+            ]
+          ]
+        }
+      },
+      {
+        "type": "fields",
+        "key": "compliance-audit-regelgeving-ref",
+        "title": "Regelgevingsreferentie",
+        "width": 1,
+        "highContrast": false,
+        "properties": {
+          "columns": [
+            [
+              {
+                "key": "regulationReference",
+                "title": "Referentie",
+                "value": "doc:regulationReference"
+              }
+            ]
+          ]
+        }
+      },
+      {
+        "type": "fields",
+        "key": "compliance-audit-volgende-review",
+        "title": "Volgende review",
+        "width": 1,
+        "highContrast": true,
+        "properties": {
+          "columns": [
+            [
+              {
+                "key": "nextReviewDate",
+                "title": "Reviewdatum",
+                "value": "doc:nextReviewDate",
+                "displayProperties": {
+                  "type": "date",
+                  "format": "DD-MM-YYYY"
+                }
+              }
+            ]
+          ]
+        }
+      },
+      {
+        "type": "fields",
+        "key": "compliance-audit-document-titel",
+        "title": "Documenttitel",
+        "width": 2,
+        "highContrast": false,
+        "properties": {
+          "columns": [
+            [
+              {
+                "key": "documentTitle",
+                "title": "Titel",
+                "value": "doc:documentTitle"
+              }
+            ]
+          ]
+        }
+      },
+      {
+        "type": "fields",
+        "key": "compliance-audit-document-versie",
+        "title": "Documentversie",
+        "width": 1,
+        "highContrast": true,
+        "properties": {
+          "columns": [
+            [
+              {
+                "key": "documentVersion",
+                "title": "Versie",
+                "value": "doc:documentVersion"
+              }
+            ]
+          ]
+        }
+      },
+      {
+        "type": "fields",
+        "key": "compliance-audit-document-auteur",
+        "title": "Documentauteur",
+        "width": 1,
+        "highContrast": false,
+        "properties": {
+          "columns": [
+            [
+              {
+                "key": "documentAuthor",
+                "title": "Auteur",
+                "value": "doc:documentAuthor"
+              }
+            ]
+          ]
+        }
+      },
+      {
+        "type": "fields",
+        "key": "compliance-audit-document-datum",
+        "title": "Documentdatum",
+        "width": 1,
+        "highContrast": true,
+        "properties": {
+          "columns": [
+            [
+              {
+                "key": "documentDate",
+                "title": "Datum",
+                "value": "doc:documentDate",
+                "displayProperties": {
+                  "type": "date",
+                  "format": "DD-MM-YYYY"
+                }
+              }
+            ]
+          ]
+        }
+      },
+      {
+        "type": "fields",
+        "key": "compliance-audit-document-categorie",
+        "title": "Documentcategorie",
+        "width": 1,
+        "highContrast": false,
+        "properties": {
+          "columns": [
+            [
+              {
+                "key": "documentCategory",
+                "title": "Categorie",
+                "value": "doc:documentCategory"
+              }
+            ]
+          ]
+        }
+      },
+      {
+        "type": "fields",
+        "key": "compliance-audit-bewaartermijn",
+        "title": "Bewaartermijn",
+        "width": 1,
+        "highContrast": true,
+        "properties": {
+          "columns": [
+            [
+              {
+                "key": "retentionPeriod",
+                "title": "Bewaartermijn",
+                "value": "doc:retentionPeriod"
+              }
+            ]
+          ]
+        }
+      },
+      {
+        "type": "fields",
+        "key": "compliance-audit-vertrouwelijkheid",
+        "title": "Vertrouwelijkheid",
+        "width": 1,
+        "highContrast": false,
+        "properties": {
+          "columns": [
+            [
+              {
+                "key": "confidentialityLevel",
+                "title": "Niveau",
+                "value": "doc:confidentialityLevel"
+              }
+            ]
+          ]
+        }
+      },
+      {
+        "type": "fields",
+        "key": "compliance-audit-toegangsbeheer",
+        "title": "Toegangsbeheer",
+        "width": 1,
+        "highContrast": true,
+        "properties": {
+          "columns": [
+            [
+              {
+                "key": "accessControl",
+                "title": "Toegang",
+                "value": "doc:accessControl"
+              }
+            ]
+          ]
+        }
+      },
+      {
+        "type": "fields",
+        "key": "compliance-audit-laatst-gewijzigd-door",
+        "title": "Laatst gewijzigd door",
+        "width": 2,
+        "highContrast": false,
+        "properties": {
+          "columns": [
+            [
+              {
+                "key": "lastModifiedBy",
+                "title": "Door",
+                "value": "doc:lastModifiedBy"
+              }
+            ]
+          ]
+        }
+      },
+      {
+        "type": "fields",
+        "key": "compliance-audit-laatst-gewijzigd-datum",
+        "title": "Laatst gewijzigd datum",
+        "width": 1,
+        "highContrast": true,
+        "properties": {
+          "columns": [
+            [
+              {
+                "key": "lastModifiedDate",
+                "title": "Datum",
+                "value": "doc:lastModifiedDate",
+                "displayProperties": {
+                  "type": "date",
+                  "format": "DD-MM-YYYY"
+                }
+              }
+            ]
+          ]
+        }
+      },
+      {
+        "type": "fields",
+        "key": "compliance-audit-notities",
+        "title": "Notities",
+        "width": 3,
+        "highContrast": false,
+        "properties": {
+          "columns": [
+            [
+              {
+                "key": "notes",
+                "title": "Notities",
+                "value": "doc:notes"
+              }
+            ]
+          ]
+        }
+      },
+      {
+        "type": "fields",
+        "key": "compliance-audit-interne-notities",
+        "title": "Interne notities",
+        "width": 3,
+        "highContrast": true,
+        "properties": {
+          "columns": [
+            [
+              {
+                "key": "internalNotes",
+                "title": "Interne notities",
+                "value": "doc:internalNotes"
+              }
+            ]
+          ]
+        }
+      },
+      {
+        "type": "fields",
+        "key": "compliance-audit-externe-referentie",
+        "title": "Externe referentie",
+        "width": 1,
+        "highContrast": false,
+        "properties": {
+          "columns": [
+            [
+              {
+                "key": "externalReference",
+                "title": "Referentie",
+                "value": "doc:externalReference"
+              }
+            ]
+          ]
+        }
+      },
+      {
+        "type": "fields",
+        "key": "compliance-audit-bronsysteem",
+        "title": "Bronsysteem",
+        "width": 1,
+        "highContrast": true,
+        "properties": {
+          "columns": [
+            [
+              {
+                "key": "sourceSystem",
+                "title": "Bronsysteem",
+                "value": "doc:sourceSystem"
+              }
+            ]
+          ]
+        }
+      },
+      {
+        "type": "fields",
+        "key": "compliance-audit-integratie-status",
+        "title": "Integratiestatus",
+        "width": 1,
+        "highContrast": false,
+        "properties": {
+          "columns": [
+            [
+              {
+                "key": "integrationStatus",
+                "title": "Status",
+                "value": "doc:integrationStatus"
+              }
+            ]
+          ]
+        }
+      },
+      {
+        "type": "fields",
+        "key": "compliance-audit-sync-timestamp",
+        "title": "Synchronisatietijdstip",
+        "width": 1,
+        "highContrast": true,
+        "properties": {
+          "columns": [
+            [
+              {
+                "key": "syncTimestamp",
+                "title": "Tijdstip",
+                "value": "doc:syncTimestamp",
+                "displayProperties": {
+                  "type": "date",
+                  "format": "DD-MM-YYYY"
+                }
+              }
+            ]
+          ]
+        }
+      },
+      {
+        "type": "fields",
+        "key": "compliance-audit-datakwaliteit",
+        "title": "Datakwaliteitsscore",
+        "width": 1,
+        "highContrast": false,
+        "properties": {
+          "columns": [
+            [
+              {
+                "key": "dataQualityScore",
+                "title": "Score",
+                "value": "doc:dataQualityScore",
+                "displayProperties": {
+                  "type": "number"
+                }
+              }
+            ]
+          ]
+        }
+      },
+      {
+        "type": "fields",
+        "key": "compliance-audit-validatiefouten",
+        "title": "Validatiefouten",
+        "width": 2,
+        "highContrast": true,
+        "properties": {
+          "columns": [
+            [
+              {
+                "key": "validationErrors",
+                "title": "Fouten",
+                "value": "doc:validationErrors"
+              }
+            ]
+          ]
+        }
+      },
+      {
+        "type": "fields",
+        "key": "compliance-audit-audit-overzicht",
+        "title": "Auditoverzicht",
+        "width": 3,
+        "highContrast": false,
+        "properties": {
+          "columns": [
+            [
+              {
+                "key": "auditDate2",
+                "title": "Datum",
+                "value": "doc:auditDate",
+                "displayProperties": {
+                  "type": "date",
+                  "format": "DD-MM-YYYY"
+                }
+              },
+              {
+                "key": "auditorName2",
+                "title": "Auditor",
+                "value": "doc:auditorName"
+              },
+              {
+                "key": "auditResult2",
+                "title": "Resultaat",
+                "value": "doc:auditResult"
+              }
+            ],
+            [
+              {
+                "key": "auditScore2",
+                "title": "Score",
+                "value": "doc:auditScore",
+                "displayProperties": {
+                  "type": "number"
+                }
+              }
+            ]
+          ]
+        }
+      },
+      {
+        "type": "fields",
+        "key": "compliance-audit-compliance-overzicht",
+        "title": "Complianceoverzicht",
+        "width": 3,
+        "highContrast": true,
+        "properties": {
+          "columns": [
+            [
+              {
+                "key": "complianceStatus2",
+                "title": "Status",
+                "value": "doc:complianceStatus"
+              },
+              {
+                "key": "regulatoryBody2",
+                "title": "Toezichthouder",
+                "value": "doc:regulatoryBody"
+              }
+            ],
+            [
+              {
+                "key": "regulationReference2",
+                "title": "Referentie",
+                "value": "doc:regulationReference"
+              },
+              {
+                "key": "nextReviewDate2",
+                "title": "Volgende review",
+                "value": "doc:nextReviewDate",
+                "displayProperties": {
+                  "type": "date",
+                  "format": "DD-MM-YYYY"
+                }
+              }
+            ]
+          ]
+        }
+      },
+      {
+        "type": "fields",
+        "key": "compliance-audit-document-overzicht",
+        "title": "Documentoverzicht",
+        "width": 4,
+        "highContrast": false,
+        "properties": {
+          "columns": [
+            [
+              {
+                "key": "documentTitle2",
+                "title": "Titel",
+                "value": "doc:documentTitle"
+              },
+              {
+                "key": "documentVersion2",
+                "title": "Versie",
+                "value": "doc:documentVersion"
+              },
+              {
+                "key": "documentAuthor2",
+                "title": "Auteur",
+                "value": "doc:documentAuthor"
+              },
+              {
+                "key": "documentDate2",
+                "title": "Datum",
+                "value": "doc:documentDate",
+                "displayProperties": {
+                  "type": "date",
+                  "format": "DD-MM-YYYY"
+                }
+              }
+            ]
+          ]
+        }
+      },
+      {
+        "type": "fields",
+        "key": "compliance-audit-document-beheer",
+        "title": "Documentbeheer",
+        "width": 2,
+        "highContrast": true,
+        "properties": {
+          "columns": [
+            [
+              {
+                "key": "documentCategory2",
+                "title": "Categorie",
+                "value": "doc:documentCategory"
+              },
+              {
+                "key": "retentionPeriod2",
+                "title": "Bewaartermijn",
+                "value": "doc:retentionPeriod"
+              }
+            ],
+            [
+              {
+                "key": "confidentialityLevel2",
+                "title": "Vertrouwelijkheid",
+                "value": "doc:confidentialityLevel"
+              },
+              {
+                "key": "accessControl2",
+                "title": "Toegang",
+                "value": "doc:accessControl"
+              }
+            ]
+          ]
+        }
+      },
+      {
+        "type": "fields",
+        "key": "compliance-audit-meta-overzicht",
+        "title": "Meta-overzicht",
+        "width": 4,
+        "highContrast": false,
+        "properties": {
+          "columns": [
+            [
+              {
+                "key": "lastModifiedBy2",
+                "title": "Gewijzigd door",
+                "value": "doc:lastModifiedBy"
+              },
+              {
+                "key": "lastModifiedDate2",
+                "title": "Gewijzigd op",
+                "value": "doc:lastModifiedDate",
+                "displayProperties": {
+                  "type": "date",
+                  "format": "DD-MM-YYYY"
+                }
+              },
+              {
+                "key": "externalReference2",
+                "title": "Ext. ref.",
+                "value": "doc:externalReference"
+              }
+            ],
+            [
+              {
+                "key": "sourceSystem2",
+                "title": "Bronsysteem",
+                "value": "doc:sourceSystem"
+              },
+              {
+                "key": "integrationStatus2",
+                "title": "Integratie",
+                "value": "doc:integrationStatus"
+              },
+              {
+                "key": "syncTimestamp2",
+                "title": "Sync",
+                "value": "doc:syncTimestamp",
+                "displayProperties": {
+                  "type": "date",
+                  "format": "DD-MM-YYYY"
+                }
+              }
+            ]
+          ]
+        }
+      },
+      {
+        "type": "fields",
+        "key": "compliance-audit-datakwaliteit-detail",
+        "title": "Datakwaliteitsdetails",
+        "width": 2,
+        "highContrast": true,
+        "properties": {
+          "columns": [
+            [
+              {
+                "key": "dataQualityScore2",
+                "title": "Score",
+                "value": "doc:dataQualityScore",
+                "displayProperties": {
+                  "type": "number"
+                }
+              },
+              {
+                "key": "validationErrors2",
+                "title": "Fouten",
+                "value": "doc:validationErrors"
+              }
+            ]
+          ]
+        }
+      },
+      {
+        "type": "fields",
+        "key": "compliance-audit-incident-type",
+        "title": "Incidenttype",
+        "width": 1,
+        "highContrast": false,
+        "properties": {
+          "columns": [
+            [
+              {
+                "key": "incidentType",
+                "title": "Type",
+                "value": "doc:incidentType"
+              }
+            ]
+          ]
+        }
+      },
+      {
+        "type": "fields",
+        "key": "compliance-audit-incident-ernst",
+        "title": "Incidenternst",
+        "width": 1,
+        "highContrast": true,
+        "properties": {
+          "columns": [
+            [
+              {
+                "key": "incidentSeverity",
+                "title": "Ernst",
+                "value": "doc:incidentSeverity"
+              }
+            ]
+          ]
+        }
+      },
+      {
+        "type": "fields",
+        "key": "compliance-audit-incident-beschrijving",
+        "title": "Incidentbeschrijving",
+        "width": 3,
+        "highContrast": false,
+        "properties": {
+          "columns": [
+            [
+              {
+                "key": "incidentDescription",
+                "title": "Beschrijving",
+                "value": "doc:incidentDescription"
+              }
+            ]
+          ]
+        }
+      },
+      {
+        "type": "fields",
+        "key": "compliance-audit-grondoorzaak",
+        "title": "Grondoorzaak",
+        "width": 2,
+        "highContrast": true,
+        "properties": {
+          "columns": [
+            [
+              {
+                "key": "rootCause",
+                "title": "Oorzaak",
+                "value": "doc:rootCause"
+              }
+            ]
+          ]
+        }
+      },
+      {
+        "type": "fields",
+        "key": "compliance-audit-corrigerende-actie",
+        "title": "Corrigerende actie",
+        "width": 2,
+        "highContrast": false,
+        "properties": {
+          "columns": [
+            [
+              {
+                "key": "correctiveAction",
+                "title": "Actie",
+                "value": "doc:correctiveAction"
+              }
+            ]
+          ]
+        }
+      },
+      {
+        "type": "fields",
+        "key": "compliance-audit-preventieve-actie",
+        "title": "Preventieve actie",
+        "width": 2,
+        "highContrast": true,
+        "properties": {
+          "columns": [
+            [
+              {
+                "key": "preventiveAction",
+                "title": "Actie",
+                "value": "doc:preventiveAction"
+              }
+            ]
+          ]
+        }
+      },
+      {
+        "type": "fields",
+        "key": "compliance-audit-risico-niveau",
+        "title": "Risiconiveau",
+        "width": 1,
+        "highContrast": false,
+        "properties": {
+          "columns": [
+            [
+              {
+                "key": "riskLevel",
+                "title": "Niveau",
+                "value": "doc:riskLevel"
+              }
+            ]
+          ]
+        }
+      },
+      {
+        "type": "fields",
+        "key": "compliance-audit-risico-beschrijving",
+        "title": "Risicobeschrijving",
+        "width": 2,
+        "highContrast": true,
+        "properties": {
+          "columns": [
+            [
+              {
+                "key": "riskDescription",
+                "title": "Beschrijving",
+                "value": "doc:riskDescription"
+              }
+            ]
+          ]
+        }
+      },
+      {
+        "type": "fields",
+        "key": "compliance-audit-mitigatie-plan",
+        "title": "Mitigatieplan",
+        "width": 2,
+        "highContrast": false,
+        "properties": {
+          "columns": [
+            [
+              {
+                "key": "mitigationPlan",
+                "title": "Plan",
+                "value": "doc:mitigationPlan"
+              }
+            ]
+          ]
+        }
+      },
+      {
+        "type": "fields",
+        "key": "compliance-audit-audit-score-highlight",
+        "title": "Auditscore",
+        "width": 1,
+        "highContrast": true,
+        "properties": {
+          "columns": [
+            [
+              {
+                "key": "auditScore3",
+                "title": "Score",
+                "value": "doc:auditScore",
+                "displayProperties": {
+                  "type": "number"
+                }
+              }
+            ]
+          ]
+        }
+      },
+      {
+        "type": "fields",
+        "key": "compliance-audit-compliance-highlight",
+        "title": "Compliancestatus",
+        "width": 1,
+        "highContrast": false,
+        "properties": {
+          "columns": [
+            [
+              {
+                "key": "complianceStatus3",
+                "title": "Status",
+                "value": "doc:complianceStatus"
+              }
+            ]
+          ]
+        }
+      },
+      {
+        "type": "fields",
+        "key": "compliance-audit-volledige-audit",
+        "title": "Volledige auditrapport",
+        "width": 4,
+        "highContrast": true,
+        "properties": {
+          "columns": [
+            [
+              {
+                "key": "auditDate3",
+                "title": "Datum",
+                "value": "doc:auditDate",
+                "displayProperties": {
+                  "type": "date",
+                  "format": "DD-MM-YYYY"
+                }
+              },
+              {
+                "key": "auditorName3",
+                "title": "Auditor",
+                "value": "doc:auditorName"
+              },
+              {
+                "key": "auditResult3",
+                "title": "Resultaat",
+                "value": "doc:auditResult"
+              },
+              {
+                "key": "auditScore4",
+                "title": "Score",
+                "value": "doc:auditScore",
+                "displayProperties": {
+                  "type": "number"
+                }
+              }
+            ],
+            [
+              {
+                "key": "auditRemarks2",
+                "title": "Opmerkingen",
+                "value": "doc:auditRemarks"
+              }
+            ]
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "key": "everything",
+    "widgets": [
+      {
+        "type": "divider",
+        "key": "everything-divider-1",
+        "title": "Persoonsgegevens",
+        "width": 4,
+        "highContrast": false
+      },
+      {
+        "type": "fields",
+        "key": "everything-naam",
+        "title": "Naam",
+        "width": 2,
+        "highContrast": true,
+        "properties": {
+          "columns": [
+            [
+              {
+                "key": "firstName",
+                "title": "Voornaam",
+                "value": "doc:firstName"
+              },
+              {
+                "key": "lastName",
+                "title": "Achternaam",
+                "value": "doc:lastName"
+              }
+            ]
+          ]
+        }
+      },
+      {
+        "type": "fields",
+        "key": "everything-geboortedatum",
+        "title": "Geboortedatum",
+        "width": 1,
+        "highContrast": false,
+        "properties": {
+          "columns": [
+            [
+              {
+                "key": "dateOfBirth",
+                "title": "Geboortedatum",
+                "value": "doc:dateOfBirth",
+                "displayProperties": {
+                  "type": "date",
+                  "format": "DD-MM-YYYY"
+                }
+              }
+            ]
+          ]
+        }
+      },
+      {
+        "type": "fields",
+        "key": "everything-bsn",
+        "title": "BSN",
+        "width": 1,
+        "highContrast": true,
+        "properties": {
+          "columns": [
+            [
+              {
+                "key": "bsn",
+                "title": "BSN",
+                "value": "doc:bsn"
+              }
+            ]
+          ]
+        }
+      },
+      {
+        "type": "fields",
+        "key": "everything-email",
+        "title": "E-mail",
+        "width": 1,
+        "highContrast": false,
+        "properties": {
+          "columns": [
+            [
+              {
+                "key": "email",
+                "title": "E-mail",
+                "value": "doc:email"
+              }
+            ]
+          ]
+        }
+      },
+      {
+        "type": "fields",
+        "key": "everything-telefoon",
+        "title": "Telefoon",
+        "width": 1,
+        "highContrast": true,
+        "properties": {
+          "columns": [
+            [
+              {
+                "key": "phone",
+                "title": "Telefoon",
+                "value": "doc:phone"
+              }
+            ]
+          ]
+        }
+      },
+      {
+        "type": "divider",
+        "key": "everything-divider-2",
+        "title": "Adres",
+        "width": 4,
+        "highContrast": false
+      },
+      {
+        "type": "fields",
+        "key": "everything-adres",
+        "title": "Volledig adres",
+        "width": 3,
+        "highContrast": false,
+        "properties": {
+          "columns": [
+            [
+              {
+                "key": "street",
+                "title": "Straat",
+                "value": "doc:street"
+              },
+              {
+                "key": "houseNumber",
+                "title": "Huisnummer",
+                "value": "doc:houseNumber"
+              },
+              {
+                "key": "postalCode",
+                "title": "Postcode",
+                "value": "doc:postalCode"
+              }
+            ],
+            [
+              {
+                "key": "city",
+                "title": "Woonplaats",
+                "value": "doc:city"
+              },
+              {
+                "key": "province",
+                "title": "Provincie",
+                "value": "doc:province"
+              },
+              {
+                "key": "country",
+                "title": "Land",
+                "value": "doc:country"
+              }
+            ]
+          ]
+        }
+      },
+      {
+        "type": "fields",
+        "key": "everything-woonplaats",
+        "title": "Woonplaats",
+        "width": 1,
+        "highContrast": true,
+        "properties": {
+          "columns": [
+            [
+              {
+                "key": "city2",
+                "title": "Woonplaats",
+                "value": "doc:city"
+              }
+            ]
+          ]
+        }
+      },
+      {
+        "type": "divider",
+        "key": "everything-divider-3",
+        "title": "Werk",
+        "width": 4,
+        "highContrast": false
+      },
+      {
+        "type": "fields",
+        "key": "everything-bedrijf",
+        "title": "Bedrijf",
+        "width": 2,
+        "highContrast": false,
+        "properties": {
+          "columns": [
+            [
+              {
+                "key": "companyName",
+                "title": "Bedrijf",
+                "value": "doc:companyName"
+              },
+              {
+                "key": "department",
+                "title": "Afdeling",
+                "value": "doc:department"
+              }
+            ]
+          ]
+        }
+      },
+      {
+        "type": "fields",
+        "key": "everything-functie",
+        "title": "Functie",
+        "width": 1,
+        "highContrast": true,
+        "properties": {
+          "columns": [
+            [
+              {
+                "key": "jobTitle",
+                "title": "Functie",
+                "value": "doc:jobTitle"
+              }
+            ]
+          ]
+        }
+      },
+      {
+        "type": "fields",
+        "key": "everything-salaris",
+        "title": "Salaris",
+        "width": 1,
+        "highContrast": false,
+        "properties": {
+          "columns": [
+            [
+              {
+                "key": "salary",
+                "title": "Salaris",
+                "value": "doc:salary",
+                "displayProperties": {
+                  "type": "currency",
+                  "currencyCode": "EUR"
+                }
+              }
+            ]
+          ]
+        }
+      },
+      {
+        "type": "fields",
+        "key": "everything-contract",
+        "title": "Contract",
+        "width": 2,
+        "highContrast": true,
+        "properties": {
+          "columns": [
+            [
+              {
+                "key": "contractType",
+                "title": "Type",
+                "value": "doc:contractType"
+              },
+              {
+                "key": "startDate",
+                "title": "Startdatum",
+                "value": "doc:startDate",
+                "displayProperties": {
+                  "type": "date",
+                  "format": "DD-MM-YYYY"
+                }
+              }
+            ]
+          ]
+        }
+      },
+      {
+        "type": "divider",
+        "key": "everything-divider-4",
+        "title": "Aanvraag",
+        "width": 4,
+        "highContrast": false
+      },
+      {
+        "type": "fields",
+        "key": "everything-aanvraag-type",
+        "title": "Aanvraagtype",
+        "width": 1,
+        "highContrast": false,
+        "properties": {
+          "columns": [
+            [
+              {
+                "key": "requestType",
+                "title": "Type",
+                "value": "doc:requestType"
+              }
+            ]
+          ]
+        }
+      },
+      {
+        "type": "fields",
+        "key": "everything-aanvraag-status",
+        "title": "Aanvraagstatus",
+        "width": 1,
+        "highContrast": true,
+        "properties": {
+          "columns": [
+            [
+              {
+                "key": "requestStatus",
+                "title": "Status",
+                "value": "doc:requestStatus"
+              }
+            ]
+          ]
+        }
+      },
+      {
+        "type": "fields",
+        "key": "everything-aanvraag-prioriteit",
+        "title": "Prioriteit",
+        "width": 1,
+        "highContrast": false,
+        "properties": {
+          "columns": [
+            [
+              {
+                "key": "requestPriority",
+                "title": "Prioriteit",
+                "value": "doc:requestPriority"
+              }
+            ]
+          ]
+        }
+      },
+      {
+        "type": "fields",
+        "key": "everything-aanvraag-datum",
+        "title": "Aanvraagdatum",
+        "width": 1,
+        "highContrast": true,
+        "properties": {
+          "columns": [
+            [
+              {
+                "key": "requestDate",
+                "title": "Datum",
+                "value": "doc:requestDate",
+                "displayProperties": {
+                  "type": "date",
+                  "format": "DD-MM-YYYY"
+                }
+              }
+            ]
+          ]
+        }
+      },
+      {
+        "type": "fields",
+        "key": "everything-aanvraag-beschrijving",
+        "title": "Beschrijving",
+        "width": 3,
+        "highContrast": false,
+        "properties": {
+          "columns": [
+            [
+              {
+                "key": "requestDescription",
+                "title": "Beschrijving",
+                "value": "doc:requestDescription"
+              }
+            ]
+          ]
+        }
+      },
+      {
+        "type": "divider",
+        "key": "everything-divider-5",
+        "title": "Project",
+        "width": 4,
+        "highContrast": false
+      },
+      {
+        "type": "fields",
+        "key": "everything-project-naam",
+        "title": "Projectnaam",
+        "width": 2,
+        "highContrast": true,
+        "properties": {
+          "columns": [
+            [
+              {
+                "key": "projectName",
+                "title": "Project",
+                "value": "doc:projectName"
+              }
+            ]
+          ]
+        }
+      },
+      {
+        "type": "fields",
+        "key": "everything-project-fase",
+        "title": "Projectfase",
+        "width": 1,
+        "highContrast": false,
+        "properties": {
+          "columns": [
+            [
+              {
+                "key": "projectPhase",
+                "title": "Fase",
+                "value": "doc:projectPhase"
+              }
+            ]
+          ]
+        }
+      },
+      {
+        "type": "fields",
+        "key": "everything-project-taken",
+        "title": "Taken",
+        "width": 2,
+        "highContrast": true,
+        "properties": {
+          "columns": [
+            [
+              {
+                "key": "totalTasks",
+                "title": "Totaal",
+                "value": "doc:totalTasks",
+                "displayProperties": {
+                  "type": "number"
+                }
+              },
+              {
+                "key": "completedTasks",
+                "title": "Afgerond",
+                "value": "doc:completedTasks",
+                "displayProperties": {
+                  "type": "number"
+                }
+              }
+            ]
+          ]
+        }
+      },
+      {
+        "type": "fields",
+        "key": "everything-project-open",
+        "title": "Open taken",
+        "width": 1,
+        "highContrast": false,
+        "properties": {
+          "columns": [
+            [
+              {
+                "key": "openTasks",
+                "title": "Open",
+                "value": "doc:openTasks",
+                "displayProperties": {
+                  "type": "number"
+                }
+              }
+            ]
+          ]
+        }
+      },
+      {
+        "type": "divider",
+        "key": "everything-divider-6",
+        "title": "Budget en financiën",
+        "width": 4,
+        "highContrast": false
+      },
+      {
+        "type": "fields",
+        "key": "everything-budget-highlight",
+        "title": "Budget toegekend",
+        "width": 1,
+        "highContrast": true,
+        "properties": {
+          "columns": [
+            [
+              {
+                "key": "budgetAllocated",
+                "title": "Toegekend",
+                "value": "doc:budgetAllocated",
+                "displayProperties": {
+                  "type": "currency",
+                  "currencyCode": "EUR"
+                }
+              }
+            ]
+          ]
+        }
+      },
+      {
+        "type": "fields",
+        "key": "everything-budget-besteed",
+        "title": "Budget besteed",
+        "width": 1,
+        "highContrast": false,
+        "properties": {
+          "columns": [
+            [
+              {
+                "key": "budgetSpent",
+                "title": "Besteed",
+                "value": "doc:budgetSpent",
+                "displayProperties": {
+                  "type": "currency",
+                  "currencyCode": "EUR"
+                }
+              }
+            ]
+          ]
+        }
+      },
+      {
+        "type": "fields",
+        "key": "everything-budget-resterend",
+        "title": "Budget resterend",
+        "width": 1,
+        "highContrast": true,
+        "properties": {
+          "columns": [
+            [
+              {
+                "key": "budgetRemaining",
+                "title": "Resterend",
+                "value": "doc:budgetRemaining",
+                "displayProperties": {
+                  "type": "currency",
+                  "currencyCode": "EUR"
+                }
+              }
+            ]
+          ]
+        }
+      },
+      {
+        "type": "fields",
+        "key": "everything-factuur",
+        "title": "Factuur",
+        "width": 2,
+        "highContrast": false,
+        "properties": {
+          "columns": [
+            [
+              {
+                "key": "invoiceNumber",
+                "title": "Nummer",
+                "value": "doc:invoiceNumber"
+              },
+              {
+                "key": "invoiceTotal",
+                "title": "Totaal",
+                "value": "doc:invoiceTotal",
+                "displayProperties": {
+                  "type": "currency",
+                  "currencyCode": "EUR"
+                }
+              }
+            ]
+          ]
+        }
+      },
+      {
+        "type": "divider",
+        "key": "everything-divider-7",
+        "title": "Leverancier en levering",
+        "width": 4,
+        "highContrast": false
+      },
+      {
+        "type": "fields",
+        "key": "everything-leverancier",
+        "title": "Leverancier",
+        "width": 2,
+        "highContrast": true,
+        "properties": {
+          "columns": [
+            [
+              {
+                "key": "vendorName",
+                "title": "Naam",
+                "value": "doc:vendorName"
+              },
+              {
+                "key": "vendorEmail",
+                "title": "E-mail",
+                "value": "doc:vendorEmail"
+              }
+            ]
+          ]
+        }
+      },
+      {
+        "type": "fields",
+        "key": "everything-levering",
+        "title": "Levering",
+        "width": 2,
+        "highContrast": false,
+        "properties": {
+          "columns": [
+            [
+              {
+                "key": "deliveryDate",
+                "title": "Datum",
+                "value": "doc:deliveryDate",
+                "displayProperties": {
+                  "type": "date",
+                  "format": "DD-MM-YYYY"
+                }
+              },
+              {
+                "key": "deliveryStatus",
+                "title": "Status",
+                "value": "doc:deliveryStatus"
+              }
+            ]
+          ]
+        }
+      },
+      {
+        "type": "fields",
+        "key": "everything-tracking",
+        "title": "Tracking",
+        "width": 1,
+        "highContrast": true,
+        "properties": {
+          "columns": [
+            [
+              {
+                "key": "trackingNumber",
+                "title": "Nummer",
+                "value": "doc:trackingNumber"
+              }
+            ]
+          ]
+        }
+      },
+      {
+        "type": "fields",
+        "key": "everything-voorraad",
+        "title": "Voorraad",
+        "width": 1,
+        "highContrast": false,
+        "properties": {
+          "columns": [
+            [
+              {
+                "key": "stockLevel",
+                "title": "Niveau",
+                "value": "doc:stockLevel",
+                "displayProperties": {
+                  "type": "number"
+                }
+              }
+            ]
+          ]
+        }
+      },
+      {
+        "type": "divider",
+        "key": "everything-divider-8",
+        "title": "SLA en kwaliteit",
+        "width": 4,
+        "highContrast": false
+      },
+      {
+        "type": "fields",
+        "key": "everything-sla",
+        "title": "SLA",
+        "width": 2,
+        "highContrast": true,
+        "properties": {
+          "columns": [
+            [
+              {
+                "key": "responseTime",
+                "title": "Responstijd",
+                "value": "doc:responseTime",
+                "displayProperties": {
+                  "type": "number"
+                }
+              },
+              {
+                "key": "resolutionTime",
+                "title": "Oplostijd",
+                "value": "doc:resolutionTime",
+                "displayProperties": {
+                  "type": "number"
+                }
+              }
+            ]
+          ]
+        }
+      },
+      {
+        "type": "fields",
+        "key": "everything-tevredenheid",
+        "title": "Tevredenheid",
+        "width": 1,
+        "highContrast": false,
+        "properties": {
+          "columns": [
+            [
+              {
+                "key": "customerSatisfaction",
+                "title": "Score",
+                "value": "doc:customerSatisfaction",
+                "displayProperties": {
+                  "type": "number"
+                }
+              }
+            ]
+          ]
+        }
+      },
+      {
+        "type": "fields",
+        "key": "everything-nps",
+        "title": "NPS",
+        "width": 1,
+        "highContrast": true,
+        "properties": {
+          "columns": [
+            [
+              {
+                "key": "npsScore",
+                "title": "NPS",
+                "value": "doc:npsScore",
+                "displayProperties": {
+                  "type": "number"
+                }
+              }
+            ]
+          ]
+        }
+      },
+      {
+        "type": "divider",
+        "key": "everything-divider-9",
+        "title": "Compliance en audit",
+        "width": 4,
+        "highContrast": false
+      },
+      {
+        "type": "fields",
+        "key": "everything-audit",
+        "title": "Audit",
+        "width": 2,
+        "highContrast": false,
+        "properties": {
+          "columns": [
+            [
+              {
+                "key": "auditDate",
+                "title": "Datum",
+                "value": "doc:auditDate",
+                "displayProperties": {
+                  "type": "date",
+                  "format": "DD-MM-YYYY"
+                }
+              },
+              {
+                "key": "auditScore",
+                "title": "Score",
+                "value": "doc:auditScore",
+                "displayProperties": {
+                  "type": "number"
+                }
+              }
+            ]
+          ]
+        }
+      },
+      {
+        "type": "fields",
+        "key": "everything-compliance",
+        "title": "Compliance",
+        "width": 1,
+        "highContrast": true,
+        "properties": {
+          "columns": [
+            [
+              {
+                "key": "complianceStatus",
+                "title": "Status",
+                "value": "doc:complianceStatus"
+              }
+            ]
+          ]
+        }
+      },
+      {
+        "type": "fields",
+        "key": "everything-incident",
+        "title": "Incident",
+        "width": 2,
+        "highContrast": false,
+        "properties": {
+          "columns": [
+            [
+              {
+                "key": "incidentType",
+                "title": "Type",
+                "value": "doc:incidentType"
+              },
+              {
+                "key": "incidentSeverity",
+                "title": "Ernst",
+                "value": "doc:incidentSeverity"
+              }
+            ]
+          ]
+        }
+      },
+      {
+        "type": "fields",
+        "key": "everything-risico",
+        "title": "Risico",
+        "width": 1,
+        "highContrast": true,
+        "properties": {
+          "columns": [
+            [
+              {
+                "key": "riskLevel",
+                "title": "Niveau",
+                "value": "doc:riskLevel"
+              }
+            ]
+          ]
+        }
+      },
+      {
+        "type": "divider",
+        "key": "everything-divider-10",
+        "title": "Document en meta",
+        "width": 4,
+        "highContrast": false
+      },
+      {
+        "type": "fields",
+        "key": "everything-document",
+        "title": "Document",
+        "width": 3,
+        "highContrast": false,
+        "properties": {
+          "columns": [
+            [
+              {
+                "key": "documentTitle",
+                "title": "Titel",
+                "value": "doc:documentTitle"
+              },
+              {
+                "key": "documentVersion",
+                "title": "Versie",
+                "value": "doc:documentVersion"
+              },
+              {
+                "key": "documentAuthor",
+                "title": "Auteur",
+                "value": "doc:documentAuthor"
+              }
+            ]
+          ]
+        }
+      },
+      {
+        "type": "fields",
+        "key": "everything-document-datum",
+        "title": "Documentdatum",
+        "width": 1,
+        "highContrast": true,
+        "properties": {
+          "columns": [
+            [
+              {
+                "key": "documentDate",
+                "title": "Datum",
+                "value": "doc:documentDate",
+                "displayProperties": {
+                  "type": "date",
+                  "format": "DD-MM-YYYY"
+                }
+              }
+            ]
+          ]
+        }
+      },
+      {
+        "type": "fields",
+        "key": "everything-meta",
+        "title": "Meta",
+        "width": 2,
+        "highContrast": false,
+        "properties": {
+          "columns": [
+            [
+              {
+                "key": "lastModifiedBy",
+                "title": "Gewijzigd door",
+                "value": "doc:lastModifiedBy"
+              },
+              {
+                "key": "lastModifiedDate",
+                "title": "Datum",
+                "value": "doc:lastModifiedDate",
+                "displayProperties": {
+                  "type": "date",
+                  "format": "DD-MM-YYYY"
+                }
+              }
+            ]
+          ]
+        }
+      },
+      {
+        "type": "fields",
+        "key": "everything-datakwaliteit-bron",
+        "title": "Datakwaliteit en bron",
+        "width": 2,
+        "highContrast": true,
+        "properties": {
+          "columns": [
+            [
+              {
+                "key": "dataQualityScore",
+                "title": "Score",
+                "value": "doc:dataQualityScore",
+                "displayProperties": {
+                  "type": "number"
+                }
+              }
+            ],
+            [
+              {
+                "key": "sourceSystem",
+                "title": "Systeem",
+                "value": "doc:sourceSystem"
+              }
+            ]
+          ]
+        }
+      },
+      {
+        "type": "fields",
+        "key": "everything-opmerkingen",
+        "title": "Opmerkingen",
+        "width": 3,
+        "highContrast": true,
+        "properties": {
+          "columns": [
+            [
+              {
+                "key": "notes",
+                "title": "Notities",
+                "value": "doc:notes"
+              },
+              {
+                "key": "internalNotes",
+                "title": "Intern",
+                "value": "doc:internalNotes"
+              }
+            ]
+          ]
+        }
+      }
+    ]
+  }
+]
