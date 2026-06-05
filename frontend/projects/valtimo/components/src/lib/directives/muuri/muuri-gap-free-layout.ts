@@ -15,39 +15,28 @@
  */
 
 /**
- * Custom Muuri layout function that produces a gap-free, left-aligned
- * layout while preserving item order.
+ * Custom Muuri layout function — FFDH + CSS Grid Dense packing.
  *
- * Algorithm: Skyline Bottom-Left with waste-map backfill and two-item
- * lookahead.
+ * Works on a virtual cell grid (columns × rows). Derives the column count
+ * and row height from the actual item dimensions so that the algorithm
+ * works identically for both case widgets (320px / 200px) and dashboard
+ * widgets (275px / 220px) without hardcoding either constant. Items are
+ * sorted by height descending (tallest first) so that tall items anchor
+ * rows and shorter items backfill remaining cells — similar to CSS
+ * Grid's `auto-flow: dense`.
  *
- * Items are processed in DOM order. For each item the algorithm:
- *   1. Tries to place it inside an existing waste rectangle (backfill).
- *   2. If no waste rect fits, evaluates every valid skyline position.
- *      For each candidate position, it simulates placing the *next*
- *      unplaced item on the resulting skyline and picks the position
- *      that minimises total skyline unevenness after both placements.
- *      This two-step lookahead prevents greedy single-step choices
- *      from creating cascading gaps.
+ * The result is a tight rectangular layout with gaps only at the
+ * bottom-right, never sandwiched in the middle.
  *
  * Compatible with Muuri's custom layout function API (v0.9.x):
- *   layout: function(grid, layoutId, items, gridWidth, gridHeight, callback)
+ *   layout(grid, layoutId, items, gridWidth, gridHeight, callback)
  */
 
-interface SkylineSegment {
-  x: number;
-  y: number;
-  width: number;
-}
+/** Maximum number of grid columns to consider when detecting the column count. */
+const MAX_COLS = 10;
 
-interface WasteRect {
-  x: number;
-  y: number;
-  width: number;
-  height: number;
-}
-
-const EPS = 0.5;
+/** Tolerance (in pixels) for floating-point width/height comparisons. */
+const SNAP_PX = 1;
 
 function muuriGapFreeLayout(
   grid: any,
@@ -64,142 +53,100 @@ function muuriGapFreeLayout(
     return;
   }
 
-  const outerWidths: number[] = [];
-  const outerHeights: number[] = [];
+  // Pre-compute outer dimensions (pixels).
+  const pxWidths: number[] = [];
+  const pxHeights: number[] = [];
   for (let i = 0; i < items.length; i++) {
     const item = items[i];
-    outerWidths.push(item._width + item._marginLeft + item._marginRight);
-    outerHeights.push(item._height + item._marginTop + item._marginBottom);
+    pxWidths.push(item._width + item._marginLeft + item._marginRight);
+    pxHeights.push(item._height + item._marginTop + item._marginBottom);
   }
 
-  const skyline: SkylineSegment[] = [{x: 0, y: 0, width: gridWidth}];
-  const wasteRects: WasteRect[] = [];
-  let layoutHeight = 0;
+  // Detect the number of grid columns and row unit height from item
+  // dimensions. This avoids hardcoding constants that differ between
+  // the case widget system and the dashboard widget system.
+  const totalCols = detectTotalCols(pxWidths, gridWidth);
+  const colWidth = gridWidth / totalCols;
+  const rowHeight = detectRowHeight(pxHeights);
 
+  // Convert each item to column/row units.
+  const colSpans: number[] = [];
+  const rowSpans: number[] = [];
   for (let i = 0; i < items.length; i++) {
-    const w = outerWidths[i];
-    const h = outerHeights[i];
+    colSpans.push(Math.max(1, Math.round(pxWidths[i] / colWidth)));
+    rowSpans.push(Math.max(1, Math.round(pxHeights[i] / rowHeight)));
+  }
 
-    if (w <= 0 || h <= 0) {
-      slots[i * 2] = 0;
-      slots[i * 2 + 1] = 0;
+  // Create sort order: height descending, then width descending for tie-breaking,
+  // then original index ascending to preserve DOM order among equal-sized items.
+  const order = items.map((_, i) => i);
+  order.sort((a, b) => {
+    const hd = rowSpans[b] - rowSpans[a];
+    if (hd !== 0) return hd;
+    const wd = colSpans[b] - colSpans[a];
+    if (wd !== 0) return wd;
+    return a - b;
+  });
+
+  // Occupancy grid: occupied[row][col] = true if cell is taken.
+  // Start with a generous estimate; we'll grow as needed.
+  let gridRows = 16;
+  const occupied: boolean[][] = [];
+  for (let r = 0; r < gridRows; r++) {
+    occupied.push(new Array(totalCols).fill(false));
+  }
+
+  // Placed positions in grid units, indexed by original item index.
+  const placedCol: number[] = new Array(items.length);
+  const placedRow: number[] = new Array(items.length);
+
+  // Place each item in sorted order.
+  for (const idx of order) {
+    const cw = colSpans[idx];
+    const rh = rowSpans[idx];
+
+    if (cw <= 0 || rh <= 0) {
+      placedCol[idx] = 0;
+      placedRow[idx] = 0;
       continue;
     }
 
-    // --- Phase 1: try to place in a waste rectangle (backfill) ---
+    // Find first position (top-left scan) where item fits.
     let placed = false;
-    let bestWasteIdx = -1;
-    let bestWasteY = Infinity;
-    let bestWasteX = Infinity;
+    for (let r = 0; !placed; r++) {
+      // Grow occupancy grid if needed.
+      while (r + rh > gridRows) {
+        occupied.push(new Array(totalCols).fill(false));
+        gridRows++;
+      }
 
-    for (let wi = 0; wi < wasteRects.length; wi++) {
-      const wr = wasteRects[wi];
-      if (w <= wr.width + EPS && h <= wr.height + EPS) {
-        if (
-          wr.y < bestWasteY - EPS ||
-          (Math.abs(wr.y - bestWasteY) < EPS && wr.x < bestWasteX)
-        ) {
-          bestWasteY = wr.y;
-          bestWasteX = wr.x;
-          bestWasteIdx = wi;
+      for (let c = 0; c <= totalCols - cw; c++) {
+        if (canPlace(occupied, r, c, rh, cw, gridRows)) {
+          markOccupied(occupied, r, c, rh, cw);
+          placedCol[idx] = c;
+          placedRow[idx] = r;
+          placed = true;
+          break;
         }
       }
     }
-
-    if (bestWasteIdx >= 0) {
-      const wr = wasteRects[bestWasteIdx];
-      slots[i * 2] = Math.round(wr.x);
-      slots[i * 2 + 1] = Math.round(wr.y);
-
-      const bottom = wr.y + h;
-      if (bottom > layoutHeight) layoutHeight = bottom;
-
-      const rightW = wr.width - w;
-      const bottomH = wr.height - h;
-      wasteRects.splice(bestWasteIdx, 1);
-      if (rightW > EPS) {
-        wasteRects.push({x: wr.x + w, y: wr.y, width: rightW, height: h});
-      }
-      if (bottomH > EPS) {
-        wasteRects.push({x: wr.x, y: wr.y + h, width: wr.width, height: bottomH});
-      }
-      placed = true;
-    }
-
-    if (placed) continue;
-
-    // --- Phase 2: skyline placement with two-item lookahead ---
-
-    // Find the next non-zero-sized item for lookahead.
-    let nextW = 0;
-    let nextH = 0;
-    for (let ni = i + 1; ni < items.length; ni++) {
-      if (outerWidths[ni] > EPS && outerHeights[ni] > EPS) {
-        nextW = outerWidths[ni];
-        nextH = outerHeights[ni];
-        break;
-      }
-    }
-
-    let bestScore = Infinity;
-    let bestY = Infinity;
-    let bestX = Infinity;
-    let bestSegIdx = -1;
-
-    for (let si = 0; si < skyline.length; si++) {
-      const startX = skyline[si].x;
-      if (startX + w > gridWidth + EPS) break;
-
-      let maxY = 0;
-      let coveredWidth = 0;
-      for (let sj = si; sj < skyline.length && coveredWidth < w - EPS; sj++) {
-        if (skyline[sj].y > maxY) maxY = skyline[sj].y;
-        coveredWidth += skyline[sj].width;
-      }
-      if (coveredWidth < w - EPS) continue;
-
-      const placedBottom = maxY + h;
-      const itemRight = startX + w;
-
-      // Simulate skyline after placing this item.
-      const sim1 = simulateSkyline(skyline, startX, itemRight, placedBottom);
-
-      // One-step unevenness.
-      const uneven1 = skylineUnevenness(sim1);
-
-      // Two-step lookahead: simulate the next item's best placement.
-      let uneven2 = 0;
-      if (nextW > EPS && nextH > EPS) {
-        uneven2 = bestNextUnevenness(sim1, nextW, nextH, gridWidth);
-      }
-
-      const resultHeight = Math.max(layoutHeight, placedBottom);
-      const score =
-        (uneven1 + uneven2) * 1e6 + resultHeight * 1e2 + startX * 0.001;
-
-      if (score < bestScore - EPS) {
-        bestScore = score;
-        bestY = maxY;
-        bestX = startX;
-        bestSegIdx = si;
-      }
-    }
-
-    if (bestSegIdx < 0) {
-      bestY = layoutHeight;
-      bestX = 0;
-      bestSegIdx = 0;
-    }
-
-    slots[i * 2] = Math.round(bestX);
-    slots[i * 2 + 1] = Math.round(bestY);
-
-    const bottom = bestY + h;
-    if (bottom > layoutHeight) layoutHeight = bottom;
-
-    // Update skyline and collect waste.
-    applySkylineUpdate(skyline, wasteRects, bestX, bestX + w, bestY, bottom, bestSegIdx);
   }
+
+  // Convert grid positions to pixel coordinates.
+  for (let i = 0; i < items.length; i++) {
+    slots[i * 2] = Math.round(placedCol[i] * colWidth);
+    slots[i * 2 + 1] = Math.round(placedRow[i] * rowHeight);
+  }
+
+  // Compute total layout height from the occupancy grid.
+  let maxOccupiedRow = 0;
+  for (let r = gridRows - 1; r >= 0; r--) {
+    if (occupied[r].some(v => v)) {
+      maxOccupiedRow = r + 1;
+      break;
+    }
+  }
+  const layoutHeight = Math.round(maxOccupiedRow * rowHeight);
 
   const el = grid._element;
   const isBorderBox = el ? getComputedStyle(el).boxSizing === 'border-box' : false;
@@ -218,162 +165,73 @@ function muuriGapFreeLayout(
 }
 
 /**
- * Find the minimum unevenness achievable by placing an item of size
- * (nextW × nextH) on the given skyline. Returns the best unevenness.
+ * Detect the number of grid columns by finding the largest n (up to
+ * MAX_COLS) such that every item width is approximately an integer
+ * multiple of gridWidth/n.
  */
-function bestNextUnevenness(
-  skyline: SkylineSegment[],
-  nextW: number,
-  nextH: number,
-  gridWidth: number
-): number {
-  let best = Infinity;
-
-  for (let si = 0; si < skyline.length; si++) {
-    const startX = skyline[si].x;
-    if (startX + nextW > gridWidth + EPS) break;
-
-    let maxY = 0;
-    let coveredWidth = 0;
-    for (let sj = si; sj < skyline.length && coveredWidth < nextW - EPS; sj++) {
-      if (skyline[sj].y > maxY) maxY = skyline[sj].y;
-      coveredWidth += skyline[sj].width;
-    }
-    if (coveredWidth < nextW - EPS) continue;
-
-    const sim = simulateSkyline(skyline, startX, startX + nextW, maxY + nextH);
-    const u = skylineUnevenness(sim);
-    if (u < best) best = u;
-  }
-
-  return best === Infinity ? 0 : best;
-}
-
-/**
- * Compute skyline unevenness: total area between each segment and the
- * maximum height. A flat skyline returns 0.
- */
-function skylineUnevenness(skyline: SkylineSegment[]): number {
-  if (skyline.length <= 1) return 0;
-  let maxY = 0;
-  for (let i = 0; i < skyline.length; i++) {
-    if (skyline[i].y > maxY) maxY = skyline[i].y;
-  }
-  let area = 0;
-  for (let i = 0; i < skyline.length; i++) {
-    const gap = maxY - skyline[i].y;
-    if (gap > EPS) area += gap * skyline[i].width;
-  }
-  return area;
-}
-
-/**
- * Simulate the skyline after placing an item, without mutation.
- */
-function simulateSkyline(
-  skyline: SkylineSegment[],
-  startX: number,
-  itemRight: number,
-  placedBottom: number
-): SkylineSegment[] {
-  const result: SkylineSegment[] = [];
-
-  for (let si = 0; si < skyline.length; si++) {
-    const seg = skyline[si];
-    const segRight = seg.x + seg.width;
-
-    if (segRight <= startX + EPS || seg.x >= itemRight - EPS) {
-      result.push({x: seg.x, y: seg.y, width: seg.width});
-    } else if (seg.x >= startX - EPS && segRight <= itemRight + EPS) {
-      // Fully covered — skip.
-    } else if (seg.x < startX - EPS && segRight > itemRight - EPS) {
-      // Spans both sides — split.
-      result.push({x: seg.x, y: seg.y, width: startX - seg.x});
-      result.push({x: itemRight, y: seg.y, width: segRight - itemRight});
-    } else if (seg.x < startX - EPS) {
-      result.push({x: seg.x, y: seg.y, width: startX - seg.x});
-    } else {
-      result.push({x: itemRight, y: seg.y, width: segRight - itemRight});
-    }
-  }
-
-  result.push({x: startX, y: placedBottom, width: itemRight - startX});
-  result.sort((a, b) => a.x - b.x);
-
-  let i = 0;
-  while (i < result.length - 1) {
-    const a = result[i];
-    const b = result[i + 1];
-    if (Math.abs((a.x + a.width) - b.x) < EPS && Math.abs(a.y - b.y) < EPS) {
-      a.width += b.width;
-      result.splice(i + 1, 1);
-    } else {
-      i++;
-    }
-  }
-
-  return result;
-}
-
-/**
- * Mutate the real skyline: collect waste rects and update segments.
- */
-function applySkylineUpdate(
-  skyline: SkylineSegment[],
-  wasteRects: WasteRect[],
-  startX: number,
-  itemRight: number,
-  placedY: number,
-  placedBottom: number,
-  startSegIdx: number
-): void {
-  let sx = startX;
-  let segIdx = startSegIdx;
-
-  while (segIdx < skyline.length && sx < itemRight - EPS) {
-    const seg = skyline[segIdx];
-    const segRight = seg.x + seg.width;
-    const overlapLeft = Math.max(sx, seg.x);
-    const overlapRight = Math.min(itemRight, segRight);
-    const overlapWidth = overlapRight - overlapLeft;
-
-    if (overlapWidth > EPS) {
-      const gapHeight = placedY - seg.y;
-      if (gapHeight > EPS) {
-        wasteRects.push({
-          x: overlapLeft,
-          y: seg.y,
-          width: overlapWidth,
-          height: gapHeight,
-        });
+function detectTotalCols(pxWidths: number[], gridWidth: number): number {
+  for (let n = MAX_COLS; n >= 2; n--) {
+    const unit = gridWidth / n;
+    let valid = true;
+    for (const w of pxWidths) {
+      if (w < SNAP_PX) continue;
+      const ratio = w / unit;
+      if (Math.abs(ratio - Math.round(ratio)) > SNAP_PX / unit) {
+        valid = false;
+        break;
       }
     }
-
-    if (segRight <= itemRight + EPS) {
-      skyline.splice(segIdx, 1);
-    } else {
-      const trimAmount = itemRight - seg.x;
-      seg.x = itemRight;
-      seg.width -= trimAmount;
-      segIdx++;
-    }
-    sx = overlapRight;
+    if (valid) return n;
   }
-
-  skyline.splice(startSegIdx, 0, {x: startX, y: placedBottom, width: itemRight - startX});
-  mergeSkyline(skyline);
+  return 1;
 }
 
-function mergeSkyline(skyline: SkylineSegment[]): void {
-  let i = 0;
-  while (i < skyline.length - 1) {
-    const a = skyline[i];
-    const b = skyline[i + 1];
-    if (Math.abs((a.x + a.width) - b.x) < EPS && Math.abs(a.y - b.y) < EPS) {
-      a.width += b.width;
-      skyline.splice(i + 1, 1);
-    } else {
-      i++;
+/**
+ * Detect the row unit height as the smallest positive item height.
+ * All item heights are expected to be integer multiples of this unit
+ * (e.g. 200, 400, 600 for case widgets or 220, 440, 660 for dashboard).
+ */
+function detectRowHeight(pxHeights: number[]): number {
+  let minH = Infinity;
+  for (const h of pxHeights) {
+    if (h > SNAP_PX && h < minH) minH = h;
+  }
+  return minH === Infinity ? 200 : minH;
+}
+
+/**
+ * Check if an item of size (rowSpan × colSpan) can be placed at (row, col).
+ */
+function canPlace(
+  occupied: boolean[][],
+  row: number,
+  col: number,
+  rowSpan: number,
+  colSpan: number,
+  gridRows: number
+): boolean {
+  if (row + rowSpan > gridRows) return false;
+  for (let r = row; r < row + rowSpan; r++) {
+    for (let c = col; c < col + colSpan; c++) {
+      if (occupied[r][c]) return false;
+    }
+  }
+  return true;
+}
+
+/**
+ * Mark cells as occupied for an item placed at (row, col).
+ */
+function markOccupied(
+  occupied: boolean[][],
+  row: number,
+  col: number,
+  rowSpan: number,
+  colSpan: number
+): void {
+  for (let r = row; r < row + rowSpan; r++) {
+    for (let c = col; c < col + colSpan; c++) {
+      occupied[r][c] = true;
     }
   }
 }
