@@ -139,6 +139,11 @@ dependencies {
     testImplementation "org.springframework.security:spring-security-test"
     testImplementation "org.junit.jupiter:junit-jupiter-engine"
     testImplementation "org.apache.groovy:groovy-all:${groovyVersion}"
+
+    // BouncyCastle for X.509 certificate generation in vulnerability tests
+    testImplementation "org.bouncycastle:bcprov-jdk18on:1.84"
+    testImplementation "org.bouncycastle:bcpkix-jdk18on:1.84"
+
 }
 
 apply from: "gradle/publishing.gradle"
