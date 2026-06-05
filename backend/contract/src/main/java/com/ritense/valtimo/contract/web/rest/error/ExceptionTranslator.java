@@ -26,6 +26,7 @@ import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import org.springframework.dao.ConcurrencyFailureException;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
@@ -91,8 +92,12 @@ public class ExceptionTranslator implements ProblemHandling {
     @Override
     public ResponseEntity<Problem> handleMethodArgumentNotValid(MethodArgumentNotValidException ex, @Nonnull NativeWebRequest request) {
         BindingResult result = ex.getBindingResult();
-        List<String> fieldErrors = result.getFieldErrors().stream()
-            .map(f -> f.getObjectName() + "." + f.getField() + ": " + f.getDefaultMessage())
+        List<String> fieldErrors = Stream.concat(
+                result.getFieldErrors().stream()
+                    .map(f -> f.getObjectName() + "." + f.getField() + ": " + f.getDefaultMessage()),
+                result.getGlobalErrors().stream()
+                    .map(e -> e.getObjectName() + ": " + e.getDefaultMessage())
+            )
             .collect(Collectors.toList());
 
         Problem problem = Problem.builder()

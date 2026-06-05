@@ -10,7 +10,7 @@
 
 * **Server-side input validation hardening (NCSC U/WA.03-1)**
 
-  REST controllers across the backend now apply Bean Validation (`@Valid`) to every endpoint that accepts a request
-  body.
+  REST controllers across the backend now apply Bean Validation to applicable endpoints that accept a
+  request body.
 
 ## Bugfixes

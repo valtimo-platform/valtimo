@@ -21,6 +21,7 @@ import java.util.HashMap;
 import java.util.Map;
 import org.zalando.problem.AbstractThrowableProblem;
 import org.zalando.problem.Status;
+import org.zalando.problem.ThrowableProblem;
 
 /**
  * Base for Valtimo exceptions translated to RFC7807 Problem responses.
@@ -44,10 +45,14 @@ public abstract class ValtimoProblem extends AbstractThrowableProblem {
     }
 
     protected ValtimoProblem(URI type, String message, Status status, String errorKey, String params, Throwable cause) {
-        super(type, message, status, null, null, null, alertParameters(errorKey, params));
-        if (cause != null) {
-            initCause(cause);
+        super(type, message, status, null, null, asThrowableProblem(cause), alertParameters(errorKey, params));
+        if (cause != null && !(cause instanceof ThrowableProblem)) {
+            addSuppressed(cause);
         }
+    }
+
+    private static ThrowableProblem asThrowableProblem(Throwable cause) {
+        return cause instanceof ThrowableProblem throwableProblem ? throwableProblem : null;
     }
 
     private static Map<String, Object> alertParameters(String errorKey, String params) {
