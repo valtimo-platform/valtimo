@@ -2339,6 +2339,12 @@
       "openInNewTab": "Open in new tab"
     }
   },
+  "widgetLayout": {
+    "label": "Layout algorithm",
+    "muuriGapFree": "Default (less gaps)",
+    "muuri": "Default",
+    "beautiful": "Beautiful (gap-free)"
+  },
   "ikoManagement": {
     "preparingDownload": "Preparing download",
     "ikoServer": "IKO Server",

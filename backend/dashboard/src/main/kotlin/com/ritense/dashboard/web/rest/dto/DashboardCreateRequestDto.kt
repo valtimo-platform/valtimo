@@ -16,7 +16,10 @@
 
 package com.ritense.dashboard.web.rest.dto
 
+import com.ritense.dashboard.domain.WidgetLayout
+
 data class DashboardCreateRequestDto(
     val title: String,
     val description: String,
+    val widgetLayout: WidgetLayout? = null,
 )

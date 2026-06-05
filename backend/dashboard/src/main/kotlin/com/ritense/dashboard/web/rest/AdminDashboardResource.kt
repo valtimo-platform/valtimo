@@ -70,6 +70,7 @@ class AdminDashboardResource(
         val dashboard = dashboardService.createDashboard(
             dashboardDto.title,
             dashboardDto.description,
+            dashboardDto.widgetLayout,
         )
         return ResponseEntity.ok(DashboardResponseDto.of(dashboard))
     }

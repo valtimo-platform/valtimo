@@ -2372,6 +2372,12 @@
       "openInNewTab": "Open in nieuw tabblad"
     }
   },
+  "widgetLayout": {
+    "label": "Lay-out algoritme",
+    "muuriGapFree": "Default (less gaps)",
+    "muuri": "Default",
+    "beautiful": "Beautiful (gap-free)"
+  },
   "ikoManagement": {
     "preparingDownload": "Download aan het voorbereiden",
     "title": "Configuratie",

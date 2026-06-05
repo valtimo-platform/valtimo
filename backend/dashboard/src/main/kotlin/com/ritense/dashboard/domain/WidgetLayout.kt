@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,23 +14,14 @@
  * limitations under the License.
  */
 
-package com.ritense.iko.web.rest.request
+package com.ritense.dashboard.domain
 
-import com.ritense.tab.domain.Tab
-import com.ritense.tab.domain.WidgetLayout
-
-data class IkoTabCreateRequest(
-    val title: String?,
-    val type: String,
-    val properties: Map<String, Any?> = emptyMap(),
-    val widgetLayout: WidgetLayout? = null,
-) {
-    fun toEntity(key: String) = Tab(
-        key = key,
-        title = title,
-        order = 0,
-        type = type,
-        properties = properties,
-        widgetLayout = widgetLayout,
-    )
+/**
+ * Layout algorithm used to position a dashboard's widgets. When absent the
+ * frontend falls back to [MUURI_GAP_FREE], preserving the original behaviour.
+ */
+enum class WidgetLayout {
+    MUURI_GAP_FREE,
+    MUURI,
+    BEAUTIFUL
 }
