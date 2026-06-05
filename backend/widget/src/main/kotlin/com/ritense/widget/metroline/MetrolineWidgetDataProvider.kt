@@ -21,13 +21,10 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import com.jayway.jsonpath.Configuration
 import com.jayway.jsonpath.JsonPath
 import com.jayway.jsonpath.Option
+import com.ritense.valtimo.contract.json.Iso8601Deserializer
 import com.ritense.valueresolver.ValueResolverService
 import com.ritense.widget.WidgetDataProvider
-import java.time.Instant
 import java.time.LocalDateTime
-import java.time.OffsetDateTime
-import java.time.ZoneId
-import java.time.ZonedDateTime
 
 class MetrolineWidgetDataProvider(
     private val objectMapper: ObjectMapper,
@@ -62,23 +59,7 @@ class MetrolineWidgetDataProvider(
         val node = resolveNodeAt(row, path) ?: return null
         if (!node.isValueNode || node.isNull) return null
         val text = node.asText().takeIf { it.isNotBlank() } ?: return null
-        return parseLocalDateTime(text)
-    }
-
-    /**
-     * Parses an ISO-8601 timestamp into a [LocalDateTime] tolerantly, accepting:
-     * - ISO local date-time (`2025-08-15T10:30:00`)
-     * - Offset date-time (`2025-08-15T10:30:00+02:00`) — keeps the wall-clock time at the offset
-     * - Instant / UTC (`2025-08-15T10:30:00Z`) — converted at UTC
-     * - Zoned date-time (`2025-08-15T10:30:00+02:00[Europe/Amsterdam]`) — keeps the wall-clock time
-     *
-     * Returns null when the value is not a parseable timestamp.
-     */
-    private fun parseLocalDateTime(text: String): LocalDateTime? {
-        return runCatching { LocalDateTime.parse(text) }.getOrNull()
-            ?: runCatching { OffsetDateTime.parse(text).toLocalDateTime() }.getOrNull()
-            ?: runCatching { ZonedDateTime.parse(text).toLocalDateTime() }.getOrNull()
-            ?: runCatching { Instant.parse(text).atZone(ZoneId.of("UTC")).toLocalDateTime() }.getOrNull()
+        return Iso8601Deserializer.parseOrNull(text)?.toLocalDateTime()
     }
 
     private fun resolveNodeAt(row: JsonNode, path: String): JsonNode? {
