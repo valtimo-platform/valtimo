@@ -33,7 +33,7 @@
  */
 
 /** Maximum number of grid columns to consider when detecting the column count. */
-const MAX_COLS = 10;
+const MAX_COLS = 20;
 
 /** Tolerance (in pixels) for floating-point width/height comparisons. */
 const SNAP_PX = 1;

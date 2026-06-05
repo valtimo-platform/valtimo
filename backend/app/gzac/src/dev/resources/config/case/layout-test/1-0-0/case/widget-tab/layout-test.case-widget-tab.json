@@ -27,6 +27,31 @@
                 "key": "lastName",
                 "title": "Achternaam",
                 "value": "doc:lastName"
+              },
+              {
+                "key": "middleName",
+                "title": "Tussenvoegsel",
+                "value": "doc:middleName"
+              },
+              {
+                "key": "initials",
+                "title": "Voorletters",
+                "value": "doc:initials"
+              },
+              {
+                "key": "birthPlace",
+                "title": "Geboorteplaats",
+                "value": "doc:birthPlace"
+              },
+              {
+                "key": "birthCountry",
+                "title": "Geboorteland",
+                "value": "doc:birthCountry"
+              },
+              {
+                "key": "maritalStatus",
+                "title": "Burgerlijke staat",
+                "value": "doc:maritalStatus"
               }
             ]
           ]
@@ -92,6 +117,21 @@
                 "key": "bsn",
                 "title": "BSN",
                 "value": "doc:bsn"
+              },
+              {
+                "key": "extra1-personal-info-bsn",
+                "title": "Aanvullend gegeven",
+                "value": "doc:extra1"
+              },
+              {
+                "key": "extra2-personal-info-bsn",
+                "title": "Verificatiestatus",
+                "value": "doc:extra2"
+              },
+              {
+                "key": "extra3-personal-info-bsn",
+                "title": "Bijgewerkt op",
+                "value": "doc:extra3"
               }
             ]
           ]
@@ -128,6 +168,31 @@
                 "key": "email",
                 "title": "E-mailadres",
                 "value": "doc:email"
+              },
+              {
+                "key": "extra1-personal-info-email-highlight",
+                "title": "Aanvullend gegeven",
+                "value": "doc:extra1"
+              },
+              {
+                "key": "extra2-personal-info-email-highlight",
+                "title": "Verificatiestatus",
+                "value": "doc:extra2"
+              },
+              {
+                "key": "extra3-personal-info-email-highlight",
+                "title": "Bijgewerkt op",
+                "value": "doc:extra3"
+              },
+              {
+                "key": "extra4-personal-info-email-highlight",
+                "title": "Bron",
+                "value": "doc:extra4"
+              },
+              {
+                "key": "extra5-personal-info-email-highlight",
+                "title": "Opmerking",
+                "value": "doc:extra5"
               }
             ]
           ]
@@ -270,6 +335,41 @@
                   "type": "date",
                   "format": "DD-MM-YYYY"
                 }
+              },
+              {
+                "key": "middleName",
+                "title": "Tussenvoegsel",
+                "value": "doc:middleName"
+              },
+              {
+                "key": "initials",
+                "title": "Voorletters",
+                "value": "doc:initials"
+              },
+              {
+                "key": "birthPlace",
+                "title": "Geboorteplaats",
+                "value": "doc:birthPlace"
+              },
+              {
+                "key": "birthCountry",
+                "title": "Geboorteland",
+                "value": "doc:birthCountry"
+              },
+              {
+                "key": "maritalStatus",
+                "title": "Burgerlijke staat",
+                "value": "doc:maritalStatus"
+              },
+              {
+                "key": "preferredLanguage",
+                "title": "Voorkeurstaal",
+                "value": "doc:preferredLanguage"
+              },
+              {
+                "key": "maidenName",
+                "title": "Meisjesnaam",
+                "value": "doc:maidenName"
               }
             ]
           ]
@@ -325,6 +425,26 @@
                 "key": "postalCode",
                 "title": "Postcode",
                 "value": "doc:postalCode"
+              },
+              {
+                "key": "extra1-address-contact-postcode",
+                "title": "Aanvullend gegeven",
+                "value": "doc:extra1"
+              },
+              {
+                "key": "extra2-address-contact-postcode",
+                "title": "Verificatiestatus",
+                "value": "doc:extra2"
+              },
+              {
+                "key": "extra3-address-contact-postcode",
+                "title": "Bijgewerkt op",
+                "value": "doc:extra3"
+              },
+              {
+                "key": "extra4-address-contact-postcode",
+                "title": "Bron",
+                "value": "doc:extra4"
               }
             ]
           ]
@@ -343,6 +463,46 @@
                 "key": "city",
                 "title": "Woonplaats",
                 "value": "doc:city"
+              },
+              {
+                "key": "extra1-address-contact-woonplaats",
+                "title": "Aanvullend gegeven",
+                "value": "doc:extra1"
+              },
+              {
+                "key": "extra2-address-contact-woonplaats",
+                "title": "Verificatiestatus",
+                "value": "doc:extra2"
+              },
+              {
+                "key": "extra3-address-contact-woonplaats",
+                "title": "Bijgewerkt op",
+                "value": "doc:extra3"
+              },
+              {
+                "key": "extra4-address-contact-woonplaats",
+                "title": "Bron",
+                "value": "doc:extra4"
+              },
+              {
+                "key": "extra5-address-contact-woonplaats",
+                "title": "Opmerking",
+                "value": "doc:extra5"
+              },
+              {
+                "key": "extra6-address-contact-woonplaats",
+                "title": "Referentie",
+                "value": "doc:extra6"
+              },
+              {
+                "key": "extra7-address-contact-woonplaats",
+                "title": "Categorie",
+                "value": "doc:extra7"
+              },
+              {
+                "key": "extra8-address-contact-woonplaats",
+                "title": "Validatie",
+                "value": "doc:extra8"
               }
             ]
           ]
@@ -414,6 +574,36 @@
                 "key": "postalCode2",
                 "title": "Postcode",
                 "value": "doc:postalCode"
+              },
+              {
+                "key": "houseNumberAddition",
+                "title": "Toevoeging",
+                "value": "doc:houseNumberAddition"
+              },
+              {
+                "key": "municipality",
+                "title": "Gemeente",
+                "value": "doc:municipality"
+              },
+              {
+                "key": "district",
+                "title": "Wijk",
+                "value": "doc:district"
+              },
+              {
+                "key": "neighborhood",
+                "title": "Buurt",
+                "value": "doc:neighborhood"
+              },
+              {
+                "key": "addressType",
+                "title": "Adrestype",
+                "value": "doc:addressType"
+              },
+              {
+                "key": "movingDate",
+                "title": "Verhuisdatum",
+                "value": "doc:movingDate"
               }
             ],
             [
@@ -474,6 +664,21 @@
                 "key": "phone",
                 "title": "Telefoonnummer",
                 "value": "doc:phone"
+              },
+              {
+                "key": "extra1-address-contact-telefoon",
+                "title": "Aanvullend gegeven",
+                "value": "doc:extra1"
+              },
+              {
+                "key": "extra2-address-contact-telefoon",
+                "title": "Verificatiestatus",
+                "value": "doc:extra2"
+              },
+              {
+                "key": "extra3-address-contact-telefoon",
+                "title": "Bijgewerkt op",
+                "value": "doc:extra3"
               }
             ]
           ]
@@ -563,6 +768,36 @@
                 "key": "jobTitle",
                 "title": "Functie",
                 "value": "doc:jobTitle"
+              },
+              {
+                "key": "extra1-employment-functie",
+                "title": "Aanvullend gegeven",
+                "value": "doc:extra1"
+              },
+              {
+                "key": "extra2-employment-functie",
+                "title": "Verificatiestatus",
+                "value": "doc:extra2"
+              },
+              {
+                "key": "extra3-employment-functie",
+                "title": "Bijgewerkt op",
+                "value": "doc:extra3"
+              },
+              {
+                "key": "extra4-employment-functie",
+                "title": "Bron",
+                "value": "doc:extra4"
+              },
+              {
+                "key": "extra5-employment-functie",
+                "title": "Opmerking",
+                "value": "doc:extra5"
+              },
+              {
+                "key": "extra6-employment-functie",
+                "title": "Referentie",
+                "value": "doc:extra6"
               }
             ]
           ]
@@ -628,6 +863,26 @@
                 "key": "contractType",
                 "title": "Contracttype",
                 "value": "doc:contractType"
+              },
+              {
+                "key": "extra1-employment-contracttype",
+                "title": "Aanvullend gegeven",
+                "value": "doc:extra1"
+              },
+              {
+                "key": "extra2-employment-contracttype",
+                "title": "Verificatiestatus",
+                "value": "doc:extra2"
+              },
+              {
+                "key": "extra3-employment-contracttype",
+                "title": "Bijgewerkt op",
+                "value": "doc:extra3"
+              },
+              {
+                "key": "extra4-employment-contracttype",
+                "title": "Bron",
+                "value": "doc:extra4"
               }
             ]
           ]
@@ -699,6 +954,56 @@
                 "displayProperties": {
                   "type": "number"
                 }
+              },
+              {
+                "key": "extra1-employment-vakantiedagen",
+                "title": "Aanvullend gegeven",
+                "value": "doc:extra1"
+              },
+              {
+                "key": "extra2-employment-vakantiedagen",
+                "title": "Verificatiestatus",
+                "value": "doc:extra2"
+              },
+              {
+                "key": "extra3-employment-vakantiedagen",
+                "title": "Bijgewerkt op",
+                "value": "doc:extra3"
+              },
+              {
+                "key": "extra4-employment-vakantiedagen",
+                "title": "Bron",
+                "value": "doc:extra4"
+              },
+              {
+                "key": "extra5-employment-vakantiedagen",
+                "title": "Opmerking",
+                "value": "doc:extra5"
+              },
+              {
+                "key": "extra6-employment-vakantiedagen",
+                "title": "Referentie",
+                "value": "doc:extra6"
+              },
+              {
+                "key": "extra7-employment-vakantiedagen",
+                "title": "Categorie",
+                "value": "doc:extra7"
+              },
+              {
+                "key": "extra8-employment-vakantiedagen",
+                "title": "Validatie",
+                "value": "doc:extra8"
+              },
+              {
+                "key": "extra9-employment-vakantiedagen",
+                "title": "Herkomst",
+                "value": "doc:extra9"
+              },
+              {
+                "key": "extra10-employment-vakantiedagen",
+                "title": "Gecontroleerd door",
+                "value": "doc:extra10"
               }
             ]
           ]
@@ -788,6 +1093,21 @@
                 "key": "university",
                 "title": "Universiteit",
                 "value": "doc:university"
+              },
+              {
+                "key": "pensionDate",
+                "title": "Pensioendatum",
+                "value": "doc:pensionDate"
+              },
+              {
+                "key": "collectiveAgreement",
+                "title": "CAO",
+                "value": "doc:collectiveAgreement"
+              },
+              {
+                "key": "payScale",
+                "title": "Salarisschaal",
+                "value": "doc:payScale"
               }
             ],
             [
@@ -877,6 +1197,21 @@
                 "key": "requestType",
                 "title": "Type",
                 "value": "doc:requestType"
+              },
+              {
+                "key": "extra1-request-info-type",
+                "title": "Aanvullend gegeven",
+                "value": "doc:extra1"
+              },
+              {
+                "key": "extra2-request-info-type",
+                "title": "Verificatiestatus",
+                "value": "doc:extra2"
+              },
+              {
+                "key": "extra3-request-info-type",
+                "title": "Bijgewerkt op",
+                "value": "doc:extra3"
               }
             ]
           ]
@@ -917,6 +1252,31 @@
                 "key": "requestPriority",
                 "title": "Prioriteit",
                 "value": "doc:requestPriority"
+              },
+              {
+                "key": "extra1-request-info-prioriteit",
+                "title": "Aanvullend gegeven",
+                "value": "doc:extra1"
+              },
+              {
+                "key": "extra2-request-info-prioriteit",
+                "title": "Verificatiestatus",
+                "value": "doc:extra2"
+              },
+              {
+                "key": "extra3-request-info-prioriteit",
+                "title": "Bijgewerkt op",
+                "value": "doc:extra3"
+              },
+              {
+                "key": "extra4-request-info-prioriteit",
+                "title": "Bron",
+                "value": "doc:extra4"
+              },
+              {
+                "key": "extra5-request-info-prioriteit",
+                "title": "Opmerking",
+                "value": "doc:extra5"
               }
             ]
           ]
@@ -996,6 +1356,26 @@
                 "key": "requestSubCategory",
                 "title": "Subcategorie",
                 "value": "doc:requestSubCategory"
+              },
+              {
+                "key": "extra1-request-info-subcategorie",
+                "title": "Aanvullend gegeven",
+                "value": "doc:extra1"
+              },
+              {
+                "key": "extra2-request-info-subcategorie",
+                "title": "Verificatiestatus",
+                "value": "doc:extra2"
+              },
+              {
+                "key": "extra3-request-info-subcategorie",
+                "title": "Bijgewerkt op",
+                "value": "doc:extra3"
+              },
+              {
+                "key": "extra4-request-info-subcategorie",
+                "title": "Bron",
+                "value": "doc:extra4"
               }
             ]
           ]
@@ -1068,6 +1448,46 @@
                   "type": "date",
                   "format": "DD-MM-YYYY"
                 }
+              },
+              {
+                "key": "extra1-request-info-deadline",
+                "title": "Aanvullend gegeven",
+                "value": "doc:extra1"
+              },
+              {
+                "key": "extra2-request-info-deadline",
+                "title": "Verificatiestatus",
+                "value": "doc:extra2"
+              },
+              {
+                "key": "extra3-request-info-deadline",
+                "title": "Bijgewerkt op",
+                "value": "doc:extra3"
+              },
+              {
+                "key": "extra4-request-info-deadline",
+                "title": "Bron",
+                "value": "doc:extra4"
+              },
+              {
+                "key": "extra5-request-info-deadline",
+                "title": "Opmerking",
+                "value": "doc:extra5"
+              },
+              {
+                "key": "extra6-request-info-deadline",
+                "title": "Referentie",
+                "value": "doc:extra6"
+              },
+              {
+                "key": "extra7-request-info-deadline",
+                "title": "Categorie",
+                "value": "doc:extra7"
+              },
+              {
+                "key": "extra8-request-info-deadline",
+                "title": "Validatie",
+                "value": "doc:extra8"
               }
             ]
           ]
@@ -1136,6 +1556,21 @@
                 "key": "riskLevel",
                 "title": "Risiconiveau",
                 "value": "doc:riskLevel"
+              },
+              {
+                "key": "extra1-request-info-risico",
+                "title": "Aanvullend gegeven",
+                "value": "doc:extra1"
+              },
+              {
+                "key": "extra2-request-info-risico",
+                "title": "Verificatiestatus",
+                "value": "doc:extra2"
+              },
+              {
+                "key": "extra3-request-info-risico",
+                "title": "Bijgewerkt op",
+                "value": "doc:extra3"
               }
             ]
           ]
@@ -1154,6 +1589,31 @@
                 "key": "riskDescription",
                 "title": "Beschrijving",
                 "value": "doc:riskDescription"
+              },
+              {
+                "key": "projectCode",
+                "title": "Projectcode",
+                "value": "doc:projectCode"
+              },
+              {
+                "key": "projectSponsor",
+                "title": "Opdrachtgever",
+                "value": "doc:projectSponsor"
+              },
+              {
+                "key": "projectBudget",
+                "title": "Projectbudget",
+                "value": "doc:projectBudget"
+              },
+              {
+                "key": "milestone",
+                "title": "Mijlpaal",
+                "value": "doc:milestone"
+              },
+              {
+                "key": "dependency",
+                "title": "Afhankelijkheid",
+                "value": "doc:dependency"
               }
             ],
             [
@@ -1197,6 +1657,46 @@
                 "key": "approvedBy",
                 "title": "Goedgekeurd door",
                 "value": "doc:approvedBy"
+              },
+              {
+                "key": "projectCode",
+                "title": "Projectcode",
+                "value": "doc:projectCode"
+              },
+              {
+                "key": "projectSponsor",
+                "title": "Opdrachtgever",
+                "value": "doc:projectSponsor"
+              },
+              {
+                "key": "projectBudget",
+                "title": "Projectbudget",
+                "value": "doc:projectBudget"
+              },
+              {
+                "key": "milestone",
+                "title": "Mijlpaal",
+                "value": "doc:milestone"
+              },
+              {
+                "key": "dependency",
+                "title": "Afhankelijkheid",
+                "value": "doc:dependency"
+              },
+              {
+                "key": "riskLevel",
+                "title": "Risiconiveau",
+                "value": "doc:riskLevel"
+              },
+              {
+                "key": "stakeholder",
+                "title": "Stakeholder",
+                "value": "doc:stakeholder"
+              },
+              {
+                "key": "deliverable",
+                "title": "Oplevering",
+                "value": "doc:deliverable"
               }
             ],
             [
@@ -1274,6 +1774,36 @@
                 "key": "projectPhase",
                 "title": "Fase",
                 "value": "doc:projectPhase"
+              },
+              {
+                "key": "extra1-project-budget-projectfase",
+                "title": "Aanvullend gegeven",
+                "value": "doc:extra1"
+              },
+              {
+                "key": "extra2-project-budget-projectfase",
+                "title": "Verificatiestatus",
+                "value": "doc:extra2"
+              },
+              {
+                "key": "extra3-project-budget-projectfase",
+                "title": "Bijgewerkt op",
+                "value": "doc:extra3"
+              },
+              {
+                "key": "extra4-project-budget-projectfase",
+                "title": "Bron",
+                "value": "doc:extra4"
+              },
+              {
+                "key": "extra5-project-budget-projectfase",
+                "title": "Opmerking",
+                "value": "doc:extra5"
+              },
+              {
+                "key": "extra6-project-budget-projectfase",
+                "title": "Referentie",
+                "value": "doc:extra6"
               }
             ]
           ]
@@ -1336,6 +1866,26 @@
                   "type": "date",
                   "format": "DD-MM-YYYY"
                 }
+              },
+              {
+                "key": "extra1-project-budget-project-eind",
+                "title": "Aanvullend gegeven",
+                "value": "doc:extra1"
+              },
+              {
+                "key": "extra2-project-budget-project-eind",
+                "title": "Verificatiestatus",
+                "value": "doc:extra2"
+              },
+              {
+                "key": "extra3-project-budget-project-eind",
+                "title": "Bijgewerkt op",
+                "value": "doc:extra3"
+              },
+              {
+                "key": "extra4-project-budget-project-eind",
+                "title": "Bron",
+                "value": "doc:extra4"
               }
             ]
           ]
@@ -1406,6 +1956,56 @@
                 "displayProperties": {
                   "type": "number"
                 }
+              },
+              {
+                "key": "extra1-project-budget-open-taken",
+                "title": "Aanvullend gegeven",
+                "value": "doc:extra1"
+              },
+              {
+                "key": "extra2-project-budget-open-taken",
+                "title": "Verificatiestatus",
+                "value": "doc:extra2"
+              },
+              {
+                "key": "extra3-project-budget-open-taken",
+                "title": "Bijgewerkt op",
+                "value": "doc:extra3"
+              },
+              {
+                "key": "extra4-project-budget-open-taken",
+                "title": "Bron",
+                "value": "doc:extra4"
+              },
+              {
+                "key": "extra5-project-budget-open-taken",
+                "title": "Opmerking",
+                "value": "doc:extra5"
+              },
+              {
+                "key": "extra6-project-budget-open-taken",
+                "title": "Referentie",
+                "value": "doc:extra6"
+              },
+              {
+                "key": "extra7-project-budget-open-taken",
+                "title": "Categorie",
+                "value": "doc:extra7"
+              },
+              {
+                "key": "extra8-project-budget-open-taken",
+                "title": "Validatie",
+                "value": "doc:extra8"
+              },
+              {
+                "key": "extra9-project-budget-open-taken",
+                "title": "Herkomst",
+                "value": "doc:extra9"
+              },
+              {
+                "key": "extra10-project-budget-open-taken",
+                "title": "Gecontroleerd door",
+                "value": "doc:extra10"
               }
             ]
           ]
@@ -1456,6 +2056,46 @@
                 "displayProperties": {
                   "type": "number"
                 }
+              },
+              {
+                "key": "projectCode",
+                "title": "Projectcode",
+                "value": "doc:projectCode"
+              },
+              {
+                "key": "projectSponsor",
+                "title": "Opdrachtgever",
+                "value": "doc:projectSponsor"
+              },
+              {
+                "key": "projectBudget",
+                "title": "Projectbudget",
+                "value": "doc:projectBudget"
+              },
+              {
+                "key": "milestone",
+                "title": "Mijlpaal",
+                "value": "doc:milestone"
+              },
+              {
+                "key": "dependency",
+                "title": "Afhankelijkheid",
+                "value": "doc:dependency"
+              },
+              {
+                "key": "riskLevel",
+                "title": "Risiconiveau",
+                "value": "doc:riskLevel"
+              },
+              {
+                "key": "stakeholder",
+                "title": "Stakeholder",
+                "value": "doc:stakeholder"
+              },
+              {
+                "key": "deliverable",
+                "title": "Oplevering",
+                "value": "doc:deliverable"
               }
             ],
             [
@@ -1525,6 +2165,21 @@
                   "type": "currency",
                   "currencyCode": "EUR"
                 }
+              },
+              {
+                "key": "extra1-project-budget-budget-besteed",
+                "title": "Aanvullend gegeven",
+                "value": "doc:extra1"
+              },
+              {
+                "key": "extra2-project-budget-budget-besteed",
+                "title": "Verificatiestatus",
+                "value": "doc:extra2"
+              },
+              {
+                "key": "extra3-project-budget-budget-besteed",
+                "title": "Bijgewerkt op",
+                "value": "doc:extra3"
               }
             ]
           ]
@@ -1587,6 +2242,26 @@
                   "type": "currency",
                   "currencyCode": "EUR"
                 }
+              },
+              {
+                "key": "iban",
+                "title": "IBAN",
+                "value": "doc:iban"
+              },
+              {
+                "key": "bic",
+                "title": "BIC",
+                "value": "doc:bic"
+              },
+              {
+                "key": "accountHolder",
+                "title": "Rekeninghouder",
+                "value": "doc:accountHolder"
+              },
+              {
+                "key": "taxRate",
+                "title": "Belastingtarief",
+                "value": "doc:taxRate"
               }
             ]
           ]
@@ -1612,6 +2287,31 @@
                 "key": "invoiceNumber",
                 "title": "Factuurnummer",
                 "value": "doc:invoiceNumber"
+              },
+              {
+                "key": "extra1-project-budget-factuurnummer",
+                "title": "Aanvullend gegeven",
+                "value": "doc:extra1"
+              },
+              {
+                "key": "extra2-project-budget-factuurnummer",
+                "title": "Verificatiestatus",
+                "value": "doc:extra2"
+              },
+              {
+                "key": "extra3-project-budget-factuurnummer",
+                "title": "Bijgewerkt op",
+                "value": "doc:extra3"
+              },
+              {
+                "key": "extra4-project-budget-factuurnummer",
+                "title": "Bron",
+                "value": "doc:extra4"
+              },
+              {
+                "key": "extra5-project-budget-factuurnummer",
+                "title": "Opmerking",
+                "value": "doc:extra5"
               }
             ]
           ]
@@ -1678,6 +2378,26 @@
                   "type": "currency",
                   "currencyCode": "EUR"
                 }
+              },
+              {
+                "key": "extra1-project-budget-factuur-btw",
+                "title": "Aanvullend gegeven",
+                "value": "doc:extra1"
+              },
+              {
+                "key": "extra2-project-budget-factuur-btw",
+                "title": "Verificatiestatus",
+                "value": "doc:extra2"
+              },
+              {
+                "key": "extra3-project-budget-factuur-btw",
+                "title": "Bijgewerkt op",
+                "value": "doc:extra3"
+              },
+              {
+                "key": "extra4-project-budget-factuur-btw",
+                "title": "Bron",
+                "value": "doc:extra4"
               }
             ]
           ]
@@ -1700,6 +2420,46 @@
                   "type": "currency",
                   "currencyCode": "EUR"
                 }
+              },
+              {
+                "key": "extra1-project-budget-factuur-totaal",
+                "title": "Aanvullend gegeven",
+                "value": "doc:extra1"
+              },
+              {
+                "key": "extra2-project-budget-factuur-totaal",
+                "title": "Verificatiestatus",
+                "value": "doc:extra2"
+              },
+              {
+                "key": "extra3-project-budget-factuur-totaal",
+                "title": "Bijgewerkt op",
+                "value": "doc:extra3"
+              },
+              {
+                "key": "extra4-project-budget-factuur-totaal",
+                "title": "Bron",
+                "value": "doc:extra4"
+              },
+              {
+                "key": "extra5-project-budget-factuur-totaal",
+                "title": "Opmerking",
+                "value": "doc:extra5"
+              },
+              {
+                "key": "extra6-project-budget-factuur-totaal",
+                "title": "Referentie",
+                "value": "doc:extra6"
+              },
+              {
+                "key": "extra7-project-budget-factuur-totaal",
+                "title": "Categorie",
+                "value": "doc:extra7"
+              },
+              {
+                "key": "extra8-project-budget-factuur-totaal",
+                "title": "Validatie",
+                "value": "doc:extra8"
               }
             ]
           ]
@@ -1790,6 +2550,21 @@
                 "key": "riskLevel",
                 "title": "Niveau",
                 "value": "doc:riskLevel"
+              },
+              {
+                "key": "extra1-project-budget-risico-niveau",
+                "title": "Aanvullend gegeven",
+                "value": "doc:extra1"
+              },
+              {
+                "key": "extra2-project-budget-risico-niveau",
+                "title": "Verificatiestatus",
+                "value": "doc:extra2"
+              },
+              {
+                "key": "extra3-project-budget-risico-niveau",
+                "title": "Bijgewerkt op",
+                "value": "doc:extra3"
               }
             ]
           ]
@@ -1808,6 +2583,21 @@
                 "key": "riskDescription",
                 "title": "Beschrijving",
                 "value": "doc:riskDescription"
+              },
+              {
+                "key": "paymentTerms",
+                "title": "Betalingsvoorwaarden",
+                "value": "doc:paymentTerms"
+              },
+              {
+                "key": "creditLimit",
+                "title": "Kredietlimiet",
+                "value": "doc:creditLimit"
+              },
+              {
+                "key": "currency",
+                "title": "Valuta",
+                "value": "doc:currency"
               }
             ],
             [
@@ -1874,6 +2664,36 @@
                 "key": "insuranceNumber",
                 "title": "Verzekeringsnummer",
                 "value": "doc:insuranceNumber"
+              },
+              {
+                "key": "extra1-financial-verzekeringsnummer",
+                "title": "Aanvullend gegeven",
+                "value": "doc:extra1"
+              },
+              {
+                "key": "extra2-financial-verzekeringsnummer",
+                "title": "Verificatiestatus",
+                "value": "doc:extra2"
+              },
+              {
+                "key": "extra3-financial-verzekeringsnummer",
+                "title": "Bijgewerkt op",
+                "value": "doc:extra3"
+              },
+              {
+                "key": "extra4-financial-verzekeringsnummer",
+                "title": "Bron",
+                "value": "doc:extra4"
+              },
+              {
+                "key": "extra5-financial-verzekeringsnummer",
+                "title": "Opmerking",
+                "value": "doc:extra5"
+              },
+              {
+                "key": "extra6-financial-verzekeringsnummer",
+                "title": "Referentie",
+                "value": "doc:extra6"
               }
             ]
           ]
@@ -1940,6 +2760,26 @@
                   "type": "currency",
                   "currencyCode": "EUR"
                 }
+              },
+              {
+                "key": "extra1-financial-budget-besteed",
+                "title": "Aanvullend gegeven",
+                "value": "doc:extra1"
+              },
+              {
+                "key": "extra2-financial-budget-besteed",
+                "title": "Verificatiestatus",
+                "value": "doc:extra2"
+              },
+              {
+                "key": "extra3-financial-budget-besteed",
+                "title": "Bijgewerkt op",
+                "value": "doc:extra3"
+              },
+              {
+                "key": "extra4-financial-budget-besteed",
+                "title": "Bron",
+                "value": "doc:extra4"
               }
             ]
           ]
@@ -2002,6 +2842,56 @@
                   "type": "date",
                   "format": "DD-MM-YYYY"
                 }
+              },
+              {
+                "key": "extra1-financial-factuurdatum",
+                "title": "Aanvullend gegeven",
+                "value": "doc:extra1"
+              },
+              {
+                "key": "extra2-financial-factuurdatum",
+                "title": "Verificatiestatus",
+                "value": "doc:extra2"
+              },
+              {
+                "key": "extra3-financial-factuurdatum",
+                "title": "Bijgewerkt op",
+                "value": "doc:extra3"
+              },
+              {
+                "key": "extra4-financial-factuurdatum",
+                "title": "Bron",
+                "value": "doc:extra4"
+              },
+              {
+                "key": "extra5-financial-factuurdatum",
+                "title": "Opmerking",
+                "value": "doc:extra5"
+              },
+              {
+                "key": "extra6-financial-factuurdatum",
+                "title": "Referentie",
+                "value": "doc:extra6"
+              },
+              {
+                "key": "extra7-financial-factuurdatum",
+                "title": "Categorie",
+                "value": "doc:extra7"
+              },
+              {
+                "key": "extra8-financial-factuurdatum",
+                "title": "Validatie",
+                "value": "doc:extra8"
+              },
+              {
+                "key": "extra9-financial-factuurdatum",
+                "title": "Herkomst",
+                "value": "doc:extra9"
+              },
+              {
+                "key": "extra10-financial-factuurdatum",
+                "title": "Gecontroleerd door",
+                "value": "doc:extra10"
               }
             ]
           ]
@@ -2068,6 +2958,21 @@
                   "type": "currency",
                   "currencyCode": "EUR"
                 }
+              },
+              {
+                "key": "extra1-financial-factuur-totaal",
+                "title": "Aanvullend gegeven",
+                "value": "doc:extra1"
+              },
+              {
+                "key": "extra2-financial-factuur-totaal",
+                "title": "Verificatiestatus",
+                "value": "doc:extra2"
+              },
+              {
+                "key": "extra3-financial-factuur-totaal",
+                "title": "Bijgewerkt op",
+                "value": "doc:extra3"
               }
             ]
           ]
@@ -2126,6 +3031,31 @@
                 "key": "paymentReference",
                 "title": "Referentie",
                 "value": "doc:paymentReference"
+              },
+              {
+                "key": "extra1-financial-betaalreferentie",
+                "title": "Aanvullend gegeven",
+                "value": "doc:extra1"
+              },
+              {
+                "key": "extra2-financial-betaalreferentie",
+                "title": "Verificatiestatus",
+                "value": "doc:extra2"
+              },
+              {
+                "key": "extra3-financial-betaalreferentie",
+                "title": "Bijgewerkt op",
+                "value": "doc:extra3"
+              },
+              {
+                "key": "extra4-financial-betaalreferentie",
+                "title": "Bron",
+                "value": "doc:extra4"
+              },
+              {
+                "key": "extra5-financial-betaalreferentie",
+                "title": "Opmerking",
+                "value": "doc:extra5"
               }
             ]
           ]
@@ -2190,6 +3120,26 @@
                 "displayProperties": {
                   "type": "percent"
                 }
+              },
+              {
+                "key": "extra1-financial-korting",
+                "title": "Aanvullend gegeven",
+                "value": "doc:extra1"
+              },
+              {
+                "key": "extra2-financial-korting",
+                "title": "Verificatiestatus",
+                "value": "doc:extra2"
+              },
+              {
+                "key": "extra3-financial-korting",
+                "title": "Bijgewerkt op",
+                "value": "doc:extra3"
+              },
+              {
+                "key": "extra4-financial-korting",
+                "title": "Bron",
+                "value": "doc:extra4"
               }
             ]
           ]
@@ -2212,6 +3162,46 @@
                   "type": "currency",
                   "currencyCode": "EUR"
                 }
+              },
+              {
+                "key": "extra1-financial-totaalprijs",
+                "title": "Aanvullend gegeven",
+                "value": "doc:extra1"
+              },
+              {
+                "key": "extra2-financial-totaalprijs",
+                "title": "Verificatiestatus",
+                "value": "doc:extra2"
+              },
+              {
+                "key": "extra3-financial-totaalprijs",
+                "title": "Bijgewerkt op",
+                "value": "doc:extra3"
+              },
+              {
+                "key": "extra4-financial-totaalprijs",
+                "title": "Bron",
+                "value": "doc:extra4"
+              },
+              {
+                "key": "extra5-financial-totaalprijs",
+                "title": "Opmerking",
+                "value": "doc:extra5"
+              },
+              {
+                "key": "extra6-financial-totaalprijs",
+                "title": "Referentie",
+                "value": "doc:extra6"
+              },
+              {
+                "key": "extra7-financial-totaalprijs",
+                "title": "Categorie",
+                "value": "doc:extra7"
+              },
+              {
+                "key": "extra8-financial-totaalprijs",
+                "title": "Validatie",
+                "value": "doc:extra8"
               }
             ]
           ]
@@ -2248,6 +3238,41 @@
                   "type": "currency",
                   "currencyCode": "EUR"
                 }
+              },
+              {
+                "key": "iban",
+                "title": "IBAN",
+                "value": "doc:iban"
+              },
+              {
+                "key": "bic",
+                "title": "BIC",
+                "value": "doc:bic"
+              },
+              {
+                "key": "accountHolder",
+                "title": "Rekeninghouder",
+                "value": "doc:accountHolder"
+              },
+              {
+                "key": "taxRate",
+                "title": "Belastingtarief",
+                "value": "doc:taxRate"
+              },
+              {
+                "key": "paymentTerms",
+                "title": "Betalingsvoorwaarden",
+                "value": "doc:paymentTerms"
+              },
+              {
+                "key": "creditLimit",
+                "title": "Kredietlimiet",
+                "value": "doc:creditLimit"
+              },
+              {
+                "key": "currency",
+                "title": "Valuta",
+                "value": "doc:currency"
               }
             ],
             [
@@ -2464,6 +3489,21 @@
                 "key": "approvedBy",
                 "title": "Door",
                 "value": "doc:approvedBy"
+              },
+              {
+                "key": "extra1-financial-goedgekeurd-door",
+                "title": "Aanvullend gegeven",
+                "value": "doc:extra1"
+              },
+              {
+                "key": "extra2-financial-goedgekeurd-door",
+                "title": "Verificatiestatus",
+                "value": "doc:extra2"
+              },
+              {
+                "key": "extra3-financial-goedgekeurd-door",
+                "title": "Bijgewerkt op",
+                "value": "doc:extra3"
               }
             ]
           ]
@@ -2534,6 +3574,36 @@
                 "displayProperties": {
                   "type": "number"
                 }
+              },
+              {
+                "key": "iban",
+                "title": "IBAN",
+                "value": "doc:iban"
+              },
+              {
+                "key": "bic",
+                "title": "BIC",
+                "value": "doc:bic"
+              },
+              {
+                "key": "accountHolder",
+                "title": "Rekeninghouder",
+                "value": "doc:accountHolder"
+              },
+              {
+                "key": "taxRate",
+                "title": "Belastingtarief",
+                "value": "doc:taxRate"
+              },
+              {
+                "key": "paymentTerms",
+                "title": "Betalingsvoorwaarden",
+                "value": "doc:paymentTerms"
+              },
+              {
+                "key": "creditLimit",
+                "title": "Kredietlimiet",
+                "value": "doc:creditLimit"
               }
             ],
             [
@@ -2611,6 +3681,41 @@
                 "key": "insuranceNumber2",
                 "title": "Verzekeringsnr.",
                 "value": "doc:insuranceNumber"
+              },
+              {
+                "key": "creditLimit",
+                "title": "Kredietlimiet",
+                "value": "doc:creditLimit"
+              },
+              {
+                "key": "currency",
+                "title": "Valuta",
+                "value": "doc:currency"
+              },
+              {
+                "key": "costAllocation",
+                "title": "Kostenverdeling",
+                "value": "doc:costAllocation"
+              },
+              {
+                "key": "yearlyBudget",
+                "title": "Jaarlijks budget",
+                "value": "doc:yearlyBudget"
+              },
+              {
+                "key": "monthlyExpense",
+                "title": "Maandelijkse kosten",
+                "value": "doc:monthlyExpense"
+              },
+              {
+                "key": "netIncome",
+                "title": "Netto inkomen",
+                "value": "doc:netIncome"
+              },
+              {
+                "key": "grossIncome",
+                "title": "Bruto inkomen",
+                "value": "doc:grossIncome"
               }
             ],
             [
@@ -2671,6 +3776,36 @@
                   "type": "currency",
                   "currencyCode": "EUR"
                 }
+              },
+              {
+                "key": "extra1-financial-netto-overzicht",
+                "title": "Aanvullend gegeven",
+                "value": "doc:extra1"
+              },
+              {
+                "key": "extra2-financial-netto-overzicht",
+                "title": "Verificatiestatus",
+                "value": "doc:extra2"
+              },
+              {
+                "key": "extra3-financial-netto-overzicht",
+                "title": "Bijgewerkt op",
+                "value": "doc:extra3"
+              },
+              {
+                "key": "extra4-financial-netto-overzicht",
+                "title": "Bron",
+                "value": "doc:extra4"
+              },
+              {
+                "key": "extra5-financial-netto-overzicht",
+                "title": "Opmerking",
+                "value": "doc:extra5"
+              },
+              {
+                "key": "extra6-financial-netto-overzicht",
+                "title": "Referentie",
+                "value": "doc:extra6"
               }
             ]
           ]
@@ -2748,6 +3883,26 @@
                 "key": "vendorPhone",
                 "title": "Telefoon",
                 "value": "doc:vendorPhone"
+              },
+              {
+                "key": "extra1-logistics-leverancier-telefoon",
+                "title": "Aanvullend gegeven",
+                "value": "doc:extra1"
+              },
+              {
+                "key": "extra2-logistics-leverancier-telefoon",
+                "title": "Verificatiestatus",
+                "value": "doc:extra2"
+              },
+              {
+                "key": "extra3-logistics-leverancier-telefoon",
+                "title": "Bijgewerkt op",
+                "value": "doc:extra3"
+              },
+              {
+                "key": "extra4-logistics-leverancier-telefoon",
+                "title": "Bron",
+                "value": "doc:extra4"
               }
             ]
           ]
@@ -2842,6 +3997,56 @@
                 "key": "warehouseLocation",
                 "title": "Locatie",
                 "value": "doc:warehouseLocation"
+              },
+              {
+                "key": "extra1-logistics-magazijnlocatie",
+                "title": "Aanvullend gegeven",
+                "value": "doc:extra1"
+              },
+              {
+                "key": "extra2-logistics-magazijnlocatie",
+                "title": "Verificatiestatus",
+                "value": "doc:extra2"
+              },
+              {
+                "key": "extra3-logistics-magazijnlocatie",
+                "title": "Bijgewerkt op",
+                "value": "doc:extra3"
+              },
+              {
+                "key": "extra4-logistics-magazijnlocatie",
+                "title": "Bron",
+                "value": "doc:extra4"
+              },
+              {
+                "key": "extra5-logistics-magazijnlocatie",
+                "title": "Opmerking",
+                "value": "doc:extra5"
+              },
+              {
+                "key": "extra6-logistics-magazijnlocatie",
+                "title": "Referentie",
+                "value": "doc:extra6"
+              },
+              {
+                "key": "extra7-logistics-magazijnlocatie",
+                "title": "Categorie",
+                "value": "doc:extra7"
+              },
+              {
+                "key": "extra8-logistics-magazijnlocatie",
+                "title": "Validatie",
+                "value": "doc:extra8"
+              },
+              {
+                "key": "extra9-logistics-magazijnlocatie",
+                "title": "Herkomst",
+                "value": "doc:extra9"
+              },
+              {
+                "key": "extra10-logistics-magazijnlocatie",
+                "title": "Gecontroleerd door",
+                "value": "doc:extra10"
               }
             ]
           ]
@@ -2906,6 +4111,21 @@
                   "type": "currency",
                   "currencyCode": "EUR"
                 }
+              },
+              {
+                "key": "extra1-logistics-eenheidsprijs",
+                "title": "Aanvullend gegeven",
+                "value": "doc:extra1"
+              },
+              {
+                "key": "extra2-logistics-eenheidsprijs",
+                "title": "Verificatiestatus",
+                "value": "doc:extra2"
+              },
+              {
+                "key": "extra3-logistics-eenheidsprijs",
+                "title": "Bijgewerkt op",
+                "value": "doc:extra3"
               }
             ]
           ]
@@ -2948,6 +4168,31 @@
                 "displayProperties": {
                   "type": "percent"
                 }
+              },
+              {
+                "key": "extra1-logistics-korting",
+                "title": "Aanvullend gegeven",
+                "value": "doc:extra1"
+              },
+              {
+                "key": "extra2-logistics-korting",
+                "title": "Verificatiestatus",
+                "value": "doc:extra2"
+              },
+              {
+                "key": "extra3-logistics-korting",
+                "title": "Bijgewerkt op",
+                "value": "doc:extra3"
+              },
+              {
+                "key": "extra4-logistics-korting",
+                "title": "Bron",
+                "value": "doc:extra4"
+              },
+              {
+                "key": "extra5-logistics-korting",
+                "title": "Opmerking",
+                "value": "doc:extra5"
               }
             ]
           ]
@@ -2997,6 +4242,31 @@
                   "type": "date",
                   "format": "DD-MM-YYYY"
                 }
+              },
+              {
+                "key": "houseNumberAddition",
+                "title": "Toevoeging",
+                "value": "doc:houseNumberAddition"
+              },
+              {
+                "key": "municipality",
+                "title": "Gemeente",
+                "value": "doc:municipality"
+              },
+              {
+                "key": "district",
+                "title": "Wijk",
+                "value": "doc:district"
+              },
+              {
+                "key": "neighborhood",
+                "title": "Buurt",
+                "value": "doc:neighborhood"
+              },
+              {
+                "key": "addressType",
+                "title": "Adrestype",
+                "value": "doc:addressType"
               }
             ],
             [
@@ -3120,6 +4390,46 @@
                 "key": "vendorPhone2",
                 "title": "Telefoon",
                 "value": "doc:vendorPhone"
+              },
+              {
+                "key": "iban",
+                "title": "IBAN",
+                "value": "doc:iban"
+              },
+              {
+                "key": "bic",
+                "title": "BIC",
+                "value": "doc:bic"
+              },
+              {
+                "key": "accountHolder",
+                "title": "Rekeninghouder",
+                "value": "doc:accountHolder"
+              },
+              {
+                "key": "taxRate",
+                "title": "Belastingtarief",
+                "value": "doc:taxRate"
+              },
+              {
+                "key": "paymentTerms",
+                "title": "Betalingsvoorwaarden",
+                "value": "doc:paymentTerms"
+              },
+              {
+                "key": "creditLimit",
+                "title": "Kredietlimiet",
+                "value": "doc:creditLimit"
+              },
+              {
+                "key": "currency",
+                "title": "Valuta",
+                "value": "doc:currency"
+              },
+              {
+                "key": "costAllocation",
+                "title": "Kostenverdeling",
+                "value": "doc:costAllocation"
               }
             ]
           ]
@@ -3160,6 +4470,26 @@
                   "type": "currency",
                   "currencyCode": "EUR"
                 }
+              },
+              {
+                "key": "extra1-logistics-factuur-bedrag",
+                "title": "Aanvullend gegeven",
+                "value": "doc:extra1"
+              },
+              {
+                "key": "extra2-logistics-factuur-bedrag",
+                "title": "Verificatiestatus",
+                "value": "doc:extra2"
+              },
+              {
+                "key": "extra3-logistics-factuur-bedrag",
+                "title": "Bijgewerkt op",
+                "value": "doc:extra3"
+              },
+              {
+                "key": "extra4-logistics-factuur-bedrag",
+                "title": "Bron",
+                "value": "doc:extra4"
               }
             ]
           ]
@@ -3178,6 +4508,46 @@
                 "key": "paymentMethod",
                 "title": "Methode",
                 "value": "doc:paymentMethod"
+              },
+              {
+                "key": "extra1-logistics-betaalmethode",
+                "title": "Aanvullend gegeven",
+                "value": "doc:extra1"
+              },
+              {
+                "key": "extra2-logistics-betaalmethode",
+                "title": "Verificatiestatus",
+                "value": "doc:extra2"
+              },
+              {
+                "key": "extra3-logistics-betaalmethode",
+                "title": "Bijgewerkt op",
+                "value": "doc:extra3"
+              },
+              {
+                "key": "extra4-logistics-betaalmethode",
+                "title": "Bron",
+                "value": "doc:extra4"
+              },
+              {
+                "key": "extra5-logistics-betaalmethode",
+                "title": "Opmerking",
+                "value": "doc:extra5"
+              },
+              {
+                "key": "extra6-logistics-betaalmethode",
+                "title": "Referentie",
+                "value": "doc:extra6"
+              },
+              {
+                "key": "extra7-logistics-betaalmethode",
+                "title": "Categorie",
+                "value": "doc:extra7"
+              },
+              {
+                "key": "extra8-logistics-betaalmethode",
+                "title": "Validatie",
+                "value": "doc:extra8"
               }
             ]
           ]
@@ -3234,6 +4604,21 @@
                 "displayProperties": {
                   "type": "number"
                 }
+              },
+              {
+                "key": "movingDate2",
+                "title": "Verhuisdatum",
+                "value": "doc:movingDate"
+              },
+              {
+                "key": "previousAddress2",
+                "title": "Vorig adres",
+                "value": "doc:previousAddress"
+              },
+              {
+                "key": "registrationDate2",
+                "title": "Inschrijfdatum",
+                "value": "doc:registrationDate"
               }
             ]
           ]
@@ -3311,6 +4696,21 @@
                 "displayProperties": {
                   "type": "number"
                 }
+              },
+              {
+                "key": "extra1-quality-sla-oplostijd",
+                "title": "Aanvullend gegeven",
+                "value": "doc:extra1"
+              },
+              {
+                "key": "extra2-quality-sla-oplostijd",
+                "title": "Verificatiestatus",
+                "value": "doc:extra2"
+              },
+              {
+                "key": "extra3-quality-sla-oplostijd",
+                "title": "Bijgewerkt op",
+                "value": "doc:extra3"
               }
             ]
           ]
@@ -3351,6 +4751,36 @@
                   "type": "date",
                   "format": "DD-MM-YYYY"
                 }
+              },
+              {
+                "key": "extra1-quality-sla-sla-deadline",
+                "title": "Aanvullend gegeven",
+                "value": "doc:extra1"
+              },
+              {
+                "key": "extra2-quality-sla-sla-deadline",
+                "title": "Verificatiestatus",
+                "value": "doc:extra2"
+              },
+              {
+                "key": "extra3-quality-sla-sla-deadline",
+                "title": "Bijgewerkt op",
+                "value": "doc:extra3"
+              },
+              {
+                "key": "extra4-quality-sla-sla-deadline",
+                "title": "Bron",
+                "value": "doc:extra4"
+              },
+              {
+                "key": "extra5-quality-sla-sla-deadline",
+                "title": "Opmerking",
+                "value": "doc:extra5"
+              },
+              {
+                "key": "extra6-quality-sla-sla-deadline",
+                "title": "Referentie",
+                "value": "doc:extra6"
               }
             ]
           ]
@@ -3421,6 +4851,26 @@
                 "displayProperties": {
                   "type": "number"
                 }
+              },
+              {
+                "key": "extra1-quality-sla-nps",
+                "title": "Aanvullend gegeven",
+                "value": "doc:extra1"
+              },
+              {
+                "key": "extra2-quality-sla-nps",
+                "title": "Verificatiestatus",
+                "value": "doc:extra2"
+              },
+              {
+                "key": "extra3-quality-sla-nps",
+                "title": "Bijgewerkt op",
+                "value": "doc:extra3"
+              },
+              {
+                "key": "extra4-quality-sla-nps",
+                "title": "Bron",
+                "value": "doc:extra4"
               }
             ]
           ]
@@ -3504,6 +4954,56 @@
                 "key": "incidentType",
                 "title": "Type",
                 "value": "doc:incidentType"
+              },
+              {
+                "key": "extra1-quality-sla-incident-type",
+                "title": "Aanvullend gegeven",
+                "value": "doc:extra1"
+              },
+              {
+                "key": "extra2-quality-sla-incident-type",
+                "title": "Verificatiestatus",
+                "value": "doc:extra2"
+              },
+              {
+                "key": "extra3-quality-sla-incident-type",
+                "title": "Bijgewerkt op",
+                "value": "doc:extra3"
+              },
+              {
+                "key": "extra4-quality-sla-incident-type",
+                "title": "Bron",
+                "value": "doc:extra4"
+              },
+              {
+                "key": "extra5-quality-sla-incident-type",
+                "title": "Opmerking",
+                "value": "doc:extra5"
+              },
+              {
+                "key": "extra6-quality-sla-incident-type",
+                "title": "Referentie",
+                "value": "doc:extra6"
+              },
+              {
+                "key": "extra7-quality-sla-incident-type",
+                "title": "Categorie",
+                "value": "doc:extra7"
+              },
+              {
+                "key": "extra8-quality-sla-incident-type",
+                "title": "Validatie",
+                "value": "doc:extra8"
+              },
+              {
+                "key": "extra9-quality-sla-incident-type",
+                "title": "Herkomst",
+                "value": "doc:extra9"
+              },
+              {
+                "key": "extra10-quality-sla-incident-type",
+                "title": "Gecontroleerd door",
+                "value": "doc:extra10"
               }
             ]
           ]
@@ -3562,6 +5062,21 @@
                 "key": "incidentLocation",
                 "title": "Locatie",
                 "value": "doc:incidentLocation"
+              },
+              {
+                "key": "extra1-quality-sla-incident-locatie",
+                "title": "Aanvullend gegeven",
+                "value": "doc:extra1"
+              },
+              {
+                "key": "extra2-quality-sla-incident-locatie",
+                "title": "Verificatiestatus",
+                "value": "doc:extra2"
+              },
+              {
+                "key": "extra3-quality-sla-incident-locatie",
+                "title": "Bijgewerkt op",
+                "value": "doc:extra3"
               }
             ]
           ]
@@ -3677,6 +5192,51 @@
                 "displayProperties": {
                   "type": "number"
                 }
+              },
+              {
+                "key": "targetResponseTime",
+                "title": "Streeftijd reactie",
+                "value": "doc:targetResponseTime"
+              },
+              {
+                "key": "actualResponseTime",
+                "title": "Werkelijke reactietijd",
+                "value": "doc:actualResponseTime"
+              },
+              {
+                "key": "breachCount",
+                "title": "Aantal overtredingen",
+                "value": "doc:breachCount"
+              },
+              {
+                "key": "penaltyAmount",
+                "title": "Boetebedrag",
+                "value": "doc:penaltyAmount"
+              },
+              {
+                "key": "serviceLevel",
+                "title": "Serviceniveau",
+                "value": "doc:serviceLevel"
+              },
+              {
+                "key": "availabilityTarget",
+                "title": "Beschikbaarheidsdoel",
+                "value": "doc:availabilityTarget"
+              },
+              {
+                "key": "actualAvailability",
+                "title": "Werkelijke beschikbaarheid",
+                "value": "doc:actualAvailability"
+              },
+              {
+                "key": "mttr",
+                "title": "Gemiddelde hersteltijd",
+                "value": "doc:mttr"
+              },
+              {
+                "key": "mtbf",
+                "title": "Gemiddelde tijd tussen storingen",
+                "value": "doc:mtbf"
               }
             ],
             [
@@ -3861,6 +5421,31 @@
                 "displayProperties": {
                   "type": "number"
                 }
+              },
+              {
+                "key": "extra1-quality-sla-responstijd-highlight",
+                "title": "Aanvullend gegeven",
+                "value": "doc:extra1"
+              },
+              {
+                "key": "extra2-quality-sla-responstijd-highlight",
+                "title": "Verificatiestatus",
+                "value": "doc:extra2"
+              },
+              {
+                "key": "extra3-quality-sla-responstijd-highlight",
+                "title": "Bijgewerkt op",
+                "value": "doc:extra3"
+              },
+              {
+                "key": "extra4-quality-sla-responstijd-highlight",
+                "title": "Bron",
+                "value": "doc:extra4"
+              },
+              {
+                "key": "extra5-quality-sla-responstijd-highlight",
+                "title": "Opmerking",
+                "value": "doc:extra5"
               }
             ]
           ]
@@ -3924,6 +5509,26 @@
                 "displayProperties": {
                   "type": "number"
                 }
+              },
+              {
+                "key": "extra1-quality-sla-nps-highlight",
+                "title": "Aanvullend gegeven",
+                "value": "doc:extra1"
+              },
+              {
+                "key": "extra2-quality-sla-nps-highlight",
+                "title": "Verificatiestatus",
+                "value": "doc:extra2"
+              },
+              {
+                "key": "extra3-quality-sla-nps-highlight",
+                "title": "Bijgewerkt op",
+                "value": "doc:extra3"
+              },
+              {
+                "key": "extra4-quality-sla-nps-highlight",
+                "title": "Bron",
+                "value": "doc:extra4"
               }
             ]
           ]
@@ -4041,6 +5646,46 @@
                 "displayProperties": {
                   "type": "number"
                 }
+              },
+              {
+                "key": "extra1-quality-sla-feedback-score",
+                "title": "Aanvullend gegeven",
+                "value": "doc:extra1"
+              },
+              {
+                "key": "extra2-quality-sla-feedback-score",
+                "title": "Verificatiestatus",
+                "value": "doc:extra2"
+              },
+              {
+                "key": "extra3-quality-sla-feedback-score",
+                "title": "Bijgewerkt op",
+                "value": "doc:extra3"
+              },
+              {
+                "key": "extra4-quality-sla-feedback-score",
+                "title": "Bron",
+                "value": "doc:extra4"
+              },
+              {
+                "key": "extra5-quality-sla-feedback-score",
+                "title": "Opmerking",
+                "value": "doc:extra5"
+              },
+              {
+                "key": "extra6-quality-sla-feedback-score",
+                "title": "Referentie",
+                "value": "doc:extra6"
+              },
+              {
+                "key": "extra7-quality-sla-feedback-score",
+                "title": "Categorie",
+                "value": "doc:extra7"
+              },
+              {
+                "key": "extra8-quality-sla-feedback-score",
+                "title": "Validatie",
+                "value": "doc:extra8"
               }
             ]
           ]
@@ -4112,6 +5757,21 @@
                   "type": "date",
                   "format": "DD-MM-YYYY"
                 }
+              },
+              {
+                "key": "extra1-compliance-audit-audit-datum",
+                "title": "Aanvullend gegeven",
+                "value": "doc:extra1"
+              },
+              {
+                "key": "extra2-compliance-audit-audit-datum",
+                "title": "Verificatiestatus",
+                "value": "doc:extra2"
+              },
+              {
+                "key": "extra3-compliance-audit-audit-datum",
+                "title": "Bijgewerkt op",
+                "value": "doc:extra3"
               }
             ]
           ]
@@ -4148,6 +5808,36 @@
                 "key": "auditResult",
                 "title": "Resultaat",
                 "value": "doc:auditResult"
+              },
+              {
+                "key": "extra1-compliance-audit-audit-resultaat",
+                "title": "Aanvullend gegeven",
+                "value": "doc:extra1"
+              },
+              {
+                "key": "extra2-compliance-audit-audit-resultaat",
+                "title": "Verificatiestatus",
+                "value": "doc:extra2"
+              },
+              {
+                "key": "extra3-compliance-audit-audit-resultaat",
+                "title": "Bijgewerkt op",
+                "value": "doc:extra3"
+              },
+              {
+                "key": "extra4-compliance-audit-audit-resultaat",
+                "title": "Bron",
+                "value": "doc:extra4"
+              },
+              {
+                "key": "extra5-compliance-audit-audit-resultaat",
+                "title": "Opmerking",
+                "value": "doc:extra5"
+              },
+              {
+                "key": "extra6-compliance-audit-audit-resultaat",
+                "title": "Referentie",
+                "value": "doc:extra6"
               }
             ]
           ]
@@ -4241,6 +5931,26 @@
                 "key": "regulationReference",
                 "title": "Referentie",
                 "value": "doc:regulationReference"
+              },
+              {
+                "key": "extra1-compliance-audit-regelgeving-ref",
+                "title": "Aanvullend gegeven",
+                "value": "doc:extra1"
+              },
+              {
+                "key": "extra2-compliance-audit-regelgeving-ref",
+                "title": "Verificatiestatus",
+                "value": "doc:extra2"
+              },
+              {
+                "key": "extra3-compliance-audit-regelgeving-ref",
+                "title": "Bijgewerkt op",
+                "value": "doc:extra3"
+              },
+              {
+                "key": "extra4-compliance-audit-regelgeving-ref",
+                "title": "Bron",
+                "value": "doc:extra4"
               }
             ]
           ]
@@ -4317,6 +6027,56 @@
                 "key": "documentAuthor",
                 "title": "Auteur",
                 "value": "doc:documentAuthor"
+              },
+              {
+                "key": "extra1-compliance-audit-document-auteur",
+                "title": "Aanvullend gegeven",
+                "value": "doc:extra1"
+              },
+              {
+                "key": "extra2-compliance-audit-document-auteur",
+                "title": "Verificatiestatus",
+                "value": "doc:extra2"
+              },
+              {
+                "key": "extra3-compliance-audit-document-auteur",
+                "title": "Bijgewerkt op",
+                "value": "doc:extra3"
+              },
+              {
+                "key": "extra4-compliance-audit-document-auteur",
+                "title": "Bron",
+                "value": "doc:extra4"
+              },
+              {
+                "key": "extra5-compliance-audit-document-auteur",
+                "title": "Opmerking",
+                "value": "doc:extra5"
+              },
+              {
+                "key": "extra6-compliance-audit-document-auteur",
+                "title": "Referentie",
+                "value": "doc:extra6"
+              },
+              {
+                "key": "extra7-compliance-audit-document-auteur",
+                "title": "Categorie",
+                "value": "doc:extra7"
+              },
+              {
+                "key": "extra8-compliance-audit-document-auteur",
+                "title": "Validatie",
+                "value": "doc:extra8"
+              },
+              {
+                "key": "extra9-compliance-audit-document-auteur",
+                "title": "Herkomst",
+                "value": "doc:extra9"
+              },
+              {
+                "key": "extra10-compliance-audit-document-auteur",
+                "title": "Gecontroleerd door",
+                "value": "doc:extra10"
               }
             ]
           ]
@@ -4375,6 +6135,21 @@
                 "key": "retentionPeriod",
                 "title": "Bewaartermijn",
                 "value": "doc:retentionPeriod"
+              },
+              {
+                "key": "extra1-compliance-audit-bewaartermijn",
+                "title": "Aanvullend gegeven",
+                "value": "doc:extra1"
+              },
+              {
+                "key": "extra2-compliance-audit-bewaartermijn",
+                "title": "Verificatiestatus",
+                "value": "doc:extra2"
+              },
+              {
+                "key": "extra3-compliance-audit-bewaartermijn",
+                "title": "Bijgewerkt op",
+                "value": "doc:extra3"
               }
             ]
           ]
@@ -4411,6 +6186,31 @@
                 "key": "accessControl",
                 "title": "Toegang",
                 "value": "doc:accessControl"
+              },
+              {
+                "key": "extra1-compliance-audit-toegangsbeheer",
+                "title": "Aanvullend gegeven",
+                "value": "doc:extra1"
+              },
+              {
+                "key": "extra2-compliance-audit-toegangsbeheer",
+                "title": "Verificatiestatus",
+                "value": "doc:extra2"
+              },
+              {
+                "key": "extra3-compliance-audit-toegangsbeheer",
+                "title": "Bijgewerkt op",
+                "value": "doc:extra3"
+              },
+              {
+                "key": "extra4-compliance-audit-toegangsbeheer",
+                "title": "Bron",
+                "value": "doc:extra4"
+              },
+              {
+                "key": "extra5-compliance-audit-toegangsbeheer",
+                "title": "Opmerking",
+                "value": "doc:extra5"
               }
             ]
           ]
@@ -4523,6 +6323,26 @@
                 "key": "sourceSystem",
                 "title": "Bronsysteem",
                 "value": "doc:sourceSystem"
+              },
+              {
+                "key": "extra1-compliance-audit-bronsysteem",
+                "title": "Aanvullend gegeven",
+                "value": "doc:extra1"
+              },
+              {
+                "key": "extra2-compliance-audit-bronsysteem",
+                "title": "Verificatiestatus",
+                "value": "doc:extra2"
+              },
+              {
+                "key": "extra3-compliance-audit-bronsysteem",
+                "title": "Bijgewerkt op",
+                "value": "doc:extra3"
+              },
+              {
+                "key": "extra4-compliance-audit-bronsysteem",
+                "title": "Bron",
+                "value": "doc:extra4"
               }
             ]
           ]
@@ -4541,6 +6361,46 @@
                 "key": "integrationStatus",
                 "title": "Status",
                 "value": "doc:integrationStatus"
+              },
+              {
+                "key": "extra1-compliance-audit-integratie-status",
+                "title": "Aanvullend gegeven",
+                "value": "doc:extra1"
+              },
+              {
+                "key": "extra2-compliance-audit-integratie-status",
+                "title": "Verificatiestatus",
+                "value": "doc:extra2"
+              },
+              {
+                "key": "extra3-compliance-audit-integratie-status",
+                "title": "Bijgewerkt op",
+                "value": "doc:extra3"
+              },
+              {
+                "key": "extra4-compliance-audit-integratie-status",
+                "title": "Bron",
+                "value": "doc:extra4"
+              },
+              {
+                "key": "extra5-compliance-audit-integratie-status",
+                "title": "Opmerking",
+                "value": "doc:extra5"
+              },
+              {
+                "key": "extra6-compliance-audit-integratie-status",
+                "title": "Referentie",
+                "value": "doc:extra6"
+              },
+              {
+                "key": "extra7-compliance-audit-integratie-status",
+                "title": "Categorie",
+                "value": "doc:extra7"
+              },
+              {
+                "key": "extra8-compliance-audit-integratie-status",
+                "title": "Validatie",
+                "value": "doc:extra8"
               }
             ]
           ]
@@ -4634,6 +6494,41 @@
                 "key": "auditResult2",
                 "title": "Resultaat",
                 "value": "doc:auditResult"
+              },
+              {
+                "key": "auditType",
+                "title": "Audittype",
+                "value": "doc:auditType"
+              },
+              {
+                "key": "auditScope",
+                "title": "Auditscope",
+                "value": "doc:auditScope"
+              },
+              {
+                "key": "findingsCount",
+                "title": "Aantal bevindingen",
+                "value": "doc:findingsCount"
+              },
+              {
+                "key": "criticalFindings",
+                "title": "Kritieke bevindingen",
+                "value": "doc:criticalFindings"
+              },
+              {
+                "key": "actionItems",
+                "title": "Actiepunten",
+                "value": "doc:actionItems"
+              },
+              {
+                "key": "followUpDate",
+                "title": "Opvolgdatum",
+                "value": "doc:followUpDate"
+              },
+              {
+                "key": "certificationStatus",
+                "title": "Certificeringsstatus",
+                "value": "doc:certificationStatus"
               }
             ],
             [
@@ -4787,6 +6682,26 @@
                 "key": "externalReference2",
                 "title": "Ext. ref.",
                 "value": "doc:externalReference"
+              },
+              {
+                "key": "regulatoryBody",
+                "title": "Toezichthouder",
+                "value": "doc:regulatoryBody"
+              },
+              {
+                "key": "complianceFramework",
+                "title": "Compliance-raamwerk",
+                "value": "doc:complianceFramework"
+              },
+              {
+                "key": "lastAuditDate",
+                "title": "Laatste auditdatum",
+                "value": "doc:lastAuditDate"
+              },
+              {
+                "key": "nextAuditDate",
+                "title": "Volgende auditdatum",
+                "value": "doc:nextAuditDate"
               }
             ],
             [
@@ -4852,6 +6767,21 @@
                 "key": "incidentType",
                 "title": "Type",
                 "value": "doc:incidentType"
+              },
+              {
+                "key": "extra1-compliance-audit-incident-type",
+                "title": "Aanvullend gegeven",
+                "value": "doc:extra1"
+              },
+              {
+                "key": "extra2-compliance-audit-incident-type",
+                "title": "Verificatiestatus",
+                "value": "doc:extra2"
+              },
+              {
+                "key": "extra3-compliance-audit-incident-type",
+                "title": "Bijgewerkt op",
+                "value": "doc:extra3"
               }
             ]
           ]
@@ -4960,6 +6890,36 @@
                 "key": "riskLevel",
                 "title": "Niveau",
                 "value": "doc:riskLevel"
+              },
+              {
+                "key": "extra1-compliance-audit-risico-niveau",
+                "title": "Aanvullend gegeven",
+                "value": "doc:extra1"
+              },
+              {
+                "key": "extra2-compliance-audit-risico-niveau",
+                "title": "Verificatiestatus",
+                "value": "doc:extra2"
+              },
+              {
+                "key": "extra3-compliance-audit-risico-niveau",
+                "title": "Bijgewerkt op",
+                "value": "doc:extra3"
+              },
+              {
+                "key": "extra4-compliance-audit-risico-niveau",
+                "title": "Bron",
+                "value": "doc:extra4"
+              },
+              {
+                "key": "extra5-compliance-audit-risico-niveau",
+                "title": "Opmerking",
+                "value": "doc:extra5"
+              },
+              {
+                "key": "extra6-compliance-audit-risico-niveau",
+                "title": "Referentie",
+                "value": "doc:extra6"
               }
             ]
           ]
@@ -5075,6 +7035,36 @@
                 "displayProperties": {
                   "type": "number"
                 }
+              },
+              {
+                "key": "auditType",
+                "title": "Audittype",
+                "value": "doc:auditType"
+              },
+              {
+                "key": "auditScope",
+                "title": "Auditscope",
+                "value": "doc:auditScope"
+              },
+              {
+                "key": "findingsCount",
+                "title": "Aantal bevindingen",
+                "value": "doc:findingsCount"
+              },
+              {
+                "key": "criticalFindings",
+                "title": "Kritieke bevindingen",
+                "value": "doc:criticalFindings"
+              },
+              {
+                "key": "actionItems",
+                "title": "Actiepunten",
+                "value": "doc:actionItems"
+              },
+              {
+                "key": "followUpDate",
+                "title": "Opvolgdatum",
+                "value": "doc:followUpDate"
               }
             ],
             [
@@ -5117,6 +7107,31 @@
                 "key": "lastName",
                 "title": "Achternaam",
                 "value": "doc:lastName"
+              },
+              {
+                "key": "middleName",
+                "title": "Tussenvoegsel",
+                "value": "doc:middleName"
+              },
+              {
+                "key": "initials",
+                "title": "Voorletters",
+                "value": "doc:initials"
+              },
+              {
+                "key": "birthPlace",
+                "title": "Geboorteplaats",
+                "value": "doc:birthPlace"
+              },
+              {
+                "key": "birthCountry",
+                "title": "Geboorteland",
+                "value": "doc:birthCountry"
+              },
+              {
+                "key": "maritalStatus",
+                "title": "Burgerlijke staat",
+                "value": "doc:maritalStatus"
               }
             ]
           ]
@@ -5139,6 +7154,26 @@
                   "type": "date",
                   "format": "DD-MM-YYYY"
                 }
+              },
+              {
+                "key": "extra1-everything-geboortedatum",
+                "title": "Aanvullend gegeven",
+                "value": "doc:extra1"
+              },
+              {
+                "key": "extra2-everything-geboortedatum",
+                "title": "Verificatiestatus",
+                "value": "doc:extra2"
+              },
+              {
+                "key": "extra3-everything-geboortedatum",
+                "title": "Bijgewerkt op",
+                "value": "doc:extra3"
+              },
+              {
+                "key": "extra4-everything-geboortedatum",
+                "title": "Bron",
+                "value": "doc:extra4"
               }
             ]
           ]
@@ -5193,6 +7228,56 @@
                 "key": "phone",
                 "title": "Telefoon",
                 "value": "doc:phone"
+              },
+              {
+                "key": "extra1-everything-telefoon",
+                "title": "Aanvullend gegeven",
+                "value": "doc:extra1"
+              },
+              {
+                "key": "extra2-everything-telefoon",
+                "title": "Verificatiestatus",
+                "value": "doc:extra2"
+              },
+              {
+                "key": "extra3-everything-telefoon",
+                "title": "Bijgewerkt op",
+                "value": "doc:extra3"
+              },
+              {
+                "key": "extra4-everything-telefoon",
+                "title": "Bron",
+                "value": "doc:extra4"
+              },
+              {
+                "key": "extra5-everything-telefoon",
+                "title": "Opmerking",
+                "value": "doc:extra5"
+              },
+              {
+                "key": "extra6-everything-telefoon",
+                "title": "Referentie",
+                "value": "doc:extra6"
+              },
+              {
+                "key": "extra7-everything-telefoon",
+                "title": "Categorie",
+                "value": "doc:extra7"
+              },
+              {
+                "key": "extra8-everything-telefoon",
+                "title": "Validatie",
+                "value": "doc:extra8"
+              },
+              {
+                "key": "extra9-everything-telefoon",
+                "title": "Herkomst",
+                "value": "doc:extra9"
+              },
+              {
+                "key": "extra10-everything-telefoon",
+                "title": "Gecontroleerd door",
+                "value": "doc:extra10"
               }
             ]
           ]
@@ -5293,6 +7378,21 @@
                 "key": "department",
                 "title": "Afdeling",
                 "value": "doc:department"
+              },
+              {
+                "key": "employeeNumber",
+                "title": "Personeelsnummer",
+                "value": "doc:employeeNumber"
+              },
+              {
+                "key": "costCenter",
+                "title": "Kostenplaats",
+                "value": "doc:costCenter"
+              },
+              {
+                "key": "manager",
+                "title": "Leidinggevende",
+                "value": "doc:manager"
               }
             ]
           ]
@@ -5333,6 +7433,21 @@
                   "type": "currency",
                   "currencyCode": "EUR"
                 }
+              },
+              {
+                "key": "extra1-everything-salaris",
+                "title": "Aanvullend gegeven",
+                "value": "doc:extra1"
+              },
+              {
+                "key": "extra2-everything-salaris",
+                "title": "Verificatiestatus",
+                "value": "doc:extra2"
+              },
+              {
+                "key": "extra3-everything-salaris",
+                "title": "Bijgewerkt op",
+                "value": "doc:extra3"
               }
             ]
           ]
@@ -5360,6 +7475,46 @@
                   "type": "date",
                   "format": "DD-MM-YYYY"
                 }
+              },
+              {
+                "key": "employeeNumber",
+                "title": "Personeelsnummer",
+                "value": "doc:employeeNumber"
+              },
+              {
+                "key": "costCenter",
+                "title": "Kostenplaats",
+                "value": "doc:costCenter"
+              },
+              {
+                "key": "manager",
+                "title": "Leidinggevende",
+                "value": "doc:manager"
+              },
+              {
+                "key": "workLocation",
+                "title": "Werklocatie",
+                "value": "doc:workLocation"
+              },
+              {
+                "key": "contractEndDate",
+                "title": "Einddatum contract",
+                "value": "doc:contractEndDate"
+              },
+              {
+                "key": "probationEnd",
+                "title": "Einde proeftijd",
+                "value": "doc:probationEnd"
+              },
+              {
+                "key": "pensionDate",
+                "title": "Pensioendatum",
+                "value": "doc:pensionDate"
+              },
+              {
+                "key": "collectiveAgreement",
+                "title": "CAO",
+                "value": "doc:collectiveAgreement"
               }
             ]
           ]
@@ -5403,6 +7558,31 @@
                 "key": "requestStatus",
                 "title": "Status",
                 "value": "doc:requestStatus"
+              },
+              {
+                "key": "extra1-everything-aanvraag-status",
+                "title": "Aanvullend gegeven",
+                "value": "doc:extra1"
+              },
+              {
+                "key": "extra2-everything-aanvraag-status",
+                "title": "Verificatiestatus",
+                "value": "doc:extra2"
+              },
+              {
+                "key": "extra3-everything-aanvraag-status",
+                "title": "Bijgewerkt op",
+                "value": "doc:extra3"
+              },
+              {
+                "key": "extra4-everything-aanvraag-status",
+                "title": "Bron",
+                "value": "doc:extra4"
+              },
+              {
+                "key": "extra5-everything-aanvraag-status",
+                "title": "Opmerking",
+                "value": "doc:extra5"
               }
             ]
           ]
@@ -5504,6 +7684,26 @@
                 "key": "projectPhase",
                 "title": "Fase",
                 "value": "doc:projectPhase"
+              },
+              {
+                "key": "extra1-everything-project-fase",
+                "title": "Aanvullend gegeven",
+                "value": "doc:extra1"
+              },
+              {
+                "key": "extra2-everything-project-fase",
+                "title": "Verificatiestatus",
+                "value": "doc:extra2"
+              },
+              {
+                "key": "extra3-everything-project-fase",
+                "title": "Bijgewerkt op",
+                "value": "doc:extra3"
+              },
+              {
+                "key": "extra4-everything-project-fase",
+                "title": "Bron",
+                "value": "doc:extra4"
               }
             ]
           ]
@@ -5554,6 +7754,46 @@
                 "displayProperties": {
                   "type": "number"
                 }
+              },
+              {
+                "key": "extra1-everything-project-open",
+                "title": "Aanvullend gegeven",
+                "value": "doc:extra1"
+              },
+              {
+                "key": "extra2-everything-project-open",
+                "title": "Verificatiestatus",
+                "value": "doc:extra2"
+              },
+              {
+                "key": "extra3-everything-project-open",
+                "title": "Bijgewerkt op",
+                "value": "doc:extra3"
+              },
+              {
+                "key": "extra4-everything-project-open",
+                "title": "Bron",
+                "value": "doc:extra4"
+              },
+              {
+                "key": "extra5-everything-project-open",
+                "title": "Opmerking",
+                "value": "doc:extra5"
+              },
+              {
+                "key": "extra6-everything-project-open",
+                "title": "Referentie",
+                "value": "doc:extra6"
+              },
+              {
+                "key": "extra7-everything-project-open",
+                "title": "Categorie",
+                "value": "doc:extra7"
+              },
+              {
+                "key": "extra8-everything-project-open",
+                "title": "Validatie",
+                "value": "doc:extra8"
               }
             ]
           ]
@@ -5627,6 +7867,21 @@
                   "type": "currency",
                   "currencyCode": "EUR"
                 }
+              },
+              {
+                "key": "extra1-everything-budget-resterend",
+                "title": "Aanvullend gegeven",
+                "value": "doc:extra1"
+              },
+              {
+                "key": "extra2-everything-budget-resterend",
+                "title": "Verificatiestatus",
+                "value": "doc:extra2"
+              },
+              {
+                "key": "extra3-everything-budget-resterend",
+                "title": "Bijgewerkt op",
+                "value": "doc:extra3"
               }
             ]
           ]
@@ -5654,6 +7909,56 @@
                   "type": "currency",
                   "currencyCode": "EUR"
                 }
+              },
+              {
+                "key": "iban",
+                "title": "IBAN",
+                "value": "doc:iban"
+              },
+              {
+                "key": "bic",
+                "title": "BIC",
+                "value": "doc:bic"
+              },
+              {
+                "key": "accountHolder",
+                "title": "Rekeninghouder",
+                "value": "doc:accountHolder"
+              },
+              {
+                "key": "taxRate",
+                "title": "Belastingtarief",
+                "value": "doc:taxRate"
+              },
+              {
+                "key": "paymentTerms",
+                "title": "Betalingsvoorwaarden",
+                "value": "doc:paymentTerms"
+              },
+              {
+                "key": "creditLimit",
+                "title": "Kredietlimiet",
+                "value": "doc:creditLimit"
+              },
+              {
+                "key": "currency",
+                "title": "Valuta",
+                "value": "doc:currency"
+              },
+              {
+                "key": "costAllocation",
+                "title": "Kostenverdeling",
+                "value": "doc:costAllocation"
+              },
+              {
+                "key": "yearlyBudget",
+                "title": "Jaarlijks budget",
+                "value": "doc:yearlyBudget"
+              },
+              {
+                "key": "monthlyExpense",
+                "title": "Maandelijkse kosten",
+                "value": "doc:monthlyExpense"
               }
             ]
           ]
@@ -5684,6 +7989,21 @@
                 "key": "vendorEmail",
                 "title": "E-mail",
                 "value": "doc:vendorEmail"
+              },
+              {
+                "key": "houseNumberAddition",
+                "title": "Toevoeging",
+                "value": "doc:houseNumberAddition"
+              },
+              {
+                "key": "municipality",
+                "title": "Gemeente",
+                "value": "doc:municipality"
+              },
+              {
+                "key": "district",
+                "title": "Wijk",
+                "value": "doc:district"
               }
             ]
           ]
@@ -5750,6 +8070,36 @@
                 "displayProperties": {
                   "type": "number"
                 }
+              },
+              {
+                "key": "extra1-everything-voorraad",
+                "title": "Aanvullend gegeven",
+                "value": "doc:extra1"
+              },
+              {
+                "key": "extra2-everything-voorraad",
+                "title": "Verificatiestatus",
+                "value": "doc:extra2"
+              },
+              {
+                "key": "extra3-everything-voorraad",
+                "title": "Bijgewerkt op",
+                "value": "doc:extra3"
+              },
+              {
+                "key": "extra4-everything-voorraad",
+                "title": "Bron",
+                "value": "doc:extra4"
+              },
+              {
+                "key": "extra5-everything-voorraad",
+                "title": "Opmerking",
+                "value": "doc:extra5"
+              },
+              {
+                "key": "extra6-everything-voorraad",
+                "title": "Referentie",
+                "value": "doc:extra6"
               }
             ]
           ]
@@ -5786,6 +8136,41 @@
                 "displayProperties": {
                   "type": "number"
                 }
+              },
+              {
+                "key": "targetResponseTime",
+                "title": "Streeftijd reactie",
+                "value": "doc:targetResponseTime"
+              },
+              {
+                "key": "actualResponseTime",
+                "title": "Werkelijke reactietijd",
+                "value": "doc:actualResponseTime"
+              },
+              {
+                "key": "breachCount",
+                "title": "Aantal overtredingen",
+                "value": "doc:breachCount"
+              },
+              {
+                "key": "penaltyAmount",
+                "title": "Boetebedrag",
+                "value": "doc:penaltyAmount"
+              },
+              {
+                "key": "serviceLevel",
+                "title": "Serviceniveau",
+                "value": "doc:serviceLevel"
+              },
+              {
+                "key": "availabilityTarget",
+                "title": "Beschikbaarheidsdoel",
+                "value": "doc:availabilityTarget"
+              },
+              {
+                "key": "actualAvailability",
+                "title": "Werkelijke beschikbaarheid",
+                "value": "doc:actualAvailability"
               }
             ]
           ]
@@ -5865,6 +8250,31 @@
                 "displayProperties": {
                   "type": "number"
                 }
+              },
+              {
+                "key": "auditType",
+                "title": "Audittype",
+                "value": "doc:auditType"
+              },
+              {
+                "key": "auditScope",
+                "title": "Auditscope",
+                "value": "doc:auditScope"
+              },
+              {
+                "key": "findingsCount",
+                "title": "Aantal bevindingen",
+                "value": "doc:findingsCount"
+              },
+              {
+                "key": "criticalFindings",
+                "title": "Kritieke bevindingen",
+                "value": "doc:criticalFindings"
+              },
+              {
+                "key": "actionItems",
+                "title": "Actiepunten",
+                "value": "doc:actionItems"
               }
             ]
           ]
@@ -5883,6 +8293,26 @@
                 "key": "complianceStatus",
                 "title": "Status",
                 "value": "doc:complianceStatus"
+              },
+              {
+                "key": "extra1-everything-compliance",
+                "title": "Aanvullend gegeven",
+                "value": "doc:extra1"
+              },
+              {
+                "key": "extra2-everything-compliance",
+                "title": "Verificatiestatus",
+                "value": "doc:extra2"
+              },
+              {
+                "key": "extra3-everything-compliance",
+                "title": "Bijgewerkt op",
+                "value": "doc:extra3"
+              },
+              {
+                "key": "extra4-everything-compliance",
+                "title": "Bron",
+                "value": "doc:extra4"
               }
             ]
           ]
@@ -5906,6 +8336,21 @@
                 "key": "incidentSeverity",
                 "title": "Ernst",
                 "value": "doc:incidentSeverity"
+              },
+              {
+                "key": "followUpDate",
+                "title": "Opvolgdatum",
+                "value": "doc:followUpDate"
+              },
+              {
+                "key": "certificationStatus",
+                "title": "Certificeringsstatus",
+                "value": "doc:certificationStatus"
+              },
+              {
+                "key": "regulatoryBody",
+                "title": "Toezichthouder",
+                "value": "doc:regulatoryBody"
               }
             ]
           ]
@@ -5959,6 +8404,51 @@
                 "key": "documentAuthor",
                 "title": "Auteur",
                 "value": "doc:documentAuthor"
+              },
+              {
+                "key": "auditType",
+                "title": "Audittype",
+                "value": "doc:auditType"
+              },
+              {
+                "key": "auditScope",
+                "title": "Auditscope",
+                "value": "doc:auditScope"
+              },
+              {
+                "key": "findingsCount",
+                "title": "Aantal bevindingen",
+                "value": "doc:findingsCount"
+              },
+              {
+                "key": "criticalFindings",
+                "title": "Kritieke bevindingen",
+                "value": "doc:criticalFindings"
+              },
+              {
+                "key": "actionItems",
+                "title": "Actiepunten",
+                "value": "doc:actionItems"
+              },
+              {
+                "key": "followUpDate",
+                "title": "Opvolgdatum",
+                "value": "doc:followUpDate"
+              },
+              {
+                "key": "certificationStatus",
+                "title": "Certificeringsstatus",
+                "value": "doc:certificationStatus"
+              },
+              {
+                "key": "regulatoryBody",
+                "title": "Toezichthouder",
+                "value": "doc:regulatoryBody"
+              },
+              {
+                "key": "complianceFramework",
+                "title": "Compliance-raamwerk",
+                "value": "doc:complianceFramework"
               }
             ]
           ]
@@ -6008,6 +8498,26 @@
                   "type": "date",
                   "format": "DD-MM-YYYY"
                 }
+              },
+              {
+                "key": "iban",
+                "title": "IBAN",
+                "value": "doc:iban"
+              },
+              {
+                "key": "bic",
+                "title": "BIC",
+                "value": "doc:bic"
+              },
+              {
+                "key": "accountHolder",
+                "title": "Rekeninghouder",
+                "value": "doc:accountHolder"
+              },
+              {
+                "key": "taxRate",
+                "title": "Belastingtarief",
+                "value": "doc:taxRate"
               }
             ]
           ]
@@ -6059,6 +8569,36 @@
                 "key": "internalNotes",
                 "title": "Intern",
                 "value": "doc:internalNotes"
+              },
+              {
+                "key": "middleName",
+                "title": "Tussenvoegsel",
+                "value": "doc:middleName"
+              },
+              {
+                "key": "initials",
+                "title": "Voorletters",
+                "value": "doc:initials"
+              },
+              {
+                "key": "birthPlace",
+                "title": "Geboorteplaats",
+                "value": "doc:birthPlace"
+              },
+              {
+                "key": "birthCountry",
+                "title": "Geboorteland",
+                "value": "doc:birthCountry"
+              },
+              {
+                "key": "maritalStatus",
+                "title": "Burgerlijke staat",
+                "value": "doc:maritalStatus"
+              },
+              {
+                "key": "preferredLanguage",
+                "title": "Voorkeurstaal",
+                "value": "doc:preferredLanguage"
               }
             ]
           ]
