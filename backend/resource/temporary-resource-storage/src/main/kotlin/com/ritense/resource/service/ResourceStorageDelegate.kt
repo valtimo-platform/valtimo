@@ -27,4 +27,13 @@ class ResourceStorageDelegate(
     fun deleteResource(resourceStorageFileId: String): Boolean {
         return service.deleteResource(resourceStorageFileId)
     }
+
+    fun storeResolvableContent(contentProcessVariable: String) : String {
+        return service.storeResolvableContent(contentProcessVariable);
+    }
+
+    fun storeContent(content: String) : String {
+        return service.storeResolvableContent(content);
+    }
+
 }

@@ -17,7 +17,7 @@
 dependencies {
     api project(':backend:contract')
     api project(':backend:resource')
-
+    implementation project(":backend:value-resolver")
     implementation "org.springframework.boot:spring-boot-starter-data-jpa"
     implementation "org.springframework.boot:spring-boot-starter-web"
     implementation "org.springframework.boot:spring-boot-starter-security"
