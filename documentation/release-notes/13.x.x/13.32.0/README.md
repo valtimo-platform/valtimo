@@ -4,6 +4,10 @@
 **Release date 10-06-2026**
 {% endhint %}
 
+## Features
+
+## Bugfixes
+
 ## Enhancements
 
 * **Fewer gaps in widget layout**
