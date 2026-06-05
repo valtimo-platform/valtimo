@@ -196,7 +196,7 @@ class SearchFieldResourceIntegrationTest extends BaseIntegrationTest {
                                 .contentType(MediaType.APPLICATION_JSON_VALUE))
                 .andDo(print())
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.detail", is("JsonPath '$.invalid.path' doesn't point to any property inside document definition '" + DOCUMENT_DEFINITION_NAME + "'")));
+                .andExpect(jsonPath("$.title", is("JsonPath '$.invalid.path' doesn't point to any property inside document definition '" + DOCUMENT_DEFINITION_NAME + "'")));
     }
 
     @Test
