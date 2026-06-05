@@ -1,6 +1,7 @@
 [
   {
     "key": "personal-info",
+    "widgetLayout": "BEAUTIFUL",
     "widgets": [
       {
         "type": "divider",
@@ -379,6 +380,7 @@
   },
   {
     "key": "address-contact",
+    "widgetLayout": "BEAUTIFUL",
     "widgets": [
       {
         "type": "divider",
@@ -711,6 +713,7 @@
   },
   {
     "key": "employment",
+    "widgetLayout": "BEAUTIFUL",
     "widgets": [
       {
         "type": "divider",
@@ -1176,6 +1179,7 @@
   },
   {
     "key": "request-info",
+    "widgetLayout": "BEAUTIFUL",
     "widgets": [
       {
         "type": "divider",
@@ -1735,6 +1739,7 @@
   },
   {
     "key": "project-budget",
+    "widgetLayout": "BEAUTIFUL",
     "widgets": [
       {
         "type": "divider",
@@ -2614,6 +2619,7 @@
   },
   {
     "key": "financial",
+    "widgetLayout": "BEAUTIFUL",
     "widgets": [
       {
         "type": "fields",
@@ -3815,6 +3821,7 @@
   },
   {
     "key": "logistics",
+    "widgetLayout": "BEAUTIFUL",
     "widgets": [
       {
         "type": "fields",
@@ -4651,6 +4658,7 @@
   },
   {
     "key": "quality-sla",
+    "widgetLayout": "BEAUTIFUL",
     "widgets": [
       {
         "type": "divider",
@@ -5739,6 +5747,7 @@
   },
   {
     "key": "compliance-audit",
+    "widgetLayout": "BEAUTIFUL",
     "widgets": [
       {
         "type": "fields",
@@ -7081,6 +7090,7 @@
   },
   {
     "key": "everything",
+    "widgetLayout": "BEAUTIFUL",
     "widgets": [
       {
         "type": "divider",

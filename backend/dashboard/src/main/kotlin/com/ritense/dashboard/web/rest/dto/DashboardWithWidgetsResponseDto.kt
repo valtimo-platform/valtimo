@@ -17,11 +17,13 @@
 package com.ritense.dashboard.web.rest.dto
 
 import com.ritense.dashboard.domain.Dashboard
+import com.ritense.dashboard.domain.WidgetLayout
 
 data class DashboardWithWidgetsResponseDto(
     val key: String,
     val title: String,
-    val widgets: List<WidgetConfigurationResponseDto>
+    val widgets: List<WidgetConfigurationResponseDto>,
+    val widgetLayout: WidgetLayout? = null
 ) {
     companion object {
         fun of(dashboard: Dashboard) = DashboardWithWidgetsResponseDto(
@@ -29,7 +31,8 @@ data class DashboardWithWidgetsResponseDto(
             title = dashboard.title,
             widgets = dashboard.widgetConfigurations.map {
                 WidgetConfigurationResponseDto.of(it)
-            }
+            },
+            widgetLayout = dashboard.widgetLayout
         )
     }
 }

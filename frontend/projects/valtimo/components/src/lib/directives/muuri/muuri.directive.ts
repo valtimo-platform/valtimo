@@ -26,7 +26,7 @@ import {
 import Muuri from 'muuri';
 import {BehaviorSubject, combineLatest, fromEvent, Observable, Subscription, switchMap} from 'rxjs';
 import {distinctUntilChanged, filter, take, tap} from 'rxjs/operators';
-import {muuriGapFreeLayout} from './muuri-gap-free-layout';
+import {resolveWidgetLayout, WidgetLayout} from './widget-layout';
 
 @Directive({
   selector: '[muuri]',
@@ -34,6 +34,7 @@ import {muuriGapFreeLayout} from './muuri-gap-free-layout';
 })
 export class MuuriDirective implements AfterViewInit, OnDestroy {
   @Input() public readonly columnMinWidth = 250;
+  @Input() public widgetLayout?: WidgetLayout;
 
   private readonly _muuriSubject$ = new BehaviorSubject<Muuri | null>(null);
   private readonly _containerWidthSubject$ = new BehaviorSubject<number>(0);
@@ -111,7 +112,7 @@ export class MuuriDirective implements AfterViewInit, OnDestroy {
 
     this._muuriSubject$.next(
       new Muuri(nativeElement, {
-        layout: muuriGapFreeLayout,
+        layout: resolveWidgetLayout(this.widgetLayout).muuriLayout,
         layoutOnResize: false,
       })
     );

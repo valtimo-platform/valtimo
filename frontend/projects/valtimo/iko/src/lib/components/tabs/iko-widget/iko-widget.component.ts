@@ -15,7 +15,7 @@
  */
 import {CommonModule} from '@angular/common';
 import {ChangeDetectionStrategy, Component, Input} from '@angular/core';
-import {FitPageDirective} from '@valtimo/components';
+import {FitPageDirective, WidgetLayout} from '@valtimo/components';
 import {WidgetComponentMap, WidgetContainerComponent, WidgetType} from '@valtimo/layout';
 import {NGXLogger} from 'ngx-logger';
 import {BehaviorSubject, combineLatest, filter, map, Observable, switchMap, tap} from 'rxjs';
@@ -53,6 +53,17 @@ export class IkoWidgetComponent {
 
   public widgets$ = combineLatest([this.ikoViewKey$, this.key$]).pipe(
     switchMap(([ikoViewKey, key]) => this.ikoApiService.getIkoWidget(ikoViewKey, key))
+  );
+
+  public widgetLayout$: Observable<WidgetLayout | undefined> = combineLatest([
+    this.ikoViewKey$,
+    this.key$,
+  ]).pipe(
+    switchMap(([ikoViewKey, key]) =>
+      this.ikoApiService
+        .getIkoDetailTabs(ikoViewKey)
+        .pipe(map(tabs => tabs.find(tab => tab.key === key)?.widgetLayout))
+    )
   );
   public widgetParams$: Observable<IkoWidgetParams> = combineLatest([
     this.ikoViewKey$,

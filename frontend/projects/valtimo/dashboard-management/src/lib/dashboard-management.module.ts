@@ -22,6 +22,7 @@ import {
   ConfirmationModalModule,
   JsonEditorComponent,
   RenderInPageHeaderDirective,
+  SelectModule,
   SpinnerModule,
   ValtimoCdsModalDirective,
 } from '@valtimo/components';
@@ -69,6 +70,7 @@ import {WidgetConfigurationContainerComponent} from './components/widget-configu
     LayerModule,
     ValtimoCdsModalDirective,
     JsonEditorComponent,
+    SelectModule,
   ],
   exports: [],
 })

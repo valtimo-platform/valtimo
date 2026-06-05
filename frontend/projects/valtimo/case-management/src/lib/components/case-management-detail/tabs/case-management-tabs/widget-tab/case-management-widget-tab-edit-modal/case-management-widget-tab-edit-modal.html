@@ -49,6 +49,14 @@
         [attr.modal-primary-focus]="true"
       />
     </cds-label>
+
+    <v-select
+      formControlName="widgetLayout"
+      [items]="widgetLayoutSelectItems"
+      [dropUp]="false"
+      [appendInline]="false"
+      titleTranslationKey="widgetLayout.label"
+    ></v-select>
   </form>
 </ng-template>
 

@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 
+import {WidgetLayout} from '@valtimo/components';
+
 export interface DashboardItem {
   description: string;
   key: string;
@@ -22,4 +24,5 @@ export interface DashboardItem {
   createdBy?: string;
   createdOn?: string;
   url?: string;
+  widgetLayout?: WidgetLayout;
 }
