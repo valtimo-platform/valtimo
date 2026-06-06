@@ -54,6 +54,8 @@ export class IkoDetailsComponent implements OnDestroy {
     this.ikoApiService.cachedMenuItems$,
   ]).pipe(
     tap(([params, queryParams, breadcrumbTitle, menuItems]) => {
+      this._container.clear();
+
       const currentMenuItem = menuItems.find(item => item.key === params.key);
 
       if (currentMenuItem && currentMenuItem?.title)
