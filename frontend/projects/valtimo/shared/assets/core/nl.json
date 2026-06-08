@@ -2274,6 +2274,255 @@
       "noResults": {
         "description": "Klik op <strong>Nieuwe rol toevoegen</strong> om te beginnen met het ontwerpen van uw rol",
         "title": "Geen rollen toegevoegd"
+      },
+      "tabs": {
+        "summary": "Samenvatting",
+        "jsonEditor": "JSON-editor"
+      }
+    },
+    "resourceTypes": {
+      "caseDefinition": "Zaakdossier-definitie",
+      "caseTab": "Zaakdossier-tab",
+      "caseWidget": "Zaakdossier-widget",
+      "caseWidgetTabWidget": "Zaakdossier-tab-widget",
+      "dashboard": "Dashboard",
+      "jsonSchemaDocument": "Document",
+      "jsonSchemaDocumentDefinition": "Documentdefinitie",
+      "jsonSchemaDocumentSnapshot": "Documentmomentopname",
+      "searchField": "Zoekveld",
+      "zgwDocument": "ZGW-document",
+      "ikoView": "IKO-weergave",
+      "note": "Notitie",
+      "object": "Objecten API Object",
+      "resourcePermission": "Geüpload bestand",
+      "team": "Team",
+      "user": "Gebruiker",
+      "operatonExecution": "Procesinstantie",
+      "operatonIdentityLink": "User assignment",
+      "operatonProcessDefinition": "Procesdefinitie",
+      "operatonTask": "Taak"
+    },
+    "actions": {
+      "view": "bekijken",
+      "view_list": "lijst bekijken",
+      "create": "aanmaken",
+      "modify": "wijzigen",
+      "delete": "verwijderen",
+      "assign": "toewijzen",
+      "assignable": "toewijsbaar",
+      "claim": "claimen",
+      "complete": "afronden",
+      "export": "exporteren"
+    },
+    "filter": {
+      "resourceType": "Resource-type",
+      "action": "Actie",
+      "allResourceTypes": "Alle resource-types",
+      "allActions": "Alle acties"
+    },
+    "overview": {
+      "canDo": "Kan",
+      "can": "kan",
+      "cannot": "kan niet",
+      "and": "en",
+      "or": "of",
+      "when": "wanneer",
+      "unconditional": "zonder voorwaarden",
+      "relatedResource": "Gerelateerd",
+      "where": "waar",
+      "atJsonPath": "op JSON-pad",
+      "inContextOf": "in de context van",
+      "noContext": "zonder context",
+      "customField": "(aangepast veld)",
+      "customResource": "(aangepaste resource)",
+      "noAccess": "Geen toegang",
+      "empty": {
+        "title": "Geen rechten",
+        "message": "Deze rol heeft nog geen rechten geconfigureerd."
+      },
+      "operators": {
+        "eq": "gelijk aan",
+        "neq": "niet gelijk aan",
+        "gt": "groter dan",
+        "gte": "groter dan of gelijk aan",
+        "lt": "kleiner dan",
+        "lte": "kleiner dan of gelijk aan",
+        "in": "is een van",
+        "list_contains": "bevat"
+      },
+      "specialValues": {
+        "currentUserId": "het ID van de huidige gebruiker",
+        "currentUsername": "de huidige gebruiker",
+        "currentUserEmail": "het e-mailadres van de huidige gebruiker",
+        "currentUserRoles": "de rollen van de huidige gebruiker",
+        "currentUserTeams": "de teams van de huidige gebruiker",
+        "null": "(geen)",
+        "empty": "(leeg)"
+      },
+      "fields": {
+        "caseDefinition": {
+          "idKey": "zaakdossier-definitie-sleutel",
+          "idVersionTag": "zaakdossier-definitie-versie",
+          "name": "zaakdossier-definitie-naam",
+          "description": "omschrijving",
+          "basedOnVersionTag": "gebaseerd op versie",
+          "final": "is definitief",
+          "active": "is actief",
+          "canHaveAssignee": "kan behandelaar hebben",
+          "autoAssignTasks": "taken automatisch toewijzen",
+          "hasExternalStartForm": "heeft extern startformulier",
+          "externalStartFormUrl": "URL extern startformulier",
+          "externalStartFormDescription": "omschrijving extern startformulier",
+          "originalKey": "originele sleutel",
+          "originalName": "originele naam",
+          "originalVersionTag": "originele versie",
+          "createdBy": "aangemaakt door",
+          "createdDate": "aanmaakdatum"
+        },
+        "caseTab": {
+          "idCaseDefinitionIdKey": "zaakdossier-definitie-sleutel",
+          "idCaseDefinitionIdVersionTag": "zaakdossier-definitie-versie",
+          "idKey": "tab-sleutel",
+          "name": "tab-naam",
+          "tabOrder": "tab-volgorde",
+          "type": "tab-type",
+          "contentKey": "inhoudssleutel",
+          "createdOn": "aangemaakt op",
+          "createdBy": "aangemaakt door",
+          "showTasks": "toont taken"
+        },
+        "caseWidgetTabWidget": {
+          "title": "titel",
+          "icon": "icoon",
+          "color": "kleur",
+          "order": "volgorde",
+          "width": "breedte",
+          "highContrast": "hoog contrast",
+          "isCompact": "is compact"
+        },
+        "dashboard": {
+          "key": "dashboard-sleutel",
+          "title": "titel",
+          "description": "omschrijving",
+          "order": "volgorde",
+          "createdBy": "aangemaakt door",
+          "createdOn": "aangemaakt op"
+        },
+        "jsonSchemaDocument": {
+          "id": "document-ID",
+          "contentContent": "documentinhoud",
+          "assigneeId": "behandelaar",
+          "assigneeFullName": "behandelaarsnaam",
+          "assignedTeamKey": "toegewezen team",
+          "assignedTeamTitle": "toegewezen team-titel",
+          "documentDefinitionIdName": "documentdefinitie-naam",
+          "documentDefinitionIdVersion": "documentdefinitie-versie",
+          "documentDefinitionIdCaseDefinitionIdKey": "zaakdossier-definitie-sleutel (via documentdefinitie)",
+          "documentDefinitionIdCaseDefinitionIdVersionTag": "zaakdossier-definitie-versie (via documentdefinitie)",
+          "version": "versie",
+          "createdOn": "aangemaakt op",
+          "modifiedOn": "gewijzigd op",
+          "createdBy": "aangemaakt door",
+          "sequence": "volgnummer",
+          "internalStatus": "interne status",
+          "retentionDate": "bewaartermijn"
+        },
+        "jsonSchemaDocumentDefinition": {
+          "idName": "documentdefinitie-naam",
+          "idVersion": "documentdefinitie-versie",
+          "createdOn": "aangemaakt op"
+        },
+        "jsonSchemaDocumentSnapshot": {
+          "id": "momentopname-ID",
+          "createdOn": "aangemaakt op",
+          "createdBy": "aangemaakt door"
+        },
+        "searchField": {
+          "key": "zoekveld-sleutel",
+          "title": "titel",
+          "path": "JSON-pad",
+          "dataType": "datatype",
+          "fieldType": "veldtype",
+          "matchType": "matchtype",
+          "order": "volgorde"
+        },
+        "zgwDocument": {
+          "caseDocumentId": "zaakdocument-ID",
+          "vertrouwelijkheidaanduiding": "vertrouwelijkheidaanduiding",
+          "status": "status",
+          "informatieobjecttypeUrl": "informatieobjecttype-URL",
+          "informatieobjecttypeOmschrijving": "informatieobjecttype-omschrijving"
+        },
+        "ikoView": {
+          "key": "IKO-weergavesleutel",
+          "title": "titel"
+        },
+        "note": {
+          "id": "notitie-ID",
+          "createdByUserId": "aangemaakt door",
+          "createdByUserFullName": "aangemaakt door (volledige naam)",
+          "createdDate": "aanmaakdatum",
+          "content": "inhoud",
+          "documentId": "document-ID"
+        },
+        "team": {
+          "key": "team-sleutel",
+          "title": "team-titel",
+          "users": "teamleden"
+        },
+        "user": {
+          "roles": "gebruikersrollen"
+        },
+        "operatonExecution": {
+          "id": "procesinstantie-ID",
+          "businessKey": "businessKey",
+          "activityId": "huidige activiteit",
+          "activityInstanceId": "activiteit-instantie-ID",
+          "active": "is actief",
+          "caseInstanceId": "zaakinstantie-ID",
+          "processInstanceId": "procesinstantie-ID",
+          "processDefinitionId": "procesdefinitie-ID",
+          "processDefinitionKey": "procesdefinitie-sleutel",
+          "parentId": "bovenliggende-instantie-ID",
+          "tenantId": "tenant-ID"
+        },
+        "operatonIdentityLink": {
+          "groupId": "Candidate group",
+          "type": "koppelingstype",
+          "userId": "gebruikers-ID",
+          "processDefinitionKey": "procesdefinitie-sleutel",
+          "tenantId": "tenant-ID"
+        },
+        "operatonProcessDefinition": {
+          "id": "procesdefinitie-ID",
+          "category": "categorie",
+          "name": "procesnaam",
+          "key": "procesdefinitie-sleutel",
+          "version": "versie",
+          "versionTag": "versie-tag",
+          "deploymentId": "deployment-ID",
+          "isStartableInTasklist": "startbaar in takenlijst",
+          "tenantId": "tenant-ID"
+        },
+        "operatonTask": {
+          "id": "taak-ID",
+          "name": "taaknaam",
+          "description": "omschrijving",
+          "taskDefinitionKey": "taakdefinitie-sleutel",
+          "owner": "eigenaar",
+          "assignee": "behandelaar",
+          "priority": "prioriteit",
+          "createTime": "aangemaakt op",
+          "lastUpdated": "laatst bijgewerkt",
+          "dueDate": "vervaldatum",
+          "followUpDate": "opvolgdatum",
+          "caseInstanceId": "zaakinstantie-ID",
+          "caseDefinitionId": "zaakdefinitie-ID",
+          "processInstanceId": "procesinstantie-ID",
+          "processDefinitionId": "procesdefinitie-ID",
+          "processDefinitionKey": "procesdefinitie-sleutel",
+          "tenantId": "tenant-ID"
+        }
       }
     }
   },
