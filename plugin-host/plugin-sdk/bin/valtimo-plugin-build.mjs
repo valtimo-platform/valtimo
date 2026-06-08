@@ -29,12 +29,26 @@
  */
 
 import { execFileSync } from "node:child_process";
-import { existsSync, mkdirSync } from "node:fs";
+import { existsSync, mkdirSync, writeFileSync } from "node:fs";
 import { resolve, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
+
+// Wasm interface (`-i`) consumed by extism-js: declares the exported entrypoint and the host
+// functions the module imports. This is identical for every plugin, so the build generates it
+// automatically — plugin authors never need to write Wasm-specific type declarations.
+const DEFAULT_INTERFACE = `declare module "main" {
+  export function handle_action(): I32;
+}
+
+declare module "extism:host" {
+  interface user {
+    gzac_api(input: PTR): PTR;
+  }
+}
+`;
 
 const args = process.argv.slice(2);
 const inputIdx = args.indexOf("--input");
@@ -102,18 +116,21 @@ function findExtismJs() {
 const extismJsBin = findExtismJs();
 if (!extismJsBin) {
   console.error("[valtimo-plugin-build] extism-js CLI not found.");
-  console.error("Install it from: https://github.com/nicholasgasior/extism/js-pdk/releases");
-  console.error("Or place it in sdks/.bin/extism-js for local development.");
+  console.error("Install it from: https://github.com/extism/js-pdk/releases");
+  console.error("Or place it in plugin-host/.bin/extism-js for local development.");
   process.exit(1);
 }
 
 try {
-  // Look for index.d.ts in the plugin directory (declares exported functions)
-  const interfaceFile = resolve(cwd, "index.d.ts");
-  const extismArgs = [bundlePath, "-o", outputPath];
-  if (existsSync(interfaceFile)) {
-    extismArgs.push("-i", interfaceFile);
+  // Use the plugin's own index.d.ts if it provides one (e.g. to declare extra host functions),
+  // otherwise generate the standard interface so src/plugin.ts is the only file authors write.
+  let interfaceFile = resolve(cwd, "index.d.ts");
+  if (!existsSync(interfaceFile)) {
+    interfaceFile = resolve(cwd, "dist", "_plugin_interface.d.ts");
+    writeFileSync(interfaceFile, DEFAULT_INTERFACE);
+    console.log("[valtimo-plugin-build] Using generated Wasm interface (no index.d.ts found)");
   }
+  const extismArgs = [bundlePath, "-o", outputPath, "-i", interfaceFile];
   execFileSync(extismJsBin, extismArgs, { cwd, stdio: "inherit" });
   console.log(`[valtimo-plugin-build] Built: ${output}`);
 } catch (err) {

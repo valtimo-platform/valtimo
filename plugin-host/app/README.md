@@ -105,11 +105,14 @@ curl -sS http://localhost:8090/api/host/configurations \
 
 ### `POST /api/host/configurations/:configId` — push configuration
 
+`serviceToken` and `gzacBaseUrl` are required — the host uses them to authenticate and route the
+plugin's API callbacks. For local testing any non-empty string works for `serviceToken`.
+
 ```bash
 curl -sS -X POST http://localhost:8090/api/host/configurations/my-config \
   -H "Authorization: Bearer test-secret" \
   -H "Content-Type: application/json" \
-  -d '{"pluginId":"say-hello","pluginVersion":"0.1.0","properties":{"greeting":"Hello"}}' | jq .
+  -d '{"pluginId":"say-hello","pluginVersion":"0.1.0","properties":{"greeting":"Hello"},"serviceToken":"local-test-token","gzacBaseUrl":"http://localhost:8080"}' | jq .
 ```
 
 ### `PUT /api/host/configurations/:configId` — update configuration

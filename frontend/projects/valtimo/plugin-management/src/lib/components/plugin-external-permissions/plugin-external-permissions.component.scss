@@ -28,8 +28,16 @@
   font-style: italic;
 }
 
+.plugin-external-permissions__list {
+  margin: 0 0 1.5rem;
+  padding: 0;
+  list-style: none;
+  border: 1px solid var(--cds-border-subtle, #e0e0e0);
+  border-radius: 2px;
+}
+
 .plugin-external-permissions__endpoint {
-  padding: 0.75rem 0;
+  padding: 0.75rem 1rem;
   border-bottom: 1px solid var(--cds-border-subtle, #e0e0e0);
 
   &:last-child {
@@ -57,7 +65,18 @@
 }
 
 .plugin-external-permissions__endpoint-description {
-  margin: 0.25rem 0 0 1.75rem;
+  margin: 0.25rem 0 0;
   font-size: 0.8125rem;
+  color: var(--cds-text-secondary, #525252);
+}
+
+.plugin-external-permissions__acceptance {
+  display: block;
+  margin-top: 0.5rem;
+}
+
+.plugin-external-permissions__readonly-note {
+  font-size: 0.8125rem;
+  font-style: italic;
   color: var(--cds-text-secondary, #525252);
 }

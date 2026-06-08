@@ -14,14 +14,13 @@
  * limitations under the License.
  */
 
-import {Component, OnDestroy, OnInit} from '@angular/core';
-import {BehaviorSubject, combineLatest, Observable, of, Subscription} from 'rxjs';
-import {catchError, map} from 'rxjs/operators';
+import {Component, Input, OnDestroy, OnInit} from '@angular/core';
+import {BehaviorSubject, combineLatest, Observable, Subscription} from 'rxjs';
+import {map} from 'rxjs/operators';
 import {PluginManagementStateService} from '../../services';
 import {UnifiedPluginDefinition} from '../../models';
 import {
   ExternalPluginDefinition,
-  ExternalPluginService,
   PluginDefinition,
   PluginManagementService,
   toExternalPluginKey,
@@ -35,6 +34,10 @@ import {
   styleUrls: ['./plugin-add-select.component.scss'],
 })
 export class PluginAddSelectComponent implements OnInit, OnDestroy {
+  @Input() set externalDefinitions(value: ExternalPluginDefinition[] | null) {
+    this._externalDefs$.next(value ?? []);
+  }
+
   public readonly selectedPluginDefinition$ = this._stateService.selectedPluginDefinition$;
   public readonly disabled$ = this._stateService.inputDisabled$;
   public readonly testIds = PLUGIN_CATALOG_TEST_IDS;
@@ -44,7 +47,7 @@ export class PluginAddSelectComponent implements OnInit, OnDestroy {
   public readonly allDefinitions$: Observable<UnifiedPluginDefinition[] | undefined> =
     combineLatest([
       this._stateService.pluginDefinitionsWithLogos$,
-      this._externalDefs$.asObservable(),
+      this._externalDefs$,
     ]).pipe(
       map(([embedded, external]) => {
         if (!embedded) return undefined;
@@ -70,14 +73,12 @@ export class PluginAddSelectComponent implements OnInit, OnDestroy {
 
   constructor(
     private readonly _pluginManagementService: PluginManagementService,
-    private readonly _stateService: PluginManagementStateService,
-    private readonly _externalPluginService: ExternalPluginService
+    private readonly _stateService: PluginManagementStateService
   ) {}
 
   public ngOnInit(): void {
     this._openRefreshSubscription();
     this._getPluginDefinitions();
-    this._getExternalPluginDefinitions();
   }
 
   public ngOnDestroy(): void {
@@ -96,15 +97,6 @@ export class PluginAddSelectComponent implements OnInit, OnDestroy {
     this._pluginManagementService.getPluginDefinitions().subscribe(pluginDefinitions => {
       this._stateService.setPluginDefinitions(pluginDefinitions);
     });
-  }
-
-  private _getExternalPluginDefinitions(): void {
-    this._externalPluginService
-      .getDefinitions()
-      .pipe(catchError(() => of([] as ExternalPluginDefinition[])))
-      .subscribe(definitions => {
-        this._externalDefs$.next(definitions);
-      });
   }
 
   private _openRefreshSubscription(): void {

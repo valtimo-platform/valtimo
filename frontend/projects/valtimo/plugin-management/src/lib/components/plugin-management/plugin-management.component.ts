@@ -15,7 +15,7 @@
  */
 import {Component, OnDestroy} from '@angular/core';
 import {TranslateService} from '@ngx-translate/core';
-import {ActionItem, ColumnConfig, ViewType} from '@valtimo/components';
+import {ActionItem, CarbonTag, ColumnConfig, ViewType} from '@valtimo/components';
 import {
   ExternalPluginConfiguration,
   ExternalPluginDefinition,
@@ -153,12 +153,12 @@ export class PluginManagementComponent implements OnDestroy {
       viewType: ViewType.TEXT,
     },
     {
-      key: 'status',
+      key: 'statusTag',
       label: 'pluginManagement.labels.status',
-      viewType: ViewType.TEXT,
+      viewType: ViewType.TAGS,
     },
     {
-      key: 'lastHealthCheck',
+      key: 'lastHealthCheckFormatted',
       label: 'pluginManagement.labels.lastHealthCheck',
       viewType: ViewType.TEXT,
     },
@@ -182,7 +182,34 @@ export class PluginManagementComponent implements OnDestroy {
     map(() => document.visibilityState === 'visible')
   );
 
-  public readonly hosts$: Observable<Array<ExternalPluginHost>> = merge(
+  // --- External plugin definitions refresh ---
+  public readonly externalDefsRefreshing$ = new BehaviorSubject<boolean>(false);
+  private _externalDefsInitialLoad = true;
+
+  public readonly externalDefinitions$: Observable<ExternalPluginDefinition[]> = merge(
+    this._tabVisible$.pipe(
+      switchMap(visible => (visible ? timer(0, 5000) : EMPTY))
+    ),
+    this._stateService.refresh$
+  ).pipe(
+    takeUntil(this._destroy$),
+    tap(() => {
+      if (!this._externalDefsInitialLoad) {
+        this.externalDefsRefreshing$.next(true);
+      }
+    }),
+    switchMap(() =>
+      this._externalPluginService
+        .getDefinitions()
+        .pipe(catchError(() => of([] as ExternalPluginDefinition[])))
+    ),
+    tap(() => {
+      this._externalDefsInitialLoad = false;
+      this.externalDefsRefreshing$.next(false);
+    })
+  );
+
+  public readonly hosts$: Observable<Array<ExternalPluginHost & {statusTag: CarbonTag; lastHealthCheckFormatted: string}>> = merge(
     this._tabVisible$.pipe(
       switchMap(visible => (visible ? timer(0, 5000) : EMPTY))
     ),
@@ -196,6 +223,17 @@ export class PluginManagementComponent implements OnDestroy {
     }),
     switchMap(() =>
       this._externalPluginService.getHosts().pipe(catchError(() => of([] as ExternalPluginHost[])))
+    ),
+    switchMap(hosts =>
+      this._translateService.stream('key').pipe(
+        map(() =>
+          hosts.map(host => ({
+            ...host,
+            statusTag: this._getStatusTag(host.status),
+            lastHealthCheckFormatted: this._formatLastHealthCheck(host.lastHealthCheck),
+          }))
+        )
+      )
     ),
     tap(() => {
       this._hostsInitialLoad = false;
@@ -358,6 +396,27 @@ export class PluginManagementComponent implements OnDestroy {
       error: () => {
         this._logger.error('Something went wrong with creating the plugin host.');
       },
+    });
+  }
+
+  private _getStatusTag(status: 'CONNECTED' | 'UNREACHABLE'): CarbonTag {
+    return {
+      content: this._translateService.instant(`pluginManagement.hostStatus.${status}`),
+      type: status === 'CONNECTED' ? 'green' : 'red',
+    };
+  }
+
+  private _formatLastHealthCheck(lastHealthCheck: string | null): string {
+    if (!lastHealthCheck) {
+      return '-';
+    }
+    const date = new Date(lastHealthCheck);
+    return date.toLocaleString(this._translateService.currentLang || 'en', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
     });
   }
 }

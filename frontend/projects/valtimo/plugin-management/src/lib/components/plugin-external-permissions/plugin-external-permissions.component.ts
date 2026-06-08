@@ -38,6 +38,15 @@ interface EnrichedEndpoint extends ExternalPluginManagementEndpoint {
   description: string | null;
 }
 
+/**
+ * Lists the GZAC API endpoints an external plugin requires. Permissions are all-or-nothing: the
+ * backend rejects a configuration unless every endpoint declared in the manifest is granted, so
+ * there is no per-endpoint toggle. Instead the admin reviews the full list and accepts the
+ * implications with a single acknowledgement before the configuration can be saved.
+ *
+ * In `readonlyMode` (editing an existing configuration) the list is informational only — the
+ * permissions were already accepted at activation — so no acknowledgement is required.
+ */
 @Component({
   standalone: true,
   selector: 'valtimo-plugin-external-permissions',
@@ -48,29 +57,27 @@ interface EnrichedEndpoint extends ExternalPluginManagementEndpoint {
 })
 export class PluginExternalPermissionsComponent implements OnChanges {
   @Input() public endpoints: Array<ExternalPluginManagementEndpoint> = [];
-  @Input() public grantedEndpoints: Array<ExternalPluginGrantedEndpointEntry> | null = null;
+  @Input() public readonlyMode = false;
 
   @Output() public validEvent = new EventEmitter<boolean>();
   @Output() public grantedEndpointsChange = new EventEmitter<Array<ExternalPluginGrantedEndpointEntry>>();
 
   public readonly _$enrichedEndpoints = signal<Array<EnrichedEndpoint>>([]);
-  public readonly _$grantedState = signal<Record<string, boolean>>({});
+  public readonly _$accepted = signal<boolean>(false);
 
   private readonly _externalPluginService = inject(ExternalPluginService);
   private readonly _translateService = inject(TranslateService);
 
   public ngOnChanges(changes: SimpleChanges): void {
-    if (changes['endpoints'] || changes['grantedEndpoints']) {
+    if (changes['endpoints'] || changes['readonlyMode']) {
+      this._$accepted.set(false);
       this._fetchDescriptionsAndInit();
     }
   }
 
-  public onCheckboxChange(endpoint: EnrichedEndpoint, checked: boolean): void {
-    const key = this._endpointKey(endpoint);
-    const state = {...this._$grantedState()};
-    state[key] = checked;
-    this._$grantedState.set(state);
-    this._emitState(state);
+  public onAcceptanceChange(accepted: boolean): void {
+    this._$accepted.set(accepted);
+    this._emitValidity();
   }
 
   private _endpointKey(endpoint: ExternalPluginManagementEndpoint): string {
@@ -79,13 +86,11 @@ export class PluginExternalPermissionsComponent implements OnChanges {
 
   private _fetchDescriptionsAndInit(): void {
     if (this.endpoints.length === 0) {
-      this._$enrichedEndpoints.set([]);
-      this._initGrantedState([]);
+      this._setEnriched([]);
       return;
     }
 
     const queries = this.endpoints.map(ep => ({method: ep.method, pattern: ep.pattern}));
-
     const locale = this._translateService.currentLang || this._translateService.defaultLang || 'en';
 
     this._externalPluginService.getEndpointDescriptions(queries, locale).subscribe({
@@ -94,57 +99,37 @@ export class PluginExternalPermissionsComponent implements OnChanges {
           descriptions.map(d => [`${d.method.toUpperCase()}:${d.pattern}`, d.description])
         );
 
-        const enriched: Array<EnrichedEndpoint> = this.endpoints.map(ep => ({
-          ...ep,
-          description: descriptionMap.get(this._endpointKey(ep)) ?? null,
-        }));
-
-        this._$enrichedEndpoints.set(enriched);
-        this._initGrantedState(enriched);
+        this._setEnriched(
+          this.endpoints.map(ep => ({
+            ...ep,
+            description: descriptionMap.get(this._endpointKey(ep)) ?? null,
+          }))
+        );
       },
       error: () => {
-        const enriched: Array<EnrichedEndpoint> = this.endpoints.map(ep => ({
-          ...ep,
-          description: null,
-        }));
-        this._$enrichedEndpoints.set(enriched);
-        this._initGrantedState(enriched);
+        this._setEnriched(this.endpoints.map(ep => ({...ep, description: null})));
       },
     });
   }
 
-  private _initGrantedState(enriched: Array<EnrichedEndpoint>): void {
-    const state: Record<string, boolean> = {};
-
-    if (this.grantedEndpoints) {
-      const grantedKeys = new Set(
-        this.grantedEndpoints.map(e => `${e.method.toUpperCase()}:${e.pattern}`)
-      );
-      enriched.forEach(ep => {
-        state[this._endpointKey(ep)] = grantedKeys.has(this._endpointKey(ep));
-      });
-    } else {
-      enriched.forEach(ep => {
-        state[this._endpointKey(ep)] = false;
-      });
-    }
-
-    this._$grantedState.set(state);
-    this._emitState(state);
+  private _setEnriched(enriched: Array<EnrichedEndpoint>): void {
+    this._$enrichedEndpoints.set(enriched);
+    this._emitGrantedEndpoints(enriched);
+    this._emitValidity();
   }
 
-  private _emitState(state: Record<string, boolean>): void {
-    const enriched = this._$enrichedEndpoints();
-    const allGranted = enriched.length > 0 && enriched.every(ep => state[this._endpointKey(ep)]);
-    this.validEvent.emit(allGranted);
+  /**
+   * Accepting the permissions grants the full declared set — partial grants are not allowed by the
+   * backend, so the component always emits every endpoint.
+   */
+  private _emitGrantedEndpoints(enriched: Array<EnrichedEndpoint>): void {
+    this.grantedEndpointsChange.emit(
+      enriched.map(ep => ({method: ep.method.toUpperCase(), pattern: ep.pattern}))
+    );
+  }
 
-    const granted: Array<ExternalPluginGrantedEndpointEntry> = enriched
-      .filter(ep => state[this._endpointKey(ep)])
-      .map(ep => ({
-        method: ep.method.toUpperCase(),
-        pattern: ep.pattern,
-      }));
-
-    this.grantedEndpointsChange.emit(granted);
+  private _emitValidity(): void {
+    const valid = this.readonlyMode || this._$enrichedEndpoints().length === 0 || this._$accepted();
+    this.validEvent.emit(valid);
   }
 }

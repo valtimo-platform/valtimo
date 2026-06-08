@@ -21,9 +21,7 @@
   valtimoCdsModal
 >
   <cds-modal-header (closeSelect)="onClose()">
-    <h3 cdsModalHeaderHeading>
-      {{ 'pluginManagement.editExternalConfiguration' | translate }}
-    </h3>
+    {{ configuration?.title }} - {{ _$definitionName() }}
 
     <cds-progress-indicator
       *ngIf="progressSteps.length > 1"
@@ -75,9 +73,8 @@
     <div *ngIf="_$hasPermissionsStep()" [hidden]="currentStepIndex !== 1">
       <valtimo-plugin-external-permissions
         [endpoints]="_$managementEndpoints()"
-        [grantedEndpoints]="_$grantedEndpoints()"
+        [readonlyMode]="true"
         (validEvent)="onPermissionsValid($event)"
-        (grantedEndpointsChange)="onGrantedEndpointsChange($event)"
       ></valtimo-plugin-external-permissions>
     </div>
   </section>

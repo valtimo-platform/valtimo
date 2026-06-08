@@ -29,7 +29,7 @@
   </cds-modal-header>
   <section cdsModalContent [cdsLayer]="1">
     <div [hidden]="currentStepIndex !== 0">
-      <valtimo-plugin-add-select></valtimo-plugin-add-select>
+      <valtimo-plugin-add-select [externalDefinitions]="externalDefinitions"></valtimo-plugin-add-select>
     </div>
 
     <div [hidden]="currentStepIndex !== 1">

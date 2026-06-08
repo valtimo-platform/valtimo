@@ -15,7 +15,12 @@
   -->
 
 <p class="plugin-external-permissions__description">
-  {{ 'pluginManagement.permissions.description' | translate }}
+  {{
+    (readonlyMode
+      ? 'pluginManagement.permissions.descriptionReadonly'
+      : 'pluginManagement.permissions.description'
+    ) | translate
+  }}
 </p>
 
 <div
@@ -25,25 +30,39 @@
   {{ 'pluginManagement.permissions.noEndpoints' | translate }}
 </div>
 
-<div
-  *ngFor="let endpoint of _$enrichedEndpoints()"
-  class="plugin-external-permissions__endpoint"
-  [attr.data-test-id]="'external-plugin-permission-' + endpoint.method + '-' + endpoint.pattern"
->
-  <cds-checkbox
-    [checked]="_$grantedState()[endpoint.method.toUpperCase() + ':' + endpoint.pattern]"
-    (checkedChange)="onCheckboxChange(endpoint, $event)"
+<ul *ngIf="_$enrichedEndpoints().length > 0" class="plugin-external-permissions__list">
+  <li
+    *ngFor="let endpoint of _$enrichedEndpoints()"
+    class="plugin-external-permissions__endpoint"
+    [attr.data-test-id]="'external-plugin-permission-' + endpoint.method + '-' + endpoint.pattern"
   >
     <span class="plugin-external-permissions__endpoint-label">
       <span class="plugin-external-permissions__method">{{ endpoint.method | uppercase }}</span>
       <code class="plugin-external-permissions__pattern">{{ endpoint.pattern }}</code>
     </span>
-  </cds-checkbox>
 
-  <p
-    *ngIf="endpoint.description"
-    class="plugin-external-permissions__endpoint-description"
-  >
-    {{ endpoint.description }}
-  </p>
-</div>
+    <p
+      *ngIf="endpoint.description"
+      class="plugin-external-permissions__endpoint-description"
+    >
+      {{ endpoint.description }}
+    </p>
+  </li>
+</ul>
+
+<cds-checkbox
+  *ngIf="!readonlyMode && _$enrichedEndpoints().length > 0"
+  class="plugin-external-permissions__acceptance"
+  [checked]="_$accepted()"
+  (checkedChange)="onAcceptanceChange($event)"
+  data-test-id="external-plugin-permissions-accept"
+>
+  {{ 'pluginManagement.permissions.accept' | translate }}
+</cds-checkbox>
+
+<p
+  *ngIf="readonlyMode && _$enrichedEndpoints().length > 0"
+  class="plugin-external-permissions__readonly-note"
+>
+  {{ 'pluginManagement.permissions.acceptedNote' | translate }}
+</p>

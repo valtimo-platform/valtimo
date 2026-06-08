@@ -69,9 +69,11 @@ class ValtimoPluginSDK {
   private readonly _handlers = new Map<string, Array<EventHandler<unknown>>>();
   private readonly _bufferedEvents: Array<{ event: string; payload: unknown }> = [];
   private _parentOrigin: string | null = null;
+  // Bound once so addEventListener and removeEventListener share the same reference.
+  private readonly _boundOnMessage = this._onMessage.bind(this);
 
   constructor() {
-    window.addEventListener("message", this._onMessage.bind(this));
+    window.addEventListener("message", this._boundOnMessage);
   }
 
   // ---- Incoming event handlers ----
@@ -199,7 +201,7 @@ class ValtimoPluginSDK {
 
   /** Clean up event listener. Call this if you need to destroy the SDK instance. */
   public destroy(): void {
-    window.removeEventListener("message", this._onMessage.bind(this));
+    window.removeEventListener("message", this._boundOnMessage);
   }
 }
 

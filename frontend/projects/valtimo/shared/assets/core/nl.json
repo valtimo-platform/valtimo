@@ -1894,6 +1894,10 @@
       "embedded": "Ingebed",
       "external": "Extern"
     },
+    "hostStatus": {
+      "CONNECTED": "Verbonden",
+      "UNREACHABLE": "Onbereikbaar"
+    },
     "editExternalConfiguration": "Externe plugin-configuratie bewerken",
     "invalidJson": "Ongeldige JSON",
     "addSteps": {
@@ -1908,8 +1912,11 @@
       "save": "Configuratie opslaan"
     },
     "permissions": {
-      "description": "Selecteer de beheer-endpoints waar deze plugin toegang toe krijgt.",
-      "noEndpoints": "Deze plugin heeft geen beheer-endpoint-rechten nodig."
+      "description": "Deze plugin heeft toegang nodig tot de volgende API-endpoints. Bekijk ze zorgvuldig — na acceptatie kan de plugin deze endpoints namens jou aanroepen.",
+      "descriptionReadonly": "Deze plugin heeft toegang gekregen tot de volgende API-endpoints.",
+      "noEndpoints": "Deze plugin heeft geen beheer-endpoint-rechten nodig.",
+      "accept": "Ik begrijp de gevolgen van het accepteren van deze rechten",
+      "acceptedNote": "Deze rechten zijn geaccepteerd bij het activeren van de configuratie en kunnen hier niet worden gewijzigd."
     }
   },
   "customerCases": {
