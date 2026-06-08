@@ -8,4 +8,8 @@
 
 ## Enhancements
 
+* **Access control overview tab**
+
+  A new overview tab presents the permissions in a human-readable manner.
+
 ## Bugfixes
