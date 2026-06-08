@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:camunda="http://camunda.org/schema/1.0/bpmn" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" id="Definitions_1" targetNamespace="http://bpmn.io/schema/bpmn" exporter="Camunda Modeler" exporterVersion="5.23.0">
+  <bpmn:process id="bestand-koppelen" name="Bestand koppelen" processType="None" isClosed="false" isExecutable="true" camunda:versionTag="CD:bezwaar:1.0.1">
+    <bpmn:startEvent id="StartEvent_1" name="starten maar">
+      <bpmn:outgoing>Flow_11vuyzp</bpmn:outgoing>
+    </bpmn:startEvent>
+    <bpmn:endEvent id="Event_0pluhoi">
+      <bpmn:incoming>Flow_17qrvlq</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:sequenceFlow id="Flow_11vuyzp" sourceRef="StartEvent_1" targetRef="SetContentTask" />
+    <bpmn:userTask id="TweedeCheckTask" name="check param" implementation="##unspecified">
+      <bpmn:incoming>Flow_0wmnep7</bpmn:incoming>
+      <bpmn:outgoing>Flow_17qrvlq</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:sequenceFlow id="Flow_0t2bxg8" sourceRef="UploadToDocumentenAPITask" targetRef="LinkToCaseTask" />
+    <bpmn:serviceTask id="UploadToDocumentenAPITask" name="Upload document" implementation="##WebService" camunda:expression="${true}">
+      <bpmn:incoming>Flow_0a4d81k</bpmn:incoming>
+      <bpmn:outgoing>Flow_0t2bxg8</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:sequenceFlow id="Flow_0a4d81k" sourceRef="StoreContentTask" targetRef="UploadToDocumentenAPITask" />
+    <bpmn:serviceTask id="StoreContentTask" name="Store content" implementation="##WebService" camunda:expression="${resourceStorageDelegate.storeResolvableContent(&#39;pv:testcontent&#39;)}" camunda:resultVariable="textResourceId">
+      <bpmn:incoming>Flow_0w9lzxm</bpmn:incoming>
+      <bpmn:outgoing>Flow_0a4d81k</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:serviceTask id="LinkToCaseTask" name="link to zaak" camunda:asyncAfter="true" implementation="##WebService" camunda:expression="${true}">
+      <bpmn:incoming>Flow_0t2bxg8</bpmn:incoming>
+      <bpmn:outgoing>Flow_0wmnep7</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:sequenceFlow id="Flow_08p7bm9" sourceRef="SetContentTask" targetRef="EersteCheckTask" />
+    <bpmn:serviceTask id="SetContentTask" name="set content" implementation="##WebService" camunda:expression="${execution.setVariable(&#39;testcontent&#39;, valueResolverDelegateService.resolveValue(execution, &#39;doc:voornaam&#39;))}">
+      <bpmn:incoming>Flow_11vuyzp</bpmn:incoming>
+      <bpmn:outgoing>Flow_08p7bm9</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:sequenceFlow id="Flow_17qrvlq" sourceRef="TweedeCheckTask" targetRef="Event_0pluhoi" />
+    <bpmn:sequenceFlow id="Flow_0w9lzxm" sourceRef="EersteCheckTask" targetRef="StoreContentTask" />
+    <bpmn:userTask id="EersteCheckTask" name="check" implementation="##unspecified">
+      <bpmn:incoming>Flow_08p7bm9</bpmn:incoming>
+      <bpmn:outgoing>Flow_0w9lzxm</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:sequenceFlow id="Flow_0wmnep7" sourceRef="LinkToCaseTask" targetRef="TweedeCheckTask" />
+  </bpmn:process>
+  <bpmndi:BPMNDiagram id="BPMNDiagram_1">
+    <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="bestand-koppelen">
+      <bpmndi:BPMNShape id="Activity_1x1a1na_di" bpmnElement="UploadToDocumentenAPITask">
+        <dc:Bounds x="570" y="170" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_13injfj_di" bpmnElement="StoreContentTask">
+        <dc:Bounds x="430" y="170" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_0eyijav_di" bpmnElement="LinkToCaseTask">
+        <dc:Bounds x="710" y="170" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_1knz5uw_di" bpmnElement="TweedeCheckTask">
+        <dc:Bounds x="850" y="170" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_0pluhoi_di" bpmnElement="Event_0pluhoi">
+        <dc:Bounds x="882" y="102" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="356" y="145" width="89" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_1sw0e20_di" bpmnElement="EersteCheckTask">
+        <dc:Bounds x="290" y="170" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_0s7ndai_di" bpmnElement="SetContentTask">
+        <dc:Bounds x="150" y="170" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="_BPMNShape_StartEvent_2" bpmnElement="StartEvent_1">
+        <dc:Bounds x="182" y="102" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="169" y="78" width="62" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="Flow_11vuyzp_di" bpmnElement="Flow_11vuyzp">
+        <di:waypoint x="200" y="138" />
+        <di:waypoint x="200" y="170" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0t2bxg8_di" bpmnElement="Flow_0t2bxg8">
+        <di:waypoint x="670" y="210" />
+        <di:waypoint x="710" y="210" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0a4d81k_di" bpmnElement="Flow_0a4d81k">
+        <di:waypoint x="530" y="210" />
+        <di:waypoint x="570" y="210" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_08p7bm9_di" bpmnElement="Flow_08p7bm9">
+        <di:waypoint x="250" y="210" />
+        <di:waypoint x="290" y="210" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_17qrvlq_di" bpmnElement="Flow_17qrvlq">
+        <di:waypoint x="900" y="170" />
+        <di:waypoint x="900" y="138" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0w9lzxm_di" bpmnElement="Flow_0w9lzxm">
+        <di:waypoint x="390" y="210" />
+        <di:waypoint x="430" y="210" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0wmnep7_di" bpmnElement="Flow_0wmnep7">
+        <di:waypoint x="810" y="210" />
+        <di:waypoint x="850" y="210" />
+      </bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</bpmn:definitions>
