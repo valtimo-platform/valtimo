@@ -21,6 +21,7 @@
         pluginConfigurations: pluginConfigurations$ | async,
         loading: loading$ | async,
         hasConnectedHosts: hasConnectedHosts$ | async,
+        externalDefsRefreshing: externalDefsRefreshing$ | async,
       } as obs"
     >
       <valtimo-carbon-list
@@ -31,10 +32,31 @@
         [header]="false"
         (rowClicked)="editConfiguration($event)"
       >
-        <ng-container
-          carbonToolbarContent
-          [ngTemplateOutlet]="toolbarButtons"
-        ></ng-container>
+        <ng-container carbonToolbarContent>
+          <cds-loading
+            *ngIf="obs.externalDefsRefreshing"
+            size="sm"
+            [isActive]="true"
+            class="plugin-management__hosts-spinner"
+          ></cds-loading>
+
+          <button
+            *ngIf="obs.hasConnectedHosts"
+            cdsButton="tertiary"
+            [disabled]="obs.loading"
+            (click)="openUploadModal()"
+          >
+            {{ 'pluginManagement.uploadPlugin' | translate }}
+
+            <svg cdsIcon="upload" size="16" class="cds--btn__icon"></svg>
+          </button>
+
+          <button cdsButton="primary" [disabled]="obs.loading" (click)="showAddModal()">
+            {{ 'pluginManagement.add' | translate }}
+
+            <svg cdsIcon="add" size="16" class="cds--btn__icon"></svg>
+          </button>
+        </ng-container>
 
         <valtimo-no-results
           [action]="toolbarButtons"
@@ -110,6 +132,7 @@
 
 <valtimo-plugin-add-modal
   [open]="showAddModal$ | async"
+  [externalDefinitions]="externalDefinitions$ | async"
   (closeModal)="closeAddModal()"
 ></valtimo-plugin-add-modal>
 

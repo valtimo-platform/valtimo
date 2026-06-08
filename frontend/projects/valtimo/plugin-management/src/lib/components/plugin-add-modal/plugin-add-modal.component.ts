@@ -19,6 +19,7 @@ import {PluginManagementStateService} from '../../services';
 import {map, take} from 'rxjs/operators';
 import {BehaviorSubject, Observable, Subscription} from 'rxjs';
 import {
+  ExternalPluginDefinition,
   ExternalPluginGrantedEndpointEntry,
   ExternalPluginManagementEndpoint,
   ExternalPluginService,
@@ -39,6 +40,7 @@ import {TranslateService} from '@ngx-translate/core';
 })
 export class PluginAddModalComponent implements OnDestroy {
   @Input() public open = false;
+  @Input() public externalDefinitions: ExternalPluginDefinition[] | null = null;
 
   @Output() public closeModal = new EventEmitter<boolean>();
 

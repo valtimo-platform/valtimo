@@ -62,16 +62,34 @@ export function handleAction(inputJson: string): string {
     // Execute handler (note: in QuickJS, async/await is sequential, not concurrent)
     const result = handler(input);
 
-    // Handle both sync and async results
-    if (result && typeof (result as any).then === "function") {
-      // In QuickJS this resolves synchronously
+    // Handlers may use async/await. Under QuickJS-ng (Extism JS PDK) there is no event loop, so a
+    // promise settles synchronously as the job queue drains. Capture the settled value; surface a
+    // rejection as an error and never serialise a still-pending Promise object.
+    if (result && typeof (result as {then?: unknown}).then === "function") {
+      let settled = false;
+      let rejected = false;
       let resolved: ActionOutput | undefined;
-      (result as Promise<ActionOutput>).then((r) => {
-        resolved = r;
-      });
-      if (resolved) {
-        return JSON.stringify(resolved);
+      let rejection: unknown;
+      (result as Promise<ActionOutput>).then(
+        (r) => {
+          settled = true;
+          resolved = r;
+        },
+        (e) => {
+          settled = true;
+          rejected = true;
+          rejection = e;
+        }
+      );
+      if (!settled) {
+        throw new Error(
+          "Async action handler did not settle synchronously; the QuickJS runtime has no event loop"
+        );
       }
+      if (rejected) {
+        throw rejection instanceof Error ? rejection : new Error(String(rejection));
+      }
+      return JSON.stringify(resolved);
     }
 
     return JSON.stringify(result);

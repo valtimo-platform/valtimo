@@ -1,4 +1,4 @@
-/*
+/*!
  * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
@@ -13,6 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
+:host ::ng-deep .cds--modal-header {
+  display: flex;
+  flex-direction: column;
+}
 
 .plugin-external-edit-modal__properties-textarea {
   font-family: 'IBM Plex Mono', monospace;

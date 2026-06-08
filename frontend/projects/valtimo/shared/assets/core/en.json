@@ -1867,6 +1867,10 @@
       "embedded": "Embedded",
       "external": "External"
     },
+    "hostStatus": {
+      "CONNECTED": "Connected",
+      "UNREACHABLE": "Unreachable"
+    },
     "editExternalConfiguration": "Edit external plugin configuration",
     "invalidJson": "Invalid JSON",
     "addSteps": {
@@ -1881,8 +1885,11 @@
       "save": "Save configuration"
     },
     "permissions": {
-      "description": "Select the management endpoints this plugin is allowed to access.",
-      "noEndpoints": "This plugin does not require any management endpoint permissions."
+      "description": "This plugin requires access to the following API endpoints. Review them carefully — once accepted, the plugin can call these endpoints on your behalf.",
+      "descriptionReadonly": "This plugin was granted access to the following API endpoints.",
+      "noEndpoints": "This plugin does not require any management endpoint permissions.",
+      "accept": "I understand the implications of accepting these permissions",
+      "acceptedNote": "These permissions were accepted when the configuration was activated and cannot be changed here."
     }
   },
   "customerCases": {

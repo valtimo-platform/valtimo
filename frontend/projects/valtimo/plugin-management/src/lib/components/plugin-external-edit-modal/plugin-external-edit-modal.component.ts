@@ -37,7 +37,6 @@ import {
 import {CARBON_CONSTANTS, ValtimoCdsModalDirective} from '@valtimo/components';
 import {
   ExternalPluginDefinition,
-  ExternalPluginGrantedEndpointEntry,
   ExternalPluginIframeComponent,
   ExternalPluginManagementEndpoint,
   ExternalPluginService,
@@ -89,18 +88,15 @@ export class PluginExternalEditModalComponent implements OnChanges, OnDestroy {
   public readonly _$iframeValid = signal(false);
 
   public readonly _$managementEndpoints = signal<Array<ExternalPluginManagementEndpoint>>([]);
-  public readonly _$grantedEndpoints = signal<Array<ExternalPluginGrantedEndpointEntry> | null>(
-    null
-  );
   public readonly _$permissionsValid = signal(false);
   public readonly _$hasPermissionsStep = signal(false);
+  public readonly _$definitionName = signal<string>('');
 
   public currentStepIndex = 0;
   public progressSteps: Array<{label: string}> = [];
 
   private _iframeConfigTitle: string = '';
   private _iframeConfigData: Record<string, unknown> | null = null;
-  private _currentGrantedEndpoints: Array<ExternalPluginGrantedEndpointEntry> = [];
 
   private readonly _subscriptions = new Subscription();
 
@@ -150,11 +146,12 @@ export class PluginExternalEditModalComponent implements OnChanges, OnDestroy {
 
     this._$loading.set(true);
 
+    // Permissions are accepted at activation and are immutable afterwards, so they are not sent
+    // on update — the backend leaves the granted endpoints unchanged when they are omitted.
     this._externalPluginService
       .updateConfiguration(this.configuration.id, {
         title: this._form.value.title ?? '',
         properties,
-        grantedEndpoints: this._currentGrantedEndpoints,
       })
       .subscribe({
         next: () => {
@@ -193,10 +190,6 @@ export class PluginExternalEditModalComponent implements OnChanges, OnDestroy {
     this._$permissionsValid.set(valid);
   }
 
-  public onGrantedEndpointsChange(endpoints: Array<ExternalPluginGrantedEndpointEntry>): void {
-    this._currentGrantedEndpoints = endpoints;
-  }
-
   public get configValid(): boolean {
     if (this._$configBundleUrl()) {
       return this._$iframeValid();
@@ -217,7 +210,6 @@ export class PluginExternalEditModalComponent implements OnChanges, OnDestroy {
       .updateConfiguration(this.configuration.id, {
         title,
         properties,
-        grantedEndpoints: this._currentGrantedEndpoints,
       })
       .subscribe({
         next: () => {
@@ -243,10 +235,9 @@ export class PluginExternalEditModalComponent implements OnChanges, OnDestroy {
     this._$iframeValid.set(false);
     this._iframeConfigData = null;
     this._$managementEndpoints.set([]);
-    this._$grantedEndpoints.set(null);
     this._$permissionsValid.set(false);
     this._$hasPermissionsStep.set(false);
-    this._currentGrantedEndpoints = [];
+    this._$definitionName.set('');
 
     const configId = this.configuration?.id;
     const definitionId = this.configuration?.externalDefinitionId;
@@ -258,6 +249,7 @@ export class PluginExternalEditModalComponent implements OnChanges, OnDestroy {
         this._externalPluginService.getDefinition(definitionId),
       ]).subscribe({
         next: ([configDetail, definition]) => {
+          this._$definitionName.set(definition.name ?? definition.pluginId);
           this._$configurationSchema.set(definition.configurationSchema);
           this._resolveConfigBundleUrl(definition);
 
@@ -275,21 +267,9 @@ export class PluginExternalEditModalComponent implements OnChanges, OnDestroy {
 
           const endpoints = definition.manifest?.permissions?.managementEndpoints ?? [];
           this._$managementEndpoints.set(endpoints);
-
-          const hasEndpoints = endpoints.length > 0;
-          this._$hasPermissionsStep.set(hasEndpoints);
-
-          if (hasEndpoints && configDetail.grantedEndpoints) {
-            const mapped: Array<ExternalPluginGrantedEndpointEntry> =
-              configDetail.grantedEndpoints.map(ge => ({
-                method: ge.httpMethod.toUpperCase(),
-                pattern: ge.endpointPattern,
-              }));
-            this._$grantedEndpoints.set(mapped);
-            this._currentGrantedEndpoints = mapped;
-          } else {
-            this._$permissionsValid.set(true);
-          }
+          this._$hasPermissionsStep.set(endpoints.length > 0);
+          // Permissions are read-only when editing, so the step never blocks saving.
+          this._$permissionsValid.set(true);
 
           this._buildProgressSteps();
           this._$loading.set(false);
@@ -302,15 +282,14 @@ export class PluginExternalEditModalComponent implements OnChanges, OnDestroy {
       this._$loading.set(true);
       this._externalPluginService.getDefinition(definitionId).subscribe({
         next: definition => {
+          this._$definitionName.set(definition.name ?? definition.pluginId);
           this._$configurationSchema.set(definition.configurationSchema);
           this._resolveConfigBundleUrl(definition);
 
           const endpoints = definition.manifest?.permissions?.managementEndpoints ?? [];
           this._$managementEndpoints.set(endpoints);
           this._$hasPermissionsStep.set(endpoints.length > 0);
-          if (endpoints.length === 0) {
-            this._$permissionsValid.set(true);
-          }
+          this._$permissionsValid.set(true);
 
           this._buildProgressSteps();
           this._$loading.set(false);
@@ -366,10 +345,9 @@ export class PluginExternalEditModalComponent implements OnChanges, OnDestroy {
     this._$iframeValid.set(false);
     this._iframeConfigData = null;
     this._$managementEndpoints.set([]);
-    this._$grantedEndpoints.set(null);
     this._$permissionsValid.set(false);
     this._$hasPermissionsStep.set(false);
-    this._currentGrantedEndpoints = [];
+    this._$definitionName.set('');
     this._buildProgressSteps();
   }
 }
