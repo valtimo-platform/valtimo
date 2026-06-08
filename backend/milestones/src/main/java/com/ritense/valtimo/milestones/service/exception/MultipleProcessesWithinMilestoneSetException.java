@@ -19,11 +19,11 @@ package com.ritense.valtimo.milestones.service.exception;
 import com.ritense.valtimo.contract.web.rest.error.BadRequestAlertException;
 
 public class MultipleProcessesWithinMilestoneSetException extends BadRequestAlertException {
-    public MultipleProcessesWithinMilestoneSetException(String message, String translationKey, String entityName) {
-        super(message, entityName, translationKey);
+    public MultipleProcessesWithinMilestoneSetException(String message, String entityName, String errorKey) {
+        super(message, entityName, errorKey);
     }
 
-    public MultipleProcessesWithinMilestoneSetException(String message, Throwable cause, String translationKey, String entityName) {
-        super(message, entityName, translationKey, cause);
+    public MultipleProcessesWithinMilestoneSetException(String message, String entityName, String errorKey, Throwable cause) {
+        super(message, entityName, errorKey, cause);
     }
 }
