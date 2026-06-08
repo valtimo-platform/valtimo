@@ -28,3 +28,9 @@
   [dashboard](../../../features/dashboard/README.md#layout-algorithm),
   [case widget tab](../../../features/case/case-detail/tabs/widgets.md#layout-algorithm) and
   [IKO tab](../../../features/iko/tabs.md#layout-algorithm) documentation for details.
+  
+* **Access control overview tab**
+
+  A new overview tab presents the permissions in a human-readable manner.
+
+## Bugfixes
