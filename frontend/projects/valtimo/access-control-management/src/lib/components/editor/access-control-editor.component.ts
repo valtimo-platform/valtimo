@@ -14,22 +14,12 @@
  * limitations under the License.
  */
 
-import {ChangeDetectionStrategy, Component, OnDestroy, OnInit} from '@angular/core';
+import {ChangeDetectionStrategy, Component, OnDestroy, OnInit, signal} from '@angular/core';
 import {AccessControlService} from '../../services/access-control.service';
-import {
-  BehaviorSubject,
-  filter,
-  finalize,
-  map,
-  Observable,
-  Subscription,
-  switchMap,
-  take,
-  tap,
-} from 'rxjs';
+import {BehaviorSubject, filter, finalize, map, Subscription, switchMap, take, tap} from 'rxjs';
 import {ActivatedRoute, Router} from '@angular/router';
 import {EditorModel, PageHeaderService, PageTitleService} from '@valtimo/components';
-import {PermissionSchema, Role} from '../../models';
+import {AccessControlEditorTab, Permission, Role} from '../../models';
 import {TranslateService} from '@ngx-translate/core';
 import {AccessControlExportService} from '../../services/access-control-export.service';
 import {GlobalNotificationService} from '@valtimo/shared';
@@ -42,6 +32,7 @@ import {GlobalNotificationService} from '@valtimo/shared';
 })
 export class AccessControlEditorComponent implements OnInit, OnDestroy {
   public readonly model$ = new BehaviorSubject<EditorModel | null>(null);
+  public readonly permissions$ = new BehaviorSubject<Permission[] | null>(null);
   public readonly roleKey$ = new BehaviorSubject<string | null>(null);
   public readonly saveDisabled$ = new BehaviorSubject<boolean>(true);
   public readonly editorDisabled$ = new BehaviorSubject<boolean>(false);
@@ -50,8 +41,10 @@ export class AccessControlEditorComponent implements OnInit, OnDestroy {
   public readonly showEditModal$ = new BehaviorSubject<boolean>(false);
   public readonly selectedRowKeys$ = new BehaviorSubject<Array<string> | null>(null);
   public readonly compactMode$ = this.pageHeaderService.compactMode$;
-  public readonly schema$: Observable<PermissionSchema> =
-    this.accessControlService.getPermissionSchema();
+
+  public readonly $activeTab = signal<AccessControlEditorTab>(AccessControlEditorTab.SUMMARY);
+
+  protected readonly AccessControlEditorTab = AccessControlEditorTab;
 
   private _roleKeySubscription!: Subscription;
   private _roleKey!: string;
@@ -69,6 +62,7 @@ export class AccessControlEditorComponent implements OnInit, OnDestroy {
   ) {}
 
   public ngOnInit(): void {
+    this.restoreActiveTabFromUrl();
     this.getPermissions();
     this.openRoleKeySubscription();
   }
@@ -156,6 +150,37 @@ export class AccessControlEditorComponent implements OnInit, OnDestroy {
     });
   }
 
+  public setActiveTab(tab: AccessControlEditorTab): void {
+    if (this.$activeTab() === tab) return;
+
+    const roleKey = this.route.snapshot.paramMap.get('id');
+    if (!roleKey) {
+      this.$activeTab.set(tab);
+      return;
+    }
+
+    const segments =
+      tab === AccessControlEditorTab.JSON_EDITOR
+        ? ['/access-control', roleKey, 'json-editor']
+        : ['/access-control', roleKey];
+
+    this.router.navigate(segments);
+  }
+
+  private restoreActiveTabFromUrl(): void {
+    const url = this.route.snapshot.url;
+    const lastSegment = url[url.length - 1]?.path;
+    if (lastSegment === 'json-editor') {
+      this.$activeTab.set(AccessControlEditorTab.JSON_EDITOR);
+      return;
+    }
+
+    const params = this.route.snapshot.queryParamMap;
+    if (params.get('filterResourceType') || params.get('filterAction')) {
+      this.$activeTab.set(AccessControlEditorTab.JSON_EDITOR);
+    }
+  }
+
   public exportPermissions(): void {
     this.accessControlExportService
       .exportRoles({type: 'separate', roleKeys: [this._roleKey]})
@@ -209,6 +234,7 @@ export class AccessControlEditorComponent implements OnInit, OnDestroy {
       language: 'json',
       uri: `inmemory://access-control/role-${roleKey}.access-control-permissions.json`,
     });
+    this.permissions$.next(Array.isArray(permissions) ? (permissions as Permission[]) : null);
   }
 
   private disableMore(): void {

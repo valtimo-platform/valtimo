@@ -14,9 +14,33 @@
  * limitations under the License.
  */
 
-// JSON Schema returned by GET /api/management/v1/permissions/schema. Treated as an opaque
-// object by Monaco. Auxiliary parsers (see PermissionSchemaMetadataService) extract the
-// resource type and action lists when other UI surfaces need them.
+// JSON Schema returned by GET /api/management/v1/permissions/schema. Passed to the Monaco
+// JSON editor (via valtimo-editor [jsonSchema]) to drive validation and autocomplete.
 type PermissionSchema = object;
 
-export {PermissionSchema};
+interface SchemaAllOfBranch {
+  if?: {properties?: {resourceType?: {const?: string}}};
+  then?: {properties?: {action?: {enum?: string[]}}};
+}
+
+interface SchemaOneOfEntry {
+  const?: string;
+}
+
+interface SchemaCondListVariant {
+  allOf?: Array<{$ref?: string; properties?: {field?: {enum?: string[]}}}>;
+}
+
+interface SchemaCondListDefinition {
+  items?: {oneOf?: SchemaCondListVariant[]};
+}
+
+interface SchemaShape {
+  items?: {
+    allOf?: SchemaAllOfBranch[];
+    properties?: {resourceType?: {oneOf?: SchemaOneOfEntry[]}};
+  };
+  definitions?: Record<string, SchemaCondListDefinition>;
+}
+
+export {PermissionSchema, SchemaShape};
