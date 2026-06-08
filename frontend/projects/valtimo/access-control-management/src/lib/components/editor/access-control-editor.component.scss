@@ -33,3 +33,7 @@
     height: min-content;
   }
 }
+
+:host ::ng-deep .cds--tab-content {
+  background-color: #fff;
+}

@@ -19,7 +19,6 @@ import {TranslateModule} from '@ngx-translate/core';
 import {
   CarbonListModule,
   ConfirmationModalModule,
-  EditorModule,
   OverflowMenuComponent,
   OverflowMenuOptionComponent,
   OverflowMenuTriggerComponent,
@@ -35,9 +34,12 @@ import {
   LoadingModule,
   ModalModule,
   NotificationModule,
+  TabsModule,
 } from 'carbon-components-angular';
 import {FormsModule, ReactiveFormsModule} from '@angular/forms';
 import {AccessControlEditorComponent} from './components/editor/access-control-editor.component';
+import {AccessControlJsonEditorTabComponent} from './components/access-control-json-editor-tab/access-control-json-editor-tab.component';
+import {AccessControlOverviewTabComponent} from './components/access-control-overview-tab/access-control-overview-tab.component';
 import {DeleteRoleModalComponent} from './components/delete-role-modal/delete-role-modal.component';
 import {ExportRoleModalComponent} from './components/export-role-modal/export-role-modal.component';
 
@@ -60,7 +62,6 @@ import {ExportRoleModalComponent} from './components/export-role-modal/export-ro
     InputModule,
     IconModule,
     ConfirmationModalModule,
-    EditorModule,
     RenderInPageHeaderDirective,
     LoadingModule,
     IconModule,
@@ -69,6 +70,9 @@ import {ExportRoleModalComponent} from './components/export-role-modal/export-ro
     OverflowMenuTriggerComponent,
     NotificationModule,
     CarbonListModule,
+    TabsModule,
+    AccessControlJsonEditorTabComponent,
+    AccessControlOverviewTabComponent,
   ],
 })
 export class AccessControlManagementModule {}
