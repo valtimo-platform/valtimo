@@ -14,6 +14,33 @@ The list of configured tabs for a case is displayed within the case settings. To
 
 <figure><img src="../../../.gitbook/assets/image (11).png" alt=""><figcaption><p>Widget configuration UI</p></figcaption></figure>
 
+## Layout algorithm
+
+The way a widget tab's widgets are arranged can be chosen per tab. The same options are available for dashboards and IKO tabs.
+
+| Selector label | Stored value (`widgetLayout`) | Behaviour |
+| --- | --- | --- |
+| Default (less gaps) | `MUURI_GAP_FREE` | Muuri masonry that fills small gaps. Keeps the widgets in their configured order as much as possible. **Used when nothing is configured** (the original behaviour). |
+| Default | `MUURI` | Plain Muuri masonry without gap filling. Keeps the configured order, but empty gaps can remain. |
+| Gap free | `BEAUTIFUL` | Custom dense-packing algorithm. May reorder widgets within a section to remove gaps and almost always produces a clean layout without holes. |
+
+**Trade-off:** *Default* and *Default (less gaps)* keep the widgets in the order you configured (predictable) but can leave empty space, while *Gap free* reorders widgets to eliminate gaps at the cost of changing their order.
+
+* **Via UI:** open the widget tab and click **Edit widget tab**. Pick an option in the **Layout algorithm** dropdown of the modal and save. An information block underneath the dropdown summarises the trade-off.
+* **Via auto-deployment:** add the optional `widgetLayout` property (one of the stored values above) to the tab object in the `*.case-widget-tab.json` file. When omitted, the layout falls back to `MUURI_GAP_FREE`.
+
+```json
+[
+  {
+    "key": "personal-info",
+    "widgetLayout": "BEAUTIFUL",
+    "widgets": []
+  }
+]
+```
+
+## Adding widgets
+
 Click **Add widget** to open the create new widget modal that will guide the widget creation in 4 steps.
 
 {% stepper %}

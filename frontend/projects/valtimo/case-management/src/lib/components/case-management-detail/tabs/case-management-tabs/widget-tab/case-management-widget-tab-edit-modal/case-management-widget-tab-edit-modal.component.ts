@@ -33,12 +33,13 @@ import {
   WIDGET_LAYOUT_TRANSLATION_KEYS,
   WIDGET_LAYOUT_VALUES,
   WidgetLayout,
+  WidgetLayoutInfoComponent,
 } from '@valtimo/components';
 import {IWidgetManagementService, WIDGET_MANAGEMENT_SERVICE} from '@valtimo/layout';
 import {CaseManagementParams} from '@valtimo/shared';
 import {TabManagementService, CaseWidgetManagementApiService} from '../../../../../../services';
 import {ApiTabItem, ApiTabType} from '@valtimo/case';
-import {ButtonModule, InputModule, ModalModule} from 'carbon-components-angular';
+import {ButtonModule, InputModule, LayerModule, ModalModule} from 'carbon-components-angular';
 import {BehaviorSubject, Observable, Subscription, switchMap, take} from 'rxjs';
 import {CommonModule} from '@angular/common';
 import {TranslateModule} from '@ngx-translate/core';
@@ -58,7 +59,9 @@ import {TranslateModule} from '@ngx-translate/core';
     ReactiveFormsModule,
     InputModule,
     ButtonModule,
+    LayerModule,
     SelectModule,
+    WidgetLayoutInfoComponent,
   ],
 })
 export class CaseManagementWidgetTabEditModalComponent implements OnInit, OnDestroy {

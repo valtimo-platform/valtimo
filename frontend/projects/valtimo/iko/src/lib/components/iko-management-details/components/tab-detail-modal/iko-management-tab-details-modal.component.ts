@@ -42,6 +42,7 @@ import {
   WIDGET_LAYOUT_TRANSLATION_KEYS,
   WIDGET_LAYOUT_VALUES,
   WidgetLayout,
+  WidgetLayoutInfoComponent,
 } from '@valtimo/components';
 import {ModalCloseEvent, ModalMode} from '@valtimo/shared';
 import {
@@ -81,6 +82,7 @@ import {PropertiesFormComponent} from '../../../iko-management-properties/iko-ma
     NumberModule,
     AutoKeyInputComponent,
     PropertiesFormComponent,
+    WidgetLayoutInfoComponent,
   ],
 })
 export class IkoManagementTabDetailsModalComponent {
