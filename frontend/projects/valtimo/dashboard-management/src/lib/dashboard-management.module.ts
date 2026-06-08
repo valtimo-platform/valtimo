@@ -25,6 +25,7 @@ import {
   SelectModule,
   SpinnerModule,
   ValtimoCdsModalDirective,
+  WidgetLayoutInfoComponent,
 } from '@valtimo/components';
 import {
   ButtonModule,
@@ -71,6 +72,7 @@ import {WidgetConfigurationContainerComponent} from './components/widget-configu
     ValtimoCdsModalDirective,
     JsonEditorComponent,
     SelectModule,
+    WidgetLayoutInfoComponent,
   ],
   exports: [],
 })
