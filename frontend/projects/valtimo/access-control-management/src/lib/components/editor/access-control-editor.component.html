@@ -14,20 +14,35 @@
   ~ limitations under the License.
   -->
 
-@if ({model: model$ | async, schema: schema$ | async}; as obs) {
-  @if (obs.model && obs.schema) {
-    <valtimo-editor
-      [disabled]="editorDisabled$ | async"
-      [model]="obs.model"
-      [jsonSchema]="obs.schema"
-      (validEvent)="onValid($event)"
-      (valueChangeEvent)="onValueChange($event)"
-      [fitPage]="true"
-    ></valtimo-editor>
-  } @else {
-    <ng-container *ngTemplateOutlet="loading"></ng-container>
-  }
-}
+<ng-container *ngIf="model$ | async as model; else loading">
+  <cds-tabs type="contained">
+    <cds-tab
+      [active]="$activeTab() === AccessControlEditorTab.SUMMARY"
+      [heading]="'accessControl.roles.tabs.summary' | translate"
+      (selected)="setActiveTab(AccessControlEditorTab.SUMMARY)"
+    >
+      <valtimo-access-control-overview-tab
+        *ngIf="$activeTab() === AccessControlEditorTab.SUMMARY"
+        [permissions]="permissions$ | async"
+        [roleKey]="roleKey$ | async"
+      ></valtimo-access-control-overview-tab>
+    </cds-tab>
+
+    <cds-tab
+      [active]="$activeTab() === AccessControlEditorTab.JSON_EDITOR"
+      [heading]="'accessControl.roles.tabs.jsonEditor' | translate"
+      (selected)="setActiveTab(AccessControlEditorTab.JSON_EDITOR)"
+    >
+      <valtimo-access-control-json-editor-tab
+        *ngIf="$activeTab() === AccessControlEditorTab.JSON_EDITOR"
+        [disabled]="editorDisabled$ | async"
+        [model]="model"
+        (validEvent)="onValid($event)"
+        (valueChangeEvent)="onValueChange($event)"
+      ></valtimo-access-control-json-editor-tab>
+    </cds-tab>
+  </cds-tabs>
+</ng-container>
 
 <ng-container renderInPageHeader>
   <ng-template>

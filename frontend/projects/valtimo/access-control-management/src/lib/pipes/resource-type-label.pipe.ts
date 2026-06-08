@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,7 +14,19 @@
  * limitations under the License.
  */
 
-export * from './access-control-editor-tab.model';
-export * from './permission.model';
-export * from './permission-schema.model';
-export * from './role.model';
+import {Pipe, PipeTransform} from '@angular/core';
+import {TranslateService} from '@ngx-translate/core';
+import {formatResourceType} from '../utils';
+
+@Pipe({
+  standalone: true,
+  name: 'resourceTypeLabel',
+})
+export class ResourceTypeLabelPipe implements PipeTransform {
+  constructor(private readonly translateService: TranslateService) {}
+
+  public transform(fqn: string | null | undefined): string {
+    if (!fqn) return '';
+    return formatResourceType(this.translateService, fqn);
+  }
+}
