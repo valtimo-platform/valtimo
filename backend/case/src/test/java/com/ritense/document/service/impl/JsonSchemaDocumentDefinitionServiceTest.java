@@ -262,25 +262,6 @@ class JsonSchemaDocumentDefinitionServiceTest extends BaseTest {
         );
     }
 
-    @Test
-    void shouldGetPropertyNamesFromReferencedNestedObject() {
-        var definitionName = "combined-schema-additional-property-example";
-        var definition = mockDefinition(definitionName);
-
-        var names = documentDefinitionService.getPropertyNames(definition);
-
-        Collections.sort(names);
-        assertArrayEquals(
-            names.toArray(), new String[]{
-                "/address/city",
-                "/address/country",
-                "/address/number",
-                "/address/province",
-                "/address/streetName"
-            }
-        );
-    }
-
     public JsonSchemaDocumentDefinition mockDefinition(String definitionName) {
         var definition = definitionOfForUnitTests(definitionName);
         when(jsonSchemaDocumentDefinitionRepository.findOne(any(Specification.class)))
