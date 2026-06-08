@@ -1,0 +1,107 @@
+/*!
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
+ *
+ * Licensed under EUPL, Version 1.2 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" basis,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+.ac {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+  padding: 1rem;
+
+  &__group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  &__heading {
+    border-bottom: 1px solid var(--cds-border-subtle, #c6c6c6);
+    margin: 0 0 0.5rem;
+    padding-bottom: 0.25rem;
+  }
+
+  &__heading-link {
+    color: inherit;
+    text-decoration: none;
+
+    &:hover,
+    &:focus-visible {
+      text-decoration: underline;
+    }
+  }
+
+  &__action-link {
+    color: inherit;
+    text-decoration: none;
+
+    &:hover,
+    &:focus-visible {
+      text-decoration: underline;
+    }
+  }
+
+  &__fqn {
+    color: var(--cds-text-secondary, #525252);
+    font-family: var(--cds-code-01-font-family, monospace);
+    font-size: 0.875rem;
+    font-weight: 400;
+    margin-left: 0.5rem;
+  }
+
+  &__action {
+    line-height: 1.6;
+  }
+
+  &__action-name {
+    font-weight: 600;
+  }
+
+  &__resource-type {
+    font-weight: 600;
+  }
+
+  &__operator {
+    font-style: italic;
+  }
+
+  &__connective {
+    color: var(--cds-text-secondary, #525252);
+    font-style: italic;
+  }
+
+  &__no-access {
+    color: var(--cds-text-error, #da1e28);
+    font-style: italic;
+  }
+
+  &__grant {
+    padding-left: 1.5rem;
+  }
+
+  &__or {
+    padding-left: 1.5rem;
+  }
+
+  &__conditions {
+    padding-left: 1.5rem;
+  }
+
+  &__path {
+    background-color: var(--cds-layer-accent, #e0e0e0);
+    border-radius: 2px;
+    font-family: var(--cds-code-01-font-family, monospace);
+    padding: 0 0.25rem;
+  }
+}
