@@ -141,6 +141,10 @@ dependencies {
     testImplementation "org.junit.jupiter:junit-jupiter-engine"
     testImplementation "org.apache.groovy:groovy-all:${groovyVersion}"
 
+    // BouncyCastle for X.509 certificate generation in vulnerability tests
+    testImplementation "org.bouncycastle:bcprov-jdk18on:1.84"
+    testImplementation "org.bouncycastle:bcpkix-jdk18on:1.84"
+
     configurations.all {
         exclude group: 'org.graalvm.truffle', module: 'truffle-enterprise'
     }
