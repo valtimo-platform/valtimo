@@ -51,6 +51,10 @@ export class ExternalPluginService {
     return this._http.post<ExternalPluginHost>(`${this._baseUrl}/host`, request);
   }
 
+  public deleteHost(hostId: string): Observable<void> {
+    return this._http.delete<void>(`${this._baseUrl}/host/${hostId}`);
+  }
+
   public getDefinitions(): Observable<Array<ExternalPluginDefinition>> {
     return this._http.get<Array<ExternalPluginDefinition>>(`${this._baseUrl}/definition`);
   }

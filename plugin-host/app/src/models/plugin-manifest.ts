@@ -56,6 +56,11 @@ export interface PluginManifest {
       required?: boolean;
     }>;
   }>;
+  /**
+   * CloudEvent `type` values this plugin subscribes to. The host routes matching events consumed
+   * from RabbitMQ to the plugin's `handle_event` export.
+   */
+  eventSubscriptions?: string[];
 }
 
 export type { FrontendBundle, ManagementEndpoint };

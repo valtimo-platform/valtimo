@@ -24,6 +24,7 @@ import com.ritense.valtimo.contract.endpoint.EndpointDescriptor
 class FormFlowEndpointDescriptionProvider : EndpointDescriptionProvider {
 
     override fun getEndpointDescriptors(): List<EndpointDescriptor> = listOf(
+        endpoint("GET", "/api/management/v1/form-flow-definition/schema", "Get form flow definition schema", "Form-flow-definitieschema ophalen"),
         endpoint("GET", "/api/management/v1/case-definition/{caseDefinitionKey}/version/{versionTag}/form-flow-definition/process-link-option", "Get form flow process link options", "Form-flow-proceskoppelingsopties ophalen"),
         endpoint("GET", "/api/management/v1/case-definition/{caseDefinitionKey}/version/{versionTag}/form-flow-definition", "List form flow definitions", "Form-flow-definities ophalen"),
         endpoint("GET", "/api/management/v1/case-definition/{caseDefinitionKey}/version/{versionTag}/form-flow-definition/{definitionKey}", "Get form flow definition", "Form-flow-definitie ophalen"),

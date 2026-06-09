@@ -14,6 +14,21 @@
  * limitations under the License.
  */
 
+/**
+ * Connection details for the event broker of the GZAC instance that owns a configuration. Pushed by
+ * GZAC alongside the configuration — the host never configures a broker itself, because a single
+ * host serves multiple GZAC instances, each with its own broker. The host opens one consumer per
+ * distinct broker and routes its events only to configurations that carry the matching broker.
+ */
+export interface EventBrokerConfig {
+  /** AMQP URL the host should connect to, e.g. `amqp://guest:guest@rabbitmq:5672`. */
+  amqpUrl: string;
+  /** Exchange the GZAC instance's outbox publishes to (typically `valtimo-events`). */
+  exchange: string;
+  /** Exchange type — must match the GZAC instance's declaration. */
+  exchangeType: "fanout" | "topic" | "direct";
+}
+
 export interface PluginConfiguration {
   configurationId: string;
   pluginId: string;
@@ -29,4 +44,9 @@ export interface PluginConfiguration {
    * plugin requests in `gzac_api` to this URL.
    */
   gzacBaseUrl: string;
+  /**
+   * Event broker of the owning GZAC instance. Absent when the instance has no broker configured —
+   * the configuration then receives no platform events (actions still work).
+   */
+  eventBroker?: EventBrokerConfig;
 }

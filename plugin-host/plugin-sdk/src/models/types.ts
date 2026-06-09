@@ -33,6 +33,33 @@ export interface ActionOutput {
 
 export type ActionHandler = (input: ActionInput) => ActionOutput | Promise<ActionOutput>;
 
+/**
+ * A platform event delivered to a plugin. Mirrors the CloudEvent the core app publishes to
+ * RabbitMQ: the envelope fields (`type`, `id`, `source`, `time`) plus the flattened `data`
+ * payload (`userId`, `roles`, `resultType`, `resultId`, `result`). `configuration` carries the
+ * plugin configuration's properties, exactly like {@link ActionInput.configuration}.
+ */
+export interface EventInput {
+  type: string;
+  id: string;
+  source: string;
+  time?: string;
+  userId?: string;
+  roles?: string[];
+  resultType?: string;
+  resultId?: string;
+  result?: unknown;
+  configuration: Record<string, unknown>;
+}
+
+export interface EventOutput {
+  status: "completed" | "ignored" | "error";
+  errorCode?: string;
+  errorMessage?: string;
+}
+
+export type EventHandler = (event: EventInput) => EventOutput | void | Promise<EventOutput | void>;
+
 export interface ManifestAction {
   key: string;
   title: string;
@@ -59,6 +86,11 @@ export interface PluginManifest {
   };
   configurationSchema?: Record<string, unknown>;
   actions: ManifestAction[];
+  /**
+   * CloudEvent `type` values this plugin subscribes to. The host routes matching events from
+   * RabbitMQ to the plugin's `handle_event` export.
+   */
+  eventSubscriptions?: string[];
 }
 
 /**

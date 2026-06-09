@@ -69,6 +69,7 @@ class ExternalPluginServiceTaskStartListener(
         val configuration = configurationService.get(processLink.externalPluginConfigurationId)
         val definition = definitionService.get(configuration.definitionId)
         val host = hostService.get(definition.hostId)
+        val hostSecret = hostService.decryptedSecret(host)
 
         val resolvedProperties = resolveActionProperties(execution, processLink)
         val payload = buildPayload(execution, processLink, configuration, resolvedProperties)
@@ -79,6 +80,7 @@ class ExternalPluginServiceTaskStartListener(
             version = processLink.pluginVersion,
             actionKey = processLink.actionKey,
             payload = payload,
+            hostSecret = hostSecret,
         )
 
         when {

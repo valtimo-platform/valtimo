@@ -24,6 +24,7 @@ import { hostManagementRoutes } from "./routes/host-management.js";
 import { hostConfigurationRoutes } from "./routes/host-configurations.js";
 import { pluginActionRoutes } from "./routes/plugin-actions.js";
 import { pluginBundleRoutes } from "./routes/plugin-bundles.js";
+import { EventConsumerManager } from "./rabbitmq/event-consumer.js";
 
 async function main(): Promise<void> {
   const config = loadConfig();
@@ -48,6 +49,15 @@ async function main(): Promise<void> {
   );
   const configRegistry = new ConfigRegistry();
 
+  // Brokers are learned from the configurations GZAC pushes; the manager opens/closes consumers as
+  // configurations come and go (see hostConfigurationRoutes).
+  const eventConsumerManager = new EventConsumerManager(
+    pluginManager,
+    configRegistry,
+    config.HOST_ID,
+    fastify.log
+  );
+
   // Load existing plugins from disk
   await pluginManager.loadAllFromDisk();
 
@@ -61,6 +71,7 @@ async function main(): Promise<void> {
     configRegistry,
     pluginManager,
     config,
+    eventConsumerManager,
   });
   await fastify.register(pluginActionRoutes, {
     pluginManager,

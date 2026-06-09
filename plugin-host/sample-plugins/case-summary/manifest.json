@@ -21,7 +21,8 @@
   },
   "permissions": {
     "managementEndpoints": [
-      { "method": "GET", "pattern": "/api/v1/document/*" }
+      { "method": "GET", "pattern": "/api/v1/document/*" },
+      { "method": "POST", "pattern": "/api/v1/document/*/note" }
     ]
   },
   "frontendBundles": [
@@ -49,5 +50,10 @@
         { "key": "definitionKeyVariable", "type": "string", "required": false }
       ]
     }
+  ],
+  "eventSubscriptions": [
+    "com.ritense.valtimo.document.created",
+    "com.ritense.valtimo.task.completed",
+    "com.ritense.valtimo.document.viewed"
   ]
 }

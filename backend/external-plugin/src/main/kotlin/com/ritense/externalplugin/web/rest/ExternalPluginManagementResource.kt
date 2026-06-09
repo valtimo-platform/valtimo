@@ -72,6 +72,13 @@ class ExternalPluginManagementResource(
     }
 
     @RunWithoutAuthorization
+    @DeleteMapping("/host/{hostId}")
+    fun deleteHost(@PathVariable hostId: UUID): ResponseEntity<Void> {
+        hostService.delete(hostId)
+        return ResponseEntity.noContent().build()
+    }
+
+    @RunWithoutAuthorization
     @PostMapping("/host/{hostId}/upload", consumes = ["multipart/form-data"])
     fun uploadPlugin(
         @PathVariable hostId: UUID,

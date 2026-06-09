@@ -24,9 +24,16 @@
  */
 
 import { getActionHandler } from "./actions.js";
+import { getEventHandlers } from "./events.js";
 import { setCurrentConfig } from "./config.js";
 import { log } from "./host-functions.js";
-import type { ActionInput, ActionOutput, PluginManifest } from "./models/index.js";
+import type {
+  ActionInput,
+  ActionOutput,
+  EventInput,
+  EventOutput,
+  PluginManifest,
+} from "./models/index.js";
 
 let pluginManifest: PluginManifest | null = null;
 
@@ -105,6 +112,79 @@ export function handleAction(inputJson: string): string {
 }
 
 /**
+ * Called by the Plugin Host for event delivery.
+ * Input: JSON string with EventInput shape.
+ * Output: JSON string with EventOutput shape.
+ *
+ * Every registered event handler is invoked; the last handler that returns an EventOutput
+ * determines the reported status. With no handlers registered the event is reported as ignored.
+ */
+export function handleEvent(inputJson: string): string {
+  try {
+    const event: EventInput = JSON.parse(inputJson);
+
+    setCurrentConfig(event.configuration || {});
+
+    const handlers = getEventHandlers();
+    if (handlers.length === 0) {
+      return JSON.stringify({ status: "ignored" } satisfies EventOutput);
+    }
+
+    let output: EventOutput = { status: "completed" };
+    for (const handler of handlers) {
+      const result = settleSync(handler(event));
+      if (result && typeof result === "object" && "status" in result) {
+        output = result as EventOutput;
+      }
+    }
+    return JSON.stringify(output);
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : String(err);
+    log.error(`Event handling failed: ${message}`);
+    return JSON.stringify({
+      status: "error",
+      errorCode: "EXECUTION_ERROR",
+      errorMessage: message,
+    } satisfies EventOutput);
+  }
+}
+
+/**
+ * Settles a possibly-async handler result synchronously. Under QuickJS-ng (Extism JS PDK) there is
+ * no event loop, so a promise settles as the job queue drains. Surfaces a rejection as an error and
+ * never returns a still-pending Promise.
+ */
+function settleSync<T>(result: T | Promise<T>): T {
+  if (result && typeof (result as { then?: unknown }).then === "function") {
+    let settled = false;
+    let rejected = false;
+    let resolved: T | undefined;
+    let rejection: unknown;
+    (result as Promise<T>).then(
+      (r) => {
+        settled = true;
+        resolved = r;
+      },
+      (e) => {
+        settled = true;
+        rejected = true;
+        rejection = e;
+      }
+    );
+    if (!settled) {
+      throw new Error(
+        "Async handler did not settle synchronously; the QuickJS runtime has no event loop"
+      );
+    }
+    if (rejected) {
+      throw rejection instanceof Error ? rejection : new Error(String(rejection));
+    }
+    return resolved as T;
+  }
+  return result as T;
+}
+
+/**
  * Called by the Plugin Host to retrieve the plugin manifest.
  */
 export function handleGetManifest(): string {
@@ -116,8 +196,8 @@ export function handleGetManifest(): string {
 
 // ---- Extism Wasm entrypoint ----
 // Bridges the Extism Host I/O globals to the SDK dispatch logic.
-// Plugin authors export this via module.exports — no need to touch
-// Host.inputString / Host.outputString directly.
+// The build tool (valtimo-plugin-build) re-exports this from a generated entry, so authors
+// never reference Host.inputString / Host.outputString or write `module.exports` themselves.
 
 declare const Host: {
   inputString(): string;
@@ -128,15 +208,41 @@ declare const Host: {
  * Extism-exported function that reads input from the host, dispatches
  * to the registered action handler, and writes the output back.
  *
- * Plugin usage:
- *   import { action, handle_action } from "@valtimo/plugin-sdk";
+ * Plugin usage — register handlers at module load; the build wires up the export:
+ *   import { action } from "@valtimo/plugin-sdk";
  *   action("my-action", (input) => { ... });
- *   module.exports = { handle_action };
  */
 export function handle_action(): number {
   try {
     const inputJson = Host.inputString();
     const outputJson = handleAction(inputJson);
+    Host.outputString(outputJson);
+    return 0;
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : String(err);
+    Host.outputString(
+      JSON.stringify({
+        status: "error",
+        errorCode: "EXECUTION_ERROR",
+        errorMessage: message,
+      })
+    );
+    return 1;
+  }
+}
+
+/**
+ * Extism-exported function that reads a platform event from the host, dispatches it to the
+ * registered event handlers, and writes the output back.
+ *
+ * Plugin usage — register handlers at module load; the build wires up the export:
+ *   import { onEvent } from "@valtimo/plugin-sdk";
+ *   onEvent((event) => { ... });
+ */
+export function handle_event(): number {
+  try {
+    const inputJson = Host.inputString();
+    const outputJson = handleEvent(inputJson);
     Host.outputString(outputJson);
     return 0;
   } catch (err: unknown) {

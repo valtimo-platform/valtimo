@@ -1917,6 +1917,16 @@
       "noEndpoints": "Deze plugin heeft geen beheer-endpoint-rechten nodig.",
       "accept": "Ik begrijp de gevolgen van het accepteren van deze rechten",
       "acceptedNote": "Deze rechten zijn geaccepteerd bij het activeren van de configuratie en kunnen hier niet worden gewijzigd."
+    },
+    "reloadModal": {
+      "title": "Herladen vereist",
+      "description": "De plugin-host is succesvol toegevoegd. Om plugins van deze host te configureren, moet de pagina opnieuw worden geladen zodat beveiligingsbeleid kan worden bijgewerkt.",
+      "reload": "Nu herladen",
+      "later": "Later"
+    },
+    "deleteHostModal": {
+      "title": "Plugin-host verwijderen",
+      "description": "Weet je zeker dat je deze plugin-host wilt verwijderen? Alle plugin-definities en configuraties van deze host worden ook verwijderd. Deze actie kan niet ongedaan worden gemaakt."
     }
   },
   "customerCases": {

@@ -20,6 +20,9 @@ import com.fasterxml.jackson.databind.JsonNode
 import com.ritense.externalplugin.client.ExternalPluginHostClient
 import com.ritense.externalplugin.domain.ExternalPluginHost
 import com.ritense.externalplugin.domain.ExternalPluginHostStatus
+import com.ritense.externalplugin.repository.ExternalPluginConfigurationRepository
+import com.ritense.externalplugin.repository.ExternalPluginDefinitionRepository
+import com.ritense.externalplugin.repository.ExternalPluginGrantedEndpointRepository
 import com.ritense.externalplugin.repository.ExternalPluginHostRepository
 import com.ritense.plugin.service.EncryptionService
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
@@ -32,6 +35,9 @@ import java.util.UUID
 @Transactional
 class ExternalPluginHostService(
     private val hostRepository: ExternalPluginHostRepository,
+    private val definitionRepository: ExternalPluginDefinitionRepository,
+    private val configurationRepository: ExternalPluginConfigurationRepository,
+    private val grantedEndpointRepository: ExternalPluginGrantedEndpointRepository,
     private val encryptionService: EncryptionService,
     private val hostClient: ExternalPluginHostClient,
 ) {
@@ -52,6 +58,19 @@ class ExternalPluginHostService(
             status = ExternalPluginHostStatus.UNREACHABLE,
         )
         return hostRepository.save(host)
+    }
+
+    fun delete(hostId: UUID) {
+        val definitions = definitionRepository.findAllByHostId(hostId)
+        for (definition in definitions) {
+            val configurations = configurationRepository.findAllByDefinitionId(definition.id)
+            for (configuration in configurations) {
+                grantedEndpointRepository.deleteAllByConfigurationId(configuration.id)
+            }
+            configurationRepository.deleteAll(configurations)
+        }
+        definitionRepository.deleteAll(definitions)
+        hostRepository.deleteById(hostId)
     }
 
     fun uploadPlugin(hostId: UUID, fileName: String, fileBytes: ByteArray): JsonNode {

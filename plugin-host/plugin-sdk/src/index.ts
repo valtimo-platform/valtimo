@@ -16,17 +16,21 @@
 
 // Public API — what plugin developers import
 export { action } from "./actions.js";
+export { onEvent } from "./events.js";
 export { config } from "./config.js";
 export { log } from "./host-functions.js";
 export { gzacApi } from "./gzac-api.js";
 export { setManifest } from "./runtime.js";
-export { handleAction, handleGetManifest, handle_action } from "./runtime.js";
+export { handleAction, handleEvent, handleGetManifest, handle_action, handle_event } from "./runtime.js";
 
 // Types
 export type {
   ActionInput,
   ActionOutput,
   ActionHandler,
+  EventInput,
+  EventOutput,
+  EventHandler,
   PluginManifest,
   ManifestAction,
   ManifestActionProperty,

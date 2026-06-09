@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+import { hostname } from "node:os";
 import { z } from "zod";
 
 export const envSchema = z.object({
@@ -21,6 +22,14 @@ export const envSchema = z.object({
   ADMIN_TOKEN: z.string().min(1),
   PLUGIN_STORAGE_DIR: z.string().default("./plugins"),
   LOG_LEVEL: z.enum(["debug", "info", "warn", "error"]).default("info"),
+  // Event delivery is not configured on the host: each GZAC instance pushes its own broker
+  // (amqpUrl/exchange) alongside every configuration, and the host opens one consumer per broker.
+  //
+  // Identity of this logical host. Used to name the per-host event queue so that, on a fanout
+  // exchange, every distinct host bound to the same GZAC instance receives its own copy of each
+  // event. Replicas of the SAME host must share one HOST_ID so they load-balance (process each
+  // event once) instead of each handling it. Defaults to the OS hostname.
+  HOST_ID: z.string().min(1).default(() => hostname()),
 });
 
 export type AppConfig = z.infer<typeof envSchema>;

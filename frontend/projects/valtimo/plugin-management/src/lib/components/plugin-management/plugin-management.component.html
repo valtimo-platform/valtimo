@@ -15,7 +15,11 @@
   -->
 
 <cds-tabs>
-  <cds-tab [heading]="'pluginManagement.tabs.configurations' | translate">
+  <cds-tab
+    [heading]="'pluginManagement.tabs.configurations' | translate"
+    [active]="(selectedTabIndex$ | async) === 0"
+    (selected)="onTabSelected(0)"
+  >
     <ng-container
       *ngIf="{
         pluginConfigurations: pluginConfigurations$ | async,
@@ -85,7 +89,11 @@
     </ng-container>
   </cds-tab>
 
-  <cds-tab [heading]="'pluginManagement.tabs.pluginHosts' | translate">
+  <cds-tab
+    [heading]="'pluginManagement.tabs.pluginHosts' | translate"
+    [active]="(selectedTabIndex$ | async) === 1"
+    (selected)="onTabSelected(1)"
+  >
     <ng-container
       *ngIf="{
         hosts: hosts$ | async,
@@ -96,6 +104,7 @@
         [loading]="hostsLoading$ | async"
         [items]="hostObs.hosts"
         [fields]="hostFields"
+        [actionItems]="hostActionItems"
         [header]="false"
       >
         <ng-container carbonToolbarContent>
@@ -162,3 +171,24 @@
   (closeEvent)="closeUploadModal()"
   (uploadedEvent)="onPluginUploaded()"
 ></valtimo-plugin-upload-modal>
+
+<valtimo-confirmation-modal
+  [showModalSubject$]="reloadModalOpen$"
+  [titleTranslationKey]="'pluginManagement.reloadModal.title'"
+  [contentTranslationKey]="'pluginManagement.reloadModal.description'"
+  [confirmButtonTextTranslationKey]="'pluginManagement.reloadModal.reload'"
+  [cancelButtonTextTranslationKey]="'pluginManagement.reloadModal.later'"
+  (confirmEvent)="confirmReload()"
+  (cancelEvent)="cancelReload()"
+></valtimo-confirmation-modal>
+
+<valtimo-confirmation-modal
+  [showModalSubject$]="deleteHostModalOpen$"
+  [titleTranslationKey]="'pluginManagement.deleteHostModal.title'"
+  [contentTranslationKey]="'pluginManagement.deleteHostModal.description'"
+  [confirmButtonTextTranslationKey]="'interface.delete'"
+  [confirmButtonType]="'danger'"
+  [cancelButtonTextTranslationKey]="'interface.cancel'"
+  (confirmEvent)="confirmDeleteHost()"
+  (cancelEvent)="cancelDeleteHost()"
+></valtimo-confirmation-modal>

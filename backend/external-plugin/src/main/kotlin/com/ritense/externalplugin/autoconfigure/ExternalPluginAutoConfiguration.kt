@@ -82,9 +82,19 @@ class ExternalPluginAutoConfiguration {
     @ConditionalOnMissingBean(ExternalPluginHostService::class)
     fun externalPluginHostService(
         hostRepository: ExternalPluginHostRepository,
+        definitionRepository: ExternalPluginDefinitionRepository,
+        configurationRepository: ExternalPluginConfigurationRepository,
+        grantedEndpointRepository: ExternalPluginGrantedEndpointRepository,
         encryptionService: EncryptionService,
         hostClient: ExternalPluginHostClient,
-    ) = ExternalPluginHostService(hostRepository, encryptionService, hostClient)
+    ) = ExternalPluginHostService(
+        hostRepository,
+        definitionRepository,
+        configurationRepository,
+        grantedEndpointRepository,
+        encryptionService,
+        hostClient,
+    )
 
     @Bean
     @ConditionalOnMissingBean(ExternalPluginDefinitionService::class)
@@ -141,6 +151,9 @@ class ExternalPluginAutoConfiguration {
         objectMapper: ObjectMapper,
         serviceTokenService: ExternalPluginServiceTokenService,
         @Value("\${valtimo.external-plugin.gzac-base-url}") gzacBaseUrl: String,
+        @Value("\${valtimo.external-plugin.event-broker.amqp-url:}") eventBrokerUrl: String,
+        @Value("\${valtimo.external-plugin.event-broker.exchange:valtimo-events}") eventBrokerExchange: String,
+        @Value("\${valtimo.external-plugin.event-broker.exchange-type:fanout}") eventBrokerExchangeType: String,
     ) = ExternalPluginConfigurationService(
         configurationRepository,
         definitionRepository,
@@ -152,6 +165,9 @@ class ExternalPluginAutoConfiguration {
         objectMapper,
         serviceTokenService,
         gzacBaseUrl,
+        eventBrokerUrl,
+        eventBrokerExchange,
+        eventBrokerExchangeType,
     )
 
     @Bean

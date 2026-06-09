@@ -13,7 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import {Component, OnDestroy} from '@angular/core';
+import {Component, OnDestroy, OnInit} from '@angular/core';
+import {ActivatedRoute, Router} from '@angular/router';
 import {TranslateService} from '@ngx-translate/core';
 import {ActionItem, CarbonTag, ColumnConfig, ViewType} from '@valtimo/components';
 import {
@@ -40,8 +41,11 @@ import {v4 as uuidv4} from 'uuid';
   templateUrl: './plugin-management.component.html',
   styleUrls: ['./plugin-management.component.scss'],
 })
-export class PluginManagementComponent implements OnDestroy {
+export class PluginManagementComponent implements OnInit, OnDestroy {
   private readonly _destroy$ = new Subject<void>();
+
+  public readonly selectedTabIndex$ = new BehaviorSubject<number>(0);
+  private readonly _tabs = ['configurations', 'plugin-hosts'] as const;
   // --- Configurations tab ---
   public readonly fields: ColumnConfig[] = [
     {
@@ -164,6 +168,14 @@ export class PluginManagementComponent implements OnDestroy {
     },
   ];
 
+  public readonly hostActionItems: ActionItem[] = [
+    {
+      callback: this.deleteHost.bind(this),
+      label: 'interface.delete',
+      type: 'danger',
+    },
+  ];
+
   // --- External plugin edit modal ---
   public readonly showExternalEditModal$ = new BehaviorSubject<boolean>(false);
   public readonly selectedExternalConfiguration$ =
@@ -173,6 +185,9 @@ export class PluginManagementComponent implements OnDestroy {
   public readonly hostsLoading$ = new BehaviorSubject<boolean>(true);
   public readonly hostsRefreshing$ = new BehaviorSubject<boolean>(false);
   public readonly hostModalOpen$ = new BehaviorSubject<boolean>(false);
+  public readonly reloadModalOpen$ = new BehaviorSubject<boolean>(false);
+  public readonly deleteHostModalOpen$ = new BehaviorSubject<boolean>(false);
+  public hostToDelete: ExternalPluginHost | null = null;
 
   private readonly _refreshHosts$ = new Subject<void>();
   private _hostsInitialLoad = true;
@@ -248,12 +263,35 @@ export class PluginManagementComponent implements OnDestroy {
     private readonly _pluginTranslationService: PluginTranslationService,
     private readonly _stateService: PluginManagementStateService,
     private readonly _translateService: TranslateService,
-    private readonly _externalPluginService: ExternalPluginService
+    private readonly _externalPluginService: ExternalPluginService,
+    private readonly _route: ActivatedRoute,
+    private readonly _router: Router
   ) {}
+
+  public ngOnInit(): void {
+    this._route.queryParams.pipe(takeUntil(this._destroy$)).subscribe(params => {
+      const tab = params['tab'];
+      const tabIndex = this._tabs.indexOf(tab);
+      if (tabIndex >= 0) {
+        this.selectedTabIndex$.next(tabIndex);
+      }
+    });
+  }
 
   public ngOnDestroy(): void {
     this._destroy$.next();
     this._destroy$.complete();
+  }
+
+  // --- Tab navigation ---
+
+  public onTabSelected(tabIndex: number): void {
+    this.selectedTabIndex$.next(tabIndex);
+    this._router.navigate([], {
+      relativeTo: this._route,
+      queryParams: {tab: this._tabs[tabIndex]},
+      queryParamsHandling: 'merge',
+    });
   }
 
   // --- Configurations tab methods ---
@@ -390,13 +428,45 @@ export class PluginManagementComponent implements OnDestroy {
     this._externalPluginService.createHost(request).subscribe({
       next: () => {
         this.hostModalOpen$.next(false);
-        this.hostsLoading$.next(true);
-        this._refreshHosts$.next();
+        this.reloadModalOpen$.next(true);
       },
       error: () => {
         this._logger.error('Something went wrong with creating the plugin host.');
       },
     });
+  }
+
+  public deleteHost(host: ExternalPluginHost): void {
+    this.hostToDelete = host;
+    this.deleteHostModalOpen$.next(true);
+  }
+
+  public confirmDeleteHost(): void {
+    if (!this.hostToDelete) return;
+    this._externalPluginService.deleteHost(this.hostToDelete.id).pipe(take(1)).subscribe({
+      next: () => {
+        this.hostToDelete = null;
+        this.hostsLoading$.next(true);
+        this._refreshHosts$.next();
+        this._stateService.refresh();
+      },
+      error: () => {
+        this._logger.error('Something went wrong with deleting the plugin host.');
+      },
+    });
+  }
+
+  public cancelDeleteHost(): void {
+    this.hostToDelete = null;
+  }
+
+  public confirmReload(): void {
+    window.location.reload();
+  }
+
+  public cancelReload(): void {
+    this.hostsLoading$.next(true);
+    this._refreshHosts$.next();
   }
 
   private _getStatusTag(status: 'CONNECTED' | 'UNREACHABLE'): CarbonTag {
