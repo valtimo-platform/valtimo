@@ -1,0 +1,13 @@
+{
+    "$id": "upload-and-link-document.schema",
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "Upload document naar documenten API en koppelen aan een zaak",
+    "type": "object",
+    "properties": {
+        "temporaryDocumentId": {
+            "type": "string",
+            "description": "Id of temporary stored document"
+        }
+    },
+    "required": ["temporaryDocumentId"]
+}
