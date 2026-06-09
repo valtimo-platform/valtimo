@@ -12,4 +12,9 @@
 
   A new overview tab presents the permissions in a human-readable manner.
 
+* **Metroline widget available for IKO widget tabs**
+
+  The metroline widget can now be added to IKO widget tabs, allowing case progress to be visualised alongside other
+  case information shown to customers.
+
 ## Bugfixes

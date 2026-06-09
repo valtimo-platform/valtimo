@@ -14,10 +14,12 @@
  * limitations under the License.
  */
 
-export * from './widget-custom';
-export * from './widget-table';
-export * from './widget-collection';
-export * from './widget-formio';
-export * from './widget-field';
-export * from './widget-map';
-export * from './widget-metroline';
+package com.ritense.widget.metroline
+
+import java.time.LocalDateTime
+
+data class MetrolineItem(
+    val title: String,
+    val label: String?,
+    val completed: LocalDateTime?,
+)
