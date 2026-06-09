@@ -21,8 +21,10 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import com.ritense.authorization.AuthorizationService
 import com.ritense.authorization.request.AuthorizationResourceContext
 import com.ritense.authorization.request.RelatedEntityAuthorizationRequest
+import com.ritense.buildingblock.repository.BuildingBlockDefinitionRepository
 import com.ritense.buildingblock.repository.CaseDefinitionBuildingBlockLinkRepository
 import com.ritense.buildingblock.repository.ProcessDefinitionBuildingBlockDefinitionRepository
+import org.springframework.data.repository.findByIdOrNull
 import com.ritense.buildingblock.web.rest.dto.CreateCaseDefinitionBuildingBlockLinkDto
 import com.ritense.buildingblock.web.rest.dto.UpdateCaseDefinitionBuildingBlockLinkDto
 import com.ritense.case.service.StartableItemProvider
@@ -43,6 +45,7 @@ import org.springframework.stereotype.Component
 class StartableBuildingBlockItemProvider(
     private val linkRepository: CaseDefinitionBuildingBlockLinkRepository,
     private val processDefinitionBuildingBlockDefinitionRepository: ProcessDefinitionBuildingBlockDefinitionRepository,
+    private val buildingBlockDefinitionRepository: BuildingBlockDefinitionRepository,
     private val authorizationService: AuthorizationService,
     private val caseDefinitionBuildingBlockLinkService: CaseDefinitionBuildingBlockLinkService,
     private val objectMapper: ObjectMapper,
@@ -64,12 +67,14 @@ class StartableBuildingBlockItemProvider(
                 if (!hasExecutionPermission(processDefinitionId, document)) {
                     return@mapNotNull null
                 }
+                val buildingBlock = buildingBlockDefinitionRepository.findByIdOrNull(link.buildingBlockDefinitionId)
                 StartableItemDto(
                     type = StartableItemType.BUILDING_BLOCK,
                     name = mainProcessLink.processDefinitionName ?: link.buildingBlockDefinitionId.key,
                     key = link.buildingBlockDefinitionId.key,
                     versionTag = link.buildingBlockDefinitionId.versionTag.toString(),
-                    processDefinitionId = processDefinitionId
+                    processDefinitionId = processDefinitionId,
+                    draft = buildingBlock?.final != true
                 )
             }
     }
@@ -84,13 +89,15 @@ class StartableBuildingBlockItemProvider(
         )
         val mainProcessLink = processDefinitionBuildingBlockDefinitionRepository
             .findByIdBuildingBlockDefinitionIdAndMain(buildingBlockDefinitionId, true)
+        val buildingBlock = buildingBlockDefinitionRepository.findByIdOrNull(buildingBlockDefinitionId)
 
         return StartableItemDto(
             type = StartableItemType.BUILDING_BLOCK,
             name = mainProcessLink?.processDefinitionName ?: linkDto.buildingBlockDefinitionKey,
             key = linkDto.buildingBlockDefinitionKey,
             versionTag = linkDto.buildingBlockDefinitionVersionTag,
-            processDefinitionId = mainProcessLink?.id?.processDefinitionId?.id
+            processDefinitionId = mainProcessLink?.id?.processDefinitionId?.id,
+            draft = buildingBlock?.final != true
         )
     }
 
@@ -107,13 +114,15 @@ class StartableBuildingBlockItemProvider(
 
         val mainProcessLink = processDefinitionBuildingBlockDefinitionRepository
             .findByIdBuildingBlockDefinitionIdAndMain(buildingBlockDefinitionId, true)
+        val buildingBlock = buildingBlockDefinitionRepository.findByIdOrNull(buildingBlockDefinitionId)
 
         return StartableItemDto(
             type = StartableItemType.BUILDING_BLOCK,
             name = mainProcessLink?.processDefinitionName ?: linkDto.buildingBlockDefinitionKey,
             key = linkDto.buildingBlockDefinitionKey,
             versionTag = linkDto.buildingBlockDefinitionVersionTag,
-            processDefinitionId = mainProcessLink?.id?.processDefinitionId?.id
+            processDefinitionId = mainProcessLink?.id?.processDefinitionId?.id,
+            draft = buildingBlock?.final != true
         )
     }
 

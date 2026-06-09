@@ -29,10 +29,13 @@ import com.ritense.processlink.service.ProcessLinkService
 import com.ritense.processlink.web.rest.dto.CaseProcessDefinitionResponseDto
 import com.ritense.processlink.web.rest.dto.ProcessDefinitionResponseDto
 import com.ritense.processlink.web.rest.dto.ProcessLinkCreateRequestDto
+import com.ritense.processlink.web.rest.dto.ProcessDefinitionValidateRequestDto
+import com.ritense.processlink.web.rest.dto.ProcessDefinitionValidateResponseDto
 import com.ritense.processlink.web.rest.dto.ProcessLinkExportResponseDto
 import com.ritense.processlink.web.rest.dto.ProcessLinkResponseDto
 import com.ritense.processlink.web.rest.dto.ProcessDefinitionConflictResponseDto
 import com.ritense.processlink.web.rest.dto.ProcessLinkUpdateRequestDto
+import com.ritense.processlink.validation.ProcessDefinitionValidator
 import com.ritense.valtimo.operaton.domain.OperatonProcessDefinition
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import com.ritense.valtimo.contract.case_.CaseDefinitionId
@@ -40,6 +43,7 @@ import com.ritense.valtimo.contract.domain.ValtimoMediaType.APPLICATION_JSON_UTF
 import com.ritense.valtimo.service.OperatonProcessService
 import com.ritense.valtimo.web.rest.dto.ProcessDefinitionWithPropertiesDto
 import org.operaton.bpm.engine.RepositoryService
+import org.operaton.bpm.model.bpmn.Bpmn
 import org.operaton.bpm.engine.impl.util.IoUtil
 import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
@@ -69,7 +73,8 @@ class ProcessLinkResource(
     private val operatonProcessService: OperatonProcessService,
     private val processDefinitionCaseDefinitionService: ProcessDefinitionCaseDefinitionService,
     private val repositoryService: RepositoryService,
-    private val processDeploymentService: ProcessDeploymentService
+    private val processDeploymentService: ProcessDeploymentService,
+    private val processDefinitionValidator: ProcessDefinitionValidator
 ) {
 
     @GetMapping("/v1/process-link")
@@ -447,6 +452,25 @@ class ProcessLinkResource(
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build()
     }
 
+
+    @PostMapping(
+        value = ["/management/v1/process-definition/validate"],
+        consumes = [MediaType.APPLICATION_JSON_VALUE],
+        produces = [MediaType.APPLICATION_JSON_VALUE]
+    )
+    fun validateProcessDefinition(
+        @RequestBody request: ProcessDefinitionValidateRequestDto
+    ): ResponseEntity<ProcessDefinitionValidateResponseDto> {
+        val bpmnModel = Bpmn.readModelFromStream(request.bpmnXml.byteInputStream())
+        val result = processDefinitionValidator.validate(bpmnModel, request.processLinks)
+        return ResponseEntity.ok(
+            ProcessDefinitionValidateResponseDto(
+                isValid = result.isValid,
+                hasWarnings = result.hasWarnings,
+                errors = result.errors
+            )
+        )
+    }
 
     private fun getProcessLinkMapper(processLinkType: String): ProcessLinkMapper {
         return processLinkMappers.singleOrNull { it.supportsProcessLinkType(processLinkType) }

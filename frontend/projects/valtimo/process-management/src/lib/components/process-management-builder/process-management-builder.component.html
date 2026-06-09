@@ -50,14 +50,15 @@
             <button
               *ngFor="let error of validationErrors"
               class="validation-errors-list__item"
+              [class.warning]="error.severity === 'WARNING'"
               (click)="onValidationErrorClick(error.elementId)"
             >
-              <span class="validation-errors-list__icon">!</span>
+              <span class="validation-errors-list__icon" [class.warning]="error.severity === 'WARNING'">{{ error.severity === 'WARNING' ? '!' : '!' }}</span>
 
               <span class="validation-errors-list__details">
                 <span class="validation-errors-list__element">{{ error.elementName || error.elementId }}</span>
 
-                <span class="validation-errors-list__reason">{{ error.reason }}</span>
+                <span class="validation-errors-list__reason" [class.warning]="error.severity === 'WARNING'">{{ getValidationErrorMessage(error) }}</span>
               </span>
             </button>
           </div>
@@ -79,6 +80,16 @@
 </div>
 
 <valtimo-process-link-modal></valtimo-process-link-modal>
+
+<valtimo-confirmation-modal
+  [showModalSubject$]="showWarningConfirmationModal$"
+  [titleTranslationKey]="'processManagement.warningConfirmation.title'"
+  [contentTranslationKey]="'processManagement.warningConfirmation.content'"
+  [confirmButtonTextTranslationKey]="'processManagement.warningConfirmation.confirm'"
+  [cancelButtonTextTranslationKey]="'interface.cancel'"
+  (confirmEvent)="onWarningConfirmationConfirm()"
+  (cancelEvent)="onWarningConfirmationCancel()"
+></valtimo-confirmation-modal>
 
 <ng-container renderInPageHeader [fullWidth]="true">
   <ng-template>

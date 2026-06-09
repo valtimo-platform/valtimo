@@ -20,5 +20,6 @@ data class ProcessDefinitionValidationResult(
     val isExecutable: Boolean,
     val errors: List<ProcessDefinitionValidationError>
 ) {
-    val isValid: Boolean get() = errors.isEmpty()
+    val isValid: Boolean get() = errors.none { it.severity == ValidationSeverity.ERROR }
+    val hasWarnings: Boolean get() = errors.any { it.severity == ValidationSeverity.WARNING }
 }

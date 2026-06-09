@@ -42,7 +42,7 @@ import {
   FormCustomComponentConfig,
   ProcessLinkService,
 } from '@valtimo/process-link';
-import {BehaviorSubject, combineLatest, Subscription, switchMap} from 'rxjs';
+import {BehaviorSubject, combineLatest, Observable, Subscription, switchMap} from 'rxjs';
 import {take} from 'rxjs/operators';
 import {FORM_VIEW_MODEL_TOKEN, FormViewModel} from '@valtimo/shared';
 
@@ -85,6 +85,14 @@ export class CaseSupportingProcessStartModalComponent implements OnDestroy {
   private _buildingBlockDefinitionVersionTag: string | null = null;
 
   public readonly closeModalEvent = new EventEmitter();
+  public readonly showDraftConfirmation$ = new BehaviorSubject<boolean>(false);
+
+  private _pendingStartableItem: {
+    item: StartableItem;
+    documentId: string;
+    caseDefinitionKey: string;
+    caseDefinitionVersionTag: string;
+  } | null = null;
 
   private _formViewModelSubscription!: Subscription;
 
@@ -148,6 +156,36 @@ export class CaseSupportingProcessStartModalComponent implements OnDestroy {
   }
 
   public openModalForStartableItem(
+    item: StartableItem,
+    documentId: string,
+    caseDefinitionKey: string,
+    caseDefinitionVersionTag: string
+  ): void {
+    if (item.draft) {
+      this._pendingStartableItem = {item, documentId, caseDefinitionKey, caseDefinitionVersionTag};
+      this.showDraftConfirmation$.next(true);
+      return;
+    }
+
+    this.proceedWithStartableItem(item, documentId, caseDefinitionKey, caseDefinitionVersionTag);
+  }
+
+  public onDraftConfirmationConfirm(): void {
+    this.showDraftConfirmation$.next(false);
+    if (this._pendingStartableItem) {
+      const {item, documentId, caseDefinitionKey, caseDefinitionVersionTag} =
+        this._pendingStartableItem;
+      this._pendingStartableItem = null;
+      this.proceedWithStartableItem(item, documentId, caseDefinitionKey, caseDefinitionVersionTag);
+    }
+  }
+
+  public onDraftConfirmationCancel(): void {
+    this.showDraftConfirmation$.next(false);
+    this._pendingStartableItem = null;
+  }
+
+  private proceedWithStartableItem(
     item: StartableItem,
     documentId: string,
     caseDefinitionKey: string,

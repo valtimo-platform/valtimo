@@ -102,7 +102,6 @@ class ProcessDefinitionCaseDefinitionService(
             processDefinitionCaseDefinitionRepository.findAll(caseDefinitionId, startableByUser, canInitializeDocument)
 
         return definitions
-            .filter { isProcessDefinitionActive(it.id.processDefinitionId.id) }
             .filter {
                 authorizationService.hasPermission(
                     RelatedEntityAuthorizationRequest<OperatonExecution>(
@@ -131,7 +130,6 @@ class ProcessDefinitionCaseDefinitionService(
         )
 
         return definitions
-            .filter { isProcessDefinitionActive(it.id.processDefinitionId.id) }
             .filter {
                 authorizationService.hasPermission(
                     RelatedEntityAuthorizationRequest<OperatonExecution>(
@@ -147,13 +145,6 @@ class ProcessDefinitionCaseDefinitionService(
                     )
                 )
             }
-    }
-
-    private fun isProcessDefinitionActive(processDefinitionId: String): Boolean {
-        val definition = runWithoutAuthorization {
-            repositoryService.findProcessDefinitionById(processDefinitionId)
-        }
-        return definition != null && !definition.isSuspended()
     }
 
     fun deleteProcessDefinitionCaseDefinition(

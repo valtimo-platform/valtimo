@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2026 Ritense BV, the Netherlands.
+ * Copyright 2015-2025 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,18 +14,15 @@
  * limitations under the License.
  */
 
-package com.ritense.case.web.rest.dto
+package com.ritense.processlink.validation
 
-enum class StartableItemType {
-    PROCESS,
-    BUILDING_BLOCK
+enum class ExpressionValidationErrorCode {
+    MISSING_EL_MARKERS,
+    UNCLOSED_PARENTHESIS,
+    UNCLOSED_BRACE,
+    UNCLOSED_BRACKET,
+    MISMATCHED_DELIMITER,
+    INCOMPLETE_EXPRESSION,
+    INVALID_SYNTAX,
+    BEAN_NOT_FOUND
 }
-
-data class StartableItemDto(
-    val type: StartableItemType,
-    val name: String?,
-    val key: String,
-    val versionTag: String?,
-    val processDefinitionId: String? = null,
-    val draft: Boolean = false
-)

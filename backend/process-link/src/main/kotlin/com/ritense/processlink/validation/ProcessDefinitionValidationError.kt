@@ -20,5 +20,8 @@ data class ProcessDefinitionValidationError(
     val elementId: String,
     val elementType: String,
     val elementName: String?,
-    val reason: String
+    val reason: String,
+    val errorCode: String? = null,
+    val expression: String? = null,
+    val severity: ValidationSeverity = ValidationSeverity.ERROR
 )

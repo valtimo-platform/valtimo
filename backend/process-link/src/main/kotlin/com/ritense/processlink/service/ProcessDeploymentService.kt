@@ -20,13 +20,13 @@ import com.ritense.authorization.AuthorizationContext.Companion.runWithoutAuthor
 import com.ritense.processdocument.domain.ProcessDefinitionId
 import com.ritense.processdocument.domain.ProcessDocumentDefinitionRequest
 import com.ritense.processdocument.service.ProcessDefinitionCaseDefinitionService
+import com.ritense.processlink.validation.ProcessDefinitionValidationError
 import com.ritense.processlink.validation.ProcessDefinitionValidationException
 import com.ritense.processlink.validation.ProcessDefinitionValidator
 import com.ritense.processlink.web.rest.dto.ProcessLinkCreateRequestDto
 import com.ritense.valtimo.contract.BlueprintId
 import com.ritense.valtimo.operaton.domain.OperatonProcessDefinition
 import com.ritense.valtimo.contract.case_.CaseDefinitionId
-import com.ritense.valtimo.exception.BpmnParseException
 import com.ritense.valtimo.service.OperatonProcessService
 import org.operaton.bpm.engine.ParseException
 import org.operaton.bpm.engine.RepositoryService
@@ -157,7 +157,13 @@ class ProcessDeploymentService(
                 deployedProcessDefinitionId = deployedProcessDefinition.id
                 updateSuspensionState(deployedProcessDefinitionId, validationResult.isExecutable)
             } catch (e: ParseException) {
-                throw BpmnParseException(e)
+                val deploymentError = ProcessDefinitionValidationError(
+                    elementId = "deployment",
+                    elementType = "Deployment",
+                    elementName = null,
+                    reason = e.message ?: "BPMN parse error"
+                )
+                throw ProcessDefinitionValidationException(validationResult.errors + deploymentError)
             }
         } else {
             try {

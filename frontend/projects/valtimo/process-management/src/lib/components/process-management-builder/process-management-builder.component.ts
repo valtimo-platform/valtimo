@@ -30,6 +30,7 @@ import {ActivatedRoute, Router} from '@angular/router';
 import {TranslateModule, TranslateService} from '@ngx-translate/core';
 import {
   BreadcrumbService,
+  ConfirmationModalModule,
   FitPageDirective,
   ModalService,
   OverflowMenuComponent,
@@ -148,6 +149,7 @@ import {PluginTranslationService} from '@valtimo/plugin';
     OverflowMenuTriggerComponent,
     ToggleModule,
     TooltipModule,
+    ConfirmationModalModule,
   ],
   providers: [
     ProcessManagementEditorService,
@@ -289,6 +291,9 @@ export class ProcessManagementBuilderComponent implements AfterViewInit, OnDestr
 
   public readonly updatingProcessDefinitionCaseDefinition$ = new BehaviorSubject<boolean>(false);
 
+  public readonly showWarningConfirmationModal$ = new BehaviorSubject<boolean>(false);
+  private _pendingDeployAction: (() => void) | null = null;
+
   private readonly _subscriptions = new Subscription();
 
   constructor(
@@ -351,6 +356,10 @@ export class ProcessManagementBuilderComponent implements AfterViewInit, OnDestr
   }
 
   public deployChanges(isReadOnlyProcess: boolean): void {
+    this.validateAndDeploy(isReadOnlyProcess, () => this.executeDeployChanges(isReadOnlyProcess));
+  }
+
+  private executeDeployChanges(isReadOnlyProcess: boolean): void {
     combineLatest([
       from(isReadOnlyProcess ? this._bpmnViewer.saveXML() : this._bpmnModeler.saveXML()),
       this.processManagementEditorService.processLinksForSelectedDefinition$,
@@ -419,6 +428,10 @@ export class ProcessManagementBuilderComponent implements AfterViewInit, OnDestr
   }
 
   public deployNewProcessDefinition(): void {
+    this.validateAndDeploy(false, () => this.executeDeployNewProcessDefinition());
+  }
+
+  private executeDeployNewProcessDefinition(): void {
     combineLatest([
       from(this._bpmnModeler.saveXML()),
       this.processManagementEditorService.processLinksForSelectedDefinition$,
@@ -527,6 +540,58 @@ export class ProcessManagementBuilderComponent implements AfterViewInit, OnDestr
     this.changesPending$.next(true);
   }
 
+  public onWarningConfirmationConfirm(): void {
+    if (this._pendingDeployAction) {
+      this._pendingDeployAction();
+      this._pendingDeployAction = null;
+    }
+  }
+
+  public onWarningConfirmationCancel(): void {
+    this._pendingDeployAction = null;
+  }
+
+  private validateAndDeploy(isReadOnlyProcess: boolean, deployAction: () => void): void {
+    combineLatest([
+      from(isReadOnlyProcess ? this._bpmnViewer.saveXML() : this._bpmnModeler.saveXML()),
+      this.processManagementEditorService.processLinksForSelectedDefinition$,
+    ])
+      .pipe(
+        take(1),
+        switchMap(([result, processLinks]) => {
+          const xml = this.applyDraftState(result?.xml ?? '') ?? '';
+          return this.processManagementService.validateProcessDefinition({
+            bpmnXml: xml,
+            processLinks: processLinks.map(link => ({
+              ...link,
+              processDefinitionId: '-',
+            })),
+          });
+        })
+      )
+      .subscribe({
+        next: validationResult => {
+          if (!validationResult.isValid) {
+            // Has errors - show them and block deployment
+            this.highlightValidationErrors(validationResult.errors);
+            this.showNotification('validationError');
+          } else if (validationResult.hasWarnings) {
+            // Only warnings - show confirmation dialog
+            this.highlightValidationErrors(validationResult.errors);
+            this._pendingDeployAction = deployAction;
+            this.showWarningConfirmationModal$.next(true);
+          } else {
+            // No issues - proceed with deployment
+            deployAction();
+          }
+        },
+        error: () => {
+          // Validation endpoint failed - proceed with deployment anyway (server will validate again)
+          deployAction();
+        },
+      });
+  }
+
   private setProcessManagementWindow(): void {
     const processManagementWindow = window as any as ProcessManagementWindow;
 
@@ -573,7 +638,7 @@ export class ProcessManagementBuilderComponent implements AfterViewInit, OnDestr
   }
 
   private highlightValidationErrors(
-    errors: Array<{elementId: string; elementType: string; elementName?: string; reason: string}>
+    errors: Array<{elementId: string; elementType: string; elementName?: string; reason: string; errorCode?: string; expression?: string; severity?: 'ERROR' | 'WARNING'}>
   ): void {
     this.clearValidationErrors();
     this.processManagementEditorService.setValidationErrors(errors);
@@ -586,23 +651,49 @@ export class ProcessManagementBuilderComponent implements AfterViewInit, OnDestr
 
     const errorElementIds = new Set<string>();
 
-    for (const error of errors) {
-      try {
-        if (error.elementType === 'Process') {
-          // No visual element on canvas — only shown in error summary list
-          continue;
-        }
+    // Group by elementId and determine if element has any errors (not just warnings)
+    const elementHasError = new Map<string, boolean>();
+    const elementFirstIssue = new Map<string, typeof errors[0]>();
 
-        this._validationErrorElementIds.push(error.elementId);
-        errorElementIds.add(error.elementId);
-        canvas.addMarker(error.elementId, 'highlight-overlay-error');
+    for (const error of errors) {
+      if (error.elementType === 'Process') continue;
+
+      const hasErrorAlready = elementHasError.get(error.elementId) ?? false;
+      const isError = error.severity !== 'WARNING';
+
+      if (!elementFirstIssue.has(error.elementId)) {
+        elementFirstIssue.set(error.elementId, error);
+      } else if (isError && !hasErrorAlready) {
+        // Replace warning with error as the displayed issue
+        elementFirstIssue.set(error.elementId, error);
+      }
+
+      if (isError) {
+        elementHasError.set(error.elementId, true);
+      } else if (!hasErrorAlready) {
+        elementHasError.set(error.elementId, false);
+      }
+    }
+
+    // Add markers and overlays - one per element, error takes precedence
+    for (const [elementId, issue] of elementFirstIssue) {
+      try {
+        const hasError = elementHasError.get(elementId) ?? false;
+        const markerClass = hasError ? 'highlight-overlay-error' : 'highlight-overlay-warning';
+        const overlayClass = hasError ? 'validation-error-overlay' : 'validation-warning-overlay';
+
+        this._validationErrorElementIds.push(elementId);
+        errorElementIds.add(elementId);
+        canvas.addMarker(elementId, markerClass);
 
         const position =
-          error.elementType === 'Participant' ? {top: 5, left: 5} : {top: -12, left: -12};
+          issue.elementType === 'Participant' ? {top: 5, left: 5} : {top: -12, left: -12};
 
-        overlays.add(error.elementId, 'validation-error', {
+        const errorMessage = this.getValidationErrorMessage(issue);
+
+        overlays.add(elementId, 'validation-error', {
           position,
-          html: `<div class="validation-error-overlay" data-element-id="${error.elementId}"><span class="validation-error-overlay__icon">!</span><span class="validation-error-overlay__text">${error.reason}</span></div>`,
+          html: `<div class="${overlayClass}" data-element-id="${elementId}"><span class="${overlayClass}__icon">!</span><span class="${overlayClass}__text">${errorMessage}</span></div>`,
         });
       } catch (e) {
         // Element may not exist on the canvas
@@ -613,17 +704,19 @@ export class ProcessManagementBuilderComponent implements AfterViewInit, OnDestr
     this._validationHoverHandler = (event: any) => {
       const id = event.element?.id;
       if (id && errorElementIds.has(id)) {
-        document
-          .querySelector(`.validation-error-overlay[data-element-id="${id}"]`)
-          ?.classList.add('validation-error-overlay--active');
+        const errorOverlay = document.querySelector(`.validation-error-overlay[data-element-id="${id}"]`);
+        const warningOverlay = document.querySelector(`.validation-warning-overlay[data-element-id="${id}"]`);
+        errorOverlay?.classList.add('validation-error-overlay--active');
+        warningOverlay?.classList.add('validation-warning-overlay--active');
       }
     };
     this._validationOutHandler = (event: any) => {
       const id = event.element?.id;
       if (id && errorElementIds.has(id)) {
-        document
-          .querySelector(`.validation-error-overlay[data-element-id="${id}"]`)
-          ?.classList.remove('validation-error-overlay--active');
+        const errorOverlay = document.querySelector(`.validation-error-overlay[data-element-id="${id}"]`);
+        const warningOverlay = document.querySelector(`.validation-warning-overlay[data-element-id="${id}"]`);
+        errorOverlay?.classList.remove('validation-error-overlay--active');
+        warningOverlay?.classList.remove('validation-warning-overlay--active');
       }
     };
     eventBus.on('element.hover', this._validationHoverHandler);
@@ -663,6 +756,7 @@ export class ProcessManagementBuilderComponent implements AfterViewInit, OnDestr
     for (const elementId of this._validationErrorElementIds) {
       try {
         canvas.removeMarker(elementId, 'highlight-overlay-error');
+        canvas.removeMarker(elementId, 'highlight-overlay-warning');
       } catch (e) {
         // ignore
       }
@@ -1048,5 +1142,18 @@ export class ProcessManagementBuilderComponent implements AfterViewInit, OnDestr
     }
 
     clearBuildingBlockCalledElement(editor, activityId);
+  }
+
+  public getValidationErrorMessage(error: {reason: string; errorCode?: string; expression?: string}): string {
+    if (error.errorCode) {
+      const translationKey = `processManagement.expressionErrors.${error.errorCode}`;
+      const translated = this.translateService.instant(translationKey);
+      if (translated !== translationKey) {
+        return error.expression
+          ? `${translated}: '${error.expression}'`
+          : translated;
+      }
+    }
+    return error.reason;
   }
 }

@@ -17,6 +17,7 @@
 package com.ritense.processlink.validation
 
 import com.ritense.processlink.web.rest.dto.ProcessLinkCreateRequestDto
+import org.operaton.bpm.impl.juel.Builder
 import org.operaton.bpm.model.bpmn.BpmnModelInstance
 import org.operaton.bpm.model.bpmn.instance.BusinessRuleTask
 import org.operaton.bpm.model.bpmn.instance.CallActivity
@@ -42,8 +43,13 @@ import org.operaton.bpm.model.bpmn.instance.TerminateEventDefinition
 import org.operaton.bpm.model.bpmn.instance.TimerEventDefinition
 import org.operaton.bpm.model.bpmn.instance.UserTask
 import org.operaton.bpm.model.bpmn.instance.operaton.OperatonExecutionListener
+import java.util.function.Supplier
 
-class ProcessDefinitionValidator {
+class ProcessDefinitionValidator(
+    private val processBeansSupplier: Supplier<Map<String, Any>> = Supplier { emptyMap() }
+) {
+    private val treeBuilder = Builder(Builder.Feature.METHOD_INVOCATIONS)
+    private val beanNameRegex = Regex("""[\$#]\{(\w+)[\.\(\}]""")
 
     fun validate(
         bpmnModel: BpmnModelInstance,
@@ -166,7 +172,7 @@ class ProcessDefinitionValidator {
                             elementId = node.id,
                             elementType = node.elementType.typeName,
                             elementName = node.name,
-                            reason = "Element has no incoming flow"
+                            reason = "Element has no incoming flow",
                         )
                     )
                 }
@@ -176,7 +182,7 @@ class ProcessDefinitionValidator {
                             elementId = node.id,
                             elementType = node.elementType.typeName,
                             elementName = node.name,
-                            reason = "Element has no outgoing flow"
+                            reason = "Element has no outgoing flow",
                         )
                     )
                 }
@@ -213,7 +219,8 @@ class ProcessDefinitionValidator {
                         elementId = node.id,
                         elementType = node.elementType.typeName,
                         elementName = node.name,
-                        reason = "Element is not reachable from any start event"
+                        reason = "Element is not reachable from any start event",
+                        severity = ValidationSeverity.WARNING
                     )
                 )
             }
@@ -234,7 +241,7 @@ class ProcessDefinitionValidator {
                     elementId = processElementId(process, participant),
                     elementType = processElementType(participant),
                     elementName = processElementName(process, participant),
-                    reason = "Process has multiple none start events"
+                    reason = "Process has multiple none start events",
                 )
             )
         }
@@ -290,6 +297,10 @@ class ProcessDefinitionValidator {
         errors: MutableList<ProcessDefinitionValidationError>
     ) {
         bpmnModel.getModelElementsByType(ServiceTask::class.java).forEach { task ->
+            // Validate expression syntax
+            validateExpression(task.operatonExpression, task.id, "ServiceTask", task.name, errors)
+            validateExpression(task.operatonDelegateExpression, task.id, "ServiceTask", task.name, errors)
+
             if (processLinkActivityIds.contains(task.id)) return@forEach
             if (hasImplementation(task)) return@forEach
             if (hasExecutionListener(task)) return@forEach
@@ -299,7 +310,8 @@ class ProcessDefinitionValidator {
                     elementId = task.id,
                     elementType = "ServiceTask",
                     elementName = task.name,
-                    reason = "Service task has no process link, implementation, or execution listener"
+                    reason = "Service task has no process link, implementation, or execution listener",
+                    severity = ValidationSeverity.WARNING
                 )
             )
         }
@@ -319,7 +331,8 @@ class ProcessDefinitionValidator {
                     elementId = task.id,
                     elementType = "UserTask",
                     elementName = task.name,
-                    reason = "User task has no process link or form"
+                    reason = "User task has no process link or form",
+                    severity = ValidationSeverity.WARNING
                 )
             )
         }
@@ -331,6 +344,10 @@ class ProcessDefinitionValidator {
         errors: MutableList<ProcessDefinitionValidationError>
     ) {
         bpmnModel.getModelElementsByType(SendTask::class.java).forEach { task ->
+            // Validate expression syntax
+            validateExpression(task.operatonExpression, task.id, "SendTask", task.name, errors)
+            validateExpression(task.operatonDelegateExpression, task.id, "SendTask", task.name, errors)
+
             if (processLinkActivityIds.contains(task.id)) return@forEach
             if (hasImplementation(task)) return@forEach
 
@@ -339,7 +356,8 @@ class ProcessDefinitionValidator {
                     elementId = task.id,
                     elementType = "SendTask",
                     elementName = task.name,
-                    reason = "Send task has no process link or implementation"
+                    reason = "Send task has no process link or implementation",
+                    severity = ValidationSeverity.WARNING
                 )
             )
         }
@@ -359,7 +377,8 @@ class ProcessDefinitionValidator {
                     elementId = task.id,
                     elementType = "ReceiveTask",
                     elementName = task.name,
-                    reason = "Receive task has no process link or message"
+                    reason = "Receive task has no process link or message",
+                    severity = ValidationSeverity.WARNING
                 )
             )
         }
@@ -377,7 +396,8 @@ class ProcessDefinitionValidator {
                     elementId = task.id,
                     elementType = "BusinessRuleTask",
                     elementName = task.name,
-                    reason = "Business rule task has no implementation"
+                    reason = "Business rule task has no implementation",
+                    severity = ValidationSeverity.WARNING
                 )
             )
         }
@@ -397,7 +417,8 @@ class ProcessDefinitionValidator {
                     elementId = callActivity.id,
                     elementType = "CallActivity",
                     elementName = callActivity.name,
-                    reason = "Call activity has no process link or called element"
+                    reason = "Call activity has no process link or called element",
+                    severity = ValidationSeverity.WARNING
                 )
             )
         }
@@ -412,6 +433,11 @@ class ProcessDefinitionValidator {
             .toSet()
 
         bpmnModel.getModelElementsByType(SequenceFlow::class.java).forEach { flow ->
+            // Validate expression syntax for all sequence flows with conditions
+            flow.conditionExpression?.textContent?.let { expr ->
+                validateExpression(expr, flow.id, "SequenceFlow", flow.name, errors)
+            }
+
             if (flow.source !is ExclusiveGateway) return@forEach
             if ((flow.source as ExclusiveGateway).getOutgoing().size == 1) return@forEach
             if (defaultFlowIds.contains(flow.id)) return@forEach
@@ -446,7 +472,8 @@ class ProcessDefinitionValidator {
                         elementId = event.id,
                         elementType = "MessageIntermediateCatchEvent",
                         elementName = event.name,
-                        reason = "Message intermediate catch event has no process link or message"
+                        reason = "Message intermediate catch event has no process link or message",
+                        severity = ValidationSeverity.WARNING
                     )
                 )
             }
@@ -470,7 +497,8 @@ class ProcessDefinitionValidator {
                         elementId = event.id,
                         elementType = "MessageIntermediateThrowEvent",
                         elementName = event.name,
-                        reason = "Message intermediate throw event has no process link or message"
+                        reason = "Message intermediate throw event has no process link or message",
+                        severity = ValidationSeverity.WARNING
                     )
                 )
             }
@@ -517,7 +545,8 @@ class ProcessDefinitionValidator {
                                 elementId = startEvent.id,
                                 elementType = "MessageStartEvent",
                                 elementName = startEvent.name,
-                                reason = "Message start event has no process link or message"
+                                reason = "Message start event has no process link or message",
+                                severity = ValidationSeverity.WARNING
                             )
                         )
                     }
@@ -601,5 +630,93 @@ class ProcessDefinitionValidator {
             .filterByType(OperatonExecutionListener::class.java)
             .list()
             .isNotEmpty()
+    }
+
+    private fun validateExpression(
+        expression: String?,
+        elementId: String,
+        elementType: String,
+        elementName: String?,
+        errors: MutableList<ProcessDefinitionValidationError>
+    ) {
+        if (expression.isNullOrBlank()) return
+
+        if (!expression.contains("\${") && !expression.contains("#{")) {
+            errors.add(
+                ProcessDefinitionValidationError(
+                    elementId = elementId,
+                    elementType = elementType,
+                    elementName = elementName,
+                    reason = "Expression must use \${...} or #{...} syntax",
+                    errorCode = ExpressionValidationErrorCode.MISSING_EL_MARKERS.name,
+                    expression = expression
+                )
+            )
+            return
+        }
+
+        try {
+            treeBuilder.build(expression)
+        } catch (e: Exception) {
+            val errorCode = mapExceptionToErrorCode(e.message)
+            errors.add(
+                ProcessDefinitionValidationError(
+                    elementId = elementId,
+                    elementType = elementType,
+                    elementName = elementName,
+                    reason = "Invalid expression syntax: ${e.message}",
+                    errorCode = errorCode.name,
+                    expression = expression
+                )
+            )
+            return
+        }
+
+        // Semantic validation - check bean exists
+        val processBeans = processBeansSupplier.get()
+        if (processBeans.isNotEmpty()) {
+            validateExpressionSemantics(processBeans, expression, elementId, elementType, elementName, errors)
+        }
+    }
+
+    private fun validateExpressionSemantics(
+        processBeans: Map<String, Any>,
+        expression: String,
+        elementId: String,
+        elementType: String,
+        elementName: String?,
+        errors: MutableList<ProcessDefinitionValidationError>
+    ) {
+        val beanNameMatch = beanNameRegex.find(expression)
+        val beanName = beanNameMatch?.groupValues?.get(1) ?: return
+
+        // Skip JUEL built-ins and common keywords
+        if (beanName in listOf("true", "false", "null", "empty", "not")) return
+
+        if (!processBeans.containsKey(beanName)) {
+            errors.add(
+                ProcessDefinitionValidationError(
+                    elementId = elementId,
+                    elementType = elementType,
+                    elementName = elementName,
+                    reason = "Bean '$beanName' not found in process beans",
+                    errorCode = ExpressionValidationErrorCode.BEAN_NOT_FOUND.name,
+                    expression = expression
+                )
+            )
+        }
+    }
+
+    private fun mapExceptionToErrorCode(message: String?): ExpressionValidationErrorCode {
+        return when {
+            message == null -> ExpressionValidationErrorCode.INVALID_SYNTAX
+            message.contains("expected ')'") -> ExpressionValidationErrorCode.UNCLOSED_PARENTHESIS
+            message.contains("expected '}'") -> ExpressionValidationErrorCode.UNCLOSED_BRACE
+            message.contains("expected ']'") -> ExpressionValidationErrorCode.UNCLOSED_BRACKET
+            message.contains("<EOF>") -> ExpressionValidationErrorCode.INCOMPLETE_EXPRESSION
+            message.contains("encountered '}'") || message.contains("encountered ')'") ||
+                message.contains("encountered ']'") -> ExpressionValidationErrorCode.MISMATCHED_DELIMITER
+            else -> ExpressionValidationErrorCode.INVALID_SYNTAX
+        }
     }
 }

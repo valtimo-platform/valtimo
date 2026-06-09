@@ -1191,6 +1191,135 @@ class ProcessDefinitionValidatorTest {
         assertThat(result.errors).noneMatch { it.elementType == "EscalationStartEvent" }
     }
 
+    // --- Expression syntax validation tests ---
+
+    @Test
+    fun `should report invalid expression syntax in condition`() {
+        val model = Bpmn.createExecutableProcess("test-process")
+            .startEvent()
+            .exclusiveGateway("my-gateway")
+            .sequenceFlowId("flow-a")
+            .condition("condition-a", "\${broken(")  // Invalid: unclosed parenthesis
+            .endEvent("end-a")
+            .moveToNode("my-gateway")
+            .sequenceFlowId("flow-b")
+            .condition("condition-b", "\${valid}")
+            .endEvent("end-b")
+            .done()
+
+        val result = validator.validate(model, emptyList())
+
+        val error = result.errors.find { it.elementId == "flow-a" && it.reason.contains("Invalid expression syntax") }
+        assertThat(error).isNotNull
+        assertThat(error!!.errorCode).isEqualTo("UNCLOSED_PARENTHESIS")
+        assertThat(error.expression).isEqualTo("\${broken(")
+    }
+
+    @Test
+    fun `should pass valid expression syntax in condition`() {
+        val model = Bpmn.createExecutableProcess("test-process")
+            .startEvent()
+            .exclusiveGateway("my-gateway")
+            .sequenceFlowId("flow-a")
+            .condition("condition-a", "\${approved == true}")
+            .endEvent("end-a")
+            .moveToNode("my-gateway")
+            .sequenceFlowId("flow-b")
+            .condition("condition-b", "\${!approved}")
+            .endEvent("end-b")
+            .done()
+
+        val result = validator.validate(model, emptyList())
+
+        assertThat(result.errors).noneMatch {
+            it.reason.contains("Invalid expression syntax")
+        }
+    }
+
+    @Test
+    fun `should report invalid expression syntax in service task`() {
+        val model = Bpmn.createExecutableProcess("test-process")
+            .startEvent()
+            .serviceTask("my-task")
+            .operatonExpression("\${broken]")  // Invalid: unexpected ] when expecting }
+            .endEvent()
+            .done()
+
+        val result = validator.validate(model, emptyList())
+
+        val error = result.errors.find { it.elementId == "my-task" && it.reason.contains("Invalid expression syntax") }
+        assertThat(error).isNotNull
+        assertThat(error!!.errorCode).isEqualTo("UNCLOSED_BRACE")
+        assertThat(error.expression).isEqualTo("\${broken]")
+    }
+
+    @Test
+    fun `should report plain text expression without EL markers`() {
+        val model = Bpmn.createExecutableProcess("test-process")
+            .startEvent()
+            .serviceTask("my-task")
+            .operatonExpression("plainTextWithoutMarkers")  // Invalid: no ${} or #{}
+            .endEvent()
+            .done()
+
+        val result = validator.validate(model, emptyList())
+
+        val error = result.errors.find { it.elementId == "my-task" && it.reason.contains("\${...} or #{...}") }
+        assertThat(error).isNotNull
+        assertThat(error!!.errorCode).isEqualTo("MISSING_EL_MARKERS")
+        assertThat(error.expression).isEqualTo("plainTextWithoutMarkers")
+    }
+
+    @Test
+    fun `should report bean not found when bean does not exist in process beans`() {
+        val validatorWithBeans = ProcessDefinitionValidator { mapOf("existingBean" to Object()) }
+
+        val model = Bpmn.createExecutableProcess("test-process")
+            .startEvent()
+            .serviceTask("my-task")
+            .operatonExpression("\${nonExistentBean.doSomething()}")
+            .endEvent()
+            .done()
+
+        val result = validatorWithBeans.validate(model, emptyList())
+
+        val error = result.errors.find { it.elementId == "my-task" && it.errorCode == "BEAN_NOT_FOUND" }
+        assertThat(error).isNotNull
+        assertThat(error!!.reason).contains("nonExistentBean")
+        assertThat(error.expression).isEqualTo("\${nonExistentBean.doSomething()}")
+    }
+
+    @Test
+    fun `should not report bean error when bean exists in process beans`() {
+        val validatorWithBeans = ProcessDefinitionValidator { mapOf("myBean" to Object()) }
+
+        val model = Bpmn.createExecutableProcess("test-process")
+            .startEvent()
+            .serviceTask("my-task")
+            .operatonExpression("\${myBean.doSomething()}")
+            .endEvent()
+            .done()
+
+        val result = validatorWithBeans.validate(model, emptyList())
+
+        assertThat(result.errors.filter { it.errorCode == "BEAN_NOT_FOUND" }).isEmpty()
+    }
+
+    @Test
+    fun `should skip bean validation when no process beans are configured`() {
+        // Default validator has no process beans
+        val model = Bpmn.createExecutableProcess("test-process")
+            .startEvent()
+            .serviceTask("my-task")
+            .operatonExpression("\${anyBean.doSomething()}")
+            .endEvent()
+            .done()
+
+        val result = validator.validate(model, emptyList())
+
+        assertThat(result.errors.filter { it.errorCode == "BEAN_NOT_FOUND" }).isEmpty()
+    }
+
     private fun createModelWithServiceTask(id: String): BpmnModelInstance {
         return Bpmn.createExecutableProcess("test-process")
             .startEvent()

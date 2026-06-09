@@ -33,6 +33,7 @@ import {FormioBeforeSubmit, FormioForm} from '@formio/angular';
 import {TranslateModule} from '@ngx-translate/core';
 import {PermissionService} from '@valtimo/access-control';
 import {
+  ConfirmationModalModule,
   FormioComponent,
   FormIoModule,
   FormioOptionsImpl,
@@ -76,6 +77,7 @@ import {CaseListService, StartModalService} from '../../services';
     ModalModule,
     LayerModule,
     RenderInBodyComponent,
+    ConfirmationModalModule,
   ],
 })
 export class CaseProcessStartModalComponent implements OnInit, OnDestroy {
@@ -106,7 +108,9 @@ export class CaseProcessStartModalComponent implements OnInit, OnDestroy {
   @Output() noProcessLinked = new EventEmitter<string>();
 
   public readonly modalOpen$ = new BehaviorSubject<boolean>(false);
+  public readonly showDraftConfirmation$ = new BehaviorSubject<boolean>(false);
 
+  private _pendingProcessDefinitionCaseDefinition: ProcessDefinitionCaseDefinition | null = null;
   private _subscriptions = new Subscription();
   private readonly _formCustomComponentConfig$ = new BehaviorSubject<
     FormCustomComponentConfig | {}
@@ -217,6 +221,30 @@ export class CaseProcessStartModalComponent implements OnInit, OnDestroy {
   }
 
   openModal(processDefinitionCaseDefinition: ProcessDefinitionCaseDefinition) {
+    if (processDefinitionCaseDefinition.draft) {
+      this._pendingProcessDefinitionCaseDefinition = processDefinitionCaseDefinition;
+      this.showDraftConfirmation$.next(true);
+      return;
+    }
+
+    this.proceedWithOpenModal(processDefinitionCaseDefinition);
+  }
+
+  public onDraftConfirmationConfirm(): void {
+    this.showDraftConfirmation$.next(false);
+    if (this._pendingProcessDefinitionCaseDefinition) {
+      const pending = this._pendingProcessDefinitionCaseDefinition;
+      this._pendingProcessDefinitionCaseDefinition = null;
+      this.proceedWithOpenModal(pending);
+    }
+  }
+
+  public onDraftConfirmationCancel(): void {
+    this.showDraftConfirmation$.next(false);
+    this._pendingProcessDefinitionCaseDefinition = null;
+  }
+
+  private proceedWithOpenModal(processDefinitionCaseDefinition: ProcessDefinitionCaseDefinition): void {
     this.processDefinitionKey = processDefinitionCaseDefinition.processDefinitionKey;
     this.caseDefinitionKey = processDefinitionCaseDefinition.id.caseDefinitionId.key;
     this.processDefinitionId = processDefinitionCaseDefinition.id.processDefinitionId;

@@ -169,17 +169,23 @@
     padding: 10px 16px;
     border: none;
     border-bottom: 1px solid var(--cds-border-subtle);
-    background: none;
+    border-left: 3px solid var(--cds-support-error, #da1e28);
+    background-color: var(--cds-notification-error-background, #fff1f1);
     text-align: left;
     cursor: pointer;
     font-family: inherit;
+
+    &.warning {
+      background-color: var(--cds-notification-warning-background, #fdf6dd);
+      border-left-color: var(--cds-support-warning, #f1c21b);
+    }
 
     &:last-child {
       border-bottom: none;
     }
 
     &:hover {
-      background-color: var(--cds-layer-hover);
+      filter: brightness(0.97);
     }
   }
 
@@ -196,7 +202,12 @@
     color: var(--cds-text-on-color, #ffffff);
     font-size: 12px;
     font-weight: 700;
-    line-height: 1;
+    line-height: 0;
+
+    &.warning {
+      background-color: var(--cds-support-warning, #f1c21b);
+      color: var(--cds-text-primary, #161616);
+    }
   }
 
   &__details {
@@ -213,12 +224,16 @@
 
   &__reason {
     font-size: 13px;
-    color: var(--cds-support-error, #da1e28);
+    color: var(--cds-text-primary);
   }
 }
 
 ::ng-deep .highlight-overlay-error:not(.djs-connection) .djs-visual > :nth-child(1) {
   stroke: var(--cds-support-error, #da1e28) !important;
+}
+
+::ng-deep .highlight-overlay-warning:not(.djs-connection) .djs-visual > :nth-child(1) {
+  stroke: var(--cds-support-warning, #f1c21b) !important;
 }
 
 ::ng-deep .djs-overlay-validation-error {
@@ -242,7 +257,7 @@
     color: var(--cds-text-on-color, #ffffff);
     font-size: 14px;
     font-weight: 700;
-    line-height: 1;
+    line-height: 0;
   }
 
   &__text {
@@ -271,6 +286,51 @@
   }
 }
 
+::ng-deep .validation-warning-overlay {
+  position: relative;
+  cursor: pointer;
+  pointer-events: all;
+
+  &__icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    background-color: var(--cds-support-warning, #f1c21b);
+    color: var(--cds-text-primary, #161616);
+    font-size: 14px;
+    font-weight: 700;
+    line-height: 0;
+  }
+
+  &__text {
+    display: none;
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    margin-bottom: 4px;
+    border: 1px solid var(--cds-support-warning, #f1c21b);
+    color: var(--cds-text-primary, #161616);
+    background-color: var(--cds-layer, #ffffff);
+    padding: 4px 8px;
+    border-radius: 2px;
+    font-size: 14px;
+    white-space: nowrap;
+    max-width: 350px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    z-index: 10;
+  }
+
+  &:hover &__text,
+  &--active &__text {
+    display: block;
+  }
+}
+
 ::ng-deep .validation-errors-panel {
   padding: 8px 12px;
   display: flex;
@@ -281,6 +341,14 @@
     display: flex;
     align-items: flex-start;
     gap: 8px;
+    padding: 8px 12px;
+    background-color: var(--cds-notification-error-background, #fff1f1);
+    border-left: 3px solid var(--cds-support-error, #da1e28);
+
+    &.warning {
+      background-color: var(--cds-notification-warning-background, #fdf6dd);
+      border-left-color: var(--cds-support-warning, #f1c21b);
+    }
   }
 
   &__icon {
@@ -295,11 +363,16 @@
     color: var(--cds-text-on-color, #ffffff);
     font-size: 12px;
     font-weight: 700;
-    line-height: 1;
+    line-height: 0;
+
+    &.warning {
+      background-color: var(--cds-support-warning, #f1c21b);
+      color: var(--cds-text-primary, #161616);
+    }
   }
 
   &__reason {
-    color: var(--cds-support-error, #da1e28);
+    color: var(--cds-text-primary, #161616);
     font-size: 13px;
     line-height: 18px;
   }

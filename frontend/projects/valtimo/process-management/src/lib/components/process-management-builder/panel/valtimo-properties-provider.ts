@@ -79,6 +79,7 @@ class ValtimoPropertiesProvider {
             {
               id: 'validationErrorsEntry',
               errors: elementErrors,
+              translateService: this.translateService,
               component: ValidationErrorsElement,
             },
           ],
@@ -405,14 +406,28 @@ const CustomRootElement = (props: {
 };
 
 const ValidationErrorsElement = (props: {
-  errors: Array<{elementId: string; elementType: string; elementName?: string; reason: string}>;
+  errors: Array<{elementId: string; elementType: string; elementName?: string; reason: string; errorCode?: string; expression?: string; severity?: 'ERROR' | 'WARNING'}>;
+  translateService: TranslateService;
 }): VNode => {
+  const getErrorMessage = (error: {reason: string; errorCode?: string; expression?: string}): string => {
+    if (error.errorCode) {
+      const translationKey = `processManagement.expressionErrors.${error.errorCode}`;
+      const translated = props.translateService.instant(translationKey);
+      if (translated !== translationKey) {
+        return error.expression
+          ? `${translated}: '${error.expression}'`
+          : translated;
+      }
+    }
+    return error.reason;
+  };
+
   return html`<div class="validation-errors-panel">
     ${props.errors.map(
       error =>
-        html`<div class="validation-errors-panel__item">
-          <span class="validation-errors-panel__icon">!</span>
-          <span class="validation-errors-panel__reason">${error.reason}</span>
+        html`<div class="validation-errors-panel__item${error.severity === 'WARNING' ? ' warning' : ''}">
+          <span class="validation-errors-panel__icon${error.severity === 'WARNING' ? ' warning' : ''}">!</span>
+          <span class="validation-errors-panel__reason${error.severity === 'WARNING' ? ' warning' : ''}">${getErrorMessage(error)}</span>
         </div>`
     )}
   </div>`;

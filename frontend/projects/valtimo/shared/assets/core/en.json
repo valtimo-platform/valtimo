@@ -44,6 +44,12 @@
       "content": "Are you sure you want to change tabs? All selection will be lost.",
       "confirm": "Change tab"
     },
+    "draftProcessConfirmation": {
+      "title": "Start draft process",
+      "message": "This process definition is still in draft. Are you sure you want to start it?",
+      "confirm": "Start anyway",
+      "cancel": "Cancel"
+    },
     "noResults": {
       "ALL": {"description": "There is nothing to do here.", "title": "There are no cases"},
       "MINE": {"description": "Time for a short break.", "title": "No cases assigned to you"},
@@ -601,7 +607,8 @@
       "notFinalizableWarning": {
         "title": "This case definition cannot be finalized.",
         "BUILDING_BLOCK_NOT_FINAL": "The case definition makes use of draft building blocks. In order to finalize this case definition, make sure all the building blocks it uses are final.",
-        "CONFIGURATION_ISSUES": "The case definition contains unresolved configuration issues. Please review and fix all configuration warnings before finalizing."
+        "CONFIGURATION_ISSUES": "The case definition contains unresolved configuration issues. Please review and fix all configuration warnings before finalizing.",
+        "PROCESS_DEFINITION_IN_DRAFT": "The case definition contains process definitions that are still in draft. Finalize all process definitions before finalizing the case definition."
       }
     },
     "environmentConfig": {
@@ -1497,7 +1504,22 @@
       "replaceConfirm": "Replace"
     },
     "canInitializeDocument": "Starts case",
-    "startableByUser": "Startable by user"
+    "startableByUser": "Startable by user",
+    "expressionErrors": {
+      "MISSING_EL_MARKERS": "Expression must use ${...} or #{...} syntax",
+      "UNCLOSED_PARENTHESIS": "Expression has an unclosed parenthesis '('",
+      "UNCLOSED_BRACE": "Expression is missing a closing brace '}'",
+      "UNCLOSED_BRACKET": "Expression has an unclosed bracket '['",
+      "MISMATCHED_DELIMITER": "Expression has mismatched brackets or braces",
+      "INCOMPLETE_EXPRESSION": "Expression is incomplete",
+      "INVALID_SYNTAX": "Expression has invalid syntax",
+      "BEAN_NOT_FOUND": "Referenced bean does not exist"
+    },
+    "warningConfirmation": {
+      "title": "Process has warnings",
+      "content": "The process definition contains warnings. Are you sure you want to save it without resolving the warnings?",
+      "confirm": "Save anyway"
+    }
   },
   "processCaseConnection": {
     "noProcessesTitle": "No processes",

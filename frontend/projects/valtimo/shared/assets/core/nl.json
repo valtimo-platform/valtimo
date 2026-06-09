@@ -44,6 +44,12 @@
       "content": "Weet je zeker dat je van tabblad wilt wisselen? Alle gemaakte selecties gaan verloren.",
       "confirm": "Tabblad wisselen"
     },
+    "draftProcessConfirmation": {
+      "title": "Concept-proces starten",
+      "message": "Deze procesdefinitie is nog in concept. Weet je zeker dat je dit wilt starten?",
+      "confirm": "Toch starten",
+      "cancel": "Annuleren"
+    },
     "noResults": {
       "ALL": {"description": "Er is hier niets te doen.", "title": "Er zijn geen dossiers"},
       "MINE": {"description": "Even pauze.", "title": "Er zijn geen dossiers aan jou toegewezen"},
@@ -608,7 +614,8 @@
       "notFinalizableWarning": {
         "title": "Deze dossierdefinitie kan niet definitief worden gemaakt.",
         "BUILDING_BLOCK_NOT_FINAL": "De dossierdefinitie maakt gebruik van concept-bouwblokken. Om deze dossierdefinitie definitief te kunnen maken, moeten alle bouwblokken die het gebruikt definitief zijn.",
-        "CONFIGURATION_ISSUES": "De dossierdefinitie bevat onopgeloste configuratieproblemen. Controleer en los alle configuratiewaarschuwingen op voordat u deze definitief maakt."
+        "CONFIGURATION_ISSUES": "De dossierdefinitie bevat onopgeloste configuratieproblemen. Controleer en los alle configuratiewaarschuwingen op voordat u deze definitief maakt.",
+        "PROCESS_DEFINITION_IN_DRAFT": "De dossierdefinitie bevat procesdefinities die nog in concept zijn. Maak alle procesdefinities definitief voordat u de dossierdefinitie definitief maakt."
       }
     },
     "environmentConfig": {
@@ -1525,7 +1532,22 @@
       "replaceConfirm": "Vervangen"
     },
     "canInitializeDocument": "Start een dossier",
-    "startableByUser": "Door gebruiker te starten"
+    "startableByUser": "Door gebruiker te starten",
+    "expressionErrors": {
+      "MISSING_EL_MARKERS": "Expressie moet ${...} of #{...} syntax gebruiken",
+      "UNCLOSED_PARENTHESIS": "Expressie heeft een niet-gesloten haakje '('",
+      "UNCLOSED_BRACE": "Expressie mist een sluitende accolade '}'",
+      "UNCLOSED_BRACKET": "Expressie heeft een niet-gesloten blokhak '['",
+      "MISMATCHED_DELIMITER": "Expressie heeft niet-overeenkomende haakjes of accolades",
+      "INCOMPLETE_EXPRESSION": "Expressie is onvolledig",
+      "INVALID_SYNTAX": "Expressie heeft ongeldige syntax",
+      "BEAN_NOT_FOUND": "Gerefereerde bean bestaat niet"
+    },
+    "warningConfirmation": {
+      "title": "Proces bevat waarschuwingen",
+      "content": "De procesdefinitie bevat waarschuwingen. Weet u zeker dat u wilt opslaan zonder de waarschuwingen op te lossen?",
+      "confirm": "Toch opslaan"
+    }
   },
   "processCaseConnection": {
     "noProcessesTitle": "Geen processen",

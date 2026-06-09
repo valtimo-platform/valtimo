@@ -14,18 +14,9 @@
  * limitations under the License.
  */
 
-package com.ritense.case.web.rest.dto
+package com.ritense.processlink.validation
 
-enum class StartableItemType {
-    PROCESS,
-    BUILDING_BLOCK
+enum class ValidationSeverity {
+    ERROR,
+    WARNING
 }
-
-data class StartableItemDto(
-    val type: StartableItemType,
-    val name: String?,
-    val key: String,
-    val versionTag: String?,
-    val processDefinitionId: String? = null,
-    val draft: Boolean = false
-)

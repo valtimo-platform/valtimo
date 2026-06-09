@@ -438,7 +438,7 @@ internal class ProcessLinkResourceIT @Autowired constructor(
     }
 
     @Test
-    fun `should reject executable process definition with unconfigured user task`() {
+    fun `should reject executable process definition with missing start event`() {
         val bpmnXml = """
         <?xml version="1.0" encoding="UTF-8"?>
         <bpmn:definitions xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
@@ -446,17 +446,12 @@ internal class ProcessLinkResourceIT @Autowired constructor(
                           id="Definitions_1"
                           targetNamespace="http://bpmn.io/schema/bpmn">
             <bpmn:process id="exec-invalid-process" name="Executable Invalid Process" isExecutable="true">
-                <bpmn:startEvent id="StartEvent_1">
-                    <bpmn:outgoing>Flow_1</bpmn:outgoing>
-                </bpmn:startEvent>
-                <bpmn:sequenceFlow id="Flow_1" sourceRef="StartEvent_1" targetRef="Activity_1" />
                 <bpmn:endEvent id="EndEvent_1">
-                    <bpmn:incoming>Flow_2</bpmn:incoming>
-                </bpmn:endEvent>
-                <bpmn:sequenceFlow id="Flow_2" sourceRef="Activity_1" targetRef="EndEvent_1" />
-                <bpmn:userTask id="Activity_1" name="Unconfigured User Task">
                     <bpmn:incoming>Flow_1</bpmn:incoming>
-                    <bpmn:outgoing>Flow_2</bpmn:outgoing>
+                </bpmn:endEvent>
+                <bpmn:sequenceFlow id="Flow_1" sourceRef="Activity_1" targetRef="EndEvent_1" />
+                <bpmn:userTask id="Activity_1" name="Orphan Task">
+                    <bpmn:outgoing>Flow_1</bpmn:outgoing>
                 </bpmn:userTask>
             </bpmn:process>
         </bpmn:definitions>
@@ -493,9 +488,8 @@ internal class ProcessLinkResourceIT @Autowired constructor(
             .andDo(print())
             .andExpect(status().isUnprocessableEntity)
             .andExpect(jsonPath("$.errors").isArray)
-            .andExpect(jsonPath("$.errors", hasSize<Any>(1)))
-            .andExpect(jsonPath("$.errors[0].elementId").value("Activity_1"))
-            .andExpect(jsonPath("$.errors[0].elementType").value("UserTask"))
+            .andExpect(jsonPath("$.errors[0].elementType").value("Process"))
+            .andExpect(jsonPath("$.errors[0].reason").value("Process has no start event"))
     }
 
     @Test

@@ -87,7 +87,7 @@ export class ProcessManagementEditorService implements OnDestroy {
   }
 
   private readonly _validationErrors$ = new BehaviorSubject<
-    Array<{elementId: string; elementType: string; elementName?: string; reason: string}>
+    Array<{elementId: string; elementType: string; elementName?: string; reason: string; errorCode?: string; expression?: string; severity?: 'ERROR' | 'WARNING'}>
   >([]);
 
   public readonly validationErrors$ = this._validationErrors$.asObservable();
@@ -97,12 +97,15 @@ export class ProcessManagementEditorService implements OnDestroy {
     elementType: string;
     elementName?: string;
     reason: string;
+    errorCode?: string;
+    expression?: string;
+    severity?: 'ERROR' | 'WARNING';
   }> {
     return this._validationErrors$.getValue();
   }
 
   public setValidationErrors(
-    errors: Array<{elementId: string; elementType: string; elementName?: string; reason: string}>
+    errors: Array<{elementId: string; elementType: string; elementName?: string; reason: string; errorCode?: string; expression?: string; severity?: 'ERROR' | 'WARNING'}>
   ): void {
     this._validationErrors$.next(errors);
   }

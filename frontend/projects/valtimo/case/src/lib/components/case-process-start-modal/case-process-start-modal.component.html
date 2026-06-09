@@ -69,3 +69,12 @@
     </section>
   </cds-modal>
 </valtimo-render-in-body>
+
+<valtimo-confirmation-modal
+  confirmButtonTextTranslationKey="case.draftProcessConfirmation.confirm"
+  contentTranslationKey="case.draftProcessConfirmation.message"
+  [showModalSubject$]="showDraftConfirmation$"
+  titleTranslationKey="case.draftProcessConfirmation.title"
+  (confirmEvent)="onDraftConfirmationConfirm()"
+  (cancelEvent)="onDraftConfirmationCancel()"
+></valtimo-confirmation-modal>

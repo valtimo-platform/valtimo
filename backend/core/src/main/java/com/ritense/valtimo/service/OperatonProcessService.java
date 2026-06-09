@@ -295,13 +295,22 @@ public class OperatonProcessService {
             )
         );
 
-        ProcessInstance processInstance = formService.submitStartForm(
-            processDefinition.getId(),
-            businessKey,
-            FormUtils.createTypedVariableMap(variables)
-        );
-
-        return new ProcessInstanceWithDefinition(processInstance, processDefinition);
+        boolean wasSuspended = processDefinition.isSuspended();
+        if (wasSuspended) {
+            repositoryService.activateProcessDefinitionById(processDefinition.getId());
+        }
+        try {
+            ProcessInstance processInstance = formService.submitStartForm(
+                processDefinition.getId(),
+                businessKey,
+                FormUtils.createTypedVariableMap(variables)
+            );
+            return new ProcessInstanceWithDefinition(processInstance, processDefinition);
+        } finally {
+            if (wasSuspended) {
+                repositoryService.suspendProcessDefinitionById(processDefinition.getId());
+            }
+        }
     }
 
     /**
