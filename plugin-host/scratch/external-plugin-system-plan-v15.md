@@ -134,9 +134,8 @@ Environment (`models/app-config.ts`): `ADMIN_TOKEN` (required), `PORT` (8090), `
 (`./plugins`), `LOG_LEVEL` (info), `HOST_ID` (defaults to the OS hostname; see §6). **No broker
 variables** — the host never configures a broker itself.
 
-Gaps to close for production: action route is unauthenticated (POC — must validate the service
-token/HMAC like the callback path does); no `log` / `http_request` / `kv` host functions or
-capability allowlist; no HTMX `render_page` / `handle_request`; registry is memory-only;
+Gaps to close for production: no `log` / `http_request` / `kv` host functions or
+capability allowlist; no HTMX `render_page` / `handle_request`;
 `DELETE /plugins/:id/:version` doesn't refuse removal while active configs reference it.
 
 ## 6. Events ✅ (POC-level 🟡)
@@ -280,13 +279,16 @@ Remaining DX: align all docs/examples on one (synchronous) calling convention; d
 
 Host capabilities + host functions (`http_request`, `kv`, structured `log`) with allowlist
 enforcement; downscoped user tokens for iframe→user-endpoint calls (PBAC ∩ allowlist); HTMX pages;
-case tabs/widgets; menu pages; host database (KV, API logs, retention); URL-plugin mode; host-side
-action authentication; broker credential delivery over TLS/HMAC rather than the admin-token channel;
+case tabs/widgets; menu pages; host database (KV, API logs, retention); URL-plugin mode;
+broker credential delivery over TLS/HMAC rather than the admin-token channel;
 event delivery durability across host downtime (currently live-subscription only).
 
 ## 9. Roadmap (priority order)
 
-1. Authenticate the host action route (service token + HMAC) — security blocker.
+1. ~~Authenticate the host action route (service token + HMAC) — security blocker.~~ ✅ Implemented:
+   `plugin-host/app/src/security/hmac.ts` + preHandler on action route. HMAC-SHA256 over
+   `{METHOD}\n{path}\n{timestamp}\n{bodyHash}` using `ADMIN_TOKEN` as shared secret; 5-minute
+   timestamp drift tolerance; timing-safe comparison.
 2. Capabilities + host functions + allowlist enforcement; surface in the acceptance screen by category.
 3. Durable/replayable event delivery option (per-host durable queue with TTL) for hosts that must not
    miss events during downtime.

@@ -17,6 +17,12 @@
 import {FastifyInstance} from "fastify";
 import {PluginManager} from "../plugin-manager.js";
 import {ConfigRegistry} from "../config-registry.js";
+import type {AppConfig} from "../config.js";
+import {
+  verifyHmac,
+  SIGNATURE_HEADER,
+  TIMESTAMP_HEADER,
+} from "../security/hmac.js";
 
 /**
  * Plugin action execution endpoint.
@@ -26,13 +32,15 @@ import {ConfigRegistry} from "../config-registry.js";
  * (pushed by GZAC on activation/startup), injects decrypted properties
  * into the Wasm function input, and returns variables to the process.
  *
- * POC: no token auth on this route. Production: service token + HMAC.
+ * Authentication: HMAC-SHA256 signature over `{method}\n{path}\n{timestamp}\n{bodyHash}`
+ * using the shared secret (ADMIN_TOKEN). This ensures requests originate from a GZAC
+ * instance that knows the host's secret.
  */
 export async function pluginActionRoutes(
   fastify: FastifyInstance,
-  opts: { pluginManager: PluginManager; configRegistry: ConfigRegistry }
+  opts: { pluginManager: PluginManager; configRegistry: ConfigRegistry; config: AppConfig }
 ): Promise<void> {
-  const { pluginManager, configRegistry } = opts;
+  const { pluginManager, configRegistry, config } = opts;
 
   /**
    * POST /plugins/:pluginId/:version/actions/:actionKey
@@ -48,6 +56,8 @@ export async function pluginActionRoutes(
    * GZAC pushes configurations to the host on activation/startup via the
    * configuration push API. At action time, only the configurationId is
    * sent. The host looks up decrypted properties from its in-memory registry.
+   *
+   * Authentication: HMAC-SHA256 signature in X-Valtimo-Signature header.
    */
   fastify.post<{
     Params: {
@@ -64,6 +74,32 @@ export async function pluginActionRoutes(
     };
   }>(
     "/plugins/:pluginId/:version/actions/:actionKey",
+    {
+      // Capture raw body for HMAC verification while still parsing JSON
+      config: {
+        rawBody: true,
+      },
+      preHandler: async (request, reply) => {
+        const rawBody = (request as unknown as { rawBody?: Buffer }).rawBody ?? Buffer.alloc(0);
+        const signatureHeader = request.headers[SIGNATURE_HEADER] as string | undefined;
+        const timestampHeader = request.headers[TIMESTAMP_HEADER] as string | undefined;
+
+        const result = verifyHmac(
+          config.ADMIN_TOKEN,
+          request.method,
+          request.url.split("?")[0], // path without query string
+          signatureHeader,
+          timestampHeader,
+          rawBody
+        );
+
+        if (!result.valid) {
+          request.log.warn({ error: result.error, path: request.url }, "HMAC verification failed");
+          reply.code(401).send({ error: "Unauthorized: " + result.error });
+          return;
+        }
+      },
+    },
     async (request, reply) => {
       const { pluginId, version, actionKey } = request.params;
       const {
