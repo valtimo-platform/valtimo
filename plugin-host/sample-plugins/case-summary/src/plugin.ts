@@ -14,8 +14,8 @@
  * limitations under the License.
  */
 
-import type {ActionInput, Document} from "@valtimo/plugin-sdk";
-import {action, config, gzacApi, handle_action, log,} from "@valtimo/plugin-sdk";
+import type {ActionInput, Document, EventInput} from "@valtimo/plugin-sdk";
+import {action, config, gzacApi, log, onEvent,} from "@valtimo/plugin-sdk";
 
 action("case-summary", (input: ActionInput) => {
   const titleField = (input.properties.titleField as string) || "/applicantName";
@@ -68,6 +68,32 @@ action("case-summary", (input: ActionInput) => {
   };
 });
 
+// Subscribe to platform events declared under `eventSubscriptions` in manifest.json. The host
+// routes each matching CloudEvent here. On `document.created` this writes a note back to the
+// document via the GZAC API, exercising the full event -> callback round trip. The POST endpoint is
+// declared under `permissions.managementEndpoints`, so the configuration must be granted it.
+onEvent((event: EventInput) => {
+  log.info(
+    `[case-summary] event ${event.type} (resultType=${event.resultType ?? "?"}, ` +
+      `resultId=${event.resultId ?? "?"}, user=${event.userId ?? "?"})`
+  );
+
+  if (event.type === "com.ritense.valtimo.document.created" && event.resultId) {
+    const content = `consumed by external plugin on ${new Date().toISOString()}`;
+    const res = gzacApi.post(`/api/v1/document/${event.resultId}/note`, {content});
+    if (res.status < 200 || res.status >= 300) {
+      return {
+        status: "error" as const,
+        errorCode: `NOTE_CREATE_${res.status}`,
+        errorMessage: `Failed to add note to document ${event.resultId} (status ${res.status})`,
+      };
+    }
+    log.info(`[case-summary] added note to document ${event.resultId}`);
+  }
+
+  return {status: "completed" as const};
+});
+
 /**
  * Minimal RFC 6901 JSON Pointer lookup. `""` and `"/"` return the root; missing path segments
  * return undefined rather than throwing. Supports the `~0`/`~1` escape sequences.
@@ -92,6 +118,3 @@ function pointerLookup(
   }
   return cur;
 }
-
-// @ts-ignore — module.exports is used by the extism-js compiler
-module.exports = { handle_action };

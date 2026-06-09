@@ -34,6 +34,7 @@ import {PluginHostModalComponent} from './components/plugin-host-modal/plugin-ho
 import {PluginUploadModalComponent} from './components/plugin-upload-modal/plugin-upload-modal.component';
 import {
   CarbonListModule,
+  ConfirmationModalModule,
   ParagraphModule,
   TableModule,
   ValtimoCdsModalDirective,
@@ -85,6 +86,7 @@ import {
     PluginExternalPermissionsComponent,
     PluginHostModalComponent,
     PluginUploadModalComponent,
+    ConfirmationModalModule,
   ],
   exports: [
     PluginManagementComponent,

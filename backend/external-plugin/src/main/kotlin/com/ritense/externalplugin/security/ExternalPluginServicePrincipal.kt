@@ -16,16 +16,19 @@
 
 package com.ritense.externalplugin.security
 
+import com.ritense.valtimo.contract.authentication.SystemPrincipal
 import java.util.UUID
 
 /**
  * Spring Security principal representing an external plugin service-token caller. Carries no roles —
- * endpoint access is enforced by [ExternalPluginEndpointAllowlistFilter].
+ * endpoint access is enforced by [ExternalPluginEndpointAllowlistFilter]. Marked as a
+ * [SystemPrincipal] so user-scoped operations it triggers (e.g. creating a note) attribute to the
+ * system user rather than failing on a user lookup — the token has no Keycloak user.
  */
 data class ExternalPluginServicePrincipal(
     val pluginConfigId: UUID,
     val pluginId: String,
     val pluginVersion: String,
-) {
+) : SystemPrincipal {
     override fun toString(): String = "external-plugin:$pluginId:$pluginConfigId"
 }

@@ -18,6 +18,29 @@ import {FastifyInstance, FastifyReply, FastifyRequest} from "fastify";
 import {ConfigRegistry} from "../config-registry.js";
 import {PluginManager} from "../plugin-manager.js";
 import {AppConfig} from "../config.js";
+import {EventConsumerManager} from "../rabbitmq/event-consumer.js";
+import type {EventBrokerConfig} from "../models/index.js";
+
+const EXCHANGE_TYPES = ["fanout", "topic", "direct"] as const;
+
+/**
+ * Normalizes the `eventBroker` field GZAC sends with a configuration. Returns `undefined` (events
+ * disabled for the configuration) when no `amqpUrl` is supplied; defaults the exchange/type so GZAC
+ * only has to send the URL for the common topology.
+ */
+function normalizeEventBroker(input: unknown): EventBrokerConfig | undefined {
+  if (!input || typeof input !== "object") return undefined;
+  const b = input as Record<string, unknown>;
+  const amqpUrl = typeof b.amqpUrl === "string" ? b.amqpUrl.trim() : "";
+  if (!amqpUrl) return undefined;
+  const exchange =
+    typeof b.exchange === "string" && b.exchange.length > 0 ? b.exchange : "valtimo-events";
+  const typeRaw = typeof b.exchangeType === "string" ? b.exchangeType : "fanout";
+  const exchangeType = (EXCHANGE_TYPES as readonly string[]).includes(typeRaw)
+    ? (typeRaw as EventBrokerConfig["exchangeType"])
+    : "fanout";
+  return { amqpUrl, exchange, exchangeType };
+}
 
 /**
  * Configuration push endpoints.
@@ -33,9 +56,10 @@ export async function hostConfigurationRoutes(
     configRegistry: ConfigRegistry;
     pluginManager: PluginManager;
     config: AppConfig;
+    eventConsumerManager: EventConsumerManager;
   }
 ): Promise<void> {
-  const { configRegistry, pluginManager, config } = opts;
+  const { configRegistry, pluginManager, config, eventConsumerManager } = opts;
 
   // Admin auth hook
   fastify.addHook(
@@ -66,6 +90,7 @@ export async function hostConfigurationRoutes(
       properties: Record<string, unknown>;
       serviceToken: string;
       gzacBaseUrl: string;
+      eventBroker?: unknown;
     };
   }>("/api/host/configurations/:configId", async (request, reply) => {
     const { configId } = request.params;
@@ -94,6 +119,8 @@ export async function hostConfigurationRoutes(
       return;
     }
 
+    const eventBroker = normalizeEventBroker(request.body.eventBroker);
+
     configRegistry.set(configId, {
       configurationId: configId,
       pluginId,
@@ -101,10 +128,12 @@ export async function hostConfigurationRoutes(
       properties: properties || {},
       serviceToken,
       gzacBaseUrl,
+      eventBroker,
     });
+    await eventConsumerManager.sync();
 
     request.log.info(
-      { configId, pluginId, pluginVersion, gzacBaseUrl },
+      { configId, pluginId, pluginVersion, gzacBaseUrl, eventBroker: eventBroker?.exchange ?? null },
       "Configuration pushed"
     );
     reply.code(201).send({ configurationId: configId });
@@ -119,6 +148,7 @@ export async function hostConfigurationRoutes(
       properties: Record<string, unknown>;
       serviceToken?: string;
       gzacBaseUrl?: string;
+      eventBroker?: unknown;
     };
   }>("/api/host/configurations/:configId", async (request, reply) => {
     const { configId } = request.params;
@@ -129,12 +159,20 @@ export async function hostConfigurationRoutes(
       return;
     }
 
+    // Only replace the broker when the update actually carries one; otherwise keep what's stored.
+    const eventBroker =
+      "eventBroker" in request.body
+        ? normalizeEventBroker(request.body.eventBroker)
+        : existing.eventBroker;
+
     configRegistry.set(configId, {
       ...existing,
       properties: request.body.properties || {},
       serviceToken: request.body.serviceToken ?? existing.serviceToken,
       gzacBaseUrl: request.body.gzacBaseUrl ?? existing.gzacBaseUrl,
+      eventBroker,
     });
+    await eventConsumerManager.sync();
 
     reply.code(200).send({ configurationId: configId });
   });
@@ -152,6 +190,7 @@ export async function hostConfigurationRoutes(
         });
         return;
       }
+      await eventConsumerManager.sync();
       reply.code(204).send();
     }
   );

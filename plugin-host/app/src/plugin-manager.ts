@@ -28,6 +28,12 @@ interface LoadedPlugin {
   manifest: PluginManifest;
   wasmPath: string;
   extismPlugin: ExtismPlugin | null;
+  /**
+   * Serializes access to {@link extismPlugin}. Extism instances are not reentrant — a second
+   * `plugin.call` (or a concurrent instance creation) while one is in flight throws "plugin is not
+   * reentrant". Calls chain through this promise so only one runs at a time per loaded plugin.
+   */
+  lock: Promise<unknown>;
 }
 
 /**
@@ -90,6 +96,7 @@ export class PluginManager {
       manifest,
       wasmPath,
       extismPlugin: null,
+      lock: Promise.resolve(),
     });
 
     this.logger.info({ pluginId, version }, "Plugin loaded");
@@ -203,6 +210,22 @@ export class PluginManager {
   }
 
   /**
+   * Runs `fn` with exclusive access to the loaded plugin's Extism instance. Calls are chained
+   * through {@link LoadedPlugin.lock} so only one is ever in flight — Extism instances are not
+   * reentrant, and a burst of events would otherwise call the same cached instance concurrently
+   * ("plugin is not reentrant"). The tail swallows the result/rejection so one failed call never
+   * breaks the chain for the next.
+   */
+  private runExclusive<T>(loaded: LoadedPlugin, fn: () => Promise<T>): Promise<T> {
+    const run = loaded.lock.then(fn, fn);
+    loaded.lock = run.then(
+      () => undefined,
+      () => undefined
+    );
+    return run;
+  }
+
+  /**
    * Call the handle_action exported function on a plugin.
    *
    * `serviceToken` and `gzacBaseUrl` are passed via Extism's per-call host context — they are
@@ -236,8 +259,6 @@ export class PluginManager {
       throw new Error(`Plugin not found: ${pluginId}@${version}`);
     }
 
-    const plugin = await this.getOrCreateExtismPlugin(loaded);
-
     // Wasm input excludes serviceToken / gzacBaseUrl — they're host-only.
     const { serviceToken, gzacBaseUrl, ...wasmFields } = input;
     const wasmInput = JSON.stringify({
@@ -258,19 +279,77 @@ export class PluginManager {
       "Calling handle_action"
     );
 
-    const result = await plugin.call("handle_action", wasmInput, hostCtx);
-
-    if (!result) {
-      throw new Error(
-        `handle_action returned null for ${pluginId}@${version}`
-      );
-    }
-
-    const output = JSON.parse(result.text());
+    const output = await this.runExclusive(loaded, async () => {
+      const plugin = await this.getOrCreateExtismPlugin(loaded);
+      const result = await plugin.call("handle_action", wasmInput, hostCtx);
+      if (!result) {
+        throw new Error(`handle_action returned null for ${pluginId}@${version}`);
+      }
+      return JSON.parse(result.text());
+    });
 
     this.logger.debug(
       { pluginId, version, actionKey, status: output.status },
       "handle_action completed"
+    );
+
+    return output;
+  }
+
+  /**
+   * Call the handle_event exported function on a plugin.
+   *
+   * Like {@link callAction}, `serviceToken` and `gzacBaseUrl` are passed via Extism's per-call
+   * host context so the event handler can call back into GZAC via `gzac_api`; they are never
+   * serialized into the Wasm input.
+   */
+  async callEvent(
+    pluginId: string,
+    version: string,
+    input: {
+      configurationId: string;
+      configuration: Record<string, unknown>;
+      event: Record<string, unknown>;
+      serviceToken: string;
+      gzacBaseUrl: string;
+    }
+  ): Promise<{ status: string; errorCode?: string; errorMessage?: string }> {
+    const k = this.key(pluginId, version);
+    const loaded = this.plugins.get(k);
+
+    if (!loaded) {
+      throw new Error(`Plugin not found: ${pluginId}@${version}`);
+    }
+
+    // The Wasm input is the EventInput shape: the event envelope/payload plus the configuration.
+    const wasmInput = JSON.stringify({
+      ...input.event,
+      configuration: input.configuration,
+    });
+
+    const hostCtx: GzacApiCallContext = {
+      configurationId: input.configurationId,
+      pluginId,
+      pluginVersion: version,
+      serviceToken: input.serviceToken,
+      gzacBaseUrl: input.gzacBaseUrl,
+    };
+
+    const eventType = (input.event as { type?: string }).type;
+    this.logger.debug({ pluginId, version, eventType }, "Calling handle_event");
+
+    const output = await this.runExclusive(loaded, async () => {
+      const plugin = await this.getOrCreateExtismPlugin(loaded);
+      const result = await plugin.call("handle_event", wasmInput, hostCtx);
+      if (!result) {
+        throw new Error(`handle_event returned null for ${pluginId}@${version}`);
+      }
+      return JSON.parse(result.text());
+    });
+
+    this.logger.debug(
+      { pluginId, version, eventType, status: output.status },
+      "handle_event completed"
     );
 
     return output;

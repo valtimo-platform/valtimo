@@ -14,18 +14,19 @@
  * limitations under the License.
  */
 
-export type {
-  ActionInput,
-  ActionOutput,
-  ActionHandler,
-  EventInput,
-  EventOutput,
-  EventHandler,
-  PluginManifest,
-  ManifestAction,
-  ManifestActionProperty,
-  GzacApiResponse,
-  Document,
-  DocumentContent,
-  DocumentDefinitionId,
-} from "./types.js";
+import { EventHandler } from "./models/index.js";
+
+const eventHandlers: EventHandler[] = [];
+
+/**
+ * Register a handler for platform events. The plugin host delivers every event whose CloudEvent
+ * `type` is listed in the manifest's `eventSubscriptions`. Discriminate on `event.type` inside the
+ * handler. Multiple handlers may be registered; all are invoked for each event.
+ */
+export function onEvent(handler: EventHandler): void {
+  eventHandlers.push(handler);
+}
+
+export function getEventHandlers(): EventHandler[] {
+  return eventHandlers;
+}

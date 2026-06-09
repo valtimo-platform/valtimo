@@ -15,12 +15,14 @@
     "@extism/extism": "^2.0.0-rc13",
     "@fastify/multipart": "^10.0.0",
     "adm-zip": "^0.5.17",
+    "amqplib": "^0.10.9",
     "fastify": "^5.8.5",
     "pino": "^9.6.0",
     "zod": "^3.24.4"
   },
   "devDependencies": {
     "@types/adm-zip": "^0.5.8",
+    "@types/amqplib": "^0.10.8",
     "@types/node": "^22.0.0",
     "tsx": "^4.19.0",
     "typescript": "^5.4.0"

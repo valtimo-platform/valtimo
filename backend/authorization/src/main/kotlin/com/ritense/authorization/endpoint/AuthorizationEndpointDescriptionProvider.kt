@@ -31,6 +31,7 @@ class AuthorizationEndpointDescriptionProvider : EndpointDescriptionProvider {
         endpoint("GET", "/api/management/v1/roles/{roleKey}/permissions", "Get role permissions", "Rolpermissies ophalen"),
         endpoint("PUT", "/api/management/v1/roles/{roleKey}/permissions", "Update role permissions", "Rolpermissies bijwerken"),
         endpoint("POST", "/api/management/v1/permissions/search", "Search permissions", "Permissies zoeken"),
+        endpoint("GET", "/api/management/v1/permissions/schema", "Get permissions schema", "Permissieschema ophalen"),
     )
 
     private companion object {

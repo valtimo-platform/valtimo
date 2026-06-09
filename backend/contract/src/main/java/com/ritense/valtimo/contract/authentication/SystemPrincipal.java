@@ -14,12 +14,14 @@
  * limitations under the License.
  */
 
-declare module "main" {
-  export function handle_action(): I32;
-}
+package com.ritense.valtimo.contract.authentication;
 
-declare module "extism:host" {
-  interface user {
-    gzac_api(input: PTR): PTR;
-  }
+/**
+ * Marker for a Spring Security principal that represents a non-human / system actor rather than a
+ * Keycloak user — for example an external plugin authenticated by a service token. Such a caller is
+ * authenticated (so it satisfies {@code .authenticated()} security rules) but has no user account,
+ * so {@link UserManagementService#getCurrentUser()} resolves it to the system user instead of
+ * attempting a user lookup that would fail.
+ */
+public interface SystemPrincipal {
 }

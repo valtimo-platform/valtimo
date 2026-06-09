@@ -19,6 +19,7 @@ package com.ritense.externalplugin.client
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.node.ObjectNode
+import com.ritense.externalplugin.security.ExternalPluginHmacSigner
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpMethod
@@ -32,6 +33,7 @@ import org.springframework.core.io.ByteArrayResource
 import org.springframework.util.LinkedMultiValueMap
 import org.springframework.web.client.RestTemplate
 import java.net.URI
+import java.time.Instant
 
 @Component
 @SkipComponentScan
@@ -76,6 +78,9 @@ class ExternalPluginHostClient(
         properties: ObjectNode,
         serviceToken: String,
         gzacBaseUrl: String,
+        eventBrokerUrl: String?,
+        eventBrokerExchange: String,
+        eventBrokerExchangeType: String,
     ): Boolean = try {
         val uri = buildUri(baseUrl, "/api/host/configurations/$configId")
         val body = objectMapper.createObjectNode().apply {
@@ -84,6 +89,15 @@ class ExternalPluginHostClient(
             set<ObjectNode>("properties", properties)
             put("serviceToken", serviceToken)
             put("gzacBaseUrl", gzacBaseUrl)
+            // The host learns this GZAC instance's broker from the push (it never configures one
+            // itself). Omitted when no broker is configured — events are then disabled for the config.
+            if (!eventBrokerUrl.isNullOrBlank()) {
+                set<ObjectNode>("eventBroker", objectMapper.createObjectNode().apply {
+                    put("amqpUrl", eventBrokerUrl)
+                    put("exchange", eventBrokerExchange)
+                    put("exchangeType", eventBrokerExchangeType)
+                })
+            }
         }
         val headers = HttpHeaders().apply {
             setBearerAuth(adminToken)
@@ -112,12 +126,21 @@ class ExternalPluginHostClient(
         version: String,
         actionKey: String,
         payload: ObjectNode,
+        hostSecret: String,
     ): ActionResponse {
-        val uri = buildUri(baseUrl, "/plugins/$pluginId/$version/actions/$actionKey")
+        val path = "/plugins/$pluginId/$version/actions/$actionKey"
+        val uri = buildUri(baseUrl, path)
         val body = objectMapper.writeValueAsBytes(payload)
+
+        val signer = ExternalPluginHmacSigner(hostSecret)
+        val timestamp = Instant.now().toString()
+        val bodyHash = signer.bodyHash(body)
+        val signature = signer.sign(HttpMethod.POST.name(), path, timestamp, bodyHash)
 
         val headers = HttpHeaders().apply {
             contentType = MediaType.APPLICATION_JSON
+            set(ExternalPluginHmacSigner.SIGNATURE_HEADER, signature)
+            set(ExternalPluginHmacSigner.TIMESTAMP_HEADER, timestamp)
         }
 
         return try {

@@ -52,6 +52,9 @@ class ExternalPluginConfigurationService(
     private val objectMapper: ObjectMapper,
     private val serviceTokenService: ExternalPluginServiceTokenService,
     private val gzacBaseUrl: String,
+    private val eventBrokerUrl: String,
+    private val eventBrokerExchange: String,
+    private val eventBrokerExchangeType: String,
 ) {
 
     @Transactional(readOnly = true)
@@ -125,6 +128,9 @@ class ExternalPluginConfigurationService(
             properties = decrypted,
             serviceToken = serviceToken,
             gzacBaseUrl = gzacBaseUrl,
+            eventBrokerUrl = eventBrokerUrl,
+            eventBrokerExchange = eventBrokerExchange,
+            eventBrokerExchangeType = eventBrokerExchangeType,
         )
         if (pushed) {
             logger.info { "Pushed configuration ${configuration.id} for plugin '${definition.pluginId}' to host ${host.id}" }
