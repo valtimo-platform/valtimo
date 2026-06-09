@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -42,13 +42,13 @@ import com.ritense.widget.map.geojson.GeoJsonNullMapper
 import com.ritense.widget.map.geojson.GeoJsonPointMapper
 import com.ritense.widget.map.geojson.GeoJsonPolygonMapper
 import com.ritense.widget.map.geojson.Wgs84FeatureNormalizer
+import com.ritense.widget.metroline.MetrolineWidget
+import com.ritense.widget.metroline.MetrolineWidgetDataProvider
 import com.ritense.widget.pdok.client.PdokLocatieserverClient
 import com.ritense.widget.repository.WidgetRepository
-import java.net.URI
 import com.ritense.widget.service.WidgetService
 import com.ritense.widget.table.TableWidget
 import com.ritense.widget.table.TableWidgetDataProvider
-import javax.sql.DataSource
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.autoconfigure.AutoConfiguration
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass
@@ -59,6 +59,8 @@ import org.springframework.context.annotation.Bean
 import org.springframework.core.annotation.Order
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories
 import org.springframework.web.client.RestClient
+import java.net.URI
+import javax.sql.DataSource
 
 @AutoConfiguration
 @EnableJpaRepositories(
@@ -74,6 +76,7 @@ import org.springframework.web.client.RestClient
         FieldsWidget::class,
         InteractiveTableWidget::class,
         MapWidget::class,
+        MetrolineWidget::class,
         TableWidget::class,
         Widget::class,
     ]
@@ -131,6 +134,13 @@ class WidgetAutoConfiguration {
     fun customWidgetDataProvider(
         valueResolverService: ValueResolverService,
     ) = CustomWidgetDataProvider(valueResolverService)
+
+    @ConditionalOnMissingBean(MetrolineWidgetDataProvider::class)
+    @Bean
+    fun metrolineWidgetDataProvider(
+        objectMapper: ObjectMapper,
+        valueResolverService: ValueResolverService,
+    ) = MetrolineWidgetDataProvider(objectMapper, valueResolverService)
 
     @ConditionalOnMissingBean(ResolvedPageSerializer::class)
     @Bean
