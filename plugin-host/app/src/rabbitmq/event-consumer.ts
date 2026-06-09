@@ -172,8 +172,9 @@ export class EventConsumerManager {
   private async reconcile(): Promise<void> {
     if (this.closing) return;
 
+    const configs = await this.configRegistry.list();
     const desired = new Map<string, EventBrokerConfig>();
-    for (const cfg of this.configRegistry.list()) {
+    for (const cfg of configs) {
       if (cfg.eventBroker?.amqpUrl) desired.set(brokerKey(cfg.eventBroker), cfg.eventBroker);
     }
 
@@ -223,7 +224,8 @@ export class EventConsumerManager {
       result: data.result,
     };
 
-    for (const cfg of this.configRegistry.list()) {
+    const configs = await this.configRegistry.list();
+    for (const cfg of configs) {
       if (!cfg.eventBroker || brokerKey(cfg.eventBroker) !== key) continue;
       const manifest = this.pluginManager.getManifest(cfg.pluginId, cfg.pluginVersion);
       if (!manifest?.eventSubscriptions?.includes(type)) continue;

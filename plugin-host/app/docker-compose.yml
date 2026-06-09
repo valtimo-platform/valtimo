@@ -1,0 +1,42 @@
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: plugin-host-db
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-pluginhost}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-pluginhost}
+      POSTGRES_DB: ${POSTGRES_DB:-pluginhost}
+    ports:
+      - "${POSTGRES_PORT:-5434}:5432"
+    volumes:
+      - plugin-host-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-pluginhost} -d ${POSTGRES_DB:-pluginhost}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  app:
+    build: .
+    container_name: plugin-host-app
+    environment:
+      ADMIN_TOKEN: ${ADMIN_TOKEN:-changeme}
+      DB_HOST: db
+      DB_PORT: 5432
+      DB_NAME: ${POSTGRES_DB:-pluginhost}
+      DB_USER: ${POSTGRES_USER:-pluginhost}
+      DB_PASSWORD: ${POSTGRES_PASSWORD:-pluginhost}
+      PLUGIN_STORAGE_DIR: /data/plugins
+      HOST_ID: ${HOST_ID:-plugin-host}
+      LOG_LEVEL: ${LOG_LEVEL:-info}
+    ports:
+      - "${APP_PORT:-8090}:8090"
+    volumes:
+      - plugin-storage:/data/plugins
+    depends_on:
+      db:
+        condition: service_healthy
+
+volumes:
+  plugin-host-data:
+  plugin-storage:

@@ -121,7 +121,7 @@ export async function hostConfigurationRoutes(
 
     const eventBroker = normalizeEventBroker(request.body.eventBroker);
 
-    configRegistry.set(configId, {
+    await configRegistry.set(configId, {
       configurationId: configId,
       pluginId,
       pluginVersion,
@@ -152,7 +152,7 @@ export async function hostConfigurationRoutes(
     };
   }>("/api/host/configurations/:configId", async (request, reply) => {
     const { configId } = request.params;
-    const existing = configRegistry.get(configId);
+    const existing = await configRegistry.get(configId);
 
     if (!existing) {
       reply.code(404).send({ error: `Configuration not found: ${configId}` });
@@ -165,7 +165,7 @@ export async function hostConfigurationRoutes(
         ? normalizeEventBroker(request.body.eventBroker)
         : existing.eventBroker;
 
-    configRegistry.set(configId, {
+    await configRegistry.set(configId, {
       ...existing,
       properties: request.body.properties || {},
       serviceToken: request.body.serviceToken ?? existing.serviceToken,
@@ -183,7 +183,7 @@ export async function hostConfigurationRoutes(
   fastify.delete<{ Params: { configId: string } }>(
     "/api/host/configurations/:configId",
     async (request, reply) => {
-      const deleted = configRegistry.delete(request.params.configId);
+      const deleted = await configRegistry.delete(request.params.configId);
       if (!deleted) {
         reply.code(404).send({
           error: `Configuration not found: ${request.params.configId}`,
