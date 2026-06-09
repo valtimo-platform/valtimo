@@ -15,6 +15,7 @@
  */
 
 import Fastify from "fastify";
+import rawBody from "fastify-raw-body";
 import multipart from "@fastify/multipart";
 import { loadConfig } from "./config.js";
 import { PluginManager } from "./plugin-manager.js";
@@ -55,6 +56,14 @@ async function main(): Promise<void> {
     fastify.log.error({ error: (err as Error).message }, "Failed to connect to database");
     process.exit(1);
   }
+
+  // Register raw body plugin for HMAC verification on action routes
+  await fastify.register(rawBody, {
+    field: "rawBody",
+    global: false, // Only enable on routes that request it via config.rawBody
+    encoding: false, // Return Buffer, not string
+    runFirst: true, // Run before JSON parsing
+  });
 
   // Register multipart for file uploads
   await fastify.register(multipart, {
@@ -101,6 +110,7 @@ async function main(): Promise<void> {
   await fastify.register(pluginActionRoutes, {
     pluginManager,
     configRegistry,
+    config,
   });
   await fastify.register(pluginBundleRoutes, {
     pluginManager,
