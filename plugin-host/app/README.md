@@ -48,29 +48,29 @@ Dockerfile                # App container image
 - Node.js 22+
 - Docker (for database and containerized deployment)
 
-## Quick Start
+## Quick Start (Recommended)
 
-### Local Development
+Run the host locally with only PostgreSQL in Docker. This works seamlessly with GZAC's RabbitMQ
+since both use `localhost`.
 
 ```bash
-# Start the database
-npm run db:up
-
-# Install dependencies and run with auto-reload
 npm install
-npm run dev
+npm run dev    # Starts db container + app with auto-reload
 ```
 
-### Docker Deployment
+That's it. The database starts automatically and the host listens on port 8090.
+
+### Full Docker Deployment
+
+For production or isolated testing, run everything in Docker:
 
 ```bash
-# Build and start everything
 npm run build
-npm run docker:up
-
-# Or with custom admin token
 ADMIN_TOKEN=my-secret npm run docker:up
 ```
+
+Note: When running fully containerized, GZAC must push `eventBroker.amqpUrl` using
+`host.docker.internal` instead of `localhost` to reach the host machine's RabbitMQ.
 
 ## Environment Variables
 
@@ -97,7 +97,7 @@ each on its own broker.
 
 | Script | Description |
 |--------|-------------|
-| `npm run dev` | Start with auto-reload (sets `ADMIN_TOKEN=test-secret`) |
+| `npm run dev` | Start db container + app with auto-reload (recommended for local dev) |
 | `npm run build` | Compile TypeScript to `dist/` |
 | `npm start` | Run compiled app |
 | `npm run clean` | Remove `dist/`, `.tmp/`, and `plugins/` directories |
