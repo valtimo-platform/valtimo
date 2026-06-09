@@ -1162,6 +1162,28 @@
           "placeholder": "Select a status source",
           "internalStatus": "Internal status",
           "zaakStatus": "Zaak status"
+        },
+        "iko": {
+          "source": {
+            "label": "Items source",
+            "placeholder": "iko:/statushistorie",
+            "tooltip": "Path expression resolving to an array. Each element of the array becomes one step in the timeline. Example: iko:/statushistorie"
+          },
+          "titlePath": {
+            "label": "Title path",
+            "placeholder": "/statustype/omschrijving",
+            "tooltip": "Path applied to each item to extract its title. Example: /statustype/omschrijving"
+          },
+          "labelPath": {
+            "label": "Tooltip text path (optional)",
+            "placeholder": "/statustype/toelichting",
+            "tooltip": "Optional path applied to each item to extract the text shown in the step's info tooltip (the icon next to the title). Example: /statustype/toelichting"
+          },
+          "completedPath": {
+            "label": "Completion timestamp path",
+            "placeholder": "/datumStatusGezet",
+            "tooltip": "Path applied to each item to extract the timestamp at which the step was reached. Expected as an ISO-8601 timestamp, with or without a timezone offset (e.g. 2025-08-15T10:30:00, 2025-08-15T10:30:00Z, or 2025-08-15T10:30:00+02:00). Items whose value is empty or unparseable are rendered as not yet reached. Example: /datumStatusGezet"
+          }
         }
       },
       "highlight": {
