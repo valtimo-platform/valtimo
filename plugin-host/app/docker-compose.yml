@@ -19,6 +19,8 @@ services:
   app:
     build: .
     container_name: plugin-host-app
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     environment:
       ADMIN_TOKEN: ${ADMIN_TOKEN:-changeme}
       DB_HOST: db
