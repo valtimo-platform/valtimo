@@ -25,6 +25,8 @@ import { hostConfigurationRoutes } from "./routes/host-configurations.js";
 import { pluginActionRoutes } from "./routes/plugin-actions.js";
 import { pluginBundleRoutes } from "./routes/plugin-bundles.js";
 import { EventConsumerManager } from "./rabbitmq/event-consumer.js";
+import { createDbPool, runMigrations, closeDbPool, type DbPool } from "./db/index.js";
+import { ConfigRepository } from "./db/config-repository.js";
 
 async function main(): Promise<void> {
   const config = loadConfig();
@@ -34,6 +36,25 @@ async function main(): Promise<void> {
       level: config.LOG_LEVEL,
     },
   });
+
+  // Initialize database connection
+  let dbPool: DbPool;
+  try {
+    dbPool = await createDbPool(
+      {
+        host: config.DB_HOST,
+        port: config.DB_PORT,
+        database: config.DB_NAME,
+        user: config.DB_USER,
+        password: config.DB_PASSWORD,
+      },
+      fastify.log
+    );
+    await runMigrations(dbPool, fastify.log);
+  } catch (err) {
+    fastify.log.error({ error: (err as Error).message }, "Failed to connect to database");
+    process.exit(1);
+  }
 
   // Register multipart for file uploads
   await fastify.register(multipart, {
@@ -47,7 +68,8 @@ async function main(): Promise<void> {
     config.PLUGIN_STORAGE_DIR,
     fastify.log
   );
-  const configRegistry = new ConfigRegistry();
+  const configRepository = new ConfigRepository(dbPool);
+  const configRegistry = new ConfigRegistry(configRepository);
 
   // Brokers are learned from the configurations GZAC pushes; the manager opens/closes consumers as
   // configurations come and go (see hostConfigurationRoutes).
@@ -60,6 +82,9 @@ async function main(): Promise<void> {
 
   // Load existing plugins from disk
   await pluginManager.loadAllFromDisk();
+
+  // Sync event consumers with persisted configurations
+  await eventConsumerManager.sync();
 
   // Register routes
   await fastify.register(healthRoutes);
@@ -81,12 +106,25 @@ async function main(): Promise<void> {
     pluginManager,
   });
 
+  // Graceful shutdown
+  const shutdown = async (signal: string) => {
+    fastify.log.info({ signal }, "Shutting down...");
+    await eventConsumerManager.close();
+    await closeDbPool(dbPool);
+    await fastify.close();
+    process.exit(0);
+  };
+
+  process.on("SIGTERM", () => shutdown("SIGTERM"));
+  process.on("SIGINT", () => shutdown("SIGINT"));
+
   // Start server
   try {
     await fastify.listen({ port: config.PORT, host: "0.0.0.0" });
     fastify.log.info(`Plugin Host listening on port ${config.PORT}`);
   } catch (err) {
     fastify.log.error(err);
+    await closeDbPool(dbPool);
     process.exit(1);
   }
 }

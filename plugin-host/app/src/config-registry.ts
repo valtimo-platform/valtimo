@@ -15,41 +15,37 @@
  */
 
 import type { PluginConfiguration } from "./models/index.js";
+import type { ConfigRepository } from "./db/config-repository.js";
 
 /**
- * In-memory configuration registry.
+ * Configuration registry backed by database storage.
  *
  * Maps configurationId → { decrypted properties, plugin routing info }.
  * GZAC pushes configurations here on activation; the host injects them
  * into every Wasm call.
  *
- * POC scope: simplified — no GZAC instance tracking, no token lifecycle.
+ * Configurations are persisted to PostgreSQL and survive host restarts.
  */
 export class ConfigRegistry {
-  private configs = new Map<string, PluginConfiguration>();
+  constructor(private repo: ConfigRepository) {}
 
-  set(configurationId: string, config: PluginConfiguration): void {
-    this.configs.set(configurationId, config);
+  async set(configurationId: string, config: PluginConfiguration): Promise<void> {
+    await this.repo.set(configurationId, config);
   }
 
-  get(configurationId: string): PluginConfiguration | undefined {
-    return this.configs.get(configurationId);
+  async get(configurationId: string): Promise<PluginConfiguration | undefined> {
+    return this.repo.get(configurationId);
   }
 
-  delete(configurationId: string): boolean {
-    return this.configs.delete(configurationId);
+  async delete(configurationId: string): Promise<boolean> {
+    return this.repo.delete(configurationId);
   }
 
-  list(): PluginConfiguration[] {
-    return Array.from(this.configs.values());
+  async list(): Promise<PluginConfiguration[]> {
+    return this.repo.list();
   }
 
-  listByPlugin(
-    pluginId: string,
-    pluginVersion: string
-  ): PluginConfiguration[] {
-    return Array.from(this.configs.values()).filter(
-      (c) => c.pluginId === pluginId && c.pluginVersion === pluginVersion
-    );
+  async listByPlugin(pluginId: string, pluginVersion: string): Promise<PluginConfiguration[]> {
+    return this.repo.listByPlugin(pluginId, pluginVersion);
   }
 }

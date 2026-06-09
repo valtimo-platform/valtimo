@@ -100,7 +100,7 @@ export async function pluginActionRoutes(
         return;
       }
 
-      const pluginConfig = configRegistry.get(configurationId);
+      const pluginConfig = await configRegistry.get(configurationId);
       if (!pluginConfig) {
         reply.code(404).send({
           error: `Configuration not found: ${configurationId}. GZAC may need to re-sync configurations.`,

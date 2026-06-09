@@ -30,6 +30,13 @@ export const envSchema = z.object({
   // event. Replicas of the SAME host must share one HOST_ID so they load-balance (process each
   // event once) instead of each handling it. Defaults to the OS hostname.
   HOST_ID: z.string().min(1).default(() => hostname()),
+
+  // Database configuration
+  DB_HOST: z.string().default("localhost"),
+  DB_PORT: z.coerce.number().default(5434),
+  DB_NAME: z.string().default("pluginhost"),
+  DB_USER: z.string().default("pluginhost"),
+  DB_PASSWORD: z.string().default("pluginhost"),
 });
 
 export type AppConfig = z.infer<typeof envSchema>;
