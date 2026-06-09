@@ -25,10 +25,6 @@
     border-left: 4px solid var(--cds-support-info, #0043ce);
   }
 
-  &__empty {
-    color: var(--cds-text-helper, #6f6f6f);
-  }
-
   &__layout {
     display: grid;
     grid-template-columns: minmax(220px, 1fr) 3fr;

@@ -191,6 +191,7 @@
       },
       "buildingBlocks": {
         "loading": "Bouwblokken laden...",
+        "emptyTitle": "Geen bouwblokken",
         "empty": "Dit dossier heeft geen bouwblok-instanties.",
         "notEnabled": "Bouwblokken zijn niet ingeschakeld voor deze Valtimo-installatie.",
         "saved": "Bouwblok-document bijgewerkt",

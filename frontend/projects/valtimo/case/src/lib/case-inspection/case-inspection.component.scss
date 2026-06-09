@@ -16,14 +16,8 @@
 
 :host ::ng-deep {
   cds-tab .cds--tab-content {
-    padding: 0;
-  }
-}
-
-.case-inspection {
-  &__pane {
     background-color: var(--cds-layer);
-    padding: var(--cds-spacing-06, 1.5rem);
+    padding: 16px 0 0 0;
   }
 }
 

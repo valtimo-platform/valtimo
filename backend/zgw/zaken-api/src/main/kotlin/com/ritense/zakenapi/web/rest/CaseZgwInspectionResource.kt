@@ -30,14 +30,6 @@ import com.ritense.plugin.service.PluginService
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import com.ritense.valtimo.contract.domain.ValtimoMediaType.APPLICATION_JSON_UTF8_VALUE
 import com.ritense.zakenapi.ZakenApiPlugin
-import com.ritense.zakenapi.domain.ZaakInformatieObject
-import com.ritense.zakenapi.domain.ZaakInstanceLink
-import com.ritense.zakenapi.domain.ZaakObject
-import com.ritense.zakenapi.domain.ZaakResultaat
-import com.ritense.zakenapi.domain.ZaakStatus
-import com.ritense.zakenapi.domain.ZaakbesluitResponse
-import com.ritense.zakenapi.domain.ZaakeigenschapResponse
-import com.ritense.zakenapi.domain.rol.Rol
 import com.ritense.zakenapi.link.ZaakInstanceLinkNotFoundException
 import com.ritense.zakenapi.link.ZaakInstanceLinkService
 import com.ritense.zakenapi.web.rest.dto.CaseZgwInspectionDto
@@ -99,7 +91,7 @@ class CaseZgwInspectionResource(
         val link = try {
             zaakInstanceLinkService.getByDocumentId(caseId)
         } catch (e: ZaakInstanceLinkNotFoundException) {
-            return emptyInspection()
+            return CaseZgwInspectionDto()
         }
 
         val plugin = pluginService.createInstance(
@@ -108,7 +100,10 @@ class CaseZgwInspectionResource(
         )
         if (plugin == null) {
             warnings += "zaak: no Zaken API plugin configured for host ${link.zaakInstanceUrl.host}"
-            return emptyInspection(linkDto = link.toDto(), warnings = warnings)
+            return CaseZgwInspectionDto(
+                zaakInstanceLink = ZaakInstanceLinkDto.fromDomain(link),
+                warnings = warnings,
+            )
         }
 
         val zaak = trySection(warnings, "zaak") { plugin.getZaak(link.zaakInstanceUrl) }
@@ -117,40 +112,43 @@ class CaseZgwInspectionResource(
             // sub-resource call would hit the same error. Short-circuit so the
             // frontend can render a single, focused "zaak unreachable" empty
             // state instead of seven repeated warnings.
-            return emptyInspection(linkDto = link.toDto(), warnings = warnings)
+            return CaseZgwInspectionDto(
+                zaakInstanceLink = ZaakInstanceLinkDto.fromDomain(link),
+                warnings = warnings,
+            )
         }
         val zaakJson: JsonNode = objectMapper.valueToTree(zaak)
 
         val eigenschappen = trySection(warnings, "eigenschappen") {
-            plugin.getZaakeigenschappen(link.zaakInstanceUrl).map { it.toDto() }
+            plugin.getZaakeigenschappen(link.zaakInstanceUrl).map { ZaakEigenschapDto.fromDomain(it) }
         } ?: emptyList()
 
         val rollen = trySection(warnings, "rollen") {
-            plugin.getZaakRollen(link.zaakInstanceUrl).map { it.toDto() }
+            plugin.getZaakRollen(link.zaakInstanceUrl).map { ZaakRolDto.fromDomain(it, objectMapper) }
         } ?: emptyList()
 
         val statusHistory = trySection(warnings, "statusHistory") {
-            plugin.getZaakStatussen(link.zaakInstanceUrl).map { it.toDto() }
+            plugin.getZaakStatussen(link.zaakInstanceUrl).map { ZaakStatusDto.fromDomain(it) }
         } ?: emptyList()
 
         val resultaat = trySection(warnings, "resultaat") {
-            plugin.getZaakResultaat(link.zaakInstanceUrl)?.toDto()
+            plugin.getZaakResultaat(link.zaakInstanceUrl)?.let { ZaakResultaatDto.fromDomain(it) }
         }
 
         val zaakObjecten = trySection(warnings, "zaakObjecten") {
-            plugin.getZaakObjecten(link.zaakInstanceUrl).map { it.toDto() }
+            plugin.getZaakObjecten(link.zaakInstanceUrl).map { ZaakObjectDto.fromDomain(it) }
         } ?: emptyList()
 
         val zaakInformatieObjecten = trySection(warnings, "zaakInformatieObjecten") {
-            plugin.getZaakInformatieObjecten(caseId, link.zaakInstanceUrl).map { it.toDto() }
+            plugin.getZaakInformatieObjecten(caseId, link.zaakInstanceUrl).map { ZaakInformatieObjectDto.fromDomain(it) }
         } ?: emptyList()
 
         val besluiten = trySection(warnings, "besluiten") {
-            plugin.getZaakbesluiten(link.zaakInstanceUrl).map { it.toDto() }
+            plugin.getZaakbesluiten(link.zaakInstanceUrl).map { ZaakBesluitDto.fromDomain(it) }
         } ?: emptyList()
 
         return CaseZgwInspectionDto(
-            zaakInstanceLink = link.toDto(),
+            zaakInstanceLink = ZaakInstanceLinkDto.fromDomain(link),
             zaak = zaakJson,
             eigenschappen = eigenschappen,
             rollen = rollen,
@@ -163,22 +161,6 @@ class CaseZgwInspectionResource(
         )
     }
 
-    private fun emptyInspection(
-        linkDto: ZaakInstanceLinkDto? = null,
-        warnings: List<String> = emptyList(),
-    ) = CaseZgwInspectionDto(
-        zaakInstanceLink = linkDto,
-        zaak = null,
-        eigenschappen = emptyList(),
-        rollen = emptyList(),
-        statusHistory = emptyList(),
-        resultaat = null,
-        zaakObjecten = emptyList(),
-        zaakInformatieObjecten = emptyList(),
-        besluiten = emptyList(),
-        warnings = warnings,
-    )
-
     private inline fun <T> trySection(
         warnings: MutableList<String>,
         name: String,
@@ -190,62 +172,6 @@ class CaseZgwInspectionResource(
         warnings += "$name: failed to load"
         null
     }
-
-    private fun ZaakInstanceLink.toDto() = ZaakInstanceLinkDto(
-        zaakInstanceUrl = zaakInstanceUrl,
-        zaakInstanceId = zaakInstanceId,
-        zaakTypeUrl = zaakTypeUrl,
-    )
-
-    private fun ZaakeigenschapResponse.toDto() = ZaakEigenschapDto(
-        url = url,
-        eigenschap = eigenschap,
-        naam = naam,
-        waarde = waarde,
-    )
-
-    private fun Rol.toDto() = ZaakRolDto(
-        url = url,
-        betrokkeneType = betrokkeneType.name,
-        roltype = roltype,
-        omschrijving = omschrijving,
-        omschrijvingGeneriek = omschrijvingGeneriek?.name,
-        indicatieMachtiging = indicatieMachtiging?.key,
-        betrokkeneIdentificatie = betrokkeneIdentificatie?.let { objectMapper.valueToTree(it) },
-    )
-
-    private fun ZaakStatus.toDto() = ZaakStatusDto(
-        url = url,
-        statustype = statustype,
-        datumStatusGezet = datumStatusGezet,
-        statustoelichting = statustoelichting,
-    )
-
-    private fun ZaakResultaat.toDto() = ZaakResultaatDto(
-        url = url,
-        resultaattype = resultaattype,
-        toelichting = toelichting,
-    )
-
-    private fun ZaakObject.toDto() = ZaakObjectDto(
-        url = url,
-        objectUrl = objectUrl,
-        objectType = objectType,
-        objectTypeOverige = objectTypeOverige,
-        relatieomschrijving = relatieomschrijving,
-    )
-
-    private fun ZaakInformatieObject.toDto() = ZaakInformatieObjectDto(
-        url = url,
-        informatieobject = informatieobject,
-        titel = titel,
-        registratiedatum = registratiedatum,
-    )
-
-    private fun ZaakbesluitResponse.toDto() = ZaakBesluitDto(
-        url = url,
-        besluit = besluit,
-    )
 
     companion object {
         private val logger = KotlinLogging.logger {}

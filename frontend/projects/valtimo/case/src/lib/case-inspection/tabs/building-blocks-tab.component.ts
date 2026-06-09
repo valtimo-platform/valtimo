@@ -27,6 +27,7 @@ import {
   SimpleChanges,
 } from '@angular/core';
 import {TranslateModule} from '@ngx-translate/core';
+import {CarbonListModule} from '@valtimo/components';
 import {CaseInspectionBuildingBlockDetailComponent} from './building-block-detail.component';
 import {BuildingBlockInstance} from '../models/case-inspection.models';
 import {CaseInspectionService} from '../services/case-inspection.service';
@@ -37,7 +38,12 @@ import {CaseInspectionService} from '../services/case-inspection.service';
   templateUrl: './building-blocks-tab.component.html',
   styleUrl: './building-blocks-tab.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, TranslateModule, CaseInspectionBuildingBlockDetailComponent],
+  imports: [
+    CarbonListModule,
+    CaseInspectionBuildingBlockDetailComponent,
+    CommonModule,
+    TranslateModule,
+  ],
 })
 export class CaseInspectionBuildingBlocksTabComponent implements OnChanges {
   @Input() public documentId!: string;

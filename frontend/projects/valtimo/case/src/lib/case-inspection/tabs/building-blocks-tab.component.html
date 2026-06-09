@@ -30,9 +30,12 @@
   </ng-container>
 
   <ng-container *ngIf="!$loading() && !$notSupported() && $instances() as instances">
-    <p *ngIf="instances.length === 0" class="case-inspection-bb__empty">
-      {{ 'case.inspection.buildingBlocks.empty' | translate }}
-    </p>
+    <valtimo-no-results
+      *ngIf="instances.length === 0"
+      illustration="valtimo-layout/img/emptystate-empty.svg"
+      [description]="'case.inspection.buildingBlocks.empty' | translate"
+      [title]="'case.inspection.buildingBlocks.emptyTitle' | translate"
+    ></valtimo-no-results>
 
     <div *ngIf="instances.length > 0" class="case-inspection-bb__layout">
       <div

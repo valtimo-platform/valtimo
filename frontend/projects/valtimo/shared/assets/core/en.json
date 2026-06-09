@@ -188,6 +188,7 @@
       },
       "buildingBlocks": {
         "loading": "Loading building blocks...",
+        "emptyTitle": "No building blocks",
         "empty": "This case has no building block instances.",
         "notEnabled": "Building blocks are not enabled for this Valtimo installation.",
         "saved": "Building block document updated",
