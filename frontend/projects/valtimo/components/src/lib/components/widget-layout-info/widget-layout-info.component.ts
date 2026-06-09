@@ -28,16 +28,6 @@ import {NotificationModule} from 'carbon-components-angular';
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [TranslateModule, NotificationModule],
-  template: `
-    <cds-inline-notification
-      [notificationObj]="{
-        type: 'info',
-        title: 'widgetLayout.infoTitle' | translate,
-        message: 'widgetLayout.info' | translate,
-        showClose: false,
-        lowContrast: true
-      }"
-    ></cds-inline-notification>
-  `,
+  templateUrl: './widget-layout-info.component.html',
 })
 export class WidgetLayoutInfoComponent {}
