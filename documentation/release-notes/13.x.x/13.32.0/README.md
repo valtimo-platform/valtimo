@@ -18,3 +18,12 @@
   case information shown to customers.
 
 ## Bugfixes
+
+## Security
+
+* **Documented recommended Keycloak session and logout settings**
+
+  Valtimo's Keycloak configuration documentation now includes step-by-step admin-console instructions for the
+  recommended session timeout values and for enabling refresh-token revocation on logout. See
+  [Configuring Keycloak](../../../running-valtimo/application-configuration/configuring-keycloak.md) for the new
+  sections. 
