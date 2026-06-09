@@ -1,0 +1,215 @@
+<!--
+  ~ Copyright 2015-2026 Ritense BV, the Netherlands.
+  ~
+  ~ Licensed under EUPL, Version 1.2 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~ https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" basis,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<div *ngIf="overview$ | async as overview" class="ac">
+  @for (resource of overview; track resource.resourceType) {
+    <section class="ac__group">
+      <h4 class="ac__heading">
+        @if (roleKey) {
+          <a
+            class="ac__heading-link"
+            [routerLink]="['/access-control', roleKey, 'json-editor']"
+            [queryParams]="{filterResourceType: resource.resourceType}"
+          >
+            {{ resource.resourceType | resourceTypeLabel }}
+            <span class="ac__fqn">({{ resource.resourceType }})</span>
+          </a>
+        } @else {
+          {{ resource.resourceType | resourceTypeLabel }}
+          <span class="ac__fqn">({{ resource.resourceType }})</span>
+        }
+      </h4>
+
+      @for (entry of resource.actions; track entry.action) {
+        <div class="ac__action">
+          @if (entry.grants.length) {
+            <span class="ac__connective">{{ 'accessControl.overview.can' | translate }}</span>
+            @if (roleKey) {
+              <a
+                class="ac__action-link"
+                [routerLink]="['/access-control', roleKey, 'json-editor']"
+                [queryParams]="{
+                  filterResourceType: resource.resourceType,
+                  filterAction: entry.action,
+                }"
+              >
+                <span class="ac__action-name">{{
+                  'accessControl.actions.' + entry.action | translate
+                }}</span>
+              </a>
+            } @else {
+              <span class="ac__action-name">{{
+                'accessControl.actions.' + entry.action | translate
+              }}</span>
+            }
+
+            @for (perm of entry.grants; track $index; let isFirst = $first) {
+              @if (!isFirst) {
+                <div class="ac__or ac__connective">{{
+                  'accessControl.overview.or' | translate
+                }}</div>
+              }
+              <div class="ac__grant">
+                @if (perm.conditions?.length) {
+                  <div class="ac__connective">{{
+                    'accessControl.overview.when' | translate
+                  }}</div>
+                  <ng-container
+                    *ngTemplateOutlet="
+                      conditionsTpl;
+                      context: {
+                        conditions: perm.conditions,
+                        resourceType: perm.resourceType,
+                      }
+                    "
+                  ></ng-container>
+                } @else if (!perm.contextResourceType) {
+                  <div class="ac__connective">{{
+                    'accessControl.overview.unconditional' | translate
+                  }}</div>
+                }
+
+                @if (perm.contextResourceType) {
+                  @if (isNoContext(perm.contextResourceType)) {
+                    <div class="ac__connective">{{
+                      'accessControl.overview.noContext' | translate
+                    }}</div>
+                  } @else {
+                    <div>
+                      <span class="ac__connective">{{
+                        'accessControl.overview.inContextOf' | translate
+                      }}</span>
+                      <span class="ac__resource-type">{{
+                        perm.contextResourceType | resourceTypeLabel
+                      }}</span>
+                      @if (perm.contextConditions?.length) {
+                        <span class="ac__connective">{{
+                          'accessControl.overview.where' | translate
+                        }}</span>
+                      }
+                    </div>
+                    @if (perm.contextConditions?.length) {
+                      <ng-container
+                        *ngTemplateOutlet="
+                          conditionsTpl;
+                          context: {
+                            conditions: perm.contextConditions,
+                            resourceType: perm.contextResourceType,
+                          }
+                        "
+                      ></ng-container>
+                    }
+                  }
+                }
+              </div>
+            }
+          } @else {
+            <span class="ac__no-access">{{
+              'accessControl.overview.cannot' | translate
+            }}</span>
+            @if (roleKey) {
+              <a
+                class="ac__action-link"
+                [routerLink]="['/access-control', roleKey, 'json-editor']"
+                [queryParams]="{
+                  filterResourceType: resource.resourceType,
+                  filterAction: entry.action,
+                }"
+              >
+                <span class="ac__action-name">{{
+                  'accessControl.actions.' + entry.action | translate
+                }}</span>
+              </a>
+            } @else {
+              <span class="ac__action-name">{{
+                'accessControl.actions.' + entry.action | translate
+              }}</span>
+            }
+          }
+        </div>
+      }
+    </section>
+  }
+</div>
+
+<ng-template #conditionsTpl let-conditions="conditions" let-resourceType="resourceType">
+  <div class="ac__conditions">
+    @for (
+      condition of formatConditions(conditions, resourceType);
+      track $index;
+      let isFirst = $first
+    ) {
+      <div class="ac__condition">
+        @if (!isFirst) {
+          <span class="ac__connective">{{ 'accessControl.overview.and' | translate }}</span>
+        }
+        @switch (condition.kind) {
+          @case ('field') {
+            <span>{{ condition.field }}</span>
+            @if (condition.customField) {
+              <span class="ac__connective">{{
+                'accessControl.overview.customField' | translate
+              }}</span>
+            }
+            <span class="ac__operator">{{ condition.operator }}</span>
+            <span>{{ condition.value }}</span>
+          }
+
+          @case ('expression') {
+            <span>{{ condition.field }}</span>
+            @if (condition.customField) {
+              <span class="ac__connective">{{
+                'accessControl.overview.customField' | translate
+              }}</span>
+            }
+            <span class="ac__connective">{{
+              'accessControl.overview.atJsonPath' | translate
+            }}</span>
+            <code class="ac__path" [title]="condition.clazz">{{ condition.path }}</code>
+            <span class="ac__operator">{{ condition.operator }}</span>
+            <span>{{ condition.value }}</span>
+          }
+
+          @case ('container') {
+            <span class="ac__connective">{{
+              'accessControl.overview.relatedResource' | translate
+            }}</span>
+            <span class="ac__resource-type">{{
+              condition.resourceType | resourceTypeLabel
+            }}</span>
+            @if (condition.customResource) {
+              <span class="ac__connective">{{
+                'accessControl.overview.customResource' | translate
+              }}</span>
+            }
+            <span class="ac__connective">{{
+              'accessControl.overview.where' | translate
+            }}</span>
+            <ng-container
+              *ngTemplateOutlet="
+                conditionsTpl;
+                context: {
+                  conditions: condition.conditions,
+                  resourceType: condition.resourceType,
+                }
+              "
+            ></ng-container>
+          }
+        }
+      </div>
+    }
+  </div>
+</ng-template>

@@ -15,3 +15,4 @@
  */
 
 export * from './access-control.service';
+export * from './permission-schema-metadata.service';
