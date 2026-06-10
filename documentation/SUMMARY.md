@@ -259,6 +259,7 @@
   * [Custom logo](customizing-valtimo/front-end-customization/custom-logo.md)
   * [Custom components](customizing-valtimo/front-end-customization/custom-components/README.md)
     * [Custom case management tab](customizing-valtimo/front-end-customization/custom-components/custom-case-management-tab.md)
+    * [Custom UI component process link](customizing-valtimo/front-end-customization/custom-components/custom-ui-component-process-link.md)
 
 ## Contributing to Valtimo
 
