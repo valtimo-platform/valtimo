@@ -24,6 +24,8 @@ export type {
   PluginManifest,
   ManifestAction,
   ManifestActionProperty,
+  ManagementEndpoint,
+  FrontendBundle,
   GzacApiResponse,
   Document,
   DocumentContent,

@@ -99,6 +99,7 @@ async function main(): Promise<void> {
   await fastify.register(healthRoutes);
   await fastify.register(hostManagementRoutes, {
     pluginManager,
+    configRegistry,
     config,
   });
   await fastify.register(hostConfigurationRoutes, {

@@ -16,6 +16,7 @@
 
 import { FastifyInstance, FastifyRequest, FastifyReply } from "fastify";
 import { PluginManager } from "../plugin-manager.js";
+import { ConfigRegistry } from "../config-registry.js";
 import { AppConfig } from "../config.js";
 import { mkdir, mkdtemp, readFile, rm } from "node:fs/promises";
 import { join, dirname } from "node:path";
@@ -29,9 +30,9 @@ import AdmZip from "adm-zip";
  */
 export async function hostManagementRoutes(
   fastify: FastifyInstance,
-  opts: { pluginManager: PluginManager; config: AppConfig }
+  opts: { pluginManager: PluginManager; configRegistry: ConfigRegistry; config: AppConfig }
 ): Promise<void> {
-  const { pluginManager, config } = opts;
+  const { pluginManager, configRegistry, config } = opts;
 
   // Admin auth hook for all routes in this plugin
   fastify.addHook(
@@ -150,6 +151,8 @@ export async function hostManagementRoutes(
 
   /**
    * DELETE /api/host/plugins/:pluginId/:version — unload and remove
+   *
+   * Refuses deletion if active configurations reference this plugin version.
    */
   fastify.delete<{ Params: { pluginId: string; version: string } }>(
     "/api/host/plugins/:pluginId/:version",
@@ -159,6 +162,16 @@ export async function hostManagementRoutes(
       const manifest = pluginManager.getManifest(pluginId, version);
       if (!manifest) {
         reply.code(404).send({ error: `Plugin not found: ${pluginId}@${version}` });
+        return;
+      }
+
+      // Check for active configurations referencing this plugin version
+      const activeConfigs = await configRegistry.listByPlugin(pluginId, version);
+      if (activeConfigs.length > 0) {
+        reply.code(409).send({
+          error: `Cannot delete plugin: ${activeConfigs.length} active configuration(s) reference ${pluginId}@${version}`,
+          configurationIds: activeConfigs.map((c) => c.configurationId),
+        });
         return;
       }
 

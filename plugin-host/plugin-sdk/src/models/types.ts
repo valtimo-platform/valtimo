@@ -74,6 +74,22 @@ export interface ManifestActionProperty {
   required?: boolean;
 }
 
+export interface ManagementEndpoint {
+  method: string;
+  pattern: string;
+}
+
+export interface FrontendBundle {
+  type: "config" | "process-link-action" | "case-tab" | "case-widget" | "page";
+  key?: string;
+  title?: string;
+  path: string;
+  activityTypes?: string[];
+  menuIcon?: string;
+  menuPosition?: string;
+  renderMode?: "bundle" | "htmx";
+}
+
 export interface PluginManifest {
   pluginId: string;
   version: string;
@@ -85,6 +101,10 @@ export interface PluginManifest {
     maxGzacVersion?: string;
   };
   configurationSchema?: Record<string, unknown>;
+  permissions?: {
+    managementEndpoints?: ManagementEndpoint[];
+  };
+  frontendBundles?: FrontendBundle[];
   actions: ManifestAction[];
   /**
    * CloudEvent `type` values this plugin subscribes to. The host routes matching events from
