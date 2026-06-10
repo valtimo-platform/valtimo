@@ -6,6 +6,8 @@ Currently, the following types of process-links are supported by Valtimo:
 
 * Form
 * Form-flow
+* Form View Model
+* UI component
 * Plugin
 * Building block
 
@@ -57,6 +59,18 @@ Any text fields for configuring the process link itself support several ways of 
 Building block process links are used on **Call activities** to start a reusable building block. In the wizard, you select the building block and version, configure plugin mappings, and map inputs and outputs.
 
 For a step-by-step guide, see [Building blocks](../building-blocks/README.md).
+
+#### Creating a Form View Model process link
+
+A Form View Model process link can be added to user-tasks and start events. Instead of using a static Form.io definition, it connects to a server-side view model that controls the form data. This allows backend logic to populate, validate, and transform form fields dynamically.
+
+On the backend, a `FormViewModelLoader` provides the initial view model data and handles updates, while a `FormViewModelUserTaskSubmissionHandler` (for user tasks) or `FormViewModelStartFormSubmissionHandler` (for start forms) processes the submission. The user task handler is responsible for dispatching `CompleteTaskCommand` to complete the Camunda task.
+
+#### Creating a UI component process link
+
+A UI component process link can be added to user-tasks and start events. It renders a custom Angular component instead of a Form.io form, giving full control over the user interface.
+
+More information about creating a custom UI component process link can be found in the [custom UI component process link documentation](../../customizing-valtimo/front-end-customization/custom-components/custom-ui-component-process-link.md).
 {% endtab %}
 
 {% tab title="Via IDE" %}
@@ -83,6 +97,18 @@ This is an example of an auto-deployment file for two user task for a process:
       "activityType": "bpmn:UserTask:create",
       "processLinkType": "form-flow",
       "formFlowDefinitionId": "do-another-thing:latest"
+   },
+   {
+      "activityId": "review-task",
+      "activityType": "bpmn:UserTask:create",
+      "processLinkType": "form-view-model",
+      "formName": "review-task-form"
+   },
+   {
+      "activityId": "custom-review-task",
+      "activityType": "bpmn:UserTask:create",
+      "processLinkType": "ui-component",
+      "componentKey": "my-custom-component"
    },
    {
       "activityId": "delete-object-from-objectsapi",

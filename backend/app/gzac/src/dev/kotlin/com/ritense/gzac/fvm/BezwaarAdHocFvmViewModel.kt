@@ -14,23 +14,20 @@
  * limitations under the License.
  */
 
-import {EventEmitter, Type} from '@angular/core';
+package com.ritense.gzac.fvm
 
-interface FormCustomComponent {
-  taskInstanceId: string | null;
-  processDefinitionKey: string | null;
-  documentDefinitionName: string | null;
-  documentId: string | null;
-  submittedEvent: EventEmitter<any>;
+import com.ritense.document.domain.impl.JsonSchemaDocument
+import com.ritense.formviewmodel.viewmodel.Submission
+import com.ritense.formviewmodel.viewmodel.ViewModel
+import com.ritense.valtimo.operaton.domain.OperatonTask
+
+data class BezwaarAdHocFvmViewModel(
+    val omschrijving: String? = null,
+    val toelichting: String? = null,
+    val beoordeling: String? = null,
+) : ViewModel, Submission {
+
+    override fun update(task: OperatonTask?, page: Int?, document: JsonSchemaDocument?): ViewModel {
+        return this
+    }
 }
-
-interface FormCustomComponentDefinition {
-  id: string;
-  component: FormCustomComponent;
-}
-
-interface FormCustomComponentConfig {
-  [id: string]: Type<FormCustomComponentDefinition>;
-}
-
-export {FormCustomComponent, FormCustomComponentDefinition, FormCustomComponentConfig};

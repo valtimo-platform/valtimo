@@ -106,6 +106,8 @@ export class CaseSupportingProcessStartModalComponent implements OnDestroy {
 
   private loadProcessLink(): void {
     this.startProcessLinkType$.next(null);
+    this.formViewModelDynamicContainer?.clear();
+    this.formCustomComponentDynamicContainer?.clear();
 
     combineLatest([this.processDefinitionId$, this.documentId$])
       .pipe(
@@ -266,7 +268,7 @@ export class CaseSupportingProcessStartModalComponent implements OnDestroy {
       formViewModelComponent.destroy();
     });
 
-    this.isLoading$.next(true);
+    this.isLoading$.next(false);
   }
 
   private setFormCustomComponent(formCustomComponentKey: string): void {
@@ -278,11 +280,12 @@ export class CaseSupportingProcessStartModalComponent implements OnDestroy {
         customComponent
       ) as ComponentRef<FormCustomComponent>;
 
-      combineLatest([this.processDefinitionKey$, this.caseDefinitionKey$])
+      combineLatest([this.processDefinitionKey$, this.caseDefinitionKey$, this.documentId$])
         .pipe(take(1))
-        .subscribe(([processDefinitionKey, caseDefinitionKey]) => {
+        .subscribe(([processDefinitionKey, caseDefinitionKey, documentId]) => {
           renderedComponent.instance.processDefinitionKey = processDefinitionKey;
           renderedComponent.instance.documentDefinitionName = caseDefinitionKey;
+          renderedComponent.instance.documentId = documentId;
         });
 
       renderedComponent.instance.submittedEvent.subscribe(() => {

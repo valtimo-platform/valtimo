@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,12 @@
 
 import {Component, EventEmitter, Input, Output} from '@angular/core';
 import {FormCustomComponent} from '@valtimo/process-link';
+import {
+  DocumentService,
+  ModifyDocumentAndStartProcessRequestImpl,
+  ModifyDocumentRequestImpl,
+} from '@valtimo/document';
+import {TaskService} from '@valtimo/task';
 
 @Component({
   selector: 'app-dummy-form-custom-component',
@@ -25,6 +31,7 @@ import {FormCustomComponent} from '@valtimo/process-link';
       <p><strong>Task Instance ID:</strong> {{ taskInstanceId }}</p>
       <p><strong>Process Definition Key:</strong> {{ processDefinitionKey }}</p>
       <p><strong>Document Definition Name:</strong> {{ documentDefinitionName }}</p>
+      <p><strong>Document ID:</strong> {{ documentId }}</p>
       <button (click)="onSubmit()">Submit Dummy Data</button>
     </div>
   `,
@@ -43,16 +50,30 @@ export class CustomFormComponent implements FormCustomComponent {
   @Input() taskInstanceId: string | null = null;
   @Input() processDefinitionKey: string | null = null;
   @Input() documentDefinitionName: string | null = null;
+  @Input() documentId: string | null = null;
   @Output() submittedEvent: EventEmitter<any> = new EventEmitter<any>();
 
-  public onSubmit(): void {
-    const dummyPayload = {
-      taskInstanceId: this.taskInstanceId,
-      processDefinitionKey: this.processDefinitionKey,
-      documentDefinitionName: this.documentDefinitionName,
-      data: 'This is a dummy submission',
-    };
+  constructor(
+    private readonly documentService: DocumentService,
+    private readonly taskService: TaskService
+  ) {}
 
-    this.submittedEvent.emit(dummyPayload);
+  public onSubmit(): void {
+    if (this.taskInstanceId) {
+      // User task scenario: complete the task on the backend, then emit
+      this.taskService.completeTask(this.taskInstanceId, new Map()).subscribe(() => {
+        this.submittedEvent.emit();
+      });
+    } else if (this.processDefinitionKey && this.documentId) {
+      // Start form scenario: start the process for the existing document
+      const modifyRequest = new ModifyDocumentRequestImpl(this.documentId, {}, '');
+      const request = new ModifyDocumentAndStartProcessRequestImpl(
+        this.processDefinitionKey,
+        modifyRequest
+      );
+      this.documentService.modifyDocumentAndStartProcess(request).subscribe(() => {
+        this.submittedEvent.emit();
+      });
+    }
   }
 }
