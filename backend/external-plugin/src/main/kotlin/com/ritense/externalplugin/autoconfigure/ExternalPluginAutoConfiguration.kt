@@ -17,8 +17,8 @@
 package com.ritense.externalplugin.autoconfigure
 
 import com.fasterxml.jackson.databind.ObjectMapper
-import com.ritense.externalplugin.endpoint.ExternalPluginEndpointDescriptionProvider
 import com.ritense.externalplugin.client.ExternalPluginHostClient
+import com.ritense.externalplugin.endpoint.ExternalPluginEndpointDescriptionProvider
 import com.ritense.externalplugin.processlink.ExternalPluginProcessLinkMapper
 import com.ritense.externalplugin.processlink.ExternalPluginServiceTaskStartListener
 import com.ritense.externalplugin.processlink.ExternalPluginSupportedProcessLinkTypeHandler
@@ -34,7 +34,6 @@ import com.ritense.externalplugin.security.ExternalPluginServiceTokenAuthenticat
 import com.ritense.externalplugin.security.ExternalPluginServiceTokenFilter
 import com.ritense.externalplugin.security.ExternalPluginServiceTokenKeyProvider
 import com.ritense.externalplugin.service.EndpointDescriptionService
-import com.ritense.valtimo.contract.endpoint.EndpointDescriptionProvider
 import com.ritense.externalplugin.service.ExternalPluginConfigurationService
 import com.ritense.externalplugin.service.ExternalPluginDefinitionService
 import com.ritense.externalplugin.service.ExternalPluginDiscoveryJob
@@ -44,6 +43,7 @@ import com.ritense.externalplugin.service.ExternalPluginServiceTokenService
 import com.ritense.externalplugin.service.PluginPropertyEncryptor
 import com.ritense.externalplugin.web.rest.ExternalPluginManagementResource
 import com.ritense.plugin.service.EncryptionService
+import com.ritense.valtimo.contract.endpoint.EndpointDescriptionProvider
 import com.ritense.valueresolver.ValueResolverService
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
@@ -104,7 +104,7 @@ class ExternalPluginAutoConfiguration {
     @Bean
     @ConditionalOnMissingBean(ExternalPluginServiceTokenKeyProvider::class)
     fun externalPluginServiceTokenKeyProvider(
-        @Value("\${valtimo.external-plugin.service-token-secret}") secret: String,
+        @Value("\${valtimo.plugin.encryption-secret}") secret: String,
     ) = ExternalPluginServiceTokenKeyProvider(secret)
 
     @Bean
@@ -138,6 +138,17 @@ class ExternalPluginAutoConfiguration {
         allowlistFilter: ExternalPluginEndpointAllowlistFilter,
     ) = ExternalPluginCallbackHttpSecurityConfigurer(serviceTokenFilter, allowlistFilter)
 
+    /**
+     * The configuration service only needs two fallbacks:
+     *
+     * - `defaultEventBrokerExchange` reuses `valtimo.outbox.publisher.rabbitmq.exchange` — applied
+     *   when a host row leaves `event_broker_exchange` null. New hosts almost never override this.
+     * - `fallbackGzacBaseUrl` only kicks in for legacy host rows that pre-date the
+     *   `gzac_callback_base_url` column. New hosts always carry the URL the admin entered.
+     *
+     * Everything else (callback URL, broker URL) is per-host and read off the host row at push
+     * time. The add-host form fetches sensible pre-fills from `HostDefaultsResource`.
+     */
     @Bean
     @ConditionalOnMissingBean(ExternalPluginConfigurationService::class)
     fun externalPluginConfigurationService(
@@ -150,10 +161,8 @@ class ExternalPluginAutoConfiguration {
         encryptionService: EncryptionService,
         objectMapper: ObjectMapper,
         serviceTokenService: ExternalPluginServiceTokenService,
-        @Value("\${valtimo.external-plugin.gzac-base-url}") gzacBaseUrl: String,
-        @Value("\${valtimo.external-plugin.event-broker.amqp-url:}") eventBrokerUrl: String,
-        @Value("\${valtimo.external-plugin.event-broker.exchange:valtimo-events}") eventBrokerExchange: String,
-        @Value("\${valtimo.external-plugin.event-broker.exchange-type:fanout}") eventBrokerExchangeType: String,
+        @Value("\${server.port:8080}") serverPort: Int,
+        @Value("\${valtimo.outbox.publisher.rabbitmq.exchange:valtimo-events}") defaultEventBrokerExchange: String,
     ) = ExternalPluginConfigurationService(
         configurationRepository,
         definitionRepository,
@@ -164,10 +173,8 @@ class ExternalPluginAutoConfiguration {
         encryptionService,
         objectMapper,
         serviceTokenService,
-        gzacBaseUrl,
-        eventBrokerUrl,
-        eventBrokerExchange,
-        eventBrokerExchangeType,
+        defaultEventBrokerExchange,
+        "http://localhost:$serverPort",
     )
 
     @Bean
@@ -201,7 +208,15 @@ class ExternalPluginAutoConfiguration {
         configurationService: ExternalPluginConfigurationService,
         endpointDescriptionService: EndpointDescriptionService,
         discoveryService: ExternalPluginDiscoveryService,
-    ) = ExternalPluginManagementResource(hostService, definitionService, configurationService, endpointDescriptionService, discoveryService)
+        environment: org.springframework.core.env.Environment,
+    ) = ExternalPluginManagementResource(
+        hostService,
+        definitionService,
+        configurationService,
+        endpointDescriptionService,
+        discoveryService,
+        environment,
+    )
 
     @Bean
     @ConditionalOnMissingBean(ExternalPluginProcessLinkMapper::class)

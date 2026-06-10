@@ -1888,7 +1888,10 @@
       "secret": "Geheim",
       "source": "Bron",
       "properties": "Eigenschappen (JSON)",
-      "pluginHost": "Plugin-host"
+      "pluginHost": "Plugin-host",
+      "gzacCallbackBaseUrl": "GZAC callback-URL",
+      "eventBrokerAmqpUrl": "Event broker-URL (optioneel)",
+      "eventBrokerExchange": "Event broker exchange (optioneel)"
     },
     "source": {
       "embedded": "Ingebed",

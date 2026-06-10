@@ -176,18 +176,6 @@ valtimo:
     plugin:
         encryption-secret: ${VALTIMO_PLUGIN_ENCRYPTIONSECRET}
 
-    external-plugin:
-        service-token-secret: ${VALTIMO_EXTERNAL_PLUGIN_SERVICE_TOKEN_SECRET:change-me-please-use-32-bytes-or-more}
-        gzac-base-url: ${VALTIMO_EXTERNAL_PLUGIN_GZAC_BASE_URL:http://localhost:8080}
-        # Broker this instance's events are published to. Pushed to each plugin host with every
-        # configuration so the host can consume this instance's event stream. Leave the URL blank to
-        # disable event delivery to plugins. Must be reachable from the host (not necessarily the
-        # same address GZAC itself uses for spring.rabbitmq).
-        event-broker:
-            amqp-url: ${VALTIMO_EXTERNAL_PLUGIN_EVENT_BROKER_AMQP_URL:amqp://guest:guest@localhost:5672}
-            exchange: ${VALTIMO_EXTERNAL_PLUGIN_EVENT_BROKER_EXCHANGE:valtimo-events}
-            exchange-type: ${VALTIMO_EXTERNAL_PLUGIN_EVENT_BROKER_EXCHANGE_TYPE:fanout}
-
     notificaties-api:
         processing:
             batch-size: 50

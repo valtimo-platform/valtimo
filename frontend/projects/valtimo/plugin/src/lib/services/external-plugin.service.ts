@@ -28,6 +28,7 @@ import {
   ExternalPluginEndpointDescriptionQuery,
   ExternalPluginHost,
   ExternalPluginHostCreateRequest,
+  ExternalPluginHostDefaults,
 } from '../models';
 
 @Injectable({
@@ -49,6 +50,10 @@ export class ExternalPluginService {
 
   public createHost(request: ExternalPluginHostCreateRequest): Observable<ExternalPluginHost> {
     return this._http.post<ExternalPluginHost>(`${this._baseUrl}/host`, request);
+  }
+
+  public getHostDefaults(): Observable<ExternalPluginHostDefaults> {
+    return this._http.get<ExternalPluginHostDefaults>(`${this._baseUrl}/host-defaults`);
   }
 
   public deleteHost(hostId: string): Observable<void> {

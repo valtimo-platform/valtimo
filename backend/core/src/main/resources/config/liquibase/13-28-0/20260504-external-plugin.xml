@@ -41,6 +41,9 @@
             <column name="consecutive_failures" type="${intType}" defaultValueNumeric="0">
                 <constraints nullable="false"/>
             </column>
+            <column name="gzac_callback_base_url" type="VARCHAR(1024)"/>
+            <column name="event_broker_amqp_url" type="VARCHAR(1024)"/>
+            <column name="event_broker_exchange" type="VARCHAR(255)"/>
         </createTable>
     </changeSet>
 

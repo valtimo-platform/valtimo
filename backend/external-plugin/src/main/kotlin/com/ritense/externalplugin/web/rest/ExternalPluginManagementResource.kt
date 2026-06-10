@@ -30,9 +30,11 @@ import com.ritense.externalplugin.web.rest.dto.ConfigurationUpdateRequest
 import com.ritense.externalplugin.web.rest.dto.DefinitionResponse
 import com.ritense.externalplugin.web.rest.dto.GrantedEndpointResponse
 import com.ritense.externalplugin.web.rest.dto.HostCreateRequest
+import com.ritense.externalplugin.web.rest.dto.HostDefaultsResponse
 import com.ritense.externalplugin.web.rest.dto.HostResponse
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import com.ritense.valtimo.contract.domain.ValtimoMediaType.APPLICATION_JSON_UTF8_VALUE
+import org.springframework.core.env.Environment
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.stereotype.Controller
@@ -57,6 +59,7 @@ class ExternalPluginManagementResource(
     private val configurationService: ExternalPluginConfigurationService,
     private val endpointDescriptionService: EndpointDescriptionService,
     private val discoveryService: ExternalPluginDiscoveryService,
+    private val environment: Environment,
 ) {
 
     @RunWithoutAuthorization
@@ -67,8 +70,56 @@ class ExternalPluginManagementResource(
     @RunWithoutAuthorization
     @PostMapping("/host")
     fun createHost(@RequestBody request: HostCreateRequest): ResponseEntity<HostResponse> {
-        val host = hostService.register(request.name, request.baseUrl, request.secret)
+        val host = hostService.register(
+            request.name,
+            request.baseUrl,
+            request.secret,
+            request.gzacCallbackBaseUrl,
+            request.eventBrokerAmqpUrl,
+            request.eventBrokerExchange,
+        )
         return ResponseEntity.status(HttpStatus.CREATED).body(HostResponse.from(host))
+    }
+
+    /**
+     * Suggested defaults for the add-host form, derived from existing system state so no env vars
+     * are required:
+     * - GZAC callback URL: `http://localhost:{server.port}` — the backend's own port. We deliberately
+     *   do **not** use the incoming request URL: the admin reaches GZAC through the Angular dev
+     *   proxy on port 4200 (or a reverse proxy in production), neither of which is the URL the
+     *   plugin host should call back on. The host typically lives on the same Docker network as the
+     *   backend and reaches it on its native port. Operators override per-host in the UI for
+     *   non-local topologies.
+     * - Broker AMQP URL: built from `spring.rabbitmq.*` (GZAC's own broker view).
+     * - Broker exchange: GZAC's outbox publisher exchange.
+     */
+    @RunWithoutAuthorization
+    @GetMapping("/host-defaults")
+    fun hostDefaults(): ResponseEntity<HostDefaultsResponse> {
+        val serverPort = environment.getProperty("server.port", Int::class.java, 8080)
+        val gzacCallbackBaseUrl = "http://localhost:$serverPort"
+
+        val rabbitHost = environment.getProperty("spring.rabbitmq.host", "localhost")
+        val rabbitPort = environment.getProperty("spring.rabbitmq.port", Int::class.java, 5672)
+        val rabbitUsername = environment.getProperty("spring.rabbitmq.username", "guest")
+        val rabbitPassword = environment.getProperty("spring.rabbitmq.password", "guest")
+        val rabbitVirtualHost = environment.getProperty("spring.rabbitmq.virtual-host", "/")
+        val vhostPath = if (rabbitVirtualHost == "/") "" else "/$rabbitVirtualHost"
+        val eventBrokerAmqpUrl =
+            "amqp://$rabbitUsername:$rabbitPassword@$rabbitHost:$rabbitPort$vhostPath"
+
+        val eventBrokerExchange = environment.getProperty(
+            "valtimo.outbox.publisher.rabbitmq.exchange",
+            "valtimo-events",
+        )
+
+        return ResponseEntity.ok(
+            HostDefaultsResponse(
+                gzacCallbackBaseUrl = gzacCallbackBaseUrl,
+                eventBrokerAmqpUrl = eventBrokerAmqpUrl,
+                eventBrokerExchange = eventBrokerExchange,
+            )
+        )
     }
 
     @RunWithoutAuthorization

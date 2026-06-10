@@ -25,6 +25,9 @@ data class HostCreateRequest(
     val name: String,
     val baseUrl: String,
     val secret: String,
+    val gzacCallbackBaseUrl: String,
+    val eventBrokerAmqpUrl: String?,
+    val eventBrokerExchange: String?,
 )
 
 data class HostResponse(
@@ -33,6 +36,9 @@ data class HostResponse(
     val baseUrl: String,
     val status: ExternalPluginHostStatus,
     val lastHealthCheck: Instant?,
+    val gzacCallbackBaseUrl: String?,
+    val eventBrokerAmqpUrl: String?,
+    val eventBrokerExchange: String?,
 ) {
     companion object {
         fun from(host: ExternalPluginHost) = HostResponse(
@@ -41,6 +47,22 @@ data class HostResponse(
             baseUrl = host.baseUrl,
             status = host.status,
             lastHealthCheck = host.lastHealthCheck,
+            gzacCallbackBaseUrl = host.gzacCallbackBaseUrl,
+            eventBrokerAmqpUrl = host.eventBrokerAmqpUrl,
+            eventBrokerExchange = host.eventBrokerExchange,
         )
     }
 }
+
+/**
+ * Suggested defaults for the add-host form. Surfaced via `GET /host-defaults`.
+ *
+ * - `gzacCallbackBaseUrl`: URL the admin reached GZAC at, derived from the current request.
+ * - `eventBrokerAmqpUrl`: built from `spring.rabbitmq.*` — GZAC's own broker view.
+ * - `eventBrokerExchange`: the exchange GZAC publishes to (from `valtimo.outbox.publisher.rabbitmq.exchange`).
+ */
+data class HostDefaultsResponse(
+    val gzacCallbackBaseUrl: String,
+    val eventBrokerAmqpUrl: String,
+    val eventBrokerExchange: String,
+)

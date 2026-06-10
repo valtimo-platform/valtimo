@@ -49,13 +49,23 @@ class ExternalPluginHostService(
 
     fun decryptedSecret(host: ExternalPluginHost): String = encryptionService.decrypt(host.secret)
 
-    fun register(name: String, baseUrl: String, secret: String): ExternalPluginHost {
+    fun register(
+        name: String,
+        baseUrl: String,
+        secret: String,
+        gzacCallbackBaseUrl: String,
+        eventBrokerAmqpUrl: String?,
+        eventBrokerExchange: String?,
+    ): ExternalPluginHost {
         val host = ExternalPluginHost(
             id = UUID.randomUUID(),
             name = name,
             baseUrl = baseUrl.trimEnd('/'),
             secret = encryptionService.encrypt(secret),
             status = ExternalPluginHostStatus.UNREACHABLE,
+            gzacCallbackBaseUrl = gzacCallbackBaseUrl.trimEnd('/'),
+            eventBrokerAmqpUrl = eventBrokerAmqpUrl?.takeIf { it.isNotBlank() },
+            eventBrokerExchange = eventBrokerExchange?.takeIf { it.isNotBlank() },
         )
         return hostRepository.save(host)
     }

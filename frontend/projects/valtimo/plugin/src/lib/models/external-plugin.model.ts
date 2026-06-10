@@ -23,12 +23,24 @@ interface ExternalPluginHost {
   baseUrl: string;
   status: ExternalPluginHostStatus;
   lastHealthCheck: string | null;
+  gzacCallbackBaseUrl: string | null;
+  eventBrokerAmqpUrl: string | null;
+  eventBrokerExchange: string | null;
 }
 
 interface ExternalPluginHostCreateRequest {
   name: string;
   baseUrl: string;
   secret: string;
+  gzacCallbackBaseUrl: string;
+  eventBrokerAmqpUrl: string | null;
+  eventBrokerExchange: string | null;
+}
+
+interface ExternalPluginHostDefaults {
+  gzacCallbackBaseUrl: string;
+  eventBrokerAmqpUrl: string;
+  eventBrokerExchange: string;
 }
 
 interface ExternalPluginAction {
@@ -154,6 +166,7 @@ export {
   ExternalPluginDefinitionStatus,
   ExternalPluginHost,
   ExternalPluginHostCreateRequest,
+  ExternalPluginHostDefaults,
   ExternalPluginDefinition,
   ExternalPluginConfiguration,
   ExternalPluginConfigurationDetail,

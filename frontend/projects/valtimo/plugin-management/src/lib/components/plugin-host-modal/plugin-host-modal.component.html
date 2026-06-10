@@ -44,6 +44,21 @@
       {{ 'pluginManagement.labels.secret' | translate }}
       <input cdsText formControlName="secret" type="password" placeholder="admin-token" />
     </cds-label>
+
+    <cds-label>
+      {{ 'pluginManagement.labels.gzacCallbackBaseUrl' | translate }}
+      <input cdsText formControlName="gzacCallbackBaseUrl" placeholder="http://localhost:8080" />
+    </cds-label>
+
+    <cds-label>
+      {{ 'pluginManagement.labels.eventBrokerAmqpUrl' | translate }}
+      <input cdsText formControlName="eventBrokerAmqpUrl" placeholder="amqp://guest:guest@localhost:5672" />
+    </cds-label>
+
+    <cds-label>
+      {{ 'pluginManagement.labels.eventBrokerExchange' | translate }}
+      <input cdsText formControlName="eventBrokerExchange" placeholder="valtimo-events" />
+    </cds-label>
   </form>
 
   <cds-modal-footer>

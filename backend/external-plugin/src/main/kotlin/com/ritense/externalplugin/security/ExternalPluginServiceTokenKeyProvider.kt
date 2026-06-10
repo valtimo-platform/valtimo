@@ -21,18 +21,24 @@ import io.jsonwebtoken.Claims
 import io.jsonwebtoken.SignatureAlgorithm
 import io.jsonwebtoken.security.Keys
 import java.security.Key
+import java.security.MessageDigest
 import javax.crypto.SecretKey
 
+/**
+ * JWT signing key for external-plugin service tokens. Derived from `valtimo.plugin.encryption-secret`
+ * via SHA-256 so the same configuration works regardless of the secret's raw length (AES-128 uses
+ * 16 bytes; HMAC-SHA256 needs 32). The hash gives us domain separation as a side effect — if a
+ * service token is exfiltrated, the AES key can't be recovered from it.
+ */
 class ExternalPluginServiceTokenKeyProvider(secret: String) : SecretKeyProvider {
 
     init {
-        require(secret.isNotBlank()) { "valtimo.external-plugin.service-token-secret must not be blank" }
-        require(secret.toByteArray(Charsets.UTF_8).size >= 32) {
-            "valtimo.external-plugin.service-token-secret must be at least 32 bytes for HmacSHA256"
-        }
+        require(secret.isNotBlank()) { "valtimo.plugin.encryption-secret must not be blank" }
     }
 
-    val signingKey: SecretKey = Keys.hmacShaKeyFor(secret.toByteArray(Charsets.UTF_8))
+    val signingKey: SecretKey = Keys.hmacShaKeyFor(
+        MessageDigest.getInstance("SHA-256").digest(secret.toByteArray(Charsets.UTF_8))
+    )
 
     @Suppress("DEPRECATION")
     override fun supports(algorithm: SignatureAlgorithm, claims: Claims): Boolean =
