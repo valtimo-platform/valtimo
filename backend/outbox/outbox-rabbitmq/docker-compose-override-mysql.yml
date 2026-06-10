@@ -1,6 +1,6 @@
 services:
     rabbitmq:
-        image: rabbitmq:3-management
+        image: public.ecr.aws/docker/library/rabbitmq:3-management
         volumes:
             - ../outbox/outbox-rabbitmq/docker/rabbitmq/rabbitmq.conf:/etc/rabbitmq/rabbitmq.conf:ro
             - ../outbox/outbox-rabbitmq/docker/rabbitmq/definitions.json:/etc/rabbitmq/definitions.json:ro
