@@ -1,0 +1,95 @@
+{
+    "display": "form",
+    "settings": {},
+    "components": [
+        {
+            "key": "html",
+            "type": "htmlelement",
+            "input": false,
+            "label": "translate:bezwaarStartForm.htmlLabel",
+            "content": "translate:bezwaarStartForm.startInstruction",
+            "tableView": false,
+            "refreshOnChange": false
+        },
+        {
+            "key": "pv.confidentialityLevel",
+            "type": "select",
+            "input": true,
+            "label": "Vertrouwelijkheidaanduiding",
+            "tableView": true,
+            "validate": {
+                "required": true
+            },
+            "defaultValue": "vertrouwelijk",
+            "data": {
+                "values": [
+                    { "label": "Openbaar", "value": "openbaar" },
+                    { "label": "Beperkt openbaar", "value": "beperkt_openbaar" },
+                    { "label": "Intern", "value": "intern" },
+                    { "label": "Zaakvertrouwelijk", "value": "zaakvertrouwelijk" },
+                    { "label": "Vertrouwelijk", "value": "vertrouwelijk" },
+                    { "label": "Confidentieel", "value": "confidentieel" },
+                    { "label": "Geheim", "value": "geheim" },
+                    { "label": "Zeer geheim", "value": "zeer_geheim" }
+                ]
+            }
+        },
+        {
+            "key": "pv.fileName",
+            "type": "textfield",
+            "input": true,
+            "label": "Bestandsnaam",
+            "tableView": true,
+            "validate": {
+                "required": true
+            },
+            "defaultValue": "file.txt"
+        },
+        {
+            "key": "pv.description",
+            "type": "textfield",
+            "input": true,
+            "label": "Beschrijving",
+            "tableView": true,
+            "placeholder": "beschrijving"
+        },
+        {
+            "key": "pv.title",
+            "type": "textfield",
+            "input": true,
+            "label": "Titel",
+            "tableView": true,
+            "placeholder": "titel"
+        },
+        {
+            "key": "pv.storedDocumentUrl",
+            "type": "textfield",
+            "input": true,
+            "label": "Titel",
+            "tableView": true,
+            "defaultValue": "storedDocumentUrl",
+            "validate": {
+                "required": true
+            }
+        },
+        {
+            "key": "pv.tempDocumentLocationId",
+            "type": "textfield",
+            "input": true,
+            "label": "tijdelijke Document Locatie id",
+            "tableView": true,
+            "defaultValue": "tempDocumentLocationId",
+            "validate": {
+                "required": true
+            }
+        },
+        {
+            "key": "submit",
+            "type": "button",
+            "input": true,
+            "label": "translate:bezwaarStartForm.start",
+            "tableView": false,
+            "disableOnInvalid": true
+        }
+    ]
+}
