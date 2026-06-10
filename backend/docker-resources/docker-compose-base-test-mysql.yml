@@ -1,6 +1,6 @@
 services:
     db:
-        image: public.ecr.aws/docker/library/mysql:8.3.0
+        image: mysql:8.3.0
         cap_add:
             - SYS_NICE  # CAP_SYS_NICE
         command:
