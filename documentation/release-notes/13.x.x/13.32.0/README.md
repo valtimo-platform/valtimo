@@ -4,8 +4,6 @@
 **Release date 10-06-2026**
 {% endhint %}
 
-## Features
-
 ## Enhancements
 
 * **`documentId` added to `FormCustomComponent` interface**
