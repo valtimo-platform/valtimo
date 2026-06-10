@@ -312,6 +312,9 @@ export class CaseManagementListColumnsComponent implements AfterViewInit, OnDest
   public readonly jsonEditorActive = signal<boolean>(false);
   public readonly buttonTheme = computed(() => (this.jsonEditorActive() ? 'primary' : 'ghost'));
   public displayExportButton = true;
+  public displaySortable = true;
+
+  private static readonly SORTABLE_PATH_REGEX = /^(case:|doc:)/;
 
   constructor(
     private readonly documentService: DocumentService,
@@ -323,7 +326,7 @@ export class CaseManagementListColumnsComponent implements AfterViewInit, OnDest
 
   public ngAfterViewInit(): void {
     this.iconService.registerAll([ArrowDown16, ArrowUp16]);
-    this.disableExportToggle();
+    this.observePathChanges();
   }
 
   public ngOnDestroy(): void {
@@ -596,10 +599,11 @@ export class CaseManagementListColumnsComponent implements AfterViewInit, OnDest
   private mapFormValuesToColumn(formValue: any): CaseListColumn {
     return {
       key: formValue.key,
-      sortable: formValue.sortable,
-      ...(formValue.defaultSort?.key !== this.INVALID_KEY && {
-        defaultSort: formValue.defaultSort?.key,
-      }),
+      sortable: this.displaySortable ? formValue.sortable : false,
+      ...(this.displaySortable &&
+        formValue.defaultSort?.key !== this.INVALID_KEY && {
+          defaultSort: formValue.defaultSort?.key,
+        }),
       title: formValue.title || '',
       path: formValue.path,
       displayType: {
@@ -617,12 +621,27 @@ export class CaseManagementListColumnsComponent implements AfterViewInit, OnDest
     };
   }
 
-  private disableExportToggle(): void {
-    this.formGroup.controls.path.valueChanges
-      .pipe(startWith(this.formGroup.controls.path.value))
-      .subscribe(value => {
-        const pathMustStartWithCaseOrDocRegex = /^(case:|doc:)/;
-        this.displayExportButton = pathMustStartWithCaseOrDocRegex.test(String(value));
-      });
+  private observePathChanges(): void {
+    this._subscriptions.add(
+      this.formGroup.controls.path.valueChanges
+        .pipe(startWith(this.formGroup.controls.path.value))
+        .subscribe(value => {
+          const matches = CaseManagementListColumnsComponent.SORTABLE_PATH_REGEX.test(
+            String(value)
+          );
+          this.displayExportButton = matches;
+          this.displaySortable = matches;
+
+          if (!matches) {
+            if (this.formGroup.value.sortable || this.formGroup.value.defaultSort?.key !== this.INVALID_KEY) {
+              this.formGroup.patchValue(
+                {sortable: false, defaultSort: {key: this.INVALID_KEY}},
+                {emitEvent: false}
+              );
+              this.selectedSortItemIndex$.next(0);
+            }
+          }
+        })
+    );
   }
 }
