@@ -1,17 +1,5 @@
 # 12.37.0
 
-## New Features
+## Security
 
-* **New feature title**
-
-  New feature explanation.
-
-## Enhancements
-
-* **New enhancement title**
-
-  New enhancement explanation.
-
-## Bugfixes
-
-* New bugfix.
+* Several dependencies have been upgraded to fix security vulnerabilities.
