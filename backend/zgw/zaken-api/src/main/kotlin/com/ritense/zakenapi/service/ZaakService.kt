@@ -44,7 +44,7 @@ open class ZaakService(
             authorizationService.hasPermission(
                 EntityAuthorizationRequest(
                     Zaak::class.java,
-                    ZaakActionProvider.VIEW_ACTIVE_STATUS,
+                    ZaakActionProvider.VIEW,
                     Zaak(zaaktype = zaakResponse.zaaktype.toString())
                 )
             )

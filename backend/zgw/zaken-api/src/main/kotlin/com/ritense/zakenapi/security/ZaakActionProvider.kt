@@ -21,10 +21,10 @@ import com.ritense.authorization.ResourceActionProvider
 
 class ZaakActionProvider : ResourceActionProvider<Zaak> {
     override fun getAvailableActions(): List<Action<Zaak>> {
-        return listOf(VIEW_ACTIVE_STATUS)
+        return listOf(VIEW)
     }
 
     companion object {
-        val VIEW_ACTIVE_STATUS = Action<Zaak>("view_active_status")
+        val VIEW = Action<Zaak>("view")
     }
 }

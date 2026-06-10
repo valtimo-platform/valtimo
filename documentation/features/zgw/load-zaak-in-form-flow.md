@@ -58,9 +58,9 @@ Any field of the loaded zaak can then be referenced from the submission data. Fo
 
 Loading a zaak through this bean is secured with PBAC. A resource type `com.ritense.zakenapi.security.Zaak` is available with the following action:
 
-| Action               | Description            |
-|----------------------|------------------------|
-| `view_active_status` | Allows loading a zaak. |
+| Action | Description            |
+|--------|------------------------|
+| `view` | Allows loading a zaak. |
 
 When loading a zaak, only zaken the user is authorized to view are returned. If no authorized zaak matches the `identificatie`, the bean returns `null`.
 
@@ -72,7 +72,7 @@ The resource supports a `zaaktype` field condition, so access can be restricted 
 [
     {
         "resourceType": "com.ritense.zakenapi.security.Zaak",
-        "action": "view_active_status",
+        "action": "view",
         "roleKey": "ROLE_USER",
         "conditions": [
             {

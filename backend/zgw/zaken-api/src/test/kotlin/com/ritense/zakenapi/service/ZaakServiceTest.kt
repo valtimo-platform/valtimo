@@ -196,7 +196,7 @@ internal class ZaakServiceTest {
 
         verify(authorizationService).hasPermission(argThat<EntityAuthorizationRequest<Zaak>> {
             resourceType == Zaak::class.java &&
-                action == ZaakActionProvider.VIEW_ACTIVE_STATUS &&
+                action == ZaakActionProvider.VIEW &&
                 entities.size == 1 &&
                 entities[0].zaaktype == zaaktype.toString()
         })
