@@ -16,7 +16,11 @@
 
 package com.ritense.processdocument.web.request
 
+import jakarta.validation.constraints.Size
+
 data class TaskQuickSearchDto(
+    @field:Size(max = 2080)
     val queryPath: String,
+    @field:Size(max = 50)
     val title: String,
 )

@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,28 +14,34 @@
  * limitations under the License.
  */
 
-package com.ritense.valtimo.web.rest.error;
+package com.ritense.valtimo.contract.web.rest.error;
 
 import java.net.URI;
-import java.util.HashMap;
-import java.util.Map;
-import org.zalando.problem.AbstractThrowableProblem;
 import org.zalando.problem.Status;
 
-public class BadRequestAlertException extends AbstractThrowableProblem {
-
-    private static final long serialVersionUID = 1L;
+public class BadRequestAlertException extends ValtimoProblem {
 
     private final String entityName;
-
     private final String errorKey;
 
+    public BadRequestAlertException(String defaultMessage, String errorKey) {
+        this(ErrorConstants.DEFAULT_TYPE, defaultMessage, null, errorKey);
+    }
+
     public BadRequestAlertException(String defaultMessage, String entityName, String errorKey) {
-        this(ErrorConstants.DEFAULT_TYPE, defaultMessage, entityName, errorKey);
+        this(ErrorConstants.DEFAULT_TYPE, defaultMessage, entityName, errorKey, null);
+    }
+
+    public BadRequestAlertException(String defaultMessage, String entityName, String errorKey, Throwable cause) {
+        this(ErrorConstants.DEFAULT_TYPE, defaultMessage, entityName, errorKey, cause);
     }
 
     public BadRequestAlertException(URI type, String defaultMessage, String entityName, String errorKey) {
-        super(type, defaultMessage, Status.BAD_REQUEST, null, null, null, getAlertParameters(entityName, errorKey));
+        this(type, defaultMessage, entityName, errorKey, null);
+    }
+
+    public BadRequestAlertException(URI type, String defaultMessage, String entityName, String errorKey, Throwable cause) {
+        super(type, defaultMessage, Status.BAD_REQUEST, errorKey, entityName, cause);
         this.entityName = entityName;
         this.errorKey = errorKey;
     }
@@ -46,12 +52,5 @@ public class BadRequestAlertException extends AbstractThrowableProblem {
 
     public String getErrorKey() {
         return errorKey;
-    }
-
-    private static Map<String, Object> getAlertParameters(String entityName, String errorKey) {
-        Map<String, Object> parameters = new HashMap<>();
-        parameters.put("message", "error." + errorKey);
-        parameters.put("params", entityName);
-        return parameters;
     }
 }

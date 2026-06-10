@@ -18,16 +18,27 @@ package com.ritense.documentenapi.web.rest.dto
 
 import com.fasterxml.jackson.annotation.JsonFormat
 import com.ritense.documentenapi.client.DocumentStatusType
+import jakarta.validation.constraints.Size
 import java.time.LocalDate
 
+/**
+ * Mirrors the constraints of OpenZaak's `EnkelvoudigInformatieObjectWithLockRequest`
+ * (PUT /documenten/api/v1/enkelvoudiginformatieobjecten/{uuid}). Failing fast here gives
+ * Valtimo clients a field-level error before the request reaches OpenZaak.
+ */
 class ModifyDocumentRequest(
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
     val creatiedatum: LocalDate,
+    @field:Size(min = 1, max = 200)
     val titel: String,
+    @field:Size(min = 1, max = 200)
     val auteur: String,
     val status: DocumentStatusType? = null,
+    @field:Size(min = 3, max = 3)
     val taal: String,
+    @field:Size(max = 255)
     val bestandsnaam: String? = null,
+    @field:Size(max = 1000)
     val beschrijving: String? = null,
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
     val ontvangstdatum: LocalDate? = null,
@@ -35,6 +46,7 @@ class ModifyDocumentRequest(
     val verzenddatum: LocalDate? = null,
     val indicatieGebruiksrecht: Boolean? = false,
     val vertrouwelijkheidaanduiding: String? = null,
+    @field:Size(min = 1, max = 200)
     val informatieobjecttype: String? = null,
-    val trefwoorden: List<String>? = null,
+    val trefwoorden: List<@Size(min = 1, max = 100) String>? = null,
 )

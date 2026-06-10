@@ -36,7 +36,9 @@ import com.ritense.formviewmodel.validation.OnStartUpViewModelValidator
 import com.ritense.formviewmodel.viewmodel.ViewModelLoader
 import com.ritense.formviewmodel.viewmodel.ViewModelLoaderFactory
 import com.ritense.formviewmodel.web.rest.FormViewModelResource
-import com.ritense.formviewmodel.web.rest.error.FormViewModelModuleExceptionTranslator
+import com.ritense.formviewmodel.web.rest.error.BusinessExceptionMapper
+import com.ritense.formviewmodel.web.rest.error.FormErrorsExceptionMapper
+import com.ritense.formviewmodel.web.rest.error.FormExceptionMapper
 import com.ritense.processdocument.service.ProcessDocumentAssociationService
 import com.ritense.processlink.service.ProcessLinkService
 import com.ritense.valtimo.operaton.service.OperatonRepositoryService
@@ -51,9 +53,14 @@ import org.springframework.core.annotation.Order
 @AutoConfiguration
 class FormViewModelAutoConfiguration {
 
-    @Order(Ordered.HIGHEST_PRECEDENCE)
     @Bean
-    fun formViewModelModuleExceptionTranslator() = FormViewModelModuleExceptionTranslator()
+    fun formExceptionMapper() = FormExceptionMapper()
+
+    @Bean
+    fun formErrorsExceptionMapper() = FormErrorsExceptionMapper()
+
+    @Bean
+    fun businessExceptionMapper() = BusinessExceptionMapper()
 
     @Bean
     fun formViewModelService(

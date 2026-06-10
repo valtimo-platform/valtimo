@@ -23,6 +23,7 @@ import com.ritense.form.service.FormDefinitionService
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import com.ritense.valtimo.contract.case_.CaseDefinitionId
 import com.ritense.valtimo.contract.domain.ValtimoMediaType.APPLICATION_JSON_UTF8_VALUE
+import jakarta.validation.Valid
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.data.domain.Sort.Direction.ASC
@@ -82,7 +83,7 @@ class FormManagementResource(
     fun createFormDefinition(
         @PathVariable("caseDefinitionKey") caseDefinitionKey: String,
         @PathVariable("versionTag") versionTag: String,
-        @RequestBody formDefinition: CreateFormDefinitionRequest,
+        @Valid @RequestBody formDefinition: CreateFormDefinitionRequest,
     ): ResponseEntity<FormDefinition> {
         return ResponseEntity.ok(
             formDefinitionService.createFormDefinition(
@@ -96,7 +97,7 @@ class FormManagementResource(
     fun updateFormDefinition(
         @PathVariable("caseDefinitionKey") caseDefinitionKey: String,
         @PathVariable("versionTag") versionTag: String,
-        @RequestBody formDefinition: ModifyFormDefinitionRequest,
+        @Valid @RequestBody formDefinition: ModifyFormDefinitionRequest,
     ): ResponseEntity<FormDefinition> {
         return ResponseEntity.ok(
             formDefinitionService.modifyFormDefinition(
@@ -158,7 +159,7 @@ class FormManagementResource(
 
     @PostMapping("/management/v1/form")
     fun createFormDefinition(
-        @RequestBody formDefinition: CreateFormDefinitionRequest,
+        @Valid @RequestBody formDefinition: CreateFormDefinitionRequest,
     ): ResponseEntity<FormDefinition> {
         return ResponseEntity.ok(
             formDefinitionService.createFormDefinition(
@@ -181,7 +182,7 @@ class FormManagementResource(
 
     @PutMapping("/management/v1/form")
     fun updateFormDefinition(
-        @RequestBody formDefinition: ModifyFormDefinitionRequest,
+        @Valid @RequestBody formDefinition: ModifyFormDefinitionRequest,
     ): ResponseEntity<FormDefinition> {
         return ResponseEntity.ok(
             formDefinitionService.modifyFormDefinition(

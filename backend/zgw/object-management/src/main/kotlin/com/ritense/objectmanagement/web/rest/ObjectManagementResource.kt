@@ -76,7 +76,7 @@ class ObjectManagementResource(
     fun getObjectsWithSearchFields(
         @PathVariable id: UUID,
         @PageableDefault pageable: Pageable,
-        @RequestBody searchRequest: SearchWithConfigRequest
+        @Valid @RequestBody searchRequest: SearchWithConfigRequest
     ): ResponseEntity<PageImpl<ObjectsListRowDto>> =
         ResponseEntity.ok(objectManagementService.getObjectsWithSearchParams(searchRequest, id, pageable))
 }

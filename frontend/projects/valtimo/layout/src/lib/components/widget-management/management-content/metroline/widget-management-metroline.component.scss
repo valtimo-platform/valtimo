@@ -57,4 +57,18 @@
       background: var(--cds-layer-01);
     }
   }
+
+  &__iko-block {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  &__path-input {
+    max-width: 480px;
+
+    input {
+      background: var(--cds-layer-01);
+    }
+  }
 }

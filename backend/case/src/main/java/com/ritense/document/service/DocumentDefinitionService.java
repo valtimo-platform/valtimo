@@ -56,8 +56,6 @@ public interface DocumentDefinitionService {
         CaseDefinitionId caseDefinitionId
     );
 
-    List<String> getPropertyNames(DocumentDefinition definition);
-
     List<CaseDefinitionId> findVersionsByName(String documentDefinitionName);
 
     DeployDocumentDefinitionResult deploy(String schema, CaseDefinitionId caseDefinitionId);
