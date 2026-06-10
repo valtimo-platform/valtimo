@@ -49,3 +49,12 @@
   When reopening the start modal with a different process, previously rendered FVM or custom UI components were not
   cleared, and the supporting process start modal incorrectly showed a loading spinner for FVM process links. Dynamic
   component containers are now cleared on each process link load, and the loading state is managed correctly.
+
+## Security
+
+* **Documented recommended Keycloak session and logout settings**
+
+  Valtimo's Keycloak configuration documentation now includes step-by-step admin-console instructions for the
+  recommended session timeout values and for enabling refresh-token revocation on logout. See
+  [Configuring Keycloak](../../../running-valtimo/application-configuration/configuring-keycloak.md) for the new
+  sections. 
