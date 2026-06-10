@@ -33,8 +33,15 @@ Internal-only refactors (no public surface change) require no deprecation.
 
 ### Internal-facing surface
 
-For surfaces consumed only within the Valtimo monorepo (no partner / no plugin author has a
-reasonable reason to depend on them), the minimum window is **two minor releases**:
+Internal-facing surfaces — code consumed only within the Valtimo monorepo, with no known
+external plugin author or operator-deployed integration depending on it — can be changed at any
+time. No deprecation cycle, no `@Deprecated` annotation, no release-notes entry required.
+
+### Partner-facing surface
+
+For surfaces external plugin authors or operator-configured deployments depend on — REST
+endpoints, plugin SPI types, outbox event payloads, configuration properties — removal is tied
+to the **major version contract**:
 
 1. **`13.N`** — Announce. On the symbol, add:
     - Java: `@Deprecated(since = "13.N", forRemoval = true)` plus a Javadoc `@deprecated` tag
@@ -42,22 +49,13 @@ reasonable reason to depend on them), the minimum window is **two minor releases
     - Kotlin: `@Deprecated("<reason>", ReplaceWith("<new call>"), DeprecationLevel.WARNING)`.
 
    Add a `## Deprecations` entry to the release notes for `13.N`. Document the migration.
-2. **`13.N+2` or later** — Removal is permitted. Never remove in the same minor where
-   deprecation was announced (`13.N+1` is too soon — at one-week minor cadence that's only
-   ~7 days of consumer notice).
+2. **Removal happens in the next major release** (`14.0.0`). Partner-facing surface is never
+   removed within a major version, regardless of how many minors have passed since the
+   announcement.
 
-### Partner-facing surface
-
-For surfaces external plugin authors or operator-configured deployments depend on — REST
-endpoints, plugin SPI types, outbox event payloads, configuration properties — the window is
-longer:
-
-1. **`13.N`** — Announce, same mechanics as above.
-2. **Removal no earlier than `13.N+8`** (≈ two months at the current one-week minor cadence)
-   **or** the next major release (`14.0.0`), **whichever comes first**.
-
-If the deprecation is breaking (i.e. there is no in-major replacement, only a new major), the
-removal target is the next major regardless of cadence.
+This gives partners a stable contract: any major release `13.x` honours every public surface
+that existed at `13.0`, minus surfaces explicitly marked deprecated in release notes (which they
+can prepare for ahead of the major cut-over).
 
 ### Hard cut-off
 
@@ -141,7 +139,8 @@ Also add the property to the release-notes `## Deprecations` block.
 ### Plugin SPI
 
 Plugin SPI changes affect external authors who cannot patch their plugins on the day of a
-release. They sit in the **partner-facing** tier (≥ `13.N+8` or next major). Additionally:
+release. They sit in the **partner-facing** tier — removal in the next major (`14.0.0`).
+Additionally:
 
 - The interface or abstract class carries `@Deprecated` with a migration note.
 - The replacement is documented in
@@ -155,7 +154,7 @@ changes follow the partner-facing tier:
 
 - **Adding** an optional field — backwards-compatible, no deprecation needed.
 - **Removing or renaming** a field — `@Deprecated` on the Kotlin/Java property,
-  release-notes entry, removal no earlier than `13.N+8` or next major.
+  release-notes entry, removal in the next major (`14.0.0`).
 - **Changing the meaning** of a field (e.g. units, encoding) — treat as breaking, emit a new
   event type instead and follow the same partner-facing deprecation for the old type.
 
