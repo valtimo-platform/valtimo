@@ -23,6 +23,7 @@ import com.ritense.iko.web.rest.request.IkoSearchFieldUpdateRequest
 import com.ritense.iko.web.rest.response.IkoSearchFieldResponse
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import com.ritense.valtimo.contract.domain.ValtimoMediaType.APPLICATION_JSON_UTF8_VALUE
+import jakarta.validation.Valid
 import org.springframework.http.ResponseEntity
 import org.springframework.stereotype.Controller
 import org.springframework.web.bind.annotation.DeleteMapping
@@ -70,7 +71,7 @@ class IkoSearchFieldManagementResource(
         @PathVariable ikoViewKey: String,
         @PathVariable ikoSearchActionKey: String,
         @PathVariable key: String,
-        @RequestBody request: IkoSearchFieldCreateRequest
+        @Valid @RequestBody request: IkoSearchFieldCreateRequest
     ): ResponseEntity<IkoSearchFieldResponse> {
         val existingIkoSearchFields = service.findAllSearchFieldsByIkoSearchAction(
             ikoViewKey = ikoViewKey,
@@ -90,7 +91,7 @@ class IkoSearchFieldManagementResource(
         @PathVariable ikoViewKey: String,
         @PathVariable ikoSearchActionKey: String,
         @PathVariable key: String,
-        @RequestBody request: IkoSearchFieldUpdateRequest,
+        @Valid @RequestBody request: IkoSearchFieldUpdateRequest,
     ): ResponseEntity<IkoSearchFieldResponse> {
         require(request.key == key)
         val existingIkoSearchField = service.findByKey(ikoViewKey, ikoSearchActionKey, key)
@@ -113,7 +114,7 @@ class IkoSearchFieldManagementResource(
     fun updateIkoSearchFieldsOrder(
         @PathVariable ikoViewKey: String,
         @PathVariable ikoSearchActionKey: String,
-        @RequestBody request: List<IkoSearchFieldUpdateRequest>,
+        @Valid @RequestBody request: List<IkoSearchFieldUpdateRequest>,
     ): ResponseEntity<List<IkoSearchFieldResponse>> {
         val existingIkoSearchFields = service.findAllSearchFieldsByIkoSearchAction(
             ikoViewKey = ikoViewKey,

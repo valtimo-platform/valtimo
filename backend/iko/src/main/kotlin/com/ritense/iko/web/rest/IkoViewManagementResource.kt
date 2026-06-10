@@ -29,6 +29,7 @@ import com.ritense.importer.exception.ImportServiceException
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import com.ritense.valtimo.contract.domain.ValtimoMediaType.APPLICATION_JSON_UTF8_VALUE
 import com.ritense.valtimo.contract.iko.PropertyField
+import jakarta.validation.Valid
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 import org.springframework.data.domain.Page
@@ -95,7 +96,7 @@ class IkoViewManagementResource(
     @PostMapping("/v1/iko-view/{key}")
     fun createIkoView(
         @PathVariable key: String,
-        @RequestBody request: IkoViewCreateRequest
+        @Valid @RequestBody request: IkoViewCreateRequest
     ): ResponseEntity<IkoViewResponse> {
         val ikoView = service.createIkoView(
             key = key,
@@ -110,7 +111,7 @@ class IkoViewManagementResource(
     @PutMapping("/v1/iko-view/{key}")
     fun updateIkoView(
         @PathVariable key: String,
-        @RequestBody request: IkoViewUpdateRequest
+        @Valid @RequestBody request: IkoViewUpdateRequest
     ): ResponseEntity<IkoViewResponse> {
         val ikoView = service.saveIkoView(
             key = key,
