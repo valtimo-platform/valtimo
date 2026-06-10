@@ -17,10 +17,12 @@
 package com.ritense.document.service.impl;
 
 import com.ritense.document.domain.search.AssigneeFilter;
+import jakarta.validation.constraints.Size;
 import java.util.List;
 import java.util.Objects;
 
 public class SearchRequest {
+    @Size(max = 50)
     private String documentDefinitionName;
     private String createdBy;
     private String globalSearchFilter;

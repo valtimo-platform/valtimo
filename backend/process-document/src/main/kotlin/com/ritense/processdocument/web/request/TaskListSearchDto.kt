@@ -17,8 +17,10 @@
 package com.ritense.processdocument.web.request
 
 import com.fasterxml.jackson.annotation.JsonInclude
+import jakarta.validation.constraints.Size
 
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
 data class TaskListSearchDto(
+    @field:Size(max = 256)
     val caseDefinitionKey: String?,
 )
