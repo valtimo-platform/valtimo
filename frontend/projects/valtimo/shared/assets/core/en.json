@@ -1861,7 +1861,10 @@
       "secret": "Secret",
       "source": "Source",
       "properties": "Properties (JSON)",
-      "pluginHost": "Plugin host"
+      "pluginHost": "Plugin host",
+      "gzacCallbackBaseUrl": "GZAC callback URL",
+      "eventBrokerAmqpUrl": "Event broker URL (optional)",
+      "eventBrokerExchange": "Event broker exchange (optional)"
     },
     "source": {
       "embedded": "Embedded",

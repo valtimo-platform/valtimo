@@ -51,10 +51,17 @@ class ExternalPluginConfigurationService(
     private val encryptionService: EncryptionService,
     private val objectMapper: ObjectMapper,
     private val serviceTokenService: ExternalPluginServiceTokenService,
-    private val gzacBaseUrl: String,
-    private val eventBrokerUrl: String,
-    private val eventBrokerExchange: String,
-    private val eventBrokerExchangeType: String,
+    /**
+     * Default exchange GZAC publishes to (from `valtimo.outbox.publisher.rabbitmq.exchange`).
+     * Used as a fallback when a host row has `eventBrokerExchange = null`.
+     */
+    private val defaultEventBrokerExchange: String,
+    /**
+     * Fallback callback URL — local-dev default `http://localhost:{server.port}`. Only used when
+     * a host row was created before `gzacCallbackBaseUrl` became required (legacy data); new hosts
+     * always carry a non-null value entered in the add-host UI.
+     */
+    private val fallbackGzacBaseUrl: String,
 ) {
 
     @Transactional(readOnly = true)
@@ -127,10 +134,10 @@ class ExternalPluginConfigurationService(
             pluginVersion = definition.version,
             properties = decrypted,
             serviceToken = serviceToken,
-            gzacBaseUrl = gzacBaseUrl,
-            eventBrokerUrl = eventBrokerUrl,
-            eventBrokerExchange = eventBrokerExchange,
-            eventBrokerExchangeType = eventBrokerExchangeType,
+            gzacBaseUrl = host.gzacCallbackBaseUrl ?: fallbackGzacBaseUrl,
+            eventBrokerUrl = host.eventBrokerAmqpUrl,
+            eventBrokerExchange = host.eventBrokerExchange ?: defaultEventBrokerExchange,
+            eventBrokerExchangeType = "fanout",
         )
         if (pushed) {
             logger.info { "Pushed configuration ${configuration.id} for plugin '${definition.pluginId}' to host ${host.id}" }

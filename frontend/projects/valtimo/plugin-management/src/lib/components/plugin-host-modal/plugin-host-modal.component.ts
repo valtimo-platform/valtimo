@@ -14,13 +14,13 @@
  * limitations under the License.
  */
 
-import {ChangeDetectionStrategy, Component, EventEmitter, Input, Output} from '@angular/core';
+import {ChangeDetectionStrategy, Component, EventEmitter, Input, OnChanges, Output, SimpleChanges} from '@angular/core';
 import {CommonModule} from '@angular/common';
 import {TranslateModule} from '@ngx-translate/core';
 import {FormControl, FormGroup, ReactiveFormsModule, Validators} from '@angular/forms';
 import {ButtonModule, InputModule, LayerModule, ModalModule} from 'carbon-components-angular';
 import {ValtimoCdsModalDirective} from '@valtimo/components';
-import {ExternalPluginHostCreateRequest} from '@valtimo/plugin';
+import {ExternalPluginHostCreateRequest, ExternalPluginService} from '@valtimo/plugin';
 
 @Component({
   standalone: true,
@@ -39,7 +39,7 @@ import {ExternalPluginHostCreateRequest} from '@valtimo/plugin';
     ValtimoCdsModalDirective,
   ],
 })
-export class PluginHostModalComponent {
+export class PluginHostModalComponent implements OnChanges {
   @Input() public open = false;
 
   @Output() public closeEvent = new EventEmitter<void>();
@@ -49,16 +49,59 @@ export class PluginHostModalComponent {
     name: new FormControl('', Validators.required),
     baseUrl: new FormControl('', [Validators.required, Validators.pattern(/^https?:\/\/.+/)]),
     secret: new FormControl('', Validators.required),
+    gzacCallbackBaseUrl: new FormControl('', [
+      Validators.required,
+      Validators.pattern(/^https?:\/\/.+/),
+    ]),
+    eventBrokerAmqpUrl: new FormControl(''),
+    eventBrokerExchange: new FormControl(''),
   });
+
+  constructor(private readonly _externalPluginService: ExternalPluginService) {}
+
+  public ngOnChanges(changes: SimpleChanges): void {
+    if (changes['open']?.currentValue === true) {
+      this._fetchDefaults();
+    }
+  }
 
   public onSubmit(): void {
     if (this.form.invalid) return;
-    this.submitEvent.emit(this.form.value as ExternalPluginHostCreateRequest);
-    this.form.reset({name: '', baseUrl: '', secret: ''});
+    const value = this.form.value;
+    this.submitEvent.emit({
+      name: value.name!,
+      baseUrl: value.baseUrl!,
+      secret: value.secret!,
+      gzacCallbackBaseUrl: value.gzacCallbackBaseUrl!,
+      eventBrokerAmqpUrl: value.eventBrokerAmqpUrl?.trim() || null,
+      eventBrokerExchange: value.eventBrokerExchange?.trim() || null,
+    });
+    this._resetForm();
   }
 
   public onClose(): void {
     this.closeEvent.emit();
-    this.form.reset({name: '', baseUrl: '', secret: ''});
+    this._resetForm();
+  }
+
+  private _fetchDefaults(): void {
+    this._externalPluginService.getHostDefaults().subscribe(defaults => {
+      this.form.patchValue({
+        gzacCallbackBaseUrl: defaults.gzacCallbackBaseUrl,
+        eventBrokerAmqpUrl: defaults.eventBrokerAmqpUrl,
+        eventBrokerExchange: defaults.eventBrokerExchange,
+      });
+    });
+  }
+
+  private _resetForm(): void {
+    this.form.reset({
+      name: '',
+      baseUrl: '',
+      secret: '',
+      gzacCallbackBaseUrl: '',
+      eventBrokerAmqpUrl: '',
+      eventBrokerExchange: '',
+    });
   }
 }

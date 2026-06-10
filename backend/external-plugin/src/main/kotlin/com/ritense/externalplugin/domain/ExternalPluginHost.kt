@@ -51,4 +51,27 @@ class ExternalPluginHost(
 
     @Column(name = "consecutive_failures", nullable = false)
     var consecutiveFailures: Int = 0,
+
+    /**
+     * URL the plugin host uses to call back into GZAC. Pre-filled in the add-host UI from the URL
+     * the admin reaches GZAC at and editable per host. Null only on legacy rows; pushes fall back
+     * to `http://localhost:{server.port}` in that case.
+     */
+    @Column(name = "gzac_callback_base_url")
+    var gzacCallbackBaseUrl: String? = null,
+
+    /**
+     * AMQP URL the plugin host uses to consume this instance's event stream. Pre-filled in the
+     * add-host UI from `spring.rabbitmq.*` and editable per host. Null disables event delivery
+     * for this host (actions still work).
+     */
+    @Column(name = "event_broker_amqp_url")
+    var eventBrokerAmqpUrl: String? = null,
+
+    /**
+     * Exchange the plugin host binds to. Null falls back to `valtimo.outbox.publisher.rabbitmq.exchange`
+     * at push time — the exchange GZAC itself publishes to.
+     */
+    @Column(name = "event_broker_exchange")
+    var eventBrokerExchange: String? = null,
 )
