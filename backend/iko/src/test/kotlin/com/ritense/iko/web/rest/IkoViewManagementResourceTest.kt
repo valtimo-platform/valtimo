@@ -52,6 +52,7 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPat
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 import org.springframework.test.web.servlet.setup.MockMvcBuilders
 import org.springframework.transaction.annotation.Transactional
+import org.springframework.validation.beanvalidation.LocalValidatorFactoryBean
 
 @Transactional
 internal class IkoViewManagementResourceTest {
@@ -73,6 +74,7 @@ internal class IkoViewManagementResourceTest {
         mockMvc = MockMvcBuilders.standaloneSetup(resource)
             .setCustomArgumentResolvers(PageableHandlerMethodArgumentResolver())
             .setMessageConverters(MappingJackson2HttpMessageConverter(MapperSingleton.get()))
+            .setValidator(LocalValidatorFactoryBean().apply { afterPropertiesSet() })
             .build();
     }
 
@@ -242,6 +244,23 @@ internal class IkoViewManagementResourceTest {
         mockMvc.perform(delete("/api/management/v1/iko-view/{ikoViewKey}", "klant"))
             .andDo(print())
             .andExpect(status().isNoContent())
+    }
+
+    @Test
+    fun `should reject create ikoView with title exceeding column cap`() {
+        val request = IkoViewCreateRequest(
+            ikoRepositoryConfigKey = "iko-api",
+            title = "x".repeat(257),
+            properties = emptyMap()
+        )
+
+        mockMvc.perform(
+            post("/api/management/v1/iko-view/{ikoViewKey}", "klant")
+                .content(objectMapper.writeValueAsString(request))
+                .contentType(APPLICATION_JSON_VALUE)
+        )
+            .andDo(print())
+            .andExpect(status().isBadRequest())
     }
 
 }

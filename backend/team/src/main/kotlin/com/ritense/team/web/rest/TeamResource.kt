@@ -99,7 +99,7 @@ class TeamResource(
     @ResponseStatus(HttpStatus.CREATED)
     fun addUserToTeam(
         @PathVariable teamKey: String,
-        @RequestBody request: TeamUserCreateRequestDto
+        @Valid @RequestBody request: TeamUserCreateRequestDto
     ): TeamUserResponseDto {
         val username = teamManagementService.addUserToTeam(request.username, teamKey)
         return TeamUserResponseDto.from(userManagementService.findByUsername(username))
