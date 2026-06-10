@@ -19,12 +19,19 @@ defaults:
 permissions:
   contents: read
 
+env:
+  NODE_VERSION: "20.x"
+
 jobs:
   publish:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+      - name: Set up Node.js ${{ env.NODE_VERSION }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
       - name: "Restore build artifact: dist"
         uses: actions/download-artifact@v4
         with:
