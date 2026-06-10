@@ -22,6 +22,7 @@ import com.ritense.formflow.web.rest.result.FormFlowDefinitionDto
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import com.ritense.valtimo.contract.buildingblock.BuildingBlockDefinitionId
 import com.ritense.valtimo.contract.domain.ValtimoMediaType.APPLICATION_JSON_UTF8_VALUE
+import jakarta.validation.Valid
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.http.HttpStatus
@@ -85,7 +86,7 @@ class BuildingBlockFormFlowManagementResource(
     fun createFormFlowDefinition(
         @PathVariable key: String,
         @PathVariable versionTag: String,
-        @RequestBody definitionDto: FormFlowDefinitionDto
+        @Valid @RequestBody definitionDto: FormFlowDefinitionDto
     ): ResponseEntity<FormFlowDefinitionDto> {
         val buildingBlockId = BuildingBlockDefinitionId.of(key, versionTag)
         if (buildingBlockFormFlowDefinitionService.getFormFlowDefinition(buildingBlockId, definitionDto.key) != null) {
@@ -101,7 +102,7 @@ class BuildingBlockFormFlowManagementResource(
         @PathVariable key: String,
         @PathVariable versionTag: String,
         @PathVariable definitionKey: String,
-        @RequestBody definitionDto: FormFlowDefinitionDto
+        @Valid @RequestBody definitionDto: FormFlowDefinitionDto
     ): ResponseEntity<FormFlowDefinitionDto> {
         val buildingBlockId = BuildingBlockDefinitionId.of(key, versionTag)
         if (definitionDto.key != definitionKey) {

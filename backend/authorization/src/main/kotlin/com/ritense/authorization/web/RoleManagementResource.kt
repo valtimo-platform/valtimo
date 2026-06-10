@@ -31,6 +31,7 @@ import com.ritense.authorization.web.request.UpdateRoleRequest
 import com.ritense.authorization.web.result.RoleResult
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import com.ritense.valtimo.contract.domain.ValtimoMediaType
+import jakarta.validation.Valid
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.transaction.annotation.Transactional
@@ -58,7 +59,7 @@ class RoleManagementResource(
     }
 
     @PostMapping("/v1/roles")
-    fun createRole(@RequestBody saveRoleRequest: SaveRoleRequest)
+    fun createRole(@Valid @RequestBody saveRoleRequest: SaveRoleRequest)
         : ResponseEntity<RoleResult> {
         try {
             val role: Role = roleRepository.save(saveRoleRequest.toRole())
@@ -69,7 +70,7 @@ class RoleManagementResource(
     }
 
     @PutMapping("/v1/roles/{oldRoleKey}")
-    fun updateRole(@PathVariable oldRoleKey: String, @RequestBody updateRoleRequest: UpdateRoleRequest)
+    fun updateRole(@PathVariable oldRoleKey: String, @Valid @RequestBody updateRoleRequest: UpdateRoleRequest)
         : ResponseEntity<RoleResult> {
 
         val oldRole = roleRepository.findByKey(oldRoleKey)
@@ -80,7 +81,7 @@ class RoleManagementResource(
 
     @DeleteMapping("/v1/roles")
     @Transactional
-    fun deleteRole(@RequestBody deleteRolesRequest: DeleteRolesRequest)
+    fun deleteRole(@Valid @RequestBody deleteRolesRequest: DeleteRolesRequest)
         : ResponseEntity<Void> {
         permissionRepository.deleteByRoleKeyIn(deleteRolesRequest.roles)
         roleRepository.deleteByKeyIn(deleteRolesRequest.roles)
@@ -111,7 +112,7 @@ class RoleManagementResource(
     @Transactional
     fun updateRolePermissions(
         @PathVariable roleKey: String,
-        @RequestBody rolePermissions: List<UpdateRolePermissionRequest>
+        @Valid @RequestBody rolePermissions: List<UpdateRolePermissionRequest>
     )
         : ResponseEntity<List<PermissionDto>> {
         val role = roleRepository.findByKey(roleKey)!!

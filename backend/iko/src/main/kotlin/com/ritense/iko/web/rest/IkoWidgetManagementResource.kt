@@ -21,6 +21,7 @@ import com.ritense.iko.service.IkoWidgetService
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import com.ritense.valtimo.contract.domain.ValtimoMediaType.APPLICATION_JSON_UTF8_VALUE
 import com.ritense.widget.web.rest.dto.WidgetDto
+import jakarta.validation.Valid
 import org.springframework.http.ResponseEntity
 import org.springframework.stereotype.Controller
 import org.springframework.web.bind.annotation.DeleteMapping
@@ -69,7 +70,7 @@ class IkoWidgetManagementResource(
         @PathVariable ikoViewKey: String,
         @PathVariable tabKey: String,
         @PathVariable key: String,
-        @RequestBody request: WidgetDto
+        @Valid @RequestBody request: WidgetDto
     ): ResponseEntity<WidgetDto> {
         val existingWidgets = service.findAllByTabKey(ikoViewKey, tabKey)
         val ikoWidget = service.create(
@@ -86,7 +87,7 @@ class IkoWidgetManagementResource(
         @PathVariable ikoViewKey: String,
         @PathVariable tabKey: String,
         @PathVariable key: String,
-        @RequestBody request: WidgetDto,
+        @Valid @RequestBody request: WidgetDto,
     ): ResponseEntity<WidgetDto> {
         require(request.key == key)
         val existingWidget = service.findByKey(ikoViewKey, tabKey, key)
@@ -104,7 +105,7 @@ class IkoWidgetManagementResource(
     fun updateIkoWidget(
         @PathVariable ikoViewKey: String,
         @PathVariable tabKey: String,
-        @RequestBody request: List<WidgetDto>,
+        @Valid @RequestBody request: List<WidgetDto>,
     ): ResponseEntity<List<WidgetDto>> {
         val existingWidgets = service.findAllByTabKey(ikoViewKey, tabKey)
         val ikoWidgets = request.mapIndexed { index, updatedWidget ->

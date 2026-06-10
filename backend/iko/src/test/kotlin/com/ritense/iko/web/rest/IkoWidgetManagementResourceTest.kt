@@ -41,6 +41,7 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPat
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 import org.springframework.test.web.servlet.setup.MockMvcBuilders
 import org.springframework.transaction.annotation.Transactional
+import org.springframework.validation.beanvalidation.LocalValidatorFactoryBean
 
 @Transactional
 internal class IkoWidgetManagementResourceTest {
@@ -62,6 +63,7 @@ internal class IkoWidgetManagementResourceTest {
         mockMvc = MockMvcBuilders.standaloneSetup(resource)
             .setCustomArgumentResolvers(PageableHandlerMethodArgumentResolver())
             .setMessageConverters(MappingJackson2HttpMessageConverter(objectMapper))
+            .setValidator(LocalValidatorFactoryBean().apply { afterPropertiesSet() })
             .build()
     }
 
@@ -206,6 +208,24 @@ internal class IkoWidgetManagementResourceTest {
             .andExpect(jsonPath("$[0].properties.columns[0][0].key").value("naam"))
             .andExpect(jsonPath("$[0].properties.columns[0][0].title").value("Naam"))
             .andExpect(jsonPath("$[0].properties.columns[0][0].value").value("iko:/persoon/naam/volledigeNaam"))
+    }
+
+    @Test
+    fun `should reject create iko widget with width exceeding max`() {
+        val request = widget().copy(width = 5).toDto()
+
+        mockMvc.perform(
+            post(
+                "/api/management/v1/iko-view/{ikoViewKey}/tab/{tabKey}/widget/{widgetKey}",
+                "klant",
+                "general",
+                "partner"
+            )
+                .content(objectMapper.writeValueAsString(request))
+                .contentType(APPLICATION_JSON_UTF8_VALUE)
+        )
+            .andDo(print())
+            .andExpect(status().isBadRequest())
     }
 
     @Test

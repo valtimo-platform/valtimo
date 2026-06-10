@@ -49,7 +49,7 @@ import com.ritense.document.web.rest.DocumentDefinitionManagementResource;
 import com.ritense.document.web.rest.DocumentDefinitionResource;
 import com.ritense.document.web.rest.DocumentResource;
 import com.ritense.document.web.rest.DocumentSearchResource;
-import com.ritense.document.web.rest.error.DocumentModuleExceptionTranslator;
+import com.ritense.document.web.rest.error.ValidationExceptionMapper;
 import com.ritense.document.web.rest.impl.JsonSchemaDocumentDefinitionResource;
 import com.ritense.document.web.rest.impl.JsonSchemaDocumentResource;
 import com.ritense.document.web.rest.impl.JsonSchemaDocumentSearchResource;
@@ -74,7 +74,6 @@ import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.annotation.Bean;
 import org.springframework.core.io.ResourceLoader;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
-import org.zalando.problem.spring.web.advice.AdviceTrait;
 
 @AutoConfiguration
 @EnableJpaRepositories(basePackages = "com.ritense.document.repository")
@@ -259,13 +258,9 @@ public class DocumentAutoConfiguration {
     }
 
     @Bean
-    @ConditionalOnMissingBean(DocumentModuleExceptionTranslator.class)
-    public DocumentModuleExceptionTranslator documentModuleExceptionTranslator(
-        List<AdviceTrait> adviceTraits
-    ) {
-        return new DocumentModuleExceptionTranslator(
-            adviceTraits.get(0)
-        );
+    @ConditionalOnMissingBean(ValidationExceptionMapper.class)
+    public ValidationExceptionMapper validationExceptionMapper() {
+        return new ValidationExceptionMapper();
     }
 
     @Bean
