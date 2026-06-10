@@ -14,6 +14,19 @@
   (`@valtimo/process-link`) now includes a `documentId` property. This allows custom UI components used as process
   links to know which document they are operating on, enabling them to start supporting processes or complete user
   tasks for the correct case.
+  
+* **Access control overview tab**
+
+  A new overview tab presents the permissions in a human-readable manner.
+
+* **Metroline widget available for IKO widget tabs**
+
+  The metroline widget can now be added to IKO widget tabs, allowing case progress to be visualised alongside other
+  case information shown to customers.
+
+* **Full case name shown on hover in the Cases menu**
+
+  Hovering over a case in the Cases menu now displays the full case name as a tooltip.
 
 ## Bugfixes
 
