@@ -23,6 +23,9 @@ defaults:
   run:
     working-directory: frontend
 
+env:
+  NODE_VERSION: "20.x"
+
 jobs:
   check_cache:
     if: ${{ !startsWith(github.ref_name, 'release/') }}
@@ -64,6 +67,11 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+
+      - name: Set up Node.js ${{ env.NODE_VERSION }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
 
       - name: Check whether NPM packages are already cached
         uses: actions/cache/restore@v4
@@ -124,6 +132,11 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      - name: Set up Node.js ${{ env.NODE_VERSION }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
       - name: Get node_modules from cache
         uses: actions/cache/restore@v4
         id: restore_node_modules_cache
@@ -170,6 +183,11 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+
+      - name: Set up Node.js ${{ env.NODE_VERSION }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
 
       - name: Get node_modules from cache
         uses: actions/cache/restore@v4
