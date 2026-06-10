@@ -26,11 +26,13 @@ import com.ritense.valueresolver.ValueResolverPropertyKey.Companion.TAB_KEY
 import com.ritense.valueresolver.ValueResolverPropertyKey.Companion.WIDGET_KEY
 import com.ritense.widget.web.rest.dto.WidgetDto
 import jakarta.servlet.http.HttpServletRequest
+import jakarta.validation.constraints.Size
 import org.springframework.data.domain.Pageable
 import org.springframework.data.web.PageableDefault
 import org.springframework.http.ResponseEntity
 import org.springframework.stereotype.Controller
 import org.springframework.util.LinkedMultiValueMap
+import org.springframework.validation.annotation.Validated
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.RequestMapping
@@ -38,6 +40,7 @@ import org.springframework.web.bind.annotation.RequestParam
 
 @Controller
 @SkipComponentScan
+@Validated
 @RequestMapping("/api", produces = [ValtimoMediaType.APPLICATION_JSON_UTF8_VALUE])
 class IkoWidgetResource(
     private val ikoWidgetService: IkoWidgetService
@@ -45,8 +48,8 @@ class IkoWidgetResource(
 
     @GetMapping("/v1/iko-view/{ikoViewKey}/tab/{tabKey}/widget")
     fun getIkoWidgets(
-        @PathVariable ikoViewKey: String,
-        @PathVariable tabKey: String,
+        @PathVariable @Size(max = 256) ikoViewKey: String,
+        @PathVariable @Size(max = 256) tabKey: String,
     ): ResponseEntity<List<WidgetDto>> {
         return ResponseEntity.ok(
             ikoWidgetService.findAllByTabKeyFilteredByDisplayConditions(ikoViewKey, tabKey).map { it.toDto() })
@@ -54,9 +57,9 @@ class IkoWidgetResource(
 
     @GetMapping("/v1/iko-view/{ikoViewKey}/tab/{tabKey}/widget/{widgetKey}/data")
     fun getIkoWidgetData(
-        @PathVariable ikoViewKey: String,
-        @PathVariable tabKey: String,
-        @PathVariable widgetKey: String,
+        @PathVariable @Size(max = 256) ikoViewKey: String,
+        @PathVariable @Size(max = 256) tabKey: String,
+        @PathVariable @Size(max = 256) widgetKey: String,
         @RequestParam properties: LinkedMultiValueMap<String, List<Any>>,
         @PageableDefault pageable: Pageable,
         request: HttpServletRequest,

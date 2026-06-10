@@ -16,5 +16,11 @@
 
 package com.ritense.valtimo.milestones.service.exception;
 
-public class IllegalMilestoneSetDeletionException extends RuntimeException {
+import com.ritense.valtimo.contract.web.rest.error.BadRequestAlertException;
+
+public class IllegalMilestoneSetDeletionException extends BadRequestAlertException {
+
+    public IllegalMilestoneSetDeletionException() {
+        super("Illegal milestone-set deletion", "illegalMilestoneSetDeletion");
+    }
 }

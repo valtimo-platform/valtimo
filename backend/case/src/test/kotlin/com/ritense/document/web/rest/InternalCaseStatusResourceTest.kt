@@ -48,6 +48,7 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers.content
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 import org.springframework.test.web.servlet.setup.MockMvcBuilders
+import org.springframework.validation.beanvalidation.LocalValidatorFactoryBean
 
 class InternalCaseStatusResourceTest : BaseTest() {
 
@@ -67,6 +68,7 @@ class InternalCaseStatusResourceTest : BaseTest() {
         mockMvc = MockMvcBuilders.standaloneSetup(internalCaseStatusResource)
             .setCustomArgumentResolvers(PageableHandlerMethodArgumentResolver())
             .setMessageConverters(MappingJackson2HttpMessageConverter(MapperSingleton.get()))
+            .setValidator(LocalValidatorFactoryBean().apply { afterPropertiesSet() })
             .build()
 
         whenever(internalCaseStatusService.getInternalCaseStatuses(caseDefinitionName)).thenReturn(internalCaseStatuses)
@@ -193,6 +195,30 @@ class InternalCaseStatusResourceTest : BaseTest() {
             .andExpect(status().isNoContent())
 
         verify(internalCaseStatusService).update(eq(caseDefinitionName), eq(updateDto.key), eq(updateDto))
+    }
+
+    @Test
+    fun `should reject create internalCaseStatus with title exceeding column cap`() {
+        val title = "x".repeat(256)
+        val json = """
+                    {
+                        "key": "test",
+                        "title": "$title",
+                        "visibleInCaseListByDefault": false,
+                        "retentionPeriodInDays": 365,
+                        "color": "RED"
+                    }
+                """.trimIndent()
+
+        mockMvc.perform(
+            post("/api/management/v1/case-definition/{caseDefinitionName}/internal-status", caseDefinitionName)
+                .content(json)
+                .characterEncoding(Charsets.UTF_8)
+                .accept(MediaType.APPLICATION_JSON_VALUE)
+                .contentType(MediaType.APPLICATION_JSON_VALUE)
+        )
+            .andDo(print())
+            .andExpect(status().isBadRequest())
     }
 
     @Test

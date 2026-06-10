@@ -48,6 +48,7 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers.content
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 import org.springframework.test.web.servlet.setup.MockMvcBuilders
+import org.springframework.validation.beanvalidation.LocalValidatorFactoryBean
 
 class CaseTagResourceTest : BaseTest() {
     private val caseDefinitionId = CaseDefinitionId.of("test", "1.0.0")
@@ -66,6 +67,7 @@ class CaseTagResourceTest : BaseTest() {
         mockMvc = MockMvcBuilders.standaloneSetup(caseTagResource)
             .setCustomArgumentResolvers(PageableHandlerMethodArgumentResolver())
             .setMessageConverters(MappingJackson2HttpMessageConverter(MapperSingleton.get()))
+            .setValidator(LocalValidatorFactoryBean().apply { afterPropertiesSet() })
             .build()
 
         whenever(caseTagService.getCaseTags(caseDefinitionId)).thenReturn(caseTags)
@@ -209,6 +211,31 @@ class CaseTagResourceTest : BaseTest() {
             .andExpect(status().isNoContent())
 
         verify(caseTagService).update(eq(caseDefinitionId), eq(updateDto.key), eq(updateDto))
+    }
+
+    @Test
+    fun `should reject create caseTag with title exceeding column cap`() {
+        val json = """
+                    {
+                        "key": "test",
+                        "title": "${"x".repeat(256)}",
+                        "color": "RED"
+                    }
+                """.trimIndent()
+
+        mockMvc.perform(
+            post(
+                "/api/management/v1/case-definition/{caseDefinitionKey}/version/{caseDefinitionVersionTag}/case-tag",
+                caseDefinitionId.key,
+                caseDefinitionId.versionTag.version
+            )
+                .content(json)
+                .characterEncoding(Charsets.UTF_8)
+                .accept(MediaType.APPLICATION_JSON_VALUE)
+                .contentType(MediaType.APPLICATION_JSON_VALUE)
+        )
+            .andDo(print())
+            .andExpect(status().isBadRequest())
     }
 
     @Test

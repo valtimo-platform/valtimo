@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,13 +14,4 @@
  * limitations under the License.
  */
 
-package com.ritense.valtimo.milestones.web.rest.error;
-
-public final class ErrorConstants {
-
-    public static final String ILLEGAL_MILESTONESET_DELETION = "error.illegalMilestoneSetDeletion";
-
-    private ErrorConstants() {
-    }
-
-}
+export * from './iko-widget-metroline.component';

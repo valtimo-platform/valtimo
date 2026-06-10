@@ -4,8 +4,279 @@
         "widgets": [
             {
                 "type": "fields",
+                "key": "persoonsgegevens",
+                "title": "Persoonsgegevens",
+                "width": 2,
+                "highContrast": true,
+                "properties": {
+                    "columns": [
+                        [
+                            {
+                                "key": "aanhef",
+                                "title": "Aanhef",
+                                "value": "doc:/aanhef",
+                                "displayProperties": {
+                                    "type": "text"
+                                }
+                            },
+                            {
+                                "key": "voornaam",
+                                "title": "Voornaam",
+                                "value": "doc:/voornaam",
+                                "displayProperties": {
+                                    "type": "text"
+                                }
+                            },
+                            {
+                                "key": "achternaam",
+                                "title": "Achternaam",
+                                "value": "doc:/achternaam",
+                                "displayProperties": {
+                                    "type": "text"
+                                }
+                            },
+                            {
+                                "key": "bsn",
+                                "title": "BSN",
+                                "value": "doc:/bsn",
+                                "displayProperties": {
+                                    "type": "text"
+                                }
+                            }
+                        ],
+                        [
+                            {
+                                "key": "straatnaam",
+                                "title": "Straatnaam",
+                                "value": "doc:/straatnaam",
+                                "displayProperties": {
+                                    "type": "text"
+                                }
+                            },
+                            {
+                                "key": "huisnummer",
+                                "title": "Huisnummer",
+                                "value": "doc:/huisnummer",
+                                "displayProperties": {
+                                    "type": "text"
+                                }
+                            },
+                            {
+                                "key": "toevoeging",
+                                "title": "Toevoeging",
+                                "value": "doc:/toevoeging",
+                                "displayProperties": {
+                                    "type": "text"
+                                }
+                            },
+                            {
+                                "key": "postcode",
+                                "title": "Postcode",
+                                "value": "doc:/postcode",
+                                "displayProperties": {
+                                    "type": "text"
+                                }
+                            },
+                            {
+                                "key": "plaats",
+                                "title": "Plaats",
+                                "value": "doc:/plaats",
+                                "displayProperties": {
+                                    "type": "text"
+                                }
+                            }
+                        ]
+                    ]
+                }
+            },
+            {
+                "type": "fields",
+                "key": "contact",
+                "title": "Contact",
+                "width": 1,
+                "highContrast": false,
+                "properties": {
+                    "columns": [
+                        [
+                            {
+                                "key": "telefoonnummer",
+                                "title": "Telefoonnummer",
+                                "value": "doc:/telefoonnummer",
+                                "displayProperties": {
+                                    "type": "text"
+                                }
+                            },
+                            {
+                                "key": "e-mailadres",
+                                "title": "E-mailadres",
+                                "value": "doc:/e-mailadres",
+                                "displayProperties": {
+                                    "type": "text"
+                                }
+                            },
+                            {
+                                "key": "communicatie",
+                                "title": "Communicatievoorkeur",
+                                "value": "doc:/communicatie",
+                                "displayProperties": {
+                                    "type": "text"
+                                }
+                            }
+                        ]
+                    ]
+                }
+            },
+            {
+                "type": "fields",
+                "key": "besluit",
+                "title": "Besluit",
+                "width": 2,
+                "highContrast": true,
+                "properties": {
+                    "columns": [
+                        [
+                            {
+                                "key": "zaaknummer",
+                                "title": "Zaaknummer",
+                                "value": "doc:/zaaknummer",
+                                "displayProperties": {
+                                    "type": "text"
+                                }
+                            },
+                            {
+                                "key": "datumBesluit",
+                                "title": "Datum besluit",
+                                "value": "doc:/datumBesluit",
+                                "displayProperties": {
+                                    "type": "text"
+                                }
+                            },
+                            {
+                                "key": "naamBeslisser",
+                                "title": "Naam beslisser",
+                                "value": "doc:/naamBeslisser",
+                                "displayProperties": {
+                                    "type": "text"
+                                }
+                            }
+                        ],
+                        [
+                            {
+                                "key": "besluit",
+                                "title": "Besluit",
+                                "value": "doc:/besluit",
+                                "displayProperties": {
+                                    "type": "text"
+                                }
+                            },
+                            {
+                                "key": "besluitGenomen",
+                                "title": "Besluit genomen",
+                                "value": "doc:/besluitGenomen",
+                                "displayProperties": {
+                                    "type": "boolean"
+                                }
+                            }
+                        ]
+                    ]
+                }
+            },
+            {
+                "type": "fields",
+                "key": "bezwaargegevens",
+                "title": "Bezwaar",
+                "width": 2,
+                "highContrast": false,
+                "properties": {
+                    "columns": [
+                        [
+                            {
+                                "key": "bezwaar",
+                                "title": "Reden bezwaar",
+                                "value": "doc:/bezwaar",
+                                "displayProperties": {
+                                    "type": "text"
+                                }
+                            },
+                            {
+                                "key": "beslissingBezwaar",
+                                "title": "Beslissing bezwaar",
+                                "value": "doc:/beslissingBezwaar",
+                                "displayProperties": {
+                                    "type": "text"
+                                }
+                            },
+                            {
+                                "key": "gegrond",
+                                "title": "Gegrond",
+                                "value": "doc:/gegrond",
+                                "displayProperties": {
+                                    "type": "boolean"
+                                }
+                            }
+                        ],
+                        [
+                            {
+                                "key": "aanvraagAanvulInfo",
+                                "title": "Aanvraag aanvullende info",
+                                "value": "doc:/aanvraagAanvulInfo",
+                                "displayProperties": {
+                                    "type": "text"
+                                }
+                            },
+                            {
+                                "key": "aanvullendeInfo",
+                                "title": "Aanvullende informatie",
+                                "value": "doc:/aanvullendeInfo",
+                                "displayProperties": {
+                                    "type": "text"
+                                }
+                            }
+                        ]
+                    ]
+                }
+            },
+            {
+                "type": "fields",
+                "key": "behandeling",
+                "title": "Behandeling",
+                "width": 1,
+                "highContrast": true,
+                "properties": {
+                    "columns": [
+                        [
+                            {
+                                "key": "naamBehandelaar",
+                                "title": "Naam behandelaar",
+                                "value": "doc:/naamBehandelaar",
+                                "displayProperties": {
+                                    "type": "text"
+                                }
+                            },
+                            {
+                                "key": "e-mailBehandelaar",
+                                "title": "E-mail behandelaar",
+                                "value": "doc:/e-mailBehandelaar",
+                                "displayProperties": {
+                                    "type": "text"
+                                }
+                            },
+                            {
+                                "key": "portalTaakInformatie",
+                                "title": "Portal taak informatie",
+                                "value": "doc:/portalTaakInformatie",
+                                "displayProperties": {
+                                    "type": "text"
+                                }
+                            }
+                        ]
+                    ]
+                }
+            },
+            {
+                "type": "fields",
                 "key": "aanvrager",
-                "title": "Aanvrager",
+                "title": "Aanvrager (IKO)",
                 "width": 1,
                 "highContrast": true,
                 "isCompact": null,

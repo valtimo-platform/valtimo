@@ -24,6 +24,7 @@ import com.ritense.iko.web.rest.response.IkoRepositoryConfigResponse
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import com.ritense.valtimo.contract.domain.ValtimoMediaType.APPLICATION_JSON_UTF8_VALUE
 import com.ritense.valtimo.contract.iko.PropertyField
+import jakarta.validation.Valid
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.data.domain.Sort.Direction.ASC
@@ -88,7 +89,7 @@ class IkoRepositoryManagementResource(
     @PostMapping("/v1/iko/{key}")
     fun createIkoRepositoryConfig(
         @PathVariable key: String,
-        @RequestBody request: IkoRepositoryConfigCreateRequest
+        @Valid @RequestBody request: IkoRepositoryConfigCreateRequest
     ): ResponseEntity<IkoRepositoryConfigResponse> {
         val ikoRepositoryConfig = service.createIkoRepositoryConfig(
             key = key,
@@ -103,7 +104,7 @@ class IkoRepositoryManagementResource(
     @PutMapping("/v1/iko/{key}")
     fun updateIkoRepositoryConfig(
         @PathVariable key: String,
-        @RequestBody request: IkoRepositoryConfigUpdateRequest
+        @Valid @RequestBody request: IkoRepositoryConfigUpdateRequest
     ): ResponseEntity<IkoRepositoryConfigResponse> {
         val ikoRepositoryConfig = service.saveIkoRepositoryConfig(
             key = key,

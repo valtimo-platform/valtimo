@@ -6,8 +6,12 @@ import com.ritense.formviewmodel.error.FormException
 import com.ritense.formviewmodel.service.FormViewModelService
 import com.ritense.formviewmodel.service.FormViewModelSubmissionService
 import com.ritense.formviewmodel.viewmodel.TestViewModel
-import com.ritense.formviewmodel.web.rest.error.FormViewModelModuleExceptionTranslator
+import com.ritense.formviewmodel.web.rest.error.BusinessExceptionMapper
+import com.ritense.formviewmodel.web.rest.error.FormErrorsExceptionMapper
+import com.ritense.formviewmodel.web.rest.error.FormExceptionMapper
 import com.ritense.valtimo.contract.domain.ValtimoMediaType.APPLICATION_JSON_UTF8_VALUE
+import com.ritense.valtimo.contract.web.rest.error.ExceptionTranslator
+import java.util.Optional
 import com.ritense.valtimo.contract.json.MapperSingleton
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -38,12 +42,15 @@ class FormViewModelResourceTest(
 
     private lateinit var mockMvc: MockMvc
     private lateinit var resource: FormViewModelResource
-    private lateinit var formViewModelModuleExceptionTranslator: FormViewModelModuleExceptionTranslator
+    private lateinit var exceptionTranslator: ExceptionTranslator
     private var objectMapper = MapperSingleton.get()
 
     @BeforeEach
     fun setUp() {
-        formViewModelModuleExceptionTranslator = FormViewModelModuleExceptionTranslator()
+        exceptionTranslator = ExceptionTranslator(
+            Optional.empty(),
+            listOf(FormExceptionMapper(), FormErrorsExceptionMapper(), BusinessExceptionMapper())
+        )
 
         resource = FormViewModelResource(
             formViewModelService = formViewModelService,
@@ -51,7 +58,7 @@ class FormViewModelResourceTest(
         )
         mockMvc = MockMvcBuilders
             .standaloneSetup(resource)
-            .setControllerAdvice(formViewModelModuleExceptionTranslator)
+            .setControllerAdvice(exceptionTranslator)
             .setMessageConverters(MappingJackson2HttpMessageConverter(objectMapper))
             .alwaysDo<StandaloneMockMvcBuilder>(MockMvcResultHandlers.print())
             .build()

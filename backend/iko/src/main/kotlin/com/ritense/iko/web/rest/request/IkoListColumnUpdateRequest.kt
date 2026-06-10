@@ -19,11 +19,15 @@ package com.ritense.iko.web.rest.request
 import com.ritense.search.domain.ColumnDefaultSort
 import com.ritense.search.domain.DisplayType
 import com.ritense.search.domain.SearchListColumn
+import jakarta.validation.constraints.Size
 import java.util.UUID
 
 data class IkoListColumnUpdateRequest(
+    @field:Size(max = 256)
     val key: String,
+    @field:Size(max = 256)
     val title: String?,
+    @field:Size(max = 256)
     val path: String,
     val order: Int,
     val displayType: DisplayType,
