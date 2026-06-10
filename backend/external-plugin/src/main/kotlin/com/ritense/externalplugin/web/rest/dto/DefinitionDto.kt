@@ -33,20 +33,30 @@ data class DefinitionResponse(
     val status: ExternalPluginDefinitionStatus,
     val configurationSchema: JsonNode?,
     val manifest: JsonNode?,
+    /**
+     * Absolute URL the frontend can fetch the logo from, or null when the plugin shipped no logo.
+     * The host serves the file at `GET /plugins/:id/:version/logo`; this URL composes the host
+     * `baseUrl` with the version so the management UI can use it directly in `<img src>`.
+     */
+    val logoUrl: String?,
 ) {
     companion object {
-        fun from(definition: ExternalPluginDefinition) = DefinitionResponse(
-            id = definition.id,
-            pluginId = definition.pluginId,
-            version = definition.version,
-            name = definition.name,
-            description = definition.description,
-            provider = definition.provider,
-            hostId = definition.hostId,
-            baseUrl = definition.baseUrl,
-            status = definition.status,
-            configurationSchema = definition.configSchema,
-            manifest = definition.manifestJson,
-        )
+        fun from(definition: ExternalPluginDefinition): DefinitionResponse {
+            val hasLogo = definition.manifestJson?.get("logo")?.isTextual == true
+            return DefinitionResponse(
+                id = definition.id,
+                pluginId = definition.pluginId,
+                version = definition.version,
+                name = definition.name,
+                description = definition.description,
+                provider = definition.provider,
+                hostId = definition.hostId,
+                baseUrl = definition.baseUrl,
+                status = definition.status,
+                configurationSchema = definition.configSchema,
+                manifest = definition.manifestJson,
+                logoUrl = if (hasLogo) "${definition.baseUrl}/${definition.version}/logo" else null,
+            )
+        }
     }
 }

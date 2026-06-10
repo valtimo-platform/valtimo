@@ -23,6 +23,7 @@ interface UnifiedPluginDefinition extends PluginDefinitionWithLogo {
   externalDefinitionId?: string;
   externalName?: string | null;
   externalDescription?: string | null;
+  externalLogoUrl?: string | null;
 }
 
 interface UnifiedPluginConfigurationRow {

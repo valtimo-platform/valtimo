@@ -60,6 +60,7 @@ export class PluginAddSelectComponent implements OnInit, OnDestroy {
           externalDefinitionId: def.id,
           externalName: def.name ?? def.pluginId,
           externalDescription: def.description,
+          externalLogoUrl: def.logoUrl,
         }));
 
         return [

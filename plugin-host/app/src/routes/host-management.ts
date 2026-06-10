@@ -120,13 +120,18 @@ export async function hostManagementRoutes(
       // Check for frontend directory
       const frontendDir = join(extractDir, "frontend");
 
-      // Store and load (includes frontend assets if present)
+      // Pack tool writes the logo filename onto the manifest; pass the source file through so the
+      // plugin manager can persist it alongside manifest.json and plugin.wasm.
+      const logoPath = manifest.logo ? join(extractDir, manifest.logo) : undefined;
+
+      // Store and load (includes frontend assets and optional logo if present)
       const result = await pluginManager.storeAndLoad(
         manifest.pluginId,
         manifest.version,
         manifestJson,
         wasmBuffer,
-        frontendDir
+        frontendDir,
+        logoPath
       );
 
       reply.code(201).send({

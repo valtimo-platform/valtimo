@@ -71,6 +71,8 @@ interface ExternalPluginManifest {
   actions?: Array<ExternalPluginAction>;
   frontendBundles?: Array<ExternalPluginFrontendBundle>;
   permissions?: ExternalPluginPermissions;
+  logo?: string;
+  translations?: Record<string, Record<string, string>>;
 }
 
 interface ExternalPluginDefinition {
@@ -85,6 +87,7 @@ interface ExternalPluginDefinition {
   status: ExternalPluginDefinitionStatus;
   configurationSchema: unknown | null;
   manifest: ExternalPluginManifest | null;
+  logoUrl: string | null;
 }
 
 interface ExternalPluginConfiguration {
