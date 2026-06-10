@@ -19,6 +19,7 @@ package com.ritense.document.web.rest;
 import com.ritense.document.domain.Document;
 import com.ritense.document.domain.search.SearchWithConfigRequest;
 import com.ritense.document.service.impl.SearchRequest;
+import jakarta.validation.Valid;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
@@ -26,13 +27,13 @@ import org.springframework.http.ResponseEntity;
 public interface DocumentSearchResource {
 
     ResponseEntity<Page<? extends Document>> search(
-        SearchRequest searchRequest,
+        @Valid SearchRequest searchRequest,
         Pageable pageable
     );
 
     <T extends Document> ResponseEntity<Page<T>> search(
         String documentDefinitionName,
-        SearchWithConfigRequest searchRequest,
+        @Valid SearchWithConfigRequest searchRequest,
         Pageable pageable
     );
 

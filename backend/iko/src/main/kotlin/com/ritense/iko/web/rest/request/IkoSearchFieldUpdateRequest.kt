@@ -21,11 +21,15 @@ import com.ritense.search.domain.DataType
 import com.ritense.search.domain.FieldType
 import com.ritense.search.domain.SearchFieldMatchType
 import com.ritense.search.domain.SearchFieldV2
+import jakarta.validation.constraints.Size
 import java.util.UUID
 
 data class IkoSearchFieldUpdateRequest(
+    @field:Size(max = 256)
     val key: String,
+    @field:Size(max = 256)
     val title: String?,
+    @field:Size(max = 256)
     val path: String,
     val dataType: DataType,
     val fieldType: FieldType,

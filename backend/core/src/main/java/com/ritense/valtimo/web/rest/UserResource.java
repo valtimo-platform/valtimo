@@ -16,6 +16,7 @@
 
 package com.ritense.valtimo.web.rest;
 
+import jakarta.validation.Valid;
 import static com.ritense.valtimo.contract.domain.ValtimoMediaType.APPLICATION_JSON_UTF8_VALUE;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -72,7 +73,7 @@ public class UserResource {
 
     @Deprecated(since = "Since 13.20.0", forRemoval = true)
     @PostMapping("/v1/users")
-    public ResponseEntity<ManageableUser> createUser(@RequestBody ValtimoUser valtimoUser) throws URISyntaxException {
+    public ResponseEntity<ManageableUser> createUser(@Valid @RequestBody ValtimoUser valtimoUser) throws URISyntaxException {
         logger.debug("Request to save ValtimoUser : {}", valtimoUser);
         final ManageableUser user = userManagementService.createUser(valtimoUser);
         final URI uri = new URI("/api/v1/users/" + UriUtils.encode(user.getId(), StandardCharsets.UTF_8));
@@ -82,7 +83,7 @@ public class UserResource {
 
     @Deprecated(since = "Since 13.20.0", forRemoval = true)
     @PutMapping("/v1/users")
-    public ResponseEntity<ManageableUser> updateUser(@RequestBody ValtimoUser valtimoUser) {
+    public ResponseEntity<ManageableUser> updateUser(@Valid @RequestBody ValtimoUser valtimoUser) {
         logger.debug("Request to update ValtimoUser : {}", valtimoUser);
         final ManageableUser user = userManagementService.updateUser(valtimoUser);
         final HttpHeaders headers = HeaderUtil.createAlert("userManagement.updated", user.getEmail());

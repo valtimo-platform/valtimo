@@ -17,11 +17,15 @@
 package com.ritense.iko.web.rest.request
 
 import com.ritense.tab.domain.Tab
+import jakarta.validation.constraints.Size
 import java.util.UUID
 
 data class IkoTabUpdateRequest(
+    @field:Size(max = 256)
     val key: String,
+    @field:Size(max = 256)
     val title: String?,
+    @field:Size(max = 256)
     val type: String,
     val properties: Map<String, Any?> = emptyMap(),
 ) {
