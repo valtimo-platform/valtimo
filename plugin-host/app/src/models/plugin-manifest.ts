@@ -14,53 +14,10 @@
  * limitations under the License.
  */
 
-interface FrontendBundle {
-  type: "config" | "process-link-action" | "case-tab" | "case-widget" | "page";
-  key?: string;
-  title?: string;
-  path: string;
-  activityTypes?: string[];
-  menuIcon?: string;
-  menuPosition?: string;
-  renderMode?: "bundle" | "htmx";
-}
-
-interface ManagementEndpoint {
-  method: string;
-  pattern: string;
-}
-
-export interface PluginManifest {
-  pluginId: string;
-  version: string;
-  name: string;
-  description?: string;
-  provider?: string;
-  compatibility?: {
-    minGzacVersion?: string;
-    maxGzacVersion?: string;
-  };
-  configurationSchema?: Record<string, unknown>;
-  permissions?: {
-    managementEndpoints?: Array<ManagementEndpoint>;
-  };
-  frontendBundles?: Array<FrontendBundle>;
-  actions: Array<{
-    key: string;
-    title: string;
-    description?: string;
-    activityTypes: string[];
-    properties?: Array<{
-      key: string;
-      type: string;
-      required?: boolean;
-    }>;
-  }>;
-  /**
-   * CloudEvent `type` values this plugin subscribes to. The host routes matching events consumed
-   * from RabbitMQ to the plugin's `handle_event` export.
-   */
-  eventSubscriptions?: string[];
-}
-
-export type { FrontendBundle, ManagementEndpoint };
+export type {
+  PluginManifest,
+  ManifestAction,
+  ManifestActionProperty,
+  ManagementEndpoint,
+  FrontendBundle,
+} from "@valtimo/plugin-sdk";
