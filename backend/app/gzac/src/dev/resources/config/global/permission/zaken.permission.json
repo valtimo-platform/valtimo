@@ -1,7 +1,7 @@
 [
     {
         "resourceType": "com.ritense.zakenapi.security.Zaak",
-        "action": "view_active_status",
+        "action": "view",
         "roleKey": "ROLE_ADMIN",
         "conditions": [
             {
