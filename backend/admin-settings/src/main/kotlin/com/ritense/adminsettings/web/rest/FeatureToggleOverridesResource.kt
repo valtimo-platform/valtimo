@@ -21,6 +21,7 @@ import com.ritense.adminsettings.web.rest.dto.FeatureToggleOverridesDto
 import com.ritense.adminsettings.web.rest.dto.UpdateFeatureToggleDto
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import com.ritense.valtimo.contract.domain.ValtimoMediaType.APPLICATION_JSON_UTF8_VALUE
+import jakarta.validation.Valid
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
@@ -44,7 +45,7 @@ class FeatureToggleOverridesResource(
 
     @PutMapping("/management/v1/admin-settings/feature-toggles")
     fun updateToggle(
-        @RequestBody dto: UpdateFeatureToggleDto
+        @Valid @RequestBody dto: UpdateFeatureToggleDto
     ): ResponseEntity<FeatureToggleOverridesDto> {
         return ResponseEntity.ok(featureToggleOverridesService.updateToggle(dto.key, dto.enabled))
     }

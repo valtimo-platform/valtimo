@@ -74,6 +74,11 @@
               >
                 <cds-sidenav-item
                   [attr.data-testid]="'sidenav-item-' + childMenuItem?.title"
+                  [title]="
+                    menuItem.title === 'Cases' || menuItem.title === 'Dossiers'
+                      ? (childMenuItem | menuItemTranslate | async)
+                      : null
+                  "
                   [ngClass]="{
                     'cds--side-nav__item--empty': !childMenuItem.link,
                     'menu-item--hidden': childMenuItem.includeFunction !== undefined,

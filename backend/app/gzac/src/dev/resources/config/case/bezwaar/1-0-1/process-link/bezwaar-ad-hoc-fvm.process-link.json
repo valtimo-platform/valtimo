@@ -1,0 +1,22 @@
+[
+    {
+        "activityId": "start-event",
+        "activityType": "bpmn:StartEvent:start",
+        "processLinkType": "form",
+        "formDefinitionName": "bezwaar-ad-hoc-fvm-start",
+        "viewModelEnabled": true,
+        "formDisplayType": "modal",
+        "formSize": "medium",
+        "subtitles": null
+    },
+    {
+        "activityId": "fvm-user-task",
+        "activityType": "bpmn:UserTask:create",
+        "processLinkType": "form",
+        "formDefinitionName": "bezwaar-ad-hoc-fvm-task",
+        "viewModelEnabled": true,
+        "formDisplayType": "modal",
+        "formSize": "medium",
+        "subtitles": null
+    }
+]

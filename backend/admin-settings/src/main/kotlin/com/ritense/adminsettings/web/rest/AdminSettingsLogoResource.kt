@@ -24,6 +24,7 @@ import com.ritense.adminsettings.web.rest.dto.CreateAdminSettingsLogoDto
 import com.ritense.authorization.AuthorizationContext.Companion.runWithoutAuthorization
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import com.ritense.valtimo.contract.domain.ValtimoMediaType.APPLICATION_JSON_UTF8_VALUE
+import jakarta.validation.Valid
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
@@ -61,7 +62,7 @@ class AdminSettingsLogoResource(
     )
     fun uploadLogo(
         @PathVariable logoType: LogoType,
-        @RequestBody dto: CreateAdminSettingsLogoDto
+        @Valid @RequestBody dto: CreateAdminSettingsLogoDto
     ): ResponseEntity<AdminSettingsLogoDto> {
         val created = runWithoutAuthorization { adminSettingsLogoService.uploadLogo(logoType, dto) }
         return ResponseEntity.ok(created)

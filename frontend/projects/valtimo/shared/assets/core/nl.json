@@ -1187,6 +1187,28 @@
           "placeholder": "Selecteer een statusbron",
           "internalStatus": "Interne status",
           "zaakStatus": "Zaakstatus"
+        },
+        "iko": {
+          "source": {
+            "label": "Bron van items",
+            "placeholder": "iko:/statushistorie",
+            "tooltip": "Padexpressie die verwijst naar een array. Elk element van de array wordt één stap in de tijdlijn. Voorbeeld: iko:/statushistorie"
+          },
+          "titlePath": {
+            "label": "Pad naar titel",
+            "placeholder": "/statustype/omschrijving",
+            "tooltip": "Pad dat per item wordt toegepast om de titel op te halen. Voorbeeld: /statustype/omschrijving"
+          },
+          "labelPath": {
+            "label": "Pad naar tooltiptekst (optioneel)",
+            "placeholder": "/statustype/toelichting",
+            "tooltip": "Optioneel pad dat per item wordt toegepast om de tekst op te halen die in de info-tooltip van de stap wordt getoond (het icoon naast de titel). Voorbeeld: /statustype/toelichting"
+          },
+          "completedPath": {
+            "label": "Pad naar voltooiingstijdstip",
+            "placeholder": "/datumStatusGezet",
+            "tooltip": "Pad dat per item wordt toegepast om het tijdstip op te halen waarop de stap is bereikt. Verwacht als ISO-8601-tijdstempel, met of zonder tijdzone-offset (bv. 2025-08-15T10:30:00, 2025-08-15T10:30:00Z, of 2025-08-15T10:30:00+02:00). Items zonder waarde of met onleesbare waarde worden weergegeven als nog niet bereikt. Voorbeeld: /datumStatusGezet"
+          }
         }
       },
       "highlight": {

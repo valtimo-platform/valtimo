@@ -143,6 +143,8 @@ export class CaseProcessStartModalComponent implements OnInit, OnDestroy {
     this.processLinkId = null;
     this.formDefinition = null;
     this.formFlowInstanceId = null;
+    this.formViewModelDynamicContainer?.clear();
+    this.formCustomComponentDynamicContainer?.clear();
     if (this._useStartEventNameAsStartFormTitle) {
       this.processService.getProcessDefinitionXml(this.processDefinitionId).subscribe(result => {
         this._startEventName = this.startModalService.getStandardStartEventTitle(result.bpmn20Xml);
@@ -327,6 +329,7 @@ export class CaseProcessStartModalComponent implements OnInit, OnDestroy {
 
       renderedComponent.instance.processDefinitionKey = this.processDefinitionKey;
       renderedComponent.instance.documentDefinitionName = this.caseDefinitionKey;
+      renderedComponent.instance.documentId = null;
 
       renderedComponent.instance.submittedEvent.subscribe(() => {
         this.closeCdsModal();

@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,6 +28,7 @@ import {IkoWidgetFormioComponent} from '../../widget-formio';
 import {IkoWidgetInteractiveTableComponent} from '../../widget-interactive-table';
 import {IkoWidgetTableComponent} from '../../widget-table';
 import {IkoWidgetMapComponent} from '../../widget-map';
+import {IkoWidgetMetrolineComponent} from '../../widget-metroline';
 
 @Component({
   templateUrl: './iko-widget.component.html',
@@ -89,6 +90,7 @@ export class IkoWidgetComponent {
     [WidgetType.INTERACTIVE_TABLE]: IkoWidgetInteractiveTableComponent,
     [WidgetType.COLLECTION]: IkoWidgetCollectionComponent,
     [WidgetType.MAP]: IkoWidgetMapComponent,
+    [WidgetType.METROLINE]: IkoWidgetMetrolineComponent,
   };
 
   constructor(

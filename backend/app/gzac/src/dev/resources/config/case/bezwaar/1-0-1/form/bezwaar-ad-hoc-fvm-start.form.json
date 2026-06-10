@@ -1,0 +1,28 @@
+{
+    "display": "form",
+    "components": [
+        {
+            "label": "Omschrijving",
+            "key": "omschrijving",
+            "type": "textfield",
+            "input": true,
+            "validate": {
+                "required": true,
+                "maxLength": 200
+            }
+        },
+        {
+            "label": "Toelichting",
+            "key": "toelichting",
+            "type": "textarea",
+            "input": true
+        },
+        {
+            "type": "button",
+            "label": "Submit",
+            "key": "submit",
+            "disableOnInvalid": true,
+            "input": true
+        }
+    ]
+}

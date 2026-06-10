@@ -20,6 +20,7 @@ import com.ritense.authorization.annotation.RunWithoutAuthorization
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import com.ritense.valtimo.contract.case_.CaseDefinitionId
 import com.ritense.valtimo.contract.domain.ValtimoMediaType.APPLICATION_JSON_UTF8_VALUE
+import jakarta.validation.Valid
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
@@ -53,7 +54,7 @@ class CaseZakenApiSyncManagementResource(
     fun createOrUpdateSyncConfiguration(
         @PathVariable("caseDefinitionKey") caseDefinitionKey: String,
         @PathVariable("caseDefinitionVersionTag") caseDefinitionVersionTag: String,
-        @RequestBody syncRequest: CaseZakenApiSyncRequest,
+        @Valid @RequestBody syncRequest: CaseZakenApiSyncRequest,
     ): ResponseEntity<Unit> {
         val caseDefinitionId = CaseDefinitionId(caseDefinitionKey, caseDefinitionVersionTag)
         caseZakenApiSyncManagementService.saveSyncConfiguration(syncRequest.toEntity(caseDefinitionId))

@@ -22,6 +22,7 @@ import com.ritense.valtimo.contract.domain.ValtimoMediaType.APPLICATION_JSON_UTF
 import com.ritense.valueresolver.ValueResolverOption
 import com.ritense.valueresolver.ValueResolverOptionRequest
 import com.ritense.valueresolver.ValueResolverService
+import jakarta.validation.Valid
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
@@ -40,7 +41,7 @@ class BuildingBlockValueResolverResource(
     fun getResolvableKeys(
         @PathVariable buildingBlockDefinitionKey: String,
         @PathVariable buildingBlockDefinitionVersionTag: String,
-        @RequestBody request: ValueResolverOptionRequest
+        @Valid @RequestBody request: ValueResolverOptionRequest
     ): ResponseEntity<List<ValueResolverOption>> {
         return ResponseEntity.ok(
             valueResolverService.getResolvableKeys(

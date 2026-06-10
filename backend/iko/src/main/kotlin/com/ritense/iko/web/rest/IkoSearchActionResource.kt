@@ -27,6 +27,7 @@ import com.ritense.search.domain.SearchListColumn
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import com.ritense.valtimo.contract.domain.ValtimoMediaType.APPLICATION_JSON_UTF8_VALUE
 import com.ritense.valtimo.contract.iko.DataFilter
+import jakarta.validation.Valid
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Pageable
 import org.springframework.data.domain.Sort
@@ -66,7 +67,7 @@ class IkoSearchActionResource(
     fun search(
         @PathVariable ikoViewKey: String,
         @PathVariable ikoSearchActionKey: String,
-        @RequestBody request: IkoSearchRequest,
+        @Valid @RequestBody request: IkoSearchRequest,
         pageable: Pageable,
     ): ResponseEntity<IkoSearchResponse> {
         val headers = ikoListColumnService.findAllColumnsByIkoViewKey(ikoViewKey)
