@@ -105,6 +105,18 @@ export interface PluginManifest {
     managementEndpoints?: ManagementEndpoint[];
   };
   frontendBundles?: FrontendBundle[];
+  /**
+   * Filename of the plugin logo relative to the plugin root (e.g. `logo.svg`). Written by the
+   * pack tool when it finds a `logo.{svg,png,jpg,jpeg}` next to `manifest.json`. The host serves
+   * the file at `GET /plugins/:id/:version/logo` so the GZAC management UI can display it.
+   */
+  logo?: string;
+  /**
+   * Translations keyed by locale (e.g. `{ "en": { "config.title": "Configuration name" } }`).
+   * The frontend SDK picks the active locale, falling back to `en`, and exposes a `t(key)` lookup
+   * to React/HTMX templates in the plugin's iframes.
+   */
+  translations?: Record<string, Record<string, string>>;
   actions: ManifestAction[];
   /**
    * CloudEvent `type` values this plugin subscribes to. The host routes matching events from

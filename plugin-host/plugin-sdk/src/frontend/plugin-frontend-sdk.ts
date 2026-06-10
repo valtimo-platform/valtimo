@@ -66,14 +66,35 @@ class ValtimoPluginSDK {
   private _context: PluginContext | null = null;
   private _theme: string | null = null;
   private _locale: string | null = null;
+  private _translations: Record<string, string> = {};
+  private _allTranslations: Record<string, Record<string, string>> | null = null;
   private readonly _handlers = new Map<string, Array<EventHandler<unknown>>>();
   private readonly _bufferedEvents: Array<{ event: string; payload: unknown }> = [];
   private _parentOrigin: string | null = null;
   // Bound once so addEventListener and removeEventListener share the same reference.
   private readonly _boundOnMessage = this._onMessage.bind(this);
+  /**
+   * Resolves once the plugin manifest has been fetched **and** the parent's `init` message has
+   * arrived (or 2 s have passed without init). Translations are picked from the manifest using
+   * the locale received via init, so `await sdk.ready()` before rendering UI guarantees
+   * `sdk.t(key)` returns the right string for the active locale rather than the `en` fallback.
+   */
+  private readonly _readyPromise: Promise<void>;
+  private _resolveInit: () => void = () => {};
+  private readonly _initPromise: Promise<void>;
 
   constructor() {
     window.addEventListener("message", this._boundOnMessage);
+    this._initPromise = new Promise<void>((resolve) => {
+      this._resolveInit = resolve;
+    });
+    // Fall back to whatever locale info is available if the parent never sends init (standalone
+    // plugin previews, broken parent integration, etc.) so the iframe still renders.
+    const initTimeout = new Promise<void>((resolve) => setTimeout(resolve, 2000));
+    this._readyPromise = Promise.all([
+      this._loadManifest(),
+      Promise.race([this._initPromise, initTimeout]),
+    ]).then(() => undefined);
   }
 
   // ---- Incoming event handlers ----
@@ -143,7 +164,52 @@ class ValtimoPluginSDK {
     return this._locale;
   }
 
+  /**
+   * Resolves once both the parent's init message and the plugin manifest fetch have completed,
+   * meaning {@link t} is safe to call. Re-rendering on locale changes is not yet supported.
+   */
+  public ready(): Promise<void> {
+    return this._readyPromise;
+  }
+
+  /**
+   * Look up a translation by key, with optional fallback. Returns `key` if no translation matches.
+   * Use {@link ready} before relying on this in render paths.
+   */
+  public t(key: string, fallback?: string): string {
+    return this._translations[key] ?? fallback ?? key;
+  }
+
   // ---- Internal ----
+
+  /**
+   * Fetches the plugin manifest from `{origin}/plugins/{id}/{version}/plugin-manifest`, derived
+   * from `window.location`. Waits for the parent's `init` message to learn the locale, then
+   * resolves the translation bucket (active locale → `en` fallback → {}).
+   */
+  private async _loadManifest(): Promise<void> {
+    const m = window.location.pathname.match(/^(\/plugins\/[^/]+\/[^/]+)\//);
+    if (!m) return;
+    let manifest: { translations?: Record<string, Record<string, string>> } | null = null;
+    try {
+      const res = await fetch(`${window.location.origin}${m[1]}/plugin-manifest`);
+      if (res.ok) manifest = await res.json();
+    } catch {
+      // Network failure: leave translations empty, t() returns the key.
+    }
+    this._allTranslations = manifest?.translations ?? null;
+    this._applyLocale();
+  }
+
+  private _applyLocale(): void {
+    const all = this._allTranslations;
+    if (!all) {
+      this._translations = {};
+      return;
+    }
+    const localeBucket = this._locale ? all[this._locale] : undefined;
+    this._translations = localeBucket ?? all["en"] ?? {};
+  }
 
   private _on<E extends ParentEventType>(event: E, handler: EventHandler<ParentToIframeEvents[E]>): void {
     const handlers = this._handlers.get(event) ?? [];
@@ -182,6 +248,8 @@ class ValtimoPluginSDK {
       this._context = initPayload.context;
       this._theme = initPayload.theme;
       this._locale = initPayload.locale;
+      this._applyLocale();
+      this._resolveInit();
     } else if (eventType === "tokenRefresh") {
       this._accessToken = (payload as ParentToIframeEvents["tokenRefresh"]).accessToken;
     } else if (eventType === "themeChanged") {

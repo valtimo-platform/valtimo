@@ -7,6 +7,46 @@
   "compatibility": {
     "minGzacVersion": "12.0.0"
   },
+  "translations": {
+    "en": {
+      "config.title.label": "Configuration name",
+      "config.title.placeholder": "Enter a name for this configuration",
+      "config.currency.label": "Currency code",
+      "config.currency.placeholder": "EUR",
+      "config.currency.help": "Currency code used when formatting amounts (e.g. EUR, USD, GBP)",
+      "action.titleField.label": "Title field (JSON Pointer) *",
+      "action.titleField.placeholder": "/applicantName",
+      "action.titleField.help": "JSON Pointer path to the title field in the case document (e.g. /applicantName)",
+      "action.amountField.label": "Amount field (JSON Pointer)",
+      "action.amountField.placeholder": "/requestedAmount",
+      "action.amountField.help": "Optional JSON Pointer path to the amount field in the case document",
+      "action.summaryVariable.label": "Summary variable name",
+      "action.summaryVariable.placeholder": "caseSummary",
+      "action.summaryVariable.help": "Process variable name for the generated summary (default: caseSummary)",
+      "action.definitionKeyVariable.label": "Definition key variable name",
+      "action.definitionKeyVariable.placeholder": "caseDefinitionKey",
+      "action.definitionKeyVariable.help": "Process variable name for the case definition key (default: caseDefinitionKey)"
+    },
+    "nl": {
+      "config.title.label": "Configuratienaam",
+      "config.title.placeholder": "Voer een naam in voor deze configuratie",
+      "config.currency.label": "Valutacode",
+      "config.currency.placeholder": "EUR",
+      "config.currency.help": "Valutacode gebruikt bij het opmaken van bedragen (bv. EUR, USD, GBP)",
+      "action.titleField.label": "Titelveld (JSON Pointer) *",
+      "action.titleField.placeholder": "/applicantName",
+      "action.titleField.help": "JSON Pointer-pad naar het titelveld in het zaakdocument (bv. /applicantName)",
+      "action.amountField.label": "Bedragveld (JSON Pointer)",
+      "action.amountField.placeholder": "/requestedAmount",
+      "action.amountField.help": "Optioneel JSON Pointer-pad naar het bedragveld in het zaakdocument",
+      "action.summaryVariable.label": "Procesvariabele samenvatting",
+      "action.summaryVariable.placeholder": "caseSummary",
+      "action.summaryVariable.help": "Naam van de procesvariabele voor de gegenereerde samenvatting (standaard: caseSummary)",
+      "action.definitionKeyVariable.label": "Procesvariabele zaaktype",
+      "action.definitionKeyVariable.placeholder": "caseDefinitionKey",
+      "action.definitionKeyVariable.help": "Naam van de procesvariabele voor het zaaktypesleutel (standaard: caseDefinitionKey)"
+    }
+  },
   "configurationSchema": {
     "$schema": "https://json-schema.org/draft/2020-12/schema",
     "type": "object",

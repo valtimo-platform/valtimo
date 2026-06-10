@@ -61,11 +61,22 @@
       </ng-container>
 
       <ng-template #externalTile>
-        <div class="plugin-definition-logo plugin-definition-logo--external">
-          <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32" fill="currentColor">
-            <path d="M25.7 9.3l-2.8-2.8c-.4-.4-1-.4-1.4 0L17 11l-3-3-1.4 1.4 3 3-5.6 5.6-3-3L5.6 16.4l3 3L6 22l-.7.7c-.4.4-.4 1 0 1.4l2.8 2.8c.2.2.5.3.7.3s.5-.1.7-.3L10 26l2.6-2.6 3 3 1.4-1.4-3-3 5.6-5.6 3 3 1.4-1.4-3-3L25.5 11l.7-.7c.4-.4.4-1-.1-1.4zM9.4 25l-1.8-1.8L9 21.8l1.8 1.8L9.4 25zm3.2-3.2L10.8 20 16.4 14.4l1.8 1.8-5.6 5.6zm11-11l-1.8 1.8-1.8-1.8 1.8-1.8 1.8 1.8z"/>
-          </svg>
-        </div>
+        <img
+          *ngIf="pluginDefinition.externalLogoUrl; else externalPlaceholderLogo"
+          class="plugin-definition-logo"
+          [src]="pluginDefinition.externalLogoUrl"
+          [title]="pluginDefinition.externalName ?? ''"
+          [attr.data-test-id]="testIds.tileLogo"
+          alt=""
+        />
+
+        <ng-template #externalPlaceholderLogo>
+          <div class="plugin-definition-logo plugin-definition-logo--external">
+            <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32" fill="currentColor">
+              <path d="M25.7 9.3l-2.8-2.8c-.4-.4-1-.4-1.4 0L17 11l-3-3-1.4 1.4 3 3-5.6 5.6-3-3L5.6 16.4l3 3L6 22l-.7.7c-.4.4-.4 1 0 1.4l2.8 2.8c.2.2.5.3.7.3s.5-.1.7-.3L10 26l2.6-2.6 3 3 1.4-1.4-3-3 5.6-5.6 3 3 1.4-1.4-3-3L25.5 11l.7-.7c.4-.4.4-1-.1-1.4zM9.4 25l-1.8-1.8L9 21.8l1.8 1.8L9.4 25zm3.2-3.2L10.8 20 16.4 14.4l1.8 1.8-5.6 5.6zm11-11l-1.8 1.8-1.8-1.8 1.8-1.8 1.8 1.8z"/>
+            </svg>
+          </div>
+        </ng-template>
 
         <h5 [attr.data-test-id]="testIds.tileTitle">
           {{ pluginDefinition.externalName }}

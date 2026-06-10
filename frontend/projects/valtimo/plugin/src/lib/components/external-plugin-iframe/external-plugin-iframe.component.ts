@@ -28,6 +28,7 @@ import {
 } from '@angular/core';
 import {CommonModule} from '@angular/common';
 import {DomSanitizer, SafeResourceUrl} from '@angular/platform-browser';
+import {TranslateService} from '@ngx-translate/core';
 
 @Component({
   standalone: true,
@@ -57,7 +58,10 @@ export class ExternalPluginIframeComponent implements OnInit, OnDestroy {
   private _iframeOrigin: string | null = null;
   private readonly _onMessageBound = this._onMessage.bind(this);
 
-  constructor(private readonly _sanitizer: DomSanitizer) {}
+  constructor(
+    private readonly _sanitizer: DomSanitizer,
+    private readonly _translateService: TranslateService,
+  ) {}
 
   public ngOnInit(): void {
     if (this.bundleUrl) {
@@ -96,7 +100,7 @@ export class ExternalPluginIframeComponent implements OnInit, OnDestroy {
       context: this.context,
       accessToken: '',
       theme: 'white',
-      locale: 'en',
+      locale: this._translateService.currentLang ?? this._translateService.defaultLang ?? 'en',
     });
   }
 

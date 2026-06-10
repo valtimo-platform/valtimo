@@ -125,13 +125,16 @@ export class PluginManager {
   /**
    * Store a plugin package to disk and load it.
    * If frontendDir is provided, copies the frontend directory into the plugin storage.
+   * If logoSourcePath is provided and exists, copies the file to the plugin storage so the host
+   * can serve it at GET /plugins/:id/:version/logo.
    */
   async storeAndLoad(
     pluginId: string,
     version: string,
     manifestJson: string,
     wasmBuffer: Buffer,
-    frontendDir?: string
+    frontendDir?: string,
+    logoSourcePath?: string
   ): Promise<PluginManifest> {
     const pluginDir = join(this.storageDir, pluginId, version);
     await mkdir(pluginDir, { recursive: true });
@@ -144,6 +147,13 @@ export class PluginManager {
       const destFrontendDir = join(pluginDir, "frontend");
       await cp(frontendDir, destFrontendDir, { recursive: true });
       this.logger.info({ pluginId, version }, "Frontend assets stored");
+    }
+
+    if (logoSourcePath && existsSync(logoSourcePath)) {
+      const { cp } = await import("node:fs/promises");
+      const logoFilename = logoSourcePath.split("/").pop()!;
+      await cp(logoSourcePath, join(pluginDir, logoFilename));
+      this.logger.info({ pluginId, version, logo: logoFilename }, "Logo stored");
     }
 
     await this.loadPlugin(pluginId, version);

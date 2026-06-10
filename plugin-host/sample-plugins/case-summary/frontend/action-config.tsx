@@ -67,7 +67,7 @@ function ActionConfigForm() {
     });
 
     sdk.onSave(() => {
-      // No-op: the parent already has the latest data via configurationChanged
+      // No-op
     });
 
     sdk.emit("ready", {});
@@ -99,63 +99,57 @@ function ActionConfigForm() {
   return (
     <div style={{ fontFamily: "IBM Plex Sans, sans-serif", padding: "0" }}>
       <div style={{ marginBottom: "16px" }}>
-        <label style={labelStyle}>Title field (JSON Pointer) *</label>
+        <label style={labelStyle}>{sdk.t("action.titleField.label")}</label>
         <input
           type="text"
           value={titleField}
           onChange={handleChange(setTitleField, "titleField")}
-          placeholder="/applicantName"
+          placeholder={sdk.t("action.titleField.placeholder")}
           style={inputStyle}
         />
-        <p style={helpTextStyle}>
-          JSON Pointer path to the title field in the case document (e.g. /applicantName)
-        </p>
+        <p style={helpTextStyle}>{sdk.t("action.titleField.help")}</p>
       </div>
 
       <div style={{ marginBottom: "16px" }}>
-        <label style={labelStyle}>Amount field (JSON Pointer)</label>
+        <label style={labelStyle}>{sdk.t("action.amountField.label")}</label>
         <input
           type="text"
           value={amountField}
           onChange={handleChange(setAmountField, "amountField")}
-          placeholder="/requestedAmount"
+          placeholder={sdk.t("action.amountField.placeholder")}
           style={inputStyle}
         />
-        <p style={helpTextStyle}>
-          Optional JSON Pointer path to the amount field in the case document
-        </p>
+        <p style={helpTextStyle}>{sdk.t("action.amountField.help")}</p>
       </div>
 
       <div style={{ marginBottom: "16px" }}>
-        <label style={labelStyle}>Summary variable name</label>
+        <label style={labelStyle}>{sdk.t("action.summaryVariable.label")}</label>
         <input
           type="text"
           value={summaryVariable}
           onChange={handleChange(setSummaryVariable, "summaryVariable")}
-          placeholder="caseSummary"
+          placeholder={sdk.t("action.summaryVariable.placeholder")}
           style={inputStyle}
         />
-        <p style={helpTextStyle}>
-          Process variable name for the generated summary (default: caseSummary)
-        </p>
+        <p style={helpTextStyle}>{sdk.t("action.summaryVariable.help")}</p>
       </div>
 
       <div style={{ marginBottom: "16px" }}>
-        <label style={labelStyle}>Definition key variable name</label>
+        <label style={labelStyle}>{sdk.t("action.definitionKeyVariable.label")}</label>
         <input
           type="text"
           value={definitionKeyVariable}
           onChange={handleChange(setDefinitionKeyVariable, "definitionKeyVariable")}
-          placeholder="caseDefinitionKey"
+          placeholder={sdk.t("action.definitionKeyVariable.placeholder")}
           style={inputStyle}
         />
-        <p style={helpTextStyle}>
-          Process variable name for the case definition key (default: caseDefinitionKey)
-        </p>
+        <p style={helpTextStyle}>{sdk.t("action.definitionKeyVariable.help")}</p>
       </div>
     </div>
   );
 }
 
-const root = createRoot(document.getElementById("root")!);
-root.render(<ActionConfigForm />);
+sdk.ready().then(() => {
+  const root = createRoot(document.getElementById("root")!);
+  root.render(<ActionConfigForm />);
+});

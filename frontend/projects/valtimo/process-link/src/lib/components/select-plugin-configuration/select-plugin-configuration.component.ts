@@ -117,7 +117,7 @@ export class SelectPluginConfigurationComponent implements OnInit, OnDestroy {
                   id: extConfig.id,
                   title: extConfig.title,
                   description: def?.name ?? 'External plugin',
-                  logo: null,
+                  logo: def?.logoUrl ?? null,
                   payload: {
                     id: extConfig.id,
                     title: extConfig.title,

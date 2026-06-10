@@ -139,12 +139,34 @@ if (hasFrontend) {
   }
 }
 
+// ---- Detect plugin logo ----
+// Convention: a single `logo.{svg,png,jpg,jpeg}` next to manifest.json. First match wins.
+const LOGO_EXTENSIONS = [".svg", ".png", ".jpg", ".jpeg"];
+let logoFile = null;
+for (const ext of LOGO_EXTENSIONS) {
+  const candidate = join(cwd, `logo${ext}`);
+  if (existsSync(candidate)) {
+    logoFile = candidate;
+    break;
+  }
+}
+
 // ---- Create zip ----
 
 try {
   const zip = new AdmZip();
-  zip.addLocalFile(manifestPath, "", "manifest.json");
+  // If a logo was found, set its filename on the manifest so the host knows what file to serve
+  // at GET /plugins/:id/:version/logo. We write the modified manifest into the zip rather than
+  // touching the user's source manifest.json.
+  const manifestForZip = logoFile
+    ? { ...manifest, logo: basename(logoFile) }
+    : manifest;
+  zip.addFile("manifest.json", Buffer.from(JSON.stringify(manifestForZip, null, 2), "utf-8"));
   zip.addLocalFile(wasmPath, "", "plugin.wasm");
+  if (logoFile) {
+    zip.addLocalFile(logoFile, "", basename(logoFile));
+    console.log(`[valtimo-plugin-pack] Included logo: ${basename(logoFile)}`);
+  }
 
   if (hasFrontend) {
     zip.addLocalFolder(frontendDir, "frontend");

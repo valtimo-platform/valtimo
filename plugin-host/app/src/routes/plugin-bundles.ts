@@ -90,4 +90,44 @@ export async function pluginBundleRoutes(
         .send(content);
     }
   );
+
+  /**
+   * GET /plugins/:pluginId/:version/logo — serve the plugin logo
+   *
+   * The manifest's `logo` field (set by the pack tool when it detects a logo file at the plugin
+   * root) names the file. 404 if no logo was shipped with the package.
+   */
+  fastify.get<{ Params: { pluginId: string; version: string } }>(
+    "/plugins/:pluginId/:version/logo",
+    async (request, reply) => {
+      const { pluginId, version } = request.params;
+
+      const manifest = pluginManager.getManifest(pluginId, version);
+      if (!manifest) {
+        reply.code(404).send({ error: `Plugin not found: ${pluginId}@${version}` });
+        return;
+      }
+
+      if (!manifest.logo) {
+        reply.code(404).send({ error: "No logo declared in manifest" });
+        return;
+      }
+
+      const pluginDir = pluginManager.getPluginDir(pluginId, version);
+      const logoPath = resolve(pluginDir, manifest.logo);
+      if (!logoPath.startsWith(resolve(pluginDir)) || !existsSync(logoPath)) {
+        reply.code(404).send({ error: "Logo file missing on disk" });
+        return;
+      }
+
+      const ext = extname(logoPath);
+      const contentType = MIME_TYPES[ext] ?? "application/octet-stream";
+      const content = await readFile(logoPath);
+      reply
+        .header("Content-Type", contentType)
+        .header("Cache-Control", "public, max-age=3600")
+        .header("Access-Control-Allow-Origin", "*")
+        .send(content);
+    }
+  );
 }

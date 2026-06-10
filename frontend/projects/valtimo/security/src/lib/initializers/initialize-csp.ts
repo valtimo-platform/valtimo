@@ -61,18 +61,22 @@ export const initializeCsp =
     configService: ConfigService,
     document: Document,
     domSanitizer: DomSanitizer,
-    additionalFrameSrcOrigins?: string[]
+    additionalPluginHostOrigins?: string[]
   ): (() => Promise<boolean>) =>
   async (): Promise<boolean> => {
     const cspHeaderParams = configService?.config?.csp;
 
     if (cspHeaderParams) {
-      if (additionalFrameSrcOrigins?.length > 0) {
-        const frameSrc = cspHeaderParams.directives?.['frame-src'];
-        if (Array.isArray(frameSrc)) {
-          const unique = additionalFrameSrcOrigins.filter(o => !frameSrc.includes(o));
-          frameSrc.push(...unique);
-          logger.log('CSP frame-src augmented with:', unique);
+      if (additionalPluginHostOrigins?.length > 0) {
+        // Each external plugin host serves both iframes (frame-src) and assets like the plugin
+        // logo (img-src) from its own origin, so the directive list needs both augmented.
+        for (const directive of ['frame-src', 'img-src'] as const) {
+          const values = cspHeaderParams.directives?.[directive];
+          if (Array.isArray(values)) {
+            const unique = additionalPluginHostOrigins.filter(o => !values.includes(o));
+            values.push(...unique);
+            logger.log(`CSP ${directive} augmented with:`, unique);
+          }
         }
       }
 
