@@ -55,7 +55,7 @@ import {
 } from '@valtimo/process-link';
 import {UserProviderService} from '@valtimo/security';
 import {ConfigService, FORM_VIEW_MODEL_TOKEN, FormViewModel} from '@valtimo/shared';
-import {DialogModule, LayerModule, ModalModule} from 'carbon-components-angular';
+import {DialogModule, LayerModule, ModalModule, NotificationModule} from 'carbon-components-angular';
 import {BehaviorSubject, Subscription} from 'rxjs';
 import {take} from 'rxjs/operators';
 import {CAN_VIEW_CASE_PERMISSION, CASE_DETAIL_PERMISSION_RESOURCE} from '../../permissions';
@@ -76,6 +76,7 @@ import {CaseListService, StartModalService} from '../../services';
     DialogModule,
     ModalModule,
     LayerModule,
+    NotificationModule,
     RenderInBodyComponent,
     ConfirmationModalModule,
   ],

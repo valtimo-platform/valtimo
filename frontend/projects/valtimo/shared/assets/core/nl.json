@@ -46,7 +46,8 @@
     },
     "draftProcessConfirmation": {
       "title": "Concept-proces starten",
-      "message": "Deze procesdefinitie is nog in concept. Weet je zeker dat je dit wilt starten?",
+      "warningTitle": "Waarschuwing: Concept-proces",
+      "warningDescription": "Deze procesdefinitie is nog in concept en werkt mogelijk niet zoals verwacht.",
       "confirm": "Toch starten",
       "cancel": "Annuleren"
     },
