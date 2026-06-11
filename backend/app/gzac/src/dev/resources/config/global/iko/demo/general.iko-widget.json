@@ -3,6 +3,23 @@
     "ikoTabKey": "general",
     "ikoWidgets": [
         {
+            "type": "metroline",
+            "key": "status_verloop",
+            "title": "Status verloop",
+            "width": 1,
+            "highContrast": false,
+            "isCompact": null,
+            "actions": [],
+            "displayConditions": [],
+            "properties": {
+                "orientation": "VERTICAL",
+                "source": "iko:/statushistorie",
+                "titlePath": "/statustype/omschrijving",
+                "labelPath": "/statustype/toelichting",
+                "completedPath": "/datumStatusGezet"
+            }
+        },
+        {
             "type": "fields",
             "key": "aaa",
             "title": "Basisgegevens",
