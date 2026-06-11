@@ -28,7 +28,7 @@ import {
 import {TranslateModule} from '@ngx-translate/core';
 import {PermissionService} from '@valtimo/access-control';
 import {CheckmarkFilled16, CheckmarkOutline16, WarningAltFilled16} from '@carbon/icons';
-import {IconModule, IconService, TagModule} from 'carbon-components-angular';
+import {IconModule, IconService, LoadingModule, TagModule} from 'carbon-components-angular';
 import {CaseInspectionProcessDetailComponent} from './process-detail/process-detail.component';
 import {CaseInspectionService} from '../../../services';
 import {BuildingBlockProcessReference, ProcessInstanceInspection} from '../../../models';
@@ -49,6 +49,7 @@ import {
     IconModule,
     TagModule,
     CaseInspectionProcessDetailComponent,
+    LoadingModule,
   ],
 })
 export class CaseInspectionProcessesTabComponent implements OnChanges {

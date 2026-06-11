@@ -14,7 +14,15 @@
  * limitations under the License.
  */
 
+.json-editor-container {
+  border: 1px solid var(--cds-border-subtle);
+}
+
 .case-inspection-bb-detail {
+  padding-top: 16px;
+  padding-bottom: 16px;
+  padding-right: 16px;
+
   &__header {
     margin-bottom: var(--cds-spacing-05);
 

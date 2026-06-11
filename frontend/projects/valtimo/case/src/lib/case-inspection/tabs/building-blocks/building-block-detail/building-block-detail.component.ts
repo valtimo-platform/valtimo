@@ -29,7 +29,7 @@ import {TranslateModule, TranslateService} from '@ngx-translate/core';
 import {PermissionService} from '@valtimo/access-control';
 import {EditorModel, JsonEditorComponent} from '@valtimo/components';
 import {GlobalNotificationService} from '@valtimo/shared';
-import {StructuredListModule} from 'carbon-components-angular';
+import {LayerModule, StructuredListModule} from 'carbon-components-angular';
 import {BehaviorSubject} from 'rxjs';
 import {
   CAN_INSPECT_MODIFY_CASE_PERMISSION,
@@ -44,7 +44,7 @@ import {CaseInspectionService} from '../../../../services';
   templateUrl: './building-block-detail.component.html',
   styleUrl: './building-block-detail.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, TranslateModule, StructuredListModule, JsonEditorComponent],
+  imports: [CommonModule, TranslateModule, StructuredListModule, JsonEditorComponent, LayerModule],
 })
 export class CaseInspectionBuildingBlockDetailComponent implements OnChanges {
   @Input() public instance!: BuildingBlockInstance;

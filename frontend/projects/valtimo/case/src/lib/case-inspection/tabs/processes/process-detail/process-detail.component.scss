@@ -15,6 +15,10 @@
  */
 
 .case-inspection-process-detail {
+  padding-top: var(--cds-spacing-05);
+  padding-bottom: var(--cds-spacing-05);
+  padding-right: var(--cds-spacing-05);
+
   &__header {
     margin-bottom: var(--cds-spacing-05);
 
@@ -35,6 +39,7 @@
     gap: var(--cds-spacing-03);
     flex-wrap: wrap;
     margin-top: var(--cds-spacing-03);
+    margin-bottom: var(--cds-spacing-03);
   }
 
   &__meta code {
@@ -48,24 +53,14 @@
     color: var(--cds-text-secondary);
   }
 
-  &__subhead-row {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: var(--cds-spacing-05);
-  }
-
-  &__variable-row {
-    display: flex;
-    align-items: flex-start;
-    justify-content: space-between;
-    gap: var(--cds-spacing-05);
+  &__subhead--no-margin {
+    margin-top: 0;
   }
 
   &__variable-actions {
     display: flex;
     flex-shrink: 0;
-    gap: var(--cds-spacing-02);
+    gap: 8px;
   }
 
   &__empty {
@@ -88,14 +83,29 @@
   }
 
   &__diagram {
+    margin-top: 16px;
     height: 480px;
     border: 1px solid var(--cds-border-subtle);
+    overflow: hidden;
 
-    valtimo-process-diagram,
-    .process-diagram-container,
-    .diagram-container {
-      display: block;
-      height: 100%;
+    ::ng-deep {
+      valtimo-process-diagram,
+      .process-diagram-container {
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+      }
+
+      .diagram-container {
+        flex: 1 1 auto;
+        min-height: 0;
+        height: auto !important;
+      }
+
+      .legenda-holder {
+        flex-shrink: 0;
+        padding: var(--cds-spacing-03) var(--cds-spacing-05);
+      }
     }
   }
 }

@@ -31,6 +31,7 @@ import {CarbonListModule} from '@valtimo/components';
 import {CaseInspectionBuildingBlockDetailComponent} from './building-block-detail/building-block-detail.component';
 import {BuildingBlockInstance} from '../../../models';
 import {CaseInspectionService} from '../../../services';
+import {LoadingModule} from 'carbon-components-angular';
 
 @Component({
   standalone: true,
@@ -43,6 +44,7 @@ import {CaseInspectionService} from '../../../services';
     CaseInspectionBuildingBlockDetailComponent,
     CommonModule,
     TranslateModule,
+    LoadingModule,
   ],
 })
 export class CaseInspectionBuildingBlocksTabComponent implements OnChanges {

@@ -15,9 +15,9 @@
   -->
 
 <section class="case-inspection-processes-tab">
-  <ng-container *ngIf="$loading()">
-    <p>{{ 'case.inspection.processes.loading' | translate }}</p>
-  </ng-container>
+  <div *ngIf="$loading()" class="loading-container">
+    <cds-loading size="sm"></cds-loading>
+  </div>
 
   <ng-container *ngIf="$errorMessage() as message">
     <p class="case-inspection-processes-tab__error">{{ message }}</p>
@@ -49,7 +49,7 @@
             <cds-tag
               *ngIf="row.buildingBlock as bb"
               size="sm"
-              type="purple"
+              type="green"
               [title]="
                 ('case.inspection.processes.buildingBlockTagTooltip' | translate) +
                 ': ' +

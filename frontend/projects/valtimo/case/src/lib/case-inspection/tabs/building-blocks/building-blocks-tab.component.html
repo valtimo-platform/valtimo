@@ -25,9 +25,9 @@
     </p>
   </ng-container>
 
-  <ng-container *ngIf="$loading()">
-    <p>{{ 'case.inspection.buildingBlocks.loading' | translate }}</p>
-  </ng-container>
+  <div *ngIf="$loading()" class="loading-container">
+    <cds-loading size="sm"></cds-loading>
+  </div>
 
   <ng-container *ngIf="!$loading() && !$notSupported() && $instances() as instances">
     <valtimo-no-results

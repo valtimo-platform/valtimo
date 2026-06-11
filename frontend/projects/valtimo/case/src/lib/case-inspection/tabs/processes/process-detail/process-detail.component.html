@@ -24,7 +24,7 @@
     <div class="case-inspection-process-detail__tags">
       <cds-tag
         size="sm"
-        [type]="row.active ? 'green' : 'cool-gray'"
+        [type]="row.active ? 'blue' : 'cool-gray'"
         [title]="
           row.active
             ? ('case.inspection.processes.active' | translate)
@@ -41,19 +41,15 @@
       @if (row.buildingBlock; as bb) {
         <cds-tag
           size="sm"
-          type="purple"
+          type="green"
           [title]="'case.inspection.processes.buildingBlockTagTooltip' | translate"
         >
-          {{ 'case.inspection.processes.buildingBlockTag' | translate }}: {{ bb.definitionKey }} {{ bb.definitionVersionTag }}
+          {{ 'case.inspection.processes.buildingBlockTag' | translate }}: {{ bb.definitionKey }}
+          {{ bb.definitionVersionTag }}
         </cds-tag>
       }
 
-      <button
-              cdsButton="ghost"
-              size="sm"
-              type="button"
-              (click)="onViewProcessLogs()"
-      >
+      <button cdsButton="ghost" size="sm" type="button" (click)="onViewProcessLogs()">
         {{ 'case.inspection.processes.viewLogs' | translate }}
       </button>
     </div>
@@ -61,7 +57,9 @@
     <cds-structured-list class="case-inspection-process-detail__meta" [condensed]="true">
       <cds-list-row>
         <cds-list-column>{{ 'case.inspection.processes.instanceId' | translate }}</cds-list-column>
-        <cds-list-column><code>{{ row.processInstanceId }}</code></cds-list-column>
+        <cds-list-column
+          ><code>{{ row.processInstanceId }}</code></cds-list-column
+        >
       </cds-list-row>
 
       <cds-list-row>
@@ -75,7 +73,9 @@
       </cds-list-row>
 
       <cds-list-row *ngIf="row.buildingBlock as bb">
-        <cds-list-column>{{ 'case.inspection.processes.buildingBlock' | translate }}</cds-list-column>
+        <cds-list-column>{{
+          'case.inspection.processes.buildingBlock' | translate
+        }}</cds-list-column>
         <cds-list-column>
           <a
             cdsLink
@@ -90,7 +90,7 @@
     </cds-structured-list>
   </header>
 
-  <cds-tabs type="contained">
+  <cds-tabs type="inline">
     <cds-tab
       [active]="$activeTab() === ProcessDetailTab.DETAILS"
       [heading]="'case.inspection.processes.detailsTab' | translate"
@@ -120,7 +120,9 @@
           </cds-structured-list>
         }
 
-        <h4 class="case-inspection-process-detail__subhead">
+        <h4
+          class="case-inspection-process-detail__subhead case-inspection-process-detail__subhead--no-margin"
+        >
           {{ 'case.inspection.processes.tasksHeader' | translate }}
         </h4>
 
@@ -151,11 +153,11 @@
             {{ 'case.inspection.processes.variablesHeader' | translate }}
           </h4>
           <button
-                  *ngIf="$canMutate()"
-                  cdsButton="ghost"
-                  size="sm"
-                  type="button"
-                  (click)="onAddVariable()"
+            *ngIf="$canMutate()"
+            cdsButton="ghost"
+            size="sm"
+            type="button"
+            (click)="onAddVariable()"
           >
             {{ 'case.inspection.processes.variableActions.add' | translate }}
             <svg cdsIcon="add" size="16" class="cds--btn__icon"></svg>
@@ -168,6 +170,9 @@
               @for (column of variableColumns; track column) {
                 <cds-list-column>{{ column | translate }}</cds-list-column>
               }
+              @if ($canMutate()) {
+                <cds-list-column></cds-list-column>
+              }
             </cds-list-header>
 
             @for (variable of row.variables; track variable.name) {
@@ -177,15 +182,13 @@
                 </cds-list-column>
                 <cds-list-column>{{ variable.type }}</cds-list-column>
                 <cds-list-column>
-                  <div class="case-inspection-process-detail__variable-row">
-                    <code class="case-inspection-process-detail__variable-value">{{
-                      formatVariableValue(variable)
-                    }}</code>
-
-                    <div
-                      *ngIf="$canMutate()"
-                      class="case-inspection-process-detail__variable-actions"
-                    >
+                  <code class="case-inspection-process-detail__variable-value">{{
+                    formatVariableValue(variable)
+                  }}</code>
+                </cds-list-column>
+                @if ($canMutate()) {
+                  <cds-list-column>
+                    <div class="case-inspection-process-detail__variable-actions">
                       <button
                         cdsButton="ghost"
                         size="sm"
@@ -208,8 +211,8 @@
                         <svg cdsIcon="trash-can" size="16" class="cds--btn__icon"></svg>
                       </button>
                     </div>
-                  </div>
-                </cds-list-column>
+                  </cds-list-column>
+                }
               </cds-list-row>
             }
           </cds-structured-list>

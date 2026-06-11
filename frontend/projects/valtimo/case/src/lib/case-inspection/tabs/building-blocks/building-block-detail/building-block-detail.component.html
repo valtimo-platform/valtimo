@@ -26,14 +26,18 @@
         <cds-list-column>{{
           'case.inspection.buildingBlocks.detail.instanceId' | translate
         }}</cds-list-column>
-        <cds-list-column><code>{{ instance.id }}</code></cds-list-column>
+        <cds-list-column
+          ><code>{{ instance.id }}</code></cds-list-column
+        >
       </cds-list-row>
 
       <cds-list-row>
         <cds-list-column>{{
           'case.inspection.buildingBlocks.detail.documentId' | translate
         }}</cds-list-column>
-        <cds-list-column><code>{{ instance.documentId }}</code></cds-list-column>
+        <cds-list-column
+          ><code>{{ instance.documentId }}</code></cds-list-column
+        >
       </cds-list-row>
 
       <cds-list-row>
@@ -44,9 +48,9 @@
           <ng-container *ngIf="instance.processInstanceId; else noProcess">
             <code>{{ instance.processInstanceId }}</code>
             <button
-                    class="case-inspection-bb-detail__view-logs"
-                    type="button"
-                    (click)="onViewProcessLogs()"
+              class="case-inspection-bb-detail__view-logs"
+              type="button"
+              (click)="onViewProcessLogs()"
             >
               {{ 'case.inspection.processes.viewLogs' | translate }}
             </button>
@@ -84,10 +88,14 @@
       {{ 'case.inspection.buildingBlocks.detail.content' | translate }}
     </h4>
 
-    <valtimo-json-editor
-      [model]="model"
-      [showEditButton]="$canInspectModify()"
-      (saveEvent)="onSaveEvent($event)"
-    ></valtimo-json-editor>
+    <div class="json-editor-container">
+      <valtimo-json-editor
+        cdsLayer="2"
+        [model]="model"
+        [heightPx]="400"
+        [showEditButton]="$canInspectModify()"
+        (saveEvent)="onSaveEvent($event)"
+      ></valtimo-json-editor>
+    </div>
   </ng-container>
 </section>

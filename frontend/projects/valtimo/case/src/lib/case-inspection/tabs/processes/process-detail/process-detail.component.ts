@@ -33,6 +33,7 @@ import {
   ButtonModule,
   IconModule,
   IconService,
+  LayerModule,
   LinkModule,
   StructuredListModule,
   TabsModule,
@@ -67,6 +68,7 @@ import {CaseInspectionProcessVariableModalComponent} from '../process-variable-m
     ProcessDiagramComponent,
     CaseInspectionProcessVariableModalComponent,
     ConfirmationModalModule,
+    LayerModule,
   ],
 })
 export class CaseInspectionProcessDetailComponent {
