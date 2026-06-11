@@ -42,6 +42,7 @@ import com.ritense.valtimo.contract.case_.CaseDefinitionId
 import com.ritense.valtimo.contract.domain.ValtimoMediaType.APPLICATION_JSON_UTF8_VALUE
 import com.ritense.valtimo.service.OperatonProcessService
 import com.ritense.valtimo.web.rest.dto.ProcessDefinitionWithPropertiesDto
+import jakarta.validation.Valid
 import org.operaton.bpm.engine.RepositoryService
 import org.operaton.bpm.model.bpmn.Bpmn
 import org.operaton.bpm.engine.impl.util.IoUtil
@@ -100,7 +101,7 @@ class ProcessLinkResource(
 
     @PostMapping("/v1/process-link")
     fun createProcessLink(
-        @RequestBody processLink: ProcessLinkCreateRequestDto
+        @Valid @RequestBody processLink: ProcessLinkCreateRequestDto
     ): ResponseEntity<Unit> {
         return withLoggingContext(OperatonProcessDefinition::class.java, processLink.processDefinitionId) {
             // To
@@ -111,7 +112,7 @@ class ProcessLinkResource(
 
     @PutMapping("/v1/process-link")
     fun updateProcessLink(
-        @RequestBody processLink: ProcessLinkUpdateRequestDto
+        @Valid @RequestBody processLink: ProcessLinkUpdateRequestDto
     ): ResponseEntity<Unit> {
         return withLoggingContext(ProcessLink::class, processLink.id) {
             processLinkService.updateProcessLink(processLink, null)

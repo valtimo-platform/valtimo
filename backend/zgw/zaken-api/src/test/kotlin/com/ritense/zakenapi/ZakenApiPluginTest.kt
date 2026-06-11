@@ -31,7 +31,14 @@ import com.ritense.zakenapi.ZakenApiPlugin.Companion.RESOURCE_ID_PROCESS_VAR
 import com.ritense.zakenapi.client.LinkDocumentRequest
 import com.ritense.zakenapi.client.ZakenApiClient
 import com.ritense.zakenapi.domain.AardRelatie
+import com.ritense.zakenapi.domain.GerelateerdeZaak
+import com.ritense.zakenapi.domain.Archiefstatus
 import com.ritense.zakenapi.domain.Betalingsindicatie
+import com.ritense.zakenapi.domain.Kenmerk
+import com.ritense.zakenapi.domain.Opschorting
+import com.ritense.zakenapi.domain.Processobject
+import com.ritense.zakenapi.domain.RelevanteZaak
+import com.ritense.zakenapi.domain.Verlenging
 import com.ritense.zakenapi.domain.CreateZaakRequest
 import com.ritense.zakenapi.domain.CreateZaakResultaatRequest
 import com.ritense.zakenapi.domain.CreateZaakStatusRequest
@@ -71,6 +78,8 @@ import com.ritense.zakenapi.repository.ZaakNotitieLinkRepository
 import com.ritense.zakenapi.service.ZaakDocumentService
 import com.ritense.zgw.Page
 import com.ritense.zgw.Rsin
+import com.ritense.zgw.domain.Archiefnominatie
+import com.ritense.zgw.domain.Vertrouwelijkheid
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
@@ -90,6 +99,7 @@ import org.operaton.bpm.engine.delegate.DelegateExecution
 import org.springframework.transaction.PlatformTransactionManager
 import java.net.URI
 import java.time.LocalDate
+import java.time.LocalDateTime
 import java.util.UUID
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
@@ -731,6 +741,263 @@ internal class ZakenApiPluginTest {
         assertThat(request.betalingsindicatie).isEqualTo(Betalingsindicatie.GEDEELTELIJK)
         assertThat(request.zaakgeometrie).isEqualTo(Geometry(GeometryType.POINT, listOf(4.932921F, 52.370087F)))
         assertThat(request.hoofdzaak).isEqualTo(URI.create(mainCase))
+    }
+
+    @Test
+    fun `should create zaak with identification and dates`() {
+        val zakenApiClient: ZakenApiClient = mock()
+        val executionMock = mock<DelegateExecution>()
+        val authenticationMock = mock<ZakenApiAuthentication>()
+        val caseDocumentResolverMock = mock<CaseDocumentResolver>()
+
+        val documentId = UUID.randomUUID()
+        val rsin = Rsin("051845623")
+        val zaaktypeUrl = zaaktypeUri()
+        val identification = "ZAAK-2026-001"
+        val registrationDate = LocalDate.of(2026, 1, 10)
+        val publicationDate = LocalDate.of(2026, 1, 15)
+        val confidentiality = "intern"
+        val lastPaymentDate = LocalDate.of(2026, 3, 1)
+        val selectionListClass = "https://example.com/selectielijst/1"
+
+        whenever(caseDocumentResolverMock.resolveCaseDocumentId(documentId)).thenReturn(documentId)
+        whenever(executionMock.businessKey).thenReturn(documentId.toString())
+        whenever(zakenApiClient.createZaak(authentication = eq(authenticationMock), baseUrl = eq(zakenApiUri()), request = any()))
+            .thenReturn(ZaakResponse(url = zaakUri(), uuid = UUID.randomUUID(), zaaktype = zaaktypeUrl, bronorganisatie = rsin, startdatum = LocalDate.now(), verantwoordelijkeOrganisatie = rsin))
+
+        val plugin = zakenApiPlugin(zakenApiClient = zakenApiClient, authenticationMock = authenticationMock, pluginService = pluginServiceMock(), caseDocumentResolver = caseDocumentResolverMock)
+
+        plugin.createZaak(
+            execution = executionMock,
+            rsin = rsin,
+            zaaktypeUrl = zaaktypeUrl,
+            identification = identification,
+            registrationDate = registrationDate.toString(),
+            publicationDate = publicationDate.toString(),
+            confidentiality = confidentiality,
+            lastPaymentDate = lastPaymentDate.toString(),
+            selectionListClass = selectionListClass,
+        )
+
+        val captor = argumentCaptor<CreateZaakRequest>()
+        verify(zakenApiClient).createZaak(any(), any(), captor.capture())
+
+        val request = captor.firstValue
+        assertThat(request.identificatie).isEqualTo(identification)
+        assertThat(request.registratiedatum).isEqualTo(registrationDate)
+        assertThat(request.publicatiedatum).isEqualTo(publicationDate)
+        assertThat(request.vertrouwelijkheidaanduiding).isEqualTo(Vertrouwelijkheid.INTERN)
+        assertThat(request.laatsteBetaaldatum).isEqualTo(lastPaymentDate)
+        assertThat(request.selectielijstklasse).isEqualTo(URI.create(selectionListClass))
+    }
+
+    @Test
+    fun `should create zaak with extension and suspension`() {
+        val zakenApiClient: ZakenApiClient = mock()
+        val executionMock = mock<DelegateExecution>()
+        val authenticationMock = mock<ZakenApiAuthentication>()
+        val caseDocumentResolverMock = mock<CaseDocumentResolver>()
+
+        val documentId = UUID.randomUUID()
+        val rsin = Rsin("051845623")
+        val zaaktypeUrl = zaaktypeUri()
+
+        whenever(caseDocumentResolverMock.resolveCaseDocumentId(documentId)).thenReturn(documentId)
+        whenever(executionMock.businessKey).thenReturn(documentId.toString())
+        whenever(zakenApiClient.createZaak(authentication = eq(authenticationMock), baseUrl = eq(zakenApiUri()), request = any()))
+            .thenReturn(ZaakResponse(url = zaakUri(), uuid = UUID.randomUUID(), zaaktype = zaaktypeUrl, bronorganisatie = rsin, startdatum = LocalDate.now(), verantwoordelijkeOrganisatie = rsin))
+
+        val plugin = zakenApiPlugin(zakenApiClient = zakenApiClient, authenticationMock = authenticationMock, pluginService = pluginServiceMock(), caseDocumentResolver = caseDocumentResolverMock)
+
+        plugin.createZaak(
+            execution = executionMock,
+            rsin = rsin,
+            zaaktypeUrl = zaaktypeUrl,
+            extensionReason = "Reden verlenging",
+            extensionDuration = "P14D",
+            suspensionIndication = "true",
+            suspensionReason = "Reden opschorting",
+        )
+
+        val captor = argumentCaptor<CreateZaakRequest>()
+        verify(zakenApiClient).createZaak(any(), any(), captor.capture())
+
+        val request = captor.firstValue
+        assertThat(request.verlenging).isEqualTo(Verlenging(reden = "Reden verlenging", duur = "P14D"))
+        assertThat(request.opschorting).isEqualTo(Opschorting(indicatie = true, reden = "Reden opschorting"))
+    }
+
+    @Test
+    fun `should create zaak with array fields`() {
+        val zakenApiClient: ZakenApiClient = mock()
+        val executionMock = mock<DelegateExecution>()
+        val authenticationMock = mock<ZakenApiAuthentication>()
+        val caseDocumentResolverMock = mock<CaseDocumentResolver>()
+
+        val documentId = UUID.randomUUID()
+        val rsin = Rsin("051845623")
+        val zaaktypeUrl = zaaktypeUri()
+        val productsAndServicesJson = """["https://example.com/product/1","https://example.com/product/2"]"""
+        val characteristicsJson = """[{"kenmerk":"K1","bron":"B1"},{"kenmerk":"K2","bron":"B2"}]"""
+
+        whenever(caseDocumentResolverMock.resolveCaseDocumentId(documentId)).thenReturn(documentId)
+        whenever(executionMock.businessKey).thenReturn(documentId.toString())
+        whenever(zakenApiClient.createZaak(authentication = eq(authenticationMock), baseUrl = eq(zakenApiUri()), request = any()))
+            .thenReturn(ZaakResponse(url = zaakUri(), uuid = UUID.randomUUID(), zaaktype = zaaktypeUrl, bronorganisatie = rsin, startdatum = LocalDate.now(), verantwoordelijkeOrganisatie = rsin))
+
+        val plugin = zakenApiPlugin(zakenApiClient = zakenApiClient, authenticationMock = authenticationMock, pluginService = pluginServiceMock(), caseDocumentResolver = caseDocumentResolverMock)
+
+        plugin.createZaak(
+            execution = executionMock,
+            rsin = rsin,
+            zaaktypeUrl = zaaktypeUrl,
+            productsAndServices = productsAndServicesJson,
+            characteristics = characteristicsJson,
+        )
+
+        val captor = argumentCaptor<CreateZaakRequest>()
+        verify(zakenApiClient).createZaak(any(), any(), captor.capture())
+
+        val request = captor.firstValue
+        assertThat(request.productenOfDiensten).containsExactly(
+            URI.create("https://example.com/product/1"),
+            URI.create("https://example.com/product/2"),
+        )
+        assertThat(request.kenmerken).containsExactly(
+            Kenmerk(kenmerk = "K1", bron = "B1"),
+            Kenmerk(kenmerk = "K2", bron = "B2"),
+        )
+    }
+
+    @Test
+    fun `should create zaak with archive properties`() {
+        val zakenApiClient: ZakenApiClient = mock()
+        val executionMock = mock<DelegateExecution>()
+        val authenticationMock = mock<ZakenApiAuthentication>()
+        val caseDocumentResolverMock = mock<CaseDocumentResolver>()
+
+        val documentId = UUID.randomUUID()
+        val rsin = Rsin("051845623")
+        val zaaktypeUrl = zaaktypeUri()
+        val archiveActionDate = LocalDate.of(2033, 1, 1)
+        val startDateRetentionPeriod = LocalDate.of(2026, 1, 1)
+
+        whenever(caseDocumentResolverMock.resolveCaseDocumentId(documentId)).thenReturn(documentId)
+        whenever(executionMock.businessKey).thenReturn(documentId.toString())
+        whenever(zakenApiClient.createZaak(authentication = eq(authenticationMock), baseUrl = eq(zakenApiUri()), request = any()))
+            .thenReturn(ZaakResponse(url = zaakUri(), uuid = UUID.randomUUID(), zaaktype = zaaktypeUrl, bronorganisatie = rsin, startdatum = LocalDate.now(), verantwoordelijkeOrganisatie = rsin))
+
+        val plugin = zakenApiPlugin(zakenApiClient = zakenApiClient, authenticationMock = authenticationMock, pluginService = pluginServiceMock(), caseDocumentResolver = caseDocumentResolverMock)
+
+        plugin.createZaak(
+            execution = executionMock,
+            rsin = rsin,
+            zaaktypeUrl = zaaktypeUrl,
+            archiveNomination = "vernietigen",
+            archiveStatus = "nog_te_archiveren",
+            archiveActionDate = archiveActionDate.toString(),
+            commissioningOrganisation = "051845623",
+            startDateRetentionPeriod = startDateRetentionPeriod.toString(),
+        )
+
+        val captor = argumentCaptor<CreateZaakRequest>()
+        verify(zakenApiClient).createZaak(any(), any(), captor.capture())
+
+        val request = captor.firstValue
+        assertThat(request.archiefnominatie).isEqualTo(Archiefnominatie.VERNIETIGEN)
+        assertThat(request.archiefstatus).isEqualTo(Archiefstatus.NOG_TE_ARCHIVEREN)
+        assertThat(request.archiefactiedatum).isEqualTo(archiveActionDate)
+        assertThat(request.opdrachtgevendeOrganisatie).isEqualTo("051845623")
+        assertThat(request.startdatumBewaartermijn).isEqualTo(startDateRetentionPeriod)
+    }
+
+    @Test
+    fun `should create zaak with processobject`() {
+        val zakenApiClient: ZakenApiClient = mock()
+        val executionMock = mock<DelegateExecution>()
+        val authenticationMock = mock<ZakenApiAuthentication>()
+        val caseDocumentResolverMock = mock<CaseDocumentResolver>()
+
+        val documentId = UUID.randomUUID()
+        val rsin = Rsin("051845623")
+        val zaaktypeUrl = zaaktypeUri()
+
+        whenever(caseDocumentResolverMock.resolveCaseDocumentId(documentId)).thenReturn(documentId)
+        whenever(executionMock.businessKey).thenReturn(documentId.toString())
+        whenever(zakenApiClient.createZaak(authentication = eq(authenticationMock), baseUrl = eq(zakenApiUri()), request = any()))
+            .thenReturn(ZaakResponse(url = zaakUri(), uuid = UUID.randomUUID(), zaaktype = zaaktypeUrl, bronorganisatie = rsin, startdatum = LocalDate.now(), verantwoordelijkeOrganisatie = rsin))
+
+        val plugin = zakenApiPlugin(zakenApiClient = zakenApiClient, authenticationMock = authenticationMock, pluginService = pluginServiceMock(), caseDocumentResolver = caseDocumentResolverMock)
+
+        plugin.createZaak(
+            execution = executionMock,
+            rsin = rsin,
+            zaaktypeUrl = zaaktypeUrl,
+            processObjectCategory = "Persoon",
+            processObjectDateAttribute = "geboortedatum",
+            processObjectIdentification = "999990019",
+            processObjectObjectType = "Persoon",
+            processObjectRegistration = "BRP",
+        )
+
+        val captor = argumentCaptor<CreateZaakRequest>()
+        verify(zakenApiClient).createZaak(any(), any(), captor.capture())
+
+        val request = captor.firstValue
+        assertThat(request.processobjectaard).isEqualTo("Persoon")
+        assertThat(request.processobject).isEqualTo(
+            Processobject(
+                datumkenmerk = "geboortedatum",
+                identificatie = "999990019",
+                objecttype = "Persoon",
+                registratie = "BRP",
+            )
+        )
+    }
+
+    @Test
+    fun `should create zaak with related cases and experimental fields`() {
+        val zakenApiClient: ZakenApiClient = mock()
+        val executionMock = mock<DelegateExecution>()
+        val authenticationMock = mock<ZakenApiAuthentication>()
+        val caseDocumentResolverMock = mock<CaseDocumentResolver>()
+
+        val documentId = UUID.randomUUID()
+        val rsin = Rsin("051845623")
+        val zaaktypeUrl = zaaktypeUri()
+        val relevantOtherCasesJson = """[{"url":"https://zaken.plugin.url/zaken/abc123","aardRelatie":"vervolg"}]"""
+        val relatedCasesJson = """[{"url":"https://zaken.plugin.url/zaken/def456"}]"""
+        val lastOpenedDate = LocalDateTime.of(2026, 4, 22, 10, 0, 0)
+
+        whenever(caseDocumentResolverMock.resolveCaseDocumentId(documentId)).thenReturn(documentId)
+        whenever(executionMock.businessKey).thenReturn(documentId.toString())
+        whenever(zakenApiClient.createZaak(authentication = eq(authenticationMock), baseUrl = eq(zakenApiUri()), request = any()))
+            .thenReturn(ZaakResponse(url = zaakUri(), uuid = UUID.randomUUID(), zaaktype = zaaktypeUrl, bronorganisatie = rsin, startdatum = LocalDate.now(), verantwoordelijkeOrganisatie = rsin))
+
+        val plugin = zakenApiPlugin(zakenApiClient = zakenApiClient, authenticationMock = authenticationMock, pluginService = pluginServiceMock(), caseDocumentResolver = caseDocumentResolverMock)
+
+        plugin.createZaak(
+            execution = executionMock,
+            rsin = rsin,
+            zaaktypeUrl = zaaktypeUrl,
+            relevantOtherCases = relevantOtherCasesJson,
+            relatedCases = relatedCasesJson,
+            communicationChannelName = "E-mail",
+            lastOpenedDate = lastOpenedDate.toString(),
+        )
+
+        val captor = argumentCaptor<CreateZaakRequest>()
+        verify(zakenApiClient).createZaak(any(), any(), captor.capture())
+
+        val request = captor.firstValue
+        assertThat(request.relevanteAndereZaken).containsExactly(
+            RelevanteZaak(url = URI.create("https://zaken.plugin.url/zaken/abc123"), aardRelatie = AardRelatie.VERVOLG)
+        )
+        assertThat(request.gerelateerdeZaken).containsExactly(
+            GerelateerdeZaak(url = URI.create("https://zaken.plugin.url/zaken/def456"))
+        )
+        assertThat(request.communicatiekanaalNaam).isEqualTo("E-mail")
+        assertThat(request.laatstGeopend).isEqualTo(lastOpenedDate)
     }
 
     @Test
@@ -1885,7 +2152,7 @@ internal class ZakenApiPluginTest {
         platformTransactionManager: PlatformTransactionManager = mock(),
         authenticationMock: ZakenApiAuthentication = mock(),
         valueResolverService: ValueResolverService = mock(),
-        objectMapper: ObjectMapper = mock(),
+        objectMapper: ObjectMapper = MapperSingleton.get(),
         zaakNotitieLinkRepository: ZaakNotitieLinkRepository = mock(),
         caseDocumentResolver: CaseDocumentResolver = mock(),
         userManagementService: UserManagementService = mock(),

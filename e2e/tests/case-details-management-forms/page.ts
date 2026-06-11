@@ -122,23 +122,48 @@ export class CaseDetailsFormsPage {
     return this.editComponentModal.locator('button[ref="saveButton"]');
   }
 
-  async dragComponentIntoForm(type: string) {
+  async dragComponentIntoForm(type: string, maxAttempts = 3) {
     const source = this.sidebarComponent(type);
     const target = this.formArea;
 
     await expect(source).toBeVisible();
     await expect(target).toBeVisible();
 
-    await source.hover();
-    await this.page.mouse.down();
-    // First nudge — dragula needs movement past its threshold to activate the mirror
-    await source.hover({position: {x: 5, y: 5}});
-    // Then traverse into the drop zone with small steps so the mirror tracks
-    await target.hover({position: {x: 50, y: 50}});
-    await target.hover({position: {x: 100, y: 100}});
-    await this.page.mouse.up();
+    for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+      // Use Playwright's built-in dragTo which dispatches proper HTML drag events
+      await source.dragTo(target, {
+        sourcePosition: {x: 5, y: 5},
+        targetPosition: {x: 50, y: 50},
+      });
 
-    await expect(this.editComponentModal).toBeVisible();
+      try {
+        await expect(this.editComponentModal).toBeVisible({timeout: 5_000});
+        return; // Success
+      } catch {
+        if (attempt === maxAttempts) {
+          // Last resort: try manual mouse-based drag
+          const sourceBB = await source.boundingBox();
+          const targetBB = await target.boundingBox();
+          if (!sourceBB || !targetBB) throw new Error('Could not get bounding boxes for drag');
+
+          const sx = sourceBB.x + sourceBB.width / 2;
+          const sy = sourceBB.y + sourceBB.height / 2;
+          const tx = targetBB.x + targetBB.width / 2;
+          const ty = targetBB.y + targetBB.height / 2;
+
+          await this.page.mouse.move(sx, sy);
+          await this.page.mouse.down();
+          await this.page.waitForTimeout(500);
+          await this.page.mouse.move(sx + 10, sy + 10, {steps: 5});
+          await this.page.waitForTimeout(500);
+          await this.page.mouse.move(tx, ty, {steps: 50});
+          await this.page.waitForTimeout(500);
+          await this.page.mouse.up();
+
+          await expect(this.editComponentModal).toBeVisible({timeout: 10_000});
+        }
+      }
+    }
   }
 
   async configureAndSaveComponent(label: string) {

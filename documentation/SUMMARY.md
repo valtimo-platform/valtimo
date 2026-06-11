@@ -194,10 +194,14 @@
 
 * [Release notes](release-notes/release-notes.md)
 * [13.x.x](release-notes/13.x.x/)
+  * [13.33.0](release-notes/13.x.x/13.33.0/README.md)
+  * [13.32.0](release-notes/13.x.x/13.32.0/README.md)
+  * [13.31.0](release-notes/13.x.x/13.31.0/README.md)
+  * [13.30.0](release-notes/13.x.x/13.30.0/README.md)
   * [13.29.0](release-notes/13.x.x/13.29.0/README.md)
-  * [13.28.0](release-notes/13.x.x/13.28.0/README.md)
+  * [13.28.1](release-notes/13.x.x/13.28.1/README.md)
+    * [Front-end migration](release-notes/13.x.x/13.28.1/front-end-migration.md)
   * [13.27.0](release-notes/13.x.x/13.27.0/README.md)
-    * [Front-end migration](release-notes/13.x.x/13.27.0/front-end-migration.md)
   * [13.26.0](release-notes/13.x.x/13.26.0/README.md)
   * [13.25.0](release-notes/13.x.x/13.25.0/README.md)
   * [13.24.0](release-notes/13.x.x/13.24.0/README.md)
@@ -256,6 +260,7 @@
   * [Custom logo](customizing-valtimo/front-end-customization/custom-logo.md)
   * [Custom components](customizing-valtimo/front-end-customization/custom-components/README.md)
     * [Custom case management tab](customizing-valtimo/front-end-customization/custom-components/custom-case-management-tab.md)
+    * [Custom UI component process link](customizing-valtimo/front-end-customization/custom-components/custom-ui-component-process-link.md)
 
 ## Contributing to Valtimo
 

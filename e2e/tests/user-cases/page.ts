@@ -93,7 +93,10 @@ export class UserCasesPage {
   }
 
   async visibleStatusTagTexts(): Promise<string[]> {
-    const tags = this.caseList.rows.locator('cds-tag');
+    const rows = this.caseList.rows;
+    const rowCount = await rows.count();
+    if (rowCount === 0) return [];
+    const tags = rows.locator('cds-tag');
     const texts = await tags.allInnerTexts();
     return Array.from(new Set(texts.map(t => t.trim()).filter(Boolean)));
   }

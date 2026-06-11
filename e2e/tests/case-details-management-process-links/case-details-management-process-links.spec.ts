@@ -62,10 +62,7 @@ test.describe('Case details - Process links', () => {
 
   test.beforeEach(async () => {
     await processLinksPage.clearInMemoryProcessLinks();
-    const modalOpen = await processLinksPage.modal
-      .getAttribute('ng-reflect-open')
-      .catch(() => null);
-    if (modalOpen === 'true') {
+    if (await processLinksPage.isModalOpen()) {
       await processLinksPage.cancelModal();
     }
   });
@@ -160,6 +157,8 @@ test.describe('Case details - Process links', () => {
 
       // The selection step renders a list of seeded building blocks
       await expect(processLinksPage.selectBuildingBlockComponent).toBeVisible();
+      // Wait for the API to return building block data
+      await expect(processLinksPage.buildingBlockRows.first()).toBeVisible({timeout: 10_000});
       const rowCount = await processLinksPage.buildingBlockRows.count();
       expect(rowCount).toBeGreaterThan(0);
 

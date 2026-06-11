@@ -16,6 +16,7 @@
 
 package com.ritense.valtimo.web.rest;
 
+import jakarta.validation.Valid;
 import static com.ritense.logging.LoggingContextKt.withLoggingContext;
 import static com.ritense.valtimo.contract.domain.ValtimoMediaType.APPLICATION_JSON_UTF8_VALUE;
 import static org.springframework.data.domain.Sort.Direction.DESC;
@@ -123,7 +124,7 @@ public class TaskResource extends AbstractTaskResource {
     @PostMapping("/v1/task/{taskId}/assign")
     public ResponseEntity<Void> assign(
         @LoggableResource(resourceType = OperatonTask.class) @PathVariable String taskId,
-        @RequestBody AssigneeRequest assigneeRequest
+        @Valid @RequestBody AssigneeRequest assigneeRequest
     ) {
         if (assigneeRequest.getAssignee() != null) {
             if (assigneeRequest.getAssignee().isEmpty()) {
@@ -143,7 +144,7 @@ public class TaskResource extends AbstractTaskResource {
     }
 
     @PostMapping("/v1/task/assign/batch-assign")
-    public ResponseEntity<Void> batchClaim(@RequestBody BatchAssignTaskDTO batchAssignTaskDTO) {
+    public ResponseEntity<Void> batchClaim(@Valid @RequestBody BatchAssignTaskDTO batchAssignTaskDTO) {
         final String assignee = batchAssignTaskDTO.getAssignee();
         final String assignedTeamKey = batchAssignTaskDTO.getAssignedTeamKey();
         batchAssignTaskDTO.getTasksIds().forEach(taskId -> {
@@ -169,7 +170,7 @@ public class TaskResource extends AbstractTaskResource {
     @PostMapping("/v1/task/{taskId}/complete")
     public ResponseEntity<Void> complete(
         @LoggableResource(resourceType = OperatonTask.class) @PathVariable String taskId,
-        @RequestBody TaskCompletionDTO taskCompletionDTO
+        @Valid @RequestBody TaskCompletionDTO taskCompletionDTO
     ) {
         operatonTaskService.completeTaskAndDeleteFiles(taskId, taskCompletionDTO);
         return ResponseEntity.ok().build();
@@ -190,7 +191,7 @@ public class TaskResource extends AbstractTaskResource {
     @PostMapping("/v1/task/{taskId}/set-due-date")
     public ResponseEntity<Void> setDueDate(
         @LoggableResource(resourceType = OperatonTask.class) @PathVariable String taskId,
-        @RequestBody @Nullable SetDueDateRequest setDueDateRequest
+        @Valid @RequestBody @Nullable SetDueDateRequest setDueDateRequest
     ) {
         operatonTaskService.setDueDate(
             taskId,

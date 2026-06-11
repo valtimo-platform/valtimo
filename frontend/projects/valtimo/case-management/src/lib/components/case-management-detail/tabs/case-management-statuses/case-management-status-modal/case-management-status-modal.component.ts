@@ -311,7 +311,7 @@ export class CaseManagementStatusModalComponent implements OnInit, OnDestroy {
       label: '',
       visibleInCaseListByDefault: true,
       retentionPeriodInDays: -1,
-      color: TagColor.Magenta,
+      color: TagColor.Blue,
     });
     this._selectedColor$.next(TagColor.Blue);
     this.statusFormGroup.markAsPristine();
