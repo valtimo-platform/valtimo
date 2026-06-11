@@ -80,7 +80,7 @@ export const environment: ValtimoConfig = {
       {
         roles: [ROLE_USER],
         link: ['/'],
-        title: 'Dashƒboard',
+        title: 'Dashboard',
         iconClass: 'icon mdi mdi-view-dashboard',
       },
       {
