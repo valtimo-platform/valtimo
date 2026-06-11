@@ -15,9 +15,9 @@
   -->
 
 <section class="case-inspection-metadata-tab">
-  @if ($loading()) {
-    <p>{{ 'case.inspection.metadata.loading' | translate }}</p>
-  }
+  <div *ngIf="$loading()" class="loading-container">
+    <cds-loading size="sm"></cds-loading>
+  </div>
 
   @if ($errorMessage(); as message) {
     <p class="case-inspection-metadata-tab__error">{{ message }}</p>
@@ -27,11 +27,15 @@
     <cds-structured-list class="case-inspection-metadata-tab__list" [condensed]="true">
       <cds-list-row>
         <cds-list-column>{{ 'case.inspection.metadata.documentId' | translate }}</cds-list-column>
-        <cds-list-column><code>{{ document.id }}</code></cds-list-column>
+        <cds-list-column
+          ><code>{{ document.id }}</code></cds-list-column
+        >
       </cds-list-row>
 
       <cds-list-row>
-        <cds-list-column>{{ 'case.inspection.metadata.definitionName' | translate }}</cds-list-column>
+        <cds-list-column>{{
+          'case.inspection.metadata.definitionName' | translate
+        }}</cds-list-column>
         <cds-list-column>{{ document.definitionId?.name }}</cds-list-column>
       </cds-list-row>
 
@@ -91,7 +95,9 @@
       </cds-list-row>
 
       <cds-list-row>
-        <cds-list-column>{{ 'case.inspection.metadata.internalStatus' | translate }}</cds-list-column>
+        <cds-list-column>{{
+          'case.inspection.metadata.internalStatus' | translate
+        }}</cds-list-column>
         <cds-list-column>
           <ng-container *ngIf="document.internalStatus; else noStatus">
             {{ document.internalStatus }}

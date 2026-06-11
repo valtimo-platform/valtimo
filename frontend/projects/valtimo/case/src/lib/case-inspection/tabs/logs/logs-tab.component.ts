@@ -14,8 +14,9 @@
  * limitations under the License.
  */
 
-import {CommonModule} from '@angular/common';
+import {CommonModule, DatePipe} from '@angular/common';
 import {
+  AfterViewInit,
   ChangeDetectionStrategy,
   Component,
   Input,
@@ -23,10 +24,12 @@ import {
   OnInit,
   signal,
   SimpleChanges,
+  TemplateRef,
   ViewChild,
 } from '@angular/core';
 import {FormBuilder, FormsModule, ReactiveFormsModule} from '@angular/forms';
 import {TranslateModule} from '@ngx-translate/core';
+import {CarbonListModule, ColumnConfig, ViewType} from '@valtimo/components';
 import {Page} from '@valtimo/shared';
 import {
   ButtonModule,
@@ -38,8 +41,6 @@ import {
   LayerModule,
   ListItem,
   LoadingModule,
-  PaginationModule,
-  StructuredListModule,
   TagModule,
 } from 'carbon-components-angular';
 import {
@@ -64,20 +65,22 @@ const PROCESS_INSTANCE_MDC_KEY = 'processInstanceId';
     ReactiveFormsModule,
     FormsModule,
     ButtonModule,
+    CarbonListModule,
     DatePickerModule,
     DropdownModule,
     IconModule,
     InputModule,
-    PaginationModule,
-    StructuredListModule,
     TagModule,
     LoadingModule,
     LayerModule,
   ],
 })
-export class CaseInspectionLogsTabComponent implements OnInit, OnChanges {
+export class CaseInspectionLogsTabComponent implements OnInit, AfterViewInit, OnChanges {
   @ViewChild('afterPicker') private readonly _afterDatePicker?: DatePicker;
   @ViewChild('beforePicker') private readonly _beforeDatePicker?: DatePicker;
+  @ViewChild('timestampTemplate') public timestampTemplate!: TemplateRef<any>;
+  @ViewChild('levelTemplate') public levelTemplate!: TemplateRef<any>;
+  @ViewChild('messageTemplate') public messageTemplate!: TemplateRef<any>;
 
   @Input() public documentId!: string;
   @Input() public pendingProcessInstanceId: string | null = null;
@@ -86,6 +89,7 @@ export class CaseInspectionLogsTabComponent implements OnInit, OnChanges {
   public readonly $errorMessage = signal<string | null>(null);
   public readonly $rows = signal<CaseInspectionLoggingEvent[]>([]);
   public readonly $selected = signal<CaseInspectionLoggingEvent | null>(null);
+  public readonly $selectedIndex = signal<number>(0);
   public readonly $page = signal<number>(1);
   public readonly $totalElements = signal<number>(0);
   public readonly $activeProcessInstanceFilter = signal<string | null>(null);
@@ -94,6 +98,16 @@ export class CaseInspectionLogsTabComponent implements OnInit, OnChanges {
   public readonly pageSize = 10;
 
   public readonly LEVEL_TAG = CASE_INSPECTION_LOG_LEVEL_TAG;
+
+  public fields: ColumnConfig[] = [];
+
+  public get pagination() {
+    return {
+      page: this.$page(),
+      size: this.pageSize,
+      collectionSize: this.$totalElements(),
+    };
+  }
 
   public readonly logLevelItems: ListItem[] = [
     {content: CaseInspectionLogLevel.ERROR, selected: false},
@@ -118,6 +132,29 @@ export class CaseInspectionLogsTabComponent implements OnInit, OnChanges {
   public ngOnInit(): void {
     this.applyPendingProcessInstanceFilter();
     this.load();
+  }
+
+  public ngAfterViewInit(): void {
+    this.fields = [
+      {
+        viewType: ViewType.TEMPLATE,
+        key: 'timestamp',
+        label: 'case.inspection.logs.columns.timestamp',
+        template: this.timestampTemplate,
+      },
+      {
+        viewType: ViewType.TEMPLATE,
+        key: 'level',
+        label: 'case.inspection.logs.columns.level',
+        template: this.levelTemplate,
+      },
+      {
+        viewType: ViewType.TEMPLATE,
+        key: 'formattedMessage',
+        label: 'case.inspection.logs.columns.message',
+        template: this.messageTemplate,
+      },
+    ];
   }
 
   public ngOnChanges(changes: SimpleChanges): void {
@@ -170,6 +207,8 @@ export class CaseInspectionLogsTabComponent implements OnInit, OnChanges {
 
   public onSelectRow(row: CaseInspectionLoggingEvent): void {
     this.$selected.set(row);
+    const index = this.$rows().indexOf(row);
+    this.$selectedIndex.set(index >= 0 ? index : 0);
   }
 
   public isSelected(row: CaseInspectionLoggingEvent): boolean {
@@ -249,6 +288,7 @@ export class CaseInspectionLogsTabComponent implements OnInit, OnChanges {
           this.$rows.set(page.content);
           this.$totalElements.set(page.totalElements);
           this.$selected.set(page.content[0] ?? null);
+          this.$selectedIndex.set(0);
           this.$loading.set(false);
         },
         error: err => {

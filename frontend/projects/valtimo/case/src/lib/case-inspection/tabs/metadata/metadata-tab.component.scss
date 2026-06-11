@@ -15,6 +15,9 @@
  */
 
 .case-inspection-metadata-tab {
+  border-left: 1px solid var(--cds-border-subtle);
+  border-right: 1px solid var(--cds-border-subtle);
+
   &__list ul {
     margin: 0;
     padding-left: var(--cds-spacing-06);

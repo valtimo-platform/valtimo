@@ -107,46 +107,30 @@
     </p>
 
     <div *ngIf="$rows().length > 0" class="case-inspection-logs-tab__layout">
-      <div class="case-inspection-logs-tab__list-panel">
-        <cds-structured-list [condensed]="true">
-          <cds-list-header>
-            <cds-list-column class="case-inspection-logs-tab__col-timestamp">
-              {{ 'case.inspection.logs.columns.timestamp' | translate }}
-            </cds-list-column>
-            <cds-list-column class="case-inspection-logs-tab__col-level">
-              {{ 'case.inspection.logs.columns.level' | translate }}
-            </cds-list-column>
-            <cds-list-column class="case-inspection-logs-tab__col-message">
-              {{ 'case.inspection.logs.columns.message' | translate }}
-            </cds-list-column>
-          </cds-list-header>
-
-          <cds-list-row
-            *ngFor="let row of $rows()"
-            class="case-inspection-logs-tab__row"
-            [class.case-inspection-logs-tab__row--selected]="isSelected(row)"
-            (click)="onSelectRow(row)"
-          >
-            <cds-list-column class="case-inspection-logs-tab__col-timestamp">
-              {{ row.timestamp | date: 'dd-MM HH:mm:ss' }}
-            </cds-list-column>
-            <cds-list-column class="case-inspection-logs-tab__col-level">
-              <cds-tag size="sm" [type]="LEVEL_TAG[row.level] || 'gray'">
-                {{ row.level }}
-              </cds-tag>
-            </cds-list-column>
-            <cds-list-column class="case-inspection-logs-tab__col-message">
-              <span class="case-inspection-logs-tab__message-cell">{{ row.formattedMessage }}</span>
-            </cds-list-column>
-          </cds-list-row>
-        </cds-structured-list>
-
-        <cds-pagination
-          class="case-inspection-logs-tab__pagination"
-          [model]="buildPaginationModel()"
-          [itemsPerPageOptions]="[pageSize]"
-          (selectPage)="onPageSelected($event)"
-        ></cds-pagination>
+      <div
+        class="case-inspection-logs-tab__list-panel"
+        [attr.data-selected-row]="$selectedIndex()"
+      >
+        <valtimo-carbon-list
+          [fields]="fields"
+          [header]="false"
+          [hideToolbar]="true"
+          [items]="$rows()"
+          [loading]="$loading()"
+          [pagination]="pagination"
+          [cdsLayer]="1"
+          (paginationClicked)="onPageSelected($event)"
+          (rowClicked)="onSelectRow($event)"
+        >
+          <valtimo-no-results
+            description="{{
+              ($hasActiveSearch()
+                ? 'case.inspection.logs.emptyFiltered'
+                : 'case.inspection.logs.empty'
+              ) | translate
+            }}"
+          ></valtimo-no-results>
+        </valtimo-carbon-list>
       </div>
 
       <aside class="case-inspection-logs-tab__detail" *ngIf="$selected() as selected">
@@ -181,3 +165,17 @@
     </div>
   </ng-container>
 </section>
+
+<ng-template #timestampTemplate let-data="data">
+  {{ data.item.timestamp | date: 'dd-MM HH:mm:ss' }}
+</ng-template>
+
+<ng-template #levelTemplate let-data="data">
+  <cds-tag size="sm" [type]="LEVEL_TAG[data.item.level] || 'gray'">
+    {{ data.item.level }}
+  </cds-tag>
+</ng-template>
+
+<ng-template #messageTemplate let-data="data">
+  <span class="case-inspection-logs-tab__message-cell">{{ data.item.formattedMessage }}</span>
+</ng-template>

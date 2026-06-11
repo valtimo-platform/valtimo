@@ -15,9 +15,9 @@
   -->
 
 <section class="case-inspection-zgw-tab">
-  <ng-container *ngIf="$loading()">
-    <p>{{ 'case.inspection.zgw.loading' | translate }}</p>
-  </ng-container>
+  <div *ngIf="$loading()" class="loading-container">
+    <cds-loading size="sm"></cds-loading>
+  </div>
 
   <ng-container *ngIf="$errorMessage() as message">
     <p class="case-inspection-zgw-tab__error">{{ message }}</p>
@@ -40,7 +40,7 @@
           title: 'case.inspection.zgw.zaakUnreachable.title' | translate,
           message: 'case.inspection.zgw.zaakUnreachable.message' | translate,
           showClose: false,
-          lowContrast: true
+          lowContrast: true,
         }"
       ></cds-inline-notification>
 
@@ -90,7 +90,7 @@
           title: 'case.inspection.zgw.warnings.title' | translate,
           message: zgw.warnings.join(' • '),
           showClose: false,
-          lowContrast: true
+          lowContrast: true,
         }"
       ></cds-inline-notification>
 
@@ -220,10 +220,18 @@
           <ng-container *ngIf="zgw.eigenschappen.length; else noEigenschappen">
             <cds-structured-list [condensed]="true">
               <cds-list-header>
-                <cds-list-column>{{ 'case.inspection.zgw.eigenschappen.naam' | translate }}</cds-list-column>
-                <cds-list-column>{{ 'case.inspection.zgw.eigenschappen.waarde' | translate }}</cds-list-column>
-                <cds-list-column>{{ 'case.inspection.zgw.eigenschappen.eigenschapUrl' | translate }}</cds-list-column>
-                <cds-list-column>{{ 'case.inspection.zgw.eigenschappen.zaakeigenschapUrl' | translate }}</cds-list-column>
+                <cds-list-column>{{
+                  'case.inspection.zgw.eigenschappen.naam' | translate
+                }}</cds-list-column>
+                <cds-list-column>{{
+                  'case.inspection.zgw.eigenschappen.waarde' | translate
+                }}</cds-list-column>
+                <cds-list-column>{{
+                  'case.inspection.zgw.eigenschappen.eigenschapUrl' | translate
+                }}</cds-list-column>
+                <cds-list-column>{{
+                  'case.inspection.zgw.eigenschappen.zaakeigenschapUrl' | translate
+                }}</cds-list-column>
               </cds-list-header>
 
               <cds-list-row *ngFor="let e of zgw.eigenschappen">
@@ -243,7 +251,13 @@
                 </cds-list-column>
                 <cds-list-column>
                   <code>{{ e.url }}</code>
-                  <button cdsButton="ghost" size="sm" [iconOnly]="true" [attr.aria-label]="'case.inspection.zgw.actions.copy' | translate" (click)="onCopy(e.url)">
+                  <button
+                    cdsButton="ghost"
+                    size="sm"
+                    [iconOnly]="true"
+                    [attr.aria-label]="'case.inspection.zgw.actions.copy' | translate"
+                    (click)="onCopy(e.url)"
+                  >
                     <svg cdsIcon="copy" size="16"></svg>
                   </button>
                 </cds-list-column>
@@ -262,16 +276,28 @@
           <ng-container *ngIf="zgw.rollen.length; else noRollen">
             <cds-structured-list [condensed]="true">
               <cds-list-header>
-                <cds-list-column>{{ 'case.inspection.zgw.rollen.betrokkeneType' | translate }}</cds-list-column>
-                <cds-list-column>{{ 'case.inspection.zgw.rollen.roltype' | translate }}</cds-list-column>
-                <cds-list-column>{{ 'case.inspection.zgw.rollen.identificatie' | translate }}</cds-list-column>
-                <cds-list-column>{{ 'case.inspection.zgw.rollen.indicatieMachtiging' | translate }}</cds-list-column>
-                <cds-list-column>{{ 'case.inspection.zgw.rollen.url' | translate }}</cds-list-column>
+                <cds-list-column>{{
+                  'case.inspection.zgw.rollen.betrokkeneType' | translate
+                }}</cds-list-column>
+                <cds-list-column>{{
+                  'case.inspection.zgw.rollen.roltype' | translate
+                }}</cds-list-column>
+                <cds-list-column>{{
+                  'case.inspection.zgw.rollen.identificatie' | translate
+                }}</cds-list-column>
+                <cds-list-column>{{
+                  'case.inspection.zgw.rollen.indicatieMachtiging' | translate
+                }}</cds-list-column>
+                <cds-list-column>{{
+                  'case.inspection.zgw.rollen.url' | translate
+                }}</cds-list-column>
               </cds-list-header>
 
               <cds-list-row *ngFor="let r of zgw.rollen">
                 <cds-list-column>{{ r.betrokkeneType }}</cds-list-column>
-                <cds-list-column>{{ r.omschrijving || r.omschrijvingGeneriek || '-' }}</cds-list-column>
+                <cds-list-column>{{
+                  r.omschrijving || r.omschrijvingGeneriek || '-'
+                }}</cds-list-column>
                 <cds-list-column>
                   <code *ngIf="r.betrokkeneIdentificatie">
                     {{ r.betrokkeneIdentificatie | json }}
@@ -308,9 +334,15 @@
           <ng-container *ngIf="zgw.statusHistory.length; else noStatuses">
             <cds-structured-list [condensed]="true">
               <cds-list-header>
-                <cds-list-column>{{ 'case.inspection.zgw.statusHistory.datumStatusGezet' | translate }}</cds-list-column>
-                <cds-list-column>{{ 'case.inspection.zgw.statusHistory.statustype' | translate }}</cds-list-column>
-                <cds-list-column>{{ 'case.inspection.zgw.statusHistory.statustoelichting' | translate }}</cds-list-column>
+                <cds-list-column>{{
+                  'case.inspection.zgw.statusHistory.datumStatusGezet' | translate
+                }}</cds-list-column>
+                <cds-list-column>{{
+                  'case.inspection.zgw.statusHistory.statustype' | translate
+                }}</cds-list-column>
+                <cds-list-column>{{
+                  'case.inspection.zgw.statusHistory.statustoelichting' | translate
+                }}</cds-list-column>
               </cds-list-header>
 
               <cds-list-row *ngFor="let s of zgw.statusHistory">
@@ -361,9 +393,9 @@
                   <dt>{{ 'case.inspection.zgw.zaakobjecten.objectType' | translate }}</dt>
                   <dd>{{ o.objectTypeOverige || o.objectType }}</dd>
 
-                  <dt
-                    *ngIf="o.relatieomschrijving"
-                  >{{ 'case.inspection.zgw.zaakobjecten.relatieomschrijving' | translate }}</dt>
+                  <dt *ngIf="o.relatieomschrijving">
+                    {{ 'case.inspection.zgw.zaakobjecten.relatieomschrijving' | translate }}
+                  </dt>
                   <dd *ngIf="o.relatieomschrijving">{{ o.relatieomschrijving }}</dd>
                 </dl>
 
@@ -396,7 +428,7 @@
                           title: 'case.inspection.zgw.zaakobjecten.notResolved' | translate,
                           message: resolved.message,
                           showClose: false,
-                          lowContrast: true
+                          lowContrast: true,
                         }"
                       ></cds-inline-notification>
 
@@ -426,9 +458,15 @@
           <ng-container *ngIf="zgw.zaakInformatieObjecten.length; else noZios">
             <cds-structured-list [condensed]="true">
               <cds-list-header>
-                <cds-list-column>{{ 'case.inspection.zgw.zaakinformatieobjecten.titel' | translate }}</cds-list-column>
-                <cds-list-column>{{ 'case.inspection.zgw.zaakinformatieobjecten.registratiedatum' | translate }}</cds-list-column>
-                <cds-list-column>{{ 'case.inspection.zgw.zaakinformatieobjecten.url' | translate }}</cds-list-column>
+                <cds-list-column>{{
+                  'case.inspection.zgw.zaakinformatieobjecten.titel' | translate
+                }}</cds-list-column>
+                <cds-list-column>{{
+                  'case.inspection.zgw.zaakinformatieobjecten.registratiedatum' | translate
+                }}</cds-list-column>
+                <cds-list-column>{{
+                  'case.inspection.zgw.zaakinformatieobjecten.url' | translate
+                }}</cds-list-column>
               </cds-list-header>
 
               <cds-list-row *ngFor="let z of zgw.zaakInformatieObjecten">
@@ -461,7 +499,9 @@
           <ng-container *ngIf="zgw.besluiten.length; else noBesluiten">
             <cds-structured-list [condensed]="true">
               <cds-list-header>
-                <cds-list-column>{{ 'case.inspection.zgw.besluiten.url' | translate }}</cds-list-column>
+                <cds-list-column>{{
+                  'case.inspection.zgw.besluiten.url' | translate
+                }}</cds-list-column>
               </cds-list-header>
 
               <cds-list-row *ngFor="let b of zgw.besluiten">
@@ -503,15 +543,14 @@
               <dt>{{ 'case.inspection.zgw.zaakdetails.enabled' | translate }}</dt>
               <dd>
                 <cds-tag size="sm" [type]="cfg.enabled ? 'green' : 'cool-gray'">
-                  {{ (cfg.enabled ? 'case.inspection.zgw.yes' : 'case.inspection.zgw.no') | translate }}
+                  {{
+                    (cfg.enabled ? 'case.inspection.zgw.yes' : 'case.inspection.zgw.no') | translate
+                  }}
                 </cds-tag>
               </dd>
             </dl>
 
-            <p
-              *ngIf="!zd.syncConfig"
-              class="case-inspection-zgw-tab__empty"
-            >
+            <p *ngIf="!zd.syncConfig" class="case-inspection-zgw-tab__empty">
               {{ 'case.inspection.zgw.zaakdetails.notConfigured' | translate }}
             </p>
 
@@ -533,7 +572,10 @@
               <dt>{{ 'case.inspection.zgw.zaakdetails.linkedToZaak' | translate }}</dt>
               <dd>
                 <cds-tag size="sm" [type]="zo.linkedToZaak ? 'green' : 'cool-gray'">
-                  {{ (zo.linkedToZaak ? 'case.inspection.zgw.yes' : 'case.inspection.zgw.no') | translate }}
+                  {{
+                    (zo.linkedToZaak ? 'case.inspection.zgw.yes' : 'case.inspection.zgw.no')
+                      | translate
+                  }}
                 </cds-tag>
               </dd>
             </dl>
@@ -561,7 +603,7 @@
                       title: 'case.inspection.zgw.zaakdetails.contentNotResolved' | translate,
                       message: content.message,
                       showClose: false,
-                      lowContrast: true
+                      lowContrast: true,
                     }"
                   ></cds-inline-notification>
 
