@@ -32,8 +32,9 @@ import {map, switchMap} from 'rxjs/operators';
 import {
   ExternalPluginDefinition,
   ExternalPluginGrantedEndpointEntry,
+  ExternalPluginGrantedEventEntry,
   ExternalPluginIframeComponent,
-  ExternalPluginManagementEndpoint,
+  ExternalPluginEndpoint,
   ExternalPluginService,
   extractExternalDefinitionId,
   isExternalPluginKey,
@@ -45,6 +46,7 @@ interface ExternalPluginSaveEvent {
   title: string;
   properties: Record<string, unknown>;
   grantedEndpoints: Array<ExternalPluginGrantedEndpointEntry>;
+  grantedEvents: Array<ExternalPluginGrantedEventEntry>;
 }
 
 @Component({
@@ -64,7 +66,8 @@ interface ExternalPluginSaveEvent {
 export class PluginExternalConfigureComponent implements OnInit, OnDestroy {
   @Output() public validEvent = new EventEmitter<boolean>();
   @Output() public saveEvent = new EventEmitter<ExternalPluginSaveEvent>();
-  @Output() public managementEndpointsResolved = new EventEmitter<Array<ExternalPluginManagementEndpoint>>();
+  @Output() public endpointsResolved = new EventEmitter<Array<ExternalPluginEndpoint>>();
+  @Output() public eventSubscriptionsResolved = new EventEmitter<Array<string>>();
 
   public readonly _$configBundleUrl = signal<string | null>(null);
   public readonly _$loading = signal(true);
@@ -78,6 +81,7 @@ export class PluginExternalConfigureComponent implements OnInit, OnDestroy {
   private _iframeConfigTitle: string = '';
   private _iframeConfigData: Record<string, unknown> | null = null;
   private _grantedEndpoints: Array<ExternalPluginGrantedEndpointEntry> = [];
+  private _grantedEvents: Array<ExternalPluginGrantedEventEntry> = [];
   private readonly _subscriptions = new Subscription();
 
   constructor(
@@ -94,7 +98,8 @@ export class PluginExternalConfigureComponent implements OnInit, OnDestroy {
               this._definitionId = null;
               this._$configBundleUrl.set(null);
               this._$loading.set(false);
-              this.managementEndpointsResolved.emit([]);
+              this.endpointsResolved.emit([]);
+              this.eventSubscriptionsResolved.emit([]);
               return [];
             }
 
@@ -115,8 +120,10 @@ export class PluginExternalConfigureComponent implements OnInit, OnDestroy {
                   this._$configBundleUrl.set(null);
                 }
 
-                const endpoints = definition.manifest?.permissions?.managementEndpoints ?? [];
-                this.managementEndpointsResolved.emit(endpoints);
+                const endpoints = definition.manifest?.permissions?.endpoints ?? [];
+                this.endpointsResolved.emit(endpoints);
+                const eventSubscriptions = definition.manifest?.eventSubscriptions ?? [];
+                this.eventSubscriptionsResolved.emit(eventSubscriptions);
 
                 this._$loading.set(false);
               })
@@ -153,6 +160,10 @@ export class PluginExternalConfigureComponent implements OnInit, OnDestroy {
     this._grantedEndpoints = endpoints;
   }
 
+  public setGrantedEvents(events: Array<ExternalPluginGrantedEventEntry>): void {
+    this._grantedEvents = events;
+  }
+
   private _validateForm(): void {
     if (this._$configBundleUrl()) return;
 
@@ -178,6 +189,7 @@ export class PluginExternalConfigureComponent implements OnInit, OnDestroy {
         title: this._iframeConfigTitle,
         properties: this._iframeConfigData,
         grantedEndpoints: this._grantedEndpoints,
+        grantedEvents: this._grantedEvents,
       });
       return;
     }
@@ -198,6 +210,7 @@ export class PluginExternalConfigureComponent implements OnInit, OnDestroy {
       title,
       properties,
       grantedEndpoints: this._grantedEndpoints,
+      grantedEvents: this._grantedEvents,
     });
   }
 }

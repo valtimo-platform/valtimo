@@ -152,4 +152,27 @@
                                  constraintName="ext_plugin_granted_ep_config_id_fk"/>
     </changeSet>
 
+    <changeSet author="Ritense" id="6">
+        <createTable tableName="external_plugin_granted_event">
+            <column name="id" type="${uuidType}">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="ext_plugin_granted_evt_pk"/>
+            </column>
+            <column name="configuration_id" type="${uuidType}">
+                <constraints nullable="false"/>
+            </column>
+            <column name="event_type" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="granted_at" type="DATETIME">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+        <addForeignKeyConstraint baseTableName="external_plugin_granted_event"
+                                 baseColumnNames="configuration_id"
+                                 referencedTableName="external_plugin_configuration"
+                                 referencedColumnNames="id"
+                                 constraintName="ext_plugin_granted_evt_config_id_fk"/>
+    </changeSet>
+
 </databaseChangeLog>

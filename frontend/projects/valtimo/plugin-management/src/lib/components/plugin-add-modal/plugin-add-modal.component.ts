@@ -21,7 +21,8 @@ import {BehaviorSubject, Observable, Subscription} from 'rxjs';
 import {
   ExternalPluginDefinition,
   ExternalPluginGrantedEndpointEntry,
-  ExternalPluginManagementEndpoint,
+  ExternalPluginGrantedEventEntry,
+  ExternalPluginEndpoint,
   ExternalPluginService,
   isExternalPluginKey,
   PluginConfigurationData,
@@ -52,9 +53,10 @@ export class PluginAddModalComponent implements OnDestroy {
     map(def => isExternalPluginKey(def?.key))
   );
 
-  public readonly managementEndpoints$ = new BehaviorSubject<
-    Array<ExternalPluginManagementEndpoint>
+  public readonly endpoints$ = new BehaviorSubject<
+    Array<ExternalPluginEndpoint>
   >([]);
+  public readonly eventSubscriptions$ = new BehaviorSubject<Array<string>>([]);
   public readonly permissionsValid$ = new BehaviorSubject<boolean>(false);
 
   public currentStepIndex = 0;
@@ -108,7 +110,8 @@ export class PluginAddModalComponent implements OnDestroy {
       this._stateService.enableInput();
       this._stateService.clear();
       this.configurationValid$.next(false);
-      this.managementEndpoints$.next([]);
+      this.endpoints$.next([]);
+      this.eventSubscriptions$.next([]);
       this.permissionsValid$.next(false);
       this._buildProgressSteps();
     }, CARBON_CONSTANTS.modalAnimationMs);
@@ -146,11 +149,16 @@ export class PluginAddModalComponent implements OnDestroy {
     });
   }
 
-  public onManagementEndpointsResolved(
-    endpoints: Array<ExternalPluginManagementEndpoint>
+  public onEndpointsResolved(
+    endpoints: Array<ExternalPluginEndpoint>
   ): void {
-    this.managementEndpoints$.next(endpoints);
-    this.permissionsValid$.next(endpoints.length === 0);
+    this.endpoints$.next(endpoints);
+    this._recomputePermissionsValid();
+  }
+
+  public onEventSubscriptionsResolved(eventTypes: Array<string>): void {
+    this.eventSubscriptions$.next(eventTypes);
+    this._recomputePermissionsValid();
   }
 
   public onPermissionsValid(valid: boolean): void {
@@ -161,11 +169,16 @@ export class PluginAddModalComponent implements OnDestroy {
     this._externalConfigureComponent?.setGrantedEndpoints(endpoints);
   }
 
+  public onGrantedEventsChange(events: Array<ExternalPluginGrantedEventEntry>): void {
+    this._externalConfigureComponent?.setGrantedEvents(events);
+  }
+
   public onExternalSave(event: {
     definitionId: string;
     title: string;
     properties: Record<string, unknown>;
     grantedEndpoints: Array<ExternalPluginGrantedEndpointEntry>;
+    grantedEvents: Array<ExternalPluginGrantedEventEntry>;
   }): void {
     this._stateService.disableInput();
 
@@ -175,6 +188,7 @@ export class PluginAddModalComponent implements OnDestroy {
         title: event.title,
         properties: event.properties,
         grantedEndpoints: event.grantedEndpoints,
+        grantedEvents: event.grantedEvents,
       })
       .subscribe({
         next: () => {
@@ -188,6 +202,17 @@ export class PluginAddModalComponent implements OnDestroy {
           this._stateService.enableInput();
         },
       });
+  }
+
+  /**
+   * Permissions step starts valid (no acknowledgement required) only when the plugin declared
+   * neither endpoints nor event subscriptions. The acknowledgement otherwise gates the step.
+   */
+  private _recomputePermissionsValid(): void {
+    const hasNothing = this.endpoints$.value.length === 0 && this.eventSubscriptions$.value.length === 0;
+    if (hasNothing) {
+      this.permissionsValid$.next(true);
+    }
   }
 
   private _buildProgressSteps(): void {

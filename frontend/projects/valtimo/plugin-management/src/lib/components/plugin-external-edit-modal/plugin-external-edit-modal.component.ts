@@ -38,7 +38,7 @@ import {CARBON_CONSTANTS, ValtimoCdsModalDirective} from '@valtimo/components';
 import {
   ExternalPluginDefinition,
   ExternalPluginIframeComponent,
-  ExternalPluginManagementEndpoint,
+  ExternalPluginEndpoint,
   ExternalPluginService,
 } from '@valtimo/plugin';
 import {UnifiedPluginConfigurationRow} from '../../models';
@@ -87,7 +87,8 @@ export class PluginExternalEditModalComponent implements OnChanges, OnDestroy {
   } | null>(null);
   public readonly _$iframeValid = signal(false);
 
-  public readonly _$managementEndpoints = signal<Array<ExternalPluginManagementEndpoint>>([]);
+  public readonly _$endpoints = signal<Array<ExternalPluginEndpoint>>([]);
+  public readonly _$eventSubscriptions = signal<Array<string>>([]);
   public readonly _$permissionsValid = signal(false);
   public readonly _$hasPermissionsStep = signal(false);
   public readonly _$definitionName = signal<string>('');
@@ -234,7 +235,8 @@ export class PluginExternalEditModalComponent implements OnChanges, OnDestroy {
     this._$prefillConfiguration.set(null);
     this._$iframeValid.set(false);
     this._iframeConfigData = null;
-    this._$managementEndpoints.set([]);
+    this._$endpoints.set([]);
+    this._$eventSubscriptions.set([]);
     this._$permissionsValid.set(false);
     this._$hasPermissionsStep.set(false);
     this._$definitionName.set('');
@@ -265,9 +267,11 @@ export class PluginExternalEditModalComponent implements OnChanges, OnDestroy {
             });
           }
 
-          const endpoints = definition.manifest?.permissions?.managementEndpoints ?? [];
-          this._$managementEndpoints.set(endpoints);
-          this._$hasPermissionsStep.set(endpoints.length > 0);
+          const endpoints = definition.manifest?.permissions?.endpoints ?? [];
+          const eventSubscriptions = definition.manifest?.eventSubscriptions ?? [];
+          this._$endpoints.set(endpoints);
+          this._$eventSubscriptions.set(eventSubscriptions);
+          this._$hasPermissionsStep.set(endpoints.length > 0 || eventSubscriptions.length > 0);
           // Permissions are read-only when editing, so the step never blocks saving.
           this._$permissionsValid.set(true);
 
@@ -286,9 +290,11 @@ export class PluginExternalEditModalComponent implements OnChanges, OnDestroy {
           this._$configurationSchema.set(definition.configurationSchema);
           this._resolveConfigBundleUrl(definition);
 
-          const endpoints = definition.manifest?.permissions?.managementEndpoints ?? [];
-          this._$managementEndpoints.set(endpoints);
-          this._$hasPermissionsStep.set(endpoints.length > 0);
+          const endpoints = definition.manifest?.permissions?.endpoints ?? [];
+          const eventSubscriptions = definition.manifest?.eventSubscriptions ?? [];
+          this._$endpoints.set(endpoints);
+          this._$eventSubscriptions.set(eventSubscriptions);
+          this._$hasPermissionsStep.set(endpoints.length > 0 || eventSubscriptions.length > 0);
           this._$permissionsValid.set(true);
 
           this._buildProgressSteps();
@@ -344,7 +350,8 @@ export class PluginExternalEditModalComponent implements OnChanges, OnDestroy {
     this._$prefillConfiguration.set(null);
     this._$iframeValid.set(false);
     this._iframeConfigData = null;
-    this._$managementEndpoints.set([]);
+    this._$endpoints.set([]);
+    this._$eventSubscriptions.set([]);
     this._$permissionsValid.set(false);
     this._$hasPermissionsStep.set(false);
     this._$definitionName.set('');

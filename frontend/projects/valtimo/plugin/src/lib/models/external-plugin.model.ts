@@ -58,19 +58,20 @@ interface ExternalPluginFrontendBundle {
   path: string;
 }
 
-interface ExternalPluginManagementEndpoint {
+interface ExternalPluginEndpoint {
   method: string;
   pattern: string;
 }
 
 interface ExternalPluginPermissions {
-  managementEndpoints?: Array<ExternalPluginManagementEndpoint>;
+  endpoints?: Array<ExternalPluginEndpoint>;
 }
 
 interface ExternalPluginManifest {
   actions?: Array<ExternalPluginAction>;
   frontendBundles?: Array<ExternalPluginFrontendBundle>;
   permissions?: ExternalPluginPermissions;
+  eventSubscriptions?: Array<string>;
   logo?: string;
   translations?: Record<string, Record<string, string>>;
 }
@@ -110,6 +111,17 @@ interface ExternalPluginGrantedEndpointResponse {
   grantedAt: string;
 }
 
+interface ExternalPluginGrantedEventEntry {
+  eventType: string;
+}
+
+interface ExternalPluginGrantedEventResponse {
+  id: string;
+  configurationId: string;
+  eventType: string;
+  grantedAt: string;
+}
+
 interface ExternalPluginEndpointDescriptionQuery {
   method: string;
   pattern: string;
@@ -127,6 +139,7 @@ interface ExternalPluginConfigurationDetail {
   title: string;
   properties: Record<string, unknown>;
   grantedEndpoints: Array<ExternalPluginGrantedEndpointResponse>;
+  grantedEvents: Array<ExternalPluginGrantedEventResponse>;
   createdAt: string;
 }
 
@@ -135,6 +148,7 @@ interface ExternalPluginConfigurationCreateRequest {
   title: string;
   properties: Record<string, unknown>;
   grantedEndpoints: Array<ExternalPluginGrantedEndpointEntry>;
+  grantedEvents: Array<ExternalPluginGrantedEventEntry>;
 }
 
 interface ExternalPluginConfigurationUpdateRequest {
@@ -162,7 +176,7 @@ export {
   ExternalPluginAction,
   ExternalPluginFrontendBundle,
   ExternalPluginFrontendBundleType,
-  ExternalPluginManagementEndpoint,
+  ExternalPluginEndpoint,
   ExternalPluginPermissions,
   ExternalPluginManifest,
   ExternalPluginHostStatus,
@@ -177,6 +191,8 @@ export {
   ExternalPluginConfigurationUpdateRequest,
   ExternalPluginGrantedEndpointEntry,
   ExternalPluginGrantedEndpointResponse,
+  ExternalPluginGrantedEventEntry,
+  ExternalPluginGrantedEventResponse,
   ExternalPluginEndpointDescriptionQuery,
   ExternalPluginEndpointDescription,
   isExternalPluginKey,

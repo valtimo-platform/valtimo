@@ -227,8 +227,11 @@ export class EventConsumerManager {
     const configs = await this.configRegistry.list();
     for (const cfg of configs) {
       if (!cfg.eventBroker || brokerKey(cfg.eventBroker) !== key) continue;
-      const manifest = this.pluginManager.getManifest(cfg.pluginId, cfg.pluginVersion);
-      if (!manifest?.eventSubscriptions?.includes(type)) continue;
+      // Authoritative gate: only dispatch to configurations whose granted-event list (pushed by
+      // GZAC at activation and updated on each discovery) contains this CloudEvent type. The
+      // manifest's declaration is *not* consulted here — a plugin version that adds a new
+      // subscription type can never start receiving it without an admin re-grant.
+      if (!cfg.eventSubscriptions.includes(type)) continue;
 
       try {
         await this.pluginManager.callEvent(cfg.pluginId, cfg.pluginVersion, {

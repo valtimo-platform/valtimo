@@ -103,6 +103,14 @@ export async function runMigrations(pool: DbPool, logger: HostLogger): Promise<v
         );
       `,
     },
+    {
+      version: 3,
+      name: "add_event_subscriptions_to_plugin_configurations",
+      up: `
+        ALTER TABLE plugin_configurations
+          ADD COLUMN IF NOT EXISTS event_subscriptions JSONB NOT NULL DEFAULT '[]';
+      `,
+    },
   ];
 
   for (const migration of migrations) {

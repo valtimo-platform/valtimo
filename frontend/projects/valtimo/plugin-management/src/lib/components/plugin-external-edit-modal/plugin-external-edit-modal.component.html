@@ -72,7 +72,8 @@
 
     <div *ngIf="_$hasPermissionsStep()" [hidden]="currentStepIndex !== 1">
       <valtimo-plugin-external-permissions
-        [endpoints]="_$managementEndpoints()"
+        [endpoints]="_$endpoints()"
+        [eventSubscriptions]="_$eventSubscriptions()"
         [readonlyMode]="true"
         (validEvent)="onPermissionsValid($event)"
       ></valtimo-plugin-external-permissions>

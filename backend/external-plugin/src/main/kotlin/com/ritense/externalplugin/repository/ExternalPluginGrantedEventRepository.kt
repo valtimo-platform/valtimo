@@ -14,20 +14,15 @@
  * limitations under the License.
  */
 
-export type {
-  ActionInput,
-  ActionOutput,
-  ActionHandler,
-  EventInput,
-  EventOutput,
-  EventHandler,
-  PluginManifest,
-  ManifestAction,
-  ManifestActionProperty,
-  Endpoint,
-  FrontendBundle,
-  GzacApiResponse,
-  Document,
-  DocumentContent,
-  DocumentDefinitionId,
-} from "./types.js";
+package com.ritense.externalplugin.repository
+
+import com.ritense.externalplugin.domain.ExternalPluginGrantedEvent
+import org.springframework.data.jpa.repository.JpaRepository
+import java.util.UUID
+
+interface ExternalPluginGrantedEventRepository : JpaRepository<ExternalPluginGrantedEvent, UUID> {
+
+    fun findAllByConfigurationId(configurationId: UUID): List<ExternalPluginGrantedEvent>
+
+    fun deleteAllByConfigurationId(configurationId: UUID)
+}

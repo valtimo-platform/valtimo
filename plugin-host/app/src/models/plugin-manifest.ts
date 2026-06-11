@@ -18,6 +18,6 @@ export type {
   PluginManifest,
   ManifestAction,
   ManifestActionProperty,
-  ManagementEndpoint,
+  Endpoint,
   FrontendBundle,
 } from "@valtimo/plugin-sdk";

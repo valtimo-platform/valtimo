@@ -45,6 +45,13 @@ export interface PluginConfiguration {
    */
   gzacBaseUrl: string;
   /**
+   * CloudEvent types the admin granted this configuration at activation. The dispatch loop only
+   * invokes `handle_event` for types in this set, regardless of what the manifest declares — so a
+   * later manifest update that adds an event type cannot silently start delivering it. Empty
+   * (or absent) means the plugin receives no events.
+   */
+  eventSubscriptions: string[];
+  /**
    * Event broker of the owning GZAC instance. Absent when the instance has no broker configured —
    * the configuration then receives no platform events (actions still work).
    */

@@ -35,7 +35,8 @@
     <div [hidden]="currentStepIndex !== 1">
       <ng-container *ngIf="isExternalPlugin$ | async; else embeddedConfigure">
         <valtimo-plugin-external-configure
-          (managementEndpointsResolved)="onManagementEndpointsResolved($event)"
+          (endpointsResolved)="onEndpointsResolved($event)"
+          (eventSubscriptionsResolved)="onEventSubscriptionsResolved($event)"
           (validEvent)="onValid($event)"
           (saveEvent)="onExternalSave($event)"
         ></valtimo-plugin-external-configure>
@@ -51,9 +52,11 @@
 
     <div *ngIf="isExternal" [hidden]="currentStepIndex !== 2">
       <valtimo-plugin-external-permissions
-        [endpoints]="managementEndpoints$ | async"
+        [endpoints]="endpoints$ | async"
+        [eventSubscriptions]="eventSubscriptions$ | async"
         (validEvent)="onPermissionsValid($event)"
         (grantedEndpointsChange)="onGrantedEndpointsChange($event)"
+        (grantedEventsChange)="onGrantedEventsChange($event)"
       ></valtimo-plugin-external-permissions>
     </div>
   </section>
