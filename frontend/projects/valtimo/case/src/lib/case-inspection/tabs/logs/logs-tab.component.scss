@@ -17,12 +17,12 @@
 .case-inspection-logs-tab {
   display: flex;
   flex-direction: column;
-  gap: 1rem;
+  gap: var(--cds-spacing-05);
 
   &__filters {
     display: grid;
     grid-template-columns: minmax(200px, 1fr) minmax(140px, 200px) 220px 220px auto;
-    gap: 0.75rem;
+    gap: var(--cds-spacing-04);
     align-items: end;
   }
 
@@ -48,28 +48,28 @@
 
   &__filter-actions {
     display: flex;
-    gap: 0.5rem;
+    gap: var(--cds-spacing-03);
   }
 
   &__chip-row {
     display: flex;
     align-items: center;
-    gap: 0.5rem;
+    gap: var(--cds-spacing-03);
   }
 
   &__error {
-    color: var(--cds-support-error, #da1e28);
+    color: var(--cds-support-error);
   }
 
   &__empty {
-    color: var(--cds-text-secondary, #525252);
+    color: var(--cds-text-secondary);
     font-style: italic;
   }
 
   &__layout {
     display: grid;
     grid-template-columns: minmax(0, 1.5fr) minmax(340px, 1fr);
-    gap: 1rem;
+    gap: var(--cds-spacing-05);
   }
 
   &__list-panel {
@@ -80,22 +80,22 @@
     cursor: pointer;
 
     &--selected {
-      background-color: var(--cds-layer-selected, #e0e0e0);
+      background-color: var(--cds-layer-selected);
     }
 
     &:hover {
-      background-color: var(--cds-layer-hover, #e8e8e8);
+      background-color: var(--cds-layer-hover);
     }
   }
 
   &__col-timestamp {
-    flex: 0 0 8rem;
-    max-width: 8rem;
+    flex: 0 0 128px;
+    max-width: 128px;
   }
 
   &__col-level {
-    flex: 0 0 6rem;
-    max-width: 6rem;
+    flex: 0 0 96px;
+    max-width: 96px;
   }
 
   &__col-message {
@@ -113,20 +113,20 @@
   }
 
   &__pagination {
-    margin-top: 0.5rem;
+    margin-top: var(--cds-spacing-03);
   }
 
   &__detail {
-    background-color: var(--cds-layer, #f4f4f4);
-    border: 1px solid var(--cds-border-subtle, #e0e0e0);
-    padding: 1rem;
+    background-color: var(--cds-layer);
+    border: 1px solid var(--cds-border-subtle);
+    padding: var(--cds-spacing-05);
     overflow: auto;
-    max-height: 32rem;
+    max-height: 512px;
 
     h4 {
-      margin-top: 1rem;
-      margin-bottom: 0.5rem;
-      font-size: 0.875rem;
+      margin-top: var(--cds-spacing-05);
+      margin-bottom: var(--cds-spacing-03);
+      font-size: var(--cds-body-compact-01-font-size);
       font-weight: 600;
     }
   }
@@ -134,55 +134,51 @@
   &__detail-header {
     display: flex;
     align-items: center;
-    gap: 0.5rem;
+    gap: var(--cds-spacing-03);
   }
 
   &__detail-timestamp {
-    color: var(--cds-text-secondary, #525252);
-    font-size: 0.75rem;
+    color: var(--cds-text-secondary);
+    font-size: var(--cds-helper-text-01-font-size);
   }
 
   &__detail-message {
-    margin: 0.75rem 0;
-    padding: 0.5rem;
-    background-color: var(--cds-background, #ffffff);
-    border: 1px solid var(--cds-border-subtle, #e0e0e0);
+    margin: var(--cds-spacing-04) 0;
+    padding: var(--cds-spacing-03);
+    background-color: var(--cds-background);
+    border: 1px solid var(--cds-border-subtle);
     white-space: pre-wrap;
     word-break: break-word;
-    font-size: 0.75rem;
+    font-size: var(--cds-helper-text-01-font-size);
   }
 
   &__detail-properties {
     display: grid;
     grid-template-columns: max-content 1fr;
-    gap: 0.25rem 0.75rem;
+    gap: var(--cds-spacing-02) var(--cds-spacing-04);
 
     dt {
-      color: var(--cds-text-secondary, #525252);
+      color: var(--cds-text-secondary);
     }
 
     dt,
     dd {
       margin: 0;
-      font-size: 0.75rem;
+      font-size: var(--cds-helper-text-01-font-size);
       word-break: break-all;
     }
   }
 
   &__detail-stacktrace {
     margin: 0;
-    padding: 0.5rem;
-    background-color: var(--cds-background, #ffffff);
-    border: 1px solid var(--cds-border-subtle, #e0e0e0);
+    padding: var(--cds-spacing-03);
+    background-color: var(--cds-background);
+    border: 1px solid var(--cds-border-subtle);
     white-space: pre-wrap;
     word-break: break-word;
-    font-family: var(
-      --cds-code-01-font-family,
-      'IBM Plex Mono',
-      monospace
-    );
-    font-size: 0.75rem;
-    max-height: 16rem;
+    font-family: var(--cds-code-01-font-family);
+    font-size: var(--cds-helper-text-01-font-size);
+    max-height: 256px;
     overflow: auto;
   }
 }

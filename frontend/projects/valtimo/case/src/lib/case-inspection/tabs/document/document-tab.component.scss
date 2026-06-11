@@ -16,8 +16,8 @@
 
 .case-inspection-document-tab {
   &__error {
-    color: var(--cds-text-error, #da1e28);
-    margin-top: var(--cds-spacing-03, 0.5rem);
+    color: var(--cds-text-error);
+    margin-top: var(--cds-spacing-03);
   }
 }
 
@@ -25,6 +25,6 @@
   display: flex;
   justify-content: center;
   width: 100%;
-  margin-top: 16px;
-  margin-bottom: 16px;
+  margin-top: var(--cds-spacing-05);
+  margin-bottom: var(--cds-spacing-05);
 }

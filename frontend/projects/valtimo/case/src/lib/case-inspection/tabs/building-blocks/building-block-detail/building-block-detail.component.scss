@@ -16,16 +16,16 @@
 
 .case-inspection-bb-detail {
   &__header {
-    margin-bottom: var(--cds-spacing-05, 1rem);
+    margin-bottom: var(--cds-spacing-05);
 
     h3 {
       margin: 0;
 
       small {
         font-weight: 400;
-        color: var(--cds-text-helper, #6f6f6f);
-        margin-left: var(--cds-spacing-03, 0.5rem);
-        font-size: var(--cds-body-compact-01-font-size, 0.875rem);
+        color: var(--cds-text-helper);
+        margin-left: var(--cds-spacing-03);
+        font-size: var(--cds-body-compact-01-font-size);
       }
     }
   }
@@ -35,27 +35,27 @@
   }
 
   &__subhead {
-    margin: var(--cds-spacing-06, 1.25rem) 0 var(--cds-spacing-03, 0.5rem);
-    font-size: var(--cds-body-compact-01-font-size, 0.875rem);
+    margin: var(--cds-spacing-06) 0 var(--cds-spacing-03);
+    font-size: var(--cds-body-compact-01-font-size);
     font-weight: 600;
-    color: var(--cds-text-secondary, #525252);
+    color: var(--cds-text-secondary);
   }
 
   &__error {
-    color: var(--cds-text-error, #da1e28);
+    color: var(--cds-text-error);
   }
 
   &__view-logs {
     background: none;
     border: none;
-    color: var(--cds-link-primary, #0f62fe);
+    color: var(--cds-link-primary);
     cursor: pointer;
-    font-size: 0.75rem;
-    padding: 0 0 0 0.5rem;
+    font-size: var(--cds-helper-text-01-font-size);
+    padding: 0 0 0 var(--cds-spacing-03);
     text-decoration: underline;
 
     &:hover {
-      color: var(--cds-link-primary-hover, #0043ce);
+      color: var(--cds-link-primary-hover);
     }
   }
 }

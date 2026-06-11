@@ -16,25 +16,25 @@
 
 .case-inspection-process-detail {
   &__header {
-    margin-bottom: var(--cds-spacing-05, 1rem);
+    margin-bottom: var(--cds-spacing-05);
 
     h3 {
       margin: 0;
 
       small {
         font-weight: 400;
-        color: var(--cds-text-helper, #6f6f6f);
-        margin-left: var(--cds-spacing-03, 0.5rem);
-        font-size: var(--cds-body-compact-01-font-size, 0.875rem);
+        color: var(--cds-text-helper);
+        margin-left: var(--cds-spacing-03);
+        font-size: var(--cds-body-compact-01-font-size);
       }
     }
   }
 
   &__tags {
     display: flex;
-    gap: var(--cds-spacing-03, 0.5rem);
+    gap: var(--cds-spacing-03);
     flex-wrap: wrap;
-    margin-top: var(--cds-spacing-03, 0.5rem);
+    margin-top: var(--cds-spacing-03);
   }
 
   &__meta code {
@@ -42,40 +42,40 @@
   }
 
   &__subhead {
-    margin: var(--cds-spacing-06, 1.25rem) 0 var(--cds-spacing-03, 0.5rem);
-    font-size: var(--cds-body-compact-01-font-size, 0.875rem);
+    margin: var(--cds-spacing-06) 0 var(--cds-spacing-03);
+    font-size: var(--cds-body-compact-01-font-size);
     font-weight: 600;
-    color: var(--cds-text-secondary, #525252);
+    color: var(--cds-text-secondary);
   }
 
   &__subhead-row {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: var(--cds-spacing-05, 1rem);
+    gap: var(--cds-spacing-05);
   }
 
   &__variable-row {
     display: flex;
     align-items: flex-start;
     justify-content: space-between;
-    gap: var(--cds-spacing-05, 1rem);
+    gap: var(--cds-spacing-05);
   }
 
   &__variable-actions {
     display: flex;
     flex-shrink: 0;
-    gap: var(--cds-spacing-02, 0.25rem);
+    gap: var(--cds-spacing-02);
   }
 
   &__empty {
-    color: var(--cds-text-helper, #6f6f6f);
+    color: var(--cds-text-helper);
   }
 
   &__variable-value {
     overflow-wrap: anywhere;
     white-space: pre-wrap;
-    max-height: 6em;
+    max-height: 96px;
     overflow: hidden;
     display: -webkit-box;
     -webkit-line-clamp: 4;
@@ -84,12 +84,12 @@
   }
 
   &__pane {
-    padding-top: var(--cds-spacing-05, 1rem);
+    padding-top: var(--cds-spacing-05);
   }
 
   &__diagram {
     height: 480px;
-    border: 1px solid var(--cds-border-subtle, #e0e0e0);
+    border: 1px solid var(--cds-border-subtle);
 
     valtimo-process-diagram,
     .process-diagram-container,

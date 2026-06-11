@@ -30,7 +30,7 @@ import {TranslateModule, TranslateService} from '@ngx-translate/core';
 import {PermissionService} from '@valtimo/access-control';
 import {BreadcrumbService, PageTitleService} from '@valtimo/components';
 import {DocumentService} from '@valtimo/document';
-import {forkJoin, Subscription, switchMap, take} from 'rxjs';
+import {catchError, of, Subscription, take} from 'rxjs';
 import {TabsModule} from 'carbon-components-angular';
 import {
   CAN_INSPECT_CASE_PERMISSION,
@@ -109,41 +109,36 @@ export class CaseInspectionComponent implements OnInit, OnDestroy {
     this.restoreTabFromQueryParam();
 
     this._subscriptions.add(
-      this.route.paramMap
-        .pipe(
-          take(1),
-          switchMap((params: ParamMap) => {
-            const documentId = params.get('documentId') ?? '';
-            const caseDefinitionKey = params.get('caseDefinitionKey') ?? '';
-            this.$documentId.set(documentId);
-            this.$caseDefinitionKey.set(caseDefinitionKey);
+      this.route.paramMap.pipe(take(1)).subscribe((params: ParamMap) => {
+        const documentId = params.get('documentId') ?? '';
+        const caseDefinitionKey = params.get('caseDefinitionKey') ?? '';
+        this.$documentId.set(documentId);
+        this.$caseDefinitionKey.set(caseDefinitionKey);
 
-            return forkJoin({
-              allowed: this.permissionService.requestPermission(CAN_INSPECT_CASE_PERMISSION, {
-                resource: CASE_DETAIL_PERMISSION_RESOURCE.jsonSchemaDocument,
-                identifier: documentId,
-              }),
-              definition: this.documentService.getDocumentDefinition(caseDefinitionKey),
-            });
+        this.permissionService
+          .requestPermission(CAN_INSPECT_CASE_PERMISSION, {
+            resource: CASE_DETAIL_PERMISSION_RESOURCE.jsonSchemaDocument,
+            identifier: documentId,
           })
-        )
-        .subscribe({
-          next: ({allowed, definition}) => {
-            if (!allowed) {
+          .pipe(take(1))
+          .subscribe({
+            next: allowed => {
+              if (!allowed) {
+                this.$accessDenied.set(true);
+                this.$loading.set(false);
+                this.router.navigate(['/cases']);
+                return;
+              }
+              this.$loading.set(false);
+              this.loadBreadcrumbs(caseDefinitionKey);
+            },
+            error: () => {
               this.$accessDenied.set(true);
               this.$loading.set(false);
               this.router.navigate(['/cases']);
-              return;
-            }
-            this.$loading.set(false);
-            this.initBreadcrumbs(definition.schema.title);
-          },
-          error: () => {
-            this.$accessDenied.set(true);
-            this.$loading.set(false);
-            this.router.navigate(['/cases']);
-          },
-        })
+            },
+          });
+      })
     );
   }
 
@@ -172,6 +167,19 @@ export class CaseInspectionComponent implements OnInit, OnDestroy {
   public onViewProcessLogs(processInstanceId: string): void {
     this.$pendingProcessInstanceLogFilter.set(processInstanceId);
     this.onTabSelected(CaseInspectionTab.LOGS);
+  }
+
+  private loadBreadcrumbs(caseDefinitionKey: string): void {
+    this.documentService
+      .getDocumentDefinition(caseDefinitionKey)
+      .pipe(
+        take(1),
+        catchError(() => of(null))
+      )
+      .subscribe(definition => {
+        const title = definition?.schema?.title ?? caseDefinitionKey;
+        this.initBreadcrumbs(title);
+      });
   }
 
   private initBreadcrumbs(caseDefinitionTitle: string): void {
