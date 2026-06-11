@@ -20,12 +20,16 @@
     [formGroup]="formGroup"
     (ngSubmit)="onApplyFilter()"
   >
-    <cds-text-label class="case-inspection-logs-tab__filter case-inspection-logs-tab__filter--message">
+    <cds-text-label
+      class="case-inspection-logs-tab__filter case-inspection-logs-tab__filter--message"
+    >
       {{ 'case.inspection.logs.filters.message' | translate }}
+
       <input
         cdsText
         formControlName="likeFormattedMessage"
         [placeholder]="'case.inspection.logs.filters.messagePlaceholder' | translate"
+        cdsLayer="1"
       />
     </cds-text-label>
 
@@ -34,6 +38,8 @@
       formControlName="level"
       [label]="'case.inspection.logs.filters.level' | translate"
       [placeholder]="'case.inspection.logs.filters.levelPlaceholder' | translate"
+      [dropUp]="false"
+      cdsLayer="1"
     >
       <cds-dropdown-list [items]="logLevelItems"></cds-dropdown-list>
     </cds-dropdown>
@@ -45,6 +51,7 @@
       [dateFormat]="'d-m-Y H:i'"
       [flatpickrOptions]="{enableTime: true, time_24hr: true}"
       placeholder="DD-MM-YYYY HH:mm"
+      cdsLayer="1"
       (valueChange)="onAfterDateSelected($event)"
     ></cds-date-picker>
 
@@ -55,6 +62,7 @@
       [dateFormat]="'d-m-Y H:i'"
       [flatpickrOptions]="{enableTime: true, time_24hr: true}"
       placeholder="DD-MM-YYYY HH:mm"
+      cdsLayer="1"
       (valueChange)="onBeforeDateSelected($event)"
     ></cds-date-picker>
 
@@ -76,12 +84,7 @@
         <code>{{ processInstanceId }}</code>
       </cds-tag>
 
-      <button
-        cdsButton="ghost"
-        size="sm"
-        type="button"
-        (click)="onClearProcessInstanceFilter()"
-      >
+      <button cdsButton="ghost" size="sm" type="button" (click)="onClearProcessInstanceFilter()">
         {{ 'case.inspection.logs.filters.clearProcessInstance' | translate }}
       </button>
     </div>
@@ -91,20 +94,15 @@
     <p class="case-inspection-logs-tab__error">{{ message }}</p>
   </ng-container>
 
-  <ng-container *ngIf="$loading()">
-    <p>{{ 'case.inspection.logs.loading' | translate }}</p>
-  </ng-container>
+  <div *ngIf="$loading()" class="loading-container">
+    <cds-loading size="sm"></cds-loading>
+  </div>
 
   <ng-container *ngIf="!$loading() && !$errorMessage()">
-    <p
-      *ngIf="$rows().length === 0"
-      class="case-inspection-logs-tab__empty"
-    >
+    <p *ngIf="$rows().length === 0" class="case-inspection-logs-tab__empty">
       {{
-        ($hasActiveSearch()
-          ? 'case.inspection.logs.emptyFiltered'
-          : 'case.inspection.logs.empty'
-        ) | translate
+        ($hasActiveSearch() ? 'case.inspection.logs.emptyFiltered' : 'case.inspection.logs.empty')
+          | translate
       }}
     </p>
 
@@ -153,7 +151,9 @@
 
       <aside class="case-inspection-logs-tab__detail" *ngIf="$selected() as selected">
         <header class="case-inspection-logs-tab__detail-header">
-          <cds-tag size="sm" [type]="LEVEL_TAG[selected.level] || 'gray'">{{ selected.level }}</cds-tag>
+          <cds-tag size="sm" [type]="LEVEL_TAG[selected.level] || 'gray'">{{
+            selected.level
+          }}</cds-tag>
           <span class="case-inspection-logs-tab__detail-timestamp">
             {{ selected.timestamp | date: 'dd-MM-yyyy HH:mm:ss' }}
           </span>
@@ -164,8 +164,12 @@
         <h4>{{ 'case.inspection.logs.detail.properties' | translate }}</h4>
         <dl class="case-inspection-logs-tab__detail-properties">
           <ng-container *ngFor="let prop of selected.properties">
-            <dt><code>{{ prop.key }}</code></dt>
-            <dd><code>{{ prop.value }}</code></dd>
+            <dt>
+              <code>{{ prop.key }}</code>
+            </dt>
+            <dd>
+              <code>{{ prop.value }}</code>
+            </dd>
           </ng-container>
         </dl>
 

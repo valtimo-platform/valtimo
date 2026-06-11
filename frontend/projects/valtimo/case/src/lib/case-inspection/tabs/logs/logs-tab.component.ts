@@ -35,7 +35,9 @@ import {
   DropdownModule,
   IconModule,
   InputModule,
+  LayerModule,
   ListItem,
+  LoadingModule,
   PaginationModule,
   StructuredListModule,
   TagModule,
@@ -69,6 +71,8 @@ const PROCESS_INSTANCE_MDC_KEY = 'processInstanceId';
     PaginationModule,
     StructuredListModule,
     TagModule,
+    LoadingModule,
+    LayerModule,
   ],
 })
 export class CaseInspectionLogsTabComponent implements OnInit, OnChanges {
@@ -87,7 +91,7 @@ export class CaseInspectionLogsTabComponent implements OnInit, OnChanges {
   public readonly $activeProcessInstanceFilter = signal<string | null>(null);
   public readonly $hasActiveSearch = signal<boolean>(false);
 
-  public readonly pageSize = 25;
+  public readonly pageSize = 10;
 
   public readonly LEVEL_TAG = CASE_INSPECTION_LOG_LEVEL_TAG;
 
