@@ -27,6 +27,7 @@ import {
 } from '@angular/core';
 import {ReactiveFormsModule} from '@angular/forms';
 import {ActivatedRoute, Router} from '@angular/router';
+import {Deploy16, ListChecked16, Return16} from '@carbon/icons';
 import {TranslateModule, TranslateService} from '@ngx-translate/core';
 import {
   BreadcrumbService,
@@ -316,6 +317,7 @@ export class ProcessManagementBuilderComponent implements AfterViewInit, OnDestr
     private readonly editPermissionsService: EditPermissionsService,
     private readonly processLinkBuildingBlockApiService: ProcessLinkBuildingBlockApiService
   ) {
+    this.iconService.registerAll([Deploy16, ListChecked16, Return16]);
     this.setProcessManagementWindow();
   }
 
@@ -352,6 +354,41 @@ export class ProcessManagementBuilderComponent implements AfterViewInit, OnDestr
         link.click();
         window.URL.revokeObjectURL(link.href);
         link.remove();
+      });
+  }
+
+  public validateProcessDefinition(isReadOnlyProcess: boolean): void {
+    combineLatest([
+      from(isReadOnlyProcess ? this._bpmnViewer.saveXML() : this._bpmnModeler.saveXML()),
+      this.processManagementEditorService.processLinksForSelectedDefinition$,
+    ])
+      .pipe(
+        take(1),
+        switchMap(([result, processLinks]) => {
+          const xml = this.applyDraftState(result?.xml ?? '') ?? '';
+          return this.processManagementService.validateProcessDefinition({
+            bpmnXml: xml,
+            processLinks: processLinks.map(link => ({
+              ...link,
+              processDefinitionId: '-',
+            })),
+          });
+        })
+      )
+      .subscribe({
+        next: validationResult => {
+          this.highlightValidationErrors(validationResult.errors);
+          if (!validationResult.isValid) {
+            this.showNotification('validationError');
+          } else if (validationResult.hasWarnings) {
+            this.showNotification('validationWarning');
+          } else {
+            this.showNotification('validationSuccess');
+          }
+        },
+        error: () => {
+          this.showNotification('error');
+        },
       });
   }
 
@@ -552,6 +589,12 @@ export class ProcessManagementBuilderComponent implements AfterViewInit, OnDestr
   }
 
   private validateAndDeploy(isReadOnlyProcess: boolean, deployAction: () => void): void {
+    // Skip validation for draft processes
+    if (this.draft$.getValue()) {
+      deployAction();
+      return;
+    }
+
     combineLatest([
       from(isReadOnlyProcess ? this._bpmnViewer.saveXML() : this._bpmnModeler.saveXML()),
       this.processManagementEditorService.processLinksForSelectedDefinition$,
@@ -603,9 +646,18 @@ export class ProcessManagementBuilderComponent implements AfterViewInit, OnDestr
   }
 
   private showNotification(
-    notification: null | 'success' | 'error' | 'alreadyExists' | 'validationError'
+    notification: null | 'success' | 'error' | 'alreadyExists' | 'validationError' | 'validationWarning' | 'validationSuccess'
   ): void {
-    const type = notification === 'alreadyExists' || notification === 'validationError' ? 'error' : notification;
+    let type: 'success' | 'error' | 'warning' | null = null;
+    if (notification === 'alreadyExists' || notification === 'validationError') {
+      type = 'error';
+    } else if (notification === 'validationWarning') {
+      type = 'warning';
+    } else if (notification === 'success' || notification === 'validationSuccess') {
+      type = 'success';
+    } else {
+      type = notification;
+    }
     this.notificationService.showToast({
       caption: this.translateService.instant(`processManagement.${notification}Notification`),
       type,

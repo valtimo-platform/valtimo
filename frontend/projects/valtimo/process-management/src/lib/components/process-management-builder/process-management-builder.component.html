@@ -193,15 +193,33 @@
           ></cds-tooltip>
         }
 
+        <v-overflow-menu class="overflow-button" placement="bottom-end">
+          <v-overflow-menu-trigger overflowTrigger></v-overflow-menu-trigger>
+          <v-overflow-menu-option
+                  [disabled]="actionsObs.loading"
+                  (selected)="export(actionsObs.isReadOnlyProcess)"
+          >{{ 'interface.export' | translate }}
+          </v-overflow-menu-option>
+        </v-overflow-menu>
+
         <button
           *ngIf="actionsObs.context === 'case'"
-          cdsButton="secondary"
+          cdsButton="tertiary"
           [size]="actionsObs.compactMode ? 'sm' : 'md'"
           (click)="navigateBack(null)"
         >
-          <svg class="cds--btn__icon" cdsIcon="arrow--left" size="16"></svg>
+          {{ 'interface.back' | translate }}
+          <svg class="cds--btn__icon" cdsIcon="return" size="16"></svg>
+        </button>
 
-          <span>{{ 'interface.back' | translate }}</span>
+        <button
+          cdsButton="secondary"
+          [size]="actionsObs.compactMode ? 'sm' : 'md'"
+          [disabled]="actionsObs.loading || actionsObs.draft"
+          (click)="validateProcessDefinition(actionsObs.isReadOnlyProcess)"
+        >
+          {{ 'processManagement.validate' | translate }}
+          <svg class="cds--btn__icon" cdsIcon="list--checked" size="16"></svg>
         </button>
 
         <button
@@ -219,15 +237,6 @@
 
           <svg class="cds--btn__icon" cdsIcon="deploy" size="16"></svg>
         </button>
-
-        <v-overflow-menu class="overflow-button" placement="bottom-end">
-          <v-overflow-menu-trigger overflowTrigger></v-overflow-menu-trigger>
-          <v-overflow-menu-option
-            [disabled]="actionsObs.loading"
-            (selected)="export(actionsObs.isReadOnlyProcess)"
-            >{{ 'interface.export' | translate }}
-          </v-overflow-menu-option>
-        </v-overflow-menu>
       </div>
     </div>
   </ng-template>
