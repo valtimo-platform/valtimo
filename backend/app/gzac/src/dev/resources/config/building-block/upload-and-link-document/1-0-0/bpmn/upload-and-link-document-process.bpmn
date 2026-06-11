@@ -1,77 +1,64 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:camunda="http://camunda.org/schema/1.0/bpmn" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" id="Definitions_1" targetNamespace="http://bpmn.io/schema/bpmn" exporter="Camunda Modeler" exporterVersion="5.23.0">
-  <bpmn:collaboration id="DocumentUploadAndLinkProcess">
+  <bpmn:collaboration id="DocumentUploadAndLinkProcess" isClosed="false">
     <bpmn:participant id="UploadLinkDocument" name="Document uploaden en koppelen" processRef="upload-and-link-document-process" />
   </bpmn:collaboration>
-  <bpmn:process id="upload-and-link-document-process" name="Bestand koppelen" processType="None" isClosed="false" isExecutable="true" camunda:versionTag="CD:bezwaar:1.0.1">
-    <bpmn:sequenceFlow id="Flow_11vuyzp" sourceRef="StartEvent" targetRef="UploadToDocumentenAPITask" />
-    <bpmn:sequenceFlow id="Flow_17qrvlq" sourceRef="SecondCheckTask" targetRef="Event_0pluhoi" />
-    <bpmn:sequenceFlow id="Flow_0wmnep7" sourceRef="LinkToCaseTask" targetRef="SecondCheckTask" />
-    <bpmn:sequenceFlow id="Flow_0t2bxg8" sourceRef="UploadToDocumentenAPITask" targetRef="LinkToCaseTask" />
-    <bpmn:startEvent id="StartEvent" name="starten maar">
+  <bpmn:process id="upload-and-link-document-process" name="Bestand uploaden en koppelen" processType="None" isClosed="false" isExecutable="true" camunda:versionTag="BB:upload-and-link-document:1.0.0">
+    <bpmn:startEvent id="StartEvent">
       <bpmn:outgoing>Flow_11vuyzp</bpmn:outgoing>
     </bpmn:startEvent>
-    <bpmn:serviceTask id="UploadToDocumentenAPITask" name="Upload document" implementation="##WebService" camunda:expression="${true}">
+    <bpmn:sequenceFlow id="Flow_11vuyzp" sourceRef="StartEvent" targetRef="UploadDocumentTask" />
+    <bpmn:sequenceFlow id="Flow_1h32p5m" sourceRef="UploadDocumentTask" targetRef="LinkToCaseTask" />
+    <bpmn:serviceTask id="UploadDocumentTask" name="upload document" implementation="##unspecified" camunda:expression="${true}">
       <bpmn:incoming>Flow_11vuyzp</bpmn:incoming>
-      <bpmn:outgoing>Flow_0t2bxg8</bpmn:outgoing>
+      <bpmn:outgoing>Flow_1h32p5m</bpmn:outgoing>
     </bpmn:serviceTask>
-    <bpmn:serviceTask id="LinkToCaseTask" name="link to zaak" camunda:asyncAfter="true" implementation="##WebService" camunda:expression="${true}">
-      <bpmn:incoming>Flow_0t2bxg8</bpmn:incoming>
-      <bpmn:outgoing>Flow_0wmnep7</bpmn:outgoing>
+    <bpmn:sequenceFlow id="Flow_19u2cwb" sourceRef="LinkToCaseTask" targetRef="Event_0pluhoi" />
+    <bpmn:serviceTask id="LinkToCaseTask" name="koppel document" camunda:asyncAfter="true" implementation="##WebService" camunda:expression="${null}">
+      <bpmn:incoming>Flow_1h32p5m</bpmn:incoming>
+      <bpmn:outgoing>Flow_19u2cwb</bpmn:outgoing>
     </bpmn:serviceTask>
-    <bpmn:userTask id="SecondCheckTask" name="check" implementation="##unspecified">
-      <bpmn:incoming>Flow_0wmnep7</bpmn:incoming>
-      <bpmn:outgoing>Flow_17qrvlq</bpmn:outgoing>
-    </bpmn:userTask>
     <bpmn:endEvent id="Event_0pluhoi">
-      <bpmn:incoming>Flow_17qrvlq</bpmn:incoming>
+      <bpmn:incoming>Flow_19u2cwb</bpmn:incoming>
     </bpmn:endEvent>
   </bpmn:process>
   <bpmndi:BPMNDiagram id="BPMNDiagram_1">
     <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="DocumentUploadAndLinkProcess">
       <bpmndi:BPMNShape id="Participant_1m27u71_di" bpmnElement="UploadLinkDocument" isHorizontal="true">
-        <dc:Bounds x="160" y="80" width="730" height="150" />
+        <dc:Bounds x="160" y="80" width="580" height="150" />
         <bpmndi:BPMNLabel />
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="_BPMNShape_StartEvent_2" bpmnElement="StartEvent">
-        <dc:Bounds x="242" y="132" width="36" height="36" />
+        <dc:Bounds x="232" y="132" width="36" height="36" />
         <bpmndi:BPMNLabel>
-          <dc:Bounds x="229" y="108" width="62" height="14" />
+          <dc:Bounds x="219" y="108" width="62" height="14" />
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Activity_1x1a1na_di" bpmnElement="UploadToDocumentenAPITask">
-        <dc:Bounds x="330" y="110" width="100" height="80" />
+      <bpmndi:BPMNShape id="Activity_0brfqi1_di" bpmnElement="UploadDocumentTask">
+        <dc:Bounds x="320" y="110" width="100" height="80" />
         <bpmndi:BPMNLabel />
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Activity_0eyijav_di" bpmnElement="LinkToCaseTask">
-        <dc:Bounds x="490" y="110" width="100" height="80" />
-        <bpmndi:BPMNLabel />
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Activity_1knz5uw_di" bpmnElement="SecondCheckTask">
-        <dc:Bounds x="640" y="110" width="100" height="80" />
+      <bpmndi:BPMNShape id="Activity_087hxz0_di" bpmnElement="LinkToCaseTask">
+        <dc:Bounds x="480" y="110" width="100" height="80" />
         <bpmndi:BPMNLabel />
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="Event_0pluhoi_di" bpmnElement="Event_0pluhoi">
-        <dc:Bounds x="802" y="132" width="36" height="36" />
+        <dc:Bounds x="642" y="132" width="36" height="36" />
         <bpmndi:BPMNLabel>
           <dc:Bounds x="356" y="145" width="89" height="14" />
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNShape>
       <bpmndi:BPMNEdge id="Flow_11vuyzp_di" bpmnElement="Flow_11vuyzp">
-        <di:waypoint x="278" y="150" />
-        <di:waypoint x="330" y="150" />
+        <di:waypoint x="268" y="150" />
+        <di:waypoint x="320" y="150" />
       </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="Flow_17qrvlq_di" bpmnElement="Flow_17qrvlq">
-        <di:waypoint x="740" y="150" />
-        <di:waypoint x="802" y="150" />
+      <bpmndi:BPMNEdge id="Flow_1h32p5m_di" bpmnElement="Flow_1h32p5m">
+        <di:waypoint x="420" y="150" />
+        <di:waypoint x="480" y="150" />
       </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="Flow_0wmnep7_di" bpmnElement="Flow_0wmnep7">
-        <di:waypoint x="590" y="150" />
-        <di:waypoint x="640" y="150" />
-      </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="Flow_0t2bxg8_di" bpmnElement="Flow_0t2bxg8">
-        <di:waypoint x="430" y="150" />
-        <di:waypoint x="490" y="150" />
+      <bpmndi:BPMNEdge id="Flow_19u2cwb_di" bpmnElement="Flow_19u2cwb">
+        <di:waypoint x="580" y="150" />
+        <di:waypoint x="642" y="150" />
       </bpmndi:BPMNEdge>
     </bpmndi:BPMNPlane>
   </bpmndi:BPMNDiagram>

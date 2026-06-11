@@ -51,7 +51,8 @@
             "input": true,
             "label": "Beschrijving",
             "tableView": true,
-            "placeholder": "beschrijving"
+            "placeholder": "beschrijving",
+            "defaultValue": "beschrijving van het bestand"
         },
         {
             "key": "pv.title",
@@ -59,29 +60,8 @@
             "input": true,
             "label": "Titel",
             "tableView": true,
-            "placeholder": "titel"
-        },
-        {
-            "key": "pv.storedDocumentUrl",
-            "type": "textfield",
-            "input": true,
-            "label": "Titel",
-            "tableView": true,
-            "defaultValue": "storedDocumentUrl",
-            "validate": {
-                "required": true
-            }
-        },
-        {
-            "key": "pv.tempDocumentLocationId",
-            "type": "textfield",
-            "input": true,
-            "label": "tijdelijke Document Locatie id",
-            "tableView": true,
-            "defaultValue": "tempDocumentLocationId",
-            "validate": {
-                "required": true
-            }
+            "placeholder": "titel",
+            "defaultValue": "de titel van het bestand"
         },
         {
             "key": "submit",

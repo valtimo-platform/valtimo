@@ -11,14 +11,18 @@
       <bpmn:incoming>Flow_11vuyzp</bpmn:incoming>
       <bpmn:outgoing>Flow_08p7bm9</bpmn:outgoing>
     </bpmn:serviceTask>
-    <bpmn:callActivity id="CallUploadAndLinkBB" name="Call Upload and Link BB" calledElement="upload-and-link-document-process" camunda:calledElementBinding="versionTag" camunda:calledElementVersionTag="BB:upload-and-link-document:1.0.0">
+    <bpmn:callActivity id="CallUploadAndLinkActivity" name="Call Upload and Link BB" calledElement="upload-and-link-document-process" camunda:calledElementBinding="versionTag" camunda:calledElementVersionTag="BB:upload-and-link-document:1.0.0">
       <bpmn:extensionElements>
-        <camunda:in businessKey="#{buildingBlockDocumentId}" />
+        <camunda:in source="informationObjectTypeUrl" target="informationObjectTypeUrl" />
+        <camunda:in source="temporaryDocumentId" target="temporaryDocumentId" />
+        <camunda:inputOutput>
+          <camunda:inputParameter name="informationObjectTypeUrl">http://localhost:8001/catalogi/api/v1/informatieobjecttypen/efc332f2-be3b-4bad-9e3c-49a6219c92ad</camunda:inputParameter>
+        </camunda:inputOutput>
       </bpmn:extensionElements>
       <bpmn:incoming>Flow_0a4d81k</bpmn:incoming>
       <bpmn:outgoing>Flow_0ob11xp</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:serviceTask id="StoreContentTask" name="Store content" implementation="##WebService" camunda:expression="${resourceStorageDelegate.storeResolvableContent(&#39;pv:testcontent&#39;)}" camunda:resultVariable="textResourceId">
+    <bpmn:serviceTask id="StoreContentTask" name="Store content" implementation="##WebService" camunda:expression="${resourceStorageDelegate.storeResolvableContent(&#39;test met deze content&#39;)}" camunda:resultVariable="temporaryDocumentId">
       <bpmn:incoming>Flow_08p7bm9</bpmn:incoming>
       <bpmn:outgoing>Flow_0a4d81k</bpmn:outgoing>
     </bpmn:serviceTask>
@@ -27,8 +31,8 @@
     </bpmn:endEvent>
     <bpmn:sequenceFlow id="Flow_11vuyzp" sourceRef="BestandUploadVoorbereidenStartTask" targetRef="SetContentTask" />
     <bpmn:sequenceFlow id="Flow_08p7bm9" sourceRef="SetContentTask" targetRef="StoreContentTask" />
-    <bpmn:sequenceFlow id="Flow_0a4d81k" sourceRef="StoreContentTask" targetRef="CallUploadAndLinkBB" />
-    <bpmn:sequenceFlow id="Flow_0ob11xp" sourceRef="CallUploadAndLinkBB" targetRef="Event_0pluhoi" />
+    <bpmn:sequenceFlow id="Flow_0a4d81k" sourceRef="StoreContentTask" targetRef="CallUploadAndLinkActivity" />
+    <bpmn:sequenceFlow id="Flow_0ob11xp" sourceRef="CallUploadAndLinkActivity" targetRef="Event_0pluhoi" />
   </bpmn:process>
   <bpmndi:BPMNDiagram id="BPMNDiagram_1">
     <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="Collaboration_156ynbw">
@@ -46,7 +50,7 @@
         <dc:Bounds x="295" y="80" width="100" height="80" />
         <bpmndi:BPMNLabel />
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Activity_0bj326v_di" bpmnElement="CallUploadAndLinkBB">
+      <bpmndi:BPMNShape id="Activity_0bj326v_di" bpmnElement="CallUploadAndLinkActivity">
         <dc:Bounds x="605" y="80" width="100" height="80" />
         <bpmndi:BPMNLabel />
       </bpmndi:BPMNShape>

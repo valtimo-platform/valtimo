@@ -8,5 +8,43 @@
         "formSize": "medium",
         "subtitles": null,
         "processLinkType": "form"
+    },
+    {
+        "activityId": "CallUploadAndLinkActivity",
+        "activityType": "bpmn:CallActivity:start",
+        "processLinkType": "building-block",
+        "buildingBlockDefinitionKey": "upload-and-link-document",
+        "buildingBlockDefinitionVersionTag": "1.0.0",
+        "pluginConfigurationMappings": {
+            "documentenapi": "5474fe57-532a-4050-8d89-32e62ca3e895",
+            "zakenapi": "3079d6fe-42e3-4f8f-a9db-52ce2507b7ee"
+        },
+        "inputMappings": [
+            {
+                "source": "pv:fileName",
+                "target": "doc:/fileName"
+            },
+            {
+                "source": "pv:title",
+                "target": "doc:/title"
+            },
+            {
+                "source": "pv:description",
+                "target": "doc:/description"
+            },
+            {
+                "source": "pv:confidentialityLevel",
+                "target": "doc:/confidentialityLevel"
+            },
+            {
+                "source": "pv:temporaryDocumentId",
+                "target": "doc:/temporaryDocumentId"
+            },
+           {
+                "source": "pv:informationObjectTypeUrl",
+                "target": "doc:/informationObjectTypeUrl"
+            }
+        ],
+        "outputMappings": []
     }
 ]
