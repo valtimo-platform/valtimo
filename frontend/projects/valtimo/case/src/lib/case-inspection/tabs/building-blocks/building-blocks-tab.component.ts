@@ -28,9 +28,9 @@ import {
 } from '@angular/core';
 import {TranslateModule} from '@ngx-translate/core';
 import {CarbonListModule} from '@valtimo/components';
-import {CaseInspectionBuildingBlockDetailComponent} from './building-block-detail.component';
-import {BuildingBlockInstance} from '../models/case-inspection.models';
-import {CaseInspectionService} from '../services/case-inspection.service';
+import {CaseInspectionBuildingBlockDetailComponent} from './building-block-detail/building-block-detail.component';
+import {BuildingBlockInstance} from '../../../models';
+import {CaseInspectionService} from '../../../services';
 
 @Component({
   standalone: true,

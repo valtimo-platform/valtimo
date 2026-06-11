@@ -26,9 +26,9 @@
     ></valtimo-json-editor>
   </ng-container>
 
-  <ng-container *ngIf="$loading()">
-    <p>{{ 'case.inspection.document.loading' | translate }}</p>
-  </ng-container>
+  <div *ngIf="$loading()" class="loading-container">
+    <cds-loading size="sm"></cds-loading>
+  </div>
 
   <ng-container *ngIf="$errorMessage() as message">
     <p class="case-inspection-document-tab__error">{{ message }}</p>

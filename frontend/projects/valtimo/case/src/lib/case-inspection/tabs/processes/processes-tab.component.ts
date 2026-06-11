@@ -29,16 +29,13 @@ import {TranslateModule} from '@ngx-translate/core';
 import {PermissionService} from '@valtimo/access-control';
 import {CheckmarkFilled16, CheckmarkOutline16, WarningAltFilled16} from '@carbon/icons';
 import {IconModule, IconService, TagModule} from 'carbon-components-angular';
-import {CaseInspectionProcessDetailComponent} from './process-detail.component';
-import {CaseInspectionService} from '../services/case-inspection.service';
-import {
-  BuildingBlockProcessReference,
-  ProcessInstanceInspection,
-} from '../models/case-inspection.models';
+import {CaseInspectionProcessDetailComponent} from './process-detail/process-detail.component';
+import {CaseInspectionService} from '../../../services';
+import {BuildingBlockProcessReference, ProcessInstanceInspection} from '../../../models';
 import {
   CAN_INSPECT_MODIFY_CASE_PERMISSION,
   CASE_DETAIL_PERMISSION_RESOURCE,
-} from '../../permissions/case-detail.permissions';
+} from '../../../permissions';
 
 @Component({
   standalone: true,

@@ -25,8 +25,8 @@ import {
 } from '@angular/core';
 import {TranslateModule} from '@ngx-translate/core';
 import {StructuredListModule, TagModule} from 'carbon-components-angular';
-import {DocumentInspection} from '../models/case-inspection.models';
-import {CaseInspectionService} from '../services/case-inspection.service';
+import {DocumentInspection} from '../../../models';
+import {CaseInspectionService} from '../../../services';
 
 @Component({
   standalone: true,

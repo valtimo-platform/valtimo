@@ -18,10 +18,9 @@ import {CommonModule} from '@angular/common';
 import {
   ChangeDetectionStrategy,
   Component,
-  EventEmitter,
   Input,
   OnChanges,
-  Output,
+  OnDestroy,
   signal,
   SimpleChanges,
 } from '@angular/core';
@@ -29,33 +28,32 @@ import {TranslateModule, TranslateService} from '@ngx-translate/core';
 import {PermissionService} from '@valtimo/access-control';
 import {EditorModel, JsonEditorComponent} from '@valtimo/components';
 import {GlobalNotificationService} from '@valtimo/shared';
-import {StructuredListModule} from 'carbon-components-angular';
-import {BehaviorSubject} from 'rxjs';
+import {BehaviorSubject, Subscription} from 'rxjs';
 import {
   CAN_INSPECT_MODIFY_CASE_PERMISSION,
   CASE_DETAIL_PERMISSION_RESOURCE,
-} from '../../permissions/case-detail.permissions';
-import {BuildingBlockInstance, DocumentInspection} from '../models/case-inspection.models';
-import {CaseInspectionService} from '../services/case-inspection.service';
+} from '../../../permissions';
+import {DocumentInspection} from '../../../models';
+import {CaseInspectionService} from '../../../services';
+import {LoadingModule} from 'carbon-components-angular';
 
 @Component({
   standalone: true,
-  selector: 'valtimo-case-inspection-building-block-detail',
-  templateUrl: './building-block-detail.component.html',
-  styleUrl: './building-block-detail.component.scss',
+  selector: 'valtimo-case-inspection-document',
+  templateUrl: './document-tab.component.html',
+  styleUrl: './document-tab.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, TranslateModule, StructuredListModule, JsonEditorComponent],
+  imports: [CommonModule, TranslateModule, JsonEditorComponent, LoadingModule],
 })
-export class CaseInspectionBuildingBlockDetailComponent implements OnChanges {
-  @Input() public instance!: BuildingBlockInstance;
-
-  @Output() public readonly viewProcessLogsEvent = new EventEmitter<string>();
+export class CaseInspectionDocumentTabComponent implements OnChanges, OnDestroy {
+  @Input() public documentId!: string;
 
   public readonly $loading = signal<boolean>(true);
   public readonly $errorMessage = signal<string | null>(null);
   public readonly $canInspectModify = signal<boolean>(false);
-  public readonly $document = signal<DocumentInspection | null>(null);
   public readonly model$ = new BehaviorSubject<EditorModel | null>(null);
+
+  private readonly _subscriptions = new Subscription();
 
   constructor(
     private readonly caseInspectionService: CaseInspectionService,
@@ -65,25 +63,19 @@ export class CaseInspectionBuildingBlockDetailComponent implements OnChanges {
   ) {}
 
   public ngOnChanges(changes: SimpleChanges): void {
-    if (changes.instance && this.instance) {
-      this.loadDocument(this.instance.documentId);
-      this.loadPermission(this.instance.documentId);
+    if (changes.documentId && this.documentId) {
+      this.loadDocument(this.documentId);
+      this.loadPermission(this.documentId);
     }
   }
 
-  public onViewProcessLogs(): void {
-    if (this.instance.processInstanceId) {
-      this.viewProcessLogsEvent.emit(this.instance.processInstanceId);
-    }
+  public ngOnDestroy(): void {
+    this._subscriptions.unsubscribe();
   }
 
   public onSaveEvent(content: object): void {
-    const documentId = this.instance.documentId;
     this.caseInspectionService
-      .modifyDocumentForInspection(documentId, {
-        documentId,
-        content,
-      })
+      .modifyDocumentForInspection(this.documentId, {documentId: this.documentId, content})
       .subscribe({
         next: result => {
           if (result.errors?.length) {
@@ -93,10 +85,10 @@ export class CaseInspectionBuildingBlockDetailComponent implements OnChanges {
           this.$errorMessage.set(null);
           this.notificationService.showToast({
             type: 'success',
-            title: this.translateService.instant('case.inspection.buildingBlocks.saved'),
+            title: this.translateService.instant('case.inspection.document.saved'),
             message: '',
           });
-          this.loadDocument(documentId);
+          this.loadDocument(this.documentId);
         },
         error: err => {
           this.$errorMessage.set(err?.error?.message ?? err?.message ?? 'Save failed');
@@ -107,14 +99,12 @@ export class CaseInspectionBuildingBlockDetailComponent implements OnChanges {
   private loadDocument(documentId: string): void {
     this.$loading.set(true);
     this.$errorMessage.set(null);
-    this.$document.set(null);
     this.model$.next(null);
     this.caseInspectionService.getDocument(documentId).subscribe({
-      next: document => {
-        if (documentId !== this.instance.documentId) {
+      next: (document: DocumentInspection) => {
+        if (documentId !== this.documentId) {
           return;
         }
-        this.$document.set(document);
         this.model$.next({
           value: JSON.stringify(document.content ?? {}, null, 2),
           language: 'json',
@@ -122,12 +112,10 @@ export class CaseInspectionBuildingBlockDetailComponent implements OnChanges {
         this.$loading.set(false);
       },
       error: err => {
-        if (documentId !== this.instance.documentId) {
+        if (documentId !== this.documentId) {
           return;
         }
-        this.$errorMessage.set(
-          err?.error?.message ?? err?.message ?? 'Failed to load building block'
-        );
+        this.$errorMessage.set(err?.error?.message ?? err?.message ?? 'Failed to load document');
         this.$loading.set(false);
       },
     });
@@ -141,13 +129,13 @@ export class CaseInspectionBuildingBlockDetailComponent implements OnChanges {
       })
       .subscribe({
         next: (allowed: boolean) => {
-          if (documentId !== this.instance.documentId) {
+          if (documentId !== this.documentId) {
             return;
           }
           this.$canInspectModify.set(allowed);
         },
         error: () => {
-          if (documentId !== this.instance.documentId) {
+          if (documentId !== this.documentId) {
             return;
           }
           this.$canInspectModify.set(false);

@@ -18,9 +18,10 @@ import {CommonModule} from '@angular/common';
 import {
   ChangeDetectionStrategy,
   Component,
+  EventEmitter,
   Input,
   OnChanges,
-  OnDestroy,
+  Output,
   signal,
   SimpleChanges,
 } from '@angular/core';
@@ -28,31 +29,33 @@ import {TranslateModule, TranslateService} from '@ngx-translate/core';
 import {PermissionService} from '@valtimo/access-control';
 import {EditorModel, JsonEditorComponent} from '@valtimo/components';
 import {GlobalNotificationService} from '@valtimo/shared';
-import {BehaviorSubject, Subscription} from 'rxjs';
+import {StructuredListModule} from 'carbon-components-angular';
+import {BehaviorSubject} from 'rxjs';
 import {
   CAN_INSPECT_MODIFY_CASE_PERMISSION,
   CASE_DETAIL_PERMISSION_RESOURCE,
-} from '../../permissions/case-detail.permissions';
-import {DocumentInspection} from '../models/case-inspection.models';
-import {CaseInspectionService} from '../services/case-inspection.service';
+} from '../../../../permissions';
+import {BuildingBlockInstance, DocumentInspection} from '../../../../models';
+import {CaseInspectionService} from '../../../../services';
 
 @Component({
   standalone: true,
-  selector: 'valtimo-case-inspection-document',
-  templateUrl: './document-tab.component.html',
-  styleUrl: './document-tab.component.scss',
+  selector: 'valtimo-case-inspection-building-block-detail',
+  templateUrl: './building-block-detail.component.html',
+  styleUrl: './building-block-detail.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, TranslateModule, JsonEditorComponent],
+  imports: [CommonModule, TranslateModule, StructuredListModule, JsonEditorComponent],
 })
-export class CaseInspectionDocumentTabComponent implements OnChanges, OnDestroy {
-  @Input() public documentId!: string;
+export class CaseInspectionBuildingBlockDetailComponent implements OnChanges {
+  @Input() public instance!: BuildingBlockInstance;
+
+  @Output() public readonly viewProcessLogsEvent = new EventEmitter<string>();
 
   public readonly $loading = signal<boolean>(true);
   public readonly $errorMessage = signal<string | null>(null);
   public readonly $canInspectModify = signal<boolean>(false);
+  public readonly $document = signal<DocumentInspection | null>(null);
   public readonly model$ = new BehaviorSubject<EditorModel | null>(null);
-
-  private readonly _subscriptions = new Subscription();
 
   constructor(
     private readonly caseInspectionService: CaseInspectionService,
@@ -62,19 +65,25 @@ export class CaseInspectionDocumentTabComponent implements OnChanges, OnDestroy 
   ) {}
 
   public ngOnChanges(changes: SimpleChanges): void {
-    if (changes.documentId && this.documentId) {
-      this.loadDocument(this.documentId);
-      this.loadPermission(this.documentId);
+    if (changes.instance && this.instance) {
+      this.loadDocument(this.instance.documentId);
+      this.loadPermission(this.instance.documentId);
     }
   }
 
-  public ngOnDestroy(): void {
-    this._subscriptions.unsubscribe();
+  public onViewProcessLogs(): void {
+    if (this.instance.processInstanceId) {
+      this.viewProcessLogsEvent.emit(this.instance.processInstanceId);
+    }
   }
 
   public onSaveEvent(content: object): void {
+    const documentId = this.instance.documentId;
     this.caseInspectionService
-      .modifyDocumentForInspection(this.documentId, {documentId: this.documentId, content})
+      .modifyDocumentForInspection(documentId, {
+        documentId,
+        content,
+      })
       .subscribe({
         next: result => {
           if (result.errors?.length) {
@@ -84,10 +93,10 @@ export class CaseInspectionDocumentTabComponent implements OnChanges, OnDestroy 
           this.$errorMessage.set(null);
           this.notificationService.showToast({
             type: 'success',
-            title: this.translateService.instant('case.inspection.document.saved'),
+            title: this.translateService.instant('case.inspection.buildingBlocks.saved'),
             message: '',
           });
-          this.loadDocument(this.documentId);
+          this.loadDocument(documentId);
         },
         error: err => {
           this.$errorMessage.set(err?.error?.message ?? err?.message ?? 'Save failed');
@@ -98,12 +107,14 @@ export class CaseInspectionDocumentTabComponent implements OnChanges, OnDestroy 
   private loadDocument(documentId: string): void {
     this.$loading.set(true);
     this.$errorMessage.set(null);
+    this.$document.set(null);
     this.model$.next(null);
     this.caseInspectionService.getDocument(documentId).subscribe({
-      next: (document: DocumentInspection) => {
-        if (documentId !== this.documentId) {
+      next: document => {
+        if (documentId !== this.instance.documentId) {
           return;
         }
+        this.$document.set(document);
         this.model$.next({
           value: JSON.stringify(document.content ?? {}, null, 2),
           language: 'json',
@@ -111,10 +122,12 @@ export class CaseInspectionDocumentTabComponent implements OnChanges, OnDestroy 
         this.$loading.set(false);
       },
       error: err => {
-        if (documentId !== this.documentId) {
+        if (documentId !== this.instance.documentId) {
           return;
         }
-        this.$errorMessage.set(err?.error?.message ?? err?.message ?? 'Failed to load document');
+        this.$errorMessage.set(
+          err?.error?.message ?? err?.message ?? 'Failed to load building block'
+        );
         this.$loading.set(false);
       },
     });
@@ -128,13 +141,13 @@ export class CaseInspectionDocumentTabComponent implements OnChanges, OnDestroy 
       })
       .subscribe({
         next: (allowed: boolean) => {
-          if (documentId !== this.documentId) {
+          if (documentId !== this.instance.documentId) {
             return;
           }
           this.$canInspectModify.set(allowed);
         },
         error: () => {
-          if (documentId !== this.documentId) {
+          if (documentId !== this.instance.documentId) {
             return;
           }
           this.$canInspectModify.set(false);

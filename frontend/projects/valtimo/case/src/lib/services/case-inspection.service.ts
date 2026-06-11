@@ -27,7 +27,7 @@ import {
   ModifyDocumentResult,
   ProcessInstanceInspection,
   ProcessVariableMutationRequest,
-} from '../models/case-inspection.models';
+} from '../models';
 
 @Injectable({providedIn: 'root'})
 export class CaseInspectionService {

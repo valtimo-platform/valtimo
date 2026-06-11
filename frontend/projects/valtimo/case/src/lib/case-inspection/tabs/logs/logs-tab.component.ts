@@ -45,8 +45,8 @@ import {
   CaseInspectionLoggingEvent,
   CaseInspectionLogLevel,
   CaseInspectionLogSearchRequest,
-} from '../models/case-inspection.models';
-import {CaseInspectionService} from '../services/case-inspection.service';
+} from '../../../models/';
+import {CaseInspectionService} from '../../../services';
 
 const PROCESS_INSTANCE_MDC_KEY = 'processInstanceId';
 

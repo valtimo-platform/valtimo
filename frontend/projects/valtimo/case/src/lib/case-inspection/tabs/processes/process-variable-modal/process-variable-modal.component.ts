@@ -47,16 +47,7 @@ import {
   ProcessVariable,
   ProcessVariableMutationRequest,
   ProcessVariableType,
-} from '../models/case-inspection.models';
-
-const PROCESS_VARIABLE_TYPES: ProcessVariableType[] = [
-  'STRING',
-  'INTEGER',
-  'LONG',
-  'DOUBLE',
-  'BOOLEAN',
-  'JSON',
-];
+} from '../../../../models';
 
 @Component({
   standalone: true,
@@ -87,7 +78,16 @@ export class CaseInspectionProcessVariableModalComponent implements OnChanges {
 
   public readonly $invalidJson = signal<boolean>(false);
 
-  public readonly typeSelectItems: SelectItem[] = PROCESS_VARIABLE_TYPES.map(type => ({
+  private readonly _PROCESS_VARIABLE_TYPES: ProcessVariableType[] = [
+    'STRING',
+    'INTEGER',
+    'LONG',
+    'DOUBLE',
+    'BOOLEAN',
+    'JSON',
+  ];
+
+  public readonly typeSelectItems: SelectItem[] = this._PROCESS_VARIABLE_TYPES.map(type => ({
     id: type,
     translationKey: `case.inspection.processes.variableModal.types.${type}`,
   }));

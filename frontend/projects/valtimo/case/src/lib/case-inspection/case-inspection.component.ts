@@ -36,18 +36,18 @@ import {
   CAN_INSPECT_CASE_PERMISSION,
   CASE_DETAIL_PERMISSION_RESOURCE,
 } from '../permissions/case-detail.permissions';
-import {CaseInspectionBuildingBlocksTabComponent} from './tabs/building-blocks-tab.component';
-import {CaseInspectionDocumentTabComponent} from './tabs/document-tab.component';
-import {CaseInspectionLogsTabComponent} from './tabs/logs-tab.component';
-import {CaseInspectionMetadataTabComponent} from './tabs/metadata-tab.component';
-import {CaseInspectionProcessesTabComponent} from './tabs/processes-tab.component';
-import {BuildingBlockProcessReference} from './models/case-inspection.models';
-import {CaseInspectionTab} from './case-inspection-tab.enum';
-import {CaseInspectionService} from './services/case-inspection.service';
+import {CaseInspectionBuildingBlocksTabComponent} from './tabs/building-blocks/building-blocks-tab.component';
+import {CaseInspectionDocumentTabComponent} from './tabs/document/document-tab.component';
+import {CaseInspectionLogsTabComponent} from './tabs/logs/logs-tab.component';
+import {CaseInspectionMetadataTabComponent} from './tabs/metadata/metadata-tab.component';
+import {CaseInspectionProcessesTabComponent} from './tabs/processes/processes-tab.component';
 import {
-  ZGW_CASE_INSPECTION_TAB_TOKEN,
+  BuildingBlockProcessReference,
+  CaseInspectionTab,
   ZgwCaseInspectionTabComponent,
-} from './case-inspection.tokens';
+} from '../models';
+import {CaseInspectionService} from '../services';
+import {ZGW_CASE_INSPECTION_TAB_TOKEN} from '../constants';
 
 @Component({
   standalone: true,

@@ -1,4 +1,4 @@
-/*
+/*!
  * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
@@ -14,7 +14,17 @@
  * limitations under the License.
  */
 
-export enum ProcessDetailTab {
-  DETAILS = 'details',
-  DIAGRAM = 'diagram',
+.case-inspection-document-tab {
+  &__error {
+    color: var(--cds-text-error, #da1e28);
+    margin-top: var(--cds-spacing-03, 0.5rem);
+  }
+}
+
+.loading-container {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+  margin-top: 16px;
+  margin-bottom: 16px;
 }

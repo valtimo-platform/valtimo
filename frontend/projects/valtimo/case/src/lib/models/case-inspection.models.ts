@@ -173,6 +173,24 @@ interface CaseInspectionLogSearchRequest {
   additionalProperties?: CaseInspectionLoggingEventProperty[];
 }
 
+enum ProcessDetailTab {
+  DETAILS = 'details',
+  DIAGRAM = 'diagram',
+}
+
+interface ZgwCaseInspectionTabComponent {
+  documentId: string;
+}
+
+enum CaseInspectionTab {
+  DOCUMENT = 'document',
+  PROCESSES = 'processes',
+  BUILDING_BLOCKS = 'building-blocks',
+  LOGS = 'logs',
+  ZGW = 'zgw',
+  METADATA = 'metadata',
+}
+
 export {
   Incident,
   ProcessVariable,
@@ -192,4 +210,7 @@ export {
   CaseInspectionLoggingEvent,
   CaseInspectionLoggingEventProperty,
   CaseInspectionLogSearchRequest,
+  ProcessDetailTab,
+  ZgwCaseInspectionTabComponent,
+  CaseInspectionTab,
 };

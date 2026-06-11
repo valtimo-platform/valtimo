@@ -41,13 +41,13 @@ import {
 import {BehaviorSubject, Observable} from 'rxjs';
 import {
   BuildingBlockProcessReference,
+  ProcessDetailTab,
   ProcessInstanceInspection,
   ProcessVariable,
   ProcessVariableMutationRequest,
-} from '../models/case-inspection.models';
-import {CaseInspectionService} from '../services/case-inspection.service';
-import {CaseInspectionProcessVariableModalComponent} from './process-variable-modal.component';
-import {ProcessDetailTab} from './process-detail-tab.enum';
+} from '../../../../models';
+import {CaseInspectionService} from '../../../../services';
+import {CaseInspectionProcessVariableModalComponent} from '../process-variable-modal/process-variable-modal.component';
 
 @Component({
   standalone: true,
