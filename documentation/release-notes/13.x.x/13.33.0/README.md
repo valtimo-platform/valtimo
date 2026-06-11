@@ -18,4 +18,7 @@
 
 ## Bugfixes
 
-* New bugfix.
+* **Keycloak-based database migrations failed against newer Keycloak servers**
+
+  Database migrations that look up users in Keycloak could fail to start when running against a newer Keycloak
+  version than the one Valtimo ships with. This has been resolved.
