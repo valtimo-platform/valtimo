@@ -43,6 +43,16 @@ function normalizeEventBroker(input: unknown): EventBrokerConfig | undefined {
 }
 
 /**
+ * Normalizes the `eventSubscriptions` field GZAC sends with a configuration. Treats anything that
+ * isn't an array of strings as an empty list — defense in depth so the dispatcher's allowlist
+ * check (§event-consumer) never blows up on a malformed push.
+ */
+function normalizeEventSubscriptions(input: unknown): string[] {
+  if (!Array.isArray(input)) return [];
+  return input.filter((x): x is string => typeof x === "string" && x.length > 0);
+}
+
+/**
  * Configuration push endpoints.
  *
  * GZAC pushes decrypted configuration here on activation.
@@ -90,6 +100,7 @@ export async function hostConfigurationRoutes(
       properties: Record<string, unknown>;
       serviceToken: string;
       gzacBaseUrl: string;
+      eventSubscriptions?: unknown;
       eventBroker?: unknown;
     };
   }>("/api/host/configurations/:configId", async (request, reply) => {
@@ -120,6 +131,7 @@ export async function hostConfigurationRoutes(
     }
 
     const eventBroker = normalizeEventBroker(request.body.eventBroker);
+    const eventSubscriptions = normalizeEventSubscriptions(request.body.eventSubscriptions);
 
     await configRegistry.set(configId, {
       configurationId: configId,
@@ -128,12 +140,20 @@ export async function hostConfigurationRoutes(
       properties: properties || {},
       serviceToken,
       gzacBaseUrl,
+      eventSubscriptions,
       eventBroker,
     });
     await eventConsumerManager.sync();
 
     request.log.info(
-      { configId, pluginId, pluginVersion, gzacBaseUrl, eventBroker: eventBroker?.exchange ?? null },
+      {
+        configId,
+        pluginId,
+        pluginVersion,
+        gzacBaseUrl,
+        eventBroker: eventBroker?.exchange ?? null,
+        eventSubscriptionCount: eventSubscriptions.length,
+      },
       "Configuration pushed"
     );
     reply.code(201).send({ configurationId: configId });
@@ -148,6 +168,7 @@ export async function hostConfigurationRoutes(
       properties: Record<string, unknown>;
       serviceToken?: string;
       gzacBaseUrl?: string;
+      eventSubscriptions?: unknown;
       eventBroker?: unknown;
     };
   }>("/api/host/configurations/:configId", async (request, reply) => {
@@ -164,12 +185,18 @@ export async function hostConfigurationRoutes(
       "eventBroker" in request.body
         ? normalizeEventBroker(request.body.eventBroker)
         : existing.eventBroker;
+    // Same shape for the granted event-subscription list — only replace when supplied.
+    const eventSubscriptions =
+      "eventSubscriptions" in request.body
+        ? normalizeEventSubscriptions(request.body.eventSubscriptions)
+        : existing.eventSubscriptions;
 
     await configRegistry.set(configId, {
       ...existing,
       properties: request.body.properties || {},
       serviceToken: request.body.serviceToken ?? existing.serviceToken,
       gzacBaseUrl: request.body.gzacBaseUrl ?? existing.gzacBaseUrl,
+      eventSubscriptions,
       eventBroker,
     });
     await eventConsumerManager.sync();

@@ -74,7 +74,7 @@ export interface ManifestActionProperty {
   required?: boolean;
 }
 
-export interface ManagementEndpoint {
+export interface Endpoint {
   method: string;
   pattern: string;
 }
@@ -102,7 +102,7 @@ export interface PluginManifest {
   };
   configurationSchema?: Record<string, unknown>;
   permissions?: {
-    managementEndpoints?: ManagementEndpoint[];
+    endpoints?: Endpoint[];
   };
   frontendBundles?: FrontendBundle[];
   /**

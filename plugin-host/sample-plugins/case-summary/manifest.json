@@ -60,7 +60,7 @@
     "additionalProperties": false
   },
   "permissions": {
-    "managementEndpoints": [
+    "endpoints": [
       { "method": "GET", "pattern": "/api/v1/document/*" },
       { "method": "POST", "pattern": "/api/v1/document/*/note" }
     ]

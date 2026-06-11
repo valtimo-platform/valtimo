@@ -25,6 +25,7 @@ import com.ritense.externalplugin.processlink.ExternalPluginSupportedProcessLink
 import com.ritense.externalplugin.repository.ExternalPluginConfigurationRepository
 import com.ritense.externalplugin.repository.ExternalPluginDefinitionRepository
 import com.ritense.externalplugin.repository.ExternalPluginGrantedEndpointRepository
+import com.ritense.externalplugin.repository.ExternalPluginGrantedEventRepository
 import com.ritense.externalplugin.repository.ExternalPluginHostRepository
 import com.ritense.externalplugin.repository.ExternalPluginProcessLinkRepository
 import com.ritense.externalplugin.security.ExternalPluginCallbackHttpSecurityConfigurer
@@ -85,6 +86,7 @@ class ExternalPluginAutoConfiguration {
         definitionRepository: ExternalPluginDefinitionRepository,
         configurationRepository: ExternalPluginConfigurationRepository,
         grantedEndpointRepository: ExternalPluginGrantedEndpointRepository,
+        grantedEventRepository: ExternalPluginGrantedEventRepository,
         encryptionService: EncryptionService,
         hostClient: ExternalPluginHostClient,
     ) = ExternalPluginHostService(
@@ -92,6 +94,7 @@ class ExternalPluginAutoConfiguration {
         definitionRepository,
         configurationRepository,
         grantedEndpointRepository,
+        grantedEventRepository,
         encryptionService,
         hostClient,
     )
@@ -156,6 +159,7 @@ class ExternalPluginAutoConfiguration {
         definitionRepository: ExternalPluginDefinitionRepository,
         hostRepository: ExternalPluginHostRepository,
         grantedEndpointRepository: ExternalPluginGrantedEndpointRepository,
+        grantedEventRepository: ExternalPluginGrantedEventRepository,
         hostClient: ExternalPluginHostClient,
         propertyEncryptor: PluginPropertyEncryptor,
         encryptionService: EncryptionService,
@@ -168,6 +172,7 @@ class ExternalPluginAutoConfiguration {
         definitionRepository,
         hostRepository,
         grantedEndpointRepository,
+        grantedEventRepository,
         hostClient,
         propertyEncryptor,
         encryptionService,

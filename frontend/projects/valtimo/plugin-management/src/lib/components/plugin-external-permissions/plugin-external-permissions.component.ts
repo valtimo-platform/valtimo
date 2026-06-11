@@ -27,22 +27,28 @@ import {
 } from '@angular/core';
 import {CommonModule} from '@angular/common';
 import {TranslateModule, TranslateService} from '@ngx-translate/core';
-import {CheckboxModule} from 'carbon-components-angular';
+import {
+  CheckboxModule,
+  NotificationModule,
+  StructuredListModule,
+  TagModule,
+} from 'carbon-components-angular';
 import {
   ExternalPluginGrantedEndpointEntry,
-  ExternalPluginManagementEndpoint,
+  ExternalPluginGrantedEventEntry,
+  ExternalPluginEndpoint,
   ExternalPluginService,
 } from '@valtimo/plugin';
 
-interface EnrichedEndpoint extends ExternalPluginManagementEndpoint {
+interface EnrichedEndpoint extends ExternalPluginEndpoint {
   description: string | null;
 }
 
 /**
- * Lists the GZAC API endpoints an external plugin requires. Permissions are all-or-nothing: the
- * backend rejects a configuration unless every endpoint declared in the manifest is granted, so
- * there is no per-endpoint toggle. Instead the admin reviews the full list and accepts the
- * implications with a single acknowledgement before the configuration can be saved.
+ * Lists the GZAC API endpoints and platform events an external plugin requires. Permissions are
+ * all-or-nothing: the backend rejects a configuration unless every endpoint declared in the
+ * manifest is granted **and** every declared `eventSubscriptions` type is granted. The admin
+ * reviews the full list and accepts both implications with a single acknowledgement before saving.
  *
  * In `readonlyMode` (editing an existing configuration) the list is informational only — the
  * permissions were already accepted at activation — so no acknowledgement is required.
@@ -53,24 +59,36 @@ interface EnrichedEndpoint extends ExternalPluginManagementEndpoint {
   templateUrl: './plugin-external-permissions.component.html',
   styleUrls: ['./plugin-external-permissions.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, TranslateModule, CheckboxModule],
+  imports: [
+    CommonModule,
+    TranslateModule,
+    CheckboxModule,
+    NotificationModule,
+    StructuredListModule,
+    TagModule,
+  ],
 })
 export class PluginExternalPermissionsComponent implements OnChanges {
-  @Input() public endpoints: Array<ExternalPluginManagementEndpoint> = [];
+  @Input() public endpoints: Array<ExternalPluginEndpoint> = [];
+  @Input() public eventSubscriptions: Array<string> = [];
   @Input() public readonlyMode = false;
 
   @Output() public validEvent = new EventEmitter<boolean>();
   @Output() public grantedEndpointsChange = new EventEmitter<Array<ExternalPluginGrantedEndpointEntry>>();
+  @Output() public grantedEventsChange = new EventEmitter<Array<ExternalPluginGrantedEventEntry>>();
 
   public readonly _$enrichedEndpoints = signal<Array<EnrichedEndpoint>>([]);
+  public readonly _$eventTypes = signal<Array<string>>([]);
   public readonly _$accepted = signal<boolean>(false);
 
   private readonly _externalPluginService = inject(ExternalPluginService);
   private readonly _translateService = inject(TranslateService);
 
   public ngOnChanges(changes: SimpleChanges): void {
-    if (changes['endpoints'] || changes['readonlyMode']) {
+    if (changes['endpoints'] || changes['eventSubscriptions'] || changes['readonlyMode']) {
       this._$accepted.set(false);
+      this._$eventTypes.set([...this.eventSubscriptions]);
+      this._emitGrantedEvents(this._$eventTypes());
       this._fetchDescriptionsAndInit();
     }
   }
@@ -80,7 +98,7 @@ export class PluginExternalPermissionsComponent implements OnChanges {
     this._emitValidity();
   }
 
-  private _endpointKey(endpoint: ExternalPluginManagementEndpoint): string {
+  private _endpointKey(endpoint: ExternalPluginEndpoint): string {
     return `${endpoint.method.toUpperCase()}:${endpoint.pattern}`;
   }
 
@@ -128,8 +146,18 @@ export class PluginExternalPermissionsComponent implements OnChanges {
     );
   }
 
+  /**
+   * Mirror of {@link _emitGrantedEndpoints} for event subscriptions — same all-or-nothing model:
+   * the host treats the granted list as the dispatch allowlist, narrower-or-equal to the manifest's
+   * declared `eventSubscriptions`.
+   */
+  private _emitGrantedEvents(eventTypes: Array<string>): void {
+    this.grantedEventsChange.emit(eventTypes.map(eventType => ({eventType})));
+  }
+
   private _emitValidity(): void {
-    const valid = this.readonlyMode || this._$enrichedEndpoints().length === 0 || this._$accepted();
+    const empty = this._$enrichedEndpoints().length === 0 && this._$eventTypes().length === 0;
+    const valid = this.readonlyMode || empty || this._$accepted();
     this.validEvent.emit(valid);
   }
 }

@@ -23,6 +23,7 @@ import com.ritense.externalplugin.domain.ExternalPluginHostStatus
 import com.ritense.externalplugin.repository.ExternalPluginConfigurationRepository
 import com.ritense.externalplugin.repository.ExternalPluginDefinitionRepository
 import com.ritense.externalplugin.repository.ExternalPluginGrantedEndpointRepository
+import com.ritense.externalplugin.repository.ExternalPluginGrantedEventRepository
 import com.ritense.externalplugin.repository.ExternalPluginHostRepository
 import com.ritense.plugin.service.EncryptionService
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
@@ -38,6 +39,7 @@ class ExternalPluginHostService(
     private val definitionRepository: ExternalPluginDefinitionRepository,
     private val configurationRepository: ExternalPluginConfigurationRepository,
     private val grantedEndpointRepository: ExternalPluginGrantedEndpointRepository,
+    private val grantedEventRepository: ExternalPluginGrantedEventRepository,
     private val encryptionService: EncryptionService,
     private val hostClient: ExternalPluginHostClient,
 ) {
@@ -76,6 +78,7 @@ class ExternalPluginHostService(
             val configurations = configurationRepository.findAllByDefinitionId(definition.id)
             for (configuration in configurations) {
                 grantedEndpointRepository.deleteAllByConfigurationId(configuration.id)
+                grantedEventRepository.deleteAllByConfigurationId(configuration.id)
             }
             configurationRepository.deleteAll(configurations)
         }

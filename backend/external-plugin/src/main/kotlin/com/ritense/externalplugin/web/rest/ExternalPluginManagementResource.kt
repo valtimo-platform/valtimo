@@ -29,6 +29,7 @@ import com.ritense.externalplugin.web.rest.dto.ConfigurationResponse
 import com.ritense.externalplugin.web.rest.dto.ConfigurationUpdateRequest
 import com.ritense.externalplugin.web.rest.dto.DefinitionResponse
 import com.ritense.externalplugin.web.rest.dto.GrantedEndpointResponse
+import com.ritense.externalplugin.web.rest.dto.GrantedEventResponse
 import com.ritense.externalplugin.web.rest.dto.HostCreateRequest
 import com.ritense.externalplugin.web.rest.dto.HostDefaultsResponse
 import com.ritense.externalplugin.web.rest.dto.HostResponse
@@ -165,6 +166,7 @@ class ExternalPluginManagementResource(
         val configuration = configurationService.get(configurationId)
         val decrypted = configurationService.decryptedProperties(configuration)
         val grantedEndpoints = configurationService.getGrantedEndpoints(configurationId)
+        val grantedEvents = configurationService.getGrantedEvents(configurationId)
         return ResponseEntity.ok(
             ConfigurationDetailResponse(
                 id = configuration.id,
@@ -172,6 +174,7 @@ class ExternalPluginManagementResource(
                 title = configuration.title,
                 properties = decrypted,
                 grantedEndpoints = grantedEndpoints.map(GrantedEndpointResponse::from),
+                grantedEvents = grantedEvents.map(GrantedEventResponse::from),
                 createdAt = configuration.createdAt,
             )
         )
@@ -187,6 +190,7 @@ class ExternalPluginManagementResource(
             request.title,
             request.properties,
             request.grantedEndpoints,
+            request.grantedEvents,
         )
         return ResponseEntity.status(HttpStatus.CREATED).body(ConfigurationResponse.from(configuration))
     }

@@ -24,12 +24,15 @@ import com.ritense.externalplugin.client.ExternalPluginHostClient
 import com.ritense.externalplugin.domain.ExternalPluginConfiguration
 import com.ritense.externalplugin.domain.ExternalPluginDefinition
 import com.ritense.externalplugin.domain.ExternalPluginGrantedEndpoint
+import com.ritense.externalplugin.domain.ExternalPluginGrantedEvent
 import com.ritense.externalplugin.domain.ExternalPluginHost
 import com.ritense.externalplugin.repository.ExternalPluginConfigurationRepository
 import com.ritense.externalplugin.repository.ExternalPluginDefinitionRepository
 import com.ritense.externalplugin.repository.ExternalPluginGrantedEndpointRepository
+import com.ritense.externalplugin.repository.ExternalPluginGrantedEventRepository
 import com.ritense.externalplugin.repository.ExternalPluginHostRepository
 import com.ritense.externalplugin.web.rest.dto.GrantedEndpointEntry
+import com.ritense.externalplugin.web.rest.dto.GrantedEventEntry
 import com.ritense.plugin.service.EncryptionService
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import io.github.oshai.kotlinlogging.KotlinLogging
@@ -46,6 +49,7 @@ class ExternalPluginConfigurationService(
     private val definitionRepository: ExternalPluginDefinitionRepository,
     private val hostRepository: ExternalPluginHostRepository,
     private val grantedEndpointRepository: ExternalPluginGrantedEndpointRepository,
+    private val grantedEventRepository: ExternalPluginGrantedEventRepository,
     private val hostClient: ExternalPluginHostClient,
     private val propertyEncryptor: PluginPropertyEncryptor,
     private val encryptionService: EncryptionService,
@@ -80,12 +84,14 @@ class ExternalPluginConfigurationService(
         title: String,
         properties: ObjectNode,
         grantedEndpoints: List<GrantedEndpointEntry>,
+        grantedEvents: List<GrantedEventEntry>,
     ): ExternalPluginConfiguration {
         val definition = definitionRepository.findById(definitionId)
             .orElseThrow { IllegalArgumentException("External plugin definition $definitionId not found") }
 
         validateAgainstSchema(properties, definition.configSchema)
         validateGrantedEndpointsCoverManifest(grantedEndpoints, definition)
+        validateGrantedEventsCoverManifest(grantedEvents, definition)
 
         val encrypted = propertyEncryptor.encryptSecretFields(properties.deepCopy(), definition.configSchema)
 
@@ -99,6 +105,7 @@ class ExternalPluginConfigurationService(
         val saved = configurationRepository.save(configuration)
 
         saveGrantedEndpoints(saved.id, grantedEndpoints)
+        saveGrantedEvents(saved.id, grantedEvents)
 
         // Push decrypted config to the plugin host
         try {
@@ -126,6 +133,11 @@ class ExternalPluginConfigurationService(
         val adminToken = encryptionService.decrypt(host.secret)
         val decrypted = decryptedProperties(configuration)
         val serviceToken = serviceTokenService.issue(configuration, definition)
+        // The granted set is the authoritative subscription list — the host dispatches strictly
+        // based on this, not on the manifest's declared `eventSubscriptions`. A later manifest
+        // update that adds an event type cannot silently start delivering it without admin re-grant.
+        val grantedEventTypes = grantedEventRepository.findAllByConfigurationId(configuration.id)
+            .map { it.eventType }
         val pushed = hostClient.pushConfiguration(
             baseUrl = host.baseUrl,
             adminToken = adminToken,
@@ -135,6 +147,7 @@ class ExternalPluginConfigurationService(
             properties = decrypted,
             serviceToken = serviceToken,
             gzacBaseUrl = host.gzacCallbackBaseUrl ?: fallbackGzacBaseUrl,
+            eventSubscriptions = grantedEventTypes,
             eventBrokerUrl = host.eventBrokerAmqpUrl,
             eventBrokerExchange = host.eventBrokerExchange ?: defaultEventBrokerExchange,
             eventBrokerExchangeType = "fanout",
@@ -189,6 +202,7 @@ class ExternalPluginConfigurationService(
         val definition = definitionRepository.findById(config.definitionId).orElse(null)
 
         grantedEndpointRepository.deleteAllByConfigurationId(id)
+        grantedEventRepository.deleteAllByConfigurationId(id)
         configurationRepository.delete(config)
 
         // Remove config from the plugin host
@@ -211,6 +225,10 @@ class ExternalPluginConfigurationService(
         grantedEndpointRepository.findAllByConfigurationId(configurationId)
 
     @Transactional(readOnly = true)
+    fun getGrantedEvents(configurationId: UUID): List<ExternalPluginGrantedEvent> =
+        grantedEventRepository.findAllByConfigurationId(configurationId)
+
+    @Transactional(readOnly = true)
     fun decryptedProperties(configuration: ExternalPluginConfiguration): ObjectNode {
         val definition = definitionRepository.findById(configuration.definitionId)
             .orElseThrow { IllegalArgumentException("External plugin definition ${configuration.definitionId} not found") }
@@ -231,17 +249,53 @@ class ExternalPluginConfigurationService(
         }
     }
 
+    private fun saveGrantedEvents(configurationId: UUID, events: List<GrantedEventEntry>) {
+        events.forEach { entry ->
+            grantedEventRepository.save(
+                ExternalPluginGrantedEvent(
+                    id = UUID.randomUUID(),
+                    configurationId = configurationId,
+                    eventType = entry.eventType,
+                )
+            )
+        }
+    }
+
+    /**
+     * All-or-nothing parity with endpoints (§3.1): the admin's acknowledgement covers the full
+     * declared set, recorded as the authoritative subscription list for this configuration.
+     */
+    private fun validateGrantedEventsCoverManifest(
+        grantedEvents: List<GrantedEventEntry>,
+        definition: ExternalPluginDefinition,
+    ) {
+        val manifest = definition.manifestJson ?: return
+        val declared = manifest.get("eventSubscriptions") ?: return
+        if (!declared.isArray || declared.isEmpty) return
+
+        val grantedTypes = grantedEvents.map { it.eventType }.toSet()
+        val requiredTypes = declared.mapNotNull { it.asText().takeIf { s -> s.isNotBlank() } }.toSet()
+
+        val missing = requiredTypes - grantedTypes
+        if (missing.isNotEmpty()) {
+            throw IllegalArgumentException(
+                "All event subscriptions declared in the plugin manifest must be granted. " +
+                    "Missing: ${missing.joinToString(", ")}"
+            )
+        }
+    }
+
     private fun validateGrantedEndpointsCoverManifest(
         grantedEndpoints: List<GrantedEndpointEntry>,
         definition: ExternalPluginDefinition,
     ) {
         val manifest = definition.manifestJson ?: return
         val permissions = manifest.get("permissions") ?: return
-        val managementEndpoints = permissions.get("managementEndpoints") ?: return
-        if (!managementEndpoints.isArray) return
+        val declaredEndpoints = permissions.get("endpoints") ?: return
+        if (!declaredEndpoints.isArray) return
 
         val grantedKeys = grantedEndpoints.map { "${it.method.uppercase()}:${it.pattern}" }.toSet()
-        val requiredKeys = managementEndpoints.mapNotNull { ep ->
+        val requiredKeys = declaredEndpoints.mapNotNull { ep ->
             val method = ep.get("method")?.asText() ?: return@mapNotNull null
             val pattern = ep.get("pattern")?.asText() ?: return@mapNotNull null
             "${method.uppercase()}:$pattern"
@@ -250,7 +304,7 @@ class ExternalPluginConfigurationService(
         val missing = requiredKeys - grantedKeys
         if (missing.isNotEmpty()) {
             throw IllegalArgumentException(
-                "All management endpoints declared in the plugin manifest must be granted. " +
+                "All endpoints declared in the plugin manifest must be granted. " +
                     "Missing: ${missing.joinToString(", ")}"
             )
         }

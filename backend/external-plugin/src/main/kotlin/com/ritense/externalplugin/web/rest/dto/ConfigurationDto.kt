@@ -19,6 +19,7 @@ package com.ritense.externalplugin.web.rest.dto
 import com.fasterxml.jackson.databind.node.ObjectNode
 import com.ritense.externalplugin.domain.ExternalPluginConfiguration
 import com.ritense.externalplugin.domain.ExternalPluginGrantedEndpoint
+import com.ritense.externalplugin.domain.ExternalPluginGrantedEvent
 import java.time.Instant
 import java.util.UUID
 
@@ -45,11 +46,32 @@ data class GrantedEndpointResponse(
     }
 }
 
+data class GrantedEventEntry(
+    val eventType: String,
+)
+
+data class GrantedEventResponse(
+    val id: UUID,
+    val configurationId: UUID,
+    val eventType: String,
+    val grantedAt: Instant,
+) {
+    companion object {
+        fun from(entity: ExternalPluginGrantedEvent) = GrantedEventResponse(
+            id = entity.id,
+            configurationId = entity.configurationId,
+            eventType = entity.eventType,
+            grantedAt = entity.grantedAt,
+        )
+    }
+}
+
 data class ConfigurationCreateRequest(
     val definitionId: UUID,
     val title: String,
     val properties: ObjectNode,
     val grantedEndpoints: List<GrantedEndpointEntry>,
+    val grantedEvents: List<GrantedEventEntry> = emptyList(),
 )
 
 data class ConfigurationUpdateRequest(
@@ -80,5 +102,6 @@ data class ConfigurationDetailResponse(
     val title: String,
     val properties: ObjectNode,
     val grantedEndpoints: List<GrantedEndpointResponse>,
+    val grantedEvents: List<GrantedEventResponse>,
     val createdAt: Instant,
 )

@@ -78,6 +78,8 @@ class ExternalPluginHostClient(
         properties: ObjectNode,
         serviceToken: String,
         gzacBaseUrl: String,
+        /** The CloudEvent types the admin granted. The host uses this list — not the manifest. */
+        eventSubscriptions: List<String>,
         eventBrokerUrl: String?,
         eventBrokerExchange: String,
         eventBrokerExchangeType: String,
@@ -89,6 +91,10 @@ class ExternalPluginHostClient(
             set<ObjectNode>("properties", properties)
             put("serviceToken", serviceToken)
             put("gzacBaseUrl", gzacBaseUrl)
+            // Authoritative subscription list — replaces whatever the manifest declares.
+            set<ObjectNode>("eventSubscriptions", objectMapper.createArrayNode().apply {
+                eventSubscriptions.forEach { add(it) }
+            })
             // The host learns this GZAC instance's broker from the push (it never configures one
             // itself). Omitted when no broker is configured — events are then disabled for the config.
             if (!eventBrokerUrl.isNullOrBlank()) {

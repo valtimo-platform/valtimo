@@ -1888,9 +1888,14 @@
       "save": "Save configuration"
     },
     "permissions": {
-      "description": "This plugin requires access to the following API endpoints. Review them carefully — once accepted, the plugin can call these endpoints on your behalf.",
-      "descriptionReadonly": "This plugin was granted access to the following API endpoints.",
-      "noEndpoints": "This plugin does not require any management endpoint permissions.",
+      "description": "This plugin requires access to the following API endpoints and events. Review them carefully — once accepted, the plugin can call these endpoints on your behalf and receive these events.",
+      "descriptionReadonly": "This plugin was granted access to the following API endpoints and events.",
+      "noEndpoints": "This plugin does not require any permissions.",
+      "endpointsHeading": "API endpoints",
+      "eventsHeading": "Events",
+      "methodHeading": "Method",
+      "endpointHeading": "Endpoint",
+      "descriptionHeading": "Description",
       "accept": "I understand the implications of accepting these permissions",
       "acceptedNote": "These permissions were accepted when the configuration was activated and cannot be changed here."
     },

@@ -106,34 +106,34 @@ well inside their lifetime.
 an over-broad grant (`/api/v1/**`) gives broad role-free access. Hence the activation-time
 acceptance screen (§4) is security-critical.
 
-**3.8 Manifest field rename ⛔.** The manifest currently calls the endpoint allowlist
-`permissions.managementEndpoints`. This is too narrow a name — these same endpoints will also be
-used by iframe-driven user-token calls (§13). The intended rename is
-`permissions.endpoints` (one declaration consumed by both the service-token and user-token
-authorization paths). Carries through to the Kotlin DTO, the frontend model, the
-endpoint-description endpoint, and the manifest itself in every sample plugin.
+**3.8 Manifest field naming.** The endpoint allowlist lives at `permissions.endpoints` in the
+manifest. The same declaration is the source of truth for both the service-token allowlist (this
+section) and the upcoming iframe user-token path (§13) — one block, two consumers. SDK type
+`Endpoint`, Kotlin DTO `GrantedEndpointEntry`, frontend type `ExternalPluginEndpoint`.
 
-## 4. Permission UX ✅ (with one ⛔ extension)
+## 4. Permission UX ✅
 
 Components: `plugin-management/.../{plugin-external-permissions, plugin-add-modal,
 plugin-external-edit-modal, plugin-external-configure}`. Endpoint descriptions are localised via
 `POST /api/management/v1/external-plugin/endpoint-descriptions` (aggregated from every module's
 `EndpointDescriptionProvider`; glob and `{param}` matching, `en`/`nl` with `en` fallback).
 
-- **Add / activate**: select → configure (properties or config iframe) → **Permissions**. The
-  permissions component shows a **read-only list** of all requested endpoints (method, pattern,
-  description) plus one acknowledgement checkbox that gates Save. Accepting grants the full
-  declared set. Save → `POST .../configuration` `{definitionId, title, properties, grantedEndpoints}`.
-- **Edit**: same component with `[readonlyMode]="true"`; update sends `{title, properties}` only
-  (grants immutable post-activation).
+The Permissions step shows two read-only sections under a single acknowledgement checkbox:
 
-**⛔ Event-subscription disclosure.** Today the permission screen only lists endpoint grants. The
-plugin's `eventSubscriptions` (which CloudEvent types the host's plugin will receive at
-`handle_event`) are equally a permission decision — they let the plugin observe domain activity it
-would otherwise need polling for. The screen needs a second read-only section under
-"Permissions" listing the subscribed event types with localised descriptions. Enforcement stays on
-the host (only types declared in the manifest are dispatched), so this is UX disclosure rather
-than a new authorization gate.
+- **API endpoints** — every entry from `manifest.permissions.endpoints` with method, pattern, and
+  localised description.
+- **Events** — every CloudEvent type from `manifest.eventSubscriptions` that the plugin will
+  receive at `handle_event`.
+
+Both are equally a permission decision: granting endpoints lets the plugin act on the user's data;
+granting events lets it observe domain activity. The single acknowledgement covers both — both are
+all-or-nothing, the backend rejects activation unless every declared item in both lists is
+granted.
+
+- **Add / activate**: select → configure (properties or config iframe) → **Permissions**. Save →
+  `POST .../configuration` `{definitionId, title, properties, grantedEndpoints, grantedEvents}`.
+- **Edit**: same component with `[readonlyMode]="true"`; update sends `{title, properties}` only
+  (both grant sets are immutable post-activation).
 
 ## 5. Data model ✅
 
@@ -143,10 +143,15 @@ Tables (host secret and config properties stored encrypted via the existing `Enc
   **plus** `gzac_callback_base_url`, `event_broker_amqp_url`, `event_broker_exchange` (all
   populated from the add-host UI; the two broker columns nullable for events-off / use-default-exchange).
 - `external_plugin_definition` — `UNIQUE(plugin_id, version)`, `config_schema`, `manifest_json`,
-  `host_id`, `base_url`, `status`. **The manifest's `eventSubscriptions` live here** (inside
-  `manifest_json`), discovered from the host — there is no separate subscription table.
+  `host_id`, `base_url`, `status`. The manifest's declared `eventSubscriptions` live here (inside
+  `manifest_json`), discovered from the host — but the authoritative subscription list for any
+  given activated configuration is `external_plugin_granted_event` (next paragraph), not the
+  manifest copy.
 - `external_plugin_configuration` — `definition_id`, `title`, `properties` (encrypted on schema
   `x-secret` fields), `created_at`.
+- `external_plugin_granted_event` — `configuration_id`, `event_type`, `granted_at`. Pushed to the
+  host on every config push as the actual subscription set. A later manifest update that adds a
+  new event type cannot widen this set — the row only changes when the admin re-grants.
 - `external_plugin_granted_endpoint` — `configuration_id`, `http_method`, `endpoint_pattern`,
   `granted_at`.
 - `external_plugin_*` columns on `process_link` for the `SERVICE_TASK_START` action link.
@@ -227,16 +232,34 @@ JSON by `CloudEventFactory`. `RabbitMessagePublisher` sends them with
 **fanout, durable** exchange declared in `backend/app/gzac/imports/gzac-rabbitmq/definitions.json`
 (also bound to the core app's `valtimo-audit` and `valtimo-inbox` queues).
 
-### 8.2 Per-host broker, learned at config push time
+### 8.2 Per-host broker and granted subscriptions, pushed by GZAC
 
 The plugin host is **not** configured with a broker URL via env variables. It learns each
 configuration's broker from the GZAC push, so one host can serve many GZAC instances and many
 hosts can serve one instance.
 
-`ExternalPluginConfigurationService.pushToHost(config, definition, host)` reads the broker fields
-off the host row, with `host.eventBrokerExchange` falling back to the outbox exchange when null
-and `exchangeType` hardcoded `fanout`. `eventBrokerAmqpUrl` being null causes the entire
-`eventBroker` block to be omitted from the push body — actions still work, events don't.
+`ExternalPluginConfigurationService.pushToHost(config, definition, host)` reads:
+- The broker fields off the host row, with `host.eventBrokerExchange` falling back to the outbox
+  exchange when null and `exchangeType` hardcoded `fanout`. `eventBrokerAmqpUrl` being null
+  causes the entire `eventBroker` block to be omitted from the push body — actions still work,
+  events don't.
+- The granted event types off `external_plugin_granted_event` for this configuration. These are
+  sent as the push body's `eventSubscriptions` array — the host's authoritative subscription set
+  for this configuration, narrower-or-equal to the manifest's declared list.
+
+Push body shape (relevant fields):
+
+```json
+{
+  "pluginId": "case-summary",
+  "pluginVersion": "0.1.0",
+  "properties": { },
+  "serviceToken": "eyJ…",
+  "gzacBaseUrl": "http://gzac:8080",
+  "eventSubscriptions": ["com.ritense.valtimo.document.created", "com.ritense.valtimo.task.completed"],
+  "eventBroker": { "amqpUrl": "amqp://…", "exchange": "valtimo-events", "exchangeType": "fanout" }
+}
+```
 
 ### 8.3 Consume (host, `rabbitmq/event-consumer.ts`)
 
@@ -259,12 +282,20 @@ startup if any persisted configs reference a broker, even before GZAC sends a fr
 
 For each consumed CloudEvent the manager iterates the config registry and invokes `handle_event`
 for every configuration that (a) carries the **same broker key** as the consuming connection (so
-instance A's events never reach instance B's configs) **and** (b) whose
-`manifest.eventSubscriptions` contains the CloudEvent `type`. The Wasm `EventInput` is the
-flattened event (`type, id, source, time, userId, roles, resultType, resultId, result`) plus the
-configuration's `properties`. `serviceToken` and `gzacBaseUrl` ride in the Extism per-call
-`hostContext`, so an event handler's `gzac_api` callback is authenticated and allowlist-enforced
-exactly like an action's.
+instance A's events never reach instance B's configs) **and** (b) whose stored
+`eventSubscriptions` (the granted set pushed by GZAC, persisted in the host's
+`plugin_configurations.event_subscriptions` column) contains the CloudEvent `type`.
+
+The manifest's declared `eventSubscriptions` is **not consulted at dispatch time** — only the
+granted set is. This is the security gate that prevents a plugin author from silently expanding
+the dispatched event set: publishing a new plugin version that adds an event type to the manifest
+does not start delivering that type until an admin explicitly re-grants. The same configuration's
+running v2 keeps receiving only what was originally accepted.
+
+The Wasm `EventInput` is the flattened event (`type, id, source, time, userId, roles, resultType,
+resultId, result`) plus the configuration's `properties`. `serviceToken` and `gzacBaseUrl` ride in
+the Extism per-call `hostContext`, so an event handler's `gzac_api` callback is authenticated and
+allowlist-enforced exactly like an action's.
 
 Multi-host topologies:
 - *Different* hosts on one GZAC instance have distinct queues → **every host receives a copy** of
@@ -445,9 +476,8 @@ through the user-token path.
   enforcement.
 - HTMX `render_page` / `handle_request`.
 - Case tabs / case widgets / menu pages (the iframe surfaces).
-- User-token-scoped endpoints (§13) — including the manifest rename
-  `managementEndpoints` → `endpoints` (§3.8).
-- Event-subscription disclosure in the activation permission screen (§4).
+- User-token-scoped endpoints (§13) — iframe-driven calls on behalf of the logged-in user with
+  PBAC ∩ allowlist intersection.
 - Version display across all UI surfaces (§11).
 - Strict deletion guards for host and configuration when process links exist (§12) — currently
   only the host's plugin-delete route enforces this.
@@ -463,22 +493,16 @@ through the user-token path.
    force override.
 2. **Version visibility (§11)** — surface `pluginId@version` on the configure-plugin tile, in
    the configurations list, in the process-link picker, and in the edit modal header.
-3. **Event-subscription disclosure (§4)** — extend the activation permissions screen with a
-   read-only event-types section.
-4. **Manifest rename `managementEndpoints` → `endpoints` (§3.8)** — single edit pass across
-   `PluginManifest` SDK type, host app type, backend grant validation, frontend model,
-   endpoint-description-resolver, every sample plugin's manifest. Keep `managementEndpoints` as a
-   read fallback for one minor release for any in-flight external plugins.
-5. **User-token-scoped endpoints (§13)** — new `POST /user-token` endpoint, user-token filter
+3. **User-token-scoped endpoints (§13)** — new `POST /user-token` endpoint, user-token filter
    with PBAC ∩ allowlist intersection, frontend wiring in `ExternalPluginIframeComponent.onIframeLoad()`
    to populate `accessToken` from `/user-token`, SDK side already exposes `getAccessToken()`.
-6. Capabilities + host functions + allowlist enforcement; surface in the acceptance screen by
+4. Capabilities + host functions + allowlist enforcement; surface in the acceptance screen by
    category.
-7. Durable / replayable event delivery option (per-host durable queue with TTL) for hosts that
+5. Durable / replayable event delivery option (per-host durable queue with TTL) for hosts that
    must not miss events during downtime.
-8. HTMX pages, case tabs, case widgets, menu pages.
-9. Host database (KV, API logs, retention) + admin log view.
-10. Cleanup: align async-vs-sync SDK docs.
+6. HTMX pages, case tabs, case widgets, menu pages.
+7. Host database (KV, API logs, retention) + admin log view.
+8. Cleanup: align async-vs-sync SDK docs.
 
 ## 16. Verification status
 
@@ -487,15 +511,17 @@ through the user-token path.
   endpoint-description-provider tests, 25 cases).
 - Backend `:backend:app:gzac:compileKotlin`: BUILD SUCCESSFUL.
 - Frontend `ng build` (production): clean.
-- Sample plugin `build:pack`: clean (Wasm + pack including `logo.svg` and `translations.en/nl`).
+- Sample plugin `build:pack`: clean (Wasm + pack including `logo.svg`, `translations.en/nl`,
+  `permissions.endpoints`, and `eventSubscriptions`).
 - `git diff next-minor -- backend/app/gzac/src/main/resources/application.yml`: empty (no
   application.yml additions over `next-minor`).
 - Events, end-to-end against the live `gzac-rabbitmq` broker (sample plugin):
   - host startup re-opens consumers from persisted configs ("Broker consumer started" log on
     boot is expected when a previous push is in the host's PostgreSQL);
-  - config push with `eventBroker` opens one broker consumer; subscribed types
-    (`document.viewed`, `task.completed`, `document.created`) invoke `handle_event` → `completed`;
-    unsubscribed types are not delivered;
+  - config push with `eventBroker` opens one broker consumer; the configuration's granted event
+    types (`document.viewed`, `task.completed`, `document.created`) invoke `handle_event` →
+    `completed`; unsubscribed/ungranted types are not delivered even when they appear in the
+    manifest;
   - `document.created` → `gzac_api` issues `POST /api/v1/document/<id>/note` with the
     service-token bearer; the allowlist filter (§3.4) gates the call;
   - multiple hosts per instance: distinct `HOST_ID`s each handle a copy; shared `HOST_ID` is a

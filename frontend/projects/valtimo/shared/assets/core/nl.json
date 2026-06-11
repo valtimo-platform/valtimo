@@ -1915,9 +1915,14 @@
       "save": "Configuratie opslaan"
     },
     "permissions": {
-      "description": "Deze plugin heeft toegang nodig tot de volgende API-endpoints. Bekijk ze zorgvuldig — na acceptatie kan de plugin deze endpoints namens jou aanroepen.",
-      "descriptionReadonly": "Deze plugin heeft toegang gekregen tot de volgende API-endpoints.",
-      "noEndpoints": "Deze plugin heeft geen beheer-endpoint-rechten nodig.",
+      "description": "Deze plugin heeft toegang nodig tot de volgende API-endpoints en events. Bekijk ze zorgvuldig — na acceptatie kan de plugin deze endpoints namens jou aanroepen en deze events ontvangen.",
+      "descriptionReadonly": "Deze plugin heeft toegang gekregen tot de volgende API-endpoints en events.",
+      "noEndpoints": "Deze plugin heeft geen rechten nodig.",
+      "endpointsHeading": "API-endpoints",
+      "eventsHeading": "Events",
+      "methodHeading": "Methode",
+      "endpointHeading": "Endpoint",
+      "descriptionHeading": "Omschrijving",
       "accept": "Ik begrijp de gevolgen van het accepteren van deze rechten",
       "acceptedNote": "Deze rechten zijn geaccepteerd bij het activeren van de configuratie en kunnen hier niet worden gewijzigd."
     },

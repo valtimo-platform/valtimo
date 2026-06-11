@@ -71,7 +71,7 @@ action("case-summary", (input: ActionInput) => {
 // Subscribe to platform events declared under `eventSubscriptions` in manifest.json. The host
 // routes each matching CloudEvent here. On `document.created` this writes a note back to the
 // document via the GZAC API, exercising the full event -> callback round trip. The POST endpoint is
-// declared under `permissions.managementEndpoints`, so the configuration must be granted it.
+// declared under `permissions.endpoints`, so the configuration must be granted it.
 onEvent((event: EventInput) => {
   log.info(
     `[case-summary] event ${event.type} (resultType=${event.resultType ?? "?"}, ` +

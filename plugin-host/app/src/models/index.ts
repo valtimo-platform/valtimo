@@ -18,4 +18,4 @@ export type { AppConfig } from "./app-config.js";
 export { envSchema } from "./app-config.js";
 export type { HostLogger } from "./host-logger.js";
 export type { PluginConfiguration, EventBrokerConfig } from "./plugin-configuration.js";
-export type { PluginManifest, FrontendBundle, ManagementEndpoint } from "./plugin-manifest.js";
+export type { PluginManifest, FrontendBundle, Endpoint } from "./plugin-manifest.js";
