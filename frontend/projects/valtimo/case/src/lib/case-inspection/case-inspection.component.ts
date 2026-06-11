@@ -30,7 +30,7 @@ import {TranslateModule, TranslateService} from '@ngx-translate/core';
 import {PermissionService} from '@valtimo/access-control';
 import {BreadcrumbService, PageTitleService} from '@valtimo/components';
 import {DocumentService} from '@valtimo/document';
-import {map, Subscription, switchMap, take} from 'rxjs';
+import {forkJoin, Subscription, switchMap, take} from 'rxjs';
 import {TabsModule} from 'carbon-components-angular';
 import {
   CAN_INSPECT_CASE_PERMISSION,
@@ -46,7 +46,6 @@ import {
   CaseInspectionTab,
   ZgwCaseInspectionTabComponent,
 } from '../models';
-import {CaseInspectionService} from '../services';
 import {ZGW_CASE_INSPECTION_TAB_TOKEN} from '../constants';
 
 @Component({
@@ -68,6 +67,7 @@ import {ZGW_CASE_INSPECTION_TAB_TOKEN} from '../constants';
 })
 export class CaseInspectionComponent implements OnInit, OnDestroy {
   public readonly $documentId = signal<string>('');
+  public readonly $caseDefinitionKey = signal<string>('');
   public readonly $activeTab = signal<CaseInspectionTab>(CaseInspectionTab.DOCUMENT);
   public readonly $loading = signal<boolean>(true);
   public readonly $accessDenied = signal<boolean>(false);
@@ -92,7 +92,6 @@ export class CaseInspectionComponent implements OnInit, OnDestroy {
     private readonly translateService: TranslateService,
     private readonly breadcrumbService: BreadcrumbService,
     private readonly documentService: DocumentService,
-    private readonly caseInspectionService: CaseInspectionService,
     @Optional()
     @Inject(ZGW_CASE_INSPECTION_TAB_TOKEN)
     public readonly zgwTabComponent: Type<ZgwCaseInspectionTabComponent> | null
@@ -115,15 +114,21 @@ export class CaseInspectionComponent implements OnInit, OnDestroy {
           take(1),
           switchMap((params: ParamMap) => {
             const documentId = params.get('documentId') ?? '';
+            const caseDefinitionKey = params.get('caseDefinitionKey') ?? '';
             this.$documentId.set(documentId);
-            return this.permissionService.requestPermission(CAN_INSPECT_CASE_PERMISSION, {
-              resource: CASE_DETAIL_PERMISSION_RESOURCE.jsonSchemaDocument,
-              identifier: documentId,
+            this.$caseDefinitionKey.set(caseDefinitionKey);
+
+            return forkJoin({
+              allowed: this.permissionService.requestPermission(CAN_INSPECT_CASE_PERMISSION, {
+                resource: CASE_DETAIL_PERMISSION_RESOURCE.jsonSchemaDocument,
+                identifier: documentId,
+              }),
+              definition: this.documentService.getDocumentDefinition(caseDefinitionKey),
             });
           })
         )
         .subscribe({
-          next: allowed => {
+          next: ({allowed, definition}) => {
             if (!allowed) {
               this.$accessDenied.set(true);
               this.$loading.set(false);
@@ -131,7 +136,7 @@ export class CaseInspectionComponent implements OnInit, OnDestroy {
               return;
             }
             this.$loading.set(false);
-            this.initBreadcrumbs();
+            this.initBreadcrumbs(definition.schema.title);
           },
           error: () => {
             this.$accessDenied.set(true);
@@ -169,37 +174,20 @@ export class CaseInspectionComponent implements OnInit, OnDestroy {
     this.onTabSelected(CaseInspectionTab.LOGS);
   }
 
-  private initBreadcrumbs(): void {
+  private initBreadcrumbs(caseDefinitionTitle: string): void {
     const documentId = this.$documentId();
-    this._subscriptions.add(
-      this.caseInspectionService
-        .getDocument(documentId)
-        .pipe(
-          switchMap(inspection => {
-            const caseDefinitionKey = inspection.definitionId.name;
-            return this.documentService.getDocumentDefinition(caseDefinitionKey).pipe(
-              take(1),
-              map(definition => ({
-                caseDefinitionKey,
-                caseDefinitionTitle: definition.schema.title,
-              }))
-            );
-          })
-        )
-        .subscribe(({caseDefinitionKey, caseDefinitionTitle}) => {
-          const documentId = this.$documentId();
-          this.breadcrumbService.setSecondBreadcrumb({
-            route: [`/cases/${caseDefinitionKey}`],
-            content: caseDefinitionTitle,
-            href: `/cases/${caseDefinitionKey}`,
-          });
-          this.breadcrumbService.setThirdBreadcrumb({
-            route: [`/cases/${caseDefinitionKey}/document/${documentId}`],
-            content: this.translateService.instant('Case details'),
-            href: `/cases/${caseDefinitionKey}/document/${documentId}`,
-          });
-        })
-    );
+    const caseDefinitionKey = this.$caseDefinitionKey();
+
+    this.breadcrumbService.setSecondBreadcrumb({
+      route: [`/cases/${caseDefinitionKey}`],
+      content: caseDefinitionTitle,
+      href: `/cases/${caseDefinitionKey}`,
+    });
+    this.breadcrumbService.setThirdBreadcrumb({
+      route: [`/cases/${caseDefinitionKey}/document/${documentId}`],
+      content: this.translateService.instant('Case details'),
+      href: `/cases/${caseDefinitionKey}/document/${documentId}`,
+    });
   }
 
   private restoreTabFromQueryParam(): void {

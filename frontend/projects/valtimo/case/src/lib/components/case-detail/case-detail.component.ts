@@ -479,7 +479,13 @@ export class CaseDetailComponent implements AfterViewInit, OnDestroy {
   }
 
   public navigateToInspection(): void {
-    this.router.navigate(['/case-inspection', this.documentId]);
+    this.router.navigate([
+      '/cases',
+      this.caseDefinitionKey,
+      'document',
+      this.documentId,
+      'case-inspection',
+    ]);
   }
 
   public onConfirmDelete(): void {
