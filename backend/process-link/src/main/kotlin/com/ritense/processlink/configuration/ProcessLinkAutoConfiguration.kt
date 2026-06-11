@@ -46,6 +46,7 @@ import com.ritense.valtimo.event.ProcessDefinitionDeployedEvent
 import com.ritense.valtimo.operaton.service.OperatonRepositoryService
 import com.ritense.valtimo.service.OperatonProcessService
 import com.ritense.valtimo.service.OperatonTaskService
+import com.ritense.valtimo.service.ProcessPropertyService
 import com.ritense.valtimo.task.service.UserTaskOpenedStatusService
 import org.operaton.bpm.engine.RepositoryService
 import org.springframework.boot.autoconfigure.AutoConfiguration
@@ -142,7 +143,8 @@ class ProcessLinkAutoConfiguration {
         processDefinitionCaseDefinitionService: ProcessDefinitionCaseDefinitionService,
         repositoryService: RepositoryService,
         processDeploymentService: ProcessDeploymentService,
-        processDefinitionValidator: ProcessDefinitionValidator
+        processDefinitionValidator: ProcessDefinitionValidator,
+        processPropertyService: ProcessPropertyService
     ): ProcessLinkResource {
         return ProcessLinkResource(
             processLinkService,
@@ -151,7 +153,8 @@ class ProcessLinkAutoConfiguration {
             processDefinitionCaseDefinitionService,
             repositoryService,
             processDeploymentService,
-            processDefinitionValidator
+            processDefinitionValidator,
+            processPropertyService
         )
     }
 

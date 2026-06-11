@@ -1517,6 +1517,7 @@
     "validationSuccessNotification": "Process definition is valid",
     "validationWarningNotification": "Process definition has warnings",
     "draft": "Draft",
+    "status": "Status",
     "draftTooltip": "When enabled, the process definition is saved as a draft. Draft definitions are not validated and cannot be started.",
     "validationErrors": "Validation errors",
     "validationErrorsCount": "Validation errors ({{count}})",

@@ -378,11 +378,7 @@ export class ProcessManagementBuilderComponent implements AfterViewInit, OnDestr
       .subscribe({
         next: validationResult => {
           this.highlightValidationErrors(validationResult.errors);
-          if (!validationResult.isValid) {
-            this.showNotification('validationError');
-          } else if (validationResult.hasWarnings) {
-            this.showNotification('validationWarning');
-          } else {
+          if (validationResult.isValid && !validationResult.hasWarnings) {
             this.showNotification('validationSuccess');
           }
         },
@@ -456,7 +452,6 @@ export class ProcessManagementBuilderComponent implements AfterViewInit, OnDestr
         error: (error: unknown) => {
           if (this.isValidationError(error)) {
             this.highlightValidationErrors((error as HttpErrorResponse).error.errors);
-            this.showNotification('validationError');
           } else {
             this.showNotification('error');
           }
@@ -521,7 +516,6 @@ export class ProcessManagementBuilderComponent implements AfterViewInit, OnDestr
             this.showNotification('alreadyExists');
           } else if (this.isValidationError(error)) {
             this.highlightValidationErrors((error as HttpErrorResponse).error.errors);
-            this.showNotification('validationError');
           } else {
             this.showNotification('error');
           }
@@ -617,7 +611,6 @@ export class ProcessManagementBuilderComponent implements AfterViewInit, OnDestr
           if (!validationResult.isValid) {
             // Has errors - show them and block deployment
             this.highlightValidationErrors(validationResult.errors);
-            this.showNotification('validationError');
           } else if (validationResult.hasWarnings) {
             // Only warnings - show confirmation dialog
             this.highlightValidationErrors(validationResult.errors);

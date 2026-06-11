@@ -215,7 +215,7 @@
         <button
           cdsButton="secondary"
           [size]="actionsObs.compactMode ? 'sm' : 'md'"
-          [disabled]="actionsObs.loading || actionsObs.draft"
+          [disabled]="actionsObs.loading"
           (click)="validateProcessDefinition(actionsObs.isReadOnlyProcess)"
         >
           {{ 'processManagement.validate' | translate }}

@@ -1545,6 +1545,7 @@
     "validationSuccessNotification": "Procesdefinitie is geldig",
     "validationWarningNotification": "Procesdefinitie bevat waarschuwingen",
     "draft": "Concept",
+    "status": "Status",
     "draftTooltip": "Wanneer ingeschakeld wordt de procesdefinitie opgeslagen als concept. Concepten worden niet gevalideerd en kunnen niet worden gestart.",
     "validationErrors": "Validatiefouten",
     "validationErrorsCount": "Validatiefouten ({{count}})",

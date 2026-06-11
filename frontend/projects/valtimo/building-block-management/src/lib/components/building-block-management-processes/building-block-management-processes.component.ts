@@ -76,12 +76,19 @@ export class BuildingBlockManagementProcessesComponent implements OnInit, OnDest
     this.translateService.stream('key'),
   ]).pipe(
     map(([processDefinitions]) =>
-      processDefinitions.map(definition => ({
-        ...definition,
-        mainText:
-          definition.main &&
-          this.translateService.instant('buildingBlockManagement.processDefinition.mainText'),
-      }))
+      processDefinitions.map(definition => {
+        const statusTags: Array<{content: string; type: string}> = [];
+        if (definition.main) {
+          statusTags.push({content: this.translateService.instant('buildingBlockManagement.processDefinition.mainText'), type: 'blue'});
+        }
+        if (definition.draft) {
+          statusTags.push({content: this.translateService.instant('processManagement.draft'), type: 'red'});
+        }
+        return {
+          ...definition,
+          statusTags,
+        };
+      })
     ),
     tap(
       buildingBlockProcessDefinitionItems =>
@@ -93,14 +100,10 @@ export class BuildingBlockManagementProcessesComponent implements OnInit, OnDest
     {key: 'name', label: 'buildingBlockManagement.processDefinition.name'},
     {key: 'key', label: 'buildingBlockManagement.processDefinition.key'},
     {
-      key: 'draft',
-      label: 'processManagement.draft',
-      viewType: ViewType.BOOLEAN,
-    },
-    {
-      key: 'mainText',
-      label: '',
+      key: 'statusTags',
+      label: 'processManagement.status',
       viewType: ViewType.TAGS,
+      tagAmount: 3,
     },
   ];
 

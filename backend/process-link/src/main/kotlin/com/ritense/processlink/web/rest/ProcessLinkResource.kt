@@ -41,6 +41,7 @@ import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import com.ritense.valtimo.contract.case_.CaseDefinitionId
 import com.ritense.valtimo.contract.domain.ValtimoMediaType.APPLICATION_JSON_UTF8_VALUE
 import com.ritense.valtimo.service.OperatonProcessService
+import com.ritense.valtimo.service.ProcessPropertyService
 import com.ritense.valtimo.web.rest.dto.ProcessDefinitionWithPropertiesDto
 import jakarta.validation.Valid
 import org.operaton.bpm.engine.RepositoryService
@@ -75,7 +76,8 @@ class ProcessLinkResource(
     private val processDefinitionCaseDefinitionService: ProcessDefinitionCaseDefinitionService,
     private val repositoryService: RepositoryService,
     private val processDeploymentService: ProcessDeploymentService,
-    private val processDefinitionValidator: ProcessDefinitionValidator
+    private val processDefinitionValidator: ProcessDefinitionValidator,
+    private val processPropertyService: ProcessPropertyService
 ) {
 
     @GetMapping("/v1/process-link")
@@ -184,8 +186,10 @@ class ProcessLinkResource(
                 .getUnlinkedDeployedDefinitions()
                 .stream()
                 .map { definition ->
+                    val processDefinitionDto = ProcessDefinitionWithPropertiesDto.fromProcessDefinition(definition)
+                    processDefinitionDto.setReadOnly(processPropertyService.isReadOnly(definition.key))
                     ProcessDefinitionResponseDto(
-                        ProcessDefinitionWithPropertiesDto.fromProcessDefinition(definition),
+                        processDefinitionDto,
                         processLinkService.getProcessLinks(definition.id).map {
                             getProcessLinkMapper(it.processLinkType).toProcessLinkResponseDto(it)
                         },
@@ -209,8 +213,10 @@ class ProcessLinkResource(
         }
 
         val responseDtos = definitions.map { definition ->
+            val processDefinitionDto = ProcessDefinitionWithPropertiesDto.fromProcessDefinition(definition)
+            processDefinitionDto.setReadOnly(processPropertyService.isReadOnly(definition.key))
             ProcessDefinitionResponseDto(
-                ProcessDefinitionWithPropertiesDto.fromProcessDefinition(definition),
+                processDefinitionDto,
                 processLinkService.getProcessLinks(definition.id).map {
                     getProcessLinkMapper(it.processLinkType).toProcessLinkResponseDto(it)
                 },
