@@ -43,6 +43,7 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPat
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 import org.springframework.test.web.servlet.setup.MockMvcBuilders
 import org.springframework.transaction.annotation.Transactional
+import org.springframework.validation.beanvalidation.LocalValidatorFactoryBean
 
 @Transactional
 internal class IkoSearchFieldManagementResourceTest {
@@ -60,6 +61,7 @@ internal class IkoSearchFieldManagementResourceTest {
         mockMvc = MockMvcBuilders.standaloneSetup(resource)
             .setCustomArgumentResolvers(PageableHandlerMethodArgumentResolver())
             .setMessageConverters(MappingJackson2HttpMessageConverter(MapperSingleton.get()))
+            .setValidator(LocalValidatorFactoryBean().apply { afterPropertiesSet() })
             .build();
     }
 
@@ -228,6 +230,33 @@ internal class IkoSearchFieldManagementResourceTest {
             .andExpect(jsonPath("$[0].fieldType").value("single"))
             .andExpect(jsonPath("$[0].matchType").value("exact"))
             .andExpect(jsonPath("$[0].required").value(true))
+    }
+
+    @Test
+    fun `should reject create iko searchField with title exceeding column cap`() {
+        val request = IkoSearchFieldCreateRequest(
+            key = "bsn",
+            title = "x".repeat(257),
+            path = "/bsn",
+            dataType = DataType.BSN,
+            fieldType = FieldType.SINGLE,
+            matchType = SearchFieldMatchType.EXACT,
+            dropdownDataProvider = null,
+            required = true,
+        )
+
+        mockMvc.perform(
+            post(
+                "/api/management/v1/iko-view/{ikoViewKey}/search-action/{ikoSearchActionKey}/search-field/{searchFieldKey}",
+                "klant",
+                "bsn",
+                "bsn"
+            )
+                .content(objectMapper.writeValueAsString(request))
+                .contentType(APPLICATION_JSON_VALUE)
+        )
+            .andDo(print())
+            .andExpect(status().isBadRequest())
     }
 
     @Test

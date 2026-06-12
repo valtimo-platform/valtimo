@@ -22,7 +22,7 @@ import {
   OnInit,
   ViewEncapsulation,
 } from '@angular/core';
-import {FormBuilder, ReactiveFormsModule, Validators} from '@angular/forms';
+import {FormBuilder, FormsModule, ReactiveFormsModule, Validators} from '@angular/forms';
 import {TranslateModule, TranslateService} from '@ngx-translate/core';
 import {InputLabelModule, MdiIconSelectorComponent} from '@valtimo/components';
 import {
@@ -38,7 +38,12 @@ import {
   METROLINE_MODE_TRANSLATION_KEYS,
   WIDGET_CONTENT_METROLINE_TEST_IDS,
 } from '../../../../constants';
-import {MetrolineMode, MetrolineOrientation, WidgetMetrolineContent} from '../../../../models';
+import {
+  MetrolineMode,
+  MetrolineOrientation,
+  WidgetIkoMetrolineContent,
+  WidgetMetrolineContent,
+} from '../../../../models';
 import {MetrolineWidgetApiService, WidgetWizardService} from '../../../../services';
 
 @Component({
@@ -50,6 +55,7 @@ import {MetrolineWidgetApiService, WidgetWizardService} from '../../../../servic
   imports: [
     CommonModule,
     DropdownModule,
+    FormsModule,
     InputLabelModule,
     InputModule,
     LayerModule,
@@ -64,10 +70,17 @@ export class WidgetManagementMetrolineComponent implements OnDestroy, OnInit {
 
   protected readonly testIds = WIDGET_CONTENT_METROLINE_TEST_IDS;
   protected readonly orientationOptions = MetrolineOrientation;
+  protected readonly MetrolineMode = MetrolineMode;
+
+  public readonly $widgetContext = this.widgetWizardService.$widgetContext;
 
   private readonly _initialContent = this.widgetWizardService.$widgetContent() as
     | WidgetMetrolineContent
+    | WidgetIkoMetrolineContent
     | null;
+
+  private readonly _initialCaseContent = this._initialContent as WidgetMetrolineContent | null;
+  private readonly _initialIkoContent = this._initialContent as WidgetIkoMetrolineContent | null;
 
   public readonly form = this.fb.group({
     widgetTitle: this.fb.control(this.widgetWizardService.$widgetTitle(), Validators.required),
@@ -77,9 +90,13 @@ export class WidgetManagementMetrolineComponent implements OnDestroy, OnInit {
       Validators.required
     ),
     mode: this.fb.control<MetrolineMode | null>(
-      this._initialContent?.mode ?? null,
+      this._initialCaseContent?.mode ?? null,
       Validators.required
     ),
+    source: this.fb.control<string>(this._initialIkoContent?.source ?? ''),
+    titlePath: this.fb.control<string>(this._initialIkoContent?.titlePath ?? ''),
+    labelPath: this.fb.control<string | null>(this._initialIkoContent?.labelPath ?? null),
+    completedPath: this.fb.control<string>(this._initialIkoContent?.completedPath ?? ''),
   });
 
   public readonly modeItems$: Observable<ListItem[]> = combineLatest([
@@ -97,6 +114,18 @@ export class WidgetManagementMetrolineComponent implements OnDestroy, OnInit {
   ) {}
 
   public ngOnInit(): void {
+    if (this.$widgetContext() === 'iko') {
+      // Mode is irrelevant for IKO widgets: the data shape (per-item completedPath) drives rendering.
+      this.form.controls.mode.clearValidators();
+      this.form.controls.mode.updateValueAndValidity({emitEvent: false});
+      this.form.controls.source.addValidators(Validators.required);
+      this.form.controls.titlePath.addValidators(Validators.required);
+      this.form.controls.completedPath.addValidators(Validators.required);
+      this.form.controls.source.updateValueAndValidity({emitEvent: false});
+      this.form.controls.titlePath.updateValueAndValidity({emitEvent: false});
+      this.form.controls.completedPath.updateValueAndValidity({emitEvent: false});
+    }
+
     this.syncWizardServiceFromForm();
     this.widgetWizardService.$widgetContentValid.set(this.form.valid);
 
@@ -119,14 +148,29 @@ export class WidgetManagementMetrolineComponent implements OnDestroy, OnInit {
     this.form.patchValue({mode: event.item.id as MetrolineMode});
   }
 
+  public onOrientationChange(value: MetrolineOrientation): void {
+    this.form.controls.orientation.setValue(value);
+  }
+
   private syncWizardServiceFromForm(): void {
     const value = this.form.getRawValue();
     this.widgetWizardService.$widgetTitle.set(value.widgetTitle ?? '');
     this.widgetWizardService.$widgetIcon.set(value.widgetIcon ?? '');
-    this.widgetWizardService.$widgetContent.set({
-      orientation: value.orientation ?? MetrolineOrientation.HORIZONTAL,
-      mode: value.mode,
-    });
+
+    if (this.$widgetContext() === 'iko') {
+      this.widgetWizardService.$widgetContent.set({
+        orientation: value.orientation ?? MetrolineOrientation.HORIZONTAL,
+        source: value.source ?? '',
+        titlePath: value.titlePath ?? '',
+        labelPath: value.labelPath || null,
+        completedPath: value.completedPath ?? '',
+      } as WidgetIkoMetrolineContent);
+    } else {
+      this.widgetWizardService.$widgetContent.set({
+        orientation: value.orientation ?? MetrolineOrientation.HORIZONTAL,
+        mode: value.mode,
+      } as WidgetMetrolineContent);
+    }
   }
 
   private buildModeItems(availableModes: MetrolineMode[]): ListItem[] {

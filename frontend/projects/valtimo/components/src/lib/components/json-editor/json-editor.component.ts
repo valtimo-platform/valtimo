@@ -66,7 +66,7 @@ export class JsonEditorComponent {
   @Input() formatOnLoad = true;
   @Input() heightPx!: number;
   @Input() heightStyle!: string;
-  @Input() jsonSchema?: string;
+  @Input() jsonSchema?: object;
   @Input() showEditButton = true;
   @Input() widthPx!: number;
 

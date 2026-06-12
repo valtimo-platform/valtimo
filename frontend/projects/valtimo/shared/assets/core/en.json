@@ -1003,6 +1003,14 @@
       "highlight": {
         "title": "Highlight",
         "description": "A small widget that highlights a single value or a count"
+      },
+      "generic": {
+        "title": "Generic widgets",
+        "description": "Broadly applicable — wire them up to any data structure (fields, tables, collections). More configuration, but no limits on what they can show."
+      },
+      "specific": {
+        "title": "Specific widgets",
+        "description": "Each is built for one kind of data — a person, a count, a single value. Fewer options to configure, but only suitable for that purpose."
       }
     },
     "width": {
@@ -1089,7 +1097,7 @@
         "keyTooltip": "Value resolver path to GeoJSON data"
       },
       "person-card": {
-        "description": "Pick the icon and the source paths for each person field.",
+        "description": "Choose the person to render and which sections to show on the card.",
         "fullNameLabel": "Full name",
         "birthDateLabel": "Birth date (Optional)",
         "bsnLabel": "BSN (Optional)",
@@ -1154,6 +1162,28 @@
           "placeholder": "Select a status source",
           "internalStatus": "Internal status",
           "zaakStatus": "Zaak status"
+        },
+        "iko": {
+          "source": {
+            "label": "Items source",
+            "placeholder": "iko:/statushistorie",
+            "tooltip": "Path expression resolving to an array. Each element of the array becomes one step in the timeline. Example: iko:/statushistorie"
+          },
+          "titlePath": {
+            "label": "Title path",
+            "placeholder": "/statustype/omschrijving",
+            "tooltip": "Path applied to each item to extract its title. Example: /statustype/omschrijving"
+          },
+          "labelPath": {
+            "label": "Tooltip text path (optional)",
+            "placeholder": "/statustype/toelichting",
+            "tooltip": "Optional path applied to each item to extract the text shown in the step's info tooltip (the icon next to the title). Example: /statustype/toelichting"
+          },
+          "completedPath": {
+            "label": "Completion timestamp path",
+            "placeholder": "/datumStatusGezet",
+            "tooltip": "Path applied to each item to extract the timestamp at which the step was reached. Expected as an ISO-8601 timestamp, with or without a timezone offset (e.g. 2025-08-15T10:30:00, 2025-08-15T10:30:00Z, or 2025-08-15T10:30:00+02:00). Items whose value is empty or unparseable are rendered as not yet reached. Example: /datumStatusGezet"
+          }
         }
       },
       "highlight": {
@@ -2211,6 +2241,255 @@
       "noResults": {
         "description": "Click <strong>Add new role</strong> to start designing your role",
         "title": "No roles added"
+      },
+      "tabs": {
+        "summary": "Summary",
+        "jsonEditor": "JSON editor"
+      }
+    },
+    "resourceTypes": {
+      "caseDefinition": "Case definition",
+      "caseTab": "Case tab",
+      "caseWidget": "Case widget",
+      "caseWidgetTabWidget": "Case tab widget",
+      "dashboard": "Dashboard",
+      "jsonSchemaDocument": "Document",
+      "jsonSchemaDocumentDefinition": "Document definition",
+      "jsonSchemaDocumentSnapshot": "Document snapshot",
+      "searchField": "Search field",
+      "zgwDocument": "ZGW document",
+      "ikoView": "IKO view",
+      "note": "Note",
+      "object": "Objecten API Object",
+      "resourcePermission": "Uploaded resource",
+      "team": "Team",
+      "user": "User",
+      "operatonExecution": "Process instance",
+      "operatonIdentityLink": "User assignment",
+      "operatonProcessDefinition": "Process definition",
+      "operatonTask": "Task"
+    },
+    "actions": {
+      "view": "view",
+      "view_list": "view list",
+      "create": "create",
+      "modify": "modify",
+      "delete": "delete",
+      "assign": "assign",
+      "assignable": "be assigned to",
+      "claim": "claim",
+      "complete": "complete",
+      "export": "export"
+    },
+    "filter": {
+      "resourceType": "Resource type",
+      "action": "Action",
+      "allResourceTypes": "All resource types",
+      "allActions": "All actions"
+    },
+    "overview": {
+      "canDo": "Can",
+      "can": "can",
+      "cannot": "cannot",
+      "and": "and",
+      "or": "or",
+      "when": "when",
+      "unconditional": "without conditions",
+      "relatedResource": "Related",
+      "where": "where",
+      "atJsonPath": "at JSON path",
+      "inContextOf": "in the context of",
+      "noContext": "without context",
+      "customField": "(custom field)",
+      "customResource": "(custom resource)",
+      "noAccess": "No access",
+      "empty": {
+        "title": "No permissions",
+        "message": "This role has no permissions configured yet."
+      },
+      "operators": {
+        "eq": "equals",
+        "neq": "does not equal",
+        "gt": "is greater than",
+        "gte": "is greater than or equal to",
+        "lt": "is less than",
+        "lte": "is less than or equal to",
+        "in": "is one of",
+        "list_contains": "contains"
+      },
+      "specialValues": {
+        "currentUserId": "the current user's ID",
+        "currentUsername": "the current user",
+        "currentUserEmail": "the current user's email",
+        "currentUserRoles": "the current user's roles",
+        "currentUserTeams": "the current user's teams",
+        "null": "(none)",
+        "empty": "(empty)"
+      },
+      "fields": {
+        "caseDefinition": {
+          "idKey": "case definition key",
+          "idVersionTag": "case definition version",
+          "name": "case definition name",
+          "description": "description",
+          "basedOnVersionTag": "based on version",
+          "final": "is final",
+          "active": "is active",
+          "canHaveAssignee": "can have assignee",
+          "autoAssignTasks": "auto-assign tasks",
+          "hasExternalStartForm": "has external start form",
+          "externalStartFormUrl": "external start form URL",
+          "externalStartFormDescription": "external start form description",
+          "originalKey": "original key",
+          "originalName": "original name",
+          "originalVersionTag": "original version",
+          "createdBy": "created by",
+          "createdDate": "created date"
+        },
+        "caseTab": {
+          "idCaseDefinitionIdKey": "case definition key",
+          "idCaseDefinitionIdVersionTag": "case definition version",
+          "idKey": "tab key",
+          "name": "tab name",
+          "tabOrder": "tab order",
+          "type": "tab type",
+          "contentKey": "content key",
+          "createdOn": "created on",
+          "createdBy": "created by",
+          "showTasks": "shows tasks"
+        },
+        "caseWidgetTabWidget": {
+          "title": "title",
+          "icon": "icon",
+          "color": "color",
+          "order": "order",
+          "width": "width",
+          "highContrast": "high contrast",
+          "isCompact": "is compact"
+        },
+        "dashboard": {
+          "key": "dashboard key",
+          "title": "title",
+          "description": "description",
+          "order": "order",
+          "createdBy": "created by",
+          "createdOn": "created on"
+        },
+        "jsonSchemaDocument": {
+          "id": "document ID",
+          "contentContent": "document content",
+          "assigneeId": "assignee",
+          "assigneeFullName": "assignee name",
+          "assignedTeamKey": "assigned team",
+          "assignedTeamTitle": "assigned team title",
+          "documentDefinitionIdName": "document definition name",
+          "documentDefinitionIdVersion": "document definition version",
+          "documentDefinitionIdCaseDefinitionIdKey": "case definition key (via document definition)",
+          "documentDefinitionIdCaseDefinitionIdVersionTag": "case definition version (via document definition)",
+          "version": "version",
+          "createdOn": "created on",
+          "modifiedOn": "modified on",
+          "createdBy": "created by",
+          "sequence": "sequence",
+          "internalStatus": "internal status",
+          "retentionDate": "retention date"
+        },
+        "jsonSchemaDocumentDefinition": {
+          "idName": "document definition name",
+          "idVersion": "document definition version",
+          "createdOn": "created on"
+        },
+        "jsonSchemaDocumentSnapshot": {
+          "id": "snapshot ID",
+          "createdOn": "created on",
+          "createdBy": "created by"
+        },
+        "searchField": {
+          "key": "search field key",
+          "title": "title",
+          "path": "JSON path",
+          "dataType": "data type",
+          "fieldType": "field type",
+          "matchType": "match type",
+          "order": "order"
+        },
+        "zgwDocument": {
+          "caseDocumentId": "case document ID",
+          "vertrouwelijkheidaanduiding": "confidentiality",
+          "status": "status",
+          "informatieobjecttypeUrl": "document type URL",
+          "informatieobjecttypeOmschrijving": "document type description"
+        },
+        "ikoView": {
+          "key": "IKO view key",
+          "title": "title"
+        },
+        "note": {
+          "id": "note ID",
+          "createdByUserId": "created by",
+          "createdByUserFullName": "created by name",
+          "createdDate": "created date",
+          "content": "content",
+          "documentId": "document ID"
+        },
+        "team": {
+          "key": "team key",
+          "title": "team title",
+          "users": "team members"
+        },
+        "user": {
+          "roles": "user roles"
+        },
+        "operatonExecution": {
+          "id": "process instance ID",
+          "businessKey": "business key",
+          "activityId": "current activity",
+          "activityInstanceId": "activity instance ID",
+          "active": "is active",
+          "caseInstanceId": "case instance ID",
+          "processInstanceId": "process instance ID",
+          "processDefinitionId": "process definition ID",
+          "processDefinitionKey": "process definition key",
+          "parentId": "parent execution ID",
+          "tenantId": "tenant ID"
+        },
+        "operatonIdentityLink": {
+          "groupId": "Candidate group",
+          "type": "link type",
+          "userId": "user ID",
+          "processDefinitionKey": "process definition key",
+          "tenantId": "tenant ID"
+        },
+        "operatonProcessDefinition": {
+          "id": "process definition ID",
+          "category": "category",
+          "name": "process name",
+          "key": "process definition key",
+          "version": "version",
+          "versionTag": "version tag",
+          "deploymentId": "deployment ID",
+          "isStartableInTasklist": "startable in tasklist",
+          "tenantId": "tenant ID"
+        },
+        "operatonTask": {
+          "id": "task ID",
+          "name": "task name",
+          "description": "description",
+          "taskDefinitionKey": "task definition key",
+          "owner": "owner",
+          "assignee": "assignee",
+          "priority": "priority",
+          "createTime": "created at",
+          "lastUpdated": "last updated",
+          "dueDate": "due date",
+          "followUpDate": "follow-up date",
+          "caseInstanceId": "case instance ID",
+          "caseDefinitionId": "case definition ID",
+          "processInstanceId": "process instance ID",
+          "processDefinitionId": "process definition ID",
+          "processDefinitionKey": "process definition key",
+          "tenantId": "tenant ID"
+        }
       }
     }
   },
@@ -2305,7 +2584,7 @@
       "title": "Map"
     },
     "personCard": {
-      "age": "{{age}} yr"
+      "age": "{{age}} year"
     },
     "metroline": {
       "stepState": {
@@ -2330,6 +2609,14 @@
       "selectedResult": "Selected result",
       "openInNewTab": "Open in new tab"
     }
+  },
+  "widgetLayout": {
+    "label": "Layout algorithm",
+    "muuriGapFree": "Default (less gaps)",
+    "muuri": "Default",
+    "beautiful": "Gap free",
+    "infoTitle": "About the layout algorithm",
+    "info": "Default and Default (less gaps) keep the widgets in their configured order as much as possible, which can leave empty gaps. Gap free may reorder widgets within a section to remove those gaps and almost always shows a clean layout without holes."
   },
   "ikoManagement": {
     "preparingDownload": "Preparing download",

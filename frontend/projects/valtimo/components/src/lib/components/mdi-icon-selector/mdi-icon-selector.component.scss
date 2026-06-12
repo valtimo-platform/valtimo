@@ -26,6 +26,10 @@
   }
 }
 
+:host ::ng-deep .cds--list-box {
+  background: var(--cds-layer-01);
+}
+
 .mdi-icon-preview {
   width: 24px;
   height: 24px;

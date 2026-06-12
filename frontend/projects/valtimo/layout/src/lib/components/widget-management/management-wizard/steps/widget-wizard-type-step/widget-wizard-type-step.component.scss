@@ -1,0 +1,38 @@
+/*!
+ * Copyright 2015-2025 Ritense BV, the Netherlands.
+ *
+ * Licensed under EUPL, Version 1.2 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" basis,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+.valtimo-widget-wizard-type-step {
+  &__group + &__group {
+    margin-top: 24px;
+  }
+
+  &__group-title {
+    font-weight: 600;
+    margin-bottom: 4px;
+  }
+
+  &__group-description {
+    margin-bottom: 12px;
+    font-size: 0.875rem;
+    line-height: 1.25rem;
+    letter-spacing: 0.16px;
+    color: #525252;
+  }
+
+  &__group cds-selection-tile {
+    position: relative;
+  }
+}

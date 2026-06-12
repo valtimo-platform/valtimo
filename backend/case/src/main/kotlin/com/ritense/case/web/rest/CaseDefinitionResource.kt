@@ -51,6 +51,7 @@ import com.ritense.valtimo.contract.domain.ValtimoMediaType.APPLICATION_JSON_UTF
 import com.ritense.valtimo.contract.plugin.DanglingPluginConfigurationDto
 import com.ritense.valtimo.contract.plugin.PluginConfigurationMappingResolver
 import io.github.oshai.kotlinlogging.KotlinLogging
+import jakarta.validation.Valid
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.data.domain.Sort
@@ -112,7 +113,7 @@ class CaseDefinitionResource(
     @RunWithoutAuthorization
     @PostMapping("/management/v1/case-definition/draft")
     fun createCaseDefinitionDraft(
-        @RequestBody request: CaseDefinitionDraftCreateRequest
+        @Valid @RequestBody request: CaseDefinitionDraftCreateRequest
     ): ResponseEntity<CaseDefinitionResponseDto> {
         return ResponseEntity.ok(
             CaseDefinitionResponseDto.of(
@@ -136,7 +137,7 @@ class CaseDefinitionResource(
     fun updateCaseDefinition(
         @LoggableResource("caseDefinitionKey") @PathVariable caseDefinitionKey: String,
         @LoggableResource("versionTag") @PathVariable versionTag: String,
-        @RequestBody request: CaseDefinitionUpdateRequest
+        @Valid @RequestBody request: CaseDefinitionUpdateRequest
     ): ResponseEntity<CaseDefinitionResponseDto> {
         val caseDefinition = service.updateCaseDefinition(
             CaseDefinitionId.of(caseDefinitionKey, versionTag),
@@ -247,7 +248,7 @@ class CaseDefinitionResource(
     @PatchMapping("/management/v1/case-definition/{caseDefinitionKey}/version/{caseDefinitionVersionTag}/settings")
     @RunWithoutAuthorization
     fun updateCaseSettingsForManagement(
-        @RequestBody caseSettingsDto: CaseSettingsDto,
+        @Valid @RequestBody caseSettingsDto: CaseSettingsDto,
         @LoggableResource("caseDefinitionKey") @PathVariable caseDefinitionKey: String,
         @LoggableResource("caseDefinitionVersionTag") @PathVariable caseDefinitionVersionTag: String,
     ): ResponseEntity<CaseDefinitionSettingsResponseDto> {
@@ -314,7 +315,7 @@ class CaseDefinitionResource(
     @PostMapping("/v1/case/{caseDefinitionName}/hidden-list-column")
     fun setHiddenListColumnsForUser(
         @LoggableResource("documentDefinitionName") @PathVariable caseDefinitionName: String,
-        @RequestBody hiddenCaseListColumnDtoList: List<HiddenCaseListColumnDto>
+        @Valid @RequestBody hiddenCaseListColumnDtoList: List<HiddenCaseListColumnDto>
     ): ResponseEntity<Any> {
         val currentUserId = UserManagementServiceHolder.currentInstance.currentUserId
         service.saveHiddenCaseListColumns(caseDefinitionName, hiddenCaseListColumnDtoList, currentUserId)
@@ -338,7 +339,7 @@ class CaseDefinitionResource(
     @RunWithoutAuthorization
     fun createCaseListColumnForManagement(
         @LoggableResource("documentDefinitionName") @PathVariable caseDefinitionName: String,
-        @RequestBody caseListColumnDto: CaseListColumnDto
+        @Valid @RequestBody caseListColumnDto: CaseListColumnDto
     ): ResponseEntity<Any> {
         service.createListColumn(caseDefinitionName, caseListColumnDto)
         return ResponseEntity.ok().build()
@@ -348,7 +349,7 @@ class CaseDefinitionResource(
     @RunWithoutAuthorization
     fun updateListColumnForManagement(
         @LoggableResource("documentDefinitionName") @PathVariable caseDefinitionName: String,
-        @RequestBody caseListColumnDtoList: List<CaseListColumnDto>
+        @Valid @RequestBody caseListColumnDtoList: List<CaseListColumnDto>
     ): ResponseEntity<Any> {
         service.updateListColumns(caseDefinitionName, caseListColumnDtoList)
         return ResponseEntity.ok().build()
