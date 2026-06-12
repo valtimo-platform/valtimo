@@ -28,6 +28,7 @@ Status legend: ✅ implemented & verified · 🟡 implemented, POC-level · ⛔ 
 | Process-link (`SERVICE_TASK_START`) | `backend/external-plugin/.../processlink/` + frontend process-link | 🟡 |
 | Per-host broker / callback config + defaults endpoint | `backend/external-plugin/.../web/rest/ExternalPluginManagementResource.kt#hostDefaults` | ✅ |
 | Plugin assets (logo + i18n bundle in manifest, served by host) | `plugin-host/plugin-sdk/bin/valtimo-plugin-pack.mjs`, `plugin-host/app/src/routes/plugin-bundles.ts` | ✅ |
+| GZAC→host action-call auth (HMAC-SHA256, replay-protected) | `client/ExternalPluginHostClient.kt` + `security/ExternalPluginHmacSigner.kt` ↔ `plugin-host/app/src/security/hmac.ts`, `routes/plugin-actions.ts` | ✅ |
 
 Single-core-app model with **multiple hosts per instance**: the core app pushes each configuration
 directly to its host with a freshly issued service token, a `gzacBaseUrl` callback target taken
@@ -65,9 +66,15 @@ callbacks.
 - `create()` validates properties against the definition JSON schema, then
   `validateGrantedEndpointsCoverManifest()` **rejects the configuration unless every endpoint
   declared in the manifest is granted** — permissions are all-or-nothing.
+- `create()` likewise runs `validateGrantedEventsCoverManifest()` — the same all-or-nothing gate
+  applied to `manifest.eventSubscriptions`. Both `grantedEndpoints` and `grantedEvents` are
+  **required** parameters of `create()`; event grants are enforced at the service layer, not only
+  in the UX (§4).
 - Grants persist to `external_plugin_granted_endpoint` (`configuration_id`, `http_method`,
-  `endpoint_pattern`); `update()` with non-null `grantedEndpoints` replaces them, null leaves them
-  unchanged.
+  `endpoint_pattern`) and `external_plugin_granted_event` (`configuration_id`, `event_type`);
+  `update()` with non-null `grantedEndpoints` replaces the endpoint grants, null leaves them
+  unchanged. `update()` has **no** `grantedEvents` parameter — event grants cannot change after
+  activation.
 
 **3.2 Token (`service/ExternalPluginServiceTokenService.kt`)** — HS256 JWT:
 `sub=external-plugin:{pluginId}:{configId}`, `type=external_plugin_service`, `plugin_config_id`,
@@ -111,6 +118,27 @@ manifest. The same declaration is the source of truth for both the service-token
 section) and the upcoming iframe user-token path (§13) — one block, two consumers. SDK type
 `Endpoint`, Kotlin DTO `GrantedEndpointEntry`, frontend type `ExternalPluginEndpoint`.
 
+**3.9 Reverse direction — GZAC→host action-call authentication (HMAC) ✅.** Action invocations
+flow the *other* way (core app → host) and are authenticated with an HMAC-SHA256 signature, not the
+service token. `client/ExternalPluginHostClient.invokeAction()` signs
+`{METHOD}\n{path}\n{timestamp}\n{bodyHash}` (`path = /plugins/{id}/{version}/actions/{key}`,
+`bodyHash = SHA-256(body)` hex, `timestamp = Instant.now()` ISO-8601) with the host's **decrypted
+secret** (`security/ExternalPluginHmacSigner`, fed `hostService.decryptedSecret(host)` by
+`ExternalPluginServiceTaskStartListener`), and sends `X-Valtimo-Signature` + `X-Valtimo-Timestamp`.
+The host verifies in a Fastify `preHandler` on the action route only (`routes/plugin-actions.ts`,
+raw body captured via opt-in `fastify-raw-body`): headers present, ±5-min timestamp window (replay
+protection), timing-safe compare against `computeSignature(ADMIN_TOKEN, …)`
+(`plugin-host/app/src/security/hmac.ts`). The HMAC key is therefore the host's admin token — the
+**same** secret as the management-route bearer, just a different transport.
+
+- **Caveat 1 (path prefix):** the signed `path` is the bare `/plugins/...`; the host verifies
+  `request.url` minus the query string. A reverse proxy that prepends a path prefix the host sees
+  in `request.url` would break verification. Root-mounted hosts (the default) are unaffected.
+- **Caveat 2 (asymmetric hardening):** the management + config-push routes (`/api/host/plugins`,
+  `/api/host/configurations`) are **not** HMAC-protected — they use a plain `ADMIN_TOKEN` bearer
+  with no replay window or body binding. A `routes/host-configurations.ts` POC note flags
+  "Production: HMAC per GZAC instance" as still open.
+
 ## 4. Permission UX ✅
 
 Components: `plugin-management/.../{plugin-external-permissions, plugin-add-modal,
@@ -132,18 +160,25 @@ granted.
 
 - **Add / activate**: select → configure (properties or config iframe) → **Permissions**. Save →
   `POST .../configuration` `{definitionId, title, properties, grantedEndpoints, grantedEvents}`.
-- **Edit**: same component with `[readonlyMode]="true"`; update sends `{title, properties}` only
-  (both grant sets are immutable post-activation).
+- **Edit**: same component with `[readonlyMode]="true"`; the UI update sends `{title, properties}`
+  only. Granted **events** are truly immutable post-activation (service-layer `update()` has no
+  `grantedEvents` parameter). Granted **endpoints** are immutable *in the UI*, but the backend
+  `update()` will replace them if a non-null `grantedEndpoints` is supplied (§3.1) — the
+  immutability of endpoint grants is a UI guarantee, not a service-layer one.
 
 ## 5. Data model ✅
 
-Tables (host secret and config properties stored encrypted via the existing `EncryptionService`):
+Tables (host secret and config properties stored encrypted via the existing `EncryptionService`).
+DDL lives in the **core** module's changelog, not the external-plugin module's own resources:
+`backend/core/src/main/resources/config/liquibase/13-28-0/20260504-external-plugin.xml`.
 
 - `external_plugin_host` — `base_url`, encrypted `secret`, `status`, health/failure counters,
   **plus** `gzac_callback_base_url`, `event_broker_amqp_url`, `event_broker_exchange` (all
   populated from the add-host UI; the two broker columns nullable for events-off / use-default-exchange).
 - `external_plugin_definition` — `UNIQUE(plugin_id, version)`, `config_schema`, `manifest_json`,
-  `host_id`, `base_url`, `status`. The manifest's declared `eventSubscriptions` live here (inside
+  `host_id`, `base_url`, `status`, plus `name`, `description`, `provider`, `min_gzac_version` /
+  `max_gzac_version` (stored, **not enforced at activation** — §11), `consecutive_misses`. The
+  manifest's declared `eventSubscriptions` live here (inside
   `manifest_json`), discovered from the host — but the authoritative subscription list for any
   given activated configuration is `external_plugin_granted_event` (next paragraph), not the
   manifest copy.
@@ -154,7 +189,12 @@ Tables (host secret and config properties stored encrypted via the existing `Enc
   new event type cannot widen this set — the row only changes when the admin re-grants.
 - `external_plugin_granted_endpoint` — `configuration_id`, `http_method`, `endpoint_pattern`,
   `granted_at`.
-- `external_plugin_*` columns on `process_link` for the `SERVICE_TASK_START` action link.
+- Neither grant table has a DB unique constraint on its `(configuration_id, …)` natural key, so
+  duplicate grant rows are structurally possible (in practice deduplicated only by the
+  replace-on-write flow, not the schema).
+- `external_plugin_*` columns on `process_link` (`external_plugin_config_id`,
+  `external_plugin_action_key`, `external_plugin_version`, `external_plugin_action_properties`) for
+  the `SERVICE_TASK_START` action link.
 
 Events add **no new table**: subscriptions come from `manifest_json`, the broker connection
 details come from the host row, and at push time they are pushed transiently to the host (held
@@ -182,15 +222,28 @@ blanks become `null`.
 
 ## 7. Plugin host 🟡 (`plugin-host/app/`, Node + Fastify + Extism)
 
-Routes: `GET /health`; `*/api/host/plugins[...]` (ADMIN_TOKEN bearer);
-`*/api/host/configurations[...]` (ADMIN_TOKEN; body requires `pluginId, pluginVersion, properties,
-serviceToken, gzacBaseUrl` and optionally `eventBroker`); `POST|GET /plugins/:id/:version/actions/:key`,
-`/plugin-manifest`, `/logo`; `GET /plugins/:id/:version/bundles/**`. Multi-version load keyed
-`pluginId@version`; configs held in an in-memory registry **and persisted to PostgreSQL**. The
-only registered host function is `gzac_api`.
+Routes: `GET /health`; `*/api/host/plugins[...]` (ADMIN_TOKEN bearer; POST upload, GET list,
+DELETE); `POST|PUT|DELETE|GET /api/host/configurations/:configId` (ADMIN_TOKEN bearer; push body
+carries `pluginId, pluginVersion, properties, serviceToken, gzacBaseUrl, eventSubscriptions` and
+optionally `eventBroker` — only `serviceToken`/`gzacBaseUrl` are actually validated, `pluginId`/
+`pluginVersion` are not null-checked); `POST /plugins/:id/:version/actions/:key`
+(HMAC-authenticated, §3.9 — **no GET variant**); public `GET …/plugin-manifest`, `…/logo`,
+`…/bundles/**`. Multi-version load keyed `pluginId@version`. The only registered host function is
+`gzac_api`.
 
-- **Action input**: `{actionKey, configurationId, configuration, processInstanceId, documentId,
-  activityId, properties}`; output `{status, variables}`.
+Configs are **persisted to PostgreSQL**; `ConfigRegistry` is a thin pass-through over
+`ConfigRepository` — every read/write hits the DB, there is **no separate in-memory cache** despite
+the name. A second `plugins` table + `PluginRepository` are created by the boot migrations but
+**wired nowhere** (dead code). The plugin manager serialises calls per plugin (a `lock` promise
+chain to avoid Extism reentrancy), sets `prefetch` on the broker channel, and hot-reloads a plugin
+(unload + reload) when a newer upload of the same `pluginId@version` arrives.
+
+- **Action HTTP body** (GZAC→host): `{configurationId, processInstanceId, activityId, documentId?,
+  properties}` — note it does **not** carry `actionKey` (URL param) or `configuration` (looked up
+  host-side from the registry). The host assembles the **Wasm input** `{actionKey, configurationId,
+  configuration, processInstanceId, documentId, activityId, properties}`; output `{status,
+  variables}` (plus `{errorCode, errorMessage}` on failure, surfaced to the process as a BPMN
+  error).
 - **Plugins run under Extism with `runInWorker: true`** so async host functions (`gzac_api`) can
   suspend the Wasm call until the host's fetch resolves. **This requires Node ≥ 22** (older Node
   fails to spawn the worker with `invalid execArgv flags: --disable-warning`).
@@ -200,8 +253,9 @@ only registered host function is `gzac_api`.
 
 Environment (`models/app-config.ts`): `ADMIN_TOKEN` (required), `PORT` (8090),
 `PLUGIN_STORAGE_DIR` (`./plugins`), `LOG_LEVEL` (info), `HOST_ID` (defaults to the OS hostname;
-see §8.4), plus `DB_HOST/PORT/NAME/USER/PASSWORD` for the host's PostgreSQL. **No broker
-variables** — the host never configures a broker itself.
+see §8.4), plus `DB_HOST` / `DB_PORT` (defaults to **5434**, not the standard 5432) / `DB_NAME` /
+`DB_USER` / `DB_PASSWORD` for the host's PostgreSQL. **No broker variables** — the host never
+configures a broker itself.
 
 Gaps to close for production: no `log` / `http_request` / `kv` host functions or capability
 allowlist; no HTMX `render_page` / `handle_request`.
@@ -277,6 +331,14 @@ Restart behaviour: configs are persisted in the host's PostgreSQL (`plugin_confi
 On boot the host calls `eventConsumerManager.sync()` which re-opens consumers for every config
 that still carries an `eventBroker.amqpUrl`. Expect a `"Broker consumer started"` log line at
 startup if any persisted configs reference a broker, even before GZAC sends a fresh push.
+
+**No standalone reconnect loop** (⚠️ production durability gap): if a broker connection drops, the
+`BrokerConsumer` removes itself from the manager and is only recreated on the next config push that
+triggers `sync()`. In-flight messages are redelivered (`noAck:false`), but a broker outage with no
+subsequent push leaves the host with no consumer until the next push or a host restart. Combined
+with the auto-delete live-subscription queue (§8.4), a host that loses its connection silently
+stops receiving events. The code comment is explicit: "No standalone reconnect loop — config
+pushes drive re-sync."
 
 ### 8.4 Dispatch & multi-host topologies
 
@@ -485,6 +547,14 @@ through the user-token path.
 - URL-plugin mode.
 - Broker credential delivery over TLS/HMAC rather than the admin-token channel.
 - Event delivery durability across host downtime (currently live-subscription only).
+- RabbitMQ consumer auto-reconnect on the host (currently reconnection happens only when the next
+  config push triggers `sync()` — §8.3).
+- HMAC on the host's management / config-push routes (only the action route is HMAC-signed —
+  §3.9; management routes use a plain `ADMIN_TOKEN` bearer with no replay/body binding).
+- Configurable service-token TTL (hardcoded 24h in `ExternalPluginServiceTokenService`).
+- DB unique constraints on `external_plugin_granted_event` / `external_plugin_granted_endpoint`
+  natural keys (§5).
+- Cleanup of the host's dead `plugins` table + `PluginRepository` (§7).
 
 ## 15. Roadmap (priority order)
 
@@ -534,3 +604,12 @@ through the user-token path.
   - iframe SDK fetches the manifest, applies `TranslateService.currentLang` (passed via the
     parent's `init` postMessage), renders Dutch labels when the Angular UI is Dutch and English
     labels when it is English.
+
+**Gaps in the verification record (flagged by the v18 code audit, 2026-06):**
+- The **synchronous action path** (process service task → `ExternalPluginServiceTaskStartListener`
+  → HMAC-signed `invokeAction` → host `preHandler` verify → Wasm `handle_action` → returned
+  `variables` applied to the execution, and the 4xx→`BpmnError` path) is **not** listed as
+  e2e-verified above. The HMAC handshake is confirmed coherent by code reading (§3.9), but an
+  end-to-end action run is not in the verified record and should be added before release.
+- The build/test statuses above predate this audit and were not re-run as part of it; treat them
+  as last-known-good, not freshly confirmed.
