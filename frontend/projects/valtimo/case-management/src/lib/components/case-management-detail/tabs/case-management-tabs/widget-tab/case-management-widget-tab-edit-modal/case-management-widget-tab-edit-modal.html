@@ -27,7 +27,7 @@
     <h3 cdsModalHeaderHeading>{{ 'widgetTabManagement.tab.editWidgetTab' | translate }}</h3>
   </cds-modal-header>
 
-  <section cdsModalContent [cdsLayer]="1">
+  <section cdsModalContent>
     <ng-container *ngTemplateOutlet="editWidgetTabFormTemplate;context:{obs: obs}"></ng-container>
   </section>
 
@@ -37,7 +37,12 @@
 </cds-modal>
 
 <ng-template #editWidgetTabFormTemplate let-obs="obs">
-  <form *ngIf="editWidgetTabForm" [formGroup]="editWidgetTabForm" class="widget-tab-modal__form">
+  <form
+    *ngIf="editWidgetTabForm"
+    [formGroup]="editWidgetTabForm"
+    class="widget-tab-modal__form"
+    [cdsLayer]="1"
+  >
     <cds-label [disabled]="obs.disabled" [invalid]="widgetTabName.dirty && widgetTabName.invalid">
       {{ 'widgetTabManagement.tab.form.tabName' | translate }}
 
@@ -49,6 +54,16 @@
         [attr.modal-primary-focus]="true"
       />
     </cds-label>
+
+    <v-select
+      formControlName="widgetLayout"
+      [items]="widgetLayoutSelectItems"
+      [dropUp]="false"
+      [appendInline]="false"
+      titleTranslationKey="widgetLayout.label"
+    ></v-select>
+
+    <valtimo-widget-layout-info></valtimo-widget-layout-info>
   </form>
 </ng-template>
 

@@ -17,6 +17,7 @@
 package com.ritense.dashboard.web.rest.dto
 
 import com.ritense.dashboard.domain.Dashboard
+import com.ritense.dashboard.domain.WidgetLayout
 import java.time.ZonedDateTime
 
 data class DashboardResponseDto(
@@ -24,7 +25,8 @@ data class DashboardResponseDto(
     val title: String,
     val description: String,
     val createdBy: String,
-    val createdOn: ZonedDateTime
+    val createdOn: ZonedDateTime,
+    val widgetLayout: WidgetLayout? = null
 ) {
     companion object {
         fun of(dashboard: Dashboard) = DashboardResponseDto(
@@ -33,6 +35,7 @@ data class DashboardResponseDto(
             description = dashboard.description,
             createdBy = dashboard.createdBy,
             createdOn = dashboard.createdOn,
+            widgetLayout = dashboard.widgetLayout,
         )
     }
 }

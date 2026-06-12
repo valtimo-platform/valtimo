@@ -15,6 +15,7 @@
  */
 
 import {Page} from '@valtimo/shared';
+import {WidgetLayout} from '@valtimo/components';
 
 interface IkoView {
   key: string;
@@ -68,6 +69,7 @@ interface IkoTab {
   key: string;
   title: string;
   type: IkoComponentType;
+  widgetLayout?: WidgetLayout;
 }
 
 export {
