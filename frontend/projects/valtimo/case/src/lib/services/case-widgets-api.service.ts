@@ -33,9 +33,13 @@ export class CaseWidgetsApiService extends BaseApiService {
   }
 
   public getWidgetTabConfiguration(documentId: string, tabKey: string): Observable<BasicWidget[]> {
-    return this.httpClient
-      .get<CaseWidgetsRes>(this.getApiUrl(`v1/document/${documentId}/widget-tab/${tabKey}`))
-      .pipe(map((res: CaseWidgetsRes) => res.widgets));
+    return this.getWidgetTab(documentId, tabKey).pipe(map(res => res.widgets));
+  }
+
+  public getWidgetTab(documentId: string, tabKey: string): Observable<CaseWidgetsRes> {
+    return this.httpClient.get<CaseWidgetsRes>(
+      this.getApiUrl(`v1/document/${documentId}/widget-tab/${tabKey}`)
+    );
   }
 
   public getWidgetData(
