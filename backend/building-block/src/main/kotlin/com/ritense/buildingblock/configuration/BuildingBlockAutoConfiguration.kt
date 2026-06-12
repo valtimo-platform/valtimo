@@ -393,11 +393,13 @@ class BuildingBlockAutoConfiguration {
     fun buildingBlockProcessLinkMapper(
         objectMapper: ObjectMapper,
         @Lazy processLinkService: ProcessLinkService,
-        processDefinitionBuildingBlockDefinitionRepository: ProcessDefinitionBuildingBlockDefinitionRepository
+        processDefinitionBuildingBlockDefinitionRepository: ProcessDefinitionBuildingBlockDefinitionRepository,
+        repositoryService: RepositoryService,
     ) = BuildingBlockProcessLinkMapper(
         objectMapper,
         processLinkService,
-        processDefinitionBuildingBlockDefinitionRepository
+        processDefinitionBuildingBlockDefinitionRepository,
+        repositoryService,
     )
 
     @Bean
