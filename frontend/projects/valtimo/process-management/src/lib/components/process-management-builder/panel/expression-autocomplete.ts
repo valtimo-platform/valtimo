@@ -562,7 +562,7 @@ class ExpressionAutocomplete {
 
     container.innerHTML = `
       <div class="expression-editor-field" data-container="bean">
-        <label>Bean</label>
+        <label>Service</label>
       </div>
       <div class="expression-editor-field" data-container="method"></div>
       <div data-container="params"></div>
@@ -578,7 +578,7 @@ class ExpressionAutocomplete {
         description: b.description,
       })),
       parsed.beanName,
-      'Select bean...',
+      'Select service...',
       'bean',
       beanName => {
         this.renderMethodDropdown(container, beanName, null, input);
@@ -611,22 +611,30 @@ class ExpressionAutocomplete {
     wrapper.dataset.field = dataField;
     wrapper.dataset.value = selectedValue || '';
 
-    // Trigger button
-    const trigger = document.createElement('button');
-    trigger.type = 'button';
-    trigger.className = 'expression-editor-custom-select__trigger';
-    const selectedOption = options.find(o => o.value === selectedValue);
-    trigger.innerHTML = `
-      <span class="expression-editor-custom-select__text">${selectedOption ? this.escapeHtml(selectedOption.label) : placeholder}</span>
-      <span class="expression-editor-custom-select__arrow">▼</span>
-    `;
+    // Native select for appearance (shows native arrow)
+    const nativeSelect = document.createElement('select');
+    nativeSelect.className = 'bio-properties-panel-input';
+    nativeSelect.innerHTML =
+      `<option value="" disabled ${!selectedValue ? 'selected' : ''}>${this.escapeHtml(placeholder)}</option>` +
+      options
+        .map(
+          opt =>
+            `<option value="${this.escapeAttr(opt.value)}" ${opt.value === selectedValue ? 'selected' : ''}>${this.escapeHtml(opt.label)}</option>`
+        )
+        .join('');
 
-    // Dropdown list
+    const selectedOption = options.find(o => o.value === selectedValue);
+    if (selectedOption?.description) {
+      nativeSelect.title = selectedOption.description;
+    }
+
+    // Custom dropdown overlay for descriptions
     const dropdown = document.createElement('div');
     dropdown.className = 'expression-editor-custom-select__dropdown';
     dropdown.style.display = 'none';
 
     let selectedIndex = options.findIndex(o => o.value === selectedValue);
+    if (selectedIndex < 0) selectedIndex = 0;
 
     const renderItems = () => {
       dropdown.innerHTML = options
@@ -646,8 +654,8 @@ class ExpressionAutocomplete {
           const value = (item as HTMLElement).dataset.value!;
           const selected = options.find(o => o.value === value);
           wrapper.dataset.value = value;
-          trigger.querySelector('.expression-editor-custom-select__text')!.textContent =
-            selected?.label || placeholder;
+          nativeSelect.value = value;
+          nativeSelect.title = selected?.description || '';
           dropdown.style.display = 'none';
           onChange(value);
         });
@@ -656,15 +664,16 @@ class ExpressionAutocomplete {
 
     renderItems();
 
-    // Toggle dropdown
-    trigger.addEventListener('click', e => {
-      e.stopPropagation();
+    // Intercept native select to show custom dropdown instead
+    nativeSelect.addEventListener('mousedown', e => {
+      e.preventDefault();
+      nativeSelect.focus();
       const isOpen = dropdown.style.display !== 'none';
       dropdown.style.display = isOpen ? 'none' : 'block';
     });
 
     // Keyboard navigation
-    trigger.addEventListener('keydown', e => {
+    nativeSelect.addEventListener('keydown', e => {
       if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
         e.preventDefault();
         if (dropdown.style.display === 'none') {
@@ -681,20 +690,28 @@ class ExpressionAutocomplete {
         const opt = options[selectedIndex];
         if (opt) {
           wrapper.dataset.value = opt.value;
-          trigger.querySelector('.expression-editor-custom-select__text')!.textContent = opt.label;
+          nativeSelect.value = opt.value;
+          nativeSelect.title = opt.description || '';
           dropdown.style.display = 'none';
           onChange(opt.value);
         }
       } else if (e.key === 'Escape') {
         dropdown.style.display = 'none';
+      } else if (e.key === ' ' && dropdown.style.display === 'none') {
+        e.preventDefault();
+        dropdown.style.display = 'block';
       }
     });
 
     // Close on outside click
-    const closeHandler = () => (dropdown.style.display = 'none');
+    const closeHandler = (e: MouseEvent) => {
+      if (!wrapper.contains(e.target as Node)) {
+        dropdown.style.display = 'none';
+      }
+    };
     document.addEventListener('click', closeHandler);
 
-    wrapper.appendChild(trigger);
+    wrapper.appendChild(nativeSelect);
     wrapper.appendChild(dropdown);
     container.appendChild(wrapper);
   }
@@ -961,7 +978,7 @@ class ExpressionAutocomplete {
         padding: 3px 6px 2px;
         border: 1px solid #ccc;
         border-radius: 2px;
-        font-size: 13px;
+        font-size: 14px;
         background-color: #fafafa;
         font-family: inherit;
         box-sizing: border-box;
@@ -970,7 +987,7 @@ class ExpressionAutocomplete {
       .expression-editor-input:focus {
         outline: none;
         background-color: hsl(205, 100%, 95%);
-        border-color: #2b79bd;
+        border-color: hsl(205, 100%, 50%);
       }
       /* Override bpmn-js input styles to prevent focus-within highlighting */
       .expression-editor-technical input,
@@ -978,10 +995,21 @@ class ExpressionAutocomplete {
         background-color: #fafafa !important;
         border-color: #ccc !important;
       }
+      /* Override native select and input styles in simple mode */
+      .expression-editor-simple select.bio-properties-panel-input,
+      .expression-editor-simple .expression-editor-input {
+        background-color: #fafafa !important;
+        border-color: #ccc !important;
+      }
+      .expression-editor-simple select.bio-properties-panel-input:focus,
+      .expression-editor-simple .expression-editor-input:focus {
+        background-color: hsl(205, 100%, 95%) !important;
+        border-color: hsl(205, 100%, 50%) !important;
+      }
       .expression-editor-technical input:focus,
       .expression-editor-technical textarea:focus {
         background-color: hsl(205, 100%, 95%) !important;
-        border-color: #2b79bd !important;
+        border-color: hsl(205, 100%, 50%) !important;
       }
       .expression-editor-param {
         padding-left: 8px;
@@ -1000,35 +1028,8 @@ class ExpressionAutocomplete {
         position: relative;
         width: 100%;
       }
-      .expression-editor-custom-select__trigger {
+      .expression-editor-custom-select select {
         width: 100%;
-        padding: 3px 6px 2px;
-        border: 1px solid #ccc;
-        border-radius: 2px;
-        background: #fafafa;
-        font-size: 13px;
-        font-family: inherit;
-        text-align: left;
-        cursor: pointer;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-      }
-      .expression-editor-custom-select__trigger:focus {
-        outline: none;
-        background: hsl(205, 100%, 95%);
-        border-color: #2b79bd;
-      }
-      .expression-editor-custom-select__text {
-        flex: 1;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        white-space: nowrap;
-      }
-      .expression-editor-custom-select__arrow {
-        font-size: 10px;
-        color: #666;
-        margin-left: 8px;
       }
       .expression-editor-custom-select__dropdown {
         position: absolute;
@@ -1059,7 +1060,7 @@ class ExpressionAutocomplete {
       }
       .expression-editor-custom-select__label {
         font-weight: 500;
-        font-size: 13px;
+        font-size: 14px;
         color: #333;
       }
       .expression-editor-custom-select__desc {
