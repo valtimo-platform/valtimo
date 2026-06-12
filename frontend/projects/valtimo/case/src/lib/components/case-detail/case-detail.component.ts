@@ -26,7 +26,7 @@ import {
   ViewContainerRef,
 } from '@angular/core';
 import {ActivatedRoute, NavigationStart, ParamMap, Params, Router} from '@angular/router';
-import {ChevronDown16} from '@carbon/icons';
+import {ChevronDown16, Close16} from '@carbon/icons';
 import {TranslateService} from '@ngx-translate/core';
 import {PermissionService} from '@valtimo/access-control';
 import {
@@ -123,6 +123,8 @@ export class CaseDetailComponent implements AfterViewInit, OnDestroy {
 
   public readonly taskAndProcessLinkOpenedInPanel$ =
     this.caseDetailLayoutService.taskAndProcessLinkOpenedInPanel$;
+
+  public readonly startFormPanel$ = this.caseDetailLayoutService.startFormPanel$;
 
   private readonly _caseStatusKey$ = new BehaviorSubject<string | null | 'NOT_AVAILABLE'>(null);
 
@@ -364,7 +366,7 @@ export class CaseDetailComponent implements AfterViewInit, OnDestroy {
     this.initBreadcrumb();
     this.openWidthObserver();
     this.pageTitleService.disableReset();
-    this.iconService.registerAll([ChevronDown16]);
+    this.iconService.registerAll([ChevronDown16, Close16]);
     this.setDocumentStyle();
     this.enableResetOnBackNavigation();
     this.openWidgetProcessSubscription();
@@ -399,12 +401,19 @@ export class CaseDetailComponent implements AfterViewInit, OnDestroy {
   }
 
   public startItem(item: StartableItem): void {
-    this.supportingProcessStart.openModalForStartableItem(
-      item,
-      this.documentId,
-      this.caseDefinitionKey,
-      this.caseDefinitionVersionTag
-    );
+    this.showTaskList$.pipe(take(1)).subscribe(showTaskList => {
+      this.supportingProcessStart.openModalForStartableItem(
+        item,
+        this.documentId,
+        this.caseDefinitionKey,
+        this.caseDefinitionVersionTag,
+        showTaskList
+      );
+    });
+  }
+
+  public onStartFormPanelClose(): void {
+    this.supportingProcessStart.closePanel();
   }
 
   public openWidgetProcessSubscription(): void {
@@ -538,6 +547,7 @@ export class CaseDetailComponent implements AfterViewInit, OnDestroy {
     // }
 
     if (!tab.showTasks) this.openTaskAndProcessLinkInModal$.next(null);
+    this.supportingProcessStart.closePanel();
     this.tabLoader.load(tab);
     this.setDocumentStyle();
   }

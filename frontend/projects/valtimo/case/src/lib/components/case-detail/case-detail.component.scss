@@ -119,6 +119,32 @@
   transition: height 0.15s ease-in-out;
 }
 
+.start-form-panel {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: 100%;
+
+  &__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+  }
+
+  &__title {
+    margin: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  &__body {
+    flex: 1;
+    overflow-y: auto;
+  }
+}
+
 .split-area {
   &__content {
     height: 100% !important;

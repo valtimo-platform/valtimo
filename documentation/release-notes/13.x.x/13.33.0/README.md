@@ -20,6 +20,14 @@
   modal opens in the size configured for the selected process. When no size is configured the modal keeps its previous
   default.
 
+* **Start supporting process form in the case detail panel**
+
+  The process link configuration of a start event now offers a **Display type** option (Modal or Panel), defaulting to
+  **Modal**. When a supporting process is started from the **Start** button on the case detail page and its start event
+  process link is configured as **Panel**, the start form opens in the case detail panel — the same way user task forms
+  can — provided the active tab exposes a panel. Otherwise the form opens in the modal as before. Form types that rely on
+  view models or custom UI components always open in the modal.
+
 ## Bugfixes
 
 * New bugfix.

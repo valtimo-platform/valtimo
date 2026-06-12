@@ -22,6 +22,7 @@ import com.ritense.authorization.AuthorizationContext.Companion.runWithoutAuthor
 import com.ritense.document.domain.impl.request.NewDocumentRequest
 import com.ritense.document.service.DocumentService
 import com.ritense.form.BaseIntegrationTest
+import com.ritense.form.domain.FormDisplayType
 import com.ritense.form.domain.FormProcessLink
 import com.ritense.form.domain.FormSizes
 import com.ritense.form.domain.request.CreateFormDefinitionRequest
@@ -81,6 +82,7 @@ internal class FormProcessLinkActivityHandlerIntTest : BaseIntegrationTest() {
             activityType = ActivityTypeWithEventName.START_EVENT_START,
             formDefinitionId = UUID.fromString(formDefinition.id?.toString()),
             viewModelEnabled = false,
+            formDisplayType = FormDisplayType.panel,
             formSize = FormSizes.large
         )
         runWithoutAuthorization {
@@ -93,6 +95,7 @@ internal class FormProcessLinkActivityHandlerIntTest : BaseIntegrationTest() {
 
             assertEquals("form", result.type)
             assertEquals(formDefinition.id?.toString(), result.properties.formDefinitionId.toString())
+            assertEquals(FormDisplayType.panel, result.properties.formDisplayType)
             assertEquals(FormSizes.large, result.properties.formSize)
             JSONAssert.assertEquals(
                 getForm(),
