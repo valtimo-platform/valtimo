@@ -1,4 +1,4 @@
-/*
+/*!
  * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
@@ -14,14 +14,10 @@
  * limitations under the License.
  */
 
-export * from './candidate-user.model';
-export * from './case-detail-tab.model';
-export * from './case-parameters.model';
-export * from './search.model';
-export * from './tab-api.model';
-export * from './tabs.model';
-export * from './case-detail-layout.model';
-export * from './case-sse-event.model';
-export * from './case-list-quick-search.model';
-export * from './case-widget.model';
-export * from './case-inspection.models';
+.case-inspection-variable-modal {
+  &__form {
+    display: flex;
+    flex-direction: column;
+    gap: var(--cds-spacing-06);
+  }
+}

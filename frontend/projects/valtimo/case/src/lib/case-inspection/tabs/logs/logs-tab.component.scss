@@ -1,0 +1,192 @@
+/*!
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
+ *
+ * Licensed under EUPL, Version 1.2 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" basis,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+.case-inspection-logs-tab {
+  display: flex;
+  flex-direction: column;
+  padding: 16px;
+  gap: var(--cds-spacing-05);
+
+  &__filters {
+    display: grid;
+    grid-template-columns: minmax(200px, 1fr) minmax(140px, 200px) 220px 220px auto;
+    gap: var(--cds-spacing-04);
+    align-items: end;
+  }
+
+  &__filter {
+    min-width: 0;
+  }
+
+  cds-date-picker {
+    display: block;
+    width: 100%;
+
+    ::ng-deep {
+      .cds--date-picker,
+      .cds--date-picker--single,
+      .cds--date-picker-container,
+      .cds--date-picker-input,
+      input.cds--date-picker__input {
+        width: 100%;
+        min-width: 0;
+      }
+    }
+  }
+
+  &__filter-actions {
+    display: flex;
+    gap: var(--cds-spacing-03);
+  }
+
+  &__chip-row {
+    display: flex;
+    align-items: center;
+    gap: var(--cds-spacing-03);
+  }
+
+  &__error {
+    color: var(--cds-support-error);
+  }
+
+  &__empty {
+    color: var(--cds-text-secondary);
+    font-style: italic;
+  }
+
+  &__layout {
+    display: flex;
+    gap: var(--cds-spacing-05);
+  }
+
+  &__list-panel {
+    flex: 0 0 65%;
+    min-width: 0;
+
+    ::ng-deep {
+      .cds--data-table tbody tr {
+        cursor: pointer;
+      }
+
+      .cds--data-table td:first-child {
+        width: 128px;
+        max-width: 128px;
+      }
+
+      .cds--data-table td:nth-child(2) {
+        width: 96px;
+        max-width: 96px;
+      }
+    }
+
+    @for $i from 0 through 9 {
+      &[data-selected-row='#{$i}'] ::ng-deep .cds--data-table tbody tr:nth-child(#{$i + 1}) {
+        background-color: var(--cds-layer-selected);
+      }
+    }
+  }
+
+  &__message-cell {
+    display: inline-block;
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    vertical-align: middle;
+  }
+
+  &__pagination {
+    margin-top: var(--cds-spacing-03);
+  }
+
+  &__detail {
+    flex: 0 0 calc(35% - var(--cds-spacing-05));
+    background-color: var(--cds-layer);
+    border: 1px solid var(--cds-border-subtle);
+    padding: var(--cds-spacing-05);
+    overflow: auto;
+
+    h4 {
+      margin-top: var(--cds-spacing-05);
+      margin-bottom: var(--cds-spacing-03);
+      font-size: var(--cds-body-compact-01-font-size);
+      font-weight: 600;
+    }
+  }
+
+  &__detail-header {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--cds-spacing-02);
+  }
+
+  &__detail-timestamp {
+    color: var(--cds-text-secondary);
+    font-size: var(--cds-helper-text-01-font-size);
+  }
+
+  &__detail-message {
+    margin: var(--cds-spacing-04) 0;
+    padding: var(--cds-spacing-03);
+    background-color: var(--cds-background);
+    border: 1px solid var(--cds-border-subtle);
+    white-space: pre-wrap;
+    word-break: break-word;
+    font-size: var(--cds-helper-text-01-font-size);
+  }
+
+  &__detail-properties {
+    display: flex;
+    flex-direction: column;
+    gap: var(--cds-spacing-03);
+
+    dt {
+      margin-bottom: var(--cds-spacing-01);
+
+      code {
+        color: var(--cds-text-secondary);
+      }
+    }
+
+    dd {
+      margin: 0 0 var(--cds-spacing-02) 0;
+
+      code {
+        color: var(var(--cds-status-purple));
+      }
+    }
+
+    dt,
+    dd {
+      font-size: var(--cds-helper-text-01-font-size);
+      word-break: break-all;
+    }
+  }
+
+  &__detail-stacktrace {
+    margin: 0;
+    padding: var(--cds-spacing-03);
+    background-color: var(--cds-background);
+    border: 1px solid var(--cds-border-subtle);
+    white-space: pre-wrap;
+    word-break: break-word;
+    font-family: var(--cds-code-01-font-family);
+    font-size: var(--cds-helper-text-01-font-size);
+    max-height: 256px;
+    overflow: auto;
+  }
+}

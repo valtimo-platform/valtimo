@@ -29,7 +29,7 @@ export * from './lib/components/case-list/case-list.component';
 export * from './lib/components/case-process-start-modal/case-process-start-modal.component';
 export * from './lib/components/case-supporting-process-start-modal/case-supporting-process-start-modal.component';
 export * from './lib/components/case-list-actions/case-list-actions.component';
-export * from './lib/case-inspection/case-inspection.tokens';
+export * from './lib/constants/case-inspection.constants';
 export * from './lib/constants';
 export * from './lib/case.module';
 export * from './lib/services/case.service';

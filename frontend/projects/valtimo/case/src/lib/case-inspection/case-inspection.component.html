@@ -15,7 +15,7 @@
   -->
 
 <ng-container *ngIf="!$loading() && !$accessDenied()">
-  <cds-tabs type="contained">
+  <cds-tabs type="inline" class="case-inspection-tabs">
     <cds-tab
       [active]="$activeTab() === CaseInspectionTab.DOCUMENT"
       [heading]="'case.inspection.tabs.document' | translate"

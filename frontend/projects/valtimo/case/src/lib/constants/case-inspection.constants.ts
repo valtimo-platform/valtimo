@@ -14,14 +14,11 @@
  * limitations under the License.
  */
 
-export * from './candidate-user.model';
-export * from './case-detail-tab.model';
-export * from './case-parameters.model';
-export * from './search.model';
-export * from './tab-api.model';
-export * from './tabs.model';
-export * from './case-detail-layout.model';
-export * from './case-sse-event.model';
-export * from './case-list-quick-search.model';
-export * from './case-widget.model';
-export * from './case-inspection.models';
+import {InjectionToken, Type} from '@angular/core';
+import {ZgwCaseInspectionTabComponent} from '../models';
+
+const ZGW_CASE_INSPECTION_TAB_TOKEN = new InjectionToken<Type<ZgwCaseInspectionTabComponent>>(
+  'Component contributed by @valtimo/zgw to render the ZGW tab on the case inspection screen.'
+);
+
+export {ZGW_CASE_INSPECTION_TAB_TOKEN};

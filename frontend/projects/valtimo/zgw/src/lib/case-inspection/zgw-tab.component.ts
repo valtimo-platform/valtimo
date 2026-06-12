@@ -31,6 +31,7 @@ import {
   ButtonModule,
   IconModule,
   IconService,
+  LoadingModule,
   NotificationModule,
   StructuredListModule,
   TagModule,
@@ -63,6 +64,7 @@ type ResolveState<T> = T | 'loading';
     StructuredListModule,
     TagModule,
     JsonEditorComponent,
+    LoadingModule,
   ],
 })
 export class CaseInspectionZgwTabComponent implements OnChanges {
