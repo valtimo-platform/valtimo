@@ -2643,6 +2643,14 @@
       "openInNewTab": "Open in nieuw tabblad"
     }
   },
+  "widgetLayout": {
+    "label": "Lay-out algoritme",
+    "muuriGapFree": "Standaard (minder witruimtes)",
+    "muuri": "Standaard",
+    "beautiful": "Witruimtevrij",
+    "infoTitle": "Over het lay-out algoritme",
+    "info": "Standaard en Standaard (minder witruimtes) houden de widgets zoveel mogelijk in de ingestelde volgorde, wat witruimtes kan opleveren. Witruimtevrij kan widgets binnen een sectie herordenen om die witruimtes te verwijderen en toont vrijwel altijd een nette lay-out zonder witruimtes."
+  },
   "ikoManagement": {
     "preparingDownload": "Download aan het voorbereiden",
     "title": "Configuratie",
