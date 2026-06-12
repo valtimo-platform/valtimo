@@ -112,15 +112,12 @@ export class IkoServerPage {
   // ─── Navigation ─────────────────────────────────────────────────────
 
   async goToIkoManagement(): Promise<void> {
-    // The "Admin" menu is a toggle; only expand it when the IKO link is hidden,
-    // otherwise a second click would collapse the menu and hide the link.
-    // `exact` (case-sensitive) targets the menu link "IKO" and not the
-    // breadcrumb link "Iko" shown on a server's views page.
-    const ikoLink = this.page.getByRole('link', {name: 'IKO', exact: true});
-    if (!(await ikoLink.isVisible())) {
-      await this.page.getByRole('button', {name: 'Admin'}).click();
-    }
-    await ikoLink.click();
+    // Navigate straight to the IKO management list route instead of loading the
+    // dashboard at "/" and clicking through the Admin menu. Loading "/" renders
+    // the (chart-heavy) dashboard plus its SSE subscriptions, which made the
+    // renderer flaky ("Target crashed") when this suite ran first. The other IKO
+    // suites already navigate directly to their deep `/iko-management/...` URLs.
+    await this.page.goto('/iko-management');
     await this.list.waitForLoaded();
   }
 
@@ -144,6 +141,24 @@ export class IkoServerPage {
     }
   }
 
+  /**
+   * Fill the modal's title + IKO server URL and wait until the form is valid
+   * (Save enabled). A freshly opened modal initialises its reactive form
+   * asynchronously: a late `writeValue('')` can wipe an early `fill`, and the
+   * AutoKeyInput only auto-generates the key once its `mode` has propagated.
+   * Re-filling every field via `toPass` until Save is enabled defeats both
+   * races — mirroring a user typing into a warmed-up form.
+   */
+  async fillServerForm(title: string, url: string): Promise<void> {
+    await expect(async () => {
+      await this.titleInput.fill(title);
+      // The key auto-generates from the title (15.4).
+      await expect(this.keyInput).not.toHaveValue('', {timeout: 2_000});
+      await this.serverUrlInput.fill(url);
+      await expect(this.saveButton).toBeEnabled({timeout: 2_000});
+    }).toPass({timeout: 20_000});
+  }
+
   async save(): Promise<void> {
     await expect(this.saveButton).toBeEnabled();
     await this.saveButton.click();
@@ -153,11 +168,8 @@ export class IkoServerPage {
   /** Full happy-path creation. Returns the auto-generated key. */
   async createServer(title: string, url: string): Promise<string> {
     await this.openConfigureModal();
-    await this.titleInput.fill(title);
-    // The key auto-generates from the title (15.4).
-    await expect(this.keyInput).not.toHaveValue('');
+    await this.fillServerForm(title, url);
     const key = await this.keyInput.inputValue();
-    await this.serverUrlInput.fill(url);
     await this.save();
     await this.assertServerVisible(title);
     return key;

@@ -99,13 +99,10 @@ test.describe('Feature 15B — IKO View Management', () => {
     test('15.14-15.21 — creates a view with title, auto-key and all properties', async () => {
       await ikoViewPage.openAddModal();
 
-      // 15.15 enter title → 15.16 the key auto-generates from the title.
-      await ikoViewPage.titleInput.fill(initialTitle);
-      await expect(ikoViewPage.keyInput).not.toHaveValue('');
-
-      // 15.17 connector reference, 15.18 connector instance ref,
-      // 15.19 endpoint reference, 15.20 key-value pair.
-      await ikoViewPage.fillViewProperties();
+      // 15.15 enter title → 15.16 key auto-generates → 15.17 connector
+      // reference, 15.18 connector instance ref, 15.19 endpoint reference,
+      // 15.20 key-value pair.
+      await ikoViewPage.fillViewForm(initialTitle);
 
       // 15.21 save.
       await ikoViewPage.save();

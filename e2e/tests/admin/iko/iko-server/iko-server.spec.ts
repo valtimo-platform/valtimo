@@ -30,7 +30,6 @@ test.describe('Feature 15A — IKO Server', () => {
     page = await context.newPage();
     ikoServerPage = new IkoServerPage(page, context.request);
 
-    await page.goto('/');
     await ikoServerPage.goToIkoManagement();
   });
 
@@ -57,12 +56,8 @@ test.describe('Feature 15A — IKO Server', () => {
     test('15.2-15.6 — creates a server with auto-generated key and URL', async () => {
       await ikoServerPage.openConfigureModal();
 
-      // 15.3 enter title → 15.4 the key auto-generates from the title.
-      await ikoServerPage.titleInput.fill(initialTitle);
-      await expect(ikoServerPage.keyInput).not.toHaveValue('');
-
-      // 15.5 enter the IKO server URL.
-      await ikoServerPage.serverUrlInput.fill(ikoServerConfig.serverUrl);
+      // 15.3 enter title → 15.4 key auto-generates → 15.5 enter the server URL.
+      await ikoServerPage.fillServerForm(initialTitle, ikoServerConfig.serverUrl);
 
       // 15.6 save the configuration.
       await ikoServerPage.save();
@@ -89,8 +84,12 @@ test.describe('Feature 15A — IKO Server', () => {
     const importServerTitle = uniqueServerTitle('import');
 
     test.beforeAll(async () => {
+      // Create the parent server via the API (not the modal UI) — this suite
+      // tests the import flow, not server creation, and the API path is fast
+      // and free of the modal's reactive-form races that would otherwise eat
+      // into the beforeAll hook timeout.
+      await ikoServerPage.createServerViaApi(importServerTitle, ikoServerConfig.serverUrl);
       await ikoServerPage.goToIkoManagement();
-      await ikoServerPage.createServer(importServerTitle, ikoServerConfig.serverUrl);
       // The import button lives on the server's (empty) views page.
       await ikoServerPage.enterServer(importServerTitle);
     });

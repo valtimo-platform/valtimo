@@ -260,8 +260,8 @@ test.describe('Feature 15G — IKO Widgets', () => {
       for (const testId of Object.values(IKO_WIDGET_TYPE_TILES)) {
         await expect(widgetPage.widgetTypeTile(testId)).toBeVisible();
       }
-      // The IKO management page restricts the type list — Custom, Form.io,
-      // Person card and Metroline must NOT appear here.
+      // The IKO management page restricts the type list — Custom, Form.io
+      // and Person card must NOT appear here.
       for (const testId of IKO_WIDGET_UNAVAILABLE_TYPE_TILES) {
         await expect(widgetPage.widgetTypeTile(testId)).toHaveCount(0);
       }

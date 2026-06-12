@@ -23,8 +23,9 @@ export const IKO_WIDGET_DIVIDER_TITLE_PREFIX = 'E2E IKO Divider';
 
 /**
  * Tile labels exposed by the shared widget wizard. The IKO management page
- * restricts the available widget types to the five listed below — anything
- * outside this set must NOT appear on the type-selection step.
+ * restricts the available widget types to the six listed below — anything
+ * outside this set must NOT appear on the type-selection step. Metroline was
+ * made available for IKO views in #692 (`AVAILABLE_WIDGET_TYPES`).
  */
 export const IKO_WIDGET_TYPE_TILES = {
   fields: WIDGET_WIZARD_TYPE_TEST_IDS.tileFields,
@@ -32,13 +33,13 @@ export const IKO_WIDGET_TYPE_TILES = {
   table: WIDGET_WIZARD_TYPE_TEST_IDS.tileTable,
   interactiveTable: WIDGET_WIZARD_TYPE_TEST_IDS.tileInteractiveTable,
   map: WIDGET_WIZARD_TYPE_TEST_IDS.tileMap,
+  metroline: WIDGET_WIZARD_TYPE_TEST_IDS.tileMetroline,
 } as const;
 
 export const IKO_WIDGET_UNAVAILABLE_TYPE_TILES = [
   WIDGET_WIZARD_TYPE_TEST_IDS.tileCustom,
   WIDGET_WIZARD_TYPE_TEST_IDS.tileFormio,
   WIDGET_WIZARD_TYPE_TEST_IDS.tilePersonCard,
-  WIDGET_WIZARD_TYPE_TEST_IDS.tileMetroline,
 ] as const;
 
 /**

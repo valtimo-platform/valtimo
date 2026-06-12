@@ -161,14 +161,28 @@ export class IkoViewPage {
     await expect(this.editModalHeading).toBeHidden();
   }
 
+  /**
+   * Fill the add-view modal (title → auto-key → all properties) and wait until
+   * the form is valid (Save enabled). A freshly opened modal initialises its
+   * reactive form asynchronously: a late `writeValue('')` can wipe an early
+   * `fill`, and the AutoKeyInput only auto-generates the key once its `mode`
+   * has propagated. Re-filling every field via `toPass` defeats both races.
+   */
+  async fillViewForm(title: string): Promise<void> {
+    await expect(async () => {
+      await this.titleInput.fill(title);
+      // 15.16 — the key auto-generates from the title.
+      await expect(this.keyInput).not.toHaveValue('', {timeout: 2_000});
+      await this.fillViewProperties();
+      await expect(this.saveButton).toBeEnabled({timeout: 2_000});
+    }).toPass({timeout: 20_000});
+  }
+
   /** Full happy-path creation. Returns the auto-generated key. */
   async createView(title: string): Promise<string> {
     await this.openAddModal();
-    await this.titleInput.fill(title);
-    // 15.16 — the key auto-generates from the title.
-    await expect(this.keyInput).not.toHaveValue('');
+    await this.fillViewForm(title);
     const key = await this.keyInput.inputValue();
-    await this.fillViewProperties();
     await this.save();
     await this.assertViewVisible(title);
     return key;
