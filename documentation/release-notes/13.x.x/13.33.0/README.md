@@ -23,4 +23,9 @@
 
 ## Bugfixes
 
+* **Empty building block mapping dropdowns**
+
+  Existing input and output mappings on a building block process link sometimes showed up with empty dropdowns. This
+  has been fixed.
+
 * New bugfix.
