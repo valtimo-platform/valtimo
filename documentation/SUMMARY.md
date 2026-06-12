@@ -202,6 +202,7 @@
     * [Front-end migration](release-notes/13.x.x/13.28.1/front-end-migration.md)
   * [13.27.0](release-notes/13.x.x/13.27.0/README.md)
   * [13.26.0](release-notes/13.x.x/13.26.0/README.md)
+  * [13.25.1](release-notes/13.x.x/13.25.1/README.md)
   * [13.25.0](release-notes/13.x.x/13.25.0/README.md)
   * [13.24.0](release-notes/13.x.x/13.24.0/README.md)
   * [13.23.0](release-notes/13.x.x/13.23.0/README.md)
