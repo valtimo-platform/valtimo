@@ -108,13 +108,14 @@ class LogInspectionResource(
         request.likeFormattedMessage?.let { add(byLikeFormattedMessage(it)) }
 
         request.additionalProperties
-            .filterNot { it.key == JSON_SCHEMA_DOCUMENT_KEY }
+            .filterNot { it.key == JSON_SCHEMA_DOCUMENT_KEY || it.key == BUSINESS_KEY }
             .forEach { add(byProperty(it.key, it.value)) }
     }.reduce { acc, next -> acc.and(next) }
 
     private fun buildScope(caseId: UUID): Map<String, Collection<String>> {
         val scope = mutableMapOf<String, MutableSet<String>>()
         scope.getOrPut(JSON_SCHEMA_DOCUMENT_KEY) { mutableSetOf() } += caseId.toString()
+        scope.getOrPut(BUSINESS_KEY) { mutableSetOf() } += caseId.toString()
 
         scopeContributors.forEach { contributor ->
             contributor.scopeFor(caseId).forEach { entry ->
@@ -126,5 +127,6 @@ class LogInspectionResource(
 
     companion object {
         val JSON_SCHEMA_DOCUMENT_KEY: String = JsonSchemaDocument::class.java.canonicalName
+        const val BUSINESS_KEY: String = "businessKey"
     }
 }
