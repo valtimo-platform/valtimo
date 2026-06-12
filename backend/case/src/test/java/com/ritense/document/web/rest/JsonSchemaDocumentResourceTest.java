@@ -16,6 +16,7 @@
 
 package com.ritense.document.web.rest;
 
+import org.springframework.validation.beanvalidation.LocalValidatorFactoryBean;
 import static com.ritense.valtimo.contract.domain.ValtimoMediaType.APPLICATION_JSON_UTF8_VALUE;
 import static org.hamcrest.Matchers.hasSize;
 import static org.mockito.ArgumentMatchers.any;
@@ -65,9 +66,12 @@ class JsonSchemaDocumentResourceTest extends BaseTest {
 
         documentService = mock(JsonSchemaDocumentService.class);
         DocumentResource documentResource = new JsonSchemaDocumentResource(documentService);
+        LocalValidatorFactoryBean validator = new LocalValidatorFactoryBean();
+        validator.afterPropertiesSet();
 
         mockMvc = MockMvcBuilders.standaloneSetup(documentResource)
             .setCustomArgumentResolvers(new PageableHandlerMethodArgumentResolver())
+            .setValidator(validator)
             .build();
 
         var content = new JsonDocumentContent("{\"firstName\": \"John\"}");
@@ -273,6 +277,15 @@ class JsonSchemaDocumentResourceTest extends BaseTest {
             .andExpect(jsonPath("$", hasSize(1)))
             .andExpect(jsonPath("$[0].firstName").value("John"))
             .andExpect(jsonPath("$[0].lastName").value("Doe"));
+    }
+
+    @Test
+    void shouldRejectCreateNewDocumentWhenDefinitionIsNull() throws Exception {
+        mockMvc.perform(post("/api/v1/document")
+                .contentType(APPLICATION_JSON_VALUE)
+                .content("{\"definition\": null, \"content\": {}}"))
+            .andDo(print())
+            .andExpect(status().isBadRequest());
     }
 
     @Test

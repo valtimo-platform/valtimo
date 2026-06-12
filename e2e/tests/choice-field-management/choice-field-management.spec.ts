@@ -67,43 +67,61 @@ test.describe('Choice field management — Manage definitions', () => {
   });
 
   test('View choice field in list', async () => {
-    await choiceFieldPage.goToChoiceFields();
-    const list = new CarbonList(page);
-    await list.waitForLoaded();
+    const data = createChoiceFieldTestData();
+    const created = await choiceFieldPage.createChoiceFieldViaApi(data.keyName, data.title);
+    try {
+      await choiceFieldPage.goToChoiceFields();
+      const list = new CarbonList(page);
+      await list.waitForLoaded();
+      await list.setPageSize(50);
+      await list.waitForLoaded();
 
-    const row = list.row(testData.keyName);
-    await row.assertVisible();
+      const row = list.row(data.keyName);
+      await row.assertVisible();
+    } finally {
+      await choiceFieldPage.deleteChoiceFieldViaApi(created.id);
+    }
   });
 
   test('Edit choice field title', async () => {
-    const list = new CarbonList(page);
-    const row = list.row(testData.keyName);
-    await row.click();
+    const data = createChoiceFieldTestData();
+    const created = await choiceFieldPage.createChoiceFieldViaApi(data.keyName, data.title);
+    try {
+      await choiceFieldPage.goToChoiceFields();
+      const list = new CarbonList(page);
+      await list.setPageSize(50);
+      await list.waitForLoaded();
 
-    await choiceFieldPage.editChoiceFieldTitle(testData.editedTitle);
+      const row = list.row(data.keyName);
+      await row.click();
 
-    // Navigate back to list and verify
-    await choiceFieldPage.goToChoiceFields();
-    const updatedList = new CarbonList(page);
-    await updatedList.waitForLoaded();
+      await choiceFieldPage.editChoiceFieldTitle(data.editedTitle);
 
-    const updatedRow = updatedList.row(testData.keyName);
-    await updatedRow.assertVisible();
+      const fields = await choiceFieldPage.getChoiceFieldsViaApi();
+      const updated = fields.find(f => f.id === created.id);
+      expect(updated?.title).toBe(data.editedTitle);
+    } finally {
+      await choiceFieldPage.deleteChoiceFieldViaApi(created.id);
+    }
   });
 
   test('Delete choice field', async () => {
+    const data = createChoiceFieldTestData();
+    const created = await choiceFieldPage.createChoiceFieldViaApi(data.keyName, data.title);
+
+    await choiceFieldPage.goToChoiceFields();
     const list = new CarbonList(page);
-    const row = list.row(testData.keyName);
+    await list.setPageSize(50);
+    await list.waitForLoaded();
+
+    const row = list.row(data.keyName);
     await row.click();
 
     await choiceFieldPage.deleteChoiceField();
 
-    // Verify removed from list
-    const updatedList = new CarbonList(page);
-    const deletedRow = updatedList.row(testData.keyName);
-    await deletedRow.assertNotVisible();
-
-    createdId = ''; // Already deleted
+    // Verify deletion via API — the list UI may be stale immediately after delete.
+    const fields = await choiceFieldPage.getChoiceFieldsViaApi();
+    expect(fields.find(f => f.id === created.id)).toBeUndefined();
   });
 });
 

@@ -28,6 +28,7 @@ import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import com.ritense.valtimo.contract.authentication.UserManagementService
 import com.ritense.valtimo.contract.case_.CaseDefinitionId
 import com.ritense.valtimo.contract.domain.ValtimoMediaType.APPLICATION_JSON_UTF8_VALUE
+import jakarta.validation.Valid
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.stereotype.Controller
@@ -51,7 +52,7 @@ class CaseTabManagementResource(
     fun createCaseTab(
         @LoggableResource("caseDefinitionKey") @PathVariable caseDefinitionKey: String,
         @LoggableResource("caseDefinitionVersionTag") @PathVariable caseDefinitionVersionTag: String,
-        @RequestBody caseTabDto: CaseTabDto
+        @Valid @RequestBody caseTabDto: CaseTabDto
     ): ResponseEntity<CaseTabWithMetadataDto> {
         return try {
             val caseTab = caseTabService.createCaseTab(
@@ -69,7 +70,7 @@ class CaseTabManagementResource(
     fun updateOrderCaseTab(
         @LoggableResource("caseDefinitionKey") @PathVariable caseDefinitionKey: String,
         @LoggableResource("caseDefinitionVersionTag") @PathVariable caseDefinitionVersionTag: String,
-        @RequestBody caseTabDtos: List<CaseTabUpdateOrderDto>
+        @Valid @RequestBody caseTabDtos: List<CaseTabUpdateOrderDto>
     ): ResponseEntity<List<CaseTabWithMetadataDto>> {
         val caseTabs = caseTabService.updateCaseTabs(
             CaseDefinitionId.of(caseDefinitionKey, caseDefinitionVersionTag),
@@ -85,7 +86,7 @@ class CaseTabManagementResource(
         @LoggableResource("caseDefinitionKey") @PathVariable caseDefinitionKey: String,
         @LoggableResource("caseDefinitionVersionTag") @PathVariable caseDefinitionVersionTag: String,
         @PathVariable tabKey: String,
-        @RequestBody caseTab: CaseTabUpdateDto
+        @Valid @RequestBody caseTab: CaseTabUpdateDto
     ): ResponseEntity<Unit> {
         caseTabService.updateCaseTab(
             CaseDefinitionId.of(caseDefinitionKey, caseDefinitionVersionTag),

@@ -23,6 +23,7 @@ import com.ritense.iko.web.rest.request.IkoListColumnUpdateRequest
 import com.ritense.search.importer.ListColumnDto
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import com.ritense.valtimo.contract.domain.ValtimoMediaType.APPLICATION_JSON_UTF8_VALUE
+import jakarta.validation.Valid
 import org.springframework.http.ResponseEntity
 import org.springframework.stereotype.Controller
 import org.springframework.web.bind.annotation.DeleteMapping
@@ -66,7 +67,7 @@ class IkoListColumnManagementResource(
     fun createIkoListColumn(
         @PathVariable ikoViewKey: String,
         @PathVariable key: String,
-        @RequestBody request: IkoListColumnCreateRequest
+        @Valid @RequestBody request: IkoListColumnCreateRequest
     ): ResponseEntity<ListColumnDto> {
         val existingIkoListColumns = service.findAllColumnsByIkoViewKey(
             ikoViewKey = ikoViewKey,
@@ -83,7 +84,7 @@ class IkoListColumnManagementResource(
     fun updateIkoListColumn(
         @PathVariable ikoViewKey: String,
         @PathVariable key: String,
-        @RequestBody request: IkoListColumnUpdateRequest,
+        @Valid @RequestBody request: IkoListColumnUpdateRequest,
     ): ResponseEntity<ListColumnDto> {
         require(request.key == key)
         val existingIkoListColumn = service.findByKey(ikoViewKey, key)
@@ -99,7 +100,7 @@ class IkoListColumnManagementResource(
     @PutMapping("/v1/iko-view/{ikoViewKey}/column")
     fun updateIkoListColumnsOrder(
         @PathVariable ikoViewKey: String,
-        @RequestBody request: List<IkoListColumnUpdateRequest>,
+        @Valid @RequestBody request: List<IkoListColumnUpdateRequest>,
     ): ResponseEntity<List<ListColumnDto>> {
         val existingIkoListColumns = service.findAllColumnsByIkoViewKey(
             ikoViewKey = ikoViewKey,

@@ -14,17 +14,20 @@
   ~ limitations under the License.
   -->
 
-@if (model$ | async; as model) {
-  <valtimo-editor
-    [disabled]="(loading$ | async) === false && readOnly$ | async"
-    [model]="model"
-    [jsonSchema]="formFlowSchemaJson"
-    (validEvent)="onValid($event)"
-    (valueChangeEvent)="onValueChange($event)"
-    [fitPage]="true"
-  ></valtimo-editor>
-} @else {
-  <cds-loading></cds-loading>
+@if ({model: model$ | async, schema: formFlowSchemaJson$ | async}; as obs) {
+  @if (obs.model && obs.schema) {
+    <valtimo-editor
+      [disabled]="(loading$ | async) === false && readOnly$ | async"
+      [editorOptions]="editorOptions"
+      [model]="obs.model"
+      [jsonSchema]="obs.schema"
+      (validEvent)="onValid($event)"
+      (valueChangeEvent)="onValueChange($event)"
+      [fitPage]="true"
+    ></valtimo-editor>
+  } @else {
+    <cds-loading></cds-loading>
+  }
 }
 
 <ng-container renderInPageHeader>

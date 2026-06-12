@@ -16,6 +16,9 @@
 
 package com.ritense.team.web.rest.dto
 
+import jakarta.validation.constraints.Size
+
 data class TeamUserCreateRequestDto(
+    @field:Size(max = 255)
     val username: String
 )

@@ -17,7 +17,7 @@
 package com.ritense.note.exception
 
 import com.ritense.note.domain.Note
-import com.ritense.valtimo.web.rest.error.BadRequestAlertException
+import com.ritense.valtimo.contract.web.rest.error.BadRequestAlertException
 import java.util.UUID
 
 class NoteNotFoundException(noteId: UUID) :

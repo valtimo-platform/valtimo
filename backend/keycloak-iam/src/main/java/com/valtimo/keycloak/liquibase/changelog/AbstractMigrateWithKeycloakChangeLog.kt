@@ -16,21 +16,16 @@
 
 package com.valtimo.keycloak.liquibase.changelog
 
-import com.fasterxml.jackson.databind.DeserializationFeature
-import com.fasterxml.jackson.databind.ObjectMapper
 import com.ritense.valtimo.contract.Constants.SYSTEM_ACCOUNT
 import com.ritense.valtimo.contract.annotation.AllOpen
 import io.github.oshai.kotlinlogging.KotlinLogging
 import jakarta.ws.rs.NotFoundException
-import java.nio.ByteBuffer
-import java.sql.ResultSet
-import java.util.UUID
 import liquibase.database.Database
 import liquibase.database.jvm.JdbcConnection
 import org.jboss.resteasy.client.jaxrs.internal.ResteasyClientBuilderImpl
-import org.jboss.resteasy.plugins.providers.jackson.ResteasyJackson2Provider
 import org.keycloak.OAuth2Constants.CLIENT_CREDENTIALS
 import org.keycloak.adapters.springboot.KeycloakSpringBootProperties
+import org.keycloak.admin.client.JacksonProvider
 import org.keycloak.admin.client.Keycloak
 import org.keycloak.admin.client.KeycloakBuilder
 import org.keycloak.representations.idm.AbstractUserRepresentation
@@ -40,6 +35,9 @@ import org.springframework.boot.env.EnvironmentPostProcessor
 import org.springframework.core.env.ConfigurableEnvironment
 import org.springframework.core.env.Environment
 import org.springframework.util.ConcurrentLruCache
+import java.nio.ByteBuffer
+import java.sql.ResultSet
+import java.util.UUID
 
 @AllOpen
 abstract class AbstractMigrateWithKeycloakChangeLog : EnvironmentPostProcessor {
@@ -162,15 +160,9 @@ abstract class AbstractMigrateWithKeycloakChangeLog : EnvironmentPostProcessor {
 
     /** Logic was copied from `KeycloakService.keycloak()` */
     protected fun keycloak(): Keycloak {
-        val mapper = ObjectMapper()
-            .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
-
-        val jacksonProvider = ResteasyJackson2Provider()
-        jacksonProvider.setMapper(mapper)
-
         val resteasyClient = ResteasyClientBuilderImpl()
             .connectionPoolSize(10)
-            .register(jacksonProvider)
+            .register(JacksonProvider::class.java)
             .build()
 
         val properties = keycloakProperties()

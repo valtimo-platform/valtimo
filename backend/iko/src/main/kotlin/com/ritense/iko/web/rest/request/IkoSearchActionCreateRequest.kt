@@ -19,8 +19,10 @@ package com.ritense.iko.web.rest.request
 import com.ritense.iko.domain.IkoView
 import com.ritense.iko.domain.IkoSearchAction
 import com.ritense.iko.domain.IkoSearchActionId
+import jakarta.validation.constraints.Size
 
 data class IkoSearchActionCreateRequest(
+    @field:Size(max = 256)
     val title: String,
     val properties: Map<String, Any?>
 ) {
