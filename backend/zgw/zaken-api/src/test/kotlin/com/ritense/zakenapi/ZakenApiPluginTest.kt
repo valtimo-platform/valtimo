@@ -42,12 +42,17 @@ import com.ritense.zakenapi.domain.Geometry
 import com.ritense.zakenapi.domain.GeometryType
 import com.ritense.zakenapi.domain.GerelateerdeZaak
 import com.ritense.zakenapi.domain.GetZaakResultatenRequest
+import com.ritense.zakenapi.domain.Kenmerk
 import com.ritense.zakenapi.domain.NotitieStatus
 import com.ritense.zakenapi.domain.NotitieType
+import com.ritense.zakenapi.domain.Opschorting
 import com.ritense.zakenapi.domain.PatchZaakNotitieRequest
 import com.ritense.zakenapi.domain.PatchZaakRequest
+import com.ritense.zakenapi.domain.Processobject
 import com.ritense.zakenapi.domain.PutZaakNotitieRequest
+import com.ritense.zakenapi.domain.RelevanteZaak
 import com.ritense.zakenapi.domain.UpdateZaakeigenschapRequest
+import com.ritense.zakenapi.domain.Verlenging
 import com.ritense.zakenapi.domain.ZaakHersteltermijn
 import com.ritense.zakenapi.domain.ZaakInformatieObject
 import com.ritense.zakenapi.domain.ZaakInstanceLink
