@@ -20,8 +20,7 @@
   gap: 16px;
 
   &__title-form {
-    padding: 8px 0 16px 16px;
-    background: var(--cds-layer);
+    background: var(--cds-layer-02);
     display: flex;
     gap: 16px;
   }
@@ -30,28 +29,46 @@
     max-width: 300px;
 
     input {
-      background: var(--cds-layer-02);
+      background: var(--cds-layer-01);
     }
   }
 
   &__settings {
     display: flex;
     flex-wrap: wrap;
-    align-items: center;
-    gap: 24px;
-    padding: 16px;
-    background: var(--cds-layer);
+    align-items: stretch;
+    gap: 16px;
+    background: var(--cds-layer-02);
 
     > * {
       flex: 0 0 auto;
     }
   }
 
+  &__radio-group {
+    padding: 8px;
+    background: var(--cds-layer-01);
+  }
+
   &__dropdown {
     width: 300px;
 
     .cds--list-box {
-      background: var(--cds-layer-02);
+      background: var(--cds-layer-01);
+    }
+  }
+
+  &__iko-block {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  &__path-input {
+    max-width: 480px;
+
+    input {
+      background: var(--cds-layer-01);
     }
   }
 }

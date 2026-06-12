@@ -38,6 +38,16 @@ const routes: Routes = [
       customPageTitle: true,
     },
   },
+  {
+    path: 'access-control/:id/json-editor',
+    component: AccessControlEditorComponent,
+    canActivate: [AuthGuardService],
+    data: {
+      title: 'Role details',
+      roles: [ROLE_ADMIN],
+      customPageTitle: true,
+    },
+  },
 ];
 
 @NgModule({

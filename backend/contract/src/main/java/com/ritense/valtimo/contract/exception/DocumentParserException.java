@@ -16,17 +16,11 @@
 
 package com.ritense.valtimo.contract.exception;
 
-public class DocumentParserException extends Exception {
+import com.ritense.valtimo.contract.web.rest.error.BadRequestAlertException;
 
-    private final String message;
+public class DocumentParserException extends BadRequestAlertException {
 
     public DocumentParserException(String message) {
-        this.message = message;
-    }
-
-    @Override
-    public String getMessage() {
-        return message;
+        super(message, "parsingFailure");
     }
 }
-

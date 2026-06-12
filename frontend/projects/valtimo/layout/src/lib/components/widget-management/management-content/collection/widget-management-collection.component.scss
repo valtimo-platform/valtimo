@@ -24,7 +24,7 @@
     gap: 16px;
     grid-template-columns: repeat(3, 1fr);
     align-items: flex-end;
-    background: var(--cds-layer);
+    background: var(--cds-layer-02);
     padding: 12px 16px 16px 16px;
   }
 
@@ -43,7 +43,7 @@
     flex-direction: column;
     display: flex;
     gap: 16px;
-    background: var(--cds-layer);
+    background: var(--cds-layer-02);
     padding: 16px;
 
     &-title {
@@ -75,6 +75,6 @@
 
   .cds--text-input,
   .cds--list-box {
-    background: var(--cds-layer-02);
+    background: var(--cds-layer-01);
   }
 }
