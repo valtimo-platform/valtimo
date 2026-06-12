@@ -19,7 +19,13 @@
 
 ## Bugfixes
 
+
 * **Sortable controls hidden for non-sortable paths**
 
   In the case and task list column editors, the **Sortable** checkbox and **Default sort** dropdown are now hidden when
   the configured path does not support sorting.
+
+* **Keycloak-based database migrations failed against newer Keycloak servers**
+
+  Database migrations that look up users in Keycloak could fail to start when running against a newer Keycloak
+  version than the one Valtimo ships with. This has been resolved.
