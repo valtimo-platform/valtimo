@@ -575,21 +575,21 @@ internal class DocumentJsonValueResolverTest {
     }
 
     @Test
-    fun `should not include oneOf field with more than two schemas as FIELD option`() {
+    fun `should include oneOf field with multiple primitive type schemas as FIELD option`() {
         mockDefinition("test")
 
         val options = documentValueResolver.getResolvableKeyOptions("test")
 
-        assertThat(options).noneMatch { it.path == "doc:/string5" }
+        assertThat(options).anyMatch { it.path == "doc:/string5" && it.type == ValueResolverOptionType.FIELD }
     }
 
     @Test
-    fun `should not include union type field without null as FIELD option`() {
+    fun `should include union type field without null as FIELD option`() {
         mockDefinition("test")
 
         val options = documentValueResolver.getResolvableKeyOptions("test")
 
-        assertThat(options).noneMatch { it.path == "doc:/string6" }
+        assertThat(options).anyMatch { it.path == "doc:/string6" && it.type == ValueResolverOptionType.FIELD }
     }
 
     private fun mockDefinition(definitionName: String): JsonSchemaDocumentDefinition {

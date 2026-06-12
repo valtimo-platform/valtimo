@@ -69,6 +69,7 @@ Configuring a link from a case to an IKO view is done through the case detail ta
 | [List](list.md) | Configure search result columns. |
 | [Tabs](tabs.md) | Organize detail screen information into tabs. |
 | [Widgets](widgets.md) | Configure data display widgets within tabs. |
+| [Search FormIO component](search-formio-component.md) | Embed IKO search and selection in a FormIO task form. |
 
 ## Quick start
 

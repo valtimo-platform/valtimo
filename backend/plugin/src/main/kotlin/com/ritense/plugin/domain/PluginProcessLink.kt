@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -65,10 +65,6 @@ class PluginProcessLink(
             }
             require(pluginConfigurationId == null) {
                 "pluginConfigurationId must not be set when reference type is BUILDING_BLOCK"
-            }
-        } else {
-            requireNotNull(pluginConfigurationId) {
-                "pluginConfigurationId is required when reference type is FIXED"
             }
         }
     }

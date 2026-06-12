@@ -81,6 +81,7 @@
     * [Creating a resource](features/access-control/for-developers/registering-a-resource.md)
     * [Creating a relation to another resource](features/access-control/for-developers/create-relation-between-resources.md)
     * [Running custom code without access control](features/access-control/for-developers/run-without-access-control.md)
+* [⚙️ Admin settings](features/admin-settings/README.md)
 * [🗃️ Cases](features/case/README.md)
   * [Configuration](features/case/configuration.md)
   * [General](features/case/general.md)
@@ -119,6 +120,7 @@
       * [Uploading to Documenten API with metadata](features/case/zgw/zgw-documents/upload-to-documenten-api-with-metadata.md)
     * [Creating extra case tabs for Zaakobjects](features/case/zgw/configure-tab-object-type.md)
     * [Zaakdetail sync](features/case/zgw/zaakdetail-sync.md)
+    * [Zaak sync](features/case/zgw/zaken-api-sync.md)
   * [For developers](features/case/for-developers/README.md)
     * [Search fields API](features/case/for-developers/configuring-search-fields.md)
     * [Case list tab order](features/case/for-developers/customizing-case-list-tabs.md)
@@ -151,6 +153,7 @@
   * [List](features/iko/list.md)
   * [Tabs](features/iko/tabs.md)
   * [Widgets](features/iko/widgets.md)
+  * [Search FormIO component](features/iko/search-formio-component.md)
 * [🗝️ Keycloak](features/keycloak/README.md)
   * [Access control](features/keycloak/access-control.md)
 * [✉️ Outbox](features/outbox/README.md)
@@ -190,7 +193,15 @@
 ## Release notes
 
 * [Release notes](release-notes/release-notes.md)
-* [13.x.x](release-notes/13.x.x/README.md)
+* [13.x.x](release-notes/13.x.x/)
+  * [13.32.0](release-notes/13.x.x/13.32.0/README.md)
+  * [13.31.0](release-notes/13.x.x/13.31.0/README.md)
+  * [13.30.0](release-notes/13.x.x/13.30.0/README.md)
+  * [13.29.0](release-notes/13.x.x/13.29.0/README.md)
+  * [13.28.1](release-notes/13.x.x/13.28.1/README.md)
+    * [Front-end migration](release-notes/13.x.x/13.28.1/front-end-migration.md)
+  * [13.27.0](release-notes/13.x.x/13.27.0/README.md)
+  * [13.26.0](release-notes/13.x.x/13.26.0/README.md)
   * [13.25.1](release-notes/13.x.x/13.25.1/README.md)
   * [13.25.0](release-notes/13.x.x/13.25.0/README.md)
   * [13.24.0](release-notes/13.x.x/13.24.0/README.md)
@@ -249,6 +260,7 @@
   * [Custom logo](customizing-valtimo/front-end-customization/custom-logo.md)
   * [Custom components](customizing-valtimo/front-end-customization/custom-components/README.md)
     * [Custom case management tab](customizing-valtimo/front-end-customization/custom-components/custom-case-management-tab.md)
+    * [Custom UI component process link](customizing-valtimo/front-end-customization/custom-components/custom-ui-component-process-link.md)
 
 ## Contributing to Valtimo
 

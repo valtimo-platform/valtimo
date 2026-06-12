@@ -39,6 +39,7 @@ import com.ritense.authorization.request.EntityAuthorizationRequest;
 import com.ritense.authorization.role.Role;
 import com.ritense.authorization.specification.AuthorizationSpecification;
 import com.ritense.document.domain.Document;
+import com.ritense.document.domain.InternalCaseStatusHistory;
 import com.ritense.document.domain.RelatedFile;
 import com.ritense.document.domain.impl.JsonDocumentContent;
 import com.ritense.document.domain.impl.JsonSchemaDocument;
@@ -68,6 +69,7 @@ import com.ritense.document.event.DocumentsListed;
 import com.ritense.document.exception.DocumentNotFoundException;
 import com.ritense.document.exception.ModifyDocumentException;
 import com.ritense.document.exception.UnknownDocumentDefinitionException;
+import com.ritense.document.repository.InternalCaseStatusHistoryRepository;
 import com.ritense.document.repository.impl.JsonSchemaDocumentRepository;
 import com.ritense.document.service.CaseTagService;
 import com.ritense.document.service.DocumentService;
@@ -134,6 +136,8 @@ public class JsonSchemaDocumentService implements DocumentService {
 
     private final EntityManager entityManager;
 
+    private final InternalCaseStatusHistoryRepository internalCaseStatusHistoryRepository;
+
     public JsonSchemaDocumentService(
         JsonSchemaDocumentRepository documentRepository,
         JsonSchemaDocumentDefinitionService documentDefinitionService,
@@ -147,7 +151,8 @@ public class JsonSchemaDocumentService implements DocumentService {
         InternalCaseStatusService internalCaseStatusService,
         CaseTagService caseTagService,
         TeamManagementService teamManagementService,
-        EntityManager entityManager
+        EntityManager entityManager,
+        InternalCaseStatusHistoryRepository internalCaseStatusHistoryRepository
     ) {
         this.documentRepository = documentRepository;
         this.documentDefinitionService = documentDefinitionService;
@@ -162,6 +167,7 @@ public class JsonSchemaDocumentService implements DocumentService {
         this.caseTagService = caseTagService;
         this.teamManagementService = teamManagementService;
         this.entityManager = entityManager;
+        this.internalCaseStatusHistoryRepository = internalCaseStatusHistoryRepository;
     }
 
     @Override
@@ -677,7 +683,7 @@ public class JsonSchemaDocumentService implements DocumentService {
         documentRepository.save(document);
 
         // Publish an event to update the audit log
-        publishDocumentAssigneeChangedEvent(documentId, assignee.getFullName(), null, formerAssigneeId, formerTeamKey);
+        publishDocumentAssigneeChangedEvent(documentId, assignee.getUsername(), assignee.getFullName(), null, formerAssigneeId, formerTeamKey);
 
         outboxService.send(() ->
             new DocumentAssigned(
@@ -752,7 +758,7 @@ public class JsonSchemaDocumentService implements DocumentService {
         documentRepository.save(document);
 
         // Publish an event to update the audit log
-        publishDocumentAssigneeChangedEvent(documentId, assignee.getFullName(), null, formerAssigneeId, formerTeamKey);
+        publishDocumentAssigneeChangedEvent(documentId, assignee.getUsername(), assignee.getFullName(), null, formerAssigneeId, formerTeamKey);
 
         outboxService.send(() ->
             new DocumentAssigned(
@@ -830,7 +836,7 @@ public class JsonSchemaDocumentService implements DocumentService {
         documentRepository.save(document);
 
         // Publish an event to update the audit log
-        publishDocumentAssigneeChangedEvent(documentId, null, teamTitle, formerAssigneeId, formerTeamKey);
+        publishDocumentAssigneeChangedEvent(documentId, null, null, teamTitle, formerAssigneeId, formerTeamKey);
 
         outboxService.send(() ->
             new DocumentUpdated(
@@ -876,6 +882,7 @@ public class JsonSchemaDocumentService implements DocumentService {
         documents.forEach(document -> {
             publishDocumentAssigneeChangedEvent(
                 document.id().getId(),
+                null,
                 null,
                 teamTitle,
                 formerAssigneeIdByDocumentId.get(document.id().getId()),
@@ -958,6 +965,16 @@ public class JsonSchemaDocumentService implements DocumentService {
         document.setInternalStatus(internalCaseStatus);
 
         documentRepository.save(document);
+
+        if (internalStatusKey != null) {
+            internalCaseStatusHistoryRepository.save(new InternalCaseStatusHistory(
+                UUID.randomUUID(),
+                documentId.getId(),
+                document.definitionId().name(),
+                internalStatusKey,
+                LocalDateTime.now()
+            ));
+        }
 
         if (retentionDateSet && document.retentionDate().isEmpty()) {
             applicationEventPublisher.publishEvent(
@@ -1070,6 +1087,7 @@ public class JsonSchemaDocumentService implements DocumentService {
 
     private void publishDocumentAssigneeChangedEvent(
         @LoggableResource(resourceType = JsonSchemaDocument.class) UUID documentId,
+        String assigneeId,
         String assigneeFullName,
         String teamTitle,
         String formerAssigneeId,
@@ -1082,6 +1100,7 @@ public class JsonSchemaDocumentService implements DocumentService {
                 LocalDateTime.now(),
                 AuditHelper.getActor(),
                 documentId,
+                assigneeId,
                 assigneeFullName,
                 teamTitle,
                 formerAssigneeId,
@@ -1240,6 +1259,7 @@ public class JsonSchemaDocumentService implements DocumentService {
         documents.forEach(document -> {
             publishDocumentAssigneeChangedEvent(
                 document.id().getId(),
+                assigneeUsername,
                 assignee.getFullName(),
                 null,
                 formerAssigneeIdByDocumentId.get(document.id().getId()),

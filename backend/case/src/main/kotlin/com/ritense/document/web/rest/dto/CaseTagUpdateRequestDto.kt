@@ -19,9 +19,10 @@ package com.ritense.document.web.rest.dto
 import com.ritense.document.domain.CaseTagColor
 import com.ritense.valtimo.contract.Constants
 import jakarta.validation.constraints.Pattern
+import jakarta.validation.constraints.Size
 
 data class CaseTagUpdateRequestDto(
-    @field:Pattern(regexp = Constants.KEY_REGEX) val key: String,
-    val title: String,
+    @field:Pattern(regexp = Constants.KEY_REGEX) @field:Size(max = 255) val key: String,
+    @field:Size(max = 255) val title: String,
     val color: CaseTagColor
 )

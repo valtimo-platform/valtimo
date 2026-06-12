@@ -15,6 +15,7 @@
  */
 
 import {CommonModule} from '@angular/common';
+import {HttpErrorResponse} from '@angular/common/http';
 import {
   AfterViewInit,
   Component,
@@ -51,8 +52,10 @@ import {
 } from '@valtimo/shared';
 import {ProcessService} from '@valtimo/process';
 import {
+  BuildingBlockProcessDefinitionConflictResponse,
   BuildingBlockProcessLinkCreateDto,
   BuildingBlockProcessLinkUpdateDto,
+  ProcessDefinitionConflictResponse,
   ProcessLinkBuildingBlockApiService,
   ProcessLinkButtonService,
   ProcessLinkCreateEvent,
@@ -355,7 +358,7 @@ export class ProcessManagementBuilderComponent implements AfterViewInit, OnDestr
           if (context === 'case') {
             const caseManagementParams = params as CaseManagementParams;
 
-            return this.processLinkService.deployProcessWithProcessLinksForCase(
+            return this.processLinkService.updateProcessDefinitionForCase(
               processLinks as ProcessLinkCreateEvent[],
               selectedProcessDefinition.id,
               !isReadOnlyProcess ? (result?.xml ?? '') : null,
@@ -369,7 +372,7 @@ export class ProcessManagementBuilderComponent implements AfterViewInit, OnDestr
           if (context === 'buildingBlock') {
             const buildingBlockManagementParams = params as BuildingBlockManagementParams;
 
-            return this.processLinkService.deployProcessWithProcessLinksForBuildingBlock(
+            return this.processLinkService.updateProcessDefinitionForBuildingBlock(
               processLinks as ProcessLinkCreateEvent[],
               selectedProcessDefinition.id,
               result?.xml,
@@ -378,7 +381,7 @@ export class ProcessManagementBuilderComponent implements AfterViewInit, OnDestr
             );
           }
 
-          return this.processLinkService.deployProcessWithProcessLinks(
+          return this.processLinkService.updateProcessDefinition(
             processLinks as ProcessLinkCreateEvent[],
             selectedProcessDefinition.id,
             !isReadOnlyProcess ? (result?.xml ?? '') : null
@@ -418,25 +421,22 @@ export class ProcessManagementBuilderComponent implements AfterViewInit, OnDestr
 
           switch (context) {
             case 'independent':
-              return this.processLinkService.deployProcessWithProcessLinks(
+              return this.processLinkService.createProcessDefinition(
                 mappedProcessLinks,
-                null,
                 result.xml ?? ''
               );
             case 'buildingBlock':
               const buildingBlockParams = params as BuildingBlockManagementParams;
-              return this.processLinkService.deployProcessWithProcessLinksForBuildingBlock(
+              return this.processLinkService.createProcessDefinitionForBuildingBlock(
                 mappedProcessLinks,
-                null,
                 result.xml ?? '',
                 buildingBlockParams.buildingBlockDefinitionKey,
                 buildingBlockParams.buildingBlockDefinitionVersionTag
               );
             case 'case':
               const caseManagementParams = params as CaseManagementParams;
-              return this.processLinkService.deployProcessWithProcessLinksForCase(
+              return this.processLinkService.createProcessDefinitionForCase(
                 mappedProcessLinks,
-                null,
                 result.xml ?? '',
                 caseManagementParams.caseDefinitionKey,
                 caseManagementParams.caseDefinitionVersionTag,
@@ -450,8 +450,12 @@ export class ProcessManagementBuilderComponent implements AfterViewInit, OnDestr
         next: () => {
           this.navigateBack('success');
         },
-        error: () => {
-          this.showNotification('error');
+        error: (error: unknown) => {
+          if (this.isProcessDefinitionAlreadyExistsError(error)) {
+            this.showNotification('alreadyExists');
+          } else {
+            this.showNotification('error');
+          }
         },
       });
   }
@@ -498,12 +502,21 @@ export class ProcessManagementBuilderComponent implements AfterViewInit, OnDestr
     processManagementWindow.pluginTranslationService = this.pluginTranslationService;
   }
 
-  private showNotification(notification: null | 'success' | 'error'): void {
+  private showNotification(notification: null | 'success' | 'error' | 'alreadyExists'): void {
+    const type = notification === 'alreadyExists' ? 'error' : notification;
     this.notificationService.showToast({
       caption: this.translateService.instant(`processManagement.${notification}Notification`),
-      type: notification,
-      title: this.translateService.instant(`interface.${notification}`),
+      type,
+      title: this.translateService.instant(`interface.${type}`),
     });
+  }
+
+  private isProcessDefinitionAlreadyExistsError(error: unknown): boolean {
+    if (!(error instanceof HttpErrorResponse) || error.status !== 409) return false;
+    const body = error.error;
+    if ((body as ProcessDefinitionConflictResponse)?.processDefinitionId) return true;
+    const bbBody = body as BuildingBlockProcessDefinitionConflictResponse;
+    return Array.isArray(bbBody?.duplicateProcessDefinitions) && bbBody.duplicateProcessDefinitions.length > 0;
   }
 
   private setSelectedProcessDefinitionToLatest(

@@ -12,7 +12,7 @@
   from the **Decision tables** tab in the building block management page. They can be used in business rule tasks
   within the building block's processes. Decision tables are included in building block import and export, and can be
   auto-deployed by placing `.dmn` files in the `config/building-block/<key>/<version>/dmn/` directory. See
-  [Building block decision tables](../../features/building-blocks/decision-tables.md) for more information.
+  [Building block decision tables](../../../features/building-blocks/decision-tables.md) for more information.
 
 * **New Notificaties API plugin actions**
 

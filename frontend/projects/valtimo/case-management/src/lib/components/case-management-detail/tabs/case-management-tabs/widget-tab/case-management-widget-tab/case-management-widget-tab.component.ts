@@ -140,6 +140,9 @@ export class CaseManagementWidgetTabComponent
     WidgetType.FORMIO,
     WidgetType.TABLE,
     WidgetType.MAP,
+    WidgetType.PERSON_CARD,
+    WidgetType.METROLINE,
+    WidgetType.HIGHLIGHT,
   ];
 
   constructor(

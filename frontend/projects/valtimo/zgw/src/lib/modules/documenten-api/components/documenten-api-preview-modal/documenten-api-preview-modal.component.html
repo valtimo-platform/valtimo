@@ -43,7 +43,10 @@
 </cds-modal>
 
 <ng-template #loading>
-  <div class="loading-container pb-2">
+  <div class="loading-container" role="status" aria-live="polite">
+    <span class="cds--type-heading-compact-01">
+      {{ 'zgw.documents.preview.loading' | translate }}
+    </span>
     <cds-loading size="normal"></cds-loading>
   </div>
 </ng-template>

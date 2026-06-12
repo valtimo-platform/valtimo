@@ -21,6 +21,7 @@ import com.ritense.logging.web.rest.dto.LoggingEventResponse
 import com.ritense.logging.web.rest.dto.LoggingEventSearchRequest
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import com.ritense.valtimo.contract.domain.ValtimoMediaType.APPLICATION_JSON_UTF8_VALUE
+import jakarta.validation.Valid
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageImpl
 import org.springframework.data.domain.Pageable
@@ -43,7 +44,7 @@ class LoggingEventManagementResource(
     @Transactional(readOnly = true)
     @PostMapping("/v1/logging")
     fun searchLoggingEvents(
-        @RequestBody searchRequest: LoggingEventSearchRequest,
+        @Valid @RequestBody searchRequest: LoggingEventSearchRequest,
         @PageableDefault(sort = ["timestamp"], direction = Sort.Direction.DESC) pageable: Pageable,
     ): ResponseEntity<Page<LoggingEventResponse>> {
         val loggingEvents = loggingEventService.searchLoggingEvents(searchRequest, pageable)

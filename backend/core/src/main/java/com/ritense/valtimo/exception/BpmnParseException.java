@@ -16,7 +16,7 @@
 
 package com.ritense.valtimo.exception;
 
-import com.ritense.valtimo.web.rest.error.BadRequestAlertException;
+import com.ritense.valtimo.contract.web.rest.error.BadRequestAlertException;
 import org.operaton.bpm.engine.repository.ProcessDefinition;
 
 public class BpmnParseException extends BadRequestAlertException {

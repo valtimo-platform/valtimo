@@ -21,6 +21,7 @@ import com.ritense.authorization.permission.PermissionRepository
 import com.ritense.authorization.web.request.SearchPermissionsRequest
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import com.ritense.valtimo.contract.domain.ValtimoMediaType
+import jakarta.validation.Valid
 import org.springframework.http.ResponseEntity
 import org.springframework.stereotype.Controller
 import org.springframework.web.bind.annotation.PostMapping
@@ -34,7 +35,7 @@ class PermissionManagementResource(
     val permissionRepository: PermissionRepository
 ) {
     @PostMapping("/v1/permissions/search")
-    fun searchPermissions(@RequestBody searchRequest: SearchPermissionsRequest): ResponseEntity<List<PermissionDto>> {
+    fun searchPermissions(@Valid @RequestBody searchRequest: SearchPermissionsRequest): ResponseEntity<List<PermissionDto>> {
         val rolePermissions = permissionRepository
             .findAllByRoleKeyInOrderByRoleKeyAscResourceTypeAsc(searchRequest.roles)
             .map {

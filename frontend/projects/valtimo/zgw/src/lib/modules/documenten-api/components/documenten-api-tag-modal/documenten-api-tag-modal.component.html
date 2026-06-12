@@ -45,6 +45,7 @@
         <input
           cdsText
           formControlName="value"
+          [attr.data-test-id]="testIds.modalValueInput"
           [attr.modal-primary-focus]="true"
           [invalid]="value.dirty && value.invalid"
         />
@@ -53,11 +54,21 @@
   </section>
 
   <cds-modal-footer [cdsLayer]="1">
-    <button cdsButton="secondary" (click)="onClose()" [disabled]="obs.disabled">
+    <button
+      cdsButton="secondary"
+      [attr.data-test-id]="testIds.modalCancelButton"
+      (click)="onClose()"
+      [disabled]="obs.disabled"
+    >
       {{ 'interface.cancel' | translate }}
     </button>
 
-    <button cdsButton="primary" [disabled]="invalid || pristine || obs.disabled" (click)="addTag()">
+    <button
+      cdsButton="primary"
+      [attr.data-test-id]="testIds.modalSubmitButton"
+      [disabled]="invalid || pristine || obs.disabled"
+      (click)="addTag()"
+    >
       {{ 'interface.add' | translate }}
     </button>
   </cds-modal-footer>

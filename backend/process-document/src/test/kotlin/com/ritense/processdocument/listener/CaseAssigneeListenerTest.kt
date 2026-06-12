@@ -109,7 +109,7 @@ class CaseAssigneeListenerTest {
         )
 
     private fun assigneeChangedEvent() = DocumentAssigneeChangedEvent(
-        UUID.randomUUID(), "test", LocalDateTime.now(), "admin", documentId, assigneeUsername
+        UUID.randomUUID(), "test", LocalDateTime.now(), "admin", documentId, assigneeUsername, null
     )
 
     // --- updateAssigneeOnTasks ---

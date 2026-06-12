@@ -42,6 +42,18 @@ export class CaseMenuService implements OnDestroy {
   }
 
   public appendCaseMenuItems = (menuItems: MenuItem[]): Observable<MenuItem[]> => {
+    const isGenericCaseList =
+      this.configService.config?.featureToggles?.enableGenericCaseList === true;
+
+    if (isGenericCaseList) {
+      const index = menuItems.findIndex(i => i.title === 'Cases' || i.title === 'Dossiers');
+      if (index >= 0) {
+        menuItems[index].link = ['/cases'];
+        delete menuItems[index].children;
+      }
+      return of(menuItems);
+    }
+
     return from(this.documentService.getCaseDefinitions({active: true})).pipe(
       switchMap(definitions => {
         const countMap = this.getCountMap(definitions);
