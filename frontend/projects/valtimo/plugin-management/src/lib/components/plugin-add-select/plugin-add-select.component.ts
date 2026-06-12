@@ -15,12 +15,15 @@
  */
 
 import {Component, Input, OnDestroy, OnInit} from '@angular/core';
+import {TranslateService} from '@ngx-translate/core';
 import {BehaviorSubject, combineLatest, Observable, Subscription} from 'rxjs';
 import {map} from 'rxjs/operators';
 import {PluginManagementStateService} from '../../services';
 import {UnifiedPluginDefinition} from '../../models';
 import {
   ExternalPluginDefinition,
+  getExternalPluginDescription,
+  getExternalPluginDisplayName,
   PluginDefinition,
   PluginManagementService,
   toExternalPluginKey,
@@ -48,18 +51,20 @@ export class PluginAddSelectComponent implements OnInit, OnDestroy {
     combineLatest([
       this._stateService.pluginDefinitionsWithLogos$,
       this._externalDefs$,
+      this._translateService.stream('key'),
     ]).pipe(
       map(([embedded, external]) => {
         if (!embedded) return undefined;
 
+        const lang = this._translateService.currentLang;
         const externalDefs: UnifiedPluginDefinition[] = external.map(def => ({
           key: toExternalPluginKey(def.id),
-          title: def.name ?? def.pluginId,
-          description: def.description,
+          title: getExternalPluginDisplayName(def, lang),
+          description: getExternalPluginDescription(def, lang),
           source: 'external',
           externalDefinitionId: def.id,
-          externalName: def.name ?? def.pluginId,
-          externalDescription: def.description,
+          externalName: getExternalPluginDisplayName(def, lang),
+          externalDescription: getExternalPluginDescription(def, lang),
           externalLogoUrl: def.logoUrl,
         }));
 
@@ -74,7 +79,8 @@ export class PluginAddSelectComponent implements OnInit, OnDestroy {
 
   constructor(
     private readonly _pluginManagementService: PluginManagementService,
-    private readonly _stateService: PluginManagementStateService
+    private readonly _stateService: PluginManagementStateService,
+    private readonly _translateService: TranslateService
   ) {}
 
   public ngOnInit(): void {

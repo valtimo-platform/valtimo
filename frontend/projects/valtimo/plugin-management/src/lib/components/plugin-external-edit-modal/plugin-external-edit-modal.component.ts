@@ -40,6 +40,7 @@ import {
   ExternalPluginIframeComponent,
   ExternalPluginEndpoint,
   ExternalPluginService,
+  getExternalPluginDisplayName,
 } from '@valtimo/plugin';
 import {UnifiedPluginConfigurationRow} from '../../models';
 import {forkJoin, Subscription} from 'rxjs';
@@ -98,6 +99,7 @@ export class PluginExternalEditModalComponent implements OnChanges, OnDestroy {
 
   private _iframeConfigTitle: string = '';
   private _iframeConfigData: Record<string, unknown> | null = null;
+  private readonly _$definition = signal<ExternalPluginDefinition | null>(null);
 
   private readonly _subscriptions = new Subscription();
 
@@ -107,7 +109,10 @@ export class PluginExternalEditModalComponent implements OnChanges, OnDestroy {
   ) {
     this._buildProgressSteps();
     this._subscriptions.add(
-      this._translateService.onLangChange.subscribe(() => this._buildProgressSteps())
+      this._translateService.onLangChange.subscribe(() => {
+        this._buildProgressSteps();
+        this._updateDefinitionName();
+      })
     );
   }
 
@@ -239,6 +244,7 @@ export class PluginExternalEditModalComponent implements OnChanges, OnDestroy {
     this._$eventSubscriptions.set([]);
     this._$permissionsValid.set(false);
     this._$hasPermissionsStep.set(false);
+    this._$definition.set(null);
     this._$definitionName.set('');
 
     const configId = this.configuration?.id;
@@ -251,7 +257,7 @@ export class PluginExternalEditModalComponent implements OnChanges, OnDestroy {
         this._externalPluginService.getDefinition(definitionId),
       ]).subscribe({
         next: ([configDetail, definition]) => {
-          this._$definitionName.set(definition.name ?? definition.pluginId);
+          this._setDefinition(definition);
           this._$configurationSchema.set(definition.configurationSchema);
           this._resolveConfigBundleUrl(definition);
 
@@ -286,7 +292,7 @@ export class PluginExternalEditModalComponent implements OnChanges, OnDestroy {
       this._$loading.set(true);
       this._externalPluginService.getDefinition(definitionId).subscribe({
         next: definition => {
-          this._$definitionName.set(definition.name ?? definition.pluginId);
+          this._setDefinition(definition);
           this._$configurationSchema.set(definition.configurationSchema);
           this._resolveConfigBundleUrl(definition);
 
@@ -316,6 +322,18 @@ export class PluginExternalEditModalComponent implements OnChanges, OnDestroy {
         this._$propertiesInvalid.set(true);
       }
     });
+  }
+
+  private _setDefinition(definition: ExternalPluginDefinition): void {
+    this._$definition.set(definition);
+    this._updateDefinitionName();
+  }
+
+  private _updateDefinitionName(): void {
+    const definition = this._$definition();
+    this._$definitionName.set(
+      definition ? getExternalPluginDisplayName(definition, this._translateService.currentLang) : ''
+    );
   }
 
   private _resolveConfigBundleUrl(definition: ExternalPluginDefinition): void {
@@ -354,6 +372,7 @@ export class PluginExternalEditModalComponent implements OnChanges, OnDestroy {
     this._$eventSubscriptions.set([]);
     this._$permissionsValid.set(false);
     this._$hasPermissionsStep.set(false);
+    this._$definition.set(null);
     this._$definitionName.set('');
     this._buildProgressSteps();
   }
