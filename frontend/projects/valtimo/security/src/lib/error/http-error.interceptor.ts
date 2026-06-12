@@ -58,7 +58,7 @@ export class HttpErrorInterceptor implements HttpInterceptor {
         } else {
           // server-side error
           if (error?.error?.errors) {
-            errorMessage = error?.error?.errors;
+            errorMessage = error?.error?.errors?.join('</br>');
           } else if (error?.error?.title && error?.error?.detail) {
             errorMessage = `${error?.error?.title}. Details: </br>${error?.error?.detail}`;
           } else if (error?.error?.title && error?.error?.referenceId) {

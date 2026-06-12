@@ -192,6 +192,10 @@ export class OverflowMenuComponent implements OnInit, AfterContentInit, OnChange
 
     this._cleanupAutoUpdate = autoUpdate(reference, menu, () => {
       computePosition(reference, menu, {
+        // The pane is rendered with `position: fixed`, so positions must be
+        // computed against the viewport. Without this the menu is offset by the
+        // trigger's page position and lands far from lower rows (unclickable).
+        strategy: 'fixed',
         placement: this.placement,
         strategy: 'fixed',
         middleware: [

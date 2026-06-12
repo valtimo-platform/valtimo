@@ -15,6 +15,7 @@
  */
 
 import {Type} from '@angular/core';
+import {WidgetLayout} from '@valtimo/components';
 
 interface IkoViewCreateRequest {
   ikoRepositoryConfigKey: string;
@@ -103,6 +104,7 @@ interface IkoTabUpdateRequest {
   title: string;
   type: string;
   properties: Record<string, any | null>;
+  widgetLayout?: WidgetLayout;
 }
 
 interface TabDto {
@@ -110,6 +112,7 @@ interface TabDto {
   title?: string;
   type: string;
   properties: Record<string, any | null>;
+  widgetLayout?: WidgetLayout;
 }
 
 type PropertyFieldType = 'text' | 'keyValueList' | 'integer' | 'dropdown' | 'url';

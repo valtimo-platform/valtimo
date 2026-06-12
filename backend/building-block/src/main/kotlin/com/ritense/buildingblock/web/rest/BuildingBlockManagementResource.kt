@@ -34,6 +34,7 @@ import com.ritense.logging.LoggableResource
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import com.ritense.valtimo.contract.buildingblock.BuildingBlockDefinitionId
 import com.ritense.valtimo.contract.domain.ValtimoMediaType.APPLICATION_JSON_UTF8_VALUE
+import jakarta.validation.Valid
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.data.domain.Sort
@@ -75,7 +76,7 @@ class BuildingBlockManagementResource(
 
     @PostMapping(consumes = [APPLICATION_JSON_UTF8_VALUE])
     fun createBuildingBlockDefinition(
-        @RequestBody dto: CreateBuildingBlockDefinitionDto
+        @Valid @RequestBody dto: CreateBuildingBlockDefinitionDto
     ): ResponseEntity<BuildingBlockDefinitionDto> {
         val savedDto = runWithoutAuthorization { buildingBlockManagementService.create(dto) }
         return ResponseEntity.ok(savedDto)
@@ -96,7 +97,7 @@ class BuildingBlockManagementResource(
     fun updateBuildingBlockDefinition(
         @PathVariable key: String,
         @PathVariable versionTag: String,
-        @RequestBody dto: UpdateBuildingBlockDefinitionDto
+        @Valid @RequestBody dto: UpdateBuildingBlockDefinitionDto
     ): ResponseEntity<BuildingBlockDefinitionDto> {
         val updated = runWithoutAuthorization { buildingBlockManagementService.update(key, versionTag, dto) }
         return ResponseEntity.ok(updated)
@@ -115,7 +116,7 @@ class BuildingBlockManagementResource(
     fun createDraftBuildingBlockDefinition(
         @PathVariable key: String,
         @PathVariable versionTag: String,
-        @RequestBody dto: CreateBuildingBlockDraftDto
+        @Valid @RequestBody dto: CreateBuildingBlockDraftDto
     ): ResponseEntity<BuildingBlockDefinitionDto> {
         val draft = runWithoutAuthorization {
             buildingBlockManagementService.createDraft(key, versionTag, dto.versionTag)

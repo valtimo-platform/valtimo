@@ -26,6 +26,7 @@ import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import com.ritense.valtimo.contract.authorization.UserManagementServiceHolder
 import com.ritense.valtimo.contract.domain.ValtimoMediaType
 import com.ritense.valtimo.service.OperatonTaskService
+import jakarta.validation.Valid
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.http.ResponseEntity
@@ -50,7 +51,7 @@ class TaskListResource (
     @PostMapping("/v3/task")
     fun getTaskList(
         @RequestParam("filter") assignmentFilter: OperatonTaskService.TaskFilter,
-        @RequestBody taskListSearchDto: TaskListSearchDto,
+        @Valid @RequestBody taskListSearchDto: TaskListSearchDto,
         pageable: Pageable
     ): ResponseEntity<Page<*>> {
         return if (taskListSearchDto.caseDefinitionKey != null) {
@@ -63,7 +64,7 @@ class TaskListResource (
     @PostMapping("/v1/document-definition/{caseDefinitionName}/task/search")
     fun searchTaskList(
         @PathVariable(name = "caseDefinitionName") caseDefinitionName: String,
-        @RequestBody searchRequest: SearchWithConfigRequest,
+        @Valid @RequestBody searchRequest: SearchWithConfigRequest,
         pageable: Pageable
     ): ResponseEntity<Page<TaskListRowDto>> {
         val result = service.searchTaskListRows(caseDefinitionName, searchRequest, pageable)
@@ -73,7 +74,7 @@ class TaskListResource (
     @PostMapping("/v1/task/{caseDefinitionKey}/stored-quick-search")
     fun saveQuickSearch(
         @PathVariable(name = "caseDefinitionKey") caseDefinitionKey: String,
-        @RequestBody request: TaskQuickSearchDto,
+        @Valid @RequestBody request: TaskQuickSearchDto,
     ): ResponseEntity<Any> {
         val currentUserId = UserManagementServiceHolder.currentInstance.currentUserId
         taskQuickSearchService.storeQuickSearch(caseDefinitionKey, request, currentUserId)

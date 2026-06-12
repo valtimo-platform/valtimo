@@ -1,5 +1,12 @@
 [
     {
+        "key": "widgets",
+        "name": "Widgets",
+        "type": "widgets",
+        "contentKey": "-",
+        "showTasks": true
+    },
+    {
         "name": "Summary",
         "key": "summary",
         "type": "standard",
@@ -40,13 +47,6 @@
         "key": "notes",
         "type": "standard",
         "contentKey": "notes"
-    },
-    {
-        "key": "widgets",
-        "name": "Widgets",
-        "type": "widgets",
-        "contentKey": "-",
-        "showTasks": true
     },
     {
         "name": "FormIO",
