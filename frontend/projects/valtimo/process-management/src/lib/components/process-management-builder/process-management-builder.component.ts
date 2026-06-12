@@ -27,16 +27,14 @@ import {
 } from '@angular/core';
 import {ReactiveFormsModule} from '@angular/forms';
 import {ActivatedRoute, Router} from '@angular/router';
-import {Deploy16, ListChecked16, Return16} from '@carbon/icons';
+import {Code16, Deploy16, ListChecked16, Return16} from '@carbon/icons';
 import {TranslateModule, TranslateService} from '@ngx-translate/core';
 import {
   BreadcrumbService,
   ConfirmationModalModule,
   FitPageDirective,
   ModalService,
-  OverflowMenuComponent,
-  OverflowMenuOptionComponent,
-  OverflowMenuTriggerComponent,
+  OverflowMenuModule,
   PageHeaderService,
   PageTitleService,
   RenderInPageHeaderDirective,
@@ -123,8 +121,9 @@ import {
   getLatestProcessDefinition,
   initBreadcrumbsForContext,
 } from '../../utils';
-import {ValtimoPropertiesProviderModule} from './panel';
+import {ValtimoPropertiesProviderModule, ExpressionAutocompleteModule, ExpressionAutocomplete} from './panel';
 import {PluginTranslationService} from '@valtimo/plugin';
+import {ProcessBeanService} from '../../services';
 
 @Component({
   selector: 'valtimo-process-management-builder',
@@ -145,12 +144,10 @@ import {PluginTranslationService} from '@valtimo/plugin';
     TagModule,
     ProcessLinkModule,
     ProcessLinkModule,
-    OverflowMenuComponent,
-    OverflowMenuOptionComponent,
-    OverflowMenuTriggerComponent,
     ToggleModule,
     TooltipModule,
     ConfirmationModalModule,
+    OverflowMenuModule,
   ],
   providers: [
     ProcessManagementEditorService,
@@ -293,7 +290,9 @@ export class ProcessManagementBuilderComponent implements AfterViewInit, OnDestr
   public readonly updatingProcessDefinitionCaseDefinition$ = new BehaviorSubject<boolean>(false);
 
   public readonly showWarningConfirmationModal$ = new BehaviorSubject<boolean>(false);
+  public readonly showErrorConfirmationModal$ = new BehaviorSubject<boolean>(false);
   private _pendingDeployAction: (() => void) | null = null;
+  private _expressionAutocomplete: ExpressionAutocomplete | null = null;
 
   private readonly _subscriptions = new Subscription();
 
@@ -315,9 +314,10 @@ export class ProcessManagementBuilderComponent implements AfterViewInit, OnDestr
     private readonly translateService: TranslateService,
     private readonly pluginTranslationService: PluginTranslationService,
     private readonly editPermissionsService: EditPermissionsService,
-    private readonly processLinkBuildingBlockApiService: ProcessLinkBuildingBlockApiService
+    private readonly processLinkBuildingBlockApiService: ProcessLinkBuildingBlockApiService,
+    private readonly processBeanService: ProcessBeanService
   ) {
-    this.iconService.registerAll([Deploy16, ListChecked16, Return16]);
+    this.iconService.registerAll([Code16, Deploy16, ListChecked16, Return16]);
     this.setProcessManagementWindow();
   }
 
@@ -571,23 +571,19 @@ export class ProcessManagementBuilderComponent implements AfterViewInit, OnDestr
     this.changesPending$.next(true);
   }
 
-  public onWarningConfirmationConfirm(): void {
+  public onConfirmationConfirm(): void {
     if (this._pendingDeployAction) {
       this._pendingDeployAction();
       this._pendingDeployAction = null;
     }
   }
 
-  public onWarningConfirmationCancel(): void {
+  public onConfirmationCancel(): void {
     this._pendingDeployAction = null;
   }
 
   private validateAndDeploy(isReadOnlyProcess: boolean, deployAction: () => void): void {
-    // Skip validation for draft processes
-    if (this.draft$.getValue()) {
-      deployAction();
-      return;
-    }
+    const isDraft = this.draft$.getValue();
 
     combineLatest([
       from(isReadOnlyProcess ? this._bpmnViewer.saveXML() : this._bpmnModeler.saveXML()),
@@ -608,17 +604,26 @@ export class ProcessManagementBuilderComponent implements AfterViewInit, OnDestr
       )
       .subscribe({
         next: validationResult => {
-          if (!validationResult.isValid) {
-            // Has errors - show them and block deployment
-            this.highlightValidationErrors(validationResult.errors);
-          } else if (validationResult.hasWarnings) {
-            // Only warnings - show confirmation dialog
-            this.highlightValidationErrors(validationResult.errors);
-            this._pendingDeployAction = deployAction;
-            this.showWarningConfirmationModal$.next(true);
+          if (isDraft) {
+            // For drafts: show confirmation on errors, ignore warnings
+            if (!validationResult.isValid) {
+              this.highlightValidationErrors(validationResult.errors);
+              this._pendingDeployAction = deployAction;
+              this.showErrorConfirmationModal$.next(true);
+            } else {
+              deployAction();
+            }
           } else {
-            // No issues - proceed with deployment
-            deployAction();
+            // For non-drafts: block on errors, confirm on warnings
+            if (!validationResult.isValid) {
+              this.highlightValidationErrors(validationResult.errors);
+            } else if (validationResult.hasWarnings) {
+              this.highlightValidationErrors(validationResult.errors);
+              this._pendingDeployAction = deployAction;
+              this.showWarningConfirmationModal$.next(true);
+            } else {
+              deployAction();
+            }
           }
         },
         error: () => {
@@ -833,12 +838,18 @@ export class ProcessManagementBuilderComponent implements AfterViewInit, OnDestr
         CamundaPlatformPropertiesProviderModule,
         camundaPlatformBehaviors,
         ValtimoPropertiesProviderModule,
+        ExpressionAutocompleteModule,
       ],
       moddleExtensions: {camunda: CamundaBpmnModdle},
       propertiesPanel: {parent: this.modelerPanelElementRef.nativeElement},
     });
 
     this._bpmnModeler?.attachTo(this.modelerElementRef.nativeElement);
+
+    // Initialize expression autocomplete
+    this._expressionAutocomplete = this._bpmnModeler.get('expressionAutocomplete') as ExpressionAutocomplete;
+    this._expressionAutocomplete?.setPanelContainer(this.modelerPanelElementRef.nativeElement);
+    this.loadProcessBeansForAutocomplete();
 
     this._bpmnModeler.on('commandStack.changed', () => {
       this.changesPending$.next(true);
@@ -859,6 +870,17 @@ export class ProcessManagementBuilderComponent implements AfterViewInit, OnDestr
 
       this.processManagementEditorService.setActivityIdBusinessIdMap(idMap);
       this.listenToActivityChangesOnModeler();
+    });
+  }
+
+  private loadProcessBeansForAutocomplete(): void {
+    this.processBeanService.getProcessBeans().subscribe({
+      next: beans => {
+        this._expressionAutocomplete?.setProcessBeans(beans);
+      },
+      error: err => {
+        this.logger.warn('Failed to load process beans for autocomplete', err);
+      },
     });
   }
 

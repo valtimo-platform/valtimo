@@ -34,7 +34,7 @@ class LocalDocumentGenerationAutoConfiguration {
     }
 
     @Bean
-    @ProcessBean
+    @ProcessBean(description = "Generates documents from templates (local stub)")
     @ConditionalOnMissingBean(LocalOperatonProcessDocumentGenerator::class)
     fun processDocumentGenerator(): LocalOperatonProcessDocumentGenerator {
         return LocalOperatonProcessDocumentGenerator()

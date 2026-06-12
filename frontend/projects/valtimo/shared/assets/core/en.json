@@ -1554,6 +1554,22 @@
       "title": "Process has warnings",
       "content": "The process definition contains warnings. Are you sure you want to save it without resolving the warnings?",
       "confirm": "Save anyway"
+    },
+    "errorConfirmation": {
+      "title": "Draft process has errors",
+      "content": "The draft process definition contains errors. Some errors may prevent the process from being saved correctly. Are you sure you want to continue?",
+      "confirm": "Save anyway"
+    },
+    "beanBrowser": {
+      "title": "Process Beans",
+      "menuItem": "Browse beans",
+      "description": "Browse available beans and methods that can be used in expressions. Click the copy button to copy an expression template to your clipboard.",
+      "search": "Search",
+      "searchPlaceholder": "Search beans and methods...",
+      "noResults": "No beans found matching your search.",
+      "example": "Example",
+      "copyExpression": "Copy expression",
+      "expressionCopied": "Expression copied to clipboard"
     }
   },
   "processCaseConnection": {

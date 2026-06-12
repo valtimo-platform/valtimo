@@ -1582,6 +1582,22 @@
       "title": "Proces bevat waarschuwingen",
       "content": "De procesdefinitie bevat waarschuwingen. Weet u zeker dat u wilt opslaan zonder de waarschuwingen op te lossen?",
       "confirm": "Toch opslaan"
+    },
+    "errorConfirmation": {
+      "title": "Conceptproces bevat fouten",
+      "content": "De conceptprocesdefinitie bevat fouten. Sommige fouten kunnen voorkomen dat het proces correct wordt opgeslagen. Weet u zeker dat u wilt doorgaan?",
+      "confirm": "Toch opslaan"
+    },
+    "beanBrowser": {
+      "title": "Proces Beans",
+      "menuItem": "Beans verkennen",
+      "description": "Verken beschikbare beans en methoden die in expressies kunnen worden gebruikt. Klik op de kopieerknop om een expressie-template naar het klembord te kopiëren.",
+      "search": "Zoeken",
+      "searchPlaceholder": "Zoek beans en methoden...",
+      "noResults": "Geen beans gevonden die overeenkomen met uw zoekopdracht.",
+      "example": "Voorbeeld",
+      "copyExpression": "Kopieer expressie",
+      "expressionCopied": "Expressie gekopieerd naar klembord"
     }
   },
   "processCaseConnection": {

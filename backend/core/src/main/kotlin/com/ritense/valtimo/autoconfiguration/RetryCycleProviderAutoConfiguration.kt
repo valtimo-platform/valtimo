@@ -30,7 +30,7 @@ import org.springframework.context.annotation.Bean
 class RetryCycleProviderAutoConfiguration {
 
     @Bean
-    @ProcessBean
+    @ProcessBean(description = "Provides retry cycle configurations for failed jobs")
     @ConditionalOnMissingBean(RetryCycleProvider::class)
     fun retryCycleProvider(config: RetryConfiguration): RetryCycleProvider {
         return RetryCycleProvider(config)

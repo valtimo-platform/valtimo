@@ -97,7 +97,7 @@ import org.springframework.core.annotation.Order
 @AutoConfiguration
 class ProcessDocumentsAutoConfiguration {
 
-    @ProcessBean
+    @ProcessBean(description = "Case document operations (deprecated, use documentDelegateService)")
     @Bean
     @ConditionalOnMissingBean(DocumentDelegate::class)
     fun documentDelegate(
@@ -114,7 +114,7 @@ class ProcessDocumentsAutoConfiguration {
         )
     }
 
-    @ProcessBean
+    @ProcessBean(description = "Resolves and sets values using value resolver keys")
     @Bean
     @ConditionalOnMissingBean
     fun valueResolverDelegateService(
@@ -125,7 +125,7 @@ class ProcessDocumentsAutoConfiguration {
         )
     }
 
-    @ProcessBean
+    @ProcessBean(description = "Case document metadata, assignments, tags, and status")
     @Bean
     @ConditionalOnMissingBean(DocumentDelegateService::class)
     fun documentDelegateService(
@@ -146,7 +146,7 @@ class ProcessDocumentsAutoConfiguration {
         )
     }
 
-    @ProcessBean
+    @ProcessBean(description = "Sends messages to start or catch events in processes")
     @Bean
     @ConditionalOnMissingBean(CorrelationService::class)
     fun correlationService(
@@ -168,7 +168,7 @@ class ProcessDocumentsAutoConfiguration {
         )
     }
 
-    @ProcessBean
+    @ProcessBean(description = "Starts processes and manages process-document associations")
     @Bean("processService")
     @ConditionalOnMissingBean(ProcessDocumentsService::class)
     fun processDocumentsService(

@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,8 +14,11 @@
  * limitations under the License.
  */
 
-export * from './window.model';
-export * from './bpmn.model';
-export * from './process-bean.model';
-export * from './process-management.model';
-export * from './process.model';
+package com.ritense.valtimo.processbean.dto
+
+data class ProcessBeanDto(
+    val name: String,
+    val className: String,
+    val description: String?,
+    val methods: List<ProcessBeanMethodDto>
+)

@@ -16,12 +16,24 @@
 
 package com.ritense.valtimo.service
 
+import com.ritense.valtimo.contract.annotation.ProcessBean
+import com.ritense.valtimo.contract.annotation.ProcessBeanMethod
+
+@ProcessBean(description = "Updates active timers for cases")
 interface TimerService {
+    @ProcessBeanMethod(
+        description = "Updates all active timers for a case to a new ISO-8601 datetime",
+        example = "\${timerService.updateActiveTimers(businessKey, '2024-12-31T23:59:59Z')}"
+    )
     fun updateActiveTimers(
         businessKey: String,
         newDate: String,
     ): Int
 
+    @ProcessBeanMethod(
+        description = "Updates specific active timers by activity ID to a new ISO-8601 datetime",
+        example = "\${timerService.updateActiveTimers(businessKey, '2024-12-31T23:59:59Z', 'timer1', 'timer2')}"
+    )
     fun updateActiveTimers(
         businessKey: String,
         newDate: String,

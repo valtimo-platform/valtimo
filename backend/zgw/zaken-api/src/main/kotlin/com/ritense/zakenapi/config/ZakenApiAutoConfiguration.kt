@@ -285,7 +285,7 @@ class ZakenApiAutoConfiguration {
     ) = DocumentMetadataAvailableEventListener(resourceStorageMetadataRepository)
 
     @Bean
-    @ProcessBean
+    @ProcessBean(description = "Publishes ZGW file upload events")
     @ConditionalOnMissingBean(UploadProcessDelegate::class)
     fun uploadProcessDelegate(
         applicationEventPublisher: ApplicationEventPublisher

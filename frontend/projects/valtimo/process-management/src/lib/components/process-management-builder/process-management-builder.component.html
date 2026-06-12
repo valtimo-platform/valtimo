@@ -87,8 +87,18 @@
   [contentTranslationKey]="'processManagement.warningConfirmation.content'"
   [confirmButtonTextTranslationKey]="'processManagement.warningConfirmation.confirm'"
   [cancelButtonTextTranslationKey]="'interface.cancel'"
-  (confirmEvent)="onWarningConfirmationConfirm()"
-  (cancelEvent)="onWarningConfirmationCancel()"
+  (confirmEvent)="onConfirmationConfirm()"
+  (cancelEvent)="onConfirmationCancel()"
+></valtimo-confirmation-modal>
+
+<valtimo-confirmation-modal
+  [showModalSubject$]="showErrorConfirmationModal$"
+  [titleTranslationKey]="'processManagement.errorConfirmation.title'"
+  [contentTranslationKey]="'processManagement.errorConfirmation.content'"
+  [confirmButtonTextTranslationKey]="'processManagement.errorConfirmation.confirm'"
+  [cancelButtonTextTranslationKey]="'interface.cancel'"
+  (confirmEvent)="onConfirmationConfirm()"
+  (cancelEvent)="onConfirmationCancel()"
 ></valtimo-confirmation-modal>
 
 <ng-container renderInPageHeader [fullWidth]="true">
