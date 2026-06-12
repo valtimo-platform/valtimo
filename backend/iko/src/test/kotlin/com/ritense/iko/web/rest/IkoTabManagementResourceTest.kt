@@ -43,6 +43,7 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPat
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 import org.springframework.test.web.servlet.setup.MockMvcBuilders
 import org.springframework.transaction.annotation.Transactional
+import org.springframework.validation.beanvalidation.LocalValidatorFactoryBean
 
 @Transactional
 internal class IkoTabManagementResourceTest {
@@ -60,6 +61,7 @@ internal class IkoTabManagementResourceTest {
         mockMvc = MockMvcBuilders.standaloneSetup(resource)
             .setCustomArgumentResolvers(PageableHandlerMethodArgumentResolver())
             .setMessageConverters(MappingJackson2HttpMessageConverter(MapperSingleton.get()))
+            .setValidator(LocalValidatorFactoryBean().apply { afterPropertiesSet() })
             .build();
     }
 
@@ -195,6 +197,26 @@ internal class IkoTabManagementResourceTest {
             .andExpect(jsonPath("$[0].key").value("overview"))
             .andExpect(jsonPath("$[0].title").value("Overview"))
             .andExpect(jsonPath("$[0].type").value("widgets"))
+    }
+
+    @Test
+    fun `should reject create tab with title exceeding column cap`() {
+        val request = IkoTabCreateRequest(
+            title = "x".repeat(257),
+            type = "widgets",
+        )
+
+        mockMvc.perform(
+            post(
+                "/api/management/v1/iko-view/{ikoViewKey}/tab/{tabKey}",
+                "klant",
+                "overview"
+            )
+                .content(objectMapper.writeValueAsString(request))
+                .contentType(APPLICATION_JSON_VALUE)
+        )
+            .andDo(print())
+            .andExpect(status().isBadRequest())
     }
 
     @Test

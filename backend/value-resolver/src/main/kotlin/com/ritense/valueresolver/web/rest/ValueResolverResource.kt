@@ -23,6 +23,7 @@ import com.ritense.valueresolver.ValueResolverOption
 import com.ritense.valueresolver.ValueResolverOptionRequest
 import com.ritense.valueresolver.ValueResolverOptionType
 import com.ritense.valueresolver.ValueResolverService
+import jakarta.validation.Valid
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
@@ -45,7 +46,7 @@ class ValueResolverResource(
     @PostMapping("/management/v1/value-resolver/case-definition/{caseDefinitionKey}/keys")
     fun getResolvableKeys(
         @PathVariable caseDefinitionKey: String,
-        @RequestBody request: ValueResolverOptionRequest
+        @Valid @RequestBody request: ValueResolverOptionRequest
     ): ResponseEntity<List<ValueResolverOption>> {
         return ResponseEntity.ok(valueResolverService.getResolvableKeys(request, caseDefinitionKey))
     }
@@ -54,7 +55,7 @@ class ValueResolverResource(
     fun getResolvableKeys(
         @PathVariable caseDefinitionKey: String,
         @PathVariable caseDefinitionVersionTag: String,
-        @RequestBody request: ValueResolverOptionRequest
+        @Valid @RequestBody request: ValueResolverOptionRequest
     ): ResponseEntity<List<ValueResolverOption>> {
         return ResponseEntity.ok(
             valueResolverService.getResolvableKeys(

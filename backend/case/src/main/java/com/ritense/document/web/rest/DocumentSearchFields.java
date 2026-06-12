@@ -17,6 +17,7 @@
 package com.ritense.document.web.rest;
 
 import com.ritense.document.domain.impl.searchfield.SearchFieldDto;
+import jakarta.validation.Valid;
 import java.util.List;
 import org.springframework.http.ResponseEntity;
 
@@ -24,13 +25,13 @@ public interface DocumentSearchFields {
 
     ResponseEntity<Void> addSearchField(
         String documentDefinitionName,
-        SearchFieldDto searchField);
+        @Valid SearchFieldDto searchField);
 
     ResponseEntity<List<SearchFieldDto>> getSearchFields(String documentDefinitionName);
 
     ResponseEntity<Void> updateSearchField(
         String documentDefinitionName,
-        List<SearchFieldDto> searchFieldDto);
+        @Valid List<SearchFieldDto> searchFieldDto);
 
     ResponseEntity<Void> deleteSearchField(
         String documentDefinitionName,

@@ -24,6 +24,7 @@ import com.ritense.logging.LoggableResource
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import com.ritense.valtimo.contract.case_.CaseDefinitionId
 import com.ritense.valtimo.contract.domain.ValtimoMediaType.APPLICATION_JSON_UTF8_VALUE
+import jakarta.validation.Valid
 import org.springframework.core.io.ClassPathResource
 import org.springframework.core.io.Resource
 import org.springframework.data.domain.Page
@@ -98,7 +99,7 @@ class FormFlowManagementResource(
     fun createFormFlowDefinition(
         @PathVariable("caseDefinitionKey") caseDefinitionKey: String,
         @PathVariable("versionTag") versionTag: String,
-        @RequestBody definitionDto: FormFlowDefinitionDto
+        @Valid @RequestBody definitionDto: FormFlowDefinitionDto
     ): ResponseEntity<FormFlowDefinitionDto> {
         val caseDefinitionId = CaseDefinitionId(caseDefinitionKey, versionTag)
         if (formFlowService.findDefinitionOrNull(definitionDto.key, caseDefinitionId) != null) {
@@ -114,7 +115,7 @@ class FormFlowManagementResource(
         @PathVariable("caseDefinitionKey") caseDefinitionKey: String,
         @PathVariable("versionTag") versionTag: String,
         @LoggableResource("formFlowDefinitionKey") @PathVariable definitionKey: String,
-        @RequestBody definitionDto: FormFlowDefinitionDto
+        @Valid @RequestBody definitionDto: FormFlowDefinitionDto
     ): ResponseEntity<FormFlowDefinitionDto> {
         val caseDefinitionId = CaseDefinitionId(caseDefinitionKey, versionTag)
         val readOnly = formFlowDefinitionImporter.isAutoDeployed(definitionKey)

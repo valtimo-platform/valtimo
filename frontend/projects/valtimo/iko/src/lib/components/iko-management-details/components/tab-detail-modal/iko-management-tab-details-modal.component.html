@@ -60,6 +60,16 @@
       [appendInline]="false"
     ></v-select>
 
+    <v-select
+      [dropUp]="false"
+      formControlName="widgetLayout"
+      [items]="widgetLayoutSelectItems"
+      titleTranslationKey="widgetLayout.label"
+      [appendInline]="false"
+    ></v-select>
+
+    <valtimo-widget-layout-info></valtimo-widget-layout-info>
+
     <valtimo-iko-management-properties
       [propertiesFormGroup]="properties"
       [fields]="propertyFields$ | async"

@@ -32,9 +32,9 @@ import com.ritense.authorization.AuthorizationService;
 import com.ritense.document.domain.impl.searchfield.SearchField;
 import com.ritense.document.domain.impl.searchfield.SearchFieldDto;
 import com.ritense.document.service.SearchFieldService;
-import com.ritense.document.web.rest.error.DocumentModuleExceptionTranslator;
 import com.ritense.document.web.rest.impl.SearchFieldManagementResource;
 import com.ritense.valtimo.contract.case_.CaseDefinitionChecker;
+import com.ritense.valtimo.web.rest.error.WebModuleExceptionTranslator;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -51,7 +51,7 @@ class SearchFieldManagementResourceIntegrationTest extends BaseIntegrationTest {
     private MappingJackson2HttpMessageConverter mappingJackson2HttpMessageConverter;
 
     @Autowired
-    private DocumentModuleExceptionTranslator documentModuleExceptionTranslator;
+    private WebModuleExceptionTranslator webModuleExceptionTranslator;
 
     @Autowired
     private AuthorizationService authorizationService;
@@ -85,7 +85,7 @@ class SearchFieldManagementResourceIntegrationTest extends BaseIntegrationTest {
 
         mockMvc = MockMvcBuilders
                 .standaloneSetup(searchFieldManagementResource)
-                .setControllerAdvice(documentModuleExceptionTranslator)
+                .setControllerAdvice(webModuleExceptionTranslator)
                 .setMessageConverters(mappingJackson2HttpMessageConverter)
                 .build();
     }

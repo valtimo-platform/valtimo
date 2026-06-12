@@ -17,6 +17,7 @@ The detail screen is divided into 4 columns. Each widget occupies a configurable
 | `table` | Data in table format. | Contact moments. |
 | `interactive-table` | Table with sorting and filtering. | Running cases. |
 | `map` | Geographic map display. | Location. |
+| `metroline` | Ordered sequence of steps showing progression. | Case progress for the customer. |
 | `divider` | Visual separation between widgets. | Grouping related widgets. |
 
 <figure><img width="500px" src="../../.gitbook/assets/iko/widget-fields-example.png" alt="Fields widget example"><figcaption><p>A fields widget displaying customer data.</p></figcaption></figure>
@@ -31,7 +32,7 @@ The widget configuration goes through 6 steps. When configuring an interactive t
 
 #### Step 1: Choose widget type
 
-Select from: Fields, Collection, Table, Interactive table, or Map.
+Select from: Fields, Collection, Table, Interactive table, Map, or Metroline.
 
 <figure><img src="../../.gitbook/assets/iko/widget-wizard-step1.png" alt="Widget wizard step 1"><figcaption><p>Select the widget type.</p></figcaption></figure>
 

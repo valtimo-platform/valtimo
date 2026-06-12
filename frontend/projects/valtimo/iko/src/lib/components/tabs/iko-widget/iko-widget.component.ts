@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,7 +15,7 @@
  */
 import {CommonModule} from '@angular/common';
 import {ChangeDetectionStrategy, Component, Input} from '@angular/core';
-import {FitPageDirective} from '@valtimo/components';
+import {FitPageDirective, WidgetLayout} from '@valtimo/components';
 import {WidgetComponentMap, WidgetContainerComponent, WidgetType} from '@valtimo/layout';
 import {NGXLogger} from 'ngx-logger';
 import {BehaviorSubject, combineLatest, filter, map, Observable, switchMap, tap} from 'rxjs';
@@ -28,6 +28,7 @@ import {IkoWidgetFormioComponent} from '../../widget-formio';
 import {IkoWidgetInteractiveTableComponent} from '../../widget-interactive-table';
 import {IkoWidgetTableComponent} from '../../widget-table';
 import {IkoWidgetMapComponent} from '../../widget-map';
+import {IkoWidgetMetrolineComponent} from '../../widget-metroline';
 
 @Component({
   templateUrl: './iko-widget.component.html',
@@ -54,6 +55,17 @@ export class IkoWidgetComponent {
   public widgets$ = combineLatest([this.ikoViewKey$, this.key$]).pipe(
     switchMap(([ikoViewKey, key]) => this.ikoApiService.getIkoWidget(ikoViewKey, key))
   );
+
+  public widgetLayout$: Observable<WidgetLayout | undefined> = combineLatest([
+    this.ikoViewKey$,
+    this.key$,
+  ]).pipe(
+    switchMap(([ikoViewKey, key]) =>
+      this.ikoApiService
+        .getIkoDetailTabs(ikoViewKey)
+        .pipe(map(tabs => tabs.find(tab => tab.key === key)?.widgetLayout))
+    )
+  );
   public widgetParams$: Observable<IkoWidgetParams> = combineLatest([
     this.ikoViewKey$,
     this.key$,
@@ -78,6 +90,7 @@ export class IkoWidgetComponent {
     [WidgetType.INTERACTIVE_TABLE]: IkoWidgetInteractiveTableComponent,
     [WidgetType.COLLECTION]: IkoWidgetCollectionComponent,
     [WidgetType.MAP]: IkoWidgetMapComponent,
+    [WidgetType.METROLINE]: IkoWidgetMetrolineComponent,
   };
 
   constructor(

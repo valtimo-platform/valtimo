@@ -29,6 +29,7 @@ import com.ritense.plugin.web.rest.result.PluginConfigurationExportDto
 import com.ritense.processlink.domain.ActivityTypeWithEventName
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import com.ritense.valtimo.contract.domain.ValtimoMediaType.APPLICATION_JSON_UTF8_VALUE
+import jakarta.validation.Valid
 import org.operaton.bpm.engine.repository.ProcessDefinition
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.DeleteMapping
@@ -73,7 +74,7 @@ class PluginConfigurationResource(
 
     @PostMapping("/v1/plugin/configuration")
     fun createPluginConfiguration(
-        @RequestBody createPluginConfiguration: CreatePluginConfigurationDto
+        @Valid @RequestBody createPluginConfiguration: CreatePluginConfigurationDto
     ): ResponseEntity<PluginConfigurationDto> {
         return withLoggingContext(PluginConfiguration::class, createPluginConfiguration.id) {
             val pluginConfigurationId = if (createPluginConfiguration.id == null) {
@@ -98,7 +99,7 @@ class PluginConfigurationResource(
     @PutMapping("/v1/plugin/configuration/{pluginConfigurationId}")
     fun updatePluginConfiguration(
         @LoggableResource(resourceType = PluginConfiguration::class) @PathVariable(name = "pluginConfigurationId") pluginConfigurationId: UUID,
-        @RequestBody updatePluginConfiguration: UpdatePluginConfigurationDto
+        @Valid @RequestBody updatePluginConfiguration: UpdatePluginConfigurationDto
     ): ResponseEntity<PluginConfigurationDto> {
         val newPluginConfigurationId = if (updatePluginConfiguration.newId == null) {
             PluginConfigurationId.existingId(pluginConfigurationId)

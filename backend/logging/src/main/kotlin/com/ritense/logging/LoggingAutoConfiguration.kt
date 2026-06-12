@@ -27,15 +27,12 @@ import com.ritense.logging.security.config.LoggingHttpSecurityConfigurer
 import com.ritense.logging.service.LoggingEventDeletionService
 import com.ritense.logging.service.LoggingEventService
 import com.ritense.logging.web.rest.LoggingEventManagementResource
-import com.ritense.valtimo.contract.hardening.service.HardeningService
-import com.ritense.valtimo.contract.web.rest.error.ExceptionTranslator
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.autoconfigure.AutoConfiguration
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.boot.autoconfigure.domain.EntityScan
 import org.springframework.context.annotation.Bean
-import org.springframework.core.Ordered.LOWEST_PRECEDENCE
 import org.springframework.core.annotation.Order
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler
@@ -105,14 +102,6 @@ class LoggingAutoConfiguration {
     @ConditionalOnMissingBean(LoggingHttpSecurityConfigurer::class)
     fun loggingHttpSecurityConfigurer(): LoggingHttpSecurityConfigurer {
         return LoggingHttpSecurityConfigurer()
-    }
-
-    @Order(LOWEST_PRECEDENCE - 100)
-    @Bean
-    fun loggingContextExceptionTranslator(
-        hardeningService: HardeningService?
-    ): ExceptionTranslator {
-        return LoggingContextExceptionTranslator(hardeningService)
     }
 
     @ConditionalOnMissingBean(LoggingErrorWithContextErrorHandler::class)
