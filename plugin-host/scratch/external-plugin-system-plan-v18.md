@@ -23,6 +23,7 @@ Status legend: ✅ implemented & verified · 🟡 implemented, POC-level · ⛔ 
 | Plugin host (Node + Fastify + Extism, multi-version) | `plugin-host/app/` | 🟡 |
 | Event consumer (RabbitMQ → `handle_event`) | `plugin-host/app/src/rabbitmq/event-consumer.ts` | ✅ |
 | Backend plugin SDK (`@valtimo/plugin-sdk`) — actions, events, `gzacApi`, frontend `t()` | `plugin-host/plugin-sdk/` | ✅ |
+| Shared manifest validation (name/description-in-translations), one rule set for pack + host | `plugin-host/plugin-sdk/src/manifest-validation.ts` (subpath `@valtimo/plugin-sdk/manifest-validation`) | ✅ |
 | Sample plugin (action + event handler + logo + i18n) | `plugin-host/sample-plugins/case-summary/` | ✅ |
 | Frontend management UI + external models/service/iframe | `frontend/projects/valtimo/{plugin-management,plugin}/` | ✅ |
 | Process-link (`SERVICE_TASK_START`) | `backend/external-plugin/.../processlink/` + frontend process-link | 🟡 |
@@ -398,7 +399,20 @@ and never serialises a pending `Promise`; the pack copies `manifest.json` verbat
 `eventSubscriptions`, `permissions`, and `translations` carry through.
 
 `PluginManifest` is defined once in `@valtimo/plugin-sdk/src/models/types.ts`; the host app's
-`models/plugin-manifest.ts` re-exports from the SDK so there is a single source of truth.
+`models/plugin-manifest.ts` re-exports from the SDK so there is a single source of truth. The
+manifest has **no top-level `name`/`description`** — those live per-locale under `translations`
+(§10). The type encodes this: `translations` is required and each bucket is a `PluginTranslations`
+(`{ name: string; description: string; [key: string]: string }`).
+
+**Manifest validation, defined once (`@valtimo/plugin-sdk/manifest-validation`).**
+`validatePluginManifest(manifest)` lives in its own dependency-free SDK module exposed via the
+`./manifest-validation` subpath export, so it can be consumed without pulling in the plugin-author
+runtime. It is the single rule set enforced at **both** gates, each importing it via the same
+`@valtimo/plugin-sdk/manifest-validation` subpath: the pack tool (`bin/valtimo-plugin-pack.mjs`,
+build-time, self-references the package's own export) and the plugin host's upload route
+(`routes/host-management.ts`, runtime, returns HTTP 400 `{error, details[]}` on failure). It
+requires a non-empty `pluginId`/`version`, a non-empty `translations` object, and a non-empty
+`name` **and** `description` string in **every** declared locale bucket.
 
 Frontend SDK (`@valtimo/plugin-sdk/frontend`):
 - `ValtimoPluginSDK` running inside the iframe communicates with the Angular parent via
@@ -429,6 +443,25 @@ comes from the Angular `TranslateService.currentLang` and is passed by
 `defaultLang`, then `en`. Sample plugin (`case-summary`) has both `en` and `nl` buckets covering
 every label, placeholder, and helper text; React components mount inside `sdk.ready().then(...)`
 so users never see raw translation keys flash on screen.
+
+**Name & description are translations ✅.** The plugin's display **name** and **description** are
+now `name`/`description` keys inside **each** locale bucket — there are no top-level `name`/
+`description` fields. Every declared locale must carry both, enforced once by `validatePluginManifest`
+at pack-time and upload-time (§9).
+
+- *Backend.* `ExternalPluginDiscoveryService.localizedManifestValue()` derives the denormalised
+  `external_plugin_definition.name`/`description` columns from the `en` bucket (fallback: first
+  declared locale). `DefinitionResponse` still exposes those columns **and** the full `manifest`
+  (with `translations`), so the frontend can localise.
+- *Frontend, single source of truth.* `@valtimo/plugin` exports `getExternalPluginName`,
+  `getExternalPluginDescription`, and `getExternalPluginDisplayName` (name + `(version)`). They read
+  `manifest.translations[lang]`, fall back to `en`, then the denormalised `definition.name`/
+  `pluginId`. Every surface that renders an external plugin's name/description uses them and
+  **reacts to language change** via `TranslateService.stream('key')` / `onLangChange`: the
+  "Configure plugin" tile (`plugin-add-select`), the configurations list `pluginName` column
+  (`plugin-management`), the process-link configuration picker (`select-plugin-configuration`), and
+  the external edit-modal header (`plugin-external-edit-modal`). Switching the Angular UI between
+  Dutch and English re-renders these labels live.
 
 **CSP.** The main app's CSP `<meta>` tag is augmented at boot
 (`projects/valtimo/security/.../initialize-csp.ts`) with the discovered host origins on both
@@ -461,13 +494,16 @@ versions of the same plugin must run side-by-side indefinitely**: there is no pa
 4. New BPMNs / case definitions bind their service tasks to the v2 configuration; existing final
    case definitions continue to reference their v1 configuration.
 
-**⛔ Version visibility in the UI.** The version number is currently absent from most surfaces.
-It needs to appear:
-- In the "Configure plugin" modal (plugin tile shows `Name vX.Y.Z` and the description)
-- In the configurations overview list (extra column or suffix on the configuration title)
-- In the process-link configuration picker (so the BPMN author knows which version they're binding
-  to)
-- In the configuration edit modal header
+**✅ Version visibility in the UI.** The version now appears in brackets after the localised plugin
+name (`Name (X.Y.Z)`) wherever that name is rendered, via `getExternalPluginDisplayName` (§10), so
+coexisting versions stay distinguishable:
+- The "Configure plugin" modal tile (`plugin-add-select`) — `Name (X.Y.Z)` plus the description.
+- The configurations overview list `pluginName` column (`plugin-management`).
+- The process-link configuration picker (`select-plugin-configuration`) — so the BPMN author knows
+  which version they're binding to.
+- The configuration edit-modal header (`plugin-external-edit-modal`) — `{configTitle} - Name (X.Y.Z)`.
+
+All four recompute on language change (the version suffix rides along with the localised name).
 
 **⛔ Other gaps.** Schema migration for an in-place v1 → v2 configuration "upgrade" is not
 implemented and arguably unnecessary given the side-by-side model. Permission-diff prompts,
@@ -540,7 +576,6 @@ through the user-token path.
 - Case tabs / case widgets / menu pages (the iframe surfaces).
 - User-token-scoped endpoints (§13) — iframe-driven calls on behalf of the logged-in user with
   PBAC ∩ allowlist intersection.
-- Version display across all UI surfaces (§11).
 - Strict deletion guards for host and configuration when process links exist (§12) — currently
   only the host's plugin-delete route enforces this.
 - Host database for KV / API logs / retention.
@@ -561,8 +596,9 @@ through the user-token path.
 1. **Strict deletion guards (§12)** — block configuration delete and host delete when any
    process link exists; structured "what depends on this" body for the UI dependency panel; no
    force override.
-2. **Version visibility (§11)** — surface `pluginId@version` on the configure-plugin tile, in
-   the configurations list, in the process-link picker, and in the edit modal header.
+2. ✅ **Version visibility (§11)** — done: localised plugin name + `(version)` on the
+   configure-plugin tile, the configurations list, the process-link picker, and the edit-modal
+   header, all reactive to language change.
 3. **User-token-scoped endpoints (§13)** — new `POST /user-token` endpoint, user-token filter
    with PBAC ∩ allowlist intersection, frontend wiring in `ExternalPluginIframeComponent.onIframeLoad()`
    to populate `accessToken` from `/user-token`, SDK side already exposes `getAccessToken()`.
@@ -604,6 +640,22 @@ through the user-token path.
   - iframe SDK fetches the manifest, applies `TranslateService.currentLang` (passed via the
     parent's `init` postMessage), renders Dutch labels when the Angular UI is Dutch and English
     labels when it is English.
+
+**Name/description-in-translations + version-display change (2026-06):**
+- `@valtimo/plugin-sdk` build: clean — emits `dist/manifest-validation.{js,d.ts}` and the updated
+  `PluginManifest` (no top-level `name`/`description`; `translations` required, buckets typed
+  `PluginTranslations`).
+- Host `tsc` build: clean — `routes/host-management.ts` imports `validatePluginManifest` from the
+  `@valtimo/plugin-sdk/manifest-validation` subpath (NodeNext resolves the export map).
+- Backend `:backend:external-plugin:compileKotlin`: BUILD SUCCESSFUL — discovery derives
+  `name`/`description` from `translations` (`localizedManifestValue`, `en` → first locale).
+- Sample plugin `case-summary/manifest.json` migrated to the new shape (`name`/`description` moved
+  into `translations.en`/`translations.nl`; top-level fields removed) so it passes validation.
+- Frontend: not manually rebuilt — the dev server on `:4200` was running and recompiles on change
+  (per the project's frontend guideline). New `@valtimo/plugin` helpers (`getExternalPluginName`/
+  `Description`/`DisplayName`) are exported via the `models` barrel and consumed by `plugin-add-select`,
+  `plugin-management`, `plugin-external-edit-modal`, and `select-plugin-configuration`. A production
+  `ng build` is still pending as a final confirmation.
 
 **Gaps in the verification record (flagged by the v18 code audit, 2026-06):**
 - The **synchronous action path** (process service task → `ExternalPluginServiceTaskStartListener`

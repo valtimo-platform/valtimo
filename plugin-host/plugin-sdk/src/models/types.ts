@@ -90,11 +90,24 @@ export interface FrontendBundle {
   renderMode?: "bundle" | "htmx";
 }
 
+/**
+ * A single locale's translation bucket.
+ *
+ * `name` and `description` are **mandatory**: they supply the plugin's localised display name and
+ * description. The manifest has **no** top-level `name`/`description` — the plugin's identity is
+ * defined per locale here so it can be rendered in the operator's language. Any additional keys are
+ * free-form translation strings consumed by the frontend SDK's `t(key)` lookup inside the plugin's
+ * iframes.
+ */
+export interface PluginTranslations {
+  name: string;
+  description: string;
+  [key: string]: string;
+}
+
 export interface PluginManifest {
   pluginId: string;
   version: string;
-  name: string;
-  description?: string;
   provider?: string;
   compatibility?: {
     minGzacVersion?: string;
@@ -112,11 +125,13 @@ export interface PluginManifest {
    */
   logo?: string;
   /**
-   * Translations keyed by locale (e.g. `{ "en": { "config.title": "Configuration name" } }`).
-   * The frontend SDK picks the active locale, falling back to `en`, and exposes a `t(key)` lookup
-   * to React/HTMX templates in the plugin's iframes.
+   * Translations keyed by locale (e.g.
+   * `{ "en": { "name": "Case Summary", "description": "…", "config.title": "Configuration name" } }`).
+   * Every locale bucket must carry a `name` and a `description` — these replace the former
+   * top-level `name`/`description` fields. The frontend SDK picks the active locale, falling back
+   * to `en`, and exposes a `t(key)` lookup to React/HTMX templates in the plugin's iframes.
    */
-  translations?: Record<string, Record<string, string>>;
+  translations: Record<string, PluginTranslations>;
   actions: ManifestAction[];
   /**
    * CloudEvent `type` values this plugin subscribes to. The host routes matching events from

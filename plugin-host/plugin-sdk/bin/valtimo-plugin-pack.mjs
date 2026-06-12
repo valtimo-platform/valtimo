@@ -38,6 +38,7 @@ import { execFileSync } from "node:child_process";
 import { existsSync, readFileSync, readdirSync, mkdirSync, unlinkSync } from "node:fs";
 import { resolve, join, basename, extname } from "node:path";
 import { createRequire } from "node:module";
+import { validatePluginManifest } from "@valtimo/plugin-sdk/manifest-validation";
 
 const require = createRequire(import.meta.url);
 const AdmZip = require("adm-zip");
@@ -66,15 +67,22 @@ if (!existsSync(wasmPath)) {
 }
 
 const manifest = JSON.parse(readFileSync(manifestPath, "utf-8"));
-const pluginId = manifest.pluginId;
-const version = manifest.version;
 
-if (!pluginId || !version) {
-  console.error(
-    "Error: manifest.json must contain 'pluginId' and 'version' fields"
-  );
+// Shared with the plugin host's upload route (defined once in @valtimo/plugin-sdk). Among other
+// rules, every locale under `translations` must carry a `name` and a `description` — there are no
+// top-level `name`/`description` fields. Fail early so authors don't build a package the host will
+// reject on upload.
+const manifestErrors = validatePluginManifest(manifest);
+if (manifestErrors.length > 0) {
+  console.error("Error: invalid manifest.json:");
+  for (const error of manifestErrors) {
+    console.error(`  - ${error}`);
+  }
   process.exit(1);
 }
+
+const pluginId = manifest.pluginId;
+const version = manifest.version;
 
 const zipName = `${pluginId}-${version}.zip`;
 const zipPath = resolve(outputDir, zipName);

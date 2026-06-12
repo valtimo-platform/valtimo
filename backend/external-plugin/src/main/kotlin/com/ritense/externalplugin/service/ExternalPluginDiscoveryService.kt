@@ -107,8 +107,9 @@ class ExternalPluginDiscoveryService(
     }
 
     private fun upsertDefinition(host: ExternalPluginHost, pluginId: String, pluginEntry: JsonNode): UUID? {
-        // Plugin-host returns: {pluginId, version, manifest: {pluginId, version, name, ...}}
-        // The detailed fields (name, description, etc.) are inside the nested manifest object.
+        // Plugin-host returns: {pluginId, version, manifest: {pluginId, version, translations, ...}}
+        // The manifest carries no top-level name/description — those live per-locale under
+        // `translations` (see localizedManifestValue).
         val manifest = pluginEntry.get("manifest") ?: pluginEntry
         val version = pluginEntry.get("version")?.asText() ?: manifest.get("version")?.asText() ?: "0.0.0"
 
@@ -129,8 +130,8 @@ class ExternalPluginDiscoveryService(
             status = ExternalPluginDefinitionStatus.AVAILABLE,
         )
 
-        definition.name = manifest.get("name")?.asText() ?: definition.name
-        definition.description = manifest.get("description")?.asText() ?: definition.description
+        definition.name = localizedManifestValue(manifest, "name") ?: definition.name
+        definition.description = localizedManifestValue(manifest, "description") ?: definition.description
         definition.provider = manifest.get("provider")?.asText() ?: definition.provider
         definition.minGzacVersion = manifest.path("compatibility").get("minGzacVersion")?.asText() ?: definition.minGzacVersion
         definition.maxGzacVersion = manifest.path("compatibility").get("maxGzacVersion")?.asText() ?: definition.maxGzacVersion
@@ -153,6 +154,21 @@ class ExternalPluginDiscoveryService(
             }
             definitionRepository.save(definition)
         }
+    }
+
+    /**
+     * Resolves a localised manifest value (`name`, `description`) from the manifest's per-locale
+     * `translations` block. The manifest has no top-level `name`/`description`; they live in every
+     * locale bucket. Prefers the `en` bucket, then falls back to the first declared locale. The
+     * result is stored on the denormalised `name`/`description` columns the management UI uses as a
+     * fallback when it cannot localise from the manifest itself.
+     */
+    private fun localizedManifestValue(manifest: JsonNode, key: String): String? {
+        val translations = manifest.path("translations")
+        if (!translations.isObject) return null
+        translations.path("en").path(key).asText("").takeIf { it.isNotBlank() }?.let { return it }
+        val firstLocale = translations.fields().asSequence().firstOrNull()?.value ?: return null
+        return firstLocale.path(key).asText("").takeIf { it.isNotBlank() }
     }
 
     companion object {

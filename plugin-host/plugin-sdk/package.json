@@ -2,6 +2,7 @@
   "name": "@valtimo/plugin-sdk",
   "version": "0.1.0",
   "description": "Valtimo External Plugin SDK for building WebAssembly plugins",
+  "type": "module",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
@@ -17,6 +18,10 @@
     "./frontend": {
       "types": "./dist/frontend/index.d.ts",
       "default": "./dist/frontend/index.js"
+    },
+    "./manifest-validation": {
+      "types": "./dist/manifest-validation.d.ts",
+      "default": "./dist/manifest-validation.js"
     }
   },
   "bin": {

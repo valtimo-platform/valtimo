@@ -171,6 +171,49 @@ function extractExternalDefinitionId(key: string): string {
   return key.replace(EXTERNAL_PLUGIN_KEY_PREFIX, '');
 }
 
+/**
+ * Resolves a per-locale manifest string (e.g. `name`, `description`) for the given language,
+ * falling back to the `en` bucket. A plugin's name and description live in `manifest.translations`
+ * (there are no top-level fields), so these helpers are the single source of truth for rendering a
+ * localised name/description anywhere in the management and process-link UIs.
+ */
+function resolveManifestTranslation(
+  manifest: ExternalPluginManifest | null | undefined,
+  key: string,
+  lang: string
+): string | null {
+  const translations = manifest?.translations;
+  if (!translations) return null;
+  const localized = translations[lang]?.[key] ?? translations['en']?.[key];
+  return localized && localized.length > 0 ? localized : null;
+}
+
+function getExternalPluginName(definition: ExternalPluginDefinition, lang: string): string {
+  return (
+    resolveManifestTranslation(definition.manifest, 'name', lang) ??
+    definition.name ??
+    definition.pluginId
+  );
+}
+
+function getExternalPluginDescription(
+  definition: ExternalPluginDefinition,
+  lang: string
+): string | null {
+  return (
+    resolveManifestTranslation(definition.manifest, 'description', lang) ?? definition.description
+  );
+}
+
+/**
+ * Localised plugin name suffixed with the definition version in brackets, e.g. `Case Summary
+ * (0.1.0)`. Used everywhere a plugin name is rendered so multiple coexisting versions of the same
+ * plugin stay distinguishable.
+ */
+function getExternalPluginDisplayName(definition: ExternalPluginDefinition, lang: string): string {
+  return `${getExternalPluginName(definition, lang)} (${definition.version})`;
+}
+
 export {
   EXTERNAL_PLUGIN_KEY_PREFIX,
   ExternalPluginAction,
@@ -198,4 +241,7 @@ export {
   isExternalPluginKey,
   toExternalPluginKey,
   extractExternalDefinitionId,
+  getExternalPluginName,
+  getExternalPluginDescription,
+  getExternalPluginDisplayName,
 };

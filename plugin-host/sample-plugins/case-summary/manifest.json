@@ -1,14 +1,14 @@
 {
   "pluginId": "case-summary",
   "version": "0.1.0",
-  "name": "Case Summary",
-  "description": "POC plugin that builds a one-line summary from the running case's document",
   "provider": "Ritense",
   "compatibility": {
     "minGzacVersion": "12.0.0"
   },
   "translations": {
     "en": {
+      "name": "Case Summary",
+      "description": "POC plugin that builds a one-line summary from the running case's document",
       "config.title.label": "Configuration name",
       "config.title.placeholder": "Enter a name for this configuration",
       "config.currency.label": "Currency code",
@@ -28,6 +28,8 @@
       "action.definitionKeyVariable.help": "Process variable name for the case definition key (default: caseDefinitionKey)"
     },
     "nl": {
+      "name": "Zaaksamenvatting",
+      "description": "POC-plugin die een samenvatting van één regel opbouwt uit het document van de lopende zaak",
       "config.title.label": "Configuratienaam",
       "config.title.placeholder": "Voer een naam in voor deze configuratie",
       "config.currency.label": "Valutacode",

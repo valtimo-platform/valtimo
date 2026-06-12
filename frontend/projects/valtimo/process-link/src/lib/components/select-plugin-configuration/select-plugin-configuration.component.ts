@@ -15,6 +15,7 @@
  */
 
 import {Component, OnDestroy, OnInit} from '@angular/core';
+import {TranslateService} from '@ngx-translate/core';
 import {catchError, filter, map, switchMap, take, withLatestFrom} from 'rxjs/operators';
 import {PluginStateService} from '../../services/plugin-state.service';
 import {combineLatest, Observable, of, Subscription} from 'rxjs';
@@ -22,6 +23,9 @@ import {
   ExternalPluginConfiguration,
   ExternalPluginDefinition,
   ExternalPluginService,
+  getExternalPluginDescription,
+  getExternalPluginDisplayName,
+  getExternalPluginName,
   PluginConfiguration,
   PluginDefinition,
   PluginManagementService,
@@ -92,8 +96,10 @@ export class SelectPluginConfigurationComponent implements OnInit, OnDestroy {
             this._pluginService.availablePluginIds$,
             this._externalPluginService.getConfigurations().pipe(catchError(() => of([] as ExternalPluginConfiguration[]))),
             this._externalPluginService.getDefinitions().pipe(catchError(() => of([] as ExternalPluginDefinition[]))),
+            this._translateService.stream('key'),
           ]).pipe(
             map(([configs, availablePluginIds, externalConfigs, externalDefinitions]) => {
+              const lang = this._translateService.currentLang;
               const embeddedItems: PluginListItem[] =
                 configs
                   ?.filter(configuration =>
@@ -116,15 +122,15 @@ export class SelectPluginConfigurationComponent implements OnInit, OnDestroy {
                 return {
                   id: extConfig.id,
                   title: extConfig.title,
-                  description: def?.name ?? 'External plugin',
+                  description: def ? getExternalPluginDisplayName(def, lang) : 'External plugin',
                   logo: def?.logoUrl ?? null,
                   payload: {
                     id: extConfig.id,
                     title: extConfig.title,
                     pluginDefinition: {
                       key: toExternalPluginKey(extConfig.definitionId),
-                      title: def?.name ?? extConfig.definitionId,
-                      description: def?.description ?? '',
+                      title: def ? getExternalPluginName(def, lang) : extConfig.definitionId,
+                      description: def ? (getExternalPluginDescription(def, lang) ?? '') : '',
                     },
                     properties: {},
                   } as PluginConfiguration,
@@ -171,7 +177,8 @@ export class SelectPluginConfigurationComponent implements OnInit, OnDestroy {
     private readonly _buttonService: ProcessLinkButtonService,
     private readonly _stepService: ProcessLinkStepService,
     private readonly _pluginTranslationService: PluginTranslationService,
-    private readonly _externalPluginService: ExternalPluginService
+    private readonly _externalPluginService: ExternalPluginService,
+    private readonly _translateService: TranslateService
   ) {}
 
   public ngOnInit(): void {

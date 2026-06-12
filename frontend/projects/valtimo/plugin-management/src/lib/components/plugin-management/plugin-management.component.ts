@@ -23,6 +23,7 @@ import {
   ExternalPluginHost,
   ExternalPluginHostCreateRequest,
   ExternalPluginService,
+  getExternalPluginDisplayName,
   PluginConfiguration,
   PluginManagementService,
   PluginTranslationService,
@@ -120,12 +121,13 @@ export class PluginManagementComponent implements OnInit, OnDestroy {
               })
             );
 
+            const lang = this._translateService.currentLang;
             const external: UnifiedPluginConfigurationRow[] = externalConfigurations.map(config => {
               const definition = externalDefinitions.find(d => d.id === config.definitionId);
               return {
                 id: config.id,
                 title: config.title,
-                pluginName: definition?.name ?? definition?.pluginId ?? '',
+                pluginName: definition ? getExternalPluginDisplayName(definition, lang) : '',
                 definitionKey: definition?.pluginId ?? '',
                 source: 'external',
                 sourceLabel: this._translateService.instant('pluginManagement.source.external'),

@@ -22,6 +22,7 @@ import { mkdir, mkdtemp, readFile, rm } from "node:fs/promises";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 import AdmZip from "adm-zip";
+import { validatePluginManifest } from "@valtimo/plugin-sdk/manifest-validation";
 
 /**
  * Admin-authenticated plugin management routes.
@@ -106,10 +107,11 @@ export async function hostManagementRoutes(
       const manifestJson = await readFile(manifestPath, "utf-8");
       const manifest = JSON.parse(manifestJson);
 
-      if (!manifest.pluginId || !manifest.version) {
+      const validationErrors = validatePluginManifest(manifest);
+      if (validationErrors.length > 0) {
         reply
           .code(400)
-          .send({ error: "manifest.json must contain pluginId and version" });
+          .send({ error: "Invalid plugin manifest", details: validationErrors });
         return;
       }
 
