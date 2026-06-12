@@ -77,18 +77,31 @@
     min-width: 0;
 
     ::ng-deep {
+      .cds--data-table {
+        width: 100%;
+      }
+
       .cds--data-table tbody tr {
         cursor: pointer;
       }
 
       .cds--data-table td:first-child {
-        width: 128px;
-        max-width: 128px;
+        width: 136px;
+        min-width: 136px;
+        max-width: 136px;
       }
 
       .cds--data-table td:nth-child(2) {
         width: 96px;
+        min-width: 96px;
         max-width: 96px;
+      }
+
+      .cds--data-table td:nth-child(3) {
+        max-width: 0;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
       }
     }
 

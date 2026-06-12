@@ -202,6 +202,61 @@ class LogInspectionResourceIT : BaseIntegrationTest() {
 
     @Test
     @WithMockUser(username = "admin@test.com", authorities = [ADMIN])
+    fun `should include logs tagged only with a businessKey equal to the case id`() {
+        val seeded = transactionTemplate.execute {
+            val bkOnly = saveLogEvent("bk-only-event", "INFO")
+            saveProperty(bkOnly, "businessKey", caseId.toString())
+
+            val unrelated = saveLogEvent("unrelated-event", "INFO")
+            saveProperty(unrelated, "businessKey", UUID.randomUUID().toString())
+
+            listOf(bkOnly.id, unrelated.id)
+        }!!
+        seededEventIds.addAll(seeded)
+
+        mockMvc.perform(
+            post("/api/management/v1/case/{caseId}/logs", caseId)
+                .contentType(MediaType.APPLICATION_JSON_VALUE)
+                .content("{}")
+        )
+            .andExpect(status().isOk)
+            .andExpect(jsonPath("$.totalElements").value(1))
+            .andExpect(jsonPath("$.content[0].formattedMessage").value("bk-only-event"))
+    }
+
+    @Test
+    @WithMockUser(username = "admin@test.com", authorities = [ADMIN])
+    fun `should overwrite a client-supplied businessKey property with the path case`() {
+        val otherCaseId = UUID.randomUUID()
+        val seeded = transactionTemplate.execute {
+            val mine = saveLogEvent("mine", "INFO")
+            saveProperty(mine, "businessKey", caseId.toString())
+            val theirs = saveLogEvent("theirs", "INFO")
+            saveProperty(theirs, "businessKey", otherCaseId.toString())
+            listOf(mine.id, theirs.id)
+        }!!
+        seededEventIds.addAll(seeded)
+
+        val body = """
+            {
+              "additionalProperties": [
+                { "key": "businessKey", "value": "$otherCaseId" }
+              ]
+            }
+        """.trimIndent()
+
+        mockMvc.perform(
+            post("/api/management/v1/case/{caseId}/logs", caseId)
+                .contentType(MediaType.APPLICATION_JSON_VALUE)
+                .content(body)
+        )
+            .andExpect(status().isOk)
+            .andExpect(jsonPath("$.totalElements").value(1))
+            .andExpect(jsonPath("$.content[0].formattedMessage").value("mine"))
+    }
+
+    @Test
+    @WithMockUser(username = "admin@test.com", authorities = [ADMIN])
     fun `should overwrite a client-supplied JsonSchemaDocument property with the path case`() {
         val otherCaseId = UUID.randomUUID()
         val seeded = transactionTemplate.execute {
