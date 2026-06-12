@@ -24,6 +24,7 @@ import com.ritense.authorization.web.request.PermissionAvailableRequest
 import com.ritense.authorization.web.result.PermissionAvailableResult
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import com.ritense.valtimo.contract.domain.ValtimoMediaType.APPLICATION_JSON_UTF8_VALUE
+import jakarta.validation.Valid
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.http.ResponseEntity
@@ -44,7 +45,7 @@ class PermissionResource(
 
     @Transactional(readOnly = true)
     @PostMapping("/v1/permissions")
-    fun userHasPermission(@RequestBody permissionsPresentRequest: List<PermissionAvailableRequest>)
+    fun userHasPermission(@Valid @RequestBody permissionsPresentRequest: List<PermissionAvailableRequest>)
         : ResponseEntity<List<PermissionAvailableResult>> {
 
         val permissionResponse: List<PermissionAvailableResult> = permissionsPresentRequest.map {

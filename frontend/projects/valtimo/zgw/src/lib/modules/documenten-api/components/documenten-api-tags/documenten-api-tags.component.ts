@@ -45,6 +45,7 @@ import {DocumentenApiColumnModalTypeCloseEvent} from '../../models';
 import {DocumentenApiTag} from '../../models/documenten-api-tag.model';
 import {DocumentenApiTagService} from '../../services/documenten-api-tag.service';
 import {DocumentenApiTagModalComponent} from '../documenten-api-tag-modal/documenten-api-tag-modal.component';
+import {ZGW_KEYWORDS_TEST_IDS} from '../../../../constants';
 
 @Component({
   selector: 'valtimo-documenten-api-tags',
@@ -64,6 +65,7 @@ import {DocumentenApiTagModalComponent} from '../documenten-api-tag-modal/docume
   ],
 })
 export class DocumentenApiTagsComponent {
+  public readonly testIds = ZGW_KEYWORDS_TEST_IDS;
   @ViewChild(CarbonListComponent) carbonList: CarbonListComponent;
 
   private readonly _reload$ = new BehaviorSubject<null | 'noAnimation'>(null);

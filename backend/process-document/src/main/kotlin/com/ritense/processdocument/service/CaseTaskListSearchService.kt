@@ -37,6 +37,7 @@ import com.ritense.processdocument.tasksearch.AdvancedSearchRequest
 import com.ritense.processdocument.tasksearch.SearchRequestMapper
 import com.ritense.processdocument.tasksearch.SearchWithConfigRequest
 import com.ritense.processdocument.web.result.TaskListRowDto
+import com.ritense.search.domain.DataType
 import com.ritense.search.domain.DisplayType
 import com.ritense.search.domain.EmptyDisplayTypeParameter
 import com.ritense.search.domain.SearchFieldV2
@@ -84,6 +85,7 @@ import java.time.OffsetDateTime
 import java.time.ZoneOffset
 import java.time.ZonedDateTime
 import java.time.temporal.TemporalAccessor
+import java.math.BigDecimal
 import java.util.Date
 import java.util.Locale
 import java.util.UUID
@@ -206,7 +208,8 @@ class CaseTaskListSearchService(
 
         query.where(constructWhere(cb, query, taskRoot, documentRoot, caseDefinitionName, advancedSearchRequest))
 
-        query.orderBy(constructOrderBy(query, cb, taskRoot, documentRoot, pageable.sort))
+        val sortTypeMap = buildSortTypeMap(caseDefinitionName)
+        query.orderBy(constructOrderBy(query, cb, taskRoot, documentRoot, pageable.sort, sortTypeMap))
 
         val pagedQuery = entityManager.createQuery(query)
             .setFirstResult(pageable.offset.toInt())
@@ -615,7 +618,8 @@ class CaseTaskListSearchService(
         cb: CriteriaBuilder,
         taskRoot: Root<OperatonTask>,
         documentRoot: Root<JsonSchemaDocument>,
-        sort: Sort
+        sort: Sort,
+        sortTypeMap: Map<String, Class<*>>
     ): List<Order> {
         return sort.stream()
             .map { order: Sort.Order ->
@@ -625,25 +629,28 @@ class CaseTaskListSearchService(
                     property.startsWith(DOC_PREFIX) -> {
                         val quotedPath = quoteJsonPath(property.substring(DOC_PREFIX.length))
                         val jsonPath = "$.${quotedPath}"
+                        val sortType = sortTypeMap[property] ?: String::class.java
                         expression = queryDialectHelper.getJsonValueExpression(
                             cb,
                             documentRoot.get<JsonDocumentContent>(CONTENT)
                                 .get<String>(CONTENT),
                             jsonPath,
-                            String::class.java
+                            sortType
                         )
                     }
 
                     property.startsWith("$.") -> {
-                        expression = cb.lower(
-                            queryDialectHelper.getJsonValueExpression(
-                                cb,
-                                documentRoot.get<JsonDocumentContent>(CONTENT)
-                                    .get<String>(CONTENT),
-                                property,
-                                String::class.java
-                            )
+                        val docPath = DOC_PREFIX + property.substring(2)
+                        val sortType = sortTypeMap[docPath] ?: String::class.java
+                        val jsonExpression = queryDialectHelper.getJsonValueExpression(
+                            cb,
+                            documentRoot.get<JsonDocumentContent>(CONTENT)
+                                .get<String>(CONTENT),
+                            property,
+                            sortType
                         )
+                        @Suppress("UNCHECKED_CAST")
+                        expression = if (sortType == String::class.java) cb.lower(jsonExpression as Expression<String>) else jsonExpression
                     }
 
                     property.startsWith(TASK_PREFIX) -> {
@@ -682,6 +689,19 @@ class CaseTaskListSearchService(
                 if (order.direction.isAscending) cb.asc(expression) else cb.desc(expression)
             }
             .collect(Collectors.toList())
+    }
+
+    private fun buildSortTypeMap(caseDefinitionName: String): Map<String, Class<*>> {
+        return searchFieldV2Service.findAllByOwnerTypeAndOwnerId(SEARCH_FIELD_OWNER_TYPE, caseDefinitionName)
+            .associate { it.path to toSortType(it.dataType) }
+    }
+
+    private fun toSortType(dataType: DataType): Class<*> = when (dataType) {
+        DataType.DATE -> LocalDate::class.java
+        DataType.DATETIME -> LocalDateTime::class.java
+        DataType.TIME -> LocalTime::class.java
+        DataType.NUMBER -> BigDecimal::class.java
+        else -> String::class.java
     }
 
     private fun getAuthorizationSpecification(action: Action<OperatonTask>): AuthorizationSpecification<OperatonTask> {

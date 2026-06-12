@@ -60,6 +60,12 @@
     </cds-label>
 
     <cds-label>
+      {{ 'caseManagement.statuses.columns.label' | translate }}
+
+      <input cdsText formControlName="label" [attr.data-test-id]="testIds.labelInput" />
+    </cds-label>
+
+    <cds-label>
       {{ 'caseManagement.statuses.columns.key' | translate }}
 
       <div class="edit-key-input">

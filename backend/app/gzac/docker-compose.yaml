@@ -105,11 +105,13 @@ services:
         container_name: gotenberg-pdf-conversion-api
         ports:
             - "3000:3000"
+        environment:
+            API_TIMEOUT: "240s"
 
     # ZGW
 
     openzaak:
-        image: openzaak/open-zaak:1.20.0
+        image: openzaak/open-zaak:1.23.0
         container_name: gzac-docker-compose-openzaak
         platform: linux/amd64
         profiles:
@@ -584,6 +586,8 @@ services:
         ports:
             - "6379:6379"
         container_name: iko-redis
+        profiles:
+            - iko
         healthcheck:
             test: [ "CMD", "redis-cli", "ping" ]
             interval: 10s

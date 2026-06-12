@@ -21,4 +21,5 @@ data class CaseDefinitionImportPreviewResponse(
     val name: String,
     val versionTag: String,
     val isFinal: Boolean,
+    val pluginConfigurations: List<PluginConfigurationPreviewDto> = emptyList(),
 )

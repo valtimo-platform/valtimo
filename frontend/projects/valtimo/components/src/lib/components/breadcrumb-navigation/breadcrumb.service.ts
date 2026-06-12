@@ -29,6 +29,7 @@ export class BreadcrumbService {
   private readonly _manualSecondBreadcrumb$ = new BehaviorSubject<BreadcrumbItem | null>(null);
   private readonly _manualThirdBreadcrumb$ = new BehaviorSubject<BreadcrumbItem | null>(null);
   private readonly _manualFourthBreadcrumb$ = new BehaviorSubject<BreadcrumbItem | null>(null);
+  private readonly _suppressSecondBreadcrumb$ = new BehaviorSubject<boolean>(false);
 
   private readonly _breadcrumbItems$: Observable<Array<BreadcrumbItem>> = combineLatest([
     this.menuService.activeParentSequenceNumber$,
@@ -36,6 +37,7 @@ export class BreadcrumbService {
     this._manualSecondBreadcrumb$,
     this._manualThirdBreadcrumb$,
     this._manualFourthBreadcrumb$,
+    this._suppressSecondBreadcrumb$,
     this.translateService.stream('key'),
     this.router.events.pipe(startWith(this.router)),
   ]).pipe(
@@ -46,6 +48,7 @@ export class BreadcrumbService {
         manualSecondBreadcrumb,
         manualThirdBreadcrumb,
         manualFourthBreadcrumb,
+        suppressSecondBreadcrumb,
       ]) => {
         const activeParentBreadcrumbTitle = menuItems.find(
           menuItem => `${menuItem.sequence}` === activeParentSequenceNumber
@@ -59,8 +62,10 @@ export class BreadcrumbService {
 
         return [
           ...(activeParentSequenceNumber ? [activeParentBreadcrumbItem] : []),
-          ...(manualSecondBreadcrumb ? [manualSecondBreadcrumb] : []),
-          ...(secondBreadCrumb && !manualSecondBreadcrumb ? [secondBreadCrumb] : []),
+          ...(!suppressSecondBreadcrumb && manualSecondBreadcrumb ? [manualSecondBreadcrumb] : []),
+          ...(!suppressSecondBreadcrumb && secondBreadCrumb && !manualSecondBreadcrumb
+            ? [secondBreadCrumb]
+            : []),
           ...(!!manualThirdBreadcrumb ? [manualThirdBreadcrumb] : []),
           ...(!!manualFourthBreadcrumb ? [manualFourthBreadcrumb] : []),
         ];
@@ -86,6 +91,14 @@ export class BreadcrumbService {
 
   public clearSecondBreadcrumb(): void {
     this._manualSecondBreadcrumb$.next(null);
+  }
+
+  public suppressSecondBreadcrumb(): void {
+    this._suppressSecondBreadcrumb$.next(true);
+  }
+
+  public unsuppressSecondBreadcrumb(): void {
+    this._suppressSecondBreadcrumb$.next(false);
   }
 
   public setThirdBreadcrumb(breadcrumb: BreadcrumbItem): void {

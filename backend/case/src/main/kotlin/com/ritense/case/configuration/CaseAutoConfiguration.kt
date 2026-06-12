@@ -20,14 +20,16 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import com.ritense.authorization.AuthorizationService
 import com.ritense.case.deployment.CaseTabDeploymentService
 import com.ritense.case.listener.CaseDefinitionConfigurationIssueListener
+import com.ritense.case.listener.StartableItemCaseEventListener
 import com.ritense.case.mapper.ConfigurationIssueSseEventMapper
 import com.ritense.case.repository.CaseDefinitionConfigurationIssueRepository
 import com.ritense.case.repository.CaseDefinitionListColumnRepository
-import com.ritense.case.repository.StartableItemRepository
 import com.ritense.case.repository.CaseTabDocumentDefinitionMapper
 import com.ritense.case.repository.CaseTabRepository
 import com.ritense.case.repository.CaseTabSpecificationFactory
 import com.ritense.case.repository.QuickSearchRepository
+import com.ritense.case.repository.StartableItemRepository
+import com.ritense.case.repository.HiddenTaskListColumnRepository
 import com.ritense.case.repository.TaskListColumnRepository
 import com.ritense.case.security.config.CaseHttpSecurityConfigurer
 import com.ritense.case.service.CaseDefinitionCheckerImpl
@@ -49,7 +51,6 @@ import com.ritense.case.service.CaseTaskListImporter
 import com.ritense.case.service.StartableItemExporter
 import com.ritense.case.service.StartableItemImporter
 import com.ritense.case.service.ConfigurationIssueCaseDefinitionFinalizationChecker
-import com.ritense.case.listener.StartableItemCaseEventListener
 import com.ritense.case.service.StartableItemManagementService
 import com.ritense.case.service.StartableItemProvider
 import com.ritense.case.service.StartableItemService
@@ -78,6 +79,8 @@ import com.ritense.valtimo.changelog.service.ChangelogDeployer
 import com.ritense.valtimo.contract.authentication.UserManagementService
 import com.ritense.valtimo.contract.case_.CaseDefinitionChecker
 import com.ritense.valtimo.contract.database.QueryDialectHelper
+import com.ritense.valtimo.contract.importer.ImportPreviewContributor
+import com.ritense.valtimo.contract.plugin.PluginConfigurationMappingResolver
 import com.ritense.valueresolver.ValueResolverService
 import org.springframework.beans.factory.ObjectProvider
 import org.springframework.beans.factory.annotation.Value
@@ -110,7 +113,8 @@ class CaseAutoConfiguration {
     @ConditionalOnMissingBean(CaseDefinitionImportPreviewService::class)
     fun caseDefinitionImportPreviewService(
         objectMapper: ObjectMapper,
-    ) = CaseDefinitionImportPreviewService(objectMapper)
+        importPreviewContributors: List<ImportPreviewContributor>,
+    ) = CaseDefinitionImportPreviewService(objectMapper, importPreviewContributors)
 
     @ConditionalOnMissingBean(name = ["caseDefinitionResource"])
     @Bean
@@ -123,6 +127,7 @@ class CaseAutoConfiguration {
         caseDefinitionChecker: CaseDefinitionChecker,
         configurationIssueRepository: CaseDefinitionConfigurationIssueRepository,
         caseDefinitionImportPreviewService: CaseDefinitionImportPreviewService,
+        pluginConfigurationMappingResolver: PluginConfigurationMappingResolver?,
     ): CaseDefinitionResource {
         return CaseDefinitionResource(
             service,
@@ -133,6 +138,7 @@ class CaseAutoConfiguration {
             caseDefinitionChecker,
             configurationIssueRepository,
             caseDefinitionImportPreviewService,
+            pluginConfigurationMappingResolver,
         )
     }
 
@@ -265,6 +271,7 @@ class CaseAutoConfiguration {
     @Bean
     fun taskColumnService(
         repository: TaskListColumnRepository,
+        hiddenTaskListColumnRepository: HiddenTaskListColumnRepository,
         documentDefinitionService: DocumentDefinitionService,
         valueResolverService: ValueResolverService,
         authorizationService: AuthorizationService,
@@ -272,6 +279,7 @@ class CaseAutoConfiguration {
     ): TaskColumnService {
         return TaskColumnService(
             repository,
+            hiddenTaskListColumnRepository,
             documentDefinitionService,
             valueResolverService,
             authorizationService,

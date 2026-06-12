@@ -34,6 +34,7 @@ import org.springframework.core.env.Environment
 import org.springframework.core.io.Resource
 import org.springframework.transaction.annotation.Transactional
 import java.io.InputStream
+import java.util.UUID
 import java.util.zip.ZipInputStream
 
 @AllOpen
@@ -225,7 +226,7 @@ class ValtimoImportService(
 
     @Transactional
     override fun import(inputStream: InputStream, caseDefinitionIdList: List<CaseDefinitionId>): CaseDefinitionId? {
-        return import(inputStream, caseDefinitionIdList, null, null)
+        return import(inputStream, caseDefinitionIdList, null, null, null)
     }
 
     @Transactional
@@ -234,6 +235,17 @@ class ValtimoImportService(
         caseDefinitionIdList: List<CaseDefinitionId>,
         keyOverride: String?,
         nameOverride: String?,
+    ): CaseDefinitionId? {
+        return import(inputStream, caseDefinitionIdList, keyOverride, nameOverride, null)
+    }
+
+    @Transactional
+    override fun import(
+        inputStream: InputStream,
+        caseDefinitionIdList: List<CaseDefinitionId>,
+        keyOverride: String?,
+        nameOverride: String?,
+        pluginConfigurationMappings: Map<UUID, UUID?>?,
     ): CaseDefinitionId? {
         return runImporter {
             val entriesWithRawPath = readZipEntriesWithRawPath(inputStream)
@@ -278,6 +290,7 @@ class ValtimoImportService(
                             entry.fileName, entry.content, caseDefinitionId,
                             keyOverride = keyOverride,
                             nameOverride = nameOverride,
+                            pluginConfigurationMappings = pluginConfigurationMappings,
                         ))
                     }
                 }
@@ -292,6 +305,7 @@ class ValtimoImportService(
                         entry.fileName, entry.content, caseDefinitionId,
                         keyOverride = keyOverride,
                         nameOverride = nameOverride,
+                        pluginConfigurationMappings = pluginConfigurationMappings,
                     ))
                 }
             }

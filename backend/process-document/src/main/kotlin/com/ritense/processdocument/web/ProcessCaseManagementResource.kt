@@ -19,6 +19,7 @@ import com.ritense.processdocument.domain.UpdateProcessDefinitionCaseDefinitionR
 import com.ritense.processdocument.service.ProcessDefinitionCaseDefinitionService
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import com.ritense.valtimo.contract.domain.ValtimoMediaType.APPLICATION_JSON_UTF8_VALUE
+import jakarta.validation.Valid
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PutMapping
 import org.springframework.web.bind.annotation.RequestBody
@@ -36,7 +37,7 @@ class ProcessCaseManagementResource(
         @PathVariable caseDefinitionKey: String,
         @PathVariable caseDefinitionVersionTag: String,
         @PathVariable processDefinitionId: String,
-        @RequestBody request: UpdateProcessDefinitionCaseDefinitionRequest
+        @Valid @RequestBody request: UpdateProcessDefinitionCaseDefinitionRequest
     ) {
         processDefinitionCaseDefinitionService.updateProcessDefinitionCaseDefinition(
             caseDefinitionKey,

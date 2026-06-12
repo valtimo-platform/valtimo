@@ -14,23 +14,66 @@
   ~ limitations under the License.
   -->
 
-<cds-tile-group
-  [multiple]="false"
-  (selected)="onSelectedEvent($event)"
-  class="valtimo-widget-wizard-step__content"
->
-  @for (widgetType of $availableWidgetTypes(); track widgetType.titleKey) {
-    <cds-selection-tile
-      class="valtimo-widget-wizard-step__tile"
-      [attr.data-test-id]="'widgetWizardTypeTile-' + widgetType.type"
-      [value]="widgetType"
-      [selected]="widgetType.type === $selectedWidget()?.type"
+@if ($genericWidgetTypes().length > 0) {
+  <section class="valtimo-widget-wizard-type-step__group">
+    <p class="valtimo-widget-wizard-type-step__group-title">
+      {{ 'widgetTabManagement.type.generic.title' | translate }}
+    </p>
+    <p class="valtimo-widget-wizard-type-step__group-description">
+      {{ 'widgetTabManagement.type.generic.description' | translate }}
+    </p>
+
+    <cds-tile-group
+      [multiple]="false"
+      (selected)="onSelectedEvent($event)"
+      class="valtimo-widget-wizard-step__content"
     >
-      <h3 class="valtimo-widget-wizard-step__tile-title">{{ widgetType.titleKey | translate }}</h3>
+      @for (widgetType of $genericWidgetTypes(); track widgetType.titleKey) {
+        <cds-selection-tile
+          class="valtimo-widget-wizard-step__tile"
+          [attr.data-test-id]="'widgetWizardTypeTile-' + widgetType.type"
+          [value]="widgetType"
+          [selected]="widgetType.type === $selectedWidget()?.type"
+        >
+          <h3 class="valtimo-widget-wizard-step__tile-title">{{ widgetType.titleKey | translate }}</h3>
 
-      <span>{{ widgetType.descriptionKey | translate }}</span>
+          <span>{{ widgetType.descriptionKey | translate }}</span>
 
-      <img [src]="widgetType.illustrationUrl" [alt]="widgetType.titleKey | translate" />
-    </cds-selection-tile>
-  }
-</cds-tile-group>
+          <img [src]="widgetType.illustrationUrl" [alt]="widgetType.titleKey | translate" />
+        </cds-selection-tile>
+      }
+    </cds-tile-group>
+  </section>
+}
+
+@if ($specificWidgetTypes().length > 0) {
+  <section class="valtimo-widget-wizard-type-step__group">
+    <p class="valtimo-widget-wizard-type-step__group-title">
+      {{ 'widgetTabManagement.type.specific.title' | translate }}
+    </p>
+    <p class="valtimo-widget-wizard-type-step__group-description">
+      {{ 'widgetTabManagement.type.specific.description' | translate }}
+    </p>
+
+    <cds-tile-group
+      [multiple]="false"
+      (selected)="onSelectedEvent($event)"
+      class="valtimo-widget-wizard-step__content"
+    >
+      @for (widgetType of $specificWidgetTypes(); track widgetType.titleKey) {
+        <cds-selection-tile
+          class="valtimo-widget-wizard-step__tile"
+          [attr.data-test-id]="'widgetWizardTypeTile-' + widgetType.type"
+          [value]="widgetType"
+          [selected]="widgetType.type === $selectedWidget()?.type"
+        >
+          <h3 class="valtimo-widget-wizard-step__tile-title">{{ widgetType.titleKey | translate }}</h3>
+
+          <span>{{ widgetType.descriptionKey | translate }}</span>
+
+          <img [src]="widgetType.illustrationUrl" [alt]="widgetType.titleKey | translate" />
+        </cds-selection-tile>
+      }
+    </cds-tile-group>
+  </section>
+}

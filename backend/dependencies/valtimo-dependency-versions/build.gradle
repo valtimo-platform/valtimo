@@ -96,6 +96,10 @@ dependencies {
 
         //!GZAC
 
+        api("org.apache.tomcat.embed:tomcat-embed-core:${tomcatVersion}")
+        api("org.apache.tomcat.embed:tomcat-embed-el:${tomcatVersion}")
+        api("org.apache.tomcat.embed:tomcat-embed-websocket:${tomcatVersion}")
+
         api("org.liquibase:liquibase-core:${liquibaseVersion}")
 
         api("org.liquibase.ext:liquibase-hibernate6:${liquibaseVersion}")

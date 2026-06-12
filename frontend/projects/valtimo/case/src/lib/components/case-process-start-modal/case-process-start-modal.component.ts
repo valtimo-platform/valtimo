@@ -84,7 +84,9 @@ export class CaseProcessStartModalComponent implements OnInit, OnDestroy {
   public caseDefinitionKey: string;
   public processName: string;
   private _startEventName: string;
-  private readonly _useStartEventNameAsStartFormTitle!: boolean;
+  private get _useStartEventNameAsStartFormTitle(): boolean {
+    return !!this.configService.featureToggles?.useStartEventNameAsStartFormTitle;
+  }
   public formDefinition: FormioForm;
   public formName: string;
   public formFlowInstanceId: string;
@@ -126,9 +128,6 @@ export class CaseProcessStartModalComponent implements OnInit, OnDestroy {
     private readonly formCustomComponentConfig: FormCustomComponentConfig,
     private urlResolverService: UrlResolverService
   ) {
-    this._useStartEventNameAsStartFormTitle =
-      this.configService.config.featureToggles?.useStartEventNameAsStartFormTitle;
-
     this._formCustomComponentConfig$.next(formCustomComponentConfig);
   }
 
@@ -144,6 +143,8 @@ export class CaseProcessStartModalComponent implements OnInit, OnDestroy {
     this.processLinkId = null;
     this.formDefinition = null;
     this.formFlowInstanceId = null;
+    this.formViewModelDynamicContainer?.clear();
+    this.formCustomComponentDynamicContainer?.clear();
     if (this._useStartEventNameAsStartFormTitle) {
       this.processService.getProcessDefinitionXml(this.processDefinitionId).subscribe(result => {
         this._startEventName = this.startModalService.getStandardStartEventTitle(result.bpmn20Xml);
@@ -328,6 +329,7 @@ export class CaseProcessStartModalComponent implements OnInit, OnDestroy {
 
       renderedComponent.instance.processDefinitionKey = this.processDefinitionKey;
       renderedComponent.instance.documentDefinitionName = this.caseDefinitionKey;
+      renderedComponent.instance.documentId = null;
 
       renderedComponent.instance.submittedEvent.subscribe(() => {
         this.closeCdsModal();

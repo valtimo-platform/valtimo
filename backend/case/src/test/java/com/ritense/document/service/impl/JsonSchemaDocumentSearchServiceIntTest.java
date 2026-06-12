@@ -48,6 +48,11 @@ import com.ritense.document.domain.search.AdvancedSearchRequest;
 import com.ritense.document.domain.search.AssigneeFilter;
 import com.ritense.document.domain.search.SearchOperator;
 import com.ritense.document.domain.search.SearchWithConfigRequest;
+import com.ritense.document.domain.impl.searchfield.SearchField;
+import com.ritense.document.domain.impl.searchfield.SearchFieldDataType;
+import com.ritense.document.domain.impl.searchfield.SearchFieldFieldType;
+import com.ritense.document.domain.impl.searchfield.SearchFieldId;
+import com.ritense.document.domain.impl.searchfield.SearchFieldMatchType;
 import com.ritense.document.event.DocumentsListed;
 import com.ritense.document.service.result.CreateDocumentResult;
 import com.ritense.outbox.domain.BaseEvent;
@@ -903,6 +908,200 @@ class JsonSchemaDocumentSearchServiceIntTest extends BaseIntegrationTest {
             "2022-01-01T12:20:00",
             content.get(1).content().getValueBy(JsonPointer.valueOf("/movedAtDateTime")).get().asText()
         );
+    }
+
+    @Test
+    @WithMockUser(username = USERNAME, authorities = FULL_ACCESS_ROLE)
+    void shouldSortByDateFieldChronologicallyAsc() {
+        documentRepository.deleteAllInBatch();
+        searchFieldRepository.deleteAllByIdCaseDefinitionKey(definition.id().name());
+
+        var searchField = new SearchField(
+            "buildDate", "doc:buildDate", SearchFieldDataType.DATE,
+            SearchFieldFieldType.SINGLE, SearchFieldMatchType.EXACT, null, 0, null
+        );
+        var searchFieldId = SearchFieldId.newId(definition.id().name()).newIdentity();
+        searchField.setId(searchFieldId);
+        searchFieldRepository.save(searchField);
+
+        createDocument("{\"buildDate\": \"2024-12-01\"}").resultingDocument().orElseThrow();
+        createDocument("{\"buildDate\": \"2023-06-15\"}").resultingDocument().orElseThrow();
+        createDocument("{\"buildDate\": \"2024-01-20\"}").resultingDocument().orElseThrow();
+
+        var result = documentSearchService.search(
+            definition.id().name(),
+            BlueprintType.CASE,
+            new AdvancedSearchRequest(),
+            PageRequest.of(0, 10, Sort.by(Direction.ASC, "doc:buildDate"))
+        );
+
+        assertThat(result.getTotalElements()).isEqualTo(3);
+        var content = result.getContent();
+        assertEquals("2023-06-15", content.get(0).content().getValueBy(JsonPointer.valueOf("/buildDate")).get().asText());
+        assertEquals("2024-01-20", content.get(1).content().getValueBy(JsonPointer.valueOf("/buildDate")).get().asText());
+        assertEquals("2024-12-01", content.get(2).content().getValueBy(JsonPointer.valueOf("/buildDate")).get().asText());
+    }
+
+    @Test
+    @WithMockUser(username = USERNAME, authorities = FULL_ACCESS_ROLE)
+    void shouldSortByDateFieldChronologicallyDesc() {
+        documentRepository.deleteAllInBatch();
+        searchFieldRepository.deleteAllByIdCaseDefinitionKey(definition.id().name());
+
+        var searchField = new SearchField(
+            "buildDate", "doc:buildDate", SearchFieldDataType.DATE,
+            SearchFieldFieldType.SINGLE, SearchFieldMatchType.EXACT, null, 0, null
+        );
+        var searchFieldId = SearchFieldId.newId(definition.id().name()).newIdentity();
+        searchField.setId(searchFieldId);
+        searchFieldRepository.save(searchField);
+
+        createDocument("{\"buildDate\": \"2024-12-01\"}").resultingDocument().orElseThrow();
+        createDocument("{\"buildDate\": \"2023-06-15\"}").resultingDocument().orElseThrow();
+        createDocument("{\"buildDate\": \"2024-01-20\"}").resultingDocument().orElseThrow();
+
+        var result = documentSearchService.search(
+            definition.id().name(),
+            BlueprintType.CASE,
+            new AdvancedSearchRequest(),
+            PageRequest.of(0, 10, Sort.by(Direction.DESC, "doc:buildDate"))
+        );
+
+        assertThat(result.getTotalElements()).isEqualTo(3);
+        var content = result.getContent();
+        assertEquals("2024-12-01", content.get(0).content().getValueBy(JsonPointer.valueOf("/buildDate")).get().asText());
+        assertEquals("2024-01-20", content.get(1).content().getValueBy(JsonPointer.valueOf("/buildDate")).get().asText());
+        assertEquals("2023-06-15", content.get(2).content().getValueBy(JsonPointer.valueOf("/buildDate")).get().asText());
+    }
+
+    @Test
+    @WithMockUser(username = USERNAME, authorities = FULL_ACCESS_ROLE)
+    void shouldSortByDateTimeFieldChronologicallyAsc() {
+        documentRepository.deleteAllInBatch();
+        searchFieldRepository.deleteAllByIdCaseDefinitionKey(definition.id().name());
+
+        var searchField = new SearchField(
+            "buildDate", "doc:buildDate", SearchFieldDataType.DATETIME,
+            SearchFieldFieldType.SINGLE, SearchFieldMatchType.EXACT, null, 0, null
+        );
+        var searchFieldId = SearchFieldId.newId(definition.id().name()).newIdentity();
+        searchField.setId(searchFieldId);
+        searchFieldRepository.save(searchField);
+
+        createDocument("{\"buildDate\": \"2024-01-01T23:00:00\"}").resultingDocument().orElseThrow();
+        createDocument("{\"buildDate\": \"2024-01-01T08:30:00\"}").resultingDocument().orElseThrow();
+        createDocument("{\"buildDate\": \"2024-01-01T15:45:00\"}").resultingDocument().orElseThrow();
+
+        var result = documentSearchService.search(
+            definition.id().name(),
+            BlueprintType.CASE,
+            new AdvancedSearchRequest(),
+            PageRequest.of(0, 10, Sort.by(Direction.ASC, "doc:buildDate"))
+        );
+
+        assertThat(result.getTotalElements()).isEqualTo(3);
+        var content = result.getContent();
+        assertEquals("2024-01-01T08:30:00", content.get(0).content().getValueBy(JsonPointer.valueOf("/buildDate")).get().asText());
+        assertEquals("2024-01-01T15:45:00", content.get(1).content().getValueBy(JsonPointer.valueOf("/buildDate")).get().asText());
+        assertEquals("2024-01-01T23:00:00", content.get(2).content().getValueBy(JsonPointer.valueOf("/buildDate")).get().asText());
+    }
+
+    @Test
+    @WithMockUser(username = USERNAME, authorities = FULL_ACCESS_ROLE)
+    void shouldSortByDateTimeFieldChronologicallyDesc() {
+        documentRepository.deleteAllInBatch();
+        searchFieldRepository.deleteAllByIdCaseDefinitionKey(definition.id().name());
+
+        var searchField = new SearchField(
+            "buildDate", "doc:buildDate", SearchFieldDataType.DATETIME,
+            SearchFieldFieldType.SINGLE, SearchFieldMatchType.EXACT, null, 0, null
+        );
+        var searchFieldId = SearchFieldId.newId(definition.id().name()).newIdentity();
+        searchField.setId(searchFieldId);
+        searchFieldRepository.save(searchField);
+
+        createDocument("{\"buildDate\": \"2024-01-01T23:00:00\"}").resultingDocument().orElseThrow();
+        createDocument("{\"buildDate\": \"2024-01-01T08:30:00\"}").resultingDocument().orElseThrow();
+        createDocument("{\"buildDate\": \"2024-01-01T15:45:00\"}").resultingDocument().orElseThrow();
+
+        var result = documentSearchService.search(
+            definition.id().name(),
+            BlueprintType.CASE,
+            new AdvancedSearchRequest(),
+            PageRequest.of(0, 10, Sort.by(Direction.DESC, "doc:buildDate"))
+        );
+
+        assertThat(result.getTotalElements()).isEqualTo(3);
+        var content = result.getContent();
+        assertEquals("2024-01-01T23:00:00", content.get(0).content().getValueBy(JsonPointer.valueOf("/buildDate")).get().asText());
+        assertEquals("2024-01-01T15:45:00", content.get(1).content().getValueBy(JsonPointer.valueOf("/buildDate")).get().asText());
+        assertEquals("2024-01-01T08:30:00", content.get(2).content().getValueBy(JsonPointer.valueOf("/buildDate")).get().asText());
+    }
+
+    @Test
+    @WithMockUser(username = USERNAME, authorities = FULL_ACCESS_ROLE)
+    void shouldSortByNumberFieldNumericallyAsc() {
+        documentRepository.deleteAllInBatch();
+        searchFieldRepository.deleteAllByIdCaseDefinitionKey(definition.id().name());
+
+        var searchField = new SearchField(
+            "housenumber", "doc:housenumber", SearchFieldDataType.NUMBER,
+            SearchFieldFieldType.SINGLE, SearchFieldMatchType.EXACT, null, 0, null
+        );
+        var searchFieldId = SearchFieldId.newId(definition.id().name()).newIdentity();
+        searchField.setId(searchFieldId);
+        searchFieldRepository.save(searchField);
+
+        createDocument("{\"housenumber\": 3}").resultingDocument().orElseThrow();
+        createDocument("{\"housenumber\": 20}").resultingDocument().orElseThrow();
+        createDocument("{\"housenumber\": 10}").resultingDocument().orElseThrow();
+
+        var result = documentSearchService.search(
+            definition.id().name(),
+            BlueprintType.CASE,
+            new AdvancedSearchRequest(),
+            PageRequest.of(0, 10, Sort.by(Direction.ASC, "doc:housenumber"))
+        );
+
+        assertThat(result.getTotalElements()).isEqualTo(3);
+        var content = result.getContent();
+        // Without numeric sorting, string order would be "10", "20", "3"
+        assertEquals(3, content.get(0).content().getValueBy(JsonPointer.valueOf("/housenumber")).get().asInt());
+        assertEquals(10, content.get(1).content().getValueBy(JsonPointer.valueOf("/housenumber")).get().asInt());
+        assertEquals(20, content.get(2).content().getValueBy(JsonPointer.valueOf("/housenumber")).get().asInt());
+    }
+
+    @Test
+    @WithMockUser(username = USERNAME, authorities = FULL_ACCESS_ROLE)
+    void shouldSortByNumberFieldNumericallyDesc() {
+        documentRepository.deleteAllInBatch();
+        searchFieldRepository.deleteAllByIdCaseDefinitionKey(definition.id().name());
+
+        var searchField = new SearchField(
+            "housenumber", "doc:housenumber", SearchFieldDataType.NUMBER,
+            SearchFieldFieldType.SINGLE, SearchFieldMatchType.EXACT, null, 0, null
+        );
+        var searchFieldId = SearchFieldId.newId(definition.id().name()).newIdentity();
+        searchField.setId(searchFieldId);
+        searchFieldRepository.save(searchField);
+
+        createDocument("{\"housenumber\": 3}").resultingDocument().orElseThrow();
+        createDocument("{\"housenumber\": 20}").resultingDocument().orElseThrow();
+        createDocument("{\"housenumber\": 10}").resultingDocument().orElseThrow();
+
+        var result = documentSearchService.search(
+            definition.id().name(),
+            BlueprintType.CASE,
+            new AdvancedSearchRequest(),
+            PageRequest.of(0, 10, Sort.by(Direction.DESC, "doc:housenumber"))
+        );
+
+        assertThat(result.getTotalElements()).isEqualTo(3);
+        var content = result.getContent();
+        // Without numeric sorting, string order would be "3", "20", "10"
+        assertEquals(20, content.get(0).content().getValueBy(JsonPointer.valueOf("/housenumber")).get().asInt());
+        assertEquals(10, content.get(1).content().getValueBy(JsonPointer.valueOf("/housenumber")).get().asInt());
+        assertEquals(3, content.get(2).content().getValueBy(JsonPointer.valueOf("/housenumber")).get().asInt());
     }
 
     @Test

@@ -55,6 +55,11 @@ class OperatonProcessDefinitionSpecificationHelper {
         }
 
         @JvmStatic
+        fun byKeyIn(processDefinitionKeys: Collection<String>) = Specification<OperatonProcessDefinition> { root, _, _ ->
+            root.get<Any>(KEY).`in`(processDefinitionKeys)
+        }
+
+        @JvmStatic
         fun byVersion(version: Int) = Specification<OperatonProcessDefinition> { root, _, cb ->
             cb.equal(root.get<Any>(VERSION), version)
         }

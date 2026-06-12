@@ -65,6 +65,15 @@ class InternalCaseStatusService(
         return internalCaseStatusRepository.findByIdCaseDefinitionKeyOrderByOrder(caseDefinitionKey)
     }
 
+    fun getAllInternalCaseStatuses(): List<InternalCaseStatus> {
+        val authorizedDefinitions = caseDefinitionService.getCaseDefinitions(active = true)
+        if (authorizedDefinitions.isEmpty()) {
+            return emptyList()
+        }
+        val authorizedKeys = authorizedDefinitions.map { it.id.key }
+        return internalCaseStatusRepository.findByIdCaseDefinitionKeyInOrderByIdCaseDefinitionKeyAscOrderAsc(authorizedKeys)
+    }
+
     fun get(caseDefinitionName: String, statusKey: String): InternalCaseStatus {
         return internalCaseStatusRepository.getReferenceById(InternalCaseStatusId(caseDefinitionName, statusKey))
     }
@@ -99,7 +108,8 @@ class InternalCaseStatusService(
                 request.visibleInCaseListByDefault,
                 currentInternalCaseStatuses.size,
                 request.retentionPeriodInDays,
-                request.color
+                request.color,
+                request.label,
             )
         )
     }
@@ -122,7 +132,8 @@ class InternalCaseStatusService(
                 title = request.title,
                 visibleInCaseListByDefault = request.visibleInCaseListByDefault,
                 retentionPeriodInDays = request.retentionPeriodInDays,
-                color = request.color
+                color = request.color,
+                label = request.label,
             )
         )
     }
@@ -151,7 +162,8 @@ class InternalCaseStatusService(
                 order = index,
                 visibleInCaseListByDefault = request.visibleInCaseListByDefault,
                 retentionPeriodInDays = request.retentionPeriodInDays,
-                color = request.color
+                color = request.color,
+                label = request.label,
             )
         }
 

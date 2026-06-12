@@ -15,7 +15,7 @@
  */
 
 import {Injectable, ViewContainerRef} from '@angular/core';
-import {BehaviorSubject, Observable} from 'rxjs';
+import {BehaviorSubject, Observable, Subscription} from 'rxjs';
 import {filter} from 'rxjs/operators';
 import {ConfigService} from '@valtimo/shared';
 
@@ -25,16 +25,14 @@ import {ConfigService} from '@valtimo/shared';
 export class PageHeaderService {
   private readonly _headerViewContainerRef$ = new BehaviorSubject<ViewContainerRef | null>(null);
   private readonly _contentViewContainerRef$ = new BehaviorSubject<ViewContainerRef | null>(null);
-  private readonly _compactMode$ = new BehaviorSubject<boolean>(
-    !!this.configService?.config?.featureToggles?.compactModeOnByDefault
-  );
-  private readonly _showUserNameInTopBar$ = new BehaviorSubject<boolean>(
-    this.getDefaultShowUserNameInTopBarValue()
-  );
+  private readonly _compactMode$ = new BehaviorSubject<boolean>(false);
+  private readonly _showUserNameInTopBar$ = new BehaviorSubject<boolean>(true);
   private readonly _pageActionsHasContent$ = new BehaviorSubject<boolean>(false);
   private readonly _pageHeadHeight$ = new BehaviorSubject<number | null>(null);
 
   private readonly _smallTitle$ = new BehaviorSubject<boolean>(false);
+
+  private readonly _featureToggleSub: Subscription;
 
   public get headerViewContainerRef$(): Observable<ViewContainerRef> {
     return this._headerViewContainerRef$.pipe(filter(ref => !!ref));
@@ -64,7 +62,19 @@ export class PageHeaderService {
     return this._pageHeadHeight$.pipe(filter(height => height !== null));
   }
 
-  constructor(private readonly configService: ConfigService) {}
+  constructor(private readonly configService: ConfigService) {
+    this._featureToggleSub = this.configService.featureToggles$.subscribe(toggles => {
+      if (toggles?.hasOwnProperty('compactModeOnByDefault')) {
+        this._compactMode$.next(!!toggles.compactModeOnByDefault);
+      }
+
+      if (toggles?.hasOwnProperty('showUserNameInTopBar')) {
+        this._showUserNameInTopBar$.next(!!toggles.showUserNameInTopBar);
+      } else {
+        this._showUserNameInTopBar$.next(true);
+      }
+    });
+  }
 
   public setHeaderViewContainerRef(ref: ViewContainerRef): void {
     this._headerViewContainerRef$.next(ref);
@@ -96,15 +106,5 @@ export class PageHeaderService {
 
   public disableSmallTitle(): void {
     this._smallTitle$.next(false);
-  }
-
-  private getDefaultShowUserNameInTopBarValue(): boolean {
-    const featureToggles = this.configService?.config?.featureToggles;
-
-    if (featureToggles && featureToggles.hasOwnProperty('showUserNameInTopBar')) {
-      return featureToggles.showUserNameInTopBar;
-    }
-
-    return true;
   }
 }

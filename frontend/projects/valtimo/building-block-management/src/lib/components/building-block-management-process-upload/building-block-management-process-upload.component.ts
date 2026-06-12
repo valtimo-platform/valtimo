@@ -32,7 +32,7 @@ import {
 } from 'carbon-components-angular';
 import {BehaviorSubject, from, map, startWith, switchMap} from 'rxjs';
 import {BuildingBlockManagementDetailService} from '../../services';
-import {ProcessLinkService} from '@valtimo/process-link';
+import {BuildingBlockProcessDefinitionConflictResponse, ProcessLinkService} from '@valtimo/process-link';
 
 @Component({
   selector: 'valtimo-building-block-management-process-upload',
@@ -56,6 +56,8 @@ export class BuildingBlockManagementProcessUploadComponent {
     this.buildingBlockManagementDetailService.showProcessDefinitionUploadModal$;
   public readonly showReplaceConfirmationModal$ = new BehaviorSubject<boolean>(false);
   public replaceModalContent = '';
+
+  private _conflictingProcessDefinitionId: string | null = null;
 
   public readonly ACCEPTED_FILES: string[] = ['bpmn'];
 
@@ -84,7 +86,7 @@ export class BuildingBlockManagementProcessUploadComponent {
     }, CARBON_CONSTANTS.modalAnimationMs);
   }
 
-  public uploadProcessBpmn(replace: boolean = false): void {
+  public uploadProcessBpmn(): void {
     const bpmnFile = this.form.value?.file?.values()?.next()?.value?.file;
 
     if (!bpmnFile) return;
@@ -92,13 +94,11 @@ export class BuildingBlockManagementProcessUploadComponent {
     from(bpmnFile.text())
       .pipe(
         switchMap(bpmnXml =>
-          this.processLinkService.deployProcessWithProcessLinksForBuildingBlock(
+          this.processLinkService.createProcessDefinitionForBuildingBlock(
             [],
-            null,
             `${bpmnXml}`,
             this.buildingBlockManagementDetailService.buildingBlockDefinitionKey,
-            this.buildingBlockManagementDetailService.buildingBlockDefinitionVersionTag,
-            replace
+            this.buildingBlockManagementDetailService.buildingBlockDefinitionVersionTag
           )
         )
       )
@@ -112,9 +112,12 @@ export class BuildingBlockManagementProcessUploadComponent {
           this.buildingBlockManagementDetailService.reloadProcessDefinitions();
         },
         error: (error: unknown) => {
-          const duplicateKey = error instanceof HttpErrorResponse && error.status === 409;
-          if (duplicateKey) {
-            this.replaceModalContent = this.buildReplaceModalContent(error);
+          const isConflict = error instanceof HttpErrorResponse && error.status === 409;
+          if (isConflict) {
+            const body = (error as HttpErrorResponse).error as BuildingBlockProcessDefinitionConflictResponse;
+            this._conflictingProcessDefinitionId =
+              body?.duplicateProcessDefinitions?.[0]?.processDefinitionId ?? null;
+            this.replaceModalContent = this.buildReplaceModalContent(error as HttpErrorResponse);
             this.showReplaceConfirmationModal$.next(true);
             return;
           }
@@ -128,8 +131,50 @@ export class BuildingBlockManagementProcessUploadComponent {
   }
 
   public confirmReplace(): void {
+    const processDefinitionId = this._conflictingProcessDefinitionId;
     this.replaceModalContent = '';
-    this.uploadProcessBpmn(true);
+    this._conflictingProcessDefinitionId = null;
+
+    if (!processDefinitionId) {
+      this.notificationService.showNotification({
+        type: 'error',
+        title: this.translateService.instant('processManagement.upload.failure'),
+      });
+      return;
+    }
+
+    const bpmnFile = this.form.value?.file?.values()?.next()?.value?.file;
+    if (!bpmnFile) return;
+
+    from(bpmnFile.text())
+      .pipe(
+        switchMap(bpmnXml =>
+          this.processLinkService.updateProcessDefinitionForBuildingBlock(
+            [],
+            processDefinitionId,
+            `${bpmnXml}`,
+            this.buildingBlockManagementDetailService.buildingBlockDefinitionKey,
+            this.buildingBlockManagementDetailService.buildingBlockDefinitionVersionTag,
+            true
+          )
+        )
+      )
+      .subscribe({
+        next: () => {
+          this.notificationService.showNotification({
+            type: 'success',
+            title: this.translateService.instant('processManagement.upload.success'),
+          });
+          this.closeModal();
+          this.buildingBlockManagementDetailService.reloadProcessDefinitions();
+        },
+        error: () => {
+          this.notificationService.showNotification({
+            type: 'error',
+            title: this.translateService.instant('processManagement.upload.failure'),
+          });
+        },
+      });
   }
 
   public clearReplaceModal(): void {

@@ -32,14 +32,15 @@ import com.ritense.plugin.annotation.PluginProperty
 import com.ritense.plugin.domain.PluginDependency
 import com.ritense.plugin.service.PluginService
 import com.ritense.processlink.domain.ActivityTypeWithEventName.SERVICE_TASK_START
-import com.ritense.processlink.domain.ActivityTypeWithEventName.USER_TASK_CREATE
 import com.ritense.resource.service.TemporaryResourceStorageService
+import com.ritense.valtimo.contract.authentication.UserManagementService
 import com.ritense.valtimo.contract.document.CaseDocumentResolver
 import com.ritense.valtimo.contract.validation.Url
 import com.ritense.valueresolver.ValueResolverService
 import com.ritense.zakenapi.client.LinkDocumentRequest
 import com.ritense.zakenapi.client.ZakenApiClient
 import com.ritense.zakenapi.domain.AardRelatie
+import com.ritense.zakenapi.domain.Archiefstatus
 import com.ritense.zakenapi.domain.Betalingsindicatie
 import com.ritense.zakenapi.domain.CreateZaakNotitieRequest
 import com.ritense.zakenapi.domain.CreateZaakRequest
@@ -48,13 +49,16 @@ import com.ritense.zakenapi.domain.CreateZaakStatusRequest
 import com.ritense.zakenapi.domain.CreateZaakeigenschapRequest
 import com.ritense.zakenapi.domain.Geometry
 import com.ritense.zakenapi.domain.GeometryType
+import com.ritense.zakenapi.domain.Kenmerk
 import com.ritense.zakenapi.domain.GetZaakResultatenRequest
 import com.ritense.zakenapi.domain.NotitieStatus
 import com.ritense.zakenapi.domain.NotitieType
 import com.ritense.zakenapi.domain.Opschorting
+import com.ritense.zakenapi.domain.Processobject
 import com.ritense.zakenapi.domain.PatchZaakNotitieRequest
 import com.ritense.zakenapi.domain.PatchZaakRequest
 import com.ritense.zakenapi.domain.PutZaakNotitieRequest
+import com.ritense.zakenapi.domain.GerelateerdeZaak
 import com.ritense.zakenapi.domain.RelevanteZaak
 import com.ritense.zakenapi.domain.SearchParameter
 import com.ritense.zakenapi.domain.UpdateZaakeigenschapRequest
@@ -87,6 +91,8 @@ import com.ritense.zakenapi.repository.ZaakHersteltermijnRepository
 import com.ritense.zakenapi.repository.ZaakInstanceLinkRepository
 import com.ritense.zakenapi.repository.ZaakNotitieLinkRepository
 import com.ritense.zakenapi.service.ZaakDocumentService
+import com.ritense.zgw.domain.Archiefnominatie
+import com.ritense.zgw.domain.Vertrouwelijkheid
 import com.ritense.zgw.LoggingConstants
 import com.ritense.zgw.LoggingConstants.CATALOGI_API
 import com.ritense.zgw.LoggingConstants.DOCUMENTEN_API
@@ -122,7 +128,8 @@ class ZakenApiPlugin(
     private val valueResolverService: ValueResolverService,
     private val objectMapper: ObjectMapper,
     private val zaakNotitieLinkRepository: ZaakNotitieLinkRepository,
-    private val caseDocumentResolver: CaseDocumentResolver
+    private val caseDocumentResolver: CaseDocumentResolver,
+    private val userManagementService: UserManagementService,
 ) {
     @Url
     @PluginProperty(key = URL_PROPERTY, secret = false)
@@ -130,22 +137,6 @@ class ZakenApiPlugin(
 
     @PluginProperty(key = "authenticationPluginConfiguration", secret = false)
     lateinit var authenticationPluginConfiguration: ZakenApiAuthentication
-
-    @PluginProperty(
-        key = "noteEventListenerEnabled",
-        title = "When enabled acts on Note events resulting in create, update or delete of ZaakNotitie",
-        required = false,
-        secret = false
-    )
-    var noteEventListenerEnabled: Boolean = false
-
-    @PluginProperty(
-        key = "noteSubject",
-        title = "Contains the fixed value for 'onderwerp' of the ZaakNotitie",
-        required = false,
-        secret = false
-    )
-    var noteSubject: String = "Note created by Valtimo GZAC"
 
     @PluginAction(
         key = "link-document-to-zaak",
@@ -264,34 +255,83 @@ class ZakenApiPlugin(
         execution: DelegateExecution,
         @PluginActionProperty rsin: Rsin,
         @PluginActionProperty zaaktypeUrl: URI,
+        @PluginActionProperty identification: String? = null,
         @PluginActionProperty description: String? = null,
+        @PluginActionProperty explanation: String? = null,
+        @PluginActionProperty registrationDate: String? = null,
         @PluginActionProperty plannedEndDate: String? = null,
         @PluginActionProperty finalDeliveryDate: String? = null,
-        @PluginActionProperty explanation: String? = null,
+        @PluginActionProperty publicationDate: String? = null,
+        @PluginActionProperty lastOpenedDate: String? = null,
         @PluginActionProperty communicationChannel: String? = null,
+        @PluginActionProperty communicationChannelName: String? = null,
+        @PluginActionProperty productsAndServices: String? = null,
+        @PluginActionProperty confidentiality: String? = null,
         @PluginActionProperty paymentIndication: String? = null,
+        @PluginActionProperty lastPaymentDate: String? = null,
         @PluginActionProperty caseGeometryType: String? = null,
         @PluginActionProperty caseGeometryCoordinates: String? = null,
-        @PluginActionProperty mainCase: String? = null
+        @PluginActionProperty extensionReason: String? = null,
+        @PluginActionProperty extensionDuration: String? = null,
+        @PluginActionProperty suspensionIndication: String? = null,
+        @PluginActionProperty suspensionReason: String? = null,
+        @PluginActionProperty selectionListClass: String? = null,
+        @PluginActionProperty mainCase: String? = null,
+        @PluginActionProperty relevantOtherCases: String? = null,
+        @PluginActionProperty relatedCases: String? = null,
+        @PluginActionProperty characteristics: String? = null,
+        @PluginActionProperty archiveNomination: String? = null,
+        @PluginActionProperty archiveStatus: String? = null,
+        @PluginActionProperty archiveActionDate: String? = null,
+        @PluginActionProperty commissioningOrganisation: String? = null,
+        @PluginActionProperty processObjectCategory: String? = null,
+        @PluginActionProperty startDateRetentionPeriod: String? = null,
+        @PluginActionProperty processObjectDateAttribute: String? = null,
+        @PluginActionProperty processObjectIdentification: String? = null,
+        @PluginActionProperty processObjectObjectType: String? = null,
+        @PluginActionProperty processObjectRegistration: String? = null,
     ) {
         withLoggingContext(
             CATALOGI_API.ZAAKTYPE to zaaktypeUrl.toString()
         ) {
             val caseDocumentId = UUID.fromString(execution.businessKey)
-            val caseGeometry = geometryOrNullFrom(caseGeometryType, caseGeometryCoordinates)
 
             createZaak(
                 caseDocumentId = caseDocumentResolver.resolveCaseDocumentId(caseDocumentId),
                 rsin = rsin,
                 zaaktypeUrl = zaaktypeUrl,
+                identification = identification,
                 description = description,
+                explanation = explanation,
+                registrationDate = registrationDate?.let { LocalDate.parse(it) },
                 plannedEndDate = plannedEndDate?.let { LocalDate.parse(it) },
                 finalDeliveryDate = finalDeliveryDate?.let { LocalDate.parse(it) },
-                explanation = explanation,
+                publicationDate = publicationDate?.let { LocalDate.parse(it) },
+                lastOpenedDate = lastOpenedDate?.let { LocalDateTime.parse(it) },
                 communicationChannel = communicationChannel?.let { URI.create(it) },
+                communicationChannelName = communicationChannelName,
+                productsAndServices = productsAndServices?.let { objectMapper.readValue<List<String>>(it).map { s -> URI.create(s) } },
+                confidentiality = confidentiality?.let { Vertrouwelijkheid.fromKey(it) },
                 paymentIndication = paymentIndication?.let { Betalingsindicatie.create(it) },
-                caseGeometry = caseGeometry,
-                mainCase = mainCase?.let { URI.create(it) }
+                lastPaymentDate = lastPaymentDate?.let { LocalDate.parse(it) },
+                caseGeometry = geometryOrNullFrom(caseGeometryType, caseGeometryCoordinates),
+                extension = verlengingOrNullFrom(extensionReason, extensionDuration),
+                suspension = opschortingOrNullFrom(suspensionIndication, suspensionReason),
+                selectionListClass = selectionListClass?.let { URI.create(it) },
+                mainCase = mainCase?.let { URI.create(it) },
+                relevantOtherCases = relevantOtherCases?.let { objectMapper.readValue<List<RelevanteZaak>>(it) },
+                relatedCases = relatedCases?.let { objectMapper.readValue<List<GerelateerdeZaak>>(it) },
+                characteristics = characteristics?.let { objectMapper.readValue<List<Kenmerk>>(it) },
+                archiveNomination = archiveNomination?.let { key -> Archiefnominatie.entries.find { it.key == key } },
+                archiveStatus = archiveStatus?.let { key -> Archiefstatus.entries.find { it.key == key } },
+                archiveActionDate = archiveActionDate?.let { LocalDate.parse(it) },
+                commissioningOrganisation = commissioningOrganisation,
+                processObjectCategory = processObjectCategory,
+                startDateRetentionPeriod = startDateRetentionPeriod?.let { LocalDate.parse(it) },
+                processObject = processobjectOrNullFrom(
+                    processObjectDateAttribute, processObjectIdentification,
+                    processObjectObjectType, processObjectRegistration,
+                ),
             )
 
             logger.info { "Zaak of zaaktype with URL '$zaaktypeUrl' created for document with id '$caseDocumentId'" }
@@ -302,14 +342,35 @@ class ZakenApiPlugin(
         caseDocumentId: UUID,
         rsin: Rsin,
         zaaktypeUrl: URI,
+        identification: String? = null,
         description: String? = null,
+        explanation: String? = null,
+        registrationDate: LocalDate? = null,
         plannedEndDate: LocalDate? = null,
         finalDeliveryDate: LocalDate? = null,
-        explanation: String? = null,
+        publicationDate: LocalDate? = null,
+        lastOpenedDate: LocalDateTime? = null,
         communicationChannel: URI? = null,
+        communicationChannelName: String? = null,
+        productsAndServices: List<URI>? = null,
+        confidentiality: Vertrouwelijkheid? = null,
         paymentIndication: Betalingsindicatie? = null,
+        lastPaymentDate: LocalDate? = null,
         caseGeometry: Geometry? = null,
-        mainCase: URI? = null
+        extension: Verlenging? = null,
+        suspension: Opschorting? = null,
+        selectionListClass: URI? = null,
+        mainCase: URI? = null,
+        relevantOtherCases: List<RelevanteZaak>? = null,
+        relatedCases: List<GerelateerdeZaak>? = null,
+        characteristics: List<Kenmerk>? = null,
+        archiveNomination: Archiefnominatie? = null,
+        archiveStatus: Archiefstatus? = null,
+        archiveActionDate: LocalDate? = null,
+        commissioningOrganisation: String? = null,
+        processObjectCategory: String? = null,
+        startDateRetentionPeriod: LocalDate? = null,
+        processObject: Processobject? = null,
     ) {
         withLoggingContext(
             CATALOGI_API.ZAAKTYPE to zaaktypeUrl.toString(),
@@ -336,18 +397,39 @@ class ZakenApiPlugin(
                 authenticationPluginConfiguration,
                 url,
                 CreateZaakRequest(
+                    identificatie = identification,
                     bronorganisatie = rsin,
-                    zaaktype = zaaktypeUrl,
                     omschrijving = description,
+                    toelichting = explanation,
+                    zaaktype = zaaktypeUrl,
+                    registratiedatum = registrationDate,
                     verantwoordelijkeOrganisatie = rsin,
                     startdatum = startdatum,
-                    uiterlijkeEinddatumAfdoening = uiterlijkeEinddatumAfdoening,
                     einddatumGepland = plannedEndDate,
-                    toelichting = explanation,
+                    uiterlijkeEinddatumAfdoening = uiterlijkeEinddatumAfdoening,
+                    publicatiedatum = publicationDate,
+                    laatstGeopend = lastOpenedDate,
                     communicatiekanaal = communicationChannel,
+                    communicatiekanaalNaam = communicationChannelName,
+                    productenOfDiensten = productsAndServices,
+                    vertrouwelijkheidaanduiding = confidentiality,
                     betalingsindicatie = paymentIndication,
+                    laatsteBetaaldatum = lastPaymentDate,
                     zaakgeometrie = caseGeometry,
-                    hoofdzaak = mainCase
+                    verlenging = extension,
+                    opschorting = suspension,
+                    selectielijstklasse = selectionListClass,
+                    hoofdzaak = mainCase,
+                    relevanteAndereZaken = relevantOtherCases,
+                    gerelateerdeZaken = relatedCases,
+                    kenmerken = characteristics,
+                    archiefnominatie = archiveNomination,
+                    archiefstatus = archiveStatus,
+                    archiefactiedatum = archiveActionDate,
+                    opdrachtgevendeOrganisatie = commissioningOrganisation,
+                    processobjectaard = processObjectCategory,
+                    startdatumBewaartermijn = startDateRetentionPeriod,
+                    processobject = processObject,
                 )
             )
 
@@ -373,61 +455,115 @@ class ZakenApiPlugin(
     )
     fun patchZaak(
         execution: DelegateExecution,
+        @PluginActionProperty identification: String? = null,
         @PluginActionProperty description: String? = null,
         @PluginActionProperty explanation: String? = null,
+        @PluginActionProperty registrationDate: String? = null,
         @PluginActionProperty startDate: String? = null,
         @PluginActionProperty plannedEndDate: String? = null,
         @PluginActionProperty finalDeliveryDate: String? = null,
         @PluginActionProperty publicationDate: String? = null,
+        @PluginActionProperty lastOpenedDate: String? = null,
         @PluginActionProperty communicationChannel: String? = null,
         @PluginActionProperty communicationChannelName: String? = null,
+        @PluginActionProperty productsAndServices: String? = null,
+        @PluginActionProperty confidentiality: String? = null,
         @PluginActionProperty paymentIndication: String? = null,
         @PluginActionProperty lastPaymentDate: String? = null,
         @PluginActionProperty caseGeometryType: String? = null,
         @PluginActionProperty caseGeometryCoordinates: String? = null,
+        @PluginActionProperty extensionReason: String? = null,
+        @PluginActionProperty extensionDuration: String? = null,
+        @PluginActionProperty suspensionIndication: String? = null,
+        @PluginActionProperty suspensionReason: String? = null,
+        @PluginActionProperty selectionListClass: String? = null,
         @PluginActionProperty mainCase: String? = null,
+        @PluginActionProperty relevantOtherCases: String? = null,
+        @PluginActionProperty relatedCases: String? = null,
+        @PluginActionProperty characteristics: String? = null,
+        @PluginActionProperty archiveNomination: String? = null,
+        @PluginActionProperty archiveStatus: String? = null,
         @PluginActionProperty archiveActionDate: String? = null,
-        @PluginActionProperty startDateRetentionPeriod: String? = null
+        @PluginActionProperty commissioningOrganisation: String? = null,
+        @PluginActionProperty processObjectCategory: String? = null,
+        @PluginActionProperty startDateRetentionPeriod: String? = null,
+        @PluginActionProperty processObjectDateAttribute: String? = null,
+        @PluginActionProperty processObjectIdentification: String? = null,
+        @PluginActionProperty processObjectObjectType: String? = null,
+        @PluginActionProperty processObjectRegistration: String? = null,
     ) {
         val documentId = UUID.fromString(execution.businessKey)
-        val caseGeometry = geometryOrNullFrom(caseGeometryType, caseGeometryCoordinates)
 
         patchZaak(
             documentId = documentId,
+            identification = identification,
             description = description,
             explanation = explanation,
+            registrationDate = registrationDate?.let { LocalDate.parse(it) },
             startDate = startDate?.let { LocalDate.parse(it) },
             plannedEndDate = plannedEndDate?.let { LocalDate.parse(it) },
             finalDeliveryDate = finalDeliveryDate?.let { LocalDate.parse(it) },
             publicationDate = publicationDate?.let { LocalDate.parse(it) },
+            lastOpenedDate = lastOpenedDate?.let { LocalDateTime.parse(it) },
             communicationChannel = communicationChannel?.let { URI.create(it) },
             communicationChannelName = communicationChannelName,
+            productsAndServices = productsAndServices?.let { objectMapper.readValue<List<String>>(it).map { s -> URI.create(s) } },
+            confidentiality = confidentiality?.let { Vertrouwelijkheid.fromKey(it) },
             paymentIndication = paymentIndication?.let { Betalingsindicatie.create(it) },
             lastPaymentDate = lastPaymentDate?.let { LocalDate.parse(it) },
-            caseGeometry = caseGeometry,
+            caseGeometry = geometryOrNullFrom(caseGeometryType, caseGeometryCoordinates),
+            extension = verlengingOrNullFrom(extensionReason, extensionDuration),
+            suspension = opschortingOrNullFrom(suspensionIndication, suspensionReason),
+            selectionListClass = selectionListClass?.let { URI.create(it) },
             mainCase = mainCase?.let { URI.create(it) },
+            relevantOtherCases = relevantOtherCases?.let { objectMapper.readValue<List<RelevanteZaak>>(it) },
+            relatedCases = relatedCases?.let { objectMapper.readValue<List<GerelateerdeZaak>>(it) },
+            characteristics = characteristics?.let { objectMapper.readValue<List<Kenmerk>>(it) },
+            archiveNomination = archiveNomination?.let { key -> Archiefnominatie.entries.find { it.key == key } },
+            archiveStatus = archiveStatus?.let { key -> Archiefstatus.entries.find { it.key == key } },
             archiveActionDate = archiveActionDate?.let { LocalDate.parse(it) },
-            startDateRetentionPeriod = startDateRetentionPeriod?.let { LocalDate.parse(it) }
+            commissioningOrganisation = commissioningOrganisation,
+            processObjectCategory = processObjectCategory,
+            startDateRetentionPeriod = startDateRetentionPeriod?.let { LocalDate.parse(it) },
+            processObject = processobjectOrNullFrom(
+                processObjectDateAttribute, processObjectIdentification,
+                processObjectObjectType, processObjectRegistration,
+            ),
         )
     }
 
     fun patchZaak(
         documentId: UUID,
+        identification: String? = null,
         description: String? = null,
         explanation: String? = null,
+        registrationDate: LocalDate? = null,
         startDate: LocalDate? = null,
         plannedEndDate: LocalDate? = null,
         finalDeliveryDate: LocalDate? = null,
         publicationDate: LocalDate? = null,
+        lastOpenedDate: LocalDateTime? = null,
         communicationChannel: URI? = null,
         communicationChannelName: String? = null,
+        productsAndServices: List<URI>? = null,
+        confidentiality: Vertrouwelijkheid? = null,
         paymentIndication: Betalingsindicatie? = null,
         lastPaymentDate: LocalDate? = null,
         caseGeometry: Geometry? = null,
+        extension: Verlenging? = null,
+        suspension: Opschorting? = null,
+        selectionListClass: URI? = null,
         mainCase: URI? = null,
         relevantOtherCases: List<RelevanteZaak>? = null,
+        relatedCases: List<GerelateerdeZaak>? = null,
+        characteristics: List<Kenmerk>? = null,
+        archiveNomination: Archiefnominatie? = null,
+        archiveStatus: Archiefstatus? = null,
         archiveActionDate: LocalDate? = null,
-        startDateRetentionPeriod: LocalDate? = null
+        commissioningOrganisation: String? = null,
+        processObjectCategory: String? = null,
+        startDateRetentionPeriod: LocalDate? = null,
+        processObject: Processobject? = null,
     ) {
         withLoggingContext(
             "com.ritense.document.domain.impl.JsonSchemaDocument" to documentId.toString(),
@@ -445,21 +581,36 @@ class ZakenApiPlugin(
                 baseUrl = url,
                 zaakUrl = zaakUrl,
                 request = PatchZaakRequest(
+                    identificatie = identification,
                     omschrijving = description,
                     toelichting = explanation,
+                    registratiedatum = registrationDate,
                     startdatum = startDate,
                     einddatumGepland = plannedEndDate,
                     uiterlijkeEinddatumAfdoening = finalDeliveryDate,
                     publicatiedatum = publicationDate,
+                    laatstGeopend = lastOpenedDate,
                     communicatiekanaal = communicationChannel,
                     communicatiekanaalNaam = communicationChannelName,
+                    productenOfDiensten = productsAndServices,
+                    vertrouwelijkheidaanduiding = confidentiality,
                     betalingsindicatie = paymentIndication,
                     laatsteBetaaldatum = lastPaymentDate,
                     zaakgeometrie = caseGeometry,
+                    verlenging = extension,
+                    opschorting = suspension,
+                    selectielijstklasse = selectionListClass,
                     hoofdzaak = mainCase,
                     relevanteAndereZaken = relevantOtherCases,
+                    gerelateerdeZaken = relatedCases,
+                    kenmerken = characteristics,
+                    archiefnominatie = archiveNomination,
+                    archiefstatus = archiveStatus,
                     archiefactiedatum = archiveActionDate,
-                    startdatumBewaartermijn = startDateRetentionPeriod
+                    opdrachtgevendeOrganisatie = commissioningOrganisation,
+                    processobjectaard = processObjectCategory,
+                    startdatumBewaartermijn = startDateRetentionPeriod,
+                    processobject = processObject,
                 )
             )
 
@@ -474,11 +625,52 @@ class ZakenApiPlugin(
         if (geometryType != null && geometryCoordinates != null) {
             Geometry(
                 type = GeometryType.entries.find { it.key.equals(geometryType, ignoreCase = true) }!!,
-                coordinates = pluginService.getObjectMapper().readValue(geometryCoordinates)
+                coordinates = objectMapper.readValue(geometryCoordinates)
             )
         } else {
             null
         }
+
+    private fun verlengingOrNullFrom(extensionReason: String?, extensionDuration: String?): Verlenging? {
+        if (extensionReason == null && extensionDuration == null) return null
+        require(!extensionReason.isNullOrBlank() && !extensionDuration.isNullOrBlank()) {
+            "Both extensionReason and extensionDuration must be provided"
+        }
+        return Verlenging(reden = extensionReason, duur = extensionDuration)
+    }
+
+    private fun opschortingOrNullFrom(suspensionIndication: String?, suspensionReason: String?): Opschorting? {
+        if (suspensionIndication == null && suspensionReason == null) return null
+        require(!suspensionIndication.isNullOrBlank() && !suspensionReason.isNullOrBlank()) {
+            "Both suspensionIndication and suspensionReason must be provided"
+        }
+        require(
+            suspensionIndication.equals("true", ignoreCase = true) || suspensionIndication.equals("false", ignoreCase = true)
+        ) {
+            "suspensionIndication must be either true or false"
+        }
+        return Opschorting(
+            indicatie = suspensionIndication.equals("true", ignoreCase = true),
+            reden = suspensionReason
+        )
+    }
+
+    private fun processobjectOrNullFrom(
+        processObjectDateAttribute: String?,
+        processObjectIdentification: String?,
+        processObjectObjectType: String?,
+        processObjectRegistration: String?,
+    ): Processobject? =
+        if (processObjectDateAttribute != null || processObjectIdentification != null ||
+            processObjectObjectType != null || processObjectRegistration != null
+        )
+            Processobject(
+                datumkenmerk = processObjectDateAttribute,
+                identificatie = processObjectIdentification,
+                objecttype = processObjectObjectType,
+                registratie = processObjectRegistration,
+            )
+        else null
 
     @PluginAction(
         key = "create-natuurlijk-persoon-zaak-rol",
@@ -1398,7 +1590,17 @@ class ZakenApiPlugin(
         return if (zaak.status == null) {
             null
         } else {
-            client.getZaakStatus(authenticationPluginConfiguration, URI(zaak.status))
+            client.getZaakStatus(authenticationPluginConfiguration, zaak.status!!)
+        }
+    }
+
+    fun getZaakStatussen(zaakUrl: URI): List<ZaakStatus> {
+        logger.debug { "Fetching zaak statussen for zaak with URL '$zaakUrl'" }
+        return Page.getAll(100) { page ->
+            client.getZaakStatussen(
+                authenticationPluginConfiguration,
+                url, zaakUrl, page
+            )
         }
     }
 
@@ -1415,6 +1617,65 @@ class ZakenApiPlugin(
     fun getZaak(zaakUrl: URI): ZaakResponse {
         logger.debug { "Fetching zaak for zaak URL '$zaakUrl'" }
         return client.getZaak(authenticationPluginConfiguration, zaakUrl)
+    }
+
+    /**
+     * Removes every behandelaar rol on the given zaak that was created by GZAC.
+     * Identification is done via the [GZAC_BEHANDELAAR_TOELICHTING] marker on `roltoelichting`,
+     * so behandelaar rollen created by other systems are left untouched.
+     */
+    fun removeGzacBehandelaarRollen(zaakUrl: URI) {
+        getZaakRollen(zaakUrl, RolTypeGeneriekeBeschrijving.BEHANDELAAR)
+            .filter { it.roltoelichting == GZAC_BEHANDELAAR_TOELICHTING }
+            .forEach { rol ->
+                val rolUuid = rol.uuid
+                if (rolUuid == null) {
+                    logger.warn { "Existing behandelaar rol on zaak '$zaakUrl' has no uuid. Skipping delete." }
+                    return@forEach
+                }
+                client.deleteZaakRol(authenticationPluginConfiguration, url, rolUuid)
+            }
+    }
+
+    fun createGzacBehandelaarRol(zaakUrl: URI, roltypeUrl: URI, username: String): Rol {
+        return client.createZaakRol(
+            authentication = authenticationPluginConfiguration,
+            baseUrl = url,
+            rol = buildGzacBehandelaarRol(zaakUrl, roltypeUrl, username),
+        )
+    }
+
+    fun upsertGzacBehandelaarRol(zaakUrl: URI, roltypeUrl: URI, username: String): Rol {
+        val previousRollen = getZaakRollen(zaakUrl, RolTypeGeneriekeBeschrijving.BEHANDELAAR)
+            .filter { it.roltoelichting == GZAC_BEHANDELAAR_TOELICHTING }
+
+        val newRol = createGzacBehandelaarRol(zaakUrl, roltypeUrl, username)
+
+        previousRollen.forEach { rol ->
+            val rolUuid = rol.uuid
+            if (rolUuid == null) {
+                logger.warn { "Existing behandelaar rol on zaak '$zaakUrl' has no uuid. Skipping delete." }
+                return@forEach
+            }
+            client.deleteZaakRol(authenticationPluginConfiguration, url, rolUuid)
+        }
+
+        return newRol
+    }
+
+    private fun buildGzacBehandelaarRol(zaakUrl: URI, roltypeUrl: URI, username: String): Rol {
+        val user = userManagementService.findByUsername(username)
+        return Rol(
+            zaak = zaakUrl,
+            roltype = roltypeUrl,
+            roltoelichting = GZAC_BEHANDELAAR_TOELICHTING,
+            betrokkeneType = BetrokkeneType.MEDEWERKER,
+            betrokkeneIdentificatie = RolMedewerker(
+                identificatie = username.take(IDENTIFICATIE_MAX_LENGTH),
+                achternaam = user?.lastName,
+            ),
+            beginGeldigheid = LocalDate.now(),
+        )
     }
 
     fun searchZaken(searchParameters: List<SearchParameter>, pageable: Pageable): Page<ZaakResponse> {
@@ -1641,6 +1902,12 @@ class ZakenApiPlugin(
         const val URL_PROPERTY = "url"
         const val RESOURCE_ID_PROCESS_VAR = "resourceId"
         const val DOCUMENT_URL_PROCESS_VAR = "documentUrl"
+
+        // Marker stored in roltoelichting so we only delete behandelaar rollen created by GZAC.
+        const val GZAC_BEHANDELAAR_TOELICHTING = "GZAC dossier assignee"
+
+        // RolMedewerker.identificatie has a max length of 24 in the OpenZaak API.
+        private const val IDENTIFICATIE_MAX_LENGTH = 24
 
         fun findConfigurationByUrl(url: URI) = { properties: JsonNode ->
             url.toString().startsWith(properties[URL_PROPERTY].textValue())

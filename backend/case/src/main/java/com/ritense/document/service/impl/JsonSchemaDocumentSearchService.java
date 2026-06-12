@@ -30,6 +30,7 @@ import com.ritense.authorization.request.EntityAuthorizationRequest;
 import com.ritense.document.domain.CaseTag;
 import com.ritense.document.domain.impl.JsonSchemaDocument;
 import com.ritense.document.domain.impl.searchfield.SearchField;
+import com.ritense.document.domain.impl.searchfield.SearchFieldDataType;
 import com.ritense.document.domain.search.AdvancedSearchRequest;
 import com.ritense.document.domain.search.AssigneeFilter;
 import com.ritense.document.domain.search.SearchOperator;
@@ -57,6 +58,7 @@ import jakarta.persistence.criteria.Order;
 import jakarta.persistence.criteria.Path;
 import jakarta.persistence.criteria.Predicate;
 import jakarta.persistence.criteria.Root;
+import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -146,6 +148,7 @@ public class JsonSchemaDocumentSearchService implements DocumentSearchService {
         BlueprintType blueprintType,
         final Pageable pageable
     ) {
+        var sortTypeMap = buildSortTypeMap(searchRequest.getDocumentDefinitionName());
         return withLoggingContext(
             "documentDefinitionName", searchRequest.getDocumentDefinitionName(), () ->
                 search(
@@ -157,7 +160,8 @@ public class JsonSchemaDocumentSearchService implements DocumentSearchService {
                             query,
                             documentRoot
                         ),
-                    pageable
+                    pageable,
+                    sortTypeMap
                 )
         );
     }
@@ -235,7 +239,8 @@ public class JsonSchemaDocumentSearchService implements DocumentSearchService {
             searchCriteria
         );
 
-        return search(documentDefinitionName, blueprintType, advancedSearchRequest, pageable, action);
+        var sortTypeMap = buildSortTypeMap(searchFieldMap);
+        return search(documentDefinitionName, blueprintType, advancedSearchRequest, pageable, action, sortTypeMap);
     }
 
     private Page<JsonSchemaDocument> search(
@@ -244,6 +249,18 @@ public class JsonSchemaDocumentSearchService implements DocumentSearchService {
         AdvancedSearchRequest advancedSearchRequest,
         Pageable pageable,
         Action<JsonSchemaDocument> action
+    ) {
+        var sortTypeMap = buildSortTypeMap(documentDefinitionName);
+        return search(documentDefinitionName, blueprintType, advancedSearchRequest, pageable, action, sortTypeMap);
+    }
+
+    private Page<JsonSchemaDocument> search(
+        @LoggableResource("documentDefinitionName") String documentDefinitionName,
+        BlueprintType blueprintType,
+        AdvancedSearchRequest advancedSearchRequest,
+        Pageable pageable,
+        Action<JsonSchemaDocument> action,
+        Map<String, Class<?>> sortTypeMap
     ) {
         SearchRequestValidator.validate(advancedSearchRequest);
         return search(
@@ -256,18 +273,19 @@ public class JsonSchemaDocumentSearchService implements DocumentSearchService {
                 documentRoot,
                 action
             ),
-            pageable
+            pageable,
+            sortTypeMap
         );
     }
 
-    private Page<JsonSchemaDocument> search(QueryWhereBuilder queryWhereBuilder, Pageable pageable) {
+    private Page<JsonSchemaDocument> search(QueryWhereBuilder queryWhereBuilder, Pageable pageable, Map<String, Class<?>> sortTypeMap) {
         final CriteriaBuilder cb = entityManager.getCriteriaBuilder();
         final CriteriaQuery<JsonSchemaDocument> query = cb.createQuery(JsonSchemaDocument.class);
         final Root<JsonSchemaDocument> selectRoot = query.from(JsonSchemaDocument.class);
 
         query.select(selectRoot);
         queryWhereBuilder.apply(cb, query, selectRoot);
-        query.orderBy(getOrderBy(query, cb, selectRoot, pageable.getSort()));
+        query.orderBy(getOrderBy(query, cb, selectRoot, pageable.getSort(), sortTypeMap));
         final TypedQuery<JsonSchemaDocument> typedQuery = entityManager.createQuery(query);
 
         if (pageable.isPaged()) {
@@ -401,6 +419,10 @@ public class JsonSchemaDocumentSearchService implements DocumentSearchService {
 
         if (!StringUtils.isEmpty(searchRequest.getGlobalSearchFilter())) {
             predicates.add(findJsonValue(cb, root, searchRequest.getGlobalSearchFilter()));
+        }
+
+        if (searchRequest.getAssigneeFilter() != null && searchRequest.getAssigneeFilter() != AssigneeFilter.ALL) {
+            predicates.add(getAssigneeFilterPredicate(cb, root, searchRequest.getAssigneeFilter()));
         }
     }
 
@@ -690,7 +712,8 @@ public class JsonSchemaDocumentSearchService implements DocumentSearchService {
         CriteriaQuery<JsonSchemaDocument> query,
         CriteriaBuilder cb,
         Root<JsonSchemaDocument> root,
-        Sort sort
+        Sort sort,
+        Map<String, Class<?>> sortTypeMap
     ) {
         return sort.stream()
             .map(order -> {
@@ -698,19 +721,23 @@ public class JsonSchemaDocumentSearchService implements DocumentSearchService {
                 String property = order.getProperty();
                 if (property.startsWith(DOC_PREFIX)) {
                     var jsonPath = "$." + property.substring(DOC_PREFIX.length());
+                    Class<?> type = sortTypeMap.getOrDefault(property, String.class);
                     expression = queryDialectHelper.getJsonValueExpression(
                         cb,
                         root.get(CONTENT).get(CONTENT),
                         jsonPath,
-                        String.class
+                        type
                     );
                 } else if (property.startsWith("$.")) {
-                    expression = cb.lower(queryDialectHelper.getJsonValueExpression(
+                    var docPath = DOC_PREFIX + property.substring(2);
+                    Class<?> type = sortTypeMap.getOrDefault(docPath, String.class);
+                    Expression<?> jsonExpression = queryDialectHelper.getJsonValueExpression(
                         cb,
                         root.get(CONTENT).get(CONTENT),
                         property,
-                        String.class
-                    ));
+                        type
+                    );
+                    expression = String.class.equals(type) ? cb.lower((Expression<String>) jsonExpression) : jsonExpression;
                 } else {
                     var docProperty = property.startsWith(CASE_PREFIX) ? property.substring(CASE_PREFIX.length()) : property;
                     if (DOCUMENT_FIELD_MAP.containsKey(docProperty)) {
@@ -748,6 +775,33 @@ public class JsonSchemaDocumentSearchService implements DocumentSearchService {
             result = result.get(s);
         }
         return (Path<T>) result;
+    }
+
+    private Map<String, Class<?>> buildSortTypeMap(String documentDefinitionName) {
+        return buildSortTypeMap(
+            searchFieldService.getSearchFields(documentDefinitionName).stream()
+                .collect(toMap(SearchField::getKey, searchField -> searchField, (a, b) -> a))
+        );
+    }
+
+    private Map<String, Class<?>> buildSortTypeMap(Map<String, SearchField> searchFieldMap) {
+        return searchFieldMap.values().stream()
+            .filter(sf -> sf.getPath() != null)
+            .collect(toMap(
+                SearchField::getPath,
+                sf -> toSortType(sf.getDataType()),
+                (a, b) -> a
+            ));
+    }
+
+    private static Class<?> toSortType(SearchFieldDataType dataType) {
+        return switch (dataType) {
+            case DATE -> LocalDate.class;
+            case DATETIME -> LocalDateTime.class;
+            case TIME -> LocalTime.class;
+            case NUMBER -> BigDecimal.class;
+            case TEXT, BOOLEAN -> String.class;
+        };
     }
 
     @FunctionalInterface

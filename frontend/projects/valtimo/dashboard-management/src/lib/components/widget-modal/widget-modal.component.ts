@@ -47,6 +47,7 @@ import {
   take,
   tap,
 } from 'rxjs';
+import {DASHBOARD_MANAGEMENT_TEST_IDS} from '../../constants/dashboard-management.test-ids';
 import {DashboardItem, WidgetDataSource, WidgetModalType} from '../../models';
 import {DashboardManagementService} from '../../services/dashboard-management.service';
 
@@ -58,6 +59,8 @@ import {DashboardManagementService} from '../../services/dashboard-management.se
   encapsulation: ViewEncapsulation.None,
 })
 export class WidgetModalComponent implements OnInit, OnDestroy {
+  public readonly testIds = DASHBOARD_MANAGEMENT_TEST_IDS;
+
   @Input() public showModal$: Observable<boolean>;
   @Input() public type: WidgetModalType;
   @Input() public dashboard: DashboardItem;

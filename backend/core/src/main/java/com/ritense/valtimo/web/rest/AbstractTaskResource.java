@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,11 +18,11 @@ package com.ritense.valtimo.web.rest;
 
 import com.ritense.authorization.AuthorizationContext;
 import com.ritense.valtimo.contract.authentication.UserManagementService;
-import com.ritense.valtimo.operaton.dto.AssigneeDto;
-import com.ritense.valtimo.operaton.dto.TeamDto;
 import com.ritense.valtimo.operaton.domain.OperatonProcessDefinition;
 import com.ritense.valtimo.operaton.domain.OperatonTask;
+import com.ritense.valtimo.operaton.dto.AssigneeDto;
 import com.ritense.valtimo.operaton.dto.OperatonTaskDto;
+import com.ritense.valtimo.operaton.dto.TeamDto;
 import com.ritense.valtimo.service.OperatonProcessService;
 import com.ritense.valtimo.service.OperatonTaskService;
 import com.ritense.valtimo.service.util.FormUtils;
@@ -93,16 +93,16 @@ public abstract class AbstractTaskResource {
         if (StringUtils.isBlank(assignee)) {
             return null;
         }
-        return Optional.ofNullable(userManagementService.findByUsername(assignee))
-            .map(user -> {
-                var firstName = user.getFirstName();
-                var lastName = user.getLastName();
-                var fullName = Stream.of(firstName, lastName)
-                    .filter(s -> s != null && !s.isBlank())
-                    .collect(Collectors.joining(" "));
-                return new AssigneeDto(assignee, firstName, lastName, fullName);
-            })
-            .orElse(null);
+        return AuthorizationContext.runWithoutAuthorization(() ->
+            Optional.ofNullable(userManagementService.findByUsername(assignee))
+        ).map(user -> {
+            var firstName = user.getFirstName();
+            var lastName = user.getLastName();
+            var fullName = Stream.of(firstName, lastName)
+                .filter(s -> s != null && !s.isBlank())
+                .collect(Collectors.joining(" "));
+            return new AssigneeDto(assignee, firstName, lastName, fullName);
+        }).orElse(null);
     }
 
 }

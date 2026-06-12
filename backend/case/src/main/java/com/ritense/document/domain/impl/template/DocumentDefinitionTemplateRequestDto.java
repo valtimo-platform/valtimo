@@ -17,9 +17,10 @@
 package com.ritense.document.domain.impl.template;
 
 import jakarta.validation.constraints.Pattern;
+import jakarta.validation.constraints.Size;
 
 public record DocumentDefinitionTemplateRequestDto(
-    @Pattern(regexp = ".+(?<!\\.)$") String documentDefinitionId,
+    @Pattern(regexp = ".+(?<!\\.)$") @Size(max = 50) String documentDefinitionId,
     String documentDefinitionTitle
 ) {
 }

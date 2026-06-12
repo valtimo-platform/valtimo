@@ -28,7 +28,7 @@ import {
   ViewEncapsulation,
 } from '@angular/core';
 import {TranslateModule} from '@ngx-translate/core';
-import {CarbonListModule, EllipsisPipe} from '@valtimo/components';
+import {CarbonListModule} from '@valtimo/components';
 import {ButtonModule, InputModule, SkeletonModule} from 'carbon-components-angular';
 import {BehaviorSubject} from 'rxjs';
 import {MapWidget, MapData} from '../../models';
@@ -54,7 +54,6 @@ import {Icon, Fill, Stroke, Style} from 'ol/style';
     InputModule,
     TranslateModule,
     CarbonListModule,
-    EllipsisPipe,
     ButtonModule,
     WidgetActionButtonComponent,
     SkeletonModule,

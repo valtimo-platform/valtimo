@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,6 +31,7 @@ import com.ritense.plugin.domain.PluginDefinition
 import com.ritense.plugin.domain.PluginProcessLink
 import com.ritense.plugin.domain.PluginProperty
 import com.ritense.plugin.events.PluginConfigurationDeletedEvent
+import com.ritense.plugin.exception.PluginEventInvocationException
 import com.ritense.plugin.exception.PluginPropertyParseException
 import com.ritense.plugin.exception.PluginPropertyRequiredException
 import com.ritense.plugin.repository.PluginActionDefinitionRepository
@@ -59,6 +60,7 @@ import org.springframework.core.env.Environment
 import java.util.Optional
 import java.util.UUID
 import kotlin.test.assertEquals
+import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
 internal class PluginServiceTest {
@@ -132,6 +134,31 @@ internal class PluginServiceTest {
                 "title", MapperSingleton.get().readTree("{\"name\": \"whatever\" }") as ObjectNode, "key"
             )
         verify(pluginConfigurationRepository).save(any())
+    }
+
+    @Test
+    fun `should throw PluginEventInvocationException with human-readable message when no PluginFactory matches`() {
+        val pluginDefinition = newPluginDefinition()
+        addPluginProperty(pluginDefinition)
+        newPluginConfiguration(pluginDefinition)
+        // pluginFactory.canCreate(...) is not stubbed -> defaults to false, so no factory matches and createInstance hits the error(...) path.
+
+        val exception = assertThrows(PluginEventInvocationException::class.java) {
+            pluginService.createPluginConfiguration(
+                "title", MapperSingleton.get().readTree("{\"name\": \"whatever\" }") as ObjectNode, "key"
+            )
+        }
+
+        assertTrue(exception.cause is IllegalStateException)
+        assertEquals(
+            "No PluginFactory found for '${TestPlugin::class.java.name}'",
+            exception.cause!!.message
+        )
+        assertTrue(exception.message!!.contains("No PluginFactory found for"))
+        // Regression guard: error(...) must not be reintroduced as error { ... }, which would surface the lambda's toString instead of the message.
+        assertFalse(exception.message!!.contains("\$\$Lambda"))
+
+        verify(pluginConfigurationRepository).deleteById(any())
     }
 
     @Test

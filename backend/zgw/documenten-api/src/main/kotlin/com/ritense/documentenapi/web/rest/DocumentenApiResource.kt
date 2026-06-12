@@ -27,6 +27,7 @@ import com.ritense.logging.LoggableResource
 import com.ritense.plugin.domain.PluginConfiguration
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import com.ritense.valtimo.contract.domain.ValtimoMediaType.APPLICATION_JSON_UTF8_VALUE
+import jakarta.validation.Valid
 import org.springframework.core.io.InputStreamResource
 import org.springframework.http.HttpHeaders
 import org.springframework.http.MediaType
@@ -79,7 +80,7 @@ class DocumentenApiResource(
     fun modifyDocument(
         @LoggableResource(resourceType = PluginConfiguration::class) @PathVariable(name = "pluginConfigurationId") pluginConfigurationId: String,
         @PathVariable(name = "documentId") documentId: String,
-        @RequestBody modifyDocumentRequest: ModifyDocumentRequest,
+        @Valid @RequestBody modifyDocumentRequest: ModifyDocumentRequest,
     ): ResponseEntity<RelatedFile> {
         val caseDocumentId: UUID? = null
         return ResponseEntity

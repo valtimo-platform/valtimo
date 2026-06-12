@@ -17,6 +17,7 @@
 pluginManagement {
     repositories {
         gradlePluginPortal()
+        maven { url = uri("https://maven-central.storage-download.googleapis.com/maven2/") }
         mavenCentral()
         mavenLocal()
     }
@@ -29,6 +30,7 @@ include(
     ":backend",
     ":backend:app",
     ":backend:app:gzac",
+    ":backend:admin-settings",
     ":backend:audit",
     ":backend:authorization",
     ":backend:building-block",
@@ -106,6 +108,7 @@ include(
 dependencyResolutionManagement {
     repositoriesMode.set(RepositoriesMode.PREFER_SETTINGS)
     repositories {
+        maven { url = uri("https://maven-central.storage-download.googleapis.com/maven2/") }
         mavenCentral()
         mavenLocal()
     }

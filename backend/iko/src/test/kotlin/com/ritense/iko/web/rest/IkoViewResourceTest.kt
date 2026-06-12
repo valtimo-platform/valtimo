@@ -19,6 +19,8 @@ package com.ritense.iko.web.rest
 import com.ritense.iko.domain.IkoView
 import com.ritense.iko.service.IkoViewService
 import com.ritense.valtimo.contract.json.MapperSingleton
+import com.ritense.valtimo.contract.web.rest.error.ExceptionTranslator
+import jakarta.validation.Validator
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.mockito.kotlin.any
@@ -26,6 +28,7 @@ import org.mockito.kotlin.eq
 import org.mockito.kotlin.isNull
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.whenever
+import org.springframework.aop.framework.ProxyFactory
 import org.springframework.data.domain.PageImpl
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.web.PageableHandlerMethodArgumentResolver
@@ -37,6 +40,9 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPat
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 import org.springframework.test.web.servlet.setup.MockMvcBuilders
 import org.springframework.transaction.annotation.Transactional
+import org.springframework.validation.beanvalidation.LocalValidatorFactoryBean
+import org.springframework.validation.beanvalidation.MethodValidationInterceptor
+import java.util.Optional
 
 @Transactional
 internal class IkoViewResourceTest {
@@ -48,10 +54,15 @@ internal class IkoViewResourceTest {
     @BeforeEach
     fun init() {
         service = mock()
-        resource = IkoViewResource(service)
+        val validator = LocalValidatorFactoryBean().apply { afterPropertiesSet() }
+        resource = ProxyFactory(IkoViewResource(service)).apply {
+            addAdvice(MethodValidationInterceptor(validator as Validator))
+        }.proxy as IkoViewResource
         mockMvc = MockMvcBuilders.standaloneSetup(resource)
             .setCustomArgumentResolvers(PageableHandlerMethodArgumentResolver())
             .setMessageConverters(MappingJackson2HttpMessageConverter(MapperSingleton.get()))
+            .setValidator(validator)
+            .setControllerAdvice(ExceptionTranslator(Optional.empty()))
             .build();
     }
 
@@ -71,6 +82,20 @@ internal class IkoViewResourceTest {
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.content[0].key").value("klant"))
             .andExpect(jsonPath("$.content[0].title").value("Klant"))
+    }
+
+    @Test
+    fun `should reject get ikoViews when key request-param exceeds cap`() {
+        mockMvc.perform(get("/api/v1/iko-view").queryParam("key", "x".repeat(257)))
+            .andDo(print())
+            .andExpect(status().isBadRequest())
+    }
+
+    @Test
+    fun `should reject get ikoViews when title request-param exceeds cap`() {
+        mockMvc.perform(get("/api/v1/iko-view").queryParam("title", "x".repeat(257)))
+            .andDo(print())
+            .andExpect(status().isBadRequest())
     }
 
 }

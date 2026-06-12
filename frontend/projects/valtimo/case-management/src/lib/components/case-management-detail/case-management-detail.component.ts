@@ -22,6 +22,7 @@ import {
   ViewChildren,
 } from '@angular/core';
 import {ActivatedRoute, NavigationEnd, Router} from '@angular/router';
+import {WarningFilled16} from '@carbon/icons';
 import {PageTitleService} from '@valtimo/components';
 import {DocumentDefinition} from '@valtimo/document';
 import {
@@ -32,7 +33,7 @@ import {
   getCaseManagementRouteParams,
 } from '@valtimo/shared';
 import {SseService} from '@valtimo/sse';
-import {Tab} from 'carbon-components-angular';
+import {IconService, Tab} from 'carbon-components-angular';
 import {
   BehaviorSubject,
   combineLatest,
@@ -73,8 +74,10 @@ export class CaseManagementDetailComponent implements OnInit, OnDestroy {
     map(params => params?.caseDefinitionKey ?? '')
   );
 
-  public caseListColumn!: boolean;
-  public tabManagementEnabled!: boolean;
+  public readonly caseListColumn$ =
+    this.configService.getFeatureToggleObservable('caseListColumn', true);
+  public readonly tabManagementEnabled$ =
+    this.configService.getFeatureToggleObservable('enableTabManagement', true);
 
   public _activeTab: TabEnum | string;
   public pendingTab: TabEnum | null | string;
@@ -100,6 +103,11 @@ export class CaseManagementDetailComponent implements OnInit, OnDestroy {
   private _subscriptions = new Subscription();
   private readonly _refreshConfigurationIssues$ = new BehaviorSubject<null>(null);
 
+  public readonly hasPluginProcessLinkIssue$: Observable<boolean> =
+    this.configurationIssueService.hasIssue$('plugin-process-link');
+
+  private readonly _tabIssueCache = new Map<string, Observable<boolean>>();
+
   public readonly configurationIssues$: Observable<CaseDefinitionConfigurationIssue[]> =
     combineLatest([
       this.caseDetailService.selectedCaseDefinitionKey$,
@@ -119,14 +127,13 @@ export class CaseManagementDetailComponent implements OnInit, OnDestroy {
     private readonly caseManagementService: CaseManagementService,
     private readonly configService: ConfigService,
     private readonly configurationIssueService: ConfigurationIssueService,
+    private readonly iconService: IconService,
     private readonly pageTitleService: PageTitleService,
     private readonly router: Router,
     private readonly sseService: SseService,
     private readonly tabService: TabService
   ) {
-    const featureToggles = this.configService.config.featureToggles;
-    this.caseListColumn = featureToggles?.caseListColumn ?? true;
-    this.tabManagementEnabled = featureToggles?.enableTabManagement ?? true;
+    this.iconService.registerAll([WarningFilled16]);
   }
 
   public ngOnInit(): void {
@@ -151,6 +158,16 @@ export class CaseManagementDetailComponent implements OnInit, OnDestroy {
     this._subscriptions.unsubscribe();
     this.pageTitleService.enableReset();
     this.configurationIssueService.setUnresolvedIssueTypes([]);
+  }
+
+  public hasTabIssues$(issueTypes: string[]): Observable<boolean> {
+    const cacheKey = issueTypes.slice().sort().join(',');
+    let cached = this._tabIssueCache.get(cacheKey);
+    if (!cached) {
+      cached = this.configurationIssueService.hasAnyOfIssues$(issueTypes);
+      this._tabIssueCache.set(cacheKey, cached);
+    }
+    return cached;
   }
 
   public navigateToTab(tab: TabEnum | string): void {

@@ -16,6 +16,8 @@
 
 package com.ritense.case.web.rest
 
+import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
+import com.fasterxml.jackson.module.kotlin.readValue
 import com.ritense.authorization.annotation.RunWithoutAuthorization
 import com.ritense.case.exception.UnknownCaseDefinitionException
 import com.ritense.case.repository.CaseDefinitionConfigurationIssueRepository
@@ -46,7 +48,10 @@ import com.ritense.valtimo.contract.authorization.UserManagementServiceHolder
 import com.ritense.valtimo.contract.case_.CaseDefinitionChecker
 import com.ritense.valtimo.contract.case_.CaseDefinitionId
 import com.ritense.valtimo.contract.domain.ValtimoMediaType.APPLICATION_JSON_UTF8_VALUE
+import com.ritense.valtimo.contract.plugin.DanglingPluginConfigurationDto
+import com.ritense.valtimo.contract.plugin.PluginConfigurationMappingResolver
 import io.github.oshai.kotlinlogging.KotlinLogging
+import jakarta.validation.Valid
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.data.domain.Sort
@@ -65,9 +70,11 @@ import org.springframework.web.bind.annotation.PutMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
+import org.springframework.web.bind.annotation.RequestPart
 import org.springframework.web.multipart.MultipartFile
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
+import java.util.UUID
 
 @Controller
 @SkipComponentScan
@@ -81,6 +88,7 @@ class CaseDefinitionResource(
     private val caseDefinitionChecker: CaseDefinitionChecker,
     private val configurationIssueRepository: CaseDefinitionConfigurationIssueRepository,
     private val caseDefinitionImportPreviewService: CaseDefinitionImportPreviewService,
+    private val pluginConfigurationMappingResolver: PluginConfigurationMappingResolver?,
 ) {
 
     @RunWithoutAuthorization
@@ -105,7 +113,7 @@ class CaseDefinitionResource(
     @RunWithoutAuthorization
     @PostMapping("/management/v1/case-definition/draft")
     fun createCaseDefinitionDraft(
-        @RequestBody request: CaseDefinitionDraftCreateRequest
+        @Valid @RequestBody request: CaseDefinitionDraftCreateRequest
     ): ResponseEntity<CaseDefinitionResponseDto> {
         return ResponseEntity.ok(
             CaseDefinitionResponseDto.of(
@@ -129,7 +137,7 @@ class CaseDefinitionResource(
     fun updateCaseDefinition(
         @LoggableResource("caseDefinitionKey") @PathVariable caseDefinitionKey: String,
         @LoggableResource("versionTag") @PathVariable versionTag: String,
-        @RequestBody request: CaseDefinitionUpdateRequest
+        @Valid @RequestBody request: CaseDefinitionUpdateRequest
     ): ResponseEntity<CaseDefinitionResponseDto> {
         val caseDefinition = service.updateCaseDefinition(
             CaseDefinitionId.of(caseDefinitionKey, versionTag),
@@ -240,7 +248,7 @@ class CaseDefinitionResource(
     @PatchMapping("/management/v1/case-definition/{caseDefinitionKey}/version/{caseDefinitionVersionTag}/settings")
     @RunWithoutAuthorization
     fun updateCaseSettingsForManagement(
-        @RequestBody caseSettingsDto: CaseSettingsDto,
+        @Valid @RequestBody caseSettingsDto: CaseSettingsDto,
         @LoggableResource("caseDefinitionKey") @PathVariable caseDefinitionKey: String,
         @LoggableResource("caseDefinitionVersionTag") @PathVariable caseDefinitionVersionTag: String,
     ): ResponseEntity<CaseDefinitionSettingsResponseDto> {
@@ -307,7 +315,7 @@ class CaseDefinitionResource(
     @PostMapping("/v1/case/{caseDefinitionName}/hidden-list-column")
     fun setHiddenListColumnsForUser(
         @LoggableResource("documentDefinitionName") @PathVariable caseDefinitionName: String,
-        @RequestBody hiddenCaseListColumnDtoList: List<HiddenCaseListColumnDto>
+        @Valid @RequestBody hiddenCaseListColumnDtoList: List<HiddenCaseListColumnDto>
     ): ResponseEntity<Any> {
         val currentUserId = UserManagementServiceHolder.currentInstance.currentUserId
         service.saveHiddenCaseListColumns(caseDefinitionName, hiddenCaseListColumnDtoList, currentUserId)
@@ -331,7 +339,7 @@ class CaseDefinitionResource(
     @RunWithoutAuthorization
     fun createCaseListColumnForManagement(
         @LoggableResource("documentDefinitionName") @PathVariable caseDefinitionName: String,
-        @RequestBody caseListColumnDto: CaseListColumnDto
+        @Valid @RequestBody caseListColumnDto: CaseListColumnDto
     ): ResponseEntity<Any> {
         service.createListColumn(caseDefinitionName, caseListColumnDto)
         return ResponseEntity.ok().build()
@@ -341,7 +349,7 @@ class CaseDefinitionResource(
     @RunWithoutAuthorization
     fun updateListColumnForManagement(
         @LoggableResource("documentDefinitionName") @PathVariable caseDefinitionName: String,
-        @RequestBody caseListColumnDtoList: List<CaseListColumnDto>
+        @Valid @RequestBody caseListColumnDtoList: List<CaseListColumnDto>
     ): ResponseEntity<Any> {
         service.updateListColumns(caseDefinitionName, caseListColumnDtoList)
         return ResponseEntity.ok().build()
@@ -396,14 +404,19 @@ class CaseDefinitionResource(
         @RequestParam("file") file: MultipartFile,
         @RequestParam("key", required = false) key: String?,
         @RequestParam("name", required = false) name: String?,
+        @RequestPart("pluginConfigurationMappings", required = false) pluginConfigurationMappingsJson: String?,
     ): ResponseEntity<CaseDefinitionImportResponse> {
         return try {
+            val pluginConfigurationMappings: Map<UUID, UUID?>? = pluginConfigurationMappingsJson?.let {
+                jacksonObjectMapper().readValue<Map<UUID, UUID?>>(it)
+            }
             val skipImportOfCaseDefinitions = caseDefinitionRepository.findAllByFinalTrue().map { it.id }
             val caseDefinitionId = importService.import(
                 file.inputStream,
                 skipImportOfCaseDefinitions,
                 key,
                 name,
+                pluginConfigurationMappings,
             )
             service.setLatestToActiveIfNoneIsActive()
             ResponseEntity.ok(CaseDefinitionImportResponse(caseDefinitionId))
@@ -422,6 +435,32 @@ class CaseDefinitionResource(
         val caseDefinitionId = CaseDefinitionId.of(caseDefinitionKey, caseDefinitionVersionTag)
         val issues = configurationIssueRepository.findAllByCaseDefinitionId(caseDefinitionId)
         return ResponseEntity.ok(issues.map { CaseDefinitionConfigurationIssueDto.of(it) })
+    }
+
+    @GetMapping("/management/v1/case-definition/{caseDefinitionKey}/version/{caseDefinitionVersionTag}/dangling-plugin-configurations")
+    @RunWithoutAuthorization
+    fun getDanglingPluginConfigurations(
+        @LoggableResource("caseDefinitionKey") @PathVariable caseDefinitionKey: String,
+        @LoggableResource("caseDefinitionVersionTag") @PathVariable caseDefinitionVersionTag: String,
+    ): ResponseEntity<List<DanglingPluginConfigurationDto>> {
+        val resolver = pluginConfigurationMappingResolver
+            ?: return ResponseEntity.ok(emptyList())
+        val caseDefinitionId = CaseDefinitionId.of(caseDefinitionKey, caseDefinitionVersionTag)
+        return ResponseEntity.ok(resolver.getDanglingPluginConfigurations(caseDefinitionId))
+    }
+
+    @PutMapping("/management/v1/case-definition/{caseDefinitionKey}/version/{caseDefinitionVersionTag}/plugin-configuration-mappings")
+    @RunWithoutAuthorization
+    fun resolvePluginConfigurationMappings(
+        @LoggableResource("caseDefinitionKey") @PathVariable caseDefinitionKey: String,
+        @LoggableResource("caseDefinitionVersionTag") @PathVariable caseDefinitionVersionTag: String,
+        @RequestBody mappings: Map<UUID, UUID>,
+    ): ResponseEntity<Void> {
+        val resolver = pluginConfigurationMappingResolver
+            ?: return ResponseEntity.status(501).build()
+        val caseDefinitionId = CaseDefinitionId.of(caseDefinitionKey, caseDefinitionVersionTag)
+        resolver.resolve(caseDefinitionId, mappings)
+        return ResponseEntity.noContent().build()
     }
 
     @RunWithoutAuthorization

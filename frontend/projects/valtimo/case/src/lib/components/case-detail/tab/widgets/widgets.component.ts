@@ -36,6 +36,9 @@ import {CaseWidgetFormioComponent} from './components/formio/case-widget-formio.
 import {CaseWidgetTableComponent} from './components/table/case-widget-table.component';
 import {CaseWidgetCollectionComponent} from './components/collection/case-widget-collection.component';
 import {CaseWidgetMapComponent} from './components/map/case-widget-map.component';
+import {CaseWidgetPersonCardComponent} from './components/person-card/case-widget-person-card.component';
+import {CaseWidgetMetrolineComponent} from './components/metroline/case-widget-metroline.component';
+import {CaseWidgetHighlightComponent} from './components/highlight/case-widget-highlight.component';
 import {DocumentUpdatedSseEvent} from '../../../../models';
 import {SseService} from '@valtimo/sse';
 import {WidgetsService} from './widgets.service';
@@ -103,6 +106,9 @@ export class CaseDetailWidgetsComponent implements OnInit, OnDestroy {
     [WidgetType.INTERACTIVE_TABLE]: CaseWidgetTableComponent,
     [WidgetType.COLLECTION]: CaseWidgetCollectionComponent,
     [WidgetType.MAP]: CaseWidgetMapComponent,
+    [WidgetType.PERSON_CARD]: CaseWidgetPersonCardComponent,
+    [WidgetType.METROLINE]: CaseWidgetMetrolineComponent,
+    [WidgetType.HIGHLIGHT]: CaseWidgetHighlightComponent,
   };
 
   constructor(

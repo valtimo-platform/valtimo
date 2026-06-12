@@ -43,5 +43,15 @@
         "processDefinitionKey": "document-audit-trail",
         "canInitializeDocument": false,
         "startableByUser": true
+    },
+    {
+        "processDefinitionKey": "bezwaar-ad-hoc-fvm",
+        "canInitializeDocument": false,
+        "startableByUser": true
+    },
+    {
+        "processDefinitionKey": "bezwaar-ad-hoc-uicomponent",
+        "canInitializeDocument": false,
+        "startableByUser": true
     }
 ]

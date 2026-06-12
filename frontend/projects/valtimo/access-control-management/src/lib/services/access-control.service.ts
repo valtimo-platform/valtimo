@@ -18,7 +18,7 @@ import {HttpClient} from '@angular/common/http';
 import {Injectable} from '@angular/core';
 import {ConfigService} from '@valtimo/shared';
 import {BehaviorSubject, catchError, Observable, of, switchMap, take, tap} from 'rxjs';
-import {DeleteRolesRequest, Role} from '../models';
+import {DeleteRolesRequest, Permission, PermissionSchema, Role} from '../models';
 
 @Injectable({providedIn: 'root'})
 export class AccessControlService {
@@ -86,8 +86,8 @@ export class AccessControlService {
       });
   }
 
-  public getRolePermissions(roleKey: string): Observable<Array<object>> {
-    return this.http.get<Array<object>>(
+  public getRolePermissions(roleKey: string): Observable<Permission[]> {
+    return this.http.get<Permission[]>(
       `${this.valtimoEndpointUri}v1/roles/${roleKey}/permissions`
     );
   }
@@ -101,6 +101,10 @@ export class AccessControlService {
       `${this.valtimoEndpointUri}v1/roles/${roleKey}/permissions`,
       updatedPermission
     );
+  }
+
+  public getPermissionSchema(): Observable<PermissionSchema> {
+    return this.http.get<PermissionSchema>(`${this.valtimoEndpointUri}v1/permissions/schema`);
   }
 
   public updateRole(roleKey: string, request: Role): Observable<object> {

@@ -27,6 +27,7 @@ import com.ritense.case.web.rest.dto.UpdateStartableItemRequest
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import com.ritense.valtimo.contract.case_.CaseDefinitionId
 import com.ritense.valtimo.contract.domain.ValtimoMediaType.APPLICATION_JSON_UTF8_VALUE
+import jakarta.validation.Valid
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
@@ -61,7 +62,7 @@ class StartableItemManagementResource(
     fun createStartableItem(
         @PathVariable caseDefinitionKey: String,
         @PathVariable caseDefinitionVersionTag: String,
-        @RequestBody request: CreateStartableItemRequest
+        @Valid @RequestBody request: CreateStartableItemRequest
     ): ResponseEntity<StartableItemDto> {
         val caseDefinitionId = CaseDefinitionId(caseDefinitionKey, caseDefinitionVersionTag)
         val item = startableItemManagementService.createItem(
@@ -78,7 +79,7 @@ class StartableItemManagementResource(
         @PathVariable caseDefinitionVersionTag: String,
         @PathVariable itemKey: String,
         @PathVariable versionTag: String,
-        @RequestBody request: UpdateStartableItemRequest
+        @Valid @RequestBody request: UpdateStartableItemRequest
     ): ResponseEntity<StartableItemDto> {
         return doUpdateStartableItem(caseDefinitionKey, caseDefinitionVersionTag, itemKey, versionTag, request)
     }
@@ -88,7 +89,7 @@ class StartableItemManagementResource(
         @PathVariable caseDefinitionKey: String,
         @PathVariable caseDefinitionVersionTag: String,
         @PathVariable itemKey: String,
-        @RequestBody request: UpdateStartableItemRequest
+        @Valid @RequestBody request: UpdateStartableItemRequest
     ): ResponseEntity<StartableItemDto> {
         return doUpdateStartableItem(caseDefinitionKey, caseDefinitionVersionTag, itemKey, null, request)
     }
@@ -183,7 +184,7 @@ class StartableItemManagementResource(
     fun updateOrder(
         @PathVariable caseDefinitionKey: String,
         @PathVariable caseDefinitionVersionTag: String,
-        @RequestBody request: UpdateStartableItemOrderRequest
+        @Valid @RequestBody request: UpdateStartableItemOrderRequest
     ): ResponseEntity<List<ManagementStartableItemDto>> {
         val caseDefinitionId = CaseDefinitionId(caseDefinitionKey, caseDefinitionVersionTag)
         return ResponseEntity.ok(startableItemManagementService.updateOrder(caseDefinitionId, request.items))

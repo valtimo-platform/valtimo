@@ -17,7 +17,7 @@
 package com.ritense.case.service.exception
 
 import com.ritense.case_.domain.definition.CaseDefinition
-import com.ritense.valtimo.web.rest.error.BadRequestAlertException
+import com.ritense.valtimo.contract.web.rest.error.BadRequestAlertException
 
 import org.zalando.problem.Exceptional
 

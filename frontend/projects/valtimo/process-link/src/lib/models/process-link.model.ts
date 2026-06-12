@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import {PluginConfiguration} from '@valtimo/plugin/lib/models/plugin';
+import {PluginConfiguration} from '@valtimo/plugin';
 import {ProcessInstanceTask} from '@valtimo/process';
 import {ListItem} from 'carbon-components-angular/dropdown';
 
@@ -309,6 +309,22 @@ interface PluginConfigurationViewModel {
   hasOptions: boolean;
 }
 
+interface DuplicateProcessDefinitionDescriptor {
+  key: string;
+  name?: string;
+  processDefinitionId: string;
+}
+
+interface BuildingBlockProcessDefinitionConflictResponse {
+  duplicateProcessDefinitions: DuplicateProcessDefinitionDescriptor[];
+}
+
+interface ProcessDefinitionConflictResponse {
+  processDefinitionKey: string;
+  processDefinitionId: string;
+  processDefinitionName?: string;
+}
+
 export {
   CompatiblePluginProcessLinks,
   CompatibleProcessVersion,
@@ -343,4 +359,7 @@ export {
   UIComponentProcessLinkUpdateRequestDto,
   URLProcessLinkCreateDto,
   URLProcessLinkUpdateRequestDto,
+  BuildingBlockProcessDefinitionConflictResponse,
+  DuplicateProcessDefinitionDescriptor,
+  ProcessDefinitionConflictResponse,
 };

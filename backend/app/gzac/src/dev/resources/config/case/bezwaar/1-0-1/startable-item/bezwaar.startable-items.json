@@ -26,5 +26,13 @@
     {
         "type": "PROCESS",
         "key": "vastleggen-besluit"
+    },
+    {
+        "type": "PROCESS",
+        "key": "bezwaar-ad-hoc-fvm"
+    },
+    {
+        "type": "PROCESS",
+        "key": "bezwaar-ad-hoc-uicomponent"
     }
 ]

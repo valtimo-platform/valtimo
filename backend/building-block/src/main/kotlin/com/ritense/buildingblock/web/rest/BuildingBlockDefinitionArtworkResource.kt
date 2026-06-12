@@ -22,6 +22,7 @@ import com.ritense.buildingblock.web.rest.dto.BuildingBlockDefinitionArtworkDto
 import com.ritense.buildingblock.web.rest.dto.CreateBuildingBlockDefinitionArtworkDto
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import com.ritense.valtimo.contract.domain.ValtimoMediaType.APPLICATION_JSON_UTF8_VALUE
+import jakarta.validation.Valid
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
@@ -55,7 +56,7 @@ class BuildingBlockDefinitionArtworkResource(
     fun createArtwork(
         @PathVariable key: String,
         @PathVariable versionTag: String,
-        @RequestBody dto: CreateBuildingBlockDefinitionArtworkDto
+        @Valid @RequestBody dto: CreateBuildingBlockDefinitionArtworkDto
     ): ResponseEntity<BuildingBlockDefinitionArtworkDto> {
         val created =
             runWithoutAuthorization { buildingBlockDefinitionArtworkService.createArtwork(key, versionTag, dto) }

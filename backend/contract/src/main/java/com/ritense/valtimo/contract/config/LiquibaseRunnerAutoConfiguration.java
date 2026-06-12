@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -34,7 +34,7 @@ import org.springframework.context.annotation.Bean;
  */
 @AutoConfiguration
 @AutoConfigureAfter({DataSourceAutoConfiguration.class, HibernateJpaAutoConfiguration.class})
-@EnableConfigurationProperties(LiquibaseProperties.class)
+@EnableConfigurationProperties({LiquibaseProperties.class, ValtimoProperties.class})
 public class LiquibaseRunnerAutoConfiguration {
 
     @Bean
@@ -42,8 +42,14 @@ public class LiquibaseRunnerAutoConfiguration {
     public LiquibaseRunner liquibaseRunner(
         final List<LiquibaseMasterChangeLogLocation> liquibaseMasterChangeLogLocations,
         final LiquibaseProperties liquibaseProperties,
-        final DataSource datasource
+        final DataSource datasource,
+        final ValtimoProperties valtimoProperties
     ) {
-        return new LiquibaseRunner(liquibaseMasterChangeLogLocations, liquibaseProperties, datasource);
+        return new LiquibaseRunner(
+            liquibaseMasterChangeLogLocations,
+            liquibaseProperties,
+            datasource,
+            valtimoProperties.getLiquibase().getStaleLockThresholdMinutes()
+        );
     }
 }
