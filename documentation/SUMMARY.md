@@ -115,6 +115,7 @@
       * [Widgets](features/case/case-detail/tabs/widgets.md)
       * [Case Header Widget](features/case/case-detail/tabs/header-widget.md)
   * [📃 ZGW](features/case/zgw/README.md)
+    * [Load a zaak in a form flow](features/zgw/load-zaak-in-form-flow.md)
     * [Documents](features/case/zgw/zgw-documents/README.md)
       * [Access control](features/case/zgw/zgw-documents/access-control.md)
       * [Uploading to Documenten API with metadata](features/case/zgw/zgw-documents/upload-to-documenten-api-with-metadata.md)
