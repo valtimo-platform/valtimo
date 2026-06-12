@@ -15,18 +15,35 @@
  */
 
 :host ::ng-deep {
-  cds-tab .cds--tab-content {
-    padding: 0;
+  .loading-container {
+    display: flex;
+    justify-content: center;
+    width: 100%;
+    padding-bottom: var(--cds-spacing-05);
+    padding-top: var(--cds-spacing-05);
   }
-}
 
-.case-inspection {
-  &__pane {
+  .case-inspection-tabs > cds-tab-headers {
+    margin-bottom: 24px;
+  }
+
+  cds-tab .cds--tab-content {
     background-color: var(--cds-layer);
-    padding: 1.5rem;
+    padding: 0;
+
+    &:focus {
+      outline: none;
+    }
+  }
+
+  code {
+    font-family: var(--cds-code-01-font-family);
+    font-size: var(--cds-code-01-font-size);
+    color: var(--cds-status-purple);
+    background-color: transparent;
   }
 }
 
 .case-inspection-tab-placeholder {
-  padding: 1rem;
+  padding: var(--cds-spacing-05);
 }

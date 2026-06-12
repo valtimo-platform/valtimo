@@ -40,6 +40,27 @@ const routes: Routes = [
     data: {title: 'Cases', roles: [ROLE_USER], customPageTitle: true},
   },
   {
+    path: 'cases/:caseDefinitionKey/document/:documentId/case-inspection',
+    component: CaseInspectionComponent,
+    canActivate: [AuthGuardService],
+    data: {
+      title: 'Case inspection',
+      parentPath: 'cases/:caseDefinitionKey/document/:documentId',
+      roles: [ROLE_USER],
+      customPageTitle: true,
+    },
+  },
+  {
+    path: 'cases/:caseDefinitionKey/document/:documentId/:tab/tasks/:taskId',
+    component: CaseUpdateComponent,
+    canActivate: [AuthGuardService],
+    data: {
+      title: 'Task details',
+      parentPath: 'cases/:caseDefinitionKey/document/:documentId/:tab',
+      roles: [ROLE_USER],
+    },
+  },
+  {
     path: 'cases/:caseDefinitionKey/document/:documentId/:tab',
     component: CaseDetailComponent,
     canActivate: [AuthGuardService],
@@ -59,26 +80,6 @@ const routes: Routes = [
       title: 'Case details',
       parentPath: 'cases/:caseDefinitionKey',
       roles: [ROLE_USER],
-    },
-  },
-  {
-    path: 'cases/:caseDefinitionKey/document/:documentId/:tab/tasks/:taskId',
-    component: CaseUpdateComponent,
-    canActivate: [AuthGuardService],
-    data: {
-      title: 'Task details',
-      parentPath: 'cases/:caseDefinitionKey/document/:documentId/:tab',
-      roles: [ROLE_USER],
-    },
-  },
-  {
-    path: 'case-inspection/:documentId',
-    component: CaseInspectionComponent,
-    canActivate: [AuthGuardService],
-    data: {
-      title: 'Case inspection',
-      roles: [ROLE_USER],
-      customPageTitle: true,
     },
   },
 ];

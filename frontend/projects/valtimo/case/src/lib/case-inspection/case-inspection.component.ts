@@ -14,26 +14,39 @@
  * limitations under the License.
  */
 
-import {CommonModule} from '@angular/common';
-import {ChangeDetectionStrategy, Component, OnDestroy, OnInit, signal} from '@angular/core';
+import {CommonModule, NgComponentOutlet} from '@angular/common';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  Inject,
+  OnDestroy,
+  OnInit,
+  Optional,
+  signal,
+  Type,
+} from '@angular/core';
 import {ActivatedRoute, ParamMap, Router} from '@angular/router';
 import {TranslateModule, TranslateService} from '@ngx-translate/core';
 import {PermissionService} from '@valtimo/access-control';
 import {BreadcrumbService, PageTitleService} from '@valtimo/components';
 import {DocumentService} from '@valtimo/document';
-import {map, Subscription, switchMap, take} from 'rxjs';
+import {catchError, of, Subscription, take} from 'rxjs';
 import {TabsModule} from 'carbon-components-angular';
 import {
   CAN_INSPECT_CASE_PERMISSION,
   CASE_DETAIL_PERMISSION_RESOURCE,
 } from '../permissions/case-detail.permissions';
-import {CaseInspectionBuildingBlocksTabComponent} from './tabs/building-blocks-tab.component';
-import {CaseInspectionDocumentTabComponent} from './tabs/document-tab.component';
-import {CaseInspectionMetadataTabComponent} from './tabs/metadata-tab.component';
-import {CaseInspectionProcessesTabComponent} from './tabs/processes-tab.component';
-import {BuildingBlockProcessReference} from './models/case-inspection.models';
-import {CaseInspectionTab} from './case-inspection-tab.enum';
-import {CaseInspectionService} from './services/case-inspection.service';
+import {CaseInspectionBuildingBlocksTabComponent} from './tabs/building-blocks/building-blocks-tab.component';
+import {CaseInspectionDocumentTabComponent} from './tabs/document/document-tab.component';
+import {CaseInspectionLogsTabComponent} from './tabs/logs/logs-tab.component';
+import {CaseInspectionMetadataTabComponent} from './tabs/metadata/metadata-tab.component';
+import {CaseInspectionProcessesTabComponent} from './tabs/processes/processes-tab.component';
+import {
+  BuildingBlockProcessReference,
+  CaseInspectionTab,
+  ZgwCaseInspectionTabComponent,
+} from '../models';
+import {ZGW_CASE_INSPECTION_TAB_TOKEN} from '../constants';
 
 @Component({
   standalone: true,
@@ -42,26 +55,34 @@ import {CaseInspectionService} from './services/case-inspection.service';
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     CommonModule,
+    NgComponentOutlet,
     TranslateModule,
     TabsModule,
     CaseInspectionDocumentTabComponent,
     CaseInspectionProcessesTabComponent,
     CaseInspectionBuildingBlocksTabComponent,
+    CaseInspectionLogsTabComponent,
     CaseInspectionMetadataTabComponent,
   ],
 })
 export class CaseInspectionComponent implements OnInit, OnDestroy {
   public readonly $documentId = signal<string>('');
+  public readonly $caseDefinitionKey = signal<string>('');
   public readonly $activeTab = signal<CaseInspectionTab>(CaseInspectionTab.DOCUMENT);
   public readonly $loading = signal<boolean>(true);
   public readonly $accessDenied = signal<boolean>(false);
   public readonly $pendingBuildingBlockInstanceId = signal<string | null>(null);
+  public readonly $pendingProcessInstanceLogFilter = signal<string | null>(null);
 
   public readonly CaseInspectionTab = CaseInspectionTab;
 
-  private readonly _validTabs: readonly CaseInspectionTab[] = Object.values(CaseInspectionTab);
-
   private readonly _subscriptions = new Subscription();
+
+  private get _validTabs(): readonly CaseInspectionTab[] {
+    return this.zgwTabComponent
+      ? Object.values(CaseInspectionTab)
+      : Object.values(CaseInspectionTab).filter(tab => tab !== CaseInspectionTab.ZGW);
+  }
 
   constructor(
     private readonly route: ActivatedRoute,
@@ -71,7 +92,9 @@ export class CaseInspectionComponent implements OnInit, OnDestroy {
     private readonly translateService: TranslateService,
     private readonly breadcrumbService: BreadcrumbService,
     private readonly documentService: DocumentService,
-    private readonly caseInspectionService: CaseInspectionService
+    @Optional()
+    @Inject(ZGW_CASE_INSPECTION_TAB_TOKEN)
+    public readonly zgwTabComponent: Type<ZgwCaseInspectionTabComponent> | null
   ) {}
 
   public ngOnInit(): void {
@@ -86,27 +109,36 @@ export class CaseInspectionComponent implements OnInit, OnDestroy {
     this.restoreTabFromQueryParam();
 
     this._subscriptions.add(
-      this.route.paramMap
-        .pipe(
-          take(1),
-          switchMap((params: ParamMap) => {
-            const documentId = params.get('documentId') ?? '';
-            this.$documentId.set(documentId);
-            return this.permissionService.requestPermission(CAN_INSPECT_CASE_PERMISSION, {
-              resource: CASE_DETAIL_PERMISSION_RESOURCE.jsonSchemaDocument,
-              identifier: documentId,
-            });
+      this.route.paramMap.pipe(take(1)).subscribe((params: ParamMap) => {
+        const documentId = params.get('documentId') ?? '';
+        const caseDefinitionKey = params.get('caseDefinitionKey') ?? '';
+        this.$documentId.set(documentId);
+        this.$caseDefinitionKey.set(caseDefinitionKey);
+
+        this.permissionService
+          .requestPermission(CAN_INSPECT_CASE_PERMISSION, {
+            resource: CASE_DETAIL_PERMISSION_RESOURCE.jsonSchemaDocument,
+            identifier: documentId,
           })
-        )
-        .subscribe(allowed => {
-          if (!allowed) {
-            this.$accessDenied.set(true);
-            this.router.navigate(['/cases']);
-            return;
-          }
-          this.$loading.set(false);
-          this.initBreadcrumbs();
-        })
+          .pipe(take(1))
+          .subscribe({
+            next: allowed => {
+              if (!allowed) {
+                this.$accessDenied.set(true);
+                this.$loading.set(false);
+                this.router.navigate(['/cases']);
+                return;
+              }
+              this.$loading.set(false);
+              this.loadBreadcrumbs(caseDefinitionKey);
+            },
+            error: () => {
+              this.$accessDenied.set(true);
+              this.$loading.set(false);
+              this.router.navigate(['/cases']);
+            },
+          });
+      })
     );
   }
 
@@ -132,34 +164,38 @@ export class CaseInspectionComponent implements OnInit, OnDestroy {
     this.onTabSelected(CaseInspectionTab.BUILDING_BLOCKS);
   }
 
-  private initBreadcrumbs(): void {
+  public onViewProcessLogs(processInstanceId: string): void {
+    this.$pendingProcessInstanceLogFilter.set(processInstanceId);
+    this.onTabSelected(CaseInspectionTab.LOGS);
+  }
+
+  private loadBreadcrumbs(caseDefinitionKey: string): void {
+    this.documentService
+      .getDocumentDefinition(caseDefinitionKey)
+      .pipe(
+        take(1),
+        catchError(() => of(null))
+      )
+      .subscribe(definition => {
+        const title = definition?.schema?.title ?? caseDefinitionKey;
+        this.initBreadcrumbs(title);
+      });
+  }
+
+  private initBreadcrumbs(caseDefinitionTitle: string): void {
     const documentId = this.$documentId();
-    this._subscriptions.add(
-      this.caseInspectionService.getDocument(documentId).pipe(
-        switchMap(inspection => {
-          const caseDefinitionKey = inspection.definitionId.name;
-          return this.documentService.getDocumentDefinition(caseDefinitionKey).pipe(
-            take(1),
-            map(definition => ({
-              caseDefinitionKey,
-              caseDefinitionTitle: definition.schema.title,
-            }))
-          );
-        })
-      ).subscribe(({caseDefinitionKey, caseDefinitionTitle}) => {
-        const documentId = this.$documentId();
-        this.breadcrumbService.setSecondBreadcrumb({
-          route: [`/cases/${caseDefinitionKey}`],
-          content: caseDefinitionTitle,
-          href: `/cases/${caseDefinitionKey}`,
-        });
-        this.breadcrumbService.setThirdBreadcrumb({
-          route: [`/cases/${caseDefinitionKey}/document/${documentId}`],
-          content: this.translateService.instant('Case details'),
-          href: `/cases/${caseDefinitionKey}/document/${documentId}`,
-        });
-      })
-    );
+    const caseDefinitionKey = this.$caseDefinitionKey();
+
+    this.breadcrumbService.setSecondBreadcrumb({
+      route: [`/cases/${caseDefinitionKey}`],
+      content: caseDefinitionTitle,
+      href: `/cases/${caseDefinitionKey}`,
+    });
+    this.breadcrumbService.setThirdBreadcrumb({
+      route: [`/cases/${caseDefinitionKey}/document/${documentId}`],
+      content: this.translateService.instant('Case details'),
+      href: `/cases/${caseDefinitionKey}/document/${documentId}`,
+    });
   }
 
   private restoreTabFromQueryParam(): void {

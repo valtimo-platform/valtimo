@@ -37,6 +37,7 @@ import com.ritense.buildingblock.repository.ProcessDefinitionBuildingBlockDefini
 import com.ritense.buildingblock.security.config.BuildingBlockHttpSecurityConfigurer
 import com.ritense.buildingblock.service.BuildingBlockCaseDefinitionFinalizationChecker
 import com.ritense.buildingblock.service.BuildingBlockCaseDocumentResolver
+import com.ritense.buildingblock.service.BuildingBlockCaseLogScopeContributor
 import com.ritense.buildingblock.service.BuildingBlockCaseTaskContributor
 import com.ritense.buildingblock.service.BuildingBlockDecisionDefinitionExporter
 import com.ritense.buildingblock.service.BuildingBlockDecisionDefinitionImporter
@@ -265,6 +266,18 @@ class BuildingBlockAutoConfiguration {
     }
 
     @Bean
+    @ConditionalOnMissingBean(BuildingBlockCaseLogScopeContributor::class)
+    fun buildingBlockCaseLogScopeContributor(
+        buildingBlockInstanceRepository: BuildingBlockInstanceRepository,
+        processDocumentAssociationService: ProcessDocumentAssociationService,
+    ): BuildingBlockCaseLogScopeContributor {
+        return BuildingBlockCaseLogScopeContributor(
+            buildingBlockInstanceRepository,
+            processDocumentAssociationService,
+        )
+    }
+
+    @Bean
     @ConditionalOnMissingBean(BuildingBlockCaseTaskContributor::class)
     fun buildingBlockCaseTaskContributor(
         queryDialectHelper: QueryDialectHelper
@@ -362,9 +375,13 @@ class BuildingBlockAutoConfiguration {
     @ConditionalOnMissingBean(BuildingBlockInstanceResource::class)
     fun buildingBlockInstanceResource(
         buildingBlockInstanceService: BuildingBlockInstanceService,
+        documentService: DocumentService,
+        authorizationService: AuthorizationService,
     ): BuildingBlockInstanceResource {
         return BuildingBlockInstanceResource(
             buildingBlockInstanceService,
+            documentService,
+            authorizationService,
         )
     }
 
