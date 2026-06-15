@@ -1,58 +1,58 @@
 [
-    {
-        "activityId": "BestandUploadVoorbereidenStartTask",
-        "activityType": "bpmn:StartEvent:start",
-        "formDefinitionName": "start-form-voorbereiden-upload-bestand",
-        "viewModelEnabled": false,
-        "formDisplayType": "modal",
-        "formSize": "medium",
-        "subtitles": null,
-        "processLinkType": "form"
+  {
+    "activityId" : "CallUploadAndLinkActivity",
+    "activityType" : "bpmn:CallActivity:start",
+    "buildingBlockDefinitionKey" : "upload-and-link-document",
+    "buildingBlockDefinitionVersionTag" : "1.0.0",
+    "pluginConfigurationMappings" : {
+      "zakenapi" : "3079d6fe-42e3-4f8f-a9db-52ce2507b7ee",
+      "documentenapi" : "5474fe57-532a-4050-8d89-32e62ca3e895"
     },
-    {
-        "activityId": "CallUploadAndLinkActivity",
-        "activityType": "bpmn:CallActivity:start",
-        "processLinkType": "building-block",
-        "buildingBlockDefinitionKey": "upload-and-link-document",
-        "buildingBlockDefinitionVersionTag": "1.0.0",
-        "pluginConfigurationMappings": {
-            "documentenapi": "5474fe57-532a-4050-8d89-32e62ca3e895",
-            "zakenapi": "3079d6fe-42e3-4f8f-a9db-52ce2507b7ee"
-        },
-        "inputMappings": [
-            {
-                "source": "pv:fileName",
-                "target": "doc:/fileName"
-            },
-            {
-                "source": "pv:title",
-                "target": "doc:/title"
-            },
-            {
-                "source": "pv:description",
-                "target": "doc:/description"
-            },
-            {
-                "source": "pv:confidentialityLevel",
-                "target": "doc:/confidentialityLevel"
-            },
-            {
-                "source": "pv:temporaryDocumentId",
-                "target": "doc:/temporaryDocumentId"
-            },
-            {
-                "source": "pv:informationObjectTypeUrl",
-                "target": "doc:/informationObjectTypeUrl"
-            },
-            {
-                "source": "pv:language",
-                "target": "doc:/language"
-            },
-            {
-                "source": "pv:status",
-                "target": "doc:/status"
-            }
-        ],
-        "outputMappings": []
-    }
+    "inputMappings" : [
+      {
+        "source" : "pv:title",
+        "target" : "title"
+      },
+      {
+        "source" : "pv:status",
+        "target" : "status"
+      },
+      {
+        "source" : "pv:fileName",
+        "target" : "fileName"
+      },
+      {
+        "source" : "pv:language",
+        "target" : "language"
+      },
+      {
+        "source" : "pv:description",
+        "target" : "description"
+      },
+      {
+        "source" : "pv:temporaryDocumentId",
+        "target" : "temporaryDocumentId"
+      },
+      {
+        "source" : "pv:confidentialityLevel",
+        "target" : "confidentialityLevel"
+      },
+      {
+        "source" : "pv:informationObjectTypeUrl",
+        "target" : "informationObjectTypeUrl"
+      }
+    ],
+    "outputMappings" : [],
+    "processLinkType" : "building-block"
+  },
+  {
+    "activityId" : "BestandUploadVoorbereidenStartTask",
+    "activityType" : "bpmn:StartEvent:start",
+    "formDefinitionName" : "start-form-voorbereiden-upload-bestand",
+    "viewModelEnabled" : false,
+    "formDisplayType" : "modal",
+    "formSize" : "medium",
+    "subtitles" : null,
+    "processLinkType" : "form"
+  }
 ]
