@@ -234,8 +234,7 @@ optionally `eventBroker` — only `serviceToken`/`gzacBaseUrl` are actually vali
 
 Configs are **persisted to PostgreSQL**; `ConfigRegistry` is a thin pass-through over
 `ConfigRepository` — every read/write hits the DB, there is **no separate in-memory cache** despite
-the name. A second `plugins` table + `PluginRepository` are created by the boot migrations but
-**wired nowhere** (dead code). The plugin manager serialises calls per plugin (a `lock` promise
+the name. The plugin manager serialises calls per plugin (a `lock` promise
 chain to avoid Extism reentrancy), sets `prefetch` on the broker channel, and hot-reloads a plugin
 (unload + reload) when a newer upload of the same `pluginId@version` arrives.
 
@@ -589,7 +588,6 @@ through the user-token path.
 - Configurable service-token TTL (hardcoded 24h in `ExternalPluginServiceTokenService`).
 - DB unique constraints on `external_plugin_granted_event` / `external_plugin_granted_endpoint`
   natural keys (§5).
-- Cleanup of the host's dead `plugins` table + `PluginRepository` (§7).
 
 ## 15. Roadmap (priority order)
 
