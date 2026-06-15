@@ -61,7 +61,26 @@ export class StoreTempDocumentConfigurationComponent
     );
 
   readonly selectedConfidentialityLevelInputType$ = new BehaviorSubject<InputOption>('selection');
+  readonly selectedLanguageInputType$ = new BehaviorSubject<InputOption>('selection');
+  readonly selectedStatusInputType$ = new BehaviorSubject<InputOption>('selection');
+
   readonly confidentialityLevelInputTypeOptions$: Observable<Array<RadioValue>> =
+    this.translateService.stream('key').pipe(
+      map(() => [
+        {value: 'selection', title: this.pluginTranslationService.instant('selection', this.pluginId)},
+        {value: 'text', title: this.pluginTranslationService.instant('text', this.pluginId)},
+      ])
+    );
+
+  readonly languageInputTypeOptions$: Observable<Array<RadioValue>> =
+    this.translateService.stream('key').pipe(
+      map(() => [
+        {value: 'selection', title: this.pluginTranslationService.instant('selection', this.pluginId)},
+        {value: 'text', title: this.pluginTranslationService.instant('text', this.pluginId)},
+      ])
+    );
+
+  readonly statusInputTypeOptions$: Observable<Array<RadioValue>> =
     this.translateService.stream('key').pipe(
       map(() => [
         {value: 'selection', title: this.pluginTranslationService.instant('selection', this.pluginId)},
@@ -112,12 +131,22 @@ export class StoreTempDocumentConfigurationComponent
     this.saveSubscription?.unsubscribe();
   }
 
-  formValueChange(formValue: StoreTempDocumentConfig & {confidentialityLevelInputType?: InputOption}): void {
+  formValueChange(formValue: StoreTempDocumentConfig & {
+    confidentialityLevelInputType?: InputOption;
+    languageInputType?: InputOption;
+    statusInputType?: InputOption;
+  }): void {
     this.formValue$.next(formValue);
     this.handleValid(formValue);
 
     if (formValue.confidentialityLevelInputType) {
       this.selectedConfidentialityLevelInputType$.next(formValue.confidentialityLevelInputType);
+    }
+    if (formValue.languageInputType) {
+      this.selectedLanguageInputType$.next(formValue.languageInputType);
+    }
+    if (formValue.statusInputType) {
+      this.selectedStatusInputType$.next(formValue.statusInputType);
     }
   }
 

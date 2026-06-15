@@ -17,6 +17,7 @@
             "input": true,
             "label": "Vertrouwelijkheidaanduiding",
             "tableView": true,
+            "prefill": false,
             "validate": {
                 "required": true
             },
@@ -35,11 +36,49 @@
             }
         },
         {
+            "key": "pv.status",
+            "type": "select",
+            "input": true,
+            "label": "Status",
+            "tableView": true,
+            "prefill": false,
+            "validate": {
+                "required": true
+            },
+            "defaultValue": "definitief",
+            "data": {
+                "values": [
+                    { "label": "In bewerking", "value": "in_bewerking" },
+                    { "label": "Ter vaststelling", "value": "ter_vaststelling" },
+                    { "label": "Definitief", "value": "definitief" },
+                    { "label": "Gearchiveerd", "value": "gearchiveerd" }
+                ]
+            }
+        },
+        {
+            "key": "pv.language",
+            "type": "select",
+            "input": true,
+            "label": "Taal",
+            "tableView": true,
+            "prefill": false,
+            "validate": {
+                "required": true
+            },
+            "defaultValue": "nld",
+            "data": {
+                "values": [
+                    { "label": "Nederlands", "value": "nld" }
+                ]
+            }
+        },
+        {
             "key": "pv.fileName",
             "type": "textfield",
             "input": true,
             "label": "Bestandsnaam",
             "tableView": true,
+            "prefill": false,
             "validate": {
                 "required": true
             },
@@ -51,6 +90,7 @@
             "input": true,
             "label": "Beschrijving",
             "tableView": true,
+            "prefill": false,
             "placeholder": "beschrijving",
             "defaultValue": "beschrijving van het bestand"
         },
@@ -60,6 +100,7 @@
             "input": true,
             "label": "Titel",
             "tableView": true,
+            "prefill": false,
             "placeholder": "titel",
             "defaultValue": "de titel van het bestand"
         },

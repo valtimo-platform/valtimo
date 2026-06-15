@@ -10,15 +10,23 @@
         },
         "description": {
             "type": "string",
-            "description": "Omschrijving document"
+            "description": "Description of the document"
         },
         "fileName": {
             "type": "string",
-            "description": "bestandsnaam"
+            "description": "Name of the document"
         },
         "confidentialityLevel": {
             "type": "string",
-            "description": "confidentiality Level document"
+            "description": "Confidentiality Level document"
+        },
+        "status": {
+            "type": "string",
+            "description": "Status document"
+        },
+        "language": {
+            "type": "string",
+            "description": "Language document"
         },
         "temporaryDocumentId": {
             "type": "string",
@@ -26,7 +34,7 @@
         },
         "informationObjectTypeUrl": {
             "type": "string",
-            "description": "Informatie object type url"
+            "description": "Information object type url"
         }
     }
 }
