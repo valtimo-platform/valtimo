@@ -26,7 +26,6 @@ import com.ritense.resource.web.rest.TemporaryResourceStorageResource
 import com.ritense.temporaryresource.repository.ResourceStorageMetadataRepository
 import com.ritense.valtimo.contract.annotation.ProcessBean
 import com.ritense.valtimo.contract.upload.ValtimoUploadProperties
-import com.ritense.valueresolver.ValueResolverService
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.autoconfigure.AutoConfiguration
@@ -54,8 +53,7 @@ class TemporaryResourceStorageAutoConfiguration {
         repository: ResourceStorageMetadataRepository,
         @Value("\${valtimo.virusscan.clamav.TemporaryResourceStorageService.enabled:false}")
         virusScanEnabledForTemporaryStorage: Boolean,
-        virusScanService: VirusScanService,
-        valueResolverService: ValueResolverService
+        virusScanService: VirusScanService
     ): TemporaryResourceStorageService {
         return TemporaryResourceStorageService(
             valtimoResourceTempDirectory = valtimoResourceTempDirectory,
@@ -63,8 +61,7 @@ class TemporaryResourceStorageAutoConfiguration {
             objectMapper = objectMapper,
             repository = repository,
             virusScanService = virusScanService,
-            virusScanEnabledForTemporaryStorage = virusScanEnabledForTemporaryStorage,
-            valueResolverService = valueResolverService
+            virusScanEnabledForTemporaryStorage = virusScanEnabledForTemporaryStorage
         )
     }
 

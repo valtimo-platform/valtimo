@@ -59,8 +59,7 @@ class TemporaryResourceStorageService(
     private val objectMapper: ObjectMapper,
     private val repository: ResourceStorageMetadataRepository,
     private val virusScanService: VirusScanService,
-    private val virusScanEnabledForTemporaryStorage: Boolean = false,
-    private val valueResolverService: ValueResolverService
+    private val virusScanEnabledForTemporaryStorage: Boolean = false
 ) {
     val tempDir: Path = if (valtimoResourceTempDirectory.isNotBlank()) {
         Path.of(valtimoResourceTempDirectory)
@@ -117,54 +116,8 @@ class TemporaryResourceStorageService(
         return metaDataFile.nameWithoutExtension
     }
 
-    /**
-     * Resolves a parameter using the ValueResolverService and stores the resolved content.
-     *
-     * @param properties A map containing context for value resolution (e.g., documentId, processInstanceId)
-     * @param contentProcessVariable The parameter to resolve (e.g., "pv:fileContent", "doc:/path/to/field")
-     * @param metadata Optional metadata to store with the file
-     * @return The resource storage ID
-     */
-    fun storeResolvableContent(
-        contentProcessVariable: String
-    ): String {
-        requireNotNull(valueResolverService) { "ValueResolverService is not configured" }
-        val properties: Map<String, Any> = emptyMap()
-        val metadata: Map<String, Any> = emptyMap()
-        val resolvedValues = valueResolverService.resolveValues(properties, listOf(contentProcessVariable))
-        val resolvedValue = resolvedValues[contentProcessVariable]
-            ?: throw IllegalArgumentException("Could not resolve parameter: $contentProcessVariable")
-
-        val inputStream = when (resolvedValue) {
-            is ByteArray -> ByteArrayInputStream(resolvedValue)
-            is String -> ByteArrayInputStream(resolvedValue.toByteArray(Charsets.UTF_8))
-            is InputStream -> resolvedValue
-            else -> ByteArrayInputStream(objectMapper.writeValueAsBytes(resolvedValue))
-        }
-
-        return store(inputStream, metadata)
-    }
-
-    /**
-     * Resolves a parameter using the ValueResolverService and stores the resolved content.
-     *
-     * @param properties A map containing context for value resolution (e.g., documentId, processInstanceId)
-     * @param contentProcessVariable The parameter to resolve (e.g., "pv:fileContent", "doc:/path/to/field")
-     * @param metadata Optional metadata to store with the file
-     * @return The resource storage ID
-     */
-    fun storeContent(
-        content: String
-    ): String {
-        val metadata: Map<String, Any> = emptyMap()
-        val inputStream = when (content) {
-            is ByteArray -> ByteArrayInputStream(content)
-            is InputStream -> content
-            else -> ByteArrayInputStream(objectMapper.writeValueAsBytes(content))
-        }
-
-        return store(inputStream, metadata)
-    }
+    fun storeContent(content: String): String =
+        store(content.byteInputStream(Charsets.UTF_8), emptyMap())
 
     /**
      * This method can be used to enrich the metadata before it is handled.
