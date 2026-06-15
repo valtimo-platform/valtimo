@@ -29,7 +29,7 @@ class ResourceStorageDelegate(
     }
 
     fun storeContent(content: String) : String {
-        return service.storeContent(content);
+        return service.storeContent(content)
     }
 
 }

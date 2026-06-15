@@ -29,7 +29,6 @@ import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import com.ritense.valtimo.contract.upload.MimeTypeDeniedException
 import com.ritense.valtimo.contract.upload.ValtimoUploadProperties
 import com.ritense.valtimo.contract.upload.VirusDetectedException
-import com.ritense.valueresolver.ValueResolverService
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.apache.tika.Tika
 import org.springframework.data.repository.findByIdOrNull
