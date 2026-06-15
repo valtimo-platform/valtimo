@@ -28,4 +28,7 @@
   Existing input and output mappings on a building block process link sometimes showed up with empty dropdowns. This
   has been fixed.
 
-* New bugfix.
+* **Keycloak-based database migrations failed against newer Keycloak servers**
+
+  Database migrations that look up users in Keycloak could fail to start when running against a newer Keycloak
+  version than the one Valtimo ships with. This has been resolved.

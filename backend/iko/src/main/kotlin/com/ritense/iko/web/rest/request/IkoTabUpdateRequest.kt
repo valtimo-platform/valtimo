@@ -17,6 +17,7 @@
 package com.ritense.iko.web.rest.request
 
 import com.ritense.tab.domain.Tab
+import com.ritense.tab.domain.WidgetLayout
 import jakarta.validation.constraints.Size
 import java.util.UUID
 
@@ -28,6 +29,7 @@ data class IkoTabUpdateRequest(
     @field:Size(max = 256)
     val type: String,
     val properties: Map<String, Any?> = emptyMap(),
+    val widgetLayout: WidgetLayout? = null,
 ) {
     fun toEntity(id: UUID, order: Int) = Tab(
         id = id,
@@ -36,5 +38,6 @@ data class IkoTabUpdateRequest(
         type = this.type,
         order = order,
         properties = properties,
+        widgetLayout = widgetLayout,
     )
 }
