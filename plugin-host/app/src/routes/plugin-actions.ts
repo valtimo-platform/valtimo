@@ -18,11 +18,7 @@ import {FastifyInstance} from "fastify";
 import {PluginManager} from "../plugin-manager.js";
 import {ConfigRegistry} from "../config-registry.js";
 import type {AppConfig} from "../config.js";
-import {
-  verifyHmac,
-  SIGNATURE_HEADER,
-  TIMESTAMP_HEADER,
-} from "../security/hmac.js";
+import {createHmacAuthHook} from "../security/hmac-auth.js";
 
 /**
  * Plugin action execution endpoint.
@@ -79,26 +75,7 @@ export async function pluginActionRoutes(
       config: {
         rawBody: true,
       },
-      preHandler: async (request, reply) => {
-        const rawBody = (request as unknown as { rawBody?: Buffer }).rawBody ?? Buffer.alloc(0);
-        const signatureHeader = request.headers[SIGNATURE_HEADER] as string | undefined;
-        const timestampHeader = request.headers[TIMESTAMP_HEADER] as string | undefined;
-
-        const result = verifyHmac(
-          config.ADMIN_TOKEN,
-          request.method,
-          request.url.split("?")[0], // path without query string
-          signatureHeader,
-          timestampHeader,
-          rawBody
-        );
-
-        if (!result.valid) {
-          request.log.warn({ error: result.error, path: request.url }, "HMAC verification failed");
-          reply.code(401).send({ error: "Unauthorized: " + result.error });
-          return;
-        }
-      },
+      preHandler: createHmacAuthHook(config.ADMIN_TOKEN),
     },
     async (request, reply) => {
       const { pluginId, version, actionKey } = request.params;
