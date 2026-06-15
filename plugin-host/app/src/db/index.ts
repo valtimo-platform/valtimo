@@ -92,19 +92,6 @@ export async function runMigrations(pool: DbPool, logger: HostLogger): Promise<v
     },
     {
       version: 2,
-      name: "create_plugins_table",
-      up: `
-        CREATE TABLE IF NOT EXISTS plugins (
-          plugin_id TEXT NOT NULL,
-          version TEXT NOT NULL,
-          manifest JSONB NOT NULL,
-          created_at TIMESTAMPTZ DEFAULT NOW(),
-          PRIMARY KEY (plugin_id, version)
-        );
-      `,
-    },
-    {
-      version: 3,
       name: "add_event_subscriptions_to_plugin_configurations",
       up: `
         ALTER TABLE plugin_configurations
