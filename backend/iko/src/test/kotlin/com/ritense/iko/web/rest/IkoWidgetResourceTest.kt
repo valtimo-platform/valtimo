@@ -19,15 +19,18 @@ package com.ritense.iko.web.rest
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.ritense.iko.service.IkoWidgetService
 import com.ritense.valtimo.contract.json.MapperSingleton
+import com.ritense.valtimo.contract.web.rest.error.ExceptionTranslator
 import com.ritense.widget.fields.FieldsWidget
 import com.ritense.widget.fields.FieldsWidgetDto
 import com.ritense.widget.fields.FieldsWidgetProperties
+import jakarta.validation.Validator
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.mockito.kotlin.any
 import org.mockito.kotlin.eq
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.whenever
+import org.springframework.aop.framework.ProxyFactory
 import org.springframework.data.web.PageableHandlerMethodArgumentResolver
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter
 import org.springframework.test.web.servlet.MockMvc
@@ -37,6 +40,9 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPat
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 import org.springframework.test.web.servlet.setup.MockMvcBuilders
 import org.springframework.transaction.annotation.Transactional
+import org.springframework.validation.beanvalidation.LocalValidatorFactoryBean
+import org.springframework.validation.beanvalidation.MethodValidationInterceptor
+import java.util.Optional
 
 @Transactional
 internal class IkoWidgetResourceTest {
@@ -54,10 +60,15 @@ internal class IkoWidgetResourceTest {
         }
 
         service = mock()
-        resource = IkoWidgetResource(service)
+        val validator = LocalValidatorFactoryBean().apply { afterPropertiesSet() }
+        resource = ProxyFactory(IkoWidgetResource(service)).apply {
+            addAdvice(MethodValidationInterceptor(validator as Validator))
+        }.proxy as IkoWidgetResource
         mockMvc = MockMvcBuilders.standaloneSetup(resource)
             .setCustomArgumentResolvers(PageableHandlerMethodArgumentResolver())
             .setMessageConverters(MappingJackson2HttpMessageConverter(objectMapper))
+            .setValidator(validator)
+            .setControllerAdvice(ExceptionTranslator(Optional.empty()))
             .build()
     }
 
@@ -103,6 +114,33 @@ internal class IkoWidgetResourceTest {
             .andDo(print())
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.bsn").value("000000000"))
+    }
+
+    @Test
+    fun `should reject get iko widgets when ikoViewKey exceeds path-variable cap`() {
+        mockMvc.perform(
+            get(
+                "/api/v1/iko-view/{ikoViewKey}/tab/{tabKey}/widget",
+                "x".repeat(257),
+                "general"
+            )
+        )
+            .andDo(print())
+            .andExpect(status().isBadRequest())
+    }
+
+    @Test
+    fun `should reject get iko widget data when widgetKey exceeds path-variable cap`() {
+        mockMvc.perform(
+            get(
+                "/api/v1/iko-view/{ikoViewKey}/tab/{tabKey}/widget/{widgetKey}/data",
+                "klant",
+                "general",
+                "x".repeat(257)
+            )
+        )
+            .andDo(print())
+            .andExpect(status().isBadRequest())
     }
 
     private fun widget() = FieldsWidget(

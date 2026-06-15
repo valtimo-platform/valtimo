@@ -22,6 +22,9 @@
     selectedInputOption: selectedInputOption$ | async,
     selectedStartDateInputOption: selectedStartDateInputOption$ | async,
     selectedExpirationDateInputOption: selectedExpirationDateInputOption$ | async,
+    selectedPublicationDateInputOption: selectedPublicationDateInputOption$ | async,
+    selectedSendDateInputOption: selectedSendDateInputOption$ | async,
+    selectedResponseDeadlineInputOption: selectedResponseDeadlineInputOption$ | async,
     pluginId: pluginId$ | async,
     loading: loading$ | async,
     context: context$ | async,
@@ -39,7 +42,7 @@
         [disabled]="obs.disabled"
         [title]="'inputTypeBesluitToggle' | pluginTranslate: obs.pluginId | async"
         [radioValues]="inputTypeOptions$ | async"
-        [defaultValue]="selectedInputOption$ | async"
+        [defaultValue]="obs.prefill?.inputTypeBesluitToggle || (selectedInputOption$ | async)"
         [margin]="true"
       >
       </v-radio>
@@ -131,7 +134,7 @@
         [disabled]="obs.disabled"
         [required]="true"
         [tooltip]="'ingangsdatumTooltip' | pluginTranslate: obs.pluginId | async"
-        [widthPx]="100"
+        [widthPx]="350"
         [margin]="true"
       ></v-date-picker>
 
@@ -167,7 +170,7 @@
         [disabled]="obs.disabled"
         [required]="false"
         [tooltip]="'vervaldatumTooltip' | pluginTranslate: obs.pluginId | async"
-        [widthPx]="100"
+        [widthPx]="350"
         [margin]="true"
       ></v-date-picker>
 
@@ -183,36 +186,111 @@
         [margin]="true"
       ></v-select>
 
+      <v-radio
+        name="inputTypePublicationDateToggle"
+        [disabled]="obs.disabled"
+        [title]="'inputTypePublicationDateToggle' | pluginTranslate: obs.pluginId | async"
+        [radioValues]="publicationDateInputTypeOptions$ | async"
+        [defaultValue]="obs.prefill?.inputTypePublicationDateToggle || 'selection'"
+        [margin]="true"
+      >
+      </v-radio>
+
+      <v-input
+        *ngIf="obs.selectedPublicationDateInputOption === 'text'"
+        name="publicatiedatum"
+        [title]="'publicatiedatum' | pluginTranslate: obs.pluginId | async"
+        [defaultValue]="obs.prefill?.publicatiedatum"
+        [disabled]="obs.disabled"
+        [required]="false"
+        [trim]="true"
+        [tooltip]="'publicatiedatumTooltip' | pluginTranslate: obs.pluginId | async"
+        [widthPx]="350"
+        [margin]="true"
+      >
+      </v-input>
+
       <v-date-picker
+        *ngIf="obs.selectedPublicationDateInputOption === 'selection'"
         name="publicatiedatum"
         [title]="'publicatiedatum' | pluginTranslate: obs.pluginId | async"
         [defaultDate]="obs.prefill?.publicatiedatum"
         [disabled]="obs.disabled"
         [required]="false"
         [tooltip]="'publicatiedatumTooltip' | pluginTranslate: obs.pluginId | async"
-        [widthPx]="100"
+        [widthPx]="350"
         [margin]="true"
       ></v-date-picker>
 
+      <v-radio
+        name="inputTypeSendDateToggle"
+        [disabled]="obs.disabled"
+        [title]="'inputTypeSendDateToggle' | pluginTranslate: obs.pluginId | async"
+        [radioValues]="sendDateInputTypeOptions$ | async"
+        [defaultValue]="obs.prefill?.inputTypeSendDateToggle || 'selection'"
+        [margin]="true"
+      >
+      </v-radio>
+
+      <v-input
+        *ngIf="obs.selectedSendDateInputOption === 'text'"
+        name="verzenddatum"
+        [title]="'verzenddatum' | pluginTranslate: obs.pluginId | async"
+        [defaultValue]="obs.prefill?.verzenddatum"
+        [disabled]="obs.disabled"
+        [required]="false"
+        [trim]="true"
+        [tooltip]="'verzenddatumTooltip' | pluginTranslate: obs.pluginId | async"
+        [widthPx]="350"
+        [margin]="true"
+      >
+      </v-input>
+
       <v-date-picker
+        *ngIf="obs.selectedSendDateInputOption === 'selection'"
         name="verzenddatum"
         [title]="'verzenddatum' | pluginTranslate: obs.pluginId | async"
         [defaultDate]="obs.prefill?.verzenddatum"
         [disabled]="obs.disabled"
         [required]="false"
         [tooltip]="'verzenddatumTooltip' | pluginTranslate: obs.pluginId | async"
-        [widthPx]="100"
+        [widthPx]="350"
         [margin]="true"
       ></v-date-picker>
 
+      <v-radio
+        name="inputTypeResponseDeadlineToggle"
+        [disabled]="obs.disabled"
+        [title]="'inputTypeResponseDeadlineToggle' | pluginTranslate: obs.pluginId | async"
+        [radioValues]="responseDeadlineInputTypeOptions$ | async"
+        [defaultValue]="obs.prefill?.inputTypeResponseDeadlineToggle || 'selection'"
+        [margin]="true"
+      >
+      </v-radio>
+
+      <v-input
+        *ngIf="obs.selectedResponseDeadlineInputOption === 'text'"
+        name="uiterlijkeReactieDatum"
+        [title]="'uiterlijkeReactieDatum' | pluginTranslate: obs.pluginId | async"
+        [defaultValue]="obs.prefill?.uiterlijkeReactieDatum"
+        [disabled]="obs.disabled"
+        [required]="false"
+        [trim]="true"
+        [tooltip]="'uiterlijkeReactieDatumTooltip' | pluginTranslate: obs.pluginId | async"
+        [widthPx]="350"
+        [margin]="true"
+      >
+      </v-input>
+
       <v-date-picker
+        *ngIf="obs.selectedResponseDeadlineInputOption === 'selection'"
         name="uiterlijkeReactieDatum"
         [title]="'uiterlijkeReactieDatum' | pluginTranslate: obs.pluginId | async"
         [defaultDate]="obs.prefill?.uiterlijkeReactieDatum"
         [disabled]="obs.disabled"
         [required]="false"
         [tooltip]="'uiterlijkeReactieDatumTooltip' | pluginTranslate: obs.pluginId | async"
-        [widthPx]="100"
+        [widthPx]="350"
         [margin]="true"
       ></v-date-picker>
 

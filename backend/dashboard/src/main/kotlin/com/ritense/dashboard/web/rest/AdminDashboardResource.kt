@@ -28,6 +28,7 @@ import com.ritense.dashboard.web.rest.dto.WidgetConfigurationCreateRequestDto
 import com.ritense.dashboard.web.rest.dto.WidgetConfigurationUpdateRequestDto
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import com.ritense.valtimo.contract.domain.ValtimoMediaType.APPLICATION_JSON_UTF8_VALUE
+import jakarta.validation.Valid
 import org.springframework.http.ResponseEntity
 import org.springframework.stereotype.Controller
 import org.springframework.web.bind.annotation.DeleteMapping
@@ -65,11 +66,12 @@ class AdminDashboardResource(
     @RunWithoutAuthorization
     @PostMapping("/v1/dashboard")
     fun createDashboard(
-        @RequestBody dashboardDto: DashboardCreateRequestDto
+        @Valid @RequestBody dashboardDto: DashboardCreateRequestDto
     ): ResponseEntity<DashboardResponseDto> {
         val dashboard = dashboardService.createDashboard(
             dashboardDto.title,
             dashboardDto.description,
+            dashboardDto.widgetLayout,
         )
         return ResponseEntity.ok(DashboardResponseDto.of(dashboard))
     }
@@ -77,7 +79,7 @@ class AdminDashboardResource(
     @RunWithoutAuthorization
     @PutMapping("/v1/dashboard")
     fun editDashboards(
-        @RequestBody dashboardUpdateRequestDtos: List<DashboardUpdateRequestDto>
+        @Valid @RequestBody dashboardUpdateRequestDtos: List<DashboardUpdateRequestDto>
     ): ResponseEntity<List<DashboardResponseDto>> {
         val dashboardResponseDtos = dashboardService.updateDashboards(dashboardUpdateRequestDtos)
             .map { DashboardResponseDto.of(it) }
@@ -97,7 +99,7 @@ class AdminDashboardResource(
     @PutMapping("/v1/dashboard/{dashboardKey}")
     fun editDashboard(
         @PathVariable(name = "dashboardKey") dashboardKey: String,
-        @RequestBody dashboardUpdateRequestDto: DashboardUpdateRequestDto
+        @Valid @RequestBody dashboardUpdateRequestDto: DashboardUpdateRequestDto
     ): ResponseEntity<DashboardResponseDto> {
         if (dashboardKey != dashboardUpdateRequestDto.key) {
             throw RuntimeException("Failed to update dashboard. Key specified in the path does not match key in the request body.")
@@ -121,7 +123,7 @@ class AdminDashboardResource(
     @PostMapping("/v1/dashboard/{dashboardKey}/widget-configuration")
     fun createWidgetConfiguration(
         @PathVariable(name = "dashboardKey") dashboardKey: String,
-        @RequestBody widgetDto: WidgetConfigurationCreateRequestDto,
+        @Valid @RequestBody widgetDto: WidgetConfigurationCreateRequestDto,
     ): ResponseEntity<AdminWidgetConfigurationResponseDto> {
         val widget = dashboardService.createWidgetConfiguration(
             dashboardKey,
@@ -139,7 +141,7 @@ class AdminDashboardResource(
     @PutMapping("/v1/dashboard/{dashboardKey}/widget-configuration")
     fun editWidgetConfigurations(
         @PathVariable(name = "dashboardKey") dashboardKey: String,
-        @RequestBody widgetUpdateRequestDtos: List<WidgetConfigurationUpdateRequestDto>
+        @Valid @RequestBody widgetUpdateRequestDtos: List<WidgetConfigurationUpdateRequestDto>
     ): ResponseEntity<List<AdminWidgetConfigurationResponseDto>> {
         val widgetResponseDtos = dashboardService.updateWidgetConfigurations(dashboardKey, widgetUpdateRequestDtos)
             .map { AdminWidgetConfigurationResponseDto.of(it) }
@@ -151,7 +153,7 @@ class AdminDashboardResource(
     fun editWidgetConfiguration(
         @PathVariable(name = "dashboardKey") dashboardKey: String,
         @PathVariable(name = "widgetKey") widgetKey: String,
-        @RequestBody widgetUpdateRequestDto: SingleWidgetConfigurationUpdateRequestDto
+        @Valid @RequestBody widgetUpdateRequestDto: SingleWidgetConfigurationUpdateRequestDto
     ): ResponseEntity<AdminWidgetConfigurationResponseDto> {
         val widgetResponseDto = dashboardService.updateWidgetConfiguration(dashboardKey, widgetKey, widgetUpdateRequestDto)
             .let { AdminWidgetConfigurationResponseDto.of(it) }
