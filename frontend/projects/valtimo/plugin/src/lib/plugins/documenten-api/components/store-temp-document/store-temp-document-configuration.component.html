@@ -19,6 +19,7 @@
   *ngIf="{
     disabled: disabled$ | async,
     prefill: prefillConfiguration$ ? (prefillConfiguration$ | async) : null,
+    selectedConfidentialityLevelInputType: selectedConfidentialityLevelInputType$ | async,
   } as obs"
 >
   <v-input
@@ -30,7 +31,18 @@
     [tooltip]="'fileNameTooltip' | pluginTranslate: pluginId | async"
     [trim]="true"
   ></v-input>
+
+  <v-radio
+    name="confidentialityLevelInputType"
+    [disabled]="obs.disabled"
+    [title]="'confidentialityLevelInputType' | pluginTranslate: pluginId | async"
+    [radioValues]="confidentialityLevelInputTypeOptions$ | async"
+    [defaultValue]="obs.prefill?.confidentialityLevelInputType || 'selection'"
+    [margin]="true"
+  ></v-radio>
+
   <v-select
+    *ngIf="obs.selectedConfidentialityLevelInputType === 'selection'"
     [items]="confidentialityLevelItems$ | async"
     [margin]="true"
     [widthInPx]="200"
@@ -40,6 +52,18 @@
     [defaultSelectionId]="obs.prefill?.confidentialityLevel || CONFIDENTIALITY_LEVEL_ITEMS[3]"
     [tooltip]="'confidentialityLevelTooltip' | pluginTranslate: pluginId | async"
   ></v-select>
+
+  <v-input
+    *ngIf="obs.selectedConfidentialityLevelInputType === 'text'"
+    name="confidentialityLevel"
+    [title]="'confidentialityLevel' | pluginTranslate: pluginId | async"
+    [margin]="true"
+    [defaultValue]="obs.prefill?.confidentialityLevel"
+    [disabled]="obs.disabled"
+    [tooltip]="'confidentialityLevelTextTooltip' | pluginTranslate: pluginId | async"
+    [trim]="true"
+    placeholder="e.g. doc:confidentialityLevel"
+  ></v-input>
   <v-input
     name="title"
     [title]="'inputTitle' | pluginTranslate: pluginId | async"

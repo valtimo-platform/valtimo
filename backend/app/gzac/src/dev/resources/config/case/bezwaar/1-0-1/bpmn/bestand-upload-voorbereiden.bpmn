@@ -18,6 +18,7 @@
         <camunda:inputOutput>
           <camunda:inputParameter name="informationObjectTypeUrl">http://localhost:8001/catalogi/api/v1/informatieobjecttypen/efc332f2-be3b-4bad-9e3c-49a6219c92ad</camunda:inputParameter>
         </camunda:inputOutput>
+        <camunda:in businessKey="#{execution.processBusinessKey}" />
       </bpmn:extensionElements>
       <bpmn:incoming>Flow_0a4d81k</bpmn:incoming>
       <bpmn:outgoing>Flow_0ob11xp</bpmn:outgoing>

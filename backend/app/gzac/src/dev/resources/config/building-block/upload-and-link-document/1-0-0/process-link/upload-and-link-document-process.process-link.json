@@ -27,8 +27,8 @@
             "fileName" : "doc:fileName",
             "description" : "doc:description",
             "storedDocumentUrl" : "storedDocumentUrl",
-            "confidentialityLevel" : "zaakvertrouwelijk",
-            "informatieobjecttype" : "doc:informationObjectTypeUrl",
+            "confidentialityLevel" : "doc:confidentialityLevel",
+            "informatieobjecttype" : "pv:informationObjectTypeUrl",
             "localDocumentLocation" : "temporaryDocumentId"
         },
         "referenceType" : "BUILDING_BLOCK",

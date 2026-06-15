@@ -69,6 +69,11 @@ const documentenApiPluginSpecification: PluginSpecification = {
       confidentialityLevel: 'Vertrouwelijkheidsaanduiding',
       confidentialityLevelTooltip:
         'Aanduiding van de mate waarin het document voor de openbaarheid bestemd is',
+      confidentialityLevelInputType: 'Invoertype vertrouwelijkheidsaanduiding',
+      confidentialityLevelTextTooltip:
+        'Voer een waarde-resolver expressie in die tijdens runtime wordt opgelost (bijv. doc:confidentialityLevel)',
+      selection: 'Selectie',
+      text: 'Tekst (waarde-resolver)',
       inputTitle: 'Titel',
       inputTitleTooltip: 'De naam waaronder het document formeel bekend is',
       inputDescription: 'Beschrijving',
@@ -164,6 +169,11 @@ const documentenApiPluginSpecification: PluginSpecification = {
       confidentialityLevel: 'Confidentiality level',
       confidentialityLevelTooltip:
         'Indication of the extent to which the document is intended for public access',
+      confidentialityLevelInputType: 'Confidentiality level input type',
+      confidentialityLevelTextTooltip:
+        'Enter a value resolver expression that will be resolved at runtime (e.g. doc:confidentialityLevel)',
+      selection: 'Selection',
+      text: 'Text (value resolver)',
       inputTitle: 'Title',
       inputTitleTooltip: 'The name by which the document is formally known',
       inputDescription: 'Description',
