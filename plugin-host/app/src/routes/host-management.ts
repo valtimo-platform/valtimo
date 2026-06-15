@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { FastifyInstance, FastifyRequest, FastifyReply } from "fastify";
+import { FastifyInstance } from "fastify";
 import { PluginManager } from "../plugin-manager.js";
 import { ConfigRegistry } from "../config-registry.js";
 import { AppConfig } from "../config.js";
@@ -23,11 +23,15 @@ import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 import AdmZip from "adm-zip";
 import { validatePluginManifest } from "@valtimo/plugin-sdk/manifest-validation";
+import { createHmacAuthHook, verifyDeferredHmac } from "../security/hmac-auth.js";
 
 /**
  * Admin-authenticated plugin management routes.
  *
- * All routes under /api/host/plugins require the ADMIN_TOKEN.
+ * All routes under /api/host/plugins are HMAC-signed (same scheme as the action route): the
+ * signature is computed over `{method}\n{path}\n{timestamp}\n{bodyHash}` with the host's ADMIN_TOKEN
+ * as the key, and the ±5-minute timestamp window blocks replay. GET/DELETE bind an empty body; the
+ * multipart upload binds the uploaded file bytes (verified inside its handler — see below).
  */
 export async function hostManagementRoutes(
   fastify: FastifyInstance,
@@ -35,23 +39,9 @@ export async function hostManagementRoutes(
 ): Promise<void> {
   const { pluginManager, configRegistry, config } = opts;
 
-  // Admin auth hook for all routes in this plugin
-  fastify.addHook(
-    "onRequest",
-    async (request: FastifyRequest, reply: FastifyReply) => {
-      const authHeader = request.headers["authorization"];
-      if (!authHeader) {
-        reply.code(401).send({ error: "Missing Authorization header" });
-        return;
-      }
-
-      const token = authHeader.replace(/^Bearer\s+/i, "");
-      if (token !== config.ADMIN_TOKEN) {
-        reply.code(403).send({ error: "Invalid admin token" });
-        return;
-      }
-    }
-  );
+  // Authenticate every management route by HMAC signature. The upload route opts out (deferHmac)
+  // and verifies itself once the uploaded file has been read, since it binds the file bytes.
+  fastify.addHook("preHandler", createHmacAuthHook(config.ADMIN_TOKEN));
 
   /**
    * GET /api/host/plugins — list all loaded plugins (all versions)
@@ -75,8 +65,13 @@ export async function hostManagementRoutes(
    *
    * The .zip must contain manifest.json and plugin.wasm at the root level.
    * pluginId and version are extracted from the manifest.
+   *
+   * HMAC body binding: the signature covers the uploaded file bytes (the .zip), not the multipart
+   * envelope — the backend signs the raw file bytes it sends, which the host reproduces below from
+   * the parsed file stream. `deferHmac` skips the shared raw-body hook so verification can run once
+   * the file has been read.
    */
-  fastify.post("/api/host/plugins", async (request, reply) => {
+  fastify.post("/api/host/plugins", { config: { deferHmac: true } }, async (request, reply) => {
     const data = await request.file();
     if (!data) {
       reply.code(400).send({ error: "No file uploaded" });
@@ -96,6 +91,11 @@ export async function hostManagementRoutes(
         chunks.push(chunk);
       }
       const zipBuffer = Buffer.concat(chunks);
+
+      // Authenticate: the HMAC signature binds these exact file bytes (see deferHmac note above).
+      if (!verifyDeferredHmac(request, reply, config.ADMIN_TOKEN, zipBuffer)) {
+        return;
+      }
 
       // Extract zip
       const extractDir = join(tempDir, "extracted");

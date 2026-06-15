@@ -16,7 +16,7 @@ services:
       timeout: 5s
       retries: 5
 
-  app:
+  plugin-host:
     build: .
     container_name: plugin-host-app
     extra_hosts:
