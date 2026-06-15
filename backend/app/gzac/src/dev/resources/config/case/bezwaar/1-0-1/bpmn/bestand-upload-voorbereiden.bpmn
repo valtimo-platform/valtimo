@@ -11,14 +11,13 @@
       <bpmn:incoming>Flow_11vuyzp</bpmn:incoming>
       <bpmn:outgoing>Flow_08p7bm9</bpmn:outgoing>
     </bpmn:serviceTask>
-    <bpmn:callActivity id="CallUploadAndLinkActivity" name="Call Upload and Link BB" calledElement="upload-and-link-document-process" camunda:calledElementBinding="versionTag" camunda:calledElementVersionTag="BB:upload-and-link-document:1.0.0">
+    <bpmn:callActivity id="CallUploadAndLinkActivity" name="Call Upload and Link BB" camunda:asyncBefore="true" calledElement="upload-and-link-document-process" camunda:calledElementBinding="versionTag" camunda:calledElementVersionTag="BB:upload-and-link-document:1.0.0">
       <bpmn:extensionElements>
         <camunda:in source="informationObjectTypeUrl" target="informationObjectTypeUrl" />
         <camunda:in source="temporaryDocumentId" target="temporaryDocumentId" />
         <camunda:inputOutput>
           <camunda:inputParameter name="informationObjectTypeUrl">http://localhost:8001/catalogi/api/v1/informatieobjecttypen/efc332f2-be3b-4bad-9e3c-49a6219c92ad</camunda:inputParameter>
         </camunda:inputOutput>
-        <camunda:in businessKey="#{execution.processBusinessKey}" />
       </bpmn:extensionElements>
       <bpmn:incoming>Flow_0a4d81k</bpmn:incoming>
       <bpmn:outgoing>Flow_0ob11xp</bpmn:outgoing>

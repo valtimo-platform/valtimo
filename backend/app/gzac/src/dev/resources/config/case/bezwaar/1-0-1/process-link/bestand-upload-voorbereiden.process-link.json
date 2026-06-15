@@ -40,9 +40,17 @@
                 "source": "pv:temporaryDocumentId",
                 "target": "doc:/temporaryDocumentId"
             },
-           {
+            {
                 "source": "pv:informationObjectTypeUrl",
                 "target": "doc:/informationObjectTypeUrl"
+            },
+            {
+                "source": "pv:language",
+                "target": "doc:/language"
+            },
+            {
+                "source": "pv:status",
+                "target": "doc:/status"
             }
         ],
         "outputMappings": []

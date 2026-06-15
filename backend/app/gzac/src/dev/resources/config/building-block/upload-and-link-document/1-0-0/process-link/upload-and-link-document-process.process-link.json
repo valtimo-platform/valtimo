@@ -1,5 +1,11 @@
 [
     {
+        "activityId": "uploadLinkWachtTask",
+        "activityType": "bpmn:UserTask:create",
+        "formDefinitionName": "empty-form",
+        "processLinkType": "form"
+    },
+    {
         "activityId" : "LinkToCaseTask",
         "activityType" : "bpmn:ServiceTask:start",
         "pluginConfigurationId" : null,
@@ -21,9 +27,9 @@
         "pluginConfigurationId" : null,
         "pluginActionDefinitionKey" : "store-temp-document",
         "actionProperties" : {
-            "taal" : "nld",
+            "taal" : "doc:language",
             "title" : "doc:title",
-            "status" : "definitief",
+            "status" : "doc:status",
             "fileName" : "doc:fileName",
             "description" : "doc:description",
             "storedDocumentUrl" : "storedDocumentUrl",

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:camunda="http://camunda.org/schema/1.0/bpmn" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" id="Definitions_1" targetNamespace="http://bpmn.io/schema/bpmn" exporter="Camunda Modeler" exporterVersion="5.23.0">
   <bpmn:collaboration id="DocumentUploadAndLinkProcess" isClosed="false">
-    <bpmn:participant id="UploadLinkDocument" name="Document uploaden en koppelen" processRef="upload-and-link-document-process" />
+    <bpmn:participant id="UploadLinkDocument" name="Upload and link document" processRef="upload-and-link-document-process" />
   </bpmn:collaboration>
   <bpmn:process id="upload-and-link-document-process" name="Bestand uploaden en koppelen" processType="None" isClosed="false" isExecutable="true" camunda:versionTag="BB:upload-and-link-document:1.0.0">
     <bpmn:startEvent id="StartEvent">
@@ -9,14 +9,14 @@
     </bpmn:startEvent>
     <bpmn:sequenceFlow id="Flow_11vuyzp" sourceRef="StartEvent" targetRef="UploadDocumentTask" />
     <bpmn:sequenceFlow id="Flow_1h32p5m" sourceRef="UploadDocumentTask" targetRef="LinkToCaseTask" />
-    <bpmn:serviceTask id="UploadDocumentTask" name="upload document" implementation="##unspecified" camunda:expression="${true}">
-      <bpmn:incoming>Flow_11vuyzp</bpmn:incoming>
-      <bpmn:outgoing>Flow_1h32p5m</bpmn:outgoing>
-    </bpmn:serviceTask>
     <bpmn:sequenceFlow id="Flow_19u2cwb" sourceRef="LinkToCaseTask" targetRef="Event_0pluhoi" />
-    <bpmn:serviceTask id="LinkToCaseTask" name="koppel document" camunda:asyncAfter="true" implementation="##WebService" camunda:expression="${null}">
+    <bpmn:serviceTask id="LinkToCaseTask" name="Link document" camunda:asyncAfter="true" implementation="##WebService" camunda:expression="${null}">
       <bpmn:incoming>Flow_1h32p5m</bpmn:incoming>
       <bpmn:outgoing>Flow_19u2cwb</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:serviceTask id="UploadDocumentTask" name="Upload document" implementation="##unspecified" camunda:expression="${true}">
+      <bpmn:incoming>Flow_11vuyzp</bpmn:incoming>
+      <bpmn:outgoing>Flow_1h32p5m</bpmn:outgoing>
     </bpmn:serviceTask>
     <bpmn:endEvent id="Event_0pluhoi">
       <bpmn:incoming>Flow_19u2cwb</bpmn:incoming>
@@ -34,16 +34,16 @@
           <dc:Bounds x="219" y="108" width="62" height="14" />
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_087hxz0_di" bpmnElement="LinkToCaseTask">
+        <dc:Bounds x="490" y="110" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="Activity_0brfqi1_di" bpmnElement="UploadDocumentTask">
         <dc:Bounds x="320" y="110" width="100" height="80" />
         <bpmndi:BPMNLabel />
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Activity_087hxz0_di" bpmnElement="LinkToCaseTask">
-        <dc:Bounds x="480" y="110" width="100" height="80" />
-        <bpmndi:BPMNLabel />
-      </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="Event_0pluhoi_di" bpmnElement="Event_0pluhoi">
-        <dc:Bounds x="642" y="132" width="36" height="36" />
+        <dc:Bounds x="652" y="132" width="36" height="36" />
         <bpmndi:BPMNLabel>
           <dc:Bounds x="356" y="145" width="89" height="14" />
         </bpmndi:BPMNLabel>
@@ -54,11 +54,11 @@
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Flow_1h32p5m_di" bpmnElement="Flow_1h32p5m">
         <di:waypoint x="420" y="150" />
-        <di:waypoint x="480" y="150" />
+        <di:waypoint x="490" y="150" />
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Flow_19u2cwb_di" bpmnElement="Flow_19u2cwb">
-        <di:waypoint x="580" y="150" />
-        <di:waypoint x="642" y="150" />
+        <di:waypoint x="590" y="150" />
+        <di:waypoint x="652" y="150" />
       </bpmndi:BPMNEdge>
     </bpmndi:BPMNPlane>
   </bpmndi:BPMNDiagram>
