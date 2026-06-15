@@ -23,6 +23,10 @@
 
 ## Bugfixes
 
+* **Form flows in draft case definitions could not be edited**
+
+  Form flows in a draft case definition were incorrectly shown as read-only and can now be edited.
+
 * **Keycloak-based database migrations failed against newer Keycloak servers**
 
   Database migrations that look up users in Keycloak could fail to start when running against a newer Keycloak
