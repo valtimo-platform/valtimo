@@ -5,11 +5,6 @@
         "startableByUser": true
     },
     {
-        "processDefinitionKey": "bestand-koppelen",
-        "canInitializeDocument": false,
-        "startableByUser": true
-    },
-    {
         "processDefinitionKey": "bestand-upload-voorbereiden",
         "canInitializeDocument": false,
         "startableByUser": true

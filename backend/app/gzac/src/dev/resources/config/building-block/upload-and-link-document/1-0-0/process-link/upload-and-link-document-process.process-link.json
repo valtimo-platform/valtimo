@@ -1,11 +1,5 @@
 [
     {
-        "activityId": "uploadLinkWachtTask",
-        "activityType": "bpmn:UserTask:create",
-        "formDefinitionName": "empty-form",
-        "processLinkType": "form"
-    },
-    {
         "activityId" : "LinkToCaseTask",
         "activityType" : "bpmn:ServiceTask:start",
         "pluginConfigurationId" : null,
