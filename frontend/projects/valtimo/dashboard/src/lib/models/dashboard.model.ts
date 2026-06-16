@@ -14,10 +14,13 @@
  * limitations under the License.
  */
 
+import {WidgetLayout} from '@valtimo/components';
+
 interface Dashboard {
   key: string;
   title: string;
   widgets: Array<DashboardWidgetConfiguration>;
+  widgetLayout?: WidgetLayout;
 }
 
 interface DashboardWidgetConfiguration {

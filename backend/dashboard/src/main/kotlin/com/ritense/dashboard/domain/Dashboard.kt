@@ -21,6 +21,8 @@ import java.time.ZonedDateTime
 import jakarta.persistence.CascadeType.ALL
 import jakarta.persistence.Column
 import jakarta.persistence.Entity
+import jakarta.persistence.EnumType
+import jakarta.persistence.Enumerated
 import jakarta.persistence.FetchType.EAGER
 import jakarta.persistence.Id
 import jakarta.persistence.OneToMany
@@ -40,6 +42,10 @@ data class Dashboard(
 
     @Column(name = "description")
     val description: String,
+
+    @Column(name = "widget_layout")
+    @Enumerated(EnumType.STRING)
+    val widgetLayout: WidgetLayout? = null,
 
     @OneToMany(mappedBy = "dashboard", fetch = EAGER, cascade = [ALL], orphanRemoval = true)
     @OrderBy("order ASC")
