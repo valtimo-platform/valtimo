@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -71,6 +71,7 @@ class ZakenApiHttpSecurityConfigurer : HttpSecurityConfigurer {
                     .requestMatchers(antMatcher(GET, ZAKEN_API_SYNC_MANAGEMENT_URL)).hasAuthority(ADMIN)
                     .requestMatchers(antMatcher(PUT, ZAKEN_API_SYNC_MANAGEMENT_URL)).hasAuthority(ADMIN)
                     .requestMatchers(antMatcher(DELETE, ZAKEN_API_SYNC_MANAGEMENT_URL)).hasAuthority(ADMIN)
+                    .requestMatchers(antMatcher(GET, "/api/management/v1/case/{caseId}/zgw")).authenticated()
             }
         } catch (e: Exception) {
             throw HttpConfigurerConfigurationException(e)
