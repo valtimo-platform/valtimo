@@ -313,7 +313,7 @@ class ZakenApiAutoConfiguration {
         return ZaakActionProvider()
     }
 
-    @Bean
+    @Bean("zakenApiZaakService")
     @ConditionalOnMissingBean(ZaakService::class)
     fun zaakService(
         pluginService: PluginService,
