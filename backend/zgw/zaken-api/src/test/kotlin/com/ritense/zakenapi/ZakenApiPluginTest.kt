@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,32 +31,32 @@ import com.ritense.zakenapi.ZakenApiPlugin.Companion.RESOURCE_ID_PROCESS_VAR
 import com.ritense.zakenapi.client.LinkDocumentRequest
 import com.ritense.zakenapi.client.ZakenApiClient
 import com.ritense.zakenapi.domain.AardRelatie
-import com.ritense.zakenapi.domain.GerelateerdeZaak
 import com.ritense.zakenapi.domain.Archiefstatus
 import com.ritense.zakenapi.domain.Betalingsindicatie
-import com.ritense.zakenapi.domain.Kenmerk
-import com.ritense.zakenapi.domain.Opschorting
-import com.ritense.zakenapi.domain.Processobject
-import com.ritense.zakenapi.domain.RelevanteZaak
-import com.ritense.zakenapi.domain.Verlenging
+import com.ritense.zakenapi.domain.CreateZaakNotitieRequest
 import com.ritense.zakenapi.domain.CreateZaakRequest
 import com.ritense.zakenapi.domain.CreateZaakResultaatRequest
 import com.ritense.zakenapi.domain.CreateZaakStatusRequest
 import com.ritense.zakenapi.domain.CreateZaakeigenschapRequest
 import com.ritense.zakenapi.domain.Geometry
 import com.ritense.zakenapi.domain.GeometryType
-import com.ritense.zakenapi.domain.PatchZaakRequest
-import com.ritense.zakenapi.domain.UpdateZaakeigenschapRequest
-import com.ritense.zakenapi.domain.CreateZaakNotitieRequest
+import com.ritense.zakenapi.domain.GerelateerdeZaak
 import com.ritense.zakenapi.domain.GetZaakResultatenRequest
-import com.ritense.zakenapi.domain.PatchZaakNotitieRequest
-import com.ritense.zakenapi.domain.ZaakNotitie
-import com.ritense.zakenapi.domain.NotitieType
+import com.ritense.zakenapi.domain.Kenmerk
 import com.ritense.zakenapi.domain.NotitieStatus
+import com.ritense.zakenapi.domain.NotitieType
+import com.ritense.zakenapi.domain.Opschorting
+import com.ritense.zakenapi.domain.PatchZaakNotitieRequest
+import com.ritense.zakenapi.domain.PatchZaakRequest
+import com.ritense.zakenapi.domain.Processobject
 import com.ritense.zakenapi.domain.PutZaakNotitieRequest
+import com.ritense.zakenapi.domain.RelevanteZaak
+import com.ritense.zakenapi.domain.UpdateZaakeigenschapRequest
+import com.ritense.zakenapi.domain.Verlenging
 import com.ritense.zakenapi.domain.ZaakHersteltermijn
 import com.ritense.zakenapi.domain.ZaakInformatieObject
 import com.ritense.zakenapi.domain.ZaakInstanceLink
+import com.ritense.zakenapi.domain.ZaakNotitie
 import com.ritense.zakenapi.domain.ZaakObject
 import com.ritense.zakenapi.domain.ZaakResponse
 import com.ritense.zakenapi.domain.ZaakResultaat
@@ -66,10 +66,10 @@ import com.ritense.zakenapi.domain.ZaakopschortingRequest
 import com.ritense.zakenapi.domain.rol.BetrokkeneType
 import com.ritense.zakenapi.domain.rol.Rol
 import com.ritense.zakenapi.domain.rol.RolMedewerker
-import com.ritense.zakenapi.domain.rol.RolTypeGeneriekeBeschrijving
 import com.ritense.zakenapi.domain.rol.RolNatuurlijkPersoon
 import com.ritense.zakenapi.domain.rol.RolNietNatuurlijkPersoon
 import com.ritense.zakenapi.domain.rol.RolOrganisatorischeEenheid
+import com.ritense.zakenapi.domain.rol.RolTypeGeneriekeBeschrijving
 import com.ritense.zakenapi.domain.rol.RolVestiging
 import com.ritense.zakenapi.domain.zaakobjectrequest.ZaakObjectRequest
 import com.ritense.zakenapi.repository.ZaakHersteltermijnRepository
@@ -87,7 +87,6 @@ import org.mockito.kotlin.any
 import org.mockito.kotlin.argumentCaptor
 import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.doThrow
-import org.springframework.security.access.AccessDeniedException
 import org.mockito.kotlin.eq
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.never
@@ -96,6 +95,7 @@ import org.mockito.kotlin.verify
 import org.mockito.kotlin.verifyNoMoreInteractions
 import org.mockito.kotlin.whenever
 import org.operaton.bpm.engine.delegate.DelegateExecution
+import org.springframework.security.access.AccessDeniedException
 import org.springframework.transaction.PlatformTransactionManager
 import java.net.URI
 import java.time.LocalDate
@@ -326,6 +326,62 @@ internal class ZakenApiPluginTest {
 
         verify(zakenApiClient, times(2)).getZaakRollen(any(), any(), any(), any(), eq(null))
         assertEquals(3, zaakRollen.size)
+    }
+
+    @Test
+    fun `getZaakeigenschappen should delegate to the client with the plugin's auth and base URL`() {
+        val zakenApiClient: ZakenApiClient = mock()
+        val authenticationMock = mock<ZakenApiAuthentication>()
+        val zaakUrl = zaakUri()
+
+        val expected = listOf(
+            ZaakeigenschapResponse(
+                url = URI("$zaakUrl/zaakeigenschappen/abc"),
+                zaak = zaakUrl,
+                eigenschap = URI("$zaakUrl/eigenschappen/abc"),
+                naam = "naam",
+                waarde = "waarde",
+            )
+        )
+        whenever(zakenApiClient.getZaakeigenschappen(authenticationMock, zakenApiUri(), zaakUrl))
+            .thenReturn(expected)
+
+        val plugin = zakenApiPlugin(
+            zakenApiClient = zakenApiClient,
+            authenticationMock = authenticationMock,
+        )
+
+        val result = plugin.getZaakeigenschappen(zaakUrl)
+
+        verify(zakenApiClient).getZaakeigenschappen(authenticationMock, zakenApiUri(), zaakUrl)
+        assertEquals(expected, result)
+    }
+
+    @Test
+    fun `getZaakbesluiten should delegate to the client with the plugin's auth and base URL`() {
+        val zakenApiClient: ZakenApiClient = mock()
+        val authenticationMock = mock<ZakenApiAuthentication>()
+        val zaakUrl = zaakUri()
+
+        val expected = listOf(
+            ZaakbesluitResponse(
+                url = URI("$zaakUrl/zaakbesluiten/xyz"),
+                uuid = UUID.randomUUID(),
+                besluit = URI("https://openzaak.example.nl/besluiten/api/v1/besluiten/xyz"),
+            )
+        )
+        whenever(zakenApiClient.getZaakbesluiten(authenticationMock, zakenApiUri(), zaakUrl))
+            .thenReturn(expected)
+
+        val plugin = zakenApiPlugin(
+            zakenApiClient = zakenApiClient,
+            authenticationMock = authenticationMock,
+        )
+
+        val result = plugin.getZaakbesluiten(zaakUrl)
+
+        verify(zakenApiClient).getZaakbesluiten(authenticationMock, zakenApiUri(), zaakUrl)
+        assertEquals(expected, result)
     }
 
     @Test

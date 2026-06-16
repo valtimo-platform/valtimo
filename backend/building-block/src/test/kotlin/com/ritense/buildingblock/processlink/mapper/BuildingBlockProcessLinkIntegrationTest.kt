@@ -44,6 +44,7 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.whenever
+import org.operaton.bpm.engine.RepositoryService
 import org.springframework.beans.factory.annotation.Autowired
 import java.time.LocalDateTime
 import java.util.UUID
@@ -52,9 +53,11 @@ import kotlin.test.assertEquals
 class BuildingBlockProcessLinkIntegrationTest @Autowired constructor(
     private val mapper: BuildingBlockProcessLinkMapper,
     private val processDefinitionBuildingBlockDefinitionRepository: ProcessDefinitionBuildingBlockDefinitionRepository,
+    private val repositoryService: RepositoryService,
 ) : BaseIntegrationTest() {
 
     lateinit var buildingBlock: BuildingBlockDefinition
+    lateinit var caseProcessDefinitionId: String
 
     @BeforeEach
     fun setUp() {
@@ -66,6 +69,12 @@ class BuildingBlockProcessLinkIntegrationTest @Autowired constructor(
             LocalDateTime.now(),
         )
         this.buildingBlock = buildingBlockDefinitionRepository.save(bbToSave)
+        this.caseProcessDefinitionId = repositoryService.createProcessDefinitionQuery()
+            .processDefinitionKey(CASE_PROCESS_KEY)
+            .latestVersion()
+            .singleResult()
+            ?.id
+            ?: throw IllegalStateException("Process definition '$CASE_PROCESS_KEY' not deployed")
     }
 
     @AfterEach
@@ -82,7 +91,7 @@ class BuildingBlockProcessLinkIntegrationTest @Autowired constructor(
 
         val mappingId = UUID.randomUUID()
         val dto = BuildingBlockProcessLinkCreateRequestDto(
-            processDefinitionId = "case-process",
+            processDefinitionId = caseProcessDefinitionId,
             activityId = "callActivity",
             activityType = ActivityTypeWithEventName.CALL_ACTIVITY_START,
             buildingBlockDefinitionKey = "bb",
@@ -116,7 +125,7 @@ class BuildingBlockProcessLinkIntegrationTest @Autowired constructor(
         )
 
         val dto = BuildingBlockProcessLinkCreateRequestDto(
-            processDefinitionId = "case-process",
+            processDefinitionId = caseProcessDefinitionId,
             activityId = "callActivity",
             activityType = ActivityTypeWithEventName.CALL_ACTIVITY_START,
             buildingBlockDefinitionKey = "bb",
@@ -161,7 +170,7 @@ class BuildingBlockProcessLinkIntegrationTest @Autowired constructor(
 
         val existing = BuildingBlockProcessLink(
             id = UUID.randomUUID(),
-            processDefinitionId = "case-process",
+            processDefinitionId = caseProcessDefinitionId,
             activityId = "callActivity",
             activityType = ActivityTypeWithEventName.CALL_ACTIVITY_START,
             buildingBlockDefinitionId = buildingBlockDefinitionId,
@@ -218,7 +227,7 @@ class BuildingBlockProcessLinkIntegrationTest @Autowired constructor(
 
         val existingLink = BuildingBlockProcessLink(
             id = UUID.randomUUID(),
-            processDefinitionId = "case-process",
+            processDefinitionId = caseProcessDefinitionId,
             activityId = "callActivity",
             activityType = ActivityTypeWithEventName.CALL_ACTIVITY_START,
             buildingBlockDefinitionId = buildingBlockDefinitionId,
@@ -245,7 +254,7 @@ class BuildingBlockProcessLinkIntegrationTest @Autowired constructor(
         doReturn(emptyList<PluginProcessLink>()).whenever(processLinkService).getProcessLinks(mainProcessDefinitionId)
 
         val dto = BuildingBlockProcessLinkCreateRequestDto(
-            processDefinitionId = "case-process",
+            processDefinitionId = caseProcessDefinitionId,
             activityId = "callActivity",
             activityType = ActivityTypeWithEventName.CALL_ACTIVITY_START,
             buildingBlockDefinitionKey = "bb",
@@ -261,7 +270,7 @@ class BuildingBlockProcessLinkIntegrationTest @Autowired constructor(
     @Test
     fun `should throw when main process definition missing`() {
         val dto = BuildingBlockProcessLinkCreateRequestDto(
-            processDefinitionId = "case-process",
+            processDefinitionId = caseProcessDefinitionId,
             activityId = "callActivity",
             activityType = ActivityTypeWithEventName.CALL_ACTIVITY_START,
             buildingBlockDefinitionKey = "bb",
@@ -272,6 +281,10 @@ class BuildingBlockProcessLinkIntegrationTest @Autowired constructor(
         assertThrows(IllegalStateException::class.java) {
             mapper.toNewProcessLink(dto, CaseDefinitionId("case", "1.0.0"))
         }
+    }
+
+    companion object {
+        private const val CASE_PROCESS_KEY = "building-block-call-activity-main"
     }
 
     private fun stubMainProcess(
