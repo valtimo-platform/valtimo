@@ -17,6 +17,10 @@
 package com.ritense.externalplugin.web.rest
 
 import com.ritense.authorization.annotation.RunWithoutAuthorization
+import com.ritense.externalplugin.compatibility.CompatibilityResult
+import com.ritense.externalplugin.compatibility.GzacCompatibilityChecker
+import com.ritense.externalplugin.compatibility.PluginPackageInspector
+import com.ritense.externalplugin.domain.ExternalPluginDefinition
 import com.ritense.externalplugin.service.EndpointDescriptionService
 import com.ritense.externalplugin.service.EndpointQuery
 import com.ritense.externalplugin.service.ExternalPluginConfigurationService
@@ -35,6 +39,7 @@ import com.ritense.externalplugin.web.rest.dto.HostDefaultsResponse
 import com.ritense.externalplugin.web.rest.dto.HostResponse
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import com.ritense.valtimo.contract.domain.ValtimoMediaType.APPLICATION_JSON_UTF8_VALUE
+import com.fasterxml.jackson.databind.ObjectMapper
 import org.springframework.core.env.Environment
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
@@ -61,6 +66,9 @@ class ExternalPluginManagementResource(
     private val endpointDescriptionService: EndpointDescriptionService,
     private val discoveryService: ExternalPluginDiscoveryService,
     private val environment: Environment,
+    private val compatibilityChecker: GzacCompatibilityChecker,
+    private val pluginPackageInspector: PluginPackageInspector,
+    private val objectMapper: ObjectMapper,
 ) {
 
     @RunWithoutAuthorization
@@ -130,12 +138,29 @@ class ExternalPluginManagementResource(
         return ResponseEntity.noContent().build()
     }
 
+    /**
+     * Uploads a plugin package to the host. Before forwarding the package, GZAC peeks at the
+     * manifest's `compatibility` range and refuses an incompatible plugin with `409 Conflict` plus
+     * the version details, unless `force=true`. The operator confirms the warning in the UI, which
+     * re-issues the request with `force=true` to proceed regardless. A compatible (or
+     * undeterminable) plugin uploads straight through.
+     */
     @RunWithoutAuthorization
     @PostMapping("/host/{hostId}/upload", consumes = ["multipart/form-data"])
     fun uploadPlugin(
         @PathVariable hostId: UUID,
         @RequestParam("file") file: MultipartFile,
+        @RequestParam(name = "force", required = false, defaultValue = "false") force: Boolean,
     ): ResponseEntity<JsonNode> {
+        if (!force) {
+            val range = pluginPackageInspector.readCompatibilityRange(file.bytes)
+            if (range != null) {
+                val compatibility = compatibilityChecker.check(range.minGzacVersion, range.maxGzacVersion)
+                if (!compatibility.compatible) {
+                    return ResponseEntity.status(HttpStatus.CONFLICT).body(incompatibilityBody(compatibility))
+                }
+            }
+        }
         val result = hostService.uploadPlugin(hostId, file.originalFilename ?: "plugin.zip", file.bytes)
         discoveryService.discoverAll()
         return ResponseEntity.status(HttpStatus.CREATED).body(result)
@@ -144,12 +169,12 @@ class ExternalPluginManagementResource(
     @RunWithoutAuthorization
     @GetMapping("/definition")
     fun listDefinitions(): ResponseEntity<List<DefinitionResponse>> =
-        ResponseEntity.ok(definitionService.list().map(DefinitionResponse::from))
+        ResponseEntity.ok(definitionService.list().map(::toDefinitionResponse))
 
     @RunWithoutAuthorization
     @GetMapping("/definition/{definitionId}")
     fun getDefinition(@PathVariable definitionId: UUID): ResponseEntity<DefinitionResponse> =
-        ResponseEntity.ok(DefinitionResponse.from(definitionService.get(definitionId)))
+        ResponseEntity.ok(toDefinitionResponse(definitionService.get(definitionId)))
 
     @RunWithoutAuthorization
     @GetMapping("/configuration")
@@ -226,4 +251,18 @@ class ExternalPluginManagementResource(
         @RequestParam(defaultValue = "en") locale: String,
     ): ResponseEntity<List<com.ritense.externalplugin.service.EndpointDescription>> =
         ResponseEntity.ok(endpointDescriptionService.resolveDescriptions(endpoints, locale))
+
+    private fun toDefinitionResponse(definition: ExternalPluginDefinition): DefinitionResponse {
+        val compatibility = compatibilityChecker.check(definition.minGzacVersion, definition.maxGzacVersion)
+        return DefinitionResponse.from(definition, compatibility)
+    }
+
+    private fun incompatibilityBody(compatibility: CompatibilityResult): JsonNode =
+        objectMapper.createObjectNode().apply {
+            put("incompatible", true)
+            put("compatible", false)
+            put("currentGzacVersion", compatibility.currentGzacVersion)
+            put("minGzacVersion", compatibility.minGzacVersion)
+            put("maxGzacVersion", compatibility.maxGzacVersion)
+        }
 }

@@ -2224,6 +2224,16 @@
     "deleteHostModal": {
       "title": "Plugin-host verwijderen",
       "description": "Weet je zeker dat je deze plugin-host wilt verwijderen? Alle plugin-definities en configuraties van deze host worden ook verwijderd. Deze actie kan niet ongedaan worden gemaakt."
+    },
+    "compatibility": {
+      "incompatibleTag": "Incompatibel",
+      "warningTitle": "Mogelijk compatibiliteitsprobleem",
+      "uploadWarningTitle": "Een incompatibele plugin uploaden?",
+      "uploadAnyway": "Toch uploaden",
+      "intro": "Jouw GZAC-versie is mogelijk incompatibel met deze plugin.",
+      "current": "Je gebruikt momenteel {{current}}.",
+      "minimum": "Minimaal compatibele versie: {{min}}.",
+      "maximum": "Maximaal compatibele versie: {{max}}."
     }
   },
   "customerCases": {

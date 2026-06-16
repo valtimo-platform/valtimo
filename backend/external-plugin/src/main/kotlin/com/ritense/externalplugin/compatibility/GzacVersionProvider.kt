@@ -1,4 +1,4 @@
-/*!
+/*
  * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
@@ -14,27 +14,14 @@
  * limitations under the License.
  */
 
-:host ::ng-deep .cds--tab-content {
-  margin: 0 !important;
-  padding-left: 0 !important;
-  padding-right: 0 !important;
-  outline: none !important;
-}
+package com.ritense.externalplugin.compatibility
 
-.plugin-management__hosts-spinner {
-  display: flex;
-  align-items: center;
-  margin-right: 8px;
-}
-
-.plugin-management__plugin-name {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
-}
-
-.plugin-management__incompatible-tooltip {
-  display: inline-flex;
-  align-items: center;
-  cursor: help;
+/**
+ * Resolves the version of the running GZAC instance, used to judge whether an external plugin's
+ * declared `compatibility` range covers this deployment. Returns `null` when the version cannot be
+ * determined (e.g. an unpackaged dev run with no build metadata); callers treat an unknown version
+ * as "cannot judge" rather than raising a false incompatibility warning.
+ */
+fun interface GzacVersionProvider {
+    fun getCurrentVersion(): String?
 }
