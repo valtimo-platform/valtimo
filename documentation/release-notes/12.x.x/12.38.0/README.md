@@ -1,5 +1,10 @@
 # 12.38.0
 
+## Security
+
+* Spring Boot upgraded from 3.5.14 to 3.5.15 to address reported CVEs.
+* Netty upgraded from 4.1.134.Final to 4.1.135.Final to address reported CVEs.
+
 ## New Features
 
 * **Load a zaak in a form flow**
@@ -9,13 +14,3 @@
   of its fields can be used in subsequent steps or conditions. Access is secured with PBAC: a new `Zaak` resource type
   with a `view` action ensures only users authorized for the matching zaaktype can load a zaak. See
   [Load a zaak in a form flow](../../../features/zgw/load-zaak-in-form-flow.md) for details.
-
-## Enhancements
-
-* **New enhancement title**
-
-  New enhancement explanation.
-
-## Bugfixes
-
-* New bugfix.
