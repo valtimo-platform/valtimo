@@ -39,3 +39,9 @@
 
   Database migrations that look up users in Keycloak could fail to start when running against a newer Keycloak
   version than the one Valtimo ships with. This has been resolved.
+
+## Security
+
+* **Spring Boot upgraded for CVE fixes**
+
+  Upgraded Spring Boot to 3.5.15 to resolve several HIGH-severity CVEs.
