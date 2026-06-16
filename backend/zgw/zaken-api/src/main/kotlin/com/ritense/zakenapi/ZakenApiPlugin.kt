@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -37,6 +37,7 @@ import com.ritense.valtimo.contract.authentication.UserManagementService
 import com.ritense.valtimo.contract.document.CaseDocumentResolver
 import com.ritense.valtimo.contract.validation.Url
 import com.ritense.valueresolver.ValueResolverService
+import com.ritense.zakenapi.ZakenApiPlugin.Companion.GZAC_BEHANDELAAR_TOELICHTING
 import com.ritense.zakenapi.client.LinkDocumentRequest
 import com.ritense.zakenapi.client.ZakenApiClient
 import com.ritense.zakenapi.domain.AardRelatie
@@ -67,7 +68,6 @@ import com.ritense.zakenapi.domain.ZaakHersteltermijn
 import com.ritense.zakenapi.domain.ZaakInformatieObject
 import com.ritense.zakenapi.domain.ZaakInstanceLink
 import com.ritense.zakenapi.domain.ZaakInstanceLinkId
-import com.ritense.zakenapi.link.ZaakInstanceLinkNotFoundException
 import com.ritense.zakenapi.domain.ZaakNotitie
 import com.ritense.zakenapi.domain.ZaakNotitieLink
 import com.ritense.zakenapi.domain.ZaakNotitieLinkId
@@ -76,6 +76,7 @@ import com.ritense.zakenapi.domain.ZaakResponse
 import com.ritense.zakenapi.domain.ZaakResultaat
 import com.ritense.zakenapi.domain.ZaakStatus
 import com.ritense.zakenapi.domain.ZaakbesluitResponse
+import com.ritense.zakenapi.domain.ZaakeigenschapResponse
 import com.ritense.zakenapi.domain.ZaakopschortingRequest
 import com.ritense.zakenapi.domain.rol.BetrokkeneType
 import com.ritense.zakenapi.domain.rol.Rol
@@ -87,6 +88,7 @@ import com.ritense.zakenapi.domain.rol.RolTypeGeneriekeBeschrijving
 import com.ritense.zakenapi.domain.rol.RolVestiging
 import com.ritense.zakenapi.domain.zaakobjectrequest.ZaakObjectOverigeRequest
 import com.ritense.zakenapi.domain.zaakobjectrequest.ZaakObjectRequest
+import com.ritense.zakenapi.link.ZaakInstanceLinkNotFoundException
 import com.ritense.zakenapi.repository.ZaakHersteltermijnRepository
 import com.ritense.zakenapi.repository.ZaakInstanceLinkRepository
 import com.ritense.zakenapi.repository.ZaakNotitieLinkRepository
@@ -1612,6 +1614,16 @@ class ZakenApiPlugin(
         } else {
             client.getZaakResultaat(authenticationPluginConfiguration, zaak.resultaat)
         }
+    }
+
+    fun getZaakeigenschappen(zaakUrl: URI): List<ZaakeigenschapResponse> {
+        logger.debug { "Fetching zaak eigenschappen for zaak with URL '$zaakUrl'" }
+        return client.getZaakeigenschappen(authenticationPluginConfiguration, url, zaakUrl)
+    }
+
+    fun getZaakbesluiten(zaakUrl: URI): List<ZaakbesluitResponse> {
+        logger.debug { "Fetching zaak besluiten for zaak with URL '$zaakUrl'" }
+        return client.getZaakbesluiten(authenticationPluginConfiguration, url, zaakUrl)
     }
 
     fun getZaak(zaakUrl: URI): ZaakResponse {

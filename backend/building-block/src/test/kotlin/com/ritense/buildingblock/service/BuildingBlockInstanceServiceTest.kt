@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@
 package com.ritense.buildingblock.service
 
 import com.fasterxml.jackson.databind.node.JsonNodeFactory
+import com.ritense.authorization.AuthorizationService
 import com.ritense.buildingblock.domain.definition.BuildingBlockDefinition
 import com.ritense.buildingblock.domain.instance.BuildingBlockInstance
 import com.ritense.buildingblock.exception.UnknownBuildingBlockDefinitionException
@@ -47,7 +48,8 @@ import java.util.UUID
 class BuildingBlockInstanceServiceTest(
     @Mock private val buildingBlockInstanceRepository: BuildingBlockInstanceRepository,
     @Mock private val buildingBlockDefinitionRepository: BuildingBlockDefinitionRepository,
-    @Mock private val documentService: DocumentService
+    @Mock private val documentService: DocumentService,
+    @Mock private val authorizationService: AuthorizationService
 ) {
     private lateinit var service: BuildingBlockInstanceService
 
@@ -56,7 +58,8 @@ class BuildingBlockInstanceServiceTest(
         service = BuildingBlockInstanceService(
             buildingBlockInstanceRepository,
             buildingBlockDefinitionRepository,
-            documentService
+            documentService,
+            authorizationService
         )
     }
 

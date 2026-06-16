@@ -169,7 +169,271 @@
       "noFormSpecified": "No form definition has been specified for this tab.",
       "formNotFound": "The form definition '{{formDefinitionName}}' could not be found."
     },
-    "rowLocked": "You don't have access to this case"
+    "rowLocked": "You don't have access to this case",
+    "inspection": {
+      "openInspector": "Inspect case",
+      "pageTitle": "Case inspection",
+      "placeholder": "This tab will be populated in a later phase.",
+      "tabs": {
+        "document": "Document",
+        "processes": "Processes",
+        "buildingBlocks": "Building blocks",
+        "logs": "Logs",
+        "zgw": "ZGW",
+        "metadata": "Metadata"
+      },
+      "document": {
+        "loading": "Loading document...",
+        "saved": "Document updated"
+      },
+      "buildingBlocks": {
+        "loading": "Loading building blocks...",
+        "emptyTitle": "No building blocks",
+        "empty": "This case has no building block instances.",
+        "notEnabled": "Building blocks are not enabled for this Valtimo installation.",
+        "saved": "Building block document updated",
+        "listAriaLabel": "Building blocks",
+        "detail": {
+          "instanceId": "Instance ID",
+          "documentId": "Document ID",
+          "processInstance": "Process instance",
+          "parent": "Parent",
+          "content": "Document content",
+          "loading": "Loading building block..."
+        }
+      },
+      "processes": {
+        "loading": "Loading processes...",
+        "empty": "No process instances are associated with this case.",
+        "listAriaLabel": "Process instances",
+        "buildingBlockTag": "BB",
+        "buildingBlockTagTooltip": "This process belongs to a building block",
+        "instanceId": "Instance ID",
+        "buildingBlock": "Building block",
+        "detailsTab": "Details",
+        "diagramTab": "Diagram",
+        "version": "Version",
+        "active": "Active",
+        "completed": "Completed",
+        "incidentsHeader": "Incidents",
+        "incidentTooltip": "Active incidents on this instance",
+        "incidentType": "Type",
+        "activity": "Activity",
+        "message": "Message",
+        "timestamp": "Timestamp",
+        "tasksHeader": "Tasks",
+        "taskName": "Task",
+        "taskAssignee": "Assignee",
+        "taskCreated": "Created",
+        "noTasks": "No active tasks.",
+        "variablesHeader": "Variables",
+        "variableName": "Name",
+        "variableType": "Type",
+        "variableValue": "Value",
+        "noVariables": "No variables.",
+        "jobsHeader": "Jobs",
+        "jobType": "Type",
+        "jobActivity": "Activity",
+        "jobRetries": "Retries left",
+        "jobDueDate": "Due",
+        "jobException": "Exception",
+        "jobTypeLabel": {
+          "TIMER": "Timer",
+          "ASYNC_CONTINUATION": "Async continuation",
+          "MESSAGE": "Message",
+          "BATCH": "Batch",
+          "OTHER": "Other"
+        },
+        "noJobs": "No jobs.",
+        "startedBy": "Started by",
+        "startedOn": "Started on",
+        "viewLogs": "View logs",
+        "variableActions": {
+          "add": "Add variable",
+          "edit": "Edit",
+          "delete": "Delete",
+          "deleteConfirmTitle": "Delete variable",
+          "deleteConfirmContent": "Are you sure you want to delete the variable '{{name}}'? This affects the running process.",
+          "createdToast": "Variable '{{name}}' created",
+          "updatedToast": "Variable '{{name}}' updated",
+          "deletedToast": "Variable '{{name}}' deleted",
+          "createFailed": "Failed to create variable",
+          "updateFailed": "Failed to update variable",
+          "deleteFailed": "Failed to delete variable",
+          "alreadyExists": "A variable with this name already exists"
+        },
+        "variableModal": {
+          "addTitle": "Add process variable",
+          "editTitle": "Edit process variable",
+          "name": "Name",
+          "type": "Type",
+          "value": "Value",
+          "invalidJson": "Value is not valid JSON",
+          "invalidNumber": "Value is not a valid number",
+          "save": "Save",
+          "cancel": "Cancel",
+          "types": {
+            "STRING": "String",
+            "INTEGER": "Integer",
+            "LONG": "Long",
+            "DOUBLE": "Double",
+            "BOOLEAN": "Boolean",
+            "JSON": "JSON / Object"
+          }
+        }
+      },
+      "logs": {
+        "loading": "Loading logs...",
+        "empty": "No log entries are stored for this case.",
+        "emptyFiltered": "No log entries match the current filters.",
+        "filters": {
+          "message": "Message contains",
+          "messagePlaceholder": "Search message...",
+          "level": "Minimum level",
+          "levelPlaceholder": "All levels",
+          "after": "From",
+          "before": "Until",
+          "apply": "Apply",
+          "reset": "Reset",
+          "processInstanceChip": "Process instance",
+          "clearProcessInstance": "Clear process filter"
+        },
+        "columns": {
+          "timestamp": "Timestamp",
+          "level": "Level",
+          "message": "Message"
+        },
+        "detail": {
+          "properties": "Context (MDC)",
+          "stacktrace": "Stacktrace"
+        }
+      },
+      "metadata": {
+        "loading": "Loading metadata...",
+        "documentId": "Document ID",
+        "definitionName": "Definition",
+        "sequence": "Sequence",
+        "version": "Version",
+        "createdBy": "Created by",
+        "createdOn": "Created on",
+        "modifiedOn": "Modified on",
+        "assignee": "Assignee",
+        "assignedTeam": "Assigned team",
+        "internalStatus": "Internal status",
+        "tags": "Tags",
+        "relations": "Relations",
+        "relatedFiles": "Related files",
+        "unassigned": "Unassigned",
+        "noStatus": "No status",
+        "noTags": "No tags",
+        "noRelations": "No relations"
+      },
+      "zgw": {
+        "loading": "Loading ZGW information...",
+        "empty": "This case is not linked to a zaak.",
+        "yes": "Yes",
+        "no": "No",
+        "zaakUnreachable": {
+          "title": "Failed to load zaak",
+          "message": "The zaak linked to this case could not be loaded. The link may be stale, the Zaken API plugin may be misconfigured, or the zaak may have been deleted.",
+          "details": "Error details"
+        },
+        "warnings": {
+          "title": "Some sections failed to load"
+        },
+        "actions": {
+          "copy": "Copy",
+          "openExternal": "Open in external system",
+          "resolveContent": "Resolve content",
+          "viewLatestContent": "View latest content"
+        },
+        "zaak": {
+          "title": "Zaak",
+          "identificatie": "Identificatie",
+          "uuid": "UUID",
+          "url": "Zaak URL",
+          "bronorganisatie": "Bronorganisatie",
+          "zaaktype": "Zaaktype",
+          "registratiedatum": "Registratiedatum",
+          "startdatum": "Startdatum",
+          "einddatum": "Einddatum",
+          "einddatumGepland": "Einddatum (gepland)",
+          "uiterlijkeEinddatumAfdoening": "Uiterlijke einddatum afdoening",
+          "vertrouwelijkheidaanduiding": "Vertrouwelijkheidaanduiding",
+          "archiefstatus": "Archiefstatus",
+          "betalingsindicatie": "Betalingsindicatie",
+          "currentStatus": "Current status",
+          "currentResultaat": "Current resultaat",
+          "noStatus": "No status set",
+          "noResultaat": "No resultaat set"
+        },
+        "eigenschappen": {
+          "title": "Eigenschappen",
+          "empty": "No eigenschappen for this zaak.",
+          "naam": "Naam",
+          "waarde": "Waarde",
+          "eigenschapUrl": "Eigenschap",
+          "zaakeigenschapUrl": "Zaakeigenschap"
+        },
+        "rollen": {
+          "title": "Rollen",
+          "empty": "No rollen for this zaak.",
+          "betrokkeneType": "Betrokkene type",
+          "roltype": "Roltype",
+          "identificatie": "Identificatie (BSN / KvK)",
+          "indicatieMachtiging": "Indicatie machtiging",
+          "url": "Rol URL"
+        },
+        "statusHistory": {
+          "title": "Status history",
+          "empty": "No statuses recorded.",
+          "datumStatusGezet": "Datum status gezet",
+          "statustype": "Statustype",
+          "statustoelichting": "Statustoelichting"
+        },
+        "resultaat": {
+          "title": "Resultaat",
+          "empty": "No resultaat for this zaak.",
+          "resultaattype": "Resultaattype",
+          "toelichting": "Toelichting"
+        },
+        "zaakobjecten": {
+          "title": "Zaakobjecten",
+          "empty": "No zaakobjecten linked to this zaak.",
+          "objectUrl": "Object URL",
+          "objectType": "Object type",
+          "relatieomschrijving": "Relatieomschrijving",
+          "resolveLoading": "Resolving content...",
+          "notResolved": "Could not resolve content"
+        },
+        "zaakinformatieobjecten": {
+          "title": "Zaakinformatieobjecten",
+          "empty": "No documents linked to this zaak.",
+          "titel": "Title",
+          "url": "Document URL",
+          "registratiedatum": "Registratiedatum"
+        },
+        "besluiten": {
+          "title": "Besluiten",
+          "empty": "No besluiten linked to this zaak.",
+          "url": "Besluit URL"
+        },
+        "zaakdetails": {
+          "title": "Zaakdetails sync object",
+          "notConfigured": "No portal sync configured for this case type.",
+          "objectManagementTitle": "Object management configuration",
+          "caseDefinitionKey": "Case definition",
+          "enabled": "Enabled",
+          "objectUrl": "Zaakdetails object URL",
+          "linkedToZaak": "Linked to zaak",
+          "contentLoading": "Resolving content...",
+          "contentNotResolved": "Could not resolve content"
+        },
+        "rawJson": {
+          "title": "Raw zaak JSON"
+        }
+      }
+    }
   },
   "document": {
     "title": {"single": "Document", "plural": "Documents"},
@@ -995,7 +1259,10 @@
       "collection": {"title": "Collection", "description": "Create a collection"},
       "divider": {"title": "Divider"},
       "map": {"title": "Map", "description": "Create a map widget"},
-      "person-card": {"title": "Person card", "description": "A person with their key details and contact info"},
+      "person-card": {
+        "title": "Person card",
+        "description": "A person with their key details and contact info"
+      },
       "metroline": {
         "title": "Metroline",
         "description": "Show progression as a metroline"

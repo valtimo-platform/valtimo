@@ -12,6 +12,30 @@
             "type": "integer",
             "description": "Aantal personen in het huishouden"
         },
+        "applicant": {
+            "type": "object",
+            "description": "Aanvrager gegevens (nested properties test)",
+            "properties": {
+                "address": {
+                    "type": "object",
+                    "description": "Adresgegevens",
+                    "properties": {
+                        "city": {
+                            "type": "string",
+                            "description": "Woonplaats"
+                        },
+                        "postalCode": {
+                            "type": "string",
+                            "description": "Postcode"
+                        }
+                    }
+                },
+                "verificationStatus": {
+                    "type": "string",
+                    "description": "Verificatie status van building block"
+                }
+            }
+        },
         "verifiedApplicant": {
             "type": "string",
             "description": "Geverifieerde aanvragergegevens vanuit building block"

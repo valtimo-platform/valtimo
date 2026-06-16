@@ -258,6 +258,7 @@ class DefaultBuildingBlockPluginConfigurationResolverIT @Autowired constructor(
         return mock {
             on { this.currentActivityId } doReturn activityId
             on { this.processDefinitionId } doReturn processDefinitionId
+            on { this.processInstanceId } doReturn "$processDefinitionId-instance"
             on { this.businessKey } doReturn businessKey
             on { this.processBusinessKey } doReturn businessKey
             on { this.eventName } doReturn "start"
