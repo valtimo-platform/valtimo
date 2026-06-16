@@ -55,10 +55,9 @@ class ExternalPluginHostClient(
     }
 
     fun listPlugins(baseUrl: String, adminToken: String): List<JsonNode> {
-        val uri = buildUri(baseUrl, "/api/host/plugins")
-        val headers = HttpHeaders().apply {
-            setBearerAuth(adminToken)
-        }
+        val path = "/api/host/plugins"
+        val uri = buildUri(baseUrl, path)
+        val headers = hmacHeaders(adminToken, HttpMethod.GET.name(), path, EMPTY_BODY)
         val request = RequestEntity<Void>(headers, HttpMethod.GET, uri)
         val response = restTemplate.exchange(request, JsonNode::class.java).body
             ?: return emptyList()
@@ -84,7 +83,8 @@ class ExternalPluginHostClient(
         eventBrokerExchange: String,
         eventBrokerExchangeType: String,
     ): Boolean = try {
-        val uri = buildUri(baseUrl, "/api/host/configurations/$configId")
+        val path = "/api/host/configurations/$configId"
+        val uri = buildUri(baseUrl, path)
         val body = objectMapper.createObjectNode().apply {
             put("pluginId", pluginId)
             put("pluginVersion", pluginVersion)
@@ -105,21 +105,22 @@ class ExternalPluginHostClient(
                 })
             }
         }
-        val headers = HttpHeaders().apply {
-            setBearerAuth(adminToken)
+        // Sign and send the exact same bytes: the host's HMAC check binds this body, so the service
+        // token and broker credentials it carries cannot be replayed or altered in flight.
+        val bodyBytes = objectMapper.writeValueAsBytes(body)
+        val headers = hmacHeaders(adminToken, HttpMethod.POST.name(), path, bodyBytes).apply {
             contentType = MediaType.APPLICATION_JSON
         }
-        val request = RequestEntity(objectMapper.writeValueAsBytes(body), headers, HttpMethod.POST, uri)
+        val request = RequestEntity(bodyBytes, headers, HttpMethod.POST, uri)
         restTemplate.exchange(request, JsonNode::class.java).statusCode.is2xxSuccessful
     } catch (e: Exception) {
         false
     }
 
     fun deleteConfiguration(baseUrl: String, adminToken: String, configId: String): Boolean = try {
-        val uri = buildUri(baseUrl, "/api/host/configurations/$configId")
-        val headers = HttpHeaders().apply {
-            setBearerAuth(adminToken)
-        }
+        val path = "/api/host/configurations/$configId"
+        val uri = buildUri(baseUrl, path)
+        val headers = hmacHeaders(adminToken, HttpMethod.DELETE.name(), path, EMPTY_BODY)
         val request = RequestEntity<Void>(headers, HttpMethod.DELETE, uri)
         restTemplate.exchange(request, Void::class.java).statusCode.is2xxSuccessful
     } catch (e: Exception) {
@@ -138,15 +139,8 @@ class ExternalPluginHostClient(
         val uri = buildUri(baseUrl, path)
         val body = objectMapper.writeValueAsBytes(payload)
 
-        val signer = ExternalPluginHmacSigner(hostSecret)
-        val timestamp = Instant.now().toString()
-        val bodyHash = signer.bodyHash(body)
-        val signature = signer.sign(HttpMethod.POST.name(), path, timestamp, bodyHash)
-
-        val headers = HttpHeaders().apply {
+        val headers = hmacHeaders(hostSecret, HttpMethod.POST.name(), path, body).apply {
             contentType = MediaType.APPLICATION_JSON
-            set(ExternalPluginHmacSigner.SIGNATURE_HEADER, signature)
-            set(ExternalPluginHmacSigner.TIMESTAMP_HEADER, timestamp)
         }
 
         return try {
@@ -166,20 +160,44 @@ class ExternalPluginHostClient(
         fileName: String,
         fileBytes: ByteArray,
     ): JsonNode {
-        val uri = buildUri(baseUrl, "/api/host/plugins")
+        val path = "/api/host/plugins"
+        val uri = buildUri(baseUrl, path)
         val resource = object : ByteArrayResource(fileBytes) {
             override fun getFilename(): String = fileName
         }
         val body = LinkedMultiValueMap<String, Any>().apply {
             add("file", resource)
         }
-        val headers = HttpHeaders().apply {
-            setBearerAuth(adminToken)
+        // The signature binds the uploaded file bytes, not the multipart envelope (whose boundary
+        // RestTemplate generates internally and the host cannot reproduce). The host recomputes the
+        // hash over the same file bytes after parsing the upload.
+        val headers = hmacHeaders(adminToken, HttpMethod.POST.name(), path, fileBytes).apply {
             contentType = MediaType.MULTIPART_FORM_DATA
         }
         val request = RequestEntity(body, headers, HttpMethod.POST, uri)
         return restTemplate.exchange(request, JsonNode::class.java).body
             ?: objectMapper.createObjectNode()
+    }
+
+    /**
+     * Builds the HMAC signature headers shared by every GZAC→host request. The key is the host's
+     * decrypted secret (its `ADMIN_TOKEN`); the signature covers `{method}\n{path}\n{timestamp}\n
+     * {bodyHash}` and the timestamp gives the host a ±5-minute replay window. Routes with no request
+     * body pass [EMPTY_BODY].
+     */
+    private fun hmacHeaders(
+        secret: String,
+        method: String,
+        path: String,
+        body: ByteArray,
+    ): HttpHeaders {
+        val signer = ExternalPluginHmacSigner(secret)
+        val timestamp = Instant.now().toString()
+        val signature = signer.sign(method, path, timestamp, signer.bodyHash(body))
+        return HttpHeaders().apply {
+            set(ExternalPluginHmacSigner.SIGNATURE_HEADER, signature)
+            set(ExternalPluginHmacSigner.TIMESTAMP_HEADER, timestamp)
+        }
     }
 
     private fun parseBody(bytes: ByteArray): JsonNode? = if (bytes.isEmpty()) null else try {
@@ -194,4 +212,8 @@ class ExternalPluginHostClient(
     }
 
     data class ActionResponse(val status: Int, val body: JsonNode?)
+
+    private companion object {
+        private val EMPTY_BODY = ByteArray(0)
+    }
 }

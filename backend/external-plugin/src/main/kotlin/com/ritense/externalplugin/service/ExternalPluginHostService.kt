@@ -29,6 +29,7 @@ import com.ritense.plugin.service.EncryptionService
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import java.net.URI
 import java.util.UUID
 
 @Service
@@ -59,14 +60,27 @@ class ExternalPluginHostService(
         eventBrokerAmqpUrl: String?,
         eventBrokerExchange: String?,
     ): ExternalPluginHost {
+        val normalizedBaseUrl = baseUrl.trimEnd('/')
+        val brokerAmqpUrl = eventBrokerAmqpUrl?.takeIf { it.isNotBlank() }
+        // The config push delivers the broker AMQP URL and credentials in its body. HMAC binds and
+        // authenticates that body but does not encrypt it, so a broker may only be configured on a
+        // host the push can reach over a confidential transport. Registration is the single gate:
+        // the base URL is immutable afterwards, so no later push can reach an insecure host.
+        require(brokerAmqpUrl == null || isSecureTransport(normalizedBaseUrl)) {
+            "Refusing to register host '$normalizedBaseUrl' with event broker credentials over an " +
+                "unencrypted transport. The configuration push carries the broker AMQP URL and " +
+                "credentials, so the host must be reachable over HTTPS (or a loopback address for " +
+                "local development). Enable TLS on the host, or leave the event broker blank to " +
+                "disable events for configurations on this host."
+        }
         val host = ExternalPluginHost(
             id = UUID.randomUUID(),
             name = name,
-            baseUrl = baseUrl.trimEnd('/'),
+            baseUrl = normalizedBaseUrl,
             secret = encryptionService.encrypt(secret),
             status = ExternalPluginHostStatus.UNREACHABLE,
             gzacCallbackBaseUrl = gzacCallbackBaseUrl.trimEnd('/'),
-            eventBrokerAmqpUrl = eventBrokerAmqpUrl?.takeIf { it.isNotBlank() },
+            eventBrokerAmqpUrl = brokerAmqpUrl,
             eventBrokerExchange = eventBrokerExchange?.takeIf { it.isNotBlank() },
         )
         return hostRepository.save(host)
@@ -90,5 +104,22 @@ class ExternalPluginHostService(
         val host = get(hostId)
         val adminToken = decryptedSecret(host)
         return hostClient.uploadPlugin(host.baseUrl, adminToken, fileName, fileBytes)
+    }
+
+    companion object {
+        private val LOOPBACK_HOSTS = setOf("localhost", "127.0.0.1", "::1")
+
+        /**
+         * Whether a host base URL provides a confidential transport for the broker credentials and
+         * service token carried in a configuration push. HTTPS encrypts the channel end-to-end; a
+         * loopback address keeps the traffic on the local machine. Plain HTTP to any other host is
+         * eavesdroppable — HMAC authenticates the push but does not encrypt it.
+         */
+        fun isSecureTransport(baseUrl: String): Boolean {
+            val uri = runCatching { URI(baseUrl) }.getOrNull() ?: return false
+            if (uri.scheme?.lowercase() == "https") return true
+            val host = uri.host?.removeSurrounding("[", "]")?.lowercase() ?: return false
+            return host in LOOPBACK_HOSTS
+        }
     }
 }
