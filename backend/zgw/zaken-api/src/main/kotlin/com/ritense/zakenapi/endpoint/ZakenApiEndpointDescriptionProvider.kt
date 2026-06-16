@@ -35,6 +35,9 @@ class ZakenApiEndpointDescriptionProvider : EndpointDescriptionProvider {
         endpoint("GET", "/api/management/v1/case-definition/{caseDefinitionKey}/version/{caseDefinitionVersionTag}/zaken-api-sync", "Get Zaken API sync settings", "Zaken API-synchronisatie-instellingen ophalen"),
         endpoint("PUT", "/api/management/v1/case-definition/{caseDefinitionKey}/version/{caseDefinitionVersionTag}/zaken-api-sync", "Update Zaken API sync settings", "Zaken API-synchronisatie-instellingen bijwerken"),
         endpoint("DELETE", "/api/management/v1/case-definition/{caseDefinitionKey}/version/{caseDefinitionVersionTag}/zaken-api-sync", "Delete Zaken API sync settings", "Zaken API-synchronisatie-instellingen verwijderen"),
+
+        // Case inspection
+        endpoint("GET", "/api/management/v1/case/{caseId}/zgw", "Get case ZGW inspection", "ZGW-inspectie voor een dossier ophalen"),
     )
 
     private companion object {

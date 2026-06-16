@@ -28,6 +28,13 @@ class ProcessDocumentEndpointDescriptionProvider : EndpointDescriptionProvider {
         endpoint("PUT", "/api/management/v1/case-definition/{caseDefinitionKey}/version/{caseDefinitionVersionTag}/feature-process", "Update feature process", "Featureproces bijwerken"),
         endpoint("DELETE", "/api/management/v1/case-definition/{caseDefinitionKey}/version/{caseDefinitionVersionTag}/feature-process/{type}", "Delete feature process", "Featureproces verwijderen"),
         endpoint("PUT", "/api/management/v1/case-definition/{caseDefinitionKey}/version/{caseDefinitionVersionTag}/process/{processDefinitionId}/properties", "Update process properties", "Proceseigenschappen bijwerken"),
+
+        // Case inspection
+        endpoint("GET", "/api/management/v1/case/{caseId}/processes", "List process instances for a case", "Procesinstanties voor een dossier ophalen"),
+        endpoint("POST", "/api/management/v1/case/{caseId}/process-instance/{processInstanceId}/variables", "Create a process variable", "Procesvariabele aanmaken"),
+        endpoint("PUT", "/api/management/v1/case/{caseId}/process-instance/{processInstanceId}/variables/{name}", "Update a process variable", "Procesvariabele bijwerken"),
+        endpoint("DELETE", "/api/management/v1/case/{caseId}/process-instance/{processInstanceId}/variables/{name}", "Delete a process variable", "Procesvariabele verwijderen"),
+        endpoint("POST", "/api/management/v1/case/{caseId}/logs", "Search case logs", "Dossierlogboeken doorzoeken"),
     )
 
     private companion object {

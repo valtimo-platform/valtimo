@@ -27,6 +27,11 @@ class ZaakDetailsEndpointDescriptionProvider : EndpointDescriptionProvider {
         endpoint("GET", "/api/management/v1/case-definition/{caseDefinitionKey}/version/{caseDefinitionVersionTag}/objecten-api-sync", "Get Objecten API sync settings", "Objecten API-synchronisatie-instellingen ophalen"),
         endpoint("PUT", "/api/management/v1/case-definition/{caseDefinitionKey}/version/{caseDefinitionVersionTag}/objecten-api-sync", "Update Objecten API sync settings", "Objecten API-synchronisatie-instellingen bijwerken"),
         endpoint("DELETE", "/api/management/v1/case-definition/{caseDefinitionKey}/version/{caseDefinitionVersionTag}/objecten-api-sync", "Delete Objecten API sync settings", "Objecten API-synchronisatie-instellingen verwijderen"),
+
+        // Case inspection
+        endpoint("GET", "/api/management/v1/case/{caseId}/zgw/zaakdetails", "Get case zaakdetails inspection", "Zaakdetails-inspectie voor een dossier ophalen"),
+        endpoint("GET", "/api/management/v1/case/{caseId}/zgw/zaakdetails/object", "Get case zaakdetails object content", "Zaakdetails-objectinhoud voor een dossier ophalen"),
+        endpoint("GET", "/api/management/v1/case/{caseId}/zgw/zaakobject/resolve", "Resolve zaakobject content for a case", "Zaakobjectinhoud voor een dossier oplossen"),
     )
 
     private companion object {
