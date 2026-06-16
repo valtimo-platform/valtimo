@@ -31,10 +31,17 @@ services:
       PLUGIN_STORAGE_DIR: /data/plugins
       HOST_ID: ${HOST_ID:-plugin-host}
       LOG_LEVEL: ${LOG_LEVEL:-info}
+      # Uncomment (and mount the ./tls volume below) to terminate TLS at the host so the GZAC→host
+      # config push — which carries broker credentials and the service token — is encrypted, not
+      # only HMAC-authenticated. GZAC must then register this host with an https:// base URL.
+      # TLS_CERT_PATH: /tls/tls.crt
+      # TLS_KEY_PATH: /tls/tls.key
+      # TLS_CA_PATH: /tls/ca.crt
     ports:
       - "${APP_PORT:-8090}:8090"
     volumes:
       - plugin-storage:/data/plugins
+      # - ./tls:/tls:ro
     depends_on:
       db:
         condition: service_healthy

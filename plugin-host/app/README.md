@@ -86,10 +86,34 @@ Note: When running fully containerized, GZAC must push `eventBroker.amqpUrl` usi
 | `DB_NAME` | no | `pluginhost` | PostgreSQL database name |
 | `DB_USER` | no | `pluginhost` | PostgreSQL username |
 | `DB_PASSWORD` | no | `pluginhost` | PostgreSQL password |
+| `TLS_CERT_PATH` | no | — | PEM certificate. Set **together with** `TLS_KEY_PATH` to make the host serve HTTPS (see [Transport security](#transport-security)). |
+| `TLS_KEY_PATH` | no | — | PEM private key. Set together with `TLS_CERT_PATH`. |
+| `TLS_CA_PATH` | no | — | PEM CA / intermediate chain, when the certificate file is not self-contained. |
 
 The host does **not** configure an event broker. Each GZAC instance pushes its own broker connection
 alongside every configuration (see [Events](#events)), so one host can serve many GZAC instances,
 each on its own broker.
+
+## Transport security
+
+Every GZAC→host request is HMAC-SHA256 signed (see [API Reference](#api-reference)). HMAC
+authenticates the caller and integrity-binds the request, so a push cannot be forged or replayed —
+but it does **not** encrypt the payload. The configuration push carries the broker AMQP URL, its
+credentials, and the per-config service token in its body, so confidentiality of those secrets
+depends on the transport.
+
+Set `TLS_CERT_PATH` and `TLS_KEY_PATH` (both together) to make the host serve HTTPS and encrypt the
+channel end-to-end; add `TLS_CA_PATH` when the certificate is not self-contained. Both must be set
+or the host refuses to start (half-configured TLS would otherwise silently fall back to plain HTTP).
+GZAC must then be configured with an `https://` base URL for the host, and the host's certificate
+must be trusted by GZAC's JVM truststore (a CA-signed certificate, or the host CA imported into the
+truststore).
+
+Plain HTTP is fine when TLS is terminated by a reverse proxy in front of the host, or for local
+development on `localhost`. To keep secrets off an eavesdroppable link, **GZAC refuses to register a
+host that carries event-broker credentials unless that host is reachable over HTTPS** (or a loopback
+address such as `localhost`/`127.0.0.1` for local development). Hosts without a broker (actions only)
+may still be registered over plain HTTP.
 
 ## NPM Scripts
 

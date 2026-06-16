@@ -62,8 +62,11 @@ npm run build:pack
 Every GZAC→host request is HMAC-SHA256 signed (not a bearer token): the signature covers
 `{METHOD}\n{path}\n{timestamp}\n{bodyHash}` keyed with the `ADMIN_TOKEN`, sent as `X-Valtimo-Signature`
 + `X-Valtimo-Timestamp` (±5-minute replay window). The plugin upload signs the file bytes; other
-write routes sign the request body. See [`app/README.md`](app/README.md#api-reference) for the full
-scheme and the `host_sign` helper used below.
+write routes sign the request body. HMAC authenticates and integrity-binds each request but does not
+encrypt it — run the host over TLS (set `TLS_CERT_PATH`/`TLS_KEY_PATH`) so the config push, which
+carries broker credentials and the service token, is also confidential. See
+[`app/README.md`](app/README.md#api-reference) for the full scheme and the `host_sign` helper used
+below, and [Transport security](app/README.md#transport-security) for TLS.
 
 ```bash
 ADMIN_TOKEN=test-secret

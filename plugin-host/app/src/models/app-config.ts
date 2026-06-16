@@ -37,6 +37,16 @@ export const envSchema = z.object({
   DB_NAME: z.string().default("pluginhost"),
   DB_USER: z.string().default("pluginhost"),
   DB_PASSWORD: z.string().default("pluginhost"),
+
+  // Optional TLS termination. Set TLS_CERT_PATH and TLS_KEY_PATH (PEM files) together to make the
+  // host serve HTTPS, so the GZAC→host configuration push — which carries the broker AMQP URL,
+  // its credentials, and the per-config service token — is encrypted on the wire rather than only
+  // HMAC-authenticated. TLS_CA_PATH supplies the intermediate/CA chain when the certificate file
+  // is not already self-contained. Leave all three unset to serve plain HTTP (local development,
+  // or when TLS is terminated by a reverse proxy in front of the host).
+  TLS_CERT_PATH: z.string().optional(),
+  TLS_KEY_PATH: z.string().optional(),
+  TLS_CA_PATH: z.string().optional(),
 });
 
 export type AppConfig = z.infer<typeof envSchema>;
