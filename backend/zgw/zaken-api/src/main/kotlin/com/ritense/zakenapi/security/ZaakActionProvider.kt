@@ -14,15 +14,17 @@
  * limitations under the License.
  */
 
-const DOC_PREFIX = 'doc:/';
+package com.ritense.zakenapi.security
 
-export function ensureDocPrefix(value: string): string {
-  if (!value) return value;
-  const colonIndex = value.indexOf(':');
-  if (colonIndex > -1 && !value.startsWith('doc:')) return value;
-  let path = value;
-  if (path.startsWith('doc:/')) path = path.substring(5);
-  else if (path.startsWith('doc:')) path = path.substring(4);
-  if (path.startsWith('/')) path = path.substring(1);
-  return `${DOC_PREFIX}${path.replace(/\./g, '/')}`;
+import com.ritense.authorization.Action
+import com.ritense.authorization.ResourceActionProvider
+
+class ZaakActionProvider : ResourceActionProvider<Zaak> {
+    override fun getAvailableActions(): List<Action<Zaak>> {
+        return listOf(VIEW)
+    }
+
+    companion object {
+        val VIEW = Action<Zaak>("view")
+    }
 }

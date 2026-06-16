@@ -16,58 +16,71 @@
         },
         "inputMappings": [
             {
-                "source": "doc:applicantName",
-                "target": "applicantName"
+                "source": "doc:/applicantName",
+                "target": "/applicantName"
             },
             {
-                "source": "doc:householdSize",
-                "target": "householdSize"
+                "source": "doc:/householdSize",
+                "target": "/householdSize"
+            },
+            {
+                "source": "doc:/applicant/address/city",
+                "target": "/applicantAddress/city"
+            },
+            {
+                "source": "doc:/applicant/address/postalCode",
+                "target": "/applicantAddress/postalCode"
             }
         ],
         "outputMappings": [
             {
-                "source": "verifiedApplicant",
-                "target": "doc:verifiedApplicant",
+                "source": "/verifiedApplicant",
+                "target": "doc:/verifiedApplicant",
                 "syncTiming": "END"
             },
             {
-                "source": "finalSubsidyAmount",
-                "target": "doc:calculatedSubsidy",
+                "source": "/verificationResult/status",
+                "target": "doc:/applicant/verificationStatus",
                 "syncTiming": "END"
             },
             {
-                "source": "eligibilityResult",
-                "target": "doc:eligibilityResult",
+                "source": "/finalSubsidyAmount",
+                "target": "doc:/calculatedSubsidy",
                 "syncTiming": "END"
             },
             {
-                "source": "zaakOmschrijvingFromZgw",
-                "target": "doc:zaakOmschrijvingFromZgw",
+                "source": "/eligibilityResult",
+                "target": "doc:/eligibilityResult",
                 "syncTiming": "END"
             },
             {
-                "source": "zaakToelichtingBB2",
-                "target": "doc:zaakToelichtingBB2",
+                "source": "/zaakOmschrijvingFromZgw",
+                "target": "doc:/zaakOmschrijvingFromZgw",
                 "syncTiming": "END"
             },
             {
-                "source": "zaakEinddatumGeplandBB3",
-                "target": "doc:zaakEinddatumGeplandBB3",
+                "source": "/zaakToelichtingBB2",
+                "target": "doc:/zaakToelichtingBB2",
                 "syncTiming": "END"
             },
             {
-                "source": "zgwActionSummary",
-                "target": "doc:zgwActionSummary",
+                "source": "/zaakEinddatumGeplandBB3",
+                "target": "doc:/zaakEinddatumGeplandBB3",
                 "syncTiming": "END"
             },
             {
-                "source": "reviewerRemarks",
-                "target": "doc:reviewerRemarks",
+                "source": "/zgwActionSummary",
+                "target": "doc:/zgwActionSummary",
                 "syncTiming": "END"
             },
             {
-                "source": "approvalDecision",
-                "target": "doc:approvalDecision",
+                "source": "/reviewerRemarks",
+                "target": "doc:/reviewerRemarks",
+                "syncTiming": "END"
+            },
+            {
+                "source": "/approvalDecision",
+                "target": "doc:/approvalDecision",
                 "syncTiming": "END"
             }
         ]

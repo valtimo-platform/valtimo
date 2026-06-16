@@ -28,7 +28,7 @@ interface GetBesluittypeConfig {
 
 interface GetResultaattypenConfig {
   processVariable: string;
-  zaakTypeUrl?: string;
+  zaaktypeUrl?: string;
 }
 
 interface GetResultaattypeConfig {
@@ -38,7 +38,7 @@ interface GetResultaattypeConfig {
 
 interface GetStatustypenConfig {
   processVariable: string;
-  zaakTypeUrl?: string;
+  zaaktypeUrl?: string;
 }
 
 interface GetStatustypeConfig {
