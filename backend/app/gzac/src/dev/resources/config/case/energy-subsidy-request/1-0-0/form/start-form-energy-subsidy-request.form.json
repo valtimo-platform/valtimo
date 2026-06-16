@@ -45,6 +45,32 @@
             "input": true
         },
         {
+            "label": "HTML",
+            "tag": "h4",
+            "content": "Adresgegevens",
+            "refreshOnChange": false,
+            "key": "html-address-title",
+            "type": "htmlelement",
+            "input": false,
+            "tableView": false
+        },
+        {
+            "label": "Woonplaats",
+            "placeholder": "Vul uw woonplaats in...",
+            "tableView": true,
+            "key": "applicant.address.city",
+            "type": "textfield",
+            "input": true
+        },
+        {
+            "label": "Postcode",
+            "placeholder": "1234 AB",
+            "tableView": true,
+            "key": "applicant.address.postalCode",
+            "type": "textfield",
+            "input": true
+        },
+        {
             "type": "button",
             "label": "Aanvraag Indienen",
             "key": "submit",

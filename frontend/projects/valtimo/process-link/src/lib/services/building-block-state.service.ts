@@ -23,6 +23,7 @@ import {
   ProcessLink,
 } from '../models';
 import {ProcessLinkBuildingBlockApiService} from './process-link-building-block-api.service';
+import {ensureDocPrefix} from '../utils';
 
 @Injectable({
   providedIn: 'root',
@@ -202,11 +203,23 @@ export class BuildingBlockStateService implements OnDestroy {
   }
 
   public setInputMappings(mappings: Array<BuildingBlockInputMapping>): void {
-    this._inputMappings$.next(mappings ?? []);
+    this._inputMappings$.next(
+      (mappings ?? []).map(m => ({
+        ...m,
+        source: ensureDocPrefix(m.source),
+        target: ensureDocPrefix(m.target),
+      }))
+    );
   }
 
   public setOutputMappings(mappings: Array<BuildingBlockOutputMapping>): void {
-    this._outputMappings$.next(mappings ?? []);
+    this._outputMappings$.next(
+      (mappings ?? []).map(m => ({
+        ...m,
+        source: ensureDocPrefix(m.source),
+        target: ensureDocPrefix(m.target),
+      }))
+    );
   }
 
   public getInputMappingsSnapshot(): Array<BuildingBlockInputMapping> {
@@ -291,7 +304,9 @@ export class BuildingBlockStateService implements OnDestroy {
       .getFieldsForBuildingBlock(key, versionTag)
       .subscribe({
         next: fields => {
-          this._buildingBlockFields$.next(fields ?? []);
+          this._buildingBlockFields$.next(
+            (fields ?? []).map(field => ({...field, name: ensureDocPrefix(field.name)}))
+          );
           this._loadingFields$.next(false);
         },
         error: () => {

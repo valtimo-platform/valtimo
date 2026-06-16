@@ -149,7 +149,15 @@ class BuildingBlockProcessLink(
 data class BuildingBlockInputMapping(
     val source: String,
     val target: String
-)
+) {
+    fun getPrefixedTarget(): String {
+        return if (!target.contains(':')) {
+            "doc:${target}"
+        } else {
+            target
+        }
+    }
+}
 
 enum class BuildingBlockSyncTiming {
     CONTINUOUS,
@@ -160,4 +168,12 @@ data class BuildingBlockOutputMapping(
     val source: String,
     val target: String,
     val syncTiming: BuildingBlockSyncTiming = BuildingBlockSyncTiming.END
-)
+) {
+    fun getPrefixedSource(): String {
+        return if (!source.contains(':')) {
+            "doc:${source}"
+        } else {
+            source
+        }
+    }
+}

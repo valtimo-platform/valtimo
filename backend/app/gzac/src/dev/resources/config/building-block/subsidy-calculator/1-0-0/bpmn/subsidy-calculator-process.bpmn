@@ -84,10 +84,18 @@
     </bpmn:serviceTask>
     <bpmn:serviceTask id="MarkCalculationCompleteTask" name="Markeer Voltooid" camunda:asyncAfter="true" camunda:expression="${valueResolverDelegateService.handleValue(execution, 'doc:/calculationStatus', 'VOLTOOID')}">
       <bpmn:incoming>Flow_SetStatusAfgehandeld_To_Complete</bpmn:incoming>
-      <bpmn:outgoing>Flow_Complete_To_StoreZgwSummary</bpmn:outgoing>
+      <bpmn:outgoing>Flow_Complete_To_SetVerificationResult</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:serviceTask id="SetVerificationResultStatusTask" name="Zet Verificatie Resultaat Status" camunda:asyncAfter="true" camunda:expression="${valueResolverDelegateService.handleValue(execution, 'doc:/verificationResult/status', 'VERIFIED')}">
+      <bpmn:incoming>Flow_Complete_To_SetVerificationResult</bpmn:incoming>
+      <bpmn:outgoing>Flow_SetVerificationResult_To_SetVerificationDetails</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:serviceTask id="SetVerificationResultDetailsTask" name="Zet Verificatie Resultaat Details" camunda:asyncAfter="true" camunda:expression="${valueResolverDelegateService.handleValue(execution, 'doc:/verificationResult/details', 'Adres geverifieerd voor '.concat(valueResolverDelegateService.resolveValue(execution, 'doc:/applicantAddress/city')))}">
+      <bpmn:incoming>Flow_SetVerificationResult_To_SetVerificationDetails</bpmn:incoming>
+      <bpmn:outgoing>Flow_SetVerificationDetails_To_StoreZgwSummary</bpmn:outgoing>
     </bpmn:serviceTask>
     <bpmn:serviceTask id="StoreZgwActionSummaryTask" name="Bewaar ZGW Samenvatting" camunda:asyncAfter="true" camunda:expression="${valueResolverDelegateService.handleValue(execution, 'doc:/zgwActionSummary', 'Omschrijving (BB1): '.concat(valueResolverDelegateService.resolveValue(execution, 'zaak:omschrijving')).concat(' | Toelichting (BB2): ').concat(valueResolverDelegateService.resolveValue(execution, 'zaak:toelichting')).concat(' | Einddatum (BB3): ').concat(valueResolverDelegateService.resolveValue(execution, 'zaak:einddatumGepland')))}">
-      <bpmn:incoming>Flow_Complete_To_StoreZgwSummary</bpmn:incoming>
+      <bpmn:incoming>Flow_SetVerificationDetails_To_StoreZgwSummary</bpmn:incoming>
       <bpmn:outgoing>Flow_StoreZgwSummary_To_End</bpmn:outgoing>
     </bpmn:serviceTask>
     <bpmn:sequenceFlow id="Flow_Summary_To_Calculate" sourceRef="GenerateSummaryTask" targetRef="CalculateFinalAmountDmnTask" />
@@ -110,13 +118,15 @@
     <bpmn:sequenceFlow id="Flow_PatchZaak_To_ReadToelichting" sourceRef="PatchZaakCalculationStartTask" targetRef="ReadZaakToelichtingTask" />
     <bpmn:sequenceFlow id="Flow_ReadToelichting_To_CallHousehold" sourceRef="ReadZaakToelichtingTask" targetRef="CallHouseholdVerificationActivity" />
     <bpmn:sequenceFlow id="Flow_CallHousehold_To_Summary" sourceRef="CallHouseholdVerificationActivity" targetRef="GenerateSummaryTask" />
-    <bpmn:sequenceFlow id="Flow_Complete_To_StoreZgwSummary" sourceRef="MarkCalculationCompleteTask" targetRef="StoreZgwActionSummaryTask" />
+    <bpmn:sequenceFlow id="Flow_Complete_To_SetVerificationResult" sourceRef="MarkCalculationCompleteTask" targetRef="SetVerificationResultStatusTask" />
+    <bpmn:sequenceFlow id="Flow_SetVerificationResult_To_SetVerificationDetails" sourceRef="SetVerificationResultStatusTask" targetRef="SetVerificationResultDetailsTask" />
+    <bpmn:sequenceFlow id="Flow_SetVerificationDetails_To_StoreZgwSummary" sourceRef="SetVerificationResultDetailsTask" targetRef="StoreZgwActionSummaryTask" />
     <bpmn:sequenceFlow id="Flow_StoreZgwSummary_To_End" sourceRef="StoreZgwActionSummaryTask" targetRef="EndEvent" />
   </bpmn:process>
   <bpmndi:BPMNDiagram id="BPMNDiagram_1">
     <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="Collaboration_SubsidyCalculator">
       <bpmndi:BPMNShape id="Participant_SubsidyCalculator_di" bpmnElement="SubsidyCalculatorParticipant" isHorizontal="true">
-        <dc:Bounds x="160" y="60" width="2960" height="250" />
+        <dc:Bounds x="160" y="60" width="3220" height="250" />
         <bpmndi:BPMNLabel />
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="StartEvent_di" bpmnElement="StartEvent">
@@ -193,14 +203,22 @@
         <dc:Bounds x="2370" y="137" width="100" height="80" />
         <bpmndi:BPMNLabel />
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="StoreZgwActionSummaryTask_di" bpmnElement="StoreZgwActionSummaryTask">
+      <bpmndi:BPMNShape id="SetVerificationResultStatusTask_di" bpmnElement="SetVerificationResultStatusTask">
+        <dc:Bounds x="2500" y="137" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="SetVerificationResultDetailsTask_di" bpmnElement="SetVerificationResultDetailsTask">
         <dc:Bounds x="2630" y="137" width="100" height="80" />
         <bpmndi:BPMNLabel />
       </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="StoreZgwActionSummaryTask_di" bpmnElement="StoreZgwActionSummaryTask">
+        <dc:Bounds x="2760" y="137" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="EndEvent_di" bpmnElement="EndEvent">
-        <dc:Bounds x="2792" y="159" width="36" height="36" />
+        <dc:Bounds x="2922" y="159" width="36" height="36" />
         <bpmndi:BPMNLabel>
-          <dc:Bounds x="2772" y="202" width="77" height="27" />
+          <dc:Bounds x="2902" y="202" width="77" height="27" />
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNShape>
       <bpmndi:BPMNEdge id="Flow_Start_To_SetStatusBerekening_di" bpmnElement="Flow_Start_To_SetStatusBerekening">
@@ -271,13 +289,21 @@
         <di:waypoint x="2340" y="177" />
         <di:waypoint x="2370" y="177" />
       </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="Flow_Complete_To_StoreZgwSummary_di" bpmnElement="Flow_Complete_To_StoreZgwSummary">
+      <bpmndi:BPMNEdge id="Flow_Complete_To_SetVerificationResult_di" bpmnElement="Flow_Complete_To_SetVerificationResult">
         <di:waypoint x="2470" y="177" />
+        <di:waypoint x="2500" y="177" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_SetVerificationResult_To_SetVerificationDetails_di" bpmnElement="Flow_SetVerificationResult_To_SetVerificationDetails">
+        <di:waypoint x="2600" y="177" />
         <di:waypoint x="2630" y="177" />
       </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="Flow_StoreZgwSummary_To_End_di" bpmnElement="Flow_StoreZgwSummary_To_End">
+      <bpmndi:BPMNEdge id="Flow_SetVerificationDetails_To_StoreZgwSummary_di" bpmnElement="Flow_SetVerificationDetails_To_StoreZgwSummary">
         <di:waypoint x="2730" y="177" />
-        <di:waypoint x="2792" y="177" />
+        <di:waypoint x="2760" y="177" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_StoreZgwSummary_To_End_di" bpmnElement="Flow_StoreZgwSummary_To_End">
+        <di:waypoint x="2860" y="177" />
+        <di:waypoint x="2922" y="177" />
       </bpmndi:BPMNEdge>
     </bpmndi:BPMNPlane>
   </bpmndi:BPMNDiagram>
