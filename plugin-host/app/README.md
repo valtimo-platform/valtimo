@@ -76,7 +76,7 @@ Note: When running fully containerized, GZAC must push `eventBroker.amqpUrl` usi
 
 | Variable | Required | Default | Description |
 |---|---|---|---|
-| `ADMIN_TOKEN` | yes | `changeme` (Docker) | Bearer token for management API |
+| `ADMIN_TOKEN` | yes | `changeme` (Docker) | Shared secret used as the HMAC key authenticating every GZAC→host request (see [API Reference](#api-reference)) |
 | `PORT` | no | `8090` | HTTP listen port |
 | `PLUGIN_STORAGE_DIR` | no | `./plugins` (local), `/data/plugins` (Docker) | Directory for persisted plugin binaries |
 | `LOG_LEVEL` | no | `info` | `debug`, `info`, `warn`, or `error` |
@@ -86,10 +86,34 @@ Note: When running fully containerized, GZAC must push `eventBroker.amqpUrl` usi
 | `DB_NAME` | no | `pluginhost` | PostgreSQL database name |
 | `DB_USER` | no | `pluginhost` | PostgreSQL username |
 | `DB_PASSWORD` | no | `pluginhost` | PostgreSQL password |
+| `TLS_CERT_PATH` | no | — | PEM certificate. Set **together with** `TLS_KEY_PATH` to make the host serve HTTPS (see [Transport security](#transport-security)). |
+| `TLS_KEY_PATH` | no | — | PEM private key. Set together with `TLS_CERT_PATH`. |
+| `TLS_CA_PATH` | no | — | PEM CA / intermediate chain, when the certificate file is not self-contained. |
 
 The host does **not** configure an event broker. Each GZAC instance pushes its own broker connection
 alongside every configuration (see [Events](#events)), so one host can serve many GZAC instances,
 each on its own broker.
+
+## Transport security
+
+Every GZAC→host request is HMAC-SHA256 signed (see [API Reference](#api-reference)). HMAC
+authenticates the caller and integrity-binds the request, so a push cannot be forged or replayed —
+but it does **not** encrypt the payload. The configuration push carries the broker AMQP URL, its
+credentials, and the per-config service token in its body, so confidentiality of those secrets
+depends on the transport.
+
+Set `TLS_CERT_PATH` and `TLS_KEY_PATH` (both together) to make the host serve HTTPS and encrypt the
+channel end-to-end; add `TLS_CA_PATH` when the certificate is not self-contained. Both must be set
+or the host refuses to start (half-configured TLS would otherwise silently fall back to plain HTTP).
+GZAC must then be configured with an `https://` base URL for the host, and the host's certificate
+must be trusted by GZAC's JVM truststore (a CA-signed certificate, or the host CA imported into the
+truststore).
+
+Plain HTTP is fine when TLS is terminated by a reverse proxy in front of the host, or for local
+development on `localhost`. To keep secrets off an eavesdroppable link, **GZAC refuses to register a
+host that carries event-broker credentials unless that host is reachable over HTTPS** (or a loopback
+address such as `localhost`/`127.0.0.1` for local development). Hosts without a broker (actions only)
+may still be registered over plain HTTP.
 
 ## NPM Scripts
 
@@ -202,7 +226,33 @@ onEvent((event) => { /* event.type, event.resultId, event.result, ... */ });
 
 ## API Reference
 
-All management endpoints require `Authorization: Bearer <ADMIN_TOKEN>`.
+Every GZAC→host request is authenticated with an **HMAC-SHA256 signature**, not a bearer token. The
+signature is computed over the canonical string `{METHOD}\n{path}\n{timestamp}\n{bodyHash}` keyed
+with the `ADMIN_TOKEN`, where:
+
+- `path` is the request path without the query string;
+- `bodyHash` is `SHA-256(body)` hex — the empty string for GET/DELETE, and the **uploaded file
+  bytes** (not the multipart envelope) for the plugin upload;
+- `timestamp` is an ISO-8601 instant; the host rejects anything more than **±5 minutes** from its
+  own clock (replay protection).
+
+It is sent as two headers: `X-Valtimo-Signature` (the hex HMAC) and `X-Valtimo-Timestamp`. In
+production GZAC's `ExternalPluginHostClient` signs every call automatically. To call the host by
+hand, sign with this helper (requires `openssl`):
+
+```bash
+ADMIN_TOKEN=test-secret
+# host_sign METHOD PATH [BODY_FILE]  →  sets $TS and $SIG for the curl calls below
+host_sign() {
+  TS="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+  local hash
+  hash="$(openssl dgst -sha256 -hex "${3:-/dev/null}" | awk '{print $NF}')"
+  SIG="$(printf '%s\n%s\n%s\n%s' "$1" "$2" "$TS" "$hash" \
+    | openssl dgst -sha256 -hmac "$ADMIN_TOKEN" -hex | awk '{print $NF}')"
+}
+```
+
+`GET /health` is the only unauthenticated route.
 
 ### `GET /health`
 
@@ -213,73 +263,91 @@ curl -sS http://localhost:8090/health | jq .
 ### `GET /api/host/plugins` — list all loaded plugins
 
 ```bash
+host_sign GET /api/host/plugins
 curl -sS http://localhost:8090/api/host/plugins \
-  -H "Authorization: Bearer test-secret" | jq .
+  -H "X-Valtimo-Timestamp: $TS" -H "X-Valtimo-Signature: $SIG" | jq .
 ```
 
 ### `GET /api/host/plugins/:pluginId` — list all versions of a plugin
 
 ```bash
+host_sign GET /api/host/plugins/say-hello
 curl -sS http://localhost:8090/api/host/plugins/say-hello \
-  -H "Authorization: Bearer test-secret" | jq .
+  -H "X-Valtimo-Timestamp: $TS" -H "X-Valtimo-Signature: $SIG" | jq .
 ```
 
 ### `POST /api/host/plugins` — upload plugin `.zip` (multipart)
 
+The signature binds the **file bytes**, so sign the `.zip` itself:
+
 ```bash
+host_sign POST /api/host/plugins ../sample-plugins/say-hello/dist/say-hello-0.1.0.zip
 curl -sS -X POST http://localhost:8090/api/host/plugins \
-  -H "Authorization: Bearer test-secret" \
+  -H "X-Valtimo-Timestamp: $TS" -H "X-Valtimo-Signature: $SIG" \
   -F "file=@../sample-plugins/say-hello/dist/say-hello-0.1.0.zip" | jq .
 ```
 
 ### `DELETE /api/host/plugins/:pluginId/:version` — remove a plugin
 
 ```bash
+host_sign DELETE /api/host/plugins/say-hello/0.1.0
 curl -sS -X DELETE http://localhost:8090/api/host/plugins/say-hello/0.1.0 \
-  -H "Authorization: Bearer test-secret" -w "\nHTTP %{http_code}\n"
+  -H "X-Valtimo-Timestamp: $TS" -H "X-Valtimo-Signature: $SIG" -w "\nHTTP %{http_code}\n"
 ```
 
 ### `GET /api/host/configurations` — list all configurations
 
 ```bash
+host_sign GET /api/host/configurations
 curl -sS http://localhost:8090/api/host/configurations \
-  -H "Authorization: Bearer test-secret" | jq .
+  -H "X-Valtimo-Timestamp: $TS" -H "X-Valtimo-Signature: $SIG" | jq .
 ```
 
 ### `POST /api/host/configurations/:configId` — push configuration
 
 `serviceToken` and `gzacBaseUrl` are required — the host uses them to authenticate and route the
-plugin's API callbacks. For local testing any non-empty string works for `serviceToken`.
+plugin's API callbacks. For local testing any non-empty string works for `serviceToken`. Write the
+body to a file so the signed bytes and the sent bytes match exactly (`--data-binary @file`):
 
 ```bash
+cat > /tmp/config.json <<'JSON'
+{"pluginId":"say-hello","pluginVersion":"0.1.0","properties":{"greeting":"Hello"},"serviceToken":"local-test-token","gzacBaseUrl":"http://localhost:8080"}
+JSON
+host_sign POST /api/host/configurations/my-config /tmp/config.json
 curl -sS -X POST http://localhost:8090/api/host/configurations/my-config \
-  -H "Authorization: Bearer test-secret" \
+  -H "X-Valtimo-Timestamp: $TS" -H "X-Valtimo-Signature: $SIG" \
   -H "Content-Type: application/json" \
-  -d '{"pluginId":"say-hello","pluginVersion":"0.1.0","properties":{"greeting":"Hello"},"serviceToken":"local-test-token","gzacBaseUrl":"http://localhost:8080"}' | jq .
+  --data-binary @/tmp/config.json | jq .
 ```
 
 ### `PUT /api/host/configurations/:configId` — update configuration
 
 ```bash
+printf '%s' '{"properties":{"greeting":"Hola"}}' > /tmp/config.json
+host_sign PUT /api/host/configurations/my-config /tmp/config.json
 curl -sS -X PUT http://localhost:8090/api/host/configurations/my-config \
-  -H "Authorization: Bearer test-secret" \
+  -H "X-Valtimo-Timestamp: $TS" -H "X-Valtimo-Signature: $SIG" \
   -H "Content-Type: application/json" \
-  -d '{"properties":{"greeting":"Hola"}}' | jq .
+  --data-binary @/tmp/config.json | jq .
 ```
 
 ### `DELETE /api/host/configurations/:configId` — remove configuration
 
 ```bash
+host_sign DELETE /api/host/configurations/my-config
 curl -sS -X DELETE http://localhost:8090/api/host/configurations/my-config \
-  -H "Authorization: Bearer test-secret" -w "\nHTTP %{http_code}\n"
+  -H "X-Valtimo-Timestamp: $TS" -H "X-Valtimo-Signature: $SIG" -w "\nHTTP %{http_code}\n"
 ```
 
 ### `POST /plugins/:pluginId/:version/actions/:actionKey` — execute an action
 
 ```bash
+printf '%s' '{"configurationId":"my-config","processInstanceId":"p1","documentId":"d1","activityId":"a1","properties":{"recipient":"World"}}' > /tmp/action.json
+host_sign POST /plugins/say-hello/0.1.0/actions/say-hello /tmp/action.json
 curl -sS -X POST http://localhost:8090/plugins/say-hello/0.1.0/actions/say-hello \
+  -H "X-Valtimo-Timestamp: $TS" -H "X-Valtimo-Signature: $SIG" \
   -H "Content-Type: application/json" \
-  -d '{"configurationId":"my-config","processInstanceId":"p1","documentId":"d1","activityId":"a1","properties":{"recipient":"World"}}' | jq .
+  --data-binary @/tmp/action.json | jq .
 ```
 
 ### `GET /plugins/:pluginId/:version/plugin-manifest` — get plugin manifest

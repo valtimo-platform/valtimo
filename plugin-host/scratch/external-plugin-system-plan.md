@@ -29,7 +29,8 @@ Status legend: ✅ implemented & verified · 🟡 implemented, POC-level · ⛔ 
 | Process-link (`SERVICE_TASK_START`) | `backend/external-plugin/.../processlink/` + frontend process-link | 🟡 |
 | Per-host broker / callback config + defaults endpoint | `backend/external-plugin/.../web/rest/ExternalPluginManagementResource.kt#hostDefaults` | ✅ |
 | Plugin assets (logo + i18n bundle in manifest, served by host) | `plugin-host/plugin-sdk/bin/valtimo-plugin-pack.mjs`, `plugin-host/app/src/routes/plugin-bundles.ts` | ✅ |
-| GZAC→host action-call auth (HMAC-SHA256, replay-protected) | `client/ExternalPluginHostClient.kt` + `security/ExternalPluginHmacSigner.kt` ↔ `plugin-host/app/src/security/hmac.ts`, `routes/plugin-actions.ts` | ✅ |
+| GZAC→host auth on **every** route (HMAC-SHA256, replay-protected, body-bound): actions, config-push, management | `client/ExternalPluginHostClient.kt` + `security/ExternalPluginHmacSigner.kt` ↔ `plugin-host/app/src/security/{hmac,hmac-auth}.ts`, `routes/{plugin-actions,host-configurations,host-management}.ts` | ✅ |
+| Transport confidentiality (TLS): host serves HTTPS from `TLS_*`; broker credentials confined to a confidential transport at host registration | `plugin-host/app/src/index.ts` (`buildHttpsOptions`) + `models/app-config.ts` ↔ `service/ExternalPluginHostService.isSecureTransport` | ✅ |
 
 Single-core-app model with **multiple hosts per instance**: the core app pushes each configuration
 directly to its host with a freshly issued service token, a `gzacBaseUrl` callback target taken
@@ -51,11 +52,11 @@ rest of Valtimo already requires. Every value the module needs is either:
 |----------------------|---------------------|------|
 | JWT signing key | `SHA-256(valtimo.plugin.encryption-secret)` | At every JWT issue/verify. The hash gives a stable 32-byte HmacSHA256 key regardless of the encryption secret's raw length, so AES-128 (16-byte) and AES-256 (32-byte) deployments both work without reconfiguration. Hashing also keeps the signing key cryptographically separate from the AES key. |
 | `gzacBaseUrl` per push | `external_plugin_host.gzac_callback_base_url` | Set in the add-host UI; default pre-fill is `http://localhost:{server.port}` because the admin's browser URL (often the Angular dev proxy at `:4200` or a reverse proxy in production) is not a reliable signal for the URL plugin hosts should call back on. |
-| Broker AMQP URL per push | `external_plugin_host.event_broker_amqp_url` (nullable) | Set in the add-host UI; default pre-fill built from `spring.rabbitmq.*`. Null disables events for hosts under this host (actions still work). |
+| Broker AMQP URL per push | `external_plugin_host.event_broker_amqp_url` (nullable) | Set in the add-host UI; default pre-fill built from `spring.rabbitmq.*`. Null disables events for hosts under this host (actions still work). A non-null broker URL requires the host base URL to be a confidential transport (HTTPS, or a loopback address for local dev); registration is rejected otherwise so AMQP credentials never travel over plaintext (§3.9). |
 | Broker exchange per push | `external_plugin_host.event_broker_exchange`, else `valtimo.outbox.publisher.rabbitmq.exchange` | Set in the add-host UI; default pre-fill from the outbox exchange, which is what GZAC itself publishes to. |
 | Broker exchange type | hardcoded `fanout` | Matches the outbox publisher and the exchange declared in `imports/gzac-rabbitmq/definitions.json`. |
 
-`git diff next-minor -- backend/app/gzac/src/main/resources/application.yml` is empty.
+The module requires **no entries** in `backend/app/gzac/src/main/resources/application.yml`.
 
 ## 3. Endpoint-scoped service token & permission enforcement ✅
 
@@ -119,26 +120,57 @@ manifest. The same declaration is the source of truth for both the service-token
 section) and the upcoming iframe user-token path (§13) — one block, two consumers. SDK type
 `Endpoint`, Kotlin DTO `GrantedEndpointEntry`, frontend type `ExternalPluginEndpoint`.
 
-**3.9 Reverse direction — GZAC→host action-call authentication (HMAC) ✅.** Action invocations
-flow the *other* way (core app → host) and are authenticated with an HMAC-SHA256 signature, not the
-service token. `client/ExternalPluginHostClient.invokeAction()` signs
-`{METHOD}\n{path}\n{timestamp}\n{bodyHash}` (`path = /plugins/{id}/{version}/actions/{key}`,
-`bodyHash = SHA-256(body)` hex, `timestamp = Instant.now()` ISO-8601) with the host's **decrypted
-secret** (`security/ExternalPluginHmacSigner`, fed `hostService.decryptedSecret(host)` by
-`ExternalPluginServiceTaskStartListener`), and sends `X-Valtimo-Signature` + `X-Valtimo-Timestamp`.
-The host verifies in a Fastify `preHandler` on the action route only (`routes/plugin-actions.ts`,
-raw body captured via opt-in `fastify-raw-body`): headers present, ±5-min timestamp window (replay
-protection), timing-safe compare against `computeSignature(ADMIN_TOKEN, …)`
-(`plugin-host/app/src/security/hmac.ts`). The HMAC key is therefore the host's admin token — the
-**same** secret as the management-route bearer, just a different transport.
+**3.9 Reverse direction — GZAC→host authentication (HMAC), every route ✅.** Calls that flow the
+*other* way (core app → host) are authenticated with an HMAC-SHA256 signature, not the service
+token. Every GZAC→host route is covered: action invocations, config-push, and host management. The
+client signs `{METHOD}\n{path}\n{timestamp}\n{bodyHash}` (`bodyHash = SHA-256(body)` hex,
+`timestamp = Instant.now()` ISO-8601) with the host's **decrypted secret**
+(`security/ExternalPluginHmacSigner`), and sends `X-Valtimo-Signature` + `X-Valtimo-Timestamp`. The
+HMAC key is therefore the host's admin token (`hostService.decryptedSecret(host)` == the host's
+`ADMIN_TOKEN`); the secret is always carried as a signature, never as a bearer token.
+`client/ExternalPluginHostClient` signs through one `hmacHeaders(secret, method, path, body)` helper
+for all five calls (`invokeAction`, `pushConfiguration`, `deleteConfiguration`, `listPlugins`,
+`uploadPlugin`).
 
-- **Caveat 1 (path prefix):** the signed `path` is the bare `/plugins/...`; the host verifies
-  `request.url` minus the query string. A reverse proxy that prepends a path prefix the host sees
-  in `request.url` would break verification. Root-mounted hosts (the default) are unaffected.
-- **Caveat 2 (asymmetric hardening):** the management + config-push routes (`/api/host/plugins`,
-  `/api/host/configurations`) are **not** HMAC-protected — they use a plain `ADMIN_TOKEN` bearer
-  with no replay window or body binding. A `routes/host-configurations.ts` POC note flags
-  "Production: HMAC per GZAC instance" as still open.
+The host verifies in a shared Fastify `preHandler` (`createHmacAuthHook`,
+`plugin-host/app/src/security/hmac-auth.ts`, delegating to `security/hmac.ts`): headers present,
+±5-min timestamp window (replay protection), timing-safe compare against
+`computeSignature(ADMIN_TOKEN, …)`. The hook is the action route's `preHandler` and a plugin-level
+`preHandler` on both `routes/host-configurations.ts` and `routes/host-management.ts`.
+
+**Body binding per route shape:**
+- **JSON-body routes** (action POST; config-push POST/PUT) opt in to raw-body capture
+  (`config: { rawBody: true }` + `fastify-raw-body`) and bind the exact request bytes. The
+  config-push body carries the freshly issued service token and broker credentials — binding it is
+  what stops a replayed/forged push from installing a swapped token or broker.
+- **No-body routes** (config GET/DELETE; management GET/DELETE) bind an empty body
+  (`SHA-256("")`), so method + path + timestamp are still signed.
+- **Multipart upload** (`POST /api/host/plugins`) cannot bind the multipart envelope — RestTemplate
+  generates the boundary internally, so the client cannot reproduce the wire bytes to hash. Instead
+  both sides hash the **uploaded file bytes** (the `.zip`). The route is flagged
+  `config: { deferHmac: true }` so the shared hook skips it, and the handler runs
+  `verifyDeferredHmac(...)` once it has read the file into a buffer.
+
+- **Caveat 1 (path prefix):** the signed `path` is the bare route path (`/plugins/...`,
+  `/api/host/...`); the host verifies `request.url` minus the query string. A reverse proxy that
+  prepends a path prefix the host sees in `request.url` would break verification. Root-mounted hosts
+  (the default) are unaffected.
+- **Caveat 2 (encryption is the transport's job, not HMAC's):** HMAC authenticates and
+  integrity-binds every request but does not encrypt it, so confidentiality of the service token and
+  broker credentials in a config-push body rides on the transport. Two mechanisms keep those secrets
+  off an eavesdroppable link:
+  - The host serves **HTTPS** when `TLS_CERT_PATH` + `TLS_KEY_PATH` are set (`buildHttpsOptions` in
+    `plugin-host/app/src/index.ts`; optional `TLS_CA_PATH` for a chain; both cert and key required or
+    the host refuses to start), encrypting the GZAC→host channel end-to-end.
+  - Host registration **refuses a non-null `eventBrokerAmqpUrl` unless the host base URL is a
+    confidential transport** — HTTPS, or a loopback address (`localhost`/`127.0.0.1`/`::1`) for local
+    development (`ExternalPluginHostService.isSecureTransport`). Registration is the single gate
+    because the base URL is immutable afterwards, so no later push can reach an insecure host with
+    broker credentials.
+
+  Hosts without a broker (actions only) may still run over plain HTTP — e.g. behind a TLS-terminating
+  reverse proxy. Replay and forgery are closed by the HMAC scheme; eavesdropping is closed by running
+  the broker-carrying channel over TLS.
 
 ## 4. Permission UX ✅
 
@@ -219,16 +251,19 @@ The operator edits whatever does not match the host's network. Three fields are 
 Leaving the broker URL blank disables events for every configuration under this host.
 
 `ExternalPluginHostService.register()` trims trailing `/` on the URLs, encrypts the secret,
-blanks become `null`.
+blanks become `null`. When a broker URL is supplied it additionally requires the host base URL to be
+a confidential transport (HTTPS, or a loopback address for local development) and rejects the
+registration otherwise, so the broker AMQP URL and credentials are never pushed over plaintext
+(§3.9).
 
 ## 7. Plugin host 🟡 (`plugin-host/app/`, Node + Fastify + Extism)
 
-Routes: `GET /health`; `*/api/host/plugins[...]` (ADMIN_TOKEN bearer; POST upload, GET list,
-DELETE); `POST|PUT|DELETE|GET /api/host/configurations/:configId` (ADMIN_TOKEN bearer; push body
+Routes: `GET /health`; `*/api/host/plugins[...]` (HMAC-signed §3.9; POST upload, GET list,
+DELETE); `POST|PUT|DELETE|GET /api/host/configurations/:configId` (HMAC-signed §3.9; push body
 carries `pluginId, pluginVersion, properties, serviceToken, gzacBaseUrl, eventSubscriptions` and
 optionally `eventBroker` — only `serviceToken`/`gzacBaseUrl` are actually validated, `pluginId`/
 `pluginVersion` are not null-checked); `POST /plugins/:id/:version/actions/:key`
-(HMAC-authenticated, §3.9 — **no GET variant**); public `GET …/plugin-manifest`, `…/logo`,
+(HMAC-signed §3.9 — **no GET variant**); public `GET …/plugin-manifest`, `…/logo`,
 `…/bundles/**`. Multi-version load keyed `pluginId@version`. The only registered host function is
 `gzac_api`.
 
@@ -251,11 +286,13 @@ chain to avoid Extism reentrancy), sets `prefetch` on the broker channel, and ho
   configurations on the host reference the plugin version
   (`configRegistry.listByPlugin(pluginId, version)`), returning the offending `configurationIds`.
 
-Environment (`models/app-config.ts`): `ADMIN_TOKEN` (required), `PORT` (8090),
+Environment (`models/app-config.ts`): `ADMIN_TOKEN` (required — the shared secret used as the
+HMAC key for every GZAC→host route, §3.9), `PORT` (8090),
 `PLUGIN_STORAGE_DIR` (`./plugins`), `LOG_LEVEL` (info), `HOST_ID` (defaults to the OS hostname;
 see §8.4), plus `DB_HOST` / `DB_PORT` (defaults to **5434**, not the standard 5432) / `DB_NAME` /
-`DB_USER` / `DB_PASSWORD` for the host's PostgreSQL. **No broker variables** — the host never
-configures a broker itself.
+`DB_USER` / `DB_PASSWORD` for the host's PostgreSQL, and optional `TLS_CERT_PATH` / `TLS_KEY_PATH`
+(set together to serve HTTPS — §3.9) plus `TLS_CA_PATH` for a certificate chain. **No broker
+variables** — the host never configures a broker itself.
 
 Gaps to close for production: no `log` / `http_request` / `kv` host functions or capability
 allowlist; no HTMX `render_page` / `handle_request`.
@@ -444,7 +481,7 @@ every label, placeholder, and helper text; React components mount inside `sdk.re
 so users never see raw translation keys flash on screen.
 
 **Name & description are translations ✅.** The plugin's display **name** and **description** are
-now `name`/`description` keys inside **each** locale bucket — there are no top-level `name`/
+`name`/`description` keys inside **each** locale bucket — there are no top-level `name`/
 `description` fields. Every declared locale must carry both, enforced once by `validatePluginManifest`
 at pack-time and upload-time (§9).
 
@@ -477,7 +514,7 @@ a new case definition, which is free to bind to a newer plugin version. This mea
 versions of the same plugin must run side-by-side indefinitely**: there is no path of
 "deprecating" an old version while final case definitions still reference it.
 
-**What works today.**
+**What works.**
 - `external_plugin_definition` has `UNIQUE(plugin_id, version)` so v1 and v2 of the same plugin
   coexist as separate rows.
 - The host loads each `(pluginId, version)` as a distinct Wasm module.
@@ -493,7 +530,7 @@ versions of the same plugin must run side-by-side indefinitely**: there is no pa
 4. New BPMNs / case definitions bind their service tasks to the v2 configuration; existing final
    case definitions continue to reference their v1 configuration.
 
-**✅ Version visibility in the UI.** The version now appears in brackets after the localised plugin
+**✅ Version visibility in the UI.** The version appears in brackets after the localised plugin
 name (`Name (X.Y.Z)`) wherever that name is rendered, via `getExternalPluginDisplayName` (§10), so
 coexisting versions stay distinguishable:
 - The "Configure plugin" modal tile (`plugin-add-select`) — `Name (X.Y.Z)` plus the description.
@@ -579,12 +616,9 @@ through the user-token path.
   only the host's plugin-delete route enforces this.
 - Host database for KV / API logs / retention.
 - URL-plugin mode.
-- Broker credential delivery over TLS/HMAC rather than the admin-token channel.
 - Event delivery durability across host downtime (currently live-subscription only).
 - RabbitMQ consumer auto-reconnect on the host (currently reconnection happens only when the next
   config push triggers `sync()` — §8.3).
-- HMAC on the host's management / config-push routes (only the action route is HMAC-signed —
-  §3.9; management routes use a plain `ADMIN_TOKEN` bearer with no replay/body binding).
 - Configurable service-token TTL (hardcoded 24h in `ExternalPluginServiceTokenService`).
 - DB unique constraints on `external_plugin_granted_event` / `external_plugin_granted_endpoint`
   natural keys (§5).
@@ -594,31 +628,35 @@ through the user-token path.
 1. **Strict deletion guards (§12)** — block configuration delete and host delete when any
    process link exists; structured "what depends on this" body for the UI dependency panel; no
    force override.
-2. ✅ **Version visibility (§11)** — done: localised plugin name + `(version)` on the
-   configure-plugin tile, the configurations list, the process-link picker, and the edit-modal
-   header, all reactive to language change.
-3. **User-token-scoped endpoints (§13)** — new `POST /user-token` endpoint, user-token filter
+2. **User-token-scoped endpoints (§13)** — new `POST /user-token` endpoint, user-token filter
    with PBAC ∩ allowlist intersection, frontend wiring in `ExternalPluginIframeComponent.onIframeLoad()`
    to populate `accessToken` from `/user-token`, SDK side already exposes `getAccessToken()`.
-4. Capabilities + host functions + allowlist enforcement; surface in the acceptance screen by
+3. Capabilities + host functions + allowlist enforcement; surface in the acceptance screen by
    category.
-5. Durable / replayable event delivery option (per-host durable queue with TTL) for hosts that
+4. Durable / replayable event delivery option (per-host durable queue with TTL) for hosts that
    must not miss events during downtime.
-6. HTMX pages, case tabs, case widgets, menu pages.
-7. Host database (KV, API logs, retention) + admin log view.
-8. Cleanup: align async-vs-sync SDK docs.
+5. HTMX pages, case tabs, case widgets, menu pages.
+6. Host database (KV, API logs, retention) + admin log view.
+7. Cleanup: align async-vs-sync SDK docs.
 
 ## 16. Verification status
 
-- Host `tsc` build and `@valtimo/plugin-sdk` build: clean.
+- Host `tsc` build and `@valtimo/plugin-sdk` build: clean (including the optional-TLS
+  `buildHttpsOptions` wiring in `plugin-host/app/src/index.ts`).
 - Backend `:backend:external-plugin:test`: BUILD SUCCESSFUL (allowlist + service-token-filter +
-  endpoint-description-provider tests, 25 cases).
+  endpoint-description-provider + host-client-HMAC + host-registration transport-guard tests). The
+  host-client-HMAC suite (`client/ExternalPluginHostClientHmacTest`) asserts `pushConfiguration`
+  (body-bound), `deleteConfiguration` / `listPlugins` (empty-body), and `uploadPlugin`
+  (file-byte-bound) each send `X-Valtimo-Signature` + `X-Valtimo-Timestamp` and **no** `Authorization`
+  header, with the signature recomputed from an independent JDK HMAC oracle. The transport-guard suite
+  (`service/ExternalPluginHostServiceTest`) asserts host registration accepts broker credentials over
+  HTTPS and loopback HTTP, rejects them over plaintext HTTP to a remote host, and that
+  `isSecureTransport` classifies schemes and loopback hosts.
 - Backend `:backend:app:gzac:compileKotlin`: BUILD SUCCESSFUL.
 - Frontend `ng build` (production): clean.
 - Sample plugin `build:pack`: clean (Wasm + pack including `logo.svg`, `translations.en/nl`,
   `permissions.endpoints`, and `eventSubscriptions`).
-- `git diff next-minor -- backend/app/gzac/src/main/resources/application.yml`: empty (no
-  application.yml additions over `next-minor`).
+- `backend/app/gzac/src/main/resources/application.yml`: the module requires no additions to it.
 - Events, end-to-end against the live `gzac-rabbitmq` broker (sample plugin):
   - host startup re-opens consumers from persisted configs ("Broker consumer started" log on
     boot is expected when a previous push is in the host's PostgreSQL);
@@ -639,27 +677,14 @@ through the user-token path.
     parent's `init` postMessage), renders Dutch labels when the Angular UI is Dutch and English
     labels when it is English.
 
-**Name/description-in-translations + version-display change (2026-06):**
-- `@valtimo/plugin-sdk` build: clean — emits `dist/manifest-validation.{js,d.ts}` and the updated
-  `PluginManifest` (no top-level `name`/`description`; `translations` required, buckets typed
-  `PluginTranslations`).
-- Host `tsc` build: clean — `routes/host-management.ts` imports `validatePluginManifest` from the
-  `@valtimo/plugin-sdk/manifest-validation` subpath (NodeNext resolves the export map).
-- Backend `:backend:external-plugin:compileKotlin`: BUILD SUCCESSFUL — discovery derives
-  `name`/`description` from `translations` (`localizedManifestValue`, `en` → first locale).
-- Sample plugin `case-summary/manifest.json` migrated to the new shape (`name`/`description` moved
-  into `translations.en`/`translations.nl`; top-level fields removed) so it passes validation.
-- Frontend: not manually rebuilt — the dev server on `:4200` was running and recompiles on change
-  (per the project's frontend guideline). New `@valtimo/plugin` helpers (`getExternalPluginName`/
-  `Description`/`DisplayName`) are exported via the `models` barrel and consumed by `plugin-add-select`,
-  `plugin-management`, `plugin-external-edit-modal`, and `select-plugin-configuration`. A production
-  `ng build` is still pending as a final confirmation.
-
-**Gaps in the verification record (flagged by the v18 code audit, 2026-06):**
+**Not yet verified end-to-end** (confirmed by code reading and clean builds, not by a live run):
+- The host has no unit-test harness, so host-side HMAC verification (`createHmacAuthHook` /
+  `verifyDeferredHmac`) and the HTTPS listen path (`buildHttpsOptions`, including the both-cert-and-key
+  guard and the TLS handshake itself) rest on code reading and a clean `tsc`. A live client↔host run
+  over the config-push / management / upload routes — a successful push returning 201, a tampered body
+  or stale timestamp returning 401, and a push over an HTTPS listener — is not in the verified record.
 - The **synchronous action path** (process service task → `ExternalPluginServiceTaskStartListener`
   → HMAC-signed `invokeAction` → host `preHandler` verify → Wasm `handle_action` → returned
-  `variables` applied to the execution, and the 4xx→`BpmnError` path) is **not** listed as
-  e2e-verified above. The HMAC handshake is confirmed coherent by code reading (§3.9), but an
-  end-to-end action run is not in the verified record and should be added before release.
-- The build/test statuses above predate this audit and were not re-run as part of it; treat them
-  as last-known-good, not freshly confirmed.
+  `variables` applied to the execution, and the 4xx→`BpmnError` path) is not verified end-to-end; the
+  HMAC handshake is confirmed coherent by code reading (§3.9), but an end-to-end action run is not in
+  the record.

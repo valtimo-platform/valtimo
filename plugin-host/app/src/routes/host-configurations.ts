@@ -14,12 +14,13 @@
  * limitations under the License.
  */
 
-import {FastifyInstance, FastifyReply, FastifyRequest} from "fastify";
+import {FastifyInstance} from "fastify";
 import {ConfigRegistry} from "../config-registry.js";
 import {PluginManager} from "../plugin-manager.js";
 import {AppConfig} from "../config.js";
 import {EventConsumerManager} from "../rabbitmq/event-consumer.js";
 import type {EventBrokerConfig} from "../models/index.js";
+import {createHmacAuthHook} from "../security/hmac-auth.js";
 
 const EXCHANGE_TYPES = ["fanout", "topic", "direct"] as const;
 
@@ -58,7 +59,10 @@ function normalizeEventSubscriptions(input: unknown): string[] {
  * GZAC pushes decrypted configuration here on activation.
  * The host stores it in-memory and injects it into every Wasm call.
  *
- * POC: simplified auth — uses ADMIN_TOKEN. Production: HMAC per GZAC instance.
+ * Authentication: HMAC-SHA256 over `{method}\n{path}\n{timestamp}\n{bodyHash}` using the host's
+ * ADMIN_TOKEN as the key (same scheme as the action route). The signature binds the request body —
+ * which carries a freshly issued service token and broker credentials — and the ±5-minute timestamp
+ * window blocks replay.
  */
 export async function hostConfigurationRoutes(
   fastify: FastifyInstance,
@@ -71,23 +75,9 @@ export async function hostConfigurationRoutes(
 ): Promise<void> {
   const { configRegistry, pluginManager, config, eventConsumerManager } = opts;
 
-  // Admin auth hook
-  fastify.addHook(
-    "onRequest",
-    async (request: FastifyRequest, reply: FastifyReply) => {
-      const authHeader = request.headers["authorization"];
-      if (!authHeader) {
-        reply.code(401).send({ error: "Missing Authorization header" });
-        return;
-      }
-
-      const token = authHeader.replace(/^Bearer\s+/i, "");
-      if (token !== config.ADMIN_TOKEN) {
-        reply.code(403).send({ error: "Invalid admin token" });
-        return;
-      }
-    }
-  );
+  // Authenticate every configuration route by HMAC signature. Write routes opt in to raw-body
+  // capture (config.rawBody) so the signature binds the pushed body; GET/DELETE bind an empty body.
+  fastify.addHook("preHandler", createHmacAuthHook(config.ADMIN_TOKEN));
 
   /**
    * POST /api/host/configurations/:configId — push configuration from GZAC
@@ -103,7 +93,7 @@ export async function hostConfigurationRoutes(
       eventSubscriptions?: unknown;
       eventBroker?: unknown;
     };
-  }>("/api/host/configurations/:configId", async (request, reply) => {
+  }>("/api/host/configurations/:configId", { config: { rawBody: true } }, async (request, reply) => {
     const { configId } = request.params;
     const { pluginId, pluginVersion, properties, serviceToken, gzacBaseUrl } =
       request.body;
@@ -171,7 +161,7 @@ export async function hostConfigurationRoutes(
       eventSubscriptions?: unknown;
       eventBroker?: unknown;
     };
-  }>("/api/host/configurations/:configId", async (request, reply) => {
+  }>("/api/host/configurations/:configId", { config: { rawBody: true } }, async (request, reply) => {
     const { configId } = request.params;
     const existing = await configRegistry.get(configId);
 
