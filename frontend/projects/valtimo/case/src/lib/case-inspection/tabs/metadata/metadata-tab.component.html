@@ -1,0 +1,159 @@
+<!--
+  ~ Copyright 2015-2026 Ritense BV, the Netherlands.
+  ~
+  ~ Licensed under EUPL, Version 1.2 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~ https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" basis,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<section class="case-inspection-metadata-tab">
+  <div *ngIf="$loading()" class="loading-container">
+    <cds-loading size="sm"></cds-loading>
+  </div>
+
+  @if ($errorMessage(); as message) {
+    <p class="case-inspection-metadata-tab__error">{{ message }}</p>
+  }
+
+  <ng-container *ngIf="$document() as document">
+    <cds-structured-list class="case-inspection-metadata-tab__list" [condensed]="true">
+      <cds-list-row>
+        <cds-list-column>{{ 'case.inspection.metadata.documentId' | translate }}</cds-list-column>
+        <cds-list-column
+          ><code>{{ document.id }}</code></cds-list-column
+        >
+      </cds-list-row>
+
+      <cds-list-row>
+        <cds-list-column>{{
+          'case.inspection.metadata.definitionName' | translate
+        }}</cds-list-column>
+        <cds-list-column>{{ document.definitionId?.name }}</cds-list-column>
+      </cds-list-row>
+
+      <cds-list-row>
+        <cds-list-column>{{ 'case.inspection.metadata.sequence' | translate }}</cds-list-column>
+        <cds-list-column>{{ document.sequence }}</cds-list-column>
+      </cds-list-row>
+
+      <cds-list-row>
+        <cds-list-column>{{ 'case.inspection.metadata.version' | translate }}</cds-list-column>
+        <cds-list-column>{{ document.version }}</cds-list-column>
+      </cds-list-row>
+
+      <cds-list-row>
+        <cds-list-column>{{ 'case.inspection.metadata.createdBy' | translate }}</cds-list-column>
+        <cds-list-column>{{ document.createdBy }}</cds-list-column>
+      </cds-list-row>
+
+      <cds-list-row>
+        <cds-list-column>{{ 'case.inspection.metadata.createdOn' | translate }}</cds-list-column>
+        <cds-list-column>{{ document.createdOn | date: 'medium' }}</cds-list-column>
+      </cds-list-row>
+
+      <cds-list-row>
+        <cds-list-column>{{ 'case.inspection.metadata.modifiedOn' | translate }}</cds-list-column>
+        <cds-list-column>{{ document.modifiedOn | date: 'medium' }}</cds-list-column>
+      </cds-list-row>
+
+      <cds-list-row>
+        <cds-list-column>{{ 'case.inspection.metadata.assignee' | translate }}</cds-list-column>
+        <cds-list-column>
+          <ng-container *ngIf="document.assigneeFullName; else noAssignee">
+            {{ document.assigneeFullName }}
+          </ng-container>
+
+          <ng-template #noAssignee>
+            <span class="case-inspection-metadata-tab__empty">
+              {{ 'case.inspection.metadata.unassigned' | translate }}
+            </span>
+          </ng-template>
+        </cds-list-column>
+      </cds-list-row>
+
+      <cds-list-row>
+        <cds-list-column>{{ 'case.inspection.metadata.assignedTeam' | translate }}</cds-list-column>
+        <cds-list-column>
+          <ng-container *ngIf="document.assignedTeamTitle; else noTeam">
+            {{ document.assignedTeamTitle }}
+          </ng-container>
+
+          <ng-template #noTeam>
+            <span class="case-inspection-metadata-tab__empty">
+              {{ 'case.inspection.metadata.unassigned' | translate }}
+            </span>
+          </ng-template>
+        </cds-list-column>
+      </cds-list-row>
+
+      <cds-list-row>
+        <cds-list-column>{{
+          'case.inspection.metadata.internalStatus' | translate
+        }}</cds-list-column>
+        <cds-list-column>
+          <ng-container *ngIf="document.internalStatus; else noStatus">
+            {{ document.internalStatus }}
+          </ng-container>
+
+          <ng-template #noStatus>
+            <span class="case-inspection-metadata-tab__empty">
+              {{ 'case.inspection.metadata.noStatus' | translate }}
+            </span>
+          </ng-template>
+        </cds-list-column>
+      </cds-list-row>
+
+      <cds-list-row>
+        <cds-list-column>{{ 'case.inspection.metadata.tags' | translate }}</cds-list-column>
+        <cds-list-column>
+          <ng-container *ngIf="document.caseTags?.length; else noTags">
+            <cds-tag
+              *ngFor="let tag of document.caseTags"
+              [title]="tag.title"
+              size="sm"
+              type="cool-gray"
+            >
+              {{ tag.title }}
+            </cds-tag>
+          </ng-container>
+
+          <ng-template #noTags>
+            <span class="case-inspection-metadata-tab__empty">
+              {{ 'case.inspection.metadata.noTags' | translate }}
+            </span>
+          </ng-template>
+        </cds-list-column>
+      </cds-list-row>
+
+      <cds-list-row>
+        <cds-list-column>{{ 'case.inspection.metadata.relations' | translate }}</cds-list-column>
+        <cds-list-column>
+          <ng-container *ngIf="document.relations?.length; else noRelations">
+            <ul>
+              <li *ngFor="let relation of document.relations">{{ relation }}</li>
+            </ul>
+          </ng-container>
+
+          <ng-template #noRelations>
+            <span class="case-inspection-metadata-tab__empty">
+              {{ 'case.inspection.metadata.noRelations' | translate }}
+            </span>
+          </ng-template>
+        </cds-list-column>
+      </cds-list-row>
+
+      <cds-list-row>
+        <cds-list-column>{{ 'case.inspection.metadata.relatedFiles' | translate }}</cds-list-column>
+        <cds-list-column>{{ document.relatedFiles?.length || 0 }}</cds-list-column>
+      </cds-list-row>
+    </cds-structured-list>
+  </ng-container>
+</section>
