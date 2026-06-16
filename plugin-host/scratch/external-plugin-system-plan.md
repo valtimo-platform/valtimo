@@ -217,14 +217,16 @@ DDL lives in the **core** module's changelog, not the external-plugin module's o
   manifest copy.
 - `external_plugin_configuration` — `definition_id`, `title`, `properties` (encrypted on schema
   `x-secret` fields), `created_at`.
-- `external_plugin_granted_event` — `configuration_id`, `event_type`, `granted_at`. Pushed to the
-  host on every config push as the actual subscription set. A later manifest update that adds a
-  new event type cannot widen this set — the row only changes when the admin re-grants.
+- `external_plugin_granted_event` — `configuration_id`, `event_type`, `granted_at`;
+  `UNIQUE(configuration_id, event_type)`. Pushed to the host on every config push as the actual
+  subscription set. A later manifest update that adds a new event type cannot widen this set — the
+  row only changes when the admin re-grants.
 - `external_plugin_granted_endpoint` — `configuration_id`, `http_method`, `endpoint_pattern`,
-  `granted_at`.
-- Neither grant table has a DB unique constraint on its `(configuration_id, …)` natural key, so
-  duplicate grant rows are structurally possible (in practice deduplicated only by the
-  replace-on-write flow, not the schema).
+  `granted_at`; `UNIQUE(configuration_id, http_method, endpoint_pattern)`.
+- Each grant table enforces a DB unique constraint on its `(configuration_id, …)` natural key, so
+  duplicate grant rows are structurally impossible. The replace-on-write `update()` flow deletes a
+  configuration's endpoint grants and flushes that delete before re-inserting, so a replacement set
+  that overlaps the previous grants stays within the constraint.
 - `external_plugin_*` columns on `process_link` (`external_plugin_config_id`,
   `external_plugin_action_key`, `external_plugin_version`, `external_plugin_action_properties`) for
   the `SERVICE_TASK_START` action link.
@@ -620,8 +622,6 @@ through the user-token path.
 - RabbitMQ consumer auto-reconnect on the host (currently reconnection happens only when the next
   config push triggers `sync()` — §8.3).
 - Configurable service-token TTL (hardcoded 24h in `ExternalPluginServiceTokenService`).
-- DB unique constraints on `external_plugin_granted_event` / `external_plugin_granted_endpoint`
-  natural keys (§5).
 
 ## 15. Roadmap (priority order)
 
