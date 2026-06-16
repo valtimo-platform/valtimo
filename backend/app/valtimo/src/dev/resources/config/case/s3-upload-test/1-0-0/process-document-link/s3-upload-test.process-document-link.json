@@ -1,0 +1,7 @@
+[
+    {
+        "processDefinitionKey": "s3-upload-test",
+        "canInitializeDocument": true,
+        "startableByUser": true
+    }
+]

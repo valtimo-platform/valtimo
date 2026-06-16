@@ -1,0 +1,38 @@
+<?xml version="1.1" encoding="UTF-8" standalone="no"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.5.xsd">
+    <changeSet author="Floris Thijssen" id="drop s3 resource index" dbms="mysql">
+        <sql>
+            DROP INDEX `s3_key_index` ON s3_resource;
+        </sql>
+    </changeSet>
+    <changeSet author="Ritense" id="drop s3 resource index postgres" dbms="postgresql">
+        <sql>
+            DROP INDEX s3_key_index;
+        </sql>
+    </changeSet>
+
+    <changeSet author="Floris Thijssen" id="increase s3 resource key length" dbms="mysql">
+        <sql>
+            ALTER TABLE s3_resource
+                MODIFY COLUMN s3_key
+                    VARCHAR(1024);
+        </sql>
+    </changeSet>
+    <changeSet author="Ritense" id="increase s3 resource key length other" dbms="postgresql">
+        <modifyDataType tableName="s3_resource" columnName="s3_key" newDataType="varchar(1024)" />
+    </changeSet>
+
+
+    <changeSet author="Floris Thijssen" id="increase s3 resource name length" dbms="mysql">
+        <sql>
+            ALTER TABLE s3_resource
+                MODIFY COLUMN `name`
+                    VARCHAR(1024);
+        </sql>
+    </changeSet>
+    <changeSet author="Ritense" id="increase s3 resource name length postgres" dbms="postgresql">
+        <modifyDataType tableName="s3_resource" columnName="name" newDataType="varchar(1024)" />
+    </changeSet>
+</databaseChangeLog>

@@ -16,7 +16,7 @@
 
 import {Injectable} from '@angular/core';
 import {HttpClient} from '@angular/common/http';
-import {Observable} from 'rxjs';
+import {Observable, of} from 'rxjs';
 import {map} from 'rxjs/operators';
 import {ConfigService, MenuItem} from '@valtimo/shared';
 
@@ -28,6 +28,13 @@ export class ObjectMenuService {
   ) {}
 
   public appendObjectMenuItems = (menuItems: MenuItem[]): Observable<MenuItem[]> => {
+    const featureToggles = this.configService.featureToggles;
+    const enabled = featureToggles?.enableObjectManagement && featureToggles?.enableZgwFeatures !== false;
+
+    if (!enabled) {
+      return of(menuItems);
+    }
+
     const apiBaseUrl = this.configService.config.valtimoApi.endpointUri;
 
     return this.getObjects(apiBaseUrl).pipe(

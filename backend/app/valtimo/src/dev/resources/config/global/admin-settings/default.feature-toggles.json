@@ -1,0 +1,18 @@
+{
+  "showUserNameInTopBar": true,
+  "showPlantATreeButton": true,
+  "experimentalDmnEditing": true,
+  "largeLogoMargin": false,
+  "sortFilesByDate": true,
+  "disableCaseCount": false,
+  "returnToLastUrlAfterTokenExpiration": true,
+  "useStartEventNameAsStartFormTitle": true,
+  "allowUserThemeSwitching": true,
+  "enableUserNameInTopBarToggle": true,
+  "enableTabManagement": true,
+  "enableObjectManagement": false,
+  "enableFormViewModel": true,
+  "enableIntermediateSave": true,
+  "enableFormFlowBreadcrumbs": true,
+  "enableZgwFeatures": false
+}

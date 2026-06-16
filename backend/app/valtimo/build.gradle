@@ -1,0 +1,114 @@
+/*
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
+ *
+ * Licensed under EUPL, Version 1.2 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" basis,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+import org.jetbrains.kotlin.gradle.dsl.KotlinJvmProjectExtension
+
+plugins {
+    id 'war'
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    implementation(platform(project(":backend:dependencies:valtimo-dependency-versions")))
+
+    implementation(project(":backend:dependencies:valtimo-dependencies"))
+    implementation(project(":backend:aws:s3-resource"))
+    implementation(project(":backend:mail:local-mail"))
+    implementation(project(":backend:outbox:outbox-rabbitmq"))
+
+    implementation("io.github.oshai:kotlin-logging")
+    implementation "org.springframework.boot:spring-boot-starter-webflux"
+    implementation "org.springframework.boot:spring-boot-starter-security"
+
+    // Spring cloud stream RabbitMQ
+    implementation "org.springframework.cloud:spring-cloud-starter-stream-rabbit:${springCloudStreamVersion}"
+    implementation "com.rabbitmq:amqp-client:$amqpCLientVersion"
+
+    // Database
+    implementation "org.postgresql:postgresql:$postgresqlDriverVersion"
+    implementation "com.mysql:mysql-connector-j:$mysqlDriverVersion"
+
+    if (System.getProperty("os.arch") == "aarch64") {
+        runtimeOnly("io.netty:netty-resolver-dns-native-macos::osx-aarch_64")
+    }
+
+    testImplementation "org.jetbrains.kotlin:kotlin-test"
+    testImplementation "org.junit.jupiter:junit-jupiter"
+    testImplementation "org.springframework.boot:spring-boot-starter-test"
+}
+
+// Note: -PincludeDev=false comes in as a String; coerce to real boolean
+def includeDevSources = project.findProperty("includeDev")?.toString()?.toBoolean() ?: false
+
+println "includeDevSources: $includeDevSources"
+
+if (includeDevSources) {
+    extensions.configure(KotlinJvmProjectExtension) { kotlinExt ->
+        kotlinExt.sourceSets.named("main") { kotlinSourceSet ->
+            kotlinSourceSet.kotlin.srcDir("src/dev/kotlin")
+        }
+    }
+    sourceSets {
+        main {
+            resources.srcDir("src/dev/resources")
+        }
+    }
+}
+
+apply from: "gradle/publishing.gradle"
+
+bootRun {
+    doFirst {
+        File f = file(".env.properties")
+        if (f.isFile()) {
+            def props = new Properties()
+            f.withInputStream { props.load(it) }
+            props.each { key, value ->
+                environment key.toString(), value.toString()
+            }
+        }
+    }
+}
+
+dockerCompose {
+    projectName = "valtimo-docker-compose"
+    stopContainers = false
+    removeContainers = false
+    removeVolumes = false
+}
+
+tasks.register("bootRunWithDocker", tasks.named("bootRun").get().class) {
+    group = "application"
+    description = "Starts docker containers and then runs this project as a Spring Boot application"
+    classpath = sourceSets.main.runtimeClasspath
+    mainClass = "com.ritense.valtimo.ValtimoApplicationKt"
+
+    doFirst {
+        File f = file(".env.properties")
+        if (f.isFile()) {
+            def props = new Properties()
+            f.withInputStream { props.load(it) }
+            props.each { key, value ->
+                environment key.toString(), value.toString()
+            }
+        }
+    }
+}
+
+dockerCompose.isRequiredBy(bootRunWithDocker)

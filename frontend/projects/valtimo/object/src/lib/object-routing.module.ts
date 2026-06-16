@@ -18,20 +18,20 @@ import {NgModule} from '@angular/core';
 import {RouterModule, Routes} from '@angular/router';
 import {CommonModule} from '@angular/common';
 import {AuthGuardService} from '@valtimo/security';
-import {ROLE_USER} from '@valtimo/shared';
+import {ROLE_USER, zgwFeaturesGuard} from '@valtimo/shared';
 import {ObjectListComponent} from './components/object-list/object-list.component';
 import {ObjectDetailContainerComponent} from './components/object-detail-container/object-detail-container.component';
 
 const routes: Routes = [
   {
     path: 'objects/:objectManagementId',
-    canActivate: [AuthGuardService],
+    canActivate: [AuthGuardService, zgwFeaturesGuard],
     component: ObjectListComponent,
     data: {title: 'Objects', roles: [ROLE_USER], customPageTitle: true},
   },
   {
     path: 'objects/:objectManagementId/:objectId',
-    canActivate: [AuthGuardService],
+    canActivate: [AuthGuardService, zgwFeaturesGuard],
     component: ObjectDetailContainerComponent,
     data: {title: 'object.header', roles: [ROLE_USER]},
   },

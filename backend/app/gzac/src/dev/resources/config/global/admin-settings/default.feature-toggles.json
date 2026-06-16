@@ -15,5 +15,6 @@
   "enableIntermediateSave": true,
   "enableFormFlowBreadcrumbs": true,
   "enablePbacDocumentenApiDocuments": true,
-  "enableSuppressDocumentError": false
+  "enableSuppressDocumentError": false,
+  "enableZgwFeatures": true
 }

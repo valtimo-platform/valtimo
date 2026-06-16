@@ -1,0 +1,61 @@
+[
+    {
+        "resourceType": "com.ritense.document.domain.impl.JsonSchemaDocument",
+        "actions": [
+            "view",
+            "view_list",
+            "create",
+            "modify",
+            "delete",
+            "claim",
+            "assign",
+            "assignable",
+            "export"
+        ],
+        "roleKey": "ROLE_ADMIN"
+    },
+    {
+        "resourceType": "com.ritense.document.domain.impl.JsonSchemaDocument",
+        "actions": [
+            "create"
+        ],
+        "roleKey": "ROLE_USER",
+        "conditions": [
+            {
+                "type": "container",
+                "resourceType": "com.ritense.document.domain.impl.JsonSchemaDocumentDefinition",
+                "conditions": [
+                    {
+                        "type": "field",
+                        "field": "id.name",
+                        "operator": "==",
+                        "value": "s3-upload-test"
+                    }
+                ]
+            }
+        ]
+    },
+    {
+        "resourceType": "com.ritense.document.domain.impl.JsonSchemaDocument",
+        "actions": [
+            "view",
+            "view_list",
+            "modify"
+        ],
+        "roleKey": "ROLE_USER",
+        "conditions": [
+            {
+                "type": "container",
+                "resourceType": "com.ritense.case_.domain.definition.CaseDefinition",
+                "conditions": [
+                    {
+                        "type": "field",
+                        "field": "id.key",
+                        "operator": "==",
+                        "value": "s3-upload-test"
+                    }
+                ]
+            }
+        ]
+    }
+]

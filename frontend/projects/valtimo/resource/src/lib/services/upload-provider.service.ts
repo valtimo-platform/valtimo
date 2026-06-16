@@ -41,7 +41,13 @@ export class UploadProviderService implements UploadService {
   ) {
     let uploadService: UploadService;
 
-    switch (configService.config.uploadProvider) {
+    // If ZGW features disabled, force S3; otherwise use environment config
+    const zgwEnabled = configService.featureToggles?.enableZgwFeatures !== false;
+    const uploadProvider = zgwEnabled
+      ? configService.config.uploadProvider
+      : UploadProvider.S3;
+
+    switch (uploadProvider) {
       case UploadProvider.S3:
         uploadService = injector.get<UploadService>(S3UploadService);
         break;
