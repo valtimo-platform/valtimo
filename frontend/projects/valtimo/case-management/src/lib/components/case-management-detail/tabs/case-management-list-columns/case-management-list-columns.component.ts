@@ -171,17 +171,7 @@ export class CaseManagementListColumnsComponent implements AfterViewInit, OnDest
     exportable: new FormControl(false),
   });
 
-  public readonly disableDefaultSort$ = combineLatest([
-    this.currentModalType$,
-    this.formGroup.valueChanges,
-  ]).pipe(
-    map(
-      ([currentModalType]) =>
-        currentModalType === 'create' &&
-        this.cachedCaseListColumns.find(column => !!column.defaultSort)
-    ),
-    startWith(false)
-  );
+  public readonly disableDefaultSort$ = new BehaviorSubject<boolean>(false);
 
   public readonly DISPLAY_TYPES: Array<ViewType> = [
     ViewType.TEXT,
@@ -340,8 +330,16 @@ export class CaseManagementListColumnsComponent implements AfterViewInit, OnDest
     if (modalType === 'create') {
       this.formGroup.controls['key'].enable();
       this.resetFormGroup();
+      const hasExistingDefaultSort = this.cachedCaseListColumns.some(
+        column => !!column.defaultSort
+      );
+      this.disableDefaultSort$.next(hasExistingDefaultSort);
+      if (hasExistingDefaultSort) {
+        this.formGroup.controls.defaultSort.disable({emitEvent: false});
+      }
     } else if (modalType === 'edit') {
       this.formGroup.controls['key'].disable();
+      this.disableDefaultSort$.next(false);
     }
   }
 
