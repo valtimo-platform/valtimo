@@ -1,0 +1,111 @@
+/*!
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
+ *
+ * Licensed under EUPL, Version 1.2 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" basis,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+.case-inspection-process-detail {
+  padding-top: var(--cds-spacing-05);
+  padding-bottom: var(--cds-spacing-05);
+  padding-right: var(--cds-spacing-05);
+
+  &__header {
+    margin-bottom: var(--cds-spacing-05);
+
+    h3 {
+      margin: 0;
+
+      small {
+        font-weight: 400;
+        color: var(--cds-text-helper);
+        margin-left: var(--cds-spacing-03);
+        font-size: var(--cds-body-compact-01-font-size);
+      }
+    }
+  }
+
+  &__tags {
+    display: flex;
+    gap: var(--cds-spacing-03);
+    flex-wrap: wrap;
+    margin-top: var(--cds-spacing-03);
+    margin-bottom: var(--cds-spacing-03);
+  }
+
+  &__meta code {
+    word-break: break-all;
+  }
+
+  &__subhead {
+    margin: var(--cds-spacing-06) 0 var(--cds-spacing-03);
+    font-size: var(--cds-body-compact-01-font-size);
+    font-weight: 600;
+    color: var(--cds-text-secondary);
+  }
+
+  &__subhead--no-margin {
+    margin-top: 0;
+  }
+
+  &__variable-actions {
+    display: flex;
+    flex-shrink: 0;
+    gap: 8px;
+  }
+
+  &__empty {
+    color: var(--cds-text-helper);
+  }
+
+  &__variable-value {
+    overflow-wrap: anywhere;
+    white-space: pre-wrap;
+    max-height: 96px;
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-line-clamp: 4;
+    line-clamp: 4;
+    -webkit-box-orient: vertical;
+  }
+
+  &__pane {
+    padding-top: var(--cds-spacing-05);
+  }
+
+  &__diagram {
+    margin-top: 16px;
+    height: 480px;
+    border: 1px solid var(--cds-border-subtle);
+    overflow: hidden;
+
+    ::ng-deep {
+      valtimo-process-diagram,
+      .process-diagram-container {
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+      }
+
+      .diagram-container {
+        flex: 1 1 auto;
+        min-height: 0;
+        height: auto !important;
+      }
+
+      .legenda-holder {
+        flex-shrink: 0;
+        padding: var(--cds-spacing-03) var(--cds-spacing-05);
+      }
+    }
+  }
+}

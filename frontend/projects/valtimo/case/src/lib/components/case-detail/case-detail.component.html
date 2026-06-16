@@ -229,6 +229,12 @@
   </v-overflow-menu-option>
 </ng-template>
 
+<ng-template #inspectButton let-canInspect="canInspect">
+  <v-overflow-menu-option *ngIf="canInspect" (selected)="navigateToInspection()">
+    {{ 'case.inspection.openInspector' | translate }}
+  </v-overflow-menu-option>
+</ng-template>
+
 <ng-template #customStartTrigger>
   <button
     [size]="(compactMode$ | async) ? 'sm' : 'lg'"
@@ -265,6 +271,7 @@
         canClaim: canClaim$ | async,
         canHaveAssignee: canHaveAssignee$ | async,
         canDelete: canDelete$ | async,
+        canInspect: canInspect$ | async,
         document: document$ | async,
         caseStatus: caseStatus$ | async,
       } as obs"
@@ -294,7 +301,7 @@
 
       <div class="buttons-container">
         <v-overflow-menu
-          *ngIf="obs.canHaveAssignee || obs.canDelete"
+          *ngIf="obs.canHaveAssignee || obs.canDelete || obs.canInspect"
           placement="bottom-end"
           class="overflow-button assign-overflow"
           [ngClass]="{'--compact': compactMode$ | async}"
@@ -322,6 +329,9 @@
               }
             "
           >
+          </ng-container>
+
+          <ng-container *ngTemplateOutlet="inspectButton; context: {canInspect: obs.canInspect}">
           </ng-container>
 
           <ng-container *ngTemplateOutlet="deleteButton; context: {canDelete: obs.canDelete}">

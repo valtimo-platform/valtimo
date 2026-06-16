@@ -94,12 +94,12 @@ class BuildingBlockEndEventListener(
             valueResolverService.resolveValues(
                 execution.processInstanceId,
                 execution,
-                endSyncMappings.map { it.source }
+                endSyncMappings.map { it.getPrefixedSource() }
             )
         }
 
-        val valuesToHandle = endSyncMappings.associate { (sourceKey, target) ->
-            target to resolvedValues[sourceKey]
+        val valuesToHandle = endSyncMappings.associate { mapping ->
+            mapping.target to resolvedValues[mapping.getPrefixedSource()]
         }
 
         AuthorizationContext.runWithoutAuthorization {

@@ -130,7 +130,7 @@ class ProcessLinkService(
                 )
             }
 
-            processLinkRepository.save(mapper.toNewProcessLink(createRequest, blueprintId)).also {
+            processLinkRepository.save(newProcessLink).also {
                 applicationEventPublisher.publishEvent(ProcessLinkCreatedEvent(createRequest.processLinkType, it.processDefinitionId))
             }
         }

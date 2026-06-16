@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,21 +14,37 @@
  * limitations under the License.
  */
 
-package com.ritense.valtimo.security.config;
+package com.ritense.valtimo.security.oauth2;
 
 import com.ritense.valtimo.contract.security.config.HttpConfigurerConfigurationException;
 import com.ritense.valtimo.contract.security.config.HttpSecurityConfigurer;
+import org.operaton.bpm.engine.IdentityService;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.web.authentication.AnonymousAuthenticationFilter;
 
-public class HeaderFrameOptionHttpSecurityConfigurer implements HttpSecurityConfigurer {
+/**
+ * Wires {@link OperatonIdentityBridgeFilter} into the Spring Security chain,
+ * positioned after the anonymous-authentication filter so by the time it runs
+ * the {@code SecurityContext} has been populated by whichever authentication
+ * filter handled the request (Bearer token, form login, etc.).
+ */
+public class OperatonIdentityBridgeHttpSecurityConfigurer implements HttpSecurityConfigurer {
+
+    private final IdentityService identityService;
+
+    public OperatonIdentityBridgeHttpSecurityConfigurer(IdentityService identityService) {
+        this.identityService = identityService;
+    }
 
     @Override
     public void configure(HttpSecurity http) {
         try {
-            http.headers().frameOptions().disable();
+            http.addFilterAfter(
+                new OperatonIdentityBridgeFilter(identityService),
+                AnonymousAuthenticationFilter.class
+            );
         } catch (Exception e) {
             throw new HttpConfigurerConfigurationException(e);
         }
     }
-
 }

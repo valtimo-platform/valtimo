@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,6 +24,8 @@ enum PERMISSION_ACTION {
   edit = 'modify',
   view = 'view',
   export = 'export',
+  inspect = 'inspect',
+  inspectModify = 'inspect_modify',
 }
 
 enum CASE_DETAIL_PERMISSION_RESOURCE {
@@ -77,6 +79,16 @@ const CAN_EXPORT_CASE_PERMISSION: PermissionRequest = {
   resource: CASE_DETAIL_PERMISSION_RESOURCE.jsonSchemaDocument,
 };
 
+const CAN_INSPECT_CASE_PERMISSION: PermissionRequest = {
+  action: PERMISSION_ACTION.inspect,
+  resource: CASE_DETAIL_PERMISSION_RESOURCE.jsonSchemaDocument,
+};
+
+const CAN_INSPECT_MODIFY_CASE_PERMISSION: PermissionRequest = {
+  action: PERMISSION_ACTION.inspectModify,
+  resource: CASE_DETAIL_PERMISSION_RESOURCE.jsonSchemaDocument,
+};
+
 export {
   CAN_ADD_NOTE_PERMISSION,
   CAN_ASSIGN_CASE_PERMISSION,
@@ -88,4 +100,6 @@ export {
   CAN_CREATE_CASE_PERMISSION,
   CAN_DELETE_CASE_PERMISSION,
   CAN_EXPORT_CASE_PERMISSION,
+  CAN_INSPECT_CASE_PERMISSION,
+  CAN_INSPECT_MODIFY_CASE_PERMISSION,
 };

@@ -16,9 +16,12 @@
 
 package com.ritense.zaakdetails
 
+import com.fasterxml.jackson.databind.ObjectMapper
+import com.ritense.authorization.AuthorizationService
 import com.ritense.document.service.DocumentService
 import com.ritense.objectenapi.management.ObjectManagementInfoProvider
 import com.ritense.objectmanagement.repository.ObjectManagementRepository
+import com.ritense.objectmanagement.service.ObjectManagementService
 import com.ritense.plugin.service.PluginService
 import com.ritense.valtimo.contract.case_.CaseDefinitionChecker
 import com.fasterxml.jackson.databind.ObjectMapper
@@ -28,13 +31,16 @@ import com.ritense.zaakdetails.documentobjectenapisync.DocumentObjectenApiSyncEx
 import com.ritense.zaakdetails.documentobjectenapisync.DocumentObjectenApiSyncImporter
 import com.ritense.zaakdetails.documentobjectenapisync.DocumentObjectenApiSyncManagementResource
 import com.ritense.zaakdetails.documentobjectenapisync.DocumentObjectenApiSyncManagementService
-import com.ritense.zaakdetails.documentobjectenapisync.listener.DocumentObjectenApiSyncConfigurationIssueListener
 import com.ritense.zaakdetails.documentobjectenapisync.DocumentObjectenApiSyncRepository
 import com.ritense.zaakdetails.documentobjectenapisync.DocumentObjectenApiSyncService
+import com.ritense.zaakdetails.documentobjectenapisync.listener.DocumentObjectenApiSyncConfigurationIssueListener
 import com.ritense.zaakdetails.repository.ZaakdetailsObjectRepository
 import com.ritense.zaakdetails.security.ZaakDetailsHttpSecurityConfigurer
+import com.ritense.zaakdetails.service.CaseZaakdetailsInspectionService
 import com.ritense.zaakdetails.service.ZaakdetailsObjectService
+import com.ritense.zaakdetails.web.rest.CaseZaakdetailsInspectionResource
 import com.ritense.zakenapi.ZaakUrlProvider
+import com.ritense.zakenapi.link.ZaakInstanceLinkService
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.autoconfigure.AutoConfiguration
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
@@ -96,6 +102,36 @@ class ZaakDetailsAutoConfiguration {
             objectManagementInfoProvider,
         )
     }
+
+    @Bean
+    @ConditionalOnMissingBean(CaseZaakdetailsInspectionService::class)
+    fun caseZaakdetailsInspectionService(
+        documentService: DocumentService,
+        zaakdetailsObjectService: ZaakdetailsObjectService,
+        documentObjectenApiSyncManagementService: DocumentObjectenApiSyncManagementService,
+        objectManagementService: ObjectManagementService,
+        pluginService: PluginService,
+        zaakInstanceLinkService: ZaakInstanceLinkService,
+        objectMapper: ObjectMapper,
+    ) = CaseZaakdetailsInspectionService(
+        documentService,
+        zaakdetailsObjectService,
+        documentObjectenApiSyncManagementService,
+        objectManagementService,
+        pluginService,
+        zaakInstanceLinkService,
+        objectMapper,
+    )
+
+    @Bean
+    @ConditionalOnMissingBean(CaseZaakdetailsInspectionResource::class)
+    fun caseZaakdetailsInspectionResource(
+        authorizationService: AuthorizationService,
+        caseZaakdetailsInspectionService: CaseZaakdetailsInspectionService,
+    ) = CaseZaakdetailsInspectionResource(
+        authorizationService,
+        caseZaakdetailsInspectionService,
+    )
 
     @Order(400)
     @Bean

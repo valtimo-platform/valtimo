@@ -66,11 +66,14 @@ const besluitenApiPluginSpecification: PluginSpecification = {
       ingetrokken_overheid: 'Ingetrokken door overheid',
       ingetrokken_belanghebbende: 'Ingetrokken door belanghebbende',
       publicatiedatum: 'Publicatiedatum',
-      publicatiedatumTooltip: 'Datum waarop het besluit gepubliceerd wordt.',
+      publicatiedatumTooltip:
+        'Datum waarop het besluit gepubliceerd wordt. Ondersteunt de value resolver, bijv: pv:publicatiedatum of doc:/besluit/publicatiedatum. Ondersteunende datum voorbeelden: 2024-04-01, 2024-04-01T12:10:00, 2024-04-01T12:10:06.069Z.',
       verzenddatum: 'Verzenddatum',
-      verzenddatumTooltip: 'Datum waarop het besluit verzonden is.',
+      verzenddatumTooltip:
+        'Datum waarop het besluit verzonden is. Ondersteunt de value resolver, bijv: pv:verzenddatum of doc:/besluit/verzenddatum. Ondersteunende datum voorbeelden: 2024-04-01, 2024-04-01T12:10:00, 2024-04-01T12:10:06.069Z.',
       uiterlijkeReactieDatum: 'Uiterlijke reactie datum',
-      uiterlijkeReactieDatumTooltip: 'De datum tot wanneer verweer tegen het besluit mogelijk is.',
+      uiterlijkeReactieDatumTooltip:
+        'De datum tot wanneer verweer tegen het besluit mogelijk is. Ondersteunt de value resolver, bijv: pv:uiterlijkeReactieDatum of doc:/besluit/uiterlijkeReactieDatum. Ondersteunende datum voorbeelden: 2024-04-01, 2024-04-01T12:10:00, 2024-04-01T12:10:06.069Z.',
       besluitUrlProcessVariable: 'Naam procesvariabele met besluit URL',
       besluitUrlProcessVariableTooltip:
         'Hier moet de naam van de procesvariabele ingevuld worden waarin de besluit URL lokaal staat opgeslagen',
@@ -84,6 +87,9 @@ const besluitenApiPluginSpecification: PluginSpecification = {
       inputTypeBesluitToggle: 'Invoertype Besluit-URL',
       inputTypeStartingDateToggle: 'Invoertype Begindatum',
       inputTypeExpirationDateToggle: 'Invoertype vervaldatum',
+      inputTypePublicationDateToggle: 'Invoertype publicatiedatum',
+      inputTypeSendDateToggle: 'Invoertype verzenddatum',
+      inputTypeResponseDeadlineToggle: 'Invoertype uiterlijke reactie datum',
       text: 'Tekst',
       selection: 'Selectie',
       caseDefinition: 'Dossierdefinitie',
@@ -135,12 +141,14 @@ const besluitenApiPluginSpecification: PluginSpecification = {
       ingetrokken_overheid: 'Withdrawn by government',
       ingetrokken_belanghebbende: 'Withdrawn by interested party',
       publicatiedatum: 'Publication date',
-      publicatiedatumTooltip: 'Date on which the besluit is published.',
+      publicatiedatumTooltip:
+        'Date on which the besluit is published. Supports the value resolver eg: pv:publicatiedatum or doc:/besluit/publicatiedatum. Supporting date format examples: 2024-04-01, 2024-04-01T12:10:00, 2024-04-01T12:10:06.069Z.',
       verzenddatum: 'Shipment date',
-      verzenddatumTooltip: 'Date on which the besluit was sent.',
+      verzenddatumTooltip:
+        'Date on which the besluit was sent. Supports the value resolver eg: pv:verzenddatum or doc:/besluit/verzenddatum. Supporting date format examples: 2024-04-01, 2024-04-01T12:10:00, 2024-04-01T12:10:06.069Z.',
       uiterlijkeReactieDatum: 'Response deadline',
       uiterlijkeReactieDatumTooltip:
-        'The date until which a defense against the decision is possible.',
+        'The date until which a defense against the decision is possible. Supports the value resolver eg: pv:uiterlijkeReactieDatum or doc:/besluit/uiterlijkeReactieDatum. Supporting date format examples: 2024-04-01, 2024-04-01T12:10:00, 2024-04-01T12:10:06.069Z.',
       besluitUrlProcessVariable: 'Process variable name with besluit URL',
       besluitUrlProcessVariableTooltip:
         'Here must be entered the name of the process variable in which the besluit URL is stored locally',
@@ -154,6 +162,9 @@ const besluitenApiPluginSpecification: PluginSpecification = {
       inputTypeBesluitToggle: 'Input type Besluit-URL',
       inputTypeStartingDateToggle: 'Input type start date',
       inputTypeExpirationDateToggle: 'Input type expiration date',
+      inputTypePublicationDateToggle: 'Input type publication date',
+      inputTypeSendDateToggle: 'Input type shipment date',
+      inputTypeResponseDeadlineToggle: 'Input type response deadline',
       text: 'Text',
       selection: 'Selection',
       caseDefinition: 'Case definition',
