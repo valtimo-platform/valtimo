@@ -48,6 +48,12 @@
   Database migrations that look up users in Keycloak could fail to start when running against a newer Keycloak
   version than the one Valtimo ships with. This has been resolved.
 
+* **Misleading plugin configuration error when configuring a building block call activity**
+
+  When a call activity to a building block was missing the required business key configuration, saving the
+  process link failed with a confusing "No plugin configuration mapping provided" message. Valtimo now checks
+  the call activity up front and shows a clear error that points to the missing business key configuration.
+
 * **Sortable controls hidden for non-sortable paths**
 
   In the case and task list column editors, the **Sortable** checkbox and **Default sort** dropdown are now hidden when
