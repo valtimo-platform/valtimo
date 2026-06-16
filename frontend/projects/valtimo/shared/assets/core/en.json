@@ -2877,6 +2877,14 @@
       "openInNewTab": "Open in new tab"
     }
   },
+  "widgetLayout": {
+    "label": "Layout algorithm",
+    "muuriGapFree": "Default (less gaps)",
+    "muuri": "Default",
+    "beautiful": "Gap free",
+    "infoTitle": "About the layout algorithm",
+    "info": "Default and Default (less gaps) keep the widgets in their configured order as much as possible, which can leave empty gaps. Gap free may reorder widgets within a section to remove those gaps and almost always shows a clean layout without holes."
+  },
   "ikoManagement": {
     "preparingDownload": "Preparing download",
     "ikoServer": "IKO Server",

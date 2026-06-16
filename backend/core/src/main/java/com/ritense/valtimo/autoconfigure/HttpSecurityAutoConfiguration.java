@@ -74,6 +74,33 @@ import org.springframework.security.data.repository.query.SecurityEvaluationCont
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.Http403ForbiddenEntryPoint;
 
+/**
+ * HTTP Security configuration for Valtimo.
+ *
+ * <h2>Security Headers Baseline (U/PW.02-4, U/PW.02-5)</h2>
+ * <p>Spring Security 6.x applies the following default headers to all responses:</p>
+ * <ul>
+ *   <li><b>X-Content-Type-Options: nosniff</b> - Prevents MIME type sniffing attacks</li>
+ *   <li><b>X-XSS-Protection: 0</b> - Disabled; modern browsers use CSP instead</li>
+ *   <li><b>Cache-Control: no-cache, no-store, max-age=0, must-revalidate</b> - Prevents caching of sensitive data</li>
+ *   <li><b>Pragma: no-cache</b> - HTTP/1.0 cache prevention</li>
+ *   <li><b>Expires: 0</b> - Cache expiration</li>
+ *   <li><b>X-Frame-Options: DENY</b> - Clickjacking protection (intentionally enabled)</li>
+ * </ul>
+ * <p>Additional headers from CORS configuration (via valtimo.web.cors):</p>
+ * <ul>
+ *   <li><b>Vary: origin, access-control-request-method, access-control-request-headers</b></li>
+ * </ul>
+ * <p>Endpoint-specific headers:</p>
+ * <ul>
+ *   <li><b>Content-Disposition</b> - Set on file download endpoints (e.g., ZaakDocumentResource) for filename hints</li>
+ * </ul>
+ * <p>Headers intentionally NOT sent:</p>
+ * <ul>
+ *   <li><b>Server</b> - Suppressed via server.server-header="" to avoid technology disclosure</li>
+ *   <li><b>X-Powered-By</b> - Not added by Spring Boot / Tomcat by default</li>
+ * </ul>
+ */
 @AutoConfiguration
 @EnableWebSecurity
 @EnableConfigurationProperties(SecurityWhitelistProperties.class)
