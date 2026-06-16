@@ -27,3 +27,16 @@
 .cds--modal-content {
   overflow-x: hidden;
 }
+
+.plugin-add-modal__compatibility-warning {
+  display: block;
+  margin-bottom: 16px;
+}
+
+// Carbon caps inline notifications at a narrow max-width; stretch it to fill the modal so the full
+// compatibility message reads on one block instead of a cramped column.
+:host ::ng-deep .plugin-add-modal__compatibility-warning {
+  max-width: 100%;
+  width: 100%;
+  max-inline-size: unset;
+}

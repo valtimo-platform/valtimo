@@ -33,6 +33,18 @@
     </div>
 
     <div [hidden]="currentStepIndex !== 1">
+      <cds-inline-notification
+        *ngIf="incompatibleWarning$ | async as warning"
+        [notificationObj]="{
+          type: 'warning',
+          title: ('pluginManagement.compatibility.warningTitle' | translate),
+          message: warning,
+          showClose: false,
+          lowContrast: true,
+        }"
+        class="plugin-add-modal__compatibility-warning"
+      ></cds-inline-notification>
+
       <ng-container *ngIf="isExternalPlugin$ | async; else embeddedConfigure">
         <valtimo-plugin-external-configure
           (endpointsResolved)="onEndpointsResolved($event)"

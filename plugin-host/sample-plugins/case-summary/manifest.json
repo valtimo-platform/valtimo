@@ -3,7 +3,8 @@
   "version": "0.1.0",
   "provider": "Ritense",
   "compatibility": {
-    "minGzacVersion": "12.0.0"
+    "minGzacVersion": "12.0.0",
+    "maxGzacVersion": "12.1.0"
   },
   "translations": {
     "en": {

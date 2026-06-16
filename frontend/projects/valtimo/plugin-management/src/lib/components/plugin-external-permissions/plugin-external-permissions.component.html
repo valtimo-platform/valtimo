@@ -14,6 +14,17 @@
   ~ limitations under the License.
   -->
 
+<cds-inline-notification
+  *ngIf="readonlyMode && (_$enrichedEndpoints().length > 0 || _$eventTypes().length > 0)"
+  [notificationObj]="{
+    type: 'info',
+    title: '',
+    message: 'pluginManagement.permissions.acceptedNote' | translate,
+    showClose: false,
+    lowContrast: true,
+  }"
+></cds-inline-notification>
+
 <p class="cds--type-body-01 plugin-external-permissions__description">
   {{
     (readonlyMode
@@ -34,10 +45,7 @@
   }"
 ></cds-inline-notification>
 
-<section
-  *ngIf="_$enrichedEndpoints().length > 0"
-  class="plugin-external-permissions__section"
->
+<section *ngIf="_$enrichedEndpoints().length > 0" class="plugin-external-permissions__section">
   <h6 class="cds--type-heading-compact-02 plugin-external-permissions__section-heading">
     {{ 'pluginManagement.permissions.endpointsHeading' | translate }}
   </h6>
@@ -60,11 +68,11 @@
       [attr.data-test-id]="'external-plugin-permission-' + endpoint.method + '-' + endpoint.pattern"
     >
       <cds-list-column nowrap="true">
-        <cds-tag type="cool-gray" size="sm">{{ endpoint.method | uppercase }}</cds-tag>
+        <cds-tag type="red" size="sm">{{ endpoint.method | uppercase }}</cds-tag>
       </cds-list-column>
 
       <cds-list-column nowrap="true">
-        <code class="cds--snippet--inline">{{ endpoint.pattern }}</code>
+        <cds-tag type="red" size="sm">{{ endpoint.pattern }}</cds-tag>
       </cds-list-column>
 
       <cds-list-column>
@@ -77,10 +85,7 @@
   </cds-structured-list>
 </section>
 
-<section
-  *ngIf="_$eventTypes().length > 0"
-  class="plugin-external-permissions__section"
->
+<section *ngIf="_$eventTypes().length > 0" class="plugin-external-permissions__section">
   <h6 class="cds--type-heading-compact-02 plugin-external-permissions__section-heading">
     {{ 'pluginManagement.permissions.eventsHeading' | translate }}
   </h6>
@@ -91,7 +96,7 @@
       [attr.data-test-id]="'external-plugin-permission-event-' + eventType"
     >
       <cds-list-column>
-        <code class="cds--snippet--inline">{{ eventType }}</code>
+        <cds-tag type="red" size="sm">{{ eventType }}</cds-tag>
       </cds-list-column>
     </cds-list-row>
   </cds-structured-list>
@@ -106,14 +111,3 @@
 >
   {{ 'pluginManagement.permissions.accept' | translate }}
 </cds-checkbox>
-
-<cds-inline-notification
-  *ngIf="readonlyMode && (_$enrichedEndpoints().length > 0 || _$eventTypes().length > 0)"
-  [notificationObj]="{
-    type: 'info',
-    title: '',
-    subtitle: 'pluginManagement.permissions.acceptedNote' | translate,
-    showClose: false,
-    lowContrast: true,
-  }"
-></cds-inline-notification>

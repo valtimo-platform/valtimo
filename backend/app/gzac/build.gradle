@@ -12,6 +12,13 @@ repositories {
     mavenCentral()
 }
 
+// Generate META-INF/build-info.properties so a BuildProperties bean (carrying the project version)
+// is available at runtime — both for `bootRun` and the packaged artifact. The external-plugin
+// compatibility check reads this to compare a plugin's declared GZAC range against the running version.
+springBoot {
+    buildInfo()
+}
+
 dependencies {
     implementation(platform(project(":backend:dependencies:valtimo-dependency-versions")))
 
