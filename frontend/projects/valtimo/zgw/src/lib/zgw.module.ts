@@ -18,6 +18,7 @@ import {NgModule} from '@angular/core';
 import {RouterModule} from '@angular/router';
 import {FormioModule} from '@formio/angular';
 import {TranslateModule} from '@ngx-translate/core';
+import {ZGW_CASE_INSPECTION_TAB_TOKEN} from '@valtimo/case';
 import {DropzoneModule, FileSizeModule} from '@valtimo/components';
 import {
   CASE_CONFIGURATION_EXTENSIONS_TOKEN,
@@ -36,6 +37,7 @@ import {
   NotificatiesApiRoutingModule,
 } from './modules';
 import {CaseManagementZgwComponent} from './components';
+import {CaseInspectionZgwTabComponent} from './case-inspection/zgw-tab.component';
 
 @NgModule({
   imports: [
@@ -66,6 +68,10 @@ import {CaseManagementZgwComponent} from './components';
     {
       provide: ZGW_OBJECT_TYPE_COMPONENT_TOKEN,
       useValue: CaseDetailTabObjectTypeComponent,
+    },
+    {
+      provide: ZGW_CASE_INSPECTION_TAB_TOKEN,
+      useValue: CaseInspectionZgwTabComponent,
     },
     {
       provide: ZGW_DOCUMENTEN_API_DOCUMENTS_COMPONENT_TOKEN,

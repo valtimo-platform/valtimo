@@ -1,0 +1,1024 @@
+{
+    "display": "form",
+    "components": [
+        {
+            "label": "HTML",
+            "tag": "h3",
+            "content": "Layout Test - Prefilled Data",
+            "refreshOnChange": false,
+            "key": "html-title",
+            "type": "htmlelement",
+            "input": false,
+            "tableView": false
+        },
+        {
+            "label": "HTML",
+            "content": "Alle velden zijn vooraf ingevuld. Klik op 'Indienen' om een dossier aan te maken met testdata.",
+            "refreshOnChange": false,
+            "key": "html-description",
+            "type": "htmlelement",
+            "input": false,
+            "tableView": false
+        },
+        {
+            "label": "Voornaam",
+            "key": "firstName",
+            "type": "textfield",
+            "input": true,
+            "defaultValue": "Jan",
+            "tableView": true
+        },
+        {
+            "label": "Achternaam",
+            "key": "lastName",
+            "type": "textfield",
+            "input": true,
+            "defaultValue": "Jansen",
+            "tableView": true
+        },
+        {
+            "label": "E-mail",
+            "key": "email",
+            "type": "textfield",
+            "input": true,
+            "defaultValue": "jan.jansen@voorbeeld.nl",
+            "tableView": true
+        },
+        {
+            "label": "Telefoon",
+            "key": "phone",
+            "type": "textfield",
+            "input": true,
+            "defaultValue": "+31 6 12345678",
+            "tableView": true
+        },
+        {
+            "label": "Geboortedatum",
+            "key": "dateOfBirth",
+            "type": "textfield",
+            "input": true,
+            "defaultValue": "1985-03-15",
+            "tableView": true
+        },
+        {
+            "label": "Geslacht",
+            "key": "gender",
+            "type": "textfield",
+            "input": true,
+            "defaultValue": "m",
+            "tableView": true
+        },
+        {
+            "label": "Nationaliteit",
+            "key": "nationality",
+            "type": "textfield",
+            "input": true,
+            "defaultValue": "Nederlands",
+            "tableView": true
+        },
+        {
+            "label": "BSN",
+            "key": "bsn",
+            "type": "textfield",
+            "input": true,
+            "defaultValue": "123456789",
+            "tableView": true
+        },
+        {
+            "label": "Straat",
+            "key": "street",
+            "type": "textfield",
+            "input": true,
+            "defaultValue": "Kerkstraat",
+            "tableView": true
+        },
+        {
+            "label": "Huisnummer",
+            "key": "houseNumber",
+            "type": "textfield",
+            "input": true,
+            "defaultValue": "42a",
+            "tableView": true
+        },
+        {
+            "label": "Postcode",
+            "key": "postalCode",
+            "type": "textfield",
+            "input": true,
+            "defaultValue": "1234 AB",
+            "tableView": true
+        },
+        {
+            "label": "Stad",
+            "key": "city",
+            "type": "textfield",
+            "input": true,
+            "defaultValue": "Amsterdam",
+            "tableView": true
+        },
+        {
+            "label": "Provincie",
+            "key": "province",
+            "type": "textfield",
+            "input": true,
+            "defaultValue": "Noord-Holland",
+            "tableView": true
+        },
+        {
+            "label": "Land",
+            "key": "country",
+            "type": "textfield",
+            "input": true,
+            "defaultValue": "Nederland",
+            "tableView": true
+        },
+        {
+            "label": "Bedrijfsnaam",
+            "key": "companyName",
+            "type": "textfield",
+            "input": true,
+            "defaultValue": "Ritense BV",
+            "tableView": true
+        },
+        {
+            "label": "Afdeling",
+            "key": "department",
+            "type": "textfield",
+            "input": true,
+            "defaultValue": "Engineering",
+            "tableView": true
+        },
+        {
+            "label": "Functietitel",
+            "key": "jobTitle",
+            "type": "textfield",
+            "input": true,
+            "defaultValue": "Senior Developer",
+            "tableView": true
+        },
+        {
+            "label": "Werknemer ID",
+            "key": "employeeId",
+            "type": "textfield",
+            "input": true,
+            "defaultValue": "EMP-2024-0042",
+            "tableView": true
+        },
+        {
+            "label": "Startdatum",
+            "key": "startDate",
+            "type": "textfield",
+            "input": true,
+            "defaultValue": "2020-01-15",
+            "tableView": true
+        },
+        {
+            "label": "Contracttype",
+            "key": "contractType",
+            "type": "textfield",
+            "input": true,
+            "defaultValue": "Vast",
+            "tableView": true
+        },
+        {
+            "label": "Salaris",
+            "key": "salary",
+            "type": "number",
+            "input": true,
+            "defaultValue": 5500,
+            "tableView": true
+        },
+        {
+            "label": "Uren per week",
+            "key": "hoursPerWeek",
+            "type": "number",
+            "input": true,
+            "defaultValue": 40,
+            "tableView": true
+        },
+        {
+            "label": "Vakantiedagen",
+            "key": "vacationDays",
+            "type": "number",
+            "input": true,
+            "defaultValue": 25,
+            "tableView": true
+        },
+        {
+            "label": "Bankrekening",
+            "key": "bankAccount",
+            "type": "textfield",
+            "input": true,
+            "defaultValue": "NL91ABNA0417164300",
+            "tableView": true
+        },
+        {
+            "label": "BTW-nummer",
+            "key": "taxId",
+            "type": "textfield",
+            "input": true,
+            "defaultValue": "NL001234567B01",
+            "tableView": true
+        },
+        {
+            "label": "Verzekeringsnummer",
+            "key": "insuranceNumber",
+            "type": "textfield",
+            "input": true,
+            "defaultValue": "VZ-2024-789012",
+            "tableView": true
+        },
+        {
+            "label": "Contactpersoon noodgeval",
+            "key": "emergencyContactName",
+            "type": "textfield",
+            "input": true,
+            "defaultValue": "Maria Jansen",
+            "tableView": true
+        },
+        {
+            "label": "Telefoon noodgeval",
+            "key": "emergencyContactPhone",
+            "type": "textfield",
+            "input": true,
+            "defaultValue": "+31 6 98765432",
+            "tableView": true
+        },
+        {
+            "label": "Relatie noodcontact",
+            "key": "emergencyContactRelation",
+            "type": "textfield",
+            "input": true,
+            "defaultValue": "Echtgenote",
+            "tableView": true
+        },
+        {
+            "label": "Opleidingsniveau",
+            "key": "educationLevel",
+            "type": "textfield",
+            "input": true,
+            "defaultValue": "WO Master",
+            "tableView": true
+        },
+        {
+            "label": "Universiteit",
+            "key": "university",
+            "type": "textfield",
+            "input": true,
+            "defaultValue": "Technische Universiteit Delft",
+            "tableView": true
+        },
+        {
+            "label": "Afstudeerjaar",
+            "key": "graduationYear",
+            "type": "number",
+            "input": true,
+            "defaultValue": 2010,
+            "tableView": true
+        },
+        {
+            "label": "Studierichting",
+            "key": "fieldOfStudy",
+            "type": "textfield",
+            "input": true,
+            "defaultValue": "Computer Science",
+            "tableView": true
+        },
+        {
+            "label": "Certificaatnummer",
+            "key": "certificateNumber",
+            "type": "textfield",
+            "input": true,
+            "defaultValue": "TUD-2010-CS-4521",
+            "tableView": true
+        },
+        {
+            "label": "Vaardigheden",
+            "key": "skills",
+            "type": "textfield",
+            "input": true,
+            "defaultValue": "Java, Kotlin, Angular, Spring Boot, PostgreSQL, Docker",
+            "tableView": true
+        },
+        {
+            "label": "Talen",
+            "key": "languages",
+            "type": "textfield",
+            "input": true,
+            "defaultValue": "Nederlands (moedertaal), Engels (vloeiend), Duits (basis)",
+            "tableView": true
+        },
+        {
+            "label": "Rijbewijs",
+            "key": "driverLicense",
+            "type": "checkbox",
+            "input": true,
+            "defaultValue": true,
+            "tableView": true
+        },
+        {
+            "label": "Eigen auto",
+            "key": "ownsCar",
+            "type": "checkbox",
+            "input": true,
+            "defaultValue": true,
+            "tableView": true
+        },
+        {
+            "label": "Type aanvraag",
+            "key": "requestType",
+            "type": "textfield",
+            "input": true,
+            "defaultValue": "Subsidieaanvraag",
+            "tableView": true
+        },
+        {
+            "label": "Aanvraagdatum",
+            "key": "requestDate",
+            "type": "textfield",
+            "input": true,
+            "defaultValue": "2024-06-01",
+            "tableView": true
+        },
+        {
+            "label": "Prioriteit",
+            "key": "requestPriority",
+            "type": "textfield",
+            "input": true,
+            "defaultValue": "Hoog",
+            "tableView": true
+        },
+        {
+            "label": "Status",
+            "key": "requestStatus",
+            "type": "textfield",
+            "input": true,
+            "defaultValue": "In behandeling",
+            "tableView": true
+        },
+        {
+            "label": "Omschrijving",
+            "key": "requestDescription",
+            "type": "textarea",
+            "input": true,
+            "defaultValue": "Aanvraag voor energietoeslag vanwege gestegen energiekosten in het huishouden.",
+            "tableView": true
+        },
+        {
+            "label": "Categorie",
+            "key": "requestCategory",
+            "type": "textfield",
+            "input": true,
+            "defaultValue": "Financieel",
+            "tableView": true
+        },
+        {
+            "label": "Subcategorie",
+            "key": "requestSubCategory",
+            "type": "textfield",
+            "input": true,
+            "defaultValue": "Energietoeslag",
+            "tableView": true
+        },
+        {
+            "label": "Toegewezen team",
+            "key": "assignedTeam",
+            "type": "textfield",
+            "input": true,
+            "defaultValue": "Team Subsidies",
+            "tableView": true
+        },
+        {
+            "label": "Toegewezen medewerker",
+            "key": "assignedAgent",
+            "type": "textfield",
+            "input": true,
+            "defaultValue": "Klaas de Vries",
+            "tableView": true
+        },
+        {
+            "label": "Deadline",
+            "key": "dueDate",
+            "type": "textfield",
+            "input": true,
+            "defaultValue": "2024-07-01",
+            "tableView": true
+        },
+        {
+            "label": "Afronddatum",
+            "key": "completionDate",
+            "type": "textfield",
+            "input": true,
+            "defaultValue": "2024-06-28",
+            "tableView": true
+        },
+        {
+            "label": "Voortgangspercentage",
+            "key": "completionPercentage",
+            "type": "number",
+            "input": true,
+            "defaultValue": 75.5,
+            "tableView": true
+        },
+        {
+            "label": "Budget toegekend",
+            "key": "budgetAllocated",
+            "type": "number",
+            "input": true,
+            "defaultValue": 250000,
+            "tableView": true
+        },
+        {
+            "label": "Budget besteed",
+            "key": "budgetSpent",
+            "type": "number",
+            "input": true,
+            "defaultValue": 187500,
+            "tableView": true
+        },
+        {
+            "label": "Budget resterend",
+            "key": "budgetRemaining",
+            "type": "number",
+            "input": true,
+            "defaultValue": 62500,
+            "tableView": true
+        },
+        {
+            "label": "Projectnaam",
+            "key": "projectName",
+            "type": "textfield",
+            "input": true,
+            "defaultValue": "Energietransitie 2024",
+            "tableView": true
+        },
+        {
+            "label": "Projectfase",
+            "key": "projectPhase",
+            "type": "textfield",
+            "input": true,
+            "defaultValue": "Uitvoering",
+            "tableView": true
+        },
+        {
+            "label": "Projectmanager",
+            "key": "projectManager",
+            "type": "textfield",
+            "input": true,
+            "defaultValue": "Pieter van den Berg",
+            "tableView": true
+        },
+        {
+            "label": "Project startdatum",
+            "key": "projectStartDate",
+            "type": "textfield",
+            "input": true,
+            "defaultValue": "2024-01-01",
+            "tableView": true
+        },
+        {
+            "label": "Project einddatum",
+            "key": "projectEndDate",
+            "type": "textfield",
+            "input": true,
+            "defaultValue": "2024-12-31",
+            "tableView": true
+        },
+        {
+            "label": "Totaal taken",
+            "key": "totalTasks",
+            "type": "number",
+            "input": true,
+            "defaultValue": 48,
+            "tableView": true
+        },
+        {
+            "label": "Afgeronde taken",
+            "key": "completedTasks",
+            "type": "number",
+            "input": true,
+            "defaultValue": 32,
+            "tableView": true
+        },
+        {
+            "label": "Open taken",
+            "key": "openTasks",
+            "type": "number",
+            "input": true,
+            "defaultValue": 12,
+            "tableView": true
+        },
+        {
+            "label": "Geblokkeerde taken",
+            "key": "blockedTasks",
+            "type": "number",
+            "input": true,
+            "defaultValue": 4,
+            "tableView": true
+        },
+        {
+            "label": "Risiconiveau",
+            "key": "riskLevel",
+            "type": "textfield",
+            "input": true,
+            "defaultValue": "Gemiddeld",
+            "tableView": true
+        },
+        {
+            "label": "Risicobeschrijving",
+            "key": "riskDescription",
+            "type": "textarea",
+            "input": true,
+            "defaultValue": "Mogelijke vertraging door afhankelijkheid van externe leverancier voor energieaudit",
+            "tableView": true
+        },
+        {
+            "label": "Mitigatieplan",
+            "key": "mitigationPlan",
+            "type": "textarea",
+            "input": true,
+            "defaultValue": "Alternatieve leverancier geidentificeerd. Wekelijks overleg met huidige leverancier.",
+            "tableView": true
+        },
+        {
+            "label": "Goedkeuringsstatus",
+            "key": "approvalStatus",
+            "type": "textfield",
+            "input": true,
+            "defaultValue": "Goedgekeurd",
+            "tableView": true
+        },
+        {
+            "label": "Goedgekeurd door",
+            "key": "approvedBy",
+            "type": "textfield",
+            "input": true,
+            "defaultValue": "Directeur Sociale Zaken",
+            "tableView": true
+        },
+        {
+            "label": "Goedkeuringsdatum",
+            "key": "approvalDate",
+            "type": "textfield",
+            "input": true,
+            "defaultValue": "2024-06-15",
+            "tableView": true
+        },
+        {
+            "label": "Opmerkingen goedkeuring",
+            "key": "approvalRemarks",
+            "type": "textarea",
+            "input": true,
+            "defaultValue": "Voldoet aan alle criteria. Budget beschikbaar.",
+            "tableView": true
+        },
+        {
+            "label": "Factuurnummer",
+            "key": "invoiceNumber",
+            "type": "textfield",
+            "input": true,
+            "defaultValue": "INV-2024-001234",
+            "tableView": true
+        },
+        {
+            "label": "Factuurdatum",
+            "key": "invoiceDate",
+            "type": "textfield",
+            "input": true,
+            "defaultValue": "2024-06-20",
+            "tableView": true
+        },
+        {
+            "label": "Factuurbedrag",
+            "key": "invoiceAmount",
+            "type": "number",
+            "input": true,
+            "defaultValue": 1200,
+            "tableView": true
+        },
+        {
+            "label": "BTW",
+            "key": "invoiceTax",
+            "type": "number",
+            "input": true,
+            "defaultValue": 252,
+            "tableView": true
+        },
+        {
+            "label": "Factuurtotaal",
+            "key": "invoiceTotal",
+            "type": "number",
+            "input": true,
+            "defaultValue": 1452,
+            "tableView": true
+        },
+        {
+            "label": "Betaalmethode",
+            "key": "paymentMethod",
+            "type": "textfield",
+            "input": true,
+            "defaultValue": "Bankoverschrijving",
+            "tableView": true
+        },
+        {
+            "label": "Betaaldatum",
+            "key": "paymentDate",
+            "type": "textfield",
+            "input": true,
+            "defaultValue": "2024-06-25",
+            "tableView": true
+        },
+        {
+            "label": "Betalingsreferentie",
+            "key": "paymentReference",
+            "type": "textfield",
+            "input": true,
+            "defaultValue": "BET-2024-005678",
+            "tableView": true
+        },
+        {
+            "label": "Leveranciersnaam",
+            "key": "vendorName",
+            "type": "textfield",
+            "input": true,
+            "defaultValue": "Energie Advies Nederland BV",
+            "tableView": true
+        },
+        {
+            "label": "Leverancierscontact",
+            "key": "vendorContact",
+            "type": "textfield",
+            "input": true,
+            "defaultValue": "Sophie Bakker",
+            "tableView": true
+        },
+        {
+            "label": "Leveranciers e-mail",
+            "key": "vendorEmail",
+            "type": "textfield",
+            "input": true,
+            "defaultValue": "s.bakker@energieadvies.nl",
+            "tableView": true
+        },
+        {
+            "label": "Leverancierstelefoon",
+            "key": "vendorPhone",
+            "type": "textfield",
+            "input": true,
+            "defaultValue": "+31 20 1234567",
+            "tableView": true
+        },
+        {
+            "label": "Afleveradres",
+            "key": "deliveryAddress",
+            "type": "textfield",
+            "input": true,
+            "defaultValue": "Kerkstraat 42a, 1234 AB Amsterdam",
+            "tableView": true
+        },
+        {
+            "label": "Afleverdatum",
+            "key": "deliveryDate",
+            "type": "textfield",
+            "input": true,
+            "defaultValue": "2024-07-10",
+            "tableView": true
+        },
+        {
+            "label": "Afleverstatus",
+            "key": "deliveryStatus",
+            "type": "textfield",
+            "input": true,
+            "defaultValue": "Onderweg",
+            "tableView": true
+        },
+        {
+            "label": "Trackingnummer",
+            "key": "trackingNumber",
+            "type": "textfield",
+            "input": true,
+            "defaultValue": "NL-TRACK-2024-789012",
+            "tableView": true
+        },
+        {
+            "label": "Magazijnlocatie",
+            "key": "warehouseLocation",
+            "type": "textfield",
+            "input": true,
+            "defaultValue": "Magazijn Amsterdam-West, Rek B-14",
+            "tableView": true
+        },
+        {
+            "label": "Voorraadniveau",
+            "key": "stockLevel",
+            "type": "number",
+            "input": true,
+            "defaultValue": 150,
+            "tableView": true
+        },
+        {
+            "label": "Bestelpunt",
+            "key": "reorderPoint",
+            "type": "number",
+            "input": true,
+            "defaultValue": 25,
+            "tableView": true
+        },
+        {
+            "label": "Eenheidsprijs",
+            "key": "unitPrice",
+            "type": "number",
+            "input": true,
+            "defaultValue": 24.99,
+            "tableView": true
+        },
+        {
+            "label": "Aantal",
+            "key": "quantity",
+            "type": "number",
+            "input": true,
+            "defaultValue": 48,
+            "tableView": true
+        },
+        {
+            "label": "Korting",
+            "key": "discount",
+            "type": "number",
+            "input": true,
+            "defaultValue": 10,
+            "tableView": true
+        },
+        {
+            "label": "Totaalprijs",
+            "key": "totalPrice",
+            "type": "number",
+            "input": true,
+            "defaultValue": 1079.57,
+            "tableView": true
+        },
+        {
+            "label": "Klanttevredenheid",
+            "key": "customerSatisfaction",
+            "type": "number",
+            "input": true,
+            "defaultValue": 8.5,
+            "tableView": true
+        },
+        {
+            "label": "NPS Score",
+            "key": "npsScore",
+            "type": "number",
+            "input": true,
+            "defaultValue": 72,
+            "tableView": true
+        },
+        {
+            "label": "Feedback",
+            "key": "feedbackText",
+            "type": "textarea",
+            "input": true,
+            "defaultValue": "Zeer tevreden over de snelle afhandeling. Communicatie was helder en de medewerker was behulpzaam.",
+            "tableView": true
+        },
+        {
+            "label": "Feedbackdatum",
+            "key": "feedbackDate",
+            "type": "textfield",
+            "input": true,
+            "defaultValue": "2024-06-30",
+            "tableView": true
+        },
+        {
+            "label": "Feedbackcategorie",
+            "key": "feedbackCategory",
+            "type": "textfield",
+            "input": true,
+            "defaultValue": "Service",
+            "tableView": true
+        },
+        {
+            "label": "Reactietijd (uren)",
+            "key": "responseTime",
+            "type": "number",
+            "input": true,
+            "defaultValue": 2.5,
+            "tableView": true
+        },
+        {
+            "label": "Oplostijd (uren)",
+            "key": "resolutionTime",
+            "type": "number",
+            "input": true,
+            "defaultValue": 48,
+            "tableView": true
+        },
+        {
+            "label": "SLA status",
+            "key": "slaStatus",
+            "type": "textfield",
+            "input": true,
+            "defaultValue": "Binnen SLA",
+            "tableView": true
+        },
+        {
+            "label": "SLA deadline",
+            "key": "slaDeadline",
+            "type": "textfield",
+            "input": true,
+            "defaultValue": "2024-07-15",
+            "tableView": true
+        },
+        {
+            "label": "Escalatieniveau",
+            "key": "escalationLevel",
+            "type": "number",
+            "input": true,
+            "defaultValue": 0,
+            "tableView": true
+        },
+        {
+            "label": "Incidenttype",
+            "key": "incidentType",
+            "type": "textfield",
+            "input": true,
+            "defaultValue": "Systeemstoring",
+            "tableView": true
+        },
+        {
+            "label": "Ernst incident",
+            "key": "incidentSeverity",
+            "type": "textfield",
+            "input": true,
+            "defaultValue": "Laag",
+            "tableView": true
+        },
+        {
+            "label": "Incidentdatum",
+            "key": "incidentDate",
+            "type": "textfield",
+            "input": true,
+            "defaultValue": "2024-06-10",
+            "tableView": true
+        },
+        {
+            "label": "Incidentlocatie",
+            "key": "incidentLocation",
+            "type": "textfield",
+            "input": true,
+            "defaultValue": "Kantoor Amsterdam",
+            "tableView": true
+        },
+        {
+            "label": "Incidentbeschrijving",
+            "key": "incidentDescription",
+            "type": "textarea",
+            "input": true,
+            "defaultValue": "Tijdelijke storing in het subsidiesysteem waardoor aanvragen niet verwerkt konden worden.",
+            "tableView": true
+        },
+        {
+            "label": "Oorzaak",
+            "key": "rootCause",
+            "type": "textfield",
+            "input": true,
+            "defaultValue": "Database connectie timeout door hoge belasting",
+            "tableView": true
+        },
+        {
+            "label": "Corrigerende actie",
+            "key": "correctiveAction",
+            "type": "textfield",
+            "input": true,
+            "defaultValue": "Connection pool vergroot en query optimalisatie doorgevoerd",
+            "tableView": true
+        },
+        {
+            "label": "Preventieve actie",
+            "key": "preventiveAction",
+            "type": "textfield",
+            "input": true,
+            "defaultValue": "Monitoring alerts ingesteld voor database performance metrics",
+            "tableView": true
+        },
+        {
+            "label": "Auditdatum",
+            "key": "auditDate",
+            "type": "textfield",
+            "input": true,
+            "defaultValue": "2024-05-01",
+            "tableView": true
+        },
+        {
+            "label": "Auditornaam",
+            "key": "auditorName",
+            "type": "textfield",
+            "input": true,
+            "defaultValue": "Ernst en Young",
+            "tableView": true
+        },
+        {
+            "label": "Auditresultaat",
+            "key": "auditResult",
+            "type": "textfield",
+            "input": true,
+            "defaultValue": "Goedkeurend",
+            "tableView": true
+        },
+        {
+            "label": "Auditscore",
+            "key": "auditScore",
+            "type": "number",
+            "input": true,
+            "defaultValue": 92.5,
+            "tableView": true
+        },
+        {
+            "label": "Auditopmerkingen",
+            "key": "auditRemarks",
+            "type": "textarea",
+            "input": true,
+            "defaultValue": "Processen voldoen aan alle gestelde eisen. Kleine verbeterpunten in documentatie.",
+            "tableView": true
+        },
+        {
+            "label": "Compliancestatus",
+            "key": "complianceStatus",
+            "type": "textfield",
+            "input": true,
+            "defaultValue": "Conform",
+            "tableView": true
+        },
+        {
+            "label": "Toezichthouder",
+            "key": "regulatoryBody",
+            "type": "textfield",
+            "input": true,
+            "defaultValue": "Autoriteit Persoonsgegevens",
+            "tableView": true
+        },
+        {
+            "label": "Regelgevingreferentie",
+            "key": "regulationReference",
+            "type": "textfield",
+            "input": true,
+            "defaultValue": "AVG Art. 6 lid 1 sub e",
+            "tableView": true
+        },
+        {
+            "label": "Volgende review",
+            "key": "nextReviewDate",
+            "type": "textfield",
+            "input": true,
+            "defaultValue": "2025-05-01",
+            "tableView": true
+        },
+        {
+            "label": "Documenttitel",
+            "key": "documentTitle",
+            "type": "textfield",
+            "input": true,
+            "defaultValue": "Subsidieaanvraag Energietoeslag 2024",
+            "tableView": true
+        },
+        {
+            "label": "Documentversie",
+            "key": "documentVersion",
+            "type": "textfield",
+            "input": true,
+            "defaultValue": "2.1",
+            "tableView": true
+        },
+        {
+            "label": "Documentauteur",
+            "key": "documentAuthor",
+            "type": "textfield",
+            "input": true,
+            "defaultValue": "Jan Jansen",
+            "tableView": true
+        },
+        {
+            "label": "Notities",
+            "key": "notes",
+            "type": "textarea",
+            "input": true,
+            "defaultValue": "Aanvraag is volledig en voldoet aan alle criteria voor toekenning energietoeslag.",
+            "tableView": true
+        },
+        {
+            "label": "Interne notities",
+            "key": "internalNotes",
+            "type": "textarea",
+            "input": true,
+            "defaultValue": "Let op: aanvrager heeft vorig jaar ook een aanvraag ingediend die is toegekend.",
+            "tableView": true
+        },
+        {
+            "type": "button",
+            "label": "Indienen",
+            "key": "submit",
+            "disableOnInvalid": true,
+            "input": true,
+            "tableView": false
+        }
+    ]
+}

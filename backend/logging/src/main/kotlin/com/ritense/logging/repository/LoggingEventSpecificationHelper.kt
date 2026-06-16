@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -85,6 +85,24 @@ class LoggingEventSpecificationHelper {
                 cb.equal(properties.get<Any>(ID).get<String>(KEY), key),
                 cb.equal(properties.get<String>(VALUE), value)
             )
+        }
+
+        @JvmStatic
+        fun byAnyOfProperties(keyToValues: Map<String, Collection<String>>) = Specification<LoggingEvent> { root, query, cb ->
+            val nonEmpty = keyToValues.filterValues { it.isNotEmpty() }
+            if (nonEmpty.isEmpty()) {
+                cb.disjunction()
+            } else {
+                query?.distinct(true)
+                val properties = root.join<Any, Any>(PROPERTIES)
+                val clauses = nonEmpty.map { (key, values) ->
+                    cb.and(
+                        cb.equal(properties.get<Any>(ID).get<String>(KEY), key),
+                        properties.get<String>(VALUE).`in`(values)
+                    )
+                }
+                cb.or(*clauses.toTypedArray())
+            }
         }
 
     }

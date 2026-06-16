@@ -6,6 +6,14 @@
 
 ## New Features
 
+* **Load a zaak in a form flow**
+
+  A new `zakenFormFlow` bean lets form flows load a zaak from the Zaken API by its `identificatie` through a `getZaak`
+  method that can be used in SpEL expressions (for example `onOpen` or `onComplete`). The full zaak is returned, so any
+  of its fields can be used in subsequent steps or conditions. Access is secured with PBAC: a new `Zaak` resource type
+  with a `view` action ensures only users authorized for the matching zaaktype can load a zaak. See
+  [Load a zaak in a form flow](../../../features/zgw/load-zaak-in-form-flow.md) for details.
+
 * **Task properties in value paths**
 
   Task properties (`task:createTime`, `task:name`, `task:assignee`, `task:dueDate`, `task:assignedTeamTitle`) can now be
@@ -13,19 +21,40 @@
 
 ## Enhancements
 
+* **Value resolver support for Besluiten API plugin date fields**
+
+  In the Besluiten API plugin, the *create besluit* action can now resolve the publication date, shipment date and
+  response deadline from a value resolver expression (e.g. `pv:publicatiedatum` or `doc:/besluit/publicatiedatum`)
+  instead of only a fixed date, selectable per field via an input-type toggle.
+
+* **Building blocks support nested document properties**
+
+  Input and output mappings on building block call activities can now reference nested paths in the case or building
+  block document (e.g. `/person/name`), instead of only top-level properties.
+
 * **Task list columns: path picker**
 
   The path field in the task list column modal is now a searchable dropdown instead of a free-text input.
 
 ## Bugfixes
 
+* **Empty building block mapping dropdowns**
+
+  Existing input and output mappings on a building block process link sometimes showed up with empty dropdowns. This
+  has been fixed.
+
+* **Keycloak-based database migrations failed against newer Keycloak servers**
+
+  Database migrations that look up users in Keycloak could fail to start when running against a newer Keycloak
+  version than the one Valtimo ships with. This has been resolved.
 
 * **Sortable controls hidden for non-sortable paths**
 
   In the case and task list column editors, the **Sortable** checkbox and **Default sort** dropdown are now hidden when
   the configured path does not support sorting.
 
-* **Keycloak-based database migrations failed against newer Keycloak servers**
+## Security
 
-  Database migrations that look up users in Keycloak could fail to start when running against a newer Keycloak
-  version than the one Valtimo ships with. This has been resolved.
+* **Spring Boot upgraded for CVE fixes**
+
+  Upgraded Spring Boot to 3.5.15 to resolve several HIGH-severity CVEs.
