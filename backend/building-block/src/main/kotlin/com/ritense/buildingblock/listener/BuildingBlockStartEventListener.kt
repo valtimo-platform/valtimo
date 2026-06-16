@@ -107,7 +107,7 @@ class BuildingBlockStartEventListener(
         logger.debug { "Creating ad-hoc BuildingBlockInstance for '${buildingBlockDefinitionId.key}'" }
         val inputSources = link.inputMappings.map { it.source }
         val resolvedValues = valueResolverService.resolveValues(caseDocumentId.toString(), inputSources)
-        val valuesToHandle = link.inputMappings.associate { it.target to resolvedValues[it.source] }
+        val valuesToHandle = link.inputMappings.associate { it.getPrefixedTarget() to resolvedValues[it.source] }
         val preProcessValues = valueResolverService.preProcessValuesForNewCase(valuesToHandle)
         val documentContent = objectMapper.valueToTree<JsonNode>(preProcessValues[DOC_PREFIX])
 
