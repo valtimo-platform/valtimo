@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -33,10 +33,12 @@ public class JsonSchemaDocumentActionProvider implements ResourceActionProvider<
     public static final Action<JsonSchemaDocument> ASSIGN = new Action<>(Action.ASSIGN);
     public static final Action<JsonSchemaDocument> ASSIGNABLE = new Action<>(Action.ASSIGNABLE);
     public static final Action<JsonSchemaDocument> EXPORT = new Action<>(Action.EXPORT);
+    public static final Action<JsonSchemaDocument> INSPECT = new Action<>("inspect");
+    public static final Action<JsonSchemaDocument> INSPECT_MODIFY = new Action<>("inspect_modify");
 
     @NotNull
     @Override
     public List<Action<JsonSchemaDocument>> getAvailableActions() {
-        return List.of(VIEW, VIEW_LIST, CREATE, MODIFY, DELETE, CLAIM, ASSIGN, ASSIGNABLE, EXPORT);
+        return List.of(VIEW, VIEW_LIST, CREATE, MODIFY, DELETE, CLAIM, ASSIGN, ASSIGNABLE, EXPORT, INSPECT, INSPECT_MODIFY);
     }
 }
