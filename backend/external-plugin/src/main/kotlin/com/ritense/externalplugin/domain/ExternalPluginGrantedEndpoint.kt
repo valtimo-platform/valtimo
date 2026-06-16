@@ -20,11 +20,20 @@ import jakarta.persistence.Column
 import jakarta.persistence.Entity
 import jakarta.persistence.Id
 import jakarta.persistence.Table
+import jakarta.persistence.UniqueConstraint
 import java.time.Instant
 import java.util.UUID
 
 @Entity
-@Table(name = "external_plugin_granted_endpoint")
+@Table(
+    name = "external_plugin_granted_endpoint",
+    uniqueConstraints = [
+        UniqueConstraint(
+            name = "ext_plugin_granted_ep_config_method_pattern_uq",
+            columnNames = ["configuration_id", "http_method", "endpoint_pattern"]
+        )
+    ]
+)
 class ExternalPluginGrantedEndpoint(
 
     @Id

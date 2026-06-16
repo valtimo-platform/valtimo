@@ -19,7 +19,6 @@ package com.ritense.buildingblock.configuration
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.ritense.authorization.AuthorizationService
 import com.ritense.buildingblock.endpoint.BuildingBlockEndpointDescriptionProvider
-import com.ritense.buildingblock.listener.CaseDefinitionBuildingBlockLinkCaseEventListener
 import com.ritense.buildingblock.listener.BuildingBlockCaseAssigneeListener
 import com.ritense.buildingblock.listener.BuildingBlockDefinitionEventListener
 import com.ritense.buildingblock.listener.BuildingBlockEndEventListener

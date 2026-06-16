@@ -66,6 +66,9 @@ class BuildingBlockEndpointDescriptionProvider : EndpointDescriptionProvider {
         endpoint("GET", "/api/management/v1/building-block/{key}/version/{versionTag}/decision-definition", "List building block decision definitions", "Bouwblokbeslisdefinities ophalen"),
         endpoint("POST", "/api/management/v1/building-block/{key}/version/{versionTag}/decision-definition", "Create building block decision definition", "Bouwblokbeslisdefinitie aanmaken"),
         endpoint("DELETE", "/api/management/v1/building-block/{key}/version/{versionTag}/decision-definition/{decisionDefinitionKey}", "Delete building block decision definition", "Bouwblokbeslisdefinitie verwijderen"),
+
+        // Case inspection
+        endpoint("GET", "/api/management/v1/case/{caseId}/building-blocks", "List building block instances for a case", "Bouwblokinstanties voor een dossier ophalen"),
     )
 
     private companion object {
