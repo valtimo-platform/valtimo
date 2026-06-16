@@ -136,6 +136,10 @@ class CaseEndpointDescriptionProvider : EndpointDescriptionProvider {
         endpoint("GET", "/api/management/v1/case/{caseDefinitionName}/version/{caseDefinitionVersion}/export", "Export case definition", "Dossierdefinitie exporteren"),
         endpoint("POST", "/api/management/v1/case/import", "Import case definition", "Dossierdefinitie importeren"),
         endpoint("POST", "/api/management/v1/case/import/preview", "Preview case definition import", "Importvoorvertoning van dossierdefinitie"),
+
+        // Case inspection
+        endpoint("GET", "/api/management/v1/case/{caseId}", "Get a case for inspection", "Dossier voor inspectie ophalen"),
+        endpoint("PUT", "/api/management/v1/case/{caseId}", "Modify a case for inspection", "Dossier voor inspectie bijwerken"),
     )
 
     private companion object {

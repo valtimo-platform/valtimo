@@ -20,6 +20,7 @@ import jakarta.persistence.Column
 import jakarta.persistence.Entity
 import jakarta.persistence.Id
 import jakarta.persistence.Table
+import jakarta.persistence.UniqueConstraint
 import java.time.Instant
 import java.util.UUID
 
@@ -31,7 +32,15 @@ import java.util.UUID
  * required.
  */
 @Entity
-@Table(name = "external_plugin_granted_event")
+@Table(
+    name = "external_plugin_granted_event",
+    uniqueConstraints = [
+        UniqueConstraint(
+            name = "ext_plugin_granted_evt_config_event_type_uq",
+            columnNames = ["configuration_id", "event_type"]
+        )
+    ]
+)
 class ExternalPluginGrantedEvent(
 
     @Id

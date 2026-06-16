@@ -174,6 +174,10 @@ class ExternalPluginConfigurationService(
         if (grantedEndpoints != null) {
             validateGrantedEndpointsCoverManifest(grantedEndpoints, definition)
             grantedEndpointRepository.deleteAllByConfigurationId(id)
+            // Flush the delete before re-inserting: Hibernate orders inserts ahead of deletes
+            // within a flush, which would trip the (configuration_id, http_method, endpoint_pattern)
+            // unique constraint when the replacement set overlaps the previous grants.
+            grantedEndpointRepository.flush()
             saveGrantedEndpoints(id, grantedEndpoints)
         }
 
