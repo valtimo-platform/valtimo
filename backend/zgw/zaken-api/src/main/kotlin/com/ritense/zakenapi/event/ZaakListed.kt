@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2025 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,10 +14,14 @@
  * limitations under the License.
  */
 
-import {Versions} from '../models';
+package com.ritense.zakenapi.event
 
-const VERSIONS: Versions = {
-  frontendLibraries: '12.38.0',
-};
+import com.fasterxml.jackson.databind.node.ArrayNode
+import com.ritense.outbox.domain.BaseEvent
 
-export {VERSIONS};
+class ZaakListed(zaak: ArrayNode) : BaseEvent(
+    type = "com.ritense.gzac.zrc.zaak.listed",
+    resultType = "com.ritense.zakenapi.domain.ZaakResponse",
+    resultId = null,
+    result = zaak
+)

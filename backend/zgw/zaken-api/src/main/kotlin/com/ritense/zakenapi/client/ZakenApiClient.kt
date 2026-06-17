@@ -31,6 +31,7 @@ import com.ritense.zakenapi.domain.CreateZaakStatusResponse
 import com.ritense.zakenapi.domain.CreateZaakeigenschapRequest
 import com.ritense.zakenapi.domain.GetZaakResultatenRequest
 import com.ritense.zakenapi.domain.PatchZaakRequest
+import com.ritense.zakenapi.domain.SearchParameter
 import com.ritense.zakenapi.domain.UpdateZaakeigenschapRequest
 import com.ritense.zakenapi.domain.ZaakInformatieObject
 import com.ritense.zakenapi.domain.ZaakObject
@@ -50,6 +51,7 @@ import com.ritense.zakenapi.domain.zaakobjectrequest.ZaakObjectType
 import com.ritense.zakenapi.event.DocumentLinkedToZaak
 import com.ritense.zakenapi.event.ZaakCreated
 import com.ritense.zakenapi.event.ZaakInformatieObjectenListed
+import com.ritense.zakenapi.event.ZaakListed
 import com.ritense.zakenapi.event.ZaakObjectCreated
 import com.ritense.zakenapi.event.ZaakObjectViewed
 import com.ritense.zakenapi.event.ZaakObjectenListed
@@ -75,6 +77,7 @@ import com.ritense.zgw.ClientTools
 import com.ritense.zgw.Page
 import mu.KLogger
 import mu.KotlinLogging
+import org.springframework.data.domain.Pageable
 import org.springframework.http.HttpHeaders
 import org.springframework.http.MediaType
 import org.springframework.web.client.RestClient
@@ -726,6 +729,58 @@ class ZakenApiClient(
         headers.set("Content-Crs", "EPSG:4326")
     }
 
+    fun searchZaken(
+        authentication: ZakenApiAuthentication,
+        baseUrl: URI,
+        searchParameters: List<SearchParameter>,
+        pageable: Pageable,
+    ): Page<ZaakResponse> {
+        val ordering = pageable.sort.joinToString(",") { sort ->
+            val sortProperty = sort.property
+                .substringAfter(':')
+                .replace("/", "__")
+                .trim('_')
+            if (sort.isAscending) {
+                sortProperty
+            } else {
+                "-$sortProperty"
+            }
+        }
+
+        val result = buildRestClient(authentication)
+            .get()
+            .uri {
+                var builder = ClientTools.baseUrlToBuilder(it, baseUrl)
+                    .pathSegment("zaken")
+                searchParameters.forEach { searchParameter ->
+                    val queryParamName = searchParameter.getQueryParamName()
+                    require(SUPPORTED_SEARCH_ZAKEN_QUERY_PARAMETERS.contains(queryParamName)) {
+                        "Failed search for zaken. Unsupported query parameter name $queryParamName. See: https://redocly.github.io/redoc/?url=https://raw.githubusercontent.com/vng-Realisatie/zaken-api/master/src/openapi.yaml#tag/zaken/operation/zaak_list"
+                    }
+                    builder = builder
+                        .queryParam(searchParameter.getQueryParamName(), searchParameter.getQueryParamValue())
+                }
+                if (!pageable.isUnpaged) {
+                    builder = builder
+                        .queryParam("pageSize", pageable.pageSize)
+                        .queryParam("page", pageable.pageNumber + 1) //objects api pagination starts at 1 instead of 0
+                }
+                builder
+                    .queryParam("ordering", ordering)
+                    .build()
+            }
+            .headers(this::defaultHeaders)
+            .retrieve()
+            .body<Page<ZaakResponse>>()!!
+
+        outboxService.send {
+            ZaakListed(
+                objectMapper.valueToTree(result.results)
+            )
+        }
+        return result
+    }
+
     private fun buildRestClient(authentication: ZakenApiAuthentication): RestClient {
         return restClientBuilder
             .clone()
@@ -737,5 +792,59 @@ class ZakenApiClient(
 
     companion object {
         private val logger: KLogger = KotlinLogging.logger {}
+
+        private val SUPPORTED_SEARCH_ZAKEN_QUERY_PARAMETERS = setOf(
+            "archiefactiedatum",
+            "archiefactiedatum__gt",
+            "archiefactiedatum__isnull",
+            "archiefactiedatum__lt",
+            "archiefnominatie",
+            "archiefnominatie__in",
+            "archiefstatus",
+            "archiefstatus__in",
+            "bronorganisatie",
+            "bronorganisatie__in",
+            "einddatumGepland",
+            "einddatumGepland__gt",
+            "einddatumGepland__lt",
+            "einddatum",
+            "einddatum__gt",
+            "einddatum__isnull",
+            "einddatum__lt",
+            "expand",
+            "identificatie",
+            "identificatie__icontains",
+            "maximaleVertrouwelijkheidaanduiding",
+            "omschrijving",
+            "registratiedatum",
+            "registratiedatum__gt",
+            "registratiedatum__lt",
+            "rol__betrokkene",
+            "rol__betrokkeneIdentificatie__medewerker__identificatie",
+            "rol__betrokkeneIdentificatie__natuurlijkPersoon__anpIdentificatie",
+            "rol__betrokkeneIdentificatie__natuurlijkPersoon__inpA_nummer",
+            "rol__betrokkeneIdentificatie__natuurlijkPersoon__inpBsn",
+            "rol__betrokkeneIdentificatie__nietNatuurlijkPersoon__annIdentificatie",
+            "rol__betrokkeneIdentificatie__nietNatuurlijkPersoon__innNnpId",
+            "rol__betrokkeneIdentificatie__nietNatuurlijkPersoon__kvkNummer",
+            "rol__betrokkeneIdentificatie__nietNatuurlijkPersoon__vestigingsNummer",
+            "rol__betrokkeneIdentificatie__organisatorischeEenheid__identificatie",
+            "rol__betrokkeneIdentificatie__vestiging__kvkNummer",
+            "rol__betrokkeneIdentificatie__vestiging__vestigingsNummer",
+            "rol__betrokkeneType",
+            "rol__machtiging",
+            "rol__machtiging__loa",
+            "rol__omschrijvingGeneriek",
+            "startdatum",
+            "startdatum__gt",
+            "startdatum__gte",
+            "startdatum__lt",
+            "startdatum__lte",
+            "uiterlijkeEinddatumAfdoening",
+            "uiterlijkeEinddatumAfdoening__gt",
+            "uiterlijkeEinddatumAfdoening__lt",
+            "zaaktype",
+            "zaaktype__omschrijving",
+        )
     }
 }

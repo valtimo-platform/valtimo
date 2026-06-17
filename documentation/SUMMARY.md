@@ -159,6 +159,7 @@
     * [Whitelisting Spring beans for Camunda](features/process/process/whitelist-spring-bean.md)
 * [✅ Tasks](features/tasks.md)
 * [📃 ZGW](features/zgw/README.md)
+  * [Load a zaak in a form flow](features/zgw/load-zaak-in-form-flow.md)
   * [Documents](features/zgw/zgw-documents/README.md)
     * [Access control](features/zgw/zgw-documents/access-control.md)
     * [Uploading to Documenten API with metadata](features/zgw/zgw-documents/upload-to-documenten-api-with-metadata.md)
