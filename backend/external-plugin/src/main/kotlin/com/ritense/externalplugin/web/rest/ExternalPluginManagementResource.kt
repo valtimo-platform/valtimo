@@ -36,6 +36,7 @@ import com.ritense.externalplugin.web.rest.dto.GrantedEndpointResponse
 import com.ritense.externalplugin.web.rest.dto.GrantedEventResponse
 import com.ritense.externalplugin.web.rest.dto.HostCreateRequest
 import com.ritense.externalplugin.web.rest.dto.HostDefaultsResponse
+import com.ritense.externalplugin.web.rest.dto.HostEventQueueUpdateRequest
 import com.ritense.externalplugin.web.rest.dto.HostResponse
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import com.ritense.valtimo.contract.domain.ValtimoMediaType.APPLICATION_JSON_UTF8_VALUE
@@ -47,6 +48,7 @@ import org.springframework.stereotype.Controller
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.DeleteMapping
+import org.springframework.web.bind.annotation.PatchMapping
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.PutMapping
 import org.springframework.web.bind.annotation.RequestBody
@@ -86,8 +88,31 @@ class ExternalPluginManagementResource(
             request.gzacCallbackBaseUrl,
             request.eventBrokerAmqpUrl,
             request.eventBrokerExchange,
+            request.eventQueueMode,
+            request.eventQueueTtlMs,
         )
         return ResponseEntity.status(HttpStatus.CREATED).body(HostResponse.from(host))
+    }
+
+    /**
+     * Narrowly-scoped update for the per-host event-queue declaration. baseUrl/secret/broker stay
+     * immutable; only mode and TTL are mutable. Triggers an immediate re-discovery so the host's
+     * `EventConsumerManager` swaps its queue without waiting for the next polling tick — best-effort
+     * because the periodic discovery cycle will reconcile anyway.
+     */
+    @RunWithoutAuthorization
+    @PatchMapping("/host/{hostId}/event-queue")
+    fun updateHostEventQueue(
+        @PathVariable hostId: UUID,
+        @RequestBody request: HostEventQueueUpdateRequest,
+    ): ResponseEntity<HostResponse> {
+        val host = hostService.updateEventQueue(
+            hostId,
+            request.eventQueueMode,
+            request.eventQueueTtlMs,
+        )
+        runCatching { discoveryService.discoverAll() }
+        return ResponseEntity.ok(HostResponse.from(host))
     }
 
     /**
@@ -127,6 +152,9 @@ class ExternalPluginManagementResource(
                 gzacCallbackBaseUrl = gzacCallbackBaseUrl,
                 eventBrokerAmqpUrl = eventBrokerAmqpUrl,
                 eventBrokerExchange = eventBrokerExchange,
+                defaultEventQueueTtlMs = ExternalPluginHostService.DEFAULT_EVENT_QUEUE_TTL_MS,
+                minEventQueueTtlMs = ExternalPluginHostService.MIN_EVENT_QUEUE_TTL_MS,
+                maxEventQueueTtlMs = ExternalPluginHostService.MAX_EVENT_QUEUE_TTL_MS,
             )
         )
     }

@@ -23,11 +23,17 @@ import type {EventBrokerConfig} from "../models/index.js";
 import {createHmacAuthHook} from "../security/hmac-auth.js";
 
 const EXCHANGE_TYPES = ["fanout", "topic", "direct"] as const;
+const QUEUE_MODES = ["live", "durable"] as const;
+const MIN_QUEUE_TTL_MS = 60 * 60 * 1000;
+const MAX_QUEUE_TTL_MS = 30 * 24 * 60 * 60 * 1000;
+const DEFAULT_QUEUE_TTL_MS = 72 * 60 * 60 * 1000;
 
 /**
  * Normalizes the `eventBroker` field GZAC sends with a configuration. Returns `undefined` (events
  * disabled for the configuration) when no `amqpUrl` is supplied; defaults the exchange/type so GZAC
- * only has to send the URL for the common topology.
+ * only has to send the URL for the common topology. Also normalizes the per-host queue mode and
+ * TTL: an unknown/absent mode defaults to `"live"`; a durable-mode TTL outside the documented
+ * [1h, 30d] window is clamped (defensive — GZAC validates the same bounds before pushing).
  */
 function normalizeEventBroker(input: unknown): EventBrokerConfig | undefined {
   if (!input || typeof input !== "object") return undefined;
@@ -40,7 +46,16 @@ function normalizeEventBroker(input: unknown): EventBrokerConfig | undefined {
   const exchangeType = (EXCHANGE_TYPES as readonly string[]).includes(typeRaw)
     ? (typeRaw as EventBrokerConfig["exchangeType"])
     : "fanout";
-  return { amqpUrl, exchange, exchangeType };
+  const modeRaw = typeof b.queueMode === "string" ? b.queueMode : "live";
+  const queueMode: "live" | "durable" = (QUEUE_MODES as readonly string[]).includes(modeRaw)
+    ? (modeRaw as "live" | "durable")
+    : "live";
+  let queueTtlMs: number | undefined;
+  if (queueMode === "durable") {
+    const rawTtl = typeof b.queueTtlMs === "number" ? b.queueTtlMs : DEFAULT_QUEUE_TTL_MS;
+    queueTtlMs = Math.min(Math.max(rawTtl, MIN_QUEUE_TTL_MS), MAX_QUEUE_TTL_MS);
+  }
+  return { amqpUrl, exchange, exchangeType, queueMode, queueTtlMs };
 }
 
 /**

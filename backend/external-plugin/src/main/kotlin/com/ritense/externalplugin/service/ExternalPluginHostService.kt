@@ -18,6 +18,7 @@ package com.ritense.externalplugin.service
 
 import com.fasterxml.jackson.databind.JsonNode
 import com.ritense.externalplugin.client.ExternalPluginHostClient
+import com.ritense.externalplugin.domain.EventQueueMode
 import com.ritense.externalplugin.domain.ExternalPluginHost
 import com.ritense.externalplugin.domain.ExternalPluginHostStatus
 import com.ritense.externalplugin.repository.ExternalPluginConfigurationRepository
@@ -59,6 +60,8 @@ class ExternalPluginHostService(
         gzacCallbackBaseUrl: String,
         eventBrokerAmqpUrl: String?,
         eventBrokerExchange: String?,
+        eventQueueMode: EventQueueMode = EventQueueMode.LIVE,
+        eventQueueTtlMs: Long? = null,
     ): ExternalPluginHost {
         val normalizedBaseUrl = baseUrl.trimEnd('/')
         val brokerAmqpUrl = eventBrokerAmqpUrl?.takeIf { it.isNotBlank() }
@@ -73,6 +76,7 @@ class ExternalPluginHostService(
                 "local development). Enable TLS on the host, or leave the event broker blank to " +
                 "disable events for configurations on this host."
         }
+        val resolvedTtlMs = resolveEventQueueTtlMs(eventQueueMode, eventQueueTtlMs)
         val host = ExternalPluginHost(
             id = UUID.randomUUID(),
             name = name,
@@ -82,8 +86,44 @@ class ExternalPluginHostService(
             gzacCallbackBaseUrl = gzacCallbackBaseUrl.trimEnd('/'),
             eventBrokerAmqpUrl = brokerAmqpUrl,
             eventBrokerExchange = eventBrokerExchange?.takeIf { it.isNotBlank() },
+            eventQueueMode = eventQueueMode,
+            eventQueueTtlMs = resolvedTtlMs,
         )
         return hostRepository.save(host)
+    }
+
+    /**
+     * Updates only the per-host event-queue declaration knobs. The base URL, secret, broker URL
+     * and broker exchange remain immutable — those are the security-sensitive fields. Mode and TTL
+     * only affect the queue declaration on the plugin-host side; the next configuration push
+     * propagates the change so the host swaps its queue.
+     */
+    fun updateEventQueue(
+        hostId: UUID,
+        eventQueueMode: EventQueueMode,
+        eventQueueTtlMs: Long?,
+    ): ExternalPluginHost {
+        val host = get(hostId)
+        host.eventQueueMode = eventQueueMode
+        host.eventQueueTtlMs = resolveEventQueueTtlMs(eventQueueMode, eventQueueTtlMs)
+        return hostRepository.save(host)
+    }
+
+    private fun resolveEventQueueTtlMs(mode: EventQueueMode, ttlMs: Long?): Long? = when (mode) {
+        EventQueueMode.LIVE -> {
+            require(ttlMs == null) {
+                "eventQueueTtlMs must be null when eventQueueMode is LIVE (got $ttlMs)."
+            }
+            null
+        }
+        EventQueueMode.DURABLE -> {
+            val value = ttlMs ?: DEFAULT_EVENT_QUEUE_TTL_MS
+            require(value in MIN_EVENT_QUEUE_TTL_MS..MAX_EVENT_QUEUE_TTL_MS) {
+                "eventQueueTtlMs must be between $MIN_EVENT_QUEUE_TTL_MS (1h) and " +
+                    "$MAX_EVENT_QUEUE_TTL_MS (30d), got $value."
+            }
+            value
+        }
     }
 
     fun delete(hostId: UUID) {
@@ -108,6 +148,15 @@ class ExternalPluginHostService(
 
     companion object {
         private val LOOPBACK_HOSTS = setOf("localhost", "127.0.0.1", "::1")
+
+        /** Default queue inactivity TTL for new DURABLE hosts: 72 hours. */
+        const val DEFAULT_EVENT_QUEUE_TTL_MS: Long = 72L * 60 * 60 * 1000
+
+        /** Minimum allowed TTL: 1 hour. Below this a brief restart can blow away the queue. */
+        const val MIN_EVENT_QUEUE_TTL_MS: Long = 60L * 60 * 1000
+
+        /** Maximum allowed TTL: 30 days. Past this, buffered events are likely stale. */
+        const val MAX_EVENT_QUEUE_TTL_MS: Long = 30L * 24 * 60 * 60 * 1000
 
         /**
          * Whether a host base URL provides a confidential transport for the broker credentials and

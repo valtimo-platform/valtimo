@@ -16,6 +16,7 @@
 
 type ExternalPluginHostStatus = 'CONNECTED' | 'UNREACHABLE';
 type ExternalPluginDefinitionStatus = 'AVAILABLE' | 'UNAVAILABLE';
+type ExternalPluginEventQueueMode = 'LIVE' | 'DURABLE';
 
 interface ExternalPluginHost {
   id: string;
@@ -26,6 +27,8 @@ interface ExternalPluginHost {
   gzacCallbackBaseUrl: string | null;
   eventBrokerAmqpUrl: string | null;
   eventBrokerExchange: string | null;
+  eventQueueMode: ExternalPluginEventQueueMode;
+  eventQueueTtlMs: number | null;
 }
 
 interface ExternalPluginHostCreateRequest {
@@ -35,12 +38,22 @@ interface ExternalPluginHostCreateRequest {
   gzacCallbackBaseUrl: string;
   eventBrokerAmqpUrl: string | null;
   eventBrokerExchange: string | null;
+  eventQueueMode: ExternalPluginEventQueueMode;
+  eventQueueTtlMs: number | null;
 }
 
 interface ExternalPluginHostDefaults {
   gzacCallbackBaseUrl: string;
   eventBrokerAmqpUrl: string;
   eventBrokerExchange: string;
+  defaultEventQueueTtlMs: number;
+  minEventQueueTtlMs: number;
+  maxEventQueueTtlMs: number;
+}
+
+interface ExternalPluginHostEventQueueUpdateRequest {
+  eventQueueMode: ExternalPluginEventQueueMode;
+  eventQueueTtlMs: number | null;
 }
 
 interface ExternalPluginAction {
@@ -255,9 +268,11 @@ export {
   ExternalPluginCompatibilityInfo,
   ExternalPluginHostStatus,
   ExternalPluginDefinitionStatus,
+  ExternalPluginEventQueueMode,
   ExternalPluginHost,
   ExternalPluginHostCreateRequest,
   ExternalPluginHostDefaults,
+  ExternalPluginHostEventQueueUpdateRequest,
   ExternalPluginDefinition,
   ExternalPluginConfiguration,
   ExternalPluginConfigurationDetail,

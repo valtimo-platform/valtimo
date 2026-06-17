@@ -22,6 +22,7 @@ import {
   ExternalPluginDefinition,
   ExternalPluginHost,
   ExternalPluginHostCreateRequest,
+  ExternalPluginHostEventQueueUpdateRequest,
   ExternalPluginService,
   getExternalPluginDisplayName,
   isExternalPluginDefinitionIncompatible,
@@ -170,6 +171,10 @@ export class PluginManagementComponent implements OnInit, AfterViewInit, OnDestr
 
   public readonly hostActionItems: ActionItem[] = [
     {
+      callback: this.editHostEventQueue.bind(this),
+      label: 'pluginManagement.editEventQueue',
+    },
+    {
       callback: this.deleteHost.bind(this),
       label: 'interface.delete',
       type: 'danger',
@@ -188,6 +193,9 @@ export class PluginManagementComponent implements OnInit, AfterViewInit, OnDestr
   public readonly reloadModalOpen$ = new BehaviorSubject<boolean>(false);
   public readonly deleteHostModalOpen$ = new BehaviorSubject<boolean>(false);
   public hostToDelete: ExternalPluginHost | null = null;
+
+  public readonly eventQueueModalOpen$ = new BehaviorSubject<boolean>(false);
+  public readonly hostToEditEventQueue$ = new BehaviorSubject<ExternalPluginHost | null>(null);
 
   private readonly _refreshHosts$ = new Subject<void>();
   private _hostsInitialLoad = true;
@@ -487,6 +495,31 @@ export class PluginManagementComponent implements OnInit, AfterViewInit, OnDestr
 
   public cancelDeleteHost(): void {
     this.hostToDelete = null;
+  }
+
+  public editHostEventQueue(host: ExternalPluginHost): void {
+    this.hostToEditEventQueue$.next(host);
+    this.eventQueueModalOpen$.next(true);
+  }
+
+  public closeEventQueueModal(): void {
+    this.eventQueueModalOpen$.next(false);
+    this.hostToEditEventQueue$.next(null);
+  }
+
+  public submitEventQueueUpdate(request: ExternalPluginHostEventQueueUpdateRequest): void {
+    const host = this.hostToEditEventQueue$.value;
+    if (!host) return;
+    this._externalPluginService.updateHostEventQueue(host.id, request).subscribe({
+      next: () => {
+        this.eventQueueModalOpen$.next(false);
+        this.hostToEditEventQueue$.next(null);
+        this._refreshHosts$.next();
+      },
+      error: () => {
+        this._logger.error('Something went wrong with updating the plugin host event queue.');
+      },
+    });
   }
 
   public confirmReload(): void {

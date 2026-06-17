@@ -29,6 +29,7 @@ import {
   ExternalPluginHost,
   ExternalPluginHostCreateRequest,
   ExternalPluginHostDefaults,
+  ExternalPluginHostEventQueueUpdateRequest,
 } from '../models';
 
 @Injectable({
@@ -58,6 +59,16 @@ export class ExternalPluginService {
 
   public deleteHost(hostId: string): Observable<void> {
     return this._http.delete<void>(`${this._baseUrl}/host/${hostId}`);
+  }
+
+  public updateHostEventQueue(
+    hostId: string,
+    request: ExternalPluginHostEventQueueUpdateRequest
+  ): Observable<ExternalPluginHost> {
+    return this._http.patch<ExternalPluginHost>(
+      `${this._baseUrl}/host/${hostId}/event-queue`,
+      request
+    );
   }
 
   public getDefinitions(): Observable<Array<ExternalPluginDefinition>> {

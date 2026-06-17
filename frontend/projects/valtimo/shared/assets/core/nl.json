@@ -2180,8 +2180,20 @@
       "pluginHost": "Plugin-host",
       "gzacCallbackBaseUrl": "GZAC callback-URL",
       "eventBrokerAmqpUrl": "Event broker-URL (optioneel)",
-      "eventBrokerExchange": "Event broker exchange (optioneel)"
+      "eventBrokerExchange": "Event broker exchange (optioneel)",
+      "eventQueueMode": "Event queue-modus",
+      "eventQueueTtlMs": "Event queue inactiviteits-TTL (ms)"
     },
+    "eventQueueMode": {
+      "live": "Live (events gaan verloren als de host uitstaat)",
+      "durable": "Duurzaam (bewaart events gedurende de TTL als de host uitstaat)"
+    },
+    "hints": {
+      "eventQueueTtlMs": "De duurzame queue wordt verwijderd na dit aantal ms zonder verbonden host. Min 1u (3600000), max 30d (2592000000), standaard 72u (259200000)."
+    },
+    "editEventQueue": "Event queue bewerken",
+    "editHostEventQueueModalTitle": "Event queue bewerken voor {{name}}",
+    "saveEventQueue": "Opslaan",
     "source": {
       "embedded": "Ingebed",
       "external": "Extern"
