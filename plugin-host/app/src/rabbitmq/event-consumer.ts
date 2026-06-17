@@ -54,57 +54,51 @@ function queueName(b: EventBrokerConfig, hostId: string): string {
 type Router = (key: string, event: CloudEventJson) => Promise<void>;
 
 /**
+ * Exponential backoff schedule for broker reconnects: 1s, 2s, 4s, …, capped at 30s, with 50–100 %
+ * jitter applied so a herd of hosts losing the same broker don't all retry on the same beat.
+ */
+const RECONNECT_BASE_MS = 1_000;
+const RECONNECT_MAX_MS = 30_000;
+function backoffDelayMs(attempt: number): number {
+  const exp = Math.min(RECONNECT_MAX_MS, RECONNECT_BASE_MS * 2 ** Math.min(attempt, 5));
+  return Math.floor(exp * (0.5 + Math.random() * 0.5));
+}
+
+/**
  * A single AMQP connection to one GZAC instance's broker. Binds this host's own queue to that
  * instance's events exchange and forwards every consumed CloudEvent to the manager's router, tagged
  * with the broker key so the manager can route it only to that instance's configurations.
+ *
+ * Once `start()` has succeeded the consumer owns its own reconnect loop: an unexpected connection
+ * close schedules a backed-off reconnect and the consumer stays alive in the manager's map across
+ * the gap. The loop terminates only when the manager calls `close()` (broker no longer referenced,
+ * or host shutdown).
  */
 class BrokerConsumer {
   private connection: Awaited<ReturnType<typeof amqp.connect>> | null = null;
   private channel: amqp.Channel | null = null;
   private intentionalClose = false;
+  private reconnectTimer: ReturnType<typeof setTimeout> | null = null;
+  private reconnectAttempt = 0;
 
   constructor(
-    private readonly key: string,
     private readonly broker: EventBrokerConfig,
     private readonly hostId: string,
     private readonly route: Router,
-    private readonly onClosed: (key: string) => void,
     private readonly log: HostLogger
   ) {}
 
+  /** Open the connection and bind the queue. Throws on initial failure so the caller can decide. */
   async start(): Promise<void> {
-    this.connection = await amqp.connect(this.broker.amqpUrl);
-    // A dropped connection leaves a dead consumer; let the manager drop it so the next config
-    // sync recreates it. (No standalone reconnect loop — config pushes drive re-sync.)
-    this.connection.on("close", () => {
-      if (!this.intentionalClose) {
-        this.log.warn({ exchange: this.broker.exchange }, "Broker connection closed");
-        this.onClosed(this.key);
-      }
-    });
-    this.connection.on("error", (err: Error) => {
-      this.log.warn({ exchange: this.broker.exchange, error: err.message }, "Broker connection error");
-    });
-
-    this.channel = await this.connection.createChannel();
-    // Backpressure: cap unacked messages so a high-volume stream (e.g. document.viewed) isn't all
-    // pulled into memory at once. Plugin calls are serialized per instance anyway (PluginManager).
-    await this.channel.prefetch(16);
-    await this.channel.assertExchange(this.broker.exchange, this.broker.exchangeType, { durable: true });
-    const queue = queueName(this.broker, this.hostId);
-    // autoDelete so a host that goes away doesn't leave a queue accumulating every event forever;
-    // it lives while at least one replica of this host is connected. (Live-subscription semantics:
-    // events published while a host is fully down are not retained for it.)
-    const q = await this.channel.assertQueue(queue, { durable: false, autoDelete: true });
-    // Fanout ignores the routing key; for topic/direct an empty key binds to the default.
-    await this.channel.bindQueue(q.queue, this.broker.exchange, "");
-    await this.channel.consume(q.queue, (msg) => this.onMessage(msg), { noAck: false });
-
-    this.log.info({ exchange: this.broker.exchange, queue: q.queue }, "Broker consumer started");
+    await this.openConnection();
   }
 
   async close(): Promise<void> {
     this.intentionalClose = true;
+    if (this.reconnectTimer) {
+      clearTimeout(this.reconnectTimer);
+      this.reconnectTimer = null;
+    }
     try {
       await this.channel?.close();
       await this.connection?.close();
@@ -116,11 +110,84 @@ class BrokerConsumer {
     }
   }
 
+  private async openConnection(): Promise<void> {
+    const connection = await amqp.connect(this.broker.amqpUrl);
+    // amqplib emits 'error' before 'close' on abnormal drops; treat 'close' as the single recovery
+    // hook and log 'error' for diagnostics so a stack-trace doesn't crash the process either.
+    connection.on("error", (err: Error) => {
+      this.log.warn(
+        { exchange: this.broker.exchange, error: err.message },
+        "Broker connection error"
+      );
+    });
+    connection.on("close", () => {
+      this.connection = null;
+      this.channel = null;
+      if (this.intentionalClose) return;
+      this.log.warn(
+        { exchange: this.broker.exchange },
+        "Broker connection closed; scheduling reconnect"
+      );
+      this.scheduleReconnect();
+    });
+
+    const channel = await connection.createChannel();
+    // Backpressure: cap unacked messages so a high-volume stream (e.g. document.viewed) isn't all
+    // pulled into memory at once. Plugin calls are serialized per instance anyway (PluginManager).
+    await channel.prefetch(16);
+    await channel.assertExchange(this.broker.exchange, this.broker.exchangeType, { durable: true });
+    const queue = queueName(this.broker, this.hostId);
+    // autoDelete so a host that goes away doesn't leave a queue accumulating every event forever;
+    // it lives while at least one replica of this host is connected. (Live-subscription semantics:
+    // events published while a host is fully down — including the reconnect window — are not
+    // retained for it.)
+    const q = await channel.assertQueue(queue, { durable: false, autoDelete: true });
+    // Fanout ignores the routing key; for topic/direct an empty key binds to the default.
+    await channel.bindQueue(q.queue, this.broker.exchange, "");
+    await channel.consume(q.queue, (msg) => this.onMessage(msg), { noAck: false });
+
+    this.connection = connection;
+    this.channel = channel;
+    const wasReconnect = this.reconnectAttempt > 0;
+    this.reconnectAttempt = 0;
+    this.log.info(
+      { exchange: this.broker.exchange, queue: q.queue },
+      wasReconnect ? "Broker consumer reconnected" : "Broker consumer started"
+    );
+  }
+
+  private scheduleReconnect(): void {
+    if (this.intentionalClose || this.reconnectTimer) return;
+    const delay = backoffDelayMs(this.reconnectAttempt);
+    this.reconnectAttempt += 1;
+    this.log.info(
+      { exchange: this.broker.exchange, attempt: this.reconnectAttempt, delayMs: delay },
+      "Reconnecting broker consumer"
+    );
+    this.reconnectTimer = setTimeout(() => {
+      this.reconnectTimer = null;
+      void this.attemptReconnect();
+    }, delay);
+  }
+
+  private async attemptReconnect(): Promise<void> {
+    if (this.intentionalClose) return;
+    try {
+      await this.openConnection();
+    } catch (err) {
+      this.log.warn(
+        { exchange: this.broker.exchange, error: (err as Error).message },
+        "Broker reconnect attempt failed"
+      );
+      this.scheduleReconnect();
+    }
+  }
+
   private async onMessage(msg: amqp.ConsumeMessage | null): Promise<void> {
     if (!msg) return;
     try {
       const cloudEvent = JSON.parse(msg.content.toString("utf-8")) as CloudEventJson;
-      await this.route(this.key, cloudEvent);
+      await this.route(brokerKey(this.broker), cloudEvent);
       this.channel?.ack(msg);
     } catch (err) {
       this.log.warn({ error: (err as Error).message }, "Failed to process event message; dropping");
@@ -181,18 +248,17 @@ export class EventConsumerManager {
     for (const [key, broker] of desired) {
       if (this.consumers.has(key)) continue;
       const consumer = new BrokerConsumer(
-        key,
         broker,
         this.hostId,
         (k, event) => this.dispatch(k, event),
-        (k) => this.consumers.delete(k),
         this.log
       );
       try {
         await consumer.start();
         this.consumers.set(key, consumer);
       } catch (err) {
-        // Leave it out of the map so the next sync retries this broker.
+        // Leave it out of the map so the next sync retries the initial connect. Once a consumer
+        // has joined the map it owns its own reconnect on subsequent drops.
         this.log.error(
           { exchange: broker.exchange, error: (err as Error).message },
           "Failed to start broker consumer — events from this broker will not be delivered"
