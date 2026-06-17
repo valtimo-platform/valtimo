@@ -18,51 +18,34 @@ package com.ritense.externalplugin.compatibility
 
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
-import org.mockito.kotlin.mock
-import org.mockito.kotlin.whenever
-import org.springframework.beans.factory.ObjectProvider
-import org.springframework.boot.info.BuildProperties
-import java.util.Properties
 
 class DefaultGzacVersionProviderTest {
 
     @Test
-    fun `prefers the configured override over build properties`() {
-        val provider = DefaultGzacVersionProvider(buildPropertiesProvider("13.1.3"), versionOverride = "9.9.9")
+    fun `prefers the configured override over the library version`() {
+        val provider = DefaultGzacVersionProvider(versionOverride = "9.9.9", libraryVersion = "13.5.0")
 
         assertThat(provider.getCurrentVersion()).isEqualTo("9.9.9")
     }
 
     @Test
-    fun `falls back to build properties when no override is configured`() {
-        val provider = DefaultGzacVersionProvider(buildPropertiesProvider("13.1.3"), versionOverride = "")
+    fun `falls back to the valtimo library version when no override is configured`() {
+        val provider = DefaultGzacVersionProvider(versionOverride = "", libraryVersion = "13.5.0")
 
-        assertThat(provider.getCurrentVersion()).isEqualTo("13.1.3")
+        assertThat(provider.getCurrentVersion()).isEqualTo("13.5.0")
     }
 
     @Test
-    fun `ignores a blank override`() {
-        val provider = DefaultGzacVersionProvider(buildPropertiesProvider("13.1.3"), versionOverride = "   ")
-
-        assertThat(provider.getCurrentVersion()).isEqualTo("13.1.3")
-    }
-
-    @Test
-    fun `returns null when neither override nor build properties resolve a version`() {
-        val provider = DefaultGzacVersionProvider(emptyProvider(), versionOverride = null)
+    fun `ignores a blank override and a blank library version`() {
+        val provider = DefaultGzacVersionProvider(versionOverride = "   ", libraryVersion = "  ")
 
         assertThat(provider.getCurrentVersion()).isNull()
     }
 
-    private fun buildPropertiesProvider(version: String): ObjectProvider<BuildProperties> {
-        val buildProperties = BuildProperties(Properties().apply { setProperty("version", version) })
-        return mock<ObjectProvider<BuildProperties>>().also {
-            whenever(it.ifAvailable).thenReturn(buildProperties)
-        }
-    }
+    @Test
+    fun `returns null when nothing resolves a version`() {
+        val provider = DefaultGzacVersionProvider(versionOverride = null, libraryVersion = null)
 
-    private fun emptyProvider(): ObjectProvider<BuildProperties> =
-        mock<ObjectProvider<BuildProperties>>().also {
-            whenever(it.ifAvailable).thenReturn(null)
-        }
+        assertThat(provider.getCurrentVersion()).isNull()
+    }
 }
