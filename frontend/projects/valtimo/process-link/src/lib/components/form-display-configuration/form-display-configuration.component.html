@@ -22,6 +22,7 @@
     disableFormSizeInput: disableFormSizeInput$ | async,
     subtitles: subtitles$ | async,
     isUserTask: isUserTask$ | async,
+    isStartEvent: isStartEvent$ | async,
     saving: saving$ | async,
   } as obs"
 >
@@ -36,7 +37,9 @@
     </cds-combo-box>
 
     <br />
+  }
 
+  @if (obs.isUserTask || obs.isStartEvent) {
     <cds-combo-box
       [placeholder]="'processLinkSteps.formSize.placeholder' | translate"
       [label]="'processLinkSteps.formSize.label' | translate"
@@ -47,7 +50,9 @@
     </cds-combo-box>
 
     <br />
+  }
 
+  @if (obs.isUserTask) {
     <valtimo-carbon-multi-input
       type="value"
       titleTranslationKey="processLinkSteps.subtitles"

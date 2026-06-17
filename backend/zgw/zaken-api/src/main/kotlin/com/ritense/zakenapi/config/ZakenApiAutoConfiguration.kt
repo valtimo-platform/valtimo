@@ -20,11 +20,12 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import com.ritense.authorization.AuthorizationService
 import com.ritense.case_.listener.ZaakTypeLinkCaseEventListener
 import com.ritense.catalogiapi.service.CatalogiService
-import com.ritense.document.service.DocumentService
 import com.ritense.catalogiapi.service.ZaaktypeUrlProvider
+import com.ritense.document.service.DocumentService
 import com.ritense.document.service.impl.JsonSchemaDocumentService
 import com.ritense.documentenapi.service.DocumentenApiService
 import com.ritense.documentenapi.service.DocumentenApiVersionService
+import com.ritense.formflow.expression.FormFlowBean
 import com.ritense.outbox.OutboxService
 import com.ritense.plugin.repository.PluginConfigurationRepository
 import com.ritense.plugin.service.PluginService
@@ -42,11 +43,15 @@ import com.ritense.zakenapi.ZaakUrlProvider
 import com.ritense.zakenapi.ZakenApiPluginFactory
 import com.ritense.zakenapi.client.ZakenApiClient
 import com.ritense.zakenapi.exporter.ZaakTypeLinkExporter
+import com.ritense.zakenapi.formflow.ZakenFormFlow
 import com.ritense.zakenapi.ikorepository.ZakenApiIkoRepository
 import com.ritense.zakenapi.link.ZaakInstanceLinkService
-import com.ritense.zakenapi.widget.ZaakMetrolineDataServiceImpl
+import com.ritense.zakenapi.listener.DocumentMetadataAvailableEventListener
 import com.ritense.zakenapi.listener.ZaakNotitieEventListener
 import com.ritense.zakenapi.listener.ZaakTypeLinkConfigurationIssueListener
+import com.ritense.zakenapi.listener.ZakenApiCaseAssigneeListener
+import com.ritense.zakenapi.listener.ZakenApiDocumentDeletedEventListener
+import com.ritense.zakenapi.listener.ZakenApiEventListener
 import com.ritense.zakenapi.provider.BsnProvider
 import com.ritense.zakenapi.provider.DefaultZaakUrlProvider
 import com.ritense.zakenapi.provider.DefaultZaaktypeUrlProvider
@@ -60,27 +65,29 @@ import com.ritense.zakenapi.repository.ZaakTypeLinkRepository
 import com.ritense.zakenapi.resolver.ZaakResultaatValueResolverFactory
 import com.ritense.zakenapi.resolver.ZaakStatusValueResolverFactory
 import com.ritense.zakenapi.resolver.ZaakValueResolverFactory
+import com.ritense.zakenapi.security.ZaakActionProvider
+import com.ritense.zakenapi.security.ZaakSpecificationFactory
 import com.ritense.zakenapi.security.ZakenApiHttpSecurityConfigurer
 import com.ritense.zakenapi.service.DefaultZaakTypeLinkService
-import com.ritense.zakenapi.listener.DocumentMetadataAvailableEventListener
 import com.ritense.zakenapi.service.UploadProcessDelegate
 import com.ritense.zakenapi.service.ZaakDocumentService
 import com.ritense.zakenapi.service.ZaakNotitieService
+import com.ritense.zakenapi.service.ZaakService
 import com.ritense.zakenapi.service.ZaakTypeLinkService
-import com.ritense.zakenapi.listener.ZakenApiDocumentDeletedEventListener
-import com.ritense.zakenapi.listener.ZakenApiEventListener
 import com.ritense.zakenapi.service.ZakenDocumentDeleteHandler
-import com.ritense.zakenapi.listener.ZakenApiCaseAssigneeListener
 import com.ritense.zakenapi.sync.CaseZakenApiSyncCaseEventListener
 import com.ritense.zakenapi.sync.CaseZakenApiSyncExporter
 import com.ritense.zakenapi.sync.CaseZakenApiSyncImporter
 import com.ritense.zakenapi.sync.CaseZakenApiSyncManagementResource
 import com.ritense.zakenapi.sync.CaseZakenApiSyncManagementService
 import com.ritense.zakenapi.sync.CaseZakenApiSyncRepository
+import com.ritense.zakenapi.web.rest.CaseZgwInspectionResource
 import com.ritense.zakenapi.web.rest.DefaultZaakTypeLinkResource
 import com.ritense.zakenapi.web.rest.ZaakDocumentResource
+import com.ritense.zakenapi.widget.ZaakMetrolineDataServiceImpl
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.autoconfigure.AutoConfiguration
+import org.springframework.boot.autoconfigure.condition.ConditionalOnClass
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.boot.autoconfigure.domain.EntityScan
 import org.springframework.context.ApplicationEventPublisher
@@ -176,6 +183,22 @@ class ZakenApiAutoConfiguration {
         zaakDocumentService: ZaakDocumentService
     ) = ZaakDocumentResource(
         zaakDocumentService
+    )
+
+    @Bean
+    @ConditionalOnMissingBean(CaseZgwInspectionResource::class)
+    fun caseZgwInspectionResource(
+        documentService: DocumentService,
+        authorizationService: AuthorizationService,
+        zaakInstanceLinkService: ZaakInstanceLinkService,
+        pluginService: PluginService,
+        objectMapper: ObjectMapper,
+    ) = CaseZgwInspectionResource(
+        documentService,
+        authorizationService,
+        zaakInstanceLinkService,
+        pluginService,
+        objectMapper,
     )
 
     @Bean
@@ -399,6 +422,27 @@ class ZakenApiAutoConfiguration {
     )
 
     @Bean
+    @ConditionalOnMissingBean(ZaakSpecificationFactory::class)
+    fun zaakSpecificationFactory(): ZaakSpecificationFactory {
+        return ZaakSpecificationFactory()
+    }
+
+    @Bean
+    @ConditionalOnMissingBean(ZaakActionProvider::class)
+    fun zaakActionProvider(): ZaakActionProvider {
+        return ZaakActionProvider()
+    }
+
+    @Bean
+    @ConditionalOnMissingBean(ZaakService::class)
+    fun zaakService(
+        pluginService: PluginService,
+        authorizationService: AuthorizationService,
+    ): ZaakService {
+        return ZaakService(pluginService, authorizationService)
+    }
+
+    @Bean
     @ConditionalOnMissingBean(ZaakTypeLinkConfigurationIssueListener::class)
     fun zaakTypeLinkConfigurationIssueListener(
         applicationEventPublisher: ApplicationEventPublisher
@@ -481,4 +525,9 @@ class ZakenApiAutoConfiguration {
         documentService,
         caseDocumentResolver,
     )
+
+    @Bean
+    @ConditionalOnClass(FormFlowBean::class) // Only registered when :form-flow is on the classpath
+    @ConditionalOnMissingBean(ZakenFormFlow::class)
+    fun zakenFormFlow(zaakService: ZaakService): ZakenFormFlow = ZakenFormFlow(zaakService)
 }

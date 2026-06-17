@@ -524,6 +524,7 @@ class NestedBuildingBlockIT @Autowired constructor(
         return mock {
             on { this.currentActivityId } doReturn activityId
             on { this.processDefinitionId } doReturn processDefinitionId
+            on { this.processInstanceId } doReturn UUID.randomUUID().toString()
             on { this.businessKey } doReturn businessKey
             on { this.processBusinessKey } doReturn businessKey  // Used by findParentBuildingBlockInstance
             on { this.processInstance } doReturn processInstance

@@ -82,8 +82,8 @@ const catalogiApiPluginSpecification: PluginSpecification = {
       eigenschapTooltip: 'Naam van de aard van het eigenschaap.',
       eigenschapProcessVariableTooltip:
         'Nadat de eigenschap is opgehaald, wordt deze opgeslagen in een procesvariabele met deze naam.',
-      zaakTypeUrl: 'Zaaktype URL',
-      zaakTypeUrlTooltip:
+      zaaktypeUrl: 'Zaaktype URL',
+      zaaktypeUrlTooltip:
         'Specificeer hier de URL van het betreffende Zaaktype indien deze afwijkt van de aan het Dossier gekoppelde Zaak',
     },
     en: {
@@ -129,8 +129,8 @@ const catalogiApiPluginSpecification: PluginSpecification = {
       eigenschapTooltip: 'Name of the nature of the eigenschap.',
       eigenschapProcessVariableTooltip:
         'After the eigenschap is retrieved, it is stored in a process variable with this name.',
-      zaakTypeUrl: 'Zaaktype URL',
-      zaakTypeUrlTooltip:
+      zaaktypeUrl: 'Zaaktype URL',
+      zaaktypeUrlTooltip:
         'Specify the URL of the relevant Zaaktype here if it differs from the Zaak linked to the Case',
     },
   },

@@ -140,7 +140,9 @@
             "claim",
             "assign",
             "assignable",
-            "export"
+            "export",
+            "inspect",
+            "inspect_modify"
         ],
         "roleKey": "ROLE_ADMIN"
     }

@@ -44,6 +44,7 @@ export class FormDisplayConfigurationComponent implements OnInit, OnDestroy {
   public readonly disableFormSizeInput$ = new BehaviorSubject<boolean>(true);
   public readonly saving$ = this.stateService.saving$;
   public readonly isUserTask$ = new BehaviorSubject<boolean>(false);
+  public readonly isStartEvent$ = new BehaviorSubject<boolean>(false);
 
   private readonly _DISPLAY_TYPE_OPTIONS: FormDisplayType[] = ['modal', 'panel'];
   private readonly _FORM_SIZE_OPTIONS: FormSize[] = ['extraSmall', 'small', 'medium', 'large'];
@@ -88,15 +89,20 @@ export class FormDisplayConfigurationComponent implements OnInit, OnDestroy {
         this.stateService.selectedProcessLink$,
       ]).subscribe(([modalParams, selectedProcessLink]) => {
         this.isUserTask$.next(modalParams?.element?.type === 'bpmn:UserTask');
+        this.isStartEvent$.next(modalParams?.element?.type === 'bpmn:StartEvent');
 
         if (selectedProcessLink) {
           if (selectedProcessLink.formDisplayType) this.disableFormSizeInput$.next(false);
           if (selectedProcessLink.activityType.includes('bpmn:UserTask'))
             this.isUserTask$.next(true);
+          if (selectedProcessLink.activityType.includes('bpmn:StartEvent'))
+            this.isStartEvent$.next(true);
           this.formDisplayValue$.next(selectedProcessLink.formDisplayType ?? null);
           this.formSizeValue$.next(selectedProcessLink.formSize ?? null);
           this._subtitles$.next(selectedProcessLink.subtitles ?? []);
         }
+
+        if (this.isStartEvent$.getValue()) this.disableFormSizeInput$.next(false);
       })
     );
   }
@@ -136,12 +142,15 @@ export class FormDisplayConfigurationComponent implements OnInit, OnDestroy {
   }
 
   private enableSaveButtonWhenValid(): void {
-    if (
-      this.selectedFormDefinition &&
-      this.formDisplayValue$.getValue() &&
-      this.formSizeValue$.getValue()
-    )
-      this.buttonService.enableSaveButton();
+    // For start events only a form selection is required; the form size is optional and defaults
+    // to the configured default. User tasks additionally require a display type and form size.
+    const valid = this.isStartEvent$.getValue()
+      ? !!this.selectedFormDefinition
+      : !!this.selectedFormDefinition &&
+        !!this.formDisplayValue$.getValue() &&
+        !!this.formSizeValue$.getValue();
+
+    if (valid) this.buttonService.enableSaveButton();
     else this.buttonService.disableSaveButton();
   }
 }

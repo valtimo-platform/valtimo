@@ -23,6 +23,7 @@ import com.ritense.document.domain.impl.request.NewDocumentRequest
 import com.ritense.document.service.DocumentService
 import com.ritense.form.BaseIntegrationTest
 import com.ritense.form.domain.FormProcessLink
+import com.ritense.form.domain.FormSizes
 import com.ritense.form.domain.request.CreateFormDefinitionRequest
 import com.ritense.form.processlink.FormProcessLinkActivityHandler
 import com.ritense.form.service.impl.FormIoFormDefinitionService
@@ -79,7 +80,8 @@ internal class FormProcessLinkActivityHandlerIntTest : BaseIntegrationTest() {
             activityId = "some_activity_id",
             activityType = ActivityTypeWithEventName.START_EVENT_START,
             formDefinitionId = UUID.fromString(formDefinition.id?.toString()),
-            viewModelEnabled = false
+            viewModelEnabled = false,
+            formSize = FormSizes.large
         )
         runWithoutAuthorization {
             val result = formProcessLinkActivityHandler.getStartEventObject(
@@ -91,6 +93,7 @@ internal class FormProcessLinkActivityHandlerIntTest : BaseIntegrationTest() {
 
             assertEquals("form", result.type)
             assertEquals(formDefinition.id?.toString(), result.properties.formDefinitionId.toString())
+            assertEquals(FormSizes.large, result.properties.formSize)
             JSONAssert.assertEquals(
                 getForm(),
                 objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(result.properties.prefilledForm),

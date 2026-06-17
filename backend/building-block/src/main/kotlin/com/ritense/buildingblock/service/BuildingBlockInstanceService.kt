@@ -16,13 +16,19 @@
 
 package com.ritense.buildingblock.service
 
+import com.ritense.authorization.AuthorizationContext.Companion.runWithoutAuthorization
+import com.ritense.authorization.AuthorizationService
+import com.ritense.authorization.request.EntityAuthorizationRequest
 import com.ritense.buildingblock.domain.instance.BuildingBlockInstance
 import com.ritense.buildingblock.exception.UnknownBuildingBlockDefinitionException
 import com.ritense.buildingblock.exception.UnknownBuildingBlockInstanceException
 import com.ritense.buildingblock.repository.BuildingBlockDefinitionRepository
 import com.ritense.buildingblock.repository.BuildingBlockInstanceRepository
+import com.ritense.document.domain.impl.JsonSchemaDocument
+import com.ritense.document.domain.impl.JsonSchemaDocumentId
 import com.ritense.document.domain.impl.request.NewDocumentRequest
 import com.ritense.document.service.DocumentService
+import com.ritense.document.service.JsonSchemaDocumentActionProvider
 import com.ritense.valtimo.contract.buildingblock.BuildingBlockDefinitionId
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
@@ -33,7 +39,8 @@ import java.util.UUID
 class BuildingBlockInstanceService(
     private val buildingBlockInstanceRepository: BuildingBlockInstanceRepository,
     private val buildingBlockDefinitionRepository: BuildingBlockDefinitionRepository,
-    private val documentService: DocumentService
+    private val documentService: DocumentService,
+    private val authorizationService: AuthorizationService
 ) {
     @Transactional
     fun create(
@@ -104,6 +111,21 @@ class BuildingBlockInstanceService(
     @Transactional(readOnly = true)
     fun getByProcessInstanceId(processInstanceId: String): BuildingBlockInstance? {
         return buildingBlockInstanceRepository.findByProcessInstanceId(processInstanceId)
+    }
+
+    @Transactional(readOnly = true)
+    fun findAllByCaseDocumentId(caseDocumentId: UUID): List<BuildingBlockInstance> {
+        val document = runWithoutAuthorization {
+            documentService.findBy(JsonSchemaDocumentId.existingId(caseDocumentId)).orElseThrow()
+        } as JsonSchemaDocument
+        authorizationService.requirePermission(
+            EntityAuthorizationRequest(
+                JsonSchemaDocument::class.java,
+                JsonSchemaDocumentActionProvider.INSPECT,
+                document
+            )
+        )
+        return buildingBlockInstanceRepository.findAllByCaseDocumentId(caseDocumentId)
     }
 
     @Transactional(readOnly = true)

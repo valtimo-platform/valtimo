@@ -79,7 +79,11 @@ class FormProcessLinkActivityHandler(
             FORM_TASK_TYPE_KEY,
             null,
             null,
-            FormTaskOpenResultProperties(processLink.formDefinitionId, formDefinition.asJson())
+            FormTaskOpenResultProperties(
+                processLink.formDefinitionId,
+                formDefinition.asJson(),
+                formSize = processLink.formSize
+            )
         )
     }
 
