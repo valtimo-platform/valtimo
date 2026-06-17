@@ -50,11 +50,9 @@ import com.ritense.externalplugin.web.rest.ExternalPluginManagementResource
 import com.ritense.plugin.service.EncryptionService
 import com.ritense.valtimo.contract.endpoint.EndpointDescriptionProvider
 import com.ritense.valueresolver.ValueResolverService
-import org.springframework.beans.factory.ObjectProvider
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.boot.autoconfigure.domain.EntityScan
-import org.springframework.boot.info.BuildProperties
 import org.springframework.boot.web.client.RestTemplateBuilder
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
@@ -214,9 +212,11 @@ class ExternalPluginAutoConfiguration {
     @Bean
     @ConditionalOnMissingBean(GzacVersionProvider::class)
     fun gzacVersionProvider(
-        buildProperties: ObjectProvider<BuildProperties>,
         @Value("\${valtimo.external-plugin.gzac-version:}") versionOverride: String,
-    ): GzacVersionProvider = DefaultGzacVersionProvider(buildProperties, versionOverride)
+    ): GzacVersionProvider = DefaultGzacVersionProvider(
+        versionOverride,
+        DefaultGzacVersionProvider::class.java.`package`?.implementationVersion,
+    )
 
     @Bean
     @ConditionalOnMissingBean(GzacCompatibilityChecker::class)
