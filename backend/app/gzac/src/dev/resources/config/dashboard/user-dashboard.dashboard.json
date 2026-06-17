@@ -1,10 +1,11 @@
 {
-    "changesetId": "user-dashboard-v8",
+    "changesetId": "user-dashboard-v9",
     "dashboards": [
         {
             "key": "user-dashboard",
             "title": "My dashboard",
             "description": "Dashboard for ROLE_USER",
+            "widgetLayout": "BEAUTIFUL",
             "order": 1,
             "widgetConfigurations": [
                 {

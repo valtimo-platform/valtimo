@@ -81,6 +81,18 @@
         />
       </cds-label>
     </div>
+
+    <div class="form__element">
+      <v-select
+        formControlName="widgetLayout"
+        [items]="widgetLayoutSelectItems"
+        [dropUp]="false"
+        [appendInline]="false"
+        titleTranslationKey="widgetLayout.label"
+      ></v-select>
+    </div>
+
+    <valtimo-widget-layout-info></valtimo-widget-layout-info>
   </form>
 </ng-template>
 
