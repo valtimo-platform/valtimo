@@ -14,11 +14,6 @@
   with a `view` action ensures only users authorized for the matching zaaktype can load a zaak. See
   [Load a zaak in a form flow](../../../features/zgw/load-zaak-in-form-flow.md) for details.
 
-* **Task properties in value paths**
-
-  Task properties (`task:createTime`, `task:name`, `task:assignee`, `task:dueDate`, `task:assignedTeamTitle`) can now be
-  selected anywhere a value path is configured.
-
 ## Enhancements
 
 * **Configurable modal size for start forms**
@@ -40,10 +35,6 @@
   Input and output mappings on building block call activities can now reference nested paths in the case or building
   block document (e.g. `/person/name`), instead of only top-level properties.
 
-* **Task list columns: path picker**
-
-  The path field in the task list column modal is now a searchable dropdown instead of a free-text input.
-
 ## Bugfixes
 
 * **Empty building block mapping dropdowns**
@@ -61,11 +52,6 @@
   When a call activity to a building block was missing the required business key configuration, saving the
   process link failed with a confusing "No plugin configuration mapping provided" message. Valtimo now checks
   the call activity up front and shows a clear error that points to the missing business key configuration.
-
-* **Sortable controls hidden for non-sortable paths**
-
-  In the case and task list column editors, the **Sortable** checkbox and **Default sort** dropdown are now hidden when
-  the configured path does not support sorting.
 
 ## Security
 
