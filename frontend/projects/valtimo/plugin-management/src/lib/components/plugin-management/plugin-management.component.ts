@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import {Component, OnDestroy, OnInit} from '@angular/core';
+import {AfterViewInit, Component, OnDestroy, OnInit, TemplateRef, ViewChild} from '@angular/core';
 import {ActivatedRoute, Router} from '@angular/router';
 import {TranslateService} from '@ngx-translate/core';
 import {ActionItem, CarbonTag, ColumnConfig, ViewType} from '@valtimo/components';
@@ -24,10 +24,14 @@ import {
   ExternalPluginHostCreateRequest,
   ExternalPluginService,
   getExternalPluginDisplayName,
+  isExternalPluginDefinitionIncompatible,
   PluginConfiguration,
   PluginManagementService,
   PluginTranslationService,
 } from '@valtimo/plugin';
+import {IconService} from 'carbon-components-angular';
+import {Information16} from '@carbon/icons';
+import {buildExternalPluginCompatibilityMessage} from '../../utils';
 import {NGXLogger} from 'ngx-logger';
 import {BehaviorSubject, combineLatest, EMPTY, fromEvent, merge, Observable, of, Subject, timer} from 'rxjs';
 import {catchError, map, startWith, switchMap, take, takeUntil, tap} from 'rxjs/operators';
@@ -42,34 +46,22 @@ import {v4 as uuidv4} from 'uuid';
   templateUrl: './plugin-management.component.html',
   styleUrls: ['./plugin-management.component.scss'],
 })
-export class PluginManagementComponent implements OnInit, OnDestroy {
+export class PluginManagementComponent implements OnInit, AfterViewInit, OnDestroy {
   private readonly _destroy$ = new Subject<void>();
 
   public readonly selectedTabIndex$ = new BehaviorSubject<number>(0);
   private readonly _tabs = ['configurations', 'plugin-hosts'] as const;
+
+  /**
+   * Renders the plugin name and, for an external configuration whose plugin is incompatible with
+   * the running GZAC version, an "Incompatible" tag plus a Carbon info tooltip carrying the
+   * compatibility message.
+   */
+  @ViewChild('pluginNameColumnTemplate') private _pluginNameColumnTemplate!: TemplateRef<any>;
+
   // --- Configurations tab ---
-  public readonly fields: ColumnConfig[] = [
-    {
-      key: 'title',
-      label: 'pluginManagement.labels.configurationName',
-      viewType: ViewType.TEXT,
-    },
-    {
-      key: 'pluginName',
-      label: 'pluginManagement.labels.pluginName',
-      viewType: ViewType.TEXT,
-    },
-    {
-      key: 'definitionKey',
-      label: 'pluginManagement.labels.identifier',
-      viewType: ViewType.TEXT,
-    },
-    {
-      key: 'sourceLabel',
-      label: 'pluginManagement.labels.source',
-      viewType: ViewType.TAGS,
-    },
-  ];
+  // Populated in ngAfterViewInit so the plugin-name column can reference its content template.
+  public readonly fields$ = new BehaviorSubject<ColumnConfig[]>([]);
 
   public readonly actionItems: ActionItem[] = [
     {
@@ -124,6 +116,7 @@ export class PluginManagementComponent implements OnInit, OnDestroy {
             const lang = this._translateService.currentLang;
             const external: UnifiedPluginConfigurationRow[] = externalConfigurations.map(config => {
               const definition = externalDefinitions.find(d => d.id === config.definitionId);
+              const incompatible = isExternalPluginDefinitionIncompatible(definition);
               return {
                 id: config.id,
                 title: config.title,
@@ -132,6 +125,11 @@ export class PluginManagementComponent implements OnInit, OnDestroy {
                 source: 'external',
                 sourceLabel: this._translateService.instant('pluginManagement.source.external'),
                 externalDefinitionId: config.definitionId,
+                incompatible,
+                compatibilityMessage:
+                  incompatible && definition
+                    ? buildExternalPluginCompatibilityMessage(definition, this._translateService)
+                    : undefined,
               };
             });
 
@@ -267,8 +265,11 @@ export class PluginManagementComponent implements OnInit, OnDestroy {
     private readonly _translateService: TranslateService,
     private readonly _externalPluginService: ExternalPluginService,
     private readonly _route: ActivatedRoute,
-    private readonly _router: Router
-  ) {}
+    private readonly _router: Router,
+    private readonly _iconService: IconService
+  ) {
+    this._iconService.registerAll([Information16]);
+  }
 
   public ngOnInit(): void {
     this._route.queryParams.pipe(takeUntil(this._destroy$)).subscribe(params => {
@@ -278,6 +279,32 @@ export class PluginManagementComponent implements OnInit, OnDestroy {
         this.selectedTabIndex$.next(tabIndex);
       }
     });
+  }
+
+  public ngAfterViewInit(): void {
+    this.fields$.next([
+      {
+        key: 'title',
+        label: 'pluginManagement.labels.configurationName',
+        viewType: ViewType.TEXT,
+      },
+      {
+        key: 'pluginName',
+        label: 'pluginManagement.labels.pluginName',
+        viewType: ViewType.TEMPLATE,
+        template: this._pluginNameColumnTemplate,
+      },
+      {
+        key: 'definitionKey',
+        label: 'pluginManagement.labels.identifier',
+        viewType: ViewType.TEXT,
+      },
+      {
+        key: 'sourceLabel',
+        label: 'pluginManagement.labels.source',
+        viewType: ViewType.TAGS,
+      },
+    ]);
   }
 
   public ngOnDestroy(): void {

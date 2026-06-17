@@ -17,13 +17,15 @@
 import {Component, EventEmitter, Input, OnDestroy, Output, ViewChild} from '@angular/core';
 import {PluginManagementStateService} from '../../services';
 import {map, take} from 'rxjs/operators';
-import {BehaviorSubject, Observable, Subscription} from 'rxjs';
+import {BehaviorSubject, combineLatest, Observable, Subscription} from 'rxjs';
 import {
   ExternalPluginDefinition,
   ExternalPluginGrantedEndpointEntry,
   ExternalPluginGrantedEventEntry,
   ExternalPluginEndpoint,
   ExternalPluginService,
+  extractExternalDefinitionId,
+  isExternalPluginDefinitionIncompatible,
   isExternalPluginKey,
   PluginConfigurationData,
   PluginManagementService,
@@ -32,6 +34,7 @@ import {PluginExternalConfigureComponent} from '../plugin-external-configure/plu
 import {NGXLogger} from 'ngx-logger';
 import {CARBON_CONSTANTS} from '@valtimo/components';
 import {TranslateService} from '@ngx-translate/core';
+import {buildExternalPluginCompatibilityMessage} from '../../utils';
 
 @Component({
   standalone: false,
@@ -41,7 +44,13 @@ import {TranslateService} from '@ngx-translate/core';
 })
 export class PluginAddModalComponent implements OnDestroy {
   @Input() public open = false;
-  @Input() public externalDefinitions: ExternalPluginDefinition[] | null = null;
+  @Input() public set externalDefinitions(value: ExternalPluginDefinition[] | null) {
+    this._externalDefinitions = value;
+    this._externalDefinitions$.next(value ?? []);
+  }
+  public get externalDefinitions(): ExternalPluginDefinition[] | null {
+    return this._externalDefinitions;
+  }
 
   @Output() public closeModal = new EventEmitter<boolean>();
 
@@ -49,8 +58,29 @@ export class PluginAddModalComponent implements OnDestroy {
   public readonly selectedPluginDefinition$ = this._stateService.selectedPluginDefinition$;
   public readonly configurationValid$ = new BehaviorSubject<boolean>(false);
 
+  private _externalDefinitions: ExternalPluginDefinition[] | null = null;
+  private readonly _externalDefinitions$ = new BehaviorSubject<ExternalPluginDefinition[]>([]);
+
   public readonly isExternalPlugin$: Observable<boolean> = this.selectedPluginDefinition$.pipe(
     map(def => isExternalPluginKey(def?.key))
+  );
+
+  /**
+   * The localized compatibility warning to show on the configure step, or null when the selected
+   * plugin is embedded, compatible, or not yet chosen. Recomputed on language change so the message
+   * stays localized.
+   */
+  public readonly incompatibleWarning$: Observable<string | null> = combineLatest([
+    this.selectedPluginDefinition$,
+    this._externalDefinitions$,
+    this._translateService.stream('key'),
+  ]).pipe(
+    map(([selected, definitions]) => {
+      if (!selected || !isExternalPluginKey(selected.key)) return null;
+      const definition = definitions.find(d => d.id === extractExternalDefinitionId(selected.key));
+      if (!isExternalPluginDefinitionIncompatible(definition)) return null;
+      return buildExternalPluginCompatibilityMessage(definition!, this._translateService);
+    })
   );
 
   public readonly endpoints$ = new BehaviorSubject<

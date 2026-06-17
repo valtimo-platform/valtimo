@@ -46,9 +46,12 @@ import {
   LayerModule,
   LoadingModule,
   ModalModule as CarbonModalModule,
+  NotificationModule,
   ProgressIndicatorModule,
   TabsModule,
+  TagModule,
   TilesModule,
+  TooltipModule,
 } from 'carbon-components-angular';
 
 @NgModule({
@@ -76,6 +79,9 @@ import {
     CarbonListModule,
     CarbonModalModule,
     IconModule,
+    NotificationModule,
+    TagModule,
+    TooltipModule,
     ValtimoCdsModalDirective,
     LayerModule,
     TilesModule,

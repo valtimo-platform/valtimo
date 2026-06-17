@@ -18,6 +18,10 @@ package com.ritense.externalplugin.autoconfigure
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.ritense.externalplugin.client.ExternalPluginHostClient
+import com.ritense.externalplugin.compatibility.DefaultGzacVersionProvider
+import com.ritense.externalplugin.compatibility.GzacCompatibilityChecker
+import com.ritense.externalplugin.compatibility.GzacVersionProvider
+import com.ritense.externalplugin.compatibility.PluginPackageInspector
 import com.ritense.externalplugin.endpoint.ExternalPluginEndpointDescriptionProvider
 import com.ritense.externalplugin.processlink.ExternalPluginProcessLinkMapper
 import com.ritense.externalplugin.processlink.ExternalPluginServiceTaskStartListener
@@ -206,6 +210,24 @@ class ExternalPluginAutoConfiguration {
     ) = EndpointDescriptionService(providers)
 
     @Bean
+    @ConditionalOnMissingBean(GzacVersionProvider::class)
+    fun gzacVersionProvider(
+        @Value("\${valtimo.external-plugin.gzac-version:}") versionOverride: String,
+    ): GzacVersionProvider = DefaultGzacVersionProvider(
+        versionOverride,
+        DefaultGzacVersionProvider::class.java.`package`?.implementationVersion,
+    )
+
+    @Bean
+    @ConditionalOnMissingBean(GzacCompatibilityChecker::class)
+    fun gzacCompatibilityChecker(versionProvider: GzacVersionProvider) =
+        GzacCompatibilityChecker(versionProvider)
+
+    @Bean
+    @ConditionalOnMissingBean(PluginPackageInspector::class)
+    fun pluginPackageInspector(objectMapper: ObjectMapper) = PluginPackageInspector(objectMapper)
+
+    @Bean
     @ConditionalOnMissingBean(ExternalPluginManagementResource::class)
     fun externalPluginManagementResource(
         hostService: ExternalPluginHostService,
@@ -214,6 +236,9 @@ class ExternalPluginAutoConfiguration {
         endpointDescriptionService: EndpointDescriptionService,
         discoveryService: ExternalPluginDiscoveryService,
         environment: org.springframework.core.env.Environment,
+        compatibilityChecker: GzacCompatibilityChecker,
+        pluginPackageInspector: PluginPackageInspector,
+        objectMapper: ObjectMapper,
     ) = ExternalPluginManagementResource(
         hostService,
         definitionService,
@@ -221,6 +246,9 @@ class ExternalPluginAutoConfiguration {
         endpointDescriptionService,
         discoveryService,
         environment,
+        compatibilityChecker,
+        pluginPackageInspector,
+        objectMapper,
     )
 
     @Bean

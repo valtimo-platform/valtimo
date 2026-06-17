@@ -36,6 +36,12 @@ interface UnifiedPluginConfigurationRow {
   properties?: object;
   pluginDefinition?: {key: string};
   externalDefinitionId?: string;
+  /**
+   * Set on external rows whose plugin definition is incompatible with the running GZAC version.
+   * Drives the "Incompatible" tag and its tooltip ([compatibilityMessage]) in the table.
+   */
+  incompatible?: boolean;
+  compatibilityMessage?: string;
 }
 
 export {PluginConfigurationSource, UnifiedPluginDefinition, UnifiedPluginConfigurationRow};
