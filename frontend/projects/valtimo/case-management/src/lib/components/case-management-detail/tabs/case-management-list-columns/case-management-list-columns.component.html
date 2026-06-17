@@ -308,6 +308,17 @@
       >
         <cds-dropdown-list [items]="(sortItems$ | async) || []"></cds-dropdown-list>
       </cds-dropdown>
+
+      <cds-inline-notification
+        *ngIf="modalObs.disableDefaultSort && !modalObs.disableInput && !modalObs.showTagAmount"
+        [notificationObj]="{
+          type: 'info',
+          title: '',
+          message: ('listColumn.defaultSortDisabledNotice' | translate),
+          showClose: false,
+          lowContrast: true
+        }"
+      ></cds-inline-notification>
     </cds-label>
 
     <cds-label *ngIf="displayExportButton">

@@ -503,7 +503,7 @@ export class CaseManagementListColumnsComponent implements AfterViewInit, OnDest
   }
 
   private addColumn(): void {
-    const formValue = this.formGroup.value;
+    const formValue = this.formGroup.getRawValue();
 
     this.params$.pipe(take(1)).subscribe(params => {
       this.documentService
@@ -521,7 +521,7 @@ export class CaseManagementListColumnsComponent implements AfterViewInit, OnDest
   }
 
   private updateColumn(): void {
-    const updatedColumnFormValue = this.formGroup.value;
+    const updatedColumnFormValue = this.formGroup.getRawValue();
     const mappedUpdatedColumn = this.mapFormValuesToColumn(updatedColumnFormValue);
     const currentColumns = this.cachedCaseListColumns;
     const mappedCurrentColumns = currentColumns.map(column => {
