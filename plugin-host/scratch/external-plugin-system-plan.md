@@ -81,8 +81,12 @@ callbacks.
 
 **3.2 Token (`service/ExternalPluginServiceTokenService.kt`)** — HS256 JWT:
 `sub=external-plugin:{pluginId}:{configId}`, `type=external_plugin_service`, `plugin_config_id`,
-`plugin_id`, `plugin_version`, `iss=valtimo-gzac`, `exp=now+24h`. **No roles.** Signed with
+`plugin_id`, `plugin_version`, `iss=valtimo-gzac`, `exp=now+ttl`. **No roles.** Signed with
 `SHA-256(valtimo.plugin.encryption-secret)` — see `security/ExternalPluginServiceTokenKeyProvider.kt`.
+The lifetime `ttl` is the `valtimo.external-plugin.service-token.ttl` property — a Spring duration
+(ISO-8601 `PT24H` or the `24h` shorthand), defaulting to 24h — parsed in the autoconfiguration
+(`DurationStyle.detectAndParse`) and handed to the service; the service itself falls back to 24h
+when constructed without one.
 
 **3.3 Recognition (`security/ExternalPluginServiceTokenFilter.kt`)** — registered **before**
 `BearerTokenAuthenticationFilter` (`security/ExternalPluginCallbackHttpSecurityConfigurer.kt`,
@@ -107,10 +111,13 @@ service tokens — the allowlist is the sole gate).
 token is passed via Extism `hostContext`, never serialised into the Wasm input — plugin code never
 sees it. This is the same mechanism for both action handlers and event handlers.
 
-**3.6 Token lifecycle** — 24h TTL, **no separate refresh loop**. Each healthy discovery poll
-re-pushes every configuration with a freshly issued token
+**3.6 Token lifecycle** — operator-tunable TTL (`valtimo.external-plugin.service-token.ttl`,
+default 24h, §3.2), **no separate refresh loop**. Each healthy discovery poll re-pushes every
+configuration with a freshly issued token
 (`service/ExternalPluginDiscoveryService.syncConfigurations()`), continuously replacing tokens
-well inside their lifetime.
+well inside their lifetime. That poll *is* the refresh mechanism (default 60s,
+`valtimo.external-plugin.polling.rate`), so a tuned TTL must stay comfortably above the poll
+interval or a token can lapse between pushes.
 
 **3.7 Caveat** — service tokens bypass PBAC, so the allowlist is the entire authorization surface;
 an over-broad grant (`/api/v1/**`) gives broad role-free access. Hence the activation-time
@@ -684,7 +691,6 @@ through the user-token path.
 - Host database for KV / API logs / retention.
 - URL-plugin mode.
 - Event delivery durability across host downtime (currently live-subscription only).
-- Configurable service-token TTL (hardcoded 24h in `ExternalPluginServiceTokenService`).
 
 ## 15. Roadmap (priority order)
 
@@ -707,8 +713,8 @@ through the user-token path.
 - Host `tsc` build and `@valtimo/plugin-sdk` build: clean (including the optional-TLS
   `buildHttpsOptions` wiring in `plugin-host/app/src/index.ts`).
 - Backend `:backend:external-plugin:test`: BUILD SUCCESSFUL (allowlist + service-token-filter +
-  endpoint-description-provider + host-client-HMAC + host-registration transport-guard + compatibility
-  tests). The host-client-HMAC suite (`client/ExternalPluginHostClientHmacTest`) asserts
+  service-token-ttl + endpoint-description-provider + host-client-HMAC + host-registration
+  transport-guard + compatibility tests). The host-client-HMAC suite (`client/ExternalPluginHostClientHmacTest`) asserts
   `pushConfiguration` (body-bound), `deleteConfiguration` / `listPlugins` (empty-body), and
   `uploadPlugin` (file-byte-bound) each send `X-Valtimo-Signature` + `X-Valtimo-Timestamp` and **no**
   `Authorization` header, with the signature recomputed from an independent JDK HMAC oracle. The
@@ -722,7 +728,9 @@ through the user-token path.
   manifest version, `null` otherwise), the zip manifest peek (root-entry wins, missing/blank/garbage →
   no gate), and the upload
   endpoint's 409-unless-forced gate (an incompatible package is rejected and never forwarded to the
-  host; a forced upload, a compatible package, and an undeclared package each go through).
+  host; a forced upload, a compatible package, and an undeclared package each go through). The
+  service-token suite (`service/ExternalPluginServiceTokenServiceTest`) asserts the issued JWT's
+  `exp − iat` equals the configured TTL and falls back to 24h when none is set.
 - Backend `:backend:app:gzac:compileKotlin`: BUILD SUCCESSFUL.
 - Frontend `ng build` (production): clean.
 - Sample plugin `build:pack`: clean (Wasm + pack including `logo.svg`, `translations.en/nl`,
