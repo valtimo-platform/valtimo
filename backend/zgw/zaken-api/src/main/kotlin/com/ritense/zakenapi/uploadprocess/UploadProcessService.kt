@@ -37,7 +37,7 @@ class UploadProcessService(
 ) {
 
     fun startUploadResourceProcess(documentId: String, resourceId: String) {
-        val caseDocumentId = caseDocumentResolver.resolveCaseDocumentId(UUID.fromString(documentId))
+        val caseDocumentId = runWithoutAuthorization { caseDocumentResolver.resolveCaseDocumentId(UUID.fromString(documentId)) }
         val caseDefinitionId = runWithoutAuthorization { documentService.get(caseDocumentId.toString()) }.definitionId().caseDefinitionId()
         val link = caseDefinitionProcessLinkService.getDocumentDefinitionProcessLink(caseDefinitionId, DOCUMENT_UPLOAD)
             ?: throw IllegalStateException("No upload-process linked to case: $caseDefinitionId")
