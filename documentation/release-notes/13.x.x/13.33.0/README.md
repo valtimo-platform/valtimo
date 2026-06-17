@@ -30,10 +30,6 @@
 
 ## Bugfixes
 
-* **Form flows in draft case definitions could not be edited**
-
-  Form flows in a draft case definition were incorrectly shown as read-only and can now be edited.
-
 * **Empty building block mapping dropdowns**
 
   Existing input and output mappings on a building block process link sometimes showed up with empty dropdowns. This
