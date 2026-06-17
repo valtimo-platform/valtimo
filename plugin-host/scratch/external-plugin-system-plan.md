@@ -568,11 +568,16 @@ Both bounds are optional and inclusive. GZAC compares the range against its own 
   warning.
 - *Running version* (`compatibility/DefaultGzacVersionProvider.kt`, behind the `GzacVersionProvider`
   fun-interface) resolves in precedence order: (1) the `valtimo.external-plugin.gzac-version`
-  property (operator override, useful in tests or when build metadata is absent/wrong), (2) Spring
-  `BuildProperties.version` — the canonical source, present for both `bootRun` and packaged
-  artifacts because `backend/app/gzac/build.gradle` enables `springBoot { buildInfo() }`, (3) the jar
-  manifest implementation version. `null` when none resolve, which the comparator treats as "cannot
-  judge".
+  property (operator override, useful in tests or when the build metadata is absent/wrong), (2) the
+  Valtimo library version — the `Implementation-Version` stamped on every Valtimo module's jar
+  manifest (`backend/build.gradle` sets it to `projectVersion` for all subprojects). This is the
+  canonical source because a plugin's `compatibility` range targets the Valtimo *platform*, not the
+  wrapping application: it is the same value the UI sidebar shows for the backend (read by
+  `com.ritense.valtimo.web.rest.VersionResource` off a core-module class) and stays correct even when
+  Valtimo is embedded in a downstream app whose own build version differs. The autoconfiguration
+  reads it from `DefaultGzacVersionProvider`'s own package, which carries that manifest version.
+  `null` when neither resolves (e.g. a dev run from class directories with no jar manifest), which the
+  comparator treats as "cannot judge".
 
 Two places run it:
 
@@ -713,8 +718,9 @@ through the user-token path.
   (`compatibility/GzacCompatibilityCheckerTest`, `compatibility/DefaultGzacVersionProviderTest`,
   `compatibility/PluginPackageInspectorTest`, `web/rest/ExternalPluginUploadCompatibilityTest`)
   asserts the semver range comparison (below-minimum, above-maximum, open bounds, and
-  unparseable/unknown-version leniency), the version-provider precedence (override → build-info → jar
-  manifest), the zip manifest peek (root-entry wins, missing/blank/garbage → no gate), and the upload
+  unparseable/unknown-version leniency), the version-provider precedence (override → Valtimo library
+  manifest version, `null` otherwise), the zip manifest peek (root-entry wins, missing/blank/garbage →
+  no gate), and the upload
   endpoint's 409-unless-forced gate (an incompatible package is rejected and never forwarded to the
   host; a forced upload, a compatible package, and an undeclared package each go through).
 - Backend `:backend:app:gzac:compileKotlin`: BUILD SUCCESSFUL.

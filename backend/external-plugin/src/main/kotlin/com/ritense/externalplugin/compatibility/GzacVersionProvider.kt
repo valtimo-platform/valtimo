@@ -18,9 +18,12 @@ package com.ritense.externalplugin.compatibility
 
 /**
  * Resolves the version of the running GZAC instance, used to judge whether an external plugin's
- * declared `compatibility` range covers this deployment. Returns `null` when the version cannot be
- * determined (e.g. an unpackaged dev run with no build metadata); callers treat an unknown version
- * as "cannot judge" rather than raising a false incompatibility warning.
+ * declared `compatibility` range covers this deployment. A plugin's range targets the Valtimo
+ * *platform*, so the resolved version is the Valtimo library version (not the wrapping
+ * application's build version) — the same value the UI sidebar shows for the backend. Returns
+ * `null` when the version cannot be determined (e.g. an unpackaged dev run with no jar manifest or
+ * build metadata); callers treat an unknown version as "cannot judge" rather than raising a false
+ * incompatibility warning.
  */
 fun interface GzacVersionProvider {
     fun getCurrentVersion(): String?
