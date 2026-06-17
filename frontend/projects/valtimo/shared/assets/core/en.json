@@ -2225,6 +2225,16 @@
         "BUILDING_BLOCK": "Building block",
         "GLOBAL": "Global"
       }
+    },
+    "compatibility": {
+      "incompatibleTag": "Incompatible",
+      "warningTitle": "Possible compatibility issue",
+      "uploadWarningTitle": "Upload an incompatible plugin?",
+      "uploadAnyway": "Upload anyway",
+      "intro": "Your GZAC version might be incompatible with this plugin.",
+      "current": "You're currently running {{current}}.",
+      "minimum": "Minimum compatible version: {{min}}.",
+      "maximum": "Maximum compatible version: {{max}}."
     }
   },
   "customerCases": {

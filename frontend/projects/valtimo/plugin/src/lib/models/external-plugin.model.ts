@@ -88,7 +88,26 @@ interface ExternalPluginDefinition {
   status: ExternalPluginDefinitionStatus;
   configurationSchema: unknown | null;
   manifest: ExternalPluginManifest | null;
+  /**
+   * Declared GZAC compatibility bounds (from the manifest) and the resolved outcome of comparing
+   * them against the running GZAC version. `compatible` is `false` only when the running version
+   * falls outside the declared range; it stays `true` when the plugin fits, declares no bounds, or
+   * the running version could not be determined. The management UI surfaces a non-blocking warning
+   * when `compatible` is `false`. `currentGzacVersion` is the version the check used (null if
+   * undeterminable).
+   */
+  minGzacVersion: string | null;
+  maxGzacVersion: string | null;
+  currentGzacVersion: string | null;
+  compatible: boolean;
   logoUrl: string | null;
+}
+
+/** The subset of compatibility fields needed to render a warning message. */
+interface ExternalPluginCompatibilityInfo {
+  minGzacVersion: string | null;
+  maxGzacVersion: string | null;
+  currentGzacVersion: string | null;
 }
 
 interface ExternalPluginConfiguration {
@@ -240,6 +259,17 @@ function getExternalPluginDisplayName(definition: ExternalPluginDefinition, lang
   return `${getExternalPluginName(definition, lang)} (${definition.version})`;
 }
 
+/**
+ * Whether the running GZAC version falls outside the plugin's declared compatibility range. Returns
+ * `false` for a compatible plugin, a plugin without bounds, or when the version could not be judged
+ * (the backend reports `compatible: true` in all of those cases).
+ */
+function isExternalPluginDefinitionIncompatible(
+  definition: ExternalPluginDefinition | null | undefined
+): boolean {
+  return definition?.compatible === false;
+}
+
 export {
   EXTERNAL_PLUGIN_KEY_PREFIX,
   ExternalPluginAction,
@@ -248,6 +278,7 @@ export {
   ExternalPluginEndpoint,
   ExternalPluginPermissions,
   ExternalPluginManifest,
+  ExternalPluginCompatibilityInfo,
   ExternalPluginHostStatus,
   ExternalPluginDefinitionStatus,
   ExternalPluginHost,
@@ -272,4 +303,5 @@ export {
   getExternalPluginName,
   getExternalPluginDescription,
   getExternalPluginDisplayName,
+  isExternalPluginDefinitionIncompatible,
 };

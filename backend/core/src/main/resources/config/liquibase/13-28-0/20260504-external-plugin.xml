@@ -145,6 +145,10 @@
             </column>
         </createTable>
 
+        <addUniqueConstraint tableName="external_plugin_granted_endpoint"
+                             columnNames="configuration_id, http_method, endpoint_pattern"
+                             constraintName="ext_plugin_granted_ep_config_method_pattern_uq"/>
+
         <addForeignKeyConstraint baseTableName="external_plugin_granted_endpoint"
                                  baseColumnNames="configuration_id"
                                  referencedTableName="external_plugin_configuration"
@@ -167,6 +171,10 @@
                 <constraints nullable="false"/>
             </column>
         </createTable>
+
+        <addUniqueConstraint tableName="external_plugin_granted_event"
+                             columnNames="configuration_id, event_type"
+                             constraintName="ext_plugin_granted_evt_config_event_type_uq"/>
 
         <addForeignKeyConstraint baseTableName="external_plugin_granted_event"
                                  baseColumnNames="configuration_id"

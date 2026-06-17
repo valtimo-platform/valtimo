@@ -68,3 +68,13 @@
     </button>
   </cds-modal-footer>
 </cds-modal>
+
+<valtimo-confirmation-modal
+  [showModalSubject$]="_compatibilityModalOpen$"
+  [titleTranslationKey]="'pluginManagement.compatibility.uploadWarningTitle'"
+  [content]="_$compatibilityWarning()"
+  [confirmButtonTextTranslationKey]="'pluginManagement.compatibility.uploadAnyway'"
+  [cancelButtonTextTranslationKey]="'interface.cancel'"
+  (confirmEvent)="onConfirmIncompatibleUpload()"
+  (cancelEvent)="onCancelIncompatibleUpload()"
+></valtimo-confirmation-modal>

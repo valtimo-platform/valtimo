@@ -24,6 +24,7 @@ import com.ritense.objectmanagement.repository.ObjectManagementRepository
 import com.ritense.objectmanagement.service.ObjectManagementService
 import com.ritense.plugin.service.PluginService
 import com.ritense.valtimo.contract.case_.CaseDefinitionChecker
+import com.ritense.zaakdetails.endpoint.ZaakDetailsEndpointDescriptionProvider
 import com.ritense.zaakdetails.documentobjectenapisync.DocumentObjectenApiSyncCaseEventListener
 import com.ritense.zaakdetails.documentobjectenapisync.DocumentObjectenApiSyncExporter
 import com.ritense.zaakdetails.documentobjectenapisync.DocumentObjectenApiSyncImporter
@@ -32,7 +33,6 @@ import com.ritense.zaakdetails.documentobjectenapisync.DocumentObjectenApiSyncMa
 import com.ritense.zaakdetails.documentobjectenapisync.DocumentObjectenApiSyncRepository
 import com.ritense.zaakdetails.documentobjectenapisync.DocumentObjectenApiSyncService
 import com.ritense.zaakdetails.documentobjectenapisync.listener.DocumentObjectenApiSyncConfigurationIssueListener
-import com.ritense.zaakdetails.endpoint.ZaakDetailsEndpointDescriptionProvider
 import com.ritense.zaakdetails.repository.ZaakdetailsObjectRepository
 import com.ritense.zaakdetails.security.ZaakDetailsHttpSecurityConfigurer
 import com.ritense.zaakdetails.service.CaseZaakdetailsInspectionService

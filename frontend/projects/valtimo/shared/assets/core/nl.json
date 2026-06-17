@@ -2252,6 +2252,16 @@
         "BUILDING_BLOCK": "Bouwblok",
         "GLOBAL": "Globaal"
       }
+    },
+    "compatibility": {
+      "incompatibleTag": "Incompatibel",
+      "warningTitle": "Mogelijk compatibiliteitsprobleem",
+      "uploadWarningTitle": "Een incompatibele plugin uploaden?",
+      "uploadAnyway": "Toch uploaden",
+      "intro": "Jouw GZAC-versie is mogelijk incompatibel met deze plugin.",
+      "current": "Je gebruikt momenteel {{current}}.",
+      "minimum": "Minimaal compatibele versie: {{min}}.",
+      "maximum": "Maximaal compatibele versie: {{max}}."
     }
   },
   "customerCases": {

@@ -32,7 +32,7 @@
         [actionItems]="actionItems"
         [loading]="obs.loading"
         [items]="obs.pluginConfigurations"
-        [fields]="fields"
+        [fields]="fields$ | async"
         [header]="false"
         (rowClicked)="editConfiguration($event)"
       >
@@ -213,3 +213,29 @@
   [usages]="usageModalUsages$ | async"
   (closeEvent)="closeUsageModal()"
 ></valtimo-plugin-usage-modal>
+
+<ng-template #pluginNameColumnTemplate let-data="data">
+  <div class="plugin-management__plugin-name">
+    <span>{{ data?.item?.pluginName }}</span>
+
+    @if (data?.item?.incompatible) {
+      <cds-tag
+        type="red"
+        size="sm"
+        (click)="$event.stopPropagation()"
+      >
+        {{ 'pluginManagement.compatibility.incompatibleTag' | translate }}
+      </cds-tag>
+
+      <cds-tooltip
+        [align]="'top'"
+        [caret]="true"
+        [description]="data.item.compatibilityMessage"
+        class="plugin-management__incompatible-tooltip"
+        (click)="$event.stopPropagation()"
+      >
+        <svg cdsIcon="information" size="16"></svg>
+      </cds-tooltip>
+    }
+  </div>
+</ng-template>
