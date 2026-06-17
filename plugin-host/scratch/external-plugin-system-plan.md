@@ -374,13 +374,17 @@ On boot the host calls `eventConsumerManager.sync()` which re-opens consumers fo
 that still carries an `eventBroker.amqpUrl`. Expect a `"Broker consumer started"` log line at
 startup if any persisted configs reference a broker, even before GZAC sends a fresh push.
 
-**No standalone reconnect loop** (⚠️ production durability gap): if a broker connection drops, the
-`BrokerConsumer` removes itself from the manager and is only recreated on the next config push that
-triggers `sync()`. In-flight messages are redelivered (`noAck:false`), but a broker outage with no
-subsequent push leaves the host with no consumer until the next push or a host restart. Combined
-with the auto-delete live-subscription queue (§8.4), a host that loses its connection silently
-stops receiving events. The code comment is explicit: "No standalone reconnect loop — config
-pushes drive re-sync."
+**Self-healing reconnect.** Once `BrokerConsumer.start()` has succeeded the consumer owns its own
+reconnect loop: an unexpected `close` on the AMQP connection schedules a backed-off reconnect
+(`1s, 2s, 4s, …`, capped at 30s with 50–100 % jitter) and the consumer stays in the manager's map
+across the gap, so delivery resumes without a configuration push or host restart. A successful
+reconnect resets the backoff and re-asserts the exchange, queue, binding, and `consume`. The loop
+terminates only on intentional close — when the manager's `sync()` removes a broker that is no
+longer referenced by any configuration, or when the host shuts down. The initial `start()` call
+keeps its strict contract: if connecting to a broker that has *never* worked fails, the consumer is
+left out of the map and the next `sync()` retries — only post-success drops are self-healed. The
+auto-delete live-subscription queue (§8.4) is re-created on every reconnect, so events published
+during a disconnected window are still not retained for the host.
 
 ### 8.4 Dispatch & multi-host topologies
 
@@ -680,8 +684,6 @@ through the user-token path.
 - Host database for KV / API logs / retention.
 - URL-plugin mode.
 - Event delivery durability across host downtime (currently live-subscription only).
-- RabbitMQ consumer auto-reconnect on the host (currently reconnection happens only when the next
-  config push triggers `sync()` — §8.3).
 - Configurable service-token TTL (hardcoded 24h in `ExternalPluginServiceTokenService`).
 
 ## 15. Roadmap (priority order)
@@ -757,3 +759,8 @@ through the user-token path.
   `variables` applied to the execution, and the 4xx→`BpmnError` path) is not verified end-to-end; the
   HMAC handshake is confirmed coherent by code reading (§3.9), but an end-to-end action run is not in
   the record.
+- The **broker self-healing reconnect** (§8.3) — kill the broker container under a connected host,
+  observe `"Broker connection closed; scheduling reconnect"` log lines with growing backoff, bring
+  the broker back, observe `"Broker consumer reconnected"`, and confirm events published after the
+  reconnect are delivered to the plugin — is confirmed by code reading and a clean `tsc`, not by a
+  live broker-drop test.
