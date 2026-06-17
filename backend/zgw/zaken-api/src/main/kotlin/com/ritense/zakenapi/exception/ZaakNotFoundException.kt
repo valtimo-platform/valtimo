@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,10 +14,6 @@
  * limitations under the License.
  */
 
-import {Versions} from '../models';
+package com.ritense.zakenapi.exception
 
-const VERSIONS: Versions = {
-  frontendLibraries: '12.38.0',
-};
-
-export {VERSIONS};
+class ZaakNotFoundException(message: String) : RuntimeException(message)

@@ -1,0 +1,18 @@
+{
+    "changesetId": "zaken-v1",
+    "permissions": [
+        {
+            "resourceType": "com.ritense.zakenapi.security.Zaak",
+            "action": "view",
+            "roleKey": "ROLE_ADMIN",
+            "conditions": [
+                {
+                    "type": "field",
+                    "field": "zaaktype",
+                    "operator": "==",
+                    "value": "http://localhost:8001/catalogi/api/v1/zaaktypen/744ca059-f412-49d4-8963-5800e4afd486"
+                }
+            ]
+        }
+    ]
+}

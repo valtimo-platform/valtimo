@@ -22,6 +22,7 @@ import com.ritense.catalogiapi.service.CatalogiService
 import com.ritense.catalogiapi.service.ZaaktypeUrlProvider
 import com.ritense.documentenapi.service.DocumentenApiService
 import com.ritense.documentenapi.service.DocumentenApiVersionService
+import com.ritense.formflow.expression.FormFlowBean
 import com.ritense.outbox.OutboxService
 import com.ritense.plugin.service.PluginService
 import com.ritense.processdocument.service.ProcessDocumentAssociationService
@@ -33,6 +34,7 @@ import com.ritense.valueresolver.ValueResolverService
 import com.ritense.zakenapi.ZaakUrlProvider
 import com.ritense.zakenapi.ZakenApiPluginFactory
 import com.ritense.zakenapi.client.ZakenApiClient
+import com.ritense.zakenapi.formflow.ZakenFormFlow
 import com.ritense.zakenapi.link.ZaakInstanceLinkService
 import com.ritense.zakenapi.provider.BsnProvider
 import com.ritense.zakenapi.provider.DefaultZaakUrlProvider
@@ -46,11 +48,14 @@ import com.ritense.zakenapi.repository.ZaakTypeLinkRepository
 import com.ritense.zakenapi.resolver.ZaakResultaatValueResolverFactory
 import com.ritense.zakenapi.resolver.ZaakStatusValueResolverFactory
 import com.ritense.zakenapi.resolver.ZaakValueResolverFactory
+import com.ritense.zakenapi.security.ZaakActionProvider
+import com.ritense.zakenapi.security.ZaakSpecificationFactory
 import com.ritense.zakenapi.security.ZakenApiHttpSecurityConfigurer
 import com.ritense.zakenapi.service.DefaultZaakTypeLinkService
 import com.ritense.zakenapi.service.DocumentMetadataAvailableEventListener
 import com.ritense.zakenapi.service.UploadProcessDelegate
 import com.ritense.zakenapi.service.ZaakDocumentService
+import com.ritense.zakenapi.service.ZaakService
 import com.ritense.zakenapi.service.ZaakTypeLinkService
 import com.ritense.zakenapi.service.ZakenApiDocumentDeletedEventListener
 import com.ritense.zakenapi.service.ZakenApiEventListener
@@ -60,6 +65,7 @@ import com.ritense.zakenapi.web.rest.ZaakDocumentResource
 import kotlin.contracts.ExperimentalContracts
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.autoconfigure.AutoConfiguration
+import org.springframework.boot.autoconfigure.condition.ConditionalOnClass
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.boot.autoconfigure.domain.EntityScan
 import org.springframework.context.ApplicationEventPublisher
@@ -294,4 +300,30 @@ class ZakenApiAutoConfiguration {
         zaakDocumentService,
         pluginService
     )
+
+    @Bean
+    @ConditionalOnMissingBean(ZaakSpecificationFactory::class)
+    fun zaakSpecificationFactory(): ZaakSpecificationFactory {
+        return ZaakSpecificationFactory()
+    }
+
+    @Bean
+    @ConditionalOnMissingBean(ZaakActionProvider::class)
+    fun zaakActionProvider(): ZaakActionProvider {
+        return ZaakActionProvider()
+    }
+
+    @Bean("zakenApiZaakService")
+    @ConditionalOnMissingBean(ZaakService::class)
+    fun zaakService(
+        pluginService: PluginService,
+        authorizationService: AuthorizationService,
+    ): ZaakService {
+        return ZaakService(pluginService, authorizationService)
+    }
+
+    @Bean
+    @ConditionalOnClass(FormFlowBean::class) // Only registered when :form-flow is on the classpath
+    @ConditionalOnMissingBean(ZakenFormFlow::class)
+    fun zakenFormFlow(zaakService: ZaakService): ZakenFormFlow = ZakenFormFlow(zaakService)
 }

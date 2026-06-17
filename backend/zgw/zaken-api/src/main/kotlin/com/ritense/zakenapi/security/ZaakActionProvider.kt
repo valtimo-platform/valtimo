@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,10 +14,17 @@
  * limitations under the License.
  */
 
-import {Versions} from '../models';
+package com.ritense.zakenapi.security
 
-const VERSIONS: Versions = {
-  frontendLibraries: '12.38.0',
-};
+import com.ritense.authorization.Action
+import com.ritense.authorization.ResourceActionProvider
 
-export {VERSIONS};
+class ZaakActionProvider : ResourceActionProvider<Zaak> {
+    override fun getAvailableActions(): List<Action<Zaak>> {
+        return listOf(VIEW)
+    }
+
+    companion object {
+        val VIEW = Action<Zaak>("view")
+    }
+}
