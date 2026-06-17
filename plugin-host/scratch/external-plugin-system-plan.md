@@ -31,6 +31,7 @@ Status legend: ✅ implemented & verified · 🟡 implemented, POC-level · ⛔ 
 | Plugin assets (logo + i18n bundle in manifest, served by host) | `plugin-host/plugin-sdk/bin/valtimo-plugin-pack.mjs`, `plugin-host/app/src/routes/plugin-bundles.ts` | ✅ |
 | GZAC→host auth on **every** route (HMAC-SHA256, replay-protected, body-bound): actions, config-push, management | `client/ExternalPluginHostClient.kt` + `security/ExternalPluginHmacSigner.kt` ↔ `plugin-host/app/src/security/{hmac,hmac-auth}.ts`, `routes/{plugin-actions,host-configurations,host-management}.ts` | ✅ |
 | Transport confidentiality (TLS): host serves HTTPS from `TLS_*`; broker credentials confined to a confidential transport at host registration | `plugin-host/app/src/index.ts` (`buildHttpsOptions`) + `models/app-config.ts` ↔ `service/ExternalPluginHostService.isSecureTransport` | ✅ |
+| GZAC compatibility check (semver range vs running version): comparator + version provider + zip manifest peek; non-blocking UI warnings, upload confirm-gate | `backend/external-plugin/.../compatibility/*` + `web/rest/ExternalPluginManagementResource.kt#uploadPlugin` ↔ frontend `plugin-management/.../utils/external-plugin-compatibility.util.ts` | ✅ |
 
 Single-core-app model with **multiple hosts per instance**: the core app pushes each configuration
 directly to its host with a freshly issued service token, a `gzacBaseUrl` callback target taken
@@ -210,7 +211,9 @@ DDL lives in the **core** module's changelog, not the external-plugin module's o
   populated from the add-host UI; the two broker columns nullable for events-off / use-default-exchange).
 - `external_plugin_definition` — `UNIQUE(plugin_id, version)`, `config_schema`, `manifest_json`,
   `host_id`, `base_url`, `status`, plus `name`, `description`, `provider`, `min_gzac_version` /
-  `max_gzac_version` (stored, **not enforced at activation** — §11), `consecutive_misses`. The
+  `max_gzac_version` (populated at discovery from the manifest's `compatibility` block, compared
+  against the running GZAC version to surface a non-blocking compatibility warning — §11),
+  `consecutive_misses`. The
   manifest's declared `eventSubscriptions` live here (inside
   `manifest_json`), discovered from the host — but the authoritative subscription list for any
   given activated configuration is `external_plugin_granted_event` (next paragraph), not the
@@ -507,7 +510,7 @@ at pack-time and upload-time (§9).
 `/api/management/v1/external-plugin/host` and passes the origins into the initializer; without
 this, `<img src="http://plugin-host:8090/.../logo">` is blocked by `img-src 'self' data:`.
 
-## 11. Multi-version support 🟡 (coexistence ✅, in-place upgrade ⛔)
+## 11. Multi-version support & compatibility 🟡 (coexistence ✅, compatibility check ✅, in-place upgrade ⛔)
 
 **Why coexistence matters.** Once a case definition becomes *final*, its BPMN — including any
 service tasks bound to an external-plugin action — is immutable. A process link cannot then be
@@ -543,10 +546,63 @@ coexisting versions stay distinguishable:
 
 All four recompute on language change (the version suffix rides along with the localised name).
 
+**Compatibility check ✅.** A plugin declares the GZAC version range it targets in its manifest:
+
+```json
+"compatibility": { "minGzacVersion": "12.0.0", "maxGzacVersion": "12.1.0" }
+```
+
+Both bounds are optional and inclusive. GZAC compares the range against its own running version and
+**warns** on a mismatch; it never hard-blocks activation. One comparator backs two entry points:
+
+- *Comparator* (`compatibility/GzacCompatibilityChecker.kt`) parses both bounds and the current
+  version as semver (`org.semver4j.Semver`) and returns
+  `CompatibilityResult(compatible, currentGzacVersion, minGzacVersion, maxGzacVersion, status)` with
+  `status ∈ {COMPATIBLE, BELOW_MINIMUM, ABOVE_MAXIMUM, CURRENT_VERSION_UNKNOWN}`. Lenient by design:
+  an absent or unparseable bound is not enforced, and an undeterminable current version yields
+  `compatible = true` (`CURRENT_VERSION_UNKNOWN`) so noisy version metadata never raises a false
+  warning.
+- *Running version* (`compatibility/DefaultGzacVersionProvider.kt`, behind the `GzacVersionProvider`
+  fun-interface) resolves in precedence order: (1) the `valtimo.external-plugin.gzac-version`
+  property (operator override, useful in tests or when build metadata is absent/wrong), (2) Spring
+  `BuildProperties.version` — the canonical source, present for both `bootRun` and packaged
+  artifacts because `backend/app/gzac/build.gradle` enables `springBoot { buildInfo() }`, (3) the jar
+  manifest implementation version. `null` when none resolve, which the comparator treats as "cannot
+  judge".
+
+Two places run it:
+
+- **Listing / detail** — `ExternalPluginManagementResource.toDefinitionResponse()` checks each
+  definition's stored `min_gzac_version` / `max_gzac_version` columns (populated at discovery from
+  the manifest) and folds the outcome into `DefinitionResponse` (`minGzacVersion`, `maxGzacVersion`,
+  `currentGzacVersion`, `compatible`). Informational only — an incompatible definition still lists
+  and still activates.
+- **Upload** — `POST …/host/{hostId}/upload` takes a `force` flag (default `false`). With
+  `force=false`, `compatibility/PluginPackageInspector.kt` peeks the `compatibility` block straight
+  from the uploaded `.zip`'s `manifest.json` (the definition row does not exist yet — discovery runs
+  only after a successful upload), and an incompatible plugin is refused with **`409 Conflict`**
+  carrying `{incompatible, compatible, currentGzacVersion, minGzacVersion, maxGzacVersion}`; the host
+  is never contacted and discovery never runs. With `force=true` the upload proceeds regardless. The
+  inspector is resilient — a missing manifest, missing `compatibility` block, or any parse failure
+  yields no gate, and the manifest read is capped at 1 MB.
+
+The frontend surfaces incompatibility as a **non-blocking** warning, localised via
+`pluginManagement.compatibility.*` (`en`/`nl`) through one message builder
+(`plugin-management/.../utils/external-plugin-compatibility.util.ts`), gated solely on
+`compatible === false` (`isExternalPluginDefinitionIncompatible()`):
+- the configurations table (`plugin-management.component`) shows an "Incompatible" tag with an
+  info-tooltip on each external row whose definition is incompatible;
+- the configure step (`plugin-add-modal.component`) shows `incompatibleWarning$` for an incompatible
+  selection, recomputed on language change;
+- the upload modal (`plugin-upload-modal.component`) turns the `409` (kept off the global error
+  toast by the `X-Skip-Interceptor: 409` request header) into an "Upload an incompatible plugin?"
+  confirmation that re-issues the upload with `force=true`.
+
 **⛔ Other gaps.** Schema migration for an in-place v1 → v2 configuration "upgrade" is not
-implemented and arguably unnecessary given the side-by-side model. Permission-diff prompts,
-compatibility-range enforcement (`compatibility.minGzacVersion` / `maxGzacVersion` are stored but
-not enforced at activation), and a `LATEST/STABLE/DEPRECATED` channel status are all open.
+implemented and arguably unnecessary given the side-by-side model. Permission-diff prompts and a
+`LATEST/STABLE/DEPRECATED` channel status are open. The compatibility range is a warning rather than
+an activation gate — only upload is a confirm-gate; an admin can still activate a configuration for
+an incompatible definition.
 
 ## 12. Deletion semantics — strict, never forced ⛔ (host-side plugin delete ✅)
 
@@ -644,14 +700,21 @@ through the user-token path.
 - Host `tsc` build and `@valtimo/plugin-sdk` build: clean (including the optional-TLS
   `buildHttpsOptions` wiring in `plugin-host/app/src/index.ts`).
 - Backend `:backend:external-plugin:test`: BUILD SUCCESSFUL (allowlist + service-token-filter +
-  endpoint-description-provider + host-client-HMAC + host-registration transport-guard tests). The
-  host-client-HMAC suite (`client/ExternalPluginHostClientHmacTest`) asserts `pushConfiguration`
-  (body-bound), `deleteConfiguration` / `listPlugins` (empty-body), and `uploadPlugin`
-  (file-byte-bound) each send `X-Valtimo-Signature` + `X-Valtimo-Timestamp` and **no** `Authorization`
-  header, with the signature recomputed from an independent JDK HMAC oracle. The transport-guard suite
-  (`service/ExternalPluginHostServiceTest`) asserts host registration accepts broker credentials over
-  HTTPS and loopback HTTP, rejects them over plaintext HTTP to a remote host, and that
-  `isSecureTransport` classifies schemes and loopback hosts.
+  endpoint-description-provider + host-client-HMAC + host-registration transport-guard + compatibility
+  tests). The host-client-HMAC suite (`client/ExternalPluginHostClientHmacTest`) asserts
+  `pushConfiguration` (body-bound), `deleteConfiguration` / `listPlugins` (empty-body), and
+  `uploadPlugin` (file-byte-bound) each send `X-Valtimo-Signature` + `X-Valtimo-Timestamp` and **no**
+  `Authorization` header, with the signature recomputed from an independent JDK HMAC oracle. The
+  transport-guard suite (`service/ExternalPluginHostServiceTest`) asserts host registration accepts
+  broker credentials over HTTPS and loopback HTTP, rejects them over plaintext HTTP to a remote host,
+  and that `isSecureTransport` classifies schemes and loopback hosts. The compatibility suite
+  (`compatibility/GzacCompatibilityCheckerTest`, `compatibility/DefaultGzacVersionProviderTest`,
+  `compatibility/PluginPackageInspectorTest`, `web/rest/ExternalPluginUploadCompatibilityTest`)
+  asserts the semver range comparison (below-minimum, above-maximum, open bounds, and
+  unparseable/unknown-version leniency), the version-provider precedence (override → build-info → jar
+  manifest), the zip manifest peek (root-entry wins, missing/blank/garbage → no gate), and the upload
+  endpoint's 409-unless-forced gate (an incompatible package is rejected and never forwarded to the
+  host; a forced upload, a compatible package, and an undeclared package each go through).
 - Backend `:backend:app:gzac:compileKotlin`: BUILD SUCCESSFUL.
 - Frontend `ng build` (production): clean.
 - Sample plugin `build:pack`: clean (Wasm + pack including `logo.svg`, `translations.en/nl`,
