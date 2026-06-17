@@ -15,8 +15,8 @@
  */
 
 import {Injectable} from '@angular/core';
-import {HttpClient, HttpParams} from '@angular/common/http';
-import {ConfigService} from '@valtimo/shared';
+import {HttpClient, HttpHeaders, HttpParams} from '@angular/common/http';
+import {ConfigService, InterceptorSkip} from '@valtimo/shared';
 import {Observable} from 'rxjs';
 import {
   ExternalPluginConfiguration,
@@ -102,9 +102,17 @@ export class ExternalPluginService {
     );
   }
 
-  public uploadPlugin(hostId: string, file: File): Observable<unknown> {
+  /**
+   * Uploads a plugin package to the host. When `force` is false the backend rejects a plugin that
+   * is incompatible with the running GZAC version with a 409 carrying the version details; the
+   * caller catches it to warn the operator and re-issues with `force=true` to proceed. The
+   * `X-Skip-Interceptor` header keeps that expected 409 from raising a global error toast.
+   */
+  public uploadPlugin(hostId: string, file: File, force = false): Observable<unknown> {
     const formData = new FormData();
     formData.append('file', file, file.name);
-    return this._http.post(`${this._baseUrl}/host/${hostId}/upload`, formData);
+    const params = new HttpParams().set('force', force);
+    const headers = new HttpHeaders().set(InterceptorSkip, '409');
+    return this._http.post(`${this._baseUrl}/host/${hostId}/upload`, formData, {headers, params});
   }
 }
