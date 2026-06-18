@@ -153,7 +153,7 @@ The auto-deployment configuration file supports environment variables such as `$
 
 ```yaml
 valtimo:
-  imports:
+  import:
     whitelistedPaths:
       - "VALTIMO_.*"
       - "GZAC_.*"
