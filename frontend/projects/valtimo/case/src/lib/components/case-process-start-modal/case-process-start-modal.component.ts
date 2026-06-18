@@ -33,6 +33,7 @@ import {FormioBeforeSubmit, FormioForm} from '@formio/angular';
 import {TranslateModule} from '@ngx-translate/core';
 import {PermissionService} from '@valtimo/access-control';
 import {
+  CarbonModalSize,
   FormioComponent,
   FormIoModule,
   FormioOptionsImpl,
@@ -47,6 +48,8 @@ import {
   FORM_CUSTOM_COMPONENT_TOKEN,
   FormCustomComponent,
   FormCustomComponentConfig,
+  FormSize,
+  formSizeToCarbonModalSizeMap,
   FormSubmissionResult,
   ProcessLinkModule,
   ProcessLinkService,
@@ -59,6 +62,8 @@ import {BehaviorSubject, Subscription} from 'rxjs';
 import {take} from 'rxjs/operators';
 import {CAN_VIEW_CASE_PERMISSION, CASE_DETAIL_PERMISSION_RESOURCE} from '../../permissions';
 import {CaseListService, StartModalService} from '../../services';
+
+const DEFAULT_START_MODAL_SIZE: CarbonModalSize = 'sm';
 
 @Component({
   standalone: true,
@@ -106,6 +111,7 @@ export class CaseProcessStartModalComponent implements OnInit, OnDestroy {
   @Output() noProcessLinked = new EventEmitter<string>();
 
   public readonly modalOpen$ = new BehaviorSubject<boolean>(false);
+  public readonly modalSize$ = new BehaviorSubject<CarbonModalSize>(DEFAULT_START_MODAL_SIZE);
 
   private _subscriptions = new Subscription();
   private readonly _formCustomComponentConfig$ = new BehaviorSubject<
@@ -143,6 +149,7 @@ export class CaseProcessStartModalComponent implements OnInit, OnDestroy {
     this.processLinkId = null;
     this.formDefinition = null;
     this.formFlowInstanceId = null;
+    this.modalSize$.next(DEFAULT_START_MODAL_SIZE);
     this.formViewModelDynamicContainer?.clear();
     this.formCustomComponentDynamicContainer?.clear();
     if (this._useStartEventNameAsStartFormTitle) {
@@ -161,6 +168,7 @@ export class CaseProcessStartModalComponent implements OnInit, OnDestroy {
               this.formDefinition = startProcessResult.properties.prefilledForm;
               this.processLinkId = startProcessResult.processLinkId;
               this.isFormViewModel = false;
+              this.setModalSize(startProcessResult.properties.formSize);
               this.openCdsModal();
               break;
             case 'form-flow':
@@ -204,6 +212,12 @@ export class CaseProcessStartModalComponent implements OnInit, OnDestroy {
           this.noProcessLinked.emit(this.processDefinitionKey);
         }
       });
+  }
+
+  private setModalSize(formSize?: FormSize): void {
+    this.modalSize$.next(
+      formSize ? formSizeToCarbonModalSizeMap[formSize] : DEFAULT_START_MODAL_SIZE
+    );
   }
 
   public gotoProcessLinkScreen(): void {
