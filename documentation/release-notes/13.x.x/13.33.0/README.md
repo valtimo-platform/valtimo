@@ -36,14 +36,6 @@
   Input and output mappings on building block call activities can now reference nested paths in the case or building
   block document (e.g. `/person/name`), instead of only top-level properties.
 
-* **Start supporting process forms in the case detail panel**
-
-  The process link configuration of a start event now offers a **Display type** option (Modal or Panel), defaulting to
-  **Modal**. When a supporting process is started from the **Start** button with its start event configured as
-  **Panel**, the start form opens in the case detail panel, the same way user task forms can. This requires the active
-  tab to expose a panel. Otherwise the form opens in the modal as before. Form types that rely on view models or custom
-  UI components always open in the modal.
-
 ## Bugfixes
 
 * **Empty building block mapping dropdowns**
