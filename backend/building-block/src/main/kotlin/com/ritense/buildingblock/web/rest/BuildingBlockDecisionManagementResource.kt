@@ -21,6 +21,7 @@ import com.ritense.buildingblock.service.BuildingBlockDecisionService
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import com.ritense.valtimo.contract.buildingblock.BuildingBlockDefinitionId
 import com.ritense.valtimo.contract.domain.ValtimoMediaType.APPLICATION_JSON_UTF8_VALUE
+import com.ritense.valtimo.contract.endpoint.EndpointDescription
 import com.ritense.valtimo.web.rest.dto.DefinitionDeploymentResponseDto
 import org.operaton.bpm.engine.impl.persistence.entity.DeploymentEntity
 import org.operaton.bpm.engine.rest.dto.repository.DecisionDefinitionDto
@@ -44,6 +45,10 @@ class BuildingBlockDecisionManagementResource(
     private val buildingBlockDecisionService: BuildingBlockDecisionService,
 ) {
 
+    @EndpointDescription(
+        en = "List building block decision definitions",
+        nl = "Beslisdefinities van bouwblok ophalen",
+    )
     @GetMapping(
         value = ["/{key}/version/{versionTag}/decision-definition"],
         produces = [MediaType.APPLICATION_JSON_VALUE]
@@ -63,6 +68,10 @@ class BuildingBlockDecisionManagementResource(
         })
     }
 
+    @EndpointDescription(
+        en = "Deploy building block decision definition",
+        nl = "Beslisdefinitie van bouwblok uitrollen",
+    )
     @PostMapping(
         value = ["/{key}/version/{versionTag}/decision-definition"],
         consumes = [MediaType.MULTIPART_FORM_DATA_VALUE],
@@ -96,6 +105,10 @@ class BuildingBlockDecisionManagementResource(
         )
     }
 
+    @EndpointDescription(
+        en = "Delete building block decision definition",
+        nl = "Beslisdefinitie van bouwblok verwijderen",
+    )
     @DeleteMapping(
         value = ["/{key}/version/{versionTag}/decision-definition/{decisionDefinitionKey}"],
     )

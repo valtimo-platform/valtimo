@@ -24,6 +24,7 @@ import com.ritense.logging.LoggableResource
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import com.ritense.valtimo.contract.authorization.UserManagementServiceHolder
 import com.ritense.valtimo.contract.domain.ValtimoMediaType.APPLICATION_JSON_UTF8_VALUE
+import com.ritense.valtimo.contract.endpoint.EndpointDescription
 import io.github.oshai.kotlinlogging.KotlinLogging
 import jakarta.validation.Valid
 import org.springframework.http.ResponseEntity
@@ -43,6 +44,10 @@ class TaskListResource(
     private val service: TaskColumnService
 ) {
 
+    @EndpointDescription(
+        en = "List task list columns",
+        nl = "Takenlijstkolommen ophalen",
+    )
     @GetMapping("/v1/case/{caseDefinitionName}/task-list-column")
     @RunWithoutAuthorization
     fun getTaskListColumn(
@@ -51,12 +56,20 @@ class TaskListResource(
         return ResponseEntity.ok().body(service.getListColumns(caseDefinitionName))
     }
 
+    @EndpointDescription(
+        en = "List task list columns",
+        nl = "Takenlijstkolommen ophalen",
+    )
     @GetMapping("/management/v1/case/{caseDefinitionName}/task-list-column")
     @RunWithoutAuthorization
     fun getTaskListColumnForManagement(
         @LoggableResource("documentDefinitionName") @PathVariable caseDefinitionName: String
     ): ResponseEntity<List<TaskListColumnDto>> = getTaskListColumn(caseDefinitionName)
 
+    @EndpointDescription(
+        en = "Save task list column",
+        nl = "Takenlijstkolom opslaan",
+    )
     @PutMapping("/management/v1/case/{caseDefinitionName}/task-list-column/{columnKey}")
     @RunWithoutAuthorization
     fun createListColumnForManagement(
@@ -68,6 +81,10 @@ class TaskListResource(
     }
 
     @Deprecated("Since 13.0.0")
+    @EndpointDescription(
+        en = "Swap task list column order",
+        nl = "Volgorde takenlijstkolommen wisselen",
+    )
     @PostMapping("/management/v1/case/{caseDefinitionName}/task-list-column")
     @RunWithoutAuthorization
     fun swapColumnOrderForManagement(
@@ -78,6 +95,10 @@ class TaskListResource(
         return ResponseEntity.ok().build()
     }
 
+    @EndpointDescription(
+        en = "Reorder task list columns",
+        nl = "Takenlijstkolommen herordenen",
+    )
     @PostMapping("/management/v2/case/{caseDefinitionName}/task-list-column")
     @RunWithoutAuthorization
     fun reorderColumnsForManagement(
@@ -88,6 +109,10 @@ class TaskListResource(
         return ResponseEntity.ok().build()
     }
 
+    @EndpointDescription(
+        en = "Delete task list column",
+        nl = "Takenlijstkolom verwijderen",
+    )
     @DeleteMapping("/management/v1/case/{caseDefinitionName}/task-list-column/{columnKey}")
     @RunWithoutAuthorization
     fun deleteListColumnForManagement(
@@ -98,6 +123,10 @@ class TaskListResource(
         return ResponseEntity.noContent().build()
     }
 
+    @EndpointDescription(
+        en = "List hidden task list columns",
+        nl = "Verborgen takenlijstkolommen ophalen",
+    )
     @GetMapping("/v1/case/{caseDefinitionName}/hidden-task-list-column")
     fun getHiddenTaskListColumns(
         @LoggableResource("documentDefinitionName") @PathVariable caseDefinitionName: String
@@ -106,6 +135,10 @@ class TaskListResource(
         return ResponseEntity.ok().body(service.getHiddenTaskListColumns(caseDefinitionName, currentUserId))
     }
 
+    @EndpointDescription(
+        en = "Save hidden task list columns",
+        nl = "Verborgen takenlijstkolommen opslaan",
+    )
     @PostMapping("/v1/case/{caseDefinitionName}/hidden-task-list-column")
     fun saveHiddenTaskListColumns(
         @LoggableResource("documentDefinitionName") @PathVariable caseDefinitionName: String,

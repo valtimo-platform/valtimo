@@ -28,6 +28,7 @@ import com.ritense.processlink.domain.ProcessLink
 import com.ritense.valtimo.operaton.domain.OperatonTask
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import com.ritense.valtimo.contract.domain.ValtimoMediaType.APPLICATION_JSON_UTF8_VALUE
+import com.ritense.valtimo.contract.endpoint.EndpointDescription
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
@@ -49,6 +50,10 @@ class FormResource(
     private val formDefinitionService: FormDefinitionService,
 ) {
 
+    @EndpointDescription(
+        en = "Handle process link form submission",
+        nl = "Formulierinzending voor proceslink verwerken",
+    )
     @PostMapping("/v1/process-link/{processLinkId}/form/submission")
     fun handleSubmission(
         @LoggableResource(resourceType = ProcessLink::class) @PathVariable processLinkId: UUID,
@@ -67,6 +72,10 @@ class FormResource(
             )
         )
 
+    @EndpointDescription(
+        en = "Get prefilled form definition by form key",
+        nl = "Vooringevulde formulierdefinitie ophalen op formuliersleutel",
+    )
     @GetMapping("/v1/process-link/form-definition/{formKey}")
     fun getFormDefinitionByFormKey(
         @PathVariable formKey: String,

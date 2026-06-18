@@ -17,7 +17,6 @@
 package com.ritense.valueresolver.autoconfiguration
 
 import com.fasterxml.jackson.databind.ObjectMapper
-import com.ritense.valueresolver.endpoint.ValueResolverEndpointDescriptionProvider
 import com.ritense.valueresolver.FixedValueResolverFactory
 import com.ritense.valueresolver.ProcessVariableValueResolverFactory
 import com.ritense.valueresolver.ValueResolverFactory
@@ -84,8 +83,4 @@ class ValueResolverAutoConfiguration {
     ): ValueResolverResource {
         return ValueResolverResource(valueResolverService)
     }
-
-    @Bean
-    @ConditionalOnMissingBean(ValueResolverEndpointDescriptionProvider::class)
-    fun valueResolverEndpointDescriptionProvider() = ValueResolverEndpointDescriptionProvider()
 }

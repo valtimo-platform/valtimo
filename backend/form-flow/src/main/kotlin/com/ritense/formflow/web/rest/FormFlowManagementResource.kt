@@ -24,6 +24,7 @@ import com.ritense.logging.LoggableResource
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import com.ritense.valtimo.contract.case_.CaseDefinitionId
 import com.ritense.valtimo.contract.domain.ValtimoMediaType.APPLICATION_JSON_UTF8_VALUE
+import com.ritense.valtimo.contract.endpoint.EndpointDescription
 import jakarta.validation.Valid
 import org.springframework.core.io.ClassPathResource
 import org.springframework.core.io.Resource
@@ -49,10 +50,18 @@ class FormFlowManagementResource(
     private val formFlowService: FormFlowService,
     private val formFlowDefinitionImporter: FormFlowDefinitionImporter,
 ) {
+    @EndpointDescription(
+        en = "Get form flow definition schema",
+        nl = "Schema van form flow definitie ophalen",
+    )
     @GetMapping("/v1/form-flow-definition/schema")
     fun getFormFlowDefinitionSchema(): ResponseEntity<Resource> =
         ResponseEntity.ok(ClassPathResource(FORM_FLOW_SCHEMA_PATH))
 
+    @EndpointDescription(
+        en = "List form flow definitions",
+        nl = "Form flow definities ophalen",
+    )
     @GetMapping("/v1/case-definition/{caseDefinitionKey}/version/{versionTag}/form-flow-definition")
     @Transactional
     fun getAllFormFlowDefinitions(
@@ -66,6 +75,10 @@ class FormFlowManagementResource(
         return ResponseEntity.ok(definitions)
     }
 
+    @EndpointDescription(
+        en = "Get form flow definition by key",
+        nl = "Form flow definitie ophalen op sleutel",
+    )
     @GetMapping("/v1/case-definition/{caseDefinitionKey}/version/{versionTag}/form-flow-definition/{definitionKey}")
     @Transactional
     fun getFormFlowDefinitionById(
@@ -79,6 +92,10 @@ class FormFlowManagementResource(
         return ResponseEntity.ok(FormFlowDefinitionDto.of(definition, readOnly))
     }
 
+    @EndpointDescription(
+        en = "Delete form flow definition",
+        nl = "Form flow definitie verwijderen",
+    )
     @DeleteMapping("/v1/case-definition/{caseDefinitionKey}/version/{versionTag}/form-flow-definition/{definitionKey}")
     @Transactional
     fun deleteFormFlowDefinition(
@@ -94,6 +111,10 @@ class FormFlowManagementResource(
         return ResponseEntity.ok().build()
     }
 
+    @EndpointDescription(
+        en = "Create form flow definition",
+        nl = "Form flow definitie aanmaken",
+    )
     @PostMapping("/v1/case-definition/{caseDefinitionKey}/version/{versionTag}/form-flow-definition")
     @Transactional
     fun createFormFlowDefinition(
@@ -109,6 +130,10 @@ class FormFlowManagementResource(
         return ResponseEntity.ok(FormFlowDefinitionDto.of(newDefinition, false))
     }
 
+    @EndpointDescription(
+        en = "Update form flow definition",
+        nl = "Form flow definitie bijwerken",
+    )
     @PutMapping("/v1/case-definition/{caseDefinitionKey}/version/{versionTag}/form-flow-definition/{definitionKey}")
     @Transactional
     fun updateFormFlowDefinition(

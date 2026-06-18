@@ -40,7 +40,8 @@ dependencies {
     testImplementation "org.jetbrains.kotlin:kotlin-test"
     testImplementation project(":backend:test-utils-common")
 
-    // All modules with EndpointDescriptionProviders — needed by the translation coverage test
+    // Modules whose controllers EndpointDescriptionCoverageTest scans — it requires every endpoint
+    // to carry an @EndpointDescription, so those controllers must be on the test classpath
     testImplementation project(":backend:case")
     testImplementation project(":backend:process-document")
     testImplementation project(":backend:form")
@@ -56,6 +57,19 @@ dependencies {
     testImplementation project(":backend:zgw:notificaties-api")
     testImplementation project(":backend:zgw:object-management")
     testImplementation project(":backend:zgw:zaakdetails")
+
+    // Controller-bearing modules that ship in the application but are not compile dependencies of
+    // external-plugin — on the test classpath so the coverage test enforces descriptions on every
+    // runtime endpoint, not only those reachable from this module's own dependencies
+    testImplementation project(":backend:notes")
+    testImplementation project(":backend:team")
+    testImplementation project(":backend:milestones")
+    testImplementation project(":backend:mail:mandrill")
+    testImplementation project(":backend:process-link-url")
+    testImplementation project(":backend:form-view-model")
+    testImplementation project(":backend:zgw:documenten-api-preview")
+    testImplementation project(":backend:exact-plugin")
+    testImplementation project(":backend:keycloak-iam")
 
     jar {
         enabled = true

@@ -20,6 +20,7 @@ import com.ritense.objectmanagement.domain.ObjectManagement
 import com.ritense.objectmanagement.service.ObjectManagementService
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import com.ritense.valtimo.contract.domain.ValtimoMediaType.APPLICATION_JSON_UTF8_VALUE
+import com.ritense.valtimo.contract.endpoint.EndpointDescription
 import org.springframework.http.ResponseEntity
 import org.springframework.stereotype.Controller
 import org.springframework.web.bind.annotation.GetMapping
@@ -32,6 +33,10 @@ class ObjectManagementManagementResource(
     private val objectManagementService: ObjectManagementService
 ) {
 
+    @EndpointDescription(
+        en = "List object management configurations",
+        nl = "Objectbeheerconfiguraties ophalen",
+    )
     @GetMapping("/v1/object/management/configuration")
     fun getAll(): ResponseEntity<List<ObjectManagement>> = ResponseEntity.ok(objectManagementService.getAll())
 

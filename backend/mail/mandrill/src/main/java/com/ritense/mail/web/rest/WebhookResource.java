@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,12 +16,13 @@
 
 package com.ritense.mail.web.rest;
 
-import jakarta.validation.Valid;
 import static com.ritense.valtimo.contract.domain.ValtimoMediaType.APPLICATION_JSON_UTF8_VALUE;
 
 import com.ritense.mail.domain.webhook.MandrillWebhookRequest;
 import com.ritense.mail.service.WebhookService;
 import com.ritense.valtimo.contract.annotation.SkipComponentScan;
+import com.ritense.valtimo.contract.endpoint.EndpointDescription;
+import jakarta.validation.Valid;
 import java.io.IOException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -47,12 +48,20 @@ public class WebhookResource {
         this.webhookService = webhookService;
     }
 
+    @EndpointDescription(
+        en = "Check the Mandrill webhook exists",
+        nl = "Controleren of de Mandrill-webhook bestaat"
+    )
     @GetMapping("/v1/mandrill/webhook")
     public ResponseEntity<Void> exists() {
         // Exists for Mandrill's check whether or not the endpoint exists.
         return ResponseEntity.ok().build();
     }
 
+    @EndpointDescription(
+        en = "Handle a Mandrill webhook event",
+        nl = "Mandrill-webhook-event verwerken"
+    )
     @PostMapping(value = "/v1/mandrill/webhook", consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE)
     public ResponseEntity<Void> mandrillWebhook(
         @RequestHeader("X-Mandrill-Signature") String authenticationKey,

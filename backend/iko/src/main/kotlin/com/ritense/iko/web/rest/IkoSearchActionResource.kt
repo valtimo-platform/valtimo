@@ -26,6 +26,7 @@ import com.ritense.search.domain.SearchFieldV2
 import com.ritense.search.domain.SearchListColumn
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import com.ritense.valtimo.contract.domain.ValtimoMediaType.APPLICATION_JSON_UTF8_VALUE
+import com.ritense.valtimo.contract.endpoint.EndpointDescription
 import com.ritense.valtimo.contract.iko.DataFilter
 import jakarta.validation.Valid
 import org.springframework.data.domain.PageRequest
@@ -48,6 +49,10 @@ class IkoSearchActionResource(
     private val ikoSearchFieldService: IkoSearchFieldService,
 ) {
 
+    @EndpointDescription(
+        en = "List IKO search actions",
+        nl = "IKO-zoekacties ophalen",
+    )
     @GetMapping("/v1/iko-view/{ikoViewKey}/search-action")
     fun getIkoSearchActions(
         @PathVariable ikoViewKey: String,
@@ -63,6 +68,10 @@ class IkoSearchActionResource(
         return ResponseEntity.ok(response)
     }
 
+    @EndpointDescription(
+        en = "Execute IKO search action",
+        nl = "IKO-zoekactie uitvoeren",
+    )
     @PostMapping("/v1/iko-view/{ikoViewKey}/search-action/{ikoSearchActionKey}/search")
     fun search(
         @PathVariable ikoViewKey: String,

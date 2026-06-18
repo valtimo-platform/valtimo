@@ -39,7 +39,6 @@ import com.ritense.valtimo.contract.authentication.UserManagementService
 import com.ritense.valtimo.contract.case_.CaseDefinitionChecker
 import com.ritense.valtimo.contract.document.CaseDocumentResolver
 import com.ritense.valueresolver.ValueResolverService
-import com.ritense.zakenapi.endpoint.ZakenApiEndpointDescriptionProvider
 import com.ritense.zakenapi.ZaakUrlProvider
 import com.ritense.zakenapi.ZakenApiPluginFactory
 import com.ritense.zakenapi.client.ZakenApiClient
@@ -531,8 +530,4 @@ class ZakenApiAutoConfiguration {
     @ConditionalOnClass(FormFlowBean::class) // Only registered when :form-flow is on the classpath
     @ConditionalOnMissingBean(ZakenFormFlow::class)
     fun zakenFormFlow(zaakService: ZaakService): ZakenFormFlow = ZakenFormFlow(zaakService)
-
-    @Bean
-    @ConditionalOnMissingBean(ZakenApiEndpointDescriptionProvider::class)
-    fun zakenApiEndpointDescriptionProvider() = ZakenApiEndpointDescriptionProvider()
 }

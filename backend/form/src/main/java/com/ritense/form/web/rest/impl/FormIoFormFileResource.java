@@ -19,6 +19,7 @@ package com.ritense.form.web.rest.impl;
 import com.ritense.form.web.rest.FormFileResource;
 import com.ritense.logging.LoggableResource;
 import com.ritense.resource.service.ResourceService;
+import com.ritense.valtimo.contract.endpoint.EndpointDescription;
 import com.ritense.valtimo.contract.resource.Resource;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -39,6 +40,10 @@ public class FormIoFormFileResource implements FormFileResource {
     }
 
     @Override
+    @EndpointDescription(
+        en = "Upload form file",
+        nl = "Formulierbestand uploaden"
+    )
     @PostMapping(value = "/v1/form-file/upload", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<? extends Resource> uploadFile(
         @LoggableResource(resourceTypeName = "jsonSchemaDocumentName") @RequestParam("documentDefinitionName") String documentDefinitionName,
@@ -50,6 +55,10 @@ public class FormIoFormFileResource implements FormFileResource {
     }
 
     @Override
+    @EndpointDescription(
+        en = "Get form file redirect",
+        nl = "Formulierbestand doorverwijzing ophalen"
+    )
     @GetMapping("/v1/form-file")
     public RedirectView getFile(@RequestParam("form") String fileName) {
         return new RedirectView(
@@ -60,6 +69,10 @@ public class FormIoFormFileResource implements FormFileResource {
     }
 
     @Override
+    @EndpointDescription(
+        en = "Delete form file",
+        nl = "Formulierbestand verwijderen"
+    )
     @DeleteMapping("/v1/form-file")
     public ResponseEntity<Void> deleteFile(@RequestParam("form") String fileName) {
         resourceService.removeResource(stripInitialSlashFromPath(fileName));
