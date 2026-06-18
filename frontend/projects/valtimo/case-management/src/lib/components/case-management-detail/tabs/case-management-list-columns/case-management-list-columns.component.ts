@@ -339,6 +339,7 @@ export class CaseManagementListColumnsComponent implements AfterViewInit, OnDest
       }
     } else if (modalType === 'edit') {
       this.formGroup.controls['key'].disable();
+      this.formGroup.controls.defaultSort.enable({emitEvent: false});
       this.disableDefaultSort$.next(false);
     }
   }
