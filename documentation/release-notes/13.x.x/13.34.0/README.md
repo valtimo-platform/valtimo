@@ -18,4 +18,6 @@
 
 ## Bugfixes
 
-* New bugfix.
+* **Form flows in draft case definitions could not be edited**
+
+  Form flows in a draft case definition were incorrectly shown as read-only and can now be edited.
