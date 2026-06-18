@@ -149,6 +149,7 @@
   [open]="showEditModal$ | async"
   [saveNewConfiguration]="saveNewConfiguration$ | async"
   (closeModal)="closeEditModal()"
+  (deleteEvent)="onEmbeddedConfigDeleted($event)"
 ></valtimo-plugin-edit-modal>
 
 <valtimo-plugin-external-edit-modal
@@ -199,6 +200,26 @@
   (confirmEvent)="confirmDeleteHost()"
   (cancelEvent)="cancelDeleteHost()"
 ></valtimo-confirmation-modal>
+
+<valtimo-confirmation-modal
+  [showModalSubject$]="deleteConfigurationModalOpen$"
+  [titleTranslationKey]="'pluginManagement.deleteConfigurationModal.title'"
+  [contentTranslationKey]="'pluginManagement.deleteConfigurationModal.description'"
+  [confirmButtonTextTranslationKey]="'interface.delete'"
+  [confirmButtonType]="'danger'"
+  [cancelButtonTextTranslationKey]="'interface.cancel'"
+  (confirmEvent)="confirmDeleteConfiguration()"
+  (cancelEvent)="cancelDeleteConfiguration()"
+></valtimo-confirmation-modal>
+
+<valtimo-plugin-usage-modal
+  [descriptionTranslationKey]="usageModalDescriptionKey"
+  [entityName]="usageModalEntityName"
+  [open]="usageModalOpen$ | async"
+  [titleTranslationKey]="usageModalTitleKey"
+  [usages]="usageModalUsages$ | async"
+  (closeEvent)="closeUsageModal()"
+></valtimo-plugin-usage-modal>
 
 <ng-template #pluginNameColumnTemplate let-data="data">
   <div class="plugin-management__plugin-name">

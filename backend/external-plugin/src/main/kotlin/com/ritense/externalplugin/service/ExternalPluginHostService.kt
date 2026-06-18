@@ -21,12 +21,14 @@ import com.ritense.externalplugin.client.ExternalPluginHostClient
 import com.ritense.externalplugin.domain.EventQueueMode
 import com.ritense.externalplugin.domain.ExternalPluginHost
 import com.ritense.externalplugin.domain.ExternalPluginHostStatus
+import com.ritense.externalplugin.exception.ExternalPluginHostInUseException
 import com.ritense.externalplugin.repository.ExternalPluginConfigurationRepository
 import com.ritense.externalplugin.repository.ExternalPluginDefinitionRepository
 import com.ritense.externalplugin.repository.ExternalPluginGrantedEndpointRepository
 import com.ritense.externalplugin.repository.ExternalPluginGrantedEventRepository
 import com.ritense.externalplugin.repository.ExternalPluginHostRepository
 import com.ritense.plugin.service.EncryptionService
+import com.ritense.plugin.web.rest.dto.PluginUsageDto
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -44,6 +46,7 @@ class ExternalPluginHostService(
     private val grantedEventRepository: ExternalPluginGrantedEventRepository,
     private val encryptionService: EncryptionService,
     private val hostClient: ExternalPluginHostClient,
+    private val hostUsageResolver: ExternalPluginHostUsageResolver,
 ) {
 
     fun list(): List<ExternalPluginHost> = hostRepository.findAll()
@@ -126,7 +129,22 @@ class ExternalPluginHostService(
         }
     }
 
+    /**
+     * Exposes what BPMN process links currently reference any configuration under this host.
+     * The UI uses this to disable the delete control proactively; the server-side guard in
+     * [delete] still enforces the same invariant, so an empty list here does not authorise
+     * deletion — concurrent process-link creation between this call and the delete call would
+     * still surface as an [ExternalPluginHostInUseException].
+     */
+    @Transactional(readOnly = true)
+    fun findUsages(hostId: UUID): List<PluginUsageDto> = hostUsageResolver.findUsagesForHost(hostId)
+
     fun delete(hostId: UUID) {
+        val usages = hostUsageResolver.findUsagesForHost(hostId)
+        if (usages.isNotEmpty()) {
+            throw ExternalPluginHostInUseException(hostId, usages)
+        }
+
         val definitions = definitionRepository.findAllByHostId(hostId)
         for (definition in definitions) {
             val configurations = configurationRepository.findAllByDefinitionId(definition.id)

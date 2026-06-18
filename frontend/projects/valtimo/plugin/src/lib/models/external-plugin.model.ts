@@ -189,6 +189,32 @@ interface ExternalPluginConfigurationUpdateRequest {
   grantedEndpoints?: Array<ExternalPluginGrantedEndpointEntry>;
 }
 
+/**
+ * What owns the process definition that an `ExternalPluginHostUsage` lives on. `GLOBAL` also
+ * doubles as the fallback when the process definition can't be resolved at all — in that case
+ * `parentKey` and `parentVersionTag` are both null.
+ */
+type ExternalPluginHostUsageParentType = 'CASE' | 'BUILDING_BLOCK' | 'GLOBAL';
+
+/**
+ * One BPMN activity that references a configuration under a plugin host. The host cannot be
+ * deleted while any of these exist; the management UI uses this payload to disable the delete
+ * action and tell the admin which case / building block / global process holds the host alive.
+ */
+interface ExternalPluginHostUsage {
+  configurationId: string;
+  configurationTitle: string;
+  parentType: ExternalPluginHostUsageParentType;
+  parentKey: string | null;
+  parentVersionTag: string | null;
+  processDefinitionId: string;
+  processDefinitionKey: string | null;
+  processDefinitionName: string | null;
+  activityId: string;
+  activityName: string | null;
+  processLinkId: string;
+}
+
 const EXTERNAL_PLUGIN_KEY_PREFIX = 'external:';
 
 function isExternalPluginKey(key: string | undefined | null): boolean {
@@ -273,6 +299,8 @@ export {
   ExternalPluginHostCreateRequest,
   ExternalPluginHostDefaults,
   ExternalPluginHostEventQueueUpdateRequest,
+  ExternalPluginHostUsage,
+  ExternalPluginHostUsageParentType,
   ExternalPluginDefinition,
   ExternalPluginConfiguration,
   ExternalPluginConfigurationDetail,

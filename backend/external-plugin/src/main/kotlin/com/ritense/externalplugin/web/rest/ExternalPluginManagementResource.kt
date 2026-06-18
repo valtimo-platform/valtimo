@@ -16,6 +16,7 @@
 
 package com.ritense.externalplugin.web.rest
 
+import com.fasterxml.jackson.databind.JsonNode
 import com.ritense.authorization.annotation.RunWithoutAuthorization
 import com.ritense.externalplugin.compatibility.CompatibilityResult
 import com.ritense.externalplugin.compatibility.GzacCompatibilityChecker
@@ -38,6 +39,7 @@ import com.ritense.externalplugin.web.rest.dto.HostCreateRequest
 import com.ritense.externalplugin.web.rest.dto.HostDefaultsResponse
 import com.ritense.externalplugin.web.rest.dto.HostEventQueueUpdateRequest
 import com.ritense.externalplugin.web.rest.dto.HostResponse
+import com.ritense.plugin.web.rest.dto.PluginUsageDto
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import com.ritense.valtimo.contract.domain.ValtimoMediaType.APPLICATION_JSON_UTF8_VALUE
 import com.fasterxml.jackson.databind.ObjectMapper
@@ -45,6 +47,7 @@ import org.springframework.core.env.Environment
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.stereotype.Controller
+import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.DeleteMapping
@@ -55,7 +58,6 @@ import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.multipart.MultipartFile
-import com.fasterxml.jackson.databind.JsonNode
 import java.util.UUID
 
 @Controller
@@ -158,6 +160,16 @@ class ExternalPluginManagementResource(
             )
         )
     }
+
+    /**
+     * Lets the UI render the host list with an accurate "delete blocked because…" state without
+     * having to attempt the delete and parse a 409. The server-side guard in
+     * [ExternalPluginHostService.delete] remains authoritative — this endpoint is advisory only.
+     */
+    @RunWithoutAuthorization
+    @GetMapping("/host/{hostId}/usages")
+    fun listHostUsages(@PathVariable hostId: UUID): ResponseEntity<List<PluginUsageDto>> =
+        ResponseEntity.ok(hostService.findUsages(hostId))
 
     @RunWithoutAuthorization
     @DeleteMapping("/host/{hostId}")
@@ -262,6 +274,18 @@ class ExternalPluginManagementResource(
         )
         return ResponseEntity.ok(ConfigurationResponse.from(configuration))
     }
+
+    /**
+     * Mirrors `listHostUsages` but scoped to a single configuration. Lets the management UI
+     * pre-emptively disable the delete control on a configuration whose process links would
+     * otherwise cause a 409.
+     */
+    @RunWithoutAuthorization
+    @GetMapping("/configuration/{configurationId}/usages")
+    fun listConfigurationUsages(
+        @PathVariable configurationId: UUID,
+    ): ResponseEntity<List<PluginUsageDto>> =
+        ResponseEntity.ok(configurationService.findUsages(configurationId))
 
     @RunWithoutAuthorization
     @DeleteMapping("/configuration/{configurationId}")
