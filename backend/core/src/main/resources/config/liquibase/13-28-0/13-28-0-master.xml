@@ -24,5 +24,6 @@ xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liqui
     <include file="20260428-add-label-to-internal-case-status.xml" relativeToChangelogFile="true"/>
     <include file="20260428-add-internal-case-status-history-table.xml" relativeToChangelogFile="true"/>
     <include file="20260504-external-plugin.xml" relativeToChangelogFile="true"/>
+    <include file="20260617-external-plugin-event-queue.xml" relativeToChangelogFile="true"/>
 
 </databaseChangeLog>

@@ -46,9 +46,15 @@ function brokerKey(b: EventBrokerConfig): string {
  * Per-host queue name. On a fanout exchange every distinct host binds its OWN queue and so receives
  * its own copy of each event; replicas sharing a `hostId` bind the same queue and load-balance. The
  * exchange is included so distinct exchanges on one broker don't collide.
+ *
+ * The mode suffix means flipping `queueMode` produces a different queue name and so never collides
+ * with the previous queue's `assertQueue` arguments. The orphaned LIVE queue auto-deletes on
+ * disconnect; an orphaned DURABLE queue lingers until its `x-expires` fires (or an operator deletes
+ * it from the RabbitMQ management UI).
  */
 function queueName(b: EventBrokerConfig, hostId: string): string {
-  return `valtimo-external-plugins.${b.exchange}.${hostId}`;
+  const mode = b.queueMode ?? "live";
+  return `valtimo-external-plugins.${b.exchange}.${hostId}.${mode}`;
 }
 
 type Router = (key: string, event: CloudEventJson) => Promise<void>;
@@ -137,11 +143,20 @@ class BrokerConsumer {
     await channel.prefetch(16);
     await channel.assertExchange(this.broker.exchange, this.broker.exchangeType, { durable: true });
     const queue = queueName(this.broker, this.hostId);
-    // autoDelete so a host that goes away doesn't leave a queue accumulating every event forever;
-    // it lives while at least one replica of this host is connected. (Live-subscription semantics:
-    // events published while a host is fully down — including the reconnect window — are not
-    // retained for it.)
-    const q = await channel.assertQueue(queue, { durable: false, autoDelete: true });
+    const queueMode = this.broker.queueMode ?? "live";
+    // LIVE: live-subscription semantics — queue evaporates with the last consumer, so events while
+    // the host is fully down (including the reconnect window) are not retained.
+    // DURABLE: queue survives host restarts. `x-expires` (queue inactivity TTL) deletes the queue
+    // after `queueTtlMs` of having no consumer, so a host that vanishes permanently doesn't pile up
+    // events forever.
+    const q =
+      queueMode === "durable"
+        ? await channel.assertQueue(queue, {
+            durable: true,
+            autoDelete: false,
+            arguments: { "x-expires": this.broker.queueTtlMs },
+          })
+        : await channel.assertQueue(queue, { durable: false, autoDelete: true });
     // Fanout ignores the routing key; for topic/direct an empty key binds to the default.
     await channel.bindQueue(q.queue, this.broker.exchange, "");
     await channel.consume(q.queue, (msg) => this.onMessage(msg), { noAck: false });
@@ -151,7 +166,12 @@ class BrokerConsumer {
     const wasReconnect = this.reconnectAttempt > 0;
     this.reconnectAttempt = 0;
     this.log.info(
-      { exchange: this.broker.exchange, queue: q.queue },
+      {
+        exchange: this.broker.exchange,
+        queue: q.queue,
+        mode: queueMode,
+        ttlMs: this.broker.queueTtlMs ?? null,
+      },
       wasReconnect ? "Broker consumer reconnected" : "Broker consumer started"
     );
   }

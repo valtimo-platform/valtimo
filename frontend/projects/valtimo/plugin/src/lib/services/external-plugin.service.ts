@@ -29,6 +29,7 @@ import {
   ExternalPluginHost,
   ExternalPluginHostCreateRequest,
   ExternalPluginHostDefaults,
+  ExternalPluginHostEventQueueUpdateRequest,
   ExternalPluginHostUsage,
 } from '../models';
 
@@ -69,6 +70,16 @@ export class ExternalPluginService {
    */
   public getHostUsages(hostId: string): Observable<Array<ExternalPluginHostUsage>> {
     return this._http.get<Array<ExternalPluginHostUsage>>(`${this._baseUrl}/host/${hostId}/usages`);
+  }
+
+  public updateHostEventQueue(
+    hostId: string,
+    request: ExternalPluginHostEventQueueUpdateRequest
+  ): Observable<ExternalPluginHost> {
+    return this._http.patch<ExternalPluginHost>(
+      `${this._baseUrl}/host/${hostId}/event-queue`,
+      request
+    );
   }
 
   public getDefinitions(): Observable<Array<ExternalPluginDefinition>> {

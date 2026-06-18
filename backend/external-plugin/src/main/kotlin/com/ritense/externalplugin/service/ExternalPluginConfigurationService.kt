@@ -154,6 +154,8 @@ class ExternalPluginConfigurationService(
             eventBrokerUrl = host.eventBrokerAmqpUrl,
             eventBrokerExchange = host.eventBrokerExchange ?: defaultEventBrokerExchange,
             eventBrokerExchangeType = "fanout",
+            eventQueueMode = host.eventQueueMode,
+            eventQueueTtlMs = host.eventQueueTtlMs,
         )
         if (pushed) {
             logger.info { "Pushed configuration ${configuration.id} for plugin '${definition.pluginId}' to host ${host.id}" }

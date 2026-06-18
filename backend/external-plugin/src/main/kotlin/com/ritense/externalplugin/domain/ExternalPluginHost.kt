@@ -74,4 +74,20 @@ class ExternalPluginHost(
      */
     @Column(name = "event_broker_exchange")
     var eventBrokerExchange: String? = null,
+
+    /**
+     * Per-host event-queue declaration mode. LIVE keeps today's autoDelete semantics; DURABLE
+     * survives host restarts. Pushed alongside the broker connection on every configuration push,
+     * so the plugin-host can switch its `assertQueue` arguments without any out-of-band coordination.
+     */
+    @Column(name = "event_queue_mode", nullable = false)
+    @Enumerated(EnumType.STRING)
+    var eventQueueMode: EventQueueMode = EventQueueMode.LIVE,
+
+    /**
+     * Queue inactivity TTL in milliseconds, used only when [eventQueueMode] is DURABLE. Maps to
+     * RabbitMQ's `x-expires` queue argument. Required to be `null` when mode is LIVE.
+     */
+    @Column(name = "event_queue_ttl_ms")
+    var eventQueueTtlMs: Long? = null,
 )

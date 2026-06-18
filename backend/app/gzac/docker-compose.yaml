@@ -85,9 +85,11 @@ services:
     gzac-rabbitmq:
         image: rabbitmq:4.1.0-management
         container_name: gzac-docker-compose-gzac-rabbitmq
+        hostname: gzac-rabbitmq # stable Erlang node name (rabbit@gzac-rabbitmq) so durable streams/quorum queues survive restarts
         volumes:
             - ./imports/gzac-rabbitmq/rabbitmq.conf:/etc/rabbitmq/rabbitmq.conf:ro
             - ./imports/gzac-rabbitmq/definitions.json:/etc/rabbitmq/definitions.json:ro
+            - gzac-rabbitmq-data:/var/lib/rabbitmq # persist data even if container shuts down
         ports:
             - "5672:5672"
             - "15672:15672"
@@ -733,3 +735,4 @@ services:
 volumes:
     gzac-database-data:
     gzac-database-data-mysql:
+    gzac-rabbitmq-data:
