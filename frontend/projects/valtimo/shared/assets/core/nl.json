@@ -179,7 +179,271 @@
       "noFormSpecified": "Voor dit tabblad is geen formulierdefinitie opgegeven.",
       "formNotFound": "De formulierdefinitie '{{formDefinitionName}}' kan niet worden gevonden."
     },
-    "rowLocked": "Je hebt geen toegang tot dit dossier"
+    "rowLocked": "Je hebt geen toegang tot dit dossier",
+    "inspection": {
+      "openInspector": "Dossier inspecteren",
+      "pageTitle": "Dossier inspectie",
+      "placeholder": "Dit tabblad wordt in een latere fase ingevuld.",
+      "tabs": {
+        "document": "Document",
+        "processes": "Processen",
+        "buildingBlocks": "Bouwblokken",
+        "logs": "Logs",
+        "zgw": "ZGW",
+        "metadata": "Metadata"
+      },
+      "document": {
+        "loading": "Document laden...",
+        "saved": "Document bijgewerkt"
+      },
+      "buildingBlocks": {
+        "loading": "Bouwblokken laden...",
+        "emptyTitle": "Geen bouwblokken",
+        "empty": "Dit dossier heeft geen bouwblok-instanties.",
+        "notEnabled": "Bouwblokken zijn niet ingeschakeld voor deze Valtimo-installatie.",
+        "saved": "Bouwblok-document bijgewerkt",
+        "listAriaLabel": "Bouwblokken",
+        "detail": {
+          "instanceId": "Instantie-ID",
+          "documentId": "Document-ID",
+          "processInstance": "Procesinstantie",
+          "parent": "Parent",
+          "content": "Documentinhoud",
+          "loading": "Bouwblok laden..."
+        }
+      },
+      "processes": {
+        "loading": "Processen laden...",
+        "empty": "Er zijn geen procesinstanties gekoppeld aan dit dossier.",
+        "listAriaLabel": "Procesinstanties",
+        "buildingBlockTag": "Bouwblok",
+        "buildingBlockTagTooltip": "Dit proces hoort bij een bouwblok",
+        "instanceId": "Instantie-ID",
+        "buildingBlock": "Bouwblok",
+        "detailsTab": "Details",
+        "diagramTab": "Diagram",
+        "version": "Versie",
+        "active": "Actief",
+        "completed": "Afgerond",
+        "incidentsHeader": "Incidenten",
+        "incidentTooltip": "Actieve incidenten op deze instantie",
+        "incidentType": "Type",
+        "activity": "Activiteit",
+        "message": "Bericht",
+        "timestamp": "Tijdstip",
+        "tasksHeader": "Taken",
+        "taskName": "Taak",
+        "taskAssignee": "Behandelaar",
+        "taskCreated": "Aangemaakt",
+        "noTasks": "Geen actieve taken.",
+        "variablesHeader": "Variabelen",
+        "variableName": "Naam",
+        "variableType": "Type",
+        "variableValue": "Waarde",
+        "noVariables": "Geen variabelen.",
+        "jobsHeader": "Jobs",
+        "jobType": "Type",
+        "jobActivity": "Activiteit",
+        "jobRetries": "Pogingen over",
+        "jobDueDate": "Vervaldatum",
+        "jobException": "Foutmelding",
+        "jobTypeLabel": {
+          "TIMER": "Timer",
+          "ASYNC_CONTINUATION": "Asynchrone continuatie",
+          "MESSAGE": "Bericht",
+          "BATCH": "Batch",
+          "OTHER": "Anders"
+        },
+        "noJobs": "Geen jobs.",
+        "startedBy": "Gestart door",
+        "startedOn": "Gestart op",
+        "viewLogs": "Logs bekijken",
+        "variableActions": {
+          "add": "Variabele toevoegen",
+          "edit": "Bewerken",
+          "delete": "Verwijderen",
+          "deleteConfirmTitle": "Variabele verwijderen",
+          "deleteConfirmContent": "Weet je zeker dat je de variabele '{{name}}' wil verwijderen? Dit heeft effect op het lopende proces.",
+          "createdToast": "Variabele '{{name}}' toegevoegd",
+          "updatedToast": "Variabele '{{name}}' bijgewerkt",
+          "deletedToast": "Variabele '{{name}}' verwijderd",
+          "createFailed": "Toevoegen van variabele mislukt",
+          "updateFailed": "Bijwerken van variabele mislukt",
+          "deleteFailed": "Verwijderen van variabele mislukt",
+          "alreadyExists": "Er bestaat al een variabele met deze naam"
+        },
+        "variableModal": {
+          "addTitle": "Procesvariabele toevoegen",
+          "editTitle": "Procesvariabele bewerken",
+          "name": "Naam",
+          "type": "Type",
+          "value": "Waarde",
+          "invalidJson": "Waarde is geen geldige JSON",
+          "invalidNumber": "Waarde is geen geldig getal",
+          "save": "Opslaan",
+          "cancel": "Annuleren",
+          "types": {
+            "STRING": "Tekst",
+            "INTEGER": "Geheel getal",
+            "LONG": "Long",
+            "DOUBLE": "Decimaal getal",
+            "BOOLEAN": "Boolean",
+            "JSON": "JSON / Object"
+          }
+        }
+      },
+      "logs": {
+        "loading": "Logs laden...",
+        "empty": "Er zijn geen logregels opgeslagen voor dit dossier.",
+        "emptyFiltered": "Geen logregels die aan de huidige filters voldoen.",
+        "filters": {
+          "message": "Bericht bevat",
+          "messagePlaceholder": "Zoek in bericht...",
+          "level": "Minimaal niveau",
+          "levelPlaceholder": "Alle niveaus",
+          "after": "Vanaf",
+          "before": "Tot",
+          "apply": "Toepassen",
+          "reset": "Reset",
+          "processInstanceChip": "Procesinstantie",
+          "clearProcessInstance": "Procesfilter wissen"
+        },
+        "columns": {
+          "timestamp": "Tijdstip",
+          "level": "Niveau",
+          "message": "Bericht"
+        },
+        "detail": {
+          "properties": "Context (MDC)",
+          "stacktrace": "Stacktrace"
+        }
+      },
+      "metadata": {
+        "loading": "Metadata laden...",
+        "documentId": "Document ID",
+        "definitionName": "Definitie",
+        "sequence": "Volgnummer",
+        "version": "Versie",
+        "createdBy": "Aangemaakt door",
+        "createdOn": "Aangemaakt op",
+        "modifiedOn": "Gewijzigd op",
+        "assignee": "Behandelaar",
+        "assignedTeam": "Toegewezen team",
+        "internalStatus": "Interne status",
+        "tags": "Tags",
+        "relations": "Relaties",
+        "relatedFiles": "Gerelateerde bestanden",
+        "unassigned": "Niet toegewezen",
+        "noStatus": "Geen status",
+        "noTags": "Geen tags",
+        "noRelations": "Geen relaties"
+      },
+      "zgw": {
+        "loading": "ZGW-informatie laden...",
+        "empty": "Dit dossier is niet gekoppeld aan een zaak.",
+        "yes": "Ja",
+        "no": "Nee",
+        "zaakUnreachable": {
+          "title": "Zaak laden mislukt",
+          "message": "De zaak die aan dit dossier is gekoppeld kon niet geladen worden. De koppeling kan verouderd zijn, de Zaken API-plugin kan verkeerd geconfigureerd zijn, of de zaak is verwijderd.",
+          "details": "Foutdetails"
+        },
+        "warnings": {
+          "title": "Enkele secties konden niet geladen worden"
+        },
+        "actions": {
+          "copy": "Kopiëren",
+          "openExternal": "Openen in extern systeem",
+          "resolveContent": "Inhoud ophalen",
+          "viewLatestContent": "Laatste inhoud bekijken"
+        },
+        "zaak": {
+          "title": "Zaak",
+          "identificatie": "Identificatie",
+          "uuid": "UUID",
+          "url": "Zaak-URL",
+          "bronorganisatie": "Bronorganisatie",
+          "zaaktype": "Zaaktype",
+          "registratiedatum": "Registratiedatum",
+          "startdatum": "Startdatum",
+          "einddatum": "Einddatum",
+          "einddatumGepland": "Einddatum (gepland)",
+          "uiterlijkeEinddatumAfdoening": "Uiterlijke einddatum afdoening",
+          "vertrouwelijkheidaanduiding": "Vertrouwelijkheidaanduiding",
+          "archiefstatus": "Archiefstatus",
+          "betalingsindicatie": "Betalingsindicatie",
+          "currentStatus": "Huidige status",
+          "currentResultaat": "Huidig resultaat",
+          "noStatus": "Geen status ingesteld",
+          "noResultaat": "Geen resultaat ingesteld"
+        },
+        "eigenschappen": {
+          "title": "Eigenschappen",
+          "empty": "Geen eigenschappen voor deze zaak.",
+          "naam": "Naam",
+          "waarde": "Waarde",
+          "eigenschapUrl": "Eigenschap",
+          "zaakeigenschapUrl": "Zaakeigenschap"
+        },
+        "rollen": {
+          "title": "Rollen",
+          "empty": "Geen rollen voor deze zaak.",
+          "betrokkeneType": "Type betrokkene",
+          "roltype": "Roltype",
+          "identificatie": "Identificatie (BSN / KvK)",
+          "indicatieMachtiging": "Indicatie machtiging",
+          "url": "Rol-URL"
+        },
+        "statusHistory": {
+          "title": "Statusgeschiedenis",
+          "empty": "Geen statussen geregistreerd.",
+          "datumStatusGezet": "Datum status gezet",
+          "statustype": "Statustype",
+          "statustoelichting": "Statustoelichting"
+        },
+        "resultaat": {
+          "title": "Resultaat",
+          "empty": "Geen resultaat voor deze zaak.",
+          "resultaattype": "Resultaattype",
+          "toelichting": "Toelichting"
+        },
+        "zaakobjecten": {
+          "title": "Zaakobjecten",
+          "empty": "Geen zaakobjecten gekoppeld aan deze zaak.",
+          "objectUrl": "Object-URL",
+          "objectType": "Objecttype",
+          "relatieomschrijving": "Relatieomschrijving",
+          "resolveLoading": "Inhoud ophalen...",
+          "notResolved": "Kan inhoud niet ophalen"
+        },
+        "zaakinformatieobjecten": {
+          "title": "Zaakinformatieobjecten",
+          "empty": "Geen documenten gekoppeld aan deze zaak.",
+          "titel": "Titel",
+          "url": "Document-URL",
+          "registratiedatum": "Registratiedatum"
+        },
+        "besluiten": {
+          "title": "Besluiten",
+          "empty": "Geen besluiten gekoppeld aan deze zaak.",
+          "url": "Besluit-URL"
+        },
+        "zaakdetails": {
+          "title": "Zaakdetails sync-object",
+          "notConfigured": "Geen portaal-synchronisatie geconfigureerd voor dit zaaktype.",
+          "objectManagementTitle": "Objectbeheer-configuratie",
+          "caseDefinitionKey": "Dossierdefinitie",
+          "enabled": "Ingeschakeld",
+          "objectUrl": "Zaakdetails object-URL",
+          "linkedToZaak": "Gekoppeld aan zaak",
+          "contentLoading": "Inhoud ophalen...",
+          "contentNotResolved": "Kan inhoud niet ophalen"
+        },
+        "rawJson": {
+          "title": "Ruwe zaak-JSON"
+        }
+      }
+    }
   },
   "document": {
     "title": {"single": "Document", "plural": "Document's"},
@@ -1022,7 +1286,10 @@
       "collection": {"title": "Collectie", "description": "Maak een collectie aan"},
       "divider": {"title": "Scheidingslijn"},
       "map": {"title": "Kaart", "description": "Maak een kaart widget aan"},
-      "person-card": {"title": "Persoonskaart", "description": "Een persoon met de belangrijkste gegevens en contactinformatie"},
+      "person-card": {
+        "title": "Persoonskaart",
+        "description": "Een persoon met de belangrijkste gegevens en contactinformatie"
+      },
       "metroline": {
         "title": "Metrolijn",
         "description": "Toon de voortgang van een zaak als een metrolijn"
@@ -2674,6 +2941,14 @@
       "selectedResult": "Geselecteerd resultaat",
       "openInNewTab": "Open in nieuw tabblad"
     }
+  },
+  "widgetLayout": {
+    "label": "Lay-out algoritme",
+    "muuriGapFree": "Standaard (minder witruimtes)",
+    "muuri": "Standaard",
+    "beautiful": "Witruimtevrij",
+    "infoTitle": "Over het lay-out algoritme",
+    "info": "Standaard en Standaard (minder witruimtes) houden de widgets zoveel mogelijk in de ingestelde volgorde, wat witruimtes kan opleveren. Witruimtevrij kan widgets binnen een sectie herordenen om die witruimtes te verwijderen en toont vrijwel altijd een nette lay-out zonder witruimtes."
   },
   "ikoManagement": {
     "preparingDownload": "Download aan het voorbereiden",

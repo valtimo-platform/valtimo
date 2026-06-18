@@ -29,6 +29,34 @@
                 }
             },
             {
+                "key": "nested-properties-test",
+                "type": "fields",
+                "title": "Nested Properties Test",
+                "width": 2,
+                "highContrast": true,
+                "properties": {
+                    "columns": [
+                        [
+                            {
+                                "key": "applicantCity",
+                                "title": "Woonplaats (Input)",
+                                "value": "doc:/applicant/address/city"
+                            },
+                            {
+                                "key": "applicantPostalCode",
+                                "title": "Postcode (Input)",
+                                "value": "doc:/applicant/address/postalCode"
+                            },
+                            {
+                                "key": "verificationStatus",
+                                "title": "Verificatie Status (Output)",
+                                "value": "doc:/applicant/verificationStatus"
+                            }
+                        ]
+                    ]
+                }
+            },
+            {
                 "key": "berekening-resultaten",
                 "type": "fields",
                 "title": "Berekening Resultaten",

@@ -1,0 +1,113 @@
+<!--
+  ~ Copyright 2015-2026 Ritense BV, the Netherlands.
+  ~
+  ~ Licensed under EUPL, Version 1.2 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~ https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" basis,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<section class="case-inspection-processes-tab">
+  <div *ngIf="$loading()" class="loading-container">
+    <cds-loading size="sm"></cds-loading>
+  </div>
+
+  <ng-container *ngIf="$errorMessage() as message">
+    <p class="case-inspection-processes-tab__error">{{ message }}</p>
+  </ng-container>
+
+  <ng-container *ngIf="!$loading() && $rows() as rows">
+    <p *ngIf="rows.length === 0" class="case-inspection-processes-tab__empty">
+      {{ 'case.inspection.processes.empty' | translate }}
+    </p>
+
+    <div *ngIf="rows.length > 0" class="case-inspection-processes-tab__layout">
+      <div
+        class="case-inspection-processes-tab__list"
+        role="listbox"
+        [attr.aria-label]="'case.inspection.processes.listAriaLabel' | translate"
+      >
+        <button
+          *ngFor="let row of rows"
+          type="button"
+          role="option"
+          class="case-inspection-processes-tab__list-item"
+          [attr.aria-selected]="isSelected(row)"
+          [class.case-inspection-processes-tab__list-item--selected]="isSelected(row)"
+          (click)="onSelect(row)"
+        >
+          <span class="case-inspection-processes-tab__list-item-title">
+            {{ row.processName || row.processDefinitionKey }}
+
+            <cds-tag
+              *ngIf="row.buildingBlock as bb"
+              size="sm"
+              type="green"
+              [title]="
+                ('case.inspection.processes.buildingBlockTagTooltip' | translate) +
+                ': ' +
+                bb.definitionKey +
+                ' ' +
+                bb.definitionVersionTag
+              "
+            >
+              {{ 'case.inspection.processes.buildingBlockTag' | translate }}
+            </cds-tag>
+          </span>
+          <span class="case-inspection-processes-tab__list-item-meta">
+            <code>{{ row.processInstanceId }}</code>
+          </span>
+
+          <span class="case-inspection-processes-tab__list-item-indicators">
+            <ng-container *ngIf="row.incidents.length > 0; else noIncidents">
+              <span
+                class="case-inspection-processes-tab__row-incident"
+                [attr.title]="'case.inspection.processes.incidentTooltip' | translate"
+              >
+                <svg cdsIcon="warning--alt--filled" size="16"></svg>
+                {{ row.incidents.length }}
+              </span>
+            </ng-container>
+
+            <ng-template #noIncidents>
+              <span
+                *ngIf="row.active"
+                class="case-inspection-processes-tab__row-healthy"
+                [attr.title]="'case.inspection.processes.active' | translate"
+              >
+                <svg cdsIcon="checkmark--filled" size="16"></svg>
+              </span>
+
+              <span
+                *ngIf="!row.active"
+                class="case-inspection-processes-tab__row-completed"
+                [attr.title]="'case.inspection.processes.completed' | translate"
+              >
+                <svg cdsIcon="checkmark--outline" size="16"></svg>
+              </span>
+            </ng-template>
+          </span>
+        </button>
+      </div>
+
+      <article class="case-inspection-processes-tab__detail">
+        <valtimo-case-inspection-process-detail
+          *ngIf="$selected() as selected"
+          [canInspectModify]="$canInspectModify()"
+          [documentId]="documentId"
+          [row]="selected"
+          (variablesChangedEvent)="reloadSelected()"
+          (viewBuildingBlockEvent)="viewBuildingBlockEvent.emit($event)"
+          (viewProcessLogsEvent)="viewProcessLogsEvent.emit($event)"
+        ></valtimo-case-inspection-process-detail>
+      </article>
+    </div>
+  </ng-container>
+</section>

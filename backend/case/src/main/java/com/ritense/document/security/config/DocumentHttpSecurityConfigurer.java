@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -43,7 +43,9 @@ public class DocumentHttpSecurityConfigurer implements HttpSecurityConfigurer {
                 .requestMatchers(antMatcher(POST, "/api/v1/document/{documentId}/unassign")).authenticated()
                 .requestMatchers(antMatcher(GET, "/api/v1/document/{document-id}/candidate-user")).authenticated()
                 .requestMatchers(antMatcher(POST, "/api/v1/document/candidate-user")).authenticated()
-                .requestMatchers(antMatcher(GET, "/api/v1/document/{document-id}/candidate-team")).authenticated());
+                .requestMatchers(antMatcher(GET, "/api/v1/document/{document-id}/candidate-team")).authenticated()
+                .requestMatchers(antMatcher(GET, "/api/management/v1/case/{caseId}")).authenticated()
+                .requestMatchers(antMatcher(PUT, "/api/management/v1/case/{caseId}")).authenticated());
         } catch (Exception e) {
             throw new HttpConfigurerConfigurationException(e);
         }

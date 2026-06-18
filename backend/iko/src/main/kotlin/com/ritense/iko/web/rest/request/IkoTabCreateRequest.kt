@@ -17,6 +17,7 @@
 package com.ritense.iko.web.rest.request
 
 import com.ritense.tab.domain.Tab
+import com.ritense.tab.domain.WidgetLayout
 import jakarta.validation.constraints.Size
 
 data class IkoTabCreateRequest(
@@ -25,6 +26,7 @@ data class IkoTabCreateRequest(
     @field:Size(max = 256)
     val type: String,
     val properties: Map<String, Any?> = emptyMap(),
+    val widgetLayout: WidgetLayout? = null,
 ) {
     fun toEntity(key: String) = Tab(
         key = key,
@@ -32,5 +34,6 @@ data class IkoTabCreateRequest(
         order = 0,
         type = type,
         properties = properties,
+        widgetLayout = widgetLayout,
     )
 }

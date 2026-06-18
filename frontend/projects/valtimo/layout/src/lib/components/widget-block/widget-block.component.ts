@@ -47,7 +47,7 @@ import {
 } from 'rxjs';
 import {WidgetColor, WidgetComponentMap, WidgetType, WidgetWithUuid} from '../../models';
 import {WidgetLayoutService} from '../../services/widget-layout.service';
-import {WIDGET_COLOR_THEME_MAP, WIDGET_HEIGHT_1X, type WidgetColorVariant} from '../../constants';
+import {WIDGET_COLOR_THEME_MAP, type WidgetColorVariant} from '../../constants';
 
 @Component({
   selector: 'valtimo-widget-block',
@@ -92,10 +92,11 @@ export class WidgetBlockComponent implements AfterViewInit, OnDestroy {
     this._contentHeight$,
     this._viewContainerRef$,
     this.widget$,
+    this.widgetLayoutService.rowHeightUnit$,
   ]).pipe(
     filter(([contentHeight]) => contentHeight !== 0),
-    tap(([contentHeight, viewRef, widget]) => {
-      const blockHeight = Math.ceil((contentHeight + 16) / WIDGET_HEIGHT_1X) * WIDGET_HEIGHT_1X;
+    tap(([contentHeight, viewRef, , rowHeightUnit]) => {
+      const blockHeight = Math.ceil((contentHeight + 16) / rowHeightUnit) * rowHeightUnit;
 
       this.renderer.setStyle(viewRef.element.nativeElement, 'height', `${blockHeight}px`);
       this.widgetLayoutService.triggerMuuriLayout();
