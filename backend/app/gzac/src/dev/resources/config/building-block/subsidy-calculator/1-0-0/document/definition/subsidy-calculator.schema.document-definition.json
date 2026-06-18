@@ -12,6 +12,34 @@
             "type": "integer",
             "description": "Aantal personen in het huishouden"
         },
+        "applicantAddress": {
+            "type": "object",
+            "description": "Adresgegevens van aanvrager (nested input test)",
+            "properties": {
+                "city": {
+                    "type": "string",
+                    "description": "Woonplaats"
+                },
+                "postalCode": {
+                    "type": "string",
+                    "description": "Postcode"
+                }
+            }
+        },
+        "verificationResult": {
+            "type": "object",
+            "description": "Resultaat van verificatie (nested output test)",
+            "properties": {
+                "status": {
+                    "type": "string",
+                    "description": "Status van verificatie"
+                },
+                "details": {
+                    "type": "string",
+                    "description": "Details van verificatie"
+                }
+            }
+        },
         "verifiedApplicant": {
             "type": "string",
             "description": "Geverifieerde aanvragergegevens"

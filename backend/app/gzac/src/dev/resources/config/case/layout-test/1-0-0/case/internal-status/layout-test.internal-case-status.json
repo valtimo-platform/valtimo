@@ -1,0 +1,23 @@
+[
+    {
+        "key": "nieuw",
+        "title": "Nieuw",
+        "retentionPeriodInDays": -1,
+        "visibleInCaseListByDefault": true,
+        "color": "BLUE"
+    },
+    {
+        "key": "in-behandeling",
+        "title": "In behandeling",
+        "retentionPeriodInDays": -1,
+        "visibleInCaseListByDefault": true,
+        "color": "PURPLE"
+    },
+    {
+        "key": "afgehandeld",
+        "title": "Afgehandeld",
+        "retentionPeriodInDays": 365,
+        "visibleInCaseListByDefault": true,
+        "color": "GREEN"
+    }
+]

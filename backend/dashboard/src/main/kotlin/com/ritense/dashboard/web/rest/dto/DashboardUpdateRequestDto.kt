@@ -17,11 +17,13 @@
 package com.ritense.dashboard.web.rest.dto
 
 import com.ritense.dashboard.domain.Dashboard
+import com.ritense.dashboard.domain.WidgetLayout
 
 data class DashboardUpdateRequestDto(
     val key: String,
     val title: String,
     val description: String,
+    val widgetLayout: WidgetLayout? = null,
 ) {
     companion object {
         fun of(dashboard: Dashboard): DashboardUpdateRequestDto {
@@ -29,6 +31,7 @@ data class DashboardUpdateRequestDto(
                 key = dashboard.key,
                 title = dashboard.title,
                 description = dashboard.description,
+                widgetLayout = dashboard.widgetLayout,
             )
         }
     }
