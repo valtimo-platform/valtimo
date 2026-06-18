@@ -64,6 +64,8 @@ type StartProcessLinkType = 'form' | 'form-flow' | 'form-view-model' | 'url' | '
 
 type StartProcessLinkFormSize = 'extraSmall' | 'small' | 'medium' | 'large';
 
+type StartProcessLinkFormDisplayType = 'modal' | 'panel';
+
 interface ProcessDefinitionStartProcessLink {
   processLinkId: string;
   type: StartProcessLinkType;
@@ -76,6 +78,7 @@ interface ProcessDefinitionStartProcessLink {
     url?: string;
     componentKey?: string;
     formSize?: StartProcessLinkFormSize;
+    formDisplayType?: StartProcessLinkFormDisplayType;
   };
 }
 
