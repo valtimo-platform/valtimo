@@ -270,9 +270,6 @@
 * [Style guide](contributing/style-guide.md)
 * [Extend the core or build a plugin](contributing-to-valtimo/extend-the-core-or-build-a-plugin.md)
 * [Branching and release strategy](contributing-to-valtimo/branching-and-release-strategy.md)
-* [API design standards](contributing-to-valtimo/api-design-standards.md)
-* [Deprecation policy](contributing-to-valtimo/deprecation-policy.md)
-* [Data processing guidelines](contributing-to-valtimo/data-processing-guidelines.md)
 
 ## Reference
 

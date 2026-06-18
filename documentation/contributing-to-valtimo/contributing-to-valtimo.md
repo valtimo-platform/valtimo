@@ -63,16 +63,12 @@ organisation. In that case you maintain the plugin yourself.
     - Related issue gets updated with the milestone.
     - Upcoming Wednesday, the PR is included in the release.
 
-## Standards and policies
+## Coding guidelines
 
-When contributing code or designing new endpoints, follow these standards:
+For code style and conventions, see:
 
-* [Backend coding guidelines](../../backend/CODING-GUIDELINES.md) — Kotlin/Java style, Spring conventions, validation,
-  security practices.
-* [Frontend coding guidelines](../../frontend/CODING-GUIDELINES.md) — Angular templates, TypeScript, signals, reactive
-  forms.
-* [API design standards](api-design-standards.md) — REST URL conventions, status codes, versioning, RFC 7807 error
-  format.
-* [Deprecation policy](deprecation-policy.md) — how to retire public API surface and the announce/remove timeline.
-* [Data processing guidelines](data-processing-guidelines.md) — what data Valtimo stores, what may and may not be
-  logged, retention and erasure patterns.
+* [Backend coding guidelines](../../backend/CODING-GUIDELINES.md)
+* [Frontend coding guidelines](../../frontend/CODING-GUIDELINES.md)
+
+These describe how the codebase is generally written today. They are guidance, not hard rules — when in doubt, match the
+surrounding code and discuss bigger changes with the product team.
