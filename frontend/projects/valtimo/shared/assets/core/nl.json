@@ -2248,7 +2248,7 @@
         "processDefinition": "Procesdefinitie"
       },
       "parentType": {
-        "CASE": "Zaak",
+        "CASE": "Dossier",
         "BUILDING_BLOCK": "Bouwblok",
         "GLOBAL": "Globaal"
       }
