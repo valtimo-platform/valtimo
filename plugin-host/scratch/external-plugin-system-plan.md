@@ -32,6 +32,7 @@ Status legend: ✅ implemented & verified · 🟡 implemented, POC-level · ⛔ 
 | GZAC→host auth on **every** route (HMAC-SHA256, replay-protected, body-bound): actions, config-push, management | `client/ExternalPluginHostClient.kt` + `security/ExternalPluginHmacSigner.kt` ↔ `plugin-host/app/src/security/{hmac,hmac-auth}.ts`, `routes/{plugin-actions,host-configurations,host-management}.ts` | ✅ |
 | Transport confidentiality (TLS): host serves HTTPS from `TLS_*`; broker credentials confined to a confidential transport at host registration | `plugin-host/app/src/index.ts` (`buildHttpsOptions`) + `models/app-config.ts` ↔ `service/ExternalPluginHostService.isSecureTransport` | ✅ |
 | GZAC compatibility check (semver range vs running version): comparator + version provider + zip manifest peek; non-blocking UI warnings, upload confirm-gate | `backend/external-plugin/.../compatibility/*` + `web/rest/ExternalPluginManagementResource.kt#uploadPlugin` ↔ frontend `plugin-management/.../utils/external-plugin-compatibility.util.ts` | ✅ |
+| Strict delete guards (embedded + external), shared usage DTO/resolver + `/usages` endpoints + read-only in-use modal, no force override | core `backend/plugin/.../{web/rest/dto/PluginUsageDto, service/ProcessDefinitionUsageMetaResolver, service/PluginConfigurationUsageResolver, exception/PluginConfigurationInUseException}` + `backend/external-plugin/.../{service/ExternalPluginHostUsageResolver, exception/ExternalPlugin*InUseException}` ↔ frontend `plugin-management/.../plugin-usage-modal/` | ✅ |
 
 Single-core-app model with **multiple hosts per instance**: the core app pushes each configuration
 directly to its host with a freshly issued service token, a `gzacBaseUrl` callback target taken
@@ -613,22 +614,25 @@ implemented and arguably unnecessary given the side-by-side model. Permission-di
 an activation gate — only upload is a confirm-gate; an admin can still activate a configuration for
 an incompatible definition.
 
-## 12. Deletion semantics — strict, never forced ⛔ (host-side plugin delete ✅)
+## 12. Deletion semantics — strict, never forced ✅
 
 Deletion of a host or a plugin configuration is **never allowed** while any process link in the
 system references that configuration — even when the case definition that owns the BPMN is final
-and the link is therefore frozen.
+and the link is therefore frozen. The same guard covers both **external** plugin configurations /
+hosts and **embedded** (`com.ritense.plugin`) configurations.
 
 Rationale: a forced cascade would silently break a final case definition's runtime behaviour. The
 configuration is immutable for the same reason the BPMN that references it is immutable. The user
-experience is to surface what depends on the resource and explain that deletion is unavailable.
+experience is to surface what depends on the resource and explain that deletion is unavailable —
+there is no force override on any path.
 
 | Entity | Blocked when… | Surface |
 |--------|---------------|---------|
 | **ProcessLink** | never (BPMN authoring is the source of truth — the case definition is the gate) | — |
-| **Configuration** | any `ProcessLink` references it | Edit/delete screen shows a panel: "Cannot delete: used by N process link(s)" with `(processDefinitionKey, activityName, caseDefinitionKey, version)` deep links. No override. |
+| **Configuration** (external) | any `ProcessLink` references it | Server-side guard in `ExternalPluginConfigurationService.delete` throws `ExternalPluginConfigurationInUseException` (HTTP 409, `usages` payload). UI runs the usage pre-check and shows the read-only `PluginUsageModalComponent` listing the referencing activities. No override. |
+| **Configuration** (embedded) | any *fixed* `PluginProcessLink` references it | Server-side guard in `PluginService.deletePluginConfiguration` throws `PluginConfigurationInUseException` (HTTP 409, `usages` payload). Same UI flow and modal. |
 | **Definition** | any `Configuration` exists for it | Not directly user-deletable; cleared by the discovery cycle when the upstream host no longer lists the version **and** no configurations remain. |
-| **Host** | any `Configuration` under any definition on this host has at least one `ProcessLink` referencing it | Host detail screen shows the same dependency panel. Deletion of an entire host with active configurations remains blocked: removing the host would orphan service tokens, push paths, and broker bindings for live configurations. |
+| **Host** | any `Configuration` under any definition on this host has at least one `ProcessLink` referencing it | Server-side guard in `ExternalPluginHostService.delete` throws `ExternalPluginHostInUseException` (HTTP 409, `usages` payload). Host delete in the UI shows the same `PluginUsageModalComponent`. Deletion of an entire host with active configurations remains blocked: removing the host would orphan service tokens, push paths, and broker bindings for live configurations. |
 | **Plugin on host** (host-side route) ✅ | active config refers to plugin version | `DELETE /api/host/plugins/:id/:version` returns HTTP 409 with `configurationIds`. |
 
 A configuration that *has* been activated but has no process links yet **can** be deleted (it is
@@ -636,10 +640,66 @@ not yet load-bearing). A host without any configurations can be deleted. Discove
 continues to mark missing definitions `UNAVAILABLE` after N consecutive misses
 (`failure-threshold`, default 3) rather than deleting them.
 
-UX detail: the dependency-list endpoint returns enough context for the UI to render a clickable
-list — process definition key, activity name, case definition key + version, last process
-instance count — so the operator can take action (close out the case definition, archive
-instances) before retrying.
+**12.1 Shared usage infrastructure (core plugin module).** The guard reuses one set of types and
+one process-definition reader across both plugin systems, all living in the **core** `plugin`
+module (`backend/plugin`, which now depends on `:backend:core` for the Operaton lookups). External
+code imports them rather than redefining them:
+
+- `web/rest/dto/PluginUsageDto` + `PluginUsageParentType` (`CASE | BUILDING_BLOCK | GLOBAL`) — the
+  single DTO shape returned in all four 409 payloads and `/usages` responses. Carries
+  `configurationId`, `configurationTitle`, `parentType`, `parentKey`, `parentVersionTag`,
+  `processDefinitionId`, `processDefinitionKey`, `processDefinitionName`, `activityId`,
+  `activityName`, `processLinkId`.
+- `service/ProcessDefinitionUsageMetaResolver` — resolves a process definition's key/name, the
+  owning **case definition or building block** (parsed from the Operaton `versionTag` via
+  `OperatonProcessDefinition.getBlueprintId()`, widened into `PluginUsageParentType`), and lazily
+  the BPMN model so the **activity name** can be looked up. All Operaton/BPMN reads are wrapped in
+  `runCatching`, so a missing or unloadable process definition degrades to nullable fields
+  (`GLOBAL` + null key/version) — the row still surfaces with `processDefinitionId` and the link id
+  for manual investigation.
+
+Two thin usage resolvers sit on top of it:
+- `PluginConfigurationUsageResolver` (core) — one `PluginUsageDto` per *fixed* `PluginProcessLink`
+  referencing the configuration. **BUILDING_BLOCK references resolve dynamically per
+  building-block context and are stored with `plugin_configuration_id = NULL`**, so they are
+  correctly excluded by `findByPluginConfigurationId` — only fixed references block deletion of a
+  specific configuration.
+- `ExternalPluginHostUsageResolver` (external-plugin module) — `findUsagesForConfiguration(id)` and
+  `findUsagesForHost(id)` (the host variant fans out over every definition→configuration under the
+  host), via `ExternalPluginProcessLinkRepository.findAllByExternalPluginConfigurationIdIn(...)`.
+
+**12.2 Exceptions.** Three `AbstractThrowableProblem`s, all HTTP 409 `application/problem+json`
+with `getCause() = null` (so no stack leaks into the body) and a `parameters` map rendered as
+top-level keys: `PluginConfigurationInUseException` (core, `configurationId` + `usages`),
+`ExternalPluginConfigurationInUseException` (`configurationId` + `usages`), and
+`ExternalPluginHostInUseException` (`hostId` + `usages`).
+
+**12.3 Advisory `/usages` endpoints (proactive UI).** Each delete is preceded by a read-only
+lookup so the UI can disable / divert the delete control before the user commits, returning the
+same `List<PluginUsageDto>` the 409 would carry. All three are `ADMIN`-gated in their respective
+`HttpSecurityConfigurer`s:
+- `GET /api/v1/plugin/configuration/{id}/usages` (embedded);
+- `GET /api/management/v1/external-plugin/configuration/{id}/usages`;
+- `GET /api/management/v1/external-plugin/host/{hostId}/usages`.
+
+These are **advisory only** — the server-side guard in the `delete` methods remains authoritative.
+An empty list here does not authorise deletion: a process link created between the pre-check and
+the delete still surfaces the 409, which the UI also handles.
+
+**12.4 Frontend flow.** `@valtimo/plugin` exports the `ExternalPluginHostUsage` /
+`ExternalPluginHostUsageParentType` types (mirroring the DTO) and the
+`getHostUsages` / `getConfigurationUsages` service calls (`ExternalPluginService`), with
+`PluginManagementService.getConfigurationUsages` for embedded configs. `PluginManagementComponent`
+runs one unified `_requestDeleteConfiguration(source, id, title)` entry point for every delete
+trigger (row action, external edit modal's `onExternalConfigDeleted`, embedded edit modal's
+bubbled `deleteEvent`): it pre-checks usages, then routes to either the read-only in-use modal
+(blocked) or a destructive-confirmation modal (clear); the actual delete still catches a 409 and
+re-opens the in-use modal to cover the race. The embedded `PluginEditModalComponent` no longer
+deletes inline — it emits `deleteEvent` up to the parent so the pre-check + confirmation flow lives
+in one place (matching the external edit modal). `PluginUsageModalComponent` is a single read-only,
+"Close"-only modal reused for hosts and configurations; the parent supplies the title/description
+translation keys. i18n lives under `pluginManagement.{deleteConfigurationModal, hostInUseModal,
+configurationInUseModal, usageModal}` in `en.json` / `nl.json`.
 
 ## 13. User-token-scoped endpoints (downscoped) ⛔
 
@@ -679,8 +739,6 @@ through the user-token path.
 - Case tabs / case widgets / menu pages (the iframe surfaces).
 - User-token-scoped endpoints (§13) — iframe-driven calls on behalf of the logged-in user with
   PBAC ∩ allowlist intersection.
-- Strict deletion guards for host and configuration when process links exist (§12) — currently
-  only the host's plugin-delete route enforces this.
 - Host database for KV / API logs / retention.
 - URL-plugin mode.
 - Event delivery durability across host downtime (currently live-subscription only).
@@ -688,19 +746,16 @@ through the user-token path.
 
 ## 15. Roadmap (priority order)
 
-1. **Strict deletion guards (§12)** — block configuration delete and host delete when any
-   process link exists; structured "what depends on this" body for the UI dependency panel; no
-   force override.
-2. **User-token-scoped endpoints (§13)** — new `POST /user-token` endpoint, user-token filter
+1. **User-token-scoped endpoints (§13)** — new `POST /user-token` endpoint, user-token filter
    with PBAC ∩ allowlist intersection, frontend wiring in `ExternalPluginIframeComponent.onIframeLoad()`
    to populate `accessToken` from `/user-token`, SDK side already exposes `getAccessToken()`.
-3. Capabilities + host functions + allowlist enforcement; surface in the acceptance screen by
+2. Capabilities + host functions + allowlist enforcement; surface in the acceptance screen by
    category.
-4. Durable / replayable event delivery option (per-host durable queue with TTL) for hosts that
+3. Durable / replayable event delivery option (per-host durable queue with TTL) for hosts that
    must not miss events during downtime.
-5. HTMX pages, case tabs, case widgets, menu pages.
-6. Host database (KV, API logs, retention) + admin log view.
-7. Cleanup: align async-vs-sync SDK docs.
+4. HTMX pages, case tabs, case widgets, menu pages.
+5. Host database (KV, API logs, retention) + admin log view.
+6. Cleanup: align async-vs-sync SDK docs.
 
 ## 16. Verification status
 
@@ -722,7 +777,19 @@ through the user-token path.
   manifest version, `null` otherwise), the zip manifest peek (root-entry wins, missing/blank/garbage →
   no gate), and the upload
   endpoint's 409-unless-forced gate (an incompatible package is rejected and never forwarded to the
-  host; a forced upload, a compatible package, and an undeclared package each go through).
+  host; a forced upload, a compatible package, and an undeclared package each go through). The
+  delete-guard suites cover both plugin systems: `service/ExternalPluginHostUsageResolverTest`
+  (host- and configuration-scoped usage resolution, parent classification into
+  CASE/BUILDING_BLOCK/GLOBAL, activity-name lookup, and graceful degradation when a process
+  definition is missing/unloadable), `service/ExternalPluginConfigurationServiceDeleteTest` and
+  `service/ExternalPluginHostServiceDeleteTest` (delete proceeds with no usages, throws the
+  in-use exception with the populated `usages` payload otherwise), and
+  `exception/ExternalPluginHostInUseExceptionTest` (pins the 409 problem-body shape: title,
+  `CONFLICT` status, `hostId`, and the `PluginUsageDto` fields).
+- Backend `:backend:plugin:test` (`service/PluginServiceTest`): BUILD SUCCESSFUL — embedded
+  `deletePluginConfiguration` proceeds when no fixed process link references the configuration,
+  throws `PluginConfigurationInUseException` with the `usages` payload when one does, and a
+  not-found id is a no-op warning.
 - Backend `:backend:app:gzac:compileKotlin`: BUILD SUCCESSFUL.
 - Frontend `ng build` (production): clean.
 - Sample plugin `build:pack`: clean (Wasm + pack including `logo.svg`, `translations.en/nl`,

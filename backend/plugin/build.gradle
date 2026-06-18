@@ -38,6 +38,7 @@ dependencies {
         exclude(group: "com.ritense.valtimo", module: "core")
     }
     implementation project(":backend:contract")
+    implementation project(":backend:core")
     implementation project(":backend:logging")
     implementation project(":backend:value-resolver")
 

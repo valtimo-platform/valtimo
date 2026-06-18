@@ -42,6 +42,7 @@ import com.ritense.plugin.domain.PluginProcessLinkId
 import com.ritense.plugin.domain.PluginProperty
 import com.ritense.plugin.events.PluginConfigurationDeletedEvent
 import com.ritense.plugin.events.PluginConfigurationIdUpdatedEvent
+import com.ritense.plugin.exception.PluginConfigurationInUseException
 import com.ritense.plugin.exception.PluginEventInvocationException
 import com.ritense.plugin.exception.PluginPropertyParseException
 import com.ritense.plugin.exception.PluginPropertyRequiredException
@@ -50,6 +51,7 @@ import com.ritense.plugin.repository.PluginConfigurationRepository
 import com.ritense.plugin.repository.PluginConfigurationSearchRepository
 import com.ritense.plugin.repository.PluginDefinitionRepository
 import com.ritense.plugin.repository.PluginProcessLinkRepository
+import com.ritense.plugin.web.rest.dto.PluginUsageDto
 import com.ritense.plugin.web.rest.request.PluginProcessLinkCreateDto
 import com.ritense.plugin.web.rest.request.PluginProcessLinkUpdateDto
 import com.ritense.plugin.web.rest.result.PluginActionDefinitionDto
@@ -99,7 +101,8 @@ class PluginService(
     private val encryptionService: EncryptionService,
     private val environment: Environment,
     private val caseDefinitionChecker: CaseDefinitionChecker,
-    private val buildingBlockPluginConfigurationResolver: BuildingBlockPluginConfigurationResolver?
+    private val buildingBlockPluginConfigurationResolver: BuildingBlockPluginConfigurationResolver?,
+    private val pluginConfigurationUsageResolver: PluginConfigurationUsageResolver,
 ) {
 
     fun getObjectMapper(): ObjectMapper {
@@ -280,23 +283,33 @@ class PluginService(
         return savedPluginConfiguration
     }
 
+    @Transactional(readOnly = true)
+    fun findPluginConfigurationUsages(
+        @LoggableResource(resourceType = PluginConfiguration::class) pluginConfigurationId: PluginConfigurationId
+    ): List<PluginUsageDto> = pluginConfigurationUsageResolver.findUsagesForConfiguration(pluginConfigurationId)
+
     fun deletePluginConfiguration(
         @LoggableResource(resourceType = PluginConfiguration::class) pluginConfigurationId: PluginConfigurationId
     ) {
-        pluginConfigurationRepository.findByIdOrNull(pluginConfigurationId)
-            ?.let {
-                try {
-                    it.runAllPluginEvents(EventType.DELETE)
-                } catch (e: Exception) {
-                    logger.warn { "Failed to run events on plugin ${it.title} with id ${it.id.id}" }
-                }
-
-                pluginConfigurationRepository.deleteById(pluginConfigurationId)
-
-                val event = PluginConfigurationDeletedEvent(it)
-                applicationEventPublisher.publishEvent(event)
+        val configuration = pluginConfigurationRepository.findByIdOrNull(pluginConfigurationId)
+            ?: run {
+                logger.warn { "Plugin configuration with Id: [$pluginConfigurationId] was not found." }
+                return
             }
-            ?: logger.warn { "Plugin configuration with Id: [$pluginConfigurationId] was not found." }
+
+        val usages = pluginConfigurationUsageResolver.findUsagesForConfiguration(pluginConfigurationId)
+        if (usages.isNotEmpty()) {
+            throw PluginConfigurationInUseException(pluginConfigurationId.id, usages)
+        }
+
+        try {
+            configuration.runAllPluginEvents(EventType.DELETE)
+        } catch (e: Exception) {
+            logger.warn { "Failed to run events on plugin ${configuration.title} with id ${configuration.id.id}" }
+        }
+
+        pluginConfigurationRepository.deleteById(pluginConfigurationId)
+        applicationEventPublisher.publishEvent(PluginConfigurationDeletedEvent(configuration))
     }
 
     fun getPluginDefinitionActions(

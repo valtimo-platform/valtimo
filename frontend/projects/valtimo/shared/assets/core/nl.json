@@ -2225,6 +2225,34 @@
       "title": "Plugin-host verwijderen",
       "description": "Weet je zeker dat je deze plugin-host wilt verwijderen? Alle plugin-definities en configuraties van deze host worden ook verwijderd. Deze actie kan niet ongedaan worden gemaakt."
     },
+    "deleteConfigurationModal": {
+      "title": "Plugin-configuratie verwijderen",
+      "description": "Weet je zeker dat je deze plugin-configuratie wilt verwijderen? Deze actie kan niet ongedaan worden gemaakt."
+    },
+    "hostInUseModal": {
+      "title": "Plugin-host is in gebruik",
+      "thisHost": "deze plugin-host",
+      "description": "{{ entityName }} kan niet worden verwijderd omdat de volgende BPMN-activiteiten nog gebruikmaken van een configuratie van deze host. Verwijder eerst deze proceskoppelingen."
+    },
+    "configurationInUseModal": {
+      "title": "Plugin-configuratie is in gebruik",
+      "thisConfiguration": "deze plugin-configuratie",
+      "description": "{{ entityName }} kan niet worden verwijderd omdat de volgende BPMN-activiteiten er nog naar verwijzen. Verwijder eerst deze proceskoppelingen."
+    },
+    "usageModal": {
+      "headers": {
+        "activity": "Activiteit",
+        "configuration": "Plugin-configuratie",
+        "type": "Type",
+        "linkedTo": "Gekoppeld aan",
+        "processDefinition": "Procesdefinitie"
+      },
+      "parentType": {
+        "CASE": "Dossier",
+        "BUILDING_BLOCK": "Bouwblok",
+        "GLOBAL": "Globaal"
+      }
+    },
     "compatibility": {
       "incompatibleTag": "Incompatibel",
       "warningTitle": "Mogelijk compatibiliteitsprobleem",

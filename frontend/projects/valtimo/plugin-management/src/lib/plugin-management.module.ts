@@ -31,6 +31,7 @@ import {PluginExternalEditModalComponent} from './components/plugin-external-edi
 import {PluginExternalConfigureComponent} from './components/plugin-external-configure/plugin-external-configure.component';
 import {PluginExternalPermissionsComponent} from './components/plugin-external-permissions/plugin-external-permissions.component';
 import {PluginHostModalComponent} from './components/plugin-host-modal/plugin-host-modal.component';
+import {PluginUsageModalComponent} from './components/plugin-usage-modal/plugin-usage-modal.component';
 import {PluginUploadModalComponent} from './components/plugin-upload-modal/plugin-upload-modal.component';
 import {
   CarbonListModule,
@@ -92,6 +93,7 @@ import {
     PluginExternalPermissionsComponent,
     PluginHostModalComponent,
     PluginUploadModalComponent,
+    PluginUsageModalComponent,
     ConfirmationModalModule,
   ],
   exports: [
