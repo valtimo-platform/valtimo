@@ -74,6 +74,7 @@ class ProcessDefinitionValidator(
         validateMessageIntermediateThrowEvents(bpmnModel, processLinkActivityIds, errors)
         validateTimerIntermediateCatchEvents(bpmnModel, errors)
         validateStartEventDefinitions(bpmnModel, processLinkActivityIds, errors)
+        validateNoneStartEvents(bpmnModel, processLinkActivityIds, errors)
 
         return ProcessDefinitionValidationResult(
             isExecutable = isExecutable,
@@ -521,6 +522,29 @@ class ProcessDefinitionValidator(
                         elementType = "TimerIntermediateCatchEvent",
                         elementName = event.name,
                         reason = "Timer intermediate catch event has no timer configuration"
+                    )
+                )
+            }
+    }
+
+    private fun validateNoneStartEvents(
+        bpmnModel: BpmnModelInstance,
+        processLinkActivityIds: Set<String>,
+        errors: MutableList<ProcessDefinitionValidationError>
+    ) {
+        bpmnModel.getModelElementsByType(StartEvent::class.java)
+            .filter { it.getChildElementsByType(EventDefinition::class.java).isEmpty() }
+            .forEach { startEvent ->
+                if (processLinkActivityIds.contains(startEvent.id)) return@forEach
+                if (startEvent.operatonFormKey != null || startEvent.operatonFormRef != null) return@forEach
+
+                errors.add(
+                    ProcessDefinitionValidationError(
+                        elementId = startEvent.id,
+                        elementType = "StartEvent",
+                        elementName = startEvent.name,
+                        reason = "None start event has no process link or form",
+                        severity = ValidationSeverity.WARNING
                     )
                 )
             }

@@ -24,6 +24,7 @@ import com.ritense.dashboard.datasource.WidgetDataSourceDto
 import com.ritense.dashboard.datasource.WidgetDataSourceResolver
 import com.ritense.dashboard.domain.Dashboard
 import com.ritense.dashboard.domain.WidgetConfiguration
+import com.ritense.dashboard.domain.WidgetLayout
 import com.ritense.dashboard.repository.DashboardRepository
 import com.ritense.dashboard.repository.WidgetConfigurationRepository
 import com.ritense.dashboard.web.rest.dto.DashboardUpdateRequestDto
@@ -73,7 +74,11 @@ class DashboardService(
         return dashboard
     }
 
-    fun createDashboard(title: String, description: String): Dashboard {
+    fun createDashboard(
+        title: String,
+        description: String,
+        widgetLayout: WidgetLayout? = null
+    ): Dashboard {
         denyAuthorization()
         val key = generateDashboardKey(title)
         val order = dashboardRepository.count().toInt()
@@ -83,6 +88,7 @@ class DashboardService(
                 key = key,
                 title = title,
                 description = description,
+                widgetLayout = widgetLayout,
                 order = order,
                 createdBy = createdBy
             )
@@ -97,6 +103,7 @@ class DashboardService(
                 .copy(
                     title = dashboardUpdateDto.title,
                     description = dashboardUpdateDto.description,
+                    widgetLayout = dashboardUpdateDto.widgetLayout,
                     order = index
                 )
         }
@@ -111,7 +118,8 @@ class DashboardService(
             .getOrElse { throw RuntimeException("Failed to update dashboard. Dashboard with key '${dashboardUpdateRequestDto.key}' doesn't exist.") }
             .copy(
                 title = dashboardUpdateRequestDto.title,
-                description = dashboardUpdateRequestDto.description
+                description = dashboardUpdateRequestDto.description,
+                widgetLayout = dashboardUpdateRequestDto.widgetLayout
             )
 
         return dashboardRepository.save(dashboard)

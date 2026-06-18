@@ -29,6 +29,7 @@ import {
 import {Router} from '@angular/router';
 import {FormioBeforeSubmit, FormioForm} from '@formio/angular';
 import {
+  CarbonModalSize,
   FormioComponent,
   FormioOptionsImpl,
   FormioSubmission,
@@ -40,11 +41,15 @@ import {
   FORM_CUSTOM_COMPONENT_TOKEN,
   FormCustomComponent,
   FormCustomComponentConfig,
+  FormSize,
+  formSizeToCarbonModalSizeMap,
   ProcessLinkService,
 } from '@valtimo/process-link';
 import {BehaviorSubject, combineLatest, Observable, Subscription, switchMap} from 'rxjs';
 import {take} from 'rxjs/operators';
 import {FORM_VIEW_MODEL_TOKEN, FormViewModel} from '@valtimo/shared';
+
+const DEFAULT_START_MODAL_SIZE: CarbonModalSize = 'sm';
 
 @Component({
   standalone: false,
@@ -76,6 +81,7 @@ export class CaseSupportingProcessStartModalComponent implements OnDestroy {
   public readonly formFlowInstanceId$ = new BehaviorSubject<string>(undefined);
   public readonly documentId$ = new BehaviorSubject<string>(undefined);
   public readonly modalOpen$ = new BehaviorSubject<boolean>(false);
+  public readonly modalSize$ = new BehaviorSubject<CarbonModalSize>(DEFAULT_START_MODAL_SIZE);
   public readonly isLoading$ = new BehaviorSubject<boolean>(true);
   private readonly _formCustomComponentConfig$ = new BehaviorSubject<
     FormCustomComponentConfig | {}
@@ -114,6 +120,7 @@ export class CaseSupportingProcessStartModalComponent implements OnDestroy {
 
   private loadProcessLink(): void {
     this.startProcessLinkType$.next(null);
+    this.modalSize$.next(DEFAULT_START_MODAL_SIZE);
     this.formViewModelDynamicContainer?.clear();
     this.formCustomComponentDynamicContainer?.clear();
 
@@ -138,6 +145,7 @@ export class CaseSupportingProcessStartModalComponent implements OnDestroy {
             case 'form':
               this.formDefinition$.next(startProcessResult.properties.prefilledForm);
               this.processLinkId$.next(startProcessResult.processLinkId);
+              this.setModalSize(startProcessResult.properties.formSize);
               break;
             case 'form-flow':
               this.formFlowInstanceId$.next(startProcessResult.properties.formFlowInstanceId);
@@ -155,6 +163,12 @@ export class CaseSupportingProcessStartModalComponent implements OnDestroy {
           this.openCdsModal();
         }
       });
+  }
+
+  private setModalSize(formSize?: FormSize): void {
+    this.modalSize$.next(
+      formSize ? formSizeToCarbonModalSizeMap[formSize] : DEFAULT_START_MODAL_SIZE
+    );
   }
 
   public openModalForStartableItem(

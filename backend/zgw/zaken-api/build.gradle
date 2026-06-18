@@ -33,6 +33,7 @@ dependencies {
     implementation project(":backend:case")
     implementation project(":backend:core")
     implementation project(":backend:contract")
+    compileOnly project(":backend:form-flow")
     implementation project(":backend:plugin")
     implementation project(":backend:process-document")
     implementation project(":backend:resource")
@@ -53,6 +54,7 @@ dependencies {
     implementation "com.fasterxml.jackson.datatype:jackson-datatype-jsr310"
 
     testImplementation project(":backend:form")
+    testImplementation project(":backend:form-flow")
     testImplementation(project(':backend:building-block'))
     testImplementation project(":backend:process-document")
     testImplementation project(":backend:plugin-valtimo")

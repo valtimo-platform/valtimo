@@ -367,7 +367,7 @@ valtimo:
 
 In Valtimo 13, **only whitelisted environment variables** can be used in auto-deployment configuration files. This restriction was added for **security reasons**, so sensitive system variables can’t be accessed unintentionally.
 
-Whitelist patterns are configured in application.yml under valtimo.imports.whitelistedPaths:
+Whitelist patterns are configured in application.yml under valtimo.import.whitelistedPaths:
 
 ### Migration Guide
 

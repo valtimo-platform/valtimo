@@ -95,9 +95,9 @@ class ProcessDefinitionValidatorTest {
 
         val result = validator.validate(model, emptyList())
 
-        assertThat(result.errors).hasSize(1)
-        assertThat(result.errors[0].elementId).isEqualTo("my-service-task")
-        assertThat(result.errors[0].elementType).isEqualTo("ServiceTask")
+        val serviceTaskErrors = result.errors.filter { it.elementType == "ServiceTask" }
+        assertThat(serviceTaskErrors).hasSize(1)
+        assertThat(serviceTaskErrors[0].elementId).isEqualTo("my-service-task")
     }
 
     @Test
@@ -176,9 +176,9 @@ class ProcessDefinitionValidatorTest {
 
         val result = validator.validate(model, emptyList())
 
-        assertThat(result.errors).hasSize(1)
-        assertThat(result.errors[0].elementId).isEqualTo("my-user-task")
-        assertThat(result.errors[0].elementType).isEqualTo("UserTask")
+        val userTaskErrors = result.errors.filter { it.elementType == "UserTask" }
+        assertThat(userTaskErrors).hasSize(1)
+        assertThat(userTaskErrors[0].elementId).isEqualTo("my-user-task")
     }
 
     @Test
@@ -218,9 +218,9 @@ class ProcessDefinitionValidatorTest {
 
         val result = validator.validate(model, emptyList())
 
-        assertThat(result.errors).hasSize(1)
-        assertThat(result.errors[0].elementId).isEqualTo("my-send-task")
-        assertThat(result.errors[0].elementType).isEqualTo("SendTask")
+        val sendTaskErrors = result.errors.filter { it.elementType == "SendTask" }
+        assertThat(sendTaskErrors).hasSize(1)
+        assertThat(sendTaskErrors[0].elementId).isEqualTo("my-send-task")
     }
 
     @Test
@@ -260,9 +260,9 @@ class ProcessDefinitionValidatorTest {
 
         val result = validator.validate(model, emptyList())
 
-        assertThat(result.errors).hasSize(1)
-        assertThat(result.errors[0].elementId).isEqualTo("my-receive-task")
-        assertThat(result.errors[0].elementType).isEqualTo("ReceiveTask")
+        val receiveTaskErrors = result.errors.filter { it.elementType == "ReceiveTask" }
+        assertThat(receiveTaskErrors).hasSize(1)
+        assertThat(receiveTaskErrors[0].elementId).isEqualTo("my-receive-task")
     }
 
     @Test
@@ -302,9 +302,9 @@ class ProcessDefinitionValidatorTest {
 
         val result = validator.validate(model, emptyList())
 
-        assertThat(result.errors).hasSize(1)
-        assertThat(result.errors[0].elementId).isEqualTo("my-rule-task")
-        assertThat(result.errors[0].elementType).isEqualTo("BusinessRuleTask")
+        val ruleTaskErrors = result.errors.filter { it.elementType == "BusinessRuleTask" }
+        assertThat(ruleTaskErrors).hasSize(1)
+        assertThat(ruleTaskErrors[0].elementId).isEqualTo("my-rule-task")
     }
 
     @Test
@@ -330,9 +330,9 @@ class ProcessDefinitionValidatorTest {
 
         val result = validator.validate(model, emptyList())
 
-        assertThat(result.errors).hasSize(1)
-        assertThat(result.errors[0].elementId).isEqualTo("my-call-activity")
-        assertThat(result.errors[0].elementType).isEqualTo("CallActivity")
+        val callActivityErrors = result.errors.filter { it.elementType == "CallActivity" }
+        assertThat(callActivityErrors).hasSize(1)
+        assertThat(callActivityErrors[0].elementId).isEqualTo("my-call-activity")
     }
 
     @Test
@@ -434,9 +434,9 @@ class ProcessDefinitionValidatorTest {
 
         val result = validator.validate(model, emptyList())
 
-        assertThat(result.errors).hasSize(1)
-        assertThat(result.errors[0].elementId).isEqualTo("my-catch-event")
-        assertThat(result.errors[0].elementType).isEqualTo("MessageIntermediateCatchEvent")
+        val catchEventErrors = result.errors.filter { it.elementType == "MessageIntermediateCatchEvent" }
+        assertThat(catchEventErrors).hasSize(1)
+        assertThat(catchEventErrors[0].elementId).isEqualTo("my-catch-event")
     }
 
     @Test
@@ -492,9 +492,9 @@ class ProcessDefinitionValidatorTest {
 
         val result = validator.validate(model, emptyList())
 
-        assertThat(result.errors).hasSize(1)
-        assertThat(result.errors[0].elementId).isEqualTo("my-throw-event")
-        assertThat(result.errors[0].elementType).isEqualTo("MessageIntermediateThrowEvent")
+        val throwEventErrors = result.errors.filter { it.elementType == "MessageIntermediateThrowEvent" }
+        assertThat(throwEventErrors).hasSize(1)
+        assertThat(throwEventErrors[0].elementId).isEqualTo("my-throw-event")
     }
 
     @Test
@@ -532,9 +532,9 @@ class ProcessDefinitionValidatorTest {
 
         val result = validator.validate(model, emptyList())
 
-        assertThat(result.errors).hasSize(1)
-        assertThat(result.errors[0].elementId).isEqualTo("my-timer-event")
-        assertThat(result.errors[0].elementType).isEqualTo("TimerIntermediateCatchEvent")
+        val timerEventErrors = result.errors.filter { it.elementType == "TimerIntermediateCatchEvent" }
+        assertThat(timerEventErrors).hasSize(1)
+        assertThat(timerEventErrors[0].elementId).isEqualTo("my-timer-event")
     }
 
     @Test
@@ -568,8 +568,9 @@ class ProcessDefinitionValidatorTest {
 
         val result = validator.validate(model, emptyList())
 
-        assertThat(result.errors).hasSize(2)
-        assertThat(result.errors.map { it.elementId }).containsExactlyInAnyOrder(
+        val taskErrors = result.errors.filter { it.elementType in listOf("ServiceTask", "UserTask") }
+        assertThat(taskErrors).hasSize(2)
+        assertThat(taskErrors.map { it.elementId }).containsExactlyInAnyOrder(
             "unconfigured-service",
             "unconfigured-user"
         )
@@ -764,13 +765,14 @@ class ProcessDefinitionValidatorTest {
 
         val result = validator.validate(model, emptyList())
 
-        assertThat(result.errors.filter {
-            it.reason.contains("start event") ||
-                it.reason.contains("end event") ||
+        val structuralErrors = result.errors.filter {
+            it.reason == "Process has no start event" ||
+                it.reason == "Process has no end event" ||
                 it.reason.contains("incoming flow") ||
                 it.reason.contains("outgoing flow") ||
                 it.reason.contains("reachable")
-        }).isEmpty()
+        }
+        assertThat(structuralErrors).isEmpty()
     }
 
     @Test
@@ -851,6 +853,51 @@ class ProcessDefinitionValidatorTest {
 
         assertThat(result.errors).anyMatch {
             it.elementId == "test-process" && it.reason == "Process has multiple none start events"
+        }
+    }
+
+    @Test
+    fun `should report none start event without form or process link`() {
+        val model = Bpmn.createExecutableProcess("test-process")
+            .startEvent("start")
+            .endEvent()
+            .done()
+
+        val result = validator.validate(model, emptyList())
+
+        assertThat(result.errors).anyMatch {
+            it.elementId == "start" &&
+                it.elementType == "StartEvent" &&
+                it.reason == "None start event has no process link or form" &&
+                it.severity == ValidationSeverity.WARNING
+        }
+    }
+
+    @Test
+    fun `should pass none start event with process link`() {
+        val model = Bpmn.createExecutableProcess("test-process")
+            .startEvent("start")
+            .endEvent()
+            .done()
+
+        val result = validator.validate(model, listOf(createProcessLink("start")))
+
+        assertThat(result.errors).noneMatch {
+            it.elementId == "start" && it.reason == "None start event has no process link or form"
+        }
+    }
+
+    @Test
+    fun `should pass none start event with form key`() {
+        val model = Bpmn.createExecutableProcess("test-process")
+            .startEvent("start").operatonFormKey("formio:my-form")
+            .endEvent()
+            .done()
+
+        val result = validator.validate(model, emptyList())
+
+        assertThat(result.errors).noneMatch {
+            it.elementId == "start" && it.reason == "None start event has no process link or form"
         }
     }
 
