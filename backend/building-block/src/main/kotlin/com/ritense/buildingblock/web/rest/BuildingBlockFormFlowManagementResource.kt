@@ -16,10 +16,10 @@
 
 package com.ritense.buildingblock.web.rest
 
-import com.ritense.buildingblock.service.BuildingBlockFormFlowDefinitionImporter
 import com.ritense.buildingblock.service.BuildingBlockFormFlowDefinitionService
 import com.ritense.formflow.web.rest.result.FormFlowDefinitionDto
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
+import com.ritense.valtimo.contract.buildingblock.BuildingBlockDefinitionChecker
 import com.ritense.valtimo.contract.buildingblock.BuildingBlockDefinitionId
 import com.ritense.valtimo.contract.domain.ValtimoMediaType.APPLICATION_JSON_UTF8_VALUE
 import jakarta.validation.Valid
@@ -42,7 +42,7 @@ import org.springframework.web.bind.annotation.RestController
 @RequestMapping("/api/management/v1/building-block", produces = [APPLICATION_JSON_UTF8_VALUE])
 class BuildingBlockFormFlowManagementResource(
     private val buildingBlockFormFlowDefinitionService: BuildingBlockFormFlowDefinitionService,
-    private val buildingBlockFormFlowDefinitionImporter: BuildingBlockFormFlowDefinitionImporter,
+    private val buildingBlockDefinitionChecker: BuildingBlockDefinitionChecker,
 ) {
 
     @GetMapping("/{key}/version/{versionTag}/form-flow-definition")
@@ -53,11 +53,12 @@ class BuildingBlockFormFlowManagementResource(
         pageable: Pageable
     ): ResponseEntity<Page<FormFlowDefinitionDto>> {
         val buildingBlockId = BuildingBlockDefinitionId.of(key, versionTag)
+        val readOnly = !buildingBlockDefinitionChecker.canUpdateBuildingBlockDefinition(buildingBlockId)
         val definitions = buildingBlockFormFlowDefinitionService.getFormFlowDefinitions(buildingBlockId, pageable)
             .map {
                 FormFlowDefinitionDto.of(
                     it,
-                    buildingBlockFormFlowDefinitionImporter.isAutoDeployed(buildingBlockId, it.id.key)
+                    readOnly
                 )
             }
         return ResponseEntity.ok(definitions)
@@ -76,7 +77,7 @@ class BuildingBlockFormFlowManagementResource(
         return ResponseEntity.ok(
             FormFlowDefinitionDto.of(
                 definition,
-                buildingBlockFormFlowDefinitionImporter.isAutoDeployed(buildingBlockId, definitionKey)
+                !buildingBlockDefinitionChecker.canUpdateBuildingBlockDefinition(buildingBlockId)
             )
         )
     }
@@ -89,6 +90,7 @@ class BuildingBlockFormFlowManagementResource(
         @Valid @RequestBody definitionDto: FormFlowDefinitionDto
     ): ResponseEntity<FormFlowDefinitionDto> {
         val buildingBlockId = BuildingBlockDefinitionId.of(key, versionTag)
+        buildingBlockDefinitionChecker.assertCanUpdateBuildingBlockDefinition(buildingBlockId)
         if (buildingBlockFormFlowDefinitionService.getFormFlowDefinition(buildingBlockId, definitionDto.key) != null) {
             return ResponseEntity.badRequest().build()
         }
@@ -108,7 +110,7 @@ class BuildingBlockFormFlowManagementResource(
         if (definitionDto.key != definitionKey) {
             return ResponseEntity.badRequest().build()
         }
-        if (buildingBlockFormFlowDefinitionImporter.isAutoDeployed(buildingBlockId, definitionKey)) {
+        if (!buildingBlockDefinitionChecker.canUpdateBuildingBlockDefinition(buildingBlockId)) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build()
         }
         val saved = buildingBlockFormFlowDefinitionService.save(buildingBlockId, definitionDto)
@@ -123,7 +125,7 @@ class BuildingBlockFormFlowManagementResource(
         @PathVariable definitionKey: String
     ): ResponseEntity<Unit> {
         val buildingBlockId = BuildingBlockDefinitionId.of(key, versionTag)
-        if (buildingBlockFormFlowDefinitionImporter.isAutoDeployed(buildingBlockId, definitionKey)) {
+        if (!buildingBlockDefinitionChecker.canUpdateBuildingBlockDefinition(buildingBlockId)) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build()
         }
         buildingBlockFormFlowDefinitionService.delete(buildingBlockId, definitionKey)
