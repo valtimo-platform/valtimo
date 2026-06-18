@@ -36,6 +36,7 @@ export const cspHeaderParamsDev: CSPHeaderParams = {
     'connect-src': [
       SELF,
       UrlUtils.getUrlHost(authenticationKeycloak.options.keycloakOptions.config.url),
+      'http://localhost:4566', // LocalStack S3
     ],
     'style-src': [
       SELF,
