@@ -28,6 +28,7 @@ Status legend: ✅ implemented & verified · 🟡 implemented, POC-level · ⛔ 
 | Frontend management UI + external models/service/iframe | `frontend/projects/valtimo/{plugin-management,plugin}/` | ✅ |
 | Process-link (`SERVICE_TASK_START`) | `backend/external-plugin/.../processlink/` + frontend process-link | 🟡 |
 | Per-host broker / callback config + defaults endpoint | `backend/external-plugin/.../web/rest/ExternalPluginManagementResource.kt#hostDefaults` | ✅ |
+| Per-host durable event queue mode + TTL (live/durable, `x-expires`) + narrow PATCH endpoint | `backend/external-plugin/.../domain/EventQueueMode.kt`, `service/ExternalPluginHostService.updateEventQueue`, `web/rest/...#updateHostEventQueue` ↔ `plugin-host/app/src/rabbitmq/event-consumer.ts` | ✅ |
 | Plugin assets (logo + i18n bundle in manifest, served by host) | `plugin-host/plugin-sdk/bin/valtimo-plugin-pack.mjs`, `plugin-host/app/src/routes/plugin-bundles.ts` | ✅ |
 | GZAC→host auth on **every** route (HMAC-SHA256, replay-protected, body-bound): actions, config-push, management | `client/ExternalPluginHostClient.kt` + `security/ExternalPluginHmacSigner.kt` ↔ `plugin-host/app/src/security/{hmac,hmac-auth}.ts`, `routes/{plugin-actions,host-configurations,host-management}.ts` | ✅ |
 | Transport confidentiality (TLS): host serves HTTPS from `TLS_*`; broker credentials confined to a confidential transport at host registration | `plugin-host/app/src/index.ts` (`buildHttpsOptions`) + `models/app-config.ts` ↔ `service/ExternalPluginHostService.isSecureTransport` | ✅ |
@@ -57,6 +58,8 @@ rest of Valtimo already requires. Every value the module needs is either:
 | Broker AMQP URL per push | `external_plugin_host.event_broker_amqp_url` (nullable) | Set in the add-host UI; default pre-fill built from `spring.rabbitmq.*`. Null disables events for hosts under this host (actions still work). A non-null broker URL requires the host base URL to be a confidential transport (HTTPS, or a loopback address for local dev); registration is rejected otherwise so AMQP credentials never travel over plaintext (§3.9). |
 | Broker exchange per push | `external_plugin_host.event_broker_exchange`, else `valtimo.outbox.publisher.rabbitmq.exchange` | Set in the add-host UI; default pre-fill from the outbox exchange, which is what GZAC itself publishes to. |
 | Broker exchange type | hardcoded `fanout` | Matches the outbox publisher and the exchange declared in `imports/gzac-rabbitmq/definitions.json`. |
+| Queue mode per push (`live`/`durable`) | `external_plugin_host.event_queue_mode` (default `LIVE`) | Set in the add-host UI and editable later via `PATCH .../host/{id}/event-queue` (§8.4). Drives the host's `assertQueue` arguments. |
+| Queue inactivity TTL per push (ms) | `external_plugin_host.event_queue_ttl_ms` (nullable; required when mode is `DURABLE`) | Validated to `[1h, 30d]`, default 72h. Maps to RabbitMQ `x-expires`; ignored (forced null) in `LIVE` mode. |
 
 The module requires **no entries** in `backend/app/gzac/src/main/resources/application.yml`.
 
@@ -209,7 +212,10 @@ DDL lives in the **core** module's changelog, not the external-plugin module's o
 
 - `external_plugin_host` — `base_url`, encrypted `secret`, `status`, health/failure counters,
   **plus** `gzac_callback_base_url`, `event_broker_amqp_url`, `event_broker_exchange` (all
-  populated from the add-host UI; the two broker columns nullable for events-off / use-default-exchange).
+  populated from the add-host UI; the two broker columns nullable for events-off / use-default-exchange),
+  **plus** `event_queue_mode` (`LIVE`/`DURABLE`, default `LIVE`, added in
+  `20260617-external-plugin-event-queue.xml`) and `event_queue_ttl_ms` (nullable bigint; required
+  when mode is `DURABLE`, ignored when `LIVE`).
 - `external_plugin_definition` — `UNIQUE(plugin_id, version)`, `config_schema`, `manifest_json`,
   `host_id`, `base_url`, `status`, plus `name`, `description`, `provider`, `min_gzac_version` /
   `max_gzac_version` (populated at discovery from the manifest's `compatibility` block, compared
@@ -242,25 +248,38 @@ only in the host's in-memory registry until the host stores them in its own Post
 ## 6. Adding a host & host-defaults endpoint ✅
 
 `GET /api/management/v1/external-plugin/host-defaults` (`ExternalPluginManagementResource`)
-returns three pre-fills the add-host UI uses to populate the new-host form:
+returns pre-fills the add-host UI uses to populate the new-host form:
 
 ```json
 {
   "gzacCallbackBaseUrl": "http://localhost:8080",
   "eventBrokerAmqpUrl": "amqp://guest:guest@localhost:5672",
-  "eventBrokerExchange": "valtimo-events"
+  "eventBrokerExchange": "valtimo-events",
+  "defaultEventQueueTtlMs": 259200000,
+  "minEventQueueTtlMs": 3600000,
+  "maxEventQueueTtlMs": 2592000000
 }
 ```
 
-The operator edits whatever does not match the host's network. Three fields are exposed:
+The operator edits whatever does not match the host's network. URL fields exposed:
 `gzacCallbackBaseUrl` is required; `eventBrokerAmqpUrl` and `eventBrokerExchange` are optional.
-Leaving the broker URL blank disables events for every configuration under this host.
+Leaving the broker URL blank disables events for every configuration under this host. The
+`*EventQueueTtlMs` triplet drives the durable-mode TTL input in the UI (default 72h, range 1h–30d);
+the constants live on `ExternalPluginHostService` (`DEFAULT_/MIN_/MAX_EVENT_QUEUE_TTL_MS`).
 
 `ExternalPluginHostService.register()` trims trailing `/` on the URLs, encrypts the secret,
 blanks become `null`. When a broker URL is supplied it additionally requires the host base URL to be
 a confidential transport (HTTPS, or a loopback address for local development) and rejects the
 registration otherwise, so the broker AMQP URL and credentials are never pushed over plaintext
 (§3.9).
+
+The same service exposes a **narrowly-scoped update path** for the event-queue mode/TTL only:
+`PATCH /api/management/v1/external-plugin/host/{hostId}/event-queue` with
+`{eventQueueMode, eventQueueTtlMs}`. `baseUrl`, `secret`, `eventBrokerAmqpUrl`, and
+`eventBrokerExchange` remain immutable — the security check that pins broker credentials to a
+confidential `baseUrl` only needs to run at registration. After the PATCH, the resource triggers
+`discoveryService.discoverAll()` so the host's `EventConsumerManager.sync()` swaps the queue
+immediately instead of waiting for the next polling tick.
 
 ## 7. Plugin host 🟡 (`plugin-host/app/`, Node + Fastify + Extism)
 
@@ -354,21 +373,47 @@ Push body shape (relevant fields):
   "serviceToken": "eyJ…",
   "gzacBaseUrl": "http://gzac:8080",
   "eventSubscriptions": ["com.ritense.valtimo.document.created", "com.ritense.valtimo.task.completed"],
-  "eventBroker": { "amqpUrl": "amqp://…", "exchange": "valtimo-events", "exchangeType": "fanout" }
+  "eventBroker": {
+    "amqpUrl": "amqp://…",
+    "exchange": "valtimo-events",
+    "exchangeType": "fanout",
+    "queueMode": "live",
+    "queueTtlMs": null
+  }
 }
 ```
+
+`queueMode` is `"live"` or `"durable"` (lowercased on the wire — the host's `normalizeEventBroker`
+defaults unknown/absent values to `"live"`, so older GZACs that don't push it stay compatible).
+`queueTtlMs` is present only when `queueMode === "durable"` and is clamped defensively to the
+1h–30d window even though GZAC validates the same bounds at registration / PATCH time.
 
 ### 8.3 Consume (host, `rabbitmq/event-consumer.ts`)
 
 `EventConsumerManager` keeps one `BrokerConsumer` per **distinct broker**
-(`brokerKey = amqpUrl + exchange + exchangeType`). After any configuration mutation the route
-calls `sync()` (serialised via a promise chain): it opens consumers for newly referenced brokers
-and closes consumers no configuration references any more. A `BrokerConsumer`:
+(`brokerKey = amqpUrl + exchange + exchangeType`). Note: `queueMode`/`queueTtlMs` are intentionally
+**not** in the broker key — they are queue-level concerns, not connection-level, so two
+configurations on the same broker still share a single connection while the queue arguments come
+from the host-wide mode. After any configuration mutation the route calls `sync()` (serialised via
+a promise chain): it opens consumers for newly referenced brokers and closes consumers no
+configuration references any more. A `BrokerConsumer`:
 - `assertExchange(exchange, exchangeType, { durable: true })`,
-- `assertQueue("valtimo-external-plugins.<exchange>.<HOST_ID>", { durable: false, autoDelete: true })`,
+- `assertQueue("valtimo-external-plugins.<exchange>.<HOST_ID>.<queueMode>", …)` with arguments
+  switched per mode:
+  - **`live`** (default): `{ durable: false, autoDelete: true }` — queue evaporates when the host
+    disconnects; events while the host is fully down are lost (live-subscription semantics).
+  - **`durable`**: `{ durable: true, autoDelete: false, arguments: { "x-expires": queueTtlMs } }` —
+    queue survives host restarts; `x-expires` deletes the queue after `queueTtlMs` of no-consumer
+    inactivity, so a host that vanishes permanently doesn't accumulate events forever.
+
+  The mode suffix in the queue name means flipping `queueMode` produces a different queue and so
+  never collides with the previous queue's `assertQueue` arguments — the old `.live` queue
+  auto-deletes on disconnect; an orphan `.durable` queue lingers until its `x-expires` fires or an
+  operator deletes it from the management UI.
 - `bindQueue(queue, exchange, "")` (fanout ignores the routing key),
 - `consume(..., { noAck: false })` — ack on success; a malformed message is `nack`-dropped (not
-  requeued) to avoid a poison loop.
+  requeued) to avoid a poison loop. There is **no DLQ** today; expired or dropped messages are
+  silently lost.
 
 Restart behaviour: configs are persisted in the host's PostgreSQL (`plugin_configurations` table).
 On boot the host calls `eventConsumerManager.sync()` which re-opens consumers for every config
@@ -414,8 +459,12 @@ Multi-host topologies:
 - *One host serving multiple GZAC instances*: each instance has its own broker, so the host opens
   a separate `BrokerConsumer` per broker. Dispatch only fires configurations whose pushed broker
   key matches the consuming connection.
-- Trade-off: the auto-delete queue is not retained while a host is fully down, so events
-  published during that window are not delivered to it (live-subscription semantics).
+- Durability trade-off (configurable per host): `live` mode preserves today's no-overhead
+  semantics — events published while the host is fully down are not retained. `durable` mode
+  retains buffered events up to `queueTtlMs` since the last consumer disconnected, at the cost of
+  a queue that has to be cleaned up if a host is deprovisioned and its `HOST_ID` never returns
+  (the TTL is the automatic cleanup). Plugin handlers must already be idempotent because gzac's
+  outbox is at-least-once, so durable replay does not change handler-correctness requirements.
 
 ### 8.5 SDK & declaration
 
@@ -741,7 +790,8 @@ through the user-token path.
   PBAC ∩ allowlist intersection.
 - Host database for KV / API logs / retention.
 - URL-plugin mode.
-- Event delivery durability across host downtime (currently live-subscription only).
+- DLQ for nacked or expired messages (today `nack(false,false)` drops, `x-expires` deletes the
+  queue and its contents).
 - Configurable service-token TTL (hardcoded 24h in `ExternalPluginServiceTokenService`).
 
 ## 15. Roadmap (priority order)
@@ -751,33 +801,38 @@ through the user-token path.
    to populate `accessToken` from `/user-token`, SDK side already exposes `getAccessToken()`.
 2. Capabilities + host functions + allowlist enforcement; surface in the acceptance screen by
    category.
-3. Durable / replayable event delivery option (per-host durable queue with TTL) for hosts that
-   must not miss events during downtime.
-4. HTMX pages, case tabs, case widgets, menu pages.
-5. Host database (KV, API logs, retention) + admin log view.
-6. Cleanup: align async-vs-sync SDK docs.
+3. HTMX pages, case tabs, case widgets, menu pages.
+4. Host database (KV, API logs, retention) + admin log view.
+5. Cleanup: align async-vs-sync SDK docs.
 
 ## 16. Verification status
 
 - Host `tsc` build and `@valtimo/plugin-sdk` build: clean (including the optional-TLS
   `buildHttpsOptions` wiring in `plugin-host/app/src/index.ts`).
 - Backend `:backend:external-plugin:test`: BUILD SUCCESSFUL (allowlist + service-token-filter +
-  endpoint-description-provider + host-client-HMAC + host-registration transport-guard + compatibility
-  tests). The host-client-HMAC suite (`client/ExternalPluginHostClientHmacTest`) asserts
-  `pushConfiguration` (body-bound), `deleteConfiguration` / `listPlugins` (empty-body), and
-  `uploadPlugin` (file-byte-bound) each send `X-Valtimo-Signature` + `X-Valtimo-Timestamp` and **no**
+  endpoint-description-provider + host-client-HMAC + host-registration transport-guard +
+  compatibility + event-queue mode/TTL tests). The host-client-HMAC suite
+  (`client/ExternalPluginHostClientHmacTest`) asserts `pushConfiguration` (body-bound, **including
+  the `queueMode`/`queueTtlMs` fields inside the signed `eventBroker` block, with the omit-TTL case
+  for `LIVE` mode**), `deleteConfiguration` / `listPlugins` (empty-body), and `uploadPlugin`
+  (file-byte-bound) each send `X-Valtimo-Signature` + `X-Valtimo-Timestamp` and **no**
   `Authorization` header, with the signature recomputed from an independent JDK HMAC oracle. The
-  transport-guard suite (`service/ExternalPluginHostServiceTest`) asserts host registration accepts
-  broker credentials over HTTPS and loopback HTTP, rejects them over plaintext HTTP to a remote host,
-  and that `isSecureTransport` classifies schemes and loopback hosts. The compatibility suite
-  (`compatibility/GzacCompatibilityCheckerTest`, `compatibility/DefaultGzacVersionProviderTest`,
-  `compatibility/PluginPackageInspectorTest`, `web/rest/ExternalPluginUploadCompatibilityTest`)
-  asserts the semver range comparison (below-minimum, above-maximum, open bounds, and
-  unparseable/unknown-version leniency), the version-provider precedence (override → Valtimo library
-  manifest version, `null` otherwise), the zip manifest peek (root-entry wins, missing/blank/garbage →
-  no gate), and the upload
-  endpoint's 409-unless-forced gate (an incompatible package is rejected and never forwarded to the
-  host; a forced upload, a compatible package, and an undeclared package each go through). The
+  host-service suite (`service/ExternalPluginHostServiceTest`) asserts:
+  - host registration accepts broker credentials over HTTPS and loopback HTTP, rejects them over
+    plaintext HTTP to a remote host, and `isSecureTransport` classifies schemes and loopback hosts;
+  - default mode is `LIVE` with null TTL; `DURABLE` without explicit TTL applies the 72h default;
+    TTLs outside the 1h–30d window are rejected; `LIVE` with a non-null TTL is rejected;
+  - `updateEventQueue` swaps mode + TTL on an existing host, clears the TTL when going back to
+    `LIVE`, and throws when the host does not exist.
+
+  The compatibility suite (`compatibility/GzacCompatibilityCheckerTest`,
+  `compatibility/DefaultGzacVersionProviderTest`, `compatibility/PluginPackageInspectorTest`,
+  `web/rest/ExternalPluginUploadCompatibilityTest`) asserts the semver range comparison
+  (below-minimum, above-maximum, open bounds, and unparseable/unknown-version leniency), the
+  version-provider precedence (override → Valtimo library manifest version, `null` otherwise), the
+  zip manifest peek (root-entry wins, missing/blank/garbage → no gate), and the upload endpoint's
+  409-unless-forced gate (an incompatible package is rejected and never forwarded to the host; a
+  forced upload, a compatible package, and an undeclared package each go through). The   
   delete-guard suites cover both plugin systems: `service/ExternalPluginHostUsageResolverTest`
   (host- and configuration-scoped usage resolution, parent classification into
   CASE/BUILDING_BLOCK/GLOBAL, activity-name lookup, and graceful degradation when a process

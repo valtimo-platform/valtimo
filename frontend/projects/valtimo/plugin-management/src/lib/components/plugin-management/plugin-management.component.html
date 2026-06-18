@@ -166,6 +166,13 @@
   (submitEvent)="submitHost($event)"
 ></valtimo-plugin-host-modal>
 
+<valtimo-plugin-host-event-queue-modal
+  [host]="hostToEditEventQueue$ | async"
+  [open]="eventQueueModalOpen$ | async"
+  (closeEvent)="closeEventQueueModal()"
+  (submitEvent)="submitEventQueueUpdate($event)"
+></valtimo-plugin-host-event-queue-modal>
+
 <valtimo-plugin-upload-modal
   [hosts]="connectedHosts$ | async"
   [open]="uploadModalOpen$ | async"

@@ -174,7 +174,9 @@ pushes its broker connection (`eventBroker`) alongside every configuration on
   "eventBroker": {
     "amqpUrl": "amqp://guest:guest@localhost:5672",
     "exchange": "valtimo-events",
-    "exchangeType": "fanout"
+    "exchangeType": "fanout",
+    "queueMode": "live",
+    "queueTtlMs": null
   }
 }
 ```
@@ -185,7 +187,7 @@ references it any more. `exchange` defaults to `valtimo-events` and `exchangeTyp
 routed only to configurations carrying that same broker.
 
 **Multiple hosts per instance.** The exchange is a fanout, so the host binds its **own** queue —
-`valtimo-external-plugins.<exchange>.<HOST_ID>` (auto-deleted when the host disconnects). This means:
+`valtimo-external-plugins.<exchange>.<HOST_ID>.<queueMode>`. This means:
 
 - *Different* hosts on the same GZAC instance each have a distinct queue, so **every host receives a
   copy** of every event.
@@ -194,8 +196,20 @@ routed only to configurations carrying that same broker.
   replicas to get this load-balancing (the default OS hostname makes each replica distinct, which
   would double-handle).
 
-Because the queue auto-deletes, events published while a host is fully down are not retained for it
-(live-subscription semantics).
+**Queue durability modes.** The GZAC admin chooses, per host:
+
+| `queueMode` | Queue arguments | Behavior |
+|-------------|-----------------|----------|
+| `live` (default) | `durable:false, autoDelete:true` | Queue evaporates when the host disconnects. Events published while the host is fully down are **lost**. |
+| `durable` | `durable:true, autoDelete:false`, `x-expires=queueTtlMs` | Queue survives host restarts. Buffered events are replayed on reconnect, up to `queueTtlMs` of no-consumer inactivity (then the queue is deleted). |
+
+The mode is included in the queue name, so flipping the mode never collides with the previous
+queue's arguments — the old `.live` queue auto-deletes on disconnect, while an orphan `.durable`
+queue lingers until `x-expires` fires or an operator deletes it.
+
+`queueTtlMs` is validated on the GZAC side between 1 hour and 30 days; default 72 hours. Use a
+short value (e.g. 1h) for fast local feedback when testing the durability flow; pick a longer one in
+production based on the maximum downtime you want to tolerate without losing events.
 
 Round trip:
 
