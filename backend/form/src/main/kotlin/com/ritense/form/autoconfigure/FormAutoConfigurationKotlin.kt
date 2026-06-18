@@ -22,7 +22,6 @@ import com.ritense.authorization.AuthorizationService
 import com.ritense.document.service.DocumentService
 import com.ritense.document.service.impl.JsonSchemaDocumentDefinitionService
 import com.ritense.document.service.impl.JsonSchemaDocumentService
-import com.ritense.form.endpoint.FormEndpointDescriptionProvider
 import com.ritense.form.autodeployment.FormDefinitionDeploymentService
 import com.ritense.form.casewidget.FormIoCaseWidgetDataProvider
 import com.ritense.form.casewidget.FormIoCaseWidgetMapper
@@ -233,8 +232,4 @@ class FormAutoConfigurationKotlin {
         documentService,
         objectMapper,
     )
-
-    @Bean
-    @ConditionalOnMissingBean(FormEndpointDescriptionProvider::class)
-    fun formEndpointDescriptionProvider() = FormEndpointDescriptionProvider()
 }

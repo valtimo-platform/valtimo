@@ -23,6 +23,7 @@ import com.ritense.logging.LoggableResource;
 import com.ritense.valtimo.operaton.domain.OperatonExecution;
 import com.ritense.valtimo.operaton.service.OperatonRuntimeService;
 import com.ritense.valtimo.contract.annotation.SkipComponentScan;
+import com.ritense.valtimo.contract.endpoint.EndpointDescription;
 import java.util.List;
 import java.util.Map;
 import org.springframework.http.ResponseEntity;
@@ -43,6 +44,10 @@ public class ProcessInstanceResource {
         this.runtimeService = runtimeService;
     }
 
+    @EndpointDescription(
+        en = "Get process instance variables",
+        nl = "Procesinstantie-variabelen ophalen"
+    )
     @PostMapping("/v1/process-instance/{id}/variables")
     public ResponseEntity<Map<String, Object>> getProcessInstanceVariables(
         @LoggableResource(resourceType = OperatonExecution.class) @PathVariable String id,

@@ -17,64 +17,71 @@
 package com.ritense.externalplugin.service
 
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
-import com.ritense.valtimo.contract.endpoint.EndpointDescriptionProvider
-import com.ritense.valtimo.contract.endpoint.EndpointDescriptor
+import com.ritense.valtimo.contract.endpoint.EndpointDescription as EndpointDescriptionAnnotation
 import org.springframework.stereotype.Service
+import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping
 
 /**
- * Aggregates all [EndpointDescriptionProvider] beans and resolves human-readable descriptions
- * for API endpoint patterns. Used by the management UI when an admin grants endpoint permissions
- * to an external plugin.
+ * Resolves human-readable descriptions for API endpoint patterns by reading the [EndpointDescriptionAnnotation]
+ * declared on each controller handler method. Used by the management UI when an admin grants endpoint
+ * permissions to an external plugin.
  */
 @Service
 @SkipComponentScan
 class EndpointDescriptionService(
-    private val providers: List<EndpointDescriptionProvider>,
+    private val handlerMappings: List<RequestMappingHandlerMapping>,
 ) {
 
-    private val descriptorsByKey: Map<String, EndpointDescriptor> by lazy {
-        providers
-            .flatMap { it.getEndpointDescriptors() }
-            .associateBy { "${it.method.uppercase()}:${it.pattern}" }
-    }
-
-    /**
-     * Returns all known endpoint descriptors.
-     */
-    fun getAllDescriptors(): List<EndpointDescriptor> = descriptorsByKey.values.toList()
+    private val descriptionsByKey: Map<String, Map<String, String>> by lazy { buildIndex() }
 
     /**
      * Resolves descriptions for the given endpoint keys in the requested locale.
-     * Falls back to English, then to the raw key if no description is registered.
+     * Falls back to English, then to a null description if no annotation is registered.
      */
     fun resolveDescriptions(
         endpoints: List<EndpointQuery>,
         locale: String = "en",
     ): List<EndpointDescription> = endpoints.map { query ->
         val method = query.method.uppercase()
-        val descriptor = findDescriptor(method, query.pattern)
-        val description = descriptor?.descriptions?.get(locale)
-            ?: descriptor?.descriptions?.get("en")
-
+        val descriptions = findDescriptions(method, query.pattern)
         EndpointDescription(
             method = method,
             pattern = query.pattern,
-            description = description,
+            description = descriptions?.get(locale) ?: descriptions?.get("en"),
         )
     }
 
-    private fun findDescriptor(method: String, pattern: String): EndpointDescriptor? {
+    private fun buildIndex(): Map<String, Map<String, String>> {
+        val index = mutableMapOf<String, Map<String, String>>()
+        handlerMappings
+            .flatMap { it.handlerMethods.entries }
+            .forEach { (info, handlerMethod) ->
+                val annotation = handlerMethod.getMethodAnnotation(EndpointDescriptionAnnotation::class.java)
+                    ?: return@forEach
+                val descriptions = mapOf("en" to annotation.en, "nl" to annotation.nl)
+                val methods = info.methodsCondition.methods
+                    .map { it.name.uppercase() }
+                    .ifEmpty { listOf("GET", "POST", "PUT", "PATCH", "DELETE") }
+                for (method in methods) {
+                    for (pattern in info.patternValues) {
+                        index["$method:$pattern"] = descriptions
+                    }
+                }
+            }
+        return index
+    }
+
+    private fun findDescriptions(method: String, pattern: String): Map<String, String>? {
         // Try exact match first
-        val exactKey = "$method:$pattern"
-        descriptorsByKey[exactKey]?.let { return it }
+        descriptionsByKey["$method:$pattern"]?.let { return it }
 
         // If the queried pattern contains wildcards, match against registered patterns.
-        // Plugin manifests use glob-style `*` while providers use Spring `{param}` placeholders.
+        // Plugin manifests use glob-style `*` while controllers use Spring `{param}` placeholders.
         // Convert the query glob into a regex: `*` matches a single path segment (`[^/]+`),
         // `**` matches any number of segments (`.+`).
         if ("*" in pattern) {
             val regex = buildGlobRegex(pattern)
-            return descriptorsByKey.entries
+            return descriptionsByKey.entries
                 .firstOrNull { (key, _) -> key.startsWith("$method:") && regex.matches(key.substringAfter(":")) }
                 ?.value
         }
@@ -83,7 +90,7 @@ class EndpointDescriptionService(
         // patterns that might use different placeholder names or `*`.
         if ("{" in pattern) {
             val regex = buildGlobRegex(pattern.replace(Regex("\\{[^}]+}"), "*"))
-            return descriptorsByKey.entries
+            return descriptionsByKey.entries
                 .firstOrNull { (key, _) -> key.startsWith("$method:") && regex.matches(key.substringAfter(":")) }
                 ?.value
         }

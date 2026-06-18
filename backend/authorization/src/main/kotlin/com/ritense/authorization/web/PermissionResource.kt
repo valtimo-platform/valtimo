@@ -24,6 +24,7 @@ import com.ritense.authorization.web.request.PermissionAvailableRequest
 import com.ritense.authorization.web.result.PermissionAvailableResult
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import com.ritense.valtimo.contract.domain.ValtimoMediaType.APPLICATION_JSON_UTF8_VALUE
+import com.ritense.valtimo.contract.endpoint.EndpointDescription
 import jakarta.validation.Valid
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -43,6 +44,10 @@ class PermissionResource(
 
     private val logger: Logger = LoggerFactory.getLogger(PermissionResource::class.java)
 
+    @EndpointDescription(
+        en = "Check user permissions",
+        nl = "Gebruikerspermissies controleren",
+    )
     @Transactional(readOnly = true)
     @PostMapping("/v1/permissions")
     fun userHasPermission(@Valid @RequestBody permissionsPresentRequest: List<PermissionAvailableRequest>)

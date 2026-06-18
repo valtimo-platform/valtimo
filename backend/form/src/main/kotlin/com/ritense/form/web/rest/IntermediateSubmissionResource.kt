@@ -25,6 +25,7 @@ import com.ritense.logging.withLoggingContext
 import com.ritense.valtimo.operaton.domain.OperatonTask
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import com.ritense.valtimo.contract.domain.ValtimoMediaType.APPLICATION_JSON_UTF8_VALUE
+import com.ritense.valtimo.contract.endpoint.EndpointDescription
 import jakarta.validation.Valid
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.DeleteMapping
@@ -42,6 +43,10 @@ class IntermediateSubmissionResource(
     private val intermediateSubmissionService: IntermediateSubmissionService
 ) {
 
+    @EndpointDescription(
+        en = "Get intermediate submission",
+        nl = "Tussentijdse inzending ophalen",
+    )
     @GetMapping
     fun getIntermediateSubmission(
         @LoggableResource(resourceType = OperatonTask::class) @RequestParam taskInstanceId: String
@@ -50,6 +55,10 @@ class IntermediateSubmissionResource(
         return intermediateSubmission?.let { ResponseEntity.ok(it.toResponse()) } ?: ResponseEntity.notFound().build()
     }
 
+    @EndpointDescription(
+        en = "Store intermediate submission",
+        nl = "Tussentijdse inzending opslaan",
+    )
     @PostMapping
     fun storeIntermediateSubmission(
         @Valid @RequestBody request: IntermediateSaveRequest
@@ -63,6 +72,10 @@ class IntermediateSubmissionResource(
         }
     }
 
+    @EndpointDescription(
+        en = "Clear intermediate submission",
+        nl = "Tussentijdse inzending verwijderen",
+    )
     @DeleteMapping
     fun clearIntermediateSubmission(
         @LoggableResource(resourceType = OperatonTask::class) @RequestParam taskInstanceId: String

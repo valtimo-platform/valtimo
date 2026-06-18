@@ -28,6 +28,7 @@ import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import com.ritense.valtimo.contract.authentication.UserManagementService
 import com.ritense.valtimo.contract.case_.CaseDefinitionId
 import com.ritense.valtimo.contract.domain.ValtimoMediaType.APPLICATION_JSON_UTF8_VALUE
+import com.ritense.valtimo.contract.endpoint.EndpointDescription
 import jakarta.validation.Valid
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
@@ -48,6 +49,10 @@ class CaseTabManagementResource(
     private val userManagementService: UserManagementService,
 ) {
     @RunWithoutAuthorization
+    @EndpointDescription(
+        en = "Create case tab",
+        nl = "Dossiertabblad aanmaken",
+    )
     @PostMapping("/v1/case-definition/{caseDefinitionKey}/version/{caseDefinitionVersionTag}/tab")
     fun createCaseTab(
         @LoggableResource("caseDefinitionKey") @PathVariable caseDefinitionKey: String,
@@ -66,6 +71,10 @@ class CaseTabManagementResource(
     }
 
     @RunWithoutAuthorization
+    @EndpointDescription(
+        en = "Update case tab order",
+        nl = "Volgorde dossiertabbladen bijwerken",
+    )
     @PutMapping("/v1/case-definition/{caseDefinitionKey}/version/{caseDefinitionVersionTag}/tab")
     fun updateOrderCaseTab(
         @LoggableResource("caseDefinitionKey") @PathVariable caseDefinitionKey: String,
@@ -81,6 +90,10 @@ class CaseTabManagementResource(
     }
 
     @RunWithoutAuthorization
+    @EndpointDescription(
+        en = "Update case tab",
+        nl = "Dossiertabblad bijwerken",
+    )
     @PutMapping("/v1/case-definition/{caseDefinitionKey}/version/{caseDefinitionVersionTag}/tab/{tabKey}")
     fun updateCaseTab(
         @LoggableResource("caseDefinitionKey") @PathVariable caseDefinitionKey: String,
@@ -97,6 +110,10 @@ class CaseTabManagementResource(
     }
 
     @RunWithoutAuthorization
+    @EndpointDescription(
+        en = "Delete case tab",
+        nl = "Dossiertabblad verwijderen",
+    )
     @DeleteMapping("/v1/case-definition/{caseDefinitionKey}/version/{caseDefinitionVersionTag}/tab/{tabKey}")
     fun deleteCaseTab(
         @LoggableResource("caseDefinitionKey") @PathVariable caseDefinitionKey: String,
@@ -108,6 +125,10 @@ class CaseTabManagementResource(
     }
 
     @RunWithoutAuthorization
+    @EndpointDescription(
+        en = "List case tabs",
+        nl = "Dossiertabbladen ophalen",
+    )
     @GetMapping("/v1/case-definition/{caseDefinitionKey}/version/{caseDefinitionVersionTag}/tab")
     fun getCaseTabs(
         @LoggableResource("caseDefinitionName") @PathVariable caseDefinitionKey: String,
@@ -119,6 +140,10 @@ class CaseTabManagementResource(
     }
 
     @RunWithoutAuthorization
+    @EndpointDescription(
+        en = "Get case tab",
+        nl = "Dossiertabblad ophalen",
+    )
     @GetMapping("/v1/case-definition/{caseDefinitionKey}/version/{caseDefinitionVersionTag}/tab/{tabKey}")
     fun getCaseTab(
         @LoggableResource("caseDefinitionKey") @PathVariable caseDefinitionKey: String,

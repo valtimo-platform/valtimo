@@ -17,7 +17,6 @@
 package com.ritense.notificatiesapi.autoconfigure
 
 import com.fasterxml.jackson.databind.ObjectMapper
-import com.ritense.notificatiesapi.endpoint.NotificatiesApiEndpointDescriptionProvider
 import com.ritense.notificatiesapi.NotificatiesApiPluginFactory
 import com.ritense.notificatiesapi.PluginsDeployedEventListener
 import com.ritense.notificatiesapi.client.NotificatiesApiClient
@@ -246,8 +245,4 @@ class NotificatiesApiAutoConfiguration {
     fun notificatiesApiHttpSecurityConfigurer(): NotificatiesApiHttpSecurityConfigurer {
         return NotificatiesApiHttpSecurityConfigurer()
     }
-
-    @Bean
-    @ConditionalOnMissingBean(NotificatiesApiEndpointDescriptionProvider::class)
-    fun notificatiesApiEndpointDescriptionProvider() = NotificatiesApiEndpointDescriptionProvider()
 }

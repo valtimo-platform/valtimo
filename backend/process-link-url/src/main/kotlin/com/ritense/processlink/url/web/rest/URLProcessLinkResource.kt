@@ -21,6 +21,7 @@ import com.ritense.processlink.url.web.rest.dto.URLVariables
 import com.ritense.processlink.url.web.rest.dto.URLSubmissionResult
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import com.ritense.valtimo.contract.domain.ValtimoMediaType
+import com.ritense.valtimo.contract.endpoint.EndpointDescription
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
@@ -36,6 +37,10 @@ class URLProcessLinkResource(
     val urlProcessLinkService: URLProcessLinkService
 ) {
 
+    @EndpointDescription(
+        en = "Submit a URL process link",
+        nl = "Inzending voor een URL-proceskoppeling verwerken",
+    )
     @PostMapping("/v1/process-link/url/{processLinkId}")
     fun handleSubmission(
         @PathVariable processLinkId: UUID,
@@ -51,6 +56,10 @@ class URLProcessLinkResource(
         )
     }
 
+    @EndpointDescription(
+        en = "Get the default process link URL",
+        nl = "Standaard-proceskoppeling-URL ophalen",
+    )
     @GetMapping("/v1/process-link/url/variables")
     fun getDefaultUrl(
     ): URLVariables {

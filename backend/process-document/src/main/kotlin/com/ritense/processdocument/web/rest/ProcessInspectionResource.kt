@@ -35,6 +35,7 @@ import com.ritense.processdocument.web.rest.dto.TaskInspectionDto
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import com.ritense.valtimo.contract.audit.utils.AuditHelper
 import com.ritense.valtimo.contract.domain.ValtimoMediaType.APPLICATION_JSON_UTF8_VALUE
+import com.ritense.valtimo.contract.endpoint.EndpointDescription
 import com.ritense.valtimo.contract.utils.RequestHelper
 import com.ritense.valtimo.operaton.repository.OperatonTaskSpecificationHelper.Companion.byProcessInstanceId
 import com.ritense.valtimo.service.OperatonTaskService
@@ -77,6 +78,10 @@ class ProcessInspectionResource(
     private val objectMapper: ObjectMapper,
 ) {
 
+    @EndpointDescription(
+        en = "Get case process inspection",
+        nl = "Procesinspectie van dossier ophalen",
+    )
     @GetMapping("/v1/case/{caseId}/processes")
     fun getProcessInspection(
         @LoggableResource(resourceType = JsonSchemaDocument::class) @PathVariable caseId: UUID
@@ -96,6 +101,10 @@ class ProcessInspectionResource(
         return ResponseEntity.ok(rows)
     }
 
+    @EndpointDescription(
+        en = "Create process instance variable",
+        nl = "Procesvariabele aanmaken",
+    )
     @PostMapping("/v1/case/{caseId}/process-instance/{processInstanceId}/variables")
     fun createVariable(
         @LoggableResource(resourceType = JsonSchemaDocument::class) @PathVariable caseId: UUID,
@@ -129,6 +138,10 @@ class ProcessInspectionResource(
         return ResponseEntity.status(HttpStatus.CREATED).build()
     }
 
+    @EndpointDescription(
+        en = "Update process instance variable",
+        nl = "Procesvariabele bijwerken",
+    )
     @PutMapping("/v1/case/{caseId}/process-instance/{processInstanceId}/variables/{name}")
     fun updateVariable(
         @LoggableResource(resourceType = JsonSchemaDocument::class) @PathVariable caseId: UUID,
@@ -161,6 +174,10 @@ class ProcessInspectionResource(
         return ResponseEntity.ok().build()
     }
 
+    @EndpointDescription(
+        en = "Delete process instance variable",
+        nl = "Procesvariabele verwijderen",
+    )
     @DeleteMapping("/v1/case/{caseId}/process-instance/{processInstanceId}/variables/{name}")
     fun deleteVariable(
         @LoggableResource(resourceType = JsonSchemaDocument::class) @PathVariable caseId: UUID,

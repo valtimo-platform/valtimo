@@ -22,6 +22,7 @@ import com.ritense.logging.LoggableResource
 import com.ritense.processdocument.service.CaseDefinitionProcessLinkService
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import com.ritense.valtimo.contract.domain.ValtimoMediaType.APPLICATION_JSON_UTF8_VALUE
+import com.ritense.valtimo.contract.endpoint.EndpointDescription
 import com.ritense.zakenapi.uploadprocess.UploadProcessService.Companion.DOCUMENT_UPLOAD
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
@@ -38,6 +39,10 @@ class UploadProcessResource(
 ) {
 
     @Deprecated("Marked for removal since 9.22.0")
+    @EndpointDescription(
+        en = "Check case upload process link",
+        nl = "Dossieruploadproceskoppeling controleren",
+    )
     @GetMapping("/v1/uploadprocess/case/{caseDefinitionName}/check-link")
     fun checkCaseProcessLink(
         @LoggableResource("documentDefinitionName") @PathVariable caseDefinitionName: String

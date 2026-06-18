@@ -22,6 +22,7 @@ import com.ritense.objectmanagement.domain.search.SearchWithConfigRequest
 import com.ritense.objectmanagement.service.ObjectManagementService
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import com.ritense.valtimo.contract.domain.ValtimoMediaType.APPLICATION_JSON_UTF8_VALUE
+import com.ritense.valtimo.contract.endpoint.EndpointDescription
 import jakarta.validation.Valid
 import org.springframework.data.domain.PageImpl
 import org.springframework.data.domain.Pageable
@@ -44,27 +45,51 @@ class ObjectManagementResource(
     private val objectManagementService: ObjectManagementService
 ) {
 
+    @EndpointDescription(
+        en = "Create object management configuration",
+        nl = "Objectbeheerconfiguratie aanmaken",
+    )
     @PostMapping
     fun create(@Valid @RequestBody objectManagement: ObjectManagement): ResponseEntity<ObjectManagement> =
         ResponseEntity.ok(objectManagementService.create(objectManagement))
 
+    @EndpointDescription(
+        en = "Update object management configuration",
+        nl = "Objectbeheerconfiguratie bijwerken",
+    )
     @PutMapping
     fun update(@Valid @RequestBody objectManagement: ObjectManagement): ResponseEntity<ObjectManagement> =
         ResponseEntity.ok(objectManagementService.update(objectManagement))
 
+    @EndpointDescription(
+        en = "Get object management configuration by id",
+        nl = "Objectbeheerconfiguratie op id ophalen",
+    )
     @GetMapping("/{id}")
     fun getById(@PathVariable id: UUID): ResponseEntity<ObjectManagement?> =
         ResponseEntity.ok(objectManagementService.getById(id))
 
+    @EndpointDescription(
+        en = "List object management configurations",
+        nl = "Objectbeheerconfiguraties ophalen",
+    )
     @GetMapping
     fun getAll() = ResponseEntity.ok(objectManagementService.getAll())
 
+    @EndpointDescription(
+        en = "Delete object management configuration",
+        nl = "Objectbeheerconfiguratie verwijderen",
+    )
     @DeleteMapping("/{id}")
     fun delete(@PathVariable id: UUID): ResponseEntity<Any> {
         objectManagementService.deleteById(id)
         return ResponseEntity.noContent().build()
     }
 
+    @EndpointDescription(
+        en = "List objects for configuration",
+        nl = "Objecten voor configuratie ophalen",
+    )
     @GetMapping("/{id}/object")
     fun getObjects(
         @PathVariable id: UUID,
@@ -72,6 +97,10 @@ class ObjectManagementResource(
     ): ResponseEntity<PageImpl<ObjectsListRowDto>> =
         ResponseEntity.ok(objectManagementService.getObjects(id, pageable))
 
+    @EndpointDescription(
+        en = "Search objects with search fields",
+        nl = "Objecten met zoekvelden ophalen",
+    )
     @PostMapping("/{id}/object")
     fun getObjectsWithSearchFields(
         @PathVariable id: UUID,

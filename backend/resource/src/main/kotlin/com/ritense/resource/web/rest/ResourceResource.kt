@@ -20,6 +20,7 @@ import com.ritense.resource.web.ObjectUrlDTO
 import com.ritense.resource.web.ResourceDTO
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import com.ritense.valtimo.contract.domain.ValtimoMediaType.APPLICATION_JSON_UTF8_VALUE
+import com.ritense.valtimo.contract.endpoint.EndpointDescription
 import jakarta.validation.Valid
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.DeleteMapping
@@ -35,15 +36,31 @@ import org.springframework.web.bind.annotation.RestController
 @RequestMapping("/api", produces = [APPLICATION_JSON_UTF8_VALUE])
 interface ResourceResource {
 
+    @EndpointDescription(
+        en = "Get resource by id",
+        nl = "Bestand ophalen op id",
+    )
     @GetMapping("/v1/resource/{resourceId}")
     fun get(@PathVariable(name = "resourceId") resourceId: String): ResponseEntity<ObjectUrlDTO>
 
+    @EndpointDescription(
+        en = "Download resource content",
+        nl = "Bestandsinhoud downloaden",
+    )
     @GetMapping("/v1/resource/{resourceId}/download")
     fun getContent(@PathVariable(name = "resourceId") resourceId: String): ResponseEntity<ByteArray>
 
+    @EndpointDescription(
+        en = "Register resource",
+        nl = "Bestand registreren",
+    )
     @PutMapping("/v1/resource", consumes = [APPLICATION_JSON_UTF8_VALUE])
     fun register(@Valid @RequestBody resourceDTO: ResourceDTO): ResponseEntity<ResourceDTO>
 
+    @EndpointDescription(
+        en = "Delete resource by id",
+        nl = "Bestand verwijderen op id",
+    )
     @DeleteMapping("/v1/resource/{resourceId}")
     fun delete(@PathVariable(name = "resourceId") resourceId: String): ResponseEntity<Void>
 

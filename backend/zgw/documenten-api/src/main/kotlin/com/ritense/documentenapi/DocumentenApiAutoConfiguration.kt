@@ -25,7 +25,6 @@ import com.ritense.document.repository.impl.JsonSchemaDocumentRepository
 import com.ritense.document.service.DocumentDefinitionService
 import com.ritense.document.service.DocumentService
 import com.ritense.document.service.impl.JsonSchemaDocumentDefinitionService
-import com.ritense.documentenapi.endpoint.DocumentenApiEndpointDescriptionProvider
 import com.ritense.documentenapi.authorization.ZgwDocumentActionProvider
 import com.ritense.documentenapi.authorization.ZgwDocumentSpecificationFactory
 import com.ritense.documentenapi.authorization.ZgwDocumentToJsonSchemaDocumentMapper
@@ -277,8 +276,4 @@ class DocumentenApiAutoConfiguration {
         documentenApiUploadFieldRepository,
         objectMapper
     )
-
-    @Bean
-    @ConditionalOnMissingBean(DocumentenApiEndpointDescriptionProvider::class)
-    fun documentenApiEndpointDescriptionProvider() = DocumentenApiEndpointDescriptionProvider()
 }

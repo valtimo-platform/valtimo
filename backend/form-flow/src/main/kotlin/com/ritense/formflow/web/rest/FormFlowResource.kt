@@ -25,6 +25,7 @@ import com.ritense.formflow.service.FormFlowService
 import com.ritense.logging.LoggableResource
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import com.ritense.valtimo.contract.domain.ValtimoMediaType.APPLICATION_JSON_UTF8_VALUE
+import com.ritense.valtimo.contract.endpoint.EndpointDescription
 import com.ritense.formflow.service.FormFlowValtimoService
 import com.ritense.formflow.web.rest.dto.FormFlowBreadcrumbsResponse
 import com.ritense.formflow.web.rest.result.CompleteStepResult
@@ -47,6 +48,10 @@ class FormFlowResource(
     private val formFlowService: FormFlowService,
     private val formFlowValtimoService: FormFlowValtimoService,
 ) {
+    @EndpointDescription(
+        en = "Get form flow state",
+        nl = "Form flow status ophalen",
+    )
     @GetMapping(
         value = [
             "/v1/form-flow/instance/{formFlowInstanceId}",
@@ -70,6 +75,10 @@ class FormFlowResource(
         return ResponseEntity.ok(GetFormFlowStateResult(instance.id.id, toStepResult(stepInstance), toResultList(openResult)))
     }
 
+    @EndpointDescription(
+        en = "Complete form flow step",
+        nl = "Form flow stap voltooien",
+    )
     @PostMapping(
         value = [
             "/v1/form-flow/instance/{formFlowId}/step/instance/{stepInstanceId}",
@@ -97,6 +106,10 @@ class FormFlowResource(
         return ResponseEntity.ok(CompleteStepResult(instance.id.id, nextStep?.let { toStepResult(it) }, onOpenResult, onCompleteResult))
     }
 
+    @EndpointDescription(
+        en = "Navigate to previous form flow step",
+        nl = "Naar vorige form flow stap navigeren",
+    )
     @PostMapping(
         value = [
             "/v1/form-flow/instance/{formFlowId}/back",
@@ -120,6 +133,10 @@ class FormFlowResource(
         return ResponseEntity.ok(GetFormFlowStateResult(instance.id.id, stepInstance?.let { toStepResult(it) }, onOpenResult = openResult))
     }
 
+    @EndpointDescription(
+        en = "Save form flow step temporarily",
+        nl = "Form flow stap tussentijds opslaan",
+    )
     @PostMapping(
         value = [
             "/v1/form-flow/instance/{formFlowId}/save",
@@ -139,6 +156,10 @@ class FormFlowResource(
         return ResponseEntity.noContent().build()
     }
 
+    @EndpointDescription(
+        en = "Navigate to specific form flow step",
+        nl = "Naar specifieke form flow stap navigeren",
+    )
     @PostMapping("/v1/form-flow/instance/{formFlowId}/step/instance/{stepInstanceId}/to/step/instance/{targetStepInstanceId}")
     @Transactional
     fun navigateToStep(
@@ -163,6 +184,10 @@ class FormFlowResource(
         return ResponseEntity.ok(GetFormFlowStateResult(instance.id.id, toStepResult(stepInstance), openResult))
     }
 
+    @EndpointDescription(
+        en = "Get form flow breadcrumbs",
+        nl = "Form flow kruimelpad ophalen",
+    )
     @GetMapping("/v1/form-flow/instance/{formFlowId}/breadcrumbs")
     @Transactional
     fun getBreadcrumbs(

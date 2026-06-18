@@ -17,7 +17,6 @@
 package com.ritense.objectmanagement.autoconfigure
 
 import com.fasterxml.jackson.databind.ObjectMapper
-import com.ritense.objectmanagement.endpoint.ObjectManagementEndpointDescriptionProvider
 import com.ritense.objectmanagement.autodeployment.ObjectManagementDefinitionDeploymentService
 import com.ritense.objectmanagement.repository.ObjectManagementRepository
 import com.ritense.objectmanagement.security.config.ObjectManagementHttpSecurityConfigurer
@@ -132,9 +131,4 @@ class ObjectManagementAutoConfiguration {
     fun objectManagementHttpSecurityConfigurer(): ObjectManagementHttpSecurityConfigurer {
         return ObjectManagementHttpSecurityConfigurer()
     }
-
-    @Bean
-    @ConditionalOnMissingBean(ObjectManagementEndpointDescriptionProvider::class)
-    fun objectManagementEndpointDescriptionProvider() = ObjectManagementEndpointDescriptionProvider()
-
 }
