@@ -26,7 +26,7 @@
     saving: saving$ | async,
   } as obs"
 >
-  @if (obs.isUserTask) {
+  @if (obs.isUserTask || obs.isStartEvent) {
     <cds-combo-box
       [placeholder]="'processLinkSteps.displayType.placeholder' | translate"
       [label]="'processLinkSteps.displayType.label' | translate"
