@@ -4,10 +4,6 @@
 **Release date 10-06-2026**
 {% endhint %}
 
-## Features
-
-## Bugfixes
-
 ## Enhancements
 
 * **Selectable widget layout algorithm**
