@@ -17,6 +17,7 @@
 package com.ritense.case.web.rest
 
 import com.fasterxml.jackson.databind.JsonNode
+import com.ritense.authorization.annotation.RunWithoutAuthorization
 import com.ritense.case.service.StartableItemManagementService
 import com.ritense.case.web.rest.dto.CreateStartableItemRequest
 import com.ritense.case.web.rest.dto.ManagementStartableItemDto
@@ -49,6 +50,7 @@ class StartableItemManagementResource(
     private val startableItemManagementService: StartableItemManagementService,
 ) {
 
+    @RunWithoutAuthorization
     @GetMapping
     fun getStartableItems(
         @PathVariable caseDefinitionKey: String,
@@ -58,6 +60,7 @@ class StartableItemManagementResource(
         return ResponseEntity.ok(startableItemManagementService.getStartableItems(caseDefinitionId))
     }
 
+    @RunWithoutAuthorization
     @PostMapping
     fun createStartableItem(
         @PathVariable caseDefinitionKey: String,
@@ -73,6 +76,7 @@ class StartableItemManagementResource(
         return ResponseEntity.ok(item)
     }
 
+    @RunWithoutAuthorization
     @PutMapping("/{itemKey}/version/{versionTag}")
     fun updateStartableItem(
         @PathVariable caseDefinitionKey: String,
@@ -84,6 +88,7 @@ class StartableItemManagementResource(
         return doUpdateStartableItem(caseDefinitionKey, caseDefinitionVersionTag, itemKey, versionTag, request)
     }
 
+    @RunWithoutAuthorization
     @PutMapping("/{itemKey}")
     fun updateStartableItemWithoutVersionTag(
         @PathVariable caseDefinitionKey: String,
@@ -94,6 +99,7 @@ class StartableItemManagementResource(
         return doUpdateStartableItem(caseDefinitionKey, caseDefinitionVersionTag, itemKey, null, request)
     }
 
+    @RunWithoutAuthorization
     @GetMapping("/{itemKey}/version/{versionTag}/properties")
     fun getStartableItemProperties(
         @PathVariable caseDefinitionKey: String,
@@ -105,6 +111,7 @@ class StartableItemManagementResource(
         return doGetStartableItemProperties(caseDefinitionKey, caseDefinitionVersionTag, itemKey, versionTag, type)
     }
 
+    @RunWithoutAuthorization
     @GetMapping("/{itemKey}/properties")
     fun getStartableItemPropertiesWithoutVersionTag(
         @PathVariable caseDefinitionKey: String,
@@ -115,6 +122,7 @@ class StartableItemManagementResource(
         return doGetStartableItemProperties(caseDefinitionKey, caseDefinitionVersionTag, itemKey, null, type)
     }
 
+    @RunWithoutAuthorization
     @DeleteMapping("/{itemKey}/version/{versionTag}")
     fun deleteStartableItem(
         @PathVariable caseDefinitionKey: String,
@@ -125,6 +133,7 @@ class StartableItemManagementResource(
         return doDeleteStartableItem(caseDefinitionKey, caseDefinitionVersionTag, itemKey, versionTag)
     }
 
+    @RunWithoutAuthorization
     @DeleteMapping("/{itemKey}")
     fun deleteStartableItemWithoutVersionTag(
         @PathVariable caseDefinitionKey: String,
