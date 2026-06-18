@@ -1,0 +1,115 @@
+<!--
+  ~ Copyright 2015-2026 Ritense BV, the Netherlands.
+  ~
+  ~ Licensed under EUPL, Version 1.2 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~ https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" basis,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<cds-modal valtimoCdsModal [open]="open" size="sm" showFooter="true" (close)="onCancel()">
+  <cds-modal-header [showCloseButton]="true" (closeSelect)="onCancel()">
+    <h3 cdsModalHeaderHeading>
+      {{
+        (mode === 'edit'
+          ? 'case.inspection.processes.variableModal.editTitle'
+          : 'case.inspection.processes.variableModal.addTitle'
+        ) | translate
+      }}
+    </h3>
+  </cds-modal-header>
+
+  <form
+    [cdsLayer]="1"
+    [formGroup]="formGroup"
+    cdsModalContent
+    class="case-inspection-variable-modal__form"
+  >
+    <cds-label>
+      {{ 'case.inspection.processes.variableModal.name' | translate }}
+
+      <input
+        cdsText
+        formControlName="name"
+        [invalid]="name.dirty && name.invalid"
+      />
+    </cds-label>
+
+    <v-select
+      formControlName="type"
+      titleTranslationKey="case.inspection.processes.variableModal.type"
+      [appendInline]="false"
+      [items]="typeSelectItems"
+    ></v-select>
+
+    <ng-container [ngSwitch]="type.value">
+      <cds-label *ngSwitchCase="'STRING'">
+        {{ 'case.inspection.processes.variableModal.value' | translate }}
+
+        <input cdsText formControlName="valueText" />
+      </cds-label>
+
+      <ng-container *ngSwitchCase="'INTEGER'">
+        <ng-container *ngTemplateOutlet="numberField"></ng-container>
+      </ng-container>
+
+      <ng-container *ngSwitchCase="'LONG'">
+        <ng-container *ngTemplateOutlet="numberField"></ng-container>
+      </ng-container>
+
+      <ng-container *ngSwitchCase="'DOUBLE'">
+        <ng-container *ngTemplateOutlet="numberField"></ng-container>
+      </ng-container>
+
+      <cds-toggle
+        *ngSwitchCase="'BOOLEAN'"
+        formControlName="valueBoolean"
+        [label]="'case.inspection.processes.variableModal.value' | translate"
+      ></cds-toggle>
+
+      <cds-textarea-label
+        *ngSwitchCase="'JSON'"
+        [invalid]="$invalidJson()"
+        [invalidText]="'case.inspection.processes.variableModal.invalidJson' | translate"
+      >
+        {{ 'case.inspection.processes.variableModal.value' | translate }}
+
+        <textarea
+          cdsTextArea
+          formControlName="valueJson"
+          rows="8"
+          [invalid]="$invalidJson()"
+        ></textarea>
+      </cds-textarea-label>
+    </ng-container>
+
+    <ng-template #numberField>
+      <cds-number
+        formControlName="valueNumber"
+        [label]="'case.inspection.processes.variableModal.value' | translate"
+        [step]="type.value === 'DOUBLE' ? 0.1 : 1"
+      ></cds-number>
+    </ng-template>
+  </form>
+
+  <cds-modal-footer>
+    <button cdsButton="ghost" (click)="onCancel()">
+      {{ 'case.inspection.processes.variableModal.cancel' | translate }}
+    </button>
+
+    <button
+      cdsButton="primary"
+      [disabled]="formGroup.invalid"
+      (click)="onConfirm()"
+    >
+      {{ 'case.inspection.processes.variableModal.save' | translate }}
+    </button>
+  </cds-modal-footer>
+</cds-modal>

@@ -69,17 +69,10 @@ class BuildingBlockCallActivityListener(
                 else -> null
             }
 
-            val sourceDocumentId: UUID? = when {
-                parentBuildingBlockInstance != null -> parentBuildingBlockInstance.documentId
-                !isIndependentProcess && execution.businessKey != null -> UUID.fromString(execution.businessKey)
-                else -> null
-            }
-
             val buildingBlockInstance = this.createBuildingBlock(
                 execution = execution,
                 buildingBlockProcessLink = it,
                 rootCaseDocumentId = rootCaseDocumentId,
-                sourceDocumentId = sourceDocumentId,
                 activityId = activityId,
                 parentBuildingBlockInstanceId = parentBuildingBlockInstance?.id
             )
@@ -166,15 +159,8 @@ class BuildingBlockCallActivityListener(
         }
         if (endSyncOutputMappings.isEmpty()) return
 
-        // Resolve values from building block document
-        // Source format: doc:/path or just /path (defaults to doc:)
         val sourceMappings = endSyncOutputMappings.map { mapping ->
-            val sourceKey = if (mapping.source.startsWith("doc:")) {
-                mapping.source
-            } else {
-                "doc:/${mapping.source}"
-            }
-            sourceKey to mapping.target
+            mapping.getPrefixedSource() to mapping.target
         }
 
         val resolvedValues = valueResolverService.resolveValues(
@@ -214,62 +200,43 @@ class BuildingBlockCallActivityListener(
         execution: DelegateExecution,
         buildingBlockProcessLink: BuildingBlockProcessLink,
         rootCaseDocumentId: UUID?,
-        sourceDocumentId: UUID?,
         activityId: String,
         parentBuildingBlockInstanceId: UUID?
     ): BuildingBlockInstance {
+        val inputSources = buildingBlockProcessLink.inputMappings.map { it.source }
+        val resolvedValues = valueResolverService.resolveValues(execution.processInstanceId, execution, inputSources)
+        val valuesToHandle = buildingBlockProcessLink.inputMappings.associate {
+            it.getPrefixedTarget() to resolvedValues[it.source]
+        }
+        val preProcessValues = valueResolverService.preProcessValuesForNewCase(valuesToHandle)
+        val documentContent = objectMapper.valueToTree<JsonNode>(preProcessValues[DOC_PREFIX])
+
         val documentRequest = NewDocumentRequest(
             null,
             null,
             null,
             buildingBlockProcessLink.buildingBlockDefinitionId.key,
             buildingBlockProcessLink.buildingBlockDefinitionId.versionTag.toString(),
-            buildDocumentContent(execution, buildingBlockProcessLink, sourceDocumentId),
+            documentContent,
         )
 
-        return buildingBlockInstanceService.create(
+        val buildingBlockInstance =  buildingBlockInstanceService.create(
             documentRequest,
             rootCaseDocumentId,
             activityId,
             parentBuildingBlockInstanceId,
             callerProcessDefinitionId = execution.processDefinitionId
         )
+
+        valueResolverService.handleValues(
+            buildingBlockInstance.documentId,
+            preProcessValues.filterKeys { !it.startsWith(DOC_PREFIX) }
+        )
+
+        return buildingBlockInstance
     }
 
-    private fun buildDocumentContent(
-        execution: DelegateExecution,
-        buildingBlockProcessLink: BuildingBlockProcessLink,
-        sourceDocumentId: UUID?
-    ): JsonNode {
-        val inputSources = buildingBlockProcessLink.inputMappings.map { it.source }
-
-        // Separate pv: sources from doc: sources
-        val pvSources = inputSources.filter { it.startsWith("pv:") }
-        val docSources = inputSources.filter { !it.startsWith("pv:") }
-
-        // Resolve process variable sources using execution context
-        val pvResolvedValues = if (pvSources.isNotEmpty()) {
-            valueResolverService.resolveValues(execution.processInstanceId, execution, pvSources)
-        } else {
-            emptyMap()
-        }
-
-        // Resolve document sources using document ID (if available)
-        val docResolvedValues = if (docSources.isNotEmpty() && sourceDocumentId != null) {
-            valueResolverService.resolveValues(sourceDocumentId.toString(), docSources)
-        } else if (docSources.isNotEmpty()) {
-            throw IllegalStateException("Cannot resolve doc: input mappings without a source document (case or parent building block)")
-        } else {
-            emptyMap()
-        }
-
-        // Combine resolved values
-        val resolvedValues = pvResolvedValues + docResolvedValues
-
-        val documentToCreate = buildingBlockProcessLink.inputMappings.associate {
-            it.target to resolvedValues[it.source]
-        }
-
-        return objectMapper.valueToTree(documentToCreate)
+    private companion object {
+        private const val DOC_PREFIX = "doc"
     }
 }
