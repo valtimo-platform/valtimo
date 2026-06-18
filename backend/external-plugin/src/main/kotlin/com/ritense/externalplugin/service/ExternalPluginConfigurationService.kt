@@ -26,6 +26,7 @@ import com.ritense.externalplugin.domain.ExternalPluginDefinition
 import com.ritense.externalplugin.domain.ExternalPluginGrantedEndpoint
 import com.ritense.externalplugin.domain.ExternalPluginGrantedEvent
 import com.ritense.externalplugin.domain.ExternalPluginHost
+import com.ritense.externalplugin.exception.ExternalPluginConfigurationInUseException
 import com.ritense.externalplugin.repository.ExternalPluginConfigurationRepository
 import com.ritense.externalplugin.repository.ExternalPluginDefinitionRepository
 import com.ritense.externalplugin.repository.ExternalPluginGrantedEndpointRepository
@@ -34,6 +35,7 @@ import com.ritense.externalplugin.repository.ExternalPluginHostRepository
 import com.ritense.externalplugin.web.rest.dto.GrantedEndpointEntry
 import com.ritense.externalplugin.web.rest.dto.GrantedEventEntry
 import com.ritense.plugin.service.EncryptionService
+import com.ritense.plugin.web.rest.dto.PluginUsageDto
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.stereotype.Service
@@ -55,6 +57,7 @@ class ExternalPluginConfigurationService(
     private val encryptionService: EncryptionService,
     private val objectMapper: ObjectMapper,
     private val serviceTokenService: ExternalPluginServiceTokenService,
+    private val hostUsageResolver: ExternalPluginHostUsageResolver,
     /**
      * Default exchange GZAC publishes to (from `valtimo.outbox.publisher.rabbitmq.exchange`).
      * Used as a fallback when a host row has `eventBrokerExchange = null`.
@@ -200,9 +203,26 @@ class ExternalPluginConfigurationService(
         return saved
     }
 
+    /**
+     * Mirrors [ExternalPluginHostService.findUsages] but scoped to a single configuration. Used
+     * by the management UI to disable the delete control proactively; the server-side guard in
+     * [delete] still enforces the same invariant, so an empty list here does not authorise
+     * deletion — a concurrent process-link creation will still surface as an
+     * [ExternalPluginConfigurationInUseException].
+     */
+    @Transactional(readOnly = true)
+    fun findUsages(configurationId: UUID): List<PluginUsageDto> =
+        hostUsageResolver.findUsagesForConfiguration(configurationId)
+
     fun delete(id: UUID) {
         val config = configurationRepository.findById(id)
             .orElseThrow { IllegalArgumentException("External plugin configuration $id not found") }
+
+        val usages = hostUsageResolver.findUsagesForConfiguration(id)
+        if (usages.isNotEmpty()) {
+            throw ExternalPluginConfigurationInUseException(id, usages)
+        }
+
         val definition = definitionRepository.findById(config.definitionId).orElse(null)
 
         grantedEndpointRepository.deleteAllByConfigurationId(id)
