@@ -2496,8 +2496,8 @@
       "options": {"modal": "Modaal", "panel": "Panel"}
     },
     "formSize": {
-      "label": "Selecteer modaal-grootte",
-      "placeholder": "Selecteer een modaal-grootte",
+      "label": "Selecteer formuliergrootte",
+      "placeholder": "Selecteer een formuliergrootte",
       "options": {
         "extraSmall": "Extra klein",
         "small": "Klein",

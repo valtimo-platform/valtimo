@@ -19,6 +19,10 @@
 
 ## Bugfixes
 
+* **Form flows in draft case definitions could not be edited**
+
+  Form flows in a draft case definition were incorrectly shown as read-only and can now be edited.
+
 * **Sortable controls hidden for non-sortable paths**
 
   In the case and task list column editors, the **Sortable** checkbox and **Default sort** dropdown are now hidden when

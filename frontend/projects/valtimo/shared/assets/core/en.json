@@ -2463,8 +2463,8 @@
       "options": {"modal": "Modal", "panel": "Panel"}
     },
     "formSize": {
-      "label": "Select modal size",
-      "placeholder": "Select a modal size",
+      "label": "Select form size",
+      "placeholder": "Select a form size",
       "options": {
         "extraSmall": "Extra small",
         "small": "Small",
