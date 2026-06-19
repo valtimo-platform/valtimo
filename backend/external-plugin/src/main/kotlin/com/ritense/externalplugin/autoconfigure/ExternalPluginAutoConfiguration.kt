@@ -44,12 +44,15 @@ import com.ritense.externalplugin.service.ExternalPluginDefinitionService
 import com.ritense.externalplugin.service.ExternalPluginDiscoveryJob
 import com.ritense.externalplugin.service.ExternalPluginDiscoveryService
 import com.ritense.externalplugin.service.ExternalPluginHostService
+import com.ritense.externalplugin.service.ExternalPluginHostUsageResolver
 import com.ritense.externalplugin.service.ExternalPluginServiceTokenService
 import com.ritense.externalplugin.service.PluginPropertyEncryptor
 import com.ritense.externalplugin.web.rest.ExternalPluginManagementResource
 import com.ritense.plugin.service.EncryptionService
 import com.ritense.valtimo.contract.endpoint.EndpointDescriptionProvider
+import com.ritense.valtimo.operaton.service.OperatonRepositoryService
 import com.ritense.valueresolver.ValueResolverService
+import org.operaton.bpm.engine.RepositoryService
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.boot.autoconfigure.domain.EntityScan
@@ -85,6 +88,22 @@ class ExternalPluginAutoConfiguration {
     ) = ExternalPluginHostClient(restTemplate, objectMapper)
 
     @Bean
+    @ConditionalOnMissingBean(ExternalPluginHostUsageResolver::class)
+    fun externalPluginHostUsageResolver(
+        definitionRepository: ExternalPluginDefinitionRepository,
+        configurationRepository: ExternalPluginConfigurationRepository,
+        processLinkRepository: ExternalPluginProcessLinkRepository,
+        operatonRepositoryService: OperatonRepositoryService,
+        bpmnRepositoryService: RepositoryService,
+    ) = ExternalPluginHostUsageResolver(
+        definitionRepository,
+        configurationRepository,
+        processLinkRepository,
+        operatonRepositoryService,
+        bpmnRepositoryService,
+    )
+
+    @Bean
     @ConditionalOnMissingBean(ExternalPluginHostService::class)
     fun externalPluginHostService(
         hostRepository: ExternalPluginHostRepository,
@@ -94,6 +113,7 @@ class ExternalPluginAutoConfiguration {
         grantedEventRepository: ExternalPluginGrantedEventRepository,
         encryptionService: EncryptionService,
         hostClient: ExternalPluginHostClient,
+        hostUsageResolver: ExternalPluginHostUsageResolver,
     ) = ExternalPluginHostService(
         hostRepository,
         definitionRepository,
@@ -102,6 +122,7 @@ class ExternalPluginAutoConfiguration {
         grantedEventRepository,
         encryptionService,
         hostClient,
+        hostUsageResolver,
     )
 
     @Bean
@@ -171,6 +192,7 @@ class ExternalPluginAutoConfiguration {
         encryptionService: EncryptionService,
         objectMapper: ObjectMapper,
         serviceTokenService: ExternalPluginServiceTokenService,
+        hostUsageResolver: ExternalPluginHostUsageResolver,
         @Value("\${server.port:8080}") serverPort: Int,
         @Value("\${valtimo.outbox.publisher.rabbitmq.exchange:valtimo-events}") defaultEventBrokerExchange: String,
     ) = ExternalPluginConfigurationService(
@@ -184,6 +206,7 @@ class ExternalPluginAutoConfiguration {
         encryptionService,
         objectMapper,
         serviceTokenService,
+        hostUsageResolver,
         defaultEventBrokerExchange,
         "http://localhost:$serverPort",
     )

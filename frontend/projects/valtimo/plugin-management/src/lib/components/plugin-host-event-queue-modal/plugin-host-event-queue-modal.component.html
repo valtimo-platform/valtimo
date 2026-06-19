@@ -15,51 +15,22 @@
   -->
 
 <cds-modal
-  *ngIf="open"
+  *ngIf="open && host"
   [open]="open"
   size="sm"
   valtimoCdsModal
 >
   <cds-modal-header (closeSelect)="onClose()">
-    <h3 cdsModalHeaderHeading>{{ 'pluginManagement.addHost' | translate }}</h3>
+    <h3 cdsModalHeaderHeading>
+      {{ 'pluginManagement.editHostEventQueueModalTitle' | translate: {name: host.name} }}
+    </h3>
   </cds-modal-header>
 
   <form
     [formGroup]="form"
     cdsModalContent
     [cdsLayer]="1"
-    class="plugin-host-modal__content"
   >
-    <cds-label>
-      {{ 'pluginManagement.labels.name' | translate }}
-      <input cdsText formControlName="name" placeholder="my-plugin-host" />
-    </cds-label>
-
-    <cds-label>
-      {{ 'pluginManagement.labels.baseUrl' | translate }}
-      <input cdsText formControlName="baseUrl" placeholder="https://plugin-host.internal:8090" />
-    </cds-label>
-
-    <cds-label>
-      {{ 'pluginManagement.labels.secret' | translate }}
-      <input cdsText formControlName="secret" type="password" placeholder="admin-token" />
-    </cds-label>
-
-    <cds-label>
-      {{ 'pluginManagement.labels.gzacCallbackBaseUrl' | translate }}
-      <input cdsText formControlName="gzacCallbackBaseUrl" placeholder="http://localhost:8080" />
-    </cds-label>
-
-    <cds-label>
-      {{ 'pluginManagement.labels.eventBrokerAmqpUrl' | translate }}
-      <input cdsText formControlName="eventBrokerAmqpUrl" placeholder="amqp://guest:guest@localhost:5672" />
-    </cds-label>
-
-    <cds-label>
-      {{ 'pluginManagement.labels.eventBrokerExchange' | translate }}
-      <input cdsText formControlName="eventBrokerExchange" placeholder="valtimo-events" />
-    </cds-label>
-
     <v-select
       [appendInline]="false"
       [dropUp]="false"
@@ -88,7 +59,7 @@
     </button>
 
     <button cdsButton="primary" [disabled]="form.invalid" (click)="onSubmit()">
-      {{ 'interface.save' | translate }}
+      {{ 'pluginManagement.saveEventQueue' | translate }}
     </button>
   </cds-modal-footer>
 </cds-modal>

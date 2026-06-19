@@ -2153,8 +2153,20 @@
       "pluginHost": "Plugin host",
       "gzacCallbackBaseUrl": "GZAC callback URL",
       "eventBrokerAmqpUrl": "Event broker URL (optional)",
-      "eventBrokerExchange": "Event broker exchange (optional)"
+      "eventBrokerExchange": "Event broker exchange (optional)",
+      "eventQueueMode": "Event queue mode",
+      "eventQueueTtlMs": "Event queue inactivity TTL (ms)"
     },
+    "eventQueueMode": {
+      "live": "Live (events lost while host is down)",
+      "durable": "Durable (retains events for the TTL while host is down)"
+    },
+    "hints": {
+      "eventQueueTtlMs": "The durable queue is deleted after this many ms with no connected host. Min 1h (3600000), max 30d (2592000000), default 72h (259200000)."
+    },
+    "editEventQueue": "Edit event queue",
+    "editHostEventQueueModalTitle": "Edit event queue for {{name}}",
+    "saveEventQueue": "Save",
     "source": {
       "embedded": "Embedded",
       "external": "External"
@@ -2197,6 +2209,34 @@
     "deleteHostModal": {
       "title": "Delete plugin host",
       "description": "Are you sure you want to delete this plugin host? All plugin definitions and configurations from this host will also be deleted. This action cannot be undone."
+    },
+    "deleteConfigurationModal": {
+      "title": "Delete plugin configuration",
+      "description": "Are you sure you want to delete this plugin configuration? This action cannot be undone."
+    },
+    "hostInUseModal": {
+      "title": "Plugin host is in use",
+      "thisHost": "this plugin host",
+      "description": "{{ entityName }} cannot be deleted because the following BPMN activities still use a configuration from this host. Remove these process links first."
+    },
+    "configurationInUseModal": {
+      "title": "Plugin configuration is in use",
+      "thisConfiguration": "this plugin configuration",
+      "description": "{{ entityName }} cannot be deleted because the following BPMN activities still reference it. Remove these process links first."
+    },
+    "usageModal": {
+      "headers": {
+        "activity": "Activity",
+        "configuration": "Plugin configuration",
+        "type": "Type",
+        "linkedTo": "Linked to",
+        "processDefinition": "Process definition"
+      },
+      "parentType": {
+        "CASE": "Case",
+        "BUILDING_BLOCK": "Building block",
+        "GLOBAL": "Global"
+      }
     },
     "compatibility": {
       "incompatibleTag": "Incompatible",
