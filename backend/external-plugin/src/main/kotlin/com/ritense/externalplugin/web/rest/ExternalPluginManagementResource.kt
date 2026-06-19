@@ -112,6 +112,10 @@ class ExternalPluginManagementResource(
      * because the periodic discovery cycle will reconcile anyway.
      */
     @RunWithoutAuthorization
+    @EndpointDescription(
+        en = "Update a host's event-queue mode and TTL",
+        nl = "Event-queue-modus en TTL van host bijwerken",
+    )
     @PatchMapping("/host/{hostId}/event-queue")
     fun updateHostEventQueue(
         @PathVariable hostId: UUID,
@@ -180,6 +184,10 @@ class ExternalPluginManagementResource(
      * [ExternalPluginHostService.delete] remains authoritative — this endpoint is advisory only.
      */
     @RunWithoutAuthorization
+    @EndpointDescription(
+        en = "List usages of an external plugin host",
+        nl = "Gebruik van externe-pluginhost ophalen",
+    )
     @GetMapping("/host/{hostId}/usages")
     fun listHostUsages(@PathVariable hostId: UUID): ResponseEntity<List<PluginUsageDto>> =
         ResponseEntity.ok(hostService.findUsages(hostId))
@@ -326,6 +334,10 @@ class ExternalPluginManagementResource(
      * otherwise cause a 409.
      */
     @RunWithoutAuthorization
+    @EndpointDescription(
+        en = "List usages of an external plugin configuration",
+        nl = "Gebruik van externe-pluginconfiguratie ophalen",
+    )
     @GetMapping("/configuration/{configurationId}/usages")
     fun listConfigurationUsages(
         @PathVariable configurationId: UUID,
