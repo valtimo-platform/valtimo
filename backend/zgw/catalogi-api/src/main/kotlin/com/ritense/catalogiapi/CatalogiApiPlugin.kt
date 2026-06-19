@@ -249,7 +249,7 @@ class CatalogiApiPlugin(
     @PluginAction(
         key = "get-informatieobjecttype",
         title = "Get Informatieobjecttype",
-        description = "Retrieve the informatieobjecttype URL and store it in a process variable",
+        description = "Retrieve the informatieobjecttype URL by description and store it in a process variable",
         activityTypes = [ActivityTypeWithEventName.SERVICE_TASK_START, ActivityTypeWithEventName.CALL_ACTIVITY_START]
     )
     fun getInformatieobjecttypeUrl(
@@ -260,15 +260,11 @@ class CatalogiApiPlugin(
         withLoggingContext(
             CATALOGI_API.INFORMATIEOBJECTTYPE to informatieobjecttype
         ) {
-            logger.debug { "Retrieving informatieobjecttype by $informatieobjecttype and storing it in process variable: $processVariable" }
-            val informatieobjecttypeUrl = if (informatieobjecttype.matches(HTTPS_REGEX)) {
-                informatieobjecttype
-            } else {
-                val zaaktypeUrl = getZaaktypeUrl(execution)
-                getInformatieobjecttypeByOmschrijving(zaaktypeUrl, informatieobjecttype).url!!.toASCIIString()
-            }
+            logger.debug { "Retrieving informatieobjecttype by description '$informatieobjecttype' and storing it in process variable: $processVariable" }
+            val zaaktypeUrl = getZaaktypeUrl(execution)
+            val informatieobjecttypeUrl = getInformatieobjecttypeByOmschrijving(zaaktypeUrl, informatieobjecttype).url!!.toASCIIString()
 
-            logger.info { "Setting process variable '$processVariable' with (retrieved) informatieobjecttype URL: $informatieobjecttypeUrl" }
+            logger.info { "Setting process variable '$processVariable' with informatieobjecttype URL: $informatieobjecttypeUrl" }
 
             execution.setVariable(processVariable, informatieobjecttypeUrl)
         }

@@ -150,26 +150,6 @@ class CatalogiApiPluginIT : BaseIntegrationTest() {
         assertTrue(zaaktypeInformatieobjecttypesRequest.path?.contains("zaaktype=$ZAAKTYPE_URL") == true)
     }
 
-    @Test
-    fun `should pass through informatieobjecttype url when given https url`() {
-        createProcessLink(INFORMATIEOBJECTTYPE_URL)
-
-        val request = NewDocumentAndStartProcessRequest(PROCESS_DEFINITION_KEY, newDocumentRequest())
-        val response = runWithoutAuthorization { processDocumentService.newDocumentAndStartProcess(request) }
-
-        assertTrue(response is NewDocumentAndStartProcessResultSucceeded)
-
-        val processInstanceId = response.resultingProcessInstanceId().get().toString()
-        val processVariable = getHistoricProcessVariable(processInstanceId, PROCESS_VARIABLE_NAME)
-
-        assertEquals(INFORMATIEOBJECTTYPE_URL, processVariable)
-
-        val zaaktypeInformatieobjecttypesRequest = executedRequests.find {
-            it.path?.contains("zaaktype-informatieobjecttypen") == true
-        }
-        assertNull(zaaktypeInformatieobjecttypesRequest)
-    }
-
     private fun createProcessLink(informatieobjecttype: String) {
         pluginProcessLinkRepository.save(
             PluginProcessLink(

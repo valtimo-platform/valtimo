@@ -758,18 +758,6 @@ internal class CatalogiApiPluginTest : BaseTest() {
     }
 
     @Test
-    fun `should get informatieobjecttype by url`() {
-        val informatieobjecttypeUrl = informatieObjectTypeUrl("1")
-        val processVariable = "informatieobjecttypeUrlPv"
-        val documentId = documentId()
-        val execution = mockExecution(documentId)
-
-        plugin.getInformatieobjecttypeUrl(execution, informatieobjecttypeUrl, processVariable)
-
-        verify(execution, times(1)).setVariable(processVariable, informatieobjecttypeUrl)
-    }
-
-    @Test
     fun `should throw InformatieobjecttypeNotFoundException when get informatieobjecttype doesn't exist`() {
         val omschrijving = "Onbekend document"
         val processVariable = "informatieobjecttypeUrlPv"
