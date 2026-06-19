@@ -166,6 +166,10 @@ class PluginConfigurationResource(
      * Lets the management UI pre-emptively disable the delete control with the same payload
      * the backend would attach to a 409 from `DELETE /v1/plugin/configuration/{id}`.
      */
+    @EndpointDescription(
+        en = "List plugin configuration usages by id",
+        nl = "Gebruik van pluginconfiguratie ophalen op id",
+    )
     @GetMapping("/v1/plugin/configuration/{pluginConfigurationId}/usages")
     fun listPluginConfigurationUsages(
         @LoggableResource(resourceType = PluginConfiguration::class) @PathVariable(name = "pluginConfigurationId") pluginConfigurationId: UUID,
