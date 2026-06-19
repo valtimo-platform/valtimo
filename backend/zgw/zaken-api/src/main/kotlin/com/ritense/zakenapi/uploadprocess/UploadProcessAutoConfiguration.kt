@@ -23,6 +23,7 @@ import com.ritense.document.service.DocumentService
 import com.ritense.processdocument.service.CaseDefinitionProcessLinkService
 import com.ritense.processdocument.service.ProcessDocumentService
 import com.ritense.resource.service.TemporaryResourceStorageService
+import com.ritense.valtimo.contract.document.CaseDocumentResolver
 import org.springframework.boot.autoconfigure.AutoConfiguration
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.context.annotation.Bean
@@ -63,11 +64,13 @@ class UploadProcessAutoConfiguration {
         documentService: DocumentService,
         processDocumentService: ProcessDocumentService,
         caseDefinitionProcessLinkService: CaseDefinitionProcessLinkService,
+        caseDocumentResolver: CaseDocumentResolver,
     ): UploadProcessService {
         return UploadProcessService(
             documentService,
             processDocumentService,
             caseDefinitionProcessLinkService,
+            caseDocumentResolver,
         )
     }
 
