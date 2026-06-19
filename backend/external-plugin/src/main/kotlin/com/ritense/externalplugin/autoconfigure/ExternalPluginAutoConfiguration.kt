@@ -56,6 +56,7 @@ import org.operaton.bpm.engine.RepositoryService
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.boot.autoconfigure.domain.EntityScan
+import org.springframework.boot.convert.DurationStyle
 import org.springframework.boot.web.client.RestTemplateBuilder
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
@@ -139,7 +140,8 @@ class ExternalPluginAutoConfiguration {
     @ConditionalOnMissingBean(ExternalPluginServiceTokenService::class)
     fun externalPluginServiceTokenService(
         keyProvider: ExternalPluginServiceTokenKeyProvider,
-    ) = ExternalPluginServiceTokenService(keyProvider)
+        @Value("\${valtimo.external-plugin.service-token.ttl:PT24H}") tokenTtl: String,
+    ) = ExternalPluginServiceTokenService(keyProvider, DurationStyle.detectAndParse(tokenTtl))
 
     @Bean
     @ConditionalOnMissingBean(ExternalPluginServiceTokenAuthenticator::class)
