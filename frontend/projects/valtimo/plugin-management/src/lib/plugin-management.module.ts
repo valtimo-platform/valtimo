@@ -30,7 +30,9 @@ import {PluginEditComponent} from './components/plugin-edit/plugin-edit.componen
 import {PluginExternalEditModalComponent} from './components/plugin-external-edit-modal/plugin-external-edit-modal.component';
 import {PluginExternalConfigureComponent} from './components/plugin-external-configure/plugin-external-configure.component';
 import {PluginExternalPermissionsComponent} from './components/plugin-external-permissions/plugin-external-permissions.component';
+import {PluginHostEventQueueModalComponent} from './components/plugin-host-event-queue-modal/plugin-host-event-queue-modal.component';
 import {PluginHostModalComponent} from './components/plugin-host-modal/plugin-host-modal.component';
+import {PluginUsageModalComponent} from './components/plugin-usage-modal/plugin-usage-modal.component';
 import {PluginUploadModalComponent} from './components/plugin-upload-modal/plugin-upload-modal.component';
 import {
   CarbonListModule,
@@ -90,8 +92,10 @@ import {
     PluginExternalEditModalComponent,
     PluginExternalConfigureComponent,
     PluginExternalPermissionsComponent,
+    PluginHostEventQueueModalComponent,
     PluginHostModalComponent,
     PluginUploadModalComponent,
+    PluginUsageModalComponent,
     ConfirmationModalModule,
   ],
   exports: [

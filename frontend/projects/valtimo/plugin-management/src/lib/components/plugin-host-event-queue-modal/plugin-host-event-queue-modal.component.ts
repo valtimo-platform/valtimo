@@ -22,16 +22,16 @@ import {ButtonModule, InputModule, LayerModule, ModalModule} from 'carbon-compon
 import {SelectItem, SelectModule, ValtimoCdsModalDirective} from '@valtimo/components';
 import {
   ExternalPluginEventQueueMode,
-  ExternalPluginHostCreateRequest,
+  ExternalPluginHost,
+  ExternalPluginHostEventQueueUpdateRequest,
   ExternalPluginService,
 } from '@valtimo/plugin';
 import {Subscription} from 'rxjs';
 
 @Component({
   standalone: true,
-  selector: 'valtimo-plugin-host-modal',
-  templateUrl: './plugin-host-modal.component.html',
-  styleUrls: ['./plugin-host-modal.component.scss'],
+  selector: 'valtimo-plugin-host-event-queue-modal',
+  templateUrl: './plugin-host-event-queue-modal.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     CommonModule,
@@ -45,22 +45,14 @@ import {Subscription} from 'rxjs';
     ValtimoCdsModalDirective,
   ],
 })
-export class PluginHostModalComponent implements OnChanges, OnInit, OnDestroy {
+export class PluginHostEventQueueModalComponent implements OnChanges, OnInit, OnDestroy {
   @Input() public open = false;
+  @Input() public host: ExternalPluginHost | null = null;
 
   @Output() public closeEvent = new EventEmitter<void>();
-  @Output() public submitEvent = new EventEmitter<ExternalPluginHostCreateRequest>();
+  @Output() public submitEvent = new EventEmitter<ExternalPluginHostEventQueueUpdateRequest>();
 
   public readonly form = new FormGroup({
-    name: new FormControl('', Validators.required),
-    baseUrl: new FormControl('', [Validators.required, Validators.pattern(/^https?:\/\/.+/)]),
-    secret: new FormControl('', Validators.required),
-    gzacCallbackBaseUrl: new FormControl('', [
-      Validators.required,
-      Validators.pattern(/^https?:\/\/.+/),
-    ]),
-    eventBrokerAmqpUrl: new FormControl(''),
-    eventBrokerExchange: new FormControl(''),
     eventQueueMode: new FormControl<ExternalPluginEventQueueMode>('LIVE', {nonNullable: true}),
     eventQueueTtlMs: new FormControl<number | null>(null),
   });
@@ -101,6 +93,7 @@ export class PluginHostModalComponent implements OnChanges, OnInit, OnDestroy {
   public ngOnChanges(changes: SimpleChanges): void {
     if (changes['open']?.currentValue === true) {
       this._fetchDefaults();
+      this._loadHost();
     }
   }
 
@@ -113,21 +106,13 @@ export class PluginHostModalComponent implements OnChanges, OnInit, OnDestroy {
     const value = this.form.value;
     const mode = value.eventQueueMode ?? 'LIVE';
     this.submitEvent.emit({
-      name: value.name!,
-      baseUrl: value.baseUrl!,
-      secret: value.secret!,
-      gzacCallbackBaseUrl: value.gzacCallbackBaseUrl!,
-      eventBrokerAmqpUrl: value.eventBrokerAmqpUrl?.trim() || null,
-      eventBrokerExchange: value.eventBrokerExchange?.trim() || null,
       eventQueueMode: mode,
       eventQueueTtlMs: mode === 'DURABLE' ? value.eventQueueTtlMs ?? null : null,
     });
-    this._resetForm();
   }
 
   public onClose(): void {
     this.closeEvent.emit();
-    this._resetForm();
   }
 
   private _fetchDefaults(): void {
@@ -135,24 +120,30 @@ export class PluginHostModalComponent implements OnChanges, OnInit, OnDestroy {
       this.minTtlMs = defaults.minEventQueueTtlMs;
       this.maxTtlMs = defaults.maxEventQueueTtlMs;
       this.defaultTtlMs = defaults.defaultEventQueueTtlMs;
-      this.form.patchValue({
-        gzacCallbackBaseUrl: defaults.gzacCallbackBaseUrl,
-        eventBrokerAmqpUrl: defaults.eventBrokerAmqpUrl,
-        eventBrokerExchange: defaults.eventBrokerExchange,
-      });
     });
   }
 
-  private _resetForm(): void {
-    this.form.reset({
-      name: '',
-      baseUrl: '',
-      secret: '',
-      gzacCallbackBaseUrl: '',
-      eventBrokerAmqpUrl: '',
-      eventBrokerExchange: '',
-      eventQueueMode: 'LIVE',
-      eventQueueTtlMs: null,
-    });
+  private _loadHost(): void {
+    if (!this.host) return;
+    this.form.reset(
+      {
+        eventQueueMode: this.host.eventQueueMode,
+        eventQueueTtlMs: this.host.eventQueueTtlMs,
+      },
+      {emitEvent: false}
+    );
+    // Trigger validator wiring for the current mode without losing the pre-loaded TTL.
+    const mode = this.host.eventQueueMode;
+    const ttl = this.form.controls.eventQueueTtlMs;
+    if (mode === 'DURABLE') {
+      ttl.setValidators([
+        Validators.required,
+        Validators.min(this.minTtlMs),
+        Validators.max(this.maxTtlMs),
+      ]);
+    } else {
+      ttl.clearValidators();
+    }
+    ttl.updateValueAndValidity();
   }
 }

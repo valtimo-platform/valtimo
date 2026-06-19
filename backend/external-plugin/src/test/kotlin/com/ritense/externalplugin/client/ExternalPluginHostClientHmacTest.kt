@@ -17,6 +17,7 @@
 package com.ritense.externalplugin.client
 
 import com.fasterxml.jackson.databind.ObjectMapper
+import com.ritense.externalplugin.domain.EventQueueMode
 import com.ritense.externalplugin.security.ExternalPluginHmacSigner
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
@@ -71,7 +72,12 @@ class ExternalPluginHostClientHmacTest {
                 request as MockClientHttpRequest
                 // The freshly issued service token must travel inside the signed body, so it cannot
                 // be swapped or replayed without breaking the signature.
-                assertThat(String(request.bodyAsBytes)).contains(serviceToken)
+                val bodyString = String(request.bodyAsBytes)
+                assertThat(bodyString).contains(serviceToken)
+                // The host learns the queue mode + TTL from this push and uses them to declare its
+                // own queue; both must travel inside the signed body so they cannot be swapped.
+                assertThat(bodyString).contains("\"queueMode\":\"durable\"")
+                assertThat(bodyString).contains("\"queueTtlMs\":259200000")
                 assertSigned(request, "POST", path, request.bodyAsBytes)
             }
             .andRespond(
@@ -93,9 +99,50 @@ class ExternalPluginHostClientHmacTest {
             eventBrokerUrl = "amqp://guest:guest@broker:5672",
             eventBrokerExchange = "valtimo-events",
             eventBrokerExchangeType = "fanout",
+            eventQueueMode = EventQueueMode.DURABLE,
+            eventQueueTtlMs = 259_200_000L,
         )
 
         assertThat(pushed).isTrue()
+        server.verify()
+    }
+
+    @Test
+    fun `pushConfiguration omits queueTtlMs from the body when null`() {
+        val configId = UUID.randomUUID().toString()
+        val path = "/api/host/configurations/$configId"
+
+        server.expect(requestTo("$baseUrl$path"))
+            .andExpect(method(HttpMethod.POST))
+            .andExpect { request ->
+                request as MockClientHttpRequest
+                val bodyString = String(request.bodyAsBytes)
+                assertThat(bodyString).contains("\"queueMode\":\"live\"")
+                assertThat(bodyString).doesNotContain("queueTtlMs")
+            }
+            .andRespond(
+                withStatus(HttpStatus.CREATED)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .body("""{"configurationId":"$configId"}""")
+            )
+
+        client.pushConfiguration(
+            baseUrl = baseUrl,
+            adminToken = secret,
+            configId = configId,
+            pluginId = "case-summary",
+            pluginVersion = "0.1.0",
+            properties = objectMapper.createObjectNode(),
+            serviceToken = "service-token",
+            gzacBaseUrl = "http://gzac:8080",
+            eventSubscriptions = emptyList(),
+            eventBrokerUrl = "amqp://guest:guest@broker:5672",
+            eventBrokerExchange = "valtimo-events",
+            eventBrokerExchangeType = "fanout",
+            eventQueueMode = EventQueueMode.LIVE,
+            eventQueueTtlMs = null,
+        )
+
         server.verify()
     }
 

@@ -35,14 +35,18 @@ import com.ritense.plugin.security.config.PluginHttpSecurityConfigurer
 import com.ritense.plugin.service.BuildingBlockPluginConfigurationResolver
 import com.ritense.plugin.service.EncryptionService
 import com.ritense.plugin.service.PluginConfigurationListener
+import com.ritense.plugin.service.PluginConfigurationUsageResolver
 import com.ritense.plugin.service.PluginService
+import com.ritense.plugin.service.ProcessDefinitionUsageMetaResolver
 import com.ritense.plugin.web.rest.PluginConfigurationResource
 import com.ritense.plugin.web.rest.PluginDefinitionResource
 import com.ritense.plugin.web.rest.converter.StringToActivityTypeConverter
 import com.ritense.valtimo.contract.case_.CaseDefinitionChecker
+import com.ritense.valtimo.operaton.service.OperatonRepositoryService
 import com.ritense.valueresolver.ValueResolverService
 import jakarta.persistence.EntityManager
 import jakarta.validation.Validator
+import org.operaton.bpm.engine.RepositoryService
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.autoconfigure.AutoConfiguration
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
@@ -114,6 +118,26 @@ class PluginAutoConfiguration {
     }
 
     @Bean
+    @ConditionalOnMissingBean(ProcessDefinitionUsageMetaResolver::class)
+    fun processDefinitionUsageMetaResolver(
+        operatonRepositoryService: OperatonRepositoryService,
+        bpmnRepositoryService: RepositoryService,
+    ) = ProcessDefinitionUsageMetaResolver(operatonRepositoryService, bpmnRepositoryService)
+
+    @Bean
+    @ConditionalOnMissingBean(PluginConfigurationUsageResolver::class)
+    @Suppress("DEPRECATION")
+    fun pluginConfigurationUsageResolver(
+        pluginConfigurationRepository: PluginConfigurationRepository,
+        pluginProcessLinkRepositoryImpl: PluginProcessLinkRepositoryImpl,
+        metaResolver: ProcessDefinitionUsageMetaResolver,
+    ) = PluginConfigurationUsageResolver(
+        pluginConfigurationRepository,
+        pluginProcessLinkRepositoryImpl,
+        metaResolver,
+    )
+
+    @Bean
     fun pluginService(
         pluginDefinitionRepository: PluginDefinitionRepository,
         pluginConfigurationRepository: PluginConfigurationRepository,
@@ -129,6 +153,7 @@ class PluginAutoConfiguration {
         environment: Environment,
         caseDefinitionChecker: CaseDefinitionChecker,
         buildingBlockPluginConfigurationResolver: BuildingBlockPluginConfigurationResolver?,
+        pluginConfigurationUsageResolver: PluginConfigurationUsageResolver,
     ): PluginService {
         return PluginService(
             pluginDefinitionRepository,
@@ -145,6 +170,7 @@ class PluginAutoConfiguration {
             environment,
             caseDefinitionChecker,
             buildingBlockPluginConfigurationResolver,
+            pluginConfigurationUsageResolver,
         )
     }
 
