@@ -12,9 +12,10 @@
 
 ## Enhancements
 
-* **New enhancement title**
+* **Value resolver support for Documenten API plugin**
 
-  New enhancement explanation.
+  In the Documenten API plugin, the *store temp document* action can now resolve the confidentiality level, language and status from a value resolver expression (e.g. `pv:confidentialityLevel` or `doc:/confidentialityLevel`)
+  instead of only a option op a dropdown, selectable per field via an input-type toggle. This makes all parameters resolvable which is useful in Building blocks.
 
 ## Bugfixes
 
