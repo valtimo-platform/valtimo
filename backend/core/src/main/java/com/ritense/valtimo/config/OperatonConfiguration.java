@@ -52,6 +52,7 @@ public class OperatonConfiguration implements OperatonProcessEngineConfiguration
     public void preInit(ProcessEngineConfigurationImpl processEngineConfiguration) {
         processEngineConfiguration.setIdGenerator(new StrongUuidGenerator());
         processEngineConfiguration.setDefaultSerializationFormat(Variables.SerializationDataFormats.JSON.getName());
+        processEngineConfiguration.setLoggingContextBusinessKey("businessKey");
 
         HashMap<String, Class<? extends FormFieldValidator>> customValidators = new HashMap<>();
         customValidators.put("minDate", MinDateValidator.class);
