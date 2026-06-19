@@ -1839,7 +1839,7 @@
       "MISSING_EL_MARKERS": "Expressie moet ${...} of #{...} syntax gebruiken",
       "UNCLOSED_PARENTHESIS": "Expressie heeft een niet-gesloten haakje '('",
       "UNCLOSED_BRACE": "Expressie mist een sluitende accolade '}'",
-      "UNCLOSED_BRACKET": "Expressie heeft een niet-gesloten blokhak '['",
+      "UNCLOSED_BRACKET": "Expressie heeft een niet-gesloten blokhaak '['",
       "MISMATCHED_DELIMITER": "Expressie heeft niet-overeenkomende haakjes of accolades",
       "INCOMPLETE_EXPRESSION": "Expressie is onvolledig",
       "INVALID_SYNTAX": "Expressie heeft ongeldige syntax",
