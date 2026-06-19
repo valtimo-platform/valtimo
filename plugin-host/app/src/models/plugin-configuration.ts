@@ -27,6 +27,20 @@ export interface EventBrokerConfig {
   exchange: string;
   /** Exchange type — must match the GZAC instance's declaration. */
   exchangeType: "fanout" | "topic" | "direct";
+  /**
+   * Per-host queue declaration mode the GZAC admin chose for this host:
+   * - `"live"`: queue is `durable:false, autoDelete:true`. Events while the host is down are lost.
+   * - `"durable"`: queue is `durable:true, autoDelete:false` with `x-expires = queueTtlMs`. Events
+   *   are retained for up to that TTL since the last consumer disconnected.
+   *
+   * Absent or unrecognised values are treated as `"live"` (older GZAC instances don't push this).
+   */
+  queueMode?: "live" | "durable";
+  /**
+   * Queue inactivity TTL in milliseconds. Required when `queueMode === "durable"`; ignored
+   * (treated as undefined) when `queueMode === "live"`.
+   */
+  queueTtlMs?: number;
 }
 
 export interface PluginConfiguration {

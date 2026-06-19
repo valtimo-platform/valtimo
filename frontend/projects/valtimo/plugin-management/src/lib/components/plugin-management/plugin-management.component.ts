@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 import {AfterViewInit, Component, OnDestroy, OnInit, TemplateRef, ViewChild} from '@angular/core';
+import {HttpErrorResponse} from '@angular/common/http';
 import {ActivatedRoute, Router} from '@angular/router';
 import {TranslateService} from '@ngx-translate/core';
 import {ActionItem, CarbonTag, ColumnConfig, ViewType} from '@valtimo/components';
@@ -22,6 +23,8 @@ import {
   ExternalPluginDefinition,
   ExternalPluginHost,
   ExternalPluginHostCreateRequest,
+  ExternalPluginHostEventQueueUpdateRequest,
+  ExternalPluginHostUsage,
   ExternalPluginService,
   getExternalPluginDisplayName,
   isExternalPluginDefinitionIncompatible,
@@ -33,7 +36,17 @@ import {IconService} from 'carbon-components-angular';
 import {Information16} from '@carbon/icons';
 import {buildExternalPluginCompatibilityMessage} from '../../utils';
 import {NGXLogger} from 'ngx-logger';
-import {BehaviorSubject, combineLatest, EMPTY, fromEvent, merge, Observable, of, Subject, timer} from 'rxjs';
+import {
+  BehaviorSubject,
+  combineLatest,
+  EMPTY,
+  fromEvent,
+  merge,
+  Observable,
+  of,
+  Subject,
+  timer,
+} from 'rxjs';
 import {catchError, map, startWith, switchMap, take, takeUntil, tap} from 'rxjs/operators';
 import {PluginManagementStateService} from '../../services';
 import {UnifiedPluginConfigurationRow} from '../../models';
@@ -170,6 +183,10 @@ export class PluginManagementComponent implements OnInit, AfterViewInit, OnDestr
 
   public readonly hostActionItems: ActionItem[] = [
     {
+      callback: this.editHostEventQueue.bind(this),
+      label: 'pluginManagement.editEventQueue',
+    },
+    {
       callback: this.deleteHost.bind(this),
       label: 'interface.delete',
       type: 'danger',
@@ -189,6 +206,24 @@ export class PluginManagementComponent implements OnInit, AfterViewInit, OnDestr
   public readonly deleteHostModalOpen$ = new BehaviorSubject<boolean>(false);
   public hostToDelete: ExternalPluginHost | null = null;
 
+  public readonly eventQueueModalOpen$ = new BehaviorSubject<boolean>(false);
+  public readonly hostToEditEventQueue$ = new BehaviorSubject<ExternalPluginHost | null>(null);
+
+  public readonly deleteConfigurationModalOpen$ = new BehaviorSubject<boolean>(false);
+  public configurationToDelete: {
+    id: string;
+    title: string;
+    source: 'external' | 'embedded';
+  } | null = null;
+
+  // Reused for both host and configuration "in use" payloads — `usageModalKind` switches the
+  // title/description translation keys.
+  public readonly usageModalOpen$ = new BehaviorSubject<boolean>(false);
+  public readonly usageModalUsages$ = new BehaviorSubject<Array<ExternalPluginHostUsage>>([]);
+  public usageModalEntityName: string | null = null;
+  public usageModalTitleKey = '';
+  public usageModalDescriptionKey = '';
+
   private readonly _refreshHosts$ = new Subject<void>();
   private _hostsInitialLoad = true;
 
@@ -202,9 +237,7 @@ export class PluginManagementComponent implements OnInit, AfterViewInit, OnDestr
   private _externalDefsInitialLoad = true;
 
   public readonly externalDefinitions$: Observable<ExternalPluginDefinition[]> = merge(
-    this._tabVisible$.pipe(
-      switchMap(visible => (visible ? timer(0, 5000) : EMPTY))
-    ),
+    this._tabVisible$.pipe(switchMap(visible => (visible ? timer(0, 5000) : EMPTY))),
     this._stateService.refresh$
   ).pipe(
     takeUntil(this._destroy$),
@@ -224,10 +257,10 @@ export class PluginManagementComponent implements OnInit, AfterViewInit, OnDestr
     })
   );
 
-  public readonly hosts$: Observable<Array<ExternalPluginHost & {statusTag: CarbonTag; lastHealthCheckFormatted: string}>> = merge(
-    this._tabVisible$.pipe(
-      switchMap(visible => (visible ? timer(0, 5000) : EMPTY))
-    ),
+  public readonly hosts$: Observable<
+    Array<ExternalPluginHost & {statusTag: CarbonTag; lastHealthCheckFormatted: string}>
+  > = merge(
+    this._tabVisible$.pipe(switchMap(visible => (visible ? timer(0, 5000) : EMPTY))),
     this._refreshHosts$
   ).pipe(
     takeUntil(this._destroy$),
@@ -343,34 +376,107 @@ export class PluginManagementComponent implements OnInit, AfterViewInit, OnDestr
 
   public deleteConfiguration(configuration: UnifiedPluginConfigurationRow): void {
     if (!configuration.id) return;
+    this._requestDeleteConfiguration(configuration.source, configuration.id, configuration.title);
+  }
 
-    if (configuration.source === 'external') {
-      this._externalPluginService
-        .deleteConfiguration(configuration.id)
-        .pipe(take(1))
-        .subscribe({
-          next: () => {
-            this._stateService.refresh();
-          },
-          error: () => {
-            this._logger.error(
-              'Something went wrong with deleting the external plugin configuration.'
-            );
-          },
-        });
+  public confirmDeleteConfiguration(): void {
+    const target = this.configurationToDelete;
+    if (!target) return;
+    this.configurationToDelete = null;
+    if (target.source === 'external') {
+      this._performDeleteExternalConfiguration(target.id, target.title);
     } else {
-      this._pluginManagementService
-        .deletePluginConfiguration(configuration.id)
-        .pipe(take(1))
-        .subscribe({
-          next: () => {
-            this._stateService.refresh();
-          },
-          error: () => {
-            this._logger.error('Something went wrong with deleting the plugin configuration.');
-          },
-        });
+      this._performDeleteEmbeddedConfiguration(target.id, target.title);
     }
+  }
+
+  public cancelDeleteConfiguration(): void {
+    this.configurationToDelete = null;
+  }
+
+  /**
+   * Single entry point for deleting a plugin configuration from any source (row action,
+   * external edit modal, embedded edit modal). Runs the usage pre-check and routes to either
+   * the "in use" modal (when blocked) or the destructive-confirmation modal (when clear).
+   * Backend 409s during the actual delete are still caught by [`_performDelete*`] to handle
+   * race conditions between the pre-check and the delete.
+   */
+  private _requestDeleteConfiguration(
+    source: 'external' | 'embedded',
+    id: string,
+    title: string
+  ): void {
+    const usages$ =
+      source === 'external'
+        ? this._externalPluginService.getConfigurationUsages(id)
+        : this._pluginManagementService.getConfigurationUsages(id);
+
+    usages$.pipe(take(1)).subscribe({
+      next: usages => {
+        if (usages.length > 0) {
+          this._showConfigurationInUseModal(title, usages);
+          return;
+        }
+        this.configurationToDelete = {id, title, source};
+        this.deleteConfigurationModalOpen$.next(true);
+      },
+      error: () => {
+        // Usage lookup failed (network blip). Skip straight to the confirmation modal — the
+        // backend guard will still surface a 409 if a process link references it.
+        this.configurationToDelete = {id, title, source};
+        this.deleteConfigurationModalOpen$.next(true);
+      },
+    });
+  }
+
+  private _performDeleteExternalConfiguration(
+    configurationId: string,
+    configurationTitle: string
+  ): void {
+    this._externalPluginService
+      .deleteConfiguration(configurationId)
+      .pipe(take(1))
+      .subscribe({
+        next: () => {
+          this._stateService.refresh();
+        },
+        error: (response: HttpErrorResponse) => {
+          if (response.status === 409 && response.error?.usages) {
+            this._showConfigurationInUseModal(
+              configurationTitle,
+              response.error.usages as Array<ExternalPluginHostUsage>
+            );
+            return;
+          }
+          this._logger.error(
+            'Something went wrong with deleting the external plugin configuration.'
+          );
+        },
+      });
+  }
+
+  private _performDeleteEmbeddedConfiguration(
+    configurationId: string,
+    configurationTitle: string
+  ): void {
+    this._pluginManagementService
+      .deletePluginConfiguration(configurationId)
+      .pipe(take(1))
+      .subscribe({
+        next: () => {
+          this._stateService.refresh();
+        },
+        error: (response: HttpErrorResponse) => {
+          if (response.status === 409 && response.error?.usages) {
+            this._showConfigurationInUseModal(
+              configurationTitle,
+              response.error.usages as Array<ExternalPluginHostUsage>
+            );
+            return;
+          }
+          this._logger.error('Something went wrong with deleting the plugin configuration.');
+        },
+      });
   }
 
   public closeEditModal(): void {
@@ -407,18 +513,22 @@ export class PluginManagementComponent implements OnInit, AfterViewInit, OnDestr
   }
 
   public onExternalConfigDeleted(configurationId: string): void {
-    this._externalPluginService.deleteConfiguration(configurationId).subscribe({
-      next: () => {
-        this.showExternalEditModal$.next(false);
-        this.selectedExternalConfiguration$.next(null);
-        this._stateService.refresh();
-      },
-      error: () => {
-        this._logger.error(
-          'Something went wrong with deleting the external plugin configuration.'
-        );
-      },
-    });
+    const configurationTitle = this.selectedExternalConfiguration$.value?.title ?? '';
+    this.showExternalEditModal$.next(false);
+    this.selectedExternalConfiguration$.next(null);
+    this._requestDeleteConfiguration('external', configurationId, configurationTitle);
+  }
+
+  public onEmbeddedConfigDeleted(payload: {
+    configurationId: string;
+    configurationTitle: string;
+  }): void {
+    this.showEditModal$.next(false);
+    this._requestDeleteConfiguration(
+      'embedded',
+      payload.configurationId,
+      payload.configurationTitle
+    );
   }
 
   // --- Plugin upload modal ---
@@ -465,28 +575,119 @@ export class PluginManagementComponent implements OnInit, AfterViewInit, OnDestr
     });
   }
 
+  /**
+   * Look up what's still referencing the host before showing a confirmation. If anything is, the
+   * admin sees a read-only list explaining what's blocking the delete instead of a confirm dialog
+   * that's just going to fail with a 409 server-side.
+   *
+   * The server-side guard in `ExternalPluginHostService.delete` remains authoritative; if a
+   * process link is created between this lookup and the user clicking "confirm", the delete still
+   * surfaces a 409 which we handle below.
+   */
   public deleteHost(host: ExternalPluginHost): void {
-    this.hostToDelete = host;
-    this.deleteHostModalOpen$.next(true);
+    this._externalPluginService
+      .getHostUsages(host.id)
+      .pipe(take(1))
+      .subscribe({
+        next: usages => {
+          if (usages.length > 0) {
+            this._showHostInUseModal(host, usages);
+            return;
+          }
+          this.hostToDelete = host;
+          this.deleteHostModalOpen$.next(true);
+        },
+        error: () => {
+          // If the lookup itself fails (e.g. network blip), fall through to the confirmation modal —
+          // the delete call will still be gated by the backend guard.
+          this.hostToDelete = host;
+          this.deleteHostModalOpen$.next(true);
+        },
+      });
   }
 
   public confirmDeleteHost(): void {
     if (!this.hostToDelete) return;
-    this._externalPluginService.deleteHost(this.hostToDelete.id).pipe(take(1)).subscribe({
-      next: () => {
-        this.hostToDelete = null;
-        this.hostsLoading$.next(true);
-        this._refreshHosts$.next();
-        this._stateService.refresh();
-      },
-      error: () => {
-        this._logger.error('Something went wrong with deleting the plugin host.');
-      },
-    });
+    const host = this.hostToDelete;
+    this._externalPluginService
+      .deleteHost(host.id)
+      .pipe(take(1))
+      .subscribe({
+        next: () => {
+          this.hostToDelete = null;
+          this.hostsLoading$.next(true);
+          this._refreshHosts$.next();
+          this._stateService.refresh();
+        },
+        error: (response: HttpErrorResponse) => {
+          if (response.status === 409 && response.error?.usages) {
+            this.hostToDelete = null;
+            this._showHostInUseModal(host, response.error.usages as Array<ExternalPluginHostUsage>);
+            return;
+          }
+          this._logger.error('Something went wrong with deleting the plugin host.');
+        },
+      });
   }
 
   public cancelDeleteHost(): void {
     this.hostToDelete = null;
+  }
+
+  public editHostEventQueue(host: ExternalPluginHost): void {
+    this.hostToEditEventQueue$.next(host);
+    this.eventQueueModalOpen$.next(true);
+  }
+
+  public closeEventQueueModal(): void {
+    this.eventQueueModalOpen$.next(false);
+    this.hostToEditEventQueue$.next(null);
+  }
+
+  public submitEventQueueUpdate(request: ExternalPluginHostEventQueueUpdateRequest): void {
+    const host = this.hostToEditEventQueue$.value;
+    if (!host) return;
+    this._externalPluginService.updateHostEventQueue(host.id, request).subscribe({
+      next: () => {
+        this.eventQueueModalOpen$.next(false);
+        this.hostToEditEventQueue$.next(null);
+        this._refreshHosts$.next();
+      },
+      error: () => {
+        this._logger.error('Something went wrong with updating the plugin host event queue.');
+      },
+    });
+  }
+
+  public closeUsageModal(): void {
+    this.usageModalOpen$.next(false);
+    this.usageModalUsages$.next([]);
+    this.usageModalEntityName = null;
+  }
+
+  private _showHostInUseModal(
+    host: ExternalPluginHost,
+    usages: Array<ExternalPluginHostUsage>
+  ): void {
+    this.usageModalEntityName =
+      host.name || this._translateService.instant('pluginManagement.hostInUseModal.thisHost');
+    this.usageModalTitleKey = 'pluginManagement.hostInUseModal.title';
+    this.usageModalDescriptionKey = 'pluginManagement.hostInUseModal.description';
+    this.usageModalUsages$.next(usages);
+    this.usageModalOpen$.next(true);
+  }
+
+  private _showConfigurationInUseModal(
+    title: string,
+    usages: Array<ExternalPluginHostUsage>
+  ): void {
+    this.usageModalEntityName =
+      title ||
+      this._translateService.instant('pluginManagement.configurationInUseModal.thisConfiguration');
+    this.usageModalTitleKey = 'pluginManagement.configurationInUseModal.title';
+    this.usageModalDescriptionKey = 'pluginManagement.configurationInUseModal.description';
+    this.usageModalUsages$.next(usages);
+    this.usageModalOpen$.next(true);
   }
 
   public confirmReload(): void {

@@ -19,6 +19,7 @@ package com.ritense.externalplugin.client
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.node.ObjectNode
+import com.ritense.externalplugin.domain.EventQueueMode
 import com.ritense.externalplugin.security.ExternalPluginHmacSigner
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import org.springframework.http.HttpHeaders
@@ -82,6 +83,10 @@ class ExternalPluginHostClient(
         eventBrokerUrl: String?,
         eventBrokerExchange: String,
         eventBrokerExchangeType: String,
+        /** Per-host queue declaration mode the plugin-host should use for this broker connection. */
+        eventQueueMode: EventQueueMode = EventQueueMode.LIVE,
+        /** Queue inactivity TTL in ms; only meaningful when [eventQueueMode] is DURABLE. */
+        eventQueueTtlMs: Long? = null,
     ): Boolean = try {
         val path = "/api/host/configurations/$configId"
         val uri = buildUri(baseUrl, path)
@@ -102,6 +107,8 @@ class ExternalPluginHostClient(
                     put("amqpUrl", eventBrokerUrl)
                     put("exchange", eventBrokerExchange)
                     put("exchangeType", eventBrokerExchangeType)
+                    put("queueMode", eventQueueMode.name.lowercase())
+                    if (eventQueueTtlMs != null) put("queueTtlMs", eventQueueTtlMs)
                 })
             }
         }

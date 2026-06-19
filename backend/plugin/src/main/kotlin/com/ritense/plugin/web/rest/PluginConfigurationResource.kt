@@ -22,6 +22,7 @@ import com.ritense.plugin.domain.PluginConfiguration
 import com.ritense.plugin.domain.PluginConfigurationId
 import com.ritense.plugin.service.PluginConfigurationSearchParameters
 import com.ritense.plugin.service.PluginService
+import com.ritense.plugin.web.rest.dto.PluginUsageDto
 import com.ritense.plugin.web.rest.request.CreatePluginConfigurationDto
 import com.ritense.plugin.web.rest.request.UpdatePluginConfigurationDto
 import com.ritense.plugin.web.rest.result.PluginConfigurationDto
@@ -139,4 +140,14 @@ class PluginConfigurationResource(
         pluginService.deletePluginConfiguration(PluginConfigurationId.existingId(pluginConfigurationId))
         return ResponseEntity.noContent().build()
     }
+
+    /**
+     * Lets the management UI pre-emptively disable the delete control with the same payload
+     * the backend would attach to a 409 from `DELETE /v1/plugin/configuration/{id}`.
+     */
+    @GetMapping("/v1/plugin/configuration/{pluginConfigurationId}/usages")
+    fun listPluginConfigurationUsages(
+        @LoggableResource(resourceType = PluginConfiguration::class) @PathVariable(name = "pluginConfigurationId") pluginConfigurationId: UUID,
+    ): ResponseEntity<List<PluginUsageDto>> =
+        ResponseEntity.ok(pluginService.findPluginConfigurationUsages(PluginConfigurationId.existingId(pluginConfigurationId)))
 }

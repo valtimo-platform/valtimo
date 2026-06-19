@@ -16,6 +16,7 @@
 
 package com.ritense.externalplugin.web.rest.dto
 
+import com.ritense.externalplugin.domain.EventQueueMode
 import com.ritense.externalplugin.domain.ExternalPluginHost
 import com.ritense.externalplugin.domain.ExternalPluginHostStatus
 import java.time.Instant
@@ -28,6 +29,8 @@ data class HostCreateRequest(
     val gzacCallbackBaseUrl: String,
     val eventBrokerAmqpUrl: String?,
     val eventBrokerExchange: String?,
+    val eventQueueMode: EventQueueMode = EventQueueMode.LIVE,
+    val eventQueueTtlMs: Long? = null,
 )
 
 data class HostResponse(
@@ -39,6 +42,8 @@ data class HostResponse(
     val gzacCallbackBaseUrl: String?,
     val eventBrokerAmqpUrl: String?,
     val eventBrokerExchange: String?,
+    val eventQueueMode: EventQueueMode,
+    val eventQueueTtlMs: Long?,
 ) {
     companion object {
         fun from(host: ExternalPluginHost) = HostResponse(
@@ -50,6 +55,8 @@ data class HostResponse(
             gzacCallbackBaseUrl = host.gzacCallbackBaseUrl,
             eventBrokerAmqpUrl = host.eventBrokerAmqpUrl,
             eventBrokerExchange = host.eventBrokerExchange,
+            eventQueueMode = host.eventQueueMode,
+            eventQueueTtlMs = host.eventQueueTtlMs,
         )
     }
 }
@@ -60,9 +67,25 @@ data class HostResponse(
  * - `gzacCallbackBaseUrl`: URL the admin reached GZAC at, derived from the current request.
  * - `eventBrokerAmqpUrl`: built from `spring.rabbitmq.*` — GZAC's own broker view.
  * - `eventBrokerExchange`: the exchange GZAC publishes to (from `valtimo.outbox.publisher.rabbitmq.exchange`).
+ * - `defaultEventQueueTtlMs` / `minEventQueueTtlMs` / `maxEventQueueTtlMs`: the queue inactivity
+ *   TTL bounds the backend will accept when a host opts into DURABLE mode. Pre-fills and validates
+ *   the TTL input in the add-host UI.
  */
 data class HostDefaultsResponse(
     val gzacCallbackBaseUrl: String,
     val eventBrokerAmqpUrl: String,
     val eventBrokerExchange: String,
+    val defaultEventQueueTtlMs: Long,
+    val minEventQueueTtlMs: Long,
+    val maxEventQueueTtlMs: Long,
+)
+
+/**
+ * Narrow update payload: flips the per-host event-queue mode and adjusts the TTL on an existing
+ * host without touching any other field. baseUrl/secret/broker remain immutable because the
+ * security check that pins broker credentials to a confidential baseUrl runs at registration time.
+ */
+data class HostEventQueueUpdateRequest(
+    val eventQueueMode: EventQueueMode,
+    val eventQueueTtlMs: Long?,
 )

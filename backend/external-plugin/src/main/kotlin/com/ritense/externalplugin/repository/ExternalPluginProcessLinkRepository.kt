@@ -28,4 +28,8 @@ interface ExternalPluginProcessLinkRepository : JpaRepository<ExternalPluginProc
         activityId: String,
         activityType: ActivityTypeWithEventName,
     ): List<ExternalPluginProcessLink>
+
+    fun findAllByExternalPluginConfigurationIdIn(
+        externalPluginConfigurationIds: Collection<UUID>,
+    ): List<ExternalPluginProcessLink>
 }
