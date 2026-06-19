@@ -17,6 +17,7 @@
 package com.ritense.externalplugin.service
 
 import com.ritense.externalplugin.client.ExternalPluginHostClient
+import com.ritense.externalplugin.domain.EventQueueMode
 import com.ritense.externalplugin.domain.ExternalPluginHost
 import com.ritense.externalplugin.repository.ExternalPluginConfigurationRepository
 import com.ritense.externalplugin.repository.ExternalPluginDefinitionRepository
@@ -31,6 +32,8 @@ import org.junit.jupiter.api.Test
 import org.mockito.kotlin.any
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.whenever
+import java.util.Optional
+import java.util.UUID
 
 /**
  * Guards the rule that the broker AMQP URL and credentials — carried in cleartext inside the
@@ -58,6 +61,7 @@ class ExternalPluginHostServiceTest {
             mock<ExternalPluginGrantedEventRepository>(),
             encryptionService,
             mock<ExternalPluginHostClient>(),
+            mock<ExternalPluginHostUsageResolver>(),
         )
     }
 
@@ -151,4 +155,109 @@ class ExternalPluginHostServiceTest {
         assertThat(ExternalPluginHostService.isSecureTransport("http://10.0.0.5:8090")).isFalse()
         assertThat(ExternalPluginHostService.isSecureTransport("plugin-host:8090")).isFalse()
     }
+
+    @Test
+    fun `register defaults event queue mode to LIVE and TTL to null`() {
+        val host = registerMinimal()
+
+        assertThat(host.eventQueueMode).isEqualTo(EventQueueMode.LIVE)
+        assertThat(host.eventQueueTtlMs).isNull()
+    }
+
+    @Test
+    fun `register with DURABLE mode and no TTL applies the 72h default`() {
+        val host = registerMinimal(mode = EventQueueMode.DURABLE, ttlMs = null)
+
+        assertThat(host.eventQueueMode).isEqualTo(EventQueueMode.DURABLE)
+        assertThat(host.eventQueueTtlMs).isEqualTo(ExternalPluginHostService.DEFAULT_EVENT_QUEUE_TTL_MS)
+    }
+
+    @Test
+    fun `register with DURABLE mode honours an explicit TTL inside the allowed range`() {
+        val host = registerMinimal(mode = EventQueueMode.DURABLE, ttlMs = 6L * 60 * 60 * 1000)
+
+        assertThat(host.eventQueueTtlMs).isEqualTo(6L * 60 * 60 * 1000)
+    }
+
+    @Test
+    fun `register with DURABLE mode rejects a TTL below 1 hour`() {
+        assertThatThrownBy {
+            registerMinimal(mode = EventQueueMode.DURABLE, ttlMs = 60_000)
+        }.isInstanceOf(IllegalArgumentException::class.java)
+            .hasMessageContaining("eventQueueTtlMs must be between")
+    }
+
+    @Test
+    fun `register with DURABLE mode rejects a TTL above 30 days`() {
+        assertThatThrownBy {
+            registerMinimal(mode = EventQueueMode.DURABLE, ttlMs = 31L * 24 * 60 * 60 * 1000)
+        }.isInstanceOf(IllegalArgumentException::class.java)
+            .hasMessageContaining("eventQueueTtlMs must be between")
+    }
+
+    @Test
+    fun `register with LIVE mode rejects a non-null TTL`() {
+        assertThatThrownBy {
+            registerMinimal(mode = EventQueueMode.LIVE, ttlMs = 60L * 60 * 1000)
+        }.isInstanceOf(IllegalArgumentException::class.java)
+            .hasMessageContaining("must be null when eventQueueMode is LIVE")
+    }
+
+    @Test
+    fun `updateEventQueue swaps mode from LIVE to DURABLE with the default TTL`() {
+        val existing = registerMinimal()
+        whenever(hostRepository.findById(existing.id)).thenReturn(Optional.of(existing))
+
+        val updated = service.updateEventQueue(existing.id, EventQueueMode.DURABLE, null)
+
+        assertThat(updated.eventQueueMode).isEqualTo(EventQueueMode.DURABLE)
+        assertThat(updated.eventQueueTtlMs).isEqualTo(ExternalPluginHostService.DEFAULT_EVENT_QUEUE_TTL_MS)
+    }
+
+    @Test
+    fun `updateEventQueue clears TTL when downgrading from DURABLE to LIVE`() {
+        val existing = registerMinimal(mode = EventQueueMode.DURABLE, ttlMs = 6L * 60 * 60 * 1000)
+        whenever(hostRepository.findById(existing.id)).thenReturn(Optional.of(existing))
+
+        val updated = service.updateEventQueue(existing.id, EventQueueMode.LIVE, null)
+
+        assertThat(updated.eventQueueMode).isEqualTo(EventQueueMode.LIVE)
+        assertThat(updated.eventQueueTtlMs).isNull()
+    }
+
+    @Test
+    fun `updateEventQueue with LIVE mode rejects a non-null TTL`() {
+        val existing = registerMinimal()
+        whenever(hostRepository.findById(existing.id)).thenReturn(Optional.of(existing))
+
+        assertThatThrownBy {
+            service.updateEventQueue(existing.id, EventQueueMode.LIVE, 60L * 60 * 1000)
+        }.isInstanceOf(IllegalArgumentException::class.java)
+            .hasMessageContaining("must be null when eventQueueMode is LIVE")
+    }
+
+    @Test
+    fun `updateEventQueue throws when the host does not exist`() {
+        val missingId = UUID.randomUUID()
+        whenever(hostRepository.findById(missingId)).thenReturn(Optional.empty())
+
+        assertThatThrownBy {
+            service.updateEventQueue(missingId, EventQueueMode.LIVE, null)
+        }.isInstanceOf(IllegalArgumentException::class.java)
+            .hasMessageContaining("not found")
+    }
+
+    private fun registerMinimal(
+        mode: EventQueueMode = EventQueueMode.LIVE,
+        ttlMs: Long? = null,
+    ): ExternalPluginHost = service.register(
+        name = "local",
+        baseUrl = "https://plugin-host.example.com",
+        secret = "admin-token",
+        gzacCallbackBaseUrl = "https://gzac.example.com",
+        eventBrokerAmqpUrl = "amqp://guest:guest@broker:5672",
+        eventBrokerExchange = null,
+        eventQueueMode = mode,
+        eventQueueTtlMs = ttlMs,
+    )
 }

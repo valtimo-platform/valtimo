@@ -31,6 +31,7 @@ import com.ritense.plugin.domain.PluginDefinition
 import com.ritense.plugin.domain.PluginProcessLink
 import com.ritense.plugin.domain.PluginProperty
 import com.ritense.plugin.events.PluginConfigurationDeletedEvent
+import com.ritense.plugin.exception.PluginConfigurationInUseException
 import com.ritense.plugin.exception.PluginEventInvocationException
 import com.ritense.plugin.exception.PluginPropertyParseException
 import com.ritense.plugin.exception.PluginPropertyRequiredException
@@ -39,6 +40,8 @@ import com.ritense.plugin.repository.PluginConfigurationRepository
 import com.ritense.plugin.repository.PluginConfigurationSearchRepository
 import com.ritense.plugin.repository.PluginDefinitionRepository
 import com.ritense.plugin.repository.PluginProcessLinkRepository
+import com.ritense.plugin.web.rest.dto.PluginUsageDto
+import com.ritense.plugin.web.rest.dto.PluginUsageParentType
 import com.ritense.processlink.domain.ActivityTypeWithEventName
 import com.ritense.valtimo.contract.json.MapperSingleton
 import com.ritense.valueresolver.ValueResolverService
@@ -76,6 +79,7 @@ internal class PluginServiceTest {
     lateinit var applicationEventPublisher: ApplicationEventPublisher
     lateinit var encryptionService: EncryptionService
     lateinit var environment: Environment
+    lateinit var pluginConfigurationUsageResolver: PluginConfigurationUsageResolver
 
     @BeforeEach
     fun init() {
@@ -89,6 +93,7 @@ internal class PluginServiceTest {
         applicationEventPublisher = mock()
         encryptionService = mock()
         environment = mock()
+        pluginConfigurationUsageResolver = mock()
         pluginService = spy(PluginService(
             pluginDefinitionRepository,
             pluginConfigurationRepository,
@@ -103,7 +108,8 @@ internal class PluginServiceTest {
             encryptionService,
             environment,
             mock(),
-            null
+            null,
+            pluginConfigurationUsageResolver,
         ))
     }
 
@@ -262,6 +268,8 @@ internal class PluginServiceTest {
 
         // need to mock findById because findByIdOrNull can't be mocked because it's static
         whenever(pluginConfigurationRepository.findById(any())).thenReturn(Optional.of(pluginConfiguration))
+        whenever(pluginConfigurationUsageResolver.findUsagesForConfiguration(pluginConfigurationId))
+            .thenReturn(emptyList())
         doReturn(plugin2).whenever(pluginService).createInstance(any<PluginConfiguration>())
 
         pluginService.deletePluginConfiguration(pluginConfigurationId)
@@ -269,6 +277,66 @@ internal class PluginServiceTest {
         verify(pluginConfigurationRepository).deleteById(pluginConfigurationId)
         verify(applicationEventPublisher).publishEvent(deleteEventCaptor.capture())
         assertEquals(pluginConfiguration, deleteEventCaptor.firstValue.pluginConfiguration)
+    }
+
+    @Test
+    fun `should throw when deleting a configuration that is still referenced`() {
+        val pluginDefinition = newPluginDefinition()
+        addPluginProperty(pluginDefinition)
+        val pluginConfiguration = newPluginConfiguration(pluginDefinition)
+        val pluginConfigurationId = pluginConfiguration.id
+
+        whenever(pluginConfigurationRepository.findById(any())).thenReturn(Optional.of(pluginConfiguration))
+        val usages = listOf(
+            PluginUsageDto(
+                configurationId = pluginConfigurationId.id,
+                configurationTitle = pluginConfiguration.title!!,
+                parentType = PluginUsageParentType.CASE,
+                parentKey = "complaint",
+                parentVersionTag = "1.0.0",
+                processDefinitionId = "complaint-intake:3:abc",
+                processDefinitionKey = "complaint-intake",
+                processDefinitionName = "Complaint intake",
+                activityId = "SendLetter",
+                activityName = "Send letter to citizen",
+                processLinkId = UUID.randomUUID(),
+            )
+        )
+        whenever(pluginConfigurationUsageResolver.findUsagesForConfiguration(pluginConfigurationId))
+            .thenReturn(usages)
+
+        assertThrows(PluginConfigurationInUseException::class.java) {
+            pluginService.deletePluginConfiguration(pluginConfigurationId)
+        }
+
+        verify(pluginConfigurationRepository, org.mockito.kotlin.never()).deleteById(any<PluginConfigurationId>())
+        verify(applicationEventPublisher, org.mockito.kotlin.never()).publishEvent(any<PluginConfigurationDeletedEvent>())
+    }
+
+    @Test
+    fun `findPluginConfigurationUsages delegates to the resolver`() {
+        val pluginConfigurationId = PluginConfigurationId.newId()
+        val expected = listOf(
+            PluginUsageDto(
+                configurationId = pluginConfigurationId.id,
+                configurationTitle = "x",
+                parentType = PluginUsageParentType.GLOBAL,
+                parentKey = null,
+                parentVersionTag = null,
+                processDefinitionId = "p:1:hash",
+                processDefinitionKey = null,
+                processDefinitionName = null,
+                activityId = "a",
+                activityName = null,
+                processLinkId = UUID.randomUUID(),
+            )
+        )
+        whenever(pluginConfigurationUsageResolver.findUsagesForConfiguration(pluginConfigurationId))
+            .thenReturn(expected)
+
+        val result = pluginService.findPluginConfigurationUsages(pluginConfigurationId)
+
+        assertEquals(expected, result)
     }
 
     @Test
@@ -431,7 +499,8 @@ internal class PluginServiceTest {
                 encryptionService,
                 environment,
                 mock(),
-                resolver
+                resolver,
+                pluginConfigurationUsageResolver,
             )
         )
 
@@ -491,7 +560,8 @@ internal class PluginServiceTest {
                 encryptionService,
                 environment,
                 mock(),
-                resolver
+                resolver,
+                pluginConfigurationUsageResolver,
             )
         )
 

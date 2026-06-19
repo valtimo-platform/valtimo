@@ -21,6 +21,7 @@ import com.ritense.valtimo.contract.security.config.HttpConfigurerConfigurationE
 import com.ritense.valtimo.contract.security.config.HttpSecurityConfigurer
 import org.springframework.http.HttpMethod.DELETE
 import org.springframework.http.HttpMethod.GET
+import org.springframework.http.HttpMethod.PATCH
 import org.springframework.http.HttpMethod.POST
 import org.springframework.http.HttpMethod.PUT
 import org.springframework.security.config.annotation.web.builders.HttpSecurity
@@ -35,12 +36,15 @@ class ExternalPluginHttpSecurityConfigurer : HttpSecurityConfigurer {
                     .requestMatchers(antMatcher(GET, "/api/management/v1/external-plugin/host")).hasAuthority(ADMIN)
                     .requestMatchers(antMatcher(POST, "/api/management/v1/external-plugin/host")).hasAuthority(ADMIN)
                     .requestMatchers(antMatcher(DELETE, "/api/management/v1/external-plugin/host/*")).hasAuthority(ADMIN)
+                    .requestMatchers(antMatcher(PATCH, "/api/management/v1/external-plugin/host/*/event-queue")).hasAuthority(ADMIN)
+                    .requestMatchers(antMatcher(GET, "/api/management/v1/external-plugin/host/*/usages")).hasAuthority(ADMIN)
                     .requestMatchers(antMatcher(GET, "/api/management/v1/external-plugin/host-defaults")).hasAuthority(ADMIN)
                     .requestMatchers(antMatcher(POST, "/api/management/v1/external-plugin/host/*/upload")).hasAuthority(ADMIN)
                     .requestMatchers(antMatcher(GET, "/api/management/v1/external-plugin/definition")).hasAuthority(ADMIN)
                     .requestMatchers(antMatcher(GET, "/api/management/v1/external-plugin/definition/*")).hasAuthority(ADMIN)
                     .requestMatchers(antMatcher(GET, "/api/management/v1/external-plugin/configuration")).hasAuthority(ADMIN)
                     .requestMatchers(antMatcher(GET, "/api/management/v1/external-plugin/configuration/*")).hasAuthority(ADMIN)
+                    .requestMatchers(antMatcher(GET, "/api/management/v1/external-plugin/configuration/*/usages")).hasAuthority(ADMIN)
                     .requestMatchers(antMatcher(POST, "/api/management/v1/external-plugin/configuration")).hasAuthority(ADMIN)
                     .requestMatchers(antMatcher(PUT, "/api/management/v1/external-plugin/configuration/*")).hasAuthority(ADMIN)
                     .requestMatchers(antMatcher(DELETE, "/api/management/v1/external-plugin/configuration/*")).hasAuthority(ADMIN)

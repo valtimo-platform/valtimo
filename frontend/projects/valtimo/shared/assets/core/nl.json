@@ -2180,8 +2180,20 @@
       "pluginHost": "Plugin-host",
       "gzacCallbackBaseUrl": "GZAC callback-URL",
       "eventBrokerAmqpUrl": "Event broker-URL (optioneel)",
-      "eventBrokerExchange": "Event broker exchange (optioneel)"
+      "eventBrokerExchange": "Event broker exchange (optioneel)",
+      "eventQueueMode": "Event queue-modus",
+      "eventQueueTtlMs": "Event queue inactiviteits-TTL (ms)"
     },
+    "eventQueueMode": {
+      "live": "Live (events gaan verloren als de host uitstaat)",
+      "durable": "Duurzaam (bewaart events gedurende de TTL als de host uitstaat)"
+    },
+    "hints": {
+      "eventQueueTtlMs": "De duurzame queue wordt verwijderd na dit aantal ms zonder verbonden host. Min 1u (3600000), max 30d (2592000000), standaard 72u (259200000)."
+    },
+    "editEventQueue": "Event queue bewerken",
+    "editHostEventQueueModalTitle": "Event queue bewerken voor {{name}}",
+    "saveEventQueue": "Opslaan",
     "source": {
       "embedded": "Ingebed",
       "external": "Extern"
@@ -2224,6 +2236,34 @@
     "deleteHostModal": {
       "title": "Plugin-host verwijderen",
       "description": "Weet je zeker dat je deze plugin-host wilt verwijderen? Alle plugin-definities en configuraties van deze host worden ook verwijderd. Deze actie kan niet ongedaan worden gemaakt."
+    },
+    "deleteConfigurationModal": {
+      "title": "Plugin-configuratie verwijderen",
+      "description": "Weet je zeker dat je deze plugin-configuratie wilt verwijderen? Deze actie kan niet ongedaan worden gemaakt."
+    },
+    "hostInUseModal": {
+      "title": "Plugin-host is in gebruik",
+      "thisHost": "deze plugin-host",
+      "description": "{{ entityName }} kan niet worden verwijderd omdat de volgende BPMN-activiteiten nog gebruikmaken van een configuratie van deze host. Verwijder eerst deze proceskoppelingen."
+    },
+    "configurationInUseModal": {
+      "title": "Plugin-configuratie is in gebruik",
+      "thisConfiguration": "deze plugin-configuratie",
+      "description": "{{ entityName }} kan niet worden verwijderd omdat de volgende BPMN-activiteiten er nog naar verwijzen. Verwijder eerst deze proceskoppelingen."
+    },
+    "usageModal": {
+      "headers": {
+        "activity": "Activiteit",
+        "configuration": "Plugin-configuratie",
+        "type": "Type",
+        "linkedTo": "Gekoppeld aan",
+        "processDefinition": "Procesdefinitie"
+      },
+      "parentType": {
+        "CASE": "Dossier",
+        "BUILDING_BLOCK": "Bouwblok",
+        "GLOBAL": "Globaal"
+      }
     },
     "compatibility": {
       "incompatibleTag": "Incompatibel",

@@ -16,6 +16,7 @@
 
 package com.ritense.externalplugin.web.rest
 
+import com.fasterxml.jackson.databind.JsonNode
 import com.ritense.authorization.annotation.RunWithoutAuthorization
 import com.ritense.externalplugin.compatibility.CompatibilityResult
 import com.ritense.externalplugin.compatibility.GzacCompatibilityChecker
@@ -36,7 +37,9 @@ import com.ritense.externalplugin.web.rest.dto.GrantedEndpointResponse
 import com.ritense.externalplugin.web.rest.dto.GrantedEventResponse
 import com.ritense.externalplugin.web.rest.dto.HostCreateRequest
 import com.ritense.externalplugin.web.rest.dto.HostDefaultsResponse
+import com.ritense.externalplugin.web.rest.dto.HostEventQueueUpdateRequest
 import com.ritense.externalplugin.web.rest.dto.HostResponse
+import com.ritense.plugin.web.rest.dto.PluginUsageDto
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import com.ritense.valtimo.contract.domain.ValtimoMediaType.APPLICATION_JSON_UTF8_VALUE
 import com.ritense.valtimo.contract.endpoint.EndpointDescription
@@ -45,16 +48,17 @@ import org.springframework.core.env.Environment
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.stereotype.Controller
+import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.DeleteMapping
+import org.springframework.web.bind.annotation.PatchMapping
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.PutMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.multipart.MultipartFile
-import com.fasterxml.jackson.databind.JsonNode
 import java.util.UUID
 
 @Controller
@@ -95,8 +99,31 @@ class ExternalPluginManagementResource(
             request.gzacCallbackBaseUrl,
             request.eventBrokerAmqpUrl,
             request.eventBrokerExchange,
+            request.eventQueueMode,
+            request.eventQueueTtlMs,
         )
         return ResponseEntity.status(HttpStatus.CREATED).body(HostResponse.from(host))
+    }
+
+    /**
+     * Narrowly-scoped update for the per-host event-queue declaration. baseUrl/secret/broker stay
+     * immutable; only mode and TTL are mutable. Triggers an immediate re-discovery so the host's
+     * `EventConsumerManager` swaps its queue without waiting for the next polling tick — best-effort
+     * because the periodic discovery cycle will reconcile anyway.
+     */
+    @RunWithoutAuthorization
+    @PatchMapping("/host/{hostId}/event-queue")
+    fun updateHostEventQueue(
+        @PathVariable hostId: UUID,
+        @RequestBody request: HostEventQueueUpdateRequest,
+    ): ResponseEntity<HostResponse> {
+        val host = hostService.updateEventQueue(
+            hostId,
+            request.eventQueueMode,
+            request.eventQueueTtlMs,
+        )
+        runCatching { discoveryService.discoverAll() }
+        return ResponseEntity.ok(HostResponse.from(host))
     }
 
     /**
@@ -140,9 +167,22 @@ class ExternalPluginManagementResource(
                 gzacCallbackBaseUrl = gzacCallbackBaseUrl,
                 eventBrokerAmqpUrl = eventBrokerAmqpUrl,
                 eventBrokerExchange = eventBrokerExchange,
+                defaultEventQueueTtlMs = ExternalPluginHostService.DEFAULT_EVENT_QUEUE_TTL_MS,
+                minEventQueueTtlMs = ExternalPluginHostService.MIN_EVENT_QUEUE_TTL_MS,
+                maxEventQueueTtlMs = ExternalPluginHostService.MAX_EVENT_QUEUE_TTL_MS,
             )
         )
     }
+
+    /**
+     * Lets the UI render the host list with an accurate "delete blocked because…" state without
+     * having to attempt the delete and parse a 409. The server-side guard in
+     * [ExternalPluginHostService.delete] remains authoritative — this endpoint is advisory only.
+     */
+    @RunWithoutAuthorization
+    @GetMapping("/host/{hostId}/usages")
+    fun listHostUsages(@PathVariable hostId: UUID): ResponseEntity<List<PluginUsageDto>> =
+        ResponseEntity.ok(hostService.findUsages(hostId))
 
     @RunWithoutAuthorization
     @EndpointDescription(
@@ -279,6 +319,18 @@ class ExternalPluginManagementResource(
         )
         return ResponseEntity.ok(ConfigurationResponse.from(configuration))
     }
+
+    /**
+     * Mirrors `listHostUsages` but scoped to a single configuration. Lets the management UI
+     * pre-emptively disable the delete control on a configuration whose process links would
+     * otherwise cause a 409.
+     */
+    @RunWithoutAuthorization
+    @GetMapping("/configuration/{configurationId}/usages")
+    fun listConfigurationUsages(
+        @PathVariable configurationId: UUID,
+    ): ResponseEntity<List<PluginUsageDto>> =
+        ResponseEntity.ok(configurationService.findUsages(configurationId))
 
     @RunWithoutAuthorization
     @EndpointDescription(

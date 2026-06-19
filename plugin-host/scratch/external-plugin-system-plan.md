@@ -28,10 +28,12 @@ Status legend: ✅ implemented & verified · 🟡 implemented, POC-level · ⛔ 
 | Frontend management UI + external models/service/iframe | `frontend/projects/valtimo/{plugin-management,plugin}/` | ✅ |
 | Process-link (`SERVICE_TASK_START`) | `backend/external-plugin/.../processlink/` + frontend process-link | 🟡 |
 | Per-host broker / callback config + defaults endpoint | `backend/external-plugin/.../web/rest/ExternalPluginManagementResource.kt#hostDefaults` | ✅ |
+| Per-host durable event queue mode + TTL (live/durable, `x-expires`) + narrow PATCH endpoint | `backend/external-plugin/.../domain/EventQueueMode.kt`, `service/ExternalPluginHostService.updateEventQueue`, `web/rest/...#updateHostEventQueue` ↔ `plugin-host/app/src/rabbitmq/event-consumer.ts` | ✅ |
 | Plugin assets (logo + i18n bundle in manifest, served by host) | `plugin-host/plugin-sdk/bin/valtimo-plugin-pack.mjs`, `plugin-host/app/src/routes/plugin-bundles.ts` | ✅ |
 | GZAC→host auth on **every** route (HMAC-SHA256, replay-protected, body-bound): actions, config-push, management | `client/ExternalPluginHostClient.kt` + `security/ExternalPluginHmacSigner.kt` ↔ `plugin-host/app/src/security/{hmac,hmac-auth}.ts`, `routes/{plugin-actions,host-configurations,host-management}.ts` | ✅ |
 | Transport confidentiality (TLS): host serves HTTPS from `TLS_*`; broker credentials confined to a confidential transport at host registration | `plugin-host/app/src/index.ts` (`buildHttpsOptions`) + `models/app-config.ts` ↔ `service/ExternalPluginHostService.isSecureTransport` | ✅ |
 | GZAC compatibility check (semver range vs running version): comparator + version provider + zip manifest peek; non-blocking UI warnings, upload confirm-gate | `backend/external-plugin/.../compatibility/*` + `web/rest/ExternalPluginManagementResource.kt#uploadPlugin` ↔ frontend `plugin-management/.../utils/external-plugin-compatibility.util.ts` | ✅ |
+| Strict delete guards (embedded + external), shared usage DTO/resolver + `/usages` endpoints + read-only in-use modal, no force override | core `backend/plugin/.../{web/rest/dto/PluginUsageDto, service/ProcessDefinitionUsageMetaResolver, service/PluginConfigurationUsageResolver, exception/PluginConfigurationInUseException}` + `backend/external-plugin/.../{service/ExternalPluginHostUsageResolver, exception/ExternalPlugin*InUseException}` ↔ frontend `plugin-management/.../plugin-usage-modal/` | ✅ |
 
 Single-core-app model with **multiple hosts per instance**: the core app pushes each configuration
 directly to its host with a freshly issued service token, a `gzacBaseUrl` callback target taken
@@ -56,6 +58,8 @@ rest of Valtimo already requires. Every value the module needs is either:
 | Broker AMQP URL per push | `external_plugin_host.event_broker_amqp_url` (nullable) | Set in the add-host UI; default pre-fill built from `spring.rabbitmq.*`. Null disables events for hosts under this host (actions still work). A non-null broker URL requires the host base URL to be a confidential transport (HTTPS, or a loopback address for local dev); registration is rejected otherwise so AMQP credentials never travel over plaintext (§3.9). |
 | Broker exchange per push | `external_plugin_host.event_broker_exchange`, else `valtimo.outbox.publisher.rabbitmq.exchange` | Set in the add-host UI; default pre-fill from the outbox exchange, which is what GZAC itself publishes to. |
 | Broker exchange type | hardcoded `fanout` | Matches the outbox publisher and the exchange declared in `imports/gzac-rabbitmq/definitions.json`. |
+| Queue mode per push (`live`/`durable`) | `external_plugin_host.event_queue_mode` (default `LIVE`) | Set in the add-host UI and editable later via `PATCH .../host/{id}/event-queue` (§8.4). Drives the host's `assertQueue` arguments. |
+| Queue inactivity TTL per push (ms) | `external_plugin_host.event_queue_ttl_ms` (nullable; required when mode is `DURABLE`) | Validated to `[1h, 30d]`, default 72h. Maps to RabbitMQ `x-expires`; ignored (forced null) in `LIVE` mode. |
 
 The module requires **no entries** in `backend/app/gzac/src/main/resources/application.yml`.
 
@@ -221,7 +225,10 @@ DDL lives in the **core** module's changelog, not the external-plugin module's o
 
 - `external_plugin_host` — `base_url`, encrypted `secret`, `status`, health/failure counters,
   **plus** `gzac_callback_base_url`, `event_broker_amqp_url`, `event_broker_exchange` (all
-  populated from the add-host UI; the two broker columns nullable for events-off / use-default-exchange).
+  populated from the add-host UI; the two broker columns nullable for events-off / use-default-exchange),
+  **plus** `event_queue_mode` (`LIVE`/`DURABLE`, default `LIVE`, added in
+  `20260617-external-plugin-event-queue.xml`) and `event_queue_ttl_ms` (nullable bigint; required
+  when mode is `DURABLE`, ignored when `LIVE`).
 - `external_plugin_definition` — `UNIQUE(plugin_id, version)`, `config_schema`, `manifest_json`,
   `host_id`, `base_url`, `status`, plus `name`, `description`, `provider`, `min_gzac_version` /
   `max_gzac_version` (populated at discovery from the manifest's `compatibility` block, compared
@@ -254,25 +261,38 @@ only in the host's in-memory registry until the host stores them in its own Post
 ## 6. Adding a host & host-defaults endpoint ✅
 
 `GET /api/management/v1/external-plugin/host-defaults` (`ExternalPluginManagementResource`)
-returns three pre-fills the add-host UI uses to populate the new-host form:
+returns pre-fills the add-host UI uses to populate the new-host form:
 
 ```json
 {
   "gzacCallbackBaseUrl": "http://localhost:8080",
   "eventBrokerAmqpUrl": "amqp://guest:guest@localhost:5672",
-  "eventBrokerExchange": "valtimo-events"
+  "eventBrokerExchange": "valtimo-events",
+  "defaultEventQueueTtlMs": 259200000,
+  "minEventQueueTtlMs": 3600000,
+  "maxEventQueueTtlMs": 2592000000
 }
 ```
 
-The operator edits whatever does not match the host's network. Three fields are exposed:
+The operator edits whatever does not match the host's network. URL fields exposed:
 `gzacCallbackBaseUrl` is required; `eventBrokerAmqpUrl` and `eventBrokerExchange` are optional.
-Leaving the broker URL blank disables events for every configuration under this host.
+Leaving the broker URL blank disables events for every configuration under this host. The
+`*EventQueueTtlMs` triplet drives the durable-mode TTL input in the UI (default 72h, range 1h–30d);
+the constants live on `ExternalPluginHostService` (`DEFAULT_/MIN_/MAX_EVENT_QUEUE_TTL_MS`).
 
 `ExternalPluginHostService.register()` trims trailing `/` on the URLs, encrypts the secret,
 blanks become `null`. When a broker URL is supplied it additionally requires the host base URL to be
 a confidential transport (HTTPS, or a loopback address for local development) and rejects the
 registration otherwise, so the broker AMQP URL and credentials are never pushed over plaintext
 (§3.9).
+
+The same service exposes a **narrowly-scoped update path** for the event-queue mode/TTL only:
+`PATCH /api/management/v1/external-plugin/host/{hostId}/event-queue` with
+`{eventQueueMode, eventQueueTtlMs}`. `baseUrl`, `secret`, `eventBrokerAmqpUrl`, and
+`eventBrokerExchange` remain immutable — the security check that pins broker credentials to a
+confidential `baseUrl` only needs to run at registration. After the PATCH, the resource triggers
+`discoveryService.discoverAll()` so the host's `EventConsumerManager.sync()` swaps the queue
+immediately instead of waiting for the next polling tick.
 
 ## 7. Plugin host 🟡 (`plugin-host/app/`, Node + Fastify + Extism)
 
@@ -366,21 +386,47 @@ Push body shape (relevant fields):
   "serviceToken": "eyJ…",
   "gzacBaseUrl": "http://gzac:8080",
   "eventSubscriptions": ["com.ritense.valtimo.document.created", "com.ritense.valtimo.task.completed"],
-  "eventBroker": { "amqpUrl": "amqp://…", "exchange": "valtimo-events", "exchangeType": "fanout" }
+  "eventBroker": {
+    "amqpUrl": "amqp://…",
+    "exchange": "valtimo-events",
+    "exchangeType": "fanout",
+    "queueMode": "live",
+    "queueTtlMs": null
+  }
 }
 ```
+
+`queueMode` is `"live"` or `"durable"` (lowercased on the wire — the host's `normalizeEventBroker`
+defaults unknown/absent values to `"live"`, so older GZACs that don't push it stay compatible).
+`queueTtlMs` is present only when `queueMode === "durable"` and is clamped defensively to the
+1h–30d window even though GZAC validates the same bounds at registration / PATCH time.
 
 ### 8.3 Consume (host, `rabbitmq/event-consumer.ts`)
 
 `EventConsumerManager` keeps one `BrokerConsumer` per **distinct broker**
-(`brokerKey = amqpUrl + exchange + exchangeType`). After any configuration mutation the route
-calls `sync()` (serialised via a promise chain): it opens consumers for newly referenced brokers
-and closes consumers no configuration references any more. A `BrokerConsumer`:
+(`brokerKey = amqpUrl + exchange + exchangeType`). Note: `queueMode`/`queueTtlMs` are intentionally
+**not** in the broker key — they are queue-level concerns, not connection-level, so two
+configurations on the same broker still share a single connection while the queue arguments come
+from the host-wide mode. After any configuration mutation the route calls `sync()` (serialised via
+a promise chain): it opens consumers for newly referenced brokers and closes consumers no
+configuration references any more. A `BrokerConsumer`:
 - `assertExchange(exchange, exchangeType, { durable: true })`,
-- `assertQueue("valtimo-external-plugins.<exchange>.<HOST_ID>", { durable: false, autoDelete: true })`,
+- `assertQueue("valtimo-external-plugins.<exchange>.<HOST_ID>.<queueMode>", …)` with arguments
+  switched per mode:
+  - **`live`** (default): `{ durable: false, autoDelete: true }` — queue evaporates when the host
+    disconnects; events while the host is fully down are lost (live-subscription semantics).
+  - **`durable`**: `{ durable: true, autoDelete: false, arguments: { "x-expires": queueTtlMs } }` —
+    queue survives host restarts; `x-expires` deletes the queue after `queueTtlMs` of no-consumer
+    inactivity, so a host that vanishes permanently doesn't accumulate events forever.
+
+  The mode suffix in the queue name means flipping `queueMode` produces a different queue and so
+  never collides with the previous queue's `assertQueue` arguments — the old `.live` queue
+  auto-deletes on disconnect; an orphan `.durable` queue lingers until its `x-expires` fires or an
+  operator deletes it from the management UI.
 - `bindQueue(queue, exchange, "")` (fanout ignores the routing key),
 - `consume(..., { noAck: false })` — ack on success; a malformed message is `nack`-dropped (not
-  requeued) to avoid a poison loop.
+  requeued) to avoid a poison loop. There is **no DLQ** today; expired or dropped messages are
+  silently lost.
 
 Restart behaviour: configs are persisted in the host's PostgreSQL (`plugin_configurations` table).
 On boot the host calls `eventConsumerManager.sync()` which re-opens consumers for every config
@@ -426,8 +472,12 @@ Multi-host topologies:
 - *One host serving multiple GZAC instances*: each instance has its own broker, so the host opens
   a separate `BrokerConsumer` per broker. Dispatch only fires configurations whose pushed broker
   key matches the consuming connection.
-- Trade-off: the auto-delete queue is not retained while a host is fully down, so events
-  published during that window are not delivered to it (live-subscription semantics).
+- Durability trade-off (configurable per host): `live` mode preserves today's no-overhead
+  semantics — events published while the host is fully down are not retained. `durable` mode
+  retains buffered events up to `queueTtlMs` since the last consumer disconnected, at the cost of
+  a queue that has to be cleaned up if a host is deprovisioned and its `HOST_ID` never returns
+  (the TTL is the automatic cleanup). Plugin handlers must already be idempotent because gzac's
+  outbox is at-least-once, so durable replay does not change handler-correctness requirements.
 
 ### 8.5 SDK & declaration
 
@@ -626,22 +676,25 @@ implemented and arguably unnecessary given the side-by-side model. Permission-di
 an activation gate — only upload is a confirm-gate; an admin can still activate a configuration for
 an incompatible definition.
 
-## 12. Deletion semantics — strict, never forced ⛔ (host-side plugin delete ✅)
+## 12. Deletion semantics — strict, never forced ✅
 
 Deletion of a host or a plugin configuration is **never allowed** while any process link in the
 system references that configuration — even when the case definition that owns the BPMN is final
-and the link is therefore frozen.
+and the link is therefore frozen. The same guard covers both **external** plugin configurations /
+hosts and **embedded** (`com.ritense.plugin`) configurations.
 
 Rationale: a forced cascade would silently break a final case definition's runtime behaviour. The
 configuration is immutable for the same reason the BPMN that references it is immutable. The user
-experience is to surface what depends on the resource and explain that deletion is unavailable.
+experience is to surface what depends on the resource and explain that deletion is unavailable —
+there is no force override on any path.
 
 | Entity | Blocked when… | Surface |
 |--------|---------------|---------|
 | **ProcessLink** | never (BPMN authoring is the source of truth — the case definition is the gate) | — |
-| **Configuration** | any `ProcessLink` references it | Edit/delete screen shows a panel: "Cannot delete: used by N process link(s)" with `(processDefinitionKey, activityName, caseDefinitionKey, version)` deep links. No override. |
+| **Configuration** (external) | any `ProcessLink` references it | Server-side guard in `ExternalPluginConfigurationService.delete` throws `ExternalPluginConfigurationInUseException` (HTTP 409, `usages` payload). UI runs the usage pre-check and shows the read-only `PluginUsageModalComponent` listing the referencing activities. No override. |
+| **Configuration** (embedded) | any *fixed* `PluginProcessLink` references it | Server-side guard in `PluginService.deletePluginConfiguration` throws `PluginConfigurationInUseException` (HTTP 409, `usages` payload). Same UI flow and modal. |
 | **Definition** | any `Configuration` exists for it | Not directly user-deletable; cleared by the discovery cycle when the upstream host no longer lists the version **and** no configurations remain. |
-| **Host** | any `Configuration` under any definition on this host has at least one `ProcessLink` referencing it | Host detail screen shows the same dependency panel. Deletion of an entire host with active configurations remains blocked: removing the host would orphan service tokens, push paths, and broker bindings for live configurations. |
+| **Host** | any `Configuration` under any definition on this host has at least one `ProcessLink` referencing it | Server-side guard in `ExternalPluginHostService.delete` throws `ExternalPluginHostInUseException` (HTTP 409, `usages` payload). Host delete in the UI shows the same `PluginUsageModalComponent`. Deletion of an entire host with active configurations remains blocked: removing the host would orphan service tokens, push paths, and broker bindings for live configurations. |
 | **Plugin on host** (host-side route) ✅ | active config refers to plugin version | `DELETE /api/host/plugins/:id/:version` returns HTTP 409 with `configurationIds`. |
 
 A configuration that *has* been activated but has no process links yet **can** be deleted (it is
@@ -649,10 +702,66 @@ not yet load-bearing). A host without any configurations can be deleted. Discove
 continues to mark missing definitions `UNAVAILABLE` after N consecutive misses
 (`failure-threshold`, default 3) rather than deleting them.
 
-UX detail: the dependency-list endpoint returns enough context for the UI to render a clickable
-list — process definition key, activity name, case definition key + version, last process
-instance count — so the operator can take action (close out the case definition, archive
-instances) before retrying.
+**12.1 Shared usage infrastructure (core plugin module).** The guard reuses one set of types and
+one process-definition reader across both plugin systems, all living in the **core** `plugin`
+module (`backend/plugin`, which now depends on `:backend:core` for the Operaton lookups). External
+code imports them rather than redefining them:
+
+- `web/rest/dto/PluginUsageDto` + `PluginUsageParentType` (`CASE | BUILDING_BLOCK | GLOBAL`) — the
+  single DTO shape returned in all four 409 payloads and `/usages` responses. Carries
+  `configurationId`, `configurationTitle`, `parentType`, `parentKey`, `parentVersionTag`,
+  `processDefinitionId`, `processDefinitionKey`, `processDefinitionName`, `activityId`,
+  `activityName`, `processLinkId`.
+- `service/ProcessDefinitionUsageMetaResolver` — resolves a process definition's key/name, the
+  owning **case definition or building block** (parsed from the Operaton `versionTag` via
+  `OperatonProcessDefinition.getBlueprintId()`, widened into `PluginUsageParentType`), and lazily
+  the BPMN model so the **activity name** can be looked up. All Operaton/BPMN reads are wrapped in
+  `runCatching`, so a missing or unloadable process definition degrades to nullable fields
+  (`GLOBAL` + null key/version) — the row still surfaces with `processDefinitionId` and the link id
+  for manual investigation.
+
+Two thin usage resolvers sit on top of it:
+- `PluginConfigurationUsageResolver` (core) — one `PluginUsageDto` per *fixed* `PluginProcessLink`
+  referencing the configuration. **BUILDING_BLOCK references resolve dynamically per
+  building-block context and are stored with `plugin_configuration_id = NULL`**, so they are
+  correctly excluded by `findByPluginConfigurationId` — only fixed references block deletion of a
+  specific configuration.
+- `ExternalPluginHostUsageResolver` (external-plugin module) — `findUsagesForConfiguration(id)` and
+  `findUsagesForHost(id)` (the host variant fans out over every definition→configuration under the
+  host), via `ExternalPluginProcessLinkRepository.findAllByExternalPluginConfigurationIdIn(...)`.
+
+**12.2 Exceptions.** Three `AbstractThrowableProblem`s, all HTTP 409 `application/problem+json`
+with `getCause() = null` (so no stack leaks into the body) and a `parameters` map rendered as
+top-level keys: `PluginConfigurationInUseException` (core, `configurationId` + `usages`),
+`ExternalPluginConfigurationInUseException` (`configurationId` + `usages`), and
+`ExternalPluginHostInUseException` (`hostId` + `usages`).
+
+**12.3 Advisory `/usages` endpoints (proactive UI).** Each delete is preceded by a read-only
+lookup so the UI can disable / divert the delete control before the user commits, returning the
+same `List<PluginUsageDto>` the 409 would carry. All three are `ADMIN`-gated in their respective
+`HttpSecurityConfigurer`s:
+- `GET /api/v1/plugin/configuration/{id}/usages` (embedded);
+- `GET /api/management/v1/external-plugin/configuration/{id}/usages`;
+- `GET /api/management/v1/external-plugin/host/{hostId}/usages`.
+
+These are **advisory only** — the server-side guard in the `delete` methods remains authoritative.
+An empty list here does not authorise deletion: a process link created between the pre-check and
+the delete still surfaces the 409, which the UI also handles.
+
+**12.4 Frontend flow.** `@valtimo/plugin` exports the `ExternalPluginHostUsage` /
+`ExternalPluginHostUsageParentType` types (mirroring the DTO) and the
+`getHostUsages` / `getConfigurationUsages` service calls (`ExternalPluginService`), with
+`PluginManagementService.getConfigurationUsages` for embedded configs. `PluginManagementComponent`
+runs one unified `_requestDeleteConfiguration(source, id, title)` entry point for every delete
+trigger (row action, external edit modal's `onExternalConfigDeleted`, embedded edit modal's
+bubbled `deleteEvent`): it pre-checks usages, then routes to either the read-only in-use modal
+(blocked) or a destructive-confirmation modal (clear); the actual delete still catches a 409 and
+re-opens the in-use modal to cover the race. The embedded `PluginEditModalComponent` no longer
+deletes inline — it emits `deleteEvent` up to the parent so the pre-check + confirmation flow lives
+in one place (matching the external edit modal). `PluginUsageModalComponent` is a single read-only,
+"Close"-only modal reused for hosts and configurations; the parent supplies the title/description
+translation keys. i18n lives under `pluginManagement.{deleteConfigurationModal, hostInUseModal,
+configurationInUseModal, usageModal}` in `en.json` / `nl.json`.
 
 ## 13. User-token-scoped endpoints (downscoped) ⛔
 
@@ -692,27 +801,21 @@ through the user-token path.
 - Case tabs / case widgets / menu pages (the iframe surfaces).
 - User-token-scoped endpoints (§13) — iframe-driven calls on behalf of the logged-in user with
   PBAC ∩ allowlist intersection.
-- Strict deletion guards for host and configuration when process links exist (§12) — currently
-  only the host's plugin-delete route enforces this.
 - Host database for KV / API logs / retention.
 - URL-plugin mode.
-- Event delivery durability across host downtime (currently live-subscription only).
+- DLQ for nacked or expired messages (today `nack(false,false)` drops, `x-expires` deletes the
+  queue and its contents).
 
 ## 15. Roadmap (priority order)
 
-1. **Strict deletion guards (§12)** — block configuration delete and host delete when any
-   process link exists; structured "what depends on this" body for the UI dependency panel; no
-   force override.
-2. **User-token-scoped endpoints (§13)** — new `POST /user-token` endpoint, user-token filter
+1. **User-token-scoped endpoints (§13)** — new `POST /user-token` endpoint, user-token filter
    with PBAC ∩ allowlist intersection, frontend wiring in `ExternalPluginIframeComponent.onIframeLoad()`
    to populate `accessToken` from `/user-token`, SDK side already exposes `getAccessToken()`.
-3. Capabilities + host functions + allowlist enforcement; surface in the acceptance screen by
+2. Capabilities + host functions + allowlist enforcement; surface in the acceptance screen by
    category.
-4. Durable / replayable event delivery option (per-host durable queue with TTL) for hosts that
-   must not miss events during downtime.
-5. HTMX pages, case tabs, case widgets, menu pages.
-6. Host database (KV, API logs, retention) + admin log view.
-7. Cleanup: align async-vs-sync SDK docs.
+3. HTMX pages, case tabs, case widgets, menu pages.
+4. Host database (KV, API logs, retention) + admin log view.
+5. Cleanup: align async-vs-sync SDK docs.
 
 ## 16. Verification status
 
@@ -720,23 +823,42 @@ through the user-token path.
   `buildHttpsOptions` wiring in `plugin-host/app/src/index.ts`).
 - Backend `:backend:external-plugin:test`: BUILD SUCCESSFUL (allowlist + service-token-filter +
   service-token-ttl + endpoint-description-coverage + host-client-HMAC + host-registration
-  transport-guard + compatibility tests). The host-client-HMAC suite (`client/ExternalPluginHostClientHmacTest`) asserts
-  `pushConfiguration` (body-bound), `deleteConfiguration` / `listPlugins` (empty-body), and
-  `uploadPlugin` (file-byte-bound) each send `X-Valtimo-Signature` + `X-Valtimo-Timestamp` and **no**
+  transport-guard + compatibility + event-queue mode/TTL tests). The host-client-HMAC suite
+  (`client/ExternalPluginHostClientHmacTest`) asserts `pushConfiguration` (body-bound, **including
+  the `queueMode`/`queueTtlMs` fields inside the signed `eventBroker` block, with the omit-TTL case
+  for `LIVE` mode**), `deleteConfiguration` / `listPlugins` (empty-body), and `uploadPlugin`
+  (file-byte-bound) each send `X-Valtimo-Signature` + `X-Valtimo-Timestamp` and **no**
   `Authorization` header, with the signature recomputed from an independent JDK HMAC oracle. The
-  transport-guard suite (`service/ExternalPluginHostServiceTest`) asserts host registration accepts
-  broker credentials over HTTPS and loopback HTTP, rejects them over plaintext HTTP to a remote host,
-  and that `isSecureTransport` classifies schemes and loopback hosts. The compatibility suite
-  (`compatibility/GzacCompatibilityCheckerTest`, `compatibility/DefaultGzacVersionProviderTest`,
-  `compatibility/PluginPackageInspectorTest`, `web/rest/ExternalPluginUploadCompatibilityTest`)
-  asserts the semver range comparison (below-minimum, above-maximum, open bounds, and
-  unparseable/unknown-version leniency), the version-provider precedence (override → Valtimo library
-  manifest version, `null` otherwise), the zip manifest peek (root-entry wins, missing/blank/garbage →
-  no gate), and the upload
-  endpoint's 409-unless-forced gate (an incompatible package is rejected and never forwarded to the
-  host; a forced upload, a compatible package, and an undeclared package each go through). The
-  service-token suite (`service/ExternalPluginServiceTokenServiceTest`) asserts the issued JWT's
-  `exp − iat` equals the configured TTL and falls back to 24h when none is set.
+  host-service suite (`service/ExternalPluginHostServiceTest`) asserts:
+  - host registration accepts broker credentials over HTTPS and loopback HTTP, rejects them over
+    plaintext HTTP to a remote host, and `isSecureTransport` classifies schemes and loopback hosts;
+  - default mode is `LIVE` with null TTL; `DURABLE` without explicit TTL applies the 72h default;
+    TTLs outside the 1h–30d window are rejected; `LIVE` with a non-null TTL is rejected;
+  - `updateEventQueue` swaps mode + TTL on an existing host, clears the TTL when going back to
+    `LIVE`, and throws when the host does not exist.
+
+  The compatibility suite (`compatibility/GzacCompatibilityCheckerTest`,
+  `compatibility/DefaultGzacVersionProviderTest`, `compatibility/PluginPackageInspectorTest`,
+  `web/rest/ExternalPluginUploadCompatibilityTest`) asserts the semver range comparison
+  (below-minimum, above-maximum, open bounds, and unparseable/unknown-version leniency), the
+  version-provider precedence (override → Valtimo library manifest version, `null` otherwise), the
+  zip manifest peek (root-entry wins, missing/blank/garbage → no gate), and the upload endpoint's
+  409-unless-forced gate (an incompatible package is rejected and never forwarded to the host; a
+  forced upload, a compatible package, and an undeclared package each go through). The   
+  delete-guard suites cover both plugin systems: `service/ExternalPluginHostUsageResolverTest`
+  (host- and configuration-scoped usage resolution, parent classification into
+  CASE/BUILDING_BLOCK/GLOBAL, activity-name lookup, and graceful degradation when a process
+  definition is missing/unloadable), `service/ExternalPluginConfigurationServiceDeleteTest` and
+  `service/ExternalPluginHostServiceDeleteTest` (delete proceeds with no usages, throws the
+  in-use exception with the populated `usages` payload otherwise), and
+  `exception/ExternalPluginHostInUseExceptionTest` (pins the 409 problem-body shape: title,
+  `CONFLICT` status, `hostId`, and the `PluginUsageDto` fields). The service-token suite
+  (`service/ExternalPluginServiceTokenServiceTest`) asserts the issued JWT's `exp − iat` equals the
+  configured TTL and falls back to 24h when none is set.
+- Backend `:backend:plugin:test` (`service/PluginServiceTest`): BUILD SUCCESSFUL — embedded
+  `deletePluginConfiguration` proceeds when no fixed process link references the configuration,
+  throws `PluginConfigurationInUseException` with the `usages` payload when one does, and a
+  not-found id is a no-op warning.
 - Backend `:backend:app:gzac:compileKotlin`: BUILD SUCCESSFUL.
 - Frontend `ng build` (production): clean.
 - Sample plugin `build:pack`: clean (Wasm + pack including `logo.svg`, `translations.en/nl`,
