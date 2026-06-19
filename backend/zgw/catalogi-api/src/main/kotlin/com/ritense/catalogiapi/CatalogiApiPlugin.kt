@@ -35,6 +35,7 @@ import com.ritense.catalogiapi.domain.Zaaktype
 import com.ritense.catalogiapi.domain.ZaaktypeInformatieobjecttype
 import com.ritense.catalogiapi.exception.BesluittypeNotFoundException
 import com.ritense.catalogiapi.exception.EigenschapNotFoundException
+import com.ritense.catalogiapi.exception.InformatieobjecttypeNotFoundException
 import com.ritense.catalogiapi.exception.ResultaattypeNotFoundException
 import com.ritense.catalogiapi.exception.StatustypeNotFoundException
 import com.ritense.catalogiapi.service.ZaaktypeUrlProvider
@@ -245,6 +246,34 @@ class CatalogiApiPlugin(
         }
     }
 
+    @PluginAction(
+        key = "get-informatieobjecttype",
+        title = "Get Informatieobjecttype",
+        description = "Retrieve the informatieobjecttype URL and store it in a process variable",
+        activityTypes = [ActivityTypeWithEventName.SERVICE_TASK_START, ActivityTypeWithEventName.CALL_ACTIVITY_START]
+    )
+    fun getInformatieobjecttypeUrl(
+        execution: DelegateExecution,
+        @PluginActionProperty informatieobjecttype: String,
+        @PluginActionProperty processVariable: String,
+    ) {
+        withLoggingContext(
+            CATALOGI_API.INFORMATIEOBJECTTYPE to informatieobjecttype
+        ) {
+            logger.debug { "Retrieving informatieobjecttype by $informatieobjecttype and storing it in process variable: $processVariable" }
+            val informatieobjecttypeUrl = if (informatieobjecttype.matches(HTTPS_REGEX)) {
+                informatieobjecttype
+            } else {
+                val zaaktypeUrl = getZaaktypeUrl(execution)
+                getInformatieobjecttypeByOmschrijving(zaaktypeUrl, informatieobjecttype).url!!.toASCIIString()
+            }
+
+            logger.info { "Setting process variable '$processVariable' with (retrieved) informatieobjecttype URL: $informatieobjecttypeUrl" }
+
+            execution.setVariable(processVariable, informatieobjecttypeUrl)
+        }
+    }
+
     fun getInformatieobjecttypes(
         zaakTypeUrl: URI,
     ): List<Informatieobjecttype> {
@@ -308,6 +337,17 @@ class CatalogiApiPlugin(
                 url,
                 typeUrl
             )
+        }
+    }
+
+    fun getInformatieobjecttypeByOmschrijving(zaakTypeUrl: URI, omschrijving: String): Informatieobjecttype {
+        withLoggingContext(
+            CATALOGI_API.INFORMATIEOBJECTTYPE to zaakTypeUrl.toString()
+        ) {
+            logger.debug { "Getting Informatieobjecttype by omschrijving: $omschrijving for zaaktype $zaakTypeUrl" }
+            return getInformatieobjecttypes(zaakTypeUrl)
+                .singleOrNull { it.omschrijving.equals(omschrijving, ignoreCase = true) }
+                ?: throw InformatieobjecttypeNotFoundException("with 'omschrijving': '$omschrijving'")
         }
     }
 

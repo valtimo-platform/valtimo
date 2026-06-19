@@ -20,6 +20,7 @@ import com.ritense.catalogiapi.client.CatalogiApiClient
 import com.ritense.catalogiapi.client.ZaaktypeInformatieobjecttypeRequest
 import com.ritense.catalogiapi.domain.Besluittype
 import com.ritense.catalogiapi.domain.Eigenschap
+import com.ritense.catalogiapi.domain.InformatieobjecttypeVertrouwelijkheid
 import com.ritense.catalogiapi.domain.Informatieobjecttype
 import com.ritense.catalogiapi.domain.Resultaattype
 import com.ritense.catalogiapi.domain.Specificatie
@@ -28,6 +29,7 @@ import com.ritense.catalogiapi.domain.Zaaktype
 import com.ritense.catalogiapi.domain.ZaaktypeInformatieobjecttype
 import com.ritense.catalogiapi.exception.BesluittypeNotFoundException
 import com.ritense.catalogiapi.exception.EigenschapNotFoundException
+import com.ritense.catalogiapi.exception.InformatieobjecttypeNotFoundException
 import com.ritense.catalogiapi.exception.ResultaattypeNotFoundException
 import com.ritense.catalogiapi.exception.StatustypeNotFoundException
 import com.ritense.catalogiapi.service.ZaaktypeUrlProvider
@@ -722,6 +724,109 @@ internal class CatalogiApiPluginTest : BaseTest() {
 
         assertEquals("No eigenschap was found with eigenschapnaam: 'Einddatum'", exception.message)
     }
+
+    @Test
+    fun `should get informatieobjecttype by omschrijving`() {
+        val omschrijving = "Bijlage"
+        val processVariable = "informatieobjecttypeUrlPv"
+        val informatieobjecttypeUrl = informatieObjectTypeUrl("1")
+        val zaaktypeUrl = zaaktypeUrl()
+        val documentId = documentId()
+        val document = mockDocument(documentId.toUUID())
+        val execution = mockExecution(documentId)
+
+        mockDocumentService(documentId, document)
+        mockZaakTypeUrlProvider(zaaktypeUrl.toURI())
+        mockInformatieobjecttypes(
+            zaaktypeUrl = zaaktypeUrl.toURI(),
+            informatieobjecttypes = listOf(
+                informatieobjecttype(
+                    url = informatieobjecttypeUrl.toURI(),
+                    omschrijving = omschrijving
+                ),
+                informatieobjecttype(
+                    url = informatieObjectTypeUrl("2").toURI(),
+                    omschrijving = "Other document"
+                )
+            )
+        )
+
+        plugin.getInformatieobjecttypeUrl(execution, omschrijving, processVariable)
+
+        verify(execution, times(1))
+            .setVariable(eq(processVariable), eq(informatieobjecttypeUrl))
+    }
+
+    @Test
+    fun `should get informatieobjecttype by url`() {
+        val informatieobjecttypeUrl = informatieObjectTypeUrl("1")
+        val processVariable = "informatieobjecttypeUrlPv"
+        val documentId = documentId()
+        val execution = mockExecution(documentId)
+
+        plugin.getInformatieobjecttypeUrl(execution, informatieobjecttypeUrl, processVariable)
+
+        verify(execution, times(1)).setVariable(processVariable, informatieobjecttypeUrl)
+    }
+
+    @Test
+    fun `should throw InformatieobjecttypeNotFoundException when get informatieobjecttype doesn't exist`() {
+        val omschrijving = "Onbekend document"
+        val processVariable = "informatieobjecttypeUrlPv"
+        val zaaktypeUrl = zaaktypeUrl()
+        val documentId = documentId()
+        val document = mockDocument(documentId.toUUID())
+        val execution = mockExecution(documentId)
+
+        mockDocumentService(documentId, document)
+        mockZaakTypeUrlProvider(zaaktypeUrl.toURI())
+        mockInformatieobjecttypes(
+            zaaktypeUrl = zaaktypeUrl.toURI(),
+            informatieobjecttypes = listOf()
+        )
+
+        val exception = assertThrows<InformatieobjecttypeNotFoundException> {
+            plugin.getInformatieobjecttypeUrl(execution, omschrijving, processVariable)
+        }
+
+        assertEquals("No informatieobjecttype was found with 'omschrijving': 'Onbekend document'", exception.message)
+    }
+
+    private fun mockInformatieobjecttypes(
+        zaaktypeUrl: URI,
+        informatieobjecttypes: List<Informatieobjecttype>
+    ) {
+        val zaaktypeInformatieobjecttypes = informatieobjecttypes.map { iot ->
+            mock<ZaaktypeInformatieobjecttype> {
+                on { this.informatieobjecttype } doReturn iot.url!!
+            }
+        }
+        whenever(client.getZaaktypeInformatieobjecttypes(any(), any(), any())).thenReturn(
+            Page(
+                count = informatieobjecttypes.size,
+                results = zaaktypeInformatieobjecttypes
+            )
+        )
+        informatieobjecttypes.forEach { iot ->
+            whenever(client.getInformatieobjecttype(any(), any(), eq(iot.url!!))).thenReturn(iot)
+        }
+    }
+
+    private fun informatieobjecttype(
+        url: URI,
+        omschrijving: String,
+        concept: Boolean = false,
+        beginGeldigheid: LocalDate = LocalDate.now().minusDays(1),
+        eindeGeldigheid: LocalDate? = null
+    ) = Informatieobjecttype(
+        url = url,
+        catalogus = URI("https://example.com/catalogus/1"),
+        omschrijving = omschrijving,
+        vertrouwelijkheidaanduiding = InformatieobjecttypeVertrouwelijkheid.OPENBAAR,
+        beginGeldigheid = beginGeldigheid,
+        eindeGeldigheid = eindeGeldigheid,
+        concept = concept
+    )
 
     private fun mockDocument(documentId: UUID = documentId().toUUID()): JsonSchemaDocument = mock {
         on { this.definitionId() } doReturn JsonSchemaDocumentDefinitionId.of("myDocDef", caseDefinitionId)
