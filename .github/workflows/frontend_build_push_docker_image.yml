@@ -63,8 +63,38 @@ jobs:
         with:
           node-version: ${{ env.NODE_VERSION }}
 
-      - name: Install dependencies
-        run: npm install
+      - name: Download libraries dist artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: ${{ inputs.frontend_libraries_build_artifact_name }}
+          path: frontend/dist/
+
+      - name: Rewrite local @valtimo/* deps to file: links and install
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          PROJECTS_DIR="projects/valtimo"
+          SCOPE="@valtimo"
+          LOCAL_ROOT="dist/valtimo"
+
+          if [ ! -d "$PROJECTS_DIR" ]; then
+            echo "::error::$PROJECTS_DIR not found"
+            exit 1
+          fi
+
+          mapfile -t NAMES < <(find "$PROJECTS_DIR" -mindepth 1 -maxdepth 1 -type d -printf '%f\n' | grep -v '^\.' || true)
+          if [ "${#NAMES[@]}" -eq 0 ]; then
+            echo "::error::no workspace packages found under $PROJECTS_DIR"
+            exit 1
+          fi
+
+          for name in "${NAMES[@]}"; do
+            npm pkg delete devDependencies."$SCOPE/$name" >/dev/null 2>&1 || true
+            npm pkg set "dependencies.$SCOPE/$name=file:$LOCAL_ROOT/$name"
+          done
+
+          npm install
 
       - name: Build app
         run: npm run build
