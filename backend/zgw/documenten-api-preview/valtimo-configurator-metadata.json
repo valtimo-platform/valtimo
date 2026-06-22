@@ -10,7 +10,7 @@
     "import": "@valtimo/plugin",
     "codeAdditions": [
       {
-        "spec": "documentenApiPluginSpecification",
+        "spec": "documentenApiPreviewPluginSpecification",
         "module": "DocumentenApiPreviewPluginModule"
       }
     ]
