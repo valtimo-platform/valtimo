@@ -31,6 +31,7 @@ import com.ritense.processdocument.importer.CaseDefinitionProcessLinkImporter
 import com.ritense.processdocument.importer.ProcessDocumentLinkImporter
 import com.ritense.processdocument.listener.CaseAssigneeListener
 import com.ritense.processdocument.listener.CaseAssigneeTaskCreatedListener
+import com.ritense.processdocument.listener.CaseTaskTeamAutoAssignListener
 import com.ritense.processdocument.listener.DecisionCaseEventListener
 import com.ritense.processdocument.listener.ProcessDefinitionCaseEventListener
 import com.ritense.processdocument.listener.ProcessDocumentLinkEventListener
@@ -42,7 +43,9 @@ import com.ritense.processdocument.repository.OperatonProcessDefinitionCaseDefin
 import com.ritense.processdocument.repository.ProcessDefinitionCaseDefinitionRepository
 import com.ritense.processdocument.repository.ProcessDocumentInstanceRepository
 import com.ritense.processdocument.service.CaseDefinitionProcessLinkService
+import com.ritense.processdocument.repository.TaskQuickSearchRepository
 import com.ritense.processdocument.service.CaseTaskListSearchService
+import com.ritense.processdocument.service.TaskQuickSearchService
 import com.ritense.processdocument.service.CorrelationService
 import com.ritense.processdocument.service.CorrelationServiceImpl
 import com.ritense.processdocument.service.DefaultProcessDefinitionCaseDefinitionLinker
@@ -226,6 +229,26 @@ class ProcessDocumentsAutoConfiguration {
     }
 
     @Bean
+    @ConditionalOnMissingBean(CaseTaskTeamAutoAssignListener::class)
+    fun caseTaskTeamAutoAssignListener(
+        operatonTaskService: OperatonTaskService,
+        documentService: DocumentService,
+        caseDefinitionService: CaseDefinitionService,
+        processDocumentService: ProcessDocumentService,
+        teamManagementService: TeamManagementService?,
+        caseDocumentResolver: CaseDocumentResolver,
+    ): CaseTaskTeamAutoAssignListener {
+        return CaseTaskTeamAutoAssignListener(
+            operatonTaskService,
+            documentService,
+            caseDefinitionService,
+            processDocumentService,
+            teamManagementService,
+            caseDocumentResolver,
+        )
+    }
+
+    @Bean
     @ConditionalOnMissingBean(OperatonTaskDocumentMapper::class)
     fun operatonTaskDocumentMapper(
         processDocumentInstanceRepository: ProcessDocumentInstanceRepository,
@@ -316,14 +339,30 @@ class ProcessDocumentsAutoConfiguration {
     }
 
     @Bean
+    @ConditionalOnMissingBean(TaskQuickSearchService::class)
+    fun taskQuickSearchService(
+        taskQuickSearchRepository: TaskQuickSearchRepository,
+        caseDefinitionService: CaseDefinitionService,
+        authorizationService: AuthorizationService,
+    ): TaskQuickSearchService {
+        return TaskQuickSearchService(
+            taskQuickSearchRepository,
+            caseDefinitionService,
+            authorizationService,
+        )
+    }
+
+    @Bean
     @ConditionalOnMissingBean(TaskListResource::class)
     fun processDocumentTaskListResource(
         caseTaskListSearchService: CaseTaskListSearchService,
         operatonTaskService: OperatonTaskService,
+        taskQuickSearchService: TaskQuickSearchService,
     ): TaskListResource {
         return TaskListResource(
             caseTaskListSearchService,
             operatonTaskService,
+            taskQuickSearchService,
         )
     }
 

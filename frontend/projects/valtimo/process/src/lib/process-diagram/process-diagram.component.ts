@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+import {CommonModule} from '@angular/common';
 import {
   Component,
   ElementRef,
@@ -28,18 +29,19 @@ import {
 } from '@angular/core';
 import {ProcessService} from '../process.service';
 
-import BpmnViewer from 'bpmn-js';
+import NavigatedViewer from 'bpmn-js/lib/NavigatedViewer';
 import heatmap from 'heatmap.js-fixed/build/heatmap.js';
 
 @Component({
+  standalone: true,
   selector: 'valtimo-process-diagram',
   templateUrl: './process-diagram.component.html',
   styleUrls: ['./process-diagram.component.scss'],
   encapsulation: ViewEncapsulation.None,
-  standalone: false,
+  imports: [CommonModule],
 })
 export class ProcessDiagramComponent implements OnInit, OnDestroy, OnChanges {
-  private bpmnViewer: BpmnViewer;
+  private bpmnViewer: NavigatedViewer;
   private heatMapInstance: any;
 
   @ViewChild('ref', {static: true}) public el: ElementRef;
@@ -72,7 +74,7 @@ export class ProcessDiagramComponent implements OnInit, OnDestroy, OnChanges {
     if (this.processInstanceId) {
       this.loadProcessInstanceXml(this.processInstanceId);
     }
-    this.bpmnViewer = new BpmnViewer();
+    this.bpmnViewer = new NavigatedViewer();
     this.bpmnViewer.on('import.done', (event: any) => {
       if (!event?.error) {
         const canvas = this.bpmnViewer.get('canvas') as any;

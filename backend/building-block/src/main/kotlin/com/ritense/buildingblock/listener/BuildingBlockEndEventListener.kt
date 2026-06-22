@@ -16,6 +16,7 @@
 
 package com.ritense.buildingblock.listener
 
+import com.ritense.authorization.AuthorizationContext
 import com.ritense.buildingblock.domain.CaseDefinitionBuildingBlockLink
 import com.ritense.buildingblock.domain.instance.BuildingBlockInstance
 import com.ritense.buildingblock.processlink.domain.BuildingBlockSyncTiming
@@ -44,12 +45,12 @@ class BuildingBlockEndEventListener(
 
     @EventListener(
         condition = """#event.delegateExecution.bpmnModelElementInstance != null
-            && #event.delegateExecution.bpmnModelElementInstance.elementType.typeName == T(org.operaton.bpm.engine.ActivityTypes).END_EVENT_NONE
+            && #event.delegateExecution.bpmnModelElementInstance.elementType.typeName == 'endEvent'
             && #event.eventName == T(org.operaton.bpm.engine.delegate.ExecutionListener).EVENTNAME_END"""
     )
     fun onEndEvent(event: OperatonExecutionEvent) {
         val execution = event.delegateExecution
-        if (execution.parentId != execution.processInstanceId) {
+        if (execution.parentId != null && execution.parentId != execution.processInstanceId) {
             return
         }
         val processInstanceId = OperatonProcessInstanceId(execution.processInstanceId)
@@ -57,6 +58,10 @@ class BuildingBlockEndEventListener(
             ?: return
         val buildingBlockInstance = buildingBlockInstanceService.getByDocumentId(documentId.id)
             ?: return
+        // BBs started via a call activity are synced by BuildingBlockCallActivityListener.onCallActivityEnd
+        if (buildingBlockInstance.callerProcessDefinitionId != null) {
+            return
+        }
         val caseDocumentId = buildingBlockInstance.caseDocumentId
             ?: return
 
@@ -85,17 +90,21 @@ class BuildingBlockEndEventListener(
         val caseDocumentId = buildingBlockInstance.caseDocumentId
             ?: throw IllegalStateException("Cannot sync results for building block without a case document")
 
-        val resolvedValues = valueResolverService.resolveValues(
-            execution.processInstanceId,
-            execution,
-            endSyncMappings.map { it.source }
-        )
-
-        val valuesToHandle = endSyncMappings.associate { (sourceKey, target) ->
-            target to resolvedValues[sourceKey]
+        val resolvedValues = AuthorizationContext.runWithoutAuthorization {
+            valueResolverService.resolveValues(
+                execution.processInstanceId,
+                execution,
+                endSyncMappings.map { it.getPrefixedSource() }
+            )
         }
 
-        valueResolverService.handleValues(caseDocumentId, valuesToHandle)
+        val valuesToHandle = endSyncMappings.associate { mapping ->
+            mapping.target to resolvedValues[mapping.getPrefixedSource()]
+        }
+
+        AuthorizationContext.runWithoutAuthorization {
+            valueResolverService.handleValues(caseDocumentId, valuesToHandle)
+        }
     }
 
     private companion object {

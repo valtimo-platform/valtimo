@@ -51,6 +51,7 @@
         {{ 'dashboardManagement.widgets.form.dashboardTitle' | translate }}
 
         <input
+          [attr.data-test-id]="testIds.editTitleInput"
           cdsText
           [disabled]="obs.disabled"
           [invalid]="dashboardTitle.dirty && dashboardTitle.invalid"
@@ -72,6 +73,7 @@
         {{ 'dashboardManagement.widgets.form.dashboardDescription' | translate }}
 
         <input
+          [attr.data-test-id]="testIds.editDescriptionInput"
           cdsText
           [disabled]="obs.disabled"
           [invalid]="dashboardDescription.dirty && dashboardDescription.invalid"
@@ -79,6 +81,18 @@
         />
       </cds-label>
     </div>
+
+    <div class="form__element">
+      <v-select
+        formControlName="widgetLayout"
+        [items]="widgetLayoutSelectItems"
+        [dropUp]="false"
+        [appendInline]="false"
+        titleTranslationKey="widgetLayout.label"
+      ></v-select>
+    </div>
+
+    <valtimo-widget-layout-info></valtimo-widget-layout-info>
   </form>
 </ng-template>
 
@@ -88,6 +102,7 @@
   </button>
 
   <button
+    [attr.data-test-id]="testIds.completeButton"
     cdsButton="primary"
     [disabled]="editDashboardForm.invalid || obs.disabled"
     (click)="saveDashboard()"

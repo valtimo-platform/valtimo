@@ -48,6 +48,7 @@ import {
   take,
   tap,
 } from 'rxjs';
+import {FORM_MANAGEMENT_LIST_TEST_IDS} from '../../constants';
 import {FormDefinition} from '../../models';
 import {FormManagementService} from '../../services';
 import {getContextObservable} from '../../utils';
@@ -85,6 +86,8 @@ export class FormManagementListComponent {
   public readonly formDefinitionToDelete$ = new BehaviorSubject<FormDefinition | null>(null);
   public readonly loading$ = new BehaviorSubject<boolean>(true);
   public readonly searchTerm$ = new BehaviorSubject<string>('');
+
+  protected readonly testIds = FORM_MANAGEMENT_LIST_TEST_IDS;
 
   public readonly context$ = getContextObservable(this.route);
 

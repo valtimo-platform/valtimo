@@ -31,7 +31,7 @@
   };
 
 <div class="mapping-step">
-  <section class="mapping-section">
+  <section class="mapping-section" [attr.data-test-id]="testIds.inputSection">
     <h4 class="section-header">
       {{ 'processLinkConfiguration.buildingBlock.inputTitle' | translate }}
     </h4>
@@ -56,7 +56,11 @@
 
       <div formArrayName="inputs">
         @for (group of inputs.controls; let inputIndex = $index; track inputIndex) {
-          <div class="mapping-row input" [formGroup]="group">
+          <div
+            class="mapping-row input"
+            [formGroup]="group"
+            [attr.data-test-id]="testIds.inputRow"
+          >
             <div class="mapping-part">
               @if (obs.sourceIsIndependent) {
                 <input [cdsLayer]="2" cdsText formControlName="source" [placeholder]="'pv:'" />
@@ -64,6 +68,7 @@
                 <valtimo-value-path-selector
                   [cdsLayer]="2"
                   [prefixes]="[ValuePathSelectorPrefix.DOC, ValuePathSelectorPrefix.CASE]"
+                  [notation]="'slashes'"
                   [caseDefinitionKey]="obs.params?.caseDefinitionKey"
                   [caseDefinitionVersionTag]="obs.params?.caseDefinitionVersionTag"
                   [buildingBlockDefinitionKey]="obs.buildingBlockParams?.buildingBlockDefinitionKey"
@@ -80,10 +85,10 @@
             </div>
 
             <div class="mapping-part">
-              <div class="mapping-cell">
+              <div class="mapping-cell" [attr.data-test-id]="testIds.inputTargetSelectWrapper">
                 @if (isRequiredTarget(obs.fields, group.get('target')?.value)) {
-                  <div class="required-target">
-                    {{ 'doc:' + group.get('target')?.value }}
+                  <div class="required-target" [attr.data-test-id]="testIds.inputRequiredTargetLabel">
+                    {{ group.get('target')?.value }}
                   </div>
                 } @else {
                   <v-select
@@ -108,11 +113,14 @@
                     iconOnly
                     size="sm"
                     (click)="deleteInput(inputIndex)"
+                    [attr.data-test-id]="testIds.inputDeleteButton"
                   >
                     <svg cdsIcon="trash-can" class="cds--btn__icon" size="16"></svg>
                   </button>
                 } @else {
-                  <div class="required-indicator">*</div>
+                  <div class="required-indicator" [attr.data-test-id]="testIds.inputRequiredIndicator">
+                    *
+                  </div>
 
                   <div>
                     {{ 'interface.required' | translate }}
@@ -131,6 +139,7 @@
       (click)="addInput()"
       [title]="'processLinkConfiguration.buildingBlock.addInput' | translate"
       [disabled]="allInputsMapped$ | async"
+      [attr.data-test-id]="testIds.addInputButton"
     >
       {{ 'processLinkConfiguration.buildingBlock.addInput' | translate }}
 
@@ -138,7 +147,7 @@
     </button>
   </section>
 
-  <section class="mapping-section">
+  <section class="mapping-section" [attr.data-test-id]="testIds.outputSection">
     <h4 class="section-header">
       {{ 'processLinkConfiguration.buildingBlock.outputTitle' | translate }}
     </h4>
@@ -169,9 +178,13 @@
 
       <div formArrayName="outputs">
         @for (group of outputs.controls; let outputIndex = $index; track outputIndex) {
-          <div class="mapping-row output" [formGroup]="group">
+          <div
+            class="mapping-row output"
+            [formGroup]="group"
+            [attr.data-test-id]="testIds.outputRow"
+          >
             <div class="mapping-part">
-              <div class="mapping-cell">
+              <div class="mapping-cell" [attr.data-test-id]="testIds.outputSourceSelectWrapper">
                 <v-select
                   [cdsLayer]="2"
                   [appendInline]="false"
@@ -196,6 +209,7 @@
                 <valtimo-value-path-selector
                   [cdsLayer]="2"
                   [prefixes]="[ValuePathSelectorPrefix.DOC, ValuePathSelectorPrefix.CASE]"
+                  [notation]="'slashes'"
                   [caseDefinitionKey]="obs.params?.caseDefinitionKey"
                   [caseDefinitionVersionTag]="obs.params?.caseDefinitionVersionTag"
                   [buildingBlockDefinitionKey]="obs.buildingBlockParams?.buildingBlockDefinitionKey"
@@ -231,6 +245,7 @@
                   iconOnly
                   size="sm"
                   (click)="deleteOutput(outputIndex)"
+                  [attr.data-test-id]="testIds.outputDeleteButton"
                 >
                   <svg cdsIcon="trash-can" class="cds--btn__icon" size="16"></svg>
                 </button>
@@ -246,6 +261,7 @@
       size="sm"
       (click)="addOutput()"
       [title]="'processLinkConfiguration.buildingBlock.addOutput' | translate"
+      [attr.data-test-id]="testIds.addOutputButton"
     >
       {{ 'processLinkConfiguration.buildingBlock.addOutput' | translate }}
 

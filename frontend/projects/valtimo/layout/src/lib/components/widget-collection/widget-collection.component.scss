@@ -165,7 +165,7 @@
         &-content {
           padding-left: 16px;
           gap: 12px;
-          border-left: 1px solid var(--cds-border-subtle-01);
+          border-left: 1px solid var(--widget-accent-color, var(--cds-border-subtle-01));
         }
 
         &-input {
@@ -173,5 +173,9 @@
         }
       }
     }
+  }
+
+  .valtimo-no-results__content {
+    color: var(--widget-text-color, var(--cds-text-primary)) !important;
   }
 }

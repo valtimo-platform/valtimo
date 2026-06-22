@@ -19,6 +19,7 @@ import {
   ChangeDetectionStrategy,
   Component,
   ElementRef,
+  HostBinding,
   Input,
   OnDestroy,
   Renderer2,
@@ -44,9 +45,9 @@ import {
   Subscription,
   tap,
 } from 'rxjs';
-import {WidgetColor, WidgetComponentMap, WidgetWithUuid} from '../../models';
+import {WidgetColor, WidgetComponentMap, WidgetType, WidgetWithUuid} from '../../models';
 import {WidgetLayoutService} from '../../services/widget-layout.service';
-import {WIDGET_COLOR_THEME_MAP, WIDGET_HEIGHT_1X, type WidgetColorVariant} from '../../constants';
+import {WIDGET_COLOR_THEME_MAP, type WidgetColorVariant} from '../../constants';
 
 @Component({
   selector: 'valtimo-widget-block',
@@ -74,6 +75,11 @@ export class WidgetBlockComponent implements AfterViewInit, OnDestroy {
     return this._widget$.pipe(filter(widget => widget !== null));
   }
 
+  @HostBinding('attr.data-widget-type')
+  public get widgetTypeAttr(): string | null {
+    return this._widget$.value?.type ?? null;
+  }
+
   private readonly _viewContainerRefSubject$ = new BehaviorSubject<ViewContainerRef | null>(null);
 
   private get _viewContainerRef$(): Observable<ViewContainerRef> {
@@ -85,10 +91,12 @@ export class WidgetBlockComponent implements AfterViewInit, OnDestroy {
   public readonly blockHeightPx$ = combineLatest([
     this._contentHeight$,
     this._viewContainerRef$,
+    this.widget$,
+    this.widgetLayoutService.rowHeightUnit$,
   ]).pipe(
     filter(([contentHeight]) => contentHeight !== 0),
-    tap(([contentHeight, viewRef]) => {
-      const blockHeight = Math.ceil((contentHeight + 16) / WIDGET_HEIGHT_1X) * WIDGET_HEIGHT_1X;
+    tap(([contentHeight, viewRef, , rowHeightUnit]) => {
+      const blockHeight = Math.ceil((contentHeight + 16) / rowHeightUnit) * rowHeightUnit;
 
       this.renderer.setStyle(viewRef.element.nativeElement, 'height', `${blockHeight}px`);
       this.widgetLayoutService.triggerMuuriLayout();
@@ -191,8 +199,14 @@ export class WidgetBlockComponent implements AfterViewInit, OnDestroy {
     const widgetColor =
       WIDGET_COLOR_THEME_MAP[colorKey] ?? WIDGET_COLOR_THEME_MAP[WidgetColor.WHITE];
     const themeType = this.isLightTheme(theme) ? 'light' : 'dark';
+    const variant =
+      widgetColor[themeType] ?? WIDGET_COLOR_THEME_MAP[WidgetColor.WHITE][themeType];
 
-    return widgetColor[themeType] ?? WIDGET_COLOR_THEME_MAP[WidgetColor.WHITE][themeType];
+    if (widgetConfiguration.type === WidgetType.HIGHLIGHT) {
+      return {text: null, background: null, layer: null, accent: variant.accent};
+    }
+
+    return variant;
   }
 
   private isLightTheme(theme: CARBON_THEME): boolean {

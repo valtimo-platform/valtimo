@@ -276,6 +276,9 @@ export * from './lib/directives/remove-classnames/remove-classnames.directive';
 export * from './lib/directives/muuri/muuri-directive.module';
 export * from './lib/directives/muuri/muuri.directive';
 export * from './lib/directives/muuri/muuri-item.component';
+export * from './lib/directives/muuri/muuri-gap-free-layout';
+export * from './lib/directives/muuri/widget-layout';
+export * from './lib/components/widget-layout-info/widget-layout-info.component';
 // read-only
 export * from './lib/directives/read-only.directive';
 // observe size
@@ -287,3 +290,6 @@ export * from './lib/interfaces';
 
 // assignment
 export * from './lib/components/assign-user/assignment.component';
+
+// Color picker
+export * from './lib/components/color-picker/color-picker.component';

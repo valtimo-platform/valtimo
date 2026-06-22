@@ -18,11 +18,14 @@ import {NgModule} from '@angular/core';
 import {CommonModule} from '@angular/common';
 import {DocumentenApiConfigurationComponent} from './components/documenten-api-configuration/documenten-api-configuration.component';
 import {PluginTranslatePipeModule} from '../../pipes';
-import {FormModule, InputModule, ParagraphModule, SelectModule} from '@valtimo/components';
+import {FormModule, InputModule, ParagraphModule, RadioModule, SelectModule} from '@valtimo/components';
 import {StoreTempDocumentConfigurationComponent} from './components/store-temp-document/store-temp-document-configuration.component';
 import {StoreUploadedDocumentConfigurationComponent} from './components/store-uploaded-document/store-uploaded-document-configuration.component';
 import {DownloadDocumentConfigurationComponent} from './components/download-document/download-document-configuration.component';
 import {StoreUploadedDocumentInPartsConfigurationComponent} from './components/store-uploaded-document-in-parts/store-uploaded-document-in-parts-configuration.component';
+import {LinkDocumentToObjectConfigurationComponent} from './components/link-document-to-object/link-document-to-object-configuration.component';
+import {DeleteDocumentLinkConfigurationComponent} from './components/delete-document-link/delete-document-link-configuration.component';
+import {GetAuditTrailConfigurationComponent} from './components/get-audit-trail/get-audit-trail-configuration.component';
 
 @NgModule({
   declarations: [
@@ -31,6 +34,9 @@ import {StoreUploadedDocumentInPartsConfigurationComponent} from './components/s
     StoreUploadedDocumentConfigurationComponent,
     StoreUploadedDocumentInPartsConfigurationComponent,
     DownloadDocumentConfigurationComponent,
+    LinkDocumentToObjectConfigurationComponent,
+    DeleteDocumentLinkConfigurationComponent,
+    GetAuditTrailConfigurationComponent,
   ],
   imports: [
     CommonModule,
@@ -39,6 +45,7 @@ import {StoreUploadedDocumentInPartsConfigurationComponent} from './components/s
     InputModule,
     SelectModule,
     ParagraphModule,
+    RadioModule,
   ],
   exports: [
     DocumentenApiConfigurationComponent,
@@ -46,6 +53,9 @@ import {StoreUploadedDocumentInPartsConfigurationComponent} from './components/s
     StoreUploadedDocumentConfigurationComponent,
     StoreUploadedDocumentInPartsConfigurationComponent,
     DownloadDocumentConfigurationComponent,
+    LinkDocumentToObjectConfigurationComponent,
+    DeleteDocumentLinkConfigurationComponent,
+    GetAuditTrailConfigurationComponent,
   ],
 })
 export class DocumentenApiPluginModule {}

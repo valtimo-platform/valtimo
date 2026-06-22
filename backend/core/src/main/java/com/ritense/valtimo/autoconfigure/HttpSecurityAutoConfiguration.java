@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,6 +20,7 @@ import com.ritense.valtimo.contract.hardening.service.HardeningService;
 import com.ritense.valtimo.contract.security.config.HttpSecurityConfigurer;
 import com.ritense.valtimo.contract.security.config.oauth2.NoOAuth2ClientsConfiguredCondition;
 import com.ritense.valtimo.contract.web.rest.error.ExceptionTranslator;
+import com.ritense.valtimo.security.ActuatorRoleHealthEndpointGroups;
 import com.ritense.valtimo.security.ActuatorSecurityFilterChainFactory;
 import com.ritense.valtimo.security.CoreSecurityFactory;
 import com.ritense.valtimo.security.Http401UnauthorizedEntryPoint;
@@ -27,8 +28,6 @@ import com.ritense.valtimo.security.SpringSecurityAuditorAware;
 import com.ritense.valtimo.security.ValtimoCoreSecurityFactory;
 import com.ritense.valtimo.security.config.AccountHttpSecurityConfigurer;
 import com.ritense.valtimo.security.config.ApiLoginHttpSecurityConfigurer;
-import com.ritense.valtimo.security.config.OperatonCockpitHttpSecurityConfigurer;
-import com.ritense.valtimo.security.config.OperatonRestHttpSecurityConfigurer;
 import com.ritense.valtimo.security.config.ChoiceFieldHttpSecurityConfigurer;
 import com.ritense.valtimo.security.config.CsrfHttpSecurityConfigurer;
 import com.ritense.valtimo.security.config.DenyAllHttpSecurityConfigurer;
@@ -36,6 +35,8 @@ import com.ritense.valtimo.security.config.EmailNotificationSettingsSecurityConf
 import com.ritense.valtimo.security.config.ErrorHttpSecurityConfigurer;
 import com.ritense.valtimo.security.config.JwtHttpSecurityConfigurer;
 import com.ritense.valtimo.security.config.OpenApiHttpSecurityConfigurer;
+import com.ritense.valtimo.security.config.OperatonCockpitHttpSecurityConfigurer;
+import com.ritense.valtimo.security.config.OperatonRestHttpSecurityConfigurer;
 import com.ritense.valtimo.security.config.PingHttpSecurityConfigurer;
 import com.ritense.valtimo.security.config.ProcessHttpSecurityConfigurer;
 import com.ritense.valtimo.security.config.ProcessInstanceHttpSecurityConfigurer;
@@ -48,12 +49,15 @@ import com.ritense.valtimo.security.config.ValtimoVersionHttpSecurityConfigurer;
 import com.ritense.valtimo.security.jwt.authentication.TokenAuthenticationService;
 import com.ritense.valtimo.security.matcher.SecurityWhitelistProperties;
 import com.ritense.valtimo.security.matcher.WhitelistIpRequestMatcher;
+import com.ritense.valtimo.security.oauth2.OperatonIdentityBridgeHttpSecurityConfigurer;
 import java.util.List;
 import java.util.Optional;
 import org.operaton.bpm.engine.IdentityService;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.beans.factory.config.BeanPostProcessor;
 import org.springframework.boot.actuate.autoconfigure.endpoint.web.WebEndpointProperties;
 import org.springframework.boot.actuate.autoconfigure.health.HealthEndpointProperties;
+import org.springframework.boot.actuate.health.HealthEndpointGroups;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -70,6 +74,33 @@ import org.springframework.security.data.repository.query.SecurityEvaluationCont
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.Http403ForbiddenEntryPoint;
 
+/**
+ * HTTP Security configuration for Valtimo.
+ *
+ * <h2>Security Headers Baseline (U/PW.02-4, U/PW.02-5)</h2>
+ * <p>Spring Security 6.x applies the following default headers to all responses:</p>
+ * <ul>
+ *   <li><b>X-Content-Type-Options: nosniff</b> - Prevents MIME type sniffing attacks</li>
+ *   <li><b>X-XSS-Protection: 0</b> - Disabled; modern browsers use CSP instead</li>
+ *   <li><b>Cache-Control: no-cache, no-store, max-age=0, must-revalidate</b> - Prevents caching of sensitive data</li>
+ *   <li><b>Pragma: no-cache</b> - HTTP/1.0 cache prevention</li>
+ *   <li><b>Expires: 0</b> - Cache expiration</li>
+ *   <li><b>X-Frame-Options: DENY</b> - Clickjacking protection (intentionally enabled)</li>
+ * </ul>
+ * <p>Additional headers from CORS configuration (via valtimo.web.cors):</p>
+ * <ul>
+ *   <li><b>Vary: origin, access-control-request-method, access-control-request-headers</b></li>
+ * </ul>
+ * <p>Endpoint-specific headers:</p>
+ * <ul>
+ *   <li><b>Content-Disposition</b> - Set on file download endpoints (e.g., ZaakDocumentResource) for filename hints</li>
+ * </ul>
+ * <p>Headers intentionally NOT sent:</p>
+ * <ul>
+ *   <li><b>Server</b> - Suppressed via server.server-header="" to avoid technology disclosure</li>
+ *   <li><b>X-Powered-By</b> - Not added by Spring Boot / Tomcat by default</li>
+ * </ul>
+ */
 @AutoConfiguration
 @EnableWebSecurity
 @EnableConfigurationProperties(SecurityWhitelistProperties.class)
@@ -233,6 +264,16 @@ public class HttpSecurityAutoConfiguration {
         return new JwtHttpSecurityConfigurer(identityService, tokenAuthenticationService);
     }
 
+    @Order(441)
+    @Bean
+    @Conditional(org.springframework.boot.autoconfigure.security.oauth2.client.ClientsConfiguredCondition.class)
+    @ConditionalOnMissingBean(OperatonIdentityBridgeHttpSecurityConfigurer.class)
+    public OperatonIdentityBridgeHttpSecurityConfigurer operatonIdentityBridgeHttpSecurityConfigurer(
+        IdentityService identityService
+    ) {
+        return new OperatonIdentityBridgeHttpSecurityConfigurer(identityService);
+    }
+
     @Order(450)
     @Bean
     @ConditionalOnMissingBean(ApiLoginHttpSecurityConfigurer.class)
@@ -300,6 +341,25 @@ public class HttpSecurityAutoConfiguration {
             username,
             password
         );
+    }
+
+    // Wraps the auto-configured HealthEndpointGroups so /actuator/health responses only include
+    // components/details when the caller is authenticated and holds ROLE_ACTUATOR. This is a
+    // code-level override of management.endpoint.health.{show-details,roles} and per-group
+    // equivalents — application.yml cannot relax it. Defense-in-depth alongside the conditional
+    // permitAll in ActuatorSecurityFilterChainFactory.
+    @Bean
+    public static BeanPostProcessor actuatorRoleHealthEndpointGroupsPostProcessor() {
+        return new BeanPostProcessor() {
+            @Override
+            public Object postProcessAfterInitialization(Object bean, String beanName) {
+                if (bean instanceof HealthEndpointGroups groups
+                        && !(bean instanceof ActuatorRoleHealthEndpointGroups)) {
+                    return new ActuatorRoleHealthEndpointGroups(groups);
+                }
+                return bean;
+            }
+        };
     }
 
     @Order(100)

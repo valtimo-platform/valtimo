@@ -1,3 +1,4 @@
+.env.properties
 
 # Playwright
 node_modules/

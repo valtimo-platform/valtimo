@@ -192,12 +192,22 @@ define what can be configured for that element.
 				<strong>ZGW</strong>
 			</td>
 			<td valign="top">
+				<a href="../zgw/load-zaak-in-form-flow.md#access-control">Zaak</a>
+			</td>
+			<td valign="top">
+				<code>com.ritense.zakenapi.security.Zaak</code>
+			</td>
+			<td valign="top">Zaken API</td>
+		</tr>
+		<tr>
+			<td valign="top"></td>
+			<td valign="top">
 				<a href="../case/zgw/zgw-documents/access-control.md">Documents</a>
 			</td>
 			<td valign="top">
-				<code>com.ritense.resource.authorization.ResourcePermission</code>
+				<code>com.ritense.documentenapi.authorization.ZgwDocument</code>
 			</td>
-			<td valign="top">Resource</td>
+			<td valign="top">Documenten API</td>
 		</tr>
 	</tbody>
 </table>

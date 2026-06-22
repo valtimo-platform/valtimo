@@ -19,6 +19,7 @@ import {Component, Input} from '@angular/core';
 import {ButtonModule} from 'carbon-components-angular';
 import {BasicWidget, WidgetAction} from '../../models';
 import {GlobalNotificationService} from '@valtimo/shared';
+import {Router} from '@angular/router';
 
 @Component({
   selector: 'valtimo-widget-action-button',
@@ -31,25 +32,42 @@ export class WidgetActionButtonComponent {
   @Input() public widgetConfiguration: BasicWidget;
   @Input() public resolvedData: object;
 
-  constructor(private readonly globalNotificationService: GlobalNotificationService) {}
+  constructor(
+    private readonly globalNotificationService: GlobalNotificationService,
+    private readonly router: Router
+  ) {}
 
   public onNavigateButtonClick(buttonAction: WidgetAction): void {
-    const navigateTo = this.resolveProperty(buttonAction?.navigateTo, this.resolvedData);
-    if (navigateTo?.startsWith(window.location.origin) || navigateTo?.startsWith('/')) {
-      window.open(navigateTo, '_self');
-    } else if (navigateTo?.startsWith('http')) {
-      window.open(navigateTo, '_blank');
-    } else {
+    const navigateTo = this.getNavigateToUrl(buttonAction);
+    if (!navigateTo) {
       this.globalNotificationService.showToast({
         title: 'An unexpected error occurred',
-        caption: `Unable to navigate to ${navigateTo}`,
+        caption: 'Unable to navigate to the configured URL',
         type: 'error',
       });
+      return;
+    }
+
+    if (buttonAction?.openInNewTab) {
+      window.open(navigateTo, '_blank', 'noopener,noreferrer');
+    } else if (navigateTo.startsWith(window.location.origin)) {
+      this.router.navigateByUrl(navigateTo.substring(window.location.origin.length));
+    } else if (navigateTo.startsWith('/')) {
+      this.router.navigateByUrl(navigateTo);
+    } else {
+      window.open(navigateTo, '_self');
     }
   }
 
-  private resolveProperty(property: string, data: {[key: string]: any}): string {
+  public getNavigateToUrl(buttonAction: WidgetAction): string | null {
+    return this.resolveProperty(buttonAction?.navigateTo, this.resolvedData);
+  }
+
+  private resolveProperty(property: string, data: {[key: string]: any}): string | null {
+    if (!property) return null;
     const resolved = data?.resolved || data;
-    return property ? (resolved ? String(resolved[property]) : property) : null;
+    if (!resolved) return property;
+    const value = resolved[property];
+    return value != null ? String(value) : null;
   }
 }

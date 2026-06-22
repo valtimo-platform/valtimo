@@ -22,5 +22,6 @@
   <valtimo-widget-container
     [widgets]="widgetGroup.widgets"
     [widgetComponentMap]="widgetComponentMap"
+    [widgetLayout]="widgetLayout$ | async"
   ></valtimo-widget-container>
 }

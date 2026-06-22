@@ -1,5 +1,5 @@
 <!--
-  ~ Copyright 2015-2025 Ritense BV, the Netherlands.
+  ~ Copyright 2015-2026 Ritense BV, the Netherlands.
   ~
   ~ Licensed under EUPL, Version 1.2 (the "License");
   ~ you may not use this file except in compliance with the License.
@@ -13,6 +13,7 @@
   ~ See the License for the specific language governing permissions and
   ~ limitations under the License.
   -->
+
 <div
   class="main-content"
   [ngClass]="{'main-content--no-horizontal-overflow': $tabHorizontalOverflowDisabled()}"
@@ -61,6 +62,7 @@
         caseDetailLayout: caseDetailLayout$ | async,
         openTaskAndProcessLinkInModal: openTaskAndProcessLinkInModal$ | async,
         taskAndProcessLinkOpenedInPanel: taskAndProcessLinkOpenedInPanel$ | async,
+        startFormPanel: startFormPanel$ | async,
         isDarkMode: isDarkMode$ | async,
         compactMode: compactMode$ | async,
         tabContentContainerMaxHeight: tabContentContainerMaxHeight$ | async,
@@ -123,15 +125,23 @@
         >
           @if (tabContentObs.showTaskList) {
             <div class="task-panel">
-              @if (!tabContentObs.taskAndProcessLinkOpenedInPanel) {
-                <valtimo-case-detail-task-list
-                  [openTaskAndProcessLinkInModal]="tabContentObs.openTaskAndProcessLinkInModal"
-                  (taskClickEvent)="onTaskClickEvent($event)"
-                  (formSubmitEvent)="onFormSubmitEvent()"
-                ></valtimo-case-detail-task-list>
-              }
+              @if (tabContentObs.startFormPanel) {
+                <div class="start-form-panel">
+                  <section class="start-form-panel__header">
+                    <h4 class="start-form-panel__title">{{ tabContentObs.startFormPanel.title }}</h4>
 
-              @if (tabContentObs.taskAndProcessLinkOpenedInPanel) {
+                    <button cdsButton="ghost" [iconOnly]="true" (click)="onStartFormPanelClose()">
+                      <svg cdsIcon="close" size="16"></svg>
+                    </button>
+                  </section>
+
+                  <section class="start-form-panel__body">
+                    <ng-container
+                      *ngTemplateOutlet="tabContentObs.startFormPanel.template"
+                    ></ng-container>
+                  </section>
+                </div>
+              } @else if (tabContentObs.taskAndProcessLinkOpenedInPanel) {
                 <valtimo-case-detail-task-detail
                   [taskAndProcessLink]="tabContentObs.taskAndProcessLinkOpenedInPanel"
                   (activeChange)="onActiveChangeEvent($event)"
@@ -140,6 +150,12 @@
                   (dueDateChanged)="onDueDateChanged()"
                 >
                 </valtimo-case-detail-task-detail>
+              } @else {
+                <valtimo-case-detail-task-list
+                  [openTaskAndProcessLinkInModal]="tabContentObs.openTaskAndProcessLinkInModal"
+                  (taskClickEvent)="onTaskClickEvent($event)"
+                  (formSubmitEvent)="onFormSubmitEvent()"
+                ></valtimo-case-detail-task-list>
               }
             </div>
           }
@@ -228,6 +244,12 @@
   </v-overflow-menu-option>
 </ng-template>
 
+<ng-template #inspectButton let-canInspect="canInspect">
+  <v-overflow-menu-option *ngIf="canInspect" (selected)="navigateToInspection()">
+    {{ 'case.inspection.openInspector' | translate }}
+  </v-overflow-menu-option>
+</ng-template>
+
 <ng-template #customStartTrigger>
   <button
     [size]="(compactMode$ | async) ? 'sm' : 'lg'"
@@ -264,6 +286,7 @@
         canClaim: canClaim$ | async,
         canHaveAssignee: canHaveAssignee$ | async,
         canDelete: canDelete$ | async,
+        canInspect: canInspect$ | async,
         document: document$ | async,
         caseStatus: caseStatus$ | async,
       } as obs"
@@ -293,12 +316,15 @@
 
       <div class="buttons-container">
         <v-overflow-menu
-          *ngIf="obs.canHaveAssignee || obs.canDelete"
+          *ngIf="obs.canHaveAssignee || obs.canDelete || obs.canInspect"
           placement="bottom-end"
           class="overflow-button assign-overflow"
           [ngClass]="{'--compact': compactMode$ | async}"
         >
-          <v-overflow-menu-trigger overflowTrigger [compact]="compactMode$ | async"></v-overflow-menu-trigger>
+          <v-overflow-menu-trigger
+            overflowTrigger
+            [compact]="compactMode$ | async"
+          ></v-overflow-menu-trigger>
 
           <ng-container
             *ngTemplateOutlet="
@@ -318,6 +344,9 @@
               }
             "
           >
+          </ng-container>
+
+          <ng-container *ngTemplateOutlet="inspectButton; context: {canInspect: obs.canInspect}">
           </ng-container>
 
           <ng-container *ngTemplateOutlet="deleteButton; context: {canDelete: obs.canDelete}">

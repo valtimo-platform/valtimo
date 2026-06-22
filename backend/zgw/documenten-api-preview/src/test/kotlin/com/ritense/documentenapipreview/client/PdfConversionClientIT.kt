@@ -19,6 +19,7 @@ package com.ritense.documentenapipreview.client
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.ritense.documentenapipreview.BaseIntegrationTest
 import com.ritense.documentenapipreview.DocumentenApiPreviewPlugin
+import com.ritense.documentenapipreview.domain.PdfArchiveMethod
 import okhttp3.mockwebserver.Dispatcher
 import okhttp3.mockwebserver.MockResponse
 
@@ -67,7 +68,9 @@ internal class PdfConversionClientIT @Autowired constructor(
         val stream = pdfConversionClient.convertDocument(
             documentenApiPreviewPlugin.pdfConversionUrl,
             "test_document".byteInputStream(),
-            "dummy_file.txt"
+            "dummy_file.txt",
+            PdfArchiveMethod.PDFA2B,
+            true
         )
 
         assertNotNull(stream)

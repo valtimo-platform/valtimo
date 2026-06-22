@@ -23,6 +23,7 @@ import com.fasterxml.jackson.module.kotlin.treeToValue
 import com.flipkart.zjsonpatch.JsonPatch
 import com.ritense.valtimo.contract.json.patch.JsonPatchBuilder
 import io.github.oshai.kotlinlogging.KotlinLogging
+import java.util.UUID
 import org.operaton.bpm.engine.RuntimeService
 import org.operaton.bpm.engine.delegate.VariableScope
 import org.operaton.bpm.engine.impl.context.Context
@@ -90,6 +91,18 @@ class ProcessVariableValueResolverFactory(
                 )
             }
             values.singleOrNull()
+        }
+    }
+
+    override fun handleValues(documentId: UUID, values: Map<String, Any?>) {
+        val processInstances = runtimeService.createProcessInstanceQuery()
+            .processInstanceBusinessKey(documentId.toString())
+            .list()
+
+        if (processInstances.size == 1) {
+            handleValues(processInstances.first().id, null, values)
+        } else if (processInstances.size > 1) {
+            error("Cannot infer a unique process instance to update. Found ${processInstances.size} instances.")
         }
     }
 

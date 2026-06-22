@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,6 +27,7 @@ import {
   take,
 } from 'rxjs';
 import Muuri from 'muuri';
+import {WIDGET_ROW_HEIGHT_DEFAULT} from '@valtimo/components';
 import {WidgetWithUuid} from '../models/widget.model';
 import {WIDGET_WIDTH_1X} from '../constants/widget.constants';
 
@@ -37,6 +38,9 @@ export class WidgetLayoutService implements OnDestroy {
   private readonly _widgetDataLoadedSubject$ = new BehaviorSubject<string[] | null>(null);
   private readonly _muuriSubject$ = new BehaviorSubject<Muuri | null>(null);
   private readonly _triggerMuuriLayout$ = new Subject<null>();
+
+  /** Row-unit height (px) each widget snaps to; depends on the layout algorithm. */
+  private readonly _rowHeightUnit$ = new BehaviorSubject<number>(WIDGET_ROW_HEIGHT_DEFAULT);
 
   private get _muuri$(): Observable<Muuri> {
     return this._muuriSubject$.pipe(filter(muuri => !!muuri));
@@ -50,6 +54,10 @@ export class WidgetLayoutService implements OnDestroy {
     return this._containerWidth$.pipe(
       map(containerWidth => Math.floor(containerWidth / WIDGET_WIDTH_1X))
     );
+  }
+
+  public get rowHeightUnit$(): Observable<number> {
+    return this._rowHeightUnit$.asObservable();
   }
 
   private get _widgets$(): Observable<WidgetWithUuid[]> {
@@ -118,6 +126,10 @@ export class WidgetLayoutService implements OnDestroy {
     this._containerWidthSubject$.next(width);
   }
 
+  public setRowHeightUnit(rowHeightUnit: number): void {
+    this._rowHeightUnit$.next(rowHeightUnit);
+  }
+
   public setWidgetDataLoaded(uuid: string): void {
     this._widgetDataLoadedSubject$.pipe(take(1)).subscribe(widgetDataLoaded => {
       if (!(widgetDataLoaded || []).includes(uuid)) {
@@ -138,7 +150,7 @@ export class WidgetLayoutService implements OnDestroy {
   private openMuuriSubscription(): void {
     this._subscriptions.add(
       combineLatest([this._muuri$, this._triggerMuuriLayout$])
-        .pipe(debounceTime(150))
+        .pipe(debounceTime(400))
         .subscribe(([muuri]) => {
           muuri.refreshItems();
           muuri.layout();

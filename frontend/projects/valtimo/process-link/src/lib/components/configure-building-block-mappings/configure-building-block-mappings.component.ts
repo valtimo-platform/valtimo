@@ -53,7 +53,8 @@ import {
   ProcessLinkStateService,
   ProcessLinkStepService,
 } from '../../services';
-import {stripDocPrefix} from '../../utils';
+import {BB_MAPPINGS_TEST_IDS} from '../../constants';
+import {ensureDocPrefix} from '../../utils';
 import {
   ButtonModule,
   ComboBoxModule,
@@ -95,6 +96,8 @@ import {ActivatedRoute} from '@angular/router';
   ],
 })
 export class ConfigureBuildingBlockMappingsComponent implements OnInit, OnDestroy, AfterViewInit {
+  protected readonly testIds = BB_MAPPINGS_TEST_IDS;
+
   public readonly buildingBlockFields$ = this.buildingBlockStateService.buildingBlockFields$;
 
   public readonly buildingBlockFieldItems$: Observable<Array<SelectItem>> =
@@ -103,7 +106,7 @@ export class ConfigureBuildingBlockMappingsComponent implements OnInit, OnDestro
         buildingBlockFields.map(buildingBlockField => {
           return {
             id: buildingBlockField.name,
-            text: `doc:${buildingBlockField.name}`,
+            text: buildingBlockField.name,
           };
         })
       )
@@ -415,17 +418,12 @@ export class ConfigureBuildingBlockMappingsComponent implements OnInit, OnDestro
     mappings: BuildingBlockInputMapping[]
   ): void {
     this._syncingFromState = true;
-    const normalizedMappings = mappings.map(m => ({
-      ...m,
-      target: stripDocPrefix(m.target),
-    }));
     const requiredTargets = fields.filter(f => f.required).map(f => f.name);
     const allMappings: BuildingBlockInputMapping[] = [
       ...requiredTargets.map(
-        target =>
-          normalizedMappings.find(m => m.target === target) || {target: target, source: ''}
+        target => mappings.find(m => m.target === target) || {target: target, source: ''}
       ),
-      ...normalizedMappings.filter(mapping => !requiredTargets.includes(mapping.target)),
+      ...mappings.filter(mapping => !requiredTargets.includes(mapping.target)),
     ];
 
     this.inputs.clear();
@@ -464,9 +462,7 @@ export class ConfigureBuildingBlockMappingsComponent implements OnInit, OnDestro
 
   private applyMappingSources(mappings: BuildingBlockInputMapping[]): void {
     const mappingByTarget = new Map<string, BuildingBlockInputMapping>(
-      mappings
-        .filter(mapping => !!mapping.target)
-        .map(mapping => [stripDocPrefix(mapping.target), mapping])
+      mappings.filter(mapping => !!mapping.target).map(mapping => [mapping.target, mapping])
     );
     let updated = false;
 
@@ -512,11 +508,7 @@ export class ConfigureBuildingBlockMappingsComponent implements OnInit, OnDestro
     this._syncingFromState = true;
     this.outputs.clear();
     (mappings || []).forEach(mapping => {
-      const normalizedMapping = {
-        ...mapping,
-        source: stripDocPrefix(mapping.source),
-      };
-      this.outputs.push(this.createOutputGroup(normalizedMapping));
+      this.outputs.push(this.createOutputGroup(mapping));
     });
     this._syncingFromState = false;
     this.triggerValidation();
@@ -527,7 +519,10 @@ export class ConfigureBuildingBlockMappingsComponent implements OnInit, OnDestro
       return;
     }
     const mapped: Array<BuildingBlockInputMapping> = this.inputs.controls.map(group => {
-      return {source: group.value.source, target: group.value.target} as BuildingBlockInputMapping;
+      return {
+        source: group.value.source,
+        target: ensureDocPrefix(group.value.target ?? ''),
+      } as BuildingBlockInputMapping;
     });
     this.buildingBlockStateService.setInputMappings(mapped);
     this.triggerValidation();
@@ -539,7 +534,7 @@ export class ConfigureBuildingBlockMappingsComponent implements OnInit, OnDestro
     }
     const mapped: Array<BuildingBlockOutputMapping> = this.outputs.controls.map(group => {
       return {
-        source: group.value.source,
+        source: ensureDocPrefix(group.value.source ?? ''),
         target: group.value.target,
         syncTiming: (group.value.syncTiming ?? 'END') as BuildingBlockSyncTiming,
       } as BuildingBlockOutputMapping;

@@ -17,6 +17,7 @@ import {
   ChangeDetectionStrategy,
   Component,
   EventEmitter,
+  Inject,
   Input,
   OnDestroy,
   OnInit,
@@ -24,11 +25,22 @@ import {
   ViewEncapsulation,
 } from '@angular/core';
 import {AbstractControl, FormBuilder, ReactiveFormsModule, Validators} from '@angular/forms';
-import {CARBON_CONSTANTS, ValtimoCdsModalDirective} from '@valtimo/components';
-import {TabManagementService} from '../../../../../../services';
+import {
+  CARBON_CONSTANTS,
+  SelectItem,
+  SelectModule,
+  ValtimoCdsModalDirective,
+  WIDGET_LAYOUT_TRANSLATION_KEYS,
+  WIDGET_LAYOUT_VALUES,
+  WidgetLayout,
+  WidgetLayoutInfoComponent,
+} from '@valtimo/components';
+import {IWidgetManagementService, WIDGET_MANAGEMENT_SERVICE} from '@valtimo/layout';
+import {CaseManagementParams} from '@valtimo/shared';
+import {TabManagementService, CaseWidgetManagementApiService} from '../../../../../../services';
 import {ApiTabItem, ApiTabType} from '@valtimo/case';
-import {ButtonModule, InputModule, ModalModule} from 'carbon-components-angular';
-import {BehaviorSubject, Observable, Subscription} from 'rxjs';
+import {ButtonModule, InputModule, LayerModule, ModalModule} from 'carbon-components-angular';
+import {BehaviorSubject, Observable, Subscription, switchMap, take} from 'rxjs';
 import {CommonModule} from '@angular/common';
 import {TranslateModule} from '@ngx-translate/core';
 
@@ -47,6 +59,9 @@ import {TranslateModule} from '@ngx-translate/core';
     ReactiveFormsModule,
     InputModule,
     ButtonModule,
+    LayerModule,
+    SelectModule,
+    WidgetLayoutInfoComponent,
   ],
 })
 export class CaseManagementWidgetTabEditModalComponent implements OnInit, OnDestroy {
@@ -58,17 +73,31 @@ export class CaseManagementWidgetTabEditModalComponent implements OnInit, OnDest
   public readonly disabled$ = new BehaviorSubject<boolean>(false);
   public readonly editWidgetTabForm = this.fb.group({
     name: this.fb.control('', [Validators.required]),
+    widgetLayout: this.fb.control<WidgetLayout>(WidgetLayout.MUURI_GAP_FREE),
   });
+
+  public readonly widgetLayoutSelectItems: SelectItem[] = WIDGET_LAYOUT_VALUES.map(value => ({
+    id: value,
+    translationKey: WIDGET_LAYOUT_TRANSLATION_KEYS[value],
+  }));
 
   public get widgetTabName(): AbstractControl<string | null, string | null> | null {
     return this.editWidgetTabForm.get('name');
+  }
+
+  private get _widgetService(): CaseWidgetManagementApiService {
+    return this.widgetManagementService as CaseWidgetManagementApiService;
   }
 
   private _openSubscription!: Subscription;
 
   constructor(
     private readonly fb: FormBuilder,
-    private readonly tabManagementService: TabManagementService
+    private readonly tabManagementService: TabManagementService,
+    @Inject(WIDGET_MANAGEMENT_SERVICE)
+    private readonly widgetManagementService: IWidgetManagementService<
+      CaseManagementParams & {key: string}
+    >
   ) {}
 
   public ngOnInit(): void {
@@ -90,6 +119,9 @@ export class CaseManagementWidgetTabEditModalComponent implements OnInit, OnDest
   public saveWidgetTab(): void {
     this.disable();
 
+    const widgetLayout =
+      this.editWidgetTabForm.get('widgetLayout')?.value ?? WidgetLayout.MUURI_GAP_FREE;
+
     this.tabManagementService
       .editTab(
         {
@@ -99,6 +131,12 @@ export class CaseManagementWidgetTabEditModalComponent implements OnInit, OnDest
           type: ApiTabType.WIDGETS,
         },
         this.tabItem.key
+      )
+      .pipe(
+        // Refresh the cached widgets first so persisting the layout doesn't
+        // overwrite the widget tab with a stale widget list.
+        switchMap(() => this._widgetService.getWidgetConfiguration().pipe(take(1))),
+        switchMap(() => this._widgetService.updateWidgetLayout(widgetLayout).pipe(take(1)))
       )
       .subscribe(() => {
         this.saveEvent.emit();
@@ -110,6 +148,10 @@ export class CaseManagementWidgetTabEditModalComponent implements OnInit, OnDest
     if (this.tabItem) {
       this.widgetTabName?.setValue(this.tabItem.name ?? '');
     }
+
+    this.editWidgetTabForm
+      .get('widgetLayout')
+      ?.setValue(this._widgetService.widgetLayout$.value);
 
     this.enable();
   }

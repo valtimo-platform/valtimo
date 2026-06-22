@@ -17,6 +17,7 @@
 package com.ritense.case.web.rest
 
 import com.fasterxml.jackson.databind.JsonNode
+import com.ritense.authorization.annotation.RunWithoutAuthorization
 import com.ritense.case.service.StartableItemManagementService
 import com.ritense.case.web.rest.dto.CreateStartableItemRequest
 import com.ritense.case.web.rest.dto.ManagementStartableItemDto
@@ -27,6 +28,7 @@ import com.ritense.case.web.rest.dto.UpdateStartableItemRequest
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import com.ritense.valtimo.contract.case_.CaseDefinitionId
 import com.ritense.valtimo.contract.domain.ValtimoMediaType.APPLICATION_JSON_UTF8_VALUE
+import jakarta.validation.Valid
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
@@ -48,6 +50,7 @@ class StartableItemManagementResource(
     private val startableItemManagementService: StartableItemManagementService,
 ) {
 
+    @RunWithoutAuthorization
     @GetMapping
     fun getStartableItems(
         @PathVariable caseDefinitionKey: String,
@@ -57,11 +60,12 @@ class StartableItemManagementResource(
         return ResponseEntity.ok(startableItemManagementService.getStartableItems(caseDefinitionId))
     }
 
+    @RunWithoutAuthorization
     @PostMapping
     fun createStartableItem(
         @PathVariable caseDefinitionKey: String,
         @PathVariable caseDefinitionVersionTag: String,
-        @RequestBody request: CreateStartableItemRequest
+        @Valid @RequestBody request: CreateStartableItemRequest
     ): ResponseEntity<StartableItemDto> {
         val caseDefinitionId = CaseDefinitionId(caseDefinitionKey, caseDefinitionVersionTag)
         val item = startableItemManagementService.createItem(
@@ -72,27 +76,30 @@ class StartableItemManagementResource(
         return ResponseEntity.ok(item)
     }
 
+    @RunWithoutAuthorization
     @PutMapping("/{itemKey}/version/{versionTag}")
     fun updateStartableItem(
         @PathVariable caseDefinitionKey: String,
         @PathVariable caseDefinitionVersionTag: String,
         @PathVariable itemKey: String,
         @PathVariable versionTag: String,
-        @RequestBody request: UpdateStartableItemRequest
+        @Valid @RequestBody request: UpdateStartableItemRequest
     ): ResponseEntity<StartableItemDto> {
         return doUpdateStartableItem(caseDefinitionKey, caseDefinitionVersionTag, itemKey, versionTag, request)
     }
 
+    @RunWithoutAuthorization
     @PutMapping("/{itemKey}")
     fun updateStartableItemWithoutVersionTag(
         @PathVariable caseDefinitionKey: String,
         @PathVariable caseDefinitionVersionTag: String,
         @PathVariable itemKey: String,
-        @RequestBody request: UpdateStartableItemRequest
+        @Valid @RequestBody request: UpdateStartableItemRequest
     ): ResponseEntity<StartableItemDto> {
         return doUpdateStartableItem(caseDefinitionKey, caseDefinitionVersionTag, itemKey, null, request)
     }
 
+    @RunWithoutAuthorization
     @GetMapping("/{itemKey}/version/{versionTag}/properties")
     fun getStartableItemProperties(
         @PathVariable caseDefinitionKey: String,
@@ -104,6 +111,7 @@ class StartableItemManagementResource(
         return doGetStartableItemProperties(caseDefinitionKey, caseDefinitionVersionTag, itemKey, versionTag, type)
     }
 
+    @RunWithoutAuthorization
     @GetMapping("/{itemKey}/properties")
     fun getStartableItemPropertiesWithoutVersionTag(
         @PathVariable caseDefinitionKey: String,
@@ -114,6 +122,7 @@ class StartableItemManagementResource(
         return doGetStartableItemProperties(caseDefinitionKey, caseDefinitionVersionTag, itemKey, null, type)
     }
 
+    @RunWithoutAuthorization
     @DeleteMapping("/{itemKey}/version/{versionTag}")
     fun deleteStartableItem(
         @PathVariable caseDefinitionKey: String,
@@ -124,6 +133,7 @@ class StartableItemManagementResource(
         return doDeleteStartableItem(caseDefinitionKey, caseDefinitionVersionTag, itemKey, versionTag)
     }
 
+    @RunWithoutAuthorization
     @DeleteMapping("/{itemKey}")
     fun deleteStartableItemWithoutVersionTag(
         @PathVariable caseDefinitionKey: String,
@@ -183,7 +193,7 @@ class StartableItemManagementResource(
     fun updateOrder(
         @PathVariable caseDefinitionKey: String,
         @PathVariable caseDefinitionVersionTag: String,
-        @RequestBody request: UpdateStartableItemOrderRequest
+        @Valid @RequestBody request: UpdateStartableItemOrderRequest
     ): ResponseEntity<List<ManagementStartableItemDto>> {
         val caseDefinitionId = CaseDefinitionId(caseDefinitionKey, caseDefinitionVersionTag)
         return ResponseEntity.ok(startableItemManagementService.updateOrder(caseDefinitionId, request.items))

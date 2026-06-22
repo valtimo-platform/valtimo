@@ -20,7 +20,10 @@ import {
   WidgetManagementCollectionComponent,
   WidgetManagementCustomComponent,
   WidgetManagementFieldsComponent,
+  WidgetManagementHighlightComponent,
   WidgetManagementMapComponent,
+  WidgetManagementPersonCardComponent,
+  WidgetManagementMetrolineComponent,
   WidgetManagementTableComponent,
 } from '../components/widget-management/management-content';
 import {WidgetManagementInteractiveTableComponent} from '../components/widget-management/management-content/interactive-table/widget-management-interactive-table.component';
@@ -127,6 +130,27 @@ const AVAILABLE_WIDGETS: WidgetTypeSelection[] = [
     illustrationUrl: 'valtimo-layout/img/widget-management/types/map.svg',
     type: WidgetType.MAP,
     component: WidgetManagementMapComponent,
+  },
+  {
+    titleKey: 'widgetTabManagement.type.metroline.title',
+    descriptionKey: 'widgetTabManagement.type.metroline.description',
+    illustrationUrl: 'valtimo-layout/img/widget-management/types/metroline.svg',
+    type: WidgetType.METROLINE,
+    component: WidgetManagementMetrolineComponent,
+  },
+  {
+    titleKey: 'widgetTabManagement.type.person-card.title',
+    descriptionKey: 'widgetTabManagement.type.person-card.description',
+    illustrationUrl: 'valtimo-layout/img/widget-management/types/person.svg',
+    type: WidgetType.PERSON_CARD,
+    component: WidgetManagementPersonCardComponent,
+  },
+  {
+    titleKey: 'widgetTabManagement.type.highlight.title',
+    descriptionKey: 'widgetTabManagement.type.highlight.description',
+    illustrationUrl: 'valtimo-layout/img/widget-management/types/highlight.svg',
+    type: WidgetType.HIGHLIGHT,
+    component: WidgetManagementHighlightComponent,
   },
 ];
 

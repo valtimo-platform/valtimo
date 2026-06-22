@@ -21,6 +21,10 @@ import {DocumentenApiConfigurationComponent} from './components/documenten-api-c
 import {StoreUploadedDocumentConfigurationComponent} from './components/store-uploaded-document/store-uploaded-document-configuration.component';
 import {DownloadDocumentConfigurationComponent} from './components/download-document/download-document-configuration.component';
 import {StoreUploadedDocumentInPartsConfigurationComponent} from './components/store-uploaded-document-in-parts/store-uploaded-document-in-parts-configuration.component';
+import {LinkDocumentToObjectConfigurationComponent} from './components/link-document-to-object/link-document-to-object-configuration.component';
+import {DeleteDocumentLinkConfigurationComponent} from './components/delete-document-link/delete-document-link-configuration.component';
+import {GetAuditTrailConfigurationComponent} from './components/get-audit-trail/get-audit-trail-configuration.component';
+import {documentenApiActionFilterFunction} from './services';
 
 const documentenApiPluginSpecification: PluginSpecification = {
   pluginId: 'documentenapi',
@@ -31,7 +35,11 @@ const documentenApiPluginSpecification: PluginSpecification = {
     'store-uploaded-document': StoreUploadedDocumentConfigurationComponent,
     'store-uploaded-document-in-parts': StoreUploadedDocumentInPartsConfigurationComponent,
     'download-document': DownloadDocumentConfigurationComponent,
+    'link-document-to-object': LinkDocumentToObjectConfigurationComponent,
+    'delete-document-link': DeleteDocumentLinkConfigurationComponent,
+    'get-audit-trail': GetAuditTrailConfigurationComponent,
   },
+  functionConfigurationComponentsFilter: documentenApiActionFilterFunction,
   pluginTranslations: {
     nl: {
       title: 'Documenten API',
@@ -40,6 +48,8 @@ const documentenApiPluginSpecification: PluginSpecification = {
       'store-uploaded-document': 'Geupload document opslaan',
       'store-uploaded-document-in-parts': 'Geupload document opslaan in bestandsdelen',
       'download-document': 'Download document',
+      'link-document-to-object': 'Document koppelen aan object',
+      'delete-document-link': 'Documentkoppeling verwijderen',
       storeUploadedDocumentMessage:
         'Het opslaan van een geupload document heeft geen configuratie nodig.',
       storeUploadedDocumentInPartsMessage:
@@ -59,6 +69,11 @@ const documentenApiPluginSpecification: PluginSpecification = {
       confidentialityLevel: 'Vertrouwelijkheidsaanduiding',
       confidentialityLevelTooltip:
         'Aanduiding van de mate waarin het document voor de openbaarheid bestemd is',
+      confidentialityLevelInputType: 'Invoertype vertrouwelijkheidsaanduiding',
+      confidentialityLevelTextTooltip:
+        'Voer een waarde-resolver expressie in die tijdens runtime wordt opgelost (bijv. doc:confidentialityLevel)',
+      selection: 'Selectie',
+      text: 'Tekst (waarde-resolver)',
       inputTitle: 'Titel',
       inputTitleTooltip: 'De naam waaronder het document formeel bekend is',
       inputDescription: 'Beschrijving',
@@ -78,7 +93,13 @@ const documentenApiPluginSpecification: PluginSpecification = {
       storeDocumentUrlTooltip:
         'Nadat het document geupload is naar de Documenten API zal de applicatie in deze procesvariabele de URL naar het document opslaan.',
       taal: 'Taal',
+      languageInputType: 'Invoertype taal',
+      taalTextTooltip:
+        'Voer een waarde-resolver expressie in die tijdens runtime wordt opgelost (bijv. doc:taal)',
       status: 'Status',
+      statusInputType: 'Invoertype status',
+      statusTextTooltip:
+        'Voer een waarde-resolver expressie in die tijdens runtime wordt opgelost (bijv. doc:status)',
       informatieobjecttype: 'URL naar het informatieobjecttype',
       informatieobjecttypeTooltip:
         'Vul in dit veld de volledige URL naar een informatieobjecttype van een Zaak catalogus. Deze URL moet dus eindigen op /catalogi/api/v1/informatieobjecttypen/{uuid}',
@@ -96,6 +117,35 @@ const documentenApiPluginSpecification: PluginSpecification = {
         'Het downloaden van een document vanuit de Documenten API vereist geen configuratie.',
       processVariableName:
         'Wat is de naam van de procesvariabele waarnaar u het document wilt downloaden?',
+      linkDocumentToObjectMessage:
+        "Koppelt het document waarvan de URL is opgeslagen in de procesvariabele 'documentUrl' aan een object. " +
+        "Procesvariabelen kunnen worden gebruikt met de notatie 'pv:variabelenaam'.",
+      linkDocumentToObjectExperimentalWarning:
+        '⚠ Experimentele functie: deze actie maakt gebruik van de objectinformatieobjecten-API.',
+      deleteDocumentLinkMessage:
+        "Verwijdert een objectinformatieobject-koppeling op basis van de opgegeven URL. " +
+        "De koppelingsactie 'Document koppelen aan object' slaat deze URL op in de procesvariabele 'objectInformatieObjectUrl'. " +
+        "Procesvariabelen kunnen worden gebruikt met de notatie 'pv:variabelenaam'.",
+      deleteDocumentLinkExperimentalWarning:
+        '⚠ Experimentele functie: deze actie maakt gebruik van de objectinformatieobjecten-API.',
+      objectUrl: 'Object URL',
+      objectUrlTooltip:
+        "De URL van het object waaraan het document gekoppeld moet worden. " +
+        "Gebruik 'pv:variabelenaam' om een procesvariabele te refereren, bijv. 'pv:objectUrl'.",
+      objectType: 'Objecttype',
+      objectTypeTooltip:
+        "Het type van het object, bijv. 'zaak', 'besluit' of 'apiname'. " +
+        "Gebruik 'pv:variabelenaam' om een procesvariabele te refereren.",
+      objectInformatieObjectUrl: 'Objectinformatieobject URL',
+      objectInformatieObjectUrlTooltip:
+        "De URL van de objectinformatieobject-koppeling die verwijderd moet worden. ",
+      'get-audit-trail': 'Audit trail ophalen',
+      documentUrl: 'Document URL',
+      documentUrlTooltip:
+        'De volledige URL naar het enkelvoudiginformatieobject waarvoor de audit trail opgehaald moet worden',
+      auditTrailProcessVariableName: 'Naam procesvariabele voor audit trail',
+      auditTrailProcessVariableNameTooltip:
+        'De naam van de procesvariabele waarin het resultaat van de audit trail opgeslagen wordt als JSON',
     },
     en: {
       title: 'Documenten API',
@@ -104,6 +154,8 @@ const documentenApiPluginSpecification: PluginSpecification = {
       'store-uploaded-document': 'Save uploaded document',
       'store-uploaded-document-in-parts': 'Save uploaded document in parts',
       'download-document': 'Download document',
+      'link-document-to-object': 'Link document to object',
+      'delete-document-link': 'Delete document link',
       storeUploadedDocumentMessage:
         'Saving an uploaded document does not require any configuration.',
       storeUploadedDocumentInPartsMessage:
@@ -123,6 +175,11 @@ const documentenApiPluginSpecification: PluginSpecification = {
       confidentialityLevel: 'Confidentiality level',
       confidentialityLevelTooltip:
         'Indication of the extent to which the document is intended for public access',
+      confidentialityLevelInputType: 'Confidentiality level input type',
+      confidentialityLevelTextTooltip:
+        'Enter a value resolver expression that will be resolved at runtime (e.g. doc:confidentialityLevel)',
+      selection: 'Selection',
+      text: 'Text (value resolver)',
       inputTitle: 'Title',
       inputTitleTooltip: 'The name by which the document is formally known',
       inputDescription: 'Description',
@@ -142,7 +199,13 @@ const documentenApiPluginSpecification: PluginSpecification = {
       storeDocumentUrlTooltip:
         'After the document has been uploaded to the Documenten API, the application will store the URL to the document in this process variable.',
       taal: 'Language',
+      languageInputType: 'Language input type',
+      taalTextTooltip:
+        'Enter a value resolver expression that will be resolved at runtime (e.g. doc:taal)',
       status: 'Status',
+      statusInputType: 'Status input type',
+      statusTextTooltip:
+        'Enter a value resolver expression that will be resolved at runtime (e.g. doc:status)',
       informatieobjecttype: 'URL to the informationobjecttype',
       informatieobjecttypeTooltip:
         'Enter the full URL to an information object type of a Zaak catalog in this field. So this URL must end with /catalogi/api/v1/informatieobjecttypen/{uuid}',
@@ -160,6 +223,36 @@ const documentenApiPluginSpecification: PluginSpecification = {
         'Downloading a document form the Documenten API does not require any configuration.',
       processVariableName:
         'What is the name of the process variable you want to download the document to?',
+      linkDocumentToObjectMessage:
+        "Links the document whose URL is stored in the process variable 'documentUrl' to an object. For Zaak items use the Zaken API to ensure backwards compatibility." +
+        "Process variables can be referenced using the notation 'pv:variableName'.",
+      linkDocumentToObjectExperimentalWarning:
+        '⚠ Experimental feature: this action uses the objectinformatieobjecten API.',
+      deleteDocumentLinkMessage:
+        "Deletes an objectinformatieobject link by its URL. " +
+        "The 'Link document to object' action stores this URL in the process variable 'objectInformatieObjectUrl'. " +
+        "Process variables can be referenced using the notation 'pv:variableName'.",
+      deleteDocumentLinkExperimentalWarning:
+        '⚠ Experimental feature: this action uses the objectinformatieobjecten API.',
+      objectUrl: 'Object URL',
+      objectUrlTooltip:
+        "The URL of the object to link the document to. " +
+        "Use 'pv:variableName' to reference a process variable, e.g. 'pv:objectUrl'.",
+      objectType: 'Object type',
+      objectTypeTooltip:
+        "The type of the object, e.g. 'zaak', 'besluit' or 'apiname'. " +
+        "Use 'pv:variableName' to reference a process variable.",
+      objectInformatieObjectUrl: 'Objectinformatieobject URL',
+      objectInformatieObjectUrlTooltip:
+        "The URL of the objectinformatieobject link to delete. " +
+        "The preceding action stores this in the process variable 'objectInformatieObjectUrl'.",
+      'get-audit-trail': 'Get audit trail',
+      documentUrl: 'Document URL',
+      documentUrlTooltip:
+        'The full URL to the enkelvoudiginformatieobject for which to retrieve the audit trail',
+      auditTrailProcessVariableName: 'Process variable name for audit trail',
+      auditTrailProcessVariableNameTooltip:
+        'The name of the process variable in which the audit trail result will be stored as JSON',
     },
   },
 };

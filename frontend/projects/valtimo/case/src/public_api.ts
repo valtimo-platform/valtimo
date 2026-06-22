@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,7 +27,9 @@ export * from './lib/components/case-detail/tab/progress/progress.component';
 export * from './lib/components/case-detail/tab/summary/summary.component';
 export * from './lib/components/case-list/case-list.component';
 export * from './lib/components/case-process-start-modal/case-process-start-modal.component';
+export * from './lib/components/case-supporting-process-start-modal/case-supporting-process-start-modal.component';
 export * from './lib/components/case-list-actions/case-list-actions.component';
+export * from './lib/constants/case-inspection.constants';
 export * from './lib/constants';
 export * from './lib/case.module';
 export * from './lib/services/case.service';

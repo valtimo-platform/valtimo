@@ -40,7 +40,7 @@ dependencies {
     implementation "com.mysql:mysql-connector-j:$mysqlDriverVersion"
 
     if (System.getProperty("os.arch") == "aarch64") {
-        runtimeOnly("io.netty:netty-resolver-dns-native-macos:4.1.105.Final:osx-aarch_64")
+        runtimeOnly("io.netty:netty-resolver-dns-native-macos::osx-aarch_64")
     }
 
     testImplementation "org.jetbrains.kotlin:kotlin-test"

@@ -18,6 +18,7 @@ package com.ritense.case_.rest.dto
 
 import com.ritense.case_.domain.tab.CaseWidgetTab
 import com.ritense.case_.domain.tab.CaseWidgetTabWidget
+import com.ritense.case_.domain.tab.WidgetLayout
 import com.ritense.case_.widget.CaseWidgetMapper
 import com.ritense.document.domain.impl.JsonSchemaDocument
 import com.ritense.valtimo.contract.case_.CaseDefinitionId
@@ -30,6 +31,7 @@ data class CaseWidgetTabDto(
     val caseDefinitionVersionTag: String? = null,
     @field:NotBlank val key: String,
     @field:Valid val widgets: List<@Valid CaseWidgetTabWidgetDto> = listOf(),
+    val widgetLayout: WidgetLayout? = null,
 ) {
     fun validate(caseDefinitionId: CaseDefinitionId) {
         widgets.forEach {
@@ -54,8 +56,8 @@ data class CaseWidgetTabDto(
                         widgetMappers.first { mapper ->
                             mapper.supportedEntityType().isAssignableFrom(widget::class.java)
                         }.toDto(widget)
-                }
-
+                },
+                widgetLayout = tab.widgetLayout
             )
         }
 
@@ -77,7 +79,8 @@ data class CaseWidgetTabDto(
                         widgetMappers.first { mapper ->
                             mapper.supportedEntityType().isAssignableFrom(widget::class.java)
                         }.toDto(widget)
-                    }
+                    },
+                widgetLayout = tab.widgetLayout
             )
         }
     }

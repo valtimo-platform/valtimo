@@ -48,6 +48,7 @@ import {DocumentenApiUploadField} from '../../models/documenten-api-upload-field
 import {DocumentService} from '@valtimo/document';
 import {getCaseManagementRouteParams} from '@valtimo/shared';
 import {ActivatedRoute} from '@angular/router';
+import {ZGW_UPLOAD_FIELDS_TEST_IDS} from '../../../../constants/zgw.test-ids';
 
 @Component({
   selector: 'valtimo-documenten-api-upload-field-modal',
@@ -83,6 +84,8 @@ export class DocumentenApiUploadFieldModalComponent implements OnDestroy {
   }
 
   @Output() public closeModalEvent = new EventEmitter<DocumentenApiColumnModalTypeCloseEvent>();
+
+  public readonly testIds = ZGW_UPLOAD_FIELDS_TEST_IDS;
 
   public readonly formGroup = this.fb.group({
     defaultValue: this.fb.control('', [Validators.maxLength(256)]),

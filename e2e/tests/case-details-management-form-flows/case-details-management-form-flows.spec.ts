@@ -15,7 +15,7 @@
  */
 
 import {expect, test} from '@playwright/test';
-import {CASE_IDENTIFIER, formFlowTestData} from './case-details-management-form-flows';
+import {CASE_IDENTIFIER, createFormFlowTestData} from './case-details-management-form-flows';
 import {CaseDetailsManagementFormFlowsPage} from './page';
 
 test.use({storageState: undefined});
@@ -25,6 +25,9 @@ test.describe('Case details management — Form Flows', () => {
   let page;
   let formFlowsPage: CaseDetailsManagementFormFlowsPage;
   let request;
+
+  // Generate unique test data per run to avoid key collisions
+  const formFlowTestData = createFormFlowTestData();
 
   // Arrange
   test.beforeAll(async ({browser, baseURL}) => {
@@ -38,6 +41,7 @@ test.describe('Case details management — Form Flows', () => {
     await formFlowsPage.goToCaseManagement(CASE_IDENTIFIER);
     await formFlowsPage.ensureDraftVersionSelected();
     await formFlowsPage.switchToFormFlowsTab();
+    await formFlowsPage.cleanupStaleFormFlows();
   });
 
   test.afterAll(async () => {
@@ -47,7 +51,7 @@ test.describe('Case details management — Form Flows', () => {
 
   // ─── 6.58 View form flows list ────────────────────────────────────
 
-  test.describe('View form flows list', () => {
+  test.describe('6.58 — View form flows list', () => {
     test('Form flows list is visible', async () => {
       await expect(formFlowsPage.formFlowsList).toBeVisible();
     });
@@ -55,7 +59,7 @@ test.describe('Case details management — Form Flows', () => {
 
   // ─── 6.59 Create form flow ────────────────────────────────────────
 
-  test.describe('Create form flow', () => {
+  test.describe('6.59 — Create form flow', () => {
     test.describe('Success', () => {
       test('Create a form flow', async () => {
         // Act
@@ -69,10 +73,10 @@ test.describe('Case details management — Form Flows', () => {
 
   // ─── 6.60 Edit form flow JSON ─────────────────────────────────────
 
-  test.describe('Edit form flow JSON', () => {
+  test.describe('6.60 — Edit form flow JSON', () => {
     test('Open form flow and see JSON editor', async () => {
       // Navigate back to list first (creation left us on the editor)
-      await page.goBack();
+      await formFlowsPage.navigateBackToFormFlowsList();
 
       // Act
       await formFlowsPage.openFormFlow(formFlowTestData.key);
@@ -82,11 +86,74 @@ test.describe('Case details management — Form Flows', () => {
     });
   });
 
-  // ─── 6.61 Delete form flow (cleanup) ───────────────────────────────
+  // ─── 6.61 Save form flow ───────────────────────────────────────────
+
+  test.describe('6.61 — Save form flow', () => {
+    test.describe('Success', () => {
+      test('Save button is initially enabled with valid JSON', async () => {
+        await expect(formFlowsPage.saveButton).toBeEnabled();
+      });
+
+      test('Save form flow with modified JSON', async () => {
+        const validFormFlowJson = {
+          startStep: 'step1',
+          steps: [
+            {
+              key: 'step1',
+              type: {
+                name: 'form',
+                properties: {definition: 'test-form'},
+              },
+              nextSteps: [],
+              onBack: [],
+              onOpen: [],
+              onComplete: [],
+            },
+          ],
+        };
+
+        // Act — edit the JSON and save
+        await formFlowsPage.editFormFlowJson(validFormFlowJson);
+        await expect(formFlowsPage.saveButton).toBeEnabled();
+        await formFlowsPage.saveFormFlow(formFlowTestData.key, CASE_IDENTIFIER);
+
+        // Assert — success notification appears
+        await formFlowsPage.assertSaveSuccessNotification(formFlowTestData.key);
+      });
+    });
+
+    test.describe('Failure scenarios', () => {
+      test('Save button is disabled when JSON is invalid', async () => {
+        // Act
+        await formFlowsPage.pasteRawTextInEditor('{ this is not valid json }');
+
+        // Assert
+        await expect(formFlowsPage.saveButton).toBeDisabled({timeout: 10_000});
+
+        // Restore valid JSON so subsequent tests (delete) can proceed
+        await formFlowsPage.editFormFlowJson({
+          startStep: 'step1',
+          steps: [
+            {
+              key: 'step1',
+              type: {name: 'form', properties: {definition: 'test-form'}},
+              nextSteps: [],
+              onBack: [],
+              onOpen: [],
+              onComplete: [],
+            },
+          ],
+        });
+        await expect(formFlowsPage.saveButton).toBeEnabled({timeout: 10_000});
+      });
+    });
+  });
+
+  // ─── Delete form flow (cleanup) ───────────────────────────────────
 
   test.describe('Delete form flow', () => {
     test('Navigate back to form flows list', async () => {
-      await page.goBack();
+      await formFlowsPage.navigateBackToFormFlowsList();
       await formFlowsPage.assertFormFlowExists(formFlowTestData.key);
     });
 

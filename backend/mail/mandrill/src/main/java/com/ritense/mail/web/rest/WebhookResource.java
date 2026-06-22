@@ -16,6 +16,7 @@
 
 package com.ritense.mail.web.rest;
 
+import jakarta.validation.Valid;
 import static com.ritense.valtimo.contract.domain.ValtimoMediaType.APPLICATION_JSON_UTF8_VALUE;
 
 import com.ritense.mail.domain.webhook.MandrillWebhookRequest;
@@ -55,7 +56,7 @@ public class WebhookResource {
     @PostMapping(value = "/v1/mandrill/webhook", consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE)
     public ResponseEntity<Void> mandrillWebhook(
         @RequestHeader("X-Mandrill-Signature") String authenticationKey,
-        @RequestBody MultiValueMap<String, String> body
+        @Valid @RequestBody MultiValueMap<String, String> body
     ) throws IOException {
         if (!webhookService.isRequestValid(authenticationKey, body)) {
             return ResponseEntity.badRequest().build();

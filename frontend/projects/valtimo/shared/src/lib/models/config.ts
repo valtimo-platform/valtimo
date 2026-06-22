@@ -70,7 +70,6 @@ interface OverrideFormioOptions extends FormioOptions {
 
 interface ValtimoConfigFeatureToggles {
   applicationTitleAsSuffix?: boolean;
-  enableHackathonCasesPage?: boolean;
   showUserNameInTopBar?: boolean;
   showPlantATreeButton?: boolean;
   experimentalDmnEditing?: boolean;
@@ -94,6 +93,7 @@ interface ValtimoConfigFeatureToggles {
   enablePbacDocumentenApiDocuments?: boolean;
   enableSuppressDocumentError?: boolean;
   enableIkoType?: boolean;
+  enableGenericCaseList?: boolean;
 }
 
 interface ValtimoConfig {

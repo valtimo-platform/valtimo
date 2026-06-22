@@ -29,6 +29,7 @@ class InternalCaseHttpSecurityConfigurer : AuthorizeRequestsHttpSecurityConfigur
 
     override fun authorizeHttpRequests(requests: AuthorizeHttpRequestsConfigurer<HttpSecurity>.AuthorizationManagerRequestMatcherRegistry) {
         requests
+            .antMatcher(GET, "/api/v1/internal-status").authenticated()
             .antMatcher(GET, "/api/v1/case-definition/{caseDefinitionName}/internal-status").authenticated()
             .antMatcher(GET, "/api/management/v1/case-definition/{caseDefinitionName}/internal-status").hasAuthority(ADMIN)
             .antMatcher(POST, "/api/management/v1/case-definition/{caseDefinitionName}/internal-status").hasAuthority(ADMIN)

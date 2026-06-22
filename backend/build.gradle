@@ -50,6 +50,12 @@ checkstyle {
     toolVersion = "12.3.1"
 }
 
+configurations.matching { it.name == 'checkstyle' }.configureEach {
+    resolutionStrategy {
+        force "org.codehaus.plexus:plexus-utils:${plexusUtilsVersion}"
+    }
+}
+
 def allTestCoverageFile = "${rootDir}/build/reports/jacoco/testCodeCoverageReport/testCodeCoverageReport.xml"
 dependencies {
     subprojects { subproject ->
@@ -145,10 +151,13 @@ allprojects {
                 mavenBom "software.amazon.awssdk:bom:${awssdkVersion}"
                 mavenBom "com.fasterxml.jackson:jackson-bom:${jacksonVersion}"
                 mavenBom "org.junit:junit-bom:${junitVersion}"
+                // Temporary override, remove on next upgrade of spring
+                mavenBom "io.netty:netty-bom:${nettyVersion}"
             }
             dependencies {
                 dependency "org.hibernate.orm:hibernate-core:${hibernateCoreVersion}"
                 dependency "org.liquibase:liquibase-core:${liquibaseVersion}"
+                dependency "org.postgresql:postgresql:${postgresqlDriverVersion}"
                 dependency "com.rabbitmq:amqp-client:${amqpCLientVersion}"
                 dependency "org.apache.commons:commons-lang3:${commonsLangVersion}"
 
@@ -156,6 +165,23 @@ allprojects {
                 //  pulled in through operaton has vulnerabilities and no operaton fix is available as
                 //  of 03-02-2026
                 dependency "org.assertj:assertj-core:3.27.7"
+
+                // CVE override: Spring Boot 3.5.14 ships with Tomcat 10.1.54. Override
+                // until a new Spring Boot patch includes the fix.
+                dependency "org.apache.tomcat.embed:tomcat-embed-core:${tomcatVersion}"
+                dependency "org.apache.tomcat.embed:tomcat-embed-el:${tomcatVersion}"
+                dependency "org.apache.tomcat.embed:tomcat-embed-websocket:${tomcatVersion}"
+
+                // CVE overrides: Spring Boot 3.5.14 ships with log4j 2.24.3 which has
+                // vulnerabilities. Override until a new Spring Boot patch includes the fix.
+                dependency "org.apache.logging.log4j:log4j-api:${log4jVersion}"
+                dependency "org.apache.logging.log4j:log4j-core:${log4jVersion}"
+                dependency "org.apache.logging.log4j:log4j-jul:${log4jVersion}"
+                dependency "org.apache.logging.log4j:log4j-slf4j2-impl:${log4jVersion}"
+
+                // CVE override: httpclient 4.5.3 pulled in transitively by lutung has a known
+                // vulnerability. Force upgrade to the latest 4.5.x release.
+                dependency "org.apache.httpcomponents:httpclient:${apacheHttpclientVersion}"
             }
         }
 
@@ -235,6 +261,14 @@ subprojects { subproject ->
             config project.resources.text.fromFile(rootProject.file("backend/ritense_valtimo_only_checks.xml"))
             ignoreFailures = false
             showViolations = true
+        }
+
+        // CVE override: checkstyle pulls in plexus-utils 3.3.0 transitively via doxia-core.
+        // Force upgrade to a patched version.
+        configurations.matching { it.name == 'checkstyle' }.configureEach {
+            resolutionStrategy {
+                force "org.codehaus.plexus:plexus-utils:${plexusUtilsVersion}"
+            }
         }
 
         tasks.withType(Checkstyle).configureEach {

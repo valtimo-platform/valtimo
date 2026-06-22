@@ -16,6 +16,7 @@
 
 package com.ritense.valtimo.web.rest;
 
+import org.springframework.validation.beanvalidation.LocalValidatorFactoryBean;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
@@ -97,10 +98,13 @@ class TaskResourceTest {
 
         MappingJackson2HttpMessageConverter converter = new MappingJackson2HttpMessageConverter();
         converter.setObjectMapper(objectMapper);
+        LocalValidatorFactoryBean validator = new LocalValidatorFactoryBean();
+        validator.afterPropertiesSet();
 
         mockMvc = MockMvcBuilders.standaloneSetup(taskResource)
             .setMessageConverters(converter)
             .setCustomArgumentResolvers(new PageableHandlerMethodArgumentResolver())
+            .setValidator(validator)
             .build();
     }
 
@@ -130,6 +134,18 @@ class TaskResourceTest {
             .andExpect(status().isOk());
 
         verify(operatonTaskService, times(1)).setDueDate(taskId, dueDate);
+    }
+
+    @Test
+    void shouldRejectSetDueDateWhenDueDateIsNull() throws Exception {
+        mockMvc.perform(post("/api/v1/task/{taskId}/set-due-date", taskId)
+                .content("{\"dueDate\": null}")
+                .characterEncoding(StandardCharsets.UTF_8.name())
+                .contentType(MediaType.APPLICATION_JSON_VALUE)
+                .accept(MediaType.APPLICATION_JSON_VALUE)
+            )
+            .andDo(print())
+            .andExpect(status().isBadRequest());
     }
 
     @Test

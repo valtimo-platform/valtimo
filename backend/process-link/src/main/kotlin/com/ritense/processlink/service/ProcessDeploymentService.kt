@@ -22,6 +22,7 @@ import com.ritense.processdocument.domain.ProcessDocumentDefinitionRequest
 import com.ritense.processdocument.service.ProcessDefinitionCaseDefinitionService
 import com.ritense.processlink.web.rest.dto.ProcessLinkCreateRequestDto
 import com.ritense.valtimo.contract.BlueprintId
+import com.ritense.valtimo.operaton.domain.OperatonProcessDefinition
 import com.ritense.valtimo.contract.case_.CaseDefinitionId
 import com.ritense.valtimo.exception.BpmnParseException
 import com.ritense.valtimo.service.OperatonProcessService
@@ -39,6 +40,35 @@ class ProcessDeploymentService(
     private val processDefinitionCaseDefinitionService: ProcessDefinitionCaseDefinitionService,
     private val processLinkService: ProcessLinkService,
 ) {
+    fun findExistingProcessDefinitionForCaseDefinition(
+        caseDefinitionId: CaseDefinitionId,
+        bpmn: MultipartFile?,
+        processDefinitionId: String?
+    ): OperatonProcessDefinition? {
+        return runWithoutAuthorization {
+            val model = if (bpmn != null) {
+                Bpmn.readModelFromStream(ByteArrayInputStream(bpmn.bytes))
+            } else {
+                operatonProcessService.getBpmnModelInstanceByProcessDefinitionId(processDefinitionId!!)
+            }
+            operatonProcessService.getExistingProcessForFile(caseDefinitionId, model)
+        }
+    }
+
+    fun findExistingUnlinkedProcessDefinition(
+        bpmn: MultipartFile?,
+        processDefinitionId: String?
+    ): OperatonProcessDefinition? {
+        return runWithoutAuthorization {
+            val model = if (bpmn != null) {
+                Bpmn.readModelFromStream(ByteArrayInputStream(bpmn.bytes))
+            } else {
+                operatonProcessService.getBpmnModelInstanceByProcessDefinitionId(processDefinitionId!!)
+            }
+            operatonProcessService.getExistingProcessForFile(null, model)
+        }
+    }
+
     //TODO: this code could use a refactor
     fun deployProcessDefinitionAndProcessLinksForCaseDefinition(
         caseDefinitionId: CaseDefinitionId,
