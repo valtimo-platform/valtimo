@@ -89,6 +89,13 @@ jobs:
             exit 1
           fi
 
+          # Drop the workspaces declaration so npm install honours the file:
+          # deps below instead of symlinking @valtimo/* to source folders that
+          # have no compiled output. Source resolution still works for the app
+          # itself via tsconfig.paths; the plugin tarballs in node_modules need
+          # the file: deps to find @valtimo/* via standard node resolution.
+          npm pkg delete workspaces >/dev/null 2>&1 || true
+
           for name in "${NAMES[@]}"; do
             npm pkg delete devDependencies."$SCOPE/$name" >/dev/null 2>&1 || true
             npm pkg set "dependencies.$SCOPE/$name=file:$LOCAL_ROOT/$name"
