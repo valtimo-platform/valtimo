@@ -38,6 +38,7 @@
         { "bundleName" : "MPL-1.1", "licenseName" : "Mozilla Public License Version 1.1", "licenseUrl" : "https://www.mozilla.org/en-US/MPL/1.1" },
         { "bundleName" : "MPL-2.0", "licenseName" : "Mozilla Public License, Version 2.0", "licenseUrl" : "https://www.mozilla.org/en-US/MPL/2.0" },
         { "bundleName" : "Public-Domain", "licenseName" : "PUBLIC DOMAIN", "licenseUrl" : "" },
+        { "bundleName" : "EUPL-1.1", "licenseName" : "European Union Public Licence, Version 1.1", "licenseUrl" : "https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-11" },
         { "bundleName" : "EUPL-1.2", "licenseName" : "European Union Public Licence, Version 1.2", "licenseUrl" : "https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12" }
     ],
     "transformationRules" : [
@@ -103,6 +104,8 @@
         { "bundleName" : "Public-Domain", "licenseNamePattern" : "((public)\\s(domain)).*", "transformUrl" : false },
         { "bundleName" : "Public-Domain", "licenseFileContentPattern" : ".*(Creative)\\s(Commons).*", "transformUrl" : false },
         { "bundleName" : "Public-Domain", "licenseFileContentPattern" : ".*((Public)\\s(Domain)).*", "transformUrl" : false },
+        { "bundleName" : "EUPL-1.1", "licenseNamePattern" : ".*EUPL,?\\s*Version 1\\.1.*" },
+        { "bundleName" : "EUPL-1.1", "licenseNamePattern" : ".*European Union Public Licen[cs]e,?\\s*(v\\.?|Version)?\\s*1\\.1.*" },
         { "bundleName" : "EUPL-1.2", "licenseNamePattern" : ".*EUPL,?\\s*Version 1\\.2.*" },
         { "bundleName" : "EUPL-1.2", "licenseNamePattern" : ".*European Union Public Licen[cs]e,?\\s*(v\\.?|Version)?\\s*1\\.2.*" }
     ]
