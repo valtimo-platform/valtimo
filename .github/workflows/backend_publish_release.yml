@@ -10,11 +10,21 @@ on:
         description: "Base semantic version (e.g. 13.6.0)"
         required: true
         type: string
+      publish_images:
+        description: "Build and push the backend Docker image. Disable on v12-stable, where the image is still built by Jenkins from the template repo."
+        required: false
+        type: boolean
+        default: true
   workflow_dispatch:
     inputs:
       project_version:
         description: "Base semantic version (e.g. 13.6.0)"
         required: true
+      publish_images:
+        description: "Build and push the backend Docker image. Disable on v12-stable, where the image is still built by Jenkins from the template repo."
+        required: false
+        type: boolean
+        default: true
 
 env:
   ORG_GRADLE_PROJECT_includeDev: false
@@ -26,6 +36,7 @@ jobs:
 
   build_and_push_image:
     name: Build and push Docker image
+    if: ${{ inputs.publish_images }}
     needs:
       - build_run_tests
     permissions:
@@ -41,7 +52,6 @@ jobs:
   publish:
     needs:
       - build_run_tests
-      - build_and_push_image
     runs-on: ubuntu-latest
     env:
       SONATYPE_USERNAME: ${{ secrets.SONATYPE_USERNAME }}
@@ -93,7 +103,7 @@ jobs:
         env:
           ORG_GRADLE_PROJECT_sonatypeUsername: ${{ env.SONATYPE_USERNAME }}
           ORG_GRADLE_PROJECT_sonatypePassword: ${{ env.SONATYPE_PASSWORD }}
-        run: ./gradlew -PincludeDev=false :backend:jreleaserDeploy --stacktrace -PprojectVersion="${{ steps.version.outputs.version_release }}"
+        run: ./gradlew -PincludeDev=false :backend:jreleaserDeploy --stacktrace -PprojectVersion="${PROJECT_VERSION}"
 
       - name: Archive Reports
         if: always()

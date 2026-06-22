@@ -10,11 +10,21 @@ on:
         description: "Base semantic version (e.g. 13.6.0)"
         required: true
         type: string
+      publish_images:
+        description: "Reserved for parity with the release workflow. RC currently publishes libs only; image-build step may be added later."
+        required: false
+        type: boolean
+        default: true
   workflow_dispatch:
     inputs:
       project_version:
         description: "Base semantic version (e.g. 13.6.0)"
         required: true
+      publish_images:
+        description: "Reserved for parity with the release workflow. RC currently publishes libs only; image-build step may be added later."
+        required: false
+        type: boolean
+        default: true
 
 env:
   ORG_GRADLE_PROJECT_includeDev: false
