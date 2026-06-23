@@ -234,7 +234,7 @@
     "@simonwep/pickr": "^1.9.1",
     "@tadashi/currency": "3.4.0",
     "@valtimo-plugins/freemarker": "8.3.6",
-    "@valtimo-plugins/smtpmail": "2.0.2",
+    "@valtimo-plugins/smtpmail": "2.0.5",
     "@webcomponents/custom-elements": "1.6.0",
     "ajv": "8.17.1",
     "angular-split": "19.0.0",
