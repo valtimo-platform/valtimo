@@ -37,7 +37,7 @@ import com.ritense.processlink.service.ProcessLinkService
 import com.ritense.processlink.validation.ProcessDefinitionValidator
 import com.ritense.processlink.web.rest.ProcessLinkResource
 import com.ritense.processlink.web.rest.ProcessLinkTaskResource
-import com.ritense.processlink.web.rest.error.ProcessDefinitionValidationExceptionTranslator
+import com.ritense.processlink.web.rest.error.ProcessDefinitionValidationExceptionMapper
 import com.ritense.valtimo.autoconfiguration.ValtimoOperatonAutoConfiguration
 import com.ritense.valtimo.contract.annotation.ProcessBean
 import com.ritense.valtimo.contract.buildingblock.BuildingBlockDefinitionChecker
@@ -239,9 +239,9 @@ class ProcessLinkAutoConfiguration {
     }
 
     @Bean
-    @ConditionalOnMissingBean(ProcessDefinitionValidationExceptionTranslator::class)
-    fun processDefinitionValidationExceptionTranslator(): ProcessDefinitionValidationExceptionTranslator {
-        return ProcessDefinitionValidationExceptionTranslator()
+    @ConditionalOnMissingBean(ProcessDefinitionValidationExceptionMapper::class)
+    fun processDefinitionValidationExceptionTranslator(): ProcessDefinitionValidationExceptionMapper {
+        return ProcessDefinitionValidationExceptionMapper()
     }
 
     @Bean

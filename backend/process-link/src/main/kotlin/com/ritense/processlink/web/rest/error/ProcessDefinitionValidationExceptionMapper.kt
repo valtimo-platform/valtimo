@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,12 +18,8 @@ package com.ritense.processlink.web.rest.error
 
 import com.ritense.processlink.validation.ProcessDefinitionValidationError
 import com.ritense.processlink.validation.ProcessDefinitionValidationException
-import com.ritense.valtimo.contract.annotation.SkipComponentScan
-import org.springframework.core.Ordered
-import org.springframework.core.annotation.Order
+import com.ritense.valtimo.contract.web.rest.error.ExceptionMapper
 import org.springframework.http.ResponseEntity
-import org.springframework.web.bind.annotation.ControllerAdvice
-import org.springframework.web.bind.annotation.ExceptionHandler
 import org.springframework.web.context.request.NativeWebRequest
 
   class ProcessDefinitionValidationExceptionMapper :
@@ -34,4 +30,8 @@ import org.springframework.web.context.request.NativeWebRequest
       override fun toResponse(ex: ProcessDefinitionValidationException, request: NativeWebRequest) =
           ResponseEntity.unprocessableEntity()
               .body(ProcessDefinitionValidationErrorResponse(ex.errors))
+
+      data class ProcessDefinitionValidationErrorResponse(
+          val errors: List<ProcessDefinitionValidationError>
+      )
   }
