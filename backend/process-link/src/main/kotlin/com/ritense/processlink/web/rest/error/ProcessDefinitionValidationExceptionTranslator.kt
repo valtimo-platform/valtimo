@@ -26,22 +26,12 @@ import org.springframework.web.bind.annotation.ControllerAdvice
 import org.springframework.web.bind.annotation.ExceptionHandler
 import org.springframework.web.context.request.NativeWebRequest
 
-@SkipComponentScan
-@ControllerAdvice
-@Order(Ordered.HIGHEST_PRECEDENCE)
-class ProcessDefinitionValidationExceptionTranslator {
+  class ProcessDefinitionValidationExceptionMapper :
+      ExceptionMapper<ProcessDefinitionValidationException> {
 
-    @ExceptionHandler(ProcessDefinitionValidationException::class)
-    fun handleValidationException(
-        ex: ProcessDefinitionValidationException,
-        request: NativeWebRequest
-    ): ResponseEntity<ProcessDefinitionValidationErrorResponse> {
-        return ResponseEntity
-            .unprocessableEntity()
-            .body(ProcessDefinitionValidationErrorResponse(ex.errors))
-    }
+      override fun getSupportedType() = ProcessDefinitionValidationException::class.java
 
-    data class ProcessDefinitionValidationErrorResponse(
-        val errors: List<ProcessDefinitionValidationError>
-    )
-}
+      override fun toResponse(ex: ProcessDefinitionValidationException, request: NativeWebRequest) =
+          ResponseEntity.unprocessableEntity()
+              .body(ProcessDefinitionValidationErrorResponse(ex.errors))
+  }
