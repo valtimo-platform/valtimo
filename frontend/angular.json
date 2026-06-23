@@ -111,6 +111,10 @@
                 {
                   "replace": "src/app/dev-tools.ts",
                   "with": "src/app/no-dev-tools.ts"
+                },
+                {
+                  "replace": "src/app/app-plugins.ts",
+                  "with": "src/app/app-plugins.prod.ts"
                 }
               ],
               "optimization": true,

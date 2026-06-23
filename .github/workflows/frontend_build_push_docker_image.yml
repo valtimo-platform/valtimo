@@ -69,6 +69,30 @@ jobs:
           name: ${{ inputs.frontend_libraries_build_artifact_name }}
           path: frontend/dist/
 
+      - name: Add release plugin dependencies
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          # Plugin packages live outside package.json so local dev (npm start)
+          # doesn't pull them in — the workspace symlinks would break Vite's
+          # pre-bundling of their @valtimo/* transitive imports. Release builds
+          # use fileReplacements to swap src/app/app-plugins.ts -> .prod.ts,
+          # which imports these packages; CI installs them here per-branch
+          # using the pins in release-plugins.json.
+          if [ ! -f "release-plugins.json" ]; then
+            echo "::notice::release-plugins.json not found; skipping release plugin pin"
+            exit 0
+          fi
+
+          jq -r 'to_entries[] | "dependencies.\(.key)=\(.value)"' release-plugins.json \
+            | while IFS= read -r entry; do
+                npm pkg set "$entry"
+              done
+
+          echo "Release plugin pins applied:"
+          jq -r 'to_entries[] | "  \(.key)@\(.value)"' release-plugins.json
+
       - name: "Rewrite local @valtimo/* deps to file: links and install"
         shell: bash
         run: |
