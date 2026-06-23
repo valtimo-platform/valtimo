@@ -1,4 +1,4 @@
-/*
+/*!
  * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
@@ -14,22 +14,12 @@
  * limitations under the License.
  */
 
-export const DECISION_LIST_TEST_IDS = {
-  uploadButton: 'decisionListUploadButton',
-  createButton: 'decisionListCreateButton',
-} as const;
+:host ::ng-deep cds-label {
+  width: 100%;
+}
 
-export const DECISION_UPLOAD_TEST_IDS = {
-  submitButton: 'decisionUploadModalSubmitButton',
-} as const;
-
-export const DECISION_FORM_TEST_IDS = {
-  nameInput: 'decisionFormModalNameInput',
-  inputVariables: 'decisionFormModalInputVariables',
-  submitButton: 'decisionFormModalSubmitButton',
-} as const;
-
-export const DECISION_MODELER_TEST_IDS = {
-  deployButton: 'decisionModelerDeployButton',
-  backButton: 'decisionModelerBackButton',
-} as const;
+.cds--modal-content {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}

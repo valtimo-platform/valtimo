@@ -72,7 +72,6 @@ interface ValtimoConfigFeatureToggles {
   applicationTitleAsSuffix?: boolean;
   showUserNameInTopBar?: boolean;
   showPlantATreeButton?: boolean;
-  experimentalDmnEditing?: boolean;
   disableCaseCount?: boolean;
   caseListColumn?: boolean;
   enableObjectManagement?: boolean;
@@ -94,6 +93,11 @@ interface ValtimoConfigFeatureToggles {
   enableSuppressDocumentError?: boolean;
   enableIkoType?: boolean;
   enableGenericCaseList?: boolean;
+  /**
+   * @deprecated DMN decision table editing is always enabled and is no longer gated by a
+   * feature toggle. This option is ignored and will be removed in a future major release.
+   */
+  experimentalDmnEditing?: boolean;
 }
 
 interface ValtimoConfig {
