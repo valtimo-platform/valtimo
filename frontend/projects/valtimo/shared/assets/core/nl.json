@@ -688,6 +688,22 @@
       "fileUploaderDescription": "Alleen bestanden met de extensie .dmn zijn toegestaan.",
       "fileUploaderButton": "Kies DMN-bestand"
     },
+    "create": "Creëer DMN-tabel",
+    "createModal": {
+      "title": "Beslistabel aanmaken",
+      "name": "Naam",
+      "namePlaceholder": "bijv. Geschiktheidsbeslissing",
+      "nameRequired": "Naam is verplicht",
+      "inputVariables": "Inputvariabelen (optioneel)",
+      "inputVariablesHelper": "Inputkolommen zijn optioneel - je mag dit leeg laten. Voor elke rij die je toevoegt is de procesvariabele verplicht; het label is optioneel en de naam van de procesvariabele wordt als kolomkop gebruikt als je het leeg laat. Je kunt deze later in de editor aanpassen.",
+      "inputLabel": "Label (optioneel)",
+      "inputExpression": "Procesvariabele (verplicht)",
+      "inputExpressionRequired": "Een procesvariabele is verplicht voor elke inputkolom.",
+      "addInputVariable": "Inputvariabele toevoegen"
+    },
+    "editModal": {
+      "title": "Beslistabel bewerken"
+    },
     "version": "Versie",
     "deploy": "Opslaan",
     "loadFailure": "Er is iets misgegaan bij het laden van de beslistabel.",
@@ -3116,10 +3132,6 @@
         "applicationTitleAsSuffix": {
           "title": "Applicatietitel als achtervoegsel",
           "description": "Voeg de applicatietitel toe als achtervoegsel aan de browsertabtitel."
-        },
-        "experimentalDmnEditing": {
-          "title": "Experimentele DMN-bewerking",
-          "description": "Schakel de experimentele DMN-beslissingstabeleditor in."
         },
         "disableCaseCount": {
           "title": "Dossiertelling uitschakelen",
