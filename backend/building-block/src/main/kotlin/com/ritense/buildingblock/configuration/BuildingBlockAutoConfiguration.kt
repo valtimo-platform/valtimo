@@ -817,11 +817,11 @@ class BuildingBlockAutoConfiguration {
     @ConditionalOnMissingBean(BuildingBlockFormFlowManagementResource::class)
     fun buildingBlockFormFlowManagementResource(
         buildingBlockFormFlowDefinitionService: BuildingBlockFormFlowDefinitionService,
-        buildingBlockFormFlowDefinitionImporter: BuildingBlockFormFlowDefinitionImporter,
+        buildingBlockDefinitionChecker: BuildingBlockDefinitionChecker,
     ): BuildingBlockFormFlowManagementResource {
         return BuildingBlockFormFlowManagementResource(
             buildingBlockFormFlowDefinitionService,
-            buildingBlockFormFlowDefinitionImporter
+            buildingBlockDefinitionChecker
         )
     }
 

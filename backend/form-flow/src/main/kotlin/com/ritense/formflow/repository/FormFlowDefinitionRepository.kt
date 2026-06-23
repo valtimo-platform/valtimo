@@ -23,7 +23,6 @@ import org.semver4j.Semver
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.data.jpa.repository.JpaRepository
-import org.springframework.data.jpa.repository.Modifying
 import org.springframework.data.jpa.repository.Query
 
 interface FormFlowDefinitionRepository : JpaRepository<FormFlowDefinition, FormFlowDefinitionId> {
@@ -33,10 +32,6 @@ interface FormFlowDefinitionRepository : JpaRepository<FormFlowDefinition, FormF
 
     @Query("SELECT f FROM FormFlowDefinition f WHERE f.id.blueprintId.blueprintType = :blueprintType AND f.id.blueprintId.blueprintKey = :blueprintKey AND f.id.blueprintId.blueprintVersionTag = :blueprintVersionTag")
     fun findAllByBlueprintId(blueprintType: BlueprintType, blueprintKey: String, blueprintVersionTag: Semver, pageable: Pageable): Page<FormFlowDefinition>
-
-    @Modifying
-    @Query("DELETE FROM FormFlowDefinition f WHERE f.id.blueprintId.blueprintType = :blueprintType AND f.id.blueprintId.blueprintKey = :blueprintKey AND f.id.blueprintId.blueprintVersionTag = :blueprintVersionTag")
-    fun deleteAllByBlueprintId(blueprintType: BlueprintType, blueprintKey: String, blueprintVersionTag: Semver)
 
     @Query("SELECT f FROM FormFlowDefinition f WHERE f.id.key = :key")
     fun findAllByKey(key: String): List<FormFlowDefinition>

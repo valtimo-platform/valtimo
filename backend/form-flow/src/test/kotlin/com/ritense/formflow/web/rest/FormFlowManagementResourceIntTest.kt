@@ -77,7 +77,7 @@ class FormFlowManagementResourceIntTest : BaseIntegrationTest() {
             .andDo(print())
             .andExpect(status().isOk)
             .andExpect(jsonPath("$.content[?(@.key=='inkomens_loket')].key").value("inkomens_loket"))
-            .andExpect(jsonPath("$.content[?(@.key=='inkomens_loket')].readOnly").value(true))
+            .andExpect(jsonPath("$.content[?(@.key=='inkomens_loket')].readOnly").value(false))
     }
 
     @Test
