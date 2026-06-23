@@ -17,6 +17,11 @@
   In the Documenten API plugin, the *store temp document* action can now resolve the confidentiality level, language and status from a value resolver expression (e.g. `pv:confidentialityLevel` or `doc:/confidentialityLevel`)
   instead of only a option op a dropdown, selectable per field via an input-type toggle. This makes all parameters resolvable which is useful in Building blocks.
 
+* **Default sidebar state**
+
+  It is now possible to configure the default state for the sidebar (collapsed or not) application wide via the settings
+  page. User specific settings overwrite this.
+
 ## Bugfixes
 
 * **Case definition could not be deleted when it contained a form flow**
