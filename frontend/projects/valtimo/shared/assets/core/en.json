@@ -3139,6 +3139,10 @@
         "enableIkoType": {
           "title": "Enable IKO type",
           "description": "Enable the IKO (Informatie Kanaal Objecten) integration type."
+        },
+        "menuCollapsedByDefault": {
+          "title": "Menu collapsed by default",
+          "description": "Start with the navigation menu collapsed instead of expanded."
         }
       }
     }
