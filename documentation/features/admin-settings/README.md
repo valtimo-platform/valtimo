@@ -88,7 +88,6 @@ Create a JSON file matching the pattern `<name>.feature-toggles.json`.
 {
   "showUserNameInTopBar": true,
   "showPlantATreeButton": true,
-  "experimentalDmnEditing": true,
   "largeLogoMargin": false,
   "sortFilesByDate": true,
   "disableCaseCount": false,
