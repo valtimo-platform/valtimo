@@ -138,6 +138,12 @@
         },
         {
             "moduleLicense": "Unicode/ICU License"
+        },
+        {
+            "moduleLicense": "European Union Public Licence, Version 1.1"
+        },
+        {
+            "moduleLicense": "European Union Public Licence, Version 1.2"
         }
     ]
 }

@@ -7,6 +7,10 @@ dependencies {
     implementation(project(":backend:logging"))
     implementation(project(":backend:zgw:portaaltaak"))
 
+    // Plugins
+    implementation("com.ritense.valtimoplugins:freemarker:$freemarkerPluginVersion")
+    implementation("com.ritense.valtimoplugins:smtpmail:$smtpmailPluginVersion")
+
     implementation("io.github.microutils:kotlin-logging")
     implementation "org.springframework.boot:spring-boot-starter-webflux"
     implementation "org.springframework.boot:spring-boot-starter-security"

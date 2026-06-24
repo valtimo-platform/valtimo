@@ -4,10 +4,16 @@ permissions:
   contents: read
 
 on:
+  workflow_call:
+    inputs:
+      project_version:
+        description: "Base semantic version (e.g. 13.6.0)"
+        required: true
+        type: string
   workflow_dispatch:
     inputs:
       project_version:
-        description: "Project version"
+        description: "Base semantic version (e.g. 13.6.0)"
         required: true
 
 defaults:
@@ -15,35 +21,17 @@ defaults:
     working-directory: frontend
 
 jobs:
-  determine_version:
-    runs-on: ubuntu-latest
-    outputs:
-      project_version: ${{ steps.version.outputs.version_release }}
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Compute version from branch
-        id: version
-        shell: bash
-        run: |
-          SEMVER_VERSION="${GITHUB_REF_NAME#release/}"
-          echo "version_release=$SEMVER_VERSION" >> "$GITHUB_OUTPUT"
-
   build_and_test_libs:
-    needs: ["determine_version"]
     uses: ./.github/workflows/frontend_build_test_libraries.yml
     with:
-      project_version: ${{ needs.determine_version.outputs.project_version }}
+      project_version: ${{ inputs.project_version || github.event.inputs.project_version }}
     secrets: inherit
 
-  publish:
-    if: ${{ startsWith(github.ref_name, 'release/') }}
+  publish_libs:
     needs:
       - build_and_test_libs
-      - determine_version
     uses: ./.github/workflows/frontend_publish_to_npm.yml
     with:
-      project_version: ${{ needs.determine_version.outputs.project_version }}
+      project_version: ${{ inputs.project_version || github.event.inputs.project_version }}
       frontend_libraries_build_artifact_name: ${{ needs.build_and_test_libs.outputs.build_artifact_name }}
     secrets: inherit

@@ -7,9 +7,6 @@ on:
       - .github/workflows/backend_*.yml
       - backend/**
   pull_request:
-    branches:
-      - next-minor
-      - rc/*
     paths:
       - .github/workflows/backend_*.yml
       - backend/**
@@ -43,8 +40,10 @@ jobs:
     if: ${{ github.event_name == 'pull_request'}}
     needs:
       - build_and_push_image
-    uses: ./.github/workflows/tag_test_env.yml
+      - build_and_test_libraries
+    uses: ./.github/workflows/tag_test_env_image.yml
     secrets: inherit
     with:
       target: "gzac-backend"
-      image_to_tag: ${{ needs.build_and_push_image.outputs.tagged_image }}
+      image_to_tag: ${{ needs.build_and_push_image.outputs.built_test_image }}
+      contents_sha: ${{ needs.build_and_test_libraries.outputs.contents_sha }}

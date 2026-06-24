@@ -10,11 +10,20 @@ on:
         required: true
         description: Name of the frontend build artifact to download with 'download-artifact'
         type: "string"
+      push_to_dockerhub:
+        description: "Push the built image to Docker Hub as well"
+        required: false
+        type: boolean
+        default: false
+      release_image_tag:
+        description: "Tag to use when pushing the Docker Hub release image"
+        required: false
+        type: string
 
     outputs:
-      tagged_image:
+      built_image:
         description: "The Docker image tag"
-        value: ${{ jobs.build_image.outputs.image_tag }}
+        value: ${{ jobs.build_and_push_image.outputs.image_tag }}
 
 defaults:
   run:
@@ -22,16 +31,17 @@ defaults:
 
 env:
   NODE_VERSION: "20.x"
+  DOCKERHUB_IMAGE: ritense/gzac-frontend
 
 jobs:
-  build_image:
+  build_and_push_image:
     runs-on: ubuntu-latest
     permissions:
       contents: read
       packages: write
 
     outputs:
-      image_tag: ${{ fromJson(steps.generate_tags.outputs.json).tags[0] }}
+      image_tag: ${{ steps.primary_tag.outputs.tag }}
 
     env:
       BRANCH_NAME: ${{ github.head_ref || github.ref_name }}
@@ -39,6 +49,14 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+
+      - name: Validate release image inputs
+        if: ${{ inputs.push_to_dockerhub }}
+        run: |
+          if [ -z "${{ inputs.release_image_tag }}" ]; then
+            echo "::error::'release_image_tag' input must be provided when 'push_to_dockerhub' is true."
+            exit 1
+          fi
 
       - name: Set up Node.js ${{ env.NODE_VERSION }}
         uses: actions/setup-node@v4
@@ -51,7 +69,31 @@ jobs:
           name: ${{ inputs.frontend_libraries_build_artifact_name }}
           path: frontend/dist/
 
-      - name: Move local devDependencies to dependencies and install
+      - name: Add release plugin dependencies
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          # Plugin packages live outside package.json so local dev (npm start)
+          # doesn't pull them in — the workspace symlinks would break Vite's
+          # pre-bundling of their @valtimo/* transitive imports. Release builds
+          # use fileReplacements to swap src/app/app-plugins.ts -> .prod.ts,
+          # which imports these packages; CI installs them here per-branch
+          # using the pins in release-plugins.json.
+          if [ ! -f "release-plugins.json" ]; then
+            echo "::notice::release-plugins.json not found; skipping release plugin pin"
+            exit 0
+          fi
+
+          jq -r 'to_entries[] | "dependencies.\(.key)=\(.value)"' release-plugins.json \
+            | while IFS= read -r entry; do
+                npm pkg set "$entry"
+              done
+
+          echo "Release plugin pins applied:"
+          jq -r 'to_entries[] | "  \(.key)@\(.value)"' release-plugins.json
+
+      - name: "Rewrite local @valtimo/* deps to file: links and install"
         shell: bash
         run: |
           set -euo pipefail
@@ -59,41 +101,33 @@ jobs:
           PROJECTS_DIR="projects/valtimo"
           SCOPE="@valtimo"
           LOCAL_ROOT="dist/valtimo"
-          PKG_JSON="package.json"
 
-          if [ ! -f "$PKG_JSON" ]; then
-            echo "❌ $PKG_JSON niet gevonden in repo-root"; exit 1
-          fi
           if [ ! -d "$PROJECTS_DIR" ]; then
-            echo "ℹ️  '$PROJECTS_DIR' niet gevonden; niets te doen."; exit 0
+            echo "::error::$PROJECTS_DIR not found"
+            exit 1
           fi
 
-          echo "🔎 Subfolders in '$PROJECTS_DIR' verzamelen…"
           mapfile -t NAMES < <(find "$PROJECTS_DIR" -mindepth 1 -maxdepth 1 -type d -printf '%f\n' | grep -v '^\.' || true)
-
           if [ "${#NAMES[@]}" -eq 0 ]; then
-            echo "ℹ️  Geen subfolders gevonden; niets te doen."; exit 0
+            echo "::error::no workspace packages found under $PROJECTS_DIR"
+            exit 1
           fi
+
+          # Drop the workspaces declaration so npm install honours the file:
+          # deps below instead of symlinking @valtimo/* to source folders that
+          # have no compiled output. Source resolution still works for the app
+          # itself via tsconfig.paths; the plugin tarballs in node_modules need
+          # the file: deps to find @valtimo/* via standard node resolution.
+          npm pkg delete workspaces >/dev/null 2>&1 || true
 
           for name in "${NAMES[@]}"; do
-            npm pkg delete devDependencies."$SCOPE/$name" || true
-            npm pkg set dependencies.@valtimo/$name="file:$LOCAL_ROOT/$name"
+            npm pkg delete devDependencies."$SCOPE/$name" >/dev/null 2>&1 || true
+            npm pkg set "dependencies.$SCOPE/$name=file:$LOCAL_ROOT/$name"
           done
 
-          echo "📦 npm install…"
           npm install
 
-          echo "🎉 Klaar. Geüpdatet packages:"
-          for name in "${NAMES[@]}"; do
-            echo " - ${SCOPE}/${name} -> file:${LOCAL_ROOT}/${name}"
-          done
-
-          echo "Content of package.json:"
-          cat package.json
-
-          sed -i "s/\"dist\/valtimo/\"dist\/valtimo/g" angular.json
-
-      - name: Build app (optioneel voor andere outputs)
+      - name: Build app
         run: npm run build
 
       - name: Log in to GitHub Container Registry
@@ -103,9 +137,21 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Log in to Docker Hub
+        if: ${{ inputs.push_to_dockerhub }}
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_PASSWORD }}
+
       - name: Resolve frontend tree hash
         id: frontend_tree
         run: echo "tree=$(git rev-parse HEAD:frontend)" >> "$GITHUB_OUTPUT"
+
+      - name: Normalize branch name for tags
+        shell: bash
+        run: |
+          echo "BRANCH_NAME_SAFE=${BRANCH_NAME//\//-}" >> "$GITHUB_ENV"
 
       - name: Generate image tags
         id: generate_tags
@@ -115,11 +161,17 @@ jobs:
         with:
           images: ghcr.io/${{ github.repository }}/gzac-frontend
           tags: |
-            type=raw,value=${{ env.BRANCH_NAME }}.${{ github.run_number }}
-            type=raw,value=commit-${{ github.sha }}
-            type=raw,value=contents-${{ steps.frontend_tree.outputs.tree }}
+            type=raw,value=${{ env.BRANCH_NAME }}-test.${{ github.run_number }}
+            type=raw,value=commit-test-${{ github.sha }}
+            type=raw,value=contents-test-${{ steps.frontend_tree.outputs.tree }}
           flavor: |
             latest=false
+
+      - name: Extract primary image tag
+        id: primary_tag
+        run: |
+          full_tag='${{ fromJson(steps.generate_tags.outputs.json).tags[0] }}'
+          echo "tag=${full_tag##*:}" >> "$GITHUB_OUTPUT"
 
       - name: Set up Buildx
         uses: docker/setup-buildx-action@v3
@@ -133,7 +185,10 @@ jobs:
           # gebruik het ge-downloadde artefact als build context
           context: frontend/
           file: ./frontend/Dockerfile
+          platforms: linux/amd64,linux/arm64/v8
           push: true
-          tags: ${{ steps.generate_tags.outputs.tags }}
+          tags: |
+            ${{ steps.generate_tags.outputs.tags }}
+            ${{ inputs.push_to_dockerhub && format('docker.io/{0}:{1}', env.DOCKERHUB_IMAGE, inputs.release_image_tag) || '' }}
           cache-from: type=gha
           cache-to: type=gha,mode=max

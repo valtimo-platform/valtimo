@@ -4,7 +4,17 @@ permissions:
   contents: read
 
 on:
+  workflow_call:
+    inputs:
+      project_version:
+        description: "Semantic version suffixed with -{rc_number}. E.g. 13.6.0-1"
+        required: true
+        type: string
   workflow_dispatch:
+    inputs:
+      project_version:
+        description: "Semantic version suffixed with -{rc_number}. E.g. 13.6.0-1"
+        required: true
 
 defaults:
   run:
@@ -13,19 +23,27 @@ defaults:
 jobs:
   determine_version:
     runs-on: ubuntu-latest
+    env:
+      PROJECT_VERSION: ${{ inputs.project_version || github.event.inputs.project_version }}
     outputs:
       project_version: ${{ steps.version.outputs.version_rc }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Compute version from branch
+      - name: Validate project version
         id: version
         shell: bash
         run: |
-          SEMVER_VERSION="${GITHUB_REF_NAME#rc/}"
-          VERSION_RC="${SEMVER_VERSION}-${GITHUB_RUN_NUMBER}.RC"
-          echo "version_rc=$VERSION_RC" >> "$GITHUB_OUTPUT"
+          if [[ -z "$PROJECT_VERSION" ]]; then
+            echo "::error::Project version input is required."
+            exit 1
+          fi
+          if [[ ! "$PROJECT_VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+-[0-9]+$ ]]; then
+            echo "::error::Project version must be <semver>-<rc_number> (e.g. 13.5.0-1). Current: $PROJECT_VERSION."
+            exit 1
+          fi
+          echo "version_rc=$PROJECT_VERSION" >> "$GITHUB_OUTPUT"
 
   build_and_test:
     needs: ["determine_version"]

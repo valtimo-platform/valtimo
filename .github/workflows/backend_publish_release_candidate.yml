@@ -4,11 +4,17 @@ permissions:
   contents: read
 
 on:
+  workflow_call:
+    inputs:
+      project_version:
+        description: "Base semantic version (e.g. 13.6.0)"
+        required: true
+        type: string
   workflow_dispatch:
-
-defaults:
-  run:
-    working-directory: backend
+    inputs:
+      project_version:
+        description: "Base semantic version (e.g. 13.6.0)"
+        required: true
 
 env:
   ORG_GRADLE_PROJECT_includeDev: false
@@ -22,6 +28,7 @@ jobs:
     runs-on: ubuntu-latest
     if: ${{ startsWith(github.ref_name, 'rc/') }}
     env:
+      PROJECT_VERSION: ${{ inputs.project_version || github.event.inputs.project_version }}
       SONATYPE_USERNAME: ${{ secrets.SONATYPE_USERNAME }}
       SONATYPE_PASSWORD: ${{ secrets.SONATYPE_PASSWORD }}
       JRELEASER_MAVENCENTRAL_sonatype_STAGE: UPLOAD
@@ -47,18 +54,25 @@ jobs:
         id: version
         shell: bash
         run: |
-          SEMVER_VERSION="${GITHUB_REF_NAME#rc/}"
-          VERSION_RC="${SEMVER_VERSION}.RC-${GITHUB_RUN_NUMBER}-SNAPSHOT"
+          if [[ -z "$PROJECT_VERSION" ]]; then
+            echo "::error::Project version input is required."
+            exit 1
+          fi
+          if [[ ! "$PROJECT_VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+-[0-9]+$ ]]; then
+            echo "::error::Project version must be <semver>-<rc_number> (e.g. 13.5.0-1). Current: $PROJECT_VERSION."
+            exit 1
+          fi
+          VERSION_RC="$PROJECT_VERSION"
           echo "version_rc=$VERSION_RC" >> "$GITHUB_OUTPUT"
 
       - name: Check license compliance (non-blocking)
         continue-on-error: true
-        run: ./gradlew -PincludeDev=false checkLicense
+        run: ./gradlew -PincludeDev=false :backend:checkLicense
 
       - name: Warn if disallowed licenses found
         run: |
           sudo apt-get update -qq && sudo apt-get install -y jq
-          FILE="build/reports/dependency-license/dependencies-without-allowed-license.json"
+          FILE="backend/build/reports/dependency-license/dependencies-without-allowed-license.json"
           if [[ -f "$FILE" ]]; then
             COUNT=$(jq '.dependenciesWithoutAllowedLicenses | length' "$FILE" 2>/dev/null || echo 0)
             if [[ "$COUNT" -gt 0 ]]; then
@@ -76,7 +90,7 @@ jobs:
         env:
           ORG_GRADLE_PROJECT_sonatypeUsername: ${{ env.SONATYPE_USERNAME }}
           ORG_GRADLE_PROJECT_sonatypePassword: ${{ env.SONATYPE_PASSWORD }}
-        run: ./gradlew -PincludeDev=false jreleaserDeploy --stacktrace -PprojectVersion="${{ steps.version.outputs.version_rc }}"
+        run: ./gradlew -PincludeDev=false :backend:jreleaserDeploy --stacktrace -PprojectVersion="${{ steps.version.outputs.version_rc }}"
 
       - name: Archive Reports
         if: always()
