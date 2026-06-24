@@ -23,6 +23,14 @@
 
   Editing decision tables in the UI is no longer experimental. The DMN editor is now used consistently for case,
   building block, and standalone decision tables, without a feature toggle.
+  
+* **Start supporting process forms in the case detail panel**
+
+  The process link configuration of a start event now offers a **Display type** option (Modal or Panel), defaulting to
+  **Modal**. When a supporting process is started from the **Start** button with its start event configured as
+  **Panel**, the start form opens in the case detail panel, the same way user task forms can. This requires the active
+  tab to expose a panel. Otherwise the form opens in the modal as before. Form types that rely on view models or custom
+  UI components always open in the modal.
 
 * **Value resolver support for Documenten API plugin**
 
