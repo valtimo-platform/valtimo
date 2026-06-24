@@ -62,12 +62,20 @@ export async function pluginDataRoutes(
       query?: Record<string, string>;
       body?: unknown;
       context?: Record<string, unknown>;
+      /**
+       * Downscoped user token forwarded from the tab. Lets a `handle_request` handler call back into
+       * GZAC *as the user* (`gzacApi.asUser`, PBAC ∩ allowlist). Optional — when absent the handler
+       * can still use the service token. ⚠️ The host now holds the user token for the call; see the
+       * route-level security note.
+       */
+      userToken?: string;
     };
   }>(
     "/plugins/:pluginId/:version/data",
     async (request, reply) => {
       const { pluginId, version } = request.params;
-      const { configurationId, method, path, query, body, context } = request.body ?? ({} as never);
+      const { configurationId, method, path, query, body, context, userToken } =
+        request.body ?? ({} as never);
 
       reply.header("Access-Control-Allow-Origin", "*");
 
@@ -105,6 +113,7 @@ export async function pluginDataRoutes(
           context,
           serviceToken,
           gzacBaseUrl,
+          userToken,
         });
 
         if (result.headers) {

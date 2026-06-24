@@ -386,6 +386,7 @@ export class PluginManager {
       context?: Record<string, unknown>;
       serviceToken?: string;
       gzacBaseUrl?: string;
+      userToken?: string;
     }
   ): Promise<{ status: number; headers?: Record<string, string>; body?: unknown }> {
     const k = this.key(pluginId, version);
@@ -395,7 +396,10 @@ export class PluginManager {
       throw new Error(`Plugin not found: ${pluginId}@${version}`);
     }
 
-    const { serviceToken, gzacBaseUrl, ...wasmFields } = input;
+    // serviceToken / gzacBaseUrl / userToken are host-only — destructured out so they are never
+    // serialized into the Wasm input the plugin sees. They reach GZAC only via the gzac_api host
+    // function, which reads them from the per-call host context below.
+    const { serviceToken, gzacBaseUrl, userToken, ...wasmFields } = input;
     const wasmInput = JSON.stringify({
       ...wasmFields,
       configuration: input.configuration,
@@ -407,6 +411,7 @@ export class PluginManager {
       pluginVersion: version,
       serviceToken: serviceToken ?? "",
       gzacBaseUrl: gzacBaseUrl ?? "",
+      userToken: userToken,
     };
 
     this.logger.debug(

@@ -54,10 +54,50 @@ interface SummaryData {
   items: Array<{ label: string; value: string }>;
 }
 
+interface BackendScopeResult {
+  tokenType: "user" | "plugin";
+  upstreamStatus: number;
+  caseDefinitionKey: string;
+  totalElements: number | null;
+}
+
 type LoadState<T> =
   | { state: "loading" }
   | { state: "error"; message: string }
   | { state: "ready"; data: T };
+
+/** Renders the result of a "tab → plugin backend → GZAC" case-count call (levels 3 & 4). */
+function BackendScopePanel(props: {
+  titleKey: string;
+  descKey: string;
+  state: LoadState<BackendScopeResult>;
+}) {
+  const { titleKey, descKey, state } = props;
+  return (
+    <div style={panelStyle}>
+      <div style={panelTitleStyle}>{sdk.t(titleKey)}</div>
+      <div style={{ ...mutedStyle, marginBottom: "8px" }}>{sdk.t(descKey)}</div>
+      {state.state === "loading" && <div style={mutedStyle}>{sdk.t("caseTab.loading")}</div>}
+      {state.state === "error" && <div style={errorStyle}>{state.message}</div>}
+      {state.state === "ready" && (
+        <div>
+          <div style={rowStyle}>
+            <span>{sdk.t("caseTab.backend.upstreamStatus")}</span>
+            <span>{state.data.upstreamStatus}</span>
+          </div>
+          {state.data.totalElements !== null ? (
+            <div style={rowStyle}>
+              <span>{sdk.t("caseTab.backend.casesVisible")}</span>
+              <span>{state.data.totalElements}</span>
+            </div>
+          ) : (
+            <div style={errorStyle}>{sdk.t("caseTab.backend.denied")}</div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
 
 function useResizeEmitter(deps: unknown[]): void {
   useEffect(() => {
@@ -76,6 +116,20 @@ function CaseTab() {
   const [valtimoData, setValtimoData] = useState<LoadState<Record<string, unknown>>>({
     state: "loading",
   });
+  const [scopeAsUser, setScopeAsUser] = useState<LoadState<BackendScopeResult>>({ state: "loading" });
+  const [scopeAsPlugin, setScopeAsPlugin] = useState<LoadState<BackendScopeResult>>({
+    state: "loading",
+  });
+
+  // (4) tab -> plugin backend -> GZAC, with the downscoped user token (PBAC ∩ allowlist).
+  useEffect(() => {
+    loadScope("/case-count-as-user", setScopeAsUser);
+  }, []);
+
+  // (5) tab -> plugin backend -> GZAC, with the service/plugin token (allowlist only; broader scope).
+  useEffect(() => {
+    loadScope("/case-count-as-plugin", setScopeAsPlugin);
+  }, []);
 
   // (2) Plugin-served data — fetched from the plugin's own handle_request handler.
   useEffect(() => {
@@ -111,7 +165,7 @@ function CaseTab() {
       .catch((err) => setValtimoData({ state: "error", message: String(err?.message ?? err) }));
   }, [documentId]);
 
-  useResizeEmitter([pluginData, valtimoData]);
+  useResizeEmitter([pluginData, valtimoData, scopeAsUser, scopeAsPlugin]);
 
   return (
     <div style={{ fontFamily: "IBM Plex Sans, sans-serif", padding: "0" }}>
@@ -151,8 +205,38 @@ function CaseTab() {
           </div>
         )}
       </div>
+
+      {/* (4) tab -> plugin backend -> GZAC with the user token (PBAC ∩ allowlist). */}
+      <BackendScopePanel
+        titleKey="caseTab.backend.userTitle"
+        descKey="caseTab.backend.userDesc"
+        state={scopeAsUser}
+      />
+
+      {/* (5) tab -> plugin backend -> GZAC with the service/plugin token (broader than the user). */}
+      <BackendScopePanel
+        titleKey="caseTab.backend.pluginTitle"
+        descKey="caseTab.backend.pluginDesc"
+        state={scopeAsPlugin}
+      />
     </div>
   );
+}
+
+function loadScope(
+  path: string,
+  setState: (state: LoadState<BackendScopeResult>) => void
+): void {
+  sdk
+    .getPluginData(path)
+    .then((res) => {
+      if (res.status >= 200 && res.status < 300) {
+        setState({ state: "ready", data: res.body as BackendScopeResult });
+      } else {
+        setState({ state: "error", message: sdk.t("caseTab.backend.error") });
+      }
+    })
+    .catch((err) => setState({ state: "error", message: String(err?.message ?? err) }));
 }
 
 function describeDefinition(document: Record<string, unknown>): string {

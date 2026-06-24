@@ -237,6 +237,11 @@ export class ExternalPluginIframeComponent implements OnInit, OnDestroy {
         query,
         body,
         context: this.context,
+        // Forward the downscoped user token so a `handle_request` handler can call GZAC *as the user*
+        // (gzacApi.asUser). NOTE: this hands the user token to the plugin host — a deliberate
+        // relaxation of the "token never leaves the browser" guarantee, bounded by PBAC ∩ allowlist
+        // and the token's short TTL. The plugin only receives data, never the token itself.
+        userToken: this.userToken ?? undefined,
       }),
     });
 

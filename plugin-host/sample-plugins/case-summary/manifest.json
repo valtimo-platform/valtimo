@@ -37,6 +37,14 @@
       "caseTab.valtimo.error": "Could not load case data.",
       "caseTab.valtimo.forbidden": "You don't have permission to view this case's data.",
       "caseTab.valtimo.noDocument": "No document is associated with this tab.",
+      "caseTab.backend.userTitle": "Plugin backend → Valtimo (user token)",
+      "caseTab.backend.userDesc": "The plugin backend counts cases of this type as you — row-level PBAC ∩ the plugin's allowlist, so you only see yours.",
+      "caseTab.backend.pluginTitle": "Plugin backend → Valtimo (plugin token)",
+      "caseTab.backend.pluginDesc": "The plugin backend counts cases as the system — PBAC is bypassed, so it sees every case (scope broader than yours).",
+      "caseTab.backend.upstreamStatus": "Upstream status",
+      "caseTab.backend.casesVisible": "Cases visible",
+      "caseTab.backend.denied": "The upstream call was denied for this token.",
+      "caseTab.backend.error": "The plugin backend could not complete the call.",
       "caseTabDetails.hello.title": "Case details tab",
       "caseTabDetails.hello": "This is a second case tab from the same plugin, selected by its bundle key.",
       "caseTabDetails.content.title": "Document content (your access)",
@@ -72,6 +80,14 @@
       "caseTab.valtimo.error": "Kon zaakgegevens niet laden.",
       "caseTab.valtimo.forbidden": "U heeft geen rechten om de gegevens van deze zaak te bekijken.",
       "caseTab.valtimo.noDocument": "Er is geen document gekoppeld aan dit tabblad.",
+      "caseTab.backend.userTitle": "Plugin-backend → Valtimo (gebruikerstoken)",
+      "caseTab.backend.userDesc": "De plugin-backend telt zaken van dit type als u — PBAC op rijniveau ∩ de allowlist van de plugin, dus u ziet alleen die van uzelf.",
+      "caseTab.backend.pluginTitle": "Plugin-backend → Valtimo (plugintoken)",
+      "caseTab.backend.pluginDesc": "De plugin-backend telt zaken als het systeem — PBAC wordt omzeild, dus alle zaken zijn zichtbaar (bredere scope dan die van u).",
+      "caseTab.backend.upstreamStatus": "Upstream-status",
+      "caseTab.backend.casesVisible": "Zichtbare zaken",
+      "caseTab.backend.denied": "De upstream-aanroep is geweigerd voor dit token.",
+      "caseTab.backend.error": "De plugin-backend kon de aanroep niet voltooien.",
       "caseTabDetails.hello.title": "Zaakdetails-tabblad",
       "caseTabDetails.hello": "Dit is een tweede zaaktabblad van dezelfde plugin, geselecteerd op zijn bundle-sleutel.",
       "caseTabDetails.content.title": "Documentinhoud (uw toegang)",
@@ -93,7 +109,8 @@
   "permissions": {
     "endpoints": [
       { "method": "GET", "pattern": "/api/v1/document/*" },
-      { "method": "POST", "pattern": "/api/v1/document/*/note" }
+      { "method": "POST", "pattern": "/api/v1/document/*/note" },
+      { "method": "POST", "pattern": "/api/v1/case/*/search" }
     ]
   },
   "frontendBundles": [
