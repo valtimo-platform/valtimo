@@ -101,6 +101,7 @@ export class SelectFormComponent implements OnInit, OnDestroy {
   private isStartEvent$ = new BehaviorSubject<boolean>(false);
 
   private readonly _DEFAULT_FORM_DISPLAY_TYPE: FormDisplayType = 'panel';
+  private readonly _DEFAULT_START_EVENT_FORM_DISPLAY_TYPE: FormDisplayType = 'modal';
   private readonly _DEFAULT_FORM_DISPLAY_SIZE: FormSize = 'medium';
 
   constructor(
@@ -202,6 +203,10 @@ export class SelectFormComponent implements OnInit, OnDestroy {
           ...(isUserTask && {
             formDisplayType: this.formDisplayValue || this._DEFAULT_FORM_DISPLAY_TYPE,
           }),
+          ...(isStartEvent && {
+            formDisplayType:
+              this.formDisplayValue || this._DEFAULT_START_EVENT_FORM_DISPLAY_TYPE,
+          }),
           ...((isUserTask || isStartEvent) && {
             formSize: this.formSizeValue || this._DEFAULT_FORM_DISPLAY_SIZE,
           }),
@@ -231,6 +236,10 @@ export class SelectFormComponent implements OnInit, OnDestroy {
           viewModelEnabled,
           ...(isUserTask && {
             formDisplayType: this.formDisplayValue || this._DEFAULT_FORM_DISPLAY_TYPE,
+          }),
+          ...(isStartEvent && {
+            formDisplayType:
+              this.formDisplayValue || this._DEFAULT_START_EVENT_FORM_DISPLAY_TYPE,
           }),
           ...((isUserTask || isStartEvent) && {
             formSize: this.formSizeValue || this._DEFAULT_FORM_DISPLAY_SIZE,

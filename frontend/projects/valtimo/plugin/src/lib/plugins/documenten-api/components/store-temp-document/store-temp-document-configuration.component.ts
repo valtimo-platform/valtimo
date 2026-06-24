@@ -20,7 +20,9 @@ import {BehaviorSubject, combineLatest, map, Observable, Subscription, take} fro
 import {DocumentLanguage, DocumentStatus, StoreTempDocumentConfig} from '../../models';
 import {TranslateService} from '@ngx-translate/core';
 import {PluginTranslationService} from '../../../../services';
-import {ConfidentialityLevel} from '../../../documenten-api/models';
+import {ConfidentialityLevel} from '../../models';
+import {InputOption} from '../../../zaken-api/models';
+import {RadioValue} from '@valtimo/components';
 
 @Component({
   selector: 'valtimo-store-temp-document-configuration',
@@ -56,6 +58,34 @@ export class StoreTempDocumentConfigurationComponent
           text: this.pluginTranslationService.instant(confidentialityLevel, this.pluginId),
         }))
       )
+    );
+
+  readonly selectedConfidentialityLevelInputType$ = new BehaviorSubject<InputOption>('selection');
+  readonly selectedLanguageInputType$ = new BehaviorSubject<InputOption>('selection');
+  readonly selectedStatusInputType$ = new BehaviorSubject<InputOption>('selection');
+
+  readonly confidentialityLevelInputTypeOptions$: Observable<Array<RadioValue>> =
+    this.translateService.stream('key').pipe(
+      map(() => [
+        {value: 'selection', title: this.pluginTranslationService.instant('selection', this.pluginId)},
+        {value: 'text', title: this.pluginTranslationService.instant('text', this.pluginId)},
+      ])
+    );
+
+  readonly languageInputTypeOptions$: Observable<Array<RadioValue>> =
+    this.translateService.stream('key').pipe(
+      map(() => [
+        {value: 'selection', title: this.pluginTranslationService.instant('selection', this.pluginId)},
+        {value: 'text', title: this.pluginTranslationService.instant('text', this.pluginId)},
+      ])
+    );
+
+  readonly statusInputTypeOptions$: Observable<Array<RadioValue>> =
+    this.translateService.stream('key').pipe(
+      map(() => [
+        {value: 'selection', title: this.pluginTranslationService.instant('selection', this.pluginId)},
+        {value: 'text', title: this.pluginTranslationService.instant('text', this.pluginId)},
+      ])
     );
 
   readonly LANGUAGE_ITEMS: Array<DocumentLanguage> = ['nld'];
@@ -101,9 +131,23 @@ export class StoreTempDocumentConfigurationComponent
     this.saveSubscription?.unsubscribe();
   }
 
-  formValueChange(formValue: StoreTempDocumentConfig): void {
+  formValueChange(formValue: StoreTempDocumentConfig & {
+    confidentialityLevelInputType?: InputOption;
+    languageInputType?: InputOption;
+    statusInputType?: InputOption;
+  }): void {
     this.formValue$.next(formValue);
     this.handleValid(formValue);
+
+    if (formValue.confidentialityLevelInputType) {
+      this.selectedConfidentialityLevelInputType$.next(formValue.confidentialityLevelInputType);
+    }
+    if (formValue.languageInputType) {
+      this.selectedLanguageInputType$.next(formValue.languageInputType);
+    }
+    if (formValue.statusInputType) {
+      this.selectedStatusInputType$.next(formValue.statusInputType);
+    }
   }
 
   private handleValid(formValue: StoreTempDocumentConfig): void {

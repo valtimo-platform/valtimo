@@ -17,11 +17,11 @@
 package com.ritense.formflow.web.rest
 
 import com.ritense.formflow.domain.definition.FormFlowDefinitionId
-import com.ritense.formflow.importer.FormFlowDefinitionImporter
 import com.ritense.formflow.service.FormFlowService
 import com.ritense.formflow.web.rest.result.FormFlowDefinitionDto
 import com.ritense.logging.LoggableResource
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
+import com.ritense.valtimo.contract.case_.CaseDefinitionChecker
 import com.ritense.valtimo.contract.case_.CaseDefinitionId
 import com.ritense.valtimo.contract.domain.ValtimoMediaType.APPLICATION_JSON_UTF8_VALUE
 import jakarta.validation.Valid
@@ -47,7 +47,7 @@ import org.springframework.web.bind.annotation.RestController
 @RequestMapping("/api/management", produces = [APPLICATION_JSON_UTF8_VALUE])
 class FormFlowManagementResource(
     private val formFlowService: FormFlowService,
-    private val formFlowDefinitionImporter: FormFlowDefinitionImporter,
+    private val caseDefinitionChecker: CaseDefinitionChecker,
 ) {
     @GetMapping("/v1/form-flow-definition/schema")
     fun getFormFlowDefinitionSchema(): ResponseEntity<Resource> =
@@ -61,8 +61,9 @@ class FormFlowManagementResource(
         @PageableDefault pageable: Pageable
     ): ResponseEntity<Page<FormFlowDefinitionDto>> {
         val caseDefinitionId = CaseDefinitionId(caseDefinitionKey, versionTag)
+        val readOnly = !caseDefinitionChecker.canUpdateCaseDefinition(caseDefinitionId)
         val definitions = formFlowService.getFormFlowDefinitions(caseDefinitionId, pageable)
-            .map { FormFlowDefinitionDto.of(it, formFlowDefinitionImporter.isAutoDeployed(it.id.key)) }
+            .map { FormFlowDefinitionDto.of(it, readOnly) }
         return ResponseEntity.ok(definitions)
     }
 
@@ -75,7 +76,7 @@ class FormFlowManagementResource(
     ): ResponseEntity<FormFlowDefinitionDto> {
         val caseDefinitionId = CaseDefinitionId(caseDefinitionKey, versionTag)
         val definition = formFlowService.findDefinition(FormFlowDefinitionId.existingId(definitionKey, caseDefinitionId))
-        val readOnly = formFlowDefinitionImporter.isAutoDeployed(definition.id.key)
+        val readOnly = !caseDefinitionChecker.canUpdateCaseDefinition(caseDefinitionId)
         return ResponseEntity.ok(FormFlowDefinitionDto.of(definition, readOnly))
     }
 
@@ -87,7 +88,7 @@ class FormFlowManagementResource(
         @LoggableResource("formFlowDefinitionKey") @PathVariable definitionKey: String,
     ): ResponseEntity<Unit> {
         val caseDefinitionId = CaseDefinitionId(caseDefinitionKey, versionTag)
-        if (formFlowDefinitionImporter.isAutoDeployed(definitionKey)) {
+        if (!caseDefinitionChecker.canUpdateCaseDefinition(caseDefinitionId)) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build()
         }
         formFlowService.deleteByKeyAndsCaseDefinition(definitionKey, caseDefinitionId)
@@ -102,6 +103,7 @@ class FormFlowManagementResource(
         @Valid @RequestBody definitionDto: FormFlowDefinitionDto
     ): ResponseEntity<FormFlowDefinitionDto> {
         val caseDefinitionId = CaseDefinitionId(caseDefinitionKey, versionTag)
+        caseDefinitionChecker.assertCanUpdateCaseDefinition(caseDefinitionId)
         if (formFlowService.findDefinitionOrNull(definitionDto.key, caseDefinitionId) != null) {
             return ResponseEntity.badRequest().build()
         }
@@ -118,7 +120,7 @@ class FormFlowManagementResource(
         @Valid @RequestBody definitionDto: FormFlowDefinitionDto
     ): ResponseEntity<FormFlowDefinitionDto> {
         val caseDefinitionId = CaseDefinitionId(caseDefinitionKey, versionTag)
-        val readOnly = formFlowDefinitionImporter.isAutoDeployed(definitionKey)
+        val readOnly = !caseDefinitionChecker.canUpdateCaseDefinition(caseDefinitionId)
         if (readOnly) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build()
         }
