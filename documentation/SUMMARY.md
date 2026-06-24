@@ -253,6 +253,7 @@
   * [REST API endpoint security test](running-valtimo/application-configuration/security-testing.md)
   * [Content Security Policy (CSP.md)](running-valtimo/application-configuration/content-security-policy.md)
   * [Configuring Keycloak](running-valtimo/application-configuration/configuring-keycloak.md)
+  * [Security baseline](running-valtimo/application-configuration/security-baseline.md)
   * [Temporary file storage](running-valtimo/application-configuration/temporary-file-storage.md)
   * [Feature toggles](running-valtimo/application-configuration/feature-toggles.md)
 
