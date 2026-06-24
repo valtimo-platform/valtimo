@@ -1,5 +1,5 @@
 <!--
-  ~ Copyright 2015-2025 Ritense BV, the Netherlands.
+  ~ Copyright 2015-2026 Ritense BV, the Netherlands.
   ~
   ~ Licensed under EUPL, Version 1.2 (the "License");
   ~ you may not use this file except in compliance with the License.
@@ -13,39 +13,135 @@
   ~ See the License for the specific language governing permissions and
   ~ limitations under the License.
   -->
-<ng-container
-  *ngIf="{
-    pluginConfigurations: pluginConfigurations$ | async,
-    loading: loading$ | async,
-  } as obs"
->
-  <valtimo-carbon-list
-    [actionItems]="actionItems"
-    [loading]="obs.loading"
-    [items]="obs.pluginConfigurations"
-    [fields]="fields"
-    [header]="false"
-    (rowClicked)="editConfiguration($event)"
+
+<cds-tabs>
+  <cds-tab
+    [heading]="'pluginManagement.tabs.configurations' | translate"
+    [active]="(selectedTabIndex$ | async) === 0"
+    (selected)="onTabSelected(0)"
   >
-    <ng-container carbonToolbarContent [ngTemplateOutlet]="configurePluginButton"></ng-container>
+    <ng-container
+      *ngIf="{
+        pluginConfigurations: pluginConfigurations$ | async,
+        loading: loading$ | async,
+        hasConnectedHosts: hasConnectedHosts$ | async,
+        externalDefsRefreshing: externalDefsRefreshing$ | async,
+      } as obs"
+    >
+      <valtimo-carbon-list
+        [actionItems]="actionItems"
+        [loading]="obs.loading"
+        [items]="obs.pluginConfigurations"
+        [fields]="fields$ | async"
+        [header]="false"
+        (rowClicked)="editConfiguration($event)"
+      >
+        <ng-container carbonToolbarContent>
+          <cds-loading
+            *ngIf="obs.externalDefsRefreshing"
+            size="sm"
+            [isActive]="true"
+            class="plugin-management__hosts-spinner"
+          ></cds-loading>
 
-    <valtimo-no-results
-      [action]="configurePluginButton"
-      [title]="'pages.plugins.noResults' | translate"
-    ></valtimo-no-results>
-  </valtimo-carbon-list>
+          <button
+            *ngIf="obs.hasConnectedHosts"
+            cdsButton="tertiary"
+            [disabled]="obs.loading"
+            (click)="openUploadModal()"
+          >
+            {{ 'pluginManagement.uploadPlugin' | translate }}
 
-  <ng-template #configurePluginButton>
-    <button cdsButton="primary" [disabled]="obs.loading" (click)="showAddModal()">
-      {{ 'pluginManagement.add' | translate }}
+            <svg cdsIcon="upload" size="16" class="cds--btn__icon"></svg>
+          </button>
 
-      <svg cdsIcon="add" size="16" class="cds--btn__icon"></svg>
-    </button>
-  </ng-template>
-</ng-container>
+          <button cdsButton="primary" [disabled]="obs.loading" (click)="showAddModal()">
+            {{ 'pluginManagement.add' | translate }}
+
+            <svg cdsIcon="add" size="16" class="cds--btn__icon"></svg>
+          </button>
+        </ng-container>
+
+        <valtimo-no-results
+          [action]="toolbarButtons"
+          [title]="'pages.plugins.noResults' | translate"
+        ></valtimo-no-results>
+      </valtimo-carbon-list>
+
+      <ng-template #toolbarButtons>
+        <button
+          *ngIf="obs.hasConnectedHosts"
+          cdsButton="tertiary"
+          [disabled]="obs.loading"
+          (click)="openUploadModal()"
+        >
+          {{ 'pluginManagement.uploadPlugin' | translate }}
+
+          <svg cdsIcon="upload" size="16" class="cds--btn__icon"></svg>
+        </button>
+
+        <button cdsButton="primary" [disabled]="obs.loading" (click)="showAddModal()">
+          {{ 'pluginManagement.add' | translate }}
+
+          <svg cdsIcon="add" size="16" class="cds--btn__icon"></svg>
+        </button>
+      </ng-template>
+    </ng-container>
+  </cds-tab>
+
+  <cds-tab
+    [heading]="'pluginManagement.tabs.pluginHosts' | translate"
+    [active]="(selectedTabIndex$ | async) === 1"
+    (selected)="onTabSelected(1)"
+  >
+    <ng-container
+      *ngIf="{
+        hosts: hosts$ | async,
+        refreshing: hostsRefreshing$ | async,
+      } as hostObs"
+    >
+      <valtimo-carbon-list
+        [loading]="hostsLoading$ | async"
+        [items]="hostObs.hosts"
+        [fields]="hostFields"
+        [actionItems]="hostActionItems"
+        [header]="false"
+      >
+        <ng-container carbonToolbarContent>
+          <cds-loading
+            *ngIf="hostObs.refreshing"
+            size="sm"
+            [isActive]="true"
+            class="plugin-management__hosts-spinner"
+          ></cds-loading>
+
+          <button cdsButton="primary" [disabled]="hostsLoading$ | async" (click)="openHostModal()">
+            {{ 'pluginManagement.addHost' | translate }}
+
+            <svg cdsIcon="add" size="16" class="cds--btn__icon"></svg>
+          </button>
+        </ng-container>
+
+        <valtimo-no-results
+          [action]="addHostButton"
+          [title]="'pluginManagement.noHosts' | translate"
+        ></valtimo-no-results>
+      </valtimo-carbon-list>
+
+      <ng-template #addHostButton>
+        <button cdsButton="primary" [disabled]="hostsLoading$ | async" (click)="openHostModal()">
+          {{ 'pluginManagement.addHost' | translate }}
+
+          <svg cdsIcon="add" size="16" class="cds--btn__icon"></svg>
+        </button>
+      </ng-template>
+    </ng-container>
+  </cds-tab>
+</cds-tabs>
 
 <valtimo-plugin-add-modal
   [open]="showAddModal$ | async"
+  [externalDefinitions]="externalDefinitions$ | async"
   (closeModal)="closeAddModal()"
 ></valtimo-plugin-add-modal>
 
@@ -53,4 +149,100 @@
   [open]="showEditModal$ | async"
   [saveNewConfiguration]="saveNewConfiguration$ | async"
   (closeModal)="closeEditModal()"
+  (deleteEvent)="onEmbeddedConfigDeleted($event)"
 ></valtimo-plugin-edit-modal>
+
+<valtimo-plugin-external-edit-modal
+  [open]="showExternalEditModal$ | async"
+  [configuration]="selectedExternalConfiguration$ | async"
+  (closeEvent)="closeExternalEditModal()"
+  (savedEvent)="onExternalConfigSaved()"
+  (deleteEvent)="onExternalConfigDeleted($event)"
+></valtimo-plugin-external-edit-modal>
+
+<valtimo-plugin-host-modal
+  [open]="hostModalOpen$ | async"
+  (closeEvent)="closeHostModal()"
+  (submitEvent)="submitHost($event)"
+></valtimo-plugin-host-modal>
+
+<valtimo-plugin-host-event-queue-modal
+  [host]="hostToEditEventQueue$ | async"
+  [open]="eventQueueModalOpen$ | async"
+  (closeEvent)="closeEventQueueModal()"
+  (submitEvent)="submitEventQueueUpdate($event)"
+></valtimo-plugin-host-event-queue-modal>
+
+<valtimo-plugin-upload-modal
+  [hosts]="connectedHosts$ | async"
+  [open]="uploadModalOpen$ | async"
+  (closeEvent)="closeUploadModal()"
+  (uploadedEvent)="onPluginUploaded()"
+></valtimo-plugin-upload-modal>
+
+<valtimo-confirmation-modal
+  [showModalSubject$]="reloadModalOpen$"
+  [titleTranslationKey]="'pluginManagement.reloadModal.title'"
+  [contentTranslationKey]="'pluginManagement.reloadModal.description'"
+  [confirmButtonTextTranslationKey]="'pluginManagement.reloadModal.reload'"
+  [cancelButtonTextTranslationKey]="'pluginManagement.reloadModal.later'"
+  (confirmEvent)="confirmReload()"
+  (cancelEvent)="cancelReload()"
+></valtimo-confirmation-modal>
+
+<valtimo-confirmation-modal
+  [showModalSubject$]="deleteHostModalOpen$"
+  [titleTranslationKey]="'pluginManagement.deleteHostModal.title'"
+  [contentTranslationKey]="'pluginManagement.deleteHostModal.description'"
+  [confirmButtonTextTranslationKey]="'interface.delete'"
+  [confirmButtonType]="'danger'"
+  [cancelButtonTextTranslationKey]="'interface.cancel'"
+  (confirmEvent)="confirmDeleteHost()"
+  (cancelEvent)="cancelDeleteHost()"
+></valtimo-confirmation-modal>
+
+<valtimo-confirmation-modal
+  [showModalSubject$]="deleteConfigurationModalOpen$"
+  [titleTranslationKey]="'pluginManagement.deleteConfigurationModal.title'"
+  [contentTranslationKey]="'pluginManagement.deleteConfigurationModal.description'"
+  [confirmButtonTextTranslationKey]="'interface.delete'"
+  [confirmButtonType]="'danger'"
+  [cancelButtonTextTranslationKey]="'interface.cancel'"
+  (confirmEvent)="confirmDeleteConfiguration()"
+  (cancelEvent)="cancelDeleteConfiguration()"
+></valtimo-confirmation-modal>
+
+<valtimo-plugin-usage-modal
+  [descriptionTranslationKey]="usageModalDescriptionKey"
+  [entityName]="usageModalEntityName"
+  [open]="usageModalOpen$ | async"
+  [titleTranslationKey]="usageModalTitleKey"
+  [usages]="usageModalUsages$ | async"
+  (closeEvent)="closeUsageModal()"
+></valtimo-plugin-usage-modal>
+
+<ng-template #pluginNameColumnTemplate let-data="data">
+  <div class="plugin-management__plugin-name">
+    <span>{{ data?.item?.pluginName }}</span>
+
+    @if (data?.item?.incompatible) {
+      <cds-tag
+        type="red"
+        size="sm"
+        (click)="$event.stopPropagation()"
+      >
+        {{ 'pluginManagement.compatibility.incompatibleTag' | translate }}
+      </cds-tag>
+
+      <cds-tooltip
+        [align]="'top'"
+        [caret]="true"
+        [description]="data.item.compatibilityMessage"
+        class="plugin-management__incompatible-tooltip"
+        (click)="$event.stopPropagation()"
+      >
+        <svg cdsIcon="information" size="16"></svg>
+      </cds-tooltip>
+    }
+  </div>
+</ng-template>

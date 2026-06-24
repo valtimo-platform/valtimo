@@ -1,0 +1,119 @@
+<!--
+  ~ Copyright 2015-2026 Ritense BV, the Netherlands.
+  ~
+  ~ Licensed under EUPL, Version 1.2 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~ https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" basis,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<cds-modal
+  *ngIf="open"
+  [open]="open"
+  size="md"
+  valtimoCdsModal
+>
+  <cds-modal-header (closeSelect)="onClose()">
+    {{ configuration?.title }} - {{ _$definitionName() }}
+
+    <cds-progress-indicator
+      *ngIf="progressSteps.length > 1"
+      [steps]="progressSteps"
+      [current]="currentStepIndex"
+      spacing="equal"
+      class="plugin-external-edit-modal__progress"
+    ></cds-progress-indicator>
+  </cds-modal-header>
+
+  <section cdsModalContent>
+    <cds-loading *ngIf="_$loading()" [isActive]="true" size="sm"></cds-loading>
+
+    <div [hidden]="currentStepIndex !== 0 || _$loading()">
+      <ng-container *ngIf="!_$loading()">
+        <ng-container *ngIf="_$configBundleUrl() as bundleUrl; else jsonForm">
+          <valtimo-external-plugin-iframe
+            [bundleUrl]="bundleUrl"
+            [prefillConfiguration]="_$prefillConfiguration()"
+            (configurationChangedEvent)="onIframeConfigurationChanged($event)"
+          ></valtimo-external-plugin-iframe>
+        </ng-container>
+
+        <ng-template #jsonForm>
+          <form [formGroup]="_form">
+            <div class="cds--form-item">
+              <label class="cds--label">{{ 'pluginManagement.labels.configurationName' | translate }}</label>
+              <input class="cds--text-input" formControlName="title" />
+            </div>
+
+            <div class="cds--form-item">
+              <label class="cds--label">{{ 'pluginManagement.labels.properties' | translate }}</label>
+
+              <textarea
+                class="cds--text-area plugin-external-edit-modal__properties-textarea"
+                formControlName="properties"
+                rows="12"
+              ></textarea>
+
+              <div *ngIf="_$propertiesInvalid()" class="cds--form-requirement">
+                {{ 'pluginManagement.invalidJson' | translate }}
+              </div>
+            </div>
+          </form>
+        </ng-template>
+      </ng-container>
+    </div>
+
+    <div *ngIf="_$hasPermissionsStep()" [hidden]="currentStepIndex !== 1">
+      <valtimo-plugin-external-permissions
+        [endpoints]="_$endpoints()"
+        [eventSubscriptions]="_$eventSubscriptions()"
+        [readonlyMode]="true"
+        (validEvent)="onPermissionsValid($event)"
+      ></valtimo-plugin-external-permissions>
+    </div>
+  </section>
+
+  <cds-modal-footer>
+    <button
+      cdsButton="danger"
+      [disabled]="_$loading()"
+      (click)="onDelete()"
+    >
+      {{ 'pluginManagement.remove' | translate }}
+    </button>
+
+    <button
+      *ngIf="currentStepIndex === 0 && _$hasPermissionsStep()"
+      cdsButton="primary"
+      [disabled]="_$loading()"
+      (click)="goToNextStep()"
+    >
+      {{ 'pluginManagement.editSteps.step1' | translate }}
+    </button>
+
+    <button
+      *ngIf="currentStepIndex === 0 && !_$hasPermissionsStep()"
+      cdsButton="primary"
+      [disabled]="!configValid || _$loading()"
+      (click)="onSave()"
+    >
+      {{ 'pluginManagement.editSteps.save' | translate }}
+    </button>
+
+    <button
+      *ngIf="currentStepIndex === 1 && _$hasPermissionsStep()"
+      cdsButton="primary"
+      [disabled]="!_$permissionsValid() || _$loading()"
+      (click)="onSave()"
+    >
+      {{ 'pluginManagement.editSteps.save' | translate }}
+    </button>
+  </cds-modal-footer>
+</cds-modal>

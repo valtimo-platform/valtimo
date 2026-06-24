@@ -1,5 +1,5 @@
 <!--
-  ~ Copyright 2015-2025 Ritense BV, the Netherlands.
+  ~ Copyright 2015-2026 Ritense BV, the Netherlands.
   ~
   ~ Licensed under EUPL, Version 1.2 (the "License");
   ~ you may not use this file except in compliance with the License.
@@ -14,19 +14,51 @@
   ~ limitations under the License.
   -->
 
-<valtimo-import-plugin-configuration
-  [pluginActionKey]="functionKey$ | async"
-  (configurationEvent)="onImportConfiguration($event)"
-></valtimo-import-plugin-configuration>
+<ng-container *ngIf="isExternalPlugin$ | async; else embeddedConfig">
+  <ng-container *ngIf="{url: externalActionBundleUrl$ | async, resolved: externalBundleResolved$ | async} as bundle">
+    <valtimo-external-plugin-iframe
+      *ngIf="bundle.url"
+      [bundleUrl]="bundle.url"
+      [prefillConfiguration]="externalActionPrefill$ | async"
+      (configurationChangedEvent)="onIframeConfigurationChanged($event)"
+    ></valtimo-external-plugin-iframe>
 
-<valtimo-plugin-configuration-container
-  [pluginDefinitionKey]="pluginDefinitionKey$ | async"
-  [functionKey]="functionKey$ | async"
-  [save$]="save$"
-  [disabled$]="saving$"
-  [selectedPluginConfiguration$]="selectedPluginConfiguration$"
-  [prefillConfiguration$]="prefillConfiguration$"
-  (valid)="onValid($event)"
-  (configuration)="onConfiguration($event)"
-  type="function"
-></valtimo-plugin-configuration-container>
+    <div *ngIf="bundle.resolved && !bundle.url" class="external-action-config">
+      <p class="step-description">
+        {{ 'processLinkConfiguration.externalPluginActionProperties' | translate }}
+      </p>
+      <div class="cds--form-item">
+        <label class="cds--label">{{ 'processLinkConfiguration.actionPropertiesJson' | translate }}</label>
+        <textarea
+          class="cds--text-area"
+          rows="10"
+          [ngModel]="externalActionPropertiesJson"
+          (ngModelChange)="onExternalActionPropertiesChange($event)"
+          [class.cds--text-area--invalid]="!externalActionPropertiesValid"
+        ></textarea>
+        <div *ngIf="!externalActionPropertiesValid" class="cds--form-requirement">
+          {{ 'processLinkConfiguration.invalidJson' | translate }}
+        </div>
+      </div>
+    </div>
+  </ng-container>
+</ng-container>
+
+<ng-template #embeddedConfig>
+  <valtimo-import-plugin-configuration
+    [pluginActionKey]="functionKey$ | async"
+    (configurationEvent)="onImportConfiguration($event)"
+  ></valtimo-import-plugin-configuration>
+
+  <valtimo-plugin-configuration-container
+    [pluginDefinitionKey]="pluginDefinitionKey$ | async"
+    [functionKey]="functionKey$ | async"
+    [save$]="save$"
+    [disabled$]="saving$"
+    [selectedPluginConfiguration$]="selectedPluginConfiguration$"
+    [prefillConfiguration$]="prefillConfiguration$"
+    (valid)="onValid($event)"
+    (configuration)="onConfiguration($event)"
+    type="function"
+  ></valtimo-plugin-configuration-container>
+</ng-template>

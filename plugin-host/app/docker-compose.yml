@@ -1,0 +1,51 @@
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: plugin-host-db
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-pluginhost}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-pluginhost}
+      POSTGRES_DB: ${POSTGRES_DB:-pluginhost}
+    ports:
+      - "${POSTGRES_PORT:-5434}:5432"
+    volumes:
+      - plugin-host-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-pluginhost} -d ${POSTGRES_DB:-pluginhost}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  plugin-host:
+    build: .
+    container_name: plugin-host-app
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    environment:
+      ADMIN_TOKEN: ${ADMIN_TOKEN:-changeme}
+      DB_HOST: db
+      DB_PORT: 5432
+      DB_NAME: ${POSTGRES_DB:-pluginhost}
+      DB_USER: ${POSTGRES_USER:-pluginhost}
+      DB_PASSWORD: ${POSTGRES_PASSWORD:-pluginhost}
+      PLUGIN_STORAGE_DIR: /data/plugins
+      HOST_ID: ${HOST_ID:-plugin-host}
+      LOG_LEVEL: ${LOG_LEVEL:-info}
+      # Uncomment (and mount the ./tls volume below) to terminate TLS at the host so the GZAC→host
+      # config push — which carries broker credentials and the service token — is encrypted, not
+      # only HMAC-authenticated. GZAC must then register this host with an https:// base URL.
+      # TLS_CERT_PATH: /tls/tls.crt
+      # TLS_KEY_PATH: /tls/tls.key
+      # TLS_CA_PATH: /tls/ca.crt
+    ports:
+      - "${APP_PORT:-8090}:8090"
+    volumes:
+      - plugin-storage:/data/plugins
+      # - ./tls:/tls:ro
+    depends_on:
+      db:
+        condition: service_healthy
+
+volumes:
+  plugin-host-data:
+  plugin-storage:

@@ -22,6 +22,7 @@ import com.ritense.authorization.request.EntityAuthorizationRequest;
 import com.ritense.valtimo.contract.authentication.AuthoritiesConstants;
 import com.ritense.valtimo.contract.authentication.ManageableUser;
 import com.ritense.valtimo.contract.authentication.NamedUser;
+import com.ritense.valtimo.contract.authentication.SystemPrincipal;
 import com.ritense.valtimo.contract.authentication.TeamManagementService;
 import com.ritense.valtimo.contract.authentication.User;
 import com.ritense.valtimo.contract.authentication.UserManagementService;
@@ -67,7 +68,7 @@ public class KeycloakUserManagementService implements UserManagementService {
     private static final Logger logger = LoggerFactory.getLogger(KeycloakUserManagementService.class);
     protected static final int MAX_USERS = 100000;
     private static final String MAX_USERS_WARNING_MESSAGE = "Maximum number of users retrieved from keycloak: " + MAX_USERS + ".";
-    private static final ValtimoUser SYSTEM_VALTIMO_USER = new ValtimoUserBuilder().id(SYSTEM_ACCOUNT).lastName(SYSTEM_ACCOUNT).build();
+    private static final ValtimoUser SYSTEM_VALTIMO_USER = new ValtimoUserBuilder().id(SYSTEM_ACCOUNT).username(SYSTEM_ACCOUNT).lastName(SYSTEM_ACCOUNT).build();
 
     private final KeycloakService keycloakService;
     private final String clientName;
@@ -250,20 +251,25 @@ public class KeycloakUserManagementService implements UserManagementService {
 
     @Override
     public ManageableUser getCurrentUser() {
-        if (SecurityUtils.getCurrentUserAuthentication() == null) {
+        Authentication authentication = SecurityUtils.getCurrentUserAuthentication();
+        if (authentication == null) {
             return SYSTEM_VALTIMO_USER;
-        } else if (SecurityUtils.getCurrentUserAuthentication() instanceof AnonymousAuthenticationToken) {
+        } else if (authentication instanceof AnonymousAuthenticationToken) {
             return null;
+        } else if (authentication.getPrincipal() instanceof SystemPrincipal) {
+            // Authenticated non-human actor (e.g. an external plugin service token) — no user account.
+            return SYSTEM_VALTIMO_USER;
         } else {
             return runWithoutAuthorization(() -> findByEmail(SecurityUtils.getCurrentUserLogin()).orElseThrow(() ->
-                new IllegalStateException("No user found for email: ${currentUserService.currentUser.email}")
+                new IllegalStateException("No user found for email: " + SecurityUtils.getCurrentUserLogin())
             ));
         }
     }
 
     @Override
     public String getCurrentUserId() {
-        if (SecurityUtils.getCurrentUserAuthentication() != null) {
+        Authentication authentication = SecurityUtils.getCurrentUserAuthentication();
+        if (authentication != null && !(authentication.getPrincipal() instanceof SystemPrincipal)) {
             return runWithoutAuthorization(() -> findUserRepresentationByEmail(SecurityUtils.getCurrentUserLogin()).orElseThrow(() ->
                 new IllegalStateException("No user found for email: " + SecurityUtils.getCurrentUserLogin())
             ).getId());

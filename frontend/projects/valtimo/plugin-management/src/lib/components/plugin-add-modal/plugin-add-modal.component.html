@@ -1,5 +1,5 @@
 <!--
-  ~ Copyright 2015-2025 Ritense BV, the Netherlands.
+  ~ Copyright 2015-2026 Ritense BV, the Netherlands.
   ~
   ~ Licensed under EUPL, Version 1.2 (the "License");
   ~ you may not use this file except in compliance with the License.
@@ -14,40 +14,103 @@
   ~ limitations under the License.
   -->
 
-<v-stepper-container
-  (completeEvent)="complete()"
-  (cancelClickEvent)="hide()"
-  [disabled]="inputDisabled$ | async"
-  [returnToFirstStepSubject$]="returnToFirstStepSubject$"
->
-  <cds-modal valtimoCdsModal #pluginAddModal [open]="open" (close)="hide()">
-    <cds-modal-header [showCloseButton]="true" (closeSelect)="hide()">
-      <v-stepper-header></v-stepper-header>
-    </cds-modal-header>
-    <section cdsModalContent>
-      <v-stepper-content>
-        <v-stepper-step titleTranslationKey="pluginManagement.addSteps.step0">
-          <valtimo-plugin-add-select></valtimo-plugin-add-select>
-        </v-stepper-step>
-        <v-stepper-step titleTranslationKey="pluginManagement.addSteps.step1">
-          <valtimo-plugin-configure
-            (valid)="onValid($event)"
-            (configuration)="onConfiguration($event)"
-          ></valtimo-plugin-configure>
-        </v-stepper-step>
-      </v-stepper-content>
-    </section>
-    <cds-modal-footer>
-      <v-stepper-footer class="stepper-footer">
-        <v-stepper-footer-step
-          nextButtonTranslationKey="pluginManagement.addSteps.step1"
-          [nextButtonEnabled]="selectedPluginDefinition$ | async"
-        ></v-stepper-footer-step>
-        <v-stepper-footer-step
-          completeButtonTranslationKey="pluginManagement.addSteps.complete"
-          [completeButtonEnabled]="configurationValid$ | async"
-        ></v-stepper-footer-step>
-      </v-stepper-footer>
-    </cds-modal-footer>
-  </cds-modal>
-</v-stepper-container>
+<cds-modal valtimoCdsModal [open]="open" size="lg" (close)="hide()">
+  <cds-modal-header [showCloseButton]="true" (closeSelect)="hide()">
+    <h3 cdsModalHeaderHeading class="add-plugin-modal-header">
+      {{ 'pluginManagement.add' | translate }}
+    </h3>
+
+    <cds-progress-indicator
+      [steps]="progressSteps"
+      [current]="currentStepIndex"
+      spacing="equal"
+      class="plugin-add-modal__progress"
+    ></cds-progress-indicator>
+  </cds-modal-header>
+  <section cdsModalContent [cdsLayer]="1">
+    <div [hidden]="currentStepIndex !== 0">
+      <valtimo-plugin-add-select [externalDefinitions]="externalDefinitions"></valtimo-plugin-add-select>
+    </div>
+
+    <div [hidden]="currentStepIndex !== 1">
+      <cds-inline-notification
+        *ngIf="incompatibleWarning$ | async as warning"
+        [notificationObj]="{
+          type: 'warning',
+          title: ('pluginManagement.compatibility.warningTitle' | translate),
+          message: warning,
+          showClose: false,
+          lowContrast: true,
+        }"
+        class="plugin-add-modal__compatibility-warning"
+      ></cds-inline-notification>
+
+      <ng-container *ngIf="isExternalPlugin$ | async; else embeddedConfigure">
+        <valtimo-plugin-external-configure
+          (endpointsResolved)="onEndpointsResolved($event)"
+          (eventSubscriptionsResolved)="onEventSubscriptionsResolved($event)"
+          (validEvent)="onValid($event)"
+          (saveEvent)="onExternalSave($event)"
+        ></valtimo-plugin-external-configure>
+      </ng-container>
+
+      <ng-template #embeddedConfigure>
+        <valtimo-plugin-configure
+          (valid)="onValid($event)"
+          (configuration)="onConfiguration($event)"
+        ></valtimo-plugin-configure>
+      </ng-template>
+    </div>
+
+    <div *ngIf="isExternal" [hidden]="currentStepIndex !== 2">
+      <valtimo-plugin-external-permissions
+        [endpoints]="endpoints$ | async"
+        [eventSubscriptions]="eventSubscriptions$ | async"
+        (validEvent)="onPermissionsValid($event)"
+        (grantedEndpointsChange)="onGrantedEndpointsChange($event)"
+        (grantedEventsChange)="onGrantedEventsChange($event)"
+      ></valtimo-plugin-external-permissions>
+    </div>
+  </section>
+  <cds-modal-footer>
+    <button cdsButton="ghost" (click)="hide()" [disabled]="inputDisabled$ | async">
+      {{ 'stepper.cancelButtonText' | translate }}
+    </button>
+
+    <button
+      *ngIf="currentStepIndex === 0"
+      cdsButton="primary"
+      [disabled]="!(selectedPluginDefinition$ | async) || (inputDisabled$ | async)"
+      (click)="goToNextStep()"
+    >
+      {{ 'pluginManagement.addSteps.step1' | translate }}
+    </button>
+
+    <button
+      *ngIf="currentStepIndex === 1 && isExternal"
+      cdsButton="primary"
+      [disabled]="!(configurationValid$ | async) || (inputDisabled$ | async)"
+      (click)="goToNextStep()"
+    >
+      {{ 'pluginManagement.addSteps.step2' | translate }}
+    </button>
+
+    <button
+      *ngIf="currentStepIndex === 1 && !isExternal"
+      cdsButton="primary"
+      [disabled]="!(configurationValid$ | async) || (inputDisabled$ | async)"
+      (click)="complete()"
+    >
+      {{ 'pluginManagement.addSteps.complete' | translate }}
+    </button>
+
+    <button
+      *ngIf="currentStepIndex === 2 && isExternal"
+      cdsButton="primary"
+      [disabled]="!(permissionsValid$ | async) || (inputDisabled$ | async)"
+      (click)="complete()"
+    >
+      {{ 'pluginManagement.addSteps.complete' | translate }}
+    </button>
+  </cds-modal-footer>
+</cds-modal>

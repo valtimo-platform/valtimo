@@ -1,0 +1,34 @@
+/*
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
+ *
+ * Licensed under EUPL, Version 1.2 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" basis,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package com.ritense.externalplugin.security
+
+import com.ritense.valtimo.contract.authentication.SystemPrincipal
+import java.util.UUID
+
+/**
+ * Spring Security principal representing an external plugin service-token caller. Carries no roles —
+ * endpoint access is enforced by [ExternalPluginEndpointAllowlistFilter]. Marked as a
+ * [SystemPrincipal] so user-scoped operations it triggers (e.g. creating a note) attribute to the
+ * system user rather than failing on a user lookup — the token has no Keycloak user.
+ */
+data class ExternalPluginServicePrincipal(
+    val pluginConfigId: UUID,
+    val pluginId: String,
+    val pluginVersion: String,
+) : SystemPrincipal {
+    override fun toString(): String = "external-plugin:$pluginId:$pluginConfigId"
+}

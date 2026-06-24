@@ -18,6 +18,7 @@ package com.ritense.authorization.autoconfigure
 
 import com.fasterxml.jackson.databind.Module
 import com.fasterxml.jackson.databind.ObjectMapper
+import com.ritense.authorization.endpoint.AuthorizationEndpointDescriptionProvider
 import com.ritense.authorization.AuthorizationEntityMapper
 import com.ritense.authorization.AuthorizationService
 import com.ritense.authorization.AuthorizationServiceHolder
@@ -235,4 +236,8 @@ class AuthorizationAutoConfiguration(
             roleRepository
         )
     }
+
+    @Bean
+    @ConditionalOnMissingBean(AuthorizationEndpointDescriptionProvider::class)
+    fun authorizationEndpointDescriptionProvider() = AuthorizationEndpointDescriptionProvider()
 }

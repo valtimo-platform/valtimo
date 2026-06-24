@@ -2150,18 +2150,130 @@
   "pluginManagement": {
     "tableItemsText": "plugin-configuraties",
     "add": "Plugin configureren",
+    "addHost": "Host toevoegen",
+    "uploadPlugin": "Plugin uploaden",
+    "selectHost": "Selecteer een plugin-host",
+    "upload": {
+      "title": "Plugin-bundel",
+      "buttonText": "Bestand kiezen",
+      "description": "Alleen .zip-bestanden worden geaccepteerd"
+    },
     "noDefinitions": "Geen plugin-definities gevonden.",
+    "noHosts": "Geen plugin-hosts geconfigureerd.",
     "save": "Configuratie opslaan",
     "remove": "Configuratie verwijderen",
+    "tabs": {
+      "configurations": "Configuraties",
+      "pluginHosts": "Plugin-hosts"
+    },
     "labels": {
       "pluginName": "Plugin naam",
       "identifier": "Identifier",
-      "configurationName": "Configuratienaam"
+      "configurationName": "Configuratienaam",
+      "name": "Naam",
+      "baseUrl": "Basis-URL",
+      "status": "Status",
+      "lastHealthCheck": "Laatste health check",
+      "secret": "Geheim",
+      "source": "Bron",
+      "properties": "Eigenschappen (JSON)",
+      "pluginHost": "Plugin-host",
+      "gzacCallbackBaseUrl": "GZAC callback-URL",
+      "eventBrokerAmqpUrl": "Event broker-URL (optioneel)",
+      "eventBrokerExchange": "Event broker exchange (optioneel)",
+      "eventQueueMode": "Event queue-modus",
+      "eventQueueTtlMs": "Event queue inactiviteits-TTL (ms)"
     },
+    "eventQueueMode": {
+      "live": "Live (events gaan verloren als de host uitstaat)",
+      "durable": "Duurzaam (bewaart events gedurende de TTL als de host uitstaat)"
+    },
+    "hints": {
+      "eventQueueTtlMs": "De duurzame queue wordt verwijderd na dit aantal ms zonder verbonden host. Min 1u (3600000), max 30d (2592000000), standaard 72u (259200000)."
+    },
+    "editEventQueue": "Event queue bewerken",
+    "editHostEventQueueModalTitle": "Event queue bewerken voor {{name}}",
+    "saveEventQueue": "Opslaan",
+    "source": {
+      "embedded": "Ingebed",
+      "external": "Extern"
+    },
+    "hostStatus": {
+      "CONNECTED": "Verbonden",
+      "UNREACHABLE": "Onbereikbaar"
+    },
+    "editExternalConfiguration": "Externe plugin-configuratie bewerken",
+    "invalidJson": "Ongeldige JSON",
     "addSteps": {
       "step0": "Kies je plugin",
       "step1": "Gegevens invullen",
+      "step2": "Rechten",
       "complete": "Configuratie opslaan"
+    },
+    "editSteps": {
+      "step0": "Gegevens invullen",
+      "step1": "Rechten",
+      "save": "Configuratie opslaan"
+    },
+    "permissions": {
+      "description": "Deze plugin heeft toegang nodig tot de volgende API-endpoints en events. Bekijk ze zorgvuldig — na acceptatie kan de plugin deze endpoints namens jou aanroepen en deze events ontvangen.",
+      "descriptionReadonly": "Deze plugin heeft toegang gekregen tot de volgende API-endpoints en events.",
+      "noEndpoints": "Deze plugin heeft geen rechten nodig.",
+      "endpointsHeading": "API-endpoints",
+      "eventsHeading": "Events",
+      "methodHeading": "Methode",
+      "endpointHeading": "Endpoint",
+      "descriptionHeading": "Omschrijving",
+      "accept": "Ik begrijp de gevolgen van het accepteren van deze rechten",
+      "acceptedNote": "Deze rechten zijn geaccepteerd bij het activeren van de configuratie en kunnen hier niet worden gewijzigd."
+    },
+    "reloadModal": {
+      "title": "Herladen vereist",
+      "description": "De plugin-host is succesvol toegevoegd. Om plugins van deze host te configureren, moet de pagina opnieuw worden geladen zodat beveiligingsbeleid kan worden bijgewerkt.",
+      "reload": "Nu herladen",
+      "later": "Later"
+    },
+    "deleteHostModal": {
+      "title": "Plugin-host verwijderen",
+      "description": "Weet je zeker dat je deze plugin-host wilt verwijderen? Alle plugin-definities en configuraties van deze host worden ook verwijderd. Deze actie kan niet ongedaan worden gemaakt."
+    },
+    "deleteConfigurationModal": {
+      "title": "Plugin-configuratie verwijderen",
+      "description": "Weet je zeker dat je deze plugin-configuratie wilt verwijderen? Deze actie kan niet ongedaan worden gemaakt."
+    },
+    "hostInUseModal": {
+      "title": "Plugin-host is in gebruik",
+      "thisHost": "deze plugin-host",
+      "description": "{{ entityName }} kan niet worden verwijderd omdat de volgende BPMN-activiteiten nog gebruikmaken van een configuratie van deze host. Verwijder eerst deze proceskoppelingen."
+    },
+    "configurationInUseModal": {
+      "title": "Plugin-configuratie is in gebruik",
+      "thisConfiguration": "deze plugin-configuratie",
+      "description": "{{ entityName }} kan niet worden verwijderd omdat de volgende BPMN-activiteiten er nog naar verwijzen. Verwijder eerst deze proceskoppelingen."
+    },
+    "usageModal": {
+      "headers": {
+        "activity": "Activiteit",
+        "configuration": "Plugin-configuratie",
+        "type": "Type",
+        "linkedTo": "Gekoppeld aan",
+        "processDefinition": "Procesdefinitie"
+      },
+      "parentType": {
+        "CASE": "Dossier",
+        "BUILDING_BLOCK": "Bouwblok",
+        "GLOBAL": "Globaal"
+      }
+    },
+    "compatibility": {
+      "incompatibleTag": "Incompatibel",
+      "warningTitle": "Mogelijk compatibiliteitsprobleem",
+      "uploadWarningTitle": "Een incompatibele plugin uploaden?",
+      "uploadAnyway": "Toch uploaden",
+      "intro": "Jouw GZAC-versie is mogelijk incompatibel met deze plugin.",
+      "current": "Je gebruikt momenteel {{current}}.",
+      "minimum": "Minimaal compatibele versie: {{min}}.",
+      "maximum": "Maximaal compatibele versie: {{max}}."
     }
   },
   "customerCases": {
@@ -2433,6 +2545,9 @@
       "checkboxDescription": "Activeert Form View Model form afhandeling"
     },
     "importConfiguration": "Configuratie importeren",
+    "externalPluginActionProperties": "Configureer de actie-eigenschappen voor deze externe plugin actie als JSON. Klik op opslaan wanneer gereed.",
+    "actionPropertiesJson": "Actie-eigenschappen (JSON)",
+    "invalidJson": "Ongeldige JSON",
     "selectProcess": "Selecteer een proces",
     "process": "Proces",
     "version": "Versie",
@@ -2482,7 +2597,45 @@
     "form-flow": "FormFlow",
     "url": "URL",
     "ui-component": "UI Component",
-    "building-block": "Bouwblok"
+    "building-block": "Bouwblok",
+    "external_plugin": "Externe plugin"
+  },
+  "externalPlugin": {
+    "menuTitle": "Externe Plugins",
+    "host": {
+      "title": "Hosts",
+      "add": "Host toevoegen",
+      "name": "Naam",
+      "baseUrl": "Basis-URL",
+      "status": "Status",
+      "lastHealthCheck": "Laatste health check"
+    },
+    "definition": {
+      "title": "Plugin-definities",
+      "pluginId": "Plugin-ID",
+      "version": "Versie",
+      "name": "Naam",
+      "provider": "Leverancier",
+      "status": "Status"
+    },
+    "configuration": {
+      "title": "Configuraties",
+      "titleField": "Titel",
+      "add": "Configuratie toevoegen",
+      "definition": "Plugin-definitie",
+      "definitionPlaceholder": "Selecteer een plugin",
+      "definitionId": "Definitie",
+      "createdAt": "Aangemaakt op",
+      "properties": "Eigenschappen (JSON)",
+      "propertiesInvalidJson": "Eigenschappen moeten geldige JSON zijn"
+    },
+    "processLink": {
+      "configuration": "Plugin-configuratie",
+      "configurationPlaceholder": "Selecteer een configuratie",
+      "actionKey": "Actiesleutel",
+      "actionProperties": "Actie-eigenschappen (JSON)",
+      "actionPropertiesInvalidJson": "Actie-eigenschappen moeten geldige JSON zijn"
+    }
   },
   "processLinkSteps": {
     "chooseProcessLinkType": "Kies soort koppeling",
@@ -2515,7 +2668,8 @@
     "uiComponent": "Selecteer UI component",
     "selectBuildingBlock": "Selecteer bouwblok",
     "configureBuildingBlockPlugins": "Configureer plugin mappings",
-    "configureBuildingBlockMappings": "Input & Sync"
+    "configureBuildingBlockMappings": "Input & Sync",
+    "configureExternalPlugin": "Configureer externe plugin"
   },
   "processLinkTypeDisabledTooltip": {
     "plugin": "Er zijn geen plugin-configuraties beschikbaar. Maak een plugin-configuratie aan om deze te kunnen koppelen aan een processtap.",

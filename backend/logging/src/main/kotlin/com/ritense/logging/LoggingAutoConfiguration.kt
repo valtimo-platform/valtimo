@@ -16,6 +16,7 @@
 
 package com.ritense.logging
 
+import com.ritense.logging.endpoint.LoggingEndpointDescriptionProvider
 import com.ritense.logging.domain.LoggingEvent
 import com.ritense.logging.domain.LoggingEventException
 import com.ritense.logging.domain.LoggingEventProperty
@@ -119,4 +120,8 @@ class LoggingAutoConfiguration {
         threadPoolTaskScheduler.setErrorHandler(loggingErrorWithContextErrorHandler)
         return threadPoolTaskScheduler
     }
+
+    @Bean
+    @ConditionalOnMissingBean(LoggingEndpointDescriptionProvider::class)
+    fun loggingEndpointDescriptionProvider() = LoggingEndpointDescriptionProvider()
 }

@@ -177,6 +177,10 @@ valtimo:
     plugin:
         encryption-secret: ${VALTIMO_PLUGIN_ENCRYPTIONSECRET}
 
+    external-plugin:
+        service-token:
+            ttl: PT12H # 12 hours
+
     notificaties-api:
         processing:
             batch-size: 50

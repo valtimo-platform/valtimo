@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -132,8 +132,8 @@ export class ProcessManagementEditorService implements OnDestroy {
   public updateProcessLink(event: ProcessLinkUpdateEvent): void {
     this.setProcessLinksForSelectedDefinition(
       this.processLinksForSelectedDefinition.map(processLink => {
-        if (processLink.activityId === event.activityId) {
-          return {...processLink, ...(event as any)};
+        if (processLink.id === event.id) {
+          return {...processLink, ...event} as ProcessLink;
         }
 
         return processLink;

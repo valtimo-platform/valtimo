@@ -28,7 +28,6 @@ import {
 } from '@valtimo/shared';
 import {NgxLoggerLevel} from 'ngx-logger';
 import {authenticationKeycloak} from './auth/keycloak-config';
-import {cspHeaderParamsDev} from './csp';
 import {
   DARK_MODE_LOGO_BASE_64,
   DARK_MODE_LOGO_BASE_64_PNG,

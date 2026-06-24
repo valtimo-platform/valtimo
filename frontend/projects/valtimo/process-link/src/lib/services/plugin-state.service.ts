@@ -16,13 +16,15 @@
 
 import {Injectable} from '@angular/core';
 import {BehaviorSubject, combineLatest, Observable, of, Subject, switchMap} from 'rxjs';
-import {map, take} from 'rxjs/operators';
+import {catchError, map, take} from 'rxjs/operators';
 import {
+  ExternalPluginService,
   PluginConfiguration,
   PluginDefinition,
   PluginFunction,
   PluginManagementService,
   PluginService,
+  toExternalPluginKey,
 } from '@valtimo/plugin';
 import {ProcessLink} from '../models';
 
@@ -40,7 +42,8 @@ export class PluginStateService {
 
   constructor(
     private readonly pluginManagementService: PluginManagementService,
-    private readonly pluginService: PluginService
+    private readonly pluginService: PluginService,
+    private readonly externalPluginService: ExternalPluginService
   ) {}
 
   get selectedPluginDefinition$(): Observable<PluginDefinition> {
@@ -82,11 +85,18 @@ export class PluginStateService {
           : combineLatest([
               this._selectedProcessLink$,
               this.pluginService.pluginSpecifications$,
+              this._selectedPluginDefinition$,
             ]).pipe(
-              map(([processLink, pluginSpecifications]) => {
+              map(([processLink, pluginSpecifications, selectedDefinition]) => {
                 if (processLink?.pluginDefinitionKey) {
                   return processLink.pluginDefinitionKey;
                 }
+
+                // For external plugins, use the definition set by loadExternalPluginStateForProcessLink
+                if (selectedDefinition?.key) {
+                  return selectedDefinition.key;
+                }
+
                 const pluginSpecification = pluginSpecifications.find(specification => {
                   const functionKeys =
                     specification?.functionConfigurationComponents &&
@@ -116,9 +126,10 @@ export class PluginStateService {
   selectProcessLink(processLink: ProcessLink): void {
     this._selectedProcessLink$.next(processLink);
 
-    // When editing a plugin process link, populate the plugin definition
     if (processLink?.processLinkType === 'plugin') {
       this.loadPluginDefinitionForProcessLink(processLink);
+    } else if (processLink?.processLinkType === 'external_plugin') {
+      this.loadExternalPluginStateForProcessLink(processLink);
     }
   }
 
@@ -164,6 +175,42 @@ export class PluginStateService {
           }
         });
     }
+  }
+
+  private loadExternalPluginStateForProcessLink(processLink: ProcessLink): void {
+    const configId = processLink.externalPluginConfigurationId;
+    if (!configId) return;
+
+    // Fetch all external configurations to find the one matching this process link
+    this.externalPluginService
+      .getConfigurations()
+      .pipe(
+        take(1),
+        catchError(() => of([]))
+      )
+      .subscribe(configs => {
+        const config = configs.find(c => c.id === configId);
+        if (!config) return;
+
+        const definitionId = config.definitionId;
+        const externalKey = toExternalPluginKey(definitionId);
+
+        // Set synthetic plugin definition with the external: prefix key
+        this._selectedPluginDefinition$.next({key: externalKey} as PluginDefinition);
+
+        // Set synthetic plugin configuration with the external config ID
+        this._selectedPluginConfiguration$.next({
+          id: configId,
+          pluginDefinition: {key: externalKey},
+        } as PluginConfiguration);
+
+        // Set the selected function from the saved action key
+        if (processLink.actionKey) {
+          this._selectedPluginFunction$.next({
+            key: processLink.actionKey,
+          } as PluginFunction);
+        }
+      });
   }
 
   private getPluginDefinitionKeyForProcessLink(processLink: ProcessLink): Observable<string> {

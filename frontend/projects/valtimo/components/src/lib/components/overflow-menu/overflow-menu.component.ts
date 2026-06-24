@@ -195,8 +195,8 @@ export class OverflowMenuComponent implements OnInit, AfterContentInit, OnChange
         // The pane is rendered with `position: fixed`, so positions must be
         // computed against the viewport. Without this the menu is offset by the
         // trigger's page position and lands far from lower rows (unclickable).
-        strategy: 'fixed',
         placement: this.placement,
+        strategy: 'fixed',
         middleware: [
           offset({mainAxis: this.offsetY, crossAxis: this.offsetX}),
           flip(),
@@ -223,8 +223,7 @@ export class OverflowMenuComponent implements OnInit, AfterContentInit, OnChange
 
     const target = event.target as HTMLElement;
     const clickedInsideHost = this._elementRef.nativeElement.contains(target);
-    const clickedInsidePortal =
-      this._portalledPane && this._portalledPane.contains(target);
+    const clickedInsidePortal = this._portalledPane && this._portalledPane.contains(target);
 
     if (!clickedInsideHost && !clickedInsidePortal) {
       this.close();

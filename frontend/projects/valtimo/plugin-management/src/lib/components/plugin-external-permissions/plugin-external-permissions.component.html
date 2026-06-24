@@ -1,0 +1,113 @@
+<!--
+  ~ Copyright 2015-2026 Ritense BV, the Netherlands.
+  ~
+  ~ Licensed under EUPL, Version 1.2 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~ https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" basis,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<cds-inline-notification
+  *ngIf="readonlyMode && (_$enrichedEndpoints().length > 0 || _$eventTypes().length > 0)"
+  [notificationObj]="{
+    type: 'info',
+    title: '',
+    message: 'pluginManagement.permissions.acceptedNote' | translate,
+    showClose: false,
+    lowContrast: true,
+  }"
+></cds-inline-notification>
+
+<p class="cds--type-body-01 plugin-external-permissions__description">
+  {{
+    (readonlyMode
+      ? 'pluginManagement.permissions.descriptionReadonly'
+      : 'pluginManagement.permissions.description'
+    ) | translate
+  }}
+</p>
+
+<cds-inline-notification
+  *ngIf="_$enrichedEndpoints().length === 0 && _$eventTypes().length === 0"
+  [notificationObj]="{
+    type: 'info',
+    title: '',
+    subtitle: 'pluginManagement.permissions.noEndpoints' | translate,
+    showClose: false,
+    lowContrast: true,
+  }"
+></cds-inline-notification>
+
+<section *ngIf="_$enrichedEndpoints().length > 0" class="plugin-external-permissions__section">
+  <h6 class="cds--type-heading-compact-02 plugin-external-permissions__section-heading">
+    {{ 'pluginManagement.permissions.endpointsHeading' | translate }}
+  </h6>
+
+  <cds-structured-list>
+    <cds-list-header>
+      <cds-list-column nowrap="true">
+        {{ 'pluginManagement.permissions.methodHeading' | translate }}
+      </cds-list-column>
+      <cds-list-column nowrap="true">
+        {{ 'pluginManagement.permissions.endpointHeading' | translate }}
+      </cds-list-column>
+      <cds-list-column>
+        {{ 'pluginManagement.permissions.descriptionHeading' | translate }}
+      </cds-list-column>
+    </cds-list-header>
+
+    <cds-list-row
+      *ngFor="let endpoint of _$enrichedEndpoints()"
+      [attr.data-test-id]="'external-plugin-permission-' + endpoint.method + '-' + endpoint.pattern"
+    >
+      <cds-list-column nowrap="true">
+        <cds-tag type="red" size="sm">{{ endpoint.method | uppercase }}</cds-tag>
+      </cds-list-column>
+
+      <cds-list-column nowrap="true">
+        <cds-tag type="red" size="sm">{{ endpoint.pattern }}</cds-tag>
+      </cds-list-column>
+
+      <cds-list-column>
+        <span *ngIf="endpoint.description; else noDescription">{{ endpoint.description }}</span>
+        <ng-template #noDescription>
+          <span class="plugin-external-permissions__helper">—</span>
+        </ng-template>
+      </cds-list-column>
+    </cds-list-row>
+  </cds-structured-list>
+</section>
+
+<section *ngIf="_$eventTypes().length > 0" class="plugin-external-permissions__section">
+  <h6 class="cds--type-heading-compact-02 plugin-external-permissions__section-heading">
+    {{ 'pluginManagement.permissions.eventsHeading' | translate }}
+  </h6>
+
+  <cds-structured-list>
+    <cds-list-row
+      *ngFor="let eventType of _$eventTypes()"
+      [attr.data-test-id]="'external-plugin-permission-event-' + eventType"
+    >
+      <cds-list-column>
+        <cds-tag type="red" size="sm">{{ eventType }}</cds-tag>
+      </cds-list-column>
+    </cds-list-row>
+  </cds-structured-list>
+</section>
+
+<cds-checkbox
+  *ngIf="!readonlyMode && (_$enrichedEndpoints().length > 0 || _$eventTypes().length > 0)"
+  class="plugin-external-permissions__acceptance"
+  [checked]="_$accepted()"
+  (checkedChange)="onAcceptanceChange($event)"
+  data-test-id="external-plugin-permissions-accept"
+>
+  {{ 'pluginManagement.permissions.accept' | translate }}
+</cds-checkbox>

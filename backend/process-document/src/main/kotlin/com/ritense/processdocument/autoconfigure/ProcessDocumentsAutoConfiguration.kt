@@ -24,6 +24,7 @@ import com.ritense.document.DocumentCaseDefinitionPredicateProvider
 import com.ritense.document.repository.impl.JsonSchemaDocumentRepository
 import com.ritense.document.service.DocumentService
 import com.ritense.document.service.impl.JsonSchemaDocumentService
+import com.ritense.processdocument.endpoint.ProcessDocumentEndpointDescriptionProvider
 import com.ritense.processdocument.domain.impl.delegate.DocumentDelegate
 import com.ritense.processdocument.exporter.CaseDefinitionProcessLinkExporter
 import com.ritense.processdocument.exporter.ProcessDocumentLinkExporter
@@ -532,4 +533,8 @@ class ProcessDocumentsAutoConfiguration {
             authorizationService,
         )
     }
+
+    @Bean
+    @ConditionalOnMissingBean(ProcessDocumentEndpointDescriptionProvider::class)
+    fun processDocumentEndpointDescriptionProvider() = ProcessDocumentEndpointDescriptionProvider()
 }

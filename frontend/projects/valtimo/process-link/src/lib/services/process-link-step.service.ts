@@ -322,6 +322,19 @@ export class ProcessLinkStepService {
     this._currentStepIndex$.next(0);
   }
 
+  public setExternalPluginSteps(): void {
+    this._steps$.next([
+      {label: 'chooseProcessLinkType', secondaryLabel: 'processLinkType.external_plugin'},
+      {label: 'configureExternalPlugin'},
+    ]);
+    this._currentStepIndex$.next(1);
+  }
+
+  public setSingleExternalPluginStep(): void {
+    this._steps$.next([{label: 'configureExternalPlugin'}]);
+    this._currentStepIndex$.next(0);
+  }
+
   public disableSteps(): void {
     this._disableSteps$.next(true);
   }
@@ -387,6 +400,16 @@ export class ProcessLinkStepService {
         this.buttonService.showBackButton();
         this.buttonService.showSaveButton();
         break;
+      case 'external_plugin':
+        if (hasOneOption) {
+          this.setSingleExternalPluginStep();
+          this.buttonService.hideBackButton();
+        } else {
+          this.setExternalPluginSteps();
+          this.buttonService.showBackButton();
+        }
+        this.buttonService.showSaveButton();
+        break;
     }
   }
 
@@ -412,9 +435,15 @@ export class ProcessLinkStepService {
     const prefix: Array<Step> = [];
     if (!options.skipSelection) {
       if (!options.hasOneType) {
-        prefix.push({label: 'chooseProcessLinkType', secondaryLabel: 'processLinkType.building-block'});
+        prefix.push({
+          label: 'chooseProcessLinkType',
+          secondaryLabel: 'processLinkType.building-block',
+        });
       }
-      prefix.push({label: 'selectBuildingBlock', ...(options.selectionLabel && {secondaryLabel: options.selectionLabel})});
+      prefix.push({
+        label: 'selectBuildingBlock',
+        ...(options.selectionLabel && {secondaryLabel: options.selectionLabel}),
+      });
     }
 
     const steps = [...prefix, ...bbSteps];
@@ -469,7 +498,9 @@ export class ProcessLinkStepService {
         break;
       case 'plugin': {
         const selectionLabel =
-          this._context === 'buildingBlock' ? 'choosePluginDefinition' : 'choosePluginConfiguration';
+          this._context === 'buildingBlock'
+            ? 'choosePluginDefinition'
+            : 'choosePluginConfiguration';
         // Plugin has 3 config steps: select config, select action, configure action
         this._steps$.next([
           {label: selectionLabel},
@@ -490,6 +521,15 @@ export class ProcessLinkStepService {
         this._currentStepIndex$.next(bbIndex);
         break;
       }
+      case 'external_plugin':
+        // External plugin has 3 steps same as plugin: select config, select action, configure action
+        this._steps$.next([
+          {label: 'choosePluginConfiguration'},
+          {label: 'choosePluginAction'},
+          {label: 'configurePluginAction'},
+        ]);
+        this._currentStepIndex$.next(2); // Start at last step (configure action)
+        break;
       case 'ui-component':
         // Single step for UI component
         this._steps$.next([{label: 'uiComponent'}]);
