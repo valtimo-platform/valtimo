@@ -82,6 +82,7 @@ class FormProcessLinkActivityHandler(
             FormTaskOpenResultProperties(
                 processLink.formDefinitionId,
                 formDefinition.asJson(),
+                formDisplayType = processLink.formDisplayType,
                 formSize = processLink.formSize
             )
         )

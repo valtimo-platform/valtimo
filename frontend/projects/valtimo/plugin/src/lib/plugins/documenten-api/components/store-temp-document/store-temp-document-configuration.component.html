@@ -19,6 +19,9 @@
   *ngIf="{
     disabled: disabled$ | async,
     prefill: prefillConfiguration$ ? (prefillConfiguration$ | async) : null,
+    selectedConfidentialityLevelInputType: selectedConfidentialityLevelInputType$ | async,
+    selectedLanguageInputType: selectedLanguageInputType$ | async,
+    selectedStatusInputType: selectedStatusInputType$ | async,
   } as obs"
 >
   <v-input
@@ -30,7 +33,18 @@
     [tooltip]="'fileNameTooltip' | pluginTranslate: pluginId | async"
     [trim]="true"
   ></v-input>
+
+  <v-radio
+    name="confidentialityLevelInputType"
+    [disabled]="obs.disabled"
+    [title]="'confidentialityLevelInputType' | pluginTranslate: pluginId | async"
+    [radioValues]="confidentialityLevelInputTypeOptions$ | async"
+    [defaultValue]="obs.prefill?.confidentialityLevelInputType || 'selection'"
+    [margin]="true"
+  ></v-radio>
+
   <v-select
+    *ngIf="obs.selectedConfidentialityLevelInputType === 'selection'"
     [items]="confidentialityLevelItems$ | async"
     [margin]="true"
     [widthInPx]="200"
@@ -40,6 +54,18 @@
     [defaultSelectionId]="obs.prefill?.confidentialityLevel || CONFIDENTIALITY_LEVEL_ITEMS[3]"
     [tooltip]="'confidentialityLevelTooltip' | pluginTranslate: pluginId | async"
   ></v-select>
+
+  <v-input
+    *ngIf="obs.selectedConfidentialityLevelInputType === 'text'"
+    name="confidentialityLevel"
+    [title]="'confidentialityLevel' | pluginTranslate: pluginId | async"
+    [margin]="true"
+    [defaultValue]="obs.prefill?.confidentialityLevel"
+    [disabled]="obs.disabled"
+    [tooltip]="'confidentialityLevelTextTooltip' | pluginTranslate: pluginId | async"
+    [trim]="true"
+    placeholder="e.g. doc:confidentialityLevel"
+  ></v-input>
   <v-input
     name="title"
     [title]="'inputTitle' | pluginTranslate: pluginId | async"
@@ -78,7 +104,17 @@
     [tooltip]="'storeDocumentUrlTooltip' | pluginTranslate: pluginId | async"
   >
   </v-input>
+  <v-radio
+    name="languageInputType"
+    [disabled]="obs.disabled"
+    [title]="'languageInputType' | pluginTranslate: pluginId | async"
+    [radioValues]="languageInputTypeOptions$ | async"
+    [defaultValue]="obs.prefill?.languageInputType || 'selection'"
+    [margin]="true"
+  ></v-radio>
+
   <v-select
+    *ngIf="obs.selectedLanguageInputType === 'selection'"
     [items]="languageSelectItems$ | async"
     [margin]="true"
     [widthInPx]="200"
@@ -88,7 +124,30 @@
     [defaultSelectionId]="obs.prefill?.taal || LANGUAGE_ITEMS[0]"
     [required]="true"
   ></v-select>
+
+  <v-input
+    *ngIf="obs.selectedLanguageInputType === 'text'"
+    name="taal"
+    [title]="'taal' | pluginTranslate: pluginId | async"
+    [margin]="true"
+    [defaultValue]="obs.prefill?.taal"
+    [disabled]="obs.disabled"
+    [required]="true"
+    [tooltip]="'taalTextTooltip' | pluginTranslate: pluginId | async"
+    [trim]="true"
+    placeholder="e.g. doc:language"
+  ></v-input>
+  <v-radio
+    name="statusInputType"
+    [disabled]="obs.disabled"
+    [title]="'statusInputType' | pluginTranslate: pluginId | async"
+    [radioValues]="statusInputTypeOptions$ | async"
+    [defaultValue]="obs.prefill?.statusInputType || 'selection'"
+    [margin]="true"
+  ></v-radio>
+
   <v-select
+    *ngIf="obs.selectedStatusInputType === 'selection'"
     [items]="statusSelectItems$ | async"
     [margin]="true"
     [widthInPx]="200"
@@ -98,6 +157,19 @@
     [defaultSelectionId]="obs.prefill?.status || STATUS_ITEMS[2]"
     [required]="true"
   ></v-select>
+
+  <v-input
+    *ngIf="obs.selectedStatusInputType === 'text'"
+    name="status"
+    [title]="'status' | pluginTranslate: pluginId | async"
+    [margin]="true"
+    [defaultValue]="obs.prefill?.status"
+    [disabled]="obs.disabled"
+    [required]="true"
+    [tooltip]="'statusTextTooltip' | pluginTranslate: pluginId | async"
+    [trim]="true"
+    placeholder="e.g. doc:status"
+  ></v-input>
   <v-input
     name="informatieobjecttype"
     [title]="'informatieobjecttype' | pluginTranslate: pluginId | async"

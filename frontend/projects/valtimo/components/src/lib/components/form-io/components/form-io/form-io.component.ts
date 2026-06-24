@@ -73,6 +73,9 @@ export class FormioComponent implements OnInit, OnChanges, OnDestroy {
   @Input() set readOnly(readOnlyValue: boolean) {
     this.readOnly$.next(readOnlyValue);
   }
+  @Input() set errors(errorsValue: Array<string>) {
+    this.errors$.next(errorsValue ?? []);
+  }
   @Input() formRefresh$!: Subject<FormioRefreshValue>;
 
   // eslint-disable-next-line @angular-eslint/no-output-native

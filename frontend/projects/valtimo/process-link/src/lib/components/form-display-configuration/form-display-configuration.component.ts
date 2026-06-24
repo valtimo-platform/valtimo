@@ -102,7 +102,11 @@ export class FormDisplayConfigurationComponent implements OnInit, OnDestroy {
           this._subtitles$.next(selectedProcessLink.subtitles ?? []);
         }
 
-        if (this.isStartEvent$.getValue()) this.disableFormSizeInput$.next(false);
+        if (this.isStartEvent$.getValue()) {
+          // Start events always allow a form size and default the display type to 'modal'.
+          this.disableFormSizeInput$.next(false);
+          if (!this.formDisplayValue$.getValue()) this.updateFormDisplayType('modal');
+        }
       })
     );
   }
