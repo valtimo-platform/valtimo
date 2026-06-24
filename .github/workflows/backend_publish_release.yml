@@ -10,11 +10,21 @@ on:
         description: "Base semantic version (e.g. 13.6.0)"
         required: true
         type: string
+      publish_images:
+        description: "Build and push the backend Docker image. Disable on v12-stable, where the image is still built by Jenkins from the template repo."
+        required: false
+        type: boolean
+        default: true
   workflow_dispatch:
     inputs:
       project_version:
         description: "Base semantic version (e.g. 13.6.0)"
         required: true
+      publish_images:
+        description: "Build and push the backend Docker image. Disable on v12-stable, where the image is still built by Jenkins from the template repo."
+        required: false
+        type: boolean
+        default: true
 
 env:
   ORG_GRADLE_PROJECT_includeDev: false
@@ -23,6 +33,21 @@ env:
 jobs:
   build_run_tests:
     uses: ./.github/workflows/backend_build_test_libraries.yml
+
+  build_and_push_image:
+    name: Build and push Docker image
+    if: ${{ inputs.publish_images }}
+    needs:
+      - build_run_tests
+    permissions:
+      contents: read
+      packages: write
+    uses: ./.github/workflows/backend_build_push_docker_image.yml
+    with:
+      backend_libraries_build_artifact_name: ${{ needs.build_run_tests.outputs.build_artifact_name }}
+      push_to_dockerhub: true
+      release_image_tag: ${{ inputs.project_version || github.event.inputs.project_version }}
+    secrets: inherit
 
   publish:
     needs:
