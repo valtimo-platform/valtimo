@@ -48,8 +48,13 @@ dependencies {
     testImplementation "org.springframework.boot:spring-boot-starter-test"
 }
 
-// Note: -PincludeDev=false comes in as a String; coerce to real boolean
-def includeDevSources = project.findProperty("includeDev")?.toString()?.toBoolean() ?: false
+// bootRun / bootRunWithDocker default to dev mode; bootJar / assemble / image
+// build default to template-only (prod). Override either direction with -PincludeDev=true|false.
+def bootRunRequested = gradle.startParameter.taskNames.any {
+    it == "bootRun" || it == "bootRunWithDocker" ||
+            it.endsWith(":bootRun") || it.endsWith(":bootRunWithDocker")
+}
+def includeDevSources = project.findProperty("includeDev")?.toString()?.toBoolean() ?: bootRunRequested
 
 println "includeDevSources: $includeDevSources"
 
@@ -63,6 +68,21 @@ if (includeDevSources) {
         main {
             resources.srcDir("src/dev/resources")
         }
+    }
+    // src/dev resources are appended after src/main, so dev wins on collisions
+    // (config/application.yml, META-INF/processes.xml, logback-spring.xml, banner.txt).
+    tasks.named("processResources").configure {
+        duplicatesStrategy = DuplicatesStrategy.INCLUDE
+    }
+    // Both com.ritense.valtimo.Application (template, src/main) and
+    // com.ritense.gzac.GzacApplication (dev, src/dev) carry @SpringBootApplication;
+    // pin the dev one so bootRun knows which to start.
+    springBoot {
+        mainClass = "com.ritense.gzac.GzacApplicationKt"
+    }
+} else {
+    springBoot {
+        mainClass = "com.ritense.valtimo.ApplicationKt"
     }
 }
 

@@ -12,17 +12,20 @@
     "installDeps": "npm install",
     "devMode": "npm run start",
     "syncLibDepsToRootDeps": "node scripts/sync-lib-deps.js && npm run prettier:write",
-    "start": "node --max_old_space_size=8048 ./node_modules/@angular/cli/bin/ng serve --proxy-config proxy.conf.json",
-    "startProd": "node --max_old_space_size=8048 ./node_modules/@angular/cli/bin/ng serve --proxy-config proxy.conf.json --configuration production",
-    "startAot": "ng serve --proxy-config proxy.conf.json --aot",
-    "startHmr": "ng serve --proxy-config proxy.conf.json --hmr",
-    "buildTest": "ng build --configuration production --configuration=test",
-    "build": "ng build --configuration production",
+    "start": "node --max_old_space_size=8048 ./node_modules/@angular/cli/bin/ng.js serve dev --proxy-config proxy.conf.json",
+    "start:gzac": "node --max_old_space_size=8048 ./node_modules/@angular/cli/bin/ng.js serve gzac --proxy-config proxy.conf.json",
+    "startProd": "node --max_old_space_size=8048 ./node_modules/@angular/cli/bin/ng.js serve dev --proxy-config proxy.conf.json --configuration production",
+    "startAot": "ng serve dev --proxy-config proxy.conf.json --aot",
+    "startHmr": "ng serve dev --proxy-config proxy.conf.json --hmr",
+    "buildTest": "ng build dev --configuration production --configuration=test",
+    "build": "ng build dev --configuration production",
+    "build:dev": "ng build dev --configuration production",
+    "build:gzac": "ng build gzac --configuration production",
     "test": "ng test",
     "lint": "ng lint",
     "prettier:check": "prettier --check .",
     "prettier:write": "prettier --write .",
-    "analyze": "ng build --configuration production --configuration=test --stats-json && webpack-bundle-analyzer deployment/valtimo-angular-console/stats.json",
+    "analyze": "ng build dev --configuration production --configuration=test --stats-json && webpack-bundle-analyzer deployment/dev/stats.json",
     "compodoc-generate": "npx compodoc -p tsconfig.json -n 'Valtimo Console'",
     "compodoc-serve": "npx compodoc -s -o -r 8088",
     "libs-build-all": "rimraf dist && run-s libs:build-1:* && run-p -l --max-parallel 8 libs:build-2:* && run-s libs:build-3:* && run-s libs:build-4:* && run-s libs:build-5:* && run-s libs:build-6:* && npm-run-all libs:build-7:* && run-p -l --max-parallel 8 libs:build:* && run-s libs:build-7:* ",
@@ -217,6 +220,7 @@
     "@angular/platform-browser": "19.2.20",
     "@angular/platform-browser-dynamic": "19.2.20",
     "@angular/router": "19.2.20",
+    "@bpmn-io/cm-theme": "0.2.0",
     "@bpmn-io/dmn-migrate": "0.5.0",
     "@bpmn-io/properties-panel": "3.26.4",
     "@carbon/charts-angular": "1.23.6",
@@ -338,6 +342,11 @@
   "optionalDependencies": {
     "@nx/nx-darwin-arm64": "20.8.1",
     "@nx/nx-linux-x64-gnu": "20.8.1"
+  },
+  "overrides": {
+    "feelers": {
+      "@bpmn-io/cm-theme": "0.1.0-alpha.2"
+    }
   },
   "workspaces": [
     "projects/valtimo/*"

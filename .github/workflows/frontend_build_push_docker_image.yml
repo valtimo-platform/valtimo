@@ -10,6 +10,11 @@ on:
         required: true
         description: Name of the frontend build artifact to download with 'download-artifact'
         type: "string"
+      variant:
+        description: "Angular app variant to build (matches an angular.json project name). Default 'dev' for CI test images; release flows pass 'gzac'."
+        required: false
+        type: string
+        default: dev
       push_to_dockerhub:
         description: "Push the built image to Docker Hub as well"
         required: false
@@ -128,7 +133,7 @@ jobs:
           npm install
 
       - name: Build app
-        run: npm run build
+        run: npm run build:${{ inputs.variant }}
 
       - name: Log in to GitHub Container Registry
         uses: docker/login-action@v3
@@ -185,6 +190,8 @@ jobs:
           # gebruik het ge-downloadde artefact als build context
           context: frontend/
           file: ./frontend/Dockerfile
+          build-args: |
+            VARIANT=${{ inputs.variant }}
           platforms: linux/amd64,linux/arm64/v8
           push: true
           tags: |

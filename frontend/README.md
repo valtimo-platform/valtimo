@@ -2,8 +2,17 @@
 
 This folder contains:
 
-- A collection of Angular libraries that together form the Valtimo frontend.
-- The `app` module, containing an Angular application, used for library development.
+- A collection of Angular libraries under `projects/valtimo/*` that together form
+  the Valtimo frontend (including the shared `@valtimo/app-shell` library, which
+  carries the common `NgModule` wiring used by every variant).
+- Two application variants under `apps/`:
+    - `apps/dev/` — the developer-loop console, with showcase components, demo
+      routes, and the dev-only plugins enabled. This is what you serve when
+      iterating on the libraries.
+    - `apps/gzac/` — the template-equivalent application that is packaged into
+      the released `ritense/gzac-frontend` Docker image. Imports the same
+      `CommonAppModule` from `@valtimo/app-shell` but skips the dev showcase
+      modules.
 
 ### Starting the Valtimo platform
 
@@ -27,12 +36,33 @@ Run the following command to install the dependencies: `npm install`.
 
 #### Start application
 
-- Run the following command to start the Angular application: `npm start`.
-  - The first run will build all libraries into `dist/` (this can take a few minutes).
-    Subsequent runs skip this step as long as `dist/valtimo/shared` exists.
-- When this command has been completed, navigate to `http://localhost:4200/`
-- Edits to library `*.ts` source files are picked up automatically by `ng serve` —
-  no manual rebuild required.
+Pick a variant to serve:
+
+| Command                | Variant                              | Notes                                                                    |
+|------------------------|--------------------------------------|--------------------------------------------------------------------------|
+| `npm start`            | `apps/dev` (developer console)       | Default for library development. Showcase components, dev routes, devTabs. |
+| `npm run start:gzac`   | `apps/gzac` (template-equivalent)    | Same shell as the released image but served with the dev `app-plugins` stub (no `@valtimo-plugins/*` required locally). |
+
+Both serve at `http://localhost:4200/` by default. To run them side by side, pass
+`-- --port 4201` to one of the commands.
+
+Edits to library `*.ts` source files under `projects/valtimo/**` are picked up
+automatically by `ng serve` — no manual rebuild required. The same is true for
+the `@valtimo/app-shell` library: changes to `CommonAppModule` are live-reloaded
+in whichever variant is being served.
+
+#### Production-config builds
+
+`npm run build:dev` and `npm run build:gzac` produce optimised bundles via
+`ng build <variant> --configuration production`. These swap in
+`app-plugins.prod.ts` (which imports `@valtimo-plugins/{smtpmail,freemarker}`)
+through Angular `fileReplacements`. Those plugin tarballs are **not** in
+`frontend/package.json` — they are installed only inside CI by
+`.github/workflows/frontend_build_push_docker_image.yml`'s
+"Add release plugin dependencies" step (reading
+[`release-plugins.json`](./release-plugins.json)). Running these commands on
+your laptop will therefore fail to resolve `@valtimo-plugins/*`; that's
+expected. Use CI to validate production builds.
 
 #### Rebuilding libraries
 

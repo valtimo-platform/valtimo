@@ -35,7 +35,7 @@ module.exports = function (config) {
       suppressAll: true,
     },
     coverageReporter: {
-      dir: require('path').join(__dirname, './coverage/valtimo-angular-console'),
+      dir: require('path').join(__dirname, './coverage/dev'),
       subdir: '.',
       reporters: [{type: 'html'}, {type: 'text-summary'}],
     },
