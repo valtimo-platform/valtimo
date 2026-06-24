@@ -34,6 +34,19 @@ dependencies {
 
 apply from: "gradle/publishing.gradle"
 
+// backend/app/build.gradle disables bootJar+jar for everything under :backend:app.
+// Re-enable bootJar here so :backend:app:gzac:assemble produces the
+// executable JAR that backend/app/gzac/Dockerfile copies into the released
+// ritense/gzac-backend:<v> image. Keep the unwrapped 'jar' task disabled —
+// only the Spring Boot launcher JAR ships.
+bootJar {
+    enabled = true
+    archiveClassifier = ''
+}
+jar {
+    enabled = false
+}
+
 // Determine whether to include dev sources/resources in the main source set.
 // Defaults to true when bootRun is the requested task so the dev console
 // works out of the box (./gradlew :backend:app:gzac:bootRun). Otherwise
