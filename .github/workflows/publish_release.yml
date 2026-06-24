@@ -13,9 +13,6 @@ on:
         required: false
         type: boolean
         default: true
-  push:
-    branches:
-      - release/0.0.0 # Temporarily, for testing without having to have this workflow in the default branch
 
 jobs:
   prepare:
@@ -51,9 +48,7 @@ jobs:
     uses: ./.github/workflows/backend_publish_release.yml
     with:
       project_version: ${{ needs.prepare.outputs.version }}
-      # Push-triggered runs (release/0.0.0 test branch) default to true;
-      # workflow_dispatch lets the caller opt out for v12-stable.
-      publish_images: ${{ github.event_name == 'push' || inputs.publish_images }}
+      publish_images: ${{ inputs.publish_images }}
     secrets: inherit
 
   frontend_release:
@@ -62,7 +57,7 @@ jobs:
     uses: ./.github/workflows/frontend_publish_release.yml
     with:
       project_version: ${{ needs.prepare.outputs.version }}
-      publish_images: ${{ github.event_name == 'push' || inputs.publish_images }}
+      publish_images: ${{ inputs.publish_images }}
     secrets: inherit
 
   create_release:
