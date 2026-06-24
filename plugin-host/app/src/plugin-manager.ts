@@ -366,6 +366,72 @@ export class PluginManager {
   }
 
   /**
+   * Call the handle_request exported function on a plugin — the RPC-style data route used by the
+   * plugin's iframe (forwarded by the host's `/plugins/:id/:version/data` route).
+   *
+   * Like {@link callAction}, `serviceToken` and `gzacBaseUrl` (when present) are passed via Extism's
+   * per-call host context so a request handler *could* call back into GZAC via `gzac_api`; they are
+   * never serialized into the Wasm input.
+   */
+  async callRequest(
+    pluginId: string,
+    version: string,
+    input: {
+      configurationId?: string;
+      configuration: Record<string, unknown>;
+      method: string;
+      path: string;
+      query?: Record<string, string>;
+      body?: unknown;
+      context?: Record<string, unknown>;
+      serviceToken?: string;
+      gzacBaseUrl?: string;
+    }
+  ): Promise<{ status: number; headers?: Record<string, string>; body?: unknown }> {
+    const k = this.key(pluginId, version);
+    const loaded = this.plugins.get(k);
+
+    if (!loaded) {
+      throw new Error(`Plugin not found: ${pluginId}@${version}`);
+    }
+
+    const { serviceToken, gzacBaseUrl, ...wasmFields } = input;
+    const wasmInput = JSON.stringify({
+      ...wasmFields,
+      configuration: input.configuration,
+    });
+
+    const hostCtx: GzacApiCallContext = {
+      configurationId: input.configurationId ?? "",
+      pluginId,
+      pluginVersion: version,
+      serviceToken: serviceToken ?? "",
+      gzacBaseUrl: gzacBaseUrl ?? "",
+    };
+
+    this.logger.debug(
+      { pluginId, version, method: input.method, path: input.path },
+      "Calling handle_request"
+    );
+
+    const output = await this.runExclusive(loaded, async () => {
+      const plugin = await this.getOrCreateExtismPlugin(loaded);
+      const result = await plugin.call("handle_request", wasmInput, hostCtx);
+      if (!result) {
+        throw new Error(`handle_request returned null for ${pluginId}@${version}`);
+      }
+      return JSON.parse(result.text());
+    });
+
+    this.logger.debug(
+      { pluginId, version, path: input.path, status: output.status },
+      "handle_request completed"
+    );
+
+    return output;
+  }
+
+  /**
    * Get the manifest for a loaded plugin.
    */
   getManifest(pluginId: string, version: string): PluginManifest | null {

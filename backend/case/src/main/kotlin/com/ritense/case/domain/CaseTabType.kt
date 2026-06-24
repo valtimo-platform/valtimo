@@ -22,7 +22,8 @@ enum class CaseTabType {
     STANDARD,
     FORMIO,
     CUSTOM,
-    WIDGETS;
+    WIDGETS,
+    EXTERNAL_PLUGIN;
 
     val value: String
         @JsonValue get() = name.lowercase()

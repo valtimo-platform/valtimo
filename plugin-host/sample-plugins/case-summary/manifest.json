@@ -26,7 +26,21 @@
       "action.summaryVariable.help": "Process variable name for the generated summary (default: caseSummary)",
       "action.definitionKeyVariable.label": "Definition key variable name",
       "action.definitionKeyVariable.placeholder": "caseDefinitionKey",
-      "action.definitionKeyVariable.help": "Process variable name for the case definition key (default: caseDefinitionKey)"
+      "action.definitionKeyVariable.help": "Process variable name for the case definition key (default: caseDefinitionKey)",
+      "caseTab.hello.title": "Hello world",
+      "caseTab.hello": "This text is rendered by the case-summary plugin bundle.",
+      "caseTab.loading": "Loading…",
+      "caseTab.plugin.title": "Plugin-served data",
+      "caseTab.plugin.error": "Could not load plugin data.",
+      "caseTab.valtimo.title": "Case data (your access)",
+      "caseTab.valtimo.definition": "Case definition",
+      "caseTab.valtimo.error": "Could not load case data.",
+      "caseTab.valtimo.forbidden": "You don't have permission to view this case's data.",
+      "caseTab.valtimo.noDocument": "No document is associated with this tab.",
+      "caseTabDetails.hello.title": "Case details tab",
+      "caseTabDetails.hello": "This is a second case tab from the same plugin, selected by its bundle key.",
+      "caseTabDetails.content.title": "Document content (your access)",
+      "caseTabDetails.content.empty": "This document has no content."
     },
     "nl": {
       "name": "Zaaksamenvatting",
@@ -47,7 +61,21 @@
       "action.summaryVariable.help": "Naam van de procesvariabele voor de gegenereerde samenvatting (standaard: caseSummary)",
       "action.definitionKeyVariable.label": "Procesvariabele zaaktype",
       "action.definitionKeyVariable.placeholder": "caseDefinitionKey",
-      "action.definitionKeyVariable.help": "Naam van de procesvariabele voor het zaaktypesleutel (standaard: caseDefinitionKey)"
+      "action.definitionKeyVariable.help": "Naam van de procesvariabele voor het zaaktypesleutel (standaard: caseDefinitionKey)",
+      "caseTab.hello.title": "Hallo wereld",
+      "caseTab.hello": "Deze tekst wordt weergegeven door de case-summary plugin-bundle.",
+      "caseTab.loading": "Laden…",
+      "caseTab.plugin.title": "Door de plugin geleverde gegevens",
+      "caseTab.plugin.error": "Kon plugin-gegevens niet laden.",
+      "caseTab.valtimo.title": "Zaakgegevens (uw toegang)",
+      "caseTab.valtimo.definition": "Zaaktype",
+      "caseTab.valtimo.error": "Kon zaakgegevens niet laden.",
+      "caseTab.valtimo.forbidden": "U heeft geen rechten om de gegevens van deze zaak te bekijken.",
+      "caseTab.valtimo.noDocument": "Er is geen document gekoppeld aan dit tabblad.",
+      "caseTabDetails.hello.title": "Zaakdetails-tabblad",
+      "caseTabDetails.hello": "Dit is een tweede zaaktabblad van dezelfde plugin, geselecteerd op zijn bundle-sleutel.",
+      "caseTabDetails.content.title": "Documentinhoud (uw toegang)",
+      "caseTabDetails.content.empty": "Dit document heeft geen inhoud."
     }
   },
   "configurationSchema": {
@@ -78,6 +106,18 @@
       "key": "case-summary",
       "title": "Build Case Summary",
       "path": "/bundles/action-config.html"
+    },
+    {
+      "type": "case-tab",
+      "key": "summary",
+      "title": "Case Summary",
+      "path": "/bundles/case-tab.html"
+    },
+    {
+      "type": "case-tab",
+      "key": "details",
+      "title": "Case Details",
+      "path": "/bundles/case-tab-details.html"
     }
   ],
   "actions": [

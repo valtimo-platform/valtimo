@@ -16,6 +16,7 @@
 
 package com.ritense.externalplugin.service
 
+import com.ritense.case_.service.CaseExternalPluginTabService
 import com.ritense.externalplugin.domain.ExternalPluginConfiguration
 import com.ritense.externalplugin.domain.ExternalPluginProcessLink
 import com.ritense.externalplugin.repository.ExternalPluginConfigurationRepository
@@ -33,6 +34,7 @@ import org.operaton.bpm.model.bpmn.BpmnModelInstance
 import org.operaton.bpm.model.bpmn.instance.FlowElement
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import java.util.Optional
 import java.util.UUID
 
 @Service
@@ -44,17 +46,44 @@ class ExternalPluginHostUsageResolver(
     private val processLinkRepository: ExternalPluginProcessLinkRepository,
     private val operatonRepositoryService: OperatonRepositoryService,
     private val bpmnRepositoryService: RepositoryService,
+    /**
+     * Optional so the module still wires up if the case module's tab service is unavailable; in a
+     * normal GZAC deployment it is always present (external-plugin depends on case).
+     */
+    private val caseExternalPluginTabService: Optional<CaseExternalPluginTabService>,
 ) {
 
     fun findUsagesForHost(hostId: UUID): List<PluginUsageDto> {
         val configurations = collectConfigurationsForHost(hostId)
-        return buildUsageDtos(configurations)
+        return buildUsageDtos(configurations) + buildCaseTabUsageDtos(configurations)
     }
 
     fun findUsagesForConfiguration(configurationId: UUID): List<PluginUsageDto> {
         val configuration = configurationRepository.findById(configurationId).orElse(null)
             ?: return emptyList()
-        return buildUsageDtos(listOf(configuration))
+        return buildUsageDtos(listOf(configuration)) + buildCaseTabUsageDtos(listOf(configuration))
+    }
+
+    /**
+     * A `case-tab` of an external plugin references the configuration without a process link, so it
+     * counts as a usage that blocks deletion (system-plan §12).
+     */
+    private fun buildCaseTabUsageDtos(configurations: List<ExternalPluginConfiguration>): List<PluginUsageDto> {
+        val tabService = caseExternalPluginTabService.orElse(null) ?: return emptyList()
+        if (configurations.isEmpty()) return emptyList()
+        return configurations.flatMap { configuration ->
+            tabService.findUsagesForConfiguration(configuration.id).map { usage ->
+                PluginUsageDto(
+                    configurationId = configuration.id,
+                    configurationTitle = configuration.title,
+                    parentType = PluginUsageParentType.CASE,
+                    parentKey = usage.caseDefinitionKey,
+                    parentVersionTag = usage.caseDefinitionVersionTag,
+                    tabKey = usage.tabKey,
+                    tabName = usage.tabName,
+                )
+            }
+        }
     }
 
     private fun buildUsageDtos(configurations: List<ExternalPluginConfiguration>): List<PluginUsageDto> {

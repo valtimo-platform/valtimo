@@ -39,8 +39,9 @@ export class TabFormComponent implements OnInit, OnDestroy {
     this.tabService.getFormDefinitions(this.route),
     this.tabService.defaultTabs$,
     this.tabService.customComponentKeys$,
+    this.tabService.getExternalPluginTabItems(),
   ]).pipe(
-    map(([tabKeys, formDefinitions, defaultTabs, customComponentKeys]) => {
+    map(([tabKeys, formDefinitions, defaultTabs, customComponentKeys, externalPluginItems]) => {
       switch (this.tabType) {
         case ApiTabType.STANDARD:
           return this.getListItems(defaultTabs, tabKeys);
@@ -48,7 +49,11 @@ export class TabFormComponent implements OnInit, OnDestroy {
           return this.getListItems(customComponentKeys, tabKeys);
         case ApiTabType.FORMIO:
           return this.getListItems(formDefinitions, tabKeys);
+        case ApiTabType.EXTERNAL_PLUGIN:
+          return this.getListItems(externalPluginItems, tabKeys);
         case ApiTabType.WIDGETS:
+          return [];
+        default:
           return [];
       }
     }),

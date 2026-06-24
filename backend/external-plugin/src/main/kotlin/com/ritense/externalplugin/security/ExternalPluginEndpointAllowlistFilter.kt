@@ -25,9 +25,16 @@ import org.springframework.security.web.util.matcher.AntPathRequestMatcher
 import org.springframework.web.filter.OncePerRequestFilter
 
 /**
- * Restricts external plugin service tokens (principal: [ExternalPluginServicePrincipal]) to the
- * endpoints that were explicitly granted for the plugin configuration. Other authenticated
- * principals (Keycloak users, etc.) are unaffected.
+ * Restricts external plugin tokens to the endpoints that were explicitly granted for the plugin
+ * configuration. Applies to **both** token kinds:
+ *
+ * - [ExternalPluginServicePrincipal] — the host's system credential. Reach is *only* the allowlist
+ *   (PBAC is bypassed for the service token).
+ * - [ExternalPluginUserPrincipal] — the downscoped user token used by the iframe parent-proxy. Reach
+ *   is **PBAC ∩ allowlist**: PBAC is enforced upstream (the recognising filter does not run without
+ *   authorization) and this filter narrows it further to the granted set.
+ *
+ * Other authenticated principals (interactive Keycloak users, etc.) are unaffected.
  */
 class ExternalPluginEndpointAllowlistFilter(
     private val grantedEndpointRepository: ExternalPluginGrantedEndpointRepository,
@@ -43,10 +50,13 @@ class ExternalPluginEndpointAllowlistFilter(
         filterChain: FilterChain,
     ) {
         val authentication = SecurityContextHolder.getContext().authentication
-        val principal = authentication?.principal
-        if (principal !is ExternalPluginServicePrincipal) {
-            filterChain.doFilter(request, response)
-            return
+        val configurationId = when (val principal = authentication?.principal) {
+            is ExternalPluginServicePrincipal -> principal.pluginConfigId
+            is ExternalPluginUserPrincipal -> principal.pluginConfigId
+            else -> {
+                filterChain.doFilter(request, response)
+                return
+            }
         }
 
         // External plugins must never access their own management endpoints
@@ -58,7 +68,7 @@ class ExternalPluginEndpointAllowlistFilter(
             return
         }
 
-        val grantedEndpoints = grantedEndpointRepository.findAllByConfigurationId(principal.pluginConfigId)
+        val grantedEndpoints = grantedEndpointRepository.findAllByConfigurationId(configurationId)
         val matchers = grantedEndpoints.map {
             AntPathRequestMatcher(it.endpointPattern, it.httpMethod)
         }

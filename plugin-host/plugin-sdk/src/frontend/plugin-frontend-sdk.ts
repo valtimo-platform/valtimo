@@ -35,6 +35,12 @@ interface ParentToIframeEvents {
   tokenRefresh: { accessToken: string };
   themeChanged: { theme: string };
   prefillConfiguration: { title: string; configuration: Record<string, unknown> };
+  /**
+   * Reply to a {@link IframeToParentEvents.proxyRequest}. The parent performed the allow-listed
+   * call (against GZAC with the downscoped user token, or against the plugin host) and returns the
+   * **data only** — never the token. `error` is set when the parent could not perform the call.
+   */
+  proxyResponse: { correlationId: string; status: number; body?: unknown; error?: string };
 }
 
 /** Events sent from the plugin iframe to the Angular parent. */
@@ -44,6 +50,27 @@ interface IframeToParentEvents {
   configurationChanged: { valid: boolean; title: string; data: Record<string, unknown> };
   navigate: { route: string };
   notification: { type: "success" | "warning" | "error" | "info"; message: string };
+  /**
+   * Ask the Angular parent to perform an allow-listed call on the iframe's behalf. The iframe never
+   * holds a credential (opaque origin); the parent attaches the downscoped user token for
+   * `target: "gzac"`, or forwards to the plugin host for `target: "plugin"`, and replies with a
+   * {@link ParentToIframeEvents.proxyResponse}.
+   */
+  proxyRequest: {
+    correlationId: string;
+    target: "gzac" | "plugin";
+    method: string;
+    path: string;
+    query?: Record<string, string>;
+    body?: unknown;
+    headers?: Record<string, string>;
+  };
+}
+
+/** Result of a proxied call: the HTTP status and the response body (data only). */
+export interface ProxyResult {
+  status: number;
+  body: unknown;
 }
 
 /** Context information passed to the plugin on init. */
@@ -70,6 +97,12 @@ class ValtimoPluginSDK {
   private _allTranslations: Record<string, Record<string, string>> | null = null;
   private readonly _handlers = new Map<string, Array<EventHandler<unknown>>>();
   private readonly _bufferedEvents: Array<{ event: string; payload: unknown }> = [];
+  // Pending proxied requests, keyed by an incrementing correlation id (a counter is fine in-browser).
+  private _correlationCounter = 0;
+  private readonly _pendingRequests = new Map<
+    string,
+    { resolve: (value: ProxyResult) => void; reject: (reason: unknown) => void }
+  >();
   private _parentOrigin: string | null = null;
   // Bound once so addEventListener and removeEventListener share the same reference.
   private readonly _boundOnMessage = this._onMessage.bind(this);
@@ -142,6 +175,48 @@ class ValtimoPluginSDK {
     this.emit("configurationChanged", { valid, title, data });
   }
 
+  // ---- Parent-proxied data access ----
+
+  /**
+   * Read Valtimo (GZAC) data through the Angular parent, scoped to the logged-in user. The iframe
+   * never holds a token — the parent attaches the downscoped user token and returns the data only.
+   * `path` must be a GZAC API path (e.g. `/api/v1/document/{id}`).
+   *
+   * Resolves with `{ status, body }` (the caller decides what to do with a non-2xx status); rejects
+   * only when the parent could not perform the call at all.
+   */
+  public callValtimo(
+    method: string,
+    path: string,
+    body?: unknown,
+    headers?: Record<string, string>
+  ): Promise<ProxyResult> {
+    return this._proxyRequest("gzac", method, path, undefined, body, headers);
+  }
+
+  /**
+   * Fetch data the plugin serves itself (its `handle_request` handler), via the parent → plugin
+   * host. `path` is the logical path the handler dispatches on (e.g. `/summary`).
+   */
+  public getPluginData(path: string, query?: Record<string, string>): Promise<ProxyResult> {
+    return this._proxyRequest("plugin", "GET", path, query);
+  }
+
+  private _proxyRequest(
+    target: "gzac" | "plugin",
+    method: string,
+    path: string,
+    query?: Record<string, string>,
+    body?: unknown,
+    headers?: Record<string, string>
+  ): Promise<ProxyResult> {
+    const correlationId = String(++this._correlationCounter);
+    return new Promise<ProxyResult>((resolve, reject) => {
+      this._pendingRequests.set(correlationId, { resolve, reject });
+      this.emit("proxyRequest", { correlationId, target, method, path, query, body, headers });
+    });
+  }
+
   // ---- Accessors ----
 
   /** Get the current access token (refreshed automatically). */
@@ -188,11 +263,15 @@ class ValtimoPluginSDK {
    * resolves the translation bucket (active locale → `en` fallback → {}).
    */
   private async _loadManifest(): Promise<void> {
-    const m = window.location.pathname.match(/^(\/plugins\/[^/]+\/[^/]+)\//);
-    if (!m) return;
+    // Build the manifest URL from the full href, NOT window.location.origin: at an opaque origin
+    // (the iframe is sandboxed without allow-same-origin) `origin` serialises to "null", while
+    // `href` still reflects the document's real URL. This also makes the fetch cross-origin, so the
+    // host serves the manifest with `Access-Control-Allow-Origin: *`.
+    const base = window.location.href.match(/^(https?:\/\/[^/]+\/plugins\/[^/]+\/[^/]+)\//);
+    if (!base) return;
     let manifest: { translations?: Record<string, Record<string, string>> } | null = null;
     try {
-      const res = await fetch(`${window.location.origin}${m[1]}/plugin-manifest`);
+      const res = await fetch(`${base[1]}/plugin-manifest`);
       if (res.ok) manifest = await res.json();
     } catch {
       // Network failure: leave translations empty, t() returns the key.
@@ -254,6 +333,19 @@ class ValtimoPluginSDK {
       this._accessToken = (payload as ParentToIframeEvents["tokenRefresh"]).accessToken;
     } else if (eventType === "themeChanged") {
       this._theme = (payload as ParentToIframeEvents["themeChanged"]).theme;
+    } else if (eventType === "proxyResponse") {
+      // Resolve/reject the matching pending request; never dispatched to user handlers.
+      const response = payload as ParentToIframeEvents["proxyResponse"];
+      const pending = this._pendingRequests.get(response.correlationId);
+      if (pending) {
+        this._pendingRequests.delete(response.correlationId);
+        if (response.error) {
+          pending.reject(new Error(response.error));
+        } else {
+          pending.resolve({ status: response.status, body: response.body });
+        }
+      }
+      return;
     }
 
     // Dispatch to registered handlers, or buffer if none registered yet

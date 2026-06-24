@@ -982,9 +982,14 @@
         "uniqueKeyError": "De key voor deze tab moet uniek zijn.",
         "invalidKeyError": "De key voor deze tab mag alleen letters, nummers en dashes bevatten.",
         "widgetsComponent": "Widgets component",
+        "externalPlugin": "Externe plugin",
+        "externalPluginDisabled": "Er zijn geen geactiveerde externe plugins met een zaaktabblad, of ze zijn allemaal al toegevoegd.",
         "visibleTitle": "Takenlijst zichtbaar op tabblad",
         "visible": "Zichtbaar",
         "invisible": "Niet zichtbaar"
+      },
+      "externalPlugin": {
+        "loadError": "Het externe plugin-tabblad kon niet worden geladen. De plugin-host is mogelijk onbereikbaar of de bundle is niet beschikbaar."
       },
       "titles": {
         "custom": "Nieuw tabblad toevoegen met aangepaste component",
@@ -995,7 +1000,8 @@
       "contentLabels": {
         "custom": "Kies aangepaste component",
         "formio": "Kies FormIO component",
-        "standard": "Kies standaard inhoud"
+        "standard": "Kies standaard inhoud",
+        "external_plugin": "Kies externe plugin"
       },
       "editModal": {"title": "Tabblad bewerken {{name}}", "updateTab": "Tabblad updaten"},
       "deleteModal": {
@@ -2263,7 +2269,8 @@
         "CASE": "Dossier",
         "BUILDING_BLOCK": "Bouwblok",
         "GLOBAL": "Globaal"
-      }
+      },
+      "caseTab": "Zaaktabblad"
     },
     "compatibility": {
       "incompatibleTag": "Incompatibel",

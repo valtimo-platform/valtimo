@@ -23,6 +23,7 @@ dependencies {
     implementation project(":backend:logging")
     implementation project(":backend:plugin")
     implementation project(":backend:authorization")
+    implementation project(":backend:case")
 
     implementation "org.springframework.boot:spring-boot-starter-data-jpa"
     implementation "org.springframework.boot:spring-boot-starter"
@@ -41,7 +42,7 @@ dependencies {
     testImplementation project(":backend:test-utils-common")
 
     // All modules with EndpointDescriptionProviders — needed by the translation coverage test
-    testImplementation project(":backend:case")
+    // (:backend:case is already a compile dependency above)
     testImplementation project(":backend:process-document")
     testImplementation project(":backend:form")
     testImplementation project(":backend:form-flow")

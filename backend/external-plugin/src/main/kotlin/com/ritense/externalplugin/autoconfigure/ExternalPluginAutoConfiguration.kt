@@ -38,7 +38,11 @@ import com.ritense.externalplugin.security.ExternalPluginHttpSecurityConfigurer
 import com.ritense.externalplugin.security.ExternalPluginServiceTokenAuthenticator
 import com.ritense.externalplugin.security.ExternalPluginServiceTokenFilter
 import com.ritense.externalplugin.security.ExternalPluginServiceTokenKeyProvider
+import com.ritense.externalplugin.security.ExternalPluginUserTokenAuthenticator
+import com.ritense.externalplugin.security.ExternalPluginUserTokenFilter
+import com.ritense.externalplugin.security.ExternalPluginUserTokenKeyProvider
 import com.ritense.externalplugin.service.EndpointDescriptionService
+import com.ritense.externalplugin.service.ExternalPluginCaseTabResolverImpl
 import com.ritense.externalplugin.service.ExternalPluginConfigurationService
 import com.ritense.externalplugin.service.ExternalPluginDefinitionService
 import com.ritense.externalplugin.service.ExternalPluginDiscoveryJob
@@ -46,8 +50,10 @@ import com.ritense.externalplugin.service.ExternalPluginDiscoveryService
 import com.ritense.externalplugin.service.ExternalPluginHostService
 import com.ritense.externalplugin.service.ExternalPluginHostUsageResolver
 import com.ritense.externalplugin.service.ExternalPluginServiceTokenService
+import com.ritense.externalplugin.service.ExternalPluginUserTokenService
 import com.ritense.externalplugin.service.PluginPropertyEncryptor
 import com.ritense.externalplugin.web.rest.ExternalPluginManagementResource
+import com.ritense.externalplugin.web.rest.ExternalPluginUserTokenResource
 import com.ritense.plugin.service.EncryptionService
 import com.ritense.valtimo.contract.endpoint.EndpointDescriptionProvider
 import com.ritense.valtimo.operaton.service.OperatonRepositoryService
@@ -95,12 +101,14 @@ class ExternalPluginAutoConfiguration {
         processLinkRepository: ExternalPluginProcessLinkRepository,
         operatonRepositoryService: OperatonRepositoryService,
         bpmnRepositoryService: RepositoryService,
+        caseExternalPluginTabService: java.util.Optional<com.ritense.case_.service.CaseExternalPluginTabService>,
     ) = ExternalPluginHostUsageResolver(
         definitionRepository,
         configurationRepository,
         processLinkRepository,
         operatonRepositoryService,
         bpmnRepositoryService,
+        caseExternalPluginTabService,
     )
 
     @Bean
@@ -129,6 +137,13 @@ class ExternalPluginAutoConfiguration {
     @ConditionalOnMissingBean(ExternalPluginDefinitionService::class)
     fun externalPluginDefinitionService(definitionRepository: ExternalPluginDefinitionRepository) =
         ExternalPluginDefinitionService(definitionRepository)
+
+    @Bean
+    @ConditionalOnMissingBean(ExternalPluginCaseTabResolverImpl::class)
+    fun externalPluginCaseTabResolver(
+        configurationRepository: ExternalPluginConfigurationRepository,
+        definitionRepository: ExternalPluginDefinitionRepository,
+    ) = ExternalPluginCaseTabResolverImpl(configurationRepository, definitionRepository)
 
     @Bean
     @ConditionalOnMissingBean(ExternalPluginServiceTokenKeyProvider::class)
@@ -161,12 +176,44 @@ class ExternalPluginAutoConfiguration {
     ) = ExternalPluginServiceTokenFilter(keyProvider, authenticator)
 
     @Bean
+    @ConditionalOnMissingBean(ExternalPluginUserTokenKeyProvider::class)
+    fun externalPluginUserTokenKeyProvider(
+        @Value("\${valtimo.plugin.encryption-secret}") secret: String,
+    ) = ExternalPluginUserTokenKeyProvider(secret)
+
+    @Bean
+    @ConditionalOnMissingBean(ExternalPluginUserTokenService::class)
+    fun externalPluginUserTokenService(
+        keyProvider: ExternalPluginUserTokenKeyProvider,
+        @Value("\${valtimo.external-plugin.user-token.ttl:PT15M}") tokenTtl: String,
+    ) = ExternalPluginUserTokenService(keyProvider, DurationStyle.detectAndParse(tokenTtl))
+
+    @Bean
+    @ConditionalOnMissingBean(ExternalPluginUserTokenAuthenticator::class)
+    fun externalPluginUserTokenAuthenticator() = ExternalPluginUserTokenAuthenticator()
+
+    @Bean
+    @ConditionalOnMissingBean(ExternalPluginUserTokenFilter::class)
+    fun externalPluginUserTokenFilter(
+        keyProvider: ExternalPluginUserTokenKeyProvider,
+        authenticator: ExternalPluginUserTokenAuthenticator,
+    ) = ExternalPluginUserTokenFilter(keyProvider, authenticator)
+
+    @Bean
+    @ConditionalOnMissingBean(ExternalPluginUserTokenResource::class)
+    fun externalPluginUserTokenResource(
+        configurationRepository: ExternalPluginConfigurationRepository,
+        userTokenService: ExternalPluginUserTokenService,
+    ) = ExternalPluginUserTokenResource(configurationRepository, userTokenService)
+
+    @Bean
     @Order(450)
     @ConditionalOnMissingBean(ExternalPluginCallbackHttpSecurityConfigurer::class)
     fun externalPluginCallbackHttpSecurityConfigurer(
         serviceTokenFilter: ExternalPluginServiceTokenFilter,
+        userTokenFilter: ExternalPluginUserTokenFilter,
         allowlistFilter: ExternalPluginEndpointAllowlistFilter,
-    ) = ExternalPluginCallbackHttpSecurityConfigurer(serviceTokenFilter, allowlistFilter)
+    ) = ExternalPluginCallbackHttpSecurityConfigurer(serviceTokenFilter, userTokenFilter, allowlistFilter)
 
     /**
      * The configuration service only needs two fallbacks:

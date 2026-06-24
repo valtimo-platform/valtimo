@@ -63,6 +63,7 @@ class ExternalPluginHostUsageResolverTest {
             processLinkRepository,
             operatonRepositoryService,
             bpmnRepositoryService,
+            java.util.Optional.empty(),
         )
     }
 

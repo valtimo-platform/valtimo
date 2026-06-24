@@ -14,8 +14,29 @@
  * limitations under the License.
  */
 
-import type {ActionInput, Document, EventInput} from "@valtimo/plugin-sdk";
-import {action, config, gzacApi, log, onEvent,} from "@valtimo/plugin-sdk";
+import type {ActionInput, Document, EventInput, RequestInput} from "@valtimo/plugin-sdk";
+import {action, config, gzacApi, log, onEvent, request,} from "@valtimo/plugin-sdk";
+
+// Plugin-served data for the case-tab iframe. Reached via the host's
+// `POST /plugins/case-summary/{version}/data` route, which the Angular parent-proxy calls when the
+// bundle invokes `sdk.getPluginData("/summary")`. Demonstrates the "plugin serves its own data"
+// origin — distinct from data the plugin reads back out of GZAC.
+request("/summary", (input: RequestInput) => {
+  const currency = (input.configuration.currency as string) ?? "EUR";
+  return {
+    status: 200,
+    body: {
+      message: "Hello from the case-summary plugin backend",
+      currency,
+      documentId: input.context?.documentId ?? null,
+      items: [
+        {label: "Status", value: "In progress"},
+        {label: "Priority", value: "Normal"},
+        {label: "Channel", value: "Web"},
+      ],
+    },
+  };
+});
 
 action("case-summary", (input: ActionInput) => {
   const titleField = (input.properties.titleField as string) || "/applicantName";

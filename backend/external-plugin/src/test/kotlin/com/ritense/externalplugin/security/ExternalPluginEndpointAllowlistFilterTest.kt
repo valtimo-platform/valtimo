@@ -149,6 +149,38 @@ class ExternalPluginEndpointAllowlistFilterTest {
         assertThat(chain.request).isNull()
     }
 
+    @Test
+    fun `allows a granted request for an external plugin user principal`() {
+        val configId = UUID.randomUUID()
+        authenticateAsUser(configId)
+        whenever(grantedEndpointRepository.findAllByConfigurationId(configId))
+            .thenReturn(listOf(grantedEndpoint(configId, "GET", "/api/v1/document/*")))
+        val request = request("GET", "/api/v1/document/123")
+        val response = MockHttpServletResponse()
+        val chain = MockFilterChain()
+
+        filter.doFilter(request, response, chain)
+
+        assertThat(response.status).isEqualTo(200)
+        assertThat(chain.request).isNotNull()
+    }
+
+    @Test
+    fun `blocks an ungranted request for an external plugin user principal`() {
+        val configId = UUID.randomUUID()
+        authenticateAsUser(configId)
+        whenever(grantedEndpointRepository.findAllByConfigurationId(configId))
+            .thenReturn(listOf(grantedEndpoint(configId, "GET", "/api/v1/document/*")))
+        val request = request("GET", "/api/v1/case/123")
+        val response = MockHttpServletResponse()
+        val chain = MockFilterChain()
+
+        filter.doFilter(request, response, chain)
+
+        assertThat(response.status).isEqualTo(403)
+        assertThat(chain.request).isNull()
+    }
+
     private fun request(method: String, path: String) =
         MockHttpServletRequest(method, path).apply { servletPath = path }
 
@@ -156,6 +188,12 @@ class ExternalPluginEndpointAllowlistFilterTest {
         val principal = ExternalPluginServicePrincipal(configId, "case-summary", "0.1.0")
         SecurityContextHolder.getContext().authentication =
             UsernamePasswordAuthenticationToken(principal, "token", emptyList())
+    }
+
+    private fun authenticateAsUser(configId: UUID) {
+        val principal = ExternalPluginUserPrincipal("john.doe", listOf("ROLE_USER"), configId)
+        SecurityContextHolder.getContext().authentication =
+            UsernamePasswordAuthenticationToken(principal, "token", principal.authorities)
     }
 
     private fun grantedEndpoint(configId: UUID, method: String, pattern: String) =
