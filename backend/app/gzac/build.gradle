@@ -34,6 +34,43 @@ dependencies {
 
 apply from: "gradle/publishing.gradle"
 
+// Determine whether to include dev sources/resources in the main source set.
+// Defaults to true when bootRun is the requested task so the dev console
+// works out of the box (./gradlew :backend:app:gzac:bootRun). Otherwise
+// reads -PincludeDev (default false — CI image-build passes false explicitly
+// via ORG_GRADLE_PROJECT_includeDev so only the template-equivalent
+// src/main/ ships in ritense/gzac-backend:<v>).
+def bootRunRequested = gradle.startParameter.taskNames.any { taskName ->
+    def normalised = taskName.startsWith(':') ? taskName.substring(taskName.lastIndexOf(':') + 1) : taskName
+    normalised in ['bootRun', 'bootRunWithDocker']
+}
+def includeDevSources = bootRunRequested ? true : (project.hasProperty('includeDev') ? project.property('includeDev').toString().toBoolean() : false)
+
+if (includeDevSources) {
+    sourceSets {
+        main {
+            kotlin.srcDirs += 'src/dev/kotlin'
+            java.srcDirs += 'src/dev/java'
+            resources.srcDirs += 'src/dev/resources'
+        }
+    }
+    tasks.named('processResources').configure {
+        // src/dev/resources comes after src/main/resources in the srcDir list;
+        // with INCLUDE, gradle copies both and the later (dev) entry wins on
+        // collisions. So application.yml, processes.xml, logback-spring.xml
+        // and banner.txt from src/dev/resources override their src/main/
+        // counterparts during the dev loop.
+        duplicatesStrategy = DuplicatesStrategy.INCLUDE
+    }
+    springBoot {
+        mainClass = 'com.ritense.gzac.GzacApplication'
+    }
+} else {
+    springBoot {
+        mainClass = 'com.ritense.valtimo.ApplicationKt'
+    }
+}
+
 bootRun {
     doFirst {
         File f = file(".env.properties")

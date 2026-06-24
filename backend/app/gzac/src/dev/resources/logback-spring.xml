@@ -1,16 +1,32 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<!--
+  ~ Copyright 2015-2026 Ritense BV, the Netherlands.
+  ~
+  ~ Licensed under EUPL, Version 1.2 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~ https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" basis,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
 <configuration scan="true">
     <include resource="config/logging/logback/valtimo-defaults.xml" />
     <include resource="org/springframework/boot/logging/logback/console-appender.xml" />
     <include resource="config/logging/logback/valtimo-database-appender.xml" />
 
-    <logger name="com.ritense.valtimo" level="${logback.loglevel:-INFO}"/>
+    <logger name="com.ritense.valtimo" level="#logback.loglevel#"/>
+    <logger name="com.ritense.valtimo.web.logging" level="DEBUG"/>
 
-    <logger name="javax.activation" level="WARN"/>
-    <logger name="javax.mail" level="WARN"/>
-    <logger name="javax.xml.bind" level="WARN"/>
-    <logger name="jdk.event.security" level="WARN"/>
+    <logger name="jakarta.activation" level="WARN"/>
+    <logger name="jakarta.mail" level="WARN"/>
+    <logger name="jakarta.xml.bind" level="WARN"/>
     <logger name="ch.qos.logback" level="WARN"/>
     <logger name="com.codahale.metrics" level="WARN"/>
     <logger name="com.ryantenney" level="WARN"/>
@@ -36,20 +52,19 @@
     <logger name="liquibase" level="WARN"/>
     <logger name="sun.rmi.transport" level="WARN"/>
     <logger name="com.amazonaws" level="WARN"/>
-    <logger name="com.ritense.valtimo.externalconnector" level="WARN"/>
     <logger name="javax.management.remote.rmi" level="WARN"/>
     <logger name="org.testcontainers" level="INFO"/>
     <logger name="com.ritense.valtimo.config.testcontainer" level="WARN"/>
     <logger name="com.github.dockerjava" level="WARN"/>
     <logger name="okhttp3" level="WARN"/>
     <logger name="org.hibernate.engine.jdbc.spi" level="INFO"/>
-    <logger name="com.vladmihalcea.hibernate" level="WARN"/>
+    <logger name="io.hypersistence.utils.hibernate" level="WARN"/>
 
     <contextListener class="ch.qos.logback.classic.jul.LevelChangePropagator">
         <resetJUL>true</resetJUL>
     </contextListener>
 
-    <root level="${logback.loglevel:-INFO}">
+    <root level="#logback.loglevel#">
         <appender-ref ref="CONSOLE"/>
         <appender-ref ref="VALTIMODBASYNC"/>
     </root>

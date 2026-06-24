@@ -7,6 +7,12 @@ permissions:
 
 on:
   workflow_dispatch:
+    inputs:
+      publish_images:
+        description: "Build and push the GZAC backend Docker image from the monorepo. Frontend image is built by Jenkins until the apps/ split lands (path B step 3)."
+        required: false
+        type: boolean
+        default: true
 
 jobs:
   prepare:
@@ -42,6 +48,7 @@ jobs:
     uses: ./.github/workflows/backend_publish_release.yml
     with:
       project_version: ${{ needs.prepare.outputs.version }}
+      publish_images: ${{ inputs.publish_images }}
     secrets: inherit
 
   frontend_release:
