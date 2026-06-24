@@ -71,7 +71,12 @@ if (includeDevSources) {
     }
     // src/dev resources are appended after src/main, so dev wins on collisions
     // (config/application.yml, META-INF/processes.xml, logback-spring.xml, banner.txt).
+    // processResources runs at build time; sourcesJar runs at publish time and
+    // also walks both resource roots, so it needs the same strategy.
     tasks.named("processResources").configure {
+        duplicatesStrategy = DuplicatesStrategy.INCLUDE
+    }
+    tasks.named("sourcesJar").configure {
         duplicatesStrategy = DuplicatesStrategy.INCLUDE
     }
     // Both com.ritense.valtimo.Application (template, src/main) and
