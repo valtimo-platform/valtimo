@@ -204,7 +204,6 @@
     <include file="config/liquibase/initial-setup/case/changelog/20250902-add-hidden-case-list-column.xml"/>
     <include file="config/liquibase/initial-setup/case/changelog/20251117-add-widget-icon.xml"/>
     <include file="config/liquibase/initial-setup/case/changelog/20251125-add-widget-is-compact.xml"/>
-    <include file="config/liquibase/initial-setup/case/changelog/20260622-add-case-external-plugin-tab.xml"/>
 
     <!-- form-flow/src/main/resources/config/liquibase/form-flow-master.xml -->
 
