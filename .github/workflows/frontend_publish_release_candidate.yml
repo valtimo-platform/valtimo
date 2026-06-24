@@ -7,14 +7,24 @@ on:
   workflow_call:
     inputs:
       project_version:
-        description: "Semantic version suffixed with -{rc_number}. E.g. 13.6.0-1"
+        description: "Semantic version suffixed with -{rc_number}. E.g. 12.39.0-1"
         required: true
         type: string
+      publish_images:
+        description: "Reserved for parity with the release workflow. RC currently publishes libs only."
+        required: false
+        type: boolean
+        default: true
   workflow_dispatch:
     inputs:
       project_version:
-        description: "Semantic version suffixed with -{rc_number}. E.g. 13.6.0-1"
+        description: "Semantic version suffixed with -{rc_number}. E.g. 12.39.0-1"
         required: true
+      publish_images:
+        description: "Reserved for parity with the release workflow. RC currently publishes libs only."
+        required: false
+        type: boolean
+        default: true
 
 defaults:
   run:

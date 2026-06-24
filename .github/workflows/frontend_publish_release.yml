@@ -2,19 +2,30 @@ name: Frontend - Publish release
 
 permissions:
   contents: read
+  packages: write
 
 on:
   workflow_call:
     inputs:
       project_version:
-        description: "Base semantic version (e.g. 13.6.0)"
+        description: "Base semantic version (e.g. 12.39.0)"
         required: true
         type: string
+      publish_images:
+        description: "Build and push the frontend Docker image (variant=gzac). Disable to leave Jenkins as the image source."
+        required: false
+        type: boolean
+        default: true
   workflow_dispatch:
     inputs:
       project_version:
-        description: "Base semantic version (e.g. 13.6.0)"
+        description: "Base semantic version (e.g. 12.39.0)"
         required: true
+      publish_images:
+        description: "Build and push the frontend Docker image (variant=gzac). Disable to leave Jenkins as the image source."
+        required: false
+        type: boolean
+        default: true
 
 defaults:
   run:
@@ -34,4 +45,20 @@ jobs:
     with:
       project_version: ${{ inputs.project_version || github.event.inputs.project_version }}
       frontend_libraries_build_artifact_name: ${{ needs.build_and_test_libs.outputs.build_artifact_name }}
+    secrets: inherit
+
+  publish_image:
+    name: Build and push Docker image
+    if: ${{ inputs.publish_images }}
+    needs:
+      - build_and_test_libs
+    permissions:
+      contents: read
+      packages: write
+    uses: ./.github/workflows/frontend_build_push_docker_image.yml
+    with:
+      frontend_libraries_build_artifact_name: ${{ needs.build_and_test_libs.outputs.build_artifact_name }}
+      variant: gzac
+      push_to_dockerhub: true
+      release_image_tag: ${{ inputs.project_version || github.event.inputs.project_version }}
     secrets: inherit

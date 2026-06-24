@@ -19,6 +19,11 @@ on:
         description: "Tag to use when pushing the Docker Hub release image"
         required: false
         type: string
+      variant:
+        description: "Which Angular project to build (dev = monorepo dev console, gzac = released template-equivalent app)."
+        required: false
+        type: string
+        default: dev
 
     outputs:
       built_image:
@@ -128,7 +133,7 @@ jobs:
           npm install
 
       - name: Build app
-        run: npm run build
+        run: npm run build:${{ inputs.variant }}
 
       - name: Log in to GitHub Container Registry
         uses: docker/login-action@v3
@@ -184,7 +189,11 @@ jobs:
         with:
           # gebruik het ge-downloadde artefact als build context
           context: frontend/
-          file: ./frontend/Dockerfile
+          # dev = legacy Apache Dockerfile (port 4200, serves the monorepo dev
+          # console for PR test envs); gzac = nginx-unprivileged Dockerfile
+          # matching the v12 gzac-frontend-template image shipped by Jenkins
+          # (port 8080, envsubst on assets/config.template.js).
+          file: ${{ inputs.variant == 'gzac' && './frontend/apps/gzac/Dockerfile' || './frontend/Dockerfile' }}
           platforms: linux/amd64,linux/arm64/v8
           push: true
           tags: |
