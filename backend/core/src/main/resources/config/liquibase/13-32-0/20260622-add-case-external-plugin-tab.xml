@@ -1,0 +1,49 @@
+<?xml version="1.1" encoding="UTF-8" standalone="no"?>
+<!--
+  ~ Copyright 2015-2026 Ritense BV, the Netherlands.
+  ~
+  ~ Licensed under EUPL, Version 1.2 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~ https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" basis,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.6.xsd" logicalFilePath="config/liquibase/changelog/20260622-add-case-external-plugin-tab.xml">
+
+    <changeSet id="1" author="Ritense">
+        <createTable tableName="case_external_plugin_tab">
+            <column name="case_definition_key" type="varchar(256)">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="case_definition_version_tag" type="varchar(200)">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="tab_key" type="varchar(156)">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="external_plugin_configuration_id" type="${uuidType}">
+                <constraints nullable="false"/>
+            </column>
+            <column name="bundle_key" type="varchar(256)"/>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="2" author="Ritense">
+        <addForeignKeyConstraint
+            baseTableName="case_external_plugin_tab"
+            baseColumnNames="case_definition_key, case_definition_version_tag, tab_key"
+            constraintName="fk_case_external_plugin_tab_case_tab"
+            referencedTableName="case_tab"
+            referencedColumnNames="case_definition_key, case_definition_version_tag, tab_key"
+            onDelete="CASCADE"/>
+    </changeSet>
+</databaseChangeLog>
