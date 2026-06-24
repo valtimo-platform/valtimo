@@ -4,12 +4,6 @@
 **Release date 24-06-2026**
 {% endhint %}
 
-## New Features
-
-* **New feature title**
-
-  New feature explanation.
-
 ## Enhancements
 
 * **Value resolver support for Documenten API plugin**
