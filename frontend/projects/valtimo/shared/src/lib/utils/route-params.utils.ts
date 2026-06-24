@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import {CaseManagementParams, ManagementContext} from '../models';
+import {BuildingBlockManagementParams, CaseManagementParams, ManagementContext} from '../models';
 import {ActivatedRoute} from '@angular/router';
 import {combineLatest, distinctUntilChanged, filter, map, Observable, of, switchMap} from 'rxjs';
 import {isEqual} from 'lodash';
@@ -40,7 +40,47 @@ const getCaseManagementRouteParams = (
   );
 };
 
+const getBuildingBlockManagementRouteParams = (
+  route: ActivatedRoute,
+  doFilter = false
+): Observable<BuildingBlockManagementParams | undefined> => {
+  const rootParams$ = route.params ? route.params : of({});
+  const parentParams$ = route.parent?.params ? route.parent.params : of({});
+  return combineLatest([rootParams$, parentParams$]).pipe(
+    map(([rootParams, parentParams]) => {
+      const buildingBlockDefinitionKey =
+        rootParams['buildingBlockDefinitionKey'] || parentParams['buildingBlockDefinitionKey'];
+      const buildingBlockDefinitionVersionTag =
+        rootParams['buildingBlockDefinitionVersionTag'] ||
+        parentParams['buildingBlockDefinitionVersionTag'];
+      if (buildingBlockDefinitionKey && buildingBlockDefinitionVersionTag) {
+        return {buildingBlockDefinitionKey, buildingBlockDefinitionVersionTag};
+      }
+      return null;
+    }),
+    filter((params): params is BuildingBlockManagementParams =>
+      doFilter ? params !== null : true
+    ),
+    distinctUntilChanged((previous, current) => isEqual(previous, current))
+  );
+};
+
 function getContextObservable(route: ActivatedRoute): Observable<ManagementContext | null> {
+  // Traverse the route hierarchy to find the context data
+  // The context is set on a parent route, so we need to look up the tree
+  let currentRoute: ActivatedRoute | null = route;
+  while (currentRoute) {
+    const context = currentRoute.snapshot?.data?.['context'] as ManagementContext | undefined;
+    if (context) {
+      return currentRoute.data.pipe(
+        map(data => (data && (data['context'] as ManagementContext)) || null),
+        distinctUntilChanged()
+      );
+    }
+    currentRoute = currentRoute.parent;
+  }
+
+  // Fallback to original behavior if no context found in hierarchy
   return route.data.pipe(
     map(data => (data && (data['context'] as ManagementContext)) || null),
     distinctUntilChanged()
@@ -70,4 +110,9 @@ function getCaseManagementRouteParamsAndContext(
   );
 }
 
-export {getCaseManagementRouteParams, getContextObservable, getCaseManagementRouteParamsAndContext};
+export {
+  getCaseManagementRouteParams,
+  getContextObservable,
+  getCaseManagementRouteParamsAndContext,
+  getBuildingBlockManagementRouteParams,
+};

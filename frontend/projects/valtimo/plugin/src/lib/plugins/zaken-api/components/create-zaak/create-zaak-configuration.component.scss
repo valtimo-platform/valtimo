@@ -1,5 +1,5 @@
 /*!
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,13 +14,19 @@
  * limitations under the License.
  */
 
-.loading-container {
-  display: flex;
-  flex-direction: row;
-  justify-content: center;
-  height: 100%;
-  width: 100%;
-  align-items: center;
+.property-group {
+  background: var(--cds-layer-02);
+  padding: 1rem;
+  margin-block-end: var(--v-input-margin);
+}
+
+:host ::ng-deep .property-group > .row:last-child .v-input--margin {
+  margin-block-end: 0;
+}
+
+:host ::ng-deep .property-group .cds--text-input,
+:host ::ng-deep .property-group .cds--list-box__field {
+  background-color: #ffffff;
 }
 
 button.delete-button {
@@ -33,39 +39,19 @@ button.delete-button:hover {
   background-color: #e12717;
 }
 
-button.add-button {
+.property-group button.delete-button {
+  background-color: #ffffff;
+}
+
+.property-group button.delete-button:hover {
+  background-color: #e12717;
+}
+
+.add-button {
   margin-block-end: var(--v-input-margin);
 }
 
-::ng-deep .cds--overflow-menu-options {
-  z-index: 10000 !important;
-  width: 230px;
-}
-
-.property-input {
-  display: flex;
-
-  v-input,
-  cds-date-picker-input {
-    flex-grow: 1;
-  }
-
-  button {
-    height: 46px;
-    width: 46px;
-    margin: 16px;
-  }
-}
-
-div.property-row {
-  width: 100%;
-  display: grid;
-  grid-template-columns: 92% 8%; /* precise 95/5 split */
-}
-div.property-row > * {
-  box-sizing: border-box; /* keeps borders/padding inside the column width */
-  min-width: 0; /* prevents overflow from long content */
-}
-div.property-delete-col {
-  margin-left: auto;
+:host ::ng-deep .add-button .v-overflow-menu__pane {
+  max-height: 40vh;
+  overflow-y: auto;
 }

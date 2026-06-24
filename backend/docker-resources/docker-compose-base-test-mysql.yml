@@ -69,5 +69,9 @@ services:
 #   url: jdbc:mysql://localhost:3360/openklant-authentication-test
 #   url: jdbc:mysql://localhost:3361/klantinteracties-api-test
 #   url: jdbc:mysql://localhost:3362/iko-test
+#   url: jdbc:mysql://localhost:3363/building-block-test
+#   url: jdbc:mysql://localhost:3364/team-test
+#   url: jdbc:mysql://localhost:3365/admin-settings-test
+#   url: jdbc:mysql://localhost:3366/documenten-api-preview-test
 #   url: localhost:55672 <--outbox rabbitmq
 #   url: localhost:55673 <--inbox rabbitmq

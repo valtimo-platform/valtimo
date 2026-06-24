@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -34,6 +34,9 @@ class ZaakDetailsHttpSecurityConfigurer : HttpSecurityConfigurer {
                     .requestMatchers(antMatcher(GET, SYNC_MANAGEMENT_URL)).hasAuthority(ADMIN)
                     .requestMatchers(antMatcher(PUT, SYNC_MANAGEMENT_URL)).hasAuthority(ADMIN)
                     .requestMatchers(antMatcher(DELETE, SYNC_MANAGEMENT_URL)).hasAuthority(ADMIN)
+                    .requestMatchers(antMatcher(GET, "/api/management/v1/case/{caseId}/zgw/zaakdetails")).authenticated()
+                    .requestMatchers(antMatcher(GET, "/api/management/v1/case/{caseId}/zgw/zaakdetails/object")).authenticated()
+                    .requestMatchers(antMatcher(GET, "/api/management/v1/case/{caseId}/zgw/zaakobject/resolve")).authenticated()
             }
         } catch (e: Exception) {
             throw HttpConfigurerConfigurationException(e)

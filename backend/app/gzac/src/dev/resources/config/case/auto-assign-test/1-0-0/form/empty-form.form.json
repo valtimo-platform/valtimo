@@ -1,0 +1,16 @@
+{
+    "display": "form",
+    "components": [
+        {
+            "id": "ez8wcn",
+            "key": "submit",
+            "size": "md",
+            "type": "button",
+            "input": true,
+            "label": "Submit",
+            "theme": "primary",
+            "action": "submit",
+            "disableOnInvalid": true
+        }
+    ]
+}

@@ -1,0 +1,93 @@
+{
+    "$id": "subsidy-calculator.schema",
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "Subsidie Berekening Document",
+    "type": "object",
+    "properties": {
+        "applicantName": {
+            "type": "string",
+            "description": "Naam van de aanvrager"
+        },
+        "householdSize": {
+            "type": "integer",
+            "description": "Aantal personen in het huishouden"
+        },
+        "applicantAddress": {
+            "type": "object",
+            "description": "Adresgegevens van aanvrager (nested input test)",
+            "properties": {
+                "city": {
+                    "type": "string",
+                    "description": "Woonplaats"
+                },
+                "postalCode": {
+                    "type": "string",
+                    "description": "Postcode"
+                }
+            }
+        },
+        "verificationResult": {
+            "type": "object",
+            "description": "Resultaat van verificatie (nested output test)",
+            "properties": {
+                "status": {
+                    "type": "string",
+                    "description": "Status van verificatie"
+                },
+                "details": {
+                    "type": "string",
+                    "description": "Details van verificatie"
+                }
+            }
+        },
+        "verifiedApplicant": {
+            "type": "string",
+            "description": "Geverifieerde aanvragergegevens"
+        },
+        "baseSubsidyAmount": {
+            "type": "integer",
+            "description": "Basisbedrag van de subsidie"
+        },
+        "eligibilityResult": {
+            "type": "string",
+            "description": "Resultaat van de geschiktheidsbeoordeling"
+        },
+        "calculationStatus": {
+            "type": "string",
+            "description": "Status van de berekening"
+        },
+        "calculationSummary": {
+            "type": "string",
+            "description": "Samenvatting van de berekening"
+        },
+        "finalSubsidyAmount": {
+            "type": "integer",
+            "description": "Definitief subsidiebedrag (basisbedrag + bonus)"
+        },
+        "zaakOmschrijvingFromZgw": {
+            "type": "string",
+            "description": "Zaak omschrijving gelezen na ZGW patch-zaak actie in BB1"
+        },
+        "zaakToelichtingBB2": {
+            "type": "string",
+            "description": "Zaak toelichting gelezen na ZGW patch-zaak actie in BB2"
+        },
+        "zaakEinddatumGeplandBB3": {
+            "type": "string",
+            "description": "Zaak einddatum gepland gelezen na ZGW patch-zaak actie in BB3"
+        },
+        "zgwActionSummary": {
+            "type": "string",
+            "description": "Samenvatting van alle ZGW plugin acties"
+        },
+        "reviewerRemarks": {
+            "type": "string",
+            "description": "Opmerkingen van de beoordelaar bij de subsidieberekening"
+        },
+        "approvalDecision": {
+            "type": "string",
+            "description": "Besluit van de beoordelaar (GOEDGEKEURD of AFGEKEURD)"
+        }
+    },
+    "required": ["applicantName", "householdSize"]
+}

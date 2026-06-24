@@ -1,0 +1,68 @@
+[
+    {
+        "activityId": "start-event",
+        "activityType": "bpmn:StartEvent:start",
+        "processLinkType": "form",
+        "formDefinitionName": "start-form-auto-assign-test"
+    },
+    {
+        "activityId": "admin-role-task",
+        "activityType": "bpmn:UserTask:create",
+        "formDefinitionName": "empty-form",
+        "processLinkType": "form"
+    },
+    {
+        "activityId": "default-team-task",
+        "activityType": "bpmn:UserTask:create",
+        "formDefinitionName": "empty-form",
+        "processLinkType": "form"
+    },
+    {
+        "activityId": "admin-and-default-team-task",
+        "activityType": "bpmn:UserTask:create",
+        "formDefinitionName": "empty-form",
+        "processLinkType": "form"
+    },
+    {
+        "activityId": "other-role-task",
+        "activityType": "bpmn:UserTask:create",
+        "formDefinitionName": "empty-form",
+        "processLinkType": "form"
+    },
+    {
+        "activityId": "another-team-task",
+        "activityType": "bpmn:UserTask:create",
+        "formDefinitionName": "empty-form",
+        "processLinkType": "form"
+    },
+    {
+        "activityId": "other-role-and-another-team-task",
+        "activityType": "bpmn:UserTask:create",
+        "formDefinitionName": "empty-form",
+        "processLinkType": "form"
+    },
+    {
+        "activityId": "admin-and-another-team-task",
+        "activityType": "bpmn:UserTask:create",
+        "formDefinitionName": "empty-form",
+        "processLinkType": "form"
+    },
+    {
+        "activityId": "other-role-and-default-team-task",
+        "activityType": "bpmn:UserTask:create",
+        "formDefinitionName": "empty-form",
+        "processLinkType": "form"
+    },
+    {
+        "activityId": "no-candidate-group-task",
+        "activityType": "bpmn:UserTask:create",
+        "formDefinitionName": "empty-form",
+        "processLinkType": "form"
+    },
+    {
+        "activityId": "all-groups-task",
+        "activityType": "bpmn:UserTask:create",
+        "formDefinitionName": "empty-form",
+        "processLinkType": "form"
+    }
+]

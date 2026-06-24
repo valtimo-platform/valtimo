@@ -19,6 +19,7 @@ package com.ritense.iko.web.rest
 import com.ritense.iko.service.IkoTabService
 import com.ritense.tab.domain.Tab
 import com.ritense.valtimo.contract.json.MapperSingleton
+import com.ritense.valtimo.contract.web.rest.error.ExceptionTranslator
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.mockito.kotlin.mock
@@ -30,8 +31,13 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get
 import org.springframework.test.web.servlet.result.MockMvcResultHandlers.print
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
+import jakarta.validation.Validator
+import org.springframework.aop.framework.ProxyFactory
 import org.springframework.test.web.servlet.setup.MockMvcBuilders
 import org.springframework.transaction.annotation.Transactional
+import org.springframework.validation.beanvalidation.LocalValidatorFactoryBean
+import org.springframework.validation.beanvalidation.MethodValidationInterceptor
+import java.util.Optional
 
 @Transactional
 internal class IkoTabResourceTest {
@@ -43,10 +49,15 @@ internal class IkoTabResourceTest {
     @BeforeEach
     fun init() {
         service = mock()
-        resource = IkoTabResource(service)
+        val validator = LocalValidatorFactoryBean().apply { afterPropertiesSet() }
+        resource = ProxyFactory(IkoTabResource(service)).apply {
+            addAdvice(MethodValidationInterceptor(validator as Validator))
+        }.proxy as IkoTabResource
         mockMvc = MockMvcBuilders.standaloneSetup(resource)
             .setCustomArgumentResolvers(PageableHandlerMethodArgumentResolver())
             .setMessageConverters(MappingJackson2HttpMessageConverter(MapperSingleton.get()))
+            .setValidator(validator)
+            .setControllerAdvice(ExceptionTranslator(Optional.empty()))
             .build();
     }
 
@@ -61,6 +72,14 @@ internal class IkoTabResourceTest {
             .andExpect(jsonPath("$[0].key").value("naam"))
             .andExpect(jsonPath("$[0].title").value("Naam"))
             .andExpect(jsonPath("$[0].type").value("widgets"))
+            .andExpect(jsonPath("$[0].properties.aggregatedDataProfileName").value("Personen"))
+    }
+
+    @Test
+    fun `should reject get tabs when ikoViewKey exceeds path-variable cap`() {
+        mockMvc.perform(get("/api/v1/iko-view/{ikoViewKey}/tab", "x".repeat(257)))
+            .andDo(print())
+            .andExpect(status().isBadRequest())
     }
 
     private fun tab() = Tab(
@@ -68,5 +87,8 @@ internal class IkoTabResourceTest {
         title = "Naam",
         type = "widgets",
         order = 0,
+        properties = mapOf (
+            "aggregatedDataProfileName" to "Personen"
+        )
     )
 }

@@ -3,6 +3,6 @@
     "title": "IKO Server",
     "type": "iko",
     "properties": {
-        "pluginConfiguration": "72a13bd5-2625-47db-b181-ffc4055cae43"
+        "ikoServerUrl": "${VALTIMO_IKO_API_URL}"
     }
 }

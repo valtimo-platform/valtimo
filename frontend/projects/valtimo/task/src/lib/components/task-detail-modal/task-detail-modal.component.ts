@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,25 +27,27 @@ import {
 import {Router} from '@angular/router';
 import {TranslateService} from '@ngx-translate/core';
 import {PermissionService} from '@valtimo/access-control';
-import {CarbonModalSize} from '@valtimo/components';
+import {AssignmentChangeEvent, CarbonModalSize, runAfterCarbonModalClosed} from '@valtimo/components';
 import {SseService} from '@valtimo/sse';
 import {FormSize, formSizeToCarbonModalSizeMap, TaskWithProcessLink} from '@valtimo/process-link';
 import moment from 'moment';
 import {NGXLogger} from 'ngx-logger';
-import {BehaviorSubject, combineLatest, Subscription} from 'rxjs';
+import {BehaviorSubject, combineLatest, EMPTY, Observable, of, shareReplay, Subscription} from 'rxjs';
+import {catchError, filter, map, switchMap, take} from 'rxjs/operators';
 import {IntermediateSubmission, Task, TaskUpdateSseEvent} from '../../models';
-import {TaskIntermediateSaveService} from '../../services';
+import {TaskIntermediateSaveService, TaskService} from '../../services';
+import {enrichTaskFromProcessLink} from '../../utils/task-enrichment.utils';
 import {
   CAN_ASSIGN_TASK_PERMISSION,
   CAN_MODIFY_TASK_PERMISSION,
   TASK_DETAIL_PERMISSION_RESOURCE,
 } from '../../task-permissions';
 import {TaskDetailIntermediateSaveComponent} from '../task-detail-intermediate-save/task-detail-intermediate-save.component';
-import {filter, take} from 'rxjs/operators';
 import {IconService} from 'carbon-components-angular';
 import {DocumentService} from '@valtimo/document';
-import {TaskService} from '../../services/task.service';
+// @ts-ignore
 import {FolderDetailsReference16} from '@carbon/icons';
+import {GlobalNotificationService, NamedUser, TeamResponseDto} from '@valtimo/shared';
 
 moment.locale(localStorage.getItem('langKey') || '');
 
@@ -58,10 +60,12 @@ moment.locale(localStorage.getItem('langKey') || '');
 })
 export class TaskDetailModalComponent implements OnInit, OnDestroy {
   @ViewChild(TaskDetailIntermediateSaveComponent)
-  private readonly _intermediateSaveComponent: TaskDetailIntermediateSaveComponent;
+  private readonly _intermediateSaveComponent!: TaskDetailIntermediateSaveComponent;
 
   @Output() formSubmit = new EventEmitter();
   @Output() assignmentOfTaskChanged = new EventEmitter();
+  @Output() dueDateChanged = new EventEmitter();
+  @Output() modalClosed = new EventEmitter();
 
   @Input() set modalSize(value: FormSize) {
     if (value) this.size$.next(formSizeToCarbonModalSizeMap[value]);
@@ -76,11 +80,11 @@ export class TaskDetailModalComponent implements OnInit, OnDestroy {
   public readonly processLinkPreloaded$ = new BehaviorSubject<boolean>(false);
   public readonly task$ = new BehaviorSubject<Task | null>(null);
   public readonly taskAndProcessLink$ = new BehaviorSubject<TaskWithProcessLink | null>(null);
-  public readonly task = new BehaviorSubject<Task | null>(null);
   public readonly submission$ = new BehaviorSubject<any>({});
   public readonly page$ = new BehaviorSubject<any>(null);
   public readonly showConfirmationModal$ = new BehaviorSubject<boolean>(false);
   public readonly businessKey$ = new BehaviorSubject<string>('');
+  public readonly caseDocumentId$ = new BehaviorSubject<string>('');
 
   public readonly size$ = new BehaviorSubject<CarbonModalSize>('md');
   public readonly openFromCaseManagement$ = new BehaviorSubject<boolean>(false);
@@ -91,6 +95,26 @@ export class TaskDetailModalComponent implements OnInit, OnDestroy {
   public readonly modalCloseEvent$ = new BehaviorSubject<boolean>(false);
 
   public readonly modalOpen$ = new BehaviorSubject<boolean>(false);
+
+  public readonly candidateUsers$: Observable<NamedUser[]> = combineLatest([
+    this.task$.pipe(filter(task => !!task)),
+    this.canAssignUserToTask$,
+  ]).pipe(
+    switchMap(([task, canAssign]) =>
+      canAssign ? this.taskService.getCandidateUsers(task.id) : of([])
+    ),
+    shareReplay(1)
+  );
+
+  public readonly candidateTeams$: Observable<TeamResponseDto[]> = combineLatest([
+    this.task$.pipe(filter(task => !!task)),
+    this.canAssignUserToTask$,
+  ]).pipe(
+    switchMap(([task, canAssign]) =>
+      canAssign ? this.taskService.getCandidateTeams(task.id).pipe(map(page => page.content)) : of([])
+    ),
+    shareReplay(1)
+  );
 
   private readonly _subscriptions = new Subscription();
 
@@ -104,7 +128,8 @@ export class TaskDetailModalComponent implements OnInit, OnDestroy {
     private readonly cdr: ChangeDetectorRef,
     private readonly iconService: IconService,
     private readonly documentService: DocumentService,
-    private readonly taskService: TaskService
+    private readonly taskService: TaskService,
+    private readonly globalNotificationService: GlobalNotificationService
   ) {
     this.iconService.registerAll([FolderDetailsReference16]);
   }
@@ -119,13 +144,13 @@ export class TaskDetailModalComponent implements OnInit, OnDestroy {
   }
 
   public openRelatedCase(): void {
-    const businessKey = this.businessKey$.getValue();
+    const caseDocId = this.caseDocumentId$.getValue() || this.businessKey$.getValue();
 
     this.documentService
-      .getDocument(businessKey)
+      .getDocument(caseDocId)
       .pipe(take(1))
       .subscribe(document => {
-        window.open(`/cases/${document.definitionId?.name}/document/${businessKey}`, '_blank');
+        window.open(`/cases/${document.definitionId?.name}/document/${caseDocId}`, '_blank');
       });
   }
 
@@ -135,6 +160,7 @@ export class TaskDetailModalComponent implements OnInit, OnDestroy {
         if (task) {
           this.logger.debug('Checking if user allowed to assign a user to Task with id:', task.id);
           this.businessKey$.next(task.businessKey);
+          this.caseDocumentId$.next(task.caseDocumentId || task.businessKey);
 
           this.permissionService
             .requestPermission(CAN_ASSIGN_TASK_PERMISSION, {
@@ -163,13 +189,77 @@ export class TaskDetailModalComponent implements OnInit, OnDestroy {
 
   private openTaskUpdateSseEventSubscription(): void {
     this._subscriptions.add(
-      combineLatest([
-        this.task$,
-        this.sseService.getSseEventObservable<TaskUpdateSseEvent>('TASK_UPDATE'),
-      ])
-        .pipe(filter(([task, event]) => task?.id === event.taskId))
-        .subscribe(() => this.closeModal())
+      this.sseService
+        .getSseEventObservable<TaskUpdateSseEvent>('TASK_UPDATE')
+        .pipe(
+          filter(event => this.task$.getValue()?.id === event.taskId),
+          switchMap(event =>
+            this.taskService.getTask(event.taskId).pipe(
+              catchError(err => {
+                if (err.status === 404) {
+                  return of(null);
+                }
+                this.logger.error('Failed to fetch task on SSE update', err);
+                return EMPTY;
+              })
+            )
+          )
+        )
+        .subscribe(response => {
+          if (!response) {
+            this.closeModal();
+          } else {
+            const currentTask = this.task$.getValue();
+            const fetchedTask = response.task as Partial<Task>;
+            if (!currentTask || !fetchedTask) return;
+
+            // Merge fetched task data onto the existing task, only overwriting with
+            // defined values to preserve fields not returned by the GET /v1/task/{id}
+            // endpoint (e.g. valtimoAssignee, businessKey, caseDocumentId)
+            const mergedTask: Task = {...currentTask};
+            for (const [key, value] of Object.entries(fetchedTask)) {
+              if (value !== undefined) {
+                (mergedTask as any)[key] = value;
+              }
+            }
+
+            if (currentTask.assignee !== mergedTask.assignee) {
+              this.showAssigneeNotification(mergedTask);
+            }
+
+            this.task$.next(mergedTask);
+          }
+        })
     );
+  }
+
+  private refreshTask(response: any): void {
+    const currentTask = this.task$.getValue();
+    const fetchedTask = response.task as Partial<Task>;
+    if (!currentTask || !fetchedTask) return;
+
+    const mergedTask: Task = {...currentTask};
+    for (const [key, value] of Object.entries(fetchedTask)) {
+      if (value !== undefined) {
+        (mergedTask as any)[key] = value;
+      }
+    }
+
+    this.task$.next(mergedTask);
+  }
+
+  private showAssigneeNotification(task: Task): void {
+    if (task.assignee) {
+      this.globalNotificationService.showToast({
+        title: this.translateService.instant('taskDetail.assignedNotificationTitle'),
+        type: 'info',
+      });
+    } else {
+      this.globalNotificationService.showToast({
+        title: this.translateService.instant('taskDetail.unassignedNotificationTitle'),
+        type: 'info',
+      });
+    }
   }
 
   public clearCurrentProgress(): void {
@@ -177,25 +267,32 @@ export class TaskDetailModalComponent implements OnInit, OnDestroy {
   }
 
   public openTaskDetails(task: Task | null): void {
-    this.task$.next({...task});
-    this.page$.next({
-      title: task?.name,
-      subtitle: `${this.translateService.instant('taskDetail.taskCreated')} ${task?.created}`,
-    });
-
+    if (task) {
+      this.task$.next({...task});
+    }
+    this.setPageFromTask(task);
     this.openModal();
   }
 
   public openTaskAndProcessLinkDetails(taskWithProcessLink: TaskWithProcessLink | null): void {
     this.processLinkPreloaded$.next(true);
-    this.taskAndProcessLink$.next(taskWithProcessLink);
-    this.task$.next({...(taskWithProcessLink.task as any)});
-    this.page$.next({
-      title: taskWithProcessLink.task?.name,
-      subtitle: `${this.translateService.instant('taskDetail.taskCreated')} ${taskWithProcessLink.task?.created}`,
-    });
-
+    if (taskWithProcessLink) {
+      this.taskAndProcessLink$.next(taskWithProcessLink);
+      const task = enrichTaskFromProcessLink(
+        {...taskWithProcessLink.task} as unknown as Task,
+        taskWithProcessLink.processLinkActivityResult
+      );
+      this.task$.next(task);
+    }
+    this.setPageFromTask(taskWithProcessLink?.task);
     this.openModal();
+  }
+
+  private setPageFromTask(task: {name?: string; created?: string} | null | undefined): void {
+    this.page$.next({
+      title: task?.name,
+      subtitle: `${this.translateService.instant('taskDetail.taskCreated')} ${task?.created}`,
+    });
   }
 
   public gotoProcessLinkScreen(): void {
@@ -205,6 +302,46 @@ export class TaskDetailModalComponent implements OnInit, OnDestroy {
 
   public onCurrentIntermediateSaveEvent(value: IntermediateSubmission | null): void {
     this.currentIntermediateSave$.next(value);
+  }
+
+  public onTaskUpdated(task: Task): void {
+    this.task$.next(task);
+  }
+
+  public onAssignmentChanged(event: AssignmentChangeEvent): void {
+    const task = this.task$.getValue();
+    if (!task) return;
+
+    const assignRequest: {assignee?: string; assignedTeamKey?: string} = {};
+    if (event.userId !== undefined) assignRequest.assignee = event.userId ?? '';
+    if (event.teamKey !== undefined) assignRequest.assignedTeamKey = event.teamKey ?? '';
+
+    this.taskService
+      .assignTask(task.id, assignRequest)
+      .pipe(
+        switchMap(() => this.taskService.getTask(task.id)),
+        take(1)
+      )
+      .subscribe(response => {
+        this.refreshTask(response);
+        this.assignmentOfTaskChanged.emit();
+      });
+  }
+
+  public onUnassigned(): void {
+    const task = this.task$.getValue();
+    if (!task) return;
+
+    this.taskService
+      .unassignTask(task.id)
+      .pipe(
+        switchMap(() => this.taskService.getTask(task.id)),
+        take(1)
+      )
+      .subscribe(response => {
+        this.refreshTask(response);
+        this.assignmentOfTaskChanged.emit();
+      });
   }
 
   public onFormSubmit(): void {
@@ -217,8 +354,15 @@ export class TaskDetailModalComponent implements OnInit, OnDestroy {
 
   public closeModal(): void {
     this.modalOpen$.next(false);
-    this.taskIntermediateSaveService.setSubmission({});
     this.modalCloseEvent$.next(!this.modalCloseEvent$.getValue());
+    this.modalClosed.emit();
+    // Delay clearing task data and submission until after modal close animation completes
+    runAfterCarbonModalClosed(() => {
+      this.processLinkPreloaded$.next(false);
+      this.task$.next(null);
+      this.taskAndProcessLink$.next(null);
+      this.taskIntermediateSaveService.setSubmission({});
+    });
   }
 
   private openModal(): void {

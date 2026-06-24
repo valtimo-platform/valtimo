@@ -763,7 +763,7 @@ internal class CatalogiApiPluginTest : BaseTest() {
     }
 
     private fun mockZaakTypeUrlProvider(zaaktypeUrl: URI = zaaktypeUrl().toURI()) {
-        whenever(zaaktypeUrlProvider.getZaaktypeUrl(eq(caseDefinitionId)))
+        whenever(zaaktypeUrlProvider.getZaaktypeUrl(eq(documentId().toUUID())))
             .thenReturn(zaaktypeUrl)
     }
 
@@ -847,6 +847,7 @@ internal class CatalogiApiPluginTest : BaseTest() {
         omschrijvingGeneriek = null,
         statustekst = null,
         volgnummer = 0,
+        toelichting = null,
         isEindstatus = null,
         informeren = null
     )

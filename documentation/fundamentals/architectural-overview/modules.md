@@ -12,7 +12,7 @@ Audit provides a framework to record and store actions performed by users. Certa
 
 ### Authorization
 
-Valtimo supports Policy Based Access Control (PBAC) as an authorization layer via this module. This layer allows you to restrict access to functionality or data based on policies. Other modules that utilize the authorization module can define their own resource types (e.g. camunda tasks), so they can be used to grant access to certain functionality in Valtimo.
+Valtimo supports Policy-Based Access Control (PBAC) as an authorization layer via this module. This layer allows you to restrict access to functionality or data based on policies. Other modules that utilize the authorization module can define their own resource types (e.g. Operaton tasks), so they can be used to grant access to certain functionality in Valtimo.
 
 ### Connector
 
@@ -28,7 +28,7 @@ Apart from this, contract sanitizes endpoint output when exceptions occur. A liq
 
 ### Core
 
-Core is the main module of Valtimo. It contains and builds upon the Camunda process engine that enables Valtimo to run processes. Several endpoints and functions are available that provide task data and process data.
+Core is the main module of Valtimo. It contains and builds upon the Operaton process engine that enables Valtimo to run processes. Several endpoints and functions are available that provide task data and process data.
 
 It also includes choice fields, a generic way to create lists of values that can be used by the application (e.g. selectboxes or radiobuttons). Some security features used to control access to any Valtimo endpoints are also part of this module.
 
@@ -56,7 +56,7 @@ The exporter module provides export functionality for Valtimo. By default, Valti
 
 ### Form
 
-Forms can be used to complete user tasks in Valtimo with a visual interface where the user can validate an/or input data. These forms can be composed using [Form.IO](https://www.form.io/).
+Forms can be used to complete user tasks in Valtimo with a visual interface where the user can validate an/or input data. These forms can be composed using [Form.io](https://www.form.io/).
 
 Forms can be managed by using the provided endpoints, or loaded from a configuration file at application startup.
 
@@ -64,7 +64,7 @@ Forms can be managed by using the provided endpoints, or loaded from a configura
 
 Form flow allows users to create a sequence of forms, similar to a flow chart or a form wizard. A form flow definition contains the configuration for each step, what the subsequent steps are, and the conditions under which they can be reached. A form flow can be linked to a task, which consequently allows for more forms for the same task. Form flow supports forwards and backwards movement between steps without completing the task, reducing complexity in a BPMN model.
 
-For information on how to create form flow definitions, see [here](broken-reference).
+For information on how to create form flow definitions, see the [form flow documentation](../../features/case/form-flow.md).
 
 ### Form flow Valtimo
 
@@ -118,7 +118,7 @@ The `outbox-rabbitmq` module adds support for publishing `outbox` messages to Ra
 
 Plugins are extensions on the Valtimo platform. These are often connections to external services, such as transactional email and document generation. Plugins can be configured without writing code, and actions can be attached to BPMN activities.
 
-Some plugins are provided by the platform, but developers can create their own plugins as well. A more in-depth description can be found [here](https://app.gitbook.com/s/bcArISKZtxWk4tKpZb9P/features/plugins/plugins/custom-plugin-definition).
+Some plugins are provided by the platform, but developers can create their own plugins as well. A more in-depth description can be found in the [custom plugin definition documentation](https://app.gitbook.com/s/bcArISKZtxWk4tKpZb9P/features/plugins/plugins/custom-plugin-definition).
 
 ### Process document
 
@@ -204,7 +204,7 @@ The [Objecttypeb (Object types) API](https://vng.nl/projecten/overige-objecten-r
 
 ## OpenZaak Plugin Authentication
 
-[OpenZaak Plugin Authentication](broken-reference) contains the OpenZaakPlugin which can be used for authentication in several ZGW plugins.
+[OpenZaak Plugin Authentication](../../getting-started/modules/zgw/openzaak-plugin-authentication.md) contains the OpenZaakPlugin which can be used for authentication in several ZGW plugins.
 
 ### OpenZaak resource
 

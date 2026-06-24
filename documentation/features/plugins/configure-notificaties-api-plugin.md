@@ -12,14 +12,15 @@ This page requires knowledge on how to configure the Notificaties API
 
 ## Configuring the plugin
 
-A plugin configuration is required before the plugin can be used. A general description on how to configure plugins can be found [here](broken-reference).
+A plugin configuration is required before the plugin can be used. A general description on how to configure plugins can be found in the [plugin configuration guide](configure-plugin.md).
 
-If the Notificaties API plugin is not visible in the plugin menu, it is possible the application is missing a dependency. Instructions on how to add the Notificaties API dependency can be found [here](broken-reference).
+If the Notificaties API plugin is not visible in the plugin menu, it is possible the application is missing a dependency. Instructions on how to add the Notificaties API dependency can be found in the [Notificaties API module documentation](../../fundamentals/getting-started/modules/zgw/notificaties-api.md).
 
 To configure this plugin the following properties have to be entered (in addition to the optional Configuration ID and required Configuration name):
 
 * **Notificaties API URL (`url`).** Contains the complete base URL of the Notificaties API to connect to. This generally includes the path `/api/v1/`.
 * **Callback URL (`callbackUrl`).** Contains the complete callback url of Valtimo the Notificaties API will send updates on subscriptions to.
+* **Authentication header (`authHeader`).** Contains the auth header token the Notificaties API will include in the callback request.
 * **Authentication plugin configuration (`authenticationPluginConfiguration`).** Reference to another plugin configuration that will be used to add authentication to any request performed on the Notificaties API. If no option is available in this field a plugin has to be configured that is able to authenticate for the specific application that hosts the Notificaties API.
 
 An example plugin configuration:&#x20;
@@ -27,6 +28,64 @@ An example plugin configuration:&#x20;
 <figure><img src="../../.gitbook/assets/configure-plugin-notificaties.png" alt=""><figcaption></figcaption></figure>
 
 After saving the configuration Valtimo automatically ensures the required kanalen exist and that an abonnement with a generated secret is registered against the configured Notificaties API instance. Disabling this behaviour is possible by setting `valtimo.zgw.register-abonnementen=false` in the `application.yml`.
+
+## Available actions
+
+The Notificaties API plugin supports the following actions that can be configured in process links.
+
+A general description on how to create process links can be found in the [process link configuration guide](configure-plugin.md).
+
+### Publish notification (Publiceer een notificatie)
+
+This action publishes a notification via the Notificaties API. It can be used on send tasks and intermediate throw events.
+
+When creating a process link the following properties have to be entered:
+
+* **Channel (`kanaal`).** The channel on which the notification is published (max 50 characters).
+* **Main object URL (`hoofdObject`).** URL reference to the main object of the publishing API.
+* **Resource (`resource`).** The resource name the notification concerns (max 100 characters).
+* **Resource URL (`resourceUrl`).** URL reference to the resource in the publishing API.
+* **Action (`actie`).** The action performed by the publishing API (max 100 characters).
+* **Creation date (`aanmaakdatum`)** *(optional).* Timestamp when the action occurred. If empty, the current time is used.
+* **Attributes (`kenmerken`)** *(optional).* Key-value pairs for notification filtering.
+
+### Receive notification (Ontvang een notificatie)
+
+This action waits for an incoming notification via the Notificaties API. It can be used on receive tasks, intermediate
+message catch events, and message start events. For receive tasks and intermediate catch events, the waiting process
+instance is automatically signaled to continue when a matching notification arrives. For message start events, a new
+process instance is started when a matching notification arrives.
+
+{% hint style="info" %}
+When a message start event is used on a **system process**, the process is started directly without a case.
+When used on a **case process**, the linked case definition must have `canInitializeDocument` set to `true`. In that
+case, a new document and process instance are created together.
+{% endhint %}
+
+When creating a process link the following properties can be entered (all are optional — empty fields match all values):
+
+* **Channel (`kanaal`).** Filter on the notification channel. Only notifications on this kanaal will match.
+* **Action (`actie`).** Filter on the action that was performed. Only notifications with this actie will match.
+* **Attributes (`kenmerken`).** Filter on key-value pairs. Only notifications that contain all specified kenmerken will
+  match.
+
+When a notification matches, the following data from the notification is passed as process variables:
+
+| Process variable          | Description                                                         |
+|---------------------------|---------------------------------------------------------------------|
+| `notificatieKanaal`       | The channel the notification was received on.                       |
+| `notificatieHoofdObject`  | The URL of the main object related to the notification.             |
+| `notificatieResourceUrl`  | The URL of the resource that triggered the notification.            |
+| `notificatieActie`        | The action that was performed (e.g. `create`, `update`, `destroy`). |
+| `notificatieAanmaakdatum` | The creation date of the notification (ISO-8601 string).            |
+| `notificatieKenmerken`    | A map of key-value attribute pairs from the notification.           |
+
+{% hint style="warning" %}
+The channel must exist in the Notificaties API and the abonnement must be configured to filter on the specified
+kenmerken. Per kanaal, only kenmerken that are defined on the kanaal can be used as filters. See
+the [Notificaties API specification](https://vng-realisatie.github.io/gemma-zaken/standaard/notificaties/index) for
+details on kanalen and filters.
+{% endhint %}
 
 ## Subscriptions
 

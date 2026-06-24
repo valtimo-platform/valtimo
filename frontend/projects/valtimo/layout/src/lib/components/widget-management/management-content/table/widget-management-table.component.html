@@ -54,7 +54,10 @@
     />
   </cds-text-label>
 
-  <cds-text-label [attr.data-carbon-theme]="theme">
+  <div
+    class="valtimo-widget-management-table__path-selector"
+    [attr.data-carbon-theme]="theme"
+  >
     <v-input-label
       [title]="'widgetTabManagement.content.table.collection' | translate"
       [tooltip]="collectionDataTooltip$ | async"
@@ -79,7 +82,7 @@
         type="text"
       />
     }
-  </cds-text-label>
+  </div>
 </form>
 
 <ng-content></ng-content>
@@ -93,6 +96,7 @@
   [columnData]="$content()?.columns"
   (columnUpdateEvent)="onColumnUpdateEvent($event)"
   [selectedCollection]="selectedCollection$ | async"
+  [showSortableCheckbox]="sortableColumns"
 ></valtimo-widget-management-fields-column>
 
 <section *ngIf="showFirstColumnOption" class="valtimo-widget-management-table__toggle">

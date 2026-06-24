@@ -22,7 +22,13 @@ import {
   Output,
   signal,
 } from '@angular/core';
-import {AbstractControl, FormBuilder, ReactiveFormsModule, Validators} from '@angular/forms';
+import {
+  AbstractControl,
+  FormBuilder,
+  FormGroup,
+  ReactiveFormsModule,
+  Validators,
+} from '@angular/forms';
 import {ActivatedRoute} from '@angular/router';
 import {TranslateModule} from '@ngx-translate/core';
 import {
@@ -33,6 +39,10 @@ import {
   SelectItem,
   SelectModule,
   ValtimoCdsModalDirective,
+  WIDGET_LAYOUT_TRANSLATION_KEYS,
+  WIDGET_LAYOUT_VALUES,
+  WidgetLayout,
+  WidgetLayoutInfoComponent,
 } from '@valtimo/components';
 import {ModalCloseEvent, ModalMode} from '@valtimo/shared';
 import {
@@ -45,8 +55,9 @@ import {
   TooltipModule,
 } from 'carbon-components-angular';
 import {filter, map, Observable, switchMap} from 'rxjs';
-import {IkoTabType, TabDto} from '../../../../models';
+import {IkoTabType, PropertyField, TabDto} from '../../../../models';
 import {IkoManagementApiService} from '../../../../services';
+import {PropertiesFormComponent} from '../../../iko-management-properties/iko-management-properties.component';
 
 @Component({
   selector: 'valtimo-iko-management-tab-details-modal',
@@ -70,6 +81,8 @@ import {IkoManagementApiService} from '../../../../services';
     InputLabelModule,
     NumberModule,
     AutoKeyInputComponent,
+    PropertiesFormComponent,
+    WidgetLayoutInfoComponent,
   ],
 })
 export class IkoManagementTabDetailsModalComponent {
@@ -84,7 +97,13 @@ export class IkoManagementTabDetailsModalComponent {
   @Input() public set selectedTab(value: TabDto) {
     if (!value) return;
     this.$selectedKey.set(value.key);
-    this.form.setValue({...value, title: value.title || ''});
+    this.form.setValue({
+      key: value.key,
+      title: value.title || '',
+      type: value.type,
+      properties: value.properties || {},
+      widgetLayout: value.widgetLayout ?? WidgetLayout.MUURI_GAP_FREE,
+    });
     this.form.markAsPristine();
   }
 
@@ -103,6 +122,8 @@ export class IkoManagementTabDetailsModalComponent {
     title: this.formBuilder.control('', Validators.required),
     key: this.formBuilder.control('', [Validators.required]),
     type: this.formBuilder.control('', [Validators.required]),
+    properties: this.formBuilder.group({}),
+    widgetLayout: this.formBuilder.control<WidgetLayout>(WidgetLayout.MUURI_GAP_FREE),
   });
 
   public get title(): AbstractControl<string> {
@@ -113,6 +134,9 @@ export class IkoManagementTabDetailsModalComponent {
   }
   public get type(): AbstractControl<string> {
     return this.form.get('type') as AbstractControl<string>;
+  }
+  public get properties(): FormGroup | null {
+    return this.form.get('properties') as FormGroup | null;
   }
 
   private readonly _ikoViewKey$: Observable<string> = this.route.params.pipe(
@@ -126,6 +150,14 @@ export class IkoManagementTabDetailsModalComponent {
     id: tabType,
     translationKey: `ikoManagement.tabTypes.${tabType}`,
   }));
+
+  public readonly widgetLayoutSelectItems: SelectItem[] = WIDGET_LAYOUT_VALUES.map(value => ({
+    id: value,
+    translationKey: WIDGET_LAYOUT_TRANSLATION_KEYS[value],
+  }));
+
+  public readonly propertyFields$: Observable<PropertyField[]> =
+    this.ikoManagementApiService.getIkoTabPropertyFields('iko');
 
   constructor(
     private readonly ikoManagementApiService: IkoManagementApiService,

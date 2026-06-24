@@ -1,0 +1,88 @@
+[
+    {
+        "activityId": "StartEvent",
+        "activityType": "bpmn:StartEvent:start",
+        "processLinkType": "form",
+        "formDefinitionName": "start-form-energy-subsidy-request"
+    },
+    {
+        "activityId": "CallSubsidyCalculatorActivity",
+        "activityType": "bpmn:CallActivity:start",
+        "processLinkType": "building-block",
+        "buildingBlockDefinitionKey": "subsidy-calculator",
+        "buildingBlockDefinitionVersionTag": "1.0.0",
+        "pluginConfigurationMappings": {
+            "zakenapi": "3079d6fe-42e3-4f8f-a9db-52ce2507b7ee"
+        },
+        "inputMappings": [
+            {
+                "source": "doc:/applicantName",
+                "target": "/applicantName"
+            },
+            {
+                "source": "doc:/householdSize",
+                "target": "/householdSize"
+            },
+            {
+                "source": "doc:/applicant/address/city",
+                "target": "/applicantAddress/city"
+            },
+            {
+                "source": "doc:/applicant/address/postalCode",
+                "target": "/applicantAddress/postalCode"
+            }
+        ],
+        "outputMappings": [
+            {
+                "source": "/verifiedApplicant",
+                "target": "doc:/verifiedApplicant",
+                "syncTiming": "END"
+            },
+            {
+                "source": "/verificationResult/status",
+                "target": "doc:/applicant/verificationStatus",
+                "syncTiming": "END"
+            },
+            {
+                "source": "/finalSubsidyAmount",
+                "target": "doc:/calculatedSubsidy",
+                "syncTiming": "END"
+            },
+            {
+                "source": "/eligibilityResult",
+                "target": "doc:/eligibilityResult",
+                "syncTiming": "END"
+            },
+            {
+                "source": "/zaakOmschrijvingFromZgw",
+                "target": "doc:/zaakOmschrijvingFromZgw",
+                "syncTiming": "END"
+            },
+            {
+                "source": "/zaakToelichtingBB2",
+                "target": "doc:/zaakToelichtingBB2",
+                "syncTiming": "END"
+            },
+            {
+                "source": "/zaakEinddatumGeplandBB3",
+                "target": "doc:/zaakEinddatumGeplandBB3",
+                "syncTiming": "END"
+            },
+            {
+                "source": "/zgwActionSummary",
+                "target": "doc:/zgwActionSummary",
+                "syncTiming": "END"
+            },
+            {
+                "source": "/reviewerRemarks",
+                "target": "doc:/reviewerRemarks",
+                "syncTiming": "END"
+            },
+            {
+                "source": "/approvalDecision",
+                "target": "doc:/approvalDecision",
+                "syncTiming": "END"
+            }
+        ]
+    }
+]

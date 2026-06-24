@@ -25,10 +25,12 @@ import jakarta.persistence.Column
 import jakarta.persistence.DiscriminatorColumn
 import jakarta.persistence.DiscriminatorType
 import jakarta.persistence.Entity
+import jakarta.persistence.EnumType
 import jakarta.persistence.Id
 import jakarta.persistence.Inheritance
 import jakarta.persistence.InheritanceType
 import jakarta.persistence.Table
+import jakarta.persistence.Enumerated
 import org.hibernate.annotations.Type
 import java.util.Objects
 import java.util.UUID
@@ -54,6 +56,10 @@ abstract class Widget(
 
     @Column(name = "icon", nullable = true)
     val icon: String?,
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "color", nullable = false)
+    val color: WidgetColor = WidgetColor.WHITE,
 
     @Column(name = "widget_order", nullable = false)
     val order: Int,
@@ -86,6 +92,7 @@ abstract class Widget(
         key: String = this.key,
         title: String = this.title,
         icon: String? = this.icon,
+        color: WidgetColor = this.color,
         order: Int = this.order,
         width: Int = this.width,
         highContrast: Boolean = this.highContrast,
@@ -114,6 +121,7 @@ abstract class Widget(
         if (key != other.key) return false
         if (title != other.title) return false
         if (icon != other.icon) return false
+        if (color != other.color) return false
         if (order != other.order) return false
         if (width != other.width) return false
         if (highContrast != other.highContrast) return false
@@ -130,6 +138,7 @@ abstract class Widget(
             key,
             title,
             icon,
+            color,
             order,
             width,
             highContrast,
@@ -140,6 +149,6 @@ abstract class Widget(
     }
 
     override fun toString(): String {
-        return "Widget(id='$id', key='$key', title='$title', icon='$icon', order=$order, width=$width, highContrast=$highContrast, isCompact=$isCompact)"
+        return "Widget(id='$id', key='$key', title='$title', icon='$icon', color=$color, order=$order, width=$width, highContrast=$highContrast, isCompact=$isCompact)"
     }
 }

@@ -1,6 +1,6 @@
 # Process beans
 
-Process beans are Spring beans that can be used inside a Camunda BPMN process. The BPMN expression fields have access to all process beans. This page gives an overview of all available process beans.
+Process beans are Spring beans that can be used inside a Operaton BPMN process. The BPMN expression fields have access to all process beans. This page gives an overview of all available process beans.
 
 ## ConnectorService
 
@@ -60,9 +60,13 @@ fun sendCatchEventMessage(message: String, businessKey: String)
 fun sendCatchEventMessage(message: String, businessKey: String, variables: Map<String, Any>?)
 fun sendCatchEventMessageToAll(message: String, businessKey: String)
 fun sendCatchEventMessageToAll(message: String, businessKey: String, variables: Map<String, Any>?)
+fun sendGlobalCatchEventMessage(message: String)
+fun sendGlobalCatchEventMessage(message: String, variables: Map<String, Any>?)
+fun sendGlobalCatchEventMessageToAll(message: String)
+fun sendGlobalCatchEventMessageToAll(message: String, variables: Map<String, Any>?)
 ```
 
-Information on all methods can be found [here](../../features/process/correlation-service.md).
+Information on all methods can be found in the [correlation service documentation](../../features/process/correlation-service.md).
 
 ## JobService
 
@@ -73,7 +77,7 @@ fun updateTimerDueDateByActivityId(dueDateString: String, activityId: String, ex
 fun addOffsetInMillisToTimerDueDateByActivityId(millisecondsToAdd: Long, activityId: String, execution: DelegateExecution)
 ```
 
-Information on all methods can be found [here](../../features/process/job-service.md).
+Information on all methods can be found in the [job service documentation](../../features/process/job-service.md).
 
 ## ProcessDocumentGenerator
 
@@ -93,7 +97,7 @@ This process bean is for sending emails.
 fun sendElementTemplateTaskMail(execution: DelegateExecution)
 ```
 
-Is able to send an email using the configured Camunda extension properties. The extension properties are:
+Is able to send an email using the configured Operaton extension properties. The extension properties are:
 
 * `mailSendTaskFrom` - The email-address of the sender.
 * `mailSendTaskSubject` - The subject of the email.
@@ -191,7 +195,7 @@ Starts a new process and attaches it to the current document.
 
 ## ValueResolverDelegateService
 
-This process bean contains functions for accessing the Valtimo value resolver. More information [here](broken-reference)
+This process bean contains functions for accessing the Valtimo value resolver. More information in the [value resolver documentation](../../fundamentals/getting-started/modules/core/value-resolver.md)
 
 ### Resolve value
 
@@ -215,4 +219,43 @@ Handles a value for a specified target. The example below shows how a process-va
 
 ```spel
 ${valueResolverDelegateService.handleValue(execution, 'doc:person.firstName', execution.getVariable('firstName'))}
+```
+
+## TimerService
+
+Reschedules active BPMN timer jobs belonging to a case to a new due date. Useful for flows where a case-level date (e.g. exam date) changes and timer-driven activities need to be realigned.
+
+### Update all active timers
+
+```kotlin
+fun updateActiveTimers(businessKey: String, newDate: String): Int
+```
+
+Reschedules every active timer job across all running process instances that share the given business key.
+
+- `businessKey`: the process business key (typically the document/case ID).
+- `newDate`: the new due date as an ISO-8601 instant (e.g. `2026-05-01T00:00:00Z`).
+
+```spel
+${timerService.updateActiveTimers(execution.processBusinessKey, execution.getVariable('newDate'))}
+```
+
+### Update specific active timers
+
+```kotlin
+fun updateActiveTimers(businessKey: String, newDate: String, vararg activityIds: String): Int
+```
+
+Same as above but restricts the update to timer jobs whose BPMN activity ID is in the supplied list.
+
+- `businessKey`: the process business key (typically the document/case ID).
+- `newDate`: the new due date as an ISO-8601 instant.
+- `activityIds`: one or more BPMN activity IDs to limit which timer jobs are rescheduled.
+
+```spel
+${timerService.updateActiveTimers(execution.processBusinessKey, execution.getVariable('newDate'), 'exam-logistics-wait-for-allocate-students-and-rooms')}
+```
+
+```spel
+${timerService.updateActiveTimers(execution.processBusinessKey, execution.getVariable('newDate'), 'exam-logistics-timer_6_weeks_prior_to_exam_date', 'exam-logistics-timer_4_weeks_prior_to_exam_date')}
 ```

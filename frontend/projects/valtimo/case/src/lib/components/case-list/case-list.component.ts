@@ -13,84 +13,39 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import {Component, Inject, OnDestroy, OnInit, ViewChild} from '@angular/core';
+import {Component, inject, Inject, OnDestroy, OnInit, ViewChild} from '@angular/core';
 import {ActivatedRoute, Params, Router} from '@angular/router';
-import {TranslateService} from '@ngx-translate/core';
-import {PermissionService} from '@valtimo/access-control';
 import {
   BreadcrumbService,
   CarbonListComponent,
-  CarbonListItem,
-  CarbonListNoResultsMessage,
   CarbonPaginationSelection,
-  CASES_WITHOUT_STATUS_KEY,
   IQuickSearchService,
-  ListField,
   ListHiddenColumn,
   PageTitleService,
   Pagination,
   QUICK_SEARCH_SERVICE,
   QuickSearchStateService,
-  ViewType,
 } from '@valtimo/components';
-import {
-  AdvancedDocumentSearchRequest,
-  AdvancedDocumentSearchRequestImpl,
-  CaseTag,
-  CaseTagsUtils,
-  Documents,
-  DocumentService,
-  InternalCaseStatus,
-  InternalCaseStatusUtils,
-  SpecifiedDocuments,
-} from '@valtimo/document';
-import {
-  AssigneeFilter,
-  CaseListTab,
-  ConfigService,
-  DefinitionColumn,
-  Direction,
-  SearchField,
-  SearchFieldValues,
-  SortState,
-} from '@valtimo/shared';
-import {Tab, Tabs} from 'carbon-components-angular';
-import {isEqual} from 'lodash';
+import {CaseListTab, ConfigService, SearchFieldValues, SortState} from '@valtimo/shared';
+import {TeamsApiService} from '@valtimo/teams';
 import {
   BehaviorSubject,
   combineLatest,
-  debounceTime,
-  defaultIfEmpty,
   distinctUntilChanged,
   filter,
-  forkJoin,
   map,
-  Observable,
-  of,
   Subscription,
-  switchMap,
   take,
-  tap,
 } from 'rxjs';
-import {
-  CASE_LIST_NO_RESULTS_MESSAGE,
-  CASE_LIST_TABLE_TRANSLATIONS,
-  DEFAULT_CASE_LIST_TABS,
-} from '../../constants';
-import {CaseListQuickSearchParams} from '../../models';
-import {
-  CAN_CREATE_CASE_PERMISSION,
-  CAN_EXPORT_CASE_PERMISSION,
-  CAN_VIEW_CASE_PERMISSION,
-  CASE_DETAIL_PERMISSION_RESOURCE,
-} from '../../permissions';
+import {CASE_LIST_TABLE_TRANSLATIONS, DEFAULT_CASE_LIST_TABS} from '../../constants';
+import {BulkAssign, CaseListQuickSearchParams} from '../../models';
 import {
   CaseBulkAssignService,
   CaseColumnService,
   CaseExportService,
   CaseListAssigneeService,
   CaseListCaseTagService,
-  CaseListHiddenColumnsService,
+  CaseListOrchestrationService,
   CaseListPaginationService,
   CaseListQuickSearchService,
   CaseListSearchService,
@@ -99,6 +54,7 @@ import {
   CaseParameterService,
 } from '../../services';
 import {CaseListActionsComponent} from '../case-list-actions/case-list-actions.component';
+import {CaseListTabsComponent} from '../case-list-tabs/case-list-tabs.component';
 
 @Component({
   standalone: false,
@@ -114,6 +70,7 @@ import {CaseListActionsComponent} from '../case-list-actions/case-list-actions.c
     CaseListStatusService,
     CaseListCaseTagService,
     CaseExportService,
+    CaseListOrchestrationService,
     {
       provide: QUICK_SEARCH_SERVICE,
       useClass: CaseListQuickSearchService,
@@ -123,491 +80,78 @@ import {CaseListActionsComponent} from '../case-list-actions/case-list-actions.c
 export class CaseListComponent implements OnInit, OnDestroy {
   @ViewChild(CarbonListComponent) carbonList: CarbonListComponent;
   @ViewChild(CaseListActionsComponent) listActionsComponent: CaseListActionsComponent;
-  @ViewChild(Tabs) tabsComponent: Tabs;
+  @ViewChild(CaseListTabsComponent) tabsComponent: CaseListTabsComponent;
 
-  public activeTab: CaseListTab = null;
-  public loadingFields = true;
-  public loadingPagination = true;
-  public loadingSearchFields = true;
-  public loadingAssigneeFilter = true;
-  public loadingDocumentItems = true;
-  public loadingStatuses = true;
   public pagination!: Pagination;
   public canHaveAssignee!: boolean;
-  public visibleCaseTabs: Array<CaseListTab> | null = null;
   public loadingExport = false;
+  public visibleCaseTabs: CaseListTab[] | null = null;
 
-  public readonly defaultTabs = DEFAULT_CASE_LIST_TABS;
+  public readonly orchestration = inject(CaseListOrchestrationService);
+
   public readonly tableTranslations = CASE_LIST_TABLE_TRANSLATIONS;
 
-  public readonly noResultsMessage$ = new BehaviorSubject<CarbonListNoResultsMessage>(
-    CASE_LIST_NO_RESULTS_MESSAGE
-  );
-  public readonly disableStartButton$ = new BehaviorSubject<boolean>(false);
   public readonly showAssignModal$ = new BehaviorSubject<boolean>(false);
   public readonly showChangePageModal$ = new BehaviorSubject<boolean>(false);
-  public readonly showChangeTabModal$ = new BehaviorSubject<boolean>(false);
-  public readonly disableExportButton$ = new BehaviorSubject<boolean>(false);
-
-  public readonly searchFields$: Observable<Array<SearchField> | null> =
-    this.searchService.documentSearchFields$.pipe(tap(() => (this.loadingSearchFields = false)));
-
-  public readonly statuses$ = this.statusService.caseStatuses$.pipe(
-    tap(() => (this.loadingStatuses = false))
-  );
-  public readonly caseTags$ = this.caseListCaseTagService.caseTags$.pipe(
-    tap(() => (this.loadingStatuses = false))
-  );
-  public readonly selectedStatusKeys$ = this.statusService.selectedCaseStatuses$;
-  public readonly selectedCaseTagKeys$ = this.caseListCaseTagService.selectedCaseTagKeys$;
-
-  public readonly caseDefinitionKey$ = this.listService.caseDefinitionKey$.pipe(
-    tap((caseDefinitionKey: string) =>
-      this.caseListQuickSearchService.initParams(caseDefinitionKey)
-    )
-  );
-
+  public readonly disableStartButton$ = new BehaviorSubject<boolean>(false);
   public readonly selectedCaseIds$ = new BehaviorSubject<string[]>([]);
-  private readonly _refreshHiddenColumns$ = new BehaviorSubject<null>(null);
-  public readonly hiddenColumns$: Observable<ListField[]> = this._refreshHiddenColumns$.pipe(
-    switchMap(() => this.caseDefinitionKey$),
-    switchMap((caseDefinitionKey: string) =>
-      this.caseListHiddenColumnsService.getHiddenColumns(caseDefinitionKey)
-    )
-  );
-
-  public readonly schema$ = this.listService.caseDefinitionKey$.pipe(
-    switchMap(caseDefinitionKey => this.documentService.getDocumentDefinition(caseDefinitionKey)),
-    map(caseDefinition => caseDefinition?.schema),
-    tap(schema => {
-      if (schema?.title) {
-        this.pageTitleService.setCustomPageTitle(schema?.title, true);
-      }
-    })
-  );
-  public readonly canCreateCase$: Observable<boolean> = this.caseDefinitionKey$.pipe(
-    switchMap(caseDefinitionKey =>
-      this.permissionService.requestPermission(CAN_CREATE_CASE_PERMISSION, {
-        resource: CASE_DETAIL_PERMISSION_RESOURCE.jsonSchemaDocumentDefinition,
-        identifier: caseDefinitionKey,
-      })
-    )
-  );
-
-  public readonly canExportCase$: Observable<boolean> = this.caseDefinitionKey$.pipe(
-    switchMap(caseDefinitionKey =>
-      combineLatest([
-        this.permissionService.requestPermission(CAN_EXPORT_CASE_PERMISSION, {
-          resource: CASE_DETAIL_PERMISSION_RESOURCE.jsonSchemaDocumentDefinition,
-          identifier: caseDefinitionKey,
-        }),
-        this.documentService.getCaseList(caseDefinitionKey),
-      ])
-    ),
-    switchMap(([canExportPermission, caseList]) => {
-      const isExportableColumns = caseList.some(caseListitem => caseListitem.exportable);
-      return of(canExportPermission && isExportableColumns);
-    })
-  );
-
-  public readonly searchFieldValues$ = this.parameterService.searchFieldValues$;
-  public readonly assigneeFilter$: Observable<AssigneeFilter> =
-    this.assigneeService.assigneeFilter$.pipe(
-      tap(assigneeFilter => (this.activeTab = assigneeFilter as CaseListTab))
-    );
   public readonly paginationChange$ = new BehaviorSubject<CarbonPaginationSelection | null>(null);
-  public readonly tabChange$ = new BehaviorSubject<CaseListTab | null>(null);
-  private readonly _pagination$ = this.paginationService.pagination$.pipe(
-    tap(pagination => {
-      this.pagination = pagination;
-      this.loadingPagination = false;
-    })
-  );
-  public readonly hasApiColumnConfig$ = new BehaviorSubject<boolean>(false);
-  private readonly _canHaveAssignee$: Observable<boolean> = this.assigneeService.canHaveAssignee$;
-  private readonly _columns$: Observable<Array<DefinitionColumn>> =
-    this.listService.caseDefinitionKey$.pipe(
-      switchMap(caseDefinitionKey => this.columnService.getDefinitionColumns(caseDefinitionKey)),
-      map(res => {
-        this.hasApiColumnConfig$.next(res.hasApiConfig);
-        return res.columns;
-      }),
-      tap(columns => {
-        this.listService.caseDefinitionKey$.pipe(take(1)).subscribe(_ => {
-          this.paginationService.setPagination(columns);
-        });
-      })
-    );
-
-  public readonly showStatusSelector$ = this.statusService.showStatusSelector$;
-  public readonly showCaseTagsSelector$ = this.caseListCaseTagService.showCaseTagsSelector$;
-
-  private readonly INTERNAL_STATUS_COLUMN = 'internalStatus';
-  private readonly CASE_TAGS_COLUMN = 'caseTags';
-  private readonly _statusField: ListField = {
-    label: 'document.status',
-    key: this.INTERNAL_STATUS_COLUMN,
-    viewType: ViewType.TAGS,
-    sortable: true,
-  };
-  private readonly _internalStatusKeys$ = new BehaviorSubject<string[]>([
-    this.INTERNAL_STATUS_COLUMN,
-  ]);
-  private readonly _caseTagsKeys$ = new BehaviorSubject<string[]>([this.CASE_TAGS_COLUMN]);
-  public readonly availableFields$: Observable<ListField[]> = combineLatest([
-    this._canHaveAssignee$,
-    this._columns$,
-    this.hasApiColumnConfig$,
-    this.statuses$,
-    this.translateService.stream('key'),
-  ]).pipe(
-    tap(([canHaveAssignee]) => {
-      this.canHaveAssignee = canHaveAssignee;
-    }),
-    map(([canHaveAssignee, columns, hasApiConfig, statuses]) => {
-      this._internalStatusKeys$.next([
-        ...this._internalStatusKeys$.getValue(),
-        ...columns.reduce(
-          (acc, curr) =>
-            curr.propertyName === this.INTERNAL_STATUS_COLUMN ? [...acc, curr.translationKey] : acc,
-          [] as string[]
-        ),
-      ]);
-      this._caseTagsKeys$.next([
-        ...this._caseTagsKeys$.getValue(),
-        ...columns.reduce(
-          (acc, curr) =>
-            curr.propertyName === this.CASE_TAGS_COLUMN ? [...acc, curr.translationKey] : acc,
-          []
-        ),
-      ]);
-      const filteredAssigneeColumns = this.assigneeService.filterAssigneeColumns(
-        columns,
-        canHaveAssignee
-      );
-      const listFields = this.columnService.mapDefinitionColumnsToListFields(
-        filteredAssigneeColumns,
-        hasApiConfig
-      );
-      const fieldsToReturn = this.assigneeService.addAssigneeListField(
-        columns,
-        listFields,
-        canHaveAssignee
-      );
-
-      return statuses.some(
-        (status: InternalCaseStatus) => status.key !== CASES_WITHOUT_STATUS_KEY
-      ) && !hasApiConfig
-        ? [...fieldsToReturn, this._statusField]
-        : fieldsToReturn;
-    })
-  );
-
-  public readonly fields$: Observable<ListField[]> = combineLatest([
-    this.availableFields$,
-    this.hiddenColumns$,
-  ]).pipe(
-    map(([fields, hiddenColumns]) =>
-      fields.filter(
-        (field: ListField) =>
-          !hiddenColumns.find((hiddenColumn: ListField) => hiddenColumn.key === field.key)
-      )
-    ),
-    tap(listFields => {
-      const defaultListField = listFields.find(field => field.default);
-      // set default sort state if no pagination query parameters for sorting are available
-      this.parameterService.queryPaginationParams$
-        .pipe(take(1))
-        .subscribe(queryPaginationParams => {
-          if (defaultListField && !queryPaginationParams?.sort?.isSorting) {
-            const sortDirection =
-              typeof defaultListField.default === 'string' ? defaultListField.default : 'DESC';
-            this.paginationService.sortChanged({
-              isSorting: true,
-              state: {name: defaultListField.key, direction: sortDirection as Direction},
-            });
-          }
-        });
-    }),
-    tap(() => {
-      this.loadingFields = false;
-    })
-  );
-
-  private readonly _documentSearchRequest$: Observable<AdvancedDocumentSearchRequest> =
-    combineLatest([this._pagination$, this.listService.caseDefinitionKey$]).pipe(
-      filter(([pagination]) => !!pagination),
-      map(([pagination, caseDefinitionKey]) => {
-        const page = pagination.page - 1;
-
-        return new AdvancedDocumentSearchRequestImpl(
-          caseDefinitionKey,
-          page >= 0 ? page : 0,
-          pagination.size,
-          pagination.sort
-        );
-      })
-    );
-
-  public readonly documentItems$: Observable<any[]> = this.listService.checkRefresh$.pipe(
-    switchMap(() =>
-      combineLatest([
-        this._documentSearchRequest$,
-        this.assigneeFilter$,
-        this.searchFieldValues$,
-        this.statusService.selectedCaseStatuses$,
-        this.caseListCaseTagService.selectedCaseTagKeys$,
-        this.listService.forceRefresh$,
-        this.hasApiColumnConfig$,
-        this.statusService.caseStatuses$,
-        this.caseListCaseTagService.caseTags$,
-      ]).pipe(debounceTime(50))
-    ),
-    distinctUntilChanged(
-      (
-        [
-          prevSearchRequest,
-          prevAssigneeFilter,
-          prevSearchFieldValues,
-          prevSelectedStatuses,
-          prevCaseTagKeys,
-          prevForceRefresh,
-        ],
-        [
-          currSearchRequest,
-          currAssigneeFilter,
-          currSearchFieldValues,
-          currSelectedStatuses,
-          currCaseTagKeys,
-          currForceRefresh,
-        ]
-      ) =>
-        isEqual(
-          {
-            ...prevSearchRequest,
-            assignee: prevAssigneeFilter,
-            ...prevSearchFieldValues,
-            ...prevSelectedStatuses,
-            ...prevCaseTagKeys,
-            forceRefresh: prevForceRefresh,
-          },
-          {
-            ...currSearchRequest,
-            assignee: currAssigneeFilter,
-            ...currSearchFieldValues,
-            ...currSelectedStatuses,
-            ...currCaseTagKeys,
-            forceRefresh: currForceRefresh,
-          }
-        )
-    ),
-    switchMap(
-      ([
-        documentSearchRequest,
-        assigneeFilter,
-        searchValues,
-        selectedStatuses,
-        selectedCaseTagKeys,
-        _,
-        hasApiColumnConfig,
-        allStatuses,
-      ]) => {
-        const obsApi: Observable<boolean> = of(hasApiColumnConfig);
-        const statusKeys: (string | null)[] =
-          allStatuses.length === 1
-            ? []
-            : selectedStatuses.map((statusKey: string) =>
-                statusKey === CASES_WITHOUT_STATUS_KEY ? null : statusKey
-              );
-        if ((Object.keys(searchValues) || []).length > 0) {
-          return forkJoin({
-            documents: !hasApiColumnConfig
-              ? this.documentService.getDocumentsSearch(
-                  documentSearchRequest,
-                  'AND',
-                  assigneeFilter,
-                  this.searchService.mapSearchValuesToFilters(searchValues),
-                  statusKeys,
-                  selectedCaseTagKeys
-                )
-              : this.documentService.getSpecifiedDocumentsSearch(
-                  documentSearchRequest,
-                  'AND',
-                  assigneeFilter,
-                  this.searchService.mapSearchValuesToFilters(searchValues),
-                  statusKeys,
-                  selectedCaseTagKeys
-                ),
-            hasApiColumnConfig: obsApi,
-            isSearchResult: of(true),
-            allStatuses: of(allStatuses),
-          });
-        }
-
-        return forkJoin({
-          documents: !hasApiColumnConfig
-            ? this.documentService.getDocumentsSearch(
-                documentSearchRequest,
-                'AND',
-                assigneeFilter,
-                undefined,
-                statusKeys,
-                selectedCaseTagKeys
-              )
-            : this.documentService.getSpecifiedDocumentsSearch(
-                documentSearchRequest,
-                'AND',
-                assigneeFilter,
-                undefined,
-                statusKeys,
-                selectedCaseTagKeys
-              ),
-          hasApiColumnConfig: obsApi,
-          isSearchResult: of(false),
-          allStatuses: of(allStatuses),
-        });
-      }
-    ),
-    switchMap(res =>
-      combineLatest([
-        of(res),
-        forkJoin(
-          res.documents.content.map(document =>
-            this.permissionService
-              .requestPermission(CAN_VIEW_CASE_PERMISSION, {
-                resource: CASE_DETAIL_PERMISSION_RESOURCE.jsonSchemaDocument,
-                identifier: document.id,
-              })
-              .pipe(take(1))
-          )
-        ).pipe(defaultIfEmpty([] as boolean[])),
-        this._internalStatusKeys$,
-        this._caseTagsKeys$,
-      ])
-    ),
-    map(([res, documentsAuthorization, statusColumnKeys, caseTagsKeys]) => ({
-      ...res,
-      documents: {
-        ...res.documents,
-        content: res.documents.content.map((document, index) => ({
-          ...document,
-          locked: !documentsAuthorization[index],
-        })),
-      },
-      statusColumnKeys,
-      caseTagsKeys,
-    })),
-    map(
-      (res: {
-        documents: Documents | SpecifiedDocuments;
-        hasApiColumnConfig: boolean;
-        isSearchResult: boolean;
-        selectedStatuses: InternalCaseStatus[];
-        allStatuses: InternalCaseStatus[];
-        statusColumnKeys: string[];
-        caseTagsKeys: string[];
-      }) => {
-        this.paginationService.setCollectionSize(res.documents);
-        this.paginationService.checkPage(res.documents);
-        this.updateNoResultsMessage(res.isSearchResult);
-
-        return {
-          data: this.listService.mapDocuments(res.documents, res.hasApiColumnConfig),
-          statuses: res.allStatuses,
-          statusColumnKeys: res.statusColumnKeys,
-          caseTagsKeys: res.caseTagsKeys,
-        };
-      }
-    ),
-    map(res => {
-      if (!Array.isArray(res.data)) return res.data;
-      this.disableExportButton$.next(res.data.length === 0 ? true : false);
-      return res.data.map(item => {
-        const mappedInternalStatusColumns = res.statusColumnKeys.reduce((acc, curr) => {
-          const status = res.statuses.find(
-            (status: InternalCaseStatus) => status.key === item[curr] || status.key === item.status
-          );
-          return !status
-            ? acc
-            : {
-                ...acc,
-                [curr]: {
-                  content: status.title,
-                  type: InternalCaseStatusUtils.getTagTypeFromInternalCaseStatusColor(status.color),
-                },
-              };
-        }, {});
-        const mappedTagColumns = res.caseTagsKeys.reduce((acc, curr) => {
-          if (item[curr]) {
-            return {
-              ...acc,
-              [curr]: item[curr].map(tag => ({
-                content: tag.title,
-                type: CaseTagsUtils.getTagTypeFromCaseTagColor(tag.color),
-              })),
-            };
-          }
-          return acc;
-        }, {});
-
-        return {
-          ...item,
-          ...mappedInternalStatusColumns,
-          ...mappedTagColumns,
-        };
-      });
-    }),
-    tap(() => {
-      this.loadingAssigneeFilter = false;
-      this.loadingDocumentItems = false;
-    })
-  );
 
   private _previousCaseDefinitionKey!: string;
   private _caseDefinitionKeySubscription!: Subscription;
+  private _paginationSubscription!: Subscription;
+  private _canHaveAssigneeSubscription!: Subscription;
+  private _searchFieldsSubscription!: Subscription;
 
   constructor(
     private readonly assigneeService: CaseListAssigneeService,
     private readonly breadcrumbService: BreadcrumbService,
     private readonly bulkAssignService: CaseBulkAssignService,
-    private readonly columnService: CaseColumnService,
-    private readonly configService: ConfigService,
-    private readonly documentService: DocumentService,
+    private readonly caseExportService: CaseExportService,
+    private readonly caseListCaseTagService: CaseListCaseTagService,
     private readonly listService: CaseListService,
     private readonly pageTitleService: PageTitleService,
     private readonly paginationService: CaseListPaginationService,
     private readonly parameterService: CaseParameterService,
+    private readonly quickSearchStateService: QuickSearchStateService,
     private readonly route: ActivatedRoute,
     private readonly router: Router,
     private readonly searchService: CaseListSearchService,
-    private readonly translateService: TranslateService,
-    private readonly permissionService: PermissionService,
     private readonly statusService: CaseListStatusService,
-    private readonly caseListCaseTagService: CaseListCaseTagService,
-    private readonly caseExportService: CaseExportService,
-    private readonly caseListHiddenColumnsService: CaseListHiddenColumnsService,
-    private readonly quickSearchStateService: QuickSearchStateService,
     @Inject(QUICK_SEARCH_SERVICE)
-    private readonly caseListQuickSearchService: IQuickSearchService<CaseListQuickSearchParams>
+    private readonly caseListQuickSearchService: IQuickSearchService<CaseListQuickSearchParams>,
+    private readonly configService: ConfigService,
+    private readonly teamsApiService: TeamsApiService
   ) {}
 
   public ngOnInit(): void {
-    this.setVisibleTabs();
     this.openCaseDefinitionKeySubscription();
+    this.subscribeToPagination();
+    this.subscribeToCanHaveAssignee();
+    this.subscribeToSearchFields();
+    this.resolveVisibleCaseTabs();
+
+    if (!this.configService.config?.featureToggles?.enableGenericCaseList) {
+      this.breadcrumbService.suppressSecondBreadcrumb();
+    }
   }
 
   public ngOnDestroy(): void {
     this._caseDefinitionKeySubscription?.unsubscribe();
+    this._paginationSubscription?.unsubscribe();
+    this._canHaveAssigneeSubscription?.unsubscribe();
+    this._searchFieldsSubscription?.unsubscribe();
     this.pageTitleService.enableReset();
+    this.breadcrumbService.unsuppressSecondBreadcrumb();
   }
 
-  public trackByIndex(index: number): number {
-    return index;
-  }
+  // --- Search ---
 
   public search(searchFieldValues: SearchFieldValues): void {
     this.searchService.search(searchFieldValues);
   }
+
+  // --- Row click ---
 
   public rowClick(item: any): void {
     this.listService.caseDefinitionKey$.pipe(take(1)).subscribe(caseDefinitionKey => {
@@ -624,45 +168,16 @@ export class CaseListComponent implements OnInit, OnDestroy {
     });
   }
 
-  public tabChange(tab: CaseListTab): void {
-    if (!this.activeTab) {
-      this.activeTab = tab;
-      this.updateNoResultsMessage(false);
-      return;
-    }
+  // --- Tab change ---
 
-    if (this.activeTab.toLowerCase() === tab.toLowerCase()) {
-      return;
-    }
-
-    if (this.carbonList.model.selectedRowsCount()) {
-      this.showChangeTabModal$.next(true);
-      this.tabChange$.next(tab);
-      return;
-    }
-
-    this.onChangeTabConfirm(tab);
+  public onTabChange(tab: CaseListTab): void {
+    this.orchestration.setLoadingAssigneeFilter(true);
+    this.orchestration.updateNoResultsMessage(false, tab);
+    this.paginationService.setPage(1);
+    this.assigneeService.setAssigneeFilter(tab);
   }
 
-  public onChangeTabCancel(): void {
-    if (!this.tabsComponent) {
-      return;
-    }
-
-    const prevTab: Tab | undefined = this.tabsComponent.tabs.find(
-      (tab: Tab) => tab.id === this.activeTab
-    );
-
-    if (!prevTab) {
-      return;
-    }
-
-    const tab = this.tabsComponent.tabs.find((tab: Tab) => tab.active);
-
-    if (!tab) return;
-    tab.active = false;
-    prevTab.active = true;
-  }
+  // --- Pagination ---
 
   public pageChange(page: number): void {
     if (this.carbonList?.model.selectedRowsCount()) {
@@ -686,40 +201,34 @@ export class CaseListComponent implements OnInit, OnDestroy {
     this.paginationService.sortChanged(newSortState);
   }
 
-  private onChangeTabConfirm(tab: CaseListTab): void {
-    this.loadingAssigneeFilter = true;
-    this.activeTab = tab;
-    this.updateNoResultsMessage(false);
-    this.paginationService.setPage(1);
-    this.assigneeService.setAssigneeFilter(tab);
-  }
-
-  public showAssignModal(): void {
-    this.selectedCaseIds$.next(
-      this.carbonList.selectedItems.map((document: CarbonListItem) => document.id)
-    );
-    this.showAssignModal$.next(true);
-  }
-
-  public onCloseEvent(assigneeId: null | string, documentIds: string[]): void {
-    this.showAssignModal$.next(false);
-    if (!assigneeId) {
-      return;
-    }
-
-    this.bulkAssignService.bulkAssign(assigneeId, documentIds).subscribe(() => {
-      this.forceRefresh();
-    });
-  }
-
   public onChangePageConfirm(pagination: CarbonPaginationSelection): void {
     if (pagination.size !== this.pagination.size) {
       this.paginationService.pageSizeChange(pagination.size);
       return;
     }
-
     this.paginationService.pageChange(pagination.page);
   }
+
+  // --- Bulk assign ---
+
+  public showAssignModal(): void {
+    this.selectedCaseIds$.next(
+      this.carbonList.selectedItems.map(document => document.id)
+    );
+    this.showAssignModal$.next(true);
+  }
+
+  public onCloseEvent(bulkAssign: null | BulkAssign): void {
+    this.showAssignModal$.next(false);
+    if (!bulkAssign?.assigneeId && !bulkAssign?.assignedTeamKey) return;
+
+    this.bulkAssignService.bulkAssign(bulkAssign.ids, bulkAssign.assigneeId, bulkAssign.assignedTeamKey).subscribe(() => {
+      this.carbonList.model.selectAll(false);
+      this.forceRefresh();
+    });
+  }
+
+  // --- Actions ---
 
   public startCase(): void {
     this.listActionsComponent.startCase();
@@ -735,6 +244,8 @@ export class CaseListComponent implements OnInit, OnDestroy {
     this.listService.forceRefresh();
   }
 
+  // --- Filters ---
+
   public onSelectedStatusesChange(statusKeys: string[]): void {
     this.statusService.setSelectedStatuses(statusKeys);
   }
@@ -748,23 +259,12 @@ export class CaseListComponent implements OnInit, OnDestroy {
   }
 
   public onViewUpdateEvent(hiddenColumns: ListHiddenColumn[]): void {
-    this.caseDefinitionKey$
-      .pipe(
-        take(1),
-        switchMap((caseDefinitionKey: string) =>
-          this.caseListHiddenColumnsService.saveHiddenColumns(caseDefinitionKey, hiddenColumns)
-        )
-      )
-      .subscribe(() => this._refreshHiddenColumns$.next(null));
+    this.orchestration.saveHiddenColumns(hiddenColumns);
   }
 
-  public readonly disableSaveSearch$ = combineLatest([
-    this.statusService.selectedCaseStatuses$,
-    this.caseListCaseTagService.selectedCaseTagKeys$,
-  ]).pipe(
-    map(([selectedStatuses, selectedTags]) => !selectedStatuses.length && !selectedTags.length)
-  );
-  public onSaveSearchEvent(event): void {
+  // --- Quick search ---
+
+  public onSaveSearchEvent(event: any): void {
     combineLatest([
       this.statusService.selectedCaseStatuses$,
       this.caseListCaseTagService.selectedCaseTagKeys$,
@@ -780,7 +280,7 @@ export class CaseListComponent implements OnInit, OnDestroy {
   }
 
   public onQuickSearchEvent(queryPath: string): void {
-    combineLatest([this.route.queryParams, this.caseDefinitionKey$])
+    combineLatest([this.route.queryParams, this.orchestration.caseDefinitionKey$])
       .pipe(take(1))
       .subscribe(([urlParams, caseDefinitionKey]) => {
         const queryParams = {...urlParams, ...Object.fromEntries(new URLSearchParams(queryPath))};
@@ -806,6 +306,8 @@ export class CaseListComponent implements OnInit, OnDestroy {
     this.caseListCaseTagService.setSelectedCaseTags([]);
   }
 
+  // --- Private ---
+
   private openCaseDefinitionKeySubscription(): void {
     this._caseDefinitionKeySubscription = this.route.params
       .pipe(
@@ -822,36 +324,36 @@ export class CaseListComponent implements OnInit, OnDestroy {
         this.paginationService.clearPagination();
         this.assigneeService.resetAssigneeFilter();
         this.listService.setCaseDefinitionKey(caseDefinitionKey);
-        this.setLoading();
+        this.orchestration.setLoading();
       });
   }
 
-  private setLoading(): void {
-    this.loadingFields = true;
-    this.loadingPagination = true;
-    this.loadingSearchFields = true;
-    this.loadingAssigneeFilter = true;
-    this.loadingDocumentItems = true;
-    this.loadingStatuses = true;
+  private subscribeToPagination(): void {
+    this._paginationSubscription = this.orchestration.pagination$.subscribe(pagination => {
+      this.pagination = pagination;
+    });
   }
 
-  private setVisibleTabs(): void {
-    this.visibleCaseTabs = this.configService.config?.visibleCaseListTabs || null;
-  }
-
-  private updateNoResultsMessage(isSearchResult: boolean): void {
-    this.noResultsMessage$.next(
-      isSearchResult
-        ? {
-            description: 'case.noResults.search.description',
-            isSearchResult,
-            title: 'case.noResults.search.title',
-          }
-        : {
-            description: `case.noResults.${this.activeTab ?? 'ALL'}.description`,
-            isSearchResult,
-            title: `case.noResults.${this.activeTab ?? 'ALL'}.title`,
-          }
+  private subscribeToCanHaveAssignee(): void {
+    this._canHaveAssigneeSubscription = this.assigneeService.canHaveAssignee$.subscribe(
+      canHaveAssignee => {
+        this.canHaveAssignee = canHaveAssignee;
+      }
     );
+  }
+
+  private subscribeToSearchFields(): void {
+    this._searchFieldsSubscription = this.orchestration.searchFields$.subscribe(() => {
+      this.orchestration.setLoadingSearchFields(false);
+    });
+  }
+
+  private resolveVisibleCaseTabs(): void {
+    const tabs = this.configService.config?.visibleCaseListTabs || DEFAULT_CASE_LIST_TABS;
+
+    this.teamsApiService.getCurrentUserTeams().subscribe(teams => {
+      this.visibleCaseTabs =
+        teams.length > 0 ? tabs : tabs.filter(tab => tab !== CaseListTab.TEAM);
+    });
   }
 }

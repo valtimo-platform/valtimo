@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import {HttpClient, HttpHeaders, HttpResponse} from '@angular/common/http';
+import {HttpClient, HttpHeaders, HttpParams, HttpResponse} from '@angular/common/http';
 import {Injectable} from '@angular/core';
 import {
   BaseApiService,
@@ -25,7 +25,14 @@ import {Page} from '@valtimo/document';
 import {map, Observable} from 'rxjs';
 import {CaseListItem} from '../models';
 import {CaseVersionListItem} from '../models/case-version-list.model';
-import {CaseDefinition, DraftVersion} from '../models/case-deployment.model';
+import {
+  CaseDefinition,
+  CaseDefinitionConfigurationIssue,
+  CaseDefinitionFinalizationCheckResult,
+  CaseDefinitionImportPreview,
+  DanglingPluginConfiguration,
+  DraftVersion,
+} from '../models/case-deployment.model';
 
 @Injectable({
   providedIn: 'root',
@@ -79,7 +86,8 @@ export class CaseManagementService extends BaseApiService {
 
   public getGlobalActiveCase(caseDefinitionKey: string): Observable<any> {
     return this.httpClient.get<any[]>(
-      this.getApiUrl(`management/v1/case-definition/${caseDefinitionKey}`)
+      this.getApiUrl(`management/v1/case-definition/${caseDefinitionKey}`),
+      {headers: new HttpHeaders().set(InterceptorSkip, '404')}
     );
   }
 
@@ -139,10 +147,33 @@ export class CaseManagementService extends BaseApiService {
     );
   }
 
-  public importDocumentDefinitionZip(file: FormData): Observable<HttpResponse<Blob>> {
+  public previewImport(file: FormData): Observable<CaseDefinitionImportPreview> {
+    return this.httpClient.post<CaseDefinitionImportPreview>(
+      this.getApiUrl('management/v1/case/import/preview'),
+      file,
+      {headers: new HttpHeaders().set(InterceptorSkip, '400')}
+    );
+  }
+
+  public importDocumentDefinitionZip(
+    file: FormData,
+    key?: string,
+    name?: string,
+    pluginConfigurationMappings?: Record<string, string | null>
+  ): Observable<HttpResponse<Blob>> {
+    let params = new HttpParams();
+    if (key) params = params.set('key', key);
+    if (name) params = params.set('name', name);
+    if (pluginConfigurationMappings) {
+      file.set(
+        'pluginConfigurationMappings',
+        new Blob([JSON.stringify(pluginConfigurationMappings)], {type: 'application/json'})
+      );
+    }
     return this.httpClient.post<HttpResponse<Blob>>(
-      this.getApiUrl(`management/v1/case/import`),
-      file
+      this.getApiUrl('management/v1/case/import'),
+      file,
+      {params}
     );
   }
 
@@ -155,6 +186,52 @@ export class CaseManagementService extends BaseApiService {
         `management/v1/case/${caseDefinitionKey}/version/${caseDefinitionVersionTag}/export`
       ),
       {observe: 'response', responseType: 'blob' as 'json', headers: InterceptorSkipHeader}
+    );
+  }
+
+  public getConfigurationIssues(
+    caseDefinitionKey: string,
+    caseDefinitionVersionTag: string
+  ): Observable<CaseDefinitionConfigurationIssue[]> {
+    return this.httpClient.get<CaseDefinitionConfigurationIssue[]>(
+      this.getApiUrl(
+        `management/v1/case-definition/${caseDefinitionKey}/version/${caseDefinitionVersionTag}/configuration-issues`
+      )
+    );
+  }
+
+  public getDanglingPluginConfigurations(
+    caseDefinitionKey: string,
+    caseDefinitionVersionTag: string
+  ): Observable<DanglingPluginConfiguration[]> {
+    return this.httpClient.get<DanglingPluginConfiguration[]>(
+      this.getApiUrl(
+        `management/v1/case-definition/${caseDefinitionKey}/version/${caseDefinitionVersionTag}/dangling-plugin-configurations`
+      )
+    );
+  }
+
+  public resolvePluginConfigurationMappings(
+    caseDefinitionKey: string,
+    caseDefinitionVersionTag: string,
+    mappings: Record<string, string>
+  ): Observable<void> {
+    return this.httpClient.put<void>(
+      this.getApiUrl(
+        `management/v1/case-definition/${caseDefinitionKey}/version/${caseDefinitionVersionTag}/plugin-configuration-mappings`
+      ),
+      mappings
+    );
+  }
+
+  public getCaseDefinitionFinalizationCheck(
+    caseDefinitionKey: string,
+    caseDefinitionVersionTag: string
+  ): Observable<CaseDefinitionFinalizationCheckResult> {
+    return this.httpClient.get<CaseDefinitionFinalizationCheckResult>(
+      this.getApiUrl(
+        `management/v1/case-definition/${caseDefinitionKey}/version/${caseDefinitionVersionTag}/finalizable`
+      )
     );
   }
 }

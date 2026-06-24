@@ -175,7 +175,7 @@ class ProcessDocumentsServiceIntTest : BaseIntegrationTest() {
             )
         }
         assertEquals(
-            "No process definition found with key: 'non-existing-key' and caseDefinitionId: 'house:1.0.0'",
+            "No process definition found with key: 'non-existing-key' and blueprintId: 'house:1.0.0'",
             exception.cause?.message
         )
     }

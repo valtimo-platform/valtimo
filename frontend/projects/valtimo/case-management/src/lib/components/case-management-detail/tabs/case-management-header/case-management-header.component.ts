@@ -49,7 +49,6 @@ export class CaseManagementHeaderComponent
   public readonly AVAILABLE_WIDGET_TYPES = [WidgetType.FIELDS];
   public readonly WIDGET_WIZARD_STEPS = [
     WidgetWizardStep.TYPE,
-    WidgetWizardStep.STYLE,
     WidgetWizardStep.CONTENT,
   ];
 
@@ -78,5 +77,7 @@ export class CaseManagementHeaderComponent
 
   public ngOnDestroy(): void {
     this._subscriptions.unsubscribe();
+    this.widgetWizardService.$disableActionButton.set(false);
+    this.setTitleDisabled(false);
   }
 }

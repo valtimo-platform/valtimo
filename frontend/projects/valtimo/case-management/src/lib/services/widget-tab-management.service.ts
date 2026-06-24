@@ -19,6 +19,7 @@ import {Injectable} from '@angular/core';
 import {CaseManagementParams, ConfigService} from '@valtimo/shared';
 import {BehaviorSubject, map, Observable, switchMap} from 'rxjs';
 import {BasicWidget, IWidgetManagementService} from '@valtimo/layout';
+import {WidgetLayout} from '@valtimo/components';
 import {CaseWidgetsRes} from '@valtimo/case';
 
 @Injectable({
@@ -29,6 +30,9 @@ export class CaseWidgetManagementApiService
 {
   private readonly valtimoEndpointBase: string;
   private _widgetConfigurationCache: BasicWidget[] = [];
+  private _widgetLayout: WidgetLayout = WidgetLayout.MUURI_GAP_FREE;
+
+  public readonly widgetLayout$ = new BehaviorSubject<WidgetLayout>(WidgetLayout.MUURI_GAP_FREE);
 
   constructor(
     private readonly http: HttpClient,
@@ -55,7 +59,6 @@ export class CaseWidgetManagementApiService
     );
   }
   public updateWidget(widget: BasicWidget): Observable<BasicWidget> {
-    console.log('update', widget);
     return this.updateWidgets(
       this._widgetConfigurationCache.map((cachedWidget: BasicWidget) =>
         cachedWidget.key === widget.key ? widget : cachedWidget
@@ -75,6 +78,8 @@ export class CaseWidgetManagementApiService
       ),
       map((res: CaseWidgetsRes) => {
         this._widgetConfigurationCache = res.widgets;
+        this._widgetLayout = res.widgetLayout ?? WidgetLayout.MUURI_GAP_FREE;
+        this.widgetLayout$.next(this._widgetLayout);
         return res.widgets;
       })
     );
@@ -84,12 +89,18 @@ export class CaseWidgetManagementApiService
     return this.updateWidgets(widgets);
   }
 
+  public updateWidgetLayout(widgetLayout: WidgetLayout): Observable<unknown> {
+    this._widgetLayout = widgetLayout;
+    this.widgetLayout$.next(widgetLayout);
+    return this.updateWidgets(this._widgetConfigurationCache);
+  }
+
   private updateWidgets(widgets: BasicWidget[]): Observable<any> {
     return this.params$.pipe(
       switchMap((params: CaseManagementParams & {key: string}) =>
         this.http.post<any>(
           `${this.valtimoEndpointBase}/${params.caseDefinitionKey}/version/${params.caseDefinitionVersionTag}/widget-tab/${params.key}`,
-          {...params, widgets}
+          {...params, widgets, widgetLayout: this._widgetLayout}
         )
       )
     );

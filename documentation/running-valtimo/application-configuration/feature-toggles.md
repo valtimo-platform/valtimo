@@ -16,7 +16,7 @@ In the frontend, feature toggles can be configured under the `featureToggles` ke
     If enabled, the full name of the user currently logged in is shown in the top bar next to the user menu button.
 *   **`experimentalDmnEditing`**
 
-    If enabled, it is possible to edit DMN tables from the ui from the admin page. This feature is experimental, please refer to [the release notes](../../release-notes/9.x.x/9.20.0-5.9.1/valtimo-frontend-libraries.md) for known issues.
+    If enabled, it is possible to edit DMN tables from the ui from the admin page. This feature is experimental.
 *   **`disableCaseCount`**
 
     If set to `true`, showing the number of open cases in the menu is disabled.
@@ -41,7 +41,7 @@ In the frontend, feature toggles can be configured under the `featureToggles` ke
   If enabled, users will see a new breadcrumb trail on top of every form flow. This allows a user to quickly navigate between the different steps of the form flow. See [this page](../../features/case/form-flow.md#bread-crumbs) for more information.
 *   **`enableObjectManagement`**
 
-    If enabled, a new menu item 'objects' will appear in the left sidebar menu. Enabled by default when not configured. This menu item can have one or more submenu items depending on the configuration. For more information [here](../../fundamentals/getting-started/modules/zgw/object-management.md)
+    If enabled, a new menu item 'objects' will appear in the left sidebar menu. Enabled by default when not configured. This menu item can have one or more submenu items depending on the configuration. For more information, see the [object management documentation](../../fundamentals/getting-started/modules/zgw/object-management.md)
 *   **`hideValtimoVersionsForNonAdmins`**
 
     If enabled, the Valtimo version information in the right sidebar will only be visible for admins and will be hidden for any other users.
@@ -60,6 +60,9 @@ In the frontend, feature toggles can be configured under the `featureToggles` ke
 
     If enabled, access to the list of uploaded documents now requires permissions. Additionally, the backend requires the following property to be set in `application.yml`:\
     `valtimo.authorization.zgwDocuments.enabled`
+* **`enableGenericCaseList`**
+
+    If enabled, the case list is displayed similar to the task list, with an overview of all cases across all case definitions. This helps keep the sidebar organized when you have a lot of case definitions.
 
 ## Backend
 

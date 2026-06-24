@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,5 +15,9 @@
  */
 
 export * from './custom-widget-token';
+export * from './layout.test-ids';
 export * from './widget.constants';
 export * from './widget-management.constants';
+export * from './widget-management-metroline.constants';
+export * from './widget-metroline.constants';
+export * from './widget-color.constants';

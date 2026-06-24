@@ -73,6 +73,9 @@ export class FormioComponent implements OnInit, OnChanges, OnDestroy {
   @Input() set readOnly(readOnlyValue: boolean) {
     this.readOnly$.next(readOnlyValue);
   }
+  @Input() set errors(errorsValue: Array<string>) {
+    this.errors$.next(errorsValue ?? []);
+  }
   @Input() formRefresh$!: Subject<FormioRefreshValue>;
 
   // eslint-disable-next-line @angular-eslint/no-output-native
@@ -161,6 +164,7 @@ export class FormioComponent implements OnInit, OnChanges, OnDestroy {
   }
 
   public ngOnInit(): void {
+    Formio.setBaseUrl(location.origin);
     Formio.setProjectUrl(location.origin);
     Formio.authUrl = location.origin;
 
@@ -292,11 +296,11 @@ export class FormioComponent implements OnInit, OnChanges, OnDestroy {
   private openRouteSubscription(): void {
     this._subscriptions.add(
       this.route.params.subscribe(params => {
-        const documentDefinitionName = params.documentDefinitionName;
+        const caseDefinitionKey = params.caseDefinitionKey;
         const documentId = params.documentId;
 
-        if (documentDefinitionName) {
-          this.stateService.setDocumentDefinitionName(documentDefinitionName);
+        if (caseDefinitionKey) {
+          this.stateService.setCaseDefinitionKey(caseDefinitionKey);
         }
 
         if (documentId) {

@@ -1,4 +1,16 @@
 export const endpoints = {
+  dashboard: {
+    getAll: '/api/management/v1/dashboard',
+    get: (key: string) => `/api/management/v1/dashboard/${key}`,
+    create: '/api/management/v1/dashboard',
+    delete: (key: string) => `/api/management/v1/dashboard/${key}`,
+    widgetConfigurations: (dashboardKey: string) =>
+      `/api/management/v1/dashboard/${dashboardKey}/widget-configuration`,
+    widgetConfiguration: (dashboardKey: string, widgetKey: string) =>
+      `/api/management/v1/dashboard/${dashboardKey}/widget-configuration/${widgetKey}`,
+    dataSources: '/api/management/v1/dashboard/widget-data-sources',
+  },
+
   formFlow: {
     getAll: '/api/management/v1/form-flow/definition',
     getByKeyAndVersion: (key: string, version: number) =>
@@ -25,6 +37,12 @@ export const endpoints = {
       `/api/management/v1/case-definition/${caseDefinitionName}/case-tag`,
     documentenApiVersion: (caseDefinitionName: string) =>
       `/api/management/v1/case-definition/${caseDefinitionName}/documenten-api/version`,
+    caseTab: (caseDefinitionName: string, version: string) =>
+      `/api/management/v1/case-definition/${caseDefinitionName}/version/${version}/tab`,
+    headerWidget: (caseDefinitionName: string, version: string) =>
+      `/api/management/v1/case-definition/${caseDefinitionName}/version/${version}/header-widget`,
+    documentDefinition: (caseDefinitionName: string, version: string) =>
+      `/api/management/v1/case-definition/${caseDefinitionName}/version/${version}/document-definition`,
   },
 
   processDefinition: {
@@ -101,6 +119,17 @@ export const endpoints = {
       `/api/v1/uploadprocess/case/${caseDefinitionName}/check-link`,
     getDocumentColumn: (caseDefinitionName: string) =>
       `/api/v1/case-definition/${caseDefinitionName}/zgw-document-column`,
+  },
+
+  choiceField: {
+    getAll: '/api/v1/choice-fields',
+    create: '/api/v1/choice-fields',
+    update: '/api/v1/choice-fields',
+    delete: (id: string) => `/api/v1/choice-fields/${id}`,
+    getByName: (name: string) => `/api/v1/choice-fields/name/${name}`,
+    values: (keyName: string) => `/api/v1/choice-field-values/${keyName}/values`,
+    createValue: (keyName: string) => `/api/v1/choice-field-values?choice_field_name=${keyName}`,
+    updateValue: (keyName: string) => `/api/v1/choice-field-values?choice_field_name=${keyName}`,
   },
 
   version: {

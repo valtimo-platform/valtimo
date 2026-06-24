@@ -15,7 +15,6 @@
  */
 
 import {Injectable, OnDestroy} from '@angular/core';
-import {ProcessDefinition} from '@valtimo/process';
 import {BehaviorSubject, filter, Observable, Subject, Subscription} from 'rxjs';
 import {distinctUntilChanged} from 'rxjs/operators';
 import {isEqual} from 'lodash';
@@ -26,23 +25,28 @@ import {
   ProcessLinkService,
   ProcessLinkUpdateEvent,
 } from '@valtimo/process-link';
-import {OpenProcessLinkModalEvent} from '../models';
-import {CaseManagementParams, ManagementContext} from '@valtimo/shared';
+import {DeleteProcessLinkEvent, OpenProcessLinkModalEvent} from '../models';
+import {
+  BuildingBlockManagementParams,
+  CaseManagementParams,
+  ManagementContext,
+  ProcessDefinitionWithPropertiesDto,
+} from '@valtimo/shared';
 import {FormDefinitionOption, FormService} from '@valtimo/form';
 
 @Injectable()
 export class ProcessManagementEditorService implements OnDestroy {
   private readonly _selectionProcessDefinitionSubject$ =
-    new BehaviorSubject<ProcessDefinition | null>(null);
+    new BehaviorSubject<ProcessDefinitionWithPropertiesDto | null>(null);
 
-  public get selectionProcessDefinition$(): Observable<ProcessDefinition> {
+  public get selectionProcessDefinition$(): Observable<ProcessDefinitionWithPropertiesDto> {
     return this._selectionProcessDefinitionSubject$.pipe(
       filter(selectedProcessDefinition => !!selectedProcessDefinition?.id),
       distinctUntilChanged((previous, current) => isEqual(previous, current))
     );
   }
 
-  public get selectionProcessDefinition(): ProcessDefinition {
+  public get selectionProcessDefinition(): ProcessDefinitionWithPropertiesDto {
     return this._selectionProcessDefinitionSubject$.getValue();
   }
 
@@ -56,22 +60,24 @@ export class ProcessManagementEditorService implements OnDestroy {
     return this._processLinksForSelectedDefinition$.getValue();
   }
 
-  private readonly _processLinksFetchedForSelectedDefinition$ = new BehaviorSubject<boolean>(false);
-
-  private readonly _subscriptions = new Subscription();
-
   private readonly _openProcessLinkModalEvents$ = new Subject<OpenProcessLinkModalEvent>();
 
   public get openProcessLinkModalEvents$(): Observable<OpenProcessLinkModalEvent> {
     return this._openProcessLinkModalEvents$.asObservable();
   }
 
-  public setSelectedProcessDefinition(definition: ProcessDefinition): void {
+  private readonly _deleteProcessLinkEvents$ = new Subject<DeleteProcessLinkEvent>();
+
+  public get deleteProcessLinkEvents$(): Observable<DeleteProcessLinkEvent> {
+    return this._deleteProcessLinkEvents$.asObservable();
+  }
+
+  public setSelectedProcessDefinition(definition: ProcessDefinitionWithPropertiesDto): void {
     this._selectionProcessDefinitionSubject$.next(definition);
   }
 
-  private readonly _caseManagementRouteParams$ = new BehaviorSubject<
-    [ManagementContext, CaseManagementParams] | null
+  private readonly _managementRouteParams$ = new BehaviorSubject<
+    [ManagementContext, CaseManagementParams | BuildingBlockManagementParams] | null
   >(null);
 
   private readonly _formDefinitionOptions$ = new BehaviorSubject<FormDefinitionOption[]>([]);
@@ -86,6 +92,8 @@ export class ProcessManagementEditorService implements OnDestroy {
 
   private _activityIdBusinessIdMap: Record<string, string> = {};
 
+  private readonly _subscriptions = new Subscription();
+
   constructor(
     private readonly processLinkService: ProcessLinkService,
     private readonly formService: FormService
@@ -98,11 +106,11 @@ export class ProcessManagementEditorService implements OnDestroy {
     this._subscriptions.unsubscribe();
   }
 
-  public setCaseManagementRouteParams(
+  public setManagementRouteParams(
     context: ManagementContext,
-    params: CaseManagementParams
+    params: CaseManagementParams | BuildingBlockManagementParams
   ): void {
-    this._caseManagementRouteParams$.next([context, params]);
+    this._managementRouteParams$.next([context, params]);
   }
 
   public sendOpenProcessLinkModalEvent(
@@ -111,6 +119,14 @@ export class ProcessManagementEditorService implements OnDestroy {
   ): void {
     this._updateBpmnViewFunction = updateBpmnViewFunction;
     this._openProcessLinkModalEvents$.next(event);
+  }
+
+  public sendDeleteProcessLinkEvent(
+    event: DeleteProcessLinkEvent,
+    updateBpmnViewFunction: () => void
+  ): void {
+    this._updateBpmnViewFunction = updateBpmnViewFunction;
+    this._deleteProcessLinkEvents$.next(event);
   }
 
   public updateProcessLink(event: ProcessLinkUpdateEvent): void {
@@ -212,22 +228,43 @@ export class ProcessManagementEditorService implements OnDestroy {
 
   private openFormDefinitionOptionsSubscription(): void {
     this._subscriptions.add(
-      this._caseManagementRouteParams$
+      this._managementRouteParams$
         .pipe(
-          filter((params): params is [ManagementContext, CaseManagementParams] => params !== null)
+          filter(
+            (
+              params
+            ): params is [
+              ManagementContext,
+              CaseManagementParams | BuildingBlockManagementParams,
+            ] => params !== null
+          )
         )
         .subscribe(([context, params]) => {
-          if (context === 'independent') {
-            this.formService
-              .getAllUnlinkedFormDefinitions()
-              .subscribe(options => this._formDefinitionOptions$.next(options));
-          } else {
-            this.formService
-              .getAllFormDefinitionsForCaseDefinition(
-                params.caseDefinitionKey,
-                params.caseDefinitionVersionTag
-              )
-              .subscribe(options => this._formDefinitionOptions$.next(options));
+          switch (context) {
+            case 'independent':
+              this.formService
+                .getAllUnlinkedFormDefinitions()
+                .subscribe(options => this._formDefinitionOptions$.next(options));
+              break;
+            case 'case':
+              const caseParams = params as CaseManagementParams;
+              this.formService
+                .getAllFormDefinitionsForCaseDefinition(
+                  caseParams.caseDefinitionKey,
+                  caseParams.caseDefinitionVersionTag
+                )
+                .subscribe(options => this._formDefinitionOptions$.next(options));
+              break;
+            case 'buildingBlock': {
+              const buildingBlockParams = params as BuildingBlockManagementParams;
+              this.formService
+                .getAllFormDefinitionsForBuildingBlock(
+                  buildingBlockParams.buildingBlockDefinitionKey,
+                  buildingBlockParams.buildingBlockDefinitionVersionTag
+                )
+                .subscribe(options => this._formDefinitionOptions$.next(options));
+              break;
+            }
           }
         })
     );

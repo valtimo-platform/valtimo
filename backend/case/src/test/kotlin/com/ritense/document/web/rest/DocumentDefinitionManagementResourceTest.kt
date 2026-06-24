@@ -48,6 +48,7 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers
 import org.springframework.test.web.servlet.setup.MockMvcBuilders
 import java.nio.charset.StandardCharsets
 import java.util.Optional
+import org.springframework.validation.beanvalidation.LocalValidatorFactoryBean
 
 class DocumentDefinitionManagementResourceTest : BaseTest() {
 
@@ -68,6 +69,7 @@ class DocumentDefinitionManagementResourceTest : BaseTest() {
         mockMvc = MockMvcBuilders.standaloneSetup(documentDefinitionManagementResource)
             .setCustomArgumentResolvers(PageableHandlerMethodArgumentResolver())
             .setMessageConverters(MappingJackson2HttpMessageConverter(get()))
+            .setValidator(LocalValidatorFactoryBean().apply { afterPropertiesSet() })
             .build()
 
         definition = definition()
@@ -80,7 +82,7 @@ class DocumentDefinitionManagementResourceTest : BaseTest() {
     @Test
     fun shouldReturnSingleDefinitionRecordByNameAndVersion() {
         val caseDefinitionId = definition.getId().caseDefinitionId()
-        whenever(documentDefinitionService.findByCaseDefinitionId(caseDefinitionId))
+        whenever(documentDefinitionService.findByBlueprintId(caseDefinitionId))
             .thenReturn(Optional.of(definition))
         mockMvc.perform(
             MockMvcRequestBuilders.get(
@@ -98,7 +100,7 @@ class DocumentDefinitionManagementResourceTest : BaseTest() {
     @Test
     fun shouldReturnNoDefinitionRecordByNameAndVersion() {
         val caseDefinitionId = definition.getId().caseDefinitionId()
-        whenever(documentDefinitionService.findByCaseDefinitionId(caseDefinitionId))
+        whenever(documentDefinitionService.findByBlueprintId(caseDefinitionId))
             .thenReturn(Optional.empty<JsonSchemaDocumentDefinition>())
         mockMvc.perform(
             MockMvcRequestBuilders.get(
@@ -163,6 +165,23 @@ class DocumentDefinitionManagementResourceTest : BaseTest() {
 
         verify(documentDefinitionService, Mockito.times(1))
             .deploy(anyString(), any<CaseDefinitionId>())
+    }
+
+    @Test
+    fun shouldRejectCreateWhenDefinitionIsMissing() {
+        mockMvc.perform(
+            MockMvcRequestBuilders.put(
+                "/api/management/v1/case-definition/{caseDefinitionKey}/version/{versionTag}/document-definition",
+                "caseDefinitionId",
+                "1.0.0"
+            )
+            .content("{}")
+            .characterEncoding(StandardCharsets.UTF_8.name())
+            .contentType(MediaType.APPLICATION_JSON_VALUE)
+            .accept(MediaType.APPLICATION_JSON_VALUE)
+        )
+        .andDo(MockMvcResultHandlers.print())
+        .andExpect(MockMvcResultMatchers.status().isBadRequest())
     }
 
     @Test

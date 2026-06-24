@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2025 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,7 +21,6 @@ import com.ritense.authorization.AuthorizationContext.Companion.runWithoutAuthor
 import com.ritense.document.domain.impl.request.NewDocumentRequest
 import com.ritense.plugin.domain.PluginConfiguration
 import com.ritense.plugin.domain.PluginProcessLink
-import com.ritense.plugin.domain.PluginProcessLinkId
 import com.ritense.plugin.repository.PluginProcessLinkRepository
 import com.ritense.plugin.service.PluginService
 import com.ritense.processdocument.domain.impl.request.NewDocumentAndStartProcessRequest
@@ -34,10 +33,10 @@ import com.ritense.smartdocuments.domain.SmartDocumentsRequest
 import com.ritense.valtimo.operaton.domain.OperatonProcessDefinition
 import com.ritense.valtimo.operaton.service.OperatonRepositoryService
 import org.assertj.core.api.Assertions.assertThat
-import org.operaton.bpm.engine.RuntimeService
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
+import org.operaton.bpm.engine.RuntimeService
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.web.reactive.AutoConfigureWebTestClient
 import org.springframework.http.HttpMethod
@@ -131,7 +130,7 @@ class SmartDocumentsPluginIntegrationTest @Autowired constructor(
         // then
         val requestBody =
             findRequestBody(HttpMethod.POST, "/wsxmldeposit/deposit/unattended", SmartDocumentsRequest::class.java)
-        assertThat(requestBody.smartDocument.selection.templateGroup).isNotEqualTo("test-template-group")
+        assertThat(requestBody.smartDocument.selection.templateGroup).isEqualTo("test-template-group")
         assertThat(requestBody.smartDocument.selection.template).isEqualTo("test-template-name")
         assertThat(requestBody.customerData).isEqualTo(
             mapOf(
@@ -251,13 +250,14 @@ class SmartDocumentsPluginIntegrationTest @Autowired constructor(
     private fun saveProcessLink(generateDocumentActionProperties: String) {
         pluginProcessLinkRepository.save(
             PluginProcessLink(
-                PluginProcessLinkId(UUID.fromString("aad69a1b-0325-40ff-91df-27762305dcc1")),
-                processDefinition.id,
-                "GenerateDocument",
-                objectMapper.readTree(generateDocumentActionProperties) as ObjectNode,
-                pluginConfiguration.id,
-                "generate-document",
-                ActivityTypeWithEventName.SERVICE_TASK_START
+                id = UUID.fromString("aad69a1b-0325-40ff-91df-27762305dcc1"),
+                processDefinitionId = processDefinition.id,
+                activityId = "GenerateDocument",
+                activityType = ActivityTypeWithEventName.SERVICE_TASK_START,
+                actionProperties = objectMapper.readTree(generateDocumentActionProperties) as ObjectNode,
+                pluginConfigurationId = pluginConfiguration.id,
+                pluginConfigurationReference = com.ritense.plugin.domain.PluginConfigurationReference(),
+                pluginActionDefinitionKey = "generate-document"
             )
         )
     }

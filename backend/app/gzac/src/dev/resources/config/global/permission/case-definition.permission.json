@@ -1,0 +1,20 @@
+[
+    {
+        "resourceType": "com.ritense.case_.domain.definition.CaseDefinition",
+        "actions": [
+            "view_list",
+            "view"
+        ],
+        "roleKey": "ROLE_ADMIN",
+        "conditions": []
+    },
+    {
+        "resourceType": "com.ritense.case_.domain.definition.CaseDefinition",
+        "actions": [
+            "view_list",
+            "view"
+        ],
+        "roleKey": "ROLE_USER",
+        "conditions": []
+    }
+]

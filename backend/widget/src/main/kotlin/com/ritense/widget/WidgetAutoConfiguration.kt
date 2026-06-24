@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,7 +18,6 @@ package com.ritense.widget
 
 import ResolvedPageSerializer
 import com.fasterxml.jackson.databind.ObjectMapper
-import com.ritense.valtimo.contract.config.LiquibaseMasterChangeLogLocation
 import com.ritense.valueresolver.ValueResolverService
 import com.ritense.widget.collection.CollectionWidget
 import com.ritense.widget.collection.CollectionWidgetDataProvider
@@ -31,6 +30,7 @@ import com.ritense.widget.fields.FieldsWidgetDataProvider
 import com.ritense.widget.interactivetable.InteractiveTableWidget
 import com.ritense.widget.map.MapWidget
 import com.ritense.widget.map.MapWidgetDataProvider
+import com.ritense.widget.map.geojson.GeoJsonDutchAddressMapper
 import com.ritense.widget.map.geojson.GeoJsonFeatureCollectionMapper
 import com.ritense.widget.map.geojson.GeoJsonFeatureMapper
 import com.ritense.widget.map.geojson.GeoJsonGeometryCollectionMapper
@@ -41,19 +41,25 @@ import com.ritense.widget.map.geojson.GeoJsonMultiPolygonMapper
 import com.ritense.widget.map.geojson.GeoJsonNullMapper
 import com.ritense.widget.map.geojson.GeoJsonPointMapper
 import com.ritense.widget.map.geojson.GeoJsonPolygonMapper
+import com.ritense.widget.map.geojson.Wgs84FeatureNormalizer
+import com.ritense.widget.metroline.MetrolineWidget
+import com.ritense.widget.metroline.MetrolineWidgetDataProvider
+import com.ritense.widget.pdok.client.PdokLocatieserverClient
 import com.ritense.widget.repository.WidgetRepository
 import com.ritense.widget.service.WidgetService
 import com.ritense.widget.table.TableWidget
 import com.ritense.widget.table.TableWidgetDataProvider
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.autoconfigure.AutoConfiguration
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.boot.autoconfigure.domain.EntityScan
 import org.springframework.context.ApplicationContext
 import org.springframework.context.annotation.Bean
-import org.springframework.core.Ordered.HIGHEST_PRECEDENCE
 import org.springframework.core.annotation.Order
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories
+import org.springframework.web.client.RestClient
+import java.net.URI
 import javax.sql.DataSource
 
 @AutoConfiguration
@@ -70,19 +76,12 @@ import javax.sql.DataSource
         FieldsWidget::class,
         InteractiveTableWidget::class,
         MapWidget::class,
+        MetrolineWidget::class,
         TableWidget::class,
         Widget::class,
     ]
 )
 class WidgetAutoConfiguration {
-
-    @Order(HIGHEST_PRECEDENCE + 34)
-    @Bean
-    @ConditionalOnClass(DataSource::class)
-    @ConditionalOnMissingBean(name = ["widgetLiquibaseMasterChangeLogLocation"])
-    fun widgetLiquibaseMasterChangeLogLocation(): LiquibaseMasterChangeLogLocation {
-        return LiquibaseMasterChangeLogLocation("config/liquibase/widget-master.xml")
-    }
 
     @Bean
     @ConditionalOnClass(DataSource::class)
@@ -136,13 +135,45 @@ class WidgetAutoConfiguration {
         valueResolverService: ValueResolverService,
     ) = CustomWidgetDataProvider(valueResolverService)
 
+    @ConditionalOnMissingBean(MetrolineWidgetDataProvider::class)
+    @Bean
+    fun metrolineWidgetDataProvider(
+        objectMapper: ObjectMapper,
+        valueResolverService: ValueResolverService,
+    ) = MetrolineWidgetDataProvider(objectMapper, valueResolverService)
+
     @ConditionalOnMissingBean(ResolvedPageSerializer::class)
     @Bean
     fun resolvedPageSerializer(
     ) = ResolvedPageSerializer()
 
+    @ConditionalOnMissingBean(PdokLocatieserverClient::class)
+    @Bean
+    fun pdokLocatieserverClient(
+        restClientBuilder: RestClient.Builder,
+        @Value("\${valtimo.pdok.locatieserver.base-url:https://api.pdok.nl/bzk/locatieserver/search/v3_1}")
+        baseUrl: URI,
+    ) = PdokLocatieserverClient(
+        restClientBuilder,
+        baseUrl,
+    )
+
+    @ConditionalOnMissingBean(Wgs84FeatureNormalizer::class)
+    @Bean
+    fun wgs84FeatureNormalizer() = Wgs84FeatureNormalizer()
+
+    @ConditionalOnMissingBean(GeoJsonDutchAddressMapper::class)
+    @Bean
+    @Order(100)
+    fun geoJsonDutchAddressMapper(
+        locatieserverClient: PdokLocatieserverClient,
+    ) = GeoJsonDutchAddressMapper(
+        locatieserverClient,
+    )
+
     @ConditionalOnMissingBean(GeoJsonGeometryMapper::class)
     @Bean
+    @Order(100)
     fun geoJsonGeometryMapper(
         objectMapper: ObjectMapper,
     ) = GeoJsonGeometryMapper(
@@ -151,10 +182,12 @@ class WidgetAutoConfiguration {
 
     @ConditionalOnMissingBean(GeoJsonNullMapper::class)
     @Bean
+    @Order(100)
     fun geoJsonNullMapper() = GeoJsonNullMapper()
 
     @ConditionalOnMissingBean(GeoJsonPointMapper::class)
     @Bean
+    @Order(100)
     fun geoJsonPointMapper(
         objectMapper: ObjectMapper,
         geometryMapper: GeoJsonGeometryMapper,
@@ -165,6 +198,7 @@ class WidgetAutoConfiguration {
 
     @ConditionalOnMissingBean(GeoJsonPolygonMapper::class)
     @Bean
+    @Order(100)
     fun geoJsonPolygonMapper(
         objectMapper: ObjectMapper,
         geometryMapper: GeoJsonGeometryMapper,
@@ -175,6 +209,7 @@ class WidgetAutoConfiguration {
 
     @ConditionalOnMissingBean(GeoJsonGeometryCollectionMapper::class)
     @Bean
+    @Order(100)
     fun geoJsonGeometryCollectionMapper(
         geometryMapper: GeoJsonGeometryMapper,
     ) = GeoJsonGeometryCollectionMapper(
@@ -183,6 +218,7 @@ class WidgetAutoConfiguration {
 
     @ConditionalOnMissingBean(GeoJsonFeatureMapper::class)
     @Bean
+    @Order(100)
     fun geoJsonFeatureMapper(
         objectMapper: ObjectMapper,
     ) = GeoJsonFeatureMapper(
@@ -191,6 +227,7 @@ class WidgetAutoConfiguration {
 
     @ConditionalOnMissingBean(GeoJsonMultiPolygonMapper::class)
     @Bean
+    @Order(100)
     fun geoJsonMultiPolygonMapper(
         objectMapper: ObjectMapper,
         geometryMapper: GeoJsonGeometryMapper,
@@ -201,6 +238,7 @@ class WidgetAutoConfiguration {
 
     @ConditionalOnMissingBean(GeoJsonFeatureCollectionMapper::class)
     @Bean
+    @Order(100)
     fun geoJsonFeatureCollectionMapper(
         objectMapper: ObjectMapper,
     ) = GeoJsonFeatureCollectionMapper(
@@ -209,6 +247,7 @@ class WidgetAutoConfiguration {
 
     @ConditionalOnMissingBean(GeoJsonLineStringMapper::class)
     @Bean
+    @Order(100)
     fun geoJsonLineStringMapper(
         objectMapper: ObjectMapper,
         geometryMapper: GeoJsonGeometryMapper,
@@ -223,10 +262,12 @@ class WidgetAutoConfiguration {
         valueResolverService: ValueResolverService,
         objectMapper: ObjectMapper,
         geoJsonMappers: List<GeoJsonMapper>,
+        wgs84FeatureNormalizer: Wgs84FeatureNormalizer,
     ) = MapWidgetDataProvider(
         valueResolverService,
         objectMapper,
         geoJsonMappers,
+        wgs84FeatureNormalizer,
     )
 
 }

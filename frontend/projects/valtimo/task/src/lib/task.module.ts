@@ -21,13 +21,15 @@ import {BrowserAnimationsModule} from '@angular/platform-browser/animations';
 import {NgbModule} from '@ng-bootstrap/ng-bootstrap';
 import {TranslateLoader, TranslateModule} from '@ngx-translate/core';
 import {
+  AssignmentComponent,
   CamundaFormModule,
   CarbonListModule,
   ConfirmationModalModule,
   FormIoModule,
+  ListColumnViewComponent,
   PageHeaderModule,
+  QuickSearchComponent,
   RenderInPageHeaderDirective,
-  SearchableDropdownSelectModule,
   SearchFieldsModule,
   SpinnerModule,
   ValtimoCdsModalDirective,
@@ -46,7 +48,6 @@ import {
   TabsModule,
   TooltipModule,
 } from 'carbon-components-angular';
-import {AssignUserToTaskComponent} from './components/assign-user-to-task/assign-user-to-task.component';
 import {SetTaskDueDateComponent} from './components/set-task-due-date/set-task-due-date.component';
 import {TaskDetailContentComponent} from './components/task-detail-content/task-detail-content.component';
 import {TaskDetailIntermediateSaveComponent} from './components/task-detail-intermediate-save/task-detail-intermediate-save.component';
@@ -63,7 +64,6 @@ import {TaskRoutingModule} from './task-routing.module';
     PageHeaderModule,
     WidgetModule,
     SpinnerModule,
-    SearchableDropdownSelectModule,
     CamundaFormModule,
     BrowserAnimationsModule,
     FormsModule,
@@ -89,11 +89,13 @@ import {TaskRoutingModule} from './task-routing.module';
     ValtimoTooltipModule,
     ConfirmationModalModule,
     SearchFieldsModule,
-    AssignUserToTaskComponent,
+    QuickSearchComponent,
+    AssignmentComponent,
     TaskDetailContentComponent,
     TaskDetailIntermediateSaveComponent,
     SetTaskDueDateComponent,
     ValtimoCdsModalDirective,
+    ListColumnViewComponent,
   ],
   exports: [TaskListComponent, TaskDetailModalComponent],
 })

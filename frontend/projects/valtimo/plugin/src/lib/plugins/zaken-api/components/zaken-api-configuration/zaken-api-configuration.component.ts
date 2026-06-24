@@ -20,6 +20,7 @@ import {BehaviorSubject, combineLatest, map, Observable, Subscription, take} fro
 import {PluginManagementService, PluginTranslationService} from '../../../../services';
 import {TranslateService} from '@ngx-translate/core';
 import {ZakenApiConfig} from '../../models';
+import {ZAKEN_API_CONFIGURATION_TEST_IDS} from '../../../../constants';
 
 @Component({
   standalone: false,
@@ -36,6 +37,7 @@ export class ZakenApiConfigurationComponent
   @Input() public prefillConfiguration$: Observable<ZakenApiConfig>;
   @Output() public valid: EventEmitter<boolean> = new EventEmitter<boolean>();
   @Output() public configuration: EventEmitter<ZakenApiConfig> = new EventEmitter<ZakenApiConfig>();
+  protected readonly testIds = ZAKEN_API_CONFIGURATION_TEST_IDS;
 
   public readonly authenticationPluginSelectItems$: Observable<Array<{id: string; text: string}>> =
     combineLatest([
@@ -52,9 +54,7 @@ export class ZakenApiConfigurationComponent
         }))
       )
     );
-  public readonly noteEventListenerEnabled$ = new BehaviorSubject<boolean>(false);
 
-  private _eventListenerEnabledSubscription!: Subscription;
   private readonly formValue$ = new BehaviorSubject<ZakenApiConfig | null>(null);
   private _saveSubscription!: Subscription;
   private readonly valid$ = new BehaviorSubject<boolean>(false);
@@ -66,53 +66,23 @@ export class ZakenApiConfigurationComponent
   ) {}
 
   public ngOnInit(): void {
-    this.initNoteEventListenerEnabled()
-    this.openEventListenerEnabledSubscription();
     this.openSaveSubscription();
   }
 
   public ngOnDestroy() {
     this._saveSubscription?.unsubscribe();
-    this._eventListenerEnabledSubscription?.unsubscribe();
   }
 
   public formValueChange(formValue: ZakenApiConfig): void {
-    const formValueIncludingToggle = {
-      ...formValue,
-      noteEventListenerEnabled: this.noteEventListenerEnabled$.getValue()
-    }
-    this.formValue$.next(formValueIncludingToggle);
-    this.handleValid(formValueIncludingToggle);
-  }
-
-  public onNoteEventListenerEnabledChange(event: any): void {
-    this.noteEventListenerEnabled$.next(event);
-  }
-
-  private initNoteEventListenerEnabled(): void {
-    this.prefillConfiguration$.pipe(take(1)).subscribe(configuration => {
-      this.noteEventListenerEnabled$.next(configuration.noteEventListenerEnabled);
-    })
-  }
-
-  private openEventListenerEnabledSubscription(): void {
-    this._eventListenerEnabledSubscription = this.noteEventListenerEnabled$.subscribe( value => {
-      this.formValueChange(this.formValue$.getValue());
-    })
+    this.formValue$.next(formValue);
+    this.handleValid(formValue);
   }
 
   private handleValid(formValue: ZakenApiConfig): void {
     const valid = !!(
       formValue.configurationTitle &&
       formValue.url &&
-      formValue.authenticationPluginConfiguration &&
-      formValue.noteEventListenerEnabled !== null &&
-      (
-        formValue.noteEventListenerEnabled === false
-        ||
-        formValue.noteEventListenerEnabled === true &&
-        formValue.noteSubject
-      )
+      formValue.authenticationPluginConfiguration
     );
     this.valid$.next(valid);
     this.valid.emit(valid);
@@ -127,6 +97,6 @@ export class ZakenApiConfigurationComponent
             this.configuration.emit(formValue);
           }
         });
-    })
+    });
   }
 }

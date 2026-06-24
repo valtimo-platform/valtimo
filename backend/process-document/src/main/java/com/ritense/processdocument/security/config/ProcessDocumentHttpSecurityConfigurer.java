@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -44,7 +44,28 @@ public class ProcessDocumentHttpSecurityConfigurer implements HttpSecurityConfig
                 .authenticated()
                 .requestMatchers(antMatcher(GET, "/api/v1/process-document/instance/document/{document-id}"))
                 .authenticated()
+                .requestMatchers(antMatcher(GET, "/api/v2/process-document/instance/document/{document-id}"))
+                .authenticated()
                 .requestMatchers(antMatcher(GET, "/api/v1/process-document/instance/document/{document-id}/audit"))
+                .authenticated()
+                .requestMatchers(antMatcher(GET, "/api/management/v1/case/{caseId}/processes"))
+                .authenticated()
+                .requestMatchers(antMatcher(
+                    POST,
+                    "/api/management/v1/case/{caseId}/process-instance/{processInstanceId}/variables"
+                ))
+                .authenticated()
+                .requestMatchers(antMatcher(
+                    PUT,
+                    "/api/management/v1/case/{caseId}/process-instance/{processInstanceId}/variables/{name}"
+                ))
+                .authenticated()
+                .requestMatchers(antMatcher(
+                    DELETE,
+                    "/api/management/v1/case/{caseId}/process-instance/{processInstanceId}/variables/{name}"
+                ))
+                .authenticated()
+                .requestMatchers(antMatcher(POST, "/api/management/v1/case/{caseId}/logs"))
                 .authenticated()
                 .requestMatchers(antMatcher(POST, "/api/v1/process-document/operation/new-document-and-start-process"))
                 .authenticated()
@@ -61,6 +82,12 @@ public class ProcessDocumentHttpSecurityConfigurer implements HttpSecurityConfig
                 .requestMatchers(antMatcher(POST, "/api/v3/task"))
                 .authenticated()
                 .requestMatchers(antMatcher(POST, "/api/v1/document-definition/{caseDefinitionName}/task/search"))
+                .authenticated()
+                .requestMatchers(antMatcher(POST, "/api/v1/task/{caseDefinitionKey}/stored-quick-search"))
+                .authenticated()
+                .requestMatchers(antMatcher(GET, "/api/v1/task/{caseDefinitionKey}/stored-quick-search"))
+                .authenticated()
+                .requestMatchers(antMatcher(DELETE, "/api/v1/task/{caseDefinitionKey}/stored-quick-search/{title}"))
                 .authenticated()
                 //admin endpoints
                 .requestMatchers(antMatcher(GET, FEATURE_PROCESS_URL + "/{type}"))

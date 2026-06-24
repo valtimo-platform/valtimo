@@ -20,14 +20,14 @@ import {InputOption} from './input';
 interface ZakenApiConfig extends PluginConfigurationData {
   url: string;
   authenticationPluginConfiguration: string;
-  noteEventListenerEnabled?: boolean;
-  noteSubject?: string;
 }
 
 interface LinkDocumentToZaakConfig {
   documentUrl: string;
   titel: string;
   beschrijving: string;
+  vernietigingsdatum?: string;
+  statusUrl?: string;
 }
 
 interface GetZaakInformatieobjectenConfig {
@@ -70,9 +70,9 @@ interface CreateNietNatuurlijkePersoonZaakRolConfig {
 interface CreateMedewerkerZaakRolConfig {
   roltypeUrl: string;
   rolToelichting: string;
-  identificatie: string;
-  achternaam: string;
-  voorletters: string;
+  identificatie?: string;
+  achternaam?: string;
+  voorletters?: string;
   voorvoegselAchternaam?: string;
   afwijkendeNaamBetrokkene?: string;
   indicatieMachtiging?: string;
@@ -82,9 +82,9 @@ interface CreateMedewerkerZaakRolConfig {
 interface CreateOrganisatorischeEenheidZaakRolConfig {
   roltypeUrl: string;
   rolToelichting: string;
-  identificatie: string;
-  naam: string;
-  isGehuisvestIn: string;
+  identificatie?: string;
+  naam?: string;
+  isGehuisvestIn?: string;
   afwijkendeNaamBetrokkene?: string;
   indicatieMachtiging?: string;
   resultProcessVariable?: string;
@@ -94,8 +94,8 @@ interface CreateVestigingZaakRolConfig {
   roltypeUrl: string;
   rolToelichting: string;
   handelsnaam?: string;
-  kvkNummer: string;
-  vestigingsNummer: string;
+  kvkNummer?: string;
+  vestigingsNummer?: string;
   resultProcessVariable?: string;
 }
 
@@ -108,15 +108,41 @@ interface CreateZaakConfig {
   manualZaakTypeUrl: boolean;
   zaaktypeUrl: string;
   inputTypeZaakTypeToggle?: InputOption;
+  archiveActionDate?: string;
+  archiveNomination?: string;
+  archiveStatus?: string;
+  caseGeometryCoordinates?: string;
+  caseGeometryType?: string;
+  characteristics?: string;
+  commissioningOrganisation?: string;
+  communicationChannel?: string;
+  communicationChannelName?: string;
+  confidentiality?: string;
   description?: string;
   explanation?: string;
-  plannedEndDate?: string;
+  extensionDuration?: string;
+  extensionReason?: string;
   finalDeliveryDate?: string;
-  communicationChannel?: string;
-  paymentIndication?: string;
-  caseGeometryType?: string;
-  caseGeometryCoordinates?: string;
+  identification?: string;
+  lastOpenedDate?: string;
+  lastPaymentDate?: string;
   mainCase?: string;
+  paymentIndication?: string;
+  plannedEndDate?: string;
+  processObjectCategory?: string;
+  processObjectDateAttribute?: string;
+  processObjectIdentification?: string;
+  processObjectObjectType?: string;
+  processObjectRegistration?: string;
+  productsAndServices?: string;
+  publicationDate?: string;
+  registrationDate?: string;
+  relatedCases?: string;
+  relevantOtherCases?: string;
+  selectionListClass?: string;
+  startDateRetentionPeriod?: string;
+  suspensionIndication?: string;
+  suspensionReason?: string;
 }
 
 interface SetZaakopschortingConfig {
@@ -147,21 +173,42 @@ interface DeleteZaakeigenschapConfig {
 }
 
 interface PatchZaakConfig {
-  description?: string;
-  explanation?: string;
-  startDate?: string;
-  plannedEndDate?: string;
-  finalDeliveryDate?: string;
-  publicationDate?: string;
+  archiveActionDate?: string;
+  archiveNomination?: string;
+  archiveStatus?: string;
+  caseGeometryCoordinates?: string;
+  caseGeometryType?: string;
+  characteristics?: string;
+  commissioningOrganisation?: string;
   communicationChannel?: string;
   communicationChannelName?: string;
-  paymentIndication?: string;
+  confidentiality?: string;
+  description?: string;
+  explanation?: string;
+  extensionDuration?: string;
+  extensionReason?: string;
+  finalDeliveryDate?: string;
+  identification?: string;
+  lastOpenedDate?: string;
   lastPaymentDate?: string;
-  caseGeometryType?: string;
-  caseGeometryCoordinates?: string;
   mainCase?: string;
-  archiveActionDate?: string;
+  paymentIndication?: string;
+  plannedEndDate?: string;
+  processObjectCategory?: string;
+  processObjectDateAttribute?: string;
+  processObjectIdentification?: string;
+  processObjectObjectType?: string;
+  processObjectRegistration?: string;
+  productsAndServices?: string;
+  publicationDate?: string;
+  registrationDate?: string;
+  relatedCases?: string;
+  relevantOtherCases?: string;
+  selectionListClass?: string;
+  startDate?: string;
   startDateRetentionPeriod?: string;
+  suspensionIndication?: string;
+  suspensionReason?: string;
 }
 
 interface RelateerZakenConfig {

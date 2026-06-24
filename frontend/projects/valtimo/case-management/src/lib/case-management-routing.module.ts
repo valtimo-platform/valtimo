@@ -43,6 +43,7 @@ import {CaseManagementDetailComponent} from './components/case-management-detail
 import {CaseManagementDocumentDefinitionComponent} from './components/case-management-detail/tabs/case-management-document-definition/case-management-document-definition.component';
 import {CaseManagementGeneralComponent} from './components/case-management-detail/tabs/case-management-general/case-management-general.component';
 import {CaseManagementWidgetTabComponent} from './components/case-management-detail/tabs/case-management-tabs/widget-tab/case-management-widget-tab/case-management-widget-tab.component';
+import {CaseManagementActionsComponent} from './components/case-management-detail/tabs/case-management-actions/case-management-actions.component';
 import {CaseManagementListComponent} from './components/case-management-list/case-management-list.component';
 import {TabEnum} from './models';
 
@@ -71,6 +72,7 @@ const routes: Routes = [
         component: ProcessManagementComponent,
         data: {context: 'case'} as ProcessManagementRouteData,
       },
+      {path: TabEnum.ACTIONS, component: CaseManagementActionsComponent},
       {
         path: TabEnum.DECISIONS,
         component: DecisionListComponent,

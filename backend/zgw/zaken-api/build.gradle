@@ -30,21 +30,22 @@ dockerCompose {
 }
 
 dependencies {
-    implementation project(":case")
-    implementation project(":core")
-    implementation project(":contract")
-    implementation project(":plugin")
-    implementation project(":process-document")
-    implementation project(":resource")
-    implementation project(":resource:temporary-resource-storage")
-    implementation project(":value-resolver")
-    implementation project(":zgw")
-    implementation project(':zgw:catalogi-api')
-    implementation project(':zgw:documenten-api')
-    implementation project(":outbox")
-    implementation project(":logging")
-    implementation project(":importer")
-    implementation project(":exporter")
+    implementation project(":backend:case")
+    implementation project(":backend:core")
+    implementation project(":backend:contract")
+    compileOnly project(":backend:form-flow")
+    implementation project(":backend:plugin")
+    implementation project(":backend:process-document")
+    implementation project(":backend:resource")
+    implementation project(":backend:resource:temporary-resource-storage")
+    implementation project(":backend:value-resolver")
+    implementation project(":backend:zgw")
+    implementation project(':backend:zgw:catalogi-api')
+    implementation project(':backend:zgw:documenten-api')
+    implementation project(":backend:outbox")
+    implementation project(":backend:logging")
+    implementation project(":backend:importer")
+    implementation project(":backend:exporter")
 
     implementation "io.github.oshai:kotlin-logging:${kotlinLoggingVersion}"
     implementation "org.springframework.boot:spring-boot-starter-data-jpa"
@@ -52,10 +53,12 @@ dependencies {
     implementation "org.springframework.boot:spring-boot-starter-security"
     implementation "com.fasterxml.jackson.datatype:jackson-datatype-jsr310"
 
-    testImplementation project(":form")
-    testImplementation project(":process-document")
-    testImplementation project(":plugin-valtimo")
-    testImplementation project(":resource")
+    testImplementation project(":backend:form")
+    testImplementation project(":backend:form-flow")
+    testImplementation(project(':backend:building-block'))
+    testImplementation project(":backend:process-document")
+    testImplementation project(":backend:plugin-valtimo")
+    testImplementation project(":backend:resource")
 
     testImplementation "org.springframework.boot:spring-boot-starter-data-jpa"
     testImplementation "org.springframework.security:spring-security-test"
@@ -67,7 +70,7 @@ dependencies {
     //Kotlin
     testImplementation "org.mockito.kotlin:mockito-kotlin:${mockitoKotlinVersion}"
 
-    testImplementation project(":test-utils-common")
+    testImplementation project(":backend:test-utils-common")
 
     jar {
         enabled = true

@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,15 +29,19 @@ import com.ritense.plugin.annotation.Plugin
 import com.ritense.plugin.annotation.PluginAction
 import com.ritense.plugin.annotation.PluginActionProperty
 import com.ritense.plugin.annotation.PluginProperty
+import com.ritense.plugin.domain.PluginDependency
 import com.ritense.plugin.service.PluginService
 import com.ritense.processlink.domain.ActivityTypeWithEventName.SERVICE_TASK_START
-import com.ritense.processlink.domain.ActivityTypeWithEventName.USER_TASK_CREATE
 import com.ritense.resource.service.TemporaryResourceStorageService
+import com.ritense.valtimo.contract.authentication.UserManagementService
+import com.ritense.valtimo.contract.document.CaseDocumentResolver
 import com.ritense.valtimo.contract.validation.Url
 import com.ritense.valueresolver.ValueResolverService
+import com.ritense.zakenapi.ZakenApiPlugin.Companion.GZAC_BEHANDELAAR_TOELICHTING
 import com.ritense.zakenapi.client.LinkDocumentRequest
 import com.ritense.zakenapi.client.ZakenApiClient
 import com.ritense.zakenapi.domain.AardRelatie
+import com.ritense.zakenapi.domain.Archiefstatus
 import com.ritense.zakenapi.domain.Betalingsindicatie
 import com.ritense.zakenapi.domain.CreateZaakNotitieRequest
 import com.ritense.zakenapi.domain.CreateZaakRequest
@@ -46,12 +50,16 @@ import com.ritense.zakenapi.domain.CreateZaakStatusRequest
 import com.ritense.zakenapi.domain.CreateZaakeigenschapRequest
 import com.ritense.zakenapi.domain.Geometry
 import com.ritense.zakenapi.domain.GeometryType
+import com.ritense.zakenapi.domain.Kenmerk
+import com.ritense.zakenapi.domain.GetZaakResultatenRequest
 import com.ritense.zakenapi.domain.NotitieStatus
 import com.ritense.zakenapi.domain.NotitieType
 import com.ritense.zakenapi.domain.Opschorting
+import com.ritense.zakenapi.domain.Processobject
 import com.ritense.zakenapi.domain.PatchZaakNotitieRequest
 import com.ritense.zakenapi.domain.PatchZaakRequest
 import com.ritense.zakenapi.domain.PutZaakNotitieRequest
+import com.ritense.zakenapi.domain.GerelateerdeZaak
 import com.ritense.zakenapi.domain.RelevanteZaak
 import com.ritense.zakenapi.domain.SearchParameter
 import com.ritense.zakenapi.domain.UpdateZaakeigenschapRequest
@@ -68,6 +76,7 @@ import com.ritense.zakenapi.domain.ZaakResponse
 import com.ritense.zakenapi.domain.ZaakResultaat
 import com.ritense.zakenapi.domain.ZaakStatus
 import com.ritense.zakenapi.domain.ZaakbesluitResponse
+import com.ritense.zakenapi.domain.ZaakeigenschapResponse
 import com.ritense.zakenapi.domain.ZaakopschortingRequest
 import com.ritense.zakenapi.domain.rol.BetrokkeneType
 import com.ritense.zakenapi.domain.rol.Rol
@@ -79,11 +88,13 @@ import com.ritense.zakenapi.domain.rol.RolTypeGeneriekeBeschrijving
 import com.ritense.zakenapi.domain.rol.RolVestiging
 import com.ritense.zakenapi.domain.zaakobjectrequest.ZaakObjectOverigeRequest
 import com.ritense.zakenapi.domain.zaakobjectrequest.ZaakObjectRequest
+import com.ritense.zakenapi.link.ZaakInstanceLinkNotFoundException
 import com.ritense.zakenapi.repository.ZaakHersteltermijnRepository
 import com.ritense.zakenapi.repository.ZaakInstanceLinkRepository
 import com.ritense.zakenapi.repository.ZaakNotitieLinkRepository
 import com.ritense.zakenapi.service.ZaakDocumentService
-import com.ritense.zakenapi.service.ZaakNotitieService
+import com.ritense.zgw.domain.Archiefnominatie
+import com.ritense.zgw.domain.Vertrouwelijkheid
 import com.ritense.zgw.LoggingConstants
 import com.ritense.zgw.LoggingConstants.CATALOGI_API
 import com.ritense.zgw.LoggingConstants.DOCUMENTEN_API
@@ -104,7 +115,8 @@ import java.util.UUID
 @Plugin(
     key = ZakenApiPlugin.PLUGIN_KEY,
     title = "Zaken API",
-    description = "Connects to the Zaken API"
+    description = "Connects to the Zaken API",
+    dependencies = [PluginDependency.ZAAK_TYPE_LINK, PluginDependency.ZAAK_INSTANCE_LINK]
 )
 class ZakenApiPlugin(
     private val client: ZakenApiClient,
@@ -117,7 +129,9 @@ class ZakenApiPlugin(
     private val platformTransactionManager: PlatformTransactionManager,
     private val valueResolverService: ValueResolverService,
     private val objectMapper: ObjectMapper,
-    private val zaakNotitieLinkRepository: ZaakNotitieLinkRepository
+    private val zaakNotitieLinkRepository: ZaakNotitieLinkRepository,
+    private val caseDocumentResolver: CaseDocumentResolver,
+    private val userManagementService: UserManagementService,
 ) {
     @Url
     @PluginProperty(key = URL_PROPERTY, secret = false)
@@ -125,22 +139,6 @@ class ZakenApiPlugin(
 
     @PluginProperty(key = "authenticationPluginConfiguration", secret = false)
     lateinit var authenticationPluginConfiguration: ZakenApiAuthentication
-
-    @PluginProperty(
-        key = "noteEventListenerEnabled",
-        title = "When enabled acts on Note events resulting in create, update or delete of ZaakNotitie",
-        required = false,
-        secret = false
-    )
-    var noteEventListenerEnabled: Boolean = false
-
-    @PluginProperty(
-        key = "noteSubject",
-        title = "Contains the fixed value for 'onderwerp' of the ZaakNotitie",
-        required = false,
-        secret = false
-    )
-    var noteSubject: String = "Note created by Valtimo GZAC"
 
     @PluginAction(
         key = "link-document-to-zaak",
@@ -152,28 +150,32 @@ class ZakenApiPlugin(
         execution: DelegateExecution,
         @PluginActionProperty documentUrl: String,
         @PluginActionProperty titel: String?,
-        @PluginActionProperty beschrijving: String?
+        @PluginActionProperty beschrijving: String?,
+        @PluginActionProperty vernietigingsdatum: String? = null,
+        @PluginActionProperty statusUrl: String? = null
     ) {
         withLoggingContext(
             DOCUMENTEN_API.ENKELVOUDIG_INFORMATIE_OBJECT to documentUrl
         ) {
             logger.debug { "Starting to link document with URL '$documentUrl' to zaak" }
 
-            val documentId = UUID.fromString(execution.businessKey)
-            val zaakUrl = zaakUrlProvider.getZaakUrl(documentId)
+            val caseDocumentId = UUID.fromString(execution.businessKey)
+            val zaakUrl = zaakUrlProvider.getZaakUrl(caseDocumentId)
 
-            if (getZaakInformatieObject(zaakUrl, URI(documentUrl)) != null) {
+            if (getZaakInformatieObject( caseDocumentId, zaakUrl, URI(documentUrl)) != null) {
                 logger.warn { "Skipping document-zaak-link creation. Link already exists between zaak '$zaakUrl' and document: '$documentUrl'." }
                 return
             }
 
             val request = LinkDocumentRequest(
-                documentUrl,
-                zaakUrl.toString(),
-                titel,
-                beschrijving
+                informatieobject = documentUrl,
+                zaak = zaakUrl.toString(),
+                titel = titel,
+                beschrijving = beschrijving,
+                vernietigingsdatum = vernietigingsdatum,
+                status = statusUrl
             )
-            client.linkDocument(authenticationPluginConfiguration, url, request)
+            client.linkDocument(authenticationPluginConfiguration, caseDocumentId, url, request)
             logger.info { "Document with URL '$documentUrl' linked successfully to zaak with URL '$zaakUrl'" }
         }
     }
@@ -195,18 +197,25 @@ class ZakenApiPlugin(
         val documentId = UUID.fromString(execution.businessKey)
         val zaakUrl = zaakUrlProvider.getZaakUrl(documentId)
 
-        if (getZaakInformatieObject(zaakUrl, URI(documentUrl)) != null) {
+        if (getZaakInformatieObject(documentId, zaakUrl, URI(documentUrl)) != null) {
             logger.warn { "Skipping document-zaak-link creation. Link already exists between zaak '$zaakUrl' and document: '$documentUrl'." }
             return
         }
 
         val request = LinkDocumentRequest(
-            documentUrl,
-            zaakUrl.toString(),
-            metadata["title"] as String?,
-            metadata["description"] as String?,
+            informatieobject = documentUrl,
+            zaak = zaakUrl.toString(),
+            titel = metadata["title"] as String?,
+            beschrijving = metadata["description"] as String?,
+            vernietigingsdatum = null,
+            status = null
         )
-        client.linkDocument(authenticationPluginConfiguration, url, request)
+        client.linkDocument(
+            authenticationPluginConfiguration,
+            UUID.fromString(execution.businessKey),
+            url,
+            request
+        )
         logger.info { "Linked uploaded document with URL '$documentUrl' to zaak with URL '$zaakUrl'" }
     }
 
@@ -248,62 +257,137 @@ class ZakenApiPlugin(
         execution: DelegateExecution,
         @PluginActionProperty rsin: Rsin,
         @PluginActionProperty zaaktypeUrl: URI,
+        @PluginActionProperty identification: String? = null,
         @PluginActionProperty description: String? = null,
+        @PluginActionProperty explanation: String? = null,
+        @PluginActionProperty registrationDate: String? = null,
         @PluginActionProperty plannedEndDate: String? = null,
         @PluginActionProperty finalDeliveryDate: String? = null,
-        @PluginActionProperty explanation: String? = null,
+        @PluginActionProperty publicationDate: String? = null,
+        @PluginActionProperty lastOpenedDate: String? = null,
         @PluginActionProperty communicationChannel: String? = null,
+        @PluginActionProperty communicationChannelName: String? = null,
+        @PluginActionProperty productsAndServices: String? = null,
+        @PluginActionProperty confidentiality: String? = null,
         @PluginActionProperty paymentIndication: String? = null,
+        @PluginActionProperty lastPaymentDate: String? = null,
         @PluginActionProperty caseGeometryType: String? = null,
         @PluginActionProperty caseGeometryCoordinates: String? = null,
-        @PluginActionProperty mainCase: String? = null
+        @PluginActionProperty extensionReason: String? = null,
+        @PluginActionProperty extensionDuration: String? = null,
+        @PluginActionProperty suspensionIndication: String? = null,
+        @PluginActionProperty suspensionReason: String? = null,
+        @PluginActionProperty selectionListClass: String? = null,
+        @PluginActionProperty mainCase: String? = null,
+        @PluginActionProperty relevantOtherCases: String? = null,
+        @PluginActionProperty relatedCases: String? = null,
+        @PluginActionProperty characteristics: String? = null,
+        @PluginActionProperty archiveNomination: String? = null,
+        @PluginActionProperty archiveStatus: String? = null,
+        @PluginActionProperty archiveActionDate: String? = null,
+        @PluginActionProperty commissioningOrganisation: String? = null,
+        @PluginActionProperty processObjectCategory: String? = null,
+        @PluginActionProperty startDateRetentionPeriod: String? = null,
+        @PluginActionProperty processObjectDateAttribute: String? = null,
+        @PluginActionProperty processObjectIdentification: String? = null,
+        @PluginActionProperty processObjectObjectType: String? = null,
+        @PluginActionProperty processObjectRegistration: String? = null,
     ) {
         withLoggingContext(
             CATALOGI_API.ZAAKTYPE to zaaktypeUrl.toString()
         ) {
-            val documentId = UUID.fromString(execution.businessKey)
-            val caseGeometry = geometryOrNullFrom(caseGeometryType, caseGeometryCoordinates)
+            val caseDocumentId = UUID.fromString(execution.businessKey)
 
             createZaak(
-                documentId = documentId,
+                caseDocumentId = caseDocumentResolver.resolveCaseDocumentId(caseDocumentId),
                 rsin = rsin,
                 zaaktypeUrl = zaaktypeUrl,
+                identification = identification,
                 description = description,
+                explanation = explanation,
+                registrationDate = registrationDate?.let { LocalDate.parse(it) },
                 plannedEndDate = plannedEndDate?.let { LocalDate.parse(it) },
                 finalDeliveryDate = finalDeliveryDate?.let { LocalDate.parse(it) },
-                explanation = explanation,
+                publicationDate = publicationDate?.let { LocalDate.parse(it) },
+                lastOpenedDate = lastOpenedDate?.let { LocalDateTime.parse(it) },
                 communicationChannel = communicationChannel?.let { URI.create(it) },
+                communicationChannelName = communicationChannelName,
+                productsAndServices = productsAndServices?.let { objectMapper.readValue<List<String>>(it).map { s -> URI.create(s) } },
+                confidentiality = confidentiality?.let { Vertrouwelijkheid.fromKey(it) },
                 paymentIndication = paymentIndication?.let { Betalingsindicatie.create(it) },
-                caseGeometry = caseGeometry,
-                mainCase = mainCase?.let { URI.create(it) }
+                lastPaymentDate = lastPaymentDate?.let { LocalDate.parse(it) },
+                caseGeometry = geometryOrNullFrom(caseGeometryType, caseGeometryCoordinates),
+                extension = verlengingOrNullFrom(extensionReason, extensionDuration),
+                suspension = opschortingOrNullFrom(suspensionIndication, suspensionReason),
+                selectionListClass = selectionListClass?.let { URI.create(it) },
+                mainCase = mainCase?.let { URI.create(it) },
+                relevantOtherCases = relevantOtherCases?.let { objectMapper.readValue<List<RelevanteZaak>>(it) },
+                relatedCases = relatedCases?.let { objectMapper.readValue<List<GerelateerdeZaak>>(it) },
+                characteristics = characteristics?.let { objectMapper.readValue<List<Kenmerk>>(it) },
+                archiveNomination = archiveNomination?.let { key -> Archiefnominatie.entries.find { it.key == key } },
+                archiveStatus = archiveStatus?.let { key -> Archiefstatus.entries.find { it.key == key } },
+                archiveActionDate = archiveActionDate?.let { LocalDate.parse(it) },
+                commissioningOrganisation = commissioningOrganisation,
+                processObjectCategory = processObjectCategory,
+                startDateRetentionPeriod = startDateRetentionPeriod?.let { LocalDate.parse(it) },
+                processObject = processobjectOrNullFrom(
+                    processObjectDateAttribute, processObjectIdentification,
+                    processObjectObjectType, processObjectRegistration,
+                ),
             )
 
-            logger.info { "Zaak of zaaktype with URL '$zaaktypeUrl' created for document with id '$documentId'" }
+            logger.info { "Zaak of zaaktype with URL '$zaaktypeUrl' created for document with id '$caseDocumentId'" }
         }
     }
 
     fun createZaak(
-        documentId: UUID,
+        caseDocumentId: UUID,
         rsin: Rsin,
         zaaktypeUrl: URI,
+        identification: String? = null,
         description: String? = null,
+        explanation: String? = null,
+        registrationDate: LocalDate? = null,
         plannedEndDate: LocalDate? = null,
         finalDeliveryDate: LocalDate? = null,
-        explanation: String? = null,
+        publicationDate: LocalDate? = null,
+        lastOpenedDate: LocalDateTime? = null,
         communicationChannel: URI? = null,
+        communicationChannelName: String? = null,
+        productsAndServices: List<URI>? = null,
+        confidentiality: Vertrouwelijkheid? = null,
         paymentIndication: Betalingsindicatie? = null,
+        lastPaymentDate: LocalDate? = null,
         caseGeometry: Geometry? = null,
-        mainCase: URI? = null
+        extension: Verlenging? = null,
+        suspension: Opschorting? = null,
+        selectionListClass: URI? = null,
+        mainCase: URI? = null,
+        relevantOtherCases: List<RelevanteZaak>? = null,
+        relatedCases: List<GerelateerdeZaak>? = null,
+        characteristics: List<Kenmerk>? = null,
+        archiveNomination: Archiefnominatie? = null,
+        archiveStatus: Archiefstatus? = null,
+        archiveActionDate: LocalDate? = null,
+        commissioningOrganisation: String? = null,
+        processObjectCategory: String? = null,
+        startDateRetentionPeriod: LocalDate? = null,
+        processObject: Processobject? = null,
     ) {
         withLoggingContext(
             CATALOGI_API.ZAAKTYPE to zaaktypeUrl.toString(),
-            "com.ritense.document.domain.impl.JsonSchemaDocument" to documentId.toString(),
+            "com.ritense.document.domain.impl.JsonSchemaDocument" to caseDocumentId.toString(),
         ) {
-            logger.debug { "Starting creation of zaak of zaaktype with URL '$zaaktypeUrl' for document with id '$documentId'" }
-            val zaakInstanceLink = zaakInstanceLinkRepository.findByDocumentId(documentId)
+            logger.debug { "Starting creation of zaak of zaaktype with URL '$zaaktypeUrl' for document with id '$caseDocumentId'" }
 
-            if (zaakInstanceLink != null) {
-                logger.warn { "Skipping zaak creation. Zaak already exists for document with id '$documentId'. Zaak URL: '${zaakInstanceLink.zaakInstanceUrl}'." }
+            val existingZaakUrl = try {
+                zaakUrlProvider.getZaakUrl(caseDocumentId)
+            } catch (e: ZaakInstanceLinkNotFoundException) {
+                null
+            }
+
+            if (existingZaakUrl != null) {
+                logger.warn { "Skipping zaak creation. Zaak already exists for document with id '$caseDocumentId'. Zaak URL: '$existingZaakUrl'." }
                 return
             }
 
@@ -315,18 +399,39 @@ class ZakenApiPlugin(
                 authenticationPluginConfiguration,
                 url,
                 CreateZaakRequest(
+                    identificatie = identification,
                     bronorganisatie = rsin,
-                    zaaktype = zaaktypeUrl,
                     omschrijving = description,
+                    toelichting = explanation,
+                    zaaktype = zaaktypeUrl,
+                    registratiedatum = registrationDate,
                     verantwoordelijkeOrganisatie = rsin,
                     startdatum = startdatum,
-                    uiterlijkeEinddatumAfdoening = uiterlijkeEinddatumAfdoening,
                     einddatumGepland = plannedEndDate,
-                    toelichting = explanation,
+                    uiterlijkeEinddatumAfdoening = uiterlijkeEinddatumAfdoening,
+                    publicatiedatum = publicationDate,
+                    laatstGeopend = lastOpenedDate,
                     communicatiekanaal = communicationChannel,
+                    communicatiekanaalNaam = communicationChannelName,
+                    productenOfDiensten = productsAndServices,
+                    vertrouwelijkheidaanduiding = confidentiality,
                     betalingsindicatie = paymentIndication,
+                    laatsteBetaaldatum = lastPaymentDate,
                     zaakgeometrie = caseGeometry,
-                    hoofdzaak = mainCase
+                    verlenging = extension,
+                    opschorting = suspension,
+                    selectielijstklasse = selectionListClass,
+                    hoofdzaak = mainCase,
+                    relevanteAndereZaken = relevantOtherCases,
+                    gerelateerdeZaken = relatedCases,
+                    kenmerken = characteristics,
+                    archiefnominatie = archiveNomination,
+                    archiefstatus = archiveStatus,
+                    archiefactiedatum = archiveActionDate,
+                    opdrachtgevendeOrganisatie = commissioningOrganisation,
+                    processobjectaard = processObjectCategory,
+                    startdatumBewaartermijn = startDateRetentionPeriod,
+                    processobject = processObject,
                 )
             )
 
@@ -335,12 +440,12 @@ class ZakenApiPlugin(
                     ZaakInstanceLinkId(UUID.randomUUID()),
                     zaak.url,
                     zaak.uuid,
-                    documentId,
+                    caseDocumentId,
                     zaak.zaaktype
                 )
             )
 
-            logger.info { "Zaak with URL '${zaak.url}' created successfully for document with id '$documentId''" }
+            logger.info { "Zaak with URL '${zaak.url}' created successfully for document with id '$caseDocumentId'" }
         }
     }
 
@@ -352,68 +457,123 @@ class ZakenApiPlugin(
     )
     fun patchZaak(
         execution: DelegateExecution,
+        @PluginActionProperty identification: String? = null,
         @PluginActionProperty description: String? = null,
         @PluginActionProperty explanation: String? = null,
+        @PluginActionProperty registrationDate: String? = null,
         @PluginActionProperty startDate: String? = null,
         @PluginActionProperty plannedEndDate: String? = null,
         @PluginActionProperty finalDeliveryDate: String? = null,
         @PluginActionProperty publicationDate: String? = null,
+        @PluginActionProperty lastOpenedDate: String? = null,
         @PluginActionProperty communicationChannel: String? = null,
         @PluginActionProperty communicationChannelName: String? = null,
+        @PluginActionProperty productsAndServices: String? = null,
+        @PluginActionProperty confidentiality: String? = null,
         @PluginActionProperty paymentIndication: String? = null,
         @PluginActionProperty lastPaymentDate: String? = null,
         @PluginActionProperty caseGeometryType: String? = null,
         @PluginActionProperty caseGeometryCoordinates: String? = null,
+        @PluginActionProperty extensionReason: String? = null,
+        @PluginActionProperty extensionDuration: String? = null,
+        @PluginActionProperty suspensionIndication: String? = null,
+        @PluginActionProperty suspensionReason: String? = null,
+        @PluginActionProperty selectionListClass: String? = null,
         @PluginActionProperty mainCase: String? = null,
+        @PluginActionProperty relevantOtherCases: String? = null,
+        @PluginActionProperty relatedCases: String? = null,
+        @PluginActionProperty characteristics: String? = null,
+        @PluginActionProperty archiveNomination: String? = null,
+        @PluginActionProperty archiveStatus: String? = null,
         @PluginActionProperty archiveActionDate: String? = null,
-        @PluginActionProperty startDateRetentionPeriod: String? = null
+        @PluginActionProperty commissioningOrganisation: String? = null,
+        @PluginActionProperty processObjectCategory: String? = null,
+        @PluginActionProperty startDateRetentionPeriod: String? = null,
+        @PluginActionProperty processObjectDateAttribute: String? = null,
+        @PluginActionProperty processObjectIdentification: String? = null,
+        @PluginActionProperty processObjectObjectType: String? = null,
+        @PluginActionProperty processObjectRegistration: String? = null,
     ) {
         val documentId = UUID.fromString(execution.businessKey)
-        val caseGeometry = geometryOrNullFrom(caseGeometryType, caseGeometryCoordinates)
 
         patchZaak(
             documentId = documentId,
+            identification = identification,
             description = description,
             explanation = explanation,
+            registrationDate = registrationDate?.let { LocalDate.parse(it) },
             startDate = startDate?.let { LocalDate.parse(it) },
             plannedEndDate = plannedEndDate?.let { LocalDate.parse(it) },
             finalDeliveryDate = finalDeliveryDate?.let { LocalDate.parse(it) },
             publicationDate = publicationDate?.let { LocalDate.parse(it) },
+            lastOpenedDate = lastOpenedDate?.let { LocalDateTime.parse(it) },
             communicationChannel = communicationChannel?.let { URI.create(it) },
             communicationChannelName = communicationChannelName,
+            productsAndServices = productsAndServices?.let { objectMapper.readValue<List<String>>(it).map { s -> URI.create(s) } },
+            confidentiality = confidentiality?.let { Vertrouwelijkheid.fromKey(it) },
             paymentIndication = paymentIndication?.let { Betalingsindicatie.create(it) },
             lastPaymentDate = lastPaymentDate?.let { LocalDate.parse(it) },
-            caseGeometry = caseGeometry,
+            caseGeometry = geometryOrNullFrom(caseGeometryType, caseGeometryCoordinates),
+            extension = verlengingOrNullFrom(extensionReason, extensionDuration),
+            suspension = opschortingOrNullFrom(suspensionIndication, suspensionReason),
+            selectionListClass = selectionListClass?.let { URI.create(it) },
             mainCase = mainCase?.let { URI.create(it) },
+            relevantOtherCases = relevantOtherCases?.let { objectMapper.readValue<List<RelevanteZaak>>(it) },
+            relatedCases = relatedCases?.let { objectMapper.readValue<List<GerelateerdeZaak>>(it) },
+            characteristics = characteristics?.let { objectMapper.readValue<List<Kenmerk>>(it) },
+            archiveNomination = archiveNomination?.let { key -> Archiefnominatie.entries.find { it.key == key } },
+            archiveStatus = archiveStatus?.let { key -> Archiefstatus.entries.find { it.key == key } },
             archiveActionDate = archiveActionDate?.let { LocalDate.parse(it) },
-            startDateRetentionPeriod = startDateRetentionPeriod?.let { LocalDate.parse(it) }
+            commissioningOrganisation = commissioningOrganisation,
+            processObjectCategory = processObjectCategory,
+            startDateRetentionPeriod = startDateRetentionPeriod?.let { LocalDate.parse(it) },
+            processObject = processobjectOrNullFrom(
+                processObjectDateAttribute, processObjectIdentification,
+                processObjectObjectType, processObjectRegistration,
+            ),
         )
     }
 
     fun patchZaak(
         documentId: UUID,
+        identification: String? = null,
         description: String? = null,
         explanation: String? = null,
+        registrationDate: LocalDate? = null,
         startDate: LocalDate? = null,
         plannedEndDate: LocalDate? = null,
         finalDeliveryDate: LocalDate? = null,
         publicationDate: LocalDate? = null,
+        lastOpenedDate: LocalDateTime? = null,
         communicationChannel: URI? = null,
         communicationChannelName: String? = null,
+        productsAndServices: List<URI>? = null,
+        confidentiality: Vertrouwelijkheid? = null,
         paymentIndication: Betalingsindicatie? = null,
         lastPaymentDate: LocalDate? = null,
         caseGeometry: Geometry? = null,
+        extension: Verlenging? = null,
+        suspension: Opschorting? = null,
+        selectionListClass: URI? = null,
         mainCase: URI? = null,
         relevantOtherCases: List<RelevanteZaak>? = null,
+        relatedCases: List<GerelateerdeZaak>? = null,
+        characteristics: List<Kenmerk>? = null,
+        archiveNomination: Archiefnominatie? = null,
+        archiveStatus: Archiefstatus? = null,
         archiveActionDate: LocalDate? = null,
-        startDateRetentionPeriod: LocalDate? = null
+        commissioningOrganisation: String? = null,
+        processObjectCategory: String? = null,
+        startDateRetentionPeriod: LocalDate? = null,
+        processObject: Processobject? = null,
     ) {
         withLoggingContext(
             "com.ritense.document.domain.impl.JsonSchemaDocument" to documentId.toString(),
         ) {
             logger.debug { "Starting patch of zaak for document with id '$documentId'" }
-            val zaakInstanceLink = zaakInstanceLinkRepository.findByDocumentId(documentId)
-            if (zaakInstanceLink == null) {
+            val zaakUrl = try {
+                zaakUrlProvider.getZaakUrl(documentId)
+            } catch (e: ZaakInstanceLinkNotFoundException) {
                 logger.warn { "Skipping patch zaak. Zaak does not exist for document with id '$documentId'." }
                 return
             }
@@ -421,23 +581,38 @@ class ZakenApiPlugin(
             val zaak = client.patchZaak(
                 authentication = authenticationPluginConfiguration,
                 baseUrl = url,
-                zaakUrl = zaakInstanceLink.zaakInstanceUrl,
+                zaakUrl = zaakUrl,
                 request = PatchZaakRequest(
+                    identificatie = identification,
                     omschrijving = description,
                     toelichting = explanation,
+                    registratiedatum = registrationDate,
                     startdatum = startDate,
                     einddatumGepland = plannedEndDate,
                     uiterlijkeEinddatumAfdoening = finalDeliveryDate,
                     publicatiedatum = publicationDate,
+                    laatstGeopend = lastOpenedDate,
                     communicatiekanaal = communicationChannel,
                     communicatiekanaalNaam = communicationChannelName,
+                    productenOfDiensten = productsAndServices,
+                    vertrouwelijkheidaanduiding = confidentiality,
                     betalingsindicatie = paymentIndication,
                     laatsteBetaaldatum = lastPaymentDate,
                     zaakgeometrie = caseGeometry,
+                    verlenging = extension,
+                    opschorting = suspension,
+                    selectielijstklasse = selectionListClass,
                     hoofdzaak = mainCase,
                     relevanteAndereZaken = relevantOtherCases,
+                    gerelateerdeZaken = relatedCases,
+                    kenmerken = characteristics,
+                    archiefnominatie = archiveNomination,
+                    archiefstatus = archiveStatus,
                     archiefactiedatum = archiveActionDate,
-                    startdatumBewaartermijn = startDateRetentionPeriod
+                    opdrachtgevendeOrganisatie = commissioningOrganisation,
+                    processobjectaard = processObjectCategory,
+                    startdatumBewaartermijn = startDateRetentionPeriod,
+                    processobject = processObject,
                 )
             )
 
@@ -452,11 +627,52 @@ class ZakenApiPlugin(
         if (geometryType != null && geometryCoordinates != null) {
             Geometry(
                 type = GeometryType.entries.find { it.key.equals(geometryType, ignoreCase = true) }!!,
-                coordinates = pluginService.getObjectMapper().readValue(geometryCoordinates)
+                coordinates = objectMapper.readValue(geometryCoordinates)
             )
         } else {
             null
         }
+
+    private fun verlengingOrNullFrom(extensionReason: String?, extensionDuration: String?): Verlenging? {
+        if (extensionReason == null && extensionDuration == null) return null
+        require(!extensionReason.isNullOrBlank() && !extensionDuration.isNullOrBlank()) {
+            "Both extensionReason and extensionDuration must be provided"
+        }
+        return Verlenging(reden = extensionReason, duur = extensionDuration)
+    }
+
+    private fun opschortingOrNullFrom(suspensionIndication: String?, suspensionReason: String?): Opschorting? {
+        if (suspensionIndication == null && suspensionReason == null) return null
+        require(!suspensionIndication.isNullOrBlank() && !suspensionReason.isNullOrBlank()) {
+            "Both suspensionIndication and suspensionReason must be provided"
+        }
+        require(
+            suspensionIndication.equals("true", ignoreCase = true) || suspensionIndication.equals("false", ignoreCase = true)
+        ) {
+            "suspensionIndication must be either true or false"
+        }
+        return Opschorting(
+            indicatie = suspensionIndication.equals("true", ignoreCase = true),
+            reden = suspensionReason
+        )
+    }
+
+    private fun processobjectOrNullFrom(
+        processObjectDateAttribute: String?,
+        processObjectIdentification: String?,
+        processObjectObjectType: String?,
+        processObjectRegistration: String?,
+    ): Processobject? =
+        if (processObjectDateAttribute != null || processObjectIdentification != null ||
+            processObjectObjectType != null || processObjectRegistration != null
+        )
+            Processobject(
+                datumkenmerk = processObjectDateAttribute,
+                identificatie = processObjectIdentification,
+                objecttype = processObjectObjectType,
+                registratie = processObjectRegistration,
+            )
+        else null
 
     @PluginAction(
         key = "create-natuurlijk-persoon-zaak-rol",
@@ -487,9 +703,9 @@ class ZakenApiPlugin(
             val zaakUrl = zaakUrlProvider.getZaakUrl(documentId)
 
             val rol = client.createZaakRol(
-                authenticationPluginConfiguration,
-                url,
-                Rol(
+                authentication = authenticationPluginConfiguration,
+                baseUrl = url,
+                rol = Rol(
                     zaak = zaakUrl,
                     roltype = URI(roltypeUrl),
                     roltoelichting = rolToelichting,
@@ -545,9 +761,9 @@ class ZakenApiPlugin(
             val zaakUrl = zaakUrlProvider.getZaakUrl(documentId)
 
             val rol = client.createZaakRol(
-                authenticationPluginConfiguration,
-                url,
-                Rol(
+                authentication = authenticationPluginConfiguration,
+                baseUrl = url,
+                rol = Rol(
                     zaak = zaakUrl,
                     roltype = URI(roltypeUrl),
                     roltoelichting = rolToelichting,
@@ -585,9 +801,9 @@ class ZakenApiPlugin(
         execution: DelegateExecution,
         @PluginActionProperty roltypeUrl: String,
         @PluginActionProperty rolToelichting: String,
-        @PluginActionProperty identificatie: String,
-        @PluginActionProperty achternaam: String,
-        @PluginActionProperty voorletters: String,
+        @PluginActionProperty identificatie: String? = null,
+        @PluginActionProperty achternaam: String? = null,
+        @PluginActionProperty voorletters: String? = null,
         @PluginActionProperty voorvoegselAchternaam: String? = null,
         @PluginActionProperty afwijkendeNaamBetrokkene: String? = null,
         @PluginActionProperty indicatieMachtiging: String? = null,
@@ -607,9 +823,9 @@ class ZakenApiPlugin(
             val zaakUrl = zaakUrlProvider.getZaakUrl(documentId)
 
             val rol = client.createZaakRol(
-                authenticationPluginConfiguration,
-                url,
-                Rol(
+                authentication = authenticationPluginConfiguration,
+                baseUrl = url,
+                rol = Rol(
                     zaak = zaakUrl,
                     roltype = URI(roltypeUrl),
                     roltoelichting = rolToelichting,
@@ -618,7 +834,7 @@ class ZakenApiPlugin(
                         identificatie = identificatie,
                         achternaam = achternaam,
                         voorletters = voorletters,
-                        voorvoegselAchternaam = voorvoegselAchternaam ?: ""
+                        voorvoegselAchternaam = voorvoegselAchternaam
                     ),
                     afwijkendeNaamBetrokkene = afwijkendeNaamBetrokkene,
                     indicatieMachtigingString = indicatieMachtiging,
@@ -649,9 +865,9 @@ class ZakenApiPlugin(
         execution: DelegateExecution,
         @PluginActionProperty roltypeUrl: String,
         @PluginActionProperty rolToelichting: String,
-        @PluginActionProperty identificatie: String,
-        @PluginActionProperty naam: String,
-        @PluginActionProperty isGehuisvestIn: String,
+        @PluginActionProperty identificatie: String? = null,
+        @PluginActionProperty naam: String? = null,
+        @PluginActionProperty isGehuisvestIn: String? = null,
         @PluginActionProperty afwijkendeNaamBetrokkene: String? = null,
         @PluginActionProperty indicatieMachtiging: String? = null,
         @PluginActionProperty beginGeldigheid: LocalDate? = null,
@@ -670,9 +886,9 @@ class ZakenApiPlugin(
             val zaakUrl = zaakUrlProvider.getZaakUrl(documentId)
 
             val rol = client.createZaakRol(
-                authenticationPluginConfiguration,
-                url,
-                Rol(
+                authentication = authenticationPluginConfiguration,
+                baseUrl = url,
+                rol = Rol(
                     zaak = zaakUrl,
                     roltype = URI(roltypeUrl),
                     roltoelichting = rolToelichting,
@@ -711,8 +927,8 @@ class ZakenApiPlugin(
         execution: DelegateExecution,
         @PluginActionProperty roltypeUrl: String,
         @PluginActionProperty rolToelichting: String,
-        @PluginActionProperty kvkNummer: String,
-        @PluginActionProperty vestigingsNummer: String,
+        @PluginActionProperty kvkNummer: String? = null,
+        @PluginActionProperty vestigingsNummer: String? = null,
         @PluginActionProperty handelsnaam: String? = null,
         @PluginActionProperty beginGeldigheid: LocalDate? = null,
         @PluginActionProperty eindeGeldigheid: LocalDate? = null,
@@ -730,9 +946,9 @@ class ZakenApiPlugin(
             val zaakUrl = zaakUrlProvider.getZaakUrl(documentId)
 
             val rol = client.createZaakRol(
-                authenticationPluginConfiguration,
-                url,
-                Rol(
+                authentication = authenticationPluginConfiguration,
+                baseUrl = url,
+                rol = Rol(
                     zaak = zaakUrl,
                     roltype = URI(roltypeUrl),
                     roltoelichting = rolToelichting,
@@ -847,6 +1063,45 @@ class ZakenApiPlugin(
     }
 
     @PluginAction(
+        key = "delete-zaakresultaten",
+        title = "Delete zaak resultaten",
+        description = "Deletes resultaten for a zaak",
+        activityTypes = [SERVICE_TASK_START]
+    )
+    fun deleteZaakResultaten(
+        execution: DelegateExecution
+    ) {
+        val documentId = UUID.fromString(execution.businessKey)
+        val zaakUrl = zaakUrlProvider.getZaakUrl(documentId)
+
+        withLoggingContext(
+            "zaak.url" to zaakUrl.toString(),
+            "document.id" to documentId.toString(),
+        ) {
+            logger.debug { "Deleting all zaak resultaten for document '$documentId' and zaak '$zaakUrl'" }
+
+            // It's only possible for one zaak-resultaat to be linked to a zaak. However, because the api specs allow for multiple results and there's no bulk delete endpoint, we need to page through the results and delete them one by one.
+            val resultatenPage = client.getAllZaakResultaten(
+                authenticationPluginConfiguration,
+                url,
+                GetZaakResultatenRequest(
+                    zaak = zaakUrl,
+                )
+            )
+
+            resultatenPage.results.forEach { resultaat ->
+                client.deleteZaakResultaat(
+                    authenticationPluginConfiguration,
+                    url,
+                    resultaat.uuid
+                )
+            }
+
+            logger.info { "Deleted all zaak resultaten for document '$documentId' and zaak '$zaakUrl'" }
+        }
+    }
+
+    @PluginAction(
         key = "set-zaakopschorting",
         title = "Set case suspension",
         description = "Suspends a case, sets the suspend status to true and adds a duration of time to the planned end date",
@@ -883,7 +1138,7 @@ class ZakenApiPlugin(
         key = "start-hersteltermijn",
         title = "Start hersteltermijn",
         description = "Start the recovery period for a case",
-        activityTypes = [SERVICE_TASK_START, USER_TASK_CREATE]
+        activityTypes = [SERVICE_TASK_START]
     )
     fun startHersteltermijn(
         execution: DelegateExecution,
@@ -1134,10 +1389,14 @@ class ZakenApiPlugin(
 
             if (execution != null && resolvedZaakObjectRequest.zaakUrl == null) {
                 val documentId = UUID.fromString(execution.businessKey)
-                val zaakInstanceLink = zaakInstanceLinkRepository.findByDocumentId(documentId)
+                val zaakUrl = try {
+                    zaakUrlProvider.getZaakUrl(documentId)
+                } catch (e: ZaakInstanceLinkNotFoundException) {
+                    null
+                }
 
-                if (zaakInstanceLink != null) {
-                    resolvedZaakObjectRequest.zaakUrl = zaakInstanceLink.zaakInstanceUrl
+                if (zaakUrl != null) {
+                    resolvedZaakObjectRequest.zaakUrl = zaakUrl
                 }
             }
 
@@ -1223,28 +1482,31 @@ class ZakenApiPlugin(
         )
     }
 
-    fun getZaakInformatieObjecten(zaakUrl: URI): List<ZaakInformatieObject> {
+    fun getZaakInformatieObjecten(documentId: UUID, zaakUrl: URI): List<ZaakInformatieObject> {
         logger.debug { "Fetching zaak informatie objecten for zaak with URL '$zaakUrl'" }
         return client.getZaakInformatieObjecten(
             authentication = authenticationPluginConfiguration,
+            documentId,
             baseUrl = url,
             zaakUrl = zaakUrl
         )
     }
 
-    fun getZaakInformatieObjectenByInformatieobjectUrl(informatieobjectUrl: URI): List<ZaakInformatieObject> {
+    fun getZaakInformatieObjectenByInformatieobjectUrl(caseDocumentId: UUID?, informatieobjectUrl: URI): List<ZaakInformatieObject> {
         logger.debug { "Fetching zaak informatie objecten by informatieobject URL '$informatieobjectUrl'" }
         return client.getZaakInformatieObjecten(
             authentication = authenticationPluginConfiguration,
+            caseDocumentId,
             baseUrl = url,
             informatieobjectUrl = informatieobjectUrl
         )
     }
 
-    fun getZaakInformatieObject(zaakUrl: URI, informatieobjectUrl: URI): ZaakInformatieObject? {
+    fun getZaakInformatieObject(caseDocumentId: UUID, zaakUrl: URI, informatieobjectUrl: URI): ZaakInformatieObject? {
         logger.debug { "Fetching zaak informatie object by '$zaakUrl' and '$informatieobjectUrl'" }
         val results = client.getZaakInformatieObjecten(
             authentication = authenticationPluginConfiguration,
+            caseDocumentId,
             baseUrl = url,
             zaakUrl = zaakUrl,
             informatieobjectUrl = informatieobjectUrl,
@@ -1252,12 +1514,21 @@ class ZakenApiPlugin(
         return results.singleOrNull()
     }
 
-    fun deleteZaakInformatieobject(zaakInformatieobjectUrl: URI) {
+    fun getZaakInformatieObjectByUrl(zaakInformatieobjectUrl: URI, caseDocumentId: UUID) =
+        client.getZaakInformatieObject(
+            authentication = authenticationPluginConfiguration,
+            baseUrl = url,
+            zaakInformatieobjectUrl = zaakInformatieobjectUrl,
+            caseDocumentId
+        )
+
+    fun deleteZaakInformatieobject(zaakInformatieobjectUrl: URI, caseDocumentId: UUID?) {
         logger.debug { "Deleting zaak informatie object for URL '$zaakInformatieobjectUrl'" }
         client.deleteZaakInformatieObject(
             authentication = authenticationPluginConfiguration,
             baseUrl = url,
-            zaakInformatieobjectUrl = zaakInformatieobjectUrl
+            zaakInformatieobjectUrl = zaakInformatieobjectUrl,
+            caseDocumentId
         )
         logger.info { "Deleted zaak informatie object with URL '$zaakInformatieobjectUrl'" }
     }
@@ -1321,7 +1592,17 @@ class ZakenApiPlugin(
         return if (zaak.status == null) {
             null
         } else {
-            client.getZaakStatus(authenticationPluginConfiguration, URI(zaak.status))
+            client.getZaakStatus(authenticationPluginConfiguration, zaak.status!!)
+        }
+    }
+
+    fun getZaakStatussen(zaakUrl: URI): List<ZaakStatus> {
+        logger.debug { "Fetching zaak statussen for zaak with URL '$zaakUrl'" }
+        return Page.getAll(100) { page ->
+            client.getZaakStatussen(
+                authenticationPluginConfiguration,
+                url, zaakUrl, page
+            )
         }
     }
 
@@ -1335,9 +1616,78 @@ class ZakenApiPlugin(
         }
     }
 
+    fun getZaakeigenschappen(zaakUrl: URI): List<ZaakeigenschapResponse> {
+        logger.debug { "Fetching zaak eigenschappen for zaak with URL '$zaakUrl'" }
+        return client.getZaakeigenschappen(authenticationPluginConfiguration, url, zaakUrl)
+    }
+
+    fun getZaakbesluiten(zaakUrl: URI): List<ZaakbesluitResponse> {
+        logger.debug { "Fetching zaak besluiten for zaak with URL '$zaakUrl'" }
+        return client.getZaakbesluiten(authenticationPluginConfiguration, url, zaakUrl)
+    }
+
     fun getZaak(zaakUrl: URI): ZaakResponse {
         logger.debug { "Fetching zaak for zaak URL '$zaakUrl'" }
         return client.getZaak(authenticationPluginConfiguration, zaakUrl)
+    }
+
+    /**
+     * Removes every behandelaar rol on the given zaak that was created by GZAC.
+     * Identification is done via the [GZAC_BEHANDELAAR_TOELICHTING] marker on `roltoelichting`,
+     * so behandelaar rollen created by other systems are left untouched.
+     */
+    fun removeGzacBehandelaarRollen(zaakUrl: URI) {
+        getZaakRollen(zaakUrl, RolTypeGeneriekeBeschrijving.BEHANDELAAR)
+            .filter { it.roltoelichting == GZAC_BEHANDELAAR_TOELICHTING }
+            .forEach { rol ->
+                val rolUuid = rol.uuid
+                if (rolUuid == null) {
+                    logger.warn { "Existing behandelaar rol on zaak '$zaakUrl' has no uuid. Skipping delete." }
+                    return@forEach
+                }
+                client.deleteZaakRol(authenticationPluginConfiguration, url, rolUuid)
+            }
+    }
+
+    fun createGzacBehandelaarRol(zaakUrl: URI, roltypeUrl: URI, username: String): Rol {
+        return client.createZaakRol(
+            authentication = authenticationPluginConfiguration,
+            baseUrl = url,
+            rol = buildGzacBehandelaarRol(zaakUrl, roltypeUrl, username),
+        )
+    }
+
+    fun upsertGzacBehandelaarRol(zaakUrl: URI, roltypeUrl: URI, username: String): Rol {
+        val previousRollen = getZaakRollen(zaakUrl, RolTypeGeneriekeBeschrijving.BEHANDELAAR)
+            .filter { it.roltoelichting == GZAC_BEHANDELAAR_TOELICHTING }
+
+        val newRol = createGzacBehandelaarRol(zaakUrl, roltypeUrl, username)
+
+        previousRollen.forEach { rol ->
+            val rolUuid = rol.uuid
+            if (rolUuid == null) {
+                logger.warn { "Existing behandelaar rol on zaak '$zaakUrl' has no uuid. Skipping delete." }
+                return@forEach
+            }
+            client.deleteZaakRol(authenticationPluginConfiguration, url, rolUuid)
+        }
+
+        return newRol
+    }
+
+    private fun buildGzacBehandelaarRol(zaakUrl: URI, roltypeUrl: URI, username: String): Rol {
+        val user = userManagementService.findByUsername(username)
+        return Rol(
+            zaak = zaakUrl,
+            roltype = roltypeUrl,
+            roltoelichting = GZAC_BEHANDELAAR_TOELICHTING,
+            betrokkeneType = BetrokkeneType.MEDEWERKER,
+            betrokkeneIdentificatie = RolMedewerker(
+                identificatie = username.take(IDENTIFICATIE_MAX_LENGTH),
+                achternaam = user?.lastName,
+            ),
+            beginGeldigheid = LocalDate.now(),
+        )
     }
 
     fun searchZaken(searchParameters: List<SearchParameter>, pageable: Pageable): Page<ZaakResponse> {
@@ -1564,6 +1914,12 @@ class ZakenApiPlugin(
         const val URL_PROPERTY = "url"
         const val RESOURCE_ID_PROCESS_VAR = "resourceId"
         const val DOCUMENT_URL_PROCESS_VAR = "documentUrl"
+
+        // Marker stored in roltoelichting so we only delete behandelaar rollen created by GZAC.
+        const val GZAC_BEHANDELAAR_TOELICHTING = "GZAC dossier assignee"
+
+        // RolMedewerker.identificatie has a max length of 24 in the OpenZaak API.
+        private const val IDENTIFICATIE_MAX_LENGTH = 24
 
         fun findConfigurationByUrl(url: URI) = { properties: JsonNode ->
             url.toString().startsWith(properties[URL_PROPERTY].textValue())

@@ -16,6 +16,7 @@
 
 package com.ritense.processdocument.web.rest;
 
+import org.springframework.validation.beanvalidation.LocalValidatorFactoryBean;
 import static com.ritense.valtimo.contract.domain.ValtimoMediaType.APPLICATION_JSON_UTF8_VALUE;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
@@ -107,10 +108,13 @@ class ProcessDocumentResourceTest extends BaseTest {
             processDefinitionCaseDefinitionService,
             activeCaseDefinitionService
         );
+        LocalValidatorFactoryBean validator = new LocalValidatorFactoryBean();
+        validator.afterPropertiesSet();
 
         mockMvc = MockMvcBuilders.standaloneSetup(processDocumentResource)
             .setCustomArgumentResolvers(new PageableHandlerMethodArgumentResolver())
             .setMessageConverters(new MappingJackson2HttpMessageConverter(MapperSingleton.INSTANCE.get()))
+            .setValidator(validator)
             .build();
 
         processDefinitionCaseDefinition = new ProcessDefinitionCaseDefinition(
@@ -148,6 +152,9 @@ class ProcessDocumentResourceTest extends BaseTest {
             true,
             false,
             false,
+            null,
+            null,
+            null,
             null,
             null
         );
@@ -193,7 +200,7 @@ class ProcessDocumentResourceTest extends BaseTest {
 
     @Test
     void shouldReturnOkWhenGettingProcessDocumentInstances() throws Exception {
-        when(processDocumentAssociationService.findProcessDocumentInstanceDtos(any(JsonSchemaDocumentId.class)))
+        when(processDocumentAssociationService.findProcessDocumentInstanceDtosWithoutBuildingBlocks(any(JsonSchemaDocumentId.class)))
             .thenReturn(List.of(processDocumentInstance));
 
         mockMvc.perform(
@@ -304,5 +311,19 @@ class ProcessDocumentResourceTest extends BaseTest {
             .andExpect(jsonPath("$.document").exists())
             .andExpect(jsonPath("$.errors").exists())
             .andExpect(jsonPath("$.errors").isEmpty());
+    }
+
+    @Test
+    void shouldRejectModifyDocumentAndStartProcessWhenProcessDefinitionKeyIsMissing() throws Exception {
+        String json = "{\"request\": {\"documentId\": \""
+            + UUID.randomUUID() + "\", \"content\": {}}}";
+
+        mockMvc.perform(
+                post("/api/v1/process-document/operation/modify-document-and-start-process")
+                    .characterEncoding(StandardCharsets.UTF_8.name())
+                    .contentType(APPLICATION_JSON_VALUE)
+                    .content(json))
+            .andDo(print())
+            .andExpect(status().isBadRequest());
     }
 }

@@ -24,6 +24,7 @@ import {
   SearchFilter,
   SearchFilterRange,
   SearchOperator,
+  TeamResponseDto,
 } from '@valtimo/shared';
 import {catchError, Observable, of, switchMap} from 'rxjs';
 
@@ -56,6 +57,7 @@ import {
   ProcessDocumentDefinitionSearch,
   ProcessDocumentInstance,
   SpecifiedDocuments,
+  StartableItem,
   TemplatePayload,
   TemplateResponse,
   UndeployDocumentDefinitionResult,
@@ -280,24 +282,6 @@ export class DocumentService {
     return this.http.delete<void>(`${this.valtimoEndpointUri}v1/document/${documentId}`);
   }
 
-  // ProcessDefinitionCaseDefinition-calls
-  public findProcessDefinitionCaseDefinitions(
-    caseDefinitionKey: string
-  ): Observable<ProcessDefinitionCaseDefinition[]> {
-    return this.http.get<ProcessDefinitionCaseDefinition[]>(
-      `${this.valtimoEndpointUri}v1/case-definition/${caseDefinitionKey}/case-process-link`
-    );
-  }
-
-  public findProcessDefinitionCaseDefinitionsByStartableByUser(
-    caseDefinitionKey: string,
-    startableByUser: boolean
-  ): Observable<ProcessDefinitionCaseDefinition[]> {
-    return this.http.get<ProcessDefinitionCaseDefinition[]>(
-      `${this.valtimoEndpointUri}v1/case-definition/${caseDefinitionKey}/case-process-link?startableByUser=${startableByUser}`
-    );
-  }
-
   public findProcessDefinitionCaseDefinitionsByCanInitializeDocument(
     caseDefinitionKey: string,
     canInitializeDocument: boolean
@@ -307,17 +291,19 @@ export class DocumentService {
     );
   }
 
-  public findProcessDefinitionCaseDefinitionsForDocument(
-    documentId: string,
-    searchRequest: ProcessDocumentDefinitionSearch
-  ): Observable<ProcessDefinitionCaseDefinition[]> {
-    const params = new HttpParams({
-      fromObject: searchRequest as any,
+  public getStartableItems(params: {
+    caseDocumentId?: string;
+    caseDefinitionKey?: string;
+    caseDefinitionVersionTag?: string;
+  }): Observable<StartableItem[]> {
+    const httpParams = new HttpParams({
+      fromObject: Object.fromEntries(
+        Object.entries(params).filter(([_, v]) => v != null)
+      ) as Record<string, string>,
     });
-    return this.http.get<ProcessDefinitionCaseDefinition[]>(
-      `${this.valtimoEndpointUri}v1/document-instance/${documentId}/case-process-link`,
-      {params}
-    );
+    return this.http.get<StartableItem[]>(`${this.valtimoEndpointUri}v1/case/startable-item`, {
+      params: httpParams,
+    });
   }
 
   // Case definition calls
@@ -347,7 +333,7 @@ export class DocumentService {
 
   public findProcessDocumentInstances(documentId: string): Observable<ProcessDocumentInstance[]> {
     return this.http.get<ProcessDocumentInstance[]>(
-      `${this.valtimoEndpointUri}v1/process-document/instance/document/${documentId}`
+      `${this.valtimoEndpointUri}v2/process-document/instance/document/${documentId}`
     );
   }
 
@@ -520,11 +506,12 @@ export class DocumentService {
 
   public assignHandlerToDocument(
     documentId: string,
-    assigneeId: string
+    assigneeId?: string,
+    assignedTeamKey?: string
   ): Observable<AssignHandlerToDocumentResult> {
     return this.http.post<AssignHandlerToDocumentResult>(
       `${this.valtimoEndpointUri}v1/document/${documentId}/assign`,
-      {assigneeId}
+      {assigneeId, assignedTeamKey}
     );
   }
 
@@ -535,6 +522,13 @@ export class DocumentService {
   public getCandidateUsers(documentId: string): Observable<Array<NamedUser>> {
     return this.http.get<Array<NamedUser>>(
       `${this.valtimoEndpointUri}v1/document/${documentId}/candidate-user`
+    );
+  }
+
+  public getCandidateTeams(documentId: string): Observable<Page<TeamResponseDto>> {
+    return this.http.get<Page<TeamResponseDto>>(
+      `${this.valtimoEndpointUri}v1/document/${documentId}/candidate-team`,
+      {params: {size: '1000'}}
     );
   }
 

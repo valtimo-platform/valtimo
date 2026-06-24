@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,13 +20,16 @@ import {
   WidgetCustomComponent,
   WidgetFieldComponent,
   WidgetFormioComponent,
+  WidgetHighlightComponent,
   WidgetMapComponent,
+  WidgetMetrolineComponent,
+  WidgetPersonCardComponent,
   WidgetTableComponent,
 } from '../components';
 import {WidgetInteractiveTableComponent} from '../components/widget-interactive-table';
 
 const WIDGET_WIDTH_1X = 320;
-const WIDGET_HEIGHT_1X = 200;
+const WIDGET_HEIGHT_1X = 92;
 
 const DEFAULT_WIDGET_COMPONENT_MAP: WidgetComponentMap = {
   [WidgetType.FORMIO]: WidgetFormioComponent,
@@ -36,6 +39,9 @@ const DEFAULT_WIDGET_COMPONENT_MAP: WidgetComponentMap = {
   [WidgetType.INTERACTIVE_TABLE]: WidgetInteractiveTableComponent,
   [WidgetType.FIELDS]: WidgetFieldComponent,
   [WidgetType.MAP]: WidgetMapComponent,
+  [WidgetType.METROLINE]: WidgetMetrolineComponent,
+  [WidgetType.PERSON_CARD]: WidgetPersonCardComponent,
+  [WidgetType.HIGHLIGHT]: WidgetHighlightComponent,
 };
 
 export {WIDGET_WIDTH_1X, WIDGET_HEIGHT_1X, DEFAULT_WIDGET_COMPONENT_MAP};

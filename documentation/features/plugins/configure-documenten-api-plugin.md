@@ -8,9 +8,9 @@ The Documenten API plugin is used to store documents and their metadata in an ap
 
 ## Configure the plugin
 
-A plugin configuration is required before the plugin can be used. A general description on how to configure plugins can be found [here](./#configuring-plugins).
+A plugin configuration is required before the plugin can be used. A general description on how to configure plugins can be found in the [plugin configuration guide](./#configuring-plugins).
 
-If the Documenten API plugin is not visible in the plugin menu, it is possible the application is missing a dependency. Instructions on how to add the Documenten API dependency can be found [here](../../fundamentals/getting-started/modules/zgw/documenten-api.md).
+If the Documenten API plugin is not visible in the plugin menu, it is possible the application is missing a dependency. Instructions on how to add the Documenten API dependency can be found in the [Documenten API module documentation](../../fundamentals/getting-started/modules/zgw/documenten-api.md).
 
 To configure this plugin the following properties have to be entered:
 
@@ -40,7 +40,7 @@ Maykin Media has released their own Documenten API implementation that offers ad
 
 The Documenten API plugin supports the following actions that can be configured in process links in order to store documents and their metadata.
 
-A general description on how to create process links, can be found [here](../process/process-link.md#creating-a-plugin-process-link).
+A general description on how to create process links, can be found in the [process link documentation](../process/process-link.md#creating-a-plugin-process-link).
 
 ### Save document
 
@@ -81,3 +81,18 @@ This process link does the following steps:
 1. Take the document URL that is saved in the process variable `documentUrl`.
 2. Download the document and saves it to a temporary file.
 3. Creates a new process variable with the name of your choosing, by default: `resourceId`, containing the temporary file ID.
+
+### Get audit trail
+
+The **Get audit trail** action retrieves the audit trail for a document from the Documenten API and stores the result as a JSON string in a process variable. This can be used to inspect who changed what on the document, when, and why.
+
+When creating a process link the following properties have to be entered:
+
+* **Document URL.** The full URL to the `enkelvoudiginformatieobject` for which to retrieve the audit trail. Must belong to the Documenten API instance configured on this plugin.
+* **Process variable name for audit trail.** The name of the process variable in which the audit trail result will be stored as a JSON string.
+
+This process link does the following steps:
+
+1. Validates that the provided document URL belongs to the configured Documenten API.
+2. Calls `GET {documentUrl}/audittrail` on the Documenten API.
+3. Stores the resulting list of audit trail entries as a JSON string in the chosen process variable.

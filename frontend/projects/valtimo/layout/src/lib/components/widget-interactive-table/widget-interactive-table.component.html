@@ -1,5 +1,5 @@
 <!--
-  ~ Copyright 2015-2025 Ritense BV, the Netherlands.
+  ~ Copyright 2015-2026 Ritense BV, the Netherlands.
   ~
   ~ Licensed under EUPL, Version 1.2 (the "License");
   ~ you may not use this file except in compliance with the License.
@@ -19,6 +19,7 @@
     fields: fields$ | async,
     widgetData: widgetData$ | async,
     caseDefinitions: caseDefinitions$ | async,
+    filters: filters$ | async,
   } as obs"
 >
   <div class="valtimo-widget-interactive-table__title-container">
@@ -33,26 +34,47 @@
   <valtimo-carbon-list
     [header]="false"
     [fields]="obs.fields"
-    [items]="obs.widgetData"
+    [items]="obs.widgetData || []"
+    [initialSortState]="$initialSortState()"
+    [loading]="obs.widgetData === null"
+    [skeletonRowCount]="widgetConfiguration?.properties?.defaultPageSize || 5"
     [pagination]="$paginationModel()"
     [paginatorConfig]="$paginatorConfig()"
     (paginationClicked)="onPaginationClicked($event)"
+    (paginationSet)="onPaginationSet($event)"
+    (sortChanged)="onSortChanged($event)"
     (rowClicked)="rowClick($event)"
   >
     <section class="valtimo-widget-interactive-table__header" carbonToolbarContent>
-      <cds-overflow-menu
-        *ngIf="!!widgetConfiguration?.actions?.length"
-        [customTrigger]="externalLinkTrigger"
-        placement="bottom"
-        flip="true"
-        [offset]="{x: 4, y: 44}"
+      <v-overflow-menu
+        *ngIf="!!obs.filters.length"
+        carbonToolbarContent
+        placement="bottom-end"
+        [closeOnSelect]="false"
       >
+        <button overflowTrigger cdsButton="ghost" [iconOnly]="true">
+          <svg cdsIcon="filter" size="16"></svg>
+        </button>
+
+        <div overflowPane>
+          <ng-container *ngTemplateOutlet="widgetInteractiveTableSearch"></ng-container>
+        </div>
+      </v-overflow-menu>
+
+      <v-overflow-menu
+        *ngIf="!!widgetConfiguration?.actions?.length"
+        placement="bottom-end"
+      >
+        <button overflowTrigger cdsButton="ghost" [iconOnly]="true">
+          <svg cdsIcon="link" size="16"></svg>
+        </button>
+
         @for (action of widgetConfiguration?.actions; track action.name) {
-          <cds-overflow-menu-option (click)="onActionClick(action)">
+          <v-overflow-menu-option (selected)="onActionClick(action)">
             {{ action.name }}
-          </cds-overflow-menu-option>
+          </v-overflow-menu-option>
         }
-      </cds-overflow-menu>
+      </v-overflow-menu>
 
       <cds-menu-button
         *ngIf="widgetConfiguration?.properties?.canStartCase"
@@ -68,15 +90,18 @@
     </section>
 
     <valtimo-no-results
+      *ngIf="obs.widgetData !== null"
       [collapseVertically]="true"
       [description]="'widgets.noData' | translate"
       [smallPadding]="true"
     ></valtimo-no-results>
   </valtimo-carbon-list>
 
-  <ng-template #externalLinkTrigger>
-    <button cdsButton="ghost" iconOnly="true">
-      <svg cdsIcon="link" size="16"></svg>
-    </button>
+  <ng-template #widgetInteractiveTableSearch>
+    <valtimo-widget-interactive-table-search
+      [filters]="obs.filters"
+      [initSearchRequest]="searchRequest"
+      (searchSubmitEvent)="onSearchSubmit($event)"
+    ></valtimo-widget-interactive-table-search>
   </ng-template>
 </ng-container>

@@ -33,11 +33,16 @@
   </section>
 
   <cds-modal-footer>
-    <button cdsButton="ghost" (click)="closeModal()">
+    <button cdsButton="secondary" (click)="closeModal()">
       {{ 'interface.cancel' | translate }}
     </button>
 
-    <button cdsButton="primary" [disabled]="!selectedDmnFile" (click)="deployDmn()">
+    <button
+      cdsButton="primary"
+      [disabled]="!selectedDmnFile"
+      (click)="deployDmn()"
+      [attr.data-test-id]="testIds.submitButton"
+    >
       {{ 'interface.upload' | translate }}
     </button>
   </cds-modal-footer>

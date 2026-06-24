@@ -16,18 +16,30 @@
 
 package com.ritense.notificatiesapi
 
+import com.fasterxml.jackson.databind.ObjectMapper
 import com.ritense.logging.withLoggingContext
 import com.ritense.notificatiesapi.client.NotificatiesApiClient
+import com.ritense.notificatiesapi.domain.Abonnement
 import com.ritense.notificatiesapi.domain.Kanaal
+import com.ritense.notificatiesapi.domain.Notificatie
 import com.ritense.notificatiesapi.domain.NotificatiesApiConfigurationId
-import com.ritense.notificatiesapi.repository.NotificatiesApiAbonnementLinkRepository
+import com.ritense.notificatiesapi.listener.ReceiveNotificatieProperties
 import com.ritense.plugin.annotation.Plugin
+import com.ritense.plugin.annotation.PluginAction
+import com.ritense.plugin.annotation.PluginActionProperty
 import com.ritense.plugin.annotation.PluginProperty
 import com.ritense.plugin.domain.PluginConfiguration
 import com.ritense.plugin.domain.PluginConfigurationId
+import com.ritense.plugin.repository.PluginProcessLinkRepository
+import com.ritense.processlink.domain.ActivityTypeWithEventName.INTERMEDIATE_CATCH_EVENT_END
+import com.ritense.processlink.domain.ActivityTypeWithEventName.INTERMEDIATE_THROW_EVENT_START
+import com.ritense.processlink.domain.ActivityTypeWithEventName.MESSAGE_START_EVENT_START
+import com.ritense.processlink.domain.ActivityTypeWithEventName.RECEIVE_TASK_END
+import com.ritense.processlink.domain.ActivityTypeWithEventName.SEND_TASK_START
 import com.ritense.valtimo.contract.validation.Url
 import io.github.oshai.kotlinlogging.KotlinLogging
 import java.net.URI
+import java.time.LocalDateTime
 
 @Plugin(
     key = "notificatiesapi",
@@ -37,8 +49,9 @@ import java.net.URI
 class NotificatiesApiPlugin(
     pluginConfigurationId: PluginConfigurationId,
     private val client: NotificatiesApiClient,
-    private val notificatiesApiAbonnementLinkRepository: NotificatiesApiAbonnementLinkRepository
-) {
+    private val objectMapper: ObjectMapper,
+    private val pluginProcessLinkRepository: PluginProcessLinkRepository,
+) : NotificatiesApiListener {
     val notificatiesApiConfigurationId = NotificatiesApiConfigurationId(pluginConfigurationId.id)
 
     @Url
@@ -49,8 +62,76 @@ class NotificatiesApiPlugin(
     @PluginProperty(key = "callbackUrl", secret = false)
     lateinit var callbackUrl: URI
 
+    @PluginProperty(key = "authHeader", secret = false, required = false)
+    var authHeader: String? = null
+
     @PluginProperty(key = "authenticationPluginConfiguration", secret = false)
     lateinit var authenticationPluginConfiguration: NotificatiesApiAuthentication
+
+    @PluginAction(
+        key = "publish-notificatie",
+        title = "Publiceer een notificatie",
+        description = "Publiceert een notificatie via de Notificaties API",
+        activityTypes = [SEND_TASK_START, INTERMEDIATE_THROW_EVENT_START]
+    )
+    fun publishNotificatie(
+        @PluginActionProperty kanaal: String,
+        @PluginActionProperty hoofdObject: URI,
+        @PluginActionProperty resource: String,
+        @PluginActionProperty resourceUrl: URI,
+        @PluginActionProperty actie: String,
+        @PluginActionProperty aanmaakdatum: LocalDateTime?,
+        @PluginActionProperty kenmerken: Map<String, String>?,
+    ) = withLoggingContext(
+        PluginConfiguration::class.java.canonicalName to notificatiesApiConfigurationId.toString()
+    ) {
+        logger.debug { "Publishing notificatie on kanaal '$kanaal'" }
+        val notificatie = Notificatie(
+            kanaal = kanaal,
+            hoofdObject = hoofdObject,
+            resource = resource,
+            resourceUrl = resourceUrl,
+            actie = actie,
+            aanmaakdatum = aanmaakdatum ?: LocalDateTime.now(),
+            kenmerken = kenmerken,
+        )
+        client.createNotificatie(authenticationPluginConfiguration, url, notificatie)
+        logger.info { "Successfully published notificatie on kanaal '$kanaal'" }
+    }
+
+    @PluginAction(
+        key = RECEIVE_NOTIFICATIE_ACTION_KEY,
+        title = "Ontvang een notificatie",
+        description = "Wacht op een binnenkomende notificatie via de Notificaties API",
+        activityTypes = [RECEIVE_TASK_END, INTERMEDIATE_CATCH_EVENT_END, MESSAGE_START_EVENT_START]
+    )
+    fun receiveNotificatie(
+        @PluginActionProperty kanaal: String?,
+        @PluginActionProperty actie: String?,
+        @PluginActionProperty kenmerken: Map<String, String>?,
+    ) {
+        logger.debug { "Receive notificatie action invoked for kanaal='$kanaal', actie='$actie', kenmerken=$kenmerken" }
+    }
+
+    override fun getNotificatiesApiPlugin(): NotificatiesApiPlugin = this
+
+    override fun getKanaalFilters(): List<Abonnement.Kanaal> {
+        return pluginProcessLinkRepository.findByPluginDefinitionKeyAndPluginActionDefinitionKey(
+            NOTIFICATIES_API_PLUGIN_DEFINITION_KEY,
+            RECEIVE_NOTIFICATIE_ACTION_KEY
+        ).mapNotNull { pluginProcessLink ->
+            val notificatie = objectMapper.treeToValue(pluginProcessLink.actionProperties, ReceiveNotificatieProperties::class.java)
+            val kanaal = notificatie.kanaal ?: return@mapNotNull null
+            val filters = buildMap {
+                notificatie.actie?.let { put("actie", it) }
+                notificatie.kenmerken?.let { putAll(it) }
+            }
+            Abonnement.Kanaal(
+                naam = kanaal,
+                filters = filters
+            )
+        }
+    }
 
     fun ensureKanalenExist(kanalen: Set<String>) = withLoggingContext(
         PluginConfiguration::class.java.canonicalName to notificatiesApiConfigurationId.toString()
@@ -68,5 +149,7 @@ class NotificatiesApiPlugin(
 
     companion object {
         val logger = KotlinLogging.logger {}
+        const val NOTIFICATIES_API_PLUGIN_DEFINITION_KEY = "notificatiesapi"
+        const val RECEIVE_NOTIFICATIE_ACTION_KEY = "receive-notificatie"
     }
 }

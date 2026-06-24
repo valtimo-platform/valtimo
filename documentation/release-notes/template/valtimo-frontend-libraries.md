@@ -35,7 +35,7 @@ The following breaking changes were introduced:
 
 * **Breaking change2**
 
-Instructions on how to migrate to this version of Valtimo can be found [here](migration.md).
+Instructions on how to migrate to this version of Valtimo can be found in the [migration guide](migration.md).
 
 ## Deprecations
 
@@ -48,7 +48,7 @@ The following was deprecated:
 
   X was deprecated and is replaced with Y.
 
-Instructions on how to migrate to this version of Valtimo can be found [here](migration.md).
+Instructions on how to migrate to this version of Valtimo can be found in the [migration guide](migration.md).
 
 ## Known issues
 

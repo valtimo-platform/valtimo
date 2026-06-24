@@ -73,10 +73,12 @@ export class IkoManagementRepositoryModalComponent {
     this.$prefillData.set(value);
     this.formGroup.patchValue({
       ...value,
-      type: 'iko',
+      type: value?.type || 'iko',
     });
 
-    this.formGroup.get('type')?.disable({ emitEvent: false });
+    if (!this.enableIkoType) {
+      this.formGroup.get('type')?.disable({emitEvent: false});
+    }
   }
 
   private _modalMode: ModalMode;
@@ -93,7 +95,9 @@ export class IkoManagementRepositoryModalComponent {
     return this.formGroup.get('title') as AbstractControl<string>;
   }
 
-  public enableIkoType = false;
+  public get enableIkoType(): boolean {
+    return this.configService.getFeatureToggle('enableIkoType');
+  }
   public readonly disabled$ = new BehaviorSubject(true);
   private readonly _ikoRepositoryTypes$ = this.ikoManagementApiService.getIkoRepositoryTypes();
 
@@ -111,10 +115,7 @@ export class IkoManagementRepositoryModalComponent {
   public formGroup = this.fb.group({
     title: this.fb.control('', Validators.required),
     key: this.fb.control('', Validators.required),
-    type: this.fb.control(
-      {value: 'iko', disabled: true},
-      Validators.required
-    ),
+    type: this.fb.control({value: 'iko', disabled: true}, Validators.required),
     properties: this.fb.group({}, Validators.required),
   });
 
@@ -124,7 +125,7 @@ export class IkoManagementRepositoryModalComponent {
       startWith(this.formGroup.get('type').value),
       tap(_ => this.formGroup.patchValue({properties: {}}, {emitEvent: false})),
       filter(type => !!type && !Array.isArray(type)),
-      switchMap(type => this.ikoManagementApiService.getIkoRepositoryPropertyFields(type)),
+      switchMap(type => this.ikoManagementApiService.getIkoRepositoryPropertyFields(type))
     );
 
   constructor(
@@ -132,7 +133,9 @@ export class IkoManagementRepositoryModalComponent {
     private readonly ikoManagementApiService: IkoManagementApiService,
     private readonly configService: ConfigService
   ) {
-    this.enableIkoType = this.configService.getFeatureToggle('enableIkoType');
+    if (this.enableIkoType) {
+      this.formGroup.get('type').enable({emitEvent: false});
+    }
   }
 
   public get properties(): FormGroup | null {

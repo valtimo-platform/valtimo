@@ -17,13 +17,13 @@
 package com.ritense.zakenapi.uploadprocess
 
 import com.ritense.authorization.AuthorizationContext.Companion.runWithoutAuthorization
-import com.ritense.case_.service.ActiveCaseDefinitionService
 import com.ritense.document.domain.impl.JsonSchemaDocumentId
 import com.ritense.document.service.DocumentService
 import com.ritense.processdocument.domain.impl.request.StartProcessForDocumentRequest
 import com.ritense.processdocument.service.CaseDefinitionProcessLinkService
 import com.ritense.processdocument.service.ProcessDocumentService
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
+import com.ritense.valtimo.contract.document.CaseDocumentResolver
 import org.springframework.stereotype.Service
 import java.util.UUID
 
@@ -33,21 +33,19 @@ class UploadProcessService(
     private val documentService: DocumentService,
     private val processDocumentService: ProcessDocumentService,
     private val caseDefinitionProcessLinkService: CaseDefinitionProcessLinkService,
-    private val activeCaseDefinitionService: ActiveCaseDefinitionService,
+    private val caseDocumentResolver: CaseDocumentResolver,
 ) {
 
-    fun startUploadResourceProcess(caseId: String, resourceId: String) {
-        val caseDefinitionName = runWithoutAuthorization { documentService.get(caseId) }.definitionId().name()
-        val caseDefinition = runWithoutAuthorization { activeCaseDefinitionService.getActiveCaseDefinition(caseDefinitionName) }
-        val link = caseDefinitionProcessLinkService.getDocumentDefinitionProcessLink(caseDefinition.id, DOCUMENT_UPLOAD)
-        if (link == null) {
-            throw IllegalStateException("No upload-process linked to case: $caseDefinitionName")
-        }
+    fun startUploadResourceProcess(documentId: String, resourceId: String) {
+        val caseDocumentId = runWithoutAuthorization { caseDocumentResolver.resolveCaseDocumentId(UUID.fromString(documentId)) }
+        val caseDefinitionId = runWithoutAuthorization { documentService.get(caseDocumentId.toString()) }.definitionId().caseDefinitionId()
+        val link = caseDefinitionProcessLinkService.getDocumentDefinitionProcessLink(caseDefinitionId, DOCUMENT_UPLOAD)
+            ?: throw IllegalStateException("No upload-process linked to case: $caseDefinitionId")
 
         val result = runWithoutAuthorization {
             processDocumentService.startProcessForDocument(
                 StartProcessForDocumentRequest(
-                    JsonSchemaDocumentId.existingId(UUID.fromString(caseId)),
+                    JsonSchemaDocumentId.existingId(UUID.fromString(documentId)),
                     link.id.processDefinitionKey,
                     mapOf(RESOURCE_ID_PROCESS_VAR to resourceId)
                 )

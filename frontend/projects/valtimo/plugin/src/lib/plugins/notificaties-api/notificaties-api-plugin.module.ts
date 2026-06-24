@@ -16,12 +16,21 @@
 
 import {NgModule} from '@angular/core';
 import {NotificatiesApiConfigurationComponent} from './components/notificaties-api-configuration/notificaties-api-configuration.component';
+import {PublishNotificatieConfigurationComponent} from './components/publish-notificatie/publish-notificatie-configuration.component';
+import {ReceiveNotificatieConfigurationComponent} from './components/receive-notificatie/receive-notificatie-configuration.component';
 import {PluginTranslatePipeModule} from '../../pipes';
 import {CommonModule} from '@angular/common';
-import {FormModule, InputModule, ParagraphModule, SelectModule} from '@valtimo/components';
+import {
+  CarbonMultiInputModule,
+  FormModule,
+  InputModule,
+  ParagraphModule,
+  SelectModule,
+} from '@valtimo/components';
+import {NotificationModule} from 'carbon-components-angular';
 
 @NgModule({
-  declarations: [NotificatiesApiConfigurationComponent],
+  declarations: [NotificatiesApiConfigurationComponent, PublishNotificatieConfigurationComponent, ReceiveNotificatieConfigurationComponent],
   imports: [
     CommonModule,
     PluginTranslatePipeModule,
@@ -29,7 +38,9 @@ import {FormModule, InputModule, ParagraphModule, SelectModule} from '@valtimo/c
     InputModule,
     SelectModule,
     ParagraphModule,
+    CarbonMultiInputModule,
+    NotificationModule,
   ],
-  exports: [NotificatiesApiConfigurationComponent],
+  exports: [NotificatiesApiConfigurationComponent, PublishNotificatieConfigurationComponent, ReceiveNotificatieConfigurationComponent],
 })
 export class NotificatiesApiPluginModule {}

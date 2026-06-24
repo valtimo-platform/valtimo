@@ -13,6 +13,8 @@ management:
             show-details: when_authorized
             roles:
                 - ROLE_ACTUATOR
+            probes:
+                enabled: true
 
 spring:
     profiles:
@@ -152,6 +154,7 @@ spring:
 
 server:
     port: 8080
+    server-header: ""
     compression:
         enabled: true
         mime-types: text/html,text/xml,text/plain,text/css, application/javascript, application/json
@@ -182,6 +185,11 @@ valtimo:
             retry-backoff-multiplier: 3
             retention-period: 5m
             poll-interval: PT1S
+
+    case:
+        processing:
+            retention:
+                poll-interval: PT30M
 
     hardening:
         allowStacktraceOnIps:
@@ -220,6 +228,12 @@ valtimo:
             - application/xml
             - image/jpeg
             - image/png
+            - application/msword
+            - application/vnd.ms-excel
+            - application/vnd.ms-powerpoint
+            - application/vnd.openxmlformats-officedocument.wordprocessingml.document
+            - application/vnd.openxmlformats-officedocument.spreadsheetml.sheet
+            - application/vnd.openxmlformats-officedocument.presentationml.presentation
 
     outbox:
         enabled: true
@@ -287,3 +301,7 @@ operaton:
             id: ${OPERATON_BPM_ADMINUSER_ID:Admin}
             password: ${OPERATON_BPM_ADMINUSER_PASSWORD}
             first-name: Admin account
+    incident:
+        alert-log:
+            enabled: true
+            message-template: "OPERATON_INCIDENT_FAILED_JOB: processInstanceId={processInstanceId} incidentId={incidentId}"

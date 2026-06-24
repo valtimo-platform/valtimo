@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+import {Step} from 'carbon-components-angular';
 import {WidgetDisplayType} from './widget-display.model';
 import {FieldsWidgetValue, GeoJsonSource, WidgetAction} from './widget.model';
 
@@ -46,7 +47,7 @@ interface WidgetCollectionContent {
 interface CollectionWidgetResolvedField {
   key: string;
   title: string;
-  value: string;
+  value: string | null;
   width: CollectionWidgetFieldWidth;
   hideWhenEmpty: boolean;
 }
@@ -67,6 +68,17 @@ interface WidgetTableContent {
 interface WidgetInteractiveTableContent extends Omit<WidgetTableContent, 'firstColumnAsTitle'> {
   canStartCase: boolean;
   rowClickAction: WidgetAction;
+  filters?: WidgetFilter[];
+}
+
+interface WidgetFilter {
+  dataType: string;
+  fieldType: string;
+  key: string;
+  matchType?: string;
+  title: string;
+  dropdownDataProvider?: string;
+  dropdownValues?: Record<string, string>;
 }
 
 interface WidgetCustomContent {
@@ -78,9 +90,99 @@ interface WidgetFormioContent {
   formDefinitionName: string;
 }
 
+interface WidgetInteractiveTableEventSearchRequest {
+  size?: number;
+  page?: number;
+  filters?: Record<string, string>;
+}
+
+enum MoveRowDirection {
+  UP = 'UP',
+  DOWN = 'DOWN',
+}
+
+enum FilterDropdownDataProvider {
+  DATABASE = 'dropdownDatabaseDataProvider',
+  JSON = 'dropdownJsonFileDataProvider',
+}
+
+interface MoveRowEvent {
+  direction: MoveRowDirection;
+  index: number;
+}
+
 interface WidgetMapContent {
   geoJsonSources: GeoJsonSource[];
 }
+
+enum MetrolineOrientation {
+  HORIZONTAL = 'HORIZONTAL',
+  VERTICAL = 'VERTICAL',
+}
+
+enum MetrolineMode {
+  INTERNAL_CASE_STATUS = 'INTERNAL_CASE_STATUS',
+  ZAAKSTATUS = 'ZAAKSTATUS',
+}
+
+interface WidgetMetrolineContent {
+  orientation: MetrolineOrientation;
+  mode: MetrolineMode | null;
+}
+
+interface WidgetIkoMetrolineContent {
+  orientation: MetrolineOrientation;
+  source: string;
+  titlePath: string;
+  labelPath: string | null;
+  completedPath: string;
+}
+
+interface MetrolineItem {
+  title: string;
+  label: string | null;
+  completed: string | null;
+}
+
+interface MetrolineStep extends Step {
+  itemLabel: string | null;
+}
+
+enum MetrolineStepState {
+  CURRENT = 'current',
+  COMPLETE = 'complete',
+  INCOMPLETE = 'incomplete',
+  INVALID = 'invalid',
+}
+
+interface WidgetPersonCardContent {
+  icon?: string;
+  person: {
+    fullName: string;
+    birthDate?: string;
+    bsn?: string;
+    phone?: string;
+    email?: string;
+    city?: string;
+  };
+}
+
+enum HighlightDisplayType {
+  TEXT = 'text',
+  NUMBER = 'number',
+  ARRAY_COUNT = 'array-count',
+}
+
+interface HighlightDisplayProperties {
+  type: HighlightDisplayType;
+}
+
+interface WidgetHighlightContent {
+  value: string;
+  displayProperties: HighlightDisplayProperties;
+}
+
+type WidgetDropdownValue = {[key: string]: string};
 
 type WidgetContentProperties =
   | WidgetFieldsContent
@@ -89,7 +191,11 @@ type WidgetContentProperties =
   | WidgetCustomContent
   | WidgetFormioContent
   | WidgetCollectionContent
-  | WidgetMapContent;
+  | WidgetMapContent
+  | WidgetMetrolineContent
+  | WidgetIkoMetrolineContent
+  | WidgetPersonCardContent
+  | WidgetHighlightContent;
 
 export {
   WidgetContentProperties,
@@ -100,9 +206,24 @@ export {
   WidgetInteractiveTableContent,
   WidgetCollectionContent,
   WidgetMapContent,
+  WidgetMetrolineContent,
+  WidgetIkoMetrolineContent,
+  MetrolineItem,
+  MetrolineMode,
+  MetrolineOrientation,
+  MetrolineStep,
+  MetrolineStepState,
+  WidgetHighlightContent,
+  HighlightDisplayProperties,
+  HighlightDisplayType,
+  WidgetPersonCardContent,
+  WidgetInteractiveTableEventSearchRequest,
+  WidgetFilter,
+  WidgetDropdownValue,
   CollectionWidgetField,
   CollectionWidgetFieldWidth,
   CollectionWidgetResolvedField,
   CollectionWidgetTitle,
   CollectionWidgetCardData,
+  FilterDropdownDataProvider,
 };

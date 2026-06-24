@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,23 +30,27 @@ dockerCompose {
 }
 
 dependencies {
-    implementation project(":case")
-    implementation project(":contract")
-    implementation project(":plugin")
-    implementation project(":zgw")
-    implementation project(":zgw:objecten-api")
-    implementation project(":zgw:objecttypen-api")
-    implementation project(":zgw:zaken-api")
-    implementation project(":logging")
+    implementation project(":backend:authorization")
+    implementation project(":backend:case")
+    implementation project(":backend:contract")
+    implementation project(":backend:plugin")
+    implementation project(":backend:zgw")
+    implementation project(":backend:zgw:objecten-api")
+    implementation project(":backend:zgw:object-management")
+    implementation project(":backend:zgw:objecttypen-api")
+    implementation project(":backend:zgw:zaken-api")
+    implementation project(":backend:logging")
+    implementation project(":backend:importer")
+    implementation project(":backend:exporter")
 
     implementation "io.github.oshai:kotlin-logging:${kotlinLoggingVersion}"
     implementation "org.springframework.boot:spring-boot-starter-webflux"
     implementation "org.springframework.boot:spring-boot-starter-security"
     implementation "org.springframework.boot:spring-boot-starter-data-jpa"
 
-    testImplementation project(":authorization")
-    testImplementation project(":test-utils-common")
-    testImplementation project(":plugin-authentication:openzaak-plugin-authentication")
+    testImplementation project(":backend:building-block")
+    testImplementation project(":backend:test-utils-common")
+    testImplementation project(":backend:plugin-authentication:openzaak-plugin-authentication")
 
     testImplementation "org.springframework.boot:spring-boot-starter-data-jpa"
     testImplementation "org.jetbrains.kotlin:kotlin-test"

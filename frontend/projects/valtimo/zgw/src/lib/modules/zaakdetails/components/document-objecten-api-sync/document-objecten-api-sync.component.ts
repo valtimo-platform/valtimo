@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,9 +24,8 @@ import {
   Validators,
 } from '@angular/forms';
 import {ActivatedRoute} from '@angular/router';
-import {Edit16, TrashCan16} from '@carbon/icons';
+import {Edit16, TrashCan16, WarningFilled16} from '@carbon/icons';
 import {TranslateModule} from '@ngx-translate/core';
-import {CaseManagementDraftWarningComponent} from '@valtimo/case-management';
 import {
   CdsThemeService,
   FormModule,
@@ -40,6 +39,7 @@ import {
 import {DocumentDefinition, DocumentService} from '@valtimo/document';
 import {
   CaseManagementParams,
+  ConfigurationIssueService,
   DraftVersionService,
   getCaseManagementRouteParams,
 } from '@valtimo/shared';
@@ -52,10 +52,12 @@ import {
   ModalModule,
   TilesModule,
 } from 'carbon-components-angular';
-import {BehaviorSubject, map, Observable, switchMap, tap, of} from 'rxjs';
+import {BehaviorSubject, combineLatest, map, Observable, switchMap, take, tap} from 'rxjs';
 
 import {DocumentObjectenApiSync} from '../../models';
 import {DocumentObjectenApiSyncService} from '../../services';
+import {filter} from 'rxjs/operators';
+import {ZGW_CASE_SYNC_TEST_IDS} from '../../../../constants';
 
 @Component({
   selector: 'valtimo-document-objecten-api-sync',
@@ -79,29 +81,18 @@ import {DocumentObjectenApiSyncService} from '../../services';
     TranslateModule,
     ValtimoCdsModalDirective,
     RenderInBodyComponent,
-    CaseManagementDraftWarningComponent,
   ],
 })
 export class DocumentObjectenApiSyncComponent implements OnInit {
   public readonly loading$ = new BehaviorSubject<boolean>(true);
   private readonly _params$: Observable<CaseManagementParams | undefined> =
     getCaseManagementRouteParams(this.route);
-  private readonly _documentDefinition$: Observable<DocumentDefinition> = this._params$.pipe(
+  public readonly _documentDefinition$: Observable<DocumentDefinition> = this._params$.pipe(
     switchMap(params =>
       this.documentService.getDocumentDefinitionByVersion(
         params?.caseDefinitionKey ?? '',
         params?.caseDefinitionVersionTag ?? ''
       )
-    )
-  );
-  public readonly isDraftVersion$ = this._params$.pipe(
-    switchMap((params: CaseManagementParams | undefined) =>
-      !params
-        ? of(false)
-        : this.draftVersionService.isDraftVersion(
-            params.caseDefinitionKey,
-            params.caseDefinitionVersionTag
-          )
     )
   );
   public readonly documentObjectenApiSync$ = new BehaviorSubject<DocumentObjectenApiSync | null>(
@@ -131,17 +122,33 @@ export class DocumentObjectenApiSyncComponent implements OnInit {
     return this.formGroup.get('enabled') ?? null;
   }
 
+  public readonly testIds = ZGW_CASE_SYNC_TEST_IDS;
   public readonly valid$ = new BehaviorSubject<boolean>(false);
+  public readonly hasConfigurationIssue$ =
+    this.configurationIssueService.hasIssue$('zaakdetail-sync');
+  private readonly _isDraftVersion$: Observable<boolean> = this._params$.pipe(
+    switchMap(params =>
+      this.draftVersionService.isDraftVersion(
+        params?.caseDefinitionKey ?? '',
+        params?.caseDefinitionVersionTag ?? ''
+      )
+    )
+  );
+  public readonly canEdit$: Observable<boolean> = combineLatest([
+    this._isDraftVersion$,
+    this.hasConfigurationIssue$,
+  ]).pipe(map(([isDraft, hasIssue]) => isDraft || hasIssue));
 
   constructor(
     private readonly route: ActivatedRoute,
+    private readonly configurationIssueService: ConfigurationIssueService,
+    private readonly draftVersionService: DraftVersionService,
     private readonly documentObjectenApiSyncService: DocumentObjectenApiSyncService,
     private readonly documentService: DocumentService,
     private readonly cdsThemeService: CdsThemeService,
-    private readonly iconService: IconService,
-    private readonly draftVersionService: DraftVersionService
+    private readonly iconService: IconService
   ) {
-    this.iconService.registerAll([TrashCan16, Edit16]);
+    this.iconService.registerAll([TrashCan16, Edit16, WarningFilled16]);
   }
 
   public ngOnInit(): void {
@@ -151,10 +158,11 @@ export class DocumentObjectenApiSyncComponent implements OnInit {
   public loadDocumentenObjectenApiSync(): void {
     this._documentDefinition$
       .pipe(
+        filter(documentDefinition => !!documentDefinition?.id?.blueprintId),
         switchMap((documentDefinition: DocumentDefinition) =>
           this.documentObjectenApiSyncService.getDocumentObjectenApiSync(
-            documentDefinition.id.caseDefinitionId.key,
-            documentDefinition.id.caseDefinitionId.versionTag
+            documentDefinition.id.blueprintId.blueprintKey,
+            documentDefinition.id.blueprintId.blueprintVersionTag
           )
         )
       )
@@ -169,10 +177,11 @@ export class DocumentObjectenApiSyncComponent implements OnInit {
   public remove(): void {
     this._documentDefinition$
       .pipe(
+        take(1),
         switchMap(documentDefinition =>
           this.documentObjectenApiSyncService.deleteDocumentObjectenApiSync(
-            documentDefinition.id.caseDefinitionId.key,
-            documentDefinition.id.caseDefinitionId.versionTag
+            documentDefinition.id.blueprintId.blueprintKey,
+            documentDefinition.id.blueprintId.blueprintVersionTag
           )
         ),
         tap(() => {
@@ -186,10 +195,11 @@ export class DocumentObjectenApiSyncComponent implements OnInit {
     const formValues = this.formGroup.getRawValue();
     this._documentDefinition$
       .pipe(
+        take(1),
         switchMap(documentDefinition =>
           this.documentObjectenApiSyncService.updateDocumentObjectenApiSync(
-            documentDefinition.id.caseDefinitionId.key,
-            documentDefinition.id.caseDefinitionId.versionTag,
+            documentDefinition.id.blueprintId.blueprintKey,
+            documentDefinition.id.blueprintId.blueprintVersionTag,
             {
               objectManagementConfigurationId: formValues.objectManagementConfigurationId ?? '',
               enabled: !!formValues.enabled,

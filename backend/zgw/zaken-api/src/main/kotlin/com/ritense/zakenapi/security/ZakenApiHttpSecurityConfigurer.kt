@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,6 +22,7 @@ import com.ritense.valtimo.contract.security.config.HttpSecurityConfigurer
 import org.springframework.http.HttpMethod.DELETE
 import org.springframework.http.HttpMethod.GET
 import org.springframework.http.HttpMethod.POST
+import org.springframework.http.HttpMethod.PUT
 import org.springframework.security.config.annotation.web.builders.HttpSecurity
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher.antMatcher
 
@@ -30,12 +31,14 @@ class ZakenApiHttpSecurityConfigurer : HttpSecurityConfigurer {
     override fun configure(http: HttpSecurity) {
         try {
             http.authorizeHttpRequests { requests ->
-                requests.requestMatchers(antMatcher(GET, "/api/v1/zaken-api/document/{documentId}/files"))
-                    .authenticated()
+                requests
+                    .requestMatchers(antMatcher(GET, "/api/v1/zaken-api/document/{documentId}/files")).authenticated()
                     .requestMatchers(antMatcher(GET, "/api/v2/zaken-api/document/{documentId}/files")).authenticated()
                     .requestMatchers(antMatcher(GET, "/api/v1/zaken-api/document/{documentId}/zaak")).authenticated()
-                    .requestMatchers(antMatcher(GET, "/api/management/v1/zaak-type-link/{documentDefinitionName}"))
-                    .hasAuthority(ADMIN)
+                    .requestMatchers(antMatcher(PUT, "/api/v1/zaken-api/{pluginConfigurationId}/case-document/{caseDocumentId}/files/{documentId}")).authenticated()
+                    .requestMatchers(antMatcher(DELETE, "/api/v1/zaken-api/{pluginConfigurationId}/case-document/{caseDocumentId}/files/{documentId}")).authenticated()
+                    .requestMatchers(antMatcher(GET, "/api/v1/zaken-api/{pluginConfigurationId}/case-document/{caseDocumentId}/files/{documentId}/download")).authenticated()
+                    .requestMatchers(antMatcher(GET, "/api/management/v1/zaak-type-link/{documentDefinitionName}")).hasAuthority(ADMIN)
                     .requestMatchers(
                         antMatcher(
                             GET,
@@ -65,9 +68,18 @@ class ZakenApiHttpSecurityConfigurer : HttpSecurityConfigurer {
                             "/api/management/v1/case-definition/{caseDefinitionKey}/version/{versionTag}/zaak-type-link"
                         )
                     ).hasAuthority(ADMIN)
+                    .requestMatchers(antMatcher(GET, ZAKEN_API_SYNC_MANAGEMENT_URL)).hasAuthority(ADMIN)
+                    .requestMatchers(antMatcher(PUT, ZAKEN_API_SYNC_MANAGEMENT_URL)).hasAuthority(ADMIN)
+                    .requestMatchers(antMatcher(DELETE, ZAKEN_API_SYNC_MANAGEMENT_URL)).hasAuthority(ADMIN)
+                    .requestMatchers(antMatcher(GET, "/api/management/v1/case/{caseId}/zgw")).authenticated()
             }
         } catch (e: Exception) {
             throw HttpConfigurerConfigurationException(e)
         }
+    }
+
+    companion object {
+        private const val ZAKEN_API_SYNC_MANAGEMENT_URL =
+            "/api/management/v1/case-definition/{caseDefinitionKey}/version/{caseDefinitionVersionTag}/zaken-api-sync"
     }
 }

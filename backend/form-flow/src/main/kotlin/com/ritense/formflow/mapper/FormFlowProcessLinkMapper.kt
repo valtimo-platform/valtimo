@@ -36,9 +36,11 @@ import com.ritense.processlink.web.rest.dto.ProcessLinkCreateRequestDto
 import com.ritense.processlink.web.rest.dto.ProcessLinkExportResponseDto
 import com.ritense.processlink.web.rest.dto.ProcessLinkResponseDto
 import com.ritense.processlink.web.rest.dto.ProcessLinkUpdateRequestDto
-import com.ritense.valtimo.operaton.domain.OperatonProcessDefinition
+import com.ritense.valtimo.contract.BlueprintId
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
+import com.ritense.valtimo.contract.buildingblock.BuildingBlockDefinitionId
 import com.ritense.valtimo.contract.case_.CaseDefinitionId
+import com.ritense.valtimo.operaton.domain.OperatonProcessDefinition
 import org.operaton.bpm.engine.repository.ProcessDefinition
 import org.springframework.stereotype.Component
 import java.util.UUID
@@ -80,7 +82,7 @@ class FormFlowProcessLinkMapper(
         }
     }
 
-    override fun toProcessLinkCreateRequestDto(deployDto: ProcessLinkDeployDto): ProcessLinkCreateRequestDto {
+    override fun toProcessLinkCreateRequestDto(deployDto: ProcessLinkDeployDto, blueprintId: BlueprintId?): ProcessLinkCreateRequestDto {
         return withLoggingContext(OperatonProcessDefinition::class, deployDto.processDefinitionId) {
             deployDto as FormFlowProcessLinkDeployDto
 
@@ -98,7 +100,8 @@ class FormFlowProcessLinkMapper(
 
     override fun toProcessLinkUpdateRequestDto(
         deployDto: ProcessLinkDeployDto,
-        existingProcessLinkId: UUID
+        existingProcessLinkId: UUID,
+        blueprintId: BlueprintId?
     ): ProcessLinkUpdateRequestDto {
         return withLoggingContext(OperatonProcessDefinition::class, deployDto.processDefinitionId) {
             deployDto as FormFlowProcessLinkDeployDto
@@ -129,17 +132,10 @@ class FormFlowProcessLinkMapper(
         }
     }
 
-    override fun toNewProcessLink(createRequestDto: ProcessLinkCreateRequestDto, caseDefinitionId: CaseDefinitionId?): ProcessLink {
+    override fun toNewProcessLink(createRequestDto: ProcessLinkCreateRequestDto, blueprintId: BlueprintId?): ProcessLink {
         return withLoggingContext(ProcessDefinition::class, createRequestDto.processDefinitionId) {
-            if (caseDefinitionId == null) {
-                //TODO: change exception type
-                throw RuntimeException("Case definition id is required for creating a new process link with form flow")
-            }
-
             createRequestDto as FormFlowProcessLinkCreateRequestDto
-            if (formFlowService.findDefinition(createRequestDto.formFlowDefinitionKey, caseDefinitionId) == null) {
-                throw RuntimeException("FormFlow definition not found with id ${createRequestDto.formFlowDefinitionKey}")
-            }
+            assertFormFlowDefinitionExists(createRequestDto.formFlowDefinitionKey, blueprintId)
             FormFlowProcessLink(
                 id = UUID.randomUUID(),
                 processDefinitionId = createRequestDto.processDefinitionId,
@@ -156,13 +152,11 @@ class FormFlowProcessLinkMapper(
     override fun toUpdatedProcessLink(
         processLinkToUpdate: ProcessLink,
         updateRequestDto: ProcessLinkUpdateRequestDto,
-        caseDefinitionId: CaseDefinitionId?
+        blueprintId: BlueprintId?
     ): ProcessLink {
         return withLoggingContext(ProcessLink::class, processLinkToUpdate.id) {
             updateRequestDto as FormFlowProcessLinkUpdateRequestDto
-            if (formFlowService.findDefinition(updateRequestDto.formFlowDefinitionKey, caseDefinitionId!!) == null) {
-                throw RuntimeException("FormFlow definition not found with id ${updateRequestDto.formFlowDefinitionKey}")
-            }
+            assertFormFlowDefinitionExists(updateRequestDto.formFlowDefinitionKey, blueprintId)
             FormFlowProcessLink(
                 id = updateRequestDto.id,
                 processDefinitionId = processLinkToUpdate.processDefinitionId,
@@ -173,6 +167,17 @@ class FormFlowProcessLinkMapper(
                 formSize = updateRequestDto.formSize ?: FormSizes.medium,
                 subtitles = updateRequestDto.subtitles ?: emptyList(),
             )
+        }
+    }
+
+    private fun assertFormFlowDefinitionExists(formFlowDefinitionKey: String, blueprintId: BlueprintId?) {
+        val definition = when (blueprintId) {
+            is CaseDefinitionId -> formFlowService.findDefinition(formFlowDefinitionKey, blueprintId)
+            is BuildingBlockDefinitionId -> formFlowService.findDefinition(formFlowDefinitionKey, blueprintId)
+            else -> throw RuntimeException("A blueprint id (case or building block) is required for a form flow process link")
+        }
+        if (definition == null) {
+            throw RuntimeException("FormFlow definition not found with id $formFlowDefinitionKey")
         }
     }
 

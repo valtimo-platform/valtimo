@@ -55,7 +55,7 @@ class ZonedLocalDateTimeDeserializerTest {
     @Test
     fun `should deserialize to null`() {
         val dateTimeString = """"""""
-        val result: LocalDateTime = mapper.readValue(dateTimeString)
+        val result: LocalDateTime? = mapper.readValue(dateTimeString)
         assertThat(result).isNull()
     }
 

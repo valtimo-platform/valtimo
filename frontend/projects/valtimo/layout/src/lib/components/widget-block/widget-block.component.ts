@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,6 +19,7 @@ import {
   ChangeDetectionStrategy,
   Component,
   ElementRef,
+  HostBinding,
   Input,
   OnDestroy,
   Renderer2,
@@ -44,9 +45,9 @@ import {
   Subscription,
   tap,
 } from 'rxjs';
-import {WidgetComponentMap, WidgetWithUuid} from '../../models';
+import {WidgetColor, WidgetComponentMap, WidgetType, WidgetWithUuid} from '../../models';
 import {WidgetLayoutService} from '../../services/widget-layout.service';
-import {WIDGET_HEIGHT_1X} from '../../constants';
+import {WIDGET_COLOR_THEME_MAP, type WidgetColorVariant} from '../../constants';
 
 @Component({
   selector: 'valtimo-widget-block',
@@ -74,6 +75,11 @@ export class WidgetBlockComponent implements AfterViewInit, OnDestroy {
     return this._widget$.pipe(filter(widget => widget !== null));
   }
 
+  @HostBinding('attr.data-widget-type')
+  public get widgetTypeAttr(): string | null {
+    return this._widget$.value?.type ?? null;
+  }
+
   private readonly _viewContainerRefSubject$ = new BehaviorSubject<ViewContainerRef | null>(null);
 
   private get _viewContainerRef$(): Observable<ViewContainerRef> {
@@ -85,10 +91,12 @@ export class WidgetBlockComponent implements AfterViewInit, OnDestroy {
   public readonly blockHeightPx$ = combineLatest([
     this._contentHeight$,
     this._viewContainerRef$,
+    this.widget$,
+    this.widgetLayoutService.rowHeightUnit$,
   ]).pipe(
     filter(([contentHeight]) => contentHeight !== 0),
-    tap(([contentHeight, viewRef]) => {
-      const blockHeight = Math.ceil((contentHeight + 16) / WIDGET_HEIGHT_1X) * WIDGET_HEIGHT_1X;
+    tap(([contentHeight, viewRef, , rowHeightUnit]) => {
+      const blockHeight = Math.ceil((contentHeight + 16) / rowHeightUnit) * rowHeightUnit;
 
       this.renderer.setStyle(viewRef.element.nativeElement, 'height', `${blockHeight}px`);
       this.widgetLayoutService.triggerMuuriLayout();
@@ -114,17 +122,19 @@ export class WidgetBlockComponent implements AfterViewInit, OnDestroy {
     filter(documentId => !!documentId)
   );
 
-  public readonly theme$ = combineLatest([this.cdsThemeService.currentTheme$, this.widget$]).pipe(
-    map(([currentTheme, widgetConfiguration]) => {
-      return currentTheme === CurrentCarbonTheme.G10
-        ? widgetConfiguration.highContrast
-          ? CARBON_THEME.G100
-          : CARBON_THEME.G10
-        : widgetConfiguration.highContrast
-          ? CARBON_THEME.WHITE
-          : CARBON_THEME.G90;
-    })
+  public readonly theme$ = this.cdsThemeService.currentTheme$.pipe(
+    map(currentTheme =>
+      currentTheme === CurrentCarbonTheme.G10
+        ? CARBON_THEME.G10
+        : CARBON_THEME.G90
+    )
   );
+
+  public readonly widgetColors$ = combineLatest([this.widget$, this.theme$]).pipe(
+    map(([widgetConfiguration, theme]) =>
+      this.getWidgetColorVariant(widgetConfiguration, theme)
+    )
+  )
 
   private readonly _subscriptions = new Subscription();
 
@@ -179,5 +189,27 @@ export class WidgetBlockComponent implements AfterViewInit, OnDestroy {
         }
       )
     );
+  }
+
+  private getWidgetColorVariant(
+    widgetConfiguration: WidgetWithUuid,
+    theme: CARBON_THEME
+  ): WidgetColorVariant {
+    const colorKey = widgetConfiguration.color ?? WidgetColor.WHITE;
+    const widgetColor =
+      WIDGET_COLOR_THEME_MAP[colorKey] ?? WIDGET_COLOR_THEME_MAP[WidgetColor.WHITE];
+    const themeType = this.isLightTheme(theme) ? 'light' : 'dark';
+    const variant =
+      widgetColor[themeType] ?? WIDGET_COLOR_THEME_MAP[WidgetColor.WHITE][themeType];
+
+    if (widgetConfiguration.type === WidgetType.HIGHLIGHT) {
+      return {text: null, background: null, layer: null, accent: variant.accent};
+    }
+
+    return variant;
+  }
+
+  private isLightTheme(theme: CARBON_THEME): boolean {
+    return theme === CARBON_THEME.G10 || theme === CARBON_THEME.WHITE;
   }
 }

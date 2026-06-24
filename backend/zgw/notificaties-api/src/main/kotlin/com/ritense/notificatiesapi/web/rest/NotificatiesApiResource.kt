@@ -21,6 +21,7 @@ import com.ritense.notificatiesapi.exception.AuthorizationException
 import com.ritense.notificatiesapi.service.NotificatiesApiService
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import com.ritense.valtimo.contract.domain.ValtimoMediaType.APPLICATION_JSON_UTF8_VALUE
+import jakarta.validation.Valid
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.stereotype.Controller
@@ -38,7 +39,7 @@ class NotificatiesApiResource(
 
     @PostMapping("/v1/notificatiesapi/callback")
     fun handleNotification(
-        @RequestBody notification: NotificatiesApiNotificationReceivedEvent,
+        @Valid @RequestBody notification: NotificatiesApiNotificationReceivedEvent,
         @RequestHeader("Authorization") authHeader: String?
     ): ResponseEntity<Void> {
         return if (authHeader != null) {

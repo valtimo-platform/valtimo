@@ -36,19 +36,19 @@ dockerCompose {
 }
 
 dependencies {
-    implementation project(":authorization")
-    implementation project(":changelog")
-    api project(":contract")
-    implementation project(":data-provider")
-    implementation project(":exporter")
-    implementation project(":importer")
-    implementation project(":logging")
-    implementation project(":outbox")
-    implementation project(":resource")
-    implementation project(":search")
-    implementation project(":value-resolver")
-    implementation project(":web")
-    implementation project(":widget")
+    implementation project(":backend:authorization")
+    implementation project(":backend:changelog")
+    api project(":backend:contract")
+    implementation project(":backend:data-provider")
+    implementation project(":backend:exporter")
+    implementation project(":backend:importer")
+    implementation project(":backend:logging")
+    implementation project(":backend:outbox")
+    implementation project(":backend:resource")
+    implementation project(":backend:search")
+    implementation project(":backend:value-resolver")
+    implementation project(":backend:web")
+    implementation project(":backend:widget")
 
     api "org.springframework.security:spring-security-core"
     api "org.springframework.boot:spring-boot"
@@ -89,8 +89,14 @@ dependencies {
 
     annotationProcessor "org.springframework.boot:spring-boot-autoconfigure-processor"
 
-    testImplementation project(':core')
-    testImplementation project(':test-utils-common')
+    testImplementation project(':backend:core')
+    testImplementation(project(':backend:audit')) {
+        exclude(group: "com.ritense.valtimo", module: "case")
+    }
+    testImplementation project(':backend:test-utils-common')
+    testImplementation(project(':backend:building-block')) {
+        exclude group: 'com.ritense.valtimo', module: 'case'
+    }
 
     testImplementation "org.springframework.boot:spring-boot-starter-test"
     testImplementation "org.jetbrains.kotlin:kotlin-test"
@@ -109,6 +115,17 @@ dependencies {
             attributes("Implementation-Version": projectVersion)
         }
     }
+}
+
+// Handle duplicate liquibase files from circular test dependency (building-block -> form)
+tasks.named("integrationTestingPostgresql") {
+    systemProperty("liquibase.duplicateFileMode", "WARN")
+}
+tasks.named("integrationTestingMysql") {
+    systemProperty("liquibase.duplicateFileMode", "WARN")
+}
+tasks.named("securityTesting") {
+    systemProperty("liquibase.duplicateFileMode", "WARN")
 }
 
 apply from: "gradle/publishing.gradle"

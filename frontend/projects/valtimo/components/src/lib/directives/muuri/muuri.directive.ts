@@ -14,10 +14,19 @@
  * limitations under the License.
  */
 
-import {AfterViewInit, Directive, ElementRef, Input, OnDestroy, Renderer2} from '@angular/core';
+import {
+  AfterViewInit,
+  Directive,
+  ElementRef,
+  Input,
+  NgZone,
+  OnDestroy,
+  Renderer2,
+} from '@angular/core';
 import Muuri from 'muuri';
 import {BehaviorSubject, combineLatest, fromEvent, Observable, Subscription, switchMap} from 'rxjs';
-import {distinctUntilChanged, filter, tap} from 'rxjs/operators';
+import {distinctUntilChanged, filter, take, tap} from 'rxjs/operators';
+import {resolveWidgetLayout, WidgetLayout} from './widget-layout';
 
 @Directive({
   selector: '[muuri]',
@@ -25,19 +34,24 @@ import {distinctUntilChanged, filter, tap} from 'rxjs/operators';
 })
 export class MuuriDirective implements AfterViewInit, OnDestroy {
   @Input() public readonly columnMinWidth = 250;
+  @Input() public widgetLayout?: WidgetLayout;
 
   private readonly _muuriSubject$ = new BehaviorSubject<Muuri | null>(null);
   private readonly _containerWidthSubject$ = new BehaviorSubject<number>(0);
   private readonly _mutationTrigger$ = new BehaviorSubject<null>(null);
 
-  private resizeObserver?: ResizeObserver;
-  private mutationObserver?: MutationObserver;
+  private _containerResizeObserver?: ResizeObserver;
+  private _itemResizeObserver?: ResizeObserver;
+  private _mutationObserver?: MutationObserver;
+  private _layoutDebounceTimer: ReturnType<typeof setTimeout> | null = null;
+
+  private readonly _subscriptions = new Subscription();
 
   private get _muuri$(): Observable<Muuri> {
-    return this._muuriSubject$.pipe(filter(muuri => !!muuri));
+    return this._muuriSubject$.pipe(filter((muuri): muuri is Muuri => !!muuri));
   }
 
-  private get _muuri(): Muuri {
+  private get _muuri(): Muuri | null {
     return this._muuriSubject$.getValue();
   }
 
@@ -45,37 +59,108 @@ export class MuuriDirective implements AfterViewInit, OnDestroy {
     return this._containerWidthSubject$.pipe(distinctUntilChanged());
   }
 
-  private readonly _subscriptions = new Subscription();
-
   constructor(
-    private readonly elementRef: ElementRef,
-    private readonly renderer: Renderer2
+    private readonly elementRef: ElementRef<HTMLElement>,
+    private readonly renderer: Renderer2,
+    private readonly ngZone: NgZone
   ) {}
 
   public ngAfterViewInit(): void {
     this.setContainerStyles();
     this.observeContainerWidthChanges();
     this.observeMutations();
-    this.initMuuri();
-    this.openContainerChangeSubscription();
-    this.setContainerStyles();
+
+    this.ngZone.runOutsideAngular(() => {
+      this.ngZone.onStable.pipe(take(1)).subscribe(() => {
+        const nativeElement = this.elementRef.nativeElement;
+
+        if (
+          !nativeElement ||
+          !(nativeElement instanceof HTMLElement) ||
+          !nativeElement.isConnected
+        ) {
+          console.warn(
+            'MuuriDirective: container element is not an attached HTMLElement; skipping Muuri init.'
+          );
+          return;
+        }
+
+        this.initMuuri();
+        this.initItemResizeObserver();
+        this.openContainerChangeSubscription();
+        this._mutationTrigger$.next(null);
+      });
+    });
   }
 
   public ngOnDestroy(): void {
-    this.resizeObserver?.disconnect();
-    this.mutationObserver?.disconnect();
+    this._containerResizeObserver?.disconnect();
+    this._itemResizeObserver?.disconnect();
+    this._mutationObserver?.disconnect();
+    if (this._layoutDebounceTimer) clearTimeout(this._layoutDebounceTimer);
     this._subscriptions.unsubscribe();
+    this._muuriSubject$.value?.destroy?.();
   }
 
   private initMuuri(): void {
+    const nativeElement = this.elementRef.nativeElement;
+
+    if (!nativeElement || !(nativeElement instanceof HTMLElement)) {
+      console.warn('MuuriDirective: cannot initialize Muuri, nativeElement is not an HTMLElement.');
+      return;
+    }
+
     this._muuriSubject$.next(
-      new Muuri(this.elementRef.nativeElement, {
-        layout: {
-          fillGaps: true,
-        },
+      new Muuri(nativeElement, {
+        layout: resolveWidgetLayout(this.widgetLayout).muuriLayout,
         layoutOnResize: false,
       })
     );
+  }
+
+  /**
+   * Create a ResizeObserver that watches each direct child (Muuri item) for
+   * size changes. This catches image loads, async content rendering, font
+   * loading, and any other change that alters an item's height without
+   * triggering a DOM mutation.
+   */
+  private initItemResizeObserver(): void {
+    if (typeof ResizeObserver === 'undefined') return;
+
+    this._itemResizeObserver = new ResizeObserver(() => {
+      this.debouncedLayout();
+    });
+
+    this.observeCurrentItems();
+  }
+
+  /**
+   * Start observing all current direct children that are not yet observed.
+   * Called on init and whenever the MutationObserver detects new children.
+   */
+  private observeCurrentItems(): void {
+    if (!this._itemResizeObserver) return;
+
+    const container = this.elementRef.nativeElement as HTMLElement;
+    Array.from(container.children).forEach(child => {
+      this._itemResizeObserver!.observe(child);
+    });
+  }
+
+  /**
+   * Debounced refresh + layout to batch rapid item size changes (e.g. multiple
+   * images loading in quick succession) into a single Muuri re-layout.
+   */
+  private debouncedLayout(): void {
+    if (this._layoutDebounceTimer) clearTimeout(this._layoutDebounceTimer);
+
+    this._layoutDebounceTimer = setTimeout(() => {
+      this._layoutDebounceTimer = null;
+      if (this._muuri) {
+        this._muuri.refreshItems();
+        this._muuri.layout(true);
+      }
+    }, 200);
   }
 
   private observeContainerWidthChanges(): void {
@@ -86,18 +171,26 @@ export class MuuriDirective implements AfterViewInit, OnDestroy {
       this._containerWidthSubject$.next(width);
     };
 
-    this.resizeObserver = new ResizeObserver(() => getWidth());
-    this.resizeObserver.observe(nativeElement);
+    if (typeof ResizeObserver !== 'undefined') {
+      this._containerResizeObserver = new ResizeObserver(() => getWidth());
+      this._containerResizeObserver.observe(nativeElement);
+    }
 
-    this._subscriptions.add(fromEvent(window, 'resize').subscribe(() => getWidth()));
+    if (typeof window !== 'undefined') {
+      this._subscriptions.add(fromEvent(window, 'resize').subscribe(() => getWidth()));
+    }
 
     getWidth();
   }
 
   private observeMutations(): void {
+    if (typeof MutationObserver === 'undefined') {
+      return;
+    }
+
     const nativeElement = this.elementRef.nativeElement as HTMLElement;
 
-    this.mutationObserver = new MutationObserver(() => {
+    this._mutationObserver = new MutationObserver(() => {
       if (!this._muuri) return;
 
       const container = this.elementRef.nativeElement as HTMLElement;
@@ -109,10 +202,13 @@ export class MuuriDirective implements AfterViewInit, OnDestroy {
         this._muuri.add(items);
       }
 
+      // Ensure newly added items are observed for size changes
+      this.observeCurrentItems();
+
       this._mutationTrigger$.next(null);
     });
 
-    this.mutationObserver.observe(nativeElement, {
+    this._mutationObserver.observe(nativeElement, {
       childList: true,
       subtree: true,
     });

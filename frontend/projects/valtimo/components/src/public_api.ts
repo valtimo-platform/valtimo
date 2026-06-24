@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -97,15 +97,13 @@ export * from './lib/components/view-content/view-content.service';
 export * from './lib/components/form-io/components/form-io/form-io.component';
 export * from './lib/components/form-io/components/form-io-builder/form-io-builder.component';
 export * from './lib/components/form-io/form-io.module';
+export * from './lib/components/form-io/patches/patched-datagrid';
 
 export * from './lib/components/modal/modal.module';
 export * from './lib/components/modal/modal.component';
 
 export * from './lib/components/spinner/spinner.module';
 export * from './lib/components/spinner/spinner.component';
-
-export * from './lib/components/searchable-dropdown/searchable-dropdown.module';
-export * from './lib/components/searchable-dropdown/searchable-dropdown.component';
 
 export * from './lib/components/dropzone/dropzone.module';
 export * from './lib/components/dropzone/dropzone.component';
@@ -133,9 +131,6 @@ export * from './lib/components/webcam/webcam.component';
 
 export * from './lib/components/progress-bar/progress-bar.module';
 export * from './lib/components/progress-bar/progress-bar.component';
-
-export * from './lib/components/searchable-dropdown-select/searchable-dropdown-select.module';
-export * from './lib/components/searchable-dropdown-select/searchable-dropdown-select.component';
 
 export * from './lib/components/multiselect-dropdown/multiselect-dropdown.module';
 export * from './lib/components/multiselect-dropdown/multiselect-dropdown.component';
@@ -246,6 +241,10 @@ export * from './lib/components/mdi-icon-selector/mdi-icon-selector.component';
 // MDI icon viewer
 export * from './lib/components/mdi-icon-viewer/mdi-icon-viewer.component';
 
+// Schema editor
+
+export * from './lib/components/schema-editor/schema-editor.component';
+
 /*
 directives
  */
@@ -265,14 +264,21 @@ export * from './lib/directives/fit-page/fit-page.directive';
 export * from './lib/directives/digit-only/digit-only.directive';
 // command click
 export * from './lib/directives/ctrl-click/ctrl-click.directive';
-// cds overflow button
-export * from './lib/directives/valtimo-cds-overflow-button/valtimo-cds-overflow-button.directive';
+// overflow menu (floating-ui based)
+export * from './lib/components/overflow-menu/overflow-menu.component';
+export * from './lib/components/overflow-menu/overflow-menu-option/overflow-menu-option.component';
+export * from './lib/components/overflow-menu/overflow-menu-trigger/overflow-menu-trigger.component';
+export * from './lib/components/overflow-menu/overflow-menu.module';
+export * from './lib/components/overflow-menu/overflow-menu.model';
 // remove toggletip button class
 export * from './lib/directives/remove-classnames/remove-classnames.directive';
 // muuri
 export * from './lib/directives/muuri/muuri-directive.module';
 export * from './lib/directives/muuri/muuri.directive';
 export * from './lib/directives/muuri/muuri-item.component';
+export * from './lib/directives/muuri/muuri-gap-free-layout';
+export * from './lib/directives/muuri/widget-layout';
+export * from './lib/components/widget-layout-info/widget-layout-info.component';
 // read-only
 export * from './lib/directives/read-only.directive';
 // observe size
@@ -281,3 +287,9 @@ export * from './lib/directives/observe-size/observe-size.directive';
 export * from './lib/directives/context-menu.directive';
 // interfaces
 export * from './lib/interfaces';
+
+// assignment
+export * from './lib/components/assign-user/assignment.component';
+
+// Color picker
+export * from './lib/components/color-picker/color-picker.component';

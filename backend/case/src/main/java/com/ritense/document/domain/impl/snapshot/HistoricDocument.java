@@ -76,6 +76,9 @@ public class HistoricDocument implements Document {
     @Column(name = "document_modified_on", columnDefinition = "DATETIME")
     private LocalDateTime modifiedOn = null;
 
+    @Column(name = "document_retention_date", columnDefinition = "DATETIME")
+    private LocalDateTime retentionDate = null;
+
     @Column(name = "document_created_by", columnDefinition = "VARCHAR(255)")
     private String createdBy;
 
@@ -87,6 +90,12 @@ public class HistoricDocument implements Document {
 
     @Column(name = "document_assignee_full_name", columnDefinition = "VARCHAR(255)")
     private String assigneeFullName;
+
+    @Column(name = "document_team_key", columnDefinition = "VARCHAR(255)")
+    private String assignedTeamKey;
+
+    @Column(name = "document_team_title", columnDefinition = "VARCHAR(255)")
+    private String assignedTeamTitle;
 
     @Type(value = JsonType.class)
     @Column(name = "document_relations", columnDefinition = "json")
@@ -108,10 +117,13 @@ public class HistoricDocument implements Document {
         this.version = document.version();
         this.createdOn = document.createdOn();
         this.modifiedOn = document.modifiedOn().orElse(null);
+        this.retentionDate = document.retentionDate().orElse(null);
         this.createdBy = document.createdBy();
         this.sequence = document.sequence();
         this.assigneeId = document.assigneeId();
         this.assigneeFullName = document.assigneeFullName();
+        this.assignedTeamKey = document.assignedTeamKey();
+        this.assignedTeamTitle = document.assignedTeamTitle();
         this.documentRelations = document.relations();
         this.relatedFiles = document.relatedFiles();
     }
@@ -132,6 +144,11 @@ public class HistoricDocument implements Document {
     @Override
     public Optional<LocalDateTime> modifiedOn() {
         return Optional.ofNullable(modifiedOn);
+    }
+
+    @Override
+    public Optional<LocalDateTime> retentionDate() {
+        return Optional.ofNullable(retentionDate);
     }
 
     @Override
@@ -183,6 +200,16 @@ public class HistoricDocument implements Document {
     @Override
     public String assigneeFullName() {
         return assigneeFullName;
+    }
+
+    @Override
+    public String assignedTeamKey() {
+        return assignedTeamKey;
+    }
+
+    @Override
+    public String assignedTeamTitle() {
+        return assignedTeamTitle;
     }
 
     @Override

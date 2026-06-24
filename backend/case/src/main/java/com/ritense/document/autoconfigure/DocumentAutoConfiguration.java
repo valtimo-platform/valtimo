@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,18 +25,22 @@ import com.ritense.document.domain.impl.listener.DocumentRelatedFileSubmittedEve
 import com.ritense.document.domain.impl.listener.RelatedJsonSchemaDocumentAvailableEventListenerImpl;
 import com.ritense.document.domain.impl.sequence.JsonSchemaDocumentDefinitionSequenceRecord;
 import com.ritense.document.exporter.JsonSchemaDocumentDefinitionExporter;
-import com.ritense.document.importer.JsonSchemaDocumentDefinitionImporter;
+import com.ritense.document.importer.CaseJsonSchemaDocumentDefinitionImporter;
 import com.ritense.document.listener.DocumentDefinitionCaseEventListener;
+import com.ritense.document.listener.JsonSchemaDocumentTeamChangedListener;
 import com.ritense.document.repository.DocumentDefinitionRepository;
 import com.ritense.document.repository.DocumentDefinitionSequenceRepository;
+import com.ritense.document.repository.InternalCaseStatusHistoryRepository;
 import com.ritense.document.repository.impl.JsonSchemaDocumentRepository;
 import com.ritense.document.service.CaseTagService;
+import com.ritense.document.service.DefaultCaseDocumentResolver;
 import com.ritense.document.service.DocumentDefinitionService;
 import com.ritense.document.service.DocumentSearchService;
 import com.ritense.document.service.DocumentSequenceGeneratorService;
 import com.ritense.document.service.DocumentService;
 import com.ritense.document.service.DocumentStatisticService;
 import com.ritense.document.service.InternalCaseStatusService;
+import com.ritense.document.service.JsonSchemaDocumentActionProvider;
 import com.ritense.document.service.SearchFieldService;
 import com.ritense.document.service.impl.JsonSchemaDocumentDefinitionSequenceGeneratorService;
 import com.ritense.document.service.impl.JsonSchemaDocumentDefinitionService;
@@ -46,15 +50,19 @@ import com.ritense.document.web.rest.DocumentDefinitionManagementResource;
 import com.ritense.document.web.rest.DocumentDefinitionResource;
 import com.ritense.document.web.rest.DocumentResource;
 import com.ritense.document.web.rest.DocumentSearchResource;
-import com.ritense.document.web.rest.error.DocumentModuleExceptionTranslator;
+import com.ritense.document.web.rest.error.ValidationExceptionMapper;
 import com.ritense.document.web.rest.impl.JsonSchemaDocumentDefinitionResource;
+import com.ritense.document.web.rest.impl.JsonSchemaDocumentInspectionResource;
 import com.ritense.document.web.rest.impl.JsonSchemaDocumentResource;
 import com.ritense.document.web.rest.impl.JsonSchemaDocumentSearchResource;
 import com.ritense.outbox.OutboxService;
 import com.ritense.resource.service.ResourceService;
+import com.ritense.valtimo.contract.authentication.TeamManagementService;
 import com.ritense.valtimo.contract.authentication.UserManagementService;
 import com.ritense.valtimo.contract.case_.CaseDefinitionChecker;
 import com.ritense.valtimo.contract.database.QueryDialectHelper;
+import com.ritense.valtimo.contract.document.BlueprintCaseDocumentResolver;
+import com.ritense.valtimo.contract.document.CaseDocumentResolver;
 import com.ritense.valtimo.web.sse.service.SseSubscriptionService;
 import jakarta.persistence.EntityManager;
 import java.util.List;
@@ -68,7 +76,6 @@ import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.annotation.Bean;
 import org.springframework.core.io.ResourceLoader;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
-import org.zalando.problem.spring.web.advice.AdviceTrait;
 
 @AutoConfiguration
 @EnableJpaRepositories(basePackages = "com.ritense.document.repository")
@@ -91,7 +98,9 @@ public class DocumentAutoConfiguration {
         final ObjectMapper objectMapper,
         final InternalCaseStatusService internalCaseStatusService,
         final CaseTagService caseTagService,
-        final EntityManager entityManager
+        final Optional<TeamManagementService> teamManagementService,
+        final EntityManager entityManager,
+        final InternalCaseStatusHistoryRepository internalCaseStatusHistoryRepository
     ) {
         return new JsonSchemaDocumentService(
             documentRepository,
@@ -105,8 +114,19 @@ public class DocumentAutoConfiguration {
             objectMapper,
             internalCaseStatusService,
             caseTagService,
-            entityManager
+            teamManagementService.orElse(null),
+            entityManager,
+            internalCaseStatusHistoryRepository
         );
+    }
+
+    @Bean
+    @ConditionalOnMissingBean(CaseDocumentResolver.class)
+    public CaseDocumentResolver caseDocumentResolver(
+        final DocumentService documentService,
+        final List<BlueprintCaseDocumentResolver> blueprintCaseDocumentResolvers
+    ) {
+        return new DefaultCaseDocumentResolver(documentService, blueprintCaseDocumentResolvers);
     }
 
     @Bean
@@ -139,10 +159,10 @@ public class DocumentAutoConfiguration {
 
     @Bean
     @ConditionalOnMissingBean
-    public JsonSchemaDocumentDefinitionImporter documentDefinitionImporter(
+    public CaseJsonSchemaDocumentDefinitionImporter documentDefinitionImporter(
         JsonSchemaDocumentDefinitionService jsonSchemaDocumentDefinitionService
     ) {
-        return new JsonSchemaDocumentDefinitionImporter(
+        return new CaseJsonSchemaDocumentDefinitionImporter(
             jsonSchemaDocumentDefinitionService
         );
     }
@@ -162,6 +182,7 @@ public class DocumentAutoConfiguration {
         final QueryDialectHelper queryDialectHelper,
         final SearchFieldService searchFieldService,
         final UserManagementService userManagementService,
+        final Optional<TeamManagementService> teamManagementService,
         final AuthorizationService authorizationService,
         final OutboxService outboxService,
         final JsonSchemaDocumentDefinitionService jsonSchemaDocumentDefinitionService,
@@ -172,6 +193,7 @@ public class DocumentAutoConfiguration {
             queryDialectHelper,
             searchFieldService,
             userManagementService,
+            teamManagementService.orElse(null),
             authorizationService,
             outboxService,
             jsonSchemaDocumentDefinitionService,
@@ -238,13 +260,9 @@ public class DocumentAutoConfiguration {
     }
 
     @Bean
-    @ConditionalOnMissingBean(DocumentModuleExceptionTranslator.class)
-    public DocumentModuleExceptionTranslator documentModuleExceptionTranslator(
-        List<AdviceTrait> adviceTraits
-    ) {
-        return new DocumentModuleExceptionTranslator(
-            adviceTraits.get(0)
-        );
+    @ConditionalOnMissingBean(ValidationExceptionMapper.class)
+    public ValidationExceptionMapper validationExceptionMapper() {
+        return new ValidationExceptionMapper();
     }
 
     @Bean
@@ -254,6 +272,36 @@ public class DocumentAutoConfiguration {
     ) {
         return new DocumentDefinitionCaseEventListener(
             documentDefinitionService
+        );
+    }
+
+    @Bean
+    @ConditionalOnMissingBean(JsonSchemaDocumentTeamChangedListener.class)
+    public JsonSchemaDocumentTeamChangedListener jsonSchemaDocumentTeamChangedListener(
+        JsonSchemaDocumentRepository jsonSchemaDocumentRepository
+    ) {
+        return new JsonSchemaDocumentTeamChangedListener(
+            jsonSchemaDocumentRepository
+        );
+    }
+
+    @Bean
+    @ConditionalOnMissingBean(JsonSchemaDocumentActionProvider.class)
+    public JsonSchemaDocumentActionProvider jsonSchemaDocumentActionProvider() {
+        return new JsonSchemaDocumentActionProvider();
+    }
+
+    @Bean
+    @ConditionalOnMissingBean(JsonSchemaDocumentInspectionResource.class)
+    public JsonSchemaDocumentInspectionResource jsonSchemaDocumentInspectionResource(
+        final DocumentService documentService,
+        final AuthorizationService authorizationService,
+        final ApplicationEventPublisher applicationEventPublisher
+    ) {
+        return new JsonSchemaDocumentInspectionResource(
+            documentService,
+            authorizationService,
+            applicationEventPublisher
         );
     }
 }

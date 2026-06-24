@@ -20,10 +20,11 @@ import com.ritense.authorization.annotation.RunWithoutAuthorization
 import com.ritense.iko.service.IkoTabService
 import com.ritense.iko.web.rest.request.IkoTabCreateRequest
 import com.ritense.iko.web.rest.request.IkoTabUpdateRequest
-import com.ritense.tab.domain.Tab
 import com.ritense.tab.web.rest.dto.TabDto
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import com.ritense.valtimo.contract.domain.ValtimoMediaType.APPLICATION_JSON_UTF8_VALUE
+import com.ritense.valtimo.contract.iko.PropertyField
+import jakarta.validation.Valid
 import org.springframework.http.ResponseEntity
 import org.springframework.stereotype.Controller
 import org.springframework.web.bind.annotation.DeleteMapping
@@ -40,6 +41,14 @@ import org.springframework.web.bind.annotation.RequestMapping
 class IkoTabManagementResource(
     private val service: IkoTabService,
 ) {
+
+    @RunWithoutAuthorization
+    @GetMapping("/v1/iko-property-fields/{type}/tab")
+    fun getIkoTabPropertyFields(
+        @PathVariable type: String,
+    ): ResponseEntity<List<PropertyField>> {
+        return ResponseEntity.ok(service.getIkoTabPropertyFields(type))
+    }
 
     @RunWithoutAuthorization
     @GetMapping("/v1/iko-view/{ikoViewKey}/tab")
@@ -67,16 +76,11 @@ class IkoTabManagementResource(
     fun createIkoTab(
         @PathVariable ikoViewKey: String,
         @PathVariable key: String,
-        @RequestBody request: IkoTabCreateRequest
+        @Valid @RequestBody request: IkoTabCreateRequest
     ): ResponseEntity<TabDto> {
         val ikoTab = service.create(
             ikoViewKey = ikoViewKey,
-            tab = Tab(
-                key = key,
-                title = request.title,
-                type = request.type,
-                order = 0,
-            ),
+            tab = request.toEntity(key),
         )
         return ResponseEntity.ok(TabDto.from(ikoTab))
     }
@@ -86,7 +90,7 @@ class IkoTabManagementResource(
     fun updateIkoTab(
         @PathVariable ikoViewKey: String,
         @PathVariable key: String,
-        @RequestBody request: IkoTabUpdateRequest,
+        @Valid @RequestBody request: IkoTabUpdateRequest,
     ): ResponseEntity<TabDto> {
         require(request.key == key)
         val existingIkoTab = service.findByKey(
@@ -103,7 +107,7 @@ class IkoTabManagementResource(
     @PutMapping("/v1/iko-view/{ikoViewKey}/tab")
     fun updateIkoTabOrder(
         @PathVariable ikoViewKey: String,
-        @RequestBody request: List<IkoTabUpdateRequest>,
+        @Valid @RequestBody request: List<IkoTabUpdateRequest>,
     ): ResponseEntity<List<TabDto>> {
         val existingIkoTabs = service.findAllTabsByIkoViewKey(
             ikoViewKey = ikoViewKey,

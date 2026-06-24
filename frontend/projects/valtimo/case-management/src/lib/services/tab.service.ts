@@ -25,7 +25,7 @@ import {
 } from '@valtimo/shared';
 import {FormDefinitionOption, FormService} from '@valtimo/form';
 import {ListItem} from 'carbon-components-angular';
-import {BehaviorSubject, combineLatest, map, Observable, switchMap} from 'rxjs';
+import {BehaviorSubject, combineLatest, map, Observable, of, switchMap} from 'rxjs';
 import {TabEnum} from '../models';
 
 @Injectable({
@@ -144,9 +144,12 @@ export class TabService {
     caseManagementTabConfig?: CaseManagementTabConfig[] | CaseManagementTabConfig
   ): void {
     if (!caseManagementTabConfig) return;
+    const tabs = Array.isArray(caseManagementTabConfig)
+      ? caseManagementTabConfig
+      : [caseManagementTabConfig];
 
     this._injectedCaseManagementTabs$.next(
-      Array.isArray(caseManagementTabConfig) ? caseManagementTabConfig : [caseManagementTabConfig]
+      tabs.map(tab => ({...tab, enabled$: tab.enabled$ ?? of(true)}))
     );
   }
 }

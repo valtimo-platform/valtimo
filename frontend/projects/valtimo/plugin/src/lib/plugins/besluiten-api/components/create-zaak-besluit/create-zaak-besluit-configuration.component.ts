@@ -80,6 +80,9 @@ export class CreateZaakBesluitConfigurationComponent
   readonly selectedInputOption$ = new BehaviorSubject<InputOption>('selection');
   readonly selectedStartDateInputOption$ = new BehaviorSubject<InputOption>('selection');
   readonly selectedExpirationDateInputOption$ = new BehaviorSubject<InputOption>('selection');
+  readonly selectedPublicationDateInputOption$ = new BehaviorSubject<InputOption>('selection');
+  readonly selectedSendDateInputOption$ = new BehaviorSubject<InputOption>('selection');
+  readonly selectedResponseDeadlineInputOption$ = new BehaviorSubject<InputOption>('selection');
   readonly loading$ = new BehaviorSubject<boolean>(true);
   readonly pluginId$ = new BehaviorSubject<string>('');
   readonly clearBesluitSelection$ = new Subject<void>();
@@ -101,6 +104,9 @@ export class CreateZaakBesluitConfigurationComponent
 
   readonly startDateInputTypeOptions$ = this.inputTypeOptions$;
   readonly expirationDateInputTypeOptions$ = this.inputTypeOptions$;
+  readonly publicationDateInputTypeOptions$ = this.inputTypeOptions$;
+  readonly sendDateInputTypeOptions$ = this.inputTypeOptions$;
+  readonly responseDeadlineInputTypeOptions$ = this.inputTypeOptions$;
 
   private readonly formValue$ = new BehaviorSubject<CreateZaakBesluitConfig | null>(null);
   private readonly valid$ = new BehaviorSubject<boolean>(false);
@@ -139,6 +145,18 @@ export class CreateZaakBesluitConfigurationComponent
     if (formValue.inputTypeExpirationDateToggle) {
       this.selectedExpirationDateInputOption$.next(formValue.inputTypeExpirationDateToggle);
     }
+
+    if (formValue.inputTypePublicationDateToggle) {
+      this.selectedPublicationDateInputOption$.next(formValue.inputTypePublicationDateToggle);
+    }
+
+    if (formValue.inputTypeSendDateToggle) {
+      this.selectedSendDateInputOption$.next(formValue.inputTypeSendDateToggle);
+    }
+
+    if (formValue.inputTypeResponseDeadlineToggle) {
+      this.selectedResponseDeadlineInputOption$.next(formValue.inputTypeResponseDeadlineToggle);
+    }
   }
 
   public oneSelectItem(selectItems: Array<SelectItem>): boolean {
@@ -151,7 +169,7 @@ export class CreateZaakBesluitConfigurationComponent
     const sub = this.context$
       .pipe(
         filter(([context]) => {
-          if (context === 'independent') {
+          if (context === 'independent' || context === 'buildingBlock') {
             this.selectedInputOption$.next('text');
             this.loading$.next(false);
           }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2023 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -8,7 +8,7 @@
  * https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
  *
  * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
+ * distributed under the License is distributed on an "AS IS" basis,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
@@ -70,6 +70,9 @@ const defaultDefinitionColumns: Array<DefinitionColumn> = [
 export const environment: ValtimoConfig = {
   logoSvgBase64: LOGO_BASE_64,
   darkModeLogoSvgBase64: DARK_MODE_LOGO_BASE_64,
+  logoPngBase64: LOGO_BASE_64_PNG,
+  darkModeLogoPngBase64: DARK_MODE_LOGO_BASE_64_PNG,
+  applicationTitle: '',
   production: false,
   authentication: authenticationKeycloak,
   menu: {
@@ -79,20 +82,17 @@ export const environment: ValtimoConfig = {
         link: ['/'],
         title: 'Dashboard',
         iconClass: 'icon mdi mdi-view-dashboard',
-        sequence: 0,
       },
       {
         roles: [ROLE_USER],
         title: 'Cases',
         iconClass: 'icon mdi mdi-layers',
-        sequence: 1,
         children: [],
       },
       {
-        roles: [ROLE_USER],
+        roles: [ROLE_ADMIN],
         title: 'Objects',
         iconClass: 'icon mdi mdi-archive',
-        sequence: 2,
         includeFunction: IncludeFunction.ObjectManagementEnabled,
       },
       {
@@ -100,68 +100,61 @@ export const environment: ValtimoConfig = {
         link: ['/tasks'],
         title: 'Tasks',
         iconClass: 'icon mdi mdi-check-all',
-        sequence: 3,
       },
       {
         roles: [ROLE_USER],
         link: ['/analysis'],
         title: 'Analysis',
         iconClass: 'icon mdi mdi-chart-bar',
-        sequence: 4,
+      },
+      {
+        roles: [ROLE_USER],
+        link: ['/teams'],
+        title: 'teams.title',
+        iconClass: 'icon mdi mdi-account-group',
       },
       {
         roles: [ROLE_ADMIN],
         title: 'Admin',
         iconClass: 'icon mdi mdi-tune',
-        sequence: 5,
         children: [
-          {title: 'Configuration', textClass: 'text-dark font-weight-bold c-default', sequence: 1},
-          {link: ['/case-management'], title: 'Cases', sequence: 2},
-          {link: ['/plugins'], title: 'Plugins', sequence: 3},
-          {link: ['/dashboard-management'], title: 'Dashboard', sequence: 4},
-          {link: ['/access-control'], title: 'Access Control', sequence: 5},
-          {link: ['/translation-management'], title: 'Translations', sequence: 6},
-          {link: ['/choice-fields'], title: 'Choice fields', sequence: 7},
-
-          {
-            title: 'Object management',
-            textClass: 'text-dark font-weight-bold c-default',
-            sequence: 8,
-          },
-          {link: ['/object-management'], title: 'Objects', sequence: 9},
-          {link: ['/form-management'], title: 'Forms', sequence: 10},
-          {
-            link: ['/notifications-api/notifications/failed'],
-            title: 'Failed notifications',
-            sequence: 11,
-          },
-
-          {
-            title: 'System processes',
-            textClass: 'text-dark font-weight-bold c-default',
-            sequence: 12,
-          },
-          {link: ['/processes'], title: 'Processes', sequence: 13},
-          {link: ['/decision-tables'], title: 'Decision tables', sequence: 14},
-
-          {title: 'Other', textClass: 'text-dark font-weight-bold c-default', sequence: 15},
-          {link: ['/logging'], title: 'Logs', sequence: 16},
-          {link: ['/case-migration'], title: 'Case migration (beta)', sequence: 17},
-          {link: ['/process-migration'], title: 'Process migration', sequence: 18},
+          {title: 'Configuration', textClass: 'text-dark font-weight-bold c-default'},
+          {link: ['/admin-settings'], title: 'adminSettings.title'},
+          {link: ['/building-block-management'], title: 'buildingBlockManagement.title'},
+          {link: ['/case-management'], title: 'Cases'},
+          {link: ['/plugins'], title: 'Plugins'},
+          {link: ['/dashboard-management'], title: 'Dashboard'},
+          {link: ['/access-control'], title: 'Access Control'},
+          {link: ['/translation-management'], title: 'Translations'},
+          {link: ['/choice-fields'], title: 'Choice fields'},
+          {title: 'Object management', textClass: 'text-dark font-weight-bold c-default'},
+          {link: ['/object-management'], title: 'Objects'},
+          {link: ['/form-management'], title: 'Forms'},
+          {link: ['/notifications-api/notifications/failed'], title: 'Notifications'},
+          {title: 'System processes', textClass: 'text-dark font-weight-bold c-default'},
+          {link: ['/processes'], title: 'Processes'},
+          {link: ['/decision-tables'], title: 'Decision tables'},
+          {title: 'Other', textClass: 'text-dark font-weight-bold c-default'},
+          {link: ['/logging'], title: 'Logs'},
+          {link: ['/case-migration'], title: 'Case migration (beta)'},
+          {link: ['/process-migration'], title: 'Process migration'},
+          {link: ['/task-management'], title: 'Tasks (legacy)'},
+          {title: 'Valtimo test tools', textClass: 'text-dark font-weight-bold c-default'},
+          {link: ['/notification-test'], title: 'Send notification'},
         ],
       },
       {
-        roles: [ROLE_DEVELOPER],
+        roles: [ROLE_DEVELOPER, ROLE_ADMIN],
         title: 'Development',
-        iconClass: 'icon mdi mdi-code',
-        sequence: 6,
+        iconClass: 'icon mdi mdi-xml',
         children: [
-          {link: ['/swagger'], title: 'Swagger', iconClass: 'icon mdi mdi-dot-circle', sequence: 1},
+          {link: ['/swagger'], title: 'Swagger', iconClass: 'icon mdi mdi-dot-circle'},
         ],
       },
     ],
   },
   whitelistedDomains: ['localhost:4200'],
+  langKey: Language.NL,
   mockApi: {
     endpointUri: window['env']['mockApiUri'] || '/mock-api/',
   },
@@ -180,8 +173,8 @@ export const environment: ValtimoConfig = {
   },
   uploadProvider: UploadProvider.DOCUMENTEN_API,
   defaultDefinitionTable: defaultDefinitionColumns,
-  visibleTaskListTabs: [TaskListTab.MINE, TaskListTab.OPEN, TaskListTab.ALL],
-  visibleCaseListTabs: [CaseListTab.ALL, CaseListTab.MINE, CaseListTab.OPEN],
+  visibleTaskListTabs: [TaskListTab.MINE, TaskListTab.TEAM, TaskListTab.OPEN, TaskListTab.ALL],
+  visibleCaseListTabs: [CaseListTab.ALL, CaseListTab.MINE, CaseListTab.TEAM, CaseListTab.OPEN],
   featureToggles: {
     allowUserThemeSwitching: true,
     disableCaseCount: false,
@@ -191,7 +184,7 @@ export const environment: ValtimoConfig = {
     enableTabManagement: true,
     enableUserNameInTopBarToggle: true,
     experimentalDmnEditing: true,
-    largeLogoMargin: true,
+    largeLogoMargin: false,
     returnToLastUrlAfterTokenExpiration: true,
     showPlantATreeButton: false,
     showUserNameInTopBar: true,

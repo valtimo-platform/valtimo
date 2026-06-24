@@ -1,6 +1,14 @@
 {
     "searchFields": [
         {
+            "key": "team",
+            "path": "case:assignedTeamTitle",
+            "dataType": "text",
+            "fieldType": "single",
+            "matchType": "like",
+            "title": "Team"
+        },
+        {
             "key": "createdOn",
             "path": "case:createdOn",
             "dataType": "date",

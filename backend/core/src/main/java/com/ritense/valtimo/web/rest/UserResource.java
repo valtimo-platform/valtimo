@@ -16,6 +16,7 @@
 
 package com.ritense.valtimo.web.rest;
 
+import jakarta.validation.Valid;
 import static com.ritense.valtimo.contract.domain.ValtimoMediaType.APPLICATION_JSON_UTF8_VALUE;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -26,6 +27,7 @@ import com.ritense.valtimo.contract.authentication.ManageableUser;
 import com.ritense.valtimo.contract.authentication.UserManagementService;
 import com.ritense.valtimo.contract.authentication.model.ValtimoUser;
 import com.ritense.valtimo.service.UserSettingsService;
+import com.ritense.valtimo.web.rest.dto.UserTeamDto;
 import com.ritense.valtimo.web.rest.util.HeaderUtil;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -69,8 +71,9 @@ public class UserResource {
         this.objectMapper = objectMapper;
     }
 
+    @Deprecated(since = "Since 13.20.0", forRemoval = true)
     @PostMapping("/v1/users")
-    public ResponseEntity<ManageableUser> createUser(@RequestBody ValtimoUser valtimoUser) throws URISyntaxException {
+    public ResponseEntity<ManageableUser> createUser(@Valid @RequestBody ValtimoUser valtimoUser) throws URISyntaxException {
         logger.debug("Request to save ValtimoUser : {}", valtimoUser);
         final ManageableUser user = userManagementService.createUser(valtimoUser);
         final URI uri = new URI("/api/v1/users/" + UriUtils.encode(user.getId(), StandardCharsets.UTF_8));
@@ -78,14 +81,16 @@ public class UserResource {
         return ResponseEntity.created(uri).headers(headers).body(user);
     }
 
+    @Deprecated(since = "Since 13.20.0", forRemoval = true)
     @PutMapping("/v1/users")
-    public ResponseEntity<ManageableUser> updateUser(@RequestBody ValtimoUser valtimoUser) {
+    public ResponseEntity<ManageableUser> updateUser(@Valid @RequestBody ValtimoUser valtimoUser) {
         logger.debug("Request to update ValtimoUser : {}", valtimoUser);
         final ManageableUser user = userManagementService.updateUser(valtimoUser);
         final HttpHeaders headers = HeaderUtil.createAlert("userManagement.updated", user.getEmail());
         return ResponseEntity.ok().headers(headers).body(user);
     }
 
+    @Deprecated(since = "Since 13.20.0", forRemoval = true)
     @PutMapping("/v1/users/{userId}/activate")
     public ResponseEntity<Void> activateUser(@PathVariable String userId) {
         logger.debug("Request to activate userId : {}", userId);
@@ -94,6 +99,7 @@ public class UserResource {
         return ResponseEntity.ok().headers(headers).build();
     }
 
+    @Deprecated(since = "Since 13.20.0", forRemoval = true)
     @PutMapping("/v1/users/{userId}/deactivate")
     public ResponseEntity<Void> deactivateUser(@PathVariable String userId) {
         logger.debug("Request to deactivate user : {}", userId);
@@ -136,6 +142,7 @@ public class UserResource {
         return ResponseEntity.ok(usersWithRole);
     }
 
+    @Deprecated(since = "Since 13.20.0", forRemoval = true)
     @DeleteMapping("/v1/users/{userId}")
     public ResponseEntity<Void> deleteUser(@PathVariable String userId) {
         logger.debug("Request to delete user : {}", userId);
@@ -175,5 +182,13 @@ public class UserResource {
         }
 
         return ResponseEntity.ok().build();
+    }
+
+    @GetMapping("/v1/user/team")
+    public ResponseEntity<List<UserTeamDto>> getCurrentUserTeams() {
+        List<UserTeamDto> teams = userManagementService.getCurrentUserTeams().stream()
+            .map(UserTeamDto::new)
+            .toList();
+        return ResponseEntity.ok(teams);
     }
 }

@@ -23,14 +23,19 @@ import com.ritense.notificatiesapi.domain.NotificatiesApiAbonnementLink
 import com.ritense.notificatiesapi.exception.NotificatiesApiAbonnementException
 import com.ritense.notificatiesapi.repository.NotificatiesApiAbonnementLinkRepository
 import com.ritense.plugin.events.PluginConfigurationDeletedEvent
+import com.ritense.processlink.event.ProcessLinkCreatedEvent
+import com.ritense.processlink.event.ProcessLinkUpdatedEvent
 import com.ritense.plugin.service.PluginConfigurationSearchParameters
 import com.ritense.plugin.service.PluginService
 import com.ritense.valtimo.contract.event.ApplicationFullyReadyEvent
+import com.ritense.valtimo.contract.event.PluginsDeployedEvent
 import io.github.oshai.kotlinlogging.KotlinLogging
+import org.springframework.context.event.EventListener
+import org.springframework.transaction.event.TransactionPhase.AFTER_COMMIT
+import org.springframework.transaction.event.TransactionalEventListener
 import java.net.URI
 import java.security.SecureRandom
 import java.util.Base64
-import org.springframework.context.event.EventListener
 
 class PluginsDeployedEventListener(
     private val client: NotificatiesApiClient,
@@ -39,7 +44,32 @@ class PluginsDeployedEventListener(
     private val registerAbonnementen: Boolean
 ) {
 
-    @EventListener(ApplicationFullyReadyEvent::class, PluginConfigurationDeletedEvent::class)
+    private var applicationFullyReady = false
+
+    @EventListener(ApplicationFullyReadyEvent::class)
+    fun handleApplicationFullyReadyEvent() {
+        applicationFullyReady = true
+        registerAbonnementenForNotificatiesApiPlugins()
+    }
+
+    @EventListener(PluginConfigurationDeletedEvent::class, PluginsDeployedEvent::class)
+    fun handlePluginConfigurationChangedEvent() {
+        if (!applicationFullyReady) return
+        registerAbonnementenForNotificatiesApiPlugins()
+    }
+
+    @TransactionalEventListener(phase = AFTER_COMMIT)
+    fun handleProcessLinkCreatedEvent(event: ProcessLinkCreatedEvent) {
+        if (!applicationFullyReady || event.processLinkType != "plugin") return
+        registerAbonnementenForNotificatiesApiPlugins()
+    }
+
+    @TransactionalEventListener(phase = AFTER_COMMIT)
+    fun handleProcessLinkUpdatedEvent(event: ProcessLinkUpdatedEvent) {
+        if (!applicationFullyReady || event.processLinkType != "plugin") return
+        registerAbonnementenForNotificatiesApiPlugins()
+    }
+
     fun registerAbonnementenForNotificatiesApiPlugins() {
         if (!registerAbonnementen) return
 
@@ -85,16 +115,18 @@ class PluginsDeployedEventListener(
                 )
             }
 
-        val kanalen = configurations.flatMap {
-            it.getKanaalFilters()
-        }
+        val kanalen = configurations
+            .flatMap { it.getKanaalFilters() }
+            .distinct()
 
         val currentNotificatiesApiAbonnementLink = knownNotificatiesApiAbonnementLinks.firstOrNull {
             it.notificatiesApiConfigurationId.id == configurations.first()
                 .getNotificatiesApiPlugin().notificatiesApiConfigurationId.id
         }
 
-        val authKey = currentNotificatiesApiAbonnementLink?.auth ?: createRandomKey()
+        val authKey = notificatiesApiPluginInstance.authHeader?.takeIf { it.isNotBlank() }
+            ?: currentNotificatiesApiAbonnementLink?.auth?.takeIf { it.isNotBlank() }
+            ?: createRandomKey()
 
         ensureKanalenExist(
             kanalen.map { it.naam }.toSet(),
@@ -104,7 +136,7 @@ class PluginsDeployedEventListener(
 
         val currentNotificatiesApiAbonnement = abonnementenInApi.firstOrNull { abonnement ->
             currentNotificatiesApiAbonnementLink != null &&
-            currentNotificatiesApiAbonnementLink.url == abonnement.url
+                currentNotificatiesApiAbonnementLink.url == abonnement.url
         }
 
         val abonnement = if (currentNotificatiesApiAbonnement == null) {
@@ -122,20 +154,32 @@ class PluginsDeployedEventListener(
                 )
             )
         } else {
-            logger.debug {
-                "Updating abonnement for Notificaties API plugin configuration with id " +
-                    "'${notificatiesApiPluginInstance.notificatiesApiConfigurationId.id}'"
-            }
-            client.updateAbonnement(
-                notificatiesApiPluginInstance.authenticationPluginConfiguration,
-                notificatiesApiPluginInstance.url,
-                currentNotificatiesApiAbonnementLink!!.getAbonnementId(),
-                Abonnement(
-                    callbackUrl = notificatiesApiPluginInstance.callbackUrl.toASCIIString(),
-                    auth = authKey,
-                    kanalen = kanalen
+            val desiredCallbackUrl = notificatiesApiPluginInstance.callbackUrl.toASCIIString()
+            val abonnementUnchanged = currentNotificatiesApiAbonnement.callbackUrl == desiredCallbackUrl &&
+                currentNotificatiesApiAbonnement.kanalen.toSet() == kanalen.toSet()
+
+            if (abonnementUnchanged) {
+                logger.debug {
+                    "Skipping update for Notificaties API plugin configuration with id " +
+                        "'${notificatiesApiPluginInstance.notificatiesApiConfigurationId.id}' because abonnement is unchanged"
+                }
+                currentNotificatiesApiAbonnement
+            } else {
+                logger.debug {
+                    "Updating abonnement for Notificaties API plugin configuration with id " +
+                        "'${notificatiesApiPluginInstance.notificatiesApiConfigurationId.id}'"
+                }
+                client.updateAbonnement(
+                    notificatiesApiPluginInstance.authenticationPluginConfiguration,
+                    notificatiesApiPluginInstance.url,
+                    currentNotificatiesApiAbonnementLink!!.getAbonnementId(),
+                    Abonnement(
+                        callbackUrl = desiredCallbackUrl,
+                        auth = authKey,
+                        kanalen = kanalen
+                    )
                 )
-            )
+            }
         }
 
         if (currentNotificatiesApiAbonnement == null && currentNotificatiesApiAbonnementLink != null) {

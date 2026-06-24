@@ -19,32 +19,33 @@
   *ngIf="{
     disabled: disabled$ | async,
     prefill: prefillConfiguration$ ? (prefillConfiguration$ | async) : null,
-    noteEventListenerEnabled: noteEventListenerEnabled$ | async
   } as obs"
 >
   <v-input
     name="configurationTitle"
+    [attr.data-test-id]="testIds.configurationTitle"
     placeholder="Zaken API Plugin"
     [title]="'configurationTitle' | pluginTranslate: pluginId | async"
-    [tooltip]="'configurationTitleTooltip' | pluginTranslate: pluginId | async"
     [defaultValue]="obs.prefill?.configurationTitle"
     [disabled]="obs.disabled"
     [required]="true"
     [margin]="true"
     [trim]="true"
+    [tooltip]="'configurationTitleTooltip' | pluginTranslate: pluginId | async"
   >
   </v-input>
 
   <v-input
     name="url"
-    placeholder="https://openzaak.example.com/zaken/api/v1/ "
+    [attr.data-test-id]="testIds.url"
     [title]="'url' | pluginTranslate: pluginId | async"
-    [tooltip]="'urlTooltip' | pluginTranslate: pluginId | async"
     [defaultValue]="obs.prefill?.url"
     [disabled]="obs.disabled"
     [required]="true"
     [trim]="true"
     [margin]="true"
+    [tooltip]="'urlTooltip' | pluginTranslate: pluginId | async"
+    placeholder="https://openzaak.example.com/zaken/api/v1/ "
   >
   </v-input>
 
@@ -52,6 +53,7 @@
     *ngIf="{authenticationPluginSelectItems: authenticationPluginSelectItems$ | async} as authObs"
   >
     <v-select
+      [attr.data-test-id]="testIds.authenticationPluginConfiguration"
       name="authenticationPluginConfiguration"
       [title]="'authenticationPluginConfiguration' | pluginTranslate: pluginId | async"
       [tooltip]="'authenticationPluginConfigurationTooltip' | pluginTranslate: pluginId | async"
@@ -64,31 +66,4 @@
     ></v-select>
   </ng-container>
 
-  <div class="input-toggle--small-margin">
-    <v-input-label
-      [title]="'noteEventListenerEnabled' | pluginTranslate: pluginId | async"
-      [tooltip]="'noteEventListenerEnabledTooltip' | pluginTranslate: pluginId | async"
-    >
-    </v-input-label>
-
-    <cds-toggle
-      [checked]="obs.noteEventListenerEnabled"
-      [disabled]="obs.disabled"
-      [onText]="'noteEventListenerEnabled.toggleOn' | pluginTranslate: pluginId | async"
-      [offText]="'noteEventListenerEnabled.toggleOff' | pluginTranslate: pluginId | async"
-      (checkedChange)="onNoteEventListenerEnabledChange($event)"
-    ></cds-toggle>
-  </div>
-
-  <v-input
-    *ngIf="obs.noteEventListenerEnabled"
-    name="noteSubject"
-    [title]="'noteSubject' | pluginTranslate: pluginId | async"
-    [defaultValue]="obs.prefill?.noteSubject"
-    [disabled]="obs.disabled"
-    [required]="true"
-    [margin]="true"
-    [trim]="true"
-  >
-  </v-input>
 </v-form>

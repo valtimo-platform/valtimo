@@ -25,32 +25,26 @@ Starting up the Valtimo platform requires two steps:
 
 Run the following command to install the dependencies: `npm install`.
 
-#### Build libraries
-
-Run the following command to build all the Valtimo libraries: `npm run libs-build-all`.
-
 #### Start application
 
 - Run the following command to start the Angular application: `npm start`.
+  - The first run will build all libraries into `dist/` (this can take a few minutes).
+    Subsequent runs skip this step as long as `dist/valtimo/shared` exists.
 - When this command has been completed, navigate to `http://localhost:4200/`
+- Edits to library `*.ts` source files are picked up automatically by `ng serve` —
+  no manual rebuild required.
 
-#### Development mode
+#### Rebuilding libraries
 
-- If you expect to make changes to multiple libraries at once, use the following commands:
-  - `npm run devMode` to build all libraries, watch them for changes and to start the Angular
-    application.
-  - `npm run devMode:skipLibsBuild`. Use this command if all libraries have already been built.
-    Watches all libraries for changes and starts the Angular application.
+The libraries are wired in via npm workspaces (`projects/valtimo/*` is symlinked into
+`node_modules/@valtimo/*`), so most source changes are picked up live. You only need
+to rebuild a library manually when:
 
-### Making changes to the Valtimo frontend
+- you change a library's `package.json`, `ng-package.json`, or assets, or
+- you want to refresh the published artifacts in `dist/`.
 
-When making changes to the libraries, the modified libraries have to be rebuilt. The following
-command can be used to build one specific library: `npm run libs:build:libraryName`. Note: it is
-possible to `watch` for changes in a specific library, building it automatically after a change has
-been saved. For rebuilding automatically use the following command:
-`npm run libs:watch:libraryName`.
-
-The app will automatically reload if you change any of the source files.
+Use `npm run libs:build:libraryName` for a single library or `npm run libs-build-all`
+to rebuild every library. `npm run libs-build-all` is also what CI/CD and publishing use.
 
 ### Code quality
 
@@ -80,3 +74,4 @@ Run the following command to run the unit tests: `npm run libs:test:libraryName`
 #### Code guidelines
 
 For contributing code, please refer to the [coding guidelines](CODING-GUIDELINES.md).
+

@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,14 +31,15 @@ import {ButtonModule, IconModule, IconService, TabsModule} from 'carbon-componen
 import {cloneDeep} from 'lodash';
 import {BehaviorSubject, combineLatest, filter, map, Observable, switchMap, take, tap} from 'rxjs';
 
-import {WIDGET_MANAGEMENT_SERVICE} from '../../../constants';
+import {WIDGET_EDITOR_TEST_IDS, WIDGET_MANAGEMENT_SERVICE} from '../../../constants';
 import {IWidgetManagementService} from '../../../interfaces';
 import {
   AVAILABLE_WIDGETS,
   BasicWidget,
+  WIDGET_COLOR_LABELS,
   Widget,
+  WidgetColor,
   WidgetDensity,
-  WidgetStyle,
   WidgetType,
   WidgetTypeTags,
   WidgetWidth,
@@ -68,6 +69,8 @@ import {WidgetManagementWizardComponent} from '../management-wizard/widget-manag
   ],
 })
 export class WidgetManagementEditorComponent implements OnDestroy {
+  protected readonly testIds = WIDGET_EDITOR_TEST_IDS;
+
   @Input() public enableWidgetDivider = true;
   @Input() public set params(value: any) {
     if (!value) return;
@@ -125,6 +128,15 @@ export class WidgetManagementEditorComponent implements OnDestroy {
             {
               key: 'widthTranslation',
               label: 'widgetTabManagement.columns.width',
+              viewType: ViewType.TEXT,
+            },
+          ]
+        : []),
+      ...(this.widgetWizardService.$widgetWizardSteps().includes(WidgetWizardStep.APPEARANCE)
+        ? [
+            {
+              key: 'colorLabel',
+              label: 'widgetTabManagement.columns.color',
               viewType: ViewType.TEXT,
             },
           ]
@@ -190,6 +202,7 @@ export class WidgetManagementEditorComponent implements OnDestroy {
         densityTranslation: this.translateService.instant(
           `widgetTabManagement.density.${item.isCompact ? 'compact' : 'default'}.title`
         ),
+        colorLabel: this.getWidgetColorLabel(item),
         tags: [
           {
             content: this.translateService.instant(`widgetTabManagement.type.${item.type}.title`),
@@ -213,6 +226,12 @@ export class WidgetManagementEditorComponent implements OnDestroy {
   public readonly $isDividerModalOpen = signal<boolean>(false);
   public readonly $dividerModalMode = signal<ModalMode>('add');
   public readonly $dragAndDropDisabled = signal(false);
+  private readonly _colorSupportedWidgetTypes: WidgetType[] = [
+    WidgetType.FIELDS,
+    WidgetType.COLLECTION,
+    WidgetType.TABLE,
+    WidgetType.HIGHLIGHT,
+  ];
 
   constructor(
     private readonly iconService: IconService,
@@ -237,9 +256,8 @@ export class WidgetManagementEditorComponent implements OnDestroy {
     }
     this.widgetWizardService.$widgetTitle.set(widget.title);
     this.widgetWizardService.$widgetIcon.set(widget.icon ?? null);
-    this.widgetWizardService.$widgetStyle.set(
-      widget.highContrast ? WidgetStyle.HIGH_CONTRAST : WidgetStyle.DEFAULT
-    );
+    this.widgetWizardService.$widgetHighContrast.set(!!widget.highContrast);
+    this.widgetWizardService.$widgetColor.set(widget.color ?? WidgetColor.WHITE);
     this.widgetWizardService.$widgetWidth.set(
       widget.width || this.widgetWizardService.defaultWidth
     );
@@ -255,6 +273,19 @@ export class WidgetManagementEditorComponent implements OnDestroy {
     this.widgetWizardService.$widgetKey.set(widget.key);
     this.widgetWizardService.$widgetActions.set(widget.actions);
     this.$isWizardOpen.set(true);
+  }
+
+  private getWidgetColorLabel(widget: BasicWidget): string {
+    const color =
+      this.widgetSupportsColor(widget.type) && widget.color ? widget.color : WidgetColor.WHITE;
+
+    return this.translateService.instant(
+      WIDGET_COLOR_LABELS[color] ?? 'widgetTabManagement.appearance.backgroundColor.colors.white'
+    );
+  }
+
+  private widgetSupportsColor(type: WidgetType): boolean {
+    return this._colorSupportedWidgetTypes.includes(type);
   }
 
   public duplicateWidget(tabWidget: Widget): void {

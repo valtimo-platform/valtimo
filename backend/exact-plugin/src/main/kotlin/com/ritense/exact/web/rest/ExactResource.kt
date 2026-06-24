@@ -5,6 +5,7 @@ import com.ritense.exact.service.request.ExactExchangeRequest
 import com.ritense.exact.service.response.ExactExchangeResponse
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import com.ritense.valtimo.contract.domain.ValtimoMediaType.APPLICATION_JSON_UTF8_VALUE
+import jakarta.validation.Valid
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
@@ -18,7 +19,7 @@ class ExactResource(
 ) {
 
     @PostMapping("/v1/plugin/exact/exchange")
-    fun exchange(@RequestBody request: ExactExchangeRequest): ExactExchangeResponse {
+    fun exchange(@Valid @RequestBody request: ExactExchangeRequest): ExactExchangeResponse {
         return exactService.exchange(request)
     }
 

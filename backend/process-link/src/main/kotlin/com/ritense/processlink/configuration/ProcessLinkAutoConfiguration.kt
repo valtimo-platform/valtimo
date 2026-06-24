@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,9 +20,10 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import com.ritense.authorization.AuthorizationService
 import com.ritense.document.service.DocumentService
 import com.ritense.processdocument.service.ProcessDefinitionCaseDefinitionService
-import com.ritense.processlink.autodeployment.ProcessLinkDeploymentApplicationReadyEventListener
 import com.ritense.processlink.domain.SupportedProcessLinkTypeHandler
+import com.ritense.processlink.exporter.BuildingBlockProcessLinkToBuildingBlockMapper
 import com.ritense.processlink.exporter.ProcessLinkExporter
+import com.ritense.processlink.importer.GlobalProcessLinkImporter
 import com.ritense.processlink.importer.ProcessLinkImporter
 import com.ritense.processlink.listener.ProcessDefinitionDeletedEventListener
 import com.ritense.processlink.mapper.ProcessLinkMapper
@@ -36,11 +37,13 @@ import com.ritense.processlink.service.ProcessLinkService
 import com.ritense.processlink.web.rest.ProcessLinkResource
 import com.ritense.processlink.web.rest.ProcessLinkTaskResource
 import com.ritense.valtimo.autoconfiguration.ValtimoOperatonAutoConfiguration
-import com.ritense.valtimo.operaton.service.OperatonRepositoryService
+import com.ritense.valtimo.contract.buildingblock.BuildingBlockDefinitionChecker
 import com.ritense.valtimo.contract.case_.CaseDefinitionChecker
 import com.ritense.valtimo.event.ProcessDefinitionDeployedEvent
+import com.ritense.valtimo.operaton.service.OperatonRepositoryService
 import com.ritense.valtimo.service.OperatonProcessService
 import com.ritense.valtimo.service.OperatonTaskService
+import com.ritense.valtimo.task.service.UserTaskOpenedStatusService
 import org.operaton.bpm.engine.RepositoryService
 import org.springframework.boot.autoconfigure.AutoConfiguration
 import org.springframework.boot.autoconfigure.AutoConfigureAfter
@@ -51,8 +54,6 @@ import org.springframework.boot.autoconfigure.domain.EntityScan
 import org.springframework.context.ApplicationEventPublisher
 import org.springframework.context.annotation.Bean
 import org.springframework.core.annotation.Order
-import org.springframework.core.env.Environment
-import org.springframework.core.io.ResourceLoader
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories
 
 @AutoConfiguration
@@ -80,13 +81,17 @@ class ProcessLinkAutoConfiguration {
         processLinkTypes: List<SupportedProcessLinkTypeHandler>,
         operatonRepositoryService: OperatonRepositoryService,
         caseDefinitionChecker: CaseDefinitionChecker,
+        buildingBlockDefinitionChecker: BuildingBlockDefinitionChecker,
+        applicationEventPublisher: ApplicationEventPublisher,
     ): ProcessLinkService {
         return ProcessLinkService(
             processLinkRepository,
             processLinkMappers,
             processLinkTypes,
             operatonRepositoryService,
-            caseDefinitionChecker
+            caseDefinitionChecker,
+            buildingBlockDefinitionChecker,
+            applicationEventPublisher
         )
     }
 
@@ -118,9 +123,10 @@ class ProcessLinkAutoConfiguration {
     @ConditionalOnMissingBean(ProcessLinkTaskResource::class)
     @ConditionalOnBean(ProcessLinkActivityService::class)
     fun processLinkTaskResource(
-        processLinkActivityService: ProcessLinkActivityService
+        processLinkActivityService: ProcessLinkActivityService,
+        userTaskOpenedStatusService: UserTaskOpenedStatusService
     ): ProcessLinkTaskResource {
-        return ProcessLinkTaskResource(processLinkActivityService)
+        return ProcessLinkTaskResource(processLinkActivityService, userTaskOpenedStatusService)
     }
 
     @Bean
@@ -157,31 +163,17 @@ class ProcessLinkAutoConfiguration {
     }
 
     @Bean
-    @ConditionalOnMissingBean(ProcessLinkDeploymentApplicationReadyEventListener::class)
-    fun processLinkDeploymentApplicationReadyEventListener(
-        resourceLoader: ResourceLoader,
-        processLinkImporter: ProcessLinkImporter,
-        objectMapper: ObjectMapper,
-        environment: Environment
-    ): ProcessLinkDeploymentApplicationReadyEventListener {
-        return ProcessLinkDeploymentApplicationReadyEventListener(
-            resourceLoader,
-            processLinkImporter,
-            objectMapper,
-            environment
-        )
-    }
-
-    @Bean
     @ConditionalOnMissingBean(ProcessLinkExporter::class)
     fun processLinkExporter(
         objectMapper: ObjectMapper,
         processLinkService: ProcessLinkService,
-        repositoryService: OperatonRepositoryService
+        repositoryService: OperatonRepositoryService,
+        buildingBlockMapper: BuildingBlockProcessLinkToBuildingBlockMapper,
     ) = ProcessLinkExporter(
         objectMapper,
         processLinkService,
-        repositoryService
+        repositoryService,
+        buildingBlockMapper,
     )
 
     @Bean
@@ -189,11 +181,35 @@ class ProcessLinkAutoConfiguration {
     fun processLinkImporter(
         processLinkService: ProcessLinkService,
         repositoryService: OperatonRepositoryService,
-        objectMapper: ObjectMapper
+        processDefinitionCaseDefinitionService: ProcessDefinitionCaseDefinitionService,
+        objectMapper: ObjectMapper,
+        processLinkMappers: List<ProcessLinkMapper>,
+        applicationEventPublisher: ApplicationEventPublisher,
     ) = ProcessLinkImporter(
         processLinkService,
         repositoryService,
-        objectMapper
+        processDefinitionCaseDefinitionService,
+        objectMapper,
+        processLinkMappers,
+        applicationEventPublisher,
+    )
+
+    @Bean
+    @ConditionalOnMissingBean(GlobalProcessLinkImporter::class)
+    fun globalProcessLinkImporter(
+        processLinkService: ProcessLinkService,
+        repositoryService: OperatonRepositoryService,
+        processDefinitionCaseDefinitionService: ProcessDefinitionCaseDefinitionService,
+        objectMapper: ObjectMapper,
+        processLinkMappers: List<ProcessLinkMapper>,
+        applicationEventPublisher: ApplicationEventPublisher,
+    ) = GlobalProcessLinkImporter(
+        processLinkService,
+        repositoryService,
+        processDefinitionCaseDefinitionService,
+        objectMapper,
+        processLinkMappers,
+        applicationEventPublisher,
     )
 
     @Bean

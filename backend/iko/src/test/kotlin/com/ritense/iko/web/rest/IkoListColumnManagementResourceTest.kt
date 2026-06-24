@@ -42,6 +42,7 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPat
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 import org.springframework.test.web.servlet.setup.MockMvcBuilders
 import org.springframework.transaction.annotation.Transactional
+import org.springframework.validation.beanvalidation.LocalValidatorFactoryBean
 
 @Transactional
 internal class IkoListColumnManagementResourceTest {
@@ -59,6 +60,7 @@ internal class IkoListColumnManagementResourceTest {
         mockMvc = MockMvcBuilders.standaloneSetup(resource)
             .setCustomArgumentResolvers(PageableHandlerMethodArgumentResolver())
             .setMessageConverters(MappingJackson2HttpMessageConverter(MapperSingleton.get()))
+            .setValidator(LocalValidatorFactoryBean().apply { afterPropertiesSet() })
             .build();
     }
 
@@ -196,6 +198,30 @@ internal class IkoListColumnManagementResourceTest {
             .andExpect(jsonPath("$[0].path").value("/naam/volledigeNaam"))
             .andExpect(jsonPath("$[0].displayType.type").value("text"))
             .andExpect(jsonPath("$[0].sortable").value("false"))
+    }
+
+    @Test
+    fun `should reject create listColumn with title exceeding column cap`() {
+        val request = IkoListColumnCreateRequest(
+            key = "naam",
+            title = "x".repeat(257),
+            path = "/naam",
+            order = 0,
+            displayType = DisplayType("text", EmptyDisplayTypeParameter()),
+            sortable = false,
+        )
+
+        mockMvc.perform(
+            post(
+                "/api/management/v1/iko-view/{ikoViewKey}/column/{listColumnKey}",
+                "klant",
+                "naam"
+            )
+                .content(objectMapper.writeValueAsString(request))
+                .contentType(APPLICATION_JSON_VALUE)
+        )
+            .andDo(print())
+            .andExpect(status().isBadRequest())
     }
 
     @Test

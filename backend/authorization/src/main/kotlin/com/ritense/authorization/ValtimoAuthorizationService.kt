@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,7 @@
 
 package com.ritense.authorization
 
+import com.ritense.authorization.AuthorizationContext.Companion.runWithoutAuthorization
 import com.ritense.authorization.permission.Permission
 import com.ritense.authorization.permission.PermissionRepository
 import com.ritense.authorization.request.AuthorizationRequest
@@ -72,6 +73,13 @@ class ValtimoAuthorizationService(
         return getAuthorizationSpecification(request).isAuthorized()
     }
 
+    override fun <T : Any> hasPermission(
+        request: AuthorizationRequest<T>,
+        permissions: List<Permission>
+    ): Boolean {
+        return getAuthorizationSpecification(request, permissions).isAuthorized()
+    }
+
     override fun <T : Any> getAuthorizationSpecification(
         request: AuthorizationRequest<T>,
         permissions: List<Permission>?
@@ -95,6 +103,10 @@ class ValtimoAuthorizationService(
             ?: throw AccessDeniedException("No entity mapper found for given arguments.")
     }
 
+    override fun hasMapper(from: Class<*>, to: Class<*>): Boolean {
+        return mappers.any { it.supports(from, to) }
+    }
+
     override fun <T : Any> getAvailableActionsForResource(clazz: Class<T>): List<Action<T>> {
         return actionProviders
             .filter { (it.javaClass.genericInterfaces[0] as ParameterizedType).actualTypeArguments[0] == clazz }
@@ -115,7 +127,7 @@ class ValtimoAuthorizationService(
         val factory = (authorizationSpecificationFactories.firstOrNull {
             it.canCreate(request, permissionSupplier)
         } as AuthorizationSpecificationFactory<T>?)
-            ?: throw AccessDeniedException("No specification found for given context.")
+            ?: throw AccessDeniedException("Missing AuthorizationSpecificationFactory<${request.resourceType.name}>")
         return factory.create(request, permissionSupplier)
     }
 
@@ -123,7 +135,7 @@ class ValtimoAuthorizationService(
         val userRoles = if (context.user == null) {
             SecurityUtils.getCurrentUserRoles()
         } else {
-            userManagementService.findByUsername(context.user)
+            runWithoutAuthorization { userManagementService.findByUsername(context.user) }
                 ?.roles
                 ?: return emptyList()
         }

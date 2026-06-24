@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -34,3 +34,5 @@ export * from './case-menu.service';
 export * from './case-header-widget-api.service';
 export * from './case-list-hidden-columns.service';
 export * from './case-list-quick-search.service';
+export * from './case-list-orchestration.service';
+export * from './case-inspection.service';

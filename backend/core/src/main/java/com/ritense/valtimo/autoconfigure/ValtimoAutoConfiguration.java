@@ -16,6 +16,8 @@
 
 package com.ritense.valtimo.autoconfigure;
 
+import static org.springframework.core.Ordered.LOWEST_PRECEDENCE;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ritense.authorization.AuthorizationService;
 import com.ritense.outbox.OutboxService;
@@ -26,14 +28,17 @@ import com.ritense.valtimo.contract.authentication.AuthorizedUserRepository;
 import com.ritense.valtimo.contract.authentication.AuthorizedUsersService;
 import com.ritense.valtimo.contract.authentication.CurrentUserRepository;
 import com.ritense.valtimo.contract.authentication.CurrentUserService;
+import com.ritense.valtimo.contract.authentication.TeamManagementService;
 import com.ritense.valtimo.contract.authentication.UserManagementService;
 import com.ritense.valtimo.contract.config.ValtimoProperties;
 import com.ritense.valtimo.helper.ActivityHelper;
 import com.ritense.valtimo.helper.DelegateTaskHelper;
 import com.ritense.valtimo.helper.OperatonDeploymentSourceHelper;
+import com.ritense.valtimo.operaton.CallDepthExecutionListener;
 import com.ritense.valtimo.operaton.ProcessApplicationStartedEventListener;
 import com.ritense.valtimo.operaton.ProcessDefinitionPropertyListener;
 import com.ritense.valtimo.operaton.TaskCompletedListener;
+import com.ritense.valtimo.operaton.listener.OperatonEventListener;
 import com.ritense.valtimo.operaton.repository.CustomRepositoryServiceImpl;
 import com.ritense.valtimo.operaton.repository.OperatonExecutionRepository;
 import com.ritense.valtimo.operaton.repository.OperatonIdentityLinkRepository;
@@ -56,7 +61,12 @@ import com.ritense.valtimo.service.OperatonTaskService;
 import com.ritense.valtimo.service.ProcessDefinitionCaseDefinitionLinker;
 import com.ritense.valtimo.service.ProcessPropertyService;
 import com.ritense.valtimo.service.ProcessShortTimerService;
+import com.ritense.valtimo.service.TaskBusinessKeyResolver;
 import com.ritense.valtimo.service.UserSettingsService;
+import com.ritense.valtimo.task.listener.TaskTeamChangedListener;
+import com.ritense.valtimo.task.repository.TaskTeamRepository;
+import com.ritense.valtimo.task.repository.UserTaskOpenedStatusRepository;
+import com.ritense.valtimo.task.service.UserTaskOpenedStatusService;
 import com.ritense.valtimo.web.rest.AccountResource;
 import com.ritense.valtimo.web.rest.PingResource;
 import com.ritense.valtimo.web.rest.ProcessInstanceResource;
@@ -67,6 +77,7 @@ import com.ritense.valtimo.web.rest.UserResource;
 import com.ritense.valtimo.web.rest.VersionResource;
 import jakarta.persistence.EntityManager;
 import java.util.Collection;
+import java.util.List;
 import java.util.Optional;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
@@ -86,8 +97,6 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.core.annotation.Order;
 import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
-
-import static org.springframework.core.Ordered.LOWEST_PRECEDENCE;
 
 @AutoConfiguration
 @EnableConfigurationProperties(ValtimoProperties.class)
@@ -124,6 +133,18 @@ public class ValtimoAutoConfiguration {
     @ConditionalOnMissingBean(TaskCompletedListener.class)
     public TaskCompletedListener taskCompletedListener(final ApplicationEventPublisher applicationEventPublisher) {
         return new TaskCompletedListener(applicationEventPublisher);
+    }
+
+    @Bean
+    @ConditionalOnMissingBean(CallDepthExecutionListener.class)
+    public CallDepthExecutionListener callDepthExecutionListener(final ValtimoProperties valtimoProperties) {
+        return new CallDepthExecutionListener(valtimoProperties);
+    }
+
+    @Bean
+    @ConditionalOnMissingBean(OperatonEventListener.class)
+    public OperatonEventListener operatonEventListener(final ApplicationEventPublisher publisher) {
+        return new OperatonEventListener(publisher);
     }
 
     @Bean
@@ -183,6 +204,14 @@ public class ValtimoAutoConfiguration {
     }
 
     @Bean
+    @ConditionalOnMissingBean(UserTaskOpenedStatusService.class)
+    public UserTaskOpenedStatusService userTaskOpenedStatusService(
+        final UserTaskOpenedStatusRepository userTaskOpenedStatusRepository
+    ) {
+        return new UserTaskOpenedStatusService(userTaskOpenedStatusRepository);
+    }
+
+    @Bean
     @ConditionalOnMissingBean(OperatonTaskService.class)
     public OperatonTaskService operatonTaskService(
         final TaskService taskService,
@@ -197,7 +226,11 @@ public class ValtimoAutoConfiguration {
         final EntityManager entityManager,
         final AuthorizationService authorizationService,
         final OutboxService outboxService,
-        final ObjectMapper objectMapper
+        final ObjectMapper objectMapper,
+        final List<TaskBusinessKeyResolver> taskBusinessKeyResolvers,
+        final UserTaskOpenedStatusService userTaskOpenedStatusService,
+        final TaskTeamRepository taskTeamRepository,
+        final Optional<TeamManagementService> teamManagementService
     ) {
         return new OperatonTaskService(
             taskService,
@@ -212,7 +245,11 @@ public class ValtimoAutoConfiguration {
             entityManager,
             authorizationService,
             outboxService,
-            objectMapper
+            objectMapper,
+            taskBusinessKeyResolvers,
+            userTaskOpenedStatusService,
+            taskTeamRepository,
+            teamManagementService.orElse(null)
         );
     }
 
@@ -265,9 +302,11 @@ public class ValtimoAutoConfiguration {
     public TaskResource taskResource(
         final FormService formService,
         final OperatonTaskService operatonTaskService,
-        final OperatonProcessService operatonProcessService
+        final OperatonProcessService operatonProcessService,
+        final UserTaskOpenedStatusService userTaskOpenedStatusService,
+        final UserManagementService userManagementService
     ) {
-        return new TaskResource(formService, operatonTaskService, operatonProcessService);
+        return new TaskResource(formService, operatonTaskService, operatonProcessService, userTaskOpenedStatusService, userManagementService);
     }
 
     @Bean
@@ -377,6 +416,17 @@ public class ValtimoAutoConfiguration {
         final OperatonRepositoryService repositoryService
     ) {
         return new ProcessPropertyService(processDefinitionPropertiesRepository, valtimoProperties, repositoryService);
+    }
+
+
+    @Bean
+    @ConditionalOnMissingBean(TaskTeamChangedListener.class)
+    public TaskTeamChangedListener taskTeamChangedListener(
+        final TaskTeamRepository taskTeamRepository
+    ) {
+        return new TaskTeamChangedListener(
+            taskTeamRepository
+        );
     }
 
 }

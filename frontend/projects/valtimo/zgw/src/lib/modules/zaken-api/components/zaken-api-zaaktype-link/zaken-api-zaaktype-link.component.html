@@ -1,5 +1,5 @@
 <!--
-  ~ Copyright 2015-2025 Ritense BV, the Netherlands.
+  ~ Copyright 2015-2026 Ritense BV, the Netherlands.
   ~
   ~ Licensed under EUPL, Version 1.2 (the "License");
   ~ you may not use this file except in compliance with the License.
@@ -14,7 +14,7 @@
   ~ limitations under the License.
   -->
 
-<cds-tile>
+<cds-tile [class.tile--danger]="hasConfigurationIssue$ | async">
   <h2 class="valtimo-zaak-type-link__title">{{ 'openZaak.links' | translate }}</h2>
 
   @if (loading$ | async) {
@@ -26,19 +26,29 @@
           {{ this.selectedZaakType?.omschrijving || '-' }}
         </span>
 
-        <div class="valtimo-zaak-type-link__card-controls">
-          <button cdsButton="tertiary" (click)="openModal(zaakTypeLink)">
-            {{ 'interface.edit' | translate }}
+        @if (canEdit$ | async) {
+          <div class="valtimo-zaak-type-link__card-controls">
+            <button
+              cdsButton="tertiary"
+              [attr.data-test-id]="testIds.editButton"
+              (click)="openModal(zaakTypeLink)"
+            >
+              {{ 'interface.edit' | translate }}
 
-            <svg cdsIcon="edit" size="16" class="cds--btn__icon"></svg>
-          </button>
+              <svg cdsIcon="edit" size="16" class="cds--btn__icon"></svg>
+            </button>
 
-          <button cdsButton="danger" (click)="removeZaakTypeLink()">
-            {{ 'interface.delete' | translate }}
+            <button
+              cdsButton="danger"
+              [attr.data-test-id]="testIds.deleteButton"
+              (click)="removeZaakTypeLink()"
+            >
+              {{ 'interface.delete' | translate }}
 
-            <svg cdsIcon="trash-can" size="16" class="cds--btn__icon"></svg>
-          </button>
-        </div>
+              <svg cdsIcon="trash-can" size="16" class="cds--btn__icon"></svg>
+            </button>
+          </div>
+        }
       </section>
 
       <section class="valtimo-zaak-type-link__card-body">
@@ -64,10 +74,11 @@
           {{ zaakTypeLink?.rsin || '-' }}
         </div>
       </section>
-    } @else {
+    } @else if (canEdit$ | async) {
       <button
         cdsButton="primary"
         class="valtimo-zaak-type-link__link-button"
+        [attr.data-test-id]="testIds.linkButton"
         (click)="openModal(null)"
       >
         {{ 'openZaak.linkZaakType' | translate }}
@@ -75,6 +86,13 @@
         <svg class="cds--btn__icon" cdsIcon="add" size="16"></svg>
       </button>
     }
+  }
+
+  @if (hasConfigurationIssue$ | async) {
+    <div class="tile-error-message">
+      <svg cdsIcon="warning--filled" size="16" class="tile-error-message__icon"></svg>
+      <span class="tile-error-message__text">{{ 'openZaak.configurationIssue' | translate }}</span>
+    </div>
   }
 </cds-tile>
 
@@ -89,12 +107,13 @@
     <section cdsModalContent class="valtimo-zaak-type-link-modal__content">
       <cds-select
         [label]="'openZaak.selectZaakTypeForCase' | translate"
+        [attr.data-test-id]="testIds.modalZaakTypeSelect"
         [(ngModel)]="this.zaakTypeLinkRequest.zaakTypeUrl"
       >
         <option value="default">{{ 'openZaak.selectZaakType' | translate }}</option>
 
         @for (zaakType of zaakTypes; track zaakType.url) {
-          <option [value]="zaakType.url">
+          <option [value]="zaakType.url" [selected]="zaakType.url === selectedZaakType?.url">
             {{ zaakType.omschrijving || '-' }}
           </option>
         }
@@ -102,12 +121,17 @@
 
       <cds-select
         [label]="'openZaak.selectZakenApiPluginForCase' | translate"
+        [attr.data-test-id]="testIds.modalPluginSelect"
         [(ngModel)]="this.zaakTypeLinkRequest.zakenApiPluginConfigurationId"
       >
         <option value="default">{{ 'openZaak.selectZakenApiPlugin' | translate }}</option>
 
         @for (pluginConfiguration of pluginConfigurations; track pluginConfiguration.id) {
-          <option [value]="pluginConfiguration.id">
+          <option
+            [value]="pluginConfiguration.id"
+            [selected]="pluginConfiguration.id === selectedPluginConfiguration?.id"
+          >
+          >
             {{ pluginConfiguration?.title || '-' }}
           </option>
         }
@@ -121,12 +145,14 @@
           cdsLayer="1"
           placeholder="RSIN"
           type="text"
+          [attr.data-test-id]="testIds.modalRsinInput"
           [(ngModel)]="this.zaakTypeLinkRequest.rsin"
         />
       </cds-text-label>
 
       <cds-toggle
         [label]="'openZaak.autoCreateForCase' | translate"
+        [attr.data-test-id]="testIds.modalAutoCreateToggle"
         [checked]="this.zaakTypeLinkRequest.createWithDossier"
         (checkedChange)="onCheckedChange($event)"
       >
@@ -134,12 +160,17 @@
     </section>
 
     <cds-modal-footer>
-      <button cdsButton="ghost" (click)="closeModal()">
+      <button
+        cdsButton="secondary"
+        [attr.data-test-id]="testIds.modalCancelButton"
+        (click)="closeModal()"
+      >
         {{ 'interface.cancel' | translate }}
       </button>
 
       <button
         cdsButton="primary"
+        [attr.data-test-id]="testIds.modalSubmitButton"
         [disabled]="!this.zaakTypeLinkRequest.zaakTypeUrl"
         (click)="submit()"
       >

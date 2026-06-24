@@ -31,6 +31,7 @@ import com.ritense.processlink.web.rest.dto.ProcessDefinitionResponseDto
 import com.ritense.processlink.web.rest.dto.ProcessLinkCreateRequestDto
 import com.ritense.processlink.web.rest.dto.ProcessLinkExportResponseDto
 import com.ritense.processlink.web.rest.dto.ProcessLinkResponseDto
+import com.ritense.processlink.web.rest.dto.ProcessDefinitionConflictResponseDto
 import com.ritense.processlink.web.rest.dto.ProcessLinkUpdateRequestDto
 import com.ritense.valtimo.operaton.domain.OperatonProcessDefinition
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
@@ -38,6 +39,7 @@ import com.ritense.valtimo.contract.case_.CaseDefinitionId
 import com.ritense.valtimo.contract.domain.ValtimoMediaType.APPLICATION_JSON_UTF8_VALUE
 import com.ritense.valtimo.service.OperatonProcessService
 import com.ritense.valtimo.web.rest.dto.ProcessDefinitionWithPropertiesDto
+import jakarta.validation.Valid
 import org.operaton.bpm.engine.RepositoryService
 import org.operaton.bpm.engine.impl.util.IoUtil
 import org.springframework.http.HttpStatus
@@ -94,7 +96,7 @@ class ProcessLinkResource(
 
     @PostMapping("/v1/process-link")
     fun createProcessLink(
-        @RequestBody processLink: ProcessLinkCreateRequestDto
+        @Valid @RequestBody processLink: ProcessLinkCreateRequestDto
     ): ResponseEntity<Unit> {
         return withLoggingContext(OperatonProcessDefinition::class.java, processLink.processDefinitionId) {
             // To
@@ -105,7 +107,7 @@ class ProcessLinkResource(
 
     @PutMapping("/v1/process-link")
     fun updateProcessLink(
-        @RequestBody processLink: ProcessLinkUpdateRequestDto
+        @Valid @RequestBody processLink: ProcessLinkUpdateRequestDto
     ): ResponseEntity<Unit> {
         return withLoggingContext(ProcessLink::class, processLink.id) {
             processLinkService.updateProcessLink(processLink, null)
@@ -296,7 +298,8 @@ class ProcessLinkResource(
 
         val definition = runWithoutAuthorization {
             operatonProcessService
-                .getDefinitionByKeyAndCaseDefinition(caseDefinitionId, processDefinitionKey)
+                .getDefinitionsByKeyAndBlueprint(caseDefinitionId, processDefinitionKey)
+                .firstOrNull()
                 ?: throw IllegalStateException("No process definition found for key '$processDefinitionKey' in case definition '$caseDefinitionId'")
         }
 
@@ -329,17 +332,19 @@ class ProcessLinkResource(
         @PathVariable("processDefinitionKey") processDefinitionKey: String,
     ): ResponseEntity<Any> {
         runWithoutAuthorization {
-            val definition = operatonProcessService
-                .getDefinitionByKeyAndCaseDefinition(
+            operatonProcessService
+                .getDefinitionsByKeyAndBlueprint(
                     CaseDefinitionId.of(caseDefinitionKey, versionTag),
                     processDefinitionKey
                 )
-            processDefinitionCaseDefinitionService.deleteProcessDefinitionCaseDefinition(
-                ProcessDefinitionId(definition.id),
-                CaseDefinitionId.of(caseDefinitionKey, versionTag)
-            )
-            processLinkService.deleteProcessLinksForProcessDefinition(definition.id)
-            operatonProcessService.deleteProcessDefinition(definition.id)
+                .forEach { definition: OperatonProcessDefinition ->
+                    processDefinitionCaseDefinitionService.deleteProcessDefinitionCaseDefinition(
+                        ProcessDefinitionId(definition.id),
+                        CaseDefinitionId.of(caseDefinitionKey, versionTag)
+                    )
+                    processLinkService.deleteProcessLinksForProcessDefinition(definition.id)
+                    operatonProcessService.deleteProcessDefinition(definition.id)
+                }
         }
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build()
     }
@@ -376,6 +381,40 @@ class ProcessLinkResource(
         @RequestParam(name = "startableByUser") startableByUser: String?
     ): ResponseEntity<Any> {
         val caseDefinitionId = CaseDefinitionId(caseDefinitionKey, caseDefinitionVersionTag)
+        val existing = processDeploymentService.findExistingProcessDefinitionForCaseDefinition(caseDefinitionId, bpmn, processDefinitionId)
+        if (existing != null) {
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(
+                ProcessDefinitionConflictResponseDto(existing.key, existing.id, existing.name)
+            )
+        }
+        processDeploymentService.deployProcessDefinitionAndProcessLinksForCaseDefinition(
+            caseDefinitionId,
+            bpmn,
+            processLinks,
+            processDefinitionId,
+            canInitializeDocument.toBoolean(),
+            startableByUser.toBoolean()
+        )
+
+        return ResponseEntity.status(HttpStatus.NO_CONTENT).build()
+    }
+
+    @PutMapping(
+        value = ["/management/v1/case-definition/{caseDefinitionKey}/version/{caseDefinitionVersionTag}/process-definition"],
+        consumes = [MediaType.MULTIPART_FORM_DATA_VALUE],
+        produces = [MediaType.APPLICATION_JSON_VALUE]
+    )
+    @Transactional
+    fun updateProcessDefinitionAndProcessLinks(
+        @PathVariable(name = "caseDefinitionKey") caseDefinitionKey: String,
+        @PathVariable(name = "caseDefinitionVersionTag") caseDefinitionVersionTag: String,
+        @RequestPart(name = "file") bpmn: MultipartFile?,
+        @RequestPart(name = "processLinks") processLinks: List<ProcessLinkCreateRequestDto>,
+        @RequestParam(name = "processDefinitionId") processDefinitionId: String?,
+        @RequestParam(name = "canInitializeDocument") canInitializeDocument: String?,
+        @RequestParam(name = "startableByUser") startableByUser: String?
+    ): ResponseEntity<Any> {
+        val caseDefinitionId = CaseDefinitionId(caseDefinitionKey, caseDefinitionVersionTag)
         processDeploymentService.deployProcessDefinitionAndProcessLinksForCaseDefinition(
             caseDefinitionId,
             bpmn,
@@ -395,6 +434,33 @@ class ProcessLinkResource(
     )
     @Transactional
     fun deployUnlinkedProcessDefinitionAndProcessLinks(
+        @RequestPart(name = "file") bpmn: MultipartFile?,
+        @RequestPart(name = "processLinks") processLinks: List<ProcessLinkCreateRequestDto>,
+        @RequestPart(name = "processDefinitionId") processDefinitionId: String?
+    ): ResponseEntity<Any> {
+        val existing = processDeploymentService.findExistingUnlinkedProcessDefinition(bpmn, processDefinitionId)
+        if (existing != null) {
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(
+                ProcessDefinitionConflictResponseDto(existing.key, existing.id, existing.name)
+            )
+        }
+        processDeploymentService.deployProcessDefinitionAndProcessLinks(
+            null,
+            bpmn,
+            processLinks,
+            processDefinitionId
+        )
+
+        return ResponseEntity.status(HttpStatus.NO_CONTENT).build()
+    }
+
+    @PutMapping(
+        value = ["/management/v1/process-definition"],
+        consumes = [MediaType.MULTIPART_FORM_DATA_VALUE],
+        produces = [MediaType.APPLICATION_JSON_VALUE]
+    )
+    @Transactional
+    fun updateUnlinkedProcessDefinitionAndProcessLinks(
         @RequestPart(name = "file") bpmn: MultipartFile?,
         @RequestPart(name = "processLinks") processLinks: List<ProcessLinkCreateRequestDto>,
         @RequestPart(name = "processDefinitionId") processDefinitionId: String?

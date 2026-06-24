@@ -1,0 +1,347 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  ~ Copyright 2015-2024 Ritense BV, the Netherlands.
+  ~
+  ~ Licensed under EUPL, Version 1.2 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~ https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" basis,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<databaseChangeLog
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd">
+
+    <property name="uuidType" value="BINARY(16)" dbms="mysql"/>
+    <property name="uuidType" value="uuid" dbms="h2,postgresql"/>
+    <property name="now" value="now()" dbms="mysql,h2"/>
+    <property name="now" value="current_timestamp" dbms="postgresql"/>
+    <property name="now" value="sysdate" dbms="oracle"/>
+    <property name="autoIncrement" value="true" dbms="mysql,h2,postgresql,oracle"/>
+    <property name="intType" value="int" dbms="mysql"/>
+    <property name="intType" value="integer" dbms="postgresql"/>
+    <property name="jsonType" value="JSON" dbms="mysql"/>
+    <property name="jsonType" value="JSONB" dbms="postgresql"/>
+    <property name="booleanFalseValue" value="0" dbms="mysql"/>
+    <property name="booleanFalseValue" value="false" dbms="postgresql"/>
+
+
+
+
+    <!-- authorization/src/main/resources/config/liquibase/authorization-master.xml -->
+
+    <include file="config/liquibase/initial-setup/authorization/changelog/20230424-create-authorization-table.xml"/>
+    <include file="config/liquibase/initial-setup/authorization/changelog/20230910-create-json-array-contains-function.xml"/>
+    <include file="config/liquibase/initial-setup/authorization/changelog/20240612-add-context-columns.xml"/>
+    <include file="config/liquibase/initial-setup/authorization/changelog/20250701-operaton-migration.xml"/>
+    <include file="config/liquibase/initial-setup/authorization/changelog/20250908-multiple-actions-support.xml"/>
+
+    <!-- core/src/main/resources/config/liquibase/valtimo-master.xml -->
+
+
+
+    <include file="config/liquibase/initial-setup/core/camunda/20170530-camunda-setup.xml"/>
+    <include file="config/liquibase/initial-setup/core/changelog/process-definition-version-changelog.xml"/>
+    <include file="config/liquibase/initial-setup/core/changelog/initial-domain-tables.xml"/>
+    <include file="config/liquibase/initial-setup/core/changelog/20170530-auditevents.xml"/>
+    <include file="config/liquibase/initial-setup/core/changelog/20170621-auditevents-changed-value-column-datatype.xml"/>
+    <include file="config/liquibase/initial-setup/core/changelog/20170808_contexts_changelog.xml"/>
+    <include file="config/liquibase/initial-setup/core/changelog/20180801-auditevents-added-column-action.xml"/>
+    <include file="config/liquibase/initial-setup/core/changelog/20180824-auditevents-added-column-unique_id.xml"/>
+    <include file="config/liquibase/initial-setup/core/changelog/20180919-context-processes.xml"/>
+    <include file="config/liquibase/initial-setup/core/changelog/20190719-email-notification-settings-changelog.xml"/>
+    <include file="config/liquibase/initial-setup/core/changelog/20190828-email-settings-changed-changelog.xml"/>
+    <include file="config/liquibase/initial-setup/core/changelog/20220111-create-shedlock-table.xml"/>
+    <include file="config/liquibase/initial-setup/core/camunda/20201217-camunda-upgrade-7-14-0-changelog.xml"/>
+    <include file="config/liquibase/initial-setup/core/changelog/20211229-add-json-support-function.xml"/>
+    <include file="config/liquibase/initial-setup/core/changelog/20220912-add-system-process.xml"/>
+    <include file="config/liquibase/initial-setup/core/camunda/20220928-camunda-upgrade-7-17-0-changelog.xml"/>
+    <include file="config/liquibase/initial-setup/core/camunda/20221031-camunda-upgrade-7-18-0-changelog.xml"/>
+    <include file="config/liquibase/initial-setup/core/changelog/20230511-add-user-settings.xml"/>
+    <include file="config/liquibase/initial-setup/core/changelog/20230821-remove-context.xml"/>
+    <include file="config/liquibase/initial-setup/core/changelog/20230901-remove-authority.xml"/>
+    <include file="config/liquibase/initial-setup/core/changelog/20230904-choice-field-values-change-deprecated-datatype.xml"/>
+    <include file="config/liquibase/initial-setup/core/camunda/20240607-camunda-upgrade-7-21-0-changelog.xml"/>
+    <include file="config/liquibase/initial-setup/core/changelog/20241007-applicationproperties.xml"/>
+    <include file="config/liquibase/initial-setup/core/camunda/20250428-camunda-upgrade-7-23-0-changelog.xml"/>
+    <include file="config/liquibase/initial-setup/core/changelog/20250515-camunda-process-version-tag.xml"/>
+    <include file="config/liquibase/initial-setup/core/changelog/20250424-major-13-drop-deprecated-tables.xml"/>
+    <include file="config/liquibase/initial-setup/core/changelog/20250812-operaton-migration.xml"/>
+    <include file="config/liquibase/initial-setup/core/camunda/20251023-operaton-upgrade-1-0-0-rc-1-changelog.xml"/>
+    <include file="config/liquibase/initial-setup/core/changelog/20251113-drop-applicationproperties.xml"/>
+
+    <!-- localization/src/main/resources/config/liquibase/localization-master.xml -->
+
+    <include file="config/liquibase/initial-setup/localization/changelog/20240130-add-localization-table.xml"/>
+
+    <!-- milestones/src/main/resources/config/liquibase/milestones-master.xml -->
+    <include file="config/liquibase/initial-setup/milestones/changelog/20180103-MilestoneSet.xml"/>
+    <include file="config/liquibase/initial-setup/milestones/changelog/20180103-Milestone.xml"/>
+    <include file="config/liquibase/initial-setup/milestones/changelog/20180103-MilestoneInstance.xml"/>
+    <include file="config/liquibase/initial-setup/milestones/changelog/20180205-changed-Milestone-and-MilestoneInstance-plannedInterval-to-plannedIntervalInDays.xml"/>
+    <include file="config/liquibase/initial-setup/milestones/changelog/20180205-added_MilestoneSetId_to_MilestoneInstance.xml"/>
+    <!-- jhipster-needle-liquibase-add-changelog - JHipster will add liquibase changelogs here -->
+    <!-- jhipster-needle-liquibase-add-constraints-changelog - JHipster will add liquibase constraints changelogs here -->
+
+    <!-- process-link/src/main/resources/config/liquibase/process-link-master.xml -->
+
+    <include file="config/liquibase/initial-setup/process-link/changelog/20230327-create-process-link-table.xml"/>
+    <include file="config/liquibase/initial-setup/process-link/changelog/20230602-fix-actiity-type-call-activity-start.xml"/>
+    <include file="config/liquibase/initial-setup/process-link/changelog/20250107-add-ui-component-process-link.xml"/>
+
+    <!-- mail/mandrill/src/main/resources/config/liquibase/mandrill-mail-master.xml (no changelog entries) -->
+    <!-- case/src/main/resources/config/liquibase/document-master.xml -->
+
+
+
+    <include file="config/liquibase/initial-setup/case/changelog/20190712-create-document-domain-changelog.xml"/>
+    <include file="config/liquibase/initial-setup/case/changelog/20190815-document-dates-added-changelog.xml"/>
+    <include file="config/liquibase/initial-setup/case/changelog/20190916-document-created-by-added-changelog.xml"/>
+    <include file="config/liquibase/initial-setup/case/changelog/20191014-document-definition-sequence.xml"/>
+    <include file="config/liquibase/initial-setup/case/changelog/20191018-document-relationships.xml"/>
+    <include file="config/liquibase/initial-setup/case/changelog/20191018-document-indexes.xml"/>
+    <include file="config/liquibase/initial-setup/case/changelog/20200310-document-related-files.xml"/>
+    <include file="config/liquibase/initial-setup/case/changelog/20201007-update-document-definition-id.xml"/>
+    <include file="config/liquibase/initial-setup/case/changelog/20201014-document-snapshot.xml"/>
+    <include file="config/liquibase/initial-setup/case/changelog/20210202-add-readonly-column.xml"/>
+    <include file="config/liquibase/initial-setup/case/changelog/20220215-create-document-definition-role-changelog.xml"/>
+    <include file="config/liquibase/initial-setup/case/changelog/20220923-add-assginee-columns-changelog.xml"/>
+    <include file="config/liquibase/initial-setup/case/changelog/20221021-add-search-field-table.xml"/>
+    <include file="config/liquibase/initial-setup/case/changelog/20221114-add-column-title-to-search-field-table.xml"/>
+    <include file="config/liquibase/initial-setup/case/changelog/20240104-update-version-column.xml"/>
+    <include file="config/liquibase/initial-setup/case/changelog/20240201-add-internal-case-status-table.xml"/>
+    <include file="config/liquibase/initial-setup/case/changelog/20240214-add-column-color-to-internal-case-status-table.xml"/>
+    <include file="config/liquibase/initial-setup/case/changelog/20250203-add-case-tag-table.xml"/>
+    <include file="config/liquibase/initial-setup/case/changelog/20250210-add-case-tag-link-table.xml"/>
+    <include file="config/liquibase/initial-setup/case/changelog/20241220-update-document-sequence.xml"/>
+    <include file="config/liquibase/initial-setup/case/changelog/20251009-add-document-index-case-status.xml"/>
+    <include file="config/liquibase/initial-setup/case/changelog/20250113-major13-upgrade.xml"/>
+    <include file="config/liquibase/initial-setup/case/changelog/20251013-add-document-index-case-status-post-13-migration.xml"/>
+    <include file="config/liquibase/initial-setup/case/changelog/20251111-json-schema-definition-blueprint-definition.xml"/>
+
+    <!-- process-document/src/main/resources/config/liquibase/process-document-master.xml -->
+
+
+    <include file="config/liquibase/initial-setup/process-document/changelog/20190731-create-process-document-domain-changelog.xml"/>
+    <include file="config/liquibase/initial-setup/process-document/changelog/20191213-add-column-can-initialize-document-changelog.xml"/>
+    <include file="config/liquibase/initial-setup/process-document/changelog/20200115-add-process-name-changelog.xml"/>
+    <include file="config/liquibase/initial-setup/process-document/changelog/20200119-rename-id-column-changelog.xml"/>
+    <include file="config/liquibase/initial-setup/process-document/changelog/20201008-update-document-definition-id.xml"/>
+    <include file="config/liquibase/initial-setup/process-document/changelog/20210506-add-column-startable-by-user-changelog.xml"/>
+    <include file="config/liquibase/initial-setup/process-document/changelog/20220920-create-link-process-changelog.xml"/>
+    <include file="config/liquibase/initial-setup/process-document/changelog/20230217-process-definition-key-type-resize.xml"/>
+    <include file="config/liquibase/initial-setup/process-document/changelog/20250106-process-case-definition.xml"/>
+    <include file="config/liquibase/initial-setup/process-document/changelog/20250327-case-definition-process.xml"/>
+
+    <!-- form/src/main/resources/config/liquibase/form-master.xml -->
+
+
+    <include file="config/liquibase/initial-setup/form/changelog/20200224-form-definitions.xml"/>
+    <include file="config/liquibase/initial-setup/form/changelog/20200330-remove-name-unique-constraint-changelog.xml"/>
+    <include file="config/liquibase/initial-setup/form/changelog/20200408-add-storage-type.xml"/>
+    <include file="config/liquibase/initial-setup/form/changelog/20201022-remove-storage-type-column.xml"/>
+    <include file="config/liquibase/initial-setup/form/changelog/20210107-add-readonly-column.xml"/>
+    <include file="config/liquibase/initial-setup/form/changelog/20220123-add-name-unique-constraint-changelog.xml"/>
+    <include file="config/liquibase/initial-setup/form/changelog/20230330-add-form-process-link.xml"/>
+    <include file="config/liquibase/initial-setup/form/changelog/20240528-add-view-model-to-process-link.xml"/>
+    <include file="config/liquibase/initial-setup/form/changelog/20240529-intermediate-submission.xml"/>
+    <include file="config/liquibase/initial-setup/form/changelog/20240819-task-size-and-type-to-process-link.xml"/>
+    <include file="config/liquibase/initial-setup/form/changelog/20241111-subtitles-to-process-link.xml"/>
+    <include file="config/liquibase/initial-setup/form/changelog/20250219-form-major13-upgrade.xml"/>
+    <include file="config/liquibase/initial-setup/form/changelog/20250812-process-link-subtitles-to-jsonb.xml"/>
+
+    <!-- process-link-url/src/main/resources/config/liquibase/process-link-url-master.xml -->
+
+
+    <include file="config/liquibase/initial-setup/process-link-url/changelog/20240808-add-url-process-link.xml"/>
+
+    <!-- mail/src/main/resources/config/liquibase/mail-master.xml -->
+    <include file="config/liquibase/initial-setup/mail/changelog/20190306112310_blacklisted_email.xml"/>
+
+    <!-- audit/src/main/resources/config/liquibase/audit-master.xml -->
+
+
+    <include file="config/liquibase/initial-setup/audit/changelog/20190305-create-audit-record-changelog.xml"/>
+    <include file="config/liquibase/initial-setup/audit/changelog/20210414-audit-record-add-document-id-changelog.xml"/>
+    <include file="config/liquibase/initial-setup/audit/changelog/20210708-update-document-id-audit-event.xml"/>
+    <include file="config/liquibase/initial-setup/audit/changelog/20220104-rename-indexes.xml"/>
+    <include file="config/liquibase/initial-setup/audit/changelog/20240926-rename-anonymous-to-system.xml"/>
+    <include file="config/liquibase/initial-setup/audit/changelog/20250613-major-13-migration.xml"/>
+    <include file="config/liquibase/initial-setup/audit/changelog/20251113-migrate-note.xml"/>
+
+    <!-- case/src/main/resources/config/liquibase/case-master.xml -->
+
+    <include file="config/liquibase/initial-setup/case/changelog/20221125-add-case-definition.xml"/>
+    <include file="config/liquibase/initial-setup/case/changelog/20221206-add-case-list-column.xml"/>
+    <include file="config/liquibase/initial-setup/case/changelog/20221214-add-column-order-to-list-column.xml"/>
+    <include file="config/liquibase/initial-setup/case/changelog/20230526-add-column-auto-assign-tasks-to-case-definition.xml"/>
+    <include file="config/liquibase/initial-setup/case/changelog/20230926-add-case-tabs.xml"/>
+    <include file="config/liquibase/initial-setup/case/changelog/20231006-add-standard-case-tabs.xml"/>
+    <include file="config/liquibase/initial-setup/case/changelog/20240228-add-task-list-column.xml"/>
+    <include file="config/liquibase/initial-setup/case/changelog/20240513-add-case-widget-tab.xml"/>
+    <include file="config/liquibase/initial-setup/case/changelog/20240514-add-case-widget-tab-widget.xml"/>
+    <include file="config/liquibase/initial-setup/case/changelog/20240527-add-createdon-createdby-to-case-tabs.xml"/>
+    <include file="config/liquibase/initial-setup/case/changelog/20240617-add-showtasks-to-case-tabs.xml"/>
+    <include file="config/liquibase/initial-setup/case/changelog/20241220-add-case-widget-actions.xml"/>
+    <include file="config/liquibase/initial-setup/case/changelog/20250122-add-columns-for-external-start-case-form-to-case-definition.xml"/>
+    <include file="config/liquibase/initial-setup/case/changelog/20241205-update-case-definition.xml"/>
+    <include file="config/liquibase/initial-setup/case/changelog/20250214-case-major13-upgrade.xml"/>
+    <include file="config/liquibase/initial-setup/case/changelog/20250326-draft-system.xml"/>
+    <include file="config/liquibase/initial-setup/case/changelog/20250405-case-definition-draft.xml"/>
+    <include file="config/liquibase/initial-setup/case/changelog/20250828-add-quick-search-changelog.xml"/>
+    <include file="config/liquibase/initial-setup/case/changelog/20250807-add-exportable-to-list-column.xml"/>
+    <include file="config/liquibase/initial-setup/case/changelog/20250924-add-case-header-widget.xml"/>
+    <include file="config/liquibase/initial-setup/case/changelog/20250827-widget-tab-conditions.xml"/>
+    <include file="config/liquibase/initial-setup/case/changelog/20250912-update-widget-properties.xml"/>
+    <include file="config/liquibase/initial-setup/case/changelog/20250902-add-hidden-case-list-column.xml"/>
+    <include file="config/liquibase/initial-setup/case/changelog/20251117-add-widget-icon.xml"/>
+    <include file="config/liquibase/initial-setup/case/changelog/20251125-add-widget-is-compact.xml"/>
+
+    <!-- form-flow/src/main/resources/config/liquibase/form-flow-master.xml -->
+
+    <include file="config/liquibase/initial-setup/form-flow/changelog/20220317-add-form-flow-definition.xml"/>
+    <include file="config/liquibase/initial-setup/form-flow/changelog/20220328-add-form-flow-instance.xml"/>
+    <include file="config/liquibase/initial-setup/form-flow/changelog/20220824-add-form-flow-on-back.xml"/>
+    <include file="config/liquibase/initial-setup/form-flow/changelog/20230823-temporary-submission-data.xml"/>
+    <include file="config/liquibase/initial-setup/form-flow/changelog/20240820-add-form-flow-step-instance-submission-order.xml"/>
+    <include file="config/liquibase/initial-setup/form-flow/changelog/20240823-add-form-flow-step-title.xml"/>
+    <include file="config/liquibase/initial-setup/form-flow/changelog/20250307-add-form-flow-to-case-definition.xml"/>
+
+    <!-- zgw/portaaltaak/src/main/resources/config/liquibase/portaaltaak-master.xml -->
+    <include file="config/liquibase/initial-setup/zgw/portaaltaak/changelog/20230308-migrate-process.xml"/>
+
+    <!-- resource/temporary-resource-storage/src/main/resources/config/liquibase/temporary-resource-master.xml -->
+
+    <include file="config/liquibase/initial-setup/resource/temporary-resource-storage/changelog/20240725-add-resource-storage-metadata.xml"/>
+
+    <!-- plugin/src/main/resources/config/liquibase/plugin-master.xml -->
+
+    <include file="config/liquibase/initial-setup/plugin/changelog/20220617-add-plugin-definition.xml"/>
+    <include file="config/liquibase/initial-setup/plugin/changelog/20220622-add-plugin-configuration.xml"/>
+    <include file="config/liquibase/initial-setup/plugin/changelog/20220706-add-plugin-process-link.xml"/>
+    <include file="config/liquibase/initial-setup/plugin/changelog/20220705-add-plugin-property.xml"/>
+    <include file="config/liquibase/initial-setup/plugin/changelog/20220801-add-plugin-categories.xml"/>
+    <include file="config/liquibase/initial-setup/plugin/changelog/20230131-add-activity-type-to-process-links.xml"/>
+    <include file="config/liquibase/initial-setup/plugin/changelog/20230329-migrate-process-link-table.xml"/>
+    <include file="config/liquibase/initial-setup/plugin/changelog/20250601-add-plugin-configuration-reference.xml"/>
+
+    <!-- notes/src/main/resources/config/liquibase/note-master.xml -->
+
+    <include file="config/liquibase/initial-setup/notes/changelog/20221010-create-note-table-changelog.xml"/>
+    <include file="config/liquibase/initial-setup/notes/changelog/20250213-cascade-document-delete.xml"/>
+
+    <!-- zgw/object-management/src/main/resources/config/liquibase/object-management-master.xml -->
+
+    <include file="config/liquibase/initial-setup/zgw/object-management/changelog/20221221-add-object-management-table.xml"/>
+    <include file="config/liquibase/initial-setup/zgw/object-management/changelog/20230130-switch-configuration-id-columns.xml"/>
+
+    <!-- search/src/main/resources/config/liquibase/search-master.xml -->
+
+    <include file="config/liquibase/initial-setup/search/changelog/20230124-add-search-list-column-table.xml"/>
+    <include file="config/liquibase/initial-setup/search/changelog/20230131-add-search-field-table.xml"/>
+    <include file="config/liquibase/initial-setup/search/changelog/20230426-migrate-path.xml"/>
+    <include file="config/liquibase/initial-setup/search/changelog/20240523-add-ownertype-matchtype-dropdown.xml"/>
+    <include file="config/liquibase/initial-setup/search/changelog/20240620-replace-uq-constraint-remove-null.xml"/>
+    <include file="config/liquibase/initial-setup/search/changelog/20250601-add-required-and-owner-type-dropdown.xml"/>
+
+    <!-- zgw/notificaties-api/src/main/resources/config/liquibase/notificaties-api-master.xml -->
+
+    <include file="config/liquibase/initial-setup/zgw/notificaties-api/changelog/20230105-add-notificaties-api-abonnement-link-table.xml"/>
+    <include file="config/liquibase/initial-setup/zgw/notificaties-api/changelog/20230123-rename-primary-key-column-in-notificaties-api-abonnement-link-table.xml"/>
+    <include file="config/liquibase/initial-setup/zgw/notificaties-api/changelog/20240525-add-notificaties-api-inbound-event-table.xml"/>
+
+    <!-- data-provider/src/main/resources/config/liquibase/dataprovider-master.xml -->
+
+    <include file="config/liquibase/initial-setup/data-provider/changelog/20230117-add-dropdown-list-table.xml"/>
+
+    <!-- zgw/zaken-api/src/main/resources/config/liquibase/zaken-api-master.xml -->
+
+    <include file="config/liquibase/initial-setup/zgw/zaken-api/changelog/20230117-add-zaak-instance-link.xml"/>
+    <include file="config/liquibase/initial-setup/zgw/zaken-api/changelog/20240131-zaaktype-link-domain-changelog.xml"/>
+    <include file="config/liquibase/initial-setup/zgw/zaken-api/changelog/20240214-create-table-zaak-hersteltermijn.xml"/>
+    <include file="config/liquibase/initial-setup/zgw/zaken-api/changelog/20250312_zaak_type_link_to_case_definition.xml"/>
+    <include file="config/liquibase/initial-setup/zgw/zaken-api/changelog/20251023-add-zaak-notitie-link.xml"/>
+
+    <!-- building-block/src/main/resources/config/liquibase/building-block-master.xml -->
+
+    <include file="config/liquibase/initial-setup/building-block/changelog/20251014-add-building-block-definition-table.xml"/>
+    <include file="config/liquibase/initial-setup/building-block/changelog/20251015-add-building-block-definition-process-definition.xml"/>
+    <include file="config/liquibase/initial-setup/building-block/changelog/20251110-add-building-block-definition-artwork-table.xml"/>
+    <include file="config/liquibase/initial-setup/building-block/changelog/20251124-add-building-block-instance-table.xml"/>
+    <include file="config/liquibase/initial-setup/building-block/changelog/20250601-create-building-block-process-link.xml"/>
+    <include file="config/liquibase/initial-setup/building-block/changelog/20251120-add-building-block-process-link-mappings.xml"/>
+    <include file="config/liquibase/initial-setup/building-block/changelog/20251209-add-building-block-instance-activity-id.xml"/>
+    <include file="config/liquibase/initial-setup/building-block/changelog/20260114-add-parent-building-block-instance-id.xml"/>
+    <include file="config/liquibase/initial-setup/building-block/changelog/20260130-make-case-document-id-nullable.xml"/>
+
+    <!-- form-flow/src/main/resources/config/liquibase/form-flow-valtimo-master.xml -->
+
+    <include file="config/liquibase/initial-setup/form-flow/changelog/20230330-add-form-flow-process-link.xml"/>
+
+    <!-- dashboard/src/main/resources/config/liquibase/dashboard-master.xml -->
+
+    <include file="config/liquibase/initial-setup/dashboard/changelog/20230531-add-dashboard-table.xml"/>
+
+    <!-- zgw/verzoek/src/main/resources/config/liquibase/verzoek-master.xml -->
+
+    <include file="config/liquibase/initial-setup/zgw/verzoek/changelog/20230913-move-object-management-id.xml"/>
+    <include file="config/liquibase/initial-setup/zgw/verzoek/changelog/20250926-rename-to-case-definition-key.xml"/>
+
+    <!-- changelog/src/main/resources/config/liquibase/changelog-master.xml -->
+
+    <include file="config/liquibase/initial-setup/changelog/changelog/20230615-add-changelog-table.xml"/>
+
+    <!-- keycloak-iam/src/main/resources/config/liquibase/keycloak-master.xml -->
+    <include file="config/liquibase/initial-setup/keycloak-iam/changelog/20250506-migrate-to-keycloak-username.xml"/>
+
+    <!-- zgw/documenten-api/src/main/resources/config/liquibase/documenten-api-master.xml -->
+
+    <include file="config/liquibase/initial-setup/zgw/documenten-api/changelog/20240221-add-documente-api-list-column.xml"/>
+    <include file="config/liquibase/initial-setup/zgw/documenten-api/changelog/20240222-add-documenten-api-trefwoorden.xml"/>
+    <include file="config/liquibase/initial-setup/zgw/documenten-api/changelog/20241203-add-documenten-api-upload-field.xml"/>
+
+    <!-- zgw/zaakdetails/src/main/resources/config/liquibase/zaakdetails-master.xml -->
+
+    <include file="config/liquibase/initial-setup/zgw/zaakdetails/changelog/20240328-add-objecten-api-document-sync-table-changelog.xml"/>
+    <include file="config/liquibase/initial-setup/zgw/zaakdetails/changelog/20241106-add-zaakdetails-object-table.xml"/>
+
+    <!-- logging/src/main/resources/config/liquibase/logging-master.xml -->
+    <include file="config/liquibase/initial-setup/logging/changelog/20240830-logback-logging.xml"/>
+
+    <!-- widget/src/main/resources/config/liquibase/widget-master.xml -->
+
+
+
+    <include file="config/liquibase/initial-setup/widget/changelog/20250702-add-tab-table.xml"/>
+    <include file="config/liquibase/initial-setup/widget/changelog/20250704-add-widget-table.xml"/>
+    <include file="config/liquibase/initial-setup/widget/changelog/20250923-update-widget-properties.xml"/>
+    <include file="config/liquibase/initial-setup/widget/changelog/20251016-widget-tab-conditions.xml"/>
+    <include file="config/liquibase/initial-setup/widget/changelog/20251117-add-widget-icon-column.xml"/>
+    <include file="config/liquibase/initial-setup/widget/changelog/20251125-add-widget-is-compact-column.xml"/>
+    <include file="config/liquibase/initial-setup/widget/changelog/20260106-add-tab-properties.xml"/>
+
+    <!-- iko/src/main/resources/config/liquibase/iko-master.xml -->
+
+    <include file="config/liquibase/initial-setup/iko/changelog/20250623-create-iko-domain.xml"/>
+    <include file="config/liquibase/initial-setup/iko/changelog/20250707-add-iko-tab-widget.xml"/>
+    <include file="config/liquibase/initial-setup/iko/changelog/20250711-add-iko-list-column-and-search-field.xml"/>
+    <include file="config/liquibase/initial-setup/iko/changelog/20251021-rename-property-endpoint-path.xml"/>
+    <include file="config/liquibase/initial-setup/iko/changelog/20251024-remove-cascade-from-fk.xml"/>
+    <include file="config/liquibase/initial-setup/iko/changelog/20251128-rename-iko.xml"/>
+    <include file="config/liquibase/initial-setup/iko/changelog/20260106-migrate-tab-properties.xml"/>
+    <include file="config/liquibase/initial-setup/iko/changelog/20260113-migrate-iko-config.xml"/>
+
+
+    <include file="config/liquibase/initial-setup/team/changelog/20260309-create-table-team.xml"/>
+    <include file="config/liquibase/initial-setup/case/changelog/20260311-add-team-key-to-json-schema-document.xml"/>
+    <include file="config/liquibase/initial-setup/task/changelog/20260317-create-table-task-team.xml"/>
+
+</databaseChangeLog>

@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,18 +22,27 @@ enum UPLOAD_STATUS {
 
 enum UPLOAD_STEP {
   ACCESS_CONTROL = 'accessControl',
+  CONFIGURE = 'configure',
   DASHBOARD = 'dashboard',
   FILE_SELECT = 'fileSelect',
   FILE_UPLOAD = 'fileUpload',
   PLUGINS = 'plugins',
 }
 
+enum IMPORT_WARNING {
+  NONE = 'none',
+  NEW_VERSION = 'newVersion',
+  EXISTING_DRAFT = 'existingDraft',
+  EXISTING_FINAL = 'existingFinal',
+}
+
 const STEPS = [
-  UPLOAD_STEP.PLUGINS,
   UPLOAD_STEP.FILE_SELECT,
+  UPLOAD_STEP.CONFIGURE,
+  UPLOAD_STEP.PLUGINS,
   UPLOAD_STEP.FILE_UPLOAD,
   UPLOAD_STEP.ACCESS_CONTROL,
   UPLOAD_STEP.DASHBOARD,
 ];
 
-export {STEPS, UPLOAD_STATUS, UPLOAD_STEP};
+export {STEPS, UPLOAD_STATUS, UPLOAD_STEP, IMPORT_WARNING};

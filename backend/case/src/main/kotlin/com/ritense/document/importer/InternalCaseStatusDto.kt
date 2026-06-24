@@ -23,14 +23,18 @@ data class InternalCaseStatusDto(
     val key: String,
     val title: String,
     val visibleInCaseListByDefault: Boolean,
-    val color: InternalCaseStatusColor
+    val retentionPeriodInDays: Int = -1,
+    val color: InternalCaseStatusColor,
+    val label: String? = null,
 ) {
     companion object {
         fun of(internalCaseStatus: InternalCaseStatus) = InternalCaseStatusDto(
             internalCaseStatus.id.key,
             internalCaseStatus.title,
             internalCaseStatus.visibleInCaseListByDefault,
-            internalCaseStatus.color
+            internalCaseStatus.retentionPeriodInDays,
+            internalCaseStatus.color,
+            internalCaseStatus.label,
         )
     }
 }

@@ -18,11 +18,14 @@ package com.ritense.widget.interactivetable
 
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.databind.node.ArrayNode
 import com.fasterxml.jackson.module.kotlin.treeToValue
 import com.jayway.jsonpath.Configuration
 import com.jayway.jsonpath.JsonPath
 import com.jayway.jsonpath.Option
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
+import com.ritense.valtimo.contract.pageable.PageableHelper.withSize
+import com.ritense.valueresolver.ValueResolverPropertyKey.Companion.NO_PAGE_SIZE
 import com.ritense.valueresolver.ValueResolverPropertyKey.Companion.PAGEABLE
 import com.ritense.valueresolver.ValueResolverService
 import com.ritense.widget.WidgetDataProvider
@@ -45,10 +48,11 @@ class InteractiveTableWidgetDataProvider(
         widget: InteractiveTableWidget,
         properties: Map<String, Any>
     ): InteractiveTableWidgetDataResult {
-        val pageable = properties[PAGEABLE] as Pageable? ?: Pageable.ofSize(widget.properties.defaultPageSize)
+        val pageSize = if (properties[NO_PAGE_SIZE] as Boolean? == true) widget.properties.defaultPageSize else null
+        val pageable = (properties[PAGEABLE] as Pageable?).withSize(pageSize)
 
         val resolvedValues = valueResolverService.resolveValues(
-            properties,
+            properties + mapOf(PAGEABLE to pageable),
             widget.getUnresolvedValues()
         )
 
@@ -62,37 +66,50 @@ class InteractiveTableWidgetDataProvider(
             )
         }
 
-        if (!collectionNode.isArray) {
+        if (collectionNode.isArray) {
+            val result = collectionNode
+                .chunked(pageable.pageSize)
+                .getOrElse(pageable.pageNumber, defaultValue = { _ -> listOf() })
+            val content = toPageContent(widget, resolvedValues, result)
+            return InteractiveTableWidgetDataResult(
+                resolved = exposedValues,
+                table = PageImpl(content, pageable, collectionNode.size().toLong())
+            )
+        } else if (collectionNode["content"] is ArrayNode) {
+            val result = collectionNode["content"] as ArrayNode
+            val content = toPageContent(widget, resolvedValues, result)
+            val total = collectionNode["totalElements"]?.longValue() ?: result.size().toLong()
+            return InteractiveTableWidgetDataResult(
+                resolved = exposedValues,
+                table = PageImpl(content, pageable, total)
+            )
+        } else {
             throw InvalidCollectionException()
         }
-
-        val pagedCollection = collectionNode.chunked(
-            pageable.pageSize
-        )
-
-        val result = pagedCollection.getOrElse(pageable.pageNumber, defaultValue = { _ -> listOf() })
-            .onEachIndexed { index, node ->
-                if (!node.isContainerNode) {
-                    throw InvalidCollectionNodeTypeException(index)
-                }
-            }.map { child ->
-                InteractiveTableResult(
-                    data = widget.properties.columns.associate { column ->
-                        column.key to getValueAt(child, column.value)
-                    },
-                    resolved = widget.properties.rowClickAction?.getExposedValues(
-                        { path -> resolvedValues[path] ?: getValueAt(child, path) }
-                    ),
-                )
-            }
-
-        return InteractiveTableWidgetDataResult(
-            resolved = exposedValues,
-            table = PageImpl(result, pageable, collectionNode.size().toLong())
-        )
     }
 
-    private inline fun getValueAt(data: JsonNode, path: String): Any? {
+    private fun toPageContent(
+        widget: InteractiveTableWidget,
+        resolvedValues: Map<String, Any?>,
+        content: Iterable<JsonNode>,
+    ): List<InteractiveTableResult> {
+        return content.onEachIndexed { index, node ->
+            if (!node.isContainerNode) {
+                throw InvalidCollectionNodeTypeException(index)
+            }
+        }.map { child ->
+            InteractiveTableResult(
+                data = widget.properties.columns.associate { column ->
+                    column.key to getValueAt(child, column.value)
+                },
+                resolved = widget.properties.rowClickAction?.getExposedValues(
+                    { path -> resolvedValues[path] ?: getValueAt(child, path) }
+                ),
+            )
+        }
+    }
+
+    private fun getValueAt(data: JsonNode, path: String): Any? {
         return if (path.startsWith("$")) {
             JSONPATH_CONTEXT.parse(data.toString()).read<Any?>(path)
         } else {

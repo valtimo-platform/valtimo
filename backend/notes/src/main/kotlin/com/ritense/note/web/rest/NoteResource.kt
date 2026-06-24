@@ -24,6 +24,7 @@ import com.ritense.note.web.rest.dto.NoteResponseDto
 import com.ritense.note.web.rest.dto.NoteUpdateRequestDto
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import com.ritense.valtimo.contract.domain.ValtimoMediaType.APPLICATION_JSON_UTF8_VALUE
+import jakarta.validation.Valid
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.data.domain.Sort
@@ -65,7 +66,7 @@ class NoteResource(
     @PostMapping("/v1/document/{documentId}/note")
     fun createNote(
         @PathVariable(name = "documentId") documentId: UUID,
-        @RequestBody noteDto: NoteCreateRequestDto
+        @Valid @RequestBody noteDto: NoteCreateRequestDto
     ): ResponseEntity<NoteResponseDto> {
 
         val jsonSchemaDocumentId = JsonSchemaDocumentId.existingId(documentId)
@@ -79,7 +80,7 @@ class NoteResource(
     @PutMapping("/v1/note/{noteId}")
     fun editNote(
         @PathVariable(name = "noteId") noteId: UUID,
-        @RequestBody noteDto: NoteUpdateRequestDto
+        @Valid @RequestBody noteDto: NoteUpdateRequestDto
     ): ResponseEntity<NoteResponseDto> {
         val note = noteService.editNote(noteId, noteDto.content)
         return ResponseEntity.ok(NoteResponseDto(note))

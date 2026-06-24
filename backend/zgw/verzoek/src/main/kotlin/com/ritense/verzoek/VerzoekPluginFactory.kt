@@ -24,7 +24,7 @@ import com.ritense.plugin.service.PluginService
 import com.ritense.valtimo.service.ApplicationStateService
 
 class VerzoekPluginFactory(
-    pluginService: PluginService,
+    private val pluginService: PluginService,
     private val caseDefinitionService: CaseDefinitionService,
     private val documentDefinitionService: JsonSchemaDocumentDefinitionService,
     private val objectManagementService: ObjectManagementService,

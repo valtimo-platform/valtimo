@@ -25,7 +25,7 @@ With the introduction of case definitions, the structure inside your `resources`
 | Resource type               | Old location                                               | New location                                                                  | Notes                                                                                                                                                                   |
 | --------------------------- | ---------------------------------------------------------- | ----------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Documenten API upload field | `/config/zgw/*.zgw-document-upload-fields.json`            | `/config/case/*/*/zgw/document-upload-field/*.zgw-document-upload-field.json` | Structure changed, see below.                                                                                                                                           |
-| Zaak type link              | -                                                          | `/config/case/*/*/zgw/zaak-type-link/*.zaak-type-link.json`                   | New, click [here](https://app.gitbook.com/o/yIYH93lNsNEOoIWOawxF/s/q5dx9HWFJGshztp4binE/~/changes/12/release-notes/13.x.x/13.0.0/migration#zaak-type-link) for details. |
+| Zaak type link              | -                                                          | `/config/case/*/*/zgw/zaak-type-link/*.zaak-type-link.json`                   | New, see [zaak type link migration details](https://app.gitbook.com/o/yIYH93lNsNEOoIWOawxF/s/q5dx9HWFJGshztp4binE/~/changes/12/release-notes/13.x.x/13.0.0/migration#zaak-type-link). |
 | ZGW document list column    | `/config/documenten-api/*.zgw-document-list-column.json`   | `/config/case/*/*/zgw/document-list-column/*.zgw-document-list-column.json`   | Structure changed, see below.                                                                                                                                           |
 | ZGW document trefwoord      | `/config/case-trefwoorden/*.zgw-document-trefwoorden.json` | `/config/case/*/*/zgw/trefwoord/*.zgw-document-trefwoord.json`                | Structure changed, see below.                                                                                                                                           |
 {% endtab %}
@@ -204,23 +204,23 @@ Other changes required are impossible to list because they depend on how Camunda
 
 #### Application configuration
 
-References to Camunda properties in the application configuration should be changed. Usually this is done in `applcation.yml`
+References to Camunda properties in the application configuration should be changed. Usually this is done in `application.yml`
 
 <table><thead><tr><th>Before</th><th>After</th></tr></thead><tbody><tr><td><pre class="language-yaml"><code class="lang-yaml">spring:
     jersey:
         application-path: /api/camunda-rest
 camunda:
-bpm:
-history-level: AUDIT
-history-level-default: AUDIT
+    bpm:
+        history-level: AUDIT
+        history-level-default: AUDIT
 
 </code></pre></td><td><pre class="language-yaml"><code class="lang-yaml">spring:
-jersey:
-application-path: /api/operaton-rest
+    jersey:
+        application-path: /api/operaton-rest
 operaton:
-bpm:
-history-level: AUDIT
-history-level-default: AUDIT
+    bpm:
+        history-level: AUDIT
+        history-level-default: AUDIT
 
 </code></pre></td></tr></tbody></table>
 
@@ -367,7 +367,7 @@ valtimo:
 
 In Valtimo 13, **only whitelisted environment variables** can be used in auto-deployment configuration files. This restriction was added for **security reasons**, so sensitive system variables can’t be accessed unintentionally.
 
-Whitelist patterns are configured in application.yml under valtimo.imports.whitelistedPaths:
+Whitelist patterns are configured in application.yml under valtimo.import.whitelistedPaths:
 
 ### Migration Guide
 

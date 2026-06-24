@@ -5,6 +5,11 @@
         "startableByUser": true
     },
     {
+        "processDefinitionKey": "bestand-upload-voorbereiden",
+        "canInitializeDocument": false,
+        "startableByUser": true
+    },
+    {
         "processDefinitionKey": "catalogi-get-typen",
         "canInitializeDocument": false,
         "startableByUser": true
@@ -15,12 +20,17 @@
         "startableByUser": true
     },
     {
-        "processDefinitionKey": "patch-zaak",
+        "processDefinitionKey": "create-portaal-taak-process",
         "canInitializeDocument": false,
         "startableByUser": true
     },
     {
         "processDefinitionKey": "create-zaaknotitie",
+        "canInitializeDocument": false,
+        "startableByUser": true
+    },
+    {
+        "processDefinitionKey": "patch-zaak",
         "canInitializeDocument": false,
         "startableByUser": true
     },
@@ -31,6 +41,21 @@
     },
     {
         "processDefinitionKey": "vastleggen-besluit",
+        "canInitializeDocument": false,
+        "startableByUser": true
+    },
+    {
+        "processDefinitionKey": "document-audit-trail",
+        "canInitializeDocument": false,
+        "startableByUser": true
+    },
+    {
+        "processDefinitionKey": "bezwaar-ad-hoc-fvm",
+        "canInitializeDocument": false,
+        "startableByUser": true
+    },
+    {
+        "processDefinitionKey": "bezwaar-ad-hoc-uicomponent",
         "canInitializeDocument": false,
         "startableByUser": true
     }

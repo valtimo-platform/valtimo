@@ -15,16 +15,14 @@
       },
       "architect": {
         "build": {
-          "builder": "@angular-builders/custom-webpack:browser",
+          "builder": "@angular-devkit/build-angular:application",
           "options": {
-            "customWebpackConfig": {
-              "path": "./webpack.config.js"
+            "outputPath": {
+              "base": "deployment/valtimo-angular-console"
             },
-            "aot": false,
-            "outputPath": "deployment/valtimo-angular-console",
             "index": "src/index.html",
-            "main": "src/main.ts",
-            "polyfills": "src/polyfills.ts",
+            "browser": "src/main.ts",
+            "polyfills": ["src/polyfills.ts"],
             "tsConfig": "src/tsconfig.app.json",
             "assets": [
               "src/favicon.ico",
@@ -66,15 +64,15 @@
               "node_modules/bpmn-js/dist/assets/bpmn-font/css/bpmn-embedded.css",
               "node_modules/@bpmn-io/properties-panel/dist/assets/properties-panel.css",
               "node_modules/ol/ol.css",
-              "dist/valtimo/components/assets/css/ng-multiselect-dropdown.theme.scss",
-              "dist/valtimo/layout/assets/css/app.css",
+              "node_modules/@valtimo/components/assets/css/ng-multiselect-dropdown.theme.scss",
+              "node_modules/@valtimo/layout/assets/css/app.css",
               "src/styles.scss",
               "node_modules/flatpickr/dist/flatpickr.css",
-              "dist/valtimo/components/assets/css/carbon.scss",
-              "dist/valtimo/components/assets/css/color.scss",
-              "dist/valtimo/components/assets/css/compatibility.scss",
-              "dist/valtimo/components/assets/css/design-tokens.css",
-              "dist/valtimo/components/assets/css/formio-carbon.scss"
+              "node_modules/@valtimo/components/assets/css/carbon.scss",
+              "node_modules/@valtimo/components/assets/css/color.scss",
+              "node_modules/@valtimo/components/assets/css/compatibility.scss",
+              "node_modules/@valtimo/components/assets/css/design-tokens.css",
+              "node_modules/@valtimo/components/assets/css/formio-carbon.scss"
             ],
             "scripts": [
               "node_modules/jquery/dist/jquery.min.js",
@@ -84,7 +82,7 @@
               "node_modules/@foxythemes/bootstrap-datetime-picker-bs4/js/bootstrap-datetimepicker.min.js",
               "node_modules/perfect-scrollbar/dist/perfect-scrollbar.min.js",
               "node_modules/select2/dist/js/select2.min.js",
-              "dist/valtimo/layout/assets/js/app.js",
+              "node_modules/@valtimo/layout/assets/js/app.js",
               "src/assets/bpmn/ValtimoBPMNModeler.js",
               "node_modules/@webcomponents/custom-elements/src/native-shim.js",
               "node_modules/dmn-js/dist/dmn-modeler.development.js"
@@ -98,9 +96,7 @@
               "object-refs",
               "heatmap.js-fixed"
             ],
-            "vendorChunk": true,
             "extractLicenses": false,
-            "buildOptimizer": false,
             "sourceMap": true,
             "optimization": false,
             "namedChunks": true
@@ -121,10 +117,7 @@
               "outputHashing": "all",
               "sourceMap": false,
               "namedChunks": false,
-              "aot": true,
               "extractLicenses": true,
-              "vendorChunk": false,
-              "buildOptimizer": true,
               "budgets": [
                 {
                   "type": "anyComponentStyle",
@@ -136,7 +129,6 @@
               "outputHashing": "all",
               "sourceMap": false,
               "extractLicenses": true,
-              "vendorChunk": false,
               "budgets": [
                 {
                   "type": "initial",
@@ -153,10 +145,11 @@
           "defaultConfiguration": ""
         },
         "serve": {
-          "builder": "@angular-builders/custom-webpack:dev-server",
+          "builder": "@angular-devkit/build-angular:dev-server",
           "options": {
             "proxyConfig": "proxy.conf.json",
-            "buildTarget": "valtimo-angular-console:build"
+            "buildTarget": "valtimo-angular-console:build",
+            "hmr": false
           },
           "configurations": {
             "production": {
@@ -177,23 +170,15 @@
             "polyfills": "src/polyfills.ts",
             "tsConfig": "src/tsconfig.spec.json",
             "karmaConfig": "src/karma.conf.js",
-            "styles": [
-              "src/styles.scss"
-            ],
+            "styles": ["src/styles.scss"],
             "scripts": [],
-            "assets": [
-              "src/favicon.ico",
-              "src/assets"
-            ]
+            "assets": ["src/favicon.ico", "src/assets"]
           }
         },
         "lint": {
           "builder": "@angular-eslint/builder:lint",
           "options": {
-            "lintFilePatterns": [
-              "src/**/*.ts",
-              "src/**/*.html"
-            ]
+            "lintFilePatterns": ["src/**/*.ts", "src/**/*.html"]
           }
         }
       }
@@ -1611,10 +1596,7 @@
         "lint": {
           "builder": "@angular-eslint/builder:lint",
           "options": {
-            "lintFilePatterns": [
-              "projects/valtimo/sse/**/*.ts",
-              "projects/valtimo/sse/**/*.html"
-            ]
+            "lintFilePatterns": ["projects/valtimo/sse/**/*.ts", "projects/valtimo/sse/**/*.html"]
           }
         }
       }
@@ -1695,12 +1677,113 @@
           }
         }
       }
+    },
+    "@valtimo/building-block-management": {
+      "root": "projects/valtimo/building-block-management",
+      "sourceRoot": "projects/valtimo/building-block-management/src",
+      "projectType": "library",
+      "prefix": "valtimo",
+      "architect": {
+        "build": {
+          "builder": "@angular-devkit/build-angular:ng-packagr",
+          "options": {
+            "tsConfig": "projects/valtimo/building-block-management/tsconfig.lib.json",
+            "project": "projects/valtimo/building-block-management/ng-package.json"
+          },
+          "configurations": {
+            "production": {
+              "tsConfig": "projects/valtimo/building-block-management/tsconfig.lib.prod.json"
+            }
+          }
+        },
+        "test": {
+          "builder": "@angular-devkit/build-angular:karma",
+          "options": {
+            "main": "src/test.ts",
+            "tsConfig": "projects/valtimo/building-block-management/tsconfig.spec.json",
+            "karmaConfig": "projects/valtimo/building-block-management/karma.conf.js"
+          }
+        },
+        "lint": {
+          "builder": "@angular-eslint/builder:lint",
+          "options": {
+            "lintFilePatterns": [
+              "projects/valtimo/building-block-management/src/**/*.ts",
+              "projects/valtimo/building-block-management/src/**/*.html"
+            ]
+          }
+        }
+      }
+    },
+    "@valtimo/teams": {
+      "root": "projects/valtimo/teams",
+      "sourceRoot": "projects/valtimo/teams/src",
+      "projectType": "library",
+      "prefix": "valtimo",
+      "architect": {
+        "build": {
+          "builder": "@angular-devkit/build-angular:ng-packagr",
+          "options": {
+            "tsConfig": "projects/valtimo/teams/tsconfig.lib.json",
+            "project": "projects/valtimo/teams/ng-package.json"
+          },
+          "configurations": {
+            "production": {
+              "tsConfig": "projects/valtimo/teams/tsconfig.lib.prod.json"
+            }
+          }
+        },
+        "test": {
+          "builder": "@angular-devkit/build-angular:karma",
+          "options": {
+            "main": "src/test.ts",
+            "tsConfig": "projects/valtimo/teams/tsconfig.spec.json",
+            "karmaConfig": "projects/valtimo/teams/karma.conf.js"
+          }
+        },
+        "lint": {
+          "builder": "@angular-eslint/builder:lint",
+          "options": {
+            "lintFilePatterns": [
+              "projects/valtimo/teams/src/**/*.ts",
+              "projects/valtimo/teams/src/**/*.html"
+            ]
+          }
+        }
+      }
+    },
+    "@valtimo/admin-settings": {
+      "root": "projects/valtimo/admin-settings",
+      "sourceRoot": "projects/valtimo/admin-settings/src",
+      "projectType": "library",
+      "prefix": "valtimo",
+      "architect": {
+        "build": {
+          "builder": "@angular-devkit/build-angular:ng-packagr",
+          "options": {
+            "tsConfig": "projects/valtimo/admin-settings/tsconfig.lib.json",
+            "project": "projects/valtimo/admin-settings/ng-package.json"
+          },
+          "configurations": {
+            "production": {
+              "tsConfig": "projects/valtimo/admin-settings/tsconfig.lib.prod.json"
+            }
+          }
+        },
+        "lint": {
+          "builder": "@angular-eslint/builder:lint",
+          "options": {
+            "lintFilePatterns": [
+              "projects/valtimo/admin-settings/src/**/*.ts",
+              "projects/valtimo/admin-settings/src/**/*.html"
+            ]
+          }
+        }
+      }
     }
   },
   "cli": {
-    "schematicCollections": [
-      "@angular-eslint/schematics"
-    ],
+    "schematicCollections": ["@angular-eslint/schematics"],
     "analytics": false
   }
 }

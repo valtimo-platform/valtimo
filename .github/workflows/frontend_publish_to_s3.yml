@@ -40,8 +40,9 @@ jobs:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           PROJECT_VERSION: ${{ inputs.project_version }}
+          PUBLISH_TYPE: ${{ inputs.publish_type }}
         run: |
-          npm run libs-publish-all -- ${{ inputs.publish_type }} $AWS_ACCESS_KEY_ID $AWS_SECRET_ACCESS_KEY $PROJECT_VERSION
+          npm run libs-publish-all -- "$PUBLISH_TYPE" $AWS_ACCESS_KEY_ID $AWS_SECRET_ACCESS_KEY $PROJECT_VERSION
 
       - name: "Publish to SNS topic for snapshots"
         if: inputs.publish_type == 'snapshot'

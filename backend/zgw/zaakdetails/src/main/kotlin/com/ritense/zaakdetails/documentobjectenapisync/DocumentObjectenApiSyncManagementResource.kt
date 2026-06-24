@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,6 +21,7 @@ import com.ritense.objectenapi.management.ObjectManagementInfoProvider
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import com.ritense.valtimo.contract.case_.CaseDefinitionId
 import com.ritense.valtimo.contract.domain.ValtimoMediaType.APPLICATION_JSON_UTF8_VALUE
+import jakarta.validation.Valid
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
@@ -46,8 +47,10 @@ class DocumentObjectenApiSyncManagementResource(
         val syncConfiguration =
             documentObjectenApiSyncManagementService.getSyncConfiguration(caseDefinitionId)
                 ?: return ResponseEntity.ok(null)
+        val objectManagementConfigurationId = syncConfiguration.objectManagementConfigurationId
+            ?: return ResponseEntity.ok(null)
         val objectManagementConfiguration =
-            objectManagementInfoProvider.getObjectManagementInfo(syncConfiguration.objectManagementConfigurationId)
+            objectManagementInfoProvider.getObjectManagementInfo(objectManagementConfigurationId)
         return ResponseEntity.ok(
             DocumentObjectenApiSyncResponse.of(syncConfiguration, objectManagementConfiguration)
         )
@@ -57,7 +60,7 @@ class DocumentObjectenApiSyncManagementResource(
     fun createOrUpdateSyncConfiguration(
         @PathVariable(name = "caseDefinitionKey") caseDefinitionKey: String,
         @PathVariable(name = "caseDefinitionVersionTag") caseDefinitionVersionTag: String,
-        @RequestBody syncRequest: DocumentObjectenApiSyncRequest
+        @Valid @RequestBody syncRequest: DocumentObjectenApiSyncRequest
     ): ResponseEntity<Unit> {
         val caseDefinitionId = CaseDefinitionId(caseDefinitionKey, caseDefinitionVersionTag)
         val syncConfiguration = syncRequest.toEntity(caseDefinitionId)

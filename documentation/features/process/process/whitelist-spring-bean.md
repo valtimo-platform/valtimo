@@ -4,7 +4,7 @@ It is possible to use custom code in your BPMN processes by referencing a [Sprin
 
 ## ProcessBean annotation
 
-Camunda by default allows access to Spring beans, e.g. to send an email. Valtimo provides a whitelist for this instead, as exposing every bean is a security concern. In order to add a Spring bean to this whitelist, the bean definition itself has to be whitelisted. This is done with the `@ProcessBean` annotation.
+Operaton by default allows access to Spring beans, e.g. to send an email. Valtimo provides a whitelist for this instead, as exposing every bean is a security concern. In order to add a Spring bean to this whitelist, the bean definition itself has to be whitelisted. This is done with the `@ProcessBean` annotation.
 
 1.  Ensure a bean for the class that should be whitelisted is provided.
 
@@ -24,7 +24,7 @@ Camunda by default allows access to Spring beans, e.g. to send an email. Valtimo
     }
     ```
 
-The bean can now be used. For information on how to use these beans inside a BPMN, see [here](integrate-spring-bean-in-process.md).
+The bean can now be used. For information on how to use these beans inside a BPMN, see [integrating a Spring bean in a process](integrate-spring-bean-in-process.md).
 
 Note: the whitelist can be disabled by setting the following Spring property to `false`.
 
@@ -32,6 +32,6 @@ Note: the whitelist can be disabled by setting the following Spring property to 
 
 ```yaml
 valtimo:
-  camunda:
+  operaton:
     bean-whitelisting: false
 ```

@@ -63,7 +63,12 @@ import {
   TaskWithProcessLink,
   UrlResolverService,
 } from '@valtimo/process-link';
-import {IconService} from 'carbon-components-angular';
+import {
+  IconService,
+  LoadingModule,
+  NotificationContent,
+  NotificationModule,
+} from 'carbon-components-angular';
 import {NGXLogger} from 'ngx-logger';
 import {
   BehaviorSubject,
@@ -79,34 +84,48 @@ import {
 import {IntermediateSubmission, Task} from '../../models';
 import {TaskIntermediateSaveService, TaskService} from '../../services';
 import {CAN_ASSIGN_TASK_PERMISSION, TASK_DETAIL_PERMISSION_RESOURCE} from '../../task-permissions';
+import {enrichTaskFromProcessLink} from '../../utils/task-enrichment.utils';
 
 @Component({
   selector: 'valtimo-task-detail-content',
   templateUrl: './task-detail-content.component.html',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, FormIoModule, TranslateModule, ProcessLinkModule],
+  imports: [
+    CommonModule,
+    FormIoModule,
+    TranslateModule,
+    ProcessLinkModule,
+    LoadingModule,
+    NotificationModule,
+  ],
 })
 export class TaskDetailContentComponent implements OnInit, OnDestroy, AfterViewInit {
-  @ViewChild('form') form: FormioComponent;
+  @ViewChild('form') form!: FormioComponent;
   @ViewChild('formViewModelComponent', {static: false, read: ViewContainerRef})
-  public formViewModelDynamicContainer: ViewContainerRef;
-  @ViewChild('formFlow') public formFlow: FormFlowComponent;
+  public formViewModelDynamicContainer!: ViewContainerRef;
+  @ViewChild('formFlow') public formFlow!: FormFlowComponent;
   @ViewChild('formCustomComponent', {static: false, read: ViewContainerRef})
-  public formCustomComponentDynamicContainer: ViewContainerRef;
+  public formCustomComponentDynamicContainer!: ViewContainerRef;
   @Input() public set task(value: Task | null) {
     if (!value) return;
 
+    if (this.taskInstanceId$.getValue() === value.id) {
+      this.task$.next(value);
+      return;
+    }
     this.loadTaskDetails(value);
   }
   @Input() public set taskAndProcessLink(value: TaskWithProcessLink | null) {
     if (!value) return;
 
-    this.loadTaskDetails(value.task as any, value.processLinkActivityResult);
+    const task = enrichTaskFromProcessLink(value.task as any as Task, value.processLinkActivityResult);
+    this.loadTaskDetails(task, value.processLinkActivityResult);
   }
   @Input() public set modalClosed(closed: boolean) {
     // save form flow data on modal closed
     if (this.formFlow) this.formFlow.saveData();
+    this.taskInstanceId$.next(null);
 
     if (closed) {
       this.closeModalEvent.emit();
@@ -115,6 +134,7 @@ export class TaskDetailContentComponent implements OnInit, OnDestroy, AfterViewI
   @Output() public readonly closeModalEvent = new EventEmitter();
   @Output() public readonly formSubmit = new EventEmitter();
   @Output() public readonly activeChange = new EventEmitter<boolean>();
+  @Output() public readonly taskUpdated = new EventEmitter<Task>();
 
   public readonly canAssignUserToTask$ = new BehaviorSubject<boolean>(false);
   public readonly errorMessage$ = new BehaviorSubject<string | null>(null);
@@ -125,11 +145,12 @@ export class TaskDetailContentComponent implements OnInit, OnDestroy, AfterViewI
   public readonly formIoFormData$ = new BehaviorSubject<any>(null);
   public readonly formName$ = new BehaviorSubject<string | null>(null);
   public readonly loading$ = new BehaviorSubject<boolean>(true);
-  public readonly page$ = new BehaviorSubject<any>(null);
-  public readonly submission$ = this.taskIntermediateSaveService.submission$;
+  public readonly submission$ = new BehaviorSubject<any>(null);
   public readonly task$ = new BehaviorSubject<Task | null>(null);
   public readonly taskInstanceId$ = new BehaviorSubject<string | null>(null);
-  public intermediateSaveEnabled = false;
+  public get intermediateSaveEnabled(): boolean {
+    return !!this.configService.featureToggles?.enableIntermediateSave;
+  }
 
   private readonly _taskProcessLinkType$ = new BehaviorSubject<TaskProcessLinkType | null>(null);
   public readonly processLinkIsForm$ = this._taskProcessLinkType$.pipe(
@@ -143,6 +164,44 @@ export class TaskDetailContentComponent implements OnInit, OnDestroy, AfterViewI
   );
   public readonly processLinkIsUiComponent$ = this._taskProcessLinkType$.pipe(
     map((type: string | null) => type === 'ui-component')
+  );
+
+  public readonly noFormNotification$: Observable<NotificationContent | null> = combineLatest([
+    this.loading$,
+    this.formDefinition$,
+    this.formFlowInstanceId$,
+    this.errorMessage$,
+    this.processLinkIsUiComponent$,
+    this.processLinkIsFormViewModel$,
+  ]).pipe(
+    map(
+      ([
+        loading,
+        formDefinition,
+        formFlowInstanceId,
+        errorMessage,
+        isUiComponent,
+        isFormViewModel,
+      ]) => {
+        if (
+          !loading &&
+          !formDefinition &&
+          !formFlowInstanceId &&
+          !errorMessage &&
+          !isUiComponent &&
+          !isFormViewModel
+        ) {
+          return {
+            type: 'warning',
+            title: this.translateService.instant('interface.warning'),
+            message: this.translateService.instant('formManagement.noFormDefinitionFoundUser'),
+            showClose: false,
+            lowContrast: true,
+          } as NotificationContent;
+        }
+        return null;
+      }
+    )
   );
 
   private readonly _processLinkId$ = new BehaviorSubject<string | null>(null);
@@ -177,8 +236,6 @@ export class TaskDetailContentComponent implements OnInit, OnDestroy, AfterViewI
     private readonly formCustomComponentConfig: FormCustomComponentConfig,
     private readonly urlResolverService: UrlResolverService
   ) {
-    this.intermediateSaveEnabled = !!this.configService.featureToggles?.enableIntermediateSave;
-
     this.iconService.registerAll([RecentlyViewed16]);
 
     const options = new FormioOptionsImpl();
@@ -192,7 +249,7 @@ export class TaskDetailContentComponent implements OnInit, OnDestroy, AfterViewI
 
   public ngOnDestroy(): void {
     this._subscriptions.unsubscribe();
-    this.taskIntermediateSaveService.setSubmission({});
+    this.submission$.next(null);
     this._viewInitialized$.next(false);
   }
 
@@ -272,10 +329,6 @@ export class TaskDetailContentComponent implements OnInit, OnDestroy, AfterViewI
     this.stateService.setDocumentId(documentId);
 
     this.task$.next(task);
-    this.page$.next({
-      title: task.name,
-      subtitle: `${this.translateService.instant('taskDetail.taskCreated')} ${task.created}`,
-    });
     this.stateService.setProcessInstanceId(task.processInstanceId);
   }
 
@@ -306,6 +359,7 @@ export class TaskDetailContentComponent implements OnInit, OnDestroy, AfterViewI
   private getTaskProcessLink(taskId: string): void {
     this.taskService.getTaskProcessLink(taskId).subscribe({
       next: res => {
+        this.updateTaskFromProcessLink(res);
         this.setTaskProcessLink(res);
       },
       error: _ => {
@@ -314,25 +368,42 @@ export class TaskDetailContentComponent implements OnInit, OnDestroy, AfterViewI
     });
   }
 
+  private updateTaskFromProcessLink(processLinkResult: TaskProcessLinkResult | null): void {
+    const currentTask = this.task$.getValue();
+    if (!currentTask) return;
+
+    const enrichedTask = enrichTaskFromProcessLink(currentTask, processLinkResult);
+    if (enrichedTask !== currentTask) {
+      this.task$.next(enrichedTask);
+      this.taskUpdated.emit(enrichedTask);
+    }
+  }
+
   private setTaskProcessLink(processLinkResult: TaskProcessLinkResult | null): void {
     if (processLinkResult !== null) {
       switch (processLinkResult?.type) {
         case 'form':
           this._taskProcessLinkType$.next('form');
           this._processLinkId$.next(processLinkResult.processLinkId);
-          if (this.intermediateSaveEnabled) this.getCurrentProgress();
-          this.setFormDefinition(processLinkResult.properties.prefilledForm);
+          // initializeFormWithSubmission will set loading to false after form is ready
+          this.initializeFormWithSubmission(processLinkResult.properties.prefilledForm);
           break;
         case 'form-flow':
           this._taskProcessLinkType$.next('form-flow');
           this.formFlowInstanceId$.next(processLinkResult.properties.formFlowInstanceId ?? '');
+          this.loading$.next(false);
           break;
         case 'form-view-model':
           this._taskProcessLinkType$.next('form-view-model');
           this._processLinkId$.next(processLinkResult.processLinkId);
           this.formDefinition$.next(processLinkResult.properties.formDefinition);
           this.formName$.next(processLinkResult.properties.formName ?? '');
-          this.setFormViewModelComponent();
+          this.setFormViewModelComponent(
+            processLinkResult.properties.formDefinition,
+            processLinkResult.properties.formName ?? '',
+            this.taskInstanceId$.getValue()
+          );
+          this.loading$.next(false);
           break;
         case 'url':
           this._taskProcessLinkType$.next('url');
@@ -341,27 +412,30 @@ export class TaskDetailContentComponent implements OnInit, OnDestroy, AfterViewI
             .pipe(take(1))
             .subscribe(([variables, task]) => {
               let url = this.urlResolverService.resolveUrlVariables(
-                processLinkResult.properties.url,
+                processLinkResult.properties.url!,
                 variables.variables
               );
-              window.open(url, '_blank').focus();
+              window.open(url, '_blank')!.focus();
               this.processLinkService
-                .submitURLProcessLink(processLinkResult.processLinkId, task.businessKey, task.id)
+                .submitURLProcessLink(processLinkResult.processLinkId, task!.businessKey, task!.id)
                 .subscribe(() => {
-                  this.completeTask(task);
+                  this.completeTask(task!);
                 });
             });
+          this.loading$.next(false);
           break;
         case 'ui-component':
           this._taskProcessLinkType$.next('ui-component');
           this._processLinkId$.next(processLinkResult.processLinkId);
           this.formDefinition$.next(null);
           this.formName$.next('');
-          this.setFormCustomComponent(processLinkResult.properties.componentKey);
+          this.setFormCustomComponent(
+            processLinkResult.properties.componentKey!,
+            this.taskInstanceId$.getValue()
+          );
+          this.loading$.next(false);
           break;
       }
-
-      this.loading$.next(false);
     }
   }
 
@@ -391,91 +465,127 @@ export class TaskDetailContentComponent implements OnInit, OnDestroy, AfterViewI
     this.formDefinition$.next(formDefinition);
   }
 
-  private setFormViewModelComponent() {
-    combineLatest([this._viewInitialized$, this.processLinkIsFormViewModel$]).subscribe(
-      ([viewInitialized, isFvm]) => {
-        if (viewInitialized && isFvm) {
-          this.formViewModelDynamicContainer.clear();
-          if (!this.formViewModel) {
-            return;
-          }
-          const formViewModelComponent = this.formViewModelDynamicContainer.createComponent(
-            this.formViewModel.component
-          );
-          formViewModelComponent.instance.form = this.formDefinition$.getValue();
-          formViewModelComponent.instance.formName = this.formName$.getValue();
-          formViewModelComponent.instance.taskInstanceId = this.taskInstanceId$.getValue();
-          formViewModelComponent.instance.isStartForm = false;
-
-          formViewModelComponent.instance.formSubmit
-            .pipe(
-              switchMap(() => this.task$),
-              take(1)
-            )
-            .subscribe((task: Task | null) => {
-              this.completeTask(task);
+  private initializeFormWithSubmission(formDefinition: any): void {
+    if (this.intermediateSaveEnabled) {
+      // Wait for intermediate submission before rendering the form
+      this.taskInstanceId$
+        .pipe(
+          filter(value => !!value),
+          take(1),
+          switchMap((taskInstanceId: string | null) =>
+            this.taskIntermediateSaveService.getIntermediateSubmission(taskInstanceId ?? '')
+          )
+        )
+        .subscribe({
+          next: (intermediateSubmission: IntermediateSubmission) => {
+            // Set submission first, then form definition, then mark as loaded
+            this.submission$.next({
+              data: intermediateSubmission?.submission || {},
             });
-
-          if (this.intermediateSaveEnabled) {
-            this._subscriptions.add(
-              formViewModelComponent.instance.submission$.subscribe(submission => {
-                this.taskIntermediateSaveService.setSubmission(submission);
-              })
-            );
-            this._subscriptions.add(
-              this.submission$.pipe(distinctUntilChanged()).subscribe((submission?) => {
-                if (submission?.data && Object.keys(submission.data).length === 0) {
-                  formViewModelComponent.instance.submission = {data: {}};
-                }
-              })
-            );
-            this.getCurrentProgress(formViewModelComponent);
-          }
-
-          this._subscriptions.add(
-            this.closeModalEvent.subscribe(() => {
-              formViewModelComponent.destroy();
-            })
-          );
-        }
-      }
-    );
+            this.setFormDefinition(formDefinition);
+            this.loading$.next(false);
+          },
+          error: () => {
+            // If fetching fails, still render form with empty submission
+            this.submission$.next({data: {}});
+            this.setFormDefinition(formDefinition);
+            this.loading$.next(false);
+          },
+        });
+    } else {
+      // No intermediate save, render form immediately with empty submission
+      this.submission$.next({data: {}});
+      this.setFormDefinition(formDefinition);
+      this.loading$.next(false);
+    }
   }
 
-  private setFormCustomComponent(formCustomComponentKey: string): void {
-    combineLatest([this._viewInitialized$, this.processLinkIsUiComponent$]).subscribe(
-      ([viewInitialized, isUiComponent]) => {
-        if (viewInitialized && isUiComponent) {
-          this.formCustomComponentDynamicContainer.clear();
-          if (!this.formCustomComponentConfig) {
-            return;
-          }
-          let renderedComponent: ComponentRef<FormCustomComponent>;
-          this._subscriptions.add(
-            this._formCustomComponentConfig$.subscribe(formCustomComponentConfig => {
-              const customComponent = formCustomComponentConfig[formCustomComponentKey];
-              renderedComponent = this.formCustomComponentDynamicContainer.createComponent(
-                customComponent
-              ) as ComponentRef<FormCustomComponent>;
-
-              renderedComponent.instance.taskInstanceId = this.taskInstanceId$.value;
-              renderedComponent.instance.submittedEvent.subscribe(() => {
-                this.closeModalEvent.emit();
-              });
-            })
-          );
-          this._subscriptions.add(
-            this.closeModalEvent.subscribe(() => {
-              renderedComponent.destroy();
-            })
-          );
-        }
+  private setFormViewModelComponent(
+    formDefinition: any,
+    formName: string,
+    taskInstanceId: string | null
+  ): void {
+    this.viewInitialized$.pipe(take(1)).subscribe(() => {
+      this.formViewModelDynamicContainer.clear();
+      if (!this.formViewModel) {
+        return;
       }
-    );
+      const formViewModelComponent = this.formViewModelDynamicContainer.createComponent(
+        this.formViewModel.component
+      );
+      formViewModelComponent.instance.form = formDefinition;
+      formViewModelComponent.instance.formName = formName;
+      formViewModelComponent.instance.taskInstanceId = taskInstanceId;
+      formViewModelComponent.instance.isStartForm = false;
+
+      formViewModelComponent.instance.formSubmit
+        .pipe(
+          switchMap(() => this.task$),
+          take(1)
+        )
+        .subscribe((task: Task | null) => {
+          this.completeTask(task);
+        });
+
+      if (this.intermediateSaveEnabled) {
+        this._subscriptions.add(
+          formViewModelComponent.instance.submission$.subscribe(submission => {
+            this.taskIntermediateSaveService.setSubmission(submission);
+          })
+        );
+        this._subscriptions.add(
+          this.submission$.pipe(distinctUntilChanged()).subscribe(submission => {
+            if (submission?.data && Object.keys(submission.data).length === 0) {
+              formViewModelComponent.instance.submission = {data: {}};
+            }
+          })
+        );
+        this.getCurrentProgress(formViewModelComponent);
+      }
+
+      this._subscriptions.add(
+        this.closeModalEvent.subscribe(() => {
+          formViewModelComponent.destroy();
+        })
+      );
+    });
+  }
+
+  private setFormCustomComponent(
+    formCustomComponentKey: string,
+    taskInstanceId: string | null
+  ): void {
+    this.viewInitialized$.pipe(take(1)).subscribe(() => {
+      this.formCustomComponentDynamicContainer.clear();
+      if (!this.formCustomComponentConfig) {
+        return;
+      }
+      let renderedComponent: ComponentRef<FormCustomComponent>;
+      this._subscriptions.add(
+        this._formCustomComponentConfig$.subscribe((formCustomComponentConfig: any) => {
+          const customComponent = formCustomComponentConfig[formCustomComponentKey];
+          renderedComponent = this.formCustomComponentDynamicContainer.createComponent(
+            customComponent
+          ) as ComponentRef<FormCustomComponent>;
+
+          renderedComponent.instance.taskInstanceId = taskInstanceId;
+          renderedComponent.instance.documentId = this.task$.getValue()?.businessKey ?? null;
+          renderedComponent.instance.submittedEvent.subscribe(() => {
+            this.completeTask(this.task$.getValue());
+          });
+        })
+      );
+      this._subscriptions.add(
+        this.closeModalEvent.subscribe(() => {
+          renderedComponent.destroy();
+        })
+      );
+    });
   }
 
   private resetFormDefinition(): void {
     this.formDefinition$.next(null);
+    this.submission$.next(null);
     this.loading$.next(true);
   }
 
@@ -490,7 +600,7 @@ export class TaskDetailContentComponent implements OnInit, OnDestroy, AfterViewI
       .subscribe(ProcessDefinitionCaseDefinition => {
         const caseDefinitionKey = ProcessDefinitionCaseDefinition.id.caseDefinitionId.key;
         this.modalService.setCaseDefinitionKey(caseDefinitionKey);
-        this.stateService.setDocumentDefinitionName(caseDefinitionKey);
+        this.stateService.setCaseDefinitionKey(caseDefinitionKey);
       });
   }
 }

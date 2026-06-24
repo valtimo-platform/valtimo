@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -37,19 +37,26 @@ import com.ritense.processdocument.tasksearch.AdvancedSearchRequest
 import com.ritense.processdocument.tasksearch.SearchRequestMapper
 import com.ritense.processdocument.tasksearch.SearchWithConfigRequest
 import com.ritense.processdocument.web.result.TaskListRowDto
+import com.ritense.search.domain.DataType
 import com.ritense.search.domain.DisplayType
 import com.ritense.search.domain.EmptyDisplayTypeParameter
 import com.ritense.search.domain.SearchFieldV2
 import com.ritense.search.service.SearchFieldV2Service
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
+import com.ritense.valtimo.contract.authentication.TeamManagementService
 import com.ritense.valtimo.contract.authentication.UserManagementService
 import com.ritense.valtimo.contract.database.QueryDialectHelper
 import com.ritense.valtimo.contract.utils.RequestHelper
+import com.ritense.valtimo.contract.utils.SecurityUtils
+import com.ritense.valtimo.task.domain.TaskTeam
+import com.ritense.valtimo.task.service.UserTaskOpenedStatusService
 import com.ritense.valtimo.operaton.authorization.OperatonTaskActionProvider
 import com.ritense.valtimo.operaton.domain.OperatonExecution
 import com.ritense.valtimo.operaton.domain.OperatonTask
 import com.ritense.valtimo.operaton.repository.OperatonTaskSpecificationHelper
+import com.ritense.valtimo.operaton.repository.OperatonTaskSpecificationHelper.Companion.byTeamKeys
 import com.ritense.valtimo.service.OperatonTaskService.TaskFilter
+import com.ritense.valtimo.service.TaskBusinessKeyResolver
 import com.ritense.valueresolver.ValueResolverService
 import jakarta.persistence.EntityManager
 import jakarta.persistence.criteria.AbstractQuery
@@ -78,6 +85,7 @@ import java.time.OffsetDateTime
 import java.time.ZoneOffset
 import java.time.ZonedDateTime
 import java.time.temporal.TemporalAccessor
+import java.math.BigDecimal
 import java.util.Date
 import java.util.Locale
 import java.util.UUID
@@ -96,7 +104,10 @@ class CaseTaskListSearchService(
     private val userManagementService: UserManagementService,
     private val authorizationService: AuthorizationService,
     private val searchFieldV2Service: SearchFieldV2Service,
-    private val queryDialectHelper: QueryDialectHelper
+    private val queryDialectHelper: QueryDialectHelper,
+    private val userTaskOpenedStatusService: UserTaskOpenedStatusService,
+    private val taskBusinessKeyResolvers: List<TaskBusinessKeyResolver> = emptyList(),
+    private val teamManagementService: TeamManagementService? = null
 ) {
     private val CONTENT = "content"
     private val INTERNAL_STATUS = "internalStatus"
@@ -116,8 +127,14 @@ class CaseTaskListSearchService(
         ).ifEmpty { defaultColumns }
         val newPageable = mutatePageable(taskListColumns, pageable)
 
-        return search(caseDefinitionName, AdvancedSearchRequest().assigneeFilter(assignmentFilter), newPageable)
-            .map { task -> toCaseListRowDto(task, taskListColumns) }
+        val taskPage = search(caseDefinitionName, AdvancedSearchRequest().assigneeFilter(assignmentFilter), newPageable)
+        val currentUserId = SecurityUtils.getCurrentUserLogin()
+        val openedTaskIds = if (currentUserId != null) {
+            userTaskOpenedStatusService.getOpenedTaskIdsForUser(taskPage.content.map { it.taskId }.toSet(), currentUserId)
+        } else {
+            emptySet()
+        }
+        return taskPage.map { task -> toCaseListRowDto(task, taskListColumns, openedTaskIds.contains(task.taskId)) }
     }
 
     fun searchTaskListRows(
@@ -130,8 +147,14 @@ class CaseTaskListSearchService(
         ).ifEmpty { defaultColumns }
         val newPageable = mutatePageable(taskListColumns, pageable)
 
-        return search(caseDefinitionName, searchWithConfigRequest, newPageable)
-            .map { task -> toCaseListRowDto(task, taskListColumns) }
+        val taskPage = search(caseDefinitionName, searchWithConfigRequest, newPageable)
+        val currentUserId = SecurityUtils.getCurrentUserLogin()
+        val openedTaskIds = if (currentUserId != null) {
+            userTaskOpenedStatusService.getOpenedTaskIdsForUser(taskPage.content.map { it.taskId }.toSet(), currentUserId)
+        } else {
+            emptySet()
+        }
+        return taskPage.map { task -> toCaseListRowDto(task, taskListColumns, openedTaskIds.contains(task.taskId)) }
     }
 
     fun search(
@@ -172,7 +195,8 @@ class CaseTaskListSearchService(
             taskRoot.get<String?>(CaseTaskProperties.ASSIGNEE.propertyName),
             taskRoot.get<LocalDateTime?>(CaseTaskProperties.DUE_DATE.propertyName),
             taskRoot.get<OperatonExecution?>("processInstance").get<String>("id"),
-            documentRoot.get<JsonSchemaDocumentId>("id").get<UUID>("id")
+            documentRoot.get<JsonSchemaDocumentId>("id").get<UUID>("id"),
+            taskTeamSubquery(query, taskRoot, "teamTitle")
         )
 
         query.select(
@@ -182,10 +206,10 @@ class CaseTaskListSearchService(
             )
         )
 
-        // TODO: look into ability to re-use where predicate in list and count query. improves performance
         query.where(constructWhere(cb, query, taskRoot, documentRoot, caseDefinitionName, advancedSearchRequest))
 
-        query.orderBy(constructOrderBy(query, cb, taskRoot, documentRoot, pageable.sort))
+        val sortTypeMap = buildSortTypeMap(caseDefinitionName)
+        query.orderBy(constructOrderBy(query, cb, taskRoot, documentRoot, pageable.sort, sortTypeMap))
 
         val pagedQuery = entityManager.createQuery(query)
             .setFirstResult(pageable.offset.toInt())
@@ -215,20 +239,34 @@ class CaseTaskListSearchService(
         val authorizationPredicate: Predicate =
             getAuthorizationSpecification(OperatonTaskActionProvider.VIEW_LIST).toPredicate(taskRoot, query as AbstractQuery<*>, cb)
 
-        val assignmentFilterPredicate: Predicate = constructAssignmentFilter(advancedSearchRequest.assigneeFilter, cb, taskRoot)
+        val assignmentFilterPredicate: Predicate = constructAssignmentFilter(advancedSearchRequest.assigneeFilter, cb, query, taskRoot)
 
-        // TODO: look into options to improve performance as with complex rules this takes quite some time to finish
         val searchRequestPredicate: Array<Predicate> = constructSearchCriteriaFilter(advancedSearchRequest, cb, query, taskRoot, documentRoot)
 
+        val caseDefPredicate = cb.equal(
+            documentRoot.get<JsonSchemaDocumentDefinitionId>("documentDefinitionId").get<String>("name"),
+            caseDefinitionName
+        )
+
+        val businessKeyPath = taskRoot.get<OperatonExecution>("processInstance").get<String>("businessKey")
+        val documentId = documentRoot.get<JsonSchemaDocumentId>("id").get<UUID>("id")
+
+        val resolverExpressions = taskBusinessKeyResolvers.mapNotNull { resolver ->
+            resolver.resolveCaseDocumentId(cb, query, businessKeyPath)
+        }
+
+        val taskDocumentMatch = if (resolverExpressions.isEmpty()) {
+            cb.equal(businessKeyPath, queryDialectHelper.uuidToString(cb, documentRoot.get<JsonSchemaDocumentId>("id").get("id")))
+        } else {
+            val coalesce = cb.coalesce<UUID>()
+            resolverExpressions.forEach { coalesce.value(it) }
+            coalesce.value(queryDialectHelper.stringToUuid(cb, businessKeyPath))
+            cb.equal(coalesce, documentId)
+        }
+
         val where = cb.and(
-            cb.equal(
-                documentRoot.get<JsonSchemaDocumentDefinitionId>("documentDefinitionId").get<String>("name"),
-                caseDefinitionName
-            ),
-            cb.equal(
-                taskRoot.get<OperatonExecution>("processInstance").get<String>("businessKey"),
-                queryDialectHelper.uuidToString(cb, documentRoot.get<JsonSchemaDocumentId>("id").get("id"))
-            ),
+            caseDefPredicate,
+            taskDocumentMatch,
             assignmentFilterPredicate,
             authorizationPredicate,
             *searchRequestPredicate
@@ -239,6 +277,7 @@ class CaseTaskListSearchService(
     private fun constructAssignmentFilter(
         assignmentFilter: TaskFilter,
         cb: CriteriaBuilder,
+        query: CriteriaQuery<*>,
         taskRoot: Root<OperatonTask>
     ): Predicate {
         val assignmentFilterPredicate: Predicate = when (assignmentFilter) {
@@ -253,6 +292,16 @@ class CaseTaskListSearchService(
 
             TaskFilter.OPEN -> {
                 cb.and(taskRoot.get<Any>(OperatonTaskSpecificationHelper.ASSIGNEE).isNull)
+            }
+
+            TaskFilter.TEAM -> {
+                val teamManagement = teamManagementService
+                    ?: throw IllegalStateException(
+                        "No teamManagementService found. In order to use this feature, the team library must be included."
+                    )
+                val username = userManagementService.currentUser.username
+                val teamKeys = teamManagement.findTeamKeysByUsername(username)
+                byTeamKeys(teamKeys).toPredicate(taskRoot, query, cb)
             }
         }
         return assignmentFilterPredicate
@@ -345,7 +394,7 @@ class CaseTaskListSearchService(
             } else if (searchCriteria.path.startsWith(CASE_PREFIX)) {
                 getValueExpressionForCasePrefix(documentRoot, searchCriteria)
             } else if (searchCriteria.path.startsWith(TASK_PREFIX)) {
-                getValueExpressionForTaskPrefix(taskRoot, searchCriteria)
+                getValueExpressionForTaskPrefix(query, taskRoot, searchCriteria)
             } else {
                 throw IllegalArgumentException("Search path doesn't start with known prefix: '" + searchCriteria.path + "'")
             }
@@ -410,11 +459,24 @@ class CaseTaskListSearchService(
     }
 
     private fun getValueExpressionForTaskPrefix(
+        query: AbstractQuery<*>,
         taskRoot: Root<OperatonTask>,
         searchCriteria: AdvancedSearchRequest.OtherFilter
     ): Expression<Comparable<Any>> {
         val taskColumnName = searchCriteria.path.substring(TASK_PREFIX.length)
+        if (taskColumnName == CaseTaskProperties.ASSIGNED_TEAM_TITLE.propertyName) {
+            @Suppress("UNCHECKED_CAST")
+            return taskTeamSubquery(query, taskRoot, "teamTitle") as Expression<Comparable<Any>>
+        }
         return taskRoot.get<Any>(taskColumnName).`as`(searchCriteria.getDataType())
+    }
+
+    private fun taskTeamSubquery(query: AbstractQuery<*>, taskRoot: Root<OperatonTask>, column: String): Expression<String> {
+        val subquery = query.subquery(String::class.java)
+        val taskTeamRoot = subquery.from(TaskTeam::class.java)
+        subquery.select(taskTeamRoot.get(column))
+        subquery.where(entityManager.criteriaBuilder.equal(taskTeamRoot.get<String>("taskId"), taskRoot.get<String>("id")))
+        return subquery.selection
     }
 
     private fun getValueExpressionForCasePrefix(
@@ -556,7 +618,8 @@ class CaseTaskListSearchService(
         cb: CriteriaBuilder,
         taskRoot: Root<OperatonTask>,
         documentRoot: Root<JsonSchemaDocument>,
-        sort: Sort
+        sort: Sort,
+        sortTypeMap: Map<String, Class<*>>
     ): List<Order> {
         return sort.stream()
             .map { order: Sort.Order ->
@@ -566,29 +629,37 @@ class CaseTaskListSearchService(
                     property.startsWith(DOC_PREFIX) -> {
                         val quotedPath = quoteJsonPath(property.substring(DOC_PREFIX.length))
                         val jsonPath = "$.${quotedPath}"
+                        val sortType = sortTypeMap[property] ?: String::class.java
                         expression = queryDialectHelper.getJsonValueExpression(
                             cb,
                             documentRoot.get<JsonDocumentContent>(CONTENT)
                                 .get<String>(CONTENT),
                             jsonPath,
-                            String::class.java
+                            sortType
                         )
                     }
 
                     property.startsWith("$.") -> {
-                        expression = cb.lower(
-                            queryDialectHelper.getJsonValueExpression(
-                                cb,
-                                documentRoot.get<JsonDocumentContent>(CONTENT)
-                                    .get<String>(CONTENT),
-                                property,
-                                String::class.java
-                            )
+                        val docPath = DOC_PREFIX + property.substring(2)
+                        val sortType = sortTypeMap[docPath] ?: String::class.java
+                        val jsonExpression = queryDialectHelper.getJsonValueExpression(
+                            cb,
+                            documentRoot.get<JsonDocumentContent>(CONTENT)
+                                .get<String>(CONTENT),
+                            property,
+                            sortType
                         )
+                        @Suppress("UNCHECKED_CAST")
+                        expression = if (sortType == String::class.java) cb.lower(jsonExpression as Expression<String>) else jsonExpression
                     }
 
                     property.startsWith(TASK_PREFIX) -> {
-                        expression = taskRoot.get<Any>(property.substring(TASK_PREFIX.length))
+                        val taskColumnName = property.substring(TASK_PREFIX.length)
+                        expression = if (taskColumnName == CaseTaskProperties.ASSIGNED_TEAM_TITLE.propertyName) {
+                            taskTeamSubquery(query, taskRoot, "teamTitle")
+                        } else {
+                            taskRoot.get<Any>(taskColumnName)
+                        }
                     }
 
                     else -> {
@@ -620,6 +691,19 @@ class CaseTaskListSearchService(
             .collect(Collectors.toList())
     }
 
+    private fun buildSortTypeMap(caseDefinitionName: String): Map<String, Class<*>> {
+        return searchFieldV2Service.findAllByOwnerTypeAndOwnerId(SEARCH_FIELD_OWNER_TYPE, caseDefinitionName)
+            .associate { it.path to toSortType(it.dataType) }
+    }
+
+    private fun toSortType(dataType: DataType): Class<*> = when (dataType) {
+        DataType.DATE -> LocalDate::class.java
+        DataType.DATETIME -> LocalDateTime::class.java
+        DataType.TIME -> LocalTime::class.java
+        DataType.NUMBER -> BigDecimal::class.java
+        else -> String::class.java
+    }
+
     private fun getAuthorizationSpecification(action: Action<OperatonTask>): AuthorizationSpecification<OperatonTask> {
         return authorizationService.getAuthorizationSpecification(
             EntityAuthorizationRequest(OperatonTask::class.java, action),
@@ -649,7 +733,7 @@ class CaseTaskListSearchService(
         return PageRequest.of(pageable.pageNumber, pageable.pageSize, newSort)
     }
 
-    private fun toCaseListRowDto(caseTask: CaseTask, taskListColumns: List<TaskListColumn>): TaskListRowDto {
+    private fun toCaseListRowDto(caseTask: CaseTask, taskListColumns: List<TaskListColumn>, isOpened: Boolean): TaskListRowDto {
         val paths = taskListColumns.map { it.path }
 
         val (taskPaths, otherPaths) = paths.partition { it.startsWith(TASK_PREFIX) }
@@ -661,7 +745,7 @@ class CaseTaskListSearchService(
             TaskListRowDto.TaskListItemDto(caseListColumn.id.key, resolvedValuesMap[caseListColumn.path])
         }.toList()
 
-        return TaskListRowDto(caseTask.taskId, caseTask.documentInstanceId.toString(), caseTask.processInstanceId, caseTask.name, caseTask.createTime, items)
+        return TaskListRowDto(caseTask.taskId, caseTask.documentInstanceId.toString(), caseTask.processInstanceId, caseTask.name, caseTask.createTime, items, isOpened)
     }
 
     private fun resolveTaskValue(caseTask: CaseTask, taskPath: String): Pair<String, Any?> {
@@ -670,7 +754,7 @@ class CaseTaskListSearchService(
                 "assignee" -> {
                     CaseTaskProperties.getByPropertyName("assignee")
                         ?.getValueFromObject(caseTask)
-                        ?.let { assigneeUsername -> userManagementService.findByUsername(assigneeUsername as String)?.fullName }
+                        ?.let { assigneeUsername -> runWithoutAuthorization { userManagementService.findByUsername(assigneeUsername as String)?.fullName } }
                 }
 
                 else -> CaseTaskProperties.getByPropertyName(path)?.getValueFromObject(caseTask)
@@ -746,6 +830,9 @@ enum class CaseTaskProperties(val propertyName: String) {
     },
     DUE_DATE("dueDate") {
         override fun getValueFromObject(caseTask: CaseTask) = caseTask.dueDate
+    },
+    ASSIGNED_TEAM_TITLE("assignedTeamTitle") {
+        override fun getValueFromObject(caseTask: CaseTask) = caseTask.assignedTeamTitle
     };
 
     abstract fun getValueFromObject(caseTask: CaseTask): Any?

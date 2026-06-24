@@ -1,0 +1,111 @@
+publiccodeYmlVersion: '0'
+name: Valtimo
+applicationSuite: Valtimo Platform
+url: 'https://github.com/valtimo-platform/valtimo'
+landingURL: 'https://www.valtimo.nl/'
+releaseDate: '2026-01-14'
+platforms:
+  - web
+  - linux
+  - windows
+  - mac
+categories:
+  - document-management
+  - collaboration
+  - workflow-management
+  - business-process-management
+  - task-management
+developmentStatus: stable
+softwareType: standalone/web
+description:
+  en:
+    localisedName: Valtimo
+    shortDescription: >-
+      Open source case management platform, including GZAC-edition for Dutch Common Ground government organizations,
+      licensed under EUPL 1.2.
+    longDescription: |
+      Valtimo is an open-source, low-code, European made, case management platform. It includes a GZAC-edition specifically designed for Dutch government entities. The platform enables public administration organizations to manage cases and workflows efficiently.
+
+      Key features include:
+      - Comprehensive case management capabilities
+      - Workflow automation and business process management
+      - PBAC (Policy Based Access Control) framework
+      - Support for DMN (Decision Model and Notation) and BPMN (Business Process Model and Notation)
+
+      Valtimo GZAC-edition has been developed with funding and collaboration from major Dutch municipalities including Amsterdam, The Hague, Rotterdam, and Utrecht.
+    features:
+      - Case management
+      - Document management
+      - Workflow automation
+      - Process orchestration
+      - Integration framework
+      - Public sector compliance
+    documentation: 'https://docs.valtimo.nl/'
+    screenshots:
+      - https://www.valtimo.nl/wp-content/uploads/Screenshot-2025-01-28-at-20.19.54.png
+      - https://www.valtimo.nl/wp-content/uploads/PE-plugins.png
+      - https://www.valtimo.nl/wp-content/uploads/Form-editor-uitgelicht-1.png
+      - https://www.valtimo.nl/wp-content/uploads/process-progress-uitgelicht.png
+  nl:
+    localisedName: Valtimo (GZAC)
+    shortDescription: >-
+      Open source zaakgericht werken platform voor Nederlandse overheden,
+      gelicenseerd onder EUPL 1.2.
+    longDescription: |
+      Valtimo is een open-source platform voor case management. De GZAC editie is specifiek ontwikkeld voor Nederlandse overheidsorganisaties. Het platform stelt publieke organisaties in staat om zaken, documenten en workflows efficiënt te beheren.
+
+      In de Nederlandse overheid staat het systeem ook bekend als GZAC (Gemeentelijk Zaaksysteem Aanbesteding Coalitie).
+    documentation: 'https://gzac.gitbook.io/product-docs'
+    features:
+      - Zaakbeheer
+      - Documentbeheer
+      - Workflowautomatisering
+      - Procesorchestratie
+      - Integratieframework
+      - Publieke sector compliance
+legal:
+  license: EUPL-1.2
+  mainCopyrightOwner: Ritense BV
+organisation:
+  name: Ritense BV
+  uri: 'https://www.ritense.com/'
+maintenance:
+  type: contract
+  contractors:
+    - name: Ritense BV
+      email: support@ritense.com
+      website: 'https://www.ritense.com/'
+      until: '2028-03-31'
+  contacts:
+    - name: Rutger Haagsma
+      email: rutger.haagsma@ritense.com
+      affiliation: Ritense BV
+localisation:
+  localisationReady: true
+  availableLanguages:
+    - nl
+    - en
+dependsOn:
+  open:
+    - name: Java
+      versionMin: '11'
+    - name: Kotlin
+    - name: Spring Boot
+    - name: PostgreSQL
+    - name: Docker
+intendedAudience:
+  scope:
+    - government
+    - education
+    - local-authorities
+  countries:
+    - NL
+    - BE
+    - DE
+usedBy:
+  - Gemeente Amsterdam
+  - Gemeente Den Haag
+  - Gemeente Rotterdam
+  - Gemeente Utrecht
+  - Technische Universiteit Delft
+roadmap: 'https://ritense.atlassian.net/jira/discovery/share/views/6a25d852-900a-46de-8e45-a4a7fa554de6'

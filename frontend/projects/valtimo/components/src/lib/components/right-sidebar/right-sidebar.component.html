@@ -24,7 +24,7 @@
               <ng-container *ngTemplateOutlet="accountTabTemplate"></ng-container>
             </cds-tab>
 
-            <cds-tab [heading]="'settings.title' | translate">
+            <cds-tab [heading]="'settings.title' | translate" [attr.data-test-id]="testIds.settingsTab">
               <ng-container *ngTemplateOutlet="settingsTabTemplate"></ng-container>
             </cds-tab>
           </cds-tabs>
@@ -138,7 +138,7 @@
         </cds-list-column>
       </cds-list-row>
 
-      <cds-list-row *ngIf="showPlantATreeButton">
+      <cds-list-row *ngIf="showPlantATreeButton$ | async">
         <cds-list-column>
           <a
             class="text-success"
@@ -164,6 +164,7 @@
       <cds-list-column>
         <cds-dropdown
           [id]="'language-dropdown'"
+          [attr.data-test-id]="testIds.languageDropdown"
           [appendInline]="true"
           [dropUp]="false"
           (click)="$event.stopPropagation()"
@@ -196,10 +197,11 @@
       </cds-list-column>
     </cds-list-row>
 
-    <cds-list-row *ngIf="allowUserThemeSwitching">
+    <cds-list-row *ngIf="allowUserThemeSwitching$ | async">
       <cds-list-column>
         <cds-dropdown
           [label]="'settings.interface.themePreference' | translate"
+          [attr.data-test-id]="testIds.themeDropdown"
           [appendInline]="true"
           (click)="$event.stopPropagation()"
           (selected)="setPreferredTheme($event)"
@@ -210,7 +212,7 @@
       </cds-list-column>
     </cds-list-row>
 
-    <cds-list-row *ngIf="enableCompactModeToggle">
+    <cds-list-row *ngIf="enableCompactModeToggle$ | async">
       <cds-list-column>
         <cds-toggle
           [label]="'settings.interface.compactMode' | translate"
@@ -224,7 +226,7 @@
       </cds-list-column>
     </cds-list-row>
 
-    <cds-list-row *ngIf="enableShowUserNameToggle">
+    <cds-list-row *ngIf="enableShowUserNameToggle$ | async">
       <cds-list-column>
         <cds-toggle
           [label]="'settings.interface.showUserName' | translate"

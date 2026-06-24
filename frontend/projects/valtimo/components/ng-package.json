@@ -1,4 +1,5 @@
 {
+  "deleteDestPath": false,
   "$schema": "../../../node_modules/ng-packagr/ng-package.schema.json",
   "dest": "../../../dist/valtimo/components",
   "assets": ["./assets"],
@@ -36,6 +37,10 @@
     "@types/topojson",
     "@tadashi/currency",
     "semver",
-    "muuri"
+    "muuri",
+    "ajv",
+    "vanilla-jsoneditor",
+    "@floating-ui/dom",
+    "@simonwep/pickr"
   ]
 }

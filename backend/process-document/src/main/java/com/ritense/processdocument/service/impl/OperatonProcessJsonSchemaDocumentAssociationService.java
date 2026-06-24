@@ -17,8 +17,8 @@
 package com.ritense.processdocument.service.impl;
 
 import static com.ritense.authorization.AuthorizationContext.runWithoutAuthorization;
-import static com.ritense.valtimo.operaton.repository.OperatonProcessDefinitionSpecificationHelper.byCaseDefinitionId;
-import static com.ritense.valtimo.operaton.repository.OperatonProcessDefinitionSpecificationHelper.byKey;
+import static com.ritense.valtimo.operaton.repository.OperatonProcessDefinitionSpecificationHelper.byBlueprintId;
+import static com.ritense.valtimo.operaton.repository.OperatonProcessDefinitionSpecificationHelper.byKeyIn;
 import static com.ritense.valtimo.operaton.repository.OperatonProcessDefinitionSpecificationHelper.byNotLinkedToCaseDefinition;
 import static com.ritense.valtimo.operaton.repository.OperatonProcessDefinitionSpecificationHelper.maxVersionOf;
 
@@ -38,19 +38,30 @@ import com.ritense.processdocument.domain.impl.OperatonProcessJsonSchemaDocument
 import com.ritense.processdocument.domain.impl.ProcessDocumentInstanceDto;
 import com.ritense.processdocument.repository.ProcessDocumentInstanceRepository;
 import com.ritense.processdocument.service.ProcessDocumentAssociationService;
-import com.ritense.valtimo.operaton.service.OperatonRepositoryService;
 import com.ritense.valtimo.contract.authentication.ManageableUser;
 import com.ritense.valtimo.contract.authentication.UserManagementService;
+import com.ritense.valtimo.contract.case_.CaseDefinitionId;
 import com.ritense.valtimo.contract.result.FunctionResult;
 import com.ritense.valtimo.contract.result.OperationError;
+import com.ritense.valtimo.operaton.domain.OperatonProcessDefinition;
+import com.ritense.valtimo.operaton.service.OperatonRepositoryService;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 import org.operaton.bpm.engine.HistoryService;
 import org.operaton.bpm.engine.RuntimeService;
+import org.operaton.bpm.engine.history.HistoricProcessInstance;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.transaction.annotation.Transactional;
@@ -102,6 +113,12 @@ public class OperatonProcessJsonSchemaDocumentAssociationService implements Proc
             )
         );
 
+        return findProcessDocumentInstancesWithoutPermissionCheck(documentId);
+    }
+
+    @Override
+    public List<OperatonProcessJsonSchemaDocumentInstance> findProcessDocumentInstancesWithoutPermissionCheck(Document.Id documentId) {
+
         var processes = processDocumentInstanceRepository.findAllByProcessDocumentInstanceIdDocumentId(documentId);
         for (var process : processes) {
             OperatonProcessJsonSchemaDocumentInstanceId id = process.getId();
@@ -116,63 +133,22 @@ public class OperatonProcessJsonSchemaDocumentAssociationService implements Proc
     }
 
     @Override
+    public List<ProcessDocumentInstanceDto> findProcessDocumentInstanceDtosWithoutBuildingBlocks(Document.Id documentId) {
+        var document = documentService.findBy(documentId).orElseThrow();
+        requireViewPermission((JsonSchemaDocument) document);
+
+        var processes = processDocumentInstanceRepository.findAllByProcessDocumentInstanceIdDocumentId(documentId);
+        return buildDtos(processes, document);
+    }
+
+    @Override
     public List<ProcessDocumentInstanceDto> findProcessDocumentInstanceDtos(Document.Id documentId) {
         var document = documentService.findBy(documentId).orElseThrow();
+        requireViewPermission((JsonSchemaDocument) document);
 
-        authorizationService.requirePermission(
-            new EntityAuthorizationRequest<>(
-                JsonSchemaDocument.class,
-                JsonSchemaDocumentActionProvider.VIEW,
-                (JsonSchemaDocument) document
-            )
-        );
-
-        return processDocumentInstanceRepository.findAllByProcessDocumentInstanceIdDocumentId(documentId).stream()
-            .map(process -> {
-                var operatonProcess = historyService.createHistoricProcessInstanceQuery()
-                        .processInstanceId(process.getId().processInstanceId().toString())
-                        .singleResult();
-
-                if (operatonProcess == null) {
-                    return null;
-                }
-
-                process.setActive(operatonProcess.getEndTime() == null);
-                var operatonProcessDefinition = runWithoutAuthorization(() -> {
-                        var pd = repositoryService.findProcessDefinition(
-                            byKey(operatonProcess.getProcessDefinitionKey())
-                                .and(byCaseDefinitionId(document.definitionId().caseDefinitionId()))
-                        );
-                        if (pd != null) {
-                            return pd;
-                        } else {
-                            // Needed for system-processes:
-                            return repositoryService.findProcessDefinition(
-                                byKey(operatonProcess.getProcessDefinitionKey())
-                                    .and(maxVersionOf(byNotLinkedToCaseDefinition()))
-                            );
-                        }
-                    }
-                );
-                var startDateTime = LocalDateTime.ofInstant(
-                    operatonProcess.getStartTime().toInstant(),
-                    ZoneId.systemDefault()
-                );
-                var startedBy = operatonProcess.getStartUserId() == null ? null :
-                        userManagementService.findByEmail(operatonProcess.getStartUserId()).map(ManageableUser::getFullName).orElse(null);
-
-                    return new ProcessDocumentInstanceDto(
-                        process.getId(),
-                        process.processName(),
-                        process.isActive(),
-                        operatonProcess.getProcessDefinitionVersion(),
-                        operatonProcessDefinition.getVersion(),
-                        startedBy,
-                        startDateTime
-                );
-            })
-            .filter(Objects::nonNull)
-            .toList();
+        var processes = processDocumentInstanceRepository
+            .findAllByProcessDocumentInstanceIdDocumentIdIncludingBuildingBlocks(documentId.getId());
+        return buildDtos(processes, document);
     }
 
     @Override
@@ -345,6 +321,123 @@ public class OperatonProcessJsonSchemaDocumentAssociationService implements Proc
             final String msg = "Corresponding process-document-instance is not associated with process-document-instance-id";
             return new FunctionResult.Erroneous<>(new OperationError.FromString(msg));
         }
+    }
+
+    private void requireViewPermission(JsonSchemaDocument document) {
+        authorizationService.requirePermission(
+            new EntityAuthorizationRequest<>(
+                JsonSchemaDocument.class,
+                JsonSchemaDocumentActionProvider.VIEW,
+                document
+            )
+        );
+    }
+
+    private List<ProcessDocumentInstanceDto> buildDtos(
+        List<OperatonProcessJsonSchemaDocumentInstance> processes,
+        Document document
+    ) {
+        if (processes.isEmpty()) {
+            return List.of();
+        }
+
+        var caseDefinitionId = document.definitionId().caseDefinitionId();
+        var historicProcessesById = loadHistoricProcessInstancesById(processes);
+        var processDefinitionsByKey = loadProcessDefinitionsByKey(historicProcessesById.values(), caseDefinitionId);
+        var fullNamesByUserId = loadFullNamesByUserId(historicProcessesById.values());
+
+        var dtos = new ArrayList<ProcessDocumentInstanceDto>(processes.size());
+        for (var process : processes) {
+            var operatonProcess = historicProcessesById.get(process.getId().processInstanceId().toString());
+            if (operatonProcess == null) {
+                continue;
+            }
+            process.setActive(operatonProcess.getEndTime() == null);
+            var startUserId = operatonProcess.getStartUserId();
+            var startedBy = startUserId == null ? null : fullNamesByUserId.get(startUserId).orElse(null);
+            dtos.add(toDto(
+                process,
+                operatonProcess,
+                processDefinitionsByKey.get(operatonProcess.getProcessDefinitionKey()),
+                startedBy
+            ));
+        }
+        return dtos;
+    }
+
+    private Map<String, HistoricProcessInstance> loadHistoricProcessInstancesById(
+        List<OperatonProcessJsonSchemaDocumentInstance> processes
+    ) {
+        var processInstanceIds = processes.stream()
+            .map(p -> p.getId().processInstanceId().toString())
+            .collect(Collectors.toSet());
+
+        return historyService.createHistoricProcessInstanceQuery()
+            .processInstanceIds(processInstanceIds)
+            .list().stream()
+            .collect(Collectors.toMap(HistoricProcessInstance::getId, Function.identity()));
+    }
+
+    private Map<String, OperatonProcessDefinition> loadProcessDefinitionsByKey(
+        Collection<HistoricProcessInstance> historicProcesses,
+        CaseDefinitionId caseDefinitionId
+    ) {
+        Set<String> keys = historicProcesses.stream()
+            .map(HistoricProcessInstance::getProcessDefinitionKey)
+            .collect(Collectors.toSet());
+        if (keys.isEmpty()) {
+            return Map.of();
+        }
+
+        return runWithoutAuthorization(() -> {
+            var byKey = new HashMap<String, OperatonProcessDefinition>();
+            repositoryService.findProcessDefinitions(byKeyIn(keys).and(byBlueprintId(caseDefinitionId)))
+                .forEach(pd -> byKey.put(pd.getKey(), pd));
+
+            // Needed for system-processes:
+            var missingKeys = new HashSet<>(keys);
+            missingKeys.removeAll(byKey.keySet());
+            if (!missingKeys.isEmpty()) {
+                repositoryService.findProcessDefinitions(byKeyIn(missingKeys).and(maxVersionOf(byNotLinkedToCaseDefinition())))
+                    .forEach(pd -> byKey.put(pd.getKey(), pd));
+            }
+            return byKey;
+        });
+    }
+
+    private Map<String, Optional<String>> loadFullNamesByUserId(Collection<HistoricProcessInstance> historicProcesses) {
+        return historicProcesses.stream()
+            .map(HistoricProcessInstance::getStartUserId)
+            .filter(Objects::nonNull)
+            .distinct()
+            .collect(Collectors.toMap(Function.identity(), this::findUserFullName));
+    }
+
+    private Optional<String> findUserFullName(String userId) {
+        return runWithoutAuthorization(() ->
+            userManagementService.findByEmail(userId).map(ManageableUser::getFullName)
+        );
+    }
+
+    private ProcessDocumentInstanceDto toDto(
+        OperatonProcessJsonSchemaDocumentInstance process,
+        HistoricProcessInstance operatonProcess,
+        OperatonProcessDefinition processDefinition,
+        String startedBy
+    ) {
+        var startDateTime = LocalDateTime.ofInstant(
+            operatonProcess.getStartTime().toInstant(),
+            ZoneId.systemDefault()
+        );
+        return new ProcessDocumentInstanceDto(
+            process.getId(),
+            process.processName(),
+            process.isActive(),
+            operatonProcess.getProcessDefinitionVersion(),
+            processDefinition.getVersion(),
+            startedBy,
+            startDateTime
+        );
     }
 
     private <T> void denyAuthorization(Class<T> clazz) {

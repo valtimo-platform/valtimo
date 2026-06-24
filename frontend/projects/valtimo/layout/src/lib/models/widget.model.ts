@@ -14,14 +14,17 @@
  * limitations under the License.
  */
 import {Type} from '@angular/core';
-import {Condition} from '@valtimo/shared';
+import {Condition, Direction} from '@valtimo/shared';
 import {
   WidgetCollectionContent,
   WidgetContentProperties,
   WidgetCustomContent,
   WidgetFieldsContent,
+  WidgetHighlightContent,
   WidgetInteractiveTableContent,
   WidgetMapContent,
+  WidgetPersonCardContent,
+  WidgetMetrolineContent,
   WidgetTableContent,
 } from './widget-content.model';
 import {WidgetDisplayType} from './widget-display.model';
@@ -35,6 +38,29 @@ enum WidgetType {
   FORMIO = 'formio',
   DIVIDER = 'divider',
   MAP = 'map',
+  METROLINE = 'metroline',
+  HIGHLIGHT = 'highlight',
+  PERSON_CARD = 'person-card',
+}
+
+enum WidgetColor {
+  YELLOW = 'YELLOW',
+  ORANGE = 'ORANGE',
+  RED = 'RED',
+  BROWN = 'BROWN',
+  GREEN = 'GREEN',
+  TURQOISE = 'TURQOISE',
+  PURPLE = 'PURPLE',
+  PERIWINKLE = 'PERIWINKLE',
+  BLUE = 'BLUE',
+  WHITE = 'WHITE',
+  HIGHCONTRAST = 'HIGHCONTRAST',
+}
+
+interface WidgetColorTile {
+  color: WidgetColor;
+  labelKey: string;
+  illustration: string;
 }
 
 type WidgetWidth = 1 | 2 | 3 | 4;
@@ -45,6 +71,7 @@ interface WidgetAction {
   processDefinitionKey?: string;
   caseDefinitionKey?: string;
   navigateTo?: string;
+  openInNewTab?: boolean;
 }
 
 interface BasicWidget {
@@ -53,11 +80,12 @@ interface BasicWidget {
   icon?: string;
   width: WidgetWidth;
   highContrast: boolean;
+  color?: WidgetColor;
   key: string;
   properties?: WidgetContentProperties;
   isCompact?: boolean;
   actions?: WidgetAction[];
-  displayConditions: Array<Condition>;
+  displayConditions: Array<Condition<string>>;
 }
 
 interface FieldsWidgetValue {
@@ -66,6 +94,8 @@ interface FieldsWidgetValue {
   value: string;
   ellipsisCharacterLimit?: number;
   displayProperties?: WidgetDisplayType;
+  sortable?: boolean;
+  defaultSort?: Direction;
 }
 
 interface GeoJsonSource {
@@ -122,6 +152,21 @@ interface MapWidget extends BasicWidget {
   properties: WidgetMapContent;
 }
 
+interface HighlightWidget extends BasicWidget {
+  type: WidgetType.HIGHLIGHT;
+  properties: WidgetHighlightContent;
+}
+
+interface PersonCardWidget extends BasicWidget {
+  type: WidgetType.PERSON_CARD;
+  properties: WidgetPersonCardContent;
+}
+
+interface MetrolineWidget extends BasicWidget {
+  type: WidgetType.METROLINE;
+  properties: WidgetMetrolineContent;
+}
+
 type Widget =
   | FieldsWidget
   | CollectionWidget
@@ -130,7 +175,10 @@ type Widget =
   | InteractiveTableWidget
   | FormioWidget
   | DividerWidget
-  | MapWidget;
+  | PersonCardWidget
+  | MapWidget
+  | MetrolineWidget
+  | HighlightWidget;
 
 type WidgetWithUuid = Widget & {
   uuid: string;
@@ -198,7 +246,14 @@ interface WidgetGroup {
   widgets: Widget[];
 }
 
-type WidgetComponentMap = Record<Exclude<WidgetType, WidgetType.DIVIDER>, Type<any>>;
+type OptionalWidgets =
+  | WidgetType.PERSON_CARD
+  | WidgetType.METROLINE
+  | WidgetType.HIGHLIGHT;
+
+type WidgetComponentMap =
+  Record<Exclude<WidgetType, WidgetType.DIVIDER | OptionalWidgets>, Type<any>> &
+  Partial<Record<OptionalWidgets, Type<any>>>;
 
 type WidgetContext = 'case' | 'iko';
 
@@ -227,6 +282,9 @@ export {
   TableWidget,
   InteractiveTableWidget,
   MapWidget,
+  PersonCardWidget,
+  HighlightWidget,
+  MetrolineWidget,
   WidgetPackResultItem,
   WidgetPackResultItemsByRow,
   FormioWidgetWidgetWithUuid,
@@ -234,4 +292,6 @@ export {
   WidgetComponentMap,
   WidgetContext,
   WidgetGroup,
+  WidgetColor,
+  WidgetColorTile,
 };

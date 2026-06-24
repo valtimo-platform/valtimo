@@ -37,6 +37,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ritense.BaseIntegrationTest;
 import com.ritense.document.domain.Document;
+import com.ritense.valtimo.contract.blueprint.BlueprintType;
 import com.ritense.document.domain.impl.JsonDocumentContent;
 import com.ritense.document.domain.impl.JsonSchema;
 import com.ritense.document.domain.impl.JsonSchemaDocument;
@@ -47,6 +48,11 @@ import com.ritense.document.domain.search.AdvancedSearchRequest;
 import com.ritense.document.domain.search.AssigneeFilter;
 import com.ritense.document.domain.search.SearchOperator;
 import com.ritense.document.domain.search.SearchWithConfigRequest;
+import com.ritense.document.domain.impl.searchfield.SearchField;
+import com.ritense.document.domain.impl.searchfield.SearchFieldDataType;
+import com.ritense.document.domain.impl.searchfield.SearchFieldFieldType;
+import com.ritense.document.domain.impl.searchfield.SearchFieldId;
+import com.ritense.document.domain.impl.searchfield.SearchFieldMatchType;
 import com.ritense.document.event.DocumentsListed;
 import com.ritense.document.service.result.CreateDocumentResult;
 import com.ritense.outbox.domain.BaseEvent;
@@ -59,6 +65,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.List;
+import java.util.UUID;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -147,8 +154,16 @@ class JsonSchemaDocumentSearchServiceIntTest extends BaseIntegrationTest {
             return null;
         });
 
-        var user = new ValtimoUserBuilder().username(USERNAME).email(USERNAME).id(USER_ID).build();
+        var user = new ValtimoUserBuilder()
+            .username(USERNAME)
+            .name(USERNAME)
+            .email(USERNAME)
+            .id(USER_ID)
+            .roles(List.of(FULL_ACCESS_ROLE))
+            .build();
+        when(userManagementService.findByUsername(USERNAME)).thenReturn(user);
         when(userManagementService.findByUsername(USER_ID)).thenReturn(user);
+        when(userManagementService.findById(USERNAME)).thenReturn(user);
         when(userManagementService.findById(USER_ID)).thenReturn(user);
         when(userManagementService.getCurrentUser()).thenReturn(user);
     }
@@ -164,6 +179,7 @@ class JsonSchemaDocumentSearchServiceIntTest extends BaseIntegrationTest {
 
         final Page<? extends Document> page = documentSearchService.search(
             searchRequest,
+            BlueprintType.CASE,
             PageRequest.of(0, 10)
         );
         assertThat(page).isNotNull();
@@ -182,6 +198,7 @@ class JsonSchemaDocumentSearchServiceIntTest extends BaseIntegrationTest {
 
         final Page<? extends Document> page = documentSearchService.search(
             searchRequest,
+            BlueprintType.CASE,
             PageRequest.of(0, 10)
         );
         assertThat(page).isNotNull();
@@ -197,6 +214,7 @@ class JsonSchemaDocumentSearchServiceIntTest extends BaseIntegrationTest {
 
         final Page<? extends Document> page = documentSearchService.search(
             searchRequest,
+            BlueprintType.CASE,
             PageRequest.of(0, 10, Sort.by("internalStatus").ascending())
         );
         assertThat(page).isNotNull();
@@ -213,6 +231,7 @@ class JsonSchemaDocumentSearchServiceIntTest extends BaseIntegrationTest {
 
         final Page<? extends Document> page = documentSearchService.search(
             searchRequest,
+            BlueprintType.CASE,
             PageRequest.of(0, 10, Sort.by("internalStatus").descending())
         );
         assertThat(page).isNotNull();
@@ -234,6 +253,7 @@ class JsonSchemaDocumentSearchServiceIntTest extends BaseIntegrationTest {
 
         final Page<? extends Document> page = documentSearchService.search(
             searchRequest,
+            BlueprintType.CASE,
             PageRequest.of(0, 10)
         );
         assertThat(page).isNotNull();
@@ -254,6 +274,7 @@ class JsonSchemaDocumentSearchServiceIntTest extends BaseIntegrationTest {
 
         final Page<? extends Document> page = documentSearchService.search(
             searchRequest,
+            BlueprintType.CASE,
             PageRequest.of(0, 10)
         );
         assertThat(page).isNotNull();
@@ -274,6 +295,7 @@ class JsonSchemaDocumentSearchServiceIntTest extends BaseIntegrationTest {
 
         final Page<? extends Document> page = documentSearchService.search(
             searchRequest,
+            BlueprintType.CASE,
             PageRequest.of(0, 10)
         );
         assertThat(page).isNotNull();
@@ -295,6 +317,7 @@ class JsonSchemaDocumentSearchServiceIntTest extends BaseIntegrationTest {
 
         final Page<? extends Document> page = documentSearchService.search(
             searchRequest,
+            BlueprintType.CASE,
             PageRequest.of(0, 10)
         );
         assertThat(page).isNotNull();
@@ -316,6 +339,7 @@ class JsonSchemaDocumentSearchServiceIntTest extends BaseIntegrationTest {
 
         final Page<? extends Document> page = documentSearchService.search(
             searchRequest,
+            BlueprintType.CASE,
             PageRequest.of(0, 10)
         );
         assertThat(page).isNotNull();
@@ -333,6 +357,7 @@ class JsonSchemaDocumentSearchServiceIntTest extends BaseIntegrationTest {
 
         final Page<? extends Document> page = documentSearchService.search(
             searchRequest,
+            BlueprintType.CASE,
             PageRequest.of(0, 10)
         );
         assertThat(page).isNotNull();
@@ -349,6 +374,7 @@ class JsonSchemaDocumentSearchServiceIntTest extends BaseIntegrationTest {
 
         final Page<? extends Document> page = documentSearchService.search(
             searchRequest,
+            BlueprintType.CASE,
             PageRequest.of(0, 10)
         );
         assertThat(page).isNotNull();
@@ -365,6 +391,7 @@ class JsonSchemaDocumentSearchServiceIntTest extends BaseIntegrationTest {
 
         final Page<? extends Document> page = documentSearchService.search(
             searchRequest,
+            BlueprintType.CASE,
             PageRequest.of(0, 10)
         );
         assertThat(page).isNotNull();
@@ -389,6 +416,7 @@ class JsonSchemaDocumentSearchServiceIntTest extends BaseIntegrationTest {
 
         final Page<? extends Document> page = documentSearchService.search(
             searchRequest,
+            BlueprintType.CASE,
             PageRequest.of(0, 1)
         );
         assertThat(page).isNotNull();
@@ -416,6 +444,7 @@ class JsonSchemaDocumentSearchServiceIntTest extends BaseIntegrationTest {
 
         final Page<? extends Document> page = documentSearchService.search(
             searchRequest,
+            BlueprintType.CASE,
             PageRequest.of(1, 2, Sort.by(Direction.ASC, "$.street"))
         );
         assertThat(page).isNotNull();
@@ -446,6 +475,7 @@ class JsonSchemaDocumentSearchServiceIntTest extends BaseIntegrationTest {
 
         final Page<? extends Document> page = documentSearchService.search(
             searchRequest,
+            BlueprintType.CASE,
             PageRequest.of(0, 10, Sort.by("$.street"))
         );
         assertThat(page).isNotNull();
@@ -474,6 +504,7 @@ class JsonSchemaDocumentSearchServiceIntTest extends BaseIntegrationTest {
 
         final Page<? extends Document> page = documentSearchService.search(
             searchRequest,
+            BlueprintType.CASE,
             PageRequest.of(0, 10, Sort.by(Direction.DESC, "$.street"))
         );
         assertThat(page).isNotNull();
@@ -503,6 +534,7 @@ class JsonSchemaDocumentSearchServiceIntTest extends BaseIntegrationTest {
 
         final Page<? extends Document> page = documentSearchService.search(
             searchRequest,
+            BlueprintType.CASE,
             PageRequest.of(0, 10, Sort.by("$.street", "$.number"))
         );
         assertThat(page).isNotNull();
@@ -534,6 +566,7 @@ class JsonSchemaDocumentSearchServiceIntTest extends BaseIntegrationTest {
 
         final Page<? extends Document> page = documentSearchService.search(
             searchRequest,
+            BlueprintType.CASE,
             PageRequest.of(0, 10, Sort.by(Direction.DESC, "sequence"))
         );
         assertThat(page).isNotNull();
@@ -563,6 +596,7 @@ class JsonSchemaDocumentSearchServiceIntTest extends BaseIntegrationTest {
 
         final Page<? extends Document> page = documentSearchService.search(
             searchRequest,
+            BlueprintType.CASE,
             PageRequest.of(0, 10, Sort.by(Direction.ASC, "$.street"))
         );
         assertThat(page).isNotNull();
@@ -585,6 +619,7 @@ class JsonSchemaDocumentSearchServiceIntTest extends BaseIntegrationTest {
 
         final Page<? extends Document> page = documentSearchService.search(
             new SearchRequest(),
+            BlueprintType.CASE,
             PageRequest.of(0, 10, Sort.by(Direction.DESC, "assigneeFullName"))
         );
 
@@ -613,6 +648,7 @@ class JsonSchemaDocumentSearchServiceIntTest extends BaseIntegrationTest {
 
         var result = documentSearchService.search(
             definition.id().name(),
+            BlueprintType.CASE,
             searchRequest,
             PageRequest.of(0, 10, Sort.by(Direction.DESC, "doc:street"))
         );
@@ -639,6 +675,7 @@ class JsonSchemaDocumentSearchServiceIntTest extends BaseIntegrationTest {
 
         var result = documentSearchService.search(
             definition.id().name(),
+            BlueprintType.CASE,
             searchRequest,
             PageRequest.of(0, 10, Sort.by(Direction.DESC, "doc:street"))
         );
@@ -666,6 +703,7 @@ class JsonSchemaDocumentSearchServiceIntTest extends BaseIntegrationTest {
 
         var result = documentSearchService.search(
             definition.id().name(),
+            BlueprintType.CASE,
             searchRequest,
             PageRequest.of(0, 10, Sort.by(Direction.DESC, "doc:street"))
         );
@@ -693,6 +731,7 @@ class JsonSchemaDocumentSearchServiceIntTest extends BaseIntegrationTest {
 
         var result = documentSearchService.search(
             definition.id().name(),
+            BlueprintType.CASE,
             searchRequest,
             PageRequest.of(0, 10, Sort.by(Direction.ASC, "doc:housenumber"))
         );
@@ -724,6 +763,7 @@ class JsonSchemaDocumentSearchServiceIntTest extends BaseIntegrationTest {
 
         var result = documentSearchService.search(
             definition.id().name(),
+            BlueprintType.CASE,
             searchRequest,
             PageRequest.of(0, 10, Sort.by(Direction.ASC, "doc:housenumber"))
         );
@@ -755,6 +795,7 @@ class JsonSchemaDocumentSearchServiceIntTest extends BaseIntegrationTest {
 
         var result = documentSearchService.search(
             definition.id().name(),
+            BlueprintType.CASE,
             searchRequest,
             PageRequest.of(0, 10, Sort.by(Direction.ASC, "doc:housenumber"))
         );
@@ -785,6 +826,7 @@ class JsonSchemaDocumentSearchServiceIntTest extends BaseIntegrationTest {
         assertThrows(
             ValidationException.class, () -> documentSearchService.search(
                 definition.id().name(),
+                BlueprintType.CASE,
                 searchRequest,
                 PageRequest.of(0, 10)
             )
@@ -809,6 +851,7 @@ class JsonSchemaDocumentSearchServiceIntTest extends BaseIntegrationTest {
 
         var result = documentSearchService.search(
             definition.id().name(),
+            BlueprintType.CASE,
             searchRequest,
             PageRequest.of(0, 10, Sort.by(Direction.ASC, "doc:movedAtDate"))
         );
@@ -846,6 +889,7 @@ class JsonSchemaDocumentSearchServiceIntTest extends BaseIntegrationTest {
 
         var result = documentSearchService.search(
             definition.id().name(),
+            BlueprintType.CASE,
             searchRequest,
             PageRequest.of(0, 10, Sort.by(Direction.ASC, "doc:movedAtDateTime"))
         );
@@ -867,6 +911,200 @@ class JsonSchemaDocumentSearchServiceIntTest extends BaseIntegrationTest {
     }
 
     @Test
+    @WithMockUser(username = USERNAME, authorities = FULL_ACCESS_ROLE)
+    void shouldSortByDateFieldChronologicallyAsc() {
+        documentRepository.deleteAllInBatch();
+        searchFieldRepository.deleteAllByIdCaseDefinitionKey(definition.id().name());
+
+        var searchField = new SearchField(
+            "buildDate", "doc:buildDate", SearchFieldDataType.DATE,
+            SearchFieldFieldType.SINGLE, SearchFieldMatchType.EXACT, null, 0, null
+        );
+        var searchFieldId = SearchFieldId.newId(definition.id().name()).newIdentity();
+        searchField.setId(searchFieldId);
+        searchFieldRepository.save(searchField);
+
+        createDocument("{\"buildDate\": \"2024-12-01\"}").resultingDocument().orElseThrow();
+        createDocument("{\"buildDate\": \"2023-06-15\"}").resultingDocument().orElseThrow();
+        createDocument("{\"buildDate\": \"2024-01-20\"}").resultingDocument().orElseThrow();
+
+        var result = documentSearchService.search(
+            definition.id().name(),
+            BlueprintType.CASE,
+            new AdvancedSearchRequest(),
+            PageRequest.of(0, 10, Sort.by(Direction.ASC, "doc:buildDate"))
+        );
+
+        assertThat(result.getTotalElements()).isEqualTo(3);
+        var content = result.getContent();
+        assertEquals("2023-06-15", content.get(0).content().getValueBy(JsonPointer.valueOf("/buildDate")).get().asText());
+        assertEquals("2024-01-20", content.get(1).content().getValueBy(JsonPointer.valueOf("/buildDate")).get().asText());
+        assertEquals("2024-12-01", content.get(2).content().getValueBy(JsonPointer.valueOf("/buildDate")).get().asText());
+    }
+
+    @Test
+    @WithMockUser(username = USERNAME, authorities = FULL_ACCESS_ROLE)
+    void shouldSortByDateFieldChronologicallyDesc() {
+        documentRepository.deleteAllInBatch();
+        searchFieldRepository.deleteAllByIdCaseDefinitionKey(definition.id().name());
+
+        var searchField = new SearchField(
+            "buildDate", "doc:buildDate", SearchFieldDataType.DATE,
+            SearchFieldFieldType.SINGLE, SearchFieldMatchType.EXACT, null, 0, null
+        );
+        var searchFieldId = SearchFieldId.newId(definition.id().name()).newIdentity();
+        searchField.setId(searchFieldId);
+        searchFieldRepository.save(searchField);
+
+        createDocument("{\"buildDate\": \"2024-12-01\"}").resultingDocument().orElseThrow();
+        createDocument("{\"buildDate\": \"2023-06-15\"}").resultingDocument().orElseThrow();
+        createDocument("{\"buildDate\": \"2024-01-20\"}").resultingDocument().orElseThrow();
+
+        var result = documentSearchService.search(
+            definition.id().name(),
+            BlueprintType.CASE,
+            new AdvancedSearchRequest(),
+            PageRequest.of(0, 10, Sort.by(Direction.DESC, "doc:buildDate"))
+        );
+
+        assertThat(result.getTotalElements()).isEqualTo(3);
+        var content = result.getContent();
+        assertEquals("2024-12-01", content.get(0).content().getValueBy(JsonPointer.valueOf("/buildDate")).get().asText());
+        assertEquals("2024-01-20", content.get(1).content().getValueBy(JsonPointer.valueOf("/buildDate")).get().asText());
+        assertEquals("2023-06-15", content.get(2).content().getValueBy(JsonPointer.valueOf("/buildDate")).get().asText());
+    }
+
+    @Test
+    @WithMockUser(username = USERNAME, authorities = FULL_ACCESS_ROLE)
+    void shouldSortByDateTimeFieldChronologicallyAsc() {
+        documentRepository.deleteAllInBatch();
+        searchFieldRepository.deleteAllByIdCaseDefinitionKey(definition.id().name());
+
+        var searchField = new SearchField(
+            "buildDate", "doc:buildDate", SearchFieldDataType.DATETIME,
+            SearchFieldFieldType.SINGLE, SearchFieldMatchType.EXACT, null, 0, null
+        );
+        var searchFieldId = SearchFieldId.newId(definition.id().name()).newIdentity();
+        searchField.setId(searchFieldId);
+        searchFieldRepository.save(searchField);
+
+        createDocument("{\"buildDate\": \"2024-01-01T23:00:00\"}").resultingDocument().orElseThrow();
+        createDocument("{\"buildDate\": \"2024-01-01T08:30:00\"}").resultingDocument().orElseThrow();
+        createDocument("{\"buildDate\": \"2024-01-01T15:45:00\"}").resultingDocument().orElseThrow();
+
+        var result = documentSearchService.search(
+            definition.id().name(),
+            BlueprintType.CASE,
+            new AdvancedSearchRequest(),
+            PageRequest.of(0, 10, Sort.by(Direction.ASC, "doc:buildDate"))
+        );
+
+        assertThat(result.getTotalElements()).isEqualTo(3);
+        var content = result.getContent();
+        assertEquals("2024-01-01T08:30:00", content.get(0).content().getValueBy(JsonPointer.valueOf("/buildDate")).get().asText());
+        assertEquals("2024-01-01T15:45:00", content.get(1).content().getValueBy(JsonPointer.valueOf("/buildDate")).get().asText());
+        assertEquals("2024-01-01T23:00:00", content.get(2).content().getValueBy(JsonPointer.valueOf("/buildDate")).get().asText());
+    }
+
+    @Test
+    @WithMockUser(username = USERNAME, authorities = FULL_ACCESS_ROLE)
+    void shouldSortByDateTimeFieldChronologicallyDesc() {
+        documentRepository.deleteAllInBatch();
+        searchFieldRepository.deleteAllByIdCaseDefinitionKey(definition.id().name());
+
+        var searchField = new SearchField(
+            "buildDate", "doc:buildDate", SearchFieldDataType.DATETIME,
+            SearchFieldFieldType.SINGLE, SearchFieldMatchType.EXACT, null, 0, null
+        );
+        var searchFieldId = SearchFieldId.newId(definition.id().name()).newIdentity();
+        searchField.setId(searchFieldId);
+        searchFieldRepository.save(searchField);
+
+        createDocument("{\"buildDate\": \"2024-01-01T23:00:00\"}").resultingDocument().orElseThrow();
+        createDocument("{\"buildDate\": \"2024-01-01T08:30:00\"}").resultingDocument().orElseThrow();
+        createDocument("{\"buildDate\": \"2024-01-01T15:45:00\"}").resultingDocument().orElseThrow();
+
+        var result = documentSearchService.search(
+            definition.id().name(),
+            BlueprintType.CASE,
+            new AdvancedSearchRequest(),
+            PageRequest.of(0, 10, Sort.by(Direction.DESC, "doc:buildDate"))
+        );
+
+        assertThat(result.getTotalElements()).isEqualTo(3);
+        var content = result.getContent();
+        assertEquals("2024-01-01T23:00:00", content.get(0).content().getValueBy(JsonPointer.valueOf("/buildDate")).get().asText());
+        assertEquals("2024-01-01T15:45:00", content.get(1).content().getValueBy(JsonPointer.valueOf("/buildDate")).get().asText());
+        assertEquals("2024-01-01T08:30:00", content.get(2).content().getValueBy(JsonPointer.valueOf("/buildDate")).get().asText());
+    }
+
+    @Test
+    @WithMockUser(username = USERNAME, authorities = FULL_ACCESS_ROLE)
+    void shouldSortByNumberFieldNumericallyAsc() {
+        documentRepository.deleteAllInBatch();
+        searchFieldRepository.deleteAllByIdCaseDefinitionKey(definition.id().name());
+
+        var searchField = new SearchField(
+            "housenumber", "doc:housenumber", SearchFieldDataType.NUMBER,
+            SearchFieldFieldType.SINGLE, SearchFieldMatchType.EXACT, null, 0, null
+        );
+        var searchFieldId = SearchFieldId.newId(definition.id().name()).newIdentity();
+        searchField.setId(searchFieldId);
+        searchFieldRepository.save(searchField);
+
+        createDocument("{\"housenumber\": 3}").resultingDocument().orElseThrow();
+        createDocument("{\"housenumber\": 20}").resultingDocument().orElseThrow();
+        createDocument("{\"housenumber\": 10}").resultingDocument().orElseThrow();
+
+        var result = documentSearchService.search(
+            definition.id().name(),
+            BlueprintType.CASE,
+            new AdvancedSearchRequest(),
+            PageRequest.of(0, 10, Sort.by(Direction.ASC, "doc:housenumber"))
+        );
+
+        assertThat(result.getTotalElements()).isEqualTo(3);
+        var content = result.getContent();
+        // Without numeric sorting, string order would be "10", "20", "3"
+        assertEquals(3, content.get(0).content().getValueBy(JsonPointer.valueOf("/housenumber")).get().asInt());
+        assertEquals(10, content.get(1).content().getValueBy(JsonPointer.valueOf("/housenumber")).get().asInt());
+        assertEquals(20, content.get(2).content().getValueBy(JsonPointer.valueOf("/housenumber")).get().asInt());
+    }
+
+    @Test
+    @WithMockUser(username = USERNAME, authorities = FULL_ACCESS_ROLE)
+    void shouldSortByNumberFieldNumericallyDesc() {
+        documentRepository.deleteAllInBatch();
+        searchFieldRepository.deleteAllByIdCaseDefinitionKey(definition.id().name());
+
+        var searchField = new SearchField(
+            "housenumber", "doc:housenumber", SearchFieldDataType.NUMBER,
+            SearchFieldFieldType.SINGLE, SearchFieldMatchType.EXACT, null, 0, null
+        );
+        var searchFieldId = SearchFieldId.newId(definition.id().name()).newIdentity();
+        searchField.setId(searchFieldId);
+        searchFieldRepository.save(searchField);
+
+        createDocument("{\"housenumber\": 3}").resultingDocument().orElseThrow();
+        createDocument("{\"housenumber\": 20}").resultingDocument().orElseThrow();
+        createDocument("{\"housenumber\": 10}").resultingDocument().orElseThrow();
+
+        var result = documentSearchService.search(
+            definition.id().name(),
+            BlueprintType.CASE,
+            new AdvancedSearchRequest(),
+            PageRequest.of(0, 10, Sort.by(Direction.DESC, "doc:housenumber"))
+        );
+
+        assertThat(result.getTotalElements()).isEqualTo(3);
+        var content = result.getContent();
+        // Without numeric sorting, string order would be "3", "20", "10"
+        assertEquals(20, content.get(0).content().getValueBy(JsonPointer.valueOf("/housenumber")).get().asInt());
+        assertEquals(10, content.get(1).content().getValueBy(JsonPointer.valueOf("/housenumber")).get().asInt());
+        assertEquals(3, content.get(2).content().getValueBy(JsonPointer.valueOf("/housenumber")).get().asInt());
+    }
+
+    @Test
     @WithMockUser(username = "example@ritense.com", authorities = FULL_ACCESS_ROLE)
     void shouldSearchWithSearchRequestAndCreatedBy() {
         documentRepository.deleteAllInBatch();
@@ -881,6 +1119,7 @@ class JsonSchemaDocumentSearchServiceIntTest extends BaseIntegrationTest {
 
         var result = documentSearchService.search(
             definition.id().name(),
+            BlueprintType.CASE,
             searchRequest,
             Pageable.unpaged()
         );
@@ -903,6 +1142,7 @@ class JsonSchemaDocumentSearchServiceIntTest extends BaseIntegrationTest {
 
         var result = documentSearchService.search(
             definition.id().name(),
+            BlueprintType.CASE,
             new AdvancedSearchRequest(),
             PageRequest.of(0, 10, Sort.by(Direction.DESC, "case:sequence"))
         );
@@ -931,6 +1171,7 @@ class JsonSchemaDocumentSearchServiceIntTest extends BaseIntegrationTest {
 
         var result = documentSearchService.search(
             definition.id().name(),
+            BlueprintType.CASE,
             searchRequest,
             Pageable.unpaged()
         );
@@ -955,6 +1196,7 @@ class JsonSchemaDocumentSearchServiceIntTest extends BaseIntegrationTest {
 
         var result = documentSearchService.search(
             definition.id().name(),
+            BlueprintType.CASE,
             searchRequest,
             Pageable.unpaged()
         );
@@ -986,6 +1228,7 @@ class JsonSchemaDocumentSearchServiceIntTest extends BaseIntegrationTest {
 
         var result = documentSearchService.search(
             definition.id().name(),
+            BlueprintType.CASE,
             searchRequest,
             Pageable.unpaged()
         );
@@ -1017,6 +1260,7 @@ class JsonSchemaDocumentSearchServiceIntTest extends BaseIntegrationTest {
 
         var result = documentSearchService.search(
             definition.id().name(),
+            BlueprintType.CASE,
             searchRequest,
             Pageable.unpaged()
         );
@@ -1050,6 +1294,7 @@ class JsonSchemaDocumentSearchServiceIntTest extends BaseIntegrationTest {
 
         var result = documentSearchService.search(
             definition.id().name(),
+            BlueprintType.CASE,
             searchRequest,
             PageRequest.of(0, 10, Sort.by(Direction.DESC, "doc:street"))
         );
@@ -1083,6 +1328,7 @@ class JsonSchemaDocumentSearchServiceIntTest extends BaseIntegrationTest {
 
         var result = documentSearchService.search(
             definition.id().name(),
+            BlueprintType.CASE,
             searchRequest,
             PageRequest.of(0, 10, Sort.by(Direction.DESC, "doc:street"))
         );
@@ -1113,6 +1359,7 @@ class JsonSchemaDocumentSearchServiceIntTest extends BaseIntegrationTest {
 
         var result = documentSearchService.search(
             definition.id().name(),
+            BlueprintType.CASE,
             searchRequest,
             PageRequest.of(0, 10, Sort.by(Direction.DESC, "doc:street"))
         );
@@ -1139,12 +1386,46 @@ class JsonSchemaDocumentSearchServiceIntTest extends BaseIntegrationTest {
 
         var result = documentSearchService.search(
             definition.id().name(),
+            BlueprintType.CASE,
             searchRequest,
             Pageable.unpaged()
         );
 
         assertThat(result).isNotNull();
         assertThat(result.getTotalElements()).isEqualTo(2);
+    }
+
+    @Test
+    @WithMockUser(username = USERNAME, authorities = FULL_ACCESS_ROLE)
+    void shouldSearchForTeamCases() {
+        documentRepository.deleteAllInBatch();
+
+        var document1 = createDocument("{\"street\": \"Alpaccalaan\"}").resultingDocument().orElseThrow();
+        var document2 = createDocument("{\"street\": \"Baarnseweg\"}").resultingDocument().orElseThrow();
+        var document3 = createDocument("{\"street\": \"Comeniuslaan\"}").resultingDocument().orElseThrow();
+
+        when(teamManagementService.findTeamKeysByUsername(USERNAME)).thenReturn(List.of("team1"));
+        mockTeamFindByKey("team1", "Team 1");
+        mockTeamFindByKey("team2", "Team 2");
+
+        runWithoutAuthorization(() -> {
+            documentService.assignTeamToDocument(document1.id().getId(), "team1");
+            documentService.assignTeamToDocument(document2.id().getId(), "team2");
+            return null;
+        });
+
+        var searchRequest = new AdvancedSearchRequest()
+            .assigneeFilter(AssigneeFilter.TEAM);
+
+        var result = documentSearchService.search(
+            definition.id().name(),
+            BlueprintType.CASE,
+            searchRequest,
+            PageRequest.of(0, 10, Sort.by(Direction.ASC, "doc:street"))
+        );
+
+        assertThat(result.toList()).hasSize(1);
+        assertThat(result.toList().get(0).id().getId()).isEqualTo(document1.id().getId());
     }
 
     @Test
@@ -1156,24 +1437,26 @@ class JsonSchemaDocumentSearchServiceIntTest extends BaseIntegrationTest {
         var document2 = createDocument("{\"street\": \"Baarnseweg\"}").resultingDocument().orElseThrow();
         var document3 = createDocument("{\"street\": \"Comeniuslaan\"}").resultingDocument().orElseThrow();
 
+        mockTeamFindByKey("some-team", "Some Team");
+
         runWithoutAuthorization(() -> {
-                documentService.assignUserToDocument(document2.id().getId(), USER_ID);
-                return null;
-            }
-        );
+            documentService.assignUserToDocument(document2.id().getId(), USER_ID);
+            documentService.assignTeamToDocument(document3.id().getId(), "some-team");
+            return null;
+        });
 
         var searchRequest = new AdvancedSearchRequest()
             .assigneeFilter(AssigneeFilter.OPEN);
 
         var result = documentSearchService.search(
             definition.id().name(),
+            BlueprintType.CASE,
             searchRequest,
             PageRequest.of(0, 10, Sort.by(Direction.ASC, "doc:street"))
         );
 
-        assertThat(result.toList()).hasSize(2);
+        assertThat(result.toList()).hasSize(1);
         assertThat(result.toList().get(0).id().getId()).isEqualTo(document1.id().getId());
-        assertThat(result.toList().get(1).id().getId()).isEqualTo(document3.id().getId());
     }
 
     @Test
@@ -1184,24 +1467,36 @@ class JsonSchemaDocumentSearchServiceIntTest extends BaseIntegrationTest {
         var document1 = createDocument("{\"street\": \"Alpaccalaan\"}").resultingDocument().orElseThrow();
         var document2 = createDocument("{\"street\": \"Baarnseweg\"}").resultingDocument().orElseThrow();
         var document3 = createDocument("{\"street\": \"Comeniuslaan\"}").resultingDocument().orElseThrow();
+        var document4 = createDocument("{\"street\": \"Dennenlaan\"}").resultingDocument().orElseThrow();
+        var document5 = createDocument("{\"street\": \"Edelweiss\"}").resultingDocument().orElseThrow();
+
+        when(teamManagementService.findTeamKeysByUsername(USERNAME)).thenReturn(List.of("team1"));
+        mockTeamFindByKey("team1", "Team 1");
+        mockTeamFindByKey("team2", "Team 2");
 
         runWithoutAuthorization(() -> {
-                documentService.assignUserToDocument(document2.id().getId(), USER_ID);
-                return null;
-            }
-        );
+            documentService.unassignUserFromDocument(document1.id().getId());
+            documentService.assignUserToDocument(document2.id().getId(), USERNAME);
+            documentService.assignTeamToDocument(document3.id().getId(), "team1");
+            documentService.assignTeamToDocument(document4.id().getId(), "team1");
+            documentService.assignUserToDocument(document4.id().getId(), USERNAME);
+            documentService.assignTeamToDocument(document5.id().getId(), "team2");
+            return null;
+        });
 
         var searchRequest = new AdvancedSearchRequest()
             .assigneeFilter(AssigneeFilter.MINE);
 
         var result = documentSearchService.search(
             definition.id().name(),
+            BlueprintType.CASE,
             searchRequest,
             PageRequest.of(0, 10, Sort.by(Direction.ASC, "doc:street"))
         );
 
-        assertThat(result.toList()).hasSize(1);
-        assertThat(result.toList().get(0).id().getId()).isEqualTo(document2.id().getId());
+        assertThat(result.toList()).hasSize(2);
+        List<UUID> resultIds = result.getContent().stream().map(d -> d.id().getId()).toList();
+        assertThat(resultIds).containsExactly(document2.id().getId(), document4.id().getId());
     }
 
     @Test
@@ -1226,6 +1521,7 @@ class JsonSchemaDocumentSearchServiceIntTest extends BaseIntegrationTest {
 
         var result = documentSearchService.search(
             definition.id().name(),
+            BlueprintType.CASE,
             searchRequest,
             PageRequest.of(0, 10, Sort.by(Direction.ASC, "doc:street"))
         );
@@ -1258,6 +1554,7 @@ class JsonSchemaDocumentSearchServiceIntTest extends BaseIntegrationTest {
 
         var result = documentSearchService.search(
             definition.id().name(),
+            BlueprintType.CASE,
             searchRequest,
             PageRequest.of(0, 10, Sort.by(Direction.ASC, "doc:street"))
         );
@@ -1283,6 +1580,7 @@ class JsonSchemaDocumentSearchServiceIntTest extends BaseIntegrationTest {
 
         var result = documentSearchService.search(
             definition.id().name(),
+            BlueprintType.CASE,
             searchRequest,
             PageRequest.of(0, 10, Sort.by(Direction.ASC, "doc:street"))
         );
@@ -1330,6 +1628,7 @@ class JsonSchemaDocumentSearchServiceIntTest extends BaseIntegrationTest {
 
             var result = documentSearchService.search(
                 definition.id().name(),
+                BlueprintType.CASE,
                 request,
                 PageRequest.of(0, 10)
             );
@@ -1383,6 +1682,7 @@ class JsonSchemaDocumentSearchServiceIntTest extends BaseIntegrationTest {
 
             var result = documentSearchService.search(
                 definition.id().name(),
+                BlueprintType.CASE,
                 request,
                 PageRequest.of(0, 10)
             );
@@ -1409,5 +1709,12 @@ class JsonSchemaDocumentSearchServiceIntTest extends BaseIntegrationTest {
                 )
             )
         );
+    }
+
+    private void mockTeamFindByKey(String key, String title) {
+        when(teamManagementService.findByKey(key)).thenReturn(new com.ritense.valtimo.contract.authentication.Team() {
+            @Override public String getKey() { return key; }
+            @Override public String getTitle() { return title; }
+        });
     }
 }

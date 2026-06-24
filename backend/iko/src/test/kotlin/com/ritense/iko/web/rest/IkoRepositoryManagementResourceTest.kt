@@ -16,13 +16,13 @@
 
 package com.ritense.iko.web.rest
 
-import com.ritense.iko.IkoServerRepository.Companion.PLUGIN_CONFIGURATION
+import com.ritense.iko.IkoServerRepository.Companion.IKO_SERVER_URL
 import com.ritense.iko.domain.IkoRepositoryConfig
 import com.ritense.iko.service.IkoRepositoryService
 import com.ritense.iko.web.rest.request.IkoRepositoryConfigCreateRequest
 import com.ritense.iko.web.rest.request.IkoRepositoryConfigUpdateRequest
 import com.ritense.valtimo.contract.iko.PropertyField
-import com.ritense.valtimo.contract.iko.PropertyField.Companion.PROPERTY_FIELD_TYPE_DROPDOWN
+import com.ritense.valtimo.contract.iko.PropertyField.Companion.PROPERTY_FIELD_TYPE_URL
 import com.ritense.valtimo.contract.json.MapperSingleton
 import org.hamcrest.Matchers.hasSize
 import org.junit.jupiter.api.BeforeEach
@@ -47,6 +47,7 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPat
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 import org.springframework.test.web.servlet.setup.MockMvcBuilders
 import org.springframework.transaction.annotation.Transactional
+import org.springframework.validation.beanvalidation.LocalValidatorFactoryBean
 
 @Transactional
 internal class IkoRepositoryManagementResourceTest {
@@ -64,6 +65,7 @@ internal class IkoRepositoryManagementResourceTest {
         mockMvc = MockMvcBuilders.standaloneSetup(resource)
             .setCustomArgumentResolvers(PageableHandlerMethodArgumentResolver())
             .setMessageConverters(MappingJackson2HttpMessageConverter(MapperSingleton.get()))
+            .setValidator(LocalValidatorFactoryBean().apply { afterPropertiesSet() })
             .build();
     }
 
@@ -83,9 +85,8 @@ internal class IkoRepositoryManagementResourceTest {
         whenever(service.getIkoRepositoryConfigPropertyFields("iko")).thenReturn(
             listOf(
                 PropertyField(
-                    key = PLUGIN_CONFIGURATION,
-                    type = PROPERTY_FIELD_TYPE_DROPDOWN,
-                    dropdownList = listOf("1234" to "My Plugin")
+                    key = IKO_SERVER_URL,
+                    type = PROPERTY_FIELD_TYPE_URL
                 )
             )
         )
@@ -94,11 +95,9 @@ internal class IkoRepositoryManagementResourceTest {
             .andDo(print())
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.*", hasSize<Int>(1)))
-            .andExpect(jsonPath("$[0].title").value("Plugin Configuration"))
-            .andExpect(jsonPath("$[0].key").value("pluginConfiguration"))
-            .andExpect(jsonPath("$[0].type").value("dropdown"))
-            .andExpect(jsonPath("$[0].dropdownList[0].first").value("1234"))
-            .andExpect(jsonPath("$[0].dropdownList[0].second").value("My Plugin"))
+            .andExpect(jsonPath("$[0].title").value("Iko Server Url"))
+            .andExpect(jsonPath("$[0].key").value("ikoServerUrl"))
+            .andExpect(jsonPath("$[0].type").value("url"))
     }
 
     @Test
@@ -195,6 +194,23 @@ internal class IkoRepositoryManagementResourceTest {
         mockMvc.perform(delete("/api/management/v1/iko/{repositoryConfigKey}", "iko-api"))
             .andDo(print())
             .andExpect(status().isNoContent())
+    }
+
+    @Test
+    fun `should reject create iko repository config with type exceeding column cap`() {
+        val request = IkoRepositoryConfigCreateRequest(
+            title = "IKO API",
+            type = "x".repeat(65),
+            properties = emptyMap()
+        )
+
+        mockMvc.perform(
+            post("/api/management/v1/iko/{repositoryConfigKey}", "iko-api")
+                .content(objectMapper.writeValueAsString(request))
+                .contentType(APPLICATION_JSON_VALUE)
+        )
+            .andDo(print())
+            .andExpect(status().isBadRequest())
     }
 
 }

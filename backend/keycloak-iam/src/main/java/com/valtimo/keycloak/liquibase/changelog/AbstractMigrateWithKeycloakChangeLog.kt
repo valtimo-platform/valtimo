@@ -25,11 +25,11 @@ import liquibase.database.jvm.JdbcConnection
 import org.jboss.resteasy.client.jaxrs.internal.ResteasyClientBuilderImpl
 import org.keycloak.OAuth2Constants.CLIENT_CREDENTIALS
 import org.keycloak.adapters.springboot.KeycloakSpringBootProperties
+import org.keycloak.admin.client.JacksonProvider
 import org.keycloak.admin.client.Keycloak
 import org.keycloak.admin.client.KeycloakBuilder
 import org.keycloak.representations.idm.AbstractUserRepresentation
 import org.keycloak.representations.idm.UserRepresentation
-import org.keycloak.utils.EmailValidationUtil
 import org.springframework.boot.SpringApplication
 import org.springframework.boot.env.EnvironmentPostProcessor
 import org.springframework.core.env.ConfigurableEnvironment
@@ -132,7 +132,7 @@ abstract class AbstractMigrateWithKeycloakChangeLog : EnvironmentPostProcessor {
         keycloak().use { keycloak ->
             val keycloakRealmUsers = keycloak.realm(properties.realm).users()
             try {
-                if (EmailValidationUtil.isValidEmail(emailOrUsernameOrUserId)) {
+                if (EMAIL_REGEX_PERMISSIVE.matches(emailOrUsernameOrUserId)) {
                     return keycloakRealmUsers
                         .searchByEmail(emailOrUsernameOrUserId, true)
                         .maxByOrNull { it.isEnabled || it.isEmailVerified }
@@ -160,6 +160,11 @@ abstract class AbstractMigrateWithKeycloakChangeLog : EnvironmentPostProcessor {
 
     /** Logic was copied from `KeycloakService.keycloak()` */
     protected fun keycloak(): Keycloak {
+        val resteasyClient = ResteasyClientBuilderImpl()
+            .connectionPoolSize(10)
+            .register(JacksonProvider::class.java)
+            .build()
+
         val properties = keycloakProperties()
         return KeycloakBuilder.builder()
             .serverUrl(properties.authServerUrl)
@@ -167,10 +172,7 @@ abstract class AbstractMigrateWithKeycloakChangeLog : EnvironmentPostProcessor {
             .grantType(CLIENT_CREDENTIALS)
             .clientId(properties.resource)
             .clientSecret(properties.credentials["secret"] as String?)
-            .resteasyClient(
-                ResteasyClientBuilderImpl()
-                    .connectionPoolSize(10).build()
-            )
+            .resteasyClient(resteasyClient)
             .build()
     }
 
@@ -222,6 +224,8 @@ abstract class AbstractMigrateWithKeycloakChangeLog : EnvironmentPostProcessor {
         private const val OAUTH2_ISSUER_URI = "spring.security.oauth2.client.provider.keycloakapi.issuer-uri"
         private const val OAUTH2_CLIENT_ID = "spring.security.oauth2.client.registration.keycloakapi.client-id"
         private const val OAUTH2_CLIENT_SECRET = "spring.security.oauth2.client.registration.keycloakapi.client-secret"
+
+        private val EMAIL_REGEX_PERMISSIVE = Regex("""^[^@]+@[^@]+\.[^@]+$""")
 
         protected lateinit var environment: Environment
 

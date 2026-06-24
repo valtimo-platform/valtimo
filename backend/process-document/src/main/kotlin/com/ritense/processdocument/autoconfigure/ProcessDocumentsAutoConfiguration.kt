@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,23 +20,32 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import com.ritense.authorization.AuthorizationService
 import com.ritense.case.repository.TaskListColumnRepository
 import com.ritense.case.service.CaseDefinitionService
+import com.ritense.document.DocumentCaseDefinitionPredicateProvider
 import com.ritense.document.repository.impl.JsonSchemaDocumentRepository
-import com.ritense.document.service.DocumentDefinitionService
 import com.ritense.document.service.DocumentService
 import com.ritense.document.service.impl.JsonSchemaDocumentService
 import com.ritense.processdocument.domain.impl.delegate.DocumentDelegate
+import com.ritense.processdocument.exporter.CaseDefinitionProcessLinkExporter
 import com.ritense.processdocument.exporter.ProcessDocumentLinkExporter
+import com.ritense.processdocument.importer.CaseDefinitionProcessLinkImporter
 import com.ritense.processdocument.importer.ProcessDocumentLinkImporter
 import com.ritense.processdocument.listener.CaseAssigneeListener
 import com.ritense.processdocument.listener.CaseAssigneeTaskCreatedListener
+import com.ritense.processdocument.listener.CaseTaskTeamAutoAssignListener
 import com.ritense.processdocument.listener.DecisionCaseEventListener
 import com.ritense.processdocument.listener.ProcessDefinitionCaseEventListener
 import com.ritense.processdocument.listener.ProcessDocumentLinkEventListener
 import com.ritense.processdocument.operaton.authorization.OperatonTaskDocumentMapper
+import com.ritense.processdocument.repository.CaseDefinitionProcessLinkRepository
+import com.ritense.processdocument.repository.OperatonExecutionCaseDefinitionMapper
+import com.ritense.processdocument.repository.OperatonExecutionJsonSchemaDocumentMapper
+import com.ritense.processdocument.repository.OperatonProcessDefinitionCaseDefinitionMapper
 import com.ritense.processdocument.repository.ProcessDefinitionCaseDefinitionRepository
 import com.ritense.processdocument.repository.ProcessDocumentInstanceRepository
 import com.ritense.processdocument.service.CaseDefinitionProcessLinkService
+import com.ritense.processdocument.repository.TaskQuickSearchRepository
 import com.ritense.processdocument.service.CaseTaskListSearchService
+import com.ritense.processdocument.service.TaskQuickSearchService
 import com.ritense.processdocument.service.CorrelationService
 import com.ritense.processdocument.service.CorrelationServiceImpl
 import com.ritense.processdocument.service.DefaultProcessDefinitionCaseDefinitionLinker
@@ -46,7 +55,9 @@ import com.ritense.processdocument.service.ProcessDocumentAssociationService
 import com.ritense.processdocument.service.ProcessDocumentDeletedEventListener
 import com.ritense.processdocument.service.ProcessDocumentService
 import com.ritense.processdocument.service.ProcessDocumentsService
+import com.ritense.processdocument.service.StartableProcessItemProvider
 import com.ritense.processdocument.service.ValueResolverDelegateService
+import com.ritense.processdocument.service.impl.OperatonProcessJsonSchemaDocumentService
 import com.ritense.processdocument.tasksearch.TaskSearchFieldExporter
 import com.ritense.processdocument.tasksearch.TaskSearchFieldImporter
 import com.ritense.processdocument.web.CaseDefinitionProcessManagementResource
@@ -55,23 +66,31 @@ import com.ritense.processdocument.web.TaskListResource
 import com.ritense.search.repository.SearchFieldV2Repository
 import com.ritense.search.service.SearchFieldV2Service
 import com.ritense.valtimo.contract.annotation.ProcessBean
+import com.ritense.valtimo.contract.authentication.TeamManagementService
 import com.ritense.valtimo.contract.authentication.UserManagementService
 import com.ritense.valtimo.contract.case_.CaseDefinitionChecker
 import com.ritense.valtimo.contract.database.QueryDialectHelper
+import com.ritense.valtimo.contract.document.CaseDocumentResolver
 import com.ritense.valtimo.decision.OperatonDecisionService
+import com.ritense.valtimo.operaton.repository.OperatonTaskRepository
 import com.ritense.valtimo.operaton.service.OperatonRepositoryService
 import com.ritense.valtimo.operaton.service.OperatonRuntimeService
 import com.ritense.valtimo.service.OperatonProcessService
 import com.ritense.valtimo.service.OperatonTaskService
 import com.ritense.valtimo.service.ProcessDefinitionCaseDefinitionLinker
+import com.ritense.valtimo.service.TaskBusinessKeyResolver
+import com.ritense.valtimo.task.service.UserTaskOpenedStatusService
 import com.ritense.valueresolver.ValueResolverService
 import jakarta.persistence.EntityManager
+import java.util.Optional
+import org.operaton.bpm.engine.HistoryService
 import org.operaton.bpm.engine.RepositoryService
 import org.operaton.bpm.engine.RuntimeService
 import org.operaton.bpm.engine.TaskService
 import org.springframework.boot.autoconfigure.AutoConfiguration
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.context.annotation.Bean
+import org.springframework.context.annotation.Lazy
 import org.springframework.core.annotation.Order
 
 @AutoConfiguration
@@ -83,12 +102,14 @@ class ProcessDocumentsAutoConfiguration {
     fun documentDelegate(
         processDocumentService: ProcessDocumentService,
         userManagementService: UserManagementService,
-        documentService: DocumentService
+        documentService: DocumentService,
+        caseDocumentResolver: CaseDocumentResolver,
     ): DocumentDelegate {
         return DocumentDelegate(
             processDocumentService,
             userManagementService,
-            documentService
+            documentService,
+            caseDocumentResolver,
         )
     }
 
@@ -112,6 +133,7 @@ class ProcessDocumentsAutoConfiguration {
         jsonSchemaDocumentService: JsonSchemaDocumentService,
         userManagementService: UserManagementService,
         objectMapper: ObjectMapper,
+        caseDocumentResolver: CaseDocumentResolver,
     ): DocumentDelegateService {
         return DocumentDelegateService(
             processDocumentService,
@@ -119,6 +141,7 @@ class ProcessDocumentsAutoConfiguration {
             jsonSchemaDocumentService,
             userManagementService,
             objectMapper,
+            caseDocumentResolver,
         )
     }
 
@@ -170,10 +193,19 @@ class ProcessDocumentsAutoConfiguration {
         taskService: TaskService,
         documentService: DocumentService,
         caseDefinitionService: CaseDefinitionService,
-        userManagementService: UserManagementService
+        userManagementService: UserManagementService,
+        caseDocumentResolver: CaseDocumentResolver,
+        authorizationService: AuthorizationService,
+        operatonTaskRepository: OperatonTaskRepository,
     ): CaseAssigneeTaskCreatedListener {
         return CaseAssigneeTaskCreatedListener(
-            taskService, documentService, caseDefinitionService, userManagementService
+            taskService,
+            documentService,
+            caseDefinitionService,
+            userManagementService,
+            caseDocumentResolver,
+            authorizationService,
+            operatonTaskRepository
         )
     }
 
@@ -182,10 +214,37 @@ class ProcessDocumentsAutoConfiguration {
         operatonTaskService: OperatonTaskService,
         documentService: DocumentService,
         caseDefinitionService: CaseDefinitionService,
-        userManagementService: UserManagementService
+        userManagementService: UserManagementService,
+        caseDocumentResolver: CaseDocumentResolver,
+        authorizationService: AuthorizationService,
     ): CaseAssigneeListener {
         return CaseAssigneeListener(
-            operatonTaskService, documentService, caseDefinitionService, userManagementService
+            operatonTaskService,
+            documentService,
+            caseDefinitionService,
+            userManagementService,
+            caseDocumentResolver,
+            authorizationService
+        )
+    }
+
+    @Bean
+    @ConditionalOnMissingBean(CaseTaskTeamAutoAssignListener::class)
+    fun caseTaskTeamAutoAssignListener(
+        operatonTaskService: OperatonTaskService,
+        documentService: DocumentService,
+        caseDefinitionService: CaseDefinitionService,
+        processDocumentService: ProcessDocumentService,
+        teamManagementService: TeamManagementService?,
+        caseDocumentResolver: CaseDocumentResolver,
+    ): CaseTaskTeamAutoAssignListener {
+        return CaseTaskTeamAutoAssignListener(
+            operatonTaskService,
+            documentService,
+            caseDefinitionService,
+            processDocumentService,
+            teamManagementService,
+            caseDocumentResolver,
         )
     }
 
@@ -217,15 +276,37 @@ class ProcessDocumentsAutoConfiguration {
     @ConditionalOnMissingBean(ProcessDocumentLinkImporter::class)
     fun processDocumentLinkImporter(
         processDefinitionCaseDefinitionService: ProcessDefinitionCaseDefinitionService,
-        documentDefinitionService: DocumentDefinitionService,
         objectMapper: ObjectMapper,
         processService: OperatonProcessService
     ): ProcessDocumentLinkImporter {
         return ProcessDocumentLinkImporter(
             processDefinitionCaseDefinitionService,
-            documentDefinitionService,
             objectMapper,
             processService
+        )
+    }
+
+    @Bean
+    @ConditionalOnMissingBean(CaseDefinitionProcessLinkExporter::class)
+    fun caseDefinitionProcessLinkExporter(
+        objectMapper: ObjectMapper,
+        caseDefinitionProcessLinkService: CaseDefinitionProcessLinkService
+    ): CaseDefinitionProcessLinkExporter {
+        return CaseDefinitionProcessLinkExporter(
+            objectMapper,
+            caseDefinitionProcessLinkService
+        )
+    }
+
+    @Bean
+    @ConditionalOnMissingBean(CaseDefinitionProcessLinkImporter::class)
+    fun caseDefinitionProcessLinkImporter(
+        caseDefinitionProcessLinkRepository: CaseDefinitionProcessLinkRepository,
+        objectMapper: ObjectMapper
+    ): CaseDefinitionProcessLinkImporter {
+        return CaseDefinitionProcessLinkImporter(
+            caseDefinitionProcessLinkRepository,
+            objectMapper
         )
     }
 
@@ -238,7 +319,10 @@ class ProcessDocumentsAutoConfiguration {
         userManagementService: UserManagementService,
         authorizationService: AuthorizationService,
         searchFieldV2Service: SearchFieldV2Service,
-        queryDialectHelper: QueryDialectHelper
+        queryDialectHelper: QueryDialectHelper,
+        userTaskOpenedStatusService: UserTaskOpenedStatusService,
+        taskBusinessKeyResolvers: List<TaskBusinessKeyResolver>,
+        teamManagementService: Optional<TeamManagementService>
     ): CaseTaskListSearchService {
         return CaseTaskListSearchService(
             entityManager,
@@ -247,7 +331,24 @@ class ProcessDocumentsAutoConfiguration {
             userManagementService,
             authorizationService,
             searchFieldV2Service,
-            queryDialectHelper
+            queryDialectHelper,
+            userTaskOpenedStatusService,
+            taskBusinessKeyResolvers,
+            teamManagementService.orElse(null)
+        )
+    }
+
+    @Bean
+    @ConditionalOnMissingBean(TaskQuickSearchService::class)
+    fun taskQuickSearchService(
+        taskQuickSearchRepository: TaskQuickSearchRepository,
+        caseDefinitionService: CaseDefinitionService,
+        authorizationService: AuthorizationService,
+    ): TaskQuickSearchService {
+        return TaskQuickSearchService(
+            taskQuickSearchRepository,
+            caseDefinitionService,
+            authorizationService,
         )
     }
 
@@ -255,11 +356,13 @@ class ProcessDocumentsAutoConfiguration {
     @ConditionalOnMissingBean(TaskListResource::class)
     fun processDocumentTaskListResource(
         caseTaskListSearchService: CaseTaskListSearchService,
-        operatonTaskService: OperatonTaskService
+        operatonTaskService: OperatonTaskService,
+        taskQuickSearchService: TaskQuickSearchService,
     ): TaskListResource {
         return TaskListResource(
             caseTaskListSearchService,
-            operatonTaskService
+            operatonTaskService,
+            taskQuickSearchService,
         )
     }
 
@@ -296,6 +399,7 @@ class ProcessDocumentsAutoConfiguration {
         runtimeService: RuntimeService,
         repositoryService: OperatonRepositoryService,
         caseDefinitionChecker: CaseDefinitionChecker,
+        caseDocumentResolver: CaseDocumentResolver,
     ): ProcessDefinitionCaseDefinitionService {
         return ProcessDefinitionCaseDefinitionService(
             authorizationService,
@@ -304,6 +408,7 @@ class ProcessDocumentsAutoConfiguration {
             runtimeService,
             repositoryService,
             caseDefinitionChecker,
+            caseDocumentResolver,
         )
     }
 
@@ -312,10 +417,12 @@ class ProcessDocumentsAutoConfiguration {
     @Order(100)
     fun processDocumentDeletedEventListener(
         runtimeService: RuntimeService,
+        historyService: HistoryService,
         processDocumentAssociationService: ProcessDocumentAssociationService
     ): ProcessDocumentDeletedEventListener {
         return ProcessDocumentDeletedEventListener(
             runtimeService,
+            historyService,
             processDocumentAssociationService
         )
     }
@@ -365,8 +472,64 @@ class ProcessDocumentsAutoConfiguration {
     }
 
     @Bean
+    @ConditionalOnMissingBean(OperatonExecutionCaseDefinitionMapper::class)
+    fun operatonExecutionCaseDefinitionMapper(
+        processDefinitionCaseDefinitionRepository: ProcessDefinitionCaseDefinitionRepository,
+        @Lazy caseDefinitionService: CaseDefinitionService,
+        executionDocumentMapper: OperatonExecutionJsonSchemaDocumentMapper,
+        @Lazy authorizationService: AuthorizationService,
+        queryDialectHelper: QueryDialectHelper,
+        documentCaseDefinitionPredicateProvider: DocumentCaseDefinitionPredicateProvider,
+    ): OperatonExecutionCaseDefinitionMapper {
+        return OperatonExecutionCaseDefinitionMapper(
+            processDefinitionCaseDefinitionRepository,
+            caseDefinitionService,
+            executionDocumentMapper,
+            authorizationService,
+            queryDialectHelper,
+            documentCaseDefinitionPredicateProvider,
+        )
+    }
+
+    @Bean
+    @ConditionalOnMissingBean(OperatonProcessDefinitionCaseDefinitionMapper::class)
+    fun operatonProcessDefinitionCaseDefinitionMapper(
+        processDefinitionCaseDefinitionRepository: ProcessDefinitionCaseDefinitionRepository,
+        @Lazy caseDefinitionService: CaseDefinitionService,
+    ): OperatonProcessDefinitionCaseDefinitionMapper {
+        return OperatonProcessDefinitionCaseDefinitionMapper(
+            processDefinitionCaseDefinitionRepository,
+            caseDefinitionService,
+        )
+    }
+
+    @Bean
+    @ConditionalOnMissingBean(OperatonExecutionJsonSchemaDocumentMapper::class)
+    fun operatonExecutionJsonSchemaDocumentMapper(
+        @Lazy processDocumentService: OperatonProcessJsonSchemaDocumentService,
+        queryDialectHelper: QueryDialectHelper,
+    ): OperatonExecutionJsonSchemaDocumentMapper {
+        return OperatonExecutionJsonSchemaDocumentMapper(
+            processDocumentService,
+            queryDialectHelper,
+        )
+    }
+
+    @Bean
     @ConditionalOnMissingBean
     fun processDocumentLinkEventListener(
         caseDefinitionProcessLinkService: CaseDefinitionProcessLinkService
     ): ProcessDocumentLinkEventListener = ProcessDocumentLinkEventListener(caseDefinitionProcessLinkService)
+
+    @Bean
+    @ConditionalOnMissingBean(StartableProcessItemProvider::class)
+    fun startableProcessItemProvider(
+        processDefinitionCaseDefinitionRepository: ProcessDefinitionCaseDefinitionRepository,
+        authorizationService: AuthorizationService,
+    ): StartableProcessItemProvider {
+        return StartableProcessItemProvider(
+            processDefinitionCaseDefinitionRepository,
+            authorizationService,
+        )
+    }
 }

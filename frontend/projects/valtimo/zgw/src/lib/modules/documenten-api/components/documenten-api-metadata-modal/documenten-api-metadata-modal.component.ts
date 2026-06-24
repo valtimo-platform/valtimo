@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -40,7 +40,7 @@ import {
 } from 'rxjs';
 import {TranslateModule, TranslateService} from '@ngx-translate/core';
 import {ActivatedRoute} from '@angular/router';
-import {DocumentService} from '@valtimo/document';
+import {DocumentService, DocumentType as ZgwDocumentType} from '@valtimo/document';
 import {KeycloakService} from 'keycloak-angular';
 import {tap} from 'rxjs/operators';
 import {CommonModule} from '@angular/common';
@@ -72,14 +72,14 @@ import {
   LayerModule,
   ListItem,
   ModalModule,
+  NotificationModule,
   RadioModule,
   TagModule,
   TooltipModule,
 } from 'carbon-components-angular';
-import {DocumentenApiTagService} from '../../services';
+import {DocumentenApiTagService, DocumentenApiVersionService} from '../../services';
 import moment from 'moment';
 import {DocumentenApiUploadFieldDefaultValues} from '../../models/documenten-api-upload-field.model';
-import {DocumentenApiVersionService} from '../../services';
 
 @Component({
   selector: 'valtimo-documenten-api-metadata-modal',
@@ -97,6 +97,7 @@ import {DocumentenApiVersionService} from '../../services';
     InputLabelModule,
     InputModule,
     ModalModule,
+    NotificationModule,
     RadioModule,
     ReactiveFormsModule,
     SelectModule,
@@ -180,6 +181,7 @@ export class DocumentenApiMetadataModalComponent implements OnInit, OnDestroy {
     }
   }
   @Input() isEditMode: boolean;
+  @Input() uploadError: string | null = null;
 
   public readonly open$ = new BehaviorSubject<boolean>(false);
 
@@ -195,6 +197,7 @@ export class DocumentenApiMetadataModalComponent implements OnInit, OnDestroy {
 
   @Output() metadata: EventEmitter<DocumentenApiMetadata> = new EventEmitter();
   @Output() modalClose: EventEmitter<boolean> = new EventEmitter();
+  @Output() uploadErrorDismiss: EventEmitter<void> = new EventEmitter();
 
   public filenameExtension: string = '';
   public documentenApiMetadataForm: FormGroup = this.fb.group({
@@ -405,20 +408,36 @@ export class DocumentenApiMetadataModalComponent implements OnInit, OnDestroy {
   ]).pipe(map(([formIoDocumentId, routeDocumentId]) => formIoDocumentId || routeDocumentId));
 
   public readonly documentTypeItems$: Observable<Array<ListItem>> = combineLatest([
-    this.documentId$,
+    this.documentId$.pipe(startWith(null)),
+    this.valtimoModalService.caseDefinitionKey$.pipe(startWith(null)),
     this.informatieobjecttypeFormControl.valueChanges.pipe(
       startWith(this.informatieobjecttypeFormControl.value)
     ),
   ]).pipe(
-    filter(([documentId]) => !!documentId),
-    switchMap(([documentId, informatieobjecttypeValue]) =>
-      combineLatest([
-        this.documentService.getDocumentTypesForDocument(documentId),
-        of(informatieobjecttypeValue),
-      ])
-    ),
+    filter(([documentId, caseDefinitionKey]) => !!documentId || !!caseDefinitionKey),
+    switchMap(([documentId, caseDefinitionKey, defaultValue]) => {
+      if (documentId) {
+        return this.documentService
+          .getDocumentTypesForDocument(documentId)
+          .pipe(map(types => [types, defaultValue]));
+      }
+      if (caseDefinitionKey) {
+        return this.documentService.getCaseSettings(caseDefinitionKey).pipe(
+          switchMap(settings =>
+            settings.caseDefinitionVersionTag
+              ? this.documentService.getDocumentTypesForCase(
+                  caseDefinitionKey,
+                  settings.caseDefinitionVersionTag
+                )
+              : of([])
+          ),
+          map(types => [types, defaultValue])
+        );
+      }
+      return of([[], defaultValue]);
+    }),
     map(([documentTypes, informatieobjecttypeValue]) =>
-      documentTypes.map((type: any) => ({
+      (documentTypes as ZgwDocumentType[]).map((type: any) => ({
         id: type.url,
         content: type.name,
         selected: informatieobjecttypeValue === type.url,
@@ -557,9 +576,14 @@ export class DocumentenApiMetadataModalComponent implements OnInit, OnDestroy {
       {}
     ) as DocumentenApiMetadata;
 
-    if (this.documentenApiMetadataForm.valid) this.metadata.emit(mappedRawValue);
-
-    this.closeModal();
+    if (this.documentenApiMetadataForm.valid) {
+      this.metadata.emit(mappedRawValue);
+      if (this.areAllFieldsHidden()) {
+        this.closeModal();
+      }
+    } else {
+      this.closeModal();
+    }
   }
 
   public closeModal(): void {

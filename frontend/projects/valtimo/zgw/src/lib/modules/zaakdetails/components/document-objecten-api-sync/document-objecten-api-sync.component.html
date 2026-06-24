@@ -1,5 +1,5 @@
 <!--
-  ~ Copyright 2015-2025 Ritense BV, the Netherlands.
+  ~ Copyright 2015-2026 Ritense BV, the Netherlands.
   ~
   ~ Licensed under EUPL, Version 1.2 (the "License");
   ~ you may not use this file except in compliance with the License.
@@ -14,12 +14,7 @@
   ~ limitations under the License.
   -->
 
-<cds-tile>
-  <valtimo-case-management-draft-warning
-    *ngIf="isDraftVersion$ | async"
-    [name]="'zaakdetails.title' | translate | lowercase"
-  ></valtimo-case-management-draft-warning>
-
+<cds-tile [class.tile--danger]="hasConfigurationIssue$ | async">
   <h2 class="valtimo-objecten-sync__title">{{ 'zaakdetails.title' | translate }}</h2>
 
   @if (loading$ | async) {
@@ -31,19 +26,29 @@
           {{ documentObjectenApiSync.objectManagementConfigurationTitle || '-' }}
         </span>
 
-        <div class="valtimo-objecten-sync__card-controls">
-          <button cdsButton="tertiary" (click)="showModal()">
-            {{ 'interface.edit' | translate }}
+        @if (canEdit$ | async) {
+          <div class="valtimo-objecten-sync__card-controls">
+            <button
+              cdsButton="tertiary"
+              [attr.data-test-id]="testIds.editButton"
+              (click)="showModal()"
+            >
+              {{ 'interface.edit' | translate }}
 
-            <svg class="cds--btn__icon" cdsIcon="edit" size="16"></svg>
-          </button>
+              <svg class="cds--btn__icon" cdsIcon="edit" size="16"></svg>
+            </button>
 
-          <button cdsButton="danger" (click)="remove()">
-            {{ 'interface.delete' | translate }}
+            <button
+              cdsButton="danger"
+              [attr.data-test-id]="testIds.deleteButton"
+              (click)="remove()"
+            >
+              {{ 'interface.delete' | translate }}
 
-            <svg class="cds--btn__icon" cdsIcon="trash-can" size="16"></svg>
-          </button>
-        </div>
+              <svg class="cds--btn__icon" cdsIcon="trash-can" size="16"></svg>
+            </button>
+          </div>
+        }
       </section>
 
       <section class="valtimo-objecten-sync__card-body">
@@ -63,13 +68,24 @@
           {{ documentObjectenApiSync.objectManagementConfigurationTitle || '-' }}
         </div>
       </section>
-    } @else {
-      <button cdsButton="primary" (click)="showModal()">
+    } @else if (canEdit$ | async) {
+      <button
+        cdsButton="primary"
+        [attr.data-test-id]="testIds.addButton"
+        (click)="showModal()"
+      >
         {{ 'zaakdetails.submitButton' | translate }}
 
         <svg class="cds--btn__icon" cdsIcon="add" size="16"></svg>
       </button>
     }
+  }
+
+  @if (hasConfigurationIssue$ | async) {
+    <div class="tile-error-message">
+      <svg cdsIcon="warning--filled" size="16" class="tile-error-message__icon"></svg>
+      <span class="tile-error-message__text">{{ 'zaakdetails.configurationIssue' | translate }}</span>
+    </div>
   }
 </cds-tile>
 
@@ -91,6 +107,7 @@
       <form [formGroup]="formGroup">
         <v-select
           *ngIf="objectManagementConfigurationItems$ | async as objectManagementConfigurations"
+          [attr.data-test-id]="testIds.modalConfigSelect"
           [appendInline]="false"
           [dropUp]="false"
           [items]="objectManagementConfigurations"
@@ -107,18 +124,30 @@
           (selectedChange)="configSelected($event)"
         ></v-select>
 
-        <cds-checkbox formControlName="enabled"
+        <cds-checkbox
+          formControlName="enabled"
+          [attr.data-test-id]="testIds.modalEnabledCheckbox"
           >{{ 'zaakdetails.editModal.enabled' | translate }}
         </cds-checkbox>
       </form>
     </section>
 
     <cds-modal-footer>
-      <button cdsButton="secondary" (click)="onModalClose()" [disabled]="false">
+      <button
+        cdsButton="secondary"
+        [attr.data-test-id]="testIds.modalCancelButton"
+        (click)="onModalClose()"
+        [disabled]="false"
+      >
         {{ 'interface.cancel' | translate }}
       </button>
 
-      <button cdsButton="primary" [disabled]="!formGroup.valid" (click)="submit()">
+      <button
+        cdsButton="primary"
+        [attr.data-test-id]="testIds.modalSubmitButton"
+        [disabled]="!formGroup.valid"
+        (click)="submit()"
+      >
         {{ 'searchFieldsOverview.submit' | translate }}
       </button>
     </cds-modal-footer>

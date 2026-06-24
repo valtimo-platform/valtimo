@@ -17,11 +17,11 @@
 package com.ritense.notificatiesapi
 
 import com.ritense.notificatiesapi.client.NotificatiesApiClient
-import com.ritense.notificatiesapi.repository.NotificatiesApiAbonnementLinkRepository
 import com.ritense.plugin.domain.PluginConfiguration
 import com.ritense.plugin.domain.PluginConfigurationId
 import com.ritense.plugin.domain.PluginDefinition
 import com.ritense.plugin.domain.PluginProperty
+import com.ritense.plugin.repository.PluginProcessLinkRepository
 import com.ritense.plugin.service.PluginService
 import com.ritense.valtimo.contract.json.MapperSingleton
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -36,14 +36,14 @@ internal class NotificatiesApiPluginFactoryTest {
     fun `should create NotificatiesApiPlugin`() {
         val pluginService = mock<PluginService>()
         val client = mock<NotificatiesApiClient>()
-        val abonnementLinkRepository = mock<NotificatiesApiAbonnementLinkRepository>()
+        val pluginProcessLinkRepository = mock<PluginProcessLinkRepository>()
 
         whenever(pluginService.getObjectMapper()).thenReturn(MapperSingleton.get())
 
         val factory = NotificatiesApiPluginFactory(
             pluginService,
             client,
-            abonnementLinkRepository
+            pluginProcessLinkRepository
         )
 
         val notificatiesApiPluginProperties: String = """

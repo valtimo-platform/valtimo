@@ -35,7 +35,7 @@ dockerCompose {
 
 dependencies {
 
-    implementation project(":contract")
+    implementation project(":backend:contract")
 
     implementation "org.springframework.boot:spring-boot"
     implementation "org.springframework.boot:spring-boot-starter"
@@ -46,6 +46,8 @@ dependencies {
     implementation "io.github.oshai:kotlin-logging:${kotlinLoggingVersion}"
 
     implementation("ch.qos.logback.db:logback-classic-db:1.2.11.1")
+
+    testImplementation(project(":backend:core"))
 
     testImplementation "org.springframework.boot:spring-boot-starter-test"
     testImplementation "org.junit.jupiter:junit-jupiter"

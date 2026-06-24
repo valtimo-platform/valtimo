@@ -28,8 +28,8 @@ import {
   ViewEncapsulation,
 } from '@angular/core';
 import {TranslateModule} from '@ngx-translate/core';
-import {CarbonListModule, EllipsisPipe} from '@valtimo/components';
-import {ButtonModule, InputModule} from 'carbon-components-angular';
+import {CarbonListModule} from '@valtimo/components';
+import {ButtonModule, InputModule, SkeletonModule} from 'carbon-components-angular';
 import {BehaviorSubject} from 'rxjs';
 import {MapWidget, MapData} from '../../models';
 import {WidgetActionButtonComponent} from '../widget-action-button/widget-action-button.component';
@@ -54,9 +54,9 @@ import {Icon, Fill, Stroke, Style} from 'ol/style';
     InputModule,
     TranslateModule,
     CarbonListModule,
-    EllipsisPipe,
     ButtonModule,
     WidgetActionButtonComponent,
+    SkeletonModule,
   ],
 })
 export class WidgetMapComponent implements AfterViewInit, OnDestroy {
@@ -72,8 +72,11 @@ export class WidgetMapComponent implements AfterViewInit, OnDestroy {
   public readonly isEmptyWidgetData$ = new BehaviorSubject<boolean>(false);
   public readonly noVisibleMap$ = new BehaviorSubject<boolean>(true);
 
-  @Input() public set widgetData(value: object) {
-    if (!value) return;
+  @Input() public set widgetData(value: object | null) {
+    if (!value) {
+      this.widgetData$.next(null);
+      return;
+    }
     this.widgetData$.next(value as MapData);
     this.isEmptyWidgetData$.next(this.checkEmptyWidgetData(value));
   }
@@ -152,7 +155,7 @@ export class WidgetMapComponent implements AfterViewInit, OnDestroy {
     });
 
     this.widgetData$.subscribe(widgetData => {
-      if (!widgetData?.geoJsonFeatureCollection) {
+      if (!widgetData?.geoJsonFeatureCollection?.features) {
         return;
       }
 
@@ -175,13 +178,14 @@ export class WidgetMapComponent implements AfterViewInit, OnDestroy {
       });
 
       this.map.addLayer(this.vectorLayer);
-      this.fitMap(vectorSource);
+      setTimeout(() => this.fitMap(vectorSource));
     });
   }
 
   private fitMap(vectorSource: VectorSource): void {
     const extent = vectorSource?.getExtent();
     if (extent) {
+      this.map.updateSize();
       this.map.getView().fit(extent, {
         padding: [20, 20, 20, 20],
         maxZoom: 18,

@@ -17,17 +17,22 @@
 package com.ritense.processdocument.web
 
 import com.ritense.processdocument.service.CaseTaskListSearchService
+import com.ritense.processdocument.service.TaskQuickSearchService
 import com.ritense.processdocument.tasksearch.SearchWithConfigRequest
 import com.ritense.processdocument.web.request.TaskListSearchDto
+import com.ritense.processdocument.web.request.TaskQuickSearchDto
 import com.ritense.processdocument.web.result.TaskListRowDto
-import com.ritense.valtimo.operaton.dto.TaskExtended
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
+import com.ritense.valtimo.contract.authorization.UserManagementServiceHolder
 import com.ritense.valtimo.contract.domain.ValtimoMediaType
 import com.ritense.valtimo.service.OperatonTaskService
+import jakarta.validation.Valid
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.http.ResponseEntity
 import org.springframework.stereotype.Controller
+import org.springframework.web.bind.annotation.DeleteMapping
+import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
@@ -39,31 +44,67 @@ import org.springframework.web.bind.annotation.RequestParam
 @RequestMapping("/api", produces = [ValtimoMediaType.APPLICATION_JSON_UTF8_VALUE])
 class TaskListResource (
     private val service: CaseTaskListSearchService,
-    private val operatonTaskService: OperatonTaskService
+    private val operatonTaskService: OperatonTaskService,
+    private val taskQuickSearchService: TaskQuickSearchService,
 ) {
 
     @PostMapping("/v3/task")
     fun getTaskList(
         @RequestParam("filter") assignmentFilter: OperatonTaskService.TaskFilter,
-        @RequestBody taskListSearchDto: TaskListSearchDto,
+        @Valid @RequestBody taskListSearchDto: TaskListSearchDto,
         pageable: Pageable
     ): ResponseEntity<Page<*>> {
         return if (taskListSearchDto.caseDefinitionKey != null) {
             ResponseEntity.ok().body(service.getTasksByCaseDefinition(taskListSearchDto.caseDefinitionKey, assignmentFilter, pageable))
         } else {
-            val page: Page<TaskExtended> = operatonTaskService.findTasksFiltered(assignmentFilter, pageable)
-            return ResponseEntity.ok(page)
+            ResponseEntity.ok(operatonTaskService.findTasksFiltered(assignmentFilter, pageable))
         }
     }
 
     @PostMapping("/v1/document-definition/{caseDefinitionName}/task/search")
     fun searchTaskList(
         @PathVariable(name = "caseDefinitionName") caseDefinitionName: String,
-        @RequestBody searchRequest: SearchWithConfigRequest,
+        @Valid @RequestBody searchRequest: SearchWithConfigRequest,
         pageable: Pageable
     ): ResponseEntity<Page<TaskListRowDto>> {
         val result = service.searchTaskListRows(caseDefinitionName, searchRequest, pageable)
         return ResponseEntity.ok(result)
+    }
+
+    @PostMapping("/v1/task/{caseDefinitionKey}/stored-quick-search")
+    fun saveQuickSearch(
+        @PathVariable(name = "caseDefinitionKey") caseDefinitionKey: String,
+        @Valid @RequestBody request: TaskQuickSearchDto,
+    ): ResponseEntity<Any> {
+        val currentUserId = UserManagementServiceHolder.currentInstance.currentUserId
+        taskQuickSearchService.storeQuickSearch(caseDefinitionKey, request, currentUserId)
+        return ResponseEntity.ok().build()
+    }
+
+    @DeleteMapping("/v1/task/{caseDefinitionKey}/stored-quick-search/{title}")
+    fun deleteQuickSearch(
+        @PathVariable(name = "caseDefinitionKey") caseDefinitionKey: String,
+        @PathVariable(name = "title") quickSearchTitle: String,
+    ): ResponseEntity<Any> {
+        val currentUserId = UserManagementServiceHolder.currentInstance.currentUserId
+        taskQuickSearchService.deleteQuickSearch(caseDefinitionKey, currentUserId, quickSearchTitle)
+        return ResponseEntity.noContent().build()
+    }
+
+    @GetMapping("/v1/task/{caseDefinitionKey}/stored-quick-search")
+    fun getQuickSearchList(
+        @PathVariable(name = "caseDefinitionKey") caseDefinitionKey: String
+    ): ResponseEntity<List<TaskQuickSearchDto>> {
+        val currentUserId = UserManagementServiceHolder.currentInstance.currentUserId
+        val result = taskQuickSearchService.getQuickSearchList(caseDefinitionKey, currentUserId)
+        return ResponseEntity.ok(
+            result.map {
+                TaskQuickSearchDto(
+                    it.queryPath,
+                    it.title,
+                )
+            }
+        )
     }
 
 }

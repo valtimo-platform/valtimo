@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,10 +26,11 @@ import {
   ViewContainerRef,
 } from '@angular/core';
 import {ActivatedRoute, NavigationStart, ParamMap, Params, Router} from '@angular/router';
-import {ChevronDown16} from '@carbon/icons';
+import {ChevronDown16, Close16} from '@carbon/icons';
 import {TranslateService} from '@ngx-translate/core';
 import {PermissionService} from '@valtimo/access-control';
 import {
+  AssignmentChangeEvent,
   BreadcrumbService,
   CdsThemeService,
   CurrentCarbonTheme,
@@ -46,7 +47,7 @@ import {
   DocumentService,
   InternalCaseStatus,
   InternalCaseStatusUtils,
-  ProcessDefinitionCaseDefinition,
+  StartableItem,
 } from '@valtimo/document';
 import {TaskWithProcessLink} from '@valtimo/process-link';
 import {UserProviderService} from '@valtimo/security';
@@ -61,6 +62,7 @@ import {
   map,
   Observable,
   of,
+  shareReplay,
   startWith,
   Subject,
   Subscription,
@@ -79,6 +81,7 @@ import {
   CAN_ASSIGN_CASE_PERMISSION,
   CAN_CLAIM_CASE_PERMISSION,
   CAN_DELETE_CASE_PERMISSION,
+  CAN_INSPECT_CASE_PERMISSION,
   CAN_VIEW_CASE_PERMISSION,
   CASE_DETAIL_PERMISSION_RESOURCE,
 } from '../../permissions';
@@ -104,12 +107,11 @@ export class CaseDetailComponent implements AfterViewInit, OnDestroy {
 
   public document: ValtimoDocument | null = null;
   public caseDefinitionKey: string;
+  public caseDefinitionVersionTag: string;
   public documentDefinitionTitle: string;
   public documentId: string;
   public processDefinitionListFields: Array<any> = [];
-  public processDefinitionCaseDefinitions: (ProcessDefinitionCaseDefinition & {
-    displayName?: string;
-  })[] = [];
+  public startableItems: (StartableItem & {displayName?: string})[] = [];
   public tabLoader: TabLoaderImpl | null = null;
 
   public readonly assigneeId$ = new BehaviorSubject<string>('');
@@ -122,6 +124,8 @@ export class CaseDetailComponent implements AfterViewInit, OnDestroy {
 
   public readonly taskAndProcessLinkOpenedInPanel$ =
     this.caseDetailLayoutService.taskAndProcessLinkOpenedInPanel$;
+
+  public readonly startFormPanel$ = this.caseDetailLayoutService.startFormPanel$;
 
   private readonly _caseStatusKey$ = new BehaviorSubject<string | null | 'NOT_AVAILABLE'>(null);
 
@@ -242,6 +246,28 @@ export class CaseDetailComponent implements AfterViewInit, OnDestroy {
     })
   );
 
+  public readonly candidateUsers$ = combineLatest([
+    this.caseService.refreshDocument$,
+    this.canAssign$,
+  ]).pipe(
+    switchMap(([_, canAssign]) =>
+      canAssign ? this.documentService.getCandidateUsers(this.documentId) : of([])
+    ),
+    shareReplay(1)
+  );
+
+  public readonly candidateTeams$ = combineLatest([
+    this.caseService.refreshDocument$,
+    this.canAssign$,
+  ]).pipe(
+    switchMap(([_, canAssign]) =>
+      canAssign
+        ? this.documentService.getCandidateTeams(this.documentId).pipe(map(page => page.content))
+        : of([])
+    ),
+    shareReplay(1)
+  );
+
   public readonly canClaim$: Observable<boolean> = this.route.paramMap.pipe(
     switchMap((params: ParamMap) =>
       this.permissionService.requestPermission(CAN_CLAIM_CASE_PERMISSION, {
@@ -255,6 +281,15 @@ export class CaseDetailComponent implements AfterViewInit, OnDestroy {
   public readonly canDelete$: Observable<boolean> = this.route.paramMap.pipe(
     switchMap((params: ParamMap) =>
       this.permissionService.requestPermission(CAN_DELETE_CASE_PERMISSION, {
+        resource: CASE_DETAIL_PERMISSION_RESOURCE.jsonSchemaDocument,
+        identifier: params.get('documentId') ?? '',
+      })
+    )
+  );
+
+  public readonly canInspect$: Observable<boolean> = this.route.paramMap.pipe(
+    switchMap((params: ParamMap) =>
+      this.permissionService.requestPermission(CAN_INSPECT_CASE_PERMISSION, {
         resource: CASE_DETAIL_PERMISSION_RESOURCE.jsonSchemaDocument,
         identifier: params.get('documentId') ?? '',
       })
@@ -341,7 +376,7 @@ export class CaseDetailComponent implements AfterViewInit, OnDestroy {
     this.initBreadcrumb();
     this.openWidthObserver();
     this.pageTitleService.disableReset();
-    this.iconService.registerAll([ChevronDown16]);
+    this.iconService.registerAll([ChevronDown16, Close16]);
     this.setDocumentStyle();
     this.enableResetOnBackNavigation();
     this.openWidgetProcessSubscription();
@@ -359,14 +394,10 @@ export class CaseDetailComponent implements AfterViewInit, OnDestroy {
   public getAllAssociatedProcessDefinitions(): void {
     this._subscriptions.add(
       combineLatest([
-        this.documentService.findProcessDefinitionCaseDefinitionsForDocument(this.documentId, {
-          startableByUser: true,
-        }),
+        this.documentService.getStartableItems({caseDocumentId: this.documentId}),
         this.translateService.stream('key'),
-      ]).subscribe(([processDefinitionCaseDefinitions]) => {
-        this.processDefinitionCaseDefinitions = this.mapProcessDocumentDefinitions(
-          processDefinitionCaseDefinitions
-        );
+      ]).subscribe(([startableItems]) => {
+        this.startableItems = this.mapStartableItems(startableItems);
         this.setProcessDropdownWidth();
 
         this.processDefinitionListFields = [
@@ -379,16 +410,31 @@ export class CaseDetailComponent implements AfterViewInit, OnDestroy {
     );
   }
 
-  public startProcess(processDefinitionCaseDefinition: ProcessDefinitionCaseDefinition): void {
-    this.supportingProcessStart.openModal(processDefinitionCaseDefinition, this.documentId);
+  public startItem(item: StartableItem): void {
+    this.showTaskList$.pipe(take(1)).subscribe(showTaskList => {
+      this.supportingProcessStart.openModalForStartableItem(
+        item,
+        this.documentId,
+        this.caseDefinitionKey,
+        this.caseDefinitionVersionTag,
+        showTaskList
+      );
+    });
+  }
+
+  public onStartFormPanelClose(): void {
+    this.supportingProcessStart.closePanel();
   }
 
   public openWidgetProcessSubscription(): void {
     this._subscriptions.add(
       this.widgetsService.startProcessEvent
-        .pipe(switchMap(() => this.widgetsService.activeProcess$))
-        .subscribe(processDefinitionCaseDefinition => {
-          this.startProcess(processDefinitionCaseDefinition);
+        .pipe(
+          switchMap(() => this.widgetsService.activeProcess$),
+          filter((item): item is StartableItem => !!item)
+        )
+        .subscribe(item => {
+          this.startItem(item);
         })
     );
   }
@@ -439,6 +485,16 @@ export class CaseDetailComponent implements AfterViewInit, OnDestroy {
 
   public deleteDocument(): void {
     this.showDeleteModal$.next(true);
+  }
+
+  public navigateToInspection(): void {
+    this.router.navigate([
+      '/cases',
+      this.caseDefinitionKey,
+      'document',
+      this.documentId,
+      'case-inspection',
+    ]);
   }
 
   public onConfirmDelete(): void {
@@ -511,6 +567,7 @@ export class CaseDetailComponent implements AfterViewInit, OnDestroy {
     // }
 
     if (!tab.showTasks) this.openTaskAndProcessLinkInModal$.next(null);
+    this.supportingProcessStart.closePanel();
     this.tabLoader.load(tab);
     this.setDocumentStyle();
   }
@@ -519,6 +576,10 @@ export class CaseDetailComponent implements AfterViewInit, OnDestroy {
     this.caseDetailLayoutService.setTaskAndProcessLinkOpenedInPanel(null);
     this.caseDetailLayoutService.refreshTasks();
     this.tabLoader?.refreshView();
+  }
+
+  public onDueDateChanged(): void {
+    this.caseDetailLayoutService.refreshTasks();
   }
 
   public onMainContentHeaderHeightChange(height: number): void {
@@ -541,6 +602,7 @@ export class CaseDetailComponent implements AfterViewInit, OnDestroy {
   private initBreadcrumb(): void {
     this.documentService.getDocumentDefinition(this.caseDefinitionKey).subscribe(definition => {
       this.documentDefinitionTitle = definition.schema.title;
+      this.caseDefinitionVersionTag = definition.id.blueprintId.blueprintVersionTag;
       this.setBreadcrumb();
     });
   }
@@ -578,6 +640,23 @@ export class CaseDetailComponent implements AfterViewInit, OnDestroy {
 
   public assignmentOfDocumentChanged(): void {
     this.caseService.refresh();
+  }
+
+  public onAssignmentChanged(event: AssignmentChangeEvent): void {
+    const assigneeId = event.userId !== undefined ? (event.userId ?? '') : undefined;
+    const assignedTeamKey = event.teamKey !== undefined ? (event.teamKey ?? '') : undefined;
+
+    this.documentService
+      .assignHandlerToDocument(this.documentId, assigneeId, assignedTeamKey)
+      .subscribe(() => {
+        this.caseService.refresh();
+      });
+  }
+
+  public onUnassigned(): void {
+    this.documentService.unassignHandlerFromDocument(this.documentId).subscribe(() => {
+      this.caseService.refresh();
+    });
   }
 
   private getNestedProperty(obj: any, path: string, defaultValue: any): any {
@@ -649,23 +728,18 @@ export class CaseDetailComponent implements AfterViewInit, OnDestroy {
     });
   }
 
-  private mapProcessDocumentDefinitions(
-    processDefinitionCaseDefinitions: ProcessDefinitionCaseDefinition[]
-  ): (ProcessDefinitionCaseDefinition & {displayName: string})[] {
-    return processDefinitionCaseDefinitions.map(
-      (processDefinitionCaseDefinition: ProcessDefinitionCaseDefinition) => ({
-        ...processDefinitionCaseDefinition,
-        displayName:
-          this.translateService.instant(processDefinitionCaseDefinition?.processDefinitionKey) !==
-          processDefinitionCaseDefinition?.processDefinitionKey
-            ? this.translateService.instant(processDefinitionCaseDefinition.processDefinitionKey)
-            : processDefinitionCaseDefinition.processDefinitionName,
-      })
-    );
+  private mapStartableItems(items: StartableItem[]): (StartableItem & {displayName: string})[] {
+    return items.map(item => ({
+      ...item,
+      displayName:
+        this.translateService.instant(item.key) !== item.key
+          ? this.translateService.instant(item.key)
+          : item.name || item.key,
+    }));
   }
 
   private setProcessDropdownWidth(): void {
-    const longestName = this.processDefinitionCaseDefinitions.reduce(
+    const longestName = this.startableItems.reduce(
       (acc, curr) =>
         !!curr.displayName && curr.displayName.length > acc ? curr.displayName.length : acc,
       0

@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+import {DECISION_MODELER_TEST_IDS} from '../constants';
 import {DecisionService} from '../services/decision.service';
 import {AfterViewInit, Component, OnDestroy, OnInit} from '@angular/core';
 import DmnJS from 'dmn-js/dist/dmn-modeler.development.js';
@@ -42,6 +43,9 @@ import {
   RenderInPageHeaderDirective,
   SelectedValue,
   SelectModule as ValtimoSelectModule,
+  OverflowMenuComponent,
+  OverflowMenuOptionComponent,
+  OverflowMenuTriggerComponent,
   WidgetModule,
 } from '@valtimo/components';
 import {TranslateModule, TranslateService} from '@ngx-translate/core';
@@ -49,15 +53,16 @@ import {EMPTY_DECISION} from './empty-decision';
 import {CommonModule} from '@angular/common';
 import {
   ButtonModule,
-  DialogModule,
   IconModule,
   IconService,
   ModalModule,
   SelectModule,
 } from 'carbon-components-angular';
 import {
+  BuildingBlockManagementParams,
   CaseManagementParams,
   EditPermissionsService,
+  getBuildingBlockManagementRouteParams,
   getCaseManagementRouteParams,
   getContextObservable,
   GlobalNotificationService,
@@ -84,7 +89,9 @@ declare const $: any;
     ButtonModule,
     IconModule,
     FitPageDirective,
-    DialogModule,
+    OverflowMenuComponent,
+    OverflowMenuOptionComponent,
+    OverflowMenuTriggerComponent,
   ],
 })
 export class DecisionModelerComponent
@@ -96,6 +103,8 @@ export class DecisionModelerComponent
     decisionTable: 'dmn-icon-decision-table',
     literalExpression: 'dmn-icon-literal-expression',
   };
+
+  protected readonly testIds = DECISION_MODELER_TEST_IDS;
 
   private $container!: any;
   private $tabs!: any;
@@ -110,6 +119,10 @@ export class DecisionModelerComponent
   public readonly caseManagementRouteParams$: Observable<CaseManagementParams | undefined> =
     getCaseManagementRouteParams(this.route);
 
+  public readonly buildingBlockManagementRouteParams$: Observable<
+    BuildingBlockManagementParams | undefined
+  > = getBuildingBlockManagementRouteParams(this.route);
+
   public readonly context$: Observable<ManagementContext | null> = getContextObservable(this.route);
   public readonly isIndependent$ = this.context$.pipe(map(context => context === 'independent'));
 
@@ -120,11 +133,7 @@ export class DecisionModelerComponent
     this.context$,
   ]).pipe(
     switchMap(([params, context]) =>
-      this.editPermissionsService.hasPermissionsToEditBasedOnContext(
-        params?.caseDefinitionKey ?? '',
-        params?.caseDefinitionVersionTag ?? '',
-        context ?? ''
-      )
+      this.editPermissionsService.hasPermissionsToEditBasedOnContext(params, context ?? '')
     )
   );
 
@@ -189,6 +198,8 @@ export class DecisionModelerComponent
 
   public ngOnDestroy(): void {
     this.pageTitleService.enableReset();
+    this.breadcrumbService.clearThirdBreadcrumb();
+    this.breadcrumbService.clearFourthBreadcrumb();
   }
 
   public ngAfterViewInit(): void {
@@ -196,13 +207,19 @@ export class DecisionModelerComponent
     this.setTabEvents();
     this.setModelerEvents();
 
-    combineLatest([this.caseManagementRouteParams$, this.context$])
-      .pipe(take(1))
-      .subscribe(([params, context]) => {
-        if (!params || !context) return;
+    this.context$.pipe(take(1)).subscribe(context => {
+      if (!context) return;
 
-        this.initBreadcrumbs(params, context);
-      });
+      if (context === 'buildingBlock') {
+        this.buildingBlockManagementRouteParams$.pipe(take(1)).subscribe(params => {
+          if (params) this.initBuildingBlockBreadcrumbs(params);
+        });
+      } else {
+        this.caseManagementRouteParams$.pipe(take(1)).subscribe(params => {
+          if (params) this.initBreadcrumbs(params, context);
+        });
+      }
+    });
   }
 
   public switchVersion(decisionId: string | SelectedValue): void {
@@ -217,19 +234,31 @@ export class DecisionModelerComponent
       .pipe(
         map(result => new File([(result as any).xml], this._fileName, {type: 'text/xml'})),
         switchMap(file => combineLatest([of(file), this.context$])),
-        switchMap(([file, context]) =>
-          context === 'independent'
-            ? this.decisionService.deployDmn(file)
-            : this.caseManagementRouteParams$.pipe(
-                switchMap(params =>
-                  this.decisionService.deployCaseDecisionDefinition(
-                    params?.caseDefinitionKey ?? '',
-                    params?.caseDefinitionVersionTag ?? '',
-                    file
-                  )
+        switchMap(([file, context]) => {
+          if (context === 'independent') {
+            return this.decisionService.deployDmn(file);
+          }
+          if (context === 'buildingBlock') {
+            return this.buildingBlockManagementRouteParams$.pipe(
+              switchMap(params =>
+                this.decisionService.deployBuildingBlockDecisionDefinition(
+                  params?.buildingBlockDefinitionKey ?? '',
+                  params?.buildingBlockDefinitionVersionTag ?? '',
+                  file
                 )
               )
-        ),
+            );
+          }
+          return this.caseManagementRouteParams$.pipe(
+            switchMap(params =>
+              this.decisionService.deployCaseDecisionDefinition(
+                params?.caseDefinitionKey ?? '',
+                params?.caseDefinitionVersionTag ?? '',
+                file
+              )
+            )
+          );
+        }),
         tap((res: {identifier: string}) => {
           this.switchVersion(res.identifier);
           this.showNotification('success', 'decisions.deploySuccess');
@@ -369,6 +398,25 @@ export class DecisionModelerComponent
     this.breadcrumbService.setFourthBreadcrumb({
       route: [routeWithDecisions],
       content: this.translateService.instant('caseManagement.tabs.decision'),
+      href: routeWithDecisions,
+    });
+  }
+
+  private initBuildingBlockBreadcrumbs(params: BuildingBlockManagementParams): void {
+    const route = `/building-block-management/building-block/${params.buildingBlockDefinitionKey}/version/${params.buildingBlockDefinitionVersionTag}`;
+    const generalRoute = `${route}/general`;
+
+    this.breadcrumbService.setThirdBreadcrumb({
+      route: [generalRoute],
+      content: `${params.buildingBlockDefinitionKey} (${params.buildingBlockDefinitionVersionTag})`,
+      href: generalRoute,
+    });
+
+    const routeWithDecisions = `${route}/decisions`;
+
+    this.breadcrumbService.setFourthBreadcrumb({
+      route: [routeWithDecisions],
+      content: this.translateService.instant('buildingBlockManagement.tabs.decisions'),
       href: routeWithDecisions,
     });
   }

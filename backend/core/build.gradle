@@ -34,17 +34,17 @@ dockerCompose {
 }
 
 dependencies {
-    api project(":authorization")
+    api project(":backend:authorization")
 
-    implementation project(":contract")
-    implementation project(":exporter")
-    implementation project(":importer")
-    implementation project(":logging")
-    implementation project(":outbox")
-    implementation project(":resource")
-    implementation project(":web")
+    implementation project(":backend:contract")
+    implementation project(":backend:exporter")
+    implementation project(":backend:importer")
+    implementation project(":backend:logging")
+    implementation project(":backend:outbox")
+    implementation project(":backend:resource")
+    implementation project(":backend:web")
 
-    testImplementation project(':test-utils-common')
+    testImplementation project(':backend:test-utils-common')
 
     api "org.springframework.security:spring-security-core"
     api "org.springframework.boot:spring-boot"
@@ -131,15 +131,19 @@ dependencies {
     implementation "io.jsonwebtoken:jjwt-impl:${jjwtVersion}"
     implementation "io.jsonwebtoken:jjwt-jackson:${jjwtVersion}"
 
-    testImplementation (project(":case")) {
+    testImplementation (project(":backend:case")) {
         exclude(group: "com.ritense.valtimo", module: "core")
     }
 
     // Operaton test
-    testImplementation project(":test-utils-common")
+    testImplementation project(":backend:test-utils-common")
     testImplementation "org.springframework.security:spring-security-test"
     testImplementation "org.junit.jupiter:junit-jupiter-engine"
     testImplementation "org.apache.groovy:groovy-all:${groovyVersion}"
+
+    // BouncyCastle for X.509 certificate generation in vulnerability tests
+    testImplementation "org.bouncycastle:bcprov-jdk18on:1.84"
+    testImplementation "org.bouncycastle:bcpkix-jdk18on:1.84"
 
     configurations.all {
         exclude group: 'org.graalvm.truffle', module: 'truffle-enterprise'

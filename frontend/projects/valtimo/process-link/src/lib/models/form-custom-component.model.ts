@@ -20,6 +20,7 @@ interface FormCustomComponent {
   taskInstanceId: string | null;
   processDefinitionKey: string | null;
   documentDefinitionName: string | null;
+  documentId: string | null;
   submittedEvent: EventEmitter<any>;
 }
 

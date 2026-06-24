@@ -43,6 +43,9 @@ tasks.register("integrationTesting") {
 tasks.register("integrationTestingPostgresql", Test) {
     group = 'verification'
     systemProperty("spring.profiles.include", "inttest,postgresql")
+    testLogging {
+        events("passed", "skipped", "failed", "standardError")
+    }
     useJUnitPlatform {
         includeTags "integration"
         excludeTags "security"
@@ -68,6 +71,9 @@ tasks.register("integrationTestingMysql", Test) {
     group = 'verification'
     description = 'Runs MySQL-based integration tests.'
     systemProperty("spring.profiles.include", "inttest,mysql")
+    testLogging {
+        events("passed", "skipped", "failed", "standardError")
+    }
     useJUnitPlatform {
         includeTags "integration"
         excludeTags "security"
@@ -94,6 +100,10 @@ tasks.register("integrationTestingMysql", Test) {
 tasks.register("securityTesting", Test) {
     group = 'verification'
     systemProperty("spring.profiles.include", "inttest,postgresql")
+    maxHeapSize = "2g"
+    testLogging {
+        events("passed", "skipped", "failed", "standardError")
+    }
     useJUnitPlatform {
         includeTags "security"
         excludeTags "integration"

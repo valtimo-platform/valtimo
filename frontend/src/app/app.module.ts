@@ -25,13 +25,15 @@ import {
 } from '@angular/common/http';
 import {AppRoutingModule} from './app-routing.module';
 import {AppComponent} from './app.component';
-import {CUSTOM_WIDGET_TOKEN, LayoutModule, TranslationManagementModule} from '@valtimo/layout';
+import {LayoutModule, TranslationManagementModule} from '@valtimo/layout';
 import {TaskModule} from '@valtimo/task';
 import {environment} from '../environments/environment';
 import {SecurityModule} from '@valtimo/security';
 import {
+  BpmnJsDiagramModule,
   enableCustomFormioComponents,
   FormIoModule,
+  MenuModule,
   registerFormioCurrencyComponent,
   registerFormioCurrentUserComponent,
   registerFormioFileSelectorComponent,
@@ -39,12 +41,9 @@ import {
   registerFormioUploadComponent,
   registerFormioValueResolverSelectorComponent,
   UploaderModule,
-  BpmnJsDiagramModule,
-  MenuModule,
   WidgetModule,
 } from '@valtimo/components';
 import {
-  CASE_TAB_TOKEN,
   CaseDetailTabAuditComponent,
   CaseDetailTabDocumentsComponent,
   CaseDetailTabNotesComponent,
@@ -88,8 +87,8 @@ import {
   catalogiApiPluginSpecification,
   DocumentenApiPluginModule,
   documentenApiPluginSpecification,
-  IkoPluginModule,
-  ikoPluginSpecification,
+  DocumentenApiPreviewPluginModule,
+  documentenApiPreviewPluginSpecification,
   KlantinteractiesApiPluginModule,
   klantinteractiesApiPluginSpecification,
   NotificatiesApiPluginModule,
@@ -121,12 +120,15 @@ import {ObjectModule} from '@valtimo/object';
 import {AccessControlManagementModule} from '@valtimo/access-control-management';
 import {FormFlowManagementModule} from '@valtimo/form-flow-management';
 import {CaseMigrationModule} from '@valtimo/case-migration';
-import {registerDocumentenApiFormioUploadComponent, ZgwModule} from '@valtimo/zgw';
 import {LoggingModule} from '@valtimo/logging';
 import {FormViewModelModule} from '@valtimo/form-view-model';
 import {CaseManagementModule} from '@valtimo/case-management';
-import {IkoModule} from '@valtimo/iko';
+import {IkoModule, registerIkoSearchFormioComponent} from '@valtimo/iko';
 import {devDeclarations, devImports, devProviders, devTabs} from './dev-tools';
+import {AdminSettingsModule} from '@valtimo/admin-settings';
+import {BuildingBlockManagementModule} from '@valtimo/building-block-management';
+import {TeamsModule} from '@valtimo/teams';
+import {registerDocumentenApiFormioUploadComponent, ZgwModule} from '@valtimo/zgw';
 
 export function tabsFactory() {
   return new Map<string, object>([
@@ -185,6 +187,7 @@ export function tabsFactory() {
     OpenZaakPluginModule,
     SmartDocumentsPluginModule,
     DocumentenApiPluginModule,
+    DocumentenApiPreviewPluginModule,
     KlantinteractiesApiPluginModule,
     ObjecttypenApiPluginModule,
     OpenKlantTokenAuthenticationPluginModule,
@@ -211,8 +214,10 @@ export function tabsFactory() {
     BpmnJsDiagramModule,
     MenuModule,
     WidgetModule,
-    IkoPluginModule,
     IkoModule,
+    AdminSettingsModule,
+    BuildingBlockManagementModule,
+    TeamsModule,
     ...(environment.production ? [] : devImports),
   ],
   providers: [
@@ -223,7 +228,7 @@ export function tabsFactory() {
         besluitenApiPluginSpecification,
         catalogiApiPluginSpecification,
         documentenApiPluginSpecification,
-        ikoPluginSpecification,
+        documentenApiPreviewPluginSpecification,
         klantinteractiesApiPluginSpecification,
         notificatiesApiPluginSpecification,
         objectenApiPluginSpecification,
@@ -251,5 +256,6 @@ export class AppModule {
     registerFormioIbanComponent(injector);
     registerFormioCurrencyComponent(injector);
     registerFormioValueResolverSelectorComponent(injector);
+    registerIkoSearchFormioComponent(injector);
   }
 }

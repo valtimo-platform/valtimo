@@ -27,7 +27,6 @@ import com.ritense.authorization.AuthorizationService
 import com.ritense.authorization.request.AuthorizationResourceContext
 import com.ritense.authorization.request.EntityAuthorizationRequest
 import com.ritense.authorization.request.RelatedEntityAuthorizationRequest
-import com.ritense.case.service.CaseDefinitionService
 import com.ritense.document.domain.Document
 import com.ritense.document.domain.impl.JsonSchemaDocument
 import com.ritense.document.domain.impl.request.ModifyDocumentRequest
@@ -55,22 +54,25 @@ import com.ritense.processdocument.domain.request.Request
 import com.ritense.processdocument.exception.ProcessDocumentDefinitionNotFoundException
 import com.ritense.processdocument.service.ProcessDefinitionCaseDefinitionService
 import com.ritense.processdocument.service.ProcessDocumentService
+import com.ritense.processlink.domain.ActivityTypeWithEventName.MESSAGE_START_EVENT_START
 import com.ritense.processlink.domain.ActivityTypeWithEventName.START_EVENT_START
 import com.ritense.processlink.domain.ActivityTypeWithEventName.USER_TASK_CREATE
 import com.ritense.processlink.domain.ProcessLink
 import com.ritense.processlink.service.ProcessLinkService
+import com.ritense.valtimo.contract.BlueprintId
+import com.ritense.valtimo.contract.annotation.SkipComponentScan
+import com.ritense.valtimo.contract.buildingblock.BuildingBlockDefinitionId
+import com.ritense.valtimo.contract.case_.CaseDefinitionId
+import com.ritense.valtimo.contract.event.ExternalDataSubmittedEvent
+import com.ritense.valtimo.contract.json.patch.JsonPatch
+import com.ritense.valtimo.contract.result.OperationError
+import com.ritense.valtimo.contract.result.OperationError.FromException
 import com.ritense.valtimo.operaton.authorization.OperatonExecutionActionProvider
 import com.ritense.valtimo.operaton.authorization.OperatonTaskActionProvider.Companion.COMPLETE
 import com.ritense.valtimo.operaton.domain.OperatonExecution
 import com.ritense.valtimo.operaton.domain.OperatonProcessDefinition
 import com.ritense.valtimo.operaton.domain.OperatonTask
 import com.ritense.valtimo.operaton.service.OperatonRepositoryService
-import com.ritense.valtimo.contract.annotation.SkipComponentScan
-import com.ritense.valtimo.contract.case_.CaseDefinitionId
-import com.ritense.valtimo.contract.event.ExternalDataSubmittedEvent
-import com.ritense.valtimo.contract.json.patch.JsonPatch
-import com.ritense.valtimo.contract.result.OperationError
-import com.ritense.valtimo.contract.result.OperationError.FromException
 import com.ritense.valtimo.service.OperatonTaskService
 import com.ritense.valueresolver.ValueResolverService
 import com.ritense.valueresolver.ValueResolverServiceImpl
@@ -80,7 +82,7 @@ import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.util.UUID
 import kotlin.jvm.optionals.getOrNull
-import com.ritense.processdocument.resolver.DocumentJsonValueResolverFactory.Companion.PREFIX as DOC_PREFIX
+import com.ritense.processdocument.resolver.CaseDocumentJsonValueResolverFactory.Companion.PREFIX as DOC_PREFIX
 import com.ritense.valueresolver.ProcessVariableValueResolverFactory.Companion.PREFIX as PV_PREFIX
 
 @Service
@@ -98,7 +100,6 @@ class DefaultFormSubmissionService(
     private val prefillFormService: PrefillFormService,
     private val authorizationService: AuthorizationService,
     private val valueResolverService: ValueResolverService,
-    private val caseDefinitionService: CaseDefinitionService,
     private val objectMapper: ObjectMapper,
 ) : FormSubmissionService {
 
@@ -121,7 +122,7 @@ class DefaultFormSubmissionService(
             val documentDefinitionNameToUse = document?.definitionId()?.name()
                 ?: documentDefinitionName
                 ?: getProcessDocumentDefinition(processDefinition, document).run {
-                    documentDefinitionService.findByCaseDefinitionId(this.id.caseDefinitionId).orElseThrow().id?.name()
+                    documentDefinitionService.findByBlueprintId(this.id.caseDefinitionId).orElseThrow().id?.name()
                         ?: throw ProcessDocumentDefinitionNotFoundException("DocumentDefinition not found for processDefinitionId: ${processDefinition.id}")
                 }
             val processVariables = getProcessVariables(taskInstanceId)
@@ -140,7 +141,7 @@ class DefaultFormSubmissionService(
                 taskInstanceId,
                 documentDefinitionNameToUse,
                 processDefinition.key,
-                processDefinition.getCaseDefinitionId(),
+                processDefinition.getBlueprintId(),
                 categorizedKeyValues.createDocumentWithContent,
                 categorizedKeyValues.withProcessVars,
                 modifyDocumentWithJsonPatch
@@ -399,12 +400,12 @@ class DefaultFormSubmissionService(
         taskInstanceId: String?,
         documentDefinitionName: String,
         processDefinitionKey: String,
-        caseDefinitionId: CaseDefinitionId?,
+        blueprintId: BlueprintId?,
         documentContent: JsonNode,
         withProcessVars: Map<String, Any>,
         modifyDocumentWithJsonPatch: JsonPatch
     ): Request {
-        return if (processLink.activityType == START_EVENT_START) {
+        return if (processLink.activityType == START_EVENT_START || processLink.activityType == MESSAGE_START_EVENT_START) {
             check(taskInstanceId == null) {
                 "Process link configuration error: START_EVENT_START shouldn't be linked to a user-task. For process-definition: '${processLink.processDefinitionId}' with activity-id: '${processLink.activityId}'"
             }
@@ -413,7 +414,7 @@ class DefaultFormSubmissionService(
                 newDocumentAndStartProcessRequest(
                     documentDefinitionName,
                     processDefinitionKey,
-                    caseDefinitionId,
+                    blueprintId,
                     documentContent,
                     withProcessVars
                 )
@@ -445,19 +446,49 @@ class DefaultFormSubmissionService(
     private fun newDocumentAndStartProcessRequest(
         documentDefinitionName: String,
         processDefinitionKey: String,
-        caseDefinitionId: CaseDefinitionId?,
+        blueprintId: BlueprintId?,
         documentContent: JsonNode,
         withProcessVars: Map<String, Any>,
     ): NewDocumentAndStartProcessRequest {
-        return NewDocumentAndStartProcessRequest(
-            processDefinitionKey,
-            NewDocumentRequest(
-                documentDefinitionName,
-                caseDefinitionId?.key,
-                caseDefinitionId?.versionTag?.version,
-                documentContent
-            )
-        ).withProcessVars(withProcessVars)
+        return when (blueprintId) {
+            is CaseDefinitionId -> {
+                NewDocumentAndStartProcessRequest(
+                    processDefinitionKey,
+                    NewDocumentRequest(
+                        documentDefinitionName,
+                        blueprintId.key,
+                        blueprintId.versionTag.version,
+                        documentContent
+                    )
+                ).withProcessVars(withProcessVars)
+            }
+
+            is BuildingBlockDefinitionId -> {
+                NewDocumentAndStartProcessRequest(
+                    processDefinitionKey,
+                    NewDocumentRequest(
+                        documentDefinitionName,
+                        null,
+                        null,
+                        blueprintId.key,
+                        blueprintId.versionTag.version,
+                        documentContent
+                    )
+                ).withProcessVars(withProcessVars)
+            }
+
+            else -> {
+                NewDocumentAndStartProcessRequest(
+                    processDefinitionKey,
+                    NewDocumentRequest(
+                        documentDefinitionName,
+                        null,
+                        null,
+                        documentContent
+                    )
+                ).withProcessVars(withProcessVars)
+            }
+        }
     }
 
     private fun modifyDocumentAndStartProcessRequest(

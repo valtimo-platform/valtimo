@@ -1,3 +1,19 @@
+/*
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
+ *
+ * Licensed under EUPL, Version 1.2 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" basis,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package com.ritense.valtimo.operaton.repository
 
 import com.ritense.valtimo.BaseIntegrationTest
@@ -70,6 +86,50 @@ class OperatonTaskSpecificationHelperIntTest @Autowired constructor(
         val operatonTask = operatonTaskRepository.findOne(OperatonTaskSpecificationHelper.byProcessInstanceBusinessKey(processInstance.businessKey)).get()
 
         assertThat(operatonTask.getProcessInstanceId()).isEqualTo(processInstance.id)
+    }
+
+    @Test
+    @Transactional
+    fun byRootProcessInstanceBusinessKey() {
+        val processInstance = getRandomOneTaskProcessInstance()
+        val operatonTask = operatonTaskRepository.findOne(
+            OperatonTaskSpecificationHelper.byRootProcessInstanceBusinessKey(processInstance.businessKey)
+        ).get()
+
+        assertThat(operatonTask.getProcessInstanceId()).isEqualTo(processInstance.id)
+    }
+
+    @Test
+    @Transactional
+    fun `byRootProcessInstanceBusinessKey should not match non-existing business key`() {
+        val tasks = operatonTaskRepository.findAll(
+            OperatonTaskSpecificationHelper.byRootProcessInstanceBusinessKey(UUID.randomUUID().toString())
+        )
+
+        assertThat(tasks).isEmpty()
+    }
+
+    @Test
+    @Transactional
+    fun byRootProcessInstanceBusinessKeys() {
+        val businessKeys = oneTaskInstances.map { it.businessKey }
+        val operatonTasks = operatonTaskRepository.findAll(
+            OperatonTaskSpecificationHelper.byRootProcessInstanceBusinessKeys(businessKeys)
+        )
+
+        assertThat(operatonTasks).hasSize(oneTaskInstances.size)
+        assertThat(operatonTasks.map { it.getProcessInstanceId() })
+            .containsExactlyInAnyOrderElementsOf(oneTaskInstances.map { it.id })
+    }
+
+    @Test
+    @Transactional
+    fun `byRootProcessInstanceBusinessKeys should return empty for empty collection`() {
+        val tasks = operatonTaskRepository.findAll(
+            OperatonTaskSpecificationHelper.byRootProcessInstanceBusinessKeys(emptyList())
+        )
+
+        assertThat(tasks).isEmpty()
     }
 
     @Test

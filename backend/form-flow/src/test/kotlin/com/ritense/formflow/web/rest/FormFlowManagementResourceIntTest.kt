@@ -61,13 +61,23 @@ class FormFlowManagementResourceIntTest : BaseIntegrationTest() {
     }
 
     @Test
+    fun `should return form flow definition schema`() {
+        mockMvc
+            .perform(get("/api/management/v1/form-flow-definition/schema"))
+            .andDo(print())
+            .andExpect(status().isOk)
+            .andExpect(jsonPath("$.title").value("Form flow definition"))
+            .andExpect(jsonPath("$.properties.steps").exists())
+    }
+
+    @Test
     fun `should return form flow definitions`() {
         mockMvc
             .perform(get("/api/management/v1/case-definition/{caseDefinitionKey}/version/{versionTag}/form-flow-definition", "profile", "1.0.0"))
             .andDo(print())
             .andExpect(status().isOk)
             .andExpect(jsonPath("$.content[?(@.key=='inkomens_loket')].key").value("inkomens_loket"))
-            .andExpect(jsonPath("$.content[?(@.key=='inkomens_loket')].readOnly").value(true))
+            .andExpect(jsonPath("$.content[?(@.key=='inkomens_loket')].readOnly").value(false))
     }
 
     @Test
@@ -84,7 +94,7 @@ class FormFlowManagementResourceIntTest : BaseIntegrationTest() {
     @Test
     fun `should delete form flow definition by key`() {
         val caseDefinitionId = CaseDefinitionId("profile", "1.0.0")
-        formFlowService.save(FormFlowDefinition(FormFlowDefinitionId("test", caseDefinitionId), "start-step", setOf()))
+        formFlowService.save(FormFlowDefinition(FormFlowDefinitionId.existingId("test", caseDefinitionId), "start-step", setOf()))
         mockMvc
             .perform(delete("/api/management/v1/case-definition/{caseDefinitionKey}/version/{versionTag}/form-flow-definition/{definitionKey}", "profile", "1.0.0", "test"))
             .andDo(print())
@@ -114,7 +124,7 @@ class FormFlowManagementResourceIntTest : BaseIntegrationTest() {
     @Test
     fun `should update form flow definition`() {
         val caseDefinitionId = CaseDefinitionId("profile", "1.0.0")
-        formFlowService.save(FormFlowDefinition(FormFlowDefinitionId("test", caseDefinitionId), "start-step", setOf()))
+        formFlowService.save(FormFlowDefinition(FormFlowDefinitionId.existingId("test", caseDefinitionId), "start-step", setOf()))
 
         val definition = FormFlowDefinitionDto(
             key = "test",

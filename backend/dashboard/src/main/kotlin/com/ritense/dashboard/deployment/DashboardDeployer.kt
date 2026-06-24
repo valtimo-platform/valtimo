@@ -72,6 +72,7 @@ class DashboardDeployer(
             key = dashboardDto.key,
             title = dashboardDto.title,
             description = dashboardDto.description,
+            widgetLayout = dashboardDto.widgetLayout,
             widgetConfigurations = widgetConfigurations,
             order = dashboardDto.order,
             createdBy = "auto-deployed"

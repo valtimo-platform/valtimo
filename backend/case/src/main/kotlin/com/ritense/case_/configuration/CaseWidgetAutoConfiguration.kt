@@ -50,23 +50,35 @@ import com.ritense.case_.widget.custom.CustomCaseWidgetMapper
 import com.ritense.case_.widget.divider.DividerCaseWidgetMapper
 import com.ritense.case_.widget.fields.FieldsCaseWidgetDataProvider
 import com.ritense.case_.widget.fields.FieldsCaseWidgetMapper
+import com.ritense.case_.widget.highlight.HighlightCaseWidgetDataProvider
+import com.ritense.case_.widget.highlight.HighlightCaseWidgetMapper
 import com.ritense.case_.widget.fieldsheader.FieldsCaseHeaderWidgetDataProvider
 import com.ritense.case_.widget.map.MapCaseWidgetDataProvider
 import com.ritense.case_.widget.map.MapCaseWidgetMapper
+import com.ritense.case_.widget.personcard.PersonCardCaseWidgetDataProvider
+import com.ritense.case_.widget.personcard.PersonCardCaseWidgetMapper
+import com.ritense.case_.rest.MetrolineManagementResource
+import com.ritense.case_.widget.metroline.MetrolineCaseWidgetDataProvider
+import com.ritense.case_.widget.metroline.MetrolineCaseWidgetMapper
+import com.ritense.case_.widget.metroline.ZaakMetrolineDataService
 import com.ritense.case_.widget.table.TableCaseWidgetDataProvider
 import com.ritense.case_.widget.table.TableCaseWidgetMapper
+import com.ritense.document.repository.InternalCaseStatusHistoryRepository
 import com.ritense.document.service.CaseTagService
 import com.ritense.document.service.DocumentService
+import com.ritense.document.service.InternalCaseStatusService
 import com.ritense.valtimo.contract.case_.CaseDefinitionChecker
 import com.ritense.valtimo.contract.database.QueryDialectHelper
 import com.ritense.valueresolver.ValueResolverService
 import com.ritense.widget.map.geojson.GeoJsonMapper
+import com.ritense.widget.map.geojson.Wgs84FeatureNormalizer
 import jakarta.validation.Validator
 import org.springframework.boot.autoconfigure.AutoConfiguration
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.boot.autoconfigure.domain.EntityScan
 import org.springframework.context.ApplicationContext
 import org.springframework.context.annotation.Bean
+import java.util.Optional
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories
 
 @AutoConfiguration
@@ -216,6 +228,16 @@ class CaseWidgetAutoConfiguration {
         valueResolverService: ValueResolverService,
     ) = CustomCaseWidgetDataProvider(valueResolverService)
 
+    @ConditionalOnMissingBean(HighlightCaseWidgetMapper::class)
+    @Bean
+    fun highlightCaseWidgetMapper() = HighlightCaseWidgetMapper()
+
+    @ConditionalOnMissingBean(HighlightCaseWidgetDataProvider::class)
+    @Bean
+    fun highlightCaseWidgetDataProvider(
+        valueResolverService: ValueResolverService,
+    ) = HighlightCaseWidgetDataProvider(valueResolverService)
+
     @ConditionalOnMissingBean(DividerCaseWidgetMapper::class)
     @Bean
     fun dividerCaseWidgetMapper() = DividerCaseWidgetMapper()
@@ -252,6 +274,17 @@ class CaseWidgetAutoConfiguration {
         objectMapper: ObjectMapper
     ) = FieldsCaseHeaderWidgetDataProvider(valueResolverService, objectMapper)
 
+    @ConditionalOnMissingBean(PersonCardCaseWidgetMapper::class)
+    @Bean
+    fun personCardCaseWidgetMapper() = PersonCardCaseWidgetMapper()
+
+    @ConditionalOnMissingBean(PersonCardCaseWidgetDataProvider::class)
+    @Bean
+    fun personCardCaseWidgetDataProvider(
+        valueResolverService: ValueResolverService,
+        objectMapper: ObjectMapper
+    ) = PersonCardCaseWidgetDataProvider(valueResolverService, objectMapper)
+
     @ConditionalOnMissingBean(MapCaseWidgetMapper::class)
     @Bean
     fun mapCaseWidgetMapper() = MapCaseWidgetMapper()
@@ -262,10 +295,12 @@ class CaseWidgetAutoConfiguration {
         valueResolverService: ValueResolverService,
         objectMapper: ObjectMapper,
         geoJsonMappers: List<GeoJsonMapper>,
+        wgs84FeatureNormalizer: Wgs84FeatureNormalizer,
     ) = MapCaseWidgetDataProvider(
         valueResolverService,
         objectMapper,
         geoJsonMappers,
+        wgs84FeatureNormalizer,
     )
 
     @ConditionalOnMissingBean(CaseHeaderWidgetCaseEventListener::class)
@@ -295,4 +330,28 @@ class CaseWidgetAutoConfiguration {
         documentService: DocumentService,
         caseWidgetService: CaseWidgetService
     ) = CaseHeaderWidgetResource(caseHeaderWidgetService, documentService, caseWidgetService)
+
+    @ConditionalOnMissingBean(MetrolineManagementResource::class)
+    @Bean
+    fun metrolineManagementResource(
+        zaakMetrolineDataService: Optional<ZaakMetrolineDataService>,
+    ) = MetrolineManagementResource(
+        zaakMetrolineDataService.orElse(null),
+    )
+
+    @ConditionalOnMissingBean(MetrolineCaseWidgetMapper::class)
+    @Bean
+    fun metrolineCaseWidgetMapper() = MetrolineCaseWidgetMapper()
+
+    @ConditionalOnMissingBean(MetrolineCaseWidgetDataProvider::class)
+    @Bean
+    fun metrolineCaseWidgetDataProvider(
+        internalCaseStatusService: InternalCaseStatusService,
+        internalCaseStatusHistoryRepository: InternalCaseStatusHistoryRepository,
+        zaakMetrolineDataService: Optional<ZaakMetrolineDataService>,
+    ) = MetrolineCaseWidgetDataProvider(
+        internalCaseStatusService,
+        internalCaseStatusHistoryRepository,
+        zaakMetrolineDataService.orElse(null),
+    )
 }

@@ -1,5 +1,5 @@
 <!--
-  ~ Copyright 2015-2025 Ritense BV, the Netherlands.
+  ~ Copyright 2015-2026 Ritense BV, the Netherlands.
   ~
   ~ Licensed under EUPL, Version 1.2 (the "License");
   ~ you may not use this file except in compliance with the License.
@@ -19,6 +19,8 @@
 >
   @for (item of obs.quickSearchItems; track item.title) {
     <cds-tooltip
+      autoAlign="true"
+      align="bottom-left"
       [description]="'quickSearch.rightClickTooltip' | translate"
       [enterDelayMs]="TOOLTIP_DELAY"
     >
@@ -49,10 +51,10 @@
   ></valtimo-confirmation-modal>
 
   <ng-template #contextMenuTpl let-data="data" let-close="close">
-    <cds-overflow-menu-option (click)="deleteItem(data); close()">
+    <v-overflow-menu-option (selected)="deleteItem(data); close()">
       {{ 'interface.delete' | translate }}
 
-      <svg cdsIcon="trash-can" size="16"></svg
-    ></cds-overflow-menu-option>
+      <svg cdsIcon="trash-can" size="16"></svg>
+    </v-overflow-menu-option>
   </ng-template>
 </ng-container>

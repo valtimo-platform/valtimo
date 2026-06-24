@@ -65,6 +65,15 @@ class InternalCaseStatusService(
         return internalCaseStatusRepository.findByIdCaseDefinitionKeyOrderByOrder(caseDefinitionKey)
     }
 
+    fun getAllInternalCaseStatuses(): List<InternalCaseStatus> {
+        val authorizedDefinitions = caseDefinitionService.getCaseDefinitions(active = true)
+        if (authorizedDefinitions.isEmpty()) {
+            return emptyList()
+        }
+        val authorizedKeys = authorizedDefinitions.map { it.id.key }
+        return internalCaseStatusRepository.findByIdCaseDefinitionKeyInOrderByIdCaseDefinitionKeyAscOrderAsc(authorizedKeys)
+    }
+
     fun get(caseDefinitionName: String, statusKey: String): InternalCaseStatus {
         return internalCaseStatusRepository.getReferenceById(InternalCaseStatusId(caseDefinitionName, statusKey))
     }
@@ -98,7 +107,9 @@ class InternalCaseStatusService(
                 request.title,
                 request.visibleInCaseListByDefault,
                 currentInternalCaseStatuses.size,
-                request.color
+                request.retentionPeriodInDays,
+                request.color,
+                request.label,
             )
         )
     }
@@ -120,7 +131,9 @@ class InternalCaseStatusService(
             oldInternalCaseStatus.copy(
                 title = request.title,
                 visibleInCaseListByDefault = request.visibleInCaseListByDefault,
-                color = request.color
+                retentionPeriodInDays = request.retentionPeriodInDays,
+                color = request.color,
+                label = request.label,
             )
         )
     }
@@ -148,7 +161,9 @@ class InternalCaseStatusService(
                 title = request.title,
                 order = index,
                 visibleInCaseListByDefault = request.visibleInCaseListByDefault,
-                color = request.color
+                retentionPeriodInDays = request.retentionPeriodInDays,
+                color = request.color,
+                label = request.label,
             )
         }
 

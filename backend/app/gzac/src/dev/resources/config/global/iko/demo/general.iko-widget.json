@@ -3,6 +3,23 @@
     "ikoTabKey": "general",
     "ikoWidgets": [
         {
+            "type": "metroline",
+            "key": "status_verloop",
+            "title": "Status verloop",
+            "width": 1,
+            "highContrast": false,
+            "isCompact": null,
+            "actions": [],
+            "displayConditions": [],
+            "properties": {
+                "orientation": "VERTICAL",
+                "source": "iko:/statushistorie",
+                "titlePath": "/statustype/omschrijving",
+                "labelPath": "/statustype/toelichting",
+                "completedPath": "/datumStatusGezet"
+            }
+        },
+        {
             "type": "fields",
             "key": "aaa",
             "title": "Basisgegevens",
@@ -206,8 +223,8 @@
             }
         },
         {
-            "type": "table",
-            "key": "lopende-zaken",
+            "type": "interactive-table",
+            "key": "lopende_zaken",
             "title": "Zaken",
             "width": 2,
             "highContrast": false,
@@ -225,7 +242,9 @@
                         "displayProperties": {
                             "type": "text",
                             "hideWhenEmpty": false
-                        }
+                        },
+                        "sortable": true,
+                        "defaultSort": "ASC"
                     },
                     {
                         "key": "beschrijving",
@@ -234,7 +253,22 @@
                         "displayProperties": {
                             "type": "text",
                             "hideWhenEmpty": false
-                        }
+                        },
+                        "sortable": false
+                    }
+                ],
+                "filters": [
+                    {
+                        "key": "type",
+                        "title": "Type",
+                        "dataType": "text",
+                        "fieldType": "single"
+                    },
+                    {
+                        "key": "beschrijving",
+                        "title": "Beschrijving",
+                        "dataType": "text",
+                        "fieldType": "single"
                     }
                 ],
                 "firstColumnAsTitle": false
@@ -329,7 +363,7 @@
             "displayConditions": [],
             "properties": {
                 "collection": "iko:/gezinsprofiel/gezin/kinderen",
-                "defaultPageSize": 5,
+                "defaultPageSize": 2,
                 "title": {
                     "value": "naam"
                 },

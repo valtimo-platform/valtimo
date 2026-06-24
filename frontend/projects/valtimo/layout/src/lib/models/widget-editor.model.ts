@@ -22,7 +22,7 @@ enum WidgetManagementTab {
   JSON = 'json',
 }
 
-const WidgetTypeTags: {[key: string]: TagType} = {
+const WidgetTypeTags: Record<WidgetType, TagType> = {
   [WidgetType.COLLECTION]: 'teal',
   [WidgetType.CUSTOM]: 'magenta',
   [WidgetType.FIELDS]: 'blue',
@@ -30,6 +30,10 @@ const WidgetTypeTags: {[key: string]: TagType} = {
   [WidgetType.TABLE]: 'purple',
   [WidgetType.INTERACTIVE_TABLE]: 'red',
   [WidgetType.MAP]: 'cyan',
+  [WidgetType.DIVIDER]: 'orange' as TagType,
+  [WidgetType.METROLINE]: 'light-green' as TagType,
+  [WidgetType.PERSON_CARD]: 'yellow' as TagType,
+  [WidgetType.HIGHLIGHT]: 'periwinkle' as TagType,
 };
 
 export {WidgetManagementTab, WidgetTypeTags};

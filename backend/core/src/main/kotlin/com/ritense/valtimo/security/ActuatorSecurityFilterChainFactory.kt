@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,9 +19,8 @@ package com.ritense.valtimo.security
 import com.ritense.valtimo.contract.authentication.AuthoritiesConstants.ACTUATOR
 import org.springframework.boot.actuate.autoconfigure.endpoint.web.WebEndpointProperties
 import org.springframework.boot.actuate.autoconfigure.health.HealthEndpointProperties
-import org.springframework.boot.actuate.endpoint.Show
-import org.springframework.http.HttpMethod.GET
-import org.springframework.http.HttpMethod.POST
+import org.springframework.boot.actuate.autoconfigure.security.servlet.EndpointRequest
+import org.springframework.http.HttpMethod
 import org.springframework.security.authentication.AuthenticationManager
 import org.springframework.security.authentication.ProviderManager
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider
@@ -32,8 +31,8 @@ import org.springframework.security.core.userdetails.UserDetailsService
 import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.security.provisioning.InMemoryUserDetailsManager
 import org.springframework.security.web.SecurityFilterChain
-import org.springframework.security.web.util.matcher.AntPathRequestMatcher.antMatcher
-import org.springframework.security.web.util.matcher.OrRequestMatcher
+import org.springframework.security.web.util.matcher.AndRequestMatcher
+import org.springframework.security.web.util.matcher.RequestMatcher
 
 class ActuatorSecurityFilterChainFactory {
 
@@ -48,6 +47,7 @@ class ActuatorSecurityFilterChainFactory {
         return createFilterChain(http, webEndpointProperties, null, passwordEncoder, username, password)
     }
 
+    @Suppress("UNUSED_PARAMETER")
     fun createFilterChain(
         http: HttpSecurity,
         webEndpointProperties: WebEndpointProperties,
@@ -56,26 +56,24 @@ class ActuatorSecurityFilterChainFactory {
         username: String,
         password: String
     ): SecurityFilterChain {
-        val matchers = getActuatorMatchers(webEndpointProperties.basePath)
         http
-            .securityMatcher(OrRequestMatcher(*matchers))
+            .securityMatcher(EndpointRequest.toAnyEndpoint())
             .authorizeHttpRequests {
-                if (healthEndpointProperties != null && (
-                        //Allow access to this endpoint only if the details are not shown to anonymous users or users without ROLE_ACTUATOR
-                        healthEndpointProperties.showDetails == Show.NEVER || (
-                            healthEndpointProperties.showDetails == Show.WHEN_AUTHORIZED &&
-                            healthEndpointProperties.roles.contains(ACTUATOR)
-                        )
-                )) {
-                    it.requestMatchers(getHealthMatcher(webEndpointProperties.basePath)).permitAll()
-                }
-                it.requestMatchers(*matchers).hasAuthority(ACTUATOR)
+                // /health and /actuator (links) are always publicly readable; components and
+                // details are stripped for non-actuator callers by ActuatorRoleHealthEndpointGroups.
+                it.requestMatchers(EndpointRequest.to("health").withHttpMethod(HttpMethod.GET)).permitAll()
+                // toLinks() has no withHttpMethod; AndRequestMatcher restricts it to GET.
+                it.requestMatchers(AndRequestMatcher(getOnly, EndpointRequest.toLinks())).permitAll()
+                // Only runtime mutation we expose: POST /loggers/{name}.
+                it.requestMatchers(EndpointRequest.to("loggers").withHttpMethod(HttpMethod.POST)).hasAuthority(ACTUATOR)
+                it.requestMatchers(EndpointRequest.toAnyEndpoint().withHttpMethod(HttpMethod.GET)).hasAuthority(ACTUATOR)
+                // Defense in depth: any other write (POST /env, DELETE /caches, ...) lands here.
+                it.anyRequest().denyAll()
             }
             .authenticationManager(actuatorAuthenticationManager(passwordEncoder, username, password))
             .httpBasic { it.realmName(ACTUATOR_REALM) }
-            .csrf {
-                csrfConfigurer -> csrfConfigurer.ignoringRequestMatchers("${webEndpointProperties.basePath}/loggers/**")
-            }
+            // CSRF off only for /loggers so automation can POST without first fetching a token.
+            .csrf { it.ignoringRequestMatchers(EndpointRequest.to("loggers")) }
 
         return http.build()
     }
@@ -86,9 +84,8 @@ class ActuatorSecurityFilterChainFactory {
         password: String
     ): AuthenticationManager {
         val userDetailsService: UserDetailsService = userDetailsService(passwordEncoder, username, password)
-        val authenticationProvider = DaoAuthenticationProvider()
+        val authenticationProvider = DaoAuthenticationProvider(userDetailsService)
         authenticationProvider.setPasswordEncoder(passwordEncoder)
-        authenticationProvider.setUserDetailsService(userDetailsService)
 
         return ProviderManager(authenticationProvider)
     }
@@ -107,24 +104,9 @@ class ActuatorSecurityFilterChainFactory {
         return InMemoryUserDetailsManager(actuatorUser)
     }
 
-    private fun getActuatorMatchers(actuatorPath: String) = arrayOf(
-        antMatcher(GET, actuatorPath),
-        antMatcher(GET, "${actuatorPath}/configprops"),
-        antMatcher(GET, "${actuatorPath}/env"),
-        getHealthMatcher(actuatorPath),
-        antMatcher(GET, "${actuatorPath}/health/liveness"),
-        antMatcher(GET, "${actuatorPath}/health/readiness"),
-        antMatcher(GET, "${actuatorPath}/mappings"),
-        antMatcher(GET, "${actuatorPath}/logfile"),
-        antMatcher(GET, "${actuatorPath}/loggers"),
-        antMatcher(POST, "${actuatorPath}/loggers/**"),
-        antMatcher(GET, "${actuatorPath}/info"),
-    )
-
-    private fun getHealthMatcher(actuatorPath: String) =
-        antMatcher(GET, "${actuatorPath}/health")
-
     companion object {
         const val ACTUATOR_REALM = "Actuator realm"
+
+        private val getOnly = RequestMatcher { request -> request.method == "GET" }
     }
 }

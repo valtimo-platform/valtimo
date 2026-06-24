@@ -107,6 +107,10 @@ class CaseWidgetService(
         }
     }
 
+    fun getCaseWidget(documentId: JsonSchemaDocumentId, tabKey: String, widgetKey: String): CaseWidgetTabWidgetDto? {
+        return getWidgetTab(documentId, tabKey)?.widgets?.singleOrNull { it.key == widgetKey }
+    }
+
     @Transactional
     fun updateWidgetTab(@Valid tabDto: CaseWidgetTabDto): CaseWidgetTabDto {
         denyAuthorization()
@@ -124,7 +128,8 @@ class CaseWidgetService(
                     caseWidgetMappers.first { mapper ->
                         mapper.supportedDtoType().isAssignableFrom(widgetDto::class.java)
                     }.toEntity(widgetDto, index)
-                }
+                },
+                widgetLayout = tabDto.widgetLayout
             )
         return CaseWidgetTabDto.of(
             caseWidgetTabRepository.save(caseWidgetTab),

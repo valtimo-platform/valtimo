@@ -18,7 +18,7 @@ package com.ritense.document.service.impl;
 
 import static com.ritense.authorization.AuthorizationContext.runWithoutAuthorization;
 import static com.ritense.document.repository.impl.specification.JsonSchemaDocumentDefinitionSpecificationHelper.byCaseDefinitionActive;
-import static com.ritense.document.repository.impl.specification.JsonSchemaDocumentDefinitionSpecificationHelper.byIdCaseDefinitionId;
+import static com.ritense.document.repository.impl.specification.JsonSchemaDocumentDefinitionSpecificationHelper.byIdBlueprintId;
 import static com.ritense.document.repository.impl.specification.JsonSchemaDocumentDefinitionSpecificationHelper.byIdName;
 import static com.ritense.document.repository.impl.specification.JsonSchemaDocumentDefinitionSpecificationHelper.byLatestVersion;
 import static com.ritense.document.service.JsonSchemaDocumentDefinitionActionProvider.CREATE;
@@ -56,12 +56,12 @@ import com.ritense.document.service.result.DeployDocumentDefinitionResultFailed;
 import com.ritense.document.service.result.DeployDocumentDefinitionResultSucceeded;
 import com.ritense.document.service.result.error.DocumentDefinitionError;
 import com.ritense.logging.LoggableResource;
+import com.ritense.valtimo.contract.BlueprintId;
 import com.ritense.valtimo.contract.case_.CaseDefinitionChecker;
 import com.ritense.valtimo.contract.case_.CaseDefinitionId;
 import jakarta.validation.ValidationException;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import org.slf4j.Logger;
@@ -121,7 +121,7 @@ public class JsonSchemaDocumentDefinitionService implements DocumentDefinitionSe
                 ),
                 null
             );
-        return documentDefinitionRepository.findAll(spec.and(byIdCaseDefinitionId(caseDefinitionId)));
+        return documentDefinitionRepository.findAll(spec.and(byIdBlueprintId(caseDefinitionId)));
     }
 
     @Override
@@ -225,10 +225,12 @@ public class JsonSchemaDocumentDefinitionService implements DocumentDefinitionSe
     }
 
     @Override
-    public Optional<JsonSchemaDocumentDefinition> findByCaseDefinitionId(
-        CaseDefinitionId caseDefinitionId
+    public Optional<JsonSchemaDocumentDefinition> findByBlueprintId(
+        BlueprintId blueprintId
     ) {
-        final var optionalDefinition = documentDefinitionRepository.findByIdCaseDefinitionId(caseDefinitionId);
+        final var optionalDefinition = documentDefinitionRepository.findOne(
+            byIdBlueprintId(blueprintId)
+        );
 
         optionalDefinition.ifPresent(definition -> authorizationService.requirePermission(
             new EntityAuthorizationRequest<>(
@@ -262,25 +264,18 @@ public class JsonSchemaDocumentDefinitionService implements DocumentDefinitionSe
     }
 
     @Override
-    public List<String> getPropertyNames(DocumentDefinition definition) {
-        return withLoggingContext(JsonSchemaDocumentDefinition.class, definition.id(), () -> {
-            JsonSchemaDocumentDefinition jsonSchemaDocumentDefinition = (JsonSchemaDocumentDefinition) definition;
-            ObjectNode propertiesObjectNode = (ObjectNode) jsonSchemaDocumentDefinition.getSchema()
-                .asJson()
-                .get("properties");
-            return getPropertyNamesFromObjectNode(jsonSchemaDocumentDefinition, propertiesObjectNode, "/");
-        });
-    }
-
-    @Override
     public List<CaseDefinitionId> findVersionsByName(
         @LoggableResource("documentDefinitionName") String documentDefinitionName
     ) {
-        final var optionalDefinition = documentDefinitionRepository.findFirstByIdNameOrderByIdCaseDefinitionIdVersionTagDesc(
-            documentDefinitionName
+        final var definitions = documentDefinitionRepository.findAll(
+            byIdName(documentDefinitionName).and(byCaseDefinitionActive()),
+            org.springframework.data.domain.Sort.by(
+                org.springframework.data.domain.Sort.Order.asc("id.blueprintId.blueprintKey"),
+                org.springframework.data.domain.Sort.Order.desc("id.blueprintId.blueprintVersionTag")
+            )
         );
 
-        optionalDefinition.ifPresent(definition -> authorizationService.requirePermission(
+        definitions.stream().findFirst().ifPresent(definition -> authorizationService.requirePermission(
             new EntityAuthorizationRequest<>(
                 JsonSchemaDocumentDefinition.class,
                 VIEW,
@@ -288,7 +283,10 @@ public class JsonSchemaDocumentDefinitionService implements DocumentDefinitionSe
             )
         ));
 
-        return documentDefinitionRepository.findVersionsByName(documentDefinitionName);
+        return definitions.stream()
+            .map(definition -> definition.id().caseDefinitionId())
+            .filter(java.util.Objects::nonNull)
+            .toList();
     }
 
     @Override
@@ -301,8 +299,9 @@ public class JsonSchemaDocumentDefinitionService implements DocumentDefinitionSe
     public DeployDocumentDefinitionResult deploy(JsonSchema jsonSchema, CaseDefinitionId caseDefinitionId) {
         //Authorization check is delegated to the store() method
         try {
+            var resolvedSchema = applyKeyOverride(jsonSchema, caseDefinitionId.getIdKey());
             caseDefinitionChecker.assertCanUpdateCaseDefinition(caseDefinitionId);
-            final var documentDefinitionName = jsonSchema.getSchema().getId().replace(".schema", "");
+            final var documentDefinitionName = resolvedSchema.getSchema().getId().replace(".schema", "");
             return withLoggingContext("documentDefinitionName", documentDefinitionName, () -> {
 
                 final JsonSchemaDocumentDefinitionId documentDefinitionId = JsonSchemaDocumentDefinitionId.existingId(
@@ -310,9 +309,9 @@ public class JsonSchemaDocumentDefinitionService implements DocumentDefinitionSe
                     caseDefinitionId
                 );
 
-                logger.info("Deploying schema {} for case definition {}", jsonSchema.getSchema().getId(), caseDefinitionId);
+                logger.info("Deploying schema {} for case definition {}", resolvedSchema.getSchema().getId(), caseDefinitionId);
 
-                var documentDefinition = new JsonSchemaDocumentDefinition(documentDefinitionId, jsonSchema);
+                var documentDefinition = new JsonSchemaDocumentDefinition(documentDefinitionId, resolvedSchema);
                 store(documentDefinition);
                 return new DeployDocumentDefinitionResultSucceeded(documentDefinition);
             });
@@ -333,7 +332,7 @@ public class JsonSchemaDocumentDefinitionService implements DocumentDefinitionSe
 
             final var documentDefinitionExists = documentDefinitionRepository.findOne(
                 byIdName(documentDefinition.id().name())
-                    .and(byIdCaseDefinitionId(documentDefinition.id().caseDefinitionId()))
+                    .and(byIdBlueprintId(documentDefinition.id().caseDefinitionId()))
             ).isPresent();
 
             authorizationService.requirePermission(
@@ -510,45 +509,15 @@ public class JsonSchemaDocumentDefinitionService implements DocumentDefinitionSe
         return ResourcePatternUtils.getResourcePatternResolver(resourceLoader).getResources(PATH);
     }
 
-    private List<String> getPropertyNamesFromObjectNode(
-        JsonSchemaDocumentDefinition definition,
-        ObjectNode node,
-        String parent
-    ) {
-        List<String> propertyNames = new ArrayList<>();
-        if (node != null) {
-            node.fields().forEachRemaining((jsonNode -> {
-                if (jsonNode.getValue().has("type")) {
-                    String propertyType = jsonNode.getValue().get("type").asText();
-                    if (isSimpleObject(propertyType)) {
-                        propertyNames.add(parent + jsonNode.getKey());
-                    } else if (propertyType.equals("object")) {
-                        ObjectNode objectNode = (ObjectNode) jsonNode.getValue();
-                        propertyNames.addAll(getPropertyNamesFromObjectNode(
-                            definition,
-                            (ObjectNode) objectNode.get("properties"),
-                            parent.concat(jsonNode.getKey() + "/")
-                        ));
-                    }
-                } else if (jsonNode.getValue().has("$ref")) {
-                    String internalDefinition = jsonNode.getValue().get("$ref").asText().substring(1);
-                    if (internalDefinition.startsWith("/")) {
-                        ObjectNode jsonNode1 = (ObjectNode) definition.schema().at(internalDefinition).get("properties");
-                        propertyNames.addAll(getPropertyNamesFromObjectNode(
-                            definition,
-                            jsonNode1,
-                            parent.concat(jsonNode.getKey() + "/")
-                        ));
-                    }
-                }
-            }));
+    private JsonSchema applyKeyOverride(JsonSchema jsonSchema, String key) {
+        var json = jsonSchema.asJson();
+        var idNode = json.get("$id");
+        var currentName = idNode == null ? null : idNode.asText().replace(".schema", "");
+        if (key.equals(currentName)) {
+            return jsonSchema;
+        } else {
+            ((ObjectNode) json).put("$id", key + ".schema");
+            return JsonSchema.fromString(json.toString());
         }
-
-        return propertyNames;
-    }
-
-    private boolean isSimpleObject(String propertyType) {
-        List<String> simpleTypes = List.of("string", "boolean", "integer", "number");
-        return simpleTypes.contains(propertyType);
     }
 }

@@ -17,8 +17,10 @@
 package com.ritense.authorization.web.request
 
 import com.ritense.authorization.role.Role
+import jakarta.validation.constraints.Size
 
 data class SaveRoleRequest(
+    @field:Size(max = 256)
     val roleKey: String
 ) {
     fun toRole(): Role {

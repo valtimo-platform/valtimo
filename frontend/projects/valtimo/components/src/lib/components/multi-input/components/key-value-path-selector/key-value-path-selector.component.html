@@ -26,6 +26,7 @@
     [defaultValue]="value.key"
     [disabled]="disabled"
     (input)="onInputChange('key', $event.target.value)"
+    [attr.data-test-id]="testIds.keyInput"
   />
 </div>
 

@@ -31,6 +31,10 @@ export class FormFlowService extends BaseApiService {
     super(httpClient, configService);
   }
 
+  public getFormFlowDefinitionSchema(): Observable<object> {
+    return this.httpClient.get<object>(this.getApiUrl('management/v1/form-flow-definition/schema'));
+  }
+
   public getFormFlowDefinitions(
     caseDefinitionKey: string,
     caseVersionTag: string
@@ -88,6 +92,68 @@ export class FormFlowService extends BaseApiService {
     return this.httpClient.put<FormFlowDefinition>(
       this.getApiUrl(
         `management/v1/case-definition/${caseDefinitionKey}/version/${caseVersionTag}/form-flow-definition/${definitionKey}`
+      ),
+      updatedDefinition
+    );
+  }
+
+  public getBuildingBlockFormFlowDefinitions(
+    buildingBlockKey: string,
+    versionTag: string
+  ): Observable<Page<ListFormFlowDefinition>> {
+    return this.httpClient.get<Page<ListFormFlowDefinition>>(
+      this.getApiUrl(
+        `management/v1/building-block/${buildingBlockKey}/version/${versionTag}/form-flow-definition`
+      )
+    );
+  }
+
+  public getBuildingBlockFormFlowDefinitionByKey(
+    buildingBlockKey: string,
+    versionTag: string,
+    formFlowDefinitionKey: string
+  ): Observable<FormFlowDefinition> {
+    return this.httpClient.get<FormFlowDefinition>(
+      this.getApiUrl(
+        `management/v1/building-block/${buildingBlockKey}/version/${versionTag}/form-flow-definition/${formFlowDefinitionKey}`
+      )
+    );
+  }
+
+  public createBuildingBlockFormFlowDefinition(
+    buildingBlockKey: string,
+    versionTag: string,
+    definition: FormFlowDefinition
+  ): Observable<FormFlowDefinition> {
+    return this.httpClient.post<FormFlowDefinition>(
+      this.getApiUrl(
+        `management/v1/building-block/${buildingBlockKey}/version/${versionTag}/form-flow-definition`
+      ),
+      definition
+    );
+  }
+
+  public deleteBuildingBlockFormFlowDefinition(
+    buildingBlockKey: string,
+    versionTag: string,
+    definitionKey: string
+  ): Observable<null> {
+    return this.httpClient.delete<null>(
+      this.getApiUrl(
+        `management/v1/building-block/${buildingBlockKey}/version/${versionTag}/form-flow-definition/${definitionKey}`
+      )
+    );
+  }
+
+  public updateBuildingBlockFormFlowDefinition(
+    buildingBlockKey: string,
+    versionTag: string,
+    definitionKey: string,
+    updatedDefinition: FormFlowDefinition
+  ): Observable<FormFlowDefinition> {
+    return this.httpClient.put<FormFlowDefinition>(
+      this.getApiUrl(
+        `management/v1/building-block/${buildingBlockKey}/version/${versionTag}/form-flow-definition/${definitionKey}`
       ),
       updatedDefinition
     );

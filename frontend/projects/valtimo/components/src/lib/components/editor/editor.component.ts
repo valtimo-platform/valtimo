@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -56,7 +56,7 @@ export class EditorComponent implements AfterViewInit, OnDestroy {
   @Input() widthPx!: number;
   @Input() heightPx!: number;
   @Input() heightStyle!: string;
-  @Input() jsonSchema?: string;
+  @Input() jsonSchema?: object;
   @Input() fitPage = false;
   @Input() fitPageSpaceAdjustment = 0;
 
@@ -70,6 +70,7 @@ export class EditorComponent implements AfterViewInit, OnDestroy {
   private _model: EditorModel;
 
   private _layoutSubscription!: Subscription;
+  private _containerResizeObserver: ResizeObserver | null = null;
 
   constructor(
     private readonly editorService: EditorService,
@@ -85,6 +86,13 @@ export class EditorComponent implements AfterViewInit, OnDestroy {
 
   public ngOnDestroy(): void {
     this._layoutSubscription?.unsubscribe();
+    this._containerResizeObserver?.disconnect();
+    this._containerResizeObserver = null;
+    if (this._editor) {
+      const model = this._editor.getModel();
+      this._editor.dispose();
+      model?.dispose();
+    }
   }
 
   private openLayoutSubscription(): void {
@@ -154,7 +162,7 @@ export class EditorComponent implements AfterViewInit, OnDestroy {
 
   private checkValidity(): void {
     const markers = monaco.editor.getModelMarkers() || [];
-    const valid = markers.length === 0;
+    const valid = !markers.some(m => m.severity === monaco.MarkerSeverity.Error);
 
     this.validEvent.emit(valid);
   }
@@ -183,6 +191,20 @@ export class EditorComponent implements AfterViewInit, OnDestroy {
 
     this.setEditorEvents();
     this.updateModel();
+    this.initContainerResizeObserver();
+  }
+
+  private initContainerResizeObserver(): void {
+    const container = this.editorContainer?.nativeElement;
+    if (!container) {
+      return;
+    }
+
+    this._containerResizeObserver = new ResizeObserver(() => {
+      this._editor?.layout();
+    });
+
+    this._containerResizeObserver.observe(container);
   }
 
   private initJsonSchemaValidation() {
@@ -191,6 +213,7 @@ export class EditorComponent implements AfterViewInit, OnDestroy {
       const key = id.split('.')[0];
       monaco.languages.json.jsonDefaults.setDiagnosticsOptions({
         validate: true,
+        schemaValidation: 'warning',
         schemas: [
           {
             uri: id,

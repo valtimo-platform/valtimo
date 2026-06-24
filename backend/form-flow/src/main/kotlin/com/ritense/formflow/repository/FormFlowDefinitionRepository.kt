@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,16 +18,22 @@ package com.ritense.formflow.repository
 
 import com.ritense.formflow.domain.definition.FormFlowDefinition
 import com.ritense.formflow.domain.definition.FormFlowDefinitionId
-import com.ritense.valtimo.contract.case_.CaseDefinitionId
+import com.ritense.valtimo.contract.blueprint.BlueprintType
+import org.semver4j.Semver
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.data.jpa.repository.JpaRepository
+import org.springframework.data.jpa.repository.Query
 
 interface FormFlowDefinitionRepository : JpaRepository<FormFlowDefinition, FormFlowDefinitionId> {
 
-    fun findAllByIdCaseDefinitionId(caseDefinitionId: CaseDefinitionId): List<FormFlowDefinition>
+    @Query("SELECT f FROM FormFlowDefinition f WHERE f.id.blueprintId.blueprintType = :blueprintType AND f.id.blueprintId.blueprintKey = :blueprintKey AND f.id.blueprintId.blueprintVersionTag = :blueprintVersionTag")
+    fun findAllByBlueprintId(blueprintType: BlueprintType, blueprintKey: String, blueprintVersionTag: Semver): List<FormFlowDefinition>
 
-    fun findAllByIdCaseDefinitionId(caseDefinitionId: CaseDefinitionId, pageable: Pageable): Page<FormFlowDefinition>
+    @Query("SELECT f FROM FormFlowDefinition f WHERE f.id.blueprintId.blueprintType = :blueprintType AND f.id.blueprintId.blueprintKey = :blueprintKey AND f.id.blueprintId.blueprintVersionTag = :blueprintVersionTag")
+    fun findAllByBlueprintId(blueprintType: BlueprintType, blueprintKey: String, blueprintVersionTag: Semver, pageable: Pageable): Page<FormFlowDefinition>
 
-    fun deleteAllByIdCaseDefinitionId(caseDefinitionId: CaseDefinitionId)
+    @Query("SELECT f FROM FormFlowDefinition f WHERE f.id.key = :key")
+    fun findAllByKey(key: String): List<FormFlowDefinition>
+
 }

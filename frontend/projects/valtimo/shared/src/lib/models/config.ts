@@ -18,7 +18,6 @@ import {InjectionToken, Injector} from '@angular/core';
 import {Auth} from './security.config';
 import {MenuConfig} from './menu.config';
 import {CSPHeaderParams} from 'csp-header';
-import {FormioOptions} from '@formio/angular';
 
 const VALTIMO_CONFIG = new InjectionToken<ValtimoConfig>('valtimoConfig');
 
@@ -61,13 +60,16 @@ interface SortState {
   isSorting: boolean;
 }
 
+interface FormioOptions {
+  [key: string]: any;
+}
+
 interface OverrideFormioOptions extends FormioOptions {
   [key: string]: any;
 }
 
 interface ValtimoConfigFeatureToggles {
   applicationTitleAsSuffix?: boolean;
-  enableHackathonCasesPage?: boolean;
   showUserNameInTopBar?: boolean;
   showPlantATreeButton?: boolean;
   experimentalDmnEditing?: boolean;
@@ -91,6 +93,7 @@ interface ValtimoConfigFeatureToggles {
   enablePbacDocumentenApiDocuments?: boolean;
   enableSuppressDocumentError?: boolean;
   enableIkoType?: boolean;
+  enableGenericCaseList?: boolean;
 }
 
 interface ValtimoConfig {
@@ -160,12 +163,14 @@ enum TaskListTab {
   MINE = 'mine',
   OPEN = 'open',
   ALL = 'all',
+  TEAM = 'team',
 }
 
 enum CaseListTab {
   MINE = 'MINE',
   OPEN = 'OPEN',
   ALL = 'ALL',
+  TEAM = 'TEAM',
 }
 
 enum Language {

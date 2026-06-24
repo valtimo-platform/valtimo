@@ -16,7 +16,12 @@
 
 import {HttpClient} from '@angular/common/http';
 import {Injectable, Signal, signal} from '@angular/core';
-import {BaseApiService, ConfigService, ManagementContext} from '@valtimo/shared';
+import {
+  BaseApiService,
+  BuildingBlockProcessDefinitionWithLinksDto,
+  ConfigService,
+  ManagementContext,
+} from '@valtimo/shared';
 import {BehaviorSubject, combineLatest, Observable, of, switchMap} from 'rxjs';
 import {toObservable} from '@angular/core/rxjs-interop';
 
@@ -31,7 +36,15 @@ import {
 })
 export class ProcessManagementService extends BaseApiService {
   private readonly _definitionKey$ = new BehaviorSubject<string | null>(null);
-  private readonly _caseDefinitionVersionTag$ = new BehaviorSubject<string | null>(null);
+  private readonly _versionTag$ = new BehaviorSubject<string | null>(null);
+
+  public get caseDefinitionKey(): string {
+    return this._definitionKey$.getValue() ?? '';
+  }
+
+  public get caseDefinitionVersionTag(): string {
+    return this._versionTag$.getValue() ?? '';
+  }
 
   private _$context = signal<ManagementContext>('independent');
   public set context(value: ManagementContext) {
@@ -43,15 +56,15 @@ export class ProcessManagementService extends BaseApiService {
 
   public processes$: Observable<ProcessDefinitionResult[]> = combineLatest([
     this._definitionKey$,
-    this._caseDefinitionVersionTag$,
+    this._versionTag$,
     toObservable(this._$context),
   ]).pipe(
-    switchMap(([definitionKey, caseDefinitionVersionTag, context]) => {
+    switchMap(([definitionKey, versionTag, context]) => {
       if (context === 'independent') {
         return this.getUnlinkedProcesses();
       }
-      if (!!definitionKey && !!caseDefinitionVersionTag) {
-        return this.getProcesses(definitionKey, caseDefinitionVersionTag);
+      if (!!definitionKey && !!versionTag) {
+        return this.getProcesses(definitionKey, versionTag);
       }
       return of([]);
     })
@@ -64,15 +77,15 @@ export class ProcessManagementService extends BaseApiService {
     super(httpClient, configService);
   }
 
-  public setParams(caseDefinitionKey: string, caseDefinitionVersionTag: string): void {
-    this._definitionKey$.next(caseDefinitionKey);
-    this._caseDefinitionVersionTag$.next(caseDefinitionVersionTag);
+  public setParams(key: string, versionTag: string): void {
+    this._definitionKey$.next(key);
+    this._versionTag$.next(versionTag);
   }
 
   public deleteProcess(processDefinitionKey: string): Observable<void> {
     return this.httpClient.delete<void>(
       this.getApiUrl(
-        `${PROCESS_MANAGEMENT_ENDPOINTS[this._$context()]}/${this._definitionKey$.getValue()}/version/${this._caseDefinitionVersionTag$.getValue()}/process-definition/key/${processDefinitionKey}`
+        `${PROCESS_MANAGEMENT_ENDPOINTS[this._$context()]}/${this._definitionKey$.getValue()}/version/${this._versionTag$.getValue()}/process-definition/key/${processDefinitionKey}`
       )
     );
   }
@@ -98,7 +111,7 @@ export class ProcessManagementService extends BaseApiService {
     return this.httpClient.post<any>(
       this._$context() === 'case'
         ? this.getApiUrl(
-            `${PROCESS_MANAGEMENT_ENDPOINTS[this._$context()]}/${this._definitionKey$.getValue()}/version/${this._caseDefinitionVersionTag$.getValue()}/process-definition`
+            `${PROCESS_MANAGEMENT_ENDPOINTS[this._$context()]}/${this._definitionKey$.getValue()}/version/${this._versionTag$.getValue()}/process-definition`
           )
         : this.getApiUrl(`${PROCESS_MANAGEMENT_ENDPOINTS[this._$context()]}`),
       formData
@@ -113,6 +126,18 @@ export class ProcessManagementService extends BaseApiService {
     return this.httpClient.get<ProcessDefinitionResult>(
       this.getApiUrl(
         `${PROCESS_MANAGEMENT_ENDPOINTS[this._$context()]}/${caseDefinitionKey}/version/${caseDefinitionVersionTag}/process-definition/key/${processDefinitionKey}`
+      )
+    );
+  }
+
+  public getBuildingBlockProcessDefinition(
+    key: string,
+    versionTag: string,
+    processDefinitionId: string
+  ): Observable<BuildingBlockProcessDefinitionWithLinksDto> {
+    return this.httpClient.get<BuildingBlockProcessDefinitionWithLinksDto>(
+      this.getApiUrl(
+        `management/v1/building-block/${key}/version/${versionTag}/process-definition/${processDefinitionId}`
       )
     );
   }
@@ -143,11 +168,11 @@ export class ProcessManagementService extends BaseApiService {
 
   private getProcesses(
     definitionName: string,
-    caseDefinitionVersionTag: string
+    versionTag: string
   ): Observable<ProcessDefinitionResult[]> {
     return this.httpClient.get<ProcessDefinitionResult[]>(
       this.getApiUrl(
-        `${PROCESS_MANAGEMENT_ENDPOINTS[this._$context()]}/${definitionName}/version/${caseDefinitionVersionTag}/process-definition`
+        `${PROCESS_MANAGEMENT_ENDPOINTS[this._$context()]}/${definitionName}/version/${versionTag}/process-definition`
       )
     );
   }
