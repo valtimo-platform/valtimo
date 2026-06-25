@@ -75,6 +75,13 @@ if (includeDevSources) {
         // counterparts during the dev loop.
         duplicatesStrategy = DuplicatesStrategy.INCLUDE
     }
+    // sourcesJar (added by `java { withSourcesJar() }` in backend/build.gradle)
+    // packages every srcDir of sourceSets.main — including the dev overlay
+    // above — and has no default duplicate strategy, so collisions like
+    // banner.txt break the task. Match processResources' INCLUDE strategy.
+    tasks.named('sourcesJar').configure {
+        duplicatesStrategy = DuplicatesStrategy.INCLUDE
+    }
     springBoot {
         mainClass = 'com.ritense.gzac.GzacApplication'
     }
