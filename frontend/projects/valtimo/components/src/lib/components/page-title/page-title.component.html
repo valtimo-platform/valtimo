@@ -40,7 +40,14 @@
     </div>
 
     <ng-container *ngIf="obs.hasCustomPageTitle ? obs.customPageTitleSet : obs.title !== ''">
-      @if (!isCompact) {
+      @if (isCompact) {
+        <span
+          [title]="obs.hasCustomPageTitle ? obs.customPageTitle : obs.title"
+          class="cds--breadcrumb compact-page-title"
+        >
+          {{ obs.hasCustomPageTitle ? obs.customPageTitle : obs.title }}
+        </span>
+      } @else if ((titleAsBreadcrumb$ | async) === false) {
         <h2
           [title]="obs.hasCustomPageTitle ? obs.customPageTitle : obs.title"
           class="page-title"
@@ -48,13 +55,6 @@
         >
           {{ obs.hasCustomPageTitle ? obs.customPageTitle : obs.title }}
         </h2>
-      } @else {
-        <span
-          [title]="obs.hasCustomPageTitle ? obs.customPageTitle : obs.title"
-          class="cds--breadcrumb compact-page-title"
-        >
-          {{ obs.hasCustomPageTitle ? obs.customPageTitle : obs.title }}
-        </span>
       }
     </ng-container>
   </ng-container>

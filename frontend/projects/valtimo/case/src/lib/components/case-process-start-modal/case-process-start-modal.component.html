@@ -74,3 +74,22 @@
     </section>
   </cds-modal>
 </valtimo-render-in-body>
+
+<valtimo-confirmation-modal
+  confirmButtonTextTranslationKey="case.draftProcessConfirmation.confirm"
+  [showModalSubject$]="showDraftConfirmation$"
+  titleTranslationKey="case.draftProcessConfirmation.title"
+  (confirmEvent)="onDraftConfirmationConfirm()"
+  (cancelEvent)="onDraftConfirmationCancel()"
+>
+  <cds-notification
+    class="full-width-notification"
+    [notificationObj]="{
+      type: 'warning',
+      title: 'case.draftProcessConfirmation.warningTitle' | translate,
+      message: 'case.draftProcessConfirmation.warningDescription' | translate,
+      showClose: false,
+      lowContrast: true
+    }"
+  ></cds-notification>
+</valtimo-confirmation-modal>
