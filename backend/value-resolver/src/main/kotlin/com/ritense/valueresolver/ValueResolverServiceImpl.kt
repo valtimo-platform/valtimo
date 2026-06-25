@@ -57,7 +57,9 @@ class ValueResolverServiceImpl(
         request: ValueResolverOptionRequest,
         caseDefinitionKey: String
     ): List<ValueResolverOption> {
-        val prefixes = request.prefixes.ifEmpty { resolverFactoryMap.keys }
+        val prefixes = request.prefixes.ifEmpty {
+            resolverFactoryMap.keys.filter { !request.excludePrefixes.contains(it) }
+        }
         return prefixes.fold(emptyList()) { list, prefix ->
             val newOptions = resolverFactoryMap[prefix]?.getResolvableKeyOptions(caseDefinitionKey) ?: emptyList()
             list + newOptions.filter { option -> request.type.equals(option.type) }
@@ -68,7 +70,9 @@ class ValueResolverServiceImpl(
         request: ValueResolverOptionRequest,
         caseDefinitionId: CaseDefinitionId
     ): List<ValueResolverOption> {
-        val prefixes = request.prefixes.ifEmpty { resolverFactoryMap.keys }
+        val prefixes = request.prefixes.ifEmpty {
+            resolverFactoryMap.keys.filter { !request.excludePrefixes.contains(it) }
+        }
         return prefixes.fold(emptyList()) { list, prefix ->
             val newOptions = resolverFactoryMap[prefix]?.getResolvableKeyOptions(caseDefinitionId) ?: emptyList()
             list + newOptions.filter { option -> request.type.equals(option.type) }
@@ -79,7 +83,9 @@ class ValueResolverServiceImpl(
         request: ValueResolverOptionRequest,
         blueprintId: BlueprintId
     ): List<ValueResolverOption> {
-        val prefixes = request.prefixes.ifEmpty { resolverFactoryMap.keys }
+        val prefixes = request.prefixes.ifEmpty {
+            resolverFactoryMap.keys.filter { !request.excludePrefixes.contains(it) }
+        }
         return prefixes.fold(emptyList()) { list, prefix ->
             val newOptions = resolverFactoryMap[prefix]?.getResolvableKeyOptions(blueprintId) ?: emptyList()
             list + newOptions.filter { option -> request.type.equals(option.type) }
