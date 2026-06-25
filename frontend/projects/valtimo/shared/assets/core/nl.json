@@ -3205,6 +3205,10 @@
         "enableIkoType": {
           "title": "IKO-type inschakelen",
           "description": "Schakel het IKO (Informatie Kanaal Objecten) integratietype in."
+        },
+        "menuCollapsedByDefault": {
+          "title": "Menu standaard ingeklapt",
+          "description": "Start met het navigatiemenu ingeklapt in plaats van uitgeklapt."
         }
       }
     }
