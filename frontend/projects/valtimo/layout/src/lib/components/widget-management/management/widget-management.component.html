@@ -31,7 +31,6 @@
         *ngIf="$activeTab() === WidgetManagementTab.JSON"
         [model]="jsonModel$ | async"
         [fitPage]="true"
-        [fitPageSpaceAdjustment]="136"
         (saveEvent)="onSaveEvent($event)"
       ></valtimo-json-editor>
     </cds-tab>

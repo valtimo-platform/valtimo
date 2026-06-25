@@ -36,6 +36,8 @@ export class PageTitleService implements OnDestroy {
 
   private readonly _pageTitleHidden$ = new BehaviorSubject<boolean>(false);
 
+  private readonly _currentTitle$ = new BehaviorSubject<string>('');
+
   private _routeSubscription!: Subscription;
 
   private readonly _preventReset$ = new BehaviorSubject<boolean>(false);
@@ -70,6 +72,11 @@ export class PageTitleService implements OnDestroy {
 
   public get pageTitleHidden$(): Observable<boolean> {
     return this._pageTitleHidden$.asObservable();
+  }
+
+  /** The currently displayed page title (custom title when set, otherwise the route title). */
+  public get currentTitle$(): Observable<string> {
+    return this._currentTitle$.asObservable();
   }
 
   constructor(private readonly router: Router) {
@@ -120,6 +127,10 @@ export class PageTitleService implements OnDestroy {
 
   public setPageTitleHidden(hidden: boolean): void {
     this._pageTitleHidden$.next(hidden);
+  }
+
+  public setCurrentTitle(title: string): void {
+    this._currentTitle$.next(title);
   }
 
   public clearPageActionsViewContainerRef(): void {

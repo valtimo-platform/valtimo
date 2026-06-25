@@ -23,7 +23,7 @@ type BuildingBlockManagementTabKey =
   | string;
 
 interface BuildingBlockProcessDefinitionItem extends BuildingBlockProcessDefinitionDto {
-  mainText: string;
+  statusTags: Array<{content: string; type: string}>;
 }
 
 interface BuildingBlockFormDefinitionItem extends BuildingBlockFormDefinitionDto {

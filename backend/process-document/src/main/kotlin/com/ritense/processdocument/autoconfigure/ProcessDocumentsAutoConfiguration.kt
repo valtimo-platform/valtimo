@@ -55,6 +55,7 @@ import com.ritense.processdocument.service.ProcessDocumentAssociationService
 import com.ritense.processdocument.service.ProcessDocumentDeletedEventListener
 import com.ritense.processdocument.service.ProcessDocumentService
 import com.ritense.processdocument.service.ProcessDocumentsService
+import com.ritense.processdocument.service.DraftProcessDefinitionCaseDefinitionFinalizationChecker
 import com.ritense.processdocument.service.StartableProcessItemProvider
 import com.ritense.processdocument.service.ValueResolverDelegateService
 import com.ritense.processdocument.service.impl.OperatonProcessJsonSchemaDocumentService
@@ -526,10 +527,18 @@ class ProcessDocumentsAutoConfiguration {
     fun startableProcessItemProvider(
         processDefinitionCaseDefinitionRepository: ProcessDefinitionCaseDefinitionRepository,
         authorizationService: AuthorizationService,
+        repositoryService: OperatonRepositoryService,
     ): StartableProcessItemProvider {
         return StartableProcessItemProvider(
             processDefinitionCaseDefinitionRepository,
             authorizationService,
+            repositoryService,
         )
     }
+
+    @Bean
+    @ConditionalOnMissingBean(DraftProcessDefinitionCaseDefinitionFinalizationChecker::class)
+    fun draftProcessDefinitionCaseDefinitionFinalizationChecker(
+        operatonProcessService: OperatonProcessService
+    ) = DraftProcessDefinitionCaseDefinitionFinalizationChecker(operatonProcessService)
 }
