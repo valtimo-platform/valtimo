@@ -8,21 +8,21 @@ on:
   workflow_call:
     inputs:
       project_version:
-        description: "Base semantic version (e.g. 12.39.0)"
+        description: "Base semantic version (e.g. 13.6.0)"
         required: true
         type: string
       publish_images:
-        description: "Build and push the frontend Docker image (variant=gzac). Disable to leave Jenkins as the image source."
+        description: "Build and push the frontend Docker image. Disable on v12-stable, where the image is still built by Jenkins from the template repo."
         required: false
         type: boolean
         default: true
   workflow_dispatch:
     inputs:
       project_version:
-        description: "Base semantic version (e.g. 12.39.0)"
+        description: "Base semantic version (e.g. 13.6.0)"
         required: true
       publish_images:
-        description: "Build and push the frontend Docker image (variant=gzac). Disable to leave Jenkins as the image source."
+        description: "Build and push the frontend Docker image. Disable on v12-stable, where the image is still built by Jenkins from the template repo."
         required: false
         type: boolean
         default: true
@@ -47,8 +47,8 @@ jobs:
       frontend_libraries_build_artifact_name: ${{ needs.build_and_test_libs.outputs.build_artifact_name }}
     secrets: inherit
 
-  publish_image:
-    name: Build and push Docker image
+  publish_gzac_image:
+    name: Build and push gzac-frontend image
     if: ${{ inputs.publish_images }}
     needs:
       - build_and_test_libs
@@ -59,6 +59,38 @@ jobs:
     with:
       frontend_libraries_build_artifact_name: ${{ needs.build_and_test_libs.outputs.build_artifact_name }}
       variant: gzac
+      push_to_dockerhub: true
+      release_image_tag: ${{ inputs.project_version || github.event.inputs.project_version }}
+    secrets: inherit
+
+  publish_valtimo_image:
+    name: Build and push valtimo-frontend image
+    if: ${{ inputs.publish_images }}
+    needs:
+      - build_and_test_libs
+    permissions:
+      contents: read
+      packages: write
+    uses: ./.github/workflows/frontend_build_push_docker_image.yml
+    with:
+      frontend_libraries_build_artifact_name: ${{ needs.build_and_test_libs.outputs.build_artifact_name }}
+      variant: valtimo
+      push_to_dockerhub: true
+      release_image_tag: ${{ inputs.project_version || github.event.inputs.project_version }}
+    secrets: inherit
+
+  publish_evenementenvergunning_image:
+    name: Build and push gzac-evenementenvergunning-frontend image
+    if: ${{ inputs.publish_images }}
+    needs:
+      - build_and_test_libs
+    permissions:
+      contents: read
+      packages: write
+    uses: ./.github/workflows/frontend_build_push_docker_image.yml
+    with:
+      frontend_libraries_build_artifact_name: ${{ needs.build_and_test_libs.outputs.build_artifact_name }}
+      variant: evenementenvergunning
       push_to_dockerhub: true
       release_image_tag: ${{ inputs.project_version || github.event.inputs.project_version }}
     secrets: inherit

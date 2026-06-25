@@ -10,6 +10,11 @@ on:
         required: true
         description: Name of the backend build artifact to download with 'download-artifact'
         type: "string"
+      variant:
+        description: "Which backend app to build. 'gzac' (default) and 'evenementenvergunning' both come out of :backend:app:gzac; 'valtimo' uses :backend:app:valtimo."
+        required: false
+        type: string
+        default: gzac
       push_to_dockerhub:
         description: "Push the built image to Docker Hub as well"
         required: false
@@ -31,13 +36,53 @@ env:
   BRANCH_NAME: ${{ github.head_ref || github.ref_name }}
 
 jobs:
+  resolve_variant:
+    runs-on: ubuntu-latest
+    outputs:
+      module: ${{ steps.resolve.outputs.module }}
+      extra_args: ${{ steps.resolve.outputs.extra_args }}
+      image_name: ${{ steps.resolve.outputs.image_name }}
+      build_types: ${{ steps.resolve.outputs.build_types }}
+    steps:
+      - name: Resolve variant parameters
+        id: resolve
+        run: |
+          case "${{ inputs.variant }}" in
+            gzac)
+              echo "module=gzac" >> "$GITHUB_OUTPUT"
+              echo "extra_args=" >> "$GITHUB_OUTPUT"
+              echo "image_name=gzac-backend" >> "$GITHUB_OUTPUT"
+              # gzac is the only variant with a dev source set; build both
+              # production and test images so CI/e2e jobs get an includeDev=true
+              # test image as well as the release image.
+              echo 'build_types=["production","test"]' >> "$GITHUB_OUTPUT"
+              ;;
+            valtimo)
+              echo "module=valtimo" >> "$GITHUB_OUTPUT"
+              echo "extra_args=" >> "$GITHUB_OUTPUT"
+              echo "image_name=valtimo-backend" >> "$GITHUB_OUTPUT"
+              echo 'build_types=["production"]' >> "$GITHUB_OUTPUT"
+              ;;
+            evenementenvergunning)
+              echo "module=gzac" >> "$GITHUB_OUTPUT"
+              echo "extra_args=-Pvariant=evenementenvergunning" >> "$GITHUB_OUTPUT"
+              echo "image_name=gzac-evenementenvergunning-backend" >> "$GITHUB_OUTPUT"
+              echo 'build_types=["production"]' >> "$GITHUB_OUTPUT"
+              ;;
+            *)
+              echo "::error::Unknown variant '${{ inputs.variant }}' (expected: gzac, valtimo, evenementenvergunning)"
+              exit 1
+              ;;
+          esac
+
   assemble:
+    needs: resolve_variant
     strategy:
       matrix:
-        build_type: ["production", "test"]
+        build_type: ${{ fromJSON(needs.resolve_variant.outputs.build_types) }}
 
     runs-on: ubuntu-latest
-    name: "assemble-${{ matrix.build_type }}"
+    name: "assemble-${{ inputs.variant }}-${{ matrix.build_type }}"
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -54,21 +99,22 @@ jobs:
           name: ${{ inputs.backend_libraries_build_artifact_name }}
           path: .
 
-      - run: ./gradlew -PincludeDev=${{ matrix.build_type == 'test'}} :backend:app:gzac:assemble
+      - run: ./gradlew -PincludeDev=${{ matrix.build_type == 'test' }} ${{ needs.resolve_variant.outputs.extra_args }} :backend:app:${{ needs.resolve_variant.outputs.module }}:assemble
 
       - name: Prepare deployment folder
         run: |
           mkdir backend/deployment
-          mv backend/app/gzac/build/ backend/app/gzac/Dockerfile backend/deployment/
+          mv backend/app/${{ needs.resolve_variant.outputs.module }}/build/ backend/app/${{ needs.resolve_variant.outputs.module }}/Dockerfile backend/deployment/
 
       - name: Archive deployment folder
         uses: actions/upload-artifact@v4
         with:
-          name: gzac-app-backend-deployment-${{ matrix.build_type }}
+          name: ${{ needs.resolve_variant.outputs.image_name }}-deployment-${{ matrix.build_type }}
           path: backend/deployment/
           retention-days: 1
 
   generate_tags:
+    needs: resolve_variant
     runs-on: ubuntu-latest
     outputs:
       test_tags: ${{ steps.generate_tags_test.outputs.tags }}
@@ -85,7 +131,7 @@ jobs:
         id: generate_tags_test
         uses: docker/metadata-action@v5
         with:
-          images: ghcr.io/${{ github.repository }}/gzac-backend
+          images: ghcr.io/${{ github.repository }}/${{ needs.resolve_variant.outputs.image_name }}
           tags: |
             type=raw,value=${{ env.BRANCH_NAME }}-test.${{ github.run_number }}
             type=raw,value=commit-test-${{ github.sha }}
@@ -103,7 +149,7 @@ jobs:
         id: generate_tags_production
         uses: docker/metadata-action@v5
         with:
-          images: ghcr.io/${{ github.repository }}/gzac-backend
+          images: ghcr.io/${{ github.repository }}/${{ needs.resolve_variant.outputs.image_name }}
           tags: |
             type=raw,value=${{ env.BRANCH_NAME }}-production.${{ github.run_number }}
             type=raw,value=commit-production-${{ github.sha }}
@@ -118,13 +164,14 @@ jobs:
           echo "tag=${full_tag##*:}" >> "$GITHUB_OUTPUT"
 
   build_image:
-    strategy:
-      matrix:
-        build_type: ["production", "test"]
-    runs-on: ubuntu-latest
     needs:
+      - resolve_variant
       - assemble
       - generate_tags
+    strategy:
+      matrix:
+        build_type: ${{ fromJSON(needs.resolve_variant.outputs.build_types) }}
+    runs-on: ubuntu-latest
     permissions:
       contents: read
       packages: write
@@ -148,10 +195,17 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Log in to Docker Hub
+        if: ${{ inputs.push_to_dockerhub && matrix.build_type == 'production' }}
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_PASSWORD }}
+
       - name: Download deployment artifact
         uses: actions/download-artifact@v4
         with:
-          name: gzac-app-backend-deployment-${{ matrix.build_type }}
+          name: ${{ needs.resolve_variant.outputs.image_name }}-deployment-${{ matrix.build_type }}
           path: backend/deployment/
 
       - name: Set up Buildx
@@ -167,6 +221,8 @@ jobs:
           context: backend/deployment/
           platforms: linux/amd64,linux/arm64/v8
           push: true
-          tags: ${{ matrix.build_type == 'production' && needs.generate_tags.outputs.production_tags || needs.generate_tags.outputs.test_tags }}
+          tags: |
+            ${{ matrix.build_type == 'production' && needs.generate_tags.outputs.production_tags || needs.generate_tags.outputs.test_tags }}
+            ${{ (inputs.push_to_dockerhub && matrix.build_type == 'production') && format('docker.io/ritense/{0}:{1}', needs.resolve_variant.outputs.image_name, inputs.release_image_tag) || '' }}
           cache-from: type=gha
           cache-to: type=gha,mode=max

@@ -20,6 +20,8 @@
     "build": "ng build dev",
     "build:dev": "ng build dev",
     "build:gzac": "ng build gzac",
+    "build:valtimo": "ng build valtimo",
+    "build:evenementenvergunning": "ng build evenementenvergunning",
     "test": "ng test",
     "lint": "ng lint",
     "tslint-check": "tslint-config-prettier-check ./tslint.json",
