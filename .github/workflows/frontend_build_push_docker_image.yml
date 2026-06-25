@@ -40,6 +40,11 @@ env:
 jobs:
   resolve_variant:
     runs-on: ubuntu-latest
+    # Override the workflow-level `defaults.run.working-directory: frontend` —
+    # this job doesn't check the repo out, so `cd frontend` would fail.
+    defaults:
+      run:
+        working-directory: .
     outputs:
       image_name: ${{ steps.resolve.outputs.image_name }}
       dockerfile: ${{ steps.resolve.outputs.dockerfile }}
