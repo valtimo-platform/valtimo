@@ -36,10 +36,37 @@ defaults:
 
 env:
   NODE_VERSION: "20.x"
-  DOCKERHUB_IMAGE: ritense/gzac-frontend
 
 jobs:
+  resolve_variant:
+    runs-on: ubuntu-latest
+    outputs:
+      image_name: ${{ steps.resolve.outputs.image_name }}
+    steps:
+      - name: Resolve variant parameters
+        id: resolve
+        run: |
+          case "${{ inputs.variant }}" in
+            dev)
+              echo "image_name=gzac-frontend" >> "$GITHUB_OUTPUT"  # CI test-env image still ships under the gzac-frontend ghcr name
+              ;;
+            gzac)
+              echo "image_name=gzac-frontend" >> "$GITHUB_OUTPUT"
+              ;;
+            valtimo)
+              echo "image_name=valtimo-frontend" >> "$GITHUB_OUTPUT"
+              ;;
+            evenementenvergunning)
+              echo "image_name=gzac-evenementenvergunning-frontend" >> "$GITHUB_OUTPUT"
+              ;;
+            *)
+              echo "::error::Unknown variant '${{ inputs.variant }}' (expected: dev, gzac, valtimo, evenementenvergunning)"
+              exit 1
+              ;;
+          esac
+
   build_and_push_image:
+    needs: resolve_variant
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -164,7 +191,7 @@ jobs:
         env:
           BRANCH_NAME: ${{ github.head_ref || github.ref_name }}
         with:
-          images: ghcr.io/${{ github.repository }}/gzac-frontend
+          images: ghcr.io/${{ github.repository }}/${{ needs.resolve_variant.outputs.image_name }}
           tags: |
             type=raw,value=${{ env.BRANCH_NAME }}-test.${{ github.run_number }}
             type=raw,value=commit-test-${{ github.sha }}
@@ -196,6 +223,6 @@ jobs:
           push: true
           tags: |
             ${{ steps.generate_tags.outputs.tags }}
-            ${{ inputs.push_to_dockerhub && format('docker.io/{0}:{1}', env.DOCKERHUB_IMAGE, inputs.release_image_tag) || '' }}
+            ${{ inputs.push_to_dockerhub && format('docker.io/ritense/{0}:{1}', needs.resolve_variant.outputs.image_name, inputs.release_image_tag) || '' }}
           cache-from: type=gha
           cache-to: type=gha,mode=max

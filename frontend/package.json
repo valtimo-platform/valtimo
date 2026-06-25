@@ -21,6 +21,8 @@
     "build": "ng build dev --configuration production",
     "build:dev": "ng build dev --configuration production",
     "build:gzac": "ng build gzac --configuration production",
+    "build:valtimo": "ng build valtimo --configuration production",
+    "build:evenementenvergunning": "ng build evenementenvergunning --configuration production",
     "test": "ng test",
     "lint": "ng lint",
     "prettier:check": "prettier --check .",
