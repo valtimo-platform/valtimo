@@ -20,6 +20,7 @@ import com.ritense.search.domain.SearchListColumn
 import com.ritense.search.service.SearchListColumnService
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import com.ritense.valtimo.contract.domain.ValtimoMediaType.APPLICATION_JSON_UTF8_VALUE
+import com.ritense.valtimo.contract.endpoint.EndpointDescription
 import jakarta.validation.Valid
 import org.springframework.http.ResponseEntity
 import org.springframework.stereotype.Controller
@@ -38,6 +39,10 @@ class SearchListColumnResource(
     private val searchListColumnService: SearchListColumnService
 ) {
 
+    @EndpointDescription(
+        en = "Create list column",
+        nl = "Lijstkolom aanmaken",
+    )
     @PostMapping("/{ownerId}")
     fun create(
         @PathVariable ownerId: String,
@@ -45,6 +50,10 @@ class SearchListColumnResource(
     ) =
         ResponseEntity.ok(searchListColumnService.create(searchListColumn))
 
+    @EndpointDescription(
+        en = "Update list column by key",
+        nl = "Lijstkolom bijwerken op sleutel",
+    )
     @PutMapping("/{ownerId}/{key}")
     fun update(
         @PathVariable ownerId: String,
@@ -53,6 +62,10 @@ class SearchListColumnResource(
     ) =
         ResponseEntity.ok(searchListColumnService.update(searchListColumn))
 
+    @EndpointDescription(
+        en = "Update list column list",
+        nl = "Lijst met lijstkolommen bijwerken",
+    )
     @PutMapping("/{ownerId}/search-list-columns")
     fun updateList(
         @PathVariable ownerId: String,
@@ -60,10 +73,18 @@ class SearchListColumnResource(
     ) =
         ResponseEntity.ok(searchListColumnService.updateList(searchListColumn))
 
+    @EndpointDescription(
+        en = "List columns by owner",
+        nl = "Lijstkolommen ophalen per eigenaar",
+    )
     @GetMapping("/{ownerId}")
     fun getByKey(@PathVariable ownerId: String) =
         ResponseEntity.ok(searchListColumnService.findByOwnerId(ownerId))
 
+    @EndpointDescription(
+        en = "Delete list column by key",
+        nl = "Lijstkolom verwijderen op sleutel",
+    )
     @DeleteMapping("/{ownerId}/{key}")
     fun delete(
         @PathVariable ownerId: String,

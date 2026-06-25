@@ -23,6 +23,7 @@ import com.ritense.iko.web.rest.request.IkoListColumnUpdateRequest
 import com.ritense.search.importer.ListColumnDto
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import com.ritense.valtimo.contract.domain.ValtimoMediaType.APPLICATION_JSON_UTF8_VALUE
+import com.ritense.valtimo.contract.endpoint.EndpointDescription
 import jakarta.validation.Valid
 import org.springframework.http.ResponseEntity
 import org.springframework.stereotype.Controller
@@ -42,6 +43,10 @@ class IkoListColumnManagementResource(
 ) {
 
     @RunWithoutAuthorization
+    @EndpointDescription(
+        en = "List IKO list columns for management",
+        nl = "IKO-lijstkolommen ophalen voor beheer",
+    )
     @GetMapping("/v1/iko-view/{ikoViewKey}/column")
     fun getIkoListColumnsForManagement(
         @PathVariable ikoViewKey: String,
@@ -53,6 +58,10 @@ class IkoListColumnManagementResource(
     }
 
     @RunWithoutAuthorization
+    @EndpointDescription(
+        en = "Get IKO list column by key",
+        nl = "IKO-lijstkolom ophalen op sleutel",
+    )
     @GetMapping("/v1/iko-view/{ikoViewKey}/column/{key}")
     fun getIkoListColumn(
         @PathVariable ikoViewKey: String,
@@ -63,6 +72,10 @@ class IkoListColumnManagementResource(
     }
 
     @RunWithoutAuthorization
+    @EndpointDescription(
+        en = "Create IKO list column",
+        nl = "IKO-lijstkolom aanmaken",
+    )
     @PostMapping("/v1/iko-view/{ikoViewKey}/column/{key}")
     fun createIkoListColumn(
         @PathVariable ikoViewKey: String,
@@ -80,6 +93,10 @@ class IkoListColumnManagementResource(
     }
 
     @RunWithoutAuthorization
+    @EndpointDescription(
+        en = "Update IKO list column",
+        nl = "IKO-lijstkolom bijwerken",
+    )
     @PutMapping("/v1/iko-view/{ikoViewKey}/column/{key}")
     fun updateIkoListColumn(
         @PathVariable ikoViewKey: String,
@@ -97,6 +114,10 @@ class IkoListColumnManagementResource(
     }
 
     @RunWithoutAuthorization
+    @EndpointDescription(
+        en = "Update IKO list columns order",
+        nl = "Volgorde van IKO-lijstkolommen bijwerken",
+    )
     @PutMapping("/v1/iko-view/{ikoViewKey}/column")
     fun updateIkoListColumnsOrder(
         @PathVariable ikoViewKey: String,
@@ -117,6 +138,10 @@ class IkoListColumnManagementResource(
     }
 
     @RunWithoutAuthorization
+    @EndpointDescription(
+        en = "Delete IKO list column",
+        nl = "IKO-lijstkolom verwijderen",
+    )
     @DeleteMapping("/v1/iko-view/{ikoViewKey}/column/{key}")
     fun deleteIkoListColumn(
         @PathVariable ikoViewKey: String,

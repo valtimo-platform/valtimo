@@ -24,6 +24,7 @@ import com.ritense.document.service.result.DeployDocumentDefinitionResult
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import com.ritense.valtimo.contract.case_.CaseDefinitionId
 import com.ritense.valtimo.contract.domain.ValtimoMediaType
+import com.ritense.valtimo.contract.endpoint.EndpointDescription
 import jakarta.validation.Valid
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
@@ -41,6 +42,10 @@ class DocumentDefinitionManagementResource(
     private val documentDefinitionService: DocumentDefinitionService
 ) {
 
+    @EndpointDescription(
+        en = "Get document definition",
+        nl = "Documentdefinitie ophalen",
+    )
     @GetMapping("/v1/case-definition/{caseDefinitionKey}/version/{versionTag}/document-definition")
     fun getDocumentDefinition(
         @PathVariable("caseDefinitionKey") caseDefinitionKey: String,
@@ -53,6 +58,10 @@ class DocumentDefinitionManagementResource(
         return ResponseEntity.of(documentDefinition)
     }
 
+    @EndpointDescription(
+        en = "Deploy document definition",
+        nl = "Documentdefinitie uitrollen",
+    )
     @PutMapping("/v1/case-definition/{caseDefinitionKey}/version/{versionTag}/document-definition")
     fun putDocumentDefinition(
         @PathVariable("caseDefinitionKey") caseDefinitionKey: String,

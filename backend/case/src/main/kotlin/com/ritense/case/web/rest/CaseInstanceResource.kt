@@ -26,6 +26,7 @@ import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import com.ritense.valtimo.contract.authorization.UserManagementServiceHolder
 import com.ritense.valtimo.contract.domain.ValtimoMediaType.APPLICATION_JSON_UTF8_VALUE
 import com.ritense.valtimo.contract.domain.ValtimoMediaType.TEXT_CSV_UTF8_VALUE
+import com.ritense.valtimo.contract.endpoint.EndpointDescription
 import jakarta.validation.Valid
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
@@ -46,6 +47,10 @@ class CaseInstanceResource(
     private val exporter: CaseExporter
 ) {
 
+    @EndpointDescription(
+        en = "Search cases",
+        nl = "Dossiers zoeken",
+    )
     @PostMapping("/v1/case/{caseDefinitionName}/search")
     fun search(
         @LoggableResource("documentDefinitionName") @PathVariable(name = "caseDefinitionName") caseDefinitionName: String,
@@ -56,6 +61,10 @@ class CaseInstanceResource(
         return ResponseEntity.ok(result)
     }
 
+    @EndpointDescription(
+        en = "Save quick search",
+        nl = "Snelzoekopdracht opslaan",
+    )
     @PostMapping("/v1/case/{caseDefinitionKey}/stored-quick-search")
     fun saveQuickSearch(
         @LoggableResource("documentDefinitionName") @PathVariable(name = "caseDefinitionKey") caseDefinitionKey: String,
@@ -66,6 +75,10 @@ class CaseInstanceResource(
         return ResponseEntity.ok().build()
     }
 
+    @EndpointDescription(
+        en = "Delete quick search",
+        nl = "Snelzoekopdracht verwijderen",
+    )
     @DeleteMapping("/v1/case/{caseDefinitionKey}/stored-quick-search/{title}")
     fun deleteQuickSearch(
         @LoggableResource("documentDefinitionName") @PathVariable(name = "caseDefinitionKey") caseDefinitionKey: String,
@@ -76,6 +89,10 @@ class CaseInstanceResource(
         return ResponseEntity.noContent().build()
     }
 
+    @EndpointDescription(
+        en = "List quick searches",
+        nl = "Snelzoekopdrachten ophalen",
+    )
     @GetMapping("/v1/case/{caseDefinitionKey}/stored-quick-search")
     fun getQuickSearchList(
         @LoggableResource("documentDefinitionName") @PathVariable(name = "caseDefinitionKey") caseDefinitionKey: String
@@ -92,6 +109,10 @@ class CaseInstanceResource(
         )
     }
 
+    @EndpointDescription(
+        en = "Export cases as CSV",
+        nl = "Dossiers exporteren als CSV",
+    )
     @PostMapping(
         "/v1/case/{caseDefinitionName}/export",
         consumes = [APPLICATION_JSON_UTF8_VALUE],

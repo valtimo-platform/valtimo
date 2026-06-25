@@ -19,7 +19,7 @@ Status legend: ✅ implemented & verified · 🟡 implemented, POC-level · ⛔ 
 | Area | Path | Status |
 |------|------|--------|
 | Core-app backend module | `backend/external-plugin/` | ✅ |
-| Endpoint-description providers (per module) + contract | `backend/*/.../endpoint/*EndpointDescriptionProvider.kt`, `com.ritense.valtimo.contract.endpoint.EndpointDescriptionProvider` | ✅ |
+| Endpoint descriptions (`@EndpointDescription` on every controller method) + contract annotation | `backend/*/.../web/rest/*Resource.{kt,java}`, `com.ritense.valtimo.contract.endpoint.EndpointDescription` | ✅ |
 | Plugin host (Node + Fastify + Extism, multi-version) | `plugin-host/app/` | 🟡 |
 | Event consumer (RabbitMQ → `handle_event`) | `plugin-host/app/src/rabbitmq/event-consumer.ts` | ✅ |
 | Backend plugin SDK (`@valtimo/plugin-sdk`) — actions, events, `gzacApi`, frontend `t()` | `plugin-host/plugin-sdk/` | ✅ |
@@ -188,8 +188,14 @@ The host verifies in a shared Fastify `preHandler` (`createHmacAuthHook`,
 
 Components: `plugin-management/.../{plugin-external-permissions, plugin-add-modal,
 plugin-external-edit-modal, plugin-external-configure}`. Endpoint descriptions are localised via
-`POST /api/management/v1/external-plugin/endpoint-descriptions` (aggregated from every module's
-`EndpointDescriptionProvider`; glob and `{param}` matching, `en`/`nl` with `en` fallback).
+`POST /api/management/v1/external-plugin/endpoint-descriptions`. Each endpoint declares its own
+English and Dutch text directly on the controller handler method with an `@EndpointDescription(en,
+nl)` annotation (`com.ritense.valtimo.contract.endpoint.EndpointDescription`);
+`EndpointDescriptionService` collects every annotation from Spring's `RequestMappingHandlerMapping`
+and resolves a queried pattern against them (glob and `{param}` matching, `en`/`nl` with `en`
+fallback). A test (`EndpointDescriptionCoverageTest`, `backend/external-plugin`) enforces that
+**every** controller endpoint on the classpath — not only management ones — carries both
+translations, so the description requirement cannot drift as endpoints are added.
 
 The Permissions step shows two read-only sections under a single acknowledgement checkbox:
 
@@ -816,7 +822,7 @@ through the user-token path.
 - Host `tsc` build and `@valtimo/plugin-sdk` build: clean (including the optional-TLS
   `buildHttpsOptions` wiring in `plugin-host/app/src/index.ts`).
 - Backend `:backend:external-plugin:test`: BUILD SUCCESSFUL (allowlist + service-token-filter +
-  service-token-ttl + endpoint-description-provider + host-client-HMAC + host-registration
+  service-token-ttl + endpoint-description-coverage + host-client-HMAC + host-registration
   transport-guard + compatibility + event-queue mode/TTL tests). The host-client-HMAC suite
   (`client/ExternalPluginHostClientHmacTest`) asserts `pushConfiguration` (body-bound, **including
   the `queueMode`/`queueTtlMs` fields inside the signed `eventBroker` block, with the omit-TTL case

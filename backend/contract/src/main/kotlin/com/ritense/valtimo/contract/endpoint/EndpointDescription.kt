@@ -16,12 +16,17 @@
 
 package com.ritense.valtimo.contract.endpoint
 
-data class EndpointDescriptor(
-    val method: String,
-    val pattern: String,
-    val descriptions: Map<String, String>,
+/**
+ * Documents a REST endpoint with a human-readable description in English and Dutch, placed directly
+ * on the controller handler method that defines the endpoint. It is the single source of truth for
+ * the endpoint's description: the description shown to an admin when granting an external plugin
+ * access to specific endpoints is resolved from this annotation, and a test enforces that every
+ * endpoint declares one.
+ */
+@Target(AnnotationTarget.FUNCTION)
+@Retention(AnnotationRetention.RUNTIME)
+@MustBeDocumented
+annotation class EndpointDescription(
+    val en: String,
+    val nl: String,
 )
-
-interface EndpointDescriptionProvider {
-    fun getEndpointDescriptors(): List<EndpointDescriptor>
-}

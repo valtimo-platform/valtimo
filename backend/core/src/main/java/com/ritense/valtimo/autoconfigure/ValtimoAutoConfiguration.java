@@ -22,7 +22,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ritense.authorization.AuthorizationService;
 import com.ritense.outbox.OutboxService;
 import com.ritense.resource.service.ResourceService;
-import com.ritense.valtimo.endpoint.CoreEndpointDescriptionProvider;
 import com.ritense.valtimo.config.CustomDateTimeProvider;
 import com.ritense.valtimo.config.ValtimoApplicationReadyEventListener;
 import com.ritense.valtimo.contract.authentication.AuthorizedUserRepository;
@@ -428,12 +427,6 @@ public class ValtimoAutoConfiguration {
         return new TaskTeamChangedListener(
             taskTeamRepository
         );
-    }
-
-    @Bean
-    @ConditionalOnMissingBean(CoreEndpointDescriptionProvider.class)
-    public CoreEndpointDescriptionProvider coreEndpointDescriptionProvider() {
-        return new CoreEndpointDescriptionProvider();
     }
 
 }

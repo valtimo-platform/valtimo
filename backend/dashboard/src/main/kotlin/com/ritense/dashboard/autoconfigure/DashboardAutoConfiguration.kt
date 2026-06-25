@@ -29,7 +29,6 @@ import com.ritense.dashboard.service.DashboardService
 import com.ritense.dashboard.web.rest.AdminDashboardResource
 import com.ritense.dashboard.web.rest.DashboardResource
 import com.ritense.valtimo.changelog.service.ChangelogService
-import com.ritense.dashboard.endpoint.DashboardEndpointDescriptionProvider
 import com.ritense.valtimo.contract.authentication.UserManagementService
 import com.ritense.valtimo.contract.database.QueryDialectHelper
 import org.springframework.beans.factory.annotation.Value
@@ -47,10 +46,6 @@ import org.springframework.data.jpa.repository.config.EnableJpaRepositories
 @EntityScan("com.ritense.dashboard.domain")
 @EnableCaching
 class DashboardAutoConfiguration {
-
-    @Bean
-    @ConditionalOnMissingBean(DashboardEndpointDescriptionProvider::class)
-    fun dashboardEndpointDescriptionProvider() = DashboardEndpointDescriptionProvider()
 
     @Order(270)
     @Bean
