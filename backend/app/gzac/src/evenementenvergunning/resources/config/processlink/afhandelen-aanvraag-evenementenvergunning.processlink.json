@@ -1,0 +1,82 @@
+[
+  {
+    "activityId": "StartEvent_1",
+    "activityType": "bpmn:StartEvent:start",
+    "formFlowDefinitionId": "aanvragen-evenementenvergunning:latest",
+    "formDisplayType": "modal",
+    "formSize": "medium",
+    "subtitles": null,
+    "processLinkType": "form-flow"
+  },
+  {
+    "activityId": "controleer-beschikbaarheid-locatie",
+    "activityType": "bpmn:UserTask:create",
+    "formDefinitionName": "controleer-beschikbaarheid-locatie",
+    "viewModelEnabled": false,
+    "formDisplayType": "modal",
+    "formSize": "medium",
+    "subtitles": null,
+    "processLinkType": "form"
+  },
+  {
+    "activityId": "beoordeel-versnelde-afhandeling",
+    "activityType": "bpmn:UserTask:create",
+    "formDefinitionName": "beoordeel-versnelde-afhandeling",
+    "viewModelEnabled": false,
+    "formDisplayType": "modal",
+    "formSize": "medium",
+    "subtitles": null,
+    "processLinkType": "form"
+  },
+  {
+    "activityId": "goedkeuring-wethouder",
+    "activityType": "bpmn:UserTask:create",
+    "formDefinitionName": "goedkeuring-wethouder",
+    "viewModelEnabled": false,
+    "formDisplayType": "modal",
+    "formSize": "medium",
+    "subtitles": null,
+    "processLinkType": "form"
+  },
+  {
+    "activityId": "behandel-aanvraag-evenementenvergunning",
+    "activityType": "bpmn:UserTask:create",
+    "formDefinitionName": "behandel-aanvraag-evenementenvergunning",
+    "viewModelEnabled": false,
+    "formDisplayType": "modal",
+    "formSize": "medium",
+    "subtitles": null,
+    "processLinkType": "form"
+  },
+  {
+    "activityId": "kies-andere-locatie",
+    "activityType": "bpmn:UserTask:create",
+    "pluginConfigurationId": "d45f4ba5-dcee-468b-8cad-e62181448683",
+    "pluginActionDefinitionKey": "create-portaaltaak",
+    "actionProperties": {
+      "formTypeUrl": "https://objecten.ritense.opengem.nl/api/v2/objects/447dcb07-5921-4720-b202-240725372807",
+      "identificationKey": "bsn",
+      "identificationValue": "999993872",
+      "verloopDurationInDays": "14",
+      "formType": "url",
+      "receiver": "other",
+      "sendData": [
+        {
+          "key": "/evenementLocatie",
+          "value": "doc:/locatieEnOpstelling/evenementLocatie"
+        },
+        {
+          "key": "/toelichtingNieuweLocatie",
+          "value": "pv:toelichtingNieuweLocatie"
+        }
+      ],
+      "receiveData": [
+        {
+          "key": "doc:/locatieEnOpstelling/evenementLocatie",
+          "value": "/locatie"
+        }
+      ]
+    },
+    "processLinkType": "plugin"
+  }
+]

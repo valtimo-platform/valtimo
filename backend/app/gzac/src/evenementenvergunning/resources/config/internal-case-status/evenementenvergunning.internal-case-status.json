@@ -1,0 +1,54 @@
+{
+  "changesetId": "evenementenvergunning.internal-case-status.1740147769086",
+  "internalCaseStatuses": [
+    {
+      "key": "nieuw",
+      "caseDefinitionName": "evenementenvergunning",
+      "title": "Nieuw",
+      "visibleInCaseListByDefault": true,
+      "color": "BLUE"
+    },
+    {
+      "key": "controleren-locatie",
+      "caseDefinitionName": "evenementenvergunning",
+      "title": "Controleren locatie",
+      "visibleInCaseListByDefault": true,
+      "color": "PURPLE"
+    },
+    {
+      "key": "wacht-op-locatie",
+      "caseDefinitionName": "evenementenvergunning",
+      "title": "Wacht op nieuwe locatie",
+      "visibleInCaseListByDefault": true,
+      "color": "RED"
+    },
+    {
+      "key": "in-behandeling",
+      "caseDefinitionName": "evenementenvergunning",
+      "title": "In behandeling",
+      "visibleInCaseListByDefault": true,
+      "color": "BLUE"
+    },
+    {
+      "key": "versnelde-afhandeling",
+      "caseDefinitionName": "evenementenvergunning",
+      "title": "Versnelde afhandeling",
+      "visibleInCaseListByDefault": true,
+      "color": "TEAL"
+    },
+    {
+      "key": "goedkeuring-wethouder",
+      "caseDefinitionName": "evenementenvergunning",
+      "title": "Goedkeuring wethouder",
+      "visibleInCaseListByDefault": true,
+      "color": "MAGENTA"
+    },
+    {
+      "key": "afgerond",
+      "caseDefinitionName": "evenementenvergunning",
+      "title": "Afgerond",
+      "visibleInCaseListByDefault": false,
+      "color": "GREEN"
+    }
+  ]
+}

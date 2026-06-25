@@ -1,0 +1,57 @@
+dependencies {
+    implementation(platform(project(":backend:dependencies:valtimo-dependency-versions")))
+
+    implementation(project(":backend:dependencies:valtimo-dependencies"))
+
+    implementation(project(":backend:document-generation:local-document-generation"))
+    implementation(project(":backend:resource:local-resource"))
+    implementation(project(":backend:mail:local-mail"))
+    implementation(project(":backend:milestones"))
+    implementation(project(":backend:zgw:object-management"))
+    implementation(project(":backend:plugin-authentication:objecten-api-authentication"))
+    implementation(project(":backend:zgw:objecten-api"))
+    implementation(project(":backend:zgw:objecttypen-api"))
+    implementation(project(":backend:openzaak"))
+    implementation(project(":backend:zgw:zaken-api"))
+
+    implementation("io.github.microutils:kotlin-logging")
+
+    implementation group: 'org.postgresql', name: 'postgresql', version: postgresqlDriverVersion
+
+    if (System.getProperty("os.arch") == "aarch64") {
+        runtimeOnly("io.netty:netty-resolver-dns-native-macos::osx-aarch_64")
+    }
+
+    testImplementation "org.jetbrains.kotlin:kotlin-test"
+    testImplementation "org.junit.jupiter:junit-jupiter"
+    testImplementation "org.springframework.boot:spring-boot-starter-test"
+}
+
+// backend/app/build.gradle disables bootJar+jar for everything under :backend:app.
+// Re-enable bootJar here so :backend:app:valtimo:assemble produces the
+// executable JAR that backend/app/valtimo/Dockerfile copies into the released
+// ritense/valtimo-backend:<v> image.
+bootJar {
+    enabled = true
+    archiveClassifier = ''
+}
+jar {
+    enabled = false
+}
+
+springBoot {
+    mainClass = 'com.ritense.valtimo.ApplicationKt'
+}
+
+bootRun {
+    doFirst {
+        File f = file(".env.properties")
+        if (f.isFile()) {
+            def props = new Properties()
+            f.withInputStream { props.load(it) }
+            props.each { key, value ->
+                environment key.toString(), value.toString()
+            }
+        }
+    }
+}

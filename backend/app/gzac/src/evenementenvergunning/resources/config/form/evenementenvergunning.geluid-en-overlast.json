@@ -1,0 +1,39 @@
+{
+  "type": "form",
+  "components": [
+    {
+      "key": "geluidEnOverlast",
+      "type": "panel",
+      "title": "Geluid en Overlast",
+      "components": [
+        {
+          "key": "geluidEnOverlast.versterktGeluid",
+          "type": "checkbox",
+          "input": true,
+          "label": "Wordt er versterkt geluid gebruikt?",
+          "attributes": {
+            "data-testid": "evenementenvergunning.geluid-en-overlast-versterktGeluid"
+          },
+          "defaultValue": true
+        },
+        {
+          "key": "geluidEnOverlast.geluidReductieMaatregelen",
+          "type": "textfield",
+          "input": true,
+          "label": "Geluidreductiemaatregelen",
+          "attributes": {
+            "data-testid": "evenementenvergunning.geluid-en-overlast-geluidReductieMaatregelen"
+          },
+          "defaultValue": "Geluidsschermen en volumebeperkingen na 22:00 uur."
+        },
+        {
+          "key": "submit",
+          "type": "button",
+          "label": "Submit",
+          "theme": "primary",
+          "action": "submit"
+        }
+      ]
+    }
+  ]
+}
