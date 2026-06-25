@@ -204,6 +204,10 @@ export class ValuePathSelectorComponent implements OnInit, OnDestroy, ControlVal
     this._prefixes$.next(value ?? []);
   }
 
+  @Input() public set excludePrefixes(value: ValuePathSelectorPrefix[]) {
+    this._excludePrefixes$.next(value ?? []);
+  }
+
   @Input() public label = '';
   @Input() public tooltip = '';
   @Input() public required = false;
@@ -258,6 +262,7 @@ export class ValuePathSelectorComponent implements OnInit, OnDestroy, ControlVal
   );
 
   private readonly _prefixes$ = new BehaviorSubject<ValuePathSelectorPrefix[]>([]);
+  private readonly _excludePrefixes$ = new BehaviorSubject<ValuePathSelectorPrefix[]>([]);
 
   private readonly _inputMode$ = new BehaviorSubject<ValuePathSelectorInputMode>(
     ValuePathSelectorInputMode.DROPDOWN
@@ -279,17 +284,19 @@ export class ValuePathSelectorComponent implements OnInit, OnDestroy, ControlVal
         : combineLatest([
             this._caseDefinitionKeySubject$,
             this._prefixes$,
+            this._excludePrefixes$,
             this._type$,
             this._caseDefinitionVersionTag$,
             this._buildingBlockDefinitionKey$,
             this._buildingBlockDefinitionVersionTag$,
             this.showToggle$,
           ]).pipe(
-            filter(([, , , , , , showToggle]) => showToggle),
+            filter(([, , , , , , , showToggle]) => showToggle),
             switchMap(
               ([
                 caseDefinitionKey,
                 prefixes,
+                excludePrefixes,
                 type,
                 caseDefinitionVersionTag,
                 buildingBlockKey,
@@ -304,6 +311,7 @@ export class ValuePathSelectorComponent implements OnInit, OnDestroy, ControlVal
                 if (!context) return of([]);
                 return this.valuePathSelectorService.getResolvableKeysForContext(
                   prefixes,
+                  excludePrefixes,
                   context,
                   type
                 );

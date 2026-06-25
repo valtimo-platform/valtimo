@@ -30,7 +30,10 @@ A column can be added by clicking on the **Add column** button. This will open t
 * **Key**\
   A unique key by which the column is identified. If the key is not unique, you will not be able to save the column.
 * **Path**\
-  A path which leads to the property you want to show. For the document's JSON schema, follow this example: `doc:customer.firstName`. For document properties, follow these examples: `case:createdBy`, or `case:sequence`, or `case:assigneeFullName`.
+  A path which leads to the property you want to show. 
+  * All task properties: `task:createTime`, `task:assignee`, `task:dueDate`, `task:assignedTeamTitle"`.
+  * For the document's JSON schema, follow this example: `doc:/customer/firstName`. 
+  * For document properties, follow these examples: `case:createdBy`, or `case:sequence`, or `case:assigneeFullName`.
 
 {% hint style="info" %}
 **Note**

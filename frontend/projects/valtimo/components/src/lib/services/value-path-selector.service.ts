@@ -68,6 +68,7 @@ export class ValuePathSelectorService extends BaseApiService implements OnDestro
    */
   public getResolvableKeysForContext(
     prefixes: ValuePathSelectorPrefix[],
+    excludePrefixes: ValuePathSelectorPrefix[] = [],
     context: BlueprintContext,
     type: ValuePathType = ValuePathType.FIELD
   ): Observable<ValuePathItem[]> {
@@ -84,6 +85,7 @@ export class ValuePathSelectorService extends BaseApiService implements OnDestro
       prefixesWithoutCache.length > 0 || this._prefixes.length === 0
         ? this.httpClient.post<ValuePathResponse[]>(this.getApiUrl(url), {
             prefixes: prefixesWithoutCache,
+            excludePrefixes,
             type,
           })
         : of([])
