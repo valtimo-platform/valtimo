@@ -31,6 +31,7 @@ export class PageHeaderService {
   private readonly _pageHeadHeight$ = new BehaviorSubject<number | null>(null);
 
   private readonly _smallTitle$ = new BehaviorSubject<boolean>(false);
+  private readonly _titleAsBreadcrumb$ = new BehaviorSubject<boolean>(false);
 
   private readonly _featureToggleSub: Subscription;
 
@@ -48,6 +49,10 @@ export class PageHeaderService {
 
   public get smallTitle$(): Observable<boolean> {
     return this._smallTitle$.asObservable();
+  }
+
+  public get titleAsBreadcrumb$(): Observable<boolean> {
+    return this._titleAsBreadcrumb$.asObservable();
   }
 
   public get showUserNameInTopBar$(): Observable<boolean> {
@@ -106,5 +111,20 @@ export class PageHeaderService {
 
   public disableSmallTitle(): void {
     this._smallTitle$.next(false);
+  }
+
+  /**
+   * Renders the current page title inline as the final (non-link) breadcrumb item instead of
+   * as a large heading below the breadcrumb trail, freeing up the page header row for actions.
+   * Unlike compact mode, the breadcrumb stays in the page header area (not the top bar).
+   *
+   * Enable from a component's `ngAfterViewInit`/`ngOnInit` and disable in `ngOnDestroy`.
+   */
+  public enableTitleAsBreadcrumb(): void {
+    this._titleAsBreadcrumb$.next(true);
+  }
+
+  public disableTitleAsBreadcrumb(): void {
+    this._titleAsBreadcrumb$.next(false);
   }
 }

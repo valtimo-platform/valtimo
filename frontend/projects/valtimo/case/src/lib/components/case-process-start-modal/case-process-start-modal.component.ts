@@ -33,6 +33,7 @@ import {FormioBeforeSubmit, FormioForm} from '@formio/angular';
 import {TranslateModule} from '@ngx-translate/core';
 import {PermissionService} from '@valtimo/access-control';
 import {
+  ConfirmationModalModule,
   CarbonModalSize,
   FormioComponent,
   FormIoModule,
@@ -57,7 +58,7 @@ import {
 } from '@valtimo/process-link';
 import {UserProviderService} from '@valtimo/security';
 import {ConfigService, FORM_VIEW_MODEL_TOKEN, FormViewModel} from '@valtimo/shared';
-import {DialogModule, LayerModule, ModalModule} from 'carbon-components-angular';
+import {DialogModule, LayerModule, ModalModule, NotificationModule} from 'carbon-components-angular';
 import {BehaviorSubject, Subscription} from 'rxjs';
 import {take} from 'rxjs/operators';
 import {CAN_VIEW_CASE_PERMISSION, CASE_DETAIL_PERMISSION_RESOURCE} from '../../permissions';
@@ -80,7 +81,9 @@ const DEFAULT_START_MODAL_SIZE: CarbonModalSize = 'sm';
     DialogModule,
     ModalModule,
     LayerModule,
+    NotificationModule,
     RenderInBodyComponent,
+    ConfirmationModalModule,
   ],
 })
 export class CaseProcessStartModalComponent implements OnInit, OnDestroy {
@@ -112,7 +115,9 @@ export class CaseProcessStartModalComponent implements OnInit, OnDestroy {
 
   public readonly modalOpen$ = new BehaviorSubject<boolean>(false);
   public readonly modalSize$ = new BehaviorSubject<CarbonModalSize>(DEFAULT_START_MODAL_SIZE);
+  public readonly showDraftConfirmation$ = new BehaviorSubject<boolean>(false);
 
+  private _pendingProcessDefinitionCaseDefinition: ProcessDefinitionCaseDefinition | null = null;
   private _subscriptions = new Subscription();
   private readonly _formCustomComponentConfig$ = new BehaviorSubject<
     FormCustomComponentConfig | {}
@@ -233,6 +238,32 @@ export class CaseProcessStartModalComponent implements OnInit, OnDestroy {
   }
 
   openModal(processDefinitionCaseDefinition: ProcessDefinitionCaseDefinition) {
+    if (processDefinitionCaseDefinition.draft) {
+      this._pendingProcessDefinitionCaseDefinition = processDefinitionCaseDefinition;
+      this.showDraftConfirmation$.next(true);
+      return;
+    }
+
+    this._pendingProcessDefinitionCaseDefinition = null;
+    this.showDraftConfirmation$.next(false);
+    this.proceedWithOpenModal(processDefinitionCaseDefinition);
+  }
+
+  public onDraftConfirmationConfirm(): void {
+    this.showDraftConfirmation$.next(false);
+    if (this._pendingProcessDefinitionCaseDefinition) {
+      const pending = this._pendingProcessDefinitionCaseDefinition;
+      this._pendingProcessDefinitionCaseDefinition = null;
+      this.proceedWithOpenModal(pending);
+    }
+  }
+
+  public onDraftConfirmationCancel(): void {
+    this.showDraftConfirmation$.next(false);
+    this._pendingProcessDefinitionCaseDefinition = null;
+  }
+
+  private proceedWithOpenModal(processDefinitionCaseDefinition: ProcessDefinitionCaseDefinition): void {
     this.processDefinitionKey = processDefinitionCaseDefinition.processDefinitionKey;
     this.caseDefinitionKey = processDefinitionCaseDefinition.id.caseDefinitionId.key;
     this.processDefinitionId = processDefinitionCaseDefinition.id.processDefinitionId;

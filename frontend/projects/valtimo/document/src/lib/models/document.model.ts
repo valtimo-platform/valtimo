@@ -145,6 +145,7 @@ interface ProcessDefinitionCaseDefinition {
   startableByUser: boolean;
   processDefinitionName: string;
   processDefinitionKey: string;
+  draft?: boolean;
 }
 
 type StartableItemType = 'PROCESS' | 'BUILDING_BLOCK';
@@ -155,6 +156,7 @@ interface StartableItem {
   key: string;
   versionTag: string | null;
   processDefinitionId: string | null;
+  draft?: boolean;
 }
 
 interface ProcessDocumentInstanceId {
