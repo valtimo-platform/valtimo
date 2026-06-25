@@ -29,7 +29,7 @@ class ExternalPluginConfigurationInUseException(
     null,
     "External plugin configuration is in use",
     Status.CONFLICT,
-    "One or more BPMN process links reference this configuration. " +
+    "One or more BPMN process links or case tabs reference this configuration. " +
         "Remove the references before deleting the configuration.",
     null,
     null,

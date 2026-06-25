@@ -207,12 +207,16 @@ interface ExternalPluginHostUsage {
   parentType: ExternalPluginHostUsageParentType;
   parentKey: string | null;
   parentVersionTag: string | null;
-  processDefinitionId: string;
+  // Process-link usages populate these; external-plugin case-tab usages leave them null.
+  processDefinitionId: string | null;
   processDefinitionKey: string | null;
   processDefinitionName: string | null;
-  activityId: string;
+  activityId: string | null;
   activityName: string | null;
-  processLinkId: string;
+  processLinkId: string | null;
+  // Populated only for an external-plugin case-tab usage.
+  tabKey?: string | null;
+  tabName?: string | null;
 }
 
 const EXTERNAL_PLUGIN_KEY_PREFIX = 'external:';

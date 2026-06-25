@@ -23,12 +23,16 @@ import org.springframework.security.oauth2.server.resource.web.authentication.Be
 
 class ExternalPluginCallbackHttpSecurityConfigurer(
     private val serviceTokenFilter: ExternalPluginServiceTokenFilter,
+    private val userTokenFilter: ExternalPluginUserTokenFilter,
     private val allowlistFilter: ExternalPluginEndpointAllowlistFilter,
 ) : HttpSecurityConfigurer {
 
     override fun configure(http: HttpSecurity) {
         try {
             http.addFilterBefore(serviceTokenFilter, BearerTokenAuthenticationFilter::class.java)
+            http.addFilterBefore(userTokenFilter, BearerTokenAuthenticationFilter::class.java)
+            // Single allowlist filter, after authentication — it recognises both the service and the
+            // user principal and intersects each with the configuration's granted endpoints.
             http.addFilterAfter(allowlistFilter, BearerTokenAuthenticationFilter::class.java)
         } catch (e: Exception) {
             throw HttpConfigurerConfigurationException(e)

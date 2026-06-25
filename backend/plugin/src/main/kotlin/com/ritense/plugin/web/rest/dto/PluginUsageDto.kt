@@ -31,9 +31,15 @@ enum class PluginUsageParentType {
 }
 
 /**
- * One BPMN activity that references a plugin configuration. Used by the "configuration in use"
- * and "host in use" guards on both the embedded and external plugin paths — the shape is the
- * same in all four 409 payloads (`hostId | configurationId` × `embedded | external`).
+ * One usage of a plugin configuration that blocks its deletion. Used by the "configuration in use"
+ * and "host in use" guards on both the embedded and external plugin paths.
+ *
+ * Two shapes share this DTO:
+ * - **Process-link usage** (embedded + external): the BPMN-activity fields are populated and
+ *   [tabKey] is null.
+ * - **External-plugin case-tab usage**: [tabKey]/[tabName] are populated, [parentType] is `CASE`,
+ *   and the process-link fields are null. (A `case-tab` of an external plugin references the
+ *   configuration but has no process link.)
  */
 data class PluginUsageDto(
     val configurationId: UUID,
@@ -41,10 +47,12 @@ data class PluginUsageDto(
     val parentType: PluginUsageParentType,
     val parentKey: String?,
     val parentVersionTag: String?,
-    val processDefinitionId: String,
-    val processDefinitionKey: String?,
-    val processDefinitionName: String?,
-    val activityId: String,
-    val activityName: String?,
-    val processLinkId: UUID,
+    val processDefinitionId: String? = null,
+    val processDefinitionKey: String? = null,
+    val processDefinitionName: String? = null,
+    val activityId: String? = null,
+    val activityName: String? = null,
+    val processLinkId: UUID? = null,
+    val tabKey: String? = null,
+    val tabName: String? = null,
 )

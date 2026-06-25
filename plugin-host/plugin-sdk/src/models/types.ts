@@ -60,6 +60,30 @@ export interface EventOutput {
 
 export type EventHandler = (event: EventInput) => EventOutput | void | Promise<EventOutput | void>;
 
+/**
+ * Input to a plugin's `handle_request` data handler. A plugin serves JSON to its own iframe through
+ * the host's `POST /plugins/:id/:version/data` route — the RPC-style counterpart to `handle_action`.
+ * `configuration` carries the plugin configuration's properties (like {@link ActionInput.configuration});
+ * `context` is the opaque per-call context the iframe passed through (e.g. the documentId/case keys).
+ */
+export interface RequestInput {
+  method: string;
+  path: string;
+  query?: Record<string, string>;
+  body?: unknown;
+  configurationId?: string;
+  configuration: Record<string, unknown>;
+  context?: Record<string, unknown>;
+}
+
+export interface RequestOutput {
+  status: number;
+  headers?: Record<string, string>;
+  body?: unknown;
+}
+
+export type RequestHandler = (input: RequestInput) => RequestOutput | Promise<RequestOutput>;
+
 export interface ManifestAction {
   key: string;
   title: string;
@@ -161,7 +185,15 @@ export interface DocumentContent {
 
 export interface DocumentDefinitionId {
   name: string;
-  version: number;
+  /**
+   * The owning blueprint (case definition / building block). Since the case-definition refactor the
+   * version lives here as `blueprintVersionTag`, not as a top-level `version` on the definitionId.
+   */
+  blueprintId?: {
+    blueprintKey: string;
+    blueprintType: "CASE" | "BUILDING_BLOCK";
+    blueprintVersionTag: string;
+  };
 }
 
 export interface Document {

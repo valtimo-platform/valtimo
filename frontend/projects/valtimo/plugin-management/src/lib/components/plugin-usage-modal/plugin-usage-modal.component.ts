@@ -64,8 +64,8 @@ export class PluginUsageModalComponent {
     this.closeEvent.emit();
   }
 
-  public trackByProcessLink(_index: number, usage: ExternalPluginHostUsage): string {
-    return usage.processLinkId;
+  public trackByUsage(_index: number, usage: ExternalPluginHostUsage): string {
+    return usage.processLinkId ?? `tab:${usage.parentKey}:${usage.tabKey}`;
   }
 
   public parentTypeTagColor(parentType: ExternalPluginHostUsageParentType): string {

@@ -23,16 +23,19 @@
  * bundled automatically by the build tooling.
  */
 
-import { getActionHandler } from "./actions.js";
-import { getEventHandlers } from "./events.js";
-import { setCurrentConfig } from "./config.js";
-import { log } from "./host-functions.js";
+import {getActionHandler} from "./actions.js";
+import {getEventHandlers} from "./events.js";
+import {getRequestHandler} from "./requests.js";
+import {setCurrentConfig} from "./config.js";
+import {log} from "./host-functions.js";
 import type {
   ActionInput,
   ActionOutput,
   EventInput,
   EventOutput,
   PluginManifest,
+  RequestInput,
+  RequestOutput,
 } from "./models/index.js";
 
 let pluginManifest: PluginManifest | null = null;
@@ -150,6 +153,40 @@ export function handleEvent(inputJson: string): string {
 }
 
 /**
+ * Called by the Plugin Host for plugin-served data requests.
+ * Input: JSON string with RequestInput shape.
+ * Output: JSON string with RequestOutput shape.
+ *
+ * Looks up the handler by `path` (falling back to a registered catch-all). An unknown path yields a
+ * 404-shaped RequestOutput rather than throwing.
+ */
+export function handleRequest(inputJson: string): string {
+  try {
+    const input: RequestInput = JSON.parse(inputJson);
+
+    setCurrentConfig(input.configuration || {});
+
+    const handler = getRequestHandler(input.path);
+    if (!handler) {
+      return JSON.stringify({
+        status: 404,
+        body: { error: `No request handler registered for path '${input.path}'` },
+      } satisfies RequestOutput);
+    }
+
+    const result = settleSync(handler(input));
+    return JSON.stringify(result);
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : String(err);
+    log.error(`Request handling failed: ${message}`);
+    return JSON.stringify({
+      status: 500,
+      body: { error: message },
+    } satisfies RequestOutput);
+  }
+}
+
+/**
  * Settles a possibly-async handler result synchronously. Under QuickJS-ng (Extism JS PDK) there is
  * no event loop, so a promise settles as the job queue drains. Surfaces a rejection as an error and
  * never returns a still-pending Promise.
@@ -252,6 +289,32 @@ export function handle_event(): number {
         status: "error",
         errorCode: "EXECUTION_ERROR",
         errorMessage: message,
+      })
+    );
+    return 1;
+  }
+}
+
+/**
+ * Extism-exported function that reads a data request from the host, dispatches it to the registered
+ * request handler, and writes the RequestOutput back.
+ *
+ * Plugin usage — register handlers at module load; the build wires up the export:
+ *   import { request } from "@valtimo/plugin-sdk";
+ *   request("/summary", (input) => ({ status: 200, body: { ... } }));
+ */
+export function handle_request(): number {
+  try {
+    const inputJson = Host.inputString();
+    const outputJson = handleRequest(inputJson);
+    Host.outputString(outputJson);
+    return 0;
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : String(err);
+    Host.outputString(
+      JSON.stringify({
+        status: 500,
+        body: { error: message },
       })
     );
     return 1;

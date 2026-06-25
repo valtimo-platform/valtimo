@@ -975,20 +975,28 @@
         "uniqueKeyError": "The key for this tab must be unique.",
         "invalidKeyError": "The key for this tab can only contains letters, numbers and dashes.",
         "widgetsComponent": "Widgets component",
+        "externalPlugin": "Plugin",
+        "externalPluginDisabled": "There are no activated plugins with a case tab, or they have all been added already.",
         "visibleTitle": "Task list visible on tab",
         "visible": "Visible",
         "invisible": "Not visible"
+      },
+      "externalPlugin": {
+        "loadError": "Could not load the external plugin tab. The plugin host may be unreachable or the bundle is unavailable."
       },
       "titles": {
         "custom": "Add new tab with custom component",
         "formio": "Add new tab with FormIO component",
         "standard": "Add new tab with standard content",
-        "widgets": "Add a new tab with widgets"
+        "widgets": "Add a new tab with widgets",
+        "external_plugin": "Add a new tab with a plugin"
       },
       "contentLabels": {
         "custom": "Choose custom component",
         "formio": "Choose FormIO component",
-        "standard": "Choose standard content"
+        "standard": "Choose standard content",
+        "external_plugin_config": "Choose plugin configuration",
+        "external_plugin_bundle": "Choose tab"
       },
       "editModal": {"title": "Edit tab {{name}}", "updateTab": "Update tab"},
       "deleteModal": {
@@ -2236,7 +2244,8 @@
         "CASE": "Case",
         "BUILDING_BLOCK": "Building block",
         "GLOBAL": "Global"
-      }
+      },
+      "caseTab": "Case tab"
     },
     "compatibility": {
       "incompatibleTag": "Incompatible",
@@ -2565,7 +2574,7 @@
     "url": "URL",
     "ui-component": "UI Component",
     "building-block": "Building block",
-    "external_plugin": "External plugin"
+    "external_plugin": "Plugin"
   },
   "externalPlugin": {
     "menuTitle": "External Plugins",

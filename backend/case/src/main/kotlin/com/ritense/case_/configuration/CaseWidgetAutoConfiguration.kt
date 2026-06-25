@@ -24,21 +24,26 @@ import com.ritense.case_.domain.tab.CaseWidgetTabWidget
 import com.ritense.case_.listener.CaseHeaderWidgetCaseEventListener
 import com.ritense.case_.listener.CaseTabCaseEventListener
 import com.ritense.case_.listener.CaseTagCaseEventListener
+import com.ritense.case_.repository.CaseExternalPluginTabRepository
 import com.ritense.case_.repository.CaseHeaderWidgetRepository
 import com.ritense.case_.repository.CaseWidgetTabRepository
 import com.ritense.case_.repository.CaseWidgetTabWidgetSpecificationFactory
+import com.ritense.case_.rest.CaseExternalPluginTabResource
 import com.ritense.case_.rest.CaseHeaderWidgetManagementResource
 import com.ritense.case_.rest.CaseHeaderWidgetResource
 import com.ritense.case_.rest.CaseWidgetTabManagementResource
 import com.ritense.case_.rest.CaseWidgetTabResource
+import com.ritense.case_.rest.MetrolineManagementResource
 import com.ritense.case_.rest.dto.CaseWidgetTabWidgetDto
 import com.ritense.case_.service.ActiveCaseDefinitionService
+import com.ritense.case_.service.CaseExternalPluginTabService
 import com.ritense.case_.service.CaseHeaderWidgetExporter
 import com.ritense.case_.service.CaseHeaderWidgetImporter
 import com.ritense.case_.service.CaseHeaderWidgetService
 import com.ritense.case_.service.CaseWidgetService
 import com.ritense.case_.service.CaseWidgetTabExporter
 import com.ritense.case_.service.CaseWidgetTabImporter
+import com.ritense.case_.service.ExternalPluginCaseTabResolver
 import com.ritense.case_.widget.CaseWidgetAnnotatedClassResolver
 import com.ritense.case_.widget.CaseWidgetDataProvider
 import com.ritense.case_.widget.CaseWidgetJacksonModule
@@ -50,17 +55,16 @@ import com.ritense.case_.widget.custom.CustomCaseWidgetMapper
 import com.ritense.case_.widget.divider.DividerCaseWidgetMapper
 import com.ritense.case_.widget.fields.FieldsCaseWidgetDataProvider
 import com.ritense.case_.widget.fields.FieldsCaseWidgetMapper
+import com.ritense.case_.widget.fieldsheader.FieldsCaseHeaderWidgetDataProvider
 import com.ritense.case_.widget.highlight.HighlightCaseWidgetDataProvider
 import com.ritense.case_.widget.highlight.HighlightCaseWidgetMapper
-import com.ritense.case_.widget.fieldsheader.FieldsCaseHeaderWidgetDataProvider
 import com.ritense.case_.widget.map.MapCaseWidgetDataProvider
 import com.ritense.case_.widget.map.MapCaseWidgetMapper
-import com.ritense.case_.widget.personcard.PersonCardCaseWidgetDataProvider
-import com.ritense.case_.widget.personcard.PersonCardCaseWidgetMapper
-import com.ritense.case_.rest.MetrolineManagementResource
 import com.ritense.case_.widget.metroline.MetrolineCaseWidgetDataProvider
 import com.ritense.case_.widget.metroline.MetrolineCaseWidgetMapper
 import com.ritense.case_.widget.metroline.ZaakMetrolineDataService
+import com.ritense.case_.widget.personcard.PersonCardCaseWidgetDataProvider
+import com.ritense.case_.widget.personcard.PersonCardCaseWidgetMapper
 import com.ritense.case_.widget.table.TableCaseWidgetDataProvider
 import com.ritense.case_.widget.table.TableCaseWidgetMapper
 import com.ritense.document.repository.InternalCaseStatusHistoryRepository
@@ -78,14 +82,15 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.boot.autoconfigure.domain.EntityScan
 import org.springframework.context.ApplicationContext
 import org.springframework.context.annotation.Bean
-import java.util.Optional
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories
+import java.util.Optional
 
 @AutoConfiguration
 @EnableJpaRepositories(
     basePackageClasses = [
         CaseWidgetTabRepository::class,
-        CaseHeaderWidgetRepository::class
+        CaseHeaderWidgetRepository::class,
+        CaseExternalPluginTabRepository::class
     ]
 )
 @EntityScan(basePackages = ["com.ritense.case_.domain", "com.ritense.case_.widget"])
@@ -166,6 +171,28 @@ class CaseWidgetAutoConfiguration {
     fun caseWidgetTabResource(
         caseWidgetService: CaseWidgetService
     ) = CaseWidgetTabResource(caseWidgetService)
+
+    @ConditionalOnMissingBean(CaseExternalPluginTabService::class)
+    @Bean
+    fun caseExternalPluginTabService(
+        documentService: DocumentService,
+        caseExternalPluginTabRepository: CaseExternalPluginTabRepository,
+        caseTabRepository: CaseTabRepository,
+        authorizationService: AuthorizationService,
+        externalPluginCaseTabResolver: Optional<ExternalPluginCaseTabResolver>,
+    ) = CaseExternalPluginTabService(
+        documentService,
+        caseExternalPluginTabRepository,
+        caseTabRepository,
+        authorizationService,
+        externalPluginCaseTabResolver,
+    )
+
+    @ConditionalOnMissingBean(CaseExternalPluginTabResource::class)
+    @Bean
+    fun caseExternalPluginTabResource(
+        caseExternalPluginTabService: CaseExternalPluginTabService
+    ) = CaseExternalPluginTabResource(caseExternalPluginTabService)
 
     @ConditionalOnMissingBean(CaseWidgetTabManagementResource::class)
     @Bean
