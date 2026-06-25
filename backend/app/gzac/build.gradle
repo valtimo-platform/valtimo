@@ -55,36 +55,8 @@ def bootRunRequested = gradle.startParameter.taskNames.any {
             it.endsWith(":bootRun") || it.endsWith(":bootRunWithDocker")
 }
 def includeDevSources = project.findProperty("includeDev")?.toString()?.toBoolean() ?: bootRunRequested
-// `-Pvariant=evenementenvergunning` swaps the gzac-template src/main overlay
-// for the evenementenvergunning demo overlay (used to publish
-// ritense/gzac-evenementenvergunning-backend). Default 'gzac' keeps the
-// existing gzac-template build.
-def variant = (project.findProperty("variant") ?: "gzac").toString()
 
-println "includeDevSources: $includeDevSources, variant: $variant"
-
-if (variant == "evenementenvergunning") {
-    // The demo carries its own com.ritense.valtimo.Application that boots the
-    // sample-data loader. Drop the gzac-template Application from the main
-    // source set so Kotlin doesn't see two classes with the same FQN.
-    extensions.configure(KotlinJvmProjectExtension) { kotlinExt ->
-        kotlinExt.sourceSets.named("main") { kotlinSourceSet ->
-            kotlinSourceSet.kotlin.srcDir("src/evenementenvergunning/kotlin")
-            kotlinSourceSet.kotlin.exclude("**/Application.kt")
-        }
-    }
-    sourceSets {
-        main {
-            resources.srcDir("src/evenementenvergunning/resources")
-        }
-    }
-    tasks.named("processResources").configure {
-        duplicatesStrategy = DuplicatesStrategy.INCLUDE
-    }
-    tasks.named("sourcesJar").configure {
-        duplicatesStrategy = DuplicatesStrategy.INCLUDE
-    }
-}
+println "includeDevSources: $includeDevSources"
 
 if (includeDevSources) {
     extensions.configure(KotlinJvmProjectExtension) { kotlinExt ->
