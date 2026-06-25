@@ -20,7 +20,6 @@
     "paths": {
       "@src": ["apps/dev/src"],
       "@src/*": ["apps/dev/src/*"],
-      "@valtimo/app-shell": ["projects/valtimo/app-shell/src/public-api.ts"],
       "@angular/*": ["./node_modules/@angular/*"],
       "@valtimo/layout": ["dist/valtimo/layout"],
       "@valtimo/layout/*": ["dist/valtimo/layout/*"],
@@ -113,9 +112,6 @@
     },
     {
       "path": "./apps/gzac/src/tsconfig.spec.json"
-    },
-    {
-      "path": "./projects/valtimo/app-shell/tsconfig.lib.json"
     },
     {
       "path": "./e2e/tsconfig.e2e.json"

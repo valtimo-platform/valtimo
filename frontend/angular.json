@@ -315,26 +315,6 @@
         }
       }
     },
-    "@valtimo/app-shell": {
-      "projectType": "library",
-      "root": "projects/valtimo/app-shell",
-      "sourceRoot": "projects/valtimo/app-shell/src",
-      "prefix": "valtimo",
-      "architect": {
-        "build": {
-          "builder": "@angular-devkit/build-angular:ng-packagr",
-          "options": {
-            "tsConfig": "projects/valtimo/app-shell/tsconfig.lib.json",
-            "project": "projects/valtimo/app-shell/ng-package.json"
-          },
-          "configurations": {
-            "production": {
-              "tsConfig": "projects/valtimo/app-shell/tsconfig.lib.prod.json"
-            }
-          }
-        }
-      }
-    },
     "@valtimo/layout": {
       "root": "projects/valtimo/layout",
       "sourceRoot": "projects/valtimo/layout/src",
