@@ -33,6 +33,11 @@ elements and displays an error panel. Clicking an error navigates to the element
 
   The path field in the task list column modal is now a searchable dropdown instead of a free-text input.
 
+* **Default sidebar state**
+
+  It is now possible to configure the default state for the sidebar (collapsed or not) application wide via the settings
+  page. User specific settings overwrite this.
+
 ## Bugfixes
 
 * **Sortable controls hidden for non-sortable paths**
