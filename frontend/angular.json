@@ -387,6 +387,373 @@
         }
       }
     },
+    "valtimo": {
+      "root": "apps/gzac",
+      "sourceRoot": "apps/valtimo/src",
+      "projectType": "application",
+      "prefix": "app",
+      "schematics": {
+        "@schematics/angular:component": {
+          "style": "scss"
+        }
+      },
+      "architect": {
+        "build": {
+          "builder": "@angular-devkit/build-angular:application",
+          "options": {
+            "outputPath": {
+              "base": "deployment/valtimo"
+            },
+            "index": "apps/valtimo/src/index.html",
+            "browser": "apps/valtimo/src/main.ts",
+            "polyfills": [
+              "apps/valtimo/src/polyfills.ts"
+            ],
+            "tsConfig": "apps/valtimo/src/tsconfig.app.json",
+            "assets": [
+              "apps/valtimo/src/favicon.ico",
+              "apps/valtimo/src/assets",
+              {
+                "glob": "**/*",
+                "input": "projects/valtimo/layout/assets/img",
+                "output": "./valtimo-layout/img/"
+              },
+              {
+                "glob": "**/*",
+                "input": "projects/valtimo/shared/assets/core",
+                "output": "./valtimo-translation/core/"
+              },
+              {
+                "glob": "**/*",
+                "input": "node_modules/monaco-editor",
+                "output": "assets/monaco-editor"
+              }
+            ],
+            "styles": [
+              "node_modules/bootstrap/dist/css/bootstrap.min.css",
+              "node_modules/perfect-scrollbar/css/perfect-scrollbar.css",
+              "node_modules/@mdi/font/css/materialdesignicons.css",
+              "node_modules/@foxythemes/bootstrap-datetime-picker-bs4/css/bootstrap-datetimepicker.css",
+              "node_modules/swagger-ui/dist/swagger-ui.css",
+              "node_modules/dmn-js/dist/assets/diagram-js.css",
+              "node_modules/dmn-js/dist/assets/dmn-js-decision-table.css",
+              "node_modules/dmn-js/dist/assets/dmn-js-decision-table-controls.css",
+              "node_modules/dmn-js/dist/assets/dmn-js-drd.css",
+              "node_modules/dmn-js/dist/assets/dmn-js-literal-expression.css",
+              "node_modules/dmn-js/dist/assets/dmn-js-shared.css",
+              "node_modules/dmn-js/dist/assets/dmn-font/css/dmn.css",
+              "node_modules/dmn-js/dist/assets/dmn-font/css/dmn-embedded.css",
+              "node_modules/dmn-js/dist/assets/dmn-font/css/dmn-codes.css",
+              "node_modules/bpmn-js/dist/assets/diagram-js.css",
+              "node_modules/bpmn-js/dist/assets/bpmn-font/css/bpmn.css",
+              "node_modules/bpmn-js/dist/assets/bpmn-font/css/bpmn-codes.css",
+              "node_modules/bpmn-js/dist/assets/bpmn-font/css/bpmn-embedded.css",
+              "node_modules/@bpmn-io/properties-panel/dist/assets/properties-panel.css",
+              "node_modules/ol/ol.css",
+              "node_modules/@valtimo/components/assets/css/ng-multiselect-dropdown.theme.scss",
+              "node_modules/@valtimo/layout/assets/css/app.css",
+              "apps/valtimo/src/styles.scss",
+              "node_modules/flatpickr/dist/flatpickr.css",
+              "node_modules/@valtimo/components/assets/css/carbon.scss",
+              "node_modules/@valtimo/components/assets/css/color.scss",
+              "node_modules/@valtimo/components/assets/css/compatibility.scss",
+              "node_modules/@valtimo/components/assets/css/design-tokens.css",
+              "node_modules/@valtimo/components/assets/css/formio-carbon.scss"
+            ],
+            "scripts": [
+              "node_modules/jquery/dist/jquery.min.js",
+              "node_modules/components-jqueryui/jquery-ui.min.js",
+              "node_modules/popper.js/dist/umd/popper.js",
+              "node_modules/bootstrap/dist/js/bootstrap.js",
+              "node_modules/@foxythemes/bootstrap-datetime-picker-bs4/js/bootstrap-datetimepicker.min.js",
+              "node_modules/perfect-scrollbar/dist/perfect-scrollbar.min.js",
+              "node_modules/select2/dist/js/select2.min.js",
+              "node_modules/@valtimo/layout/assets/js/app.js",
+              "apps/valtimo/src/assets/bpmn/ValtimoBPMNModeler.js",
+              "node_modules/@webcomponents/custom-elements/src/native-shim.js",
+              "node_modules/dmn-js/dist/dmn-modeler.development.js"
+            ],
+            "allowedCommonJsDependencies": [
+              "swagger-ui",
+              "bpmn-js-properties-panel",
+              "lodash",
+              "hammerjs",
+              "camunda-bpmn-moddle/lib",
+              "object-refs",
+              "heatmap.js-fixed"
+            ],
+            "extractLicenses": false,
+            "sourceMap": true,
+            "optimization": false,
+            "namedChunks": true
+          },
+          "configurations": {
+            "production": {
+              "fileReplacements": [],
+              "optimization": true,
+              "outputHashing": "all",
+              "sourceMap": false,
+              "namedChunks": false,
+              "extractLicenses": true,
+              "budgets": [
+                {
+                  "type": "anyComponentStyle",
+                  "maximumWarning": "6kb"
+                }
+              ]
+            },
+            "test": {
+              "outputHashing": "all",
+              "sourceMap": false,
+              "extractLicenses": true,
+              "budgets": [
+                {
+                  "type": "initial",
+                  "maximumWarning": "2mb",
+                  "maximumError": "5mb"
+                },
+                {
+                  "type": "anyComponentStyle",
+                  "maximumWarning": "6kb"
+                }
+              ]
+            }
+          },
+          "defaultConfiguration": ""
+        },
+        "serve": {
+          "builder": "@angular-devkit/build-angular:dev-server",
+          "options": {
+            "proxyConfig": "proxy.conf.json",
+            "buildTarget": "valtimo:build",
+            "hmr": false
+          },
+          "configurations": {
+            "production": {
+              "buildTarget": "valtimo:build:production"
+            }
+          }
+        },
+        "extract-i18n": {
+          "builder": "@angular-devkit/build-angular:extract-i18n",
+          "options": {
+            "buildTarget": "valtimo:build"
+          }
+        },
+        "test": {
+          "builder": "@angular-devkit/build-angular:karma",
+          "options": {
+            "main": "apps/valtimo/src/test.ts",
+            "polyfills": "apps/valtimo/src/polyfills.ts",
+            "tsConfig": "apps/valtimo/src/tsconfig.spec.json",
+            "karmaConfig": "apps/valtimo/src/karma.conf.js",
+            "styles": [
+              "apps/valtimo/src/styles.scss"
+            ],
+            "scripts": [],
+            "assets": [
+              "apps/valtimo/src/favicon.ico",
+              "apps/valtimo/src/assets"
+            ]
+          }
+        },
+        "lint": {
+          "builder": "@angular-eslint/builder:lint",
+          "options": {
+            "lintFilePatterns": [
+              "apps/valtimo/src/**/*.ts",
+              "apps/valtimo/src/**/*.html"
+            ]
+          }
+        }
+      }
+    },
+    "evenementenvergunning": {
+      "root": "apps/gzac",
+      "sourceRoot": "apps/evenementenvergunning/src",
+      "projectType": "application",
+      "prefix": "app",
+      "schematics": {
+        "@schematics/angular:component": {
+          "style": "scss"
+        }
+      },
+      "architect": {
+        "build": {
+          "builder": "@angular-devkit/build-angular:application",
+          "options": {
+            "outputPath": {
+              "base": "deployment/evenementenvergunning"
+            },
+            "index": "apps/evenementenvergunning/src/index.html",
+            "browser": "apps/evenementenvergunning/src/main.ts",
+            "polyfills": [
+              "apps/evenementenvergunning/src/polyfills.ts"
+            ],
+            "tsConfig": "apps/evenementenvergunning/src/tsconfig.app.json",
+            "assets": [
+              "apps/evenementenvergunning/src/favicon.ico",
+              "apps/evenementenvergunning/src/assets",
+              {
+                "glob": "**/*",
+                "input": "projects/valtimo/layout/assets/img",
+                "output": "./valtimo-layout/img/"
+              },
+              {
+                "glob": "**/*",
+                "input": "projects/valtimo/shared/assets/core",
+                "output": "./valtimo-translation/core/"
+              },
+              {
+                "glob": "**/*",
+                "input": "node_modules/monaco-editor",
+                "output": "assets/monaco-editor"
+              }
+            ],
+            "styles": [
+              "node_modules/bootstrap/dist/css/bootstrap.min.css",
+              "node_modules/perfect-scrollbar/css/perfect-scrollbar.css",
+              "node_modules/@mdi/font/css/materialdesignicons.css",
+              "node_modules/@foxythemes/bootstrap-datetime-picker-bs4/css/bootstrap-datetimepicker.css",
+              "node_modules/swagger-ui/dist/swagger-ui.css",
+              "node_modules/dmn-js/dist/assets/diagram-js.css",
+              "node_modules/dmn-js/dist/assets/dmn-js-decision-table.css",
+              "node_modules/dmn-js/dist/assets/dmn-js-decision-table-controls.css",
+              "node_modules/dmn-js/dist/assets/dmn-js-drd.css",
+              "node_modules/dmn-js/dist/assets/dmn-js-literal-expression.css",
+              "node_modules/dmn-js/dist/assets/dmn-js-shared.css",
+              "node_modules/dmn-js/dist/assets/dmn-font/css/dmn.css",
+              "node_modules/dmn-js/dist/assets/dmn-font/css/dmn-embedded.css",
+              "node_modules/dmn-js/dist/assets/dmn-font/css/dmn-codes.css",
+              "node_modules/bpmn-js/dist/assets/diagram-js.css",
+              "node_modules/bpmn-js/dist/assets/bpmn-font/css/bpmn.css",
+              "node_modules/bpmn-js/dist/assets/bpmn-font/css/bpmn-codes.css",
+              "node_modules/bpmn-js/dist/assets/bpmn-font/css/bpmn-embedded.css",
+              "node_modules/@bpmn-io/properties-panel/dist/assets/properties-panel.css",
+              "node_modules/ol/ol.css",
+              "node_modules/@valtimo/components/assets/css/ng-multiselect-dropdown.theme.scss",
+              "node_modules/@valtimo/layout/assets/css/app.css",
+              "apps/evenementenvergunning/src/styles.scss",
+              "node_modules/flatpickr/dist/flatpickr.css",
+              "node_modules/@valtimo/components/assets/css/carbon.scss",
+              "node_modules/@valtimo/components/assets/css/color.scss",
+              "node_modules/@valtimo/components/assets/css/compatibility.scss",
+              "node_modules/@valtimo/components/assets/css/design-tokens.css",
+              "node_modules/@valtimo/components/assets/css/formio-carbon.scss"
+            ],
+            "scripts": [
+              "node_modules/jquery/dist/jquery.min.js",
+              "node_modules/components-jqueryui/jquery-ui.min.js",
+              "node_modules/popper.js/dist/umd/popper.js",
+              "node_modules/bootstrap/dist/js/bootstrap.js",
+              "node_modules/@foxythemes/bootstrap-datetime-picker-bs4/js/bootstrap-datetimepicker.min.js",
+              "node_modules/perfect-scrollbar/dist/perfect-scrollbar.min.js",
+              "node_modules/select2/dist/js/select2.min.js",
+              "node_modules/@valtimo/layout/assets/js/app.js",
+              "apps/evenementenvergunning/src/assets/bpmn/ValtimoBPMNModeler.js",
+              "node_modules/@webcomponents/custom-elements/src/native-shim.js",
+              "node_modules/dmn-js/dist/dmn-modeler.development.js"
+            ],
+            "allowedCommonJsDependencies": [
+              "swagger-ui",
+              "bpmn-js-properties-panel",
+              "lodash",
+              "hammerjs",
+              "camunda-bpmn-moddle/lib",
+              "object-refs",
+              "heatmap.js-fixed"
+            ],
+            "extractLicenses": false,
+            "sourceMap": true,
+            "optimization": false,
+            "namedChunks": true
+          },
+          "configurations": {
+            "production": {
+              "fileReplacements": [
+                {
+                  "replace": "apps/evenementenvergunning/src/app/app-plugins.ts",
+                  "with": "apps/evenementenvergunning/src/app/app-plugins.prod.ts"
+                }
+              ],
+              "optimization": true,
+              "outputHashing": "all",
+              "sourceMap": false,
+              "namedChunks": false,
+              "extractLicenses": true,
+              "budgets": [
+                {
+                  "type": "anyComponentStyle",
+                  "maximumWarning": "6kb"
+                }
+              ]
+            },
+            "test": {
+              "outputHashing": "all",
+              "sourceMap": false,
+              "extractLicenses": true,
+              "budgets": [
+                {
+                  "type": "initial",
+                  "maximumWarning": "2mb",
+                  "maximumError": "5mb"
+                },
+                {
+                  "type": "anyComponentStyle",
+                  "maximumWarning": "6kb"
+                }
+              ]
+            }
+          },
+          "defaultConfiguration": ""
+        },
+        "serve": {
+          "builder": "@angular-devkit/build-angular:dev-server",
+          "options": {
+            "proxyConfig": "proxy.conf.json",
+            "buildTarget": "evenementenvergunning:build",
+            "hmr": false
+          },
+          "configurations": {
+            "production": {
+              "buildTarget": "evenementenvergunning:build:production"
+            }
+          }
+        },
+        "extract-i18n": {
+          "builder": "@angular-devkit/build-angular:extract-i18n",
+          "options": {
+            "buildTarget": "evenementenvergunning:build"
+          }
+        },
+        "test": {
+          "builder": "@angular-devkit/build-angular:karma",
+          "options": {
+            "main": "apps/evenementenvergunning/src/test.ts",
+            "polyfills": "apps/evenementenvergunning/src/polyfills.ts",
+            "tsConfig": "apps/evenementenvergunning/src/tsconfig.spec.json",
+            "karmaConfig": "apps/evenementenvergunning/src/karma.conf.js",
+            "styles": [
+              "apps/evenementenvergunning/src/styles.scss"
+            ],
+            "scripts": [],
+            "assets": [
+              "apps/evenementenvergunning/src/favicon.ico",
+              "apps/evenementenvergunning/src/assets"
+            ]
+          }
+        },
+        "lint": {
+          "builder": "@angular-eslint/builder:lint",
+          "options": {
+            "lintFilePatterns": [
+              "apps/evenementenvergunning/src/**/*.ts",
+              "apps/evenementenvergunning/src/**/*.html"
+            ]
+          }
+        }
+      }
+    },
     "@valtimo/layout": {
       "root": "projects/valtimo/layout",
       "sourceRoot": "projects/valtimo/layout/src",
