@@ -24,9 +24,10 @@ import {
   getCaseManagementRouteParams,
 } from '@valtimo/shared';
 import {FormDefinitionOption, FormService} from '@valtimo/form';
+import {ExternalPluginService, getExternalPluginDisplayName} from '@valtimo/plugin';
 import {ListItem} from 'carbon-components-angular';
-import {BehaviorSubject, combineLatest, map, Observable, of, switchMap} from 'rxjs';
-import {TabEnum} from '../models';
+import {BehaviorSubject, catchError, combineLatest, map, Observable, of, switchMap} from 'rxjs';
+import {ExternalPluginTabConfigOption, TabEnum} from '../models';
 
 @Injectable({
   providedIn: 'root',
@@ -82,7 +83,8 @@ export class TabService {
     @Inject(CASE_MANAGEMENT_TAB_TOKEN)
     private readonly caseManagementTabConfig: CaseManagementTabConfig[],
     private readonly formService: FormService,
-    private readonly translateService: TranslateService
+    private readonly translateService: TranslateService,
+    private readonly externalPluginService: ExternalPluginService
   ) {
     this.setInjectedCaseManagementTabs(this.caseManagementTabConfig);
   }
@@ -92,14 +94,16 @@ export class TabService {
     custom: boolean;
     formIO: boolean;
     widgets: boolean;
+    externalPlugin: boolean;
   }> {
     return combineLatest([
       this.configuredContentKeys$,
       this.getFormDefinitions(route),
       this.defaultTabs$,
       this.customComponentKeys$,
+      this.getExternalPluginTabItems(),
     ]).pipe(
-      map(([tabKeys, formDefinitions, defaultTabs, customComponentKeys]) => ({
+      map(([tabKeys, formDefinitions, defaultTabs, customComponentKeys, externalPluginItems]) => ({
         standard: defaultTabs.every((tabItem: ListItem) => tabKeys.includes(tabItem.contentKey)),
         custom:
           !customComponentKeys.length ||
@@ -108,7 +112,94 @@ export class TabService {
           !formDefinitions.length ||
           formDefinitions.every((tabItem: ListItem) => tabKeys.includes(tabItem.contentKey)),
         widgets: false,
+        externalPlugin:
+          !externalPluginItems.length ||
+          externalPluginItems.every((tabItem: ListItem) => tabKeys.includes(tabItem.contentKey)),
       }))
+    );
+  }
+
+  /**
+   * Lists the selectable content keys for `EXTERNAL_PLUGIN` tabs: one entry per `case-tab` bundle of
+   * each activated (`AVAILABLE`) external-plugin configuration. The `contentKey` encodes
+   * `"<configurationId>[:<bundleKey>]"` — consumed server-side (Phase 2.7) to create the side row.
+   *
+   * Degrades to an empty list when the external-plugin endpoints are unavailable (module absent).
+   */
+  public getExternalPluginTabItems(): Observable<ListItem[]> {
+    return combineLatest([
+      this.externalPluginService.getDefinitions(),
+      this.externalPluginService.getConfigurations(),
+    ]).pipe(
+      map(([definitions, configurations]) => {
+        const lang = this.translateService.currentLang;
+        const definitionById = new Map(definitions.map(definition => [definition.id, definition]));
+        const items: ListItem[] = [];
+
+        configurations.forEach(configuration => {
+          const definition = definitionById.get(configuration.definitionId);
+          if (!definition || definition.status !== 'AVAILABLE') return;
+
+          const caseTabBundles = (definition.manifest?.frontendBundles ?? []).filter(
+            bundle => bundle.type === 'case-tab'
+          );
+          if (!caseTabBundles.length) return;
+
+          const pluginName = getExternalPluginDisplayName(definition, lang);
+          caseTabBundles.forEach(bundle => {
+            const contentKey = bundle.key ? `${configuration.id}:${bundle.key}` : configuration.id;
+            const bundleSuffix =
+              caseTabBundles.length > 1 ? ` — ${bundle.title ?? bundle.key}` : '';
+            items.push({
+              contentKey,
+              content: `${configuration.title} (${pluginName})${bundleSuffix}`,
+              selected: false,
+            });
+          });
+        });
+
+        return items;
+      }),
+      catchError(() => of([] as ListItem[]))
+    );
+  }
+
+  /**
+   * Activated external-plugin configurations that expose ≥1 `case-tab` bundle, grouped so the tab
+   * editor can offer two dropdowns: pick the configuration, then the tab (bundle). The `contentKey`
+   * the editor writes is `"<configId>[:<bundleKey>]"` (Phase 2.7). Degrades to an empty list when the
+   * external-plugin endpoints are unavailable.
+   */
+  public getExternalPluginConfigs(): Observable<ExternalPluginTabConfigOption[]> {
+    return combineLatest([
+      this.externalPluginService.getDefinitions(),
+      this.externalPluginService.getConfigurations(),
+    ]).pipe(
+      map(([definitions, configurations]) => {
+        const lang = this.translateService.currentLang;
+        const definitionById = new Map(definitions.map(definition => [definition.id, definition]));
+
+        return configurations.reduce<ExternalPluginTabConfigOption[]>((options, configuration) => {
+          const definition = definitionById.get(configuration.definitionId);
+          if (!definition || definition.status !== 'AVAILABLE') return options;
+
+          const caseTabBundles = (definition.manifest?.frontendBundles ?? []).filter(
+            bundle => bundle.type === 'case-tab'
+          );
+          if (!caseTabBundles.length) return options;
+
+          options.push({
+            configId: configuration.id,
+            label: `${configuration.title} (${getExternalPluginDisplayName(definition, lang)})`,
+            bundles: caseTabBundles.map(bundle => ({
+              key: bundle.key ?? null,
+              title: bundle.title ?? bundle.key ?? 'case-tab',
+            })),
+          });
+          return options;
+        }, []);
+      }),
+      catchError(() => of([] as ExternalPluginTabConfigOption[]))
     );
   }
 

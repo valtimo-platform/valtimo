@@ -32,6 +32,7 @@ import com.ritense.case.web.rest.dto.CaseTabDto
 import com.ritense.case.web.rest.dto.CaseTabUpdateDto
 import com.ritense.case.web.rest.dto.CaseTabUpdateOrderDto
 import com.ritense.case_.service.event.CaseTabCreatedEvent
+import com.ritense.case_.service.event.CaseTabUpdatedEvent
 import com.ritense.document.domain.impl.JsonSchemaDocument
 import com.ritense.document.domain.impl.JsonSchemaDocumentId
 import com.ritense.document.service.DocumentDefinitionService
@@ -157,7 +158,7 @@ class CaseTabService(
 
         val existingTab = caseTabRepository.findOne(byCaseDefinitionIdAndTabKey(caseDefinitionId, tabKey)).get()
 
-        caseTabRepository.save(
+        val savedTab = caseTabRepository.save(
             existingTab.copy(
                 name = caseTab.name,
                 type = caseTab.type,
@@ -165,6 +166,8 @@ class CaseTabService(
                 showTasks = caseTab.showTasks
             )
         )
+
+        applicationEventPublisher.publishEvent(CaseTabUpdatedEvent(savedTab))
     }
 
     fun updateCaseTabs(caseDefinitionId: CaseDefinitionId, caseTabDtos: List<CaseTabUpdateOrderDto>): List<CaseTab> {

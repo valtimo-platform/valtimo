@@ -39,6 +39,16 @@ interface GzacApiRequest {
   path: string;
   body?: unknown;
   headers?: Record<string, string>;
+  /**
+   * Which credential the host should authenticate the callback with:
+   * - `"service"` (default): the plugin configuration's **service token** — a system credential.
+   *   Bypasses PBAC; reach is only bounded by the configuration's granted-endpoint allowlist, so it
+   *   can read more than any individual user.
+   * - `"user"`: the **downscoped user token** forwarded from the iframe's tab. Runs normal PBAC for
+   *   the logged-in user ∩ the allowlist. Only available when the call originates from a tab that
+   *   forwarded the user token (i.e. `handle_request`), not from `handle_action`/`handle_event`.
+   */
+  as?: "user" | "service";
 }
 
 function callGzacApi(req: GzacApiRequest): GzacApiResponse {
@@ -75,31 +85,40 @@ function callGzacApi(req: GzacApiRequest): GzacApiResponse {
   return JSON.parse(replyJson) as GzacApiResponse;
 }
 
-export const gzacApi = {
-  get<T = unknown>(
-    path: string,
-    headers?: Record<string, string>
-  ): GzacApiResponse<T> {
-    return callGzacApi({ method: "GET", path, headers }) as GzacApiResponse<T>;
-  },
-  post<T = unknown>(
-    path: string,
-    body?: unknown,
-    headers?: Record<string, string>
-  ): GzacApiResponse<T> {
-    return callGzacApi({ method: "POST", path, body, headers }) as GzacApiResponse<T>;
-  },
-  put<T = unknown>(
-    path: string,
-    body?: unknown,
-    headers?: Record<string, string>
-  ): GzacApiResponse<T> {
-    return callGzacApi({ method: "PUT", path, body, headers }) as GzacApiResponse<T>;
-  },
-  delete<T = unknown>(
-    path: string,
-    headers?: Record<string, string>
-  ): GzacApiResponse<T> {
-    return callGzacApi({ method: "DELETE", path, headers }) as GzacApiResponse<T>;
-  },
-};
+function makeGzacApi(as?: "user" | "service") {
+  return {
+    get<T = unknown>(path: string, headers?: Record<string, string>): GzacApiResponse<T> {
+      return callGzacApi({ method: "GET", path, headers, as }) as GzacApiResponse<T>;
+    },
+    post<T = unknown>(
+      path: string,
+      body?: unknown,
+      headers?: Record<string, string>
+    ): GzacApiResponse<T> {
+      return callGzacApi({ method: "POST", path, body, headers, as }) as GzacApiResponse<T>;
+    },
+    put<T = unknown>(
+      path: string,
+      body?: unknown,
+      headers?: Record<string, string>
+    ): GzacApiResponse<T> {
+      return callGzacApi({ method: "PUT", path, body, headers, as }) as GzacApiResponse<T>;
+    },
+    delete<T = unknown>(path: string, headers?: Record<string, string>): GzacApiResponse<T> {
+      return callGzacApi({ method: "DELETE", path, headers, as }) as GzacApiResponse<T>;
+    },
+  };
+}
+
+/**
+ * Callback into the GZAC instance that owns this configuration.
+ *
+ * - `gzacApi.get(...)` etc. use the **service token** (system credential, PBAC-bypassing, bounded by
+ *   the granted-endpoint allowlist) — works from actions, events and requests.
+ * - `gzacApi.asUser.get(...)` etc. use the **downscoped user token** (PBAC ∩ allowlist) — only works
+ *   from a `handle_request` invocation that a tab made with the user token forwarded; otherwise the
+ *   host returns a 401-shaped response.
+ */
+export const gzacApi = Object.assign(makeGzacApi(), {
+  asUser: makeGzacApi("user"),
+});

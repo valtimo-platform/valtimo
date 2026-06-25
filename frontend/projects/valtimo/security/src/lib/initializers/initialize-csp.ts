@@ -68,9 +68,10 @@ export const initializeCsp =
 
     if (cspHeaderParams) {
       if (additionalPluginHostOrigins?.length > 0) {
-        // Each external plugin host serves both iframes (frame-src) and assets like the plugin
-        // logo (img-src) from its own origin, so the directive list needs both augmented.
-        for (const directive of ['frame-src', 'img-src'] as const) {
+        // Each external plugin host serves iframes (frame-src), assets like the plugin logo
+        // (img-src), and the parent-proxy data route the case-tab fetches cross-origin
+        // (connect-src), all from its own origin — so every one of those directives needs augmenting.
+        for (const directive of ['frame-src', 'img-src', 'connect-src'] as const) {
           const values = cspHeaderParams.directives?.[directive];
           if (Array.isArray(values)) {
             const unique = additionalPluginHostOrigins.filter(o => !values.includes(o));

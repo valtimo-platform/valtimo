@@ -22,7 +22,7 @@ Status legend: ✅ implemented & verified · 🟡 implemented, POC-level · ⛔ 
 | Endpoint descriptions (`@EndpointDescription` on every controller method) + contract annotation | `backend/*/.../web/rest/*Resource.{kt,java}`, `com.ritense.valtimo.contract.endpoint.EndpointDescription` | ✅ |
 | Plugin host (Node + Fastify + Extism, multi-version) | `plugin-host/app/` | 🟡 |
 | Event consumer (RabbitMQ → `handle_event`) | `plugin-host/app/src/rabbitmq/event-consumer.ts` | ✅ |
-| Backend plugin SDK (`@valtimo/plugin-sdk`) — actions, events, `gzacApi`, frontend `t()` | `plugin-host/plugin-sdk/` | ✅ |
+| Backend plugin SDK (`@valtimo/plugin-sdk`) — actions, events, requests (`handle_request`), `gzacApi` (+ `asUser`), frontend `t()` + parent-proxy data access (`callValtimo`/`getPluginData`) | `plugin-host/plugin-sdk/` | ✅ |
 | Shared manifest validation (name/description-in-translations), one rule set for pack + host | `plugin-host/plugin-sdk/src/manifest-validation.ts` (subpath `@valtimo/plugin-sdk/manifest-validation`) | ✅ |
 | Sample plugin (action + event handler + logo + i18n) | `plugin-host/sample-plugins/case-summary/` | ✅ |
 | Frontend management UI + external models/service/iframe | `frontend/projects/valtimo/{plugin-management,plugin}/` | ✅ |
@@ -34,6 +34,9 @@ Status legend: ✅ implemented & verified · 🟡 implemented, POC-level · ⛔ 
 | Transport confidentiality (TLS): host serves HTTPS from `TLS_*`; broker credentials confined to a confidential transport at host registration | `plugin-host/app/src/index.ts` (`buildHttpsOptions`) + `models/app-config.ts` ↔ `service/ExternalPluginHostService.isSecureTransport` | ✅ |
 | GZAC compatibility check (semver range vs running version): comparator + version provider + zip manifest peek; non-blocking UI warnings, upload confirm-gate | `backend/external-plugin/.../compatibility/*` + `web/rest/ExternalPluginManagementResource.kt#uploadPlugin` ↔ frontend `plugin-management/.../utils/external-plugin-compatibility.util.ts` | ✅ |
 | Strict delete guards (embedded + external), shared usage DTO/resolver + `/usages` endpoints + read-only in-use modal, no force override | core `backend/plugin/.../{web/rest/dto/PluginUsageDto, service/ProcessDefinitionUsageMetaResolver, service/PluginConfigurationUsageResolver, exception/PluginConfigurationInUseException}` + `backend/external-plugin/.../{service/ExternalPluginHostUsageResolver, exception/ExternalPlugin*InUseException}` ↔ frontend `plugin-management/.../plugin-usage-modal/` | ✅ |
+| Iframe case-detail tab (`EXTERNAL_PLUGIN` tab type, side table, PBAC content endpoint, bundle-resolver SPI) + admin UX | `backend/case/.../case_/{domain/tab/CaseExternalPluginTab, repository/CaseExternalPluginTabRepository, service/CaseExternalPluginTabService, rest/CaseExternalPluginTabResource, service/ExternalPluginCaseTabResolver}` + `backend/external-plugin/.../service/ExternalPluginCaseTabResolverImpl` ↔ frontend `case/.../case-detail/tab/external-plugin`, `case-management/.../tabs` | ✅ |
+| Downscoped user token (PBAC ∩ allowlist), non-management mint endpoint, parent-proxy iframe (opaque origin, no token in iframe) | `backend/external-plugin/.../security/ExternalPluginUserToken{KeyProvider,Authenticator,Filter}, security/ExternalPluginUserPrincipal, service/ExternalPluginUserTokenService, web/rest/ExternalPluginUserTokenResource` ↔ frontend `plugin/.../external-plugin-iframe`, SDK `frontend/plugin-frontend-sdk.ts` (proxy bridge) | ✅ |
+| Plugin-served data route (`handle_request` Wasm export + host `POST .../data`) + backend-as-user (`gzacApi.asUser`) | `plugin-host/plugin-sdk/src/{requests.ts,runtime.ts,gzac-api.ts}`, `plugin-host/app/src/{routes/plugin-data.ts,host-functions/gzac-api.ts,plugin-manager.ts#callRequest}` | 🟡 |
 
 Single-core-app model with **multiple hosts per instance**: the core app pushes each configuration
 directly to its host with a freshly issued service token, a `gzacBaseUrl` callback target taken
@@ -129,8 +132,10 @@ acceptance screen (§4) is security-critical.
 
 **3.8 Manifest field naming.** The endpoint allowlist lives at `permissions.endpoints` in the
 manifest. The same declaration is the source of truth for both the service-token allowlist (this
-section) and the upcoming iframe user-token path (§13) — one block, two consumers. SDK type
-`Endpoint`, Kotlin DTO `GrantedEndpointEntry`, frontend type `ExternalPluginEndpoint`.
+section) and the iframe user-token path (§13, ✅) — one block, **two principals** through one
+`ExternalPluginEndpointAllowlistFilter` (`ExternalPluginServicePrincipal` and
+`ExternalPluginUserPrincipal`). SDK type `Endpoint`, Kotlin DTO `GrantedEndpointEntry`, frontend type
+`ExternalPluginEndpoint`.
 
 **3.9 Reverse direction — GZAC→host authentication (HMAC), every route ✅.** Calls that flow the
 *other* way (core app → host) are authenticated with an HMAC-SHA256 signature, not the service
@@ -302,8 +307,10 @@ carries `pluginId, pluginVersion, properties, serviceToken, gzacBaseUrl, eventSu
 optionally `eventBroker` — only `serviceToken`/`gzacBaseUrl` are actually validated, `pluginId`/
 `pluginVersion` are not null-checked); `POST /plugins/:id/:version/actions/:key`
 (HMAC-signed §3.9 — **no GET variant**); public `GET …/plugin-manifest`, `…/logo`,
-`…/bundles/**`. Multi-version load keyed `pluginId@version`. The only registered host function is
-`gzac_api`.
+`…/bundles/**`, and **public `POST …/data`** (the `handle_request` RPC route, §13.4/§13.5 —
+unauthenticated for this iteration, with CORS `*` + `OPTIONS` preflight; ⚠️ must be capability/auth
+gated before production, see §14). Multi-version load keyed `pluginId@version`. The only registered
+host function is `gzac_api` (now also able to authenticate as the user, §13.4).
 
 Configs are **persisted to PostgreSQL**; `ConfigRegistry` is a thin pass-through over
 `ConfigRepository` — every read/write hits the DB, there is **no separate in-memory cache** despite
@@ -333,7 +340,8 @@ see §8.4), plus `DB_HOST` / `DB_PORT` (defaults to **5434**, not the standard 5
 variables** — the host never configures a broker itself.
 
 Gaps to close for production: no `log` / `http_request` / `kv` host functions or capability
-allowlist; no HTMX `render_page` / `handle_request`.
+allowlist; no HTMX `render_page`; the `handle_request` `/data` route ships **public** (no HMAC, no
+auth) — it must be capability/auth-gated before production (§13.5, §14).
 
 ## 8. Event subscription & delivery ✅
 
@@ -494,17 +502,21 @@ register; all run per event.
 
 ## 9. SDK & developer experience ✅
 
-A plugin author writes `src/plugin.ts`: import `{action, onEvent, config, gzacApi, log}` from
-`@valtimo/plugin-sdk`; `action("key", (input) => ({status, variables}))`; `onEvent((event) => …)`;
-read config via synchronous `config.get()`; call `gzacApi.{get,post,put,delete}()` (synchronous
-from the plugin's view — the host suspends the call). Build:
-`valtimo-plugin-build` (esbuild → `extism-js`) then `valtimo-plugin-pack` (zip of `manifest.json`
-+ `plugin.wasm` + `frontend/` + optional `logo.{svg,png,jpg,jpeg}`).
+A plugin author writes `src/plugin.ts`: import `{action, onEvent, request, config, gzacApi, log}`
+from `@valtimo/plugin-sdk`; `action("key", (input) => ({status, variables}))`;
+`onEvent((event) => …)`; `request("/path", (input) => ({status, body}))` for iframe-served JSON
+data (§13.4); read config via synchronous `config.get()`; call `gzacApi.{get,post,put,delete}()`
+as the **service token**, or `gzacApi.asUser.{…}()` as the **downscoped user token** (§13.4) — both
+synchronous from the plugin's view (the host suspends the call). Build: `valtimo-plugin-build`
+(esbuild → `extism-js`) then `valtimo-plugin-pack` (zip of `manifest.json` + `plugin.wasm` +
+`frontend/` + optional `logo.{svg,png,jpg,jpeg}`).
 
-DX done: the build auto-generates the Wasm interface (`handle_action` + `handle_event` exports +
-`gzac_api` import) so authors write only `src/plugin.ts`; the runtime settles returned promises
-and never serialises a pending `Promise`; the pack copies `manifest.json` verbatim so
-`eventSubscriptions`, `permissions`, and `translations` carry through.
+DX done: the build auto-generates the Wasm interface (`handle_action` + `handle_event` +
+`handle_request` exports + `gzac_api` import) so authors write only `src/plugin.ts`; the runtime
+settles returned promises and never serialises a pending `Promise`; the pack copies `manifest.json`
+verbatim so `eventSubscriptions`, `permissions`, and `translations` carry through, and compiles each
+`frontend/*.tsx` referenced by a `frontend/*.html` `<script>` into a `*.bundle.js` (e.g. the
+`config`, `process-link-action`, and `case-tab` bundles).
 
 `PluginManifest` is defined once in `@valtimo/plugin-sdk/src/models/types.ts`; the host app's
 `models/plugin-manifest.ts` re-exports from the SDK so there is a single source of truth. The
@@ -525,9 +537,17 @@ requires a non-empty `pluginId`/`version`, a non-empty `translations` object, an
 Frontend SDK (`@valtimo/plugin-sdk/frontend`):
 - `ValtimoPluginSDK` running inside the iframe communicates with the Angular parent via
   postMessage (`init`, `save`, `prefillConfiguration`, `ready`, `configurationChanged`, etc.).
+- **Parent-proxy data access (§13.2):** `sdk.callValtimo(method, path, body?)` and
+  `sdk.getPluginData(path, query?)` return a `Promise<{status, body}>`. Each emits a
+  correlation-id-keyed `proxyRequest` to the parent and resolves on the matching `proxyResponse`;
+  the iframe holds no token — the parent attaches the downscoped user token (GZAC) or forwards to the
+  host `/data` route (plugin data) and returns the **data only**.
 - `sdk.t(key, fallback?)` returns the translation for the current locale (`en` fallback, then
   raw key). Translations come from `manifest.translations[locale]`, fetched on construction from
-  the host's `/plugins/:id/:version/plugin-manifest` route.
+  the host's `/plugins/:id/:version/plugin-manifest` route. The manifest URL is derived from
+  `window.location.href` (not `origin`, which serialises to `"null"` at the opaque origin), and the
+  manifest route serves `Access-Control-Allow-Origin: *` so the cross-origin fetch from the opaque
+  iframe succeeds.
 - `sdk.ready()` resolves once **both** the manifest fetch completes **and** the parent's `init`
   message has arrived (or 2 s timeout); mount React inside `sdk.ready().then(...)` so the very
   first render uses the correct locale instead of flashing `en`.
@@ -572,10 +592,12 @@ at pack-time and upload-time (§9).
   Dutch and English re-renders these labels live.
 
 **CSP.** The main app's CSP `<meta>` tag is augmented at boot
-(`projects/valtimo/security/.../initialize-csp.ts`) with the discovered host origins on both
-`frame-src` (iframe loading) **and** `img-src` (logo loading). The bootstrap fetches
-`/api/management/v1/external-plugin/host` and passes the origins into the initializer; without
-this, `<img src="http://plugin-host:8090/.../logo">` is blocked by `img-src 'self' data:`.
+(`projects/valtimo/security/.../initialize-csp.ts`) with the discovered host origins on
+`frame-src` (iframe loading), `img-src` (logo loading), **and `connect-src`** (the parent-proxy's
+cross-origin `POST .../data` fetch, §13.2/§13.5 — without it the call is blocked by
+`connect-src 'self' …`, even though the iframe already loaded via `frame-src`). The bootstrap fetches
+`/api/management/v1/external-plugin/host` and passes the origins into the initializer before the meta
+tag is inserted (the CSP meta is immutable once parsed).
 
 ## 11. Multi-version support & compatibility 🟡 (coexistence ✅, compatibility check ✅, in-place upgrade ⛔)
 
@@ -691,7 +713,7 @@ there is no force override on any path.
 | Entity | Blocked when… | Surface |
 |--------|---------------|---------|
 | **ProcessLink** | never (BPMN authoring is the source of truth — the case definition is the gate) | — |
-| **Configuration** (external) | any `ProcessLink` references it | Server-side guard in `ExternalPluginConfigurationService.delete` throws `ExternalPluginConfigurationInUseException` (HTTP 409, `usages` payload). UI runs the usage pre-check and shows the read-only `PluginUsageModalComponent` listing the referencing activities. No override. |
+| **Configuration** (external) | any `ProcessLink` **or** any `EXTERNAL_PLUGIN` case tab references it | Server-side guard in `ExternalPluginConfigurationService.delete` throws `ExternalPluginConfigurationInUseException` (HTTP 409, `usages` payload). `ExternalPluginHostUsageResolver` folds in process-link usages **and** case-tab usages (via the case module's `CaseExternalPluginTabService.findUsagesForConfiguration`, §13.1). UI runs the pre-check and shows the read-only `PluginUsageModalComponent`, which renders both row kinds. No override. |
 | **Configuration** (embedded) | any *fixed* `PluginProcessLink` references it | Server-side guard in `PluginService.deletePluginConfiguration` throws `PluginConfigurationInUseException` (HTTP 409, `usages` payload). Same UI flow and modal. |
 | **Definition** | any `Configuration` exists for it | Not directly user-deletable; cleared by the discovery cycle when the upstream host no longer lists the version **and** no configurations remain. |
 | **Host** | any `Configuration` under any definition on this host has at least one `ProcessLink` referencing it | Server-side guard in `ExternalPluginHostService.delete` throws `ExternalPluginHostInUseException` (HTTP 409, `usages` payload). Host delete in the UI shows the same `PluginUsageModalComponent`. Deletion of an entire host with active configurations remains blocked: removing the host would orphan service tokens, push paths, and broker bindings for live configurations. |
@@ -708,10 +730,13 @@ module (`backend/plugin`, which now depends on `:backend:core` for the Operaton 
 code imports them rather than redefining them:
 
 - `web/rest/dto/PluginUsageDto` + `PluginUsageParentType` (`CASE | BUILDING_BLOCK | GLOBAL`) — the
-  single DTO shape returned in all four 409 payloads and `/usages` responses. Carries
-  `configurationId`, `configurationTitle`, `parentType`, `parentKey`, `parentVersionTag`,
-  `processDefinitionId`, `processDefinitionKey`, `processDefinitionName`, `activityId`,
-  `activityName`, `processLinkId`.
+  single DTO shape returned in the 409 payloads and `/usages` responses. Carries
+  `configurationId`, `configurationTitle`, `parentType`, `parentKey`, `parentVersionTag`, and — for a
+  **process-link** usage — `processDefinitionId`, `processDefinitionKey`, `processDefinitionName`,
+  `activityId`, `activityName`, `processLinkId` (all now **nullable**). For an **external-plugin
+  case-tab** usage those process fields are null and `tabKey`/`tabName` are populated instead
+  (`parentType = CASE`). The frontend `ExternalPluginHostUsage` model and `PluginUsageModalComponent`
+  were widened to render either kind.
 - `service/ProcessDefinitionUsageMetaResolver` — resolves a process definition's key/name, the
   owning **case definition or building block** (parsed from the Operaton `versionTag` via
   `OperatonProcessDefinition.getBlueprintId()`, widened into `PluginUsageParentType`), and lazily
@@ -763,44 +788,139 @@ in one place (matching the external edit modal). `PluginUsageModalComponent` is 
 translation keys. i18n lives under `pluginManagement.{deleteConfigurationModal, hostInUseModal,
 configurationInUseModal, usageModal}` in `en.json` / `nl.json`.
 
-## 13. User-token-scoped endpoints (downscoped) ⛔
+## 13. Iframe surfaces & user-scoped access ✅ (case tab) / 🟡 (POC)
 
-A plugin's iframe surfaces — case tabs, case widgets, menu pages, task forms — need to call GZAC
-endpoints **on behalf of the logged-in user**, not on behalf of the plugin configuration. The
-case tab should respect what the user can see; the task form should mutate what the user can
-mutate.
+A plugin's iframe surfaces need to call GZAC **on behalf of the logged-in user** (respect what the
+user can see/do), and the plugin **backend** may call GZAC either as the user or as the system. The
+first implemented surface is the **case-detail tab**; case widgets, menu pages and task forms remain
+⛔. The implementation diverges from the original design in one important way — the iframe holds
+**no token** and routes calls through the Angular parent (the **parent-proxy** model, §13.2) instead
+of being handed the token via `init`.
 
-**Design (to implement).**
+### 13.1 Case-tab surface (`EXTERNAL_PLUGIN` tab type) ✅
 
-- The same `permissions.endpoints` block in the manifest (§3.8) declares the endpoints the plugin
-  may call. The admin's accept-at-activation grant covers both authorities.
-- For each iframe load the parent calls a new `POST /api/management/v1/external-plugin/user-token`
-  endpoint, which issues a **downscoped** JWT:
-  - Bearer authentication: the logged-in user's Keycloak token.
-  - Returns a JWT scoped to `(userSub, pluginConfigurationId)`, short TTL (≤15 minutes), keyed on
-    the same SHA-256 derived secret as service tokens but with `type=external_plugin_user`.
-- A new request filter (`ExternalPluginUserTokenFilter`) accepts the user token, attaches a
-  principal that carries **both** the original user identity **and** the bound configuration. PBAC
-  runs normally (the user identity controls what's allowed) **and** the endpoint allowlist
-  intersection runs (the plugin's granted endpoints restrict further). Net rule: the plugin can
-  only do, on behalf of the user, what (a) the user could already do via PBAC **and** (b) the
-  admin granted at activation.
-- The user token is passed to the iframe via the existing `init` postMessage (replacing the empty
-  `accessToken` field, which is currently a placeholder). The frontend SDK exposes
-  `sdk.getAccessToken()`; iframes use it as `Authorization: Bearer` on their own fetches.
+- New `CaseTabType.EXTERNAL_PLUGIN` (`@JsonValue` → `external_plugin`); 15 chars fit
+  `case_tab.type varchar(20)`, **no DDL change** to that column.
+- Side table `case_external_plugin_tab` — composite PK `(case_definition_key,
+  case_definition_version_tag, tab_key)`, FK → `case_tab(...)` `ON DELETE CASCADE`, plus
+  `external_plugin_configuration_id uuid not null` and nullable `bundle_key`. DDL lives in the core
+  **release** changelog `backend/core/.../liquibase/13-32-0/20260622-add-case-external-plugin-tab.xml`
+  (registered in `13-32-0-master.xml`), **not** in `initial-setup` — new changesets go in the
+  current release folder.
+- `CaseExternalPluginTabService` creates the side row on `CaseTabCreatedEvent` when
+  `type == EXTERNAL_PLUGIN`; the configuration id + optional bundle key are parsed from the generic
+  `contentKey` (`"<configId>[:<bundleKey>]"`), so the create path is untouched (mirrors WIDGETS) and
+  **duplicate-on-copy is automatic** — the create event reconstructs the side row, no listener branch
+  needed.
+- Content endpoint `GET /api/v1/document/{documentId}/external-plugin-tab/{tabKey}` —
+  USER-gated in `CaseHttpSecurityConfigurer` (mirroring `widget-tab`; a missing matcher would 403 by
+  deny-by-default), runs the WIDGETS PBAC pattern (`CaseTab` VIEW with document context) and returns
+  `{ bundleUrl, configurationId, bundleKey, context }` where
+  `context = { documentId, caseDefinitionKey, caseDefinitionVersionTag, pluginConfigurationId }`.
+- The bundle URL is resolved through a **one-directional SPI**: `ExternalPluginCaseTabResolver`
+  (declared in `case`, consumed as `Optional` so case builds without external-plugin) implemented by
+  `ExternalPluginCaseTabResolverImpl` in `external-plugin` (which now compile-depends on
+  `:backend:case`, no cycle) → `${definition.baseUrl}/${definition.version}${bundle.path}` for the
+  manifest's `case-tab` bundle (by `key`, or the sole one).
+- **Admin UX** (`@valtimo/case-management`): "External plugin" in the add-tab type picker, disabled
+  when no activated configuration exposes a `case-tab` bundle; an inline content selector lists
+  activated configs' `case-tab` bundles (bundle-title suffix when a plugin ships more than one) and
+  writes the `contentKey`. Tab dispatch (`@valtimo/case`) maps `ApiTabType.EXTERNAL_PLUGIN` to
+  `CaseDetailExternalPluginTabComponent`, which loads the content endpoint, mints a user token, and
+  renders `<valtimo-external-plugin-iframe>` (re-minting before the ≤15-min expiry).
 
-Service tokens (for action/event callbacks) stay as they are — PBAC-bypassing, allowlist-only —
-because plugin code running server-side has no user context. Only iframe-driven calls flow
-through the user-token path.
+### 13.2 Parent-proxy transport — the iframe holds no token ✅
+
+The original design proposed passing the user token into the iframe via `init` and letting the
+iframe fetch with it. **That was not implemented.** The iframe is rendered at an **opaque origin**
+(`sandbox="allow-scripts"`, *without* `allow-same-origin`) and never holds a credential:
+
+- The bundle calls `sdk.callValtimo(method, path, body?)` or `sdk.getPluginData(path)`; the frontend
+  SDK emits a correlation-id-keyed `proxyRequest` postMessage to the Angular parent and awaits a
+  `proxyResponse`.
+- `ExternalPluginIframeComponent` performs the call and posts back the **data only**. For GZAC
+  (`target:"gzac"`) it uses a **raw `fetch`** (not Angular `HttpClient`, so the Keycloak bearer
+  interceptor never attaches the full Keycloak token — a confused-deputy guard) with the downscoped
+  user token over a same-origin relative `/api/...` path (**zero CORS**). For plugin data
+  (`target:"plugin"`) it POSTs to the host `/data` route (cross-origin; the host serves
+  `Access-Control-Allow-Origin: *`).
+- Inbound messages are validated by `event.source === iframe.contentWindow` (an opaque-origin iframe
+  reports `event.origin === "null"`); the token never enters a postMessage.
+- **Why opaque-origin matters for escalation:** a same-origin (`allow-same-origin`) iframe could read
+  the GZAC app's session / full Keycloak token and escalate beyond the allowlist. The opaque origin
+  forecloses that, and is the reason the parent-proxy is retained even when token *confidentiality*
+  is not a concern.
+
+### 13.3 Downscoped user token ✅
+
+- **Mint endpoint** `POST /api/v1/external-plugin/configuration/{configurationId}/user-token` —
+  deliberately **non-management** and **not ADMIN-gated** (any authenticated user; the result is
+  always bounded by PBAC ∩ allowlist). Explicitly whitelisted `.authenticated()` in
+  `ExternalPluginHttpSecurityConfigurer`. Reads the current user via
+  `SecurityUtils.getCurrentUserLogin()/getCurrentUserRoles()`, verifies the configuration exists, and
+  returns `{ userToken, expiresAt }`.
+- **Token** (`ExternalPluginUserTokenService`): HS256, `sub=userLogin`, custom `roles` claim,
+  `plugin_config_id`, `type=external_plugin_user`, `iss=valtimo-gzac`, `iat`, `exp`. TTL from
+  `valtimo.external-plugin.user-token.ttl`, **hard-capped at 15 minutes**. Signed with the same
+  `SHA-256(valtimo.plugin.encryption-secret)` key as the service token; `ExternalPluginUserTokenKeyProvider`
+  discriminates by `type`.
+- **Recognition** (`ExternalPluginUserTokenFilter`, before `BearerTokenAuthenticationFilter` in
+  `ExternalPluginCallbackHttpSecurityConfigurer`): sets an `ExternalPluginUserPrincipal`, strips the
+  `Authorization` header, and — the **one critical divergence** from the service-token filter — does
+  **NOT** `runWithoutAuthorization`. PBAC stays fully active.
+- **Principal** `ExternalPluginUserPrincipal(userLogin, roles, pluginConfigId) : UserDetails` —
+  **not** a `SystemPrincipal`. `getUsername()` = the user login (so `getCurrentUserLogin()` and PBAC
+  conditions referencing the current user behave as for a Keycloak session); authorities = the token
+  roles (so `getCurrentUserRoles()` round-trips). Roles are frozen ≤15 min — no Keycloak round-trip.
+- **Enforcement**: `ExternalPluginEndpointAllowlistFilter` now extracts the `pluginConfigId` from
+  **either** `ExternalPluginServicePrincipal` **or** `ExternalPluginUserPrincipal` and intersects with
+  the configuration's granted endpoints. Net for the user token: **PBAC (enforced, not bypassed) ∩
+  allowlist**.
+
+### 13.4 Plugin backend, as the user (`gzacApi.asUser`) ✅
+
+A `handle_request` handler can call GZAC **as the user** — not just as the system — via
+`gzacApi.asUser.{get,post,put,delete}` (the existing `gzacApi.*` stays service-token). The parent
+forwards the downscoped user token in the `/data` POST body; `callRequest` threads it through the
+Extism per-call `hostContext` (host-only, **never** serialised into the Wasm input), and the
+`gzac_api` host function uses it when the request carries `as:"user"` (401-shaped reply if absent),
+else the service token. ⚠️ This hands the user token to the **plugin host** — a deliberate relaxation
+of "the token never leaves the browser," bounded by PBAC ∩ allowlist + the short TTL; plugin code
+receives data, never the token.
+
+### 13.5 Four communication levels (sample plugin) ✅
+
+The `case-summary` case tab demonstrates, side by side:
+
+1. **tab → GZAC (user token)** — `sdk.callValtimo` via the parent-proxy; PBAC ∩ allowlist.
+2. **tab → plugin backend (static)** — `sdk.getPluginData("/summary")` → `handle_request`, no GZAC.
+3. **tab → plugin backend → GZAC (user token)** — `gzacApi.asUser`; row-level PBAC ∩ allowlist.
+4. **tab → plugin backend → GZAC (service token)** — `gzacApi`; PBAC-bypassed, allowlist-only —
+   scope broader than the user.
+
+Levels 3 & 4 count cases via `POST /api/v1/case/{key}/search` (`totalElements`), a **row-level
+PBAC-filtered** list, so the user token returns the user's visible subset and the service token the
+full set — a faithful scope comparison. (A single-document GET can't show this: it's all-or-nothing
+and the user already has access to the case whose tab they opened — so it was replaced by the count.)
+This adds `{ "method": "POST", "pattern": "/api/v1/case/*/search" }` to the sample manifest's
+`permissions.endpoints`; the configuration must be (re)granted it for the allowlist to permit either
+token.
+
+Service tokens (action/event callbacks) are unchanged. ⚠️ The host `/data` route is still **public**
+(§7), so a level-4 handler exposes system-scoped data unauthenticated — gating `/data`
+(capability/auth) is the priority hardening item before non-POC use, and matters far more for
+privilege-escalation than the front-end transport choice.
 
 ## 14. Not yet implemented ⛔
 
 - Host capabilities + host functions (`http_request`, `kv`, structured `log`) with allowlist
   enforcement.
-- HTMX `render_page` / `handle_request`.
-- Case tabs / case widgets / menu pages (the iframe surfaces).
-- User-token-scoped endpoints (§13) — iframe-driven calls on behalf of the logged-in user with
-  PBAC ∩ allowlist intersection.
+- **Auth/capability gating of the public host `/data` route** (`handle_request`) — today it executes
+  plugin Wasm unauthenticated and a service-token-backed handler can return system-scoped data
+  (§7, §13.5). This is the top hardening item.
+- HTMX `render_page` (only the RPC-style `handle_request` for JSON data is implemented).
+- Case **widgets**, **menu pages**, **task forms** (the remaining iframe surfaces — the case **tab**
+  is done, §13.1).
 - Host database for KV / API logs / retention.
 - URL-plugin mode.
 - DLQ for nacked or expired messages (today `nack(false,false)` drops, `x-expires` deletes the
@@ -808,12 +928,11 @@ through the user-token path.
 
 ## 15. Roadmap (priority order)
 
-1. **User-token-scoped endpoints (§13)** — new `POST /user-token` endpoint, user-token filter
-   with PBAC ∩ allowlist intersection, frontend wiring in `ExternalPluginIframeComponent.onIframeLoad()`
-   to populate `accessToken` from `/user-token`, SDK side already exposes `getAccessToken()`.
+1. **Harden the host `/data` route** — capability/auth gating so a `handle_request` handler can't be
+   triggered (and can't reach the service token) unauthenticated; tighten the allowlist surface.
 2. Capabilities + host functions + allowlist enforcement; surface in the acceptance screen by
    category.
-3. HTMX pages, case tabs, case widgets, menu pages.
+3. Remaining iframe surfaces: HTMX pages, case widgets, menu pages, task forms (case **tab** done).
 4. Host database (KV, API logs, retention) + admin log view.
 5. Cleanup: align async-vs-sync SDK docs.
 
@@ -821,9 +940,23 @@ through the user-token path.
 
 - Host `tsc` build and `@valtimo/plugin-sdk` build: clean (including the optional-TLS
   `buildHttpsOptions` wiring in `plugin-host/app/src/index.ts`).
-- Backend `:backend:external-plugin:test`: BUILD SUCCESSFUL (allowlist + service-token-filter +
-  service-token-ttl + endpoint-description-coverage + host-client-HMAC + host-registration
-  transport-guard + compatibility + event-queue mode/TTL tests). The host-client-HMAC suite
+- Backend `:backend:external-plugin:test`: BUILD SUCCESSFUL (allowlist **for both the service and the
+  user principal** + service-token-filter + service-token-ttl + **user-token suites** + endpoint-
+  description-coverage + host-client-HMAC + host-registration transport-guard + compatibility +
+  event-queue mode/TTL tests). The endpoint-description-coverage suite
+  (`EndpointDescriptionCoverageTest`, §3.8/§4) scans every controller on the test classpath and fails
+  unless each handler carries an `@EndpointDescription` with both `en` and `nl` text — so the new
+  user-token (`ExternalPluginUserTokenResource`) and case-tab (`CaseExternalPluginTabResource`)
+  endpoints declare descriptions like every other endpoint. The user-token suites assert: the minted
+  JWT's claims
+  (`sub`/`roles`/`plugin_config_id`/`type`) and that the TTL defaults to and is capped at 15 min
+  (`ExternalPluginUserTokenServiceTest`); the filter authenticates a valid token, rebuilds the user's
+  authorities from the `roles` claim, strips the `Authorization` header, and — critically — leaves
+  `AuthorizationContext.ignoreAuthorization` **false** so PBAC stays active (`ExternalPluginUserTokenFilterTest`);
+  and `ExternalPluginEndpointAllowlistFilterTest` permits a granted and denies an ungranted
+  `(method, path)` for an `ExternalPluginUserPrincipal`. The bundle-resolver SPI
+  (`ExternalPluginCaseTabResolverImplTest`) asserts URL construction by bundle key / sole bundle and
+  null-handling. The host-client-HMAC suite
   (`client/ExternalPluginHostClientHmacTest`) asserts `pushConfiguration` (body-bound, **including
   the `queueMode`/`queueTtlMs` fields inside the signed `eventBroker` block, with the omit-TTL case
   for `LIVE` mode**), `deleteConfiguration` / `listPlugins` (empty-body), and `uploadPlugin`
@@ -883,6 +1016,15 @@ through the user-token path.
   - iframe SDK fetches the manifest, applies `TranslateService.currentLang` (passed via the
     parent's `init` postMessage), renders Dutch labels when the Angular UI is Dutch and English
     labels when it is English.
+- Case-tab surface (§13), end-to-end in the browser (sample `case-summary` tab on a seeded
+  `EXTERNAL_PLUGIN` tab): the iframe loads at an opaque origin and renders all four communication
+  levels — hello-world, plugin-served `/summary`, `tab → GZAC (user token)`, and the
+  `tab → plugin backend → GZAC` user-vs-service case counts. Confirmed the content endpoint and the
+  non-management user-token mint endpoint needed explicit `HttpSecurityConfigurer` matchers (a
+  missing matcher 403s by deny-by-default), and that the parent-proxy `POST .../data` fetch needed
+  the host origin on CSP `connect-src` (the iframe loaded via `frame-src` but the fetch was
+  CSP-blocked until `connect-src` was augmented — §10). The `@valtimo/{case,case-management,plugin}`
+  libs and the sample plugin `build:pack` are clean.
 
 **Not yet verified end-to-end** (confirmed by code reading and clean builds, not by a live run):
 - The host has no unit-test harness, so host-side HMAC verification (`createHmacAuthHook` /

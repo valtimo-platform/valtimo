@@ -14,8 +14,68 @@
  * limitations under the License.
  */
 
-import type {ActionInput, Document, EventInput} from "@valtimo/plugin-sdk";
-import {action, config, gzacApi, log, onEvent,} from "@valtimo/plugin-sdk";
+import type {ActionInput, Document, EventInput, RequestInput} from "@valtimo/plugin-sdk";
+import {action, config, gzacApi, log, onEvent, request,} from "@valtimo/plugin-sdk";
+
+// Plugin-served data for the case-tab iframe. Reached via the host's
+// `POST /plugins/case-summary/{version}/data` route, which the Angular parent-proxy calls when the
+// bundle invokes `sdk.getPluginData("/summary")`. Demonstrates the "plugin serves its own data"
+// origin — distinct from data the plugin reads back out of GZAC.
+request("/summary", (input: RequestInput) => {
+  const currency = (input.configuration.currency as string) ?? "EUR";
+  return {
+    status: 200,
+    body: {
+      message: "Hello from the case-summary plugin backend",
+      currency,
+      documentId: input.context?.documentId ?? null,
+      items: [
+        {label: "Status", value: "In progress"},
+        {label: "Priority", value: "Normal"},
+        {label: "Channel", value: "Web"},
+      ],
+    },
+  };
+});
+
+// Level 3 — tab -> plugin backend -> GZAC, authenticated with the **downscoped user token**.
+// Counts the cases of this type the call can see via `gzacApi.asUser`: row-level PBAC filters the
+// list to the logged-in user's accessible cases (∩ the plugin's allowlist).
+request("/case-count-as-user", (input: RequestInput) => countCases(input, "user"));
+
+// Level 4 — tab -> plugin backend -> GZAC, authenticated with the **service (plugin) token**.
+// Same count, but PBAC is bypassed (system principal), so it sees *every* case of this type.
+// Comparing the two totals shows the plugin token's scope is broader than any single user's.
+request("/case-count-as-plugin", (input: RequestInput) => countCases(input, "plugin"));
+
+/**
+ * Shared handler for levels 3 & 4. The case-list search is row-level PBAC-filtered, so its
+ * `totalElements` is a faithful scope signal: the user token returns the user's visible subset,
+ * the service token returns the full set. A single-document GET can't show this — it's all-or-
+ * nothing and the user already has access to the case whose tab they opened.
+ */
+function countCases(input: RequestInput, as: "user" | "plugin") {
+  const caseDefinitionKey = input.context?.caseDefinitionKey as string | undefined;
+  if (!caseDefinitionKey) {
+    return {status: 400, body: {error: "No caseDefinitionKey in tab context"}};
+  }
+
+  const api = as === "user" ? gzacApi.asUser : gzacApi;
+  const res = api.post<{totalElements?: number}>(
+    `/api/v1/case/${caseDefinitionKey}/search?page=0&size=1`,
+    {}
+  );
+
+  return {
+    status: 200,
+    body: {
+      tokenType: as,
+      upstreamStatus: res.status,
+      caseDefinitionKey,
+      totalElements: res.status === 200 ? (res.body?.totalElements ?? null) : null,
+    },
+  };
+}
 
 action("case-summary", (input: ActionInput) => {
   const titleField = (input.properties.titleField as string) || "/applicantName";

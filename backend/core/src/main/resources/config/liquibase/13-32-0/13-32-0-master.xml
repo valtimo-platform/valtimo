@@ -23,5 +23,6 @@ xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liqui
     <include file="20260605-add-dashboard-widget-layout-column.xml" relativeToChangelogFile="true"/>
     <include file="20260605-add-case-widget-tab-widget-layout-column.xml" relativeToChangelogFile="true"/>
     <include file="20260605-add-tab-widget-layout-column.xml" relativeToChangelogFile="true"/>
+    <include file="20260622-add-case-external-plugin-tab.xml" relativeToChangelogFile="true"/>
 
 </databaseChangeLog>

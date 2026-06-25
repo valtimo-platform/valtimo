@@ -52,15 +52,18 @@
       </cds-list-header>
 
       <cds-list-row
-        *ngFor="let usage of usages; trackBy: trackByProcessLink"
-        [attr.data-test-id]="'plugin-usage-' + usage.processLinkId"
+        *ngFor="let usage of usages; trackBy: trackByUsage"
+        [attr.data-test-id]="'plugin-usage-' + (usage.processLinkId || usage.tabKey)"
       >
         <cds-list-column nowrap="true">
           <div class="plugin-usage-modal__cell-main">
-            {{ usage.activityName || usage.activityId }}
+            {{ usage.activityName || usage.activityId || usage.tabName || usage.tabKey }}
           </div>
           <div *ngIf="usage.activityName" class="plugin-usage-modal__cell-sub">
             <code class="cds--snippet--inline">{{ usage.activityId }}</code>
+          </div>
+          <div *ngIf="usage.tabKey && !usage.activityId" class="plugin-usage-modal__cell-sub">
+            {{ 'pluginManagement.usageModal.caseTab' | translate }}
           </div>
         </cds-list-column>
 
@@ -100,7 +103,9 @@
           </ng-container>
 
           <ng-template #processIdFallback>
-            <code class="cds--snippet--inline">{{ usage.processDefinitionId }}</code>
+            <ng-container *ngIf="usage.processDefinitionId; else dash">
+              <code class="cds--snippet--inline">{{ usage.processDefinitionId }}</code>
+            </ng-container>
           </ng-template>
         </cds-list-column>
 

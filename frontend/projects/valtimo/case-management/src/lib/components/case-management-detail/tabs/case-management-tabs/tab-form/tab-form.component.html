@@ -33,19 +33,46 @@
     />
   </cds-label>
 
-  <cds-combo-box
-    *ngIf="tabType !== 'widgets'"
-    [cdsLayer]="1"
-    [dropUp]="false"
-    formControlName="contentKey"
-    [items]="listItems$ | async"
-    itemValueKey="contentKey"
-    [label]="'caseManagement.tabManagement.contentLabels.' + tabType | translate"
-    (search)="onSearch($event)"
-    (selected)="onSelected($event)"
-  >
-    <cds-dropdown-list [cdsLayer]="1"></cds-dropdown-list>
-  </cds-combo-box>
+  <ng-container *ngIf="tabType === TabType.EXTERNAL_PLUGIN; else nonPluginContent">
+    <cds-combo-box
+      [cdsLayer]="1"
+      [dropUp]="false"
+      [items]="configItems$ | async"
+      itemValueKey="configId"
+      [label]="'caseManagement.tabManagement.contentLabels.external_plugin_config' | translate"
+      (selected)="onConfigSelected($event)"
+    >
+      <cds-dropdown-list [cdsLayer]="1"></cds-dropdown-list>
+    </cds-combo-box>
+
+    <cds-combo-box
+      [cdsLayer]="1"
+      [disabled]="!(selectedConfigId$ | async)"
+      [dropUp]="false"
+      [items]="bundleItems$ | async"
+      itemValueKey="bundleKey"
+      [label]="'caseManagement.tabManagement.contentLabels.external_plugin_bundle' | translate"
+      (selected)="onBundleSelected($event)"
+    >
+      <cds-dropdown-list [cdsLayer]="1"></cds-dropdown-list>
+    </cds-combo-box>
+  </ng-container>
+
+  <ng-template #nonPluginContent>
+    <cds-combo-box
+      *ngIf="tabType !== 'widgets'"
+      [cdsLayer]="1"
+      [dropUp]="false"
+      formControlName="contentKey"
+      [items]="listItems$ | async"
+      itemValueKey="contentKey"
+      [label]="'caseManagement.tabManagement.contentLabels.' + tabType | translate"
+      (search)="onSearch($event)"
+      (selected)="onSelected($event)"
+    >
+      <cds-dropdown-list [cdsLayer]="1"></cds-dropdown-list>
+    </cds-combo-box>
+  </ng-template>
 
   <cds-toggle
     [label]="'caseManagement.tabManagement.addModal.visibleTitle' | translate"

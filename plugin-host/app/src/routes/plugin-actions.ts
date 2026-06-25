@@ -193,6 +193,9 @@ export async function pluginActionRoutes(
     "/plugins/:pluginId/:version/plugin-manifest",
     async (request, reply) => {
       const { pluginId, version } = request.params;
+      // The frontend SDK fetches the manifest (for translations) from inside the plugin iframe,
+      // which runs at an opaque origin — so this read is cross-origin. Served public like bundles.
+      reply.header("Access-Control-Allow-Origin", "*");
       const manifest = pluginManager.getManifest(pluginId, version);
 
       if (!manifest) {

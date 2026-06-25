@@ -14,23 +14,24 @@
  * limitations under the License.
  */
 
-import Fastify, { type FastifyServerOptions } from "fastify";
+import Fastify, {type FastifyServerOptions} from "fastify";
 import rawBody from "fastify-raw-body";
 import multipart from "@fastify/multipart";
-import { readFileSync } from "node:fs";
-import type { ServerOptions as HttpsServerOptions } from "node:https";
-import { loadConfig } from "./config.js";
-import type { AppConfig } from "./models/index.js";
-import { PluginManager } from "./plugin-manager.js";
-import { ConfigRegistry } from "./config-registry.js";
-import { healthRoutes } from "./routes/health.js";
-import { hostManagementRoutes } from "./routes/host-management.js";
-import { hostConfigurationRoutes } from "./routes/host-configurations.js";
-import { pluginActionRoutes } from "./routes/plugin-actions.js";
-import { pluginBundleRoutes } from "./routes/plugin-bundles.js";
-import { EventConsumerManager } from "./rabbitmq/event-consumer.js";
-import { createDbPool, runMigrations, closeDbPool, type DbPool } from "./db/index.js";
-import { ConfigRepository } from "./db/config-repository.js";
+import {readFileSync} from "node:fs";
+import type {ServerOptions as HttpsServerOptions} from "node:https";
+import {loadConfig} from "./config.js";
+import type {AppConfig} from "./models/index.js";
+import {PluginManager} from "./plugin-manager.js";
+import {ConfigRegistry} from "./config-registry.js";
+import {healthRoutes} from "./routes/health.js";
+import {hostManagementRoutes} from "./routes/host-management.js";
+import {hostConfigurationRoutes} from "./routes/host-configurations.js";
+import {pluginActionRoutes} from "./routes/plugin-actions.js";
+import {pluginBundleRoutes} from "./routes/plugin-bundles.js";
+import {pluginDataRoutes} from "./routes/plugin-data.js";
+import {EventConsumerManager} from "./rabbitmq/event-consumer.js";
+import {closeDbPool, createDbPool, type DbPool, runMigrations} from "./db/index.js";
+import {ConfigRepository} from "./db/config-repository.js";
 
 /**
  * Reads the TLS material when the host is configured to terminate HTTPS itself. Both the
@@ -145,6 +146,11 @@ async function main(): Promise<void> {
   });
   await fastify.register(pluginBundleRoutes, {
     pluginManager,
+  });
+  await fastify.register(pluginDataRoutes, {
+    pluginManager,
+    configRegistry,
+    config,
   });
 
   // Graceful shutdown

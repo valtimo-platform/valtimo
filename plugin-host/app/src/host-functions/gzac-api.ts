@@ -27,6 +27,11 @@ export interface GzacApiCallContext {
   pluginVersion: string;
   serviceToken: string;
   gzacBaseUrl: string;
+  /**
+   * Downscoped user token forwarded from a tab's `handle_request` invocation. Present only when the
+   * tab forwarded it; absent for action/event invocations. Used when a request asks for `as:"user"`.
+   */
+  userToken?: string;
 }
 
 interface GzacApiRequest {
@@ -34,6 +39,8 @@ interface GzacApiRequest {
   path: string;
   body?: unknown;
   headers?: Record<string, string>;
+  /** `"user"` → authenticate with the downscoped user token; otherwise the service token. */
+  as?: "user" | "service";
 }
 
 interface GzacApiResponse {
@@ -91,9 +98,23 @@ export function createGzacApiHostFunction(
       );
     }
 
+    // Select the credential: the downscoped user token (PBAC ∩ allowlist) when the plugin asked for
+    // `as:"user"`, otherwise the service token (system credential, allowlist-only).
+    let token = ctx.serviceToken;
+    if (req.as === "user") {
+      if (!ctx.userToken) {
+        return callContext.store(
+          JSON.stringify(
+            errorReply(401, "No user token available for this invocation (as:\"user\" requires a tab request that forwarded the user token)")
+          )
+        );
+      }
+      token = ctx.userToken;
+    }
+
     const url = `${ctx.gzacBaseUrl.replace(/\/$/, "")}${req.path}`;
     const headers: Record<string, string> = {
-      Authorization: `Bearer ${ctx.serviceToken}`,
+      Authorization: `Bearer ${token}`,
       Accept: "application/json",
       ...(req.headers ?? {}),
     };
