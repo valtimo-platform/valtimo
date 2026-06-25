@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,15 +16,7 @@
 
 import {CommonModule} from '@angular/common';
 import {HttpErrorResponse} from '@angular/common/http';
-import {
-  AfterViewInit,
-  Component,
-  computed,
-  ElementRef,
-  OnDestroy,
-  Signal,
-  ViewChild,
-} from '@angular/core';
+import {AfterViewInit, Component, ElementRef, OnDestroy, ViewChild} from '@angular/core';
 import {ReactiveFormsModule} from '@angular/forms';
 import {ActivatedRoute, Router} from '@angular/router';
 import {Deploy16, ListChecked16, Return16} from '@carbon/icons';
@@ -287,10 +279,6 @@ export class ProcessManagementBuilderComponent implements AfterViewInit, OnDestr
 
   public readonly creatingNewProcess$ = new BehaviorSubject<boolean>(false);
 
-  public readonly $spaceAdjustment: Signal<number> = computed(() =>
-    this.processManagementService.$context() === 'case' ? 0 : 0
-  );
-
   public readonly updatingProcessDefinitionCaseDefinition$ = new BehaviorSubject<boolean>(false);
 
   public readonly showWarningConfirmationModal$ = new BehaviorSubject<boolean>(false);
@@ -324,6 +312,7 @@ export class ProcessManagementBuilderComponent implements AfterViewInit, OnDestr
 
   public ngAfterViewInit(): void {
     this.pageTitleService.disableReset();
+    this.pageHeaderService.enableTitleAsBreadcrumb();
     this.openParamsAndContextSubscription();
     this.initModeler();
     this.initViewer();
@@ -340,6 +329,7 @@ export class ProcessManagementBuilderComponent implements AfterViewInit, OnDestr
     this._bpmnViewer?.destroy();
     this._subscriptions.unsubscribe();
     this.pageTitleService.enableReset();
+    this.pageHeaderService.disableTitleAsBreadcrumb();
     this.pageTitleService.clearPageActionsViewContainerRef();
     this.breadcrumbService.clearThirdBreadcrumb();
     this.breadcrumbService.clearFourthBreadcrumb();
@@ -483,10 +473,7 @@ export class ProcessManagementBuilderComponent implements AfterViewInit, OnDestr
 
           switch (context) {
             case 'independent':
-              return this.processLinkService.createProcessDefinition(
-                mappedProcessLinks,
-                xml
-              );
+              return this.processLinkService.createProcessDefinition(mappedProcessLinks, xml);
             case 'buildingBlock':
               const buildingBlockParams = params as BuildingBlockManagementParams;
               return this.processLinkService.createProcessDefinitionForBuildingBlock(
@@ -549,9 +536,7 @@ export class ProcessManagementBuilderComponent implements AfterViewInit, OnDestr
   }
 
   public onValidationErrorClick(elementId: string): void {
-    const modeler = this.isReadOnlyProcess$.getValue()
-      ? this._bpmnViewer
-      : this._bpmnModeler;
+    const modeler = this.isReadOnlyProcess$.getValue() ? this._bpmnViewer : this._bpmnModeler;
     const elementRegistry = modeler.get('elementRegistry') as any;
     const canvas = modeler.get('canvas') as any;
 
@@ -650,12 +635,23 @@ export class ProcessManagementBuilderComponent implements AfterViewInit, OnDestr
   }
 
   private showNotification(
-    notification: null | 'success' | 'error' | 'alreadyExists' | 'validationError' | 'validationWarning' | 'validationSuccess'
+    notification:
+      | null
+      | 'success'
+      | 'error'
+      | 'alreadyExists'
+      | 'validationError'
+      | 'validationWarning'
+      | 'validationSuccess'
   ): void {
     if (!notification) return;
 
     let type: 'success' | 'error' | 'warning';
-    if (notification === 'alreadyExists' || notification === 'validationError' || notification === 'error') {
+    if (
+      notification === 'alreadyExists' ||
+      notification === 'validationError' ||
+      notification === 'error'
+    ) {
       type = 'error';
     } else if (notification === 'validationWarning') {
       type = 'warning';
@@ -674,7 +670,10 @@ export class ProcessManagementBuilderComponent implements AfterViewInit, OnDestr
     const body = error.error;
     if ((body as ProcessDefinitionConflictResponse)?.processDefinitionId) return true;
     const bbBody = body as BuildingBlockProcessDefinitionConflictResponse;
-    return Array.isArray(bbBody?.duplicateProcessDefinitions) && bbBody.duplicateProcessDefinitions.length > 0;
+    return (
+      Array.isArray(bbBody?.duplicateProcessDefinitions) &&
+      bbBody.duplicateProcessDefinitions.length > 0
+    );
   }
 
   private applyDraftState(xml: string | null | undefined): string | null {
@@ -718,9 +717,7 @@ export class ProcessManagementBuilderComponent implements AfterViewInit, OnDestr
     this.clearValidationErrors();
     this.processManagementEditorService.setValidationErrors(errors);
 
-    const modeler = this.isReadOnlyProcess$.getValue()
-      ? this._bpmnViewer
-      : this._bpmnModeler;
+    const modeler = this.isReadOnlyProcess$.getValue() ? this._bpmnViewer : this._bpmnModeler;
     const canvas = modeler.get('canvas') as any;
     const overlays = modeler.get('overlays') as any;
 
@@ -778,8 +775,12 @@ export class ProcessManagementBuilderComponent implements AfterViewInit, OnDestr
     this._validationHoverHandler = (event: any) => {
       const id = event.element?.id;
       if (id && errorElementIds.has(id)) {
-        const errorOverlay = document.querySelector(`.validation-error-overlay[data-element-id="${id}"]`);
-        const warningOverlay = document.querySelector(`.validation-warning-overlay[data-element-id="${id}"]`);
+        const errorOverlay = document.querySelector(
+          `.validation-error-overlay[data-element-id="${id}"]`
+        );
+        const warningOverlay = document.querySelector(
+          `.validation-warning-overlay[data-element-id="${id}"]`
+        );
         errorOverlay?.classList.add('validation-error-overlay--active');
         warningOverlay?.classList.add('validation-warning-overlay--active');
       }
@@ -787,8 +788,12 @@ export class ProcessManagementBuilderComponent implements AfterViewInit, OnDestr
     this._validationOutHandler = (event: any) => {
       const id = event.element?.id;
       if (id && errorElementIds.has(id)) {
-        const errorOverlay = document.querySelector(`.validation-error-overlay[data-element-id="${id}"]`);
-        const warningOverlay = document.querySelector(`.validation-warning-overlay[data-element-id="${id}"]`);
+        const errorOverlay = document.querySelector(
+          `.validation-error-overlay[data-element-id="${id}"]`
+        );
+        const warningOverlay = document.querySelector(
+          `.validation-warning-overlay[data-element-id="${id}"]`
+        );
         errorOverlay?.classList.remove('validation-error-overlay--active');
         warningOverlay?.classList.remove('validation-warning-overlay--active');
       }
@@ -806,9 +811,7 @@ export class ProcessManagementBuilderComponent implements AfterViewInit, OnDestr
   }
 
   private clearValidationErrors(): void {
-    const modeler = this.isReadOnlyProcess$.getValue()
-      ? this._bpmnViewer
-      : this._bpmnModeler;
+    const modeler = this.isReadOnlyProcess$.getValue() ? this._bpmnViewer : this._bpmnModeler;
 
     if (!modeler) return;
 
@@ -1082,7 +1085,8 @@ export class ProcessManagementBuilderComponent implements AfterViewInit, OnDestr
           this._bpmnViewer?.importXML(processDefinitionResult.bpmn20Xml);
 
           this.draft$.next(
-            processDefinitionResult.draft ?? this.parseDraftFromXml(processDefinitionResult.bpmn20Xml)
+            processDefinitionResult.draft ??
+              this.parseDraftFromXml(processDefinitionResult.bpmn20Xml)
           );
           this.canInitializeDocument$.next(
             !!processDefinitionResult?.processCaseLink?.canInitializeDocument
@@ -1218,14 +1222,16 @@ export class ProcessManagementBuilderComponent implements AfterViewInit, OnDestr
     clearBuildingBlockCalledElement(editor, activityId);
   }
 
-  public getValidationErrorMessage(error: {reason: string; errorCode?: string; expression?: string}): string {
+  public getValidationErrorMessage(error: {
+    reason: string;
+    errorCode?: string;
+    expression?: string;
+  }): string {
     if (error.errorCode) {
       const translationKey = `processManagement.expressionErrors.${error.errorCode}`;
       const translated = this.translateService.instant(translationKey);
       if (translated !== translationKey) {
-        return error.expression
-          ? `${translated}: '${error.expression}'`
-          : translated;
+        return error.expression ? `${translated}: '${error.expression}'` : translated;
       }
     }
     return error.reason;

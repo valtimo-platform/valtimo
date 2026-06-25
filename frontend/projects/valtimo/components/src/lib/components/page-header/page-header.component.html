@@ -23,6 +23,7 @@
     'page-head--no-content': (compactMode$ | async) && (pageActionsHasContent$ | async) === false,
     'page-head--no-margin': pageTitleHidden$ | async,
     'page-head--small-title': smallTitle$ | async,
+    'page-head--title-as-breadcrumb': titleAsBreadcrumb$ | async,
   }"
 >
   <ng-container #contentVcr></ng-container>
@@ -39,6 +40,7 @@
       [ngClass]="{
         'page-header-container--compact': compactMode$ | async,
         'page-header-container--small-title': smallTitle$ | async,
+        'page-header-container--title-as-breadcrumb': titleAsBreadcrumb$ | async,
       }"
     >
       <valtimo-breadcrumb-navigation></valtimo-breadcrumb-navigation>

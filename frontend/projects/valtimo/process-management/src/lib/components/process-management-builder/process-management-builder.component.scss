@@ -68,35 +68,47 @@
   display: flex;
   width: 100%;
   justify-content: space-between;
+  align-items: center;
+  gap: 16px;
 
   &__left-container {
     display: flex;
-    gap: 24px;
-    align-items: flex-end;
+    gap: 16px;
+    align-items: center;
   }
 
   &__tags {
     display: flex;
     gap: 8px;
-    align-items: flex-end;
+    align-items: center;
   }
 
   &__version-dropdown {
     width: 150px;
   }
 
-  &__buttons {
+  &__toggles {
     display: flex;
     gap: 16px;
     align-items: center;
 
-    cds-toggle {
-      height: 24px;
+    // Let each toggle size to its switch so the flex row centers it vertically; forcing a
+    // fixed height top-aligns the smaller "sm" switch and pushes it above the row center.
+    ::ng-deep cds-toggle {
+      display: inline-flex;
+      align-items: center;
     }
 
     ::ng-deep .cds--toggle__label-text {
       display: none;
     }
+  }
+
+  &__buttons {
+    display: flex;
+    gap: 16px;
+    align-items: center;
+    flex-shrink: 0;
   }
 }
 
