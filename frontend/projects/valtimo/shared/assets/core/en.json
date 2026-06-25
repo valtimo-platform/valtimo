@@ -2295,6 +2295,7 @@
     "defaultSort": "Default Sort",
     "defaultSortTitle": "Default Sort (optional)",
     "defaultSortTooltip": "If this field has a value, the table will be sorted by default on this property, in the direction specified. Only one column at a time can have this property. On creating a new column, if another column already has a default sort specified, this input field will be disabled.",
+    "defaultSortDisabledNotice": "Another column already has a default sort configured. Only one column can have a default sort at a time. Remove the existing default sort to enable this field.",
     "selectDefaultSort": "Select a default sort",
     "sortableYes": "Yes",
     "sortableNo": "No",

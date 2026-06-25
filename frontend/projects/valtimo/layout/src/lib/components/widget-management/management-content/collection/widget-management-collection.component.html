@@ -66,6 +66,7 @@
           [attr.data-carbon-theme]="theme"
           [caseDefinitionKey]="obs.params?.caseDefinitionKey"
           [caseDefinitionVersionTag]="obs.params?.caseDefinitionVersionTag"
+          [excludePrefixes]="[ValuePathSelectorPrefix.TASK]"
           [type]="ValuePathType.COLLECTION"
           (collectionSelected)="onCollectionSelected($event)"
         ></valtimo-value-path-selector>
@@ -101,6 +102,7 @@
             [attr.data-carbon-theme]="theme"
             [caseDefinitionKey]="obs.params?.caseDefinitionKey"
             [caseDefinitionVersionTag]="obs.params?.caseDefinitionVersionTag"
+            [excludePrefixes]="[ValuePathSelectorPrefix.TASK]"
             [parentItem]="selectedCollection$ | async"
           ></valtimo-value-path-selector>
         } @else {
