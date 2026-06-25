@@ -16,6 +16,7 @@
 
 package com.ritense.documentenapi
 
+import com.ritense.documentenapi.DocumentenApiPlugin.Companion.DOCUMENT_ID_PROCESS_VAR
 import com.ritense.documentenapi.DocumentenApiPlugin.Companion.DOCUMENT_URL_PROCESS_VAR
 import com.ritense.documentenapi.DocumentenApiPlugin.Companion.RESOURCE_ID_PROCESS_VAR
 import com.ritense.documentenapi.client.CreateDocumentRequest
@@ -28,8 +29,8 @@ import com.ritense.documentenapi.client.DocumentenApiClient
 import com.ritense.documentenapi.client.ObjectInformatieObject
 import com.ritense.documentenapi.client.ObjectInformatieObjectRequest
 import com.ritense.documentenapi.client.PatchDocumentRequest
-import com.ritense.documentenapi.event.DocumentCreated
 import com.ritense.documentenapi.domain.DocumentenApiVersion
+import com.ritense.documentenapi.event.DocumentCreated
 import com.ritense.documentenapi.service.DocumentenApiVersionService
 import com.ritense.documentenapi.service.DocumentenApiVersionService.Companion.MINIMUM_VERSION
 import com.ritense.plugin.annotation.Plugin
@@ -47,7 +48,6 @@ import com.ritense.valtimo.operaton.service.OperatonRuntimeService
 import com.ritense.zgw.Rsin
 import com.ritense.zgw.domain.Vertrouwelijkheid
 import org.apache.commons.io.IOUtils
-import org.operaton.bpm.engine.delegate.DelegateExecution
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
@@ -58,6 +58,7 @@ import org.mockito.kotlin.argumentCaptor
 import org.mockito.kotlin.eq
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
+import org.operaton.bpm.engine.delegate.DelegateExecution
 import org.springframework.context.ApplicationEventPublisher
 import java.io.ByteArrayInputStream
 import java.net.URI
@@ -76,7 +77,6 @@ internal class DocumentenApiPluginTest {
     lateinit var runtimeService: OperatonRuntimeService
     lateinit var virusScanService: VirusScanService
 
-
     @BeforeEach
     fun setUp() {
         pluginService = mock()
@@ -92,7 +92,8 @@ internal class DocumentenApiPluginTest {
             pluginDefinition = pluginDefinition,
             title = "title"
         )
-        whenever(pluginService.findPluginConfiguration(any(), any())).thenReturn(pluginConfiguration)
+        whenever(pluginService.findPluginConfiguration(any(), any()))
+            .thenReturn(pluginConfiguration)
 
         client = mock()
         runtimeService = mock()
@@ -113,32 +114,32 @@ internal class DocumentenApiPluginTest {
         whenever(executionMock.businessKey).thenReturn(null)
 
         val plugin = DocumentenApiPlugin(
-            client,
-            storageService,
-            applicationEventPublisher,
-            objectMapper,
-            mutableListOf(),
-            documentenApiVersionService,
-            pluginService,
-            runtimeService,
-            virusScanService,
-            virusScanEnabledForDocumentenApiPlugin
+            client = client,
+            storageService = storageService,
+            applicationEventPublisher = applicationEventPublisher,
+            objectMapper = objectMapper,
+            documentDeleteHandlers = mutableListOf(),
+            documentenApiVersionService = documentenApiVersionService,
+            pluginService = pluginService,
+            runtimeService = runtimeService,
+            virusScanService = virusScanService,
+            virusScanEnabledForDocumentenApiPlugin = virusScanEnabledForDocumentenApiPlugin
         )
         plugin.url = URI("http://some-url")
         plugin.bronorganisatie = "123456789"
 
         val exception = assertThrows<IllegalStateException> {
             plugin.storeTemporaryDocument(
-                executionMock,
-                "test.ext",
-                Vertrouwelijkheid.ZAAKVERTROUWELIJK.key,
-                "title",
-                "description",
-                "localDocumentVariableName",
-                "storedDocumentVariableName",
-                "type",
-                "taal",
-                IN_BEWERKING
+                execution = executionMock,
+                fileName = "test.ext",
+                confidentialityLevel = Vertrouwelijkheid.ZAAKVERTROUWELIJK.key,
+                title = "title",
+                description = "description",
+                localDocumentLocation = "localDocumentVariableName",
+                storedDocumentUrl = "storedDocumentVariableName",
+                informatieobjecttype = "type",
+                taal = "taal",
+                status = IN_BEWERKING
             )
         }
         assertEquals("Failed to store document. Business key is null.", exception.message)
@@ -158,13 +159,13 @@ internal class DocumentenApiPluginTest {
         val inputStream = ByteArrayInputStream(content.toByteArray())
         val virusScanEnabledForDocumentenApiPlugin = false
         val result = CreateDocumentResult(
-            "returnedUrl",
-            "returnedAuthor",
-            "returnedFileName",
-            1L,
-            OffsetDateTime.parse("2020-01-01T01:01:01Z"),
-            listOf(),
-            null
+            url = "returnedUrl",
+            auteur = "returnedAuthor",
+            bestandsnaam = "returnedFileName",
+            bestandsomvang = 1L,
+            beginRegistratie = OffsetDateTime.parse("2020-01-01T01:01:01Z"),
+            bestandsdelen = listOf(),
+            lock = null
         )
 
         whenever(executionMock.getVariable("localDocumentVariableName"))
@@ -175,16 +176,16 @@ internal class DocumentenApiPluginTest {
         whenever(client.storeDocument(any(), any(), any(), any())).thenReturn(result)
 
         val plugin = DocumentenApiPlugin(
-            client,
-            storageService,
-            applicationEventPublisher,
-            objectMapper,
-            mutableListOf(),
-            documentenApiVersionService,
-            pluginService,
-            runtimeService,
-            virusScanService,
-            virusScanEnabledForDocumentenApiPlugin
+            client = client,
+            storageService = storageService,
+            applicationEventPublisher = applicationEventPublisher,
+            objectMapper = objectMapper,
+            documentDeleteHandlers = mutableListOf(),
+            documentenApiVersionService = documentenApiVersionService,
+            pluginService = pluginService,
+            runtimeService = runtimeService,
+            virusScanService = virusScanService,
+            virusScanEnabledForDocumentenApiPlugin = virusScanEnabledForDocumentenApiPlugin
         )
         plugin.url = URI("http://some-url")
         plugin.bronorganisatie = "123456789"
@@ -203,16 +204,16 @@ internal class DocumentenApiPluginTest {
         ).thenReturn(pluginConfiguration)
 
         plugin.storeTemporaryDocument(
-            executionMock,
-            "test.ext",
-            Vertrouwelijkheid.ZAAKVERTROUWELIJK.key,
-            "title",
-            "description",
-            "localDocumentVariableName",
-            "storedDocumentVariableName",
-            "type",
-            "taal",
-            IN_BEWERKING
+            execution = executionMock,
+            fileName = "test.ext",
+            confidentialityLevel = Vertrouwelijkheid.ZAAKVERTROUWELIJK.key,
+            title = "title",
+            description = "description",
+            localDocumentLocation = "localDocumentVariableName",
+            storedDocumentUrl = "storedDocumentVariableName",
+            informatieobjecttype = "type",
+            taal = "taal",
+            status = IN_BEWERKING
         )
 
         val apiRequestCaptor = argumentCaptor<CreateDocumentRequest>()
@@ -256,13 +257,13 @@ internal class DocumentenApiPluginTest {
         val inputStream = ByteArrayInputStream(content.toByteArray())
         val virusScanEnabledForDocumentenApiPlugin = true
         val result = CreateDocumentResult(
-            "returnedUrl",
-            "returnedAuthor",
-            "returnedFileName",
-            1L,
-            OffsetDateTime.parse("2020-01-01T01:01:01Z"),
-            listOf(),
-            null
+            url = "returnedUrl",
+            auteur = "returnedAuthor",
+            bestandsnaam = "returnedFileName",
+            bestandsomvang = 1L,
+            beginRegistratie = OffsetDateTime.parse("2020-01-01T01:01:01Z"),
+            bestandsdelen = listOf(),
+            lock = null
         )
         val byFileResult = VirusScanResult(
             status = VirusScanStatus.VIRUS_FOUND,
@@ -280,16 +281,16 @@ internal class DocumentenApiPluginTest {
         whenever(client.storeDocument(any(), any(), any(), any())).thenReturn(result)
 
         val plugin = DocumentenApiPlugin(
-            client,
-            storageService,
-            applicationEventPublisher,
-            objectMapper,
-            mutableListOf(),
-            documentenApiVersionService,
-            pluginService,
-            runtimeService,
-            virusScanService,
-            virusScanEnabledForDocumentenApiPlugin
+            client = client,
+            storageService = storageService,
+            applicationEventPublisher = applicationEventPublisher,
+            objectMapper = objectMapper,
+            documentDeleteHandlers = mutableListOf(),
+            documentenApiVersionService = documentenApiVersionService,
+            pluginService = pluginService,
+            runtimeService = runtimeService,
+            virusScanService = virusScanService,
+            virusScanEnabledForDocumentenApiPlugin = virusScanEnabledForDocumentenApiPlugin
         )
         plugin.url = URI("http://some-url")
         plugin.bronorganisatie = "123456789"
@@ -309,16 +310,16 @@ internal class DocumentenApiPluginTest {
 
         assertThrows<VirusDetectedException> {
             plugin.storeTemporaryDocument(
-                executionMock,
-                "test.ext",
-                Vertrouwelijkheid.ZAAKVERTROUWELIJK.key,
-                "title",
-                "description",
-                "localDocumentVariableName",
-                "storedDocumentVariableName",
-                "type",
-                "taal",
-                IN_BEWERKING
+                execution = executionMock,
+                fileName = "test.ext",
+                confidentialityLevel = Vertrouwelijkheid.ZAAKVERTROUWELIJK.key,
+                title = "title",
+                description = "description",
+                localDocumentLocation = "localDocumentVariableName",
+                storedDocumentUrl = "storedDocumentVariableName",
+                informatieobjecttype = "type",
+                taal = "taal",
+                status = IN_BEWERKING
             )
         }
     }
@@ -337,13 +338,13 @@ internal class DocumentenApiPluginTest {
         val inputStream = ByteArrayInputStream(content.toByteArray())
         val virusScanEnabledForDocumentenApiPlugin = true
         val result = CreateDocumentResult(
-            "returnedUrl",
-            "returnedAuthor",
-            "returnedFileName",
-            1L,
-            OffsetDateTime.parse("2020-01-01T01:01:01Z"),
-            listOf(),
-            null
+            url = "returnedUrl",
+            auteur = "returnedAuthor",
+            bestandsnaam = "returnedFileName",
+            bestandsomvang = 1L,
+            beginRegistratie = OffsetDateTime.parse("2020-01-01T01:01:01Z"),
+            bestandsdelen = listOf(),
+            lock = null
         )
 
         whenever(executionMock.getVariable("localDocumentVariableName"))
@@ -356,16 +357,16 @@ internal class DocumentenApiPluginTest {
         whenever(client.storeDocument(any(), any(), any(), any())).thenReturn(result)
 
         val plugin = DocumentenApiPlugin(
-            client,
-            storageService,
-            applicationEventPublisher,
-            objectMapper,
-            mutableListOf(),
-            documentenApiVersionService,
-            pluginService,
-            runtimeService,
-            virusScanService,
-            virusScanEnabledForDocumentenApiPlugin
+            client = client,
+            storageService = storageService,
+            applicationEventPublisher = applicationEventPublisher,
+            objectMapper = objectMapper,
+            documentDeleteHandlers = mutableListOf(),
+            documentenApiVersionService = documentenApiVersionService,
+            pluginService = pluginService,
+            runtimeService = runtimeService,
+            virusScanService = virusScanService,
+            virusScanEnabledForDocumentenApiPlugin = virusScanEnabledForDocumentenApiPlugin
         )
         plugin.url = URI("http://some-url")
         plugin.bronorganisatie = "123456789"
@@ -384,16 +385,16 @@ internal class DocumentenApiPluginTest {
         ).thenReturn(pluginConfiguration)
 
         plugin.storeTemporaryDocument(
-            executionMock,
-            "test.ext",
-            Vertrouwelijkheid.ZAAKVERTROUWELIJK.key,
-            "title",
-            "description",
-            "localDocumentVariableName",
-            "storedDocumentVariableName",
-            "type",
-            "taal",
-            IN_BEWERKING
+            execution = executionMock,
+            fileName = "test.ext",
+            confidentialityLevel = Vertrouwelijkheid.ZAAKVERTROUWELIJK.key,
+            title = "title",
+            description = "description",
+            localDocumentLocation = "localDocumentVariableName",
+            storedDocumentUrl = "storedDocumentVariableName",
+            informatieobjecttype = "type",
+            taal = "taal",
+            status = IN_BEWERKING
         )
 
         val apiRequestCaptor = argumentCaptor<CreateDocumentRequest>()
@@ -416,13 +417,13 @@ internal class DocumentenApiPluginTest {
         val virusScanEnabledForDocumentenApiPlugin = false
         val inputStream = ByteArrayInputStream(content.toByteArray())
         val result = CreateDocumentResult(
-            "returnedUrl",
-            "returnedAuthor",
-            "returnedFileName",
-            1L,
-            OffsetDateTime.now(),
-            listOf(),
-            null
+            url = "returnedUrl",
+            auteur = "returnedAuthor",
+            bestandsnaam = "returnedFileName",
+            bestandsomvang = 1L,
+            beginRegistratie = OffsetDateTime.now(),
+            bestandsdelen = listOf(),
+            lock = null
         )
 
         whenever(executionMock.getVariable(RESOURCE_ID_PROCESS_VAR))
@@ -461,16 +462,16 @@ internal class DocumentenApiPluginTest {
         ).thenReturn(pluginConfiguration)
 
         val plugin = DocumentenApiPlugin(
-            client,
-            storageService,
-            applicationEventPublisher,
-            MapperSingleton.get(),
-            mutableListOf(),
-            documentenApiVersionService,
-            pluginService,
-            runtimeService,
-            virusScanService,
-            virusScanEnabledForDocumentenApiPlugin
+            client = client,
+            storageService = storageService,
+            applicationEventPublisher = applicationEventPublisher,
+            objectMapper = MapperSingleton.get(),
+            documentDeleteHandlers = mutableListOf(),
+            documentenApiVersionService = documentenApiVersionService,
+            pluginService = pluginService,
+            runtimeService = runtimeService,
+            virusScanService = virusScanService,
+            virusScanEnabledForDocumentenApiPlugin = virusScanEnabledForDocumentenApiPlugin
         )
         plugin.url = URI("http://some-url")
         plugin.bronorganisatie = "123456789"
@@ -512,13 +513,13 @@ internal class DocumentenApiPluginTest {
         val inputStream = ByteArrayInputStream(content.toByteArray())
         val virusScanEnabledForDocumentenApiPlugin = false
         val result = CreateDocumentResult(
-            "returnedUrl",
-            "returnedAuthor",
-            "returnedFileName",
-            1L,
-            OffsetDateTime.now(),
-            listOf(),
-            null
+            url = "returnedUrl",
+            auteur = "returnedAuthor",
+            bestandsnaam = "returnedFileName",
+            bestandsomvang = 1L,
+            beginRegistratie = OffsetDateTime.now(),
+            bestandsdelen = listOf(),
+            lock = null
         )
 
         whenever(executionMock.getVariable(RESOURCE_ID_PROCESS_VAR))
@@ -539,16 +540,16 @@ internal class DocumentenApiPluginTest {
         whenever(client.storeDocument(any(), any(), any(), any())).thenReturn(result)
 
         val plugin = DocumentenApiPlugin(
-            client,
-            storageService,
-            applicationEventPublisher,
-            MapperSingleton.get(),
-            listOf(),
-            documentenApiVersionService,
-            pluginService,
-            runtimeService,
-            virusScanService,
-            virusScanEnabledForDocumentenApiPlugin
+            client = client,
+            storageService = storageService,
+            applicationEventPublisher = applicationEventPublisher,
+            objectMapper = MapperSingleton.get(),
+            documentDeleteHandlers = listOf(),
+            documentenApiVersionService = documentenApiVersionService,
+            pluginService = pluginService,
+            runtimeService = runtimeService,
+            virusScanService = virusScanService,
+            virusScanEnabledForDocumentenApiPlugin = virusScanEnabledForDocumentenApiPlugin
         )
         plugin.url = URI("http://some-url")
         plugin.bronorganisatie = "123456789"
@@ -598,16 +599,16 @@ internal class DocumentenApiPluginTest {
         val virusScanEnabledForDocumentenApiPlugin = false
 
         val plugin = DocumentenApiPlugin(
-            client,
-            storageService,
-            applicationEventPublisher,
-            MapperSingleton.get(),
-            listOf(),
-            documentenApiVersionService,
-            pluginService,
-            runtimeService,
-            virusScanService,
-            virusScanEnabledForDocumentenApiPlugin
+            client = client,
+            storageService = storageService,
+            applicationEventPublisher = applicationEventPublisher,
+            objectMapper = MapperSingleton.get(),
+            documentDeleteHandlers = listOf(),
+            documentenApiVersionService = documentenApiVersionService,
+            pluginService = pluginService,
+            runtimeService = runtimeService,
+            virusScanService = virusScanService,
+            virusScanEnabledForDocumentenApiPlugin = virusScanEnabledForDocumentenApiPlugin
         )
         plugin.url = URI("http://some-url")
         plugin.bronorganisatie = "123456789"
@@ -621,9 +622,9 @@ internal class DocumentenApiPluginTest {
         val caseDocumentIdCaptor = argumentCaptor<UUID>()
 
         verify(client).getInformatieObject(
-            authorizationCaptor.capture(),
-            caseDocumentIdCaptor.capture(),
-            informatieObjectUrlCaptor.capture(),
+            authentication = authorizationCaptor.capture(),
+            caseDocumentId = caseDocumentIdCaptor.capture(),
+            objectUrl = informatieObjectUrlCaptor.capture(),
         )
 
         assertEquals(informatieObjectUrl, informatieObjectUrlCaptor.firstValue)
@@ -640,16 +641,16 @@ internal class DocumentenApiPluginTest {
         val informatieObjectUrl = URI("http://some-url/informatie-object/123")
         val caseDocumentId = UUID.randomUUID()
         val plugin = DocumentenApiPlugin(
-            client,
-            storageService,
-            applicationEventPublisher,
-            MapperSingleton.get(),
-            listOf(),
-            documentenApiVersionService,
-            pluginService,
-            runtimeService,
-            virusScanService,
-            virusScanEnabledForDocumentenApiPlugin
+            client = client,
+            storageService = storageService,
+            applicationEventPublisher = applicationEventPublisher,
+            objectMapper = MapperSingleton.get(),
+            documentDeleteHandlers = listOf(),
+            documentenApiVersionService = documentenApiVersionService,
+            pluginService = pluginService,
+            runtimeService = runtimeService,
+            virusScanService = virusScanService,
+            virusScanEnabledForDocumentenApiPlugin = virusScanEnabledForDocumentenApiPlugin
         )
         plugin.url = URI("http://some-url")
         plugin.bronorganisatie = "123456789"
@@ -672,9 +673,9 @@ internal class DocumentenApiPluginTest {
 
         val exception = assertThrows<Exception> {
             plugin.modifyInformatieObject(
-                caseDocumentId,
-                informatieObjectUrl,
-                PatchDocumentRequest(LocalDate.now(), "Nieuwe titel", "auteur", DEFINITIEF, "taal")
+                caseDocumentId = caseDocumentId,
+                documentUrl = informatieObjectUrl,
+                patchDocumentRequest = PatchDocumentRequest(LocalDate.now(), "Nieuwe titel", "auteur", DEFINITIEF, "taal")
             )
         }
         assertEquals("InformatieObject 123 with status 'definitief' cannot be updated in Documenten API with '1.0.0'", exception.message)
@@ -694,30 +695,30 @@ internal class DocumentenApiPluginTest {
         whenever(client.getAuditTrail(any(), any(), any())).thenReturn(emptyList())
 
         val plugin = DocumentenApiPlugin(
-            client,
-            storageService,
-            applicationEventPublisher,
-            MapperSingleton.get(),
-            listOf(),
-            documentenApiVersionService,
-            pluginService,
-            runtimeService,
-            virusScanService,
-            virusScanEnabledForDocumentenApiPlugin
+            client = client,
+            storageService = storageService,
+            applicationEventPublisher = applicationEventPublisher,
+            objectMapper = MapperSingleton.get(),
+            documentDeleteHandlers = listOf(),
+            documentenApiVersionService = documentenApiVersionService,
+            pluginService = pluginService,
+            runtimeService = runtimeService,
+            virusScanService = virusScanService,
+            virusScanEnabledForDocumentenApiPlugin = virusScanEnabledForDocumentenApiPlugin
         )
         plugin.url = URI("http://some-url")
         plugin.authenticationPluginConfiguration = authenticationMock
 
         plugin.getAuditTrail(
-            executionMock,
-            documentUrl,
-            "myAuditTrailVar"
+            execution = executionMock,
+            documentUrl = documentUrl,
+            processVariableName = "myAuditTrailVar"
         )
 
         verify(client).getAuditTrail(
-            eq(authenticationMock),
-            eq(UUID.fromString("123e4567-e89b-12d3-a456-426655440000")),
-            eq(documentUrl)
+            authentication = eq(authenticationMock),
+            caseDocumentId = eq(UUID.fromString("123e4567-e89b-12d3-a456-426655440000")),
+            documentUrl = eq(documentUrl)
         )
         verify(executionMock).setVariable(eq("myAuditTrailVar"), any<String>())
     }
@@ -732,24 +733,24 @@ internal class DocumentenApiPluginTest {
         val documentUrl = URI("http://other-url/enkelvoudiginformatieobjecten/some-uuid")
 
         val plugin = DocumentenApiPlugin(
-            client,
-            storageService,
-            applicationEventPublisher,
-            MapperSingleton.get(),
-            listOf(),
-            documentenApiVersionService,
-            pluginService,
-            runtimeService,
-            virusScanService,
-            virusScanEnabledForDocumentenApiPlugin
+            client = client,
+            storageService = storageService,
+            applicationEventPublisher = applicationEventPublisher,
+            objectMapper = MapperSingleton.get(),
+            documentDeleteHandlers = listOf(),
+            documentenApiVersionService = documentenApiVersionService,
+            pluginService = pluginService,
+            runtimeService = runtimeService,
+            virusScanService = virusScanService,
+            virusScanEnabledForDocumentenApiPlugin = virusScanEnabledForDocumentenApiPlugin
         )
         plugin.url = URI("http://some-url")
 
         val exception = assertThrows<IllegalStateException> {
             plugin.getAuditTrail(
-                executionMock,
-                documentUrl,
-                "myAuditTrailVar"
+                execution = executionMock,
+                documentUrl = documentUrl,
+                processVariableName = "myAuditTrailVar"
             )
         }
         assertEquals(
@@ -770,16 +771,16 @@ internal class DocumentenApiPluginTest {
         whenever(executionMock.businessKey).thenReturn(null)
 
         val plugin = DocumentenApiPlugin(
-            client,
-            storageService,
-            applicationEventPublisher,
-            MapperSingleton.get(),
-            listOf(),
-            documentenApiVersionService,
-            pluginService,
-            runtimeService,
-            virusScanService,
-            virusScanEnabledForDocumentenApiPlugin
+            client = client,
+            storageService = storageService,
+            applicationEventPublisher = applicationEventPublisher,
+            objectMapper = MapperSingleton.get(),
+            documentDeleteHandlers = listOf(),
+            documentenApiVersionService = documentenApiVersionService,
+            pluginService = pluginService,
+            runtimeService = runtimeService,
+            virusScanService = virusScanService,
+            virusScanEnabledForDocumentenApiPlugin = virusScanEnabledForDocumentenApiPlugin
         )
         plugin.url = URI("http://some-url")
 
@@ -799,16 +800,16 @@ internal class DocumentenApiPluginTest {
         apiVersion: String? = null,
     ): DocumentenApiPlugin {
         val plugin = DocumentenApiPlugin(
-            client,
-            mock(),
-            mock(),
-            MapperSingleton.get(),
-            listOf(),
-            documentenApiVersionService,
-            pluginService,
-            runtimeService,
-            virusScanService,
-            false
+            client = client,
+            storageService = mock(),
+            applicationEventPublisher = mock(),
+            objectMapper = MapperSingleton.get(),
+            documentDeleteHandlers = listOf(),
+            documentenApiVersionService = documentenApiVersionService,
+            pluginService = pluginService,
+            runtimeService = runtimeService,
+            virusScanService = virusScanService,
+            virusScanEnabledForDocumentenApiPlugin = false
         )
         plugin.url = URI("http://some-url")
         plugin.bronorganisatie = "123456789"
@@ -821,10 +822,14 @@ internal class DocumentenApiPluginTest {
     fun `should delegate linkDocumentToObject to client when feature is supported`() {
         val authenticationMock = mock<DocumentenApiAuthentication>()
         val documentenApiVersionService: DocumentenApiVersionService = mock()
-        val version = DocumentenApiVersion("1.5.0-baseflow", supportsObjectInformatieObjecten = true)
+        val version = DocumentenApiVersion(version = "1.5.0-baseflow", supportsObjectInformatieObjecten = true)
         whenever(documentenApiVersionService.getVersionByTag("1.5.0-baseflow")).thenReturn(version)
 
-        val plugin = createPlugin(documentenApiVersionService, authenticationMock, "1.5.0-baseflow")
+        val plugin = createPlugin(
+            documentenApiVersionService = documentenApiVersionService,
+            authenticationMock = authenticationMock,
+            apiVersion = "1.5.0-baseflow"
+        )
 
         val request = ObjectInformatieObjectRequest(
             informatieobject = URI("http://some-url/enkelvoudiginformatieobjecten/123"),
@@ -853,7 +858,10 @@ internal class DocumentenApiPluginTest {
         whenever(documentenApiVersionService.getVersionByTag("1.0.0"))
             .thenReturn(DocumentenApiVersion("1.0.0", supportsObjectInformatieObjecten = false))
 
-        val plugin = createPlugin(documentenApiVersionService, apiVersion = "1.0.0")
+        val plugin = createPlugin(
+            documentenApiVersionService = documentenApiVersionService,
+            apiVersion = "1.0.0"
+        )
 
         val exception = assertThrows<Exception> {
             plugin.linkDocumentToObject(
@@ -868,34 +876,48 @@ internal class DocumentenApiPluginTest {
         assertEquals("Documenten API version '1.0.0' does not support objectinformatieobjecten", exception.message)
     }
 
-
     @Test
     fun `should delegate deleteDocumentLink to client when feature is supported`() {
         val authenticationMock = mock<DocumentenApiAuthentication>()
         val documentenApiVersionService: DocumentenApiVersionService = mock()
-        val version = DocumentenApiVersion("1.5.0-baseflow", supportsObjectInformatieObjecten = true)
+        val version = DocumentenApiVersion(version = "1.5.0-baseflow", supportsObjectInformatieObjecten = true)
         whenever(documentenApiVersionService.getVersionByTag("1.5.0-baseflow")).thenReturn(version)
 
-        val plugin = createPlugin(documentenApiVersionService, authenticationMock, "1.5.0-baseflow")
+        val plugin = createPlugin(
+            documentenApiVersionService = documentenApiVersionService,
+            authenticationMock = authenticationMock,
+            apiVersion = "1.5.0-baseflow"
+        )
 
         val objectInformatieObjectUrl = URI("http://some-url/objectinformatieobjecten/789")
         val caseDocumentId = UUID.randomUUID()
 
         plugin.deleteDocumentLink(caseDocumentId, objectInformatieObjectUrl)
 
-        verify(client).deleteDocumentLink(authenticationMock, plugin.url, caseDocumentId, objectInformatieObjectUrl)
+        verify(client).deleteDocumentLink(
+            authentication = authenticationMock,
+            baseUrl = plugin.url,
+            caseDocumentId = caseDocumentId,
+            url = objectInformatieObjectUrl
+        )
     }
 
     @Test
     fun `should throw when deleteDocumentLink is called on unsupported version`() {
         val documentenApiVersionService: DocumentenApiVersionService = mock()
         whenever(documentenApiVersionService.getVersionByTag("1.0.0"))
-            .thenReturn(DocumentenApiVersion("1.0.0", supportsObjectInformatieObjecten = false))
+            .thenReturn(DocumentenApiVersion(version = "1.0.0", supportsObjectInformatieObjecten = false))
 
-        val plugin = createPlugin(documentenApiVersionService, apiVersion = "1.0.0")
+        val plugin = createPlugin(
+            documentenApiVersionService = documentenApiVersionService,
+            apiVersion = "1.0.0"
+        )
 
         val exception = assertThrows<Exception> {
-            plugin.deleteDocumentLink(UUID.randomUUID(), URI("http://some-url/objectinformatieobjecten/789"))
+            plugin.deleteDocumentLink(
+                caseDocumentId = UUID.randomUUID(),
+                objectInformatieObjectUrl = URI("http://some-url/objectinformatieobjecten/789")
+            )
         }
         assertEquals("Documenten API version '1.0.0' does not support objectinformatieobjecten", exception.message)
     }
@@ -904,10 +926,14 @@ internal class DocumentenApiPluginTest {
     fun `should linkDocumentToObject via plugin action using documentUrl process variable`() {
         val authenticationMock = mock<DocumentenApiAuthentication>()
         val documentenApiVersionService: DocumentenApiVersionService = mock()
-        val version = DocumentenApiVersion("1.5.0-baseflow", supportsObjectInformatieObjecten = true)
+        val version = DocumentenApiVersion(version = "1.5.0-baseflow", supportsObjectInformatieObjecten = true)
         whenever(documentenApiVersionService.getVersionByTag("1.5.0-baseflow")).thenReturn(version)
 
-        val plugin = createPlugin(documentenApiVersionService, authenticationMock, "1.5.0-baseflow")
+        val plugin = createPlugin(
+            documentenApiVersionService = documentenApiVersionService,
+            authenticationMock = authenticationMock,
+            apiVersion = "1.5.0-baseflow"
+        )
 
         val execution = mock<DelegateExecution>()
         val caseDocumentId = UUID.fromString("123e4567-e89b-12d3-a456-426655440000")
@@ -950,9 +976,12 @@ internal class DocumentenApiPluginTest {
     fun `should throw when linkDocumentToObject plugin action has no documentUrl process variable`() {
         val documentenApiVersionService: DocumentenApiVersionService = mock()
         whenever(documentenApiVersionService.getVersionByTag("1.5.0-baseflow"))
-            .thenReturn(DocumentenApiVersion("1.5.0-baseflow", supportsObjectInformatieObjecten = true))
+            .thenReturn(DocumentenApiVersion(version = "1.5.0-baseflow", supportsObjectInformatieObjecten = true))
 
-        val plugin = createPlugin(documentenApiVersionService, apiVersion = "1.5.0-baseflow")
+        val plugin = createPlugin(
+            documentenApiVersionService = documentenApiVersionService,
+            apiVersion = "1.5.0-baseflow"
+        )
 
         val execution = mock<DelegateExecution>()
         whenever(execution.businessKey).thenReturn("123e4567-e89b-12d3-a456-426655440000")
@@ -971,10 +1000,14 @@ internal class DocumentenApiPluginTest {
     fun `should deleteDocumentLink via plugin action`() {
         val authenticationMock = mock<DocumentenApiAuthentication>()
         val documentenApiVersionService: DocumentenApiVersionService = mock()
-        val version = DocumentenApiVersion("1.5.0-baseflow", supportsObjectInformatieObjecten = true)
+        val version = DocumentenApiVersion(version = "1.5.0-baseflow", supportsObjectInformatieObjecten = true)
         whenever(documentenApiVersionService.getVersionByTag("1.5.0-baseflow")).thenReturn(version)
 
-        val plugin = createPlugin(documentenApiVersionService, authenticationMock, "1.5.0-baseflow")
+        val plugin = createPlugin(
+            documentenApiVersionService = documentenApiVersionService,
+            authenticationMock = authenticationMock,
+            apiVersion = "1.5.0-baseflow"
+        )
 
         val execution = mock<DelegateExecution>()
         val caseDocumentId = UUID.fromString("123e4567-e89b-12d3-a456-426655440000")
@@ -984,5 +1017,109 @@ internal class DocumentenApiPluginTest {
         plugin.deleteDocumentLink(execution, linkUrl)
 
         verify(client).deleteDocumentLink(authenticationMock, plugin.url, caseDocumentId, URI(linkUrl))
+    }
+
+    @Test
+    fun `should download document via plugin action using documentId process variable`() {
+        val storageService: TemporaryResourceStorageService = mock()
+        val applicationEventPublisher: ApplicationEventPublisher = mock()
+        val authenticationMock = mock<DocumentenApiAuthentication>()
+        val documentenApiVersionService: DocumentenApiVersionService = mock()
+        val executionMock = mock<DelegateExecution>()
+        val documentId = "3bd88200-11cb-45cf-a742-da01261755b1"
+        val caseDocumentId = "123e4567-e89b-12d3-a456-426655440000"
+
+        whenever(executionMock.getVariable(DOCUMENT_URL_PROCESS_VAR))
+            .thenReturn(null)
+        whenever(executionMock.getVariable(DOCUMENT_ID_PROCESS_VAR))
+            .thenReturn(documentId)
+        whenever(executionMock.businessKey)
+            .thenReturn(caseDocumentId)
+        whenever(client.getInformatieObject(any<DocumentenApiAuthentication>(), any<UUID>(), any<URI>()))
+            .thenReturn(
+                DocumentInformatieObject(
+                    url = URI("http://some-url/enkelvoudiginformatieobjecten/$documentId"),
+                    bronorganisatie = Rsin("000000000"),
+                    creatiedatum = LocalDate.now(),
+                    titel = "titel",
+                    auteur = "auteur",
+                    taal = "taal",
+                    beginRegistratie = OffsetDateTime.now(),
+                    status = DEFINITIEF,
+                    bestandsnaam = "passport.jpg"
+                )
+            )
+        whenever(client.downloadInformatieObjectContent(any<DocumentenApiAuthentication>(), any<UUID>(), any<URI>()))
+            .thenReturn(ByteArrayInputStream("content".toByteArray()))
+        whenever(storageService.store(any(), any()))
+            .thenReturn("tempResourceId")
+
+        val plugin = DocumentenApiPlugin(
+            client = client,
+            storageService = storageService,
+            applicationEventPublisher = applicationEventPublisher,
+            objectMapper = MapperSingleton.get(),
+            documentDeleteHandlers = listOf(),
+            documentenApiVersionService = documentenApiVersionService,
+            pluginService = pluginService,
+            runtimeService = runtimeService,
+            virusScanService = virusScanService,
+            virusScanEnabledForDocumentenApiPlugin = false
+        )
+        plugin.url = URI("http://some-url")
+        plugin.bronorganisatie = "123456789"
+        plugin.authenticationPluginConfiguration = authenticationMock
+
+        val result = plugin.downloadInformatieObject(executionMock)
+
+        assertEquals("tempResourceId", result)
+
+        val expectedDocumentUrl = URI("http://some-url/enkelvoudiginformatieobjecten/$documentId")
+        verify(client).getInformatieObject(
+            authentication = eq(authenticationMock),
+            caseDocumentId = eq(UUID.fromString(caseDocumentId)),
+            objectUrl = eq(expectedDocumentUrl)
+        )
+        verify(client).downloadInformatieObjectContent(
+            authentication = eq(authenticationMock),
+            caseDocumentId = eq(UUID.fromString(caseDocumentId)),
+            objectUrl = eq(expectedDocumentUrl)
+        )
+        verify(executionMock).setVariable(RESOURCE_ID_PROCESS_VAR, "tempResourceId")
+    }
+
+    @Test
+    fun `should throw when download plugin action has neither documentUrl nor documentId`() {
+        val storageService: TemporaryResourceStorageService = mock()
+        val applicationEventPublisher: ApplicationEventPublisher = mock()
+        val documentenApiVersionService: DocumentenApiVersionService = mock()
+        val executionMock = mock<DelegateExecution>()
+
+        whenever(executionMock.getVariable(DOCUMENT_URL_PROCESS_VAR))
+            .thenReturn(null)
+        whenever(executionMock.getVariable(DOCUMENT_ID_PROCESS_VAR))
+            .thenReturn(null)
+
+        val plugin = DocumentenApiPlugin(
+            client = client,
+            storageService = storageService,
+            applicationEventPublisher = applicationEventPublisher,
+            objectMapper = MapperSingleton.get(),
+            documentDeleteHandlers = listOf(),
+            documentenApiVersionService = documentenApiVersionService,
+            pluginService = pluginService,
+            runtimeService = runtimeService,
+            virusScanService = virusScanService,
+            virusScanEnabledForDocumentenApiPlugin = false
+        )
+        plugin.url = URI("http://some-url")
+
+        val exception = assertThrows<IllegalStateException> {
+            plugin.downloadInformatieObject(executionMock)
+        }
+        assertEquals(
+            "Failed to download document. No process variable '$DOCUMENT_URL_PROCESS_VAR' or '$DOCUMENT_ID_PROCESS_VAR' found.",
+            exception.message
+        )
     }
 }
