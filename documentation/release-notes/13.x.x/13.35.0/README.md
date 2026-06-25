@@ -6,16 +6,20 @@
 
 ## New Features
 
-* **New feature title**
+* **Task properties in value paths**
 
-  New feature explanation.
+  Task properties (`task:createTime`, `task:name`, `task:assignee`, `task:dueDate`, `task:assignedTeamTitle`) can now be
+  selected anywhere a value path is configured.
 
 ## Enhancements
 
-* **New enhancement title**
+* **Task list columns: path picker**
 
-  New enhancement explanation.
+  The path field in the task list column modal is now a searchable dropdown instead of a free-text input.
 
 ## Bugfixes
 
-* New bugfix.
+* **Sortable controls hidden for non-sortable paths**
+
+  In the case and task list column editors, the **Sortable** checkbox and **Default sort** dropdown are now hidden when
+  the configured path does not support sorting.
