@@ -23,7 +23,6 @@
       "@valtimo/access-control-management": ["./projects/valtimo/access-control-management/src/public-api.ts"],
       "@valtimo/account": ["./projects/valtimo/account/src/public_api.ts"],
       "@valtimo/admin-settings": ["./projects/valtimo/admin-settings/src/public-api.ts"],
-      "@valtimo/app-shell": ["./projects/valtimo/app-shell/src/public-api.ts"],
       "@valtimo/analyse": ["./projects/valtimo/analyse/src/public_api.ts"],
       "@valtimo/bootstrap": ["./projects/valtimo/bootstrap/src/public-api.ts"],
       "@valtimo/building-block-management": ["./projects/valtimo/building-block-management/src/public-api.ts"],
@@ -342,9 +341,6 @@
     },
     {
       "path": "./apps/gzac/src/tsconfig.spec.json"
-    },
-    {
-      "path": "./projects/valtimo/app-shell/tsconfig.lib.json"
     }
   ]
 }

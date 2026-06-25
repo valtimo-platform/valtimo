@@ -18,9 +18,10 @@ Includes everything the released `apps/gzac` variant has plus:
   [`src/app/dev-tools.ts`](./src/app/dev-tools.ts) (swapped with `no-dev-tools.ts`
   in `--configuration production` via Angular `fileReplacements`).
 
-The shared `NgModule` wiring (44 modules — layout, security, plugins, etc.) is
-imported from [`@valtimo/app-shell`](../../projects/valtimo/app-shell/) so the
-variant `app.module.ts` only carries variant-specific bits.
+The shared `NgModule` wiring (layout, security, plugins, etc.) is declared
+directly in [`src/app/app.module.ts`](./src/app/app.module.ts) alongside the
+variant-specific bits. The gzac variant keeps the same shared set; only the
+dev-only modules listed above are absent there.
 
 ## Start
 

@@ -2,17 +2,16 @@
 
 This folder contains:
 
-- A collection of Angular libraries under `projects/valtimo/*` that together form
-  the Valtimo frontend (including the shared `@valtimo/app-shell` library, which
-  carries the common `NgModule` wiring used by every variant).
+- A collection of Angular libraries under `projects/valtimo/*` that together
+  form the Valtimo frontend.
 - Two application variants under `apps/`:
     - `apps/dev/` — the developer-loop console, with showcase components, demo
       routes, and the dev-only plugins enabled. This is what you serve when
       iterating on the libraries.
     - `apps/gzac/` — the template-equivalent application that is packaged into
       the released `ritense/gzac-frontend` Docker image. Imports the same
-      `CommonAppModule` from `@valtimo/app-shell` but skips the dev showcase
-      modules.
+      shared set of feature modules directly in its `AppModule` but skips the
+      dev showcase modules.
 
 ### Starting the Valtimo platform
 
@@ -47,9 +46,7 @@ Both serve at `http://localhost:4200/` by default. To run them side by side, pas
 `-- --port 4201` to one of the commands.
 
 Edits to library `*.ts` source files under `projects/valtimo/**` are picked up
-automatically by `ng serve` — no manual rebuild required. The same is true for
-the `@valtimo/app-shell` library: changes to `CommonAppModule` are live-reloaded
-in whichever variant is being served.
+automatically by `ng serve` — no manual rebuild required.
 
 #### Production-config builds
 

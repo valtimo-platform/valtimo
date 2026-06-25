@@ -12,9 +12,11 @@ the released `ritense/gzac-frontend` Docker image. Structurally mirrors
   `enableProdMode()` actually fires in release builds. The template's
   upstream `src/` ships only `environment.ts`.
 
-The shared `NgModule` wiring is imported from
-[`@valtimo/app-shell`](../../projects/valtimo/app-shell/). The only feature
-module that's gzac-only (not in `apps/dev`) is `SseModule` from `@valtimo/sse`.
+The shared `NgModule` wiring is declared directly in
+[`src/app/app.module.ts`](./src/app/app.module.ts) — same set of feature
+modules as `apps/dev/src/app/app.module.ts` minus the dev-only ones. The
+only feature module that's gzac-only (not in `apps/dev`) is `SseModule` from
+`@valtimo/sse`.
 
 ## Start
 

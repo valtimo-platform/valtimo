@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import {NgModule} from '@angular/core';
+import {Injector, NgModule} from '@angular/core';
 import {CommonModule} from '@angular/common';
 import {BrowserModule} from '@angular/platform-browser';
 import {FormsModule, ReactiveFormsModule} from '@angular/forms';
@@ -31,7 +31,12 @@ import {AppComponent} from './app.component';
 import {AppRoutingModule} from './app-routing.module';
 import {environment} from '../environments/environment';
 
-import {CommonAppModule} from '@valtimo/app-shell';
+import {AccessControlManagementModule} from '@valtimo/access-control-management';
+import {AccountModule} from '@valtimo/account';
+import {AdminSettingsModule} from '@valtimo/admin-settings';
+import {AnalyseModule} from '@valtimo/analyse';
+import {BootstrapModule} from '@valtimo/bootstrap';
+import {BuildingBlockManagementModule} from '@valtimo/building-block-management';
 import {
   CaseDetailTabAuditComponent,
   CaseDetailTabDocumentsComponent,
@@ -41,35 +46,89 @@ import {
   CaseModule,
   DefaultTabs,
 } from '@valtimo/case';
-import {FormIoModule, UploaderModule} from '@valtimo/components';
-import {FormViewModelModule} from '@valtimo/form-view-model';
+import {CaseManagementModule} from '@valtimo/case-management';
+import {CaseMigrationModule} from '@valtimo/case-migration';
+import {ChoiceFieldModule} from '@valtimo/choice-field';
 import {
+  BpmnJsDiagramModule,
+  enableCustomFormioComponents,
+  FormIoModule,
+  MenuModule,
+  registerFormioCurrencyComponent,
+  registerFormioCurrentUserComponent,
+  registerFormioFileSelectorComponent,
+  registerFormioIbanComponent,
+  registerFormioUploadComponent,
+  registerFormioValueResolverSelectorComponent,
+  UploaderModule,
+  WidgetModule,
+} from '@valtimo/components';
+import {DashboardModule} from '@valtimo/dashboard';
+import {DashboardManagementModule} from '@valtimo/dashboard-management';
+import {DecisionModule} from '@valtimo/decision';
+import {DocumentModule} from '@valtimo/document';
+import {FormModule} from '@valtimo/form';
+import {FormFlowManagementModule} from '@valtimo/form-flow-management';
+import {FormManagementModule} from '@valtimo/form-management';
+import {FormViewModelModule} from '@valtimo/form-view-model';
+import {IkoModule, registerIkoSearchFormioComponent} from '@valtimo/iko';
+import {LayoutModule, TranslationManagementModule} from '@valtimo/layout';
+import {LoggingModule} from '@valtimo/logging';
+import {MigrationModule} from '@valtimo/migration';
+import {MilestoneModule} from '@valtimo/milestone';
+import {ObjectModule} from '@valtimo/object';
+import {ObjectManagementModule} from '@valtimo/object-management';
+import {
+  BesluitenApiPluginModule,
   besluitenApiPluginSpecification,
+  CatalogiApiPluginModule,
   catalogiApiPluginSpecification,
+  DocumentenApiPluginModule,
   documentenApiPluginSpecification,
+  DocumentenApiPreviewPluginModule,
   documentenApiPreviewPluginSpecification,
   KlantinteractiesApiPluginModule,
   klantinteractiesApiPluginSpecification,
+  NotificatiesApiPluginModule,
   notificatiesApiPluginSpecification,
+  ObjectenApiPluginModule,
   objectenApiPluginSpecification,
+  ObjectTokenAuthenticationPluginModule,
   objectTokenAuthenticationPluginSpecification,
+  ObjecttypenApiPluginModule,
   objecttypenApiPluginSpecification,
   OpenKlantTokenAuthenticationPluginModule,
   openKlantTokenAuthenticationPluginSpecification,
+  OpenNotificatiesPluginModule,
   openNotificatiesPluginSpecification,
+  OpenZaakPluginModule,
   openZaakPluginSpecification,
   PLUGINS_TOKEN,
+  PortaaltaakPluginModule,
   portaaltaakPluginSpecification,
+  SmartDocumentsPluginModule,
   smartDocumentsPluginSpecification,
+  VerzoekPluginModule,
   verzoekPluginSpecification,
+  ZakenApiPluginModule,
   zakenApiPluginSpecification,
 } from '@valtimo/plugin';
+import {PluginManagementModule} from '@valtimo/plugin-management';
+import {ProcessModule} from '@valtimo/process';
+import {ProcessLinkModule} from '@valtimo/process-link';
+import {ProcessManagementModule} from '@valtimo/process-management';
+import {ResourceModule} from '@valtimo/resource';
+import {SecurityModule} from '@valtimo/security';
 import {
   ConfigModule,
   ConfigService,
   CustomMultiTranslateHttpLoaderFactory,
   LocalizationService,
 } from '@valtimo/shared';
+import {SwaggerModule} from '@valtimo/swagger';
+import {TaskModule} from '@valtimo/task';
+import {TeamsModule} from '@valtimo/teams';
+import {registerDocumentenApiFormioUploadComponent, ZgwModule} from '@valtimo/zgw';
 
 import {devDeclarations, devImports, devProviders, devTabs} from './dev-tools';
 import {pluginImports, pluginSpecifications} from './app-plugins';
@@ -94,7 +153,6 @@ export function tabsFactory() {
     AppRoutingModule,
     FormsModule,
     ReactiveFormsModule,
-    CommonAppModule,
     ConfigModule.forRoot(environment),
     LoggerModule.forRoot(environment.logger),
     environment.authentication.module,
@@ -106,6 +164,66 @@ export function tabsFactory() {
         deps: [HttpBackend, HttpClient, ConfigService, LocalizationService],
       },
     }),
+    // layout / shell
+    LayoutModule,
+    BootstrapModule,
+    SecurityModule,
+    MenuModule,
+    WidgetModule,
+    BpmnJsDiagramModule,
+    // task / case / process
+    TaskModule,
+    CaseMigrationModule,
+    CaseManagementModule,
+    ProcessModule,
+    ProcessLinkModule,
+    ProcessManagementModule,
+    // form
+    FormModule,
+    FormManagementModule,
+    FormFlowManagementModule,
+    // dashboard / document / account
+    DashboardModule,
+    DashboardManagementModule,
+    DocumentModule,
+    AccountModule,
+    ChoiceFieldModule,
+    ResourceModule,
+    // analysis / swagger / decision / milestone / migration
+    AnalyseModule,
+    SwaggerModule,
+    DecisionModule,
+    MilestoneModule,
+    MigrationModule,
+    // management
+    PluginManagementModule,
+    ObjectManagementModule,
+    ObjectModule,
+    AccessControlManagementModule,
+    TranslationManagementModule,
+    // zgw / iko / logging
+    ZgwModule,
+    IkoModule,
+    LoggingModule,
+    // admin / building blocks / teams
+    AdminSettingsModule,
+    BuildingBlockManagementModule,
+    TeamsModule,
+    // plugin modules used by every variant
+    BesluitenApiPluginModule,
+    CatalogiApiPluginModule,
+    DocumentenApiPluginModule,
+    DocumentenApiPreviewPluginModule,
+    NotificatiesApiPluginModule,
+    ObjectenApiPluginModule,
+    ObjectTokenAuthenticationPluginModule,
+    ObjecttypenApiPluginModule,
+    OpenNotificatiesPluginModule,
+    OpenZaakPluginModule,
+    PortaaltaakPluginModule,
+    SmartDocumentsPluginModule,
+    ZakenApiPluginModule,
+    VerzoekPluginModule,
     // dev-only feature modules
     FormIoModule,
     UploaderModule,
@@ -142,4 +260,16 @@ export function tabsFactory() {
     ...(environment.production ? [] : devProviders),
   ],
 })
-export class AppModule {}
+export class AppModule {
+  constructor(injector: Injector) {
+    enableCustomFormioComponents(injector);
+    registerFormioCurrencyComponent(injector);
+    registerFormioCurrentUserComponent(injector);
+    registerFormioFileSelectorComponent(injector);
+    registerFormioUploadComponent(injector);
+    registerFormioValueResolverSelectorComponent(injector);
+    registerFormioIbanComponent(injector);
+    registerDocumentenApiFormioUploadComponent(injector);
+    registerIkoSearchFormioComponent(injector);
+  }
+}
