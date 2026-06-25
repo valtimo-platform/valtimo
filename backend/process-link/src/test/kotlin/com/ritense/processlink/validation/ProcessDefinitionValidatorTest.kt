@@ -1367,6 +1367,55 @@ class ProcessDefinitionValidatorTest {
         assertThat(result.errors.filter { it.errorCode == "BEAN_NOT_FOUND" }).isEmpty()
     }
 
+    @Test
+    fun `should allow execution variable in any element`() {
+        val validatorWithBeans = ProcessDefinitionValidator { mapOf("someBean" to Object()) }
+
+        val model = Bpmn.createExecutableProcess("test-process")
+            .startEvent()
+            .serviceTask("my-task")
+            .operatonExpression("\${execution.getVariable('myVar')}")
+            .endEvent()
+            .done()
+
+        val result = validatorWithBeans.validate(model, emptyList())
+
+        assertThat(result.errors.filter { it.errorCode == "BEAN_NOT_FOUND" }).isEmpty()
+    }
+
+    @Test
+    fun `should allow task variable in user task`() {
+        val validatorWithBeans = ProcessDefinitionValidator { mapOf("someBean" to Object()) }
+
+        val model = Bpmn.createExecutableProcess("test-process")
+            .startEvent()
+            .userTask("my-user-task").operatonFormKey("\${task.assignee}")
+            .endEvent()
+            .done()
+
+        val result = validatorWithBeans.validate(model, emptyList())
+
+        assertThat(result.errors.filter { it.errorCode == "BEAN_NOT_FOUND" }).isEmpty()
+    }
+
+    @Test
+    fun `should report task variable in non-user-task element`() {
+        val validatorWithBeans = ProcessDefinitionValidator { mapOf("someBean" to Object()) }
+
+        val model = Bpmn.createExecutableProcess("test-process")
+            .startEvent()
+            .serviceTask("my-task")
+            .operatonExpression("\${task.assignee}")
+            .endEvent()
+            .done()
+
+        val result = validatorWithBeans.validate(model, emptyList())
+
+        val error = result.errors.find { it.elementId == "my-task" && it.errorCode == "BEAN_NOT_FOUND" }
+        assertThat(error).isNotNull
+        assertThat(error!!.reason).contains("task")
+    }
+
     private fun createModelWithServiceTask(id: String): BpmnModelInstance {
         return Bpmn.createExecutableProcess("test-process")
             .startEvent()

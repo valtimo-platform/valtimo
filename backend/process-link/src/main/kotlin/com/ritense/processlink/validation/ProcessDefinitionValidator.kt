@@ -714,8 +714,11 @@ class ProcessDefinitionValidator(
         val beanNameMatch = beanNameRegex.find(expression)
         val beanName = beanNameMatch?.groupValues?.get(1) ?: return
 
-        // Skip JUEL built-ins and common keywords
-        if (beanName in listOf("true", "false", "null", "empty", "not")) return
+        // Skip JUEL built-ins and Operaton runtime variables
+        val alwaysAvailable = setOf("true", "false", "null", "empty", "not",
+            "execution", "authenticatedUserId", "variableContext")
+        if (beanName in alwaysAvailable) return
+        if (elementType == "UserTask" && beanName == "task") return
 
         if (!processBeans.containsKey(beanName)) {
             errors.add(
