@@ -177,7 +177,10 @@ jobs:
         run: |
           npm run libs-increment-all -- ${PROJECT_VERSION}
           npm run copy-frontend-version
-          npx ng build @valtimo/shared
+          # v12 lib chain bottoms out at @valtimo/config (v13 renamed it
+          # to @valtimo/shared). Build the right one so the version bump
+          # propagates before downstream libs depend on it.
+          npx ng build @valtimo/config
 
       - name: Cache built frontend libraries
         if: ${{ needs.check_cache.result != 'skipped' }}

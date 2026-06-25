@@ -75,11 +75,13 @@ if (includeDevSources) {
         // counterparts during the dev loop.
         duplicatesStrategy = DuplicatesStrategy.INCLUDE
     }
-    // sourcesJar (added by `java { withSourcesJar() }` in backend/build.gradle)
-    // packages every srcDir of sourceSets.main — including the dev overlay
-    // above — and has no default duplicate strategy, so collisions like
-    // banner.txt break the task. Match processResources' INCLUDE strategy.
-    tasks.named('sourcesJar').configure {
+    // sourcesJar / javadocJar / jar (added by `java { withSourcesJar();
+    // withJavadocJar() }` and the Java plugin in backend/build.gradle) all
+    // package srcDirs of sourceSets.main — including the dev overlay above
+    // — and have no default duplicate strategy. Collisions like banner.txt
+    // and assets under resources/ break them. Match processResources'
+    // INCLUDE strategy on every Jar-style task.
+    tasks.withType(Jar).configureEach {
         duplicatesStrategy = DuplicatesStrategy.INCLUDE
     }
     springBoot {
