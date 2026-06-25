@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,6 +21,7 @@ import com.ritense.case_.service.CaseWidgetService
 import com.ritense.document.domain.impl.JsonSchemaDocumentId.existingId
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import com.ritense.valtimo.contract.domain.ValtimoMediaType.APPLICATION_JSON_UTF8_VALUE
+import com.ritense.valtimo.contract.endpoint.EndpointDescription
 import org.springframework.data.domain.Pageable
 import org.springframework.data.web.PageableDefault
 import org.springframework.http.ResponseEntity
@@ -37,6 +38,10 @@ class CaseWidgetTabResource(
     private val caseWidgetService: CaseWidgetService
 ) {
 
+    @EndpointDescription(
+        en = "Get case widget tab",
+        nl = "Dossiertabblad met widgets ophalen",
+    )
     @GetMapping("/v1/document/{documentId}/widget-tab/{tabKey}")
     fun getCaseWidgetTab(
         @PathVariable documentId: String,
@@ -46,6 +51,10 @@ class CaseWidgetTabResource(
         return ResponseEntity.ofNullable(widgetTab)
     }
 
+    @EndpointDescription(
+        en = "Get case widget data",
+        nl = "Dossierwidgetgegevens ophalen",
+    )
     @GetMapping("/v1/document/{documentId}/widget-tab/{tabKey}/widget/{widgetKey}")
     fun getCaseWidgetData(
         @PathVariable documentId: UUID,

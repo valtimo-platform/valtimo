@@ -19,6 +19,7 @@ package com.ritense.buildingblock.web.rest
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import com.ritense.valtimo.contract.buildingblock.BuildingBlockDefinitionId
 import com.ritense.valtimo.contract.domain.ValtimoMediaType.APPLICATION_JSON_UTF8_VALUE
+import com.ritense.valtimo.contract.endpoint.EndpointDescription
 import com.ritense.valueresolver.ValueResolverOption
 import com.ritense.valueresolver.ValueResolverOptionRequest
 import com.ritense.valueresolver.ValueResolverService
@@ -37,6 +38,10 @@ class BuildingBlockValueResolverResource(
     private val valueResolverService: ValueResolverService
 ) {
 
+    @EndpointDescription(
+        en = "List building block value resolver keys",
+        nl = "Sleutels van waarde-resolver van bouwblok ophalen",
+    )
     @PostMapping("/management/v1/value-resolver/building-block/{buildingBlockDefinitionKey}/version/{buildingBlockDefinitionVersionTag}/keys")
     fun getResolvableKeys(
         @PathVariable buildingBlockDefinitionKey: String,

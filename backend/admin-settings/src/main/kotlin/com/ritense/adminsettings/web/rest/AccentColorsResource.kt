@@ -20,6 +20,7 @@ import com.ritense.adminsettings.service.AccentColorsService
 import com.ritense.adminsettings.web.rest.dto.AccentColorsDto
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import com.ritense.valtimo.contract.domain.ValtimoMediaType.APPLICATION_JSON_UTF8_VALUE
+import com.ritense.valtimo.contract.endpoint.EndpointDescription
 import jakarta.validation.Valid
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
@@ -35,11 +36,19 @@ class AccentColorsResource(
     private val accentColorsService: AccentColorsService
 ) {
 
+    @EndpointDescription(
+        en = "Get accent colors",
+        nl = "Accentkleuren ophalen",
+    )
     @GetMapping("/v1/admin-settings/accent-colors")
     fun getColors(): ResponseEntity<AccentColorsDto> {
         return ResponseEntity.ok(accentColorsService.getColors())
     }
 
+    @EndpointDescription(
+        en = "Update accent colors",
+        nl = "Accentkleuren bijwerken",
+    )
     @PutMapping("/management/v1/admin-settings/accent-colors")
     fun updateColors(
         @Valid @RequestBody dto: AccentColorsDto

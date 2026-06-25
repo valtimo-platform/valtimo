@@ -23,6 +23,7 @@ import com.ritense.objectenapi.service.ZaakObjectService
 import com.ritense.objectenapi.web.rest.result.FormType
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import com.ritense.valtimo.contract.domain.ValtimoMediaType.APPLICATION_JSON_UTF8_VALUE
+import com.ritense.valtimo.contract.endpoint.EndpointDescription
 import org.springframework.http.ResponseEntity
 import org.springframework.stereotype.Controller
 import org.springframework.web.bind.annotation.GetMapping
@@ -40,6 +41,10 @@ class ObjectResource(
     private val zaakObjectService: ZaakObjectService
 ) {
 
+    @EndpointDescription(
+        en = "Get prefilled object form",
+        nl = "Vooraf ingevuld objectformulier ophalen",
+    )
     @GetMapping("/form")
     fun getPrefilledObjectFromObjectUrl(
         @RequestParam(name = "objectUrl") objectUrl: URI? = null,
@@ -51,6 +56,10 @@ class ObjectResource(
         return form?.let { ResponseEntity.ok(it) } ?: ResponseEntity.notFound().build()
     }
 
+    @EndpointDescription(
+        en = "Patch object",
+        nl = "Object bijwerken",
+    )
     @PatchMapping
     fun patchObject(
         @RequestParam(name = "objectManagementId") objectManagementId: UUID,
@@ -60,6 +69,10 @@ class ObjectResource(
         return ResponseEntity.ok(zaakObjectService.patchObjectFromManagementId(objectManagementId, objectId, jsonNode))
     }
 
+    @EndpointDescription(
+        en = "Get object by url",
+        nl = "Object op url ophalen",
+    )
     @GetMapping
     fun getObjectByUrl(
         @RequestParam(name = "objectUrl") objectUrl: URI): ResponseEntity<ObjectWrapper?> =

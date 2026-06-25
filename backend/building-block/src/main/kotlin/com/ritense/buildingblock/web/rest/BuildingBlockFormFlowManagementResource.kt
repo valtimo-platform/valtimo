@@ -22,6 +22,7 @@ import com.ritense.formflow.web.rest.result.FormFlowDefinitionDto
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import com.ritense.valtimo.contract.buildingblock.BuildingBlockDefinitionId
 import com.ritense.valtimo.contract.domain.ValtimoMediaType.APPLICATION_JSON_UTF8_VALUE
+import com.ritense.valtimo.contract.endpoint.EndpointDescription
 import jakarta.validation.Valid
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
@@ -45,6 +46,10 @@ class BuildingBlockFormFlowManagementResource(
     private val buildingBlockFormFlowDefinitionImporter: BuildingBlockFormFlowDefinitionImporter,
 ) {
 
+    @EndpointDescription(
+        en = "List building block form flow definitions",
+        nl = "Form flow-definities van bouwblok ophalen",
+    )
     @GetMapping("/{key}/version/{versionTag}/form-flow-definition")
     @Transactional
     fun getAllFormFlowDefinitions(
@@ -63,6 +68,10 @@ class BuildingBlockFormFlowManagementResource(
         return ResponseEntity.ok(definitions)
     }
 
+    @EndpointDescription(
+        en = "Get building block form flow definition",
+        nl = "Form flow-definitie van bouwblok ophalen",
+    )
     @GetMapping("/{key}/version/{versionTag}/form-flow-definition/{definitionKey}")
     @Transactional
     fun getFormFlowDefinition(
@@ -81,6 +90,10 @@ class BuildingBlockFormFlowManagementResource(
         )
     }
 
+    @EndpointDescription(
+        en = "Create building block form flow definition",
+        nl = "Form flow-definitie van bouwblok aanmaken",
+    )
     @PostMapping("/{key}/version/{versionTag}/form-flow-definition")
     @Transactional
     fun createFormFlowDefinition(
@@ -96,6 +109,10 @@ class BuildingBlockFormFlowManagementResource(
         return ResponseEntity.ok(FormFlowDefinitionDto.of(saved, false))
     }
 
+    @EndpointDescription(
+        en = "Update building block form flow definition",
+        nl = "Form flow-definitie van bouwblok bijwerken",
+    )
     @PutMapping("/{key}/version/{versionTag}/form-flow-definition/{definitionKey}")
     @Transactional
     fun updateFormFlowDefinition(
@@ -115,6 +132,10 @@ class BuildingBlockFormFlowManagementResource(
         return ResponseEntity.ok(FormFlowDefinitionDto.of(saved, false))
     }
 
+    @EndpointDescription(
+        en = "Delete building block form flow definition",
+        nl = "Form flow-definitie van bouwblok verwijderen",
+    )
     @DeleteMapping("/{key}/version/{versionTag}/form-flow-definition/{definitionKey}")
     @Transactional
     fun deleteFormFlowDefinition(

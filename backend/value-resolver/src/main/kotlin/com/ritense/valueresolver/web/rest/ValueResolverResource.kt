@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,9 +19,9 @@ package com.ritense.valueresolver.web.rest
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import com.ritense.valtimo.contract.case_.CaseDefinitionId
 import com.ritense.valtimo.contract.domain.ValtimoMediaType.APPLICATION_JSON_UTF8_VALUE
+import com.ritense.valtimo.contract.endpoint.EndpointDescription
 import com.ritense.valueresolver.ValueResolverOption
 import com.ritense.valueresolver.ValueResolverOptionRequest
-import com.ritense.valueresolver.ValueResolverOptionType
 import com.ritense.valueresolver.ValueResolverService
 import jakarta.validation.Valid
 import org.springframework.http.ResponseEntity
@@ -38,11 +38,19 @@ import org.springframework.web.bind.annotation.RestController
 class ValueResolverResource(
     private val valueResolverService: ValueResolverService
 ) {
+    @EndpointDescription(
+        en = "List value resolvers",
+        nl = "Waarde-resolvers ophalen",
+    )
     @GetMapping("/management/v1/value-resolver")
     fun getValueResolvers(): ResponseEntity<List<String>> {
         return ResponseEntity.ok(valueResolverService.getValueResolvers())
     }
 
+    @EndpointDescription(
+        en = "Get resolvable keys for case definition",
+        nl = "Opvraagbare sleutels voor dossierdefinitie ophalen",
+    )
     @PostMapping("/management/v1/value-resolver/case-definition/{caseDefinitionKey}/keys")
     fun getResolvableKeys(
         @PathVariable caseDefinitionKey: String,
@@ -51,6 +59,10 @@ class ValueResolverResource(
         return ResponseEntity.ok(valueResolverService.getResolvableKeys(request, caseDefinitionKey))
     }
 
+    @EndpointDescription(
+        en = "Get resolvable keys for case definition version",
+        nl = "Opvraagbare sleutels voor dossierdefinitieversie ophalen",
+    )
     @PostMapping("/management/v1/value-resolver/case-definition/{caseDefinitionKey}/version/{caseDefinitionVersionTag}/keys")
     fun getResolvableKeys(
         @PathVariable caseDefinitionKey: String,

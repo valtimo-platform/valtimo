@@ -17,7 +17,6 @@
 package com.ritense.adminsettings.autoconfigure
 
 import com.fasterxml.jackson.databind.ObjectMapper
-import com.ritense.adminsettings.endpoint.AdminSettingsEndpointDescriptionProvider
 import com.ritense.adminsettings.importer.AdminSettingsAccentColorsImporter
 import com.ritense.adminsettings.importer.AdminSettingsFeatureToggleImporter
 import com.ritense.adminsettings.importer.AdminSettingsLogoImporter
@@ -144,8 +143,4 @@ class AdminSettingsAutoConfiguration {
             adminSettingsLogoRepository,
         )
     }
-
-    @Bean
-    @ConditionalOnMissingBean(AdminSettingsEndpointDescriptionProvider::class)
-    fun adminSettingsEndpointDescriptionProvider() = AdminSettingsEndpointDescriptionProvider()
 }

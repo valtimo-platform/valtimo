@@ -22,7 +22,6 @@ import com.ritense.externalplugin.compatibility.DefaultGzacVersionProvider
 import com.ritense.externalplugin.compatibility.GzacCompatibilityChecker
 import com.ritense.externalplugin.compatibility.GzacVersionProvider
 import com.ritense.externalplugin.compatibility.PluginPackageInspector
-import com.ritense.externalplugin.endpoint.ExternalPluginEndpointDescriptionProvider
 import com.ritense.externalplugin.processlink.ExternalPluginProcessLinkMapper
 import com.ritense.externalplugin.processlink.ExternalPluginServiceTaskStartListener
 import com.ritense.externalplugin.processlink.ExternalPluginSupportedProcessLinkTypeHandler
@@ -55,7 +54,6 @@ import com.ritense.externalplugin.service.PluginPropertyEncryptor
 import com.ritense.externalplugin.web.rest.ExternalPluginManagementResource
 import com.ritense.externalplugin.web.rest.ExternalPluginUserTokenResource
 import com.ritense.plugin.service.EncryptionService
-import com.ritense.valtimo.contract.endpoint.EndpointDescriptionProvider
 import com.ritense.valtimo.operaton.service.OperatonRepositoryService
 import com.ritense.valueresolver.ValueResolverService
 import org.operaton.bpm.engine.RepositoryService
@@ -70,6 +68,7 @@ import org.springframework.core.annotation.Order
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories
 import org.springframework.scheduling.annotation.EnableScheduling
 import org.springframework.web.client.RestTemplate
+import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping
 
 @Configuration
 @EnableScheduling
@@ -278,8 +277,8 @@ class ExternalPluginAutoConfiguration {
     @Bean
     @ConditionalOnMissingBean(EndpointDescriptionService::class)
     fun endpointDescriptionService(
-        providers: List<EndpointDescriptionProvider>,
-    ) = EndpointDescriptionService(providers)
+        handlerMappings: List<RequestMappingHandlerMapping>,
+    ) = EndpointDescriptionService(handlerMappings)
 
     @Bean
     @ConditionalOnMissingBean(GzacVersionProvider::class)
@@ -357,8 +356,4 @@ class ExternalPluginAutoConfiguration {
     @Order(430)
     @ConditionalOnMissingBean(ExternalPluginHttpSecurityConfigurer::class)
     fun externalPluginHttpSecurityConfigurer() = ExternalPluginHttpSecurityConfigurer()
-
-    @Bean
-    @ConditionalOnMissingBean(ExternalPluginEndpointDescriptionProvider::class)
-    fun externalPluginEndpointDescriptionProvider() = ExternalPluginEndpointDescriptionProvider()
 }

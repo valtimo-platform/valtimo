@@ -19,7 +19,7 @@ Status legend: ✅ implemented & verified · 🟡 implemented, POC-level · ⛔ 
 | Area | Path | Status |
 |------|------|--------|
 | Core-app backend module | `backend/external-plugin/` | ✅ |
-| Endpoint-description providers (per module) + contract | `backend/*/.../endpoint/*EndpointDescriptionProvider.kt`, `com.ritense.valtimo.contract.endpoint.EndpointDescriptionProvider` | ✅ |
+| Endpoint descriptions (`@EndpointDescription` on every controller method) + contract annotation | `backend/*/.../web/rest/*Resource.{kt,java}`, `com.ritense.valtimo.contract.endpoint.EndpointDescription` | ✅ |
 | Plugin host (Node + Fastify + Extism, multi-version) | `plugin-host/app/` | 🟡 |
 | Event consumer (RabbitMQ → `handle_event`) | `plugin-host/app/src/rabbitmq/event-consumer.ts` | ✅ |
 | Backend plugin SDK (`@valtimo/plugin-sdk`) — actions, events, requests (`handle_request`), `gzacApi` (+ `asUser`), frontend `t()` + parent-proxy data access (`callValtimo`/`getPluginData`) | `plugin-host/plugin-sdk/` | ✅ |
@@ -193,8 +193,14 @@ The host verifies in a shared Fastify `preHandler` (`createHmacAuthHook`,
 
 Components: `plugin-management/.../{plugin-external-permissions, plugin-add-modal,
 plugin-external-edit-modal, plugin-external-configure}`. Endpoint descriptions are localised via
-`POST /api/management/v1/external-plugin/endpoint-descriptions` (aggregated from every module's
-`EndpointDescriptionProvider`; glob and `{param}` matching, `en`/`nl` with `en` fallback).
+`POST /api/management/v1/external-plugin/endpoint-descriptions`. Each endpoint declares its own
+English and Dutch text directly on the controller handler method with an `@EndpointDescription(en,
+nl)` annotation (`com.ritense.valtimo.contract.endpoint.EndpointDescription`);
+`EndpointDescriptionService` collects every annotation from Spring's `RequestMappingHandlerMapping`
+and resolves a queried pattern against them (glob and `{param}` matching, `en`/`nl` with `en`
+fallback). A test (`EndpointDescriptionCoverageTest`, `backend/external-plugin`) enforces that
+**every** controller endpoint on the classpath — not only management ones — carries both
+translations, so the description requirement cannot drift as endpoints are added.
 
 The Permissions step shows two read-only sections under a single acknowledgement checkbox:
 
@@ -936,8 +942,13 @@ privilege-escalation than the front-end transport choice.
   `buildHttpsOptions` wiring in `plugin-host/app/src/index.ts`).
 - Backend `:backend:external-plugin:test`: BUILD SUCCESSFUL (allowlist **for both the service and the
   user principal** + service-token-filter + service-token-ttl + **user-token suites** + endpoint-
-  description-provider + host-client-HMAC + host-registration transport-guard + compatibility +
-  event-queue mode/TTL tests). The user-token suites assert: the minted JWT's claims
+  description-coverage + host-client-HMAC + host-registration transport-guard + compatibility +
+  event-queue mode/TTL tests). The endpoint-description-coverage suite
+  (`EndpointDescriptionCoverageTest`, §3.8/§4) scans every controller on the test classpath and fails
+  unless each handler carries an `@EndpointDescription` with both `en` and `nl` text — so the new
+  user-token (`ExternalPluginUserTokenResource`) and case-tab (`CaseExternalPluginTabResource`)
+  endpoints declare descriptions like every other endpoint. The user-token suites assert: the minted
+  JWT's claims
   (`sub`/`roles`/`plugin_config_id`/`type`) and that the TTL defaults to and is capped at 15 min
   (`ExternalPluginUserTokenServiceTest`); the filter authenticates a valid token, rebuilds the user's
   authorities from the `roles` claim, strips the `Authorization` header, and — critically — leaves

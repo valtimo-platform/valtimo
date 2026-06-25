@@ -21,6 +21,7 @@ import com.ritense.externalplugin.repository.ExternalPluginConfigurationReposito
 import com.ritense.externalplugin.service.ExternalPluginUserTokenService
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import com.ritense.valtimo.contract.domain.ValtimoMediaType.APPLICATION_JSON_UTF8_VALUE
+import com.ritense.valtimo.contract.endpoint.EndpointDescription
 import com.ritense.valtimo.contract.utils.SecurityUtils
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
@@ -53,6 +54,10 @@ class ExternalPluginUserTokenResource(
      * `SecurityContext`, so the result is always bounded by PBAC ∩ allowlist.
      */
     @RunWithoutAuthorization
+    @EndpointDescription(
+        en = "Mint a downscoped user token for an external plugin configuration",
+        nl = "Versmald gebruikerstoken voor een externe-pluginconfiguratie aanmaken",
+    )
     @PostMapping("/configuration/{configurationId}/user-token")
     fun mintUserToken(
         @PathVariable configurationId: UUID,

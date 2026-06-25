@@ -20,6 +20,7 @@ import com.ritense.case_.rest.dto.ExternalPluginTabContentDto
 import com.ritense.case_.service.CaseExternalPluginTabService
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import com.ritense.valtimo.contract.domain.ValtimoMediaType.APPLICATION_JSON_UTF8_VALUE
+import com.ritense.valtimo.contract.endpoint.EndpointDescription
 import org.springframework.http.ResponseEntity
 import org.springframework.stereotype.Controller
 import org.springframework.web.bind.annotation.GetMapping
@@ -34,6 +35,10 @@ class CaseExternalPluginTabResource(
     private val caseExternalPluginTabService: CaseExternalPluginTabService,
 ) {
 
+    @EndpointDescription(
+        en = "Get the content descriptor for an external plugin case tab",
+        nl = "Inhoudsdescriptor voor een externe-plugin-zaaktab ophalen",
+    )
     @GetMapping("/v1/document/{documentId}/external-plugin-tab/{tabKey}")
     fun getExternalPluginTab(
         @PathVariable documentId: UUID,

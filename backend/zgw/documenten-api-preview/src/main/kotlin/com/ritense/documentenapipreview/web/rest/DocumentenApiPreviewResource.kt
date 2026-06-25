@@ -21,6 +21,7 @@ import com.ritense.logging.LoggableResource
 import com.ritense.plugin.domain.PluginConfiguration
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import com.ritense.valtimo.contract.domain.ValtimoMediaType.APPLICATION_JSON_UTF8_VALUE
+import com.ritense.valtimo.contract.endpoint.EndpointDescription
 import org.springframework.core.io.InputStreamResource
 import org.springframework.http.ContentDisposition
 import org.springframework.http.HttpHeaders
@@ -39,6 +40,10 @@ import java.util.UUID
 class DocumentenApiPreviewResource(
     private val documentenApiPreviewService: DocumentenApiPreviewService
 ) {
+    @EndpointDescription(
+        en = "Get a document preview",
+        nl = "Voorbeeld van een document ophalen",
+    )
     @GetMapping("/v1/documenten-api-preview/{pluginConfigurationId}/preview/{caseDocumentId}/{documentId}")
     fun preview(
         @LoggableResource(resourceType = PluginConfiguration::class) @PathVariable(name = "pluginConfigurationId") pluginConfigurationId: String,
@@ -59,6 +64,10 @@ class DocumentenApiPreviewResource(
             .body(InputStreamResource(pdfFile.content))
     }
 
+    @EndpointDescription(
+        en = "Check if document preview is configured",
+        nl = "Controleren of het documentvoorbeeld is geconfigureerd",
+    )
     @GetMapping("/v1/documenten-api-preview/configuration-exists/{documentenApiConfigurationId}")
     fun isPreviewConfigured(
         @PathVariable(name = "documentenApiConfigurationId") documentenApiConfigurationId: String,
