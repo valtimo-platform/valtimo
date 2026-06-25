@@ -17,8 +17,17 @@ import {ChangeDetectionStrategy, Component, Input, OnDestroy, OnInit, signal} fr
 import {AbstractControl, FormGroup, FormGroupDirective} from '@angular/forms';
 import {ApiTabType, DefaultTabs} from '@valtimo/case';
 import {ListItem} from 'carbon-components-angular';
-import {combineLatest, map, startWith, Subscription} from 'rxjs';
+import {
+  BehaviorSubject,
+  combineLatest,
+  map,
+  Observable,
+  shareReplay,
+  startWith,
+  Subscription,
+} from 'rxjs';
 import {TabService} from '../../../../../services';
+import {ExternalPluginTabConfigOption} from '../../../../../models';
 import {ConfigService} from '@valtimo/shared';
 import {ActivatedRoute} from '@angular/router';
 
@@ -64,6 +73,45 @@ export class TabFormComponent implements OnInit, OnDestroy {
 
   public showTasks!: AbstractControl<boolean>;
 
+  // External-plugin tabs are configured with two dropdowns: configuration, then tab (bundle).
+  public readonly TabType = ApiTabType;
+  private readonly _externalPluginConfigs$ = this.tabService
+    .getExternalPluginConfigs()
+    .pipe(shareReplay({bufferSize: 1, refCount: true}));
+  private readonly _selectedConfigId$ = new BehaviorSubject<string | null>(null);
+  private readonly _selectedBundleKey$ = new BehaviorSubject<string | null>(null);
+  private _configs: ExternalPluginTabConfigOption[] = [];
+
+  public readonly selectedConfigId$ = this._selectedConfigId$.asObservable();
+
+  public readonly configItems$: Observable<ListItem[]> = combineLatest([
+    this._externalPluginConfigs$,
+    this._selectedConfigId$,
+  ]).pipe(
+    map(([configs, selectedConfigId]) =>
+      configs.map(config => ({
+        content: config.label,
+        configId: config.configId,
+        selected: config.configId === selectedConfigId,
+      }))
+    )
+  );
+
+  public readonly bundleItems$: Observable<ListItem[]> = combineLatest([
+    this._externalPluginConfigs$,
+    this._selectedConfigId$,
+    this._selectedBundleKey$,
+  ]).pipe(
+    map(([configs, selectedConfigId, selectedBundleKey]) => {
+      const config = configs.find(item => item.configId === selectedConfigId);
+      return (config?.bundles ?? []).map(bundle => ({
+        content: bundle.title,
+        bundleKey: bundle.key,
+        selected: bundle.key === selectedBundleKey,
+      }));
+    })
+  );
+
   private _searchActive: boolean;
 
   private _subscriptions = new Subscription();
@@ -84,6 +132,13 @@ export class TabFormComponent implements OnInit, OnDestroy {
       this.form.get('contentKey')?.disable();
     } else {
       this.form.get('contentKey')?.enable();
+    }
+
+    if (this.tabType === ApiTabType.EXTERNAL_PLUGIN) {
+      this._subscriptions.add(
+        this._externalPluginConfigs$.subscribe(configs => (this._configs = configs))
+      );
+      this.preselectExternalPlugin();
     }
   }
 
@@ -114,6 +169,45 @@ export class TabFormComponent implements OnInit, OnDestroy {
 
   public onSelected(): void {
     this._searchActive = false;
+  }
+
+  public onConfigSelected(item: ListItem & {configId?: string}): void {
+    const configId = item?.configId ?? null;
+    this._selectedConfigId$.next(configId);
+    this._selectedBundleKey$.next(null);
+
+    const config = this._configs.find(candidate => candidate.configId === configId);
+    // A configuration with a single bundle needs no second choice — resolve the contentKey now.
+    if (config && config.bundles.length === 1) {
+      const bundle = config.bundles[0];
+      this._selectedBundleKey$.next(bundle.key);
+      this.setExternalPluginContentKey(configId, bundle.key);
+    } else {
+      // Multiple bundles: clear the contentKey so the form stays invalid until a tab is picked.
+      this.form.get('contentKey')?.setValue('');
+    }
+  }
+
+  public onBundleSelected(item: ListItem & {bundleKey?: string | null}): void {
+    const bundleKey = item?.bundleKey ?? null;
+    this._selectedBundleKey$.next(bundleKey);
+    this.setExternalPluginContentKey(this._selectedConfigId$.value, bundleKey);
+  }
+
+  private setExternalPluginContentKey(configId: string | null, bundleKey: string | null): void {
+    if (!configId) return;
+    const contentKey = bundleKey ? `${configId}:${bundleKey}` : configId;
+    this.form.get('contentKey')?.setValue(contentKey);
+  }
+
+  private preselectExternalPlugin(): void {
+    const contentKey = this.form.get('contentKey')?.value as string | undefined;
+    if (!contentKey) return;
+    const separatorIndex = contentKey.indexOf(':');
+    const configId = separatorIndex >= 0 ? contentKey.substring(0, separatorIndex) : contentKey;
+    const bundleKey = separatorIndex >= 0 ? contentKey.substring(separatorIndex + 1) : null;
+    this._selectedConfigId$.next(configId);
+    this._selectedBundleKey$.next(bundleKey);
   }
 
   public toggleCheckedChange(event: boolean): void {

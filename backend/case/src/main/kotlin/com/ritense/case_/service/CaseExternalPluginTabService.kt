@@ -30,6 +30,7 @@ import com.ritense.case_.repository.CaseExternalPluginTabRepository
 import com.ritense.case_.rest.dto.ExternalPluginTabContentDto
 import com.ritense.case_.rest.dto.ExternalPluginTabContext
 import com.ritense.case_.service.event.CaseTabCreatedEvent
+import com.ritense.case_.service.event.CaseTabUpdatedEvent
 import com.ritense.document.domain.impl.JsonSchemaDocument
 import com.ritense.document.domain.impl.JsonSchemaDocumentId
 import com.ritense.document.service.DocumentService
@@ -69,11 +70,29 @@ class CaseExternalPluginTabService(
     @EventListener(CaseTabCreatedEvent::class)
     fun handleCaseTabCreatedEvent(event: CaseTabCreatedEvent) {
         if (event.tab.type != CaseTabType.EXTERNAL_PLUGIN) return
+        upsertSideRow(event.tab)
+    }
 
-        val (configurationId, bundleKey) = parseContentKey(event.tab.contentKey)
+    /**
+     * On update, re-point the side row to the (possibly changed) configuration/bundle in the tab's
+     * `contentKey`. `save` merges by the composite id, so it covers both an unchanged and a changed
+     * `contentKey`. If the tab's type changed away from `EXTERNAL_PLUGIN`, drop any stale side row.
+     */
+    @EventListener(CaseTabUpdatedEvent::class)
+    fun handleCaseTabUpdatedEvent(event: CaseTabUpdatedEvent) {
+        if (event.tab.type == CaseTabType.EXTERNAL_PLUGIN) {
+            upsertSideRow(event.tab)
+        } else {
+            caseExternalPluginTabRepository.findByIdOrNull(event.tab.id)
+                ?.let { caseExternalPluginTabRepository.delete(it) }
+        }
+    }
+
+    private fun upsertSideRow(tab: CaseTab) {
+        val (configurationId, bundleKey) = parseContentKey(tab.contentKey)
         caseExternalPluginTabRepository.save(
             CaseExternalPluginTab(
-                id = event.tab.id,
+                id = tab.id,
                 externalPluginConfigurationId = configurationId,
                 bundleKey = bundleKey,
             )

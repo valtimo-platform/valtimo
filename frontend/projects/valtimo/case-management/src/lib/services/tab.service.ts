@@ -27,7 +27,7 @@ import {FormDefinitionOption, FormService} from '@valtimo/form';
 import {ExternalPluginService, getExternalPluginDisplayName} from '@valtimo/plugin';
 import {ListItem} from 'carbon-components-angular';
 import {BehaviorSubject, catchError, combineLatest, map, Observable, of, switchMap} from 'rxjs';
-import {TabEnum} from '../models';
+import {ExternalPluginTabConfigOption, TabEnum} from '../models';
 
 @Injectable({
   providedIn: 'root',
@@ -161,6 +161,45 @@ export class TabService {
         return items;
       }),
       catchError(() => of([] as ListItem[]))
+    );
+  }
+
+  /**
+   * Activated external-plugin configurations that expose ≥1 `case-tab` bundle, grouped so the tab
+   * editor can offer two dropdowns: pick the configuration, then the tab (bundle). The `contentKey`
+   * the editor writes is `"<configId>[:<bundleKey>]"` (Phase 2.7). Degrades to an empty list when the
+   * external-plugin endpoints are unavailable.
+   */
+  public getExternalPluginConfigs(): Observable<ExternalPluginTabConfigOption[]> {
+    return combineLatest([
+      this.externalPluginService.getDefinitions(),
+      this.externalPluginService.getConfigurations(),
+    ]).pipe(
+      map(([definitions, configurations]) => {
+        const lang = this.translateService.currentLang;
+        const definitionById = new Map(definitions.map(definition => [definition.id, definition]));
+
+        return configurations.reduce<ExternalPluginTabConfigOption[]>((options, configuration) => {
+          const definition = definitionById.get(configuration.definitionId);
+          if (!definition || definition.status !== 'AVAILABLE') return options;
+
+          const caseTabBundles = (definition.manifest?.frontendBundles ?? []).filter(
+            bundle => bundle.type === 'case-tab'
+          );
+          if (!caseTabBundles.length) return options;
+
+          options.push({
+            configId: configuration.id,
+            label: `${configuration.title} (${getExternalPluginDisplayName(definition, lang)})`,
+            bundles: caseTabBundles.map(bundle => ({
+              key: bundle.key ?? null,
+              title: bundle.title ?? bundle.key ?? 'case-tab',
+            })),
+          });
+          return options;
+        }, []);
+      }),
+      catchError(() => of([] as ExternalPluginTabConfigOption[]))
     );
   }
 

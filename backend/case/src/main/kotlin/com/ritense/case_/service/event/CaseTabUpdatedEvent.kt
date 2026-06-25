@@ -1,5 +1,5 @@
-/*!
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+/*
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,15 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-::ng-deep .valtimo-tab-form-modal {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
 
-  .cds {
-    &--modal-container,
-    &--modal-content {
-      overflow: unset;
-    }
-  }
-}
+package com.ritense.case_.service.event
+
+import com.ritense.case.domain.CaseTab
+
+/**
+ * Published after a single case tab is updated (name/type/contentKey/showTasks). Type-specific side
+ * tables (e.g. `case_external_plugin_tab`) listen for it to keep their rows in sync with the tab's
+ * `contentKey` — the counterpart to [CaseTabCreatedEvent].
+ */
+data class CaseTabUpdatedEvent(val tab: CaseTab)

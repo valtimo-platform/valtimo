@@ -982,8 +982,8 @@
         "uniqueKeyError": "De key voor deze tab moet uniek zijn.",
         "invalidKeyError": "De key voor deze tab mag alleen letters, nummers en dashes bevatten.",
         "widgetsComponent": "Widgets component",
-        "externalPlugin": "Externe plugin",
-        "externalPluginDisabled": "Er zijn geen geactiveerde externe plugins met een zaaktabblad, of ze zijn allemaal al toegevoegd.",
+        "externalPlugin": "Plugin",
+        "externalPluginDisabled": "Er zijn geen geactiveerde plugins met een zaaktabblad, of ze zijn allemaal al toegevoegd.",
         "visibleTitle": "Takenlijst zichtbaar op tabblad",
         "visible": "Zichtbaar",
         "invisible": "Niet zichtbaar"
@@ -995,13 +995,15 @@
         "custom": "Nieuw tabblad toevoegen met aangepaste component",
         "formio": "Nieuw tabblad toevoegen met FormIO component",
         "standard": "Nieuw tabblad toevoegen met standaard inhoud",
-        "widgets": "Nieuw tabblad met widgets toevoegen"
+        "widgets": "Nieuw tabblad met widgets toevoegen",
+        "external_plugin": "Nieuw tabblad toevoegen met een plugin"
       },
       "contentLabels": {
         "custom": "Kies aangepaste component",
         "formio": "Kies FormIO component",
         "standard": "Kies standaard inhoud",
-        "external_plugin": "Kies externe plugin"
+        "external_plugin_config": "Kies pluginconfiguratie",
+        "external_plugin_bundle": "Kies tabblad"
       },
       "editModal": {"title": "Tabblad bewerken {{name}}", "updateTab": "Tabblad updaten"},
       "deleteModal": {
@@ -2605,7 +2607,7 @@
     "url": "URL",
     "ui-component": "UI Component",
     "building-block": "Bouwblok",
-    "external_plugin": "Externe plugin"
+    "external_plugin": "Plugin"
   },
   "externalPlugin": {
     "menuTitle": "Externe Plugins",
