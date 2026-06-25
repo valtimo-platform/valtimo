@@ -47,12 +47,14 @@ export interface BuildingBlockProcessDefinitionDto {
     name: string | null;
     versionTag: string | null;
     main: boolean;
+    draft: boolean;
 }
 
 export interface BuildingBlockProcessDefinitionWithLinksDto {
     processDefinition: ProcessDefinitionWithPropertiesDto;
     processLinks: ProcessLinkResponseDto[];
     bpmn20Xml: string;
+    draft: boolean;
 }
 
 export interface BuildingBlockVersionDto {
@@ -780,6 +782,7 @@ export interface CaseProcessDefinitionResponseDto {
     processCaseLink: ProcessDefinitionCaseDefinition;
     processLinks: ProcessLinkResponseDto[];
     bpmn20Xml: string;
+    draft: boolean;
 }
 
 export interface ProcessDefinitionResponseDto {

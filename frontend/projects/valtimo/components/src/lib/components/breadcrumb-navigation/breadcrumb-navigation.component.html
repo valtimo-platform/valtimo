@@ -20,6 +20,9 @@
     *ngIf="breadcrumbItems.length > 0"
     [ngClass]="{'--compact': compactMode$ | async}"
   >
-    <cds-breadcrumb [items]="breadcrumbItems"></cds-breadcrumb>
+    <cds-breadcrumb
+      [items]="breadcrumbItems"
+      [noTrailingSlash]="(titleIsFinalBreadcrumb$ | async) === true"
+    ></cds-breadcrumb>
   </div>
 </ng-container>

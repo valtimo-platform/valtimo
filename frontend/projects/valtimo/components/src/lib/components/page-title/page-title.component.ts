@@ -64,6 +64,7 @@ export class PageTitleComponent implements OnInit, AfterViewInit, OnDestroy {
   public readonly customPageTitleSet$ = this.pageTitleService.customPageTitleSet$;
   public readonly translatedTitle$ = new BehaviorSubject<string>('');
   public readonly smallTitle$ = this.pageHeaderService.smallTitle$;
+  public readonly titleAsBreadcrumb$ = this.pageHeaderService.titleAsBreadcrumb$;
 
   private readonly _appTitleAsSuffix$ =
     this.configService.getFeatureToggleObservable('applicationTitleAsSuffix');
@@ -91,6 +92,7 @@ export class PageTitleComponent implements OnInit, AfterViewInit, OnDestroy {
     this.openRouterTranslateSubscription();
     this.openHidePageTitleSubscription();
     this.openCompactModeSubscription();
+    this.openCurrentTitleSubscription();
   }
 
   public ngAfterViewInit(): void {
@@ -153,6 +155,24 @@ export class PageTitleComponent implements OnInit, AfterViewInit, OnDestroy {
     this._subscriptions.add(
       this.pageHeaderService.compactMode$.subscribe(compactMode => {
         this.isCompact = compactMode;
+      })
+    );
+  }
+
+  private openCurrentTitleSubscription(): void {
+    this._subscriptions.add(
+      combineLatest([
+        this.translatedTitle$,
+        this.hasCustomPageTitle$,
+        this.customPageTitle$,
+        this.customPageTitleSet$,
+      ]).subscribe(([translatedTitle, hasCustomPageTitle, customPageTitle, customPageTitleSet]) => {
+        const currentTitle = hasCustomPageTitle
+          ? customPageTitleSet
+            ? customPageTitle
+            : ''
+          : translatedTitle;
+        this.pageTitleService.setCurrentTitle(currentTitle || '');
       })
     );
   }

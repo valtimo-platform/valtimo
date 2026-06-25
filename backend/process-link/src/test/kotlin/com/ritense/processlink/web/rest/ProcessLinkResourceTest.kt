@@ -26,9 +26,11 @@ import com.ritense.processlink.domain.TestProcessLinkUpdateRequestDto
 import com.ritense.processlink.mapper.ProcessLinkMapper
 import com.ritense.processlink.service.ProcessDeploymentService
 import com.ritense.processlink.service.ProcessLinkService
+import com.ritense.processlink.validation.ProcessDefinitionValidator
 import com.ritense.valtimo.contract.json.MapperSingleton
 import com.ritense.valtimo.operaton.domain.OperatonProcessDefinition
 import com.ritense.valtimo.service.OperatonProcessService
+import com.ritense.valtimo.service.ProcessPropertyService
 import org.operaton.bpm.engine.RepositoryService
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -65,6 +67,8 @@ internal class ProcessLinkResourceTest {
     lateinit var processDefinitionCaseDefinitionService: ProcessDefinitionCaseDefinitionService
     lateinit var repositoryService: RepositoryService
     lateinit var processDeploymentService: ProcessDeploymentService
+    lateinit var processDefinitionValidator: ProcessDefinitionValidator
+    lateinit var processPropertyService: ProcessPropertyService
 
     @BeforeEach
     fun init() {
@@ -74,6 +78,8 @@ internal class ProcessLinkResourceTest {
         processDefinitionCaseDefinitionService = mock()
         repositoryService = mock()
         processDeploymentService = mock()
+        processDefinitionValidator = mock()
+        processPropertyService = mock()
         processLinkMappers = listOf(TestProcessLinkMapper(objectMapper))
         processLinkResource = ProcessLinkResource(
             processLinkService,
@@ -81,7 +87,9 @@ internal class ProcessLinkResourceTest {
             camdunaProcessService,
             processDefinitionCaseDefinitionService,
             repositoryService,
-            processDeploymentService
+            processDeploymentService,
+            processDefinitionValidator,
+            processPropertyService
         )
 
         val mappingJackson2HttpMessageConverter = MappingJackson2HttpMessageConverter()
