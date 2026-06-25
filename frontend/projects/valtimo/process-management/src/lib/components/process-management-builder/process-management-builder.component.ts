@@ -110,6 +110,7 @@ import {EMPTY_BPMN, PROCESS_MANAGEMENT_BUILDER_TEST_IDS} from '../../constants';
 import {
   OpenProcessLinkModalEvent,
   ProcessDefinitionResult,
+  ProcessDefinitionValidationError,
   ProcessManagementWindow,
   UpdateProcessDefinitionCaseDefinitionRequest,
 } from '../../models';
@@ -202,7 +203,7 @@ export class ProcessManagementBuilderComponent implements AfterViewInit, OnDestr
         this.cleanUpListenersOnModeler();
         this._bpmnModeler?.importXML(result.bpmn20Xml);
         this._bpmnViewer?.importXML(result.bpmn20Xml);
-        this.draft$.next(!result.bpmn20Xml.includes('isExecutable="true"'));
+        this.draft$.next(this.parseDraftFromXml(result.bpmn20Xml));
         this.isReadOnlyProcess$.next(result.readOnly);
         this.isSystemProcess$.next(result.systemProcess);
         this.loading$.next(false);
@@ -334,6 +335,7 @@ export class ProcessManagementBuilderComponent implements AfterViewInit, OnDestr
   }
 
   public ngOnDestroy(): void {
+    this.clearValidationErrors();
     this._bpmnModeler?.destroy();
     this._bpmnViewer?.destroy();
     this._subscriptions.unsubscribe();
@@ -551,13 +553,22 @@ export class ProcessManagementBuilderComponent implements AfterViewInit, OnDestr
       ? this._bpmnViewer
       : this._bpmnModeler;
     const elementRegistry = modeler.get('elementRegistry') as any;
-    const selection = modeler.get('selection') as any;
     const canvas = modeler.get('canvas') as any;
 
     const element = elementRegistry.get(elementId);
-    if (element) {
-      selection.select(element);
+    if (!element) return;
+
+    try {
+      const selection = modeler.get('selection') as any;
+      selection?.select?.(element);
+    } catch {
+      // Viewer may not expose the selection service.
+    }
+
+    try {
       canvas.scrollToElement(element);
+    } catch {
+      // ignore
     }
   }
 
@@ -641,15 +652,15 @@ export class ProcessManagementBuilderComponent implements AfterViewInit, OnDestr
   private showNotification(
     notification: null | 'success' | 'error' | 'alreadyExists' | 'validationError' | 'validationWarning' | 'validationSuccess'
   ): void {
-    let type: 'success' | 'error' | 'warning' | null = null;
-    if (notification === 'alreadyExists' || notification === 'validationError') {
+    if (!notification) return;
+
+    let type: 'success' | 'error' | 'warning';
+    if (notification === 'alreadyExists' || notification === 'validationError' || notification === 'error') {
       type = 'error';
     } else if (notification === 'validationWarning') {
       type = 'warning';
-    } else if (notification === 'success' || notification === 'validationSuccess') {
-      type = 'success';
     } else {
-      type = notification;
+      type = 'success';
     }
     this.notificationService.showToast({
       caption: this.translateService.instant(`processManagement.${notification}Notification`),
@@ -668,10 +679,31 @@ export class ProcessManagementBuilderComponent implements AfterViewInit, OnDestr
 
   private applyDraftState(xml: string | null | undefined): string | null {
     if (!xml) return null;
-    if (this.draft$.getValue()) {
-      return xml.replace(/isExecutable="true"/g, 'isExecutable="false"');
+
+    const doc = new DOMParser().parseFromString(xml, 'application/xml');
+    if (doc.getElementsByTagName('parsererror').length > 0) return xml;
+
+    const executableValue = this.draft$.getValue() ? 'false' : 'true';
+    const processes = doc.getElementsByTagNameNS('*', 'process');
+    for (let i = 0; i < processes.length; i++) {
+      processes[i].setAttribute('isExecutable', executableValue);
     }
-    return xml.replace(/isExecutable="false"/g, 'isExecutable="true"');
+    return new XMLSerializer().serializeToString(doc);
+  }
+
+  private parseDraftFromXml(xml: string | null | undefined): boolean {
+    if (!xml) return false;
+
+    const doc = new DOMParser().parseFromString(xml, 'application/xml');
+    if (doc.getElementsByTagName('parsererror').length > 0) return false;
+
+    const processes = doc.getElementsByTagNameNS('*', 'process');
+    if (processes.length === 0) return false;
+
+    for (let i = 0; i < processes.length; i++) {
+      if (processes[i].getAttribute('isExecutable') === 'true') return false;
+    }
+    return true;
   }
 
   private isValidationError(error: unknown): boolean {
@@ -682,9 +714,7 @@ export class ProcessManagementBuilderComponent implements AfterViewInit, OnDestr
     );
   }
 
-  private highlightValidationErrors(
-    errors: Array<{elementId: string; elementType: string; elementName?: string; reason: string; errorCode?: string; expression?: string; severity?: 'ERROR' | 'WARNING'}>
-  ): void {
+  private highlightValidationErrors(errors: ProcessDefinitionValidationError[]): void {
     this.clearValidationErrors();
     this.processManagementEditorService.setValidationErrors(errors);
 
@@ -696,9 +726,8 @@ export class ProcessManagementBuilderComponent implements AfterViewInit, OnDestr
 
     const errorElementIds = new Set<string>();
 
-    // Group by elementId and determine if element has any errors (not just warnings)
     const elementHasError = new Map<string, boolean>();
-    const elementFirstIssue = new Map<string, typeof errors[0]>();
+    const elementFirstIssue = new Map<string, ProcessDefinitionValidationError>();
 
     for (const error of errors) {
       if (error.elementType === 'Process') continue;
@@ -709,7 +738,6 @@ export class ProcessManagementBuilderComponent implements AfterViewInit, OnDestr
       if (!elementFirstIssue.has(error.elementId)) {
         elementFirstIssue.set(error.elementId, error);
       } else if (isError && !hasErrorAlready) {
-        // Replace warning with error as the displayed issue
         elementFirstIssue.set(error.elementId, error);
       }
 
@@ -720,7 +748,6 @@ export class ProcessManagementBuilderComponent implements AfterViewInit, OnDestr
       }
     }
 
-    // Add markers and overlays - one per element, error takes precedence
     for (const [elementId, issue] of elementFirstIssue) {
       try {
         const hasError = elementHasError.get(elementId) ?? false;
@@ -734,11 +761,13 @@ export class ProcessManagementBuilderComponent implements AfterViewInit, OnDestr
         const position =
           issue.elementType === 'Participant' ? {top: 5, left: 5} : {top: -12, left: -12};
 
-        const errorMessage = this.getValidationErrorMessage(issue);
-
         overlays.add(elementId, 'validation-error', {
           position,
-          html: `<div class="${overlayClass}" data-element-id="${elementId}"><span class="${overlayClass}__icon">!</span><span class="${overlayClass}__text">${errorMessage}</span></div>`,
+          html: this.buildOverlayElement(
+            overlayClass,
+            elementId,
+            this.getValidationErrorMessage(issue)
+          ),
         });
       } catch (e) {
         // Element may not exist on the canvas
@@ -1053,7 +1082,7 @@ export class ProcessManagementBuilderComponent implements AfterViewInit, OnDestr
           this._bpmnViewer?.importXML(processDefinitionResult.bpmn20Xml);
 
           this.draft$.next(
-            !processDefinitionResult.bpmn20Xml.includes('isExecutable="true"')
+            processDefinitionResult.draft ?? this.parseDraftFromXml(processDefinitionResult.bpmn20Xml)
           );
           this.canInitializeDocument$.next(
             !!processDefinitionResult?.processCaseLink?.canInitializeDocument
@@ -1200,5 +1229,27 @@ export class ProcessManagementBuilderComponent implements AfterViewInit, OnDestr
       }
     }
     return error.reason;
+  }
+
+  private buildOverlayElement(
+    overlayClass: string,
+    elementId: string,
+    message: string
+  ): HTMLElement {
+    const container = document.createElement('div');
+    container.className = overlayClass;
+    container.dataset.elementId = elementId;
+
+    const icon = document.createElement('span');
+    icon.className = `${overlayClass}__icon`;
+    icon.textContent = '!';
+    container.appendChild(icon);
+
+    const text = document.createElement('span');
+    text.className = `${overlayClass}__text`;
+    text.textContent = message;
+    container.appendChild(text);
+
+    return container;
   }
 }

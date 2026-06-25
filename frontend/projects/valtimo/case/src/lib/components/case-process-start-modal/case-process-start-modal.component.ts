@@ -244,6 +244,8 @@ export class CaseProcessStartModalComponent implements OnInit, OnDestroy {
       return;
     }
 
+    this._pendingProcessDefinitionCaseDefinition = null;
+    this.showDraftConfirmation$.next(false);
     this.proceedWithOpenModal(processDefinitionCaseDefinition);
   }
 

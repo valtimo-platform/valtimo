@@ -18,7 +18,12 @@ import {useService} from 'bpmn-js-properties-panel';
 import {html} from 'htm/preact';
 import {is} from 'bpmn-js/lib/util/ModelUtil';
 import {ProcessManagementEditorService} from '../../../services';
-import {BpmnElement, OpenProcessLinkModalEvent, ProcessManagementWindow} from '../../../models';
+import {
+  BpmnElement,
+  OpenProcessLinkModalEvent,
+  ProcessDefinitionValidationError,
+  ProcessManagementWindow,
+} from '../../../models';
 import {ModalParams, ProcessLink} from '@valtimo/process-link';
 import {TranslateService} from '@ngx-translate/core';
 import {mapActivityTypeToActivityListenerType} from '../../../utils';
@@ -406,17 +411,15 @@ const CustomRootElement = (props: {
 };
 
 const ValidationErrorsElement = (props: {
-  errors: Array<{elementId: string; elementType: string; elementName?: string; reason: string; errorCode?: string; expression?: string; severity?: 'ERROR' | 'WARNING'}>;
+  errors: ProcessDefinitionValidationError[];
   translateService: TranslateService;
 }): VNode => {
-  const getErrorMessage = (error: {reason: string; errorCode?: string; expression?: string}): string => {
+  const getErrorMessage = (error: ProcessDefinitionValidationError): string => {
     if (error.errorCode) {
       const translationKey = `processManagement.expressionErrors.${error.errorCode}`;
       const translated = props.translateService.instant(translationKey);
       if (translated !== translationKey) {
-        return error.expression
-          ? `${translated}: '${error.expression}'`
-          : translated;
+        return error.expression ? `${translated}: '${error.expression}'` : translated;
       }
     }
     return error.reason;

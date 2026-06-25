@@ -48,7 +48,7 @@ import {
   formSizeToCarbonModalSizeMap,
   ProcessLinkService,
 } from '@valtimo/process-link';
-import {BehaviorSubject, combineLatest, Observable, Subscription, switchMap} from 'rxjs';
+import {BehaviorSubject, combineLatest, Subscription, switchMap} from 'rxjs';
 import {map, take} from 'rxjs/operators';
 import {FORM_VIEW_MODEL_TOKEN, FormViewModel} from '@valtimo/shared';
 import {CaseDetailLayoutService} from '../../services';
@@ -237,6 +237,8 @@ export class CaseSupportingProcessStartModalComponent implements OnDestroy {
       return;
     }
 
+    this._pendingStartableItem = null;
+    this.showDraftConfirmation$.next(false);
     this.proceedWithStartableItem(item, documentId, caseDefinitionKey, caseDefinitionVersionTag);
   }
 

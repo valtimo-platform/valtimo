@@ -25,7 +25,11 @@ import {
   ProcessLinkService,
   ProcessLinkUpdateEvent,
 } from '@valtimo/process-link';
-import {DeleteProcessLinkEvent, OpenProcessLinkModalEvent} from '../models';
+import {
+  DeleteProcessLinkEvent,
+  OpenProcessLinkModalEvent,
+  ProcessDefinitionValidationError,
+} from '../models';
 import {
   BuildingBlockManagementParams,
   CaseManagementParams,
@@ -86,27 +90,17 @@ export class ProcessManagementEditorService implements OnDestroy {
     return this._formDefinitionOptions$.getValue();
   }
 
-  private readonly _validationErrors$ = new BehaviorSubject<
-    Array<{elementId: string; elementType: string; elementName?: string; reason: string; errorCode?: string; expression?: string; severity?: 'ERROR' | 'WARNING'}>
-  >([]);
+  private readonly _validationErrors$ = new BehaviorSubject<ProcessDefinitionValidationError[]>(
+    []
+  );
 
   public readonly validationErrors$ = this._validationErrors$.asObservable();
 
-  public get validationErrors(): Array<{
-    elementId: string;
-    elementType: string;
-    elementName?: string;
-    reason: string;
-    errorCode?: string;
-    expression?: string;
-    severity?: 'ERROR' | 'WARNING';
-  }> {
+  public get validationErrors(): ProcessDefinitionValidationError[] {
     return this._validationErrors$.getValue();
   }
 
-  public setValidationErrors(
-    errors: Array<{elementId: string; elementType: string; elementName?: string; reason: string; errorCode?: string; expression?: string; severity?: 'ERROR' | 'WARNING'}>
-  ): void {
+  public setValidationErrors(errors: ProcessDefinitionValidationError[]): void {
     this._validationErrors$.next(errors);
   }
 
