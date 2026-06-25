@@ -1,0 +1,14 @@
+{
+    "display": "form",
+    "components": [
+        {
+            "key": "submit",
+            "type": "button",
+            "label": "Start Case",
+            "theme": "primary",
+            "action": "submit",
+            "input": true,
+            "disableOnInvalid": false
+        }
+    ]
+}

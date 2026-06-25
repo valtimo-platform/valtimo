@@ -30,6 +30,7 @@ const WidgetTypeTags: Record<WidgetType, TagType> = {
   [WidgetType.TABLE]: 'purple',
   [WidgetType.INTERACTIVE_TABLE]: 'red',
   [WidgetType.MAP]: 'cyan',
+  [WidgetType.IMAGE]: 'cool-gray',
   [WidgetType.DIVIDER]: 'orange' as TagType,
   [WidgetType.METROLINE]: 'light-green' as TagType,
   [WidgetType.PERSON_CARD]: 'yellow' as TagType,

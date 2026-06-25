@@ -18,6 +18,7 @@ import {Observable} from 'rxjs';
 
 enum IncludeFunction {
   ObjectManagementEnabled,
+  ZgwFeaturesEnabled,
 }
 
 interface MenuItem {
@@ -31,7 +32,7 @@ interface MenuItem {
   roles?: string[];
   show?: boolean;
   count$?: Observable<number>;
-  includeFunction?: IncludeFunction;
+  includeFunction?: IncludeFunction | IncludeFunction[];
 }
 
 export {MenuItem, IncludeFunction};

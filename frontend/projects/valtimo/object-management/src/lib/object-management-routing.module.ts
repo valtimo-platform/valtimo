@@ -18,20 +18,20 @@ import {NgModule} from '@angular/core';
 import {RouterModule, Routes} from '@angular/router';
 import {CommonModule} from '@angular/common';
 import {AuthGuardService} from '@valtimo/security';
-import {ROLE_ADMIN} from '@valtimo/shared';
+import {ROLE_ADMIN, zgwFeaturesGuard} from '@valtimo/shared';
 import {ObjectManagementDetailContainerComponent} from './components/object-management-detail-container/object-management-detail-container.component';
 import {ObjectManagementListComponent} from './components/object-management-list/object-management-list.component';
 
 const routes: Routes = [
   {
     path: 'object-management',
-    canActivate: [AuthGuardService],
+    canActivate: [AuthGuardService, zgwFeaturesGuard],
     component: ObjectManagementListComponent,
     data: {title: 'Objects', roles: [ROLE_ADMIN]},
   },
   {
     path: 'object-management/object/:id',
-    canActivate: [AuthGuardService],
+    canActivate: [AuthGuardService, zgwFeaturesGuard],
     component: ObjectManagementDetailContainerComponent,
     data: {title: 'Object', roles: [ROLE_ADMIN], customPageTitle: true},
   },

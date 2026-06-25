@@ -1,0 +1,8 @@
+{
+    "key": "s3-upload-test",
+    "name": "S3 Upload Test",
+    "versionTag": "1.0.0",
+    "final": false,
+    "canHaveAssignee": true,
+    "autoAssignTasks": true
+}

@@ -1,0 +1,15 @@
+{
+    "$id": "s3-upload-test.schema",
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "S3 Upload Test",
+    "type": "object",
+    "properties": {
+        "files": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "additionalProperties": true
+            }
+        }
+    }
+}

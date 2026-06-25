@@ -182,6 +182,29 @@ interface WidgetHighlightContent {
   displayProperties: HighlightDisplayProperties;
 }
 
+interface WidgetImageContent {
+  value: string;
+}
+
+interface WidgetImageItem {
+  resourceId: string;
+  fileName?: string;
+  mimeType?: string;
+  sizeInBytes?: number;
+}
+
+interface WidgetImageData {
+  images: WidgetImageItem[];
+}
+
+interface WidgetImageResolved {
+  resourceId: string;
+  url: string;
+  displayUrl: string;
+  fileName: string;
+  mimeType?: string;
+}
+
 type WidgetDropdownValue = {[key: string]: string};
 
 type WidgetContentProperties =
@@ -195,7 +218,8 @@ type WidgetContentProperties =
   | WidgetMetrolineContent
   | WidgetIkoMetrolineContent
   | WidgetPersonCardContent
-  | WidgetHighlightContent;
+  | WidgetHighlightContent
+  | WidgetImageContent;
 
 export {
   WidgetContentProperties,
@@ -216,6 +240,10 @@ export {
   WidgetHighlightContent,
   HighlightDisplayProperties,
   HighlightDisplayType,
+  WidgetImageContent,
+  WidgetImageItem,
+  WidgetImageData,
+  WidgetImageResolved,
   WidgetPersonCardContent,
   WidgetInteractiveTableEventSearchRequest,
   WidgetFilter,

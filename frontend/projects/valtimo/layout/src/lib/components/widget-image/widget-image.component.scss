@@ -1,0 +1,126 @@
+/*!
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
+ *
+ * Licensed under EUPL, Version 1.2 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" basis,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+.valtimo-widget-image {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: 100%;
+  padding: 16px;
+  overflow: hidden;
+
+  &__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  &__title-container {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--widget-text-color, var(--cds-text-primary));
+
+    .mdi-icon-preview {
+      color: var(--widget-text-color, var(--cds-text-primary)) !important;
+    }
+  }
+
+  &__title {
+    color: var(--widget-text-color, var(--cds-text-primary));
+    font-weight: 600;
+    font-size: 16px;
+    line-height: 24px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  &__skeleton {
+    width: 100%;
+    height: 8rem;
+  }
+
+  &__empty {
+    color: var(--cds-text-secondary, #6f6f6f);
+    font-size: 14px;
+  }
+
+  &__list {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 16px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  &__item {
+    display: flex;
+    min-width: 0;
+  }
+
+  &__tile.cds--tile {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    width: 100%;
+    padding: 8px;
+  }
+
+  &__thumbnail-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    width: 100%;
+    max-height: 256px;
+  }
+
+  &__thumbnail {
+    max-width: 100%;
+    max-height: 256px;
+    width: auto;
+    height: auto;
+    object-fit: contain;
+    display: block;
+  }
+
+  &__meta {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    min-width: 0;
+  }
+
+  &__filename {
+    flex: 1 1 auto;
+    font-size: 12px;
+    line-height: 16px;
+    color: var(--cds-text-secondary, #6f6f6f);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  &__actions {
+    display: flex;
+    flex-shrink: 0;
+    gap: 2px;
+  }
+}
