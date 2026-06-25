@@ -23,7 +23,7 @@
 
   Editing decision tables in the UI is no longer experimental. The DMN editor is now used consistently for case,
   building block, and standalone decision tables, without a feature toggle.
-  
+
 * **Start supporting process forms in the case detail panel**
 
   The process link configuration of a start event now offers a **Display type** option (Modal or Panel), defaulting to
@@ -42,6 +42,11 @@
 * The `experimentalDmnEditing` feature toggle has been removed from the admin settings UI and no longer has any
   effect — DMN editing is always enabled. The option is still accepted in configuration for backward compatibility,
   but it is ignored and will be removed in a future major release.
+  
+* **Default sidebar state**
+
+  It is now possible to configure the default state for the sidebar (collapsed or not) application wide via the settings
+  page. User specific settings overwrite this.
 
 ## Bugfixes
 
