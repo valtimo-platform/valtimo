@@ -1,5 +1,5 @@
 <!--
-  ~ Copyright 2015-2025 Ritense BV, the Netherlands.
+  ~ Copyright 2015-2026 Ritense BV, the Netherlands.
   ~
   ~ Licensed under EUPL, Version 1.2 (the "License");
   ~ you may not use this file except in compliance with the License.
@@ -23,7 +23,7 @@
     'page-head--no-content': (compactMode$ | async) && (pageActionsHasContent$ | async) === false,
     'page-head--no-margin': pageTitleHidden$ | async,
     'page-head--small-title': smallTitle$ | async,
-    'page-head--title-as-breadcrumb': titleAsBreadcrumb$ | async,
+    'page-head--title-as-breadcrumb': (titleAsBreadcrumb$ | async) && !(compactMode$ | async),
   }"
 >
   <ng-container #contentVcr></ng-container>
@@ -40,7 +40,8 @@
       [ngClass]="{
         'page-header-container--compact': compactMode$ | async,
         'page-header-container--small-title': smallTitle$ | async,
-        'page-header-container--title-as-breadcrumb': titleAsBreadcrumb$ | async,
+        'page-header-container--title-as-breadcrumb':
+          (titleAsBreadcrumb$ | async) && !(compactMode$ | async),
       }"
     >
       <valtimo-breadcrumb-navigation></valtimo-breadcrumb-navigation>
