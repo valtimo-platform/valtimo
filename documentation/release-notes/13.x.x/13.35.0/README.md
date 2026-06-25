@@ -6,9 +6,12 @@
 
 ## New Features
 
-* **New feature title**
+* **Catalogi API plugin action: Get Informatieobjecttype**
 
-  New feature explanation.
+  A new plugin action `get-informatieobjecttype` has been added to the Catalogi API plugin. This action retrieves an
+  informatie object type URL from the Catalogi API and stores it in a process variable.
+
+  This is useful when you need to dynamically resolve an informatieobjecttype URL during process execution.
 
 ## Enhancements
 
