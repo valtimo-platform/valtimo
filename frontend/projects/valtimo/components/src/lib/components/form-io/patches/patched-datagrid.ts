@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import {Components} from 'formiojs';
+import {Components} from '@formio/js';
 
 const BuiltInDataGrid = (Components as any).components['datagrid'];
 

@@ -22,7 +22,7 @@
             "validateWhenHidden": false,
             "truncateMultipleSpaces": false,
             "validate": {
-                "required": true
+                "required": false
             }
         },
         {

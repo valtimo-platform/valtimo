@@ -26,13 +26,12 @@ import {
   Output,
   SimpleChanges,
 } from '@angular/core';
-import {ValtimoFormioOptions} from '../../../../models';
+import {FormioOptions, ValtimoFormioOptions} from '../../../../models';
 import {ValtimoModalService} from '../../../../services';
 import {UserProviderService} from '@valtimo/security';
 import {
   FormioComponent as FormIoSourceComponent,
   FormioForm,
-  FormioOptions,
   FormioRefreshValue,
   FormioSubmission,
 } from '@formio/angular';
@@ -45,7 +44,7 @@ import {TranslateService} from '@ngx-translate/core';
 import {deepmerge} from 'deepmerge-ts';
 import {ConfigService, ValtimoConfig} from '@valtimo/shared';
 import {isEqual} from 'lodash';
-import {Formio} from 'formiojs';
+import {Formio} from '@formio/js';
 import {
   FormIoLocalStorageService,
   FormIoStateService,
