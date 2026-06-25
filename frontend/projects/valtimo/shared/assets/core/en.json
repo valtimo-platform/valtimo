@@ -1004,6 +1004,10 @@
         "title": "Highlight",
         "description": "A small widget that highlights a single value or a count"
       },
+      "image": {
+        "title": "Image",
+        "description": "Show an uploaded image"
+      },
       "generic": {
         "title": "Generic widgets",
         "description": "Broadly applicable — wire them up to any data structure (fields, tables, collections). More configuration, but no limits on what they can show."
@@ -1192,6 +1196,12 @@
         "valuePlaceholder": "Select or type a path",
         "valueHelper": "Shows the value at this path. If it resolves to an array, the count of items is shown instead.",
         "accentColor": "Accent color"
+      },
+      "image": {
+        "description": "",
+        "value": "Value",
+        "valuePlaceholder": "Select or type a path",
+        "valueHelper": "Shows the image stored at this path. The path must resolve to an uploaded file resource."
       }
     },
     "filters": {
@@ -2580,6 +2590,11 @@
     "noWidgetsDescription": "There are no widgets configured for this tab, or you don't have the rights to view them.",
     "noWidget": "Widget not found",
     "noCustomComponentDescription": "The custom component configured for this widget is not available.",
+    "image": {
+      "noImage": "No image found",
+      "openInNewTab": "Open in new tab",
+      "download": "Download"
+    },
     "map": {
       "title": "Map"
     },

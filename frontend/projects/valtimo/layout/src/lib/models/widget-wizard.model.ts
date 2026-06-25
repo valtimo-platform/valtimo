@@ -21,6 +21,7 @@ import {
   WidgetManagementCustomComponent,
   WidgetManagementFieldsComponent,
   WidgetManagementHighlightComponent,
+  WidgetManagementImageComponent,
   WidgetManagementMapComponent,
   WidgetManagementPersonCardComponent,
   WidgetManagementMetrolineComponent,
@@ -151,6 +152,13 @@ const AVAILABLE_WIDGETS: WidgetTypeSelection[] = [
     illustrationUrl: 'valtimo-layout/img/widget-management/types/highlight.svg',
     type: WidgetType.HIGHLIGHT,
     component: WidgetManagementHighlightComponent,
+  },
+  {
+    titleKey: 'widgetTabManagement.type.image.title',
+    descriptionKey: 'widgetTabManagement.type.image.description',
+    illustrationUrl: 'valtimo-layout/img/widget-management/types/image.svg',
+    type: WidgetType.IMAGE,
+    component: WidgetManagementImageComponent,
   },
 ];
 

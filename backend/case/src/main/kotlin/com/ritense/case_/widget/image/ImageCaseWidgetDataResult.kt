@@ -14,12 +14,11 @@
  * limitations under the License.
  */
 
-export * from './fields/widget-management-fields.component';
-export * from './table/widget-management-table.component';
-export * from './collection/widget-management-collection.component';
-export * from './custom/widget-management-custom.component';
-export * from './map/widget-management-map.component';
-export * from './person-card/widget-management-person-card.component';
-export * from './metroline/widget-management-metroline.component';
-export * from './highlight/widget-management-highlight.component';
-export * from './image/widget-management-image.component';
+package com.ritense.case_.widget.image
+
+data class ImageCaseWidgetDataResult(
+    val resourceId: String,
+    val fileName: String?,
+    val mimeType: String?,
+    val sizeInBytes: Long?,
+)

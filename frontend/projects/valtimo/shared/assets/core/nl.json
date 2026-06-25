@@ -1023,6 +1023,10 @@
         "title": "Markering",
         "description": "Een kleine widget die één waarde of een aantal benadrukt"
       },
+      "image": {
+        "title": "Afbeelding",
+        "description": "Toon een geüploade afbeelding"
+      },
       "generic": {
         "title": "Generieke widgets",
         "description": "Breed toepasbaar — koppel ze aan elke gegevensstructuur (velden, tabellen, collecties). Meer configuratie, maar geen beperkingen op wat ze kunnen tonen."
@@ -1217,6 +1221,12 @@
         "valuePlaceholder": "Selecteer of typ een pad",
         "valueHelper": "Toont de waarde op dit pad. Als het een array is, wordt het aantal elementen weergegeven.",
         "accentColor": "Accentkleur"
+      },
+      "image": {
+        "description": "",
+        "value": "Waarde",
+        "valuePlaceholder": "Selecteer of typ een pad",
+        "valueHelper": "Toont de afbeelding op dit pad. Het pad moet verwijzen naar een geüploade bestandsresource."
       }
     },
     "filters": {
@@ -2613,6 +2623,11 @@
     "noWidgetsDescription": "Er zijn geen widgets geconfigureerd voor dit tabblad, of je hebt niet de juiste rechten om deze te zien.",
     "noWidget": "Widget niet beschikbaar",
     "noCustomComponentDescription": "De component die geconfigureerd is voor deze widget kon niet gevonden worden.",
+    "image": {
+      "noImage": "Geen afbeelding gevonden",
+      "openInNewTab": "Openen in nieuw tabblad",
+      "download": "Downloaden"
+    },
     "map": {
       "title": "Kaart"
     },

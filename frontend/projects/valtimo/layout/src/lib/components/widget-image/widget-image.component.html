@@ -1,0 +1,80 @@
+<!--
+  ~ Copyright 2015-2026 Ritense BV, the Netherlands.
+  ~
+  ~ Licensed under EUPL, Version 1.2 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~ https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" basis,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<ng-container
+  *ngIf="{
+    widgetConfiguration: widgetConfiguration$ | async,
+    images: images$ | async,
+  } as obs"
+>
+  <section *ngIf="obs.widgetConfiguration?.title" class="valtimo-widget-image__header">
+    <div class="valtimo-widget-image__title-container">
+      <valtimo-mdi-icon-viewer
+        *ngIf="obs.widgetConfiguration?.icon"
+        [mdiIcon]="obs.widgetConfiguration.icon"
+      ></valtimo-mdi-icon-viewer>
+
+      <h4 class="valtimo-widget-image__title">{{ obs.widgetConfiguration?.title }}</h4>
+    </div>
+  </section>
+
+  @if (!obs.images) {
+    <cds-skeleton-placeholder class="valtimo-widget-image__skeleton"></cds-skeleton-placeholder>
+  } @else if (obs.images.length === 0) {
+    <span class="valtimo-widget-image__empty">{{ 'widgets.image.noImage' | translate }}</span>
+  } @else {
+    <ul class="valtimo-widget-image__list">
+      <li *ngFor="let image of obs.images" class="valtimo-widget-image__item">
+        <cds-tile class="valtimo-widget-image__tile">
+          <div class="valtimo-widget-image__thumbnail-wrapper">
+            <img
+              class="valtimo-widget-image__thumbnail"
+              [src]="image.displayUrl"
+              [attr.alt]="image.fileName"
+              loading="lazy"
+            />
+          </div>
+
+          <div class="valtimo-widget-image__meta">
+            <span class="valtimo-widget-image__filename" [attr.title]="image.fileName">
+              {{ image.fileName }}
+            </span>
+
+            <div class="valtimo-widget-image__actions">
+              <cds-icon-button
+                kind="ghost"
+                size="sm"
+                [description]="'widgets.image.openInNewTab' | translate"
+                (click)="onOpenInNewTab(image)"
+              >
+                <svg cdsIcon="launch" size="16"></svg>
+              </cds-icon-button>
+
+              <cds-icon-button
+                kind="ghost"
+                size="sm"
+                [description]="'widgets.image.download' | translate"
+                (click)="onDownload(image)"
+              >
+                <svg cdsIcon="download" size="16"></svg>
+              </cds-icon-button>
+            </div>
+          </div>
+        </cds-tile>
+      </li>
+    </ul>
+  }
+</ng-container>
