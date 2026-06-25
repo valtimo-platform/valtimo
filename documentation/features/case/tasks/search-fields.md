@@ -24,6 +24,7 @@ For task list filters the following path prefixes are available:
 
 * `doc:`
 * `case:`
+* `task:`
 {% endtab %}
 
 {% tab title="Via IDE" %}
