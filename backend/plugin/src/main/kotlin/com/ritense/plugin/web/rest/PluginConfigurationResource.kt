@@ -30,6 +30,7 @@ import com.ritense.plugin.web.rest.result.PluginConfigurationExportDto
 import com.ritense.processlink.domain.ActivityTypeWithEventName
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import com.ritense.valtimo.contract.domain.ValtimoMediaType.APPLICATION_JSON_UTF8_VALUE
+import com.ritense.valtimo.contract.endpoint.EndpointDescription
 import jakarta.validation.Valid
 import org.operaton.bpm.engine.repository.ProcessDefinition
 import org.springframework.http.ResponseEntity
@@ -52,6 +53,10 @@ class PluginConfigurationResource(
     private var pluginService: PluginService
 ) {
 
+    @EndpointDescription(
+        en = "List plugin configurations",
+        nl = "Pluginconfiguraties ophalen",
+    )
     @GetMapping("/v1/plugin/configuration")
     fun getPluginDefinitions(
         @LoggableResource(resourceType = ProcessDefinition::class) @RequestParam("pluginDefinitionKey") pluginDefinitionKey: String?,
@@ -73,6 +78,10 @@ class PluginConfigurationResource(
                 .map { PluginConfigurationDto(it) })
     }
 
+    @EndpointDescription(
+        en = "Create plugin configuration",
+        nl = "Pluginconfiguratie aanmaken",
+    )
     @PostMapping("/v1/plugin/configuration")
     fun createPluginConfiguration(
         @Valid @RequestBody createPluginConfiguration: CreatePluginConfigurationDto
@@ -97,6 +106,10 @@ class PluginConfigurationResource(
         }
     }
 
+    @EndpointDescription(
+        en = "Update plugin configuration by id",
+        nl = "Pluginconfiguratie bijwerken op id",
+    )
     @PutMapping("/v1/plugin/configuration/{pluginConfigurationId}")
     fun updatePluginConfiguration(
         @LoggableResource(resourceType = PluginConfiguration::class) @PathVariable(name = "pluginConfigurationId") pluginConfigurationId: UUID,
@@ -120,6 +133,10 @@ class PluginConfigurationResource(
         )
     }
 
+    @EndpointDescription(
+        en = "Export plugin configurations",
+        nl = "Pluginconfiguraties exporteren",
+    )
     @GetMapping("/v1/plugin/configuration/export")
     fun exportPluginConfiguration(): ResponseEntity<List<PluginConfigurationExportDto>> {
         val pluginConfigurations = pluginService.getPluginConfigurations(PluginConfigurationSearchParameters())
@@ -133,6 +150,10 @@ class PluginConfigurationResource(
         return ResponseEntity.ok(pluginConfigurations)
     }
 
+    @EndpointDescription(
+        en = "Delete plugin configuration by id",
+        nl = "Pluginconfiguratie verwijderen op id",
+    )
     @DeleteMapping("/v1/plugin/configuration/{pluginConfigurationId}")
     fun deletePluginConfiguration(
         @LoggableResource(resourceType = PluginConfiguration::class) @PathVariable(name = "pluginConfigurationId") pluginConfigurationId: UUID
@@ -145,6 +166,10 @@ class PluginConfigurationResource(
      * Lets the management UI pre-emptively disable the delete control with the same payload
      * the backend would attach to a 409 from `DELETE /v1/plugin/configuration/{id}`.
      */
+    @EndpointDescription(
+        en = "List plugin configuration usages by id",
+        nl = "Gebruik van pluginconfiguratie ophalen op id",
+    )
     @GetMapping("/v1/plugin/configuration/{pluginConfigurationId}/usages")
     fun listPluginConfigurationUsages(
         @LoggableResource(resourceType = PluginConfiguration::class) @PathVariable(name = "pluginConfigurationId") pluginConfigurationId: UUID,

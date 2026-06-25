@@ -22,6 +22,7 @@ import com.ritense.dashboard.web.rest.dto.DashboardWidgetDataResultDto
 import com.ritense.dashboard.web.rest.dto.DashboardWithWidgetsResponseDto
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import com.ritense.valtimo.contract.domain.ValtimoMediaType.APPLICATION_JSON_UTF8_VALUE
+import com.ritense.valtimo.contract.endpoint.EndpointDescription
 import org.springframework.http.ResponseEntity
 import org.springframework.stereotype.Controller
 import org.springframework.web.bind.annotation.GetMapping
@@ -36,6 +37,10 @@ class DashboardResource(
     private val dashboardDataService: DashboardDataService,
 ) {
 
+    @EndpointDescription(
+        en = "List dashboards with dashboard widgets",
+        nl = "Dashboards met dashboardwidgets ophalen",
+    )
     @GetMapping("/v1/dashboard")
     fun getDashboards(): ResponseEntity<List<DashboardWithWidgetsResponseDto>> {
         val dashboardResponseDtos = dashboardService.getDashboards()
@@ -43,6 +48,10 @@ class DashboardResource(
         return ResponseEntity.ok(dashboardResponseDtos)
     }
 
+    @EndpointDescription(
+        en = "Get dashboard widget data",
+        nl = "Widgetgegevens van dashboard ophalen",
+    )
     @GetMapping("/v1/dashboard/{dashboardKey}/data")
     fun getDashboardData(@PathVariable dashboardKey: String): ResponseEntity<List<DashboardWidgetDataResultDto>> {
         val data = dashboardDataService.getWidgetDataForDashboard(dashboardKey)

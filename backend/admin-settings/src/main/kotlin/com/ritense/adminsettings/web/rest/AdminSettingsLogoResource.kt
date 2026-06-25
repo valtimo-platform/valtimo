@@ -24,6 +24,7 @@ import com.ritense.adminsettings.web.rest.dto.CreateAdminSettingsLogoDto
 import com.ritense.authorization.AuthorizationContext.Companion.runWithoutAuthorization
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import com.ritense.valtimo.contract.domain.ValtimoMediaType.APPLICATION_JSON_UTF8_VALUE
+import com.ritense.valtimo.contract.endpoint.EndpointDescription
 import jakarta.validation.Valid
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.DeleteMapping
@@ -41,12 +42,20 @@ class AdminSettingsLogoResource(
     private val adminSettingsLogoService: AdminSettingsLogoService
 ) {
 
+    @EndpointDescription(
+        en = "List logos",
+        nl = "Logo's ophalen",
+    )
     @GetMapping("/v1/admin-settings/logos")
     fun getLogos(): ResponseEntity<AdminSettingsLogosDto> {
         val logos = adminSettingsLogoService.getLogos()
         return ResponseEntity.ok(logos)
     }
 
+    @EndpointDescription(
+        en = "Get logo by type",
+        nl = "Logo ophalen op type",
+    )
     @GetMapping("/management/v1/admin-settings/logo/{logoType}")
     fun getLogo(
         @PathVariable logoType: LogoType
@@ -56,6 +65,10 @@ class AdminSettingsLogoResource(
             ?: ResponseEntity.notFound().build()
     }
 
+    @EndpointDescription(
+        en = "Upload logo by type",
+        nl = "Logo uploaden op type",
+    )
     @PostMapping(
         path = ["/management/v1/admin-settings/logo/{logoType}"],
         consumes = [APPLICATION_JSON_UTF8_VALUE]
@@ -68,6 +81,10 @@ class AdminSettingsLogoResource(
         return ResponseEntity.ok(created)
     }
 
+    @EndpointDescription(
+        en = "Delete logo by type",
+        nl = "Logo verwijderen op type",
+    )
     @DeleteMapping("/management/v1/admin-settings/logo/{logoType}")
     fun deleteLogo(
         @PathVariable logoType: LogoType

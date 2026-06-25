@@ -25,6 +25,7 @@ import com.ritense.logging.LoggableResource
 import com.ritense.plugin.domain.PluginConfiguration
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import com.ritense.valtimo.contract.domain.ValtimoMediaType.APPLICATION_JSON_UTF8_VALUE
+import com.ritense.valtimo.contract.endpoint.EndpointDescription
 import com.ritense.zakenapi.domain.ZaakResponse
 import com.ritense.zakenapi.service.ZaakDocumentService
 import io.github.oshai.kotlinlogging.KotlinLogging
@@ -53,6 +54,10 @@ class ZaakDocumentResource(
     private val zaakDocumentService: ZaakDocumentService
 ) {
 
+    @EndpointDescription(
+        en = "Get document files for zaak",
+        nl = "Documentbestanden voor zaak ophalen",
+    )
     @GetMapping("/v1/zaken-api/document/{documentId}/files")
     fun getFiles(
         @LoggableResource(resourceType = JsonSchemaDocument::class) @PathVariable(name = "documentId") documentId: UUID
@@ -60,6 +65,10 @@ class ZaakDocumentResource(
         return zaakDocumentService.getInformatieObjectenAsRelatedFiles(documentId)
     }
 
+    @EndpointDescription(
+        en = "Search document files page for zaak",
+        nl = "Documentbestandenpagina voor zaak zoeken",
+    )
     @GetMapping("/v2/zaken-api/document/{documentId}/files")
     fun getFiles(
         @LoggableResource(resourceType = JsonSchemaDocument::class) @PathVariable(name = "documentId") documentId: UUID,
@@ -69,6 +78,10 @@ class ZaakDocumentResource(
         return zaakDocumentService.getInformatieObjectenAsRelatedFilesPage(documentId, documentSearchRequest, pageable)
     }
 
+    @EndpointDescription(
+        en = "Get zaak metadata for document",
+        nl = "Zaakmetadata voor document ophalen",
+    )
     @GetMapping("/v1/zaken-api/document/{documentId}/zaak")
     fun getZaakMetadata(
         @LoggableResource(resourceType = JsonSchemaDocument::class) @PathVariable(name = "documentId") documentId: UUID
@@ -76,6 +89,10 @@ class ZaakDocumentResource(
         return zaakDocumentService.getZaakByCaseDocumentId(documentId)
     }
 
+    @EndpointDescription(
+        en = "Delete document from zaak",
+        nl = "Document uit zaak verwijderen",
+    )
     @DeleteMapping("/v1/zaken-api/{pluginConfigurationId}/case-document/{caseDocumentId}/files/{documentId}")
     fun deleteDocument(
         @LoggableResource(resourceType = PluginConfiguration::class) @PathVariable(name = "pluginConfigurationId") pluginConfigurationId: String,
@@ -92,6 +109,10 @@ class ZaakDocumentResource(
             .build()
     }
 
+    @EndpointDescription(
+        en = "Modify document metadata for zaak",
+        nl = "Documentmetadata voor zaak bijwerken",
+    )
     @PutMapping("/v1/zaken-api/{pluginConfigurationId}/case-document/{caseDocumentId}/files/{documentId}")
     fun modifyDocument(
         @PathVariable(name = "caseDocumentId") caseDocumentId: UUID,
@@ -111,6 +132,10 @@ class ZaakDocumentResource(
             )
     }
 
+    @EndpointDescription(
+        en = "Download document file for zaak",
+        nl = "Documentbestand voor zaak downloaden",
+    )
     @GetMapping("/v1/zaken-api/{pluginConfigurationId}/case-document/{caseDocumentId}/files/{documentId}/download")
     fun downloadDocument(
         @PathVariable(name = "caseDocumentId") caseDocumentId: UUID,

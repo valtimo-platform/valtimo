@@ -21,6 +21,7 @@ import com.ritense.notificatiesapi.service.NotificatiesApiInboundEventQueryServi
 import com.ritense.notificatiesapi.web.dto.NotificatiesApiInboundEventResponse
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import com.ritense.valtimo.contract.domain.ValtimoMediaType.APPLICATION_JSON_UTF8_VALUE
+import com.ritense.valtimo.contract.endpoint.EndpointDescription
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.http.ResponseEntity
@@ -39,17 +40,29 @@ class NotificatiesApiManagementResource(
     private val inboundEventAdminService: NotificatiesApiInboundEventAdminService
 ) {
 
+    @EndpointDescription(
+        en = "List failed inbound Notificaties API events",
+        nl = "Mislukte inkomende Notificaties API-events ophalen",
+    )
     @GetMapping("/v1/notificatiesapi/inbound-events/failed")
     fun getFailedEvents(pageable: Pageable): Page<NotificatiesApiInboundEventResponse> {
         return inboundEventQueryService.findFailedEvents(pageable)
     }
 
+    @EndpointDescription(
+        en = "Get failed inbound Notificaties API event count",
+        nl = "Aantal mislukte inkomende Notificaties API-events ophalen",
+    )
     @GetMapping("/v1/notificatiesapi/inbound-events/failed/count")
     fun getFailedEventCount(): Map<String, Long> {
         val count = inboundEventAdminService.getFailedEventCount()
         return mapOf("count" to count)
     }
 
+    @EndpointDescription(
+        en = "Retry failed inbound Notificaties API event",
+        nl = "Mislukte inkomende Notificaties API-event opnieuw proberen",
+    )
     @PostMapping("/v1/notificatiesapi/inbound-events/{id}/retry")
     fun retryFailedEvent(@PathVariable id: UUID): ResponseEntity<Void> {
         inboundEventAdminService.retryFailedEvent(id)

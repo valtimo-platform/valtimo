@@ -42,6 +42,7 @@ import com.ritense.externalplugin.web.rest.dto.HostResponse
 import com.ritense.plugin.web.rest.dto.PluginUsageDto
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import com.ritense.valtimo.contract.domain.ValtimoMediaType.APPLICATION_JSON_UTF8_VALUE
+import com.ritense.valtimo.contract.endpoint.EndpointDescription
 import com.fasterxml.jackson.databind.ObjectMapper
 import org.springframework.core.env.Environment
 import org.springframework.http.HttpStatus
@@ -50,7 +51,6 @@ import org.springframework.stereotype.Controller
 import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
-import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.PatchMapping
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.PutMapping
@@ -76,11 +76,19 @@ class ExternalPluginManagementResource(
 ) {
 
     @RunWithoutAuthorization
+    @EndpointDescription(
+        en = "List external plugin hosts",
+        nl = "Externe-pluginhosts ophalen",
+    )
     @GetMapping("/host")
     fun listHosts(): ResponseEntity<List<HostResponse>> =
         ResponseEntity.ok(hostService.list().map(HostResponse::from))
 
     @RunWithoutAuthorization
+    @EndpointDescription(
+        en = "Register an external plugin host",
+        nl = "Externe-pluginhost registreren",
+    )
     @PostMapping("/host")
     fun createHost(@RequestBody request: HostCreateRequest): ResponseEntity<HostResponse> {
         val host = hostService.register(
@@ -103,6 +111,10 @@ class ExternalPluginManagementResource(
      * because the periodic discovery cycle will reconcile anyway.
      */
     @RunWithoutAuthorization
+    @EndpointDescription(
+        en = "Update a host's event-queue mode and TTL",
+        nl = "Event-queue-modus en TTL van host bijwerken",
+    )
     @PatchMapping("/host/{hostId}/event-queue")
     fun updateHostEventQueue(
         @PathVariable hostId: UUID,
@@ -130,6 +142,10 @@ class ExternalPluginManagementResource(
      * - Broker exchange: GZAC's outbox publisher exchange.
      */
     @RunWithoutAuthorization
+    @EndpointDescription(
+        en = "Get add-host form defaults",
+        nl = "Standaardwaarden voor host ophalen",
+    )
     @GetMapping("/host-defaults")
     fun hostDefaults(): ResponseEntity<HostDefaultsResponse> {
         val serverPort = environment.getProperty("server.port", Int::class.java, 8080)
@@ -167,11 +183,19 @@ class ExternalPluginManagementResource(
      * [ExternalPluginHostService.delete] remains authoritative — this endpoint is advisory only.
      */
     @RunWithoutAuthorization
+    @EndpointDescription(
+        en = "List usages of an external plugin host",
+        nl = "Gebruik van externe-pluginhost ophalen",
+    )
     @GetMapping("/host/{hostId}/usages")
     fun listHostUsages(@PathVariable hostId: UUID): ResponseEntity<List<PluginUsageDto>> =
         ResponseEntity.ok(hostService.findUsages(hostId))
 
     @RunWithoutAuthorization
+    @EndpointDescription(
+        en = "Delete an external plugin host",
+        nl = "Externe-pluginhost verwijderen",
+    )
     @DeleteMapping("/host/{hostId}")
     fun deleteHost(@PathVariable hostId: UUID): ResponseEntity<Void> {
         hostService.delete(hostId)
@@ -186,6 +210,10 @@ class ExternalPluginManagementResource(
      * undeterminable) plugin uploads straight through.
      */
     @RunWithoutAuthorization
+    @EndpointDescription(
+        en = "Upload a plugin package to a host",
+        nl = "Pluginpakket naar host uploaden",
+    )
     @PostMapping("/host/{hostId}/upload", consumes = ["multipart/form-data"])
     fun uploadPlugin(
         @PathVariable hostId: UUID,
@@ -207,16 +235,28 @@ class ExternalPluginManagementResource(
     }
 
     @RunWithoutAuthorization
+    @EndpointDescription(
+        en = "List external plugin definitions",
+        nl = "Externe-plugindefinities ophalen",
+    )
     @GetMapping("/definition")
     fun listDefinitions(): ResponseEntity<List<DefinitionResponse>> =
         ResponseEntity.ok(definitionService.list().map(::toDefinitionResponse))
 
     @RunWithoutAuthorization
+    @EndpointDescription(
+        en = "Get an external plugin definition",
+        nl = "Externe-plugindefinitie ophalen",
+    )
     @GetMapping("/definition/{definitionId}")
     fun getDefinition(@PathVariable definitionId: UUID): ResponseEntity<DefinitionResponse> =
         ResponseEntity.ok(toDefinitionResponse(definitionService.get(definitionId)))
 
     @RunWithoutAuthorization
+    @EndpointDescription(
+        en = "List external plugin configurations",
+        nl = "Externe-pluginconfiguraties ophalen",
+    )
     @GetMapping("/configuration")
     fun listConfigurations(
         @RequestParam(required = false) definitionId: UUID?,
@@ -224,6 +264,10 @@ class ExternalPluginManagementResource(
         ResponseEntity.ok(configurationService.list(definitionId).map(ConfigurationResponse::from))
 
     @RunWithoutAuthorization
+    @EndpointDescription(
+        en = "Get an external plugin configuration",
+        nl = "Externe-pluginconfiguratie ophalen",
+    )
     @GetMapping("/configuration/{configurationId}")
     fun getConfiguration(
         @PathVariable configurationId: UUID,
@@ -246,6 +290,10 @@ class ExternalPluginManagementResource(
     }
 
     @RunWithoutAuthorization
+    @EndpointDescription(
+        en = "Create an external plugin configuration",
+        nl = "Externe-pluginconfiguratie aanmaken",
+    )
     @PostMapping("/configuration")
     fun createConfiguration(
         @RequestBody request: ConfigurationCreateRequest,
@@ -261,6 +309,10 @@ class ExternalPluginManagementResource(
     }
 
     @RunWithoutAuthorization
+    @EndpointDescription(
+        en = "Update an external plugin configuration",
+        nl = "Externe-pluginconfiguratie bijwerken",
+    )
     @PutMapping("/configuration/{configurationId}")
     fun updateConfiguration(
         @PathVariable configurationId: UUID,
@@ -281,6 +333,10 @@ class ExternalPluginManagementResource(
      * otherwise cause a 409.
      */
     @RunWithoutAuthorization
+    @EndpointDescription(
+        en = "List usages of an external plugin configuration",
+        nl = "Gebruik van externe-pluginconfiguratie ophalen",
+    )
     @GetMapping("/configuration/{configurationId}/usages")
     fun listConfigurationUsages(
         @PathVariable configurationId: UUID,
@@ -288,6 +344,10 @@ class ExternalPluginManagementResource(
         ResponseEntity.ok(configurationService.findUsages(configurationId))
 
     @RunWithoutAuthorization
+    @EndpointDescription(
+        en = "Delete an external plugin configuration",
+        nl = "Externe-pluginconfiguratie verwijderen",
+    )
     @DeleteMapping("/configuration/{configurationId}")
     fun deleteConfiguration(
         @PathVariable configurationId: UUID,
@@ -297,6 +357,10 @@ class ExternalPluginManagementResource(
     }
 
     @RunWithoutAuthorization
+    @EndpointDescription(
+        en = "Resolve endpoint descriptions",
+        nl = "Endpoint-beschrijvingen ophalen",
+    )
     @PostMapping("/endpoint-descriptions")
     fun resolveEndpointDescriptions(
         @RequestBody endpoints: List<EndpointQuery>,

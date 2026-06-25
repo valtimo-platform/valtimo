@@ -38,6 +38,7 @@ import com.ritense.logging.web.rest.dto.LoggingEventResponse
 import com.ritense.processdocument.web.rest.dto.LogInspectionSearchRequest
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import com.ritense.valtimo.contract.domain.ValtimoMediaType.APPLICATION_JSON_UTF8_VALUE
+import com.ritense.valtimo.contract.endpoint.EndpointDescription
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageImpl
 import org.springframework.data.domain.Pageable
@@ -64,6 +65,10 @@ class LogInspectionResource(
     private val scopeContributors: List<CaseLogScopeContributor>,
 ) {
 
+    @EndpointDescription(
+        en = "Search case logs",
+        nl = "Dossierlogregels zoeken",
+    )
     @Transactional(readOnly = true)
     @PostMapping("/v1/case/{caseId}/logs")
     fun searchCaseLogs(

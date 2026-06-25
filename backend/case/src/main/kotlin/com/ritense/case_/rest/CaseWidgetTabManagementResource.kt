@@ -22,6 +22,7 @@ import com.ritense.case_.service.CaseWidgetService
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import com.ritense.valtimo.contract.case_.CaseDefinitionId
 import com.ritense.valtimo.contract.domain.ValtimoMediaType.APPLICATION_JSON_UTF8_VALUE
+import com.ritense.valtimo.contract.endpoint.EndpointDescription
 import jakarta.validation.Valid
 import org.springframework.http.ResponseEntity
 import org.springframework.stereotype.Controller
@@ -38,6 +39,10 @@ class CaseWidgetTabManagementResource(
     private val caseWidgetService: CaseWidgetService
 ) {
 
+    @EndpointDescription(
+        en = "Get case widget tab",
+        nl = "Dossiertabblad met widgets ophalen",
+    )
     @GetMapping("/v1/case-definition/{caseDefinitionKey}/version/{caseDefinitionVersionTag}/widget-tab/{tabKey}")
     fun getCaseWidgetTab(
         @PathVariable caseDefinitionKey: String,
@@ -51,6 +56,10 @@ class CaseWidgetTabManagementResource(
         return ResponseEntity.ofNullable(widgetTab)
     }
 
+    @EndpointDescription(
+        en = "Update case widget tab",
+        nl = "Dossiertabblad met widgets bijwerken",
+    )
     @PostMapping("/v1/case-definition/{caseDefinitionKey}/version/{caseDefinitionVersionTag}/widget-tab/{tabKey}")
     fun updateCaseWidgetTab(
         @PathVariable caseDefinitionKey: String,

@@ -37,6 +37,7 @@ import com.ritense.valtimo.operaton.domain.OperatonProcessDefinition
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import com.ritense.valtimo.contract.case_.CaseDefinitionId
 import com.ritense.valtimo.contract.domain.ValtimoMediaType.APPLICATION_JSON_UTF8_VALUE
+import com.ritense.valtimo.contract.endpoint.EndpointDescription
 import com.ritense.valtimo.service.OperatonProcessService
 import com.ritense.valtimo.web.rest.dto.ProcessDefinitionWithPropertiesDto
 import jakarta.validation.Valid
@@ -73,6 +74,10 @@ class ProcessLinkResource(
     private val processDeploymentService: ProcessDeploymentService
 ) {
 
+    @EndpointDescription(
+        en = "List process links",
+        nl = "Proceskoppelingen ophalen",
+    )
     @GetMapping("/v1/process-link")
     fun getProcessLinks(
         @LoggableResource(resourceType = OperatonProcessDefinition::class) @RequestParam("processDefinitionId") processDefinitionId: String,
@@ -87,6 +92,10 @@ class ProcessLinkResource(
         return ResponseEntity.ok(list)
     }
 
+    @EndpointDescription(
+        en = "List supported process link types",
+        nl = "Ondersteunde proceskoppelingstypen ophalen",
+    )
     @GetMapping("/v1/process-link/types")
     fun getSupportedProcessLinkTypes(
         @RequestParam(name = "activityType") activityType: String
@@ -94,6 +103,10 @@ class ProcessLinkResource(
         return ResponseEntity.ok(processLinkService.getSupportedProcessLinkTypes(activityType))
     }
 
+    @EndpointDescription(
+        en = "Create process link",
+        nl = "Proceskoppeling aanmaken",
+    )
     @PostMapping("/v1/process-link")
     fun createProcessLink(
         @Valid @RequestBody processLink: ProcessLinkCreateRequestDto
@@ -105,6 +118,10 @@ class ProcessLinkResource(
         }
     }
 
+    @EndpointDescription(
+        en = "Update process link",
+        nl = "Proceskoppeling bijwerken",
+    )
     @PutMapping("/v1/process-link")
     fun updateProcessLink(
         @Valid @RequestBody processLink: ProcessLinkUpdateRequestDto
@@ -115,6 +132,10 @@ class ProcessLinkResource(
         }
     }
 
+    @EndpointDescription(
+        en = "Delete process link",
+        nl = "Proceskoppeling verwijderen",
+    )
     @DeleteMapping("/v1/process-link/{processLinkId}")
     fun deleteProcessLink(
         @LoggableResource(resourceType = ProcessLink::class) @PathVariable(name = "processLinkId") processLinkId: UUID
@@ -126,6 +147,10 @@ class ProcessLinkResource(
 
 
     @Deprecated("Since 12.7.0")
+    @EndpointDescription(
+        en = "Export process links",
+        nl = "Proceskoppelingen exporteren",
+    )
     @GetMapping("/v1/process-link/export")
     fun exportProcessLinks(
         @LoggableResource("processDefinitionKey") @RequestParam("processDefinitionKey") processDefinitionKey: String
@@ -138,6 +163,10 @@ class ProcessLinkResource(
         return ResponseEntity.ok(list)
     }
 
+    @EndpointDescription(
+        en = "List process definitions with links by case definition",
+        nl = "Procesdefinities met koppelingen per dossierdefinitie ophalen",
+    )
     @GetMapping(
         value = ["/management/v1/case-definition/{caseDefinitionKey}/version/{versionTag}/process-definition"],
     )
@@ -175,6 +204,10 @@ class ProcessLinkResource(
         return ResponseEntity.ok(definitions)
     }
 
+    @EndpointDescription(
+        en = "List unlinked process definitions with links",
+        nl = "Ongekoppelde procesdefinities met koppelingen ophalen",
+    )
     @GetMapping("/management/v1/process-definition")
     @Transactional
     fun getUnlinkedProcessDefinitionsAndProcessLinks(): ResponseEntity<List<ProcessDefinitionResponseDto>> {
@@ -202,6 +235,10 @@ class ProcessLinkResource(
         return ResponseEntity.ok(definitions)
     }
 
+    @EndpointDescription(
+        en = "List unlinked process definitions by key",
+        nl = "Ongekoppelde procesdefinities per sleutel ophalen",
+    )
     @GetMapping("/management/v1/process-definition/key/{processDefinitionKey}")
     @Transactional
     fun getUnlinkedProcessDefinitionsByKeyList(
@@ -230,6 +267,10 @@ class ProcessLinkResource(
     }
 
 
+    @EndpointDescription(
+        en = "Get single process definition with links",
+        nl = "Enkele procesdefinitie met koppelingen ophalen",
+    )
     @GetMapping(
         value = ["/management/v1/case-definition/{caseDefinitionKey}/version/{versionTag}/process-definition/{processDefinitionId}"],
     )
@@ -260,6 +301,10 @@ class ProcessLinkResource(
         return ResponseEntity.ok(responseDto)
     }
 
+    @EndpointDescription(
+        en = "List global process definitions with links by key",
+        nl = "Globale procesdefinities met koppelingen per sleutel ophalen",
+    )
     @GetMapping("/management/v1/process-definition/{processDefinitionKey}")
     @Transactional
     fun getUnlinkedProcessDefinitionsWithLinks(
@@ -285,6 +330,10 @@ class ProcessLinkResource(
         return ResponseEntity.ok(responseDto)
     }
 
+    @EndpointDescription(
+        en = "Get process definition by key with links",
+        nl = "Procesdefinitie per sleutel met koppelingen ophalen",
+    )
     @GetMapping(
         value = ["/management/v1/case-definition/{caseDefinitionKey}/version/{versionTag}/process-definition/key/{processDefinitionKey}"]
     )
@@ -322,6 +371,10 @@ class ProcessLinkResource(
         return ResponseEntity.ok(responseDto)
     }
 
+    @EndpointDescription(
+        en = "Delete process definitions and links by key",
+        nl = "Procesdefinities en koppelingen per sleutel verwijderen",
+    )
     @DeleteMapping(
         value = ["/management/v1/case-definition/{caseDefinitionKey}/version/{versionTag}/process-definition/key/{processDefinitionKey}"],
     )
@@ -349,6 +402,10 @@ class ProcessLinkResource(
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build()
     }
 
+    @EndpointDescription(
+        en = "Delete unlinked process definitions and links by key",
+        nl = "Ongekoppelde procesdefinities en koppelingen per sleutel verwijderen",
+    )
     @DeleteMapping("/management/v1/process-definition/key/{processDefinitionKey}")
     @Transactional
     fun deleteUnlinkedProcessDefinitionsAndLinksByKey(
@@ -365,6 +422,10 @@ class ProcessLinkResource(
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build()
     }
 
+    @EndpointDescription(
+        en = "Deploy process definition and links for case definition",
+        nl = "Procesdefinitie en koppelingen voor dossierdefinitie uitrollen",
+    )
     @PostMapping(
         value = ["/management/v1/case-definition/{caseDefinitionKey}/version/{caseDefinitionVersionTag}/process-definition"],
         consumes = [MediaType.MULTIPART_FORM_DATA_VALUE],
@@ -399,6 +460,10 @@ class ProcessLinkResource(
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build()
     }
 
+    @EndpointDescription(
+        en = "Update process definition and links for case definition",
+        nl = "Procesdefinitie en koppelingen voor dossierdefinitie bijwerken",
+    )
     @PutMapping(
         value = ["/management/v1/case-definition/{caseDefinitionKey}/version/{caseDefinitionVersionTag}/process-definition"],
         consumes = [MediaType.MULTIPART_FORM_DATA_VALUE],
@@ -427,6 +492,10 @@ class ProcessLinkResource(
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build()
     }
 
+    @EndpointDescription(
+        en = "Deploy unlinked process definition and links",
+        nl = "Ongekoppelde procesdefinitie en koppelingen uitrollen",
+    )
     @PostMapping(
         value = ["/management/v1/process-definition"],
         consumes = [MediaType.MULTIPART_FORM_DATA_VALUE],
@@ -454,6 +523,10 @@ class ProcessLinkResource(
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build()
     }
 
+    @EndpointDescription(
+        en = "Update unlinked process definition and links",
+        nl = "Ongekoppelde procesdefinitie en koppelingen bijwerken",
+    )
     @PutMapping(
         value = ["/management/v1/process-definition"],
         consumes = [MediaType.MULTIPART_FORM_DATA_VALUE],
