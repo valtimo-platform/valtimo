@@ -11,7 +11,7 @@ on:
         description: Name of the backend build artifact to download with 'download-artifact'
         type: "string"
       variant:
-        description: "Which backend app to build. 'gzac' (default) and 'evenementenvergunning' both come out of :backend:app:gzac; 'valtimo' uses :backend:app:valtimo."
+        description: "Which backend app to build. Each variant is its own Gradle module under :backend:app:* (gzac | valtimo | evenementenvergunning)."
         required: false
         type: string
         default: gzac
@@ -64,8 +64,8 @@ jobs:
               echo 'build_types=["production"]' >> "$GITHUB_OUTPUT"
               ;;
             evenementenvergunning)
-              echo "module=gzac" >> "$GITHUB_OUTPUT"
-              echo "extra_args=-Pvariant=evenementenvergunning" >> "$GITHUB_OUTPUT"
+              echo "module=evenementenvergunning" >> "$GITHUB_OUTPUT"
+              echo "extra_args=" >> "$GITHUB_OUTPUT"
               echo "image_name=gzac-evenementenvergunning-backend" >> "$GITHUB_OUTPUT"
               echo 'build_types=["production"]' >> "$GITHUB_OUTPUT"
               ;;
