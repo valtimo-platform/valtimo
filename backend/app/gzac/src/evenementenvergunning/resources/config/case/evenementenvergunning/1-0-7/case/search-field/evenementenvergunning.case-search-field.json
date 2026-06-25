@@ -1,0 +1,36 @@
+{
+    "searchFields": [
+        {
+            "key": "type",
+            "path": "doc:evenementDetails.evenementType",
+            "dataType": "text",
+            "fieldType": "single",
+            "matchType": "like",
+            "title": "Type"
+        },
+        {
+            "key": "locatie",
+            "path": "doc:locatieEnOpstelling.evenementLocatie",
+            "dataType": "text",
+            "fieldType": "single",
+            "matchType": "like",
+            "title": "Locatie"
+        },
+        {
+            "key": "evenement",
+            "path": "doc:evenementDetails.evenementNaam",
+            "dataType": "text",
+            "fieldType": "single",
+            "matchType": "like",
+            "title": "Evenement"
+        },
+        {
+            "key": "datum",
+            "path": "doc:evenementDetails.evenementDatum",
+            "dataType": "date",
+            "fieldType": "single",
+            "matchType": "exact",
+            "title": "Datum evenement"
+        }
+    ]
+}

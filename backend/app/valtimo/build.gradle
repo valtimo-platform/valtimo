@@ -1,0 +1,69 @@
+/*
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
+ *
+ * Licensed under EUPL, Version 1.2 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" basis,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+plugins {
+    id 'war'
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    implementation(platform(project(":backend:dependencies:valtimo-dependency-versions")))
+
+    implementation(project(":backend:dependencies:valtimo-dependencies"))
+
+    implementation(project(":backend:document-generation:local-document-generation"))
+    implementation(project(":backend:resource:local-resource"))
+    implementation(project(":backend:mail:local-mail"))
+    implementation(project(":backend:milestones"))
+    implementation(project(":backend:zgw:object-management"))
+    implementation(project(":backend:plugin-authentication:objecten-api-authentication"))
+    implementation(project(":backend:zgw:objecten-api"))
+    implementation(project(":backend:zgw:objecttypen-api"))
+    implementation(project(":backend:zgw:zaken-api"))
+
+    implementation("io.github.oshai:kotlin-logging")
+
+    implementation "org.postgresql:postgresql:$postgresqlDriverVersion"
+
+    if (System.getProperty("os.arch") == "aarch64") {
+        runtimeOnly("io.netty:netty-resolver-dns-native-macos::osx-aarch_64")
+    }
+
+    testImplementation(project(":backend:test-utils-common"))
+    testImplementation "org.jetbrains.kotlin:kotlin-test"
+    testImplementation "org.junit.jupiter:junit-jupiter"
+    testImplementation "org.springframework.boot:spring-boot-starter-test"
+}
+
+springBoot {
+    mainClass = "com.ritense.valtimo.ApplicationKt"
+}
+
+bootRun {
+    doFirst {
+        File f = file(".env.properties")
+        if (f.isFile()) {
+            def props = new Properties()
+            f.withInputStream { props.load(it) }
+            props.each { key, value ->
+                environment key.toString(), value.toString()
+            }
+        }
+    }
+}

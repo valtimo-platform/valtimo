@@ -30,6 +30,7 @@ include(
     ":backend",
     ":backend:app",
     ":backend:app:gzac",
+    ":backend:app:valtimo",
     ":backend:admin-settings",
     ":backend:audit",
     ":backend:authorization",

@@ -1,0 +1,53 @@
+{
+    "aanvrager": {
+        "naam": "Maria Kok",
+        "adres": "Korsostraat 12, 2161 AB Lisse",
+        "contactgegevens": {
+            "telefoon": "+31 252 123 456",
+            "email": "info@bloemencorso.nl"
+        }
+    },
+    "milieuBeheer": {
+        "afvalBeheerPlan": "Gestructureerd afvalbeheer met recyclepunten langs de route.",
+        "milieuMaatregelen": "Gebruik van biologisch afbreekbare materialen en herbruikbare decoraties.",
+        "sanitaireVoorzieningen": true
+    },
+    "etenEnDrinken": {
+        "alcoholSchenken": false,
+        "horecaVergunning": true,
+        "alcoholControleMaatregelen": "Niet van toepassing, geen alcoholverkoop"
+    },
+    "evenementDetails": {
+        "evenementNaam": "Bloemencorso Bollenstreek",
+        "evenementType": "Cultureel bloemencorso",
+        "evenementDatum": "2025-04-26",
+        "verwachteBezoekers": 1000000,
+        "isOpenbaarEvenement": true
+    },
+    "geluidEnOverlast": {
+        "versterktGeluid": true,
+        "geluidReductieMaatregelen": "Beperking van geluidsversterking langs woonwijken."
+    },
+    "verkeerEnParkeren": {
+        "verkeerPlan": "Omleidingen en extra parkeervoorzieningen bij de start- en eindlocaties.",
+        "alternatiefTransport": "Extra bussen en treinen beschikbaar vanuit omliggende steden.",
+        "parkeerVoorzieningen": true
+    },
+    "locatieEnOpstelling": {
+        "evenementLocatie": "Route van Noordwijk naar Haarlem",
+        "voorzieningen": [
+            "Tribunes",
+            "EHBO-posten",
+            "Toiletten",
+            "Infopunten",
+            "Voedsel- en drankstands"
+        ],
+        "indelingsplan": "https://bloemencorso.nl/indelingsplan.pdf"
+    },
+    "veiligheidsMaatregelen": {
+        "beveiligingsPlan": "Inzet van professionele beveiligers en politie voor verkeersbegeleiding.",
+        "noodPlan": "Noodprocedures opgesteld in samenwerking met lokale autoriteiten.",
+        "EHBO": true,
+        "beveiligingsPersoneel": 75
+    }
+}
