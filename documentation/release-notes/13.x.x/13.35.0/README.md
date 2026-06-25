@@ -12,6 +12,7 @@
   informatie object type URL from the Catalogi API and stores it in a process variable.
 
   This is useful when you need to dynamically resolve an informatieobjecttype URL during process execution.
+
 * **Process definition validation**
 
   - The process definition modeler now validates BPMN models before deployment. Click the new **Validate** button in the 

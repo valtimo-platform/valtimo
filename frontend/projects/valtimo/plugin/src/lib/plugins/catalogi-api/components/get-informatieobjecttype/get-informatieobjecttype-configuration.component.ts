@@ -23,7 +23,6 @@ import {FunctionConfigurationComponent} from '../../../../models';
   standalone: false,
   selector: 'valtimo-get-informatieobjecttype-configuration',
   templateUrl: './get-informatieobjecttype-configuration.component.html',
-  styleUrls: ['./get-informatieobjecttype-configuration.component.scss'],
 })
 export class GetInformatieobjecttypeConfigurationComponent
   implements FunctionConfigurationComponent, OnInit, OnDestroy
