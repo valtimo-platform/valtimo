@@ -29,7 +29,7 @@ import {TranslateModule} from '@ngx-translate/core';
 import {
   InputLabelModule,
   MdiIconSelectorComponent,
-  ValuePathSelectorComponent,
+  ValuePathSelectorComponent, ValuePathSelectorPrefix,
 } from '@valtimo/components';
 import {InputModule, LayerModule} from 'carbon-components-angular';
 import {debounceTime, Subscription} from 'rxjs';
@@ -127,4 +127,6 @@ export class WidgetManagementPersonCardComponent implements OnInit, OnDestroy {
 
     this.widgetWizardService.$widgetContentValid.set(this.form.valid);
   }
+
+  protected readonly ValuePathSelectorPrefix = ValuePathSelectorPrefix;
 }

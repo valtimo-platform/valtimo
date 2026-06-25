@@ -2290,6 +2290,7 @@
     "defaultSort": "Standaardsortering",
     "defaultSortTitle": "Standaardsortering (optioneel)",
     "defaultSortTooltip": "Als dit veld een waarde heeft, wordt de tabel standaard gesorteerd op deze eigenschap, in de opgegeven richting. Slechts één kolom tegelijk kan deze eigenschap hebben. Bij het aanmaken van een nieuwe kolom, als voor een andere kolom al een standaardsortering is opgegeven, is dit invoerveld uitgeschakeld.",
+    "defaultSortDisabledNotice": "Voor een andere kolom is al een standaardsortering ingesteld. Slechts één kolom tegelijk kan een standaardsortering hebben. Verwijder de bestaande standaardsortering om dit veld in te kunnen vullen.",
     "selectDefaultSort": "Selecteer een standaard sortering",
     "sortableYes": "Ja",
     "sortableNo": "Nee",
