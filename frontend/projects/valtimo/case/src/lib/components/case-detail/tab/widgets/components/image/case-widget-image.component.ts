@@ -58,6 +58,7 @@ export class CaseWidgetImageComponent implements OnDestroy {
     'jpeg',
     'gif',
     'webp',
+    'avif',
     'svg',
     'bmp',
     'ico',

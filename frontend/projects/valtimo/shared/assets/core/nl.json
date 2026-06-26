@@ -438,6 +438,7 @@
   },
   "message": {"empty": "Geen resultaat gevonden"},
   "cta": {"close": "Sluiten", "moreDetails": "Meer details"},
+  "carousel": {"previous": "Vorige", "next": "Volgende", "goToSlide": "Ga naar dia"},
   "formManagement": {
     "noFormDefinitionFoundAdmin": "Er is geen formulier gekoppeld aan de start event/user task. Druk op de knop om deze te configureren.",
     "noFormDefinitionFoundUser": "Er is geen formulier gekoppeld aan de start event/user task. Vraag een beheerder om hulp.",
@@ -1226,7 +1227,8 @@
         "description": "",
         "value": "Waarde",
         "valuePlaceholder": "Selecteer of typ een pad",
-        "valueHelper": "Toont de afbeelding op dit pad. Het pad moet verwijzen naar een geüploade bestandsresource."
+        "valueHelper": "Toont de afbeelding op dit pad. Het pad moet verwijzen naar een geüploade bestandsresource.",
+        "displayAsCarousel": "Weergeven als carrousel"
       }
     },
     "filters": {

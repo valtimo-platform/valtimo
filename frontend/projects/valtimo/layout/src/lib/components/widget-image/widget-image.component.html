@@ -35,46 +35,61 @@
     <cds-skeleton-placeholder class="valtimo-widget-image__skeleton"></cds-skeleton-placeholder>
   } @else if (obs.images.length === 0) {
     <span class="valtimo-widget-image__empty">{{ 'widgets.image.noImage' | translate }}</span>
+  } @else if (obs.widgetConfiguration?.properties?.displayAsCarousel && obs.images.length > 1) {
+    <valtimo-carousel
+      class="valtimo-widget-image__carousel"
+      [ariaLabel]="obs.widgetConfiguration?.title ?? ('widgets.image.title' | translate)"
+    >
+      <li *ngFor="let image of obs.images" class="valtimo-widget-image__item">
+        <ng-container *ngTemplateOutlet="tile; context: {$implicit: image}"></ng-container>
+      </li>
+    </valtimo-carousel>
   } @else {
     <ul class="valtimo-widget-image__list">
       <li *ngFor="let image of obs.images" class="valtimo-widget-image__item">
-        <cds-tile class="valtimo-widget-image__tile">
-          <div class="valtimo-widget-image__thumbnail-wrapper">
-            <img
-              class="valtimo-widget-image__thumbnail"
-              [src]="image.displayUrl"
-              [attr.alt]="image.fileName"
-              loading="lazy"
-            />
-          </div>
-
-          <div class="valtimo-widget-image__meta">
-            <span class="valtimo-widget-image__filename" [attr.title]="image.fileName">
-              {{ image.fileName }}
-            </span>
-
-            <div class="valtimo-widget-image__actions">
-              <cds-icon-button
-                kind="ghost"
-                size="sm"
-                [description]="'widgets.image.openInNewTab' | translate"
-                (click)="onOpenInNewTab(image)"
-              >
-                <svg cdsIcon="launch" size="16"></svg>
-              </cds-icon-button>
-
-              <cds-icon-button
-                kind="ghost"
-                size="sm"
-                [description]="'widgets.image.download' | translate"
-                (click)="onDownload(image)"
-              >
-                <svg cdsIcon="download" size="16"></svg>
-              </cds-icon-button>
-            </div>
-          </div>
-        </cds-tile>
+        <ng-container *ngTemplateOutlet="tile; context: {$implicit: image}"></ng-container>
       </li>
     </ul>
   }
 </ng-container>
+
+<ng-template #tile let-image>
+  <cds-tile class="valtimo-widget-image__tile">
+    <div class="valtimo-widget-image__thumbnail-wrapper">
+      <img
+        class="valtimo-widget-image__thumbnail"
+        [src]="image.displayUrl"
+        [attr.alt]="image.fileName"
+        loading="lazy"
+      />
+    </div>
+
+    <div class="valtimo-widget-image__meta">
+      <span class="valtimo-widget-image__filename" [attr.title]="image.fileName">
+        {{ image.fileName }}
+      </span>
+
+      <div class="valtimo-widget-image__actions">
+        <cds-icon-button
+          kind="ghost"
+          size="sm"
+          align="top-right"
+          [description]="'widgets.image.openInNewTab' | translate"
+          (click)="onOpenInNewTab(image)"
+        >
+          <svg cdsIcon="launch" size="16"></svg>
+        </cds-icon-button>
+
+        <cds-icon-button
+          kind="ghost"
+          size="sm"
+          align="top-right"
+          [description]="'widgets.image.download' | translate"
+          (click)="onDownload(image)"
+        >
+          <svg cdsIcon="download" size="16"></svg>
+        </cds-icon-button>
+      </div>
+    </div>
+  </cds-tile>
+</ng-template>

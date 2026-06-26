@@ -26,6 +26,7 @@ import {
 import {TranslateModule} from '@ngx-translate/core';
 import {Download16, Launch16} from '@carbon/icons';
 import {MdiIconViewerComponent} from '@valtimo/components';
+import {CarouselComponent} from '@valtimo/shared';
 import {
   ButtonModule,
   IconModule,
@@ -47,6 +48,7 @@ import {ImageWidget, WidgetImageResolved} from '../../models';
     CommonModule,
     TranslateModule,
     MdiIconViewerComponent,
+    CarouselComponent,
     ButtonModule,
     IconModule,
     SkeletonModule,

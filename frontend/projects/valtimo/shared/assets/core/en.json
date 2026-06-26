@@ -435,6 +435,7 @@
   },
   "message": {"empty": "No result found"},
   "cta": {"close": "Close", "moreDetails": "More details"},
+  "carousel": {"previous": "Previous", "next": "Next", "goToSlide": "Go to slide"},
   "formManagement": {
     "noFormDefinitionFoundAdmin": "There is no form connected to the start event/user task. To configure this, click on the button below.",
     "noFormDefinitionFoundUser": "There is no form connected to the start event/user task. Ask an admin user for assistance.",
@@ -1201,7 +1202,8 @@
         "description": "",
         "value": "Value",
         "valuePlaceholder": "Select or type a path",
-        "valueHelper": "Shows the image stored at this path. The path must resolve to an uploaded file resource."
+        "valueHelper": "Shows the image stored at this path. The path must resolve to an uploaded file resource.",
+        "displayAsCarousel": "Display as carousel"
       }
     },
     "filters": {

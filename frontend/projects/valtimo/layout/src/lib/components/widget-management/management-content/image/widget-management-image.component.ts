@@ -30,7 +30,7 @@ import {
   MdiIconSelectorComponent,
   ValuePathSelectorComponent,
 } from '@valtimo/components';
-import {InputModule, LayerModule} from 'carbon-components-angular';
+import {InputModule, LayerModule, ToggleModule} from 'carbon-components-angular';
 import {debounceTime, Subscription} from 'rxjs';
 import {WidgetImageContent} from '../../../../models';
 import {WIDGET_MANAGEMENT_SERVICE} from '../../../../constants';
@@ -50,6 +50,7 @@ import {WidgetWizardService} from '../../../../services';
     InputModule,
     InputLabelModule,
     LayerModule,
+    ToggleModule,
     MdiIconSelectorComponent,
     ValuePathSelectorComponent,
   ],
@@ -63,6 +64,9 @@ export class WidgetManagementImageComponent implements OnInit, OnDestroy {
     value: this.fb.control(
       (this.widgetWizardService.$widgetContent() as WidgetImageContent)?.value ?? '',
       Validators.required
+    ),
+    displayAsCarousel: this.fb.control(
+      (this.widgetWizardService.$widgetContent() as WidgetImageContent)?.displayAsCarousel ?? false
     ),
   });
 
@@ -90,6 +94,7 @@ export class WidgetManagementImageComponent implements OnInit, OnDestroy {
         this.widgetWizardService.$widgetIcon.set(formValue.widgetIcon ?? '');
         this.widgetWizardService.$widgetContent.set({
           value: formValue.value ?? '',
+          displayAsCarousel: formValue.displayAsCarousel ?? false,
         } as WidgetImageContent);
         this.syncContentValid();
       })

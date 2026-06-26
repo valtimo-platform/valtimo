@@ -20,4 +20,5 @@ import jakarta.validation.constraints.NotBlank
 
 data class ImageWidgetProperties(
     @field:NotBlank val value: String,
+    val displayAsCarousel: Boolean = false,
 )

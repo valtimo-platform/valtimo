@@ -184,6 +184,7 @@ interface WidgetHighlightContent {
 
 interface WidgetImageContent {
   value: string;
+  displayAsCarousel?: boolean;
 }
 
 interface WidgetImageItem {

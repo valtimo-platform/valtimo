@@ -19,6 +19,7 @@
   flex-direction: column;
   gap: 12px;
   width: 100%;
+  height: 100%;
   padding: 16px;
   overflow: hidden;
 
@@ -62,10 +63,14 @@
   &__list {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    align-content: start;
     gap: 16px;
+    flex: 1 1 auto;
+    min-height: 0;
     margin: 0;
     padding: 0;
     list-style: none;
+    overflow-y: auto;
   }
 
   &__item {
@@ -73,11 +78,31 @@
     min-width: 0;
   }
 
+  &__carousel {
+    flex: 1 1 auto;
+    min-height: 0;
+  }
+
+  &__carousel &__item {
+    width: 100%;
+  }
+
+  &__carousel &__thumbnail-wrapper {
+    flex: 1 1 auto;
+    min-height: 0;
+    max-height: none;
+  }
+
+  &__carousel &__thumbnail {
+    max-height: 100%;
+  }
+
   &__tile.cds--tile {
     display: flex;
     flex-direction: column;
     gap: 8px;
     width: 100%;
+    height: 100%;
     padding: 8px;
   }
 
@@ -106,6 +131,7 @@
     justify-content: space-between;
     gap: 8px;
     min-width: 0;
+    margin-top: auto;
   }
 
   &__filename {
