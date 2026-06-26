@@ -1,0 +1,114 @@
+/*!
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
+ *
+ * Licensed under EUPL, Version 1.2 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" basis,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+.case-inspection-processes-tab {
+  &__error {
+    color: var(--cds-text-error);
+  }
+
+  &__empty {
+    color: var(--cds-text-helper);
+  }
+
+  &__layout {
+    display: grid;
+    grid-template-columns: minmax(260px, 1fr) 3fr;
+    gap: var(--cds-spacing-06);
+    align-items: stretch;
+  }
+
+  &__list {
+    display: flex;
+    flex-direction: column;
+    border-right: 1px solid var(--cds-border-subtle);
+  }
+
+  &__list-item {
+    appearance: none;
+    background: transparent;
+    border: 0;
+    text-align: left;
+    padding: var(--cds-spacing-04);
+    cursor: pointer;
+    display: grid;
+    grid-template-columns: 1fr auto;
+    grid-template-rows: auto auto;
+    gap: var(--cds-spacing-01) var(--cds-spacing-03);
+    color: inherit;
+    font-family: inherit;
+
+    &:hover {
+      background-color: var(--cds-layer-hover);
+    }
+
+    &--selected {
+      background-color: var(--cds-layer-selected);
+      font-weight: 600;
+    }
+  }
+
+  &__list-item-title {
+    font-size: var(--cds-body-compact-01-font-size);
+    grid-column: 1;
+    grid-row: 1;
+    display: inline-flex;
+    align-items: center;
+    gap: var(--cds-spacing-03);
+  }
+
+  &__list-item-meta {
+    font-size: var(--cds-helper-text-01-font-size);
+    color: var(--cds-text-helper);
+    grid-column: 1;
+    grid-row: 2;
+    font-weight: 400;
+
+    code {
+      word-break: break-all;
+    }
+  }
+
+  &__list-item-indicators {
+    grid-column: 2;
+    grid-row: 1 / span 2;
+    display: flex;
+    align-items: center;
+  }
+
+  &__row-incident {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--cds-spacing-02);
+    color: var(--cds-text-error);
+    font-weight: 600;
+  }
+
+  &__row-healthy {
+    display: inline-flex;
+    align-items: center;
+    color: var(--cds-support-success);
+  }
+
+  &__row-completed {
+    display: inline-flex;
+    align-items: center;
+    color: var(--cds-text-helper);
+  }
+
+  &__detail {
+    min-width: 0;
+  }
+}

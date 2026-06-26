@@ -94,6 +94,7 @@ interface ValtimoConfigFeatureToggles {
   enableSuppressDocumentError?: boolean;
   enableIkoType?: boolean;
   enableGenericCaseList?: boolean;
+  menuCollapsedByDefault?: boolean;
   enableZgwFeatures?: boolean;
 }
 

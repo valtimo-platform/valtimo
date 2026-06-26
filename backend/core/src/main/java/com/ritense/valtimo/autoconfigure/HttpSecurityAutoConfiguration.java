@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,8 +28,6 @@ import com.ritense.valtimo.security.SpringSecurityAuditorAware;
 import com.ritense.valtimo.security.ValtimoCoreSecurityFactory;
 import com.ritense.valtimo.security.config.AccountHttpSecurityConfigurer;
 import com.ritense.valtimo.security.config.ApiLoginHttpSecurityConfigurer;
-import com.ritense.valtimo.security.config.OperatonCockpitHttpSecurityConfigurer;
-import com.ritense.valtimo.security.config.OperatonRestHttpSecurityConfigurer;
 import com.ritense.valtimo.security.config.ChoiceFieldHttpSecurityConfigurer;
 import com.ritense.valtimo.security.config.CsrfHttpSecurityConfigurer;
 import com.ritense.valtimo.security.config.DenyAllHttpSecurityConfigurer;
@@ -37,10 +35,14 @@ import com.ritense.valtimo.security.config.EmailNotificationSettingsSecurityConf
 import com.ritense.valtimo.security.config.ErrorHttpSecurityConfigurer;
 import com.ritense.valtimo.security.config.JwtHttpSecurityConfigurer;
 import com.ritense.valtimo.security.config.OpenApiHttpSecurityConfigurer;
+import com.ritense.valtimo.security.config.OperatonCockpitHttpSecurityConfigurer;
+import com.ritense.valtimo.security.config.OperatonRestHttpSecurityConfigurer;
 import com.ritense.valtimo.security.config.PingHttpSecurityConfigurer;
 import com.ritense.valtimo.security.config.ProcessHttpSecurityConfigurer;
 import com.ritense.valtimo.security.config.ProcessInstanceHttpSecurityConfigurer;
 import com.ritense.valtimo.security.config.ReportingHttpSecurityConfigurer;
+import com.ritense.valtimo.security.config.SecurityHeaderProperties;
+import com.ritense.valtimo.security.config.SecurityHeadersHttpSecurityConfigurer;
 import com.ritense.valtimo.security.config.StatelessHttpSecurityConfigurer;
 import com.ritense.valtimo.security.config.StaticResourcesHttpSecurityConfigurer;
 import com.ritense.valtimo.security.config.TaskHttpSecurityConfigurer;
@@ -49,6 +51,7 @@ import com.ritense.valtimo.security.config.ValtimoVersionHttpSecurityConfigurer;
 import com.ritense.valtimo.security.jwt.authentication.TokenAuthenticationService;
 import com.ritense.valtimo.security.matcher.SecurityWhitelistProperties;
 import com.ritense.valtimo.security.matcher.WhitelistIpRequestMatcher;
+import com.ritense.valtimo.security.oauth2.OperatonIdentityBridgeHttpSecurityConfigurer;
 import java.util.List;
 import java.util.Optional;
 import org.operaton.bpm.engine.IdentityService;
@@ -94,6 +97,11 @@ import org.springframework.security.web.authentication.Http403ForbiddenEntryPoin
  * <ul>
  *   <li><b>Content-Disposition</b> - Set on file download endpoints (e.g., ZaakDocumentResource) for filename hints</li>
  * </ul>
+ * <p>Additional security headers (via SecurityHeadersHttpSecurityConfigurer):</p>
+ * <ul>
+ *   <li><b>Referrer-Policy: strict-origin-when-cross-origin</b> - Controls referrer information in requests</li>
+ *   <li><b>Permissions-Policy: geolocation=(), microphone=(), camera=()</b> - Restricts browser features</li>
+ * </ul>
  * <p>Headers intentionally NOT sent:</p>
  * <ul>
  *   <li><b>Server</b> - Suppressed via server.server-header="" to avoid technology disclosure</li>
@@ -102,7 +110,7 @@ import org.springframework.security.web.authentication.Http403ForbiddenEntryPoin
  */
 @AutoConfiguration
 @EnableWebSecurity
-@EnableConfigurationProperties(SecurityWhitelistProperties.class)
+@EnableConfigurationProperties({SecurityWhitelistProperties.class, SecurityHeaderProperties.class})
 public class HttpSecurityAutoConfiguration {
 
     @Bean
@@ -238,6 +246,15 @@ public class HttpSecurityAutoConfiguration {
         return new StatelessHttpSecurityConfigurer();
     }
 
+    @Order(405)
+    @Bean
+    @ConditionalOnMissingBean(SecurityHeadersHttpSecurityConfigurer.class)
+    public SecurityHeadersHttpSecurityConfigurer securityHeadersHttpSecurityConfigurer(
+        SecurityHeaderProperties securityHeaderProperties
+    ) {
+        return new SecurityHeadersHttpSecurityConfigurer(securityHeaderProperties);
+    }
+
     @Order(410)
     @Bean
     @ConditionalOnMissingBean(CsrfHttpSecurityConfigurer.class)
@@ -261,6 +278,16 @@ public class HttpSecurityAutoConfiguration {
         TokenAuthenticationService tokenAuthenticationService
     ) {
         return new JwtHttpSecurityConfigurer(identityService, tokenAuthenticationService);
+    }
+
+    @Order(441)
+    @Bean
+    @Conditional(org.springframework.boot.autoconfigure.security.oauth2.client.ClientsConfiguredCondition.class)
+    @ConditionalOnMissingBean(OperatonIdentityBridgeHttpSecurityConfigurer.class)
+    public OperatonIdentityBridgeHttpSecurityConfigurer operatonIdentityBridgeHttpSecurityConfigurer(
+        IdentityService identityService
+    ) {
+        return new OperatonIdentityBridgeHttpSecurityConfigurer(identityService);
     }
 
     @Order(450)

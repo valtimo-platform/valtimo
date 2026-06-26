@@ -195,6 +195,8 @@
 
 * [Release notes](release-notes/release-notes.md)
 * [13.x.x](release-notes/13.x.x/)
+  * [13.35.0](release-notes/13.x.x/13.35.0/README.md)
+  * [13.34.0](release-notes/13.x.x/13.34.0/README.md)
   * [13.33.0](release-notes/13.x.x/13.33.0/README.md)
   * [13.32.0](release-notes/13.x.x/13.32.0/README.md)
   * [13.31.0](release-notes/13.x.x/13.31.0/README.md)
@@ -204,6 +206,7 @@
     * [Front-end migration](release-notes/13.x.x/13.28.1/front-end-migration.md)
   * [13.27.0](release-notes/13.x.x/13.27.0/README.md)
   * [13.26.0](release-notes/13.x.x/13.26.0/README.md)
+  * [13.25.1](release-notes/13.x.x/13.25.1/README.md)
   * [13.25.0](release-notes/13.x.x/13.25.0/README.md)
   * [13.24.0](release-notes/13.x.x/13.24.0/README.md)
   * [13.23.0](release-notes/13.x.x/13.23.0/README.md)
@@ -251,6 +254,7 @@
   * [REST API endpoint security test](running-valtimo/application-configuration/security-testing.md)
   * [Content Security Policy (CSP.md)](running-valtimo/application-configuration/content-security-policy.md)
   * [Configuring Keycloak](running-valtimo/application-configuration/configuring-keycloak.md)
+  * [Security baseline](running-valtimo/application-configuration/security-baseline.md)
   * [Temporary file storage](running-valtimo/application-configuration/temporary-file-storage.md)
   * [Feature toggles](running-valtimo/application-configuration/feature-toggles.md)
 
