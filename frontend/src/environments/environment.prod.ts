@@ -183,7 +183,6 @@ export const environment: ValtimoConfig = {
     enableIntermediateSave: true,
     enableTabManagement: true,
     enableUserNameInTopBarToggle: true,
-    experimentalDmnEditing: true,
     largeLogoMargin: false,
     returnToLastUrlAfterTokenExpiration: true,
     showPlantATreeButton: false,

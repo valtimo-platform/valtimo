@@ -22,6 +22,7 @@ import com.ritense.valtimo.contract.case_.CaseDefinitionId
 import com.ritense.valtimo.contract.domain.ValtimoMediaType.APPLICATION_JSON_UTF8_VALUE
 import com.ritense.valtimo.decision.OperatonDecisionService
 import com.ritense.valtimo.service.OperatonProcessService
+import com.ritense.valtimo.web.rest.dto.DecisionDefinitionResponseDto
 import com.ritense.valtimo.web.rest.dto.DefinitionDeploymentResponseDto
 import org.operaton.bpm.engine.impl.persistence.entity.DeploymentEntity
 import org.operaton.bpm.engine.rest.dto.repository.DecisionDefinitionDto
@@ -45,6 +46,20 @@ class DecisionManagementResource(
     private val operatonProcessService: OperatonProcessService,
     private val operatonDecisionService: OperatonDecisionService,
 ) {
+
+    @GetMapping(
+        value = ["/v1/decision-definition"],
+        produces = [MediaType.APPLICATION_JSON_VALUE]
+    )
+    fun listUnlinkedDecisionDefinitions(): ResponseEntity<List<DecisionDefinitionResponseDto>> {
+        val decisionDefinitions = runWithoutAuthorization {
+            operatonDecisionService.getUnlinkedDecisionDefinitions()
+        }
+
+        return ResponseEntity.ok(decisionDefinitions.map {
+            DecisionDefinitionResponseDto.from(it)
+        })
+    }
 
     @GetMapping(
         value = ["/v1/case-definition/{caseDefinitionKey}/version/{caseDefinitionVersionTag}/decision-definition"],
