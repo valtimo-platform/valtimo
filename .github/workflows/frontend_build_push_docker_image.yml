@@ -47,22 +47,30 @@ jobs:
         working-directory: .
     outputs:
       image_name: ${{ steps.resolve.outputs.image_name }}
+      tag_kind: ${{ steps.resolve.outputs.tag_kind }}
     steps:
       - name: Resolve variant parameters
         id: resolve
         run: |
           case "${{ inputs.variant }}" in
             dev)
-              echo "image_name=gzac-frontend" >> "$GITHUB_OUTPUT"  # CI test-env image still ships under the gzac-frontend ghcr name
+              # CI test-env image — ships under the gzac-frontend ghcr name with
+              # `test` tags so it never collides with the released gzac-frontend
+              # image (same name, built from variant=gzac with `production` tags).
+              echo "image_name=gzac-frontend" >> "$GITHUB_OUTPUT"
+              echo "tag_kind=test" >> "$GITHUB_OUTPUT"
               ;;
             gzac)
               echo "image_name=gzac-frontend" >> "$GITHUB_OUTPUT"
+              echo "tag_kind=production" >> "$GITHUB_OUTPUT"
               ;;
             valtimo)
               echo "image_name=valtimo-frontend" >> "$GITHUB_OUTPUT"
+              echo "tag_kind=production" >> "$GITHUB_OUTPUT"
               ;;
             evenementenvergunning)
               echo "image_name=gzac-evenementenvergunning-frontend" >> "$GITHUB_OUTPUT"
+              echo "tag_kind=production" >> "$GITHUB_OUTPUT"
               ;;
             *)
               echo "::error::Unknown variant '${{ inputs.variant }}' (expected: dev, gzac, valtimo, evenementenvergunning)"
@@ -198,9 +206,9 @@ jobs:
         with:
           images: ghcr.io/${{ github.repository }}/${{ needs.resolve_variant.outputs.image_name }}
           tags: |
-            type=raw,value=${{ env.BRANCH_NAME }}-test.${{ github.run_number }}
-            type=raw,value=commit-test-${{ github.sha }}
-            type=raw,value=contents-test-${{ steps.frontend_tree.outputs.tree }}
+            type=raw,value=${{ env.BRANCH_NAME }}-${{ needs.resolve_variant.outputs.tag_kind }}.${{ github.run_number }}
+            type=raw,value=commit-${{ needs.resolve_variant.outputs.tag_kind }}-${{ github.sha }}
+            type=raw,value=contents-${{ needs.resolve_variant.outputs.tag_kind }}-${{ steps.frontend_tree.outputs.tree }}
           flavor: |
             latest=false
 
