@@ -74,12 +74,14 @@ This process link does the following steps:
 
 ### Download document
 
-The **Download document** action downloads a document from the Documenten API and saves it as a temporary file. No configuration data has to be provided in order to configure this plugin action.
+The **Download document** action downloads a document from the Documenten API and saves it as a temporary file.
+
+The document to download is resolved from either the `documentUrl` or the `documentId` process variable. When both are present, `documentUrl` takes precedence. When only `documentId` is present, the document URL is built from the plugin's configured base URL. If neither variable is present, the action fails.
 
 This process link does the following steps:
 
-1. Take the document URL that is saved in the process variable `documentUrl`.
-2. Download the document and saves it to a temporary file.
+1. Resolves the document URL from the process variable `documentUrl`, or builds it from the process variable `documentId` when `documentUrl` is not present.
+2. Downloads the document and saves it to a temporary file.
 3. Creates a new process variable with the name of your choosing, by default: `resourceId`, containing the temporary file ID.
 
 ### Get audit trail
