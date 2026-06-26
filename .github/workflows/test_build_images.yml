@@ -1,0 +1,111 @@
+name: Test - build images (GHCR only)
+run-name: Test images ${{ github.ref_name }} (${{ inputs.side }}/${{ inputs.variant }})
+
+# Manual, non-production smoke test for the Docker image build path.
+#
+# Reuses the SAME reusable builders as the real release
+# (backend_/frontend_build_push_docker_image.yml) but never sets
+# push_to_dockerhub, so images are pushed to GHCR only:
+#   ghcr.io/<owner>/<repo>/<image_name>:<branch>-<kind>.<run_number>
+# Docker Hub, Maven Central and npm are never touched (no publish job here).
+#
+# After a run, pull & verify, e.g.:
+#   docker pull ghcr.io/valtimo-platform/valtimo/gzac-backend:<branch>-production.<run>
+#   docker pull ghcr.io/valtimo-platform/valtimo/gzac-frontend:<branch>-test.<run>
+
+permissions:
+  contents: read
+  packages: write
+
+on:
+  workflow_dispatch:
+    inputs:
+      variant:
+        description: "Which variant(s) to build. 'all' = the three release variants (gzac, valtimo, evenementenvergunning)."
+        required: true
+        type: choice
+        default: all
+        options:
+          - all
+          - gzac
+          - valtimo
+          - evenementenvergunning
+          - dev
+      side:
+        description: "Which side(s) to build."
+        required: true
+        type: choice
+        default: both
+        options:
+          - both
+          - backend
+          - frontend
+
+jobs:
+  prepare:
+    name: Resolve variant matrix
+    runs-on: ubuntu-latest
+    outputs:
+      variants: ${{ steps.set.outputs.variants }}
+    steps:
+      - id: set
+        run: |
+          if [ "${{ inputs.variant }}" = "all" ]; then
+            echo 'variants=["gzac","valtimo","evenementenvergunning"]' >> "$GITHUB_OUTPUT"
+          else
+            echo 'variants=["${{ inputs.variant }}"]' >> "$GITHUB_OUTPUT"
+          fi
+
+  # ---------------------------------------------------------------- backend ---
+  backend_libs:
+    name: Backend libraries
+    if: ${{ inputs.side == 'both' || inputs.side == 'backend' }}
+    uses: ./.github/workflows/backend_build_test_libraries.yml
+    secrets: inherit
+
+  backend_images:
+    name: Backend image (${{ matrix.variant }}) -> GHCR
+    if: ${{ inputs.side == 'both' || inputs.side == 'backend' }}
+    needs:
+      - prepare
+      - backend_libs
+    permissions:
+      contents: read
+      packages: write
+    strategy:
+      fail-fast: false
+      matrix:
+        variant: ${{ fromJson(needs.prepare.outputs.variants) }}
+    uses: ./.github/workflows/backend_build_push_docker_image.yml
+    with:
+      backend_libraries_build_artifact_name: ${{ needs.backend_libs.outputs.build_artifact_name }}
+      variant: ${{ matrix.variant }}
+      # push_to_dockerhub omitted -> defaults to false -> GHCR only.
+    secrets: inherit
+
+  # --------------------------------------------------------------- frontend ---
+  frontend_libs:
+    name: Frontend libraries
+    if: ${{ inputs.side == 'both' || inputs.side == 'frontend' }}
+    uses: ./.github/workflows/frontend_build_test_libraries.yml
+    secrets: inherit
+
+  frontend_images:
+    name: Frontend image (${{ matrix.variant }}) -> GHCR
+    if: ${{ inputs.side == 'both' || inputs.side == 'frontend' }}
+    needs:
+      - prepare
+      - frontend_libs
+    permissions:
+      contents: read
+      packages: write
+    strategy:
+      fail-fast: false
+      matrix:
+        variant: ${{ fromJson(needs.prepare.outputs.variants) }}
+    uses: ./.github/workflows/frontend_build_push_docker_image.yml
+    with:
+      frontend_libraries_build_artifact_name: ${{ needs.frontend_libs.outputs.build_artifact_name }}
+      variant: ${{ matrix.variant }}
+      # push_to_dockerhub omitted -> defaults to false -> GHCR only.
+    secrets: inherit
