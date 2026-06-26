@@ -45,6 +45,7 @@ type DocumentDefinitionItemsCache = ListItem[];
 enum ValuePathSelectorPrefix {
   DOC = 'doc',
   CASE = 'case',
+  TASK = 'task',
   ZAAKOBJECT = 'zaakobject',
   ZAAKRESULTAAT = 'zaakresultaat',
   ZAAKSTATUS = 'zaakstatus',

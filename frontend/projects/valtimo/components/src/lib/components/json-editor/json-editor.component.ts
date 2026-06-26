@@ -62,7 +62,6 @@ export class JsonEditorComponent {
   }
   @Input() editorOptions;
   @Input() fitPage = false;
-  @Input() fitPageSpaceAdjustment = 0;
   @Input() formatOnLoad = true;
   @Input() heightPx!: number;
   @Input() heightStyle!: string;

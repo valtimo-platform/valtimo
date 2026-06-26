@@ -26,5 +26,6 @@ data class StartableItemDto(
     val name: String?,
     val key: String,
     val versionTag: String?,
-    val processDefinitionId: String? = null
+    val processDefinitionId: String? = null,
+    val draft: Boolean = false
 )

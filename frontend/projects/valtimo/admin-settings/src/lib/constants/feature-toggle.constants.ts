@@ -38,6 +38,7 @@ const FEATURE_TOGGLE_DEFINITIONS: FeatureToggleDefinition[] = [
   {key: 'enablePbacDocumentenApiDocuments'},
   {key: 'enableSuppressDocumentError'},
   {key: 'enableIkoType'},
+  {key: 'menuCollapsedByDefault'},
 ];
 
 export {FEATURE_TOGGLE_DEFINITIONS};

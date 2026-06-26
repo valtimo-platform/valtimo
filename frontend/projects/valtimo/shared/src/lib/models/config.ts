@@ -98,6 +98,7 @@ interface ValtimoConfigFeatureToggles {
    * feature toggle. This option is ignored and will be removed in a future major release.
    */
   experimentalDmnEditing?: boolean;
+  menuCollapsedByDefault?: boolean;
 }
 
 interface ValtimoConfig {
