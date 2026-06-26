@@ -1,14 +1,14 @@
-# GZAC (frontend)
+# Valtimo (frontend)
 
-The standard **GZAC** web application — the official user interface published as
-`ritense/gzac-frontend`.
+The **Valtimo** web application — the official user interface published as
+`ritense/valtimo-frontend`.
 
 ## How to start
 
 From the `frontend` folder (after `npm install`, and with a backend running):
 
 ```bash
-npm run start:gzac
+npm run start:valtimo
 ```
 
 Then open <http://localhost:4200>. For day-to-day development with demo

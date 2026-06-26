@@ -41,6 +41,8 @@ Pick a variant to serve:
 |------------------------|--------------------------------------|--------------------------------------------------------------------------|
 | `npm start`            | `apps/dev` (developer console)       | Default for library development. Showcase components, dev routes, devTabs. |
 | `npm run start:gzac`   | `apps/gzac` (template-equivalent)    | Same shell as the released image but served with the dev `app-plugins` stub (no `@valtimo-plugins/*` required locally). |
+| `npm run start:valtimo` | `apps/valtimo`                      | The Valtimo released app (`ritense/valtimo-frontend`). |
+| `npm run start:evenementenvergunning` | `apps/evenementenvergunning` | The event-permit demo app (`ritense/gzac-evenementenvergunning-frontend`). |
 
 Both serve at `http://localhost:4200/` by default. To run them side by side, pass
 `-- --port 4201` to one of the commands.

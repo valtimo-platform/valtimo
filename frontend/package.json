@@ -14,6 +14,8 @@
     "syncLibDepsToRootDeps": "node scripts/sync-lib-deps.js && npm run prettier:write",
     "start": "node --max_old_space_size=8048 ./node_modules/@angular/cli/bin/ng.js serve dev --proxy-config proxy.conf.json",
     "start:gzac": "node --max_old_space_size=8048 ./node_modules/@angular/cli/bin/ng.js serve gzac --proxy-config proxy.conf.json",
+    "start:valtimo": "node --max_old_space_size=8048 ./node_modules/@angular/cli/bin/ng.js serve valtimo --proxy-config proxy.conf.json",
+    "start:evenementenvergunning": "node --max_old_space_size=8048 ./node_modules/@angular/cli/bin/ng.js serve evenementenvergunning --proxy-config proxy.conf.json",
     "startProd": "node --max_old_space_size=8048 ./node_modules/@angular/cli/bin/ng.js serve dev --proxy-config proxy.conf.json --configuration production",
     "startAot": "ng serve dev --proxy-config proxy.conf.json --aot",
     "startHmr": "ng serve dev --proxy-config proxy.conf.json --hmr",

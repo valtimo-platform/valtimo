@@ -388,7 +388,7 @@
       }
     },
     "valtimo": {
-      "root": "apps/gzac",
+      "root": "apps/valtimo",
       "sourceRoot": "apps/valtimo/src",
       "projectType": "application",
       "prefix": "app",
@@ -489,7 +489,12 @@
           },
           "configurations": {
             "production": {
-              "fileReplacements": [],
+              "fileReplacements": [
+                {
+                  "replace": "apps/valtimo/src/environments/environment.ts",
+                  "with": "apps/valtimo/src/environments/environment.prod.ts"
+                }
+              ],
               "optimization": true,
               "outputHashing": "all",
               "sourceMap": false,
@@ -569,7 +574,7 @@
       }
     },
     "evenementenvergunning": {
-      "root": "apps/gzac",
+      "root": "apps/evenementenvergunning",
       "sourceRoot": "apps/evenementenvergunning/src",
       "projectType": "application",
       "prefix": "app",
@@ -671,6 +676,10 @@
           "configurations": {
             "production": {
               "fileReplacements": [
+                {
+                  "replace": "apps/evenementenvergunning/src/environments/environment.ts",
+                  "with": "apps/evenementenvergunning/src/environments/environment.prod.ts"
+                },
                 {
                   "replace": "apps/evenementenvergunning/src/app/app-plugins.ts",
                   "with": "apps/evenementenvergunning/src/app/app-plugins.prod.ts"

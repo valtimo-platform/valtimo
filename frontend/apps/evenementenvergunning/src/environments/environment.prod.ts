@@ -19,7 +19,7 @@ import {DARK_MODE_LOGO_BASE_64, LOGO_BASE_64} from './logo';
 export const environment: ValtimoConfig = {
   logoSvgBase64: LOGO_BASE_64,
   darkModeLogoSvgBase64: DARK_MODE_LOGO_BASE_64,
-  production: false,
+  production: true,
   authentication: authenticationKeycloak,
   menu: {
     menuItems: [
@@ -144,9 +144,7 @@ export const environment: ValtimoConfig = {
   defaultDefinitionTable: defaultDefinitionColumns,
   visibleTaskListTabs: [TaskListTab.MINE, TaskListTab.OPEN, TaskListTab.ALL],
   visibleCaseListTabs: [CaseListTab.ALL, CaseListTab.MINE, CaseListTab.OPEN],
-  caseFileSizeUploadLimitMB: window['env']['caseFileSizeUploadLimitMB'] || 5,
   featureToggles: {
-    enableObjectManagement: window['env']['featureToggles']?.['enableObjectManagement'] === 'true',
     allowUserThemeSwitching: true,
     disableCaseCount: false,
     enableCompactModeToggle: true,

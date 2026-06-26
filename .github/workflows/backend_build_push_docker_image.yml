@@ -11,10 +11,10 @@ on:
         description: Name of the backend build artifact to download with 'download-artifact'
         type: "string"
       variant:
-        description: "Which backend app to build. Each variant is its own Gradle module under :backend:app:* (gzac | valtimo | evenementenvergunning)."
+        description: "Which backend app to build. Each variant is its own Gradle module under :backend:apps:* (dev | gzac | valtimo | evenementenvergunning)."
         required: false
         type: string
-        default: gzac
+        default: dev
       push_to_dockerhub:
         description: "Push the built image to Docker Hub as well"
         required: false
@@ -25,12 +25,9 @@ on:
         required: false
         type: string
     outputs:
-      built_test_image:
-        description: "Tag of the test Docker image that was built"
-        value: ${{ jobs.generate_tags.outputs.test_primary_tag }}
-      built_prod_image:
-        description: "Tag of the production Docker image that was built"
-        value: ${{ jobs.generate_tags.outputs.production_primary_tag }}
+      built_image:
+        description: "Primary tag of the Docker image that was built"
+        value: ${{ jobs.generate_tags.outputs.primary_tag }}
 
 env:
   BRANCH_NAME: ${{ github.head_ref || github.ref_name }}
@@ -40,49 +37,46 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       module: ${{ steps.resolve.outputs.module }}
-      extra_args: ${{ steps.resolve.outputs.extra_args }}
       image_name: ${{ steps.resolve.outputs.image_name }}
-      build_types: ${{ steps.resolve.outputs.build_types }}
+      tag_kind: ${{ steps.resolve.outputs.tag_kind }}
     steps:
       - name: Resolve variant parameters
         id: resolve
         run: |
           case "${{ inputs.variant }}" in
+            dev)
+              # Developer console — the PR-CI test-env image. Ships under the
+              # gzac-backend ghcr name with `test` tags so it never collides
+              # with the released gzac-backend image (same name, `production`).
+              echo "module=dev" >> "$GITHUB_OUTPUT"
+              echo "image_name=gzac-backend" >> "$GITHUB_OUTPUT"
+              echo "tag_kind=test" >> "$GITHUB_OUTPUT"
+              ;;
             gzac)
               echo "module=gzac" >> "$GITHUB_OUTPUT"
-              echo "extra_args=" >> "$GITHUB_OUTPUT"
               echo "image_name=gzac-backend" >> "$GITHUB_OUTPUT"
-              # gzac is the only variant with a dev source set; build both
-              # production and test images so CI/e2e jobs get an includeDev=true
-              # test image as well as the release image.
-              echo 'build_types=["production","test"]' >> "$GITHUB_OUTPUT"
+              echo "tag_kind=production" >> "$GITHUB_OUTPUT"
               ;;
             valtimo)
               echo "module=valtimo" >> "$GITHUB_OUTPUT"
-              echo "extra_args=" >> "$GITHUB_OUTPUT"
               echo "image_name=valtimo-backend" >> "$GITHUB_OUTPUT"
-              echo 'build_types=["production"]' >> "$GITHUB_OUTPUT"
+              echo "tag_kind=production" >> "$GITHUB_OUTPUT"
               ;;
             evenementenvergunning)
               echo "module=evenementenvergunning" >> "$GITHUB_OUTPUT"
-              echo "extra_args=" >> "$GITHUB_OUTPUT"
               echo "image_name=gzac-evenementenvergunning-backend" >> "$GITHUB_OUTPUT"
-              echo 'build_types=["production"]' >> "$GITHUB_OUTPUT"
+              echo "tag_kind=production" >> "$GITHUB_OUTPUT"
               ;;
             *)
-              echo "::error::Unknown variant '${{ inputs.variant }}' (expected: gzac, valtimo, evenementenvergunning)"
+              echo "::error::Unknown variant '${{ inputs.variant }}' (expected: dev, gzac, valtimo, evenementenvergunning)"
               exit 1
               ;;
           esac
 
   assemble:
     needs: resolve_variant
-    strategy:
-      matrix:
-        build_type: ${{ fromJSON(needs.resolve_variant.outputs.build_types) }}
-
     runs-on: ubuntu-latest
-    name: "assemble-${{ inputs.variant }}-${{ matrix.build_type }}"
+    name: "assemble-${{ inputs.variant }}"
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -99,17 +93,17 @@ jobs:
           name: ${{ inputs.backend_libraries_build_artifact_name }}
           path: .
 
-      - run: ./gradlew -PincludeDev=${{ matrix.build_type == 'test' }} ${{ needs.resolve_variant.outputs.extra_args }} :backend:app:${{ needs.resolve_variant.outputs.module }}:assemble
+      - run: ./gradlew :backend:apps:${{ needs.resolve_variant.outputs.module }}:assemble
 
       - name: Prepare deployment folder
         run: |
           mkdir backend/deployment
-          mv backend/app/${{ needs.resolve_variant.outputs.module }}/build/ backend/app/${{ needs.resolve_variant.outputs.module }}/Dockerfile backend/deployment/
+          mv backend/apps/${{ needs.resolve_variant.outputs.module }}/build/ backend/apps/${{ needs.resolve_variant.outputs.module }}/Dockerfile backend/deployment/
 
       - name: Archive deployment folder
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ needs.resolve_variant.outputs.image_name }}-deployment-${{ matrix.build_type }}
+          name: ${{ inputs.variant }}-backend-deployment
           path: backend/deployment/
           retention-days: 1
 
@@ -117,50 +111,30 @@ jobs:
     needs: resolve_variant
     runs-on: ubuntu-latest
     outputs:
-      test_tags: ${{ steps.generate_tags_test.outputs.tags }}
-      production_tags: ${{ steps.generate_tags_production.outputs.tags }}
-      test_primary_tag: ${{ steps.primary_tag_test.outputs.tag }}
-      production_primary_tag: ${{ steps.primary_tag_production.outputs.tag }}
+      tags: ${{ steps.generate_tags.outputs.tags }}
+      primary_tag: ${{ steps.primary_tag.outputs.tag }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
       - name: Resolve backend tree hash
         id: backend_tree
         run: echo "tree=$(git rev-parse HEAD:backend)" >> "$GITHUB_OUTPUT"
-      - name: Generate image tags (test)
-        id: generate_tags_test
+      - name: Generate image tags
+        id: generate_tags
         uses: docker/metadata-action@v5
         with:
           images: ghcr.io/${{ github.repository }}/${{ needs.resolve_variant.outputs.image_name }}
           tags: |
-            type=raw,value=${{ env.BRANCH_NAME }}-test.${{ github.run_number }}
-            type=raw,value=commit-test-${{ github.sha }}
-            type=raw,value=contents-test-${{ steps.backend_tree.outputs.tree }}
+            type=raw,value=${{ env.BRANCH_NAME }}-${{ needs.resolve_variant.outputs.tag_kind }}.${{ github.run_number }}
+            type=raw,value=commit-${{ needs.resolve_variant.outputs.tag_kind }}-${{ github.sha }}
+            type=raw,value=contents-${{ needs.resolve_variant.outputs.tag_kind }}-${{ steps.backend_tree.outputs.tree }}
           flavor: |
             latest=false
 
-      - name: Extract primary image tag (test)
-        id: primary_tag_test
+      - name: Extract primary image tag
+        id: primary_tag
         run: |
-          full_tag='${{ fromJson(steps.generate_tags_test.outputs.json).tags[0] }}'
-          echo "tag=${full_tag##*:}" >> "$GITHUB_OUTPUT"
-
-      - name: Generate image tags (production)
-        id: generate_tags_production
-        uses: docker/metadata-action@v5
-        with:
-          images: ghcr.io/${{ github.repository }}/${{ needs.resolve_variant.outputs.image_name }}
-          tags: |
-            type=raw,value=${{ env.BRANCH_NAME }}-production.${{ github.run_number }}
-            type=raw,value=commit-production-${{ github.sha }}
-            type=raw,value=contents-production-${{ steps.backend_tree.outputs.tree }}
-          flavor: |
-            latest=false
-
-      - name: Extract primary image tag (production)
-        id: primary_tag_production
-        run: |
-          full_tag='${{ fromJson(steps.generate_tags_production.outputs.json).tags[0] }}'
+          full_tag='${{ fromJson(steps.generate_tags.outputs.json).tags[0] }}'
           echo "tag=${full_tag##*:}" >> "$GITHUB_OUTPUT"
 
   build_image:
@@ -168,9 +142,6 @@ jobs:
       - resolve_variant
       - assemble
       - generate_tags
-    strategy:
-      matrix:
-        build_type: ${{ fromJSON(needs.resolve_variant.outputs.build_types) }}
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -196,7 +167,7 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Log in to Docker Hub
-        if: ${{ inputs.push_to_dockerhub && matrix.build_type == 'production' }}
+        if: ${{ inputs.push_to_dockerhub }}
         uses: docker/login-action@v3
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
@@ -205,7 +176,7 @@ jobs:
       - name: Download deployment artifact
         uses: actions/download-artifact@v4
         with:
-          name: ${{ needs.resolve_variant.outputs.image_name }}-deployment-${{ matrix.build_type }}
+          name: ${{ inputs.variant }}-backend-deployment
           path: backend/deployment/
 
       - name: Set up Buildx
@@ -222,7 +193,7 @@ jobs:
           platforms: linux/amd64,linux/arm64/v8
           push: true
           tags: |
-            ${{ matrix.build_type == 'production' && needs.generate_tags.outputs.production_tags || needs.generate_tags.outputs.test_tags }}
-            ${{ (inputs.push_to_dockerhub && matrix.build_type == 'production') && format('docker.io/ritense/{0}:{1}', needs.resolve_variant.outputs.image_name, inputs.release_image_tag) || '' }}
+            ${{ needs.generate_tags.outputs.tags }}
+            ${{ inputs.push_to_dockerhub && format('docker.io/ritense/{0}:{1}', needs.resolve_variant.outputs.image_name, inputs.release_image_tag) || '' }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
