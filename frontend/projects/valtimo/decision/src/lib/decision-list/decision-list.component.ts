@@ -123,7 +123,7 @@ export class DecisionListComponent {
           )
         );
       }
-      return this.decisionService.getDecisions();
+      return this.decisionService.getUnlinkedDecisions();
     }),
     map(filterLatestDecisionVersions),
     tap(() => {
