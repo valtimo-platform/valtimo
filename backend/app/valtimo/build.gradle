@@ -43,15 +43,6 @@ springBoot {
     mainClass = 'com.ritense.valtimo.ApplicationKt'
 }
 
-bootRun {
-    doFirst {
-        File f = file(".env.properties")
-        if (f.isFile()) {
-            def props = new Properties()
-            f.withInputStream { props.load(it) }
-            props.each { key, value ->
-                environment key.toString(), value.toString()
-            }
-        }
-    }
-}
+// Shared app convention: publish-disable, .env loading, the bootRunWithDocker
+// task, and the GZAC docker-compose wiring. Apply after springBoot.mainClass.
+apply from: "${rootProject.projectDir}/backend/gradle/valtimo-app.gradle"

@@ -27,7 +27,6 @@ on:
         default: true
 
 env:
-  ORG_GRADLE_PROJECT_includeDev: false
   PROJECT_VERSION: ${{ inputs.project_version || github.event.inputs.project_version }}
 
 jobs:
@@ -110,7 +109,7 @@ jobs:
           path: .
 
       - name: Check license compliance
-        run: ./gradlew -PincludeDev=false :backend:checkLicense
+        run: ./gradlew :backend:checkLicense
 
       - name: Fail if disallowed licenses found
         run: |
@@ -130,13 +129,13 @@ jobs:
         env:
           ORG_GRADLE_PROJECT_sonatypeUsername: ${{ env.SONATYPE_USERNAME }}
           ORG_GRADLE_PROJECT_sonatypePassword: ${{ env.SONATYPE_PASSWORD }}
-        run: ./gradlew -PincludeDev=false --no-parallel publishAllPublicationsToSonatypeRepository -PprojectVersion="${PROJECT_VERSION}"
+        run: ./gradlew --no-parallel publishAllPublicationsToSonatypeRepository -PprojectVersion="${PROJECT_VERSION}"
 
       - name: Deploy with JReleaser to Maven Central
         env:
           ORG_GRADLE_PROJECT_sonatypeUsername: ${{ env.SONATYPE_USERNAME }}
           ORG_GRADLE_PROJECT_sonatypePassword: ${{ env.SONATYPE_PASSWORD }}
-        run: ./gradlew -PincludeDev=false :backend:jreleaserDeploy --stacktrace -PprojectVersion="${PROJECT_VERSION}"
+        run: ./gradlew :backend:jreleaserDeploy --stacktrace -PprojectVersion="${PROJECT_VERSION}"
 
       - name: Archive Reports
         if: always()

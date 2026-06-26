@@ -31,6 +31,7 @@ include(
     ":backend:app:gzac",
     ":backend:app:valtimo",
     ":backend:app:evenementenvergunning",
+    ":backend:app:dev",
     ":backend:audit",
     ":backend:authorization",
     ":backend:besluit",

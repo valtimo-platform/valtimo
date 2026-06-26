@@ -48,14 +48,20 @@ jobs:
         id: resolve
         run: |
           case "${{ inputs.variant }}" in
+            dev)
+              # The developer console (formerly gzac's src/dev source set, now
+              # its own :backend:app:dev module). Built as the PR-CI test-env
+              # image under the gzac-backend name.
+              echo "module=dev" >> "$GITHUB_OUTPUT"
+              echo "extra_args=" >> "$GITHUB_OUTPUT"
+              echo "image_name=gzac-backend" >> "$GITHUB_OUTPUT"
+              echo 'build_types=["test"]' >> "$GITHUB_OUTPUT"
+              ;;
             gzac)
               echo "module=gzac" >> "$GITHUB_OUTPUT"
               echo "extra_args=" >> "$GITHUB_OUTPUT"
               echo "image_name=gzac-backend" >> "$GITHUB_OUTPUT"
-              # gzac is the only variant with a dev source set; build both
-              # production and test images so CI/e2e jobs get an includeDev=true
-              # test image as well as the release image.
-              echo 'build_types=["production","test"]' >> "$GITHUB_OUTPUT"
+              echo 'build_types=["production"]' >> "$GITHUB_OUTPUT"
               ;;
             valtimo)
               echo "module=valtimo" >> "$GITHUB_OUTPUT"
@@ -70,7 +76,7 @@ jobs:
               echo 'build_types=["production"]' >> "$GITHUB_OUTPUT"
               ;;
             *)
-              echo "::error::Unknown variant '${{ inputs.variant }}' (expected: gzac, valtimo, evenementenvergunning)"
+              echo "::error::Unknown variant '${{ inputs.variant }}' (expected: dev, gzac, valtimo, evenementenvergunning)"
               exit 1
               ;;
           esac
@@ -99,7 +105,7 @@ jobs:
           name: ${{ inputs.backend_libraries_build_artifact_name }}
           path: .
 
-      - run: ./gradlew -PincludeDev=${{ matrix.build_type == 'test' }} ${{ needs.resolve_variant.outputs.extra_args }} :backend:app:${{ needs.resolve_variant.outputs.module }}:assemble
+      - run: ./gradlew ${{ needs.resolve_variant.outputs.extra_args }} :backend:app:${{ needs.resolve_variant.outputs.module }}:assemble
 
       - name: Prepare deployment folder
         run: |

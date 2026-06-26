@@ -1,0 +1,64 @@
+/*
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
+ *
+ * Licensed under EUPL, Version 1.2 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" basis,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+// Shared configuration for the runnable Valtimo application modules:
+// :backend:app:gzac, :valtimo, :evenementenvergunning and :dev.
+//
+// Each module keeps its own dependency list and its own springBoot.mainClass;
+// this script only carries the boilerplate that is identical across every app:
+//   - app modules are NOT published as Maven artifacts;
+//   - bootRun / bootRunWithDocker load the module's .env.properties (if present);
+//   - bootRunWithDocker first brings up the shared GZAC docker-compose stack
+//     (downloaded + configured by dockerComposeGzac.gradle) before starting the app.
+//
+// Apply this AFTER the module's `springBoot { mainClass = ... }` block.
+
+// App modules are runnable artifacts, not libraries — never publish them.
+tasks.withType(PublishToMavenRepository).configureEach { enabled = false }
+tasks.withType(PublishToMavenLocal).configureEach { enabled = false }
+
+// Load <module>/.env.properties into the given task's environment when present.
+// No-op when the file is absent.
+ext.loadEnvProperties = { task ->
+    task.doFirst {
+        File f = project.file(".env.properties")
+        if (f.isFile()) {
+            def props = new Properties()
+            f.withInputStream { props.load(it) }
+            props.each { key, value -> task.environment(key.toString(), value.toString()) }
+        }
+    }
+}
+
+tasks.named("bootRun") {
+    loadEnvProperties(it)
+}
+
+// Start the shared GZAC docker-compose stack, then run this module as a Spring
+// Boot app. Each module has exactly one @SpringBootApplication, so the main class
+// is taken from springBoot.mainClass (no per-mode switch needed).
+tasks.register("bootRunWithDocker", tasks.named("bootRun").get().class) {
+    group = "application"
+    description = "Starts the shared GZAC docker-compose stack, then runs this app"
+    classpath = sourceSets.main.runtimeClasspath
+    mainClass.set(springBoot.mainClass)
+    dependsOn("composeUpGzac")
+    loadEnvProperties(it)
+}
+
+// downloadAndUnzip + composeUp wiring and the dockerCompose { } block (shared
+// projectName, single compose file, --profile zgw).
+apply from: "${rootProject.projectDir}/backend/gradle/dockerComposeGzac.gradle"

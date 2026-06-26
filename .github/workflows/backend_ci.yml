@@ -29,6 +29,7 @@ jobs:
     secrets: inherit
     with:
       backend_libraries_build_artifact_name: ${{ needs.build_and_test_libraries.outputs.build_artifact_name }}
+      variant: dev
 
   # For pushes
   # publish_snapshot:
