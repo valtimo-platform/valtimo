@@ -25,7 +25,6 @@ const FEATURE_TOGGLE_DEFINITIONS: FeatureToggleDefinition[] = [
   {key: 'showPlantATreeButton'},
   {key: 'largeLogoMargin'},
   {key: 'applicationTitleAsSuffix'},
-  {key: 'experimentalDmnEditing'},
   {key: 'disableCaseCount'},
   {key: 'enableObjectManagement'},
   {key: 'sortFilesByDate'},

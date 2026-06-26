@@ -6,6 +6,17 @@ block's processes.
 
 ## Managing decision tables
 
+### Creating a decision table
+
+* Open a building block definition.
+* Go to the **Decision tables** tab.
+* Click **Create DMN table**.
+* Enter a **name** for the decision table.
+* Optionally add one or more **input columns**. Each column takes a **process variable** (required) and an optional
+  **label** used as the column header — when the label is left blank, the process variable name is used.
+* Click **Create**. The decision table opens in the editor, seeded with the input columns you provided.
+* Add your rules and click **Save** to deploy it.
+
 ### Deploying a decision table
 
 * Open a building block definition.
@@ -18,22 +29,22 @@ The decision table is now available to be used in business rule tasks in the bui
 
 ### Editing a decision table
 
-* Open a building block definition.
-* Go to the **Decision tables** tab.
-* Click on the decision table you want to edit.
-* Make changes in the decision table editor.
-* Click **Save**.
+There are two ways to edit a decision table:
+
+* **Full editor** — click on the decision table row to open the DMN editor, make your changes and click **Save**.
+* **Quick edit** — use the **Edit** action in the row's overflow menu (or the editor's top-right overflow menu) to
+  change the **name** and **input columns** without opening the full grid.
 
 ### Deleting a decision table
 
 * Open a building block definition.
 * Go to the **Decision tables** tab.
-* Click the delete action on the decision table row.
+* Click the **Delete** action in the decision table row's overflow menu (or in the editor's top-right overflow menu).
 * Confirm the deletion.
 
 {% hint style="warning" %}
-Decision tables cannot be created, edited, or deleted when the building block version is finalized. To make changes,
-create a new draft version from the finalized version.
+Decision tables can only be created, edited, or deleted on a draft building block version. On a finalized version
+these actions are shown but disabled — create a new draft version from the finalized version to make changes.
 {% endhint %}
 
 ## Using decision tables in business rule tasks
