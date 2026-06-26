@@ -22,5 +22,6 @@ import com.ritense.valtimo.web.rest.dto.ProcessDefinitionWithPropertiesDto
 data class BuildingBlockProcessDefinitionWithLinksDto(
     val processDefinition: ProcessDefinitionWithPropertiesDto,
     val processLinks: List<ProcessLinkResponseDto>,
-    val bpmn20Xml: String
+    val bpmn20Xml: String,
+    val draft: Boolean = false
 )

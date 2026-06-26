@@ -78,7 +78,7 @@ export class ProcessLinkService {
     return this.http.post(
       `${this.VALTIMO_ENDPOINT_URI}management/v1/process-definition`,
       this.buildProcessDefinitionFormData(processLinks, processXml, null),
-      {headers: new HttpHeaders().set(InterceptorSkip, '409')}
+      {headers: new HttpHeaders().set(InterceptorSkip, '409,422')}
     );
   }
 
@@ -89,7 +89,8 @@ export class ProcessLinkService {
   ) {
     return this.http.put(
       `${this.VALTIMO_ENDPOINT_URI}management/v1/process-definition`,
-      this.buildProcessDefinitionFormData(processLinks, processXml, processDefinitionId)
+      this.buildProcessDefinitionFormData(processLinks, processXml, processDefinitionId),
+      {headers: new HttpHeaders().set(InterceptorSkip, '422')}
     );
   }
 
@@ -110,7 +111,7 @@ export class ProcessLinkService {
         canInitializeDocument,
         startableByUser
       ),
-      {headers: new HttpHeaders().set(InterceptorSkip, '409')}
+      {headers: new HttpHeaders().set(InterceptorSkip, '409,422')}
     );
   }
 
@@ -131,7 +132,8 @@ export class ProcessLinkService {
         processDefinitionId,
         canInitializeDocument,
         startableByUser
-      )
+      ),
+      {headers: new HttpHeaders().set(InterceptorSkip, '422')}
     );
   }
 
@@ -144,7 +146,7 @@ export class ProcessLinkService {
     return this.http.post(
       `${this.VALTIMO_ENDPOINT_URI}management/v1/building-block/${buildingBlockKey}/version/${buildingBlockVersionTag}/process-definition`,
       this.buildBuildingBlockFormData(processLinks, processXml, buildingBlockKey, buildingBlockVersionTag),
-      {headers: new HttpHeaders().set(InterceptorSkip, '409')}
+      {headers: new HttpHeaders().set(InterceptorSkip, '409,422')}
     );
   }
 
@@ -159,7 +161,10 @@ export class ProcessLinkService {
     return this.http.put(
       `${this.VALTIMO_ENDPOINT_URI}management/v1/building-block/${buildingBlockKey}/version/${buildingBlockVersionTag}/process-definition/${processDefinitionId}`,
       this.buildBuildingBlockFormData(processLinks, processXml, buildingBlockKey, buildingBlockVersionTag),
-      {params: replace ? new HttpParams().set('replace', 'true') : undefined}
+      {
+        headers: new HttpHeaders().set(InterceptorSkip, '422'),
+        params: replace ? new HttpParams().set('replace', 'true') : undefined,
+      }
     );
   }
 

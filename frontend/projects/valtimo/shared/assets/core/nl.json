@@ -44,6 +44,13 @@
       "content": "Weet je zeker dat je van tabblad wilt wisselen? Alle gemaakte selecties gaan verloren.",
       "confirm": "Tabblad wisselen"
     },
+    "draftProcessConfirmation": {
+      "title": "Concept-proces starten",
+      "warningTitle": "Waarschuwing: Concept-proces",
+      "warningDescription": "Deze procesdefinitie is nog in concept en werkt mogelijk niet zoals verwacht.",
+      "confirm": "Toch starten",
+      "cancel": "Annuleren"
+    },
     "noResults": {
       "ALL": {"description": "Er is hier niets te doen.", "title": "Er zijn geen dossiers"},
       "MINE": {"description": "Even pauze.", "title": "Er zijn geen dossiers aan jou toegewezen"},
@@ -872,7 +879,8 @@
       "notFinalizableWarning": {
         "title": "Deze dossierdefinitie kan niet definitief worden gemaakt.",
         "BUILDING_BLOCK_NOT_FINAL": "De dossierdefinitie maakt gebruik van concept-bouwblokken. Om deze dossierdefinitie definitief te kunnen maken, moeten alle bouwblokken die het gebruikt definitief zijn.",
-        "CONFIGURATION_ISSUES": "De dossierdefinitie bevat onopgeloste configuratieproblemen. Controleer en los alle configuratiewaarschuwingen op voordat u deze definitief maakt."
+        "CONFIGURATION_ISSUES": "De dossierdefinitie bevat onopgeloste configuratieproblemen. Controleer en los alle configuratiewaarschuwingen op voordat u deze definitief maakt.",
+        "PROCESS_DEFINITION_IN_DRAFT": "De dossierdefinitie bevat procesdefinities die nog in concept zijn. Maak alle procesdefinities definitief voordat u de dossierdefinitie definitief maakt."
       }
     },
     "environmentConfig": {
@@ -1801,6 +1809,15 @@
     },
     "successNotification": "Proces succesvol gepubliceerd",
     "errorNotification": "Er ging iets mis bij het publiceren van het proces",
+    "validate": "Valideren",
+    "validationSuccessNotification": "Procesdefinitie is geldig",
+    "validationWarningNotification": "Procesdefinitie bevat waarschuwingen",
+    "draft": "Concept",
+    "status": "Status",
+    "draftTooltip": "Wanneer ingeschakeld wordt de procesdefinitie opgeslagen als concept. Concepten worden niet gevalideerd en kunnen niet worden gestart.",
+    "validationErrors": "Validatiefouten",
+    "validationErrorsCount": "Validatiefouten ({{count}})",
+    "validationErrorNotification": "Procesdefinitie bevat validatiefouten. Controleer de gemarkeerde elementen.",
     "alreadyExistsNotification": "Procesdefinitie bestaat al",
     "deleteNotification": "Proces succesvol verwijderd",
     "upload": {
@@ -1817,7 +1834,22 @@
       "replaceConfirm": "Vervangen"
     },
     "canInitializeDocument": "Start een dossier",
-    "startableByUser": "Door gebruiker te starten"
+    "startableByUser": "Door gebruiker te starten",
+    "expressionErrors": {
+      "MISSING_EL_MARKERS": "Expressie moet ${...} of #{...} syntax gebruiken",
+      "UNCLOSED_PARENTHESIS": "Expressie heeft een niet-gesloten haakje '('",
+      "UNCLOSED_BRACE": "Expressie mist een sluitende accolade '}'",
+      "UNCLOSED_BRACKET": "Expressie heeft een niet-gesloten blokhaak '['",
+      "MISMATCHED_DELIMITER": "Expressie heeft niet-overeenkomende haakjes of accolades",
+      "INCOMPLETE_EXPRESSION": "Expressie is onvolledig",
+      "INVALID_SYNTAX": "Expressie heeft ongeldige syntax",
+      "BEAN_NOT_FOUND": "Gerefereerde bean bestaat niet"
+    },
+    "warningConfirmation": {
+      "title": "Proces bevat waarschuwingen",
+      "content": "De procesdefinitie bevat waarschuwingen. Weet u zeker dat u wilt opslaan zonder de waarschuwingen op te lossen?",
+      "confirm": "Toch opslaan"
+    }
   },
   "processCaseConnection": {
     "noProcessesTitle": "Geen processen",
@@ -2290,6 +2322,7 @@
     "defaultSort": "Standaardsortering",
     "defaultSortTitle": "Standaardsortering (optioneel)",
     "defaultSortTooltip": "Als dit veld een waarde heeft, wordt de tabel standaard gesorteerd op deze eigenschap, in de opgegeven richting. Slechts één kolom tegelijk kan deze eigenschap hebben. Bij het aanmaken van een nieuwe kolom, als voor een andere kolom al een standaardsortering is opgegeven, is dit invoerveld uitgeschakeld.",
+    "defaultSortDisabledNotice": "Voor een andere kolom is al een standaardsortering ingesteld. Slechts één kolom tegelijk kan een standaardsortering hebben. Verwijder de bestaande standaardsortering om dit veld in te kunnen vullen.",
     "selectDefaultSort": "Selecteer een standaard sortering",
     "sortableYes": "Ja",
     "sortableNo": "Nee",
@@ -3172,6 +3205,10 @@
         "enableIkoType": {
           "title": "IKO-type inschakelen",
           "description": "Schakel het IKO (Informatie Kanaal Objecten) integratietype in."
+        },
+        "menuCollapsedByDefault": {
+          "title": "Menu standaard ingeklapt",
+          "description": "Start met het navigatiemenu ingeklapt in plaats van uitgeklapt."
         }
       }
     }

@@ -34,6 +34,19 @@
     margin-bottom: 0;
   }
 
+  &--title-as-breadcrumb {
+    flex-direction: column;
+    align-items: stretch;
+    justify-content: flex-start;
+    margin-bottom: 16px;
+
+    // The actions sit on their own full-width row below the breadcrumb, so drop the
+    // left indent that separated them from the breadcrumb in the single-row layout.
+    ::ng-deep .page-actions--visible {
+      padding-left: 0;
+    }
+  }
+
   &--no-content,
   &--no-margin {
     margin-bottom: 0;
@@ -57,5 +70,9 @@
     flex-direction: row;
     gap: 8px;
     width: min-content;
+  }
+
+  &--title-as-breadcrumb {
+    width: max-content;
   }
 }
