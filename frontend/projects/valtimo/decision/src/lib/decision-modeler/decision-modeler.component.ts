@@ -204,7 +204,7 @@ export class DecisionModelerComponent
 
   private readonly _refreshDecisionSelectItems$ = new BehaviorSubject<null>(null);
   public readonly decisionVersionSelectItems$ = this._refreshDecisionSelectItems$.pipe(
-    switchMap(() => combineLatest([this.decision$, this.decisionService.getDecisions()])),
+    switchMap(() => combineLatest([this.decision$, this.decisionService.getUnlinkedDecisions()])),
     map(([current, list]) => {
       const filtered = list.filter(d => d.key === current.key);
       return [...filtered.map(d => ({id: d.id, text: d.version.toString()}))].sort(
