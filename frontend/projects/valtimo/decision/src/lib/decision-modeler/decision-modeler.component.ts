@@ -18,6 +18,7 @@ import {DECISION_MODELER_TEST_IDS} from '../constants';
 import {DecisionService} from '../services/decision.service';
 import {AfterViewInit, Component, OnDestroy, OnInit, ViewChild} from '@angular/core';
 import DmnJS from 'dmn-js/dist/dmn-modeler.development.js';
+import DmnViewer from 'dmn-js/dist/dmn-viewer.development.js';
 import {ActivatedRoute, Router, RouterModule} from '@angular/router';
 import {DecisionFormValue, DecisionXml} from '../models';
 import {
@@ -37,6 +38,7 @@ import {
   map,
   Observable,
   of,
+  shareReplay,
   switchMap,
   take,
   tap,
@@ -45,15 +47,15 @@ import {
   BreadcrumbService,
   ConfirmationModalModule,
   FitPageDirective,
+  OverflowMenuComponent,
+  OverflowMenuOptionComponent,
+  OverflowMenuTriggerComponent,
   PageHeaderService,
   PageTitleService,
   PendingChangesComponent,
   RenderInPageHeaderDirective,
   SelectedValue,
   SelectModule as ValtimoSelectModule,
-  OverflowMenuComponent,
-  OverflowMenuOptionComponent,
-  OverflowMenuTriggerComponent,
   WidgetModule,
 } from '@valtimo/components';
 import {TranslateModule, TranslateService} from '@ngx-translate/core';
@@ -65,6 +67,7 @@ import {
   IconService,
   ModalModule,
   SelectModule,
+  TagModule,
 } from 'carbon-components-angular';
 import {
   BuildingBlockManagementParams,
@@ -97,6 +100,7 @@ declare const $: any;
     RenderInPageHeaderDirective,
     ButtonModule,
     IconModule,
+    TagModule,
     FitPageDirective,
     OverflowMenuComponent,
     OverflowMenuOptionComponent,
@@ -121,12 +125,15 @@ export class DecisionModelerComponent
 
   private $container!: any;
   private $tabs!: any;
-  private dmnModeler!: DmnJS;
+  private dmnEditor!: DmnJS | DmnViewer;
 
   public readonly versionSelectionDisabled$ = new BehaviorSubject<boolean>(true);
   public readonly isCreating$ = new BehaviorSubject<boolean>(false);
   public readonly selectionId$ = new BehaviorSubject<string>('');
   public readonly showDeleteModal$ = new BehaviorSubject<boolean>(false);
+
+  // Emits once the dmn-js editor instance has been created, so XML import can wait for it.
+  private readonly _editorReady$ = new BehaviorSubject<boolean>(false);
 
   private _fileName!: string;
   private _createSeed: DecisionFormValue | null = null;
@@ -161,8 +168,16 @@ export class DecisionModelerComponent
         caseParams,
         context ?? ''
       );
-    })
+    }),
+    shareReplay({bufferSize: 1, refCount: false})
   );
+
+  // The editor is shown as a read-only viewer when the user cannot edit (e.g. a final case or
+  // building block definition) and is not creating a new decision table.
+  public readonly readOnly$: Observable<boolean> = combineLatest([
+    this.isCreating$,
+    this.hasEditPermissions$,
+  ]).pipe(map(([isCreating, hasEditPermissions]) => !isCreating && !hasEditPermissions));
 
   private readonly decisionId$ = this.route.params.pipe(
     map(params => params?.id),
@@ -201,6 +216,14 @@ export class DecisionModelerComponent
 
   public readonly decisionXml$ = this.decisionId$.pipe(
     switchMap(id => this.decisionService.getDecisionXml(id)),
+    // Wait until the editor (modeler or read-only viewer) has been created before importing.
+    switchMap(xml =>
+      this._editorReady$.pipe(
+        filter(Boolean),
+        take(1),
+        map(() => xml)
+      )
+    ),
     tap(xml => xml && this.loadDecisionXml(xml))
   );
 
@@ -252,15 +275,14 @@ export class DecisionModelerComponent
   }
 
   public ngOnDestroy(): void {
+    this.dmnEditor?.destroy();
     this.pageTitleService.enableReset();
     this.breadcrumbService.clearThirdBreadcrumb();
     this.breadcrumbService.clearFourthBreadcrumb();
   }
 
   public ngAfterViewInit(): void {
-    this.setProperties();
-    this.setTabEvents();
-    this.setModelerEvents();
+    this.initEditor();
 
     this.context$.pipe(take(1)).subscribe(context => {
       if (!context) return;
@@ -285,7 +307,7 @@ export class DecisionModelerComponent
   }
 
   public deploy(): void {
-    from(this.dmnModeler.saveXML({format: true}))
+    from(this.dmnEditor.saveXML({format: true}))
       .pipe(
         map(result => new File([(result as any).xml], this._fileName, {type: 'text/xml'})),
         switchMap(file => combineLatest([of(file), this.context$])),
@@ -328,7 +350,7 @@ export class DecisionModelerComponent
   }
 
   public download(): void {
-    from(this.dmnModeler.saveXML({format: true}))
+    from(this.dmnEditor.saveXML({format: true}))
       .pipe(
         map(result => new File([(result as any).xml], 'decision.dmn', {type: 'text/xml'})),
         tap(file => {
@@ -344,16 +366,16 @@ export class DecisionModelerComponent
   }
 
   public openEditModal(): void {
-    from(this.dmnModeler.saveXML({format: true}))
+    from(this.dmnEditor.saveXML({format: true}))
       .pipe(take(1))
       .subscribe(result => this.edit.open(parseDecisionForm((result as any).xml)));
   }
 
   public onEditDecision(value: DecisionFormValue): void {
-    from(this.dmnModeler.saveXML({format: true}))
+    from(this.dmnEditor.saveXML({format: true}))
       .pipe(
         map(result => updateDmnXml((result as any).xml, value)),
-        switchMap(xml => this.dmnModeler.importXML(xml)),
+        switchMap(xml => this.dmnEditor.importXML(xml)),
         tap(() => {
           this.setEditor();
           if (value.name) this.pageTitleService.setCustomPageTitle(value.name);
@@ -431,17 +453,38 @@ export class DecisionModelerComponent
     });
   }
 
-  private setProperties(): void {
-    const isCreating = this.isCreating$.getValue();
+  private initEditor(): void {
+    // A new decision table is always created in the editable modeler. For existing tables the
+    // edit permissions decide whether to render the editable modeler or a read-only viewer.
+    if (this.route.snapshot.params?.['id'] === 'create') {
+      this.createEditor(false);
+      this.loadEmptyDecisionTable();
+      return;
+    }
+
+    this.hasEditPermissions$
+      .pipe(take(1))
+      .subscribe(hasEditPermissions => this.createEditor(!hasEditPermissions));
+  }
+
+  private createEditor(readOnly: boolean): void {
     this.$container = $('.editor-container');
     this.$tabs = $('.editor-tabs');
-    this.dmnModeler = new DmnJS({
-      container: this.$container,
-      height: 500,
-      width: '100%',
-      keyboard: {bindTo: window},
-    });
-    if (isCreating) this.loadEmptyDecisionTable();
+    this.dmnEditor = readOnly
+      ? new DmnViewer({
+          container: this.$container,
+          height: 500,
+          width: '100%',
+        })
+      : new DmnJS({
+          container: this.$container,
+          height: 500,
+          width: '100%',
+          keyboard: {bindTo: window},
+        });
+    this.setTabEvents();
+    this.setModelerEvents();
+    this._editorReady$.next(true);
   }
 
   private loadEmptyDecisionTable(): void {
@@ -459,9 +502,9 @@ export class DecisionModelerComponent
   private setTabEvents(): void {
     this.$tabs.delegate('.tab', 'click', async (event: any) => {
       const index = +event.currentTarget.getAttribute('data-id');
-      const view = this.dmnModeler.getViews()[index];
+      const view = this.dmnEditor.getViews()[index];
       try {
-        await this.dmnModeler.open(view);
+        await this.dmnEditor.open(view);
       } catch (err) {
         console.error('tab open error', err);
       }
@@ -469,7 +512,7 @@ export class DecisionModelerComponent
   }
 
   private setModelerEvents(): void {
-    this.dmnModeler.on('views.changed', event => {
+    this.dmnEditor.on('views.changed', event => {
       const {views, activeView} = event;
       this.$tabs.empty();
       views.forEach((v, i) => {
@@ -483,7 +526,7 @@ export class DecisionModelerComponent
   }
 
   private loadDecisionXml(decision: DecisionXml): void {
-    from(this.dmnModeler.importXML(decision.dmnXml))
+    from(this.dmnEditor.importXML(decision.dmnXml))
       .pipe(
         tap(() => this.setEditor()),
         catchError(() => {
@@ -497,7 +540,7 @@ export class DecisionModelerComponent
   private migrateAndLoadDecisionXml(decision: DecisionXml): void {
     from(migrateDiagram(decision.dmnXml))
       .pipe(
-        switchMap(xml => this.dmnModeler.importXML(xml)),
+        switchMap(xml => this.dmnEditor.importXML(xml)),
         tap(() => this.setEditor()),
         catchError(() => {
           this.showNotification('error', 'decisions.loadFailure');
@@ -508,9 +551,9 @@ export class DecisionModelerComponent
   }
 
   private setEditor(): void {
-    const view = this.dmnModeler.getActiveView();
+    const view = this.dmnEditor.getActiveView();
     if (view?.type === 'drd') {
-      const canvas = this.dmnModeler.getActiveViewer().get('canvas');
+      const canvas = this.dmnEditor.getActiveViewer().get('canvas');
       canvas.zoom('fit-viewport');
     }
   }

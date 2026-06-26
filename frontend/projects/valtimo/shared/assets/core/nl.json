@@ -713,6 +713,7 @@
     },
     "version": "Versie",
     "deploy": "Opslaan",
+    "readOnly": "Alleen-lezen",
     "loadFailure": "Er is iets misgegaan bij het laden van de beslistabel.",
     "deploySuccess": "De beslistabel is succesvol opgeslagen.",
     "deployFailure": "Er is iets misgegaan bij het opslaan van de beslistabel.",

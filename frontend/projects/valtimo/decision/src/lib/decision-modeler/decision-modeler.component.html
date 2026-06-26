@@ -42,9 +42,14 @@
         context: context$ | async,
         compactMode: compactMode$ | async,
         hasEditPermissions: hasEditPermissions$ | async,
+        readOnly: readOnly$ | async,
       } as obs"
       class="decision-modeler-actions"
     >
+      <cds-tag *ngIf="obs.readOnly" type="blue" [attr.data-test-id]="testIds.readOnlyTag">{{
+        'decisions.readOnly' | translate
+      }}</cds-tag>
+
       <ng-container *ngTemplateOutlet="versionSelection"></ng-container>
 
       <button
@@ -74,9 +79,7 @@
 
         <v-overflow-menu class="overflow-button" placement="bottom-end">
           <v-overflow-menu-trigger overflowTrigger></v-overflow-menu-trigger>
-          <v-overflow-menu-option
-            [disabled]="!obs.hasEditPermissions"
-            (selected)="openEditModal()"
+          <v-overflow-menu-option [disabled]="!obs.hasEditPermissions" (selected)="openEditModal()"
             >{{ 'interface.edit' | translate }}
           </v-overflow-menu-option>
           <v-overflow-menu-option (selected)="download()"
