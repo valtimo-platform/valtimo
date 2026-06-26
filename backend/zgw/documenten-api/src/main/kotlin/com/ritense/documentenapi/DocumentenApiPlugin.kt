@@ -439,14 +439,16 @@ class DocumentenApiPlugin(
     }
 
     private fun resolveDownloadDocumentUrl(execution: DelegateExecution): URI {
-        val documentUrlString = execution.getVariable(DOCUMENT_URL_PROCESS_VAR) as String?
+        val documentUrlString = (execution.getVariable(DOCUMENT_URL_PROCESS_VAR) as String?)
+            ?.takeIf { it.isNotBlank() }
         if (documentUrlString != null) {
             check(documentUrlString.startsWith(url.toASCIIString())) {
                 "Failed to download document with url '$documentUrlString'. Document isn't part of Documenten API with url '$url'."
             }
             return URI(documentUrlString)
         }
-        val documentId = execution.getVariable(DOCUMENT_ID_PROCESS_VAR) as String?
+        val documentId = (execution.getVariable(DOCUMENT_ID_PROCESS_VAR) as String?)
+            ?.takeIf { it.isNotBlank() }
         if (documentId != null) {
             return createInformatieObjectUrl(documentId)
         }

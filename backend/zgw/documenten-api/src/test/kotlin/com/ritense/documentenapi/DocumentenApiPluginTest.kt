@@ -1089,6 +1089,75 @@ internal class DocumentenApiPluginTest {
     }
 
     @Test
+    fun `should fall back to documentId when documentUrl process variable is blank`() {
+        val storageService: TemporaryResourceStorageService = mock()
+        val applicationEventPublisher: ApplicationEventPublisher = mock()
+        val authenticationMock = mock<DocumentenApiAuthentication>()
+        val documentenApiVersionService: DocumentenApiVersionService = mock()
+        val executionMock = mock<DelegateExecution>()
+        val documentId = "3bd88200-11cb-45cf-a742-da01261755b1"
+        val caseDocumentId = "123e4567-e89b-12d3-a456-426655440000"
+
+        whenever(executionMock.getVariable(DOCUMENT_URL_PROCESS_VAR))
+            .thenReturn("")
+        whenever(executionMock.getVariable(DOCUMENT_ID_PROCESS_VAR))
+            .thenReturn(documentId)
+        whenever(executionMock.businessKey)
+            .thenReturn(caseDocumentId)
+        whenever(client.getInformatieObject(any<DocumentenApiAuthentication>(), any<UUID>(), any<URI>()))
+            .thenReturn(
+                DocumentInformatieObject(
+                    url = URI("http://some-url/enkelvoudiginformatieobjecten/$documentId"),
+                    bronorganisatie = Rsin("000000000"),
+                    creatiedatum = LocalDate.now(),
+                    titel = "titel",
+                    auteur = "auteur",
+                    taal = "taal",
+                    beginRegistratie = OffsetDateTime.now(),
+                    status = DEFINITIEF,
+                    bestandsnaam = "passport.jpg"
+                )
+            )
+        whenever(client.downloadInformatieObjectContent(any<DocumentenApiAuthentication>(), any<UUID>(), any<URI>()))
+            .thenReturn(ByteArrayInputStream("content".toByteArray()))
+        whenever(storageService.store(any(), any()))
+            .thenReturn("tempResourceId")
+
+        val plugin = DocumentenApiPlugin(
+            client = client,
+            storageService = storageService,
+            applicationEventPublisher = applicationEventPublisher,
+            objectMapper = MapperSingleton.get(),
+            documentDeleteHandlers = listOf(),
+            documentenApiVersionService = documentenApiVersionService,
+            pluginService = pluginService,
+            runtimeService = runtimeService,
+            virusScanService = virusScanService,
+            virusScanEnabledForDocumentenApiPlugin = false
+        )
+        plugin.url = URI("http://some-url")
+        plugin.bronorganisatie = "123456789"
+        plugin.authenticationPluginConfiguration = authenticationMock
+
+        val result = plugin.downloadInformatieObject(executionMock)
+
+        assertEquals("tempResourceId", result)
+
+        val expectedDocumentUrl = URI("http://some-url/enkelvoudiginformatieobjecten/$documentId")
+        verify(client).getInformatieObject(
+            authentication = eq(authenticationMock),
+            caseDocumentId = eq(UUID.fromString(caseDocumentId)),
+            objectUrl = eq(expectedDocumentUrl)
+        )
+        verify(client).downloadInformatieObjectContent(
+            authentication = eq(authenticationMock),
+            caseDocumentId = eq(UUID.fromString(caseDocumentId)),
+            objectUrl = eq(expectedDocumentUrl)
+        )
+        verify(executionMock).setVariable(RESOURCE_ID_PROCESS_VAR, "tempResourceId")
+    }
+
+    @Test
     fun `should throw when download plugin action has neither documentUrl nor documentId`() {
         val storageService: TemporaryResourceStorageService = mock()
         val applicationEventPublisher: ApplicationEventPublisher = mock()
