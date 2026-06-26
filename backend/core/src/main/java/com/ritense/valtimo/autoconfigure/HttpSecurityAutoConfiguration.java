@@ -41,6 +41,8 @@ import com.ritense.valtimo.security.config.PingHttpSecurityConfigurer;
 import com.ritense.valtimo.security.config.ProcessHttpSecurityConfigurer;
 import com.ritense.valtimo.security.config.ProcessInstanceHttpSecurityConfigurer;
 import com.ritense.valtimo.security.config.ReportingHttpSecurityConfigurer;
+import com.ritense.valtimo.security.config.SecurityHeaderProperties;
+import com.ritense.valtimo.security.config.SecurityHeadersHttpSecurityConfigurer;
 import com.ritense.valtimo.security.config.StatelessHttpSecurityConfigurer;
 import com.ritense.valtimo.security.config.StaticResourcesHttpSecurityConfigurer;
 import com.ritense.valtimo.security.config.TaskHttpSecurityConfigurer;
@@ -95,6 +97,11 @@ import org.springframework.security.web.authentication.Http403ForbiddenEntryPoin
  * <ul>
  *   <li><b>Content-Disposition</b> - Set on file download endpoints (e.g., ZaakDocumentResource) for filename hints</li>
  * </ul>
+ * <p>Additional security headers (via SecurityHeadersHttpSecurityConfigurer):</p>
+ * <ul>
+ *   <li><b>Referrer-Policy: strict-origin-when-cross-origin</b> - Controls referrer information in requests</li>
+ *   <li><b>Permissions-Policy: geolocation=(), microphone=(), camera=()</b> - Restricts browser features</li>
+ * </ul>
  * <p>Headers intentionally NOT sent:</p>
  * <ul>
  *   <li><b>Server</b> - Suppressed via server.server-header="" to avoid technology disclosure</li>
@@ -103,7 +110,7 @@ import org.springframework.security.web.authentication.Http403ForbiddenEntryPoin
  */
 @AutoConfiguration
 @EnableWebSecurity
-@EnableConfigurationProperties(SecurityWhitelistProperties.class)
+@EnableConfigurationProperties({SecurityWhitelistProperties.class, SecurityHeaderProperties.class})
 public class HttpSecurityAutoConfiguration {
 
     @Bean
@@ -237,6 +244,15 @@ public class HttpSecurityAutoConfiguration {
     @ConditionalOnMissingBean(StatelessHttpSecurityConfigurer.class)
     public StatelessHttpSecurityConfigurer statelessHttpSecurityConfigurer() {
         return new StatelessHttpSecurityConfigurer();
+    }
+
+    @Order(405)
+    @Bean
+    @ConditionalOnMissingBean(SecurityHeadersHttpSecurityConfigurer.class)
+    public SecurityHeadersHttpSecurityConfigurer securityHeadersHttpSecurityConfigurer(
+        SecurityHeaderProperties securityHeaderProperties
+    ) {
+        return new SecurityHeadersHttpSecurityConfigurer(securityHeaderProperties);
     }
 
     @Order(410)

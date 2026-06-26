@@ -40,10 +40,34 @@ interface UpdateProcessDefinitionCaseDefinitionRequest {
   startableByUser?: boolean;
 }
 
+interface ProcessDefinitionValidationError {
+  elementId: string;
+  elementType: string;
+  elementName?: string;
+  reason: string;
+  errorCode?: string;
+  expression?: string;
+  severity?: 'ERROR' | 'WARNING';
+}
+
+interface ProcessDefinitionValidationResult {
+  isValid: boolean;
+  hasWarnings: boolean;
+  errors: ProcessDefinitionValidationError[];
+}
+
+interface ProcessDefinitionValidateRequest {
+  bpmnXml: string;
+  processLinks: any[];
+}
+
 export {
   OpenProcessLinkModalEvent,
   PROCESS_MANAGEMENT_ENDPOINTS,
   ProcessManagementRouteData,
   UpdateProcessDefinitionCaseDefinitionRequest,
   DeleteProcessLinkEvent,
+  ProcessDefinitionValidationError,
+  ProcessDefinitionValidationResult,
+  ProcessDefinitionValidateRequest,
 };

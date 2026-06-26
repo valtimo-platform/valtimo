@@ -95,6 +95,7 @@
                   formControlName="content"
                   [caseDefinitionKey]="data.params?.caseDefinitionKey"
                   [caseDefinitionVersionTag]="data.params?.caseDefinitionVersionTag"
+                  [excludePrefixes]="[ValuePathSelectorPrefix.TASK]"
                   [parentItem]="selectedCollection"
                 ></valtimo-value-path-selector>
               } @else {
