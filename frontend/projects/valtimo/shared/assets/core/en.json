@@ -710,6 +710,7 @@
     },
     "version": "Version",
     "deploy": "Save",
+    "readOnly": "Read-only",
     "loadFailure": "Something went wrong with loading your decision table.",
     "deploySuccess": "Decision table has been deployed successfully.",
     "deployFailure": "Something went wrong with deploying your decision table.",

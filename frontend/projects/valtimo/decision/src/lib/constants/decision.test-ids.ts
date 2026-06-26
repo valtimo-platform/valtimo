@@ -32,4 +32,5 @@ export const DECISION_FORM_TEST_IDS = {
 export const DECISION_MODELER_TEST_IDS = {
   deployButton: 'decisionModelerDeployButton',
   backButton: 'decisionModelerBackButton',
+  readOnlyTag: 'decisionModelerReadOnlyTag',
 } as const;
