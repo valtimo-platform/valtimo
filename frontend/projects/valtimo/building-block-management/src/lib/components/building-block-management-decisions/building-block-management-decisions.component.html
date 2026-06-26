@@ -31,6 +31,16 @@
       >
         <svg cdsIcon="upload" size="16"></svg>
       </button>
+
+      <button
+        cdsButton="primary"
+        (click)="create.openModal()"
+        [disabled]="(isFinal$ | async) || $loading()"
+      >
+        {{ 'decisions.create' | translate }}
+
+        <svg class="cds--btn__icon" cdsIcon="add" size="16"></svg>
+      </button>
     </div>
   </div>
 </valtimo-carbon-list>
@@ -39,6 +49,18 @@
   #deploy
   (deploySuccessful)="onDeploySuccessful()"
 ></valtimo-decision-deploy>
+
+<valtimo-decision-form-modal
+  #create
+  (submitEvent)="onCreateDecision($event)"
+></valtimo-decision-form-modal>
+
+<valtimo-decision-form-modal
+  #decisionEdit
+  titleKey="decisions.editModal.title"
+  submitKey="interface.save"
+  (submitEvent)="onEditDecision($event)"
+></valtimo-decision-form-modal>
 
 <valtimo-confirmation-modal
   confirmButtonTextTranslationKey="interface.delete"

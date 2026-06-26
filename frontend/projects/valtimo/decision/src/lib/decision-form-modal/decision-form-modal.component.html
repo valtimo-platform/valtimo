@@ -1,0 +1,78 @@
+<!--
+  ~ Copyright 2015-2026 Ritense BV, the Netherlands.
+  ~
+  ~ Licensed under EUPL, Version 1.2 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~ https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" basis,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<cds-modal showFooter="true" valtimoCdsModal [open]="modalOpen$ | async" (close)="closeModal()">
+  <cds-modal-header showCloseButton="true" (closeSelect)="closeModal()">
+    <h3 cdsModalHeaderHeading>{{ titleKey | translate }}</h3>
+  </cds-modal-header>
+
+  <form cdsModalContent [cdsLayer]="1" [formGroup]="form">
+    <div class="cds--text-input__field-wrapper">
+      <cds-label [invalid]="name.touched && name.invalid">
+        <span>{{ 'decisions.createModal.name' | translate }}</span>
+
+        <input
+          cdsText
+          formControlName="name"
+          [attr.data-test-id]="testIds.nameInput"
+          [invalid]="name.touched && name.invalid"
+          placeholder="{{ 'decisions.createModal.namePlaceholder' | translate }}"
+        />
+      </cds-label>
+
+      <div *ngIf="name.touched && name.invalid" class="cds--form-requirement">
+        {{ 'decisions.createModal.nameRequired' | translate }}
+      </div>
+    </div>
+
+    <valtimo-carbon-multi-input
+      *ngIf="modalOpen$ | async"
+      type="keyValue"
+      [attr.data-test-id]="testIds.inputVariables"
+      [titleTranslationKey]="'decisions.createModal.inputVariables'"
+      [tooltip]="'decisions.createModal.inputVariablesHelper' | translate"
+      [keyColumnTitle]="'decisions.createModal.inputExpression' | translate"
+      [valueColumnTitle]="'decisions.createModal.inputLabel' | translate"
+      [addRowTranslationKey]="'decisions.createModal.addInputVariable'"
+      [defaultValues]="defaultInputVariables$ | async"
+      [initialAmountOfRows]="1"
+      [minimumAmountOfRows]="1"
+      [maxRows]="MAX_INPUT_VARIABLES"
+      [margin]="true"
+      [fullWidth]="true"
+      (valueChange)="onInputVariablesChange($event)"
+    ></valtimo-carbon-multi-input>
+
+    <div *ngIf="$inputVariablesInvalid()" class="cds--form-requirement">
+      {{ 'decisions.createModal.inputExpressionRequired' | translate }}
+    </div>
+  </form>
+
+  <cds-modal-footer>
+    <button cdsButton="secondary" (click)="closeModal()">
+      {{ 'interface.cancel' | translate }}
+    </button>
+
+    <button
+      cdsButton="primary"
+      [disabled]="form.invalid || $inputVariablesInvalid()"
+      (click)="submit()"
+      [attr.data-test-id]="testIds.submitButton"
+    >
+      {{ submitKey | translate }}
+    </button>
+  </cds-modal-footer>
+</cds-modal>

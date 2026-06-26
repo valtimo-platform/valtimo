@@ -18,8 +18,10 @@ package com.ritense.valtimo.web.rest
 
 import com.ritense.authorization.AuthorizationContext.Companion.runWithoutAuthorization
 import com.ritense.valtimo.BaseIntegrationTest
+import com.ritense.valtimo.contract.buildingblock.BuildingBlockDefinitionId
 import com.ritense.valtimo.contract.case_.CaseDefinitionId
 import com.ritense.valtimo.security.DecisionHttpSecurityConfigurer.Companion.DECISION_MANAGEMENT_URL
+import com.ritense.valtimo.security.DecisionHttpSecurityConfigurer.Companion.GLOBAL_DECISION_MANAGEMENT_URL
 import com.ritense.valtimo.service.OperatonProcessService
 import org.operaton.bpm.engine.RepositoryService
 import org.junit.jupiter.api.BeforeEach
@@ -81,6 +83,26 @@ class DecisionManagementResourceIT(
     }
 
     @Test
+    fun `should only return decision definitions not linked to a case or building block`() {
+        deployGlobalDmn("global-test")
+        deployBuildingBlockDmn("bb-test", BuildingBlockDefinitionId("my-bb", "1.0.0"))
+
+        mockMvc.perform(
+            get(GLOBAL_DECISION_MANAGEMENT_URL)
+                .accept(MediaType.APPLICATION_JSON_VALUE)
+        )
+        .andDo(MockMvcResultHandlers.print())
+        .andExpect(status().isOk)
+        .andExpect(jsonPath("$").isArray)
+        // The global decision (no version tag) is returned
+        .andExpect(jsonPath("$[?(@.key == 'global-test')]").exists())
+        // Building block (BB:) and case (CD:) linked decisions are excluded
+        .andExpect(jsonPath("$[?(@.key == 'bb-test')]").doesNotExist())
+        .andExpect(jsonPath("$[?(@.key == 'test')]").doesNotExist())
+        .andExpect(jsonPath("$[?(@.versionTag == 'CD:everything:1.0.0')]").doesNotExist())
+    }
+
+    @Test
     fun `should create a new decision definition`() {
         mockMvc.perform(
             MockMvcRequestBuilders.multipart(DECISION_MANAGEMENT_URL, "everything", "1.0.0")
@@ -129,6 +151,38 @@ class DecisionManagementResourceIT(
         val deployment = runWithoutAuthorization {
             operatonProcessService.deploy(
                 caseDefinitionId,
+                "test.dmn",
+                ByteArrayInputStream(dmnExample.toByteArray()),
+                true,
+                false
+            )
+        }
+
+        return deployment.deployedDecisionDefinitions[0].id
+    }
+
+    private fun deployGlobalDmn(key: String): String {
+        val dmnExample = getDecisionXml(key)
+
+        val deployment = runWithoutAuthorization {
+            operatonProcessService.deploy(
+                null,
+                "test.dmn",
+                ByteArrayInputStream(dmnExample.toByteArray()),
+                true,
+                false
+            )
+        }
+
+        return deployment.deployedDecisionDefinitions[0].id
+    }
+
+    private fun deployBuildingBlockDmn(key: String, buildingBlockDefinitionId: BuildingBlockDefinitionId): String {
+        val dmnExample = getDecisionXml(key)
+
+        val deployment = runWithoutAuthorization {
+            operatonProcessService.deploy(
+                buildingBlockDefinitionId,
                 "test.dmn",
                 ByteArrayInputStream(dmnExample.toByteArray()),
                 true,
