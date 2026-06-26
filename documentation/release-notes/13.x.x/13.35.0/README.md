@@ -73,3 +73,9 @@ elements and displays an error panel. Clicking an error navigates to the element
 
   In the case and task list column editors, the **Sortable** checkbox and **Default sort** dropdown are now hidden when
   the configured path does not support sorting.
+
+* **Standalone decision tables list no longer includes case or building block tables**
+
+  The standalone **Decision tables** overview listed every decision table deployed in the engine, including those
+  belonging to a case definition or building block. It now shows only standalone decision tables — those not linked to a
+  case or building block definition.
