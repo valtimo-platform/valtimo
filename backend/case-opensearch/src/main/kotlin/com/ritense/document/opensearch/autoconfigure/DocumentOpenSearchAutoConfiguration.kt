@@ -43,6 +43,7 @@ import com.ritense.document.service.SearchFieldService
 import com.ritense.document.service.impl.JsonSchemaDocumentSearchService
 import com.ritense.valtimo.contract.database.QueryDialectHelper
 import com.ritense.outbox.OutboxService
+import com.ritense.valtimo.contract.authentication.TeamManagementService
 import com.ritense.valtimo.contract.authentication.UserManagementService
 import jakarta.persistence.EntityManager
 import org.springframework.boot.ApplicationRunner
@@ -146,6 +147,7 @@ class DocumentOpenSearchAutoConfiguration {
         queryDialectHelper: QueryDialectHelper,
         searchFieldService: SearchFieldService,
         userManagementService: UserManagementService,
+        teamManagementService: TeamManagementService,
         authorizationService: AuthorizationService,
         outboxService: OutboxService,
         jsonSchemaDocumentDefinitionService: JsonSchemaDocumentDefinitionService,
@@ -153,7 +155,7 @@ class DocumentOpenSearchAutoConfiguration {
     ): JsonSchemaDocumentSearchService =
         JsonSchemaDocumentSearchService(
             entityManager, queryDialectHelper, searchFieldService,
-            userManagementService, authorizationService, outboxService,
+            userManagementService, teamManagementService, authorizationService, outboxService,
             jsonSchemaDocumentDefinitionService, objectMapper,
         )
 
