@@ -1,11 +1,17 @@
 {
   "name": "@valtimo/extension-management",
-  "version": "12.2.0",
+  "version": "13.0.0",
   "peerDependencies": {
-    "@angular/common": "^17.2.2",
-    "@angular/core": "^17.2.2"
+    "@angular/common": "19.2.20",
+    "@angular/core": "19.2.20",
+    "@angular-architects/native-federation": "19.0.23",
+    "@valtimo/case-management": "13.34.0",
+    "@valtimo/plugin": "13.34.0",
+    "@valtimo/shared": "13.34.0",
+    "ngx-logger": "5.0.12",
+    "rxjs": "7.8.2"
   },
   "dependencies": {
-    "tslib": "2.6.3"
+    "tslib": "2.8.1"
   }
 }

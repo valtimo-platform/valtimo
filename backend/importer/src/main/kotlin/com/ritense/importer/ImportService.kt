@@ -22,7 +22,6 @@ import java.io.InputStream
 import java.util.UUID
 
 interface ImportService {
-    fun importGlobal(entries: List<ImportRequest>)
     fun importGlobal(inputStream: InputStream)
     fun import(inputStream: InputStream, caseDefinitionIdList: List<CaseDefinitionId>): CaseDefinitionId?
     fun import(

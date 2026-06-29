@@ -140,13 +140,6 @@ class ExtensionManager(
         return null
     }
 
-    fun getAllResources(extensionId: String): List<Resource> {
-        val extension = getPlugin(extensionId)
-        val jarPath = getJarPath(extension)
-        return resourceResolver.getResources(Path(jarPath, "**").toString())
-            .filter { it.isReadable }
-    }
-
     fun getJarPath(extension: PluginWrapper): String {
         return Path(extension.pluginClassLoader.getResource("META-INF")!!.toURI().toString()).parent.toString()
     }

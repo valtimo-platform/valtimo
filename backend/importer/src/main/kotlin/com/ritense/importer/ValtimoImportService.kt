@@ -203,15 +203,10 @@ class ValtimoImportService(
 
     @Transactional
     override fun importGlobal(inputStream: InputStream) {
-        val entries = readZipEntries(inputStream).map { ImportRequest(it.fileName, it.content) }
-        return importGlobal(entries)
-    }
-
-    @Transactional
-    override fun importGlobal(entries: List<ImportRequest>) {
         runImporter {
+            val entries = readZipEntries(inputStream)
             val importerEntriesList = getEntriesByImporter(
-                entries.map { ZipFileEntry(it.fileName, it.content) },
+                entries,
                 { importer -> !importer.partOfCaseDefinition() && !importer.partOfBuildingBlockDefinition() }
             ).ifEmpty { return@runImporter }
 

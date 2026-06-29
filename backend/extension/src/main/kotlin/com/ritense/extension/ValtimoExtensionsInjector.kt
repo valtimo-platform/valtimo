@@ -18,7 +18,6 @@ package com.ritense.extension
 
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import com.ritense.valtimo.contract.extension.ExtensionClassRegistrationListener
-import com.ritense.valtimo.contract.extension.ExtensionResourcesRegistrationListener
 import jakarta.annotation.PostConstruct
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.pf4j.PluginState.FAILED
@@ -36,7 +35,6 @@ import org.springframework.stereotype.Component
 class ValtimoExtensionsInjector(
     private val extensionManager: ExtensionManager,
     private val extensionClassRegistrationListeners: List<ExtensionClassRegistrationListener>,
-    private val extensionResourcesRegistrationListeners: List<ExtensionResourcesRegistrationListener>,
 ) : PluginStateListener, ExtensionsInjector(
     extensionManager,
     extensionManager.applicationContext.autowireCapableBeanFactory as AbstractAutowireCapableBeanFactory
@@ -72,7 +70,6 @@ class ValtimoExtensionsInjector(
 
     fun registerExtension(extension: PluginWrapper) {
         extensionManager.getExtensionClasses(extension.pluginId).forEach { registerExtension(it) }
-        registerResources(extension.pluginId)
     }
 
     public override fun registerExtension(extensionClass: Class<*>) {
@@ -81,31 +78,11 @@ class ValtimoExtensionsInjector(
         }
     }
 
-    fun registerResources(extensionId: String) {
-        val resources = extensionManager.getAllResources(extensionId)
-        extensionResourcesRegistrationListeners.forEach { listener -> listener.registerResources(resources) }
-    }
-
     fun unregisterExtension(extension: PluginWrapper) {
-        unregisterResources(extension.pluginId)
-            .firstOrNull()?.let { throw it }
         extensionManager.getExtensionClassNames(extension.pluginId).forEach { extensionClassName ->
             unregisterExtension(extension.pluginClassLoader.loadClass(extensionClassName))
                 .firstOrNull()?.let { throw it }
         }
-    }
-
-    fun unregisterResources(extensionId: String): List<Exception> {
-        val exceptions = mutableListOf<Exception>()
-        val resources = extensionManager.getAllResources(extensionId)
-        extensionResourcesRegistrationListeners.forEach { listener ->
-            try {
-                listener.unregisterResources(resources)
-            } catch (e: Exception) {
-                exceptions.add(RuntimeException("Failed to unregister extension resources", e))
-            }
-        }
-        return exceptions
     }
 
     fun unregisterExtension(extensionClass: Class<*>): List<Exception> {

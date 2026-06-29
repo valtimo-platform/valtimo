@@ -17,13 +17,10 @@
 package com.ritense.extension
 
 import com.ritense.extension.listener.BeanExtensionClassRegistrationListener
-import com.ritense.extension.listener.ValtimoConfigImportExtensionResourcesListener
 import com.ritense.extension.web.rest.ExtensionManagementResource
 import com.ritense.extension.web.rest.ExtensionPublicResource
 import com.ritense.extension.web.rest.ExtensionSecurityConfigurer
-import com.ritense.importer.ImportService
 import com.ritense.valtimo.contract.extension.ExtensionClassRegistrationListener
-import com.ritense.valtimo.contract.extension.ExtensionResourcesRegistrationListener
 import jakarta.persistence.EntityManager
 import org.pf4j.update.UpdateManager
 import org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory
@@ -107,12 +104,10 @@ class ExtensionAutoConfiguration {
     fun valtimoExtensionsInjector(
         extensionManager: ExtensionManager,
         @Lazy extensionClassRegistrationListeners: List<ExtensionClassRegistrationListener>,
-        @Lazy extensionResourcesRegistrationListeners: List<ExtensionResourcesRegistrationListener>,
     ): ValtimoExtensionsInjector {
         return ValtimoExtensionsInjector(
             extensionManager,
             extensionClassRegistrationListeners,
-            extensionResourcesRegistrationListeners,
         )
     }
 
@@ -127,16 +122,6 @@ class ExtensionAutoConfiguration {
             extensionManager,
             beanFactory,
             extensionProperties,
-        )
-    }
-
-    @Bean
-    @ConditionalOnMissingBean(ValtimoConfigImportExtensionResourcesListener::class)
-    fun valtimoConfigImportExtensionResourcesListener(
-        importService: ImportService,
-    ): ValtimoConfigImportExtensionResourcesListener {
-        return ValtimoConfigImportExtensionResourcesListener(
-            importService,
         )
     }
 

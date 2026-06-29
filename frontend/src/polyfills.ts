@@ -15,6 +15,13 @@
  */
 
 /***************************************************************************************************
+ * Native Federation import-map polyfill. Must be loaded before any module-shim
+ * script (i.e. before main.js) so the runtime can register/merge the shared
+ * dependency import map that remotes resolve their bare imports against.
+ */
+import 'es-module-shims';
+
+/***************************************************************************************************
  * Load `$localize` onto the global scope - used if i18n tags appear in Angular templates.
  */
 import '@angular/localize/init';

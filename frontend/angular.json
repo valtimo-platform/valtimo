@@ -14,7 +14,7 @@
         }
       },
       "architect": {
-        "build": {
+        "esbuild": {
           "builder": "@angular-devkit/build-angular:application",
           "options": {
             "outputPath": {
@@ -41,6 +41,40 @@
                 "glob": "**/*",
                 "input": "node_modules/monaco-editor",
                 "output": "assets/monaco-editor"
+              },
+              {"glob": "jquery.min.js", "input": "node_modules/jquery/dist", "output": "vendor"},
+              {
+                "glob": "jquery-ui.min.js",
+                "input": "node_modules/components-jqueryui",
+                "output": "vendor"
+              },
+              {"glob": "popper.js", "input": "node_modules/popper.js/dist/umd", "output": "vendor"},
+              {"glob": "bootstrap.js", "input": "node_modules/bootstrap/dist/js", "output": "vendor"},
+              {
+                "glob": "bootstrap-datetimepicker.min.js",
+                "input": "node_modules/@foxythemes/bootstrap-datetime-picker-bs4/js",
+                "output": "vendor"
+              },
+              {
+                "glob": "perfect-scrollbar.min.js",
+                "input": "node_modules/perfect-scrollbar/dist",
+                "output": "vendor"
+              },
+              {"glob": "select2.min.js", "input": "node_modules/select2/dist/js", "output": "vendor"},
+              {
+                "glob": "app.js",
+                "input": "node_modules/@valtimo/layout/assets/js",
+                "output": "vendor/layout"
+              },
+              {
+                "glob": "native-shim.js",
+                "input": "node_modules/@webcomponents/custom-elements/src",
+                "output": "vendor"
+              },
+              {
+                "glob": "dmn-modeler.development.js",
+                "input": "node_modules/dmn-js/dist",
+                "output": "vendor"
               }
             ],
             "styles": [
@@ -74,19 +108,7 @@
               "node_modules/@valtimo/components/assets/css/design-tokens.css",
               "node_modules/@valtimo/components/assets/css/formio-carbon.scss"
             ],
-            "scripts": [
-              "node_modules/jquery/dist/jquery.min.js",
-              "node_modules/components-jqueryui/jquery-ui.min.js",
-              "node_modules/popper.js/dist/umd/popper.js",
-              "node_modules/bootstrap/dist/js/bootstrap.js",
-              "node_modules/@foxythemes/bootstrap-datetime-picker-bs4/js/bootstrap-datetimepicker.min.js",
-              "node_modules/perfect-scrollbar/dist/perfect-scrollbar.min.js",
-              "node_modules/select2/dist/js/select2.min.js",
-              "node_modules/@valtimo/layout/assets/js/app.js",
-              "src/assets/bpmn/ValtimoBPMNModeler.js",
-              "node_modules/@webcomponents/custom-elements/src/native-shim.js",
-              "node_modules/dmn-js/dist/dmn-modeler.development.js"
-            ],
+            "scripts": [],
             "allowedCommonJsDependencies": [
               "swagger-ui",
               "bpmn-js-properties-panel",
@@ -140,27 +162,64 @@
                   "maximumWarning": "6kb"
                 }
               ]
+            },
+            "development": {}
+          },
+          "defaultConfiguration": "development"
+        },
+        "build": {
+          "builder": "@angular-architects/native-federation:build",
+          "options": {},
+          "configurations": {
+            "production": {
+              "target": "valtimo-angular-console:esbuild:production"
+            },
+            "development": {
+              "target": "valtimo-angular-console:esbuild:development",
+              "dev": true
+            },
+            "test": {
+              "target": "valtimo-angular-console:esbuild:test"
             }
           },
-          "defaultConfiguration": ""
+          "defaultConfiguration": "production"
         },
-        "serve": {
+        "serve-original": {
           "builder": "@angular-devkit/build-angular:dev-server",
           "options": {
             "proxyConfig": "proxy.conf.json",
-            "buildTarget": "valtimo-angular-console:build",
+            "buildTarget": "valtimo-angular-console:esbuild:development",
             "hmr": false
           },
           "configurations": {
             "production": {
-              "buildTarget": "valtimo-angular-console:build:production"
+              "buildTarget": "valtimo-angular-console:esbuild:production"
+            },
+            "development": {
+              "buildTarget": "valtimo-angular-console:esbuild:development"
+            }
+          },
+          "defaultConfiguration": "development"
+        },
+        "serve": {
+          "builder": "@angular-architects/native-federation:build",
+          "options": {
+            "target": "valtimo-angular-console:serve-original:development",
+            "rebuildDelay": 0,
+            "dev": true,
+            "port": 4200,
+            "open": false
+          },
+          "configurations": {
+            "production": {
+              "target": "valtimo-angular-console:serve-original:production"
             }
           }
         },
         "extract-i18n": {
           "builder": "@angular-devkit/build-angular:extract-i18n",
           "options": {
-            "buildTarget": "valtimo-angular-console:build"
+            "buildTarget": "valtimo-angular-console:esbuild"
           }
         },
         "test": {

@@ -71,6 +71,7 @@ import jakarta.validation.ValidationException
 import jakarta.validation.Validator
 import org.operaton.bpm.engine.delegate.DelegateExecution
 import org.operaton.bpm.engine.delegate.DelegateTask
+import org.springframework.beans.factory.ObjectProvider
 import org.springframework.context.ApplicationEventPublisher
 import org.springframework.core.env.Environment
 import org.springframework.data.repository.findByIdOrNull
@@ -90,7 +91,11 @@ class PluginService(
     private val pluginConfigurationRepository: PluginConfigurationRepository,
     private val pluginActionDefinitionRepository: PluginActionDefinitionRepository,
     private val pluginProcessLinkRepository: PluginProcessLinkRepository,
-    private val pluginFactories: List<PluginFactory<*>>,
+    // ObjectProvider (re-resolved on each iteration) rather than a List captured at
+    // startup: extension-provided PluginFactory beans are registered as singletons at
+    // runtime when an extension loads, so a fixed list would never see them
+    // ("No PluginFactory found for ...").
+    private val pluginFactories: ObjectProvider<PluginFactory<*>>,
     private val objectMapper: ObjectMapper,
     private val valueResolverService: ValueResolverService,
     private val pluginConfigurationSearchRepository: PluginConfigurationSearchRepository,

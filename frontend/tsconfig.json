@@ -17,7 +17,6 @@
     "lib": ["ES2022", "dom", "dom.iterable"],
     "useDefineForClassFields": false,
     "paths": {
-      "@src": ["src"],
       "@src/*": ["src/*"],
       "@valtimo/access-control": ["./projects/valtimo/access-control/src/public-api.ts"],
       "@valtimo/access-control-management": ["./projects/valtimo/access-control-management/src/public-api.ts"],

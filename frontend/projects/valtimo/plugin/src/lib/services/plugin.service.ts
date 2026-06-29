@@ -42,7 +42,13 @@ export class PluginService {
   }
 
   addPluginSpecification(pluginSpecification: PluginSpecification) {
-    this._pluginSpecifications$.next([...this.pluginSpecifications, pluginSpecification]);
+    // Idempotent by pluginId: re-registering the same plugin (e.g. an extension
+    // re-loaded on app start or after an update) replaces its specification rather
+    // than appending a duplicate.
+    const withoutExisting = this.pluginSpecifications.filter(
+      specification => specification.pluginId !== pluginSpecification.pluginId
+    );
+    this._pluginSpecifications$.next([...withoutExisting, pluginSpecification]);
   }
 
   get availablePluginIds$(): Observable<Array<string>> {

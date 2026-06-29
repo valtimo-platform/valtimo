@@ -14,7 +14,8 @@
  * limitations under the License.
  */
 
-import {Component} from '@angular/core';
+import {Component, OnInit} from '@angular/core';
+import {ExtensionService} from '@valtimo/extension-management';
 
 @Component({
   selector: 'app-root',
@@ -22,6 +23,16 @@ import {Component} from '@angular/core';
   styleUrls: ['./app.component.scss'],
   standalone: false,
 })
-export class AppComponent {
-  constructor() {}
+export class AppComponent implements OnInit {
+  constructor(private readonly extensionService: ExtensionService) {}
+
+  public ngOnInit(): void {
+    // Load every started extension's frontend bundle on each app start so its UI
+    // contributions (e.g. plugin specifications) re-register after a hard refresh.
+    // Done here in the host's root component rather than in @valtimo/layout to
+    // avoid a dependency cycle (layout -> extension-management -> case-management
+    // -> layout); the extension file/id endpoints are public, so no auth gating is
+    // needed. loadAll() is fire-and-forget and logs per-extension load failures.
+    this.extensionService.loadAll();
+  }
 }

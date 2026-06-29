@@ -17,7 +17,6 @@
 import {AfterViewInit, Component, ElementRef, OnDestroy, Renderer2, ViewChild} from '@angular/core';
 import {LayoutService} from '../../services/layout.service';
 import {ShellService, UserInterfaceService} from '@valtimo/components';
-//import {ExtensionService} from '@valtimo/extension-management';
 
 // eslint-disable-next-line no-var
 declare var App;
@@ -42,10 +41,11 @@ export class LayoutInternalComponent implements AfterViewInit, OnDestroy {
     private readonly renderer: Renderer2,
     private readonly userInterfaceService: UserInterfaceService,
     private readonly shellService: ShellService
-    //extensionService: ExtensionService
   ) {
     this.renderer.addClass(document.body, 'be-animate');
-    //extensionService.loadAll();
+    // Extension frontends are auto-loaded from the host's AppComponent
+    // (see ExtensionService.loadAll) — not here, to avoid a layout ->
+    // extension-management -> case-management -> layout dependency cycle.
   }
 
   public ngAfterViewInit(): void {

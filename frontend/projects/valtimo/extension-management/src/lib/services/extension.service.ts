@@ -15,95 +15,168 @@
  */
 
 import {HttpClient} from '@angular/common/http';
-import * as angularcore from '@angular/core';
-import {createNgModule, Injectable, Injector, NgModule} from '@angular/core';
+import {Injectable} from '@angular/core';
 import {CASE_MANAGEMENT_TAB_TOKEN, ConfigService} from '@valtimo/shared';
-import * as rxjs from 'rxjs';
-import {combineLatest, Observable, Subject, switchMap} from 'rxjs';
+import {defer, from, Observable} from 'rxjs';
 import {ExtensionListItem} from '../models';
-import * as valtimoplugin from '@valtimo/plugin';
 import {PLUGINS_TOKEN, PluginService} from '@valtimo/plugin';
-import * as angularcommon from '@angular/common';
-import * as valtimocomponents from '@valtimo/components';
-import * as tslib from 'tslib';
 import {NGXLogger} from 'ngx-logger';
 import {TabService} from '@valtimo/case-management';
-import {loadRemoteModule} from '@angular-architects/module-federation';
+import {loadRemoteModule} from '@angular-architects/native-federation';
+
+/**
+ * The Native Federation `remoteEntry.json` produced by the extension's build.
+ * Lists every module the extension exposes; the loader iterates this list
+ * instead of relying on a hard-coded module name (so two different extensions
+ * can expose differently-named modules without coordination).
+ */
+interface RemoteEntry {
+  name?: string;
+  exposes?: Array<{key: string; outFileName: string}>;
+  shared?: Array<{packageName: string; outFileName: string; version: string}>;
+}
+
+/** Native Federation's global runtime cache (see @softarc/native-federation-runtime). */
+interface NativeFederationGlobal {
+  externals?: Map<string, string>;
+}
+
+const REMOTE_ENTRY_FILE = 'remoteEntry.json';
+const REMOTE_STYLES_FILE = 'styles.css';
 
 @Injectable({providedIn: 'root'})
 export class ExtensionService {
   private readonly valtimoEndpointUri: string;
-  private readonly extensionImports = {
-    '@angular/common': angularcommon,
-    '@angular/core': angularcore,
-    '@valtimo/components': valtimocomponents,
-    '@valtimo/plugin': valtimoplugin,
-    rxjs: rxjs,
-    tslib: tslib,
-  };
-  //private readonly extensionFrontendInitJs = 'frontend-bundle.js';
-  //private readonly extensionFrontendInitJs = 'frontend/fesm2022/frontend.mjs';
-  private readonly extensionFrontendInitJs = 'pluginEntry.js';
-  private readonly extensionFrontendCss = 'styles.css';
 
   constructor(
     private readonly configService: ConfigService,
     private readonly http: HttpClient,
     private readonly pluginService: PluginService,
     private readonly tabService: TabService,
-    private readonly injector: Injector,
     private readonly logger: NGXLogger
   ) {
     this.valtimoEndpointUri = `${this.configService.config.valtimoApi.endpointUri}`;
   }
 
-  public loadAll() {
-    this.getExtensionIds('STARTED', this.extensionFrontendInitJs).subscribe(extensionIds =>
-      extensionIds.forEach(extensionId =>
-        this.loadJs(extensionId).subscribe(null, err => {
-          throw new Error(err);
-        })
+  public loadAll(): void {
+    this.getExtensionIds('STARTED', REMOTE_ENTRY_FILE).subscribe(extensionIds => {
+      extensionIds.forEach(extensionId => {
+        this.load(extensionId).subscribe({
+          error: err => this.logger.error(`Failed to load extension '${extensionId}'.`, err),
+        });
+      });
+    });
+    this.getExtensionIds('STARTED', REMOTE_STYLES_FILE).subscribe(extensionIds => {
+      extensionIds.forEach(extensionId => this.loadStyle(extensionId));
+    });
+  }
+
+  /**
+   * Load a single extension's frontend bundle. We first fetch the federation
+   * info ourselves so we know which modules the remote exposes, then defer to
+   * the Native Federation runtime to actually load each one (it handles import
+   * map merging, dedupe and the import() under the hood).
+   */
+  public load(extensionId: string): Observable<unknown> {
+    const remoteEntryUrl = this.getFileUrl(extensionId, REMOTE_ENTRY_FILE);
+    return defer(() =>
+      from(
+        fetch(remoteEntryUrl, {credentials: 'include'})
+          .then(res => {
+            if (!res.ok) {
+              throw new Error(`HTTP ${res.status} loading ${remoteEntryUrl}`);
+            }
+            return res.json() as Promise<RemoteEntry>;
+          })
+          .then(async (entry: RemoteEntry) => {
+            this.aliasRemoteSharedToHost(entry);
+            const exposes = entry.exposes ?? [];
+            for (const exposed of exposes) {
+              try {
+                const m = await loadRemoteModule({
+                  remoteEntry: remoteEntryUrl,
+                  exposedModule: exposed.key,
+                });
+                this.registerLoadedModule(m);
+              } catch (err) {
+                this.logger.error(
+                  `Failed to load exposed module '${exposed.key}' from extension '${extensionId}'.`,
+                  err
+                );
+              }
+            }
+            this.loadStyleIfPresent(extensionId);
+            return true;
+          })
       )
     );
-    this.getExtensionIds('STARTED', this.extensionFrontendCss).subscribe(extensionIds =>
-      extensionIds.forEach(extensionId => this.loadStyle(extensionId))
-    );
   }
 
-  public load(extensionId: string): Observable<any> {
-    return combineLatest([
-      this.getExtensionIds('STARTED', this.extensionFrontendInitJs).pipe(
-        switchMap(extensionIds =>
-          combineLatest(
-            extensionIds
-              .map(id => {
-                if (id == extensionId) {
-                  this.loadJs(id);
-                }
-              })
-              .filter(o => o)
-          )
-        )
-      ),
-      this.getExtensionIds('STARTED', this.extensionFrontendCss).pipe(
-        switchMap(extensionIds =>
-          combineLatest(
-            extensionIds
-              .map(id => {
-                if (id == extensionId) {
-                  this.loadStyle(id);
-                }
-              })
-              .filter(o => o)
-          )
-        )
-      ),
-    ]);
+  /**
+   * Bridge the version-key gap between the host and a prebuilt remote.
+   *
+   * Native Federation keys every shared dependency by the exact string
+   * `packageName@version`. The host shares its workspace `@valtimo/*` libs as
+   * tsconfig path-mappings, which carry no version (`@valtimo/plugin@`), while a
+   * remote built against published packages declares a real version
+   * (`@valtimo/plugin@13.34.0`). The keys don't match, so the remote would load
+   * its OWN bundled copy of those libs instead of the host's — breaking
+   * `PLUGINS_TOKEN` identity (its contribution silently fails to register) and
+   * pulling in transitive deps the host doesn't serve.
+   *
+   * Here we point each version the remote declares at the host's already-loaded
+   * chunk URL (registered by `initFederation`), so the remote dedupes onto the
+   * host's instances. Runs before `loadRemoteModule`, whose remote-info
+   * processing reads these entries when building the remote's import-map scope.
+   */
+  private aliasRemoteSharedToHost(entry: RemoteEntry): void {
+    const nf = (globalThis as unknown as {__NATIVE_FEDERATION__?: NativeFederationGlobal})
+      .__NATIVE_FEDERATION__;
+    const externals = nf?.externals;
+    if (!externals || !entry.shared?.length) {
+      return;
+    }
+
+    // packageName -> host chunk URL, derived from the host's registered externals.
+    const hostUrlByPackage = new Map<string, string>();
+    for (const [key, url] of externals) {
+      const at = key.lastIndexOf('@');
+      const packageName = at > 0 ? key.slice(0, at) : key;
+      if (!hostUrlByPackage.has(packageName)) {
+        hostUrlByPackage.set(packageName, url);
+      }
+    }
+
+    for (const shared of entry.shared) {
+      const hostUrl = hostUrlByPackage.get(shared.packageName);
+      if (hostUrl) {
+        externals.set(`${shared.packageName}@${shared.version}`, hostUrl);
+      }
+    }
   }
 
-  private loadStyle(extensionId: string) {
+  /**
+   * Inject the extension's stylesheet only if it actually ships one. Not every
+   * extension has a `styles.css`; requesting it unconditionally produces a 404
+   * (and previously a blocked/empty response). We ask the backend which started
+   * extensions contain the file and only then inject the <link>, so no 404 is
+   * triggered for extensions without styles.
+   */
+  private loadStyleIfPresent(extensionId: string): void {
+    this.getExtensionIds('STARTED', REMOTE_STYLES_FILE).subscribe({
+      next: ids => {
+        if (ids.includes(extensionId)) {
+          this.loadStyle(extensionId);
+        }
+      },
+      error: err =>
+        this.logger.debug(`Could not determine stylesheet for extension '${extensionId}'.`, err),
+    });
+  }
+
+  private loadStyle(extensionId: string): void {
     const head = document.getElementsByTagName('head')[0];
-    const href = this.getFileUrl(extensionId, this.extensionFrontendCss);
+    const href = this.getFileUrl(extensionId, REMOTE_STYLES_FILE);
     let themeLink = document.getElementById(`${extensionId}-theme`) as HTMLLinkElement;
     if (themeLink) {
       themeLink.href = href;
@@ -117,67 +190,41 @@ export class ExtensionService {
     }
   }
 
-  private loadJs(extensionId: string): Observable<any> {
-    const subject = new Subject<any>();
-    Object.keys(this.extensionImports).forEach(key => (window[key] = this.extensionImports[key]));
+  /**
+   * Walk every export of a loaded remote module, register any NgModule
+   * `providers` we recognise (plugin specifications + case-management tabs).
+   * Extensions remain free to add new contribution points without code changes
+   * here, as long as they expose them via providers on a recognisable token.
+   */
+  private registerLoadedModule(loaded: Record<string, unknown>): void {
+    for (const exportName of Object.keys(loaded)) {
+      const value = loaded[exportName];
+      if (!value || typeof value !== 'function') continue;
+      const providers = this.extractModuleProviders(value);
+      if (!providers.length) continue;
 
-    // TODO: Use this: https://stackoverflow.com/questions/75445012/how-do-you-load-precompiled-angular-libraries-as-dynamic-modules/75527315#75527315
-    // https://github.com/angular/angular/issues/43133#issuecomment-921058960
-    loadRemoteModule({
-      type: 'module',
-      remoteEntry: this.getFileUrl(extensionId, this.extensionFrontendInitJs),
-      exposedModule: './WeatherPluginModule',
-    }).then(
-      m => {
-        console.log(m);
-        this.loadModule(m.WeatherPluginModule);
-        subject.next(true);
-      },
-      err => {
-        this.logger.error(`Failed to load extension '${extensionId}'.`, err);
-        subject.error(err);
-      }
-    );
+      providers
+        .filter(p => p && p.provide === PLUGINS_TOKEN)
+        .flatMap(p => (Array.isArray(p.useValue) ? p.useValue : [p.useValue]))
+        .forEach(spec => this.pluginService.addPluginSpecification(spec));
 
-    /*    import(
-      /!* webpackIgnore: true *!/ this.getFileUrl(extensionId, this.extensionFrontendInitJs)
-      ).then(
-      importedFile => {
-        try {
-          Object.keys(importedFile).forEach(name => {
-            if (name?.endsWith('Module')) {
-              this.loadModule(importedFile[name]);
-            }
-          });
-          this.logger.debug(`Successfully loaded extension '${extensionId}'`);
-          subject.next(true);
-        } catch (err) {
-          this.logger.error(`Failed to load extension '${extensionId}'.`, err);
-          subject.error(err);
-        }
-      },
-      err => {
-        this.logger.error(`Failed to load extension '${extensionId}'.`, err);
-        subject.error(err);
-      }
-    );*/
-    return subject;
+      providers
+        .filter(p => p && p.provide === CASE_MANAGEMENT_TAB_TOKEN)
+        .flatMap(p => (Array.isArray(p.useValue) ? p.useValue : [p.useValue]))
+        .forEach(tab => this.tabService.addCaseManagementTab(tab));
+    }
   }
 
-  private loadModule(module: any) {
-    //createNgModule<NgModule>(module as any, this.injector);
-    console.log(module);
-    const providers = module.__annotations__.flatMap(a => a.providers);
-    providers
-      .filter(provider => provider.provide == PLUGINS_TOKEN)
-      .flatMap(provider => provider.useValue)
-      .forEach(pluginSpecification =>
-        this.pluginService.addPluginSpecification(pluginSpecification)
-      );
-    providers
-      .filter(provider => provider.provide == CASE_MANAGEMENT_TAB_TOKEN)
-      .flatMap(provider => provider.useValue)
-      .forEach(caseManagementTab => this.tabService.addCaseManagementTab(caseManagementTab));
+  private extractModuleProviders(maybeNgModule: any): any[] {
+    // Angular's AOT compiler stores NgModule metadata under different keys
+    // depending on whether the module was compiled in partial-Ivy or full-Ivy
+    // mode. Check the well-known ones; fall back to empty.
+    const candidates =
+      maybeNgModule?.ɵmod?.providers ??
+      maybeNgModule?.ɵinj?.providers ??
+      maybeNgModule?.__annotations__?.flatMap((a: any) => a?.providers ?? []) ??
+      [];
+    return Array.isArray(candidates) ? candidates : [];
   }
 
   public getExtensions(): Observable<Array<ExtensionListItem>> {
