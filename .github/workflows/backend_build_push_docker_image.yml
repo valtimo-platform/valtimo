@@ -11,7 +11,7 @@ on:
         description: Name of the backend build artifact to download with 'download-artifact'
         type: "string"
       variant:
-        description: "Which backend app to build. Each variant is its own Gradle module under :backend:app:* (dev | gzac | valtimo | evenementenvergunning)."
+        description: "Which backend app to build. Each variant is its own Gradle module under :backend:apps:* (dev | gzac | valtimo | evenementenvergunning)."
         required: false
         type: string
         default: dev
@@ -24,6 +24,11 @@ on:
         description: "Tag to use when pushing the Docker Hub release image"
         required: false
         type: string
+      project_version:
+        description: "Version stamped into the built app (manifest / reported as valtimo-backend-libraries). Falls back to gradle.properties projectVersion when empty."
+        required: false
+        type: string
+        default: ""
     outputs:
       built_image:
         description: "Primary tag of the Docker image that was built"
@@ -93,12 +98,12 @@ jobs:
           name: ${{ inputs.backend_libraries_build_artifact_name }}
           path: .
 
-      - run: ./gradlew :backend:app:${{ needs.resolve_variant.outputs.module }}:assemble
+      - run: ./gradlew :backend:apps:${{ needs.resolve_variant.outputs.module }}:assemble ${{ inputs.project_version != '' && format('-PprojectVersion={0}', inputs.project_version) || '' }}
 
       - name: Prepare deployment folder
         run: |
           mkdir backend/deployment
-          mv backend/app/${{ needs.resolve_variant.outputs.module }}/build/ backend/app/${{ needs.resolve_variant.outputs.module }}/Dockerfile backend/deployment/
+          mv backend/apps/${{ needs.resolve_variant.outputs.module }}/build/ backend/apps/${{ needs.resolve_variant.outputs.module }}/Dockerfile backend/deployment/
 
       - name: Archive deployment folder
         uses: actions/upload-artifact@v4

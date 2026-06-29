@@ -61,6 +61,7 @@ jobs:
       variant: gzac
       push_to_dockerhub: true
       release_image_tag: ${{ inputs.project_version || github.event.inputs.project_version }}
+      project_version: ${{ inputs.project_version || github.event.inputs.project_version }}
     secrets: inherit
 
   publish_valtimo_image:
@@ -77,6 +78,7 @@ jobs:
       variant: valtimo
       push_to_dockerhub: true
       release_image_tag: ${{ inputs.project_version || github.event.inputs.project_version }}
+      project_version: ${{ inputs.project_version || github.event.inputs.project_version }}
     secrets: inherit
 
   publish_evenementenvergunning_image:
@@ -93,4 +95,5 @@ jobs:
       variant: evenementenvergunning
       push_to_dockerhub: true
       release_image_tag: ${{ inputs.project_version || github.event.inputs.project_version }}
+      project_version: ${{ inputs.project_version || github.event.inputs.project_version }}
     secrets: inherit
