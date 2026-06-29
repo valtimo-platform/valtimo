@@ -9,7 +9,7 @@ anything. This is the one to run while working on the platform.
 From the repository root:
 
 ```bash
-./gradlew :backend:app:dev:bootRunWithDocker
+./gradlew :backend:apps:dev:bootRunWithDocker
 ```
 
 This downloads and starts the supporting services (database, Keycloak, message

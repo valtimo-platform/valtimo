@@ -27,9 +27,9 @@ dependencies {
     testImplementation "org.springframework.boot:spring-boot-starter-test"
 }
 
-// backend/app/build.gradle disables bootJar+jar for everything under :backend:app.
-// Re-enable bootJar here so :backend:app:evenementenvergunning:assemble produces
-// the executable JAR that backend/app/evenementenvergunning/Dockerfile copies
+// backend/apps/build.gradle disables bootJar+jar for everything under :backend:apps.
+// Re-enable bootJar here so :backend:apps:evenementenvergunning:assemble produces
+// the executable JAR that backend/apps/evenementenvergunning/Dockerfile copies
 // into the released ritense/gzac-evenementenvergunning-backend:<v> image.
 bootJar {
     enabled = true

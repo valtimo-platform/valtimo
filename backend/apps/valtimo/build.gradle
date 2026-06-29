@@ -27,9 +27,9 @@ dependencies {
     testImplementation "org.springframework.boot:spring-boot-starter-test"
 }
 
-// backend/app/build.gradle disables bootJar+jar for everything under :backend:app.
-// Re-enable bootJar here so :backend:app:valtimo:assemble produces the
-// executable JAR that backend/app/valtimo/Dockerfile copies into the released
+// backend/apps/build.gradle disables bootJar+jar for everything under :backend:apps.
+// Re-enable bootJar here so :backend:apps:valtimo:assemble produces the
+// executable JAR that backend/apps/valtimo/Dockerfile copies into the released
 // ritense/valtimo-backend:<v> image.
 bootJar {
     enabled = true

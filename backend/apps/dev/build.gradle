@@ -53,8 +53,8 @@ dependencies {
     testImplementation "org.springframework.boot:spring-boot-starter-test"
 }
 
-// backend/app/build.gradle disables bootJar+jar for everything under :backend:app.
-// Re-enable bootJar so :backend:app:dev:assemble produces the executable JAR the
+// backend/apps/build.gradle disables bootJar+jar for everything under :backend:apps.
+// Re-enable bootJar so :backend:apps:dev:assemble produces the executable JAR the
 // dev Dockerfile copies into the PR-CI test image. Keep the plain 'jar' disabled.
 bootJar {
     enabled = true

@@ -12,5 +12,5 @@ Released as `ritense/gzac-evenementenvergunning-backend`.
 With the supporting services already running, from the repository root:
 
 ```bash
-./gradlew :backend:app:evenementenvergunning:bootRun
+./gradlew :backend:apps:evenementenvergunning:bootRun
 ```

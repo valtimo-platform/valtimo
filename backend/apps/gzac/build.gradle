@@ -32,9 +32,9 @@ dependencies {
     testImplementation "org.springframework.boot:spring-boot-starter-test"
 }
 
-// backend/app/build.gradle disables bootJar+jar for everything under :backend:app.
-// Re-enable bootJar here so :backend:app:gzac:assemble produces the executable
-// JAR that backend/app/gzac/Dockerfile copies into the released
+// backend/apps/build.gradle disables bootJar+jar for everything under :backend:apps.
+// Re-enable bootJar here so :backend:apps:gzac:assemble produces the executable
+// JAR that backend/apps/gzac/Dockerfile copies into the released
 // ritense/gzac-backend:<v> image. Keep the unwrapped 'jar' task disabled.
 bootJar {
     enabled = true
@@ -45,7 +45,7 @@ jar {
 }
 
 // gzac is the template-equivalent release app (src/main only). The developer
-// console moved to :backend:app:dev.
+// console moved to :backend:apps:dev.
 springBoot {
     mainClass = 'com.ritense.valtimo.ApplicationKt'
 }

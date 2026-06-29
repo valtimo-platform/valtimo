@@ -8,5 +8,5 @@ GZAC case-management additions. Released as `ritense/valtimo-backend`.
 With the supporting services already running, from the repository root:
 
 ```bash
-./gradlew :backend:app:valtimo:bootRun
+./gradlew :backend:apps:valtimo:bootRun
 ```
