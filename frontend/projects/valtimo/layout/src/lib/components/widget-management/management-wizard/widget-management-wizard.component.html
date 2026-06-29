@@ -37,13 +37,15 @@
     >
     </cds-progress-indicator>
 
-    <p>{{ stepLabel$ | async }}</p>
+    @if (stepLabel$ | async; as stepLabel) {
+      <p>{{ stepLabel }}</p>
+    }
 
     <ng-template #wizardStepRenderer></ng-template>
   </section>
 
   <cds-modal-footer class="valtimo-widget-management-wizard__footer">
-    <button class="valtimo-widget-management-wizard__cancel" cdsButton="ghost" (click)="onClose()">
+    <button class="valtimo-widget-management-wizard__cancel" cdsButton="ghost" [attr.data-test-id]="testIds.cancelButton" (click)="onClose()">
       {{ 'interface.cancel' | translate }}
     </button>
 
@@ -51,6 +53,7 @@
       <button
         class="valtimo-widget-management-wizard__back"
         cdsButton="secondary"
+        [attr.data-test-id]="testIds.backButton"
         [disabled]="$backButtonDisabled()"
         (click)="onBackButtonClick()"
       >
@@ -61,6 +64,7 @@
     <button
       class="valtimo-widget-management-wizard__next"
       cdsButton="primary"
+      [attr.data-test-id]="$currentStepIndex() === (numberOfSteps$ | async) - 1 ? testIds.saveButton : testIds.nextButton"
       [disabled]="$nextButtonDisabled()"
       (click)="onNextButtonClick()"
     >

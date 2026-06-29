@@ -29,6 +29,40 @@ To enable storing the logs in the Valtimo database, a custom database appender h
 </configuration>
 ```
 
+### REST client logging
+
+Valtimo includes a `LoggingRestClientCustomizer` that automatically intercepts all outgoing HTTP requests made via
+Spring's `RestClient`. When an external call returns an error status, the interceptor throws an
+`HttpClientErrorException` with the status code and status text.
+
+Detailed request and response information (method, URI, headers, and bodies) is logged at `DEBUG` level only. To enable
+these detailed logs, add the following to your `logback-spring.xml`:
+
+```xml
+<logger name="com.ritense.valtimo.web.logging" level="DEBUG"/>
+```
+
+Alternatively, this can be configured via an environment variable without modifying `logback-spring.xml`:
+
+```
+LOGGING_LEVEL_COM_RITENSE_VALTIMO_WEB_LOGGING=DEBUG
+```
+
+Or as a Spring Boot application property:
+
+```yaml
+logging:
+  level:
+    com.ritense.valtimo.web.logging: DEBUG
+```
+
+{% hint style="warning" %}
+**Security consideration:** DEBUG-level logs include full request and response bodies, which may contain sensitive
+information such as authentication tokens, API keys, or personal data (e.g. BSN numbers). Only enable DEBUG logging
+for this package in non-production environments or when actively troubleshooting an issue, and ensure log storage is
+appropriately secured.
+{% endhint %}
+
 ### Cleanup and retention
 
 The following application properties can be set to configure the cleanup job time and the log retention period:

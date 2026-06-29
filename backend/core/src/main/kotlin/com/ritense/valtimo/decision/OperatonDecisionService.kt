@@ -19,6 +19,10 @@ package com.ritense.valtimo.decision
 import com.ritense.valtimo.contract.case_.CaseDefinitionChecker
 import com.ritense.valtimo.contract.case_.CaseDefinitionId
 import com.ritense.valtimo.contract.process.ProcessConstants.OPERATON_CASE_DEFINITION_VERSION_TAG_PREFIX
+import com.ritense.valtimo.operaton.domain.OperatonDecisionDefinition
+import com.ritense.valtimo.operaton.repository.OperatonDecisionDefinitionSpecificationHelper.Companion.byNotLinkedToBuildingBlock
+import com.ritense.valtimo.operaton.repository.OperatonDecisionDefinitionSpecificationHelper.Companion.byNotLinkedToCaseDefinition
+import com.ritense.valtimo.operaton.service.OperatonRepositoryService
 import com.ritense.valtimo.service.OperatonByteArrayService
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.operaton.bpm.engine.RepositoryService
@@ -28,6 +32,7 @@ class OperatonDecisionService(
     private val repositoryService: RepositoryService,
     private val caseDefinitionChecker: CaseDefinitionChecker,
     private val operatonByteArrayService: OperatonByteArrayService,
+    private val operatonRepositoryService: OperatonRepositoryService,
 ) {
 
     fun getDecisionDefinitions(caseDefinitionId: CaseDefinitionId): List<DecisionDefinition> {
@@ -38,6 +43,17 @@ class OperatonDecisionService(
             .list()
 
         return decisionDefinitions
+    }
+
+    /**
+     * Returns the "global" decision definitions: those that are not linked to a case definition
+     * (version tag prefix "CD:") nor to a building block definition (version tag prefix "BB:").
+     * All versions are returned so callers can build a version overview.
+     */
+    fun getUnlinkedDecisionDefinitions(): List<OperatonDecisionDefinition> {
+        return operatonRepositoryService.findDecisionDefinitions(
+            byNotLinkedToCaseDefinition().and(byNotLinkedToBuildingBlock())
+        )
     }
 
     fun deleteDecisionDefinition(caseDefinitionId: CaseDefinitionId, decisionDefinitionKey: String) {

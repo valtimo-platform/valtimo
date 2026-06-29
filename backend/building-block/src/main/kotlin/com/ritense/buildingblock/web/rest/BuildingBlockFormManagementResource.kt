@@ -25,6 +25,7 @@ import com.ritense.form.web.rest.dto.FormOption
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import com.ritense.valtimo.contract.buildingblock.BuildingBlockDefinitionId
 import com.ritense.valtimo.contract.domain.ValtimoMediaType.APPLICATION_JSON_UTF8_VALUE
+import jakarta.validation.Valid
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.http.ResponseEntity
@@ -112,7 +113,7 @@ class BuildingBlockFormManagementResource(
     fun createFormDefinition(
         @PathVariable key: String,
         @PathVariable versionTag: String,
-        @RequestBody request: CreateBuildingBlockFormDefinitionDto
+        @Valid @RequestBody request: CreateBuildingBlockFormDefinitionDto
     ): ResponseEntity<BuildingBlockFormDefinitionDto> {
         val buildingBlockId = BuildingBlockDefinitionId.of(key, versionTag)
         val form = buildingBlockFormDefinitionService.createFormDefinition(
@@ -129,7 +130,7 @@ class BuildingBlockFormManagementResource(
         @PathVariable key: String,
         @PathVariable versionTag: String,
         @PathVariable formDefinitionId: UUID,
-        @RequestBody request: UpdateBuildingBlockFormDefinitionDto
+        @Valid @RequestBody request: UpdateBuildingBlockFormDefinitionDto
     ): ResponseEntity<BuildingBlockFormDefinitionDto> {
         val buildingBlockId = BuildingBlockDefinitionId.of(key, versionTag)
         val form = buildingBlockFormDefinitionService.updateFormDefinition(

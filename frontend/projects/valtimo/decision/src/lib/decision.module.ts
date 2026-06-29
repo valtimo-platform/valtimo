@@ -17,6 +17,7 @@
 import {NgModule} from '@angular/core';
 import {DecisionRoutingModule} from './decision-routing.module';
 import {DecisionDeployComponent} from './decision-deploy/decision-deploy.component';
+import {DecisionFormModalComponent} from './decision-form-modal/decision-form-modal.component';
 import {CommonModule} from '@angular/common';
 import {FormsModule} from '@angular/forms';
 import {DecisionDisplayComponent} from './decision-display/decision-display.component';
@@ -46,6 +47,7 @@ import {ButtonModule, IconModule} from 'carbon-components-angular';
     ButtonModule,
     IconModule,
     DecisionDeployComponent,
+    DecisionFormModalComponent,
     DecisionModelerComponent,
     DecisionListComponent,
     DecisionDisplayComponent,

@@ -56,7 +56,7 @@ export class CaseDetailsManagementPage {
   }
 
   get setActiveVersionButton() {
-    return this.page.getByRole('menuitem', {name: 'Set as active version'});
+    return this.page.getByTestId(CASE_MANAGEMENT_DETAIL_ACTIONS_TEST_IDS.setActiveVersionButton);
   }
 
   get seeAllVersionsButton() {
@@ -160,7 +160,7 @@ export class CaseDetailsManagementPage {
     return download;
   }
 
-  async makeVersionGlobal(caseVersion: string) {
+  async makeVersionGlobal(caseVersion: string): Promise<boolean> {
     await this.switchCaseVersionViaDropdown(caseVersion);
 
     await this.moreButton.click();
@@ -168,13 +168,20 @@ export class CaseDetailsManagementPage {
     const item = this.setActiveVersionButton;
     await expect(item).toBeVisible();
 
-    if (await item.isDisabled()) {
-      return;
+    // Check disabled state via the button
+    const isDisabled = await item.evaluate(el => {
+      const btn = el.querySelector('button') || el.querySelector('[role="menuitem"]');
+      return btn ? (btn as HTMLButtonElement).disabled : el.hasAttribute('disabled');
+    });
+    if (isDisabled) {
+      await this.page.keyboard.press('Escape');
+      return false;
     }
 
     await item.click();
     await this.confirmationModalContinueButton.click();
     await this.confirmationModalSetActiveButton.click();
+    return true;
   }
 
   async fillInExternalForm() {

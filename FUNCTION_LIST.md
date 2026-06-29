@@ -242,17 +242,24 @@ Flat list of all functions, grouped by feature.
 153. Migrate process instances
 154. View migration status
 
+### Feature 21: Team Management
+155. View teams overview
+156. Create new team
+157. Edit team details
+158. Delete team
+159. Manage team members (add/remove)
+
 ---
 
-## Total: 154 functions
+## Total: 159 functions
 
 | Category | Functions |
 |----------|-----------|
 | User Features (1-5) | 21 |
 | Case Definition Management (6) | 92 |
-| Other Admin Features (7-20) | 41 |
-| **Total** | **154** |
+| Other Admin Features (7-21) | 46 |
+| **Total** | **159** |
 
 ---
 
-*Last updated: January 30, 2026*
+*Last updated: March 12, 2026*

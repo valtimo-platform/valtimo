@@ -58,7 +58,7 @@ data class ContainerParam(
                 } else {
                     listOf(config.key to listValue.joinToString(","))
                 }
-            } else if (config.matchType == SearchFieldMatchType.EXACT) {
+            } else if (config.matchType == null || config.matchType == SearchFieldMatchType.EXACT) {
                 listOf(config.key to value.toString())
             } else {
                 error("Unsupported combination of filter config and value: $config, $value")

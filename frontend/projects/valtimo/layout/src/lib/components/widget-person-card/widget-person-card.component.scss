@@ -1,0 +1,144 @@
+/*!
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
+ *
+ * Licensed under EUPL, Version 1.2 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" basis,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+.valtimo-widget-person-card {
+  container-type: inline-size;
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+  gap: 16px;
+  padding: 24px;
+
+  &__avatar {
+    flex: 0 0 auto;
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    background-color: #d5d3f0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  &__initials {
+    font-size: 24px;
+    font-weight: 600;
+    line-height: 24px;
+    color: #1a146a;
+    text-transform: uppercase;
+  }
+
+  &__body {
+    flex: 1 1 auto;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    color: var(--widget-text-color, var(--cds-text-primary));
+  }
+
+  &__name {
+    margin: 0;
+    font-size: 18px;
+    font-weight: 600;
+    line-height: 24px;
+  }
+
+  &__subtitle {
+    margin: 0;
+    font-size: 14px;
+    line-height: 20px;
+    color: var(--widget-text-color, var(--cds-text-primary));
+  }
+
+  &__grid {
+    margin: 4px 0 0;
+    display: grid;
+    grid-template-columns: 1fr;
+    row-gap: 6px;
+  }
+
+  &__field {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-width: 0;
+  }
+
+  &__field-icon {
+    flex: 0 0 auto;
+    width: 16px;
+    height: 16px;
+    color: var(--widget-text-color, var(--cds-text-primary));
+  }
+
+  &__bsn-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    line-height: 1;
+  }
+
+  &__field-value {
+    font-size: 14px;
+    line-height: 20px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+}
+
+@container (min-width: 480px) {
+  .valtimo-widget-person-card {
+    gap: 24px;
+    padding: 24px;
+
+    &__avatar {
+      width: 64px;
+      height: 64px;
+    }
+
+    &__body {
+      gap: 6px;
+    }
+
+    &__name {
+      font-size: 20px;
+      line-height: 28px;
+    }
+
+    &__subtitle {
+      font-size: 16px;
+      line-height: 24px;
+    }
+
+    &__grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      grid-template-rows: repeat(2, auto);
+      grid-auto-flow: column;
+      column-gap: 32px;
+      row-gap: 8px;
+    }
+
+    &__field-value {
+      font-size: 14px;
+      line-height: 20px;
+    }
+  }
+}

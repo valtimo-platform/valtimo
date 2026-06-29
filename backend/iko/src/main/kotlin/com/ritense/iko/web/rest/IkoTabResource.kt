@@ -20,14 +20,17 @@ import com.ritense.iko.service.IkoTabService
 import com.ritense.tab.web.rest.dto.TabDto
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import com.ritense.valtimo.contract.domain.ValtimoMediaType
+import jakarta.validation.constraints.Size
 import org.springframework.http.ResponseEntity
 import org.springframework.stereotype.Controller
+import org.springframework.validation.annotation.Validated
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.RequestMapping
 
 @Controller
 @SkipComponentScan
+@Validated
 @RequestMapping("/api", produces = [ValtimoMediaType.APPLICATION_JSON_UTF8_VALUE])
 class IkoTabResource(
     private val ikoTabService: IkoTabService
@@ -35,7 +38,7 @@ class IkoTabResource(
 
     @GetMapping("/v1/iko-view/{ikoViewKey}/tab")
     fun getIkoTabs(
-        @PathVariable ikoViewKey: String,
+        @PathVariable @Size(max = 256) ikoViewKey: String,
     ): ResponseEntity<List<TabDto>> {
         return ResponseEntity.ok(
             ikoTabService.findAllTabsByIkoViewKey(ikoViewKey).map { TabDto.from(it) }

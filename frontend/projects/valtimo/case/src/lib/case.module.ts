@@ -25,6 +25,7 @@ import {
 } from '@ng-bootstrap/ng-bootstrap';
 import {TranslateLoader, TranslateModule} from '@ngx-translate/core';
 import {
+  AssignmentComponent,
   BpmnJsDiagramModule,
   CamundaFormModule,
   CarbonListModule,
@@ -54,7 +55,9 @@ import {
   TimelineModule,
   UploaderModule,
   ValtimoCdsModalDirective,
-  ValtimoCdsOverflowButtonDirective,
+  OverflowMenuComponent,
+  OverflowMenuOptionComponent,
+  OverflowMenuTriggerComponent,
   VModalModule,
   WidgetModule,
 } from '@valtimo/components';
@@ -84,7 +87,6 @@ import {
 } from 'carbon-components-angular';
 import {NoteModalComponent} from './components/note-modal/note-modal.component';
 import {CaseRoutingModule} from './case-routing.module';
-import {CaseAssignUserComponent} from './components/case-assign-user/case-assign-user.component';
 import {CaseBulkAssignModalComponent} from './components/case-bulk-assign-modal/case-bulk-assign-modal.component';
 import {CaseDetailComponent} from './components/case-detail/case-detail.component';
 import {CaseDetailTabAuditComponent} from './components/case-detail/tab/audit/audit.component';
@@ -108,6 +110,9 @@ import {CaseDetailTaskListComponent} from './components/case-detail-task-list/ca
 import {CaseDetailsTaskDetailComponent} from './components/case-detail-task-detail/case-detail-task-detail.component';
 import {AngularSplitModule} from 'angular-split';
 import {CaseDetailHeaderWidgetComponent} from './components/case-detail-header-widget/case-detail-header-widget.component';
+import {CaseListTabsComponent} from './components/case-list-tabs/case-list-tabs.component';
+import {CaseListToolbarComponent} from './components/case-list-toolbar/case-list-toolbar.component';
+import {GenericCaseListComponent} from './components/generic-case-list/generic-case-list.component';
 
 export type TabsFactory = () => Map<string, object>;
 
@@ -125,9 +130,11 @@ export type TabsFactory = () => Map<string, object>;
     CaseSupportingProcessStartModalComponent,
     CaseDetailTabS3DocumentsComponent,
     CaseDetailTabNotFoundComponent,
-    CaseAssignUserComponent,
     NoteModalComponent,
     CaseDetailTabFormioComponent,
+    CaseListTabsComponent,
+    CaseListToolbarComponent,
+    GenericCaseListComponent,
   ],
   imports: [
     CommonModule,
@@ -184,7 +191,9 @@ export type TabsFactory = () => Map<string, object>;
     RenderInPageHeaderDirective,
     TagModule,
     DialogModule,
-    ValtimoCdsOverflowButtonDirective,
+    OverflowMenuComponent,
+    OverflowMenuOptionComponent,
+    OverflowMenuTriggerComponent,
     CaseDetailWidgetsComponent,
     CaseDetailTaskListComponent,
     CaseDetailsTaskDetailComponent,
@@ -204,8 +213,9 @@ export type TabsFactory = () => Map<string, object>;
     QuickSearchComponent,
     CaseProcessStartModalComponent,
     CaseListActionsComponent,
+    AssignmentComponent,
   ],
-  exports: [CaseListComponent, CaseDetailComponent],
+  exports: [CaseListComponent, CaseDetailComponent, CaseSupportingProcessStartModalComponent],
 })
 export class CaseModule {
   static forRoot(tabsFactory: TabsFactory): ModuleWithProviders<CaseModule> {

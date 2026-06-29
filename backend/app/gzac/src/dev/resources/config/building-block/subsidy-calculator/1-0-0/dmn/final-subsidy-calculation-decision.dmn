@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<definitions xmlns="https://www.omg.org/spec/DMN/20191111/MODEL/" xmlns:dmndi="https://www.omg.org/spec/DMN/20191111/DMNDI/" xmlns:dc="http://www.omg.org/spec/DMN/20180521/DC/" xmlns:modeler="http://camunda.org/schema/modeler/1.0" xmlns:camunda="http://camunda.org/schema/1.0/dmn" id="Definitions_FinalSubsidyCalculation" name="Final Subsidy Calculation Decision" namespace="http://camunda.org/schema/1.0/dmn" exporter="Camunda Modeler" exporterVersion="5.28.0" modeler:executionPlatform="Camunda Platform" modeler:executionPlatformVersion="7.20.0">
+  <decision id="final-subsidy-calculation-decision" name="Eindberekening Subsidie Beslissing" camunda:historyTimeToLive="180">
+    <decisionTable id="DecisionTable_FinalSubsidyCalculation" hitPolicy="FIRST">
+      <input id="Input_BaseSubsidyAmount" label="Basisbedrag" camunda:inputVariable="baseSubsidyAmount">
+        <inputExpression id="InputExpression_BaseSubsidyAmount" typeRef="integer">
+          <text>baseSubsidyAmount</text>
+        </inputExpression>
+      </input>
+      <output id="Output_FinalSubsidyAmount" label="Eindbedrag subsidie" name="finalSubsidyAmount" typeRef="integer" />
+      <output id="Output_SubsidyCategory" label="Subsidiecategorie" name="subsidyCategory" typeRef="string" />
+      <rule id="Rule_LowBase">
+        <description>Laag basisbedrag: kleine toeslag (EUR 50)</description>
+        <inputEntry id="UnaryTests_LowBase">
+          <text>&lt; 300</text>
+        </inputEntry>
+        <outputEntry id="OutputEntry_LowFinal">
+          <text>baseSubsidyAmount + 50</text>
+        </outputEntry>
+        <outputEntry id="OutputEntry_LowCategory">
+          <text>"Categorie A - Basis"</text>
+        </outputEntry>
+      </rule>
+      <rule id="Rule_MediumBase">
+        <description>Middel basisbedrag: standaard toeslag (EUR 100)</description>
+        <inputEntry id="UnaryTests_MediumBase">
+          <text>[300..500]</text>
+        </inputEntry>
+        <outputEntry id="OutputEntry_MediumFinal">
+          <text>baseSubsidyAmount + 100</text>
+        </outputEntry>
+        <outputEntry id="OutputEntry_MediumCategory">
+          <text>"Categorie B - Standaard"</text>
+        </outputEntry>
+      </rule>
+      <rule id="Rule_HighBase">
+        <description>Hoog basisbedrag: verhoogde toeslag (EUR 200)</description>
+        <inputEntry id="UnaryTests_HighBase">
+          <text>[501..700]</text>
+        </inputEntry>
+        <outputEntry id="OutputEntry_HighFinal">
+          <text>baseSubsidyAmount + 200</text>
+        </outputEntry>
+        <outputEntry id="OutputEntry_HighCategory">
+          <text>"Categorie C - Verhoogd"</text>
+        </outputEntry>
+      </rule>
+      <rule id="Rule_MaxBase">
+        <description>Maximaal basisbedrag: maximale toeslag (EUR 300)</description>
+        <inputEntry id="UnaryTests_MaxBase">
+          <text>&gt; 700</text>
+        </inputEntry>
+        <outputEntry id="OutputEntry_MaxFinal">
+          <text>baseSubsidyAmount + 300</text>
+        </outputEntry>
+        <outputEntry id="OutputEntry_MaxCategory">
+          <text>"Categorie D - Maximaal"</text>
+        </outputEntry>
+      </rule>
+    </decisionTable>
+  </decision>
+  <dmndi:DMNDI>
+    <dmndi:DMNDiagram>
+      <dmndi:DMNShape dmnElementRef="final-subsidy-calculation-decision">
+        <dc:Bounds height="80" width="180" x="160" y="100" />
+      </dmndi:DMNShape>
+    </dmndi:DMNDiagram>
+  </dmndi:DMNDI>
+</definitions>

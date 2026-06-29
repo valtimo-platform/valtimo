@@ -16,6 +16,7 @@
 
 package com.ritense.valtimo.web.rest;
 
+import jakarta.validation.Valid;
 import static com.ritense.authorization.AuthorizationContext.runWithoutAuthorization;
 import static com.ritense.valtimo.operaton.repository.OperatonProcessDefinitionSpecificationHelper.VERSION;
 import static com.ritense.valtimo.operaton.repository.OperatonProcessDefinitionSpecificationHelper.byKey;
@@ -28,6 +29,7 @@ import static org.springframework.http.HttpStatus.FORBIDDEN;
 import static org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR;
 
 import com.ritense.logging.LoggableResource;
+import com.ritense.valtimo.operaton.dto.TeamDto;
 import com.ritense.valtimo.operaton.domain.OperatonExecution;
 import com.ritense.valtimo.operaton.domain.OperatonHistoricProcessInstance;
 import com.ritense.valtimo.operaton.domain.OperatonProcessDefinition;
@@ -368,8 +370,7 @@ public class ProcessResource extends AbstractProcessResource {
     public ResponseEntity<ProcessInstanceDto> startProcessInstance(
         @LoggableResource(resourceTypeName = "processDefinitionKey") @PathVariable String processDefinitionKey,
         @LoggableResource(resourceTypeName = "businessKey") @PathVariable String businessKey,
-        @RequestBody Map<String, Object> variables
-    ) {
+        @RequestBody Map<String, Object> variables) {
         final var processInstanceWithDefinition = operatonProcessService
             .startProcess(processDefinitionKey, businessKey, variables);
         return ResponseEntity.ok(processInstanceWithDefinition.getProcessInstanceDto());
@@ -443,7 +444,9 @@ public class ProcessResource extends AbstractProcessResource {
                 .and(byProcessInstanceId(processInstanceId))
         );
         return Optional.ofNullable(task)
-                .map(taskResult -> ResponseEntity.ok(OperatonTaskDto.of(taskResult)))
+                .map(taskResult -> ResponseEntity.ok(
+                    OperatonTaskDto.of(taskResult, Optional.ofNullable(operatonTaskService.getAssignedTeam(taskResult.getId())).map(TeamDto::from).orElse(null))
+                ))
                 .orElse(ResponseEntity.noContent().build());
     }
 
@@ -505,7 +508,7 @@ public class ProcessResource extends AbstractProcessResource {
     @Deprecated(since = "12.0.0", forRemoval = true)
     public ResponseEntity<List<ProcessInstance>> searchProcessInstancesV2(
         @LoggableResource(resourceTypeName = "processDefinitionName") @PathVariable String processDefinitionName,
-        @RequestBody ProcessInstanceSearchDTO processInstanceSearchDTO,
+        @Valid @RequestBody ProcessInstanceSearchDTO processInstanceSearchDTO,
         Pageable pageable
     ) {
         final Page<ProcessInstance> page = operatonSearchProcessInstanceRepository.searchInstances(
@@ -521,7 +524,7 @@ public class ProcessResource extends AbstractProcessResource {
     @PostMapping("/v2/process/{processDefinitionName}/search")
     public ResponseEntity<Page<ProcessInstance>> searchProcessInstancesPaged(
         @LoggableResource(resourceTypeName = "processDefinitionName") @PathVariable String processDefinitionName,
-        @RequestBody ProcessInstanceSearchDTO processInstanceSearchDTO,
+        @Valid @RequestBody ProcessInstanceSearchDTO processInstanceSearchDTO,
         Pageable pageable
     ) {
         final Page<ProcessInstance> page = operatonSearchProcessInstanceRepository.searchInstances(
@@ -535,7 +538,7 @@ public class ProcessResource extends AbstractProcessResource {
     @PostMapping("/v1/process/{processDefinitionName}/count")
     public ResponseEntity<ResultCount> searchProcessInstanceCountV2(
         @LoggableResource(resourceTypeName = "processDefinitionName") @PathVariable String processDefinitionName,
-        @RequestBody ProcessInstanceSearchDTO processInstanceSearchDTO
+        @Valid @RequestBody ProcessInstanceSearchDTO processInstanceSearchDTO
     ) {
         final Long count = operatonSearchProcessInstanceRepository.searchInstancesCountByDefinitionName(
                 processDefinitionName,
@@ -547,7 +550,7 @@ public class ProcessResource extends AbstractProcessResource {
     @PostMapping("/v1/process/definition/{processDefinitionId}/count")
     public ResponseEntity<ResultCount> getProcessInstanceCountForProcessDefinitionIdV2(
         @LoggableResource(resourceType = OperatonProcessDefinition.class) @PathVariable String processDefinitionId,
-        @RequestBody ProcessInstanceSearchDTO processInstanceSearchDTO
+        @Valid @RequestBody ProcessInstanceSearchDTO processInstanceSearchDTO
     ) {
         final Long count = operatonSearchProcessInstanceRepository.searchInstancesCountByDefinitionId(
                 processDefinitionId, processInstanceSearchDTO);
@@ -560,8 +563,7 @@ public class ProcessResource extends AbstractProcessResource {
     public ResponseEntity<BatchDto> migrateProcessInstancesByProcessDefinitionIds(
         @LoggableResource(resourceType = OperatonProcessDefinition.class) @PathVariable String sourceProcessDefinitionId,
         @PathVariable String targetProcessDefinitionId,
-        @RequestBody(required = false) Map<String, String> instructions
-    ) {
+        @RequestBody(required = false) Map<String, String> instructions) {
         if (processPropertyService.isReadOnlyById(targetProcessDefinitionId)) {
             return ResponseEntity.status(FORBIDDEN).build();
         }
@@ -591,7 +593,7 @@ public class ProcessResource extends AbstractProcessResource {
     @PostMapping("/v1/process/{processInstanceId}/comment")
     public ResponseEntity<Void> createComment(
         @LoggableResource(resourceType = OperatonExecution.class) @PathVariable String processInstanceId,
-        @RequestBody CommentDto comment
+        @Valid @RequestBody CommentDto comment
     ) {
         operatonTaskService.createComment(null, processInstanceId, comment.getText());
         return ResponseEntity.ok().build();
@@ -600,8 +602,7 @@ public class ProcessResource extends AbstractProcessResource {
     @PostMapping("/v1/process/{processInstanceId}/delete")
     public ResponseEntity<Void> delete(
         @LoggableResource(resourceType = OperatonExecution.class) @PathVariable String processInstanceId,
-        @RequestBody String reason
-    ) {
+        @RequestBody String reason) {
         runWithoutAuthorization(() -> {
             operatonProcessService.deleteProcessInstanceById(processInstanceId, reason);
             return null;

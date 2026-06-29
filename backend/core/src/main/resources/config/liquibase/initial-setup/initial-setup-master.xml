@@ -338,4 +338,10 @@
     <include file="config/liquibase/initial-setup/iko/changelog/20251128-rename-iko.xml"/>
     <include file="config/liquibase/initial-setup/iko/changelog/20260106-migrate-tab-properties.xml"/>
     <include file="config/liquibase/initial-setup/iko/changelog/20260113-migrate-iko-config.xml"/>
+
+
+    <include file="config/liquibase/initial-setup/team/changelog/20260309-create-table-team.xml"/>
+    <include file="config/liquibase/initial-setup/case/changelog/20260311-add-team-key-to-json-schema-document.xml"/>
+    <include file="config/liquibase/initial-setup/task/changelog/20260317-create-table-task-team.xml"/>
+
 </databaseChangeLog>

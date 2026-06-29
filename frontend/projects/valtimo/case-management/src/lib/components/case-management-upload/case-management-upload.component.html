@@ -1,5 +1,5 @@
 <!--
-  ~ Copyright 2015-2025 Ritense BV, the Netherlands.
+  ~ Copyright 2015-2026 Ritense BV, the Netherlands.
   ~
   ~ Licensed under EUPL, Version 1.2 (the "License");
   ~ you may not use this file except in compliance with the License.
@@ -20,10 +20,10 @@
     backButtonEnabled: backButtonEnabled$ | async,
     isStepAfterUpload: isStepAfterUpload$ | async,
     nextButtonDisabled: nextButtonDisabled$ | async,
-    notificationObj: notificationObj$ | async,
-    showCheckboxError: showCheckboxError$ | async,
     showCloseButton: showCloseButton$ | async,
     uploadStatus: uploadStatus$ | async,
+    preview: preview$ | async,
+    importWarning: importWarning$ | async,
   } as obs"
   valtimoCdsModal
   [open]="open"
@@ -70,29 +70,175 @@
         class="valtimo-definition-uploader__file-uploader"
       >
       </cds-file-uploader>
+    </form>
 
-      <cds-inline-notification
-        data-test-id="uploadWarningNotification"
-        [notificationObj]="obs.notificationObj"
-      ></cds-inline-notification>
+    <form
+      *ngSwitchCase="UPLOAD_STEP.CONFIGURE"
+      [formGroup]="configureForm"
+      class="valtimo-definition-uploader__configure"
+    >
+      <cds-label>
+        {{ 'caseManagement.createDefinition.name' | translate }}
+        <input
+          formControlName="name"
+          cdsText
+          [attr.data-test-id]="testIds.nameInput"
+        />
+      </cds-label>
 
-      <div class="valtimo-uploader__checkbox">
-        <cds-checkbox
-          data-test-id="uploadWarningCheckbox"
-          [attr.data-test-id]="testIds.uploadWarningCheckbox"
-          [class.valtimo-definition-uploader__checkbox--invalid]="obs.showCheckboxError"
-          (checkedChange)="onCheckedChange($event)"
+      <valtimo-auto-key-input
+        [mode]="'add'"
+        [sourceText]="nameControl.value"
+        formControlName="caseDefinitionKey"
+        labelTranslationKey="caseManagement.createDefinition.key"
+      >
+      </valtimo-auto-key-input>
+
+      <div class="valtimo-definition-uploader__version-label">
+        <label class="cds--label">
+          {{ 'caseManagement.createDefinition.version' | translate }}
+        </label>
+        <div
+          class="valtimo-definition-uploader__version-field"
+          [attr.data-test-id]="testIds.versionTag"
         >
-          {{ 'caseManagement.importDefinition.checkbox.message' | translate }}
-        </cds-checkbox>
-
-        <div *ngIf="obs.showCheckboxError" class="valtimo-definition-uploader__error">
-          <svg cdsIcon="warning--filled" size="16"></svg>
-
-          {{ 'caseManagement.importDefinition.checkbox.error' | translate }}
+          <cds-tag class="cds-tag--no-margin" [type]="obs.preview?.isFinal ? 'green' : 'red'">
+            {{
+              (obs.preview?.isFinal
+                ? 'caseManagement.importDefinition.configure.finalTag'
+                : 'caseManagement.importDefinition.configure.draftTag'
+              ) | translate
+            }}
+          </cds-tag>
+          <span>{{ obs.preview?.versionTag }}</span>
         </div>
       </div>
+
+      <ng-container [ngSwitch]="obs.importWarning">
+        <cds-inline-notification
+          *ngSwitchCase="IMPORT_WARNING.NEW_VERSION"
+          [notificationObj]="{
+            type: 'info',
+            title: ('caseManagement.importDefinition.configure.newVersionWarning.title' | translate),
+            message: ('caseManagement.importDefinition.configure.newVersionWarning.message' | translate),
+            showClose: false,
+            lowContrast: true
+          }"
+        ></cds-inline-notification>
+
+        <ng-container *ngSwitchCase="IMPORT_WARNING.EXISTING_DRAFT">
+          <cds-inline-notification
+            [notificationObj]="{
+              type: 'warning',
+              title: ('caseManagement.importDefinition.configure.existingDraftWarning.title' | translate),
+              message: ('caseManagement.importDefinition.configure.existingDraftWarning.message' | translate),
+              showClose: false,
+              lowContrast: true
+            }"
+          ></cds-inline-notification>
+          <cds-checkbox
+            [attr.data-test-id]="testIds.overrideCheckbox"
+            (checkedChange)="overrideConfirmed$.next($event)"
+          >
+            {{
+              'caseManagement.importDefinition.configure.overrideConfirm' | translate
+            }}
+          </cds-checkbox>
+        </ng-container>
+
+        <cds-inline-notification
+          *ngSwitchCase="IMPORT_WARNING.EXISTING_FINAL"
+          [notificationObj]="{
+            type: 'error',
+            title: ('caseManagement.importDefinition.configure.existingFinalWarning.title' | translate),
+            message: ('caseManagement.importDefinition.configure.existingFinalWarning.message' | translate),
+            showClose: false,
+            lowContrast: true
+          }"
+        ></cds-inline-notification>
+      </ng-container>
     </form>
+
+    <div
+      *ngSwitchCase="UPLOAD_STEP.PLUGINS"
+      [formGroup]="pluginMappingForm"
+      class="valtimo-definition-uploader__plugins"
+    >
+      <p class="valtimo-definition-uploader__plugins-description">
+        {{ 'caseManagement.importDefinition.plugins.description' | translate }}
+      </p>
+
+      <ng-container *ngIf="hasUnidentifiablePlugins$ | async">
+        <cds-inline-notification
+          [notificationObj]="{
+            type: 'warning',
+            title: ('caseManagement.importDefinition.plugins.unidentifiable.title' | translate),
+            message: ('caseManagement.importDefinition.plugins.unidentifiable.message' | translate),
+            showClose: false,
+            lowContrast: true
+          }"
+        ></cds-inline-notification>
+      </ng-container>
+
+      <ng-container *ngIf="(pluginMappingRows$ | async)?.length > 0; else noPlugins">
+        <div class="valtimo-definition-uploader__plugins-header">
+          <span>{{ 'caseManagement.importDefinition.plugins.source' | translate }}</span>
+          <span></span>
+          <span>{{ 'caseManagement.importDefinition.plugins.target' | translate }}</span>
+        </div>
+
+        <div
+          *ngFor="let row of pluginMappingRows$ | async; trackBy: trackBySourceId"
+          class="valtimo-definition-uploader__plugins-row"
+          [cdsLayer]="1"
+          [attr.data-test-id]="testIds.pluginMappingRow"
+        >
+          <div class="valtimo-definition-uploader__plugins-source">
+            {{ row.pluginDefinitionTitle }}
+          </div>
+          <svg
+            class="valtimo-definition-uploader__plugins-arrow"
+            xmlns="http://www.w3.org/2000/svg"
+            width="16"
+            height="16"
+            viewBox="0 0 32 32"
+          >
+            <path d="M18 6l-1.4 1.4L24.2 15H4v2h20.2l-7.6 7.6L18 26l10-10z" />
+          </svg>
+          <cds-combo-box
+            *ngIf="row.status === 'available'"
+            [attr.data-test-id]="testIds.pluginMappingDropdown"
+            [items]="row.listItems"
+            itemValueKey="id"
+            [formControlName]="row.sourcePluginConfigurationId"
+            [placeholder]="'caseManagement.importDefinition.plugins.selectPlaceholder' | translate"
+            [cdsLayer]="2"
+            [appendInline]="true"
+            [dropUp]="false"
+            (clear)="onPluginMappingClear(row.sourcePluginConfigurationId)"
+          >
+            <cds-dropdown-list></cds-dropdown-list>
+          </cds-combo-box>
+          <div *ngIf="row.status === 'not-installed'" class="valtimo-definition-uploader__plugins-unavailable valtimo-definition-uploader__plugins-unavailable--error">
+            {{ 'caseManagement.importDefinition.plugins.notInstalled' | translate }}
+          </div>
+          <div *ngIf="row.status === 'no-configurations'" class="valtimo-definition-uploader__plugins-unavailable">
+            {{ 'caseManagement.importDefinition.plugins.noConfigurations' | translate }}
+          </div>
+        </div>
+      </ng-container>
+
+      <ng-template #noPlugins>
+        <ng-container *ngIf="!(hasUnidentifiablePlugins$ | async)">
+          <valtimo-case-management-upload-step
+            [message]="'caseManagement.importDefinition.plugins.noPlugins' | translate"
+            [title]="'caseManagement.importDefinition.plugins.noPluginsTitle' | translate"
+            [illustration]="'valtimo-layout/img/plugins.svg'"
+          >
+          </valtimo-case-management-upload-step>
+        </ng-container>
+      </ng-template>
+    </div>
 
     <cds-progress-bar
       *ngSwitchCase="UPLOAD_STEP.FILE_UPLOAD"
@@ -105,7 +251,7 @@
 
   <cds-modal-footer
     class="valtimo-definition-uploader__footer"
-    [class.valtimo-definition-uploader__footer--double]="obs.activeStep === UPLOAD_STEP.PLUGINS"
+    [class.valtimo-definition-uploader__footer--double]="obs.activeStep === UPLOAD_STEP.FILE_SELECT"
   >
     <button
       *ngIf="obs.uploadStatus !== UPLOAD_STATUS.ERROR && obs.activeStep !== UPLOAD_STEP.FILE_UPLOAD"
@@ -134,7 +280,7 @@
         (click)="onNextClick(obs.activeStep)"
       >
         {{
-          (obs.activeStep === UPLOAD_STEP.FILE_SELECT
+          (obs.activeStep === UPLOAD_STEP.PLUGINS
             ? 'caseManagement.importDefinition.startUpload'
             : 'interface.next'
           ) | translate

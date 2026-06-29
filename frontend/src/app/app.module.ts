@@ -1,4 +1,4 @@
- /*
+/*
  * Copyright 2015-2023 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
- import {BrowserModule} from '@angular/platform-browser';
+import {BrowserModule} from '@angular/platform-browser';
 import {Injector, NgModule} from '@angular/core';
 import {CommonModule} from '@angular/common';
 import {
@@ -86,6 +86,8 @@ import {
   catalogiApiPluginSpecification,
   DocumentenApiPluginModule,
   documentenApiPluginSpecification,
+  DocumentenApiPreviewPluginModule,
+  documentenApiPreviewPluginSpecification,
   KlantinteractiesApiPluginModule,
   klantinteractiesApiPluginSpecification,
   NotificatiesApiPluginModule,
@@ -120,9 +122,11 @@ import {CaseMigrationModule} from '@valtimo/case-migration';
 import {LoggingModule} from '@valtimo/logging';
 import {FormViewModelModule} from '@valtimo/form-view-model';
 import {CaseManagementModule} from '@valtimo/case-management';
-import {IkoModule} from '@valtimo/iko';
+import {IkoModule, registerIkoSearchFormioComponent} from '@valtimo/iko';
 import {devDeclarations, devImports, devProviders, devTabs} from './dev-tools';
+import {AdminSettingsModule} from '@valtimo/admin-settings';
 import {BuildingBlockManagementModule} from '@valtimo/building-block-management';
+import {TeamsModule} from '@valtimo/teams';
 import {registerDocumentenApiFormioUploadComponent, ZgwModule} from '@valtimo/zgw';
 
 export function tabsFactory() {
@@ -181,6 +185,7 @@ export function tabsFactory() {
     OpenZaakPluginModule,
     SmartDocumentsPluginModule,
     DocumentenApiPluginModule,
+    DocumentenApiPreviewPluginModule,
     KlantinteractiesApiPluginModule,
     ObjecttypenApiPluginModule,
     OpenKlantTokenAuthenticationPluginModule,
@@ -208,7 +213,9 @@ export function tabsFactory() {
     MenuModule,
     WidgetModule,
     IkoModule,
+    AdminSettingsModule,
     BuildingBlockManagementModule,
+    TeamsModule,
     ...(environment.production ? [] : devImports),
   ],
   providers: [
@@ -219,6 +226,7 @@ export function tabsFactory() {
         besluitenApiPluginSpecification,
         catalogiApiPluginSpecification,
         documentenApiPluginSpecification,
+        documentenApiPreviewPluginSpecification,
         klantinteractiesApiPluginSpecification,
         notificatiesApiPluginSpecification,
         objectenApiPluginSpecification,
@@ -246,5 +254,6 @@ export class AppModule {
     registerFormioIbanComponent(injector);
     registerFormioCurrencyComponent(injector);
     registerFormioValueResolverSelectorComponent(injector);
+    registerIkoSearchFormioComponent(injector);
   }
 }

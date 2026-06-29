@@ -25,3 +25,8 @@
   display: flex;
   justify-content: center;
 }
+
+.full-width-notification {
+  max-inline-size: 100%;
+  min-inline-size: 100%;
+}

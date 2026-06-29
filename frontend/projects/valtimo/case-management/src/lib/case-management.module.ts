@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,6 +19,7 @@ import {FormsModule, ReactiveFormsModule} from '@angular/forms';
 import {NgbTooltipModule} from '@ng-bootstrap/ng-bootstrap';
 import {TranslateModule} from '@ngx-translate/core';
 import {
+  AutoKeyInputComponent,
   CarbonListModule,
   CarbonMultiInputModule,
   ConfirmationModalModule,
@@ -31,6 +32,8 @@ import {
   ModalModule,
   MultiselectDropdownModule,
   MuuriDirectiveModule,
+  OverflowMenuComponent,
+  OverflowMenuOptionComponent,
   ParagraphModule,
   ReadOnlyDirective,
   RenderInPageHeaderDirective,
@@ -39,7 +42,6 @@ import {
   TableModule,
   TooltipIconModule,
   ValtimoCdsModalDirective,
-  ValtimoCdsOverflowButtonDirective,
   ValuePathSelectorComponent,
   WidgetModule,
 } from '@valtimo/components';
@@ -96,7 +98,9 @@ import {CaseManagementUploadComponent} from './components/case-management-upload
 import {CaseManagementUploadStepComponent} from './components/case-management-upload/step/case-management-upload-step.component';
 import {TabManagementService} from './services';
 import {CaseManagementDraftWarningComponent} from './components/case-management-draft-warning/case-management-draft-warning.component';
+import {CaseManagementActionsComponent} from './components/case-management-detail/tabs/case-management-actions/case-management-actions.component';
 import {CaseManagementHeaderComponent} from './components/case-management-detail/tabs/case-management-header/case-management-header.component';
+import {CaseManagementMissingPluginConfigurationsComponent} from './components/case-management-detail/tabs/case-management-general/components/case-management-missing-plugin-configurations/case-management-missing-plugin-configurations.component';
 
 @NgModule({
   declarations: [
@@ -164,7 +168,8 @@ import {CaseManagementHeaderComponent} from './components/case-management-detail
     ComboBoxModule,
     RenderInPageHeaderDirective,
     DialogModule,
-    ValtimoCdsOverflowButtonDirective,
+    OverflowMenuComponent,
+    OverflowMenuOptionComponent,
     EditorModule,
     CarbonListModule,
     TabsModule,
@@ -183,7 +188,10 @@ import {CaseManagementHeaderComponent} from './components/case-management-detail
     ReadOnlyDirective,
     CaseManagementDraftWarningComponent,
     JsonEditorComponent,
+    CaseManagementActionsComponent,
     CaseManagementHeaderComponent,
+    AutoKeyInputComponent,
+    CaseManagementMissingPluginConfigurationsComponent,
   ],
   providers: [TabManagementService],
 })

@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,6 +26,8 @@ import com.ritense.authorization.ResourceActionProvider
 import com.ritense.authorization.ValtimoAuthorizationService
 import com.ritense.authorization.annotation.RunWithoutAuthorizationAspect
 import com.ritense.authorization.deployment.PermissionDeployer
+import com.ritense.authorization.deployment.PermissionResourceTypeMigrator
+import com.ritense.authorization.deployment.ResourceTypeRename
 import com.ritense.authorization.deployment.RoleDeployer
 import com.ritense.authorization.exporter.GlobalPermissionExporter
 import com.ritense.authorization.exporter.GlobalRoleExporter
@@ -38,6 +40,7 @@ import com.ritense.authorization.specification.impl.DenyAuthorizationSpecificati
 import com.ritense.authorization.specification.impl.NoopAuthorizationSpecificationFactory
 import com.ritense.authorization.web.PermissionManagementResource
 import com.ritense.authorization.web.PermissionResource
+import com.ritense.authorization.web.PermissionSchemaResource
 import com.ritense.authorization.web.RoleManagementResource
 import com.ritense.authorization.web.security.ValtimoAuthorizationHttpSecurityConfigurer
 import com.ritense.valtimo.changelog.service.ChangelogService
@@ -48,6 +51,7 @@ import org.springframework.boot.autoconfigure.AutoConfiguration
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.boot.autoconfigure.domain.EntityScan
 import org.springframework.context.annotation.Bean
+import org.springframework.context.annotation.Lazy
 import org.springframework.core.Ordered.HIGHEST_PRECEDENCE
 import org.springframework.core.annotation.Order
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories
@@ -56,11 +60,19 @@ import org.springframework.data.jpa.repository.config.EnableJpaRepositories
 @EnableJpaRepositories(basePackages = ["com.ritense.authorization"])
 @EntityScan("com.ritense.authorization")
 class AuthorizationAutoConfiguration(
-    userManagementService: UserManagementService
+    @Lazy userManagementService: UserManagementService
 ) {
 
     init {
         UserManagementServiceHolder(userManagementService)
+    }
+
+    @Bean
+    @ConditionalOnMissingBean(PermissionResourceTypeMigrator::class)
+    fun permissionResourceTypeMigrator(
+        renames: List<ResourceTypeRename>
+    ): PermissionResourceTypeMigrator {
+        return PermissionResourceTypeMigrator(renames)
     }
 
     @Order(270)
@@ -127,18 +139,20 @@ class AuthorizationAutoConfiguration(
         permissionRepository: PermissionRepository,
         roleRepository: RoleRepository,
         changelogService: ChangelogService,
-        @Value("\${valtimo.changelog.pbac.clear-tables:false}") clearTables: Boolean
+        @Value("\${valtimo.changelog.pbac.clear-tables:false}") clearTables: Boolean,
+        migrator: PermissionResourceTypeMigrator
     ): PermissionDeployer {
-        return PermissionDeployer(objectMapper, permissionRepository, roleRepository, changelogService, clearTables)
+        return PermissionDeployer(objectMapper, permissionRepository, roleRepository, changelogService, clearTables, migrator)
     }
 
     @Bean
     @ConditionalOnMissingBean(RoleManagementResource::class)
     fun roleManagementResource(
         roleRepository: RoleRepository,
-        permissionRepository: PermissionRepository
+        permissionRepository: PermissionRepository,
+        migrator: PermissionResourceTypeMigrator
     ): RoleManagementResource {
-        return RoleManagementResource(roleRepository, permissionRepository)
+        return RoleManagementResource(roleRepository, permissionRepository, migrator)
     }
 
     @Bean
@@ -163,6 +177,12 @@ class AuthorizationAutoConfiguration(
     }
 
     @Bean
+    @ConditionalOnMissingBean(PermissionSchemaResource::class)
+    fun permissionSchemaResource(): PermissionSchemaResource {
+        return PermissionSchemaResource()
+    }
+
+    @Bean
     @ConditionalOnMissingBean(RunWithoutAuthorizationAspect::class)
     fun runWithoutAuthorizationAspect(): RunWithoutAuthorizationAspect {
         return RunWithoutAuthorizationAspect()
@@ -173,11 +193,13 @@ class AuthorizationAutoConfiguration(
         objectMapper: ObjectMapper,
         permissionRepository: PermissionRepository,
         roleRepository: RoleRepository,
+        migrator: PermissionResourceTypeMigrator,
     ): GlobalPermissionImporter {
         return GlobalPermissionImporter(
             objectMapper,
             permissionRepository,
             roleRepository,
+            migrator,
         )
     }
 

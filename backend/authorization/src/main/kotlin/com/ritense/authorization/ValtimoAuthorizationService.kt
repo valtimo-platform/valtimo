@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -73,6 +73,13 @@ class ValtimoAuthorizationService(
         return getAuthorizationSpecification(request).isAuthorized()
     }
 
+    override fun <T : Any> hasPermission(
+        request: AuthorizationRequest<T>,
+        permissions: List<Permission>
+    ): Boolean {
+        return getAuthorizationSpecification(request, permissions).isAuthorized()
+    }
+
     override fun <T : Any> getAuthorizationSpecification(
         request: AuthorizationRequest<T>,
         permissions: List<Permission>?
@@ -120,7 +127,7 @@ class ValtimoAuthorizationService(
         val factory = (authorizationSpecificationFactories.firstOrNull {
             it.canCreate(request, permissionSupplier)
         } as AuthorizationSpecificationFactory<T>?)
-            ?: throw AccessDeniedException("No specification found for given context.")
+            ?: throw AccessDeniedException("Missing AuthorizationSpecificationFactory<${request.resourceType.name}>")
         return factory.create(request, permissionSupplier)
     }
 

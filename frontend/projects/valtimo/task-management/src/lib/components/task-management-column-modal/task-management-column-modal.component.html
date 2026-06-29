@@ -1,5 +1,5 @@
 <!--
-  ~ Copyright 2015-2025 Ritense BV, the Netherlands.
+  ~ Copyright 2015-2026 Ritense BV, the Netherlands.
   ~
   ~ Licensed under EUPL, Version 1.2 (the "License");
   ~ you may not use this file except in compliance with the License.
@@ -25,11 +25,12 @@
     showEnum: showEnum$ | async,
     showYesNo: showYesNo$ | async,
     disableDefaultSort: disableDefaultSort$ | async,
-    enumValues: enumValues$ | async,
+    enumInitialValues: enumInitialValues$ | async,
     enumValid: enumValid$ | async,
-    yesNoValues: yesNoValues$ | async,
+    yesNoInitialValues: yesNoInitialValues$ | async,
     viewTypeItems: viewTypeItems$ | async,
     sortItems: sortItems$ | async,
+    displaySortable: displaySortable$ | async,
   } as obs"
 >
   <cds-modal size="sm" [open]="obs.show" valtimoCdsModal (close)="closeModal()">
@@ -89,7 +90,10 @@
             ></v-tooltip-icon>
           </span>
 
-          <input cdsText cdsLayer formControlName="path" />
+          <valtimo-value-path-selector
+            formControlName="path"
+            [caseDefinitionKey]="caseDefinitionKey"
+          ></valtimo-value-path-selector>
         </cds-label>
       </div>
 
@@ -145,7 +149,7 @@
             *ngIf="obs.showEnum"
             [fullWidth]="true"
             [carbonTheme]="CARBON_THEME_WHITE"
-            [defaultValues]="obs.enumValues"
+            [defaultValues]="obs.enumInitialValues"
             type="keyValue"
             (valueChange)="enumValueChange($event)"
           ></valtimo-carbon-multi-input>
@@ -166,7 +170,7 @@
           <valtimo-carbon-multi-input
             *ngIf="obs.showYesNo"
             [fullWidth]="true"
-            [defaultValues]="obs.yesNoValues"
+            [defaultValues]="obs.yesNoInitialValues"
             type="keyValue"
             [hideAddButton]="true"
             [hideDeleteButton]="true"
@@ -178,13 +182,13 @@
         </cds-label>
       </div>
 
-      <div class="cds--text-input__field-wrapper">
+      <div class="cds--text-input__field-wrapper" *ngIf="obs.displaySortable">
         <cds-checkbox formControlName="sortable" [disabled]="obs.disabled"
           >{{ 'listColumn.sortable' | translate }}
         </cds-checkbox>
       </div>
 
-      <div class="cds--text-input__field-wrapper">
+      <div class="cds--text-input__field-wrapper" *ngIf="obs.displaySortable">
         <cds-label [disabled]="obs.disabled || obs.disableDefaultSort">
           <span class="label-with-tooltip select-label">
             {{ 'listColumn.defaultSortTitle' | translate }}

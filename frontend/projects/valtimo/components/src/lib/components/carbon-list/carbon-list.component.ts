@@ -32,7 +32,6 @@ import {TranslateService} from '@ngx-translate/core';
 import {SortState} from '@valtimo/document';
 import {
   IconService,
-  OverflowMenu,
   PaginationModel,
   PaginationTranslations,
   Table,
@@ -86,7 +85,7 @@ import {EllipsisPipe} from '../../pipes';
   standalone: false,
 })
 export class CarbonListComponent implements OnInit, AfterViewInit, OnDestroy {
-  @ViewChild('actionsMenuTemplate') actionsMenuTemplate: TemplateRef<OverflowMenu>;
+  @ViewChild('actionsMenuTemplate') actionsMenuTemplate: TemplateRef<any>;
   @ViewChild('actionTemplate') actionTemplate: TemplateRef<any>;
   @ViewChild('booleanTemplate') booleanTemplate: TemplateRef<any>;
   @ViewChild('moveRowsTemplate') moveRowsTemplate: TemplateRef<any>;
@@ -689,6 +688,10 @@ export class CarbonListComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   private loadPaginationSize(): void {
+    if (!this.paginationIdentifier) {
+      return;
+    }
+
     const entries = localStorage.getItem(
       `${this.paginationIdentifier}${CarbonListComponent.PAGINATION_SIZE}`
     );
@@ -705,11 +708,13 @@ export class CarbonListComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   private setPaginationSize(numberOfEntries: string): void {
-    localStorage.setItem(
-      `${this.paginationIdentifier}${CarbonListComponent.PAGINATION_SIZE}`,
-      numberOfEntries
-    );
-    this.logger.debug('Pagination set in local storage for this list: ', numberOfEntries);
+    if (this.paginationIdentifier) {
+      localStorage.setItem(
+        `${this.paginationIdentifier}${CarbonListComponent.PAGINATION_SIZE}`,
+        numberOfEntries
+      );
+      this.logger.debug('Pagination set in local storage for this list: ', numberOfEntries);
+    }
     this.paginationSet.emit(numberOfEntries);
   }
 

@@ -46,33 +46,35 @@
     (rowClicked)="rowClick($event)"
   >
     <section class="valtimo-widget-interactive-table__header" carbonToolbarContent>
-      <button
+      <v-overflow-menu
         *ngIf="!!obs.filters.length"
         carbonToolbarContent
-        [cdsOverflowMenu]="widgetInteractiveTableSearch"
-        [customPane]="true"
-        [iconOnly]="true"
-        [flip]="true"
-        [offset]="{x: 0, y: 47}"
-        placement="bottom"
-        cdsButton="ghost"
+        placement="bottom-end"
+        [closeOnSelect]="false"
       >
-        <svg cdsIcon="filter" size="16"></svg>
-      </button>
+        <button overflowTrigger cdsButton="ghost" [iconOnly]="true">
+          <svg cdsIcon="filter" size="16"></svg>
+        </button>
 
-      <cds-overflow-menu
+        <div overflowPane>
+          <ng-container *ngTemplateOutlet="widgetInteractiveTableSearch"></ng-container>
+        </div>
+      </v-overflow-menu>
+
+      <v-overflow-menu
         *ngIf="!!widgetConfiguration?.actions?.length"
-        [customTrigger]="externalLinkTrigger"
-        placement="bottom"
-        flip="true"
-        [offset]="{x: 4, y: 44}"
+        placement="bottom-end"
       >
+        <button overflowTrigger cdsButton="ghost" [iconOnly]="true">
+          <svg cdsIcon="link" size="16"></svg>
+        </button>
+
         @for (action of widgetConfiguration?.actions; track action.name) {
-          <cds-overflow-menu-option (click)="onActionClick(action)">
+          <v-overflow-menu-option (selected)="onActionClick(action)">
             {{ action.name }}
-          </cds-overflow-menu-option>
+          </v-overflow-menu-option>
         }
-      </cds-overflow-menu>
+      </v-overflow-menu>
 
       <cds-menu-button
         *ngIf="widgetConfiguration?.properties?.canStartCase"
@@ -101,11 +103,5 @@
       [initSearchRequest]="searchRequest"
       (searchSubmitEvent)="onSearchSubmit($event)"
     ></valtimo-widget-interactive-table-search>
-  </ng-template>
-
-  <ng-template #externalLinkTrigger>
-    <button cdsButton="ghost" iconOnly="true">
-      <svg cdsIcon="link" size="16"></svg>
-    </button>
   </ng-template>
 </ng-container>

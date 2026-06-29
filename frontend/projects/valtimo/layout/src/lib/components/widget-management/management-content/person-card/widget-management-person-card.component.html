@@ -1,0 +1,143 @@
+<!--
+  ~ Copyright 2015-2026 Ritense BV, the Netherlands.
+  ~
+  ~ Licensed under EUPL, Version 1.2 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~ https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" basis,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<form [formGroup]="form">
+  <section
+    *ngIf="$showTitleInput()"
+    class="valtimo-widget-management-person-card__title-form"
+  >
+    <cds-text-label class="valtimo-widget-management-person-card__title-input">
+      <v-input-label
+        [title]="'widgetTabManagement.content.widgetTitle' | translate"
+        [tooltip]="'widgetTabManagement.content.widgetTitleTooltip' | translate"
+      >
+      </v-input-label>
+
+      <input
+        formControlName="widgetTitle"
+        cdsText
+        [attr.data-test-id]="testIds.widgetTitleInput"
+        [placeholder]="'widgetTabManagement.content.widgetTitlePlaceholder' | translate"
+        type="text"
+      />
+    </cds-text-label>
+
+    <valtimo-mdi-icon-selector
+      [cdsLayer]="1"
+      formControlName="widgetIcon"
+    ></valtimo-mdi-icon-selector>
+  </section>
+
+  <div class="valtimo-widget-management-person-card__action-button-section">
+    <ng-content></ng-content>
+  </div>
+
+  <section class="valtimo-widget-management-person-card__person-fields">
+    <div
+      class="valtimo-widget-management-person-card__field valtimo-widget-management-person-card__field--full"
+    >
+      <v-input-label
+        [title]="'widgetTabManagement.content.person-card.fullNameLabel' | translate"
+      >
+      </v-input-label>
+
+      <valtimo-value-path-selector
+        *ngIf="params$ | async as params"
+        [attr.data-test-id]="testIds.fullNameInput"
+        formControlName="fullName"
+        [caseDefinitionKey]="params?.caseDefinitionKey"
+        [caseDefinitionVersionTag]="params?.caseDefinitionVersionTag"
+        [excludePrefixes]="[ValuePathSelectorPrefix.TASK]"
+      ></valtimo-value-path-selector>
+    </div>
+
+    <div class="valtimo-widget-management-person-card__field">
+      <v-input-label
+        [title]="'widgetTabManagement.content.person-card.birthDateLabel' | translate"
+      >
+      </v-input-label>
+
+      <valtimo-value-path-selector
+        *ngIf="params$ | async as params"
+        [attr.data-test-id]="testIds.birthDateInput"
+        formControlName="birthDate"
+        [caseDefinitionKey]="params?.caseDefinitionKey"
+        [caseDefinitionVersionTag]="params?.caseDefinitionVersionTag"
+        [excludePrefixes]="[ValuePathSelectorPrefix.TASK]"
+      ></valtimo-value-path-selector>
+    </div>
+
+    <div class="valtimo-widget-management-person-card__field">
+      <v-input-label [title]="'widgetTabManagement.content.person-card.bsnLabel' | translate">
+      </v-input-label>
+
+      <valtimo-value-path-selector
+        *ngIf="params$ | async as params"
+        [attr.data-test-id]="testIds.bsnInput"
+        formControlName="bsn"
+        [caseDefinitionKey]="params?.caseDefinitionKey"
+        [caseDefinitionVersionTag]="params?.caseDefinitionVersionTag"
+        [excludePrefixes]="[ValuePathSelectorPrefix.TASK]"
+      ></valtimo-value-path-selector>
+    </div>
+
+    <div class="valtimo-widget-management-person-card__field">
+      <v-input-label
+        [title]="'widgetTabManagement.content.person-card.phoneLabel' | translate"
+      >
+      </v-input-label>
+
+      <valtimo-value-path-selector
+        *ngIf="params$ | async as params"
+        [attr.data-test-id]="testIds.phoneInput"
+        formControlName="phone"
+        [caseDefinitionKey]="params?.caseDefinitionKey"
+        [caseDefinitionVersionTag]="params?.caseDefinitionVersionTag"
+        [excludePrefixes]="[ValuePathSelectorPrefix.TASK]"
+      ></valtimo-value-path-selector>
+    </div>
+
+    <div class="valtimo-widget-management-person-card__field">
+      <v-input-label
+        [title]="'widgetTabManagement.content.person-card.emailLabel' | translate"
+      >
+      </v-input-label>
+
+      <valtimo-value-path-selector
+        *ngIf="params$ | async as params"
+        [attr.data-test-id]="testIds.emailInput"
+        formControlName="email"
+        [caseDefinitionKey]="params?.caseDefinitionKey"
+        [caseDefinitionVersionTag]="params?.caseDefinitionVersionTag"
+        [excludePrefixes]="[ValuePathSelectorPrefix.TASK]"
+      ></valtimo-value-path-selector>
+    </div>
+
+    <div class="valtimo-widget-management-person-card__field">
+      <v-input-label [title]="'widgetTabManagement.content.person-card.cityLabel' | translate">
+      </v-input-label>
+
+      <valtimo-value-path-selector
+        *ngIf="params$ | async as params"
+        [attr.data-test-id]="testIds.cityInput"
+        formControlName="city"
+        [caseDefinitionKey]="params?.caseDefinitionKey"
+        [caseDefinitionVersionTag]="params?.caseDefinitionVersionTag"
+        [excludePrefixes]="[ValuePathSelectorPrefix.TASK]"
+      ></valtimo-value-path-selector>
+    </div>
+  </section>
+</form>

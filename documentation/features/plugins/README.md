@@ -15,7 +15,7 @@ Plugins consist of several parts; the definition itself, dictating both the prop
 
 Plugins can be configured in the plugin menu in Valtimo. The plugin menu is found under the admin menu. Admin privileges are required to configure plugins.
 
-Instructions for using the configuration to link an action to a process task can be found [here](../process/process-link.md#creating-a-plugin-process-link).
+Instructions for using the configuration to link an action to a process task can be found in the [process link documentation](../process/process-link.md#creating-a-plugin-process-link).
 
 ### ZGW plugins
 
@@ -38,7 +38,7 @@ The available ZGW plugins are:
 ## Configuring plugins
 
 {% hint style="info" %}
-Before plugins can be configured, both the backend and frontend dependencies are needed. See [here](../../fundamentals/getting-started/modules/core/plugin.md) for instructions on how to do this.
+Before plugins can be configured, both the backend and frontend dependencies are needed. See the [plugin module setup guide](../../fundamentals/getting-started/modules/core/plugin.md) for instructions on how to do this.
 {% endhint %}
 
 {% tabs %}
@@ -76,7 +76,7 @@ An example configuration can be found below:
 ]
 ```
 
-The id (UUID) of the plugin should be generated manually. The same id's should be used when referencing configurations at the [plugin processlink auto-deployment](broken-reference).
+The id (UUID) of the plugin should be generated manually. The same id's should be used when referencing configurations at the [plugin processlink auto-deployment](../process/process-link.md).
 
 The available properties can be found in the documentation of the plugin.
 
@@ -87,7 +87,7 @@ Values within the `properties` attribute can be resolved by using the `${SOME_VA
 
 ```yaml
 valtimo:
-  imports:
+  import:
     whitelistedPaths:
       - "VALTIMO_.*"
       - "GZAC_.*"

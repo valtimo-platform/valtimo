@@ -69,6 +69,7 @@ dependencies {
         api(project(":backend:resource:local-resource"))
         api(project(":backend:resource:temporary-resource-storage"))
         api(project(":backend:search"))
+        api(project(":backend:team"))
         api(project(":backend:test-utils-common"))
         api(project(":backend:value-resolver"))
         api(project(":backend:web"))
@@ -96,6 +97,10 @@ dependencies {
         api(project(":backend:dependencies:valtimo-gzac-dependencies"))
 
         //!GZAC
+
+        api("org.apache.tomcat.embed:tomcat-embed-core:${tomcatVersion}")
+        api("org.apache.tomcat.embed:tomcat-embed-el:${tomcatVersion}")
+        api("org.apache.tomcat.embed:tomcat-embed-websocket:${tomcatVersion}")
 
         api("org.liquibase:liquibase-core:${liquibaseVersion}")
 

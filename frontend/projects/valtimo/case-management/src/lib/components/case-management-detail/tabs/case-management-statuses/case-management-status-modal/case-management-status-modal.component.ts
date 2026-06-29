@@ -59,12 +59,21 @@ import {CASE_MANAGEMENT_STATUS_MODAL_TEST_IDS} from '../../../../../constants';
 export class CaseManagementStatusModalComponent implements OnInit, OnDestroy {
   protected readonly testIds = CASE_MANAGEMENT_STATUS_MODAL_TEST_IDS;
 
+  private _closedAnimationTimeout: ReturnType<typeof setTimeout> | undefined;
+
   @Input() public set type(value: StatusModalType) {
     this._type$.next(value);
 
+    // Cancel any pending closed animation delay
+    if (this._closedAnimationTimeout) {
+      clearTimeout(this._closedAnimationTimeout);
+      this._closedAnimationTimeout = undefined;
+    }
+
     if (value === 'closed') {
-      setTimeout(() => {
+      this._closedAnimationTimeout = setTimeout(() => {
         this._typeAnimationDelay$.next(value);
+        this._closedAnimationTimeout = undefined;
       }, CARBON_CONSTANTS.modalAnimationMs);
     } else {
       this._typeAnimationDelay$.next(value);
@@ -91,6 +100,7 @@ export class CaseManagementStatusModalComponent implements OnInit, OnDestroy {
       Validators.minLength(3),
       this.uniqueKeyValidator,
     ]),
+    label: this.fb.control(''),
     retentionPeriodInDays: this.fb.control(-1, [
       Validators.required,
       Validators.pattern(/^(?:-1|0|[1-9]\d*)$/),
@@ -151,6 +161,10 @@ export class CaseManagementStatusModalComponent implements OnInit, OnDestroy {
 
   public get title(): AbstractControl<string, string> {
     return this.statusFormGroup?.get('title');
+  }
+
+  public get label(): AbstractControl<string, string> {
+    return this.statusFormGroup?.get('label');
   }
 
   public get retentionPeriodInDays(): AbstractControl<number, number> {
@@ -279,6 +293,7 @@ export class CaseManagementStatusModalComponent implements OnInit, OnDestroy {
     this.statusFormGroup.patchValue({
       key: prefillStatus.key,
       title: prefillStatus.title,
+      label: prefillStatus.label ?? '',
       retentionPeriodInDays: retentionPeriodInDays,
       visibleInCaseListByDefault: prefillStatus.visibleInCaseListByDefault,
       color: prefillStatus.color,
@@ -293,9 +308,10 @@ export class CaseManagementStatusModalComponent implements OnInit, OnDestroy {
     this.statusFormGroup.patchValue({
       key: '',
       title: '',
+      label: '',
       visibleInCaseListByDefault: true,
       retentionPeriodInDays: -1,
-      color: TagColor.Magenta,
+      color: TagColor.Blue,
     });
     this._selectedColor$.next(TagColor.Blue);
     this.statusFormGroup.markAsPristine();
@@ -393,12 +409,14 @@ export class CaseManagementStatusModalComponent implements OnInit, OnDestroy {
   }
 
   private getFormValue(): InternalCaseStatus {
+    const labelValue = this.label.value?.trim();
     return {
       key: this.key.value,
       title: this.title.value,
       retentionPeriodInDays: this.retentionPeriodInDays.value,
       visibleInCaseListByDefault: this.visibleInCaseListByDefault.value,
       color: this.color.value as TagColor,
+      ...(labelValue ? {label: labelValue} : {}),
     };
   }
 }

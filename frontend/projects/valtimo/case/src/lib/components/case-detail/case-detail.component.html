@@ -1,5 +1,5 @@
 <!--
-  ~ Copyright 2015-2025 Ritense BV, the Netherlands.
+  ~ Copyright 2015-2026 Ritense BV, the Netherlands.
   ~
   ~ Licensed under EUPL, Version 1.2 (the "License");
   ~ you may not use this file except in compliance with the License.
@@ -13,6 +13,7 @@
   ~ See the License for the specific language governing permissions and
   ~ limitations under the License.
   -->
+
 <div
   class="main-content"
   [ngClass]="{'main-content--no-horizontal-overflow': $tabHorizontalOverflowDisabled()}"
@@ -61,6 +62,7 @@
         caseDetailLayout: caseDetailLayout$ | async,
         openTaskAndProcessLinkInModal: openTaskAndProcessLinkInModal$ | async,
         taskAndProcessLinkOpenedInPanel: taskAndProcessLinkOpenedInPanel$ | async,
+        startFormPanel: startFormPanel$ | async,
         isDarkMode: isDarkMode$ | async,
         compactMode: compactMode$ | async,
         tabContentContainerMaxHeight: tabContentContainerMaxHeight$ | async,
@@ -123,15 +125,23 @@
         >
           @if (tabContentObs.showTaskList) {
             <div class="task-panel">
-              @if (!tabContentObs.taskAndProcessLinkOpenedInPanel) {
-                <valtimo-case-detail-task-list
-                  [openTaskAndProcessLinkInModal]="tabContentObs.openTaskAndProcessLinkInModal"
-                  (taskClickEvent)="onTaskClickEvent($event)"
-                  (formSubmitEvent)="onFormSubmitEvent()"
-                ></valtimo-case-detail-task-list>
-              }
+              @if (tabContentObs.startFormPanel) {
+                <div class="start-form-panel">
+                  <section class="start-form-panel__header">
+                    <h4 class="start-form-panel__title">{{ tabContentObs.startFormPanel.title }}</h4>
 
-              @if (tabContentObs.taskAndProcessLinkOpenedInPanel) {
+                    <button cdsButton="ghost" [iconOnly]="true" (click)="onStartFormPanelClose()">
+                      <svg cdsIcon="close" size="16"></svg>
+                    </button>
+                  </section>
+
+                  <section class="start-form-panel__body">
+                    <ng-container
+                      *ngTemplateOutlet="tabContentObs.startFormPanel.template"
+                    ></ng-container>
+                  </section>
+                </div>
+              } @else if (tabContentObs.taskAndProcessLinkOpenedInPanel) {
                 <valtimo-case-detail-task-detail
                   [taskAndProcessLink]="tabContentObs.taskAndProcessLinkOpenedInPanel"
                   (activeChange)="onActiveChangeEvent($event)"
@@ -140,6 +150,12 @@
                   (dueDateChanged)="onDueDateChanged()"
                 >
                 </valtimo-case-detail-task-detail>
+              } @else {
+                <valtimo-case-detail-task-list
+                  [openTaskAndProcessLinkInModal]="tabContentObs.openTaskAndProcessLinkInModal"
+                  (taskClickEvent)="onTaskClickEvent($event)"
+                  (formSubmitEvent)="onFormSubmitEvent()"
+                ></valtimo-case-detail-task-list>
               }
             </div>
           }
@@ -176,25 +192,30 @@
   let-canAssign="canAssign"
 >
   <div *ngIf="canHaveAssignee && document">
-    <valtimo-case-assign-user
+    <valtimo-assignment
       *ngIf="canAssignLoaded$ | async"
+      mode="case"
       [assigneeFullName]="document?.assigneeFullName"
       [assigneeId]="document.assigneeId"
-      [documentId]="document.id"
+      [assignedTeamKey]="document.assignedTeamKey"
+      [assignedTeamTitle]="document.assignedTeamTitle"
       [hasPermission]="canAssign"
-      (assignmentOfDocumentChanged)="assignmentOfDocumentChanged()"
-    ></valtimo-case-assign-user>
+      [candidateUsers$]="candidateUsers$"
+      [candidateTeams$]="candidateTeams$"
+      (assignmentChangedEvent)="onAssignmentChanged($event)"
+      (unassignedEvent)="onUnassigned()"
+    ></valtimo-assignment>
   </div>
 </ng-template>
 
 <ng-template #claimButton let-canClaim="canClaim" let-canHaveAssignee="canHaveAssignee">
-  <cds-overflow-menu-option
+  <v-overflow-menu-option
     *ngIf="canClaim && canHaveAssignee"
     [disabled]="(isAssigning$ | async) || (isAssignedToCurrentUser$ | async)"
-    (click)="claimAssignee()"
+    (selected)="claimAssignee()"
   >
     {{ 'case.claimAssigneeCase' | translate }}
-  </cds-overflow-menu-option>
+  </v-overflow-menu-option>
 </ng-template>
 
 <ng-template
@@ -203,32 +224,38 @@
   let-canHaveAssignee="canHaveAssignee"
   let-assigneeId="assigneeId"
 >
-  <cds-overflow-menu-option
+  <v-overflow-menu-option
     *ngIf="canHaveAssignee && canAssign"
     [disabled]="!assigneeId"
     (selected)="unassignAssignee()"
   >
     {{ 'assignDocument.remove' | translate }}
-  </cds-overflow-menu-option>
+  </v-overflow-menu-option>
 </ng-template>
 
 <ng-template #deleteButton let-canDelete="canDelete">
-  <cds-overflow-menu-option
+  <v-overflow-menu-option
     *ngIf="canDelete"
     [disabled]="isDeleting$ | async"
-    (click)="deleteDocument()"
+    (selected)="deleteDocument()"
     type="danger"
   >
     {{ 'case.delete.delete' | translate }}
-  </cds-overflow-menu-option>
+  </v-overflow-menu-option>
+</ng-template>
+
+<ng-template #inspectButton let-canInspect="canInspect">
+  <v-overflow-menu-option *ngIf="canInspect" (selected)="navigateToInspection()">
+    {{ 'case.inspection.openInspector' | translate }}
+  </v-overflow-menu-option>
 </ng-template>
 
 <ng-template #customStartTrigger>
   <button
     [size]="(compactMode$ | async) ? 'sm' : 'lg'"
     cdsButton="primary"
-    [disabled]="processDefinitionCaseDefinitions.length === 0"
-    [ngbTooltip]="processDefinitionCaseDefinitions.length === 0 ? 'No action' : null"
+    [disabled]="startableItems.length === 0"
+    [ngbTooltip]="startableItems.length === 0 ? 'No action' : null"
   >
     {{ 'case.startSubProcess' | translate }}
 
@@ -259,6 +286,7 @@
         canClaim: canClaim$ | async,
         canHaveAssignee: canHaveAssignee$ | async,
         canDelete: canDelete$ | async,
+        canInspect: canInspect$ | async,
         document: document$ | async,
         caseStatus: caseStatus$ | async,
       } as obs"
@@ -287,13 +315,17 @@
       </div>
 
       <div class="buttons-container">
-        <cds-overflow-menu
-          [ngClass]="{'--compact': compactMode$ | async}"
-          *ngIf="obs.canHaveAssignee || obs.canDelete"
-          flip="true"
-          [offset]="(compactMode$ | async) ? {y: 48, x: -4} : {y: 48, x: 4}"
+        <v-overflow-menu
+          *ngIf="obs.canHaveAssignee || obs.canDelete || obs.canInspect"
+          placement="bottom-end"
           class="overflow-button assign-overflow"
+          [ngClass]="{'--compact': compactMode$ | async}"
         >
+          <v-overflow-menu-trigger
+            overflowTrigger
+            [compact]="compactMode$ | async"
+          ></v-overflow-menu-trigger>
+
           <ng-container
             *ngTemplateOutlet="
               claimButton;
@@ -314,26 +346,30 @@
           >
           </ng-container>
 
+          <ng-container *ngTemplateOutlet="inspectButton; context: {canInspect: obs.canInspect}">
+          </ng-container>
+
           <ng-container *ngTemplateOutlet="deleteButton; context: {canDelete: obs.canDelete}">
           </ng-container>
-        </cds-overflow-menu>
+        </v-overflow-menu>
 
-        <cds-overflow-menu
-          valtimoCdsOverflowButton
+        <v-overflow-menu
           [ngClass]="{'--compact': compactMode$ | async}"
-          [width]="dropdownWidth$ | async"
-          [customTrigger]="customStartTrigger"
-          [offset]="{y: 48, x: 35}"
+          [menuWidth]="dropdownWidth$ | async"
+          placement="bottom-end"
           class="overflow-button case-detail-overflow"
         >
-          <cds-overflow-menu-option
-            *ngFor="let processDefinitionCaseDefinition of processDefinitionCaseDefinitions"
-            [attr.title]="processDefinitionCaseDefinition.displayName"
-            (click)="startProcess(processDefinitionCaseDefinition)"
+          <ng-container overflowTrigger>
+            <ng-container *ngTemplateOutlet="customStartTrigger"></ng-container>
+          </ng-container>
+          <v-overflow-menu-option
+            *ngFor="let startableItem of startableItems"
+            [attr.title]="startableItem.displayName"
+            (selected)="startItem(startableItem)"
           >
-            {{ processDefinitionCaseDefinition.displayName }}
-          </cds-overflow-menu-option>
-        </cds-overflow-menu>
+            {{ startableItem.displayName }}
+          </v-overflow-menu-option>
+        </v-overflow-menu>
       </div>
     </div>
   </ng-template>

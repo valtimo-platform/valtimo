@@ -30,6 +30,7 @@ import com.ritense.logging.LoggableResource
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import com.ritense.valtimo.contract.case_.CaseDefinitionId
 import com.ritense.valtimo.contract.domain.ValtimoMediaType.APPLICATION_JSON_UTF8_VALUE
+import jakarta.validation.Valid
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
@@ -72,7 +73,7 @@ class DocumentenApiManagementResource(
     @PutMapping("/v1/case-definition/{caseDefinitionName}/zgw-document-column")
     fun updateColumnOrder(
         @LoggableResource("documentDefinitionName") @PathVariable(name = "caseDefinitionName") caseDefinitionName: String,
-        @RequestBody columnDtos: List<ReorderColumnRequest>,
+        @Valid @RequestBody columnDtos: List<ReorderColumnRequest>,
     ): ResponseEntity<List<ColumnResponse>> {
         val version = documentenApiVersionService.getVersion(caseDefinitionName)
         val columns = columnDtos.mapIndexed { index, columnDto -> columnDto.toEntity(caseDefinitionName, index) }
@@ -86,7 +87,7 @@ class DocumentenApiManagementResource(
     fun createOrUpdateColumn(
         @LoggableResource("documentDefinitionName") @PathVariable(name = "caseDefinitionName") caseDefinitionName: String,
         @PathVariable(name = "columnKey") columnKey: String,
-        @RequestBody column: UpdateColumnRequest,
+        @Valid @RequestBody column: UpdateColumnRequest,
     ): ResponseEntity<ColumnResponse> {
         val version = documentenApiVersionService.getVersion(caseDefinitionName)
         val updatedColumn = documentenApiService.createOrUpdateColumn(column.toEntity(caseDefinitionName, columnKey))
@@ -128,8 +129,8 @@ class DocumentenApiManagementResource(
     @RunWithoutAuthorization
     @GetMapping("/v1/documenten-api/versions")
     fun getAllApiVersion(): ResponseEntity<DocumentenApiVersionsManagementDto> {
-        val versions = documentenApiVersionService.getAllVersions().map { it.version }
-        return ResponseEntity.ok(DocumentenApiVersionsManagementDto(versions))
+        val versions = documentenApiVersionService.getAllVersions()
+        return ResponseEntity.ok(DocumentenApiVersionsManagementDto.of(versions))
     }
 
     @RunWithoutAuthorization
@@ -145,7 +146,7 @@ class DocumentenApiManagementResource(
     @PutMapping("/v1/case-definition/{caseDefinitionName}/zgw-document/upload-field")
     fun updateUploadField(
         @LoggableResource("documentDefinitionName") @PathVariable(name = "caseDefinitionName") caseDefinitionName: String,
-        @RequestBody uploadField: DocumentenApiUploadFieldDto,
+        @Valid @RequestBody uploadField: DocumentenApiUploadFieldDto,
     ): ResponseEntity<Unit> {
         documentenApiService.updateUploadField(DocumentenApiUploadFieldDto.toEntity(caseDefinitionName, uploadField))
         return ResponseEntity.noContent().build()

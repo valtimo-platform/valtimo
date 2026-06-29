@@ -14,9 +14,7 @@
         "pluginDefinitionKey": "zakenapi",
         "properties": {
             "url": "${VALTIMO_ZAKEN_API_URL}",
-            "authenticationPluginConfiguration": "b609a0a3-886e-4b3d-ae0d-c01effb311ee",
-            "noteEventListenerEnabled": true,
-            "noteSubject": "Notitie aangemaakt in Valtimo GZAC"
+            "authenticationPluginConfiguration": "b609a0a3-886e-4b3d-ae0d-c01effb311ee"
         }
     },
     {
@@ -47,6 +45,15 @@
             "bronorganisatie": "051845623",
             "authenticationPluginConfiguration": "b609a0a3-886e-4b3d-ae0d-c01effb311ee",
             "apiVersion": "1.4.2-maykin-1.13.0"
+        }
+    },
+    {
+        "id": "fdb489a2-e352-4431-a36a-8d708c90aff7",
+        "title": "Documenten API Preview",
+        "pluginDefinitionKey": "documentenapipreview",
+        "properties": {
+            "pdfConversionUrl": "${VALTIMO_PDF_CONVERSION_API_URL}",
+            "documentenApiConfigurationId": "5474fe57-532a-4050-8d89-32e62ca3e895"
         }
     },
     {

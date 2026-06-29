@@ -20,6 +20,7 @@ import com.ritense.resource.web.ObjectUrlDTO
 import com.ritense.resource.web.ResourceDTO
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import com.ritense.valtimo.contract.domain.ValtimoMediaType.APPLICATION_JSON_UTF8_VALUE
+import jakarta.validation.Valid
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
@@ -41,7 +42,7 @@ interface ResourceResource {
     fun getContent(@PathVariable(name = "resourceId") resourceId: String): ResponseEntity<ByteArray>
 
     @PutMapping("/v1/resource", consumes = [APPLICATION_JSON_UTF8_VALUE])
-    fun register(@RequestBody resourceDTO: ResourceDTO): ResponseEntity<ResourceDTO>
+    fun register(@Valid @RequestBody resourceDTO: ResourceDTO): ResponseEntity<ResourceDTO>
 
     @DeleteMapping("/v1/resource/{resourceId}")
     fun delete(@PathVariable(name = "resourceId") resourceId: String): ResponseEntity<Void>

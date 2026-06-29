@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,7 +26,7 @@ import org.springframework.transaction.annotation.Transactional
 
 @Transactional
 class CaseJsonSchemaDocumentDefinitionImporter(
-    private val jsonSchemaDocumentDefinitionService: JsonSchemaDocumentDefinitionService
+    private val jsonSchemaDocumentDefinitionService: JsonSchemaDocumentDefinitionService,
 ) : Importer {
     override fun type() = DOCUMENT_DEFINITION
 
@@ -35,7 +35,10 @@ class CaseJsonSchemaDocumentDefinitionImporter(
     override fun supports(fileName: String) = fileName.matches(PATH_REGEX)
 
     override fun import(request: ImportRequest) {
-        jsonSchemaDocumentDefinitionService.deploy(JsonSchema.fromString(request.content.toString(Charsets.UTF_8)), request.caseDefinitionId)
+        jsonSchemaDocumentDefinitionService.deploy(
+            JsonSchema.fromString(request.content.toString(Charsets.UTF_8)),
+            request.caseDefinitionId
+        )
     }
 
     private companion object {

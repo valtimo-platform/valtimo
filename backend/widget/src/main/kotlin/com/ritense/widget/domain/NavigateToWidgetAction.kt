@@ -17,12 +17,15 @@
 package com.ritense.widget.domain
 
 import com.fasterxml.jackson.annotation.JsonIgnore
+import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.annotation.JsonTypeName
 
 @JsonTypeName("navigateTo")
 data class NavigateToWidgetAction(
     val name: String?,
     val navigateTo: String,
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    val openInNewTab: Boolean? = null,
 ) : WidgetAction {
 
     @JsonIgnore

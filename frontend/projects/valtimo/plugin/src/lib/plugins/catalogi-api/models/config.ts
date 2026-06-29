@@ -28,7 +28,7 @@ interface GetBesluittypeConfig {
 
 interface GetResultaattypenConfig {
   processVariable: string;
-  zaakTypeUrl?: string;
+  zaaktypeUrl?: string;
 }
 
 interface GetResultaattypeConfig {
@@ -38,7 +38,7 @@ interface GetResultaattypeConfig {
 
 interface GetStatustypenConfig {
   processVariable: string;
-  zaakTypeUrl?: string;
+  zaaktypeUrl?: string;
 }
 
 interface GetStatustypeConfig {
@@ -51,6 +51,11 @@ interface GetEigenschapConfig {
   processVariable: string;
 }
 
+interface GetInformatieobjecttypeConfig {
+  informatieobjecttype: string;
+  processVariable: string;
+}
+
 export {
   CatalogiApiConfig,
   GetBesluittypeConfig,
@@ -59,4 +64,5 @@ export {
   GetStatustypenConfig,
   GetStatustypeConfig,
   GetEigenschapConfig,
+  GetInformatieobjecttypeConfig,
 };

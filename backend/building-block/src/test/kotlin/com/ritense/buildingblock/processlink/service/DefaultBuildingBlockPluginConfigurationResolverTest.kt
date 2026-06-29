@@ -22,14 +22,14 @@ import com.ritense.buildingblock.processlink.domain.BuildingBlockProcessLink
 import com.ritense.buildingblock.service.BuildingBlockInstanceService
 import com.ritense.processlink.domain.ActivityTypeWithEventName
 import com.ritense.processlink.service.ProcessLinkService
-import com.ritense.valtimo.contract.buildingblock.BuildingBlockConstants.Companion.BUILDING_BLOCK_DOCUMENT_ID_VARIABLE
 import com.ritense.valtimo.contract.buildingblock.BuildingBlockDefinitionId
+import com.ritense.valtimo.contract.case_.CaseDefinitionId
 import org.assertj.core.api.Assertions.assertThat
-import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.junit.jupiter.api.Test
+import org.mockito.kotlin.any
 import org.mockito.kotlin.doReturn
-import org.mockito.kotlin.eq
 import org.mockito.kotlin.mock
+import org.mockito.kotlin.never
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 import org.operaton.bpm.engine.delegate.DelegateExecution
@@ -40,62 +40,62 @@ class DefaultBuildingBlockPluginConfigurationResolverTest {
 
     private val buildingBlockInstanceService = mock<BuildingBlockInstanceService>()
     private val processLinkService = mock<ProcessLinkService>()
+    private val linkRepository = mock<com.ritense.buildingblock.repository.CaseDefinitionBuildingBlockLinkRepository>()
+    private val documentService = mock<com.ritense.document.service.DocumentService>()
 
     private val resolver = DefaultBuildingBlockPluginConfigurationResolver(
         buildingBlockInstanceService,
-        processLinkService
+        processLinkService,
+        linkRepository,
+        documentService,
     )
 
     @Test
-    fun `should resolve plugin configuration mapping for building block instance`() {
-        val documentId = UUID.randomUUID()
-        val testProcessDefinitionId = "case-process"
+    fun `should resolve plugin configuration mapping via call activity`() {
+        val bbProcessInstanceId = "bb-process-instance"
+        val callerProcessDefinitionId = "case-process-def"
         val activityId = "callActivity"
         val pluginConfigurationId = UUID.randomUUID()
+        val rootInstanceId = UUID.randomUUID()
 
-        // Mock the call activity execution that has the local variable
-        val callActivityExecution = mock<DelegateExecution> {
-            on { hasVariableLocal(eq(BUILDING_BLOCK_DOCUMENT_ID_VARIABLE)) } doReturn true
-            on { getVariableLocal(eq(BUILDING_BLOCK_DOCUMENT_ID_VARIABLE)) } doReturn documentId.toString()
-            on { processDefinitionId } doReturn testProcessDefinitionId
-            on { processInstance } doReturn null // End of hierarchy
-        }
-
-        // Mock the process instance execution that returns the call activity as superExecution
-        val processInstanceExecution = mock<DelegateExecution> {
-            on { superExecution } doReturn callActivityExecution
-        }
-
-        // Mock the current execution (inside the building block process)
         val execution = mock<DelegateExecution> {
-            on { hasVariableLocal(eq(BUILDING_BLOCK_DOCUMENT_ID_VARIABLE)) } doReturn false
-            on { processInstance } doReturn processInstanceExecution
+            on { processInstanceId } doReturn bbProcessInstanceId
         }
 
         val buildingBlockDefinitionId = BuildingBlockDefinitionId.of("bb-key", "1.0.0")
         val definition = BuildingBlockDefinition(
-            buildingBlockDefinitionId,
-            "Test block",
-            "desc",
-            "tester",
-            LocalDateTime.now(),
-            null,
-            false
+            buildingBlockDefinitionId, "Test block", "desc", "tester",
+            LocalDateTime.now(), null, false
         )
-        whenever(buildingBlockInstanceService.getByDocumentId(documentId)).thenReturn(
+
+        val rootInstance = BuildingBlockInstance(
+            id = rootInstanceId,
+            documentId = UUID.randomUUID(),
+            caseDocumentId = UUID.randomUUID(),
+            processInstanceId = "root-process-instance",
+
+            activityId = activityId,
+            callerProcessDefinitionId = callerProcessDefinitionId,
+            definition = definition
+        )
+
+        whenever(buildingBlockInstanceService.getByProcessInstanceId(bbProcessInstanceId)).thenReturn(
             BuildingBlockInstance(
-                documentId = documentId,
+                documentId = UUID.randomUUID(),
                 caseDocumentId = UUID.randomUUID(),
-                activityId = activityId,
+                processInstanceId = bbProcessInstanceId,
+
+                rootBuildingBlockInstanceId = rootInstanceId,
                 definition = definition
             )
         )
+        whenever(buildingBlockInstanceService.get(rootInstanceId)).thenReturn(rootInstance)
 
-        whenever(processLinkService.getProcessLinks(testProcessDefinitionId, activityId)).thenReturn(
+        whenever(processLinkService.getProcessLinks(callerProcessDefinitionId, activityId)).thenReturn(
             listOf(
                 BuildingBlockProcessLink(
                     id = UUID.randomUUID(),
-                    processDefinitionId = testProcessDefinitionId,
+                    processDefinitionId = callerProcessDefinitionId,
                     activityId = activityId,
                     activityType = ActivityTypeWithEventName.CALL_ACTIVITY_START,
                     buildingBlockDefinitionId = buildingBlockDefinitionId,
@@ -108,110 +108,123 @@ class DefaultBuildingBlockPluginConfigurationResolverTest {
         val resolved = resolver.resolve(execution, "plugin-definition")
 
         assertThat(resolved).isEqualTo(pluginConfigurationId)
-        verify(processLinkService).getProcessLinks(testProcessDefinitionId, activityId)
+        verify(processLinkService).getProcessLinks(callerProcessDefinitionId, activityId)
     }
 
     @Test
-    fun `should throw when no building block variable found in hierarchy`() {
-        // Execution with no building block variable in its hierarchy
+    fun `should return null when no building block context found`() {
+        val processInstanceId = UUID.randomUUID().toString()
         val execution = mock<DelegateExecution> {
-            on { hasVariableLocal(eq(BUILDING_BLOCK_DOCUMENT_ID_VARIABLE)) } doReturn false
-            on { processInstance } doReturn null
+            on { this.processInstanceId } doReturn processInstanceId
         }
 
-        assertThatThrownBy { resolver.resolve(execution, "any") }
-            .isInstanceOf(IllegalStateException::class.java)
-            .hasMessage("Could not find root building block process link with plugin configuration mappings")
+        whenever(buildingBlockInstanceService.getByProcessInstanceId(processInstanceId)).thenReturn(null)
+
+        val resolved = resolver.resolve(execution, "any")
+        assertThat(resolved).isNull()
     }
 
     @Test
-    fun `should throw when no matching building block instance is found`() {
-        val documentId = UUID.randomUUID()
-        val testProcessDefinitionId = "case-process"
-
-        // Mock the call activity execution that has the local variable
-        val callActivityExecution = mock<DelegateExecution> {
-            on { hasVariableLocal(eq(BUILDING_BLOCK_DOCUMENT_ID_VARIABLE)) } doReturn true
-            on { getVariableLocal(eq(BUILDING_BLOCK_DOCUMENT_ID_VARIABLE)) } doReturn documentId.toString()
-            on { processDefinitionId } doReturn testProcessDefinitionId
-            on { processInstance } doReturn null // End of hierarchy
-        }
-
-        // Mock the process instance execution that returns the call activity as superExecution
-        val processInstanceExecution = mock<DelegateExecution> {
-            on { superExecution } doReturn callActivityExecution
-        }
+    fun `should resolve plugin via business key when called from sub-process inside a building block`() {
+        // Scenario: BB main process started ad-hoc -> plain callActivity to a sub-process that has
+        // a plugin process link. The sub-process has its own processInstanceId and no BB instance
+        // row of its own; resolution must succeed via the business key (= BB document id) which the
+        // call activity propagates per Valtimo convention.
+        val subProcessInstanceId = "sub-process-instance"
+        val buildingBlockDocumentId = UUID.randomUUID()
+        val callerProcessDefinitionId = "case-process-def"
+        val activityId = "callBB"
+        val pluginConfigurationId = UUID.randomUUID()
 
         val execution = mock<DelegateExecution> {
-            on { hasVariableLocal(eq(BUILDING_BLOCK_DOCUMENT_ID_VARIABLE)) } doReturn false
-            on { processInstance } doReturn processInstanceExecution
-        }
-
-        whenever(buildingBlockInstanceService.getByDocumentId(documentId)).thenReturn(null)
-
-        assertThatThrownBy { resolver.resolve(execution, "plugin-definition") }
-            .isInstanceOf(IllegalStateException::class.java)
-            .hasMessageContaining("No building block instance found for documentId")
-    }
-
-    @Test
-    fun `should throw when multiple building block process links are found`() {
-        val documentId = UUID.randomUUID()
-        val testProcessDefinitionId = "case-process"
-        val activityId = "callActivity"
-
-        // Mock the call activity execution that has the local variable
-        val callActivityExecution = mock<DelegateExecution> {
-            on { hasVariableLocal(eq(BUILDING_BLOCK_DOCUMENT_ID_VARIABLE)) } doReturn true
-            on { getVariableLocal(eq(BUILDING_BLOCK_DOCUMENT_ID_VARIABLE)) } doReturn documentId.toString()
-            on { processDefinitionId } doReturn testProcessDefinitionId
-            on { processInstance } doReturn null // End of hierarchy
-        }
-
-        // Mock the process instance execution that returns the call activity as superExecution
-        val processInstanceExecution = mock<DelegateExecution> {
-            on { superExecution } doReturn callActivityExecution
-        }
-
-        val execution = mock<DelegateExecution> {
-            on { hasVariableLocal(eq(BUILDING_BLOCK_DOCUMENT_ID_VARIABLE)) } doReturn false
-            on { processInstance } doReturn processInstanceExecution
+            on { processInstanceId } doReturn subProcessInstanceId
+            on { processBusinessKey } doReturn buildingBlockDocumentId.toString()
         }
 
         val buildingBlockDefinitionId = BuildingBlockDefinitionId.of("bb-key", "1.0.0")
         val definition = BuildingBlockDefinition(
-            buildingBlockDefinitionId,
-            "Test block",
-            "desc",
-            "tester",
-            LocalDateTime.now(),
-            null,
-            false
+            buildingBlockDefinitionId, "Test block", "desc", "tester",
+            LocalDateTime.now(), null, false
         )
-        whenever(buildingBlockInstanceService.getByDocumentId(documentId)).thenReturn(
+
+        val bbInstance = BuildingBlockInstance(
+            documentId = buildingBlockDocumentId,
+            caseDocumentId = UUID.randomUUID(),
+            processInstanceId = "bb-main-process-instance",
+            activityId = activityId,
+            callerProcessDefinitionId = callerProcessDefinitionId,
+            definition = definition
+        )
+
+        // Only the BB main process has a row; the sub-process does not.
+        whenever(buildingBlockInstanceService.getByDocumentId(buildingBlockDocumentId)).thenReturn(bbInstance)
+
+        whenever(processLinkService.getProcessLinks(callerProcessDefinitionId, activityId)).thenReturn(
+            listOf(
+                BuildingBlockProcessLink(
+                    id = UUID.randomUUID(),
+                    processDefinitionId = callerProcessDefinitionId,
+                    activityId = activityId,
+                    activityType = ActivityTypeWithEventName.CALL_ACTIVITY_START,
+                    buildingBlockDefinitionId = buildingBlockDefinitionId,
+                    pluginConfigurationMappings = mapOf("plugin-definition" to pluginConfigurationId),
+                    inputMappings = emptyList()
+                )
+            )
+        )
+
+        val resolved = resolver.resolve(execution, "plugin-definition")
+
+        assertThat(resolved).isEqualTo(pluginConfigurationId)
+        // Document-id path resolves the instance; processInstanceId fallback must not be consulted.
+        verify(buildingBlockInstanceService).getByDocumentId(buildingBlockDocumentId)
+        verify(buildingBlockInstanceService, never()).getByProcessInstanceId(any())
+    }
+
+    @Test
+    fun `should resolve from case link when no call activity mapping exists`() {
+        val bbProcessInstanceId = "bb-process-instance"
+        val caseDocumentId = UUID.randomUUID()
+        val pluginConfigurationId = UUID.randomUUID()
+        val mockCaseDefinitionId = mock<CaseDefinitionId>()
+
+        val execution = mock<DelegateExecution> {
+            on { processInstanceId } doReturn bbProcessInstanceId
+        }
+
+        val buildingBlockDefinitionId = BuildingBlockDefinitionId.of("bb-key", "1.0.0")
+        val definition = BuildingBlockDefinition(
+            buildingBlockDefinitionId, "Test block", "desc", "tester",
+            LocalDateTime.now(), null, false
+        )
+
+        // Top-level ad-hoc BB (no activityId, no parent)
+        whenever(buildingBlockInstanceService.getByProcessInstanceId(bbProcessInstanceId)).thenReturn(
             BuildingBlockInstance(
-                documentId = documentId,
-                caseDocumentId = UUID.randomUUID(),
-                activityId = activityId,
+                documentId = UUID.randomUUID(),
+                caseDocumentId = caseDocumentId,
+                processInstanceId = bbProcessInstanceId,
+
                 definition = definition
             )
         )
 
-        val link = BuildingBlockProcessLink(
-            id = UUID.randomUUID(),
-            processDefinitionId = testProcessDefinitionId,
-            activityId = activityId,
-            activityType = ActivityTypeWithEventName.CALL_ACTIVITY_START,
-            buildingBlockDefinitionId = buildingBlockDefinitionId,
-            pluginConfigurationMappings = emptyMap(),
-            inputMappings = emptyList()
-        )
-        whenever(processLinkService.getProcessLinks(testProcessDefinitionId, activityId))
-            .thenReturn(listOf(link, link.copy(id = UUID.randomUUID())))
+        val documentDefinitionId = mock<com.ritense.document.domain.DocumentDefinition.Id> {
+            on { caseDefinitionId() } doReturn mockCaseDefinitionId
+        }
+        val caseDocument = mock<com.ritense.document.domain.Document> {
+            on { definitionId() } doReturn documentDefinitionId
+        }
+        whenever(documentService.get(caseDocumentId.toString())).thenReturn(caseDocument)
 
-        assertThatThrownBy { resolver.resolve(execution, "plugin-definition") }
-            .isInstanceOf(IllegalStateException::class.java)
-            .hasMessageContaining(testProcessDefinitionId)
-            .hasMessageContaining(activityId)
+        val link = mock<com.ritense.buildingblock.domain.CaseDefinitionBuildingBlockLink> {
+            on { pluginConfigurationMappings } doReturn mapOf("plugin-definition" to pluginConfigurationId)
+        }
+        whenever(linkRepository.findByCaseDefinitionIdAndBuildingBlockDefinitionId(mockCaseDefinitionId, buildingBlockDefinitionId))
+            .thenReturn(link)
+
+        val resolved = resolver.resolve(execution, "plugin-definition")
+
+        assertThat(resolved).isEqualTo(pluginConfigurationId)
     }
 }

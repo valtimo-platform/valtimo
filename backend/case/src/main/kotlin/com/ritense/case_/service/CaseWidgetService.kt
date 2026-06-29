@@ -128,7 +128,8 @@ class CaseWidgetService(
                     caseWidgetMappers.first { mapper ->
                         mapper.supportedDtoType().isAssignableFrom(widgetDto::class.java)
                     }.toEntity(widgetDto, index)
-                }
+                },
+                widgetLayout = tabDto.widgetLayout
             )
         return CaseWidgetTabDto.of(
             caseWidgetTabRepository.save(caseWidgetTab),

@@ -40,8 +40,6 @@
 
     <ng-container *ngTemplateOutlet="exportMenu; context: {obs: obs}"></ng-container>
   </div>
-
-
 </div>
 
 <ng-template #versionSelection let-obs="obs">
@@ -104,63 +102,38 @@
 </ng-template>
 
 <ng-template #exportMenu let-obs="obs">
-  <cds-overflow-menu
-    valtimoCdsOverflowButton
-    [width]="250"
-    [customTrigger]="customTrigger"
-    [offset]="{y: 48, x: 37}"
-    class="overflow-button"
-  >
-    <cds-overflow-menu-option
+  <v-overflow-menu [menuWidth]="250" placement="bottom-end" class="overflow-button">
+    <button
+      overflowTrigger
+      cdsButton="tertiary"
+      [attr.data-test-id]="testIds.moreButton"
+      [size]="(compactMode$ | async) ? 'sm' : 'md'"
+    >
+      {{ 'caseManagement.more' | translate }}
+
+      <svg
+        class="cds--btn__icon case-management-overflow-icon"
+        cdsIcon="overflow-menu--vertical"
+        size="16"
+      ></svg>
+    </button>
+
+    <v-overflow-menu-option
       [attr.data-test-id]="testIds.exportButton"
-      [id]="'exportDocumentDefinition'"
+      optionId="exportDocumentDefinition"
       [disabled]="obs.exporting || obs.loadingVersion"
       (selected)="export()"
       >{{ 'caseManagement.export' | translate: {value: documentDefinitionTitle} }}
-    </cds-overflow-menu-option>
+    </v-overflow-menu-option>
 
-    <span
-      *ngIf="obs.hasUnresolvedConfigurationIssues && !obs.selectedVersionIsGloballyActive; else setActiveDefault"
-    >
-      <cds-tooltip
-        [description]="'caseManagement.setGlobalActiveVersionConfigurationIssuesWarning' | translate"
-        [align]="'bottom'"
-      >
-        <cds-overflow-menu-option
-          [attr.data-test-id]="testIds.setActiveVersionButton"
-          [id]="'setGlobalActiveVersion'"
-          [disabled]="true"
-          >{{ 'caseManagement.setGlobalActiveVersion' | translate }}
-        </cds-overflow-menu-option>
-      </cds-tooltip>
-    </span>
-
-    <ng-template #setActiveDefault>
-      <cds-overflow-menu-option
-        data-test-id="caseSetActiveVersionButton"
-        [id]="'setGlobalActiveVersion'"
-        [disabled]="obs.selectedVersionIsGloballyActive"
-        (selected)="openGlobalActiveVersionModal()"
-        >{{ 'caseManagement.setGlobalActiveVersion' | translate }}
-      </cds-overflow-menu-option>
-    </ng-template>
-  </cds-overflow-menu>
-</ng-template>
-
-<ng-template #customTrigger>
-  <button
-    cdsButton="tertiary"
-    [attr.data-test-id]="testIds.moreButton"
-    [size]="(compactMode$ | async) ? 'sm' : 'md'"
-  >
-    {{ 'caseManagement.more' | translate }}
-
-    <svg
-      class="cds--btn__icon case-management-overflow-icon"
-      cdsIcon="overflow-menu--vertical"
-      size="16"
-    ></svg>
-  </button>
+    <v-overflow-menu-option
+      [attr.data-test-id]="testIds.setActiveVersionButton"
+      optionId="setGlobalActiveVersion"
+      [disabled]="obs.setActiveDisabled"
+      (selected)="openGlobalActiveVersionModal()"
+      >{{ 'caseManagement.setGlobalActiveVersion' | translate }}
+    </v-overflow-menu-option>
+  </v-overflow-menu>
 </ng-template>
 
 <ng-template #exportingMessage>

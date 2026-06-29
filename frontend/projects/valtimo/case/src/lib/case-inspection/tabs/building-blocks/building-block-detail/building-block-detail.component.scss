@@ -1,0 +1,70 @@
+/*!
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
+ *
+ * Licensed under EUPL, Version 1.2 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" basis,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+.json-editor-container {
+  border: 1px solid var(--cds-border-subtle);
+}
+
+.case-inspection-bb-detail {
+  padding-top: 16px;
+  padding-bottom: 16px;
+  padding-right: 16px;
+
+  &__header {
+    margin-bottom: var(--cds-spacing-05);
+
+    h3 {
+      margin: 0;
+      margin-bottom: 8px;
+
+      small {
+        font-weight: 400;
+        color: var(--cds-text-helper);
+        margin-left: var(--cds-spacing-03);
+        font-size: var(--cds-body-compact-01-font-size);
+      }
+    }
+  }
+
+  &__meta code {
+    word-break: break-all;
+  }
+
+  &__subhead {
+    margin: var(--cds-spacing-06) 0 var(--cds-spacing-03);
+    font-size: var(--cds-body-compact-01-font-size);
+    font-weight: 600;
+    color: var(--cds-text-secondary);
+  }
+
+  &__error {
+    color: var(--cds-text-error);
+  }
+
+  &__view-logs {
+    background: none;
+    border: none;
+    color: var(--cds-link-primary);
+    cursor: pointer;
+    font-size: var(--cds-helper-text-01-font-size);
+    padding: 0 0 0 var(--cds-spacing-03);
+    text-decoration: underline;
+
+    &:hover {
+      color: var(--cds-link-primary-hover);
+    }
+  }
+}

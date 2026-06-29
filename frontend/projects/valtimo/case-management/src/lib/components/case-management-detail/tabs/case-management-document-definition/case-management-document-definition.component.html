@@ -17,7 +17,6 @@
 <valtimo-json-editor
   [model]="documentDefinitionModel$ | async"
   [fitPage]="true"
-  [fitPageSpaceAdjustment]="128"
   [showEditButton]="hasEditPermissions$ | async"
   (changeEvent)="onChangeEvent()"
   (discardEvent)="onDiscardEvent()"
@@ -30,6 +29,7 @@
       (loadingDocumentDefinition$ | async) || (selectedDocumentDefinition$ | async) === null
     "
     (click)="downloadDefinition()"
+    [attr.data-test-id]="testIds.downloadButton"
   >
     {{ 'interface.download' | translate }}
 

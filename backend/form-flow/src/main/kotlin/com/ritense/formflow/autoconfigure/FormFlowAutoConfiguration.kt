@@ -205,9 +205,12 @@ class FormFlowAutoConfiguration {
     @ConditionalOnMissingBean(FormFlowManagementResource::class)
     fun formFlowManagementResource(
         formFlowService: FormFlowService,
-        formFlowDefinitionImporter: FormFlowDefinitionImporter
+        caseDefinitionChecker: CaseDefinitionChecker,
     ): FormFlowManagementResource {
-        return FormFlowManagementResource(formFlowService, formFlowDefinitionImporter)
+        return FormFlowManagementResource(
+            formFlowService,
+            caseDefinitionChecker,
+        )
     }
 
     @Bean

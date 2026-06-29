@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -35,6 +35,7 @@ import com.ritense.catalogiapi.domain.Zaaktype
 import com.ritense.catalogiapi.domain.ZaaktypeInformatieobjecttype
 import com.ritense.catalogiapi.exception.BesluittypeNotFoundException
 import com.ritense.catalogiapi.exception.EigenschapNotFoundException
+import com.ritense.catalogiapi.exception.InformatieobjecttypeNotFoundException
 import com.ritense.catalogiapi.exception.ResultaattypeNotFoundException
 import com.ritense.catalogiapi.exception.StatustypeNotFoundException
 import com.ritense.catalogiapi.service.ZaaktypeUrlProvider
@@ -245,6 +246,30 @@ class CatalogiApiPlugin(
         }
     }
 
+    @PluginAction(
+        key = "get-informatieobjecttype",
+        title = "Get Informatieobjecttype",
+        description = "Retrieve the informatieobjecttype URL by description and store it in a process variable",
+        activityTypes = [ActivityTypeWithEventName.SERVICE_TASK_START, ActivityTypeWithEventName.CALL_ACTIVITY_START]
+    )
+    fun getInformatieobjecttypeUrl(
+        execution: DelegateExecution,
+        @PluginActionProperty informatieobjecttype: String,
+        @PluginActionProperty processVariable: String,
+    ) {
+        withLoggingContext(
+            CATALOGI_API.INFORMATIEOBJECTTYPE to informatieobjecttype
+        ) {
+            logger.debug { "Retrieving informatieobjecttype by description '$informatieobjecttype' and storing it in process variable: $processVariable" }
+            val zaaktypeUrl = getZaaktypeUrl(execution)
+            val informatieobjecttypeUrl = getInformatieobjecttypeByOmschrijving(zaaktypeUrl, informatieobjecttype).url!!.toASCIIString()
+
+            logger.info { "Setting process variable '$processVariable' with informatieobjecttype URL: $informatieobjecttypeUrl" }
+
+            execution.setVariable(processVariable, informatieobjecttypeUrl)
+        }
+    }
+
     fun getInformatieobjecttypes(
         zaakTypeUrl: URI,
     ): List<Informatieobjecttype> {
@@ -275,9 +300,15 @@ class CatalogiApiPlugin(
 
                     // Filter the types based on the geldigheid dates for all non-concept types
                     if (!informatieobjecttype.concept &&
-                        informatieobjecttype.beginGeldigheid.isBefore(LocalDate.now()) &&
-                        (informatieobjecttype.eindeGeldigheid == null ||
-                            informatieobjecttype.eindeGeldigheid.isAfter(LocalDate.now()))
+                        (
+                            informatieobjecttype.beginGeldigheid.isBefore(LocalDate.now()) ||
+                            informatieobjecttype.beginGeldigheid.isEqual(LocalDate.now())
+                        ) &&
+                        (
+                            informatieobjecttype.eindeGeldigheid == null ||
+                            informatieobjecttype.eindeGeldigheid.isAfter(LocalDate.now()) ||
+                            informatieobjecttype.eindeGeldigheid.isEqual(LocalDate.now())
+                        )
                     ) {
                         informatieobjecttype
                     } else {
@@ -302,6 +333,17 @@ class CatalogiApiPlugin(
                 url,
                 typeUrl
             )
+        }
+    }
+
+    fun getInformatieobjecttypeByOmschrijving(zaakTypeUrl: URI, omschrijving: String): Informatieobjecttype {
+        withLoggingContext(
+            CATALOGI_API.INFORMATIEOBJECTTYPE to zaakTypeUrl.toString()
+        ) {
+            logger.debug { "Getting Informatieobjecttype by omschrijving: $omschrijving for zaaktype $zaakTypeUrl" }
+            return getInformatieobjecttypes(zaakTypeUrl)
+                .singleOrNull { it.omschrijving.equals(omschrijving, ignoreCase = true) }
+                ?: throw InformatieobjecttypeNotFoundException("with 'omschrijving': '$omschrijving'")
         }
     }
 

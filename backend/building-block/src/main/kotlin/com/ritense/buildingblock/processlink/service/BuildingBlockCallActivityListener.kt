@@ -25,22 +25,22 @@ import com.ritense.buildingblock.service.BuildingBlockInstanceService
 import com.ritense.document.domain.impl.request.NewDocumentRequest
 import com.ritense.processlink.service.ProcessLinkService
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
-import com.ritense.valtimo.event.OperatonExecutionEvent
 import com.ritense.valtimo.contract.buildingblock.BuildingBlockConstants.Companion.BUILDING_BLOCK_DOCUMENT_ID_VARIABLE
 import com.ritense.valtimo.contract.process.ProcessConstants.OPERATON_BUILDING_BLOCK_DEFINITION_VERSION_TAG_PREFIX
 import com.ritense.valtimo.contract.process.ProcessConstants.OPERATON_CASE_DEFINITION_VERSION_TAG_PREFIX
+import com.ritense.valtimo.event.OperatonExecutionEvent
 import com.ritense.valtimo.operaton.service.OperatonRepositoryService
 import com.ritense.valueresolver.ValueResolverService
+import java.util.UUID
 import org.operaton.bpm.engine.delegate.DelegateExecution
 import org.springframework.context.event.EventListener
 import org.springframework.stereotype.Component
-import java.util.UUID
 
 @Component
 @SkipComponentScan
 class BuildingBlockCallActivityListener(
     private val processLinkService: ProcessLinkService,
-    private val buidingBlockInstanceService: BuildingBlockInstanceService,
+    private val buildingBlockInstanceService: BuildingBlockInstanceService,
     private val valueResolverService: ValueResolverService,
     private val objectMapper: ObjectMapper,
     private val operatonRepositoryService: OperatonRepositoryService,
@@ -69,17 +69,10 @@ class BuildingBlockCallActivityListener(
                 else -> null
             }
 
-            val sourceDocumentId: UUID? = when {
-                parentBuildingBlockInstance != null -> parentBuildingBlockInstance.documentId
-                !isIndependentProcess && execution.businessKey != null -> UUID.fromString(execution.businessKey)
-                else -> null
-            }
-
             val buildingBlockInstance = this.createBuildingBlock(
                 execution = execution,
                 buildingBlockProcessLink = it,
                 rootCaseDocumentId = rootCaseDocumentId,
-                sourceDocumentId = sourceDocumentId,
                 activityId = activityId,
                 parentBuildingBlockInstanceId = parentBuildingBlockInstance?.id
             )
@@ -122,7 +115,7 @@ class BuildingBlockCallActivityListener(
 
         // Try to find a building block instance with this document ID
         // If found, the current process is a building block, and this instance is the parent
-        return buidingBlockInstanceService.getByDocumentId(documentId)
+        return buildingBlockInstanceService.getByDocumentId(documentId)
     }
 
     @EventListener(
@@ -144,18 +137,21 @@ class BuildingBlockCallActivityListener(
                 "referencing the building block document, but was '$buildingBlockVariableString'")
         }
 
-        val buildingBlockInstance = buidingBlockInstanceService.getByDocumentId(buildingBlockDocumentId)
+        val buildingBlockInstance = buildingBlockInstanceService.getByDocumentId(buildingBlockDocumentId)
             ?: throw IllegalStateException("No building block instance found for documentId '$buildingBlockDocumentId'")
+
+        val activityId = buildingBlockInstance.activityId
+            ?: throw IllegalStateException("No buildingBlockInstance.activityId found for documentId '$buildingBlockDocumentId'")
 
         val processLinks = processLinkService.getProcessLinks(
             execution.processDefinitionId,
-            buildingBlockInstance.activityId
+            activityId
         ).filterIsInstance<BuildingBlockProcessLink>()
 
         val processLink = processLinks.singleOrNull()
             ?: throw IllegalStateException(
                 "Expected a single building block process link for processDefinitionId '${execution.processDefinitionId}' " +
-                    "and activityId '${buildingBlockInstance.activityId}', but found ${processLinks.size}"
+                    "and activityId '$activityId', but found ${processLinks.size}"
             )
 
         val endSyncOutputMappings = processLink.outputMappings.filter {
@@ -163,15 +159,8 @@ class BuildingBlockCallActivityListener(
         }
         if (endSyncOutputMappings.isEmpty()) return
 
-        // Resolve values from building block document
-        // Source format: doc:/path or just /path (defaults to doc:)
         val sourceMappings = endSyncOutputMappings.map { mapping ->
-            val sourceKey = if (mapping.source.startsWith("doc:")) {
-                mapping.source
-            } else {
-                "doc:/${mapping.source}"
-            }
-            sourceKey to mapping.target
+            mapping.getPrefixedSource() to mapping.target
         }
 
         val resolvedValues = valueResolverService.resolveValues(
@@ -194,9 +183,10 @@ class BuildingBlockCallActivityListener(
 
         // Handle document targets - write to parent building block doc or case doc
         if (otherTargets.isNotEmpty()) {
-            val targetDocumentId = if (buildingBlockInstance.parentBuildingBlockInstanceId != null) {
-                val parentInstance = buidingBlockInstanceService.get(buildingBlockInstance.parentBuildingBlockInstanceId)
-                    ?: throw IllegalStateException("Parent building block instance not found: ${buildingBlockInstance.parentBuildingBlockInstanceId}")
+            val parentId = buildingBlockInstance.parentBuildingBlockInstanceId
+            val targetDocumentId = if (parentId != null) {
+                val parentInstance = buildingBlockInstanceService.get(parentId)
+                    ?: throw IllegalStateException("Parent building block instance not found: $parentId")
                 parentInstance.documentId
             } else {
                 buildingBlockInstance.caseDocumentId
@@ -210,61 +200,43 @@ class BuildingBlockCallActivityListener(
         execution: DelegateExecution,
         buildingBlockProcessLink: BuildingBlockProcessLink,
         rootCaseDocumentId: UUID?,
-        sourceDocumentId: UUID?,
         activityId: String,
         parentBuildingBlockInstanceId: UUID?
     ): BuildingBlockInstance {
+        val inputSources = buildingBlockProcessLink.inputMappings.map { it.source }
+        val resolvedValues = valueResolverService.resolveValues(execution.processInstanceId, execution, inputSources)
+        val valuesToHandle = buildingBlockProcessLink.inputMappings.associate {
+            it.getPrefixedTarget() to resolvedValues[it.source]
+        }
+        val preProcessValues = valueResolverService.preProcessValuesForNewCase(valuesToHandle)
+        val documentContent = objectMapper.valueToTree<JsonNode>(preProcessValues[DOC_PREFIX])
+
         val documentRequest = NewDocumentRequest(
             null,
             null,
             null,
             buildingBlockProcessLink.buildingBlockDefinitionId.key,
             buildingBlockProcessLink.buildingBlockDefinitionId.versionTag.toString(),
-            buildDocumentContent(execution, buildingBlockProcessLink, sourceDocumentId),
+            documentContent,
         )
 
-        return buidingBlockInstanceService.create(
+        val buildingBlockInstance =  buildingBlockInstanceService.create(
             documentRequest,
             rootCaseDocumentId,
             activityId,
-            parentBuildingBlockInstanceId
+            parentBuildingBlockInstanceId,
+            callerProcessDefinitionId = execution.processDefinitionId
         )
+
+        valueResolverService.handleValues(
+            buildingBlockInstance.documentId,
+            preProcessValues.filterKeys { !it.startsWith(DOC_PREFIX) }
+        )
+
+        return buildingBlockInstance
     }
 
-    private fun buildDocumentContent(
-        execution: DelegateExecution,
-        buildingBlockProcessLink: BuildingBlockProcessLink,
-        sourceDocumentId: UUID?
-    ): JsonNode {
-        val inputSources = buildingBlockProcessLink.inputMappings.map { it.source }
-
-        // Separate pv: sources from doc: sources
-        val pvSources = inputSources.filter { it.startsWith("pv:") }
-        val docSources = inputSources.filter { !it.startsWith("pv:") }
-
-        // Resolve process variable sources using execution context
-        val pvResolvedValues = if (pvSources.isNotEmpty()) {
-            valueResolverService.resolveValues(execution.processInstanceId, execution, pvSources)
-        } else {
-            emptyMap()
-        }
-
-        // Resolve document sources using document ID (if available)
-        val docResolvedValues = if (docSources.isNotEmpty() && sourceDocumentId != null) {
-            valueResolverService.resolveValues(sourceDocumentId.toString(), docSources)
-        } else if (docSources.isNotEmpty()) {
-            throw IllegalStateException("Cannot resolve doc: input mappings without a source document (case or parent building block)")
-        } else {
-            emptyMap()
-        }
-
-        // Combine resolved values
-        val resolvedValues = pvResolvedValues + docResolvedValues
-
-        val documentToCreate = buildingBlockProcessLink.inputMappings.associate {
-            it.target to resolvedValues[it.source]
-        }
-
-        return objectMapper.valueToTree(documentToCreate)
+    private companion object {
+        private const val DOC_PREFIX = "doc"
     }
 }

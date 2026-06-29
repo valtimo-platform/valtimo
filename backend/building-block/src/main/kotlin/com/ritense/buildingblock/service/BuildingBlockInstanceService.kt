@@ -16,13 +16,19 @@
 
 package com.ritense.buildingblock.service
 
+import com.ritense.authorization.AuthorizationContext.Companion.runWithoutAuthorization
+import com.ritense.authorization.AuthorizationService
+import com.ritense.authorization.request.EntityAuthorizationRequest
 import com.ritense.buildingblock.domain.instance.BuildingBlockInstance
 import com.ritense.buildingblock.exception.UnknownBuildingBlockDefinitionException
 import com.ritense.buildingblock.exception.UnknownBuildingBlockInstanceException
 import com.ritense.buildingblock.repository.BuildingBlockDefinitionRepository
 import com.ritense.buildingblock.repository.BuildingBlockInstanceRepository
+import com.ritense.document.domain.impl.JsonSchemaDocument
+import com.ritense.document.domain.impl.JsonSchemaDocumentId
 import com.ritense.document.domain.impl.request.NewDocumentRequest
 import com.ritense.document.service.DocumentService
+import com.ritense.document.service.JsonSchemaDocumentActionProvider
 import com.ritense.valtimo.contract.buildingblock.BuildingBlockDefinitionId
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
@@ -33,14 +39,17 @@ import java.util.UUID
 class BuildingBlockInstanceService(
     private val buildingBlockInstanceRepository: BuildingBlockInstanceRepository,
     private val buildingBlockDefinitionRepository: BuildingBlockDefinitionRepository,
-    private val documentService: DocumentService
+    private val documentService: DocumentService,
+    private val authorizationService: AuthorizationService
 ) {
     @Transactional
     fun create(
         newDocumentRequest: NewDocumentRequest,
         caseDocumentId: UUID?,
-        activityId: String,
-        parentBuildingBlockInstanceId: UUID? = null
+        activityId: String? = null,
+        parentBuildingBlockInstanceId: UUID? = null,
+        processInstanceId: String? = null,
+        callerProcessDefinitionId: String? = null
     ): BuildingBlockInstance {
         // TODO: add validation building block definition has a main process definition, otherwise it is not valid
         val definitionId = BuildingBlockDefinitionId.of(
@@ -63,15 +72,30 @@ class BuildingBlockInstanceService(
                 )
             }
 
+        val rootBuildingBlockInstanceId = if (parentBuildingBlockInstanceId != null) {
+            val parent = buildingBlockInstanceRepository.findByIdOrNull(parentBuildingBlockInstanceId)
+            parent?.rootBuildingBlockInstanceId ?: parentBuildingBlockInstanceId
+        } else {
+            null
+        }
+
         return buildingBlockInstanceRepository.save(
             BuildingBlockInstance(
                 documentId = document.id().getId(),
                 caseDocumentId = caseDocumentId,
                 activityId = activityId,
+                callerProcessDefinitionId = callerProcessDefinitionId,
+                processInstanceId = processInstanceId,
                 parentBuildingBlockInstanceId = parentBuildingBlockInstanceId,
+                rootBuildingBlockInstanceId = rootBuildingBlockInstanceId,
                 definition = definition
             )
         )
+    }
+
+    @Transactional
+    fun save(instance: BuildingBlockInstance): BuildingBlockInstance {
+        return buildingBlockInstanceRepository.save(instance)
     }
 
     @Transactional(readOnly = true)
@@ -82,6 +106,26 @@ class BuildingBlockInstanceService(
     @Transactional(readOnly = true)
     fun getByDocumentId(documentId: UUID): BuildingBlockInstance? {
         return buildingBlockInstanceRepository.findByDocumentId(documentId)
+    }
+
+    @Transactional(readOnly = true)
+    fun getByProcessInstanceId(processInstanceId: String): BuildingBlockInstance? {
+        return buildingBlockInstanceRepository.findByProcessInstanceId(processInstanceId)
+    }
+
+    @Transactional(readOnly = true)
+    fun findAllByCaseDocumentId(caseDocumentId: UUID): List<BuildingBlockInstance> {
+        val document = runWithoutAuthorization {
+            documentService.findBy(JsonSchemaDocumentId.existingId(caseDocumentId)).orElseThrow()
+        } as JsonSchemaDocument
+        authorizationService.requirePermission(
+            EntityAuthorizationRequest(
+                JsonSchemaDocument::class.java,
+                JsonSchemaDocumentActionProvider.INSPECT,
+                document
+            )
+        )
+        return buildingBlockInstanceRepository.findAllByCaseDocumentId(caseDocumentId)
     }
 
     @Transactional(readOnly = true)

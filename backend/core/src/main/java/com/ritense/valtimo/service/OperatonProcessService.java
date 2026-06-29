@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -295,13 +295,22 @@ public class OperatonProcessService {
             )
         );
 
-        ProcessInstance processInstance = formService.submitStartForm(
-            processDefinition.getId(),
-            businessKey,
-            FormUtils.createTypedVariableMap(variables)
-        );
-
-        return new ProcessInstanceWithDefinition(processInstance, processDefinition);
+        boolean wasSuspended = processDefinition.isSuspended();
+        if (wasSuspended) {
+            repositoryService.activateProcessDefinitionById(processDefinition.getId());
+        }
+        try {
+            ProcessInstance processInstance = formService.submitStartForm(
+                processDefinition.getId(),
+                businessKey,
+                FormUtils.createTypedVariableMap(variables)
+            );
+            return new ProcessInstanceWithDefinition(processInstance, processDefinition);
+        } finally {
+            if (wasSuspended) {
+                repositoryService.suspendProcessDefinitionById(processDefinition.getId());
+            }
+        }
     }
 
     /**
@@ -364,11 +373,19 @@ public class OperatonProcessService {
         ));
     }
 
+    public List<OperatonProcessDefinition> getAllDefinitions(CaseDefinitionId caseDefinitionId) {
+        denyAuthorization();
+        return AuthorizationContext.runWithoutAuthorization(() -> operatonRepositoryService.findProcessDefinitions(
+            byBlueprintId(caseDefinitionId),
+            Sort.by(NAME)
+        ));
+    }
+
     public List<OperatonProcessDefinition> getUnlinkedDeployedDefinitions() {
         denyAuthorization();
         return AuthorizationContext.runWithoutAuthorization(() ->
             operatonRepositoryService.findProcessDefinitions(
-                    byActive().and(byNotLinkedToCaseDefinition()).and(byNotLinkedToBuildingBlock()),
+                    byNotLinkedToCaseDefinition().and(byNotLinkedToBuildingBlock()),
                     Sort.by(NAME)
                 ).stream()
                 .collect(Collectors.groupingBy(
@@ -386,7 +403,7 @@ public class OperatonProcessService {
         denyAuthorization();
         return AuthorizationContext.runWithoutAuthorization(() ->
             operatonRepositoryService.findProcessDefinitions(
-                    byActive().and(byKey(processDefinitionKey)),
+                    byKey(processDefinitionKey),
                     Sort.by(NAME)
                 ).stream()
                 .filter(def -> def.getVersionTag() == null || !def.getVersionTag()
@@ -480,6 +497,7 @@ public class OperatonProcessService {
         ByteArrayInputStream fileInput,
         boolean skipProcessLinksCopy,
         boolean skipIsDeployableCheck,
+        boolean setExecutable,
         @Nullable String originalVersionTag,
         @Nullable String originalProcessDefinitionId
     ) throws ProcessNotDeployableException, FileExtensionNotSupportedException, NoFileExtensionFoundException {
@@ -495,7 +513,9 @@ public class OperatonProcessService {
             updateCaseDefinitionProcessesVersionTags(bpmnModel, blueprintId);
             updateBuildingBlockDefinitionProcessesVersionTags(bpmnModel, blueprintId);
 
-            setProcessesExecutable(bpmnModel);
+            if (setExecutable) {
+                setProcessesExecutable(bpmnModel);
+            }
             setToNullWhenServiceTaskExpressionIsEmpty(bpmnModel);
             setToNullWhenSendTaskExpressionIsEmpty(bpmnModel);
             setToCorrelateAllWhenMessageSendEventExpressionIsEmpty(bpmnModel);
@@ -585,6 +605,19 @@ public class OperatonProcessService {
     public DeploymentWithDefinitions deploy(
         BlueprintId blueprintId,
         String fileName,
+        ByteArrayInputStream fileInput,
+        boolean skipProcessLinksCopy,
+        boolean skipIsDeployableCheck,
+        @Nullable String originalVersionTag,
+        @Nullable String originalProcessDefinitionId
+    ) throws ProcessNotDeployableException, FileExtensionNotSupportedException, NoFileExtensionFoundException {
+        return deploy(blueprintId, fileName, fileInput, skipProcessLinksCopy, skipIsDeployableCheck, true, originalVersionTag, originalProcessDefinitionId);
+    }
+
+    @Transactional
+    public DeploymentWithDefinitions deploy(
+        BlueprintId blueprintId,
+        String fileName,
         ByteArrayInputStream fileInput
     ) throws ProcessNotDeployableException, FileExtensionNotSupportedException, NoFileExtensionFoundException {
         return deploy(
@@ -593,6 +626,7 @@ public class OperatonProcessService {
             fileInput,
             false,
             false,
+            true,
             null,
             null
         );
@@ -606,7 +640,19 @@ public class OperatonProcessService {
         boolean skipProcessLinksCopy,
         boolean skipIsDeployableCheck
     ) throws ProcessNotDeployableException, FileExtensionNotSupportedException, NoFileExtensionFoundException {
-        return deploy(blueprintId, fileName, fileInput, skipProcessLinksCopy, skipIsDeployableCheck, null, null);
+        return deploy(blueprintId, fileName, fileInput, skipProcessLinksCopy, skipIsDeployableCheck, true, null, null);
+    }
+
+    @Transactional
+    public DeploymentWithDefinitions deploy(
+        BlueprintId blueprintId,
+        String fileName,
+        ByteArrayInputStream fileInput,
+        boolean skipProcessLinksCopy,
+        boolean skipIsDeployableCheck,
+        boolean setExecutable
+    ) throws ProcessNotDeployableException, FileExtensionNotSupportedException, NoFileExtensionFoundException {
+        return deploy(blueprintId, fileName, fileInput, skipProcessLinksCopy, skipIsDeployableCheck, setExecutable, null, null);
     }
 
     private boolean isProcessDefinitionPreviouslyDeployed(
@@ -657,7 +703,6 @@ public class OperatonProcessService {
 
         List<OperatonProcessDefinition> processDefinition = operatonRepositoryService.findProcessDefinitions(
             byKey(processDefinitionKey)
-                .and(byActive())
                 .and(blueprintId == null ? byNotLinkedToCaseDefinition() : byVersionTag(
                     blueprintId.getTagPrefix() + blueprintId))
             ,
@@ -715,6 +760,20 @@ public class OperatonProcessService {
             // within this building block that weren't caught by the process key check above)
             callActivity.setOperatonCalledElementBinding("versionTag");
             callActivity.setOperatonCalledElementVersionTag(currentBuildingBlockVersionTag);
+        });
+
+        // Update business rule tasks (DMN decision references) to use this building block's version tag
+        bpmnModel.getModelElementsByType(BusinessRuleTask.class).forEach(businessRuleTask -> {
+            String existingVersionTag = businessRuleTask.getOperatonDecisionRefVersionTag();
+
+            // If already has a BB: version tag pointing to a different building block key, preserve it
+            BuildingBlockDefinitionId existingBuildingBlockId = BuildingBlockDefinitionId.fromProcessVersionTag(existingVersionTag);
+            if (existingBuildingBlockId != null && !existingBuildingBlockId.getKey().equals(buildingBlockDefinitionId.getKey())) {
+                return;
+            }
+
+            businessRuleTask.setOperatonDecisionRefBinding("versionTag");
+            businessRuleTask.setOperatonDecisionRefVersionTag(currentBuildingBlockVersionTag);
         });
     }
 

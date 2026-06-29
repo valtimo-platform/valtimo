@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 
+import {SelectItem} from '@valtimo/components';
+
 export class CaseDefinition {
   caseDefinitionKey: string;
   caseDefinitionVersionTag: string;
@@ -27,6 +29,9 @@ export class CaseDefinition {
   autoAssignTasks: boolean;
   active: boolean;
   conflictingVersions: string;
+  originalKey?: string;
+  originalName?: string;
+  originalVersionTag?: string;
 }
 
 export class ReleaseVersionData {
@@ -59,6 +64,38 @@ export interface CaseDefinitionConfigurationIssue {
   resolved: boolean;
   createdAt: string;
   resolvedAt: string | null;
+}
+
+export interface PluginConfigurationPreview {
+  pluginConfigurationId: string;
+  pluginDefinitionKey: string | null;
+  pluginActionDefinitionKey: string;
+  processDefinitionKey: string;
+  activityId: string;
+  existsInTargetEnvironment: boolean;
+}
+
+export interface CaseDefinitionImportPreview {
+  key: string;
+  name: string;
+  versionTag: string;
+  isFinal: boolean;
+  pluginConfigurations: PluginConfigurationPreview[];
+}
+
+export interface DanglingPluginConfiguration {
+  pluginDefinitionKey: string | null;
+  sourcePluginConfigurationIds: string[];
+}
+
+export type PluginMappingStatus = 'available' | 'no-configurations' | 'not-installed';
+
+export interface MappingRow {
+  pluginDefinitionKey: string | null;
+  pluginDefinitionTitle: string;
+  sourcePluginConfigurationIds: string[];
+  selectItems: SelectItem[];
+  status: PluginMappingStatus;
 }
 
 export interface ConfigurationIssueUpdatedSseEvent {

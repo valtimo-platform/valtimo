@@ -19,6 +19,8 @@ package com.ritense.tab.domain
 import io.hypersistence.utils.hibernate.type.json.JsonType
 import jakarta.persistence.Column
 import jakarta.persistence.Entity
+import jakarta.persistence.EnumType
+import jakarta.persistence.Enumerated
 import jakarta.persistence.Id
 import jakarta.persistence.Table
 import java.util.UUID
@@ -46,6 +48,10 @@ data class Tab(
     @Type(value = JsonType::class)
     @Column(name = "properties", nullable = false)
     val properties: Map<String, Any?> = emptyMap(),
+
+    @Column(name = "widget_layout")
+    @Enumerated(EnumType.STRING)
+    val widgetLayout: WidgetLayout? = null,
 ) {
 
     init {

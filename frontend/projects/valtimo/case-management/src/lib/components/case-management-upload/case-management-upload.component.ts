@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,19 +21,50 @@ import {
   OnDestroy,
   OnInit,
   Output,
-  signal,
 } from '@angular/core';
 import {AbstractControl, FormBuilder, FormGroup, Validators} from '@angular/forms';
-import {WarningFilled16} from '@carbon/icons';
 import {TranslateService} from '@ngx-translate/core';
 import {CARBON_CONSTANTS} from '@valtimo/components';
-import {DocumentDefinitionCreateRequest, DocumentService} from '@valtimo/document';
-import {FileItem, IconService, NotificationContent} from 'carbon-components-angular';
-import {BehaviorSubject, combineLatest, map, Observable, Subscription, switchMap, take} from 'rxjs';
-import {STEPS, UPLOAD_STATUS, UPLOAD_STEP} from './case-management-upload.constants';
+import {
+  PluginConfiguration,
+  PluginManagementService,
+  PluginTranslationService,
+} from '@valtimo/plugin';
+import {FileItem, ListItem} from 'carbon-components-angular';
+import {
+  BehaviorSubject,
+  combineLatest,
+  debounceTime,
+  distinctUntilChanged,
+  forkJoin,
+  map,
+  Observable,
+  Subscription,
+  take,
+} from 'rxjs';
+import {
+  IMPORT_WARNING,
+  STEPS,
+  UPLOAD_STATUS,
+  UPLOAD_STEP,
+} from './case-management-upload.constants';
 import {CaseManagementService} from '../../services';
-import {toObservable} from '@angular/core/rxjs-interop';
 import {CASE_MANAGEMENT_UPLOAD_TEST_IDS} from '../../constants';
+import {
+  CaseDefinitionImportPreview,
+  PluginConfigurationPreview,
+} from '../../models/case-deployment.model';
+
+type PluginMappingStatus = 'available' | 'no-configurations' | 'not-installed';
+
+interface PluginMappingRow {
+  pluginDefinitionKey: string | null;
+  pluginDefinitionTitle: string;
+  sourcePluginConfigurationId: string;
+  existsInTargetEnvironment: boolean;
+  listItems: ListItem[];
+  status: PluginMappingStatus;
+}
 
 @Component({
   standalone: false,
@@ -48,75 +79,93 @@ export class CaseManagementUploadComponent implements OnInit, OnDestroy {
 
   protected readonly testIds = CASE_MANAGEMENT_UPLOAD_TEST_IDS;
 
-  public acceptedFiles: string[] = ['.json', '.zip'];
-  public selectedFile: File | null;
-
-  private readonly _disabled$ = new BehaviorSubject<boolean>(true);
+  public acceptedFiles: string[] = ['.zip'];
 
   public readonly UPLOAD_STEP = UPLOAD_STEP;
   public readonly UPLOAD_STATUS = UPLOAD_STATUS;
-  public readonly activeStep$ = new BehaviorSubject<UPLOAD_STEP>(UPLOAD_STEP.PLUGINS);
+  public readonly IMPORT_WARNING = IMPORT_WARNING;
+
+  private readonly _disabled$ = new BehaviorSubject<boolean>(true);
+
+  public readonly activeStep$ = new BehaviorSubject<UPLOAD_STEP>(UPLOAD_STEP.FILE_SELECT);
+  public readonly uploadStatus$ = new BehaviorSubject<UPLOAD_STATUS>(UPLOAD_STATUS.ACTIVE);
+  public readonly preview$ = new BehaviorSubject<CaseDefinitionImportPreview | null>(null);
+  public readonly importWarning$ = new BehaviorSubject<IMPORT_WARNING>(IMPORT_WARNING.NONE);
+  public readonly overrideConfirmed$ = new BehaviorSubject<boolean>(false);
+  public readonly pluginMappingRows$ = new BehaviorSubject<PluginMappingRow[]>([]);
+  public readonly hasUnidentifiablePlugins$ = new BehaviorSubject<boolean>(false);
+
   public readonly backButtonEnabled$: Observable<boolean> = this.activeStep$.pipe(
     map((activeStep: UPLOAD_STEP) =>
-      [UPLOAD_STEP.FILE_SELECT, UPLOAD_STEP.ACCESS_CONTROL, UPLOAD_STEP.DASHBOARD].includes(
-        activeStep
-      )
+      [
+        UPLOAD_STEP.CONFIGURE,
+        UPLOAD_STEP.PLUGINS,
+        UPLOAD_STEP.ACCESS_CONTROL,
+        UPLOAD_STEP.DASHBOARD,
+      ].includes(activeStep)
     )
   );
+
   public readonly isStepAfterUpload$: Observable<boolean> = this.activeStep$.pipe(
     map(
       (activeStep: UPLOAD_STEP) =>
-        ![UPLOAD_STEP.PLUGINS, UPLOAD_STEP.FILE_SELECT].includes(activeStep)
+        ![UPLOAD_STEP.FILE_SELECT, UPLOAD_STEP.CONFIGURE, UPLOAD_STEP.PLUGINS].includes(activeStep)
     )
   );
+
   public readonly showCloseButton$: Observable<boolean> = this.activeStep$.pipe(
     map((activeStep: UPLOAD_STEP) =>
-      [UPLOAD_STEP.PLUGINS, UPLOAD_STEP.FILE_SELECT, UPLOAD_STEP.FILE_UPLOAD].includes(activeStep)
+      [
+        UPLOAD_STEP.FILE_SELECT,
+        UPLOAD_STEP.CONFIGURE,
+        UPLOAD_STEP.PLUGINS,
+        UPLOAD_STEP.FILE_UPLOAD,
+      ].includes(activeStep)
     )
   );
-  public readonly $warningChecked = signal(false);
 
   public readonly nextButtonDisabled$: Observable<boolean> = combineLatest([
     this.activeStep$,
     this._disabled$,
-    toObservable(this.$warningChecked),
+    this.importWarning$,
+    this.overrideConfirmed$,
   ]).pipe(
-    map(([activeStep, disabled, warningChecked]) => {
-      const warningNotChecked = activeStep === UPLOAD_STEP.FILE_SELECT && !warningChecked;
-      return warningNotChecked || (activeStep !== UPLOAD_STEP.PLUGINS && disabled);
+    map(([activeStep, disabled, warning, overrideConfirmed]) => {
+      if (activeStep === UPLOAD_STEP.CONFIGURE) {
+        if (warning === IMPORT_WARNING.EXISTING_FINAL) return true;
+        if (warning === IMPORT_WARNING.EXISTING_DRAFT && !overrideConfirmed) return true;
+        return this.configureForm.invalid;
+      }
+      if (activeStep === UPLOAD_STEP.PLUGINS) return false;
+      return disabled;
     })
   );
-  public readonly notificationObj$: Observable<NotificationContent> = combineLatest([
-    this.translateService.stream('interface.warning'),
-    this.translateService.stream('caseManagement.importDefinition.overwriteWarning'),
-  ]).pipe(
-    map(([title, message]) => ({
-      type: 'warning',
-      title,
-      message,
-      showClose: false,
-      lowContrast: true,
-    }))
-  );
-  public readonly showCheckboxError$ = new BehaviorSubject<boolean>(false);
-  public readonly uploadStatus$ = new BehaviorSubject<UPLOAD_STATUS>(UPLOAD_STATUS.ACTIVE);
 
   public form: FormGroup = this.fb.group({
     file: this.fb.control(new Set<any>(), [Validators.required]),
   });
 
-  private readonly _importFile$ = new BehaviorSubject<string | FormData>('');
+  public configureForm: FormGroup = this.fb.group({
+    name: this.fb.control('', Validators.required),
+    caseDefinitionKey: this.fb.control('', Validators.required),
+  });
+
+  public pluginMappingForm: FormGroup = this.fb.group({});
+
+  public get nameControl(): AbstractControl {
+    return this.configureForm.get('name');
+  }
+
+  private readonly _importFile$ = new BehaviorSubject<FormData | null>(null);
   private readonly _subscriptions = new Subscription();
 
   constructor(
-    private readonly documentService: DocumentService,
     private readonly caseManagementService: CaseManagementService,
     private readonly fb: FormBuilder,
-    private readonly iconService: IconService,
-    private readonly translateService: TranslateService
-  ) {
-    this.iconService.register(WarningFilled16);
-  }
+    private readonly translateService: TranslateService,
+    private readonly pluginManagementService: PluginManagementService,
+    private readonly pluginTranslationService: PluginTranslationService
+  ) {}
 
   public ngOnInit(): void {
     const control: AbstractControl | null = this.form.get('file');
@@ -129,18 +178,23 @@ export class CaseManagementUploadComponent implements OnInit, OnDestroy {
         const [fileItem] = fileSet;
         if (!fileItem) {
           this._disabled$.next(true);
-          this.showCheckboxError$.next(false);
-          this.$warningChecked.set(false);
-          return;
-        }
-
-        if (fileItem.file.type === 'application/json') {
-          this.setJsonFile(fileItem);
+          if (this.activeStep$.value === UPLOAD_STEP.FILE_SELECT) {
+            this.preview$.next(null);
+          }
           return;
         }
 
         this.setZipFile(fileItem);
       })
+    );
+
+    this._subscriptions.add(
+      this.configureForm
+        .get('caseDefinitionKey')
+        .valueChanges.pipe(debounceTime(400), distinctUntilChanged())
+        .subscribe((key: string) => {
+          this.checkExistingVersions(key);
+        })
     );
   }
 
@@ -169,11 +223,6 @@ export class CaseManagementUploadComponent implements OnInit, OnDestroy {
       return;
     }
 
-    if (activeStep === UPLOAD_STEP.FILE_SELECT && !this.$warningChecked()) {
-      this.showCheckboxError$.next(true);
-      return;
-    }
-
     this.activeStep$.next(STEPS[nextIndex]);
     if (STEPS[nextIndex] !== UPLOAD_STEP.FILE_UPLOAD) {
       return;
@@ -182,68 +231,249 @@ export class CaseManagementUploadComponent implements OnInit, OnDestroy {
     this.uploadDefinition();
   }
 
-  public onCheckedChange(checked: boolean): void {
-    this.$warningChecked.set(checked);
-
-    if (!checked) {
-      return;
-    }
-
-    this.showCheckboxError$.next(false);
+  public trackBySourceId(_index: number, row: PluginMappingRow): string {
+    return row.sourcePluginConfigurationId;
   }
 
-  private setJsonFile(fileItem: FileItem | undefined): void {
-    const file = fileItem?.file;
-
-    if (!file) {
-      this.clearJsonString();
-      return;
-    }
-    const reader = new FileReader();
-
-    reader.onloadend = () => {
-      const result = (reader.result ?? '').toString();
-      if (this.stringIsValidJson(result)) {
-        this._disabled$.next(false);
-        this._importFile$.next(result);
-        return;
-      }
-
-      this.clearJsonString();
-      this.setErrorState(fileItem);
-    };
-
-    reader.readAsText(file);
+  /**
+   * Works around a carbon-components-angular bug where clearing a single-select
+   * cds-combo-box with itemValueKey set writes `[]` to the FormControl instead
+   * of `null` (see combobox.component clearSelected).
+   */
+  public onPluginMappingClear(sourceId: string): void {
+    this.pluginMappingForm.get(sourceId)?.setValue(null);
   }
 
   private setZipFile(fileItem: FileItem): void {
     const file = fileItem?.file;
 
     if (!file) {
-      this._importFile$.next('');
+      this._importFile$.next(null);
+      this.preview$.next(null);
       return;
     }
 
-    const blob = new Blob([fileItem.file], {type: fileItem.file.type});
+    const blob = new Blob([file], {type: file.type});
     const fd = new FormData();
-    fd.append('file', blob, fileItem.file.name);
+    fd.append('file', blob, file.name);
     this._importFile$.next(fd);
-    this._disabled$.next(false);
+
+    this.caseManagementService
+      .previewImport(fd)
+      .pipe(take(1))
+      .subscribe({
+        next: preview => {
+          this.preview$.next(preview);
+          this.configureForm.patchValue({
+            name: preview.name,
+            caseDefinitionKey: preview.key,
+          });
+          this._disabled$.next(false);
+          this.checkExistingVersions(preview.key);
+          this.loadPluginMappingRows(preview.pluginConfigurations || []);
+        },
+        error: () => {
+          this._disabled$.next(true);
+          fileItem.invalid = true;
+          fileItem.invalidTitle = this.translateService.instant(
+            'caseManagement.importDefinition.invalidZipError.title'
+          );
+          fileItem.invalidText = this.translateService.instant(
+            'caseManagement.importDefinition.invalidZipError.text'
+          );
+        },
+      });
+  }
+
+  private loadPluginMappingRows(pluginConfigs: PluginConfigurationPreview[]): void {
+    const uniqueById = new Map<string, PluginConfigurationPreview>();
+    for (const config of pluginConfigs) {
+      if (!uniqueById.has(config.pluginConfigurationId)) {
+        uniqueById.set(config.pluginConfigurationId, config);
+      }
+    }
+
+    const allConfigs = Array.from(uniqueById.values());
+
+    // Configs with a known key can be mapped in the UI.
+    // Configs without a key but with a matching UUID in the target are fine as-is.
+    // Configs without a key and without a matching UUID are unidentifiable.
+    const hasUnidentifiable = allConfigs.some(
+      c => c.pluginDefinitionKey === null && !c.existsInTargetEnvironment
+    );
+    this.hasUnidentifiablePlugins$.next(hasUnidentifiable);
+
+    const uniqueConfigs = allConfigs.filter(c => c.pluginDefinitionKey !== null);
+    if (uniqueConfigs.length === 0) {
+      this.pluginMappingRows$.next([]);
+      return;
+    }
+
+    // Fetch all installed plugin definitions first, then configs per key
+    this.pluginManagementService
+      .getPluginDefinitions()
+      .pipe(take(1))
+      .subscribe(definitions => {
+        const installedKeys = new Set(definitions.map(d => d.key));
+        this.loadPluginConfigurations(uniqueConfigs, installedKeys);
+      });
+  }
+
+  private loadPluginConfigurations(
+    uniqueConfigs: PluginConfigurationPreview[],
+    installedKeys: Set<string>
+  ): void {
+    const uniqueDefinitionKeys = [
+      ...new Set(uniqueConfigs.map(c => c.pluginDefinitionKey).filter(Boolean)),
+    ];
+
+    const installableKeys = uniqueDefinitionKeys.filter(k => installedKeys.has(k));
+
+    if (installableKeys.length === 0) {
+      this.buildMappingRows(uniqueConfigs, new Map(), installedKeys);
+      return;
+    }
+
+    const configRequests: Record<string, Observable<PluginConfiguration[]>> = {};
+    for (const key of installableKeys) {
+      configRequests[key] = this.pluginManagementService
+        .getPluginConfigurationsByPluginDefinitionKey(key)
+        .pipe(take(1));
+    }
+
+    forkJoin(configRequests)
+      .pipe(take(1))
+      .subscribe(results => {
+        const configsByKey = new Map<string, PluginConfiguration[]>(Object.entries(results));
+        this.buildMappingRows(uniqueConfigs, configsByKey, installedKeys);
+      });
+  }
+
+  private buildMappingRows(
+    uniqueConfigs: PluginConfigurationPreview[],
+    configsByKey: Map<string, PluginConfiguration[]>,
+    installedKeys: Set<string>
+  ): void {
+    this.clearPluginMappingForm();
+    const rows: PluginMappingRow[] = uniqueConfigs.map(config => {
+      const key = config.pluginDefinitionKey;
+      const isInstalled = key ? installedKeys.has(key) : false;
+      const available = configsByKey.get(key) || [];
+      const defaultSelectionId = config.existsInTargetEnvironment
+        ? config.pluginConfigurationId
+        : null;
+
+      let status: PluginMappingStatus;
+      if (!isInstalled) {
+        status = 'not-installed';
+      } else if (available.length === 0) {
+        status = 'no-configurations';
+      } else {
+        status = 'available';
+      }
+
+      const listItems: ListItem[] = available.map(c => ({
+        content: c.title,
+        id: c.id,
+        selected: c.id === defaultSelectionId,
+      }));
+
+      if (status === 'available') {
+        this.pluginMappingForm.addControl(
+          config.pluginConfigurationId,
+          this.fb.control(defaultSelectionId)
+        );
+      }
+
+      return {
+        pluginDefinitionKey: key,
+        pluginDefinitionTitle: this.getPluginTitle(key),
+        sourcePluginConfigurationId: config.pluginConfigurationId,
+        existsInTargetEnvironment: config.existsInTargetEnvironment,
+        listItems,
+        status,
+      };
+    });
+    this.pluginMappingRows$.next(rows);
+  }
+
+  private clearPluginMappingForm(): void {
+    for (const key of Object.keys(this.pluginMappingForm.controls)) {
+      this.pluginMappingForm.removeControl(key);
+    }
+  }
+
+  private getPluginTitle(pluginDefinitionKey: string | null): string {
+    if (!pluginDefinitionKey) {
+      return this.translateService.instant('caseManagement.importDefinition.plugins.unknownPlugin');
+    }
+    const translated = this.pluginTranslationService.instant('title', pluginDefinitionKey);
+    // If translation returns the fallback format "key.title", use the raw key instead
+    if (translated === `${pluginDefinitionKey}.title`) {
+      return pluginDefinitionKey;
+    }
+    return translated;
+  }
+
+  private checkExistingVersions(key: string): void {
+    if (!key) {
+      this.importWarning$.next(IMPORT_WARNING.NONE);
+      return;
+    }
+
+    this.caseManagementService
+      .getCaseDefinitionVersions(key)
+      .pipe(take(1))
+      .subscribe({
+        next: versions => this.determineWarning(versions),
+        error: () => this.importWarning$.next(IMPORT_WARNING.NONE),
+      });
+  }
+
+  private determineWarning(versions: any[]): void {
+    const preview = this.preview$.value;
+    if (!preview || versions.length === 0) {
+      this.importWarning$.next(IMPORT_WARNING.NONE);
+      return;
+    }
+
+    const matchingVersion = versions.find(v => v.versionTag === preview.versionTag);
+    if (!matchingVersion) {
+      this.importWarning$.next(IMPORT_WARNING.NEW_VERSION);
+      return;
+    }
+
+    if (matchingVersion.final) {
+      this.importWarning$.next(IMPORT_WARNING.EXISTING_FINAL);
+      return;
+    }
+
+    this.importWarning$.next(IMPORT_WARNING.EXISTING_DRAFT);
+    this.overrideConfirmed$.next(false);
   }
 
   private uploadDefinition(): void {
     this._disabled$.next(true);
-    this._importFile$
-      .pipe(
-        switchMap((file: string | FormData) =>
-          file instanceof FormData
-            ? this.caseManagementService.importDocumentDefinitionZip(file)
-            : this.documentService.createDocumentDefinitionForManagement(
-                new DocumentDefinitionCreateRequest(file)
-              )
-        ),
-        take(1)
+    const file = this._importFile$.value;
+    if (!file) return;
+
+    const {name, caseDefinitionKey} = this.configureForm.getRawValue();
+    const preview = this.preview$.value;
+
+    const keyChanged = caseDefinitionKey !== preview?.key;
+    const nameChanged = name !== preview?.name;
+    const hasOverrides = keyChanged || nameChanged;
+
+    const mappings = this.buildPluginConfigurationMappings();
+
+    this.caseManagementService
+      .importDocumentDefinitionZip(
+        file,
+        hasOverrides ? caseDefinitionKey : undefined,
+        hasOverrides ? name : undefined,
+        Object.keys(mappings).length > 0 ? mappings : undefined
       )
+      .pipe(take(1))
       .subscribe({
         next: () => {
           this._disabled$.next(false);
@@ -256,39 +486,33 @@ export class CaseManagementUploadComponent implements OnInit, OnDestroy {
       });
   }
 
-  private clearJsonString(): void {
-    this._importFile$.next('');
-  }
-
-  private stringIsValidJson(string: string) {
-    try {
-      JSON.parse(string);
-    } catch (e) {
-      return false;
+  private buildPluginConfigurationMappings(): Record<string, string | null> {
+    const mappings: Record<string, string | null> = {};
+    for (const row of this.pluginMappingRows$.value) {
+      if (row.status === 'available') {
+        const control = this.pluginMappingForm.get(row.sourcePluginConfigurationId);
+        mappings[row.sourcePluginConfigurationId] = control?.value ?? null;
+      } else {
+        mappings[row.sourcePluginConfigurationId] = null;
+      }
     }
-    return true;
-  }
-
-  private setErrorState(fileItem: FileItem): void {
-    this._disabled$.next(true);
-    fileItem.invalid = true;
-    fileItem.invalidTitle = this.translateService.instant(
-      'caseManagement.importDefinition.invalidJsonError.title'
-    );
-    fileItem.invalidText = this.translateService.instant(
-      'caseManagement.importDefinition.invalidJsonError.text'
-    );
+    return mappings;
   }
 
   private resetModal(): void {
     setTimeout(() => {
-      this.activeStep$.next(UPLOAD_STEP.PLUGINS);
+      this.activeStep$.next(UPLOAD_STEP.FILE_SELECT);
       this.uploadStatus$.next(UPLOAD_STATUS.ACTIVE);
-      this.showCheckboxError$.next(false);
       this.form.reset({file: new Set<any>()});
-      this._importFile$.next('');
+      this.configureForm.reset();
+      this._importFile$.next(null);
       this._disabled$.next(true);
-      this.$warningChecked.set(false);
+      this.preview$.next(null);
+      this.importWarning$.next(IMPORT_WARNING.NONE);
+      this.overrideConfirmed$.next(false);
+      this.pluginMappingRows$.next([]);
+      this.hasUnidentifiablePlugins$.next(false);
+      this.clearPluginMappingForm();
     }, CARBON_CONSTANTS.modalAnimationMs);
   }
 }

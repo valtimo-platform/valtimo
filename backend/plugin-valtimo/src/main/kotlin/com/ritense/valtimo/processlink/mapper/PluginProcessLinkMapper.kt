@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,6 +23,7 @@ import com.ritense.plugin.domain.PluginConfigurationId
 import com.ritense.plugin.domain.PluginConfigurationReference
 import com.ritense.plugin.domain.PluginConfigurationReferenceType
 import com.ritense.plugin.domain.PluginProcessLink
+import com.ritense.plugin.repository.PluginConfigurationRepository
 import com.ritense.plugin.service.PluginService.Companion.PROCESS_LINK_TYPE_PLUGIN
 import com.ritense.plugin.web.rest.request.PluginProcessLinkCreateDto
 import com.ritense.plugin.web.rest.request.PluginProcessLinkUpdateDto
@@ -30,17 +31,24 @@ import com.ritense.plugin.web.rest.result.PluginProcessLinkResultDto
 import com.ritense.processlink.autodeployment.ProcessLinkDeployDto
 import com.ritense.processlink.domain.ProcessLink
 import com.ritense.processlink.mapper.ProcessLinkMapper
+import com.ritense.processlink.repository.ValtimoPluginProcessLinkRepository
 import com.ritense.processlink.web.rest.dto.ProcessLinkCreateRequestDto
 import com.ritense.processlink.web.rest.dto.ProcessLinkUpdateRequestDto
 import com.ritense.valtimo.contract.BlueprintId
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
+import com.ritense.valtimo.contract.case_.CaseDefinitionId
+import com.ritense.valtimo.contract.event.CaseConfigurationIssueDetectedEvent
+import com.ritense.valtimo.contract.event.CaseConfigurationIssueResolvedEvent
+import org.springframework.context.ApplicationEventPublisher
 import org.springframework.stereotype.Component
 import java.util.UUID
 
 @Component
 @SkipComponentScan
 class PluginProcessLinkMapper(
-    objectMapper: ObjectMapper
+    objectMapper: ObjectMapper,
+    private val pluginConfigurationRepository: PluginConfigurationRepository,
+    private val pluginProcessLinkRepository: ValtimoPluginProcessLinkRepository,
 ) : ProcessLinkMapper {
 
     init {
@@ -105,6 +113,12 @@ class PluginProcessLinkMapper(
     override fun toProcessLinkExportResponseDto(processLink: ProcessLink): PluginProcessLinkExportResponseDto {
         return withLoggingContext(ProcessLink::class, processLink.id) {
             processLink as PluginProcessLink
+            val definitionKey = processLink.pluginConfigurationReference.pluginDefinitionKey
+                ?: processLink.pluginConfigurationId?.let { configId ->
+                    pluginConfigurationRepository.findById(configId)
+                        .map { it.pluginDefinition.key }
+                        .orElse(null)
+                }
             PluginProcessLinkExportResponseDto(
                 activityId = processLink.activityId,
                 activityType = processLink.activityType,
@@ -112,7 +126,7 @@ class PluginProcessLinkMapper(
                 pluginActionDefinitionKey = processLink.pluginActionDefinitionKey,
                 actionProperties = processLink.actionProperties,
                 referenceType = processLink.pluginConfigurationReference.type,
-                pluginDefinitionKey = processLink.pluginConfigurationReference.pluginDefinitionKey,
+                pluginDefinitionKey = definitionKey,
             )
         }
     }
@@ -162,7 +176,10 @@ class PluginProcessLinkMapper(
         pluginDefinitionKey: String?
     ): PluginConfigurationReference {
         return when (type) {
-            PluginConfigurationReferenceType.FIXED -> PluginConfigurationReference(type)
+            PluginConfigurationReferenceType.FIXED -> PluginConfigurationReference(
+                type = type,
+                pluginDefinitionKey = pluginDefinitionKey,
+            )
             PluginConfigurationReferenceType.BUILDING_BLOCK -> PluginConfigurationReference(
                 type = type,
                 pluginDefinitionKey = requireNotNull(pluginDefinitionKey) {
@@ -172,17 +189,51 @@ class PluginProcessLinkMapper(
         }
     }
 
+    override fun afterImport(
+        caseDefinitionId: CaseDefinitionId,
+        processDefinitionIds: Set<String>,
+        applicationEventPublisher: ApplicationEventPublisher
+    ) {
+        val allPluginLinks = processDefinitionIds.flatMap { pdId ->
+            pluginProcessLinkRepository.findByProcessDefinitionId(pdId)
+        }
+
+        val hasIssue = allPluginLinks.any { link ->
+            if (link.pluginConfigurationReference.type != PluginConfigurationReferenceType.FIXED) {
+                return@any false
+            }
+
+            val configId = link.pluginConfigurationId ?: return@any true
+            val configuration = pluginConfigurationRepository.findById(configId).orElse(null) ?: return@any true
+            val expectedDefinitionKey = link.pluginConfigurationReference.pluginDefinitionKey
+
+            expectedDefinitionKey != null && configuration.pluginDefinition.key != expectedDefinitionKey
+        }
+
+        if (hasIssue) {
+            applicationEventPublisher.publishEvent(
+                CaseConfigurationIssueDetectedEvent(caseDefinitionId, ISSUE_TYPE)
+            )
+        } else {
+            applicationEventPublisher.publishEvent(
+                CaseConfigurationIssueResolvedEvent(caseDefinitionId, ISSUE_TYPE)
+            )
+        }
+    }
+
     private fun validateReference(
         type: PluginConfigurationReferenceType,
         pluginConfigurationId: PluginConfigurationId?
     ) {
         when (type) {
-            PluginConfigurationReferenceType.FIXED -> requireNotNull(pluginConfigurationId) {
-                "pluginConfigurationId is required when reference type is FIXED"
-            }
+            PluginConfigurationReferenceType.FIXED -> {} // pluginConfigurationId may be null during import
             PluginConfigurationReferenceType.BUILDING_BLOCK -> require(pluginConfigurationId == null) {
                 "pluginConfigurationId must be empty when reference type is BUILDING_BLOCK"
             }
         }
+    }
+
+    companion object {
+        const val ISSUE_TYPE = "plugin-process-link"
     }
 }

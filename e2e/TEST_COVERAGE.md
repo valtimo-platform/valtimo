@@ -4,11 +4,11 @@
 
 | Category                    | Features | Functions | ✅ Covered | ❌ Not Covered |
 |-----------------------------|----------|-----------|------------|----------------|
-| User Features (ROLE_USER)   | 5        | 21        | 2          | 19             |
-| Admin Features (ROLE_ADMIN) | 15       | 328       | 39         | 289            |
-| **Total**                   | **20**   | **349**   | **41**     | **308**        |
+| User Features (ROLE_USER)   | 5        | 21        | 12         | 9              |
+| Admin Features (ROLE_ADMIN) | 15       | 335       | 164        | 168            |
+| **Total**                   | **20**   | **356**   | **176**    | **177**        |
 
-**Coverage:** `41 / 349` — `11.7%`
+**Coverage:** `176 / 356` — `49.4%`
 
 ---
 
@@ -41,12 +41,12 @@
 
 | #   | Function                           | Test Scenarios                                        | Coverage | Notes                                           |
 |:----|:-----------------------------------|:------------------------------------------------------|:--------:|:------------------------------------------------|
-| 2.1 | View cases overview per definition | Display cases overview for specific definition        |    ❌    |                                                 |
-| 2.2 | View case details (tabs)           | Navigate and view case details with tabs              |    ❌    |                                                 |
-| 2.3 | Search/filter cases                | Search cases by criteria · Filter cases using filters |    ❌    |                                                 |
-| 2.4 | View case documents                | Display list of case documents                        |    ❌    |                                                 |
-| 2.5 | View case progress/status          | View current case progress and status                 |    ❌    |                                                 |
-| 2.6 | Execute tasks within case          | Execute task from case detail view                    |    ❌    |                                                 |
+| 2.1 | View cases overview per definition | Display cases overview for specific definition        |    ✅    | user-cases.spec.ts                              |
+| 2.2 | View case details (tabs)           | Navigate and view case details with tabs              |    ✅    | user-cases.spec.ts                              |
+| 2.3 | Search/filter cases                | Search cases by criteria · Filter cases using filters |    ✅    | user-cases.spec.ts                              |
+| 2.4 | View case documents                | Display list of case documents                        |    ✅    | user-cases.spec.ts                              |
+| 2.5 | View case progress/status          | View current case progress and status                 |    ✅    | user-cases.spec.ts                              |
+| 2.6 | Execute tasks within case          | Execute task from case detail view                    |    ✅    | user-cases.spec.ts                              |
 
 ---
 
@@ -56,10 +56,10 @@
 |:----|:-------------------------|:------------------------------------------------|:--------:|:------------------------------------------------|
 | 3.1 | View all open tasks      | Display list of all open tasks                  |    ✅    | task-list.spec.ts                               |
 | 3.2 | Filter/sort tasks        | Filter tasks by criteria · Sort tasks by column |    ✅    | task-list.spec.ts                               |
-| 3.3 | View task details        | Open and view task details                      |    ❌    |                                                 |
-| 3.4 | Claim task               | Claim an unassigned task                        |    ❌    |                                                 |
-| 3.5 | Execute task (fill form) | Fill in task form fields                        |    ❌    |                                                 |
-| 3.6 | Complete task            | Submit and complete task                        |    ❌    |                                                 |
+| 3.3 | View task details        | Open and view task details                      |    ✅    | task-list.spec.ts                               |
+| 3.4 | Claim task               | Claim an unassigned task                        |    ✅    | task-list.spec.ts                               |
+| 3.5 | Execute task (fill form) | Fill in task form fields                        |    ✅    | task-list.spec.ts                               |
+| 3.6 | Complete task            | Submit and complete task                        |    ✅    | task-list.spec.ts                               |
 
 ---
 
@@ -106,38 +106,38 @@
 | 6.6  | View linked processes        | Display list of linked processes                              |    ✅    | case-details-management-processes.spec.ts       |
 | 6.7  | Create new process           | Create new BPMN process                                       |    ✅    | case-details-management-processes.spec.ts       |
 | 6.8  | Open process in BPMN modeler | Open process in BPMN editor                                   |    ✅    | case-details-management-processes.spec.ts       |
-| 6.9  | Add BPMN elements            | Add BPMN elements via drag-drop                               |    ❌    |                                                 |
-| 6.10 | Set process properties       | Configure process properties (Starts case, Startable by user) |    ❌    |                                                 |
-| 6.11 | Save process                 | Save process definition                                       |    ❌    |                                                 |
+| 6.9  | Add BPMN elements            | Add BPMN elements via drag-drop                               |    ✅    | case-details-management-processes.spec.ts       |
+| 6.10 | Set process properties       | Configure process properties (Starts case, Startable by user) |    ✅    | case-details-management-processes.spec.ts       |
+| 6.11 | Save process                 | Save process definition                                       |    ✅    | case-details-management-processes.spec.ts       |
 
 #### 6C · Process Links
 
 | #    | Function                         | Test Scenarios                                   | Coverage | Notes                                           |
 |:-----|:---------------------------------|:-------------------------------------------------|:--------:|:------------------------------------------------|
-| 6.12 | Create process link              | Create process link via wizard                   |    ❌    |                                                 |
-| 6.13 | Configure Form link type         | Configure Form link type                         |    ❌    |                                                 |
-| 6.14 | Configure FormFlow link type     | Configure FormFlow link type                     |    ❌    |                                                 |
-| 6.15 | Configure Plugin link type       | Configure Plugin link type                       |    ❌    |                                                 |
-| 6.16 | Configure plugin action          | Configure plugin action                          |    ❌    |                                                 |
-| 6.17 | Configure Building block link    | Configure Building block link type               |    ❌    |                                                 |
-| 6.18 | Select building block            | Select building block from available list        |    ❌    |                                                 |
-| 6.19 | View building block descriptions | View building block descriptions with artwork    |    ❌    |                                                 |
-| 6.20 | Select building block version    | Select building block version                    |    ❌    |                                                 |
-| 6.21 | Configure plugin mapping         | Configure plugin mapping for building block      |    ❌    |                                                 |
-| 6.22 | Configure input mapping          | Configure input mapping (building block → case)  |    ❌    |                                                 |
-| 6.23 | Add input field mapping          | Add input field mapping                          |    ❌    |                                                 |
-| 6.24 | Select source path               | Select source path from building block document  |    ❌    |                                                 |
-| 6.25 | Map to target case field         | Map to target case field via dropdown            |    ❌    |                                                 |
-| 6.26 | Toggle mapping input mode        | Toggle between dropdown/manual input for mapping |    ❌    |                                                 |
-| 6.27 | Mark fields as required          | Mark input fields as required                    |    ❌    |                                                 |
-| 6.28 | Configure sync mapping           | Configure sync mapping (case → building block)   |    ❌    |                                                 |
-| 6.29 | Add sync field mapping           | Add sync field mapping                           |    ❌    |                                                 |
-| 6.30 | Select source field from case    | Select source field from case                    |    ❌    |                                                 |
-| 6.31 | Map to building block field      | Map to target building block field               |    ❌    |                                                 |
-| 6.32 | Delete mappings                  | Delete input/sync mappings                       |    ❌    |                                                 |
-| 6.33 | View dependency warnings         | View dependency warnings (push config needed)    |    ❌    |                                                 |
-| 6.34 | Complete building block config   | Complete building block configuration            |    ❌    |                                                 |
-| 6.35 | Save process link                | Save process link configuration                  |    ❌    |                                                 |
+| 6.12 | Create process link              | Create process link via wizard                   |    ✅    | case-details-management-process-links.spec.ts   |
+| 6.13 | Configure Form link type         | Configure Form link type                         |    ✅    | case-details-management-process-links.spec.ts   |
+| 6.14 | Configure FormFlow link type     | Configure FormFlow link type                     |    ⏳    | case-details-management-process-links.spec.ts (step visible; no seeded case-scoped flow) |
+| 6.15 | Configure Plugin link type       | Configure Plugin link type                       |    ✅    | case-details-management-process-links.spec.ts   |
+| 6.16 | Configure plugin action          | Configure plugin action                          |    ✅    | case-details-management-process-links.spec.ts   |
+| 6.17 | Configure Building block link    | Configure Building block link type               |    ✅    | case-details-management-process-links.spec.ts   |
+| 6.18 | Select building block            | Select building block from available list        |    ✅    | case-details-management-process-links.spec.ts   |
+| 6.19 | View building block descriptions | View building block descriptions with artwork    |    ✅    | case-details-management-process-links.spec.ts   |
+| 6.20 | Select building block version    | Select building block version                    |    ✅    | case-details-management-process-links.spec.ts   |
+| 6.21 | Configure plugin mapping         | Configure plugin mapping for building block      |    ✅    | case-details-management-process-links.spec.ts   |
+| 6.22 | Configure input mapping          | Configure input mapping (building block → case)  |    ✅    | case-details-management-process-links.spec.ts   |
+| 6.23 | Add input field mapping          | Add input field mapping                          |    ✅    | case-details-management-process-links.spec.ts   |
+| 6.24 | Select source path               | Select source path from building block document  |    ✅    | case-details-management-process-links.spec.ts   |
+| 6.25 | Map to target case field         | Map to target case field via dropdown            |    ✅    | case-details-management-process-links.spec.ts   |
+| 6.26 | Toggle mapping input mode        | Toggle between dropdown/manual input for mapping |    ✅    | case-details-management-process-links.spec.ts   |
+| 6.27 | Mark fields as required          | Mark input fields as required                    |    ✅    | case-details-management-process-links.spec.ts   |
+| 6.28 | Configure sync mapping           | Configure sync mapping (case → building block)   |    ✅    | case-details-management-process-links.spec.ts   |
+| 6.29 | Add sync field mapping           | Add sync field mapping                           |    ✅    | case-details-management-process-links.spec.ts   |
+| 6.30 | Select source field from case    | Select source field from case                    |    ✅    | case-details-management-process-links.spec.ts   |
+| 6.31 | Map to building block field      | Map to target building block field               |    ✅    | case-details-management-process-links.spec.ts   |
+| 6.32 | Delete mappings                  | Delete input/sync mappings                       |    ✅    | case-details-management-process-links.spec.ts   |
+| 6.33 | View dependency warnings         | View dependency warnings (push config needed)    |    ✅    | case-details-management-process-links.spec.ts   |
+| 6.34 | Complete building block config   | Complete building block configuration            |    ✅    | case-details-management-process-links.spec.ts   |
+| 6.35 | Save process link                | Save process link configuration                  |    ✅    | case-details-management-process-links.spec.ts   |
 
 #### 6D · Version Management
 
@@ -151,54 +151,54 @@
 
 | #    | Function                    | Test Scenarios                         | Coverage | Notes                                           |
 |:-----|:----------------------------|:---------------------------------------|:--------:|:------------------------------------------------|
-| 6.39 | View linked decision tables | Display list of linked decision tables |    ❌    |                                                 |
-| 6.40 | Upload decision table       | Upload decision table (.dmn file)      |    ❌    |                                                 |
-| 6.41 | Open decision table editor  | Open decision table in DMN editor      |    ❌    |                                                 |
-| 6.42 | Set DMN Hit policy          | Set DMN Hit policy                     |    ❌    |                                                 |
-| 6.43 | Manage DMN columns          | Manage DMN input/output columns        |    ❌    |                                                 |
-| 6.44 | Manage DMN rules            | Add/edit/delete DMN rules              |    ❌    |                                                 |
-| 6.45 | Save decision table         | Save decision table                    |    ❌    |                                                 |
+| 6.39 | View linked decision tables | Display list of linked decision tables |    ✅    | case-details-management-decisions.spec.ts       |
+| 6.40 | Upload decision table       | Upload decision table (.dmn file)      |    ✅    | case-details-management-decisions.spec.ts       |
+| 6.41 | Open decision table editor  | Open decision table in DMN editor      |    ✅    | case-details-management-decisions.spec.ts       |
+| 6.42 | Set DMN Hit policy          | Set DMN Hit policy                     |    ✅    | case-details-management-decisions.spec.ts       |
+| 6.43 | Manage DMN columns          | Manage DMN input/output columns        |    ✅    | case-details-management-decisions.spec.ts       |
+| 6.44 | Manage DMN rules            | Add/edit/delete DMN rules              |    ✅    | case-details-management-decisions.spec.ts       |
+| 6.45 | Save decision table         | Save decision table                    |    ✅    | case-details-management-decisions.spec.ts       |
 
 #### 6F · Document
 
 | #    | Function             | Test Scenarios              | Coverage | Notes                                           |
 |:-----|:---------------------|:----------------------------|:--------:|:------------------------------------------------|
-| 6.46 | View JSON Schema     | View JSON Schema definition |    ❌    |                                                 |
-| 6.47 | Download JSON Schema | Download JSON Schema        |    ❌    |                                                 |
-| 6.48 | Edit JSON Schema     | Edit JSON Schema            |    ❌    |                                                 |
-| 6.49 | Save JSON Schema     | Save JSON Schema changes    |    ❌    |                                                 |
+| 6.46 | View JSON Schema     | View JSON Schema definition |    ✅    | case-details-management-document.spec.ts        |
+| 6.47 | Download JSON Schema | Download JSON Schema        |    ✅    | case-details-management-document.spec.ts        |
+| 6.48 | Edit JSON Schema     | Edit JSON Schema            |    ✅    | case-details-management-document.spec.ts        |
+| 6.49 | Save JSON Schema     | Save JSON Schema changes    |    ✅    | case-details-management-document.spec.ts        |
 
 #### 6G · Forms
 
 | #    | Function            | Test Scenarios                                   | Coverage | Notes                                           |
 |:-----|:--------------------|:-------------------------------------------------|:--------:|:------------------------------------------------|
-| 6.50 | View forms list     | Display list of forms                            |    ❌    |                                                 |
-| 6.51 | Search/filter forms | Search and filter forms                          |    ❌    |                                                 |
-| 6.52 | Create form         | Create new form                                  |    ❌    |                                                 |
-| 6.53 | Add form components | Form.io builder — add components via drag-drop   |    ❌    |                                                 |
-| 6.54 | Configure component | Form.io builder — configure component properties |    ❌    |                                                 |
-| 6.55 | Use JSON editor     | Use Form.io JSON editor                          |    ❌    |                                                 |
-| 6.56 | View form preview   | View form preview                                |    ❌    |                                                 |
-| 6.57 | Save form           | Save form definition                             |    ❌    |                                                 |
+| 6.50 | View forms list     | Display list of forms                            |    ✅    | form-management.spec.ts                         |
+| 6.51 | Search/filter forms | Search and filter forms                          |    ✅    | form-management.spec.ts                         |
+| 6.52 | Create form         | Create new form                                  |    ✅    | case-details-management-forms.spec.ts           |
+| 6.53 | Add form components | Form.io builder — add components via drag-drop   |    ✅    | case-details-management-forms.spec.ts           |
+| 6.54 | Configure component | Form.io builder — configure component properties |    ✅    | case-details-management-forms.spec.ts           |
+| 6.55 | Use JSON editor     | Use Form.io JSON editor                          |    ✅    | case-details-management-forms.spec.ts           |
+| 6.56 | View form preview   | View form preview                                |    ✅    | case-details-management-forms.spec.ts           |
+| 6.57 | Save form           | Save form definition                             |    ✅    | case-details-management-forms.spec.ts           |
 
 #### 6H · Form Flows
 
 | #    | Function             | Test Scenarios                 | Coverage | Notes                                           |
 |:-----|:---------------------|:-------------------------------|:--------:|:------------------------------------------------|
-| 6.58 | View form flows list | Display list of form flows     |    ❌    |                                                 |
-| 6.59 | Create form flow     | Create new form flow           |    ❌    |                                                 |
-| 6.60 | Edit form flow JSON  | Edit form flow JSON definition |    ❌    |                                                 |
-| 6.61 | Save form flow       | Save form flow                 |    ❌    |                                                 |
+| 6.58 | View form flows list | Display list of form flows     |    ✅    | case-details-management-form-flows.spec.ts      |
+| 6.59 | Create form flow     | Create new form flow           |    ✅    | case-details-management-form-flows.spec.ts      |
+| 6.60 | Edit form flow JSON  | Edit form flow JSON definition |    ✅    | case-details-management-form-flows.spec.ts      |
+| 6.61 | Save form flow       | Save form flow, invalid JSON   |    ✅    | case-details-management-form-flows.spec.ts      |
 
 #### 6I · Tasks
 
 | #    | Function                    | Test Scenarios                       | Coverage | Notes                                           |
 |:-----|:----------------------------|:-------------------------------------|:--------:|:------------------------------------------------|
-| 6.62 | View task list columns      | View task list columns configuration |    ❌    |                                                 |
-| 6.63 | Add task list column        | Add column to task list              |    ❌    |                                                 |
-| 6.64 | Rearrange task list columns | Rearrange task list columns          |    ❌    |                                                 |
-| 6.65 | View task search fields     | View task list search fields         |    ❌    |                                                 |
-| 6.66 | Add task search field       | Add task list search field           |    ❌    |                                                 |
+| 6.62 | View task list columns      | View task list columns configuration |    ✅    | case-details-management-tasks.spec.ts           |
+| 6.63 | Add task list column        | Add column to task list              |    ✅    | case-details-management-tasks.spec.ts           |
+| 6.64 | Rearrange task list columns | Rearrange task list columns          |    ✅    | case-details-management-tasks.spec.ts           |
+| 6.65 | View task search fields     | View task list search fields         |    ✅    | case-details-management-tasks.spec.ts           |
+| 6.66 | Add task search field       | Add task list search field           |    ✅    | case-details-management-tasks.spec.ts           |
 | 6.67 | Toggle JSON/table view      | Toggle task list JSON/table view     |    ❌    |                                                 |
 
 #### 6J · Case List
@@ -216,9 +216,9 @@
 
 | #    | Function       | Test Scenarios                                 | Coverage | Notes                                           |
 |:-----|:---------------|:-----------------------------------------------|:--------:|:------------------------------------------------|
-| 6.74 | View tabs      | View tabs configuration                        |    ❌    |                                                 |
-| 6.75 | Add tab        | Add tab (Standard / FormIO / Custom / Widgets) |    ❌    |                                                 |
-| 6.76 | Rearrange tabs | Rearrange tabs order                           |    ❌    |                                                 |
+| 6.74 | View tabs      | View tabs configuration                        |    ✅    | case-details-management-tabs.spec.ts            |
+| 6.75 | Add tab        | Add tab (Standard / FormIO / Custom / Widgets) |    ✅    | case-details-management-tabs.spec.ts            |
+| 6.76 | Rearrange tabs | Rearrange tabs order                           |    ✅    | case-details-management-tabs.spec.ts            |
 
 #### 6L · Case Details — Statuses
 
@@ -236,64 +236,64 @@
 |:-----|:--------------|:------------------------|:--------:|:------------------------------------------------|
 | 6.82 | View tags     | View tags configuration |    ✅    | case-details-config.spec.ts                     |
 | 6.83 | Add tag       | Add new tag             |    ✅    | case-details-config.spec.ts                     |
-| 6.84 | Set tag color | Set tag color           |    ❌    |                                                 |
+| 6.84 | Set tag color | Set tag color, change color |    ✅    | case-details-config.spec.ts                     |
 
 #### 6N · Case Details — Header
 
 | #    | Function            | Test Scenarios                    | Coverage | Notes                                           |
 |:-----|:--------------------|:----------------------------------|:--------:|:------------------------------------------------|
-| 6.85 | View header widgets | View header widgets configuration |    ❌    |                                                 |
-| 6.86 | Add header widget   | Add header widget                 |    ❌    |                                                 |
+| 6.85 | View header widgets | View header widgets configuration |    ✅    | case-details-management-header.spec.ts          |
+| 6.86 | Add header widget   | Add header widget                 |    ✅    | case-details-management-header.spec.ts          |
 
 #### 6O · Case Details — Widgets
 
 | #    | Function                 | Test Scenarios                                                            | Coverage | Notes                                           |
 |:-----|:-------------------------|:--------------------------------------------------------------------------|:--------:|:------------------------------------------------|
-| 6.87 | View widgets list        | View widgets list                                                         |    ❌    |                                                 |
-| 6.88 | Add widget               | Add widget via 6-step wizard                                              |    ❌    |                                                 |
-| 6.89 | Select widget type       | Select widget type (Fields / Custom / Form.io / Table / Collection / Map) |    ❌    |                                                 |
-| 6.90 | Set widget width         | Set widget width                                                          |    ❌    |                                                 |
-| 6.91 | Set widget density       | Set widget density                                                        |    ❌    |                                                 |
-| 6.92 | Set widget style         | Set widget style                                                          |    ❌    |                                                 |
-| 6.93 | Configure widget content | Configure widget content                                                  |    ❌    |                                                 |
+| 6.87 | View widgets list        | View widgets list                                                         |    ✅    | case-details-management-widgets.spec.ts         |
+| 6.88 | Add widget               | Add widget via 6-step wizard                                              |    ✅    | case-details-management-widgets.spec.ts         |
+| 6.89 | Select widget type       | Select widget type (Fields / Custom / Form.io / Table / Collection / Map) |    ✅    | case-details-management-widgets.spec.ts         |
+| 6.90 | Set widget width         | Set widget width                                                          |    ✅    | case-details-management-widgets.spec.ts         |
+| 6.91 | Set widget density       | Set widget density                                                        |    ✅    | case-details-management-widgets.spec.ts         |
+| 6.92 | Set widget style         | Set widget style                                                          |    ✅    | case-details-management-widgets.spec.ts         |
+| 6.93 | Configure widget content | Configure widget content                                                  |    ✅    | case-details-management-widgets.spec.ts         |
 | 6.94 | Set widget conditions    | Set widget display conditions                                             |    ❌    |                                                 |
-| 6.95 | Add widget separator     | Add widget separator                                                      |    ❌    |                                                 |
-| 6.96 | Rearrange widgets        | Rearrange widgets order                                                   |    ❌    |                                                 |
-| 6.97 | Use widget JSON editor   | Use widget JSON editor                                                    |    ❌    |                                                 |
+| 6.95 | Add widget separator     | Add widget separator                                                      |    ✅    | case-details-management-widgets.spec.ts         |
+| 6.96 | Rearrange widgets        | Rearrange widgets order                                                   |    ✅    | case-details-management-widgets.spec.ts         |
+| 6.97 | Use widget JSON editor   | Use widget JSON editor                                                    |    ✅    | case-details-management-widgets.spec.ts         |
 
 #### 6P · ZGW — General
 
 | #     | Function            | Test Scenarios                         | Coverage | Notes                                           |
 |:------|:--------------------|:---------------------------------------|:--------:|:------------------------------------------------|
-| 6.98  | Configure case sync | Configure case details synchronization |    ❌    |                                                 |
-| 6.99  | Link case type      | Link case type                         |    ❌    |                                                 |
-| 6.100 | Edit case type      | Edit case type                         |    ❌    |                                                 |
-| 6.101 | Delete case type    | Delete case type                       |    ❌    |                                                 |
+| 6.98  | Configure case sync | Configure case details synchronization |    ✅    | case-details-management-zgw-general.spec.ts     |
+| 6.99  | Link case type      | Link case type                         |    ✅    | case-details-management-zgw-general.spec.ts     |
+| 6.100 | Edit case type      | Edit case type                         |    ✅    | case-details-management-zgw-general.spec.ts     |
+| 6.101 | Delete case type    | Delete case type                       |    ✅    | case-details-management-zgw-general.spec.ts     |
 
 #### 6Q · ZGW — Document Columns
 
-| #     | Function              | Test Scenarios              | Coverage | Notes                                           |
-|:------|:----------------------|:----------------------------|:--------:|:------------------------------------------------|
-| 6.102 | View document columns | View document columns       |    ❌    |                                                 |
-| 6.103 | Add document column   | Add document column         |    ❌    |                                                 |
-| 6.104 | Set column sorting    | Set document column sorting |    ❌    |                                                 |
-| 6.105 | Rearrange doc columns | Rearrange document columns  |    ❌    |                                                 |
+| #     | Function              | Test Scenarios               | Coverage | Notes                                           |
+|:------|:----------------------|:-----------------------------|:--------:|:------------------------------------------------|
+| 6.102 | View document columns | View document columns        |    ✅    | case-details-management-zgw.spec.ts             |
+| 6.103 | Add document column   | Add document column          |    ✅    | case-details-management-zgw.spec.ts             |
+| 6.104 | Set column sorting    | Set document column sorting  |    ✅    | case-details-management-zgw.spec.ts             |
+| 6.105 | Rearrange doc columns | Rearrange document columns   |    ✅    | case-details-management-zgw.spec.ts             |
 
 #### 6R · ZGW — Upload Fields
 
 | #     | Function                | Test Scenarios                 | Coverage | Notes                                           |
 |:------|:------------------------|:-------------------------------|:--------:|:------------------------------------------------|
-| 6.106 | View upload fields      | View upload fields             |    ❌    |                                                 |
-| 6.107 | Set field visibility    | Set upload field visibility    |    ❌    |                                                 |
-| 6.108 | Set field default value | Set upload field default value |    ❌    |                                                 |
+| 6.106 | View upload fields      | View upload fields             |    ✅    | case-details-management-zgw.spec.ts             |
+| 6.107 | Set field visibility    | Set upload field visibility    |    ✅    | case-details-management-zgw.spec.ts             |
+| 6.108 | Set field default value | Set upload field default value |    ✅    | case-details-management-zgw.spec.ts             |
 
 #### 6S · ZGW — Keywords
 
 | #     | Function        | Test Scenarios  | Coverage | Notes                                           |
 |:------|:----------------|:----------------|:--------:|:------------------------------------------------|
-| 6.109 | View keywords   | View keywords   |    ❌    |                                                 |
-| 6.110 | Add keyword     | Add keyword     |    ❌    |                                                 |
-| 6.111 | Search keywords | Search keywords |    ❌    |                                                 |
+| 6.109 | View keywords   | View keywords   |    ✅    | case-details-management-zgw-keywords.spec.ts    |
+| 6.110 | Add keyword     | Add keyword     |    ✅    | case-details-management-zgw-keywords.spec.ts    |
+| 6.111 | Search keywords | Search keywords |    ✅    | case-details-management-zgw-keywords.spec.ts    |
 
 ---
 
@@ -328,12 +328,12 @@
 |:----|:------------------------------------|:-------------------------------------------------------------------------------------------|:--------:|:------------------------------------------------|
 | 9.1 | View plugin configurations list     | Display list of all plugin configurations · Display empty state when no plugins configured |    ✅    | plugin.spec.ts                                  |
 | 9.2 | View plugin configuration name      | Display configuration name in list view                                                    |    ✅    | plugin.spec.ts                                  |
-| 9.3 | View plugin name (API type)         | Display plugin API type in list                                                            |    ❌    |                                                 |
-| 9.4 | View plugin identifier              | Display UUID identifier in list                                                            |    ❌    |                                                 |
+| 9.3 | View plugin name (API type)         | Display plugin API type in list                                                            |    ✅    | plugin.spec.ts                                  |
+| 9.4 | View plugin identifier              | Display UUID identifier in list                                                            |    ✅    | plugin.spec.ts                                  |
 | 9.5 | Browse available plugins            | Navigate through plugin catalog · View plugin details in catalog                           |    ✅    | plugin.spec.ts                                  |
-| 9.6 | View plugin categories              | Display categorized plugin list                                                            |    ❌    |                                                 |
-| 9.7 | View plugin descriptions with logos | Display plugin with logo and description                                                   |    ❌    |                                                 |
-| 9.8 | Filter/search plugins               | Search plugins by name · Filter plugins by type                                            |    ❌    |                                                 |
+| 9.6 | View plugin categories              | Display categorized plugin list                                                            |   `N/A`  | No category grouping in UI                      |
+| 9.7 | View plugin descriptions with logos | Display plugin with logo and description                                                   |    ✅    | plugin.spec.ts                                  |
+| 9.8 | Filter/search plugins               | Search plugins by name · Filter plugins by type                                            |   `N/A`  | No search/filter in plugin overview              |
 
 #### 9B · Create Plugin Config
 
@@ -372,56 +372,56 @@
 
 | #    | Function                  | Test Scenarios                                        | Coverage | Notes                                           |
 |:-----|:--------------------------|:------------------------------------------------------|:--------:|:------------------------------------------------|
-| 10.1 | View dashboard list       | Display list of dashboards                            |    ❌    |                                                 |
-| 10.2 | Create dashboard          | Create new dashboard                                  |    ❌    |                                                 |
-| 10.3 | Edit dashboard            | Edit existing dashboard                               |    ❌    |                                                 |
-| 10.4 | View dashboard metadata   | View metadata (created by, created on, dashboard key) |    ❌    |                                                 |
-| 10.5 | Toggle JSON/visual editor | Toggle between JSON and visual editor                 |    ❌    |                                                 |
-| 10.6 | Edit dashboard JSON       | Edit dashboard JSON directly                          |    ❌    |                                                 |
+| 10.1 | View dashboard list       | Display list of dashboards                            |    ✅    | dashboard-management.spec.ts                    |
+| 10.2 | Create dashboard          | Create new dashboard                                  |    ✅    | dashboard-management.spec.ts                    |
+| 10.3 | Edit dashboard            | Edit existing dashboard                               |    ✅    | dashboard-management.spec.ts                    |
+| 10.4 | View dashboard metadata   | View metadata (created by, created on, dashboard key) |    ✅    | dashboard-management.spec.ts                    |
+| 10.5 | Toggle JSON/visual editor | Toggle between JSON and visual editor                 |    ✅    | dashboard-management.spec.ts                    |
+| 10.6 | Edit dashboard JSON       | Edit dashboard JSON directly                          |    ✅    | dashboard-management.spec.ts                    |
 
 #### 10B · Widget Management
 
 | #     | Function                  | Test Scenarios                  | Coverage | Notes                                           |
 |:------|:--------------------------|:--------------------------------|:--------:|:------------------------------------------------|
-| 10.7  | View widgets list         | Display widgets list            |    ❌    |                                                 |
-| 10.8  | Add new widget            | Add new widget to dashboard     |    ❌    |                                                 |
-| 10.9  | Rearrange widgets         | Rearrange widgets via drag-drop |    ❌    |                                                 |
-| 10.10 | Delete widget             | Delete widget from dashboard    |    ❌    |                                                 |
-| 10.11 | Edit widget configuration | Edit widget configuration       |    ❌    |                                                 |
+| 10.7  | View widgets list         | Display widgets list            |    ✅    | dashboard-management.spec.ts                    |
+| 10.8  | Add new widget            | Add new widget to dashboard     |    ✅    | dashboard-management.spec.ts                    |
+| 10.9  | Rearrange widgets         | Rearrange widgets via drag-drop |    ✅    | dashboard-management.spec.ts                    |
+| 10.10 | Delete widget             | Delete widget from dashboard    |    ✅    | dashboard-management.spec.ts                    |
+| 10.11 | Edit widget configuration | Edit widget configuration       |    ✅    | dashboard-management.spec.ts                    |
 
 #### 10C · Widget Config — Data
 
 | #     | Function                     | Test Scenarios                                                                        | Coverage | Notes                                           |
 |:------|:-----------------------------|:--------------------------------------------------------------------------------------|:--------:|:------------------------------------------------|
-| 10.12 | Select widget type           | Select widget type (Case count / Multiple / Group by / Task count)                    |    ❌    |                                                 |
-| 10.13 | Enter widget title           | Enter widget title                                                                    |    ❌    |                                                 |
-| 10.14 | Select data source           | Select data source (Case count / Case counts / Task count)                            |    ❌    |                                                 |
-| 10.15 | Select case type             | Select case type for case count widgets                                               |    ❌    |                                                 |
-| 10.16 | Add conditions               | Add conditions to filter data                                                         |    ❌    |                                                 |
-| 10.17 | Configure condition path     | Configure condition query path                                                        |    ❌    |                                                 |
-| 10.18 | Configure condition operator | Configure condition query operator                                                    |    ❌    |                                                 |
-| 10.19 | Configure condition value    | Configure condition query value                                                       |    ❌    |                                                 |
-| 10.20 | Use placeholders             | Use placeholders in conditions (`${null}`, `${currentUserId}`, `${currentUserEmail}`) |    ❌    |                                                 |
+| 10.12 | Select widget type           | Select widget type (Case count / Multiple / Group by / Task count)                    |    ✅    | dashboard-management.spec.ts                    |
+| 10.13 | Enter widget title           | Enter widget title                                                                    |    ✅    | dashboard-management.spec.ts                    |
+| 10.14 | Select data source           | Select data source (Case count / Case counts / Task count)                            |    ✅    | dashboard-management.spec.ts                    |
+| 10.15 | Select case type             | Select case type for case count widgets                                               |    ✅    | dashboard-management.spec.ts                    |
+| 10.16 | Add conditions               | Add conditions to filter data                                                         |    ✅    | dashboard-management.spec.ts                    |
+| 10.17 | Configure condition path     | Configure condition query path                                                        |    ✅    | dashboard-management.spec.ts                    |
+| 10.18 | Configure condition operator | Configure condition query operator                                                    |    ✅    | dashboard-management.spec.ts                    |
+| 10.19 | Configure condition value    | Configure condition query value                                                       |    ✅    | dashboard-management.spec.ts                    |
+| 10.20 | Use placeholders             | Use placeholders in conditions (`${null}`, `${currentUserId}`, `${currentUserEmail}`) |    ✅    | dashboard-management.spec.ts                    |
 
 #### 10D · Widget Config — Display
 
 | #     | Function                   | Test Scenarios                           | Coverage | Notes                                           |
 |:------|:---------------------------|:-----------------------------------------|:--------:|:------------------------------------------------|
-| 10.21 | Select display type        | Select display type (Big number / Gauge) |    ❌    |                                                 |
-| 10.22 | Configure display title    | Configure display type title             |    ❌    |                                                 |
-| 10.23 | Configure display subtitle | Configure display type subtitle          |    ❌    |                                                 |
-| 10.24 | Configure display label    | Configure display type label             |    ❌    |                                                 |
-| 10.25 | Toggle KPI usage           | Toggle KPI usage                         |    ❌    |                                                 |
-| 10.26 | Set URL path               | Set URL path for widget click navigation |    ❌    |                                                 |
+| 10.21 | Select display type        | Select display type (Big number / Gauge) |    ✅    | dashboard-management.spec.ts                    |
+| 10.22 | Configure display title    | Configure display type title             |    ✅    | dashboard-management.spec.ts                    |
+| 10.23 | Configure display subtitle | Configure display type subtitle          |    ✅    | dashboard-management.spec.ts                    |
+| 10.24 | Configure display label    | Configure display type label             |    ✅    | dashboard-management.spec.ts                    |
+| 10.25 | Toggle KPI usage           | Toggle KPI usage                         |    ✅    | dashboard-management.spec.ts                    |
+| 10.26 | Set URL path               | Set URL path for widget click navigation |    ✅    | dashboard-management.spec.ts                    |
 
 #### 10E · Widget Types
 
 | #     | Function                    | Test Scenarios                                       | Coverage | Notes                                           |
 |:------|:----------------------------|:-----------------------------------------------------|:--------:|:------------------------------------------------|
-| 10.27 | Configure Case count widget | Configure Case count widget (single case type count) |    ❌    |                                                 |
-| 10.28 | Configure Multiple counts   | Configure Multiple case counts widget                |    ❌    |                                                 |
-| 10.29 | Configure Group by widget   | Configure Group by widget                            |    ❌    |                                                 |
-| 10.30 | Configure Task count widget | Configure Task count widget                          |    ❌    |                                                 |
+| 10.27 | Configure Case count widget | Configure Case count widget (single case type count) |    ✅    | dashboard-management.spec.ts                    |
+| 10.28 | Configure Multiple counts   | Configure Multiple case counts widget                |    ✅    | dashboard-management.spec.ts                    |
+| 10.29 | Configure Group by widget   | Configure Group by widget                            |    ✅    | dashboard-management.spec.ts                    |
+| 10.30 | Configure Task count widget | Configure Task count widget                          |    ✅    | dashboard-management.spec.ts                    |
 
 ---
 
@@ -431,14 +431,14 @@
 
 | #    | Function                  | Test Scenarios               | Coverage | Notes                                           |
 |:-----|:--------------------------|:-----------------------------|:--------:|:------------------------------------------------|
-| 11.1 | View roles list           | Display list of roles        |    ❌    |                                                 |
-| 11.2 | Add new role              | Add new role                 |    ❌    |                                                 |
-| 11.3 | Enter role name           | Enter role name              |    ❌    |                                                 |
-| 11.4 | Create role               | Create role                  |    ❌    |                                                 |
-| 11.5 | View role details         | Select and view role details |    ❌    |                                                 |
+| 11.1 | View roles list           | Display list of roles        |    ✅    | access-control.spec.ts                          |
+| 11.2 | Add new role              | Add new role                 |    ✅    | access-control.spec.ts                          |
+| 11.3 | Enter role name           | Enter role name              |    ✅    | access-control.spec.ts                          |
+| 11.4 | Create role               | Create role                  |    ✅    | access-control.spec.ts                          |
+| 11.5 | View role details         | Select and view role details |    ✅    | access-control.spec.ts                          |
 | 11.6 | Edit role metadata        | Edit role metadata           |    ❌    |                                                 |
 | 11.7 | Export role configuration | Export role configuration    |    ❌    |                                                 |
-| 11.8 | Delete role               | Delete role                  |    ❌    |                                                 |
+| 11.8 | Delete role               | Delete role                  |    ✅    | access-control.spec.ts                          |
 
 #### 11B · Permissions
 
@@ -679,8 +679,8 @@
 
 | #    | Function                        | Test Scenarios                           | Coverage | Notes                                           |
 |:-----|:--------------------------------|:-----------------------------------------|:--------:|:------------------------------------------------|
-| 16.1 | Manage choice field definitions | Manage choice field definitions          |    ❌    |                                                 |
-| 16.2 | Add/edit/delete choice options  | Add / edit / delete choice field options |    ❌    |                                                 |
+| 16.1 | Manage choice field definitions | Manage choice field definitions          |    ✅    | choice-field-management.spec.ts                 |
+| 16.2 | Add/edit/delete choice options  | Add / edit / delete choice field options |    ✅    | choice-field-management.spec.ts                 |
 
 ---
 
@@ -726,9 +726,9 @@
 | Metric                   |  Count  |
 |:-------------------------|:-------:|
 | Total Features           |   20    |
-| Total Functions          |   349   |
-| ✅ Covered by Playwright |   41    |
-| ❌ Not covered           |   308   |
-| ⏳ In progress           |    0    |
-| `N/A` Not applicable     |    0    |
-| **Coverage %**           | **11.7%** |
+| Total Functions          |   356   |
+| ✅ Covered by Playwright |   176   |
+| ❌ Not covered           |   177   |
+| ⏳ In progress           |    1    |
+| `N/A` Not applicable     |    2    |
+| **Coverage %**           | **49.4%** |

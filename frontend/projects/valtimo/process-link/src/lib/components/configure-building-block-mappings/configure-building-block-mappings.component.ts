@@ -53,6 +53,8 @@ import {
   ProcessLinkStateService,
   ProcessLinkStepService,
 } from '../../services';
+import {BB_MAPPINGS_TEST_IDS} from '../../constants';
+import {ensureDocPrefix} from '../../utils';
 import {
   ButtonModule,
   ComboBoxModule,
@@ -94,6 +96,8 @@ import {ActivatedRoute} from '@angular/router';
   ],
 })
 export class ConfigureBuildingBlockMappingsComponent implements OnInit, OnDestroy, AfterViewInit {
+  protected readonly testIds = BB_MAPPINGS_TEST_IDS;
+
   public readonly buildingBlockFields$ = this.buildingBlockStateService.buildingBlockFields$;
 
   public readonly buildingBlockFieldItems$: Observable<Array<SelectItem>> =
@@ -102,7 +106,7 @@ export class ConfigureBuildingBlockMappingsComponent implements OnInit, OnDestro
         buildingBlockFields.map(buildingBlockField => {
           return {
             id: buildingBlockField.name,
-            text: `doc:${buildingBlockField.name}`,
+            text: buildingBlockField.name,
           };
         })
       )
@@ -515,7 +519,10 @@ export class ConfigureBuildingBlockMappingsComponent implements OnInit, OnDestro
       return;
     }
     const mapped: Array<BuildingBlockInputMapping> = this.inputs.controls.map(group => {
-      return {source: group.value.source, target: group.value.target} as BuildingBlockInputMapping;
+      return {
+        source: group.value.source,
+        target: ensureDocPrefix(group.value.target ?? ''),
+      } as BuildingBlockInputMapping;
     });
     this.buildingBlockStateService.setInputMappings(mapped);
     this.triggerValidation();
@@ -527,7 +534,7 @@ export class ConfigureBuildingBlockMappingsComponent implements OnInit, OnDestro
     }
     const mapped: Array<BuildingBlockOutputMapping> = this.outputs.controls.map(group => {
       return {
-        source: group.value.source,
+        source: ensureDocPrefix(group.value.source ?? ''),
         target: group.value.target,
         syncTiming: (group.value.syncTiming ?? 'END') as BuildingBlockSyncTiming,
       } as BuildingBlockOutputMapping;
@@ -732,4 +739,5 @@ export class ConfigureBuildingBlockMappingsComponent implements OnInit, OnDestro
     if (!fields) return false;
     return fields.some(field => field.required && field.name === target);
   }
+
 }

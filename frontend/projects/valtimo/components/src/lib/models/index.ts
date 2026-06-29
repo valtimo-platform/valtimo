@@ -15,6 +15,7 @@
  */
 
 export * from './alert.model';
+export * from './assignment.model';
 export * from './blueprint-context.model';
 export * from './button.model';
 export * from './carbon-list.model';
@@ -49,3 +50,5 @@ export * from './menu.model';
 export * from './list-hidden-column.model';
 export * from './version.model';
 export * from './schema-editor.model';
+export * from './color-picker.model';
+export * from './admin-settings.model';

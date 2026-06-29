@@ -33,6 +33,8 @@ import {FormioBeforeSubmit, FormioForm} from '@formio/angular';
 import {TranslateModule} from '@ngx-translate/core';
 import {PermissionService} from '@valtimo/access-control';
 import {
+  ConfirmationModalModule,
+  CarbonModalSize,
   FormioComponent,
   FormIoModule,
   FormioOptionsImpl,
@@ -47,6 +49,8 @@ import {
   FORM_CUSTOM_COMPONENT_TOKEN,
   FormCustomComponent,
   FormCustomComponentConfig,
+  FormSize,
+  formSizeToCarbonModalSizeMap,
   FormSubmissionResult,
   ProcessLinkModule,
   ProcessLinkService,
@@ -54,11 +58,13 @@ import {
 } from '@valtimo/process-link';
 import {UserProviderService} from '@valtimo/security';
 import {ConfigService, FORM_VIEW_MODEL_TOKEN, FormViewModel} from '@valtimo/shared';
-import {DialogModule, LayerModule, ModalModule} from 'carbon-components-angular';
+import {DialogModule, LayerModule, ModalModule, NotificationModule} from 'carbon-components-angular';
 import {BehaviorSubject, Subscription} from 'rxjs';
 import {take} from 'rxjs/operators';
 import {CAN_VIEW_CASE_PERMISSION, CASE_DETAIL_PERMISSION_RESOURCE} from '../../permissions';
 import {CaseListService, StartModalService} from '../../services';
+
+const DEFAULT_START_MODAL_SIZE: CarbonModalSize = 'sm';
 
 @Component({
   standalone: true,
@@ -75,7 +81,9 @@ import {CaseListService, StartModalService} from '../../services';
     DialogModule,
     ModalModule,
     LayerModule,
+    NotificationModule,
     RenderInBodyComponent,
+    ConfirmationModalModule,
   ],
 })
 export class CaseProcessStartModalComponent implements OnInit, OnDestroy {
@@ -84,7 +92,9 @@ export class CaseProcessStartModalComponent implements OnInit, OnDestroy {
   public caseDefinitionKey: string;
   public processName: string;
   private _startEventName: string;
-  private readonly _useStartEventNameAsStartFormTitle!: boolean;
+  private get _useStartEventNameAsStartFormTitle(): boolean {
+    return !!this.configService.featureToggles?.useStartEventNameAsStartFormTitle;
+  }
   public formDefinition: FormioForm;
   public formName: string;
   public formFlowInstanceId: string;
@@ -104,7 +114,10 @@ export class CaseProcessStartModalComponent implements OnInit, OnDestroy {
   @Output() noProcessLinked = new EventEmitter<string>();
 
   public readonly modalOpen$ = new BehaviorSubject<boolean>(false);
+  public readonly modalSize$ = new BehaviorSubject<CarbonModalSize>(DEFAULT_START_MODAL_SIZE);
+  public readonly showDraftConfirmation$ = new BehaviorSubject<boolean>(false);
 
+  private _pendingProcessDefinitionCaseDefinition: ProcessDefinitionCaseDefinition | null = null;
   private _subscriptions = new Subscription();
   private readonly _formCustomComponentConfig$ = new BehaviorSubject<
     FormCustomComponentConfig | {}
@@ -126,9 +139,6 @@ export class CaseProcessStartModalComponent implements OnInit, OnDestroy {
     private readonly formCustomComponentConfig: FormCustomComponentConfig,
     private urlResolverService: UrlResolverService
   ) {
-    this._useStartEventNameAsStartFormTitle =
-      this.configService.config.featureToggles?.useStartEventNameAsStartFormTitle;
-
     this._formCustomComponentConfig$.next(formCustomComponentConfig);
   }
 
@@ -144,6 +154,9 @@ export class CaseProcessStartModalComponent implements OnInit, OnDestroy {
     this.processLinkId = null;
     this.formDefinition = null;
     this.formFlowInstanceId = null;
+    this.modalSize$.next(DEFAULT_START_MODAL_SIZE);
+    this.formViewModelDynamicContainer?.clear();
+    this.formCustomComponentDynamicContainer?.clear();
     if (this._useStartEventNameAsStartFormTitle) {
       this.processService.getProcessDefinitionXml(this.processDefinitionId).subscribe(result => {
         this._startEventName = this.startModalService.getStandardStartEventTitle(result.bpmn20Xml);
@@ -160,6 +173,7 @@ export class CaseProcessStartModalComponent implements OnInit, OnDestroy {
               this.formDefinition = startProcessResult.properties.prefilledForm;
               this.processLinkId = startProcessResult.processLinkId;
               this.isFormViewModel = false;
+              this.setModalSize(startProcessResult.properties.formSize);
               this.openCdsModal();
               break;
             case 'form-flow':
@@ -205,6 +219,12 @@ export class CaseProcessStartModalComponent implements OnInit, OnDestroy {
       });
   }
 
+  private setModalSize(formSize?: FormSize): void {
+    this.modalSize$.next(
+      formSize ? formSizeToCarbonModalSizeMap[formSize] : DEFAULT_START_MODAL_SIZE
+    );
+  }
+
   public gotoProcessLinkScreen(): void {
     this.closeCdsModal();
     this.router.navigate(['case-management']);
@@ -218,6 +238,32 @@ export class CaseProcessStartModalComponent implements OnInit, OnDestroy {
   }
 
   openModal(processDefinitionCaseDefinition: ProcessDefinitionCaseDefinition) {
+    if (processDefinitionCaseDefinition.draft) {
+      this._pendingProcessDefinitionCaseDefinition = processDefinitionCaseDefinition;
+      this.showDraftConfirmation$.next(true);
+      return;
+    }
+
+    this._pendingProcessDefinitionCaseDefinition = null;
+    this.showDraftConfirmation$.next(false);
+    this.proceedWithOpenModal(processDefinitionCaseDefinition);
+  }
+
+  public onDraftConfirmationConfirm(): void {
+    this.showDraftConfirmation$.next(false);
+    if (this._pendingProcessDefinitionCaseDefinition) {
+      const pending = this._pendingProcessDefinitionCaseDefinition;
+      this._pendingProcessDefinitionCaseDefinition = null;
+      this.proceedWithOpenModal(pending);
+    }
+  }
+
+  public onDraftConfirmationCancel(): void {
+    this.showDraftConfirmation$.next(false);
+    this._pendingProcessDefinitionCaseDefinition = null;
+  }
+
+  private proceedWithOpenModal(processDefinitionCaseDefinition: ProcessDefinitionCaseDefinition): void {
     this.processDefinitionKey = processDefinitionCaseDefinition.processDefinitionKey;
     this.caseDefinitionKey = processDefinitionCaseDefinition.id.caseDefinitionId.key;
     this.processDefinitionId = processDefinitionCaseDefinition.id.processDefinitionId;
@@ -244,9 +290,16 @@ export class CaseProcessStartModalComponent implements OnInit, OnDestroy {
     });
   }
 
-  public formFlowSubmitted(): void {
-    this.formFlowComplete.emit(null);
-    this.closeCdsModal();
+  public formFlowSubmitted(result?: any[]): void {
+    const documentId = result
+      ?.filter(item => item?.documentId)
+      ?.map(item => item.documentId)?.[0];
+    if (documentId) {
+      this.submitCompleted({documentId, errors: []});
+    } else {
+      this.formFlowComplete.emit(null);
+      this.closeCdsModal();
+    }
   }
 
   public isUserAdmin(): void {
@@ -321,6 +374,7 @@ export class CaseProcessStartModalComponent implements OnInit, OnDestroy {
 
       renderedComponent.instance.processDefinitionKey = this.processDefinitionKey;
       renderedComponent.instance.documentDefinitionName = this.caseDefinitionKey;
+      renderedComponent.instance.documentId = null;
 
       renderedComponent.instance.submittedEvent.subscribe(() => {
         this.closeCdsModal();

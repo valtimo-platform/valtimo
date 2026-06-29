@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import {EventEmitter, Type} from '@angular/core';
+import {EventEmitter, Injector, Type} from '@angular/core';
 import {Observable} from 'rxjs';
 import {SafeResourceUrl} from '@angular/platform-browser';
 import {CaseManagementParams, ManagementContext} from '@valtimo/shared';
@@ -59,6 +59,11 @@ interface PluginSpecification {
   functionConfigurationComponents?: {
     [functionId: string]: Type<FunctionConfigurationComponent>;
   };
+  functionConfigurationComponentsFilter?: (
+    pluginConfigurationProperties: {[key: string]: any},
+    functionKey: string,
+    injector: Injector
+  ) => Observable<boolean>;
   pluginTranslations: {
     [langKey: string]: {
       title: string;

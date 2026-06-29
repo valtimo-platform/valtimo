@@ -17,6 +17,7 @@
 package com.ritense.buildingblock.domain.instance
 
 import com.ritense.buildingblock.domain.definition.BuildingBlockDefinition
+import com.ritense.valtimo.contract.annotation.AllOpen
 import jakarta.persistence.Column
 import jakarta.persistence.Entity
 import jakarta.persistence.FetchType
@@ -31,7 +32,8 @@ import java.util.UUID
 // Alternatively: Set to document instance ID, so it works the same way it works for cases.
 @Entity
 @Table(name = "building_block_instance")
-open class BuildingBlockInstance(
+@AllOpen
+class BuildingBlockInstance(
     @Id
     @Column(name = "id")
     val id: UUID = UUID.randomUUID(),
@@ -46,11 +48,20 @@ open class BuildingBlockInstance(
     @Column(name = "case_document_id", nullable = true)
     val caseDocumentId: UUID? = null,
 
-    @Column(name = "activity_id", nullable = false)
-    val activityId: String,
+    @Column(name = "activity_id", nullable = true)
+    val activityId: String? = null,
+
+    @Column(name = "caller_process_definition_id", nullable = true)
+    val callerProcessDefinitionId: String? = null,
+
+    @Column(name = "process_instance_id", nullable = true)
+    var processInstanceId: String? = null,
 
     @Column(name = "parent_building_block_instance_id", nullable = true)
     val parentBuildingBlockInstanceId: UUID? = null,
+
+    @Column(name = "root_building_block_instance_id", nullable = true)
+    val rootBuildingBlockInstanceId: UUID? = null,
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumns(
@@ -65,7 +76,7 @@ open class BuildingBlockInstance(
             nullable = false
         )
     )
-    open var definition: BuildingBlockDefinition
+    var definition: BuildingBlockDefinition
 ) {
 
 }

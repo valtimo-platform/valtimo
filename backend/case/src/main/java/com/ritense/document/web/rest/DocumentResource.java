@@ -25,9 +25,12 @@ import com.ritense.document.domain.impl.request.UpdateAssigneeRequest;
 import com.ritense.document.service.result.CreateDocumentResult;
 import com.ritense.document.service.result.ModifyDocumentResult;
 import com.ritense.valtimo.contract.authentication.NamedUser;
+import com.ritense.valtimo.contract.authentication.Team;
 import jakarta.validation.Valid;
 import java.util.List;
 import java.util.UUID;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 
 public interface DocumentResource {
@@ -49,6 +52,8 @@ public interface DocumentResource {
     ResponseEntity<Void> assignHandlerToDocuments(@Valid AssignToDocumentsRequest request);
 
     ResponseEntity<Void> unassignHandlerFromDocument(UUID documentId);
+
+    ResponseEntity<Page<Team>> getCandidateTeams(UUID documentId, Pageable pageable);
 
     ResponseEntity<List<NamedUser>> getCandidateUsers(UUID documentId);
 

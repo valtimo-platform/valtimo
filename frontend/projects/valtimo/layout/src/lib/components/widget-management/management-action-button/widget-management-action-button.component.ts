@@ -32,7 +32,7 @@ import {
   Validators,
 } from '@angular/forms';
 import {TranslateModule} from '@ngx-translate/core';
-import {DropdownModule, InputModule, ListItem} from 'carbon-components-angular';
+import {CheckboxModule, DropdownModule, InputModule, ListItem} from 'carbon-components-angular';
 import {BehaviorSubject, debounceTime, map, Observable, Subscription, take, tap} from 'rxjs';
 import {WidgetAction} from '../../../models';
 import {WidgetWizardService} from '../../../services';
@@ -48,6 +48,7 @@ import {WidgetManagementProcessSelectorComponent} from '../management-process-se
   imports: [
     CommonModule,
     WidgetManagementProcessSelectorComponent,
+    CheckboxModule,
     DropdownModule,
     InputModule,
     ReactiveFormsModule,
@@ -96,6 +97,9 @@ export class WidgetManagementActionButtonComponent implements OnInit, OnDestroy 
       this.widgetWizardService.$widgetActions()?.[0]?.name ?? '',
       Validators.required
     ),
+    openInNewTab: this.fb.control<boolean>(
+      this.widgetWizardService.$widgetActions()?.[0]?.openInNewTab ?? false
+    ),
   });
 
   private readonly _subscriptions = new Subscription();
@@ -120,6 +124,7 @@ export class WidgetManagementActionButtonComponent implements OnInit, OnDestroy 
       {
         name: '',
         navigateTo: '',
+        openInNewTab: false,
       },
       {emitEvent: false}
     );
@@ -161,6 +166,7 @@ export class WidgetManagementActionButtonComponent implements OnInit, OnDestroy 
           {
             name: action.name!,
             navigateTo: action.navigateTo!,
+            ...(action.openInNewTab ? {openInNewTab: true} : {}),
           },
         ]);
       })

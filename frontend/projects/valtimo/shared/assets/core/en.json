@@ -18,6 +18,7 @@
     "TaskDueDateSetEvent": "Task due date set > {{taskName}}"
   },
   "case": {
+    "allCases": "All cases",
     "exportButtonTooltip": "Export current case list",
     "summaryFormNotFound": "Summary form not found for '{{caseDefinitionKey}}'. A form named '{{caseDefinitionKey}}.summary' must exist using the case definition key.",
     "bulkAssign": {
@@ -25,6 +26,7 @@
       "modal": {
         "confirm": "Assign",
         "selectLabel": "Assign to user",
+        "selectTeamLabel": "Assign to team",
         "selectPlaceholder": "Choose an option",
         "title": "Assign selected cases to",
         "warningTitle": "Warning",
@@ -42,10 +44,21 @@
       "content": "Are you sure you want to change tabs? All selection will be lost.",
       "confirm": "Change tab"
     },
+    "draftProcessConfirmation": {
+      "title": "Start draft process",
+      "warningTitle": "Warning: Draft process",
+      "warningDescription": "This process definition is still in draft and may not work as expected.",
+      "confirm": "Start anyway",
+      "cancel": "Cancel"
+    },
     "noResults": {
       "ALL": {"description": "There is nothing to do here.", "title": "There are no cases"},
       "MINE": {"description": "Time for a short break.", "title": "No cases assigned to you"},
       "OPEN": {"description": "Come back later.", "title": "All cases have been assigned"},
+      "TEAM": {
+        "description": "No cases have been assigned to your teams yet.",
+        "title": "No team cases"
+      },
       "search": {
         "description": "There are no cases that match your search criteria.",
         "title": "No cases found"
@@ -75,6 +88,7 @@
       "MINE": "My cases",
       "OPEN": "Unassigned cases",
       "ALL": "All cases",
+      "TEAM": "Team cases",
       "componentNotFound": "Tab component not found",
       "componentNotFoundMessage": "No component has been found for this tab. Please contact your system administrator."
     },
@@ -162,7 +176,271 @@
       "noFormSpecified": "No form definition has been specified for this tab.",
       "formNotFound": "The form definition '{{formDefinitionName}}' could not be found."
     },
-    "rowLocked": "You don't have access to this case"
+    "rowLocked": "You don't have access to this case",
+    "inspection": {
+      "openInspector": "Inspect case",
+      "pageTitle": "Case inspection",
+      "placeholder": "This tab will be populated in a later phase.",
+      "tabs": {
+        "document": "Document",
+        "processes": "Processes",
+        "buildingBlocks": "Building blocks",
+        "logs": "Logs",
+        "zgw": "ZGW",
+        "metadata": "Metadata"
+      },
+      "document": {
+        "loading": "Loading document...",
+        "saved": "Document updated"
+      },
+      "buildingBlocks": {
+        "loading": "Loading building blocks...",
+        "emptyTitle": "No building blocks",
+        "empty": "This case has no building block instances.",
+        "notEnabled": "Building blocks are not enabled for this Valtimo installation.",
+        "saved": "Building block document updated",
+        "listAriaLabel": "Building blocks",
+        "detail": {
+          "instanceId": "Instance ID",
+          "documentId": "Document ID",
+          "processInstance": "Process instance",
+          "parent": "Parent",
+          "content": "Document content",
+          "loading": "Loading building block..."
+        }
+      },
+      "processes": {
+        "loading": "Loading processes...",
+        "empty": "No process instances are associated with this case.",
+        "listAriaLabel": "Process instances",
+        "buildingBlockTag": "BB",
+        "buildingBlockTagTooltip": "This process belongs to a building block",
+        "instanceId": "Instance ID",
+        "buildingBlock": "Building block",
+        "detailsTab": "Details",
+        "diagramTab": "Diagram",
+        "version": "Version",
+        "active": "Active",
+        "completed": "Completed",
+        "incidentsHeader": "Incidents",
+        "incidentTooltip": "Active incidents on this instance",
+        "incidentType": "Type",
+        "activity": "Activity",
+        "message": "Message",
+        "timestamp": "Timestamp",
+        "tasksHeader": "Tasks",
+        "taskName": "Task",
+        "taskAssignee": "Assignee",
+        "taskCreated": "Created",
+        "noTasks": "No active tasks.",
+        "variablesHeader": "Variables",
+        "variableName": "Name",
+        "variableType": "Type",
+        "variableValue": "Value",
+        "noVariables": "No variables.",
+        "jobsHeader": "Jobs",
+        "jobType": "Type",
+        "jobActivity": "Activity",
+        "jobRetries": "Retries left",
+        "jobDueDate": "Due",
+        "jobException": "Exception",
+        "jobTypeLabel": {
+          "TIMER": "Timer",
+          "ASYNC_CONTINUATION": "Async continuation",
+          "MESSAGE": "Message",
+          "BATCH": "Batch",
+          "OTHER": "Other"
+        },
+        "noJobs": "No jobs.",
+        "startedBy": "Started by",
+        "startedOn": "Started on",
+        "viewLogs": "View logs",
+        "variableActions": {
+          "add": "Add variable",
+          "edit": "Edit",
+          "delete": "Delete",
+          "deleteConfirmTitle": "Delete variable",
+          "deleteConfirmContent": "Are you sure you want to delete the variable '{{name}}'? This affects the running process.",
+          "createdToast": "Variable '{{name}}' created",
+          "updatedToast": "Variable '{{name}}' updated",
+          "deletedToast": "Variable '{{name}}' deleted",
+          "createFailed": "Failed to create variable",
+          "updateFailed": "Failed to update variable",
+          "deleteFailed": "Failed to delete variable",
+          "alreadyExists": "A variable with this name already exists"
+        },
+        "variableModal": {
+          "addTitle": "Add process variable",
+          "editTitle": "Edit process variable",
+          "name": "Name",
+          "type": "Type",
+          "value": "Value",
+          "invalidJson": "Value is not valid JSON",
+          "invalidNumber": "Value is not a valid number",
+          "save": "Save",
+          "cancel": "Cancel",
+          "types": {
+            "STRING": "String",
+            "INTEGER": "Integer",
+            "LONG": "Long",
+            "DOUBLE": "Double",
+            "BOOLEAN": "Boolean",
+            "JSON": "JSON / Object"
+          }
+        }
+      },
+      "logs": {
+        "loading": "Loading logs...",
+        "empty": "No log entries are stored for this case.",
+        "emptyFiltered": "No log entries match the current filters.",
+        "filters": {
+          "message": "Message contains",
+          "messagePlaceholder": "Search message...",
+          "level": "Minimum level",
+          "levelPlaceholder": "All levels",
+          "after": "From",
+          "before": "Until",
+          "apply": "Apply",
+          "reset": "Reset",
+          "processInstanceChip": "Process instance",
+          "clearProcessInstance": "Clear process filter"
+        },
+        "columns": {
+          "timestamp": "Timestamp",
+          "level": "Level",
+          "message": "Message"
+        },
+        "detail": {
+          "properties": "Context (MDC)",
+          "stacktrace": "Stacktrace"
+        }
+      },
+      "metadata": {
+        "loading": "Loading metadata...",
+        "documentId": "Document ID",
+        "definitionName": "Definition",
+        "sequence": "Sequence",
+        "version": "Version",
+        "createdBy": "Created by",
+        "createdOn": "Created on",
+        "modifiedOn": "Modified on",
+        "assignee": "Assignee",
+        "assignedTeam": "Assigned team",
+        "internalStatus": "Internal status",
+        "tags": "Tags",
+        "relations": "Relations",
+        "relatedFiles": "Related files",
+        "unassigned": "Unassigned",
+        "noStatus": "No status",
+        "noTags": "No tags",
+        "noRelations": "No relations"
+      },
+      "zgw": {
+        "loading": "Loading ZGW information...",
+        "empty": "This case is not linked to a zaak.",
+        "yes": "Yes",
+        "no": "No",
+        "zaakUnreachable": {
+          "title": "Failed to load zaak",
+          "message": "The zaak linked to this case could not be loaded. The link may be stale, the Zaken API plugin may be misconfigured, or the zaak may have been deleted.",
+          "details": "Error details"
+        },
+        "warnings": {
+          "title": "Some sections failed to load"
+        },
+        "actions": {
+          "copy": "Copy",
+          "openExternal": "Open in external system",
+          "resolveContent": "Resolve content",
+          "viewLatestContent": "View latest content"
+        },
+        "zaak": {
+          "title": "Zaak",
+          "identificatie": "Identificatie",
+          "uuid": "UUID",
+          "url": "Zaak URL",
+          "bronorganisatie": "Bronorganisatie",
+          "zaaktype": "Zaaktype",
+          "registratiedatum": "Registratiedatum",
+          "startdatum": "Startdatum",
+          "einddatum": "Einddatum",
+          "einddatumGepland": "Einddatum (gepland)",
+          "uiterlijkeEinddatumAfdoening": "Uiterlijke einddatum afdoening",
+          "vertrouwelijkheidaanduiding": "Vertrouwelijkheidaanduiding",
+          "archiefstatus": "Archiefstatus",
+          "betalingsindicatie": "Betalingsindicatie",
+          "currentStatus": "Current status",
+          "currentResultaat": "Current resultaat",
+          "noStatus": "No status set",
+          "noResultaat": "No resultaat set"
+        },
+        "eigenschappen": {
+          "title": "Eigenschappen",
+          "empty": "No eigenschappen for this zaak.",
+          "naam": "Naam",
+          "waarde": "Waarde",
+          "eigenschapUrl": "Eigenschap",
+          "zaakeigenschapUrl": "Zaakeigenschap"
+        },
+        "rollen": {
+          "title": "Rollen",
+          "empty": "No rollen for this zaak.",
+          "betrokkeneType": "Betrokkene type",
+          "roltype": "Roltype",
+          "identificatie": "Identificatie (BSN / KvK)",
+          "indicatieMachtiging": "Indicatie machtiging",
+          "url": "Rol URL"
+        },
+        "statusHistory": {
+          "title": "Status history",
+          "empty": "No statuses recorded.",
+          "datumStatusGezet": "Datum status gezet",
+          "statustype": "Statustype",
+          "statustoelichting": "Statustoelichting"
+        },
+        "resultaat": {
+          "title": "Resultaat",
+          "empty": "No resultaat for this zaak.",
+          "resultaattype": "Resultaattype",
+          "toelichting": "Toelichting"
+        },
+        "zaakobjecten": {
+          "title": "Zaakobjecten",
+          "empty": "No zaakobjecten linked to this zaak.",
+          "objectUrl": "Object URL",
+          "objectType": "Object type",
+          "relatieomschrijving": "Relatieomschrijving",
+          "resolveLoading": "Resolving content...",
+          "notResolved": "Could not resolve content"
+        },
+        "zaakinformatieobjecten": {
+          "title": "Zaakinformatieobjecten",
+          "empty": "No documents linked to this zaak.",
+          "titel": "Title",
+          "url": "Document URL",
+          "registratiedatum": "Registratiedatum"
+        },
+        "besluiten": {
+          "title": "Besluiten",
+          "empty": "No besluiten linked to this zaak.",
+          "url": "Besluit URL"
+        },
+        "zaakdetails": {
+          "title": "Zaakdetails sync object",
+          "notConfigured": "No portal sync configured for this case type.",
+          "objectManagementTitle": "Object management configuration",
+          "caseDefinitionKey": "Case definition",
+          "enabled": "Enabled",
+          "objectUrl": "Zaakdetails object URL",
+          "linkedToZaak": "Linked to zaak",
+          "contentLoading": "Resolving content...",
+          "contentNotResolved": "Could not resolve content"
+        },
+        "rawJson": {
+          "title": "Raw zaak JSON"
+        }
+      }
+    }
   },
   "document": {
     "title": {"single": "Document", "plural": "Documents"},
@@ -175,6 +453,7 @@
     "cancel": "Cancel",
     "upload": "Upload",
     "save": "Save",
+    "uploadPermissionDenied": "You do not have permission to upload a document with the selected metadata. Please adjust your selections and try again.",
     "size": "Size",
     "tags": "Tags (optional)",
     "tagsTooltip": "Tags are used for easy filtering and searching of documents. You can add multiple tags to a document",
@@ -232,6 +511,7 @@
     "delete": "Delete",
     "download": "Download",
     "edit": "Edit",
+    "preview": "Preview",
     "application/octet-stream": "Unknown",
     "application/json": "JSON",
     "application/msword": "DOC",
@@ -412,11 +692,34 @@
       "fileUploaderDescription": "Only files with the .dmn extension are allowed.",
       "fileUploaderButton": "Choose DMN file"
     },
+    "create": "Create DMN table",
+    "createModal": {
+      "title": "Create decision table",
+      "name": "Name",
+      "namePlaceholder": "e.g. Eligibility decision",
+      "nameRequired": "Name is required",
+      "inputVariables": "Input variables (optional)",
+      "inputVariablesHelper": "Input columns are optional - you can leave this empty. For every row you add, the process variable is required; the label is optional and the process variable name is used as the column header when it is left blank. You can add or change these later in the editor.",
+      "inputLabel": "Label (optional)",
+      "inputExpression": "Process variable (required)",
+      "inputExpressionRequired": "A process variable is required for each input column.",
+      "addInputVariable": "Add input variable"
+    },
+    "editModal": {
+      "title": "Edit decision table"
+    },
     "version": "Version",
     "deploy": "Save",
+    "readOnly": "Read-only",
     "loadFailure": "Something went wrong with loading your decision table.",
     "deploySuccess": "Decision table has been deployed successfully.",
-    "deployFailure": "Something went wrong with deploying your decision table."
+    "deployFailure": "Something went wrong with deploying your decision table.",
+    "deleteSuccess": "Decision table has been deleted successfully.",
+    "deleteFailure": "Something went wrong with deleting the decision table.",
+    "deleteModal": {
+      "title": "Delete decision table",
+      "content": "Are you sure you want to delete this decision table? This action cannot be undone."
+    }
   },
   "message": {"empty": "No result found"},
   "cta": {"close": "Close", "moreDetails": "More details"},
@@ -490,7 +793,13 @@
     "setGlobalActiveVersionConfigurationIssuesWarning": "This version has unresolved configuration issues. Resolve them before setting it as the active version.",
     "globallyActive": "Globally active",
     "unlinkProcess": "Unlink",
-    "listColumns": {"name": "Name", "key": "Key", "version": "Version", "draft": "Draft", "status": "Status"},
+    "listColumns": {
+      "name": "Name",
+      "key": "Key",
+      "version": "Version",
+      "draft": "Draft",
+      "status": "Status"
+    },
     "needsConfiguration": "Needs configuration",
     "inactive": "Inactive",
     "globalActiveVersionModal": {
@@ -569,10 +878,19 @@
           "description": "Description"
         }
       },
+      "importOrigin": {
+        "title": "Import origin",
+        "fields": {
+          "originalKey": "Original key",
+          "originalName": "Original name",
+          "originalVersionTag": "Original version"
+        }
+      },
       "notFinalizableWarning": {
         "title": "This case definition cannot be finalized.",
         "BUILDING_BLOCK_NOT_FINAL": "The case definition makes use of draft building blocks. In order to finalize this case definition, make sure all the building blocks it uses are final.",
-        "CONFIGURATION_ISSUES": "The case definition contains unresolved configuration issues. Please review and fix all configuration warnings before finalizing."
+        "CONFIGURATION_ISSUES": "The case definition contains unresolved configuration issues. Please review and fix all configuration warnings before finalizing.",
+        "PROCESS_DEFINITION_IN_DRAFT": "The case definition contains process definitions that are still in draft. Finalize all process definitions before finalizing the case definition."
       }
     },
     "environmentConfig": {
@@ -620,6 +938,7 @@
       "general": "General",
       "cases": "Configuration",
       "processes": "Processes",
+      "actions": "Actions",
       "document": "Document",
       "zgw": "ZGW",
       "forms": "Forms",
@@ -703,32 +1022,83 @@
       }
     },
     "tabType": {"custom": "Custom", "formio": "FormIO", "standard": "Standard"},
+    "actions": {
+      "columns": {
+        "name": "Name",
+        "type": "Type"
+      },
+      "addItem": "Add an action",
+      "noResults": "No actions configured",
+      "noResultsDescription": "No actions are configured for this case type.",
+      "infoNotification": {
+        "message": "Actions appear under the start button of an existing case and can be initiated at any time by the user."
+      },
+      "type": {
+        "PROCESS": "Process",
+        "BUILDING_BLOCK": "Building block"
+      },
+      "modal": {
+        "addTitle": "Add an action",
+        "addDescription": "Select a process or a building block for the user to start",
+        "addProcessTitle": "Add process as action",
+        "addBuildingBlockTitle": "Add building block as action",
+        "editProcessTitle": "Edit process action",
+        "editBuildingBlockTitle": "Edit building block action",
+        "selectProcess": "Select a process",
+        "selectBuildingBlock": "Select a building block",
+        "selectProcessDescription": "Select a process for the user to start",
+        "selectBuildingBlockDescription": "Select a building block for the user to start",
+        "filterPlaceholder": "Filter...",
+        "add": "Add",
+        "save": "Save",
+        "back": "Back",
+        "next": "Next",
+        "noProcessesAvailable": "No more processes available to configure as action",
+        "noBuildingBlocksAvailable": "No more building blocks available to configure as action"
+      },
+      "deleteModal": {
+        "title": "Delete action",
+        "content": "Are you sure you want to delete this action? This cannot be undone."
+      }
+    },
     "importDefinition": {
       "title": "Import case definition",
-      "overwriteWarning": "If your case definition contains configurations, models and/or definitions with the same name or identifier as already on your system, they will be overwritten.",
       "startUpload": "Start upload",
-      "checkbox": {
-        "message": "I understand that configurations may be overwritten",
-        "error": "This field is mandatory"
-      },
       "info": {
         "title": "Attention",
         "message": "Before importing, please make sure the plugin configurations that are referenced in process links are present."
       },
       "upload": {
         "title": "Upload file",
-        "description": "Max file size is 500kb. Supported file types are ZIP and JSON.",
+        "description": "Max file size is 500kb. Supported file type is ZIP.",
         "buttonText": "Select file"
       },
       "progressBar": {
         "active": "This may take a while",
-        "error": "Unable to import case definition. Nothing was imported due to an error at our end. Please try again later.If the issue keeps happening, contact support.",
+        "error": "Unable to import case definition. Nothing was imported due to an error at our end. Please try again later. If the issue keeps happening, contact support.",
         "finished": "Case definition successfully imported",
         "label": "Importing case definition"
       },
-      "invalidJsonError": {
-        "text": "Please make sure it contains a valid JSON value.",
-        "title": "The file contains an error."
+      "invalidZipError": {
+        "title": "Invalid file",
+        "text": "The file could not be read as a valid case definition archive."
+      },
+      "configure": {
+        "draftTag": "Draft",
+        "finalTag": "Final",
+        "newVersionWarning": {
+          "title": "New version",
+          "message": "A case definition with this key already exists. This will be imported as a new version."
+        },
+        "existingDraftWarning": {
+          "title": "Warning",
+          "message": "A draft version with this key and version already exists. Importing will override the existing draft."
+        },
+        "overrideConfirm": "I understand that the existing draft will be overridden",
+        "existingFinalWarning": {
+          "title": "Cannot import",
+          "message": "A finalized version with this key and version already exists. Change the key to import under a different name."
+        }
       },
       "steps": {
         "accessControl": {
@@ -743,6 +1113,35 @@
           "message": "This process may use plugins. Make sure you configure them correctly.",
           "title": "Plugin Configuration"
         }
+      },
+      "plugins": {
+        "description": "Connect the correct plugin configurations. Matching plugins are filled automatically. If a plugin configuration is missing you can still continue. You can configure the plugin afterwards and connect it through the case configuration page.",
+        "source": "Source",
+        "target": "Target",
+        "selectPlaceholder": "Select plugin configuration",
+        "unknownPlugin": "Unknown plugin",
+        "noPlugins": "No plugin configurations need to be mapped for this import.",
+        "noPluginsTitle": "No plugins to configure",
+        "notInstalled": "Plugin type not installed",
+        "noConfigurations": "No configurations available",
+        "unidentifiable": {
+          "title": "Unidentified plugin configurations",
+          "message": "Some plugin configurations could not be identified from the export. The import can continue, but you will need to manually configure the affected process links afterwards."
+        }
+      }
+    },
+    "missingPluginConfigurations": {
+      "title": "Missing configuration",
+      "description": "There are missing plugin configurations for this case. Please link the required plugin configurations below",
+      "selectPlaceholder": "Select plugin configuration",
+      "unknownPlugin": "Unknown plugin",
+      "notInstalled": "Plugin type not installed",
+      "noConfigurations": "No configurations available",
+      "saveSuccess": "Plugin configuration mappings saved successfully",
+      "saveError": "Failed to save plugin configuration mappings",
+      "legacyExport": {
+        "title": "Unidentified plugin configurations",
+        "message": "Some process links reference plugin configurations that could not be identified from the export. Please manually reconfigure the affected process links."
       }
     },
     "createDefinition": {
@@ -783,6 +1182,7 @@
         "retentionPeriodTooltip": "0 or higher: retention is active, case will be deleted after the specified number of days, -1: no retention period is set, case will not be automatically deleted",
         "deletedImmediately": "Deleted immediately",
         "key": "Status key",
+        "label": "Label (Optional)",
         "visible": "Visible by default",
         "color": "Color"
       },
@@ -883,7 +1283,27 @@
       },
       "collection": {"title": "Collection", "description": "Create a collection"},
       "divider": {"title": "Divider"},
-      "map": {"title": "Map", "description": "Create a map widget"}
+      "map": {"title": "Map", "description": "Create a map widget"},
+      "person-card": {
+        "title": "Person card",
+        "description": "A person with their key details and contact info"
+      },
+      "metroline": {
+        "title": "Metroline",
+        "description": "Show progression as a metroline"
+      },
+      "highlight": {
+        "title": "Highlight",
+        "description": "A small widget that highlights a single value or a count"
+      },
+      "generic": {
+        "title": "Generic widgets",
+        "description": "Broadly applicable — wire them up to any data structure (fields, tables, collections). More configuration, but no limits on what they can show."
+      },
+      "specific": {
+        "title": "Specific widgets",
+        "description": "Each is built for one kind of data — a person, a count, a single value. Fewer options to configure, but only suitable for that purpose."
+      }
     },
     "width": {
       "description": "Select the desired width for the widget.",
@@ -968,6 +1388,16 @@
         "keyPlaceholder": "Source path",
         "keyTooltip": "Value resolver path to GeoJSON data"
       },
+      "person-card": {
+        "description": "Choose the person to render and which sections to show on the card.",
+        "fullNameLabel": "Full name",
+        "birthDateLabel": "Birth date (Optional)",
+        "bsnLabel": "BSN (Optional)",
+        "phoneLabel": "Phone (Optional)",
+        "emailLabel": "Email (Optional)",
+        "cityLabel": "City (Optional)",
+        "pathPlaceholder": "Select or type a path"
+      },
       "displayType": {
         "text": "Text",
         "boolean": "Yes/No",
@@ -1012,6 +1442,48 @@
         "fieldWidthPlaceholder": "Choose field width",
         "titleTooltip": "Title for the property",
         "valueTooltip": "Name of the property you wish to access within the previously filled collection data path"
+      },
+      "metroline": {
+        "displayType": {
+          "label": "Display type",
+          "horizontal": "Horizontal",
+          "vertical": "Vertical"
+        },
+        "statusSource": {
+          "label": "Status source",
+          "placeholder": "Select a status source",
+          "internalStatus": "Internal status",
+          "zaakStatus": "Zaak status"
+        },
+        "iko": {
+          "source": {
+            "label": "Items source",
+            "placeholder": "iko:/statushistorie",
+            "tooltip": "Path expression resolving to an array. Each element of the array becomes one step in the timeline. Example: iko:/statushistorie"
+          },
+          "titlePath": {
+            "label": "Title path",
+            "placeholder": "/statustype/omschrijving",
+            "tooltip": "Path applied to each item to extract its title. Example: /statustype/omschrijving"
+          },
+          "labelPath": {
+            "label": "Tooltip text path (optional)",
+            "placeholder": "/statustype/toelichting",
+            "tooltip": "Optional path applied to each item to extract the text shown in the step's info tooltip (the icon next to the title). Example: /statustype/toelichting"
+          },
+          "completedPath": {
+            "label": "Completion timestamp path",
+            "placeholder": "/datumStatusGezet",
+            "tooltip": "Path applied to each item to extract the timestamp at which the step was reached. Expected as an ISO-8601 timestamp, with or without a timezone offset (e.g. 2025-08-15T10:30:00, 2025-08-15T10:30:00Z, or 2025-08-15T10:30:00+02:00). Items whose value is empty or unparseable are rendered as not yet reached. Example: /datumStatusGezet"
+          }
+        }
+      },
+      "highlight": {
+        "description": "",
+        "value": "Value",
+        "valuePlaceholder": "Select or type a path",
+        "valueHelper": "Shows the value at this path. If it resolves to an array, the count of items is shown instead.",
+        "accentColor": "Accent color"
       }
     },
     "filters": {
@@ -1062,7 +1534,8 @@
       "linkLabel": "Target URL (with placeholders)",
       "linkPlaceholder": "https://ritense.nl/zaak/${doc:/zaak/id}",
       "buttonTextLabel": "Button label",
-      "buttonTextPlaceholder": "'Go to zaak'"
+      "buttonTextPlaceholder": "'Go to zaak'",
+      "openInNewTabLabel": "Open in new tab"
     },
     "saveModalContent": "Are you sure you want to save the widget configuration?"
   },
@@ -1102,6 +1575,14 @@
       "noColumns": {
         "description": "Click here to configure a column for this document",
         "title": "No configured columns"
+      },
+      "preview": {
+        "downloadOriginal": "Download original",
+        "modal": {
+          "header": "Document preview"
+        },
+        "pdfViewerNotSupported": "Your browser does not support PDF viewing.",
+        "loading": "A preview version of the document is being generated. This may take a moment."
       }
     },
     "notifications": {
@@ -1218,6 +1699,12 @@
       "noResultsDescription": "Come back later.",
       "noResultsTitle": "All tasks have been assigned"
     },
+    "team": {
+      "title": "Team tasks",
+      "description": "Overview of all tasks assigned to your teams",
+      "noResultsDescription": "No tasks have been assigned to your teams yet.",
+      "noResultsTitle": "No team tasks"
+    },
     "all": {
       "title": "All tasks",
       "description": "Overview of all tasks",
@@ -1311,6 +1798,16 @@
     },
     "successNotification": "Process deployed successfully",
     "errorNotification": "Process failed to deploy",
+    "validate": "Validate",
+    "validationSuccessNotification": "Process definition is valid",
+    "validationWarningNotification": "Process definition has warnings",
+    "draft": "Draft",
+    "status": "Status",
+    "draftTooltip": "When enabled, the process definition is saved as a draft. Draft definitions are not validated and cannot be started.",
+    "validationErrors": "Validation errors",
+    "validationErrorsCount": "Validation errors ({{count}})",
+    "validationErrorNotification": "Process definition has validation errors. Check the highlighted elements.",
+    "alreadyExistsNotification": "Process definition already exists",
     "deleteNotification": "Process deleted successfully",
     "upload": {
       "modalTitle": "Upload process definition",
@@ -1319,14 +1816,29 @@
       "buttonText": "Select file",
       "success": "Deployment successful",
       "failure": "Deployment failed",
-      "duplicateKey": "A process with the same key already exists in this building block",
+      "duplicateKey": "A process with the same key already exists",
       "replaceTitle": "Replace existing process?",
-      "replaceContent": "A process with the same key already exists in this building block. Do you want to replace it?",
-      "replaceContentWithDuplicates": "A process with the same key already exists in this building block: {{duplicates}}. Do you want to replace it?",
+      "replaceContent": "A process with the same key already exists. Do you want to replace it?",
+      "replaceContentWithDuplicates": "A process with the same key already exists: {{duplicates}}. Do you want to replace it?",
       "replaceConfirm": "Replace"
     },
     "canInitializeDocument": "Starts case",
-    "startableByUser": "Startable by user"
+    "startableByUser": "Startable by user",
+    "expressionErrors": {
+      "MISSING_EL_MARKERS": "Expression must use ${...} or #{...} syntax",
+      "UNCLOSED_PARENTHESIS": "Expression has an unclosed parenthesis '('",
+      "UNCLOSED_BRACE": "Expression is missing a closing brace '}'",
+      "UNCLOSED_BRACKET": "Expression has an unclosed bracket '['",
+      "MISMATCHED_DELIMITER": "Expression has mismatched brackets or braces",
+      "INCOMPLETE_EXPRESSION": "Expression is incomplete",
+      "INVALID_SYNTAX": "Expression has invalid syntax",
+      "BEAN_NOT_FOUND": "Referenced bean does not exist"
+    },
+    "warningConfirmation": {
+      "title": "Process has warnings",
+      "content": "The process definition contains warnings. Are you sure you want to save it without resolving the warnings?",
+      "confirm": "Save anyway"
+    }
   },
   "processCaseConnection": {
     "noProcessesTitle": "No processes",
@@ -1384,6 +1896,25 @@
       "objectManagementConfiguration": "Object management configuration",
       "objectManagementConfigurationPlaceholder": "Select an object management configuration",
       "enabled": "Enabled"
+    },
+    "configurationIssue": "This configuration is incomplete. Please review and update the settings to match this environment."
+  },
+  "zakenApiSync": {
+    "title": "Zaak synchronisation",
+    "yes": "Yes",
+    "no": "No",
+    "assigneeSyncEnabled": "Sync assignee",
+    "roltypeUrl": "Roltype URL",
+    "noteSyncEnabled": "Sync notes",
+    "submitButton": "Configure zaak synchronisation",
+    "editModal": {
+      "title": "Zaak synchronisation",
+      "assigneeSyncEnabled": "Sync case assignee as ZaakRol",
+      "roltypeUrl": "Roltype URL",
+      "roltypeUrlPlaceholder": "Enter a roltype URL",
+      "noteSyncEnabled": "Sync case notes as ZaakNotitie",
+      "noteSubject": "ZaakNotitie subject",
+      "noteSubjectPlaceholder": "Enter a subject"
     },
     "configurationIssue": "This configuration is incomplete. Please review and update the settings to match this environment."
   },
@@ -1542,6 +2073,19 @@
     "remove": "Unassign",
     "fetchingUsers": "Fetching users...",
     "submitButtonText": "Assign user to case"
+  },
+  "assignment": {
+    "assignThisCase": "Assign this case",
+    "assignThisTask": "Assign this task",
+    "clickToEdit": "Click to edit",
+    "selectUser": "Select user",
+    "selectTeam": "Select team",
+    "confirm": "Confirm",
+    "update": "Update",
+    "unassign": "Unassign",
+    "unassignAll": "Unassign all",
+    "loading": "Loading...",
+    "me": "me"
   },
   "dropzone": {
     "drop": "Choose a file or drag it here",
@@ -1770,6 +2314,7 @@
     "defaultSort": "Default Sort",
     "defaultSortTitle": "Default Sort (optional)",
     "defaultSortTooltip": "If this field has a value, the table will be sorted by default on this property, in the direction specified. Only one column at a time can have this property. On creating a new column, if another column already has a default sort specified, this input field will be disabled.",
+    "defaultSortDisabledNotice": "Another column already has a default sort configured. Only one column can have a default sort at a time. Remove the existing default sort to enable this field.",
     "selectDefaultSort": "Select a default sort",
     "sortableYes": "Yes",
     "sortableNo": "No",
@@ -1854,7 +2399,7 @@
       "formDefinitionView": "The name of the form IO definition that will be used to display the object.",
       "formDefinitionEdit": "The name of the form IO definition that will be used to edit the object.",
       "showInDataMenu": "Indicates whether the object type is visible in the menu",
-      "suppressOutbox": "When enabled, read flows this objecttype skip outbox message creation."
+      "suppressOutbox": "When enabled, read flows for this object type skip outbox message creation."
     },
     "cancel": "Cancel",
     "add": "Add object",
@@ -1886,6 +2431,7 @@
   },
   "processLinkConfiguration": {
     "configureStep": "Configure process step",
+    "buildingBlockActionTitle": "Building block action: {{buildingBlockName}}",
     "modalTitle": "Process step: {{processStepName}}",
     "pluginConfiguration": "Plugin configuration: {{pluginConfigTitle}}",
     "chooseProcessLinkTypeDescription": "A process step can perform a variety of actions. Choose below to what type of action you would like to link this step.",
@@ -1968,8 +2514,8 @@
       "options": {"modal": "Modal", "panel": "Panel"}
     },
     "formSize": {
-      "label": "Select modal size",
-      "placeholder": "Select a modal size",
+      "label": "Select form size",
+      "placeholder": "Select a form size",
       "options": {
         "extraSmall": "Extra small",
         "small": "Small",
@@ -2014,6 +2560,255 @@
       "noResults": {
         "description": "Click <strong>Add new role</strong> to start designing your role",
         "title": "No roles added"
+      },
+      "tabs": {
+        "summary": "Summary",
+        "jsonEditor": "JSON editor"
+      }
+    },
+    "resourceTypes": {
+      "caseDefinition": "Case definition",
+      "caseTab": "Case tab",
+      "caseWidget": "Case widget",
+      "caseWidgetTabWidget": "Case tab widget",
+      "dashboard": "Dashboard",
+      "jsonSchemaDocument": "Document",
+      "jsonSchemaDocumentDefinition": "Document definition",
+      "jsonSchemaDocumentSnapshot": "Document snapshot",
+      "searchField": "Search field",
+      "zgwDocument": "ZGW document",
+      "ikoView": "IKO view",
+      "note": "Note",
+      "object": "Objecten API Object",
+      "resourcePermission": "Uploaded resource",
+      "team": "Team",
+      "user": "User",
+      "operatonExecution": "Process instance",
+      "operatonIdentityLink": "User assignment",
+      "operatonProcessDefinition": "Process definition",
+      "operatonTask": "Task"
+    },
+    "actions": {
+      "view": "view",
+      "view_list": "view list",
+      "create": "create",
+      "modify": "modify",
+      "delete": "delete",
+      "assign": "assign",
+      "assignable": "be assigned to",
+      "claim": "claim",
+      "complete": "complete",
+      "export": "export"
+    },
+    "filter": {
+      "resourceType": "Resource type",
+      "action": "Action",
+      "allResourceTypes": "All resource types",
+      "allActions": "All actions"
+    },
+    "overview": {
+      "canDo": "Can",
+      "can": "can",
+      "cannot": "cannot",
+      "and": "and",
+      "or": "or",
+      "when": "when",
+      "unconditional": "without conditions",
+      "relatedResource": "Related",
+      "where": "where",
+      "atJsonPath": "at JSON path",
+      "inContextOf": "in the context of",
+      "noContext": "without context",
+      "customField": "(custom field)",
+      "customResource": "(custom resource)",
+      "noAccess": "No access",
+      "empty": {
+        "title": "No permissions",
+        "message": "This role has no permissions configured yet."
+      },
+      "operators": {
+        "eq": "equals",
+        "neq": "does not equal",
+        "gt": "is greater than",
+        "gte": "is greater than or equal to",
+        "lt": "is less than",
+        "lte": "is less than or equal to",
+        "in": "is one of",
+        "list_contains": "contains"
+      },
+      "specialValues": {
+        "currentUserId": "the current user's ID",
+        "currentUsername": "the current user",
+        "currentUserEmail": "the current user's email",
+        "currentUserRoles": "the current user's roles",
+        "currentUserTeams": "the current user's teams",
+        "null": "(none)",
+        "empty": "(empty)"
+      },
+      "fields": {
+        "caseDefinition": {
+          "idKey": "case definition key",
+          "idVersionTag": "case definition version",
+          "name": "case definition name",
+          "description": "description",
+          "basedOnVersionTag": "based on version",
+          "final": "is final",
+          "active": "is active",
+          "canHaveAssignee": "can have assignee",
+          "autoAssignTasks": "auto-assign tasks",
+          "hasExternalStartForm": "has external start form",
+          "externalStartFormUrl": "external start form URL",
+          "externalStartFormDescription": "external start form description",
+          "originalKey": "original key",
+          "originalName": "original name",
+          "originalVersionTag": "original version",
+          "createdBy": "created by",
+          "createdDate": "created date"
+        },
+        "caseTab": {
+          "idCaseDefinitionIdKey": "case definition key",
+          "idCaseDefinitionIdVersionTag": "case definition version",
+          "idKey": "tab key",
+          "name": "tab name",
+          "tabOrder": "tab order",
+          "type": "tab type",
+          "contentKey": "content key",
+          "createdOn": "created on",
+          "createdBy": "created by",
+          "showTasks": "shows tasks"
+        },
+        "caseWidgetTabWidget": {
+          "title": "title",
+          "icon": "icon",
+          "color": "color",
+          "order": "order",
+          "width": "width",
+          "highContrast": "high contrast",
+          "isCompact": "is compact"
+        },
+        "dashboard": {
+          "key": "dashboard key",
+          "title": "title",
+          "description": "description",
+          "order": "order",
+          "createdBy": "created by",
+          "createdOn": "created on"
+        },
+        "jsonSchemaDocument": {
+          "id": "document ID",
+          "contentContent": "document content",
+          "assigneeId": "assignee",
+          "assigneeFullName": "assignee name",
+          "assignedTeamKey": "assigned team",
+          "assignedTeamTitle": "assigned team title",
+          "documentDefinitionIdName": "document definition name",
+          "documentDefinitionIdVersion": "document definition version",
+          "documentDefinitionIdCaseDefinitionIdKey": "case definition key (via document definition)",
+          "documentDefinitionIdCaseDefinitionIdVersionTag": "case definition version (via document definition)",
+          "version": "version",
+          "createdOn": "created on",
+          "modifiedOn": "modified on",
+          "createdBy": "created by",
+          "sequence": "sequence",
+          "internalStatus": "internal status",
+          "retentionDate": "retention date"
+        },
+        "jsonSchemaDocumentDefinition": {
+          "idName": "document definition name",
+          "idVersion": "document definition version",
+          "createdOn": "created on"
+        },
+        "jsonSchemaDocumentSnapshot": {
+          "id": "snapshot ID",
+          "createdOn": "created on",
+          "createdBy": "created by"
+        },
+        "searchField": {
+          "key": "search field key",
+          "title": "title",
+          "path": "JSON path",
+          "dataType": "data type",
+          "fieldType": "field type",
+          "matchType": "match type",
+          "order": "order"
+        },
+        "zgwDocument": {
+          "caseDocumentId": "case document ID",
+          "vertrouwelijkheidaanduiding": "confidentiality",
+          "status": "status",
+          "informatieobjecttypeUrl": "document type URL",
+          "informatieobjecttypeOmschrijving": "document type description"
+        },
+        "ikoView": {
+          "key": "IKO view key",
+          "title": "title"
+        },
+        "note": {
+          "id": "note ID",
+          "createdByUserId": "created by",
+          "createdByUserFullName": "created by name",
+          "createdDate": "created date",
+          "content": "content",
+          "documentId": "document ID"
+        },
+        "team": {
+          "key": "team key",
+          "title": "team title",
+          "users": "team members"
+        },
+        "user": {
+          "roles": "user roles"
+        },
+        "operatonExecution": {
+          "id": "process instance ID",
+          "businessKey": "business key",
+          "activityId": "current activity",
+          "activityInstanceId": "activity instance ID",
+          "active": "is active",
+          "caseInstanceId": "case instance ID",
+          "processInstanceId": "process instance ID",
+          "processDefinitionId": "process definition ID",
+          "processDefinitionKey": "process definition key",
+          "parentId": "parent execution ID",
+          "tenantId": "tenant ID"
+        },
+        "operatonIdentityLink": {
+          "groupId": "Candidate group",
+          "type": "link type",
+          "userId": "user ID",
+          "processDefinitionKey": "process definition key",
+          "tenantId": "tenant ID"
+        },
+        "operatonProcessDefinition": {
+          "id": "process definition ID",
+          "category": "category",
+          "name": "process name",
+          "key": "process definition key",
+          "version": "version",
+          "versionTag": "version tag",
+          "deploymentId": "deployment ID",
+          "isStartableInTasklist": "startable in tasklist",
+          "tenantId": "tenant ID"
+        },
+        "operatonTask": {
+          "id": "task ID",
+          "name": "task name",
+          "description": "description",
+          "taskDefinitionKey": "task definition key",
+          "owner": "owner",
+          "assignee": "assignee",
+          "priority": "priority",
+          "createTime": "created at",
+          "lastUpdated": "last updated",
+          "dueDate": "due date",
+          "followUpDate": "follow-up date",
+          "caseInstanceId": "case instance ID",
+          "caseDefinitionId": "case definition ID",
+          "processInstanceId": "process instance ID",
+          "processDefinitionId": "process definition ID",
+          "processDefinitionKey": "process definition key",
+          "tenantId": "tenant ID"
+        }
       }
     }
   },
@@ -2106,12 +2901,41 @@
     "noCustomComponentDescription": "The custom component configured for this widget is not available.",
     "map": {
       "title": "Map"
+    },
+    "personCard": {
+      "age": "{{age}} year"
+    },
+    "metroline": {
+      "stepState": {
+        "current": "Current",
+        "complete": "Complete",
+        "incomplete": "Incomplete",
+        "invalid": "Invalid"
+      }
+    },
+    "highlight": {
+      "noValue": "No value"
     }
   },
   "iko": {
     "searchFieldsNoResults": "No search fields found for this entity",
+    "viewNotFound": "IKO View for key '{{key}}' could not be found.",
     "pageTitle": "Views",
-    "searchVia": "Search via"
+    "searchVia": "Search via",
+    "formio": {
+      "back": "Back",
+      "selectResult": "Select a result",
+      "selectedResult": "Selected result",
+      "openInNewTab": "Open in new tab"
+    }
+  },
+  "widgetLayout": {
+    "label": "Layout algorithm",
+    "muuriGapFree": "Default (less gaps)",
+    "muuri": "Default",
+    "beautiful": "Gap free",
+    "infoTitle": "About the layout algorithm",
+    "info": "Default and Default (less gaps) keep the widgets in their configured order as much as possible, which can leave empty gaps. Gap free may reorder widgets within a section to remove those gaps and almost always shows a clean layout without holes."
   },
   "ikoManagement": {
     "preparingDownload": "Preparing download",
@@ -2236,6 +3060,141 @@
     "deleteHelperText": "After creating a quick search item, you can delete it by right-clicking on it",
     "duplicateError": "A quick search item with this title already exists"
   },
+  "adminSettings": {
+    "title": "Settings",
+    "tabs": {
+      "appearance": "Appearance",
+      "featureToggles": "Feature toggles"
+    },
+    "appearance": {
+      "logo": {
+        "title": "Logo",
+        "fileUploaderTitle": "Upload logo",
+        "fileUploaderDescription": "Only PNG and SVG files are accepted. Max 10 MB.",
+        "fileUploaderButton": "Choose file",
+        "deleteConfirmationModalText": "Are you sure you want to delete this logo?"
+      },
+      "logoDarkMode": {
+        "title": "Logo (dark mode)"
+      },
+      "colors": {
+        "title": "Colors",
+        "infoMessage": "These colors define the accent color palette used throughout the application.",
+        "infoLinkText": "More info on generating a color scheme",
+        "reset": "Reset",
+        "color10": "Color 10",
+        "color20": "Color 20",
+        "color30": "Color 30",
+        "color40": "Color 40",
+        "color50": "Color 50",
+        "color60": "Color 60",
+        "color70": "Color 70",
+        "color80": "Color 80",
+        "color90": "Color 90",
+        "color100": "Color 100",
+        "pickr": {
+          "save": "OK",
+          "cancel": "Cancel",
+          "clear": "Clear"
+        }
+      }
+    },
+    "featureToggles": {
+      "refreshRequired": "Refresh required",
+      "refreshModalText": "This setting requires a page refresh to take effect. Do you want to refresh now?",
+      "refreshNow": "Refresh now",
+      "toggles": {
+        "allowUserThemeSwitching": {
+          "title": "Allow user theme switching",
+          "description": "Let users switch between light and dark mode from the top bar."
+        },
+        "enableCompactModeToggle": {
+          "title": "Enable compact mode toggle",
+          "description": "Show a compact mode toggle in the top bar for users to reduce interface spacing."
+        },
+        "compactModeOnByDefault": {
+          "title": "Compact mode on by default",
+          "description": "Enable compact mode for all users by default."
+        },
+        "enableUserNameInTopBarToggle": {
+          "title": "Enable user name display toggle",
+          "description": "Allow users to toggle their name display in the top bar."
+        },
+        "showUserNameInTopBar": {
+          "title": "Show user name in top bar",
+          "description": "Display the current user's name next to their avatar in the top bar."
+        },
+        "showPlantATreeButton": {
+          "title": "Show 'Plant a tree' button",
+          "description": "Display the 'Plant a tree' sustainability button in the interface."
+        },
+        "largeLogoMargin": {
+          "title": "Large logo margin",
+          "description": "Add extra margin around the logo in the top bar."
+        },
+        "applicationTitleAsSuffix": {
+          "title": "Application title as suffix",
+          "description": "Append the application title as a suffix to the browser tab title."
+        },
+        "disableCaseCount": {
+          "title": "Disable case count",
+          "description": "Hide the case count badge in the menu sidebar."
+        },
+        "enableObjectManagement": {
+          "title": "Enable object management",
+          "description": "Show the Objects menu item in the sidebar."
+        },
+        "sortFilesByDate": {
+          "title": "Sort files by date",
+          "description": "Sort case-related files by date in descending order by default."
+        },
+        "returnToLastUrlAfterTokenExpiration": {
+          "title": "Return to last URL after login",
+          "description": "Redirect users back to their last visited page after re-authenticating."
+        },
+        "enableTabManagement": {
+          "title": "Enable tab management",
+          "description": "When enabled, tabs are loaded from the API. When disabled, tabs are loaded from the environment configuration."
+        },
+        "hideValtimoVersionsForNonAdmins": {
+          "title": "Hide version info for non-admins",
+          "description": "Hide the Valtimo version information from non-admin users."
+        },
+        "useStartEventNameAsStartFormTitle": {
+          "title": "Use start event name as form title",
+          "description": "Display the BPMN start event name as the start form title instead of the default."
+        },
+        "enableFormViewModel": {
+          "title": "Enable form view model",
+          "description": "Use the form view model for rendering forms."
+        },
+        "enableIntermediateSave": {
+          "title": "Enable intermediate save",
+          "description": "Allow users to save task form progress without completing the task."
+        },
+        "enableFormFlowBreadcrumbs": {
+          "title": "Enable form flow breadcrumbs",
+          "description": "Show step-by-step breadcrumbs in multi-step form flows."
+        },
+        "enablePbacDocumentenApiDocuments": {
+          "title": "Enable PBAC for Documenten API",
+          "description": "Use policy-based access control for Documenten API document management."
+        },
+        "enableSuppressDocumentError": {
+          "title": "Suppress document errors",
+          "description": "Suppress error messages when document retrieval fails silently."
+        },
+        "enableIkoType": {
+          "title": "Enable IKO type",
+          "description": "Enable the IKO (Informatie Kanaal Objecten) integration type."
+        },
+        "menuCollapsedByDefault": {
+          "title": "Menu collapsed by default",
+          "description": "Start with the navigation menu collapsed instead of expanded."
+        }
+      }
+    }
+  },
   "buildingBlockManagement": {
     "title": "Building blocks",
     "listColumns": {
@@ -2286,7 +3245,9 @@
       "general": "General",
       "document": "Document",
       "processes": "Processes",
-      "forms": "Forms"
+      "forms": "Forms",
+      "formFlows": "Form flows",
+      "decisions": "Decision tables"
     },
     "formDefinition": {
       "name": "Name"
@@ -2555,5 +3516,56 @@
     "rootObject": "Root level",
     "manageRequiredFields": "Manage required fields",
     "requiredFields": "Required fields"
+  },
+  "teams": {
+    "title": "Teams",
+    "listColumns": {
+      "name": "Name",
+      "members": "Members"
+    },
+    "newTeam": "New team",
+    "noResults": {
+      "title": "There are no teams",
+      "description": "No teams have been created yet"
+    },
+    "createEditModal": {
+      "createTitle": "Create new team",
+      "editTitle": "Edit team",
+      "createDescription": "Create a new team of users to assign to cases and tasks",
+      "teamName": "Team name",
+      "teamNamePlaceholder": "Team name",
+      "create": "Create team",
+      "save": "Save team"
+    },
+    "deleteModal": {
+      "title": "Delete team",
+      "content": "Are you sure you want to delete this team? This action cannot be undone."
+    },
+    "detail": {
+      "title": "Team detail",
+      "more": "More",
+      "editTeam": "Edit team",
+      "deleteTeam": "Delete team",
+      "addMember": "Add member",
+      "removeMember": "Remove member",
+      "memberColumns": {
+        "name": "Name",
+        "email": "E-mail"
+      },
+      "noMembers": {
+        "title": "There are no members",
+        "description": "No members have been added to this team yet"
+      },
+      "addMemberModal": {
+        "selectMember": "Select member",
+        "selectMemberPlaceholder": "Choose option(s)",
+        "noUsersAvailable": "No available users found",
+        "addToTeam": "Add to team"
+      },
+      "removeMemberModal": {
+        "title": "Remove member",
+        "content": "Are you sure you want to remove this member from the team?"
+      }
+    }
   }
 }

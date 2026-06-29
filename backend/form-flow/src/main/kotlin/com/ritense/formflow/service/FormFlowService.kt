@@ -172,16 +172,18 @@ class FormFlowService(
 
     fun deleteAllByCaseDefinitionId(caseDefinitionId: CaseDefinitionId) {
         caseDefinitionChecker.assertCanUpdateCaseDefinition(caseDefinitionId)
-        formFlowDefinitionRepository.deleteAllByBlueprintId(
+        val definitions = formFlowDefinitionRepository.findAllByBlueprintId(
             BlueprintType.CASE, caseDefinitionId.key, caseDefinitionId.versionTag
         )
+        formFlowDefinitionRepository.deleteAll(definitions)
     }
 
     fun deleteAllByBuildingBlockDefinitionId(buildingBlockDefinitionId: BuildingBlockDefinitionId) {
         buildingBlockDefinitionChecker.assertCanUpdateBuildingBlockDefinition(buildingBlockDefinitionId)
-        formFlowDefinitionRepository.deleteAllByBlueprintId(
+        val definitions = formFlowDefinitionRepository.findAllByBlueprintId(
             BlueprintType.BUILDING_BLOCK, buildingBlockDefinitionId.key, buildingBlockDefinitionId.versionTag
         )
+        formFlowDefinitionRepository.deleteAll(definitions)
     }
 
     fun getBreadcrumbs(instance: FormFlowInstance): List<FormFlowBreadcrumb> {

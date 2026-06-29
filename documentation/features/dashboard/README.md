@@ -65,6 +65,7 @@ In this example a widget is created with display type `number` and data source `
       "title": "Dashboard",
       "description": "This is an example dashboard",
       "order": 1,
+      "widgetLayout": "BEAUTIFUL",
       "widgetConfigurations": [
         {
           "key": "nr_of_cases_awaiting_customer_feedback",
@@ -94,6 +95,44 @@ In this example a widget is created with display type `number` and data source `
       ]
     }
   ]
+}
+```
+{% endtab %}
+{% endtabs %}
+
+## Layout algorithm
+
+The way a dashboard's widgets are arranged can be chosen per dashboard. The same options are available for case widget tabs and IKO tabs.
+
+| Selector label | Stored value (`widgetLayout`) | Behaviour |
+| --- | --- | --- |
+| Default (less gaps) | `MUURI_GAP_FREE` | Muuri masonry that fills small gaps. Keeps the widgets in their configured order as much as possible. **Used when nothing is configured** (the original behaviour). |
+| Default | `MUURI` | Plain Muuri masonry without gap filling. Keeps the configured order, but empty gaps can remain. |
+| Gap free | `BEAUTIFUL` | Custom dense-packing algorithm. May reorder widgets within a section to remove gaps and almost always produces a clean layout without holes. |
+
+**Trade-off:** *Default* and *Default (less gaps)* keep the widgets in the order you configured (predictable) but can leave empty space, while *Gap free* reorders widgets to eliminate gaps at the cost of changing their order.
+
+{% tabs %}
+{% tab title="Via UI" %}
+* Go to the `Admin` menu
+* Go to the `Dashboard` menu
+* Select a dashboard and click **Edit**
+* Choose an option in the **Layout algorithm** dropdown and save
+
+An information block underneath the dropdown summarises the trade-off described above.
+{% endtab %}
+
+{% tab title="Via IDE" %}
+Add the optional `widgetLayout` property to the dashboard object in the `.dashboard.json` file, using one of the stored values from the table above. When the property is omitted the layout falls back to `MUURI_GAP_FREE`.
+
+```json
+{
+  "key": "example-dashboard",
+  "title": "Dashboard",
+  "description": "This is an example dashboard",
+  "order": 1,
+  "widgetLayout": "BEAUTIFUL",
+  "widgetConfigurations": []
 }
 ```
 {% endtab %}
@@ -136,7 +175,7 @@ This allows for faster editing of widgets or exchanging different dashboard widg
 
 ## Access control
 
-Access to dashboards can be configured through access control. More information about access control can be found [here](https://docs.valtimo.nl/features/access-control).
+Access to dashboards can be configured through access control. More information about access control can be found in the [access control documentation](../access-control/README.md).
 
 ### Resources and actions
 

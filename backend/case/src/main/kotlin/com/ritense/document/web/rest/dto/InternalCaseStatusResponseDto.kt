@@ -26,7 +26,8 @@ data class InternalCaseStatusResponseDto(
     val visibleInCaseListByDefault: Boolean,
     val retentionPeriodInDays: Int = -1,
     val order: Int,
-    val color: InternalCaseStatusColor
+    val color: InternalCaseStatusColor,
+    val label: String? = null,
 ) {
     constructor(internalCaseStatus: InternalCaseStatus) : this(
         internalCaseStatus.id.key,
@@ -35,6 +36,7 @@ data class InternalCaseStatusResponseDto(
         internalCaseStatus.visibleInCaseListByDefault,
         internalCaseStatus.retentionPeriodInDays,
         internalCaseStatus.order,
-        internalCaseStatus.color
+        internalCaseStatus.color,
+        internalCaseStatus.label,
     )
 }

@@ -15,6 +15,7 @@
  */
 
 dependencies {
+    api(project(":backend:admin-settings"))
     api(project(":backend:audit"))
     api(project(":backend:authorization"))
     api(project(":backend:building-block"))
@@ -43,6 +44,7 @@ dependencies {
     api(project(":backend:resource"))
     api(project(":backend:resource:temporary-resource-storage"))
     api(project(":backend:search"))
+    api(project(":backend:team"))
     api(project(":backend:value-resolver"))
     api(project(":backend:web"))
     api(project(":backend:widget"))

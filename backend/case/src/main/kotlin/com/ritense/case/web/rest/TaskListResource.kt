@@ -18,11 +18,14 @@ package com.ritense.case.web.rest
 
 import com.ritense.authorization.annotation.RunWithoutAuthorization
 import com.ritense.case.service.TaskColumnService
+import com.ritense.case.web.rest.dto.HiddenTaskListColumnDto
 import com.ritense.case.web.rest.dto.TaskListColumnDto
 import com.ritense.logging.LoggableResource
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
+import com.ritense.valtimo.contract.authorization.UserManagementServiceHolder
 import com.ritense.valtimo.contract.domain.ValtimoMediaType.APPLICATION_JSON_UTF8_VALUE
 import io.github.oshai.kotlinlogging.KotlinLogging
+import jakarta.validation.Valid
 import org.springframework.http.ResponseEntity
 import org.springframework.stereotype.Controller
 import org.springframework.web.bind.annotation.DeleteMapping
@@ -58,7 +61,7 @@ class TaskListResource(
     @RunWithoutAuthorization
     fun createListColumnForManagement(
         @LoggableResource("documentDefinitionName") @PathVariable caseDefinitionName: String,
-        @RequestBody taskListColumnDto: TaskListColumnDto
+        @Valid @RequestBody taskListColumnDto: TaskListColumnDto
     ): ResponseEntity<Any> {
         service.saveListColumn(caseDefinitionName, taskListColumnDto)
         return ResponseEntity.ok().build()
@@ -69,7 +72,7 @@ class TaskListResource(
     @RunWithoutAuthorization
     fun swapColumnOrderForManagement(
         @LoggableResource("documentDefinitionName") @PathVariable caseDefinitionName: String,
-        @RequestBody taskListColumnDto: Pair<String, String>
+        @Valid @RequestBody taskListColumnDto: Pair<String, String>
     ): ResponseEntity<Any> {
         service.swapColumnOrder(caseDefinitionName, taskListColumnDto.first, taskListColumnDto.second)
         return ResponseEntity.ok().build()
@@ -93,6 +96,24 @@ class TaskListResource(
     ): ResponseEntity<Any> {
         service.deleteTaskListColumn(caseDefinitionName, columnKey)
         return ResponseEntity.noContent().build()
+    }
+
+    @GetMapping("/v1/case/{caseDefinitionName}/hidden-task-list-column")
+    fun getHiddenTaskListColumns(
+        @LoggableResource("documentDefinitionName") @PathVariable caseDefinitionName: String
+    ): ResponseEntity<List<TaskListColumnDto>> {
+        val currentUserId = UserManagementServiceHolder.currentInstance.currentUserId
+        return ResponseEntity.ok().body(service.getHiddenTaskListColumns(caseDefinitionName, currentUserId))
+    }
+
+    @PostMapping("/v1/case/{caseDefinitionName}/hidden-task-list-column")
+    fun saveHiddenTaskListColumns(
+        @LoggableResource("documentDefinitionName") @PathVariable caseDefinitionName: String,
+        @Valid @RequestBody hiddenTaskListColumnDtoList: List<HiddenTaskListColumnDto>
+    ): ResponseEntity<Any> {
+        val currentUserId = UserManagementServiceHolder.currentInstance.currentUserId
+        service.saveHiddenTaskListColumns(caseDefinitionName, hiddenTaskListColumnDtoList, currentUserId)
+        return ResponseEntity.ok().build()
     }
 
     companion object {

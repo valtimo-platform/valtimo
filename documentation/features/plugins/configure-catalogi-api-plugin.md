@@ -8,9 +8,9 @@ The Catalogi API plugin can be used to access data stored in a ZGW (zaakgericht 
 
 ## Configure the plugin
 
-A plugin configuration is required before the plugin can be used. A general description on how to configure plugins can be found [here](broken-reference/).
+A plugin configuration is required before the plugin can be used. A general description on how to configure plugins can be found in the [plugin configuration guide](broken-reference/).
 
-If the Catalogi API plugin is not visible in the plugin menu, it is possible the application is missing a dependency. Instructions on how to add the Catalogi API dependency can be found [here](../../fundamentals/getting-started/modules/zgw/catalogi-api.md).
+If the Catalogi API plugin is not visible in the plugin menu, it is possible the application is missing a dependency. Instructions on how to add the Catalogi API dependency can be found in the [Catalogi API module documentation](../../fundamentals/getting-started/modules/zgw/catalogi-api.md).
 
 To configure this plugin the following properties have to be entered:
 
@@ -25,7 +25,7 @@ An example plugin configuration:
 
 The Catalogi API plugin supports the following actions that can be configured in process links in order to retrieve type data.
 
-A general description on how to create process links can be found [here](broken-reference/).
+A general description on how to create process links can be found in the [process link documentation](broken-reference/).
 
 ### Retrieve statustypen
 
@@ -94,7 +94,7 @@ An example action configuration:
 
 The Catalogi API plugin supports the following actions that can be configured in process links in order to retrieve type data.
 
-A general description on how to create process links can be found [here](../process/process-link.md#creating-a-plugin-process-link).
+A general description on how to create process links can be found in the [process link documentation](../process/process-link.md#creating-a-plugin-process-link).
 
 ### Retrieve statustype
 
@@ -134,3 +134,12 @@ When creating a process link the following properties have to be entered:
 An example action configuration:
 
 <figure><img src="../../.gitbook/assets/retrieve-besluittype.png" alt=""><figcaption></figcaption></figure>
+
+### Retrieve informatieobjecttype
+
+This action retrieves the informatieobjecttype URL using the informatieobjecttype description (omschrijving), and will assign it to a configured process variable.
+
+When creating a process link the following properties have to be entered:
+
+* **Informatieobjecttype**. The description (omschrijving) of the informatieobjecttype to look up.
+* **Process variable name**. This is the name of the process variable which value will be set to the found informatieobjecttype URL.

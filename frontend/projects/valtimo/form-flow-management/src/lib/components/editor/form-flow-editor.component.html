@@ -14,17 +14,20 @@
   ~ limitations under the License.
   -->
 
-@if (model$ | async; as model) {
-  <valtimo-editor
-    [disabled]="(loading$ | async) === false && readOnly$ | async"
-    [model]="model"
-    [jsonSchema]="formFlowSchemaJson"
-    (validEvent)="onValid($event)"
-    (valueChangeEvent)="onValueChange($event)"
-    [fitPage]="true"
-  ></valtimo-editor>
-} @else {
-  <cds-loading></cds-loading>
+@if ({model: model$ | async, schema: formFlowSchemaJson$ | async}; as obs) {
+  @if (obs.model && obs.schema) {
+    <valtimo-editor
+      [disabled]="(loading$ | async) === false && readOnly$ | async"
+      [editorOptions]="editorOptions"
+      [model]="obs.model"
+      [jsonSchema]="obs.schema"
+      (validEvent)="onValid($event)"
+      (valueChangeEvent)="onValueChange($event)"
+      [fitPage]="true"
+    ></valtimo-editor>
+  } @else {
+    <cds-loading></cds-loading>
+  }
 }
 
 <ng-container renderInPageHeader>
@@ -38,20 +41,21 @@
       } as obs"
       class="buttons-container"
     >
-      <cds-overflow-menu>
-        <cds-overflow-menu-option
+      <v-overflow-menu placement="bottom-end">
+        <v-overflow-menu-trigger overflowTrigger></v-overflow-menu-trigger>
+        <v-overflow-menu-option
           [disabled]="!obs.valid && !obs.readOnly"
           (selected)="downloadFormFlowDefinition(obs.model)"
           >{{ 'interface.export' | translate }}
-        </cds-overflow-menu-option>
+        </v-overflow-menu-option>
 
-        <cds-overflow-menu-option
+        <v-overflow-menu-option
           [disabled]="obs.readOnly"
           type="danger"
           (selected)="showDeleteModal()"
           >{{ 'interface.delete' | translate }}
-        </cds-overflow-menu-option>
-      </cds-overflow-menu>
+        </v-overflow-menu-option>
+      </v-overflow-menu>
 
       <button cdsButton="secondary" [size]="obs.compactMode ? 'sm' : 'md'" (click)="navigateBack()">
         {{ 'interface.back' | translate }}

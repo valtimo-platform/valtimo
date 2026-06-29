@@ -18,21 +18,56 @@
   [items]="(decisionsLatestVersions$ | async) || []"
   [loading]="loading$ | async"
   [fields]="fields"
+  [actionItems]="ACTION_ITEMS"
   (rowClicked)="viewDecisionTable($event)"
   [header]="false"
   [isSearchable]="true"
 >
   <ng-container carbonToolbarContent>
-    <button
-      *ngIf="hasEditPermissions$ | async"
-      cdsButton="primary"
-      (click)="this.deploy.openModal()"
-    >
-      {{ 'Upload' | translate }}
+    <ng-container *ngIf="{canEdit: hasEditPermissions$ | async} as obs">
+      <button
+        cdsButton="ghost"
+        iconOnly="true"
+        [disabled]="!obs.canEdit"
+        (click)="this.deploy.openModal()"
+        [attr.data-test-id]="testIds.uploadButton"
+      >
+        <svg cdsIcon="upload" size="16"></svg>
+      </button>
 
-      <svg class="cds--btn__icon" cdsIcon="upload" size="16"></svg>
-    </button>
+      <button
+        cdsButton="primary"
+        [disabled]="!obs.canEdit"
+        (click)="this.create.openModal()"
+        [attr.data-test-id]="testIds.createButton"
+      >
+        {{ 'decisions.create' | translate }}
+
+        <svg class="cds--btn__icon" cdsIcon="add" size="16"></svg>
+      </button>
+    </ng-container>
   </ng-container>
 </valtimo-carbon-list>
 
 <valtimo-decision-deploy #decisionDeploy></valtimo-decision-deploy>
+
+<valtimo-decision-form-modal
+  #decisionCreate
+  (submitEvent)="onCreateDecision($event)"
+></valtimo-decision-form-modal>
+
+<valtimo-decision-form-modal
+  #decisionEdit
+  titleKey="decisions.editModal.title"
+  submitKey="interface.save"
+  (submitEvent)="onEditDecision($event)"
+></valtimo-decision-form-modal>
+
+<valtimo-confirmation-modal
+  confirmButtonTextTranslationKey="interface.delete"
+  confirmButtonType="danger"
+  contentTranslationKey="decisions.deleteModal.content"
+  [showModalSubject$]="showDeleteModal$"
+  titleTranslationKey="decisions.deleteModal.title"
+  (confirmEvent)="onDeleteConfirm()"
+></valtimo-confirmation-modal>

@@ -56,6 +56,7 @@
               <input
                 cdsText
                 cdsLayer="2"
+                [attr.data-test-id]="testIds.fieldTitleInput"
                 [attr.data-carbon-theme]="data.inputTheme"
                 [placeholder]="'widgetTabManagement.content.fields.titlePlaceholder' | translate"
                 type="text"
@@ -64,6 +65,7 @@
             </cds-text-label>
 
             <cds-dropdown
+              [attr.data-test-id]="testIds.displayTypeDropdown"
               [attr.data-carbon-theme]="data.inputTheme"
               [label]="'widgetTabManagement.content.fields.type' | translate"
               [dropUp]="false"
@@ -89,9 +91,11 @@
 
               @if ($widgetContext() === 'case') {
                 <valtimo-value-path-selector
+                  [attr.data-test-id]="testIds.valuePathSelector"
                   formControlName="content"
                   [caseDefinitionKey]="data.params?.caseDefinitionKey"
                   [caseDefinitionVersionTag]="data.params?.caseDefinitionVersionTag"
+                  [excludePrefixes]="[ValuePathSelectorPrefix.TASK]"
                   [parentItem]="selectedCollection"
                 ></valtimo-value-path-selector>
               } @else {

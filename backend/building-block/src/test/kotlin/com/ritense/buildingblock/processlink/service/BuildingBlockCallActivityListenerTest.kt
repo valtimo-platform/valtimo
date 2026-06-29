@@ -51,14 +51,14 @@ import java.util.UUID
 class BuildingBlockCallActivityListenerTest {
 
     private val processLinkService = mock<ProcessLinkService>()
-    private val buidingBlockInstanceService = mock<BuildingBlockInstanceService>()
+    private val buildingBlockInstanceService = mock<BuildingBlockInstanceService>()
     private val valueResolverService = mock<ValueResolverService>()
     private val objectMapper = MapperSingleton.get()
     private val operatonRepositoryService = mock<OperatonRepositoryService>()
 
     private val listener = BuildingBlockCallActivityListener(
         processLinkService,
-        buidingBlockInstanceService,
+        buildingBlockInstanceService,
         valueResolverService,
         objectMapper,
         operatonRepositoryService,
@@ -71,6 +71,7 @@ class BuildingBlockCallActivityListenerTest {
         val execution = mock<DelegateExecution> {
             on { currentActivityId } doReturn "callActivity"
             on { processDefinitionId } doReturn "case-process"
+            on { processInstanceId } doReturn "case-process-instance"
             on { businessKey } doReturn caseDocumentId.toString()
             on { processBusinessKey } doReturn caseDocumentId.toString()
             on { this.eventName } doReturn "start"
@@ -91,12 +92,19 @@ class BuildingBlockCallActivityListenerTest {
             inputMappings = inputMappings
         )
         whenever(processLinkService.getProcessLinks("case-process", "callActivity")).thenReturn(listOf(link))
-        whenever(valueResolverService.resolveValues(caseDocumentId.toString(), inputMappings.map { it.source }))
-            .thenReturn(mapOf("doc:/person/name" to "Ada Lovelace"))
+        whenever(
+            valueResolverService.resolveValues(
+                eq("case-process-instance"),
+                eq(execution),
+                eq(inputMappings.map { it.source })
+            )
+        ).thenReturn(mapOf("doc:/person/name" to "Ada Lovelace"))
+        whenever(valueResolverService.preProcessValuesForNewCase(mapOf("doc:name" to "Ada Lovelace")))
+            .thenReturn(mapOf("doc" to mapOf("name" to "Ada Lovelace")))
 
         whenever(buildingBlockInstance.documentId).thenReturn(UUID.randomUUID())
 
-        whenever(buidingBlockInstanceService.getByDocumentId(caseDocumentId)).thenReturn(null)
+        whenever(buildingBlockInstanceService.getByDocumentId(caseDocumentId)).thenReturn(null)
 
         val processDefinition = mock<OperatonProcessDefinition> {
             on { versionTag } doReturn "${OPERATON_CASE_DEFINITION_VERSION_TAG_PREFIX}my-case:1.0.0"
@@ -105,11 +113,13 @@ class BuildingBlockCallActivityListenerTest {
 
         val requestCaptor = argumentCaptor<NewDocumentRequest>()
         whenever(
-            buidingBlockInstanceService.create(
+            buildingBlockInstanceService.create(
                 requestCaptor.capture(),
                 eq(caseDocumentId),
                 eq("callActivity"),
-                isNull()
+                isNull(),
+                isNull(),
+                eq("case-process")
             )
         )
         .thenReturn(buildingBlockInstance)
@@ -152,6 +162,7 @@ class BuildingBlockCallActivityListenerTest {
         val execution = mock<DelegateExecution> {
             on { currentActivityId } doReturn "nestedCallActivity"
             on { processDefinitionId } doReturn "parent-bb-process"
+            on { processInstanceId } doReturn "parent-bb-process-instance"
             on { businessKey } doReturn parentBBDocumentId.toString()
             on { processBusinessKey } doReturn parentBBDocumentId.toString()
             on { this.eventName } doReturn "start"
@@ -173,19 +184,28 @@ class BuildingBlockCallActivityListenerTest {
             inputMappings = inputMappings
         )
         whenever(processLinkService.getProcessLinks("parent-bb-process", "nestedCallActivity")).thenReturn(listOf(link))
-        whenever(valueResolverService.resolveValues(parentBBDocumentId.toString(), inputMappings.map { it.source }))
-            .thenReturn(mapOf("doc:/data" to "parent data"))
+        whenever(
+            valueResolverService.resolveValues(
+                eq("parent-bb-process-instance"),
+                eq(execution),
+                eq(inputMappings.map { it.source })
+            )
+        ).thenReturn(mapOf("doc:/data" to "parent data"))
+        whenever(valueResolverService.preProcessValuesForNewCase(mapOf("doc:input" to "parent data")))
+            .thenReturn(mapOf("doc" to mapOf("input" to "parent data")))
 
         // Parent BB instance is found because we're calling from a BB process
-        whenever(buidingBlockInstanceService.getByDocumentId(parentBBDocumentId)).thenReturn(parentBBInstance)
+        whenever(buildingBlockInstanceService.getByDocumentId(parentBBDocumentId)).thenReturn(parentBBInstance)
 
         val requestCaptor = argumentCaptor<NewDocumentRequest>()
         whenever(
-            buidingBlockInstanceService.create(
+            buildingBlockInstanceService.create(
                 requestCaptor.capture(),
                 eq(caseDocumentId),  // Root case document ID from parent chain
                 eq("nestedCallActivity"),
-                eq(parentBBInstanceId)  // Parent building block instance ID
+                eq(parentBBInstanceId),  // Parent building block instance ID
+                isNull(),
+                eq("parent-bb-process")
             )
         )
         .thenReturn(newBBInstance)
@@ -208,7 +228,7 @@ class BuildingBlockCallActivityListenerTest {
 
         listener.onCallActivityStart(OperatonExecutionEvent(execution))
 
-        verify(buidingBlockInstanceService, never()).create(any(), any(), any(), any())
+        verify(buildingBlockInstanceService, never()).create(any(), any(), any(), any(), any(), any())
     }
 
     @Test
@@ -234,7 +254,7 @@ class BuildingBlockCallActivityListenerTest {
             null,
             false
         )
-        whenever(buidingBlockInstanceService.getByDocumentId(buildingBlockDocumentId)).thenReturn(
+        whenever(buildingBlockInstanceService.getByDocumentId(buildingBlockDocumentId)).thenReturn(
             BuildingBlockInstance(
                 documentId = buildingBlockDocumentId,
                 caseDocumentId = caseDocumentId,
@@ -269,9 +289,9 @@ class BuildingBlockCallActivityListenerTest {
         whenever(
             valueResolverService.resolveValues(
                 buildingBlockDocumentId.toString(),
-                listOf("doc:/result")
+                listOf("doc:result")
             )
-        ).thenReturn(mapOf("doc:/result" to "value"))
+        ).thenReturn(mapOf("doc:result" to "value"))
 
         listener.onCallActivityEnd(OperatonExecutionEvent(execution))
 

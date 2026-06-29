@@ -22,6 +22,7 @@ import com.ritense.buildingblock.BaseIntegrationTest
 import com.ritense.buildingblock.domain.definition.BuildingBlockDefinition
 import com.ritense.buildingblock.processlink.domain.BuildingBlockProcessLink
 import com.ritense.buildingblock.repository.BuildingBlockInstanceRepository
+import com.ritense.buildingblock.service.BuildingBlockInstanceService
 import com.ritense.document.domain.impl.JsonSchema
 import com.ritense.document.domain.impl.JsonSchemaDocumentDefinition
 import com.ritense.document.domain.impl.JsonSchemaDocumentDefinitionId
@@ -29,7 +30,6 @@ import com.ritense.document.domain.impl.request.NewDocumentRequest
 import com.ritense.document.repository.impl.JsonSchemaDocumentDefinitionRepository
 import com.ritense.document.service.DocumentService
 import com.ritense.processlink.domain.ActivityTypeWithEventName
-import com.ritense.valtimo.contract.buildingblock.BuildingBlockConstants.Companion.BUILDING_BLOCK_DOCUMENT_ID_VARIABLE
 import com.ritense.valtimo.contract.buildingblock.BuildingBlockDefinitionId
 import com.ritense.valtimo.contract.case_.CaseDefinitionId
 import com.ritense.valtimo.event.OperatonExecutionEvent
@@ -37,7 +37,6 @@ import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.mockito.kotlin.doReturn
-import org.mockito.kotlin.eq
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.whenever
 import org.operaton.bpm.engine.delegate.DelegateExecution
@@ -55,6 +54,7 @@ class DefaultBuildingBlockPluginConfigurationResolverIT @Autowired constructor(
     private val listener: BuildingBlockCallActivityListener,
     private val resolver: DefaultBuildingBlockPluginConfigurationResolver,
     private val buildingBlockInstanceRepository: BuildingBlockInstanceRepository,
+    private val buildingBlockInstanceService: BuildingBlockInstanceService,
     private val documentDefinitionRepository: JsonSchemaDocumentDefinitionRepository,
     private val documentService: DocumentService,
     private val objectMapper: ObjectMapper,
@@ -144,7 +144,6 @@ class DefaultBuildingBlockPluginConfigurationResolverIT @Autowired constructor(
     @Test
     fun `should resolve plugin configuration from root building block when in nested BB`() {
         // Setup: Case -> BB1 (with plugin config) -> BB2
-        // The plugin config is defined on the BB1 process link (root BB)
         val bb1ProcessLink = BuildingBlockProcessLink(
             id = UUID.randomUUID(),
             processDefinitionId = "case-process",
@@ -161,7 +160,7 @@ class DefaultBuildingBlockPluginConfigurationResolverIT @Autowired constructor(
             activityId = "callBB2",
             activityType = ActivityTypeWithEventName.CALL_ACTIVITY_START,
             buildingBlockDefinitionId = bb2DefinitionId,
-            pluginConfigurationMappings = emptyMap(), // No plugin config on nested BB
+            pluginConfigurationMappings = emptyMap(),
             inputMappings = emptyList()
         )
 
@@ -180,6 +179,9 @@ class DefaultBuildingBlockPluginConfigurationResolverIT @Autowired constructor(
         }
 
         val bb1Instance = buildingBlockInstanceRepository.findAll().first()
+        // Simulate what BuildingBlockStartEventListener would do
+        bb1Instance.processInstanceId = "bb1-process-instance"
+        buildingBlockInstanceService.save(bb1Instance)
 
         // Create BB2 (from BB1)
         val bb2Execution = createMockExecution(
@@ -193,47 +195,12 @@ class DefaultBuildingBlockPluginConfigurationResolverIT @Autowired constructor(
         }
 
         val bb2Instance = buildingBlockInstanceRepository.findAll().find { it.definition.id == bb2DefinitionId }!!
+        bb2Instance.processInstanceId = "bb2-process-instance"
+        buildingBlockInstanceService.save(bb2Instance)
 
-        // Now simulate being inside BB2 and resolving plugin config
-        // The execution hierarchy: BB2 process -> BB1's call activity -> BB1 process -> Case's call activity -> Case process
-        // Note: superExecution is only available on the process instance (root) execution,
-        // so we need to mock processInstance to return an execution with superExecution.
-
-        // Case's call activity process instance (superExecution is null - end of chain)
-        val bb1ProcessInstance = mock<DelegateExecution> {
-            on { superExecution } doReturn null
-        }
-
-        // Case's call activity (root of the chain, superExecution is null)
-        val bb1CallActivityExecution = mock<DelegateExecution> {
-            on { hasVariableLocal(eq(BUILDING_BLOCK_DOCUMENT_ID_VARIABLE)) } doReturn true
-            on { getVariableLocal(eq(BUILDING_BLOCK_DOCUMENT_ID_VARIABLE)) } doReturn bb1Instance.documentId.toString()
-            on { processDefinitionId } doReturn "case-process"
-            on { processInstance } doReturn bb1ProcessInstance
-        }
-
-        // BB1's process instance (superExecution points to case's call activity)
-        val bb2ProcessInstanceMock = mock<DelegateExecution> {
-            on { superExecution } doReturn bb1CallActivityExecution
-        }
-
-        // BB1's call activity (links to case's call activity via superExecution)
-        val bb2CallActivityExecution = mock<DelegateExecution> {
-            on { hasVariableLocal(eq(BUILDING_BLOCK_DOCUMENT_ID_VARIABLE)) } doReturn true
-            on { getVariableLocal(eq(BUILDING_BLOCK_DOCUMENT_ID_VARIABLE)) } doReturn bb2Instance.documentId.toString()
-            on { processDefinitionId } doReturn "bb-with-plugin-process"
-            on { processInstance } doReturn bb2ProcessInstanceMock
-        }
-
-        // BB2's process instance (superExecution points to BB1's call activity)
-        val bb2RootProcessInstance = mock<DelegateExecution> {
-            on { superExecution } doReturn bb2CallActivityExecution
-        }
-
-        // BB2's process execution (links to BB1's call activity via processInstance.superExecution)
+        // Simulate being inside BB2's process — only processInstanceId is needed
         val bb2ProcessExecution = mock<DelegateExecution> {
-            on { hasVariableLocal(eq(BUILDING_BLOCK_DOCUMENT_ID_VARIABLE)) } doReturn false
-            on { processInstance } doReturn bb2RootProcessInstance
+            on { processInstanceId } doReturn "bb2-process-instance"
         }
 
         // Resolve plugin config from inside BB2 - should get config from root BB (BB1)
@@ -269,30 +236,12 @@ class DefaultBuildingBlockPluginConfigurationResolverIT @Autowired constructor(
         }
 
         val bb1Instance = buildingBlockInstanceRepository.findAll().first()
+        bb1Instance.processInstanceId = "bb1-process-instance"
+        buildingBlockInstanceService.save(bb1Instance)
 
-        // Simulate being inside BB1 and resolving plugin config
-        // Note: superExecution is only available on the process instance (root) execution.
-
-        // Case's call activity process instance (superExecution is null - end of chain)
-        val caseProcessInstance = mock<DelegateExecution> {
-            on { superExecution } doReturn null
-        }
-
-        val bb1CallActivityExecution = mock<DelegateExecution> {
-            on { hasVariableLocal(eq(BUILDING_BLOCK_DOCUMENT_ID_VARIABLE)) } doReturn true
-            on { getVariableLocal(eq(BUILDING_BLOCK_DOCUMENT_ID_VARIABLE)) } doReturn bb1Instance.documentId.toString()
-            on { processDefinitionId } doReturn "case-process"
-            on { processInstance } doReturn caseProcessInstance
-        }
-
-        // BB1's process instance (superExecution points to case's call activity)
-        val bb1ProcessInstance = mock<DelegateExecution> {
-            on { superExecution } doReturn bb1CallActivityExecution
-        }
-
+        // Simulate being inside BB1's process
         val bb1ProcessExecution = mock<DelegateExecution> {
-            on { hasVariableLocal(eq(BUILDING_BLOCK_DOCUMENT_ID_VARIABLE)) } doReturn false
-            on { processInstance } doReturn bb1ProcessInstance
+            on { processInstanceId } doReturn "bb1-process-instance"
         }
 
         // Resolve plugin config from inside BB1
@@ -309,6 +258,7 @@ class DefaultBuildingBlockPluginConfigurationResolverIT @Autowired constructor(
         return mock {
             on { this.currentActivityId } doReturn activityId
             on { this.processDefinitionId } doReturn processDefinitionId
+            on { this.processInstanceId } doReturn "$processDefinitionId-instance"
             on { this.businessKey } doReturn businessKey
             on { this.processBusinessKey } doReturn businessKey
             on { this.eventName } doReturn "start"

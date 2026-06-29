@@ -60,6 +60,13 @@ class ProcessLinkHttpSecurityConfigurer : HttpSecurityConfigurer {
                     .hasAuthority(ADMIN)
                     .requestMatchers(
                         antMatcher(
+                            PUT,
+                            "/api/management/v1/case-definition/{caseDefinitionKey}/version/{versionTag}/process-definition"
+                        )
+                    )
+                    .hasAuthority(ADMIN)
+                    .requestMatchers(
+                        antMatcher(
                             DELETE,
                             "/api/management/v1/case-definition/{caseDefinitionKey}/version/{versionTag}/process-definition/key/{processDefinitionKey}"
                         )
@@ -95,6 +102,13 @@ class ProcessLinkHttpSecurityConfigurer : HttpSecurityConfigurer {
                     .hasAuthority(ADMIN)
                     .requestMatchers(
                         antMatcher(
+                            PUT,
+                            "/api/management/v1/process-definition"
+                        )
+                    )
+                    .hasAuthority(ADMIN)
+                    .requestMatchers(
+                        antMatcher(
                             DELETE,
                             "/api/management/v1/process-definition/key/{processDefinitionKey}"
                         )
@@ -104,6 +118,12 @@ class ProcessLinkHttpSecurityConfigurer : HttpSecurityConfigurer {
                         antMatcher(
                             GET,
                             "/api/management/v1/process-definition/key/{processDefinitionKey}"
+                        )
+                    ).hasAuthority(ADMIN)
+                    .requestMatchers(
+                        antMatcher(
+                            POST,
+                            "/api/management/v1/process-definition/validate"
                         )
                     ).hasAuthority(ADMIN)
             }

@@ -20,12 +20,16 @@ import com.ritense.authorization.AuthorizationContext.Companion.runWithoutAuthor
 import com.ritense.processdocument.domain.ProcessDefinitionId
 import com.ritense.processdocument.domain.ProcessDocumentDefinitionRequest
 import com.ritense.processdocument.service.ProcessDefinitionCaseDefinitionService
+import com.ritense.processlink.validation.ProcessDefinitionValidationError
+import com.ritense.processlink.validation.ProcessDefinitionValidationException
+import com.ritense.processlink.validation.ProcessDefinitionValidator
 import com.ritense.processlink.web.rest.dto.ProcessLinkCreateRequestDto
 import com.ritense.valtimo.contract.BlueprintId
+import com.ritense.valtimo.operaton.domain.OperatonProcessDefinition
 import com.ritense.valtimo.contract.case_.CaseDefinitionId
-import com.ritense.valtimo.exception.BpmnParseException
 import com.ritense.valtimo.service.OperatonProcessService
 import org.operaton.bpm.engine.ParseException
+import org.operaton.bpm.engine.RepositoryService
 import org.operaton.bpm.model.bpmn.Bpmn
 import org.springframework.transaction.annotation.Transactional
 import org.springframework.web.multipart.MultipartFile
@@ -38,7 +42,38 @@ class ProcessDeploymentService(
     private val operatonProcessService: OperatonProcessService,
     private val processDefinitionCaseDefinitionService: ProcessDefinitionCaseDefinitionService,
     private val processLinkService: ProcessLinkService,
+    private val processDefinitionValidator: ProcessDefinitionValidator,
+    private val repositoryService: RepositoryService,
 ) {
+    fun findExistingProcessDefinitionForCaseDefinition(
+        caseDefinitionId: CaseDefinitionId,
+        bpmn: MultipartFile?,
+        processDefinitionId: String?
+    ): OperatonProcessDefinition? {
+        return runWithoutAuthorization {
+            val model = if (bpmn != null) {
+                Bpmn.readModelFromStream(ByteArrayInputStream(bpmn.bytes))
+            } else {
+                operatonProcessService.getBpmnModelInstanceByProcessDefinitionId(processDefinitionId!!)
+            }
+            operatonProcessService.getExistingProcessForFile(caseDefinitionId, model)
+        }
+    }
+
+    fun findExistingUnlinkedProcessDefinition(
+        bpmn: MultipartFile?,
+        processDefinitionId: String?
+    ): OperatonProcessDefinition? {
+        return runWithoutAuthorization {
+            val model = if (bpmn != null) {
+                Bpmn.readModelFromStream(ByteArrayInputStream(bpmn.bytes))
+            } else {
+                operatonProcessService.getBpmnModelInstanceByProcessDefinitionId(processDefinitionId!!)
+            }
+            operatonProcessService.getExistingProcessForFile(null, model)
+        }
+    }
+
     //TODO: this code could use a refactor
     fun deployProcessDefinitionAndProcessLinksForCaseDefinition(
         caseDefinitionId: CaseDefinitionId,
@@ -84,6 +119,13 @@ class ProcessDeploymentService(
         val deployedProcessDefinitionId: String
 
         if (bpmn != null) {
+            val bpmnModel = Bpmn.readModelFromStream(ByteArrayInputStream(bpmn.bytes))
+            val validationResult = processDefinitionValidator.validate(bpmnModel, processLinks)
+
+            if (validationResult.isExecutable && !validationResult.isValid) {
+                throw ProcessDefinitionValidationException(validationResult.errors)
+            }
+
             try {
                 val deployment = runWithoutAuthorization {
                     operatonProcessService.deploy(
@@ -103,6 +145,7 @@ class ProcessDeploymentService(
                             operatonProcessService.getExistingProcessForFile(blueprintId, model)
                         processLinkService.deleteProcessLinksForProcessDefinition(previouslyDeployProcess.id)
                         createProcessLinks(processLinks = processLinks, blueprintId = blueprintId)
+                        updateSuspensionState(previouslyDeployProcess.id, validationResult.isExecutable)
                     }
                     return null
                 }
@@ -112,8 +155,15 @@ class ProcessDeploymentService(
                 }
 
                 deployedProcessDefinitionId = deployedProcessDefinition.id
+                updateSuspensionState(deployedProcessDefinitionId, validationResult.isExecutable)
             } catch (e: ParseException) {
-                throw BpmnParseException(e)
+                val deploymentError = ProcessDefinitionValidationError(
+                    elementId = "deployment",
+                    elementType = "Deployment",
+                    elementName = null,
+                    reason = e.message ?: "BPMN parse error"
+                )
+                throw ProcessDefinitionValidationException(validationResult.errors + deploymentError)
             }
         } else {
             try {
@@ -163,6 +213,14 @@ class ProcessDeploymentService(
             }
         } catch (e: Exception) {
             throw RuntimeException("Failed to create process links. Rolling back deployment.", e)
+        }
+    }
+
+    private fun updateSuspensionState(processDefinitionId: String, isExecutable: Boolean) {
+        if (isExecutable) {
+            repositoryService.activateProcessDefinitionById(processDefinitionId)
+        } else {
+            repositoryService.suspendProcessDefinitionById(processDefinitionId)
         }
     }
 

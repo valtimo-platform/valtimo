@@ -5,6 +5,12 @@
         "roleKey": "ROLE_ADMIN"
     },
     {
+        "resourceType": "com.ritense.case_.domain.tab.CaseWidgetTabWidget",
+        "action": "view",
+        "roleKey": "ROLE_ADMIN",
+        "conditions": []
+    },
+    {
         "resourceType": "com.ritense.case.domain.CaseTab",
         "action": "view",
         "roleKey": "ROLE_USER"

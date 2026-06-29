@@ -40,12 +40,16 @@ import com.ritense.authorization.specification.AuthorizationSpecification;
 import com.ritense.outbox.OutboxService;
 import com.ritense.outbox.domain.BaseEvent;
 import com.ritense.valtimo.contract.authentication.ManageableUser;
+import com.ritense.valtimo.contract.authentication.Team;
+import com.ritense.valtimo.contract.authentication.TeamManagementService;
 import com.ritense.valtimo.contract.authentication.UserManagementService;
 import com.ritense.valtimo.contract.json.MapperSingleton;
 import com.ritense.valtimo.contract.utils.SecurityUtils;
 import com.ritense.valtimo.helper.DelegateTaskHelper;
 import com.ritense.valtimo.operaton.domain.OperatonTask;
 import com.ritense.valtimo.operaton.repository.OperatonTaskRepository;
+import com.ritense.valtimo.task.domain.TaskTeam;
+import com.ritense.valtimo.task.repository.TaskTeamRepository;
 import com.ritense.valtimo.task.service.UserTaskOpenedStatusService;
 import com.ritense.valtimo.security.exceptions.TaskNotFoundException;
 import jakarta.persistence.EntityManager;
@@ -69,6 +73,10 @@ import org.operaton.bpm.engine.impl.form.validator.FormFieldValidationException;
 import org.operaton.bpm.engine.runtime.ProcessInstance;
 import org.operaton.bpm.engine.runtime.ProcessInstanceQuery;
 import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 
 class OperatonTaskServiceTest {
     private static final String TASK_ID = "task";
@@ -86,6 +94,7 @@ class OperatonTaskServiceTest {
     private AuthorizationService authorizationService;
     private OutboxService outboxService;
     private UserTaskOpenedStatusService userTaskOpenedStatusService;
+    private TaskTeamRepository taskTeamRepository;
     private final ObjectMapper objectMapper = MapperSingleton.INSTANCE.get();
 
     @BeforeEach
@@ -101,6 +110,7 @@ class OperatonTaskServiceTest {
         authorizationService = mock(AuthorizationService.class);
         outboxService = mock(OutboxService.class);
         userTaskOpenedStatusService = mock(UserTaskOpenedStatusService.class);
+        taskTeamRepository = mock(TaskTeamRepository.class);
         task = spy(
             new OperatonTask(
                 TASK_ID,
@@ -145,7 +155,9 @@ class OperatonTaskServiceTest {
                 outboxService,
                 objectMapper,
                 List.of(),
-                userTaskOpenedStatusService
+                userTaskOpenedStatusService,
+                taskTeamRepository,
+                null
             )
         );
         when(authorizationService.getAuthorizationSpecification(any(), any()))
@@ -344,7 +356,9 @@ class OperatonTaskServiceTest {
             outboxService,
             objectMapper,
             List.of(),
-            userTaskOpenedStatusService
+            userTaskOpenedStatusService,
+            taskTeamRepository,
+            null
         ));
 
         when(operatonTaskRepository.findById(any())).thenReturn(Optional.of(
@@ -380,6 +394,159 @@ class OperatonTaskServiceTest {
         doThrow(new ProcessEngineException()).when(taskService).complete(anyString());
         assertThrows(IllegalStateException.class, () -> operatonTaskService.completeTaskWithFormData(TASK_ID, null));
         verify(outboxService, times(0)).send(any());
+    }
+
+    @Test
+    void assignTeamToTask_taskExists() {
+        doReturn(task).when(operatonTaskService).findTaskById(TASK_ID);
+
+        operatonTaskService.assignTeamToTask(TASK_ID, "team-a");
+
+        ArgumentCaptor<TaskTeam> taskTeamCaptor = ArgumentCaptor.forClass(TaskTeam.class);
+        verify(taskTeamRepository, times(1)).save(taskTeamCaptor.capture());
+        var savedTaskTeam = taskTeamCaptor.getValue();
+        assertThat(savedTaskTeam.getTaskId()).isEqualTo(TASK_ID);
+        assertThat(savedTaskTeam.getTeamKey()).isEqualTo("team-a");
+        assertThat(savedTaskTeam.getTeamTitle()).isEqualTo("team-a");
+
+        ArgumentCaptor<Supplier<BaseEvent>> eventCapture = ArgumentCaptor.forClass(Supplier.class);
+        verify(outboxService, times(1)).send(eventCapture.capture());
+        var event = eventCapture.getValue().get();
+        assertThat(event.getType()).isEqualTo("com.ritense.valtimo.task.assigned");
+        assertThat(event.getResultId()).isEqualTo(task.getId());
+    }
+
+    @Test
+    void assignTeamToTask_withTeamManagementService() {
+        TeamManagementService teamManagementService = mock(TeamManagementService.class);
+        Team team = mock(Team.class);
+        when(team.getTitle()).thenReturn("Team Alpha");
+        when(teamManagementService.findByKey("team-a")).thenReturn(team);
+
+        OperatonTaskService serviceWithTeamMgmt = spy(new OperatonTaskService(
+            taskService, formService, delegateTaskHelper, operatonTaskRepository, null,
+            Optional.empty(), applicationEventPublisher, runtimeService, userManagementService,
+            entityManager, authorizationService, outboxService, objectMapper, List.of(),
+            userTaskOpenedStatusService, taskTeamRepository, teamManagementService
+        ));
+        when(authorizationService.getAuthorizationSpecification(any(), any()))
+            .thenReturn(mock(AuthorizationSpecification.class));
+        doReturn(task).when(serviceWithTeamMgmt).findTaskById(TASK_ID);
+
+        serviceWithTeamMgmt.assignTeamToTask(TASK_ID, "team-a");
+
+        ArgumentCaptor<TaskTeam> taskTeamCaptor = ArgumentCaptor.forClass(TaskTeam.class);
+        verify(taskTeamRepository, times(1)).save(taskTeamCaptor.capture());
+        assertThat(taskTeamCaptor.getValue().getTeamTitle()).isEqualTo("Team Alpha");
+    }
+
+    @Test
+    void assignTeamToTask_updatesExistingRecord() {
+        doReturn(task).when(operatonTaskService).findTaskById(TASK_ID);
+        var existingTaskTeam = new TaskTeam(TASK_ID, "old-team", "Old Team");
+        when(taskTeamRepository.findById(TASK_ID)).thenReturn(Optional.of(existingTaskTeam));
+
+        operatonTaskService.assignTeamToTask(TASK_ID, "new-team");
+
+        ArgumentCaptor<TaskTeam> taskTeamCaptor = ArgumentCaptor.forClass(TaskTeam.class);
+        verify(taskTeamRepository, times(1)).save(taskTeamCaptor.capture());
+        var saved = taskTeamCaptor.getValue();
+        assertThat(saved.getTeamKey()).isEqualTo("new-team");
+        assertThat(saved.getTaskId()).isEqualTo(TASK_ID);
+    }
+
+    @Test
+    void assignTeamToTask_taskDoesNotExist() {
+        when(operatonTaskRepository.findById(any())).thenReturn(Optional.empty());
+        assertThrows(TaskNotFoundException.class, () -> operatonTaskService.assignTeamToTask(TASK_ID, "team-a"));
+        verify(taskTeamRepository, times(0)).save(any());
+    }
+
+    @Test
+    void unassignTeamFromTask_taskExists() {
+        doReturn(task).when(operatonTaskService).findTaskById(TASK_ID);
+        when(taskTeamRepository.findById(TASK_ID))
+            .thenReturn(Optional.of(new TaskTeam(TASK_ID, "team-a", "Team Alpha")));
+
+        operatonTaskService.unassignTeamFromTask(TASK_ID);
+
+        verify(taskTeamRepository, times(1)).deleteById(TASK_ID);
+
+        ArgumentCaptor<Supplier<BaseEvent>> eventCapture = ArgumentCaptor.forClass(Supplier.class);
+        verify(outboxService, times(1)).send(eventCapture.capture());
+        var event = eventCapture.getValue().get();
+        assertThat(event.getType()).isEqualTo("com.ritense.valtimo.task.unassigned");
+        assertThat(event.getResultId()).isEqualTo(task.getId());
+    }
+
+    @Test
+    void unassignTeamFromTask_taskDoesNotExist() {
+        when(operatonTaskRepository.findById(any())).thenReturn(Optional.empty());
+        assertThrows(TaskNotFoundException.class, () -> operatonTaskService.unassignTeamFromTask(TASK_ID));
+        verify(taskTeamRepository, times(0)).deleteById(any());
+    }
+
+    @Test
+    void getCandidateTeams_withoutTeamManagementService() {
+        doReturn(task).when(operatonTaskService).findTaskById(TASK_ID);
+
+        Page<Team> result = operatonTaskService.getCandidateTeams(TASK_ID, PageRequest.of(0, 10));
+
+        assertThat(result).isEmpty();
+        assertThat(result.getTotalElements()).isZero();
+    }
+
+    @Test
+    void getCandidateTeams_withTeamManagementService() {
+        TeamManagementService teamManagementService = mock(TeamManagementService.class);
+        Team team = mock(Team.class);
+        when(team.getKey()).thenReturn("team-a");
+        when(team.getTitle()).thenReturn("Team Alpha");
+        Pageable pageable = PageRequest.of(0, 10);
+        when(teamManagementService.findAll(pageable)).thenReturn(new PageImpl<>(List.of(team), pageable, 1));
+
+        OperatonTaskService serviceWithTeamMgmt = spy(new OperatonTaskService(
+            taskService, formService, delegateTaskHelper, operatonTaskRepository, null,
+            Optional.empty(), applicationEventPublisher, runtimeService, userManagementService,
+            entityManager, authorizationService, outboxService, objectMapper, List.of(),
+            userTaskOpenedStatusService, taskTeamRepository, teamManagementService
+        ));
+        when(authorizationService.getAuthorizationSpecification(any(), any()))
+            .thenReturn(mock(AuthorizationSpecification.class));
+        doReturn(task).when(serviceWithTeamMgmt).findTaskById(TASK_ID);
+
+        Page<Team> result = serviceWithTeamMgmt.getCandidateTeams(TASK_ID, pageable);
+
+        assertThat(result.getTotalElements()).isEqualTo(1);
+        assertThat(result.getContent().get(0).getKey()).isEqualTo("team-a");
+    }
+
+    @Test
+    void getCandidateTeams_taskDoesNotExist() {
+        when(operatonTaskRepository.findById(any())).thenReturn(Optional.empty());
+        assertThrows(TaskNotFoundException.class,
+            () -> operatonTaskService.getCandidateTeams(TASK_ID, PageRequest.of(0, 10)));
+    }
+
+    @Test
+    void getAssignedTeam_returnsTaskTeam() {
+        var taskTeam = new TaskTeam(TASK_ID, "team-a", "Team Alpha");
+        when(taskTeamRepository.findById(TASK_ID)).thenReturn(Optional.of(taskTeam));
+
+        var result = operatonTaskService.getAssignedTeam(TASK_ID);
+
+        assertThat(result).isNotNull();
+        assertThat(result.getKey()).isEqualTo("team-a");
+        assertThat(result.getTitle()).isEqualTo("Team Alpha");
+    }
+
+    @Test
+    void getAssignedTeam_returnsNullWhenNotFound() {
+        when(taskTeamRepository.findById(TASK_ID)).thenReturn(Optional.empty());
+
+        var result = operatonTaskService.getAssignedTeam(TASK_ID);
+
+        assertThat(result).isNull();
     }
 
     @Test

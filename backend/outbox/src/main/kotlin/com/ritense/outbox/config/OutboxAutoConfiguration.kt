@@ -64,9 +64,12 @@ class OutboxAutoConfiguration {
     @ConditionalOnMissingBean(OutboxLiquibaseRunner::class)
     fun outboxLiquibaseRunner(
         liquibaseProperties: LiquibaseProperties,
-        datasource: DataSource
+        datasource: DataSource,
+        // @Value, not ValtimoProperties: outbox is forbidden from depending on other Valtimo modules.
+        // Property is shared with the contract runner so operators have one knob.
+        @Value("\${valtimo.liquibase.stale-lock-threshold-minutes:30}") staleLockThresholdMinutes: Int,
     ): OutboxLiquibaseRunner {
-        return OutboxLiquibaseRunner(liquibaseProperties, datasource)
+        return OutboxLiquibaseRunner(liquibaseProperties, datasource, staleLockThresholdMinutes)
     }
 
     @Bean
@@ -104,6 +107,7 @@ class OutboxAutoConfiguration {
             .slidingWindowSize(props.slidingWindowSize)
             .waitDurationInOpenState(Duration.ofSeconds(props.waitDurationInOpenStateSeconds))
             .permittedNumberOfCallsInHalfOpenState(props.permittedNumberOfCallsInHalfOpenState)
+            .automaticTransitionFromOpenToHalfOpenEnabled(true)
             .build()
         return CircuitBreaker.of("outboxPollingPublisher", config)
     }

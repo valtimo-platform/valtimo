@@ -54,7 +54,10 @@
     />
   </cds-text-label>
 
-  <cds-text-label [attr.data-carbon-theme]="theme">
+  <div
+    class="valtimo-widget-management-table__path-selector"
+    [attr.data-carbon-theme]="theme"
+  >
     <v-input-label
       [title]="'widgetTabManagement.content.table.collection' | translate"
       [tooltip]="collectionDataTooltip$ | async"
@@ -67,6 +70,7 @@
         [attr.data-carbon-theme]="obs.theme"
         [caseDefinitionKey]="obs.params?.caseDefinitionKey"
         [caseDefinitionVersionTag]="obs.params?.caseDefinitionVersionTag"
+        [excludePrefixes]="[ValuePathSelectorPrefix.TASK]"
         [type]="ValuePathType.COLLECTION"
         (collectionSelected)="onCollectionSelected($event)"
       ></valtimo-value-path-selector>
@@ -79,7 +83,7 @@
         type="text"
       />
     }
-  </cds-text-label>
+  </div>
 </form>
 
 <ng-content></ng-content>

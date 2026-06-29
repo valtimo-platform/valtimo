@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,6 +19,7 @@ package com.ritense.authorization.web
 import com.fasterxml.jackson.annotation.JsonView
 import com.ritense.authorization.AuthorizationSupportedHelper
 import com.ritense.authorization.deployment.PermissionDto
+import com.ritense.authorization.deployment.PermissionResourceTypeMigrator
 import com.ritense.authorization.permission.PermissionRepository
 import com.ritense.authorization.permission.PermissionView
 import com.ritense.authorization.role.Role
@@ -30,6 +31,7 @@ import com.ritense.authorization.web.request.UpdateRoleRequest
 import com.ritense.authorization.web.result.RoleResult
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import com.ritense.valtimo.contract.domain.ValtimoMediaType
+import jakarta.validation.Valid
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.transaction.annotation.Transactional
@@ -47,7 +49,8 @@ import org.springframework.web.bind.annotation.RestController
 @RequestMapping("/api/management", produces = [ValtimoMediaType.APPLICATION_JSON_UTF8_VALUE])
 class RoleManagementResource(
     val roleRepository: RoleRepository,
-    val permissionRepository: PermissionRepository
+    val permissionRepository: PermissionRepository,
+    val migrator: PermissionResourceTypeMigrator
 ) {
     @GetMapping("/v1/roles")
     fun getRoles()
@@ -56,7 +59,7 @@ class RoleManagementResource(
     }
 
     @PostMapping("/v1/roles")
-    fun createRole(@RequestBody saveRoleRequest: SaveRoleRequest)
+    fun createRole(@Valid @RequestBody saveRoleRequest: SaveRoleRequest)
         : ResponseEntity<RoleResult> {
         try {
             val role: Role = roleRepository.save(saveRoleRequest.toRole())
@@ -67,7 +70,7 @@ class RoleManagementResource(
     }
 
     @PutMapping("/v1/roles/{oldRoleKey}")
-    fun updateRole(@PathVariable oldRoleKey: String, @RequestBody updateRoleRequest: UpdateRoleRequest)
+    fun updateRole(@PathVariable oldRoleKey: String, @Valid @RequestBody updateRoleRequest: UpdateRoleRequest)
         : ResponseEntity<RoleResult> {
 
         val oldRole = roleRepository.findByKey(oldRoleKey)
@@ -78,7 +81,7 @@ class RoleManagementResource(
 
     @DeleteMapping("/v1/roles")
     @Transactional
-    fun deleteRole(@RequestBody deleteRolesRequest: DeleteRolesRequest)
+    fun deleteRole(@Valid @RequestBody deleteRolesRequest: DeleteRolesRequest)
         : ResponseEntity<Void> {
         permissionRepository.deleteByRoleKeyIn(deleteRolesRequest.roles)
         roleRepository.deleteByKeyIn(deleteRolesRequest.roles)
@@ -109,7 +112,7 @@ class RoleManagementResource(
     @Transactional
     fun updateRolePermissions(
         @PathVariable roleKey: String,
-        @RequestBody rolePermissions: List<UpdateRolePermissionRequest>
+        @Valid @RequestBody rolePermissions: List<UpdateRolePermissionRequest>
     )
         : ResponseEntity<List<PermissionDto>> {
         val role = roleRepository.findByKey(roleKey)!!
@@ -118,7 +121,7 @@ class RoleManagementResource(
             .saveAll(
                 rolePermissions.map {
                     AuthorizationSupportedHelper.checkSupported(it.resourceType)
-                    it.toPermission(role)
+                    it.toPermission(role, migrator)
                 }
             ).map { permission ->
                 PermissionDto(

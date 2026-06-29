@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -54,6 +54,7 @@ import org.springframework.data.domain.Pageable
 import java.net.URI
 import java.time.LocalDate
 import java.time.LocalDateTime
+import java.time.OffsetDateTime
 import java.util.UUID
 
 class ZaakDocumentServiceTest {
@@ -170,6 +171,12 @@ class ZaakDocumentServiceTest {
         whenever(
             authorizationService.hasPermission<Any>(any())
         ).thenReturn(true)
+        whenever(
+            authorizationService.hasPermission<Any>(any(), any())
+        ).thenReturn(true)
+        whenever(
+            authorizationService.getPermissions(any(), any())
+        ).thenReturn(emptyList())
 
         whenever(
             documentenApiService.getCaseInformatieObjecten(
@@ -313,7 +320,7 @@ class ZaakDocumentServiceTest {
         url = uri,
         bronorganisatie = Rsin("404797441"),
         auteur = "y",
-        beginRegistratie = LocalDateTime.now(),
+        beginRegistratie = OffsetDateTime.now(),
         creatiedatum = LocalDate.now(),
         taal = "nl",
         titel = "titel",

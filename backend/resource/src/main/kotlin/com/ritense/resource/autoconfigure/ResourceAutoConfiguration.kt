@@ -16,6 +16,7 @@
 
 package com.ritense.resource.autoconfigure
 
+import com.ritense.resource.authorization.ResourcePermissionActionProvider
 import com.ritense.resource.authorization.ResourceSpecificationFactory
 import org.springframework.boot.autoconfigure.AutoConfiguration
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
@@ -30,5 +31,9 @@ class ResourceAutoConfiguration {
     ): ResourceSpecificationFactory {
         return ResourceSpecificationFactory()
     }
+
+    @Bean
+    @ConditionalOnMissingBean(ResourcePermissionActionProvider::class)
+    fun resourcePermissionActionProvider(): ResourcePermissionActionProvider = ResourcePermissionActionProvider()
 
 }
