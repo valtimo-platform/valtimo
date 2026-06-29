@@ -1,5 +1,5 @@
 name: Test - build images (GHCR only)
-run-name: Test images ${{ github.ref_name }} (${{ inputs.side || 'both' }}/${{ inputs.variant || 'all4' }} @ ${{ inputs.project_version || 'auto' }})
+run-name: Test images ${{ github.ref_name }} (${{ inputs.side }}/${{ inputs.variant }} @ ${{ inputs.project_version || 'auto' }})
 
 # Manual, non-production smoke test for the Docker image build path.
 #
@@ -12,12 +12,6 @@ run-name: Test images ${{ github.ref_name }} (${{ inputs.side || 'both' }}/${{ i
 # After a run, pull & verify, e.g.:
 #   docker pull ghcr.io/valtimo-platform/valtimo/gzac-backend:<branch>-production.<run>
 #   docker pull ghcr.io/valtimo-platform/valtimo/gzac-frontend:<branch>-test.<run>
-#
-# TEMPORARY: the push trigger below exists only so this workflow can be run from
-# the feature branches without first registering it on the default branch
-# (workflow_dispatch requires the file on the default branch). It is scoped to
-# this file's own path so it fires exactly once per change, and should be removed
-# once the workflow lands on the default branch.
 
 permissions:
   contents: read
@@ -51,12 +45,6 @@ on:
         required: false
         type: string
         default: ""
-  push:
-    branches:
-      - cicd/release-pipeline
-      - cicd/release-pipeline-v12
-    paths:
-      - .github/workflows/test_build_images.yml
 
 jobs:
   prepare:
@@ -70,10 +58,6 @@ jobs:
       - id: set
         run: |
           case "${{ inputs.variant }}" in
-            "")
-              # push-triggered (no inputs): build all four, incl. dev.
-              echo 'variants=["dev","gzac","valtimo","evenementenvergunning"]' >> "$GITHUB_OUTPUT"
-              ;;
             all)
               echo 'variants=["gzac","valtimo","evenementenvergunning"]' >> "$GITHUB_OUTPUT"
               ;;
@@ -100,13 +84,13 @@ jobs:
   # ---------------------------------------------------------------- backend ---
   backend_libs:
     name: Backend libraries
-    if: ${{ inputs.side == '' || inputs.side == 'both' || inputs.side == 'backend' }}
+    if: ${{ inputs.side == 'both' || inputs.side == 'backend' }}
     uses: ./.github/workflows/backend_build_test_libraries.yml
     secrets: inherit
 
   backend_images:
     name: Backend image (${{ matrix.variant }}) -> GHCR
-    if: ${{ inputs.side == '' || inputs.side == 'both' || inputs.side == 'backend' }}
+    if: ${{ inputs.side == 'both' || inputs.side == 'backend' }}
     needs:
       - prepare
       - backend_libs
@@ -128,7 +112,7 @@ jobs:
   # --------------------------------------------------------------- frontend ---
   frontend_libs:
     name: Frontend libraries
-    if: ${{ inputs.side == '' || inputs.side == 'both' || inputs.side == 'frontend' }}
+    if: ${{ inputs.side == 'both' || inputs.side == 'frontend' }}
     needs:
       - prepare
     uses: ./.github/workflows/frontend_build_test_libraries.yml
@@ -140,7 +124,7 @@ jobs:
 
   frontend_images:
     name: Frontend image (${{ matrix.variant }}) -> GHCR
-    if: ${{ inputs.side == '' || inputs.side == 'both' || inputs.side == 'frontend' }}
+    if: ${{ inputs.side == 'both' || inputs.side == 'frontend' }}
     needs:
       - prepare
       - frontend_libs
