@@ -692,8 +692,25 @@
       "fileUploaderDescription": "Only files with the .dmn extension are allowed.",
       "fileUploaderButton": "Choose DMN file"
     },
+    "create": "Create DMN table",
+    "createModal": {
+      "title": "Create decision table",
+      "name": "Name",
+      "namePlaceholder": "e.g. Eligibility decision",
+      "nameRequired": "Name is required",
+      "inputVariables": "Input variables (optional)",
+      "inputVariablesHelper": "Input columns are optional - you can leave this empty. For every row you add, the process variable is required; the label is optional and the process variable name is used as the column header when it is left blank. You can add or change these later in the editor.",
+      "inputLabel": "Label (optional)",
+      "inputExpression": "Process variable (required)",
+      "inputExpressionRequired": "A process variable is required for each input column.",
+      "addInputVariable": "Add input variable"
+    },
+    "editModal": {
+      "title": "Edit decision table"
+    },
     "version": "Version",
     "deploy": "Save",
+    "readOnly": "Read-only",
     "loadFailure": "Something went wrong with loading your decision table.",
     "deploySuccess": "Decision table has been deployed successfully.",
     "deployFailure": "Something went wrong with deploying your decision table.",
@@ -3116,10 +3133,6 @@
         "applicationTitleAsSuffix": {
           "title": "Application title as suffix",
           "description": "Append the application title as a suffix to the browser tab title."
-        },
-        "experimentalDmnEditing": {
-          "title": "Experimental DMN editing",
-          "description": "Enable the experimental DMN decision table editor."
         },
         "disableCaseCount": {
           "title": "Disable case count",

@@ -49,6 +49,11 @@ export class DecisionService extends BaseApiService {
     );
   }
 
+  public getUnlinkedDecisions(): Observable<Decision[]> {
+    // Only the "global" decision tables: those not linked to a case or building block definition.
+    return this.httpClient.get<Decision[]>(this.getApiUrl('/management/v1/decision-definition'));
+  }
+
   public getDecisionById(decisionId: string): Observable<Decision> {
     return this.httpClient.get<Decision>(
       this.getApiUrl(`/operaton-rest/engine/default/decision-definition/${decisionId}`)
