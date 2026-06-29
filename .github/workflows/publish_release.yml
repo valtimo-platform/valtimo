@@ -7,12 +7,6 @@ permissions:
 
 on:
   workflow_dispatch:
-    inputs:
-      publish_images:
-        description: "Build and push the GZAC Docker images from the monorepo. Disable on v12-stable, where images are still built by Jenkins from the template repos."
-        required: false
-        type: boolean
-        default: true
 
 jobs:
   prepare:
@@ -48,7 +42,6 @@ jobs:
     uses: ./.github/workflows/backend_publish_release.yml
     with:
       project_version: ${{ needs.prepare.outputs.version }}
-      publish_images: ${{ inputs.publish_images }}
     secrets: inherit
 
   frontend_release:
@@ -57,7 +50,6 @@ jobs:
     uses: ./.github/workflows/frontend_publish_release.yml
     with:
       project_version: ${{ needs.prepare.outputs.version }}
-      publish_images: ${{ inputs.publish_images }}
     secrets: inherit
 
   create_release:
