@@ -10,21 +10,11 @@ on:
         description: "Base semantic version (e.g. 13.6.0)"
         required: true
         type: string
-      publish_images:
-        description: "Build and push the backend Docker image. Disable on v12-stable, where the image is still built by Jenkins from the template repo."
-        required: false
-        type: boolean
-        default: true
   workflow_dispatch:
     inputs:
       project_version:
         description: "Base semantic version (e.g. 13.6.0)"
         required: true
-      publish_images:
-        description: "Build and push the backend Docker image. Disable on v12-stable, where the image is still built by Jenkins from the template repo."
-        required: false
-        type: boolean
-        default: true
 
 env:
   PROJECT_VERSION: ${{ inputs.project_version || github.event.inputs.project_version }}
@@ -35,7 +25,6 @@ jobs:
 
   build_and_push_gzac_image:
     name: Build and push gzac-backend image
-    if: ${{ inputs.publish_images }}
     needs:
       - build_run_tests
     permissions:
@@ -52,7 +41,6 @@ jobs:
 
   build_and_push_valtimo_image:
     name: Build and push valtimo-backend image
-    if: ${{ inputs.publish_images }}
     needs:
       - build_run_tests
     permissions:
@@ -69,7 +57,6 @@ jobs:
 
   build_and_push_evenementenvergunning_image:
     name: Build and push gzac-evenementenvergunning-backend image
-    if: ${{ inputs.publish_images }}
     needs:
       - build_run_tests
     permissions:
