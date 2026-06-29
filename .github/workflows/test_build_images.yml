@@ -1,5 +1,5 @@
 name: Test - build images (GHCR only)
-run-name: Test images ${{ github.ref_name }} (${{ inputs.side || 'both' }}/${{ inputs.variant || 'all4' }})
+run-name: Test images ${{ github.ref_name }} (${{ inputs.side || 'both' }}/${{ inputs.variant || 'all4' }} @ ${{ inputs.project_version || 'auto' }})
 
 # Manual, non-production smoke test for the Docker image build path.
 #
