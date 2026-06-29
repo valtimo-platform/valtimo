@@ -219,16 +219,9 @@ jobs:
         id: frontend_tree
         run: echo "tree=$(git rev-parse HEAD:frontend)" >> "$GITHUB_OUTPUT"
 
-      - name: Normalize branch name for tags
-        shell: bash
-        run: |
-          echo "BRANCH_NAME_SAFE=${BRANCH_NAME//\//-}" >> "$GITHUB_ENV"
-
       - name: Generate image tags
         id: generate_tags
         uses: docker/metadata-action@v5
-        env:
-          BRANCH_NAME: ${{ github.head_ref || github.ref_name }}
         with:
           images: ghcr.io/${{ github.repository }}/${{ needs.resolve_variant.outputs.image_name }}
           tags: |
