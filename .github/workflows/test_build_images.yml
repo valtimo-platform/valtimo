@@ -129,7 +129,13 @@ jobs:
   frontend_libs:
     name: Frontend libraries
     if: ${{ inputs.side == '' || inputs.side == 'both' || inputs.side == 'frontend' }}
+    needs:
+      - prepare
     uses: ./.github/workflows/frontend_build_test_libraries.yml
+    with:
+      # Build the libs at the requested version (also busts the content-only lib
+      # cache) so the dist the frontend image consumes carries the right version.
+      project_version: ${{ needs.prepare.outputs.version }}
     secrets: inherit
 
   frontend_images:
