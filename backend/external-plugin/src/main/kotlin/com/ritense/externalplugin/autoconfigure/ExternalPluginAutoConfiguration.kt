@@ -41,6 +41,7 @@ import com.ritense.externalplugin.security.ExternalPluginUserTokenAuthenticator
 import com.ritense.externalplugin.security.ExternalPluginUserTokenFilter
 import com.ritense.externalplugin.security.ExternalPluginUserTokenKeyProvider
 import com.ritense.externalplugin.service.EndpointDescriptionService
+import com.ritense.externalplugin.service.ExternalPluginBundleUrlResolver
 import com.ritense.externalplugin.service.ExternalPluginCaseTabResolverImpl
 import com.ritense.externalplugin.service.ExternalPluginConfigurationService
 import com.ritense.externalplugin.service.ExternalPluginDefinitionService
@@ -48,10 +49,12 @@ import com.ritense.externalplugin.service.ExternalPluginDiscoveryJob
 import com.ritense.externalplugin.service.ExternalPluginDiscoveryService
 import com.ritense.externalplugin.service.ExternalPluginHostService
 import com.ritense.externalplugin.service.ExternalPluginHostUsageResolver
+import com.ritense.externalplugin.service.ExternalPluginMenuPageService
 import com.ritense.externalplugin.service.ExternalPluginServiceTokenService
 import com.ritense.externalplugin.service.ExternalPluginUserTokenService
 import com.ritense.externalplugin.service.PluginPropertyEncryptor
 import com.ritense.externalplugin.web.rest.ExternalPluginManagementResource
+import com.ritense.externalplugin.web.rest.ExternalPluginMenuPageResource
 import com.ritense.externalplugin.web.rest.ExternalPluginUserTokenResource
 import com.ritense.plugin.service.EncryptionService
 import com.ritense.valtimo.operaton.service.OperatonRepositoryService
@@ -138,11 +141,31 @@ class ExternalPluginAutoConfiguration {
         ExternalPluginDefinitionService(definitionRepository)
 
     @Bean
-    @ConditionalOnMissingBean(ExternalPluginCaseTabResolverImpl::class)
-    fun externalPluginCaseTabResolver(
+    @ConditionalOnMissingBean(ExternalPluginBundleUrlResolver::class)
+    fun externalPluginBundleUrlResolver(
         configurationRepository: ExternalPluginConfigurationRepository,
         definitionRepository: ExternalPluginDefinitionRepository,
-    ) = ExternalPluginCaseTabResolverImpl(configurationRepository, definitionRepository)
+    ) = ExternalPluginBundleUrlResolver(configurationRepository, definitionRepository)
+
+    @Bean
+    @ConditionalOnMissingBean(ExternalPluginCaseTabResolverImpl::class)
+    fun externalPluginCaseTabResolver(
+        bundleUrlResolver: ExternalPluginBundleUrlResolver,
+    ) = ExternalPluginCaseTabResolverImpl(bundleUrlResolver)
+
+    @Bean
+    @ConditionalOnMissingBean(ExternalPluginMenuPageService::class)
+    fun externalPluginMenuPageService(
+        configurationRepository: ExternalPluginConfigurationRepository,
+        definitionRepository: ExternalPluginDefinitionRepository,
+        bundleUrlResolver: ExternalPluginBundleUrlResolver,
+    ) = ExternalPluginMenuPageService(configurationRepository, definitionRepository, bundleUrlResolver)
+
+    @Bean
+    @ConditionalOnMissingBean(ExternalPluginMenuPageResource::class)
+    fun externalPluginMenuPageResource(
+        menuPageService: ExternalPluginMenuPageService,
+    ) = ExternalPluginMenuPageResource(menuPageService)
 
     @Bean
     @ConditionalOnMissingBean(ExternalPluginServiceTokenKeyProvider::class)

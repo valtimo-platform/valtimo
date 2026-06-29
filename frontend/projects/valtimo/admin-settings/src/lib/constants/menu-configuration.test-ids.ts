@@ -14,10 +14,14 @@
  * limitations under the License.
  */
 
-const ADMIN_SETTINGS_TABS = {
-  APPEARANCE: 'appearance',
-  MENU_CONFIGURATION: 'menu-configuration',
-  FEATURE_TOGGLES: 'feature-toggles',
+const MENU_CONFIGURATION_TEST_IDS = {
+  saveButton: 'menuConfigurationSaveButton',
+  resetButton: 'menuConfigurationResetButton',
+  structureList: 'menuConfigurationStructureList',
+  editorTitleInput: 'menuConfigurationEditorTitleInput',
+  editorLinkInput: 'menuConfigurationEditorLinkInput',
+  editorSaveButton: 'menuConfigurationEditorSaveButton',
+  editorCancelButton: 'menuConfigurationEditorCancelButton',
 } as const;
 
-export {ADMIN_SETTINGS_TABS};
+export {MENU_CONFIGURATION_TEST_IDS};

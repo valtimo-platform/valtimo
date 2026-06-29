@@ -52,6 +52,9 @@ class ExternalPluginHttpSecurityConfigurer : HttpSecurityConfigurer {
                     // Non-management: any authenticated user may mint a downscoped user token for a
                     // plugin tab — the result is always bounded by PBAC ∩ the plugin's allowlist.
                     .requestMatchers(antMatcher(POST, "/api/v1/external-plugin/configuration/*/user-token")).authenticated()
+                    // Non-management: the menu-configuration builder lists activated page bundles. The
+                    // list is unfiltered; access to page data is enforced at render time (PBAC ∩ allowlist).
+                    .requestMatchers(antMatcher(GET, "/api/v1/external-plugin/menu-pages")).authenticated()
             }
         } catch (e: Exception) {
             throw HttpConfigurerConfigurationException(e)

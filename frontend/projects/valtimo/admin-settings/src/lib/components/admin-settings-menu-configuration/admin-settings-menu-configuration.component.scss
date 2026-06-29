@@ -1,0 +1,184 @@
+/*!
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
+ *
+ * Licensed under EUPL, Version 1.2 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" basis,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+.menu-configuration {
+  display: flex;
+  flex-direction: column;
+  gap: var(--cds-spacing-05);
+  padding: var(--cds-spacing-05) 0;
+
+  &__status {
+    display: flex;
+    justify-content: center;
+    padding: var(--cds-spacing-07);
+  }
+
+  &__toolbar {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: var(--cds-spacing-05);
+  }
+
+  &__intro {
+    color: var(--cds-text-secondary);
+    max-width: 640px;
+  }
+
+  &__toolbar-actions {
+    display: flex;
+    gap: var(--cds-spacing-03);
+    flex-shrink: 0;
+  }
+
+  &__panels {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--cds-spacing-06);
+    align-items: start;
+  }
+
+  // Each panel is its own bounded scroll container, so the menu structure and the available-items
+  // catalog scroll independently (and CDK auto-scrolls the panel you drag into). The offset is an
+  // approximation of the chrome above the panels (topbar + page heading + tabs + toolbar). Top
+  // padding lives on the sticky title so it pins to the very top of the scroll area.
+  &__panel {
+    display: flex;
+    flex-direction: column;
+    gap: var(--cds-spacing-04);
+    padding: 0 var(--cds-spacing-05) var(--cds-spacing-05);
+    background-color: var(--cds-layer);
+    border: 1px solid var(--cds-border-subtle);
+    border-radius: var(--cds-spacing-02);
+    max-height: calc(100vh - 260px);
+    min-height: 320px;
+    overflow-y: auto;
+  }
+
+  &__panel-title {
+    position: sticky;
+    top: 0;
+    z-index: 1;
+    padding: var(--cds-spacing-05) 0 var(--cds-spacing-03);
+    background-color: var(--cds-layer);
+    color: var(--cds-text-primary);
+    font-weight: 600;
+  }
+
+  &__row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--cds-spacing-03);
+    width: 100%;
+    min-width: 0;
+  }
+
+  &__row-main {
+    display: flex;
+    align-items: center;
+    gap: var(--cds-spacing-03);
+    min-width: 0;
+  }
+
+  &__row-icon {
+    color: var(--cds-icon-primary);
+    flex-shrink: 0;
+  }
+
+  &__row-title {
+    color: var(--cds-text-primary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  &__row-route {
+    color: var(--cds-text-secondary);
+    font-size: var(--cds-code-01-font-size, var(--cds-body-compact-01-font-size));
+    font-family: var(--cds-code-01-font-family, monospace);
+  }
+
+  &__row-note {
+    color: var(--cds-text-helper);
+    font-style: italic;
+  }
+
+  &__row-actions {
+    display: flex;
+    flex-shrink: 0;
+  }
+
+  // An inset, clearly-bounded drop zone for a section's children, isolated from the root list so the
+  // target (including the top of the section) is unambiguous.
+  &__children {
+    margin-top: var(--cds-spacing-03);
+    margin-left: var(--cds-spacing-07);
+    padding: var(--cds-spacing-03);
+    border: 1px dashed var(--cds-border-subtle);
+    border-radius: var(--cds-spacing-02);
+    background-color: var(--cds-layer-02);
+    min-height: var(--cds-spacing-09);
+  }
+
+  &__structure-empty,
+  &__palette-empty {
+    color: var(--cds-text-helper);
+    padding: var(--cds-spacing-04);
+    text-align: center;
+  }
+
+  &__palette-group {
+    display: flex;
+    flex-direction: column;
+    gap: var(--cds-spacing-03);
+  }
+
+  &__palette-group-title {
+    color: var(--cds-text-secondary);
+    text-transform: uppercase;
+    font-size: var(--cds-label-01-font-size);
+    letter-spacing: var(--cds-label-01-letter-spacing);
+    margin-top: var(--cds-spacing-03);
+  }
+
+  &__palette-item {
+    display: flex;
+    align-items: center;
+    gap: var(--cds-spacing-03);
+    width: 100%;
+    min-width: 0;
+  }
+
+  &__palette-label {
+    flex: 1 1 auto;
+    color: var(--cds-text-primary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  &__editor {
+    display: flex;
+    flex-direction: column;
+    gap: var(--cds-spacing-05);
+  }
+
+  &__editor-note {
+    color: var(--cds-text-helper);
+    font-style: italic;
+  }
+}

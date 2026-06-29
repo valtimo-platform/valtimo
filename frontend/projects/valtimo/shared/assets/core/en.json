@@ -3171,11 +3171,58 @@
     "deleteHelperText": "After creating a quick search item, you can delete it by right-clicking on it",
     "duplicateError": "A quick search item with this title already exists"
   },
+  "externalPluginPage": {
+    "loadError": "This plugin page could not be loaded."
+  },
   "adminSettings": {
     "title": "Settings",
     "tabs": {
       "appearance": "Appearance",
+      "menuConfiguration": "Menu configuration",
       "featureToggles": "Feature toggles"
+    },
+    "menuConfiguration": {
+      "intro": "Build the application's left-hand menu. Drag items between the available items and the menu structure, reorder them, and edit an item's title, link or icon. Access to each item is managed via PBAC.",
+      "structureTitle": "Menu structure",
+      "availableTitle": "Available items",
+      "save": "Save menu",
+      "reset": "Reset",
+      "savedTitle": "Menu saved",
+      "savedSubtitle": "The menu configuration has been saved and applies on the next reload.",
+      "required": "Required",
+      "runtimeSubmenu": "Dynamic submenu",
+      "runtimeSubmenuNote": "This item's submenu is filled at runtime (for example pinned cases) and cannot be edited here.",
+      "allPlaced": "All items are already in the menu.",
+      "emptyStructure": "Drag items here to build the menu.",
+      "emptySection": "Drop items here",
+      "add": "Add to menu",
+      "dragHandle": "Drag to reorder",
+      "categories": {
+        "generic": "Generic",
+        "main": "Main menu items",
+        "admin": "Admin pages",
+        "development": "Development pages",
+        "pluginPages": "Plugin pages"
+      },
+      "generic": {
+        "group": "Section",
+        "sectionHeader": "Section header",
+        "customLink": "Custom link"
+      },
+      "defaults": {
+        "group": "New section",
+        "sectionHeader": "New header",
+        "customLink": "New link"
+      },
+      "editor": {
+        "title": "Edit menu item",
+        "link": "Link (route or external URL)",
+        "section": "Section",
+        "sectionRoot": "Top level",
+        "includeFunction": "Include function",
+        "includeFunctionNone": "None",
+        "pbacNote": "Access to this item is managed via PBAC, not here."
+      }
     },
     "appearance": {
       "logo": {

@@ -28,6 +28,18 @@
       </cds-tab>
     }
 
+    @if ({active: activeTabKey === ADMIN_SETTINGS_TABS.MENU_CONFIGURATION}; as obs) {
+      <cds-tab
+        [active]="obs.active"
+        [heading]="'adminSettings.tabs.menuConfiguration' | translate"
+        (selected)="switchTab(ADMIN_SETTINGS_TABS.MENU_CONFIGURATION)"
+      >
+        @if (obs.active) {
+          <valtimo-admin-settings-menu-configuration></valtimo-admin-settings-menu-configuration>
+        }
+      </cds-tab>
+    }
+
     @if ({active: activeTabKey === ADMIN_SETTINGS_TABS.FEATURE_TOGGLES}; as obs) {
       <cds-tab
         [active]="obs.active"

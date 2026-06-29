@@ -17,6 +17,7 @@
 package com.ritense.externalplugin.service
 
 import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.databind.node.ObjectNode
 import com.ritense.externalplugin.domain.ExternalPluginConfiguration
 import com.ritense.externalplugin.domain.ExternalPluginDefinition
 import com.ritense.externalplugin.domain.ExternalPluginDefinitionStatus
@@ -29,44 +30,42 @@ import org.mockito.kotlin.whenever
 import java.util.Optional
 import java.util.UUID
 
-class ExternalPluginCaseTabResolverImplTest {
+class ExternalPluginBundleUrlResolverTest {
 
     private val objectMapper = ObjectMapper()
     private val configurationRepository = mock<ExternalPluginConfigurationRepository>()
     private val definitionRepository = mock<ExternalPluginDefinitionRepository>()
-    private val resolver = ExternalPluginCaseTabResolverImpl(
-        ExternalPluginBundleUrlResolver(configurationRepository, definitionRepository)
-    )
+    private val resolver = ExternalPluginBundleUrlResolver(configurationRepository, definitionRepository)
 
     @Test
-    fun `resolves the bundle url for the sole case-tab bundle when no key is given`() {
-        val (configId, definitionId) = stub(
+    fun `resolves the sole page bundle when no key is given`() {
+        val configId = stub(
             """[ { "type":"config", "path":"/bundles/config.html" },
-                 { "type":"case-tab", "key":"summary", "path":"/bundles/case-tab.html" } ]"""
+                 { "type":"page", "key":"overview", "path":"/bundles/page.html" } ]"""
         )
 
-        val url = resolver.resolveBundleUrl(configId, null)
+        val url = resolver.resolve(configId, "page", null)
 
-        assertThat(url).isEqualTo("http://host:8090/plugins/case-summary/0.1.0/bundles/case-tab.html")
+        assertThat(url).isEqualTo("http://host:8090/plugins/case-summary/0.1.0/bundles/page.html")
     }
 
     @Test
-    fun `resolves the bundle url for the matching key when multiple case-tab bundles exist`() {
-        val (configId, _) = stub(
-            """[ { "type":"case-tab", "key":"summary", "path":"/bundles/summary.html" },
-                 { "type":"case-tab", "key":"details", "path":"/bundles/details.html" } ]"""
+    fun `resolves the matching key when several bundles of a type exist`() {
+        val configId = stub(
+            """[ { "type":"task-form", "key":"approval", "path":"/bundles/approval.html" },
+                 { "type":"task-form", "key":"review", "path":"/bundles/review.html" } ]"""
         )
 
-        val url = resolver.resolveBundleUrl(configId, "details")
+        val url = resolver.resolve(configId, "task-form", "review")
 
-        assertThat(url).isEqualTo("http://host:8090/plugins/case-summary/0.1.0/bundles/details.html")
+        assertThat(url).isEqualTo("http://host:8090/plugins/case-summary/0.1.0/bundles/review.html")
     }
 
     @Test
-    fun `returns null when there is no case-tab bundle`() {
-        val (configId, _) = stub("""[ { "type":"config", "path":"/bundles/config.html" } ]""")
+    fun `returns null when no bundle of the requested type exists`() {
+        val configId = stub("""[ { "type":"case-tab", "path":"/bundles/case-tab.html" } ]""")
 
-        assertThat(resolver.resolveBundleUrl(configId, null)).isNull()
+        assertThat(resolver.resolve(configId, "page", null)).isNull()
     }
 
     @Test
@@ -74,10 +73,10 @@ class ExternalPluginCaseTabResolverImplTest {
         val configId = UUID.randomUUID()
         whenever(configurationRepository.findById(configId)).thenReturn(Optional.empty())
 
-        assertThat(resolver.resolveBundleUrl(configId, null)).isNull()
+        assertThat(resolver.resolve(configId, "page", null)).isNull()
     }
 
-    private fun stub(bundlesJson: String): Pair<UUID, UUID> {
+    private fun stub(bundlesJson: String): UUID {
         val configId = UUID.randomUUID()
         val definitionId = UUID.randomUUID()
         val configuration = ExternalPluginConfiguration(
@@ -86,7 +85,7 @@ class ExternalPluginCaseTabResolverImplTest {
             title = "test",
         )
         val manifest = objectMapper.createObjectNode()
-            .set<com.fasterxml.jackson.databind.node.ObjectNode>("frontendBundles", objectMapper.readTree(bundlesJson))
+            .set<ObjectNode>("frontendBundles", objectMapper.readTree(bundlesJson))
         val definition = ExternalPluginDefinition(
             id = definitionId,
             pluginId = "case-summary",
@@ -98,6 +97,6 @@ class ExternalPluginCaseTabResolverImplTest {
         )
         whenever(configurationRepository.findById(configId)).thenReturn(Optional.of(configuration))
         whenever(definitionRepository.findById(definitionId)).thenReturn(Optional.of(definition))
-        return configId to definitionId
+        return configId
     }
 }

@@ -19,7 +19,12 @@ import {TranslateService} from '@ngx-translate/core';
 import {accountInitializer} from '@valtimo/account';
 import {Injector} from '@angular/core';
 import {ConfigService} from '@valtimo/shared';
-import {AdminSettingsService, menuInitializer} from '@valtimo/components';
+import {
+  AdminSettingsService,
+  hasSavedMenuConfiguration,
+  menuInitializer,
+  resolveMenuConfiguration,
+} from '@valtimo/components';
 import {initializeCsp} from '@valtimo/security';
 import {HttpClient} from '@angular/common/http';
 import {DomSanitizer} from '@angular/platform-browser';
@@ -119,6 +124,24 @@ export function initializerFactory(
     }
 
     await initializeCsp(logger, configService, document, domSanitizer, pluginHostOrigins)();
+  });
+
+  // Fetch the persisted menu configuration and, when one exists, resolve it into MenuItem[] and
+  // patch config.menu.menuItems BEFORE the menu initializer runs (mirrors the feature-toggle/accent
+  // patches above). When the DB has no saved config (every existing installation) or the call
+  // errors, do nothing — config.menu is left untouched so the static environment.ts menu (custom
+  // links included) renders byte-identically. Backwards compatible by construction.
+  initializersArray.push(async () => {
+    try {
+      const adminSettingsService = injector.get(AdminSettingsService);
+      const dto = await firstValueFrom(adminSettingsService.getMenuConfiguration());
+      if (hasSavedMenuConfiguration(dto)) {
+        configService.config.menu.menuItems = resolveMenuConfiguration(dto.configuration);
+        logger.debug('Persisted menu configuration applied');
+      }
+    } catch (error) {
+      logger.warn('Failed to fetch menu configuration, using default menu', error);
+    }
   });
 
   // Use environment config initializers to be used in app startup.

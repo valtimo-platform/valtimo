@@ -1,0 +1,284 @@
+<!--
+  ~ Copyright 2015-2026 Ritense BV, the Netherlands.
+  ~
+  ~ Licensed under EUPL, Version 1.2 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~ https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" basis,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+@if ($loading()) {
+  <div class="menu-configuration__status">
+    <cds-loading [isActive]="true" [overlay]="false" size="normal"></cds-loading>
+  </div>
+} @else {
+  <div class="menu-configuration">
+    <div class="menu-configuration__toolbar">
+      <p class="menu-configuration__intro">
+        {{ 'adminSettings.menuConfiguration.intro' | translate }}
+      </p>
+
+      <div class="menu-configuration__toolbar-actions">
+        <button cdsButton="tertiary" (click)="onReset()" [attr.data-test-id]="testIds.resetButton">
+          {{ 'adminSettings.menuConfiguration.reset' | translate }}
+        </button>
+
+        <button
+          cdsButton="primary"
+          [disabled]="$saving()"
+          (click)="onSave()"
+          [attr.data-test-id]="testIds.saveButton"
+        >
+          {{ 'adminSettings.menuConfiguration.save' | translate }}
+        </button>
+      </div>
+    </div>
+
+    @if ($saved()) {
+      <cds-inline-notification
+        [notificationObj]="{
+          type: 'success',
+          title: ('adminSettings.menuConfiguration.savedTitle' | translate),
+          message: ('adminSettings.menuConfiguration.savedSubtitle' | translate),
+          showClose: true,
+          lowContrast: true
+        }"
+      ></cds-inline-notification>
+    }
+
+    <div class="menu-configuration__panels">
+      <!-- Left: the editable menu structure -->
+      <section cdkScrollable class="menu-configuration__panel">
+        <h4 class="menu-configuration__panel-title">
+          {{ 'adminSettings.menuConfiguration.structureTitle' | translate }}
+        </h4>
+
+        <valtimo-drag-drop-list
+          [attr.data-test-id]="testIds.structureList"
+          [connectedTo]="$structureListIds()"
+          [enterPredicate]="topEnterPredicate"
+          [handleAriaLabel]="'adminSettings.menuConfiguration.dragHandle' | translate"
+          [items]="$structure()"
+          [itemTemplate]="structureItemTpl"
+          [emptyTemplate]="structureEmptyTpl"
+          [wholeRowDraggable]="true"
+          listId="structure-root"
+          (dropped)="onDrop($event)"
+        ></valtimo-drag-drop-list>
+      </section>
+
+      <!-- Right: the available-items catalog -->
+      <section cdkScrollable class="menu-configuration__panel">
+        <h4 class="menu-configuration__panel-title">
+          {{ 'adminSettings.menuConfiguration.availableTitle' | translate }}
+        </h4>
+
+        @for (group of $paletteGroups(); track group.categoryKey) {
+          <div class="menu-configuration__palette-group">
+            <h5 class="menu-configuration__palette-group-title">
+              {{ 'adminSettings.menuConfiguration.categories.' + group.categoryKey | translate }}
+            </h5>
+
+            @if (!group.items.length) {
+              <p class="menu-configuration__palette-empty">
+                {{ 'adminSettings.menuConfiguration.allPlaced' | translate }}
+              </p>
+            } @else {
+              <valtimo-drag-drop-list
+                [connectedTo]="$structureListIds()"
+                [enterPredicate]="paletteEnterPredicate"
+                [handleAriaLabel]="'adminSettings.menuConfiguration.dragHandle' | translate"
+                [items]="group.items"
+                [itemTemplate]="paletteItemTpl"
+                [listId]="'palette-' + group.categoryKey"
+                [sortingDisabled]="true"
+                [wholeRowDraggable]="true"
+              ></valtimo-drag-drop-list>
+            }
+          </div>
+        }
+      </section>
+    </div>
+  </div>
+}
+
+<!-- A row in the menu structure (recursive: containers nest the same template) -->
+<ng-template #structureItemTpl let-node>
+  <div class="menu-configuration__row">
+    <div class="menu-configuration__row-main">
+      @if (iconClassOf(node)) {
+        <i class="menu-configuration__row-icon" [ngClass]="iconClassOf(node)"></i>
+      }
+
+      <span class="menu-configuration__row-title">{{ displayTitle(node) }}</span>
+
+      @if (routeOf(node)) {
+        <span class="menu-configuration__row-route">{{ routeOf(node) }}</span>
+      }
+
+      @if (isRequired(node)) {
+        <cds-tag type="cool-gray" size="sm">
+          <svg cdsIcon="locked" size="16"></svg>
+          {{ 'adminSettings.menuConfiguration.required' | translate }}
+        </cds-tag>
+      }
+
+      @if (hasRuntimeSubmenu(node)) {
+        <span
+          class="menu-configuration__row-note"
+          [cdsTooltip]="'adminSettings.menuConfiguration.runtimeSubmenuNote' | translate"
+        >
+          {{ 'adminSettings.menuConfiguration.runtimeSubmenu' | translate }}
+        </span>
+      }
+    </div>
+
+    <div class="menu-configuration__row-actions">
+      <button
+        cdsButton="ghost"
+        size="sm"
+        [iconOnly]="true"
+        (click)="openEditor(node)"
+        [title]="'interface.edit' | translate"
+      >
+        <svg cdsIcon="edit" size="16"></svg>
+      </button>
+
+      @if (!isRequired(node)) {
+        <button
+          cdsButton="ghost"
+          size="sm"
+          [iconOnly]="true"
+          (click)="onRemove(node)"
+          [title]="'interface.delete' | translate"
+        >
+          <svg cdsIcon="trash-can" size="16"></svg>
+        </button>
+      }
+    </div>
+  </div>
+
+  @if (isContainer(node)) {
+    <div class="menu-configuration__children">
+      <valtimo-drag-drop-list
+        [connectedTo]="$structureListIds()"
+        [emptyTemplate]="sectionEmptyTpl"
+        [enterPredicate]="containerEnterPredicate(node)"
+        [handleAriaLabel]="'adminSettings.menuConfiguration.dragHandle' | translate"
+        [items]="childrenOf(node)"
+        [itemTemplate]="structureItemTpl"
+        [listId]="containerListId(node)"
+        [wholeRowDraggable]="true"
+        (dropped)="onDrop($event)"
+      ></valtimo-drag-drop-list>
+    </div>
+  }
+</ng-template>
+
+<!-- A row in the available-items palette -->
+<ng-template #paletteItemTpl let-item>
+  <div class="menu-configuration__palette-item">
+    @if (item.icon) {
+      <i class="menu-configuration__row-icon" [ngClass]="item.icon"></i>
+    }
+
+    <span class="menu-configuration__palette-label">{{ item.label }}</span>
+
+    <button
+      cdsButton="ghost"
+      size="sm"
+      [iconOnly]="true"
+      (click)="onAddPaletteItem(item)"
+      [title]="'adminSettings.menuConfiguration.add' | translate"
+    >
+      <svg cdsIcon="add" size="16"></svg>
+    </button>
+  </div>
+</ng-template>
+
+<ng-template #structureEmptyTpl>
+  <p class="menu-configuration__structure-empty">
+    {{ 'adminSettings.menuConfiguration.emptyStructure' | translate }}
+  </p>
+</ng-template>
+
+<ng-template #sectionEmptyTpl>
+  <p class="menu-configuration__structure-empty">
+    {{ 'adminSettings.menuConfiguration.emptySection' | translate }}
+  </p>
+</ng-template>
+
+<!-- Item editor -->
+<cds-modal [open]="$editorOpen()" (overlaySelected)="closeEditor()">
+  <cds-modal-header (closeSelect)="closeEditor()">
+    <h3 cdsModalHeaderHeading>{{ 'adminSettings.menuConfiguration.editor.title' | translate }}</h3>
+  </cds-modal-header>
+
+  <section cdsModalContent [formGroup]="editorForm" class="menu-configuration__editor">
+    <cds-text-label>
+      {{ 'interface.title' | translate }}
+      <input cdsText formControlName="title" [attr.data-test-id]="testIds.editorTitleInput" />
+    </cds-text-label>
+
+    @if ($editorKind() === 'custom-link') {
+      <cds-text-label>
+        {{ 'adminSettings.menuConfiguration.editor.link' | translate }}
+        <input cdsText formControlName="link" [attr.data-test-id]="testIds.editorLinkInput" />
+      </cds-text-label>
+    }
+
+    @if ($editorKind() !== 'section-header') {
+      <valtimo-mdi-icon-selector formControlName="icon"></valtimo-mdi-icon-selector>
+    }
+
+    @if ($editorShowSection()) {
+      <cds-select
+        formControlName="section"
+        [label]="'adminSettings.menuConfiguration.editor.section' | translate"
+      >
+        @for (option of $sectionOptions(); track option.value) {
+          <option [value]="option.value">{{ option.label }}</option>
+        }
+      </cds-select>
+    }
+
+    @if ($editorKind() === 'catalog' && !$editorRequired()) {
+      <cds-select
+        formControlName="includeFunction"
+        [label]="'adminSettings.menuConfiguration.editor.includeFunction' | translate"
+      >
+        <option value="">
+          {{ 'adminSettings.menuConfiguration.editor.includeFunctionNone' | translate }}
+        </option>
+        @for (key of includeFunctionKeys; track key) {
+          <option [value]="key">{{ key }}</option>
+        }
+      </cds-select>
+    }
+
+    <p class="menu-configuration__editor-note">
+      {{ 'adminSettings.menuConfiguration.editor.pbacNote' | translate }}
+    </p>
+  </section>
+
+  <cds-modal-footer>
+    <button cdsButton="secondary" (click)="closeEditor()" [attr.data-test-id]="testIds.editorCancelButton">
+      {{ 'interface.cancel' | translate }}
+    </button>
+    <button
+      cdsButton="primary"
+      [disabled]="editorForm.invalid"
+      (click)="onEditorSave()"
+      [attr.data-test-id]="testIds.editorSaveButton"
+    >
+      {{ 'interface.save' | translate }}
+    </button>
+  </cds-modal-footer>
+</cds-modal>
