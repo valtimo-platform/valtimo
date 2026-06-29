@@ -24,6 +24,11 @@ on:
         description: "Tag to use when pushing the Docker Hub release image"
         required: false
         type: string
+      project_version:
+        description: "Version stamped into the built app (shown in the UI as valtimo-frontend-libraries). Falls back to the committed versions.ts value when empty."
+        required: false
+        type: string
+        default: ""
 
     outputs:
       built_image:
@@ -171,6 +176,21 @@ jobs:
           done
 
           npm install
+
+      # The app bundles @valtimo/shared's versions.ts from source (via
+      # tsconfig.paths), so stamp the version into that source file here — the
+      # libs build's version bump happens on a different runner and never reaches
+      # this checkout. No-op when project_version is empty (keeps committed value).
+      - name: Stamp frontend version
+        if: ${{ inputs.project_version != '' }}
+        shell: bash
+        env:
+          PROJECT_VERSION: ${{ inputs.project_version }}
+        run: |
+          set -euo pipefail
+          f="projects/valtimo/shared/src/lib/constants/versions.ts"
+          sed -i "s/\(frontendLibraries: *'\)[^']*'/\1${PROJECT_VERSION}'/" "$f"
+          echo "versions.ts now:"; grep frontendLibraries "$f"
 
       - name: Build app
         run: npm run build:${{ inputs.variant }}

@@ -46,6 +46,11 @@ on:
           - both
           - backend
           - frontend
+      project_version:
+        description: "Version stamped into the images (backend manifest + frontend UI). Empty = gradle.properties projectVersion + -test.<run>."
+        required: false
+        type: string
+        default: ""
   push:
     branches:
       - cicd/release-pipeline
@@ -59,7 +64,9 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       variants: ${{ steps.set.outputs.variants }}
+      version: ${{ steps.ver.outputs.version }}
     steps:
+      - uses: actions/checkout@v4
       - id: set
         run: |
           case "${{ inputs.variant }}" in
@@ -74,6 +81,21 @@ jobs:
               echo 'variants=["${{ inputs.variant }}"]' >> "$GITHUB_OUTPUT"
               ;;
           esac
+      # Effective version stamped into the images: the dispatch input when given,
+      # otherwise gradle.properties projectVersion + -test.<run> (always concrete,
+      # so the stamped version differs from the committed placeholder and is verifiable).
+      - id: ver
+        env:
+          INPUT_VERSION: ${{ inputs.project_version }}
+          RUN: ${{ github.run_number }}
+        run: |
+          if [ -n "$INPUT_VERSION" ]; then
+            echo "version=${INPUT_VERSION}" >> "$GITHUB_OUTPUT"
+          else
+            BASE=$(grep '^projectVersion=' gradle.properties | head -1 | cut -d= -f2 | tr -d '[:space:]')
+            echo "version=${BASE}-test.${RUN}" >> "$GITHUB_OUTPUT"
+          fi
+          echo "Stamping version: $(tail -1 "$GITHUB_OUTPUT")"
 
   # ---------------------------------------------------------------- backend ---
   backend_libs:
@@ -99,6 +121,7 @@ jobs:
     with:
       backend_libraries_build_artifact_name: ${{ needs.backend_libs.outputs.build_artifact_name }}
       variant: ${{ matrix.variant }}
+      project_version: ${{ needs.prepare.outputs.version }}
       # push_to_dockerhub omitted -> defaults to false -> GHCR only.
     secrets: inherit
 
@@ -126,5 +149,6 @@ jobs:
     with:
       frontend_libraries_build_artifact_name: ${{ needs.frontend_libs.outputs.build_artifact_name }}
       variant: ${{ matrix.variant }}
+      project_version: ${{ needs.prepare.outputs.version }}
       # push_to_dockerhub omitted -> defaults to false -> GHCR only.
     secrets: inherit
