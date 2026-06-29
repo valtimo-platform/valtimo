@@ -112,8 +112,9 @@ class VerzoekPlugin(
 
     override fun getKanaalFilters(): List<Abonnement.Kanaal> {
         return verzoekProperties.map { verzoekProperty ->
-            val objectManagement = objectManagementService.getById(verzoekProperty.objectManagementId)
-                ?: throw IllegalStateException("Object management not found for portaaltaak")
+            val objectManagement = runWithoutAuthorization {
+                objectManagementService.getById(verzoekProperty.objectManagementId)
+            } ?: throw IllegalStateException("Object management not found for verzoek")
 
             val objecttypenApiPlugin = pluginService.createInstance(
                 PluginConfigurationId

@@ -46,8 +46,8 @@ export class ObjectDetailComponent implements OnDestroy {
     tap(objectManagementId => {
       if (!this._settingBreadcrumb && objectManagementId) {
         this._settingBreadcrumb = true;
-        this.objectManagementService.getObjectById(objectManagementId).subscribe(objectType => {
-          if (objectType.id && objectType.title) {
+        this.objectManagementService.getObjectByIdFromList(objectManagementId).subscribe(objectType => {
+          if (objectType?.id && objectType?.title) {
             this.setBreadcrumb(objectType.id, objectType.title);
           }
         });

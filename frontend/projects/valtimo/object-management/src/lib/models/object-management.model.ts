@@ -43,6 +43,7 @@ export interface SearchColumn {
   sortable?: boolean;
   viewType?: string;
   default?: boolean | string;
+  defaultSort?: string;
   enum?: Array<string> | {[key: string]: string};
   title?: string;
   format?: string;

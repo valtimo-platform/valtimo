@@ -15,7 +15,7 @@
  */
 
 import {Injectable} from '@angular/core';
-import {Observable} from 'rxjs';
+import {map, Observable} from 'rxjs';
 import {HttpClient} from '@angular/common/http';
 import {ConfigService, SearchField} from '@valtimo/shared';
 import {Objecttype, SearchListColumn} from '../models/object-management.model';
@@ -43,6 +43,10 @@ export class ObjectManagementService {
     return this.http.get<Objecttype>(
       `${this.valtimoEndpointUri}v1/object/management/configuration/${id}`
     );
+  }
+
+  public getObjectByIdFromList(id: string): Observable<Objecttype | undefined> {
+    return this.getAllObjects().pipe(map(objects => objects.find(obj => obj.id === id)));
   }
 
   public createObject(payload: Objecttype): Observable<Objecttype> {

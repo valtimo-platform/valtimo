@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,7 +16,11 @@
 
 package com.ritense.objectmanagement.service
 
+import com.ritense.authorization.AuthorizationContext.Companion.runWithoutAuthorization
+import com.ritense.authorization.AuthorizationService
+import com.ritense.authorization.request.EntityAuthorizationRequest
 import com.ritense.objectenapi.ObjectenApiPlugin
+import com.ritense.objectmanagement.authorization.ObjectManagementActionProvider
 import com.ritense.objectenapi.client.Comparator
 import com.ritense.objectenapi.client.Comparator.EQUAL_TO
 import com.ritense.objectenapi.client.Comparator.GREATER_THAN_OR_EQUAL_TO
@@ -71,7 +75,9 @@ class ObjectManagementService(
     private val objectManagementRepository: ObjectManagementRepository,
     private val pluginService: PluginService,
     private val searchFieldV2Service: SearchFieldV2Service,
-    private val searchListColumnService: SearchListColumnService
+    private val searchListColumnService: SearchListColumnService,
+    private val authorizationService: AuthorizationService,
+    private val authorizationEnabled: Boolean = false
 ) {
 
     @Transactional
@@ -102,11 +108,43 @@ class ObjectManagementService(
         }
     }
 
-    fun getById(id: UUID): ObjectManagement? = objectManagementRepository.findByIdOrNull(id)
+    fun getById(id: UUID): ObjectManagement? {
+        val objectManagement = objectManagementRepository.findByIdOrNull(id) ?: return null
+        if (authorizationEnabled) {
+            authorizationService.requirePermission(
+                EntityAuthorizationRequest(ObjectManagement::class.java, ObjectManagementActionProvider.VIEW, objectManagement)
+            )
+        }
+        return objectManagement
+    }
 
-    fun getByTitle(title: String): ObjectManagement? = objectManagementRepository.findByTitle(title)
+    fun getByIdByTitle(title: String): ObjectManagement? = objectManagementRepository.findByTitle(title)
 
-    fun getAll(): List<ObjectManagement> = objectManagementRepository.findAll().sortedBy { it.title }
+    private fun getObjectManagementForListing(id: UUID): ObjectManagement {
+        val objectManagement = objectManagementRepository.findByIdOrNull(id)
+            ?: throw IllegalArgumentException("ObjectManagement not found with id: $id")
+        if (authorizationEnabled) {
+            authorizationService.requirePermission(
+                EntityAuthorizationRequest(ObjectManagement::class.java, ObjectManagementActionProvider.VIEW_LIST, objectManagement)
+            )
+        }
+        return objectManagement
+    }
+
+    fun getAll(): List<ObjectManagement> {
+        return if (authorizationEnabled) {
+            val spec = authorizationService.getAuthorizationSpecification(
+                EntityAuthorizationRequest(
+                    ObjectManagement::class.java,
+                    ObjectManagementActionProvider.VIEW_LIST
+                ),
+                null
+            )
+            objectManagementRepository.findAll(spec).sortedBy { it.title }
+        } else {
+            runWithoutAuthorization { objectManagementRepository.findAll().sortedBy { it.title } }
+        }
+    }
 
     @Transactional
     fun deleteById(id: UUID) {
@@ -117,9 +155,7 @@ class ObjectManagementService(
     @Transactional
     fun getObjects(id: UUID, pageable: Pageable): PageImpl<ObjectsListRowDto> {
         logger.debug { "Get objects id=$id pageable=$pageable" }
-        val objectManagement = getById(id) ?: let {
-            throw IllegalArgumentException("The requested Id is not configured as a object management configuration. The requested id was: $id")
-        }
+        val objectManagement = getObjectManagementForListing(id)
 
         return runWithSuppressedOutbox(objectManagement.suppressOutbox) {
             val objectTypePluginInstance = getObjectTypenApiPlugin(objectManagement.objecttypenApiPluginConfigurationId)
@@ -155,8 +191,7 @@ class ObjectManagementService(
         logger.debug {
             "Get objects with searchParams searchWithConfigRequest=$searchWithConfigRequest id=$id pageable=$pageable"
         }
-        val objectManagement = getById(id)
-            ?: throw IllegalStateException("The requested Id is not configured as a object management configuration. The requested id was: $id")
+        val objectManagement = getObjectManagementForListing(id)
 
         val searchFieldList = searchFieldV2Service.findAllByOwnerTypeAndOwnerId(LEGACY_OWNER_TYPE, id.toString())
 
@@ -186,15 +221,30 @@ class ObjectManagementService(
 
             val objectenPluginInstance = getObjectenApiPlugin(objectManagement.objectenApiPluginConfigurationId)
 
+            val ordering = toObjectsApiOrdering(pageable)
+
             val objectsList = objectenPluginInstance.getObjectsByObjectTypeIdWithSearchParams(
                 objecttypesApiUrl = objectTypePluginInstance.url,
                 objecttypeId = objectManagement.objecttypeId,
                 searchString = searchString,
+                ordering = ordering,
                 pageable = pageable
             )
 
             PageImpl(objectsList.results, pageable, objectsList.count.toLong())
         }
+    }
+
+    private fun toObjectsApiOrdering(pageable: Pageable): String {
+        return pageable.sort.map { order ->
+            val property = order.property
+            val sortField = if (property.startsWith("object:") || property.startsWith("/")) {
+                "record__data__" + property.substringAfter(':').replace("/", "__").trim('_')
+            } else {
+                property.replace("/", "__").trim('_')
+            }
+            if (order.isAscending) sortField else "-$sortField"
+        }.joinToString(",")
     }
 
     private fun mapToObjectListRowDto(
@@ -351,6 +401,67 @@ class ObjectManagementService(
         ) as ObjecttypenApiPlugin
 
     fun findByObjectTypeId(id: String) = objectManagementRepository.findByObjecttypeId(id)
+
+    fun getObjectsByConfig(
+        id: UUID? = null,
+        title: String? = null,
+        dataAttrs: String? = null,
+        pageable: Pageable
+    ): PageImpl<ObjectWrapper> {
+        return if (authorizationEnabled) {
+            val objectManagement = resolveConfigWithAuth(id, title)
+                ?: return PageImpl(emptyList(), pageable, 0)
+            val searchParameters = parseDataAttrs(dataAttrs)
+            getObjectsWithSearchParams(objectManagement, searchParameters, pageable)
+        } else {
+            runWithoutAuthorization {
+                val objectManagement = resolveConfigNoAuth(id, title)
+                    ?: return@runWithoutAuthorization PageImpl(emptyList(), pageable, 0)
+                val searchParameters = parseDataAttrs(dataAttrs)
+                getObjectsWithSearchParams(objectManagement, searchParameters, pageable)
+            }
+        }
+    }
+
+    private fun resolveConfigWithAuth(id: UUID?, title: String?): ObjectManagement? {
+        val objectManagement = when {
+            id != null -> objectManagementRepository.findByIdOrNull(id)
+            title != null -> objectManagementRepository.findByTitle(title)
+            else -> throw IllegalArgumentException("Either id or title must be provided")
+        } ?: return null
+
+        val hasPermission = authorizationService.hasPermission(
+            EntityAuthorizationRequest(ObjectManagement::class.java, ObjectManagementActionProvider.VIEW, objectManagement)
+        ) && authorizationService.hasPermission(
+            EntityAuthorizationRequest(ObjectManagement::class.java, ObjectManagementActionProvider.VIEW_LIST, objectManagement)
+        )
+        return if (hasPermission) objectManagement else null
+    }
+
+    private fun resolveConfigNoAuth(id: UUID?, title: String?): ObjectManagement? = when {
+        id != null -> objectManagementRepository.findByIdOrNull(id)
+        title != null -> objectManagementRepository.findByTitle(title)
+        else -> throw IllegalArgumentException("Either id or title must be provided")
+    }
+
+    private fun parseDataAttrs(dataAttrs: String?): List<ObjectSearchParameter> {
+        if (dataAttrs.isNullOrBlank()) return emptyList()
+        return dataAttrs.split(",").map { raw ->
+            val parts = raw.split("__")
+            val comparatorIndex = parts.indexOfFirst { part ->
+                Comparator.entries.any { it.value == part }
+            }
+            require(comparatorIndex > 0 && comparatorIndex < parts.lastIndex) {
+                "Invalid dataAttrs entry: '$raw' (expected attribute__comparator__value)"
+            }
+            val comparator = Comparator.entries.first { it.value == parts[comparatorIndex] }
+            ObjectSearchParameter(
+                parts.subList(0, comparatorIndex).joinToString("__"),
+                comparator,
+                parts.subList(comparatorIndex + 1, parts.size).joinToString("__")
+            )
+        }
+    }
 
     companion object {
         private val logger = KotlinLogging.logger {}

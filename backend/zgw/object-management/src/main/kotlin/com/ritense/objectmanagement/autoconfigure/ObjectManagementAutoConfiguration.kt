@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,13 +17,18 @@
 package com.ritense.objectmanagement.autoconfigure
 
 import com.fasterxml.jackson.databind.ObjectMapper
+import com.ritense.authorization.AuthorizationService
+import com.ritense.objectmanagement.authorization.ObjectManagementActionProvider
+import com.ritense.objectmanagement.authorization.ObjectManagementSpecificationFactory
 import com.ritense.objectmanagement.autodeployment.ObjectManagementDefinitionDeploymentService
+import com.ritense.valtimo.contract.database.QueryDialectHelper
 import com.ritense.objectmanagement.repository.ObjectManagementRepository
 import com.ritense.objectmanagement.security.config.ObjectManagementHttpSecurityConfigurer
 import com.ritense.objectmanagement.service.ObjectManagementFacade
 import com.ritense.objectmanagement.service.ObjectManagementImporter
 import com.ritense.objectmanagement.service.ObjectManagementService
 import com.ritense.objectmanagement.web.rest.ObjectManagementManagementResource
+import com.ritense.objectmanagement.web.rest.ObjectManagementObjectResource
 import com.ritense.objectmanagement.web.rest.ObjectManagementResource
 import com.ritense.plugin.service.PluginService
 import com.ritense.search.service.SearchFieldV2Service
@@ -35,6 +40,7 @@ import org.springframework.context.ApplicationEventPublisher
 import org.springframework.context.annotation.Bean
 import org.springframework.core.annotation.Order
 import org.springframework.core.env.Environment
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.core.io.ResourceLoader
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories
 
@@ -61,13 +67,18 @@ class ObjectManagementAutoConfiguration {
         objectManagementRepository: ObjectManagementRepository,
         pluginService: PluginService,
         searchFieldV2Service: SearchFieldV2Service,
-        searchListColumnService: SearchListColumnService
+        searchListColumnService: SearchListColumnService,
+        authorizationService: AuthorizationService,
+        @Value("\${valtimo.object-management.authorization.enabled:false}")
+        authorizationEnabled: Boolean
     ): ObjectManagementService {
         return ObjectManagementService(
             objectManagementRepository,
             pluginService,
             searchFieldV2Service,
-            searchListColumnService
+            searchListColumnService,
+            authorizationService,
+            authorizationEnabled
         )
     }
 
@@ -87,6 +98,16 @@ class ObjectManagementAutoConfiguration {
         objectManagementService: ObjectManagementService
     ): ObjectManagementManagementResource {
         return ObjectManagementManagementResource(
+            objectManagementService
+        )
+    }
+
+    @Bean
+    @ConditionalOnMissingBean(ObjectManagementObjectResource::class)
+    fun objectManagementObjectResource(
+        objectManagementService: ObjectManagementService
+    ): ObjectManagementObjectResource {
+        return ObjectManagementObjectResource(
             objectManagementService
         )
     }
@@ -130,6 +151,24 @@ class ObjectManagementAutoConfiguration {
     @ConditionalOnMissingBean(ObjectManagementHttpSecurityConfigurer::class)
     fun objectManagementHttpSecurityConfigurer(): ObjectManagementHttpSecurityConfigurer {
         return ObjectManagementHttpSecurityConfigurer()
+    }
+
+    @Bean
+    @ConditionalOnMissingBean(ObjectManagementActionProvider::class)
+    fun objectManagementActionProvider(): ObjectManagementActionProvider {
+        return ObjectManagementActionProvider()
+    }
+
+    @Bean
+    @ConditionalOnMissingBean(ObjectManagementSpecificationFactory::class)
+    fun objectManagementSpecificationFactory(
+        objectManagementRepository: ObjectManagementRepository,
+        queryDialectHelper: QueryDialectHelper
+    ): ObjectManagementSpecificationFactory {
+        return ObjectManagementSpecificationFactory(
+            objectManagementRepository,
+            queryDialectHelper
+        )
     }
 
 }

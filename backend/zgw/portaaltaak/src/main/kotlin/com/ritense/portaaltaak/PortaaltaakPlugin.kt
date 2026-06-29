@@ -106,8 +106,9 @@ class PortaaltaakPlugin(
         withLoggingContext(DelegateTask::class.java.canonicalName to delegateTask.id) {
             logger.debug { "Creating portaaltaak for task with id '${delegateTask.id}'" }
 
-            val objectManagement = objectManagementService.getById(objectManagementConfigurationId)
-                ?: throw IllegalStateException("Object management not found for portaaltaak")
+            val objectManagement = runWithoutAuthorization {
+                objectManagementService.getById(objectManagementConfigurationId)
+            } ?: throw IllegalStateException("Object management not found for portaaltaak")
 
             val objectenApiPlugin = pluginService.createInstance(
                 PluginConfigurationId
@@ -348,8 +349,9 @@ class PortaaltaakPlugin(
     }
 
     override fun getKanaalFilters(): List<Abonnement.Kanaal> {
-        val objectManagement = objectManagementService.getById(objectManagementConfigurationId)
-            ?: throw IllegalStateException("Object management not found for portaaltaak")
+        val objectManagement = runWithoutAuthorization {
+            objectManagementService.getById(objectManagementConfigurationId)
+        } ?: throw IllegalStateException("Object management not found for portaaltaak")
 
         val objecttypenApiPlugin = pluginService.createInstance(
             PluginConfigurationId
