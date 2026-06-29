@@ -14,9 +14,6 @@ In the frontend, feature toggles can be configured under the `featureToggles` ke
 *   **`showUserNameInTopBar`**
 
     If enabled, the full name of the user currently logged in is shown in the top bar next to the user menu button.
-*   **`experimentalDmnEditing`**
-
-    If enabled, it is possible to edit DMN tables from the ui from the admin page. This feature is experimental.
 *   **`disableCaseCount`**
 
     If set to `true`, showing the number of open cases in the menu is disabled.

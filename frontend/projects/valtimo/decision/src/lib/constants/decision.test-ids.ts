@@ -16,13 +16,21 @@
 
 export const DECISION_LIST_TEST_IDS = {
   uploadButton: 'decisionListUploadButton',
+  createButton: 'decisionListCreateButton',
 } as const;
 
 export const DECISION_UPLOAD_TEST_IDS = {
   submitButton: 'decisionUploadModalSubmitButton',
 } as const;
 
+export const DECISION_FORM_TEST_IDS = {
+  nameInput: 'decisionFormModalNameInput',
+  inputVariables: 'decisionFormModalInputVariables',
+  submitButton: 'decisionFormModalSubmitButton',
+} as const;
+
 export const DECISION_MODELER_TEST_IDS = {
   deployButton: 'decisionModelerDeployButton',
   backButton: 'decisionModelerBackButton',
+  readOnlyTag: 'decisionModelerReadOnlyTag',
 } as const;

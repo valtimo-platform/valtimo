@@ -22,6 +22,7 @@ import {GetBesluittypeConfigurationComponent} from './components/get-besluittype
 import {GetResultaattypenConfigurationComponent} from './components/get-resultaattypen/get-resultaattypen-configuration.component';
 import {GetResultaattypeConfigurationComponent} from './components/get-resultaattype/get-resultaattype-configuration.component';
 import {GetEigenschapConfigurationComponent} from './components/get-eigenschap/get-eigenschap-configuration.component';
+import {GetInformatieobjecttypeConfigurationComponent} from './components/get-informatieobjecttype/get-informatieobjecttype-configuration.component';
 import {CATALOGI_API_PLUGIN_LOGO_BASE64} from './assets';
 
 const catalogiApiPluginSpecification: PluginSpecification = {
@@ -35,6 +36,7 @@ const catalogiApiPluginSpecification: PluginSpecification = {
     'get-statustypen': GetStatustypenConfigurationComponent,
     'get-statustype': GetStatustypeConfigurationComponent,
     'get-eigenschap': GetEigenschapConfigurationComponent,
+    'get-informatieobjecttype': GetInformatieobjecttypeConfigurationComponent,
   },
   pluginTranslations: {
     nl: {
@@ -85,6 +87,13 @@ const catalogiApiPluginSpecification: PluginSpecification = {
       zaaktypeUrl: 'Zaaktype URL',
       zaaktypeUrlTooltip:
         'Specificeer hier de URL van het betreffende Zaaktype indien deze afwijkt van de aan het Dossier gekoppelde Zaak',
+      'get-informatieobjecttype': 'Informatieobjecttype opvragen',
+      getInformatieobjecttypeInformation:
+        'Het informatieobjecttype wordt opgehaald en daarna opgeslagen in een procesvariabele.',
+      informatieobjecttype: 'Informatieobjecttype',
+      informatieobjecttypeTooltip: 'Omschrijving van het informatieobjecttype.',
+      informatieobjecttypeProcessVariableTooltip:
+        'Nadat het informatieobjecttype is opgehaald, wordt deze opgeslagen in een procesvariabele met deze naam.',
     },
     en: {
       title: 'Catalogi API',
@@ -132,6 +141,13 @@ const catalogiApiPluginSpecification: PluginSpecification = {
       zaaktypeUrl: 'Zaaktype URL',
       zaaktypeUrlTooltip:
         'Specify the URL of the relevant Zaaktype here if it differs from the Zaak linked to the Case',
+      'get-informatieobjecttype': 'Retrieve informatieobjecttype',
+      getInformatieobjecttypeInformation:
+        'The informatieobjecttype is retrieved and then stored in a process variable.',
+      informatieobjecttype: 'Informatieobjecttype',
+      informatieobjecttypeTooltip: 'Description of the informatieobjecttype.',
+      informatieobjecttypeProcessVariableTooltip:
+        'After the informatieobjecttype is retrieved, it is stored in a process variable with this name.',
     },
   },
 };

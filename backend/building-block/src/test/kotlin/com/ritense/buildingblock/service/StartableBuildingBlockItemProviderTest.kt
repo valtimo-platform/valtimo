@@ -22,6 +22,7 @@ import com.ritense.authorization.AuthorizationSupportedHelper
 import com.ritense.buildingblock.domain.CaseDefinitionBuildingBlockLink
 import com.ritense.buildingblock.domain.ProcessDefinitionBuildingBlockDefinition
 import com.ritense.buildingblock.domain.ProcessDefinitionBuildingBlockDefinitionId
+import com.ritense.buildingblock.repository.BuildingBlockDefinitionRepository
 import com.ritense.buildingblock.repository.CaseDefinitionBuildingBlockLinkRepository
 import com.ritense.buildingblock.repository.ProcessDefinitionBuildingBlockDefinitionRepository
 import com.ritense.buildingblock.web.rest.dto.CaseDefinitionBuildingBlockLinkDto
@@ -46,6 +47,7 @@ class StartableBuildingBlockItemProviderTest {
 
     private lateinit var linkRepository: CaseDefinitionBuildingBlockLinkRepository
     private lateinit var processDefBBDefRepository: ProcessDefinitionBuildingBlockDefinitionRepository
+    private lateinit var buildingBlockDefinitionRepository: BuildingBlockDefinitionRepository
     private lateinit var authorizationService: AuthorizationService
     private lateinit var linkService: CaseDefinitionBuildingBlockLinkService
     private lateinit var objectMapper: ObjectMapper
@@ -58,6 +60,7 @@ class StartableBuildingBlockItemProviderTest {
     fun setUp() {
         linkRepository = mock()
         processDefBBDefRepository = mock()
+        buildingBlockDefinitionRepository = mock()
         authorizationService = mock()
         linkService = mock()
         objectMapper = MapperSingleton.get()
@@ -72,6 +75,7 @@ class StartableBuildingBlockItemProviderTest {
         provider = StartableBuildingBlockItemProvider(
             linkRepository = linkRepository,
             processDefinitionBuildingBlockDefinitionRepository = processDefBBDefRepository,
+            buildingBlockDefinitionRepository = buildingBlockDefinitionRepository,
             authorizationService = authorizationService,
             caseDefinitionBuildingBlockLinkService = linkService,
             objectMapper = objectMapper

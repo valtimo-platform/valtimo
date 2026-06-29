@@ -226,7 +226,6 @@ export const environment: ValtimoConfig = {
   featureToggles: {
     showUserNameInTopBar: true,
     showPlantATreeButton: true,
-    experimentalDmnEditing: true,
     largeLogoMargin: false,
     sortFilesByDate: true,
     disableCaseCount: false,

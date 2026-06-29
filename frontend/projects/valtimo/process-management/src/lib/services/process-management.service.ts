@@ -28,6 +28,8 @@ import {toObservable} from '@angular/core/rxjs-interop';
 import {
   PROCESS_MANAGEMENT_ENDPOINTS,
   ProcessDefinitionResult,
+  ProcessDefinitionValidateRequest,
+  ProcessDefinitionValidationResult,
   UpdateProcessDefinitionCaseDefinitionRequest,
 } from '../models';
 
@@ -163,6 +165,15 @@ export class ProcessManagementService extends BaseApiService {
         `/management/v1/case-definition/${caseDefinitionKey}/version/${caseDefinitionVersionTag}/process/${processDefinitionId}/properties`
       ),
       body
+    );
+  }
+
+  public validateProcessDefinition(
+    request: ProcessDefinitionValidateRequest
+  ): Observable<ProcessDefinitionValidationResult> {
+    return this.httpClient.post<ProcessDefinitionValidationResult>(
+      this.getApiUrl('/management/v1/process-definition/validate'),
+      request
     );
   }
 

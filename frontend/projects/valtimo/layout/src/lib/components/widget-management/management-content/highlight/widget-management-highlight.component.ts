@@ -33,7 +33,7 @@ import {
   CurrentCarbonTheme,
   InputLabelModule,
   MdiIconSelectorComponent,
-  ValuePathSelectorComponent,
+  ValuePathSelectorComponent, ValuePathSelectorPrefix,
 } from '@valtimo/components';
 import {
   ButtonModule,
@@ -172,4 +172,6 @@ export class WidgetManagementHighlightComponent implements OnInit, OnDestroy {
   private syncContentValid(): void {
     this.widgetWizardService.$widgetContentValid.set(this.form.valid);
   }
+
+  protected readonly ValuePathSelectorPrefix = ValuePathSelectorPrefix;
 }
