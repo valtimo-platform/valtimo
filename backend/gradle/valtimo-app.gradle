@@ -15,7 +15,7 @@
  */
 
 // Shared configuration for the runnable Valtimo application modules:
-// :backend:app:gzac, :valtimo, :evenementenvergunning and :dev.
+// :backend:apps:gzac, :valtimo, :evenementenvergunning and :dev.
 //
 // Each module keeps its own dependency list and its own springBoot.mainClass;
 // this script only carries the boilerplate that is identical across every app:
