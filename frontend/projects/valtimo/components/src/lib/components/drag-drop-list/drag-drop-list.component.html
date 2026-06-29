@@ -1,0 +1,65 @@
+<!--
+  ~ Copyright 2015-2026 Ritense BV, the Netherlands.
+  ~
+  ~ Licensed under EUPL, Version 1.2 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~ https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" basis,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<div
+  cdkDropList
+  [cdkDropListConnectedTo]="connectedTo"
+  [cdkDropListData]="items"
+  [cdkDropListDisabled]="disabled"
+  [cdkDropListEnterPredicate]="enterPredicate"
+  [cdkDropListOrientation]="orientation"
+  [cdkDropListSortingDisabled]="sortingDisabled"
+  [id]="listId"
+  (cdkDropListDropped)="dropped.emit($event)"
+  class="valtimo-drag-drop-list"
+  [class.valtimo-drag-drop-list--empty]="!items?.length"
+>
+  @for (item of items; track trackByIndex($index)) {
+    <div
+      cdkDrag
+      [cdkDragData]="item"
+      [cdkDragDisabled]="dragDisabled(item, $index)"
+      class="valtimo-drag-drop-list__item"
+      [class.valtimo-drag-drop-list__item--grabbable]="wholeRowDraggable && !dragDisabled(item, $index)"
+    >
+      <div class="valtimo-drag-drop-list__placeholder" *cdkDragPlaceholder></div>
+
+      @if (showHandle) {
+        @if (wholeRowDraggable) {
+          <span class="valtimo-drag-drop-list__handle valtimo-drag-drop-list__handle--static" aria-hidden="true">
+            <svg cdsIcon="draggable" size="16"></svg>
+          </span>
+        } @else if (!dragDisabled(item, $index)) {
+          <button cdkDragHandle [attr.aria-label]="handleAriaLabel" class="valtimo-drag-drop-list__handle" type="button">
+            <svg cdsIcon="draggable" size="16"></svg>
+          </button>
+        }
+      }
+
+      <div
+        class="valtimo-drag-drop-list__content"
+        (mousedown)="onContentPointerDown($event)"
+        (touchstart)="onContentPointerDown($event)"
+      >
+        <ng-container *ngTemplateOutlet="itemTemplate; context: {$implicit: item, index: $index}"></ng-container>
+      </div>
+    </div>
+  }
+
+  @if (!items?.length && emptyTemplate) {
+    <ng-container *ngTemplateOutlet="emptyTemplate"></ng-container>
+  }
+</div>

@@ -23,13 +23,16 @@ import com.ritense.adminsettings.importer.AdminSettingsLogoImporter
 import com.ritense.adminsettings.repository.AccentColorsRepository
 import com.ritense.adminsettings.repository.AdminSettingsLogoRepository
 import com.ritense.adminsettings.repository.FeatureToggleOverridesRepository
+import com.ritense.adminsettings.repository.MenuConfigurationRepository
 import com.ritense.adminsettings.security.config.AdminSettingsHttpSecurityConfigurer
 import com.ritense.adminsettings.service.AccentColorsService
 import com.ritense.adminsettings.service.AdminSettingsLogoService
 import com.ritense.adminsettings.service.FeatureToggleOverridesService
+import com.ritense.adminsettings.service.MenuConfigurationService
 import com.ritense.adminsettings.web.rest.AccentColorsResource
 import com.ritense.adminsettings.web.rest.AdminSettingsLogoResource
 import com.ritense.adminsettings.web.rest.FeatureToggleOverridesResource
+import com.ritense.adminsettings.web.rest.MenuConfigurationResource
 import com.ritense.authorization.AuthorizationService
 import org.springframework.boot.autoconfigure.AutoConfiguration
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
@@ -39,7 +42,7 @@ import org.springframework.core.annotation.Order
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories
 
 @AutoConfiguration
-@EnableJpaRepositories(basePackageClasses = [AdminSettingsLogoRepository::class, FeatureToggleOverridesRepository::class, AccentColorsRepository::class])
+@EnableJpaRepositories(basePackageClasses = [AdminSettingsLogoRepository::class, FeatureToggleOverridesRepository::class, AccentColorsRepository::class, MenuConfigurationRepository::class])
 @EntityScan(basePackages = ["com.ritense.adminsettings.domain"])
 class AdminSettingsAutoConfiguration {
 
@@ -108,6 +111,26 @@ class AdminSettingsAutoConfiguration {
         accentColorsService: AccentColorsService
     ): AccentColorsResource {
         return AccentColorsResource(accentColorsService)
+    }
+
+    @Bean
+    @ConditionalOnMissingBean(MenuConfigurationService::class)
+    fun menuConfigurationService(
+        menuConfigurationRepository: MenuConfigurationRepository,
+        objectMapper: ObjectMapper,
+    ): MenuConfigurationService {
+        return MenuConfigurationService(
+            menuConfigurationRepository,
+            objectMapper,
+        )
+    }
+
+    @Bean
+    @ConditionalOnMissingBean(MenuConfigurationResource::class)
+    fun menuConfigurationResource(
+        menuConfigurationService: MenuConfigurationService
+    ): MenuConfigurationResource {
+        return MenuConfigurationResource(menuConfigurationService)
     }
 
     @Bean

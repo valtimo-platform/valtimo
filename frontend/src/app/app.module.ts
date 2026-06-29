@@ -88,6 +88,7 @@ import {
   documentenApiPluginSpecification,
   DocumentenApiPreviewPluginModule,
   documentenApiPreviewPluginSpecification,
+  ExternalPluginPageRoutingModule,
   KlantinteractiesApiPluginModule,
   klantinteractiesApiPluginSpecification,
   NotificatiesApiPluginModule,
@@ -194,6 +195,7 @@ export function tabsFactory() {
     BesluitenApiPluginModule,
     CatalogiApiPluginModule,
     VerzoekPluginModule,
+    ExternalPluginPageRoutingModule,
     TranslateModule.forRoot({
       loader: {
         provide: TranslateLoader,

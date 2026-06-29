@@ -14,10 +14,9 @@
  * limitations under the License.
  */
 
-const ADMIN_SETTINGS_TABS = {
-  APPEARANCE: 'appearance',
-  MENU_CONFIGURATION: 'menu-configuration',
-  FEATURE_TOGGLES: 'feature-toggles',
-} as const;
+package com.ritense.adminsettings.repository
 
-export {ADMIN_SETTINGS_TABS};
+import com.ritense.adminsettings.domain.MenuConfiguration
+import org.springframework.data.jpa.repository.JpaRepository
+
+interface MenuConfigurationRepository : JpaRepository<MenuConfiguration, String>

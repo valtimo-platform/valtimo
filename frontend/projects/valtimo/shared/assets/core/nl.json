@@ -3204,11 +3204,58 @@
     "deleteHelperText": "Nadat je een snelzoekitem hebt gemaakt, kun je het verwijderen door er met de rechtermuisknop op te klikken",
     "duplicateError": "Er bestaat al een snelzoekitem met deze titel"
   },
+  "externalPluginPage": {
+    "loadError": "Deze pluginpagina kon niet worden geladen."
+  },
   "adminSettings": {
     "title": "Instellingen",
     "tabs": {
       "appearance": "Weergave",
+      "menuConfiguration": "Menuconfiguratie",
       "featureToggles": "Functie-instellingen"
+    },
+    "menuConfiguration": {
+      "intro": "Stel het linkermenu van de applicatie samen. Sleep items tussen de beschikbare items en de menustructuur, wijzig de volgorde en bewerk de titel, link of het pictogram van een item. Toegang tot elk item wordt beheerd via PBAC.",
+      "structureTitle": "Menustructuur",
+      "availableTitle": "Beschikbare items",
+      "save": "Menu opslaan",
+      "reset": "Herstellen",
+      "savedTitle": "Menu opgeslagen",
+      "savedSubtitle": "De menuconfiguratie is opgeslagen en wordt toegepast na de volgende herlaadbeurt.",
+      "required": "Vereist",
+      "runtimeSubmenu": "Dynamisch submenu",
+      "runtimeSubmenuNote": "Het submenu van dit item wordt tijdens runtime gevuld (bijvoorbeeld vastgezette zaken) en kan hier niet worden bewerkt.",
+      "allPlaced": "Alle items staan al in het menu.",
+      "emptyStructure": "Sleep items hierheen om het menu samen te stellen.",
+      "emptySection": "Sleep items hierheen",
+      "add": "Toevoegen aan menu",
+      "dragHandle": "Sleep om te herordenen",
+      "categories": {
+        "generic": "Generiek",
+        "main": "Hoofdmenu-items",
+        "admin": "Beheerpagina's",
+        "development": "Ontwikkelpagina's",
+        "pluginPages": "Pluginpagina's"
+      },
+      "generic": {
+        "group": "Sectie",
+        "sectionHeader": "Sectiekop",
+        "customLink": "Aangepaste link"
+      },
+      "defaults": {
+        "group": "Nieuwe sectie",
+        "sectionHeader": "Nieuwe kop",
+        "customLink": "Nieuwe link"
+      },
+      "editor": {
+        "title": "Menu-item bewerken",
+        "link": "Link (route of externe URL)",
+        "section": "Sectie",
+        "sectionRoot": "Hoofdniveau",
+        "includeFunction": "Include-functie",
+        "includeFunctionNone": "Geen",
+        "pbacNote": "Toegang tot dit item wordt beheerd via PBAC, niet hier."
+      }
     },
     "appearance": {
       "logo": {
