@@ -151,6 +151,10 @@ export class CaseListComponent implements OnInit, OnDestroy {
     this.searchService.search(searchFieldValues);
   }
 
+  public onGlobalSearchFilterChange(value: string): void {
+    this.searchService.setGlobalSearchFilter(value);
+  }
+
   // --- Row click ---
 
   public rowClick(item: any): void {

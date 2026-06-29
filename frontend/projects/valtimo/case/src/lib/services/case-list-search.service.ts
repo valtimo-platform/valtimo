@@ -15,7 +15,7 @@
  */
 
 import {Injectable} from '@angular/core';
-import {Observable, of, switchMap} from 'rxjs';
+import {BehaviorSubject, Observable, of, switchMap} from 'rxjs';
 import {SearchField, SearchFieldValues, SearchFilter, SearchFilterRange} from '@valtimo/shared';
 import {CaseListService} from './case-list.service';
 import {DocumentService} from '@valtimo/document';
@@ -32,8 +32,14 @@ export class CaseListSearchService {
       )
     );
 
+  private readonly _globalSearchFilter$ = new BehaviorSubject<string>('');
+
   public get documentSearchFields$(): Observable<Array<SearchField> | null> {
     return this._documentSearchFields$;
+  }
+
+  public get globalSearchFilter$(): Observable<string> {
+    return this._globalSearchFilter$.asObservable();
   }
 
   constructor(
@@ -41,6 +47,11 @@ export class CaseListSearchService {
     private readonly documentService: DocumentService,
     private readonly caseParameterService: CaseParameterService
   ) {}
+
+  public setGlobalSearchFilter(value: string | null): void {
+    this._globalSearchFilter$.next(value ?? '');
+    this.caseListService.checkRefresh();
+  }
 
   public search(searchFieldValues: SearchFieldValues): void {
     this.caseParameterService.setSearchFieldValues(searchFieldValues || {});
