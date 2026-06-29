@@ -188,9 +188,15 @@ jobs:
           PROJECT_VERSION: ${{ inputs.project_version }}
         run: |
           set -euo pipefail
-          f="projects/valtimo/shared/src/lib/constants/versions.ts"
+          # versions.ts location differs per branch (shared/ on v13, config/ on
+          # v12); locate the one holding frontendLibraries so this works on both.
+          f=$(grep -rl 'frontendLibraries' projects/valtimo --include='versions.ts' 2>/dev/null | head -1 || true)
+          if [ -z "$f" ]; then
+            echo "::warning::no versions.ts with frontendLibraries found; skipping frontend version stamp"
+            exit 0
+          fi
           sed -i "s/\(frontendLibraries: *'\)[^']*'/\1${PROJECT_VERSION}'/" "$f"
-          echo "versions.ts now:"; grep frontendLibraries "$f"
+          echo "Stamped $f:"; grep frontendLibraries "$f" || true
 
       - name: Build app
         run: npm run build:${{ inputs.variant }}
