@@ -18,7 +18,9 @@ package com.ritense.document.opensearch.autoconfigure
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import io.github.oshai.kotlinlogging.KotlinLogging
+import com.ritense.adminsettings.service.FeatureToggleOverridesService
 import com.ritense.authorization.AuthorizationService
+import com.ritense.document.opensearch.OpenSearchProperties
 import com.ritense.document.autoconfigure.DocumentAutoConfiguration
 import com.ritense.document.opensearch.authorization.OpenSearchAuthorizationEntityMapper
 import com.ritense.document.opensearch.authorization.OpenSearchPermissionConditionTranslator
@@ -51,6 +53,7 @@ import org.springframework.boot.autoconfigure.AutoConfiguration
 import org.springframework.boot.autoconfigure.AutoConfigureBefore
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
+import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.context.annotation.Bean
 import org.springframework.core.annotation.Order
 import org.springframework.data.elasticsearch.core.ElasticsearchOperations
@@ -60,6 +63,7 @@ import org.springframework.data.elasticsearch.repository.config.EnableElasticsea
 @AutoConfigureBefore(DocumentAutoConfiguration::class)
 @ConditionalOnClass(ElasticsearchOperations::class)
 @EnableElasticsearchRepositories(basePackages = ["com.ritense.document.opensearch.repository"])
+@EnableConfigurationProperties(OpenSearchProperties::class)
 class DocumentOpenSearchAutoConfiguration {
 
     @Bean
@@ -170,8 +174,12 @@ class DocumentOpenSearchAutoConfiguration {
 
     @Bean
     @ConditionalOnMissingBean
-    fun searchEngineResource(toggle: SearchEngineToggle): SearchEngineResource =
-        SearchEngineResource(toggle)
+    fun searchEngineResource(
+        toggle: SearchEngineToggle,
+        openSearchProperties: OpenSearchProperties,
+        featureToggleOverridesService: FeatureToggleOverridesService,
+    ): SearchEngineResource =
+        SearchEngineResource(toggle, openSearchProperties, featureToggleOverridesService)
 
     @Bean
     @ConditionalOnMissingBean
@@ -213,7 +221,27 @@ class DocumentOpenSearchAutoConfiguration {
             }
         }
 
+    @Bean
+    fun searchEngineSettingLoader(
+        toggle: SearchEngineToggle,
+        featureToggleOverridesService: FeatureToggleOverridesService,
+        openSearchProperties: OpenSearchProperties,
+    ): ApplicationRunner = ApplicationRunner {
+        if (!openSearchProperties.enabled) {
+            toggle.set(SearchEngineToggle.Engine.POSTGRES)
+            logger.info { "OpenSearch disabled via configuration; using PostgreSQL for document search" }
+            return@ApplicationRunner
+        }
+
+        val overrides = featureToggleOverridesService.getOverrides().overrides
+        val useOpenSearch = overrides[SEARCH_ENGINE_TOGGLE_KEY] ?: true
+        val engine = if (useOpenSearch) SearchEngineToggle.Engine.OPENSEARCH else SearchEngineToggle.Engine.POSTGRES
+        toggle.set(engine)
+        logger.info { "Document search engine set to: ${engine.name}" }
+    }
+
     companion object {
         private val logger = KotlinLogging.logger {}
+        const val SEARCH_ENGINE_TOGGLE_KEY = "useOpenSearchForDocumentSearch"
     }
 }

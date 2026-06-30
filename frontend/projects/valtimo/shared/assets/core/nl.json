@@ -3133,6 +3133,13 @@
       }
     },
     "featureToggles": {
+      "searchEngine": {
+        "useOpenSearch": {
+          "title": "Gebruik OpenSearch voor zaakzoekopdrachten",
+          "description": "Indien ingeschakeld worden zaakzoekopdrachten uitgevoerd met OpenSearch voor betere prestaties. Indien uitgeschakeld wordt PostgreSQL gebruikt.",
+          "unavailable": "OpenSearch is niet geconfigureerd voor deze installatie."
+        }
+      },
       "refreshRequired": "Vernieuwing vereist",
       "refreshModalText": "Deze instelling vereist een paginavernieuwing om effect te hebben. Wilt u nu vernieuwen?",
       "refreshNow": "Nu vernieuwen",

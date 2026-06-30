@@ -14,6 +14,11 @@
  * limitations under the License.
  */
 
-export * from './accent-colors.model';
-export * from './feature-toggle.model';
-export * from './search-engine.model';
+export interface SearchEngineDto {
+  available: boolean;
+  active: 'OPENSEARCH' | 'POSTGRES';
+}
+
+export interface UpdateSearchEngineDto {
+  active: 'OPENSEARCH' | 'POSTGRES';
+}

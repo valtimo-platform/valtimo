@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2026 Ritense BV, the Netherlands.
+ * Copyright 2015-2024 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,6 +14,11 @@
  * limitations under the License.
  */
 
-export * from './accent-colors.model';
-export * from './feature-toggle.model';
-export * from './search-engine.model';
+package com.ritense.document.opensearch
+
+import org.springframework.boot.context.properties.ConfigurationProperties
+
+@ConfigurationProperties(prefix = "valtimo.opensearch")
+data class OpenSearchProperties(
+    val enabled: Boolean = true
+)

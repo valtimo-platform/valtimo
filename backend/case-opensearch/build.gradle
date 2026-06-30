@@ -26,6 +26,7 @@ dockerCompose {
 }
 
 dependencies {
+    implementation project(":backend:admin-settings")
     implementation project(":backend:authorization")
     implementation project(":backend:case")
     implementation project(":backend:inbox")

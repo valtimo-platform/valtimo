@@ -3100,6 +3100,13 @@
       }
     },
     "featureToggles": {
+      "searchEngine": {
+        "useOpenSearch": {
+          "title": "Use OpenSearch for case search",
+          "description": "When enabled, case searches use OpenSearch for better performance. When disabled, PostgreSQL is used.",
+          "unavailable": "OpenSearch is not configured for this installation."
+        }
+      },
       "refreshRequired": "Refresh required",
       "refreshModalText": "This setting requires a page refresh to take effect. Do you want to refresh now?",
       "refreshNow": "Refresh now",

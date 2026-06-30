@@ -17,6 +17,32 @@
 @if (featureToggles$ | async; as toggles) {
   <div class="feature-toggles">
     <div class="feature-toggles__list">
+      @if (searchEngine$ | async; as searchEngine) {
+        <div class="feature-toggles__item" [class.feature-toggles__item--disabled]="!searchEngine.available">
+          <div class="feature-toggles__info">
+            <span class="feature-toggles__title">
+              {{ 'adminSettings.featureToggles.searchEngine.useOpenSearch.title' | translate }}
+            </span>
+            <span class="feature-toggles__description">
+              @if (searchEngine.available) {
+                {{ 'adminSettings.featureToggles.searchEngine.useOpenSearch.description' | translate }}
+              } @else {
+                {{ 'adminSettings.featureToggles.searchEngine.useOpenSearch.unavailable' | translate }}
+              }
+            </span>
+          </div>
+          <div class="feature-toggles__control">
+            <cds-toggle
+              [checked]="searchEngine.active === 'OPENSEARCH'"
+              [onText]="'interface.on' | translate"
+              [offText]="'interface.off' | translate"
+              [size]="'sm'"
+              [disabled]="!searchEngine.available"
+              (checkedChange)="onSearchEngineChange($event)"
+            ></cds-toggle>
+          </div>
+        </div>
+      }
       @for (definition of TOGGLE_DEFINITIONS; track definition.key) {
         <div class="feature-toggles__item">
           <div class="feature-toggles__info">

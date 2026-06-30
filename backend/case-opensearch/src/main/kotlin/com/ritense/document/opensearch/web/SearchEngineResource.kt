@@ -16,6 +16,9 @@
 
 package com.ritense.document.opensearch.web
 
+import com.ritense.adminsettings.service.FeatureToggleOverridesService
+import com.ritense.document.opensearch.OpenSearchProperties
+import com.ritense.document.opensearch.autoconfigure.DocumentOpenSearchAutoConfiguration.Companion.SEARCH_ENGINE_TOGGLE_KEY
 import com.ritense.document.opensearch.service.SearchEngineToggle
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
@@ -28,16 +31,45 @@ import org.springframework.web.bind.annotation.RestController
 @RequestMapping("/api/management/v1/search-engine")
 class SearchEngineResource(
     private val toggle: SearchEngineToggle,
+    private val openSearchProperties: OpenSearchProperties,
+    private val featureToggleOverridesService: FeatureToggleOverridesService,
 ) {
 
     @GetMapping
-    fun getActive(): ResponseEntity<Map<String, String>> =
-        ResponseEntity.ok(mapOf("active" to toggle.get().name))
+    fun getActive(): ResponseEntity<SearchEngineDto> =
+        ResponseEntity.ok(
+            SearchEngineDto(
+                available = openSearchProperties.enabled,
+                active = toggle.get().name
+            )
+        )
 
     @PutMapping
-    fun setActive(@RequestBody body: Map<String, String>): ResponseEntity<Map<String, String>> {
-        val engine = SearchEngineToggle.Engine.valueOf(body["active"]!!.uppercase())
+    fun setActive(@RequestBody body: UpdateSearchEngineDto): ResponseEntity<SearchEngineDto> {
+        if (!openSearchProperties.enabled) {
+            return ResponseEntity.badRequest().build()
+        }
+
+        val useOpenSearch = body.active.uppercase() == "OPENSEARCH"
+        featureToggleOverridesService.updateToggle(SEARCH_ENGINE_TOGGLE_KEY, useOpenSearch)
+
+        val engine = if (useOpenSearch) SearchEngineToggle.Engine.OPENSEARCH else SearchEngineToggle.Engine.POSTGRES
         toggle.set(engine)
-        return ResponseEntity.ok(mapOf("active" to toggle.get().name))
+
+        return ResponseEntity.ok(
+            SearchEngineDto(
+                available = true,
+                active = toggle.get().name
+            )
+        )
     }
+
+    data class SearchEngineDto(
+        val available: Boolean,
+        val active: String
+    )
+
+    data class UpdateSearchEngineDto(
+        val active: String
+    )
 }

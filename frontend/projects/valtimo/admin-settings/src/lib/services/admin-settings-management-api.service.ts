@@ -16,7 +16,7 @@
 
 import {Injectable} from '@angular/core';
 import {HttpClient} from '@angular/common/http';
-import {Observable} from 'rxjs';
+import {catchError, Observable, of} from 'rxjs';
 import {
   AdminSettingsLogoDto,
   AdminSettingsLogosDto,
@@ -24,7 +24,12 @@ import {
   ConfigService,
   CreateAdminSettingsLogoDto,
 } from '@valtimo/shared';
-import {AccentColorsDto, FeatureToggleOverridesDto, UpdateFeatureToggleDto} from '../models';
+import {
+  AccentColorsDto,
+  FeatureToggleOverridesDto,
+  SearchEngineDto,
+  UpdateFeatureToggleDto,
+} from '../models';
 
 @Injectable({
   providedIn: 'root',
@@ -88,6 +93,19 @@ export class AdminSettingsManagementApiService extends BaseApiService {
     return this.httpClient.put<AccentColorsDto>(
       this.getApiUrl('/management/v1/admin-settings/accent-colors'),
       dto
+    );
+  }
+
+  public getSearchEngine(): Observable<SearchEngineDto | null> {
+    return this.httpClient
+      .get<SearchEngineDto>(this.getApiUrl('/management/v1/search-engine'))
+      .pipe(catchError(() => of(null)));
+  }
+
+  public updateSearchEngine(useOpenSearch: boolean): Observable<SearchEngineDto> {
+    return this.httpClient.put<SearchEngineDto>(
+      this.getApiUrl('/management/v1/search-engine'),
+      {active: useOpenSearch ? 'OPENSEARCH' : 'POSTGRES'}
     );
   }
 }

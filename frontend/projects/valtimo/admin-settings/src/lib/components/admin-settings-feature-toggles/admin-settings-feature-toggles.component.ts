@@ -41,6 +41,8 @@ export class AdminSettingsFeatureTogglesComponent {
 
   public readonly featureToggles$ = this._configService.featureToggles$;
 
+  public readonly searchEngine$ = this._adminSettingsManagementApiService.getSearchEngine();
+
   constructor(
     private readonly _adminSettingsManagementApiService: AdminSettingsManagementApiService,
     private readonly _adminSettingsService: AdminSettingsService,
@@ -60,5 +62,9 @@ export class AdminSettingsFeatureTogglesComponent {
       .subscribe(() => {
         this._adminSettingsService.refreshFeatureToggles();
       });
+  }
+
+  public onSearchEngineChange(useOpenSearch: boolean): void {
+    this._adminSettingsManagementApiService.updateSearchEngine(useOpenSearch).subscribe();
   }
 }
