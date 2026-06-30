@@ -61,6 +61,12 @@ elements and displays an error panel. Clicking an error navigates to the element
   It is now possible to configure the default state for the sidebar (collapsed or not) application wide via the settings
   page. User specific settings overwrite this.
 
+* **Download document by document ID in the Documenten API plugin**
+
+  The *download document* action now also works when only the document ID is available. It reads the `documentId`
+  process variable and builds the document URL from the plugin's configured base URL. The existing `documentUrl`
+  process variable still takes precedence when both are present, so existing processes are unaffected.
+  
 ## Deprecated
 
 * The `experimentalDmnEditing` feature toggle has been removed from the admin settings UI and no longer has any
