@@ -6,7 +6,7 @@
       "type" : "htmlelement",
       "input" : false,
       "label" : "HTML",
-      "content" : "Klik start om Status en Resultaat typen op te halen bij de Catalogi API.",
+      "content" : "Klik start om Status, Resultaat en Informatieobject typen op te halen bij de Catalogi API.",
       "tableView" : false,
       "refreshOnChange" : false
     },
