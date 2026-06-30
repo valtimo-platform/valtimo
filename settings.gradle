@@ -35,7 +35,6 @@ include(
     ":backend:authorization",
     ":backend:building-block",
     ":backend:case",
-    ":backend:case-mongodb",
     ":backend:case-opensearch",
     ":backend:changelog",
     ":backend:command-handling",

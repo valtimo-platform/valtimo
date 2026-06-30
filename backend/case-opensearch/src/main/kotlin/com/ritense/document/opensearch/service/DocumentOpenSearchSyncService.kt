@@ -17,9 +17,10 @@
 package com.ritense.document.opensearch.service
 
 import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.databind.node.ContainerNode
 import com.ritense.document.opensearch.domain.JsonSchemaDocumentOsDocument
 import com.ritense.document.opensearch.repository.JsonSchemaDocumentOpenSearchRepository
-import com.ritense.inbox.ValtimoEvent
+import com.ritense.outbox.domain.BaseEvent
 import io.github.oshai.kotlinlogging.KotlinLogging
 
 class DocumentOpenSearchSyncService(
@@ -27,16 +28,20 @@ class DocumentOpenSearchSyncService(
     private val objectMapper: ObjectMapper,
 ) {
 
-    fun upsert(event: ValtimoEvent) {
+    fun upsert(event: BaseEvent) {
         val result = event.result
         if (result == null) {
             logger.warn { "Received document event ${event.type} for id=${event.resultId} with null result — skipping upsert" }
             return
         }
+        upsertFromResult(result, event.type)
+    }
+
+    private fun upsertFromResult(result: ContainerNode<*>, eventType: String) {
         val doc = objectMapper.treeToValue(result, JsonSchemaDocumentOsDocument::class.java)
         val contentText = extractLeafValues(result.get("content"))
         repository.save(doc.copy(contentText = contentText))
-        logger.debug { "Upserted document ${doc.id} in OpenSearch (event: ${event.type})" }
+        logger.debug { "Upserted document ${doc.id} in OpenSearch (event: $eventType)" }
     }
 
     fun delete(documentId: String) {

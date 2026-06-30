@@ -18,53 +18,45 @@ package com.ritense.document.opensearch.handler
 
 import com.ritense.document.event.DocumentAssigned
 import com.ritense.document.event.DocumentCreated
+import com.ritense.document.event.DocumentDeleted
+import com.ritense.document.event.DocumentRetentionDateSet
+import com.ritense.document.event.DocumentRetentionDateUnset
+import com.ritense.document.event.DocumentStatusChanged
+import com.ritense.document.event.DocumentTagsChanged
 import com.ritense.document.event.DocumentUnassigned
 import com.ritense.document.event.DocumentUpdated
 import com.ritense.document.opensearch.service.DocumentOpenSearchSyncService
-import com.ritense.inbox.ValtimoEvent
-import com.ritense.inbox.ValtimoEventHandler
-import io.github.oshai.kotlinlogging.KotlinLogging
+import org.springframework.context.event.EventListener
 
-/**
- * Listens to document domain events from the Valtimo inbox and keeps the OpenSearch read
- * model in sync. Works with both the outbox-enabled (RabbitMQ) and outbox-disabled
- * (local Spring event) modes because both paths converge on [ValtimoEventHandler].
- */
-class DocumentOpenSearchEventHandler(
+class DocumentOpenSearchEventListener(
     private val syncService: DocumentOpenSearchSyncService,
-) : ValtimoEventHandler {
+) {
+    @EventListener
+    fun onDocumentCreated(event: DocumentCreated) = syncService.upsert(event)
 
-    override fun handle(event: ValtimoEvent) {
-        when (event.type) {
-            in UPSERT_EVENT_TYPES -> syncService.upsert(event)
-            DELETED_EVENT_TYPE -> {
-                val id = event.resultId
-                if (id != null) {
-                    syncService.delete(id)
-                } else {
-                    logger.warn { "Received DocumentDeleted event with null resultId — skipping delete" }
-                }
-            }
-            else -> {
-                // Events not related to json_schema_document (e.g. DocumentsListed) are ignored
-            }
-        }
-    }
+    @EventListener
+    fun onDocumentUpdated(event: DocumentUpdated) = syncService.upsert(event)
 
-    companion object {
-        private val logger = KotlinLogging.logger {}
+    @EventListener
+    fun onDocumentAssigned(event: DocumentAssigned) = syncService.upsert(event)
 
-        val UPSERT_EVENT_TYPES: Set<String> = setOf(
-            DocumentCreated.TYPE,
-            DocumentUpdated.TYPE,
-            DocumentAssigned.TYPE,
-            DocumentUnassigned.TYPE,
-            "com.ritense.valtimo.document.status.changed",
-            "com.ritense.valtimo.document.tags.changed",
-            "com.ritense.valtimo.document.retentiondate.set",
-            "com.ritense.valtimo.document.retentiondate.unset",
-        )
+    @EventListener
+    fun onDocumentUnassigned(event: DocumentUnassigned) = syncService.upsert(event)
 
-        const val DELETED_EVENT_TYPE = "com.ritense.valtimo.document.deleted"
+    @EventListener
+    fun onDocumentStatusChanged(event: DocumentStatusChanged) = syncService.upsert(event)
+
+    @EventListener
+    fun onDocumentTagsChanged(event: DocumentTagsChanged) = syncService.upsert(event)
+
+    @EventListener
+    fun onDocumentRetentionDateSet(event: DocumentRetentionDateSet) = syncService.upsert(event)
+
+    @EventListener
+    fun onDocumentRetentionDateUnset(event: DocumentRetentionDateUnset) = syncService.upsert(event)
+
+    @EventListener
+    fun onDocumentDeleted(event: DocumentDeleted) {
+        event.resultId?.let { syncService.delete(it) }
     }
 }

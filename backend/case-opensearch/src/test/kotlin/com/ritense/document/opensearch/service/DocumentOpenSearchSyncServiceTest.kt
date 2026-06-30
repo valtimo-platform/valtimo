@@ -17,9 +17,11 @@
 package com.ritense.document.opensearch.service
 
 import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.databind.node.ContainerNode
+import com.ritense.document.event.DocumentCreated
 import com.ritense.document.opensearch.domain.JsonSchemaDocumentOsDocument
 import com.ritense.document.opensearch.repository.JsonSchemaDocumentOpenSearchRepository
-import com.ritense.inbox.ValtimoEvent
+import com.ritense.outbox.domain.BaseEvent
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -30,7 +32,6 @@ import org.mockito.kotlin.mock
 import org.mockito.kotlin.never
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
-import java.time.LocalDateTime
 
 class DocumentOpenSearchSyncServiceTest {
 
@@ -45,7 +46,7 @@ class DocumentOpenSearchSyncServiceTest {
 
     @Test
     fun `upsert with null result skips repository save`() {
-        val event = valtimoEvent(result = null)
+        val event = testEvent(result = null)
 
         service.upsert(event)
 
@@ -63,7 +64,7 @@ class DocumentOpenSearchSyncServiceTest {
             set<com.fasterxml.jackson.databind.node.ObjectNode>("content", content)
         }
         val doc = buildDocument(id = "test-id", content = mapOf("firstName" to "John", "city" to "Amsterdam"))
-        val event = valtimoEvent(result = resultNode)
+        val event = testEvent(result = resultNode)
         whenever(objectMapper.treeToValue(any(), any<Class<JsonSchemaDocumentOsDocument>>())).thenReturn(doc)
 
         val captor = ArgumentCaptor.forClass(JsonSchemaDocumentOsDocument::class.java)
@@ -80,7 +81,7 @@ class DocumentOpenSearchSyncServiceTest {
         val realMapper = ObjectMapper()
         val resultNode = realMapper.createObjectNode()
         val doc = buildDocument(id = "no-content-id", content = null)
-        val event = valtimoEvent(result = resultNode)
+        val event = testEvent(result = resultNode)
         whenever(objectMapper.treeToValue(any(), any<Class<JsonSchemaDocumentOsDocument>>())).thenReturn(doc)
 
         val captor = ArgumentCaptor.forClass(JsonSchemaDocumentOsDocument::class.java)
@@ -103,7 +104,7 @@ class DocumentOpenSearchSyncServiceTest {
             set<com.fasterxml.jackson.databind.node.ObjectNode>("content", content)
         }
         val doc = buildDocument(id = "nested-id", content = mapOf("address" to mapOf("street" to "Main Street", "number" to "42")))
-        val event = valtimoEvent(result = resultNode)
+        val event = testEvent(result = resultNode)
         whenever(objectMapper.treeToValue(any(), any<Class<JsonSchemaDocumentOsDocument>>())).thenReturn(doc)
 
         val captor = ArgumentCaptor.forClass(JsonSchemaDocumentOsDocument::class.java)
@@ -136,16 +137,15 @@ class DocumentOpenSearchSyncServiceTest {
         retentionDate = null,
     )
 
-    private fun valtimoEvent(
-        result: com.fasterxml.jackson.databind.node.ContainerNode<*>?,
-    ) = ValtimoEvent(
-        id = "event-id",
-        type = "DOCUMENT_CREATED",
-        date = LocalDateTime.now(),
-        userId = null,
-        roles = null,
-        resultType = null,
-        resultId = "doc-id",
-        result = result,
-    )
+    private fun testEvent(result: ContainerNode<*>?): BaseEvent =
+        if (result != null) {
+            DocumentCreated("doc-id", result as com.fasterxml.jackson.databind.node.ObjectNode)
+        } else {
+            object : BaseEvent(
+                type = "test",
+                resultType = null,
+                resultId = "doc-id",
+                result = null,
+            ) {}
+        }
 }

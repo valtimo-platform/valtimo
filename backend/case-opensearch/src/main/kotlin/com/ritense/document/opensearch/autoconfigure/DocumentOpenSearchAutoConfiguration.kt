@@ -27,7 +27,7 @@ import com.ritense.document.opensearch.authorization.OpenSearchPermissionConditi
 import com.ritense.document.opensearch.authorization.mapper.JsonSchemaDocumentCaseDefinitionOpenSearchMapper
 import com.ritense.document.opensearch.authorization.mapper.JsonSchemaDocumentDefinitionOpenSearchMapper
 import com.ritense.document.opensearch.domain.JsonSchemaDocumentOsDocument
-import com.ritense.document.opensearch.handler.DocumentOpenSearchEventHandler
+import com.ritense.document.opensearch.handler.DocumentOpenSearchEventListener
 import com.ritense.document.opensearch.repository.JsonSchemaDocumentOpenSearchRepository
 import com.ritense.document.opensearch.security.DocumentOpenSearchHttpSecurityConfigurer
 import com.ritense.document.opensearch.service.DelegatingDocumentSearchService
@@ -103,8 +103,8 @@ class DocumentOpenSearchAutoConfiguration {
         DocumentOpenSearchSyncService(repository, objectMapper)
 
     @Bean
-    fun documentOpenSearchEventHandler(syncService: DocumentOpenSearchSyncService): DocumentOpenSearchEventHandler =
-        DocumentOpenSearchEventHandler(syncService)
+    fun documentOpenSearchEventListener(syncService: DocumentOpenSearchSyncService): DocumentOpenSearchEventListener =
+        DocumentOpenSearchEventListener(syncService)
 
     @Bean
     @ConditionalOnMissingBean
