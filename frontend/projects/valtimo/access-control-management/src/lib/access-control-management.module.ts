@@ -33,6 +33,7 @@ import {RoleMetadataModalComponent} from './components/role-metadata-modal/role-
 import {
   AccordionModule,
   ButtonModule,
+  CheckboxModule,
   IconModule,
   InputModule,
   LayerModule,
@@ -89,6 +90,7 @@ import {PermissionFormComponent} from './components/permission-form/permission-f
     TabsModule,
     ToggleModule,
     AccordionModule,
+    CheckboxModule,
     LayerModule,
     TagModule,
     AccessControlJsonEditorTabComponent,
