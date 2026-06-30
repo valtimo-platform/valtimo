@@ -806,8 +806,15 @@ internal class CatalogiApiPluginTest : BaseTest() {
             zaaktypeUrl = zaaktypeUrl
         )
 
-        verify(execution, times(1))
-            .setVariable(eq(processVariable), any<List<Map<String, String>>>())
+        verify(execution, times(1)).setVariable(
+            eq(processVariable),
+            eq(
+                listOf(
+                    mapOf("url" to informatieObjectTypeUrl("1"), "name" to "first document"),
+                    mapOf("url" to informatieObjectTypeUrl("2"), "name" to "second document")
+                )
+            )
+        )
     }
 
     @Test
@@ -836,8 +843,14 @@ internal class CatalogiApiPluginTest : BaseTest() {
             zaaktypeUrl = null
         )
 
-        verify(execution, times(1))
-            .setVariable(eq(processVariable), any<List<Map<String, String>>>())
+        verify(execution, times(1)).setVariable(
+            eq(processVariable),
+            eq(
+                listOf(
+                    mapOf("url" to informatieObjectTypeUrl("1"), "name" to "first document")
+                )
+            )
+        )
     }
 
     private fun mockInformatieobjecttypes(
