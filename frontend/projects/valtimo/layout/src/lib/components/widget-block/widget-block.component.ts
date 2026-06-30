@@ -82,11 +82,7 @@ export class WidgetBlockComponent implements AfterViewInit, OnDestroy {
 
   @HostBinding('class.widget-block--fill-content')
   public get fillContent(): boolean {
-    const widget = this._widget$.value;
-    return (
-      widget?.type === WidgetType.IMAGE &&
-      (widget.properties as {displayAsCarousel?: boolean} | undefined)?.displayAsCarousel === true
-    );
+    return this._widget$.value?.type === WidgetType.IMAGE;
   }
 
   private readonly _viewContainerRefSubject$ = new BehaviorSubject<ViewContainerRef | null>(null);

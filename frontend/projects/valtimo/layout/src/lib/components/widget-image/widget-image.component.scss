@@ -51,10 +51,11 @@
 
   &__title {
     margin: 0;
+    padding-bottom: 2px;
     color: var(--widget-text-color, var(--cds-text-primary));
     font-weight: 600;
     font-size: 16px;
-    line-height: 22px;
+    line-height: 24px;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
@@ -97,13 +98,22 @@
     width: 100%;
   }
 
-  &__carousel &__thumbnail-wrapper {
+  &__single {
+    display: flex;
+    flex: 1 1 auto;
+    min-height: 0;
+    width: 100%;
+  }
+
+  &__carousel &__thumbnail-wrapper,
+  &__single &__thumbnail-wrapper {
     flex: 1 1 auto;
     min-height: 0;
     max-height: none;
   }
 
-  &__carousel &__thumbnail {
+  &__carousel &__thumbnail,
+  &__single &__thumbnail {
     max-height: 100%;
   }
 

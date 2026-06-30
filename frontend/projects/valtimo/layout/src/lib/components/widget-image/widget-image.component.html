@@ -53,6 +53,10 @@
           <ng-container *ngTemplateOutlet="tile; context: {$implicit: image}"></ng-container>
         </li>
       </valtimo-carousel>
+    } @else if (obs.images.length === 1) {
+      <div class="valtimo-widget-image__single">
+        <ng-container *ngTemplateOutlet="tile; context: {$implicit: obs.images[0]}"></ng-container>
+      </div>
     } @else {
       <ul class="valtimo-widget-image__list">
         <li *ngFor="let image of obs.images" class="valtimo-widget-image__item">
