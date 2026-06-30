@@ -55,6 +55,12 @@ export class PermissionFormComponent implements OnInit, AfterViewInit, OnDestroy
   // after which the prefilled form is revealed.
   public readonly $loading = signal<boolean>(true);
 
+  // The permission is shown as a three-section accordion. Only one section is open at a time;
+  // "Resource & actions" is open by default.
+  public readonly $openSection = signal<'resourceActions' | 'conditions' | 'context' | null>(
+    'resourceActions'
+  );
+
   protected readonly testIds = ACCESS_CONTROL_EDITOR_TEST_IDS;
 
   private readonly _subscriptions = new Subscription();
@@ -102,13 +108,14 @@ export class PermissionFormComponent implements OnInit, AfterViewInit, OnDestroy
 
   public ngOnInit(): void {
     this.resourceTypeItems = this.formEditorService.resourceTypeItems(this.resourceTypeValue);
-    this.contextResourceTypeItems = this.formEditorService.contextResourceTypeItems(
-      this.contextResourceTypeValue
-    );
     this.recomputeActionItems();
+    this.recomputeContextResourceTypeItems();
 
     this._subscriptions.add(
-      this.group.get('resourceType')!.valueChanges.subscribe(() => this.recomputeActionItems())
+      this.group.get('resourceType')!.valueChanges.subscribe(() => {
+        this.recomputeActionItems();
+        this.recomputeContextResourceTypeItems();
+      })
     );
   }
 
@@ -132,6 +139,15 @@ export class PermissionFormComponent implements OnInit, AfterViewInit, OnDestroy
     this.group.updateValueAndValidity();
   }
 
+  public onSectionToggle(
+    section: 'resourceActions' | 'conditions' | 'context',
+    event: {expanded?: boolean}
+  ): void {
+    // Only one section is open at a time: opening one collapses the others via the [expanded]
+    // bindings; collapsing the open one leaves all sections closed.
+    this.$openSection.set(event?.expanded ? section : null);
+  }
+
   public onRemove(): void {
     this.removeEvent.emit();
   }
@@ -140,6 +156,15 @@ export class PermissionFormComponent implements OnInit, AfterViewInit, OnDestroy
     this.actionItems = this.formEditorService.actionItems(
       this.resourceTypeValue,
       this.actionsControl.value ?? []
+    );
+  }
+
+  // The valid context resources depend on the selected resource type, so recompute whenever it
+  // changes. The current value is kept selectable even if it is no longer in the valid set.
+  private recomputeContextResourceTypeItems(): void {
+    this.contextResourceTypeItems = this.formEditorService.contextResourceTypeItems(
+      this.resourceTypeValue,
+      this.contextResourceTypeValue
     );
   }
 }
