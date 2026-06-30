@@ -143,3 +143,12 @@ When creating a process link the following properties have to be entered:
 
 * **Informatieobjecttype**. The description (omschrijving) of the informatieobjecttype to look up.
 * **Process variable name**. This is the name of the process variable which value will be set to the found informatieobjecttype URL.
+
+### Retrieve informatieobjecttypen
+
+This action retrieves a list of informatieobjecttypen (containing the name and URL of each informatieobjecttype) and will assign it to a process variable.
+
+When creating a process link the following properties have to be entered:
+
+* **Process variable name**. This is the name of the process variable which value will be set to the found informatieobjecttypen collection.
+* **Zaaktype URL** (optional). This is the URL of the zaaktype for which the informatieobjecttypen should be retrieved.

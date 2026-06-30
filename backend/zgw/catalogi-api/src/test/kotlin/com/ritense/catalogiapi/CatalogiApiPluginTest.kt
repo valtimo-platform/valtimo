@@ -780,6 +780,66 @@ internal class CatalogiApiPluginTest : BaseTest() {
         assertEquals("No informatieobjecttype was found with 'omschrijving': 'Onbekend document'", exception.message)
     }
 
+    @Test
+    fun `should get informatieobjecttypen for zaaktype specified via property`() {
+        val processVariable = "informatieobjecttypenProcessVar"
+        val zaaktypeUrl = zaaktypeUrl()
+        val execution = mockExecution()
+
+        mockInformatieobjecttypes(
+            zaaktypeUrl = zaaktypeUrl.toURI(),
+            informatieobjecttypes = listOf(
+                informatieobjecttype(
+                    url = informatieObjectTypeUrl("1").toURI(),
+                    omschrijving = "first document"
+                ),
+                informatieobjecttype(
+                    url = informatieObjectTypeUrl("2").toURI(),
+                    omschrijving = "second document"
+                )
+            )
+        )
+
+        plugin.getInformatieobjecttypen(
+            execution = execution,
+            processVariable = processVariable,
+            zaaktypeUrl = zaaktypeUrl
+        )
+
+        verify(execution, times(1))
+            .setVariable(eq(processVariable), any<List<Map<String, String>>>())
+    }
+
+    @Test
+    fun `should get informatieobjecttypen for zaaktype via linked zaak`() {
+        val processVariable = "informatieobjecttypenProcessVar"
+        val zaaktypeUrl = zaaktypeUrl()
+        val documentId = documentId()
+        val document = mockDocument(documentId.toUUID())
+        val execution = mockExecution(documentId)
+
+        mockDocumentService(documentId, document)
+        mockZaakTypeUrlProvider(zaaktypeUrl.toURI())
+        mockInformatieobjecttypes(
+            zaaktypeUrl = zaaktypeUrl.toURI(),
+            informatieobjecttypes = listOf(
+                informatieobjecttype(
+                    url = informatieObjectTypeUrl("1").toURI(),
+                    omschrijving = "first document"
+                )
+            )
+        )
+
+        plugin.getInformatieobjecttypen(
+            execution = execution,
+            processVariable = processVariable,
+            zaaktypeUrl = null
+        )
+
+        verify(execution, times(1))
+            .setVariable(eq(processVariable), any<List<Map<String, String>>>())
+    }
+
     private fun mockInformatieobjecttypes(
         zaaktypeUrl: URI,
         informatieobjecttypes: List<Informatieobjecttype>
