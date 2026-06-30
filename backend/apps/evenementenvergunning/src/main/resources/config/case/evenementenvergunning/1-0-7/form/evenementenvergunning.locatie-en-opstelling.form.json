@@ -1,0 +1,61 @@
+{
+  "type": "form",
+  "components": [
+    {
+      "key": "locatieEnOpstelling",
+      "type": "panel",
+      "input": false,
+      "label": "Panel",
+      "title": "Locatie en Opstelling",
+      "tableView": false,
+      "components": [
+        {
+          "key": "locatieEnOpstelling.evenementLocatie",
+          "type": "textfield",
+          "input": true,
+          "label": "Locatie van het evenement",
+          "tableView": true,
+          "attributes": {
+            "data-testid": "evenementenvergunning.locatie-en-opstelling-evenementLocatie"
+          },
+          "defaultValue": "Centraal Park, Amsterdam"
+        },
+        {
+          "key": "locatieEnOpstelling.voorzieningen",
+          "type": "textfield",
+          "input": true,
+          "label": "Voorzieningen",
+          "multiple": true,
+          "tableView": true,
+          "attributes": {
+            "data-testid": "evenementenvergunning.locatie-en-opstelling-voorzieningen"
+          },
+          "applyMaskOn": "change",
+          "defaultValue": [
+            "Podium",
+            "Toiletten",
+            "EHBO Post"
+          ]
+        },
+        {
+          "key": "locatieEnOpstelling.indelingsplan",
+          "type": "textfield",
+          "input": true,
+          "label": "Indelingsplan (URL)",
+          "tableView": true,
+          "attributes": {
+            "data-testid": "evenementenvergunning.locatie-en-opstelling-indelingsplan"
+          },
+          "defaultValue": "https://voorbeeld.nl/indelingsplan.pdf"
+        },
+        {
+          "key": "submit",
+          "type": "button",
+          "input": true,
+          "label": "Submit",
+          "tableView": false
+        }
+      ]
+    }
+  ]
+}
