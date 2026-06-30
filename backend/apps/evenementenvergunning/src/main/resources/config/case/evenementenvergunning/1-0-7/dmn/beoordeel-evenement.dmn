@@ -1,0 +1,120 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<definitions xmlns="https://www.omg.org/spec/DMN/20191111/MODEL/" xmlns:biodi="http://bpmn.io/schema/dmn/biodi/2.0" xmlns:camunda="http://camunda.org/schema/1.0/dmn" xmlns:dc="http://www.omg.org/spec/DMN/20180521/DC/" xmlns:dmndi="https://www.omg.org/spec/DMN/20191111/DMNDI/" xmlns:modeler="http://camunda.org/schema/modeler/1.0" exporter="Camunda Modeler" exporterVersion="4.0.0" expressionLanguage="https://www.omg.org/spec/DMN/20191111/FEEL/" id="beoordeel-evenement-afhandeling" modeler:executionPlatform="Camunda Platform" modeler:executionPlatformVersion="7.21.0" name="DRD" namespace="http://camunda.org/schema/1.0/dmn" typeLanguage="https://www.omg.org/spec/DMN/20191111/FEEL/">
+    
+  <decision id="beoordeel-evenement" name="Beoordeel evenement">
+        
+    <decisionTable hitPolicy="FIRST" id="DecisionTable_0pb0b9a" preferredOrientation="Rule-as-Row">
+            
+      <input biodi:width="190" camunda:inputVariable="aantalBezoekers" id="Input_1" label="Aantal bezoekers">
+                
+        <inputExpression id="InputExpression_1" typeRef="integer">
+                    
+          <text/>
+                  
+        </inputExpression>
+              
+      </input>
+            
+      <input camunda:inputVariable="openbaarEvenement" id="InputClause_0sspuk3" label="Openbaar evenement">
+                
+        <inputExpression id="LiteralExpression_0xnv3ax" typeRef="boolean">
+                    
+          <text/>
+                  
+        </inputExpression>
+              
+      </input>
+            
+      <output id="Output_1" label="Afhandeling" name="afhandeling" typeRef="string"/>
+            
+      <rule id="DecisionRule_13ulwys">
+                
+        <description>Goedkeuring van wethouder vereist</description>
+                
+        <inputEntry id="UnaryTests_0hk9zx4">
+                    
+          <text>&gt;= 5000</text>
+                  
+        </inputEntry>
+                
+        <inputEntry id="UnaryTests_0nymi8c">
+                    
+          <text/>
+                  
+        </inputEntry>
+                
+        <outputEntry id="LiteralExpression_16whxmw">
+                    
+          <text>"GOEDKEURING"</text>
+                  
+        </outputEntry>
+              
+      </rule>
+            
+      <rule id="DecisionRule_1wki69d">
+                
+        <description>Besloten feest met lage impact, direct goedkeuren</description>
+                
+        <inputEntry id="UnaryTests_16eks2j">
+                    
+          <text>&lt; 100</text>
+                  
+        </inputEntry>
+                
+        <inputEntry id="UnaryTests_1y459sx">
+                    
+          <text>false</text>
+                  
+        </inputEntry>
+                
+        <outputEntry id="LiteralExpression_0f4m334">
+                    
+          <text>"VERSNELD"</text>
+                  
+        </outputEntry>
+              
+      </rule>
+            
+      <rule id="DecisionRule_0dorfl7">
+                
+        <description>Normale beoordeling van de evenementaanvraag</description>
+                
+        <inputEntry id="UnaryTests_1yp3cu3">
+                    
+          <text/>
+                  
+        </inputEntry>
+                
+        <inputEntry id="UnaryTests_1b0hyxj">
+                    
+          <text/>
+                  
+        </inputEntry>
+                
+        <outputEntry id="LiteralExpression_09bwwim">
+                    
+          <text>"REGULIER"</text>
+                  
+        </outputEntry>
+              
+      </rule>
+          
+    </decisionTable>
+      
+  </decision>
+    
+  <dmndi:DMNDI>
+        
+    <dmndi:DMNDiagram>
+            
+      <dmndi:DMNShape dmnElementRef="beoordeel-evenement" isCollapsed="false">
+                
+        <dc:Bounds height="80" width="180" x="160" y="100"/>
+              
+      </dmndi:DMNShape>
+          
+    </dmndi:DMNDiagram>
+      
+  </dmndi:DMNDI>
+  
+</definitions>
