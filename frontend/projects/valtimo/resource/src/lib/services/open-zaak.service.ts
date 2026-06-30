@@ -17,7 +17,7 @@
 import {Injectable} from '@angular/core';
 import {HttpClient, HttpHeaders} from '@angular/common/http';
 import {ConfigService, InterceptorSkip, Page} from '@valtimo/shared';
-import {map, Observable} from 'rxjs';
+import {catchError, map, Observable, of, switchMap, throwError} from 'rxjs';
 import {
   CreateZaakTypeLinkRequest,
   DocumentenApiFileReference,
@@ -41,9 +41,30 @@ export class OpenZaakService {
   }
 
   public getResource(resourceId: string): Observable<ResourceDto> {
-    return this.http.get<ResourceDto>(
-      `${this.valtimoApiConfig.endpointUri}v1/resource/${resourceId}`
+    return this.getResourceMetadata(resourceId, 'downloadUrl').pipe(
+      switchMap(downloadUrl => {
+        if (!downloadUrl) {
+          return throwError(() => new Error(`No download URL found for resource ${resourceId}`));
+        }
+        return of({
+          url: `${this.valtimoApiConfig.endpointUri}${downloadUrl.replace(/^\/api\//, '')}`,
+          resource: {
+            key: resourceId,
+            name: resourceId,
+            sizeInBytes: 0,
+          },
+        });
+      })
     );
+  }
+
+  private getResourceMetadata(resourceId: string, metadataKey: string): Observable<string> {
+    return this.http
+      .get<{value: string}>(`${this.valtimoApiConfig.endpointUri}v1/resource-storage/${resourceId}/metadata/${metadataKey}`)
+      .pipe(
+        map(response => response?.value || ''),
+        catchError(() => of(''))
+      );
   }
 
   public getResources(documentId: string): Observable<Array<ResourceReference>> {
