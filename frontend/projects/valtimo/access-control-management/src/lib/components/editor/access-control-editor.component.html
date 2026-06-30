@@ -15,47 +15,58 @@
   -->
 
 <ng-container *ngIf="model$ | async as model; else loading">
+  <!-- The headers only switch the active tab; the tab content is rendered below (gated by the
+       active-tab signal) instead of inside the Carbon tab panes. Carbon removes a pane's content
+       as soon as another header is clicked, which would destroy the editor's unsaved form before
+       the leave-page confirmation is resolved. -->
   <cds-tabs type="contained">
     <cds-tab
       [active]="$activeTab() === AccessControlEditorTab.SUMMARY"
       [heading]="'accessControl.roles.tabs.summary' | translate"
       (selected)="setActiveTab(AccessControlEditorTab.SUMMARY)"
-    >
-      <valtimo-access-control-overview-tab
-        *ngIf="$activeTab() === AccessControlEditorTab.SUMMARY"
-        [permissions]="permissions$ | async"
-        [roleKey]="roleKey$ | async"
-      ></valtimo-access-control-overview-tab>
-    </cds-tab>
+    ></cds-tab>
 
     <cds-tab
       [active]="$activeTab() === AccessControlEditorTab.EDITOR"
       [heading]="'accessControl.roles.tabs.editor' | translate"
       (selected)="setActiveTab(AccessControlEditorTab.EDITOR)"
-    >
-      <valtimo-access-control-form-editor-tab
-        *ngIf="$activeTab() === AccessControlEditorTab.EDITOR"
-        [disabled]="editorDisabled$ | async"
-        [model]="model"
-        (validEvent)="onValid($event)"
-        (valueChangeEvent)="onValueChange($event)"
-      ></valtimo-access-control-form-editor-tab>
-    </cds-tab>
+    ></cds-tab>
 
     <cds-tab
       [active]="$activeTab() === AccessControlEditorTab.JSON_EDITOR"
       [heading]="'accessControl.roles.tabs.jsonEditor' | translate"
       (selected)="setActiveTab(AccessControlEditorTab.JSON_EDITOR)"
-    >
+    ></cds-tab>
+  </cds-tabs>
+
+  <!-- White surface for the tab content. The Carbon tab pane used to provide this; since the
+       content is now rendered outside the panes, the wrapper supplies the layer background. -->
+  <div class="access-control-editor__content">
+    @if ($activeTab() === AccessControlEditorTab.SUMMARY) {
+      <valtimo-access-control-overview-tab
+        [permissions]="permissions$ | async"
+        [roleKey]="roleKey$ | async"
+      ></valtimo-access-control-overview-tab>
+    }
+
+    @if ($activeTab() === AccessControlEditorTab.EDITOR) {
+      <valtimo-access-control-form-editor-tab
+        [disabled]="editorDisabled$ | async"
+        [model]="model"
+        (validEvent)="onValid($event)"
+        (valueChangeEvent)="onValueChange($event)"
+      ></valtimo-access-control-form-editor-tab>
+    }
+
+    @if ($activeTab() === AccessControlEditorTab.JSON_EDITOR) {
       <valtimo-access-control-json-editor-tab
-        *ngIf="$activeTab() === AccessControlEditorTab.JSON_EDITOR"
         [disabled]="editorDisabled$ | async"
         [model]="model"
         (validEvent)="onValid($event)"
         (valueChangeEvent)="onValueChange($event)"
       ></valtimo-access-control-json-editor-tab>
-    </cds-tab>
-  </cds-tabs>
+    }
+  </div>
 </ng-container>
 
 <ng-container renderInPageHeader>

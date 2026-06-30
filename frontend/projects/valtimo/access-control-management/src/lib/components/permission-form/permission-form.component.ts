@@ -49,6 +49,9 @@ export class PermissionFormComponent implements OnInit, AfterViewInit, OnDestroy
   public resourceTypeItems: SelectItem[] = [];
   public actionItems: SelectItem[] = [];
   public contextResourceTypeItems: SelectItem[] = [];
+  // Whether the selected resource type can be scoped to a context at all (i.e. it has at least one
+  // entity-mapper target). When false, the "scope to a context" toggle is disabled.
+  public contextOptionsAvailable = false;
 
   // The form is rendered (but visually hidden) from the start so the wrapped comboboxes can
   // initialize and fill in their preselected values. A spinner is shown until that has happened,
@@ -139,6 +142,17 @@ export class PermissionFormComponent implements OnInit, AfterViewInit, OnDestroy
     this.group.updateValueAndValidity();
   }
 
+  public onActionToggle(action: string, checked: boolean): void {
+    const actions = new Set(this.selectedActions);
+    if (checked) {
+      actions.add(action);
+    } else {
+      actions.delete(action);
+    }
+    this.actionsControl.setValue([...actions]);
+    this.actionsControl.markAsTouched();
+  }
+
   public onSectionToggle(
     section: 'resourceActions' | 'conditions' | 'context',
     event: {expanded?: boolean}
@@ -162,9 +176,18 @@ export class PermissionFormComponent implements OnInit, AfterViewInit, OnDestroy
   // The valid context resources depend on the selected resource type, so recompute whenever it
   // changes. The current value is kept selectable even if it is no longer in the valid set.
   private recomputeContextResourceTypeItems(): void {
+    this.contextOptionsAvailable = this.formEditorService.hasContextOptions(this.resourceTypeValue);
     this.contextResourceTypeItems = this.formEditorService.contextResourceTypeItems(
       this.resourceTypeValue,
       this.contextResourceTypeValue
     );
+
+    // A resource with no entity-mapper targets cannot be scoped to a context: turn the toggle off
+    // and clear any stale selection so the (now disabled) section reflects "no context".
+    if (!this.contextOptionsAvailable && this.hasContext) {
+      this.group.get('hasContext')!.setValue(false);
+      this.group.get('contextResourceType')!.setValue(null);
+      this.group.updateValueAndValidity();
+    }
   }
 }

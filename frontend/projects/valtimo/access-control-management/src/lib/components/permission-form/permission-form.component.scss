@@ -58,10 +58,18 @@
     gap: 0.5rem;
   }
 
-  &__tags {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.25rem;
+  // All available actions are shown as a checkbox grid; the checked ones are the granted actions.
+  &__actions-grid {
+    display: grid;
+    gap: 0.25rem 1rem;
+    grid-template-columns: repeat(auto-fill, minmax(10rem, 1fr));
+
+    // At least one action is required; mark the grid when none are selected.
+    &--invalid {
+      border-left: 2px solid var(--cds-support-error, #da1e28);
+      margin-left: -0.75rem;
+      padding-left: calc(0.75rem - 2px);
+    }
   }
 
   .label-with-tooltip {

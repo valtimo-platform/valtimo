@@ -24,10 +24,8 @@ import {
   ValidatorFn,
   Validators,
 } from '@angular/forms';
-import {TranslateService} from '@ngx-translate/core';
 import {SelectItem} from '@valtimo/components';
 import {PbacRegistryDto, PbacResourceDto} from '@valtimo/shared';
-import {NO_CONTEXT_RESOURCE_TYPE} from '../constants';
 import {
   ConditionOperator,
   ConditionType,
@@ -44,10 +42,7 @@ export class AccessControlFormEditorService {
   private _operatorKeys: ConditionOperator[] = [];
   private _actionsByResourceType: Record<string, string[]> = {};
 
-  constructor(
-    private readonly fb: FormBuilder,
-    private readonly translateService: TranslateService
-  ) {}
+  constructor(private readonly fb: FormBuilder) {}
 
   public setRegistry(registry: PbacRegistryDto): void {
     this._resources = registry.resources;
@@ -184,19 +179,19 @@ export class AccessControlFormEditorService {
     return this.sortByText(this.withIncluded(items, include));
   }
 
-  // Only resource types reachable from the permission's resource type via an entity mapper can be
-  // used as its context (the same set as the container-condition targets). A context with no
-  // mapper can never match at runtime, so the options are scoped per resource type rather than
-  // listing every resource.
+  // The context options are the resource types reachable from the permission's resource type via an
+  // entity mapper (the same set as the container-condition targets). The "scope to a context"
+  // toggle already represents the no-context case, so no sentinel option is listed here; when there
+  // are no reachable targets the toggle is disabled instead (see hasContextOptions).
   public contextResourceTypeItems(
     resourceType: string,
     include?: string | string[] | null
   ): SelectItem[] {
-    const noContext: SelectItem = {
-      id: NO_CONTEXT_RESOURCE_TYPE,
-      text: this.translateService.instant('accessControl.overview.noContext'),
-    };
-    return this.withIncluded([noContext, ...this.containerTargetItems(resourceType)], include);
+    return this.containerTargetItems(resourceType, include);
+  }
+
+  public hasContextOptions(resourceType: string): boolean {
+    return (this._resourceByType[resourceType]?.containerTargets?.length ?? 0) > 0;
   }
 
   public actionItems(resourceType: string, include?: string | string[] | null): SelectItem[] {
@@ -264,10 +259,10 @@ export class AccessControlFormEditorService {
     if (condition && (condition.type === 'field' || condition.type === 'expression')) {
       return condition.value;
     }
-    // A freshly-added row (no condition) or a container has no value to edit. Returning undefined
-    // renders the value field empty; only an existing field/expression condition whose value is
-    // genuinely null renders the literal "null".
-    return undefined;
+    // A freshly-added field/expression row has no value yet; default it to null, which renders as
+    // the literal "null". The value field is required and may not be left empty — to express "no
+    // value" the user types null explicitly.
+    return null;
   }
 
   private withIncluded(items: SelectItem[], include?: string | string[] | null): SelectItem[] {
@@ -307,6 +302,8 @@ function conditionValidator(group: AbstractControl): ValidationErrors | null {
     if (!group.get('resourceType')?.value) errors['resourceTypeRequired'] = true;
   } else {
     if (!group.get('field')?.value) errors['fieldRequired'] = true;
+    // The value may not be left empty; "null" must be typed for an explicit null value.
+    if (!group.get('value')?.value) errors['valueRequired'] = true;
     if (type === 'expression') {
       if (!group.get('path')?.value) errors['pathRequired'] = true;
       if (!group.get('clazz')?.value) errors['clazzRequired'] = true;
