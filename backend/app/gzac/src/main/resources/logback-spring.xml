@@ -23,6 +23,7 @@
 
     <logger name="com.ritense.valtimo" level="#logback.loglevel#"/>
     <logger name="com.ritense.valtimo.web.logging" level="DEBUG"/>
+    <logger name="com.ritense.valtimo.web.sse" level="WARN"/>
 
     <logger name="ch.qos.logback" level="WARN"/>
     <logger name="com.amazonaws" level="WARN"/>
@@ -32,6 +33,7 @@
     <logger name="com.ryantenney" level="WARN"/>
     <logger name="com.sun" level="WARN"/>
     <logger name="com.zaxxer" level="WARN"/>
+    <logger name="io.github.resilience4j.circuitbreaker" level="WARN"/>
     <logger name="io.hypersistence.utils.hibernate" level="WARN"/>
     <logger name="jakarta.activation" level="WARN"/>
     <logger name="jakarta.mail" level="WARN"/>
@@ -48,6 +50,7 @@
     <logger name="org.hibernate.engine.jdbc.spi" level="INFO"/>
     <logger name="org.hibernate.validator" level="WARN"/>
     <logger name="org.operaton" level="INFO"/>
+    <logger name="org.postgresql" level="WARN"/>
     <logger name="org.springframework" level="WARN"/>
     <logger name="org.springframework.cache" level="WARN"/>
     <logger name="org.springframework.cloud" level="WARN"/>
