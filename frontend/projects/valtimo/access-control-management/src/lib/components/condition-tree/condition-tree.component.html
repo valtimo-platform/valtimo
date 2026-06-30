@@ -25,6 +25,7 @@
           [clearable]="false"
           [dataTestId]="testIds.conditionTypeSelect"
           [defaultSelectionId]="typeOf(i)"
+          [dropUp]="false"
           [items]="typeItems"
           [tooltip]="'accessControl.editor.tooltips.conditionType' | translate"
           titleTranslationKey="accessControl.editor.conditionType"
@@ -38,9 +39,14 @@
               [cdsLayer]="inputLayerLevel"
               [dataTestId]="testIds.conditionFieldSelect"
               [defaultSelectionId]="containerResourceTypeAt(i)"
-              [invalid]="!!asFormGroup(control).errors?.['resourceTypeRequired']"
+              [dropUp]="false"
+              [invalid]="
+                !!asFormGroup(control).errors?.['resourceTypeRequired'] &&
+                !!asFormGroup(control).get('resourceType')?.touched
+              "
               [items]="containerTargetItems"
               [placeholder]="'accessControl.editor.relatedResourcePlaceholder' | translate"
+              [required]="true"
               [tooltip]="'accessControl.editor.tooltips.relatedResource' | translate"
               titleTranslationKey="accessControl.editor.relatedResource"
             ></v-select>
@@ -63,9 +69,14 @@
                 [cdsLayer]="inputLayerLevel"
                 [dataTestId]="testIds.conditionFieldSelect"
                 [defaultSelectionId]="fieldValueAt(i)"
-                [invalid]="!!asFormGroup(control).errors?.['fieldRequired']"
+                [dropUp]="false"
+                [invalid]="
+                  !!asFormGroup(control).errors?.['fieldRequired'] &&
+                  !!asFormGroup(control).get('field')?.touched
+                "
                 [items]="fieldItems"
                 [placeholder]="'accessControl.editor.fieldPlaceholder' | translate"
+                [required]="true"
                 [tooltip]="'accessControl.editor.tooltips.field' | translate"
                 titleTranslationKey="accessControl.editor.field"
               ></v-select>
@@ -77,6 +88,7 @@
                 [clearable]="false"
                 [dataTestId]="testIds.conditionOperatorSelect"
                 [defaultSelectionId]="operatorValueAt(i)"
+                [dropUp]="false"
                 [items]="operatorItems"
                 [tooltip]="'accessControl.editor.tooltips.operator' | translate"
                 titleTranslationKey="accessControl.editor.operator"
@@ -84,7 +96,9 @@
 
               <div class="condition-tree__value cds--form-item" [cdsLayer]="inputLayerLevel">
                 <label class="cds--label label-with-tooltip">
-                  {{ 'accessControl.editor.value' | translate }}
+                  {{ 'accessControl.editor.value' | translate }} ({{
+                    'interface.required' | translate
+                  }})
                   <v-tooltip-icon
                     [tooltip]="'accessControl.editor.tooltips.value' | translate"
                   ></v-tooltip-icon>
@@ -92,6 +106,10 @@
                 <input
                   cdsText
                   [attr.data-test-id]="testIds.conditionValueInput"
+                  [class.cds--text-input--invalid]="
+                    !!asFormGroup(control).errors?.['valueRequired'] &&
+                    !!asFormGroup(control).get('value')?.touched
+                  "
                   [placeholder]="'accessControl.editor.valuePlaceholder' | translate"
                   formControlName="value"
                 />
@@ -102,7 +120,9 @@
               <div class="condition-tree__fields">
                 <div class="condition-tree__value cds--form-item" [cdsLayer]="inputLayerLevel">
                   <label class="cds--label label-with-tooltip">
-                    {{ 'accessControl.editor.path' | translate }}
+                    {{ 'accessControl.editor.path' | translate }} ({{
+                      'interface.required' | translate
+                    }})
                     <v-tooltip-icon
                       [tooltip]="'accessControl.editor.tooltips.path' | translate"
                     ></v-tooltip-icon>
@@ -110,7 +130,10 @@
                   <input
                     cdsText
                     [attr.data-test-id]="testIds.conditionPathInput"
-                    [class.cds--text-input--invalid]="asFormGroup(control).errors?.['pathRequired']"
+                    [class.cds--text-input--invalid]="
+                      !!asFormGroup(control).errors?.['pathRequired'] &&
+                      !!asFormGroup(control).get('path')?.touched
+                    "
                     [placeholder]="'accessControl.editor.pathPlaceholder' | translate"
                     formControlName="path"
                   />
@@ -118,7 +141,9 @@
 
                 <div class="condition-tree__value cds--form-item" [cdsLayer]="inputLayerLevel">
                   <label class="cds--label label-with-tooltip">
-                    {{ 'accessControl.editor.clazz' | translate }}
+                    {{ 'accessControl.editor.clazz' | translate }} ({{
+                      'interface.required' | translate
+                    }})
                     <v-tooltip-icon
                       [tooltip]="'accessControl.editor.tooltips.clazz' | translate"
                     ></v-tooltip-icon>
@@ -127,7 +152,8 @@
                     cdsText
                     [attr.data-test-id]="testIds.conditionClazzInput"
                     [class.cds--text-input--invalid]="
-                      asFormGroup(control).errors?.['clazzRequired']
+                      !!asFormGroup(control).errors?.['clazzRequired'] &&
+                      !!asFormGroup(control).get('clazz')?.touched
                     "
                     [placeholder]="'accessControl.editor.clazzPlaceholder' | translate"
                     formControlName="clazz"

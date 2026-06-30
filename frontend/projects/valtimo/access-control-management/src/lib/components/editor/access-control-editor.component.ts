@@ -14,7 +14,15 @@
  * limitations under the License.
  */
 
-import {ChangeDetectionStrategy, Component, OnDestroy, OnInit, signal} from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  OnDestroy,
+  OnInit,
+  QueryList,
+  signal,
+  ViewChildren,
+} from '@angular/core';
 import {AccessControlService} from '../../services/access-control.service';
 import {BehaviorSubject, filter, finalize, map, Subscription, switchMap, take, tap} from 'rxjs';
 import {ActivatedRoute, Router} from '@angular/router';
@@ -24,6 +32,7 @@ import {
   PageTitleService,
   PendingChangesComponent,
 } from '@valtimo/components';
+import {Tab} from 'carbon-components-angular';
 import {AccessControlEditorTab, Permission, Role} from '../../models';
 import {TranslateService} from '@ngx-translate/core';
 import {AccessControlExportService} from '../../services/access-control-export.service';
@@ -53,6 +62,10 @@ export class AccessControlEditorComponent
   public readonly $activeTab = signal<AccessControlEditorTab>(AccessControlEditorTab.SUMMARY);
 
   protected readonly AccessControlEditorTab = AccessControlEditorTab;
+
+  // The Carbon tab headers, used to restore the highlighted header when a leave-page prompt is
+  // cancelled (Carbon highlights the clicked header immediately, before the guard resolves).
+  @ViewChildren(Tab) private _tabs!: QueryList<Tab>;
 
   private _roleKeySubscription!: Subscription;
   private _roleKey!: string;
@@ -91,16 +104,47 @@ export class AccessControlEditorComponent
   }
 
   public onValueChange(value: string): void {
-    // The first emission after a (re)load is the form's serialized baseline; only later emissions
-    // that differ from it are genuine unsaved edits.
+    // The first emission after a (re)load is the editor's baseline. Comparison is done on the
+    // normalized (whitespace-insensitive) JSON so the JSON editor's format-on-load reflow is not
+    // mistaken for an edit; only a genuine content change marks the editor dirty. Each tab keeps
+    // its own baseline (the editor reloads from the saved model per tab), so the JSON and visual
+    // editors track their unsaved state independently.
+    const normalized = this.normalizeJson(value);
     if (this._pendingBaseline === null) {
-      this._pendingBaseline = value;
+      this._pendingBaseline = normalized;
       this.pendingChanges = false;
     } else {
-      this.pendingChanges = value !== this._pendingBaseline;
+      this.pendingChanges = normalized !== this._pendingBaseline;
     }
 
     this._updatedModelValue$.next(value);
+  }
+
+  // Canonicalizes a JSON string by dropping insignificant whitespace, so reformatting (such as the
+  // JSON editor's format-on-load) does not register as a change. Invalid JSON is compared as-is.
+  private normalizeJson(value: string): string {
+    try {
+      return JSON.stringify(JSON.parse(value));
+    } catch {
+      return value;
+    }
+  }
+
+  protected override onCancelRedirect(): void {
+    this.syncTabHeaders();
+  }
+
+  // The Carbon tab header highlights the clicked tab immediately; if the leave-page prompt is
+  // cancelled, restore the highlight to the tab that is actually still active.
+  private syncTabHeaders(): void {
+    const order = [
+      AccessControlEditorTab.SUMMARY,
+      AccessControlEditorTab.EDITOR,
+      AccessControlEditorTab.JSON_EDITOR,
+    ];
+    this._tabs?.forEach((tab, index) => {
+      tab.active = order[index] === this.$activeTab();
+    });
   }
 
   public updatePermissions(): void {

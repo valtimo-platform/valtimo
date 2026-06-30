@@ -41,38 +41,47 @@
               [cdsLayer]="1"
               [dataTestId]="testIds.resourceTypeSelect"
               [defaultSelectionId]="resourceTypeValue"
-              [invalid]="group.get('resourceType')!.invalid"
+              [dropUp]="false"
+              [invalid]="group.get('resourceType')!.invalid && group.get('resourceType')!.touched"
               [items]="resourceTypeItems"
               [placeholder]="'accessControl.editor.resourceTypePlaceholder' | translate"
+              [required]="true"
               [tooltip]="'accessControl.editor.tooltips.resourceType' | translate"
               titleTranslationKey="accessControl.editor.resourceType"
             ></v-select>
 
             <div class="permission-form__actions-field">
               <label class="cds--label label-with-tooltip">
-                {{ 'accessControl.editor.actions' | translate }}
+                {{ 'accessControl.editor.actions' | translate }} ({{
+                  'interface.required' | translate
+                }})
                 <v-tooltip-icon
                   [tooltip]="'accessControl.editor.tooltips.actions' | translate"
                 ></v-tooltip-icon>
               </label>
 
-              <v-select
-                formControlName="actions"
-                [cdsLayer]="1"
-                [dataTestId]="testIds.actionsSelect"
-                [defaultSelectionIds]="selectedActions"
-                [invalid]="actionsControl.invalid"
-                [items]="actionItems"
-                [multiple]="true"
-                [placeholder]="'accessControl.editor.actionsPlaceholder' | translate"
-              ></v-select>
-
-              @if (selectedActions.length) {
-                <div class="permission-form__tags">
-                  @for (action of selectedActions; track action) {
-                    <cds-tag type="blue">{{ action }}</cds-tag>
+              @if (actionItems.length) {
+                <div
+                  class="permission-form__actions-grid"
+                  [attr.data-test-id]="testIds.actionsSelect"
+                  [class.permission-form__actions-grid--invalid]="
+                    actionsControl.invalid && actionsControl.touched
+                  "
+                >
+                  @for (item of actionItems; track item.id) {
+                    <cds-checkbox
+                      [checked]="selectedActions.includes(item.id)"
+                      [disabled]="disabled"
+                      (checkedChange)="onActionToggle(item.id, $event)"
+                    >
+                      {{ item.id }}
+                    </cds-checkbox>
                   }
                 </div>
+              } @else {
+                <p class="permission-form__hint">
+                  {{ 'accessControl.editor.noActions' | translate }}
+                </p>
               }
             </div>
           </div>
@@ -106,12 +115,18 @@
           <cds-toggle
             [attr.data-test-id]="testIds.contextToggle"
             [checked]="hasContext"
-            [disabled]="disabled"
+            [disabled]="disabled || !contextOptionsAvailable"
             [label]="'accessControl.editor.context' | translate"
             [offText]="'interface.off' | translate"
             [onText]="'interface.on' | translate"
             (checkedChange)="onToggleContext($event)"
           ></cds-toggle>
+
+          @if (!contextOptionsAvailable) {
+            <p class="permission-form__hint">
+              {{ 'accessControl.editor.contextUnavailable' | translate }}
+            </p>
+          }
 
           @if (hasContext) {
             <p class="permission-form__hint">
@@ -124,9 +139,11 @@
               [cdsLayer]="1"
               [dataTestId]="testIds.contextResourceTypeSelect"
               [defaultSelectionId]="contextResourceTypeValue || ''"
-              [invalid]="contextResourceTypeRequired"
+              [dropUp]="false"
+              [invalid]="contextResourceTypeRequired && !!group.get('contextResourceType')?.touched"
               [items]="contextResourceTypeItems"
               [placeholder]="'accessControl.editor.contextResourceTypePlaceholder' | translate"
+              [required]="true"
               [tooltip]="'accessControl.editor.tooltips.contextResourceType' | translate"
               titleTranslationKey="accessControl.editor.contextResourceType"
             ></v-select>
