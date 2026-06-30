@@ -37,7 +37,11 @@
     (rowClicked)="onRowClicked($event)"
   >
     <div carbonToolbarContent>
-      <button cdsButton="primary" (click)="onCreateButtonClicked()">
+      <button
+        cdsButton="primary"
+        [attr.data-test-id]="testIds.addColumnButton"
+        (click)="onCreateButtonClicked()"
+      >
         {{ 'ikoManagement.addColumn' | translate }}
 
         <svg cdsIcon="add" size="16" class="cds--btn__icon"></svg>

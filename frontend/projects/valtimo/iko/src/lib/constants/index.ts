@@ -15,3 +15,4 @@
  */
 
 export * from './iko-management.constants';
+export * from './iko.test-ids';

@@ -50,6 +50,7 @@ import {map} from 'rxjs/operators';
 import {delay, filter, Observable, of, Subscription, switchMap} from 'rxjs';
 import {ActivatedRoute} from '@angular/router';
 import {ModalCloseEvent, ModalMode} from '@valtimo/shared';
+import {IKO_COLUMN_MODAL_TEST_IDS} from '../../../../constants/iko.test-ids';
 
 @Component({
   standalone: true,
@@ -75,6 +76,7 @@ import {ModalCloseEvent, ModalMode} from '@valtimo/shared';
   ],
 })
 export class IkoManagementListModalComponent implements OnInit, OnDestroy {
+  public readonly testIds = IKO_COLUMN_MODAL_TEST_IDS;
   public readonly $openModal = signal<boolean>(false);
   @Input() public set openModal(value: boolean) {
     this.$openModal.set(value);
@@ -114,7 +116,7 @@ export class IkoManagementListModalComponent implements OnInit, OnDestroy {
     key: this.formBuilder.control('', [Validators.required], [this.keyNotUsedValidator()]),
     path: this.formBuilder.control('', [Validators.required]),
     displayType: this.formBuilder.control('', [Validators.required]),
-    sortable: this.formBuilder.control(false, [Validators.required]),
+    sortable: this.formBuilder.control(false),
     defaultSort: this.formBuilder.control(''),
     dateFormat: this.formBuilder.control(''),
     tagAmount: this.formBuilder.control(1),

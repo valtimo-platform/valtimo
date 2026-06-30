@@ -58,6 +58,7 @@ import {filter, map, Observable, switchMap} from 'rxjs';
 import {IkoTabType, PropertyField, TabDto} from '../../../../models';
 import {IkoManagementApiService} from '../../../../services';
 import {PropertiesFormComponent} from '../../../iko-management-properties/iko-management-properties.component';
+import {IKO_TAB_DETAILS_MODAL_TEST_IDS} from '../../../../constants/iko.test-ids';
 
 @Component({
   selector: 'valtimo-iko-management-tab-details-modal',
@@ -86,6 +87,8 @@ import {PropertiesFormComponent} from '../../../iko-management-properties/iko-ma
   ],
 })
 export class IkoManagementTabDetailsModalComponent {
+  public readonly testIds = IKO_TAB_DETAILS_MODAL_TEST_IDS;
+
   public readonly $openModal = signal<boolean>(false);
   @Input() public set openModal(value: boolean) {
     this.$openModal.set(value);

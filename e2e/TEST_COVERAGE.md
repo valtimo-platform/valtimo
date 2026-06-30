@@ -5,10 +5,10 @@
 | Category                    | Features | Functions | ✅ Covered | ❌ Not Covered |
 |-----------------------------|----------|-----------|------------|----------------|
 | User Features (ROLE_USER)   | 5        | 21        | 12         | 9              |
-| Admin Features (ROLE_ADMIN) | 15       | 335       | 164        | 168            |
-| **Total**                   | **20**   | **356**   | **176**    | **177**        |
+| Admin Features (ROLE_ADMIN) | 15       | 335       | 239        | 96             |
+| **Total**                   | **20**   | **356**   | **251**    | **105**        |
 
-**Coverage:** `176 / 356` — `49.4%`
+**Coverage:** `251 / 356` — `70.5%`
 
 ---
 
@@ -567,111 +567,111 @@
 
 | #     | Function                 | Test Scenarios                          | Coverage | Notes                                           |
 |:------|:-------------------------|:----------------------------------------|:--------:|:------------------------------------------------|
-| 15.1  | View IKO servers list    | View IKO servers list                   |    ❌    |                                                 |
-| 15.2  | Configure IKO server     | Configure IKO server                    |    ❌    |                                                 |
-| 15.3  | Enter server title       | Enter server title                      |    ❌    |                                                 |
-| 15.4  | Auto-generate server key | Auto-generate server key                |    ❌    |                                                 |
-| 15.5  | Enter IKO server URL     | Enter IKO server URL                    |    ❌    |                                                 |
-| 15.6  | Save IKO server config   | Save IKO server configuration           |    ❌    |                                                 |
-| 15.7  | Edit IKO server          | Edit IKO server                         |    ❌    |                                                 |
-| 15.8  | Delete IKO server        | Delete IKO server                       |    ❌    |                                                 |
-| 15.9  | View delete confirmation | View delete confirmation dialog         |    ❌    |                                                 |
-| 15.10 | Import IKO definition    | Import IKO definition (ZIP, max 500 kb) |    ❌    |                                                 |
-| 15.11 | Select file for import   | Select file for import                  |    ❌    |                                                 |
-| 15.12 | Cancel import            | Cancel import                           |    ❌    |                                                 |
+| 15.1  | View IKO servers list    | View IKO servers list                   |    ✅    | iko-server.spec.ts                              |
+| 15.2  | Configure IKO server     | Configure IKO server                    |    ✅    | iko-server.spec.ts                              |
+| 15.3  | Enter server title       | Enter server title                      |    ✅    | iko-server.spec.ts                              |
+| 15.4  | Auto-generate server key | Auto-generate server key                |    ✅    | iko-server.spec.ts                              |
+| 15.5  | Enter IKO server URL     | Enter IKO server URL                    |    ✅    | iko-server.spec.ts                              |
+| 15.6  | Save IKO server config   | Save IKO server configuration           |    ✅    | iko-server.spec.ts                              |
+| 15.7  | Edit IKO server          | Edit IKO server                         |    ✅    | iko-server.spec.ts                              |
+| 15.8  | Delete IKO server        | Delete IKO server                       |    ✅    | iko-server.spec.ts                              |
+| 15.9  | View delete confirmation | View delete confirmation dialog         |    ✅    | iko-server.spec.ts                              |
+| 15.10 | Import IKO definition    | Import IKO definition (ZIP, max 500 kb) |    ✅    | iko-server.spec.ts                              |
+| 15.11 | Select file for import   | Select file for import                  |    ✅    | iko-server.spec.ts                              |
+| 15.12 | Cancel import            | Cancel import                           |    ✅    | iko-server.spec.ts                              |
 
 #### 15B · View Management
 
 | #     | Function                     | Test Scenarios                     | Coverage | Notes                                           |
 |:------|:-----------------------------|:-----------------------------------|:--------:|:------------------------------------------------|
-| 15.13 | View IKO views list          | View IKO views list                |    ❌    |                                                 |
-| 15.14 | Add view                     | Add view                           |    ❌    |                                                 |
-| 15.15 | Enter view title             | Enter view title                   |    ❌    |                                                 |
-| 15.16 | Auto-generate view key       | Auto-generate view key             |    ❌    |                                                 |
-| 15.17 | Enter connector reference    | Enter connector reference          |    ❌    |                                                 |
-| 15.18 | Enter connector instance ref | Enter connector instance reference |    ❌    |                                                 |
-| 15.19 | Enter endpoint reference     | Enter endpoint reference           |    ❌    |                                                 |
-| 15.20 | Add key value pairs          | Add key value pairs                |    ❌    |                                                 |
-| 15.21 | Save view                    | Save view                          |    ❌    |                                                 |
-| 15.22 | Edit view                    | Edit view                          |    ❌    |                                                 |
-| 15.23 | Delete view                  | Delete view                        |    ❌    |                                                 |
+| 15.13 | View IKO views list          | View IKO views list                |    ✅    | iko-view.spec.ts                                |
+| 15.14 | Add view                     | Add view                           |    ✅    | iko-view.spec.ts                                |
+| 15.15 | Enter view title             | Enter view title                   |    ✅    | iko-view.spec.ts                                |
+| 15.16 | Auto-generate view key       | Auto-generate view key             |    ✅    | iko-view.spec.ts                                |
+| 15.17 | Enter connector reference    | Enter connector reference          |    ✅    | iko-view.spec.ts                                |
+| 15.18 | Enter connector instance ref | Enter connector instance reference |    ✅    | iko-view.spec.ts                                |
+| 15.19 | Enter endpoint reference     | Enter endpoint reference           |    ✅    | iko-view.spec.ts                                |
+| 15.20 | Add key value pairs          | Add key value pairs                |    ✅    | iko-view.spec.ts                                |
+| 15.21 | Save view                    | Save view                          |    ✅    | iko-view.spec.ts                                |
+| 15.22 | Edit view                    | Edit view                          |    ✅    | iko-view.spec.ts                                |
+| 15.23 | Delete view                  | Delete view                        |    ✅    | iko-view.spec.ts                                |
 
 #### 15C · Search Actions
 
 | #     | Function                   | Test Scenarios             | Coverage | Notes                                           |
 |:------|:---------------------------|:---------------------------|:--------:|:------------------------------------------------|
-| 15.24 | View search actions tab    | View search actions tab    |    ❌    |                                                 |
-| 15.25 | View search actions list   | View search actions list   |    ❌    |                                                 |
-| 15.26 | Add search action          | Add search action          |    ❌    |                                                 |
-| 15.27 | Enter search action title  | Enter search action title  |    ❌    |                                                 |
-| 15.28 | Enter search action key    | Enter search action key    |    ❌    |                                                 |
-| 15.29 | Delete search action       | Delete search action       |    ❌    |                                                 |
-| 15.30 | View search action details | View search action details |    ❌    |                                                 |
+| 15.24 | View search actions tab    | View search actions tab    |    ✅    | iko-search-action.spec.ts                       |
+| 15.25 | View search actions list   | View search actions list   |    ✅    | iko-search-action.spec.ts                       |
+| 15.26 | Add search action          | Add search action          |    ✅    | iko-search-action.spec.ts                       |
+| 15.27 | Enter search action title  | Enter search action title  |    ✅    | iko-search-action.spec.ts                       |
+| 15.28 | Enter search action key    | Enter search action key    |    ✅    | iko-search-action.spec.ts                       |
+| 15.29 | Delete search action       | Delete search action       |    ✅    | iko-search-action.spec.ts                       |
+| 15.30 | View search action details | View search action details |    ✅    | iko-search-action.spec.ts                       |
 
 #### 15D · Search Fields
 
 | #     | Function                | Test Scenarios                                | Coverage | Notes                                           |
 |:------|:------------------------|:----------------------------------------------|:--------:|:------------------------------------------------|
-| 15.31 | View search fields list | View search fields list                       |    ❌    |                                                 |
-| 15.32 | Add search field        | Add search field                              |    ❌    |                                                 |
-| 15.33 | Enter field title       | Enter field title (e.g. `BSN`)                |    ❌    |                                                 |
-| 15.34 | Enter field key         | Enter field key (e.g. `bsn`)                  |    ❌    |                                                 |
-| 15.35 | Enter field path        | Enter field path (e.g. `burgerservicenummer`) |    ❌    |                                                 |
-| 15.36 | Select data type        | Select data type dropdown (`Text`)            |    ❌    |                                                 |
-| 15.37 | Select match type       | Select match type (`Exact`)                   |    ❌    |                                                 |
-| 15.38 | Select field type       | Select field type (`Single`)                  |    ❌    |                                                 |
-| 15.39 | Set field as required   | Set field as required (toggle)                |    ❌    |                                                 |
-| 15.40 | Save search field       | Save search field                             |    ❌    |                                                 |
-| 15.41 | Edit search field       | Edit search field                             |    ❌    |                                                 |
-| 15.42 | Delete search field     | Delete search field                           |    ❌    |                                                 |
+| 15.31 | View search fields list | View search fields list                       |    ✅    | iko-search-field.spec.ts                        |
+| 15.32 | Add search field        | Add search field                              |    ✅    | iko-search-field.spec.ts                        |
+| 15.33 | Enter field title       | Enter field title (e.g. `BSN`)                |    ✅    | iko-search-field.spec.ts                        |
+| 15.34 | Enter field key         | Enter field key (e.g. `bsn`)                  |    ✅    | iko-search-field.spec.ts                        |
+| 15.35 | Enter field path        | Enter field path (e.g. `burgerservicenummer`) |    ✅    | iko-search-field.spec.ts                        |
+| 15.36 | Select data type        | Select data type dropdown (`Text`)            |    ✅    | iko-search-field.spec.ts                        |
+| 15.37 | Select match type       | Select match type (`Exact`)                   |    ✅    | iko-search-field.spec.ts                        |
+| 15.38 | Select field type       | Select field type (`Single`)                  |    ✅    | iko-search-field.spec.ts                        |
+| 15.39 | Set field as required   | Set field as required (toggle)                |    ✅    | iko-search-field.spec.ts                        |
+| 15.40 | Save search field       | Save search field                             |    ✅    | iko-search-field.spec.ts                        |
+| 15.41 | Edit search field       | Edit search field                             |    ✅    | iko-search-field.spec.ts                        |
+| 15.42 | Delete search field     | Delete search field                           |    ✅    | iko-search-field.spec.ts                        |
 
 #### 15E · List Columns
 
 | #     | Function                 | Test Scenarios                                        | Coverage | Notes                                           |
 |:------|:-------------------------|:------------------------------------------------------|:--------:|:------------------------------------------------|
-| 15.43 | View list tab            | View list tab                                         |    ❌    |                                                 |
-| 15.44 | View list columns        | View list columns (Title, Key, Path, Display Type, …) |    ❌    |                                                 |
-| 15.45 | Add column               | Add column                                            |    ❌    |                                                 |
-| 15.46 | Enter column title       | Enter column title                                    |    ❌    |                                                 |
-| 15.47 | Auto-generate column key | Auto-generate column key                              |    ❌    |                                                 |
-| 15.48 | Enter column path        | Enter column path (e.g. `/basisgegevens/bsn`)         |    ❌    |                                                 |
-| 15.49 | Toggle sorting enabled   | Toggle sorting enabled                                |    ❌    |                                                 |
-| 15.50 | Select default sort      | Select default sort                                   |    ❌    |                                                 |
-| 15.51 | Select display type      | Select display type (`hidden`, `Text`)                |    ❌    |                                                 |
-| 15.52 | Save column              | Save column                                           |    ❌    |                                                 |
-| 15.53 | Edit column              | Edit column                                           |    ❌    |                                                 |
-| 15.54 | Reorder columns          | Reorder columns (drag handle)                         |    ❌    |                                                 |
+| 15.43 | View list tab            | View list tab                                         |    ✅    | iko-list-column.spec.ts                         |
+| 15.44 | View list columns        | View list columns (Title, Key, Path, Display Type, …) |    ✅    | iko-list-column.spec.ts                         |
+| 15.45 | Add column               | Add column                                            |    ✅    | iko-list-column.spec.ts                         |
+| 15.46 | Enter column title       | Enter column title                                    |    ✅    | iko-list-column.spec.ts                         |
+| 15.47 | Auto-generate column key | Auto-generate column key                              |    ✅    | iko-list-column.spec.ts                         |
+| 15.48 | Enter column path        | Enter column path (e.g. `/basisgegevens/bsn`)         |    ✅    | iko-list-column.spec.ts                         |
+| 15.49 | Toggle sorting enabled   | Toggle sorting enabled                                |    ✅    | iko-list-column.spec.ts                         |
+| 15.50 | Select default sort      | Select default sort                                   |    ✅    | iko-list-column.spec.ts                         |
+| 15.51 | Select display type      | Select display type (`hidden`, `Text`)                |    ✅    | iko-list-column.spec.ts                         |
+| 15.52 | Save column              | Save column                                           |    ✅    | iko-list-column.spec.ts                         |
+| 15.53 | Edit column              | Edit column                                           |    ✅    | iko-list-column.spec.ts                         |
+| 15.54 | Reorder columns          | Reorder columns (drag handle)                         |    ✅    | iko-list-column.spec.ts                         |
 
 #### 15F · Tabs
 
 | #     | Function                | Test Scenarios                                        | Coverage | Notes                                           |
 |:------|:------------------------|:------------------------------------------------------|:--------:|:------------------------------------------------|
-| 15.55 | View tabs tab           | View tabs tab                                         |    ❌    |                                                 |
-| 15.56 | View tabs list          | View tabs list (Key, Tab title, Tab type, Properties) |    ❌    |                                                 |
-| 15.57 | Add tab                 | Add tab                                               |    ❌    |                                                 |
-| 15.58 | Enter tab title         | Enter tab title                                       |    ❌    |                                                 |
-| 15.59 | Auto-generate tab key   | Auto-generate tab key                                 |    ❌    |                                                 |
-| 15.60 | Select tab type         | Select tab type dropdown                              |    ❌    |                                                 |
-| 15.61 | Enter data profile name | Enter aggregated data profile name (optional)         |    ❌    |                                                 |
-| 15.62 | Save tab                | Save tab                                              |    ❌    |                                                 |
-| 15.63 | Edit tab                | Edit tab                                              |    ❌    |                                                 |
-| 15.64 | Delete tab              | Delete tab                                            |    ❌    |                                                 |
+| 15.55 | View tabs tab           | View tabs tab                                         |    ✅    | iko-tab.spec.ts                                 |
+| 15.56 | View tabs list          | View tabs list (Key, Tab title, Tab type, Properties) |    ✅    | iko-tab.spec.ts                                 |
+| 15.57 | Add tab                 | Add tab                                               |    ✅    | iko-tab.spec.ts                                 |
+| 15.58 | Enter tab title         | Enter tab title                                       |    ✅    | iko-tab.spec.ts                                 |
+| 15.59 | Auto-generate tab key   | Auto-generate tab key                                 |    ✅    | iko-tab.spec.ts                                 |
+| 15.60 | Select tab type         | Select tab type dropdown                              |    ✅    | iko-tab.spec.ts                                 |
+| 15.61 | Enter data profile name | Enter aggregated data profile name (optional)         |    ✅    | iko-tab.spec.ts                                 |
+| 15.62 | Save tab                | Save tab                                              |    ✅    | iko-tab.spec.ts                                 |
+| 15.63 | Edit tab                | Edit tab                                              |    ✅    | iko-tab.spec.ts                                 |
+| 15.64 | Delete tab              | Delete tab                                            |    ✅    | iko-tab.spec.ts                                 |
 
 #### 15G · IKO Widgets
 
 | #     | Function                  | Test Scenarios                                                             | Coverage | Notes                                           |
 |:------|:--------------------------|:---------------------------------------------------------------------------|:--------:|:------------------------------------------------|
-| 15.65 | View widget details page  | View IKO widget details page                                               |    ❌    |                                                 |
-| 15.66 | View widgets list         | View widgets list                                                          |    ❌    |                                                 |
-| 15.67 | View widget properties    | View widget properties (Title, Type, Key, Width, Density, High contrast)   |    ❌    |                                                 |
-| 15.68 | Toggle visual/JSON editor | Toggle visual/JSON editor                                                  |    ❌    |                                                 |
-| 15.69 | Edit widgets JSON         | Edit widgets in JSON editor                                                |    ❌    |                                                 |
-| 15.70 | Add widget divider        | Add widget divider                                                         |    ❌    |                                                 |
-| 15.71 | Enter divider title       | Enter divider title (optional)                                             |    ❌    |                                                 |
-| 15.72 | Auto-generate divider key | Auto-generate divider key                                                  |    ❌    |                                                 |
-| 15.73 | Create widget             | Create widget                                                              |    ❌    |                                                 |
-| 15.74 | Choose widget type        | Choose widget type (Fields / Table / Interactive table / Collection / Map) |    ❌    |                                                 |
-| 15.75 | Save widget configuration | Save widget configuration                                                  |    ❌    |                                                 |
+| 15.65 | View widget details page  | View IKO widget details page                                               |    ✅    | iko-widget.spec.ts                              |
+| 15.66 | View widgets list         | View widgets list                                                          |    ✅    | iko-widget.spec.ts                              |
+| 15.67 | View widget properties    | View widget properties (Title, Type, Key, Width, Density, High contrast)   |    ✅    | iko-widget.spec.ts                              |
+| 15.68 | Toggle visual/JSON editor | Toggle visual/JSON editor                                                  |    ✅    | iko-widget.spec.ts                              |
+| 15.69 | Edit widgets JSON         | Edit widgets in JSON editor                                                |    ✅    | iko-widget.spec.ts                              |
+| 15.70 | Add widget divider        | Add widget divider                                                         |    ✅    | iko-widget.spec.ts                              |
+| 15.71 | Enter divider title       | Enter divider title (optional)                                             |    ✅    | iko-widget.spec.ts                              |
+| 15.72 | Auto-generate divider key | Auto-generate divider key                                                  |    ✅    | iko-widget.spec.ts                              |
+| 15.73 | Create widget             | Create widget                                                              |    ✅    | iko-widget.spec.ts                              |
+| 15.74 | Choose widget type        | Choose widget type (Fields / Table / Interactive table / Collection / Map) |    ✅    | iko-widget.spec.ts (all 5 types created)        |
+| 15.75 | Save widget configuration | Save widget configuration                                                  |    ✅    | iko-widget.spec.ts (create + edit + delete all) |
 
 ---
 
@@ -727,8 +727,8 @@
 |:-------------------------|:-------:|
 | Total Features           |   20    |
 | Total Functions          |   356   |
-| ✅ Covered by Playwright |   176   |
-| ❌ Not covered           |   177   |
+| ✅ Covered by Playwright |   251   |
+| ❌ Not covered           |   105   |
 | ⏳ In progress           |    1    |
 | `N/A` Not applicable     |    2    |
-| **Coverage %**           | **49.4%** |
+| **Coverage %**           | **70.5%** |
