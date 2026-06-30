@@ -1,0 +1,59 @@
+/*!
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
+ *
+ * Licensed under EUPL, Version 1.2 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" basis,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+.form-editor {
+  display: flex;
+  flex-direction: column;
+
+  // The accordion spans the entire width of the tab; spacing is applied to the surrounding
+  // actions instead so the accordion itself stays edge to edge.
+  &__list {
+    width: 100%;
+  }
+
+  &__empty {
+    border: 1px dashed var(--cds-border-strong, #8d8d8d);
+    margin: 1rem;
+    padding: 2rem;
+    text-align: center;
+  }
+
+  &__empty-title {
+    margin: 0 0 0.5rem;
+  }
+
+  &__empty-message {
+    color: var(--cds-text-secondary, #525252);
+    margin: 0;
+  }
+
+  &__add {
+    align-self: flex-start;
+    margin: 1rem;
+  }
+}
+
+// The accordion sits flush against the top of the tab, so the leading separator of the first
+// item is removed.
+:host ::ng-deep .cds--accordion__item:first-of-type {
+  border-top: 0;
+}
+
+:host ::ng-deep .cds--accordion__content {
+  padding: 0 !important;
+  padding-inline-start: 16px !important;
+  padding-inline-end: 16px !important;
+}
