@@ -14,44 +14,81 @@
   ~ limitations under the License.
   -->
 
-<div *ngIf="ready && permissionsArray as permissions" class="form-editor">
-  @if (permissions.length === 0) {
-    <div class="form-editor__empty">
-      <h4 class="form-editor__empty-title">
-        {{ 'accessControl.editor.empty.title' | translate }}
-      </h4>
-      <p class="form-editor__empty-message">
-        {{ 'accessControl.editor.empty.message' | translate }}
-      </p>
-    </div>
-  }
+<!-- fitPage sizes this container to the viewport so the sidebar and panel each scroll on their own. -->
+<div *ngIf="ready && permissionsArray as permissions" class="form-editor" fitPage>
+  <aside class="form-editor__sidebar">
+    <div class="form-editor__sidebar-header">
+      <span class="form-editor__sidebar-title">{{
+        'accessControl.editor.permissions' | translate
+      }}</span>
 
-  <cds-accordion class="form-editor__list">
-    @for (control of permissions.controls; track control; let i = $index) {
-      <cds-accordion-item
-        [expanded]="isExpanded(control)"
-        [title]="permissionTitle(control)"
-        (selected)="onAccordionToggle(control, $event)"
+      <button
+        cdsButton="ghost"
+        size="sm"
+        [attr.data-test-id]="testIds.addPermissionButton"
+        [disabled]="!!disabled"
+        [iconOnly]="true"
+        [title]="'accessControl.editor.addPermission' | translate"
+        (click)="addPermission()"
       >
-        <valtimo-permission-form
-          [disabled]="!!disabled"
-          [group]="$any(control)"
-          [index]="i"
-          (removeEvent)="removePermission(i)"
-        ></valtimo-permission-form>
-      </cds-accordion-item>
+        <svg cdsIcon="add" size="16"></svg>
+      </button>
+    </div>
+
+    <ul class="form-editor__list" #permissionList>
+      @for (control of permissions.controls; track control; let i = $index) {
+        <li class="form-editor__list-item">
+          <button
+            class="form-editor__item"
+            type="button"
+            [attr.data-test-id]="testIds.permissionListItem"
+            [class.form-editor__item--selected]="$selectedIndex() === i"
+            (click)="selectPermission(i)"
+          >
+            <span class="form-editor__item-name" [title]="shortName(control)">
+              @if (shortName(control)) {
+                {{ shortName(control) }}
+              } @else {
+                {{ 'accessControl.editor.newPermission' | translate }}
+              }
+            </span>
+
+            @if (actionsOf(control).length) {
+              <span class="form-editor__item-tags">
+                @for (action of actionsOf(control); track action) {
+                  <cds-tag size="sm" type="blue">{{ action }}</cds-tag>
+                }
+              </span>
+            }
+          </button>
+        </li>
+      }
+    </ul>
+  </aside>
+
+  <section class="form-editor__panel">
+    @for (group of selectedControls(); track group) {
+      <valtimo-permission-form
+        [disabled]="!!disabled"
+        [group]="$any(group)"
+        [index]="$selectedIndex() ?? 0"
+        (removeEvent)="removePermission($selectedIndex() ?? 0)"
+      ></valtimo-permission-form>
+    } @empty {
+      <div class="form-editor__empty">
+        <h4 class="form-editor__empty-title">
+          {{ 'accessControl.editor.empty.title' | translate }}
+        </h4>
+        <p class="form-editor__empty-message">
+          {{ 'accessControl.editor.empty.message' | translate }}
+        </p>
+
+        <button cdsButton="primary" size="sm" [disabled]="!!disabled" (click)="addPermission()">
+          {{ 'accessControl.editor.addPermission' | translate }}
+
+          <svg class="cds--btn__icon" cdsIcon="add" size="16"></svg>
+        </button>
+      </div>
     }
-  </cds-accordion>
-
-  <button
-    class="form-editor__add"
-    cdsButton="tertiary"
-    [attr.data-test-id]="testIds.addPermissionButton"
-    [disabled]="!!disabled"
-    (click)="addPermission()"
-  >
-    {{ 'accessControl.editor.addPermission' | translate }}
-
-    <svg class="cds--btn__icon" cdsIcon="add" size="16"></svg>
-  </button>
+  </section>
 </div>

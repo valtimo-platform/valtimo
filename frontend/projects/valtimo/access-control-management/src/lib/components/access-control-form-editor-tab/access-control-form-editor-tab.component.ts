@@ -17,15 +17,17 @@
 import {
   ChangeDetectorRef,
   Component,
+  ElementRef,
   EventEmitter,
   Input,
   OnChanges,
   OnDestroy,
   Output,
+  signal,
   SimpleChanges,
+  ViewChild,
 } from '@angular/core';
 import {AbstractControl, FormArray, FormGroup} from '@angular/forms';
-import {TranslateService} from '@ngx-translate/core';
 import {Add16} from '@carbon/icons';
 import {EditorModel} from '@valtimo/components';
 import {IconService} from 'carbon-components-angular';
@@ -42,6 +44,8 @@ import {AccessControlFormEditorService, PermissionSchemaMetadataService} from '.
   providers: [AccessControlFormEditorService],
 })
 export class AccessControlFormEditorTabComponent implements OnChanges, OnDestroy {
+  @ViewChild('permissionList') private _permissionList?: ElementRef<HTMLElement>;
+
   @Input() public model: EditorModel | null = null;
   @Input() public disabled: boolean | null = false;
 
@@ -51,19 +55,16 @@ export class AccessControlFormEditorTabComponent implements OnChanges, OnDestroy
   public permissionsArray: FormArray | null = null;
   public ready = false;
 
+  // Index of the permission shown in the detail panel. Null when there are no permissions.
+  public readonly $selectedIndex = signal<number | null>(null);
+
   protected readonly testIds = ACCESS_CONTROL_EDITOR_TEST_IDS;
 
-  // Offset (px) to keep a scrolled-into-view permission clear of the fixed top bar (48px) plus a
-  // small gap.
-  private readonly TOP_BAR_OFFSET = 120;
-
-  private readonly _expanded = new Set<AbstractControl>();
   private _valueChangesSubscription?: Subscription;
 
   constructor(
     private readonly formEditorService: AccessControlFormEditorService,
     private readonly metadataService: PermissionSchemaMetadataService,
-    private readonly translateService: TranslateService,
     private readonly iconService: IconService,
     private readonly changeDetectorRef: ChangeDetectorRef
   ) {
@@ -82,87 +83,35 @@ export class AccessControlFormEditorTabComponent implements OnChanges, OnDestroy
     this._valueChangesSubscription?.unsubscribe();
   }
 
-  public permissionTitle(control: AbstractControl): string {
-    const group = control as FormGroup;
-    const resourceType = group.get('resourceType')!.value as string;
-    const actions = (group.get('actions')!.value as string[]) ?? [];
+  // ----- Sidebar item display -----
 
-    if (!resourceType) {
-      return this.translateService.instant('accessControl.editor.newPermission');
+  // The sidebar shows the resource's short (simple) name, e.g. "CaseTab" for
+  // "com.ritense.case.domain.CaseTab". The full technical name is still what is edited and stored.
+  public shortName(control: AbstractControl): string {
+    const resourceType = (control as FormGroup).get('resourceType')!.value as string;
+    if (!resourceType) return '';
+    return resourceType.substring(resourceType.lastIndexOf('.') + 1);
+  }
+
+  public actionsOf(control: AbstractControl): string[] {
+    return ((control as FormGroup).get('actions')!.value as string[]) ?? [];
+  }
+
+  // ----- Selection -----
+
+  public selectPermission(index: number): void {
+    this.$selectedIndex.set(index);
+  }
+
+  // Returns the selected permission as a single-element array so the template can render it with a
+  // keyed @for: tracking by the FormGroup reference recreates the detail form (and re-runs its
+  // combobox prefill) whenever the selection changes.
+  public selectedControls(): AbstractControl[] {
+    const index = this.$selectedIndex();
+    if (index === null || !this.permissionsArray || index >= this.permissionsArray.length) {
+      return [];
     }
-
-    // The technical resource type and action keys are shown verbatim, matching the rest of the
-    // editor, rather than translated display names.
-    if (!actions.length) return resourceType;
-
-    return `${resourceType} · ${actions.join(', ')}`;
-  }
-
-  public isExpanded(control: AbstractControl): boolean {
-    return this._expanded.has(control);
-  }
-
-  public onAccordionToggle(
-    control: AbstractControl,
-    event: {id?: string; expanded?: boolean}
-  ): void {
-    // Only one permission is expanded at a time: opening one collapses the others.
-    this._expanded.clear();
-    if (event?.expanded) {
-      this._expanded.add(control);
-      this.scrollIntoView(event.id);
-    }
-  }
-
-  private scrollIntoView(accordionItemId?: string): void {
-    if (!accordionItemId) return;
-    // The accordion open/collapse is animated: the collapse of the previously-open item keeps
-    // shifting the layout for a while, so scrolling immediately overshoots. Wait (frame by frame)
-    // until the target's position stops changing — i.e. the animation has settled — and only then
-    // scroll it into view. The scroll-margin-top set in CSS keeps it clear of the fixed top bar.
-    let previousTop = Number.NaN;
-    let stableFrames = 0;
-    let frames = 0;
-    let shifted = false;
-    const settleAndScroll = (): void => {
-      const element = document.getElementById(accordionItemId);
-      if (!element) return;
-
-      const top = element.getBoundingClientRect().top;
-      if (!Number.isNaN(previousTop)) {
-        if (Math.abs(top - previousTop) >= 1) {
-          // The collapse of the previously-open item has started shifting the layout.
-          shifted = true;
-          stableFrames = 0;
-        } else {
-          stableFrames++;
-        }
-      }
-      previousTop = top;
-      frames++;
-
-      // Once a shift has been observed, scroll when it settles. If no shift occurs within a short
-      // window (e.g. nothing was open above), scroll anyway. A frame cap guards against edge cases.
-      const settled = shifted ? stableFrames >= 3 : frames >= 12;
-      if (settled || frames > 120) {
-        // A small residual settle can still follow, so wait briefly and then scroll the permission's
-        // start just below the fixed top bar. A manual scrollTo (rather than scrollIntoView) applies
-        // the top-bar offset reliably, and an instant scroll avoids the drift a smooth scroll picks
-        // up from concurrent layout changes. The target is recomputed from the final position.
-        setTimeout(() => {
-          const settledElement = document.getElementById(accordionItemId);
-          if (!settledElement) return;
-          const target = Math.max(
-            0,
-            window.scrollY + settledElement.getBoundingClientRect().top - this.TOP_BAR_OFFSET
-          );
-          window.scrollTo({top: target, behavior: 'auto'});
-        }, 150);
-      } else {
-        requestAnimationFrame(settleAndScroll);
-      }
-    };
-    requestAnimationFrame(settleAndScroll);
+    return [this.permissionsArray.at(index)];
   }
 
   public addPermission(): void {
@@ -170,16 +119,28 @@ export class AccessControlFormEditorTabComponent implements OnChanges, OnDestroy
 
     const group = this.formEditorService.createPermissionGroup();
     this.permissionsArray.push(group);
-    this._expanded.clear();
-    this._expanded.add(group);
+    this.$selectedIndex.set(this.permissionsArray.length - 1);
     this.changeDetectorRef.markForCheck();
+    this.scrollNewPermissionIntoView();
+  }
+
+  // The new permission is appended at the bottom of the sidebar list; once it has rendered, scroll
+  // the list so the freshly-added (and now selected) item is brought into view.
+  private scrollNewPermissionIntoView(): void {
+    setTimeout(() => {
+      const list = this._permissionList?.nativeElement;
+      if (list) list.scrollTo({top: list.scrollHeight, behavior: 'smooth'});
+    });
   }
 
   public removePermission(index: number): void {
     if (!this.permissionsArray) return;
 
-    this._expanded.delete(this.permissionsArray.at(index));
     this.permissionsArray.removeAt(index);
+    const remaining = this.permissionsArray.length;
+    // Keep a valid selection: stay on the same slot, or fall back to the new last one.
+    this.$selectedIndex.set(remaining === 0 ? null : Math.min(index, remaining - 1));
+    this.changeDetectorRef.markForCheck();
   }
 
   private rebuild(): void {
@@ -194,8 +155,7 @@ export class AccessControlFormEditorTabComponent implements OnChanges, OnDestroy
 
   private buildForm(): void {
     this.permissionsArray = this.formEditorService.buildPermissionsArray(this.parsePermissions());
-    this._expanded.clear();
-    if (this.permissionsArray.length) this._expanded.add(this.permissionsArray.at(0));
+    this.$selectedIndex.set(this.permissionsArray.length ? 0 : null);
     this.applyDisabled();
 
     this._valueChangesSubscription?.unsubscribe();

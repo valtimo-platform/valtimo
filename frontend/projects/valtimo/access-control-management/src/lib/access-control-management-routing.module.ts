@@ -20,6 +20,7 @@ import {ROLE_ADMIN} from '@valtimo/shared';
 import {AuthGuardService} from '@valtimo/security';
 import {AccessControlOverviewComponent} from './components/overview/access-control-overview.component';
 import {AccessControlEditorComponent} from './components/editor/access-control-editor.component';
+import {pendingChangesGuard} from '@valtimo/components';
 
 const routes: Routes = [
   {
@@ -32,6 +33,18 @@ const routes: Routes = [
     path: 'access-control/:id',
     component: AccessControlEditorComponent,
     canActivate: [AuthGuardService],
+    canDeactivate: [pendingChangesGuard],
+    data: {
+      title: 'Role details',
+      roles: [ROLE_ADMIN],
+      customPageTitle: true,
+    },
+  },
+  {
+    path: 'access-control/:id/editor',
+    component: AccessControlEditorComponent,
+    canActivate: [AuthGuardService],
+    canDeactivate: [pendingChangesGuard],
     data: {
       title: 'Role details',
       roles: [ROLE_ADMIN],
@@ -42,6 +55,7 @@ const routes: Routes = [
     path: 'access-control/:id/json-editor',
     component: AccessControlEditorComponent,
     canActivate: [AuthGuardService],
+    canDeactivate: [pendingChangesGuard],
     data: {
       title: 'Role details',
       roles: [ROLE_ADMIN],
