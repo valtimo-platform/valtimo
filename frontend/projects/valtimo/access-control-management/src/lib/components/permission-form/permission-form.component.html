@@ -1,0 +1,145 @@
+<!--
+  ~ Copyright 2015-2026 Ritense BV, the Netherlands.
+  ~
+  ~ Licensed under EUPL, Version 1.2 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~ https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" basis,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<div
+  class="permission-form"
+  [attr.data-test-id]="testIds.permissionCard"
+  [cdsLayer]="0"
+  [formGroup]="group"
+>
+  @if ($loading()) {
+    <div class="permission-form__loading">
+      <cds-loading [isActive]="true" [overlay]="false" size="sm"></cds-loading>
+    </div>
+  }
+
+  <div class="permission-form__body" [class.permission-form__body--hidden]="$loading()">
+    <div class="permission-form__section">
+      <span class="permission-form__section-label">{{
+        'accessControl.editor.resourceAndActions' | translate
+      }}</span>
+
+      <div class="permission-form__row">
+        <v-select
+          class="permission-form__resource-type"
+          formControlName="resourceType"
+          [cdsLayer]="1"
+          [dataTestId]="testIds.resourceTypeSelect"
+          [defaultSelectionId]="resourceTypeValue"
+          [invalid]="group.get('resourceType')!.invalid"
+          [items]="resourceTypeItems"
+          [placeholder]="'accessControl.editor.resourceTypePlaceholder' | translate"
+          [tooltip]="'accessControl.editor.tooltips.resourceType' | translate"
+          titleTranslationKey="accessControl.editor.resourceType"
+        ></v-select>
+
+        <div class="permission-form__actions-field">
+          <label class="cds--label label-with-tooltip">
+            {{ 'accessControl.editor.actions' | translate }}
+            <v-tooltip-icon
+              [tooltip]="'accessControl.editor.tooltips.actions' | translate"
+            ></v-tooltip-icon>
+          </label>
+
+          <v-select
+            formControlName="actions"
+            [cdsLayer]="1"
+            [dataTestId]="testIds.actionsSelect"
+            [defaultSelectionIds]="selectedActions"
+            [invalid]="actionsControl.invalid"
+            [items]="actionItems"
+            [multiple]="true"
+            [placeholder]="'accessControl.editor.actionsPlaceholder' | translate"
+          ></v-select>
+
+          @if (selectedActions.length) {
+            <div class="permission-form__tags">
+              @for (action of selectedActions; track action) {
+                <cds-tag type="blue">{{ action }}</cds-tag>
+              }
+            </div>
+          }
+        </div>
+      </div>
+    </div>
+
+    <div class="permission-form__section">
+      <span class="permission-form__section-label">{{
+        'accessControl.editor.conditions' | translate
+      }}</span>
+      <p class="permission-form__hint">{{ 'accessControl.editor.conditionsHint' | translate }}</p>
+
+      <valtimo-condition-tree
+        [conditions]="conditionsArray"
+        [disabled]="disabled"
+        [resourceType]="resourceTypeValue"
+      ></valtimo-condition-tree>
+    </div>
+
+    <div class="permission-form__section">
+      <span class="permission-form__section-label">{{
+        'accessControl.editor.contextSection' | translate
+      }}</span>
+
+      <cds-toggle
+        [attr.data-test-id]="testIds.contextToggle"
+        [checked]="hasContext"
+        [disabled]="disabled"
+        [label]="'accessControl.editor.context' | translate"
+        [offText]="'interface.off' | translate"
+        [onText]="'interface.on' | translate"
+        (checkedChange)="onToggleContext($event)"
+      ></cds-toggle>
+
+      @if (hasContext) {
+        <p class="permission-form__hint">{{ 'accessControl.editor.contextHint' | translate }}</p>
+
+        <v-select
+          class="permission-form__resource-type"
+          formControlName="contextResourceType"
+          [cdsLayer]="1"
+          [dataTestId]="testIds.contextResourceTypeSelect"
+          [defaultSelectionId]="contextResourceTypeValue || ''"
+          [invalid]="contextResourceTypeRequired"
+          [items]="contextResourceTypeItems"
+          [placeholder]="'accessControl.editor.contextResourceTypePlaceholder' | translate"
+          [tooltip]="'accessControl.editor.tooltips.contextResourceType' | translate"
+          titleTranslationKey="accessControl.editor.contextResourceType"
+        ></v-select>
+
+        <valtimo-condition-tree
+          [conditions]="contextConditionsArray"
+          [disabled]="disabled"
+          [resourceType]="contextResourceTypeValue"
+        ></valtimo-condition-tree>
+      }
+    </div>
+
+    <div class="permission-form__footer">
+      <button
+        cdsButton="danger--ghost"
+        size="sm"
+        [attr.data-test-id]="testIds.removePermissionButton"
+        [disabled]="disabled"
+        (click)="onRemove()"
+      >
+        {{ 'accessControl.editor.removePermission' | translate }}
+
+        <svg class="cds--btn__icon" cdsIcon="trash-can" size="16"></svg>
+      </button>
+    </div>
+  </div>
+</div>
