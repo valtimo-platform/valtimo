@@ -1,0 +1,53 @@
+{
+    "aanvrager": {
+        "naam": "Stichting Amsterdam Light Festival",
+        "adres": "Herengracht 500, 1017 CB Amsterdam",
+        "contactgegevens": {
+            "telefoon": "+31 20 123 4567",
+            "email": "info@amsterdamlightfestival.com"
+        }
+    },
+    "milieuBeheer": {
+        "afvalBeheerPlan": "Duurzaam afvalbeheer met recyclepunten en herbruikbare materialen.",
+        "milieuMaatregelen": "Energiezuinige LED-verlichting, Afvalscheiding op locatie",
+        "sanitaireVoorzieningen": true
+    },
+    "etenEnDrinken": {
+        "alcoholSchenken": false,
+        "horecaVergunning": true,
+        "alcoholControleMaatregelen": "Niet van toepassing, geen alcoholverkoop"
+    },
+    "evenementDetails": {
+        "evenementNaam": "Amsterdam Light Festival",
+        "evenementType": "Lichtkunstfestival",
+        "evenementDatum": "2025-12-01",
+        "verwachteBezoekers": 900000,
+        "isOpenbaarEvenement": true
+    },
+    "geluidEnOverlast": {
+        "versterktGeluid": false,
+        "geluidReductieMaatregelen": "Geen versterkt geluid, enkel lichte achtergrondmuziek op bepaalde locaties."
+    },
+    "verkeerEnParkeren": {
+        "verkeerPlan": "Extra verkeersmaatregelen en omleidingen rond de grachten.",
+        "alternatiefTransport": "Aanbevolen: openbaar vervoer en fiets. Extra veerdiensten en pendelbussen.",
+        "parkeerVoorzieningen": false
+    },
+    "locatieEnOpstelling": {
+        "evenementLocatie": "Amsterdamse grachten, centrum Amsterdam",
+        "voorzieningen": [
+            "Lichtkunstinstallaties",
+            "Informatieborden",
+            "Bezoekerspaviljoen",
+            "Toiletten",
+            "Fietsenstallingen"
+        ],
+        "indelingsplan": "https://amsterdamlightfestival.com/indelingsplan.pdf"
+    },
+    "veiligheidsMaatregelen": {
+        "beveiligingsPlan": "Toezicht door professionele beveiligers en handhaving van gemeente.",
+        "noodPlan": "Evacuatieprocedures en noodcommunicatie in samenwerking met gemeente en hulpdiensten.",
+        "EHBO": true,
+        "beveiligingsPersoneel": 50
+    }
+}

@@ -32,7 +32,9 @@ Roughly:
 - **Functional module** (`backend/<module>/`) — domain, services, controllers, repositories, Liquibase changesets, and
   the module's `@AutoConfiguration` class.
 - **Contract module** (`backend/contract/`) — interfaces, annotations, DTOs, and constants that other modules consume.
-- **App module** (`backend/app/gzac/`) — the runnable Spring Boot app for development.
+- **App modules** (`backend/apps/`) — the runnable Spring Boot apps: `dev` (the
+  developer console used for local `bootRun`) plus the released `gzac`, `valtimo`
+  and `evenementenvergunning` variants.
 
 Inside a module, packages are typically organised by feature:
 
@@ -175,8 +177,8 @@ Run from the `backend/` directory:
 | `./gradlew integrationTestingPostgresqlAll`     | Integration tests across all modules, Postgres |
 | `./gradlew integrationTestingMysql`             | Integration tests, MySQL                       |
 | `./gradlew check`                               | All checks including tests                     |
-| `./gradlew :backend:app:gzac:bootRun`           | Start the dev app (requires services running)  |
-| `./gradlew :backend:app:gzac:bootRunWithDocker` | Start the dev app with Docker services         |
+| `./gradlew :backend:apps:dev:bootRun`           | Start the dev console (requires services running) |
+| `./gradlew :backend:apps:dev:bootRunWithDocker` | Start the dev console with Docker services        |
 | `./gradlew testCodeCoverageReport`              | JaCoCo coverage report                         |
 | `./gradlew cleanAll`                            | Clean every module                             |
 

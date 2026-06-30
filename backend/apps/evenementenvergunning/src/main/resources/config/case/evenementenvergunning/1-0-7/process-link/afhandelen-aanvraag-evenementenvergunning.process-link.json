@@ -1,0 +1,48 @@
+[
+{
+    "activityId": "StartEvent_1",
+    "activityType": "bpmn:StartEvent:start",
+    "formFlowDefinitionKey": "aanvragen-evenementenvergunning",
+    "processLinkType": "form-flow"
+},
+{
+    "activityId": "beoordeel-versnelde-afhandeling",
+    "activityType": "bpmn:UserTask:create",
+    "formDefinitionName": "beoordeel-versnelde-afhandeling",
+    "viewModelEnabled": false,
+    "formDisplayType": "modal",
+    "formSize": "medium",
+    "subtitles": null,
+    "processLinkType": "form"
+  },
+  {
+    "activityId": "goedkeuring-wethouder",
+    "activityType": "bpmn:UserTask:create",
+    "formDefinitionName": "goedkeuring-wethouder",
+    "viewModelEnabled": false,
+    "formDisplayType": "modal",
+    "formSize": "medium",
+    "subtitles": null,
+    "processLinkType": "form"
+  },
+  {
+    "activityId": "behandel-aanvraag-evenementenvergunning",
+    "activityType": "bpmn:UserTask:create",
+    "formDefinitionName": "behandel-aanvraag-evenementenvergunning",
+    "viewModelEnabled": false,
+    "formDisplayType": "modal",
+    "formSize": "medium",
+    "subtitles": null,
+    "processLinkType": "form"
+  },
+  {
+    "activityId": "controleer-beschikbaarheid-locatie",
+    "activityType": "bpmn:UserTask:create",
+    "formDefinitionName": "controleer-beschikbaarheid-locatie",
+    "viewModelEnabled": false,
+    "formDisplayType": "panel",
+    "formSize": "medium",
+    "subtitles": [],
+    "processLinkType": "form"
+  }
+]
