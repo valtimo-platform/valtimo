@@ -16,6 +16,7 @@
 
 const ACCESS_CONTROL_EDITOR_TEST_IDS = {
   addPermissionButton: 'accessControlEditorAddPermission',
+  permissionListItem: 'accessControlEditorPermissionListItem',
   permissionCard: 'accessControlEditorPermissionCard',
   removePermissionButton: 'accessControlEditorRemovePermission',
   resourceTypeSelect: 'accessControlEditorResourceType',

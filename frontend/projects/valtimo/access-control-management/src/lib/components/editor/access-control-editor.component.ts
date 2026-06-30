@@ -18,7 +18,12 @@ import {ChangeDetectionStrategy, Component, OnDestroy, OnInit, signal} from '@an
 import {AccessControlService} from '../../services/access-control.service';
 import {BehaviorSubject, filter, finalize, map, Subscription, switchMap, take, tap} from 'rxjs';
 import {ActivatedRoute, Router} from '@angular/router';
-import {EditorModel, PageHeaderService, PageTitleService} from '@valtimo/components';
+import {
+  EditorModel,
+  PageHeaderService,
+  PageTitleService,
+  PendingChangesComponent,
+} from '@valtimo/components';
 import {AccessControlEditorTab, Permission, Role} from '../../models';
 import {TranslateService} from '@ngx-translate/core';
 import {AccessControlExportService} from '../../services/access-control-export.service';
@@ -30,7 +35,10 @@ import {GlobalNotificationService} from '@valtimo/shared';
   changeDetection: ChangeDetectionStrategy.OnPush,
   styleUrls: ['./access-control-editor.component.scss'],
 })
-export class AccessControlEditorComponent implements OnInit, OnDestroy {
+export class AccessControlEditorComponent
+  extends PendingChangesComponent
+  implements OnInit, OnDestroy
+{
   public readonly model$ = new BehaviorSubject<EditorModel | null>(null);
   public readonly permissions$ = new BehaviorSubject<Permission[] | null>(null);
   public readonly roleKey$ = new BehaviorSubject<string | null>(null);
@@ -49,6 +57,9 @@ export class AccessControlEditorComponent implements OnInit, OnDestroy {
   private _roleKeySubscription!: Subscription;
   private _roleKey!: string;
   private readonly _updatedModelValue$ = new BehaviorSubject<string>('');
+  // The form's serialized value captured on (re)load. Edits that differ from it mark the editor
+  // dirty so the leave-page guard can warn about unsaved changes.
+  private _pendingBaseline: string | null = null;
 
   constructor(
     private readonly accessControlService: AccessControlService,
@@ -59,7 +70,9 @@ export class AccessControlEditorComponent implements OnInit, OnDestroy {
     private readonly translateService: TranslateService,
     private readonly accessControlExportService: AccessControlExportService,
     private readonly pageHeaderService: PageHeaderService
-  ) {}
+  ) {
+    super();
+  }
 
   public ngOnInit(): void {
     this.restoreActiveTabFromUrl();
@@ -68,6 +81,7 @@ export class AccessControlEditorComponent implements OnInit, OnDestroy {
   }
 
   public ngOnDestroy(): void {
+    this.pendingChanges = false;
     this.pageTitleService.enableReset();
     this._roleKeySubscription?.unsubscribe();
   }
@@ -77,6 +91,15 @@ export class AccessControlEditorComponent implements OnInit, OnDestroy {
   }
 
   public onValueChange(value: string): void {
+    // The first emission after a (re)load is the form's serialized baseline; only later emissions
+    // that differ from it are genuine unsaved edits.
+    if (this._pendingBaseline === null) {
+      this._pendingBaseline = value;
+      this.pendingChanges = false;
+    } else {
+      this.pendingChanges = value !== this._pendingBaseline;
+    }
+
     this._updatedModelValue$.next(value);
   }
 
@@ -159,17 +182,27 @@ export class AccessControlEditorComponent implements OnInit, OnDestroy {
       return;
     }
 
-    const segments =
-      tab === AccessControlEditorTab.JSON_EDITOR
-        ? ['/access-control', roleKey, 'json-editor']
-        : ['/access-control', roleKey];
+    this.router.navigate(this.segmentsForTab(tab, roleKey));
+  }
 
-    this.router.navigate(segments);
+  private segmentsForTab(tab: AccessControlEditorTab, roleKey: string): string[] {
+    switch (tab) {
+      case AccessControlEditorTab.EDITOR:
+        return ['/access-control', roleKey, 'editor'];
+      case AccessControlEditorTab.JSON_EDITOR:
+        return ['/access-control', roleKey, 'json-editor'];
+      default:
+        return ['/access-control', roleKey];
+    }
   }
 
   private restoreActiveTabFromUrl(): void {
     const url = this.route.snapshot.url;
     const lastSegment = url[url.length - 1]?.path;
+    if (lastSegment === 'editor') {
+      this.$activeTab.set(AccessControlEditorTab.EDITOR);
+      return;
+    }
     if (lastSegment === 'json-editor') {
       this.$activeTab.set(AccessControlEditorTab.JSON_EDITOR);
       return;
@@ -228,6 +261,11 @@ export class AccessControlEditorComponent implements OnInit, OnDestroy {
   }
 
   private setModel(permissions: object): void {
+    // A freshly loaded or saved model is the new clean baseline; the next value emission recaptures
+    // it and any prior unsaved-changes flag is cleared.
+    this._pendingBaseline = null;
+    this.pendingChanges = false;
+
     const roleKey = this.roleKey$.value ?? 'unknown';
     this.model$.next({
       value: JSON.stringify(permissions),

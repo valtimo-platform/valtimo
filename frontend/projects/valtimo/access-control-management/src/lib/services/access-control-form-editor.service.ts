@@ -184,15 +184,19 @@ export class AccessControlFormEditorService {
     return this.sortByText(this.withIncluded(items, include));
   }
 
-  public contextResourceTypeItems(include?: string | string[] | null): SelectItem[] {
-    const withNoContext: SelectItem[] = [
-      {
-        id: NO_CONTEXT_RESOURCE_TYPE,
-        text: this.translateService.instant('accessControl.overview.noContext'),
-      },
-      ...this.resourceTypeItems(),
-    ];
-    return this.withIncluded(withNoContext, include);
+  // Only resource types reachable from the permission's resource type via an entity mapper can be
+  // used as its context (the same set as the container-condition targets). A context with no
+  // mapper can never match at runtime, so the options are scoped per resource type rather than
+  // listing every resource.
+  public contextResourceTypeItems(
+    resourceType: string,
+    include?: string | string[] | null
+  ): SelectItem[] {
+    const noContext: SelectItem = {
+      id: NO_CONTEXT_RESOURCE_TYPE,
+      text: this.translateService.instant('accessControl.overview.noContext'),
+    };
+    return this.withIncluded([noContext, ...this.containerTargetItems(resourceType)], include);
   }
 
   public actionItems(resourceType: string, include?: string | string[] | null): SelectItem[] {

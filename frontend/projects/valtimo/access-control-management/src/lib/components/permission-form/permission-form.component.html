@@ -27,106 +27,119 @@
   }
 
   <div class="permission-form__body" [class.permission-form__body--hidden]="$loading()">
-    <div class="permission-form__section">
-      <span class="permission-form__section-label">{{
-        'accessControl.editor.resourceAndActions' | translate
-      }}</span>
+    <cds-accordion class="permission-form__accordion">
+      <cds-accordion-item
+        [expanded]="$openSection() === 'resourceActions'"
+        [title]="'accessControl.editor.resourceAndActions' | translate"
+        (selected)="onSectionToggle('resourceActions', $event)"
+      >
+        <div class="permission-form__section">
+          <div class="permission-form__row">
+            <v-select
+              class="permission-form__resource-type"
+              formControlName="resourceType"
+              [cdsLayer]="1"
+              [dataTestId]="testIds.resourceTypeSelect"
+              [defaultSelectionId]="resourceTypeValue"
+              [invalid]="group.get('resourceType')!.invalid"
+              [items]="resourceTypeItems"
+              [placeholder]="'accessControl.editor.resourceTypePlaceholder' | translate"
+              [tooltip]="'accessControl.editor.tooltips.resourceType' | translate"
+              titleTranslationKey="accessControl.editor.resourceType"
+            ></v-select>
 
-      <div class="permission-form__row">
-        <v-select
-          class="permission-form__resource-type"
-          formControlName="resourceType"
-          [cdsLayer]="1"
-          [dataTestId]="testIds.resourceTypeSelect"
-          [defaultSelectionId]="resourceTypeValue"
-          [invalid]="group.get('resourceType')!.invalid"
-          [items]="resourceTypeItems"
-          [placeholder]="'accessControl.editor.resourceTypePlaceholder' | translate"
-          [tooltip]="'accessControl.editor.tooltips.resourceType' | translate"
-          titleTranslationKey="accessControl.editor.resourceType"
-        ></v-select>
+            <div class="permission-form__actions-field">
+              <label class="cds--label label-with-tooltip">
+                {{ 'accessControl.editor.actions' | translate }}
+                <v-tooltip-icon
+                  [tooltip]="'accessControl.editor.tooltips.actions' | translate"
+                ></v-tooltip-icon>
+              </label>
 
-        <div class="permission-form__actions-field">
-          <label class="cds--label label-with-tooltip">
-            {{ 'accessControl.editor.actions' | translate }}
-            <v-tooltip-icon
-              [tooltip]="'accessControl.editor.tooltips.actions' | translate"
-            ></v-tooltip-icon>
-          </label>
+              <v-select
+                formControlName="actions"
+                [cdsLayer]="1"
+                [dataTestId]="testIds.actionsSelect"
+                [defaultSelectionIds]="selectedActions"
+                [invalid]="actionsControl.invalid"
+                [items]="actionItems"
+                [multiple]="true"
+                [placeholder]="'accessControl.editor.actionsPlaceholder' | translate"
+              ></v-select>
 
-          <v-select
-            formControlName="actions"
-            [cdsLayer]="1"
-            [dataTestId]="testIds.actionsSelect"
-            [defaultSelectionIds]="selectedActions"
-            [invalid]="actionsControl.invalid"
-            [items]="actionItems"
-            [multiple]="true"
-            [placeholder]="'accessControl.editor.actionsPlaceholder' | translate"
-          ></v-select>
-
-          @if (selectedActions.length) {
-            <div class="permission-form__tags">
-              @for (action of selectedActions; track action) {
-                <cds-tag type="blue">{{ action }}</cds-tag>
+              @if (selectedActions.length) {
+                <div class="permission-form__tags">
+                  @for (action of selectedActions; track action) {
+                    <cds-tag type="blue">{{ action }}</cds-tag>
+                  }
+                </div>
               }
             </div>
+          </div>
+        </div>
+      </cds-accordion-item>
+
+      <cds-accordion-item
+        [expanded]="$openSection() === 'conditions'"
+        [title]="'accessControl.editor.conditions' | translate"
+        (selected)="onSectionToggle('conditions', $event)"
+      >
+        <div class="permission-form__section">
+          <p class="permission-form__hint">
+            {{ 'accessControl.editor.conditionsHint' | translate }}
+          </p>
+
+          <valtimo-condition-tree
+            [conditions]="conditionsArray"
+            [disabled]="disabled"
+            [resourceType]="resourceTypeValue"
+          ></valtimo-condition-tree>
+        </div>
+      </cds-accordion-item>
+
+      <cds-accordion-item
+        [expanded]="$openSection() === 'context'"
+        [title]="'accessControl.editor.contextSection' | translate"
+        (selected)="onSectionToggle('context', $event)"
+      >
+        <div class="permission-form__section">
+          <cds-toggle
+            [attr.data-test-id]="testIds.contextToggle"
+            [checked]="hasContext"
+            [disabled]="disabled"
+            [label]="'accessControl.editor.context' | translate"
+            [offText]="'interface.off' | translate"
+            [onText]="'interface.on' | translate"
+            (checkedChange)="onToggleContext($event)"
+          ></cds-toggle>
+
+          @if (hasContext) {
+            <p class="permission-form__hint">
+              {{ 'accessControl.editor.contextHint' | translate }}
+            </p>
+
+            <v-select
+              class="permission-form__resource-type"
+              formControlName="contextResourceType"
+              [cdsLayer]="1"
+              [dataTestId]="testIds.contextResourceTypeSelect"
+              [defaultSelectionId]="contextResourceTypeValue || ''"
+              [invalid]="contextResourceTypeRequired"
+              [items]="contextResourceTypeItems"
+              [placeholder]="'accessControl.editor.contextResourceTypePlaceholder' | translate"
+              [tooltip]="'accessControl.editor.tooltips.contextResourceType' | translate"
+              titleTranslationKey="accessControl.editor.contextResourceType"
+            ></v-select>
+
+            <valtimo-condition-tree
+              [conditions]="contextConditionsArray"
+              [disabled]="disabled"
+              [resourceType]="contextResourceTypeValue"
+            ></valtimo-condition-tree>
           }
         </div>
-      </div>
-    </div>
-
-    <div class="permission-form__section">
-      <span class="permission-form__section-label">{{
-        'accessControl.editor.conditions' | translate
-      }}</span>
-      <p class="permission-form__hint">{{ 'accessControl.editor.conditionsHint' | translate }}</p>
-
-      <valtimo-condition-tree
-        [conditions]="conditionsArray"
-        [disabled]="disabled"
-        [resourceType]="resourceTypeValue"
-      ></valtimo-condition-tree>
-    </div>
-
-    <div class="permission-form__section">
-      <span class="permission-form__section-label">{{
-        'accessControl.editor.contextSection' | translate
-      }}</span>
-
-      <cds-toggle
-        [attr.data-test-id]="testIds.contextToggle"
-        [checked]="hasContext"
-        [disabled]="disabled"
-        [label]="'accessControl.editor.context' | translate"
-        [offText]="'interface.off' | translate"
-        [onText]="'interface.on' | translate"
-        (checkedChange)="onToggleContext($event)"
-      ></cds-toggle>
-
-      @if (hasContext) {
-        <p class="permission-form__hint">{{ 'accessControl.editor.contextHint' | translate }}</p>
-
-        <v-select
-          class="permission-form__resource-type"
-          formControlName="contextResourceType"
-          [cdsLayer]="1"
-          [dataTestId]="testIds.contextResourceTypeSelect"
-          [defaultSelectionId]="contextResourceTypeValue || ''"
-          [invalid]="contextResourceTypeRequired"
-          [items]="contextResourceTypeItems"
-          [placeholder]="'accessControl.editor.contextResourceTypePlaceholder' | translate"
-          [tooltip]="'accessControl.editor.tooltips.contextResourceType' | translate"
-          titleTranslationKey="accessControl.editor.contextResourceType"
-        ></v-select>
-
-        <valtimo-condition-tree
-          [conditions]="contextConditionsArray"
-          [disabled]="disabled"
-          [resourceType]="contextResourceTypeValue"
-        ></valtimo-condition-tree>
-      }
-    </div>
+      </cds-accordion-item>
+    </cds-accordion>
 
     <div class="permission-form__footer">
       <button

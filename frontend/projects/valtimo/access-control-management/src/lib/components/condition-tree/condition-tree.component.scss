@@ -1,4 +1,4 @@
-/*
+/*!
  * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
@@ -51,12 +51,9 @@
     min-width: 0;
   }
 
-  // Full-height remove column on the right, with the icon aligned to the top. Carbon fixes the
-  // button height, so it is overridden here to let the button fill the row height.
   &__remove {
     align-items: flex-start;
     align-self: stretch;
-    height: auto;
   }
 
   &__fields {

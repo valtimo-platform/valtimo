@@ -35,5 +35,7 @@
 }
 
 :host ::ng-deep .cds--tab-content {
-  background-color: #fff;
+  background-color: var(--cds-layer);
+  outline: none !important;
+  padding: 0;
 }

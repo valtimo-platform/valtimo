@@ -16,6 +16,7 @@
 
 enum AccessControlEditorTab {
   SUMMARY = 'summary',
+  EDITOR = 'editor',
   JSON_EDITOR = 'jsonEditor',
 }
 
