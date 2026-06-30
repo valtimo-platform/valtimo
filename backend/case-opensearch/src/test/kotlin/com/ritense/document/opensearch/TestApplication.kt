@@ -17,6 +17,17 @@
 package com.ritense.document.opensearch
 
 import org.springframework.boot.autoconfigure.SpringBootApplication
+import org.springframework.boot.autoconfigure.data.elasticsearch.ElasticsearchDataAutoConfiguration
+import org.springframework.boot.autoconfigure.data.elasticsearch.ReactiveElasticsearchRepositoriesAutoConfiguration
+import org.springframework.boot.autoconfigure.elasticsearch.ElasticsearchClientAutoConfiguration
+import org.springframework.boot.autoconfigure.elasticsearch.ElasticsearchRestClientAutoConfiguration
+import org.springframework.boot.autoconfigure.elasticsearch.ReactiveElasticsearchClientAutoConfiguration
 
-@SpringBootApplication
+@SpringBootApplication(exclude = [
+    ElasticsearchDataAutoConfiguration::class,
+    ElasticsearchClientAutoConfiguration::class,
+    ElasticsearchRestClientAutoConfiguration::class,
+    ReactiveElasticsearchClientAutoConfiguration::class,
+    ReactiveElasticsearchRepositoriesAutoConfiguration::class,
+])
 class TestApplication

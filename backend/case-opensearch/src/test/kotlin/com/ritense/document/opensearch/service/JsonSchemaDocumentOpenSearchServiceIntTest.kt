@@ -148,6 +148,7 @@ class JsonSchemaDocumentOpenSearchServiceIntTest : BaseOpenSearchIntegrationTest
                 contentText = street,
             )
         )
+        elasticsearchOperations.indexOps(JsonSchemaDocumentOsDocument::class.java).refresh()
         return jpaDoc
     }
 }

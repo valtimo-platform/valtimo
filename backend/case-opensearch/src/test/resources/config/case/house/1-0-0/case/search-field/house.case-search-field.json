@@ -13,6 +13,13 @@
       "dataType": "date",
       "fieldType": "range",
       "matchType": "exact"
+    },
+    {
+      "key": "street",
+      "path": "doc:street",
+      "dataType": "text",
+      "fieldType": "single",
+      "matchType": "like"
     }
   ]
 }

@@ -32,11 +32,14 @@ import com.ritense.document.service.JsonSchemaDocumentActionProvider
 import com.ritense.document.service.JsonSchemaDocumentDefinitionActionProvider
 import com.ritense.document.service.JsonSchemaDocumentSnapshotActionProvider
 import com.ritense.document.service.SearchFieldActionProvider
+import com.ritense.document.opensearch.domain.JsonSchemaDocumentOsDocument
 import com.ritense.outbox.OutboxService
 import com.ritense.testutilscommon.junit.extension.LiquibaseRunnerExtension
+import com.ritense.valtimo.contract.authentication.TeamManagementService
 import com.ritense.valtimo.contract.authentication.UserManagementService
 import com.ritense.valtimo.contract.mail.MailSender
 import com.ritense.valtimo.service.ProcessDefinitionCaseDefinitionLinker
+import org.springframework.data.elasticsearch.core.ElasticsearchOperations
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Tag
@@ -59,6 +62,9 @@ abstract class BaseOpenSearchIntegrationTest {
 
     @MockitoBean(answers = Answers.RETURNS_DEEP_STUBS)
     lateinit var userManagementService: UserManagementService
+
+    @MockitoBean
+    lateinit var teamManagementService: TeamManagementService
 
     @MockitoBean
     lateinit var applicationEventMulticaster: SimpleApplicationEventMulticaster
@@ -90,15 +96,26 @@ abstract class BaseOpenSearchIntegrationTest {
     @Autowired
     lateinit var objectMapper: ObjectMapper
 
+    @Autowired
+    lateinit var elasticsearchOperations: ElasticsearchOperations
+
     @BeforeEach
     fun setUpBase() {
         setUpPermissions()
-        openSearchRepository.deleteAll()
+        val indexOps = elasticsearchOperations.indexOps(JsonSchemaDocumentOsDocument::class.java)
+        if (indexOps.exists()) {
+            indexOps.delete()
+        }
+        indexOps.create()
+        indexOps.putMapping(indexOps.createMapping())
     }
 
     @AfterEach
     fun tearDownBase() {
-        openSearchRepository.deleteAll()
+        val indexOps = elasticsearchOperations.indexOps(JsonSchemaDocumentOsDocument::class.java)
+        if (indexOps.exists()) {
+            indexOps.delete()
+        }
     }
 
     private fun setUpPermissions() {
