@@ -17,8 +17,11 @@ import {CommonModule} from '@angular/common';
 import {HttpClient, HttpErrorResponse} from '@angular/common/http';
 import {ChangeDetectionStrategy, Component, Input, OnDestroy} from '@angular/core';
 import {TranslateModule} from '@ngx-translate/core';
+import {PermissionService} from '@valtimo/access-control';
+import {DocumentService} from '@valtimo/document';
 import {
   ImageWidget,
+  WidgetAction,
   WidgetImageComponent,
   WidgetImageData,
   WidgetImageItem,
@@ -26,6 +29,7 @@ import {
   WidgetLayoutService,
 } from '@valtimo/layout';
 import {DownloadService, ResourceDto, UploadProviderService} from '@valtimo/resource';
+import {ButtonModule} from 'carbon-components-angular';
 import {
   BehaviorSubject,
   catchError,
@@ -42,6 +46,7 @@ import {
 
 import {CaseTabService, CaseWidgetsApiService} from '../../../../../../services';
 import {WidgetsService} from '../../widgets.service';
+import {WidgetProcess} from '../widget-process/widget-process';
 
 @Component({
   selector: 'valtimo-case-widget-image',
@@ -49,9 +54,9 @@ import {WidgetsService} from '../../widgets.service';
   styleUrls: ['./case-widget-image.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: true,
-  imports: [CommonModule, TranslateModule, WidgetImageComponent],
+  imports: [ButtonModule, CommonModule, TranslateModule, WidgetImageComponent],
 })
-export class CaseWidgetImageComponent implements OnDestroy {
+export class CaseWidgetImageComponent extends WidgetProcess implements OnDestroy {
   private static readonly IMAGE_EXTENSIONS = [
     'png',
     'jpg',
@@ -67,12 +72,14 @@ export class CaseWidgetImageComponent implements OnDestroy {
   private readonly _documentId$ = new BehaviorSubject<string>('');
 
   @Input({required: true}) public set documentId(value: string) {
+    this.baseDocumentId = value;
     this._documentId$.next(value);
   }
 
   @Input() public set widgetConfiguration(value: ImageWidget) {
     if (!value) return;
     this.widgetConfiguration$.next(value);
+    this.baseWidgetConfiguration = value;
   }
 
   @Input() public readonly widgetUuid: string;
@@ -103,6 +110,8 @@ export class CaseWidgetImageComponent implements OnDestroy {
   );
 
   constructor(
+    protected readonly documentService: DocumentService,
+    protected readonly permissionService: PermissionService,
     private readonly widgetsService: WidgetsService,
     private readonly caseTabService: CaseTabService,
     private readonly caseWidgetApiService: CaseWidgetsApiService,
@@ -110,10 +119,17 @@ export class CaseWidgetImageComponent implements OnDestroy {
     private readonly uploadProviderService: UploadProviderService,
     private readonly downloadService: DownloadService,
     private readonly httpClient: HttpClient
-  ) {}
+  ) {
+    super(documentService, permissionService);
+  }
 
   public ngOnDestroy(): void {
     this.revokeObjectUrls();
+  }
+
+  public onProcessStartClick(process: WidgetAction): void {
+    if (!process.processDefinitionKey) return;
+    this.widgetsService.startProcess(process.processDefinitionKey);
   }
 
   public onDownload(image: WidgetImageResolved): void {

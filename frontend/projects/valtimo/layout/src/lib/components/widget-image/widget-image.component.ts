@@ -36,6 +36,7 @@ import {
 } from 'carbon-components-angular';
 import {BehaviorSubject} from 'rxjs';
 import {ImageWidget, WidgetImageResolved} from '../../models';
+import {WidgetActionButtonComponent} from '../widget-action-button/widget-action-button.component';
 
 @Component({
   selector: 'valtimo-widget-image',
@@ -53,6 +54,7 @@ import {ImageWidget, WidgetImageResolved} from '../../models';
     IconModule,
     SkeletonModule,
     TilesModule,
+    WidgetActionButtonComponent,
   ],
 })
 export class WidgetImageComponent {

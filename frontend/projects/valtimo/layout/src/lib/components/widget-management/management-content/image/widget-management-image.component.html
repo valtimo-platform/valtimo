@@ -15,7 +15,6 @@
   -->
 
 <form
-  *ngIf="{params: params$ | async} as data"
   [formGroup]="form"
   class="valtimo-widget-management-image__form"
 >
@@ -50,6 +49,7 @@
     >
       @if ($widgetContext() === 'case') {
         <valtimo-value-path-selector
+          *ngIf="{params: params$ | async} as data"
           formControlName="value"
           [label]="'widgetTabManagement.content.image.value' | translate"
           [caseDefinitionKey]="data.params?.caseDefinitionKey"

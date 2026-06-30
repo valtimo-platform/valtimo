@@ -23,4 +23,14 @@
   [images]="obs.images"
   (download)="onDownload($event)"
   (openInNewTab)="onOpenInNewTab($event)"
-></valtimo-widget-image>
+>
+  @if (
+    obs.widgetConfiguration?.actions?.length === 1 &&
+    obs.widgetConfiguration.actions[0]?.processDefinitionKey &&
+    (canCreateCamundaExecution$ | async)
+  ) {
+    <button cdsButton="ghost" (click)="onProcessStartClick(obs.widgetConfiguration.actions[0])">
+      {{ obs.widgetConfiguration.actions[0].name }}
+    </button>
+  }
+</valtimo-widget-image>

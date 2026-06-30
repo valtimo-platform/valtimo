@@ -19,7 +19,7 @@
   </ng-template>
 }
 
-@if ($selectedWidget(); as selectedWidget) {
+@if (contentReady && $selectedWidget(); as selectedWidget) {
   <ng-container *ngComponentOutlet="selectedWidget.component; content: projectedNodes">
   </ng-container>
 }

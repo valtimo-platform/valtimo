@@ -16,6 +16,7 @@
 import {CommonModule} from '@angular/common';
 import {
   AfterViewInit,
+  ChangeDetectorRef,
   Component,
   effect,
   TemplateRef,
@@ -34,14 +35,16 @@ import {WidgetManagementActionButtonComponent} from '../../../management-action-
 })
 export class WidgetWizardContentStepComponent implements AfterViewInit {
   @ViewChild('actionButton', {read: TemplateRef}) actionButton!: TemplateRef<any>;
-  @ViewChild('contentRenderer', {read: ViewContainerRef})
-  public projectedNodes: Node[][];
+
+  public projectedNodes: Node[][] = [];
+  public contentReady = false;
 
   public readonly $selectedWidget = this.widgetWizardService.$selectedWidget;
   public readonly $disableActionButton = this.widgetWizardService.$disableActionButton;
 
   constructor(
     private readonly vcr: ViewContainerRef,
+    private readonly cdr: ChangeDetectorRef,
     private readonly widgetWizardService: WidgetWizardService
   ) {
     effect(() => {
@@ -51,9 +54,11 @@ export class WidgetWizardContentStepComponent implements AfterViewInit {
   }
 
   public ngAfterViewInit(): void {
-    if (!this.actionButton) return;
-    const processSelectorNodes = this.vcr.createEmbeddedView(this.actionButton).rootNodes;
+    if (this.actionButton) {
+      this.projectedNodes = [this.vcr.createEmbeddedView(this.actionButton).rootNodes];
+    }
 
-    this.projectedNodes = [processSelectorNodes];
+    this.contentReady = true;
+    this.cdr.detectChanges();
   }
 }
