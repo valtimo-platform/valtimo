@@ -1,0 +1,55 @@
+{
+
+    "aanvrager": {
+        "naam": "Max Bolman",
+        "adres": "Jaarbeursplein 6, 3521 AL Utrecht",
+        "contactgegevens": {
+            "telefoon": "+31 30 123 4567",
+            "email": "info@vakantiebeursisgaaf.nl"
+        }
+    },
+    "milieuBeheer": {
+        "afvalBeheerPlan": "Uitgebreid recycleprogramma en herbruikbare standmaterialen.",
+        "milieuMaatregelen": "Gebruik van duurzame energie en beperking van papiergebruik door digitale brochures.",
+        "sanitaireVoorzieningen": true
+    },
+    "etenEnDrinken": {
+        "alcoholSchenken": true,
+        "horecaVergunning": true,
+        "alcoholControleMaatregelen": "Strikte leeftijdscontrole en alleen verkoop in geselecteerde horecagebieden."
+    },
+    "evenementDetails": {
+        "evenementNaam": "Vakantiebeurs Utrecht",
+        "evenementType": "Reis- en vakantiebeurs",
+        "evenementDatum": "2025-01-15",
+        "verwachteBezoekers": 100000,
+        "isOpenbaarEvenement": true
+    },
+    "geluidEnOverlast": {
+        "versterktGeluid": true,
+        "geluidReductieMaatregelen": "Maximaal geluidsniveau ingesteld voor stands en optredens."
+    },
+    "verkeerEnParkeren": {
+        "verkeerPlan": "Extra parkeerplaatsen en gratis pendelbussen vanaf Utrecht Centraal.",
+        "alternatiefTransport": "Aanbevolen: trein naar Utrecht Centraal, vervolgens loopafstand naar Jaarbeurs.",
+        "parkeerVoorzieningen": true
+    },
+    "locatieEnOpstelling": {
+        "evenementLocatie": "Jaarbeurs Utrecht",
+        "voorzieningen": [
+            "Beursstands",
+            "Presentatieruimtes",
+            "EHBO-posten",
+            "Toiletten",
+            "Voedsel- en drankstands"
+        ],
+        "indelingsplan": "https://vakantiebeurs.nl/indelingsplan.pdf"
+    },
+    "veiligheidsMaatregelen": {
+        "beveiligingsPlan": "Professionele beveiliging bij ingangen en camera’s op strategische punten.",
+        "noodPlan": "Evacuatieprocedures en samenwerking met hulpdiensten voor noodsituaties.",
+        "EHBO": true,
+        "beveiligingsPersoneel": 50
+    }
+
+}

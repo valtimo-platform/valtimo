@@ -567,7 +567,7 @@ These types are re-exported via `@valtimo/shared` and can be imported in any lib
 
 1. Run the generator:
    ```bash
-   ./gradlew :backend:app:gzac:generateTypeScript
+   ./gradlew :backend:apps:dev:generateTypeScript
    ```
 2. Check if the type you need is now in `generated-backend-types.ts`.
 3. If it is, import it from `@valtimo/shared` — do not duplicate the interface in the frontend.

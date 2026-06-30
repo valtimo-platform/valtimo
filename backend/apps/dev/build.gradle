@@ -1,0 +1,109 @@
+/*
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
+ *
+ * Licensed under EUPL, Version 1.2 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" basis,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+import cz.habarta.typescript.generator.DateMapping
+import cz.habarta.typescript.generator.JsonLibrary
+import cz.habarta.typescript.generator.TypeScriptOutputKind
+
+// The developer console: the gzac dependency set plus the showcase/demo Kotlin
+// and the full local-dev configuration (sample cases, building blocks, demo
+// data, dev logback/banner, processes.xml scan=false). Not released — this is
+// the `bootRun` daily driver and the PR-CI test image.
+
+plugins {
+    id 'war'
+    id 'cz.habarta.typescript-generator' version '3.2.1263'
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    implementation(platform(project(":backend:dependencies:valtimo-dependency-versions")))
+
+    implementation(project(":backend:dependencies:valtimo-gzac-dependencies"))
+    implementation(project(":backend:mail:local-mail"))
+    implementation(project(":backend:document-generation:smartdocuments"))
+    implementation(project(":backend:zgw:portaaltaak"))
+    implementation(project(":backend:outbox:outbox-rabbitmq"))
+    implementation(project(":backend:process-link-url"))
+
+    // Plugins
+    implementation("com.ritense.valtimo:smartdocuments")
+    implementation("com.ritense.valtimoplugins:freemarker:$freemarkerPluginVersion")
+    implementation("com.ritense.valtimoplugins:smtpmail:$smtpmailPluginVersion")
+
+    implementation("io.github.oshai:kotlin-logging")
+    implementation "org.springframework.boot:spring-boot-starter-webflux"
+    implementation "org.springframework.boot:spring-boot-starter-security"
+
+    // Spring cloud stream RabbitMQ
+    implementation "org.springframework.cloud:spring-cloud-starter-stream-rabbit:${springCloudStreamVersion}"
+    implementation "com.rabbitmq:amqp-client:$amqpCLientVersion"
+
+    // Database
+    implementation "org.postgresql:postgresql:$postgresqlDriverVersion"
+    implementation "com.mysql:mysql-connector-j:$mysqlDriverVersion"
+
+    if (System.getProperty("os.arch") == "aarch64") {
+        runtimeOnly("io.netty:netty-resolver-dns-native-macos::osx-aarch_64")
+    }
+
+    testImplementation "org.jetbrains.kotlin:kotlin-test"
+    testImplementation "org.junit.jupiter:junit-jupiter"
+    testImplementation "org.springframework.boot:spring-boot-starter-test"
+}
+
+springBoot {
+    mainClass = "com.ritense.gzac.GzacApplicationKt"
+}
+
+apply from: "${rootProject.projectDir}/backend/gradle/valtimo-app.gradle"
+
+// Generate TypeScript types for the frontend from the backend DTOs. Lives in the
+// dev module because it needs the full runtime classpath and is a dev-only tool.
+def generatedDir = rootProject.file("../frontend/projects/valtimo/shared/src/lib/generated")
+def outDtsFile = rootProject.file("../frontend/projects/valtimo/shared/src/lib/generated/generated-backend-types.d.ts")
+def outTsFile = rootProject.file("../frontend/projects/valtimo/shared/src/lib/generated/generated-backend-types.ts")
+
+tasks.named("generateTypeScript").configure {
+    dependsOn tasks.named("classes")
+
+    jsonLibrary   = JsonLibrary.jackson2
+    outputKind    = TypeScriptOutputKind.module
+    mapDate       = DateMapping.asString
+    classPatterns = ["com.ritense.**.web.rest.dto.*"]
+
+    excludeClasses = ["com.ritense.search.domain.DisplayType"]
+    customTypeMappings = [
+        "com.ritense.search.domain.DisplayType:any"
+    ]
+
+    doFirst {
+        generatedDir.mkdirs()
+        println "Generating backend types..."
+    }
+
+    outputFile = outDtsFile
+
+    doLast {
+        if (!outDtsFile.exists()) throw new GradleException("Expected file not found: $outDtsFile")
+        outTsFile.text = outDtsFile.text
+        if (!outDtsFile.delete()) println "Could not delete $outDtsFile"
+        println "Wrote ${outTsFile.name} and removed ${outDtsFile.name}"
+    }
+}

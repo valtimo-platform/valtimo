@@ -20,7 +20,7 @@
 const path = require('path');
 
 module.exports = function karmaBaseConfig(config) {
-  const CONFIG_JS = path.resolve(__dirname, 'src/assets/config.js');
+  const CONFIG_JS = path.resolve(__dirname, 'apps/dev/src/assets/config.js');
 
   config.set({
     basePath: '',
