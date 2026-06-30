@@ -23,7 +23,6 @@ import {
   ImageWidget,
   WidgetAction,
   WidgetImageComponent,
-  WidgetImageData,
   WidgetImageItem,
   WidgetImageResolved,
   WidgetLayoutService,
@@ -101,7 +100,17 @@ export class CaseWidgetImageComponent extends WidgetProcess implements OnDestroy
     switchMap(([widget, tabKey, documentId]) =>
       this.caseWidgetApiService.getWidgetData(documentId, tabKey, widget!.key, undefined)
     ),
-    switchMap(data => this.resolveImages((data as unknown as WidgetImageData)?.images ?? [])),
+    switchMap(data => {
+      const widgetData = data as any;
+      const valueMap = new Map<string, string>(
+        (widgetData?.value ?? []).map((v: any) => [v.id, v.filename])
+      );
+      const images: WidgetImageItem[] = (widgetData?.images ?? []).map((img: any) => ({
+        ...img,
+        fileName: img.fileName ?? valueMap.get(img.resourceId) ?? '',
+      }));
+      return this.resolveImages(images);
+    }),
     tap(() => this.widgetLayoutService.setWidgetDataLoaded(this.widgetUuid)),
     catchError((error: HttpErrorResponse) => {
       if (error.status === 404) this.widgetLayoutService.setWidgetDataLoaded(this.widgetUuid);
