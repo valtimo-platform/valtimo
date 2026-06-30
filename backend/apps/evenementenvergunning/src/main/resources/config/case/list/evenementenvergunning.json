@@ -1,0 +1,84 @@
+[
+  {
+    "title": "Evenement",
+    "key": "evenement",
+    "path": "doc:evenementDetails.evenementNaam",
+    "displayType": {
+      "type": "text",
+      "displayTypeParameters": {}
+    },
+    "sortable": false,
+    "order": 0
+  },
+  {
+    "title": "Type",
+    "key": "evenementType",
+    "path": "doc:evenementDetails.evenementType",
+    "displayType": {
+      "type": "text",
+      "displayTypeParameters": {}
+    },
+    "sortable": true,
+    "order": 1
+  },
+  {
+    "title": "Locatie",
+    "key": "locatie",
+    "path": "doc:locatieEnOpstelling.evenementLocatie",
+    "displayType": {
+      "type": "text",
+      "displayTypeParameters": {}
+    },
+    "sortable": false,
+    "order": 2
+  },
+  {
+    "title": "Datum evenement",
+    "key": "datum",
+    "path": "doc:evenementDetails.evenementDatum",
+    "displayType": {
+      "type": "date",
+      "displayTypeParameters": {
+        "dateFormat": null
+      }
+    },
+    "sortable": false,
+    "order": 3
+  },
+  {
+    "title": "Aanvrager",
+    "key": "aanvrager",
+    "path": "doc:aanvrager.naam",
+    "displayType": {
+      "type": "text",
+      "displayTypeParameters": {}
+    },
+    "sortable": false,
+    "order": 4
+  },
+  {
+    "title": "Aanvraagdatum",
+    "key": "aanvraagDatum",
+    "path": "case:createdOn",
+    "displayType": {
+      "type": "date",
+      "displayTypeParameters": {
+        "dateFormat": "DD-MM-YYYY"
+      }
+    },
+    "sortable": true,
+    "defaultSort": "DESC",
+    "order": 5
+  },
+  {
+    "title": "Status",
+    "key": "status",
+    "path": "case:internalStatus",
+    "displayType": {
+      "type": "tags",
+      "displayTypeParameters": {}
+    },
+    "sortable": false,
+    "order": 6
+  }
+]

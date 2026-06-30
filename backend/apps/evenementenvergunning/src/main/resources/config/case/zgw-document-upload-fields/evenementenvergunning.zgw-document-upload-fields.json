@@ -1,0 +1,58 @@
+{
+  "changesetId": "evenementenvergunning.zgw-document-upload-fields.1740147769288",
+  "case-definitions": [
+    {
+      "key": "evenementenvergunning",
+      "fields": [
+        {
+          "key": "aanvullendeDatum",
+          "defaultValue": "",
+          "visible": true,
+          "readonly": false
+        },
+        {
+          "key": "BESCHRIJVING",
+          "defaultValue": "",
+          "visible": true,
+          "readonly": false
+        },
+        {
+          "key": "BESTANDSNAAM",
+          "defaultValue": "",
+          "visible": true,
+          "readonly": false
+        },
+        {
+          "key": "CREATIEDATUM",
+          "defaultValue": "",
+          "visible": true,
+          "readonly": false
+        },
+        {
+          "key": "STATUS",
+          "defaultValue": "definitief",
+          "visible": false,
+          "readonly": false
+        },
+        {
+          "key": "TAAL",
+          "defaultValue": "nld",
+          "visible": false,
+          "readonly": false
+        },
+        {
+          "key": "TREFWOORDEN",
+          "defaultValue": "demo",
+          "visible": true,
+          "readonly": false
+        },
+        {
+          "key": "VERTROUWELIJKHEIDAANDUIDING",
+          "defaultValue": "intern",
+          "visible": false,
+          "readonly": false
+        }
+      ]
+    }
+  ]
+}

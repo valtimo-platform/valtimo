@@ -1,0 +1,69 @@
+name: Publish release candidate
+run-name: Publish RC ${{ github.ref_name }}
+
+permissions:
+  contents: write
+
+on:
+  workflow_dispatch:
+
+jobs:
+  prepare:
+    name: Determine version
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+    steps:
+      - name: Validate and extract release branch
+        id: version
+        run: |
+          if [[ "${GITHUB_REF_NAME}" != rc/* ]]; then
+            echo "::error::This workflow can only run on rc/* branches (current: ${GITHUB_REF_NAME})."
+            exit 1
+          fi
+          if [[ "${GITHUB_REF_NAME}" =~ ^rc/([0-9]+\.[0-9]+\.[0-9]+-[0-9]+)$ ]]; then
+            VERSION="${BASH_REMATCH[1]}"
+          else
+            echo "::error::Branch must be rc/<semver>-<rc_number> (e.g. rc/13.5.0-1). Current: ${GITHUB_REF_NAME}."
+            exit 1
+          fi
+
+          if [[ -z "$VERSION" ]]; then
+            echo "::error::Unable to derive a version from branch '${GITHUB_REF_NAME}'."
+            exit 1
+          fi
+
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+
+  backend_release:
+    name: Backend pipeline
+    needs: prepare
+    uses: ./.github/workflows/backend_publish_release_candidate.yml
+    with:
+      project_version: ${{ needs.prepare.outputs.version }}
+    secrets: inherit
+
+  frontend_release:
+    name: Frontend pipeline
+    needs: prepare
+    uses: ./.github/workflows/frontend_publish_release_candidate.yml
+    with:
+      project_version: ${{ needs.prepare.outputs.version }}
+    secrets: inherit
+
+  create_release:
+    name: Create GitHub release
+    needs:
+      - backend_release
+      - frontend_release
+      - prepare
+    runs-on: ubuntu-latest
+    steps:
+      - name: Create release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ needs.prepare.outputs.version }}
+          name: ${{ needs.prepare.outputs.version }}
+          body: "Release Candidate for Valtimo version ${{ needs.prepare.outputs.version }}."
+          draft: false
+          prerelease: true

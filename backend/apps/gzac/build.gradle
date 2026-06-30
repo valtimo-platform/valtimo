@@ -1,0 +1,55 @@
+dependencies {
+    implementation(platform(project(":backend:dependencies:valtimo-dependency-versions")))
+
+    implementation(project(":backend:dependencies:valtimo-gzac-dependencies"))
+    implementation(project(":backend:mail:local-mail"))
+    implementation(project(":backend:document-generation:smartdocuments"))
+    implementation(project(":backend:logging"))
+    implementation(project(":backend:zgw:portaaltaak"))
+
+    // Plugins
+    implementation("com.ritense.valtimoplugins:freemarker:$freemarkerPluginVersion")
+    implementation("com.ritense.valtimoplugins:smtpmail:$smtpmailPluginVersion")
+
+    implementation("io.github.microutils:kotlin-logging")
+    implementation "org.springframework.boot:spring-boot-starter-webflux"
+    implementation "org.springframework.boot:spring-boot-starter-security"
+
+    compileOnly(project(":backend:besluit"))
+    compileOnly(project(":backend:openzaak"))
+    compileOnly(project(":backend:contactmoment"))
+    compileOnly(project(":backend:objects-api"))
+
+    // Database
+    implementation group: 'org.postgresql', name: 'postgresql', version: postgresqlDriverVersion
+
+    if (System.getProperty("os.arch") == "aarch64") {
+        runtimeOnly("io.netty:netty-resolver-dns-native-macos::osx-aarch_64")
+    }
+
+    testImplementation "org.jetbrains.kotlin:kotlin-test"
+    testImplementation "org.junit.jupiter:junit-jupiter"
+    testImplementation "org.springframework.boot:spring-boot-starter-test"
+}
+
+// backend/apps/build.gradle disables bootJar+jar for everything under :backend:apps.
+// Re-enable bootJar here so :backend:apps:gzac:assemble produces the executable
+// JAR that backend/apps/gzac/Dockerfile copies into the released
+// ritense/gzac-backend:<v> image. Keep the unwrapped 'jar' task disabled.
+bootJar {
+    enabled = true
+    archiveClassifier = ''
+}
+jar {
+    enabled = false
+}
+
+// gzac is the template-equivalent release app (src/main only). The developer
+// console moved to :backend:apps:dev.
+springBoot {
+    mainClass = 'com.ritense.valtimo.ApplicationKt'
+}
+
+// Shared app convention: publish-disable, .env loading, the bootRunWithDocker
+// task, and the GZAC docker-compose wiring. Apply after springBoot.mainClass.
+apply from: "${rootProject.projectDir}/backend/gradle/valtimo-app.gradle"

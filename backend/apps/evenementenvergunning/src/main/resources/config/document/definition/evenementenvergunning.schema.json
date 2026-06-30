@@ -1,0 +1,185 @@
+{
+  "$id": "evenementenvergunning.schema",
+  "type": "object",
+  "title": "Evenementenvergunning",
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "required": [
+    "evenementDetails",
+    "locatieEnOpstelling",
+    "aanvrager"
+  ],
+  "properties": {
+    "aanvrager": {
+      "type": "object",
+      "required": [
+        "naam",
+        "adres",
+        "contactgegevens"
+      ],
+      "properties": {
+        "naam": {
+          "type": "string"
+        },
+        "adres": {
+          "type": "string"
+        },
+        "contactgegevens": {
+          "type": "object",
+          "required": [
+            "telefoon",
+            "email"
+          ],
+          "properties": {
+            "email": {
+              "type": "string"
+            },
+            "telefoon": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    },
+    "milieuBeheer": {
+      "type": "object",
+      "required": [
+        "afvalBeheerPlan",
+        "milieuMaatregelen"
+      ],
+      "properties": {
+        "afvalBeheerPlan": {
+          "type": "string"
+        },
+        "milieuMaatregelen": {
+          "type": "string"
+        },
+        "sanitaireVoorzieningen": {
+          "type": "boolean"
+        }
+      }
+    },
+    "etenEnDrinken": {
+      "type": "object",
+      "required": [
+        "alcoholSchenken",
+        "horecaVergunning"
+      ],
+      "properties": {
+        "alcoholSchenken": {
+          "type": "boolean"
+        },
+        "horecaVergunning": {
+          "type": "boolean"
+        },
+        "alcoholControleMaatregelen": {
+          "type": "string"
+        }
+      }
+    },
+    "evenementDetails": {
+      "type": "object",
+      "required": [
+        "evenementNaam",
+        "evenementType",
+        "evenementDatum",
+        "verwachteBezoekers",
+        "isOpenbaarEvenement"
+      ],
+      "properties": {
+        "evenementNaam": {
+          "type": "string"
+        },
+        "evenementType": {
+          "type": "string"
+        },
+        "evenementDatum": {
+          "type": "string",
+          "format": "date"
+        },
+        "verwachteBezoekers": {
+          "type": "integer"
+        },
+        "isOpenbaarEvenement": {
+          "type": "boolean"
+        }
+      }
+    },
+    "geluidEnOverlast": {
+      "type": "object",
+      "required": [
+        "versterktGeluid",
+        "geluidReductieMaatregelen"
+      ],
+      "properties": {
+        "versterktGeluid": {
+          "type": "boolean"
+        },
+        "geluidReductieMaatregelen": {
+          "type": "string"
+        }
+      }
+    },
+    "verkeerEnParkeren": {
+      "type": "object",
+      "required": [
+        "verkeerPlan",
+        "parkeerVoorzieningen"
+      ],
+      "properties": {
+        "verkeerPlan": {
+          "type": "string"
+        },
+        "alternatiefTransport": {
+          "type": "string"
+        },
+        "parkeerVoorzieningen": {
+          "type": "boolean"
+        }
+      }
+    },
+    "locatieEnOpstelling": {
+      "type": "object",
+      "required": [
+        "evenementLocatie",
+        "voorzieningen"
+      ],
+      "properties": {
+        "indelingsplan": {
+          "type": "string"
+        },
+        "voorzieningen": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "evenementLocatie": {
+          "type": "string"
+        }
+      }
+    },
+    "veiligheidsMaatregelen": {
+      "type": "object",
+      "required": [
+        "beveiligingsPlan",
+        "noodPlan",
+        "EHBO",
+        "beveiligingsPersoneel"
+      ],
+      "properties": {
+        "EHBO": {
+          "type": "boolean"
+        },
+        "noodPlan": {
+          "type": "string"
+        },
+        "beveiligingsPlan": {
+          "type": "string"
+        },
+        "beveiligingsPersoneel": {
+          "type": "integer"
+        }
+      }
+    }
+  }
+}

@@ -9,43 +9,52 @@ on:
       build_artifact_name:
         description: Build artifact this workflow produces that can be retrieved with the 'download-artifact' action
         value: backend-build-output
+      contents_sha:
+        description: Git contents SHA for backend (git rev-parse HEAD:backend)
+        value: ${{ jobs.compute_contents_sha.outputs.contents_sha }}
 
   workflow_dispatch:
 
-defaults:
-  run:
-    working-directory: backend
-
 jobs:
-  check_cache:
+  compute_contents_sha:
     runs-on: ubuntu-latest
     outputs:
-      cache-hit: ${{ steps.restore_cache.outputs.cache-hit }}
-      cache-key: backend-libraries-contents-${{ steps.compute_contents_hash.outputs.contents_hash }}
+      contents_sha: ${{ steps.compute.outputs.contents_sha }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
       - name: Compute backend contents hash
-        id: compute_contents_hash
+        id: compute
         run: |
-          echo "contents_hash=$(git rev-parse HEAD:backend)" >> $GITHUB_OUTPUT
+          echo "contents_sha=$(git rev-parse HEAD:backend)" >> "$GITHUB_OUTPUT"
+
+  check_cache:
+    runs-on: ubuntu-latest
+    needs:
+      - compute_contents_sha
+    outputs:
+      cache-hit: ${{ steps.restore_cache.outputs.cache-hit }}
+      cache-key: backend-libraries-contents-${{ needs.compute_contents_sha.outputs.contents_sha }}
+      contents_sha: ${{ needs.compute_contents_sha.outputs.contents_sha }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
       - name: Restore backend libraries from build cache
         id: restore_cache
         uses: actions/cache/restore@v4
         with:
           path: |
-            backend/.gradle
             backend/**/build
-          key: backend-libraries-contents-${{ steps.compute_contents_hash.outputs.contents_hash }}
+          key: backend-libraries-contents-${{ needs.compute_contents_sha.outputs.contents_sha }}
       # Even in case of a cache hit, artifact must be pulled from cache and uploaded to
       # the artifact registry to be available to subsequent jobs
       - name: Upload built libraries
+        if: ${{ steps.restore_cache.outputs.cache-hit == 'true' }}
         uses: actions/upload-artifact@v4
         with:
           name: backend-build-output
           retention-days: 1
           path: |
-            backend/.gradle
             backend/**/build
 
   build_libraries:
@@ -74,7 +83,6 @@ jobs:
           name: backend-build-output
           retention-days: 1
           path: |
-            backend/.gradle
             backend/**/build
   determine-tests:
     if: ${{ needs.check_cache.outputs.cache-hit != 'true' }}
@@ -98,13 +106,13 @@ jobs:
       # Computing the test matrices takes ~2 minutes in GHA, so cache them with a cache key based on all the Gradle files
       - name: Cache test definitions
         id: cache-test-definitions
-        uses: actions/cache/save@v4
+        uses: actions/cache@v4
         with:
           path: |
             ${{ env.UNIT_TESTS_MATRIX }}
             ${{ env.INTEGRATION_TESTS_MATRIX }}
             ${{ env.SECURITY_TESTS_MATRIX }}
-          key: testdefinitions-${{ hashFiles('backend/**/build.gradle', 'backend/**/build.gradle.kts', 'backend/**/settings.gradle', 'backend/**/settings.gradle.kts', 'backend/**/gradle.properties') }}
+          key: testdefinitions-${{ hashFiles('**/*.gradle', '**/*.gradle.kts', '**/gradle.properties', '**/gradle-wrapper.properties') }}
       - name: Make test matrices
         id: make_test_matrices
         if: steps.cache-test-definitions.outputs.cache-hit != 'true'
@@ -112,7 +120,7 @@ jobs:
           UNIT_TESTS_FILE='/tmp/unit_tests'
           INTEGRATION_TESTS_FILE='/tmp/integration_tests'
           SECURITY_TESTS_FILE='/tmp/security_tests'
-          DRY_RUN=$(./gradlew test securityTesting integrationTesting --dry-run)
+          DRY_RUN=$(./gradlew :backend:testAll :backend:securityTestingAll :backend:integrationTestingAll --dry-run)
           touch $UNIT_TESTS_FILE $INTEGRATION_TESTS_FILE $SECURITY_TESTS_FILE
           while IFS= read -r line; do
             if [[ $line =~ (:[^[:space:]]+:test)\  ]]; then
@@ -134,7 +142,7 @@ jobs:
           echo "security_test_matrix=$(cat $SECURITY_TESTS_MATRIX)" >> $GITHUB_OUTPUT
   # Run the following test suites in parallel
   unit-testing:
-    needs: [determine-tests, check_cache]
+    needs: [determine-tests, check_cache, build_libraries]
     if: ${{ needs.check_cache.outputs.cache-hit != 'true' }}
     runs-on: ubuntu-latest
     strategy:
@@ -148,12 +156,17 @@ jobs:
           distribution: "temurin"
           java-version: "21"
           cache: gradle
+      - name: Download built libraries
+        uses: actions/download-artifact@v4
+        with:
+          name: backend-build-output
+          path: .
       - name: Run Unit Tests
         run: ./gradlew ${{ matrix.unit_test_suite }}
 
   integration-testing:
     runs-on: ubuntu-latest
-    needs: [determine-tests, check_cache]
+    needs: [determine-tests, check_cache, build_libraries]
     if: ${{ needs.check_cache.outputs.cache-hit != 'true' }}
     strategy:
       matrix:
@@ -166,22 +179,47 @@ jobs:
           distribution: "temurin"
           java-version: "21"
           cache: gradle
+      - name: Download built libraries
+        uses: actions/download-artifact@v4
+        with:
+          name: backend-build-output
+          path: .
       - name: Run integration test suite
         run: ./gradlew ${{ matrix.integration_test_suite }}
 
+  integration-testing-mysql:
+    runs-on: ubuntu-latest
+    needs: [check_cache, build_libraries]
+    if: ${{ needs.check_cache.outputs.cache-hit != 'true' }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: "temurin"
+          java-version: "21"
+          cache: gradle
+      - name: Download built libraries
+        uses: actions/download-artifact@v4
+        with:
+          name: backend-build-output
+          path: .
+      - name: Run MySQL integration test (verzoek)
+        run: ./gradlew :backend:zgw:verzoek:integrationTestingMysql
+
   security-testing:
-    needs: [determine-tests]
+    needs: [determine-tests, check_cache, build_libraries]
     strategy:
       matrix:
         security_test_suite: ${{ fromJson(needs.determine-tests.outputs.security_test_matrix) }}
     if: |
-      github.ref_type == 'branch' && 
+      github.ref_type == 'branch' &&
       (
         startsWith(github.ref_name, 'development/') ||
         startsWith(github.ref_name, 'rc/') ||
         startsWith(github.ref_name, 'release/') ||
         github.ref_name == 'next-minor' ||
-        github.ref_name == 'next-major' 
+        github.ref_name == 'next-major'
       )
     runs-on: ubuntu-latest
     steps:
@@ -192,6 +230,11 @@ jobs:
           distribution: "temurin"
           java-version: "21"
           cache: gradle
+      - name: Download built libraries
+        uses: actions/download-artifact@v4
+        with:
+          name: backend-build-output
+          path: .
       - name: Run Security Tests
         run: ./gradlew ${{ matrix.security_test_suite }}
 
@@ -202,11 +245,13 @@ jobs:
       always() &&
       needs.unit-testing.result == 'success' &&
       needs.integration-testing.result == 'success' &&
+      needs.integration-testing-mysql.result == 'success' &&
       (needs.security-testing.result == 'success' || needs.security-testing.result == 'skipped')
     needs:
       - check_cache
       - unit-testing
       - integration-testing
+      - integration-testing-mysql
       - security-testing
       - build_libraries
     steps:
@@ -214,11 +259,10 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: backend-build-output
-          path: backend
+          path: .
       - name: Cache built backend libraries
         uses: actions/cache/save@v4
         with:
           path: |
-            backend/.gradle
             backend/**/build
           key: ${{ needs.check_cache.outputs.cache-key }}

@@ -1,0 +1,12 @@
+[
+  {
+    "processDefinitionKey": "afhandelen-aanvraag-evenementenvergunning",
+    "canInitializeDocument": true,
+    "startableByUser": false
+  },
+  {
+    "processDefinitionKey": "informatieverzoek",
+    "canInitializeDocument": false,
+    "startableByUser": true
+  }
+]

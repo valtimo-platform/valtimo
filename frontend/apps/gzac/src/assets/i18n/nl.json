@@ -1,0 +1,282 @@
+{
+  "events": {
+    "TaskCompletedEvent": "Taak afgerond <i class=\"mdi mdi-arrow-right\"></i> {{taskName}}",
+    "TaskAssignedEvent": "Taak toegewezen <i class=\"mdi mdi-arrow-right\"></i> {{taskName}}",
+    "JsonSchemaDocumentCreatedEvent": "Dossier aangemaakt",
+    "JsonSchemaDocumentModifiedEvent": "Dossier aangepast",
+    "ProcessStartedEvent": "Proces gestart",
+    "ProcessEndedEvent": "Proces afgerond",
+    "DossierDocumentGeneratedEvent": "Dossier document gegenereerd",
+    "DocumentRelatedFileAddedEvent": "Gerelateerd bestand toegevoegd",
+    "DocumentRelatedFileRemovedEvent": "Gerelateerd bestand verwijderd"
+  },
+  "dossier": {
+    "title": {
+      "single": "Dossier",
+      "plural": "Dossiers"
+    },
+    "tabs": {
+      "summary": "Algemeen",
+      "progress": "Voortgang",
+      "audit": "Log",
+      "maps": "Kaarten",
+      "documents": "Documenten",
+      "custom-dossier": "Custom dossier",
+      "custom-maps": "Custom maps"
+    }
+  },
+  "document": {
+    "title": {
+      "single": "Document",
+      "plural": "Document's"
+    },
+    "id": "Referentie ID",
+    "createdBy": "Aangemaakt door",
+    "createdOn": "Aangemaakt op",
+    "sequence": "Volgnummer"
+  },
+  "summary": {
+    "userTasksDoneState": "Helemaal bij!"
+  },
+  "dashboard": {
+    "openTasks": {
+      "title": "Alle taken"
+    },
+    "openTask": {
+      "title": "Open taak"
+    },
+    "activeProcess": {
+      "title": "Actieve proces"
+    },
+    "activeProcesses": {
+      "title": "Actieve processen"
+    },
+    "tasksCompleted": {
+      "title": "Afgeronde taken"
+    },
+    "taskCompleted": {
+      "title": "Afgeronde taak"
+    },
+    "statistics": {
+      "title": "Statistieken"
+    },
+    "processes": {
+      "title": "Processen"
+    },
+    "process": {
+      "title": "Proces",
+      "details": "Proces details"
+    },
+    "startProcess": {
+      "title": "Start"
+    },
+    "version": {
+      "title": "Versie"
+    },
+    "processingLeadTime": {
+      "title": "Doorlooptijd verwerken",
+      "description": "gemiddeld over de laatste 30 dagen"
+    },
+    "tasks": {
+      "title": "Taken"
+    },
+    "task": {
+      "title": "Taak"
+    }
+  },
+  "account": {
+    "title": "Account",
+    "links": {
+      "profile": "Profiel",
+      "password": "Wachtwoord",
+      "help": "Help",
+      "feedback": "Feedback",
+      "signOut": "Afmelden"
+    }
+  },
+  "settings": {
+    "title": "Instellingen",
+    "context": {
+      "title": "Context"
+    },
+    "language": {
+      "title": "Taal",
+      "options": {
+        "nl": "Nederlands",
+        "en": "English"
+      }
+    },
+    "notification": {
+      "title": "Notificaties",
+      "frequency": {
+        "title": "Notificaties frequentie"
+      },
+      "taskNotifications": "Taakmeldingen",
+      "taskNotificationsIntro": "Ontvang een e-mail wanneer een taak aan jou is toegewezen",
+      "emailNotifications": "Dagelijks taak overzicht",
+      "emailNotificationsIntro": "Persoonlijke overzicht van je open taken",
+      "emailNotificationOnMonday": "Maandag",
+      "emailNotificationOnTuesday": "Dinsdag",
+      "emailNotificationOnWednesday": "Woensdag",
+      "emailNotificationOnThursday": "Donderdag",
+      "emailNotificationOnFriday": "Vrijdag",
+      "emailNotificationOnSaturday": "Zaterdag",
+      "emailNotificationOnSunday": "Zondag"
+    },
+    "version": {
+      "title": "Versie informatie"
+    }
+  },
+  "decisions": {
+    "upload": {
+      "description": "Selecteer een .dmn bestand om te uploaden"
+    }
+  },
+  "message": {
+    "empty": "Geen resultaat gevonden"
+  },
+  "cta": {
+    "close": "Sluiten",
+    "moreDetails": "Meer details"
+  },
+  "formManagement": {
+    "noFormDefinitionFound": "Er is geen formulier gekoppeld aan de start event/user task. Om een formulier te koppelen ga naar admin-menu > formulier koppelingen",
+    "gotoFormLinksButton": "Configureer nu"
+  },
+  "serviceTaskManagement": {
+    "subtitle": "Link {{selectedElement}} naar Open Zaak",
+    "context": "Kies een bestaande open zaak configuratie of maak een nieuwe aan.",
+    "noZaakTypeLinkFound": "Er is geen Zaak type link gekoppeld aan de service task. Om een Zaak type link te koppelen ga naar Admin > Dossiers.",
+    "gotoDossierManagementButton": "Configureer nu",
+    "serviceTaskHandler": {
+      "operation": "Operatie:",
+      "status": "Status:",
+      "result": "Resultaat:"
+    },
+    "delete": "Verwijderen",
+    "edit": "Wijzigen",
+    "back": "Terug",
+    "save": "Opslaan",
+    "addMore": "Voeg nog een toe",
+    "selectDocumentDefinitionName": "Selecteer de dossier-definitie",
+    "selectedZaakType": "Geselecteerde zaak type",
+    "selectZaakOperation": "Geef aan welke actie je op de Zaak wilt doen",
+    "selectZaakStatus": "Selecteer een zaak status",
+    "noZaakStatusConfigured": "Geen zaak status beschikbaar ga naar Open zaak om een zaak status te maken",
+    "selectZaakResult": "Selecteer een zaak resultaat",
+    "noZaakResultConfigured": "Geen zaak resultaat beschikbaar ga naar Open zaak om een zaak resultaat te maken"
+  },
+  "task-list": {
+    "mine": {
+      "title": "Mijn taken",
+      "description": "Overzicht van alle toegewezen taken"
+    },
+    "open": {
+      "title": "Niet toegewezen taken",
+      "description": "Overzicht van alle niet toegewezen taken"
+    },
+    "all": {
+      "title": "Alle taken",
+      "description": "Overzicht van alle taken"
+    }
+  },
+  "Task": "Taak",
+  "Tasks": "Taken",
+  "Analysis": "Analyse",
+  "Choice fields": "Keuzevelden",
+  "Overview of all Choice fields": "Overzicht van alle Keuzevelden",
+  "Create new Choice field": "Maak nieuw Keuzeveld",
+  "Choice field details": "Keuzeveld details",
+  "Choice field values": "Keuzeveld waarden",
+  "Overview of all Choice field values": "Overzicht van alle Keuzeveld waarden",
+  "Create new Choice field value": "Maak nieuw Keuzeveld waarde",
+  "Choice field value details": "Keuzeveld waarde details",
+  "Process": "Proces",
+  "Processes": "Processen",
+  "Overview of all Processes": "Overzicht van alle Processen",
+  "Create new Process": "Maak nieuw Proces",
+  "Process details": "Proces details",
+  "Decision tables": "Beslistabellen",
+  "Overview of all Decision tables": "Overzicht van alle Beslistabellen",
+  "Create new Milestone": "Maak nieuw Milestone",
+  "Create new Milestone Set": "Maak nieuw Milestone Set",
+  "Forms": "Formulieren",
+  "Overview of all Forms": "Overzicht van alle Formulieren",
+  "Create new Form": "Maak nieuw Formulier",
+  "Form Builder": "Formulier Bouwer",
+  "Form links": "Proceskoppelingen",
+  "Process migration": "Procesmigratie",
+  "Dossier": "Dossier",
+  "Dossiers": "Dossiers",
+  "document definition": "Dossier-definitie",
+  "Upload document definition": "Upload dossier-definitie",
+  "Remove document definition": "Verwijder dossier-definitie",
+  "remove-document-definition-confirmation": "Waarschuwing: <br/><br/> Deze dossier-definitie en alle hierbij horende dossiers zullen worden verwijderd. Gekoppelde processen worden ontkoppeld.<br/> Het verwijderen van een dossier-definitie en bijbehorende dossiers kan niet worden teruggedraaid",
+  "remove-document-definition-confirmation-button": "Verwijder",
+  "remove-document-definition-success": "Dossier-definitie verwijderd",
+  "Download document definition": "Download dossier-definitie",
+  "Select a document definition": "Kies een bestand om te uploaden",
+  "Overview of all Dossiers": "Overzicht van alle Dossiers",
+  "Start Dossier": "Creëer Nieuw Dossier",
+  "Dossier details": "Dossier details",
+  "Related documents": "Gerelateerde documenten",
+  "Overview of all documents in this dossier": "Overzicht van documenten in dit dossier",
+  "Basics": "Basis",
+  "A&E": "A&E",
+  "Other": "Overig",
+  "Download": "Downloaden",
+  "Upload": "Uploaden",
+  "openZaak": {
+    "links": "OpenZaak-koppelingen",
+    "error": {
+      "configNotFound": "OpenZaak configuratie niet gevonden, ga naar Admin > Open Zaak"
+    }
+  },
+  "interface": {
+    "mainMenu": "Hoofdmenu",
+    "toggleMenu": "Menu",
+    "typeToSearch": "Typ hier om te zoeken",
+    "noSearchResults": "Geen resultaten"
+  },
+  "assignTask": {
+    "assignedTo": "Toegewezen aan ",
+    "header": "Gebruiker toewijzen aan deze taak",
+    "placeholder": "Selecteer een gebruiker",
+    "remove": "Toewijzing ongedaan maken",
+    "save": "Opslaan"
+  },
+  "dropzone": {
+    "drop": "Kies een bestand, of sleep het hier naartoe",
+    "maxFileSize": "Maximale bestandsgrootte: ",
+    "jsonDocDef": "De dossier-definitie moet in het JSON-formaat zijn",
+    "error": {
+      "tooBig": "Het opgegeven bestand is te groot",
+      "wrongType": "Het bestandstype van het opgegeven bestand wordt niet ondersteund",
+      "generic": "Er ging iets mis. Probeer het opnieuw.",
+      "invalidDocDef": "Uw dossier-definitie kon niet geüpload worden. Probeer het opnieuw."
+    }
+  },
+  "fieldLabels": {
+    "referenceNumber": "Referentienummer",
+    "createdBy": "Aangemaakt door",
+    "createdOn": "Aangemaakt op",
+    "lastModified": "Laatst gewijzigd op",
+    "files": "Bestanden",
+    "firstName": "Voornaam"
+  },
+  "list": {
+    "currentPage": "Pagina {{current}} van {{total}}",
+    "show": "Toon",
+    "entries": "rijen",
+    "noMatchingItems": "Geen resultaten gevonden voor ",
+    "noFieldDefinitions": "Geen velddefinities gedefinieerd",
+    "noResults": "Geen resultaten",
+    "showingResults": "{{number}} van {{total}} resultaten zichtbaar",
+    "showingResult": "{{number}} resultaat zichtbaar"
+  },
+  "webcam": {
+    "takePicture": "Foto maken",
+    "save": "Opslaan",
+    "redo": "Opnieuw"
+  }
+}

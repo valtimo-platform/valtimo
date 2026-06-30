@@ -1,0 +1,123 @@
+{
+  "startStep": "aanvrager",
+  "steps": [
+    {
+      "key": "geluidEnOverlast",
+      "title": "Geluid en Overlast",
+      "nextSteps": [
+        {
+          "step": "verkeerEnParkeren"
+        }
+      ],
+      "type": {
+        "name": "form",
+        "properties": {
+          "definition": "evenementenvergunning.geluid-en-overlast"
+        }
+      }
+    },
+    {
+      "key": "locatieEnOpstelling",
+      "title": "Locatie en Opstelling",
+      "nextSteps": [
+        {
+          "step": "veiligheidsMaatregelen"
+        }
+      ],
+      "type": {
+        "name": "form",
+        "properties": {
+          "definition": "evenementenvergunning.locatie-en-opstelling"
+        }
+      }
+    },
+    {
+      "key": "aanvrager",
+      "title": "Aanvrager",
+      "nextSteps": [
+        {
+          "step": "evenementDetails"
+        }
+      ],
+      "type": {
+        "name": "form",
+        "properties": {
+          "definition": "evenementenvergunning.aanvrager"
+        }
+      }
+    },
+    {
+      "key": "evenementDetails",
+      "title": "Evenement Details",
+      "nextSteps": [
+        {
+          "step": "locatieEnOpstelling"
+        }
+      ],
+      "type": {
+        "name": "form",
+        "properties": {
+          "definition": "evenementenvergunning.evenement-details"
+        }
+      }
+    },
+    {
+      "key": "verkeerEnParkeren",
+      "title": "Verkeer en Parkeren",
+      "nextSteps": [
+        {
+          "step": "milieuBeheer"
+        }
+      ],
+      "type": {
+        "name": "form",
+        "properties": {
+          "definition": "evenementenvergunning.verkeer-en-parkeren"
+        }
+      }
+    },
+    {
+      "key": "milieuBeheer",
+      "title": "Milieubeheer",
+      "nextSteps": [
+        {
+          "step": "etenEnDrinken"
+        }
+      ],
+      "type": {
+        "name": "form",
+        "properties": {
+          "definition": "evenementenvergunning.milieu-beheer"
+        }
+      }
+    },
+    {
+      "key": "etenEnDrinken",
+      "title": "Eten en Drinken",
+      "onComplete": [
+        "${valtimoFormFlow.startCase(instance.id, {'doc:/aanvrager':'/aanvrager','doc:/evenementDetails':'/evenementDetails', 'doc:/locatieEnOpstelling':'/locatieEnOpstelling', 'doc:/veiligheidsMaatregelen':'/veiligheidsMaatregelen','doc:/geluidEnOverlast':'/geluidEnOverlast', 'doc:/verkeerEnParkeren':'/verkeerEnParkeren', 'doc:/etenEnDrinken':'/etenEnDrinken', 'doc:/milieuBeheer':'/milieuBeheer'})}"
+      ],
+      "type": {
+        "name": "form",
+        "properties": {
+          "definition": "evenementenvergunning.eten-en-drinken"
+        }
+      }
+    },
+    {
+      "key": "veiligheidsMaatregelen",
+      "title": "Veiligheidsmaatregelen",
+      "nextSteps": [
+        {
+          "step": "geluidEnOverlast"
+        }
+      ],
+      "type": {
+        "name": "form",
+        "properties": {
+          "definition": "evenementenvergunning.veiligheids-maatregelen"
+        }
+      }
+    }
+  ]
+}

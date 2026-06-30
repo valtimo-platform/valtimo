@@ -1,0 +1,73 @@
+/*
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
+ *
+ * Licensed under EUPL, Version 1.2 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" basis,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+// The developer console: the gzac dependency set plus the showcase/demo code
+// (com.ritense.gzac.GzacApplication) and the full local-dev configuration that
+// used to live in gzac/src/dev. Not released — this is the bootRun daily driver
+// and the PR-CI test image.
+
+dependencies {
+    implementation(platform(project(":backend:dependencies:valtimo-dependency-versions")))
+
+    implementation(project(":backend:dependencies:valtimo-gzac-dependencies"))
+    implementation(project(":backend:mail:local-mail"))
+    implementation(project(":backend:document-generation:smartdocuments"))
+    implementation(project(":backend:logging"))
+    implementation(project(":backend:zgw:portaaltaak"))
+
+    // Plugins
+    implementation("com.ritense.valtimoplugins:freemarker:$freemarkerPluginVersion")
+    implementation("com.ritense.valtimoplugins:smtpmail:$smtpmailPluginVersion")
+
+    implementation("io.github.microutils:kotlin-logging")
+    implementation "org.springframework.boot:spring-boot-starter-webflux"
+    implementation "org.springframework.boot:spring-boot-starter-security"
+
+    compileOnly(project(":backend:besluit"))
+    compileOnly(project(":backend:openzaak"))
+    compileOnly(project(":backend:contactmoment"))
+    compileOnly(project(":backend:objects-api"))
+
+    // Database
+    implementation group: 'org.postgresql', name: 'postgresql', version: postgresqlDriverVersion
+
+    if (System.getProperty("os.arch") == "aarch64") {
+        runtimeOnly("io.netty:netty-resolver-dns-native-macos::osx-aarch_64")
+    }
+
+    testImplementation "org.jetbrains.kotlin:kotlin-test"
+    testImplementation "org.junit.jupiter:junit-jupiter"
+    testImplementation "org.springframework.boot:spring-boot-starter-test"
+}
+
+// backend/apps/build.gradle disables bootJar+jar for everything under :backend:apps.
+// Re-enable bootJar so :backend:apps:dev:assemble produces the executable JAR the
+// dev Dockerfile copies into the PR-CI test image. Keep the plain 'jar' disabled.
+bootJar {
+    enabled = true
+    archiveClassifier = ''
+}
+jar {
+    enabled = false
+}
+
+springBoot {
+    mainClass = 'com.ritense.gzac.GzacApplication'
+}
+
+// Shared app convention: publish-disable, .env loading, the bootRunWithDocker
+// task, and the GZAC docker-compose wiring. Apply after springBoot.mainClass.
+apply from: "${rootProject.projectDir}/backend/gradle/valtimo-app.gradle"

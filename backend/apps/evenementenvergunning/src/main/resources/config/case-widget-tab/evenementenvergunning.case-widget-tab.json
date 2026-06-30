@@ -1,0 +1,268 @@
+{
+  "changesetId": "evenementenvergunning.case-widget-tab.1740147768981",
+  "tabs": [
+    {
+      "caseDefinitionName": "evenementenvergunning",
+      "key": "gegevens",
+      "widgets": [
+        {
+          "type": "fields",
+          "key": "evenementgegevens",
+          "title": "Evenementgegevens",
+          "width": 1,
+          "highContrast": false,
+          "actions": [
+            {
+              "name": "Vraag informatie op",
+              "processDefinitionKey": "informatieverzoek"
+            }
+          ],
+          "properties": {
+            "columns": [
+              [
+                {
+                  "key": "naam",
+                  "title": "Naam",
+                  "value": "doc:evenementDetails.evenementNaam"
+                },
+                {
+                  "key": "type",
+                  "title": "Type",
+                  "value": "doc:evenementDetails.evenementType"
+                },
+                {
+                  "key": "datum",
+                  "title": "Datum",
+                  "value": "doc:evenementDetails.evenementDatum"
+                },
+                {
+                  "key": "verwachte-bezoekers",
+                  "title": "Verwachte bezoekers",
+                  "value": "doc:evenementDetails.verwachteBezoekers"
+                },
+                {
+                  "key": "openbaar-evenement",
+                  "title": "Openbaar evenement",
+                  "value": "doc:evenementDetails.isOpenbaarEvenement",
+                  "displayProperties": {
+                    "type": "boolean",
+                    "hideWhenEmpty": false
+                  }
+                }
+              ]
+            ]
+          }
+        },
+        {
+          "type": "fields",
+          "key": "locatie-en-opstelling",
+          "title": "Locatie en opstelling",
+          "width": 1,
+          "highContrast": false,
+          "actions": [],
+          "properties": {
+            "columns": [
+              [
+                {
+                  "key": "locatie",
+                  "title": "Locatie",
+                  "value": "doc:locatieEnOpstelling.evenementLocatie"
+                }
+              ]
+            ]
+          }
+        },
+        {
+          "type": "fields",
+          "key": "eten-en-drinken",
+          "title": "Eten en drinken",
+          "width": 1,
+          "highContrast": false,
+          "actions": [],
+          "properties": {
+            "columns": [
+              [
+                {
+                  "key": "horeca-vergunning",
+                  "title": "Horeca vergunning?",
+                  "value": "doc:etenEnDrinken.horecaVergunning",
+                  "displayProperties": {
+                    "type": "boolean",
+                    "hideWhenEmpty": false
+                  }
+                },
+                {
+                  "key": "wordt-er-alcohol-geschonken",
+                  "title": "Wordt er alcohol geschonken?",
+                  "value": "doc:etenEnDrinken.alcoholSchenken",
+                  "displayProperties": {
+                    "type": "boolean",
+                    "hideWhenEmpty": false
+                  }
+                },
+                {
+                  "key": "leeftijds-controle-alcohol",
+                  "title": "Leeftijds controle alcohol?",
+                  "value": "doc:etenEnDrinken.alcoholControleMaatregelen"
+                }
+              ]
+            ]
+          }
+        },
+        {
+          "type": "fields",
+          "key": "veiligheidsmaatregelen",
+          "title": "Veiligheidsmaatregelen",
+          "width": 1,
+          "highContrast": false,
+          "actions": [],
+          "properties": {
+            "columns": [
+              [
+                {
+                  "key": "ehbo-beschikbaar",
+                  "title": "EHBO beschikbaar",
+                  "value": "doc:veiligheidsMaatregelen.EHBO",
+                  "displayProperties": {
+                    "type": "boolean",
+                    "hideWhenEmpty": false
+                  }
+                },
+                {
+                  "key": "noodplan",
+                  "title": "Noodplan",
+                  "value": "doc:veiligheidsMaatregelen.noodPlan"
+                },
+                {
+                  "key": "beveiligingsplan",
+                  "title": "Beveiligingsplan",
+                  "value": "doc:veiligheidsMaatregelen.beveiligingsPlan"
+                },
+                {
+                  "key": "aantal-beveiligingsperoneel",
+                  "title": "Aantal beveiligingsperoneel",
+                  "value": "doc:veiligheidsMaatregelen.beveiligingsPersoneel",
+                  "displayProperties": {
+                    "type": "number",
+                    "hideWhenEmpty": false
+                  }
+                }
+              ]
+            ]
+          }
+        },
+        {
+          "type": "fields",
+          "key": "milieu-beheer",
+          "title": "Milieubeheer",
+          "width": 1,
+          "highContrast": false,
+          "actions": [],
+          "properties": {
+            "columns": [
+              [
+                {
+                  "key": "afvalbeheerplan",
+                  "title": "Afvalbeheerplan",
+                  "value": "doc:milieuBeheer.afvalBeheerPlan",
+                  "displayProperties": {
+                    "type": "text",
+                    "ellipsisCharacterLimit": 12,
+                    "hideWhenEmpty": false
+                  }
+                },
+                {
+                  "key": "milieumaatregelen",
+                  "title": "Milieumaatregelen",
+                  "value": "doc:milieuBeheer.milieuMaatregelen",
+                  "displayProperties": {
+                    "type": "text",
+                    "hideWhenEmpty": false
+                  }
+                },
+                {
+                  "key": "sanitaire-voorzieningen",
+                  "title": "Sanitaire voorzieningen",
+                  "value": "doc:milieuBeheer.sanitaireVoorzieningen",
+                  "displayProperties": {
+                    "type": "boolean",
+                    "hideWhenEmpty": false
+                  }
+                }
+              ]
+            ]
+          }
+        },
+        {
+          "type": "fields",
+          "key": "verkeer-en-parkeren",
+          "title": "Verkeer en Parkeren",
+          "width": 1,
+          "highContrast": false,
+          "actions": [],
+          "properties": {
+            "columns": [
+              [
+                {
+                  "key": "verkeersplan",
+                  "title": "Verkeersplan",
+                  "value": "doc:verkeerEnParkeren.verkeerPlan",
+                  "displayProperties": {
+                    "type": "text",
+                    "hideWhenEmpty": false
+                  }
+                },
+                {
+                  "key": "alternatief-transport",
+                  "title": "Alternatief transport",
+                  "value": "doc:verkeerEnParkeren.alternatiefTransport",
+                  "displayProperties": {
+                    "type": "text",
+                    "hideWhenEmpty": false
+                  }
+                },
+                {
+                  "key": "parkeervoorzieningen",
+                  "title": "Parkeervoorzieningen",
+                  "value": "doc:verkeerEnParkeren.parkeerVoorzieningen",
+                  "displayProperties": {
+                    "type": "boolean",
+                    "hideWhenEmpty": false
+                  }
+                }
+              ]
+            ]
+          }
+        },
+        {
+          "type": "fields",
+          "key": "geluid-en-overlast",
+          "title": "Geluid en overlast",
+          "width": 1,
+          "highContrast": false,
+          "actions": [],
+          "properties": {
+            "columns": [
+              [
+                {
+                  "key": "versterkt-geluid",
+                  "title": "Versterkt geluid",
+                  "value": "doc:geluidEnOverlast.versterktGeluid",
+                  "displayProperties": {
+                    "type": "boolean",
+                    "hideWhenEmpty": false
+                  }
+                },
+                {
+                  "key": "geluidreductiemaatregelen",
+                  "title": "Geluidreductiemaatregelen",
+                  "value": "doc:geluidEnOverlast.geluidReductieMaatregelen"
+                }
+              ]
+            ]
+          }
+        }
+      ]
+    }
+  ]
+}
