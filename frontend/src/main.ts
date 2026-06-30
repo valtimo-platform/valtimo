@@ -14,32 +14,18 @@
  * limitations under the License.
  */
 
-import {enableProdMode} from '@angular/core';
-import {platformBrowserDynamic} from '@angular/platform-browser-dynamic';
+import {initFederation} from '@angular-architects/native-federation';
 
-import {AppModule} from './app/app.module';
-import {environment} from './environments/environment';
-
-if (!environment.production) {
-  // Suppress only "ExpressionChangedAfterItHasBeenCheckedError" errors during local dev
-  const originalConsoleError = console.error;
-  console.error = (...args) => {
-    const errorMessage = args
-      .map(arg => (typeof arg === 'string' ? arg : JSON.stringify(arg)))
-      .join(' ');
-
-    if (errorMessage.includes('100')) {
-      return; // Ignore NG0100 errors
-    }
-
-    originalConsoleError(...args);
-  };
-}
-
-if (environment.production) {
-  enableProdMode();
-}
-
-platformBrowserDynamic()
-  .bootstrapModule(AppModule)
+// Initialize the Native Federation runtime (and its es-module-shims import map)
+// BEFORE the application bootstraps. The app's @angular/*, rxjs, zone.js and
+// @valtimo/* are emitted as standalone shared chunks and registered in the import
+// map here, so the application resolves those bare imports to a single shared
+// instance of each (one Angular instance on the page, consistent DI token
+// identity).
+//
+// The actual application bootstrap lives in ./bootstrap and is imported
+// dynamically so it only runs once the import map is in place.
+initFederation('/assets/federation.manifest.json')
+  .catch(err => console.error('Federation init failed', err))
+  .then(() => import('./bootstrap'))
   .catch(err => console.error(err));

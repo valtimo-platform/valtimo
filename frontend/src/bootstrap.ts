@@ -1,0 +1,61 @@
+/*
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
+ *
+ * Licensed under EUPL, Version 1.2 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+import {enableProdMode} from '@angular/core';
+import {platformBrowserDynamic} from '@angular/platform-browser-dynamic';
+
+import {AppModule} from './app/app.module';
+import {environment} from './environments/environment';
+
+if (!environment.production) {
+  // Suppress only "ExpressionChangedAfterItHasBeenCheckedError" errors during local dev
+  const originalConsoleError = console.error;
+  console.error = (...args) => {
+    const errorMessage = args
+      .map(arg => {
+        if (typeof arg === 'string') {
+          return arg;
+        }
+        if (arg instanceof Error) {
+          return arg.message;
+        }
+        try {
+          // Angular error payloads frequently contain cyclic references
+          // (component views / DOM nodes), so JSON.stringify can throw
+          // "cyclic object value" — fall back to a plain string in that case
+          // instead of letting the override crash and mask the real error.
+          return JSON.stringify(arg);
+        } catch {
+          return String(arg);
+        }
+      })
+      .join(' ');
+
+    if (errorMessage.includes('100')) {
+      return; // Ignore NG0100 errors
+    }
+
+    originalConsoleError(...args);
+  };
+}
+
+if (environment.production) {
+  enableProdMode();
+}
+
+platformBrowserDynamic()
+  .bootstrapModule(AppModule)
+  .catch(err => console.error(err));

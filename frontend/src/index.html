@@ -46,6 +46,26 @@
     />
     <link rel="icon" type="image/x-icon" href="valtimo-layout/img/valtimo/favicons/favicon.ico" />
     <script src="assets/config.js"></script>
+    <!--
+      Legacy global scripts (jQuery + plugins, BPMN/DMN modelers, layout JS).
+      Loaded here in <head> with `defer` (so they keep their relative order and
+      run before the app bootstraps) instead of via the Angular builder's
+      `scripts[]` array. Native Federation rewrites the body's polyfills/main
+      script tags and its regex spans any extra <script src> the builder injects
+      on the same line, which would strip `type="module-shim"` off main.js and
+      break boot. Keeping these out of the bundled body scripts avoids that.
+    -->
+    <script defer src="vendor/jquery.min.js"></script>
+    <script defer src="vendor/jquery-ui.min.js"></script>
+    <script defer src="vendor/popper.js"></script>
+    <script defer src="vendor/bootstrap.js"></script>
+    <script defer src="vendor/bootstrap-datetimepicker.min.js"></script>
+    <script defer src="vendor/perfect-scrollbar.min.js"></script>
+    <script defer src="vendor/select2.min.js"></script>
+    <script defer src="vendor/layout/app.js"></script>
+    <script defer src="assets/bpmn/ValtimoBPMNModeler.js"></script>
+    <script defer src="vendor/native-shim.js"></script>
+    <script defer src="vendor/dmn-modeler.development.js"></script>
   </head>
   <body>
     <app-root></app-root>
