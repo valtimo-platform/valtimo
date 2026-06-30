@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import {Component, OnDestroy, OnInit, signal} from '@angular/core';
+import {Component, OnDestroy, OnInit, signal, ViewChild} from '@angular/core';
 import {CommonModule} from '@angular/common';
 import {
   BuildingBlockManagementApiService,
@@ -36,11 +36,21 @@ import {
   ColumnConfig,
   ConfirmationModalModule,
 } from '@valtimo/components';
-import {Decision, DecisionDeployComponent, DecisionStateService} from '@valtimo/decision';
+import {
+  Decision,
+  DecisionFormModalComponent,
+  DecisionFormValue,
+  DecisionDeployComponent,
+  DecisionService,
+  DecisionStateService,
+  parseDecisionForm,
+  toDecisionFileName,
+  updateDmnXml,
+} from '@valtimo/decision';
 import {GlobalNotificationService} from '@valtimo/shared';
 import {TranslateModule, TranslateService} from '@ngx-translate/core';
 import {ButtonModule, IconModule, IconService} from 'carbon-components-angular';
-import {Upload16} from '@carbon/icons';
+import {Add16, Upload16} from '@carbon/icons';
 import {Router} from '@angular/router';
 import {BUILDING_BLOCK_MANAGEMENT_TABS} from '../../constants';
 
@@ -56,9 +66,12 @@ import {BUILDING_BLOCK_MANAGEMENT_TABS} from '../../constants';
     IconModule,
     ConfirmationModalModule,
     DecisionDeployComponent,
+    DecisionFormModalComponent,
   ],
 })
 export class BuildingBlockManagementDecisionsComponent implements OnInit, OnDestroy {
+  @ViewChild('decisionEdit') edit: DecisionFormModalComponent;
+
   public readonly $loading = signal<boolean>(true);
 
   private readonly _decisions$ = new BehaviorSubject<Decision[]>([]);
@@ -76,6 +89,12 @@ export class BuildingBlockManagementDecisionsComponent implements OnInit, OnDest
 
   public readonly ACTION_ITEMS: ActionItem[] = [
     {
+      label: 'interface.edit',
+      callback: this.openEditModal.bind(this),
+      type: 'normal',
+      disabledCallback: this.deleteDisabled.bind(this),
+    },
+    {
       label: 'interface.delete',
       callback: this.onDeleteClick,
       type: 'danger',
@@ -89,18 +108,21 @@ export class BuildingBlockManagementDecisionsComponent implements OnInit, OnDest
 
   private readonly _subscriptions = new Subscription();
   private _decisionToDelete!: Decision;
+  private _decisionToEdit: Decision | null = null;
+  private _editXml: string | null = null;
   private _isFinal = false;
 
   constructor(
     private readonly buildingBlockManagementDetailService: BuildingBlockManagementDetailService,
     private readonly buildingBlockManagementApiService: BuildingBlockManagementApiService,
     private readonly decisionStateService: DecisionStateService,
+    private readonly decisionService: DecisionService,
     private readonly translateService: TranslateService,
     private readonly iconService: IconService,
     private readonly router: Router,
     private readonly notificationService: GlobalNotificationService
   ) {
-    this.iconService.registerAll([Upload16]);
+    this.iconService.registerAll([Upload16, Add16]);
   }
 
   public ngOnInit(): void {
@@ -150,6 +172,62 @@ export class BuildingBlockManagementDecisionsComponent implements OnInit, OnDest
       BUILDING_BLOCK_MANAGEMENT_TABS.DECISIONS,
       decision.id,
     ]);
+  }
+
+  public onCreateDecision(value: DecisionFormValue): void {
+    this.router.navigate(
+      [
+        '/building-block-management',
+        'building-block',
+        this.buildingBlockManagementDetailService.buildingBlockDefinitionKey,
+        'version',
+        this.buildingBlockManagementDetailService.buildingBlockDefinitionVersionTag,
+        BUILDING_BLOCK_MANAGEMENT_TABS.DECISIONS,
+        'create',
+      ],
+      {state: {decisionName: value.name, inputVariables: value.inputVariables}}
+    );
+  }
+
+  public openEditModal(decision: Decision): void {
+    this.decisionService.getDecisionXml(decision.id).subscribe(xml => {
+      this._decisionToEdit = decision;
+      this._editXml = xml.dmnXml;
+      this.edit.open(parseDecisionForm(xml.dmnXml));
+    });
+  }
+
+  public onEditDecision(value: DecisionFormValue): void {
+    if (!this._editXml || !this._decisionToEdit) return;
+
+    this.$loading.set(true);
+
+    const patchedXml = updateDmnXml(this._editXml, value);
+    const fileName = this._decisionToEdit.resource || toDecisionFileName(this._decisionToEdit.key);
+    const file = new File([patchedXml], fileName, {type: 'text/xml'});
+
+    this.decisionService
+      .deployBuildingBlockDecisionDefinition(
+        this.buildingBlockManagementDetailService.buildingBlockDefinitionKey,
+        this.buildingBlockManagementDetailService.buildingBlockDefinitionVersionTag,
+        file
+      )
+      .subscribe({
+        next: () => {
+          this.notificationService.showToast({
+            type: 'success',
+            title: this.translateService.instant('decisions.deploySuccess'),
+          });
+          this.decisionStateService.refreshDecisions();
+        },
+        error: () => {
+          this.notificationService.showToast({
+            type: 'error',
+            title: this.translateService.instant('decisions.deployFailure'),
+          });
+          this.$loading.set(false);
+        },
+      });
   }
 
   public onDeploySuccessful(): void {
