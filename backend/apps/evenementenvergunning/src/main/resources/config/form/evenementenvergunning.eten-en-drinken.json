@@ -1,0 +1,49 @@
+{
+  "type": "form",
+  "components": [
+    {
+      "key": "etenEnDrinken",
+      "type": "panel",
+      "title": "Eten en Drinken",
+      "components": [
+        {
+          "key": "etenEnDrinken.alcoholSchenken",
+          "type": "checkbox",
+          "input": true,
+          "label": "Wordt er alcohol geschonken?",
+          "attributes": {
+            "data-testid": "evenementenvergunning.eten-en-drinken-alcoholSchenken"
+          },
+          "defaultValue": true
+        },
+        {
+          "key": "etenEnDrinken.horecaVergunning",
+          "type": "checkbox",
+          "input": true,
+          "label": "Horecavergunning aanwezig?",
+          "attributes": {
+            "data-testid": "evenementenvergunning.eten-en-drinken-horecaVergunning"
+          },
+          "defaultValue": true
+        },
+        {
+          "key": "etenEnDrinken.alcoholControleMaatregelen",
+          "type": "textfield",
+          "input": true,
+          "label": "Maatregelen voor alcoholcontrole",
+          "attributes": {
+            "data-testid": "evenementenvergunning.eten-en-drinken-alcoholControleMaatregelen"
+          },
+          "defaultValue": "Polsbandjes voor 18+ en controle bij ingang."
+        },
+        {
+          "key": "submit",
+          "type": "button",
+          "label": "Submit",
+          "theme": "primary",
+          "action": "submit"
+        }
+      ]
+    }
+  ]
+}

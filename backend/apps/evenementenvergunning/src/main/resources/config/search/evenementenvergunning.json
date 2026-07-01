@@ -1,0 +1,20 @@
+{
+  "searchFields": [
+    {
+      "key": "locatie",
+      "path": "doc:locatieEnOpstelling.evenementLocatie",
+      "dataType": "text",
+      "fieldType": "single",
+      "matchType": "like",
+      "title": "Locatie"
+    },
+    {
+      "key": "datum",
+      "path": "doc:evenementDetails.evenementDatum",
+      "dataType": "date",
+      "fieldType": "range",
+      "matchType": "exact",
+      "title": "Datum"
+    }
+  ]
+}

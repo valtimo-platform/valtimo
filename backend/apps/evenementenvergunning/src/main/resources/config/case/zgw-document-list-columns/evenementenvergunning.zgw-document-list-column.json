@@ -1,0 +1,30 @@
+{
+  "changesetId": "evenementenvergunning.zgw-document-list-column.1740147769183",
+  "case-definitions": [
+    {
+      "key": "evenementenvergunning",
+      "columns": [
+        {
+          "key": "TITEL",
+          "defaultSort": null
+        },
+        {
+          "key": "CREATIEDATUM",
+          "defaultSort": "DESC"
+        },
+        {
+          "key": "AUTEUR",
+          "defaultSort": null
+        },
+        {
+          "key": "BESTANDSOMVANG",
+          "defaultSort": null
+        },
+        {
+          "key": "INFORMATIEOBJECTTYPE_OMSCHRIJVING",
+          "defaultSort": null
+        }
+      ]
+    }
+  ]
+}

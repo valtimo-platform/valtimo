@@ -1,0 +1,4 @@
+${AnsiColor.BRIGHT_BLUE}:: GZAC ::
+:: Running Spring Boot ${spring-boot.version} ::
+:: Camunda BPM: ${camunda.bpm.formatted-version} ::
+:: https://github.com/generiekzaakafhandelcomponent/gzac-backend ::${AnsiColor.DEFAULT} ::

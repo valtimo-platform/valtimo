@@ -1,0 +1,4 @@
+${AnsiColor.BRIGHT_BLUE}:: Valtimo ::
+:: Running Spring Boot ${spring-boot.version} ::
+:: Camunda BPM: ${camunda.bpm.formatted-version} ::
+:: https://github.com/valtimo-platform/valtimo-backend-template ::${AnsiColor.DEFAULT} ::

@@ -27,8 +27,11 @@ rootProject.name = "valtimo"
 // Backend subprojects
 include(
     ":backend",
-    ":backend:app",
-    ":backend:app:gzac",
+    ":backend:apps",
+    ":backend:apps:gzac",
+    ":backend:apps:valtimo",
+    ":backend:apps:evenementenvergunning",
+    ":backend:apps:dev",
     ":backend:audit",
     ":backend:authorization",
     ":backend:besluit",

@@ -1,0 +1,80 @@
+name: Start release
+run-name: Start release ${{ inputs.version }} from ${{ inputs.source_branch }}
+
+# Convenience entrypoint for cutting a release. It creates the release/<version>
+# branch from the chosen source branch and then dispatches the existing
+# `publish_release.yml` worker ON that new branch. The worker keeps deriving the
+# version from the branch name and keeps every `github.ref_name`-based gate
+# working exactly as before — this workflow only automates the branch creation
+# and hand-off, it does not build or publish anything itself.
+
+permissions:
+  contents: write
+  actions: write
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Version to release (e.g. 12.39.0)"
+        required: true
+        type: string
+      source_branch:
+        description: "Branch to cut the release from"
+        required: true
+        type: string
+        default: v12-stable
+
+jobs:
+  start:
+    name: Create release branch and start release
+    runs-on: ubuntu-latest
+    env:
+      VERSION: ${{ inputs.version }}
+      SOURCE_BRANCH: ${{ inputs.source_branch }}
+    steps:
+      - name: Validate version
+        run: |
+          set -euo pipefail
+          if [[ ! "${VERSION}" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "::error::Version must be <semver> (e.g. 12.39.0). Got: '${VERSION}'."
+            exit 1
+          fi
+
+      - name: Checkout source branch
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.source_branch }}
+          fetch-depth: 0
+
+      - name: Create and push release branch
+        env:
+          RELEASE_BRANCH: release/${{ inputs.version }}
+        run: |
+          set -euo pipefail
+          if git ls-remote --exit-code --heads origin "refs/heads/${RELEASE_BRANCH}" >/dev/null 2>&1; then
+            echo "::error::Branch '${RELEASE_BRANCH}' already exists. Delete it or pick another version."
+            exit 1
+          fi
+          git checkout -b "${RELEASE_BRANCH}"
+          git push origin "${RELEASE_BRANCH}"
+          echo "Created and pushed ${RELEASE_BRANCH} from ${SOURCE_BRANCH}."
+
+      - name: Trigger release pipeline on the new branch
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_BRANCH: release/${{ inputs.version }}
+        run: |
+          set -euo pipefail
+          # The branch push may take a moment to propagate before the workflow
+          # file is resolvable on the new ref; retry a few times.
+          for attempt in 1 2 3 4 5; do
+            if gh workflow run publish_release.yml --ref "${RELEASE_BRANCH}"; then
+              echo "Dispatched publish_release.yml on ${RELEASE_BRANCH}."
+              exit 0
+            fi
+            echo "Dispatch attempt ${attempt} failed; retrying in 5s..."
+            sleep 5
+          done
+          echo "::error::Failed to dispatch publish_release.yml on ${RELEASE_BRANCH}."
+          exit 1
