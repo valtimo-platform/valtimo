@@ -41,7 +41,7 @@ const routes: Routes = [
     },
   },
   {
-    path: 'access-control/:id/editor',
+    path: 'access-control/:id/summary',
     component: AccessControlEditorComponent,
     canActivate: [AuthGuardService],
     canDeactivate: [pendingChangesGuard],

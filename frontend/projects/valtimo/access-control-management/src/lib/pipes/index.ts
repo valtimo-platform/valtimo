@@ -14,4 +14,5 @@
  * limitations under the License.
  */
 
+export * from './action-label.pipe';
 export * from './resource-type-label.pipe';

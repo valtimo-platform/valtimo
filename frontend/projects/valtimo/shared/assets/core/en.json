@@ -2597,7 +2597,9 @@
       "assignable": "be assigned to",
       "claim": "claim",
       "complete": "complete",
-      "export": "export"
+      "export": "export",
+      "inspect": "inspect",
+      "inspect_modify": "inspect and modify"
     },
     "filter": {
       "resourceType": "Resource type",
@@ -2653,7 +2655,7 @@
         "conditionType": "Field compares a property of the resource. Expression evaluates a value at a JSON path. Related resource checks a linked resource (e.g. the document of a case).",
         "field": "A property of the resource to check. For example: name, createdBy or active.",
         "operator": "How the field is compared to the value. For example: equals, is one of, or contains.",
-        "value": "The value to compare against — e.g. text like OPEN, a number like 42, true/false, or a placeholder like ${currentUserId}. For the 'in' and 'list_contains' operators, enter a JSON array such as [\"OPEN\", \"CLOSED\"]. Type null for no value — the field may not be left empty.",
+        "value": "The value to compare against — e.g. text like OPEN, a number like 42, true/false, or a placeholder like ${currentUserId}. For the 'is one of' and 'contains' operators, enter a JSON array such as [\"OPEN\", \"CLOSED\"]. Type null for no value — the field may not be left empty.",
         "path": "A JSON path into the resource content. For example: /root/status or /aanvrager/bsn.",
         "clazz": "The fully-qualified Java type of the value. For example: java.lang.String or java.lang.Boolean.",
         "relatedResource": "The linked resource to evaluate the nested conditions against. For example: the document attached to a case.",

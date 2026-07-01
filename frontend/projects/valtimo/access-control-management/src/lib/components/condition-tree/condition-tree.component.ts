@@ -39,11 +39,9 @@ export class ConditionTreeComponent implements OnInit, OnChanges {
   public containerTargetItems: SelectItem[] = [];
   public operatorItems: SelectItem[] = [];
 
-  // Condition types are shown by their raw technical key ('field' | 'expression' | 'container'),
-  // the exact discriminator written to the permission JSON, rather than a translated label.
-  public readonly typeItems: SelectItem[] = (
-    ['field', 'expression', 'container'] as ConditionType[]
-  ).map(type => ({id: type, text: type}));
+  // Condition types are shown in natural language. "Related resource" (container) is only offered
+  // when the resource can be related to another resource (see recomputeItems).
+  public typeItems: SelectItem[] = [];
 
   protected readonly testIds = ACCESS_CONTROL_EDITOR_TEST_IDS;
 
@@ -128,6 +126,15 @@ export class ConditionTreeComponent implements OnInit, OnChanges {
       resourceType,
       this.collectContainerTargets()
     );
+    // Only offer the "related resource" (container) type when the resource actually has related
+    // resources to point at; otherwise a container condition could never be completed.
+    const types: ConditionType[] = this.containerTargetItems.length
+      ? ['field', 'expression', 'container']
+      : ['field', 'expression'];
+    this.typeItems = types.map(type => ({
+      id: type,
+      translationKey: `accessControl.editor.conditionTypes.${type}`,
+    }));
   }
 
   private collectFieldValues(): string[] {
