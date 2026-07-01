@@ -256,6 +256,7 @@
   * [Configuring Keycloak](running-valtimo/application-configuration/configuring-keycloak.md)
   * [Security baseline](running-valtimo/application-configuration/security-baseline.md)
   * [Temporary file storage](running-valtimo/application-configuration/temporary-file-storage.md)
+  * [Document upload size limit](running-valtimo/application-configuration/document-upload-size.md)
   * [Feature toggles](running-valtimo/application-configuration/feature-toggles.md)
 
 ## Customizing Valtimo
