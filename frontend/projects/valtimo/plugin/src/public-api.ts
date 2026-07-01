@@ -114,6 +114,7 @@ export * from './lib/plugins/catalogi-api/components/get-resultaattype/get-resul
 export * from './lib/plugins/catalogi-api/components/get-statustypen/get-statustypen-configuration.component';
 export * from './lib/plugins/catalogi-api/components/get-statustype/get-statustype-configuration.component';
 export * from './lib/plugins/catalogi-api/components/get-eigenschap/get-eigenschap-configuration.component';
+export * from './lib/plugins/catalogi-api/components/get-informatieobjecttype/get-informatieobjecttype-configuration.component';
 /* notificaties api plugin */
 export * from './lib/plugins/notificaties-api/notificaties-api-plugin.module';
 export * from './lib/plugins/notificaties-api/notificaties-api-plugin.specification';

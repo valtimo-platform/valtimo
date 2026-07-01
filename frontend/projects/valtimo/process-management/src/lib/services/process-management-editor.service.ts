@@ -25,7 +25,11 @@ import {
   ProcessLinkService,
   ProcessLinkUpdateEvent,
 } from '@valtimo/process-link';
-import {DeleteProcessLinkEvent, OpenProcessLinkModalEvent} from '../models';
+import {
+  DeleteProcessLinkEvent,
+  OpenProcessLinkModalEvent,
+  ProcessDefinitionValidationError,
+} from '../models';
 import {
   BuildingBlockManagementParams,
   CaseManagementParams,
@@ -84,6 +88,20 @@ export class ProcessManagementEditorService implements OnDestroy {
 
   public get formDefinitionOptions(): FormDefinitionOption[] {
     return this._formDefinitionOptions$.getValue();
+  }
+
+  private readonly _validationErrors$ = new BehaviorSubject<ProcessDefinitionValidationError[]>(
+    []
+  );
+
+  public readonly validationErrors$ = this._validationErrors$.asObservable();
+
+  public get validationErrors(): ProcessDefinitionValidationError[] {
+    return this._validationErrors$.getValue();
+  }
+
+  public setValidationErrors(errors: ProcessDefinitionValidationError[]): void {
+    this._validationErrors$.next(errors);
   }
 
   private _updateBpmnViewFunction!: () => void;

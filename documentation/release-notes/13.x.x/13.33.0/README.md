@@ -14,7 +14,6 @@
   with a `view` action ensures only users authorized for the matching zaaktype can load a zaak. See
   [Load a zaak in a form flow](../../../features/zgw/load-zaak-in-form-flow.md) for details.
 
-
 ## Enhancements
 
 * **Configurable modal size for start forms**

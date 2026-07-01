@@ -1,0 +1,53 @@
+{
+    "aanvrager": {
+        "naam": "Erwin Mars",
+        "adres": "Elfstedenplein 1, 8911 AG Leeuwarden",
+        "contactgegevens": {
+            "telefoon": "+31 58 123 4567",
+            "email": "info@elfstedentocht.nl"
+        }
+    },
+    "milieuBeheer": {
+        "afvalBeheerPlan": "Gebruik van afvalbakken langs de route en bewustwordingscampagne voor deelnemers.",
+        "milieuMaatregelen": "Beperking van plasticgebruik en inzet van duurzame energie voor faciliteiten.",
+        "sanitaireVoorzieningen": true
+    },
+    "etenEnDrinken": {
+        "alcoholSchenken": false,
+        "horecaVergunning": true,
+        "alcoholControleMaatregelen": "Niet van toepassing, geen alcoholverkoop"
+    },
+    "evenementDetails": {
+        "evenementNaam": "Elfstedentocht",
+        "evenementType": "Schaatstocht op natuurijs",
+        "evenementDatum": "2026-01-26",
+        "verwachteBezoekers": 200000,
+        "isOpenbaarEvenement": true
+    },
+    "geluidEnOverlast": {
+        "versterktGeluid": false,
+        "geluidReductieMaatregelen": "Geen grootschalige geluidsversterking, alleen omroepinstallaties bij start en finish."
+    },
+    "verkeerEnParkeren": {
+        "verkeerPlan": "Verkeersomleidingen en extra parkeerplekken in en rondom Leeuwarden.",
+        "alternatiefTransport": "Extra treinen en bussen naar Friesland tijdens het evenement.",
+        "parkeerVoorzieningen": true
+    },
+    "locatieEnOpstelling": {
+        "evenementLocatie": "Elf Friese steden en de daartussen gelegen wateren",
+        "voorzieningen": [
+            "Verzorgingsposten",
+            "EHBO-posten",
+            "Opwarmruimtes",
+            "Toiletten",
+            "Voedsel- en drankstands"
+        ],
+        "indelingsplan": "https://elfstedentocht.nl/indelingsplan.pdf"
+    },
+    "veiligheidsMaatregelen": {
+        "beveiligingsPlan": "Samenwerking met politie, schaatsbond en hulpdiensten voor toezicht en begeleiding.",
+        "noodPlan": "Uitgebreid noodplan met evacuatiemogelijkheden en reddingsdiensten langs de route.",
+        "EHBO": true,
+        "beveiligingsPersoneel": 100
+    }
+}

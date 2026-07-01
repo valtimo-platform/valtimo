@@ -55,6 +55,7 @@
             [label]="'widgetTabManagement.content.highlight.value' | translate"
             [caseDefinitionKey]="data.params?.caseDefinitionKey"
             [caseDefinitionVersionTag]="data.params?.caseDefinitionVersionTag"
+            [excludePrefixes]="[ValuePathSelectorPrefix.TASK]"
           ></valtimo-value-path-selector>
         } @else {
           <cds-text-label>

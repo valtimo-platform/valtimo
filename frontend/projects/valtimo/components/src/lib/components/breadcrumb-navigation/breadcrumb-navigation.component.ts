@@ -31,15 +31,32 @@ export class BreadcrumbNavigationComponent implements OnInit, OnDestroy {
   @HostBinding('class.valtimo-breadcrumb-navigation--compact') isCompact!: boolean;
 
   public readonly compactMode$ = this.pageHeaderService.compactMode$;
+  public readonly titleAsBreadcrumb$ = this.pageHeaderService.titleAsBreadcrumb$;
+
+  /** True when the page title is rendered as the final breadcrumb item (non-compact only). */
+  public readonly titleIsFinalBreadcrumb$: Observable<boolean> = combineLatest([
+    this.titleAsBreadcrumb$,
+    this.compactMode$,
+    this.pageTitleService.pageTitleHidden$,
+    this.pageTitleService.currentTitle$,
+  ]).pipe(
+    map(
+      ([titleAsBreadcrumb, compactMode, pageTitleHidden, currentTitle]) =>
+        titleAsBreadcrumb && !compactMode && !pageTitleHidden && !!currentTitle
+    )
+  );
 
   public readonly breadcrumbItems$: Observable<Array<BreadcrumbItem>> = combineLatest([
     this.breadcrumbService.breadcrumbItems$,
     this.compactMode$,
     this.pageTitleService.pageTitleHidden$,
+    this.titleIsFinalBreadcrumb$,
+    this.pageTitleService.currentTitle$,
   ]).pipe(
-    map(([breadCrumbItems, compactMode, pageTitleHidden]) => [
+    map(([breadCrumbItems, compactMode, pageTitleHidden, titleIsFinalBreadcrumb, currentTitle]) => [
       ...(compactMode && !pageTitleHidden ? [{content: ''}] : []),
       ...breadCrumbItems,
+      ...(titleIsFinalBreadcrumb ? [{content: currentTitle}] : []),
     ])
   );
 
