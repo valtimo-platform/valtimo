@@ -202,9 +202,14 @@
   </cds-overflow-menu-option>
 </ng-template>
 
-<ng-template #unassignButton let-canHaveAssignee="canHaveAssignee" let-assigneeId="assigneeId">
+<ng-template
+  #unassignButton
+  let-canAssign="canAssign"
+  let-canHaveAssignee="canHaveAssignee"
+  let-assigneeId="assigneeId"
+>
   <cds-overflow-menu-option
-    *ngIf="canHaveAssignee"
+    *ngIf="canHaveAssignee && canAssign"
     [disabled]="!assigneeId"
     (selected)="unassignAssignee()"
   >
@@ -307,7 +312,11 @@
           <ng-container
             *ngTemplateOutlet="
               unassignButton;
-              context: {canHaveAssignee: obs.canHaveAssignee, assigneeId: obs.assigneeId}
+              context: {
+                canAssign: obs.canAssign,
+                canHaveAssignee: obs.canHaveAssignee,
+                assigneeId: obs.assigneeId,
+              }
             "
           >
           </ng-container>
