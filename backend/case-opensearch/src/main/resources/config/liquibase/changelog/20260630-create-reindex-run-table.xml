@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  ~ Copyright 2015-2026 Ritense BV, the Netherlands.
+  ~
+  ~ Licensed under EUPL, Version 1.2 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~ https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" basis,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd"
+    logicalFilePath="config/liquibase/changelog/20260630-create-reindex-run-table.xml">
+
+    <changeSet author="Ritense" id="create_table_document_opensearch_reindex_run">
+        <createTable tableName="document_opensearch_reindex_run">
+            <column name="id" type="${uuidType}">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="status" type="VARCHAR(20)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="instance_id" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="scope" type="CLOB"/>
+            <column name="page_size" type="${intType}">
+                <constraints nullable="false"/>
+            </column>
+            <column name="last_id" type="${uuidType}"/>
+            <column name="processed_count" type="BIGINT" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
+            <column name="skipped_count" type="BIGINT" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
+            <column name="started_on" type="DATETIME">
+                <constraints nullable="false"/>
+            </column>
+            <column name="heartbeat_on" type="DATETIME">
+                <constraints nullable="false"/>
+            </column>
+            <column name="finished_on" type="DATETIME"/>
+            <column name="error" type="CLOB"/>
+        </createTable>
+        <createIndex tableName="document_opensearch_reindex_run" indexName="idx_reindex_run_status_started">
+            <column name="status"/>
+            <column name="started_on"/>
+        </createIndex>
+    </changeSet>
+
+</databaseChangeLog>

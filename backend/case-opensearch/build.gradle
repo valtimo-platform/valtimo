@@ -29,8 +29,13 @@ dependencies {
     implementation project(":backend:admin-settings")
     implementation project(":backend:authorization")
     implementation project(":backend:case")
+    implementation project(":backend:contract")          // LiquibaseMasterChangeLogLocation
     implementation project(":backend:inbox")
     implementation project(":backend:outbox")
+
+    // ShedLock for cross-instance coordination of the re-index job. The LockProvider bean itself
+    // is supplied at runtime by core's SchedulerAutoConfiguration; here we only need the API.
+    implementation "net.javacrumbs.shedlock:shedlock-spring:${shedlockVersion}"
 
     implementation "org.springframework.boot:spring-boot-starter-data-jpa"
     implementation "org.springframework.boot:spring-boot-starter-web"

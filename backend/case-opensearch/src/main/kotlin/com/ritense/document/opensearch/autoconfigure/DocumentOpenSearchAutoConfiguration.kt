@@ -28,42 +28,54 @@ import com.ritense.document.opensearch.authorization.mapper.JsonSchemaDocumentCa
 import com.ritense.document.opensearch.authorization.mapper.JsonSchemaDocumentDefinitionOpenSearchMapper
 import com.ritense.document.opensearch.domain.JsonSchemaDocumentOsDocument
 import com.ritense.document.opensearch.handler.DocumentOpenSearchEventListener
+import com.ritense.document.opensearch.domain.OpenSearchReindexRun
+import com.ritense.document.opensearch.handler.DocumentOpenSearchEventHandler
 import com.ritense.document.opensearch.repository.JsonSchemaDocumentOpenSearchRepository
+import com.ritense.document.opensearch.repository.OpenSearchReindexRunRepository
 import com.ritense.document.opensearch.security.DocumentOpenSearchHttpSecurityConfigurer
 import com.ritense.document.opensearch.service.DelegatingDocumentSearchService
-import com.ritense.document.opensearch.service.DocumentOpenSearchBackfillService
 import com.ritense.document.opensearch.service.DocumentOpenSearchQueryService
+import com.ritense.document.opensearch.service.DocumentOpenSearchReindexService
 import com.ritense.document.opensearch.service.DocumentOpenSearchSyncService
 import com.ritense.document.opensearch.service.JsonSchemaDocumentOpenSearchService
+import com.ritense.document.opensearch.service.OpenSearchReindexRunService
 import com.ritense.document.opensearch.service.SearchEngineToggle
-import com.ritense.document.opensearch.web.DocumentOpenSearchBackfillResource
+import com.ritense.document.opensearch.web.DocumentOpenSearchReindexResource
 import com.ritense.document.opensearch.web.SearchEngineResource
 import com.ritense.document.repository.impl.JsonSchemaDocumentRepository
 import com.ritense.document.service.DocumentSearchService
 import com.ritense.document.service.impl.JsonSchemaDocumentDefinitionService
 import com.ritense.document.service.SearchFieldService
 import com.ritense.document.service.impl.JsonSchemaDocumentSearchService
+import com.ritense.valtimo.contract.config.LiquibaseMasterChangeLogLocation
 import com.ritense.valtimo.contract.database.QueryDialectHelper
 import com.ritense.outbox.OutboxService
 import com.ritense.valtimo.contract.authentication.TeamManagementService
 import com.ritense.valtimo.contract.authentication.UserManagementService
 import jakarta.persistence.EntityManager
+import net.javacrumbs.shedlock.core.LockProvider
 import org.springframework.boot.ApplicationRunner
 import org.springframework.boot.autoconfigure.AutoConfiguration
 import org.springframework.boot.autoconfigure.AutoConfigureBefore
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.boot.context.properties.EnableConfigurationProperties
+import org.springframework.boot.autoconfigure.domain.EntityScan
 import org.springframework.context.annotation.Bean
+import org.springframework.core.Ordered
 import org.springframework.core.annotation.Order
 import org.springframework.data.elasticsearch.core.ElasticsearchOperations
 import org.springframework.data.elasticsearch.repository.config.EnableElasticsearchRepositories
+import org.springframework.data.jpa.repository.config.EnableJpaRepositories
+import org.springframework.transaction.PlatformTransactionManager
 
 @AutoConfiguration
 @AutoConfigureBefore(DocumentAutoConfiguration::class)
 @ConditionalOnClass(ElasticsearchOperations::class)
 @EnableElasticsearchRepositories(basePackages = ["com.ritense.document.opensearch.repository"])
 @EnableConfigurationProperties(OpenSearchProperties::class)
+@EnableJpaRepositories(basePackageClasses = [OpenSearchReindexRunRepository::class])
+@EntityScan(basePackageClasses = [OpenSearchReindexRun::class])
 class DocumentOpenSearchAutoConfiguration {
 
     @Bean
@@ -108,14 +120,38 @@ class DocumentOpenSearchAutoConfiguration {
 
     @Bean
     @ConditionalOnMissingBean
-    fun documentOpenSearchBackfillService(
+    fun openSearchReindexRunService(
+        openSearchReindexRunRepository: OpenSearchReindexRunRepository,
+        objectMapper: ObjectMapper,
+    ): OpenSearchReindexRunService =
+        OpenSearchReindexRunService(openSearchReindexRunRepository, objectMapper)
+
+    @Bean
+    @ConditionalOnMissingBean
+    fun documentOpenSearchReindexService(
         entityManager: EntityManager,
         openSearchRepository: JsonSchemaDocumentOpenSearchRepository,
         objectMapper: ObjectMapper,
-        restHighLevelClient: org.opensearch.client.RestHighLevelClient,
-        transactionManager: org.springframework.transaction.PlatformTransactionManager,
-    ): DocumentOpenSearchBackfillService =
-        DocumentOpenSearchBackfillService(entityManager, openSearchRepository, objectMapper, restHighLevelClient, transactionManager)
+        elasticsearchOperations: ElasticsearchOperations,
+        transactionManager: PlatformTransactionManager,
+        lockProvider: LockProvider,
+        openSearchReindexRunService: OpenSearchReindexRunService,
+    ): DocumentOpenSearchReindexService =
+        DocumentOpenSearchReindexService(
+            entityManager,
+            openSearchRepository,
+            objectMapper,
+            elasticsearchOperations,
+            transactionManager,
+            lockProvider,
+            openSearchReindexRunService,
+        )
+
+    @Bean
+    @Order(Ordered.HIGHEST_PRECEDENCE + 30)
+    @ConditionalOnMissingBean(name = ["caseOpenSearchLiquibaseMasterChangeLogLocation"])
+    fun caseOpenSearchLiquibaseMasterChangeLogLocation() =
+        LiquibaseMasterChangeLogLocation("config/liquibase/case-opensearch-master.xml")
 
     @Order(294)
     @Bean
@@ -183,10 +219,10 @@ class DocumentOpenSearchAutoConfiguration {
 
     @Bean
     @ConditionalOnMissingBean
-    fun documentOpenSearchBackfillResource(
-        backfillService: DocumentOpenSearchBackfillService,
-    ): DocumentOpenSearchBackfillResource =
-        DocumentOpenSearchBackfillResource(backfillService)
+    fun documentOpenSearchReindexResource(
+        reindexService: DocumentOpenSearchReindexService,
+    ): DocumentOpenSearchReindexResource =
+        DocumentOpenSearchReindexResource(reindexService)
 
     /**
      * Creates the OpenSearch index and mappings on startup if the index does not yet exist.

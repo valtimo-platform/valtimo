@@ -30,9 +30,11 @@ class DocumentOpenSearchHttpSecurityConfigurer : HttpSecurityConfigurer {
     override fun configure(http: HttpSecurity) {
         try {
             http.authorizeHttpRequests { requests ->
-                requests.requestMatchers(antMatcher(POST, "/api/management/v1/document-opensearch/backfill"))
+                requests.requestMatchers(antMatcher(POST, "/api/management/v1/document-opensearch/reindex"))
                     .permitAll()
-                requests.requestMatchers(antMatcher(GET, "/api/management/v1/document-opensearch/backfill/status"))
+                requests.requestMatchers(antMatcher(GET, "/api/management/v1/document-opensearch/reindex/status"))
+                    .permitAll()
+                requests.requestMatchers(antMatcher(GET, "/api/management/v1/document-opensearch/reindex/*"))
                     .permitAll()
                 requests.requestMatchers(antMatcher(GET, "/api/management/v1/search-engine"))
                     .permitAll()

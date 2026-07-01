@@ -12,5 +12,10 @@ spring:
     elasticsearch:
         uris: http://localhost:39200
 
+# The spring-data-opensearch starter binds its own client from the `opensearch.*` namespace
+# (not spring.elasticsearch.*), defaulting to localhost:9200. The test OpenSearch is on 39200.
+opensearch:
+    uris: http://localhost:39200
+
 valtimo:
     database: postgres
