@@ -1,0 +1,38 @@
+[
+    {
+        "resourceType": "com.ritense.objectmanagement.domain.ObjectManagement",
+        "action": "view",
+        "roleKey": "ROLE_USER",
+        "conditions": [
+            {
+                "type": "field",
+                "field": "title",
+                "operator": "==",
+                "value": "Bomen"
+            }
+        ]
+    },
+    {
+        "resourceType": "com.ritense.objectmanagement.domain.ObjectManagement",
+        "action": "view_list",
+        "roleKey": "ROLE_USER",
+        "conditions": [
+            {
+                "type": "field",
+                "field": "title",
+                "operator": "==",
+                "value": "Bomen"
+            }
+        ]
+    },
+    {
+        "resourceType": "com.ritense.objectmanagement.domain.ObjectManagement",
+        "action": "view",
+        "roleKey": "ROLE_ADMIN"
+    },
+    {
+        "resourceType": "com.ritense.objectmanagement.domain.ObjectManagement",
+        "action": "view_list",
+        "roleKey": "ROLE_ADMIN"
+    }
+]

@@ -60,7 +60,7 @@ export class ObjectManagementListColumnsComponent {
   readonly modalShowing$ = this.showModal$.pipe(delay(250));
   readonly disableInput$ = new BehaviorSubject<boolean>(false);
   readonly showDeleteModal$ = new Subject<boolean>();
-  readonly deleteRowIndex$ = new BehaviorSubject<number>(0);
+  readonly deleteRowKey$ = new BehaviorSubject<string>('');
   readonly defaultEnumValues$ = new BehaviorSubject<MultiInputValues>(undefined);
 
   readonly INVALID_KEY = 'invalid';
@@ -342,13 +342,14 @@ export class ObjectManagementListColumnsComponent {
   deleteRow(searchListColumnRowIndex: number, clickEvent: MouseEvent): void {
     clickEvent.stopPropagation();
 
-    this.showDeleteModal$.next(true);
-    this.deleteRowIndex$.next(searchListColumnRowIndex);
+    const columnKey = this.getColumnKey(searchListColumnRowIndex);
+    if (columnKey) {
+      this.deleteRowKey$.next(columnKey);
+      this.showDeleteModal$.next(true);
+    }
   }
 
-  deleteRowConfirmation(searchListColumnRowIndex: number): void {
-    const columnKey = this.getColumnKey(searchListColumnRowIndex);
-
+  deleteRowConfirmation(columnKey: string): void {
     if (columnKey) {
       this.disableInput();
 

@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -40,6 +40,8 @@ class ObjectManagementHttpSecurityConfigurer : HttpSecurityConfigurer {
                     .requestMatchers(antMatcher(POST, "$CONFIGURATION_URL/{id}/object")).authenticated()
 
                     .requestMatchers(antMatcher(GET, CONFIGURATION_MANAGEMENT_URL)).hasAuthority(ADMIN)
+
+                    .requestMatchers(antMatcher(GET, OBJECTS_URL)).authenticated()
             }
         } catch (e: Exception) {
             throw HttpConfigurerConfigurationException(e)
@@ -49,5 +51,6 @@ class ObjectManagementHttpSecurityConfigurer : HttpSecurityConfigurer {
     companion object {
         private const val CONFIGURATION_URL = "/api/v1/object/management/configuration"
         private const val CONFIGURATION_MANAGEMENT_URL = "/api/management/v1/object/management/configuration"
+        private const val OBJECTS_URL = "/api/v1/object-management/objects"
     }
 }

@@ -434,8 +434,9 @@ export class CarbonListComponent implements OnInit, AfterViewInit, OnDestroy {
   private _headerItems$: Observable<TableHeaderItem[]> = combineLatest([
     this._translatedFields$,
     this.sort$,
+    this._items$, // Needed so extraColumns re-evaluates when items.locked changes
   ]).pipe(
-    map(([translatedFields, sortState]) =>
+    map(([translatedFields, sortState, _items]) =>
       translatedFields.map(
         (field: ColumnConfig) =>
           new TableHeaderItem({

@@ -13,10 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import {Component} from '@angular/core';
+import {Component, OnDestroy, OnInit} from '@angular/core';
 import {ActivatedRoute, Router} from '@angular/router';
 import {TranslateService} from '@ngx-translate/core';
-import {ListField, PageTitleService, Pagination} from '@valtimo/components';
+import {ListField, PageTitleService, Pagination, SortState} from '@valtimo/components';
 import {
   GlobalNotificationService,
   SearchField,
@@ -33,10 +33,12 @@ import {
   map,
   Observable,
   of,
+  skip,
   startWith,
+  Subject,
   throwError,
 } from 'rxjs';
-import {catchError, finalize, switchMap, take, tap} from 'rxjs/operators';
+import {catchError, finalize, shareReplay, switchMap, take, takeUntil, tap} from 'rxjs/operators';
 import {ColumnType, FormType} from '../../models/object.model';
 import {ObjectColumnService} from '../../services/object-column.service';
 import {ObjectService} from '../../services/object.service';
@@ -47,7 +49,9 @@ import {ObjectService} from '../../services/object.service';
   templateUrl: './object-list.component.html',
   styleUrls: ['./object-list.component.scss'],
 })
-export class ObjectListComponent {
+export class ObjectListComponent implements OnInit, OnDestroy {
+  private readonly _destroy$ = new Subject<void>();
+
   readonly loading$ = new BehaviorSubject<boolean>(true);
   readonly submission$ = new BehaviorSubject<any>({});
   readonly formValid$ = new BehaviorSubject<boolean>(false);
@@ -55,18 +59,11 @@ export class ObjectListComponent {
   readonly disableInput$ = new BehaviorSubject<boolean>(false);
   readonly clearForm$ = new BehaviorSubject<boolean>(false);
   readonly columnType$ = new BehaviorSubject<ColumnType>(ColumnType.DEFAULT);
+  readonly currentSort$ = new BehaviorSubject<SortState | null>(null);
 
   readonly objectManagementId$: Observable<string> = this.route.params.pipe(
     map(params => params.objectManagementId),
-    tap(objectManagementId => {
-      if (objectManagementId) {
-        this.objectManagementService.getObjectById(objectManagementId).subscribe(objectType => {
-          if (objectType.title) {
-            this.pageTitleService.setCustomPageTitle(objectType.title);
-          }
-        });
-      }
-    })
+    shareReplay({bufferSize: 1, refCount: true})
   );
 
   private readonly refreshObjectList$ = new BehaviorSubject<null>(null);
@@ -122,28 +119,58 @@ export class ObjectListComponent {
       )
     );
 
+  private readonly columns$: Observable<Array<SearchColumn>> = this.objectManagementId$.pipe(
+    switchMap(objectManagementId => this.objectColumnService.getObjectColumns(objectManagementId)),
+    tap(columns => {
+      if (this.currentSort$.value === null && columns?.length > 0) {
+        const defaultSortColumn = columns.find(c => c.defaultSort && c.sortable);
+        if (defaultSortColumn) {
+          this.currentSort$.next({
+            state: {
+              name: defaultSortColumn.translationKey,
+              direction: defaultSortColumn.defaultSort as 'ASC' | 'DESC',
+            },
+            isSorting: true,
+          });
+        }
+      }
+    }),
+    shareReplay({bufferSize: 1, refCount: true})
+  );
+
   readonly objectConfiguration$: Observable<Array<any>> = combineLatest([
     this.objectManagementId$,
     this.currentPageAndSize$,
     this.columnType$,
     this.searchFieldValues$,
+    this.currentSort$,
+    this.columns$,
     this.translateService.stream('key'),
     this.refreshObjectList$,
   ]).pipe(
-    switchMap(([objectManagementId, currentPage, columnType, searchFieldValues]) => {
+    switchMap(([objectManagementId, currentPage, columnType, searchFieldValues, sortState, columns]) => {
       const handleError = () => {
         this.disableInput();
         return of(null);
       };
 
+      const params: any = {
+        page: currentPage.page,
+        size: currentPage.size,
+      };
+
+      if (sortState?.isSorting && sortState.state && columns) {
+        const column = columns.find(c => c.translationKey === sortState.state.name);
+        if (column?.propertyName) {
+          params.sort = `${column.propertyName},${sortState.state.direction.toLowerCase()}`;
+        }
+      }
+
       if (columnType === ColumnType.CUSTOM) {
         return this.objectService
           .postObjectsByObjectManagementId(
             objectManagementId,
-            {
-              page: currentPage.page,
-              size: currentPage.size,
-            },
+            params,
             Object.keys(searchFieldValues).length > 0
               ? {otherFilters: this.mapSearchValuesToFilters(searchFieldValues)}
               : {}
@@ -152,10 +179,7 @@ export class ObjectListComponent {
       }
 
       return this.objectService
-        .getObjectsByObjectManagementId(objectManagementId, {
-          page: currentPage.page,
-          size: currentPage.size,
-        })
+        .getObjectsByObjectManagementId(objectManagementId, params)
         .pipe(catchError(() => handleError()));
     }),
     tap(instanceRes => {
@@ -203,11 +227,6 @@ export class ObjectListComponent {
     finalize(() => this.loading$.next(false))
   );
 
-  private readonly columns$: Observable<Array<SearchColumn>> = this.objectManagementId$.pipe(
-    switchMap(objectManagementId => this.objectColumnService.getObjectColumns(objectManagementId)),
-    map(res => res)
-  );
-
   readonly fields$: Observable<Array<ListField>> = combineLatest([
     this.columns$,
     this.translateService.stream('key'),
@@ -249,6 +268,34 @@ export class ObjectListComponent {
     private readonly translate: TranslateService,
     private readonly translateService: TranslateService
   ) {}
+
+  ngOnInit(): void {
+    this.objectManagementId$
+      .pipe(distinctUntilChanged(), skip(1), takeUntil(this._destroy$))
+      .subscribe(() => {
+        const {size} = this.currentPageAndSize$.value;
+        this.currentPageAndSize$.next({page: 0, size});
+        this.currentSort$.next(null);
+      });
+
+    this.objectManagementId$
+      .pipe(
+        distinctUntilChanged(),
+        filter(id => !!id),
+        switchMap(id => this.objectManagementService.getObjectByIdFromList(id)),
+        takeUntil(this._destroy$)
+      )
+      .subscribe(objectType => {
+        if (objectType?.title) {
+          this.pageTitleService.setCustomPageTitle(objectType.title);
+        }
+      });
+  }
+
+  ngOnDestroy(): void {
+    this._destroy$.next();
+    this._destroy$.complete();
+  }
 
   openModal(): void {
     this.showModal$.next(true);
@@ -312,6 +359,10 @@ export class ObjectListComponent {
 
   search(searchFieldValues: SearchFieldValues): void {
     this.searchFieldValues$.next(searchFieldValues || {});
+  }
+
+  sortChanged(sortState: SortState): void {
+    this.currentSort$.next(sortState);
   }
 
   private refreshObjectList(): void {
