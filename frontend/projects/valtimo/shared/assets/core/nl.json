@@ -2630,7 +2630,9 @@
       "assignable": "toewijsbaar",
       "claim": "claimen",
       "complete": "afronden",
-      "export": "exporteren"
+      "export": "exporteren",
+      "inspect": "inspecteren",
+      "inspect_modify": "inspecteren en wijzigen"
     },
     "filter": {
       "resourceType": "Resource-type",
@@ -2685,8 +2687,8 @@
         "actions": "Wat deze rol met de resource mag doen. Bijvoorbeeld: bekijken, wijzigen of verwijderen.",
         "conditionType": "Veld vergelijkt een eigenschap van de resource. Expressie evalueert een waarde op een JSON-pad. Gerelateerde resource controleert een gekoppelde resource (bijv. het document van een zaak).",
         "field": "Een eigenschap van de resource om te controleren. Bijvoorbeeld: name, createdBy of active.",
-        "operator": "Hoe het veld met de waarde wordt vergeleken. Bijvoorbeeld: is gelijk aan, is één van, of bevat.",
-        "value": "De waarde om mee te vergelijken — bijv. tekst zoals OPEN, een getal zoals 42, true/false, of een placeholder zoals ${currentUserId}. Voor de operatoren 'in' en 'list_contains' voer je een JSON-array in, zoals [\"OPEN\", \"CLOSED\"]. Typ null voor geen waarde — het veld mag niet leeg zijn.",
+        "operator": "Hoe het veld met de waarde wordt vergeleken. Bijvoorbeeld: is gelijk aan, is een van, of bevat.",
+        "value": "De waarde om mee te vergelijken — bijv. tekst zoals OPEN, een getal zoals 42, true/false, of een placeholder zoals ${currentUserId}. Voor de operatoren 'is een van' en 'bevat' voer je een JSON-array in, zoals [\"OPEN\", \"CLOSED\"]. Typ null voor geen waarde — het veld mag niet leeg zijn.",
         "path": "Een JSON-pad in de inhoud van de resource. Bijvoorbeeld: /root/status of /aanvrager/bsn.",
         "clazz": "Het volledige Java-type van de waarde. Bijvoorbeeld: java.lang.String of java.lang.Boolean.",
         "relatedResource": "De gekoppelde resource waartegen de geneste voorwaarden worden geëvalueerd. Bijvoorbeeld: het document dat aan een zaak hangt.",

@@ -74,7 +74,7 @@
                       [disabled]="disabled"
                       (checkedChange)="onActionToggle(item.id, $event)"
                     >
-                      {{ item.id }}
+                      {{ item.id | actionLabel }}
                     </cds-checkbox>
                   }
                 </div>
@@ -115,18 +115,12 @@
           <cds-toggle
             [attr.data-test-id]="testIds.contextToggle"
             [checked]="hasContext"
-            [disabled]="disabled || !contextOptionsAvailable"
+            [disabled]="disabled"
             [label]="'accessControl.editor.context' | translate"
             [offText]="'interface.off' | translate"
             [onText]="'interface.on' | translate"
             (checkedChange)="onToggleContext($event)"
           ></cds-toggle>
-
-          @if (!contextOptionsAvailable) {
-            <p class="permission-form__hint">
-              {{ 'accessControl.editor.contextUnavailable' | translate }}
-            </p>
-          }
 
           @if (hasContext) {
             <p class="permission-form__hint">
@@ -137,22 +131,23 @@
               class="permission-form__resource-type"
               formControlName="contextResourceType"
               [cdsLayer]="1"
+              [clearable]="false"
               [dataTestId]="testIds.contextResourceTypeSelect"
               [defaultSelectionId]="contextResourceTypeValue || ''"
               [dropUp]="false"
-              [invalid]="contextResourceTypeRequired && !!group.get('contextResourceType')?.touched"
               [items]="contextResourceTypeItems"
               [placeholder]="'accessControl.editor.contextResourceTypePlaceholder' | translate"
-              [required]="true"
               [tooltip]="'accessControl.editor.tooltips.contextResourceType' | translate"
               titleTranslationKey="accessControl.editor.contextResourceType"
             ></v-select>
 
-            <valtimo-condition-tree
-              [conditions]="contextConditionsArray"
-              [disabled]="disabled"
-              [resourceType]="contextResourceTypeValue"
-            ></valtimo-condition-tree>
+            @if (hasContextResource) {
+              <valtimo-condition-tree
+                [conditions]="contextConditionsArray"
+                [disabled]="disabled"
+                [resourceType]="contextResourceTypeValue"
+              ></valtimo-condition-tree>
+            }
           }
         </div>
       </cds-accordion-item>

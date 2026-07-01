@@ -21,9 +21,11 @@ import {
   OnInit,
   QueryList,
   signal,
+  ViewChild,
   ViewChildren,
 } from '@angular/core';
 import {AccessControlService} from '../../services/access-control.service';
+import {AccessControlFormEditorTabComponent} from '../access-control-form-editor-tab/access-control-form-editor-tab.component';
 import {BehaviorSubject, filter, finalize, map, Subscription, switchMap, take, tap} from 'rxjs';
 import {ActivatedRoute, Router} from '@angular/router';
 import {
@@ -59,13 +61,18 @@ export class AccessControlEditorComponent
   public readonly selectedRowKeys$ = new BehaviorSubject<Array<string> | null>(null);
   public readonly compactMode$ = this.pageHeaderService.compactMode$;
 
-  public readonly $activeTab = signal<AccessControlEditorTab>(AccessControlEditorTab.SUMMARY);
+  public readonly $activeTab = signal<AccessControlEditorTab>(AccessControlEditorTab.EDITOR);
 
   protected readonly AccessControlEditorTab = AccessControlEditorTab;
 
   // The Carbon tab headers, used to restore the highlighted header when a leave-page prompt is
   // cancelled (Carbon highlights the clicked header immediately, before the guard resolves).
   @ViewChildren(Tab) private _tabs!: QueryList<Tab>;
+
+  // The visual editor tab, used to re-open the rule that was open at save time once the saved model
+  // reloads. Undefined while another tab is active (it is only rendered on the editor tab).
+  @ViewChild(AccessControlFormEditorTabComponent)
+  private _formEditorTab?: AccessControlFormEditorTabComponent;
 
   private _roleKeySubscription!: Subscription;
   private _roleKey!: string;
@@ -138,8 +145,8 @@ export class AccessControlEditorComponent
   // cancelled, restore the highlight to the tab that is actually still active.
   private syncTabHeaders(): void {
     const order = [
-      AccessControlEditorTab.SUMMARY,
       AccessControlEditorTab.EDITOR,
+      AccessControlEditorTab.SUMMARY,
       AccessControlEditorTab.JSON_EDITOR,
     ];
     this._tabs?.forEach((tab, index) => {
@@ -148,6 +155,10 @@ export class AccessControlEditorComponent
   }
 
   public updatePermissions(): void {
+    // Preserve the open rule across the reload that follows this save (a one-shot; only after an
+    // explicit save, never on an ordinary tab open).
+    this._formEditorTab?.prepareSelectionReopen();
+
     this.disableEditor();
     this.disableSave();
     this.disableMore();
@@ -231,8 +242,8 @@ export class AccessControlEditorComponent
 
   private segmentsForTab(tab: AccessControlEditorTab, roleKey: string): string[] {
     switch (tab) {
-      case AccessControlEditorTab.EDITOR:
-        return ['/access-control', roleKey, 'editor'];
+      case AccessControlEditorTab.SUMMARY:
+        return ['/access-control', roleKey, 'summary'];
       case AccessControlEditorTab.JSON_EDITOR:
         return ['/access-control', roleKey, 'json-editor'];
       default:
@@ -243,8 +254,8 @@ export class AccessControlEditorComponent
   private restoreActiveTabFromUrl(): void {
     const url = this.route.snapshot.url;
     const lastSegment = url[url.length - 1]?.path;
-    if (lastSegment === 'editor') {
-      this.$activeTab.set(AccessControlEditorTab.EDITOR);
+    if (lastSegment === 'summary') {
+      this.$activeTab.set(AccessControlEditorTab.SUMMARY);
       return;
     }
     if (lastSegment === 'json-editor') {
@@ -252,6 +263,7 @@ export class AccessControlEditorComponent
       return;
     }
 
+    // The base URL (no tab segment) opens the visual editor — the first and default tab.
     const params = this.route.snapshot.queryParamMap;
     if (params.get('filterResourceType') || params.get('filterAction')) {
       this.$activeTab.set(AccessControlEditorTab.JSON_EDITOR);

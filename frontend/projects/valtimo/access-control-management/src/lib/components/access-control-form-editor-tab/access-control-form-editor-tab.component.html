@@ -36,27 +36,27 @@
     </div>
 
     <ul class="form-editor__list" #permissionList>
-      @for (control of permissions.controls; track control; let i = $index) {
+      @for (item of orderedPermissions(); track item.control) {
         <li class="form-editor__list-item">
           <button
             class="form-editor__item"
             type="button"
             [attr.data-test-id]="testIds.permissionListItem"
-            [class.form-editor__item--selected]="$selectedIndex() === i"
-            (click)="selectPermission(i)"
+            [class.form-editor__item--selected]="$selectedIndex() === item.index"
+            (click)="selectPermission(item.index)"
           >
-            <span class="form-editor__item-name" [title]="shortName(control)">
-              @if (shortName(control)) {
-                {{ shortName(control) }}
+            <span class="form-editor__item-name" [title]="shortName(item.control)">
+              @if (shortName(item.control)) {
+                {{ shortName(item.control) }}
               } @else {
                 {{ 'accessControl.editor.newPermission' | translate }}
               }
             </span>
 
-            @if (actionsOf(control).length) {
+            @if (actionsOf(item.control).length) {
               <span class="form-editor__item-tags">
-                @for (action of actionsOf(control); track action) {
-                  <cds-tag size="sm" type="outline">{{ action }}</cds-tag>
+                @for (action of actionsOf(item.control); track action) {
+                  <cds-tag size="sm" type="outline">{{ action | actionLabel }}</cds-tag>
                 }
               </span>
             }

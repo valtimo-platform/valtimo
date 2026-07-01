@@ -30,7 +30,7 @@ import {TrashCan16} from '@carbon/icons';
 import {SelectItem} from '@valtimo/components';
 import {IconService} from 'carbon-components-angular';
 import {Subscription} from 'rxjs';
-import {ACCESS_CONTROL_EDITOR_TEST_IDS} from '../../constants';
+import {ACCESS_CONTROL_EDITOR_TEST_IDS, NO_CONTEXT_RESOURCE_TYPE} from '../../constants';
 import {AccessControlFormEditorService} from '../../services';
 
 @Component({
@@ -49,9 +49,6 @@ export class PermissionFormComponent implements OnInit, AfterViewInit, OnDestroy
   public resourceTypeItems: SelectItem[] = [];
   public actionItems: SelectItem[] = [];
   public contextResourceTypeItems: SelectItem[] = [];
-  // Whether the selected resource type can be scoped to a context at all (i.e. it has at least one
-  // entity-mapper target). When false, the "scope to a context" toggle is disabled.
-  public contextOptionsAvailable = false;
 
   // The form is rendered (but visually hidden) from the start so the wrapped comboboxes can
   // initialize and fill in their preselected values. A spinner is shown until that has happened,
@@ -85,8 +82,16 @@ export class PermissionFormComponent implements OnInit, AfterViewInit, OnDestroy
     return this.group.get('contextResourceType')!.value;
   }
 
+  // Whether context scoping is enabled (the toggle). Off means no context is written at all.
   public get hasContext(): boolean {
     return this.group.get('hasContext')!.value;
+  }
+
+  // True when a real context resource is selected (i.e. anything other than the "No context"
+  // marker). Gates the context condition tree — the marker has no fields to build conditions on.
+  public get hasContextResource(): boolean {
+    const value = this.contextResourceTypeValue;
+    return !!value && value !== NO_CONTEXT_RESOURCE_TYPE;
   }
 
   public get actionsControl(): FormControl {
@@ -95,10 +100,6 @@ export class PermissionFormComponent implements OnInit, AfterViewInit, OnDestroy
 
   public get selectedActions(): string[] {
     return this.actionsControl.value ?? [];
-  }
-
-  public get contextResourceTypeRequired(): boolean {
-    return !!this.group.errors?.['contextResourceTypeRequired'];
   }
 
   public get conditionsArray(): FormArray {
@@ -138,8 +139,9 @@ export class PermissionFormComponent implements OnInit, AfterViewInit, OnDestroy
   }
 
   public onToggleContext(checked: boolean): void {
+    // No validators depend on this, so the form validity can never get stuck; setValue emits so the
+    // parent re-serializes (dropping or adding the context fields).
     this.group.get('hasContext')!.setValue(checked);
-    this.group.updateValueAndValidity();
   }
 
   public onActionToggle(action: string, checked: boolean): void {
@@ -174,20 +176,22 @@ export class PermissionFormComponent implements OnInit, AfterViewInit, OnDestroy
   }
 
   // The valid context resources depend on the selected resource type, so recompute whenever it
-  // changes. The current value is kept selectable even if it is no longer in the valid set.
+  // changes. "No context" is always available; if the previously-selected context resource is no
+  // longer a valid target for the (changed) resource type, fall back to "No context".
   private recomputeContextResourceTypeItems(): void {
-    this.contextOptionsAvailable = this.formEditorService.hasContextOptions(this.resourceTypeValue);
+    const validTargets = this.formEditorService.containerTargetItems(this.resourceTypeValue);
+    const current = this.contextResourceTypeValue;
+    if (
+      current &&
+      current !== NO_CONTEXT_RESOURCE_TYPE &&
+      !validTargets.some(target => target.id === current)
+    ) {
+      this.group.get('contextResourceType')!.setValue(NO_CONTEXT_RESOURCE_TYPE);
+    }
+
     this.contextResourceTypeItems = this.formEditorService.contextResourceTypeItems(
       this.resourceTypeValue,
       this.contextResourceTypeValue
     );
-
-    // A resource with no entity-mapper targets cannot be scoped to a context: turn the toggle off
-    // and clear any stale selection so the (now disabled) section reflects "no context".
-    if (!this.contextOptionsAvailable && this.hasContext) {
-      this.group.get('hasContext')!.setValue(false);
-      this.group.get('contextResourceType')!.setValue(null);
-      this.group.updateValueAndValidity();
-    }
   }
 }

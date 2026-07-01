@@ -21,15 +21,15 @@
        the leave-page confirmation is resolved. -->
   <cds-tabs type="contained">
     <cds-tab
-      [active]="$activeTab() === AccessControlEditorTab.SUMMARY"
-      [heading]="'accessControl.roles.tabs.summary' | translate"
-      (selected)="setActiveTab(AccessControlEditorTab.SUMMARY)"
-    ></cds-tab>
-
-    <cds-tab
       [active]="$activeTab() === AccessControlEditorTab.EDITOR"
       [heading]="'accessControl.roles.tabs.editor' | translate"
       (selected)="setActiveTab(AccessControlEditorTab.EDITOR)"
+    ></cds-tab>
+
+    <cds-tab
+      [active]="$activeTab() === AccessControlEditorTab.SUMMARY"
+      [heading]="'accessControl.roles.tabs.summary' | translate"
+      (selected)="setActiveTab(AccessControlEditorTab.SUMMARY)"
     ></cds-tab>
 
     <cds-tab
@@ -42,13 +42,6 @@
   <!-- White surface for the tab content. The Carbon tab pane used to provide this; since the
        content is now rendered outside the panes, the wrapper supplies the layer background. -->
   <div class="access-control-editor__content">
-    @if ($activeTab() === AccessControlEditorTab.SUMMARY) {
-      <valtimo-access-control-overview-tab
-        [permissions]="permissions$ | async"
-        [roleKey]="roleKey$ | async"
-      ></valtimo-access-control-overview-tab>
-    }
-
     @if ($activeTab() === AccessControlEditorTab.EDITOR) {
       <valtimo-access-control-form-editor-tab
         [disabled]="editorDisabled$ | async"
@@ -56,6 +49,13 @@
         (validEvent)="onValid($event)"
         (valueChangeEvent)="onValueChange($event)"
       ></valtimo-access-control-form-editor-tab>
+    }
+
+    @if ($activeTab() === AccessControlEditorTab.SUMMARY) {
+      <valtimo-access-control-overview-tab
+        [permissions]="permissions$ | async"
+        [roleKey]="roleKey$ | async"
+      ></valtimo-access-control-overview-tab>
     }
 
     @if ($activeTab() === AccessControlEditorTab.JSON_EDITOR) {
