@@ -1,36 +1,69 @@
 [
-    {
-        "activityId": "start-event",
-        "activityType": "bpmn:StartEvent:start",
-        "processLinkType": "form",
-        "formDefinitionName": "start-form-catalogi-get-typen"
+  {
+    "activityId" : "start-event",
+    "activityType" : "bpmn:StartEvent:start",
+    "formDefinitionName" : "start-form-catalogi-get-typen",
+    "viewModelEnabled" : false,
+    "formDisplayType" : "modal",
+    "formSize" : "medium",
+    "subtitles" : [],
+    "processLinkType" : "form"
+  },
+  {
+    "activityId" : "get-informatieobject-typen",
+    "activityType" : "bpmn:ServiceTask:start",
+    "pluginConfigurationId" : "22c78b91-0b0f-4008-8d8f-c4a84b8e71ec",
+    "pluginActionDefinitionKey" : "get-informatieobjecttypen",
+    "actionProperties" : {
+      "zaaktypeUrl" : null,
+      "processVariable" : "pv:informatieObjectTypenPV"
     },
-    {
-        "activityId": "get-status-typen",
-        "activityType": "bpmn:ServiceTask:start",
-        "pluginConfigurationId": "22c78b91-0b0f-4008-8d8f-c4a84b8e71ec",
-        "pluginActionDefinitionKey": "get-statustypen",
-        "actionProperties": {
-            "processVariable": "pv:statusTypenPV"
-        },
-        "processLinkType": "plugin"
+    "referenceType" : "FIXED",
+    "pluginDefinitionKey" : "catalogiapi",
+    "processLinkType" : "plugin"
+  },
+  {
+    "activityId" : "StartEvent_1",
+    "activityType" : "bpmn:StartEvent:start",
+    "formDefinitionName" : "start-form-catalogi-get-typen",
+    "viewModelEnabled" : false,
+    "formDisplayType" : "modal",
+    "formSize" : "medium",
+    "subtitles" : null,
+    "processLinkType" : "form"
+  },
+  {
+    "activityId" : "get-status-typen",
+    "activityType" : "bpmn:ServiceTask:start",
+    "pluginConfigurationId" : "22c78b91-0b0f-4008-8d8f-c4a84b8e71ec",
+    "pluginActionDefinitionKey" : "get-statustypen",
+    "actionProperties" : {
+      "processVariable" : "pv:statusTypenPV"
     },
-    {
-        "activityId": "get-resultaat-typen",
-        "activityType": "bpmn:ServiceTask:start",
-        "pluginConfigurationId": "22c78b91-0b0f-4008-8d8f-c4a84b8e71ec",
-        "pluginActionDefinitionKey": "get-resultaattypen",
-        "actionProperties": {
-            "processVariable": "pv:resultaatTypenPV"
-        },
-        "processLinkType": "plugin"
+    "referenceType" : "FIXED",
+    "pluginDefinitionKey" : "catalogiapi",
+    "processLinkType" : "plugin"
+  },
+  {
+    "activityId" : "get-resultaat-typen",
+    "activityType" : "bpmn:ServiceTask:start",
+    "pluginConfigurationId" : "22c78b91-0b0f-4008-8d8f-c4a84b8e71ec",
+    "pluginActionDefinitionKey" : "get-resultaattypen",
+    "actionProperties" : {
+      "processVariable" : "pv:resultaatTypenPV"
     },
-    {
-        "activityId": "validate-fetched-typen",
-        "activityType": "bpmn:UserTask:create",
-        "formDefinitionName": "user-task-validate-typen",
-        "processLinkType": "form",
-        "formDisplayType": "modal",
-        "formSize": "medium"
-    }
+    "referenceType" : "FIXED",
+    "pluginDefinitionKey" : "catalogiapi",
+    "processLinkType" : "plugin"
+  },
+  {
+    "activityId" : "validate-fetched-typen",
+    "activityType" : "bpmn:UserTask:create",
+    "formDefinitionName" : "user-task-validate-typen",
+    "viewModelEnabled" : false,
+    "formDisplayType" : "modal",
+    "formSize" : "medium",
+    "subtitles" : [],
+    "processLinkType" : "form"
+  }
 ]

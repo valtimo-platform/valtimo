@@ -1,64 +1,616 @@
 {
-    "display": "form",
-    "components": [
-        {
-            "key": "statusType",
-            "type": "select",
-            "input": true,
-            "label": "Status type",
-            "widget": "choicesjs",
-            "validate": {
-                "required": true
-            },
-            "dataSrc": "custom",
-            "template": "<span>{{ item.name }}</span>",
-            "idPath": "url",
-            "data": {
-                "custom": "values = data['statusTypenContainer'];"
-            }
-        },
-        {
-            "key": "statusTypenContainer",
-            "type": "hidden",
-            "input": true,
-            "label": "Status typen container",
-            "persistent": "client-only",
-            "properties": {
-                "sourceKey": "pv:statusTypen"
-            }
-        },
-        {
-            "key": "resultaatType",
-            "type": "select",
-            "input": true,
-            "label": "Resultaat type",
-            "widget": "choicesjs",
-            "validate": {
-                "required": true
-            },
-            "dataSrc": "custom",
-            "template": "<span>{{ item.name }}</span>",
-            "idPath": "url",
-            "data": {
-                "custom": "values = data['resultaatTypenContainer'];"
-            }
-        },
-        {
-            "key": "resultaatTypenContainer",
-            "type": "hidden",
-            "input": true,
-            "label": "Resultaat typen container",
-            "persistent": "client-only",
-            "properties": {
-                "sourceKey": "pv:resultaatTypen"
-            }
-        },
-        {
-            "type": "button",
-            "key": "submit",
-            "label": "Submit",
-            "disableOnInvalid": true,
-            "input": true
-        }
-    ]
+  "display" : "form",
+  "components" : [
+    {
+      "id" : "e8cw1b9",
+      "key" : "statusType",
+      "data" : {
+        "url" : "",
+        "json" : "",
+        "custom" : "values = data['statusTypenContainer'];",
+        "values" : [
+          {
+            "label" : "",
+            "value" : ""
+          }
+        ],
+        "resource" : ""
+      },
+      "type" : "select",
+      "input" : true,
+      "label" : "Status type",
+      "limit" : 100,
+      "addons" : [],
+      "filter" : "",
+      "hidden" : false,
+      "idPath" : "url",
+      "prefix" : "",
+      "suffix" : "",
+      "unique" : false,
+      "widget" : "choicesjs",
+      "dataSrc" : "custom",
+      "dbIndex" : false,
+      "overlay" : {
+        "top" : "",
+        "left" : "",
+        "style" : "",
+        "width" : "",
+        "height" : ""
+      },
+      "tooltip" : "",
+      "disabled" : false,
+      "lazyLoad" : true,
+      "multiple" : false,
+      "redrawOn" : "",
+      "tabindex" : "",
+      "template" : "<span>{{ item.name }}</span>",
+      "validate" : {
+        "custom" : "",
+        "unique" : false,
+        "multiple" : false,
+        "required" : true,
+        "customPrivate" : false,
+        "onlyAvailableItems" : false,
+        "strictDateValidation" : false
+      },
+      "autofocus" : false,
+      "encrypted" : false,
+      "hideLabel" : false,
+      "indexeddb" : {
+        "filter" : {}
+      },
+      "minSearch" : 0,
+      "modalEdit" : false,
+      "protected" : false,
+      "refreshOn" : "",
+      "tableView" : true,
+      "attributes" : {
+        "data-testid" : "user-task-validate-typen-statusType"
+      },
+      "errorLabel" : "",
+      "persistent" : true,
+      "properties" : {},
+      "validateOn" : "change",
+      "clearOnHide" : true,
+      "conditional" : {
+        "eq" : "",
+        "show" : null,
+        "when" : null
+      },
+      "customClass" : "",
+      "description" : "",
+      "fuseOptions" : {
+        "include" : "score",
+        "threshold" : 0.3
+      },
+      "ignoreCache" : false,
+      "placeholder" : "",
+      "searchField" : "",
+      "authenticate" : false,
+      "defaultValue" : null,
+      "selectFields" : "",
+      "customOptions" : {},
+      "dataGridLabel" : false,
+      "labelPosition" : "top",
+      "readOnlyValue" : false,
+      "searchEnabled" : true,
+      "showCharCount" : false,
+      "showWordCount" : false,
+      "uniqueOptions" : false,
+      "valueProperty" : "",
+      "calculateValue" : "",
+      "clearOnRefresh" : false,
+      "searchDebounce" : 0.3,
+      "useExactSearch" : false,
+      "calculateServer" : false,
+      "selectThreshold" : 0.3,
+      "allowMultipleMasks" : false,
+      "customDefaultValue" : "",
+      "allowCalculateOverride" : false
+    },
+    {
+      "id" : "epwoyb",
+      "key" : "statusTypenContainer",
+      "type" : "hidden",
+      "input" : true,
+      "label" : "Status typen container",
+      "addons" : [],
+      "hidden" : false,
+      "prefix" : "",
+      "suffix" : "",
+      "unique" : false,
+      "widget" : {
+        "type" : "input"
+      },
+      "dbIndex" : false,
+      "overlay" : {
+        "top" : "",
+        "left" : "",
+        "style" : "",
+        "width" : "",
+        "height" : ""
+      },
+      "tooltip" : "",
+      "disabled" : false,
+      "multiple" : false,
+      "redrawOn" : "",
+      "tabindex" : "",
+      "validate" : {
+        "custom" : "",
+        "unique" : false,
+        "multiple" : false,
+        "required" : false,
+        "customPrivate" : false,
+        "strictDateValidation" : false
+      },
+      "autofocus" : false,
+      "encrypted" : false,
+      "hideLabel" : false,
+      "inputType" : "hidden",
+      "modalEdit" : false,
+      "protected" : false,
+      "refreshOn" : "",
+      "tableView" : false,
+      "attributes" : {
+        "data-testid" : "user-task-validate-typen-statusTypenContainer"
+      },
+      "errorLabel" : "",
+      "persistent" : "client-only",
+      "properties" : {
+        "sourceKey" : "pv:statusTypen"
+      },
+      "validateOn" : "change",
+      "clearOnHide" : true,
+      "conditional" : {
+        "eq" : "",
+        "show" : null,
+        "when" : null
+      },
+      "customClass" : "",
+      "description" : "",
+      "placeholder" : "",
+      "defaultValue" : null,
+      "dataGridLabel" : false,
+      "labelPosition" : "top",
+      "showCharCount" : false,
+      "showWordCount" : false,
+      "calculateValue" : "",
+      "calculateServer" : false,
+      "allowMultipleMasks" : false,
+      "customDefaultValue" : "",
+      "allowCalculateOverride" : false
+    },
+    {
+      "id" : "ewdaepa",
+      "key" : "resultaatType",
+      "data" : {
+        "url" : "",
+        "json" : "",
+        "custom" : "values = data['resultaatTypenContainer'];",
+        "values" : [
+          {
+            "label" : "",
+            "value" : ""
+          }
+        ],
+        "resource" : ""
+      },
+      "type" : "select",
+      "input" : true,
+      "label" : "Resultaat type",
+      "limit" : 100,
+      "addons" : [],
+      "filter" : "",
+      "hidden" : false,
+      "idPath" : "url",
+      "prefix" : "",
+      "suffix" : "",
+      "unique" : false,
+      "widget" : "choicesjs",
+      "dataSrc" : "custom",
+      "dbIndex" : false,
+      "overlay" : {
+        "top" : "",
+        "left" : "",
+        "style" : "",
+        "width" : "",
+        "height" : ""
+      },
+      "tooltip" : "",
+      "disabled" : false,
+      "lazyLoad" : true,
+      "multiple" : false,
+      "redrawOn" : "",
+      "tabindex" : "",
+      "template" : "<span>{{ item.name }}</span>",
+      "validate" : {
+        "custom" : "",
+        "unique" : false,
+        "multiple" : false,
+        "required" : true,
+        "customPrivate" : false,
+        "onlyAvailableItems" : false,
+        "strictDateValidation" : false
+      },
+      "autofocus" : false,
+      "encrypted" : false,
+      "hideLabel" : false,
+      "indexeddb" : {
+        "filter" : {}
+      },
+      "minSearch" : 0,
+      "modalEdit" : false,
+      "protected" : false,
+      "refreshOn" : "",
+      "tableView" : true,
+      "attributes" : {
+        "data-testid" : "user-task-validate-typen-resultaatType"
+      },
+      "errorLabel" : "",
+      "persistent" : true,
+      "properties" : {},
+      "validateOn" : "change",
+      "clearOnHide" : true,
+      "conditional" : {
+        "eq" : "",
+        "show" : null,
+        "when" : null
+      },
+      "customClass" : "",
+      "description" : "",
+      "fuseOptions" : {
+        "include" : "score",
+        "threshold" : 0.3
+      },
+      "ignoreCache" : false,
+      "placeholder" : "",
+      "searchField" : "",
+      "authenticate" : false,
+      "defaultValue" : null,
+      "selectFields" : "",
+      "customOptions" : {},
+      "dataGridLabel" : false,
+      "labelPosition" : "top",
+      "readOnlyValue" : false,
+      "searchEnabled" : true,
+      "showCharCount" : false,
+      "showWordCount" : false,
+      "uniqueOptions" : false,
+      "valueProperty" : "",
+      "calculateValue" : "",
+      "clearOnRefresh" : false,
+      "searchDebounce" : 0.3,
+      "useExactSearch" : false,
+      "calculateServer" : false,
+      "selectThreshold" : 0.3,
+      "allowMultipleMasks" : false,
+      "customDefaultValue" : "",
+      "allowCalculateOverride" : false
+    },
+    {
+      "id" : "esrs6af",
+      "key" : "resultaatTypenContainer",
+      "type" : "hidden",
+      "input" : true,
+      "label" : "Resultaat typen container",
+      "addons" : [],
+      "hidden" : false,
+      "prefix" : "",
+      "suffix" : "",
+      "unique" : false,
+      "widget" : {
+        "type" : "input"
+      },
+      "dbIndex" : false,
+      "overlay" : {
+        "top" : "",
+        "left" : "",
+        "style" : "",
+        "width" : "",
+        "height" : ""
+      },
+      "tooltip" : "",
+      "disabled" : false,
+      "multiple" : false,
+      "redrawOn" : "",
+      "tabindex" : "",
+      "validate" : {
+        "custom" : "",
+        "unique" : false,
+        "multiple" : false,
+        "required" : false,
+        "customPrivate" : false,
+        "strictDateValidation" : false
+      },
+      "autofocus" : false,
+      "encrypted" : false,
+      "hideLabel" : false,
+      "inputType" : "hidden",
+      "modalEdit" : false,
+      "protected" : false,
+      "refreshOn" : "",
+      "tableView" : false,
+      "attributes" : {
+        "data-testid" : "user-task-validate-typen-resultaatTypenContainer"
+      },
+      "errorLabel" : "",
+      "persistent" : "client-only",
+      "properties" : {
+        "sourceKey" : "pv:resultaatTypen"
+      },
+      "validateOn" : "change",
+      "clearOnHide" : true,
+      "conditional" : {
+        "eq" : "",
+        "show" : null,
+        "when" : null
+      },
+      "customClass" : "",
+      "description" : "",
+      "placeholder" : "",
+      "defaultValue" : null,
+      "dataGridLabel" : false,
+      "labelPosition" : "top",
+      "showCharCount" : false,
+      "showWordCount" : false,
+      "calculateValue" : "",
+      "calculateServer" : false,
+      "allowMultipleMasks" : false,
+      "customDefaultValue" : "",
+      "allowCalculateOverride" : false
+    },
+    {
+      "id" : "el3qde",
+      "key" : "informatieObjectType",
+      "data" : {
+        "url" : "",
+        "json" : "",
+        "custom" : "values = data['informatieObjectTypenContainer'];",
+        "values" : [
+          {
+            "label" : "",
+            "value" : ""
+          }
+        ],
+        "resource" : ""
+      },
+      "type" : "select",
+      "input" : true,
+      "label" : "Informatieobject typen",
+      "limit" : 100,
+      "addons" : [],
+      "filter" : "",
+      "hidden" : false,
+      "idPath" : "url",
+      "prefix" : "",
+      "suffix" : "",
+      "unique" : false,
+      "widget" : "choicesjs",
+      "dataSrc" : "custom",
+      "dbIndex" : false,
+      "overlay" : {
+        "top" : "",
+        "left" : "",
+        "style" : "",
+        "width" : "",
+        "height" : ""
+      },
+      "tooltip" : "",
+      "disabled" : false,
+      "lazyLoad" : true,
+      "multiple" : false,
+      "redrawOn" : "",
+      "tabindex" : "",
+      "template" : "<span>{{ item.name }}</span>",
+      "validate" : {
+        "custom" : "",
+        "unique" : false,
+        "multiple" : false,
+        "required" : true,
+        "customPrivate" : false,
+        "onlyAvailableItems" : false,
+        "strictDateValidation" : false
+      },
+      "autofocus" : false,
+      "encrypted" : false,
+      "hideLabel" : false,
+      "indexeddb" : {
+        "filter" : {}
+      },
+      "minSearch" : 0,
+      "modalEdit" : false,
+      "protected" : false,
+      "refreshOn" : "",
+      "tableView" : true,
+      "attributes" : {
+        "data-testid" : "user-task-validate-typen-informatieObjectType"
+      },
+      "errorLabel" : "",
+      "persistent" : true,
+      "properties" : {},
+      "validateOn" : "change",
+      "clearOnHide" : true,
+      "conditional" : {
+        "eq" : "",
+        "show" : null,
+        "when" : null
+      },
+      "customClass" : "",
+      "description" : "",
+      "fuseOptions" : {
+        "include" : "score",
+        "threshold" : 0.3
+      },
+      "ignoreCache" : false,
+      "placeholder" : "",
+      "searchField" : "",
+      "authenticate" : false,
+      "defaultValue" : null,
+      "selectFields" : "",
+      "customOptions" : {},
+      "dataGridLabel" : false,
+      "labelPosition" : "top",
+      "readOnlyValue" : false,
+      "searchEnabled" : true,
+      "showCharCount" : false,
+      "showWordCount" : false,
+      "uniqueOptions" : false,
+      "valueProperty" : "",
+      "calculateValue" : "",
+      "clearOnRefresh" : false,
+      "searchDebounce" : 0.3,
+      "useExactSearch" : false,
+      "calculateServer" : false,
+      "selectThreshold" : 0.3,
+      "allowMultipleMasks" : false,
+      "customDefaultValue" : "",
+      "allowCalculateOverride" : false
+    },
+    {
+      "id" : "e2v3b6",
+      "key" : "informatieObjectTypenContainer",
+      "type" : "hidden",
+      "input" : true,
+      "label" : "Informatieobject typen container",
+      "addons" : [],
+      "hidden" : false,
+      "prefix" : "",
+      "suffix" : "",
+      "unique" : false,
+      "widget" : {
+        "type" : "input"
+      },
+      "dbIndex" : false,
+      "overlay" : {
+        "top" : "",
+        "left" : "",
+        "style" : "",
+        "width" : "",
+        "height" : ""
+      },
+      "tooltip" : "",
+      "disabled" : false,
+      "multiple" : false,
+      "redrawOn" : "",
+      "tabindex" : "",
+      "validate" : {
+        "custom" : "",
+        "unique" : false,
+        "multiple" : false,
+        "required" : false,
+        "customPrivate" : false,
+        "strictDateValidation" : false
+      },
+      "autofocus" : false,
+      "encrypted" : false,
+      "hideLabel" : false,
+      "inputType" : "hidden",
+      "modalEdit" : false,
+      "protected" : false,
+      "refreshOn" : "",
+      "tableView" : false,
+      "attributes" : {
+        "data-testid" : "user-task-validate-typen-informatieObjectTypenContainer"
+      },
+      "errorLabel" : "",
+      "persistent" : "client-only",
+      "properties" : {
+        "sourceKey" : "pv:informatieObjectTypen"
+      },
+      "validateOn" : "change",
+      "clearOnHide" : true,
+      "conditional" : {
+        "eq" : "",
+        "show" : null,
+        "when" : null
+      },
+      "customClass" : "",
+      "description" : "",
+      "placeholder" : "",
+      "defaultValue" : null,
+      "dataGridLabel" : false,
+      "labelPosition" : "top",
+      "showCharCount" : false,
+      "showWordCount" : false,
+      "calculateValue" : "",
+      "calculateServer" : false,
+      "allowMultipleMasks" : false,
+      "customDefaultValue" : "",
+      "allowCalculateOverride" : false
+    },
+    {
+      "id" : "e2jd2hj",
+      "key" : "submit",
+      "size" : "md",
+      "type" : "button",
+      "block" : false,
+      "input" : true,
+      "label" : "Submit",
+      "theme" : "primary",
+      "action" : "submit",
+      "addons" : [],
+      "hidden" : false,
+      "prefix" : "",
+      "suffix" : "",
+      "unique" : false,
+      "widget" : {
+        "type" : "input"
+      },
+      "dbIndex" : false,
+      "overlay" : {
+        "top" : "",
+        "left" : "",
+        "style" : "",
+        "width" : "",
+        "height" : ""
+      },
+      "tooltip" : "",
+      "disabled" : false,
+      "leftIcon" : "",
+      "multiple" : false,
+      "redrawOn" : "",
+      "tabindex" : "",
+      "validate" : {
+        "custom" : "",
+        "unique" : false,
+        "multiple" : false,
+        "required" : false,
+        "customPrivate" : false,
+        "strictDateValidation" : false
+      },
+      "autofocus" : false,
+      "encrypted" : false,
+      "hideLabel" : false,
+      "modalEdit" : false,
+      "protected" : false,
+      "refreshOn" : "",
+      "rightIcon" : "",
+      "tableView" : false,
+      "attributes" : {},
+      "errorLabel" : "",
+      "persistent" : false,
+      "properties" : {},
+      "validateOn" : "change",
+      "clearOnHide" : true,
+      "conditional" : {
+        "eq" : "",
+        "show" : null,
+        "when" : null
+      },
+      "customClass" : "",
+      "description" : "",
+      "placeholder" : "",
+      "defaultValue" : null,
+      "dataGridLabel" : true,
+      "labelPosition" : "top",
+      "showCharCount" : false,
+      "showWordCount" : false,
+      "calculateValue" : "",
+      "calculateServer" : false,
+      "disableOnInvalid" : true,
+      "allowMultipleMasks" : false,
+      "customDefaultValue" : "",
+      "allowCalculateOverride" : false
+    }
+  ]
 }
