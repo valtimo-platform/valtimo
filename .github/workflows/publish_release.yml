@@ -64,7 +64,224 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ needs.prepare.outputs.version }}
+          # Tag the exact release-branch commit. Without this, the GitHub API
+          # defaults target_commitish to the repo's default branch (next-minor),
+          # which mis-tags non-v13 releases (e.g. v12) onto next-minor content.
+          target_commitish: ${{ github.sha }}
           name: ${{ needs.prepare.outputs.version }}
           body: "Release for Valtimo version ${{ needs.prepare.outputs.version }}."
           draft: false
           prerelease: false
+
+  # After the monorepo is tagged and its libraries are published, regenerate +
+  # tag the standalone template repos that Valtimo Configurator clones. Each
+  # template's `sync-from-monorepo.yml` checks out the monorepo at the release
+  # tag and builds against the just-published Maven/npm artifacts, so this must
+  # run after create_release. Cross-repo dispatch needs a PAT (the default
+  # GITHUB_TOKEN can't reach other repos): valtimo-platform/* uses the
+  # valtimoplatform PAT, generiekzaakafhandelcomponent/* uses the gzac PAT.
+  sync_templates:
+    name: "Sync template: ${{ matrix.repo }}"
+    needs:
+      - create_release
+      - prepare
+    runs-on: ubuntu-latest
+    # Best-effort post-release automation: the release artifacts + tag are already
+    # done by create_release, so a template-sync failure must NOT fail the release.
+    # The failed job and its ::error:: annotations still show on the run page.
+    continue-on-error: true
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - repo: valtimo-platform/valtimo-frontend-template
+            org: valtimoplatform
+          - repo: valtimo-platform/valtimo-backend-template
+            org: valtimoplatform
+          - repo: generiekzaakafhandelcomponent/gzac-frontend-template
+            org: gzac
+          - repo: generiekzaakafhandelcomponent/gzac-backend-template
+            org: gzac
+          - repo: generiekzaakafhandelcomponent/gzac-evenementenvergunning-demo-frontend
+            org: gzac
+          - repo: generiekzaakafhandelcomponent/gzac-evenementenvergunning-demo-backend
+            org: gzac
+    steps:
+      - name: Dispatch and wait for template sync
+        env:
+          GH_TOKEN: ${{ matrix.org == 'gzac' && secrets.VALTIMO_RELEASE_PIPELINE_GZAC || secrets.VALTIMO_RELEASE_PIPELINE_VALTIMOPLATFORM }}
+          REPO: ${{ matrix.repo }}
+          VERSION: ${{ needs.prepare.outputs.version }}
+        run: |
+          set -euo pipefail
+
+          WF="sync-from-monorepo.yml"
+          MAJOR="${VERSION%%.*}"
+          BRANCH="v/${MAJOR}"
+
+          # The template's verify step resolves the freshly published Maven/npm
+          # artifacts, which can take a minute or two to propagate. Re-dispatch a
+          # fresh run on failure — the sync workflow is idempotent (it no-ops when
+          # there is nothing to commit and leaves an existing tag untouched).
+          attempts=3
+          delay=60
+
+          for n in $(seq 1 "$attempts"); do
+            before_id="$(gh run list --repo "$REPO" --workflow "$WF" --branch "$BRANCH" --limit 1 --json databaseId --jq '.[0].databaseId // 0')"
+
+            echo "Dispatching ${WF} on ${REPO}@${BRANCH} (version=${VERSION}), attempt ${n}/${attempts}…"
+            gh workflow run "$WF" --repo "$REPO" --ref "$BRANCH" -f version="$VERSION"
+
+            # Wait for the newly created run to show up.
+            run_id=""
+            for _ in $(seq 1 30); do
+              candidate="$(gh run list --repo "$REPO" --workflow "$WF" --branch "$BRANCH" --limit 1 --json databaseId --jq '.[0].databaseId // 0')"
+              if [ "$candidate" != "0" ] && [ "$candidate" != "$before_id" ]; then
+                run_id="$candidate"
+                break
+              fi
+              sleep 5
+            done
+
+            if [ -z "$run_id" ]; then
+              echo "::error::Could not find the dispatched ${WF} run on ${REPO}@${BRANCH}."
+              exit 1
+            fi
+
+            echo "Watching run ${run_id} on ${REPO}…"
+            if gh run watch "$run_id" --repo "$REPO" --exit-status --interval 30; then
+              echo "Template sync succeeded for ${REPO}."
+              exit 0
+            fi
+
+            if [ "$n" -ge "$attempts" ]; then
+              echo "::error::Template sync failed for ${REPO} after ${n} attempts."
+              exit 1
+            fi
+            echo "Template sync failed (attempt ${n}/${attempts}) — likely artifact propagation lag; retrying in ${delay}s."
+            sleep "$delay"
+          done
+
+  # Post-release admin (mirrors release.sh step 11): open the merge-back PR of the
+  # released branch into the stable line. Runs off create_release only (not the
+  # template sync) so it isn't blocked by template flakiness. Uses the
+  # valtimo-platform PAT — not GITHUB_TOKEN — so required CI on the PR triggers
+  # and the PR is mergeable.
+  pr_to_stable:
+    name: Open PR release -> stable
+    needs:
+      - create_release
+      - prepare
+    runs-on: ubuntu-latest
+    env:
+      GH_TOKEN: ${{ secrets.VALTIMO_RELEASE_PIPELINE_VALTIMOPLATFORM }}
+      VERSION: ${{ needs.prepare.outputs.version }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.VALTIMO_RELEASE_PIPELINE_VALTIMOPLATFORM }}
+      - name: Create release -> stable PR
+        run: |
+          set -euo pipefail
+          MAJOR="${VERSION%%.*}"
+          STABLE="v${MAJOR}-stable"
+          existing="$(gh pr list --base "$STABLE" --head "release/${VERSION}" --state all --json url --jq '.[0].url // empty')"
+          if [ -n "$existing" ]; then
+            echo "PR already exists: ${existing} — skipping."
+            exit 0
+          fi
+          gh pr create \
+            --base "$STABLE" \
+            --head "release/${VERSION}" \
+            --title "Merge release/${VERSION} into ${STABLE}" \
+            --body "Don't squash!"
+
+  # Post-release admin (mirrors release.sh step 12, MAJOR 12 path): prepare the
+  # next dev cycle by branching rc/<next> off the just-released release/<v>,
+  # adding the release-notes skeleton + SUMMARY.md entry, and pushing it (no PR
+  # on v12). Idempotent: reuses the branch if it already exists.
+  prepare_next:
+    name: Prepare next release
+    needs:
+      - create_release
+      - prepare
+    runs-on: ubuntu-latest
+    env:
+      GH_TOKEN: ${{ secrets.VALTIMO_RELEASE_PIPELINE_VALTIMOPLATFORM }}
+      VERSION: ${{ needs.prepare.outputs.version }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.VALTIMO_RELEASE_PIPELINE_VALTIMOPLATFORM }}
+          fetch-depth: 0
+      - name: Prepare next rc branch
+        run: |
+          set -euo pipefail
+
+          MAJOR="${VERSION%%.*}"
+          MINOR_PART="${VERSION#*.}"
+          MINOR="${MINOR_PART%%.*}"
+          NEXT_VERSION="${MAJOR}.$((MINOR + 1)).0"
+          NOTES_DIR="documentation/release-notes/${MAJOR}.x.x/${NEXT_VERSION}"
+          SUMMARY_FILE="documentation/SUMMARY.md"
+          NEXT_BRANCH="rc/${NEXT_VERSION}"
+          BASE_BRANCH="release/${VERSION}"
+
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+          git checkout "$BASE_BRANCH"
+          git pull --ff-only
+          if git ls-remote --exit-code --heads origin "$NEXT_BRANCH" >/dev/null 2>&1; then
+            git checkout -b "$NEXT_BRANCH" "origin/${NEXT_BRANCH}"
+          else
+            git checkout -b "$NEXT_BRANCH"
+          fi
+
+          mkdir -p "$NOTES_DIR"
+          # Heredoc body is intentionally NOT indented so no leading spaces leak
+          # into the generated file (the two-space indents below are deliberate).
+          cat > "${NOTES_DIR}/README.md" <<EOF
+          # ${NEXT_VERSION}
+
+          ## New Features
+
+          * **New feature title**
+
+            New feature explanation.
+
+          ## Enhancements
+
+          * **New enhancement title**
+
+            New enhancement explanation.
+
+          ## Bugfixes
+
+          * New bugfix.
+          EOF
+
+          NEW_ENTRY="  * [${NEXT_VERSION}](release-notes/${MAJOR}.x.x/${NEXT_VERSION}/README.md)"
+          SECTION_ANCHOR="* [${MAJOR}.x.x](release-notes/${MAJOR}.x.x/"
+          if grep -qF "$NEW_ENTRY" "$SUMMARY_FILE"; then
+            echo "SUMMARY.md already references ${NEXT_VERSION}, skipping."
+          elif ! grep -qF "$SECTION_ANCHOR" "$SUMMARY_FILE"; then
+            echo "::warning::No '${MAJOR}.x.x' section in ${SUMMARY_FILE} — add it manually."
+          else
+            awk -v anchor="$SECTION_ANCHOR" -v entry="$NEW_ENTRY" '
+              { print }
+              !inserted && index($0, anchor) { print entry; inserted = 1 }
+            ' "$SUMMARY_FILE" > "${SUMMARY_FILE}.tmp" && mv "${SUMMARY_FILE}.tmp" "$SUMMARY_FILE"
+            echo "Added ${NEXT_VERSION} entry to SUMMARY.md."
+          fi
+
+          git add "${NOTES_DIR}/README.md" "$SUMMARY_FILE"
+          if git diff --cached --quiet; then
+            echo "No staged changes to commit."
+          else
+            git commit -m "Add release notes skeleton for ${NEXT_VERSION}"
+          fi
+
+          git push -u origin "$NEXT_BRANCH"

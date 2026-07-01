@@ -23,7 +23,6 @@ on:
         description: "Branch to cut the release from"
         required: true
         type: string
-        default: v12-stable
 
 jobs:
   start:
@@ -52,6 +51,16 @@ jobs:
           RELEASE_BRANCH: release/${{ inputs.version }}
         run: |
           set -euo pipefail
+          # Allow running straight from the release branch itself (e.g. version
+          # 12.39.0 + source_branch release/12.39.0): reuse it, don't recreate.
+          if [[ "${SOURCE_BRANCH}" == "${RELEASE_BRANCH}" ]]; then
+            if ! git ls-remote --exit-code --heads origin "refs/heads/${RELEASE_BRANCH}" >/dev/null 2>&1; then
+              echo "::error::Source branch '${RELEASE_BRANCH}' does not exist on origin."
+              exit 1
+            fi
+            echo "Source branch is already ${RELEASE_BRANCH}; skipping branch creation."
+            exit 0
+          fi
           if git ls-remote --exit-code --heads origin "refs/heads/${RELEASE_BRANCH}" >/dev/null 2>&1; then
             echo "::error::Branch '${RELEASE_BRANCH}' already exists. Delete it or pick another version."
             exit 1
