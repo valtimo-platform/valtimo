@@ -1,4 +1,4 @@
 {
-  "@valtimo-plugins/freemarker": "8.3.6",
-  "@valtimo-plugins/smtpmail": "2.0.5"
+  "@valtimo-plugins/freemarker": "8.5.0",
+  "@valtimo-plugins/smtpmail": "2.0.6"
 }

@@ -1,0 +1,89 @@
+name: Start release candidate
+run-name: Start RC ${{ inputs.version }} from ${{ inputs.source_branch }}
+
+# Convenience entrypoint for cutting a release candidate. It creates the
+# rc/<version> branch from the chosen source branch and then dispatches the
+# existing `publish_release_candidate.yml` worker ON that new branch. The worker
+# derives the version from the branch name and keeps every `github.ref_name`
+# gate working as before — this workflow only automates branch creation + hand-off.
+
+permissions:
+  contents: write
+  actions: write
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "RC version to release, (e.g. 13.5.0-1)"
+        required: true
+        type: string
+      source_branch:
+        description: "Branch to cut the release candidate from"
+        required: true
+        type: string
+        default: next-minor
+
+jobs:
+  start:
+    name: Create rc branch and start release candidate
+    runs-on: ubuntu-latest
+    env:
+      VERSION: ${{ inputs.version }}
+      SOURCE_BRANCH: ${{ inputs.source_branch }}
+    steps:
+      - name: Validate version
+        run: |
+          set -euo pipefail
+          if [[ ! "${VERSION}" =~ ^[0-9]+\.[0-9]+\.[0-9]+-[0-9]+$ ]]; then
+            echo "::error::Version must be <semver>-<rc_number> (e.g. 13.5.0-1). Got: '${VERSION}'."
+            exit 1
+          fi
+
+      - name: Checkout source branch
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.source_branch }}
+          fetch-depth: 0
+
+      - name: Create and push rc branch
+        env:
+          RC_BRANCH: rc/${{ inputs.version }}
+        run: |
+          set -euo pipefail
+          # Allow running straight from the rc branch itself (e.g. version
+          # 13.5.0-1 + source_branch rc/13.5.0-1): reuse it, don't recreate.
+          if [[ "${SOURCE_BRANCH}" == "${RC_BRANCH}" ]]; then
+            if ! git ls-remote --exit-code --heads origin "refs/heads/${RC_BRANCH}" >/dev/null 2>&1; then
+              echo "::error::Source branch '${RC_BRANCH}' does not exist on origin."
+              exit 1
+            fi
+            echo "Source branch is already ${RC_BRANCH}; skipping branch creation."
+            exit 0
+          fi
+          if git ls-remote --exit-code --heads origin "refs/heads/${RC_BRANCH}" >/dev/null 2>&1; then
+            echo "::error::Branch '${RC_BRANCH}' already exists. Delete it or pick another version."
+            exit 1
+          fi
+          git checkout -b "${RC_BRANCH}"
+          git push origin "${RC_BRANCH}"
+          echo "Created and pushed ${RC_BRANCH} from ${SOURCE_BRANCH}."
+
+      - name: Trigger release candidate pipeline on the new branch
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RC_BRANCH: rc/${{ inputs.version }}
+        run: |
+          set -euo pipefail
+          # The branch push may take a moment to propagate before the workflow
+          # file is resolvable on the new ref; retry a few times.
+          for attempt in 1 2 3 4 5; do
+            if gh workflow run publish_release_candidate.yml --ref "${RC_BRANCH}"; then
+              echo "Dispatched publish_release_candidate.yml on ${RC_BRANCH}."
+              exit 0
+            fi
+            echo "Dispatch attempt ${attempt} failed; retrying in 5s..."
+            sleep 5
+          done
+          echo "::error::Failed to dispatch publish_release_candidate.yml on ${RC_BRANCH}."
+          exit 1
