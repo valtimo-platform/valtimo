@@ -3,7 +3,14 @@
 This folder contains:
 
 - A collection of Java/Kotlin libraries that together form the Valtimo backend.
-- The `app:gzac` module, containing a Spring Boot application, used for development.
+- Four runnable Spring Boot app modules under [`apps/`](apps/): `gzac`,
+  `valtimo` and `evenementenvergunning` are the released applications (packaged
+  into `ritense/gzac-backend`, `ritense/valtimo-backend` and
+  `ritense/gzac-evenementenvergunning-backend`); [`dev`](apps/dev/README.md) is
+  the developer console (demo cases, dev config, showcase components) used for
+  the local `bootRun` loop and PR-CI test images. Each is a uniform
+  single-source-set module; shared boilerplate lives in
+  [`gradle/valtimo-app.gradle`](gradle/valtimo-app.gradle).
 
 ### Starting the Valtimo platform
 
@@ -24,7 +31,18 @@ Starting up the Valtimo platform requires two steps:
 
 #### Start Application
 
-Run the following command to start the Spring Boot application: `./gradlew :backend:app:gzac:bootRunWithDocker`.
+| Command                                            | Notes                                                                                                                                                                                                                                                              |
+|----------------------------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `./gradlew :backend:apps:dev:bootRunWithDocker`    | Default for local dev. Starts Postgres / Keycloak / RabbitMQ via `docker-compose` first, then the developer console with the dev config and demo data.                                                                                                              |
+| `./gradlew :backend:apps:dev:bootRun`              | Same as above but assumes the supporting services are already running.                                                                                                                                                                                              |
+| `./gradlew :backend:apps:gzac:bootRunWithDocker`   | Boot the **released** gzac config against the shared stack — handy for smoke-testing the prod resource path. Spring will fail on placeholder resolution unless the prod env vars (`SPRING_DATASOURCE_URL`, `SPRING_RABBITMQ_HOST`, `VALTIMO_PLUGIN_ENCRYPTIONSECRET`, …) are supplied via a `.env.properties` or the environment. |
+| `./gradlew :backend:apps:gzac:assemble`            | Produces `backend/apps/gzac/build/libs/gzac-*.war` — the released image artifact. (`valtimo` / `evenementenvergunning` build the same way.)                                                                                                                         |
+
+Each app module is uniform: one source set, one `Application`, one image. The
+shared `bootRunWithDocker` task, the docker-compose stack and the publish-disable
+live in [`gradle/valtimo-app.gradle`](gradle/valtimo-app.gradle); the PR-CI
+test-env image is the `dev` variant (see
+[`.github/workflows/backend_build_push_docker_image.yml`](../.github/workflows/backend_build_push_docker_image.yml)).
 
 ### Test users
 

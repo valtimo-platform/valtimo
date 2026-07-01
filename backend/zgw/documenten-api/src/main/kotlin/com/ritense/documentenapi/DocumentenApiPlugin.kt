@@ -218,10 +218,7 @@ class DocumentenApiPlugin(
         execution: DelegateExecution,
         @PluginActionProperty processVariableName: String? = null
     ): String {
-        val documentUrlString = execution.getVariable(DOCUMENT_URL_PROCESS_VAR) as String?
-            ?: throw IllegalStateException("Failed to download document. No process variable '$DOCUMENT_URL_PROCESS_VAR' found.")
-        check(documentUrlString.startsWith(url.toASCIIString())) { "Failed to download document with url '$documentUrlString'. Document isn't part of Documenten API with url '$url'." }
-        val documentUrl = URI(documentUrlString)
+        val documentUrl = resolveDownloadDocumentUrl(execution)
         val caseDocumentId = UUID.fromString(execution.businessKey)
             ?: throw IllegalStateException("Failed to store document. Business key is null.")
 
@@ -439,6 +436,25 @@ class DocumentenApiPlugin(
         if (apiVersion != null && !documentenApiVersionService.isValidVersion(apiVersion!!)) {
             throw ValidationException("Unknown API version '$apiVersion'.")
         }
+    }
+
+    private fun resolveDownloadDocumentUrl(execution: DelegateExecution): URI {
+        val documentUrlString = (execution.getVariable(DOCUMENT_URL_PROCESS_VAR) as String?)
+            ?.takeIf { it.isNotBlank() }
+        if (documentUrlString != null) {
+            check(documentUrlString.startsWith(url.toASCIIString())) {
+                "Failed to download document with url '$documentUrlString'. Document isn't part of Documenten API with url '$url'."
+            }
+            return URI(documentUrlString)
+        }
+        val documentId = (execution.getVariable(DOCUMENT_ID_PROCESS_VAR) as String?)
+            ?.takeIf { it.isNotBlank() }
+        if (documentId != null) {
+            return createInformatieObjectUrl(documentId)
+        }
+        throw IllegalStateException(
+            "Failed to download document. No process variable '$DOCUMENT_URL_PROCESS_VAR' or '$DOCUMENT_ID_PROCESS_VAR' found."
+        )
     }
 
     private fun getResourceId(

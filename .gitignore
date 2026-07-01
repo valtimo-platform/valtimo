@@ -6,6 +6,8 @@
 .claude
 .playwright-mcp
 .env.properties
+# ...except the public demo env files shipped with each app variant.
+!backend/apps/*/.env.properties
 
 ### IntelliJ IDEA ###
 .idea

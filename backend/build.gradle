@@ -287,7 +287,7 @@ subprojects { subproject ->
             }
         }
     }
-    if(project.name != "app" && project.name != "gradle" && project.name != "dependencies") {
+    if(project.name != "apps" && project.name != "gradle" && project.name != "dependencies") {
         apply from: "${rootProject.projectDir}/backend/gradle/publishing-module.gradle"
     }
 }

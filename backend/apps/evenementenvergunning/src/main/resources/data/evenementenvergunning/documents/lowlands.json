@@ -1,0 +1,53 @@
+{
+    "aanvrager": {
+        "naam": "Erika van Hof",
+        "adres": "Willem Fenengastraat 2, 1096 BN Amsterdam",
+        "contactgegevens": {
+            "telefoon": "+31 20 123 9876",
+            "email": "info@lowlands.nl"
+        }
+    },
+    "milieuBeheer": {
+        "afvalBeheerPlan": "Uitgebreid afvalscheidingsprogramma met herbruikbare bekers en composteerbare verpakkingen.",
+        "milieuMaatregelen": "100% groene energie, herbruikbare waterflessen en biologische eetopties.",
+        "sanitaireVoorzieningen": true
+    },
+    "etenEnDrinken": {
+        "alcoholSchenken": true,
+        "horecaVergunning": true,
+        "alcoholControleMaatregelen": "Leeftijdscontrole bij alle verkooppunten, polsbandjes voor 18+ bezoekers."
+    },
+    "evenementDetails": {
+        "evenementNaam": "Lowlands Festival",
+        "evenementType": "Muziek- en cultuurfestival",
+        "evenementDatum": "2025-08-15",
+        "verwachteBezoekers": 60000,
+        "isOpenbaarEvenement": true
+    },
+    "geluidEnOverlast": {
+        "versterktGeluid": true,
+        "geluidReductieMaatregelen": "Geluidswallen en volumevermindering na 02:00 uur."
+    },
+    "verkeerEnParkeren": {
+        "verkeerPlan": "Extra verkeersmaatregelen rondom Biddinghuizen en pendelbussen vanuit grote steden.",
+        "alternatiefTransport": "Treinen en pendelbussen beschikbaar vanuit Amsterdam, Utrecht en Zwolle.",
+        "parkeerVoorzieningen": true
+    },
+    "locatieEnOpstelling": {
+        "evenementLocatie": "Evenemententerrein Walibi Holland, Biddinghuizen",
+        "voorzieningen": [
+            "Podia",
+            "Campings",
+            "EHBO-posten",
+            "Voedsel- en drankstands",
+            "Toiletten en douches"
+        ],
+        "indelingsplan": "https://lowlands.nl/indelingsplan.pdf"
+    },
+    "veiligheidsMaatregelen": {
+        "beveiligingsPlan": "Grote inzet van professionele beveiliging, camera's en crowd control maatregelen.",
+        "noodPlan": "Noodprocedures en samenwerking met politie en brandweer voor evacuaties.",
+        "EHBO": true,
+        "beveiligingsPersoneel": 250
+    }
+}

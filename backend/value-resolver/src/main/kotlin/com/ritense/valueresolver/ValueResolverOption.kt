@@ -27,6 +27,7 @@ class ValueResolverOption(
 
 class ValueResolverOptionRequest(
     val prefixes: List<String>,
+    val excludePrefixes: List<String> = emptyList(),
     val type: ValueResolverOptionType
 )
 

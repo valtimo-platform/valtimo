@@ -25,6 +25,7 @@ import {GetBesluittypeConfigurationComponent} from './components/get-besluittype
 import {GetResultaattypenConfigurationComponent} from './components/get-resultaattypen/get-resultaattypen-configuration.component';
 import {GetResultaattypeConfigurationComponent} from './components/get-resultaattype/get-resultaattype-configuration.component';
 import {GetEigenschapConfigurationComponent} from './components/get-eigenschap/get-eigenschap-configuration.component';
+import {GetInformatieobjecttypeConfigurationComponent} from './components/get-informatieobjecttype/get-informatieobjecttype-configuration.component';
 
 @NgModule({
   declarations: [
@@ -35,6 +36,7 @@ import {GetEigenschapConfigurationComponent} from './components/get-eigenschap/g
     GetStatustypenConfigurationComponent,
     GetStatustypeConfigurationComponent,
     GetEigenschapConfigurationComponent,
+    GetInformatieobjecttypeConfigurationComponent,
   ],
   imports: [
     CommonModule,
@@ -52,6 +54,7 @@ import {GetEigenschapConfigurationComponent} from './components/get-eigenschap/g
     GetStatustypeConfigurationComponent,
     GetStatustypenConfigurationComponent,
     GetEigenschapConfigurationComponent,
+    GetInformatieobjecttypeConfigurationComponent,
   ],
 })
 export class CatalogiApiPluginModule {}

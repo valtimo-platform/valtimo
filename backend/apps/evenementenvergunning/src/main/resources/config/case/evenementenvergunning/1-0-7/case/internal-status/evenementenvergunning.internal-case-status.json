@@ -1,0 +1,44 @@
+[
+    {
+      "key": "nieuw",
+      "title": "Nieuw",
+      "visibleInCaseListByDefault": true,
+      "color": "BLUE"
+    },
+    {
+      "key": "controleren-locatie",
+      "title": "Controleren locatie",
+      "visibleInCaseListByDefault": true,
+      "color": "PURPLE"
+    },
+    {
+      "key": "wacht-op-locatie",
+      "title": "Wacht op nieuwe locatie",
+      "visibleInCaseListByDefault": true,
+      "color": "RED"
+    },
+    {
+      "key": "in-behandeling",
+      "title": "In behandeling",
+      "visibleInCaseListByDefault": true,
+      "color": "BLUE"
+    },
+    {
+      "key": "versnelde-afhandeling",
+      "title": "Versnelde afhandeling",
+      "visibleInCaseListByDefault": true,
+      "color": "TEAL"
+    },
+    {
+      "key": "goedkeuring-wethouder",
+      "title": "Goedkeuring wethouder",
+      "visibleInCaseListByDefault": true,
+      "color": "MAGENTA"
+    },
+    {
+      "key": "afgerond",
+      "title": "Afgerond",
+      "visibleInCaseListByDefault": false,
+      "color": "GREEN"
+    }
+  ]

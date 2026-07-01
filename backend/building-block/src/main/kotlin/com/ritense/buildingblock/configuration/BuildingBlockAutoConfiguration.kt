@@ -714,6 +714,7 @@ class BuildingBlockAutoConfiguration {
     fun startableBuildingBlockItemProvider(
         caseDefinitionBuildingBlockLinkRepository: CaseDefinitionBuildingBlockLinkRepository,
         processDefinitionBuildingBlockDefinitionRepository: ProcessDefinitionBuildingBlockDefinitionRepository,
+        buildingBlockDefinitionRepository: BuildingBlockDefinitionRepository,
         authorizationService: AuthorizationService,
         caseDefinitionBuildingBlockLinkService: CaseDefinitionBuildingBlockLinkService,
         objectMapper: ObjectMapper,
@@ -721,6 +722,7 @@ class BuildingBlockAutoConfiguration {
         return StartableBuildingBlockItemProvider(
             caseDefinitionBuildingBlockLinkRepository,
             processDefinitionBuildingBlockDefinitionRepository,
+            buildingBlockDefinitionRepository,
             authorizationService,
             caseDefinitionBuildingBlockLinkService,
             objectMapper,
