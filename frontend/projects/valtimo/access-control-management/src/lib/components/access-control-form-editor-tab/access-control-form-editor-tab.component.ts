@@ -101,6 +101,18 @@ export class AccessControlFormEditorTabComponent implements OnChanges, OnDestroy
     return ((control as FormGroup).get('actions')!.value as string[]) ?? [];
   }
 
+  // Whether the permission has any conditions / a scoped context. Surfaced as status tags in the
+  // sidebar so a rule that carries extra configuration is recognisable at a glance (e.g. two
+  // entries for the same resource differ by their conditions).
+  public hasConditions(control: AbstractControl): boolean {
+    const conditions = (control as FormGroup).get('conditions') as FormArray | null;
+    return (conditions?.length ?? 0) > 0;
+  }
+
+  public hasContext(control: AbstractControl): boolean {
+    return !!(control as FormGroup).get('hasContext')!.value;
+  }
+
   // The sidebar always lists permissions alphabetically by their (short) resource name, with
   // not-yet-named new permissions kept at the bottom. The original array index is preserved so
   // selection and serialization stay tied to the underlying form-array order.
@@ -153,13 +165,33 @@ export class AccessControlFormEditorTabComponent implements OnChanges, OnDestroy
     });
   }
 
+  // After a save reloads the model and the previously-open rule is reselected, scroll that rule
+  // into view in the (alphabetically sorted) sidebar so it is visible without manual scrolling.
+  private scrollSelectedIntoView(): void {
+    setTimeout(() => {
+      const selected = this._permissionList?.nativeElement.querySelector(
+        '.form-editor__item--selected'
+      );
+      selected?.scrollIntoView({block: 'nearest', behavior: 'smooth'});
+    });
+  }
+
   public removePermission(index: number): void {
     if (!this.permissionsArray) return;
 
+    // After removal, select the permission shown directly above the deleted one in the
+    // (alphabetical) sidebar; if it was the first, fall back to the new first. The neighbour is
+    // captured by reference before removal so we can find its new array index afterwards.
+    const ordered = this.orderedPermissions();
+    const position = ordered.findIndex(item => item.index === index);
+    const neighbour =
+      position > 0 ? ordered[position - 1].control : (ordered[position + 1]?.control ?? null);
+
     this.permissionsArray.removeAt(index);
-    const remaining = this.permissionsArray.length;
-    // Keep a valid selection: stay on the same slot, or fall back to the new last one.
-    this.$selectedIndex.set(remaining === 0 ? null : Math.min(index, remaining - 1));
+
+    const neighbourIndex = neighbour ? this.permissionsArray.controls.indexOf(neighbour) : -1;
+    // No neighbour left means the list is now empty → clear the selection so the empty state shows.
+    this.$selectedIndex.set(neighbourIndex === -1 ? null : neighbourIndex);
     this.changeDetectorRef.markForCheck();
   }
 
@@ -192,6 +224,9 @@ export class AccessControlFormEditorTabComponent implements OnChanges, OnDestroy
     this.ready = true;
     this.emitState();
     this.changeDetectorRef.markForCheck();
+
+    // After a post-save reselect, bring the re-opened rule into view in the sidebar.
+    if (reselect) this.scrollSelectedIntoView();
   }
 
   // Called by the parent immediately before a save: captures the open permission so that, once the

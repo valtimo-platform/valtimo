@@ -38,6 +38,9 @@ export class ConditionTreeComponent implements OnInit, OnChanges {
   public fieldItems: SelectItem[] = [];
   public containerTargetItems: SelectItem[] = [];
   public operatorItems: SelectItem[] = [];
+  // Preset value types for JSON-field conditions (String, Boolean, …). The dropdown only ever holds
+  // presets — custom types are entered via manual mode — so this list is stable.
+  public valueTypeItems: SelectItem[] = [];
 
   // Condition types are shown in natural language. "Related resource" (container) is only offered
   // when the resource can be related to another resource (see recomputeItems).
@@ -68,6 +71,7 @@ export class ConditionTreeComponent implements OnInit, OnChanges {
 
   public ngOnInit(): void {
     this.operatorItems = this.formEditorService.operatorItems();
+    this.valueTypeItems = this.formEditorService.valueTypeItems();
     this.recomputeItems();
   }
 
@@ -107,6 +111,16 @@ export class ConditionTreeComponent implements OnInit, OnChanges {
     return this.groupAt(index).get('operator')!.value || '';
   }
 
+  public clazzValueAt(index: number): string {
+    return this.groupAt(index).get('clazz')!.value || '';
+  }
+
+  // Whether the value type is entered manually (a custom class) rather than picked from the preset
+  // dropdown.
+  public clazzManualAt(index: number): boolean {
+    return !!this.groupAt(index).get('clazzManual')!.value;
+  }
+
   public addCondition(): void {
     this.conditions.push(this.formEditorService.createConditionGroup(undefined, 'field'));
   }
@@ -115,7 +129,27 @@ export class ConditionTreeComponent implements OnInit, OnChanges {
     this.conditions.removeAt(index);
   }
 
-  public onTypeChange(): void {
+  // Toggles the value-type input between the preset dropdown and manual entry. Switching back to the
+  // dropdown with nothing entered yet falls back to the default type.
+  public onClazzManualToggle(index: number, manual: boolean): void {
+    const group = this.groupAt(index);
+    group.get('clazzManual')!.setValue(manual);
+    // The dropdown only lists presets, so entering it with an empty or custom value falls back to
+    // the default preset rather than leaving the dropdown with nothing selected.
+    const clazz = group.get('clazz')!.value;
+    if (!manual && (!clazz || this.formEditorService.isCustomValueType(clazz))) {
+      group.get('clazz')!.setValue(this.formEditorService.defaultValueType);
+    }
+  }
+
+  public onTypeChange(index: number): void {
+    const group = this.groupAt(index);
+    // Switching to a JSON field (expression) defaults the value type to a preset so its dropdown
+    // starts on a valid, selected option.
+    if (group.get('type')!.value === 'expression' && !group.get('clazz')!.value) {
+      group.get('clazz')!.setValue(this.formEditorService.defaultValueType);
+      group.get('clazzManual')!.setValue(false);
+    }
     this.recomputeItems();
   }
 

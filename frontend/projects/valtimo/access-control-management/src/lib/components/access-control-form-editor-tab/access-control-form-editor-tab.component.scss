@@ -103,8 +103,10 @@
     white-space: nowrap;
   }
 
-  // Action tags wrap onto new lines instead of being truncated, so every action stays readable.
-  &__item-tags {
+  // Status tags (conditions / context) sit on their own line between the name and actions,
+  // flagging rules that carry extra configuration.
+  &__item-status {
+    align-items: center;
     display: flex;
     flex-wrap: wrap;
     gap: 0.25rem;
@@ -113,6 +115,28 @@
       margin: 0;
       max-width: none;
     }
+  }
+
+  // Action tags wrap onto new lines instead of being truncated, so every action stays readable.
+  &__item-tags {
+    align-items: center;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.25rem;
+
+    ::ng-deep .cds--tag {
+      margin: 0;
+      max-width: none;
+    }
+  }
+
+  // A small "carbon text" group label ("Actions", "Includes") preceding each row of tags, echoing
+  // the labels used in the detail preview.
+  &__item-label {
+    color: var(--cds-text-secondary, #525252);
+    font-size: 0.75rem;
+    font-weight: 600;
+    padding-right: 0.25rem;
   }
 
   &__panel {

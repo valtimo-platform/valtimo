@@ -53,8 +53,31 @@
               }
             </span>
 
+            @if (hasConditions(item.control) || hasContext(item.control)) {
+              <span class="form-editor__item-status">
+                <span class="form-editor__item-label">{{
+                  'accessControl.editor.preview.includes' | translate
+                }}</span>
+
+                @if (hasConditions(item.control)) {
+                  <cds-tag size="sm" type="high-contrast">{{
+                    'accessControl.editor.hasConditions' | translate
+                  }}</cds-tag>
+                }
+                @if (hasContext(item.control)) {
+                  <cds-tag size="sm" type="high-contrast">{{
+                    'accessControl.editor.hasContext' | translate
+                  }}</cds-tag>
+                }
+              </span>
+            }
+
             @if (actionsOf(item.control).length) {
               <span class="form-editor__item-tags">
+                <span class="form-editor__item-label">{{
+                  'accessControl.editor.preview.actions' | translate
+                }}</span>
+
                 @for (action of actionsOf(item.control); track action) {
                   <cds-tag size="sm" type="outline">{{ action | actionLabel }}</cds-tag>
                 }

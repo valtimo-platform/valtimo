@@ -36,6 +36,21 @@ import {
 } from '../models';
 import {textToValue, valueToText} from '../utils';
 
+// Common Java value types offered in the "Value type" dropdown for JSON-field (expression)
+// conditions. Users can still enter any other fully-qualified type manually; String is the default.
+const VALUE_TYPE_OPTIONS = [
+  'java.lang.String',
+  'java.lang.Boolean',
+  'java.lang.Integer',
+  'java.lang.Long',
+  'java.lang.Double',
+  'java.math.BigDecimal',
+  'java.util.Collection',
+  'java.time.LocalDate',
+  'java.time.LocalDateTime',
+];
+const DEFAULT_VALUE_TYPE = 'java.lang.String';
+
 @Injectable()
 export class AccessControlFormEditorService {
   private _resources: PbacResourceDto[] = [];
@@ -104,7 +119,10 @@ export class AccessControlFormEditorService {
         operator: this.fb.control<ConditionOperator>(this.conditionOperator(condition)),
         value: this.fb.control(valueToText(this.conditionValue(condition))),
         path: this.fb.control(condition && condition.type === 'expression' ? condition.path : ''),
-        clazz: this.fb.control(condition && condition.type === 'expression' ? condition.clazz : ''),
+        clazz: this.fb.control(this.conditionClazz(condition)),
+        // Whether the value type is entered manually (a custom class) rather than picked from the
+        // preset dropdown. UI-only; not serialized.
+        clazzManual: this.fb.control(this.isCustomValueType(this.conditionClazz(condition))),
         resourceType: this.fb.control(
           condition && condition.type === 'container' ? condition.resourceType : ''
         ),
@@ -179,10 +197,14 @@ export class AccessControlFormEditorService {
   // value written to the permission JSON). Actions, operators and condition types instead use
   // natural-language labels (actions fall back to the technical key when untranslated).
   public resourceTypeItems(include?: string | string[] | null): SelectItem[] {
-    const items = this._resources.map(resource => ({
-      id: resource.resourceType,
-      text: resource.resourceType,
-    }));
+    // Shown as "ShortName (fully.qualified.Name)" — the readable short name up front, with the exact
+    // technical type it maps to in parentheses. The stored value (id) stays the fully-qualified name.
+    const items = this._resources.map(resource => {
+      const shortName =
+        resource.shortName ||
+        resource.resourceType.substring(resource.resourceType.lastIndexOf('.') + 1);
+      return {id: resource.resourceType, text: `${shortName} (${resource.resourceType})`};
+    });
     return this.sortByText(this.withIncluded(items, include));
   }
 
@@ -239,9 +261,11 @@ export class AccessControlFormEditorService {
     include?: string | string[] | null
   ): SelectItem[] {
     const targets = this._resourceByType[resourceType]?.containerTargets ?? [];
+    // Shown as "ShortName (fully.qualified.Name)", like the resource-type dropdown. The stored value
+    // (id) stays the fully-qualified name.
     const items = targets.map(target => ({
       id: target,
-      text: target,
+      text: `${target.substring(target.lastIndexOf('.') + 1)} (${target})`,
     }));
     return this.sortByText(this.withIncluded(items, include));
   }
@@ -253,6 +277,25 @@ export class AccessControlFormEditorService {
       id: key,
       translationKey: OPERATOR_LABEL[key],
     }));
+  }
+
+  // Preset value types for JSON-field (expression) conditions, shown as "ShortName (fully.qualified
+  // .Name)". Any current custom value is kept selectable via `include`.
+  public valueTypeItems(include?: string | string[] | null): SelectItem[] {
+    const items = VALUE_TYPE_OPTIONS.map(fqn => ({
+      id: fqn,
+      text: `${fqn.substring(fqn.lastIndexOf('.') + 1)} (${fqn})`,
+    }));
+    return this.withIncluded(items, include);
+  }
+
+  public get defaultValueType(): string {
+    return DEFAULT_VALUE_TYPE;
+  }
+
+  // A value type is "custom" (i.e. entered manually) when it is set but not one of the presets.
+  public isCustomValueType(clazz: string): boolean {
+    return !!clazz && !VALUE_TYPE_OPTIONS.includes(clazz);
   }
 
   // ----- Helpers -----
@@ -285,6 +328,15 @@ export class AccessControlFormEditorService {
     // the literal "null". The value field is required and may not be left empty — to express "no
     // value" the user types null explicitly.
     return null;
+  }
+
+  private conditionClazz(condition?: PermissionCondition): string {
+    // Expression conditions carry a value type; default it to the preset so the dropdown starts on a
+    // valid selection. Other condition types don't use it.
+    if (condition && condition.type === 'expression') {
+      return condition.clazz || DEFAULT_VALUE_TYPE;
+    }
+    return '';
   }
 
   private withIncluded(items: SelectItem[], include?: string | string[] | null): SelectItem[] {
