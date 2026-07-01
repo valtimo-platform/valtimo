@@ -140,7 +140,14 @@ class DocumentWidgetDataSource(
         val expression = when (pathPrefix) {
             CASE_PREFIX -> {
                 var expr = root as Path<*>
-                path.substringAfter(CASE_PREFIX).split('.').forEach {
+                val pathPostfix = when (val postfix = path.substringAfter(CASE_PREFIX)) {
+                    "internalStatus" -> "internalStatus.id.key"
+                    "id" -> "id.id"
+                    "definitionId.key" -> "documentDefinitionId.blueprintId.blueprintKey"
+                    "definitionId.versionTag" -> "documentDefinitionId.blueprintId.blueprintVersionTag"
+                    else -> postfix
+                }
+                pathPostfix.split('.').forEach {
                     expr = expr.get<Any>(it)
                 }
                 expr.`as`(valueClass)
