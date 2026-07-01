@@ -26,6 +26,7 @@ import {
 } from '@angular/forms';
 import {SelectItem} from '@valtimo/components';
 import {PbacRegistryDto, PbacResourceDto} from '@valtimo/shared';
+import {NO_CONTEXT_RESOURCE_TYPE, OPERATOR_LABEL} from '../constants';
 import {
   ConditionOperator,
   ConditionType,
@@ -73,21 +74,23 @@ export class AccessControlFormEditorService {
     const conditions = permission?.conditions ?? [];
     const contextConditions = permission?.contextConditions ?? [];
 
-    return this.fb.group(
-      {
-        resourceType: this.fb.control(permission?.resourceType ?? '', Validators.required),
-        actions: this.fb.control(this.normalizeActions(permission), minSelectedArrayValidator(1)),
-        conditions: this.fb.array(
-          conditions.map(condition => this.createConditionGroup(condition))
-        ),
-        hasContext: this.fb.control(!!permission?.contextResourceType),
-        contextResourceType: this.fb.control(permission?.contextResourceType ?? null),
-        contextConditions: this.fb.array(
-          contextConditions.map(condition => this.createConditionGroup(condition))
-        ),
-      },
-      {validators: contextResourceTypeValidator}
-    );
+    return this.fb.group({
+      resourceType: this.fb.control(permission?.resourceType ?? '', Validators.required),
+      actions: this.fb.control(this.normalizeActions(permission), minSelectedArrayValidator(1)),
+      conditions: this.fb.array(conditions.map(condition => this.createConditionGroup(condition))),
+      // Context is opt-in via a toggle. `hasContext` off means "no context at all" — nothing about
+      // context is serialized. On means the permission is scoped to the selected context resource,
+      // which may be a real related resource or the "No context" marker (itself a deliberate,
+      // distinct choice, as opposed to leaving context off entirely). The resource defaults to the
+      // marker so the dropdown always has a valid, non-empty value while the toggle is on.
+      hasContext: this.fb.control(!!permission?.contextResourceType),
+      contextResourceType: this.fb.control(
+        permission?.contextResourceType || NO_CONTEXT_RESOURCE_TYPE
+      ),
+      contextConditions: this.fb.array(
+        contextConditions.map(condition => this.createConditionGroup(condition))
+      ),
+    });
   }
 
   public createConditionGroup(condition?: PermissionCondition, type?: ConditionType): FormGroup {
@@ -114,23 +117,27 @@ export class AccessControlFormEditorService {
   // ----- Serialization back to the PUT contract -----
 
   public serialize(permissionsArray: FormArray): UpdateRolePermission[] {
-    return permissionsArray.controls.map(control => {
-      const group = control as FormGroup;
-      const result: UpdateRolePermission = {
-        resourceType: group.get('resourceType')!.value,
-        actions: group.get('actions')!.value ?? [],
-        conditions: this.serializeConditions(group.get('conditions') as FormArray),
-      };
+    return permissionsArray.controls.map(control => this.serializePermission(control as FormGroup));
+  }
 
-      if (group.get('hasContext')!.value && group.get('contextResourceType')!.value) {
-        result.contextResourceType = group.get('contextResourceType')!.value;
-        result.contextConditions = this.serializeConditions(
-          group.get('contextConditions') as FormArray
-        );
-      }
+  public serializePermission(group: FormGroup): UpdateRolePermission {
+    const result: UpdateRolePermission = {
+      resourceType: group.get('resourceType')!.value,
+      actions: group.get('actions')!.value ?? [],
+      conditions: this.serializeConditions(group.get('conditions') as FormArray),
+    };
 
-      return result;
-    });
+    // Context is only written when the toggle is on. The selected resource may be a real related
+    // resource or the "No context" marker (a distinct, deliberate choice); either way it is
+    // persisted. Toggling context off drops the context fields entirely.
+    if (group.get('hasContext')!.value) {
+      result.contextResourceType = group.get('contextResourceType')!.value;
+      result.contextConditions = this.serializeConditions(
+        group.get('contextConditions') as FormArray
+      );
+    }
+
+    return result;
   }
 
   private serializeConditions(conditionsArray: FormArray): PermissionCondition[] {
@@ -168,9 +175,9 @@ export class AccessControlFormEditorService {
 
   // ----- Registry-driven select options -----
 
-  // Resource types, actions, operators, container targets and condition types are all shown by
-  // their raw technical name (the exact value written to the permission JSON), not a translated
-  // display name, so the editor reflects precisely what is being configured.
+  // Resource types, fields and container targets are shown by their raw technical name (the exact
+  // value written to the permission JSON). Actions, operators and condition types instead use
+  // natural-language labels (actions fall back to the technical key when untranslated).
   public resourceTypeItems(include?: string | string[] | null): SelectItem[] {
     const items = this._resources.map(resource => ({
       id: resource.resourceType,
@@ -179,19 +186,27 @@ export class AccessControlFormEditorService {
     return this.sortByText(this.withIncluded(items, include));
   }
 
-  // The context options are the resource types reachable from the permission's resource type via an
-  // entity mapper (the same set as the container-condition targets). The "scope to a context"
-  // toggle already represents the no-context case, so no sentinel option is listed here; when there
-  // are no reachable targets the toggle is disabled instead (see hasContextOptions).
+  // The context options are "No context" plus the resource types reachable from the permission's
+  // resource type via an entity mapper (the same set as the container-condition targets). "No
+  // context" maps to the backend NoContext marker.
   public contextResourceTypeItems(
     resourceType: string,
     include?: string | string[] | null
   ): SelectItem[] {
-    return this.containerTargetItems(resourceType, include);
-  }
-
-  public hasContextOptions(resourceType: string): boolean {
-    return (this._resourceByType[resourceType]?.containerTargets?.length ?? 0) > 0;
+    const noContext: SelectItem = {
+      id: NO_CONTEXT_RESOURCE_TYPE,
+      translationKey: 'accessControl.overview.noContext',
+    };
+    // "No context" is added explicitly here, so the NoContext marker must never also be
+    // force-included among the container targets: doing so appends a second item with the same id
+    // (the marker is not a real target), which renders as a duplicate row and two selected
+    // checkmarks. Only real resources are kept visible via `include`.
+    const targetInclude = Array.isArray(include)
+      ? include.filter(value => value !== NO_CONTEXT_RESOURCE_TYPE)
+      : include === NO_CONTEXT_RESOURCE_TYPE
+        ? null
+        : include;
+    return [noContext, ...this.containerTargetItems(resourceType, targetInclude)];
   }
 
   public actionItems(resourceType: string, include?: string | string[] | null): SelectItem[] {
@@ -206,8 +221,13 @@ export class AccessControlFormEditorService {
   public fieldItems(resourceType: string, include?: string | string[] | null): SelectItem[] {
     const resource = this._resourceByType[resourceType];
     const names = new Set<string>();
-    for (const field of resource?.fields ?? []) names.add(field.name);
-    for (const alias of resource?.fieldAliases ?? []) names.add(alias.alias);
+    // Only string names are kept; a malformed registry entry must not render as "[object Object]".
+    for (const field of resource?.fields ?? []) {
+      if (typeof field?.name === 'string' && field.name) names.add(field.name);
+    }
+    for (const alias of resource?.fieldAliases ?? []) {
+      if (typeof alias?.alias === 'string' && alias.alias) names.add(alias.alias);
+    }
     // Fields are shown by their technical name (e.g. "isFinal", "createdBy") since that is the
     // exact value used in the permission condition.
     const items = Array.from(names).map(name => ({id: name, text: name}));
@@ -227,9 +247,11 @@ export class AccessControlFormEditorService {
   }
 
   public operatorItems(): SelectItem[] {
+    // Operators are shown in natural language (e.g. "equals", "is greater than") via their
+    // translation key; the stored value stays the technical symbol (the item id).
     return this._operatorKeys.map(key => ({
       id: key,
-      text: key,
+      translationKey: OPERATOR_LABEL[key],
     }));
   }
 
@@ -266,8 +288,11 @@ export class AccessControlFormEditorService {
   }
 
   private withIncluded(items: SelectItem[], include?: string | string[] | null): SelectItem[] {
+    // Only genuine, non-empty strings are added. A truthy non-string (e.g. an object that somehow
+    // reached a field/value control) would otherwise be pushed as {id, text} and render as
+    // "[object Object]" — guard against that here rather than trusting the caller.
     const values = (Array.isArray(include) ? include : [include]).filter(
-      (value): value is string => !!value
+      (value): value is string => typeof value === 'string' && !!value
     );
     const result = [...items];
     for (const value of values) {
@@ -286,12 +311,6 @@ function minSelectedArrayValidator(min: number): ValidatorFn {
     const value = control.value;
     return Array.isArray(value) && value.length >= min ? null : {minSelected: {min}};
   };
-}
-
-function contextResourceTypeValidator(group: AbstractControl): ValidationErrors | null {
-  const hasContext = group.get('hasContext')?.value;
-  const contextResourceType = group.get('contextResourceType')?.value;
-  return hasContext && !contextResourceType ? {contextResourceTypeRequired: true} : null;
 }
 
 function conditionValidator(group: AbstractControl): ValidationErrors | null {
