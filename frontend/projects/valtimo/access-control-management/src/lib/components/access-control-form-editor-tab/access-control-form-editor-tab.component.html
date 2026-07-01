@@ -1,0 +1,94 @@
+<!--
+  ~ Copyright 2015-2026 Ritense BV, the Netherlands.
+  ~
+  ~ Licensed under EUPL, Version 1.2 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~ https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" basis,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<!-- fitPage sizes this container to the viewport so the sidebar and panel each scroll on their own. -->
+<div *ngIf="ready && permissionsArray as permissions" class="form-editor" fitPage>
+  <aside class="form-editor__sidebar">
+    <div class="form-editor__sidebar-header">
+      <span class="form-editor__sidebar-title">{{
+        'accessControl.editor.permissions' | translate
+      }}</span>
+
+      <button
+        cdsButton="ghost"
+        size="sm"
+        [attr.data-test-id]="testIds.addPermissionButton"
+        [disabled]="!!disabled"
+        [iconOnly]="true"
+        [title]="'accessControl.editor.addPermission' | translate"
+        (click)="addPermission()"
+      >
+        <svg cdsIcon="add" size="16"></svg>
+      </button>
+    </div>
+
+    <ul class="form-editor__list" #permissionList>
+      @for (item of orderedPermissions(); track item.control) {
+        <li class="form-editor__list-item">
+          <button
+            class="form-editor__item"
+            type="button"
+            [attr.data-test-id]="testIds.permissionListItem"
+            [class.form-editor__item--selected]="$selectedIndex() === item.index"
+            (click)="selectPermission(item.index)"
+          >
+            <span class="form-editor__item-name" [title]="shortName(item.control)">
+              @if (shortName(item.control)) {
+                {{ shortName(item.control) }}
+              } @else {
+                {{ 'accessControl.editor.newPermission' | translate }}
+              }
+            </span>
+
+            @if (actionsOf(item.control).length) {
+              <span class="form-editor__item-tags">
+                @for (action of actionsOf(item.control); track action) {
+                  <cds-tag size="sm" type="outline">{{ action | actionLabel }}</cds-tag>
+                }
+              </span>
+            }
+          </button>
+        </li>
+      }
+    </ul>
+  </aside>
+
+  <section class="form-editor__panel">
+    @for (group of selectedControls(); track group) {
+      <valtimo-permission-form
+        [disabled]="!!disabled"
+        [group]="$any(group)"
+        [index]="$selectedIndex() ?? 0"
+        (removeEvent)="removePermission($selectedIndex() ?? 0)"
+      ></valtimo-permission-form>
+    } @empty {
+      <div class="form-editor__empty">
+        <h4 class="form-editor__empty-title">
+          {{ 'accessControl.editor.empty.title' | translate }}
+        </h4>
+        <p class="form-editor__empty-message">
+          {{ 'accessControl.editor.empty.message' | translate }}
+        </p>
+
+        <button cdsButton="primary" size="sm" [disabled]="!!disabled" (click)="addPermission()">
+          {{ 'accessControl.editor.addPermission' | translate }}
+
+          <svg class="cds--btn__icon" cdsIcon="add" size="16"></svg>
+        </button>
+      </div>
+    }
+  </section>
+</div>

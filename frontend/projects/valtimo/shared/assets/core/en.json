@@ -2561,6 +2561,7 @@
       },
       "tabs": {
         "summary": "Summary",
+        "editor": "Editor",
         "jsonEditor": "JSON editor"
       }
     },
@@ -2596,13 +2597,70 @@
       "assignable": "be assigned to",
       "claim": "claim",
       "complete": "complete",
-      "export": "export"
+      "export": "export",
+      "inspect": "inspect",
+      "inspect_modify": "inspect and modify"
     },
     "filter": {
       "resourceType": "Resource type",
       "action": "Action",
       "allResourceTypes": "All resource types",
       "allActions": "All actions"
+    },
+    "editor": {
+      "permission": "Permission",
+      "permissions": "Permissions",
+      "newPermission": "New permission",
+      "addPermission": "Add permission",
+      "removePermission": "Remove permission",
+      "resourceAndActions": "Resource & actions",
+      "resourceType": "Resource type",
+      "resourceTypePlaceholder": "Select a resource type",
+      "actions": "Allowed actions",
+      "actionsPlaceholder": "Select one or more actions",
+      "noActions": "No actions are available for this resource type.",
+      "conditions": "Conditions",
+      "conditionsHint": "Access is only granted when all conditions are met. Leave empty to always grant access.",
+      "conditionType": "Condition type",
+      "conditionTypes": {
+        "field": "Field",
+        "expression": "Expression",
+        "container": "Related resource"
+      },
+      "field": "Field",
+      "fieldPlaceholder": "Select a field",
+      "operator": "Operator",
+      "value": "Value",
+      "valuePlaceholder": "e.g. null, true, 42, ${currentUserId} or [\"OPEN\", \"CLOSED\"]",
+      "path": "JSON path",
+      "pathPlaceholder": "e.g. /root/status",
+      "clazz": "Value type (class)",
+      "clazzPlaceholder": "e.g. java.lang.String",
+      "relatedResource": "Related resource",
+      "relatedResourcePlaceholder": "Select a related resource",
+      "addCondition": "Add condition",
+      "contextSection": "Context",
+      "context": "Scope to a context resource",
+      "contextHint": "Only grant this permission within the context of another resource.",
+      "contextUnavailable": "This resource type cannot be scoped to a context resource.",
+      "contextResourceType": "Context resource",
+      "contextResourceTypePlaceholder": "Select a context resource",
+      "empty": {
+        "title": "No permissions yet",
+        "message": "Add a permission to start granting this role access to resources."
+      },
+      "tooltips": {
+        "resourceType": "The type of resource this permission grants access to. For example: a case definition, document or task.",
+        "actions": "What this role is allowed to do with the resource. For example: view, modify or delete.",
+        "conditionType": "Field compares a property of the resource. Expression evaluates a value at a JSON path. Related resource checks a linked resource (e.g. the document of a case).",
+        "field": "A property of the resource to check. For example: name, createdBy or active.",
+        "operator": "How the field is compared to the value. For example: equals, is one of, or contains.",
+        "value": "The value to compare against — e.g. text like OPEN, a number like 42, true/false, or a placeholder like ${currentUserId}. For the 'is one of' and 'contains' operators, enter a JSON array such as [\"OPEN\", \"CLOSED\"]. Type null for no value — the field may not be left empty.",
+        "path": "A JSON path into the resource content. For example: /root/status or /aanvrager/bsn.",
+        "clazz": "The fully-qualified Java type of the value. For example: java.lang.String or java.lang.Boolean.",
+        "relatedResource": "The linked resource to evaluate the nested conditions against. For example: the document attached to a case.",
+        "contextResourceType": "Only grant this permission when the resource is accessed within another resource. For example: documents within a specific case definition."
+      }
     },
     "overview": {
       "canDo": "Can",

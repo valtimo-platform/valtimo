@@ -1,0 +1,193 @@
+<!--
+  ~ Copyright 2015-2026 Ritense BV, the Netherlands.
+  ~
+  ~ Licensed under EUPL, Version 1.2 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~ https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" basis,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<div class="condition-tree" [class.condition-tree--nested]="depth > 0">
+  @for (control of conditions.controls; track control; let i = $index) {
+    <div class="condition-tree__row" [cdsLayer]="rowLayerLevel" [formGroup]="asFormGroup(control)">
+      <div class="condition-tree__content">
+        <v-select
+          class="condition-tree__type"
+          formControlName="type"
+          [cdsLayer]="inputLayerLevel"
+          [clearable]="false"
+          [dataTestId]="testIds.conditionTypeSelect"
+          [defaultSelectionId]="typeOf(i)"
+          [dropUp]="false"
+          [items]="typeItems"
+          [tooltip]="'accessControl.editor.tooltips.conditionType' | translate"
+          titleTranslationKey="accessControl.editor.conditionType"
+          (selectedChange)="onTypeChange()"
+        ></v-select>
+
+        @switch (typeOf(i)) {
+          @case ('container') {
+            <v-select
+              formControlName="resourceType"
+              [cdsLayer]="inputLayerLevel"
+              [dataTestId]="testIds.conditionFieldSelect"
+              [defaultSelectionId]="containerResourceTypeAt(i)"
+              [dropUp]="false"
+              [invalid]="
+                !!asFormGroup(control).errors?.['resourceTypeRequired'] &&
+                !!asFormGroup(control).get('resourceType')?.touched
+              "
+              [items]="containerTargetItems"
+              [placeholder]="'accessControl.editor.relatedResourcePlaceholder' | translate"
+              [required]="true"
+              [tooltip]="'accessControl.editor.tooltips.relatedResource' | translate"
+              titleTranslationKey="accessControl.editor.relatedResource"
+            ></v-select>
+
+            <div class="condition-tree__nested">
+              <valtimo-condition-tree
+                [conditions]="nestedConditions(i)"
+                [depth]="depth + 1"
+                [disabled]="disabled"
+                [resourceType]="containerResourceType(i)"
+              ></valtimo-condition-tree>
+            </div>
+          }
+
+          @default {
+            <div class="condition-tree__fields">
+              <v-select
+                class="condition-tree__field"
+                formControlName="field"
+                [cdsLayer]="inputLayerLevel"
+                [dataTestId]="testIds.conditionFieldSelect"
+                [defaultSelectionId]="fieldValueAt(i)"
+                [dropUp]="false"
+                [invalid]="
+                  !!asFormGroup(control).errors?.['fieldRequired'] &&
+                  !!asFormGroup(control).get('field')?.touched
+                "
+                [items]="fieldItems"
+                [placeholder]="'accessControl.editor.fieldPlaceholder' | translate"
+                [required]="true"
+                [tooltip]="'accessControl.editor.tooltips.field' | translate"
+                titleTranslationKey="accessControl.editor.field"
+              ></v-select>
+
+              <v-select
+                class="condition-tree__operator"
+                formControlName="operator"
+                [cdsLayer]="inputLayerLevel"
+                [clearable]="false"
+                [dataTestId]="testIds.conditionOperatorSelect"
+                [defaultSelectionId]="operatorValueAt(i)"
+                [dropUp]="false"
+                [items]="operatorItems"
+                [tooltip]="'accessControl.editor.tooltips.operator' | translate"
+                titleTranslationKey="accessControl.editor.operator"
+              ></v-select>
+
+              <div class="condition-tree__value cds--form-item" [cdsLayer]="inputLayerLevel">
+                <label class="cds--label label-with-tooltip">
+                  {{ 'accessControl.editor.value' | translate }} ({{
+                    'interface.required' | translate
+                  }})
+                  <v-tooltip-icon
+                    [tooltip]="'accessControl.editor.tooltips.value' | translate"
+                  ></v-tooltip-icon>
+                </label>
+                <input
+                  cdsText
+                  [attr.data-test-id]="testIds.conditionValueInput"
+                  [class.cds--text-input--invalid]="
+                    !!asFormGroup(control).errors?.['valueRequired'] &&
+                    !!asFormGroup(control).get('value')?.touched
+                  "
+                  [placeholder]="'accessControl.editor.valuePlaceholder' | translate"
+                  formControlName="value"
+                />
+              </div>
+            </div>
+
+            @if (typeOf(i) === 'expression') {
+              <div class="condition-tree__fields">
+                <div class="condition-tree__value cds--form-item" [cdsLayer]="inputLayerLevel">
+                  <label class="cds--label label-with-tooltip">
+                    {{ 'accessControl.editor.path' | translate }} ({{
+                      'interface.required' | translate
+                    }})
+                    <v-tooltip-icon
+                      [tooltip]="'accessControl.editor.tooltips.path' | translate"
+                    ></v-tooltip-icon>
+                  </label>
+                  <input
+                    cdsText
+                    [attr.data-test-id]="testIds.conditionPathInput"
+                    [class.cds--text-input--invalid]="
+                      !!asFormGroup(control).errors?.['pathRequired'] &&
+                      !!asFormGroup(control).get('path')?.touched
+                    "
+                    [placeholder]="'accessControl.editor.pathPlaceholder' | translate"
+                    formControlName="path"
+                  />
+                </div>
+
+                <div class="condition-tree__value cds--form-item" [cdsLayer]="inputLayerLevel">
+                  <label class="cds--label label-with-tooltip">
+                    {{ 'accessControl.editor.clazz' | translate }} ({{
+                      'interface.required' | translate
+                    }})
+                    <v-tooltip-icon
+                      [tooltip]="'accessControl.editor.tooltips.clazz' | translate"
+                    ></v-tooltip-icon>
+                  </label>
+                  <input
+                    cdsText
+                    [attr.data-test-id]="testIds.conditionClazzInput"
+                    [class.cds--text-input--invalid]="
+                      !!asFormGroup(control).errors?.['clazzRequired'] &&
+                      !!asFormGroup(control).get('clazz')?.touched
+                    "
+                    [placeholder]="'accessControl.editor.clazzPlaceholder' | translate"
+                    formControlName="clazz"
+                  />
+                </div>
+              </div>
+            }
+          }
+        }
+      </div>
+
+      <button
+        class="condition-tree__remove"
+        cdsButton="ghost"
+        [attr.data-test-id]="testIds.removeConditionButton"
+        [disabled]="disabled"
+        [iconOnly]="true"
+        (click)="removeCondition(i)"
+      >
+        <svg cdsIcon="trash-can" size="16"></svg>
+      </button>
+    </div>
+  }
+
+  <button
+    class="condition-tree__add"
+    cdsButton="ghost"
+    size="sm"
+    [attr.data-test-id]="testIds.addConditionButton"
+    [disabled]="disabled"
+    (click)="addCondition()"
+  >
+    {{ 'accessControl.editor.addCondition' | translate }}
+
+    <svg class="cds--btn__icon" cdsIcon="add" size="16"></svg>
+  </button>
+</div>

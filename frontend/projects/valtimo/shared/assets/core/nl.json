@@ -2594,6 +2594,7 @@
       },
       "tabs": {
         "summary": "Samenvatting",
+        "editor": "Editor",
         "jsonEditor": "JSON-editor"
       }
     },
@@ -2629,13 +2630,70 @@
       "assignable": "toewijsbaar",
       "claim": "claimen",
       "complete": "afronden",
-      "export": "exporteren"
+      "export": "exporteren",
+      "inspect": "inspecteren",
+      "inspect_modify": "inspecteren en wijzigen"
     },
     "filter": {
       "resourceType": "Resource-type",
       "action": "Actie",
       "allResourceTypes": "Alle resource-types",
       "allActions": "Alle acties"
+    },
+    "editor": {
+      "permission": "Permissie",
+      "permissions": "Permissies",
+      "newPermission": "Nieuwe permissie",
+      "addPermission": "Permissie toevoegen",
+      "removePermission": "Permissie verwijderen",
+      "resourceAndActions": "Resource & acties",
+      "resourceType": "Resource-type",
+      "resourceTypePlaceholder": "Selecteer een resource-type",
+      "actions": "Toegestane acties",
+      "actionsPlaceholder": "Selecteer één of meer acties",
+      "noActions": "Er zijn geen acties beschikbaar voor dit resource-type.",
+      "conditions": "Voorwaarden",
+      "conditionsHint": "Toegang wordt alleen verleend wanneer aan alle voorwaarden wordt voldaan. Laat leeg om altijd toegang te verlenen.",
+      "conditionType": "Type voorwaarde",
+      "conditionTypes": {
+        "field": "Veld",
+        "expression": "Expressie",
+        "container": "Gerelateerde resource"
+      },
+      "field": "Veld",
+      "fieldPlaceholder": "Selecteer een veld",
+      "operator": "Operator",
+      "value": "Waarde",
+      "valuePlaceholder": "bijv. null, true, 42, ${currentUserId} of [\"OPEN\", \"CLOSED\"]",
+      "path": "JSON-pad",
+      "pathPlaceholder": "bijv. /root/status",
+      "clazz": "Waardetype (class)",
+      "clazzPlaceholder": "bijv. java.lang.String",
+      "relatedResource": "Gerelateerde resource",
+      "relatedResourcePlaceholder": "Selecteer een gerelateerde resource",
+      "addCondition": "Voorwaarde toevoegen",
+      "contextSection": "Context",
+      "context": "Beperk tot een context-resource",
+      "contextHint": "Verleen deze permissie alleen binnen de context van een andere resource.",
+      "contextUnavailable": "Dit resource-type kan niet binnen een context worden afgebakend.",
+      "contextResourceType": "Context-resource",
+      "contextResourceTypePlaceholder": "Selecteer een context-resource",
+      "empty": {
+        "title": "Nog geen permissies",
+        "message": "Voeg een permissie toe om deze rol toegang tot resources te geven."
+      },
+      "tooltips": {
+        "resourceType": "Het type resource waarvoor deze permissie toegang geeft. Bijvoorbeeld: een zaakdefinitie, document of taak.",
+        "actions": "Wat deze rol met de resource mag doen. Bijvoorbeeld: bekijken, wijzigen of verwijderen.",
+        "conditionType": "Veld vergelijkt een eigenschap van de resource. Expressie evalueert een waarde op een JSON-pad. Gerelateerde resource controleert een gekoppelde resource (bijv. het document van een zaak).",
+        "field": "Een eigenschap van de resource om te controleren. Bijvoorbeeld: name, createdBy of active.",
+        "operator": "Hoe het veld met de waarde wordt vergeleken. Bijvoorbeeld: is gelijk aan, is een van, of bevat.",
+        "value": "De waarde om mee te vergelijken — bijv. tekst zoals OPEN, een getal zoals 42, true/false, of een placeholder zoals ${currentUserId}. Voor de operatoren 'is een van' en 'bevat' voer je een JSON-array in, zoals [\"OPEN\", \"CLOSED\"]. Typ null voor geen waarde — het veld mag niet leeg zijn.",
+        "path": "Een JSON-pad in de inhoud van de resource. Bijvoorbeeld: /root/status of /aanvrager/bsn.",
+        "clazz": "Het volledige Java-type van de waarde. Bijvoorbeeld: java.lang.String of java.lang.Boolean.",
+        "relatedResource": "De gekoppelde resource waartegen de geneste voorwaarden worden geëvalueerd. Bijvoorbeeld: het document dat aan een zaak hangt.",
+        "contextResourceType": "Verleen deze permissie alleen wanneer de resource binnen een andere resource wordt benaderd. Bijvoorbeeld: documenten binnen een specifieke zaakdefinitie."
+      }
     },
     "overview": {
       "canDo": "Kan",

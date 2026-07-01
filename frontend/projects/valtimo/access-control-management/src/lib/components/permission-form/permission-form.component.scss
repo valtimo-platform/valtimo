@@ -1,0 +1,110 @@
+/*
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
+ *
+ * Licensed under EUPL, Version 1.2 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" basis,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+.permission-form {
+  display: flex;
+  flex-direction: column;
+
+  // All form controls span the full width of their container.
+  v-select {
+    display: block;
+    width: 100%;
+  }
+
+  &__loading {
+    align-items: center;
+    display: flex;
+    justify-content: center;
+    padding: 1.5rem 0;
+  }
+
+  &__body {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+
+    // Hidden (but kept in the DOM) until the comboboxes have prefilled, so they can initialize.
+    &--hidden {
+      display: none;
+    }
+  }
+
+  &__accordion {
+    width: 100%;
+  }
+
+  &__row {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  &__actions-field {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  // All available actions are shown as a checkbox grid; the checked ones are the granted actions.
+  &__actions-grid {
+    display: grid;
+    gap: 0.25rem 1rem;
+    grid-template-columns: repeat(auto-fill, minmax(10rem, 1fr));
+
+    // At least one action is required; mark the grid when none are selected.
+    &--invalid {
+      border-left: 2px solid var(--cds-support-error, #da1e28);
+      margin-left: -0.75rem;
+      padding-left: calc(0.75rem - 2px);
+    }
+  }
+
+  .label-with-tooltip {
+    align-items: center;
+    display: inline-flex;
+    gap: 0.25rem;
+  }
+
+  &__section {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  &__hint {
+    color: var(--cds-text-secondary, #525252);
+    font-size: 0.875rem;
+    margin: 0;
+  }
+
+  &__footer {
+    display: flex;
+    justify-content: flex-end;
+    padding-top: 0.25rem;
+  }
+}
+
+// The accordion holds the three editable sections; give its content readable padding and let the
+// first item sit flush against the top of the panel.
+:host ::ng-deep .permission-form__accordion {
+  .cds--accordion__item:first-of-type {
+    border-top: 0;
+  }
+
+  .cds--accordion__content {
+    padding: 1rem 1rem 1.5rem;
+  }
+}
