@@ -53,7 +53,7 @@ import {ConditionTreeComponent} from './components/condition-tree/condition-tree
 import {DeleteRoleModalComponent} from './components/delete-role-modal/delete-role-modal.component';
 import {ExportRoleModalComponent} from './components/export-role-modal/export-role-modal.component';
 import {PermissionFormComponent} from './components/permission-form/permission-form.component';
-import {ActionLabelPipe} from './pipes';
+import {ActionDescriptionPipe, ActionLabelPipe} from './pipes';
 
 @NgModule({
   declarations: [
@@ -97,6 +97,7 @@ import {ActionLabelPipe} from './pipes';
     AccessControlJsonEditorTabComponent,
     AccessControlOverviewTabComponent,
     ActionLabelPipe,
+    ActionDescriptionPipe,
   ],
 })
 export class AccessControlManagementModule {}

@@ -115,10 +115,19 @@ export class SelectComponent implements OnInit, AfterViewInit, OnChanges, OnDest
           ? selected.includes(listItem.id)
           : selected === listItem.id;
 
+        // Only replace the content with the translation when it resolved to an actual (different)
+        // string. When an item's content happens to match a translation namespace, instant()
+        // returns that nested object; using it would render the option as "[object Object]", so we
+        // keep the original content instead.
+        const translated =
+          typeof translation === 'string' && translation !== listItem.content
+            ? translation
+            : listItem.content;
+
         return {
           ...listItem,
           selected: isSelected,
-          content: translation !== listItem.content ? translation : listItem.content,
+          content: translated,
         };
       })
     )

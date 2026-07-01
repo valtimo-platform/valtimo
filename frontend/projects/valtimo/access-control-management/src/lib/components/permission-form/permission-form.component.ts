@@ -29,7 +29,7 @@ import {FormArray, FormControl, FormGroup} from '@angular/forms';
 import {TrashCan16} from '@carbon/icons';
 import {SelectItem} from '@valtimo/components';
 import {IconService} from 'carbon-components-angular';
-import {Subscription} from 'rxjs';
+import {BehaviorSubject, Subscription} from 'rxjs';
 import {ACCESS_CONTROL_EDITOR_TEST_IDS, NO_CONTEXT_RESOURCE_TYPE} from '../../constants';
 import {AccessControlFormEditorService} from '../../services';
 
@@ -61,6 +61,11 @@ export class PermissionFormComponent implements OnInit, AfterViewInit, OnDestroy
     'resourceActions'
   );
 
+  // Controls the "remove permission" confirmation modal. Removal only happens on confirm, and even
+  // then it just drops the permission from the editable list — nothing is persisted until the whole
+  // set of permissions is saved.
+  public readonly showRemoveModal$ = new BehaviorSubject<boolean>(false);
+
   protected readonly testIds = ACCESS_CONTROL_EDITOR_TEST_IDS;
 
   private readonly _subscriptions = new Subscription();
@@ -76,6 +81,14 @@ export class PermissionFormComponent implements OnInit, AfterViewInit, OnDestroy
 
   public get resourceTypeValue(): string {
     return this.group.get('resourceType')!.value;
+  }
+
+  // The short (simple) class name of the resource type, e.g. "CaseDefinition" for
+  // "com.ritense.case_.domain.definition.CaseDefinition". Shown as the preview title, with the full
+  // technical name as a subtitle beneath it.
+  public get resourceShortName(): string {
+    const value = this.resourceTypeValue;
+    return value ? value.substring(value.lastIndexOf('.') + 1) : '';
   }
 
   public get contextResourceTypeValue(): string | null {
@@ -135,6 +148,7 @@ export class PermissionFormComponent implements OnInit, AfterViewInit, OnDestroy
 
   public ngOnDestroy(): void {
     this._subscriptions.unsubscribe();
+    this.showRemoveModal$.complete();
     if (this._revealTimeoutId !== undefined) clearTimeout(this._revealTimeoutId);
   }
 
@@ -162,6 +176,10 @@ export class PermissionFormComponent implements OnInit, AfterViewInit, OnDestroy
     // Only one section is open at a time: opening one collapses the others via the [expanded]
     // bindings; collapsing the open one leaves all sections closed.
     this.$openSection.set(event?.expanded ? section : null);
+  }
+
+  public openRemoveModal(): void {
+    this.showRemoveModal$.next(true);
   }
 
   public onRemove(): void {

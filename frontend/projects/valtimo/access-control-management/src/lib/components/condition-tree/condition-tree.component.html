@@ -29,7 +29,7 @@
           [items]="typeItems"
           [tooltip]="'accessControl.editor.tooltips.conditionType' | translate"
           titleTranslationKey="accessControl.editor.conditionType"
-          (selectedChange)="onTypeChange()"
+          (selectedChange)="onTypeChange(i)"
         ></v-select>
 
         @switch (typeOf(i)) {
@@ -148,16 +148,49 @@
                       [tooltip]="'accessControl.editor.tooltips.clazz' | translate"
                     ></v-tooltip-icon>
                   </label>
-                  <input
-                    cdsText
-                    [attr.data-test-id]="testIds.conditionClazzInput"
-                    [class.cds--text-input--invalid]="
-                      !!asFormGroup(control).errors?.['clazzRequired'] &&
-                      !!asFormGroup(control).get('clazz')?.touched
-                    "
-                    [placeholder]="'accessControl.editor.clazzPlaceholder' | translate"
-                    formControlName="clazz"
-                  />
+
+                  @if (clazzManualAt(i)) {
+                    <input
+                      cdsText
+                      [attr.data-test-id]="testIds.conditionClazzInput"
+                      [class.cds--text-input--invalid]="
+                        !!asFormGroup(control).errors?.['clazzRequired'] &&
+                        !!asFormGroup(control).get('clazz')?.touched
+                      "
+                      [placeholder]="'accessControl.editor.clazzPlaceholder' | translate"
+                      formControlName="clazz"
+                    />
+                  } @else {
+                    <v-select
+                      formControlName="clazz"
+                      [cdsLayer]="inputLayerLevel"
+                      [clearable]="false"
+                      [dataTestId]="testIds.conditionClazzInput"
+                      [defaultSelectionId]="clazzValueAt(i)"
+                      [dropUp]="false"
+                      [invalid]="
+                        !!asFormGroup(control).errors?.['clazzRequired'] &&
+                        !!asFormGroup(control).get('clazz')?.touched
+                      "
+                      [items]="valueTypeItems"
+                    ></v-select>
+                  }
+
+                  <button
+                    class="condition-tree__mode-switch"
+                    cdsButton="ghost"
+                    size="sm"
+                    type="button"
+                    [disabled]="disabled"
+                    (click)="onClazzManualToggle(i, !clazzManualAt(i))"
+                  >
+                    {{
+                      (clazzManualAt(i)
+                        ? 'accessControl.editor.valueTypeFromList'
+                        : 'accessControl.editor.valueTypeManual'
+                      ) | translate
+                    }}
+                  </button>
                 </div>
               </div>
             }

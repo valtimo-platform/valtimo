@@ -66,6 +66,13 @@
     width: 100%;
   }
 
+  // Compact "Enter manually / Choose from list" switch under the value-type field; kept left and not
+  // stretched to the full field width.
+  &__mode-switch {
+    align-self: flex-start;
+    margin-top: 0.25rem;
+  }
+
   &__nested {
     display: flex;
     flex-direction: column;
