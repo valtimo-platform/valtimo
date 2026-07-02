@@ -2647,7 +2647,6 @@
       "resourceType": "Resource type",
       "resourceTypePlaceholder": "Select a resource type",
       "actions": "Allowed actions",
-      "actionsPlaceholder": "Select one or more actions",
       "noActions": "No actions are available for this resource type.",
       "conditions": "Conditions",
       "conditionsHint": "Access is only granted when all conditions are met. Leave empty to always grant access.",
@@ -2677,7 +2676,6 @@
       "contextModeNoContext": "Only without context",
       "contextModeSpecific": "Specific context",
       "noContextHint": "This permission only applies when the resource is accessed on its own — not within any related resource.",
-      "contextUnavailable": "This resource type cannot be scoped to a context resource.",
       "contextResourceType": "Context resource",
       "contextResourceTypePlaceholder": "Select a context resource",
       "empty": {

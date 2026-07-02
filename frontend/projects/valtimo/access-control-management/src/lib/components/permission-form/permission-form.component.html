@@ -84,16 +84,17 @@
 
       <!-- Editor-level note: applies to the role selected on this page, and only system-supported
            options can be selected. -->
-      <p class="permission-form__info-note">
-        <svg class="permission-form__info-icon" cdsIcon="information" size="16"></svg>
-
-        <span>{{
-          resourceShortName
-            ? ('accessControl.editor.permissionsHint'
-              | translate: {resource: resourceShortName, role: roleKey})
-            : ('accessControl.editor.permissionsHintNew' | translate: {role: roleKey})
-        }}</span>
-      </p>
+      <ng-container
+        *ngTemplateOutlet="
+          infoNote;
+          context: {
+            $implicit: resourceShortName
+              ? ('accessControl.editor.permissionsHint'
+                | translate: {resource: resourceShortName, role: roleKey})
+              : ('accessControl.editor.permissionsHintNew' | translate: {role: roleKey}),
+          }
+        "
+      ></ng-container>
     </div>
 
     <cds-accordion class="permission-form__accordion">
@@ -103,11 +104,12 @@
         (selected)="onSectionToggle('resourceActions', $event)"
       >
         <div class="permission-form__section">
-          <p class="permission-form__info-note">
-            <svg class="permission-form__info-icon" cdsIcon="information" size="16"></svg>
-
-            <span>{{ 'accessControl.editor.resourceActionsHint' | translate }}</span>
-          </p>
+          <ng-container
+            *ngTemplateOutlet="
+              infoNote;
+              context: {$implicit: 'accessControl.editor.resourceActionsHint' | translate}
+            "
+          ></ng-container>
 
           <div class="permission-form__row">
             <v-select
@@ -176,11 +178,12 @@
         (selected)="onSectionToggle('conditions', $event)"
       >
         <div class="permission-form__section">
-          <p class="permission-form__info-note">
-            <svg class="permission-form__info-icon" cdsIcon="information" size="16"></svg>
-
-            <span>{{ 'accessControl.editor.conditionsHint' | translate }}</span>
-          </p>
+          <ng-container
+            *ngTemplateOutlet="
+              infoNote;
+              context: {$implicit: 'accessControl.editor.conditionsHint' | translate}
+            "
+          ></ng-container>
 
           <valtimo-condition-tree
             [conditions]="conditionsArray"
@@ -197,11 +200,12 @@
         (selected)="onSectionToggle('context', $event)"
       >
         <div class="permission-form__section">
-          <p class="permission-form__info-note">
-            <svg class="permission-form__info-icon" cdsIcon="information" size="16"></svg>
-
-            <span>{{ 'accessControl.editor.contextHint' | translate }}</span>
-          </p>
+          <ng-container
+            *ngTemplateOutlet="
+              infoNote;
+              context: {$implicit: 'accessControl.editor.contextHint' | translate}
+            "
+          ></ng-container>
 
           <cds-content-switcher
             class="permission-form__context-switcher"
@@ -298,4 +302,14 @@
     [showModalSubject$]="showRemoveModal$"
     (confirmEvent)="onRemove()"
   ></valtimo-confirmation-modal>
+
+  <!-- Lightweight inline hint: a blue information icon with italic secondary text. The message is
+       passed in via context so the icon and styling are defined in a single place. -->
+  <ng-template #infoNote let-message>
+    <p class="permission-form__info-note">
+      <svg class="permission-form__info-icon" cdsIcon="information" size="16"></svg>
+
+      <span>{{ message }}</span>
+    </p>
+  </ng-template>
 </div>

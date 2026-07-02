@@ -75,13 +75,10 @@ class PbacRegistryService(
             )
         }
 
-        val operators = PermissionConditionOperator.entries.map {
-            PbacOperatorDto(key = it.asText, label = operatorLabel(it))
-        }
+        val operators = PermissionConditionOperator.entries.map { PbacOperatorDto(key = it.asText) }
 
-        val conditionTypes = PermissionConditionType.entries.map {
-            PbacConditionTypeDto(key = it.value, label = conditionTypeLabel(it))
-        }
+        val conditionTypes =
+            PermissionConditionType.entries.map { PbacConditionTypeDto(key = it.value) }
 
         val entityMappers = mapperPairs.map { (from, to) ->
             PbacEntityMapperDto(fromResourceType = from, toResourceType = to)
@@ -101,9 +98,9 @@ class PbacRegistryService(
     private fun discoverResourceTypes(): Map<String, List<Action<*>>> {
         val result = mutableMapOf<String, MutableList<Action<*>>>()
         for (provider in allActionProviders()) {
-            val resourceType = extractGenericTypeArgument(
+            val resourceType = extractTypeArguments(
                 provider.javaClass, ResourceActionProvider::class.java
-            ) ?: continue
+            )?.firstOrNull() ?: continue
             val actions = provider.getAvailableActions()
             result.getOrPut(resourceType.name) { mutableListOf() }.addAll(actions)
         }
@@ -151,9 +148,9 @@ class PbacRegistryService(
     private fun discoverSpecificationFactoryResourceTypes(): Set<String> {
         val result = mutableSetOf<String>()
         for (factory in specificationFactories) {
-            val resourceType = extractGenericTypeArgument(
+            val resourceType = extractTypeArguments(
                 factory.javaClass, AuthorizationSpecificationFactory::class.java
-            ) ?: continue
+            )?.firstOrNull() ?: continue
             result.add(resourceType.name)
         }
         return result
@@ -162,42 +159,30 @@ class PbacRegistryService(
     private fun discoverMapperPairs(): List<Pair<String, String>> {
         val result = mutableListOf<Pair<String, String>>()
         for (mapper in mappers) {
-            val types = extractMapperTypeArguments(mapper.javaClass)
-            if (types != null) {
-                result.add(types.first.name to types.second.name)
+            val types = extractTypeArguments(mapper.javaClass, AuthorizationEntityMapper::class.java)
+            if (types != null && types.size >= 2) {
+                result.add(types[0].name to types[1].name)
             }
         }
         return result.distinct()
     }
 
-    private fun extractGenericTypeArgument(
+    /**
+     * Resolves the concrete type arguments a class supplies for [targetInterface], walking up the
+     * superclass chain. Returns null when the interface isn't found or any argument is not a concrete
+     * class (e.g. an unresolved type variable or Any), so callers can skip providers/mappers whose
+     * generics can't be resolved by reflection.
+     */
+    private fun extractTypeArguments(
         implClass: Class<*>,
         targetInterface: Class<*>
-    ): Class<*>? {
+    ): List<Class<*>>? {
         var clazz: Class<*>? = implClass
         while (clazz != null && clazz != Any::class.java) {
             for (iface in clazz.genericInterfaces) {
                 if (iface is ParameterizedType && iface.rawType == targetInterface) {
-                    val arg = iface.actualTypeArguments[0]
-                    return if (arg is Class<*> && arg != Any::class.java) arg else null
-                }
-            }
-            clazz = clazz.superclass
-        }
-        return null
-    }
-
-    private fun extractMapperTypeArguments(implClass: Class<*>): Pair<Class<*>, Class<*>>? {
-        var clazz: Class<*>? = implClass
-        while (clazz != null && clazz != Any::class.java) {
-            for (iface in clazz.genericInterfaces) {
-                if (iface is ParameterizedType && iface.rawType == AuthorizationEntityMapper::class.java) {
-                    val from = iface.actualTypeArguments[0]
-                    val to = iface.actualTypeArguments[1]
-                    return if (from is Class<*> && to is Class<*> && from != Any::class.java && to != Any::class.java) {
-                        from to to
-                    } else {
-                        null
+                    return iface.actualTypeArguments.map { arg ->
+                        if (arg is Class<*> && arg != Any::class.java) arg else return null
                     }
                 }
             }
@@ -291,27 +276,6 @@ class PbacRegistryService(
             Class.forName(name)
         } catch (_: ClassNotFoundException) {
             null
-        }
-    }
-
-    private fun operatorLabel(operator: PermissionConditionOperator): String {
-        return when (operator) {
-            PermissionConditionOperator.NOT_EQUAL_TO -> "Not equal to"
-            PermissionConditionOperator.EQUAL_TO -> "Equal to"
-            PermissionConditionOperator.GREATER_THAN -> "Greater than"
-            PermissionConditionOperator.GREATER_THAN_OR_EQUAL_TO -> "Greater than or equal to"
-            PermissionConditionOperator.LESS_THAN -> "Less than"
-            PermissionConditionOperator.LESS_THAN_OR_EQUAL_TO -> "Less than or equal to"
-            PermissionConditionOperator.LIST_CONTAINS -> "List contains"
-            PermissionConditionOperator.IN -> "In"
-        }
-    }
-
-    private fun conditionTypeLabel(type: PermissionConditionType): String {
-        return when (type) {
-            PermissionConditionType.FIELD -> "Field condition"
-            PermissionConditionType.EXPRESSION -> "Expression condition"
-            PermissionConditionType.CONTAINER -> "Container condition"
         }
     }
 

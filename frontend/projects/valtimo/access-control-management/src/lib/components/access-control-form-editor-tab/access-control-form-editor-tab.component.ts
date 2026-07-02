@@ -31,10 +31,11 @@ import {AbstractControl, FormArray, FormGroup} from '@angular/forms';
 import {Add16} from '@carbon/icons';
 import {EditorModel} from '@valtimo/components';
 import {IconService} from 'carbon-components-angular';
-import {combineLatest, Subscription, take} from 'rxjs';
+import {Subscription, take} from 'rxjs';
 import {ACCESS_CONTROL_EDITOR_TEST_IDS} from '../../constants';
 import {Permission} from '../../models';
 import {AccessControlFormEditorService, PermissionSchemaMetadataService} from '../../services';
+import {shortTypeName} from '../../utils';
 
 @Component({
   standalone: false,
@@ -95,8 +96,7 @@ export class AccessControlFormEditorTabComponent implements OnChanges, OnDestroy
   // "com.ritense.case.domain.CaseTab". The full technical name is still what is edited and stored.
   public shortName(control: AbstractControl): string {
     const resourceType = (control as FormGroup).get('resourceType')!.value as string;
-    if (!resourceType) return '';
-    return resourceType.substring(resourceType.lastIndexOf('.') + 1);
+    return shortTypeName(resourceType);
   }
 
   public actionsOf(control: AbstractControl): string[] {
@@ -198,13 +198,10 @@ export class AccessControlFormEditorTabComponent implements OnChanges, OnDestroy
   }
 
   private rebuild(): void {
-    combineLatest([this.metadataService.registry$, this.metadataService.actionsByResourceType$])
-      .pipe(take(1))
-      .subscribe(([registry, actionsByResourceType]) => {
-        this.formEditorService.setRegistry(registry);
-        this.formEditorService.setActionsByResourceType(actionsByResourceType);
-        this.buildForm();
-      });
+    this.metadataService.registry$.pipe(take(1)).subscribe(registry => {
+      this.formEditorService.setRegistry(registry);
+      this.buildForm();
+    });
   }
 
   private buildForm(): void {

@@ -34,7 +34,7 @@ import {
   PermissionCondition,
   UpdateRolePermission,
 } from '../models';
-import {textToValue, valueToText} from '../utils';
+import {fqnSelectItem, shortTypeName, textToValue, valueToText} from '../utils';
 
 // Common Java value types offered in the "Value type" dropdown for JSON-field (expression)
 // conditions. Users can still enter any other fully-qualified type manually; String is the default.
@@ -56,7 +56,6 @@ export class AccessControlFormEditorService {
   private _resources: PbacResourceDto[] = [];
   private _resourceByType: Record<string, PbacResourceDto> = {};
   private _operatorKeys: ConditionOperator[] = [];
-  private _actionsByResourceType: Record<string, string[]> = {};
 
   constructor(private readonly fb: FormBuilder) {}
 
@@ -70,13 +69,6 @@ export class AccessControlFormEditorService {
       {}
     );
     this._operatorKeys = registry.operators.map(operator => operator.key as ConditionOperator);
-  }
-
-  // The available actions per resource type are provided by the metadata service, which sources
-  // them from the PBAC registry (the backend discovers every ResourceActionProvider on the
-  // classpath).
-  public setActionsByResourceType(actionsByResourceType: Record<string, string[]>): void {
-    this._actionsByResourceType = actionsByResourceType;
   }
 
   // ----- Form construction -----
@@ -199,12 +191,10 @@ export class AccessControlFormEditorService {
   public resourceTypeItems(include?: string | string[] | null): SelectItem[] {
     // Shown as "ShortName (fully.qualified.Name)" — the readable short name up front, with the exact
     // technical type it maps to in parentheses. The stored value (id) stays the fully-qualified name.
-    const items = this._resources.map(resource => {
-      const shortName =
-        resource.shortName ||
-        resource.resourceType.substring(resource.resourceType.lastIndexOf('.') + 1);
-      return {id: resource.resourceType, text: `${shortName} (${resource.resourceType})`};
-    });
+    const items = this._resources.map(resource => ({
+      id: resource.resourceType,
+      text: `${resource.shortName || shortTypeName(resource.resourceType)} (${resource.resourceType})`,
+    }));
     return this.sortByText(this.withIncluded(items, include));
   }
 
@@ -232,7 +222,9 @@ export class AccessControlFormEditorService {
   }
 
   public actionItems(resourceType: string, include?: string | string[] | null): SelectItem[] {
-    const actions = this._actionsByResourceType[resourceType] ?? [];
+    // Actions come straight from the resource in the PBAC registry (the backend discovers every
+    // ResourceActionProvider on the classpath), so no separate action map is needed.
+    const actions = this._resourceByType[resourceType]?.actions ?? [];
     const items = actions.map(action => ({
       id: action,
       text: action,
@@ -263,10 +255,7 @@ export class AccessControlFormEditorService {
     const targets = this._resourceByType[resourceType]?.containerTargets ?? [];
     // Shown as "ShortName (fully.qualified.Name)", like the resource-type dropdown. The stored value
     // (id) stays the fully-qualified name.
-    const items = targets.map(target => ({
-      id: target,
-      text: `${target.substring(target.lastIndexOf('.') + 1)} (${target})`,
-    }));
+    const items = targets.map(fqnSelectItem);
     return this.sortByText(this.withIncluded(items, include));
   }
 
@@ -282,10 +271,7 @@ export class AccessControlFormEditorService {
   // Preset value types for JSON-field (expression) conditions, shown as "ShortName (fully.qualified
   // .Name)". Any current custom value is kept selectable via `include`.
   public valueTypeItems(include?: string | string[] | null): SelectItem[] {
-    const items = VALUE_TYPE_OPTIONS.map(fqn => ({
-      id: fqn,
-      text: `${fqn.substring(fqn.lastIndexOf('.') + 1)} (${fqn})`,
-    }));
+    const items = VALUE_TYPE_OPTIONS.map(fqnSelectItem);
     return this.withIncluded(items, include);
   }
 
