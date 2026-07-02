@@ -38,4 +38,5 @@
 
 ## Bugfixes
 
-* New bugfix.
+* Dashboard widgets can now group and filter on more case fields, such as the `case:internalStatus` and
+  `case:definitionId.key`.
