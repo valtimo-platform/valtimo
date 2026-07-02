@@ -41,11 +41,11 @@ export class CaseDetailsProcessesPage {
   // Locators
 
   get uploadButton() {
-    return this.carbonList.toolbar.getByRole('button').filter({hasText: /^$/}).first();
+    return this.page.getByTestId(PROCESS_MANAGEMENT_LIST_TEST_IDS.uploadButton);
   }
 
   get createProcessButton() {
-    return this.processListScope.getByRole('button', {name: 'Create process'});
+    return this.page.getByTestId(PROCESS_MANAGEMENT_LIST_TEST_IDS.createProcessButton);
   }
 
   get uploadModal() {
@@ -165,7 +165,9 @@ export class CaseDetailsProcessesPage {
     await this.uploadModalFileInput.setInputFiles(BPMN_ASSET_PATH);
     await expect(this.uploadModalUploadButton).toBeEnabled();
     await this.uploadModalUploadButton.click();
-    await expect(this.uploadModalUploadButton).not.toBeVisible();
+    // The modal only closes after the deploy request succeeds; the BPMN deploy can
+    // take several seconds on CI, so allow more than the default 5s timeout.
+    await expect(this.uploadModalUploadButton).not.toBeVisible({timeout: 30_000});
     await this.carbonList.waitForLoaded();
   }
 

@@ -86,8 +86,22 @@ export class CaseDetailsManagementTasksPage {
     return this.page.locator('cds-modal').locator('cds-label').filter({hasText: 'Key'}).locator('input');
   }
 
+  // Path uses valtimo-value-path-selector, which defaults to dropdown mode.
+  // The manual text input (where an arbitrary path can be typed) only renders
+  // after toggling to manual mode.
+  get columnPathToggle() {
+    return this.page
+      .locator('cds-modal')
+      .locator('valtimo-value-path-selector')
+      .getByTestId(VALUE_PATH_SELECTOR_TEST_IDS.toggle)
+      .locator('.cds--toggle__switch');
+  }
+
   get columnPathInput() {
-    return this.page.locator('cds-modal').locator('cds-label').filter({hasText: 'Path'}).locator('input');
+    return this.page
+      .locator('cds-modal')
+      .locator('valtimo-value-path-selector')
+      .getByTestId(VALUE_PATH_SELECTOR_TEST_IDS.input);
   }
 
   get columnDisplayTypeDropdown() {
@@ -167,6 +181,7 @@ export class CaseDetailsManagementTasksPage {
       await this.columnTitleInput.fill(column.title);
     }
     await this.columnKeyInput.fill(column.key);
+    await this.columnPathToggle.click();
     await this.columnPathInput.fill(column.path);
     await this.selectDropdownItem(this.columnDisplayTypeDropdown, column.displayType);
     await expect(this.columnSaveButton).toBeEnabled();
