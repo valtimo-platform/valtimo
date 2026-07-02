@@ -16,6 +16,7 @@
 import {
   AfterViewInit,
   ChangeDetectionStrategy,
+  ChangeDetectorRef,
   Component,
   ElementRef,
   EventEmitter,
@@ -30,6 +31,7 @@ import {FormControl} from '@angular/forms';
 import {ArrowDown16, ArrowUp16, Draggable16, SettingsView16} from '@carbon/icons';
 import {TranslateService} from '@ngx-translate/core';
 import {SortState} from '@valtimo/document';
+import {SearchField} from '@valtimo/shared';
 import {
   IconService,
   PaginationModel,
@@ -178,6 +180,8 @@ export class CarbonListComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   @Input() isSearchable = false;
+  @Input() invalidSearchFields: string[] = [];
+  @Input() searchFields: SearchField[] = [];
   @Input() enableSingleSelection = false;
   /**
    * @deprecated The lastColumnTemplate field is deprecated. Any template column can be added through the **@Input field**.
@@ -280,7 +284,8 @@ export class CarbonListComponent implements OnInit, AfterViewInit, OnDestroy {
     private readonly viewContentService: ViewContentService,
     private readonly keyStateService: KeyStateService,
     private readonly dragAndDropService: CarbonListDragAndDropService,
-    private readonly elementRef: ElementRef
+    private readonly elementRef: ElementRef,
+    private readonly cdr: ChangeDetectorRef
   ) {
     this.iconService.registerAll([ArrowDown16, ArrowUp16, SettingsView16, Draggable16]);
   }
@@ -308,21 +313,9 @@ export class CarbonListComponent implements OnInit, AfterViewInit, OnDestroy {
 
     this._subscriptions.add(
       this.searchFormControl.valueChanges
-        .pipe(debounceTime(500))
+        .pipe(debounceTime(2000))
         .subscribe((searchString: string | null) => {
-          if (this.search.observed) {
-            this.search.emit(searchString);
-            return;
-          }
-
-          if (!searchString) {
-            this._filteredItems$.next(null);
-            return;
-          }
-
-          this._filteredItems$.next(
-            this.filterPipe.transform(this._completeDataSource, searchString ?? '')
-          );
+          this.executeSearch(searchString);
         })
     );
   }
@@ -757,5 +750,247 @@ export class CarbonListComponent implements OnInit, AfterViewInit, OnDestroy {
       content,
       type: 'blue',
     }));
+  }
+
+  public getSearchSegments(): Array<{text: string; isInvalid: boolean}> {
+    const text = this.searchFormControl.value || '';
+    if (!text) return [{text, isInvalid: false}];
+
+    const segments: Array<{text: string; isInvalid: boolean}> = [];
+    const fieldPattern = /(\w+(?:\.\w+)*):("([^"]+)"|(\S+))/g;
+    const invalidSet = new Set((this.invalidSearchFields || []).map(f => f.toLowerCase()));
+
+    let lastIndex = 0;
+    let match: RegExpExecArray | null;
+
+    while ((match = fieldPattern.exec(text)) !== null) {
+      if (match.index > lastIndex) {
+        segments.push({text: text.substring(lastIndex, match.index), isInvalid: false});
+      }
+
+      const fieldName = match[1];
+      const isInvalid = invalidSet.has(fieldName.toLowerCase());
+      segments.push({text: fieldName, isInvalid});
+
+      const rest = match[0].substring(fieldName.length);
+      segments.push({text: rest, isInvalid: false});
+
+      lastIndex = match.index + match[0].length;
+    }
+
+    if (lastIndex < text.length) {
+      segments.push({text: text.substring(lastIndex), isInvalid: false});
+    }
+
+    return segments;
+  }
+
+  public showAutocomplete = false;
+  public filteredSuggestions: SearchField[] = [];
+  public selectedSuggestionIndex = 0;
+  public autocompleteLeft = 0;
+  private _searchInputElement: HTMLInputElement | null = null;
+
+  private getSearchInputElement(): HTMLInputElement | null {
+    if (!this._searchInputElement) {
+      this._searchInputElement = this.elementRef.nativeElement.querySelector(
+        '.valtimo-search-container input'
+      );
+    }
+    return this._searchInputElement;
+  }
+
+  private getCurrentFieldToken(): {token: string; start: number} | null {
+    const value = this.searchFormControl.value || '';
+    const input = this.getSearchInputElement();
+    const cursor = input?.selectionStart ?? value.length;
+
+    let start = value.lastIndexOf(' ', cursor - 1) + 1;
+    const beforeCursor = value.substring(start, cursor);
+
+    if (beforeCursor.includes(':')) return null;
+
+    const nextSpace = value.indexOf(' ', cursor);
+    const end = nextSpace === -1 ? value.length : nextSpace;
+    const afterCursor = value.substring(cursor, end);
+
+    if (afterCursor.includes(':')) return null;
+
+    return {token: beforeCursor, start};
+  }
+
+  public onSearchFocus(): void {
+    const input = this.getSearchInputElement();
+    if (input && document.activeElement === input) {
+      this.updateAutocomplete();
+    }
+  }
+
+  public updateAutocomplete(): void {
+    const input = this.getSearchInputElement();
+
+    if (!input) {
+      this.showAutocomplete = false;
+      this.filteredSuggestions = [];
+      return;
+    }
+
+    const tokenInfo = this.getCurrentFieldToken();
+
+    if (!tokenInfo || !this.searchFields?.length) {
+      this.showAutocomplete = false;
+      this.filteredSuggestions = [];
+      return;
+    }
+
+    const searchToken = tokenInfo.token.toLowerCase();
+    this.filteredSuggestions = searchToken.length === 0
+      ? this.searchFields
+      : this.searchFields.filter(
+          field =>
+            field.key.toLowerCase().includes(searchToken) ||
+            (field.title && field.title.toLowerCase().includes(searchToken))
+        );
+
+    this.showAutocomplete = this.filteredSuggestions.length > 0;
+    this.selectedSuggestionIndex = 0;
+
+    if (this.showAutocomplete) {
+      this.autocompleteLeft = this.calculateTokenLeft(tokenInfo.start);
+    }
+  }
+
+  private calculateTokenLeft(tokenStart: number): number {
+    const input = this.getSearchInputElement();
+    if (!input) return 48;
+
+    const value = this.searchFormControl.value || '';
+    const textBefore = value.substring(0, tokenStart);
+
+    const canvas = document.createElement('canvas');
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return 48;
+
+    const style = window.getComputedStyle(input);
+    ctx.font = `${style.fontSize} ${style.fontFamily}`;
+    const textWidth = ctx.measureText(textBefore).width;
+
+    return 48 + textWidth - 12;
+  }
+
+  public selectSuggestion(field: SearchField): void {
+    const tokenInfo = this.getCurrentFieldToken();
+    if (!tokenInfo) return;
+
+    const value = this.searchFormControl.value || '';
+    const input = this.getSearchInputElement();
+    const cursor = input?.selectionStart ?? value.length;
+
+    const fieldPath = field.path?.replace(/^(doc|case):/, '') || field.key;
+    const newValue =
+      value.substring(0, tokenInfo.start) + fieldPath + ':' + value.substring(cursor);
+
+    this.searchFormControl.setValue(newValue);
+    this.showAutocomplete = false;
+
+    setTimeout(() => {
+      const newCursor = tokenInfo.start + fieldPath.length + 1;
+      input?.setSelectionRange(newCursor, newCursor);
+      input?.focus();
+    });
+  }
+
+  public onSearchKeydown(event: KeyboardEvent): void {
+    if (event.key === 'Enter') {
+      event.preventDefault();
+      this.onSearchEnter();
+      return;
+    }
+
+    if (!this.showAutocomplete || this.filteredSuggestions.length === 0) return;
+
+    switch (event.key) {
+      case 'ArrowDown':
+        event.preventDefault();
+        this.selectedSuggestionIndex =
+          (this.selectedSuggestionIndex + 1) % this.filteredSuggestions.length;
+        break;
+      case 'ArrowUp':
+        event.preventDefault();
+        this.selectedSuggestionIndex =
+          (this.selectedSuggestionIndex - 1 + this.filteredSuggestions.length) %
+          this.filteredSuggestions.length;
+        break;
+      case 'Tab':
+        event.preventDefault();
+        this.selectSuggestion(this.filteredSuggestions[this.selectedSuggestionIndex]);
+        break;
+      case 'Escape':
+        this.showAutocomplete = false;
+        break;
+    }
+  }
+
+  public onSearchBlur(): void {
+    setTimeout(() => {
+      this.showAutocomplete = false;
+      this._searchInputElement = null;
+    }, 150);
+  }
+
+  
+  public onSearchClear(): void {
+    this.showAutocomplete = false;
+  }
+
+  private executeSearch(searchString: string | null): void {
+    if (this.search.observed) {
+      this.search.emit(searchString);
+      return;
+    }
+
+    if (!searchString) {
+      this._filteredItems$.next(null);
+      return;
+    }
+
+    this._filteredItems$.next(
+      this.filterPipe.transform(this._completeDataSource, searchString ?? '')
+    );
+  }
+
+  public onSearchEnter(): void {
+    if (this.showAutocomplete && this.filteredSuggestions.length > 0) {
+      this.selectSuggestion(this.filteredSuggestions[this.selectedSuggestionIndex]);
+    } else {
+      this.executeSearch(this.searchFormControl.value);
+    }
+  }
+
+  private _searchOpen = false;
+
+  public onSearchOpenChange(isOpen: boolean): void {
+    this._searchOpen = isOpen;
+    this._searchInputElement = null;
+
+    if (isOpen) {
+      setTimeout(() => {
+        this.updateAutocomplete();
+      }, 0);
+    } else {
+      this.showAutocomplete = false;
+    }
+  }
+
+  public onSearchFocusOut(event: FocusEvent): void {
+    const container = this.elementRef.nativeElement.querySelector('.valtimo-search-container');
+    const relatedTarget = event.relatedTarget as Node;
+
+    if (!container?.contains(relatedTarget)) {
+      setTimeout(() => {
+        this.showAutocomplete = false;
+        this.cdr.markForCheck();
+      }, 150);
+    }
   }
 }

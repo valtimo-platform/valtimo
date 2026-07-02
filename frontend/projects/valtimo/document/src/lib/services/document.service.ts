@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import {HttpClient, HttpHeaders, HttpParams} from '@angular/common/http';
+import {HttpClient, HttpErrorResponse, HttpHeaders, HttpParams} from '@angular/common/http';
 import {Injectable} from '@angular/core';
 import {
   AssigneeFilter,
@@ -26,7 +26,7 @@ import {
   SearchOperator,
   TeamResponseDto,
 } from '@valtimo/shared';
-import {catchError, Observable, of, switchMap} from 'rxjs';
+import {BehaviorSubject, catchError, Observable, of, switchMap, tap} from 'rxjs';
 
 import {
   AssignHandlerToDocumentResult,
@@ -84,11 +84,27 @@ export class DocumentService {
     totalPages: 0,
   };
 
+  private readonly _invalidSearchFields$ = new BehaviorSubject<string[]>([]);
+  public readonly invalidSearchFields$ = this._invalidSearchFields$.asObservable();
+
   constructor(
     private http: HttpClient,
     private configService: ConfigService
   ) {
     this.valtimoEndpointUri = this.configService.config.valtimoApi.endpointUri;
+  }
+
+  public clearInvalidSearchFields(): void {
+    this._invalidSearchFields$.next([]);
+  }
+
+  private extractInvalidSearchFields(error: HttpErrorResponse): string[] {
+    const message = error?.error?.detail || error?.error?.message || error?.error || '';
+    const match = message.match(/Unknown search field\(s\): (.+)/);
+    if (match) {
+      return match[1].split(', ').map((f: string) => f.trim());
+    }
+    return [];
   }
 
   // Document-calls
@@ -169,7 +185,14 @@ export class DocumentService {
         body,
         {params: documentSearchRequest.asHttpParams()}
       )
-      .pipe(catchError(() => of(this.EMPTY_DOCUMENTS_RESPONSE as Documents)));
+      .pipe(
+        tap(() => this._invalidSearchFields$.next([])),
+        catchError((error: HttpErrorResponse) => {
+          const invalidFields = this.extractInvalidSearchFields(error);
+          this._invalidSearchFields$.next(invalidFields);
+          return of(this.EMPTY_DOCUMENTS_RESPONSE as Documents);
+        })
+      );
   }
 
   public getSpecifiedDocumentsSearch(
@@ -197,7 +220,14 @@ export class DocumentService {
         body,
         {params: documentSearchRequest.asHttpParams()}
       )
-      .pipe(catchError(() => of(this.EMPTY_DOCUMENTS_RESPONSE as SpecifiedDocuments)));
+      .pipe(
+        tap(() => this._invalidSearchFields$.next([])),
+        catchError((error: HttpErrorResponse) => {
+          const invalidFields = this.extractInvalidSearchFields(error);
+          this._invalidSearchFields$.next(invalidFields);
+          return of(this.EMPTY_DOCUMENTS_RESPONSE as SpecifiedDocuments);
+        })
+      );
   }
 
   public getDocumentSearchFields(caseDefinitionKey: string): Observable<Array<SearchField>> {
