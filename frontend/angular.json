@@ -3,9 +3,9 @@
   "version": 1,
   "newProjectRoot": "projects",
   "projects": {
-    "valtimo-angular-console": {
-      "root": "",
-      "sourceRoot": "src",
+    "dev": {
+      "root": "apps/dev",
+      "sourceRoot": "apps/dev/src",
       "projectType": "application",
       "prefix": "app",
       "schematics": {
@@ -14,19 +14,84 @@
         }
       },
       "architect": {
+        "build": {
+          "builder": "@angular-architects/native-federation:build",
+          "options": {},
+          "configurations": {
+            "production": {
+              "target": "dev:esbuild:production"
+            },
+            "development": {
+              "target": "dev:esbuild:development"
+            },
+            "test": {
+              "target": "dev:esbuild:test"
+            }
+          },
+          "defaultConfiguration": "production"
+        },
+        "serve": {
+          "builder": "@angular-architects/native-federation:build",
+          "options": {
+            "target": "dev:serve-original:development",
+            "rebuildDelay": 0,
+            "dev": true,
+            "port": 4200,
+            "open": false
+          },
+          "configurations": {
+            "production": {
+              "target": "dev:serve-original:production"
+            }
+          }
+        },
+        "extract-i18n": {
+          "builder": "@angular-devkit/build-angular:extract-i18n",
+          "options": {
+            "buildTarget": "dev:build"
+          }
+        },
+        "test": {
+          "builder": "@angular-devkit/build-angular:karma",
+          "options": {
+            "main": "apps/dev/src/test.ts",
+            "polyfills": "apps/dev/src/polyfills.ts",
+            "tsConfig": "apps/dev/src/tsconfig.spec.json",
+            "karmaConfig": "apps/dev/src/karma.conf.js",
+            "styles": [
+              "apps/dev/src/styles.scss"
+            ],
+            "scripts": [],
+            "assets": [
+              "apps/dev/src/favicon.ico",
+              "apps/dev/src/assets"
+            ]
+          }
+        },
+        "lint": {
+          "builder": "@angular-eslint/builder:lint",
+          "options": {
+            "lintFilePatterns": [
+              "apps/dev/src/**/*.ts",
+              "apps/dev/src/**/*.html"
+            ]
+          }
+        },
         "esbuild": {
           "builder": "@angular-devkit/build-angular:application",
           "options": {
             "outputPath": {
-              "base": "deployment/valtimo-angular-console"
+              "base": "deployment/dev"
             },
-            "index": "src/index.html",
-            "browser": "src/main.ts",
-            "polyfills": ["src/polyfills.ts"],
-            "tsConfig": "src/tsconfig.app.json",
+            "index": "apps/dev/src/index.html",
+            "browser": "apps/dev/src/main.ts",
+            "polyfills": [
+              "apps/dev/src/polyfills.ts"
+            ],
+            "tsConfig": "apps/dev/src/tsconfig.app.json",
             "assets": [
-              "src/favicon.ico",
-              "src/assets",
+              "apps/dev/src/favicon.ico",
+              "apps/dev/src/assets",
               {
                 "glob": "**/*",
                 "input": "projects/valtimo/layout/assets/img",
@@ -42,14 +107,26 @@
                 "input": "node_modules/monaco-editor",
                 "output": "assets/monaco-editor"
               },
-              {"glob": "jquery.min.js", "input": "node_modules/jquery/dist", "output": "vendor"},
+              {
+                "glob": "jquery.min.js",
+                "input": "node_modules/jquery/dist",
+                "output": "vendor"
+              },
               {
                 "glob": "jquery-ui.min.js",
                 "input": "node_modules/components-jqueryui",
                 "output": "vendor"
               },
-              {"glob": "popper.js", "input": "node_modules/popper.js/dist/umd", "output": "vendor"},
-              {"glob": "bootstrap.js", "input": "node_modules/bootstrap/dist/js", "output": "vendor"},
+              {
+                "glob": "popper.js",
+                "input": "node_modules/popper.js/dist/umd",
+                "output": "vendor"
+              },
+              {
+                "glob": "bootstrap.js",
+                "input": "node_modules/bootstrap/dist/js",
+                "output": "vendor"
+              },
               {
                 "glob": "bootstrap-datetimepicker.min.js",
                 "input": "node_modules/@foxythemes/bootstrap-datetime-picker-bs4/js",
@@ -60,7 +137,11 @@
                 "input": "node_modules/perfect-scrollbar/dist",
                 "output": "vendor"
               },
-              {"glob": "select2.min.js", "input": "node_modules/select2/dist/js", "output": "vendor"},
+              {
+                "glob": "select2.min.js",
+                "input": "node_modules/select2/dist/js",
+                "output": "vendor"
+              },
               {
                 "glob": "app.js",
                 "input": "node_modules/@valtimo/layout/assets/js",
@@ -100,7 +181,7 @@
               "node_modules/ol/ol.css",
               "node_modules/@valtimo/components/assets/css/ng-multiselect-dropdown.theme.scss",
               "node_modules/@valtimo/layout/assets/css/app.css",
-              "src/styles.scss",
+              "apps/dev/src/styles.scss",
               "node_modules/flatpickr/dist/flatpickr.css",
               "node_modules/@valtimo/components/assets/css/carbon.scss",
               "node_modules/@valtimo/components/assets/css/color.scss",
@@ -127,12 +208,16 @@
             "production": {
               "fileReplacements": [
                 {
-                  "replace": "src/environments/environment.ts",
-                  "with": "src/environments/environment.prod.ts"
+                  "replace": "apps/dev/src/environments/environment.ts",
+                  "with": "apps/dev/src/environments/environment.prod.ts"
                 },
                 {
-                  "replace": "src/app/dev-tools.ts",
-                  "with": "src/app/no-dev-tools.ts"
+                  "replace": "apps/dev/src/app/dev-tools.ts",
+                  "with": "apps/dev/src/app/no-dev-tools.ts"
+                },
+                {
+                  "replace": "apps/dev/src/app/app-plugins.ts",
+                  "with": "apps/dev/src/app/app-plugins.prod.ts"
                 }
               ],
               "optimization": true,
@@ -167,44 +252,56 @@
           },
           "defaultConfiguration": "development"
         },
+        "serve-original": {
+          "builder": "@angular-devkit/build-angular:dev-server",
+          "options": {
+            "proxyConfig": "proxy.conf.json",
+            "buildTarget": "dev:esbuild:development",
+            "hmr": false
+          },
+          "configurations": {
+            "production": {
+              "buildTarget": "dev:esbuild:production"
+            },
+            "development": {
+              "buildTarget": "dev:esbuild:development"
+            }
+          },
+          "defaultConfiguration": "development"
+        }
+      }
+    },
+    "gzac": {
+      "root": "apps/gzac",
+      "sourceRoot": "apps/gzac/src",
+      "projectType": "application",
+      "prefix": "app",
+      "schematics": {
+        "@schematics/angular:component": {
+          "style": "scss"
+        }
+      },
+      "architect": {
         "build": {
           "builder": "@angular-architects/native-federation:build",
           "options": {},
           "configurations": {
             "production": {
-              "target": "valtimo-angular-console:esbuild:production"
+              "target": "gzac:esbuild:production"
             },
             "development": {
-              "target": "valtimo-angular-console:esbuild:development",
-              "dev": true
+              "target": "gzac:esbuild:development"
             },
             "test": {
-              "target": "valtimo-angular-console:esbuild:test"
+              "target": "gzac:esbuild:test"
             }
           },
           "defaultConfiguration": "production"
         },
-        "serve-original": {
-          "builder": "@angular-devkit/build-angular:dev-server",
-          "options": {
-            "proxyConfig": "proxy.conf.json",
-            "buildTarget": "valtimo-angular-console:esbuild:development",
-            "hmr": false
-          },
-          "configurations": {
-            "production": {
-              "buildTarget": "valtimo-angular-console:esbuild:production"
-            },
-            "development": {
-              "buildTarget": "valtimo-angular-console:esbuild:development"
-            }
-          },
-          "defaultConfiguration": "development"
-        },
         "serve": {
           "builder": "@angular-architects/native-federation:build",
           "options": {
-            "target": "valtimo-angular-console:serve-original:development",
+            "target": "gzac:serve-original:development",
             "rebuildDelay": 0,
             "dev": true,
             "port": 4200,
@@ -212,33 +309,753 @@
           },
           "configurations": {
             "production": {
-              "target": "valtimo-angular-console:serve-original:production"
+              "target": "gzac:serve-original:production"
             }
           }
         },
         "extract-i18n": {
           "builder": "@angular-devkit/build-angular:extract-i18n",
           "options": {
-            "buildTarget": "valtimo-angular-console:esbuild"
+            "buildTarget": "gzac:build"
           }
         },
         "test": {
           "builder": "@angular-devkit/build-angular:karma",
           "options": {
-            "main": "src/test.ts",
-            "polyfills": "src/polyfills.ts",
-            "tsConfig": "src/tsconfig.spec.json",
-            "karmaConfig": "src/karma.conf.js",
-            "styles": ["src/styles.scss"],
+            "main": "apps/gzac/src/test.ts",
+            "polyfills": "apps/gzac/src/polyfills.ts",
+            "tsConfig": "apps/gzac/src/tsconfig.spec.json",
+            "karmaConfig": "apps/gzac/src/karma.conf.js",
+            "styles": [
+              "apps/gzac/src/styles.scss"
+            ],
             "scripts": [],
-            "assets": ["src/favicon.ico", "src/assets"]
+            "assets": [
+              "apps/gzac/src/favicon.ico",
+              "apps/gzac/src/assets"
+            ]
           }
         },
         "lint": {
           "builder": "@angular-eslint/builder:lint",
           "options": {
-            "lintFilePatterns": ["src/**/*.ts", "src/**/*.html"]
+            "lintFilePatterns": [
+              "apps/gzac/src/**/*.ts",
+              "apps/gzac/src/**/*.html"
+            ]
           }
+        },
+        "esbuild": {
+          "builder": "@angular-devkit/build-angular:application",
+          "options": {
+            "outputPath": {
+              "base": "deployment/gzac"
+            },
+            "index": "apps/gzac/src/index.html",
+            "browser": "apps/gzac/src/main.ts",
+            "polyfills": [
+              "apps/gzac/src/polyfills.ts"
+            ],
+            "tsConfig": "apps/gzac/src/tsconfig.app.json",
+            "assets": [
+              "apps/gzac/src/favicon.ico",
+              "apps/gzac/src/assets",
+              {
+                "glob": "**/*",
+                "input": "projects/valtimo/layout/assets/img",
+                "output": "./valtimo-layout/img/"
+              },
+              {
+                "glob": "**/*",
+                "input": "projects/valtimo/shared/assets/core",
+                "output": "./valtimo-translation/core/"
+              },
+              {
+                "glob": "**/*",
+                "input": "node_modules/monaco-editor",
+                "output": "assets/monaco-editor"
+              },
+              {
+                "glob": "jquery.min.js",
+                "input": "node_modules/jquery/dist",
+                "output": "vendor"
+              },
+              {
+                "glob": "jquery-ui.min.js",
+                "input": "node_modules/components-jqueryui",
+                "output": "vendor"
+              },
+              {
+                "glob": "popper.js",
+                "input": "node_modules/popper.js/dist/umd",
+                "output": "vendor"
+              },
+              {
+                "glob": "bootstrap.js",
+                "input": "node_modules/bootstrap/dist/js",
+                "output": "vendor"
+              },
+              {
+                "glob": "bootstrap-datetimepicker.min.js",
+                "input": "node_modules/@foxythemes/bootstrap-datetime-picker-bs4/js",
+                "output": "vendor"
+              },
+              {
+                "glob": "perfect-scrollbar.min.js",
+                "input": "node_modules/perfect-scrollbar/dist",
+                "output": "vendor"
+              },
+              {
+                "glob": "select2.min.js",
+                "input": "node_modules/select2/dist/js",
+                "output": "vendor"
+              },
+              {
+                "glob": "app.js",
+                "input": "node_modules/@valtimo/layout/assets/js",
+                "output": "vendor/layout"
+              },
+              {
+                "glob": "native-shim.js",
+                "input": "node_modules/@webcomponents/custom-elements/src",
+                "output": "vendor"
+              },
+              {
+                "glob": "dmn-modeler.development.js",
+                "input": "node_modules/dmn-js/dist",
+                "output": "vendor"
+              }
+            ],
+            "styles": [
+              "node_modules/bootstrap/dist/css/bootstrap.min.css",
+              "node_modules/perfect-scrollbar/css/perfect-scrollbar.css",
+              "node_modules/@mdi/font/css/materialdesignicons.css",
+              "node_modules/@foxythemes/bootstrap-datetime-picker-bs4/css/bootstrap-datetimepicker.css",
+              "node_modules/swagger-ui/dist/swagger-ui.css",
+              "node_modules/dmn-js/dist/assets/diagram-js.css",
+              "node_modules/dmn-js/dist/assets/dmn-js-decision-table.css",
+              "node_modules/dmn-js/dist/assets/dmn-js-decision-table-controls.css",
+              "node_modules/dmn-js/dist/assets/dmn-js-drd.css",
+              "node_modules/dmn-js/dist/assets/dmn-js-literal-expression.css",
+              "node_modules/dmn-js/dist/assets/dmn-js-shared.css",
+              "node_modules/dmn-js/dist/assets/dmn-font/css/dmn.css",
+              "node_modules/dmn-js/dist/assets/dmn-font/css/dmn-embedded.css",
+              "node_modules/dmn-js/dist/assets/dmn-font/css/dmn-codes.css",
+              "node_modules/bpmn-js/dist/assets/diagram-js.css",
+              "node_modules/bpmn-js/dist/assets/bpmn-font/css/bpmn.css",
+              "node_modules/bpmn-js/dist/assets/bpmn-font/css/bpmn-codes.css",
+              "node_modules/bpmn-js/dist/assets/bpmn-font/css/bpmn-embedded.css",
+              "node_modules/@bpmn-io/properties-panel/dist/assets/properties-panel.css",
+              "node_modules/ol/ol.css",
+              "node_modules/@valtimo/components/assets/css/ng-multiselect-dropdown.theme.scss",
+              "node_modules/@valtimo/layout/assets/css/app.css",
+              "apps/gzac/src/styles.scss",
+              "node_modules/flatpickr/dist/flatpickr.css",
+              "node_modules/@valtimo/components/assets/css/carbon.scss",
+              "node_modules/@valtimo/components/assets/css/color.scss",
+              "node_modules/@valtimo/components/assets/css/compatibility.scss",
+              "node_modules/@valtimo/components/assets/css/design-tokens.css",
+              "node_modules/@valtimo/components/assets/css/formio-carbon.scss"
+            ],
+            "scripts": [],
+            "allowedCommonJsDependencies": [
+              "swagger-ui",
+              "bpmn-js-properties-panel",
+              "lodash",
+              "hammerjs",
+              "camunda-bpmn-moddle/lib",
+              "object-refs",
+              "heatmap.js-fixed"
+            ],
+            "extractLicenses": false,
+            "sourceMap": true,
+            "optimization": false,
+            "namedChunks": true
+          },
+          "configurations": {
+            "production": {
+              "fileReplacements": [
+                {
+                  "replace": "apps/gzac/src/environments/environment.ts",
+                  "with": "apps/gzac/src/environments/environment.prod.ts"
+                },
+                {
+                  "replace": "apps/gzac/src/app/app-plugins.ts",
+                  "with": "apps/gzac/src/app/app-plugins.prod.ts"
+                }
+              ],
+              "optimization": true,
+              "outputHashing": "all",
+              "sourceMap": false,
+              "namedChunks": false,
+              "extractLicenses": true,
+              "budgets": [
+                {
+                  "type": "anyComponentStyle",
+                  "maximumWarning": "6kb"
+                }
+              ]
+            },
+            "test": {
+              "outputHashing": "all",
+              "sourceMap": false,
+              "extractLicenses": true,
+              "budgets": [
+                {
+                  "type": "initial",
+                  "maximumWarning": "2mb",
+                  "maximumError": "5mb"
+                },
+                {
+                  "type": "anyComponentStyle",
+                  "maximumWarning": "6kb"
+                }
+              ]
+            },
+            "development": {}
+          },
+          "defaultConfiguration": "development"
+        },
+        "serve-original": {
+          "builder": "@angular-devkit/build-angular:dev-server",
+          "options": {
+            "proxyConfig": "proxy.conf.json",
+            "buildTarget": "gzac:esbuild:development",
+            "hmr": false
+          },
+          "configurations": {
+            "production": {
+              "buildTarget": "gzac:esbuild:production"
+            },
+            "development": {
+              "buildTarget": "gzac:esbuild:development"
+            }
+          },
+          "defaultConfiguration": "development"
+        }
+      }
+    },
+    "valtimo": {
+      "root": "apps/valtimo",
+      "sourceRoot": "apps/valtimo/src",
+      "projectType": "application",
+      "prefix": "app",
+      "schematics": {
+        "@schematics/angular:component": {
+          "style": "scss"
+        }
+      },
+      "architect": {
+        "build": {
+          "builder": "@angular-architects/native-federation:build",
+          "options": {},
+          "configurations": {
+            "production": {
+              "target": "valtimo:esbuild:production"
+            },
+            "development": {
+              "target": "valtimo:esbuild:development"
+            },
+            "test": {
+              "target": "valtimo:esbuild:test"
+            }
+          },
+          "defaultConfiguration": "production"
+        },
+        "serve": {
+          "builder": "@angular-architects/native-federation:build",
+          "options": {
+            "target": "valtimo:serve-original:development",
+            "rebuildDelay": 0,
+            "dev": true,
+            "port": 4200,
+            "open": false
+          },
+          "configurations": {
+            "production": {
+              "target": "valtimo:serve-original:production"
+            }
+          }
+        },
+        "extract-i18n": {
+          "builder": "@angular-devkit/build-angular:extract-i18n",
+          "options": {
+            "buildTarget": "valtimo:build"
+          }
+        },
+        "test": {
+          "builder": "@angular-devkit/build-angular:karma",
+          "options": {
+            "main": "apps/valtimo/src/test.ts",
+            "polyfills": "apps/valtimo/src/polyfills.ts",
+            "tsConfig": "apps/valtimo/src/tsconfig.spec.json",
+            "karmaConfig": "apps/valtimo/src/karma.conf.js",
+            "styles": [
+              "apps/valtimo/src/styles.scss"
+            ],
+            "scripts": [],
+            "assets": [
+              "apps/valtimo/src/favicon.ico",
+              "apps/valtimo/src/assets"
+            ]
+          }
+        },
+        "lint": {
+          "builder": "@angular-eslint/builder:lint",
+          "options": {
+            "lintFilePatterns": [
+              "apps/valtimo/src/**/*.ts",
+              "apps/valtimo/src/**/*.html"
+            ]
+          }
+        },
+        "esbuild": {
+          "builder": "@angular-devkit/build-angular:application",
+          "options": {
+            "outputPath": {
+              "base": "deployment/valtimo"
+            },
+            "index": "apps/valtimo/src/index.html",
+            "browser": "apps/valtimo/src/main.ts",
+            "polyfills": [
+              "apps/valtimo/src/polyfills.ts"
+            ],
+            "tsConfig": "apps/valtimo/src/tsconfig.app.json",
+            "assets": [
+              "apps/valtimo/src/favicon.ico",
+              "apps/valtimo/src/assets",
+              {
+                "glob": "**/*",
+                "input": "projects/valtimo/layout/assets/img",
+                "output": "./valtimo-layout/img/"
+              },
+              {
+                "glob": "**/*",
+                "input": "projects/valtimo/shared/assets/core",
+                "output": "./valtimo-translation/core/"
+              },
+              {
+                "glob": "**/*",
+                "input": "node_modules/monaco-editor",
+                "output": "assets/monaco-editor"
+              },
+              {
+                "glob": "jquery.min.js",
+                "input": "node_modules/jquery/dist",
+                "output": "vendor"
+              },
+              {
+                "glob": "jquery-ui.min.js",
+                "input": "node_modules/components-jqueryui",
+                "output": "vendor"
+              },
+              {
+                "glob": "popper.js",
+                "input": "node_modules/popper.js/dist/umd",
+                "output": "vendor"
+              },
+              {
+                "glob": "bootstrap.js",
+                "input": "node_modules/bootstrap/dist/js",
+                "output": "vendor"
+              },
+              {
+                "glob": "bootstrap-datetimepicker.min.js",
+                "input": "node_modules/@foxythemes/bootstrap-datetime-picker-bs4/js",
+                "output": "vendor"
+              },
+              {
+                "glob": "perfect-scrollbar.min.js",
+                "input": "node_modules/perfect-scrollbar/dist",
+                "output": "vendor"
+              },
+              {
+                "glob": "select2.min.js",
+                "input": "node_modules/select2/dist/js",
+                "output": "vendor"
+              },
+              {
+                "glob": "app.js",
+                "input": "node_modules/@valtimo/layout/assets/js",
+                "output": "vendor/layout"
+              },
+              {
+                "glob": "native-shim.js",
+                "input": "node_modules/@webcomponents/custom-elements/src",
+                "output": "vendor"
+              },
+              {
+                "glob": "dmn-modeler.development.js",
+                "input": "node_modules/dmn-js/dist",
+                "output": "vendor"
+              }
+            ],
+            "styles": [
+              "node_modules/bootstrap/dist/css/bootstrap.min.css",
+              "node_modules/perfect-scrollbar/css/perfect-scrollbar.css",
+              "node_modules/@mdi/font/css/materialdesignicons.css",
+              "node_modules/@foxythemes/bootstrap-datetime-picker-bs4/css/bootstrap-datetimepicker.css",
+              "node_modules/swagger-ui/dist/swagger-ui.css",
+              "node_modules/dmn-js/dist/assets/diagram-js.css",
+              "node_modules/dmn-js/dist/assets/dmn-js-decision-table.css",
+              "node_modules/dmn-js/dist/assets/dmn-js-decision-table-controls.css",
+              "node_modules/dmn-js/dist/assets/dmn-js-drd.css",
+              "node_modules/dmn-js/dist/assets/dmn-js-literal-expression.css",
+              "node_modules/dmn-js/dist/assets/dmn-js-shared.css",
+              "node_modules/dmn-js/dist/assets/dmn-font/css/dmn.css",
+              "node_modules/dmn-js/dist/assets/dmn-font/css/dmn-embedded.css",
+              "node_modules/dmn-js/dist/assets/dmn-font/css/dmn-codes.css",
+              "node_modules/bpmn-js/dist/assets/diagram-js.css",
+              "node_modules/bpmn-js/dist/assets/bpmn-font/css/bpmn.css",
+              "node_modules/bpmn-js/dist/assets/bpmn-font/css/bpmn-codes.css",
+              "node_modules/bpmn-js/dist/assets/bpmn-font/css/bpmn-embedded.css",
+              "node_modules/@bpmn-io/properties-panel/dist/assets/properties-panel.css",
+              "node_modules/ol/ol.css",
+              "node_modules/@valtimo/components/assets/css/ng-multiselect-dropdown.theme.scss",
+              "node_modules/@valtimo/layout/assets/css/app.css",
+              "apps/valtimo/src/styles.scss",
+              "node_modules/flatpickr/dist/flatpickr.css",
+              "node_modules/@valtimo/components/assets/css/carbon.scss",
+              "node_modules/@valtimo/components/assets/css/color.scss",
+              "node_modules/@valtimo/components/assets/css/compatibility.scss",
+              "node_modules/@valtimo/components/assets/css/design-tokens.css",
+              "node_modules/@valtimo/components/assets/css/formio-carbon.scss"
+            ],
+            "scripts": [],
+            "allowedCommonJsDependencies": [
+              "swagger-ui",
+              "bpmn-js-properties-panel",
+              "lodash",
+              "hammerjs",
+              "camunda-bpmn-moddle/lib",
+              "object-refs",
+              "heatmap.js-fixed"
+            ],
+            "extractLicenses": false,
+            "sourceMap": true,
+            "optimization": false,
+            "namedChunks": true
+          },
+          "configurations": {
+            "production": {
+              "fileReplacements": [
+                {
+                  "replace": "apps/valtimo/src/environments/environment.ts",
+                  "with": "apps/valtimo/src/environments/environment.prod.ts"
+                }
+              ],
+              "optimization": true,
+              "outputHashing": "all",
+              "sourceMap": false,
+              "namedChunks": false,
+              "extractLicenses": true,
+              "budgets": [
+                {
+                  "type": "anyComponentStyle",
+                  "maximumWarning": "6kb"
+                }
+              ]
+            },
+            "test": {
+              "outputHashing": "all",
+              "sourceMap": false,
+              "extractLicenses": true,
+              "budgets": [
+                {
+                  "type": "initial",
+                  "maximumWarning": "2mb",
+                  "maximumError": "5mb"
+                },
+                {
+                  "type": "anyComponentStyle",
+                  "maximumWarning": "6kb"
+                }
+              ]
+            },
+            "development": {}
+          },
+          "defaultConfiguration": "development"
+        },
+        "serve-original": {
+          "builder": "@angular-devkit/build-angular:dev-server",
+          "options": {
+            "proxyConfig": "proxy.conf.json",
+            "buildTarget": "valtimo:esbuild:development",
+            "hmr": false
+          },
+          "configurations": {
+            "production": {
+              "buildTarget": "valtimo:esbuild:production"
+            },
+            "development": {
+              "buildTarget": "valtimo:esbuild:development"
+            }
+          },
+          "defaultConfiguration": "development"
+        }
+      }
+    },
+    "evenementenvergunning": {
+      "root": "apps/evenementenvergunning",
+      "sourceRoot": "apps/evenementenvergunning/src",
+      "projectType": "application",
+      "prefix": "app",
+      "schematics": {
+        "@schematics/angular:component": {
+          "style": "scss"
+        }
+      },
+      "architect": {
+        "build": {
+          "builder": "@angular-architects/native-federation:build",
+          "options": {},
+          "configurations": {
+            "production": {
+              "target": "evenementenvergunning:esbuild:production"
+            },
+            "development": {
+              "target": "evenementenvergunning:esbuild:development"
+            },
+            "test": {
+              "target": "evenementenvergunning:esbuild:test"
+            }
+          },
+          "defaultConfiguration": "production"
+        },
+        "serve": {
+          "builder": "@angular-architects/native-federation:build",
+          "options": {
+            "target": "evenementenvergunning:serve-original:development",
+            "rebuildDelay": 0,
+            "dev": true,
+            "port": 4200,
+            "open": false
+          },
+          "configurations": {
+            "production": {
+              "target": "evenementenvergunning:serve-original:production"
+            }
+          }
+        },
+        "extract-i18n": {
+          "builder": "@angular-devkit/build-angular:extract-i18n",
+          "options": {
+            "buildTarget": "evenementenvergunning:build"
+          }
+        },
+        "test": {
+          "builder": "@angular-devkit/build-angular:karma",
+          "options": {
+            "main": "apps/evenementenvergunning/src/test.ts",
+            "polyfills": "apps/evenementenvergunning/src/polyfills.ts",
+            "tsConfig": "apps/evenementenvergunning/src/tsconfig.spec.json",
+            "karmaConfig": "apps/evenementenvergunning/src/karma.conf.js",
+            "styles": [
+              "apps/evenementenvergunning/src/styles.scss"
+            ],
+            "scripts": [],
+            "assets": [
+              "apps/evenementenvergunning/src/favicon.ico",
+              "apps/evenementenvergunning/src/assets"
+            ]
+          }
+        },
+        "lint": {
+          "builder": "@angular-eslint/builder:lint",
+          "options": {
+            "lintFilePatterns": [
+              "apps/evenementenvergunning/src/**/*.ts",
+              "apps/evenementenvergunning/src/**/*.html"
+            ]
+          }
+        },
+        "esbuild": {
+          "builder": "@angular-devkit/build-angular:application",
+          "options": {
+            "outputPath": {
+              "base": "deployment/evenementenvergunning"
+            },
+            "index": "apps/evenementenvergunning/src/index.html",
+            "browser": "apps/evenementenvergunning/src/main.ts",
+            "polyfills": [
+              "apps/evenementenvergunning/src/polyfills.ts"
+            ],
+            "tsConfig": "apps/evenementenvergunning/src/tsconfig.app.json",
+            "assets": [
+              "apps/evenementenvergunning/src/favicon.ico",
+              "apps/evenementenvergunning/src/assets",
+              {
+                "glob": "**/*",
+                "input": "projects/valtimo/layout/assets/img",
+                "output": "./valtimo-layout/img/"
+              },
+              {
+                "glob": "**/*",
+                "input": "projects/valtimo/shared/assets/core",
+                "output": "./valtimo-translation/core/"
+              },
+              {
+                "glob": "**/*",
+                "input": "node_modules/monaco-editor",
+                "output": "assets/monaco-editor"
+              },
+              {
+                "glob": "jquery.min.js",
+                "input": "node_modules/jquery/dist",
+                "output": "vendor"
+              },
+              {
+                "glob": "jquery-ui.min.js",
+                "input": "node_modules/components-jqueryui",
+                "output": "vendor"
+              },
+              {
+                "glob": "popper.js",
+                "input": "node_modules/popper.js/dist/umd",
+                "output": "vendor"
+              },
+              {
+                "glob": "bootstrap.js",
+                "input": "node_modules/bootstrap/dist/js",
+                "output": "vendor"
+              },
+              {
+                "glob": "bootstrap-datetimepicker.min.js",
+                "input": "node_modules/@foxythemes/bootstrap-datetime-picker-bs4/js",
+                "output": "vendor"
+              },
+              {
+                "glob": "perfect-scrollbar.min.js",
+                "input": "node_modules/perfect-scrollbar/dist",
+                "output": "vendor"
+              },
+              {
+                "glob": "select2.min.js",
+                "input": "node_modules/select2/dist/js",
+                "output": "vendor"
+              },
+              {
+                "glob": "app.js",
+                "input": "node_modules/@valtimo/layout/assets/js",
+                "output": "vendor/layout"
+              },
+              {
+                "glob": "native-shim.js",
+                "input": "node_modules/@webcomponents/custom-elements/src",
+                "output": "vendor"
+              },
+              {
+                "glob": "dmn-modeler.development.js",
+                "input": "node_modules/dmn-js/dist",
+                "output": "vendor"
+              }
+            ],
+            "styles": [
+              "node_modules/bootstrap/dist/css/bootstrap.min.css",
+              "node_modules/perfect-scrollbar/css/perfect-scrollbar.css",
+              "node_modules/@mdi/font/css/materialdesignicons.css",
+              "node_modules/@foxythemes/bootstrap-datetime-picker-bs4/css/bootstrap-datetimepicker.css",
+              "node_modules/swagger-ui/dist/swagger-ui.css",
+              "node_modules/dmn-js/dist/assets/diagram-js.css",
+              "node_modules/dmn-js/dist/assets/dmn-js-decision-table.css",
+              "node_modules/dmn-js/dist/assets/dmn-js-decision-table-controls.css",
+              "node_modules/dmn-js/dist/assets/dmn-js-drd.css",
+              "node_modules/dmn-js/dist/assets/dmn-js-literal-expression.css",
+              "node_modules/dmn-js/dist/assets/dmn-js-shared.css",
+              "node_modules/dmn-js/dist/assets/dmn-font/css/dmn.css",
+              "node_modules/dmn-js/dist/assets/dmn-font/css/dmn-embedded.css",
+              "node_modules/dmn-js/dist/assets/dmn-font/css/dmn-codes.css",
+              "node_modules/bpmn-js/dist/assets/diagram-js.css",
+              "node_modules/bpmn-js/dist/assets/bpmn-font/css/bpmn.css",
+              "node_modules/bpmn-js/dist/assets/bpmn-font/css/bpmn-codes.css",
+              "node_modules/bpmn-js/dist/assets/bpmn-font/css/bpmn-embedded.css",
+              "node_modules/@bpmn-io/properties-panel/dist/assets/properties-panel.css",
+              "node_modules/ol/ol.css",
+              "node_modules/@valtimo/components/assets/css/ng-multiselect-dropdown.theme.scss",
+              "node_modules/@valtimo/layout/assets/css/app.css",
+              "apps/evenementenvergunning/src/styles.scss",
+              "node_modules/flatpickr/dist/flatpickr.css",
+              "node_modules/@valtimo/components/assets/css/carbon.scss",
+              "node_modules/@valtimo/components/assets/css/color.scss",
+              "node_modules/@valtimo/components/assets/css/compatibility.scss",
+              "node_modules/@valtimo/components/assets/css/design-tokens.css",
+              "node_modules/@valtimo/components/assets/css/formio-carbon.scss"
+            ],
+            "scripts": [],
+            "allowedCommonJsDependencies": [
+              "swagger-ui",
+              "bpmn-js-properties-panel",
+              "lodash",
+              "hammerjs",
+              "camunda-bpmn-moddle/lib",
+              "object-refs",
+              "heatmap.js-fixed"
+            ],
+            "extractLicenses": false,
+            "sourceMap": true,
+            "optimization": false,
+            "namedChunks": true
+          },
+          "configurations": {
+            "production": {
+              "fileReplacements": [
+                {
+                  "replace": "apps/evenementenvergunning/src/environments/environment.ts",
+                  "with": "apps/evenementenvergunning/src/environments/environment.prod.ts"
+                },
+                {
+                  "replace": "apps/evenementenvergunning/src/app/app-plugins.ts",
+                  "with": "apps/evenementenvergunning/src/app/app-plugins.prod.ts"
+                }
+              ],
+              "optimization": true,
+              "outputHashing": "all",
+              "sourceMap": false,
+              "namedChunks": false,
+              "extractLicenses": true,
+              "budgets": [
+                {
+                  "type": "anyComponentStyle",
+                  "maximumWarning": "6kb"
+                }
+              ]
+            },
+            "test": {
+              "outputHashing": "all",
+              "sourceMap": false,
+              "extractLicenses": true,
+              "budgets": [
+                {
+                  "type": "initial",
+                  "maximumWarning": "2mb",
+                  "maximumError": "5mb"
+                },
+                {
+                  "type": "anyComponentStyle",
+                  "maximumWarning": "6kb"
+                }
+              ]
+            },
+            "development": {}
+          },
+          "defaultConfiguration": "development"
+        },
+        "serve-original": {
+          "builder": "@angular-devkit/build-angular:dev-server",
+          "options": {
+            "proxyConfig": "proxy.conf.json",
+            "buildTarget": "evenementenvergunning:esbuild:development",
+            "hmr": false
+          },
+          "configurations": {
+            "production": {
+              "buildTarget": "evenementenvergunning:esbuild:production"
+            },
+            "development": {
+              "buildTarget": "evenementenvergunning:esbuild:development"
+            }
+          },
+          "defaultConfiguration": "development"
         }
       }
     },
@@ -263,7 +1080,7 @@
         "test": {
           "builder": "@angular-devkit/build-angular:karma",
           "options": {
-            "main": "src/test.ts",
+            "main": "apps/dev/src/test.ts",
             "tsConfig": "projects/valtimo/layout/tsconfig.spec.json",
             "karmaConfig": "projects/valtimo/layout/karma.conf.js"
           }
@@ -300,7 +1117,7 @@
         "test": {
           "builder": "@angular-devkit/build-angular:karma",
           "options": {
-            "main": "src/test.ts",
+            "main": "apps/dev/src/test.ts",
             "tsConfig": "projects/valtimo/components/tsconfig.spec.json",
             "karmaConfig": "projects/valtimo/components/karma.conf.js"
           }
@@ -337,7 +1154,7 @@
         "test": {
           "builder": "@angular-devkit/build-angular:karma",
           "options": {
-            "main": "src/test.ts",
+            "main": "apps/dev/src/test.ts",
             "tsConfig": "projects/valtimo/task/tsconfig.spec.json",
             "karmaConfig": "projects/valtimo/task/karma.conf.js"
           }
@@ -374,7 +1191,7 @@
         "test": {
           "builder": "@angular-devkit/build-angular:karma",
           "options": {
-            "main": "src/test.ts",
+            "main": "apps/dev/src/test.ts",
             "tsConfig": "projects/valtimo/task-management/tsconfig.spec.json",
             "karmaConfig": "projects/valtimo/task-management/karma.conf.js"
           }
@@ -414,7 +1231,7 @@
         "test": {
           "builder": "@angular-devkit/build-angular:karma",
           "options": {
-            "main": "src/test.ts",
+            "main": "apps/dev/src/test.ts",
             "tsConfig": "projects/valtimo/access-control/tsconfig.spec.json",
             "karmaConfig": "projects/valtimo/access-control/karma.conf.js"
           }
@@ -454,7 +1271,7 @@
         "test": {
           "builder": "@angular-devkit/build-angular:karma",
           "options": {
-            "main": "src/test.ts",
+            "main": "apps/dev/src/test.ts",
             "tsConfig": "projects/valtimo/access-control-management/tsconfig.spec.json",
             "karmaConfig": "projects/valtimo/access-control-management/karma.conf.js"
           }
@@ -491,7 +1308,7 @@
         "test": {
           "builder": "@angular-devkit/build-angular:karma",
           "options": {
-            "main": "src/test.ts",
+            "main": "apps/dev/src/test.ts",
             "tsConfig": "projects/valtimo/security/tsconfig.spec.json",
             "karmaConfig": "projects/valtimo/security/karma.conf.js"
           }
@@ -528,7 +1345,7 @@
         "test": {
           "builder": "@angular-devkit/build-angular:karma",
           "options": {
-            "main": "src/test.ts",
+            "main": "apps/dev/src/test.ts",
             "tsConfig": "projects/valtimo/case/tsconfig.spec.json",
             "karmaConfig": "projects/valtimo/case/karma.conf.js"
           }
@@ -565,7 +1382,7 @@
         "test": {
           "builder": "@angular-devkit/build-angular:karma",
           "options": {
-            "main": "src/test.ts",
+            "main": "apps/dev/src/test.ts",
             "tsConfig": "projects/valtimo/case-migration/tsconfig.spec.json",
             "karmaConfig": "projects/valtimo/case-migration/karma.conf.js"
           }
@@ -602,7 +1419,7 @@
         "test": {
           "builder": "@angular-devkit/build-angular:karma",
           "options": {
-            "main": "src/test.ts",
+            "main": "apps/dev/src/test.ts",
             "tsConfig": "projects/valtimo/process/tsconfig.spec.json",
             "karmaConfig": "projects/valtimo/process/karma.conf.js"
           }
@@ -639,7 +1456,7 @@
         "test": {
           "builder": "@angular-devkit/build-angular:karma",
           "options": {
-            "main": "src/test.ts",
+            "main": "apps/dev/src/test.ts",
             "tsConfig": "projects/valtimo/dashboard/tsconfig.spec.json",
             "karmaConfig": "projects/valtimo/dashboard/karma.conf.js"
           }
@@ -679,7 +1496,7 @@
         "test": {
           "builder": "@angular-devkit/build-angular:karma",
           "options": {
-            "main": "src/test.ts",
+            "main": "apps/dev/src/test.ts",
             "tsConfig": "projects/valtimo/dashboard-management/tsconfig.spec.json",
             "karmaConfig": "projects/valtimo/dashboard-management/karma.conf.js"
           }
@@ -716,7 +1533,7 @@
         "test": {
           "builder": "@angular-devkit/build-angular:karma",
           "options": {
-            "main": "src/test.ts",
+            "main": "apps/dev/src/test.ts",
             "tsConfig": "projects/valtimo/document/tsconfig.spec.json",
             "karmaConfig": "projects/valtimo/document/karma.conf.js"
           }
@@ -753,7 +1570,7 @@
         "test": {
           "builder": "@angular-devkit/build-angular:karma",
           "options": {
-            "main": "src/test.ts",
+            "main": "apps/dev/src/test.ts",
             "tsConfig": "projects/valtimo/zgw/tsconfig.spec.json",
             "karmaConfig": "projects/valtimo/zgw/karma.conf.js"
           }
@@ -790,7 +1607,7 @@
         "test": {
           "builder": "@angular-devkit/build-angular:karma",
           "options": {
-            "main": "src/test.ts",
+            "main": "apps/dev/src/test.ts",
             "tsConfig": "projects/valtimo/logging/tsconfig.spec.json",
             "karmaConfig": "projects/valtimo/logging/karma.conf.js"
           }
@@ -827,7 +1644,7 @@
         "test": {
           "builder": "@angular-devkit/build-angular:karma",
           "options": {
-            "main": "src/test.ts",
+            "main": "apps/dev/src/test.ts",
             "tsConfig": "projects/valtimo/account/tsconfig.spec.json",
             "karmaConfig": "projects/valtimo/account/karma.conf.js"
           }
@@ -864,7 +1681,7 @@
         "test": {
           "builder": "@angular-devkit/build-angular:karma",
           "options": {
-            "main": "src/test.ts",
+            "main": "apps/dev/src/test.ts",
             "tsConfig": "projects/valtimo/choice-field/tsconfig.spec.json",
             "karmaConfig": "projects/valtimo/choice-field/karma.conf.js"
           }
@@ -901,7 +1718,7 @@
         "test": {
           "builder": "@angular-devkit/build-angular:karma",
           "options": {
-            "main": "src/test.ts",
+            "main": "apps/dev/src/test.ts",
             "tsConfig": "projects/valtimo/form/tsconfig.spec.json",
             "karmaConfig": "projects/valtimo/form/karma.conf.js"
           }
@@ -938,7 +1755,7 @@
         "test": {
           "builder": "@angular-devkit/build-angular:karma",
           "options": {
-            "main": "src/test.ts",
+            "main": "apps/dev/src/test.ts",
             "tsConfig": "projects/valtimo/analyse/tsconfig.spec.json",
             "karmaConfig": "projects/valtimo/analyse/karma.conf.js"
           }
@@ -975,7 +1792,7 @@
         "test": {
           "builder": "@angular-devkit/build-angular:karma",
           "options": {
-            "main": "src/test.ts",
+            "main": "apps/dev/src/test.ts",
             "tsConfig": "projects/valtimo/swagger/tsconfig.spec.json",
             "karmaConfig": "projects/valtimo/swagger/karma.conf.js"
           }
@@ -1012,7 +1829,7 @@
         "test": {
           "builder": "@angular-devkit/build-angular:karma",
           "options": {
-            "main": "src/test.ts",
+            "main": "apps/dev/src/test.ts",
             "tsConfig": "projects/valtimo/process-management/tsconfig.spec.json",
             "karmaConfig": "projects/valtimo/process-management/karma.conf.js"
           }
@@ -1049,7 +1866,7 @@
         "test": {
           "builder": "@angular-devkit/build-angular:karma",
           "options": {
-            "main": "src/test.ts",
+            "main": "apps/dev/src/test.ts",
             "tsConfig": "projects/valtimo/decision/tsconfig.spec.json",
             "karmaConfig": "projects/valtimo/decision/karma.conf.js"
           }
@@ -1086,7 +1903,7 @@
         "test": {
           "builder": "@angular-devkit/build-angular:karma",
           "options": {
-            "main": "src/test.ts",
+            "main": "apps/dev/src/test.ts",
             "tsConfig": "projects/valtimo/milestone/tsconfig.spec.json",
             "karmaConfig": "projects/valtimo/milestone/karma.conf.js"
           }
@@ -1123,7 +1940,7 @@
         "test": {
           "builder": "@angular-devkit/build-angular:karma",
           "options": {
-            "main": "src/test.ts",
+            "main": "apps/dev/src/test.ts",
             "tsConfig": "projects/valtimo/form-management/tsconfig.spec.json",
             "karmaConfig": "projects/valtimo/form-management/karma.conf.js"
           }
@@ -1160,7 +1977,7 @@
         "test": {
           "builder": "@angular-devkit/build-angular:karma",
           "options": {
-            "main": "src/test.ts",
+            "main": "apps/dev/src/test.ts",
             "tsConfig": "projects/valtimo/form-view-model/tsconfig.spec.json",
             "karmaConfig": "projects/valtimo/form-view-model/karma.conf.js"
           }
@@ -1197,7 +2014,7 @@
         "test": {
           "builder": "@angular-devkit/build-angular:karma",
           "options": {
-            "main": "src/test.ts",
+            "main": "apps/dev/src/test.ts",
             "tsConfig": "projects/valtimo/form-flow-management/tsconfig.spec.json",
             "karmaConfig": "projects/valtimo/form-flow-management/karma.conf.js"
           }
@@ -1234,7 +2051,7 @@
         "test": {
           "builder": "@angular-devkit/build-angular:karma",
           "options": {
-            "main": "src/test.ts",
+            "main": "apps/dev/src/test.ts",
             "tsConfig": "projects/valtimo/process-link/tsconfig.spec.json",
             "karmaConfig": "projects/valtimo/process-link/karma.conf.js"
           }
@@ -1271,7 +2088,7 @@
         "test": {
           "builder": "@angular-devkit/build-angular:karma",
           "options": {
-            "main": "src/test.ts",
+            "main": "apps/dev/src/test.ts",
             "tsConfig": "projects/valtimo/migration/tsconfig.spec.json",
             "karmaConfig": "projects/valtimo/migration/karma.conf.js"
           }
@@ -1308,7 +2125,7 @@
         "test": {
           "builder": "@angular-devkit/build-angular:karma",
           "options": {
-            "main": "src/test.ts",
+            "main": "apps/dev/src/test.ts",
             "tsConfig": "projects/valtimo/case-management/tsconfig.spec.json",
             "karmaConfig": "projects/valtimo/case-management/karma.conf.js"
           }
@@ -1345,7 +2162,7 @@
         "test": {
           "builder": "@angular-devkit/build-angular:karma",
           "options": {
-            "main": "src/test.ts",
+            "main": "apps/dev/src/test.ts",
             "tsConfig": "projects/valtimo/keycloak/tsconfig.spec.json",
             "karmaConfig": "projects/valtimo/keycloak/karma.conf.js"
           }
@@ -1382,7 +2199,7 @@
         "test": {
           "builder": "@angular-devkit/build-angular:karma",
           "options": {
-            "main": "src/test.ts",
+            "main": "apps/dev/src/test.ts",
             "tsConfig": "projects/valtimo/bootstrap/tsconfig.spec.json",
             "karmaConfig": "projects/valtimo/bootstrap/karma.conf.js"
           }
@@ -1419,7 +2236,7 @@
         "test": {
           "builder": "@angular-devkit/build-angular:karma",
           "options": {
-            "main": "src/test.ts",
+            "main": "apps/dev/src/test.ts",
             "tsConfig": "projects/valtimo/shared/tsconfig.spec.json",
             "karmaConfig": "projects/valtimo/shared/karma.conf.js"
           }
@@ -1456,7 +2273,7 @@
         "test": {
           "builder": "@angular-devkit/build-angular:karma",
           "options": {
-            "main": "src/test.ts",
+            "main": "apps/dev/src/test.ts",
             "tsConfig": "projects/valtimo/resource/tsconfig.spec.json",
             "karmaConfig": "projects/valtimo/resource/karma.conf.js"
           }
@@ -1493,7 +2310,7 @@
         "test": {
           "builder": "@angular-devkit/build-angular:karma",
           "options": {
-            "main": "src/test.ts",
+            "main": "apps/dev/src/test.ts",
             "tsConfig": "projects/valtimo/plugin-management/tsconfig.spec.json",
             "karmaConfig": "projects/valtimo/plugin-management/karma.conf.js"
           }
@@ -1530,7 +2347,7 @@
         "test": {
           "builder": "@angular-devkit/build-angular:karma",
           "options": {
-            "main": "src/test.ts",
+            "main": "apps/dev/src/test.ts",
             "tsConfig": "projects/valtimo/plugin/tsconfig.spec.json",
             "karmaConfig": "projects/valtimo/plugin/karma.conf.js"
           }
@@ -1570,7 +2387,7 @@
         "test": {
           "builder": "@angular-devkit/build-angular:karma",
           "options": {
-            "main": "src/test.ts",
+            "main": "apps/dev/src/test.ts",
             "tsConfig": "projects/valtimo/object-management/tsconfig.spec.json",
             "karmaConfig": "projects/valtimo/object-management/karma.conf.js"
           }
@@ -1610,7 +2427,7 @@
         "test": {
           "builder": "@angular-devkit/build-angular:karma",
           "options": {
-            "main": "src/test.ts",
+            "main": "apps/dev/src/test.ts",
             "tsConfig": "projects/valtimo/sse/tsconfig.spec.json",
             "karmaConfig": "projects/valtimo/sse/karma.conf.js"
           }
@@ -1618,7 +2435,10 @@
         "lint": {
           "builder": "@angular-eslint/builder:lint",
           "options": {
-            "lintFilePatterns": ["projects/valtimo/sse/**/*.ts", "projects/valtimo/sse/**/*.html"]
+            "lintFilePatterns": [
+              "projects/valtimo/sse/**/*.ts",
+              "projects/valtimo/sse/**/*.html"
+            ]
           }
         }
       }
@@ -1647,7 +2467,7 @@
         "test": {
           "builder": "@angular-devkit/build-angular:karma",
           "options": {
-            "main": "src/test.ts",
+            "main": "apps/dev/src/test.ts",
             "tsConfig": "projects/valtimo/object/tsconfig.spec.json",
             "karmaConfig": "projects/valtimo/object/karma.conf.js"
           }
@@ -1684,7 +2504,7 @@
         "test": {
           "builder": "@angular-devkit/build-angular:karma",
           "options": {
-            "main": "src/test.ts",
+            "main": "apps/dev/src/test.ts",
             "tsConfig": "projects/valtimo/iko/tsconfig.spec.json",
             "karmaConfig": "projects/valtimo/iko/karma.conf.js"
           }
@@ -1721,7 +2541,7 @@
         "test": {
           "builder": "@angular-devkit/build-angular:karma",
           "options": {
-            "main": "src/test.ts",
+            "main": "apps/dev/src/test.ts",
             "tsConfig": "projects/valtimo/building-block-management/tsconfig.spec.json",
             "karmaConfig": "projects/valtimo/building-block-management/karma.conf.js"
           }
@@ -1758,7 +2578,7 @@
         "test": {
           "builder": "@angular-devkit/build-angular:karma",
           "options": {
-            "main": "src/test.ts",
+            "main": "apps/dev/src/test.ts",
             "tsConfig": "projects/valtimo/teams/tsconfig.spec.json",
             "karmaConfig": "projects/valtimo/teams/karma.conf.js"
           }
@@ -1805,7 +2625,9 @@
     }
   },
   "cli": {
-    "schematicCollections": ["@angular-eslint/schematics"],
+    "schematicCollections": [
+      "@angular-eslint/schematics"
+    ],
     "analytics": false
   }
 }

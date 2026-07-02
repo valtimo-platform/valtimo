@@ -4,19 +4,77 @@ permissions:
   contents: read
 
 on:
+  workflow_call:
+    inputs:
+      project_version:
+        description: "Base semantic version (e.g. 13.6.0)"
+        required: true
+        type: string
   workflow_dispatch:
+    inputs:
+      project_version:
+        description: "Base semantic version (e.g. 13.6.0)"
+        required: true
 
 env:
-  ORG_GRADLE_PROJECT_includeDev: false
+  PROJECT_VERSION: ${{ inputs.project_version || github.event.inputs.project_version }}
 
 jobs:
   build_run_tests:
     uses: ./.github/workflows/backend_build_test_libraries.yml
 
+  build_and_push_gzac_image:
+    name: Build and push gzac-backend image
+    needs:
+      - build_run_tests
+    permissions:
+      contents: read
+      packages: write
+    uses: ./.github/workflows/backend_build_push_docker_image.yml
+    with:
+      backend_libraries_build_artifact_name: ${{ needs.build_run_tests.outputs.build_artifact_name }}
+      variant: gzac
+      push_to_dockerhub: true
+      release_image_tag: ${{ inputs.project_version || github.event.inputs.project_version }}
+      project_version: ${{ inputs.project_version || github.event.inputs.project_version }}
+    secrets: inherit
+
+  build_and_push_valtimo_image:
+    name: Build and push valtimo-backend image
+    needs:
+      - build_run_tests
+    permissions:
+      contents: read
+      packages: write
+    uses: ./.github/workflows/backend_build_push_docker_image.yml
+    with:
+      backend_libraries_build_artifact_name: ${{ needs.build_run_tests.outputs.build_artifact_name }}
+      variant: valtimo
+      push_to_dockerhub: true
+      release_image_tag: ${{ inputs.project_version || github.event.inputs.project_version }}
+      project_version: ${{ inputs.project_version || github.event.inputs.project_version }}
+    secrets: inherit
+
+  build_and_push_evenementenvergunning_image:
+    name: Build and push gzac-evenementenvergunning-backend image
+    needs:
+      - build_run_tests
+    permissions:
+      contents: read
+      packages: write
+    uses: ./.github/workflows/backend_build_push_docker_image.yml
+    with:
+      backend_libraries_build_artifact_name: ${{ needs.build_run_tests.outputs.build_artifact_name }}
+      variant: evenementenvergunning
+      push_to_dockerhub: true
+      release_image_tag: ${{ inputs.project_version || github.event.inputs.project_version }}
+      project_version: ${{ inputs.project_version || github.event.inputs.project_version }}
+    secrets: inherit
+
   publish:
-    needs: [build_run_tests]
+    needs:
+      - build_run_tests
     runs-on: ubuntu-latest
-    if: ${{ startsWith(github.ref_name, 'release/') }}
     env:
       SONATYPE_USERNAME: ${{ secrets.SONATYPE_USERNAME }}
       SONATYPE_PASSWORD: ${{ secrets.SONATYPE_PASSWORD }}
@@ -40,16 +98,8 @@ jobs:
           name: ${{ needs.build_run_tests.outputs.build_artifact_name }}
           path: .
 
-      - name: Compute version from branch
-        id: version
-        shell: bash
-        run: |
-          SEMVER_VERSION="${GITHUB_REF_NAME#release/}"
-          VERSION_RELEASE="${SEMVER_VERSION}.RELEASE"
-          echo "version_release=$VERSION_RELEASE" >> "$GITHUB_OUTPUT"
-
       - name: Check license compliance
-        run: ./gradlew -PincludeDev=false :backend:checkLicense
+        run: ./gradlew :backend:checkLicense
 
       - name: Fail if disallowed licenses found
         run: |
@@ -69,13 +119,13 @@ jobs:
         env:
           ORG_GRADLE_PROJECT_sonatypeUsername: ${{ env.SONATYPE_USERNAME }}
           ORG_GRADLE_PROJECT_sonatypePassword: ${{ env.SONATYPE_PASSWORD }}
-        run: ./gradlew -PincludeDev=false --no-parallel publishAllPublicationsToSonatypeRepository -PprojectVersion="${{ steps.version.outputs.version_release }}"
+        run: ./gradlew --no-parallel publishAllPublicationsToSonatypeRepository -PprojectVersion="${PROJECT_VERSION}.RELEASE"
 
       - name: Deploy with JReleaser to Maven Central
         env:
           ORG_GRADLE_PROJECT_sonatypeUsername: ${{ env.SONATYPE_USERNAME }}
           ORG_GRADLE_PROJECT_sonatypePassword: ${{ env.SONATYPE_PASSWORD }}
-        run: ./gradlew -PincludeDev=false :backend:jreleaserDeploy --stacktrace -PprojectVersion="${{ steps.version.outputs.version_release }}"
+        run: ./gradlew :backend:jreleaserDeploy --stacktrace -PprojectVersion="${PROJECT_VERSION}.RELEASE"
 
       - name: Archive Reports
         if: always()
