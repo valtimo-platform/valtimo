@@ -34,6 +34,7 @@ import {
   AccordionModule,
   ButtonModule,
   CheckboxModule,
+  ContentSwitcherModule,
   IconModule,
   InputModule,
   LayerModule,
@@ -53,7 +54,7 @@ import {ConditionTreeComponent} from './components/condition-tree/condition-tree
 import {DeleteRoleModalComponent} from './components/delete-role-modal/delete-role-modal.component';
 import {ExportRoleModalComponent} from './components/export-role-modal/export-role-modal.component';
 import {PermissionFormComponent} from './components/permission-form/permission-form.component';
-import {ActionDescriptionPipe, ActionLabelPipe} from './pipes';
+import {ActionDescriptionPipe, ActionLabelPipe, ActionTagTypePipe} from './pipes';
 
 @NgModule({
   declarations: [
@@ -90,6 +91,7 @@ import {ActionDescriptionPipe, ActionLabelPipe} from './pipes';
     TooltipIconModule,
     TabsModule,
     ToggleModule,
+    ContentSwitcherModule,
     AccordionModule,
     CheckboxModule,
     LayerModule,
@@ -98,6 +100,7 @@ import {ActionDescriptionPipe, ActionLabelPipe} from './pipes';
     AccessControlOverviewTabComponent,
     ActionLabelPipe,
     ActionDescriptionPipe,
+    ActionTagTypePipe,
   ],
 })
 export class AccessControlManagementModule {}

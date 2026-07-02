@@ -208,6 +208,27 @@ class PbacRegistryService(
 
     private fun extractFields(clazz: Class<*>): List<PbacConditionFieldDto> {
         val fields = mutableListOf<PbacConditionFieldDto>()
+        collectFields(clazz, prefix = "", depth = 0, path = mutableListOf(), into = fields)
+        return fields
+    }
+
+    /**
+     * Recursively collects condition fields as dotted paths (e.g. "documentDefinitionId.id.key") so
+     * nested properties can be used in conditions, not only top-level fields. Recursion is bounded
+     * by depth and a total cap, restricted to our own domain types, and guarded against cycles.
+     * This inspects class metadata only (no instances), so it is safe to run while building the
+     * registry.
+     */
+    private fun collectFields(
+        clazz: Class<*>,
+        prefix: String,
+        depth: Int,
+        path: MutableList<Class<*>>,
+        into: MutableList<PbacConditionFieldDto>,
+    ) {
+        if (into.size >= MAX_FIELDS || path.contains(clazz)) return
+        path.add(clazz)
+
         val seen = mutableSetOf<String>()
         var currentClass: Class<*>? = clazz
         while (currentClass != null && currentClass != Any::class.java) {
@@ -215,22 +236,35 @@ class PbacRegistryService(
                 if (field.name in seen) continue
                 if (field.isSynthetic) continue
                 if (java.lang.reflect.Modifier.isStatic(field.modifiers)) continue
-                val name = field.name
                 // Skip common framework/internal fields
-                if (name in EXCLUDED_FIELD_NAMES) continue
+                if (field.name in EXCLUDED_FIELD_NAMES) continue
                 // Skip all-uppercase constants
-                if (name == name.uppercase() && name.length > 1) continue
-                seen.add(name)
-                fields.add(
-                    PbacConditionFieldDto(
-                        name = name,
-                        type = simplifyTypeName(field.type),
-                    )
-                )
+                if (field.name == field.name.uppercase() && field.name.length > 1) continue
+                seen.add(field.name)
+
+                val name = if (prefix.isEmpty()) field.name else "$prefix.${field.name}"
+                into.add(PbacConditionFieldDto(name = name, type = simplifyTypeName(field.type)))
+
+                if (depth < MAX_FIELD_DEPTH && isNavigableType(field.type)) {
+                    collectFields(field.type, name, depth + 1, path, into)
+                }
             }
             currentClass = currentClass.superclass
         }
-        return fields
+
+        path.removeAt(path.size - 1)
+    }
+
+    /**
+     * Only navigate into our own (non-collection, non-enum) domain types; JDK and framework types
+     * have no useful nested comparison fields and would bloat the list.
+     */
+    private fun isNavigableType(type: Class<*>): Boolean {
+        if (type.isPrimitive || type.isEnum || type.isArray) return false
+        if (Collection::class.java.isAssignableFrom(type) || Map::class.java.isAssignableFrom(type)) {
+            return false
+        }
+        return SCAN_BASE_PACKAGES.any { type.name.startsWith(it) }
     }
 
     private fun extractFieldAliases(clazz: Class<*>): List<PbacFieldAliasDto> {
@@ -285,6 +319,11 @@ class PbacRegistryService(
         private val logger = KotlinLogging.logger {}
 
         private val SCAN_BASE_PACKAGES = listOf("com.ritense", "com.valtimo")
+
+        // Bounds for nested-field discovery: how deep to follow dotted paths (e.g. depth 3 allows
+        // "a.b.c.d"), and a hard cap on the number of fields per resource as a safety net.
+        private const val MAX_FIELD_DEPTH = 3
+        private const val MAX_FIELDS = 500
 
         private val EXCLUDED_FIELD_NAMES = setOf(
             "serialVersionUID", "Companion", "logger", "LOG",

@@ -25,10 +25,9 @@
     background: var(--cds-layer-01, #f4f4f4);
     border-right: 1px solid var(--cds-border-subtle, #e0e0e0);
     display: flex;
-    flex: 0 0 18rem;
+    flex: 0 0 22rem;
     flex-direction: column;
     min-height: 0;
-    width: 18rem;
   }
 
   &__sidebar-header {
@@ -37,7 +36,7 @@
     display: flex;
     flex: 0 0 auto;
     justify-content: space-between;
-    padding: 0.25rem 0.5rem 0.25rem 1rem;
+    padding: 12px;
   }
 
   &__sidebar-title {
@@ -114,6 +113,7 @@
     ::ng-deep .cds--tag {
       margin: 0;
       max-width: none;
+      box-shadow: 0 0 0 1px var(--cds-layer-01);
     }
   }
 
@@ -127,6 +127,7 @@
     ::ng-deep .cds--tag {
       margin: 0;
       max-width: none;
+      box-shadow: 0 0 0 1px var(--cds-layer-01);
     }
   }
 

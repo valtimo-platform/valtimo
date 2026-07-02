@@ -46,6 +46,7 @@
       <valtimo-access-control-form-editor-tab
         [disabled]="editorDisabled$ | async"
         [model]="model"
+        [roleKey]="roleKey$ | async"
         (validEvent)="onValid($event)"
         (valueChangeEvent)="onValueChange($event)"
       ></valtimo-access-control-form-editor-tab>

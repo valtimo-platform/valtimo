@@ -26,7 +26,7 @@ import {
   signal,
 } from '@angular/core';
 import {FormArray, FormControl, FormGroup} from '@angular/forms';
-import {TrashCan16} from '@carbon/icons';
+import {Information16, TrashCan16} from '@carbon/icons';
 import {SelectItem} from '@valtimo/components';
 import {IconService} from 'carbon-components-angular';
 import {BehaviorSubject, Subscription} from 'rxjs';
@@ -43,12 +43,16 @@ export class PermissionFormComponent implements OnInit, AfterViewInit, OnDestroy
   @Input() public group!: FormGroup;
   @Input() public index = 0;
   @Input() public disabled = false;
+  @Input() public roleKey: string | null = null;
 
   @Output() public removeEvent = new EventEmitter<void>();
 
   public resourceTypeItems: SelectItem[] = [];
   public actionItems: SelectItem[] = [];
   public contextResourceTypeItems: SelectItem[] = [];
+  // Whether the resource type has any related resources to scope to — gates the "Specific context"
+  // option in the context switcher.
+  public hasContextTargets = false;
 
   // The form is rendered (but visually hidden) from the start so the wrapped comboboxes can
   // initialize and fill in their preselected values. A spinner is shown until that has happened,
@@ -76,7 +80,7 @@ export class PermissionFormComponent implements OnInit, AfterViewInit, OnDestroy
     private readonly iconService: IconService,
     private readonly changeDetectorRef: ChangeDetectorRef
   ) {
-    this.iconService.registerAll([TrashCan16]);
+    this.iconService.registerAll([Information16, TrashCan16]);
   }
 
   public get resourceTypeValue(): string {
@@ -105,6 +109,13 @@ export class PermissionFormComponent implements OnInit, AfterViewInit, OnDestroy
   public get hasContextResource(): boolean {
     const value = this.contextResourceTypeValue;
     return !!value && value !== NO_CONTEXT_RESOURCE_TYPE;
+  }
+
+  // The three-way context choice, derived from the form: 'none' (context is ignored), 'noContext'
+  // (only applies when there is no context) or 'specific' (restricted to a context resource).
+  public get contextMode(): 'none' | 'noContext' | 'specific' {
+    if (!this.hasContext) return 'none';
+    return this.hasContextResource ? 'specific' : 'noContext';
   }
 
   public get actionsControl(): FormControl {
@@ -152,10 +163,28 @@ export class PermissionFormComponent implements OnInit, AfterViewInit, OnDestroy
     if (this._revealTimeoutId !== undefined) clearTimeout(this._revealTimeoutId);
   }
 
-  public onToggleContext(checked: boolean): void {
-    // No validators depend on this, so the form validity can never get stuck; setValue emits so the
-    // parent re-serializes (dropping or adding the context fields).
-    this.group.get('hasContext')!.setValue(checked);
+  // Applies a context-switcher choice to the form. 'none' clears context entirely; 'noContext'
+  // scopes the permission to the "no context" marker; 'specific' scopes it to a real context
+  // resource (keeping the current one, or defaulting to the first available target).
+  public onContextModeChange(mode: 'none' | 'noContext' | 'specific'): void {
+    if (this.disabled || mode === this.contextMode) return;
+
+    const hasContext = this.group.get('hasContext')!;
+    const contextResourceType = this.group.get('contextResourceType')!;
+
+    if (mode === 'none') {
+      hasContext.setValue(false);
+      return;
+    }
+
+    hasContext.setValue(true);
+    if (mode === 'noContext') {
+      contextResourceType.setValue(NO_CONTEXT_RESOURCE_TYPE);
+    } else if (!this.hasContextResource) {
+      const firstTarget = this.formEditorService.containerTargetItems(this.resourceTypeValue)[0]
+        ?.id;
+      contextResourceType.setValue(firstTarget ?? NO_CONTEXT_RESOURCE_TYPE);
+    }
   }
 
   public onActionToggle(action: string, checked: boolean): void {
@@ -193,11 +222,13 @@ export class PermissionFormComponent implements OnInit, AfterViewInit, OnDestroy
     );
   }
 
-  // The valid context resources depend on the selected resource type, so recompute whenever it
-  // changes. "No context" is always available; if the previously-selected context resource is no
-  // longer a valid target for the (changed) resource type, fall back to "No context".
+  // The context choices depend on the selected resource type, so recompute on change. The "specific
+  // context" dropdown lists only real target resources ("no context" is its own switcher mode); if
+  // the selected resource is no longer a valid target, fall back to the "no context" marker.
   private recomputeContextResourceTypeItems(): void {
     const validTargets = this.formEditorService.containerTargetItems(this.resourceTypeValue);
+    this.hasContextTargets = validTargets.length > 0;
+
     const current = this.contextResourceTypeValue;
     if (
       current &&
@@ -207,9 +238,9 @@ export class PermissionFormComponent implements OnInit, AfterViewInit, OnDestroy
       this.group.get('contextResourceType')!.setValue(NO_CONTEXT_RESOURCE_TYPE);
     }
 
-    this.contextResourceTypeItems = this.formEditorService.contextResourceTypeItems(
+    this.contextResourceTypeItems = this.formEditorService.containerTargetItems(
       this.resourceTypeValue,
-      this.contextResourceTypeValue
+      this.hasContextResource ? this.contextResourceTypeValue : null
     );
   }
 }
