@@ -114,9 +114,13 @@ const documentenApiPluginSpecification: PluginSpecification = {
       apiVersion: 'Documenten API versie',
       apiVersionTooltip: 'Selecteer de versie van de Documenten API',
       downloadDocumentMessage:
-        'Het downloaden van een document vanuit de Documenten API vereist geen configuratie.',
+        "Downloadt een document vanuit de Documenten API en slaat dit op als tijdelijk document. " +
+        "Het te downloaden document wordt bepaald op basis van de procesvariabele 'documentUrl' of 'documentId'; " +
+        "als beide aanwezig zijn heeft 'documentUrl' voorrang.",
       processVariableName:
         'Wat is de naam van de procesvariabele waarnaar u het document wilt downloaden?',
+      processVariableTooltip:
+        'De naam van de procesvariabele waarin de referentie naar het gedownloade document wordt opgeslagen.',
       linkDocumentToObjectMessage:
         "Koppelt het document waarvan de URL is opgeslagen in de procesvariabele 'documentUrl' aan een object. " +
         "Procesvariabelen kunnen worden gebruikt met de notatie 'pv:variabelenaam'.",
@@ -220,9 +224,13 @@ const documentenApiPluginSpecification: PluginSpecification = {
       apiVersion: 'Documenten API version',
       apiVersionTooltip: 'Select the version of the Documenten API',
       downloadDocumentMessage:
-        'Downloading a document form the Documenten API does not require any configuration.',
+        "Downloads a document from the Documenten API and stores it as a temporary document. " +
+        "The document is identified by either the 'documentUrl' or the 'documentId' process variable; " +
+        "when both are present 'documentUrl' takes precedence.",
       processVariableName:
         'What is the name of the process variable you want to download the document to?',
+      processVariableTooltip:
+        'The name of the process variable in which the reference to the downloaded document is stored.',
       linkDocumentToObjectMessage:
         "Links the document whose URL is stored in the process variable 'documentUrl' to an object. For Zaak items use the Zaken API to ensure backwards compatibility." +
         "Process variables can be referenced using the notation 'pv:variableName'.",
