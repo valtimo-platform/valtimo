@@ -442,14 +442,16 @@ class CaseAutoConfiguration {
         documentSearchService: JsonSchemaDocumentSearchService,
         outboxService: OutboxService,
         mapper: ObjectMapper,
-        caseListRowMapper: CaseListRowMapper
+        caseListRowMapper: CaseListRowMapper,
+        authorizationService: AuthorizationService
     ): CaseExporter {
         return CaseExporter(
             caseDefinitionListColumnRepository,
             documentSearchService,
             outboxService,
             mapper,
-            caseListRowMapper
+            caseListRowMapper,
+            authorizationService
         )
     }
 

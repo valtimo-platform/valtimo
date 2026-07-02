@@ -1,27 +1,13 @@
 [
     {
         "resourceType": "com.ritense.objectenapi.security.Object",
-        "action": "create",
-        "roleKey": "ROLE_ADMIN"
-    },
-    {
-        "resourceType": "com.ritense.objectenapi.security.Object",
-        "action": "modify",
-        "roleKey": "ROLE_ADMIN"
-    },
-    {
-        "resourceType": "com.ritense.objectenapi.security.Object",
-        "action": "view",
-        "roleKey": "ROLE_ADMIN"
-    },
-    {
-        "resourceType": "com.ritense.objectenapi.security.Object",
-        "action": "view_list",
-        "roleKey": "ROLE_ADMIN"
-    },
-    {
-        "resourceType": "com.ritense.objectenapi.security.Object",
-        "action": "delete",
+        "actions": [
+            "create",
+            "modify",
+            "view",
+            "view_list",
+            "delete"
+        ],
         "roleKey": "ROLE_ADMIN"
     }
 ]

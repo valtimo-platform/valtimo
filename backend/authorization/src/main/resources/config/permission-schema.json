@@ -1,6 +1,7 @@
 {
     "$schema": "http://json-schema.org/draft-07/schema#",
     "$id": "access-control-permissions.json",
+    "$comment": "This schema is HAND-MAINTAINED, not generated. When actions, resource types, condition fields, or container relationships change in the backend, update this file by hand to match. Keep the per-resourceType 'action'/'actions' enums in sync with the corresponding ResourceActionProvider (e.g. JsonSchemaDocumentActionProvider), and the 'condList.*' field enums in sync with the entity's authorizable fields. It is served by PermissionSchemaResource at GET /api/management/v1/permissions/schema and consumed only by the frontend access-control JSON editor (autocomplete + validation); it is NOT used for backend/deploy-time validation of *.permission.json files.",
     "type": "array",
     "title": "Role permissions",
     "description": "Permissions for the selected role. Each entry in the list grants the role one or more actions on a particular kind of resource in Valtimo (for example: 'view cases of type loans', or 'complete tasks where you are the assignee'). Multiple entries are combined with OR — the user is allowed to perform an action if ANY entry permits it.",
@@ -344,6 +345,8 @@
                                 "create",
                                 "delete",
                                 "export",
+                                "inspect",
+                                "inspect_modify",
                                 "modify",
                                 "view",
                                 "view_list"
@@ -360,6 +363,8 @@
                                     "create",
                                     "delete",
                                     "export",
+                                    "inspect",
+                                    "inspect_modify",
                                     "modify",
                                     "view",
                                     "view_list"
