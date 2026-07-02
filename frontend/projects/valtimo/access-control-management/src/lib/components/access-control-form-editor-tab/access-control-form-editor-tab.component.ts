@@ -48,6 +48,8 @@ export class AccessControlFormEditorTabComponent implements OnChanges, OnDestroy
 
   @Input() public model: EditorModel | null = null;
   @Input() public disabled: boolean | null = false;
+  // The role being edited on this page; surfaced in the permission-form's editor note.
+  @Input() public roleKey: string | null = null;
 
   @Output() public validEvent = new EventEmitter<boolean>();
   @Output() public valueChangeEvent = new EventEmitter<string>();

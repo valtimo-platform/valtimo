@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2026 Ritense BV, the Netherlands.
+ * Copyright 2015-2025 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,7 +14,26 @@
  * limitations under the License.
  */
 
-export * from './action-description.pipe';
-export * from './action-label.pipe';
-export * from './action-tag-type.pipe';
-export * from './resource-type-label.pipe';
+.role-metadata-modal {
+  // The role key field: its label, the picker/manual input, and the mode-switch button stacked.
+  &__field {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+
+    v-select {
+      display: block;
+      width: 100%;
+    }
+
+    input {
+      width: 100%;
+    }
+  }
+
+  // Ghost button that toggles between the role picker and manual entry; kept compact and left-aligned
+  // beneath the input.
+  &__mode-switch {
+    align-self: flex-start;
+  }
+}

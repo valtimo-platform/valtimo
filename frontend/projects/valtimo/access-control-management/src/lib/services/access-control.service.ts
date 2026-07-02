@@ -16,7 +16,7 @@
 
 import {HttpClient} from '@angular/common/http';
 import {Injectable} from '@angular/core';
-import {ConfigService, PbacRegistryDto} from '@valtimo/shared';
+import {ConfigService, InterceptorSkipHeader, PbacRegistryDto} from '@valtimo/shared';
 import {BehaviorSubject, catchError, Observable, of, switchMap, take, tap} from 'rxjs';
 import {DeleteRolesRequest, Permission, PermissionSchema, Role} from '../models';
 
@@ -26,6 +26,7 @@ export class AccessControlService {
   public readonly loading$ = new BehaviorSubject<boolean>(false);
 
   private valtimoEndpointUri: string;
+  private readonly apiEndpointUri: string;
 
   private get roleDtos$(): Observable<Role[]> {
     return this.http.get<Role[]>(`${this.valtimoEndpointUri}v1/roles`);
@@ -35,7 +36,24 @@ export class AccessControlService {
     private readonly configService: ConfigService,
     private readonly http: HttpClient
   ) {
-    this.valtimoEndpointUri = `${this.configService.config.valtimoApi.endpointUri}management/`;
+    this.apiEndpointUri = this.configService.config.valtimoApi.endpointUri;
+    this.valtimoEndpointUri = `${this.apiEndpointUri}management/`;
+  }
+
+  // The roles known to the identity provider (e.g. Keycloak realm roles), optionally filtered by a
+  // name prefix. Used to let an admin pick an existing role when configuring access control instead
+  // of typing its key by hand. Degrades to an empty list (and stays silent) when the endpoint is
+  // unavailable — e.g. a deployment using a different IAM — so the caller can fall back to manual
+  // entry.
+  public getExternalRoles(externalRoleNamePrefix?: string): Observable<string[]> {
+    const params = externalRoleNamePrefix
+      ? `?externalRoleNamePrefix=${encodeURIComponent(externalRoleNamePrefix)}`
+      : '';
+    return this.http
+      .get<string[]>(`${this.apiEndpointUri}v1/external-role${params}`, {
+        headers: InterceptorSkipHeader,
+      })
+      .pipe(catchError(() => of([])));
   }
 
   public addRole(role: Role): Observable<Role> {

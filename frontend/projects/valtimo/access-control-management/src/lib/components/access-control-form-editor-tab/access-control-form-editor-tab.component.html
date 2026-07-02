@@ -23,15 +23,15 @@
       }}</span>
 
       <button
-        cdsButton="ghost"
+        cdsButton="primary"
         size="sm"
         [attr.data-test-id]="testIds.addPermissionButton"
         [disabled]="!!disabled"
-        [iconOnly]="true"
-        [title]="'accessControl.editor.addPermission' | translate"
         (click)="addPermission()"
       >
-        <svg cdsIcon="add" size="16"></svg>
+        {{ 'accessControl.editor.newPermission' | translate }}
+
+        <svg class="cds--btn__icon" cdsIcon="add" size="16"></svg>
       </button>
     </div>
 
@@ -79,7 +79,9 @@
                 }}</span>
 
                 @for (action of actionsOf(item.control); track action) {
-                  <cds-tag size="sm" type="outline">{{ action | actionLabel }}</cds-tag>
+                  <cds-tag size="sm" [type]="action | actionTagType">{{
+                    action | actionLabel
+                  }}</cds-tag>
                 }
               </span>
             }
@@ -95,6 +97,7 @@
         [disabled]="!!disabled"
         [group]="$any(group)"
         [index]="$selectedIndex() ?? 0"
+        [roleKey]="roleKey"
         (removeEvent)="removePermission($selectedIndex() ?? 0)"
       ></valtimo-permission-form>
     } @empty {

@@ -74,7 +74,9 @@
             }}</span>
 
             @for (action of selectedActions; track action) {
-              <cds-tag size="sm" type="outline">{{ action | actionLabel }}</cds-tag>
+              <cds-tag size="sm" [type]="action | actionTagType">{{
+                action | actionLabel
+              }}</cds-tag>
             }
           </div>
         }
@@ -82,15 +84,16 @@
 
       <!-- Editor-level note: applies to the role selected on this page, and only system-supported
            options can be selected. -->
-      <cds-inline-notification
-        class="permission-form__notification"
-        [notificationObj]="{
-          type: 'info',
-          message: 'accessControl.editor.permissionsHint' | translate,
-          lowContrast: true,
-          showClose: false,
-        }"
-      ></cds-inline-notification>
+      <p class="permission-form__info-note">
+        <svg class="permission-form__info-icon" cdsIcon="information" size="16"></svg>
+
+        <span>{{
+          resourceShortName
+            ? ('accessControl.editor.permissionsHint'
+              | translate: {resource: resourceShortName, role: roleKey})
+            : ('accessControl.editor.permissionsHintNew' | translate: {role: roleKey})
+        }}</span>
+      </p>
     </div>
 
     <cds-accordion class="permission-form__accordion">
@@ -100,15 +103,11 @@
         (selected)="onSectionToggle('resourceActions', $event)"
       >
         <div class="permission-form__section">
-          <cds-inline-notification
-            class="permission-form__notification"
-            [notificationObj]="{
-              type: 'info',
-              message: 'accessControl.editor.resourceActionsHint' | translate,
-              lowContrast: true,
-              showClose: false,
-            }"
-          ></cds-inline-notification>
+          <p class="permission-form__info-note">
+            <svg class="permission-form__info-icon" cdsIcon="information" size="16"></svg>
+
+            <span>{{ 'accessControl.editor.resourceActionsHint' | translate }}</span>
+          </p>
 
           <div class="permission-form__row">
             <v-select
@@ -177,15 +176,11 @@
         (selected)="onSectionToggle('conditions', $event)"
       >
         <div class="permission-form__section">
-          <cds-inline-notification
-            class="permission-form__notification"
-            [notificationObj]="{
-              type: 'info',
-              message: 'accessControl.editor.conditionsHint' | translate,
-              lowContrast: true,
-              showClose: false,
-            }"
-          ></cds-inline-notification>
+          <p class="permission-form__info-note">
+            <svg class="permission-form__info-icon" cdsIcon="information" size="16"></svg>
+
+            <span>{{ 'accessControl.editor.conditionsHint' | translate }}</span>
+          </p>
 
           <valtimo-condition-tree
             [conditions]="conditionsArray"
@@ -202,48 +197,48 @@
         (selected)="onSectionToggle('context', $event)"
       >
         <div class="permission-form__section">
-          <cds-inline-notification
-            class="permission-form__notification"
-            [notificationObj]="{
-              type: 'info',
-              message: 'accessControl.editor.contextHint' | translate,
-              lowContrast: true,
-              showClose: false,
-            }"
-          ></cds-inline-notification>
+          <p class="permission-form__info-note">
+            <svg class="permission-form__info-icon" cdsIcon="information" size="16"></svg>
 
-          <cds-toggle
+            <span>{{ 'accessControl.editor.contextHint' | translate }}</span>
+          </p>
+
+          <cds-content-switcher
+            class="permission-form__context-switcher"
             [attr.data-test-id]="testIds.contextToggle"
-            [checked]="hasContext"
-            [disabled]="disabled"
-            [label]="'accessControl.editor.context' | translate"
-            [offText]="'interface.off' | translate"
-            [onText]="'interface.on' | translate"
-            (checkedChange)="onToggleContext($event)"
-          ></cds-toggle>
+            [class.permission-form__context-switcher--disabled]="disabled"
+            size="sm"
+          >
+            <button
+              cdsContentOption
+              type="button"
+              [active]="contextMode === 'none'"
+              (selected)="onContextModeChange('none')"
+            >
+              {{ 'accessControl.editor.contextModeNone' | translate }}
+            </button>
+            <button
+              cdsContentOption
+              type="button"
+              [active]="contextMode === 'noContext'"
+              (selected)="onContextModeChange('noContext')"
+            >
+              {{ 'accessControl.editor.contextModeNoContext' | translate }}
+            </button>
+            @if (hasContextTargets) {
+              <button
+                cdsContentOption
+                type="button"
+                [active]="contextMode === 'specific'"
+                (selected)="onContextModeChange('specific')"
+              >
+                {{ 'accessControl.editor.contextModeSpecific' | translate }}
+              </button>
+            }
+          </cds-content-switcher>
 
-          @if (hasContext) {
-            <v-select
-              class="permission-form__resource-type"
-              formControlName="contextResourceType"
-              [cdsLayer]="1"
-              [clearable]="false"
-              [dataTestId]="testIds.contextResourceTypeSelect"
-              [defaultSelectionId]="contextResourceTypeValue || ''"
-              [dropUp]="false"
-              [items]="contextResourceTypeItems"
-              [placeholder]="'accessControl.editor.contextResourceTypePlaceholder' | translate"
-              [tooltip]="'accessControl.editor.tooltips.contextResourceType' | translate"
-              titleTranslationKey="accessControl.editor.contextResourceType"
-            ></v-select>
-
-            @if (hasContextResource) {
-              <valtimo-condition-tree
-                [conditions]="contextConditionsArray"
-                [disabled]="disabled"
-                [resourceType]="contextResourceTypeValue"
-              ></valtimo-condition-tree>
-            } @else {
+          @switch (contextMode) {
+            @case ('noContext') {
               <cds-inline-notification
                 class="permission-form__notification"
                 [notificationObj]="{
@@ -253,6 +248,27 @@
                   showClose: false,
                 }"
               ></cds-inline-notification>
+            }
+            @case ('specific') {
+              <v-select
+                class="permission-form__resource-type"
+                formControlName="contextResourceType"
+                [cdsLayer]="1"
+                [clearable]="false"
+                [dataTestId]="testIds.contextResourceTypeSelect"
+                [defaultSelectionId]="contextResourceTypeValue || ''"
+                [dropUp]="false"
+                [items]="contextResourceTypeItems"
+                [placeholder]="'accessControl.editor.contextResourceTypePlaceholder' | translate"
+                [tooltip]="'accessControl.editor.tooltips.contextResourceType' | translate"
+                titleTranslationKey="accessControl.editor.contextResourceType"
+              ></v-select>
+
+              <valtimo-condition-tree
+                [conditions]="contextConditionsArray"
+                [disabled]="disabled"
+                [resourceType]="contextResourceTypeValue"
+              ></valtimo-condition-tree>
             }
           }
         </div>
