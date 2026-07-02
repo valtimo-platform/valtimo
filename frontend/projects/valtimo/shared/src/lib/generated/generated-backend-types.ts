@@ -9,7 +9,6 @@ export interface PbacConditionFieldDto {
 
 export interface PbacConditionTypeDto {
     key: string;
-    label: string;
 }
 
 export interface PbacEntityMapperDto {
@@ -24,7 +23,6 @@ export interface PbacFieldAliasDto {
 
 export interface PbacOperatorDto {
     key: string;
-    label: string;
 }
 
 export interface PbacRegistryDto {

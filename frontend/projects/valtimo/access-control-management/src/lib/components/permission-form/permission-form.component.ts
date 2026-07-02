@@ -32,6 +32,7 @@ import {IconService} from 'carbon-components-angular';
 import {BehaviorSubject, Subscription} from 'rxjs';
 import {ACCESS_CONTROL_EDITOR_TEST_IDS, NO_CONTEXT_RESOURCE_TYPE} from '../../constants';
 import {AccessControlFormEditorService} from '../../services';
+import {shortTypeName} from '../../utils';
 
 @Component({
   standalone: false,
@@ -91,8 +92,7 @@ export class PermissionFormComponent implements OnInit, AfterViewInit, OnDestroy
   // "com.ritense.case_.domain.definition.CaseDefinition". Shown as the preview title, with the full
   // technical name as a subtitle beneath it.
   public get resourceShortName(): string {
-    const value = this.resourceTypeValue;
-    return value ? value.substring(value.lastIndexOf('.') + 1) : '';
+    return shortTypeName(this.resourceTypeValue);
   }
 
   public get contextResourceTypeValue(): string | null {

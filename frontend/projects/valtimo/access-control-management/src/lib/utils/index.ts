@@ -16,3 +16,4 @@
 
 export * from './condition-value';
 export * from './format-condition';
+export * from './resource-name';

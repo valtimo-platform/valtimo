@@ -96,7 +96,6 @@ export class AccessControlEditorComponent
 
   public ngOnInit(): void {
     this.restoreActiveTabFromUrl();
-    this.getPermissions();
     this.openRoleKeySubscription();
   }
 
@@ -296,24 +295,6 @@ export class AccessControlEditorComponent
         })
       )
       .subscribe();
-  }
-
-  private getPermissions(): void {
-    this.route.params
-      .pipe(
-        tap(params => {
-          this.pageTitleService.setCustomPageTitle(params?.id);
-          this.roleKey$.next(params?.id ?? null);
-          this.selectedRowKeys$.next([params?.id]);
-        }),
-        switchMap(params => this.accessControlService.getRolePermissions(params.id))
-      )
-      .subscribe(permissions => {
-        this.enableMore();
-        this.enableSave();
-        this.enableEditor();
-        this.setModel(permissions);
-      });
   }
 
   private setModel(permissions: object): void {

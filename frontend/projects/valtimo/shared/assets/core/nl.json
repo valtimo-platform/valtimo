@@ -2680,7 +2680,6 @@
       "resourceType": "Resource-type",
       "resourceTypePlaceholder": "Selecteer een resource-type",
       "actions": "Toegestane acties",
-      "actionsPlaceholder": "Selecteer één of meer acties",
       "noActions": "Er zijn geen acties beschikbaar voor dit resource-type.",
       "conditions": "Voorwaarden",
       "conditionsHint": "Toegang wordt alleen verleend wanneer aan alle voorwaarden wordt voldaan. Laat leeg om altijd toegang te verlenen.",
@@ -2710,7 +2709,6 @@
       "contextModeNoContext": "Alleen zonder context",
       "contextModeSpecific": "Specifieke context",
       "noContextHint": "Deze permissie geldt alleen wanneer de resource op zichzelf wordt benaderd — niet binnen een gerelateerde resource.",
-      "contextUnavailable": "Dit resource-type kan niet binnen een context worden afgebakend.",
       "contextResourceType": "Context-resource",
       "contextResourceTypePlaceholder": "Selecteer een context-resource",
       "empty": {

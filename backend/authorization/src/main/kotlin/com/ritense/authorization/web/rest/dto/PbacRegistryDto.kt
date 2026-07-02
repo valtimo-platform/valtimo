@@ -51,10 +51,8 @@ data class PbacEntityMapperDto(
 
 data class PbacOperatorDto(
     val key: String,
-    val label: String,
 )
 
 data class PbacConditionTypeDto(
     val key: String,
-    val label: String,
 )
