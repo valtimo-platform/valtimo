@@ -198,10 +198,6 @@ export class UserCasesPage {
       .first();
   }
 
-  get noTasksMessage(): Locator {
-    return this.taskListPanel.getByText('All tasks have been completed');
-  }
-
   // ─── "Start" overflow button in the page header ──────────────────
 
   get startCaseProcessButton(): Locator {
