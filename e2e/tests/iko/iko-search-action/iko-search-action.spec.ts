@@ -98,8 +98,8 @@ test.describe('Feature 15C — IKO Search Actions', () => {
       await searchActionPage.openAddModal();
 
       // 15.27 enter title → 15.28 the key auto-generates from the title.
-      await searchActionPage.titleInput.fill(initialTitle);
-      await expect(searchActionPage.keyInput).not.toHaveValue('');
+      // Re-fill via toPass to defeat the auto-key modal's reactive-form reset race.
+      await searchActionPage.fillSearchActionForm(initialTitle);
       createdKey = await searchActionPage.keyInput.inputValue();
 
       // 15.26 save.
