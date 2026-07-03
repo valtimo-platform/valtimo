@@ -16,17 +16,26 @@
   -->
 
 <databaseChangeLog
-    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd">
 
-    <property name="uuidType" value="BINARY(16)" dbms="mysql"/>
-    <property name="uuidType" value="uuid"       dbms="postgresql"/>
-    <property name="intType"  value="int"        dbms="mysql"/>
-    <property name="intType"  value="integer"    dbms="postgresql"/>
+    <changeSet id="1" author="Ritense">
+        <addColumn tableName="json_schema_document">
+            <column name="changed_on" type="DATETIME"/>
+        </addColumn>
+    </changeSet>
 
-    <include file="changelog/20260630-create-reindex-run-table.xml" relativeToChangelogFile="true"/>
-    <include file="changelog/20260701-create-reconcile-state-table.xml" relativeToChangelogFile="true"/>
-    <include file="changelog/20260701-create-pending-index-deletion-table.xml" relativeToChangelogFile="true"/>
+    <changeSet id="2" author="Ritense">
+        <!-- Backfill so existing rows have a non-null marker before the NOT NULL constraint is added. -->
+        <update tableName="json_schema_document">
+            <column name="changed_on" valueComputed="COALESCE(modified_on, created_on)"/>
+            <where>changed_on IS NULL</where>
+        </update>
+        <addNotNullConstraint tableName="json_schema_document" columnName="changed_on" columnDataType="DATETIME"/>
+        <createIndex tableName="json_schema_document" indexName="changed_on_index">
+            <column name="changed_on"/>
+        </createIndex>
+    </changeSet>
 
 </databaseChangeLog>

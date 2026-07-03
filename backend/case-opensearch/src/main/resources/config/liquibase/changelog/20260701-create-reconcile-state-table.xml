@@ -18,15 +18,18 @@
 <databaseChangeLog
     xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd">
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd"
+    logicalFilePath="config/liquibase/changelog/20260701-create-reconcile-state-table.xml">
 
-    <property name="uuidType" value="BINARY(16)" dbms="mysql"/>
-    <property name="uuidType" value="uuid"       dbms="postgresql"/>
-    <property name="intType"  value="int"        dbms="mysql"/>
-    <property name="intType"  value="integer"    dbms="postgresql"/>
-
-    <include file="changelog/20260630-create-reindex-run-table.xml" relativeToChangelogFile="true"/>
-    <include file="changelog/20260701-create-reconcile-state-table.xml" relativeToChangelogFile="true"/>
-    <include file="changelog/20260701-create-pending-index-deletion-table.xml" relativeToChangelogFile="true"/>
+    <changeSet author="Ritense" id="create_table_document_index_reconcile_state">
+        <createTable tableName="document_index_reconcile_state">
+            <column name="id" type="VARCHAR(64)">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="watermark" type="DATETIME">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
 
 </databaseChangeLog>

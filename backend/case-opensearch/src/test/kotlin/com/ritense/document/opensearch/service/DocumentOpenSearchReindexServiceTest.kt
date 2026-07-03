@@ -16,10 +16,8 @@
 
 package com.ritense.document.opensearch.service
 
-import com.fasterxml.jackson.databind.ObjectMapper
 import com.ritense.document.opensearch.domain.OpenSearchReindexRun
 import com.ritense.document.opensearch.domain.ReindexRunStatus
-import com.ritense.document.opensearch.repository.JsonSchemaDocumentOpenSearchRepository
 import jakarta.persistence.EntityManager
 import net.javacrumbs.shedlock.core.LockProvider
 import net.javacrumbs.shedlock.core.SimpleLock
@@ -40,8 +38,7 @@ import java.util.UUID
 class DocumentOpenSearchReindexServiceTest {
 
     private val entityManager: EntityManager = mock()
-    private val openSearchRepository: JsonSchemaDocumentOpenSearchRepository = mock()
-    private val objectMapper: ObjectMapper = mock()
+    private val converter: JsonSchemaDocumentOsConverter = mock()
     private val elasticsearchOperations: ElasticsearchOperations = mock()
     private val transactionManager: PlatformTransactionManager = mock()
     private val lockProvider: LockProvider = mock()
@@ -53,8 +50,7 @@ class DocumentOpenSearchReindexServiceTest {
     fun setUp() {
         service = DocumentOpenSearchReindexService(
             entityManager,
-            openSearchRepository,
-            objectMapper,
+            converter,
             elasticsearchOperations,
             transactionManager,
             lockProvider,

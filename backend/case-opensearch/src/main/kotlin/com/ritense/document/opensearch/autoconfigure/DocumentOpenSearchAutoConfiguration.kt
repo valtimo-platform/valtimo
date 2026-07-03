@@ -27,18 +27,24 @@ import com.ritense.document.opensearch.authorization.OpenSearchPermissionConditi
 import com.ritense.document.opensearch.authorization.mapper.JsonSchemaDocumentCaseDefinitionOpenSearchMapper
 import com.ritense.document.opensearch.authorization.mapper.JsonSchemaDocumentDefinitionOpenSearchMapper
 import com.ritense.document.opensearch.domain.JsonSchemaDocumentOsDocument
-import com.ritense.document.opensearch.handler.DocumentOpenSearchEventListener
 import com.ritense.document.opensearch.domain.OpenSearchReindexRun
-import com.ritense.document.opensearch.handler.DocumentOpenSearchEventHandler
+import com.ritense.document.opensearch.handler.DocumentOpenSearchEventListener
+import com.ritense.document.opensearch.handler.PendingIndexDeletionListener
 import com.ritense.document.opensearch.repository.JsonSchemaDocumentOpenSearchRepository
+import com.ritense.document.opensearch.repository.OpenSearchReconcileStateRepository
 import com.ritense.document.opensearch.repository.OpenSearchReindexRunRepository
+import com.ritense.document.opensearch.repository.PendingIndexDeletionRepository
 import com.ritense.document.opensearch.security.DocumentOpenSearchHttpSecurityConfigurer
 import com.ritense.document.opensearch.service.DelegatingDocumentSearchService
 import com.ritense.document.opensearch.service.DocumentOpenSearchQueryService
+import com.ritense.document.opensearch.service.DocumentOpenSearchReconcileJob
+import com.ritense.document.opensearch.service.DocumentOpenSearchReconcileService
 import com.ritense.document.opensearch.service.DocumentOpenSearchReindexService
 import com.ritense.document.opensearch.service.DocumentOpenSearchSyncService
 import com.ritense.document.opensearch.service.JsonSchemaDocumentOpenSearchService
+import com.ritense.document.opensearch.service.JsonSchemaDocumentOsConverter
 import com.ritense.document.opensearch.service.OpenSearchReindexRunService
+import com.ritense.document.opensearch.service.ReindexProgressGate
 import com.ritense.document.opensearch.service.SearchEngineToggle
 import com.ritense.document.opensearch.web.DocumentOpenSearchReindexResource
 import com.ritense.document.opensearch.web.SearchEngineResource
@@ -57,8 +63,10 @@ import net.javacrumbs.shedlock.core.LockProvider
 import org.springframework.boot.ApplicationRunner
 import org.springframework.boot.autoconfigure.AutoConfiguration
 import org.springframework.boot.autoconfigure.AutoConfigureBefore
+import org.springframework.boot.autoconfigure.condition.ConditionalOnBean
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.boot.autoconfigure.domain.EntityScan
 import org.springframework.context.annotation.Bean
@@ -67,11 +75,13 @@ import org.springframework.core.annotation.Order
 import org.springframework.data.elasticsearch.core.ElasticsearchOperations
 import org.springframework.data.elasticsearch.repository.config.EnableElasticsearchRepositories
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories
+import org.springframework.scheduling.annotation.EnableScheduling
 import org.springframework.transaction.PlatformTransactionManager
 
 @AutoConfiguration
 @AutoConfigureBefore(DocumentAutoConfiguration::class)
 @ConditionalOnClass(ElasticsearchOperations::class)
+@EnableScheduling
 @EnableElasticsearchRepositories(basePackages = ["com.ritense.document.opensearch.repository"])
 @EnableConfigurationProperties(OpenSearchProperties::class)
 @EnableJpaRepositories(basePackageClasses = [OpenSearchReindexRunRepository::class])
@@ -108,13 +118,24 @@ class DocumentOpenSearchAutoConfiguration {
 
     @Bean
     @ConditionalOnMissingBean
-    fun documentOpenSearchSyncService(
-        repository: JsonSchemaDocumentOpenSearchRepository,
+    fun jsonSchemaDocumentOsConverter(
         objectMapper: ObjectMapper,
-    ): DocumentOpenSearchSyncService =
-        DocumentOpenSearchSyncService(repository, objectMapper)
+        openSearchRepository: JsonSchemaDocumentOpenSearchRepository,
+    ): JsonSchemaDocumentOsConverter =
+        JsonSchemaDocumentOsConverter(objectMapper, openSearchRepository)
 
     @Bean
+    @ConditionalOnMissingBean
+    fun documentOpenSearchSyncService(
+        repository: JsonSchemaDocumentOpenSearchRepository,
+        documentRepository: JsonSchemaDocumentRepository,
+        converter: JsonSchemaDocumentOsConverter,
+        transactionManager: PlatformTransactionManager,
+    ): DocumentOpenSearchSyncService =
+        DocumentOpenSearchSyncService(repository, documentRepository, converter, transactionManager)
+
+    @Bean
+    @ConditionalOnProperty(prefix = "valtimo.opensearch", name = ["enabled"], havingValue = "true", matchIfMissing = true)
     fun documentOpenSearchEventListener(syncService: DocumentOpenSearchSyncService): DocumentOpenSearchEventListener =
         DocumentOpenSearchEventListener(syncService)
 
@@ -130,8 +151,7 @@ class DocumentOpenSearchAutoConfiguration {
     @ConditionalOnMissingBean
     fun documentOpenSearchReindexService(
         entityManager: EntityManager,
-        openSearchRepository: JsonSchemaDocumentOpenSearchRepository,
-        objectMapper: ObjectMapper,
+        converter: JsonSchemaDocumentOsConverter,
         elasticsearchOperations: ElasticsearchOperations,
         transactionManager: PlatformTransactionManager,
         lockProvider: LockProvider,
@@ -139,13 +159,53 @@ class DocumentOpenSearchAutoConfiguration {
     ): DocumentOpenSearchReindexService =
         DocumentOpenSearchReindexService(
             entityManager,
-            openSearchRepository,
-            objectMapper,
+            converter,
             elasticsearchOperations,
             transactionManager,
             lockProvider,
             openSearchReindexRunService,
         )
+
+    @Bean
+    @ConditionalOnMissingBean
+    @ConditionalOnProperty(prefix = "valtimo.opensearch", name = ["enabled"], havingValue = "true", matchIfMissing = true)
+    fun documentOpenSearchReconcileService(
+        entityManager: EntityManager,
+        converter: JsonSchemaDocumentOsConverter,
+        openSearchRepository: JsonSchemaDocumentOpenSearchRepository,
+        reconcileStateRepository: OpenSearchReconcileStateRepository,
+        pendingIndexDeletionRepository: PendingIndexDeletionRepository,
+        transactionManager: PlatformTransactionManager,
+        lockProvider: LockProvider,
+        openSearchProperties: OpenSearchProperties,
+    ): DocumentOpenSearchReconcileService =
+        DocumentOpenSearchReconcileService(
+            entityManager,
+            converter,
+            openSearchRepository,
+            reconcileStateRepository,
+            pendingIndexDeletionRepository,
+            transactionManager,
+            lockProvider,
+            openSearchProperties,
+        )
+
+    @Bean
+    @ConditionalOnMissingBean
+    @ConditionalOnBean(DocumentOpenSearchReconcileService::class)
+    @ConditionalOnProperty(prefix = "valtimo.opensearch.reconcile", name = ["enabled"], havingValue = "true", matchIfMissing = true)
+    fun documentOpenSearchReconcileJob(
+        reconcileService: DocumentOpenSearchReconcileService,
+    ): DocumentOpenSearchReconcileJob =
+        DocumentOpenSearchReconcileJob(reconcileService)
+
+    @Bean
+    @ConditionalOnMissingBean
+    @ConditionalOnProperty(prefix = "valtimo.opensearch", name = ["enabled"], havingValue = "true", matchIfMissing = true)
+    fun pendingIndexDeletionListener(
+        pendingIndexDeletionRepository: PendingIndexDeletionRepository,
+    ): PendingIndexDeletionListener =
+        PendingIndexDeletionListener(pendingIndexDeletionRepository)
 
     @Bean
     @Order(Ordered.HIGHEST_PRECEDENCE + 30)
@@ -164,6 +224,14 @@ class DocumentOpenSearchAutoConfiguration {
     @Bean
     @ConditionalOnMissingBean
     fun searchEngineToggle(): SearchEngineToggle = SearchEngineToggle()
+
+    @Bean
+    @ConditionalOnMissingBean
+    fun reindexProgressGate(
+        openSearchReindexRunService: OpenSearchReindexRunService,
+        openSearchProperties: OpenSearchProperties,
+    ): ReindexProgressGate =
+        ReindexProgressGate(openSearchReindexRunService, openSearchProperties)
 
     @Bean("openSearchDocumentSearchService")
     fun openSearchDocumentSearchService(
@@ -205,8 +273,11 @@ class DocumentOpenSearchAutoConfiguration {
         openSearchDocumentSearchService: JsonSchemaDocumentOpenSearchService,
         jpaDocumentSearchService: JsonSchemaDocumentSearchService,
         searchEngineToggle: SearchEngineToggle,
+        reindexProgressGate: ReindexProgressGate,
     ): DelegatingDocumentSearchService =
-        DelegatingDocumentSearchService(openSearchDocumentSearchService, jpaDocumentSearchService, searchEngineToggle)
+        DelegatingDocumentSearchService(
+            openSearchDocumentSearchService, jpaDocumentSearchService, searchEngineToggle, reindexProgressGate,
+        )
 
     @Bean
     @ConditionalOnMissingBean

@@ -16,11 +16,8 @@
 
 package com.ritense.document.opensearch.service
 
-import com.fasterxml.jackson.databind.JsonNode
-import com.fasterxml.jackson.databind.ObjectMapper
 import com.ritense.document.domain.impl.JsonSchemaDocument
 import com.ritense.document.opensearch.domain.JsonSchemaDocumentOsDocument
-import com.ritense.document.opensearch.repository.JsonSchemaDocumentOpenSearchRepository
 import io.github.oshai.kotlinlogging.KotlinLogging
 import jakarta.persistence.EntityManager
 import jakarta.persistence.criteria.JoinType
@@ -28,7 +25,6 @@ import jakarta.persistence.criteria.Predicate
 import net.javacrumbs.shedlock.core.LockConfiguration
 import net.javacrumbs.shedlock.core.LockProvider
 import org.springframework.beans.factory.DisposableBean
-import org.springframework.data.elasticsearch.BulkFailureException
 import org.springframework.data.elasticsearch.core.ElasticsearchOperations
 import org.springframework.transaction.PlatformTransactionManager
 import org.springframework.transaction.support.TransactionTemplate
@@ -56,8 +52,7 @@ import java.util.concurrent.TimeUnit
  */
 open class DocumentOpenSearchReindexService(
     private val entityManager: EntityManager,
-    private val openSearchRepository: JsonSchemaDocumentOpenSearchRepository,
-    private val objectMapper: ObjectMapper,
+    private val converter: JsonSchemaDocumentOsConverter,
     private val elasticsearchOperations: ElasticsearchOperations,
     private val transactionManager: PlatformTransactionManager,
     private val lockProvider: LockProvider,
@@ -124,16 +119,14 @@ open class DocumentOpenSearchReindexService(
 
                 val docs = batch.mapNotNull { jpaDoc ->
                     try {
-                        val tree = objectMapper.valueToTree<JsonNode>(jpaDoc)
-                        objectMapper.treeToValue(tree, JsonSchemaDocumentOsDocument::class.java)
-                            .copy(contentText = extractLeafValues(tree.get("content")))
+                        converter.toOsDocument(jpaDoc)
                     } catch (e: Exception) {
                         skipped++
                         logger.warn(e) { "Failed to convert document — skipping" }
                         null
                     }
                 }
-                skipped += docs.chunked(BULK_CHUNK_SIZE).sumOf { indexChunk(it) }
+                skipped += docs.chunked(JsonSchemaDocumentOsConverter.BULK_CHUNK_SIZE).sumOf { converter.indexChunk(it) }
 
                 processed += docs.size
                 lastId = batch.last().id().id
@@ -191,31 +184,6 @@ open class DocumentOpenSearchReindexService(
 
     private fun indexOps() = elasticsearchOperations.indexOps(JsonSchemaDocumentOsDocument::class.java)
 
-    /**
-     * Indexes a single bulk chunk. On an item-level [BulkFailureException] the poison document(s) are
-     * isolated by retrying the chunk one document at a time, skipping (and counting) only those that
-     * actually fail — a single bad document can never loop the run forever. Transport/connection errors
-     * are NOT caught here: they propagate so the run is marked FAILED and is resumable from the cursor.
-     *
-     * @return the number of documents skipped in this chunk
-     */
-    private fun indexChunk(chunk: List<JsonSchemaDocumentOsDocument>): Long =
-        try {
-            openSearchRepository.saveAll(chunk)
-            0L
-        } catch (e: BulkFailureException) {
-            var skipped = 0L
-            chunk.forEach { doc ->
-                try {
-                    openSearchRepository.save(doc)
-                } catch (ex: Exception) {
-                    skipped++
-                    logger.warn(ex) { "Failed to index document ${doc.id} — skipping" }
-                }
-            }
-            skipped
-        }
-
     /** Signals an in-flight run to stop gracefully and shuts the executor down on context close. */
     override fun destroy() {
         cancelRequested = true
@@ -241,9 +209,6 @@ open class DocumentOpenSearchReindexService(
          * acceptable because all writes are idempotent upserts.
          */
         val LOCK_AT_MOST_FOR: Duration = Duration.ofHours(6)
-
-        /** OpenSearch bulk payload size, decoupled from the DB page size (P2). */
-        const val BULK_CHUNK_SIZE = 500
 
         private const val SHUTDOWN_TIMEOUT_SECONDS = 30L
     }

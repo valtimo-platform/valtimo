@@ -85,6 +85,19 @@ open class OpenSearchReindexRunService(
         )
     }
 
+    /**
+     * Whether an admin (re)index run is currently in progress anywhere in the cluster. A [ReindexRunStatus.RUNNING]
+     * row only counts while its heartbeat is fresher than [heartbeatTimeout], so a run left behind by a crashed
+     * instance cannot report "running" forever. Used to temporarily route document search to PostgreSQL while the
+     * index is being filled.
+     */
+    @Transactional(readOnly = true)
+    open fun isReindexRunning(heartbeatTimeout: Duration): Boolean =
+        repository.existsByStatusAndHeartbeatOnAfter(
+            ReindexRunStatus.RUNNING,
+            LocalDateTime.now().minus(heartbeatTimeout),
+        )
+
     @Transactional(readOnly = true)
     open fun cursorOf(runId: UUID): UUID? = requireRun(runId).lastId
 

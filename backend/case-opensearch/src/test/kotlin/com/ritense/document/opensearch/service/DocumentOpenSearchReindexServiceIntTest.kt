@@ -49,8 +49,8 @@ import java.util.UUID
  * the keyset reads and the persisted progress/cursor behave as they do in production. Committed test data
  * is removed in [cleanUp].
  *
- * Because the tests commit, creating a document also triggers the live event sync
- * ([com.ritense.document.opensearch.handler.DocumentOpenSearchEventHandler]) which indexes that document
+ * Because the tests commit, creating a document can also trigger the live event sync
+ * ([com.ritense.document.opensearch.handler.DocumentOpenSearchEventListener]) which indexes that document
  * into OpenSearch. To assert on the re-index in isolation we [clearIndex] after the document setup and
  * before running the re-index, so the index reflects only what the re-index (re)indexed.
  */
@@ -227,6 +227,51 @@ class DocumentOpenSearchReindexServiceIntTest : BaseOpenSearchIntegrationTest() 
         } finally {
             lock.get().unlock()
         }
+    }
+
+    @Test
+    fun `isReindexRunning is true while a running run has a fresh heartbeat`() {
+        reindexRunRepository.save(
+            OpenSearchReindexRun(
+                id = UUID.randomUUID(),
+                status = ReindexRunStatus.RUNNING,
+                instanceId = reindexRunService.instanceId,
+                pageSize = ReindexRequest.DEFAULT_PAGE_SIZE,
+                heartbeatOn = LocalDateTime.now(),
+            )
+        )
+
+        assertThat(reindexRunService.isReindexRunning(Duration.ofMinutes(5))).isTrue()
+    }
+
+    @Test
+    fun `isReindexRunning is false when the only running run has a stale heartbeat`() {
+        reindexRunRepository.save(
+            OpenSearchReindexRun(
+                id = UUID.randomUUID(),
+                status = ReindexRunStatus.RUNNING,
+                instanceId = reindexRunService.instanceId,
+                pageSize = ReindexRequest.DEFAULT_PAGE_SIZE,
+                heartbeatOn = LocalDateTime.now().minusMinutes(10),
+            )
+        )
+
+        assertThat(reindexRunService.isReindexRunning(Duration.ofMinutes(5))).isFalse()
+    }
+
+    @Test
+    fun `isReindexRunning is false when no run is RUNNING`() {
+        reindexRunRepository.save(
+            OpenSearchReindexRun(
+                id = UUID.randomUUID(),
+                status = ReindexRunStatus.COMPLETED,
+                instanceId = reindexRunService.instanceId,
+                pageSize = ReindexRequest.DEFAULT_PAGE_SIZE,
+                heartbeatOn = LocalDateTime.now(),
+            )
+        )
+
+        assertThat(reindexRunService.isReindexRunning(Duration.ofMinutes(5))).isFalse()
     }
 
     /** Clears the OpenSearch index (and refreshes) so a subsequent assertion sees only the re-index output. */

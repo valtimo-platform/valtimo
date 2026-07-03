@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,36 +16,59 @@
 
 package com.ritense.document.opensearch.service
 
-import com.fasterxml.jackson.databind.ObjectMapper
-import com.fasterxml.jackson.databind.node.ContainerNode
-import com.ritense.document.opensearch.domain.JsonSchemaDocumentOsDocument
+import com.ritense.authorization.AuthorizationContext
+import com.ritense.document.domain.impl.JsonSchemaDocumentId
 import com.ritense.document.opensearch.repository.JsonSchemaDocumentOpenSearchRepository
-import com.ritense.outbox.domain.BaseEvent
+import com.ritense.document.repository.impl.JsonSchemaDocumentRepository
 import io.github.oshai.kotlinlogging.KotlinLogging
+import org.springframework.data.elasticsearch.VersionConflictException
+import org.springframework.transaction.PlatformTransactionManager
+import org.springframework.transaction.support.TransactionTemplate
+import java.util.UUID
 
-class DocumentOpenSearchSyncService(
+/**
+ * Reloads the current state of a document from PostgreSQL (the source of truth) and mirrors it into
+ * OpenSearch. Callers pass only the document id; the document is (re)read here so a coalesced/late write
+ * always reflects the latest committed state rather than a stale event payload.
+ *
+ * This service does not swallow OpenSearch failures — the caller (the best-effort live listener) is
+ * responsible for isolating them. Any missed or failed write is repaired by the reconciler.
+ */
+open class DocumentOpenSearchSyncService(
     private val repository: JsonSchemaDocumentOpenSearchRepository,
-    private val objectMapper: ObjectMapper,
+    private val documentRepository: JsonSchemaDocumentRepository,
+    private val converter: JsonSchemaDocumentOsConverter,
+    transactionManager: PlatformTransactionManager,
 ) {
 
-    fun upsert(event: BaseEvent) {
-        val result = event.result
-        if (result == null) {
-            logger.warn { "Received document event ${event.type} for id=${event.resultId} with null result — skipping upsert" }
+    // Read-only transaction so the lazy associations touched during conversion can be initialised.
+    private val readOnlyTransactionTemplate = TransactionTemplate(transactionManager).apply { isReadOnly = true }
+
+    /**
+     * Reloads [documentId] and upserts it into OpenSearch. A document that no longer exists (already
+     * deleted) is skipped — its removal is handled by [delete] / the pending-index-deletion drain.
+     */
+    open fun upsertById(documentId: UUID) {
+        val osDocument = readOnlyTransactionTemplate.execute {
+            AuthorizationContext.runWithoutAuthorization {
+                documentRepository.findById(JsonSchemaDocumentId.existingId(documentId)).orElse(null)
+            }?.let { converter.toOsDocument(it) }
+        }
+        if (osDocument == null) {
+            logger.debug { "Document $documentId not found on reload — skipping upsert (likely deleted)" }
             return
         }
-        upsertFromResult(result, event.type)
+        try {
+            repository.save(osDocument)
+            logger.debug { "Upserted document $documentId in OpenSearch" }
+        } catch (e: VersionConflictException) {
+            // A newer/equal version is already indexed (the reconciler or a later event won the race).
+            logger.debug { "Document $documentId already at newer version in OpenSearch — skipping live upsert" }
+        }
     }
 
-    private fun upsertFromResult(result: ContainerNode<*>, eventType: String) {
-        val doc = objectMapper.treeToValue(result, JsonSchemaDocumentOsDocument::class.java)
-        val contentText = extractLeafValues(result.get("content"))
-        repository.save(doc.copy(contentText = contentText))
-        logger.debug { "Upserted document ${doc.id} in OpenSearch (event: $eventType)" }
-    }
-
-    fun delete(documentId: String) {
-        repository.deleteById(documentId)
+    open fun delete(documentId: UUID) {
+        repository.deleteById(documentId.toString())
         logger.debug { "Deleted document $documentId from OpenSearch" }
     }
 

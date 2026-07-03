@@ -16,15 +16,11 @@
 
 package com.ritense.document.opensearch.repository
 
-import com.ritense.document.opensearch.domain.OpenSearchReindexRun
-import com.ritense.document.opensearch.domain.ReindexRunStatus
+import com.ritense.document.opensearch.domain.PendingIndexDeletion
+import org.springframework.data.domain.Pageable
 import org.springframework.data.jpa.repository.JpaRepository
-import java.time.LocalDateTime
 import java.util.UUID
 
-interface OpenSearchReindexRunRepository : JpaRepository<OpenSearchReindexRun, UUID> {
-    fun findFirstByOrderByStartedOnDesc(): OpenSearchReindexRun?
-    fun findFirstByStatusOrderByStartedOnDesc(status: ReindexRunStatus): OpenSearchReindexRun?
-    fun findAllByStatusAndInstanceId(status: ReindexRunStatus, instanceId: String): List<OpenSearchReindexRun>
-    fun existsByStatusAndHeartbeatOnAfter(status: ReindexRunStatus, heartbeatOn: LocalDateTime): Boolean
+interface PendingIndexDeletionRepository : JpaRepository<PendingIndexDeletion, UUID> {
+    fun findByOrderByDeletedOnAsc(pageable: Pageable): List<PendingIndexDeletion>
 }

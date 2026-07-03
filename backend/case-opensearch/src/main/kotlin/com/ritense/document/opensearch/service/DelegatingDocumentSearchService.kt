@@ -29,10 +29,19 @@ class DelegatingDocumentSearchService(
     private val openSearchService: DocumentSearchService,
     private val jpaService: DocumentSearchService,
     private val toggle: SearchEngineToggle,
+    private val reindexProgressGate: ReindexProgressGate,
 ) : DocumentSearchService {
 
+    /**
+     * OpenSearch is used only when it is the selected engine **and** no admin reindex is currently filling
+     * the index; while a reindex runs, search falls back to PostgreSQL so users never see a partial index.
+     */
     private fun active(): DocumentSearchService =
-        if (toggle.get() == SearchEngineToggle.Engine.OPENSEARCH) openSearchService else jpaService
+        if (toggle.get() == SearchEngineToggle.Engine.OPENSEARCH && !reindexProgressGate.isReindexInProgress()) {
+            openSearchService
+        } else {
+            jpaService
+        }
 
     override fun search(
         searchRequest: SearchRequest,

@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,112 +16,101 @@
 
 package com.ritense.document.opensearch.service
 
-import com.fasterxml.jackson.databind.ObjectMapper
-import com.fasterxml.jackson.databind.node.ContainerNode
-import com.ritense.document.event.DocumentCreated
+import com.ritense.document.domain.impl.JsonSchemaDocument
+import com.ritense.document.domain.impl.JsonSchemaDocumentId
 import com.ritense.document.opensearch.domain.JsonSchemaDocumentOsDocument
 import com.ritense.document.opensearch.repository.JsonSchemaDocumentOpenSearchRepository
-import com.ritense.outbox.domain.BaseEvent
-import org.assertj.core.api.Assertions.assertThat
+import com.ritense.document.repository.impl.JsonSchemaDocumentRepository
+import org.assertj.core.api.Assertions.assertThatCode
+import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
-import org.mockito.ArgumentCaptor
 import org.mockito.kotlin.any
-import org.mockito.kotlin.capture
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.never
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
+import org.springframework.data.elasticsearch.VersionConflictException
+import org.springframework.transaction.PlatformTransactionManager
+import org.springframework.transaction.support.SimpleTransactionStatus
+import java.util.Optional
+import java.util.UUID
 
 class DocumentOpenSearchSyncServiceTest {
 
     private val repository: JsonSchemaDocumentOpenSearchRepository = mock()
-    private val objectMapper: ObjectMapper = mock()
+    private val documentRepository: JsonSchemaDocumentRepository = mock()
+    private val converter: JsonSchemaDocumentOsConverter = mock()
+    private val transactionManager: PlatformTransactionManager = mock()
     private lateinit var service: DocumentOpenSearchSyncService
 
     @BeforeEach
     fun setUp() {
-        service = DocumentOpenSearchSyncService(repository, objectMapper)
+        // Let the read-only TransactionTemplate run its callback inline.
+        whenever(transactionManager.getTransaction(any())).thenReturn(SimpleTransactionStatus())
+        service = DocumentOpenSearchSyncService(repository, documentRepository, converter, transactionManager)
     }
 
     @Test
-    fun `upsert with null result skips repository save`() {
-        val event = testEvent(result = null)
+    fun `upsertById reloads the document and saves the converted os document`() {
+        val id = UUID.randomUUID()
+        val document: JsonSchemaDocument = mock()
+        val osDocument = osDocument(id.toString())
+        whenever(documentRepository.findById(JsonSchemaDocumentId.existingId(id))).thenReturn(Optional.of(document))
+        whenever(converter.toOsDocument(document)).thenReturn(osDocument)
 
-        service.upsert(event)
+        service.upsertById(id)
 
+        verify(repository).save(osDocument)
+    }
+
+    @Test
+    fun `upsertById swallows a version conflict (a newer version is already indexed)`() {
+        val id = UUID.randomUUID()
+        val document: JsonSchemaDocument = mock()
+        val osDocument = osDocument(id.toString())
+        whenever(documentRepository.findById(JsonSchemaDocumentId.existingId(id))).thenReturn(Optional.of(document))
+        whenever(converter.toOsDocument(document)).thenReturn(osDocument)
+        whenever(repository.save(osDocument)).thenThrow(VersionConflictException("conflict"))
+
+        assertThatCode { service.upsertById(id) }.doesNotThrowAnyException()
+    }
+
+    @Test
+    fun `upsertById propagates a non-conflict failure`() {
+        val id = UUID.randomUUID()
+        val document: JsonSchemaDocument = mock()
+        val osDocument = osDocument(id.toString())
+        whenever(documentRepository.findById(JsonSchemaDocumentId.existingId(id))).thenReturn(Optional.of(document))
+        whenever(converter.toOsDocument(document)).thenReturn(osDocument)
+        whenever(repository.save(osDocument)).thenThrow(RuntimeException("transport error"))
+
+        assertThatThrownBy { service.upsertById(id) }.isInstanceOf(RuntimeException::class.java)
+    }
+
+    @Test
+    fun `upsertById skips a document that no longer exists (already deleted)`() {
+        val id = UUID.randomUUID()
+        whenever(documentRepository.findById(JsonSchemaDocumentId.existingId(id))).thenReturn(Optional.empty())
+
+        service.upsertById(id)
+
+        verify(converter, never()).toOsDocument(any())
         verify(repository, never()).save(any())
     }
 
     @Test
-    fun `upsert populates contentText with leaf values from content`() {
-        val realMapper = ObjectMapper()
-        val content = realMapper.createObjectNode().apply {
-            put("firstName", "John")
-            put("city", "Amsterdam")
-        }
-        val resultNode = realMapper.createObjectNode().apply {
-            set<com.fasterxml.jackson.databind.node.ObjectNode>("content", content)
-        }
-        val doc = buildDocument(id = "test-id", content = mapOf("firstName" to "John", "city" to "Amsterdam"))
-        val event = testEvent(result = resultNode)
-        whenever(objectMapper.treeToValue(any(), any<Class<JsonSchemaDocumentOsDocument>>())).thenReturn(doc)
+    fun `delete removes the document from opensearch by id`() {
+        val id = UUID.randomUUID()
 
-        val captor = ArgumentCaptor.forClass(JsonSchemaDocumentOsDocument::class.java)
-        service.upsert(event)
-        verify(repository).save(capture(captor))
+        service.delete(id)
 
-        val saved = captor.value
-        assertThat(saved.contentText).contains("John")
-        assertThat(saved.contentText).contains("Amsterdam")
+        verify(repository).deleteById(id.toString())
     }
 
-    @Test
-    fun `upsert with null content stores null contentText`() {
-        val realMapper = ObjectMapper()
-        val resultNode = realMapper.createObjectNode()
-        val doc = buildDocument(id = "no-content-id", content = null)
-        val event = testEvent(result = resultNode)
-        whenever(objectMapper.treeToValue(any(), any<Class<JsonSchemaDocumentOsDocument>>())).thenReturn(doc)
-
-        val captor = ArgumentCaptor.forClass(JsonSchemaDocumentOsDocument::class.java)
-        service.upsert(event)
-        verify(repository).save(capture(captor))
-
-        assertThat(captor.value.contentText).isNull()
-    }
-
-    @Test
-    fun `upsert with nested content extracts all leaf values`() {
-        val realMapper = ObjectMapper()
-        val content = realMapper.createObjectNode().apply {
-            putObject("address").apply {
-                put("street", "Main Street")
-                put("number", "42")
-            }
-        }
-        val resultNode = realMapper.createObjectNode().apply {
-            set<com.fasterxml.jackson.databind.node.ObjectNode>("content", content)
-        }
-        val doc = buildDocument(id = "nested-id", content = mapOf("address" to mapOf("street" to "Main Street", "number" to "42")))
-        val event = testEvent(result = resultNode)
-        whenever(objectMapper.treeToValue(any(), any<Class<JsonSchemaDocumentOsDocument>>())).thenReturn(doc)
-
-        val captor = ArgumentCaptor.forClass(JsonSchemaDocumentOsDocument::class.java)
-        service.upsert(event)
-        verify(repository).save(capture(captor))
-
-        val contentText = captor.value.contentText
-        assertThat(contentText).contains("Main Street")
-        assertThat(contentText).contains("42")
-    }
-
-    private fun buildDocument(
-        id: String,
-        content: Map<String, Any?>?,
-    ) = JsonSchemaDocumentOsDocument(
+    private fun osDocument(id: String) = JsonSchemaDocumentOsDocument(
         id = id,
-        content = content,
+        content = null,
         definitionId = null,
         createdOn = null,
         modifiedOn = null,
@@ -136,16 +125,4 @@ class DocumentOpenSearchSyncServiceTest {
         relatedFiles = null,
         retentionDate = null,
     )
-
-    private fun testEvent(result: ContainerNode<*>?): BaseEvent =
-        if (result != null) {
-            DocumentCreated("doc-id", result as com.fasterxml.jackson.databind.node.ObjectNode)
-        } else {
-            object : BaseEvent(
-                type = "test",
-                resultType = null,
-                resultId = "doc-id",
-                result = null,
-            ) {}
-        }
 }
