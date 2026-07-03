@@ -31,39 +31,72 @@ class DelegatingDocumentSearchService(
     private val toggle: SearchEngineToggle,
 ) : DocumentSearchService {
 
-    private fun active(): DocumentSearchService =
-        if (toggle.get() == SearchEngineToggle.Engine.OPENSEARCH) openSearchService else jpaService
-
     override fun search(
         searchRequest: SearchRequest,
         blueprintType: BlueprintType,
         pageable: Pageable
-    ): Page<out Document> = active().search(searchRequest, blueprintType, pageable)
+    ): Page<out Document> = executeWithFallback { active().search(searchRequest, blueprintType, pageable) }
 
     override fun search(
         documentDefinitionName: String,
         blueprintType: BlueprintType,
         searchWithConfigRequest: SearchWithConfigRequest,
         pageable: Pageable
-    ): Page<out Document> = active().search(documentDefinitionName, blueprintType, searchWithConfigRequest, pageable)
+    ): Page<out Document> = executeWithFallback {
+        active().search(documentDefinitionName, blueprintType, searchWithConfigRequest, pageable)
+    }
 
     override fun search(
         documentDefinitionName: String,
         blueprintType: BlueprintType,
         advancedSearchRequest: AdvancedSearchRequest,
         pageable: Pageable
-    ): Page<out Document> = active().search(documentDefinitionName, blueprintType, advancedSearchRequest, pageable)
+    ): Page<out Document> = executeWithFallback {
+        active().search(documentDefinitionName, blueprintType, advancedSearchRequest, pageable)
+    }
 
     override fun searchForExport(
         documentDefinitionName: String,
         blueprintType: BlueprintType,
         searchWithConfigRequest: SearchWithConfigRequest,
         pageable: Pageable
-    ): Page<out Document> = active().searchForExport(documentDefinitionName, blueprintType, searchWithConfigRequest, pageable)
+    ): Page<out Document> = executeWithFallback {
+        active().searchForExport(documentDefinitionName, blueprintType, searchWithConfigRequest, pageable)
+    }
 
     override fun count(
         documentDefinitionName: String,
         blueprintType: BlueprintType,
         advancedSearchRequest: AdvancedSearchRequest
-    ): Long = active().count(documentDefinitionName, blueprintType, advancedSearchRequest)
+    ): Long = executeWithFallback { active().count(documentDefinitionName, blueprintType, advancedSearchRequest) }
+
+    private fun active(): DocumentSearchService =
+        if (toggle.shouldUsePostgres()) jpaService else openSearchService
+
+    private fun <T> executeWithFallback(block: () -> T): T {
+        if (toggle.shouldUsePostgres()) {
+            return block()
+        }
+        return try {
+            block()
+        } catch (e: Exception) {
+            if (isConnectionError(e)) {
+                toggle.activateFallback()
+                block()
+            } else {
+                throw e
+            }
+        }
+    }
+
+    private fun isConnectionError(e: Exception): Boolean {
+        val message = e.message?.lowercase() ?: ""
+        return e is java.net.ConnectException ||
+            e is java.io.IOException ||
+            message.contains("connection refused") ||
+            message.contains("connect timed out") ||
+            message.contains("no route to host") ||
+            e.cause?.let { isConnectionError(it as? Exception ?: return false) } ?: false
+    }
+
 }

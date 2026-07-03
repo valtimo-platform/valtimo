@@ -35,6 +35,7 @@ import com.ritense.document.opensearch.service.DocumentOpenSearchBackfillService
 import com.ritense.document.opensearch.service.DocumentOpenSearchQueryService
 import com.ritense.document.opensearch.service.DocumentOpenSearchSyncService
 import com.ritense.document.opensearch.service.JsonSchemaDocumentOpenSearchService
+import com.ritense.document.opensearch.service.OpenSearchHealthService
 import com.ritense.document.opensearch.service.SearchEngineToggle
 import com.ritense.document.opensearch.web.DocumentOpenSearchBackfillResource
 import com.ritense.document.opensearch.web.SearchEngineResource
@@ -53,17 +54,21 @@ import org.springframework.boot.autoconfigure.AutoConfiguration
 import org.springframework.boot.autoconfigure.AutoConfigureBefore
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.context.annotation.Bean
 import org.springframework.core.annotation.Order
 import org.springframework.data.elasticsearch.core.ElasticsearchOperations
 import org.springframework.data.elasticsearch.repository.config.EnableElasticsearchRepositories
+import org.springframework.scheduling.annotation.EnableScheduling
+import org.springframework.scheduling.annotation.Scheduled
 
 @AutoConfiguration
 @AutoConfigureBefore(DocumentAutoConfiguration::class)
 @ConditionalOnClass(ElasticsearchOperations::class)
 @EnableElasticsearchRepositories(basePackages = ["com.ritense.document.opensearch.repository"])
 @EnableConfigurationProperties(OpenSearchProperties::class)
+@EnableScheduling
 class DocumentOpenSearchAutoConfiguration {
 
     @Bean
@@ -240,8 +245,46 @@ class DocumentOpenSearchAutoConfiguration {
         logger.info { "Document search engine set to: ${engine.name}" }
     }
 
+    @Bean
+    @ConditionalOnMissingBean
+    @ConditionalOnProperty(
+        prefix = "valtimo.opensearch",
+        name = ["health-check-enabled"],
+        havingValue = "true",
+        matchIfMissing = true
+    )
+    fun openSearchHealthService(
+        restHighLevelClient: org.opensearch.client.RestHighLevelClient,
+        toggle: SearchEngineToggle,
+        openSearchProperties: OpenSearchProperties,
+    ): OpenSearchHealthService =
+        OpenSearchHealthService(restHighLevelClient, toggle, openSearchProperties)
+
+    @Bean
+    @ConditionalOnProperty(
+        prefix = "valtimo.opensearch",
+        name = ["health-check-enabled"],
+        havingValue = "true",
+        matchIfMissing = true
+    )
+    fun openSearchHealthScheduler(
+        healthService: OpenSearchHealthService,
+        openSearchProperties: OpenSearchProperties,
+    ): OpenSearchHealthScheduler =
+        OpenSearchHealthScheduler(healthService, openSearchProperties)
+
     companion object {
         private val logger = KotlinLogging.logger {}
         const val SEARCH_ENGINE_TOGGLE_KEY = "useOpenSearchForDocumentSearch"
+    }
+}
+
+class OpenSearchHealthScheduler(
+    private val healthService: OpenSearchHealthService,
+    private val properties: OpenSearchProperties,
+) {
+    @Scheduled(fixedDelayString = "\${valtimo.opensearch.health-check-interval-ms:30000}")
+    fun checkHealth() {
+        healthService.checkAndRecover()
     }
 }

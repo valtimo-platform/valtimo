@@ -20,5 +20,8 @@ import org.springframework.boot.context.properties.ConfigurationProperties
 
 @ConfigurationProperties(prefix = "valtimo.opensearch")
 data class OpenSearchProperties(
-    val enabled: Boolean = true
+    val enabled: Boolean = true,
+    val healthCheckEnabled: Boolean = true,
+    val healthCheckIntervalMs: Long = 30000,
+    val fallbackWarningIntervalMs: Long = 300000
 )
