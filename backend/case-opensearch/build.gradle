@@ -29,7 +29,6 @@ dependencies {
     implementation project(":backend:admin-settings")
     implementation project(":backend:authorization")
     implementation project(":backend:case")
-    implementation project(":backend:contract")          // LiquibaseMasterChangeLogLocation
     implementation project(":backend:inbox")
     implementation project(":backend:outbox")
 

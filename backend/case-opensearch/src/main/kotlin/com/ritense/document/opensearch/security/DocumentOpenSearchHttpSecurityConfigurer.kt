@@ -31,15 +31,15 @@ class DocumentOpenSearchHttpSecurityConfigurer : HttpSecurityConfigurer {
         try {
             http.authorizeHttpRequests { requests ->
                 requests.requestMatchers(antMatcher(POST, "/api/management/v1/document-opensearch/reindex"))
-                    .permitAll()
+                    .hasAuthority(ADMIN)
                 requests.requestMatchers(antMatcher(GET, "/api/management/v1/document-opensearch/reindex/status"))
-                    .permitAll()
+                    .hasAuthority(ADMIN)
                 requests.requestMatchers(antMatcher(GET, "/api/management/v1/document-opensearch/reindex/*"))
-                    .permitAll()
+                    .hasAuthority(ADMIN)
                 requests.requestMatchers(antMatcher(GET, "/api/management/v1/search-engine"))
-                    .permitAll()
+                    .hasAuthority(ADMIN)
                 requests.requestMatchers(antMatcher(PUT, "/api/management/v1/search-engine"))
-                    .permitAll()
+                    .hasAuthority(ADMIN)
             }
         } catch (e: Exception) {
             throw HttpConfigurerConfigurationException(e)

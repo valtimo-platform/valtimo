@@ -53,7 +53,6 @@ import com.ritense.document.service.DocumentSearchService
 import com.ritense.document.service.impl.JsonSchemaDocumentDefinitionService
 import com.ritense.document.service.SearchFieldService
 import com.ritense.document.service.impl.JsonSchemaDocumentSearchService
-import com.ritense.valtimo.contract.config.LiquibaseMasterChangeLogLocation
 import com.ritense.valtimo.contract.database.QueryDialectHelper
 import com.ritense.outbox.OutboxService
 import com.ritense.valtimo.contract.authentication.TeamManagementService
@@ -70,7 +69,6 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.boot.autoconfigure.domain.EntityScan
 import org.springframework.context.annotation.Bean
-import org.springframework.core.Ordered
 import org.springframework.core.annotation.Order
 import org.springframework.data.elasticsearch.core.ElasticsearchOperations
 import org.springframework.data.elasticsearch.repository.config.EnableElasticsearchRepositories
@@ -211,12 +209,6 @@ class DocumentOpenSearchAutoConfiguration {
         pendingIndexDeletionRepository: PendingIndexDeletionRepository,
     ): PendingIndexDeletionListener =
         PendingIndexDeletionListener(pendingIndexDeletionRepository)
-
-    @Bean
-    @Order(Ordered.HIGHEST_PRECEDENCE + 30)
-    @ConditionalOnMissingBean(name = ["caseOpenSearchLiquibaseMasterChangeLogLocation"])
-    fun caseOpenSearchLiquibaseMasterChangeLogLocation() =
-        LiquibaseMasterChangeLogLocation("config/liquibase/case-opensearch-master.xml")
 
     @Order(294)
     @Bean

@@ -21,6 +21,7 @@ import com.ritense.document.domain.impl.event.JsonSchemaDocumentCreatedEvent
 import com.ritense.document.event.DocumentAssigneeChangedEvent
 import com.ritense.document.event.DocumentRetentionPeriodSetEvent
 import com.ritense.document.opensearch.service.DocumentOpenSearchSyncService
+import com.ritense.document.opensearch.service.SearchEngineToggle
 import com.ritense.valtimo.contract.event.DocumentDeletedEvent
 import org.assertj.core.api.Assertions.assertThatCode
 import org.junit.jupiter.api.AfterEach
@@ -28,6 +29,7 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.mockito.kotlin.any
 import org.mockito.kotlin.mock
+import org.mockito.kotlin.never
 import org.mockito.kotlin.timeout
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
@@ -36,11 +38,12 @@ import java.util.UUID
 class DocumentOpenSearchEventListenerTest {
 
     private val syncService: DocumentOpenSearchSyncService = mock()
+    private val toggle = SearchEngineToggle(SearchEngineToggle.Engine.OPENSEARCH)
     private lateinit var listener: DocumentOpenSearchEventListener
 
     @BeforeEach
     fun setUp() {
-        listener = DocumentOpenSearchEventListener(syncService)
+        listener = DocumentOpenSearchEventListener(syncService, toggle)
     }
 
     @AfterEach
@@ -88,6 +91,19 @@ class DocumentOpenSearchEventListenerTest {
         listener.onDeleted(DocumentDeletedEvent(id))
 
         verify(syncService, timeout(TIMEOUT_MS)).delete(id)
+    }
+
+    @Test
+    fun `no sync happens when the engine is toggled off`() {
+        toggle.set(SearchEngineToggle.Engine.POSTGRES)
+        val id = UUID.randomUUID()
+        val event: JsonSchemaDocumentCreatedEvent = mock()
+        whenever(event.documentId()).thenReturn(JsonSchemaDocumentId.existingId(id))
+
+        // The engine gate is checked synchronously before the task is submitted, so no upsert is ever enqueued.
+        listener.onCreated(event)
+
+        verify(syncService, never()).upsertById(any())
     }
 
     @Test
