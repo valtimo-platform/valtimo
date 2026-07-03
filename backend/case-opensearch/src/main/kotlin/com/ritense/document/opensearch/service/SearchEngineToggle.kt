@@ -54,8 +54,15 @@ class SearchEngineToggle(default: Engine = Engine.OPENSEARCH) {
         lastWarningTime.set(0)
     }
 
-    fun shouldUsePostgres(): Boolean =
-        get() == Engine.POSTGRES || (get() == Engine.OPENSEARCH && fallbackActive.get())
+    /**
+     * Route document search to PostgreSQL when the engine is not OpenSearch, while an admin reindex is
+     * filling the index ([reindexInProgress]), or while a connection fallback is active because OpenSearch
+     * is unreachable. Otherwise OpenSearch serves the query. [reindexInProgress] is a supplier so the
+     * engine check short-circuits it — the (potentially DB-backed) reindex check is skipped entirely when
+     * the engine is already PostgreSQL.
+     */
+    fun shouldUsePostgres(reindexInProgress: () -> Boolean): Boolean =
+        get() != Engine.OPENSEARCH || reindexInProgress() || fallbackActive.get()
 
     fun shouldLogWarning(intervalMs: Long): Boolean {
         val now = System.currentTimeMillis()
