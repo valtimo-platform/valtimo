@@ -42,7 +42,6 @@ test.describe('Case management', () => {
 
     caseDetailsManagementPage = new CaseDetailsManagementPage(page, request);
 
-    await page.goto('/');
     await caseDetailsManagementPage.goToCaseDetailsManagement('bezwaar');
     draftVersion = await ensureDraftVersionSelected(page);
   });
@@ -138,10 +137,16 @@ test.describe('Case management', () => {
           const canHaveHandlerSwitch = caseDetailsManagementPage.caseHandlerCanHaveHandler.getByRole('switch');
           const autoAssignSwitch = caseDetailsManagementPage.caseHandlerAutomaticallyAssign.getByRole('switch');
 
-          if (!(await canHaveHandlerSwitch.isChecked())) {
-            await caseDetailsManagementPage.caseHandlerCanHaveHandlerToggle.click();
-            await expect(canHaveHandlerSwitch).toBeChecked({timeout: 10_000});
-          }
+          // The toggle can briefly re-disable while the handler section
+          // (re)binds after a reload, which can swallow a single click. Retry
+          // the click until the switch actually flips to checked.
+          await expect(async () => {
+            if (!(await canHaveHandlerSwitch.isChecked())) {
+              await expect(canHaveHandlerSwitch).toBeEnabled();
+              await caseDetailsManagementPage.caseHandlerCanHaveHandlerToggle.click();
+            }
+            await expect(canHaveHandlerSwitch).toBeChecked({timeout: 2_000});
+          }).toPass({timeout: 15_000});
 
           // Assert canHaveHandler is true
           await expect(canHaveHandlerSwitch).toBeChecked({timeout: 10_000});

@@ -34,7 +34,6 @@ test.describe('Case details management — Header widgets', () => {
 
     headerPage = new CaseDetailsManagementHeaderPage(page, context.request);
 
-    await page.goto('/');
     await headerPage.goToCaseManagement(CASE_IDENTIFIER);
     draftVersion = await headerPage.ensureDraftVersionSelected();
 

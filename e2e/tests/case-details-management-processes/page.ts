@@ -86,6 +86,14 @@ export class CaseDetailsProcessesPage {
     return this.page.getByTestId(PROCESS_MANAGEMENT_BUILDER_TEST_IDS.deployButton);
   }
 
+  get draftToggle() {
+    return this.page.getByTestId(PROCESS_MANAGEMENT_BUILDER_TEST_IDS.draftToggle);
+  }
+
+  get draftToggleSwitch() {
+    return this.draftToggle.locator('.cds--toggle__switch');
+  }
+
   get startsCaseToggle() {
     return this.page.getByTestId(PROCESS_MANAGEMENT_BUILDER_TEST_IDS.startsCaseToggle);
   }
@@ -132,8 +140,7 @@ export class CaseDetailsProcessesPage {
   }
 
   async goToCaseDetailsProcesses(caseIdentifier: string): Promise<string> {
-    await this.page.getByRole('button', {name: 'Admin'}).click();
-    await this.page.getByRole('link', {name: 'Cases'}).click();
+    await this.page.goto('/case-management');
     await this.page.waitForSelector('valtimo-carbon-list');
     await this.page.locator(`tr:has(td:has-text("${caseIdentifier}"))`).click();
     await this.page.waitForURL(/\/case-management\/case\//);
@@ -199,6 +206,14 @@ export class CaseDetailsProcessesPage {
     await expect(this.appendTaskContextPadAction).toBeVisible();
     await this.appendTaskContextPadAction.click();
     await this.page.keyboard.press('Escape');
+  }
+
+  async enableDraft() {
+    const switchControl = this.draftToggle.getByRole('switch');
+    if (!(await switchControl.isChecked())) {
+      await this.draftToggleSwitch.click();
+    }
+    await expect(switchControl).toBeChecked();
   }
 
   async clickStartsCaseToggle() {

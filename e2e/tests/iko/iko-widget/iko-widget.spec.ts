@@ -220,8 +220,13 @@ test.describe('Feature 15G — IKO Widgets', () => {
 
     test('15.71, 15.72 — auto-generates the key from the divider title', async () => {
       await widgetPage.addDividerButton.click();
-      await widgetPage.dividerTitleInput.fill(dividerTitle);
-      await expect(widgetPage.dividerKeyInput).not.toHaveValue('');
+      // The previous test closed a modal, whose Carbon reactive-form reset fires
+      // on a deferred timer (~240 ms) that can land after this modal opens and
+      // wipe a freshly-filled title. Re-fill until the key auto-generates.
+      await expect(async () => {
+        await widgetPage.dividerTitleInput.fill(dividerTitle);
+        await expect(widgetPage.dividerKeyInput).not.toHaveValue('', {timeout: 1_000});
+      }).toPass({timeout: 10_000});
       // Cancel — the next test does the real save so we don't seed a
       // half-created divider.
       await widgetPage.dividerCancelButton.click();

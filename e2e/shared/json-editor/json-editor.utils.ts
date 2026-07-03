@@ -112,6 +112,11 @@ export class JsonEditor {
     await this.editColumnsViaJSON(changes);
     await this.jsonEditorCancelButton.click();
     await this.jsonEditorCancelModalSaveButton.click();
+    // Saving triggers an API round-trip that re-renders the JSON editor back to
+    // its read-only state. Wait for the edit button to reappear so callers that
+    // immediately switch views don't race the re-render (the switch-view button
+    // is briefly detached while the save settles).
+    await expect(this.jsonEditorEditButton).toBeVisible({timeout: 15_000});
   }
 
   private async editColumnsViaJSON(columnConfig) {
