@@ -35,6 +35,8 @@ public class ValtimoProperties {
 
     private final Liquibase liquibase;
 
+    private final Bootstrap bootstrap;
+
     @ConstructorBinding
     public ValtimoProperties(
         App app,
@@ -42,7 +44,8 @@ public class ValtimoProperties {
         Oauth oauth,
         Portal portal,
         Process process,
-        Liquibase liquibase
+        Liquibase liquibase,
+        Bootstrap bootstrap
     ) {
         this.app = app != null ? app : new App();
         this.mandrill = mandrill != null ? mandrill : new Mandrill();
@@ -50,6 +53,7 @@ public class ValtimoProperties {
         this.portal = portal != null ? portal : new Portal();
         this.process = process != null ? process : new Process();
         this.liquibase = liquibase != null ? liquibase : new Liquibase();
+        this.bootstrap = bootstrap != null ? bootstrap : new Bootstrap();
         new OauthConfigHolder(this.oauth);
     }
 
@@ -75,6 +79,10 @@ public class ValtimoProperties {
 
     public Liquibase getLiquibase() {
         return liquibase;
+    }
+
+    public Bootstrap getBootstrap() {
+        return bootstrap;
     }
 
     public static class App {
@@ -216,6 +224,25 @@ public class ValtimoProperties {
 
         public void setCallDepthWarningThreshold(int callDepthWarningThreshold) {
             this.callDepthWarningThreshold = callDepthWarningThreshold;
+        }
+    }
+
+    public static class Bootstrap {
+
+        /**
+         * When {@code true} (default) the application performs its full bootstrap on startup:
+         * Liquibase migrations (contract + outbox), the Operaton schema migration and all
+         * autodeployments. When {@code false} none of that work runs, allowing a pod to start
+         * against an already-migrated schema without competing for locks or duplicating work.
+         */
+        private boolean enabled = true;
+
+        public boolean isEnabled() {
+            return enabled;
+        }
+
+        public void setEnabled(boolean enabled) {
+            this.enabled = enabled;
         }
     }
 
