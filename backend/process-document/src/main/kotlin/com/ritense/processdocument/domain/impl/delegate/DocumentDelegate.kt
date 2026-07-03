@@ -35,6 +35,7 @@ class DocumentDelegate(
         AuthorizationContext.runWithoutAuthorization {
             if (userEmail == null) {
                 unassign(execution)
+                return@runWithoutAuthorization
             }
             logger.debug("Assigning user {} to document {}", userEmail, execution.processBusinessKey)
             val caseDocumentId = getCaseDocumentId(execution)
