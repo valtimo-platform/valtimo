@@ -234,7 +234,7 @@ class DocumentenApiPlugin(
         )
 
         val metaDataMap = objectMapper.convertValue<MutableMap<String, Any>>(metaData)
-        metaDataMap[MetadataType.DOCUMENT_ID.key] = caseDocumentId
+        metaDataMap[MetadataType.DOCUMENT_ID.key] = caseDocumentId.toString()
         metaDataMap["title"] = metaData.titel
         metaData.beschrijving?.let { metaDataMap["description"] = it }
         metaData.bestandsnaam?.let { metaDataMap[MetadataType.FILE_NAME.key] = it }
