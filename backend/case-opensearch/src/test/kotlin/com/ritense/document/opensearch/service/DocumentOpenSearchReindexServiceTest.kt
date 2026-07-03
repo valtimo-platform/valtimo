@@ -102,7 +102,6 @@ class DocumentOpenSearchReindexServiceTest {
     private fun run(id: UUID) = OpenSearchReindexRun(
         id = id,
         status = ReindexRunStatus.RUNNING,
-        instanceId = "test-instance",
         pageSize = 100,
     )
 }

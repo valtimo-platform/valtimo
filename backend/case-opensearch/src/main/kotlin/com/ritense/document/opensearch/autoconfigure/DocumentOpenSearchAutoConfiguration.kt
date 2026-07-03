@@ -26,7 +26,6 @@ import com.ritense.document.opensearch.authorization.OpenSearchAuthorizationEnti
 import com.ritense.document.opensearch.authorization.OpenSearchPermissionConditionTranslator
 import com.ritense.document.opensearch.authorization.mapper.JsonSchemaDocumentCaseDefinitionOpenSearchMapper
 import com.ritense.document.opensearch.authorization.mapper.JsonSchemaDocumentDefinitionOpenSearchMapper
-import com.ritense.document.opensearch.domain.JsonSchemaDocumentOsDocument
 import com.ritense.document.opensearch.domain.OpenSearchReindexRun
 import com.ritense.document.opensearch.handler.DocumentOpenSearchEventListener
 import com.ritense.document.opensearch.handler.PendingIndexDeletionListener
@@ -38,6 +37,7 @@ import com.ritense.document.opensearch.security.DocumentOpenSearchHttpSecurityCo
 import com.ritense.document.opensearch.service.DelegatingDocumentSearchService
 import com.ritense.document.opensearch.service.DocumentOpenSearchQueryService
 import com.ritense.document.opensearch.service.DocumentOpenSearchReconcileJob
+import com.ritense.document.opensearch.service.DocumentOpenSearchIndexInitializer
 import com.ritense.document.opensearch.service.DocumentOpenSearchReconcileService
 import com.ritense.document.opensearch.service.DocumentOpenSearchReindexService
 import com.ritense.document.opensearch.service.DocumentOpenSearchSyncService
@@ -136,16 +136,20 @@ class DocumentOpenSearchAutoConfiguration {
 
     @Bean
     @ConditionalOnProperty(prefix = "valtimo.opensearch", name = ["enabled"], havingValue = "true", matchIfMissing = true)
-    fun documentOpenSearchEventListener(syncService: DocumentOpenSearchSyncService): DocumentOpenSearchEventListener =
-        DocumentOpenSearchEventListener(syncService)
+    fun documentOpenSearchEventListener(
+        syncService: DocumentOpenSearchSyncService,
+        searchEngineToggle: SearchEngineToggle,
+    ): DocumentOpenSearchEventListener =
+        DocumentOpenSearchEventListener(syncService, searchEngineToggle)
 
     @Bean
     @ConditionalOnMissingBean
     fun openSearchReindexRunService(
         openSearchReindexRunRepository: OpenSearchReindexRunRepository,
         objectMapper: ObjectMapper,
+        openSearchProperties: OpenSearchProperties,
     ): OpenSearchReindexRunService =
-        OpenSearchReindexRunService(openSearchReindexRunRepository, objectMapper)
+        OpenSearchReindexRunService(openSearchReindexRunRepository, objectMapper, openSearchProperties)
 
     @Bean
     @ConditionalOnMissingBean
@@ -196,8 +200,9 @@ class DocumentOpenSearchAutoConfiguration {
     @ConditionalOnProperty(prefix = "valtimo.opensearch.reconcile", name = ["enabled"], havingValue = "true", matchIfMissing = true)
     fun documentOpenSearchReconcileJob(
         reconcileService: DocumentOpenSearchReconcileService,
+        searchEngineToggle: SearchEngineToggle,
     ): DocumentOpenSearchReconcileJob =
-        DocumentOpenSearchReconcileJob(reconcileService)
+        DocumentOpenSearchReconcileJob(reconcileService, searchEngineToggle)
 
     @Bean
     @ConditionalOnMissingBean
@@ -223,7 +228,10 @@ class DocumentOpenSearchAutoConfiguration {
 
     @Bean
     @ConditionalOnMissingBean
-    fun searchEngineToggle(): SearchEngineToggle = SearchEngineToggle()
+    // Start in POSTGRES so no OpenSearch call happens before searchEngineSettingLoader resolves the real
+    // engine. The @Scheduled reconciler is armed during context refresh, before ApplicationRunners run, so
+    // an OPENSEARCH default could otherwise leak one spurious call at startup even when the engine is off.
+    fun searchEngineToggle(): SearchEngineToggle = SearchEngineToggle(SearchEngineToggle.Engine.POSTGRES)
 
     @Bean
     @ConditionalOnMissingBean
@@ -285,8 +293,9 @@ class DocumentOpenSearchAutoConfiguration {
         toggle: SearchEngineToggle,
         openSearchProperties: OpenSearchProperties,
         featureToggleOverridesService: FeatureToggleOverridesService,
+        indexInitializer: DocumentOpenSearchIndexInitializer,
     ): SearchEngineResource =
-        SearchEngineResource(toggle, openSearchProperties, featureToggleOverridesService)
+        SearchEngineResource(toggle, openSearchProperties, featureToggleOverridesService, indexInitializer)
 
     @Bean
     @ConditionalOnMissingBean
@@ -295,44 +304,25 @@ class DocumentOpenSearchAutoConfiguration {
     ): DocumentOpenSearchReindexResource =
         DocumentOpenSearchReindexResource(reindexService)
 
-    /**
-     * Creates the OpenSearch index and mappings on startup if the index does not yet exist.
-     */
     @Bean
-    fun documentOpenSearchIndexInitializer(elasticsearchOperations: ElasticsearchOperations): ApplicationRunner =
-        ApplicationRunner {
-            try {
-                val indexOps = elasticsearchOperations.indexOps(JsonSchemaDocumentOsDocument::class.java)
-                if (!indexOps.exists()) {
-                    val settings = org.springframework.data.elasticsearch.core.document.Document.create()
-                    settings["index.number_of_replicas"] = 0
-                    indexOps.create(settings)
+    @ConditionalOnMissingBean
+    fun documentOpenSearchIndexInitializer(
+        elasticsearchOperations: ElasticsearchOperations,
+    ): DocumentOpenSearchIndexInitializer =
+        DocumentOpenSearchIndexInitializer(elasticsearchOperations)
 
-                    // Merge annotated mapping with a dynamic template that forces all
-                    // content.* fields to text+keyword — enables wildcard search on numbers too
-                    val annotatedMapping = indexOps.createMapping(JsonSchemaDocumentOsDocument::class.java)
-                    val dynamicTemplates = listOf(
-                        mapOf("content_fields_as_text" to mapOf(
-                            "path_match" to "content.*",
-                            "mapping" to mapOf(
-                                "type" to "text",
-                                "fields" to mapOf("keyword" to mapOf("type" to "keyword", "ignore_above" to 256))
-                            )
-                        ))
-                    )
-                    annotatedMapping["dynamic_templates"] = dynamicTemplates
-                    indexOps.putMapping(annotatedMapping)
-                }
-            } catch (e: Exception) {
-                logger.warn(e) { "Failed to initialize OpenSearch index — is OpenSearch running?" }
-            }
-        }
-
+    /**
+     * Resolves the active search engine on startup from configuration and the persisted feature-toggle
+     * override, then — only when OpenSearch is the active engine — provisions the index. Merged into a
+     * single ordered runner so the toggle is always set before any index/OpenSearch work is decided, and
+     * so a disabled or toggled-off engine performs no active OpenSearch call at all on boot.
+     */
     @Bean
     fun searchEngineSettingLoader(
         toggle: SearchEngineToggle,
         featureToggleOverridesService: FeatureToggleOverridesService,
         openSearchProperties: OpenSearchProperties,
+        indexInitializer: DocumentOpenSearchIndexInitializer,
     ): ApplicationRunner = ApplicationRunner {
         if (!openSearchProperties.enabled) {
             toggle.set(SearchEngineToggle.Engine.POSTGRES)
@@ -345,6 +335,10 @@ class DocumentOpenSearchAutoConfiguration {
         val engine = if (useOpenSearch) SearchEngineToggle.Engine.OPENSEARCH else SearchEngineToggle.Engine.POSTGRES
         toggle.set(engine)
         logger.info { "Document search engine set to: ${engine.name}" }
+
+        if (toggle.isOpenSearchActive()) {
+            indexInitializer.ensureIndex()
+        }
     }
 
     companion object {

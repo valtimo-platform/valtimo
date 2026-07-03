@@ -29,4 +29,13 @@ class SearchEngineToggle(default: Engine = Engine.OPENSEARCH) {
     fun set(engine: Engine) {
         active.set(engine)
     }
+
+    /**
+     * Master switch for every active OpenSearch call (reads, live-sync writes, reconcile, index creation).
+     * Read live on each call site so flipping the engine at runtime — via
+     * [com.ritense.document.opensearch.web.SearchEngineResource] — immediately (re)enables or disables all
+     * OpenSearch traffic without a restart. Startup forces this to [Engine.POSTGRES] when OpenSearch is
+     * disabled by configuration, so this single check also honours `valtimo.opensearch.enabled`.
+     */
+    fun isOpenSearchActive(): Boolean = active.get() == Engine.OPENSEARCH
 }

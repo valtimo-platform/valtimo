@@ -17,6 +17,7 @@
 package com.ritense.document.opensearch.service
 
 import com.fasterxml.jackson.databind.ObjectMapper
+import com.ritense.document.opensearch.OpenSearchProperties
 import com.ritense.document.opensearch.domain.OpenSearchReindexRun
 import com.ritense.document.opensearch.domain.ReindexRunStatus
 import com.ritense.document.opensearch.repository.OpenSearchReindexRunRepository
@@ -26,6 +27,7 @@ import org.junit.jupiter.api.Test
 import org.mockito.kotlin.any
 import org.mockito.kotlin.argumentCaptor
 import org.mockito.kotlin.doAnswer
+import org.mockito.kotlin.eq
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.never
 import org.mockito.kotlin.verify
@@ -37,22 +39,22 @@ class OpenSearchReindexRunServiceTest {
 
     private val repository: OpenSearchReindexRunRepository = mock()
     private val objectMapper: ObjectMapper = ObjectMapper().findAndRegisterModules()
+    private val properties = OpenSearchProperties()
     private lateinit var service: OpenSearchReindexRunService
 
     @BeforeEach
     fun setUp() {
-        service = OpenSearchReindexRunService(repository, objectMapper)
+        service = OpenSearchReindexRunService(repository, objectMapper, properties)
         whenever(repository.save(any<OpenSearchReindexRun>())).doAnswer { it.arguments[0] as OpenSearchReindexRun }
     }
 
     @Test
-    fun `startOrResume creates a new RUNNING run owned by this instance`() {
+    fun `startOrResume creates a new RUNNING run`() {
         val request = ReindexRequest(documentDefinitionName = "house", pageSize = 250)
 
         val run = service.startOrResume(request)
 
         assertThat(run.status).isEqualTo(ReindexRunStatus.RUNNING)
-        assertThat(run.instanceId).isEqualTo(service.instanceId)
         assertThat(run.pageSize).isEqualTo(250)
         assertThat(run.scope).contains("house")
         verify(repository).save(any<OpenSearchReindexRun>())
@@ -64,7 +66,6 @@ class OpenSearchReindexRunServiceTest {
         val existing = OpenSearchReindexRun(
             id = runId,
             status = ReindexRunStatus.FAILED,
-            instanceId = "other-instance",
             pageSize = 100,
             lastId = UUID.randomUUID(),
             error = "boom",
@@ -82,7 +83,7 @@ class OpenSearchReindexRunServiceTest {
     @Test
     fun `recordProgress updates cursor and counts`() {
         val runId = UUID.randomUUID()
-        val run = OpenSearchReindexRun(id = runId, instanceId = service.instanceId, pageSize = 100)
+        val run = OpenSearchReindexRun(id = runId, pageSize = 100)
         whenever(repository.findById(runId)).thenReturn(Optional.of(run))
         val cursor = UUID.randomUUID()
 
@@ -97,7 +98,7 @@ class OpenSearchReindexRunServiceTest {
     @Test
     fun `complete fail and stop set the terminal status`() {
         val runId = UUID.randomUUID()
-        val run = OpenSearchReindexRun(id = runId, instanceId = service.instanceId, pageSize = 100)
+        val run = OpenSearchReindexRun(id = runId, pageSize = 100)
         whenever(repository.findById(runId)).thenReturn(Optional.of(run))
 
         service.complete(runId)
@@ -113,14 +114,13 @@ class OpenSearchReindexRunServiceTest {
     }
 
     @Test
-    fun `reconcileOrphanedRuns marks this instance's RUNNING rows as FAILED`() {
+    fun `reconcileOrphanedRuns marks stale-heartbeat RUNNING rows as FAILED`() {
         val orphan = OpenSearchReindexRun(
             id = UUID.randomUUID(),
             status = ReindexRunStatus.RUNNING,
-            instanceId = service.instanceId,
             pageSize = 100,
         )
-        whenever(repository.findAllByStatusAndInstanceId(ReindexRunStatus.RUNNING, service.instanceId))
+        whenever(repository.findAllByStatusAndHeartbeatOnBefore(eq(ReindexRunStatus.RUNNING), any()))
             .thenReturn(listOf(orphan))
 
         service.reconcileOrphanedRuns()
@@ -134,7 +134,7 @@ class OpenSearchReindexRunServiceTest {
 
     @Test
     fun `reconcileOrphanedRuns does nothing when no orphans exist`() {
-        whenever(repository.findAllByStatusAndInstanceId(ReindexRunStatus.RUNNING, service.instanceId))
+        whenever(repository.findAllByStatusAndHeartbeatOnBefore(eq(ReindexRunStatus.RUNNING), any()))
             .thenReturn(emptyList())
 
         service.reconcileOrphanedRuns()
@@ -158,7 +158,6 @@ class OpenSearchReindexRunServiceTest {
         val run = OpenSearchReindexRun(
             id = runId,
             status = ReindexRunStatus.RUNNING,
-            instanceId = service.instanceId,
             pageSize = 100,
             processedCount = 7,
             skippedCount = 1,

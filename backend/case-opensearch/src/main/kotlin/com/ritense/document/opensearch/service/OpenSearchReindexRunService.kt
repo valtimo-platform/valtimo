@@ -17,6 +17,7 @@
 package com.ritense.document.opensearch.service
 
 import com.fasterxml.jackson.databind.ObjectMapper
+import com.ritense.document.opensearch.OpenSearchProperties
 import com.ritense.document.opensearch.domain.OpenSearchReindexRun
 import com.ritense.document.opensearch.domain.ReindexRunStatus
 import com.ritense.document.opensearch.repository.OpenSearchReindexRunRepository
@@ -24,7 +25,6 @@ import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.boot.context.event.ApplicationReadyEvent
 import org.springframework.context.event.EventListener
 import org.springframework.transaction.annotation.Transactional
-import java.net.InetAddress
 import java.time.Duration
 import java.time.LocalDateTime
 import java.util.UUID
@@ -40,24 +40,24 @@ import java.util.UUID
 open class OpenSearchReindexRunService(
     private val repository: OpenSearchReindexRunRepository,
     private val objectMapper: ObjectMapper,
+    private val properties: OpenSearchProperties,
 ) {
 
-    /** Stable-per-process identity, used to claim run rows and reconcile this instance's orphans on boot. */
-    val instanceId: String = "${hostName()}-${UUID.randomUUID()}"
-
     /**
-     * On startup, any [ReindexRunStatus.RUNNING] row owned by *this* instance must be orphaned: this
-     * instance just booted, so it cannot legitimately still be running an earlier job. Mark them FAILED
-     * (resumable from their cursor).
+     * On startup, reconcile any [ReindexRunStatus.RUNNING] row whose heartbeat has gone stale (older than
+     * [OpenSearchProperties.Reindex.runningHeartbeatTimeout]): the instance that owned it has crashed or
+     * restarted and can no longer be advancing it. Mark them FAILED (resumable from their cursor). Runs still
+     * being advanced by a live instance keep a fresh heartbeat and are left untouched, so this is cluster-safe.
      */
     @EventListener(ApplicationReadyEvent::class)
     open fun reconcileOrphanedRuns() {
-        val orphaned = repository.findAllByStatusAndInstanceId(ReindexRunStatus.RUNNING, instanceId)
+        val staleBefore = LocalDateTime.now().minus(properties.reindex.runningHeartbeatTimeout)
+        val orphaned = repository.findAllByStatusAndHeartbeatOnBefore(ReindexRunStatus.RUNNING, staleBefore)
         if (orphaned.isEmpty()) return
         val now = LocalDateTime.now()
-        orphaned.forEach { it.fail(now, "Reconciled on startup: instance restarted while run was RUNNING") }
+        orphaned.forEach { it.fail(now, "Reconciled on startup: RUNNING run with a stale heartbeat") }
         repository.saveAll(orphaned)
-        logger.warn { "Reconciled ${orphaned.size} orphaned RUNNING re-index run(s) owned by $instanceId to FAILED" }
+        logger.warn { "Reconciled ${orphaned.size} orphaned RUNNING re-index run(s) with a stale heartbeat to FAILED" }
     }
 
     /**
@@ -76,7 +76,6 @@ open class OpenSearchReindexRunService(
             OpenSearchReindexRun(
                 id = UUID.randomUUID(),
                 status = ReindexRunStatus.RUNNING,
-                instanceId = instanceId,
                 scope = serializeScope(request),
                 pageSize = request.effectivePageSize(),
                 startedOn = LocalDateTime.now(),
@@ -149,7 +148,6 @@ open class OpenSearchReindexRunService(
             "runId" to run.id,
             "status" to run.status,
             "running" to (run.status == ReindexRunStatus.RUNNING),
-            "instanceId" to run.instanceId,
             "scope" to deserializeScope(run.scope),
             "pageSize" to run.pageSize,
             "lastId" to run.lastId,
@@ -178,13 +176,6 @@ open class OpenSearchReindexRunService(
             } catch (e: Exception) {
                 it
             }
-        }
-
-    private fun hostName(): String =
-        try {
-            InetAddress.getLocalHost().hostName
-        } catch (e: Exception) {
-            "unknown-host"
         }
 
     companion object {

@@ -29,9 +29,6 @@
             <column name="status" type="VARCHAR(20)">
                 <constraints nullable="false"/>
             </column>
-            <column name="instance_id" type="VARCHAR(255)">
-                <constraints nullable="false"/>
-            </column>
             <column name="scope" type="CLOB"/>
             <column name="page_size" type="${intType}">
                 <constraints nullable="false"/>

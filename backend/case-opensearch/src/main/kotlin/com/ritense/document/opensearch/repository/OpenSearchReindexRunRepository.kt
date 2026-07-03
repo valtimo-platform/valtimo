@@ -25,6 +25,6 @@ import java.util.UUID
 interface OpenSearchReindexRunRepository : JpaRepository<OpenSearchReindexRun, UUID> {
     fun findFirstByOrderByStartedOnDesc(): OpenSearchReindexRun?
     fun findFirstByStatusOrderByStartedOnDesc(status: ReindexRunStatus): OpenSearchReindexRun?
-    fun findAllByStatusAndInstanceId(status: ReindexRunStatus, instanceId: String): List<OpenSearchReindexRun>
+    fun findAllByStatusAndHeartbeatOnBefore(status: ReindexRunStatus, heartbeatOn: LocalDateTime): List<OpenSearchReindexRun>
     fun existsByStatusAndHeartbeatOnAfter(status: ReindexRunStatus, heartbeatOn: LocalDateTime): Boolean
 }

@@ -26,6 +26,7 @@ import java.util.concurrent.atomic.AtomicBoolean
  */
 class DocumentOpenSearchReconcileJob(
     private val reconcileService: DocumentOpenSearchReconcileService,
+    private val toggle: SearchEngineToggle,
 ) {
     private val running = AtomicBoolean(false)
 
@@ -33,6 +34,9 @@ class DocumentOpenSearchReconcileJob(
     // so this safety-net reconciler runs on a relaxed interval.
     @Scheduled(fixedDelayString = "\${valtimo.opensearch.reconcile.interval:PT2M}")
     fun reconcile() {
+        // Engine off: skip this cycle without touching OpenSearch. The tick keeps firing cheaply and
+        // resumes reconciling from the persisted watermark on the first cycle after the engine is re-enabled.
+        if (!toggle.isOpenSearchActive()) return
         if (running.compareAndSet(false, true)) {
             try {
                 reconcileService.reconcile()

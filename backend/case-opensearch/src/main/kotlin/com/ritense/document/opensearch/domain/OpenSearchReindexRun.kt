@@ -48,9 +48,6 @@ class OpenSearchReindexRun(
     @Column(name = "status", nullable = false, length = 20)
     var status: ReindexRunStatus = ReindexRunStatus.RUNNING,
 
-    @Column(name = "instance_id", nullable = false)
-    val instanceId: String = "",
-
     @Column(name = "scope")
     val scope: String? = null,
 

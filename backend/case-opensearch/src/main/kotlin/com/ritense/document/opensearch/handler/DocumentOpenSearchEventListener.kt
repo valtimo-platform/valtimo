@@ -23,6 +23,7 @@ import com.ritense.document.event.DocumentRetentionPeriodSetEvent
 import com.ritense.document.event.DocumentRetentionPeriodUnsetEvent
 import com.ritense.document.event.DocumentUnassignedEvent
 import com.ritense.document.opensearch.service.DocumentOpenSearchSyncService
+import com.ritense.document.opensearch.service.SearchEngineToggle
 import com.ritense.valtimo.contract.document.event.DocumentRelatedFileAddedEvent
 import com.ritense.valtimo.contract.document.event.DocumentRelatedFileRemovedEvent
 import com.ritense.valtimo.contract.event.DocumentDeletedEvent
@@ -51,6 +52,7 @@ import java.util.concurrent.TimeUnit
  */
 class DocumentOpenSearchEventListener(
     private val syncService: DocumentOpenSearchSyncService,
+    private val toggle: SearchEngineToggle,
 ) : DisposableBean {
 
     private val executor: ExecutorService = Executors.newSingleThreadExecutor { runnable ->
@@ -89,6 +91,9 @@ class DocumentOpenSearchEventListener(
     private fun enqueueDelete(documentId: UUID) = submit { syncService.delete(documentId) }
 
     private fun submit(task: () -> Unit) {
+        // Engine off (feature toggled off or OpenSearch disabled): skip the write entirely — no thread,
+        // no OpenSearch call. The reconciler catches up from its watermark once the engine is re-enabled.
+        if (!toggle.isOpenSearchActive()) return
         try {
             executor.execute {
                 try {

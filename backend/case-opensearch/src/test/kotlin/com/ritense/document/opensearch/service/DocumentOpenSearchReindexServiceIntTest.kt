@@ -179,7 +179,6 @@ class DocumentOpenSearchReindexServiceIntTest : BaseOpenSearchIntegrationTest() 
             OpenSearchReindexRun(
                 id = UUID.randomUUID(),
                 status = ReindexRunStatus.FAILED,
-                instanceId = reindexRunService.instanceId,
                 pageSize = ReindexRequest.DEFAULT_PAGE_SIZE,
                 lastId = cursor,
                 processedCount = 3,
@@ -196,13 +195,13 @@ class DocumentOpenSearchReindexServiceIntTest : BaseOpenSearchIntegrationTest() 
     }
 
     @Test
-    fun `startup reconciliation marks this instance's orphaned RUNNING run as FAILED`() {
+    fun `startup reconciliation marks a stale-heartbeat orphaned RUNNING run as FAILED`() {
         val orphan = reindexRunRepository.save(
             OpenSearchReindexRun(
                 id = UUID.randomUUID(),
                 status = ReindexRunStatus.RUNNING,
-                instanceId = reindexRunService.instanceId,
                 pageSize = ReindexRequest.DEFAULT_PAGE_SIZE,
+                heartbeatOn = LocalDateTime.now().minusHours(1),
             )
         )
 
@@ -235,7 +234,6 @@ class DocumentOpenSearchReindexServiceIntTest : BaseOpenSearchIntegrationTest() 
             OpenSearchReindexRun(
                 id = UUID.randomUUID(),
                 status = ReindexRunStatus.RUNNING,
-                instanceId = reindexRunService.instanceId,
                 pageSize = ReindexRequest.DEFAULT_PAGE_SIZE,
                 heartbeatOn = LocalDateTime.now(),
             )
@@ -250,7 +248,6 @@ class DocumentOpenSearchReindexServiceIntTest : BaseOpenSearchIntegrationTest() 
             OpenSearchReindexRun(
                 id = UUID.randomUUID(),
                 status = ReindexRunStatus.RUNNING,
-                instanceId = reindexRunService.instanceId,
                 pageSize = ReindexRequest.DEFAULT_PAGE_SIZE,
                 heartbeatOn = LocalDateTime.now().minusMinutes(10),
             )
@@ -265,7 +262,6 @@ class DocumentOpenSearchReindexServiceIntTest : BaseOpenSearchIntegrationTest() 
             OpenSearchReindexRun(
                 id = UUID.randomUUID(),
                 status = ReindexRunStatus.COMPLETED,
-                instanceId = reindexRunService.instanceId,
                 pageSize = ReindexRequest.DEFAULT_PAGE_SIZE,
                 heartbeatOn = LocalDateTime.now(),
             )
