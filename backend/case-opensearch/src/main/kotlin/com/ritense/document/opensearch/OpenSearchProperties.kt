@@ -23,6 +23,9 @@ import java.time.Duration
 @ConfigurationProperties(prefix = "valtimo.opensearch")
 data class OpenSearchProperties(
     val enabled: Boolean = true,
+    val healthCheckEnabled: Boolean = true,
+    val healthCheckIntervalMs: Long = 30000,
+    val fallbackWarningIntervalMs: Long = 300000,
 
     @NestedConfigurationProperty
     val reconcile: Reconcile = Reconcile(),

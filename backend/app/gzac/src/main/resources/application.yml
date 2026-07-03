@@ -3,6 +3,7 @@ logging:
         name: /tmp/spring.log
     level:
         com.ritense.document.opensearch: DEBUG
+        org.opensearch.client.RestClient: WARN
 
 management:
     endpoints:

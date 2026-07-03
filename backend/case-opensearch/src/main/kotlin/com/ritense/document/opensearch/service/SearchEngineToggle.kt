@@ -16,6 +16,8 @@
 
 package com.ritense.document.opensearch.service
 
+import java.util.concurrent.atomic.AtomicBoolean
+import java.util.concurrent.atomic.AtomicLong
 import java.util.concurrent.atomic.AtomicReference
 
 class SearchEngineToggle(default: Engine = Engine.OPENSEARCH) {
@@ -23,6 +25,8 @@ class SearchEngineToggle(default: Engine = Engine.OPENSEARCH) {
     enum class Engine { OPENSEARCH, POSTGRES }
 
     private val active = AtomicReference(default)
+    private val fallbackActive = AtomicBoolean(false)
+    private val lastWarningTime = AtomicLong(0)
 
     fun get(): Engine = active.get()
 
@@ -38,4 +42,27 @@ class SearchEngineToggle(default: Engine = Engine.OPENSEARCH) {
      * disabled by configuration, so this single check also honours `valtimo.opensearch.enabled`.
      */
     fun isOpenSearchActive(): Boolean = active.get() == Engine.OPENSEARCH
+
+    fun isFallbackActive(): Boolean = fallbackActive.get()
+
+    fun activateFallback() {
+        fallbackActive.set(true)
+    }
+
+    fun deactivateFallback() {
+        fallbackActive.set(false)
+        lastWarningTime.set(0)
+    }
+
+    fun shouldUsePostgres(): Boolean =
+        get() == Engine.POSTGRES || (get() == Engine.OPENSEARCH && fallbackActive.get())
+
+    fun shouldLogWarning(intervalMs: Long): Boolean {
+        val now = System.currentTimeMillis()
+        val last = lastWarningTime.get()
+        if (now - last >= intervalMs) {
+            return lastWarningTime.compareAndSet(last, now)
+        }
+        return false
+    }
 }

@@ -45,6 +45,7 @@ import com.ritense.document.opensearch.service.JsonSchemaDocumentOpenSearchServi
 import com.ritense.document.opensearch.service.JsonSchemaDocumentOsConverter
 import com.ritense.document.opensearch.service.OpenSearchReindexRunService
 import com.ritense.document.opensearch.service.ReindexProgressGate
+import com.ritense.document.opensearch.service.OpenSearchHealthService
 import com.ritense.document.opensearch.service.SearchEngineToggle
 import com.ritense.document.opensearch.web.DocumentOpenSearchReindexResource
 import com.ritense.document.opensearch.web.SearchEngineResource
@@ -73,8 +74,9 @@ import org.springframework.core.annotation.Order
 import org.springframework.data.elasticsearch.core.ElasticsearchOperations
 import org.springframework.data.elasticsearch.repository.config.EnableElasticsearchRepositories
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories
-import org.springframework.scheduling.annotation.EnableScheduling
 import org.springframework.transaction.PlatformTransactionManager
+import org.springframework.scheduling.annotation.EnableScheduling
+import org.springframework.scheduling.annotation.Scheduled
 
 @AutoConfiguration
 @AutoConfigureBefore(DocumentAutoConfiguration::class)
@@ -333,8 +335,46 @@ class DocumentOpenSearchAutoConfiguration {
         }
     }
 
+    @Bean
+    @ConditionalOnMissingBean
+    @ConditionalOnProperty(
+        prefix = "valtimo.opensearch",
+        name = ["health-check-enabled"],
+        havingValue = "true",
+        matchIfMissing = true
+    )
+    fun openSearchHealthService(
+        restHighLevelClient: org.opensearch.client.RestHighLevelClient,
+        toggle: SearchEngineToggle,
+        openSearchProperties: OpenSearchProperties,
+    ): OpenSearchHealthService =
+        OpenSearchHealthService(restHighLevelClient, toggle, openSearchProperties)
+
+    @Bean
+    @ConditionalOnProperty(
+        prefix = "valtimo.opensearch",
+        name = ["health-check-enabled"],
+        havingValue = "true",
+        matchIfMissing = true
+    )
+    fun openSearchHealthScheduler(
+        healthService: OpenSearchHealthService,
+        openSearchProperties: OpenSearchProperties,
+    ): OpenSearchHealthScheduler =
+        OpenSearchHealthScheduler(healthService, openSearchProperties)
+
     companion object {
         private val logger = KotlinLogging.logger {}
         const val SEARCH_ENGINE_TOGGLE_KEY = "useOpenSearchForDocumentSearch"
+    }
+}
+
+class OpenSearchHealthScheduler(
+    private val healthService: OpenSearchHealthService,
+    private val properties: OpenSearchProperties,
+) {
+    @Scheduled(fixedDelayString = "\${valtimo.opensearch.health-check-interval-ms:30000}")
+    fun checkHealth() {
+        healthService.checkAndRecover()
     }
 }
