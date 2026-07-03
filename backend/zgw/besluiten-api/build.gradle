@@ -33,6 +33,7 @@ dependencies {
     implementation project(":backend:contract")
     implementation project(":backend:core")
     implementation project(":backend:plugin")
+    implementation project(":backend:process-document")
     implementation project(":backend:zgw")
     implementation project(":backend:zgw:zaken-api")
     implementation project(":backend:logging")

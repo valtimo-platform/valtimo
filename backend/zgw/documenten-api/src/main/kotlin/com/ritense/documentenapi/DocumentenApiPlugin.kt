@@ -46,6 +46,7 @@ import com.ritense.plugin.domain.EventType
 import com.ritense.plugin.domain.PluginConfiguration
 import com.ritense.plugin.domain.PluginDependency
 import com.ritense.plugin.service.PluginService
+import com.ritense.processdocument.helper.GetJsonSchemaDocumentHelper.getJsonSchemaDocumentId
 import com.ritense.processlink.domain.ActivityTypeWithEventName
 import com.ritense.resource.domain.MetadataType
 import com.ritense.resource.service.TemporaryResourceStorageService
@@ -219,8 +220,7 @@ class DocumentenApiPlugin(
         @PluginActionProperty processVariableName: String? = null
     ): String {
         val documentUrl = resolveDownloadDocumentUrl(execution)
-        val caseDocumentId = UUID.fromString(execution.businessKey)
-            ?: throw IllegalStateException("Failed to store document. Business key is null.")
+        val caseDocumentId = execution.getJsonSchemaDocumentId()
 
         val metaData = client.getInformatieObject(
             authenticationPluginConfiguration,
@@ -234,7 +234,7 @@ class DocumentenApiPlugin(
         )
 
         val metaDataMap = objectMapper.convertValue<MutableMap<String, Any>>(metaData)
-        metaDataMap[MetadataType.DOCUMENT_ID.key] = execution.businessKey
+        metaDataMap[MetadataType.DOCUMENT_ID.key] = caseDocumentId
         metaDataMap["title"] = metaData.titel
         metaData.beschrijving?.let { metaDataMap["description"] = it }
         metaData.bestandsnaam?.let { metaDataMap[MetadataType.FILE_NAME.key] = it }
@@ -264,11 +264,7 @@ class DocumentenApiPlugin(
             "Failed to get audit trail for document with url '$documentUrl'. Document isn't part of Documenten API with url '$url'."
         }
 
-        requireNotNull(execution.businessKey) {
-            "Failed to get audit trail. Business key is null."
-        }
-
-        getAuditTrail(documentUrl, UUID.fromString(execution.businessKey))
+        getAuditTrail(documentUrl, execution.getJsonSchemaDocumentId())
             .let {
                 execution.setVariable(processVariableName, objectMapper.writeValueAsString(it))
             }
@@ -291,16 +287,16 @@ class DocumentenApiPlugin(
     }
 
     fun getInformatieObjecten(
-        documentId: UUID,
+        caseDocumentId: UUID,
         documentSearchRequest: DocumentSearchRequest,
         pageable: Pageable
     ): Page<DocumentInformatieObject> {
         return client.getInformatieObjecten(
-            authenticationPluginConfiguration,
-            documentId,
-            url,
-            pageable,
-            documentSearchRequest
+            authentication = authenticationPluginConfiguration,
+            caseDocumentId = caseDocumentId,
+            baseUrl = url,
+            pageable = pageable,
+            documentSearchRequest = documentSearchRequest
         )
     }
 
@@ -359,8 +355,7 @@ class DocumentenApiPlugin(
         @PluginActionProperty objectType: String,
     ): ObjectInformatieObject {
         requireObjectInformatieObjectenSupport()
-        val caseDocumentId = UUID.fromString(execution.businessKey
-            ?: throw IllegalStateException("Failed to link document. Business key is null."))
+        val caseDocumentId = execution.getJsonSchemaDocumentId()
         val documentUrl = execution.getVariable(DOCUMENT_URL_PROCESS_VAR) as String?
             ?: throw IllegalStateException("Failed to link document. No process variable '$DOCUMENT_URL_PROCESS_VAR' found.")
 
@@ -399,8 +394,7 @@ class DocumentenApiPlugin(
         @PluginActionProperty objectInformatieObjectUrl: String,
     ) {
         requireObjectInformatieObjectenSupport()
-        val caseDocumentId = UUID.fromString(execution.businessKey
-            ?: throw IllegalStateException("Failed to delete document link. Business key is null."))
+        val caseDocumentId = execution.getJsonSchemaDocumentId()
 
         withLoggingContext(
             "OBJECT_INFORMATIE_OBJECT" to objectInformatieObjectUrl
@@ -500,8 +494,7 @@ class DocumentenApiPlugin(
             }
         } ?: (inhoudAsInputStream to metadata)
 
-        val caseDocumentId = execution.businessKey?.let { UUID.fromString(it) }
-            ?: throw IllegalStateException("Failed to store document. Business key is null.")
+        val caseDocumentId = execution.getJsonSchemaDocumentId()
 
         val vertrouwelijkheidaanduidingEnum = Vertrouwelijkheid.fromKey(
             vertrouwelijkheidaanduiding ?: getUploadField(

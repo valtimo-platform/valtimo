@@ -33,6 +33,7 @@ import com.ritense.form.BaseTest
 import com.ritense.form.domain.FormIoFormDefinition
 import com.ritense.form.service.impl.FormIoFormDefinitionService
 import com.ritense.processdocument.service.ProcessDocumentAssociationService
+import com.ritense.processdocument.service.ProcessDocumentService
 import com.ritense.valtimo.contract.case_.CaseDefinitionId
 import com.ritense.valtimo.contract.form.FormFieldDataResolver
 import com.ritense.valtimo.contract.json.MapperSingleton
@@ -62,6 +63,7 @@ class PrefillFormServiceTest : BaseTest() {
     lateinit var taskService: OperatonTaskService
     lateinit var formFieldDataResolver: FormFieldDataResolver
     lateinit var processDocumentAssociationService: ProcessDocumentAssociationService
+    lateinit var processDocumentService: ProcessDocumentService
     lateinit var valueResolverService: ValueResolverService
     lateinit var authorizationService: AuthorizationService
     @BeforeEach
@@ -72,6 +74,7 @@ class PrefillFormServiceTest : BaseTest() {
         taskService = mock()
         formFieldDataResolver = mock()
         processDocumentAssociationService = mock()
+        processDocumentService = mock()
         valueResolverService = mock()
         authorizationService = mock()
         prefillFormService = PrefillFormService(
@@ -83,7 +86,7 @@ class PrefillFormServiceTest : BaseTest() {
             processDocumentAssociationService,
             valueResolverService,
             MapperSingleton.get(),
-            authorizationService
+            processDocumentService
         )
     }
 

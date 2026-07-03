@@ -23,3 +23,4 @@
 
 * Dashboard widgets can now group and filter on more case fields, such as the `case:internalStatus` and
   `case:definitionId.key`.
+* Uploaded files now respect authorization for jsonDocuments managed from a building block process
