@@ -142,7 +142,7 @@ internal class DocumentenApiPluginTest {
                 status = IN_BEWERKING
             )
         }
-        assertEquals("Failed to store document. Business key is null.", exception.message)
+        assertEquals("Failed to resolve document id", exception.message)
     }
 
     @Test
@@ -784,14 +784,14 @@ internal class DocumentenApiPluginTest {
         )
         plugin.url = URI("http://some-url")
 
-        val exception = assertThrows<IllegalArgumentException> {
+        val exception = assertThrows<IllegalStateException> {
             plugin.getAuditTrail(
                 executionMock,
                 documentUrl,
                 "myAuditTrailVar"
             )
         }
-        assertEquals("Failed to get audit trail. Business key is null.", exception.message)
+        assertEquals("Failed to resolve document id", exception.message)
     }
 
     private fun createPlugin(

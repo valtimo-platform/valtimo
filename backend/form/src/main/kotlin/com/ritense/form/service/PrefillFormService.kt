@@ -73,10 +73,12 @@ class PrefillFormService(
             operatonProcessService.findExecutionByProcessInstanceId(processInstanceId)
                 ?: throw RuntimeException("Process instance not found by id $processInstanceId")
         }
-        val document = processDocumentService.getDocument(
-            OperatonProcessInstanceId(processInstance.id),
-            processInstance
-        )
+        val document = runWithoutAuthorization {
+            processDocumentService.getDocument(
+                OperatonProcessInstanceId(processInstance.id),
+                processInstance
+            )
+        }
         val formDefinition = formDefinitionService.getFormDefinitionById(formDefinitionId)
             .orElseThrow { RuntimeException("Form definition not found by id $formDefinitionId") }
         prefillFormDefinition(formDefinition, document, processInstanceId, taskInstanceId)

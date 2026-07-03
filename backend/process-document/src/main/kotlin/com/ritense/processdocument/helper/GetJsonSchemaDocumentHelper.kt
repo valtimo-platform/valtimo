@@ -76,8 +76,9 @@ object GetJsonSchemaDocumentHelper {
     @JvmStatic
     fun OperatonExecution.getJsonSchemaDocumentIdOrNull(): UUID? =
         businessKey?.toUUIDOrNull()
-            ?: superExecution?.getJsonSchemaDocumentIdOrNull()
-            ?: processInstance?.getJsonSchemaDocumentIdOrNull()
+            ?: (if (superExecution != this) superExecution?.getJsonSchemaDocumentIdOrNull() else null)
+            ?: (if (processInstance != this) processInstance?.getJsonSchemaDocumentIdOrNull() else null)
+            ?: (if (parent != this) parent?.getJsonSchemaDocumentIdOrNull() else null)
 
     @JvmStatic
     fun DelegateExecution.getJsonSchemaDocumentId(): UUID = getJsonSchemaDocumentIdOrNull() ?: error(
@@ -91,8 +92,8 @@ object GetJsonSchemaDocumentHelper {
     @JvmStatic
     fun DelegateExecution.getJsonSchemaDocumentIdOrNull(): UUID? =
         businessKey?.toUUIDOrNull()
-            ?: superExecution?.getJsonSchemaDocumentIdOrNull()
-            ?: processInstance?.getJsonSchemaDocumentIdOrNull()
+            ?: (if (superExecution != this) superExecution?.getJsonSchemaDocumentIdOrNull() else null)
+            ?: (if (processInstance != this) processInstance?.getJsonSchemaDocumentIdOrNull() else null)
 
     @JvmStatic
     fun DelegateTask.getJsonSchemaDocumentId(): UUID = getJsonSchemaDocumentIdOrNull() ?: error(
