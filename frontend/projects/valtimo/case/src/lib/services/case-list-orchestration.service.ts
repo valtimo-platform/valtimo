@@ -116,6 +116,9 @@ export class CaseListOrchestrationService {
 
   public readonly globalSearchFilter$: Observable<string> = this.searchService.globalSearchFilter$;
 
+  public readonly invalidSearchFields$: Observable<string[]> =
+    this.documentService.invalidSearchFields$;
+
   public readonly statuses$: Observable<Array<InternalCaseStatus>> =
     this.statusService.caseStatuses$;
 

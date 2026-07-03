@@ -83,6 +83,7 @@ dockerCompose {
     stopContainers = false
     removeContainers = false
     removeVolumes = false
+    tcpPortsToIgnoreWhenWaiting = [9600]
 }
 
 tasks.register("bootRunWithDocker", tasks.named("bootRun").get().class) {

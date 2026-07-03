@@ -39,6 +39,7 @@
     assigneeFilter: orchestration.assigneeFilter$ | async,
     hiddenColumns: orchestration.hiddenColumns$ | async,
     disableStartButton: disableStartButton$ | async,
+    invalidSearchFields: orchestration.invalidSearchFields$ | async,
   } as obs"
 >
   <valtimo-case-list-actions
@@ -96,7 +97,9 @@
     [fields]="obs.fields"
     [header]="false"
     [initialSortState]="pagination.sort"
+    [invalidSearchFields]="obs.invalidSearchFields || []"
     [isSearchable]="true"
+    [searchFields]="obs.searchFields || []"
     [items]="obs.documentItems"
     [pagination]="pagination"
     lockedTooltipTranslationKey="case.rowLocked"

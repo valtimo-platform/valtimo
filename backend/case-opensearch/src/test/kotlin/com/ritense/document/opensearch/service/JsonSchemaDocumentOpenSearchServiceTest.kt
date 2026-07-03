@@ -23,6 +23,10 @@ import com.ritense.authorization.permission.ConditionContainer
 import com.ritense.authorization.permission.Permission
 import com.ritense.authorization.role.Role
 import com.ritense.document.domain.impl.JsonSchemaDocument
+import com.ritense.document.domain.impl.searchfield.SearchField
+import com.ritense.document.domain.impl.searchfield.SearchFieldDataType
+import com.ritense.document.domain.impl.searchfield.SearchFieldFieldType
+import com.ritense.document.domain.impl.searchfield.SearchFieldMatchType
 import com.ritense.document.domain.search.AdvancedSearchRequest
 import com.ritense.document.opensearch.authorization.OpenSearchAuthorizationEntityMapper
 import com.ritense.document.opensearch.authorization.OpenSearchPermissionConditionTranslator
@@ -169,6 +173,116 @@ class JsonSchemaDocumentOpenSearchServiceTest {
         val page = service.search("house", BlueprintType.CASE, request, PageRequest.of(0, 10))
 
         assertThat(page.totalElements).isEqualTo(5L)
+    }
+
+    @Test
+    fun `search with field-qualified term targets specific field`() {
+        val queryCaptor = argumentCaptor<StringQuery>()
+        val emptySearchHits: SearchHits<JsonSchemaDocumentOsDocument> = mock()
+        whenever(emptySearchHits.searchHits).thenReturn(emptyList())
+        whenever(emptySearchHits.totalHits).thenReturn(0L)
+        whenever(elasticsearchOperations.search(queryCaptor.capture(), eq(JsonSchemaDocumentOsDocument::class.java))).thenReturn(emptySearchHits)
+        whenever(searchFieldService.getSearchFields("house")).thenReturn(listOf(
+            SearchField("city", "doc:city", SearchFieldDataType.TEXT, SearchFieldFieldType.SINGLE, SearchFieldMatchType.LIKE, null, 0, "City")
+        ))
+
+        val request = AdvancedSearchRequest().globalSearchFilter("city:amsterdam")
+        service.search("house", BlueprintType.CASE, request, PageRequest.of(0, 10))
+
+        val capturedQuery = queryCaptor.firstValue
+        assertThat(capturedQuery.source).contains("content.city")
+        assertThat(capturedQuery.source).contains("amsterdam")
+    }
+
+    @Test
+    fun `search with EXACT match type field does not add wildcards`() {
+        val queryCaptor = argumentCaptor<StringQuery>()
+        val emptySearchHits: SearchHits<JsonSchemaDocumentOsDocument> = mock()
+        whenever(emptySearchHits.searchHits).thenReturn(emptyList())
+        whenever(emptySearchHits.totalHits).thenReturn(0L)
+        whenever(elasticsearchOperations.search(queryCaptor.capture(), eq(JsonSchemaDocumentOsDocument::class.java))).thenReturn(emptySearchHits)
+        whenever(searchFieldService.getSearchFields("house")).thenReturn(listOf(
+            SearchField("status", "doc:status", SearchFieldDataType.TEXT, SearchFieldFieldType.SINGLE, SearchFieldMatchType.EXACT, null, 0, "Status")
+        ))
+
+        val request = AdvancedSearchRequest().globalSearchFilter("status:active")
+        service.search("house", BlueprintType.CASE, request, PageRequest.of(0, 10))
+
+        val capturedQuery = queryCaptor.firstValue
+        assertThat(capturedQuery.source).contains("content.status:active")
+        assertThat(capturedQuery.source).doesNotContain("*active*")
+    }
+
+    @Test
+    fun `search with LIKE match type field adds wildcards`() {
+        val queryCaptor = argumentCaptor<StringQuery>()
+        val emptySearchHits: SearchHits<JsonSchemaDocumentOsDocument> = mock()
+        whenever(emptySearchHits.searchHits).thenReturn(emptyList())
+        whenever(emptySearchHits.totalHits).thenReturn(0L)
+        whenever(elasticsearchOperations.search(queryCaptor.capture(), eq(JsonSchemaDocumentOsDocument::class.java))).thenReturn(emptySearchHits)
+        whenever(searchFieldService.getSearchFields("house")).thenReturn(listOf(
+            SearchField("name", "doc:name", SearchFieldDataType.TEXT, SearchFieldFieldType.SINGLE, SearchFieldMatchType.LIKE, null, 0, "Name")
+        ))
+
+        val request = AdvancedSearchRequest().globalSearchFilter("name:john")
+        service.search("house", BlueprintType.CASE, request, PageRequest.of(0, 10))
+
+        val capturedQuery = queryCaptor.firstValue
+        assertThat(capturedQuery.source).contains("content.name:*john*")
+    }
+
+    @Test
+    fun `search with quoted field value does not add wildcards even for LIKE fields`() {
+        val queryCaptor = argumentCaptor<StringQuery>()
+        val emptySearchHits: SearchHits<JsonSchemaDocumentOsDocument> = mock()
+        whenever(emptySearchHits.searchHits).thenReturn(emptyList())
+        whenever(emptySearchHits.totalHits).thenReturn(0L)
+        whenever(elasticsearchOperations.search(queryCaptor.capture(), eq(JsonSchemaDocumentOsDocument::class.java))).thenReturn(emptySearchHits)
+        whenever(searchFieldService.getSearchFields("house")).thenReturn(listOf(
+            SearchField("address", "doc:address", SearchFieldDataType.TEXT, SearchFieldFieldType.SINGLE, SearchFieldMatchType.LIKE, null, 0, "Address")
+        ))
+
+        val request = AdvancedSearchRequest().globalSearchFilter("""address:"Main Street 123"""")
+        service.search("house", BlueprintType.CASE, request, PageRequest.of(0, 10))
+
+        val capturedQuery = queryCaptor.firstValue
+        assertThat(capturedQuery.source).contains("""content.address:\"Main Street 123\"""")
+        assertThat(capturedQuery.source).doesNotContain("*Main Street 123*")
+    }
+
+    @Test
+    fun `search with unknown field throws exception listing unknown fields`() {
+        whenever(searchFieldService.getSearchFields("house")).thenReturn(listOf(
+            SearchField("city", "doc:city", SearchFieldDataType.TEXT, SearchFieldFieldType.SINGLE, SearchFieldMatchType.LIKE, null, 0, "City")
+        ))
+
+        val request = AdvancedSearchRequest().globalSearchFilter("unknownField:value anotherBad:x city:amsterdam")
+
+        val exception = org.junit.jupiter.api.assertThrows<IllegalArgumentException> {
+            service.search("house", BlueprintType.CASE, request, PageRequest.of(0, 10))
+        }
+
+        assertThat(exception.message).contains("unknownField")
+        assertThat(exception.message).contains("anotherBad")
+    }
+
+    @Test
+    fun `search with mixed qualified and unqualified terms`() {
+        val queryCaptor = argumentCaptor<StringQuery>()
+        val emptySearchHits: SearchHits<JsonSchemaDocumentOsDocument> = mock()
+        whenever(emptySearchHits.searchHits).thenReturn(emptyList())
+        whenever(emptySearchHits.totalHits).thenReturn(0L)
+        whenever(elasticsearchOperations.search(queryCaptor.capture(), eq(JsonSchemaDocumentOsDocument::class.java))).thenReturn(emptySearchHits)
+        whenever(searchFieldService.getSearchFields("house")).thenReturn(listOf(
+            SearchField("city", "doc:city", SearchFieldDataType.TEXT, SearchFieldFieldType.SINGLE, SearchFieldMatchType.EXACT, null, 0, "City")
+        ))
+
+        val request = AdvancedSearchRequest().globalSearchFilter("city:amsterdam urgent")
+        service.search("house", BlueprintType.CASE, request, PageRequest.of(0, 10))
+
+        val capturedQuery = queryCaptor.firstValue
+        assertThat(capturedQuery.source).contains("content.city:amsterdam")
+        assertThat(capturedQuery.source).contains("*urgent*")
     }
 
     companion object {

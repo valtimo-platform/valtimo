@@ -38,12 +38,33 @@
     </cds-table-toolbar-actions>
 
     <cds-table-toolbar-content>
-      <cds-table-toolbar-search
-        *ngIf="isSearchable"
-        [expandable]="true"
-        [formControl]="searchFormControl"
-        data-test-id="carbonListSearch"
-      ></cds-table-toolbar-search>
+      <div *ngIf="isSearchable" class="valtimo-search-container" (focusout)="onSearchFocusOut($event)">
+        <cds-table-toolbar-search
+          #toolbarSearch
+          [expandable]="true"
+          [formControl]="searchFormControl"
+          [ngClass]="{'valtimo-search--invalid': invalidSearchFields.length > 0}"
+          data-test-id="carbonListSearch"
+          (input)="updateAutocomplete()"
+          (keydown)="onSearchKeydown($event)"
+          (clear)="onSearchClear()"
+          (open)="onSearchOpenChange($event)"
+        ></cds-table-toolbar-search>
+        <div
+          class="valtimo-search-overlay"
+          aria-hidden="true"
+        ><span
+            *ngFor="let segment of getSearchSegments()"
+            [class.valtimo-search-overlay__invalid]="segment.isInvalid"
+          >{{ segment.text }}</span></div>
+        <ul *ngIf="showAutocomplete && filteredSuggestions.length" class="valtimo-search-autocomplete" [style.left.px]="autocompleteLeft">
+          <li
+            *ngFor="let field of filteredSuggestions; let i = index"
+            [class.selected]="i === selectedSuggestionIndex"
+            (mousedown)="selectSuggestion(field)"
+          >{{ field.title || field.key }}</li>
+        </ul>
+      </div>
 
       <ng-content select="[carbonToolbarContent]"> </ng-content>
     </cds-table-toolbar-content>

@@ -43,8 +43,12 @@ import com.ritense.outbox.OutboxService
 import com.ritense.valtimo.contract.authentication.UserManagementService
 import com.ritense.valtimo.contract.blueprint.BlueprintType
 import com.ritense.valtimo.contract.utils.RequestHelper
+import com.ritense.document.domain.impl.searchfield.SearchField
+import com.ritense.document.domain.impl.searchfield.SearchFieldDataType
+import com.ritense.document.domain.impl.searchfield.SearchFieldMatchType
 import com.ritense.valtimo.contract.utils.SecurityUtils
 import org.apache.commons.lang3.NotImplementedException
+import org.opensearch.index.query.Operator
 import org.opensearch.index.query.QueryBuilder
 import org.opensearch.index.query.QueryBuilders
 import org.springframework.data.domain.Page
@@ -54,8 +58,10 @@ import org.springframework.data.domain.Pageable
 import org.springframework.data.domain.Sort
 import org.springframework.data.elasticsearch.core.ElasticsearchOperations
 import org.springframework.data.elasticsearch.core.query.StringQuery
-import org.apache.lucene.queryparser.classic.QueryParser
-import java.util.regex.Pattern
+import java.time.Instant
+import java.time.LocalDate
+import java.time.ZoneOffset
+import java.time.format.DateTimeFormatter
 
 class JsonSchemaDocumentOpenSearchService(
     private val elasticsearchOperations: ElasticsearchOperations,
@@ -221,28 +227,17 @@ class JsonSchemaDocumentOpenSearchService(
 
         val globalFilter = searchRequest.globalSearchFilter?.takeIf { it.isNotEmpty() }
         if (globalFilter != null) {
-            val searchableFields = if (!documentDefinitionName.isNullOrEmpty()) {
+            val searchFields = if (!documentDefinitionName.isNullOrEmpty()) {
                 runWithoutAuthorization {
                     searchFieldService.getSearchFields(documentDefinitionName)
                 }
-                    .filter { it.path?.startsWith(DOC_PREFIX) == true }
-                    .map { "content.${it.path.removePrefix(DOC_PREFIX)}" }
             } else {
                 emptyList()
             }
 
-            if (searchableFields.isNotEmpty()) {
-                // query_string with lenient=true handles type mismatches gracefully
-                // (e.g. searching "doe" against a number field won't error, just won't match)
-                val escaped = QueryParser.escape(globalFilter.trim())
-                parts.add(
-                    QueryBuilders.queryStringQuery("*${escaped}*")
-                        .apply { searchableFields.forEach { field(it) } }
-                        .lenient(true)
-                        .analyzeWildcard(true)
-                )
+            if (searchFields.isNotEmpty()) {
+                parts.add(buildGlobalSearchQuery(globalFilter.trim(), searchFields))
             } else {
-                // Fallback: search all content via contentText
                 val term = "*${globalFilter.trim()}*"
                 parts.add(QueryBuilders.wildcardQuery("contentText.keyword", term).caseInsensitive(true))
             }
@@ -332,11 +327,11 @@ class JsonSchemaDocumentOpenSearchService(
             }
             DatabaseSearchType.IN -> QueryBuilders.termsQuery(keywordField, filter.getValues<Any>())
             DatabaseSearchType.GREATER_THAN_OR_EQUAL_TO ->
-                QueryBuilders.rangeQuery(baseField).gte(filter.rangeFromValue()!!)
+                QueryBuilders.rangeQuery(baseField).gte(formatInstantForOpenSearch(filter.rangeFromValue()!! as Instant))
             DatabaseSearchType.LESS_THAN_OR_EQUAL_TO ->
-                QueryBuilders.rangeQuery(baseField).lte(filter.rangeToValue()!!)
+                QueryBuilders.rangeQuery(baseField).lte(formatInstantForOpenSearch(filter.rangeToValue()!! as Instant))
             DatabaseSearchType.BETWEEN ->
-                QueryBuilders.rangeQuery(baseField).gte(filter.rangeFromValue()!!).lte(filter.rangeToValue()!!)
+                QueryBuilders.rangeQuery(baseField).gte(formatInstantForOpenSearch(filter.rangeFromValue()!! as Instant)).lte(formatInstantForOpenSearch(filter.rangeToValue()!! as Instant))
             else -> throw NotImplementedException("Search type '${filter.searchType}' is not supported in the OpenSearch search service")
         }
     }
@@ -355,6 +350,22 @@ class JsonSchemaDocumentOpenSearchService(
             throw IllegalArgumentException("LIKE search requires String values, got: ${value?.javaClass?.simpleName}")
         }
         return QueryBuilders.wildcardQuery(keywordField, "*${value.trim()}*").caseInsensitive(true)
+    }
+
+    private fun formatInstantForOpenSearch(instant: Instant): String {
+        return DateTimeFormatter.ofPattern("uuuu-MM-dd'T'HH:mm:ss.SSS")
+            .withZone(ZoneOffset.UTC)
+            .format(instant)
+    }
+
+    private fun parseDateRange(dateValue: String): Pair<String, String> {
+        val date = LocalDate.parse(dateValue)
+        val startOfDay = date.atStartOfDay().atZone(ZoneOffset.UTC).toInstant()
+        val endOfDay = date.plusDays(1).atStartOfDay().atZone(ZoneOffset.UTC).toInstant()
+        return Pair(
+            formatInstantForOpenSearch(startOfDay),
+            formatInstantForOpenSearch(endOfDay)
+        )
     }
 
     private fun executeSearch(combinedQuery: QueryBuilder, pageable: Pageable): Page<JsonSchemaDocument> {
@@ -396,16 +407,192 @@ class JsonSchemaDocumentOpenSearchService(
         return Sort.by(orders)
     }
 
+    private fun buildGlobalSearchQuery(query: String, searchFields: List<SearchField>): QueryBuilder {
+        val fieldMap = searchFields.associateBy { removePrefixes(it.path) }
+        val docFields = searchFields
+            .filter { it.path?.startsWith(DOC_PREFIX) == true }
+            .map { "content.${it.path?.removePrefix(DOC_PREFIX)}" }
+        val caseFields = searchFields
+            .filter { it.path?.startsWith(CASE_PREFIX) == true }
+            .filter { it.dataType == SearchFieldDataType.TEXT }
+            .map { it.path?.removePrefix(CASE_PREFIX) }
+
+        val parsedTerms = parseGlobalSearch(query)
+
+        val unknownFields = parsedTerms
+            .filter { it.field != null }
+            .map { removePrefixes(it.field) }
+            .filter { fieldMap[it] == null }
+            .distinct()
+
+        if (unknownFields.isNotEmpty()) {
+            throw IllegalArgumentException(
+                "Unknown search field(s): ${unknownFields.joinToString(", ")}"
+            )
+        }
+
+        val qualifiedCaseFieldQueries = mutableListOf<QueryBuilder>()
+        val unqualifiedCaseFieldQueries = mutableListOf<QueryBuilder>()
+        val queryStringParts = mutableListOf<String>()
+
+        parsedTerms.forEach { term ->
+            if (term.field != null) {
+                val fieldPath = removePrefixes(term.field)
+                val field = fieldMap[fieldPath]!!
+                val isDocField = field.path?.startsWith(DOC_PREFIX) == true
+                val osPath = if (isDocField) "content.$fieldPath" else fieldPath
+
+                if (!isDocField) {
+                    if (field.dataType == SearchFieldDataType.DATE || field.dataType == SearchFieldDataType.DATETIME) {
+                        val dateRange = parseDateRange(term.value)
+                        qualifiedCaseFieldQueries.add(
+                            QueryBuilders.rangeQuery(osPath)
+                                .gte(dateRange.first)
+                                .lte(dateRange.second)
+                        )
+                    } else {
+                        val pattern = if (!term.quoted && field.matchType == SearchFieldMatchType.LIKE) {
+                            "*${term.value}*"
+                        } else {
+                            term.value
+                        }
+                        qualifiedCaseFieldQueries.add(
+                            QueryBuilders.wildcardQuery(osPath, pattern).caseInsensitive(true)
+                        )
+                    }
+                } else {
+                    val value = escapeQueryStringValue(term.value)
+                    val wrappedValue = if (!term.quoted && field.matchType == SearchFieldMatchType.LIKE) {
+                        "*$value*"
+                    } else if (term.quoted) {
+                        "\"$value\""
+                    } else {
+                        value
+                    }
+                    queryStringParts.add("$osPath:$wrappedValue")
+                }
+            } else {
+                val escaped = escapeQueryStringValue(term.value)
+                queryStringParts.add(if (term.quoted) "\"$escaped\"" else "*$escaped*")
+
+                val pattern = "*${term.value}*"
+                caseFields.filterNotNull().forEach { caseField ->
+                    unqualifiedCaseFieldQueries.add(
+                        QueryBuilders.wildcardQuery(caseField, pattern).caseInsensitive(true)
+                    )
+                }
+            }
+        }
+
+        if (qualifiedCaseFieldQueries.isEmpty() && unqualifiedCaseFieldQueries.isEmpty() && queryStringParts.isEmpty()) {
+            return QueryBuilders.matchAllQuery()
+        }
+
+        val boolQuery = QueryBuilders.boolQuery()
+
+        qualifiedCaseFieldQueries.forEach { boolQuery.must(it) }
+
+        if (queryStringParts.isNotEmpty()) {
+            val docQuery = QueryBuilders.queryStringQuery(queryStringParts.joinToString(" AND "))
+                .apply { docFields.forEach { field(it) } }
+                .lenient(true)
+                .analyzeWildcard(true)
+                .defaultOperator(Operator.AND)
+
+            if (unqualifiedCaseFieldQueries.isNotEmpty()) {
+                val shouldQuery = QueryBuilders.boolQuery()
+                    .should(docQuery)
+                unqualifiedCaseFieldQueries.forEach { shouldQuery.should(it) }
+                shouldQuery.minimumShouldMatch(1)
+                boolQuery.must(shouldQuery)
+            } else {
+                boolQuery.must(docQuery)
+            }
+        } else if (unqualifiedCaseFieldQueries.isNotEmpty()) {
+            unqualifiedCaseFieldQueries.forEach { boolQuery.must(it) }
+        }
+
+        return boolQuery
+    }
+
+    private data class ParsedTerm(
+        val field: String?,
+        val value: String,
+        val quoted: Boolean
+    )
+
+    private fun parseGlobalSearch(query: String): List<ParsedTerm> {
+        val terms = mutableListOf<ParsedTerm>()
+        val fieldPattern = """(\w+(?:\.\w+)*):("([^"]+)"|(\S+))""".toRegex()
+
+        var remaining = query
+        var lastEnd = 0
+
+        for (match in fieldPattern.findAll(query)) {
+            val before = query.substring(lastEnd, match.range.first).trim()
+            if (before.isNotEmpty()) {
+                terms.addAll(parseUnqualifiedTerms(before))
+            }
+
+            val fieldName = match.groupValues[1]
+            val quoted = match.groupValues[3].isNotEmpty()
+            val value = if (quoted) match.groupValues[3] else match.groupValues[4]
+
+            terms.add(ParsedTerm(fieldName, value, quoted))
+            lastEnd = match.range.last + 1
+        }
+
+        val after = query.substring(lastEnd).trim()
+        if (after.isNotEmpty()) {
+            terms.addAll(parseUnqualifiedTerms(after))
+        }
+
+        return terms
+    }
+
+    private fun parseUnqualifiedTerms(text: String): List<ParsedTerm> {
+        val terms = mutableListOf<ParsedTerm>()
+        val quotedPattern = """"([^"]+)"""".toRegex()
+
+        var remaining = text
+        var lastEnd = 0
+
+        for (match in quotedPattern.findAll(text)) {
+            val before = text.substring(lastEnd, match.range.first).trim()
+            if (before.isNotEmpty()) {
+                before.split("\\s+".toRegex()).filter { it.isNotEmpty() }.forEach {
+                    terms.add(ParsedTerm(null, it, false))
+                }
+            }
+            terms.add(ParsedTerm(null, match.groupValues[1], true))
+            lastEnd = match.range.last + 1
+        }
+
+        val after = text.substring(lastEnd).trim()
+        if (after.isNotEmpty()) {
+            after.split("\\s+".toRegex()).filter { it.isNotEmpty() }.forEach {
+                terms.add(ParsedTerm(null, it, false))
+            }
+        }
+
+        return terms
+    }
+
+    private fun escapeQueryStringValue(value: String): String {
+        val specialChars = """[\+\-\=\&\|\!\(\)\{\}\[\]\^\~\*\?\:\\\/]""".toRegex()
+        return value.replace(specialChars) { "\\${it.value}" }
+    }
+
+    private fun removePrefixes(path: String?): String? {
+        return path?.removePrefix(DOC_PREFIX)?.removePrefix(CASE_PREFIX)
+    }
+
     companion object {
         private const val DOC_PREFIX = "doc:"
         private const val CASE_PREFIX = "case:"
         private const val DEFINITION_NAME_FIELD = "definitionId.name"
         private const val BLUEPRINT_TYPE_FIELD = "definitionId.blueprintId.blueprintType"
 
-        /**
-         * Calls [AdvancedSearchRequest.OtherFilter.getRangeFrom] via reflection to bypass the
-         * Kotlin type-bounds check.
-         */
         private fun AdvancedSearchRequest.OtherFilter.rangeFromValue(): Any? =
             AdvancedSearchRequest.OtherFilter::class.java.getMethod("getRangeFrom").invoke(this)
 
