@@ -92,7 +92,7 @@ services:
             - discovery.type=single-node
             - DISABLE_SECURITY_PLUGIN=true
             - DISABLE_INSTALL_DEMO_CONFIG=true
-            - OPENSEARCH_JAVA_OPTS=-Xms256m -Xmx2
+            - OPENSEARCH_JAVA_OPTS=-Xms256m -Xmx256m
         volumes:
             - gzac-opensearch-data:/usr/share/opensearch/data
         healthcheck:
