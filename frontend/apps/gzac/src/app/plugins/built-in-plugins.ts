@@ -14,10 +14,14 @@
  * limitations under the License.
  */
 
-// Local dev builds use this file so the @valtimo-plugins/* packages are not in
-// the import graph (workspace symlinks would break Vite pre-bundling of their
-// transitive @valtimo/* imports). Release builds swap to app-plugins.prod.ts
-// via angular.json fileReplacements; CI installs the matching packages from
-// release-plugins.json before building.
-export const pluginImports: any[] = [];
-export const pluginSpecifications: any[] = [];
+/**
+ * Plugins shipped with this app as Native Federation remotes, loaded at start
+ * time (see StartupPluginLoaderService, wired via APP_INITIALIZER). Each entry
+ * is the URL of the remote's `remoteEntry.json`, served as a static asset. A
+ * plugin the deploying party does not include simply is not present, and its
+ * entry can be omitted — the host build and startup are unaffected.
+ */
+export const BUILT_IN_PLUGINS: string[] = [
+  '/assets/plugins/freemarker/remoteEntry.json',
+  '/assets/plugins/smtpmail/remoteEntry.json',
+];

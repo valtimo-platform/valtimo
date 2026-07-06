@@ -214,10 +214,6 @@
                 {
                   "replace": "apps/dev/src/app/dev-tools.ts",
                   "with": "apps/dev/src/app/no-dev-tools.ts"
-                },
-                {
-                  "replace": "apps/dev/src/app/app-plugins.ts",
-                  "with": "apps/dev/src/app/app-plugins.prod.ts"
                 }
               ],
               "optimization": true,
@@ -478,10 +474,6 @@
                 {
                   "replace": "apps/gzac/src/environments/environment.ts",
                   "with": "apps/gzac/src/environments/environment.prod.ts"
-                },
-                {
-                  "replace": "apps/gzac/src/app/app-plugins.ts",
-                  "with": "apps/gzac/src/app/app-plugins.prod.ts"
                 }
               ],
               "optimization": true,
@@ -1002,10 +994,6 @@
                 {
                   "replace": "apps/evenementenvergunning/src/environments/environment.ts",
                   "with": "apps/evenementenvergunning/src/environments/environment.prod.ts"
-                },
-                {
-                  "replace": "apps/evenementenvergunning/src/app/app-plugins.ts",
-                  "with": "apps/evenementenvergunning/src/app/app-plugins.prod.ts"
                 }
               ],
               "optimization": true,

@@ -1,5 +1,5 @@
 import {BrowserModule} from '@angular/platform-browser';
-import {Injector, NgModule} from '@angular/core';
+import {APP_INITIALIZER, Injector, NgModule} from '@angular/core';
 import {CommonModule} from '@angular/common';
 import {HttpBackend, HttpClient, provideHttpClient, withInterceptorsFromDi} from '@angular/common/http';
 import {AppRoutingModule} from './app-routing.module';
@@ -95,7 +95,8 @@ import {CaseMigrationModule} from '@valtimo/case-migration';
 import {registerDocumentenApiFormioUploadComponent, ZgwModule} from '@valtimo/zgw';
 import {SseModule} from '@valtimo/sse';
 import {LoggingModule} from '@valtimo/logging';
-import {pluginImports, pluginSpecifications} from './app-plugins';
+import {BUILT_IN_PLUGINS} from './plugins/built-in-plugins';
+import {StartupPluginLoaderService} from './plugins/startup-plugin-loader.service';
 
 export function tabsFactory() {
   return new Map<string, object>([
@@ -173,7 +174,6 @@ export function tabsFactory() {
     WidgetModule,
     ZakenApiPluginModule,
     ZgwModule,
-    ...pluginImports,
     environment.authentication.module,
     TranslateModule.forRoot({
       loader: {
@@ -184,6 +184,13 @@ export function tabsFactory() {
     }),
   ],
   providers: [
+    {
+      // Load the app's built-in plugins (Native Federation remotes) at start time.
+      provide: APP_INITIALIZER,
+      multi: true,
+      useFactory: (loader: StartupPluginLoaderService) => () => loader.loadAll(BUILT_IN_PLUGINS),
+      deps: [StartupPluginLoaderService],
+    },
     {
       provide: PLUGINS_TOKEN,
       useValue: [
@@ -201,7 +208,6 @@ export function tabsFactory() {
         smartDocumentsPluginSpecification,
         verzoekPluginSpecification,
         zakenApiPluginSpecification,
-        ...pluginSpecifications,
       ]
     },
     provideHttpClient(withInterceptorsFromDi())

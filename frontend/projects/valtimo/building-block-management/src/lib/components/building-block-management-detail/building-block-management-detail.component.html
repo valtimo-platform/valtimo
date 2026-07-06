@@ -88,7 +88,7 @@
       </cds-tab>
     }
 
-    @for (customTab of customTabs; track customTab.tabRoute) {
+    @for (customTab of customTabs$ | async; track customTab.tabRoute) {
       @if ((customTab.enabled$ | async) && {active: activeTabKey === customTab.tabRoute}; as obs) {
         <cds-tab
           [active]="obs.active"

@@ -12,13 +12,13 @@
     "installDeps": "npm install",
     "devMode": "npm run start",
     "syncLibDepsToRootDeps": "node scripts/sync-lib-deps.js && npm run prettier:write",
-    "start": "node --max_old_space_size=8048 ./node_modules/@angular/cli/bin/ng.js serve dev --proxy-config proxy.conf.json",
-    "start:gzac": "node --max_old_space_size=8048 ./node_modules/@angular/cli/bin/ng.js serve gzac --proxy-config proxy.conf.json",
-    "start:valtimo": "node --max_old_space_size=8048 ./node_modules/@angular/cli/bin/ng.js serve valtimo --proxy-config proxy.conf.json",
-    "start:evenementenvergunning": "node --max_old_space_size=8048 ./node_modules/@angular/cli/bin/ng.js serve evenementenvergunning --proxy-config proxy.conf.json",
-    "startProd": "node --max_old_space_size=8048 ./node_modules/@angular/cli/bin/ng.js serve dev --proxy-config proxy.conf.json --configuration production",
-    "startAot": "ng serve dev --proxy-config proxy.conf.json --aot",
-    "startHmr": "ng serve dev --proxy-config proxy.conf.json --hmr",
+    "start": "node --max_old_space_size=8048 ./node_modules/@angular/cli/bin/ng.js serve dev",
+    "start:gzac": "node --max_old_space_size=8048 ./node_modules/@angular/cli/bin/ng.js serve gzac",
+    "start:valtimo": "node --max_old_space_size=8048 ./node_modules/@angular/cli/bin/ng.js serve valtimo",
+    "start:evenementenvergunning": "node --max_old_space_size=8048 ./node_modules/@angular/cli/bin/ng.js serve evenementenvergunning",
+    "startProd": "node --max_old_space_size=8048 ./node_modules/@angular/cli/bin/ng.js serve dev --configuration production",
+    "startAot": "ng serve dev --aot",
+    "startHmr": "ng serve dev --hmr",
     "buildTest": "ng build dev --configuration production --configuration=test",
     "build": "ng build dev --configuration production",
     "build:dev": "ng build dev --configuration production",
@@ -361,10 +361,5 @@
   },
   "workspaces": [
     "projects/valtimo/*"
-  ],
-  "overrides": {
-    "feelers": {
-      "@bpmn-io/cm-theme": "0.1.0-alpha.2"
-    }
-  }
+  ]
 }

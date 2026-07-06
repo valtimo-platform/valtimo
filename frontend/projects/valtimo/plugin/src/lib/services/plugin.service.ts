@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import {Inject, Injectable} from '@angular/core';
+import {EnvironmentInjector, Inject, Injectable} from '@angular/core';
 import {PluginConfig, PluginSpecification} from '../models';
 import {BehaviorSubject, Observable} from 'rxjs';
 import {map} from 'rxjs/operators';
@@ -28,6 +28,15 @@ export class PluginService {
   private readonly _availablePluginIds$ = this._pluginSpecifications$.pipe(
     map(pluginSpecifications => pluginSpecifications.map(specification => specification.pluginId))
   );
+
+  /**
+   * Environment injector per plugin id, for plugins loaded at runtime (Native
+   * Federation remotes). Their non-standalone configuration/function components
+   * live in a separate module injector, so the host must create them with that
+   * injector to resolve module-scoped providers. Compile-time plugins have no
+   * entry here and are created with the host's default injector, as before.
+   */
+  private readonly _pluginEnvironmentInjectors = new Map<string, EnvironmentInjector>();
 
   constructor(@Inject(PLUGINS_TOKEN) private readonly pluginConfig: PluginConfig) {
     this._pluginSpecifications$.next(pluginConfig);
@@ -43,5 +52,36 @@ export class PluginService {
 
   get availablePluginIds$(): Observable<Array<string>> {
     return this._availablePluginIds$;
+  }
+
+  /**
+   * Register plugin specifications after bootstrap — used when a plugin is loaded
+   * at runtime (e.g. shipped as a Native Federation remote) rather than compiled
+   * into the app via the PLUGINS_TOKEN provider. Downstream consumers subscribe
+   * to `pluginSpecifications$` / `availablePluginIds$`, so the plugin-management
+   * UI picks up the additions reactively. Idempotent by `pluginId`, so loading
+   * the same remote twice does not create duplicates.
+   */
+  public registerPluginSpecifications(specifications: Array<PluginSpecification>): void {
+    const current = this._pluginSpecifications$.getValue();
+    const knownIds = new Set(current.map(specification => specification.pluginId));
+    const additions = specifications.filter(specification => !knownIds.has(specification.pluginId));
+
+    if (additions.length > 0) {
+      this._pluginSpecifications$.next([...current, ...additions]);
+    }
+  }
+
+  /**
+   * Associate a plugin id with the environment injector its components must be
+   * created with (see `_pluginEnvironmentInjectors`). Called by the runtime
+   * plugin loader for each plugin a federated remote contributes.
+   */
+  public registerPluginEnvironmentInjector(pluginId: string, injector: EnvironmentInjector): void {
+    this._pluginEnvironmentInjectors.set(pluginId, injector);
+  }
+
+  public getPluginEnvironmentInjector(pluginId: string): EnvironmentInjector | undefined {
+    return this._pluginEnvironmentInjectors.get(pluginId);
   }
 }

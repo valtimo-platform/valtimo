@@ -142,7 +142,17 @@ export class PluginConfigurationContainerComponent
           }
 
           if (configurationComponent) {
-            const componentRef = this.dynamicContainer.createComponent(configurationComponent);
+            // Plugins loaded at runtime (Native Federation remotes) have their
+            // non-standalone components declared in a separate module injector;
+            // create the component with that injector so its module-scoped
+            // providers resolve. Compile-time plugins return undefined here and
+            // fall back to the container's default injector.
+            const environmentInjector =
+              this.pluginService.getPluginEnvironmentInjector(pluginDefinitionKey);
+            const componentRef = this.dynamicContainer.createComponent(
+              configurationComponent,
+              environmentInjector ? {environmentInjector} : undefined
+            );
             this.componentRef$.next(componentRef);
             this.noConfigurationComponentAvailable$.next(false);
           } else {

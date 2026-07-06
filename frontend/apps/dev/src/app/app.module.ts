@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import {Injector, NgModule} from '@angular/core';
+import {APP_INITIALIZER, Injector, NgModule} from '@angular/core';
 import {CommonModule} from '@angular/common';
 import {BrowserModule} from '@angular/platform-browser';
 import {FormsModule, ReactiveFormsModule} from '@angular/forms';
@@ -131,7 +131,8 @@ import {TeamsModule} from '@valtimo/teams';
 import {registerDocumentenApiFormioUploadComponent, ZgwModule} from '@valtimo/zgw';
 
 import {devDeclarations, devImports, devProviders, devTabs} from './dev-tools';
-import {pluginImports, pluginSpecifications} from './app-plugins';
+import {BUILT_IN_PLUGINS} from './plugins/built-in-plugins';
+import {StartupPluginLoaderService} from './plugins/startup-plugin-loader.service';
 
 export function tabsFactory() {
   return new Map<string, object>([
@@ -230,11 +231,17 @@ export function tabsFactory() {
     FormViewModelModule,
     KlantinteractiesApiPluginModule,
     OpenKlantTokenAuthenticationPluginModule,
-    ...pluginImports,
     ...(environment.production ? [] : devImports),
   ],
   providers: [
     provideHttpClient(withInterceptorsFromDi()),
+    {
+      // Load the app's built-in plugins (Native Federation remotes) at start time.
+      provide: APP_INITIALIZER,
+      multi: true,
+      useFactory: (loader: StartupPluginLoaderService) => () => loader.loadAll(BUILT_IN_PLUGINS),
+      deps: [StartupPluginLoaderService],
+    },
     {
       provide: PLUGINS_TOKEN,
       useValue: [
@@ -254,7 +261,6 @@ export function tabsFactory() {
         smartDocumentsPluginSpecification,
         zakenApiPluginSpecification,
         verzoekPluginSpecification,
-        ...pluginSpecifications,
       ],
     },
     ...(environment.production ? [] : devProviders),

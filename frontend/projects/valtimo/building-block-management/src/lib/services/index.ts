@@ -16,4 +16,5 @@
 
 export * from './building-block-management-api.service';
 export * from './building-block-management-detail.service';
+export * from './building-block-management-tab.service';
 export * from './building-block-management.service';
