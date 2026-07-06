@@ -133,3 +133,20 @@
     background: white !important;
   }
 }
+
+body:has(valtimo-form-management-edit) {
+  .page-title-container .page-title {
+    flex-shrink: 1;
+    min-width: 0;
+  }
+
+  .page-head .page-header-container {
+    min-width: 0;
+  }
+
+  .page-head:not(.page-head--title-as-breadcrumb) valtimo-page-actions {
+    flex: 1 1 auto;
+    width: auto;
+    min-width: 0;
+  }
+}
