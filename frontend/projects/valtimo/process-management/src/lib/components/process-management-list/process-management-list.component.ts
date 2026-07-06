@@ -33,7 +33,7 @@ import {
 } from '@valtimo/shared';
 import {ProcessDefinition} from '@valtimo/process';
 import {ButtonModule, IconModule, IconService} from 'carbon-components-angular';
-import {BehaviorSubject, combineLatest, Observable, switchMap, tap} from 'rxjs';
+import {BehaviorSubject, combineLatest, map, Observable, switchMap, tap} from 'rxjs';
 import {ProcessDefinitionResult} from '../../models';
 import {ProcessManagementService, ProcessManagementStateService} from '../../services';
 import {ActivatedRoute} from '@angular/router';
@@ -75,12 +75,27 @@ export class ProcessManagementListComponent {
 
   public readonly context$ = getContextObservable(this.route);
 
-  public readonly processDefinitions$: Observable<ProcessDefinitionResult[]> =
+  public readonly processDefinitions$ = combineLatest([
     this.processManagementStateService.reloadDefinitions$.pipe(
       tap(() => this.loading$.next(true)),
       switchMap(() => this.processManagementService.processes$),
       tap(() => this.loading$.next(false))
-    );
+    ),
+    this.translateService.stream('key'),
+  ]).pipe(
+    map(([definitions]) =>
+      definitions.map(def => {
+        const tags: Array<{content: string; type: string}> = [];
+        if (def.draft) {
+          tags.push({content: this.translateService.instant('processManagement.draft'), type: 'red'});
+        }
+        if (def.processDefinition?.readOnly) {
+          tags.push({content: this.translateService.instant('processManagement.readOnly'), type: 'gray'});
+        }
+        return {...def, statusTags: tags};
+      })
+    )
+  );
 
   public readonly hasEditPermissions$: Observable<boolean> = combineLatest([
     getCaseManagementRouteParams(this.route),
@@ -94,11 +109,6 @@ export class ProcessManagementListComponent {
   public readonly FIELDS: ColumnConfig[] = [
     {key: 'processDefinition.name', label: 'processManagement.name'},
     {key: 'processDefinition.key', label: 'processManagement.key'},
-    {
-      key: 'processDefinition.readOnly',
-      label: 'processManagement.readOnly',
-      viewType: ViewType.BOOLEAN,
-    },
     ...(this.processManagementService.$context() === 'case'
       ? [
           {
@@ -106,10 +116,6 @@ export class ProcessManagementListComponent {
             label: 'processManagement.canInitializeDocument',
             viewType: ViewType.BOOLEAN,
           },
-        ]
-      : []),
-    ...(this.processManagementService.$context() === 'case'
-      ? [
           {
             key: 'processCaseLink.startableByUser',
             label: 'processManagement.startableByUser',
@@ -117,6 +123,12 @@ export class ProcessManagementListComponent {
           },
         ]
       : []),
+    {
+      key: 'statusTags',
+      label: 'processManagement.status',
+      viewType: ViewType.TAGS,
+      tagAmount: 2,
+    },
   ];
 
   constructor(

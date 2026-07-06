@@ -1,0 +1,49 @@
+{
+  "type": "form",
+  "components": [
+    {
+      "key": "milieuBeheer",
+      "type": "panel",
+      "title": "Milieubeheer",
+      "components": [
+        {
+          "key": "milieuBeheer.afvalBeheerPlan",
+          "type": "textfield",
+          "input": true,
+          "label": "Afvalbeheerplan",
+          "attributes": {
+            "data-testid": "evenementenvergunning.milieu-beheer-afvalBeheerPlan"
+          },
+          "defaultValue": "Er zijn afvalbakken en een schoonmaakteam aanwezig."
+        },
+        {
+          "key": "milieuBeheer.milieuMaatregelen",
+          "type": "textfield",
+          "input": true,
+          "label": "Milieumaatregelen",
+          "attributes": {
+            "data-testid": "evenementenvergunning.milieu-beheer-milieuMaatregelen"
+          },
+          "defaultValue": "Herbruikbare bekers en eco-vriendelijke verlichting."
+        },
+        {
+          "key": "milieuBeheer.sanitaireVoorzieningen",
+          "type": "checkbox",
+          "input": true,
+          "label": "Sanitaire voorzieningen aanwezig?",
+          "attributes": {
+            "data-testid": "evenementenvergunning.milieu-beheer-sanitaireVoorzieningen"
+          },
+          "defaultValue": true
+        },
+        {
+          "key": "submit",
+          "type": "button",
+          "label": "Submit",
+          "theme": "primary",
+          "action": "submit"
+        }
+      ]
+    }
+  ]
+}

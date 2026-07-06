@@ -23,6 +23,7 @@ interface ProcessDefinitionResult {
   processCaseLink?: ProcessDocumentDefinition;
   processDefinition: ProcessDefinitionWithPropertiesDto;
   processLinks: ProcessLink[];
+  draft?: boolean;
 }
 
 export {ProcessDefinitionResult};

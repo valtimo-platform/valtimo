@@ -17,6 +17,7 @@
 package com.ritense.valtimo.web.rest;
 
 import static com.ritense.valtimo.operaton.repository.OperatonHistoricProcessInstanceSpecificationHelper.byProcessInstanceId;
+import static com.ritense.valtimo.operaton.repository.OperatonProcessDefinitionSpecificationHelper.byId;
 import static com.ritense.valtimo.operaton.repository.OperatonProcessDefinitionSpecificationHelper.byKey;
 import static com.ritense.valtimo.operaton.repository.OperatonProcessDefinitionSpecificationHelper.byVersion;
 import static com.ritense.valtimo.operaton.repository.OperatonTaskSpecificationHelper.byCreateTimeAfter;
@@ -81,10 +82,16 @@ public abstract class AbstractProcessResource {
         InputStream processModelIn = repositoryService.getProcessModel(processDefinitionId);
         if (processModelIn != null) {
             byte[] processModel = IoUtil.readInputStream(processModelIn, "processModelBpmn20Xml");
-            return ProcessDefinitionDiagramDto.create(
-                processDefinitionId,
-                new String(processModel, StandardCharsets.UTF_8)
+            String xml = new String(processModel, StandardCharsets.UTF_8);
+
+            OperatonProcessDefinition definition = AuthorizationContext.runWithoutAuthorization(
+                () -> operatonRepositoryService.findProcessDefinition(byId(processDefinitionId))
             );
+            if (definition != null && definition.isSuspended()) {
+                xml = xml.replace("isExecutable=\"true\"", "isExecutable=\"false\"");
+            }
+
+            return ProcessDefinitionDiagramDto.create(processDefinitionId, xml);
         } else {
             return null;
         }

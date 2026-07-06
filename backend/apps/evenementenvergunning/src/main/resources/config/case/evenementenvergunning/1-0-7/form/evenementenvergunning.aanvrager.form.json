@@ -1,0 +1,85 @@
+{
+  "display": "form",
+  "components": [
+    {
+      "key": "aanvrager",
+      "type": "panel",
+      "input": false,
+      "label": "Panel",
+      "title": "Aanvrager",
+      "tableView": false,
+      "components": [
+        {
+          "key": "aanvrager.naam",
+          "type": "textfield",
+          "input": true,
+          "label": "Naam",
+          "tableView": true,
+          "attributes": {
+            "data-testid": "evenementenvergunning.aanvrager-naam"
+          },
+          "applyMaskOn": "change",
+          "defaultValue": "",
+          "customDefaultValue": "value = token.name;"
+        },
+        {
+          "key": "aanvrager.adres",
+          "type": "textfield",
+          "input": true,
+          "label": "Adres",
+          "tableView": true,
+          "attributes": {
+            "data-testid": "evenementenvergunning.aanvrager-adres"
+          },
+          "applyMaskOn": "change",
+          "defaultValue": "Piet Heinkade 179"
+        },
+        {
+          "key": "contactgegevens",
+          "type": "panel",
+          "input": false,
+          "label": "Panel",
+          "title": "Contactgegevens",
+          "tableView": false,
+          "components": [
+            {
+              "key": "aanvrager.contactgegevens.telefoon",
+              "type": "textfield",
+              "input": true,
+              "label": "Telefoon",
+              "tableView": true,
+              "attributes": {
+                "data-testid": "evenementenvergunning.aanvrager-telefoon"
+              },
+              "applyMaskOn": "change",
+              "defaultValue": "+31612345678"
+            },
+            {
+              "key": "aanvrager.contactgegevens.email",
+              "type": "email",
+              "input": true,
+              "label": "Email",
+              "tableView": true,
+              "attributes": {
+                "data-testid": "evenementenvergunning.aanvrager-email"
+              },
+              "applyMaskOn": "change",
+              "defaultValue": "",
+              "customDefaultValue": "value = token.email;"
+            }
+          ],
+          "collapsible": false
+        }
+      ],
+      "collapsible": false
+    },
+    {
+      "key": "submit",
+      "type": "button",
+      "input": true,
+      "label": "Submit",
+      "tableView": false,
+      "disableOnInvalid": true
+    }
+  ]
+}

@@ -14,8 +14,15 @@
   with a `view` action ensures only users authorized for the matching zaaktype can load a zaak. See
   [Load a zaak in a form flow](../../../features/zgw/load-zaak-in-form-flow.md) for details.
 
-
 ## Enhancements
+
+* **Configurable modal size for start forms**
+
+  The process link configuration of a start event now offers the **Modal size** option (Extra small, Small, Medium,
+  Large). When a case is created via the **Start case** button, the start form  modal opens in the configured size 
+  instead of always being small. If multiple processes can create the case, the modal opens in the size configured 
+  for the selected process. When no size is configured the modal keeps its previous
+  default.
 
 * **Value resolver support for Besluiten API plugin date fields**
 

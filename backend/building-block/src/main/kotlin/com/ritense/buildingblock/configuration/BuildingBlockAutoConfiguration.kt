@@ -714,6 +714,7 @@ class BuildingBlockAutoConfiguration {
     fun startableBuildingBlockItemProvider(
         caseDefinitionBuildingBlockLinkRepository: CaseDefinitionBuildingBlockLinkRepository,
         processDefinitionBuildingBlockDefinitionRepository: ProcessDefinitionBuildingBlockDefinitionRepository,
+        buildingBlockDefinitionRepository: BuildingBlockDefinitionRepository,
         authorizationService: AuthorizationService,
         caseDefinitionBuildingBlockLinkService: CaseDefinitionBuildingBlockLinkService,
         objectMapper: ObjectMapper,
@@ -721,6 +722,7 @@ class BuildingBlockAutoConfiguration {
         return StartableBuildingBlockItemProvider(
             caseDefinitionBuildingBlockLinkRepository,
             processDefinitionBuildingBlockDefinitionRepository,
+            buildingBlockDefinitionRepository,
             authorizationService,
             caseDefinitionBuildingBlockLinkService,
             objectMapper,
@@ -815,11 +817,11 @@ class BuildingBlockAutoConfiguration {
     @ConditionalOnMissingBean(BuildingBlockFormFlowManagementResource::class)
     fun buildingBlockFormFlowManagementResource(
         buildingBlockFormFlowDefinitionService: BuildingBlockFormFlowDefinitionService,
-        buildingBlockFormFlowDefinitionImporter: BuildingBlockFormFlowDefinitionImporter,
+        buildingBlockDefinitionChecker: BuildingBlockDefinitionChecker,
     ): BuildingBlockFormFlowManagementResource {
         return BuildingBlockFormFlowManagementResource(
             buildingBlockFormFlowDefinitionService,
-            buildingBlockFormFlowDefinitionImporter
+            buildingBlockDefinitionChecker
         )
     }
 

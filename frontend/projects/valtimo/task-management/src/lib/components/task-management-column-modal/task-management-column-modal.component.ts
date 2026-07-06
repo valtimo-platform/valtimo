@@ -23,6 +23,7 @@ import {
   MultiInputValues,
   TooltipIconModule,
   ValtimoCdsModalDirective,
+  ValuePathSelectorComponent,
   ViewType,
 } from '@valtimo/components';
 import {CommonModule} from '@angular/common';
@@ -45,7 +46,7 @@ import {
   ReactiveFormsModule,
   Validators,
 } from '@angular/forms';
-import {BehaviorSubject, combineLatest, map, Observable, of, tap} from 'rxjs';
+import {BehaviorSubject, combineLatest, map, Observable, of, startWith, tap} from 'rxjs';
 import {
   TaskListColumn,
   TaskListColumnDefaultSort,
@@ -78,6 +79,7 @@ import {isEqual} from 'lodash';
     CarbonMultiInputModule,
     ButtonModule,
     ValtimoCdsModalDirective,
+    ValuePathSelectorComponent,
     LayerModule,
   ],
 })
@@ -281,6 +283,32 @@ export class TaskManagementColumnModalComponent {
 
   public readonly CARBON_THEME_WHITE = CARBON_THEME.WHITE;
 
+  private static readonly SORTABLE_PATH_REGEX = /^(doc:|case:|task:)/;
+
+  public readonly displaySortable$: Observable<boolean> = (
+    this.path?.valueChanges ?? of(this.path?.value)
+  ).pipe(
+    startWith(this.path?.value),
+    map(value =>
+      TaskManagementColumnModalComponent.SORTABLE_PATH_REGEX.test(String(value ?? ''))
+    ),
+    tap(displaySortable => {
+      this._displaySortable = displaySortable;
+      if (!displaySortable) {
+        const sortableValue = this.sortable?.value;
+        const defaultSortKey = this.defaultSort?.value?.key;
+        if (sortableValue || (defaultSortKey && defaultSortKey !== this._INVALID_KEY)) {
+          this.sortable?.setValue(false, {emitEvent: false});
+          this.defaultSort?.setValue(this.getInvalidListItem(`listColumn.selectDefaultSort`), {
+            emitEvent: false,
+          });
+        }
+      }
+    })
+  );
+
+  private _displaySortable = true;
+
   public readonly disableDefaultSort$ = combineLatest([this.taskListColumns$, this.keyValue$]).pipe(
     map(([taskListColumns, keyValue]) => {
       const defaultSortColumn = taskListColumns.find(
@@ -451,10 +479,11 @@ export class TaskManagementColumnModalComponent {
           ...(includeYesNo && mappedYesNoValues && {enum: mappedYesNoValues}),
         },
       },
-      sortable: formValue.sortable ?? false,
-      ...(formValue?.defaultSort?.key !== this._INVALID_KEY && {
-        defaultSort: formValue?.defaultSort?.key as TaskListColumnDefaultSort,
-      }),
+      sortable: this._displaySortable ? formValue.sortable ?? false : false,
+      ...(this._displaySortable &&
+        formValue?.defaultSort?.key !== this._INVALID_KEY && {
+          defaultSort: formValue?.defaultSort?.key as TaskListColumnDefaultSort,
+        }),
     };
 
     return taskListColumn;

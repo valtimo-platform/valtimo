@@ -18,7 +18,7 @@ import {NgModule} from '@angular/core';
 import {CommonModule} from '@angular/common';
 import {DocumentenApiConfigurationComponent} from './components/documenten-api-configuration/documenten-api-configuration.component';
 import {PluginTranslatePipeModule} from '../../pipes';
-import {FormModule, InputModule, ParagraphModule, SelectModule} from '@valtimo/components';
+import {FormModule, InputModule, ParagraphModule, RadioModule, SelectModule} from '@valtimo/components';
 import {StoreTempDocumentConfigurationComponent} from './components/store-temp-document/store-temp-document-configuration.component';
 import {StoreUploadedDocumentConfigurationComponent} from './components/store-uploaded-document/store-uploaded-document-configuration.component';
 import {DownloadDocumentConfigurationComponent} from './components/download-document/download-document-configuration.component';
@@ -45,6 +45,7 @@ import {GetAuditTrailConfigurationComponent} from './components/get-audit-trail/
     InputModule,
     SelectModule,
     ParagraphModule,
+    RadioModule,
   ],
   exports: [
     DocumentenApiConfigurationComponent,

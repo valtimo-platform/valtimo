@@ -1,0 +1,7 @@
+{
+    "key": "upload-and-link-document",
+    "name": "Document opslaan en koppelen aan de zaak",
+    "description": "Opslaan document in de documenten API en koppelen aan de zaak in Open zaak.",
+    "versionTag": "1.0.0",
+    "final": false
+}

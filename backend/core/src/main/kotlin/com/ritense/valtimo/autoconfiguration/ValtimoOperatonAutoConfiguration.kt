@@ -209,11 +209,13 @@ class ValtimoOperatonAutoConfiguration {
         repositoryService: RepositoryService,
         caseDefinitionChecker: CaseDefinitionChecker,
         operatonByteArrayService: OperatonByteArrayService,
+        operatonRepositoryService: OperatonRepositoryService,
     ): OperatonDecisionService {
         return OperatonDecisionService(
             repositoryService,
             caseDefinitionChecker,
             operatonByteArrayService,
+            operatonRepositoryService,
         )
     }
 

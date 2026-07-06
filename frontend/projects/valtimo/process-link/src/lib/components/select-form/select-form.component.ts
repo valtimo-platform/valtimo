@@ -98,8 +98,10 @@ export class SelectFormComponent implements OnInit, OnDestroy {
 
   private _subscriptions = new Subscription();
   private isUserTask$ = new BehaviorSubject<boolean>(false);
+  private isStartEvent$ = new BehaviorSubject<boolean>(false);
 
   private readonly _DEFAULT_FORM_DISPLAY_TYPE: FormDisplayType = 'panel';
+  private readonly _DEFAULT_START_EVENT_FORM_DISPLAY_TYPE: FormDisplayType = 'modal';
   private readonly _DEFAULT_FORM_DISPLAY_SIZE: FormSize = 'medium';
 
   constructor(
@@ -124,6 +126,7 @@ export class SelectFormComponent implements OnInit, OnDestroy {
         }
 
         this.isUserTask$.next(modalParams?.element?.type === 'bpmn:UserTask');
+        this.isStartEvent$.next(modalParams?.element?.type === 'bpmn:StartEvent');
       })
     );
   }
@@ -188,9 +191,10 @@ export class SelectFormComponent implements OnInit, OnDestroy {
       this.stateService.selectedProcessLink$,
       this.stateService.viewModelEnabled$,
       this.isUserTask$,
+      this.isStartEvent$,
     ])
       .pipe(take(1))
-      .subscribe(([selectedProcessLink, viewModelEnabled, isUserTask]) => {
+      .subscribe(([selectedProcessLink, viewModelEnabled, isUserTask, isStartEvent]) => {
         const updateProcessLinkRequest: FormProcessLinkUpdateRequestDto = {
           id: selectedProcessLink.id,
           formDefinitionId: this.selectedFormDefinition.id,
@@ -199,7 +203,13 @@ export class SelectFormComponent implements OnInit, OnDestroy {
           ...(isUserTask && {
             formDisplayType: this.formDisplayValue || this._DEFAULT_FORM_DISPLAY_TYPE,
           }),
-          ...(isUserTask && {formSize: this.formSizeValue || this._DEFAULT_FORM_DISPLAY_TYPE}),
+          ...(isStartEvent && {
+            formDisplayType:
+              this.formDisplayValue || this._DEFAULT_START_EVENT_FORM_DISPLAY_TYPE,
+          }),
+          ...((isUserTask || isStartEvent) && {
+            formSize: this.formSizeValue || this._DEFAULT_FORM_DISPLAY_SIZE,
+          }),
           ...(isUserTask && {subtitles: this.subtitlesValue}),
         };
 
@@ -213,9 +223,10 @@ export class SelectFormComponent implements OnInit, OnDestroy {
       this.stateService.selectedProcessLinkTypeId$,
       this.stateService.viewModelEnabled$,
       this.isUserTask$,
+      this.isStartEvent$,
     ])
       .pipe(take(1))
-      .subscribe(([modalParams, processLinkTypeId, viewModelEnabled, isUserTask]) => {
+      .subscribe(([modalParams, processLinkTypeId, viewModelEnabled, isUserTask, isStartEvent]) => {
         const createRequest = {
           formDefinitionId: this.selectedFormDefinition.id,
           activityType: modalParams.element.activityListenerType,
@@ -226,7 +237,11 @@ export class SelectFormComponent implements OnInit, OnDestroy {
           ...(isUserTask && {
             formDisplayType: this.formDisplayValue || this._DEFAULT_FORM_DISPLAY_TYPE,
           }),
-          ...(isUserTask && {
+          ...(isStartEvent && {
+            formDisplayType:
+              this.formDisplayValue || this._DEFAULT_START_EVENT_FORM_DISPLAY_TYPE,
+          }),
+          ...((isUserTask || isStartEvent) && {
             formSize: this.formSizeValue || this._DEFAULT_FORM_DISPLAY_SIZE,
           }),
           ...(isUserTask && {
