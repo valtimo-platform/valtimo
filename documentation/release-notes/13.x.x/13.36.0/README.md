@@ -23,3 +23,9 @@
 
 * Dashboard widgets can now group and filter on more case fields, such as the `case:internalStatus` and
   `case:definitionId.key`.
+
+* **Dropdowns on the case type General tab now show all their options correctly**
+
+  On the General tab of a case type, a dropdown (such as *Link upload process to case*) now displays all of its options
+  on top of the surrounding widgets, even when the widgets are stacked. Previously the options could appear behind the
+  widget below and be barely visible.
