@@ -180,6 +180,7 @@
               [checked]="actionsObs.draft"
               [disabled]="actionsObs.loading || !actionsObs.hasEditPermissions"
               (checkedChange)="onProcessToggleChange('draft', $event)"
+              [attr.data-test-id]="testIds.draftToggle"
             ></cds-toggle>
           </cds-tooltip>
 

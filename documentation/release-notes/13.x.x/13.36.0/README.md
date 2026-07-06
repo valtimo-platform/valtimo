@@ -1,10 +1,17 @@
 # 13.36.0
 
 {% hint style="info" %}
-**Release date TBD**
+**Release date 08-07-2026**
 {% endhint %}
 
 ## New Features
+
+* **Catalogi API plugin action: Get Informatieobjecttypen**
+
+  A new plugin action `get-informatieobjecttypen` has been added to the Catalogi API plugin. This action retrieves the
+  collection of informatieobjecttypen belonging to a zaaktype and stores it — as a list of `{url, name}` entries — in a
+  process variable. The zaaktype is taken from the linked case by default, or from an optional zaaktype URL. See
+  [Catalogi API plugin](../../../features/plugins/configure-catalogi-api-plugin.md#retrieve-informatieobjecttypen).
 
 * **Object Management Select Form.io component**
 
@@ -18,13 +25,18 @@
   See [Object Management Select](../../../features/objecten-management/object-management-select.md) for configuration
   details.
 
+## Enhancements
+
 * **Object Management access control (PBAC)**
 
+* **New enhancement title**
   Object Management configurations can now be secured with Permission Based Access Control. When enabled with
   `valtimo.object-management.authorization.enabled=true`, `view` and `view_list` permissions control which
   configurations appear in the menu and which object lists, detail pages, and form components a user can access.
   The feature is disabled by default; when disabled, all authenticated users retain full access. See
   [Access control](../../../features/objecten-management/access-control.md) for details.
+
+  New enhancement explanation.
 
 * **Object Management list sorting**
 
@@ -33,6 +45,9 @@
   [#125](https://github.com/generiekzaakafhandelcomponent/gzac-issues/issues/125).
 
 ## Bugfixes
+
+* Dashboard widgets can now group and filter on more case fields, such as the `case:internalStatus` and
+  `case:definitionId.key`.
 
 * **Object Management list pagination resets when switching object types**
 

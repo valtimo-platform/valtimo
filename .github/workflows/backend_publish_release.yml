@@ -115,13 +115,33 @@ jobs:
             exit 1
           fi
 
+      # Idempotency guard: Maven Central releases are immutable, so re-running a
+      # release whose artifacts already landed would fail on the duplicate. Probe
+      # a representative artifact (core) on Maven Central; if this version is
+      # already there, skip both publish steps so the release run is re-runnable.
+      - name: Check whether this version is already on Maven Central
+        id: maven_central
+        run: |
+          set -euo pipefail
+          URL="https://repo1.maven.org/maven2/com/ritense/valtimo/core/${PROJECT_VERSION}.RELEASE/"
+          code="$(curl -sS --max-time 30 -o /dev/null -w '%{http_code}' "$URL" || echo 000)"
+          if [ "$code" = "200" ]; then
+            echo "already_published=true" >> "$GITHUB_OUTPUT"
+            echo "::notice::com.ritense.valtimo:core:${PROJECT_VERSION}.RELEASE already on Maven Central — skipping Sonatype/JReleaser publish (idempotent re-run)."
+          else
+            echo "already_published=false" >> "$GITHUB_OUTPUT"
+            echo "Not on Maven Central yet (HTTP ${code}) — proceeding with publish."
+          fi
+
       - name: Publish to Sonatype staging
+        if: ${{ steps.maven_central.outputs.already_published != 'true' }}
         env:
           ORG_GRADLE_PROJECT_sonatypeUsername: ${{ env.SONATYPE_USERNAME }}
           ORG_GRADLE_PROJECT_sonatypePassword: ${{ env.SONATYPE_PASSWORD }}
         run: ./gradlew --no-parallel publishAllPublicationsToSonatypeRepository -PprojectVersion="${PROJECT_VERSION}.RELEASE"
 
       - name: Deploy with JReleaser to Maven Central
+        if: ${{ steps.maven_central.outputs.already_published != 'true' }}
         env:
           ORG_GRADLE_PROJECT_sonatypeUsername: ${{ env.SONATYPE_USERNAME }}
           ORG_GRADLE_PROJECT_sonatypePassword: ${{ env.SONATYPE_PASSWORD }}
