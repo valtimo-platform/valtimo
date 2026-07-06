@@ -1,0 +1,8 @@
+{
+    "key": "evenementenvergunning",
+    "name": "Evenementenvergunning",
+    "versionTag": "1.0.7",
+    "final": true,
+    "canHaveAssignee": true,
+    "autoAssignTasks": true
+}

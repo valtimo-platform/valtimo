@@ -44,6 +44,7 @@
 
   &__modeler-canvas {
     width: 100%;
+    position: relative;
   }
 
   &__modeler-panel {
@@ -67,35 +68,47 @@
   display: flex;
   width: 100%;
   justify-content: space-between;
+  align-items: center;
+  gap: 16px;
 
   &__left-container {
     display: flex;
-    gap: 24px;
-    align-items: flex-end;
+    gap: 16px;
+    align-items: center;
   }
 
   &__tags {
     display: flex;
     gap: 8px;
-    align-items: flex-end;
+    align-items: center;
   }
 
   &__version-dropdown {
     width: 150px;
   }
 
-  &__buttons {
+  &__toggles {
     display: flex;
     gap: 16px;
     align-items: center;
 
-    cds-toggle {
-      height: 24px;
+    // Let each toggle size to its switch so the flex row centers it vertically; forcing a
+    // fixed height top-aligns the smaller "sm" switch and pushes it above the row center.
+    ::ng-deep cds-toggle {
+      display: inline-flex;
+      align-items: center;
     }
 
     ::ng-deep .cds--toggle__label-text {
       display: none;
     }
+  }
+
+  &__buttons {
+    display: flex;
+    gap: 16px;
+    align-items: center;
+    flex-shrink: 0;
   }
 }
 
@@ -107,6 +120,273 @@
 
   &__actions > *:not(:last-child) {
     margin-right: 8px;
+  }
+}
+
+.validation-errors-list {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  z-index: 10;
+  width: 320px;
+  max-height: 250px;
+  overflow-y: auto;
+  border: 1px solid var(--cds-border-subtle);
+  background-color: var(--cds-layer);
+  border-radius: 4px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+
+  details {
+    &[open] > summary .validation-errors-list__arrow {
+      transform: rotate(90deg);
+    }
+  }
+
+  &__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 16px;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--cds-support-error, #da1e28);
+    cursor: pointer;
+    list-style: none;
+    user-select: none;
+
+    &::-webkit-details-marker {
+      display: none;
+    }
+  }
+
+  &__arrow {
+    display: inline-flex;
+    width: 16px;
+    height: 16px;
+    fill: currentColor;
+    transition: transform 0.15s ease;
+    flex-shrink: 0;
+  }
+
+  &__items {
+    display: flex;
+    flex-direction: column;
+    border-top: 1px solid var(--cds-border-subtle);
+  }
+
+  &__item {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 10px 16px;
+    border: none;
+    border-bottom: 1px solid var(--cds-border-subtle);
+    border-left: 3px solid var(--cds-support-error, #da1e28);
+    background-color: var(--cds-notification-error-background, #fff1f1);
+    text-align: left;
+    cursor: pointer;
+    font-family: inherit;
+
+    &.warning {
+      background-color: var(--cds-notification-warning-background, #fdf6dd);
+      border-left-color: var(--cds-support-warning, #f1c21b);
+    }
+
+    &:last-child {
+      border-bottom: none;
+    }
+
+    &:hover {
+      filter: brightness(0.97);
+    }
+  }
+
+  &__icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 18px;
+    height: 18px;
+    min-width: 18px;
+    margin-top: 1px;
+    border-radius: 50%;
+    background-color: var(--cds-support-error, #da1e28);
+    color: var(--cds-text-on-color, #ffffff);
+    font-size: 12px;
+    font-weight: 700;
+    line-height: 0;
+
+    &.warning {
+      background-color: var(--cds-support-warning, #f1c21b);
+      color: var(--cds-text-primary, #161616);
+    }
+  }
+
+  &__details {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  &__element {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--cds-text-primary);
+  }
+
+  &__reason {
+    font-size: 13px;
+    color: var(--cds-text-primary);
+  }
+}
+
+::ng-deep .highlight-overlay-error:not(.djs-connection) .djs-visual > :nth-child(1) {
+  stroke: var(--cds-support-error, #da1e28) !important;
+}
+
+::ng-deep .highlight-overlay-warning:not(.djs-connection) .djs-visual > :nth-child(1) {
+  stroke: var(--cds-support-warning, #f1c21b) !important;
+}
+
+::ng-deep .djs-overlay-validation-error {
+  overflow: visible !important;
+  pointer-events: all !important;
+}
+
+::ng-deep .validation-error-overlay {
+  position: relative;
+  cursor: pointer;
+  pointer-events: all;
+
+  &__icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    background-color: var(--cds-support-error, #da1e28);
+    color: var(--cds-text-on-color, #ffffff);
+    font-size: 14px;
+    font-weight: 700;
+    line-height: 0;
+  }
+
+  &__text {
+    display: none;
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    margin-bottom: 4px;
+    border: 1px solid var(--cds-support-error, #da1e28);
+    color: var(--cds-support-error, #da1e28);
+    background-color: var(--cds-layer, #ffffff);
+    padding: 4px 8px;
+    border-radius: 2px;
+    font-size: 14px;
+    white-space: nowrap;
+    max-width: 350px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    z-index: 10;
+  }
+
+  &:hover &__text,
+  &--active &__text {
+    display: block;
+  }
+}
+
+::ng-deep .validation-warning-overlay {
+  position: relative;
+  cursor: pointer;
+  pointer-events: all;
+
+  &__icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    background-color: var(--cds-support-warning, #f1c21b);
+    color: var(--cds-text-primary, #161616);
+    font-size: 14px;
+    font-weight: 700;
+    line-height: 0;
+  }
+
+  &__text {
+    display: none;
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    margin-bottom: 4px;
+    border: 1px solid var(--cds-support-warning, #f1c21b);
+    color: var(--cds-text-primary, #161616);
+    background-color: var(--cds-layer, #ffffff);
+    padding: 4px 8px;
+    border-radius: 2px;
+    font-size: 14px;
+    white-space: nowrap;
+    max-width: 350px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    z-index: 10;
+  }
+
+  &:hover &__text,
+  &--active &__text {
+    display: block;
+  }
+}
+
+::ng-deep .validation-errors-panel {
+  padding: 8px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+
+  &__item {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    padding: 8px 12px;
+    background-color: var(--cds-notification-error-background, #fff1f1);
+    border-left: 3px solid var(--cds-support-error, #da1e28);
+
+    &.warning {
+      background-color: var(--cds-notification-warning-background, #fdf6dd);
+      border-left-color: var(--cds-support-warning, #f1c21b);
+    }
+  }
+
+  &__icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 18px;
+    height: 18px;
+    min-width: 18px;
+    border-radius: 50%;
+    background-color: var(--cds-support-error, #da1e28);
+    color: var(--cds-text-on-color, #ffffff);
+    font-size: 12px;
+    font-weight: 700;
+    line-height: 0;
+
+    &.warning {
+      background-color: var(--cds-support-warning, #f1c21b);
+      color: var(--cds-text-primary, #161616);
+    }
+  }
+
+  &__reason {
+    color: var(--cds-text-primary, #161616);
+    font-size: 13px;
+    line-height: 18px;
   }
 }
 

@@ -23,6 +23,7 @@ import com.ritense.processdocument.domain.impl.request.StartProcessForDocumentRe
 import com.ritense.processdocument.service.CaseDefinitionProcessLinkService
 import com.ritense.processdocument.service.ProcessDocumentService
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
+import com.ritense.valtimo.contract.document.CaseDocumentResolver
 import org.springframework.stereotype.Service
 import java.util.UUID
 
@@ -32,10 +33,12 @@ class UploadProcessService(
     private val documentService: DocumentService,
     private val processDocumentService: ProcessDocumentService,
     private val caseDefinitionProcessLinkService: CaseDefinitionProcessLinkService,
+    private val caseDocumentResolver: CaseDocumentResolver,
 ) {
 
     fun startUploadResourceProcess(documentId: String, resourceId: String) {
-        val caseDefinitionId = runWithoutAuthorization { documentService.get(documentId) }.definitionId().caseDefinitionId()
+        val caseDocumentId = runWithoutAuthorization { caseDocumentResolver.resolveCaseDocumentId(UUID.fromString(documentId)) }
+        val caseDefinitionId = runWithoutAuthorization { documentService.get(caseDocumentId.toString()) }.definitionId().caseDefinitionId()
         val link = caseDefinitionProcessLinkService.getDocumentDefinitionProcessLink(caseDefinitionId, DOCUMENT_UPLOAD)
             ?: throw IllegalStateException("No upload-process linked to case: $caseDefinitionId")
 

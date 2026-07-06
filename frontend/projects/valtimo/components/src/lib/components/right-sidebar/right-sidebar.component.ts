@@ -261,11 +261,23 @@ export class RightSidebarComponent implements OnInit, OnDestroy {
       this.updatingUserSettings$.next(false);
 
       if (!settings?.languageCode) {
-        this.saveUserSettings();
+        this.initializeDefaultUserSettings();
       } else {
         this.setUserSettings(settings);
       }
     });
+  }
+
+  private initializeDefaultUserSettings(): void {
+    this.configService
+      .getFeatureToggleObservable('menuCollapsedByDefault')
+      .pipe(take(1))
+      .subscribe(menuCollapsedByDefault => {
+        if (menuCollapsedByDefault) {
+          this.setCollapsibleWidescreenMenu(true, false);
+        }
+        this.saveUserSettings();
+      });
   }
 
   private saveUserSettings(): void {
@@ -311,7 +323,14 @@ export class RightSidebarComponent implements OnInit, OnDestroy {
   private setUserSettings(settings: UserSettings): void {
     this._selectedLanguage$.next(settings.languageCode);
     this.updateUserLanguage(settings.languageCode, false);
-    this.setCollapsibleWidescreenMenu(settings.collapsibleWidescreenMenu, false);
+
+    this.configService
+      .getFeatureToggleObservable('menuCollapsedByDefault')
+      .pipe(take(1))
+      .subscribe(menuCollapsedByDefault => {
+        const collapsible = settings.collapsibleWidescreenMenu ?? menuCollapsedByDefault;
+        this.setCollapsibleWidescreenMenu(collapsible, false);
+      });
 
     combineLatest([
       this.enableCompactModeToggle$,

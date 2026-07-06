@@ -23,5 +23,6 @@ data class CaseProcessDefinitionResponseDto(
     val processDefinition: ProcessDefinitionWithPropertiesDto,
     val processCaseLink: ProcessDefinitionCaseDefinition,
     val processLinks: List<ProcessLinkResponseDto>,
-    val bpmn20Xml: String
+    val bpmn20Xml: String,
+    val draft: Boolean = false
 )

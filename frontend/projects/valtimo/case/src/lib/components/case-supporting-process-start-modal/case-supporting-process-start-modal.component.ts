@@ -22,13 +22,16 @@ import {
   OnDestroy,
   Optional,
   Output,
+  TemplateRef,
   ViewChild,
   ViewContainerRef,
   ViewEncapsulation,
 } from '@angular/core';
 import {Router} from '@angular/router';
+import {TranslateService} from '@ngx-translate/core';
 import {FormioBeforeSubmit, FormioForm} from '@formio/angular';
 import {
+  CarbonModalSize,
   FormioComponent,
   FormioOptionsImpl,
   FormioSubmission,
@@ -40,11 +43,17 @@ import {
   FORM_CUSTOM_COMPONENT_TOKEN,
   FormCustomComponent,
   FormCustomComponentConfig,
+  FormDisplayType,
+  FormSize,
+  formSizeToCarbonModalSizeMap,
   ProcessLinkService,
 } from '@valtimo/process-link';
 import {BehaviorSubject, combineLatest, Subscription, switchMap} from 'rxjs';
-import {take} from 'rxjs/operators';
+import {map, take} from 'rxjs/operators';
 import {FORM_VIEW_MODEL_TOKEN, FormViewModel} from '@valtimo/shared';
+import {CaseDetailLayoutService} from '../../services';
+
+const DEFAULT_START_MODAL_SIZE: CarbonModalSize = 'sm';
 
 @Component({
   standalone: false,
@@ -59,6 +68,7 @@ export class CaseSupportingProcessStartModalComponent implements OnDestroy {
   public formViewModelDynamicContainer: ViewContainerRef;
   @ViewChild('formCustomComponent', {static: false, read: ViewContainerRef})
   public formCustomComponentDynamicContainer: ViewContainerRef;
+  @ViewChild('startForm', {static: false}) public startFormTemplate: TemplateRef<any>;
 
   @Input() isAdmin: boolean;
   @Output() formSubmit = new EventEmitter();
@@ -76,7 +86,9 @@ export class CaseSupportingProcessStartModalComponent implements OnDestroy {
   public readonly formFlowInstanceId$ = new BehaviorSubject<string>(undefined);
   public readonly documentId$ = new BehaviorSubject<string>(undefined);
   public readonly modalOpen$ = new BehaviorSubject<boolean>(false);
+  public readonly modalSize$ = new BehaviorSubject<CarbonModalSize>(DEFAULT_START_MODAL_SIZE);
   public readonly isLoading$ = new BehaviorSubject<boolean>(true);
+  public readonly formErrors$ = new BehaviorSubject<string[]>([]);
   private readonly _formCustomComponentConfig$ = new BehaviorSubject<
     FormCustomComponentConfig | {}
   >({});
@@ -85,6 +97,30 @@ export class CaseSupportingProcessStartModalComponent implements OnDestroy {
   private _buildingBlockDefinitionVersionTag: string | null = null;
 
   public readonly closeModalEvent = new EventEmitter();
+  public readonly showDraftConfirmation$ = new BehaviorSubject<boolean>(false);
+
+  private _pendingStartableItem: {
+    item: StartableItem;
+    documentId: string;
+    caseDefinitionKey: string;
+    caseDefinitionVersionTag: string;
+  } | null = null;
+
+  public readonly modalTitle$ = combineLatest([
+    this.processDefinitionKey$,
+    this.processName$,
+    this.translateService.stream('key'),
+  ]).pipe(
+    map(([processDefinitionKey, processName]) => {
+      const translated = this.translateService.instant(processDefinitionKey);
+      return translated !== processDefinitionKey ? translated : processName;
+    })
+  );
+
+  // Whether the active tab exposes a panel and the start form may render in it.
+  private _panelAvailable = false;
+  // Whether the current start form is being rendered in the panel instead of the modal.
+  private _displayInPanel = false;
 
   private _formViewModelSubscription!: Subscription;
 
@@ -92,6 +128,8 @@ export class CaseSupportingProcessStartModalComponent implements OnDestroy {
     private readonly router: Router,
     private readonly processService: ProcessService,
     private readonly processLinkService: ProcessLinkService,
+    private readonly translateService: TranslateService,
+    private readonly caseDetailLayoutService: CaseDetailLayoutService,
     @Optional() @Inject(FORM_VIEW_MODEL_TOKEN) private readonly formViewModel: FormViewModel,
     @Optional()
     @Inject(FORM_CUSTOM_COMPONENT_TOKEN)
@@ -106,6 +144,7 @@ export class CaseSupportingProcessStartModalComponent implements OnDestroy {
 
   private loadProcessLink(): void {
     this.startProcessLinkType$.next(null);
+    this.modalSize$.next(DEFAULT_START_MODAL_SIZE);
     this.formViewModelDynamicContainer?.clear();
     this.formCustomComponentDynamicContainer?.clear();
 
@@ -123,30 +162,67 @@ export class CaseSupportingProcessStartModalComponent implements OnDestroy {
       .subscribe(startProcessResult => {
         this.isLoading$.next(false);
 
-        if (startProcessResult) {
-          this.startProcessLinkType$.next(startProcessResult.type);
-
-          switch (startProcessResult.type) {
-            case 'form':
-              this.formDefinition$.next(startProcessResult.properties.prefilledForm);
-              this.processLinkId$.next(startProcessResult.processLinkId);
-              break;
-            case 'form-flow':
-              this.formFlowInstanceId$.next(startProcessResult.properties.formFlowInstanceId);
-              break;
-            case 'form-view-model':
-              this.formDefinition$.next(startProcessResult.properties.formDefinition);
-              this.setFormViewModelComponent(startProcessResult.properties.formName);
-              this.openCdsModal();
-              break;
-            case 'ui-component':
-              this.setFormCustomComponent(startProcessResult.properties.componentKey);
-              this.openCdsModal();
-              break;
-          }
+        if (!startProcessResult) {
+          // No process link configured: show the modal with the "no form" guidance.
           this.openCdsModal();
+          return;
+        }
+
+        this.startProcessLinkType$.next(startProcessResult.type);
+
+        const displayType: FormDisplayType | undefined =
+          startProcessResult.properties?.formDisplayType;
+        const formSize: FormSize = startProcessResult.properties?.formSize ?? 'medium';
+
+        switch (startProcessResult.type) {
+          case 'form':
+            this.formDefinition$.next(startProcessResult.properties.prefilledForm);
+            this.processLinkId$.next(startProcessResult.processLinkId);
+            this.openStartForm(displayType, formSize);
+            break;
+          case 'form-flow':
+            this.formFlowInstanceId$.next(startProcessResult.properties.formFlowInstanceId);
+            this.openStartForm(displayType, formSize);
+            break;
+          case 'form-view-model':
+            // Dynamically rendered forms rely on view-container refs that only exist inside the
+            // modal, so they always open in the modal regardless of the configured display type.
+            this.formDefinition$.next(startProcessResult.properties.formDefinition);
+            this.setFormViewModelComponent(startProcessResult.properties.formName);
+            this.openCdsModal();
+            break;
+          case 'ui-component':
+            this.setFormCustomComponent(startProcessResult.properties.componentKey);
+            this.openCdsModal();
+            break;
         }
       });
+  }
+
+  private openStartForm(displayType: FormDisplayType | undefined, formSize: FormSize): void {
+    if (this._panelAvailable && displayType === 'panel') {
+      this._displayInPanel = true;
+      combineLatest([this.processDefinitionKey$, this.processName$])
+        .pipe(take(1))
+        .subscribe(([processDefinitionKey, processName]) => {
+          const translated = this.translateService.instant(processDefinitionKey);
+          const title = translated !== processDefinitionKey ? translated : processName;
+          this.caseDetailLayoutService.openStartFormPanel(
+            {template: this.startFormTemplate, title},
+            formSize
+          );
+        });
+    } else {
+      this._displayInPanel = false;
+      this.setModalSize(formSize);
+      this.openCdsModal();
+    }
+  }
+
+  private setModalSize(formSize?: FormSize): void {
+    this.modalSize$.next(
+      formSize ? formSizeToCarbonModalSizeMap[formSize] : DEFAULT_START_MODAL_SIZE
+    );
   }
 
   public openModalForStartableItem(
@@ -155,6 +231,42 @@ export class CaseSupportingProcessStartModalComponent implements OnDestroy {
     caseDefinitionKey: string,
     caseDefinitionVersionTag: string
   ): void {
+    if (item.draft) {
+      this._pendingStartableItem = {item, documentId, caseDefinitionKey, caseDefinitionVersionTag};
+      this.showDraftConfirmation$.next(true);
+      return;
+    }
+
+    this._pendingStartableItem = null;
+    this.showDraftConfirmation$.next(false);
+    this.proceedWithStartableItem(item, documentId, caseDefinitionKey, caseDefinitionVersionTag);
+  }
+
+  public onDraftConfirmationConfirm(): void {
+    this.showDraftConfirmation$.next(false);
+    if (this._pendingStartableItem) {
+      const {item, documentId, caseDefinitionKey, caseDefinitionVersionTag} =
+        this._pendingStartableItem;
+      this._pendingStartableItem = null;
+      this.proceedWithStartableItem(item, documentId, caseDefinitionKey, caseDefinitionVersionTag);
+    }
+  }
+
+  public onDraftConfirmationCancel(): void {
+    this.showDraftConfirmation$.next(false);
+    this._pendingStartableItem = null;
+  }
+
+  private proceedWithStartableItem(
+    item: StartableItem,
+    documentId: string,
+    caseDefinitionKey: string,
+    caseDefinitionVersionTag: string,
+    panelAvailable = false
+  ): void {
+    // Reset any panel left open by a previous start so its content does not linger.
+    this.closeStartForm();
+    this._panelAvailable = panelAvailable;
     this.isLoading$.next(true);
     this.documentId$.next(documentId);
     this.caseDefinitionKey$.next(caseDefinitionKey);
@@ -182,11 +294,11 @@ export class CaseSupportingProcessStartModalComponent implements OnDestroy {
     this.options$.next(options);
 
     this.loadProcessLink();
-    this.openCdsModal();
   }
 
   public onSubmit(submission: FormioSubmission): void {
     this.formioSubmission$.next(submission);
+    this.formErrors$.next([]);
 
     if (this.processLinkId$.getValue()) {
       combineLatest([this.processLinkId$, this.documentId$])
@@ -201,21 +313,36 @@ export class CaseSupportingProcessStartModalComponent implements OnDestroy {
             this.formSubmitted();
           },
           error: errors => {
-            this.form.showErrors(errors);
+            // Push server-side errors via input binding so they render in both the modal and the
+            // panel (in panel mode the formio ViewChild lives in the host component's view).
+            this.formErrors$.next(errors);
           },
         });
     }
   }
 
   public formSubmitted(): void {
-    this.closeCdsModal();
+    this.closeStartForm();
     this.formSubmit.emit();
     this.isLoading$.next(true);
     this.formDefinition$.next(null);
   }
 
+  public closePanel(): void {
+    this.closeStartForm();
+  }
+
+  private closeStartForm(): void {
+    if (this._displayInPanel) {
+      this._displayInPanel = false;
+      this.caseDetailLayoutService.closeStartFormPanel();
+    } else {
+      this.closeCdsModal();
+    }
+  }
+
   public gotoFormLinkScreen(): void {
-    this.closeCdsModal();
+    this.closeStartForm();
 
     if (this._buildingBlockDefinitionKey && this._buildingBlockDefinitionVersionTag) {
       this.router.navigate([

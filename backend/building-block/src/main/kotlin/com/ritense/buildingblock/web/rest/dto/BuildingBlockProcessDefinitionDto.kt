@@ -21,5 +21,6 @@ data class BuildingBlockProcessDefinitionDto(
     val key: String,
     val name: String?,
     val versionTag: String?,
-    val main: Boolean
+    val main: Boolean,
+    val draft: Boolean = false
 )

@@ -1,0 +1,49 @@
+{
+  "type": "form",
+  "components": [
+    {
+      "key": "verkeerEnParkeren",
+      "type": "panel",
+      "title": "Verkeer en Parkeren",
+      "components": [
+        {
+          "key": "verkeerEnParkeren.verkeerPlan",
+          "type": "textfield",
+          "input": true,
+          "label": "Verkeer plan",
+          "attributes": {
+            "data-testid": "evenementenvergunning.verkeer-en-parkeren-verkeerPlan"
+          },
+          "defaultValue": "Toegangswegen worden gecontroleerd en er zijn omleidingen."
+        },
+        {
+          "key": "verkeerEnParkeren.parkeerVoorzieningen",
+          "type": "checkbox",
+          "input": true,
+          "label": "Zijn er parkeerfaciliteiten?",
+          "attributes": {
+            "data-testid": "evenementenvergunning.verkeer-en-parkeren-parkeerVoorzieningen"
+          },
+          "defaultValue": true
+        },
+        {
+          "key": "verkeerEnParkeren.alternatiefTransport",
+          "type": "textfield",
+          "input": true,
+          "label": "Alternatieve vervoersopties",
+          "attributes": {
+            "data-testid": "evenementenvergunning.verkeer-en-parkeren-alternatiefTransport"
+          },
+          "defaultValue": "Extra fietsenstalling en pendelbus naar het station."
+        },
+        {
+          "key": "submit",
+          "type": "button",
+          "label": "Submit",
+          "theme": "primary",
+          "action": "submit"
+        }
+      ]
+    }
+  ]
+}

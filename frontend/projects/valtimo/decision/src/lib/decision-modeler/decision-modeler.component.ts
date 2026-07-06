@@ -16,10 +16,18 @@
 
 import {DECISION_MODELER_TEST_IDS} from '../constants';
 import {DecisionService} from '../services/decision.service';
-import {AfterViewInit, Component, OnDestroy, OnInit} from '@angular/core';
+import {AfterViewInit, Component, OnDestroy, OnInit, ViewChild} from '@angular/core';
 import DmnJS from 'dmn-js/dist/dmn-modeler.development.js';
+import DmnViewer from 'dmn-js/dist/dmn-viewer.development.js';
 import {ActivatedRoute, Router, RouterModule} from '@angular/router';
-import {DecisionXml} from '../models';
+import {DecisionFormValue, DecisionXml} from '../models';
+import {
+  createDmnXml,
+  parseDecisionForm,
+  toDecisionFileName,
+  updateDmnXml,
+} from '../utils/dmn-template';
+import {DecisionFormModalComponent} from '../decision-form-modal/decision-form-modal.component';
 import {migrateDiagram} from '@bpmn-io/dmn-migrate';
 import {
   BehaviorSubject,
@@ -30,22 +38,24 @@ import {
   map,
   Observable,
   of,
+  shareReplay,
   switchMap,
   take,
   tap,
 } from 'rxjs';
 import {
   BreadcrumbService,
+  ConfirmationModalModule,
   FitPageDirective,
+  OverflowMenuComponent,
+  OverflowMenuOptionComponent,
+  OverflowMenuTriggerComponent,
   PageHeaderService,
   PageTitleService,
   PendingChangesComponent,
   RenderInPageHeaderDirective,
   SelectedValue,
   SelectModule as ValtimoSelectModule,
-  OverflowMenuComponent,
-  OverflowMenuOptionComponent,
-  OverflowMenuTriggerComponent,
   WidgetModule,
 } from '@valtimo/components';
 import {TranslateModule, TranslateService} from '@ngx-translate/core';
@@ -57,10 +67,12 @@ import {
   IconService,
   ModalModule,
   SelectModule,
+  TagModule,
 } from 'carbon-components-angular';
 import {
   BuildingBlockManagementParams,
   CaseManagementParams,
+  DraftVersionService,
   EditPermissionsService,
   getBuildingBlockManagementRouteParams,
   getCaseManagementRouteParams,
@@ -88,16 +100,21 @@ declare const $: any;
     RenderInPageHeaderDirective,
     ButtonModule,
     IconModule,
+    TagModule,
     FitPageDirective,
     OverflowMenuComponent,
     OverflowMenuOptionComponent,
     OverflowMenuTriggerComponent,
+    DecisionFormModalComponent,
+    ConfirmationModalModule,
   ],
 })
 export class DecisionModelerComponent
   extends PendingChangesComponent
   implements OnInit, OnDestroy, AfterViewInit
 {
+  @ViewChild('decisionEdit') edit: DecisionFormModalComponent;
+
   private CLASS_NAMES = {
     drd: 'dmn-icon-lasso-tool',
     decisionTable: 'dmn-icon-decision-table',
@@ -108,13 +125,19 @@ export class DecisionModelerComponent
 
   private $container!: any;
   private $tabs!: any;
-  private dmnModeler!: DmnJS;
+  private dmnEditor!: DmnJS | DmnViewer;
 
   public readonly versionSelectionDisabled$ = new BehaviorSubject<boolean>(true);
   public readonly isCreating$ = new BehaviorSubject<boolean>(false);
   public readonly selectionId$ = new BehaviorSubject<string>('');
+  public readonly showDeleteModal$ = new BehaviorSubject<boolean>(false);
+
+  // Emits once the dmn-js editor instance has been created, so XML import can wait for it.
+  private readonly _editorReady$ = new BehaviorSubject<boolean>(false);
 
   private _fileName!: string;
+  private _createSeed: DecisionFormValue | null = null;
+  private _decisionKey: string | null = null;
 
   public readonly caseManagementRouteParams$: Observable<CaseManagementParams | undefined> =
     getCaseManagementRouteParams(this.route);
@@ -130,12 +153,31 @@ export class DecisionModelerComponent
 
   public readonly hasEditPermissions$: Observable<boolean> = combineLatest([
     this.caseManagementRouteParams$,
+    this.buildingBlockManagementRouteParams$,
     this.context$,
   ]).pipe(
-    switchMap(([params, context]) =>
-      this.editPermissionsService.hasPermissionsToEditBasedOnContext(params, context ?? '')
-    )
+    switchMap(([caseParams, buildingBlockParams, context]) => {
+      // Building block decision tables can only be edited on a draft (non-final) version.
+      if (context === 'buildingBlock') {
+        return this.draftVersionService.isDraftVersionBuildingBlock(
+          buildingBlockParams?.buildingBlockDefinitionKey ?? '',
+          buildingBlockParams?.buildingBlockDefinitionVersionTag ?? ''
+        );
+      }
+      return this.editPermissionsService.hasPermissionsToEditBasedOnContext(
+        caseParams,
+        context ?? ''
+      );
+    }),
+    shareReplay({bufferSize: 1, refCount: false})
   );
+
+  // The editor is shown as a read-only viewer when the user cannot edit (e.g. a final case or
+  // building block definition) and is not creating a new decision table.
+  public readonly readOnly$: Observable<boolean> = combineLatest([
+    this.isCreating$,
+    this.hasEditPermissions$,
+  ]).pipe(map(([isCreating, hasEditPermissions]) => !isCreating && !hasEditPermissions));
 
   private readonly decisionId$ = this.route.params.pipe(
     map(params => params?.id),
@@ -150,6 +192,7 @@ export class DecisionModelerComponent
     switchMap(id => this.decisionService.getDecisionById(id)),
     tap(decision => {
       this._fileName = decision.resource;
+      this._decisionKey = decision?.key ?? null;
       if (decision) this.selectionId$.next(decision.id);
     })
   );
@@ -161,7 +204,7 @@ export class DecisionModelerComponent
 
   private readonly _refreshDecisionSelectItems$ = new BehaviorSubject<null>(null);
   public readonly decisionVersionSelectItems$ = this._refreshDecisionSelectItems$.pipe(
-    switchMap(() => combineLatest([this.decision$, this.decisionService.getDecisions()])),
+    switchMap(() => combineLatest([this.decision$, this.decisionService.getUnlinkedDecisions()])),
     map(([current, list]) => {
       const filtered = list.filter(d => d.key === current.key);
       return [...filtered.map(d => ({id: d.id, text: d.version.toString()}))].sort(
@@ -173,6 +216,14 @@ export class DecisionModelerComponent
 
   public readonly decisionXml$ = this.decisionId$.pipe(
     switchMap(id => this.decisionService.getDecisionXml(id)),
+    // Wait until the editor (modeler or read-only viewer) has been created before importing.
+    switchMap(xml =>
+      this._editorReady$.pipe(
+        filter(Boolean),
+        take(1),
+        map(() => xml)
+      )
+    ),
     tap(xml => xml && this.loadDecisionXml(xml))
   );
 
@@ -186,10 +237,37 @@ export class DecisionModelerComponent
     private readonly iconService: IconService,
     private readonly pageHeaderService: PageHeaderService,
     private readonly notificationService: GlobalNotificationService,
-    private readonly editPermissionsService: EditPermissionsService
+    private readonly editPermissionsService: EditPermissionsService,
+    private readonly draftVersionService: DraftVersionService
   ) {
     super();
     this.iconService.registerAll([Deploy16, Download16, ArrowLeft16]);
+    this._createSeed = this.extractCreateSeed();
+  }
+
+  private extractCreateSeed(): DecisionFormValue | null {
+    const navigationState =
+      this.router.getCurrentNavigation()?.extras?.state ??
+      (typeof history !== 'undefined' ? history.state : undefined);
+
+    const name = navigationState?.['decisionName'];
+    const inputVariables = navigationState?.['inputVariables'];
+
+    if (typeof name === 'string' && name) {
+      return {
+        name,
+        inputVariables: Array.isArray(inputVariables)
+          ? inputVariables
+              .filter((variable: unknown): variable is Record<string, unknown> => !!variable)
+              .map(variable => ({
+                label: String(variable['label'] ?? ''),
+                expression: String(variable['expression'] ?? ''),
+              }))
+          : [],
+      };
+    }
+
+    return null;
   }
 
   public ngOnInit(): void {
@@ -197,15 +275,14 @@ export class DecisionModelerComponent
   }
 
   public ngOnDestroy(): void {
+    this.dmnEditor?.destroy();
     this.pageTitleService.enableReset();
     this.breadcrumbService.clearThirdBreadcrumb();
     this.breadcrumbService.clearFourthBreadcrumb();
   }
 
   public ngAfterViewInit(): void {
-    this.setProperties();
-    this.setTabEvents();
-    this.setModelerEvents();
+    this.initEditor();
 
     this.context$.pipe(take(1)).subscribe(context => {
       if (!context) return;
@@ -230,7 +307,7 @@ export class DecisionModelerComponent
   }
 
   public deploy(): void {
-    from(this.dmnModeler.saveXML({format: true}))
+    from(this.dmnEditor.saveXML({format: true}))
       .pipe(
         map(result => new File([(result as any).xml], this._fileName, {type: 'text/xml'})),
         switchMap(file => combineLatest([of(file), this.context$])),
@@ -273,7 +350,7 @@ export class DecisionModelerComponent
   }
 
   public download(): void {
-    from(this.dmnModeler.saveXML({format: true}))
+    from(this.dmnEditor.saveXML({format: true}))
       .pipe(
         map(result => new File([(result as any).xml], 'decision.dmn', {type: 'text/xml'})),
         tap(file => {
@@ -288,12 +365,82 @@ export class DecisionModelerComponent
       .subscribe();
   }
 
-  public navigateBack(notification: null | 'success' | 'error', message: string): void {
-    this.router.navigate(['../'], {relativeTo: this.route});
+  public openEditModal(): void {
+    from(this.dmnEditor.saveXML({format: true}))
+      .pipe(take(1))
+      .subscribe(result => this.edit.open(parseDecisionForm((result as any).xml)));
+  }
 
-    if (!notification) return;
+  public onEditDecision(value: DecisionFormValue): void {
+    from(this.dmnEditor.saveXML({format: true}))
+      .pipe(
+        map(result => updateDmnXml((result as any).xml, value)),
+        switchMap(xml => this.dmnEditor.importXML(xml)),
+        tap(() => {
+          this.setEditor();
+          if (value.name) this.pageTitleService.setCustomPageTitle(value.name);
+        }),
+        catchError(() => {
+          this.showNotification('error', 'decisions.loadFailure');
+          return of(null);
+        })
+      )
+      .subscribe();
+  }
 
-    this.showNotification(notification, message);
+  public onDeleteClick(): void {
+    this.showDeleteModal$.next(true);
+  }
+
+  public onDeleteConfirm(): void {
+    const decisionKey = this._decisionKey;
+    if (!decisionKey) return;
+
+    this.context$
+      .pipe(
+        take(1),
+        switchMap(context => {
+          if (context === 'buildingBlock') {
+            return this.buildingBlockManagementRouteParams$.pipe(
+              take(1),
+              switchMap(params =>
+                this.decisionService.deleteBuildingBlockDecisionDefinition(
+                  params?.buildingBlockDefinitionKey ?? '',
+                  params?.buildingBlockDefinitionVersionTag ?? '',
+                  decisionKey
+                )
+              )
+            );
+          }
+          return this.caseManagementRouteParams$.pipe(
+            take(1),
+            switchMap(params =>
+              this.decisionService.deleteCaseDecisionDefinition(
+                params?.caseDefinitionKey ?? '',
+                params?.caseDefinitionVersionTag ?? '',
+                decisionKey
+              )
+            )
+          );
+        })
+      )
+      .subscribe({
+        next: () => {
+          this.navigateBack();
+          this.showNotification('success', 'decisions.deleteSuccess');
+        },
+        error: () => this.showNotification('error', 'decisions.deleteFailure'),
+      });
+  }
+
+  public navigateBack(): void {
+    this.context$.pipe(take(1)).subscribe(context => {
+      if (context === 'independent') {
+        this.router.navigate(['/decision-tables']);
+      } else {
+        this.router.navigate(['../'], {relativeTo: this.route});
+      }
+    });
   }
 
   private showNotification(notification: null | 'success' | 'error', message: string): void {
@@ -306,29 +453,58 @@ export class DecisionModelerComponent
     });
   }
 
-  private setProperties(): void {
-    const isCreating = this.isCreating$.getValue();
+  private initEditor(): void {
+    // A new decision table is always created in the editable modeler. For existing tables the
+    // edit permissions decide whether to render the editable modeler or a read-only viewer.
+    if (this.route.snapshot.params?.['id'] === 'create') {
+      this.createEditor(false);
+      this.loadEmptyDecisionTable();
+      return;
+    }
+
+    this.hasEditPermissions$
+      .pipe(take(1))
+      .subscribe(hasEditPermissions => this.createEditor(!hasEditPermissions));
+  }
+
+  private createEditor(readOnly: boolean): void {
     this.$container = $('.editor-container');
     this.$tabs = $('.editor-tabs');
-    this.dmnModeler = new DmnJS({
-      container: this.$container,
-      height: 500,
-      width: '100%',
-      keyboard: {bindTo: window},
-    });
-    if (isCreating) this.loadEmptyDecisionTable();
+    this.dmnEditor = readOnly
+      ? new DmnViewer({
+          container: this.$container,
+          height: 500,
+          width: '100%',
+        })
+      : new DmnJS({
+          container: this.$container,
+          height: 500,
+          width: '100%',
+          keyboard: {bindTo: window},
+        });
+    this.setTabEvents();
+    this.setModelerEvents();
+    this._editorReady$.next(true);
   }
 
   private loadEmptyDecisionTable(): void {
+    if (this._createSeed) {
+      this._fileName = toDecisionFileName(this._createSeed.name);
+      this.pageTitleService.setCustomPageTitle(this._createSeed.name);
+      this.loadDecisionXml(createDmnXml(this._createSeed));
+      return;
+    }
+
+    this._fileName = 'decision.dmn';
     this.loadDecisionXml(EMPTY_DECISION);
   }
 
   private setTabEvents(): void {
     this.$tabs.delegate('.tab', 'click', async (event: any) => {
       const index = +event.currentTarget.getAttribute('data-id');
-      const view = this.dmnModeler.getViews()[index];
+      const view = this.dmnEditor.getViews()[index];
       try {
-        await this.dmnModeler.open(view);
+        await this.dmnEditor.open(view);
       } catch (err) {
         console.error('tab open error', err);
       }
@@ -336,7 +512,7 @@ export class DecisionModelerComponent
   }
 
   private setModelerEvents(): void {
-    this.dmnModeler.on('views.changed', event => {
+    this.dmnEditor.on('views.changed', event => {
       const {views, activeView} = event;
       this.$tabs.empty();
       views.forEach((v, i) => {
@@ -350,7 +526,7 @@ export class DecisionModelerComponent
   }
 
   private loadDecisionXml(decision: DecisionXml): void {
-    from(this.dmnModeler.importXML(decision.dmnXml))
+    from(this.dmnEditor.importXML(decision.dmnXml))
       .pipe(
         tap(() => this.setEditor()),
         catchError(() => {
@@ -364,7 +540,7 @@ export class DecisionModelerComponent
   private migrateAndLoadDecisionXml(decision: DecisionXml): void {
     from(migrateDiagram(decision.dmnXml))
       .pipe(
-        switchMap(xml => this.dmnModeler.importXML(xml)),
+        switchMap(xml => this.dmnEditor.importXML(xml)),
         tap(() => this.setEditor()),
         catchError(() => {
           this.showNotification('error', 'decisions.loadFailure');
@@ -375,9 +551,9 @@ export class DecisionModelerComponent
   }
 
   private setEditor(): void {
-    const view = this.dmnModeler.getActiveView();
+    const view = this.dmnEditor.getActiveView();
     if (view?.type === 'drd') {
-      const canvas = this.dmnModeler.getActiveViewer().get('canvas');
+      const canvas = this.dmnEditor.getActiveViewer().get('canvas');
       canvas.zoom('fit-viewport');
     }
   }

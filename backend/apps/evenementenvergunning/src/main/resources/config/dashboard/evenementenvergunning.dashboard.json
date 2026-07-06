@@ -1,0 +1,150 @@
+{
+    "changesetId": "evenementenvergunning-dashboard-v1",
+    "dashboards": [
+        {
+            "key": "evenementenvergunning",
+            "title": "Evenementenvergunning",
+            "description": "Dashboard voor de aanvragen evenementenvergunning",
+            "order": 1,
+            "widgetConfigurations": [
+                {
+                    "key": "status",
+                    "title": "Status",
+                    "dataSourceKey": "case-group-by",
+                    "displayType": "donut",
+                    "dataSourceProperties": {
+                        "documentDefinition": "evenementenvergunning",
+                        "path": "case:internalStatus.id.key",
+                        "queryConditions": [],
+                        "enum": {
+                            "afgerond": "Afgerond",
+                            "wacht-op-locatie": "Wachten op nieuwe locatie",
+                            "in-behandeling": "In behandeling"
+                        }
+                    },
+                    "displayTypeProperties": {
+                        "title": "Status",
+                        "subtitle": "Interne status van het dossier",
+                        "label": "dossiers",
+                        "useKPI": false
+                    },
+                    "url": null
+                },
+                {
+                    "key": "grote_evenementen",
+                    "title": "Grote evenementen",
+                    "dataSourceKey": "case-count",
+                    "displayType": "number",
+                    "dataSourceProperties": {
+                        "documentDefinition": "evenementenvergunning",
+                        "queryConditions": [
+                            {
+                                "queryPath": "doc:evenementDetails.verwachteBezoekers",
+                                "queryOperator": ">=",
+                                "queryValue": "5000"
+                            }
+                        ]
+                    },
+                    "displayTypeProperties": {
+                        "title": "Grote evenementen",
+                        "subtitle": "Meer dan 5000 bezoekers",
+                        "label": "evenementen",
+                        "useKPI": false,
+                        "lowSeverityThreshold": null,
+                        "mediumSeverityThreshold": null,
+                        "highSeverityThreshold": null
+                    },
+                    "url": null
+                },
+                {
+                    "key": "binnen_twee_weken",
+                    "title": "Binnen twee weken",
+                    "dataSourceKey": "case-count",
+                    "displayType": "number",
+                    "dataSourceProperties": {
+                        "documentDefinition": "evenementenvergunning",
+                        "queryConditions": [
+                            {
+                                "queryPath": "doc:evenementDetails.evenementDatum",
+                                "queryOperator": "<=",
+                                "queryValue": "${localDateTimeNow.plusWeeks(2)}"
+                            },
+                            {
+                                "queryPath": "doc:evenementDetails.evenementDatum",
+                                "queryOperator": ">=",
+                                "queryValue": "${localDateTimeNow}"
+                            }
+                        ]
+                    },
+                    "displayTypeProperties": {
+                        "title": "Binnen twee weken",
+                        "subtitle": "Evenementen binnen twee weken",
+                        "label": "evenementen",
+                        "useKPI": false,
+                        "lowSeverityThreshold": null,
+                        "mediumSeverityThreshold": null,
+                        "highSeverityThreshold": null
+                    },
+                    "url": null
+                },
+                {
+                    "key": "nieuw_vandaag",
+                    "title": "Nieuw vandaag",
+                    "dataSourceKey": "case-count",
+                    "displayType": "number",
+                    "dataSourceProperties": {
+                        "documentDefinition": "evenementenvergunning",
+                        "queryConditions": [
+                            {
+                                "queryPath": "case:createdOn",
+                                "queryOperator": ">=",
+                                "queryValue": "${localDateTimeNow.minusDays(1)}"
+                            }
+                        ]
+                    },
+                    "displayTypeProperties": {
+                        "title": "Nieuw vandaag",
+                        "subtitle": "Aanvragen van vandaag",
+                        "label": "aanvragen",
+                        "useKPI": false,
+                        "lowSeverityThreshold": null,
+                        "mediumSeverityThreshold": null,
+                        "highSeverityThreshold": null
+                    },
+                    "url": null
+                },
+                {
+                    "key": "aan_mij_toegewezen",
+                    "title": "Aan mij toegewezen",
+                    "dataSourceKey": "case-count",
+                    "displayType": "number",
+                    "dataSourceProperties": {
+                        "documentDefinition": "evenementenvergunning",
+                        "queryConditions": [
+                            {
+                                "queryPath": "case:internalStatus.id.key",
+                                "queryOperator": "!=",
+                                "queryValue": "afgerond"
+                            },
+                            {
+                                "queryPath": "case:assigneeId",
+                                "queryOperator": "==",
+                                "queryValue": "${currentUserIdentifier}"
+                            }
+                        ]
+                    },
+                    "displayTypeProperties": {
+                        "title": "Aan mij toegewezen",
+                        "subtitle": "",
+                        "label": "",
+                        "useKPI": false,
+                        "lowSeverityThreshold": null,
+                        "mediumSeverityThreshold": null,
+                        "highSeverityThreshold": null
+                    },
+                    "url": "/dossiers/evenementenvergunning?status=WyJDQVNFU19XSVRIT1VUX1NUQVRVU19LRVkiLCJuaWV1dyIsImNvbnRyb2xlcmVuLWxvY2F0aWUiLCJ3YWNodC1vcC1sb2NhdGllIiwiaW4tYmVoYW5kZWxpbmciLCJ2ZXJzbmVsZGUtYWZoYW5kZWxpbmciLCJnb2Vka2V1cmluZy13ZXRob3VkZXIiXQ%3D%3D&assignee=mine&size=10&collectionSize=0&page=0&isSorting=true&sortStateName=aanvraagDatum&sortStateDirection=DESC"
+                }
+            ]
+        }
+    ]
+}
