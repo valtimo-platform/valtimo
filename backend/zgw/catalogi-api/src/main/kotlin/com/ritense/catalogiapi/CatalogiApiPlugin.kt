@@ -270,12 +270,41 @@ class CatalogiApiPlugin(
         }
     }
 
+    @PluginAction(
+        key = "get-informatieobjecttypen",
+        title = "Get Informatieobjecttypen",
+        description = "Retrieve the informatieobjecttypen and save them in a process variable",
+        activityTypes = [ActivityTypeWithEventName.SERVICE_TASK_START, ActivityTypeWithEventName.CALL_ACTIVITY_START]
+    )
+    fun getInformatieobjecttypen(
+        execution: DelegateExecution,
+        @PluginActionProperty processVariable: String,
+        @PluginActionProperty zaaktypeUrl: String? = null
+    ) {
+        logger.debug { "Retrieving informatieobjecttypen and storing these in process variable: $processVariable" }
+        zaaktypeUriFrom(zaaktypeUrl, execution).let { zaaktypeUri ->
+            withLoggingContext(
+                CATALOGI_API.ZAAKTYPE to zaaktypeUri.toString()
+            ) {
+                getInformatieobjecttypes(zaaktypeUri).map { informatieobjecttype ->
+                    mapOf(
+                        URL_KEY to informatieobjecttype.url!!.toASCIIString(),
+                        NAME_KEY to informatieobjecttype.omschrijving
+                    )
+                }.let { informatieobjecttypen ->
+                    execution.setVariable(processVariable, informatieobjecttypen)
+                }
+                logger.info { "Setting process variable $processVariable with (retrieved) informatieobjecttypen" }
+            }
+        }
+    }
+
     fun getInformatieobjecttypes(
         zaakTypeUrl: URI,
     ): List<Informatieobjecttype> {
         withLoggingContext(CATALOGI_API.ZAAKTYPEINFORMATIEOBJECTTYPE to zaakTypeUrl.toString()) {
             var currentPage = 1
-            var currentResults: Page<ZaaktypeInformatieobjecttype>?
+            var currentResults: Page<ZaaktypeInformatieobjecttype>
             val results = mutableListOf<Informatieobjecttype>()
 
             do {
@@ -317,7 +346,7 @@ class CatalogiApiPlugin(
                 }
 
                 results.addAll(filteredTypes)
-            } while (currentResults?.next != null)
+            } while (currentResults.next != null)
 
             return results
         }
@@ -350,7 +379,7 @@ class CatalogiApiPlugin(
     fun getRoltypes(zaakTypeUrl: URI): List<Roltype> {
         withLoggingContext(CATALOGI_API.ROLTYPE to zaakTypeUrl.toString()) {
             var currentPage = 1
-            var currentResults: Page<Roltype>?
+            var currentResults: Page<Roltype>
             val results = mutableListOf<Roltype>()
 
             do {
@@ -364,7 +393,7 @@ class CatalogiApiPlugin(
                     )
                 )
                 results.addAll(currentResults.results)
-            } while (currentResults?.next != null)
+            } while (currentResults.next != null)
 
             return results
         }
@@ -373,7 +402,7 @@ class CatalogiApiPlugin(
     fun getStatustypen(zaakTypeUrl: URI): List<Statustype> {
         withLoggingContext(CATALOGI_API.STATUSTYPE to zaakTypeUrl.toString()) {
             var currentPage = 1
-            var currentResults: Page<Statustype>?
+            var currentResults: Page<Statustype>
             val results = mutableListOf<Statustype>()
 
             do {
@@ -387,7 +416,7 @@ class CatalogiApiPlugin(
                     )
                 )
                 results.addAll(currentResults.results)
-            } while (currentResults?.next != null)
+            } while (currentResults.next != null)
 
             return results
         }
@@ -414,7 +443,7 @@ class CatalogiApiPlugin(
     fun getResultaattypen(zaakTypeUrl: URI): List<Resultaattype> {
         withLoggingContext(CATALOGI_API.RESULTAATTYPE to zaakTypeUrl.toString()) {
             var currentPage = 1
-            var currentResults: Page<Resultaattype>?
+            var currentResults: Page<Resultaattype>
             val results = mutableListOf<Resultaattype>()
 
             do {
@@ -428,7 +457,7 @@ class CatalogiApiPlugin(
                     )
                 )
                 results.addAll(currentResults.results)
-            } while (currentResults?.next != null)
+            } while (currentResults.next != null)
 
             return results
         }
@@ -455,7 +484,7 @@ class CatalogiApiPlugin(
     fun getBesluittypen(zaakTypeUrl: URI): List<Besluittype> {
         withLoggingContext(CATALOGI_API.BESLUITTYPE to zaakTypeUrl.toString()) {
             var currentPage = 1
-            var currentResults: Page<Besluittype>?
+            var currentResults: Page<Besluittype>
             val results = mutableListOf<Besluittype>()
 
             do {
@@ -469,7 +498,7 @@ class CatalogiApiPlugin(
                     )
                 )
                 results.addAll(currentResults.results)
-            } while (currentResults?.next != null)
+            } while (currentResults.next != null)
 
             return results
         }

@@ -1,0 +1,77 @@
+{
+  "type": "form",
+  "components": [
+    {
+      "key": "evenementDetails",
+      "type": "panel",
+      "input": false,
+      "label": "Panel",
+      "title": "Evenement Details",
+      "tableView": false,
+      "components": [
+        {
+          "key": "evenementDetails.evenementNaam",
+          "type": "textfield",
+          "input": true,
+          "label": "Naam van het evenement",
+          "tableView": true,
+          "attributes": {
+            "data-testid": "evenementenvergunning.evenement-details-evenementNaam"
+          },
+          "defaultValue": "Lente Festival"
+        },
+        {
+          "key": "evenementDetails.evenementType",
+          "type": "textfield",
+          "input": true,
+          "label": "Type evenement",
+          "tableView": true,
+          "attributes": {
+            "data-testid": "evenementenvergunning.evenement-details-evenementType"
+          },
+          "defaultValue": "Openlucht Muziekfestival"
+        },
+        {
+          "key": "evenementDetails.evenementDatum",
+          "type": "textfield",
+          "input": true,
+          "label": "Datum van het evenement",
+          "tableView": false,
+          "attributes": {
+            "data-testid": "evenementenvergunning.evenement-details-evenementDatum"
+          },
+          "defaultValue": "2024-11-29"
+        },
+        {
+          "key": "evenementDetails.verwachteBezoekers",
+          "type": "number",
+          "input": true,
+          "label": "Verwacht aantal bezoekers",
+          "tableView": false,
+          "attributes": {
+            "data-testid": "evenementenvergunning.evenement-details-verwachteBezoekers"
+          },
+          "defaultValue": 5000
+        },
+        {
+          "key": "evenementDetails.isOpenbaarEvenement",
+          "type": "checkbox",
+          "input": true,
+          "label": "Is het evenement openbaar?",
+          "tableView": false,
+          "attributes": {
+            "data-testid": "evenementenvergunning.evenement-details-isOpenbaarEvenement"
+          },
+          "defaultValue": true
+        },
+        {
+          "key": "submit",
+          "type": "button",
+          "input": true,
+          "label": "Submit",
+          "tableView": false
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,27 @@
+[
+{
+      "key": "gegevens",
+      "name": "Gegevens",
+      "type": "widgets",
+      "contentKey": "-",
+      "showTasks": true
+    },
+    {
+      "key": "progress",
+      "name": null,
+      "type": "standard",
+      "contentKey": "progress"
+    },
+    {
+      "key": "audit",
+      "name": null,
+      "type": "standard",
+      "contentKey": "audit"
+    },
+    {
+      "key": "notes",
+      "name": null,
+      "type": "standard",
+      "contentKey": "notes"
+    }
+  ]

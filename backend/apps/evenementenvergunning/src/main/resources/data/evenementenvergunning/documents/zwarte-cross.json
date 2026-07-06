@@ -1,0 +1,53 @@
+{
+    "aanvrager": {
+        "naam": "Henk de Vries",
+        "adres": "Dorpstraat 1, 7131 AB Lichtenvoorde",
+        "contactgegevens": {
+            "telefoon": "+31 543 123 456",
+            "email": "info@zwartcross.nl"
+        }
+    },
+    "milieuBeheer": {
+        "afvalBeheerPlan": "Duurzaam afvalbeheer met recyclepunten.",
+        "milieuMaatregelen": "Eco-vriendelijke verlichting, Afvalscheiding op locatie",
+        "sanitaireVoorzieningen": true
+    },
+    "etenEnDrinken": {
+        "alcoholSchenken": true,
+        "horecaVergunning": true,
+        "alcoholControleMaatregelen": "Strikte leeftijdscontrole bij alcoholverkoop"
+    },
+    "evenementDetails": {
+        "evenementNaam": "Zwarte Cross",
+        "evenementType": "Muziek- en motorcrossfestival",
+        "evenementDatum": "2025-07-18",
+        "verwachteBezoekers": 220000,
+        "isOpenbaarEvenement": true
+    },
+    "geluidEnOverlast": {
+        "versterktGeluid": true,
+        "geluidReductieMaatregelen": "Geluidsbeperkingen na 01:00 uur en geluidswallen rondom het terrein."
+    },
+    "verkeerEnParkeren": {
+        "verkeerPlan": "Omleidingen en extra parkeerplaatsen ingericht.",
+        "alternatiefTransport": "Pendelbussen vanaf nabijgelegen stations.",
+        "parkeerVoorzieningen": true
+    },
+    "locatieEnOpstelling": {
+        "evenementLocatie": "Lichtenvoorde, Gelderland",
+        "voorzieningen": [
+            "Podium",
+            "Campings",
+            "EHBO Post",
+            "Toiletten",
+            "Voedsel- en drankstands"
+        ],
+        "indelingsplan": "https://zwartecross.nl/indelingsplan.pdf"
+    },
+    "veiligheidsMaatregelen": {
+        "beveiligingsPlan": "Er zijn professionele beveiligers, nooduitgangen en cameratoezicht.",
+        "noodPlan": "Evacuatieprocedures en noodcommunicatie aanwezig.",
+        "EHBO": true,
+        "beveiligingsPersoneel": 150
+    }
+}
