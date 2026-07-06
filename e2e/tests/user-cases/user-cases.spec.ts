@@ -213,8 +213,8 @@ test.describe('Feature 2 — Cases (User)', () => {
       await userCasesPage.assignTaskToSelf();
 
       // After assignment the task form is re-rendered; submit it to complete.
-      await expect(userCasesPage.formStartButton).toBeVisible({timeout: 15_000});
-      await userCasesPage.submitFormStart();
+      await expect(userCasesPage.taskFormStartButton).toBeVisible({timeout: 15_000});
+      await userCasesPage.submitTaskForm();
 
       // Completing the "Change name" task removes its tile from the list. The case's
       // initial "Valideer gegevens aanvrager" task stays, so the list is not empty.

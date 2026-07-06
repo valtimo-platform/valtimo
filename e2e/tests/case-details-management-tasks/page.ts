@@ -153,6 +153,20 @@ export class CaseDetailsManagementTasksPage {
     await expect(dropdownLocator).toContainText(itemText);
   }
 
+  // The value-path-selector toggles to manual mode and runs a setTimeout(detectChanges, 1)
+  // before the manual <input> is wired to the parent form. Filling immediately can land the
+  // value before the CVA subscription is active, so the required `path` control never commits
+  // and the Save button stays disabled. Re-fill until the input actually holds the value.
+  private async fillValuePathManually(toggle: Locator, input: Locator, path: string) {
+    await toggle.click();
+    await expect(input).toBeVisible();
+    await expect(async () => {
+      await input.fill(path);
+      await input.blur();
+      await expect(input).toHaveValue(path);
+    }).toPass({timeout: 10_000});
+  }
+
   // ─── Cleanup ───────────────────────────────────────────────────────
 
   async cleanupStaleColumns() {
@@ -180,8 +194,7 @@ export class CaseDetailsManagementTasksPage {
       await this.columnTitleInput.fill(column.title);
     }
     await this.columnKeyInput.fill(column.key);
-    await this.columnPathToggle.click();
-    await this.columnPathInput.fill(column.path);
+    await this.fillValuePathManually(this.columnPathToggle, this.columnPathInput, column.path);
     await this.selectDropdownItem(this.columnDisplayTypeDropdown, column.displayType);
     await expect(this.columnSaveButton).toBeEnabled();
     await this.columnSaveButton.click();
@@ -205,8 +218,7 @@ export class CaseDetailsManagementTasksPage {
     await expect(this.searchFieldKeyInput).toBeVisible();
     await this.page.locator('[data-testid="task-management-search-title"]').fill(field.title);
     await this.searchFieldKeyInput.fill(field.key);
-    await this.searchFieldPathToggle.click();
-    await this.searchFieldPathInput.fill(field.path);
+    await this.fillValuePathManually(this.searchFieldPathToggle, this.searchFieldPathInput, field.path);
     await this.selectDropdownItem(this.searchFieldDataTypeDropdown, field.dataType);
     if (field.matchType) {
       const matchTypeVisible = await this.searchFieldMatchTypeDropdown.isVisible();

@@ -354,9 +354,22 @@ export class DashboardManagementPage {
 
   async selectCaseType(caseType: string) {
     const caseTypeDropdown = this.page.locator('valtimo-widget-configuration-container cds-dropdown').first();
-    await expect(caseTypeDropdown).toBeVisible({timeout: 5_000});
-    await caseTypeDropdown.click();
-    await this.page.getByRole('listbox').getByText(caseType, {exact: true}).click();
+    await expect(caseTypeDropdown).toBeVisible({timeout: 10_000});
+
+    const listbox = this.page.getByRole('listbox');
+    const option = listbox.getByText(caseType, {exact: true});
+
+    // The case-type options load from the backend after the data source is
+    // picked, so clicking too early opens an empty listbox and the option never
+    // appears (hangs until the test timeout). Reopen and retry until the option
+    // is present, so slower/headless machines get a freshly-rendered listbox.
+    await expect(async () => {
+      if (!(await listbox.isVisible())) {
+        await caseTypeDropdown.click();
+      }
+      await expect(option).toBeVisible({timeout: 2_000});
+      await option.click();
+    }).toPass({timeout: 20_000});
   }
 
   async selectDisplayType(label: string) {
@@ -511,8 +524,14 @@ export class DashboardManagementPage {
   async deleteTestDashboardsViaApi(titlePrefix: string) {
     try {
       const dashboards = await ApiUtils.apiGet<DashboardListItem[]>(endpoints.dashboard.getAll);
+      // Match case-insensitively: the "Success scenarios" describe uses the static
+      // 'E2E Test Dashboard' title while the "Widget management" describe generates
+      // 'E2e Test Dashboard <id>'. A case-sensitive startsWith left the lowercase
+      // variants behind, so stale rows from aborted runs collided with the
+      // (case-insensitive, substring) carbon-list row lookup and broke the suite.
+      const prefix = titlePrefix.toLowerCase();
       for (const dashboard of dashboards) {
-        if (dashboard.title.startsWith(titlePrefix)) {
+        if (dashboard.title.toLowerCase().startsWith(prefix)) {
           await this.deleteDashboardViaApi(dashboard.key);
         }
       }

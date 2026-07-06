@@ -75,6 +75,7 @@ export class JsonEditor {
     await this.editColumnsViaJSON(changes);
     await this.jsonEditorSaveButton.click();
     await this.jsonEditorConfirmationModalConfirmButton.click();
+    await this.waitForReadOnlyView();
   }
 
   async assertKeepEditingChanges(changes: object) {
@@ -86,6 +87,7 @@ export class JsonEditor {
     await expect(this.jsonEditorCancelButton).toBeVisible();
     await this.jsonEditorCancelButton.click();
     await this.jsonEditorCancelModalConfirmButton.click();
+    await this.waitForReadOnlyView();
   }
 
   async assertCloseSaveKeepEditing(changes: object) {
@@ -97,6 +99,7 @@ export class JsonEditor {
     await expect(this.jsonEditorCancelButton).toBeVisible();
     await this.jsonEditorCancelButton.click();
     await this.jsonEditorCancelModalConfirmButton.click();
+    await this.waitForReadOnlyView();
   }
 
   async discardChanges() {
@@ -104,6 +107,7 @@ export class JsonEditor {
     await this.editColumnsViaJSON(REVERT_LIST_COLUMNS);
     await this.jsonEditorCancelButton.click();
     await this.jsonEditorCancelModalConfirmButton.click();
+    await this.waitForReadOnlyView();
   }
 
   async saveChangesWithCancel(changes: object) {
@@ -112,10 +116,14 @@ export class JsonEditor {
     await this.editColumnsViaJSON(changes);
     await this.jsonEditorCancelButton.click();
     await this.jsonEditorCancelModalSaveButton.click();
-    // Saving triggers an API round-trip that re-renders the JSON editor back to
-    // its read-only state. Wait for the edit button to reappear so callers that
-    // immediately switch views don't race the re-render (the switch-view button
-    // is briefly detached while the save settles).
+    await this.waitForReadOnlyView();
+  }
+
+  // Returning to read-only triggers an API round-trip that re-renders the JSON
+  // editor. Wait for the edit button to reappear so callers that immediately
+  // switch views (or assert on the table) don't race the re-render — the
+  // switch-view button and table are briefly detached while the change settles.
+  private async waitForReadOnlyView() {
     await expect(this.jsonEditorEditButton).toBeVisible({timeout: 15_000});
   }
 

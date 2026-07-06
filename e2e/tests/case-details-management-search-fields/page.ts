@@ -122,8 +122,19 @@ export class CaseDetailsManagementSearchFieldsPage {
 
   // Dropdown selection helper
   async selectDropdownItem(dropdownLocator: ReturnType<Page['locator']>, itemText: string) {
-    await dropdownLocator.click();
-    await this.page.getByRole('listbox').getByText(itemText, {exact: true}).click();
+    const listbox = this.page.getByRole('listbox');
+    const option = listbox.getByText(itemText, {exact: true});
+    // The cds-combo-box can re-render (detach) right as it is opened, which
+    // detaches the click target mid-action and hangs the click until the test
+    // timeout. Reopen and retry until the option is present and clickable so a
+    // transient re-render doesn't fail the test.
+    await expect(async () => {
+      if (!(await listbox.isVisible())) {
+        await dropdownLocator.click();
+      }
+      await expect(option).toBeVisible({timeout: 2_000});
+      await option.click();
+    }).toPass({timeout: 15_000});
   }
 
   // UI CRUD helpers
