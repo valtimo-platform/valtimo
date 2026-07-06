@@ -56,6 +56,11 @@ export * from './lib/plugins/documenten-api-preview/documenten-api-preview-plugi
 export * from './lib/plugins/documenten-api-preview/documenten-api-preview-plugin.specification';
 export * from './lib/plugins/documenten-api-preview/models/config';
 export * from './lib/plugins/documenten-api-preview/components/documenten-api-preview-configuration/documenten-api-preview-configuration.component';
+/* documenten api wopi plugin */
+export * from './lib/plugins/documenten-api-wopi/documenten-api-wopi-plugin.module';
+export * from './lib/plugins/documenten-api-wopi/documenten-api-wopi-plugin.specification';
+export * from './lib/plugins/documenten-api-wopi/models/config';
+export * from './lib/plugins/documenten-api-wopi/components/documenten-api-wopi-configuration/documenten-api-wopi-configuration.component';
 /* klantinteracties api plugin */
 export * from './lib/plugins/klantinteracties-api/klantinteracties-api-plugin-module';
 export * from './lib/plugins/klantinteracties-api/klantinteracties-api-plugin.specification';

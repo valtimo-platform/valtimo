@@ -83,6 +83,7 @@ import {
 import {DocumentenApiFilterComponent} from '../documenten-api-filter/documenten-api-filter.component';
 import {DocumentenApiMetadataModalComponent} from '../documenten-api-metadata-modal/documenten-api-metadata-modal.component';
 import {DocumentenApiPreviewModalComponent} from '../documenten-api-preview-modal/documenten-api-preview-modal.component';
+import {DocumentenApiWopiService} from '../../services/documenten-api-wopi.service';
 
 @Component({
   selector: 'valtimo-case-detail-tab-documenten-api-documents',
@@ -187,6 +188,7 @@ export class CaseDetailTabDocumentenApiDocumentsComponent implements OnInit, OnD
     {
       label: 'document.editContent',
       callback: this.onEditContent.bind(this),
+      disabled$: this.editContentDisabled.bind(this),
       type: 'normal',
     },
     {
@@ -357,6 +359,7 @@ export class CaseDetailTabDocumentenApiDocumentsComponent implements OnInit, OnD
     private readonly documentenApiDocumentService: DocumentenApiDocumentService,
     private readonly documentenApiPreviewService: DocumentenApiPreviewService,
     private readonly documentenApiVersionService: DocumentenApiVersionService,
+    private readonly documentenApiWopiService: DocumentenApiWopiService,
     private readonly documentService: DocumentService,
     private readonly downloadService: DownloadService,
     private readonly iconService: IconService,
@@ -528,26 +531,14 @@ export class CaseDetailTabDocumentenApiDocumentsComponent implements OnInit, OnD
     this.showUploadModal$.next(true);
   }
 
-  public onEditContent(file: DocumentenApiRelatedFile): void {
-    const wopiSrc = encodeURIComponent(
-      `https://cg-dmf.dev.baseflow.com/wopi/api/v1/files/${file.fileId}`
-    );
-    const url = `https://collabora.dev.baseflow.com/browser/4610258811/cool.html?WOPISrc=${wopiSrc}`;
+  public onEditContent(file: DocumentenApiRelatedFile): void{
+    this.documentenApiWopiService.getWopiHostPage(file.pluginConfigurationId, file.fileId).subscribe((value: Blob)=> {
+      const blobUrl = URL.createObjectURL(value);
+      window.open(blobUrl, '_blank');
 
-    const form = document.createElement('form');
-    form.method = 'POST';
-    form.action = url;
-    form.target = '_blank';
-
-    const tokenInput = document.createElement('input');
-    tokenInput.type = 'hidden';
-    tokenInput.name = 'access_token';
-    tokenInput.value = 'test';
-    form.appendChild(tokenInput);
-
-    document.body.appendChild(form);
-    form.submit();
-    document.body.removeChild(form);
+      // Clean up after a short delay (10 seconds)
+      setTimeout(() => URL.revokeObjectURL(blobUrl), 10_000);
+    })
   }
 
   public closeMetadataModal(): void {
@@ -617,6 +608,15 @@ export class CaseDetailTabDocumentenApiDocumentsComponent implements OnInit, OnD
 
   public refetchDocuments(): void {
     this._refetch$.next(null);
+  }
+
+  private editContentDisabled(file: DocumentenApiRelatedFile): Observable<boolean> {
+    return combineLatest([
+      this.documentenApiWopiService.checkWopiSupport(file?.pluginConfigurationId),
+      this.filePermissions$,
+    ]).pipe(
+      map(([hasWopiSupport, permissions]) => !hasWopiSupport || !permissions[file.fileId]?.canView)
+    );
   }
 
   private previewDisabled(file: DocumentenApiRelatedFile): Observable<boolean> {

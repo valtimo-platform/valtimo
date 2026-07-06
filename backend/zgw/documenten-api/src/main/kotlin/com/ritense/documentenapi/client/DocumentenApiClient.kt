@@ -104,7 +104,8 @@ class DocumentenApiClient(
             .retrieve()
             .body<CreateDocumentResult>()!!
 
-        outboxService.send { DocumentStored(result.url, objectMapper.valueToTree(result)) }
+        // TODO(mvanbeusekom): Temporary rewrite URL
+        outboxService.send { DocumentStored(result.url.replace("localhost", "host.docker.internal"), objectMapper.valueToTree(result)) }
         return result
     }
 
