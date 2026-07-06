@@ -33,13 +33,18 @@
 </valtimo-carbon-list>
 
 <ng-template #uploadButton>
-  <button [iconOnly]="true" cdsButton="ghost" (click)="openUploadModal()">
+  <button
+    [iconOnly]="true"
+    cdsButton="ghost"
+    [attr.data-test-id]="testIds.uploadButton"
+    (click)="openUploadModal()"
+  >
     <svg cdsIcon="upload" size="16"></svg>
   </button>
 </ng-template>
 
 <ng-template #addViewButton>
-  <button cdsButton="primary" (click)="openAddModal()">
+  <button cdsButton="primary" [attr.data-test-id]="viewTestIds.addViewButton" (click)="openAddModal()">
     {{ 'ikoManagement.views.add' | translate }}
 
     <svg class="cds--btn__icon" cdsIcon="add" size="16"></svg>
