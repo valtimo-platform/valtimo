@@ -26,6 +26,11 @@ valtimo:
     enabled: false
   plugin:
     encryption-secret: "abcdefghijklmnop"
+  opensearch:
+    reconcile:
+      # Disable the scheduled reconcile job in tests so it cannot interfere with assertions; the tests
+      # invoke DocumentOpenSearchReconcileService.reconcile() directly instead.
+      enabled: false
 
 operaton:
   bpm:

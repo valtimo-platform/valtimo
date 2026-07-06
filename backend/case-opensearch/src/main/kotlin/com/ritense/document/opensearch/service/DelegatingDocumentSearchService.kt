@@ -29,6 +29,7 @@ class DelegatingDocumentSearchService(
     private val openSearchService: DocumentSearchService,
     private val jpaService: DocumentSearchService,
     private val toggle: SearchEngineToggle,
+    private val reindexProgressGate: ReindexProgressGate,
 ) : DocumentSearchService {
 
     override fun search(
@@ -71,10 +72,10 @@ class DelegatingDocumentSearchService(
     ): Long = executeWithFallback { active().count(documentDefinitionName, blueprintType, advancedSearchRequest) }
 
     private fun active(): DocumentSearchService =
-        if (toggle.shouldUsePostgres()) jpaService else openSearchService
+        if (toggle.shouldUsePostgres { reindexProgressGate.isReindexInProgress() }) jpaService else openSearchService
 
     private fun <T> executeWithFallback(block: () -> T): T {
-        if (toggle.shouldUsePostgres()) {
+        if (toggle.shouldUsePostgres { reindexProgressGate.isReindexInProgress() }) {
             return block()
         }
         return try {

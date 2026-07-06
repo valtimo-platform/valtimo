@@ -17,6 +17,7 @@
 package com.ritense.document.opensearch.domain
 
 import org.springframework.data.annotation.Id
+import org.springframework.data.annotation.Version
 import org.springframework.data.elasticsearch.annotations.Document
 import org.springframework.data.elasticsearch.annotations.Field
 import org.springframework.data.elasticsearch.annotations.FieldType
@@ -58,6 +59,10 @@ data class JsonSchemaDocumentOsDocument(
         otherFields = [InnerField(suffix = "keyword", type = FieldType.Keyword)],
     )
     val contentText: String? = null,
+    // OpenSearch external version (maps to _version metadata, VersionType.EXTERNAL — not a source field, so
+    // no index-mapping change). Populated from the JPA optimistic-lock counter; "highest version wins" makes
+    // redundant reconciler re-sends and stale async writes benign version-conflict no-ops.
+    @Version val indexVersion: Long? = null,
 )
 
 data class OsDefinitionId(

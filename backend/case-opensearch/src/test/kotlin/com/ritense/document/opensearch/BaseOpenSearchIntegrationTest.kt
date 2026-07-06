@@ -26,13 +26,13 @@ import com.ritense.authorization.role.RoleRepository
 import com.ritense.document.domain.impl.JsonSchemaDocumentDefinition
 import com.ritense.document.domain.impl.snapshot.JsonSchemaDocumentSnapshot
 import com.ritense.document.domain.impl.searchfield.SearchField
+import com.ritense.document.opensearch.domain.JsonSchemaDocumentOsDocument
 import com.ritense.document.opensearch.repository.JsonSchemaDocumentOpenSearchRepository
 import com.ritense.document.service.impl.JsonSchemaDocumentService
 import com.ritense.document.service.JsonSchemaDocumentActionProvider
 import com.ritense.document.service.JsonSchemaDocumentDefinitionActionProvider
 import com.ritense.document.service.JsonSchemaDocumentSnapshotActionProvider
 import com.ritense.document.service.SearchFieldActionProvider
-import com.ritense.document.opensearch.domain.JsonSchemaDocumentOsDocument
 import com.ritense.outbox.OutboxService
 import com.ritense.testutilscommon.junit.extension.LiquibaseRunnerExtension
 import com.ritense.valtimo.contract.authentication.TeamManagementService
@@ -88,6 +88,9 @@ abstract class BaseOpenSearchIntegrationTest {
     lateinit var openSearchRepository: JsonSchemaDocumentOpenSearchRepository
 
     @Autowired
+    lateinit var elasticsearchOperations: ElasticsearchOperations
+
+    @Autowired
     lateinit var roleRepository: RoleRepository
 
     @Autowired
@@ -96,26 +99,25 @@ abstract class BaseOpenSearchIntegrationTest {
     @Autowired
     lateinit var objectMapper: ObjectMapper
 
-    @Autowired
-    lateinit var elasticsearchOperations: ElasticsearchOperations
-
     @BeforeEach
     fun setUpBase() {
         setUpPermissions()
-        val indexOps = elasticsearchOperations.indexOps(JsonSchemaDocumentOsDocument::class.java)
-        if (indexOps.exists()) {
-            indexOps.delete()
-        }
-        indexOps.create()
-        indexOps.putMapping(indexOps.createMapping())
+        openSearchRepository.deleteAll()
+        refreshIndex()
     }
 
     @AfterEach
     fun tearDownBase() {
-        val indexOps = elasticsearchOperations.indexOps(JsonSchemaDocumentOsDocument::class.java)
-        if (indexOps.exists()) {
-            indexOps.delete()
-        }
+        openSearchRepository.deleteAll()
+        refreshIndex()
+    }
+
+    /**
+     * Forces an OpenSearch refresh so writes/deletes are immediately visible to subsequent reads.
+     * OpenSearch refreshes asynchronously (default 1s), which makes write-then-read assertions flaky.
+     */
+    protected fun refreshIndex() {
+        elasticsearchOperations.indexOps(JsonSchemaDocumentOsDocument::class.java).refresh()
     }
 
     private fun setUpPermissions() {

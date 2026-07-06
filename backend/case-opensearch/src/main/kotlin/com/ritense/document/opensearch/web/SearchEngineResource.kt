@@ -19,6 +19,7 @@ package com.ritense.document.opensearch.web
 import com.ritense.adminsettings.service.FeatureToggleOverridesService
 import com.ritense.document.opensearch.OpenSearchProperties
 import com.ritense.document.opensearch.autoconfigure.DocumentOpenSearchAutoConfiguration.Companion.SEARCH_ENGINE_TOGGLE_KEY
+import com.ritense.document.opensearch.service.DocumentOpenSearchIndexInitializer
 import com.ritense.document.opensearch.service.SearchEngineToggle
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
@@ -33,6 +34,7 @@ class SearchEngineResource(
     private val toggle: SearchEngineToggle,
     private val openSearchProperties: OpenSearchProperties,
     private val featureToggleOverridesService: FeatureToggleOverridesService,
+    private val indexInitializer: DocumentOpenSearchIndexInitializer,
 ) {
 
     @GetMapping
@@ -55,6 +57,12 @@ class SearchEngineResource(
 
         val engine = if (useOpenSearch) SearchEngineToggle.Engine.OPENSEARCH else SearchEngineToggle.Engine.POSTGRES
         toggle.set(engine)
+
+        // Switching the engine on at runtime: make sure the index exists before live-sync/reads resume.
+        // Idempotent and failure-swallowing, so a missing cluster can't break the toggle call.
+        if (toggle.isOpenSearchActive()) {
+            indexInitializer.ensureIndex()
+        }
 
         return ResponseEntity.ok(
             SearchEngineDto(

@@ -68,7 +68,9 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
+import org.hibernate.annotations.CurrentTimestamp;
 import org.hibernate.annotations.DynamicUpdate;
+import org.hibernate.annotations.SourceType;
 import org.hibernate.annotations.Type;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -107,6 +109,16 @@ public class JsonSchemaDocument extends AbstractAggregateRoot<JsonSchemaDocument
 
     @Column(name = "modified_on", columnDefinition = "DATETIME")
     private LocalDateTime modifiedOn = null;
+
+    /**
+     * Database-clock change marker, regenerated on every insert and update ({@link SourceType#DB} emits
+     * the database's own {@code current_timestamp} in the generated SQL — a single clock, dual-DB safe).
+     * Unlike {@link #modifiedOn} (bumped only by content edits) this covers <em>every</em> mutation, so it
+     * is the watermark the OpenSearch reconciler scans on. Written by every save; never set by hand.
+     */
+    @CurrentTimestamp(source = SourceType.DB)
+    @Column(name = "changed_on", columnDefinition = "DATETIME", nullable = false)
+    private LocalDateTime changedOn;
 
     @Column(name = "created_by", columnDefinition = "VARCHAR(255)")
     private String createdBy;
@@ -387,6 +399,11 @@ public class JsonSchemaDocument extends AbstractAggregateRoot<JsonSchemaDocument
     @Override
     public Optional<LocalDateTime> modifiedOn() {
         return Optional.ofNullable(modifiedOn);
+    }
+
+    @JsonIgnore
+    public LocalDateTime changedOn() {
+        return changedOn;
     }
 
     @Override

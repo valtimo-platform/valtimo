@@ -32,8 +32,6 @@ spring:
             enabled: false
         livereload:
             enabled: false
-    elasticsearch:
-        uris: ${SPRING_ELASTICSEARCH_URIS:http://localhost:9200}
     datasource:
         type: com.zaxxer.hikari.HikariDataSource
         driver-class-name: ${SPRING_DATASOURCE_DRIVER_CLASS_NAME:org.postgresql.Driver}
@@ -121,8 +119,6 @@ spring:
     autoconfigure:
         exclude:
             - org.springframework.boot.actuate.autoconfigure.metrics.web.tomcat.TomcatMetricsAutoConfiguration
-            - org.springframework.boot.autoconfigure.data.elasticsearch.ElasticsearchDataAutoConfiguration
-            - org.springframework.boot.autoconfigure.elasticsearch.ElasticsearchClientAutoConfiguration
     cloud:
         function:
             definition: kotlinInboxCloudEventConsumer
@@ -175,8 +171,6 @@ mailing:
     sendRedirectedMailsTo:
 
 valtimo:
-    opensearch:
-        enabled: ${VALTIMO_OPENSEARCH_ENABLED:true}
     app:
         scheme: http
         hostname: ${VALTIMO_APP_HOSTNAME}

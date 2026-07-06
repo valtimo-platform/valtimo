@@ -30,14 +30,16 @@ class DocumentOpenSearchHttpSecurityConfigurer : HttpSecurityConfigurer {
     override fun configure(http: HttpSecurity) {
         try {
             http.authorizeHttpRequests { requests ->
-                requests.requestMatchers(antMatcher(POST, "/api/management/v1/document-opensearch/backfill"))
-                    .permitAll()
-                requests.requestMatchers(antMatcher(GET, "/api/management/v1/document-opensearch/backfill/status"))
-                    .permitAll()
+                requests.requestMatchers(antMatcher(POST, "/api/management/v1/document-opensearch/reindex"))
+                    .hasAuthority(ADMIN)
+                requests.requestMatchers(antMatcher(GET, "/api/management/v1/document-opensearch/reindex/status"))
+                    .hasAuthority(ADMIN)
+                requests.requestMatchers(antMatcher(GET, "/api/management/v1/document-opensearch/reindex/*"))
+                    .hasAuthority(ADMIN)
                 requests.requestMatchers(antMatcher(GET, "/api/management/v1/search-engine"))
-                    .permitAll()
+                    .hasAuthority(ADMIN)
                 requests.requestMatchers(antMatcher(PUT, "/api/management/v1/search-engine"))
-                    .permitAll()
+                    .hasAuthority(ADMIN)
             }
         } catch (e: Exception) {
             throw HttpConfigurerConfigurationException(e)
