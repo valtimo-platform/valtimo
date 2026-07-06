@@ -50,7 +50,6 @@ test.describe('Case management - Search Fields', () => {
 
     testPage = new CaseDetailsManagementSearchFieldsPage(page, request);
 
-    await page.goto('/');
     await testPage.goToCaseDetailsManagement('bezwaar');
     await ensureDraftVersionSelected(page);
   });

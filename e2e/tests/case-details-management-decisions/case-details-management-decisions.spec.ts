@@ -37,7 +37,6 @@ test.describe('Case details - Decision tables tab', () => {
 
     decisionsPage = new CaseDetailsDecisionsPage(page, request);
 
-    await page.goto('/');
     draftVersion = await decisionsPage.goToCaseDecisions(CASE_KEY);
 
     // Remove any stale decision from a previous aborted run so the upload step can succeed
