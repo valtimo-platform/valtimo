@@ -23,3 +23,8 @@
 
 * Dashboard widgets can now group and filter on more case fields, such as the `case:internalStatus` and
   `case:definitionId.key`.
+
+* **Long form names in the form builder are now truncated with an ellipsis**
+
+  When a form name is too long to fit in the form builder header, it is now shown with an ellipsis and the full name
+  appears on hover. This keeps the header action buttons (edit, save, back) visible regardless of how long the name is.
