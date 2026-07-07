@@ -25,12 +25,16 @@ import com.ritense.externalplugin.compatibility.PluginPackageInspector
 import com.ritense.externalplugin.processlink.ExternalPluginProcessLinkMapper
 import com.ritense.externalplugin.processlink.ExternalPluginServiceTaskStartListener
 import com.ritense.externalplugin.processlink.ExternalPluginSupportedProcessLinkTypeHandler
+import com.ritense.externalplugin.processlink.ExternalPluginTaskFormProcessLinkActivityHandler
+import com.ritense.externalplugin.processlink.ExternalPluginTaskFormProcessLinkMapper
+import com.ritense.externalplugin.processlink.ExternalPluginTaskFormSupportedProcessLinkTypeHandler
 import com.ritense.externalplugin.repository.ExternalPluginConfigurationRepository
 import com.ritense.externalplugin.repository.ExternalPluginDefinitionRepository
 import com.ritense.externalplugin.repository.ExternalPluginGrantedEndpointRepository
 import com.ritense.externalplugin.repository.ExternalPluginGrantedEventRepository
 import com.ritense.externalplugin.repository.ExternalPluginHostRepository
 import com.ritense.externalplugin.repository.ExternalPluginProcessLinkRepository
+import com.ritense.externalplugin.repository.ExternalPluginTaskFormProcessLinkRepository
 import com.ritense.externalplugin.security.ExternalPluginCallbackHttpSecurityConfigurer
 import com.ritense.externalplugin.security.ExternalPluginEndpointAllowlistFilter
 import com.ritense.externalplugin.security.ExternalPluginHttpSecurityConfigurer
@@ -43,6 +47,7 @@ import com.ritense.externalplugin.security.ExternalPluginUserTokenKeyProvider
 import com.ritense.externalplugin.service.EndpointDescriptionService
 import com.ritense.externalplugin.service.ExternalPluginCaseTabResolverImpl
 import com.ritense.externalplugin.service.ExternalPluginConfigurationService
+import com.ritense.externalplugin.service.ExternalPluginFrontendBundleResolver
 import com.ritense.externalplugin.service.ExternalPluginDefinitionService
 import com.ritense.externalplugin.service.ExternalPluginDiscoveryJob
 import com.ritense.externalplugin.service.ExternalPluginDiscoveryService
@@ -98,6 +103,7 @@ class ExternalPluginAutoConfiguration {
         definitionRepository: ExternalPluginDefinitionRepository,
         configurationRepository: ExternalPluginConfigurationRepository,
         processLinkRepository: ExternalPluginProcessLinkRepository,
+        taskFormProcessLinkRepository: ExternalPluginTaskFormProcessLinkRepository,
         operatonRepositoryService: OperatonRepositoryService,
         bpmnRepositoryService: RepositoryService,
         caseExternalPluginTabService: java.util.Optional<com.ritense.case_.service.CaseExternalPluginTabService>,
@@ -105,6 +111,7 @@ class ExternalPluginAutoConfiguration {
         definitionRepository,
         configurationRepository,
         processLinkRepository,
+        taskFormProcessLinkRepository,
         operatonRepositoryService,
         bpmnRepositoryService,
         caseExternalPluginTabService,
@@ -138,11 +145,17 @@ class ExternalPluginAutoConfiguration {
         ExternalPluginDefinitionService(definitionRepository)
 
     @Bean
-    @ConditionalOnMissingBean(ExternalPluginCaseTabResolverImpl::class)
-    fun externalPluginCaseTabResolver(
+    @ConditionalOnMissingBean(ExternalPluginFrontendBundleResolver::class)
+    fun externalPluginFrontendBundleResolver(
         configurationRepository: ExternalPluginConfigurationRepository,
         definitionRepository: ExternalPluginDefinitionRepository,
-    ) = ExternalPluginCaseTabResolverImpl(configurationRepository, definitionRepository)
+    ) = ExternalPluginFrontendBundleResolver(configurationRepository, definitionRepository)
+
+    @Bean
+    @ConditionalOnMissingBean(ExternalPluginCaseTabResolverImpl::class)
+    fun externalPluginCaseTabResolver(
+        bundleResolver: ExternalPluginFrontendBundleResolver,
+    ) = ExternalPluginCaseTabResolverImpl(bundleResolver)
 
     @Bean
     @ConditionalOnMissingBean(ExternalPluginServiceTokenKeyProvider::class)
@@ -331,6 +344,22 @@ class ExternalPluginAutoConfiguration {
     @Order(40)
     @ConditionalOnMissingBean(ExternalPluginSupportedProcessLinkTypeHandler::class)
     fun externalPluginSupportedProcessLinkTypeHandler() = ExternalPluginSupportedProcessLinkTypeHandler()
+
+    @Bean
+    @ConditionalOnMissingBean(ExternalPluginTaskFormProcessLinkMapper::class)
+    fun externalPluginTaskFormProcessLinkMapper(objectMapper: ObjectMapper) =
+        ExternalPluginTaskFormProcessLinkMapper(objectMapper)
+
+    @Bean
+    @Order(41)
+    @ConditionalOnMissingBean(ExternalPluginTaskFormSupportedProcessLinkTypeHandler::class)
+    fun externalPluginTaskFormSupportedProcessLinkTypeHandler() = ExternalPluginTaskFormSupportedProcessLinkTypeHandler()
+
+    @Bean
+    @ConditionalOnMissingBean(ExternalPluginTaskFormProcessLinkActivityHandler::class)
+    fun externalPluginTaskFormProcessLinkActivityHandler(
+        bundleResolver: ExternalPluginFrontendBundleResolver,
+    ) = ExternalPluginTaskFormProcessLinkActivityHandler(bundleResolver)
 
     @Bean
     @ConditionalOnMissingBean(ExternalPluginServiceTaskStartListener::class)

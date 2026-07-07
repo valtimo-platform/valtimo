@@ -48,7 +48,20 @@
       "caseTabDetails.hello.title": "Case details tab",
       "caseTabDetails.hello": "This is a second case tab from the same plugin, selected by its bundle key.",
       "caseTabDetails.content.title": "Document content (your access)",
-      "caseTabDetails.content.empty": "This document has no content."
+      "caseTabDetails.content.empty": "This document has no content.",
+      "taskForm.title": "Review case",
+      "taskForm.intro": "This form is served by the case-summary plugin. Submitting completes the task through the plugin, using your own permissions.",
+      "taskForm.decision.label": "Decision",
+      "taskForm.decision.approve": "Approve",
+      "taskForm.decision.reject": "Reject",
+      "taskForm.comment.label": "Comment",
+      "taskForm.comment.placeholder": "Add an optional comment…",
+      "taskForm.submit": "Submit & complete task",
+      "taskForm.submitting": "Completing…",
+      "taskForm.completed.title": "Task completed",
+      "taskForm.completed": "The plugin completed this task on your behalf.",
+      "taskForm.forbidden": "You don't have permission to complete this task.",
+      "taskForm.error": "The plugin could not complete this task."
     },
     "nl": {
       "name": "Zaaksamenvatting",
@@ -91,7 +104,20 @@
       "caseTabDetails.hello.title": "Zaakdetails-tabblad",
       "caseTabDetails.hello": "Dit is een tweede zaaktabblad van dezelfde plugin, geselecteerd op zijn bundle-sleutel.",
       "caseTabDetails.content.title": "Documentinhoud (uw toegang)",
-      "caseTabDetails.content.empty": "Dit document heeft geen inhoud."
+      "caseTabDetails.content.empty": "Dit document heeft geen inhoud.",
+      "taskForm.title": "Zaak beoordelen",
+      "taskForm.intro": "Dit formulier wordt geleverd door de case-summary plugin. Verzenden voltooit de taak via de plugin, met uw eigen rechten.",
+      "taskForm.decision.label": "Beslissing",
+      "taskForm.decision.approve": "Goedkeuren",
+      "taskForm.decision.reject": "Afwijzen",
+      "taskForm.comment.label": "Opmerking",
+      "taskForm.comment.placeholder": "Voeg een optionele opmerking toe…",
+      "taskForm.submit": "Verzenden & taak voltooien",
+      "taskForm.submitting": "Voltooien…",
+      "taskForm.completed.title": "Taak voltooid",
+      "taskForm.completed": "De plugin heeft deze taak namens u voltooid.",
+      "taskForm.forbidden": "U heeft geen rechten om deze taak te voltooien.",
+      "taskForm.error": "De plugin kon deze taak niet voltooien."
     }
   },
   "configurationSchema": {
@@ -110,7 +136,8 @@
     "endpoints": [
       { "method": "GET", "pattern": "/api/v1/document/*" },
       { "method": "POST", "pattern": "/api/v1/document/*/note" },
-      { "method": "POST", "pattern": "/api/v1/case/*/search" }
+      { "method": "POST", "pattern": "/api/v1/case/*/search" },
+      { "method": "POST", "pattern": "/api/v1/task/*/complete" }
     ]
   },
   "frontendBundles": [
@@ -135,6 +162,12 @@
       "key": "details",
       "title": "Case Details",
       "path": "/bundles/case-tab-details.html"
+    },
+    {
+      "type": "task-form",
+      "key": "review",
+      "title": "Case Review",
+      "path": "/bundles/task-form.html"
     }
   ],
   "actions": [

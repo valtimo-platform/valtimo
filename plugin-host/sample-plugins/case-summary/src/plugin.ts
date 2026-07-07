@@ -77,6 +77,34 @@ function countCases(input: RequestInput, as: "user" | "plugin") {
   };
 }
 
+// Task-form submit — the backend counterpart of the `task-form` frontend bundle. The bundle POSTs
+// its collected variables here via `sdk.postPluginData("/submit-task", ...)`, and this handler
+// completes the user task in GZAC **as the logged-in user** (`gzacApi.asUser`, PBAC ∩ allowlist), so
+// the whole task completion flows through the plugin. The task id comes from the authoritative
+// backend-supplied tab/task context (never the request body, which the browser controls); the
+// complete endpoint must be granted under `permissions.endpoints`.
+request("/submit-task", (input: RequestInput) => {
+  const taskId = input.context?.taskId as string | undefined;
+  if (!taskId) {
+    return {status: 400, body: {error: "No taskId in task-form context"}};
+  }
+
+  const body = (input.body ?? {}) as {variables?: Record<string, unknown>};
+  const variables = body.variables ?? {};
+
+  const res = gzacApi.asUser.post(`/api/v1/task/${taskId}/complete`, {variables});
+  if (res.status < 200 || res.status >= 300) {
+    log.info(`[case-summary] task completion for ${taskId} failed (status ${res.status})`);
+    return {
+      status: res.status,
+      body: {error: `Task completion failed (status ${res.status})`},
+    };
+  }
+
+  log.info(`[case-summary] completed task ${taskId} as the user`);
+  return {status: 200, body: {completed: true}};
+});
+
 action("case-summary", (input: ActionInput) => {
   const titleField = (input.properties.titleField as string) || "/applicantName";
   const amountField = input.properties.amountField as string | undefined;

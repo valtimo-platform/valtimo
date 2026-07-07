@@ -85,6 +85,7 @@ import {IntermediateSubmission, Task} from '../../models';
 import {TaskIntermediateSaveService, TaskService} from '../../services';
 import {CAN_ASSIGN_TASK_PERMISSION, TASK_DETAIL_PERMISSION_RESOURCE} from '../../task-permissions';
 import {enrichTaskFromProcessLink} from '../../utils/task-enrichment.utils';
+import {TaskExternalPluginFormComponent} from '../task-external-plugin-form/task-external-plugin-form.component';
 
 @Component({
   selector: 'valtimo-task-detail-content',
@@ -98,6 +99,7 @@ import {enrichTaskFromProcessLink} from '../../utils/task-enrichment.utils';
     ProcessLinkModule,
     LoadingModule,
     NotificationModule,
+    TaskExternalPluginFormComponent,
   ],
 })
 export class TaskDetailContentComponent implements OnInit, OnDestroy, AfterViewInit {
@@ -119,7 +121,10 @@ export class TaskDetailContentComponent implements OnInit, OnDestroy, AfterViewI
   @Input() public set taskAndProcessLink(value: TaskWithProcessLink | null) {
     if (!value) return;
 
-    const task = enrichTaskFromProcessLink(value.task as any as Task, value.processLinkActivityResult);
+    const task = enrichTaskFromProcessLink(
+      value.task as any as Task,
+      value.processLinkActivityResult
+    );
     this.loadTaskDetails(task, value.processLinkActivityResult);
   }
   @Input() public set modalClosed(closed: boolean) {
@@ -165,6 +170,16 @@ export class TaskDetailContentComponent implements OnInit, OnDestroy, AfterViewI
   public readonly processLinkIsUiComponent$ = this._taskProcessLinkType$.pipe(
     map((type: string | null) => type === 'ui-component')
   );
+  public readonly processLinkIsExternalPluginTaskForm$ = this._taskProcessLinkType$.pipe(
+    map((type: string | null) => type === 'external-plugin-task-form')
+  );
+
+  /** Bundle URL + configuration id + context for an external-plugin task-form, or null otherwise. */
+  public readonly externalPluginTaskForm$ = new BehaviorSubject<{
+    bundleUrl: string;
+    configurationId: string;
+    context: Record<string, unknown>;
+  } | null>(null);
 
   public readonly noFormNotification$: Observable<NotificationContent | null> = combineLatest([
     this.loading$,
@@ -173,6 +188,7 @@ export class TaskDetailContentComponent implements OnInit, OnDestroy, AfterViewI
     this.errorMessage$,
     this.processLinkIsUiComponent$,
     this.processLinkIsFormViewModel$,
+    this.processLinkIsExternalPluginTaskForm$,
   ]).pipe(
     map(
       ([
@@ -182,6 +198,7 @@ export class TaskDetailContentComponent implements OnInit, OnDestroy, AfterViewI
         errorMessage,
         isUiComponent,
         isFormViewModel,
+        isExternalPluginTaskForm,
       ]) => {
         if (
           !loading &&
@@ -189,7 +206,8 @@ export class TaskDetailContentComponent implements OnInit, OnDestroy, AfterViewI
           !formFlowInstanceId &&
           !errorMessage &&
           !isUiComponent &&
-          !isFormViewModel
+          !isFormViewModel &&
+          !isExternalPluginTaskForm
         ) {
           return {
             type: 'warning',
@@ -435,6 +453,25 @@ export class TaskDetailContentComponent implements OnInit, OnDestroy, AfterViewI
           );
           this.loading$.next(false);
           break;
+        case 'external-plugin-task-form':
+          this._taskProcessLinkType$.next('external-plugin-task-form');
+          this._processLinkId$.next(processLinkResult.processLinkId);
+          if (
+            processLinkResult.properties.bundleUrl &&
+            processLinkResult.properties.configurationId
+          ) {
+            this.externalPluginTaskForm$.next({
+              bundleUrl: processLinkResult.properties.bundleUrl,
+              configurationId: processLinkResult.properties.configurationId,
+              context: (processLinkResult.properties.context ?? {}) as Record<string, unknown>,
+            });
+          } else {
+            this.errorMessage$.next(
+              this.translateService.instant('taskDetail.externalPluginTaskForm.unavailable')
+            );
+          }
+          this.loading$.next(false);
+          break;
       }
     }
   }
@@ -592,6 +629,8 @@ export class TaskDetailContentComponent implements OnInit, OnDestroy, AfterViewI
   private resetTaskProcessLinkType(): void {
     this._taskProcessLinkType$.next(null);
     this._processLinkId$.next(null);
+    this.externalPluginTaskForm$.next(null);
+    this.errorMessage$.next(null);
   }
 
   private setDocumentDefinitionNameInService(task: Task): void {

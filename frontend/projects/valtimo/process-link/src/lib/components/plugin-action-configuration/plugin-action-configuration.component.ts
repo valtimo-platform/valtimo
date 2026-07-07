@@ -35,11 +35,16 @@ import {
 import {
   ExternalPluginProcessLinkCreateDto,
   ExternalPluginProcessLinkUpdateDto,
+  ExternalPluginTaskFormProcessLinkCreateDto,
+  ExternalPluginTaskFormProcessLinkUpdateDto,
   PluginConfigurationReferenceType,
   PluginProcessLinkCreateDto,
   PluginProcessLinkUpdateDto,
   ProcessLink,
 } from '../../models';
+
+/** The `activityListenerType` the BPMN editor reports for a user task. */
+const USER_TASK_ACTIVITY = 'bpmn:UserTask:create';
 
 @Component({
   standalone: false,
@@ -63,6 +68,24 @@ export class PluginActionConfigurationComponent implements OnInit, OnDestroy {
       map(definition => isExternalPluginKey(definition?.key))
     );
 
+  /**
+   * True when the external plugin is being linked to a user task: the plugin contributes a
+   * `task-form` (rendered + completed by the plugin), not a service-task action. In that case this
+   * step has nothing to configure — the selected form is saved as an `external_plugin_task_form`
+   * link. Derived from the edited link's type (edit) or the activity being configured (create).
+   */
+  public readonly isTaskForm$: Observable<boolean> = combineLatest([
+    this.isExternalPlugin$,
+    this._stateService.modalParams$,
+    this._stateService.selectedProcessLink$,
+  ]).pipe(
+    map(([isExternal, modalParams, selectedProcessLink]) =>
+      selectedProcessLink
+        ? selectedProcessLink.processLinkType === 'external_plugin_task_form'
+        : isExternal && modalParams?.element?.activityListenerType === USER_TASK_ACTIVITY
+    )
+  );
+
   public externalActionProperties: Record<string, unknown> = {};
   public externalActionPropertiesJson = '{}';
   public externalActionPropertiesValid = true;
@@ -73,8 +96,9 @@ export class PluginActionConfigurationComponent implements OnInit, OnDestroy {
   );
 
   /** Emits true once the bundle URL lookup has completed */
-  public readonly externalBundleResolved$: Observable<boolean> =
-    this.externalActionBundleUrl$.pipe(map(url => url !== undefined));
+  public readonly externalBundleResolved$: Observable<boolean> = this.externalActionBundleUrl$.pipe(
+    map(url => url !== undefined)
+  );
 
   /** Prefill data for the iframe when editing an existing process link */
   public readonly externalActionPrefill$ = new BehaviorSubject<{
@@ -211,13 +235,12 @@ export class PluginActionConfigurationComponent implements OnInit, OnDestroy {
               return of(null);
             }
 
-            const actionKey =
-              selectedFunction?.key || selectedProcessLink?.actionKey || null;
+            const actionKey = selectedFunction?.key || selectedProcessLink?.actionKey || null;
 
             const definitionId = extractExternalDefinitionId(definition.key);
-            return this._externalPluginService.getDefinition(definitionId).pipe(
-              map((extDef: ExternalPluginDefinition) => ({extDef, actionKey}))
-            );
+            return this._externalPluginService
+              .getDefinition(definitionId)
+              .pipe(map((extDef: ExternalPluginDefinition) => ({extDef, actionKey})));
           })
         )
         .subscribe(result => {
@@ -236,7 +259,10 @@ export class PluginActionConfigurationComponent implements OnInit, OnDestroy {
             this.externalActionBundleUrl$.next(bundleUrl);
 
             // Set up prefill for editing existing process links
-            if (this.externalActionProperties && Object.keys(this.externalActionProperties).length > 0) {
+            if (
+              this.externalActionProperties &&
+              Object.keys(this.externalActionProperties).length > 0
+            ) {
               this.externalActionPrefill$.next({
                 title: '',
                 configuration: this.externalActionProperties,
@@ -370,28 +396,77 @@ export class PluginActionConfigurationComponent implements OnInit, OnDestroy {
     ])
       .pipe(
         take(1),
-        switchMap(([modalData, selectedConfiguration, selectedFunction, selectedProcessLink, selectedDefinition]) => {
-          if (!selectedConfiguration || !selectedFunction || !selectedDefinition) {
-            this._stateService.stopSaving();
-            return of(null);
-          }
+        switchMap(
+          ([
+            modalData,
+            selectedConfiguration,
+            selectedFunction,
+            selectedProcessLink,
+            selectedDefinition,
+          ]) => {
+            if (!selectedConfiguration || !selectedFunction || !selectedDefinition) {
+              this._stateService.stopSaving();
+              return of(null);
+            }
 
-          const definitionId = extractExternalDefinitionId(selectedDefinition.key);
-          return this._externalPluginService.getDefinition(definitionId).pipe(
-            map(definition => ({
-              modalData,
-              selectedConfiguration,
-              selectedFunction,
-              selectedProcessLink,
-              pluginVersion: definition.version,
-            }))
-          );
-        })
+            const definitionId = extractExternalDefinitionId(selectedDefinition.key);
+            return this._externalPluginService.getDefinition(definitionId).pipe(
+              map(definition => ({
+                modalData,
+                selectedConfiguration,
+                selectedFunction,
+                selectedProcessLink,
+                pluginVersion: definition.version,
+              }))
+            );
+          }
+        )
       )
       .subscribe(result => {
         if (!result) return;
 
-        const {modalData, selectedConfiguration, selectedFunction, selectedProcessLink, pluginVersion} = result;
+        const {
+          modalData,
+          selectedConfiguration,
+          selectedFunction,
+          selectedProcessLink,
+          pluginVersion,
+        } = result;
+
+        // A user-task link is the plugin's task-form (rendered + completed by the plugin), not a
+        // service-task action — persist it as the dedicated `external_plugin_task_form` type.
+        const isTaskForm = selectedProcessLink
+          ? selectedProcessLink.processLinkType === 'external_plugin_task_form'
+          : modalData?.element?.activityListenerType === USER_TASK_ACTIVITY;
+
+        if (isTaskForm) {
+          // The selected "function" is a task-form bundle; its key is the bundle key (empty = the
+          // plugin's sole task-form bundle → null).
+          const bundleKey = selectedFunction.key || null;
+          if (selectedProcessLink) {
+            const updateRequest: ExternalPluginTaskFormProcessLinkUpdateDto = {
+              id: selectedProcessLink.id,
+              processLinkType: 'external_plugin_task_form',
+              externalPluginConfigurationId: selectedConfiguration.id,
+              pluginVersion,
+              bundleKey,
+            };
+            this._stateService.sendProcessLinkUpdateEvent(updateRequest);
+          } else {
+            const createRequest: ExternalPluginTaskFormProcessLinkCreateDto = {
+              processDefinitionId: modalData?.processDefinitionId,
+              activityId: modalData?.element?.id,
+              activityType: modalData?.element?.activityListenerType ?? '',
+              processLinkType: 'external_plugin_task_form',
+              externalPluginConfigurationId: selectedConfiguration.id,
+              pluginVersion,
+              bundleKey,
+            };
+            this._stateService.sendProcessLinkCreateEvent(createRequest);
+          }
+          return;
+        }
+
         const actionProperties = this.externalActionProperties;
 
         if (selectedProcessLink) {

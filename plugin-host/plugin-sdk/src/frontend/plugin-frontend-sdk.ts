@@ -51,6 +51,14 @@ interface IframeToParentEvents {
   navigate: { route: string };
   notification: { type: "success" | "warning" | "error" | "info"; message: string };
   /**
+   * Signal that the plugin has completed the user task this **task-form** bundle was opened for —
+   * typically after the plugin's `handle_request` submit handler called GZAC's task-complete endpoint
+   * under the downscoped user token (`gzacApi.asUser`). The Angular parent reacts by closing the task
+   * and refreshing the list; it does **not** complete the task itself, so the plugin remains the sole
+   * owner of the submission logic.
+   */
+  taskCompleted: {};
+  /**
    * Ask the Angular parent to perform an allow-listed call on the iframe's behalf. The iframe never
    * holds a credential (opaque origin); the parent attaches the downscoped user token for
    * `target: "gzac"`, or forwards to the plugin host for `target: "plugin"`, and replies with a
@@ -200,6 +208,16 @@ class ValtimoPluginSDK {
    */
   public getPluginData(path: string, query?: Record<string, string>): Promise<ProxyResult> {
     return this._proxyRequest("plugin", "GET", path, query);
+  }
+
+  /**
+   * Submit data to the plugin's own `handle_request` handler via the parent → plugin host (the POST
+   * counterpart of {@link getPluginData}). Used by a **task-form** bundle to hand its submission to
+   * the plugin backend, which then completes the user task with `gzacApi.asUser`. `path` is the
+   * logical path the handler dispatches on (e.g. `/submit-task`).
+   */
+  public postPluginData(path: string, body?: unknown): Promise<ProxyResult> {
+    return this._proxyRequest("plugin", "POST", path, undefined, body);
   }
 
   private _proxyRequest(

@@ -719,7 +719,7 @@ export class CaseDetailComponent implements AfterViewInit, OnDestroy {
       ...(isAdmin && {
         actions: [
           {
-            text: this.translateService.instant('dossier.configure'),
+            text: this.translateService.instant('case.configure'),
             click: () => this.router.navigate(['/process-links']),
           },
         ],

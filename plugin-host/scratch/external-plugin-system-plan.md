@@ -788,14 +788,13 @@ in one place (matching the external edit modal). `PluginUsageModalComponent` is 
 translation keys. i18n lives under `pluginManagement.{deleteConfigurationModal, hostInUseModal,
 configurationInUseModal, usageModal}` in `en.json` / `nl.json`.
 
-## 13. Iframe surfaces & user-scoped access ✅ (case tab) / 🟡 (POC)
+## 13. Iframe surfaces & user-scoped access ✅ (case tab, task form) / 🟡 (POC)
 
 A plugin's iframe surfaces need to call GZAC **on behalf of the logged-in user** (respect what the
-user can see/do), and the plugin **backend** may call GZAC either as the user or as the system. The
-first implemented surface is the **case-detail tab**; case widgets, menu pages and task forms remain
-⛔. The implementation diverges from the original design in one important way — the iframe holds
-**no token** and routes calls through the Angular parent (the **parent-proxy** model, §13.2) instead
-of being handed the token via `init`.
+user can see/do), and the plugin **backend** may call GZAC either as the user or as the system. Two
+iframe surfaces exist — the **case-detail tab** (§13.1) and the **task form** (§13.6); case widgets
+and menu pages remain ⛔. The iframe holds **no token** and routes calls through the Angular parent
+(the **parent-proxy** model, §13.2) rather than being handed the token via `init`.
 
 ### 13.1 Case-tab surface (`EXTERNAL_PLUGIN` tab type) ✅
 
@@ -911,6 +910,48 @@ Service tokens (action/event callbacks) are unchanged. ⚠️ The host `/data` r
 (capability/auth) is the priority hardening item before non-POC use, and matters far more for
 privilege-escalation than the front-end transport choice.
 
+### 13.6 Task-form surface (`external_plugin_task_form` process-link type) ✅
+
+A plugin renders the form for a **user task**, and **task completion flows through the plugin**
+(level 3, §13.5): the form submits to the plugin backend, which completes the task with
+`gzacApi.asUser`.
+
+- **Process-link type** `external_plugin_task_form` is a distinct `ProcessLink` subtype, kept separate
+  from the `external_plugin` service-task action type because the surfaces are unrelated (a form to
+  render vs. a backend action to invoke). Entity `ExternalPluginTaskFormProcessLink` maps
+  `external_plugin_task_form_{config_id,bundle_key,version}` on the shared `process_link` table (DDL in
+  the release changelog `13-32-0/20260706-add-external-plugin-task-form-process-link.xml`, not in
+  `initial-setup`). It ships the five `ProcessLinkMapper` DTOs and a `SupportedProcessLinkTypeHandler`
+  that declares **`USER_TASK_CREATE`** (the action type declares `SERVICE_TASK_START`).
+- **Render descriptor, no dedicated controller.** A `ProcessLinkActivityHandler` (shaped like the
+  URL/UI-component handlers — a render descriptor, not an execution listener) answers the generic
+  `GET /api/v2/process-link/task/{taskId}` with an `external-plugin-task-form`
+  `ProcessLinkActivityResult` carrying `{ bundleUrl, configurationId, bundleKey, context }`, where
+  `context = { taskId, processInstanceId, documentId, pluginConfigurationId }`. `taskId` is
+  authoritative — supplied by the backend, never read from the browser's request body.
+- **Bundle URL resolution.** `ExternalPluginFrontendBundleResolver(configurationId, bundleType,
+  bundleKey)` resolves `${definition.baseUrl}/${definition.version}${bundle.path}` for the manifest's
+  `task-form` bundle; the case-tab (§13.1) and task-form surfaces share it.
+- **Delete guard.** `ExternalPluginHostUsageResolver` unions task-form links with action links, so a
+  configuration referenced by a task form blocks deletion of its plugin/host (§12).
+- **Admin UX** (`@valtimo/process-link`). A "Plugin form" type tile appears for user tasks; the
+  `configureExternalPluginTaskForm` step (`SelectExternalPluginTaskFormComponent`) lists activated
+  configurations that expose a `task-form` bundle (one option per bundle) and writes the create/update
+  DTO. The process-link framework resolves the link type by Jackson **deduction** (which fields are
+  present, not `processLinkType`), so the DTO always serialises `bundleKey` (null when the bundle is
+  unkeyed) to stay distinguishable from the action link, which is identified by its `actionKey`.
+- **Runtime** (`@valtimo/task`). `TaskDetailContentComponent` maps the `external-plugin-task-form`
+  result to `TaskExternalPluginFormComponent`, which mints the downscoped user token (re-minting
+  before the ≤15-min expiry) and embeds `<valtimo-external-plugin-iframe>`. The bundle submits with
+  `sdk.postPluginData(path, body)` (the POST counterpart of `getPluginData`); on success it emits a
+  `taskCompleted` message, surfaced as the iframe's `taskCompletedEvent`, and the parent closes the
+  task and refreshes the list — the plugin has already completed the task, so the parent does **not**
+  complete it again.
+- **SDK + sample.** `task-form` is a `FrontendBundle.type`, checked by the shared manifest validator.
+  The `case-summary` sample ships a `task-form` bundle plus a `/submit-task` handler that completes the
+  task via `gzacApi.asUser.post('/api/v1/task/{taskId}/complete', …)`; its `permissions.endpoints`
+  grants `{ "method": "POST", "pattern": "/api/v1/task/*/complete" }`.
+
 ## 14. Not yet implemented ⛔
 
 - Host capabilities + host functions (`http_request`, `kv`, structured `log`) with allowlist
@@ -919,8 +960,8 @@ privilege-escalation than the front-end transport choice.
   plugin Wasm unauthenticated and a service-token-backed handler can return system-scoped data
   (§7, §13.5). This is the top hardening item.
 - HTMX `render_page` (only the RPC-style `handle_request` for JSON data is implemented).
-- Case **widgets**, **menu pages**, **task forms** (the remaining iframe surfaces — the case **tab**
-  is done, §13.1).
+- Case **widgets** and **menu pages** (the remaining iframe surfaces — the case **tab** (§13.1) and
+  the **task form** (§13.6) are done).
 - Host database for KV / API logs / retention.
 - URL-plugin mode.
 - DLQ for nacked or expired messages (today `nack(false,false)` drops, `x-expires` deletes the
@@ -932,7 +973,8 @@ privilege-escalation than the front-end transport choice.
    triggered (and can't reach the service token) unauthenticated; tighten the allowlist surface.
 2. Capabilities + host functions + allowlist enforcement; surface in the acceptance screen by
    category.
-3. Remaining iframe surfaces: HTMX pages, case widgets, menu pages, task forms (case **tab** done).
+3. Remaining iframe surfaces: HTMX pages, case widgets, menu pages (case **tab** §13.1 and **task
+   form** §13.6 done).
 4. Host database (KV, API logs, retention) + admin log view.
 5. Cleanup: align async-vs-sync SDK docs.
 

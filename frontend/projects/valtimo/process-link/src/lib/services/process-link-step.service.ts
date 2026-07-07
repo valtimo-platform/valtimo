@@ -22,7 +22,12 @@ import {TranslateService} from '@ngx-translate/core';
 import {ProcessLinkButtonService} from './process-link-button.service';
 import {take} from 'rxjs/operators';
 import {PluginStateService} from './plugin-state.service';
-import {PluginConfiguration, PluginDefinition, PluginTranslationService} from '@valtimo/plugin';
+import {
+  isExternalPluginKey,
+  PluginConfiguration,
+  PluginDefinition,
+  PluginTranslationService,
+} from '@valtimo/plugin';
 import {ManagementContext} from '@valtimo/shared';
 
 @Injectable()
@@ -206,9 +211,14 @@ export class ProcessLinkStepService {
       .subscribe(([hasOneType, selectedConfiguration, selectedFunction, selectedDefinition]) => {
         const pluginKey =
           selectedDefinition?.key || selectedConfiguration?.pluginDefinition?.key || '';
-        const selectedFunctionTranslation = pluginKey
-          ? this.pluginTranslateService.instant(selectedFunction.key, pluginKey)
-          : selectedFunction.key;
+        // External plugin actions/forms have no plugin-translation bundle — their display name comes
+        // from the manifest and is already carried on the selected function's `title`. Using the
+        // translate lookup here would render the raw `{externalKey}.{key}` fallback.
+        const selectedFunctionTranslation = isExternalPluginKey(pluginKey)
+          ? selectedFunction.title || selectedFunction.key
+          : pluginKey
+            ? this.pluginTranslateService.instant(selectedFunction.key, pluginKey)
+            : selectedFunction.key;
         const selectionLabel =
           this._context === 'buildingBlock'
             ? 'choosePluginDefinition'
@@ -522,7 +532,10 @@ export class ProcessLinkStepService {
         break;
       }
       case 'external_plugin':
-        // External plugin has 3 steps same as plugin: select config, select action, configure action
+      case 'external_plugin_task_form':
+        // Both external-plugin surfaces reuse the plugin wizard: select config, select action/form,
+        // configure. A task-form's configure step has nothing to fill in (see the action-config
+        // component), but the flow and step layout are identical.
         this._steps$.next([
           {label: 'choosePluginConfiguration'},
           {label: 'choosePluginAction'},

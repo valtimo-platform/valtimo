@@ -66,6 +66,12 @@ export class ExternalPluginIframeComponent implements OnInit, OnDestroy {
     data: Record<string, unknown>;
   }>();
   @Output() public readyEvent = new EventEmitter<void>();
+  /**
+   * Emitted when a task-form bundle reports it has completed the user task (through the plugin, under
+   * the downscoped user token). The host reacts by closing the task and refreshing the list — it does
+   * not complete the task itself.
+   */
+  @Output() public taskCompletedEvent = new EventEmitter<void>();
 
   public readonly _$trustedUrl = signal<SafeResourceUrl | null>(null);
 
@@ -139,6 +145,9 @@ export class ExternalPluginIframeComponent implements OnInit, OnDestroy {
         break;
       case 'configurationChanged':
         this.configurationChangedEvent.emit(data.payload);
+        break;
+      case 'taskCompleted':
+        this.taskCompletedEvent.emit();
         break;
       case 'resize':
         this._handleResize(data.payload);

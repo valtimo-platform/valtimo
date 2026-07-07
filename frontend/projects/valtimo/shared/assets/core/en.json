@@ -2058,7 +2058,11 @@
     "dueDateSetNotificationTitle": "Due date set",
     "dueDateSetNotificationContent": "Due date '{{date}}' set for task '{{task}}'",
     "dueDateRemovedNotificationTitle": "Due date removed",
-    "dueDateRemovedNotificationContent": "Due date removed for task '{{task}}'"
+    "dueDateRemovedNotificationContent": "Due date removed for task '{{task}}'",
+    "externalPluginTaskForm": {
+      "unavailable": "This task's plugin form could not be loaded. The plugin may be unavailable or no longer exposes a task-form.",
+      "tokenError": "Could not securely connect to the plugin to load this task's form."
+    }
   },
   "assignTask": {
     "assignedTo": "Assigned to",
@@ -2553,6 +2557,9 @@
     "buildingBlockActionTitle": "Building block action: {{buildingBlockName}}",
     "modalTitle": "Process step: {{processStepName}}",
     "pluginConfiguration": "Plugin configuration: {{pluginConfigTitle}}",
+    "externalPluginTaskForm": {
+      "description": "The selected plugin renders the form for this user task and completes the task itself, using the current user's permissions. There's nothing more to configure here — save to link it."
+    },
     "chooseProcessLinkTypeDescription": "A process step can perform a variety of actions. Choose below to what type of action you would like to link this step.",
     "chooseFormDescription": "Choose the form that you want to link to the process step.",
     "chooseFormFlowDescription": "Choose the FormFlow that you want to link to the process step.",

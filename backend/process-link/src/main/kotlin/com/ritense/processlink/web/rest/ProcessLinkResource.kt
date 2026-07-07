@@ -533,6 +533,10 @@ class ProcessLinkResource(
     }
 
 
+    @EndpointDescription(
+        en = "Validate a BPMN process definition and its process links",
+        nl = "Een BPMN-procesdefinitie en de bijbehorende proceskoppelingen valideren",
+    )
     @PostMapping(
         value = ["/management/v1/process-definition/validate"],
         consumes = [MediaType.APPLICATION_JSON_VALUE],
