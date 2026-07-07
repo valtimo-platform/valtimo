@@ -51,6 +51,8 @@ dependencies {
 
     annotationProcessor "org.springframework.boot:spring-boot-autoconfigure-processor"
 
+    testImplementation "org.springframework.boot:spring-boot-starter-test"
+    testImplementation "org.junit.jupiter:junit-jupiter"
     testImplementation "org.liquibase:liquibase-core:${liquibaseVersion}"
     testImplementation "org.liquibase.ext:liquibase-hibernate6:${liquibaseVersion}"
     testImplementation "org.springframework.security:spring-security-test"
