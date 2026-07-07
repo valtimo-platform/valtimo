@@ -47,6 +47,10 @@ dependencies {
     implementation "commons-io:commons-io:${commonsIoVersion}"
     implementation "org.apache.commons:commons-lang3:${commonsLangVersion}"
 
+    testImplementation "org.springframework.boot:spring-boot-starter-test"
+    testImplementation "org.junit.jupiter:junit-jupiter"
+    testImplementation "jakarta.validation:jakarta.validation-api"
+
     jar {
         enabled = true
         manifest {
