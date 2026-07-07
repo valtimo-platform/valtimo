@@ -16,7 +16,7 @@
 import {ChangeDetectionStrategy, Component, OnInit, ViewChild} from '@angular/core';
 import {Router} from '@angular/router';
 import {CARBON_CONSTANTS, CarbonListComponent, ColumnConfig, ViewType} from '@valtimo/components';
-import {BehaviorSubject, delay, finalize, Observable, Subject, tap} from 'rxjs';
+import {BehaviorSubject, delay, finalize, map, Observable, Subject, tap} from 'rxjs';
 import {ExportRoleOutput, Role} from '../../models';
 import {AccessControlExportService} from '../../services/access-control-export.service';
 import {AccessControlService} from '../../services/access-control.service';
@@ -38,6 +38,10 @@ export class AccessControlOverviewComponent implements OnInit {
   ];
 
   public readonly roles$: Observable<Role[]> = this.accessControlService.roles$;
+  // Keys of already-configured roles, used to keep them out of the add-role picker.
+  public readonly existingRoleKeys$: Observable<string[]> = this.roles$.pipe(
+    map(roles => roles.map(role => role.roleKey))
+  );
   public readonly loading$: Observable<boolean> = this.accessControlService.loading$;
   public readonly skeleton$ = new BehaviorSubject<boolean>(false);
   public readonly showAddModal$ = new BehaviorSubject<boolean>(false);

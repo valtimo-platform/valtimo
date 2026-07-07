@@ -24,7 +24,7 @@
   valtimoCdsModal
   (close)="onCancel()"
 >
-  <cds-modal-header [showCloseButton]="true" (closeSelect)="onCancel()">
+  <cds-modal-header [cdsLayer]="1" [showCloseButton]="true" (closeSelect)="onCancel()">
     <h3 cdsModalHeaderHeading>
       {{
         vars.isAdd
@@ -34,23 +34,54 @@
     </h3>
   </cds-modal-header>
 
-  <section cdsModalContent>
+  <section cdsModalContent [cdsLayer]="1">
     <form [formGroup]="form">
-      <cds-label [invalid]="key.dirty && key.invalid">
-        {{ 'accessControl.roles.name' | translate }}
+      <div class="role-metadata-modal__field cds--form-item">
+        <label class="cds--label">
+          {{ 'accessControl.roles.name' | translate }} ({{ 'interface.required' | translate }})
+        </label>
 
-        <input
-          formControlName="key"
-          cdsText
-          placeholder="{{ 'accessControl.roles.name' | translate }}"
-          [attr.modal-primary-focus]="true"
-          [invalid]="key.dirty && key.invalid"
-        />
-      </cds-label>
+        @if ($keyManual()) {
+          <input
+            formControlName="key"
+            cdsText
+            placeholder="{{ 'accessControl.roles.name' | translate }}"
+            [attr.modal-primary-focus]="true"
+            [invalid]="key.dirty && key.invalid"
+          />
+        } @else {
+          <v-select
+            formControlName="key"
+            [appendInline]="false"
+            [clearable]="false"
+            [defaultSelectionId]="key.value || ''"
+            [dropUp]="false"
+            [invalid]="key.dirty && key.invalid"
+            [items]="$roleKeyItems()"
+            [loading]="$loadingRoles()"
+            [placeholder]="'accessControl.roles.selectRole' | translate"
+          ></v-select>
+        }
+
+        <button
+          class="role-metadata-modal__mode-switch"
+          cdsButton="ghost"
+          size="sm"
+          type="button"
+          (click)="onKeyManualToggle(!$keyManual())"
+        >
+          {{
+            ($keyManual()
+              ? 'accessControl.roles.chooseFromList'
+              : 'accessControl.roles.enterManually'
+            ) | translate
+          }}
+        </button>
+      </div>
     </form>
   </section>
 
-  <cds-modal-footer>
+  <cds-modal-footer [cdsLayer]="1">
     <button cdsButton="secondary" (click)="onCancel()">
       {{ 'interface.cancel' | translate }}
     </button>

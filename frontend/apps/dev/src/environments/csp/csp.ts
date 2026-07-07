@@ -23,7 +23,7 @@ export const cspHeaderParamsDev: CSPHeaderParams = {
     'default-src': [SELF],
     'frame-src': [SELF, BLOB],
     'object-src': [SELF, BLOB],
-    'img-src': [SELF, DATA, 'https://tile.openstreetmap.org/'],
+    'img-src': [SELF, DATA, BLOB, 'https://tile.openstreetmap.org/'],
     'script-src': [SELF, UNSAFE_EVAL, UNSAFE_INLINE, 'https://cdn.form.io/'],
     'worker-src': [SELF, BLOB],
     'font-src': [
@@ -36,6 +36,7 @@ export const cspHeaderParamsDev: CSPHeaderParams = {
     'connect-src': [
       SELF,
       UrlUtils.getUrlHost(authenticationKeycloak.options.keycloakOptions.config.url),
+      'http://localhost:4566', // LocalStack S3
     ],
     'style-src': [
       SELF,
