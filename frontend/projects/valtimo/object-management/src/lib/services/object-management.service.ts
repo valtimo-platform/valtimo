@@ -18,7 +18,7 @@ import {Injectable} from '@angular/core';
 import {map, Observable} from 'rxjs';
 import {HttpClient} from '@angular/common/http';
 import {ConfigService, SearchField} from '@valtimo/shared';
-import {Objecttype, SearchListColumn} from '../models/object-management.model';
+import {ObjectManagementDto, Objecttype, SearchListColumn} from '../models/object-management.model';
 
 @Injectable({
   providedIn: 'root',
@@ -45,8 +45,16 @@ export class ObjectManagementService {
     );
   }
 
-  public getObjectByIdFromList(id: string): Observable<Objecttype | undefined> {
-    return this.getAllObjects().pipe(map(objects => objects.find(obj => obj.id === id)));
+  // User-facing config list (slim DTO, PBAC-gated by the backend). Replaces getAllObjects() for
+  // non-admin consumers (data menu, object list/detail page title & breadcrumb).
+  public getConfigurationsForUser(): Observable<ObjectManagementDto[]> {
+    return this.http.get<ObjectManagementDto[]>(
+      `${this.valtimoEndpointUri}v1/object-management/configuration`
+    );
+  }
+
+  public getObjectByIdFromList(id: string): Observable<ObjectManagementDto | undefined> {
+    return this.getConfigurationsForUser().pipe(map(objects => objects.find(obj => obj.id === id)));
   }
 
   public createObject(payload: Objecttype): Observable<Objecttype> {

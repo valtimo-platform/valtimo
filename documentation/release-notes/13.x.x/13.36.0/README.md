@@ -29,14 +29,11 @@
 
 * **Object Management access control (PBAC)**
 
-* **New enhancement title**
   Object Management configurations can now be secured with Permission Based Access Control. When enabled with
-  `valtimo.object-management.authorization.enabled=true`, `view` and `view_list` permissions control which
-  configurations appear in the menu and which object lists, detail pages, and form components a user can access.
-  The feature is disabled by default; when disabled, all authenticated users retain full access. See
-  [Access control](../../../features/objecten-management/access-control.md) for details.
-
-  New enhancement explanation.
+  `valtimo.object-management.authorization.enabled=true`, the `view_list` permission controls which configurations
+  appear in the data menu and object-list pages. Access to the object data itself is governed by the objecten-api
+  `Object` permissions. The feature is disabled by default; when disabled, all authenticated users retain full access.
+  See [Access control](../../../features/objecten-management/access-control.md) for details.
 
 * **Object Management list sorting**
 

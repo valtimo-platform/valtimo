@@ -14,18 +14,19 @@
  * limitations under the License.
  */
 
-package com.ritense.objectmanagement.authorization
+package com.ritense.objectmanagement.domain
 
-import com.ritense.authorization.Action
-import com.ritense.authorization.ResourceActionProvider
-import com.ritense.objectmanagement.domain.ObjectManagement
+import java.util.UUID
 
-class ObjectManagementActionProvider : ResourceActionProvider<ObjectManagement> {
-    override fun getAvailableActions(): List<Action<ObjectManagement>> {
-        return listOf(VIEW_LIST)
-    }
-
-    companion object {
-        val VIEW_LIST = Action<ObjectManagement>(Action.VIEW_LIST)
-    }
-}
+/**
+ * Slim, user-facing projection of an [ObjectManagement] configuration.
+ *
+ * Deliberately exposes only what end users need (identifier, title and the summary/edit form
+ * definitions) and never the plugin-configuration ids, objecttype references or internal flags.
+ */
+data class ObjectManagementDto(
+    val id: UUID,
+    val title: String,
+    val formDefinitionView: String?,
+    val formDefinitionEdit: String?,
+)

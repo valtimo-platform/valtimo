@@ -18,6 +18,13 @@ package com.ritense.objectmanagement.web.rest
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.node.ObjectNode
+import com.ritense.authorization.permission.ConditionContainer
+import com.ritense.authorization.permission.Permission
+import com.ritense.authorization.permission.PermissionRepository
+import com.ritense.authorization.role.Role
+import com.ritense.authorization.role.RoleRepository
+import com.ritense.objectenapi.security.Object
+import com.ritense.objectenapi.security.ObjectActionProvider
 import com.ritense.objectmanagement.BaseIntegrationTest
 import com.ritense.objectmanagement.domain.ObjectManagement
 import com.ritense.objectmanagement.service.ObjectManagementService
@@ -43,7 +50,7 @@ import org.springframework.web.context.WebApplicationContext
 import java.util.UUID
 
 @Transactional
-internal class ObjectManagementObjectResourceIntTest : BaseIntegrationTest() {
+internal class ObjectManagementConsumerResourceIntTest : BaseIntegrationTest() {
 
     lateinit var mockMvc: MockMvc
 
@@ -58,6 +65,12 @@ internal class ObjectManagementObjectResourceIntTest : BaseIntegrationTest() {
 
     @Autowired
     lateinit var objectMapper: ObjectMapper
+
+    @Autowired
+    lateinit var permissionRepository: PermissionRepository
+
+    @Autowired
+    lateinit var roleRepository: RoleRepository
 
     lateinit var mockApi: MockWebServer
     lateinit var testConfigId: UUID
@@ -107,6 +120,20 @@ internal class ObjectManagementObjectResourceIntTest : BaseIntegrationTest() {
             )
         )
         testConfigId = objectManagement.id
+
+        // These tests exercise endpoint mechanics (pagination/sorting/dataAttrs), not PBAC. The
+        // always-on Objecten API `Object` PBAC still applies, so grant the user VIEW_LIST on Object
+        // so the objects endpoint returns data instead of an empty (silently denied) page.
+        val userRole = roleRepository.findByKey(USER) ?: roleRepository.save(Role(key = USER))
+        permissionRepository.saveAndFlush(
+            Permission(
+                UUID.randomUUID(),
+                Object::class.java,
+                mutableListOf(ObjectActionProvider.VIEW_LIST),
+                ConditionContainer(emptyList()),
+                userRole
+            )
+        )
     }
 
     @AfterEach

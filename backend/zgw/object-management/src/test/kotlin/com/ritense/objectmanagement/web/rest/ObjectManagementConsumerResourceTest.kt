@@ -19,6 +19,8 @@ package com.ritense.objectmanagement.web.rest
 import com.fasterxml.jackson.databind.node.JsonNodeFactory
 import com.ritense.objectenapi.client.ObjectRecord
 import com.ritense.objectenapi.client.ObjectWrapper
+import com.ritense.objectmanagement.domain.ObjectManagementDto
+import com.ritense.objectmanagement.domain.ObjectsListRowDto
 import com.ritense.objectmanagement.service.ObjectManagementService
 import com.ritense.valtimo.contract.json.MapperSingleton
 import org.junit.jupiter.api.BeforeEach
@@ -46,22 +48,22 @@ import java.nio.charset.StandardCharsets
 import java.time.LocalDate
 import java.util.UUID
 
-internal class ObjectManagementObjectResourceTest {
+internal class ObjectManagementConsumerResourceTest {
 
     lateinit var mockMvc: MockMvc
     lateinit var objectManagementService: ObjectManagementService
-    lateinit var objectManagementObjectResource: ObjectManagementObjectResource
+    lateinit var objectManagementConsumerResource: ObjectManagementConsumerResource
 
     @BeforeEach
     fun init() {
         objectManagementService = mock()
-        objectManagementObjectResource = ObjectManagementObjectResource(objectManagementService)
+        objectManagementConsumerResource = ObjectManagementConsumerResource(objectManagementService)
 
         val mappingJackson2HttpMessageConverter = MappingJackson2HttpMessageConverter()
         mappingJackson2HttpMessageConverter.objectMapper = MapperSingleton.get()
 
         mockMvc = MockMvcBuilders
-            .standaloneSetup(objectManagementObjectResource)
+            .standaloneSetup(objectManagementConsumerResource)
             .setCustomArgumentResolvers(PageableHandlerMethodArgumentResolver())
             .setMessageConverters(mappingJackson2HttpMessageConverter)
             .build()
@@ -206,6 +208,44 @@ internal class ObjectManagementObjectResourceTest {
             .andExpect(jsonPath("$.totalElements").value(30))
             .andExpect(jsonPath("$.totalPages").value(3))
             .andExpect(jsonPath("$.number").value(2))
+    }
+
+    @Test
+    fun `should return user configurations`() {
+        val configId = UUID.randomUUID()
+        whenever(objectManagementService.getConfigurationsForUser())
+            .thenReturn(listOf(ObjectManagementDto(configId, "TestConfig", null, null)))
+
+        mockMvc.perform(
+            get("/api/v1/object-management/configuration")
+                .characterEncoding(StandardCharsets.UTF_8.name())
+                .accept(MediaType.APPLICATION_JSON_VALUE)
+        )
+            .andDo(print())
+            .andExpect(status().isOk)
+            .andExpect(jsonPath("$[0].id").value(configId.toString()))
+            .andExpect(jsonPath("$[0].title").value("TestConfig"))
+
+        verify(objectManagementService).getConfigurationsForUser()
+    }
+
+    @Test
+    fun `should get object instances by config id`() {
+        val configId = UUID.randomUUID()
+        val page = PageImpl(listOf(ObjectsListRowDto("row-1", emptyList())), PageRequest.of(0, 20), 1)
+
+        whenever(objectManagementService.getObjects(eq(configId), any())).thenReturn(page)
+
+        mockMvc.perform(
+            get("/api/v1/object-management/configuration/{id}/object", configId)
+                .characterEncoding(StandardCharsets.UTF_8.name())
+                .accept(MediaType.APPLICATION_JSON_VALUE)
+        )
+            .andDo(print())
+            .andExpect(status().isOk)
+            .andExpect(jsonPath("$.content[0].id").value("row-1"))
+
+        verify(objectManagementService).getObjects(eq(configId), any())
     }
 
     private fun createObjectWrapper(uuid: UUID): ObjectWrapper {

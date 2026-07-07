@@ -145,9 +145,8 @@ so the configured columns would otherwise be empty). For `full` and `columns` th
 
 ## Access control
 
-When Object Management Permission Based Access Control (PBAC) is enabled
-(`valtimo.object-management.authorization.enabled=true`), the component requires both `view` and `view_list`
-permissions on the Object Management configuration. Users without the required permissions see an empty table
-(silent denial).
+The component shows the objects that the user is permitted to list through the always-on objecten-api `Object`
+`view_list` permission. No Object Management permission is required. Users without the `Object` `view_list` permission
+see an empty table (silent denial).
 
 See [Access control](access-control.md) for permission details and configuration.

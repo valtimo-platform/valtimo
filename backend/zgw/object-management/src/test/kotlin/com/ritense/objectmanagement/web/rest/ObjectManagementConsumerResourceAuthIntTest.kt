@@ -18,15 +18,19 @@ package com.ritense.objectmanagement.web.rest
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.node.ObjectNode
+import com.ritense.authorization.Action
 import com.ritense.authorization.AuthorizationContext.Companion.runWithoutAuthorization
+import com.ritense.authorization.permission.ConditionContainer
+import com.ritense.authorization.permission.Permission
 import com.ritense.authorization.permission.PermissionRepository
+import com.ritense.authorization.role.Role
+import com.ritense.authorization.role.RoleRepository
 import com.ritense.objectmanagement.BaseIntegrationTest
+import com.ritense.objectmanagement.authorization.ObjectManagementActionProvider
 import com.ritense.objectmanagement.domain.ObjectManagement
 import com.ritense.objectmanagement.service.ObjectManagementService
 import com.ritense.plugin.service.PluginService
-import com.ritense.valtimo.contract.authentication.AuthoritiesConstants.ADMIN
 import com.ritense.valtimo.contract.authentication.AuthoritiesConstants.USER
-import okhttp3.mockwebserver.MockResponse
 import okhttp3.mockwebserver.MockWebServer
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
@@ -47,7 +51,7 @@ import java.util.UUID
 
 @Transactional
 @TestPropertySource(properties = ["valtimo.object-management.authorization.enabled=true"])
-internal class ObjectManagementObjectResourceAuthIntTest : BaseIntegrationTest() {
+internal class ObjectManagementConsumerResourceAuthIntTest : BaseIntegrationTest() {
 
     lateinit var mockMvc: MockMvc
 
@@ -66,9 +70,13 @@ internal class ObjectManagementObjectResourceAuthIntTest : BaseIntegrationTest()
     @Autowired
     lateinit var permissionRepository: PermissionRepository
 
+    @Autowired
+    lateinit var roleRepository: RoleRepository
+
     lateinit var mockApi: MockWebServer
     lateinit var testConfigId: UUID
     lateinit var testConfigTitle: String
+    lateinit var userRole: Role
 
     @BeforeEach
     fun setUp() {
@@ -81,6 +89,8 @@ internal class ObjectManagementObjectResourceAuthIntTest : BaseIntegrationTest()
 
         val objectUrl = mockApi.url("/objects").toString()
         val objectTypesApiUrl = mockApi.url("/objecttypes").toString()
+
+        userRole = roleRepository.findByKey(USER) ?: roleRepository.save(Role(key = USER))
 
         runWithoutAuthorization {
             val authPlugin = pluginService.createPluginConfiguration(
@@ -111,7 +121,8 @@ internal class ObjectManagementObjectResourceAuthIntTest : BaseIntegrationTest()
                     title = testConfigTitle,
                     objectenApiPluginConfigurationId = objectenPlugin.id.id,
                     objecttypeId = UUID.randomUUID().toString(),
-                    objecttypenApiPluginConfigurationId = objecttypenPlugin.id.id
+                    objecttypenApiPluginConfigurationId = objecttypenPlugin.id.id,
+                    showInDataMenu = true
                 )
             )
             testConfigId = objectManagement.id
@@ -125,57 +136,43 @@ internal class ObjectManagementObjectResourceAuthIntTest : BaseIntegrationTest()
 
     @Test
     @WithMockUser(username = "user@ritense.com", authorities = [USER])
-    fun `should return empty list when user has no VIEW permission`() {
+    fun `configuration list is empty when user has no VIEW_LIST permission`() {
         mockMvc.perform(
-            get("/api/v1/object-management/objects")
-                .param("title", testConfigTitle)
+            get("/api/v1/object-management/configuration")
                 .accept(MediaType.APPLICATION_JSON_VALUE)
         )
             .andDo(print())
             .andExpect(status().isOk)
-            .andExpect(jsonPath("$.content").isEmpty)
-            .andExpect(jsonPath("$.totalElements").value(0))
+            .andExpect(jsonPath("$").isEmpty)
     }
 
     @Test
-    @WithMockUser(username = "admin@ritense.com", authorities = [ADMIN])
-    fun `should return empty list when admin has no VIEW permission configured`() {
+    @WithMockUser(username = "user@ritense.com", authorities = [USER])
+    fun `configuration list returns slim config when user has VIEW_LIST permission`() {
+        grantPermission(ObjectManagementActionProvider.VIEW_LIST)
+
         mockMvc.perform(
-            get("/api/v1/object-management/objects")
-                .param("id", testConfigId.toString())
+            get("/api/v1/object-management/configuration")
                 .accept(MediaType.APPLICATION_JSON_VALUE)
         )
             .andDo(print())
             .andExpect(status().isOk)
-            .andExpect(jsonPath("$.content").isEmpty)
-            .andExpect(jsonPath("$.totalElements").value(0))
+            .andExpect(jsonPath("$[?(@.id == '${testConfigId}')]").exists())
+            .andExpect(jsonPath("$[?(@.id == '${testConfigId}')].title").value(testConfigTitle))
+            // slim DTO must not leak plugin/objecttype ids or internal flags
+            .andExpect(jsonPath("$[0].objecttypeId").doesNotExist())
+            .andExpect(jsonPath("$[0].objectenApiPluginConfigurationId").doesNotExist())
+            .andExpect(jsonPath("$[0].showInDataMenu").doesNotExist())
     }
 
-    private fun mockObjectsResponse(): MockResponse {
-        val body = """
-            {
-              "count": 1,
-              "next": null,
-              "previous": null,
-              "results": [{
-                  "url": "http://example.com/objects/1",
-                  "uuid": "095be615-a8ad-4c33-8e9c-c7612fbf6c9f",
-                  "type": "http://example.com/objecttypes/1",
-                  "record": {
-                    "index": 1,
-                    "typeVersion": 1,
-                    "data": {
-                      "name": "Test Object",
-                      "status": "active"
-                    },
-                    "startAt": "2024-01-01",
-                    "registrationAt": "2024-01-01"
-                  }
-              }]
-            }
-        """.trimIndent()
-        return MockResponse()
-            .addHeader("Content-Type", "application/json")
-            .setBody(body)
+    private fun grantPermission(vararg actions: Action<ObjectManagement>) {
+        val permission = Permission(
+            UUID.randomUUID(),
+            ObjectManagement::class.java,
+            actions.toMutableList(),
+            ConditionContainer(emptyList()),
+            userRole
+        )
+        permissionRepository.saveAndFlush(permission)
     }
 }

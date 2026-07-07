@@ -32,9 +32,8 @@ export class ObjectMenuService {
 
     return this.getObjects(apiBaseUrl).pipe(
       map(objects => {
-        const visibleObjects = objects.filter(obj => obj?.showInDataMenu !== false);
-
-        const objectItems: MenuItem[] = visibleObjects.map((obj, index) => ({
+        // Backend already filters to menu-visible configs the user may view; no client-side filter needed.
+        const objectItems: MenuItem[] = objects.map((obj, index) => ({
           link: ['/objects/' + obj.id],
           title: obj.title,
           iconClass: 'icon mdi mdi-dot-circle',
@@ -54,7 +53,7 @@ export class ObjectMenuService {
   };
 
   private getObjects(apiBaseUrl: string): Observable<any[]> {
-    const url = `${apiBaseUrl}v1/object/management/configuration`;
+    const url = `${apiBaseUrl}v1/object-management/configuration`;
     return this.http.get<any[]>(url);
   }
 }

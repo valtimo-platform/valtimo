@@ -29,6 +29,7 @@ import com.ritense.objectenapi.client.Comparator.STRING_CONTAINS
 import com.ritense.objectenapi.client.ObjectSearchParameter
 import com.ritense.objectenapi.client.ObjectWrapper
 import com.ritense.objectmanagement.domain.ObjectManagement
+import com.ritense.objectmanagement.domain.ObjectManagementDto
 import com.ritense.objectmanagement.domain.ObjectsListRowDto
 import com.ritense.objectmanagement.domain.search.SearchRequestValue
 import com.ritense.objectmanagement.domain.search.SearchWithConfigFilter
@@ -108,31 +109,18 @@ class ObjectManagementService(
         }
     }
 
-    fun getById(id: UUID): ObjectManagement? {
-        val objectManagement = objectManagementRepository.findByIdOrNull(id) ?: return null
-        if (authorizationEnabled) {
-            authorizationService.requirePermission(
-                EntityAuthorizationRequest(ObjectManagement::class.java, ObjectManagementActionProvider.VIEW, objectManagement)
-            )
-        }
-        return objectManagement
-    }
+    fun getById(id: UUID): ObjectManagement? = objectManagementRepository.findByIdOrNull(id)
 
     fun getByIdByTitle(title: String): ObjectManagement? = objectManagementRepository.findByTitle(title)
 
-    private fun getObjectManagementForListing(id: UUID): ObjectManagement {
-        val objectManagement = objectManagementRepository.findByIdOrNull(id)
+    private fun getObjectManagementForListing(id: UUID): ObjectManagement =
+        objectManagementRepository.findByIdOrNull(id)
             ?: throw IllegalArgumentException("ObjectManagement not found with id: $id")
-        if (authorizationEnabled) {
-            authorizationService.requirePermission(
-                EntityAuthorizationRequest(ObjectManagement::class.java, ObjectManagementActionProvider.VIEW_LIST, objectManagement)
-            )
-        }
-        return objectManagement
-    }
 
-    fun getAll(): List<ObjectManagement> {
-        return if (authorizationEnabled) {
+    fun getAll(): List<ObjectManagement> = objectManagementRepository.findAll().sortedBy { it.title }
+
+    fun getConfigurationsForUser(): List<ObjectManagementDto> {
+        val configurations = if (authorizationEnabled) {
             val spec = authorizationService.getAuthorizationSpecification(
                 EntityAuthorizationRequest(
                     ObjectManagement::class.java,
@@ -140,10 +128,14 @@ class ObjectManagementService(
                 ),
                 null
             )
-            objectManagementRepository.findAll(spec).sortedBy { it.title }
+            objectManagementRepository.findAll(spec)
         } else {
-            runWithoutAuthorization { objectManagementRepository.findAll().sortedBy { it.title } }
+            runWithoutAuthorization { objectManagementRepository.findAll() }
         }
+        return configurations
+            .filter { it.showInDataMenu }
+            .sortedBy { it.title }
+            .map { ObjectManagementDto(it.id, it.title, it.formDefinitionView, it.formDefinitionEdit) }
     }
 
     @Transactional
@@ -408,37 +400,13 @@ class ObjectManagementService(
         dataAttrs: String? = null,
         pageable: Pageable
     ): PageImpl<ObjectWrapper> {
-        return if (authorizationEnabled) {
-            val objectManagement = resolveConfigWithAuth(id, title)
-                ?: return PageImpl(emptyList(), pageable, 0)
-            val searchParameters = parseDataAttrs(dataAttrs)
-            getObjectsWithSearchParams(objectManagement, searchParameters, pageable)
-        } else {
-            runWithoutAuthorization {
-                val objectManagement = resolveConfigNoAuth(id, title)
-                    ?: return@runWithoutAuthorization PageImpl(emptyList(), pageable, 0)
-                val searchParameters = parseDataAttrs(dataAttrs)
-                getObjectsWithSearchParams(objectManagement, searchParameters, pageable)
-            }
-        }
+        val objectManagement = resolveConfig(id, title)
+            ?: return PageImpl(emptyList(), pageable, 0)
+        val searchParameters = parseDataAttrs(dataAttrs)
+        return getObjectsWithSearchParams(objectManagement, searchParameters, pageable)
     }
 
-    private fun resolveConfigWithAuth(id: UUID?, title: String?): ObjectManagement? {
-        val objectManagement = when {
-            id != null -> objectManagementRepository.findByIdOrNull(id)
-            title != null -> objectManagementRepository.findByTitle(title)
-            else -> throw IllegalArgumentException("Either id or title must be provided")
-        } ?: return null
-
-        val hasPermission = authorizationService.hasPermission(
-            EntityAuthorizationRequest(ObjectManagement::class.java, ObjectManagementActionProvider.VIEW, objectManagement)
-        ) && authorizationService.hasPermission(
-            EntityAuthorizationRequest(ObjectManagement::class.java, ObjectManagementActionProvider.VIEW_LIST, objectManagement)
-        )
-        return if (hasPermission) objectManagement else null
-    }
-
-    private fun resolveConfigNoAuth(id: UUID?, title: String?): ObjectManagement? = when {
+    private fun resolveConfig(id: UUID?, title: String?): ObjectManagement? = when {
         id != null -> objectManagementRepository.findByIdOrNull(id)
         title != null -> objectManagementRepository.findByTitle(title)
         else -> throw IllegalArgumentException("Either id or title must be provided")

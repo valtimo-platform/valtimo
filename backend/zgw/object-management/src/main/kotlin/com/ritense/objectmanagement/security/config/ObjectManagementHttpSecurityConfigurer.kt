@@ -36,12 +36,17 @@ class ObjectManagementHttpSecurityConfigurer : HttpSecurityConfigurer {
                     .requestMatchers(antMatcher(GET, CONFIGURATION_URL)).authenticated()
                     .requestMatchers(antMatcher(PUT, CONFIGURATION_URL)).hasAuthority(ADMIN)
                     .requestMatchers(antMatcher(DELETE, "$CONFIGURATION_URL/{id}")).hasAuthority(ADMIN)
+                    // Deprecated user object-instances endpoints (moved to OBJECT_MANAGEMENT_URL); kept authenticated.
                     .requestMatchers(antMatcher(GET, "$CONFIGURATION_URL/{id}/object")).authenticated()
                     .requestMatchers(antMatcher(POST, "$CONFIGURATION_URL/{id}/object")).authenticated()
 
                     .requestMatchers(antMatcher(GET, CONFIGURATION_MANAGEMENT_URL)).hasAuthority(ADMIN)
 
-                    .requestMatchers(antMatcher(GET, OBJECTS_URL)).authenticated()
+                    // User-facing controller (ObjectManagementConsumerResource): authenticated, PBAC in the service.
+                    .requestMatchers(antMatcher(GET, "$OBJECT_MANAGEMENT_URL/objects")).authenticated()
+                    .requestMatchers(antMatcher(GET, "$OBJECT_MANAGEMENT_URL/configuration")).authenticated()
+                    .requestMatchers(antMatcher(GET, "$OBJECT_MANAGEMENT_URL/configuration/{id}/object")).authenticated()
+                    .requestMatchers(antMatcher(POST, "$OBJECT_MANAGEMENT_URL/configuration/{id}/object")).authenticated()
             }
         } catch (e: Exception) {
             throw HttpConfigurerConfigurationException(e)
@@ -51,6 +56,6 @@ class ObjectManagementHttpSecurityConfigurer : HttpSecurityConfigurer {
     companion object {
         private const val CONFIGURATION_URL = "/api/v1/object/management/configuration"
         private const val CONFIGURATION_MANAGEMENT_URL = "/api/management/v1/object/management/configuration"
-        private const val OBJECTS_URL = "/api/v1/object-management/objects"
+        private const val OBJECT_MANAGEMENT_URL = "/api/v1/object-management"
     }
 }

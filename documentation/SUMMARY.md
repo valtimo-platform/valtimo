@@ -152,7 +152,6 @@
   * [Access control](features/objecten-management/access-control.md)
   * [For developers](features/objecten-management/for-developers/README.md)
     * [Registering the component](features/objecten-management/for-developers/object-management-select-registration.md)
-    * [Objects query endpoint](features/objecten-management/for-developers/objects-api-endpoint.md)
 * [👤 IKO](features/iko/README.md)
   * [Views](features/iko/views.md)
   * [Search actions](features/iko/search-actions.md)

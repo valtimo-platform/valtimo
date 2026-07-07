@@ -18,20 +18,12 @@ package com.ritense.objectmanagement.web.rest
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.node.ObjectNode
-import com.ritense.authorization.Action
 import com.ritense.authorization.AuthorizationContext.Companion.runWithoutAuthorization
-import com.ritense.authorization.permission.ConditionContainer
-import com.ritense.authorization.permission.Permission
-import com.ritense.authorization.permission.PermissionRepository
-import com.ritense.authorization.role.Role
-import com.ritense.authorization.role.RoleRepository
 import com.ritense.objectmanagement.BaseIntegrationTest
-import com.ritense.objectmanagement.authorization.ObjectManagementActionProvider
 import com.ritense.objectmanagement.domain.ObjectManagement
 import com.ritense.objectmanagement.service.ObjectManagementService
 import com.ritense.plugin.service.PluginService
 import com.ritense.valtimo.contract.authentication.AuthoritiesConstants.USER
-import okhttp3.mockwebserver.MockResponse
 import okhttp3.mockwebserver.MockWebServer
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
@@ -50,6 +42,12 @@ import org.springframework.transaction.annotation.Transactional
 import org.springframework.web.context.WebApplicationContext
 import java.util.UUID
 
+/**
+ * The admin configuration controller ([ObjectManagementResource]) carries no service-level PBAC:
+ * `getAll`/`getById` are backward-compatible with the pre-PBAC API and gated only by HTTP security
+ * (ROLE_ADMIN / authenticated). PBAC for user-facing reads lives on [ObjectManagementConsumerResource].
+ * The flag is enabled here to prove the admin endpoints ignore it.
+ */
 @Transactional
 @TestPropertySource(properties = ["valtimo.object-management.authorization.enabled=true"])
 internal class ObjectManagementResourceAuthIntTest : BaseIntegrationTest() {
@@ -68,16 +66,9 @@ internal class ObjectManagementResourceAuthIntTest : BaseIntegrationTest() {
     @Autowired
     lateinit var objectMapper: ObjectMapper
 
-    @Autowired
-    lateinit var permissionRepository: PermissionRepository
-
-    @Autowired
-    lateinit var roleRepository: RoleRepository
-
     lateinit var mockApi: MockWebServer
     lateinit var testConfigId: UUID
     lateinit var testConfigTitle: String
-    lateinit var userRole: Role
 
     @BeforeEach
     fun setUp() {
@@ -90,8 +81,6 @@ internal class ObjectManagementResourceAuthIntTest : BaseIntegrationTest() {
 
         val objectUrl = mockApi.url("/objects").toString()
         val objectTypesApiUrl = mockApi.url("/objecttypes").toString()
-
-        userRole = roleRepository.findByKey(USER) ?: roleRepository.save(Role(key = USER))
 
         runWithoutAuthorization {
             val authPlugin = pluginService.createPluginConfiguration(
@@ -136,21 +125,7 @@ internal class ObjectManagementResourceAuthIntTest : BaseIntegrationTest() {
 
     @Test
     @WithMockUser(username = "user@ritense.com", authorities = [USER])
-    fun `getAll should return empty list when user has no VIEW_LIST permission`() {
-        mockMvc.perform(
-            get("/api/v1/object/management/configuration")
-                .accept(MediaType.APPLICATION_JSON_VALUE)
-        )
-            .andDo(print())
-            .andExpect(status().isOk)
-            .andExpect(jsonPath("$").isEmpty)
-    }
-
-    @Test
-    @WithMockUser(username = "user@ritense.com", authorities = [USER])
-    fun `getAll should return configs when user has VIEW_LIST permission`() {
-        grantPermission(ObjectManagementActionProvider.VIEW_LIST)
-
+    fun `getAll returns configs without any PBAC grant (admin controller is not PBAC-gated)`() {
         mockMvc.perform(
             get("/api/v1/object/management/configuration")
                 .accept(MediaType.APPLICATION_JSON_VALUE)
@@ -162,20 +137,7 @@ internal class ObjectManagementResourceAuthIntTest : BaseIntegrationTest() {
 
     @Test
     @WithMockUser(username = "user@ritense.com", authorities = [USER])
-    fun `getById should return 403 when user has no VIEW permission`() {
-        mockMvc.perform(
-            get("/api/v1/object/management/configuration/{id}", testConfigId)
-                .accept(MediaType.APPLICATION_JSON_VALUE)
-        )
-            .andDo(print())
-            .andExpect(status().isForbidden)
-    }
-
-    @Test
-    @WithMockUser(username = "user@ritense.com", authorities = [USER])
-    fun `getById should return config when user has VIEW permission`() {
-        grantPermission(ObjectManagementActionProvider.VIEW)
-
+    fun `getById returns config without any PBAC grant (admin controller is not PBAC-gated)`() {
         mockMvc.perform(
             get("/api/v1/object/management/configuration/{id}", testConfigId)
                 .accept(MediaType.APPLICATION_JSON_VALUE)
@@ -188,48 +150,12 @@ internal class ObjectManagementResourceAuthIntTest : BaseIntegrationTest() {
 
     @Test
     @WithMockUser(username = "user@ritense.com", authorities = [USER])
-    fun `getObjects should return 403 when user has no VIEW_LIST permission`() {
+    fun `deprecated object-instances endpoint still enforces VIEW_LIST (403 without permission)`() {
         mockMvc.perform(
             get("/api/v1/object/management/configuration/{id}/object", testConfigId)
                 .accept(MediaType.APPLICATION_JSON_VALUE)
         )
             .andDo(print())
             .andExpect(status().isForbidden)
-    }
-
-    private fun grantPermission(vararg actions: Action<ObjectManagement>) {
-        val permission = Permission(
-            UUID.randomUUID(),
-            ObjectManagement::class.java,
-            actions.toMutableList(),
-            ConditionContainer(emptyList()),
-            userRole
-        )
-        permissionRepository.saveAndFlush(permission)
-    }
-
-    private fun mockObjectsResponse(): MockResponse {
-        val body = """
-            {
-              "count": 1,
-              "next": null,
-              "previous": null,
-              "results": [{
-                  "url": "http://example.com/objects/1",
-                  "uuid": "095be615-a8ad-4c33-8e9c-c7612fbf6c9f",
-                  "type": "http://example.com/objecttypes/1",
-                  "record": {
-                    "index": 1,
-                    "typeVersion": 1,
-                    "data": {"name": "Test Object"},
-                    "startAt": "2024-01-01",
-                    "registrationAt": "2024-01-01"
-                  }
-              }]
-            }
-        """.trimIndent()
-        return MockResponse()
-            .addHeader("Content-Type", "application/json")
-            .setBody(body)
     }
 }

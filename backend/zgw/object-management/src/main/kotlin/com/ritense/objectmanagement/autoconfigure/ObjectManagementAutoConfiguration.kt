@@ -27,8 +27,8 @@ import com.ritense.objectmanagement.security.config.ObjectManagementHttpSecurity
 import com.ritense.objectmanagement.service.ObjectManagementFacade
 import com.ritense.objectmanagement.service.ObjectManagementImporter
 import com.ritense.objectmanagement.service.ObjectManagementService
+import com.ritense.objectmanagement.web.rest.ObjectManagementConsumerResource
 import com.ritense.objectmanagement.web.rest.ObjectManagementManagementResource
-import com.ritense.objectmanagement.web.rest.ObjectManagementObjectResource
 import com.ritense.objectmanagement.web.rest.ObjectManagementResource
 import com.ritense.plugin.service.PluginService
 import com.ritense.search.service.SearchFieldV2Service
@@ -103,11 +103,11 @@ class ObjectManagementAutoConfiguration {
     }
 
     @Bean
-    @ConditionalOnMissingBean(ObjectManagementObjectResource::class)
-    fun objectManagementObjectResource(
+    @ConditionalOnMissingBean(ObjectManagementConsumerResource::class)
+    fun objectManagementConsumerResource(
         objectManagementService: ObjectManagementService
-    ): ObjectManagementObjectResource {
-        return ObjectManagementObjectResource(
+    ): ObjectManagementConsumerResource {
+        return ObjectManagementConsumerResource(
             objectManagementService
         )
     }
