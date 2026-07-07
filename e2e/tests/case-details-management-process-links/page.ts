@@ -41,8 +41,7 @@ export class CaseDetailsProcessLinksPage {
   // ─── Navigation + process setup ───────────────────────────────────
 
   async goToCaseProcesses(caseKey: string): Promise<string> {
-    await this.page.getByRole('button', {name: 'Admin'}).click();
-    await this.page.getByRole('link', {name: 'Cases'}).click();
+    await this.page.goto('/case-management');
     await this.page.waitForSelector('valtimo-carbon-list');
     await this.page.locator(`tr:has(td:has-text("${caseKey}"))`).click();
     await this.page.waitForURL(/\/case-management\/case\//);
@@ -170,8 +169,11 @@ export class CaseDetailsProcessLinksPage {
     return this.page.locator('valtimo-select-form');
   }
 
+  // The select-form step renders 3 combo-boxes: the form selector (first, in
+  // valtimo-select-form) plus display-type and form-size (in the child
+  // valtimo-form-display-configuration). Scope to the first — the form selector.
   get formComboBox() {
-    return this.selectFormComponent.locator('cds-combo-box');
+    return this.selectFormComponent.locator('cds-combo-box').first();
   }
 
   // Form-flow step
@@ -346,8 +348,11 @@ export class CaseDetailsProcessLinksPage {
     }
   }
 
+  // Scope to the process-link modal's footer. An unscoped `cds-modal-footer`
+  // also matches the unsaved-changes confirmation dialog ("Cancel / Save
+  // anyway"), causing strict-mode violations when both are in the DOM.
   private get modalFooter() {
-    return this.page.locator('cds-modal-footer');
+    return this.page.locator('valtimo-process-link-modal cds-modal-footer');
   }
 
   get nextButton() {

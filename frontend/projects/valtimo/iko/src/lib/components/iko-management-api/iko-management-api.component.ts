@@ -45,6 +45,7 @@ import {
 import {FormsModule, ReactiveFormsModule} from '@angular/forms';
 import {IkoManagementRepositoryModalComponent} from './repository-modal/iko-management-repository-modal.component';
 import {ModalMode} from '@valtimo/shared';
+import {IKO_MANAGEMENT_TEST_IDS} from '../../constants';
 
 @Component({
   selector: 'valtimo-iko-management-api',
@@ -69,6 +70,7 @@ import {ModalMode} from '@valtimo/shared';
   styleUrl: './iko-management-api.component.scss',
 })
 export class IkoManagementApiComponent implements OnInit, OnDestroy {
+  public readonly testIds = IKO_MANAGEMENT_TEST_IDS;
   public readonly $modalOpen = signal<boolean>(false);
   public readonly $prefillData = signal<any | null>(null);
   public readonly $keyToDelete = signal<string | null>(null);

@@ -70,11 +70,14 @@ export class CaseDetailsManagementZgwKeywordsPage {
 
   // ─── Navigation ──────────────────────────────────────────────────
 
+  // Navigate directly to the case-management list route, then open the case.
+  // Avoids the Admin menu + chart-heavy dashboard load, which can hang the
+  // beforeAll hook or crash the Chromium renderer ("Target crashed").
   async goToCaseManagementForCase(caseIdentifier: string) {
-    await this.page.getByRole('button', {name: 'Admin'}).click();
-    await this.page.getByRole('link', {name: 'Cases'}).click();
+    await this.page.goto('/case-management');
     await this.page.waitForSelector('valtimo-carbon-list');
     await this.page.locator(`tr:has(td:has-text("${caseIdentifier}"))`).click();
+    await this.page.waitForURL(/\/case-management\/case\//);
   }
 
   async openKeywordsTab() {
