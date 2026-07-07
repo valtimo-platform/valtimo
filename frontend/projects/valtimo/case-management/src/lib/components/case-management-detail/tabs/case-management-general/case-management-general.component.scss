@@ -19,3 +19,8 @@
   max-inline-size: 100%;
   min-inline-size: 100%;
 }
+
+// Lift the widget with an open dropdown above its muuri neighbours so the menu stays visible.
+:host ::ng-deep valtimo-muuri-item:has(.cds--list-box--expanded) {
+  z-index: 10;
+}

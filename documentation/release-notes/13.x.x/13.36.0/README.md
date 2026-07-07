@@ -28,3 +28,9 @@
 
   Opening a copied or bookmarked task list URL now lands on the tab it was saved from (for example *All tasks*),
   instead of defaulting to the first tab.
+
+* **Dropdowns on the case type General tab now show all their options correctly**
+
+  On the General tab of a case type, a dropdown (such as *Link upload process to case*) now displays all of its options
+  on top of the surrounding widgets, even when the widgets are stacked. Previously the options could appear behind the
+  widget below and be barely visible.
