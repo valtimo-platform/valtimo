@@ -260,7 +260,10 @@ jobs:
           # (port 8080, envsubst on assets/config.template.js).
           file: ${{ needs.resolve_variant.outputs.dockerfile }}
           platforms: linux/amd64,linux/arm64/v8
-          push: true
+          # Fork PRs get a read-only GITHUB_TOKEN that cannot write org packages.
+          # Build-only (no push) for fork PRs so the build still validates and the
+          # check goes green; push for same-repo PRs, branch pushes and releases.
+          push: ${{ github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository }}
           tags: |
             ${{ steps.generate_tags.outputs.tags }}
             ${{ inputs.push_to_dockerhub && format('docker.io/ritense/{0}:{1}', needs.resolve_variant.outputs.image_name, inputs.release_image_tag) || '' }}
