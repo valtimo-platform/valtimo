@@ -14,5 +14,6 @@
  * limitations under the License.
  */
 
+export * from './access-control-form-editor.service';
 export * from './access-control.service';
 export * from './permission-schema-metadata.service';
