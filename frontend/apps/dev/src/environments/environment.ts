@@ -176,7 +176,7 @@ export const environment: ValtimoConfig = {
   openZaak: {
     catalogus: '8225508a-6840-413e-acc9-6422af120db1',
   },
-  uploadProvider: UploadProvider.S3,
+  uploadProvider: UploadProvider.DOCUMENTEN_API,
   caseFileSizeUploadLimitMB: 100,
   supportedDocumentFileTypesToViewInBrowser: ['pdf', 'jpg', 'png', 'svg'],
   defaultDefinitionTable: defaultDefinitionColumns,
