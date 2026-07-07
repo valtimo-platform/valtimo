@@ -531,14 +531,18 @@ export class CaseDetailTabDocumentenApiDocumentsComponent implements OnInit, OnD
     this.showUploadModal$.next(true);
   }
 
-  public onEditContent(file: DocumentenApiRelatedFile): void{
-    this.documentenApiWopiService.getWopiHostPage(file.pluginConfigurationId, file.fileId).subscribe((value: Blob)=> {
-      const blobUrl = URL.createObjectURL(value);
-      window.open(blobUrl, '_blank');
+  public onEditContent(file: DocumentenApiRelatedFile): void {
+    this.documentenApiWopiService
+      .getWopiHostPage(file.pluginConfigurationId, file.fileId)
+      .subscribe({
+        next: (value: string) => {
+          let blobUrl = URL.createObjectURL(new Blob([value], {type: 'text/html'}));
+          window.open(blobUrl, '_blank');
 
-      // Clean up after a short delay (10 seconds)
-      setTimeout(() => URL.revokeObjectURL(blobUrl), 10_000);
-    })
+          // Clean up after a short delay (10 seconds)
+          setTimeout(() => URL.revokeObjectURL(blobUrl), 10_000);
+        },
+      });
   }
 
   public closeMetadataModal(): void {

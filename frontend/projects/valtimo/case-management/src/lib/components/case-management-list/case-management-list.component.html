@@ -61,7 +61,11 @@
 
 <ng-template #importCaseDefinitionButton>
   <div class="valtimo-case-management-list__actions">
-    <button [attr.data-test-id]="testIds.uploadButton" cdsButton="ghost" (click)="showUploadModal()">
+    <button
+      [attr.data-test-id]="testIds.uploadButton"
+      cdsButton="ghost"
+      (click)="showUploadModal()"
+    >
       {{ 'Upload' | translate }}
 
       <svg cdsIcon="upload" size="16" class="cds--btn__icon"></svg>

@@ -16,7 +16,7 @@
 
 <valtimo-widget-custom
   *ngIf="{
-    widgetConfiguration: widgetConfig$ | async
+    widgetConfiguration: widgetConfig$ | async,
   } as obs"
   [widgetConfiguration]="obs.widgetConfiguration"
   [widgetUuid]="widgetUuid"

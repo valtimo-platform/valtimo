@@ -292,16 +292,15 @@ lib/
 └── index.ts           # (optional) Barrel re-export for the folder
 ```
 
-Each subfolder that contains multiple exported files should have an `index.ts` barrel export.
-The library's `public-api.ts` controls the public surface — only intentionally public symbols
-should be re-exported there. Internal components and services must not be exposed.
+Each subfolder that contains multiple exported files should have an `index.ts` barrel export. The
+library's `public-api.ts` controls the public surface — only intentionally public symbols should be
+re-exported there. Internal components and services must not be exposed.
 
 ### Model file exports
 
-In model files, define all interfaces, types, and enums at the top of the file and place a
-single explicit `export` block at the bottom. This makes it clear which models are intended for
-public use — some models may be internal to the file or only used by sibling files in the same
-folder.
+In model files, define all interfaces, types, and enums at the top of the file and place a single
+explicit `export` block at the bottom. This makes it clear which models are intended for public use
+— some models may be internal to the file or only used by sibling files in the same folder.
 
 #### **`lib/models/my-item.model.ts`**
 
@@ -433,18 +432,18 @@ without any `@Input()`/`@Output()` wiring between them.
 
 ## Reuse shared components from `@valtimo/components`
 
-Before building something new, check whether `@valtimo/components` already provides it. Key
-reusable building blocks include (but not limited to):
+Before building something new, check whether `@valtimo/components` already provides it. Key reusable
+building blocks include (but not limited to):
 
-| Component / utility              | Purpose                                                              |
-| -------------------------------- | -------------------------------------------------------------------- |
-| `AutoKeyInputComponent`          | Auto-generates a unique key from a title/name field (add/edit/dup)   |
-| `CarbonListModule`               | Table/list with sorting, filtering, pagination                       |
-| `ConfirmationModalModule`        | Standard confirmation dialog                                         |
-| `ValtimoCdsModalDirective`       | Carbon modal lifecycle wrapper                                       |
-| `MultiInputComponent`            | Dynamic key-value pair inputs                                        |
-| `SelectModule`                   | Enhanced dropdown (improves on Carbon `cds-combobox`)                |
-| `runAfterCarbonModalClosed()`    | Utility for timing actions after the Carbon modal close animation    |
+| Component / utility           | Purpose                                                            |
+| ----------------------------- | ------------------------------------------------------------------ |
+| `AutoKeyInputComponent`       | Auto-generates a unique key from a title/name field (add/edit/dup) |
+| `CarbonListModule`            | Table/list with sorting, filtering, pagination                     |
+| `ConfirmationModalModule`     | Standard confirmation dialog                                       |
+| `ValtimoCdsModalDirective`    | Carbon modal lifecycle wrapper                                     |
+| `MultiInputComponent`         | Dynamic key-value pair inputs                                      |
+| `SelectModule`                | Enhanced dropdown (improves on Carbon `cds-combobox`)              |
+| `runAfterCarbonModalClosed()` | Utility for timing actions after the Carbon modal close animation  |
 
 ## Reactive forms
 
@@ -463,8 +462,8 @@ public formGroup: FormGroup = this.fb.group({
 ### Preferred approaches (in order)
 
 1. **Async pipe in templates** — no manual cleanup needed.
-2. **`Subscription` container with `ngOnDestroy`** — for imperative subscriptions that cannot
-   live in the template.
+2. **`Subscription` container with `ngOnDestroy`** — for imperative subscriptions that cannot live
+   in the template.
 
 ### HTTP observables
 
@@ -477,9 +476,9 @@ automatically after a single emission. This means:
 For multi-emission/event-based HTTP flows (e.g. `observe: 'events'`, progress events), manage
 subscriptions explicitly when cancellation/lifecycle control is required.
 
-Only add a subscription to the `_subscriptions` container when the source is a long-lived
-observable (e.g. `BehaviorSubject`, `combineLatest`, route params, store selectors) that does
-**not** complete on its own.
+Only add a subscription to the `_subscriptions` container when the source is a long-lived observable
+(e.g. `BehaviorSubject`, `combineLatest`, route params, store selectors) that does **not** complete
+on its own.
 
 ### Batching async pipes
 
@@ -503,8 +502,7 @@ Interactive and important elements should carry a `data-test-id` attribute for e
 
 ### Convention
 
-1. Define test IDs as a `const` object with `as const` in a `*.test-ids.ts` file under
-   `constants/`.
+1. Define test IDs as a `const` object with `as const` in a `*.test-ids.ts` file under `constants/`.
 2. Expose in the component as `protected readonly testIds = MY_TEST_IDS;`.
 3. Bind in the template with `[attr.data-test-id]="testIds.myElement"`.
 
@@ -527,11 +525,11 @@ export const MY_COMPONENT_TEST_IDS = {
 ## Translations
 
 - Use the `translate` pipe in templates (preferred).
-- Use `TranslateService.instant()` in TypeScript only when you need a translation as a string
-  value (e.g. building list items).
+- Use `TranslateService.instant()` in TypeScript only when you need a translation as a string value
+  (e.g. building list items).
 - Use `TranslateService.stream()` when the result must react to language changes at runtime.
-- Translation keys follow dot notation: `'moduleName.section.key'`
-  (e.g. `'caseManagement.statuses.add'`).
+- Translation keys follow dot notation: `'moduleName.section.key'` (e.g.
+  `'caseManagement.statuses.add'`).
 
 ## Carbon Design System
 
@@ -542,20 +540,20 @@ export const MY_COMPONENT_TEST_IDS = {
     this.iconService.registerAll([Edit16, TrashCan16]);
   }
   ```
-- Use Carbon components directly where possible. When a Carbon component does not meet
-  requirements out of the box, it is acceptable to create an improved wrapper in
-  `@valtimo/components` (e.g. `SelectModule` wraps and improves on `cds-combobox`).
+- Use Carbon components directly where possible. When a Carbon component does not meet requirements
+  out of the box, it is acceptable to create an improved wrapper in `@valtimo/components` (e.g.
+  `SelectModule` wraps and improves on `cds-combobox`).
 
 ## Generated backend types
 
 TypeScript types for backend REST DTOs can be generated from the Java/Kotlin source code. Before
-manually defining a DTO interface in the frontend, always check whether it already exists (or can
-be generated) from the backend.
+manually defining a DTO interface in the frontend, always check whether it already exists (or can be
+generated) from the backend.
 
 ### How it works
 
-The Gradle task scans all classes matching `com.ritense.**.web.rest.dto.*` and generates
-TypeScript interfaces into `@valtimo/shared`:
+The Gradle task scans all classes matching `com.ritense.**.web.rest.dto.*` and generates TypeScript
+interfaces into `@valtimo/shared`:
 
 ```
 frontend/projects/valtimo/shared/src/lib/generated/generated-backend-types.ts
@@ -583,8 +581,8 @@ import {MyItemResponseDto} from '@valtimo/shared';
 
 ## Error handling
 
-- **HTTP errors** are handled globally by `HttpErrorInterceptor` which shows toast notifications.
-  Do not duplicate toast logic in individual services or components.
+- **HTTP errors** are handled globally by `HttpErrorInterceptor` which shows toast notifications. Do
+  not duplicate toast logic in individual services or components.
 - Use `catchError` in services when you need recovery logic (e.g. reload data on failure).
-- For inline validation errors displayed in a form, use a `BehaviorSubject<string | null>` to
-  drive the error message in the template.
+- For inline validation errors displayed in a form, use a `BehaviorSubject<string | null>` to drive
+  the error message in the template.

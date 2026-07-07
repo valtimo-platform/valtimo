@@ -133,7 +133,8 @@ export class PluginActionConfigurationComponent implements OnInit, OnDestroy {
             ? (selectedProcessLink.pluginConfigurationId ?? '')
             : undefined;
         // Use the currently selected function key (user may have changed it)
-        const actionKey = selectedFunction?.key ?? selectedProcessLink.pluginActionDefinitionKey ?? '';
+        const actionKey =
+          selectedFunction?.key ?? selectedProcessLink.pluginActionDefinitionKey ?? '';
         const updateProcessLinkRequest: PluginProcessLinkUpdateDto = {
           id: selectedProcessLink.id,
           pluginConfigurationId,

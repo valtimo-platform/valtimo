@@ -102,9 +102,16 @@
             </button>
 
             @for (propertyOption of propertyOptions; track propertyOption) {
-              @if (propertyOption !== CASE_GEOMETRY_COORDINATES && !hasPropertyBeenAdded(propertyOption)) {
+              @if (
+                propertyOption !== CASE_GEOMETRY_COORDINATES &&
+                !hasPropertyBeenAdded(propertyOption)
+              ) {
                 <v-overflow-menu-option (selected)="addProperty(propertyOption)">
-                  {{ translationKeyForPropertyList(propertyOption) | pluginTranslate: pluginId | async }}
+                  {{
+                    translationKeyForPropertyList(propertyOption)
+                      | pluginTranslate: pluginId
+                      | async
+                  }}
                 </v-overflow-menu-option>
               }
             }
@@ -176,4 +183,3 @@
     </v-form>
   }
 </ng-container>
-

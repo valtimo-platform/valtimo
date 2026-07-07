@@ -47,7 +47,10 @@
       "ALL": {"description": "There is nothing to do here.", "title": "There are no cases"},
       "MINE": {"description": "Time for a short break.", "title": "No cases assigned to you"},
       "OPEN": {"description": "Come back later.", "title": "All cases have been assigned"},
-      "TEAM": {"description": "No cases have been assigned to your teams yet.", "title": "No team cases"},
+      "TEAM": {
+        "description": "No cases have been assigned to your teams yet.",
+        "title": "No team cases"
+      },
       "search": {
         "description": "There are no cases that match your search criteria.",
         "title": "No cases found"
@@ -502,7 +505,13 @@
     "setGlobalActiveVersionConfigurationIssuesWarning": "This version has unresolved configuration issues. Resolve them before setting it as the active version.",
     "globallyActive": "Globally active",
     "unlinkProcess": "Unlink",
-    "listColumns": {"name": "Name", "key": "Key", "version": "Version", "draft": "Draft", "status": "Status"},
+    "listColumns": {
+      "name": "Name",
+      "key": "Key",
+      "version": "Version",
+      "draft": "Draft",
+      "status": "Status"
+    },
     "needsConfiguration": "Needs configuration",
     "inactive": "Inactive",
     "globalActiveVersionModal": {

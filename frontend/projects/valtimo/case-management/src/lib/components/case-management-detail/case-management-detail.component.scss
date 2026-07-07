@@ -61,7 +61,7 @@
   vertical-align: middle;
   fill: var(--cds-support-warning);
 
-  ::ng-deep [data-icon-path="inner-path"] {
+  ::ng-deep [data-icon-path='inner-path'] {
     fill: black;
     opacity: 1;
   }

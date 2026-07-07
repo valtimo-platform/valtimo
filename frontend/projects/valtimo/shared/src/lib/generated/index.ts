@@ -1,1 +1,1 @@
-export * from './generated-backend-types'
+export * from './generated-backend-types';

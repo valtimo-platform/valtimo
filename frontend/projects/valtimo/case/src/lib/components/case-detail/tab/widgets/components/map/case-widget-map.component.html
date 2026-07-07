@@ -17,20 +17,17 @@
 <valtimo-widget-map
   *ngIf="{
     widgetConfiguration: widgetConfiguration$ | async,
-    widgetData: widgetData$ | async
+    widgetData: widgetData$ | async,
   } as obs"
   [widgetConfiguration]="obs.widgetConfiguration"
   [widgetData]="obs.widgetData"
 >
   @if (
-      obs.widgetConfiguration?.actions?.length === 1 &&
-      obs.widgetConfiguration.actions[0]?.processDefinitionKey &&
-      (canCreateCamundaExecution$ | async)
-    ) {
-    <button
-      cdsButton="ghost"
-      (click)="onProcessStartClick(obs.widgetConfiguration.actions[0])"
-    >
+    obs.widgetConfiguration?.actions?.length === 1 &&
+    obs.widgetConfiguration.actions[0]?.processDefinitionKey &&
+    (canCreateCamundaExecution$ | async)
+  ) {
+    <button cdsButton="ghost" (click)="onProcessStartClick(obs.widgetConfiguration.actions[0])">
       {{ obs.widgetConfiguration.actions[0].name }}
     </button>
   }

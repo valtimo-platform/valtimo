@@ -40,11 +40,15 @@ export class DocumentenApiWopiService extends BaseApiService {
       .pipe(catchError(() => of(false)));
   }
 
-  public getWopiHostPage(documentenApiPluginConfigurationId: string, documentId: String): Observable<Blob> {
-    return this.httpClient.get<Blob>(
+  public getWopiHostPage(
+    documentenApiPluginConfigurationId: string,
+    documentId: string
+  ): Observable<string> {
+    return this.httpClient.get(
       this.getApiUrl(
         `/v1/documenten-api-wopi/${documentenApiPluginConfigurationId}/wopi-host-page/${documentId}`
-      )
+      ),
+      {responseType: 'text'}
     );
   }
 }

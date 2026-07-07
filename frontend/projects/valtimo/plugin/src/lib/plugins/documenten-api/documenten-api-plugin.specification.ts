@@ -112,14 +112,14 @@ const documentenApiPluginSpecification: PluginSpecification = {
       linkDocumentToObjectExperimentalWarning:
         '⚠ Experimentele functie: deze actie maakt gebruik van de objectinformatieobjecten-API.',
       deleteDocumentLinkMessage:
-        "Verwijdert een objectinformatieobject-koppeling op basis van de opgegeven URL. " +
+        'Verwijdert een objectinformatieobject-koppeling op basis van de opgegeven URL. ' +
         "De koppelingsactie 'Document koppelen aan object' slaat deze URL op in de procesvariabele 'objectInformatieObjectUrl'. " +
         "Procesvariabelen kunnen worden gebruikt met de notatie 'pv:variabelenaam'.",
       deleteDocumentLinkExperimentalWarning:
         '⚠ Experimentele functie: deze actie maakt gebruik van de objectinformatieobjecten-API.',
       objectUrl: 'Object URL',
       objectUrlTooltip:
-        "De URL van het object waaraan het document gekoppeld moet worden. " +
+        'De URL van het object waaraan het document gekoppeld moet worden. ' +
         "Gebruik 'pv:variabelenaam' om een procesvariabele te refereren, bijv. 'pv:objectUrl'.",
       objectType: 'Objecttype',
       objectTypeTooltip:
@@ -127,7 +127,7 @@ const documentenApiPluginSpecification: PluginSpecification = {
         "Gebruik 'pv:variabelenaam' om een procesvariabele te refereren.",
       objectInformatieObjectUrl: 'Objectinformatieobject URL',
       objectInformatieObjectUrlTooltip:
-        "De URL van de objectinformatieobject-koppeling die verwijderd moet worden. ",
+        'De URL van de objectinformatieobject-koppeling die verwijderd moet worden. ',
       'get-audit-trail': 'Audit trail ophalen',
       documentUrl: 'Document URL',
       documentUrlTooltip:
@@ -207,14 +207,14 @@ const documentenApiPluginSpecification: PluginSpecification = {
       linkDocumentToObjectExperimentalWarning:
         '⚠ Experimental feature: this action uses the objectinformatieobjecten API.',
       deleteDocumentLinkMessage:
-        "Deletes an objectinformatieobject link by its URL. " +
+        'Deletes an objectinformatieobject link by its URL. ' +
         "The 'Link document to object' action stores this URL in the process variable 'objectInformatieObjectUrl'. " +
         "Process variables can be referenced using the notation 'pv:variableName'.",
       deleteDocumentLinkExperimentalWarning:
         '⚠ Experimental feature: this action uses the objectinformatieobjecten API.',
       objectUrl: 'Object URL',
       objectUrlTooltip:
-        "The URL of the object to link the document to. " +
+        'The URL of the object to link the document to. ' +
         "Use 'pv:variableName' to reference a process variable, e.g. 'pv:objectUrl'.",
       objectType: 'Object type',
       objectTypeTooltip:
@@ -222,7 +222,7 @@ const documentenApiPluginSpecification: PluginSpecification = {
         "Use 'pv:variableName' to reference a process variable.",
       objectInformatieObjectUrl: 'Objectinformatieobject URL',
       objectInformatieObjectUrlTooltip:
-        "The URL of the objectinformatieobject link to delete. " +
+        'The URL of the objectinformatieobject link to delete. ' +
         "The preceding action stores this in the process variable 'objectInformatieObjectUrl'.",
       'get-audit-trail': 'Get audit trail',
       documentUrl: 'Document URL',

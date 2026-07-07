@@ -47,10 +47,7 @@ export class CaseManagementHeaderComponent
   implements OnInit, OnDestroy
 {
   public readonly AVAILABLE_WIDGET_TYPES = [WidgetType.FIELDS];
-  public readonly WIDGET_WIZARD_STEPS = [
-    WidgetWizardStep.TYPE,
-    WidgetWizardStep.CONTENT,
-  ];
+  public readonly WIDGET_WIZARD_STEPS = [WidgetWizardStep.TYPE, WidgetWizardStep.CONTENT];
 
   private readonly _params$ = getCaseManagementRouteParams(this.route);
   private readonly _subscriptions = new Subscription();

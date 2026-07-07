@@ -14,7 +14,12 @@
  * limitations under the License.
  */
 import {Component, Injector, OnDestroy, OnInit} from '@angular/core';
-import {PluginDefinition, PluginFunction, PluginManagementService, PluginService} from '@valtimo/plugin';
+import {
+  PluginDefinition,
+  PluginFunction,
+  PluginManagementService,
+  PluginService,
+} from '@valtimo/plugin';
 import {combineLatest, forkJoin, Observable, of, Subscription} from 'rxjs';
 import {filter, map, switchMap, take, withLatestFrom} from 'rxjs/operators';
 

@@ -142,5 +142,5 @@ export {
   CollectionWidgetResolvedField,
   CollectionWidgetTitle,
   CollectionWidgetCardData,
-  FilterDropdownDataProvider
+  FilterDropdownDataProvider,
 };

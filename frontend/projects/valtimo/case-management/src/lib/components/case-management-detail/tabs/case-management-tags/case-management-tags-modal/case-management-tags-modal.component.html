@@ -37,7 +37,12 @@
     <form [formGroup]="caseTagFormGroup" class="case-tag-form">
       <cds-label>
         {{ 'caseManagement.caseTags.columns.title' | translate }}
-        <input cdsText formControlName="title" [attr.data-test-id]="testIds.titleInput" [attr.modal-primary-focus]="true" />
+        <input
+          cdsText
+          formControlName="title"
+          [attr.data-test-id]="testIds.titleInput"
+          [attr.modal-primary-focus]="true"
+        />
       </cds-label>
 
       <cds-label>
@@ -87,7 +92,12 @@
   </section>
 
   <cds-modal-footer>
-    <button cdsButton="ghost" [attr.data-test-id]="testIds.cancelButton" (click)="close()" [disabled]="obs.disabled">
+    <button
+      cdsButton="ghost"
+      [attr.data-test-id]="testIds.cancelButton"
+      (click)="close()"
+      [disabled]="obs.disabled"
+    >
       {{ 'interface.cancel' | translate }}
     </button>
 

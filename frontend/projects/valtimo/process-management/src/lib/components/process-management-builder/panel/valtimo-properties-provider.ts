@@ -125,7 +125,10 @@ const CustomRootElement = (props: {
       element: {
         id: currentElement.id,
         type: currentElement.type,
-        activityListenerType: mapActivityTypeToActivityListenerType(currentElement.type, currentElement),
+        activityListenerType: mapActivityTypeToActivityListenerType(
+          currentElement.type,
+          currentElement
+        ),
         name: currentElement.di?.bpmnElement?.name,
       },
     };

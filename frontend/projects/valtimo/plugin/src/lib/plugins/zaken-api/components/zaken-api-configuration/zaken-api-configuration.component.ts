@@ -68,7 +68,7 @@ export class ZakenApiConfigurationComponent
   ) {}
 
   public ngOnInit(): void {
-    this.initNoteEventListenerEnabled()
+    this.initNoteEventListenerEnabled();
     this.openEventListenerEnabledSubscription();
     this.openSaveSubscription();
   }
@@ -81,8 +81,8 @@ export class ZakenApiConfigurationComponent
   public formValueChange(formValue: ZakenApiConfig): void {
     const formValueIncludingToggle = {
       ...formValue,
-      noteEventListenerEnabled: this.noteEventListenerEnabled$.getValue()
-    }
+      noteEventListenerEnabled: this.noteEventListenerEnabled$.getValue(),
+    };
     this.formValue$.next(formValueIncludingToggle);
     this.handleValid(formValueIncludingToggle);
   }
@@ -94,13 +94,13 @@ export class ZakenApiConfigurationComponent
   private initNoteEventListenerEnabled(): void {
     this.prefillConfiguration$.pipe(take(1)).subscribe(configuration => {
       this.noteEventListenerEnabled$.next(configuration.noteEventListenerEnabled);
-    })
+    });
   }
 
   private openEventListenerEnabledSubscription(): void {
-    this._eventListenerEnabledSubscription = this.noteEventListenerEnabled$.subscribe( value => {
+    this._eventListenerEnabledSubscription = this.noteEventListenerEnabled$.subscribe(value => {
       this.formValueChange(this.formValue$.getValue());
-    })
+    });
   }
 
   private handleValid(formValue: ZakenApiConfig): void {
@@ -109,12 +109,8 @@ export class ZakenApiConfigurationComponent
       formValue.url &&
       formValue.authenticationPluginConfiguration &&
       formValue.noteEventListenerEnabled !== null &&
-      (
-        formValue.noteEventListenerEnabled === false
-        ||
-        formValue.noteEventListenerEnabled === true &&
-        formValue.noteSubject
-      )
+      (formValue.noteEventListenerEnabled === false ||
+        (formValue.noteEventListenerEnabled === true && formValue.noteSubject))
     );
     this.valid$.next(valid);
     this.valid.emit(valid);
@@ -129,6 +125,6 @@ export class ZakenApiConfigurationComponent
             this.configuration.emit(formValue);
           }
         });
-    })
+    });
   }
 }

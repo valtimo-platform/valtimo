@@ -43,7 +43,10 @@ export class WidgetInteractiveTableService {
     return providerId === FilterDropdownDataProvider.DATABASE;
   }
 
-  public getDropdownValues(provider: string, dropdownKey: string): Observable<WidgetDropdownValue | null> {
+  public getDropdownValues(
+    provider: string,
+    dropdownKey: string
+  ): Observable<WidgetDropdownValue | null> {
     if (!provider || !dropdownKey) return of(null);
 
     return this.httpClient
@@ -82,9 +85,7 @@ export class WidgetInteractiveTableService {
     }
 
     if (context === 'iko' && this.isIkoParams(params)) {
-      return params.actionKey
-        ? `${params.aggregateKey}_${params.actionKey}_${filterKey}`
-        : null;
+      return params.actionKey ? `${params.aggregateKey}_${params.actionKey}_${filterKey}` : null;
     }
 
     return null;
@@ -115,8 +116,7 @@ export class WidgetInteractiveTableService {
     if (!dropdownValues?.length) return null;
 
     return dropdownValues.reduce<WidgetDropdownValue>(
-      (acc, value) =>
-        value?.key && value?.value ? {...acc, [value.key]: value.value} : acc,
+      (acc, value) => (value?.key && value?.value ? {...acc, [value.key]: value.value} : acc),
       {}
     );
   }

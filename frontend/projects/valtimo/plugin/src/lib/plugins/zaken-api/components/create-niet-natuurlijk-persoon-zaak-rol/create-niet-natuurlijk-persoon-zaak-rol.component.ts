@@ -23,7 +23,7 @@ import {CreateNietNatuurlijkePersoonZaakRolConfig} from '../../models';
   standalone: false,
   selector: 'valtimo-create-niet-natuurlijk-persoon-zaak-rol-configuration',
   templateUrl: './create-niet-natuurlijk-persoon-zaak-rol.component.html',
-  styleUrls: ['./create-niet-natuurlijk-persoon-zaak-rol.component.scss']
+  styleUrls: ['./create-niet-natuurlijk-persoon-zaak-rol.component.scss'],
 })
 export class CreateNietNatuurlijkPersoonZaakRolComponent
   implements FunctionConfigurationComponent, OnInit, OnDestroy
@@ -58,12 +58,11 @@ export class CreateNietNatuurlijkPersoonZaakRolComponent
   private handleValid(formValue: CreateNietNatuurlijkePersoonZaakRolConfig): void {
     const valid = !!(
       formValue.rolToelichting &&
-      formValue.roltypeUrl && (
-        formValue.innNnpId ||
+      formValue.roltypeUrl &&
+      (formValue.innNnpId ||
         formValue.annIdentificatie ||
         formValue.kvkNummer ||
-        formValue.vestigingsNummer
-      )
+        formValue.vestigingsNummer)
     );
 
     this._valid$.next(valid);

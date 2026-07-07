@@ -133,7 +133,11 @@ export class IkoListComponent implements OnDestroy {
   public onRowClicked(item: any): void {
     if (this.rowSelectedEvent.observed) {
       const keys = Object.keys(item).filter(k => k !== 'id');
-      this.rowSelectedEvent.emit({id: item.id, label: keys.length > 0 ? item[keys[0]] : item.id, rowData: item});
+      this.rowSelectedEvent.emit({
+        id: item.id,
+        label: keys.length > 0 ? item[keys[0]] : item.id,
+        rowData: item,
+      });
     } else {
       this.router.navigate([`details/${item.id}`], {
         relativeTo: this.route,

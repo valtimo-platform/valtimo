@@ -67,8 +67,9 @@ export class DecisionListComponent {
   protected readonly testIds = DECISION_LIST_TEST_IDS;
 
   public readonly caseManagementRouteParams$ = getCaseManagementRouteParams(this.route);
-  public readonly buildingBlockManagementRouteParams$ =
-    getBuildingBlockManagementRouteParams(this.route);
+  public readonly buildingBlockManagementRouteParams$ = getBuildingBlockManagementRouteParams(
+    this.route
+  );
   public readonly context$ = getContextObservable(this.route);
 
   readonly decisionsLatestVersions$ = this.stateService.refreshDecisions$.pipe(

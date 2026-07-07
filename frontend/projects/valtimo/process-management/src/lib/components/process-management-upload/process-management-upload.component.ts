@@ -177,8 +177,7 @@ export class ProcessManagementUploadComponent {
         error: (error: unknown) => {
           const isConflict = error instanceof HttpErrorResponse && error.status === 409;
           if (isConflict) {
-            const body = (error as HttpErrorResponse)
-              .error as ProcessDefinitionConflictResponse;
+            const body = (error as HttpErrorResponse).error as ProcessDefinitionConflictResponse;
             this._conflictingProcessDefinitionId = body?.processDefinitionId ?? null;
             this.replaceModalContent = this.buildReplaceModalContent(body);
             this.showReplaceConfirmationModal$.next(true);
@@ -208,8 +207,7 @@ export class ProcessManagementUploadComponent {
         error: (error: unknown) => {
           const isConflict = error instanceof HttpErrorResponse && error.status === 409;
           if (isConflict) {
-            const body = (error as HttpErrorResponse)
-              .error as ProcessDefinitionConflictResponse;
+            const body = (error as HttpErrorResponse).error as ProcessDefinitionConflictResponse;
             this._conflictingProcessDefinitionId = body?.processDefinitionId ?? null;
             this.replaceModalContent = this.buildReplaceModalContent(body);
             this.showReplaceConfirmationModal$.next(true);

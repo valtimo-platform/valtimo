@@ -60,8 +60,9 @@ export class DecisionDeployComponent {
   protected readonly testIds = DECISION_UPLOAD_TEST_IDS;
 
   public readonly caseManagementRouteParams$ = getCaseManagementRouteParams(this.route);
-  public readonly buildingBlockManagementRouteParams$ =
-    getBuildingBlockManagementRouteParams(this.route);
+  public readonly buildingBlockManagementRouteParams$ = getBuildingBlockManagementRouteParams(
+    this.route
+  );
   public readonly context$ = getContextObservable(this.route);
 
   public readonly ACCEPTED_FILES: string[] = ['dmn'];

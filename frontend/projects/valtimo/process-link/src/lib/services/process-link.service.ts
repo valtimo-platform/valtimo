@@ -143,7 +143,12 @@ export class ProcessLinkService {
   ) {
     return this.http.post(
       `${this.VALTIMO_ENDPOINT_URI}management/v1/building-block/${buildingBlockKey}/version/${buildingBlockVersionTag}/process-definition`,
-      this.buildBuildingBlockFormData(processLinks, processXml, buildingBlockKey, buildingBlockVersionTag),
+      this.buildBuildingBlockFormData(
+        processLinks,
+        processXml,
+        buildingBlockKey,
+        buildingBlockVersionTag
+      ),
       {headers: new HttpHeaders().set(InterceptorSkip, '409')}
     );
   }
@@ -158,7 +163,12 @@ export class ProcessLinkService {
   ) {
     return this.http.put(
       `${this.VALTIMO_ENDPOINT_URI}management/v1/building-block/${buildingBlockKey}/version/${buildingBlockVersionTag}/process-definition/${processDefinitionId}`,
-      this.buildBuildingBlockFormData(processLinks, processXml, buildingBlockKey, buildingBlockVersionTag),
+      this.buildBuildingBlockFormData(
+        processLinks,
+        processXml,
+        buildingBlockKey,
+        buildingBlockVersionTag
+      ),
       {params: replace ? new HttpParams().set('replace', 'true') : undefined}
     );
   }

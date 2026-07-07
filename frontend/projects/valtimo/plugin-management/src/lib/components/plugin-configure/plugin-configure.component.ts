@@ -47,7 +47,7 @@ export class PluginConfigureComponent {
     this.valid.emit(valid);
   }
 
-  public onFunctionConfiguration(configuration: PluginConfigurationData): void{
+  public onFunctionConfiguration(configuration: PluginConfigurationData): void {
     this.configuration.emit(configuration);
   }
 }

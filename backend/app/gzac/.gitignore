@@ -1,0 +1,3 @@
+# Ignore Docker override files
+docker-compose.override.yml
+docker-compose.override.yaml

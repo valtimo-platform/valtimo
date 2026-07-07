@@ -298,7 +298,10 @@
           class="overflow-button assign-overflow"
           [ngClass]="{'--compact': compactMode$ | async}"
         >
-          <v-overflow-menu-trigger overflowTrigger [compact]="compactMode$ | async"></v-overflow-menu-trigger>
+          <v-overflow-menu-trigger
+            overflowTrigger
+            [compact]="compactMode$ | async"
+          ></v-overflow-menu-trigger>
 
           <ng-container
             *ngTemplateOutlet="

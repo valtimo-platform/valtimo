@@ -516,7 +516,10 @@ export class ProcessManagementBuilderComponent implements AfterViewInit, OnDestr
     const body = error.error;
     if ((body as ProcessDefinitionConflictResponse)?.processDefinitionId) return true;
     const bbBody = body as BuildingBlockProcessDefinitionConflictResponse;
-    return Array.isArray(bbBody?.duplicateProcessDefinitions) && bbBody.duplicateProcessDefinitions.length > 0;
+    return (
+      Array.isArray(bbBody?.duplicateProcessDefinitions) &&
+      bbBody.duplicateProcessDefinitions.length > 0
+    );
   }
 
   private setSelectedProcessDefinitionToLatest(

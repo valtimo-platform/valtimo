@@ -34,10 +34,7 @@ import {
   ConfirmationModalModule,
   ViewType,
 } from '@valtimo/components';
-import {
-  EditPermissionsService,
-  getCaseManagementRouteParams,
-} from '@valtimo/shared';
+import {EditPermissionsService, getCaseManagementRouteParams} from '@valtimo/shared';
 import {
   BuildingBlockProcessLinkCreateDto,
   BuildingBlockProcessLinkUpdateDto,
@@ -51,7 +48,11 @@ import {
 import {ButtonModule, IconModule, NotificationModule, TagModule} from 'carbon-components-angular';
 import {BehaviorSubject, Observable, of, shareReplay, Subscription, switchMap, tap} from 'rxjs';
 import {catchError, filter, take} from 'rxjs/operators';
-import {BuildingBlockConfigRequest, ManagementStartableItem, StartableItemType} from '../../../../models';
+import {
+  BuildingBlockConfigRequest,
+  ManagementStartableItem,
+  StartableItemType,
+} from '../../../../models';
 import {StartableItemManagementService} from '../../../../services';
 import {CaseManagementActionsModalComponent} from './case-management-actions-modal/case-management-actions-modal.component';
 
@@ -73,7 +74,12 @@ import {CaseManagementActionsModalComponent} from './case-management-actions-mod
     ConfirmationModalModule,
     ProcessLinkModule,
   ],
-  providers: [StartableItemManagementService, ProcessLinkStateService, ProcessLinkStepService, ProcessLinkButtonService],
+  providers: [
+    StartableItemManagementService,
+    ProcessLinkStateService,
+    ProcessLinkStepService,
+    ProcessLinkButtonService,
+  ],
 })
 export class CaseManagementActionsComponent implements AfterViewInit, OnDestroy {
   @ViewChild('typeColumn') public typeColumnTemplate!: TemplateRef<any>;
@@ -205,7 +211,12 @@ export class CaseManagementActionsComponent implements AfterViewInit, OnDestroy 
     this.processLinkStepService.setSkipBuildingBlockSelectionStep(true);
 
     this.processLinkStateService.setModalParams({
-      element: {id: 'ad-hoc', type: 'bpmn:CallActivity', name: key, activityListenerType: 'callActivity'},
+      element: {
+        id: 'ad-hoc',
+        type: 'bpmn:CallActivity',
+        name: key,
+        activityListenerType: 'callActivity',
+      },
       processDefinitionKey: '',
       processDefinitionId: '',
     });
@@ -231,7 +242,12 @@ export class CaseManagementActionsComponent implements AfterViewInit, OnDestroy 
       .pipe(take(1))
       .subscribe(properties => {
         this.processLinkStateService.setModalParams({
-          element: {id: 'ad-hoc', type: 'bpmn:CallActivity', name: item.name || item.key, activityListenerType: 'callActivity'},
+          element: {
+            id: 'ad-hoc',
+            type: 'bpmn:CallActivity',
+            name: item.name || item.key,
+            activityListenerType: 'callActivity',
+          },
           processDefinitionKey: '',
           processDefinitionId: '',
         });
@@ -320,10 +336,7 @@ export class CaseManagementActionsComponent implements AfterViewInit, OnDestroy 
    * For input mappings, the target is a building block field (needs prefix).
    * For output mappings, the source is a building block field (needs prefix).
    */
-  private normalizeMappingsForSave(
-    mappings: any[],
-    direction: 'input' | 'output'
-  ): any[] {
+  private normalizeMappingsForSave(mappings: any[], direction: 'input' | 'output'): any[] {
     return mappings.map(mapping => {
       if (direction === 'input') {
         return {...mapping, target: ensureDocPrefix(mapping.target)};

@@ -423,9 +423,7 @@ export class TaskListComponent implements OnInit, OnDestroy {
 
     this.teamsApiService.getCurrentUserTeams().subscribe(teams => {
       const tabs =
-        teams.length > 0
-          ? configuredTabs
-          : configuredTabs.filter(tab => tab !== TaskListTab.TEAM);
+        teams.length > 0 ? configuredTabs : configuredTabs.filter(tab => tab !== TaskListTab.TEAM);
 
       this.visibleTabs$.next(tabs);
       this.taskListService.setSelectedTaskType(tabs[0]);

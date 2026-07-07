@@ -39,7 +39,17 @@ import {
   TaskService,
 } from '@valtimo/task';
 import {ButtonModule, IconModule} from 'carbon-components-angular';
-import {BehaviorSubject, combineLatest, filter, map, Observable, of, shareReplay, switchMap, take} from 'rxjs';
+import {
+  BehaviorSubject,
+  combineLatest,
+  filter,
+  map,
+  Observable,
+  of,
+  shareReplay,
+  switchMap,
+  take,
+} from 'rxjs';
 import {TaskWithProcessLink} from '@valtimo/process-link';
 
 @Component({
@@ -104,7 +114,9 @@ export class CaseDetailsTaskDetailComponent implements OnDestroy {
     this.task$.pipe(filter(task => !!task)),
     this.canAssignUserToTask$,
   ]).pipe(
-    switchMap(([task, canAssign]) => (canAssign ? this.taskService.getCandidateUsers(task.id) : of([]))),
+    switchMap(([task, canAssign]) =>
+      canAssign ? this.taskService.getCandidateUsers(task.id) : of([])
+    ),
     shareReplay(1)
   );
 
@@ -113,7 +125,9 @@ export class CaseDetailsTaskDetailComponent implements OnDestroy {
     this.canAssignUserToTask$,
   ]).pipe(
     switchMap(([task, canAssign]) =>
-      canAssign ? this.taskService.getCandidateTeams(task.id).pipe(map(page => page.content)) : of([])
+      canAssign
+        ? this.taskService.getCandidateTeams(task.id).pipe(map(page => page.content))
+        : of([])
     ),
     shareReplay(1)
   );

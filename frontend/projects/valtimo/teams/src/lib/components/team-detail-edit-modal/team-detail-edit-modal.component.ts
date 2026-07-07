@@ -17,13 +17,7 @@
 import {Component, OnDestroy} from '@angular/core';
 import {CommonModule} from '@angular/common';
 import {ButtonModule, InputModule, LayerModule, ModalModule} from 'carbon-components-angular';
-import {
-  FormBuilder,
-  FormControl,
-  FormGroup,
-  ReactiveFormsModule,
-  Validators,
-} from '@angular/forms';
+import {FormBuilder, FormControl, FormGroup, ReactiveFormsModule, Validators} from '@angular/forms';
 import {TranslatePipe} from '@ngx-translate/core';
 import {runAfterCarbonModalClosed, ValtimoCdsModalDirective} from '@valtimo/components';
 import {TeamsApiService, TeamDetailService} from '../../services';

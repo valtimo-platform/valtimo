@@ -39,7 +39,13 @@ import {
   ParagraphModule,
   SelectModule,
 } from '@valtimo/components';
-import {ButtonModule, IconModule, IconService, InputModule, TimePickerModule} from 'carbon-components-angular';
+import {
+  ButtonModule,
+  IconModule,
+  IconService,
+  InputModule,
+  TimePickerModule,
+} from 'carbon-components-angular';
 import {debounceTime, map, Observable, Subject, Subscription} from 'rxjs';
 import {WidgetFilter, WidgetInteractiveTableEventSearchRequest} from '../../../models';
 
@@ -70,7 +76,9 @@ export class WidgetInteractiveTableSearchComponent implements OnInit, OnDestroy,
   private _initSearchRequest: WidgetInteractiveTableEventSearchRequest = {};
   private _filters: WidgetFilter[] = [];
 
-  @Input() public set initSearchRequest(value: WidgetInteractiveTableEventSearchRequest | null | undefined) {
+  @Input() public set initSearchRequest(
+    value: WidgetInteractiveTableEventSearchRequest | null | undefined
+  ) {
     this._initSearchRequest = value ?? {};
   }
 
@@ -85,7 +93,8 @@ export class WidgetInteractiveTableSearchComponent implements OnInit, OnDestroy,
     return this._filters;
   }
 
-  @Output() public readonly searchSubmitEvent = new EventEmitter<WidgetInteractiveTableEventSearchRequest>();
+  @Output() public readonly searchSubmitEvent =
+    new EventEmitter<WidgetInteractiveTableEventSearchRequest>();
 
   public readonly theme$: Observable<CARBON_THEME> = this.cdsThemeService.currentTheme$.pipe(
     map((theme: CurrentCarbonTheme) =>
@@ -109,8 +118,14 @@ export class WidgetInteractiveTableSearchComponent implements OnInit, OnDestroy,
     .stream([`searchFields.${this.BOOLEAN_POSITIVE}`, `searchFields.${this.BOOLEAN_NEGATIVE}`])
     .pipe(
       map(() => [
-        {id: this.BOOLEAN_POSITIVE, text: this.translateService.instant(`searchFields.${this.BOOLEAN_POSITIVE}`)},
-        {id: this.BOOLEAN_NEGATIVE, text: this.translateService.instant(`searchFields.${this.BOOLEAN_NEGATIVE}`)},
+        {
+          id: this.BOOLEAN_POSITIVE,
+          text: this.translateService.instant(`searchFields.${this.BOOLEAN_POSITIVE}`),
+        },
+        {
+          id: this.BOOLEAN_NEGATIVE,
+          text: this.translateService.instant(`searchFields.${this.BOOLEAN_NEGATIVE}`),
+        },
       ])
     );
 
@@ -286,9 +301,9 @@ export class WidgetInteractiveTableSearchComponent implements OnInit, OnDestroy,
     };
   }
 
-  private mapSearchRequestToFormValue(
-    searchRequest: WidgetInteractiveTableEventSearchRequest
-  ): {filters?: Record<string, any>} {
+  private mapSearchRequestToFormValue(searchRequest: WidgetInteractiveTableEventSearchRequest): {
+    filters?: Record<string, any>;
+  } {
     const result: Record<string, any> = {};
     const search = (searchRequest.filters ?? {}) as Record<string, unknown>;
 
@@ -314,7 +329,8 @@ export class WidgetInteractiveTableSearchComponent implements OnInit, OnDestroy,
       if (filter.dataType === 'boolean') {
         if (raw === true || raw === 'true') result[filter.key] = this.BOOLEAN_POSITIVE;
         else if (raw === false || raw === 'false') result[filter.key] = this.BOOLEAN_NEGATIVE;
-        else if (raw === this.BOOLEAN_POSITIVE || raw === this.BOOLEAN_NEGATIVE) result[filter.key] = raw;
+        else if (raw === this.BOOLEAN_POSITIVE || raw === this.BOOLEAN_NEGATIVE)
+          result[filter.key] = raw;
         else result[filter.key] = '';
         continue;
       }

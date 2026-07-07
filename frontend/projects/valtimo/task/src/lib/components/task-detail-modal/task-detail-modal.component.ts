@@ -27,12 +27,24 @@ import {
 import {Router} from '@angular/router';
 import {TranslateService} from '@ngx-translate/core';
 import {PermissionService} from '@valtimo/access-control';
-import {AssignmentChangeEvent, CarbonModalSize, runAfterCarbonModalClosed} from '@valtimo/components';
+import {
+  AssignmentChangeEvent,
+  CarbonModalSize,
+  runAfterCarbonModalClosed,
+} from '@valtimo/components';
 import {SseService} from '@valtimo/sse';
 import {FormSize, formSizeToCarbonModalSizeMap, TaskWithProcessLink} from '@valtimo/process-link';
 import moment from 'moment';
 import {NGXLogger} from 'ngx-logger';
-import {BehaviorSubject, combineLatest, EMPTY, Observable, of, shareReplay, Subscription} from 'rxjs';
+import {
+  BehaviorSubject,
+  combineLatest,
+  EMPTY,
+  Observable,
+  of,
+  shareReplay,
+  Subscription,
+} from 'rxjs';
 import {catchError, filter, map, switchMap, take} from 'rxjs/operators';
 import {IntermediateSubmission, Task, TaskUpdateSseEvent} from '../../models';
 import {TaskIntermediateSaveService, TaskService} from '../../services';
@@ -111,7 +123,9 @@ export class TaskDetailModalComponent implements OnInit, OnDestroy {
     this.canAssignUserToTask$,
   ]).pipe(
     switchMap(([task, canAssign]) =>
-      canAssign ? this.taskService.getCandidateTeams(task.id).pipe(map(page => page.content)) : of([])
+      canAssign
+        ? this.taskService.getCandidateTeams(task.id).pipe(map(page => page.content))
+        : of([])
     ),
     shareReplay(1)
   );

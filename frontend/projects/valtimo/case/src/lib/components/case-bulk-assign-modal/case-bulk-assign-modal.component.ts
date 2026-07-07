@@ -118,16 +118,18 @@ export class CaseBulkAssignModalComponent {
     )
   );
 
-  public readonly teamItems$: Observable<ListItem[]> = this.teamsApiService.getTeams({size: 1000}).pipe(
-    map(page =>
-      page.content.map(team => ({
-        id: team.key,
-        content: team.title,
-        selected: this.formGroup.get('team')?.value?.id === team.key,
-      }))
-    ),
-    catchError(() => of([] as ListItem[]))
-  );
+  public readonly teamItems$: Observable<ListItem[]> = this.teamsApiService
+    .getTeams({size: 1000})
+    .pipe(
+      map(page =>
+        page.content.map(team => ({
+          id: team.key,
+          content: team.title,
+          selected: this.formGroup.get('team')?.value?.id === team.key,
+        }))
+      ),
+      catchError(() => of([] as ListItem[]))
+    );
 
   public formGroup: FormGroup = this.fb.group({
     assignee: this.fb.control(null),

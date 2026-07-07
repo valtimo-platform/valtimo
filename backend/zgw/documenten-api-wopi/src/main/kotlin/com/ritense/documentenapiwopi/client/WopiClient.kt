@@ -48,7 +48,7 @@ class WopiClient(
 
     fun getWopiAccessToken(baseUrl: URI, documentId: String, documentenApiAuthentication: DocumentenApiAuthentication): WopiAccessToken {
         val result = restClient(documentenApiAuthentication)
-            .get()
+            .post()
             .uri {
                 ClientTools.baseUrlToBuilder(it, baseUrl)
                     .replacePath("/wopi/api/v1/token/$documentId")

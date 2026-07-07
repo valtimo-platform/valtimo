@@ -219,8 +219,7 @@ export class OverflowMenuComponent implements OnInit, AfterContentInit, OnChange
 
     const target = event.target as HTMLElement;
     const clickedInsideHost = this._elementRef.nativeElement.contains(target);
-    const clickedInsidePortal =
-      this._portalledPane && this._portalledPane.contains(target);
+    const clickedInsidePortal = this._portalledPane && this._portalledPane.contains(target);
 
     if (!clickedInsideHost && !clickedInsidePortal) {
       this.close();

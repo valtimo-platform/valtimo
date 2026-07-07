@@ -27,7 +27,15 @@ import {
 } from '@valtimo/components';
 import {PermissionService} from '@valtimo/access-control';
 import {TeamsApiService, TeamsService} from '../../services';
-import {BehaviorSubject, combineLatest, distinctUntilChanged, map, Subscription, switchMap, tap} from 'rxjs';
+import {
+  BehaviorSubject,
+  combineLatest,
+  distinctUntilChanged,
+  map,
+  Subscription,
+  switchMap,
+  tap,
+} from 'rxjs';
 import {TranslatePipe} from '@ngx-translate/core';
 import {TeamListResponseDto} from '@valtimo/shared';
 import {Router} from '@angular/router';
@@ -120,12 +128,14 @@ export class TeamsListComponent implements OnDestroy {
     private readonly router: Router
   ) {
     this.permissionSubscription.add(
-      this.permissionService.requestPermission(CAN_MODIFY_TEAM_PERMISSION)
-        .subscribe(canModify => this.canModify = canModify)
+      this.permissionService
+        .requestPermission(CAN_MODIFY_TEAM_PERMISSION)
+        .subscribe(canModify => (this.canModify = canModify))
     );
     this.permissionSubscription.add(
-      this.permissionService.requestPermission(CAN_DELETE_TEAM_PERMISSION)
-        .subscribe(canDelete => this.canDelete = canDelete)
+      this.permissionService
+        .requestPermission(CAN_DELETE_TEAM_PERMISSION)
+        .subscribe(canDelete => (this.canDelete = canDelete))
     );
   }
 
@@ -161,8 +171,7 @@ export class TeamsListComponent implements OnDestroy {
 
   public onPaginationSet(size: number): void {
     const {collectionSize, page} = this.pagination$.getValue();
-    const resetPage =
-      Math.ceil(+collectionSize / size) <= +page && +collectionSize > 0;
+    const resetPage = Math.ceil(+collectionSize / size) <= +page && +collectionSize > 0;
     this.pagination$.next({
       ...this.pagination$.getValue(),
       size,

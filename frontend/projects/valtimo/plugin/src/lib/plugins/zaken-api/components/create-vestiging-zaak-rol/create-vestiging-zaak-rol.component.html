@@ -17,14 +17,16 @@
   *ngIf="{
     disabled: disabled$ | async,
     prefill: prefillConfiguration$ ? (prefillConfiguration$ | async) : null,
-  } as obs">
+  } as obs"
+>
   <div class="notification--margin">
     <cds-inline-notification
       [notificationObj]="{
         type: 'info',
-        message: 'createZaakrolVestigingIdentifierFieldsInformation' | pluginTranslate: pluginId | async,
+        message:
+          'createZaakrolVestigingIdentifierFieldsInformation' | pluginTranslate: pluginId | async,
         showClose: false,
-        lowContrast: true
+        lowContrast: true,
       }"
     >
     </cds-inline-notification>

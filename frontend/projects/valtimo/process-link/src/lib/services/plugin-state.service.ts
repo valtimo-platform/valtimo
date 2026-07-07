@@ -61,9 +61,7 @@ export class PluginStateService {
 
   get functionKey$(): Observable<string> {
     // Prioritize user-selected function, fall back to process link's saved action
-    return this._selectedPluginFunction$.pipe(
-      map(pluginFunction => pluginFunction?.key)
-    );
+    return this._selectedPluginFunction$.pipe(map(pluginFunction => pluginFunction?.key));
   }
 
   get pluginDefinitionKey$(): Observable<string> {

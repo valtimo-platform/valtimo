@@ -38,8 +38,8 @@ export class CreateZaakNotitieConfigurationComponent
   @Output() configuration: EventEmitter<CreateZaakNotitieConfig> =
     new EventEmitter<CreateZaakNotitieConfig>();
 
-  public readonly statusOptions: string[] = ZAAKNOTIFICATIE_STATUSES
-  public readonly notitieTypeOptions: string[] = ZAAKNOTIFICATIE_TYPES
+  public readonly statusOptions: string[] = ZAAKNOTIFICATIE_STATUSES;
+  public readonly notitieTypeOptions: string[] = ZAAKNOTIFICATIE_TYPES;
 
   private readonly _formValue$ = new BehaviorSubject<CreateZaakNotitieConfig | null>(null);
   private readonly _valid$ = new BehaviorSubject<boolean>(false);

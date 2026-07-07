@@ -260,7 +260,9 @@ export class BuildingBlockManagementApiService extends BaseApiService {
     formDefinitionId: string
   ): Observable<void> {
     return this.httpClient.delete<void>(
-      this.getApiUrl(`management/v1/building-block/${key}/version/${versionTag}/form/${formDefinitionId}`)
+      this.getApiUrl(
+        `management/v1/building-block/${key}/version/${versionTag}/form/${formDefinitionId}`
+      )
     );
   }
 

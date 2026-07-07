@@ -245,9 +245,7 @@ export class CaseProcessStartModalComponent implements OnInit, OnDestroy {
   }
 
   public formFlowSubmitted(result?: any[]): void {
-    const documentId = result
-      ?.filter(item => item?.documentId)
-      ?.map(item => item.documentId)?.[0];
+    const documentId = result?.filter(item => item?.documentId)?.map(item => item.documentId)?.[0];
     if (documentId) {
       this.submitCompleted({documentId, errors: []});
     } else {

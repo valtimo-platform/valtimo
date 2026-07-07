@@ -26,7 +26,7 @@
       title: '',
       message: ('caseManagement.actions.infoNotification.message' | translate),
       showClose: false,
-      lowContrast: true
+      lowContrast: true,
     }"
   ></cds-inline-notification>
 
@@ -64,11 +64,7 @@
   </ng-template>
 
   <ng-template #addItemButton>
-    <button
-      *ngIf="obs.hasEditPermissions"
-      cdsButton="primary"
-      (click)="onAddItemClick()"
-    >
+    <button *ngIf="obs.hasEditPermissions" cdsButton="primary" (click)="onAddItemClick()">
       {{ 'caseManagement.actions.addItem' | translate }}
 
       <svg cdsIcon="add" size="16" class="cds--btn__icon"></svg>

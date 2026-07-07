@@ -29,11 +29,7 @@
   } as obs"
 >
   <ng-container *ngIf="isAssigned || hasPermission">
-    <div
-      class="assignment-container"
-      (mouseenter)="onMouseEnter()"
-      (mouseleave)="onMouseLeave()"
-    >
+    <div class="assignment-container" (mouseenter)="onMouseEnter()" (mouseleave)="onMouseLeave()">
       <!-- Assigned state: display pills with icons -->
       <div
         class="assigned-display element"

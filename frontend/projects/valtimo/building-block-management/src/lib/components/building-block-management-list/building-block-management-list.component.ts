@@ -20,16 +20,12 @@ import {BuildingBlockManagementApiService, BuildingBlockManagementService} from 
 import {switchMap, tap} from 'rxjs';
 import {ButtonModule, IconModule, IconService} from 'carbon-components-angular';
 import {TranslatePipe} from '@ngx-translate/core';
-import {
-  BuildingBlockManagementCreateModalComponent,
-} from '../building-block-management-create-modal/building-block-management-create-modal.component';
+import {BuildingBlockManagementCreateModalComponent} from '../building-block-management-create-modal/building-block-management-create-modal.component';
 import {BuildingBlockDefinitionDto} from '@valtimo/shared';
 import {Upload16} from '@carbon/icons';
 import {Router} from '@angular/router';
 import {BUILDING_BLOCK_MANAGEMENT_TABS} from '../../constants';
-import {
-  BuildingBlockManagementUploadModalComponent,
-} from '../building-block-management-upload-modal/building-block-management-upload-modal.component';
+import {BuildingBlockManagementUploadModalComponent} from '../building-block-management-upload-modal/building-block-management-upload-modal.component';
 
 @Component({
   standalone: true,

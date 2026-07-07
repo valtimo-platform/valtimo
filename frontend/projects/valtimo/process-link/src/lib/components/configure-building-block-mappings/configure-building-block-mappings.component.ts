@@ -425,8 +425,7 @@ export class ConfigureBuildingBlockMappingsComponent implements OnInit, OnDestro
     const requiredTargets = fields.filter(f => f.required).map(f => f.name);
     const allMappings: BuildingBlockInputMapping[] = [
       ...requiredTargets.map(
-        target =>
-          normalizedMappings.find(m => m.target === target) || {target: target, source: ''}
+        target => normalizedMappings.find(m => m.target === target) || {target: target, source: ''}
       ),
       ...normalizedMappings.filter(mapping => !requiredTargets.includes(mapping.target)),
     ];
@@ -747,5 +746,4 @@ export class ConfigureBuildingBlockMappingsComponent implements OnInit, OnDestro
     if (!fields) return false;
     return fields.some(field => field.required && field.name === target);
   }
-
 }

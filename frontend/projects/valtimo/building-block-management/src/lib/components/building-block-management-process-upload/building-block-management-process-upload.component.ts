@@ -32,7 +32,10 @@ import {
 } from 'carbon-components-angular';
 import {BehaviorSubject, from, map, startWith, switchMap} from 'rxjs';
 import {BuildingBlockManagementDetailService} from '../../services';
-import {BuildingBlockProcessDefinitionConflictResponse, ProcessLinkService} from '@valtimo/process-link';
+import {
+  BuildingBlockProcessDefinitionConflictResponse,
+  ProcessLinkService,
+} from '@valtimo/process-link';
 
 @Component({
   selector: 'valtimo-building-block-management-process-upload',
@@ -114,7 +117,8 @@ export class BuildingBlockManagementProcessUploadComponent {
         error: (error: unknown) => {
           const isConflict = error instanceof HttpErrorResponse && error.status === 409;
           if (isConflict) {
-            const body = (error as HttpErrorResponse).error as BuildingBlockProcessDefinitionConflictResponse;
+            const body = (error as HttpErrorResponse)
+              .error as BuildingBlockProcessDefinitionConflictResponse;
             this._conflictingProcessDefinitionId =
               body?.duplicateProcessDefinitions?.[0]?.processDefinitionId ?? null;
             this.replaceModalContent = this.buildReplaceModalContent(error as HttpErrorResponse);

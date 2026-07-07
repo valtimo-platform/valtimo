@@ -30,7 +30,7 @@
           title: ('caseManagement.missingPluginConfigurations.legacyExport.title' | translate),
           message: ('caseManagement.missingPluginConfigurations.legacyExport.message' | translate),
           showClose: false,
-          lowContrast: true
+          lowContrast: true,
         }"
       ></cds-inline-notification>
     }
@@ -42,17 +42,25 @@
             <div class="missing-plugin-configurations__source">
               {{ row.pluginDefinitionTitle }}
             </div>
-            <svg cdsIcon="arrow--right" size="16" class="missing-plugin-configurations__arrow"></svg>
+            <svg
+              cdsIcon="arrow--right"
+              size="16"
+              class="missing-plugin-configurations__arrow"
+            ></svg>
             @if (row.status === 'available') {
               <div class="missing-plugin-configurations__dropdown" [cdsLayer]="2">
                 <v-select
                   [items]="row.selectItems"
-                  [placeholder]="'caseManagement.missingPluginConfigurations.selectPlaceholder' | translate"
+                  [placeholder]="
+                    'caseManagement.missingPluginConfigurations.selectPlaceholder' | translate
+                  "
                   (selectedChange)="onMappingChange(i, $event)"
                 ></v-select>
               </div>
             } @else if (row.status === 'not-installed') {
-              <div class="missing-plugin-configurations__unavailable missing-plugin-configurations__unavailable--error">
+              <div
+                class="missing-plugin-configurations__unavailable missing-plugin-configurations__unavailable--error"
+              >
                 {{ 'caseManagement.missingPluginConfigurations.notInstalled' | translate }}
               </div>
             } @else if (row.status === 'no-configurations') {
@@ -65,11 +73,7 @@
       </div>
 
       <div class="missing-plugin-configurations__actions">
-        <button
-          cdsButton="primary"
-          [disabled]="saving$ | async"
-          (click)="save()"
-        >
+        <button cdsButton="primary" [disabled]="saving$ | async" (click)="save()">
           {{ 'interface.save' | translate }}
           <svg cdsIcon="save" size="16" class="cds--btn__icon"></svg>
         </button>

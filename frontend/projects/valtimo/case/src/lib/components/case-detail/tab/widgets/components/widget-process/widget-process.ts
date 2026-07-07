@@ -57,14 +57,10 @@ export class WidgetProcess {
     this._baseWidgetConfiguration$,
   ]).pipe(
     switchMap(
-      ([startableItems, widgetConfiguration]: [
-        StartableItem[] | null,
-        BasicWidget | null,
-      ]) => {
+      ([startableItems, widgetConfiguration]: [StartableItem[] | null, BasicWidget | null]) => {
         const processDefinitionKey = widgetConfiguration?.actions?.[0]?.processDefinitionKey;
         const requiredProcess = startableItems?.find(
-          (item: StartableItem) =>
-            item.key === processDefinitionKey && !!item.processDefinitionId
+          (item: StartableItem) => item.key === processDefinitionKey && !!item.processDefinitionId
         );
 
         if (!requiredProcess) {

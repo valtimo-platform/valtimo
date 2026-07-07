@@ -20,7 +20,10 @@ import {BehaviorSubject, combineLatest, Observable, Subscription, take} from 'rx
 import {IconService} from 'carbon-components-angular';
 import {Add16, TrashCan16} from '@carbon/icons';
 import {PatchZaakNotitieConfig, PropertyFormField} from '../../models';
-import {PatchZaakNotitieProperties, PatchZaakNotitiePropertyOptions} from '../../models/patch-zaaknotitie-properties';
+import {
+  PatchZaakNotitieProperties,
+  PatchZaakNotitiePropertyOptions,
+} from '../../models/patch-zaaknotitie-properties';
 import {ZAAKNOTIFICATIE_TYPES} from '../../models/zaaknotificatie-types';
 import {ZAAKNOTIFICATIE_STATUSES} from '../../models/zaaknotificatie-statuses';
 
@@ -38,21 +41,22 @@ export class PatchZaakNotitieConfigurationComponent
   @Input() save$: Observable<void>;
   @Input() prefillConfiguration$: Observable<PatchZaakNotitieConfig>;
   @Output() valid: EventEmitter<boolean> = new EventEmitter<boolean>();
-  @Output() configuration: EventEmitter<PatchZaakNotitieConfig> = new EventEmitter<PatchZaakNotitieConfig>();
+  @Output() configuration: EventEmitter<PatchZaakNotitieConfig> =
+    new EventEmitter<PatchZaakNotitieConfig>();
 
   public readonly propertyOptions: string[] = Object.values(PatchZaakNotitiePropertyOptions);
   public readonly propertyList: Array<PropertyFormField> = [];
   public readonly statusOptions: string[] = ZAAKNOTIFICATIE_STATUSES;
   public readonly notitieTypeOptions: string[] = ZAAKNOTIFICATIE_TYPES;
 
-  private readonly _formValue$ = new BehaviorSubject<PatchZaakNotitieConfig>({zaakNotitieUrl: undefined});
+  private readonly _formValue$ = new BehaviorSubject<PatchZaakNotitieConfig>({
+    zaakNotitieUrl: undefined,
+  });
   private readonly _properties = new Map<PatchZaakNotitieProperties, string>();
   private _saveSubscription!: Subscription;
   private readonly _valid$ = new BehaviorSubject<boolean>(false);
 
-  constructor(
-    private readonly iconService: IconService
-  ) {
+  constructor(private readonly iconService: IconService) {
     this.iconService.registerAll([Add16, TrashCan16]);
   }
 
@@ -85,7 +89,10 @@ export class PatchZaakNotitieConfigurationComponent
 
   public removeProperty(property: PatchZaakNotitieProperties): void {
     if (this.hasPropertyBeenAdded(property)) {
-      this.propertyList.splice(this.propertyList.findIndex(item => item.name === property), 1);
+      this.propertyList.splice(
+        this.propertyList.findIndex(item => item.name === property),
+        1
+      );
       this.onPropertyChanged(property, undefined);
     }
   }
@@ -94,17 +101,19 @@ export class PatchZaakNotitieConfigurationComponent
     return this.propertyList.findIndex(item => item.name === property) !== -1;
   }
 
-  public prefillValueFor(property: PatchZaakNotitieProperties, prefill: PatchZaakNotitieConfig): string | null {
+  public prefillValueFor(
+    property: PatchZaakNotitieProperties,
+    prefill: PatchZaakNotitieConfig
+  ): string | null {
     return prefill !== null ? prefill[property] : null;
   }
 
   private initPropertyList(): void {
     this.prefillConfiguration$.pipe(take(1)).subscribe(prefill => {
       if (prefill) {
-        PatchZaakNotitiePropertyOptions
-          .forEach(property => {
-            if (!!prefill[property]) this.addProperty(property)
-          });
+        PatchZaakNotitiePropertyOptions.forEach(property => {
+          if (!!prefill[property]) this.addProperty(property);
+        });
       }
     });
   }
@@ -121,8 +130,8 @@ export class PatchZaakNotitieConfigurationComponent
       type: this.inputTypeForProperty(property),
       name: property,
       translationKey: this.translationKeyFor(property),
-      presetOptions: this.presetOptionsForProperty(property)
-    }
+      presetOptions: this.presetOptionsForProperty(property),
+    };
   }
 
   private inputTypeForProperty(property: PatchZaakNotitieProperties): string {

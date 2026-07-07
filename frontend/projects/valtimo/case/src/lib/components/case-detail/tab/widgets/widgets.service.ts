@@ -44,7 +44,9 @@ export class WidgetsService {
 
   private readonly startableItems$ = this._documentId$.pipe(
     filter((documentId: string | null) => !!documentId),
-    switchMap((documentId: string) => this.documentService.getStartableItems({caseDocumentId: documentId})),
+    switchMap((documentId: string) =>
+      this.documentService.getStartableItems({caseDocumentId: documentId})
+    ),
     distinctUntilChanged()
   );
 

@@ -138,7 +138,11 @@
   </form>
 
   <cds-modal-footer>
-    <button [attr.data-test-id]="testIds.closeButton" cdsButton="secondary" (click)="onCloseModal()">
+    <button
+      [attr.data-test-id]="testIds.closeButton"
+      cdsButton="secondary"
+      (click)="onCloseModal()"
+    >
       {{ 'interface.cancel' | translate }}
     </button>
 

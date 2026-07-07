@@ -24,7 +24,10 @@
               <ng-container *ngTemplateOutlet="accountTabTemplate"></ng-container>
             </cds-tab>
 
-            <cds-tab [heading]="'settings.title' | translate" [attr.data-test-id]="testIds.settingsTab">
+            <cds-tab
+              [heading]="'settings.title' | translate"
+              [attr.data-test-id]="testIds.settingsTab"
+            >
               <ng-container *ngTemplateOutlet="settingsTabTemplate"></ng-container>
             </cds-tab>
           </cds-tabs>

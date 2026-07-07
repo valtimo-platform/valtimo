@@ -60,10 +60,7 @@ export class CreateMedewerkerZaakRolComponent
     const valid = !!(
       formValue.rolToelichting &&
       formValue.roltypeUrl &&
-      (
-        formValue.identificatie ||
-        formValue.achternaam
-      )
+      (formValue.identificatie || formValue.achternaam)
     );
     this._valid$.next(valid);
     this.valid.emit(valid);

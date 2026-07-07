@@ -24,7 +24,14 @@ import {TimelineComponent} from './timeline.component';
 
 @NgModule({
   declarations: [TimelineComponent],
-  imports: [CommonModule, TranslateModule, CarbonListModule, OverflowMenuComponent, OverflowMenuOptionComponent, OverflowMenuTriggerComponent],
+  imports: [
+    CommonModule,
+    TranslateModule,
+    CarbonListModule,
+    OverflowMenuComponent,
+    OverflowMenuOptionComponent,
+    OverflowMenuTriggerComponent,
+  ],
   exports: [TimelineComponent],
 })
 export class TimelineModule {}

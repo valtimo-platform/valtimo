@@ -20,7 +20,12 @@ import {TranslateModule} from '@ngx-translate/core';
 import {FormioCustomComponent} from '@valtimo/components';
 import {ButtonModule, IconModule, IconService, LayerModule} from 'carbon-components-angular';
 import {Launch16} from '@carbon/icons';
-import {IkoRowSelectedEvent, IkoSearchFormioValue, IkoSearchParams, PropertyMapping} from '../../models';
+import {
+  IkoRowSelectedEvent,
+  IkoSearchFormioValue,
+  IkoSearchParams,
+  PropertyMapping,
+} from '../../models';
 import {IkoListComponent} from '../iko-list/iko-list.component';
 import {IkoSearchComponent} from '../iko-search/iko-search.component';
 

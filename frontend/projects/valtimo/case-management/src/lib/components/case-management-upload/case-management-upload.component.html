@@ -79,11 +79,7 @@
     >
       <cds-label>
         {{ 'caseManagement.createDefinition.name' | translate }}
-        <input
-          formControlName="name"
-          cdsText
-          [attr.data-test-id]="testIds.nameInput"
-        />
+        <input formControlName="name" cdsText [attr.data-test-id]="testIds.nameInput" />
       </cds-label>
 
       <valtimo-auto-key-input
@@ -119,10 +115,12 @@
           *ngSwitchCase="IMPORT_WARNING.NEW_VERSION"
           [notificationObj]="{
             type: 'info',
-            title: ('caseManagement.importDefinition.configure.newVersionWarning.title' | translate),
-            message: ('caseManagement.importDefinition.configure.newVersionWarning.message' | translate),
+            title:
+              ('caseManagement.importDefinition.configure.newVersionWarning.title' | translate),
+            message:
+              ('caseManagement.importDefinition.configure.newVersionWarning.message' | translate),
             showClose: false,
-            lowContrast: true
+            lowContrast: true,
           }"
         ></cds-inline-notification>
 
@@ -130,19 +128,21 @@
           <cds-inline-notification
             [notificationObj]="{
               type: 'warning',
-              title: ('caseManagement.importDefinition.configure.existingDraftWarning.title' | translate),
-              message: ('caseManagement.importDefinition.configure.existingDraftWarning.message' | translate),
+              title:
+                ('caseManagement.importDefinition.configure.existingDraftWarning.title'
+                | translate),
+              message:
+                ('caseManagement.importDefinition.configure.existingDraftWarning.message'
+                | translate),
               showClose: false,
-              lowContrast: true
+              lowContrast: true,
             }"
           ></cds-inline-notification>
           <cds-checkbox
             [attr.data-test-id]="testIds.overrideCheckbox"
             (checkedChange)="overrideConfirmed$.next($event)"
           >
-            {{
-              'caseManagement.importDefinition.configure.overrideConfirm' | translate
-            }}
+            {{ 'caseManagement.importDefinition.configure.overrideConfirm' | translate }}
           </cds-checkbox>
         </ng-container>
 
@@ -150,10 +150,13 @@
           *ngSwitchCase="IMPORT_WARNING.EXISTING_FINAL"
           [notificationObj]="{
             type: 'error',
-            title: ('caseManagement.importDefinition.configure.existingFinalWarning.title' | translate),
-            message: ('caseManagement.importDefinition.configure.existingFinalWarning.message' | translate),
+            title:
+              ('caseManagement.importDefinition.configure.existingFinalWarning.title' | translate),
+            message:
+              ('caseManagement.importDefinition.configure.existingFinalWarning.message'
+              | translate),
             showClose: false,
-            lowContrast: true
+            lowContrast: true,
           }"
         ></cds-inline-notification>
       </ng-container>
@@ -175,7 +178,7 @@
             title: ('caseManagement.importDefinition.plugins.unidentifiable.title' | translate),
             message: ('caseManagement.importDefinition.plugins.unidentifiable.message' | translate),
             showClose: false,
-            lowContrast: true
+            lowContrast: true,
           }"
         ></cds-inline-notification>
       </ng-container>
@@ -219,10 +222,16 @@
           >
             <cds-dropdown-list></cds-dropdown-list>
           </cds-combo-box>
-          <div *ngIf="row.status === 'not-installed'" class="valtimo-definition-uploader__plugins-unavailable valtimo-definition-uploader__plugins-unavailable--error">
+          <div
+            *ngIf="row.status === 'not-installed'"
+            class="valtimo-definition-uploader__plugins-unavailable valtimo-definition-uploader__plugins-unavailable--error"
+          >
             {{ 'caseManagement.importDefinition.plugins.notInstalled' | translate }}
           </div>
-          <div *ngIf="row.status === 'no-configurations'" class="valtimo-definition-uploader__plugins-unavailable">
+          <div
+            *ngIf="row.status === 'no-configurations'"
+            class="valtimo-definition-uploader__plugins-unavailable"
+          >
             {{ 'caseManagement.importDefinition.plugins.noConfigurations' | translate }}
           </div>
         </div>

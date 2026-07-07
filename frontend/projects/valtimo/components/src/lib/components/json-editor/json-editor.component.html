@@ -16,7 +16,11 @@
 
 <div class="cds--toolbar-content">
   @if (isEditActive()) {
-    <button cdsButton="secondary" (click)="onCancelClick()" [attr.data-test-id]="testIds.cancelButton">
+    <button
+      cdsButton="secondary"
+      (click)="onCancelClick()"
+      [attr.data-test-id]="testIds.cancelButton"
+    >
       {{ 'interface.cancel' | translate }}
 
       <svg cdsIcon="close" size="16" class="cds--btn__icon"></svg>

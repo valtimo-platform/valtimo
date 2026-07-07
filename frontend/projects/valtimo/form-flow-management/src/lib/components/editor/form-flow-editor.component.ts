@@ -44,7 +44,12 @@ import {
   take,
   tap,
 } from 'rxjs';
-import {FormFlowDefinition, FormFlowDefinitionId, FormFlowEditorParams, FormFlowRouteParams} from '../../models';
+import {
+  FormFlowDefinition,
+  FormFlowDefinitionId,
+  FormFlowEditorParams,
+  FormFlowRouteParams,
+} from '../../models';
 import {FormFlowService} from '../../services';
 import {FormFlowDownloadService} from '../../services/form-flow-download.service';
 import formFlowSchemaJson from './formflow.schema.json';
@@ -255,10 +260,7 @@ export class FormFlowEditorComponent implements OnDestroy {
     });
   }
 
-  private initBreadcrumbs(
-    params: FormFlowEditorParams,
-    context: ManagementContext | null
-  ): void {
+  private initBreadcrumbs(params: FormFlowEditorParams, context: ManagementContext | null): void {
     if (context === 'buildingBlock') {
       const route = `/building-block-management/building-block/${params.caseDefinitionKey}/version/${params.caseDefinitionVersionTag}`;
       const generalRoute = `${route}/general`;

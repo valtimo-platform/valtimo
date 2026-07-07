@@ -28,4 +28,4 @@ export * from './lib/testing';
 export * from './lib/translation';
 export * from './lib/utils';
 export * from './lib/zgw';
-export * from './lib/generated'
+export * from './lib/generated';

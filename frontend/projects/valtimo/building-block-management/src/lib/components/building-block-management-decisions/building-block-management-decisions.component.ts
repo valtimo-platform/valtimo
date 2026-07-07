@@ -131,9 +131,7 @@ export class BuildingBlockManagementDecisionsComponent implements OnInit, OnDest
         .subscribe()
     );
 
-    this._subscriptions.add(
-      this.isFinal$.subscribe(isFinal => (this._isFinal = isFinal))
-    );
+    this._subscriptions.add(this.isFinal$.subscribe(isFinal => (this._isFinal = isFinal)));
   }
 
   public ngOnDestroy(): void {
