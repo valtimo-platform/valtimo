@@ -15,6 +15,7 @@
  */
 import {Component, Injector, OnDestroy, OnInit} from '@angular/core';
 import {
+  ExternalPluginAction,
   ExternalPluginService,
   extractExternalDefinitionId,
   isExternalPluginKey,
@@ -32,6 +33,24 @@ import {
   ProcessLinkStateService,
   ProcessLinkStepService,
 } from '../../services';
+
+/**
+ * Maps the manifest action `activityTypes` (backend `ActivityTypeWithEventName` names) to the
+ * `bpmn:{Type}:{event}` value the BPMN editor reports as `activityListenerType`. Only the activity
+ * types an external plugin action can realistically declare need to be listed; an unrecognised name
+ * never causes an action to be hidden (see `_actionSupportsActivity`).
+ */
+const ACTIVITY_TYPE_NAME_TO_VALUE: Record<string, string> = {
+  SERVICE_TASK_START: 'bpmn:ServiceTask:start',
+  SERVICE_TASK_END: 'bpmn:ServiceTask:end',
+  CALL_ACTIVITY_START: 'bpmn:CallActivity:start',
+  CALL_ACTIVITY_END: 'bpmn:CallActivity:end',
+  START_EVENT_START: 'bpmn:StartEvent:start',
+  USER_TASK_CREATE: 'bpmn:UserTask:create',
+};
+
+/** The `activityListenerType` the BPMN editor reports for a user task. */
+const USER_TASK_ACTIVITY = 'bpmn:UserTask:create';
 
 @Component({
   standalone: false,
@@ -51,15 +70,34 @@ export class SelectPluginActionComponent implements OnInit, OnDestroy {
 
       if (isExternalPluginKey(selectedDefinition.key)) {
         const definitionId = extractExternalDefinitionId(selectedDefinition.key);
+        const activityType = modalParams?.element?.activityListenerType;
         return this._externalPluginService.getDefinition(definitionId).pipe(
           map(definition => {
+            // On a user task an external plugin contributes its `task-form` bundle(s) — the form the
+            // plugin renders and completes — rather than service-task actions (which are invoked by
+            // execution listeners and could never render on a user task). Offering them here keeps a
+            // single "Plugin" entry point: pick the plugin, then pick its form.
+            if (activityType === USER_TASK_ACTIVITY) {
+              return (definition.manifest?.frontendBundles ?? [])
+                .filter(bundle => bundle.type === 'task-form')
+                .map(bundle => ({
+                  key: bundle.key ?? '',
+                  title: bundle.title ?? bundle.key ?? 'Form',
+                  description: '',
+                }));
+            }
+
             const actions = definition.manifest?.actions;
             if (!actions?.length) return [];
-            return actions.map(action => ({
-              key: action.key,
-              title: action.title ?? action.key,
-              description: action.description ?? '',
-            }));
+            // Only offer actions valid for the activity being configured (mirrors the activity-type
+            // filtering applied to embedded plugins below).
+            return actions
+              .filter(action => this._actionSupportsActivity(action, activityType))
+              .map(action => ({
+                key: action.key,
+                title: action.title ?? action.key,
+                description: action.description ?? '',
+              }));
           }),
           catchError(() => of([]))
         );
@@ -115,6 +153,23 @@ export class SelectPluginActionComponent implements OnInit, OnDestroy {
 
   public ngOnDestroy(): void {
     this._subscriptions.unsubscribe();
+  }
+
+  /**
+   * Whether an external plugin action may be linked to the activity currently being configured. An
+   * action with no declared `activityTypes` is always shown. Otherwise it is shown when the current
+   * activity matches one of its declared types, or when none of its declared types are recognised
+   * (so an incomplete {@link ACTIVITY_TYPE_NAME_TO_VALUE} never hides a valid action).
+   */
+  private _actionSupportsActivity(action: ExternalPluginAction, activityType?: string): boolean {
+    const declaredTypes = action.activityTypes;
+    if (!activityType || !declaredTypes?.length) return true;
+
+    const supportedValues = declaredTypes
+      .map(name => ACTIVITY_TYPE_NAME_TO_VALUE[name])
+      .filter((value): value is string => !!value);
+
+    return supportedValues.length === 0 || supportedValues.includes(activityType);
   }
 
   public selectFunction(pluginFunction: PluginFunction): void {

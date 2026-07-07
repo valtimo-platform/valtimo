@@ -23,6 +23,7 @@ import com.ritense.externalplugin.domain.ExternalPluginProcessLink
 import com.ritense.externalplugin.repository.ExternalPluginConfigurationRepository
 import com.ritense.externalplugin.repository.ExternalPluginDefinitionRepository
 import com.ritense.externalplugin.repository.ExternalPluginProcessLinkRepository
+import com.ritense.externalplugin.repository.ExternalPluginTaskFormProcessLinkRepository
 import com.ritense.plugin.web.rest.dto.PluginUsageParentType
 import com.ritense.processlink.domain.ActivityTypeWithEventName
 import com.ritense.valtimo.operaton.domain.OperatonProcessDefinition
@@ -46,6 +47,7 @@ class ExternalPluginHostUsageResolverTest {
     private lateinit var definitionRepository: ExternalPluginDefinitionRepository
     private lateinit var configurationRepository: ExternalPluginConfigurationRepository
     private lateinit var processLinkRepository: ExternalPluginProcessLinkRepository
+    private lateinit var taskFormProcessLinkRepository: ExternalPluginTaskFormProcessLinkRepository
     private lateinit var operatonRepositoryService: OperatonRepositoryService
     private lateinit var bpmnRepositoryService: RepositoryService
     private lateinit var resolver: ExternalPluginHostUsageResolver
@@ -55,12 +57,14 @@ class ExternalPluginHostUsageResolverTest {
         definitionRepository = mock()
         configurationRepository = mock()
         processLinkRepository = mock()
+        taskFormProcessLinkRepository = mock()
         operatonRepositoryService = mock()
         bpmnRepositoryService = mock()
         resolver = ExternalPluginHostUsageResolver(
             definitionRepository,
             configurationRepository,
             processLinkRepository,
+            taskFormProcessLinkRepository,
             operatonRepositoryService,
             bpmnRepositoryService,
             java.util.Optional.empty(),

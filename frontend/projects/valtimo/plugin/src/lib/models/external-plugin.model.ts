@@ -60,9 +60,21 @@ interface ExternalPluginAction {
   key: string;
   title?: string;
   description?: string;
+  /**
+   * `ActivityTypeWithEventName` names (e.g. `["SERVICE_TASK_START"]`) the action supports. External
+   * plugin actions are invoked by execution listeners, so this is the set of BPMN activities the
+   * action may be linked to — a user-task form is the separate `task-form` surface, not an action.
+   */
+  activityTypes?: Array<string>;
 }
 
-type ExternalPluginFrontendBundleType = 'config' | 'process-link-action' | 'case-tab' | 'case-widget' | 'page';
+type ExternalPluginFrontendBundleType =
+  | 'config'
+  | 'process-link-action'
+  | 'case-tab'
+  | 'case-widget'
+  | 'page'
+  | 'task-form';
 
 interface ExternalPluginFrontendBundle {
   type: ExternalPluginFrontendBundleType;
@@ -128,6 +140,12 @@ interface ExternalPluginConfiguration {
   definitionId: string;
   title: string;
   createdAt: string;
+}
+
+/** Response of the downscoped user-token mint endpoint (`.../configuration/{id}/user-token`). */
+interface ExternalPluginUserTokenResponse {
+  userToken: string;
+  expiresAt: string;
 }
 
 interface ExternalPluginGrantedEndpointEntry {
@@ -307,6 +325,7 @@ export {
   ExternalPluginHostUsageParentType,
   ExternalPluginDefinition,
   ExternalPluginConfiguration,
+  ExternalPluginUserTokenResponse,
   ExternalPluginConfigurationDetail,
   ExternalPluginConfigurationCreateRequest,
   ExternalPluginConfigurationUpdateRequest,

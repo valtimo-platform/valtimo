@@ -14,11 +14,18 @@
   ~ limitations under the License.
   -->
 
+<!--
+  sandbox is deliberately WITHOUT allow-same-origin (opaque origin, no access to the GZAC session
+  or token — see the parent-proxy model). `allow-forms` lets a plugin use an idiomatic <form> to
+  submit (e.g. a task-form): without it the browser blocks the submit event before the plugin's
+  handler can forward it via postMessage. It grants nothing beyond what allow-scripts already can
+  (a script can already POST via fetch), and does not weaken origin isolation.
+-->
 <iframe
   *ngIf="_$trustedUrl() as url"
   #pluginIframe
   [src]="url"
   (load)="onIframeLoad()"
-  sandbox="allow-scripts"
+  sandbox="allow-scripts allow-forms"
   class="external-plugin-iframe"
 ></iframe>

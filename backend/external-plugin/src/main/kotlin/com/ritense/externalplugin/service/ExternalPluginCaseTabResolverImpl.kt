@@ -17,43 +17,24 @@
 package com.ritense.externalplugin.service
 
 import com.ritense.case_.service.ExternalPluginCaseTabResolver
-import com.ritense.externalplugin.repository.ExternalPluginConfigurationRepository
-import com.ritense.externalplugin.repository.ExternalPluginDefinitionRepository
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import org.springframework.stereotype.Service
-import org.springframework.transaction.annotation.Transactional
 import java.util.UUID
 
 /**
- * external-plugin's implementation of the case-module [ExternalPluginCaseTabResolver] SPI. Resolves
- * a plugin configuration's `case-tab` bundle to its absolute URL
- * (`${definition.baseUrl}/${definition.version}${bundle.path}`, where `definition.baseUrl` is
- * `{hostOrigin}/plugins/{pluginId}`).
+ * external-plugin's implementation of the case-module [ExternalPluginCaseTabResolver] SPI. Delegates
+ * to the shared [ExternalPluginFrontendBundleResolver] with the `case-tab` bundle type, resolving a
+ * plugin configuration's `case-tab` bundle to its absolute URL
+ * (`${definition.baseUrl}/${definition.version}${bundle.path}`).
  */
 @Service
 @SkipComponentScan
-@Transactional(readOnly = true)
 class ExternalPluginCaseTabResolverImpl(
-    private val configurationRepository: ExternalPluginConfigurationRepository,
-    private val definitionRepository: ExternalPluginDefinitionRepository,
+    private val bundleResolver: ExternalPluginFrontendBundleResolver,
 ) : ExternalPluginCaseTabResolver {
 
-    override fun resolveBundleUrl(configurationId: UUID, bundleKey: String?): String? {
-        val configuration = configurationRepository.findById(configurationId).orElse(null) ?: return null
-        val definition = definitionRepository.findById(configuration.definitionId).orElse(null) ?: return null
-
-        val bundles = definition.manifestJson?.get("frontendBundles") ?: return null
-        if (!bundles.isArray) return null
-
-        val caseTabBundles = bundles.filter { it.get("type")?.asText() == CASE_TAB_TYPE }
-        val bundle = when {
-            bundleKey != null -> caseTabBundles.firstOrNull { it.get("key")?.asText() == bundleKey }
-            else -> caseTabBundles.singleOrNull() ?: caseTabBundles.firstOrNull()
-        } ?: return null
-
-        val path = bundle.get("path")?.asText() ?: return null
-        return "${definition.baseUrl}/${definition.version}$path"
-    }
+    override fun resolveBundleUrl(configurationId: UUID, bundleKey: String?): String? =
+        bundleResolver.resolveBundleUrl(configurationId, CASE_TAB_TYPE, bundleKey)
 
     companion object {
         private const val CASE_TAB_TYPE = "case-tab"

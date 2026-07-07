@@ -34,7 +34,9 @@ class ExternalPluginCaseTabResolverImplTest {
     private val objectMapper = ObjectMapper()
     private val configurationRepository = mock<ExternalPluginConfigurationRepository>()
     private val definitionRepository = mock<ExternalPluginDefinitionRepository>()
-    private val resolver = ExternalPluginCaseTabResolverImpl(configurationRepository, definitionRepository)
+    private val resolver = ExternalPluginCaseTabResolverImpl(
+        ExternalPluginFrontendBundleResolver(configurationRepository, definitionRepository)
+    )
 
     @Test
     fun `resolves the bundle url for the sole case-tab bundle when no key is given`() {

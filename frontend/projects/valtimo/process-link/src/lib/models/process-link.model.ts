@@ -46,6 +46,7 @@ interface ProcessLink {
   externalPluginConfigurationId?: string;
   actionKey?: string;
   pluginVersion?: string;
+  bundleKey?: string;
 }
 
 type GetProcessLinkResponse = Array<ProcessLink>;
@@ -225,6 +226,27 @@ interface ExternalPluginProcessLinkUpdateDto {
   actionProperties?: object;
 }
 
+interface ExternalPluginTaskFormProcessLinkCreateDto {
+  processDefinitionId: string;
+  activityId: string;
+  activityType: string;
+  processLinkType: 'external_plugin_task_form';
+  externalPluginConfigurationId: string;
+  pluginVersion: string;
+  // Always serialized (null when the plugin's task-form bundle has no key) so the backend's
+  // field-based (Jackson DEDUCTION) process-link type resolution can distinguish this from the
+  // action link, which is identified by its `actionKey`.
+  bundleKey: string | null;
+}
+
+interface ExternalPluginTaskFormProcessLinkUpdateDto {
+  id: string;
+  processLinkType: 'external_plugin_task_form';
+  externalPluginConfigurationId: string;
+  pluginVersion: string;
+  bundleKey: string | null;
+}
+
 type BuildingBlockSyncTiming = 'CONTINUOUS' | 'END';
 
 interface BuildingBlockInputMapping {
@@ -238,7 +260,20 @@ interface BuildingBlockOutputMapping {
   syncTiming: BuildingBlockSyncTiming;
 }
 
-type TaskProcessLinkType = 'form' | 'form-flow' | 'form-view-model' | 'url' | 'ui-component';
+type TaskProcessLinkType =
+  | 'form'
+  | 'form-flow'
+  | 'form-view-model'
+  | 'url'
+  | 'ui-component'
+  | 'external-plugin-task-form';
+
+interface ExternalPluginTaskFormContext {
+  taskId?: string | null;
+  processInstanceId?: string | null;
+  documentId?: string | null;
+  pluginConfigurationId?: string;
+}
 
 interface TaskProcessLinkResult {
   processLinkId: string;
@@ -255,6 +290,11 @@ interface TaskProcessLinkResult {
     formDisplayType?: FormDisplayType;
     formSize?: FormSize;
     componentKey?: string;
+    // external-plugin-task-form
+    bundleUrl?: string | null;
+    configurationId?: string;
+    bundleKey?: string | null;
+    context?: ExternalPluginTaskFormContext;
   };
 }
 
@@ -270,7 +310,8 @@ type ProcessLinkUpdateEvent =
   | URLProcessLinkUpdateRequestDto
   | UIComponentProcessLinkUpdateRequestDto
   | BuildingBlockProcessLinkUpdateDto
-  | ExternalPluginProcessLinkUpdateDto;
+  | ExternalPluginProcessLinkUpdateDto
+  | ExternalPluginTaskFormProcessLinkUpdateDto;
 
 interface ProcessLinkDeleteEvent {
   activityId: string;
@@ -293,7 +334,8 @@ type ProcessLinkCreateEvent =
   | BuildingBlockProcessLinkCreateDto
   | URLProcessLinkCreateDto
   | UIComponentProcessLinkCreateRequestDto
-  | ExternalPluginProcessLinkCreateDto;
+  | ExternalPluginProcessLinkCreateDto
+  | ExternalPluginTaskFormProcessLinkCreateDto;
 
 interface ProcessLinkDeleteEvent {
   activityId: string;
@@ -359,6 +401,9 @@ export {
   CompatibleProcessVersion,
   ExternalPluginProcessLinkCreateDto,
   ExternalPluginProcessLinkUpdateDto,
+  ExternalPluginTaskFormContext,
+  ExternalPluginTaskFormProcessLinkCreateDto,
+  ExternalPluginTaskFormProcessLinkUpdateDto,
   FormDisplayType,
   FormFlowProcessLinkCreateRequestDto,
   FormFlowProcessLinkUpdateRequestDto,

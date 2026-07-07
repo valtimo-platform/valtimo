@@ -104,7 +104,7 @@ export interface Endpoint {
 }
 
 export interface FrontendBundle {
-  type: "config" | "process-link-action" | "case-tab" | "case-widget" | "page";
+  type: "config" | "process-link-action" | "case-tab" | "case-widget" | "page" | "task-form";
   key?: string;
   title?: string;
   path: string;
