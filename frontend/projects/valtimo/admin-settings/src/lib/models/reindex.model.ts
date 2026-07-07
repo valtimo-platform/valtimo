@@ -16,25 +16,23 @@
  *
  */
 
-import {Observable} from 'rxjs';
+type ReindexStatus = 'RUNNING' | 'COMPLETED' | 'FAILED' | 'STOPPED';
 
-enum IncludeFunction {
-  ObjectManagementEnabled,
-  OpenSearchEnabled,
+interface ReindexStatusDto {
+  runId: string;
+  status: ReindexStatus;
+  totalCount: number;
+  processedCount: number;
+  skippedCount: number;
+  startedOn: string;
+  finishedOn: string | null;
+  elapsedSeconds: number;
+  error: string | null;
 }
 
-interface MenuItem {
-  title: string;
-  sequence?: number;
-  id?: string;
-  link?: string[] | null;
-  textClass?: string;
-  iconClass?: string;
-  children?: MenuItem[];
-  roles?: string[];
-  show?: boolean;
-  count$?: Observable<number>;
-  includeFunction?: IncludeFunction;
+interface StartReindexResponseDto {
+  status: string;
+  runId: string;
 }
 
-export {MenuItem, IncludeFunction};
+export {ReindexStatus, ReindexStatusDto, StartReindexResponseDto};

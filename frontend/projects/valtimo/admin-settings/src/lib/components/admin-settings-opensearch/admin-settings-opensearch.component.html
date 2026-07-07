@@ -1,0 +1,105 @@
+<!--
+  ~ /*
+  ~  * Copyright 2015-2026 Ritense BV, the Netherlands.
+  ~  *
+  ~  * Licensed under EUPL, Version 1.2 (the "License");
+  ~  * you may not use this file except in compliance with the License.
+  ~  * You may obtain a copy of the License at
+  ~  *
+  ~  * https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+  ~  *
+  ~  * Unless required by applicable law or agreed to in writing, software
+  ~  * distributed under the License is distributed on an "AS IS" basis,
+  ~  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~  * See the License for the specific language governing permissions and
+  ~  * limitations under the License.
+  ~  */
+  -->
+
+<div
+  class="opensearch-reindex"
+  *ngIf="{
+    status: reindexStatus$ | async,
+    isRunning: isRunning$ | async,
+    starting: startingReindex$ | async
+  } as obs"
+>
+  <div class="opensearch-reindex__header">
+    <h4 class="opensearch-reindex__title">
+      {{ 'adminSettings.opensearch.reindex.title' | translate }}
+    </h4>
+    <p class="opensearch-reindex__description">
+      {{ 'adminSettings.opensearch.reindex.description' | translate }}
+    </p>
+  </div>
+
+  @if (obs.status?.status) {
+    <div class="opensearch-reindex__status">
+      <div class="opensearch-reindex__progress">
+        <cds-progress-bar
+          [value]="obs.status.totalCount > 0 ? (obs.status.processedCount / obs.status.totalCount) * 100 : 0"
+          [label]="obs.status.processedCount + ' / ' + obs.status.totalCount"
+          [helperText]="'adminSettings.opensearch.reindex.statuses.' + obs.status.status | translate"
+          [status]="obs.status.status === 'RUNNING' ? 'active' : (obs.status.status === 'COMPLETED' ? 'finished' : 'error')"
+        ></cds-progress-bar>
+      </div>
+
+      <div class="opensearch-reindex__stats">
+        @if (obs.status.skippedCount > 0) {
+          <div class="opensearch-reindex__stat">
+            <span class="opensearch-reindex__label">
+              {{ 'adminSettings.opensearch.reindex.skipped' | translate }}:
+            </span>
+            <span>{{ obs.status.skippedCount }}</span>
+          </div>
+        }
+        @if (obs.status.startedOn) {
+          <div class="opensearch-reindex__stat">
+            <span class="opensearch-reindex__label">
+              {{ 'adminSettings.opensearch.reindex.started' | translate }}:
+            </span>
+            <span>{{ obs.status.startedOn | date:'medium' }}</span>
+          </div>
+        }
+        @if (obs.status.status === 'RUNNING' && obs.status.elapsedSeconds > 0) {
+          <div class="opensearch-reindex__stat">
+            <span class="opensearch-reindex__label">
+              {{ 'adminSettings.opensearch.reindex.elapsed' | translate }}:
+            </span>
+            <span>{{ obs.status.elapsedSeconds }}s</span>
+          </div>
+        }
+        @if (obs.status.status !== 'RUNNING' && obs.status.finishedOn) {
+          <div class="opensearch-reindex__stat">
+            <span class="opensearch-reindex__label">
+              {{ 'adminSettings.opensearch.reindex.finished' | translate }}:
+            </span>
+            <span>{{ obs.status.finishedOn | date:'medium' }}</span>
+          </div>
+        }
+      </div>
+
+      @if (obs.status.error) {
+        <div class="opensearch-reindex__error">
+          <span class="opensearch-reindex__error-title">
+            {{ 'adminSettings.opensearch.reindex.errorTitle' | translate }}:
+          </span>
+          <span>{{ obs.status.error }}</span>
+        </div>
+      }
+    </div>
+  }
+
+  <div class="opensearch-reindex__actions">
+    <button
+      cdsButton="primary"
+      [disabled]="obs.isRunning || obs.starting"
+      (click)="startReindex()"
+    >
+      @if (obs.starting) {
+        <cds-loading size="sm"></cds-loading>
+      }
+      {{ 'adminSettings.opensearch.reindex.startButton' | translate }}
+    </button>
+  </div>
+</div>

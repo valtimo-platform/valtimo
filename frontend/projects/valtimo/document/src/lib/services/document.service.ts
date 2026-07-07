@@ -1,17 +1,19 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
  *
- * Licensed under EUPL, Version 1.2 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ *  * Copyright 2015-2026 Ritense BV, the Netherlands.
+ *  *
+ *  * Licensed under EUPL, Version 1.2 (the "License");
+ *  * you may not use this file except in compliance with the License.
+ *  * You may obtain a copy of the License at
+ *  *
+ *  * https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+ *  *
+ *  * Unless required by applicable law or agreed to in writing, software
+ *  * distributed under the License is distributed on an "AS IS" basis,
+ *  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  * See the License for the specific language governing permissions and
+ *  * limitations under the License.
  *
- * https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" basis,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
  */
 import {HttpClient, HttpErrorResponse, HttpHeaders, HttpParams} from '@angular/common/http';
 import {Injectable} from '@angular/core';
@@ -100,9 +102,13 @@ export class DocumentService {
 
   private extractInvalidSearchFields(error: HttpErrorResponse): string[] {
     const message = error?.error?.detail || error?.error?.message || error?.error || '';
-    const match = message.match(/Unknown search field\(s\): (.+)/);
-    if (match) {
-      return match[1].split(', ').map((f: string) => f.trim());
+    const pluralMatch = message.match(/Unknown search field\(s\): (.+)/);
+    if (pluralMatch) {
+      return pluralMatch[1].split(', ').map((f: string) => f.trim());
+    }
+    const singularMatch = message.match(/Unknown search field: (.+)/);
+    if (singularMatch) {
+      return [singularMatch[1].trim()];
     }
     return [];
   }
@@ -151,13 +157,22 @@ export class DocumentService {
   }
 
   public getDocuments(documentSearchRequest: DocumentSearchRequest): Observable<Documents> {
-    return this.http.post<Documents>(
-      `${this.valtimoEndpointUri}v1/document-search`,
-      documentSearchRequest.asHttpBody(),
-      {
+    return this.http
+      .post<Documents>(`${this.valtimoEndpointUri}v1/document-search`, documentSearchRequest.asHttpBody(), {
         params: documentSearchRequest.asHttpParams(),
-      }
-    );
+        headers: new HttpHeaders().set(InterceptorSkip, '500'),
+      })
+      .pipe(
+        tap(() => this._invalidSearchFields$.next([])),
+        catchError((error: HttpErrorResponse) => {
+          const invalidFields = this.extractInvalidSearchFields(error);
+          if (invalidFields.length > 0) {
+            this._invalidSearchFields$.next(invalidFields);
+            return of(this.EMPTY_DOCUMENTS_RESPONSE as Documents);
+          }
+          throw error;
+        })
+      );
   }
 
   public getDocumentsSearch(
@@ -183,14 +198,20 @@ export class DocumentService {
       .post<Documents>(
         `${this.valtimoEndpointUri}v1/document-definition/${documentSearchRequest.definitionName}/search`,
         body,
-        {params: documentSearchRequest.asHttpParams()}
+        {
+          params: documentSearchRequest.asHttpParams(),
+          headers: new HttpHeaders().set(InterceptorSkip, '500'),
+        }
       )
       .pipe(
         tap(() => this._invalidSearchFields$.next([])),
         catchError((error: HttpErrorResponse) => {
           const invalidFields = this.extractInvalidSearchFields(error);
-          this._invalidSearchFields$.next(invalidFields);
-          return of(this.EMPTY_DOCUMENTS_RESPONSE as Documents);
+          if (invalidFields.length > 0) {
+            this._invalidSearchFields$.next(invalidFields);
+            return of(this.EMPTY_DOCUMENTS_RESPONSE as Documents);
+          }
+          throw error;
         })
       );
   }
@@ -218,14 +239,20 @@ export class DocumentService {
       .post<SpecifiedDocuments>(
         `${this.valtimoEndpointUri}v1/case/${documentSearchRequest.definitionName}/search`,
         body,
-        {params: documentSearchRequest.asHttpParams()}
+        {
+          params: documentSearchRequest.asHttpParams(),
+          headers: new HttpHeaders().set(InterceptorSkip, '500'),
+        }
       )
       .pipe(
         tap(() => this._invalidSearchFields$.next([])),
         catchError((error: HttpErrorResponse) => {
           const invalidFields = this.extractInvalidSearchFields(error);
-          this._invalidSearchFields$.next(invalidFields);
-          return of(this.EMPTY_DOCUMENTS_RESPONSE as SpecifiedDocuments);
+          if (invalidFields.length > 0) {
+            this._invalidSearchFields$.next(invalidFields);
+            return of(this.EMPTY_DOCUMENTS_RESPONSE as SpecifiedDocuments);
+          }
+          throw error;
         })
       );
   }

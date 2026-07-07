@@ -3097,7 +3097,8 @@
     "title": "Instellingen",
     "tabs": {
       "appearance": "Weergave",
-      "featureToggles": "Functie-instellingen"
+      "featureToggles": "Functie-instellingen",
+      "opensearch": "OpenSearch"
     },
     "appearance": {
       "logo": {
@@ -3137,7 +3138,7 @@
         "useOpenSearch": {
           "title": "Gebruik OpenSearch voor zaakzoekopdrachten",
           "description": "Indien ingeschakeld worden zaakzoekopdrachten uitgevoerd met OpenSearch voor betere prestaties. Indien uitgeschakeld wordt PostgreSQL gebruikt.",
-          "unavailable": "OpenSearch is niet geconfigureerd voor deze installatie."
+          "unavailable": "OpenSearch is niet geconfigureerd voor deze applicatie."
         }
       },
       "refreshRequired": "Vernieuwing vereist",
@@ -3231,6 +3232,32 @@
         "menuCollapsedByDefault": {
           "title": "Menu standaard ingeklapt",
           "description": "Start met het navigatiemenu ingeklapt in plaats van uitgeklapt."
+        },
+        "enableGenericCaseList": {
+          "title": "Generieke zaaklijst inschakelen",
+          "description": "Toon één zaaklijstweergave met een dropdown om tussen zaakdefinities te wisselen."
+        }
+      }
+    },
+    "opensearch": {
+      "title": "OpenSearch",
+      "reindex": {
+        "title": "Documenten herindexeren",
+        "description": "Herindexeer alle documenten van de database naar OpenSearch. Deze operatie draait op de achtergrond.",
+        "startButton": "Start herindexering",
+        "status": "Status",
+        "processed": "Verwerkt",
+        "skipped": "Overgeslagen",
+        "started": "Gestart",
+        "elapsed": "Verstreken tijd",
+        "finished": "Voltooid",
+        "inProgress": "Herindexering bezig...",
+        "errorTitle": "Fout",
+        "statuses": {
+          "RUNNING": "Bezig",
+          "COMPLETED": "Voltooid",
+          "FAILED": "Mislukt",
+          "STOPPED": "Gestopt"
         }
       }
     }

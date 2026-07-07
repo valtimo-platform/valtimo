@@ -1,17 +1,19 @@
 /*
- * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
- * Licensed under EUPL, Version 1.2 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ *  * Copyright 2015-2026 Ritense BV, the Netherlands.
+ *  *
+ *  * Licensed under EUPL, Version 1.2 (the "License");
+ *  * you may not use this file except in compliance with the License.
+ *  * You may obtain a copy of the License at
+ *  *
+ *  * https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+ *  *
+ *  * Unless required by applicable law or agreed to in writing, software
+ *  * distributed under the License is distributed on an "AS IS" basis,
+ *  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  * See the License for the specific language governing permissions and
+ *  * limitations under the License.
  *
- * https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" basis,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
  */
 
 package com.ritense.document.opensearch.service
@@ -21,6 +23,11 @@ import com.ritense.document.opensearch.OpenSearchProperties
 import com.ritense.document.opensearch.domain.OpenSearchReindexRun
 import com.ritense.document.opensearch.domain.ReindexRunStatus
 import com.ritense.document.opensearch.repository.OpenSearchReindexRunRepository
+import jakarta.persistence.EntityManager
+import jakarta.persistence.TypedQuery
+import jakarta.persistence.criteria.CriteriaBuilder
+import jakarta.persistence.criteria.CriteriaQuery
+import jakarta.persistence.criteria.Root
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -40,12 +47,28 @@ class OpenSearchReindexRunServiceTest {
     private val repository: OpenSearchReindexRunRepository = mock()
     private val objectMapper: ObjectMapper = ObjectMapper().findAndRegisterModules()
     private val properties = OpenSearchProperties()
+    private val entityManager: EntityManager = mock()
     private lateinit var service: OpenSearchReindexRunService
 
     @BeforeEach
     fun setUp() {
-        service = OpenSearchReindexRunService(repository, objectMapper, properties)
+        service = OpenSearchReindexRunService(repository, objectMapper, properties, entityManager)
         whenever(repository.save(any<OpenSearchReindexRun>())).doAnswer { it.arguments[0] as OpenSearchReindexRun }
+        setupEntityManagerMock()
+    }
+
+    private fun setupEntityManagerMock() {
+        val criteriaBuilder: CriteriaBuilder = mock()
+        val criteriaQuery: CriteriaQuery<Long> = mock()
+        val root: Root<*> = mock()
+        val typedQuery: TypedQuery<Long> = mock()
+
+        whenever(entityManager.criteriaBuilder).thenReturn(criteriaBuilder)
+        whenever(criteriaBuilder.createQuery(Long::class.java)).thenReturn(criteriaQuery)
+        whenever(criteriaQuery.from(any<Class<*>>())).thenReturn(root as Root<Nothing>)
+        whenever(criteriaQuery.select(any())).thenReturn(criteriaQuery)
+        whenever(entityManager.createQuery(criteriaQuery)).thenReturn(typedQuery)
+        whenever(typedQuery.singleResult).thenReturn(100L)
     }
 
     @Test

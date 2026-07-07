@@ -170,7 +170,12 @@ mailing:
     whitelistedDomains:
     sendRedirectedMailsTo:
 
+opensearch:
+    uris: http://localhost:9200
+
 valtimo:
+    opensearch:
+        enabled: true
     app:
         scheme: http
         hostname: ${VALTIMO_APP_HOSTNAME}

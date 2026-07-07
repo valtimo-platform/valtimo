@@ -3064,7 +3064,8 @@
     "title": "Settings",
     "tabs": {
       "appearance": "Appearance",
-      "featureToggles": "Feature toggles"
+      "featureToggles": "Feature toggles",
+      "opensearch": "OpenSearch"
     },
     "appearance": {
       "logo": {
@@ -3104,7 +3105,7 @@
         "useOpenSearch": {
           "title": "Use OpenSearch for case search",
           "description": "When enabled, case searches use OpenSearch for better performance. When disabled, PostgreSQL is used.",
-          "unavailable": "OpenSearch is not configured for this installation."
+          "unavailable": "OpenSearch is not configured for this application."
         }
       },
       "refreshRequired": "Refresh required",
@@ -3198,6 +3199,32 @@
         "menuCollapsedByDefault": {
           "title": "Menu collapsed by default",
           "description": "Start with the navigation menu collapsed instead of expanded."
+        },
+        "enableGenericCaseList": {
+          "title": "Enable generic case list",
+          "description": "Show a single case list view with a dropdown to switch between case definitions."
+        }
+      }
+    },
+    "opensearch": {
+      "title": "OpenSearch",
+      "reindex": {
+        "title": "Reindex Documents",
+        "description": "Reindex all documents from the database to OpenSearch. This operation runs in the background.",
+        "startButton": "Start Reindex",
+        "status": "Status",
+        "processed": "Processed",
+        "skipped": "Skipped",
+        "started": "Started",
+        "elapsed": "Elapsed time",
+        "finished": "Finished",
+        "inProgress": "Reindexing in progress...",
+        "errorTitle": "Error",
+        "statuses": {
+          "RUNNING": "Running",
+          "COMPLETED": "Completed",
+          "FAILED": "Failed",
+          "STOPPED": "Stopped"
         }
       }
     }

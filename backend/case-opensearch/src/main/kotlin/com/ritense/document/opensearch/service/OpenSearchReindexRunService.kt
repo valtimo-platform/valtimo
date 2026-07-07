@@ -1,27 +1,32 @@
 /*
- * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
- * Licensed under EUPL, Version 1.2 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ *  * Copyright 2015-2026 Ritense BV, the Netherlands.
+ *  *
+ *  * Licensed under EUPL, Version 1.2 (the "License");
+ *  * you may not use this file except in compliance with the License.
+ *  * You may obtain a copy of the License at
+ *  *
+ *  * https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+ *  *
+ *  * Unless required by applicable law or agreed to in writing, software
+ *  * distributed under the License is distributed on an "AS IS" basis,
+ *  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  * See the License for the specific language governing permissions and
+ *  * limitations under the License.
  *
- * https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" basis,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
  */
 
 package com.ritense.document.opensearch.service
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.ritense.document.opensearch.OpenSearchProperties
+import com.ritense.document.domain.impl.JsonSchemaDocument
 import com.ritense.document.opensearch.domain.OpenSearchReindexRun
 import com.ritense.document.opensearch.domain.ReindexRunStatus
 import com.ritense.document.opensearch.repository.OpenSearchReindexRunRepository
 import io.github.oshai.kotlinlogging.KotlinLogging
+import jakarta.persistence.EntityManager
+import jakarta.persistence.criteria.Predicate
 import org.springframework.boot.context.event.ApplicationReadyEvent
 import org.springframework.context.event.EventListener
 import org.springframework.transaction.annotation.Transactional
@@ -41,6 +46,7 @@ open class OpenSearchReindexRunService(
     private val repository: OpenSearchReindexRunRepository,
     private val objectMapper: ObjectMapper,
     private val properties: OpenSearchProperties,
+    private val entityManager: EntityManager,
 ) {
 
     /**
@@ -144,15 +150,17 @@ open class OpenSearchReindexRunService(
 
     private fun toMap(run: OpenSearchReindexRun): Map<String, Any?> {
         val elapsedSeconds = Duration.between(run.startedOn, run.finishedOn ?: LocalDateTime.now()).seconds
+        val scope = deserializeScopeToRequest(run.scope)
         return mapOf(
             "runId" to run.id,
             "status" to run.status,
             "running" to (run.status == ReindexRunStatus.RUNNING),
-            "scope" to deserializeScope(run.scope),
+            "scope" to scope?.let { objectMapper.convertValue(it, Map::class.java) },
             "pageSize" to run.pageSize,
             "lastId" to run.lastId,
             "processedCount" to run.processedCount,
             "skippedCount" to run.skippedCount,
+            "totalCount" to countDocuments(scope),
             "startedOn" to run.startedOn,
             "heartbeatOn" to run.heartbeatOn,
             "finishedOn" to run.finishedOn,
@@ -169,14 +177,37 @@ open class OpenSearchReindexRunService(
             null
         }
 
-    private fun deserializeScope(scope: String?): Any? =
+    private fun deserializeScopeToRequest(scope: String?): ReindexRequest? =
         scope?.let {
             try {
-                objectMapper.readValue(it, Map::class.java)
+                objectMapper.readValue(it, ReindexRequest::class.java)
             } catch (e: Exception) {
-                it
+                logger.warn(e) { "Failed to deserialize scope to ReindexRequest" }
+                null
             }
         }
+
+    private fun countDocuments(scope: ReindexRequest?): Long {
+        val cb = entityManager.criteriaBuilder
+        val query = cb.createQuery(Long::class.java)
+        val root = query.from(JsonSchemaDocument::class.java)
+        query.select(cb.count(root))
+
+        val predicates = mutableListOf<Predicate>()
+        scope?.modifiedAfter?.let { predicates += cb.greaterThan(root.get("modifiedOn"), it) }
+        scope?.modifiedBefore?.let { predicates += cb.lessThan(root.get("modifiedOn"), it) }
+        scope?.documentDefinitionName?.let {
+            predicates += cb.equal(root.get<Any>("documentDefinitionId").get<String>("name"), it)
+        }
+        scope?.documentIds?.takeIf { it.isNotEmpty() }?.let {
+            predicates += root.get<Any>("id").get<UUID>("id").`in`(it)
+        }
+
+        if (predicates.isNotEmpty()) {
+            query.where(*predicates.toTypedArray())
+        }
+        return entityManager.createQuery(query).singleResult
+    }
 
     companion object {
         private val logger = KotlinLogging.logger {}

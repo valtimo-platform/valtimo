@@ -1,17 +1,19 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
  *
- * Licensed under EUPL, Version 1.2 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ *  * Copyright 2015-2026 Ritense BV, the Netherlands.
+ *  *
+ *  * Licensed under EUPL, Version 1.2 (the "License");
+ *  * you may not use this file except in compliance with the License.
+ *  * You may obtain a copy of the License at
+ *  *
+ *  * https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+ *  *
+ *  * Unless required by applicable law or agreed to in writing, software
+ *  * distributed under the License is distributed on an "AS IS" basis,
+ *  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  * See the License for the specific language governing permissions and
+ *  * limitations under the License.
  *
- * https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" basis,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
  */
 
 package com.ritense.document.opensearch.service
@@ -62,7 +64,9 @@ import java.time.Instant
 import java.time.LocalDate
 import java.time.ZoneOffset
 import java.time.format.DateTimeFormatter
+import org.springframework.transaction.annotation.Transactional
 
+@Transactional
 class JsonSchemaDocumentOpenSearchService(
     private val elasticsearchOperations: ElasticsearchOperations,
     private val translator: OpenSearchPermissionConditionTranslator,
@@ -93,8 +97,22 @@ class JsonSchemaDocumentOpenSearchService(
         if (searchRequest.sequence != null) {
             parts.add(QueryBuilders.termQuery("sequence", searchRequest.sequence))
         }
-        if (!searchRequest.globalSearchFilter.isNullOrEmpty()) {
-            throw NotImplementedException("globalSearchFilter is not supported in the simple search — use the advanced search overload")
+        val globalFilter = searchRequest.globalSearchFilter?.takeIf { it.isNotEmpty() }
+        if (globalFilter != null) {
+            val searchFields = if (!searchRequest.documentDefinitionName.isNullOrEmpty()) {
+                runWithoutAuthorization {
+                    searchFieldService.getSearchFields(searchRequest.documentDefinitionName)
+                }
+            } else {
+                emptyList()
+            }
+
+            if (searchFields.isNotEmpty()) {
+                parts.add(buildGlobalSearchQuery(globalFilter.trim(), searchFields))
+            } else {
+                val term = "*${globalFilter.trim()}*"
+                parts.add(QueryBuilders.wildcardQuery("contentText.keyword", term).caseInsensitive(true))
+            }
         }
         searchRequest.otherFilters?.forEach { sc ->
             parts.add(QueryBuilders.termQuery("content.${sc.path}", sc.value))
