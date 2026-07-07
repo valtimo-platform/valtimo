@@ -8,6 +8,10 @@ This page requires:
 * Knowledge of [JSON](https://www.json.org/)
 {% endhint %}
 
+{% hint style="info" %}
+Context can also be configured in the UI with the visual permission editor (the **Context** section — see [Configuring permissions](configuring-permissions.md)), which offers three choices: no restriction, only when there is no context, or restricted to a specific context resource.
+{% endhint %}
+
 ## Use case
 
 **Use case:** An implementation has 5 case types. Financial advisors should only be able to start processes for cases of 1 case type.

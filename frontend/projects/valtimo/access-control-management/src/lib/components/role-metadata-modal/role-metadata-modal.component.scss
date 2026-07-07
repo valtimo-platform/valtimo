@@ -14,8 +14,26 @@
  * limitations under the License.
  */
 
-export * from './access-control-editor-tab.model';
-export * from './pbac-editor.model';
-export * from './permission.model';
-export * from './permission-schema.model';
-export * from './role.model';
+.role-metadata-modal {
+  // The role key field: its label, the picker/manual input, and the mode-switch button stacked.
+  &__field {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+
+    v-select {
+      display: block;
+      width: 100%;
+    }
+
+    input {
+      width: 100%;
+    }
+  }
+
+  // Ghost button that toggles between the role picker and manual entry; kept compact and left-aligned
+  // beneath the input.
+  &__mode-switch {
+    align-self: flex-start;
+  }
+}
