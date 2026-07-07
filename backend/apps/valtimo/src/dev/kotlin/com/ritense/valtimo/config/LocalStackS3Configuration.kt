@@ -17,18 +17,23 @@
 package com.ritense.valtimo.config
 
 import org.springframework.beans.factory.annotation.Value
+import org.springframework.boot.CommandLineRunner
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
+import org.springframework.context.annotation.Profile
 import software.amazon.awssdk.auth.credentials.AwsBasicCredentials
 import software.amazon.awssdk.auth.credentials.AwsCredentialsProviderChain
 import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider
 import software.amazon.awssdk.regions.Region
 import software.amazon.awssdk.services.s3.S3Client
 import software.amazon.awssdk.services.s3.S3Configuration
+import software.amazon.awssdk.services.s3.model.CORSConfiguration
+import software.amazon.awssdk.services.s3.model.CORSRule
 import software.amazon.awssdk.services.s3.presigner.S3Presigner
 import java.net.URI
 
 @Configuration
+@Profile("dev")
 class LocalStackS3Configuration {
 
     @Bean
@@ -86,5 +91,38 @@ class LocalStackS3Configuration {
         }
 
         return builder.build()
+    }
+
+    /**
+     * Creates the upload bucket and its CORS policy in LocalStack on startup so
+     * browser presigned-URL uploads work out of the box. Replaces the init-s3.sh
+     * script that the old app mounted into the LocalStack container.
+     */
+    @Bean
+    fun localStackS3BucketInitializer(
+        s3Client: S3Client,
+        @Value("\${aws.s3.bucketName}") bucketName: String
+    ): CommandLineRunner {
+        return CommandLineRunner {
+            val bucketExists = s3Client.listBuckets().buckets().any { it.name() == bucketName }
+            if (!bucketExists) {
+                s3Client.createBucket { it.bucket(bucketName) }
+            }
+            s3Client.putBucketCors { request ->
+                request.bucket(bucketName)
+                    .corsConfiguration(
+                        CORSConfiguration.builder()
+                            .corsRules(
+                                CORSRule.builder()
+                                    .allowedHeaders("*")
+                                    .allowedMethods("GET", "PUT", "POST", "DELETE", "HEAD")
+                                    .allowedOrigins("*")
+                                    .exposeHeaders("ETag")
+                                    .build()
+                            )
+                            .build()
+                    )
+            }
+        }
     }
 }
