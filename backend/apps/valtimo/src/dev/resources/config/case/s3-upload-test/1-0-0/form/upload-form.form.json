@@ -1,0 +1,28 @@
+{
+    "display": "form",
+    "components": [
+        {
+            "key": "files",
+            "type": "valtimo-file",
+            "label": "Upload Files",
+            "input": true,
+            "customOptions": {
+                "maxFileSize": 10,
+                "hideMaxFileSize": false,
+                "hideTitle": false,
+                "title": "Upload a file to S3",
+                "subtitle": "Supported formats: PDF, images, documents"
+            },
+            "validate": {
+                "required": false
+            }
+        },
+        {
+            "type": "button",
+            "label": "Submit",
+            "key": "submit",
+            "action": "submit",
+            "theme": "primary"
+        }
+    ]
+}
