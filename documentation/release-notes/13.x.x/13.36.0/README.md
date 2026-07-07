@@ -51,3 +51,9 @@
   On the General tab of a case type, a dropdown (such as *Link upload process to case*) now displays all of its options
   on top of the surrounding widgets, even when the widgets are stacked. Previously the options could appear behind the
   widget below and be barely visible.
+
+* **Start forms configured to open in a panel opened in a modal instead**
+
+  A supporting process started from the **Start** button always opened its start form in a modal, even when the process
+  link was configured with **Display type: Panel**. The configured display type is now respected
+  again, so these start forms open in the case detail panel as intended.
