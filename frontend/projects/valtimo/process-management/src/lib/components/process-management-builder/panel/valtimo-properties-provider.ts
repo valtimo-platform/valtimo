@@ -158,7 +158,10 @@ const CustomRootElement = (props: {
       element: {
         id: currentElement.id,
         type: currentElement.type,
-        activityListenerType: mapActivityTypeToActivityListenerType(currentElement.type, currentElement),
+        activityListenerType: mapActivityTypeToActivityListenerType(
+          currentElement.type,
+          currentElement
+        ),
         name: currentElement.di?.bpmnElement?.name,
       },
     };
@@ -339,6 +342,44 @@ const CustomRootElement = (props: {
     </div>`;
   }
 
+  if (processLink?.processLinkType === 'external_plugin_task_form') {
+    // A task-form's name is its bundle key (the form identifier), mirroring how the external-plugin
+    // action panel shows its action key; fall back to a generic label for a plugin's sole, unkeyed
+    // task-form bundle.
+    const taskFormName =
+      processLink?.bundleKey || translateService.instant('processLink.pluginForm');
+    return html`<div class="process-link-properties-panel">
+      <div class="process-link-properties-panel__header">
+        <span class="process-link-properties-panel__title-container">
+          <span class="process-link-properties-panel__title">${taskFormName}</span>
+        </span>
+
+        <cds-tag
+          class="cds--tag cds--tag--purple cds--tag--md cds--layout--size-md  cds-tag--no-margin"
+          ><span class="cds--tag__label">
+            ${translateService.instant('processLinkType.plugin')}
+          </span>
+        </cds-tag>
+      </div>
+
+      <div class="process-link-properties-panel__buttons">
+        <button
+          class="cds--btn cds--btn--danger cds--btn--sm cds--layout--side-md"
+          onClick=${handleUnlinkClick}
+        >
+          ${unlinkText}
+        </button>
+
+        <button
+          class="cds--btn cds--btn--primary cds--btn--sm cds--layout--size-md"
+          onClick=${handleEditClick}
+        >
+          ${editProcessLinkText}
+        </button>
+      </div>
+    </div>`;
+  }
+
   const pluginActionKey = processLink?.pluginActionDefinitionKey;
   const pluginActionTranslation =
     pluginTranslationService.instantByPluginActionKey(pluginActionKey);
@@ -463,9 +504,17 @@ const ValidationErrorsElement = (props: {
   return html`<div class="validation-errors-panel">
     ${props.errors.map(
       error =>
-        html`<div class="validation-errors-panel__item${error.severity === 'WARNING' ? ' warning' : ''}">
-          <span class="validation-errors-panel__icon${error.severity === 'WARNING' ? ' warning' : ''}">!</span>
-          <span class="validation-errors-panel__reason${error.severity === 'WARNING' ? ' warning' : ''}">${getErrorMessage(error)}</span>
+        html`<div
+          class="validation-errors-panel__item${error.severity === 'WARNING' ? ' warning' : ''}"
+        >
+          <span
+            class="validation-errors-panel__icon${error.severity === 'WARNING' ? ' warning' : ''}"
+            >!</span
+          >
+          <span
+            class="validation-errors-panel__reason${error.severity === 'WARNING' ? ' warning' : ''}"
+            >${getErrorMessage(error)}</span
+          >
         </div>`
     )}
   </div>`;
