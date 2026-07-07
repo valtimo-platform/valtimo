@@ -45,6 +45,8 @@ export class IkoDetailsComponent implements OnDestroy {
   @ViewChild('content', {read: ViewContainerRef, static: true})
   private readonly _container: ViewContainerRef;
 
+  private _currentViewKey: string | null = null;
+
   public readonly activeTabKey$ = this.ikoTabService.activeTabKey$;
 
   public readonly tabs$: Observable<IkoTab[]> = combineLatest([
@@ -54,6 +56,11 @@ export class IkoDetailsComponent implements OnDestroy {
     this.ikoApiService.cachedMenuItems$,
   ]).pipe(
     tap(([params, queryParams, breadcrumbTitle, menuItems]) => {
+      if (this._currentViewKey !== null && this._currentViewKey !== params.key) {
+        this._container.clear();
+      }
+      this._currentViewKey = params.key;
+
       const currentMenuItem = menuItems.find(item => item.key === params.key);
 
       if (currentMenuItem && currentMenuItem?.title)
