@@ -35,6 +35,7 @@
 
       <input
         [invalid]="title.dirty && title.invalid"
+        [attr.data-test-id]="testIds.titleInput"
         formControlName="title"
         cdsText
         placeholder="{{ 'ikoManagement.tabTitlePlaceholder' | translate }}"
@@ -51,14 +52,16 @@
     >
     </valtimo-auto-key-input>
 
-    <v-select
-      [invalid]="type.dirty && type.invalid"
-      [dropUp]="false"
-      formControlName="type"
-      [items]="tabTypeSelectItems"
-      titleTranslationKey="ikoManagement.tabTypeTitle"
-      [appendInline]="false"
-    ></v-select>
+    <div [attr.data-test-id]="testIds.typeSelect">
+      <v-select
+        [invalid]="type.dirty && type.invalid"
+        [dropUp]="false"
+        formControlName="type"
+        [items]="tabTypeSelectItems"
+        titleTranslationKey="ikoManagement.tabTypeTitle"
+        [appendInline]="false"
+      ></v-select>
+    </div>
 
     <v-select
       [dropUp]="false"
@@ -78,12 +81,17 @@
   </form>
 
   <cds-modal-footer>
-    <button cdsButton="secondary" (click)="closeModal()">
+    <button
+      cdsButton="secondary"
+      [attr.data-test-id]="testIds.cancelButton"
+      (click)="closeModal()"
+    >
       {{ 'interface.cancel' | translate }}
     </button>
 
     <button
       [disabled]="form.invalid || form.disabled || !form.dirty"
+      [attr.data-test-id]="testIds.saveButton"
       cdsButton="primary"
       (click)="addTab()"
     >

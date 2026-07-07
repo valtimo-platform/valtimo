@@ -112,12 +112,15 @@ export class CaseDetailsConfigPage {
 
   // ─── Navigation ───────────────────────────────────────────────────
 
+  // Navigate directly to the case-management list, then open the case.
+  // Avoids the Admin menu + chart-heavy dashboard load, which can hang the
+  // beforeAll hook or crash the Chromium renderer ("Target crashed").
   async goToCaseDetailsConfig(caseIdentifier: string) {
     console.log('Navigate to Case Details Config...');
-    await this.page.getByRole('button', {name: 'Admin'}).click();
-    await this.page.getByRole('link', {name: 'Cases'}).click();
+    await this.page.goto('/case-management');
     await this.page.waitForSelector('valtimo-carbon-list');
     await this.page.locator(`tr:has(td:has-text("${caseIdentifier}"))`).click();
+    await this.page.waitForURL(/\/case-management\/case\//);
     await this.page.getByRole('tab', {name: 'Case details'}).click();
   }
 
@@ -196,8 +199,15 @@ export class CaseDetailsConfigPage {
     await expect(visibleCell).toContainText(expectedVisible ? 'Yes' : 'No');
   }
 
+  // The Case-details config page renders several valtimo-carbon-list elements
+  // (Case-details tabs, Statuses, Tags). Scope to the statuses component so we
+  // never accidentally read/drag the tabs list.
+  private get statusesList() {
+    return new CarbonList(this.page, this.page.locator('valtimo-case-management-statuses'));
+  }
+
   async getStatusTitlesInOrder(): Promise<string[]> {
-    const list = new CarbonList(this.page);
+    const list = this.statusesList;
     const rows = list.rows;
     const count = await rows.count();
     const titles: string[] = [];
@@ -210,7 +220,7 @@ export class CaseDetailsConfigPage {
   }
 
   async dragStatusToPosition(sourceTitle: string, targetTitle: string) {
-    const list = new CarbonList(this.page);
+    const list = this.statusesList;
     const sourceRow = list.row(sourceTitle);
     const targetRow = list.row(targetTitle);
     await list.dragRow(sourceRow, targetRow);

@@ -198,10 +198,6 @@ export class UserCasesPage {
       .first();
   }
 
-  get noTasksMessage(): Locator {
-    return this.taskListPanel.getByText('All tasks have been completed');
-  }
-
   // ─── "Start" overflow button in the page header ──────────────────
 
   get startCaseProcessButton(): Locator {
@@ -220,6 +216,18 @@ export class UserCasesPage {
 
   get formStartButton(): Locator {
     return this.taskDetailDialog.getByRole('button', {name: 'Start', exact: true});
+  }
+
+  // The task-detail form opened from the case-management case detail renders
+  // inline (openFromCaseManagement) inside <valtimo-task-detail-content> instead
+  // of a role="dialog" / #taskDetailModal overlay, so its Form.io submit button
+  // must be scoped to that component — getByRole('dialog') (used for the
+  // process-start form) and the #taskDetailModal id both miss it, and an unscoped
+  // "Start" would collide with the case header's Start button.
+  get taskFormStartButton(): Locator {
+    return this.page
+      .locator('valtimo-task-detail-content')
+      .getByRole('button', {name: 'Start', exact: true});
   }
 
   // ─── Actions ─────────────────────────────────────────────────────
@@ -242,13 +250,25 @@ export class UserCasesPage {
     await this.page.getByRole('listbox').getByText('(me)').first().click();
     await this.page.getByRole('combobox', {name: 'Select team'}).click();
     await this.page.getByRole('listbox').getByRole('option').first().click();
+
+    // Confirm the assignment and wait for the backend call to succeed rather than
+    // for the "Task assigned" pop-up: that pop-up is a transient toast
+    // (globalNotificationService.showToast), not a persistent heading, so it
+    // auto-dismisses and can never be matched reliably. The assign response is
+    // the deterministic signal that the task was assigned.
+    const assignResponse = this.page.waitForResponse(
+      res => /\/api\/v1\/task\/[^/]+\/assign$/.test(res.url()) && res.request().method() === 'POST'
+    );
     await this.page.getByRole('button', {name: 'Confirm', exact: true}).click();
-    await expect(this.page.getByRole('heading', {name: 'Task assigned'})).toBeVisible({
-      timeout: 15_000,
-    });
+    const response = await assignResponse;
+    expect(response.ok()).toBeTruthy();
   }
 
   async submitFormStart() {
     await this.formStartButton.click();
+  }
+
+  async submitTaskForm() {
+    await this.taskFormStartButton.click();
   }
 }
