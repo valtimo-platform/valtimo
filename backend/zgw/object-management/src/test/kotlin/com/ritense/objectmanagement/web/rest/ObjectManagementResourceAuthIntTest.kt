@@ -24,6 +24,7 @@ import com.ritense.objectmanagement.domain.ObjectManagement
 import com.ritense.objectmanagement.service.ObjectManagementService
 import com.ritense.plugin.service.PluginService
 import com.ritense.valtimo.contract.authentication.AuthoritiesConstants.USER
+import okhttp3.mockwebserver.MockResponse
 import okhttp3.mockwebserver.MockWebServer
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
@@ -151,6 +152,14 @@ internal class ObjectManagementResourceAuthIntTest : BaseIntegrationTest() {
     @Test
     @WithMockUser(username = "user@ritense.com", authorities = [USER])
     fun `deprecated object-instances endpoint still enforces VIEW_LIST (403 without permission)`() {
+        // ObjectenApiClient fetches from the Objecten API before checking the Object VIEW_LIST permission,
+        // so a response must be stubbed for the request to reach the (denying) authorization check.
+        mockApi.enqueue(
+            MockResponse()
+                .setBody("""{"count":0,"results":[]}""")
+                .addHeader("Content-Type", MediaType.APPLICATION_JSON_VALUE)
+        )
+
         mockMvc.perform(
             get("/api/v1/object/management/configuration/{id}/object", testConfigId)
                 .accept(MediaType.APPLICATION_JSON_VALUE)
