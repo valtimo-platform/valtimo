@@ -58,7 +58,8 @@
   link was configured with **Display type: Panel**. The configured display type is now respected
   again, so these start forms open in the case detail panel as intended.
 
-* **Long form names in the form builder are now truncated with an ellipsis**
+* **Long page titles are now truncated with an ellipsis**
 
-  When a form name is too long to fit in the form builder header, it is now shown with an ellipsis and the full name
-  appears on hover. This keeps the header action buttons (edit, save, back) visible regardless of how long the name is.
+  When a page title is too long to fit in the page header, it is now shown with an ellipsis and the full title
+  appears on hover. This keeps the header action buttons visible regardless of how long the title is. This was
+  most noticeable on the form builder header with long form names.
