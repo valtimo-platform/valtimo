@@ -832,7 +832,9 @@ and menu pages remain ⛔. The iframe holds **no token** and routes calls throug
 
 The original design proposed passing the user token into the iframe via `init` and letting the
 iframe fetch with it. **That was not implemented.** The iframe is rendered at an **opaque origin**
-(`sandbox="allow-scripts"`, *without* `allow-same-origin`) and never holds a credential:
+(`sandbox="allow-scripts allow-forms"`, *without* `allow-same-origin`; `allow-forms` lets a task-form
+submit through an idiomatic `<form>` — §13.6 — and does not affect origin isolation) and never holds a
+credential:
 
 - The bundle calls `sdk.callValtimo(method, path, body?)` or `sdk.getPluginData(path)`; the frontend
   SDK emits a correlation-id-keyed `proxyRequest` postMessage to the Angular parent and awaits a
@@ -934,12 +936,24 @@ A plugin renders the form for a **user task**, and **task completion flows throu
   `task-form` bundle; the case-tab (§13.1) and task-form surfaces share it.
 - **Delete guard.** `ExternalPluginHostUsageResolver` unions task-form links with action links, so a
   configuration referenced by a task form blocks deletion of its plugin/host (§12).
-- **Admin UX** (`@valtimo/process-link`). A "Plugin form" type tile appears for user tasks; the
-  `configureExternalPluginTaskForm` step (`SelectExternalPluginTaskFormComponent`) lists activated
-  configurations that expose a `task-form` bundle (one option per bundle) and writes the create/update
-  DTO. The process-link framework resolves the link type by Jackson **deduction** (which fields are
-  present, not `processLinkType`), so the DTO always serialises `bundleKey` (null when the bundle is
-  unkeyed) to stay distinguishable from the action link, which is identified by its `actionKey`.
+- **Admin UX** (`@valtimo/process-link`). There is no separate tile: an external plugin's task-form is
+  configured inside the **"Plugin"** flow. On a user task the plugin's `task-form` bundles are listed as
+  the selectable options in the "choose action" step (in place of service-task actions), the "configure"
+  step has nothing to fill in, and saving writes the `external_plugin_task_form` link. This works
+  because external plugin **actions are activity-type filtered**: `SelectPluginActionComponent` offers an
+  action only for the activity types its manifest declares (`SERVICE_TASK_START`, …), so a user task
+  surfaces the plugin's forms rather than its actions (and an action can never be linked to an activity
+  where it could not run). The process-link framework resolves the link type by Jackson **deduction**
+  (which fields are present, not `processLinkType`), so the create/update DTO always serialises
+  `bundleKey` (null for a plugin's sole, unkeyed bundle) to stay distinguishable from the action link,
+  which is identified by its `actionKey`. The BPMN properties-panel "Process link" preview shows the
+  bundle key with a purple **Plugin** tag; the stepper labels external actions/forms by their manifest
+  title rather than a translation-bundle lookup (external plugins have no embedded translation bundle).
+- **Iframe sandbox.** The plugin iframe is sandboxed `allow-scripts allow-forms` (still without
+  `allow-same-origin`, §13.2). `allow-forms` lets a task-form submit through an idiomatic `<form>`: the
+  bundle's submit handler forwards the data by postMessage, but without `allow-forms` the browser blocks
+  the submit before that handler runs. It grants nothing a script cannot already do (a script can POST
+  via `fetch`) and preserves the opaque origin.
 - **Runtime** (`@valtimo/task`). `TaskDetailContentComponent` maps the `external-plugin-task-form`
   result to `TaskExternalPluginFormComponent`, which mints the downscoped user token (re-minting
   before the ≤15-min expiry) and embeds `<valtimo-external-plugin-iframe>`. The bundle submits with

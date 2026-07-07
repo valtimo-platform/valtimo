@@ -2347,7 +2347,8 @@
     "edit": "Proceskoppeling wijzigen",
     "saveChanges": "Wijzigingen opslaan",
     "unlink": "Ontkoppelen",
-    "noPluginFunctions": "Deze plugin ondersteunt geen plugin-acties."
+    "noPluginFunctions": "Deze plugin ondersteunt geen plugin-acties.",
+    "pluginForm": "Pluginformulier"
   },
   "keycloak": {
     "expiryPromptTitle": "De sessie verloopt bijna",
