@@ -73,5 +73,6 @@ services:
 #   url: jdbc:mysql://localhost:3364/team-test
 #   url: jdbc:mysql://localhost:3365/admin-settings-test
 #   url: jdbc:mysql://localhost:3366/documenten-api-preview-test
+#   url: jdbc:mysql://localhost:3367/aws-test
 #   url: localhost:55672 <--outbox rabbitmq
 #   url: localhost:55673 <--inbox rabbitmq
