@@ -15,6 +15,8 @@
  */
 
 import {
+  AfterViewInit,
+  ChangeDetectorRef,
   Component,
   EventEmitter,
   forwardRef,
@@ -48,7 +50,7 @@ import {NG_VALUE_ACCESSOR} from '@angular/forms';
     },
   ],
 })
-export class SelectComponent implements OnInit, OnChanges, OnDestroy {
+export class SelectComponent implements OnInit, AfterViewInit, OnChanges, OnDestroy {
   @Input() public set items(value: Array<SelectItem>) {
     this._listItems$.next(
       Array.isArray(value)
@@ -113,16 +115,26 @@ export class SelectComponent implements OnInit, OnChanges, OnDestroy {
           ? selected.includes(listItem.id)
           : selected === listItem.id;
 
+        // Only replace the content with the translation when it resolved to an actual (different)
+        // string. When an item's content happens to match a translation namespace, instant()
+        // returns that nested object; using it would render the option as "[object Object]", so we
+        // keep the original content instead.
+        const translated =
+          typeof translation === 'string' && translation !== listItem.content
+            ? translation
+            : listItem.content;
+
         return {
           ...listItem,
           selected: isSelected,
-          content: translation !== listItem.content ? translation : listItem.content,
+          content: translated,
         };
       })
     )
   );
   private _selectedSubscription!: Subscription;
   private _clearSubjectSubscription!: Subscription;
+  private _displayFlushTimeoutId?: ReturnType<typeof setTimeout>;
 
   private _onChange: (value: SelectedValue) => void = () => {};
   private _onTouched: () => void = () => {};
@@ -143,12 +155,27 @@ export class SelectComponent implements OnInit, OnChanges, OnDestroy {
     this.$disabled.set(isDisabled);
   }
 
-  constructor(private readonly translateService: TranslateService) {}
+  constructor(
+    private readonly translateService: TranslateService,
+    private readonly changeDetectorRef: ChangeDetectorRef
+  ) {}
 
   public ngOnInit(): void {
     this.setDefaultSelection();
     this.openSelectedSubscription();
     this.openClearSubjectSubscription();
+  }
+
+  public ngAfterViewInit(): void {
+    // The underlying Carbon combobox computes its displayed value asynchronously, in a setTimeout
+    // scheduled during its own view initialization. When this component lives under an OnPush
+    // ancestor that is not marked dirty, that update is never flushed to the DOM, so a preselected
+    // value only becomes visible after the user interacts with the control. Because this setTimeout
+    // is scheduled after the combobox's (lifecycle hooks of child views run first), it runs once
+    // the combobox has set its display value, and detectChanges() flushes it to the DOM. A
+    // setTimeout is used instead of NgZone.onStable so the flush also works in apps with
+    // long-running background tasks that keep the zone from ever stabilizing.
+    this._displayFlushTimeoutId = setTimeout(() => this.changeDetectorRef.detectChanges());
   }
 
   public ngOnChanges(changes: SimpleChanges): void {
@@ -165,6 +192,7 @@ export class SelectComponent implements OnInit, OnChanges, OnDestroy {
   public ngOnDestroy(): void {
     this._selectedSubscription?.unsubscribe();
     this._clearSubjectSubscription?.unsubscribe();
+    if (this._displayFlushTimeoutId !== undefined) clearTimeout(this._displayFlushTimeoutId);
   }
 
   public setSelected(selectedValue: ListItem | Array<ListItem>): void {
@@ -189,6 +217,13 @@ export class SelectComponent implements OnInit, OnChanges, OnDestroy {
 
   public clear(): void {
     this.setSelectedValue(this.multiple ? [] : '');
+  }
+
+  public onDropdownClose(): void {
+    // The Carbon combobox closes itself (e.g. on an outside click) by toggling internal state.
+    // Under an OnPush ancestor that change is not flushed to the DOM, so the open dropdown would
+    // stay visible. Marking this view for check flushes the close.
+    this.changeDetectorRef.markForCheck();
   }
 
   private setDefaultSelection(): void {

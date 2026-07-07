@@ -164,8 +164,7 @@ export class CaseDetailsManagementCaseListPage {
   // Navigation
   async goToCaseDetailsManagementCaseList(caseIdentifier: string) {
     console.log('Navigate to Case Details Management...');
-    await this.page.getByRole('button', {name: 'Admin'}).click();
-    await this.page.getByRole('link', {name: 'Cases'}).click();
+    await this.page.goto('/case-management');
     await this.page.waitForSelector('valtimo-carbon-list');
     await this.page.locator(`tr:has(td:has-text("${caseIdentifier}"))`).click();
     await this.listTab.click();

@@ -1,0 +1,315 @@
+<!--
+  ~ Copyright 2015-2026 Ritense BV, the Netherlands.
+  ~
+  ~ Licensed under EUPL, Version 1.2 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~ https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" basis,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<div
+  class="permission-form"
+  [attr.data-test-id]="testIds.permissionCard"
+  [cdsLayer]="0"
+  [formGroup]="group"
+>
+  @if ($loading()) {
+    <div class="permission-form__loading">
+      <cds-loading [isActive]="true" [overlay]="false" size="sm"></cds-loading>
+    </div>
+  }
+
+  <div class="permission-form__body" [class.permission-form__body--hidden]="$loading()">
+    <!-- Header block: the permission preview followed by an editor-level note, separated from the
+         editable sections below by a subtle divider. -->
+    <div class="permission-form__header">
+      <!-- A larger preview of the permission (the same information shown in the sidebar list), so
+           the rule being edited is recognisable at the top of the panel. The full resource type is
+           shown here (the sidebar only shows the short name). -->
+      <div class="permission-form__preview">
+        <div class="permission-form__preview-heading">
+          <h4 class="permission-form__preview-title">
+            @if (resourceTypeValue) {
+              {{ resourceShortName }}
+            } @else {
+              {{ 'accessControl.editor.newPermission' | translate }}
+            }
+          </h4>
+
+          @if (resourceTypeValue) {
+            <span class="permission-form__preview-subtitle">{{ resourceTypeValue }}</span>
+          }
+        </div>
+
+        @if (conditionsArray.length || hasContext) {
+          <div class="permission-form__preview-row">
+            <span class="permission-form__preview-label">{{
+              'accessControl.editor.preview.includes' | translate
+            }}</span>
+
+            @if (conditionsArray.length) {
+              <cds-tag size="sm" type="high-contrast">{{
+                'accessControl.editor.hasConditions' | translate
+              }}</cds-tag>
+            }
+            @if (hasContext) {
+              <cds-tag size="sm" type="high-contrast">{{
+                'accessControl.editor.hasContext' | translate
+              }}</cds-tag>
+            }
+          </div>
+        }
+
+        @if (selectedActions.length) {
+          <div class="permission-form__preview-row">
+            <span class="permission-form__preview-label">{{
+              'accessControl.editor.preview.actions' | translate
+            }}</span>
+
+            @for (action of selectedActions; track action) {
+              <cds-tag size="sm" [type]="action | actionTagType">{{
+                action | actionLabel
+              }}</cds-tag>
+            }
+          </div>
+        }
+      </div>
+
+      <!-- Editor-level note: applies to the role selected on this page, and only system-supported
+           options can be selected. -->
+      <ng-container
+        *ngTemplateOutlet="
+          infoNote;
+          context: {
+            $implicit: resourceShortName
+              ? ('accessControl.editor.permissionsHint'
+                | translate: {resource: resourceShortName, role: roleKey})
+              : ('accessControl.editor.permissionsHintNew' | translate: {role: roleKey}),
+          }
+        "
+      ></ng-container>
+    </div>
+
+    <cds-accordion class="permission-form__accordion">
+      <cds-accordion-item
+        [expanded]="$openSection() === 'resourceActions'"
+        [title]="'accessControl.editor.resourceAndActions' | translate"
+        (selected)="onSectionToggle('resourceActions', $event)"
+      >
+        <div class="permission-form__section">
+          <ng-container
+            *ngTemplateOutlet="
+              infoNote;
+              context: {$implicit: 'accessControl.editor.resourceActionsHint' | translate}
+            "
+          ></ng-container>
+
+          <div class="permission-form__row">
+            <v-select
+              class="permission-form__resource-type"
+              formControlName="resourceType"
+              [cdsLayer]="1"
+              [dataTestId]="testIds.resourceTypeSelect"
+              [defaultSelectionId]="resourceTypeValue"
+              [dropUp]="false"
+              [invalid]="group.get('resourceType')!.invalid && group.get('resourceType')!.touched"
+              [items]="resourceTypeItems"
+              [placeholder]="'accessControl.editor.resourceTypePlaceholder' | translate"
+              [required]="true"
+              [tooltip]="'accessControl.editor.tooltips.resourceType' | translate"
+              titleTranslationKey="accessControl.editor.resourceType"
+            ></v-select>
+
+            <div class="permission-form__actions-field">
+              <label class="cds--label label-with-tooltip">
+                {{ 'accessControl.editor.actions' | translate }} ({{
+                  'interface.required' | translate
+                }})
+                <v-tooltip-icon
+                  [tooltip]="'accessControl.editor.tooltips.actions' | translate"
+                ></v-tooltip-icon>
+              </label>
+
+              @if (actionItems.length) {
+                <div
+                  class="permission-form__actions-grid"
+                  [attr.data-test-id]="testIds.actionsSelect"
+                  [class.permission-form__actions-grid--invalid]="
+                    actionsControl.invalid && actionsControl.touched
+                  "
+                >
+                  @for (item of actionItems; track item.id) {
+                    <div class="permission-form__action">
+                      <cds-checkbox
+                        [checked]="selectedActions.includes(item.id)"
+                        [disabled]="disabled"
+                        (checkedChange)="onActionToggle(item.id, $event)"
+                      >
+                        {{ item.id | actionLabel }}
+                      </cds-checkbox>
+
+                      @if (item.id | actionDescription; as description) {
+                        <v-tooltip-icon [tooltip]="description"></v-tooltip-icon>
+                      }
+                    </div>
+                  }
+                </div>
+              } @else {
+                <p class="permission-form__hint">
+                  {{ 'accessControl.editor.noActions' | translate }}
+                </p>
+              }
+            </div>
+          </div>
+        </div>
+      </cds-accordion-item>
+
+      <cds-accordion-item
+        [class.permission-form__section-configured]="conditionsArray.length > 0"
+        [expanded]="$openSection() === 'conditions'"
+        [title]="'accessControl.editor.conditions' | translate"
+        (selected)="onSectionToggle('conditions', $event)"
+      >
+        <div class="permission-form__section">
+          <ng-container
+            *ngTemplateOutlet="
+              infoNote;
+              context: {$implicit: 'accessControl.editor.conditionsHint' | translate}
+            "
+          ></ng-container>
+
+          <valtimo-condition-tree
+            [conditions]="conditionsArray"
+            [disabled]="disabled"
+            [resourceType]="resourceTypeValue"
+          ></valtimo-condition-tree>
+        </div>
+      </cds-accordion-item>
+
+      <cds-accordion-item
+        [class.permission-form__section-configured]="hasContext"
+        [expanded]="$openSection() === 'context'"
+        [title]="'accessControl.editor.contextSection' | translate"
+        (selected)="onSectionToggle('context', $event)"
+      >
+        <div class="permission-form__section">
+          <ng-container
+            *ngTemplateOutlet="
+              infoNote;
+              context: {$implicit: 'accessControl.editor.contextHint' | translate}
+            "
+          ></ng-container>
+
+          <cds-content-switcher
+            class="permission-form__context-switcher"
+            [attr.data-test-id]="testIds.contextToggle"
+            [class.permission-form__context-switcher--disabled]="disabled"
+            size="sm"
+          >
+            <button
+              cdsContentOption
+              type="button"
+              [active]="contextMode === 'none'"
+              (selected)="onContextModeChange('none')"
+            >
+              {{ 'accessControl.editor.contextModeNone' | translate }}
+            </button>
+            <button
+              cdsContentOption
+              type="button"
+              [active]="contextMode === 'noContext'"
+              (selected)="onContextModeChange('noContext')"
+            >
+              {{ 'accessControl.editor.contextModeNoContext' | translate }}
+            </button>
+            @if (hasContextTargets) {
+              <button
+                cdsContentOption
+                type="button"
+                [active]="contextMode === 'specific'"
+                (selected)="onContextModeChange('specific')"
+              >
+                {{ 'accessControl.editor.contextModeSpecific' | translate }}
+              </button>
+            }
+          </cds-content-switcher>
+
+          @switch (contextMode) {
+            @case ('noContext') {
+              <cds-inline-notification
+                class="permission-form__notification"
+                [notificationObj]="{
+                  type: 'info',
+                  message: 'accessControl.editor.noContextHint' | translate,
+                  lowContrast: true,
+                  showClose: false,
+                }"
+              ></cds-inline-notification>
+            }
+            @case ('specific') {
+              <v-select
+                class="permission-form__resource-type"
+                formControlName="contextResourceType"
+                [cdsLayer]="1"
+                [clearable]="false"
+                [dataTestId]="testIds.contextResourceTypeSelect"
+                [defaultSelectionId]="contextResourceTypeValue || ''"
+                [dropUp]="false"
+                [items]="contextResourceTypeItems"
+                [placeholder]="'accessControl.editor.contextResourceTypePlaceholder' | translate"
+                [tooltip]="'accessControl.editor.tooltips.contextResourceType' | translate"
+                titleTranslationKey="accessControl.editor.contextResourceType"
+              ></v-select>
+
+              <valtimo-condition-tree
+                [conditions]="contextConditionsArray"
+                [disabled]="disabled"
+                [resourceType]="contextResourceTypeValue"
+              ></valtimo-condition-tree>
+            }
+          }
+        </div>
+      </cds-accordion-item>
+    </cds-accordion>
+
+    <div class="permission-form__footer">
+      <button
+        cdsButton="danger--ghost"
+        size="sm"
+        [attr.data-test-id]="testIds.removePermissionButton"
+        [disabled]="disabled"
+        (click)="openRemoveModal()"
+      >
+        {{ 'accessControl.editor.removePermission' | translate }}
+
+        <svg class="cds--btn__icon" cdsIcon="trash-can" size="16"></svg>
+      </button>
+    </div>
+  </div>
+
+  <valtimo-confirmation-modal
+    confirmButtonTextTranslationKey="accessControl.editor.removePermission"
+    confirmButtonType="danger"
+    contentTranslationKey="accessControl.editor.removePermissionModal.content"
+    titleTranslationKey="accessControl.editor.removePermissionModal.title"
+    [showModalSubject$]="showRemoveModal$"
+    (confirmEvent)="onRemove()"
+  ></valtimo-confirmation-modal>
+
+  <!-- Lightweight inline hint: a blue information icon with italic secondary text. The message is
+       passed in via context so the icon and styling are defined in a single place. -->
+  <ng-template #infoNote let-message>
+    <p class="permission-form__info-note">
+      <svg class="permission-form__info-icon" cdsIcon="information" size="16"></svg>
+
+      <span>{{ message }}</span>
+    </p>
+  </ng-template>
+</div>

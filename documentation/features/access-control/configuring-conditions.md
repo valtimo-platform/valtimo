@@ -8,6 +8,10 @@ This page requires:
 * Knowledge of [JSON](https://www.json.org/)
 {% endhint %}
 
+{% hint style="info" %}
+Conditions can be built in the UI with the visual permission editor (the **Conditions** section — see [Configuring permissions](configuring-permissions.md)) or written directly as JSON. This page describes their JSON structure, which applies to both.
+{% endhint %}
+
 ## Use case
 
 **Use case:** An implementation has 5 case types. 2 of those 5 case types should only be accessible to managers.
