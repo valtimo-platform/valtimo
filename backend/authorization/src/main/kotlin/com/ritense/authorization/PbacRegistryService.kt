@@ -44,165 +44,280 @@ class PbacRegistryService(
     private val specificationFactories: List<AuthorizationSpecificationFactory<*>>,
     private val roleRepository: RoleRepository,
 ) {
+    private val cacheLock = Any()
+
+    @Volatile
+    private var cachedRegistryMetadata: RegistryMetadata? = null
+
+    @Volatile
     private var cachedScannedActionProviders: List<ResourceActionProvider<*>>? = null
 
     fun getRegistry(): PbacRegistryDto {
+        val metadata = getOrCreateRegistryMetadata()
+
+        return PbacRegistryDto(
+            resources = metadata.resources,
+            operators = metadata.operators,
+            conditionTypes = metadata.conditionTypes,
+            entityMappers = metadata.entityMappers,
+            roles = roleRepository.findAll()
+                .map { it.key }
+                .sorted(),
+        )
+    }
+
+    /**
+     * Returns the immutable registry metadata.
+     *
+     * Resource types, actions, fields, operators, condition types and entity mappers are determined
+     * by the application classpath and Spring configuration, so they do not change while the
+     * application is running. The result is therefore built once and reused for subsequent calls.
+     */
+    private fun getOrCreateRegistryMetadata(): RegistryMetadata {
+        cachedRegistryMetadata?.let { return it }
+
+        return synchronized(cacheLock) {
+            cachedRegistryMetadata ?: createRegistryMetadata().also {
+                cachedRegistryMetadata = it
+            }
+        }
+    }
+
+    private fun createRegistryMetadata(): RegistryMetadata {
         val resourceTypes = discoverResourceTypes()
         val factoryResourceTypes = discoverSpecificationFactoryResourceTypes()
         val mapperPairs = discoverMapperPairs()
 
-        val containerTargets = mapperPairs.groupBy { it.first }
-            .mapValues { (_, pairs) -> pairs.map { it.second }.distinct() }
+        val containerTargets = mapperPairs
+            .groupBy { it.first }
+            .mapValues { (_, pairs) ->
+                pairs.map { it.second }
+                    .distinct()
+                    .sorted()
+            }
 
-        val allResourceTypes = (resourceTypes.keys + factoryResourceTypes).distinct().sorted()
+        val allResourceTypes = (resourceTypes.keys + factoryResourceTypes)
+            .distinct()
+            .sorted()
 
         val resources = allResourceTypes.map { resourceType ->
-            val actions = resourceTypes[resourceType]?.map { it.key }?.distinct() ?: emptyList()
-            val clazz = tryLoadClass(resourceType)
-            val fields = clazz?.let { extractFields(it) } ?: emptyList()
-            val aliases = clazz?.let { extractFieldAliases(it) } ?: emptyList()
-            val hasFactory = factoryResourceTypes.contains(resourceType)
-            val targets = containerTargets[resourceType]?.sorted() ?: emptyList()
+            val resourceClass = tryLoadClass(resourceType)
 
             PbacResourceDto(
                 resourceType = resourceType,
                 shortName = resourceType.substringAfterLast('.'),
-                actions = actions,
-                fields = fields,
-                fieldAliases = aliases,
-                hasSpecificationFactory = hasFactory,
-                containerTargets = targets,
+                actions = resourceTypes[resourceType]
+                    ?.map { it.key }
+                    ?.distinct()
+                    ?: emptyList(),
+                fields = resourceClass
+                    ?.let(::extractFields)
+                    ?: emptyList(),
+                fieldAliases = resourceClass
+                    ?.let(::extractFieldAliases)
+                    ?: emptyList(),
+                hasSpecificationFactory = resourceType in factoryResourceTypes,
+                containerTargets = containerTargets[resourceType] ?: emptyList(),
             )
         }
 
-        val operators = PermissionConditionOperator.entries.map { PbacOperatorDto(key = it.asText) }
+        val operators = PermissionConditionOperator.entries.map {
+            PbacOperatorDto(key = it.asText)
+        }
 
-        val conditionTypes =
-            PermissionConditionType.entries.map { PbacConditionTypeDto(key = it.value) }
+        val conditionTypes = PermissionConditionType.entries.map {
+            PbacConditionTypeDto(key = it.value)
+        }
 
-        val entityMappers = mapperPairs.map { (from, to) ->
-            PbacEntityMapperDto(fromResourceType = from, toResourceType = to)
-        }.sortedWith(compareBy({ it.fromResourceType }, { it.toResourceType }))
+        val entityMappers = mapperPairs
+            .map { (from, to) ->
+                PbacEntityMapperDto(
+                    fromResourceType = from,
+                    toResourceType = to,
+                )
+            }
+            .sortedWith(
+                compareBy(
+                    PbacEntityMapperDto::fromResourceType,
+                    PbacEntityMapperDto::toResourceType,
+                )
+            )
 
-        val roles = roleRepository.findAll().map { it.key }.sorted()
-
-        return PbacRegistryDto(
+        return RegistryMetadata(
             resources = resources,
             operators = operators,
             conditionTypes = conditionTypes,
             entityMappers = entityMappers,
-            roles = roles,
         )
     }
 
     private fun discoverResourceTypes(): Map<String, List<Action<*>>> {
         val result = mutableMapOf<String, MutableList<Action<*>>>()
+
         for (provider in allActionProviders()) {
             val resourceType = extractTypeArguments(
-                provider.javaClass, ResourceActionProvider::class.java
+                provider.javaClass,
+                ResourceActionProvider::class.java,
             )?.firstOrNull() ?: continue
-            val actions = provider.getAvailableActions()
-            result.getOrPut(resourceType.name) { mutableListOf() }.addAll(actions)
+
+            result.getOrPut(resourceType.name) { mutableListOf() }
+                .addAll(provider.getAvailableActions())
         }
+
         return result
     }
 
     /**
-     * The Spring-injected [actionProviders] only contains the providers that happen to be
-     * registered as beans; many [ResourceActionProvider] implementations are only used for their
-     * static action constants and are never registered. To report every resource's actions, the
-     * classpath is also scanned for implementations (which all have no-arg constructors) and those
-     * not already provided as beans are instantiated and merged in.
+     * The Spring-injected [actionProviders] only contains providers registered as beans.
+     *
+     * Some [ResourceActionProvider] implementations are only used for their static action
+     * constants and are not registered as beans. The classpath is therefore scanned for additional
+     * implementations. Providers already supplied by Spring are not instantiated a second time.
      */
     private fun allActionProviders(): List<ResourceActionProvider<*>> {
-        val beanClasses = actionProviders.map { it.javaClass }.toSet()
-        val scanned = scannedActionProviders().filter { it.javaClass !in beanClasses }
-        return actionProviders + scanned
+        val beanClasses = actionProviders
+            .map { it.javaClass }
+            .toSet()
+
+        val scannedProviders = scannedActionProviders()
+            .filter { it.javaClass !in beanClasses }
+
+        return actionProviders + scannedProviders
     }
 
     private fun scannedActionProviders(): List<ResourceActionProvider<*>> {
-        return cachedScannedActionProviders ?: scanForActionProviders().also {
-            cachedScannedActionProviders = it
-        }
-    }
+        cachedScannedActionProviders?.let { return it }
 
-    private fun scanForActionProviders(): List<ResourceActionProvider<*>> {
-        val scanner = ClassPathScanningCandidateComponentProvider(false)
-        scanner.addIncludeFilter(AssignableTypeFilter(ResourceActionProvider::class.java))
-
-        return SCAN_BASE_PACKAGES.flatMap { basePackage ->
-            scanner.findCandidateComponents(basePackage)
-        }.mapNotNull { candidate ->
-            val className = candidate.beanClassName ?: return@mapNotNull null
-            try {
-                val clazz = Class.forName(className)
-                if (Modifier.isAbstract(clazz.modifiers)) return@mapNotNull null
-                clazz.getDeclaredConstructor().newInstance() as? ResourceActionProvider<*>
-            } catch (e: Exception) {
-                logger.warn(e) { "Could not instantiate ResourceActionProvider '$className' while building the PBAC registry" }
-                null
+        return synchronized(cacheLock) {
+            cachedScannedActionProviders ?: scanForActionProviders().also {
+                cachedScannedActionProviders = it
             }
         }
     }
 
+    private fun scanForActionProviders(): List<ResourceActionProvider<*>> {
+        val scanner = ClassPathScanningCandidateComponentProvider(false).apply {
+            addIncludeFilter(
+                AssignableTypeFilter(ResourceActionProvider::class.java)
+            )
+        }
+
+        return SCAN_BASE_PACKAGES
+            .flatMap(scanner::findCandidateComponents)
+            .mapNotNull { candidate ->
+                val className = candidate.beanClassName
+                    ?: return@mapNotNull null
+
+                try {
+                    val clazz = Class.forName(className)
+
+                    if (clazz.isInterface || Modifier.isAbstract(clazz.modifiers)) {
+                        return@mapNotNull null
+                    }
+
+                    clazz.getDeclaredConstructor()
+                        .newInstance() as? ResourceActionProvider<*>
+                } catch (exception: ReflectiveOperationException) {
+                    logger.warn(exception) {
+                        "Could not instantiate ResourceActionProvider '$className' " +
+                            "while building the PBAC registry"
+                    }
+                    null
+                } catch (exception: LinkageError) {
+                    logger.warn(exception) {
+                        "Could not load ResourceActionProvider '$className' " +
+                            "while building the PBAC registry"
+                    }
+                    null
+                }
+            }
+    }
+
     private fun discoverSpecificationFactoryResourceTypes(): Set<String> {
         val result = mutableSetOf<String>()
+
         for (factory in specificationFactories) {
             val resourceType = extractTypeArguments(
-                factory.javaClass, AuthorizationSpecificationFactory::class.java
+                factory.javaClass,
+                AuthorizationSpecificationFactory::class.java,
             )?.firstOrNull() ?: continue
+
             result.add(resourceType.name)
         }
+
         return result
     }
 
     private fun discoverMapperPairs(): List<Pair<String, String>> {
         val result = mutableListOf<Pair<String, String>>()
+
         for (mapper in mappers) {
-            val types = extractTypeArguments(mapper.javaClass, AuthorizationEntityMapper::class.java)
+            val types = extractTypeArguments(
+                mapper.javaClass,
+                AuthorizationEntityMapper::class.java,
+            )
+
             if (types != null && types.size >= 2) {
                 result.add(types[0].name to types[1].name)
             }
         }
+
         return result.distinct()
     }
 
     /**
-     * Resolves the concrete type arguments a class supplies for [targetInterface], walking up the
-     * superclass chain. Returns null when the interface isn't found or any argument is not a concrete
-     * class (e.g. an unresolved type variable or Any), so callers can skip providers/mappers whose
-     * generics can't be resolved by reflection.
+     * Resolves the concrete type arguments supplied for [targetInterface], while walking up the
+     * superclass chain.
+     *
+     * Returns `null` when the interface is not found or an argument is not a concrete class, such
+     * as an unresolved type variable or `Any`.
      */
     private fun extractTypeArguments(
         implClass: Class<*>,
-        targetInterface: Class<*>
+        targetInterface: Class<*>,
     ): List<Class<*>>? {
-        var clazz: Class<*>? = implClass
-        while (clazz != null && clazz != Any::class.java) {
-            for (iface in clazz.genericInterfaces) {
-                if (iface is ParameterizedType && iface.rawType == targetInterface) {
-                    return iface.actualTypeArguments.map { arg ->
-                        if (arg is Class<*> && arg != Any::class.java) arg else return null
+        var currentClass: Class<*>? = implClass
+
+        while (currentClass != null && currentClass != Any::class.java) {
+            for (interfaceType in currentClass.genericInterfaces) {
+                if (
+                    interfaceType is ParameterizedType &&
+                    interfaceType.rawType == targetInterface
+                ) {
+                    return interfaceType.actualTypeArguments.map { argument ->
+                        if (argument is Class<*> && argument != Any::class.java) {
+                            argument
+                        } else {
+                            return null
+                        }
                     }
                 }
             }
-            clazz = clazz.superclass
+
+            currentClass = currentClass.superclass
         }
+
         return null
     }
 
     private fun extractFields(clazz: Class<*>): List<PbacConditionFieldDto> {
-        val fields = mutableListOf<PbacConditionFieldDto>()
-        collectFields(clazz, prefix = "", depth = 0, path = mutableListOf(), into = fields)
-        return fields
+        return buildList {
+            collectFields(
+                clazz = clazz,
+                prefix = "",
+                depth = 0,
+                path = mutableListOf(),
+                into = this,
+            )
+        }
     }
 
     /**
-     * Recursively collects condition fields as dotted paths (e.g. "documentDefinitionId.id.key") so
-     * nested properties can be used in conditions, not only top-level fields. Recursion is bounded
-     * by depth and a total cap, restricted to our own domain types, and guarded against cycles.
-     * This inspects class metadata only (no instances), so it is safe to run while building the
-     * registry.
+     * Recursively collects condition fields as dotted paths, such as
+     * `documentDefinitionId.id.key`.
+     *
+     * Recursion is bounded by depth and a total field cap, restricted to domain types and guarded
+     * against cycles. Only class metadata is inspected; no resource instances are created.
      */
     private fun collectFields(
         clazz: Class<*>,
@@ -211,59 +326,120 @@ class PbacRegistryService(
         path: MutableList<Class<*>>,
         into: MutableList<PbacConditionFieldDto>,
     ) {
-        if (into.size >= MAX_FIELDS || path.contains(clazz)) return
-        path.add(clazz)
-
-        val seen = mutableSetOf<String>()
-        var currentClass: Class<*>? = clazz
-        while (currentClass != null && currentClass != Any::class.java) {
-            for (field in currentClass.declaredFields) {
-                if (field.name in seen) continue
-                if (field.isSynthetic) continue
-                if (java.lang.reflect.Modifier.isStatic(field.modifiers)) continue
-                // Skip common framework/internal fields
-                if (field.name in EXCLUDED_FIELD_NAMES) continue
-                // Skip all-uppercase constants
-                if (field.name == field.name.uppercase() && field.name.length > 1) continue
-                seen.add(field.name)
-
-                val name = if (prefix.isEmpty()) field.name else "$prefix.${field.name}"
-                into.add(PbacConditionFieldDto(name = name, type = simplifyTypeName(field.type)))
-
-                if (depth < MAX_FIELD_DEPTH && isNavigableType(field.type)) {
-                    collectFields(field.type, name, depth + 1, path, into)
-                }
-            }
-            currentClass = currentClass.superclass
+        if (into.size >= MAX_FIELDS || clazz in path) {
+            return
         }
 
-        path.removeAt(path.size - 1)
+        path.add(clazz)
+
+        try {
+            val seenFieldNames = mutableSetOf<String>()
+            var currentClass: Class<*>? = clazz
+
+            while (
+                currentClass != null &&
+                currentClass != Any::class.java &&
+                into.size < MAX_FIELDS
+            ) {
+                for (field in currentClass.declaredFields) {
+                    if (into.size >= MAX_FIELDS) {
+                        break
+                    }
+
+                    if (field.name in seenFieldNames) continue
+                    if (field.isSynthetic) continue
+                    if (Modifier.isStatic(field.modifiers)) continue
+                    if (field.name in EXCLUDED_FIELD_NAMES) continue
+
+                    if (
+                        field.name.length > 1 &&
+                        field.name == field.name.uppercase()
+                    ) {
+                        continue
+                    }
+
+                    seenFieldNames.add(field.name)
+
+                    val fieldPath = if (prefix.isEmpty()) {
+                        field.name
+                    } else {
+                        "$prefix.${field.name}"
+                    }
+
+                    into.add(
+                        PbacConditionFieldDto(
+                            name = fieldPath,
+                            type = simplifyTypeName(field.type),
+                        )
+                    )
+
+                    if (
+                        depth < MAX_FIELD_DEPTH &&
+                        isNavigableType(field.type)
+                    ) {
+                        collectFields(
+                            clazz = field.type,
+                            prefix = fieldPath,
+                            depth = depth + 1,
+                            path = path,
+                            into = into,
+                        )
+                    }
+                }
+
+                currentClass = currentClass.superclass
+            }
+        } finally {
+            path.removeAt(path.lastIndex)
+        }
     }
 
     /**
-     * Only navigate into our own (non-collection, non-enum) domain types; JDK and framework types
-     * have no useful nested comparison fields and would bloat the list.
+     * Only navigates into application domain types.
+     *
+     * JDK types, framework types, collections, maps, arrays and enums do not expose useful nested
+     * PBAC comparison fields and would unnecessarily increase registry size.
      */
     private fun isNavigableType(type: Class<*>): Boolean {
-        if (type.isPrimitive || type.isEnum || type.isArray) return false
-        if (Collection::class.java.isAssignableFrom(type) || Map::class.java.isAssignableFrom(type)) {
+        if (type.isPrimitive || type.isEnum || type.isArray) {
             return false
         }
-        return SCAN_BASE_PACKAGES.any { type.name.startsWith(it) }
+
+        if (
+            Collection::class.java.isAssignableFrom(type) ||
+            Map::class.java.isAssignableFrom(type)
+        ) {
+            return false
+        }
+
+        return SCAN_BASE_PACKAGES.any { basePackage ->
+            type.name.startsWith("$basePackage.")
+        }
     }
 
     private fun extractFieldAliases(clazz: Class<*>): List<PbacFieldAliasDto> {
         val aliases = mutableListOf<PbacFieldAliasDto>()
         var currentClass: Class<*>? = clazz
+
         while (currentClass != null && currentClass != Any::class.java) {
             for (field in currentClass.declaredFields) {
-                val annotation = field.getAnnotation(AuthorizationFieldAlias::class.java) ?: continue
+                val annotation = field.getAnnotation(
+                    AuthorizationFieldAlias::class.java
+                ) ?: continue
+
                 for (alias in annotation.names) {
-                    aliases.add(PbacFieldAliasDto(alias = alias, field = field.name))
+                    aliases.add(
+                        PbacFieldAliasDto(
+                            alias = alias,
+                            field = field.name,
+                        )
+                    )
                 }
             }
+
             currentClass = currentClass.superclass
         }
+
         return aliases
     }
 
@@ -276,21 +452,45 @@ class PbacRegistryService(
             Class.forName(name)
         } catch (_: ClassNotFoundException) {
             null
+        } catch (error: LinkageError) {
+            logger.warn(error) {
+                "Could not load resource class '$name' while building the PBAC registry"
+            }
+            null
         }
     }
+
+    private data class RegistryMetadata(
+        val resources: List<PbacResourceDto>,
+        val operators: List<PbacOperatorDto>,
+        val conditionTypes: List<PbacConditionTypeDto>,
+        val entityMappers: List<PbacEntityMapperDto>,
+    )
 
     companion object {
         private val logger = KotlinLogging.logger {}
 
-        private val SCAN_BASE_PACKAGES = listOf("com.ritense", "com.valtimo")
+        private val SCAN_BASE_PACKAGES = listOf(
+            "com.ritense",
+            "com.valtimo",
+        )
 
-        // Bounds for nested-field discovery: how deep to follow dotted paths (e.g. depth 3 allows
-        // "a.b.c.d"), and a hard cap on the number of fields per resource as a safety net.
+        /**
+         * Depth 3 permits paths containing four segments, such as `a.b.c.d`.
+         */
         private const val MAX_FIELD_DEPTH = 3
+
+        /**
+         * Hard upper bound per resource to protect registry generation against unexpectedly large
+         * object graphs.
+         */
         private const val MAX_FIELDS = 500
 
         private val EXCLUDED_FIELD_NAMES = setOf(
-            "serialVersionUID", "Companion", "logger", "LOG",
+            "serialVersionUID",
+            "Companion",
+            "logger",
+            "LOG",
         )
     }
 }
