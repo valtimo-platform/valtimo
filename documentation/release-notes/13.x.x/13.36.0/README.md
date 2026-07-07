@@ -40,3 +40,8 @@
 
 * Dashboard widgets can now group and filter on more case fields, such as the `case:internalStatus` and
   `case:definitionId.key`.
+
+* **Shared task list URLs now open on the correct tab**
+
+  Opening a copied or bookmarked task list URL now lands on the tab it was saved from (for example *All tasks*),
+  instead of defaulting to the first tab.
