@@ -40,7 +40,9 @@ import com.ritense.processdocument.repository.CaseDefinitionProcessLinkRepositor
 import com.ritense.processdocument.repository.OperatonExecutionCaseDefinitionMapper
 import com.ritense.processdocument.repository.OperatonExecutionJsonSchemaDocumentMapper
 import com.ritense.processdocument.repository.OperatonProcessDefinitionCaseDefinitionMapper
+import com.ritense.processdocument.migration.ProcessMigrationComponentExecutor
 import com.ritense.processdocument.repository.ProcessDefinitionCaseDefinitionRepository
+import com.ritense.valtimo.migration.repository.ProcessMigrationConfigurationRepository
 import com.ritense.processdocument.repository.ProcessDocumentInstanceRepository
 import com.ritense.processdocument.service.CaseDefinitionProcessLinkService
 import com.ritense.processdocument.repository.TaskQuickSearchRepository
@@ -410,6 +412,20 @@ class ProcessDocumentsAutoConfiguration {
             repositoryService,
             caseDefinitionChecker,
             caseDocumentResolver,
+        )
+    }
+
+    @Bean
+    @ConditionalOnMissingBean(ProcessMigrationComponentExecutor::class)
+    fun processMigrationComponentExecutor(
+        processMigrationConfigurationRepository: ProcessMigrationConfigurationRepository,
+        processDefinitionCaseDefinitionRepository: ProcessDefinitionCaseDefinitionRepository,
+        runtimeService: RuntimeService,
+    ): ProcessMigrationComponentExecutor {
+        return ProcessMigrationComponentExecutor(
+            processMigrationConfigurationRepository,
+            processDefinitionCaseDefinitionRepository,
+            runtimeService,
         )
     }
 

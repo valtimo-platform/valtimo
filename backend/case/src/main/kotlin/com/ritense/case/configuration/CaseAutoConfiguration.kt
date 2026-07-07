@@ -64,12 +64,25 @@ import com.ritense.case.web.rest.StartableItemManagementResource
 import com.ritense.case.web.rest.StartableItemResource
 import com.ritense.case.web.rest.TaskListResource
 import com.ritense.case_.authorization.CaseDefinitionSpecificationFactory
+import com.ritense.case_.repository.CaseDefinitionMigrationExecutionRepository
+import com.ritense.case_.repository.CaseDefinitionMigrationRepository
+import com.ritense.case_.repository.CaseMigrationCaseRepository
 import com.ritense.case_.repository.CaseDefinitionRepository
+import com.ritense.case_.repository.DataMigrationConfigurationRepository
 import com.ritense.case_.repository.HiddenCaseListColumnRepository
+import com.ritense.case_.rest.CaseMigrationManagementResource
 import com.ritense.case_.service.ActiveCaseDefinitionService
+import com.ritense.case_.service.migration.CaseMigrationService
+import com.ritense.case_.service.migration.DataMigrationComponentDeployer
+import com.ritense.case_.service.migration.DataMigrationComponentExecutor
+import com.ritense.case_.service.migration.MigrationConditionEvaluator
+import com.ritense.case_.service.migration.MigrationPlanExporter
+import com.ritense.case_.service.migration.MigrationPlanImporter
+import com.ritense.case_.service.migration.MigrationTriggerScheduler
 import com.ritense.document.service.DocumentDefinitionService
 import com.ritense.document.service.DocumentSearchService
 import com.ritense.document.service.DocumentService
+import com.ritense.document.repository.impl.JsonSchemaDocumentRepository
 import com.ritense.document.service.impl.JsonSchemaDocumentSearchService
 import com.ritense.exporter.ExportService
 import com.ritense.importer.ImportService
@@ -78,6 +91,8 @@ import com.ritense.outbox.OutboxService
 import com.ritense.valtimo.changelog.service.ChangelogDeployer
 import com.ritense.valtimo.contract.authentication.UserManagementService
 import com.ritense.valtimo.contract.case_.CaseDefinitionChecker
+import com.ritense.valtimo.contract.case_.migration.MigrationComponentDeployer
+import com.ritense.valtimo.contract.case_.migration.MigrationComponentExecutor
 import com.ritense.valtimo.contract.database.QueryDialectHelper
 import com.ritense.valtimo.contract.importer.ImportPreviewContributor
 import com.ritense.valtimo.contract.plugin.PluginConfigurationMappingResolver
@@ -97,6 +112,8 @@ import org.springframework.core.io.ResourceLoader
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver
 import org.springframework.core.io.support.ResourcePatternResolver
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories
+import org.springframework.transaction.support.TransactionTemplate
+import java.time.Duration
 
 @AutoConfiguration
 @EnableJpaRepositories(
@@ -538,4 +555,87 @@ class CaseAutoConfiguration {
         objectMapper: ObjectMapper,
         startableItemRepository: StartableItemRepository,
     ) = StartableItemImporter(objectMapper, startableItemRepository)
+
+    @Bean
+    @ConditionalOnMissingBean(DataMigrationComponentDeployer::class)
+    fun dataMigrationComponentDeployer(
+        objectMapper: ObjectMapper,
+        dataMigrationConfigurationRepository: DataMigrationConfigurationRepository,
+    ) = DataMigrationComponentDeployer(objectMapper, dataMigrationConfigurationRepository)
+
+    @Bean
+    @ConditionalOnMissingBean(MigrationPlanImporter::class)
+    fun migrationPlanImporter(
+        objectMapper: ObjectMapper,
+        caseDefinitionMigrationRepository: CaseDefinitionMigrationRepository,
+        migrationComponentDeployers: List<MigrationComponentDeployer>,
+    ) = MigrationPlanImporter(objectMapper, caseDefinitionMigrationRepository, migrationComponentDeployers)
+
+    @Bean
+    @ConditionalOnMissingBean(MigrationPlanExporter::class)
+    fun migrationPlanExporter(
+        objectMapper: ObjectMapper,
+        caseDefinitionMigrationRepository: CaseDefinitionMigrationRepository,
+        migrationComponentDeployers: List<MigrationComponentDeployer>,
+    ) = MigrationPlanExporter(objectMapper, caseDefinitionMigrationRepository, migrationComponentDeployers)
+
+    @Bean
+    @ConditionalOnMissingBean(DataMigrationComponentExecutor::class)
+    fun dataMigrationComponentExecutor(
+        objectMapper: ObjectMapper,
+        dataMigrationConfigurationRepository: DataMigrationConfigurationRepository,
+        valueResolverService: ValueResolverService,
+    ) = DataMigrationComponentExecutor(objectMapper, dataMigrationConfigurationRepository, valueResolverService)
+
+    @Bean
+    @ConditionalOnMissingBean(MigrationConditionEvaluator::class)
+    fun migrationConditionEvaluator(
+        valueResolverService: ValueResolverService,
+    ) = MigrationConditionEvaluator(valueResolverService)
+
+    @Bean
+    @ConditionalOnMissingBean(CaseMigrationService::class)
+    fun caseMigrationService(
+        caseDefinitionMigrationRepository: CaseDefinitionMigrationRepository,
+        caseDefinitionMigrationExecutionRepository: CaseDefinitionMigrationExecutionRepository,
+        caseMigrationCaseRepository: CaseMigrationCaseRepository,
+        documentRepository: JsonSchemaDocumentRepository,
+        documentDefinitionService: DocumentDefinitionService,
+        migrationConditionEvaluator: MigrationConditionEvaluator,
+        migrationComponentExecutors: List<MigrationComponentExecutor>,
+        migrationComponentDeployers: List<MigrationComponentDeployer>,
+        transactionTemplate: TransactionTemplate,
+        @Value("\${valtimo.case.migration.lease-duration:PT5M}") leaseDuration: Duration,
+    ) = CaseMigrationService(
+        caseDefinitionMigrationRepository,
+        caseDefinitionMigrationExecutionRepository,
+        caseMigrationCaseRepository,
+        documentRepository,
+        documentDefinitionService,
+        migrationConditionEvaluator,
+        migrationComponentExecutors,
+        migrationComponentDeployers,
+        transactionTemplate,
+        leaseDuration,
+    )
+
+    @Bean
+    @ConditionalOnMissingBean(MigrationTriggerScheduler::class)
+    fun migrationTriggerScheduler(
+        caseDefinitionMigrationRepository: CaseDefinitionMigrationRepository,
+        caseDefinitionMigrationExecutionRepository: CaseDefinitionMigrationExecutionRepository,
+        caseMigrationService: CaseMigrationService,
+    ) = MigrationTriggerScheduler(
+        caseDefinitionMigrationRepository,
+        caseDefinitionMigrationExecutionRepository,
+        caseMigrationService,
+    )
+
+    @Bean
+    @ConditionalOnMissingBean(CaseMigrationManagementResource::class)
+    fun caseMigrationManagementResource(
+        caseMigrationService: CaseMigrationService,
+        migrationPlanImporter: MigrationPlanImporter,
+        migrationPlanExporter: MigrationPlanExporter,
+    ) = CaseMigrationManagementResource(caseMigrationService, migrationPlanImporter, migrationPlanExporter)
 }

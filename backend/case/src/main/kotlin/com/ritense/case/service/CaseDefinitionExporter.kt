@@ -27,6 +27,7 @@ import com.ritense.exporter.request.CaseDefinitionBuildingBlockLinkExportRequest
 import com.ritense.exporter.request.CaseDefinitionExportRequest
 import com.ritense.exporter.request.DocumentDefinitionExportRequest
 import com.ritense.exporter.request.ExportRequest
+import com.ritense.exporter.request.MigrationPlanExportRequest
 import com.ritense.exporter.request.StartableItemExportRequest
 import com.ritense.valtimo.contract.case_.CaseDefinitionId
 import org.springframework.transaction.annotation.Transactional
@@ -71,6 +72,7 @@ class CaseDefinitionExporter(
         relatedRequests.addAll(createDocumentDefinitionExportRequest(caseDefinition.id))
         relatedRequests.add(CaseDefinitionBuildingBlockLinkExportRequest(caseDefinition.id))
         relatedRequests.add(StartableItemExportRequest(caseDefinition.id))
+        relatedRequests.add(MigrationPlanExportRequest(caseDefinition.id))
 
         return ExportResult(caseDefinitionExport, relatedRequests)
     }

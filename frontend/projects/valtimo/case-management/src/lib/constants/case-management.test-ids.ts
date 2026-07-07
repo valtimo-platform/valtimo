@@ -77,6 +77,13 @@ export const CASE_MANAGEMENT_STATUS_MODAL_TEST_IDS = {
   saveButton: 'caseStatusSaveButton',
 } as const;
 
+export const CASE_MANAGEMENT_MIGRATION_TEST_IDS = {
+  startButton: 'caseMigrationStartButton',
+  addButton: 'caseMigrationAddButton',
+  saveButton: 'caseMigrationSaveButton',
+  cancelButton: 'caseMigrationCancelButton',
+} as const;
+
 export const CASE_MANAGEMENT_LIST_COLUMNS_TEST_IDS = {
   columnsList: 'caseListColumnsList',
   jsonEditor: 'listColumnJSONEditor',

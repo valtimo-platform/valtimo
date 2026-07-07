@@ -773,6 +773,69 @@
     }
   },
   "caseManagement": {
+    "migration": {
+      "addPlan": "Add migration plan",
+      "startNow": "Start migration now",
+      "errorCount": "{{count}} errors",
+      "editor": {
+        "createTitle": "New migration plan",
+        "editTitle": "Edit migration plan",
+        "tabs": {
+          "jsonEditor": "JSON editor"
+        }
+      },
+      "deleteModal": {
+        "title": "Delete migration plan",
+        "content": "Are you sure you want to delete this migration plan? This cannot be undone."
+      },
+      "columns": {
+        "plan": "Migration plan",
+        "triggers": "Triggers",
+        "components": "Migrates",
+        "status": "Status",
+        "progress": "Progress"
+      },
+      "noResults": {
+        "title": "No migration plans",
+        "description": "No migration plans are deployed for this case type version."
+      },
+      "status": {
+        "NOT_STARTED": "Not started",
+        "RUNNING": "Running",
+        "COMPLETED": "Completed",
+        "COMPLETED_WITH_ERRORS": "Completed with errors"
+      },
+      "fields": {
+        "status": "Migration status",
+        "casesToMigrate": "Cases to migrate",
+        "casesMigrated": "Cases migrated",
+        "casesWithErrors": "Cases with errors",
+        "startedOn": "Started on",
+        "finishedOn": "Finished on"
+      },
+      "triggers": {
+        "heading": "Triggers",
+        "manual": "Manual",
+        "scheduled": "Scheduled",
+        "runAfter": "Runs after"
+      },
+      "components": {
+        "heading": "Migrates",
+        "dataMigration": "Case data",
+        "processMigration": "Processes",
+        "none": "Nothing configured",
+        "customMigration": "Custom"
+      },
+      "conditions": {
+        "heading": "Conditions",
+        "none": "No conditions — applies to all cases"
+      },
+      "errors": {
+        "heading": "Cases with errors",
+        "caseId": "Case",
+        "message": "Error"
+      }
+    },
     "version": "Version: ",
     "preparingDownload": "Preparing download",
     "more": "More",
@@ -945,6 +1008,7 @@
       "decision": "Decision tables",
       "formFlows": "Form Flows",
       "tasks": "Tasks",
+      "migration": "Migration",
       "generalTab": {
         "readOnlyNotification": {
           "title": "Read only",

@@ -23,6 +23,7 @@ import java.util.Optional;
 import java.util.UUID;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Slice;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Modifying;
@@ -35,6 +36,14 @@ public interface JsonSchemaDocumentRepository extends DocumentRepository<JsonSch
     JpaSpecificationExecutor<JsonSchemaDocument> {
 
     Page<JsonSchemaDocument> findAllByDocumentDefinitionIdName(Pageable pageable, String definitionName);
+
+    /**
+     * Projects only the document (case) ids for a document definition name, ordered stably so it can
+     * be paged. Callers such as case migration enumerate large numbers of cases page-by-page without
+     * ever hydrating the full documents.
+     */
+    @Query("SELECT d.id.id FROM JsonSchemaDocument d WHERE d.documentDefinitionId.name = :definitionName ORDER BY d.id.id")
+    Slice<UUID> findCaseIdsByDocumentDefinitionName(@Param("definitionName") String definitionName, Pageable pageable);
 
     @Query(" SELECT  doc " +
         "    FROM    JsonSchemaDocument doc " +

@@ -40,13 +40,13 @@
             "type": "string",
             "description": "Plaats"
         },
-        "telefoonnummer": {
+        "telefoon": {
             "type": "string",
-            "description": "Telefoonnummer"
+            "description": "Telefoon (oude veldnaam, in 1.0.1 hernoemd naar telefoonnummer)"
         },
-        "e-mailadres": {
+        "emailadres": {
             "type": "string",
-            "description": "E-mailadres"
+            "description": "E-mailadres (oude veldnaam, in 1.0.1 hernoemd naar e-mailadres)"
         },
         "zaaknummer": {
             "type": "string",

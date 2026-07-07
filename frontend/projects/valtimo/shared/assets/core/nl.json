@@ -780,6 +780,69 @@
     }
   },
   "caseManagement": {
+    "migration": {
+      "addPlan": "Migratieplan toevoegen",
+      "startNow": "Migratie nu starten",
+      "errorCount": "{{count}} fouten",
+      "editor": {
+        "createTitle": "Nieuw migratieplan",
+        "editTitle": "Migratieplan bewerken",
+        "tabs": {
+          "jsonEditor": "JSON-editor"
+        }
+      },
+      "deleteModal": {
+        "title": "Migratieplan verwijderen",
+        "content": "Weet je zeker dat je dit migratieplan wilt verwijderen? Dit kan niet ongedaan worden gemaakt."
+      },
+      "columns": {
+        "plan": "Migratieplan",
+        "triggers": "Triggers",
+        "components": "Migreert",
+        "status": "Status",
+        "progress": "Voortgang"
+      },
+      "noResults": {
+        "title": "Geen migratieplannen",
+        "description": "Er zijn geen migratieplannen uitgerold voor deze versie van dit zaaktype."
+      },
+      "status": {
+        "NOT_STARTED": "Niet gestart",
+        "RUNNING": "Bezig",
+        "COMPLETED": "Voltooid",
+        "COMPLETED_WITH_ERRORS": "Voltooid met fouten"
+      },
+      "fields": {
+        "status": "Migratiestatus",
+        "casesToMigrate": "Te migreren dossiers",
+        "casesMigrated": "Gemigreerde dossiers",
+        "casesWithErrors": "Dossiers met fouten",
+        "startedOn": "Gestart op",
+        "finishedOn": "Voltooid op"
+      },
+      "triggers": {
+        "heading": "Triggers",
+        "manual": "Handmatig",
+        "scheduled": "Gepland",
+        "runAfter": "Draait na"
+      },
+      "components": {
+        "heading": "Migreert",
+        "dataMigration": "Dossiergegevens",
+        "processMigration": "Processen",
+        "none": "Niets geconfigureerd",
+        "customMigration": "Custom"
+      },
+      "conditions": {
+        "heading": "Voorwaarden",
+        "none": "Geen voorwaarden — geldt voor alle dossiers"
+      },
+      "errors": {
+        "heading": "Dossiers met fouten",
+        "caseId": "Dossier",
+        "message": "Fout"
+      }
+    },
     "version": "Versie: ",
     "preparingDownload": "Download aan het voorbereiden",
     "more": "Meer",
@@ -952,6 +1015,7 @@
       "decision": "Beslistabellen",
       "formFlows": "Form flows",
       "tasks": "Taken",
+      "migration": "Migratie",
       "generalTab": {
         "readOnlyNotification": {
           "title": "Alleen-lezen",
