@@ -80,6 +80,11 @@ export class WidgetBlockComponent implements AfterViewInit, OnDestroy {
     return this._widget$.value?.type ?? null;
   }
 
+  @HostBinding('class.widget-block--fill-content')
+  public get fillContent(): boolean {
+    return this._widget$.value?.type === WidgetType.IMAGE;
+  }
+
   private readonly _viewContainerRefSubject$ = new BehaviorSubject<ViewContainerRef | null>(null);
 
   private get _viewContainerRef$(): Observable<ViewContainerRef> {
