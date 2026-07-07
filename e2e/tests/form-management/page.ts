@@ -31,9 +31,11 @@ export class FormManagementPage {
 
   // ─── Navigation ────────────────────────────────────────────────────
 
+  // Navigate directly to the forms route — avoids loading the chart-heavy
+  // dashboard (+ SSE) via the Admin menu, which crashes the Chromium renderer
+  // ("Target crashed") on this heavy list route.
   async goToFormManagement() {
-    await this.page.getByRole('button', {name: 'Admin'}).click();
-    await this.page.getByRole('link', {name: 'Forms', exact: true}).click();
+    await this.page.goto('/form-management');
     await this.page.waitForURL(/\/form-management$/);
     await this.carbonList.waitForLoaded();
   }

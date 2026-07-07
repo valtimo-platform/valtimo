@@ -6,6 +6,23 @@
 
 ## New Features
 
+* **Visual permission editor for Access Control**
+
+  Permissions for a role can now be configured through a visual editor in GZAC, alongside the existing JSON editor. The
+  role page has three tabs — **Editor** (visual), **Summary** (a read-only overview of the configured permissions), and
+  **JSON editor**.
+
+  The visual editor lists a role's permissions in a sidebar and edits each one through a form:
+
+  - pick the **resource type** and the **allowed actions**;
+  - build **conditions** — field, JSON field, or a related resource (nested conditions on a linked resource);
+  - choose how **context** applies: no restriction, only when there is no context, or a specific context resource.
+
+  When adding a role, its key can be picked from the roles known to the identity provider (Keycloak) or typed manually,
+  and roles that are already configured are left out of the picker. Actions are shown as colour-coded tags so a rule is
+  recognisable at a glance. See
+  [Configuring permissions](../../../features/access-control/configuring-permissions.md).
+  
 * **Catalogi API plugin action: Get Informatieobjecttypen**
 
   A new plugin action `get-informatieobjecttypen` has been added to the Catalogi API plugin. This action retrieves the
@@ -23,6 +40,23 @@
 
 * Dashboard widgets can now group and filter on more case fields, such as the `case:internalStatus` and
   `case:definitionId.key`.
+
+* **Shared task list URLs now open on the correct tab**
+
+  Opening a copied or bookmarked task list URL now lands on the tab it was saved from (for example *All tasks*),
+  instead of defaulting to the first tab.
+
+* **Dropdowns on the case type General tab now show all their options correctly**
+
+  On the General tab of a case type, a dropdown (such as *Link upload process to case*) now displays all of its options
+  on top of the surrounding widgets, even when the widgets are stacked. Previously the options could appear behind the
+  widget below and be barely visible.
+
+* **Start forms configured to open in a panel opened in a modal instead**
+
+  A supporting process started from the **Start** button always opened its start form in a modal, even when the process
+  link was configured with **Display type: Panel**. The configured display type is now respected
+  again, so these start forms open in the case detail panel as intended.
 
 * **Long form names in the form builder are now truncated with an ellipsis**
 
