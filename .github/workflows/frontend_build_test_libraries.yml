@@ -202,6 +202,10 @@ jobs:
 
   # 'lint' can run in parallel with 'build_and_test'
   lint:
+    # Explicit condition (not the implicit success()) so an intentionally skipped
+    # ancestor — e.g. check_cache on release/* branches — does not cascade and skip
+    # lint. Run whenever the packages were installed successfully.
+    if: ${{ always() && needs.install_packages.result == 'success' }}
     needs:
       - install_packages
     runs-on: ubuntu-latest

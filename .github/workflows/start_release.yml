@@ -43,6 +43,10 @@ jobs:
       - name: Checkout source branch
         uses: actions/checkout@v4
         with:
+          # Push with the valtimo-platform PAT — not GITHUB_TOKEN — so the new
+          # release/<version> branch can be created despite the repository ruleset
+          # that restricts branch creation (GITHUB_TOKEN is not on the bypass list).
+          token: ${{ secrets.VALTIMO_RELEASE_PIPELINE_VALTIMOPLATFORM }}
           ref: ${{ inputs.source_branch }}
           fetch-depth: 0
 
