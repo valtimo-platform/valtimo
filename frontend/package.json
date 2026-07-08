@@ -350,7 +350,10 @@
   "overrides": {
     "feelers": {
       "@bpmn-io/cm-theme": "0.1.0-alpha.2"
-    }
+    },
+    "tar": "^7.5.13",
+    "piscina": "^4.9.3",
+    "serialize-javascript": "^7.0.3"
   },
   "workspaces": [
     "projects/valtimo/*"
