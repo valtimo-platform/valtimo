@@ -16,6 +16,7 @@
 
 package com.ritense.objectmanagement.web.rest
 
+import com.ritense.authorization.annotation.RunWithoutAuthorization
 import com.ritense.objectmanagement.domain.ObjectManagement
 import com.ritense.objectmanagement.service.ObjectManagementService
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
@@ -33,6 +34,7 @@ class ObjectManagementManagementResource(
 ) {
 
     @GetMapping("/v1/object/management/configuration")
+    @RunWithoutAuthorization
     fun getAll(): ResponseEntity<List<ObjectManagement>> = ResponseEntity.ok(objectManagementService.getAll())
 
 }

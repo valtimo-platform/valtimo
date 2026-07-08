@@ -1,6 +1,16 @@
 [
     {
         "resourceType": "com.ritense.objectenapi.security.Object",
+        "action": "view",
+        "roleKey": "ROLE_USER"
+    },
+    {
+        "resourceType": "com.ritense.objectenapi.security.Object",
+        "action": "view_list",
+        "roleKey": "ROLE_USER"
+    },
+    {
+        "resourceType": "com.ritense.objectenapi.security.Object",
         "action": "create",
         "roleKey": "ROLE_ADMIN"
     },

@@ -143,6 +143,7 @@ export class CaseManagementWidgetTabComponent
     WidgetType.PERSON_CARD,
     WidgetType.METROLINE,
     WidgetType.HIGHLIGHT,
+    WidgetType.IMAGE,
   ];
 
   constructor(
