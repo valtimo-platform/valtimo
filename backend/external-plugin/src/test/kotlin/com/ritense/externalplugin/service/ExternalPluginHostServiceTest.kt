@@ -19,6 +19,7 @@ package com.ritense.externalplugin.service
 import com.ritense.externalplugin.client.ExternalPluginHostClient
 import com.ritense.externalplugin.domain.EventQueueMode
 import com.ritense.externalplugin.domain.ExternalPluginHost
+import com.ritense.externalplugin.domain.ExternalPluginHostKind
 import com.ritense.externalplugin.repository.ExternalPluginConfigurationRepository
 import com.ritense.externalplugin.repository.ExternalPluginDefinitionRepository
 import com.ritense.externalplugin.repository.ExternalPluginGrantedEndpointRepository
@@ -234,6 +235,45 @@ class ExternalPluginHostServiceTest {
             service.updateEventQueue(existing.id, EventQueueMode.LIVE, 60L * 60 * 1000)
         }.isInstanceOf(IllegalArgumentException::class.java)
             .hasMessageContaining("must be null when eventQueueMode is LIVE")
+    }
+
+    @Test
+    fun `register defaults kind to PLUGIN_HOST`() {
+        assertThat(registerMinimal().kind).isEqualTo(ExternalPluginHostKind.PLUGIN_HOST)
+    }
+
+    @Test
+    fun `register persists the APP kind`() {
+        val host = service.register(
+            name = "demo-app",
+            baseUrl = "https://demo-app.example.com",
+            secret = "admin-token",
+            gzacCallbackBaseUrl = "https://gzac.example.com",
+            eventBrokerAmqpUrl = null,
+            eventBrokerExchange = null,
+            kind = ExternalPluginHostKind.APP,
+        )
+
+        assertThat(host.kind).isEqualTo(ExternalPluginHostKind.APP)
+    }
+
+    @Test
+    fun `uploadPlugin rejects an app host`() {
+        val app = service.register(
+            name = "demo-app",
+            baseUrl = "https://demo-app.example.com",
+            secret = "admin-token",
+            gzacCallbackBaseUrl = "https://gzac.example.com",
+            eventBrokerAmqpUrl = null,
+            eventBrokerExchange = null,
+            kind = ExternalPluginHostKind.APP,
+        )
+        whenever(hostRepository.findById(app.id)).thenReturn(Optional.of(app))
+
+        assertThatThrownBy {
+            service.uploadPlugin(app.id, "plugin.zip", ByteArray(0))
+        }.isInstanceOf(IllegalArgumentException::class.java)
+            .hasMessageContaining("does not accept plugin uploads")
     }
 
     @Test

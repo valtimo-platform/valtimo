@@ -18,6 +18,7 @@ package com.ritense.externalplugin.web.rest.dto
 
 import com.ritense.externalplugin.domain.EventQueueMode
 import com.ritense.externalplugin.domain.ExternalPluginHost
+import com.ritense.externalplugin.domain.ExternalPluginHostKind
 import com.ritense.externalplugin.domain.ExternalPluginHostStatus
 import java.time.Instant
 import java.util.UUID
@@ -31,12 +32,14 @@ data class HostCreateRequest(
     val eventBrokerExchange: String?,
     val eventQueueMode: EventQueueMode = EventQueueMode.LIVE,
     val eventQueueTtlMs: Long? = null,
+    val kind: ExternalPluginHostKind = ExternalPluginHostKind.PLUGIN_HOST,
 )
 
 data class HostResponse(
     val id: UUID,
     val name: String,
     val baseUrl: String,
+    val kind: ExternalPluginHostKind,
     val status: ExternalPluginHostStatus,
     val lastHealthCheck: Instant?,
     val gzacCallbackBaseUrl: String?,
@@ -50,6 +53,7 @@ data class HostResponse(
             id = host.id,
             name = host.name,
             baseUrl = host.baseUrl,
+            kind = host.kind,
             status = host.status,
             lastHealthCheck = host.lastHealthCheck,
             gzacCallbackBaseUrl = host.gzacCallbackBaseUrl,

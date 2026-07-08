@@ -23,6 +23,7 @@ import com.ritense.externalplugin.compatibility.CompatibilityResult
 import com.ritense.externalplugin.compatibility.GzacCompatibilityChecker
 import com.ritense.externalplugin.compatibility.PluginPackageInspector
 import com.ritense.externalplugin.domain.ExternalPluginDefinition
+import com.ritense.externalplugin.domain.ExternalPluginHostKind
 import com.ritense.externalplugin.service.EndpointDescriptionService
 import com.ritense.externalplugin.service.EndpointQuery
 import com.ritense.externalplugin.service.ExternalPluginConfigurationService
@@ -100,7 +101,14 @@ class ExternalPluginManagementResource(
             request.eventBrokerExchange,
             request.eventQueueMode,
             request.eventQueueTtlMs,
+            request.kind,
         )
+        // An app serves its single plugin itself, so discover it right away — the admin can then
+        // configure it without waiting for the next polling tick. Best-effort; the periodic cycle
+        // reconciles regardless. Plugin hosts have nothing to discover until a plugin is uploaded.
+        if (host.kind == ExternalPluginHostKind.APP) {
+            runCatching { discoveryService.discoverHost(host.id) }
+        }
         return ResponseEntity.status(HttpStatus.CREATED).body(HostResponse.from(host))
     }
 

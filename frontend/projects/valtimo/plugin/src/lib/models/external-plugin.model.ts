@@ -18,10 +18,19 @@ type ExternalPluginHostStatus = 'CONNECTED' | 'UNREACHABLE';
 type ExternalPluginDefinitionStatus = 'AVAILABLE' | 'UNAVAILABLE';
 type ExternalPluginEventQueueMode = 'LIVE' | 'DURABLE';
 
+/**
+ * The kind of remote integration. Both kinds speak the same contract to GZAC; the kind only drives
+ * the admin UX (labelling, and hiding the upload flow for apps).
+ * - `PLUGIN_HOST`: a multi-plugin host that plugins are uploaded to.
+ * - `APP`: a remote service, added by URL, that serves its own single plugin and accepts no uploads.
+ */
+type ExternalPluginHostKind = 'PLUGIN_HOST' | 'APP';
+
 interface ExternalPluginHost {
   id: string;
   name: string;
   baseUrl: string;
+  kind: ExternalPluginHostKind;
   status: ExternalPluginHostStatus;
   lastHealthCheck: string | null;
   gzacCallbackBaseUrl: string | null;
@@ -35,6 +44,7 @@ interface ExternalPluginHostCreateRequest {
   name: string;
   baseUrl: string;
   secret: string;
+  kind: ExternalPluginHostKind;
   gzacCallbackBaseUrl: string;
   eventBrokerAmqpUrl: string | null;
   eventBrokerExchange: string | null;
@@ -317,6 +327,7 @@ export {
   ExternalPluginHostStatus,
   ExternalPluginDefinitionStatus,
   ExternalPluginEventQueueMode,
+  ExternalPluginHostKind,
   ExternalPluginHost,
   ExternalPluginHostCreateRequest,
   ExternalPluginHostDefaults,
