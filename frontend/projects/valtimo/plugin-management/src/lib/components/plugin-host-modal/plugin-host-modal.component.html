@@ -21,7 +21,9 @@
   valtimoCdsModal
 >
   <cds-modal-header (closeSelect)="onClose()">
-    <h3 cdsModalHeaderHeading>{{ 'pluginManagement.addHost' | translate }}</h3>
+    <h3 cdsModalHeaderHeading>
+      {{ (isApp ? 'pluginManagement.addApp' : 'pluginManagement.addHost') | translate }}
+    </h3>
   </cds-modal-header>
 
   <form

@@ -2184,7 +2184,8 @@
   "pluginManagement": {
     "tableItemsText": "plugin configurations",
     "add": "Configure plugin",
-    "addHost": "Add host",
+    "addHost": "Add plugin host",
+    "addApp": "Add app",
     "uploadPlugin": "Upload plugin",
     "selectHost": "Select a plugin host",
     "upload": {
@@ -2198,7 +2199,8 @@
     "remove": "Delete configuration",
     "tabs": {
       "configurations": "Configurations",
-      "pluginHosts": "Plugin hosts"
+      "pluginHosts": "Plugin hosts",
+      "integrations": "Integrations"
     },
     "labels": {
       "pluginName": "Plugin name",
@@ -2206,6 +2208,7 @@
       "configurationName": "Configuration name",
       "name": "Name",
       "baseUrl": "Base URL",
+      "kind": "Type",
       "status": "Status",
       "lastHealthCheck": "Last health check",
       "secret": "Secret",
@@ -2235,6 +2238,10 @@
     "hostStatus": {
       "CONNECTED": "Connected",
       "UNREACHABLE": "Unreachable"
+    },
+    "kind": {
+      "PLUGIN_HOST": "Plugin host",
+      "APP": "App"
     },
     "editExternalConfiguration": "Edit external plugin configuration",
     "invalidJson": "Invalid JSON",

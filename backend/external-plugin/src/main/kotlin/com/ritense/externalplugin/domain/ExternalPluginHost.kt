@@ -53,6 +53,16 @@ class ExternalPluginHost(
     var consecutiveFailures: Int = 0,
 
     /**
+     * Whether this row is a multi-plugin [PLUGIN_HOST][ExternalPluginHostKind.PLUGIN_HOST] (plugins
+     * uploaded as `.wasm`) or an [APP][ExternalPluginHostKind.APP] (a remote service added by URL
+     * that serves its own single plugin and accepts no uploads). Defaults to `PLUGIN_HOST` for
+     * pre-existing rows.
+     */
+    @Column(name = "kind", nullable = false)
+    @Enumerated(EnumType.STRING)
+    var kind: ExternalPluginHostKind = ExternalPluginHostKind.PLUGIN_HOST,
+
+    /**
      * URL the plugin host uses to call back into GZAC. Pre-filled in the add-host UI from the URL
      * the admin reaches GZAC at and editable per host. Null only on legacy rows; pushes fall back
      * to `http://localhost:{server.port}` in that case.

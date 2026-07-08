@@ -2211,7 +2211,8 @@
   "pluginManagement": {
     "tableItemsText": "plugin-configuraties",
     "add": "Plugin configureren",
-    "addHost": "Host toevoegen",
+    "addHost": "Plugin-host toevoegen",
+    "addApp": "App toevoegen",
     "uploadPlugin": "Plugin uploaden",
     "selectHost": "Selecteer een plugin-host",
     "upload": {
@@ -2225,7 +2226,8 @@
     "remove": "Configuratie verwijderen",
     "tabs": {
       "configurations": "Configuraties",
-      "pluginHosts": "Plugin-hosts"
+      "pluginHosts": "Plugin-hosts",
+      "integrations": "Integraties"
     },
     "labels": {
       "pluginName": "Plugin naam",
@@ -2233,6 +2235,7 @@
       "configurationName": "Configuratienaam",
       "name": "Naam",
       "baseUrl": "Basis-URL",
+      "kind": "Type",
       "status": "Status",
       "lastHealthCheck": "Laatste health check",
       "secret": "Geheim",
@@ -2262,6 +2265,10 @@
     "hostStatus": {
       "CONNECTED": "Verbonden",
       "UNREACHABLE": "Onbereikbaar"
+    },
+    "kind": {
+      "PLUGIN_HOST": "Plugin-host",
+      "APP": "App"
     },
     "editExternalConfiguration": "Externe plugin-configuratie bewerken",
     "invalidJson": "Ongeldige JSON",

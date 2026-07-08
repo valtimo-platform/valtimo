@@ -90,7 +90,7 @@
   </cds-tab>
 
   <cds-tab
-    [heading]="'pluginManagement.tabs.pluginHosts' | translate"
+    [heading]="'pluginManagement.tabs.integrations' | translate"
     [active]="(selectedTabIndex$ | async) === 1"
     (selected)="onTabSelected(1)"
   >
@@ -115,7 +115,21 @@
             class="plugin-management__hosts-spinner"
           ></cds-loading>
 
-          <button cdsButton="primary" [disabled]="hostsLoading$ | async" (click)="openHostModal()">
+          <button
+            cdsButton="tertiary"
+            [disabled]="hostsLoading$ | async"
+            (click)="openHostModal('APP')"
+          >
+            {{ 'pluginManagement.addApp' | translate }}
+
+            <svg cdsIcon="add" size="16" class="cds--btn__icon"></svg>
+          </button>
+
+          <button
+            cdsButton="primary"
+            [disabled]="hostsLoading$ | async"
+            (click)="openHostModal('PLUGIN_HOST')"
+          >
             {{ 'pluginManagement.addHost' | translate }}
 
             <svg cdsIcon="add" size="16" class="cds--btn__icon"></svg>
@@ -129,7 +143,21 @@
       </valtimo-carbon-list>
 
       <ng-template #addHostButton>
-        <button cdsButton="primary" [disabled]="hostsLoading$ | async" (click)="openHostModal()">
+        <button
+          cdsButton="tertiary"
+          [disabled]="hostsLoading$ | async"
+          (click)="openHostModal('APP')"
+        >
+          {{ 'pluginManagement.addApp' | translate }}
+
+          <svg cdsIcon="add" size="16" class="cds--btn__icon"></svg>
+        </button>
+
+        <button
+          cdsButton="primary"
+          [disabled]="hostsLoading$ | async"
+          (click)="openHostModal('PLUGIN_HOST')"
+        >
           {{ 'pluginManagement.addHost' | translate }}
 
           <svg cdsIcon="add" size="16" class="cds--btn__icon"></svg>
@@ -161,6 +189,7 @@
 ></valtimo-plugin-external-edit-modal>
 
 <valtimo-plugin-host-modal
+  [kind]="hostModalKind$ | async"
   [open]="hostModalOpen$ | async"
   (closeEvent)="closeHostModal()"
   (submitEvent)="submitHost($event)"
