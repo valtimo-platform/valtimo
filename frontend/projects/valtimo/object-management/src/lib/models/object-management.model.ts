@@ -27,6 +27,15 @@ interface Objecttype {
   suppressOutbox?: boolean;
 }
 
+// Slim, user-facing projection returned by GET /api/v1/object-management/configuration
+// (backend ObjectManagementDto). Never carries plugin/objecttype ids.
+interface ObjectManagementDto {
+  id: string;
+  title: string;
+  formDefinitionView?: string;
+  formDefinitionEdit?: string;
+}
+
 export interface SearchListColumn {
   ownerId?: string;
   title: string;
@@ -43,6 +52,7 @@ export interface SearchColumn {
   sortable?: boolean;
   viewType?: string;
   default?: boolean | string;
+  defaultSort?: string;
   enum?: Array<string> | {[key: string]: string};
   title?: string;
   format?: string;
@@ -73,4 +83,4 @@ export interface DisplayTypeParameters {
 
 type ObjecttypeKeys = keyof Objecttype;
 
-export {Objecttype, ObjecttypeKeys};
+export {Objecttype, ObjecttypeKeys, ObjectManagementDto};
