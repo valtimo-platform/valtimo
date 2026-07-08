@@ -24,25 +24,14 @@
  * the GZAC management UI can always render a localised name/description for whichever language the
  * operator is using.
  *
- * Operates on the raw parsed JSON (untrusted input), not the typed `PluginManifest`. This module
- * intentionally has no imports so it can be consumed without pulling in the plugin-author runtime.
+ * Operates on the raw parsed JSON (untrusted input), not the typed `PluginManifest`. Its only import
+ * is the dependency-free {@link FRONTEND_BUNDLE_TYPES} list, so it still pulls in none of the
+ * plugin-author runtime and can be consumed by the pack tool and host upload route alike.
  *
  * @returns a list of human-readable error messages; an empty array means the manifest is valid.
  */
 
-/**
- * Frontend bundle `type` values the platform knows how to render. Kept in sync with
- * `FrontendBundle.type` in `models/types.ts`. Validated here so a typo (e.g. `"taskform"`) is
- * rejected at build/upload time rather than silently failing to surface in the UI.
- */
-const KNOWN_FRONTEND_BUNDLE_TYPES = [
-  "config",
-  "process-link-action",
-  "case-tab",
-  "case-widget",
-  "page",
-  "task-form",
-];
+import {FRONTEND_BUNDLE_TYPES} from "./models/types.js";
 
 export function validatePluginManifest(manifest: unknown): string[] {
   const errors: string[] = [];
@@ -100,9 +89,9 @@ export function validatePluginManifest(manifest: unknown): string[] {
           return;
         }
         const fb = bundle as Record<string, unknown>;
-        if (typeof fb.type !== "string" || !KNOWN_FRONTEND_BUNDLE_TYPES.includes(fb.type)) {
+        if (typeof fb.type !== "string" || !(FRONTEND_BUNDLE_TYPES as readonly string[]).includes(fb.type)) {
           errors.push(
-            `manifest.json frontendBundles[${index}].type must be one of: ${KNOWN_FRONTEND_BUNDLE_TYPES.join(", ")}`
+            `manifest.json frontendBundles[${index}].type must be one of: ${FRONTEND_BUNDLE_TYPES.join(", ")}`
           );
         }
         if (typeof fb.path !== "string" || fb.path.trim() === "") {

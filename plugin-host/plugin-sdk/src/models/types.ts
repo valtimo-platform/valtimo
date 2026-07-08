@@ -103,8 +103,24 @@ export interface Endpoint {
   pattern: string;
 }
 
+/**
+ * Frontend bundle `type` values the platform knows how to render. Single source of truth for both
+ * the compile-time {@link FrontendBundleType} and the runtime allow-list used by
+ * `validatePluginManifest` (which imports this dependency-free list rather than duplicating it).
+ */
+export const FRONTEND_BUNDLE_TYPES = [
+  "config",
+  "process-link-action",
+  "case-tab",
+  "case-widget",
+  "page",
+  "task-form",
+] as const;
+
+export type FrontendBundleType = (typeof FRONTEND_BUNDLE_TYPES)[number];
+
 export interface FrontendBundle {
-  type: "config" | "process-link-action" | "case-tab" | "case-widget" | "page" | "task-form";
+  type: FrontendBundleType;
   key?: string;
   title?: string;
   path: string;
