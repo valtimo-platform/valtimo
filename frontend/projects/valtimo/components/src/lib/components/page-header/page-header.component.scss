@@ -53,9 +53,8 @@
   }
 
   &:not(.page-head--title-as-breadcrumb) valtimo-page-actions {
-    flex: 1 1 auto;
+    flex: 1 0 auto;
     width: auto;
-    min-width: 0;
   }
 }
 
