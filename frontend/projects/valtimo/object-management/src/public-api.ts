@@ -20,4 +20,5 @@
 
 export * from './lib/models/object-management.model';
 export * from './lib/services/object-management.service';
+export * from './lib/permissions/object-management.permissions';
 export * from './lib/object-management.module';
