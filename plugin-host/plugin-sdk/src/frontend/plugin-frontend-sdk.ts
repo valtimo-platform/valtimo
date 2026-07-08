@@ -31,7 +31,7 @@ interface ParentToIframeEvents {
     theme: string;
     locale: string;
   };
-  save: {};
+  save: Record<string, never>;
   tokenRefresh: { accessToken: string };
   themeChanged: { theme: string };
   prefillConfiguration: { title: string; configuration: Record<string, unknown> };
@@ -45,7 +45,7 @@ interface ParentToIframeEvents {
 
 /** Events sent from the plugin iframe to the Angular parent. */
 interface IframeToParentEvents {
-  ready: {};
+  ready: Record<string, never>;
   resize: { height: number };
   configurationChanged: { valid: boolean; title: string; data: Record<string, unknown> };
   navigate: { route: string };
@@ -57,7 +57,7 @@ interface IframeToParentEvents {
    * and refreshing the list; it does **not** complete the task itself, so the plugin remains the sole
    * owner of the submission logic.
    */
-  taskCompleted: {};
+  taskCompleted: Record<string, never>;
   /**
    * Ask the Angular parent to perform an allow-listed call on the iframe's behalf. The iframe never
    * holds a credential (opaque origin); the parent attaches the downscoped user token for

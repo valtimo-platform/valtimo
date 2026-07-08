@@ -19,6 +19,8 @@ package com.ritense.externalplugin.processlink
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.ritense.externalplugin.domain.ExternalPluginTaskFormProcessLink
 import com.ritense.externalplugin.processlink.web.dto.ExternalPluginTaskFormProcessLinkCreateRequestDto
+import com.ritense.externalplugin.processlink.web.dto.ExternalPluginTaskFormProcessLinkDeployDto
+import com.ritense.externalplugin.processlink.web.dto.ExternalPluginTaskFormProcessLinkExportResponseDto
 import com.ritense.externalplugin.processlink.web.dto.ExternalPluginTaskFormProcessLinkResponseDto
 import com.ritense.externalplugin.processlink.web.dto.ExternalPluginTaskFormProcessLinkUpdateRequestDto
 import com.ritense.processlink.domain.ActivityTypeWithEventName
@@ -111,5 +113,91 @@ class ExternalPluginTaskFormProcessLinkMapperTest {
         assertThat(updated.externalPluginConfigurationId).isEqualTo(newConfigId)
         assertThat(updated.pluginVersion).isEqualTo("0.2.0")
         assertThat(updated.bundleKey).isEqualTo("approve")
+    }
+
+    @Test
+    fun `maps a deploy dto to a create request`() {
+        val configId = UUID.randomUUID()
+        val deployDto = ExternalPluginTaskFormProcessLinkDeployDto(
+            processDefinitionId = "pd-1",
+            activityId = "activity-1",
+            activityType = ActivityTypeWithEventName.USER_TASK_CREATE,
+            externalPluginConfigurationId = configId,
+            pluginVersion = "0.1.0",
+            bundleKey = "review",
+        )
+
+        val createDto = mapper.toProcessLinkCreateRequestDto(deployDto, null)
+            as ExternalPluginTaskFormProcessLinkCreateRequestDto
+
+        assertThat(createDto.processDefinitionId).isEqualTo("pd-1")
+        assertThat(createDto.activityId).isEqualTo("activity-1")
+        assertThat(createDto.activityType).isEqualTo(ActivityTypeWithEventName.USER_TASK_CREATE)
+        assertThat(createDto.externalPluginConfigurationId).isEqualTo(configId)
+        assertThat(createDto.pluginVersion).isEqualTo("0.1.0")
+        assertThat(createDto.bundleKey).isEqualTo("review")
+        assertThat(createDto.processLinkType).isEqualTo("external_plugin_task_form")
+    }
+
+    @Test
+    fun `maps a deploy dto to an update request onto the existing link id`() {
+        val existingId = UUID.randomUUID()
+        val configId = UUID.randomUUID()
+        val deployDto = ExternalPluginTaskFormProcessLinkDeployDto(
+            processDefinitionId = "pd-1",
+            activityId = "activity-1",
+            activityType = ActivityTypeWithEventName.USER_TASK_CREATE,
+            externalPluginConfigurationId = configId,
+            pluginVersion = "0.1.0",
+            bundleKey = "review",
+        )
+
+        val updateDto = mapper.toProcessLinkUpdateRequestDto(deployDto, existingId, null)
+            as ExternalPluginTaskFormProcessLinkUpdateRequestDto
+
+        assertThat(updateDto.id).isEqualTo(existingId)
+        assertThat(updateDto.externalPluginConfigurationId).isEqualTo(configId)
+        assertThat(updateDto.pluginVersion).isEqualTo("0.1.0")
+        assertThat(updateDto.bundleKey).isEqualTo("review")
+        assertThat(updateDto.processLinkType).isEqualTo("external_plugin_task_form")
+    }
+
+    @Test
+    fun `maps a process link to an export response dto without the process definition id`() {
+        val configId = UUID.randomUUID()
+        val processLink = ExternalPluginTaskFormProcessLink(
+            id = UUID.randomUUID(),
+            processDefinitionId = "pd-1",
+            activityId = "activity-1",
+            activityType = ActivityTypeWithEventName.USER_TASK_CREATE,
+            externalPluginConfigurationId = configId,
+            bundleKey = "review",
+            pluginVersion = "0.1.0",
+        )
+
+        val dto = mapper.toProcessLinkExportResponseDto(processLink)
+            as ExternalPluginTaskFormProcessLinkExportResponseDto
+
+        assertThat(dto.activityId).isEqualTo("activity-1")
+        assertThat(dto.activityType).isEqualTo(ActivityTypeWithEventName.USER_TASK_CREATE)
+        assertThat(dto.externalPluginConfigurationId).isEqualTo(configId)
+        assertThat(dto.bundleKey).isEqualTo("review")
+        assertThat(dto.pluginVersion).isEqualTo("0.1.0")
+        assertThat(dto.processLinkType).isEqualTo("external_plugin_task_form")
+    }
+
+    @Test
+    fun `maps an unkeyed bundle create request with a null bundle key`() {
+        val createDto = ExternalPluginTaskFormProcessLinkCreateRequestDto(
+            processDefinitionId = "pd-1",
+            activityId = "activity-1",
+            activityType = ActivityTypeWithEventName.USER_TASK_CREATE,
+            externalPluginConfigurationId = UUID.randomUUID(),
+            pluginVersion = "0.1.0",
+        )
+
+        val processLink = mapper.toNewProcessLink(createDto, null) as ExternalPluginTaskFormProcessLink
+
+        assertThat(processLink.bundleKey).isNull()
     }
 }

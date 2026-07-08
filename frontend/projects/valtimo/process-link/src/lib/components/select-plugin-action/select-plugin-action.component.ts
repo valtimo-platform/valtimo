@@ -27,6 +27,7 @@ import {
 import {combineLatest, forkJoin, Observable, of, Subscription} from 'rxjs';
 import {catchError, filter, map, switchMap, take, withLatestFrom} from 'rxjs/operators';
 
+import {USER_TASK_ACTIVITY} from '../../constants';
 import {
   PluginStateService,
   ProcessLinkButtonService,
@@ -46,11 +47,8 @@ const ACTIVITY_TYPE_NAME_TO_VALUE: Record<string, string> = {
   CALL_ACTIVITY_START: 'bpmn:CallActivity:start',
   CALL_ACTIVITY_END: 'bpmn:CallActivity:end',
   START_EVENT_START: 'bpmn:StartEvent:start',
-  USER_TASK_CREATE: 'bpmn:UserTask:create',
+  USER_TASK_CREATE: USER_TASK_ACTIVITY,
 };
-
-/** The `activityListenerType` the BPMN editor reports for a user task. */
-const USER_TASK_ACTIVITY = 'bpmn:UserTask:create';
 
 @Component({
   standalone: false,

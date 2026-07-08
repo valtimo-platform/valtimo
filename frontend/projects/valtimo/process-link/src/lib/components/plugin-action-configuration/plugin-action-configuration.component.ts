@@ -42,9 +42,7 @@ import {
   PluginProcessLinkUpdateDto,
   ProcessLink,
 } from '../../models';
-
-/** The `activityListenerType` the BPMN editor reports for a user task. */
-const USER_TASK_ACTIVITY = 'bpmn:UserTask:create';
+import {USER_TASK_ACTIVITY} from '../../constants';
 
 @Component({
   standalone: false,

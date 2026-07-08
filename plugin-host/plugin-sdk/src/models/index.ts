@@ -29,6 +29,7 @@ export type {
   ManifestActionProperty,
   Endpoint,
   FrontendBundle,
+  FrontendBundleType,
   GzacApiResponse,
   Document,
   DocumentContent,

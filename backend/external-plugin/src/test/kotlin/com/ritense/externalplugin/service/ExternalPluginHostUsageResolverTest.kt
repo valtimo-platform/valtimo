@@ -20,6 +20,7 @@ import com.ritense.externalplugin.domain.ExternalPluginConfiguration
 import com.ritense.externalplugin.domain.ExternalPluginDefinition
 import com.ritense.externalplugin.domain.ExternalPluginDefinitionStatus
 import com.ritense.externalplugin.domain.ExternalPluginProcessLink
+import com.ritense.externalplugin.domain.ExternalPluginTaskFormProcessLink
 import com.ritense.externalplugin.repository.ExternalPluginConfigurationRepository
 import com.ritense.externalplugin.repository.ExternalPluginDefinitionRepository
 import com.ritense.externalplugin.repository.ExternalPluginProcessLinkRepository
@@ -355,6 +356,88 @@ class ExternalPluginHostUsageResolverTest {
         verify(bpmnRepositoryService).getBpmnModelInstance(processDefId)
     }
 
+    @Test
+    fun `task-form process links are included in the usages`() {
+        val hostId = UUID.randomUUID()
+        val definition = definition(hostId = hostId)
+        val configuration = configuration(definitionId = definition.id, title = "Form Plugin")
+        val processDefId = "bezwaar:3:abc"
+        val taskFormLink = taskFormProcessLink(
+            externalPluginConfigurationId = configuration.id,
+            processDefinitionId = processDefId,
+            activityId = "ReviewTask",
+        )
+
+        whenever(definitionRepository.findAllByHostId(hostId)).thenReturn(listOf(definition))
+        whenever(configurationRepository.findAllByDefinitionId(definition.id)).thenReturn(listOf(configuration))
+        whenever(processLinkRepository.findAllByExternalPluginConfigurationIdIn(setOf(configuration.id)))
+            .thenReturn(emptyList())
+        whenever(taskFormProcessLinkRepository.findAllByExternalPluginConfigurationIdIn(setOf(configuration.id)))
+            .thenReturn(listOf(taskFormLink))
+        whenever(operatonRepositoryService.findProcessDefinitionById(processDefId)).thenReturn(
+            operatonProcessDefinition(
+                id = processDefId,
+                key = "bezwaar",
+                name = "Bezwaarprocedure",
+                versionTag = "CD:bezwaar:1.0.1",
+            )
+        )
+        val model = bpmnModelWithActivity("ReviewTask", "Review request")
+        whenever(bpmnRepositoryService.getBpmnModelInstance(processDefId)).thenReturn(model)
+
+        val usages = resolver.findUsagesForHost(hostId)
+
+        assertThat(usages).hasSize(1)
+        val usage = usages[0]
+        assertThat(usage.configurationId).isEqualTo(configuration.id)
+        assertThat(usage.processLinkId).isEqualTo(taskFormLink.id)
+        assertThat(usage.activityId).isEqualTo("ReviewTask")
+        assertThat(usage.activityName).isEqualTo("Review request")
+        assertThat(usage.parentType).isEqualTo(PluginUsageParentType.CASE)
+    }
+
+    @Test
+    fun `usages union service-task action and user-task form links for the same configuration`() {
+        val hostId = UUID.randomUUID()
+        val definition = definition(hostId = hostId)
+        val configuration = configuration(definitionId = definition.id)
+        val processDefId = "bezwaar:3:abc"
+        val actionLink = processLink(
+            externalPluginConfigurationId = configuration.id,
+            processDefinitionId = processDefId,
+            activityId = "SendLetter",
+        )
+        val taskFormLink = taskFormProcessLink(
+            externalPluginConfigurationId = configuration.id,
+            processDefinitionId = processDefId,
+            activityId = "ReviewTask",
+        )
+
+        whenever(definitionRepository.findAllByHostId(hostId)).thenReturn(listOf(definition))
+        whenever(configurationRepository.findAllByDefinitionId(definition.id)).thenReturn(listOf(configuration))
+        whenever(processLinkRepository.findAllByExternalPluginConfigurationIdIn(setOf(configuration.id)))
+            .thenReturn(listOf(actionLink))
+        whenever(taskFormProcessLinkRepository.findAllByExternalPluginConfigurationIdIn(setOf(configuration.id)))
+            .thenReturn(listOf(taskFormLink))
+        whenever(operatonRepositoryService.findProcessDefinitionById(processDefId)).thenReturn(
+            operatonProcessDefinition(
+                id = processDefId,
+                key = "bezwaar",
+                name = "Bezwaarprocedure",
+                versionTag = "CD:bezwaar:1.0.1",
+            )
+        )
+        whenever(bpmnRepositoryService.getBpmnModelInstance(processDefId)).thenReturn(mock<BpmnModelInstance>())
+
+        val usages = resolver.findUsagesForHost(hostId)
+
+        assertThat(usages).hasSize(2)
+        assertThat(usages.map { it.processLinkId })
+            .containsExactlyInAnyOrder(actionLink.id, taskFormLink.id)
+        assertThat(usages.map { it.activityId })
+            .containsExactlyInAnyOrder("SendLetter", "ReviewTask")
+    }
+
     private fun definition(hostId: UUID): ExternalPluginDefinition = ExternalPluginDefinition(
         id = UUID.randomUUID(),
         pluginId = "test-plugin",
@@ -383,6 +466,20 @@ class ExternalPluginHostUsageResolverTest {
         externalPluginConfigurationId = externalPluginConfigurationId,
         actionKey = "action",
         pluginVersion = "1.0.0",
+    )
+
+    private fun taskFormProcessLink(
+        externalPluginConfigurationId: UUID,
+        processDefinitionId: String,
+        activityId: String,
+    ): ExternalPluginTaskFormProcessLink = ExternalPluginTaskFormProcessLink(
+        id = UUID.randomUUID(),
+        processDefinitionId = processDefinitionId,
+        activityId = activityId,
+        activityType = ActivityTypeWithEventName.USER_TASK_CREATE,
+        externalPluginConfigurationId = externalPluginConfigurationId,
+        pluginVersion = "1.0.0",
+        bundleKey = "review",
     )
 
     private fun operatonProcessDefinition(
