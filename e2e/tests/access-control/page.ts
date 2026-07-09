@@ -59,13 +59,18 @@ export class AccessControlPage {
     return this.page.getByLabel('Table action bar').getByRole('button', {name: 'Add new role'});
   }
 
-  // Role metadata modal: cds-label wrapping "Role name" input, no data-test-ids
+  // Role metadata modal. The modal defaults to a "Choose from list" v-select of
+  // existing role keys; creating a brand-new role needs the manual-entry text
+  // input, revealed by the "Enter manually" toggle (see `enterRoleNameManually`).
+  // In manual mode the modal contains exactly one textbox.
   get roleNameInput() {
-    return this.page
-      .locator('cds-modal')
-      .locator('cds-label')
-      .filter({hasText: 'Role name'})
-      .locator('input');
+    return this.page.locator('cds-modal').getByRole('textbox');
+  }
+
+  // Older builds show the input directly; newer ones hide it behind the
+  // "Enter manually" toggle. Present only in the newer modal.
+  get roleNameManualToggle() {
+    return this.page.locator('cds-modal').getByRole('button', {name: 'Enter manually'});
   }
 
   get createRoleButton() {
@@ -86,8 +91,18 @@ export class AccessControlPage {
 
   // ─── Actions ──────────────────────────────────────────────────────
 
+  // Switch the modal to manual name entry when the toggle is present, so a new
+  // role key can be typed. No-op against the older input-only modal.
+  async enterRoleNameManually() {
+    if (await this.roleNameManualToggle.isVisible().catch(() => false)) {
+      await this.roleNameManualToggle.click();
+    }
+    await expect(this.roleNameInput).toBeVisible();
+  }
+
   async addRole(roleKey: string) {
     await this.addRoleButton.click();
+    await this.enterRoleNameManually();
     await this.roleNameInput.fill(roleKey);
     await this.createRoleButton.click();
   }

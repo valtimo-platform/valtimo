@@ -23,6 +23,7 @@ import {
   IKO_SEARCH_ACTIONS_TEST_IDS,
 } from '../../../constants';
 import {apiDelete, apiGet, apiPost} from '../../../utils/api.utils';
+import {settleModalReset} from '../../../shared/modal/modal.utils';
 
 interface IkoSearchActionResponse {
   key: string;
@@ -112,6 +113,10 @@ export class IkoSearchActionPage {
   async openAddModal(): Promise<void> {
     await this.addActionButton.click();
     await expect(this.addModalHeading).toBeVisible();
+    // Wait out the Carbon modal's deferred reactive-form reset before filling —
+    // otherwise a late writeValue('') wipes the title after the form validates
+    // and leaves Save permanently disabled.
+    await settleModalReset(this.page);
   }
 
   async openEditModal(title: string): Promise<void> {

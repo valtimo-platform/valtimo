@@ -52,7 +52,9 @@ test.describe('Access Control Management', () => {
     test('Add a new role', async () => {
       // Act
       await accessControlPage.addRoleButton.click();
-      await expect(accessControlPage.roleNameInput).toBeVisible();
+      // The modal defaults to a "Choose from list" v-select; switch to manual
+      // entry so a brand-new role key can be typed.
+      await accessControlPage.enterRoleNameManually();
       await accessControlPage.roleNameInput.fill(roleTestData.key);
       await accessControlPage.createRoleButton.click();
 

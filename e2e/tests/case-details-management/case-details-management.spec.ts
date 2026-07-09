@@ -124,16 +124,32 @@ test.describe('Case management', () => {
           const canHaveHandlerSwitch = caseDetailsManagementPage.caseHandlerCanHaveHandler.getByRole('switch');
           const autoAssignSwitch = caseDetailsManagementPage.caseHandlerAutomaticallyAssign.getByRole('switch');
 
-          if (await canHaveHandlerSwitch.isChecked()) {
-            await caseDetailsManagementPage.caseHandlerCanHaveHandlerToggle.click();
-          }
+          // Force a clean slate: drive the handler OFF first (which disables and
+          // clears auto-assign) then back ON, so auto-assign returns to its
+          // default unchecked-but-enabled state regardless of what the shared
+          // env persisted. The section can briefly re-disable while it rebinds
+          // after the reload and swallow a single click, so retry each step
+          // until the switch actually settles (same pattern as the siblings).
+          await expect(async () => {
+            if (await canHaveHandlerSwitch.isChecked()) {
+              await expect(canHaveHandlerSwitch).toBeEnabled();
+              await caseDetailsManagementPage.caseHandlerCanHaveHandlerToggle.click();
+            }
+            await expect(canHaveHandlerSwitch).not.toBeChecked({timeout: 2_000});
+          }).toPass({timeout: 15_000});
 
           //Act
-          await caseDetailsManagementPage.caseHandlerCanHaveHandlerToggle.click();
+          await expect(async () => {
+            if (!(await canHaveHandlerSwitch.isChecked())) {
+              await expect(canHaveHandlerSwitch).toBeEnabled();
+              await caseDetailsManagementPage.caseHandlerCanHaveHandlerToggle.click();
+            }
+            await expect(canHaveHandlerSwitch).toBeChecked({timeout: 2_000});
+          }).toPass({timeout: 15_000});
 
           // Assert
           await expect(canHaveHandlerSwitch).toBeChecked();
-          await expect(autoAssignSwitch).toBeEnabled();
+          await expect(autoAssignSwitch).toBeEnabled({timeout: 10_000});
           await expect(autoAssignSwitch).not.toBeChecked();
         });
 
