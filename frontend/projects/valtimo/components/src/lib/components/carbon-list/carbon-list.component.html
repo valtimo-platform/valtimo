@@ -43,8 +43,7 @@
       <div *ngIf="isSearchable" class="valtimo-search-container" (focusout)="onSearchFocusOut($event)">
         <cds-table-toolbar-search
           #toolbarSearch
-          [expandable]="true"
-          [active]="_searchActive"
+          [expandable]="false"
           [formControl]="searchFormControl"
           [ngClass]="{'valtimo-search--invalid': invalidSearchFields.length > 0}"
           data-test-id="carbonListSearch"
