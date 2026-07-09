@@ -37,7 +37,6 @@ test.describe('Form management — Forms list', () => {
 
     formManagementPage = new FormManagementPage(page, request);
 
-    await page.goto('/');
     await formManagementPage.goToFormManagement();
   });
 
