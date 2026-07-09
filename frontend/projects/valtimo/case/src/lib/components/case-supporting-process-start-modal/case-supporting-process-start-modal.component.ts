@@ -104,6 +104,7 @@ export class CaseSupportingProcessStartModalComponent implements OnDestroy {
     documentId: string;
     caseDefinitionKey: string;
     caseDefinitionVersionTag: string;
+    panelAvailable: boolean;
   } | null = null;
 
   public readonly modalTitle$ = combineLatest([
@@ -229,26 +230,45 @@ export class CaseSupportingProcessStartModalComponent implements OnDestroy {
     item: StartableItem,
     documentId: string,
     caseDefinitionKey: string,
-    caseDefinitionVersionTag: string
+    caseDefinitionVersionTag: string,
+    panelAvailable = false
   ): void {
     if (item.draft) {
-      this._pendingStartableItem = {item, documentId, caseDefinitionKey, caseDefinitionVersionTag};
+      this._pendingStartableItem = {
+        item,
+        documentId,
+        caseDefinitionKey,
+        caseDefinitionVersionTag,
+        panelAvailable,
+      };
       this.showDraftConfirmation$.next(true);
       return;
     }
 
     this._pendingStartableItem = null;
     this.showDraftConfirmation$.next(false);
-    this.proceedWithStartableItem(item, documentId, caseDefinitionKey, caseDefinitionVersionTag);
+    this.proceedWithStartableItem(
+      item,
+      documentId,
+      caseDefinitionKey,
+      caseDefinitionVersionTag,
+      panelAvailable
+    );
   }
 
   public onDraftConfirmationConfirm(): void {
     this.showDraftConfirmation$.next(false);
     if (this._pendingStartableItem) {
-      const {item, documentId, caseDefinitionKey, caseDefinitionVersionTag} =
+      const {item, documentId, caseDefinitionKey, caseDefinitionVersionTag, panelAvailable} =
         this._pendingStartableItem;
       this._pendingStartableItem = null;
-      this.proceedWithStartableItem(item, documentId, caseDefinitionKey, caseDefinitionVersionTag);
+      this.proceedWithStartableItem(
+        item,
+        documentId,
+        caseDefinitionKey,
+        caseDefinitionVersionTag,
+        panelAvailable
+      );
     }
   }
 

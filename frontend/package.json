@@ -348,6 +348,7 @@
     "@nx/nx-linux-x64-gnu": "20.8.1"
   },
   "overrides": {
+    "swagger-client": "3.37.3",
     "feelers": {
       "@bpmn-io/cm-theme": "0.1.0-alpha.2"
     }

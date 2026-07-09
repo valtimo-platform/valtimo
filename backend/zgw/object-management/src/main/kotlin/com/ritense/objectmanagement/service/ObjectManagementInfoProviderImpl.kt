@@ -16,6 +16,7 @@
 
 package com.ritense.objectmanagement.service
 
+import com.ritense.authorization.AuthorizationContext.Companion.runWithoutAuthorization
 import com.ritense.objectenapi.management.ObjectManagementInfo
 import com.ritense.objectenapi.management.ObjectManagementInfoProvider
 import java.util.UUID
@@ -25,8 +26,10 @@ class ObjectManagementInfoProviderImpl(
 ) : ObjectManagementInfoProvider {
 
     override fun getObjectManagementInfo(objectManagementId: UUID): ObjectManagementInfo {
-        return requireNotNull(objectManagementService.getById(objectManagementId)) {
-            "Could not find objectManagement by uuid $objectManagementId"
+        return runWithoutAuthorization {
+            requireNotNull(objectManagementService.getById(objectManagementId)) {
+                "Could not find objectManagement by uuid $objectManagementId"
+            }
         }
     }
 }

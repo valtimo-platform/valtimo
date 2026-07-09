@@ -18,11 +18,25 @@ There are different ways of configuring Permissions in Valtimo.
 
 {% tabs %}
 {% tab title="Via UI" %}
-Creating permissions is done for a specific role. Assuming a role is present, clicking on that role in the `Access control` interface will allow permissions to be configured.
+Creating permissions is done for a specific role. Assuming a role is present, clicking on that role in the `Access control` interface opens the permission editor for that role.
 
 ![configuring-permissions-example](../../.gitbook/assets/configuring-permissions.png)
 
-The image above shows all the permissions that have been configured for `ROLE_USER`. Here, permissions can be added, edited and removed. Since the list shown here is the full list of permissions for this role, removing a permission from the list and saving it will also result in the removal of that permission in Valtimo.
+The editor has three tabs:
+
+* **Editor** — a visual, form-based editor for the role's permissions (shown by default).
+* **Summary** — a read-only, human-readable overview of everything the role is allowed to do.
+* **JSON editor** — the raw permissions JSON, with validation and autocomplete.
+
+Changes are only persisted when you press **Save**. Because the editor always shows the _full_ list of permissions for the role, removing a permission and saving also removes it in Valtimo.
+
+**The visual editor**
+
+The **Editor** tab lists the role's permissions in a sidebar; use **New permission** to add one. Selecting a permission opens its form, split into three sections:
+
+* **Resource & actions** — choose the [resource type](configurable-elements.md) the permission applies to and tick the [allowed actions](configurable-elements.md) (view, create, modify, delete, …). Only the resource types and actions the system supports are offered.
+* **Conditions** — optionally restrict the permission with one or more [conditions](configuring-conditions.md): a _field_ (compare a property of the resource), a _JSON field_ (read a value at a JSON path inside the resource's JSON content), or a _related resource_ (evaluate nested conditions on a linked resource — see [container conditions](container-conditions.md)). Access is granted only when all conditions are met.
+* **Context** — control whether the permission depends on the [context](configuring-context-conditions.md) it is evaluated in: _no restriction_, _only when there is no context_, or _restricted to a specific context resource_.
 
 **Permission structure**
 
