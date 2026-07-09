@@ -44,7 +44,6 @@ test.describe('Case details - Process links', () => {
 
     processLinksPage = new CaseDetailsProcessLinksPage(page, request);
 
-    await page.goto('/');
     draftVersion = await processLinksPage.goToCaseProcesses(CASE_KEY);
 
     // Clean up test process from previous runs
@@ -241,10 +240,12 @@ test.describe('Case details - Process links', () => {
       await advanceToBBMappingsStep();
       await expect(processLinksPage.bbMappingsRequiredIndicators).toHaveCount(2);
 
+      // The required-target label renders the building-block field NAME
+      // (the mapping target), not the case document source path.
       const requiredLabels = processLinksPage.bbMappingsRequiredTargetLabels;
       await expect(requiredLabels).toHaveCount(2);
-      await expect(requiredLabels.filter({hasText: 'doc:applicantName'})).toBeVisible();
-      await expect(requiredLabels.filter({hasText: 'doc:householdSize'})).toBeVisible();
+      await expect(requiredLabels.filter({hasText: 'applicantName'})).toBeVisible();
+      await expect(requiredLabels.filter({hasText: 'householdSize'})).toBeVisible();
     });
 
     test('6.23 — Clicking "Add input" appends a new input-mapping row', async () => {

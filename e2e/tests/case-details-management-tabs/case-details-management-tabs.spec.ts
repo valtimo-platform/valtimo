@@ -40,7 +40,6 @@ test.describe('Case details management — Tabs', () => {
 
     tabsPage = new CaseDetailsManagementTabsPage(page, request);
 
-    await page.goto('/');
     await tabsPage.goToCaseManagement(CASE_IDENTIFIER);
     draftVersion = await tabsPage.ensureDraftVersionSelected();
 

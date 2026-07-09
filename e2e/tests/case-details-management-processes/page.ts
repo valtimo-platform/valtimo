@@ -41,11 +41,11 @@ export class CaseDetailsProcessesPage {
   // Locators
 
   get uploadButton() {
-    return this.carbonList.toolbar.getByRole('button').filter({hasText: /^$/}).first();
+    return this.page.getByTestId(PROCESS_MANAGEMENT_LIST_TEST_IDS.uploadButton);
   }
 
   get createProcessButton() {
-    return this.processListScope.getByRole('button', {name: 'Create process'});
+    return this.page.getByTestId(PROCESS_MANAGEMENT_LIST_TEST_IDS.createProcessButton);
   }
 
   get uploadModal() {
@@ -84,6 +84,14 @@ export class CaseDetailsProcessesPage {
 
   get builderSaveButton() {
     return this.page.getByTestId(PROCESS_MANAGEMENT_BUILDER_TEST_IDS.deployButton);
+  }
+
+  get draftToggle() {
+    return this.page.getByTestId(PROCESS_MANAGEMENT_BUILDER_TEST_IDS.draftToggle);
+  }
+
+  get draftToggleSwitch() {
+    return this.draftToggle.locator('.cds--toggle__switch');
   }
 
   get startsCaseToggle() {
@@ -132,8 +140,7 @@ export class CaseDetailsProcessesPage {
   }
 
   async goToCaseDetailsProcesses(caseIdentifier: string): Promise<string> {
-    await this.page.getByRole('button', {name: 'Admin'}).click();
-    await this.page.getByRole('link', {name: 'Cases'}).click();
+    await this.page.goto('/case-management');
     await this.page.waitForSelector('valtimo-carbon-list');
     await this.page.locator(`tr:has(td:has-text("${caseIdentifier}"))`).click();
     await this.page.waitForURL(/\/case-management\/case\//);
@@ -165,7 +172,9 @@ export class CaseDetailsProcessesPage {
     await this.uploadModalFileInput.setInputFiles(BPMN_ASSET_PATH);
     await expect(this.uploadModalUploadButton).toBeEnabled();
     await this.uploadModalUploadButton.click();
-    await expect(this.uploadModalUploadButton).not.toBeVisible();
+    // The modal only closes after the deploy request succeeds; the BPMN deploy can
+    // take several seconds on CI, so allow more than the default 5s timeout.
+    await expect(this.uploadModalUploadButton).not.toBeVisible({timeout: 30_000});
     await this.carbonList.waitForLoaded();
   }
 
@@ -197,6 +206,14 @@ export class CaseDetailsProcessesPage {
     await expect(this.appendTaskContextPadAction).toBeVisible();
     await this.appendTaskContextPadAction.click();
     await this.page.keyboard.press('Escape');
+  }
+
+  async enableDraft() {
+    const switchControl = this.draftToggle.getByRole('switch');
+    if (!(await switchControl.isChecked())) {
+      await this.draftToggleSwitch.click();
+    }
+    await expect(switchControl).toBeChecked();
   }
 
   async clickStartsCaseToggle() {

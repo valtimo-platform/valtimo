@@ -51,6 +51,7 @@
 
 <valtimo-role-metadata-modal
   [open]="showAddModal$ | async"
+  [usedKeys]="existingRoleKeys$ | async"
   (closeEvent)="onAdd($event)"
 ></valtimo-role-metadata-modal>
 
