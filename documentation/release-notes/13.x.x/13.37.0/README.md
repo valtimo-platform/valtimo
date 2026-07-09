@@ -22,3 +22,13 @@
 
   The confirmation dialog for starting a draft process or building block now shows a proper start message
   instead of a delete confirmation message.
+ 
+* **Long page titles are now truncated with an ellipsis**
+
+  When a page title is too long to fit in the page header, it is now shown with an ellipsis and the full title
+  appears on hover. This keeps the header action buttons visible regardless of how long the title is. This was
+  most noticeable on the form builder header with long form names.
+
+## Security
+
+* Updated several dependencies to address reported vulnerabilities.
