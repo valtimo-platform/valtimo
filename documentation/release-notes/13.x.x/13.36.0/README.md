@@ -113,9 +113,3 @@
   Updating a search list column that was resolved by owner and key (rather than by id) failed with an "entity not
   found" error. The lookup now falls back correctly, so creating, updating, and deleting list columns works as
   expected.
-
-* **Case list export now enforces the export permission**
-
-  The case list CSV export endpoint (`POST /api/v1/case/{caseDefinitionKey}/export`) now checks the `export` permission
-  before producing a file. A user without an applicable `export` permission for the case definition now receives a
-  403 (Forbidden) response instead of an empty CSV.
