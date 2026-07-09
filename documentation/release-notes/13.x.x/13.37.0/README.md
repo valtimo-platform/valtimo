@@ -19,3 +19,7 @@
 ## Bugfixes
 
 * New bugfix.
+
+## Security
+
+* Updated several dependencies to address reported vulnerabilities.
