@@ -1865,14 +1865,14 @@
     "canInitializeDocument": "Start een dossier",
     "startableByUser": "Door gebruiker te starten",
     "expressionErrors": {
-      "MISSING_EL_MARKERS": "Expressie moet ${...} of #{...} syntax gebruiken",
-      "UNCLOSED_PARENTHESIS": "Expressie heeft een niet-gesloten haakje '('",
-      "UNCLOSED_BRACE": "Expressie mist een sluitende accolade '}'",
-      "UNCLOSED_BRACKET": "Expressie heeft een niet-gesloten blokhaak '['",
-      "MISMATCHED_DELIMITER": "Expressie heeft niet-overeenkomende haakjes of accolades",
-      "INCOMPLETE_EXPRESSION": "Expressie is onvolledig",
-      "INVALID_SYNTAX": "Expressie heeft ongeldige syntax",
-      "BEAN_NOT_FOUND": "Gerefereerde bean bestaat niet"
+      "MISSING_EL_MARKERS": "Expressie {{expression}} moet ${...} of #{...} syntax gebruiken",
+      "UNCLOSED_PARENTHESIS": "Expressie {{expression}} heeft een niet-gesloten haakje '('",
+      "UNCLOSED_BRACE": "Expressie {{expression}} mist een sluitende accolade '}'",
+      "UNCLOSED_BRACKET": "Expressie {{expression}} heeft een niet-gesloten blokhaak '['",
+      "MISMATCHED_DELIMITER": "Expressie {{expression}} heeft niet-overeenkomende haakjes of accolades",
+      "INCOMPLETE_EXPRESSION": "Expressie {{expression}} is onvolledig",
+      "INVALID_SYNTAX": "Expressie {{expression}} heeft ongeldige syntax",
+      "BEAN_NOT_FOUND": "Geen bean gevonden met deze naam: {{expression}}. Als u een procesvariabele gebruikt, zorg dat deze tijdens runtime bestaat"
     },
     "warningConfirmation": {
       "title": "Proces bevat waarschuwingen",

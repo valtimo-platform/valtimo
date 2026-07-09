@@ -1,17 +1,19 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
  *
- * Licensed under EUPL, Version 1.2 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ *  * Copyright 2015-2026 Ritense BV, the Netherlands.
+ *  *
+ *  * Licensed under EUPL, Version 1.2 (the "License");
+ *  * you may not use this file except in compliance with the License.
+ *  * You may obtain a copy of the License at
+ *  *
+ *  * https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+ *  *
+ *  * Unless required by applicable law or agreed to in writing, software
+ *  * distributed under the License is distributed on an "AS IS" basis,
+ *  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  * See the License for the specific language governing permissions and
+ *  * limitations under the License.
  *
- * https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" basis,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
  */
 
 package com.ritense.processlink.validation
@@ -24,6 +26,7 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.operaton.bpm.model.bpmn.Bpmn
 import org.operaton.bpm.model.bpmn.BpmnModelInstance
+import org.operaton.bpm.model.bpmn.instance.BoundaryEvent
 import org.operaton.bpm.model.bpmn.instance.BusinessRuleTask
 import org.operaton.bpm.model.bpmn.instance.CallActivity
 import org.operaton.bpm.model.bpmn.instance.Condition
@@ -50,6 +53,7 @@ import org.operaton.bpm.model.bpmn.instance.ServiceTask
 import org.operaton.bpm.model.bpmn.instance.Signal
 import org.operaton.bpm.model.bpmn.instance.SignalEventDefinition
 import org.operaton.bpm.model.bpmn.instance.StartEvent
+import org.operaton.bpm.model.bpmn.instance.SubProcess
 import org.operaton.bpm.model.bpmn.instance.TerminateEventDefinition
 import org.operaton.bpm.model.bpmn.instance.TimeDuration
 import org.operaton.bpm.model.bpmn.instance.TimerEventDefinition
@@ -722,6 +726,108 @@ class ProcessDefinitionValidatorTest {
     }
 
     @Test
+    fun `should not report boundary event for missing incoming flow`() {
+        val model = Bpmn.createExecutableProcess("test-process")
+            .startEvent("start")
+            .serviceTask("my-task").operatonExpression("\${true}")
+            .boundaryEvent("boundary").timerWithDuration("PT1H")
+            .endEvent("boundary-end")
+            .moveToActivity("my-task")
+            .endEvent("end")
+            .done()
+
+        val result = validator.validate(model, emptyList())
+
+        assertThat(result.errors).noneMatch {
+            it.elementId == "boundary" && it.reason.contains("incoming flow")
+        }
+    }
+
+    @Test
+    fun `should report boundary event with no outgoing flow`() {
+        val model = Bpmn.createExecutableProcess("test-process")
+            .startEvent("start")
+            .serviceTask("my-task").operatonExpression("\${true}")
+            .endEvent("end")
+            .done()
+
+        val process = model.getModelElementsByType(Process::class.java).first()
+        val serviceTask = model.getModelElementById<ServiceTask>("my-task")
+
+        val boundaryEvent = model.newInstance(BoundaryEvent::class.java)
+        boundaryEvent.id = "orphan-boundary"
+        boundaryEvent.attachedTo = serviceTask
+        val timerDef = model.newInstance(TimerEventDefinition::class.java)
+        val timeDuration = model.newInstance(TimeDuration::class.java)
+        timeDuration.textContent = "PT1H"
+        timerDef.timeDuration = timeDuration
+        boundaryEvent.eventDefinitions.add(timerDef)
+        process.addChildElement(boundaryEvent)
+
+        val result = validator.validate(model, emptyList())
+
+        assertThat(result.errors).anyMatch {
+            it.elementId == "orphan-boundary" && it.reason == "Boundary event has no outgoing flow"
+        }
+    }
+
+    @Test
+    fun `should not report activity with boundary event for missing outgoing flow`() {
+        val model = Bpmn.createExecutableProcess("test-process")
+            .startEvent("start")
+            .serviceTask("my-task").operatonExpression("\${true}")
+            .done()
+
+        val process = model.getModelElementsByType(Process::class.java).first()
+        val serviceTask = model.getModelElementById<ServiceTask>("my-task")
+
+        val boundaryEvent = model.newInstance(BoundaryEvent::class.java)
+        boundaryEvent.id = "boundary"
+        boundaryEvent.attachedTo = serviceTask
+        val timerDef = model.newInstance(TimerEventDefinition::class.java)
+        val timeDuration = model.newInstance(TimeDuration::class.java)
+        timeDuration.textContent = "PT1H"
+        timerDef.timeDuration = timeDuration
+        boundaryEvent.eventDefinitions.add(timerDef)
+        process.addChildElement(boundaryEvent)
+
+        val endEvent = model.newInstance(EndEvent::class.java)
+        endEvent.id = "end"
+        process.addChildElement(endEvent)
+
+        val flow = model.newInstance(SequenceFlow::class.java)
+        flow.id = "boundary-to-end"
+        flow.source = boundaryEvent
+        flow.target = endEvent
+        process.addChildElement(flow)
+
+        val result = validator.validate(model, emptyList())
+
+        assertThat(result.errors).noneMatch {
+            it.elementId == "my-task" && it.reason == "Element has no outgoing flow"
+        }
+    }
+
+    @Test
+    fun `should consider boundary event as valid path to end event`() {
+        val model = Bpmn.createExecutableProcess("test-process")
+            .startEvent("start")
+            .serviceTask("my-task").operatonExpression("\${true}")
+            .boundaryEvent("boundary").timerWithDuration("PT1H")
+            .endEvent("end")
+            .done()
+
+        val result = validator.validate(model, emptyList())
+
+        assertThat(result.errors).noneMatch {
+            it.elementId == "start" && it.reason == "Start event has no path to an end event"
+        }
+        assertThat(result.errors).noneMatch {
+            it.elementId == "boundary" && it.reason.contains("not reachable")
+        }
+    }
+
+    @Test
     fun `should report unreachable element`() {
         val model = Bpmn.createExecutableProcess("test-process")
             .startEvent("start")
@@ -752,6 +858,47 @@ class ProcessDefinitionValidatorTest {
         }
         assertThat(result.errors).anyMatch {
             it.elementId == "isolated-end" && it.reason == "Element is not reachable from any start event"
+        }
+    }
+
+    @Test
+    fun `should not report event sub-process for flow or reachability errors`() {
+        val model = Bpmn.createExecutableProcess("test-process")
+            .startEvent("start")
+            .endEvent("end")
+            .done()
+
+        val process = model.getModelElementsByType(Process::class.java).first()
+
+        val eventSubProcess = model.newInstance(SubProcess::class.java)
+        eventSubProcess.id = "error-handler"
+        eventSubProcess.setTriggeredByEvent(true)
+        process.addChildElement(eventSubProcess)
+
+        val errorStartEvent = model.newInstance(StartEvent::class.java)
+        errorStartEvent.id = "error-start"
+        val errorDef = model.newInstance(ErrorEventDefinition::class.java)
+        errorStartEvent.eventDefinitions.add(errorDef)
+        eventSubProcess.addChildElement(errorStartEvent)
+
+        val errorEndEvent = model.newInstance(EndEvent::class.java)
+        errorEndEvent.id = "error-end"
+        eventSubProcess.addChildElement(errorEndEvent)
+
+        val flow = model.newInstance(SequenceFlow::class.java)
+        flow.id = "error-flow"
+        flow.source = errorStartEvent
+        flow.target = errorEndEvent
+        eventSubProcess.addChildElement(flow)
+
+        val result = validator.validate(model, emptyList())
+
+        assertThat(result.errors).noneMatch {
+            it.elementId == "error-handler" && (
+                it.reason.contains("not reachable") ||
+                it.reason.contains("incoming flow") ||
+                it.reason.contains("outgoing flow")
+            )
         }
     }
 
@@ -1332,8 +1479,9 @@ class ProcessDefinitionValidatorTest {
 
         val error = result.errors.find { it.elementId == "my-task" && it.errorCode == "BEAN_NOT_FOUND" }
         assertThat(error).isNotNull
-        assertThat(error!!.reason).contains("nonExistentBean")
+        assertThat(error!!.reason).contains("No bean named 'nonExistentBean' found")
         assertThat(error.expression).isEqualTo("\${nonExistentBean.doSomething()}")
+        assertThat(error.severity).isEqualTo(ValidationSeverity.WARNING)
     }
 
     @Test
