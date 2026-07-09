@@ -31,9 +31,20 @@ export class AccessControlPage {
     await this.page.waitForSelector('valtimo-carbon-list');
   }
 
+  // Direct navigation to the roles list — avoids relying on the Admin menu and shared history.
+  async goToAccessControlList() {
+    await this.page.goto('/access-control');
+    await this.page.waitForSelector('valtimo-carbon-list');
+  }
+
   async openRole(roleKey: string) {
     const list = new CarbonList(this.page);
     await list.row(roleKey).click();
+  }
+
+  // Role details opens on the "Summary" tab; the permissions editor is on "JSON editor".
+  async openJsonEditorTab() {
+    await this.page.getByRole('tab', {name: 'JSON editor'}).click();
   }
 
   // ─── UI Elements ──────────────────────────────────────────────────

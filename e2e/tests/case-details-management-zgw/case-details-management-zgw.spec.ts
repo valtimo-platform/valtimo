@@ -42,7 +42,6 @@ test.describe('Case details management — ZGW', () => {
       await testPage.deleteColumnViaApi(CASE_KEY, key);
     }
 
-    await page.goto('/');
     await testPage.goToCaseManagementForCase(CASE_KEY);
     await ensureDraftVersionSelected(page);
     await testPage.openDocumentColumnsTab();

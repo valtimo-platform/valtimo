@@ -80,16 +80,11 @@ export class ChoiceFieldManagementPage {
 
   // ─── Navigation ───────────────────────────────────────────────────
 
+  // Navigate directly to the choice-fields route — avoids loading the
+  // chart-heavy dashboard (+ SSE) via the Admin menu, which can hang the
+  // beforeAll hook or crash the Chromium renderer ("Target crashed").
   async goToChoiceFields() {
-    const adminButton = this.page.getByRole('button', {name: 'Admin'});
-    if ((await adminButton.getAttribute('aria-expanded')) !== 'true') {
-      await adminButton.click();
-    }
-    await this.page
-      .locator('[data-testid="sidenav-item-Admin"]')
-      .getByRole('link', {name: 'Choice fields'})
-      .click();
-
+    await this.page.goto('/choice-fields');
     await this.page.waitForURL(/\/choice-fields($|\?)/, {timeout: 10_000});
     await this.carbonList.waitForLoaded();
   }

@@ -18,10 +18,13 @@ package com.ritense.objectmanagement.repository
 
 import com.ritense.objectmanagement.domain.ObjectManagement
 import org.springframework.data.jpa.repository.JpaRepository
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor
 import java.util.UUID
 
-interface ObjectManagementRepository: JpaRepository<ObjectManagement, UUID> {
+interface ObjectManagementRepository :
+    JpaRepository<ObjectManagement, UUID>,
+    JpaSpecificationExecutor<ObjectManagement> {
 
     fun findByTitle(title: String): ObjectManagement?
-    fun findByObjecttypeId(id: String) : ObjectManagement?
+    fun findByObjecttypeId(id: String): ObjectManagement?
 }

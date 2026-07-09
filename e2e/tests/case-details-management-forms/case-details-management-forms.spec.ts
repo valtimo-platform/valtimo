@@ -38,7 +38,6 @@ test.describe('Case details - Forms tab', () => {
 
     formsPage = new CaseDetailsFormsPage(page, request);
 
-    await page.goto('/');
     draftVersion = await formsPage.goToCaseForms(CASE_KEY);
 
     // Clean up stale test form from previous runs so the create step can succeed
