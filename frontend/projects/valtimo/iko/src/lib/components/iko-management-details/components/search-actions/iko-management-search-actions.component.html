@@ -63,7 +63,11 @@
   </ng-template>
 
   <ng-template #addActionButton>
-    <button cdsButton="primary" (click)="openAddModal()">
+    <button
+      cdsButton="primary"
+      [attr.data-test-id]="testIds.addActionButton"
+      (click)="openAddModal()"
+    >
       {{ 'ikoManagement.searchActions.addActionTitle' | translate }}
 
       <svg class="cds--btn__icon" cdsIcon="add" size="16"></svg>

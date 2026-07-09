@@ -15,8 +15,15 @@
  */
 
 import {Injectable} from '@angular/core';
+import {
+  PbacConditionTypeDto,
+  PbacEntityMapperDto,
+  PbacOperatorDto,
+  PbacRegistryDto,
+  PbacResourceDto,
+} from '@valtimo/shared';
 import {BehaviorSubject, map, Observable, shareReplay, tap} from 'rxjs';
-import {PermissionSchema, SchemaShape} from '../models';
+import {PermissionSchema} from '../models';
 import {AccessControlService} from './access-control.service';
 
 @Injectable({providedIn: 'root'})
@@ -24,21 +31,76 @@ export class PermissionSchemaMetadataService {
   private readonly _knownResourceTypes$ = new BehaviorSubject<Set<string>>(new Set());
   private readonly _fieldsByResourceType$ = new BehaviorSubject<Record<string, Set<string>>>({});
 
-  public readonly schema$: Observable<PermissionSchema> = this.accessControlService
-    .getPermissionSchema()
+  /**
+   * The full PBAC registry served by GET /api/management/v1/pbac/registry. This is the
+   * authoritative, purpose-built description of every resource type, its actions and fields,
+   * the available operators and condition types, the entity-mapper pairs that define which
+   * context resources a permission can be scoped to, and the configured roles. It drives both
+   * the read-only overview and the form-based editor.
+   */
+  public readonly registry$: Observable<PbacRegistryDto> = this.accessControlService
+    .getPbacRegistry()
     .pipe(
-      tap(schema => {
-        this._knownResourceTypes$.next(this.extractKnownResourceTypes(schema));
-        this._fieldsByResourceType$.next(this.extractFieldsByResourceType(schema));
+      tap(registry => {
+        this._knownResourceTypes$.next(this.extractKnownResourceTypes(registry));
+        this._fieldsByResourceType$.next(this.extractFieldsByResourceType(registry));
       }),
       shareReplay({bufferSize: 1, refCount: false})
     );
 
-  public readonly actionsByResourceType$: Observable<Record<string, string[]>> =
-    this.schema$.pipe(map(schema => this.extractActionsByResourceType(schema)));
+  public readonly resources$: Observable<PbacResourceDto[]> = this.registry$.pipe(
+    map(registry => registry.resources)
+  );
 
-  public readonly allResourceTypes$: Observable<string[]> = this.actionsByResourceType$.pipe(
-    map(actions => Object.keys(actions))
+  public readonly resourceByType$: Observable<Record<string, PbacResourceDto>> =
+    this.resources$.pipe(
+      map(resources =>
+        resources.reduce<Record<string, PbacResourceDto>>((acc, resource) => {
+          acc[resource.resourceType] = resource;
+          return acc;
+        }, {})
+      )
+    );
+
+  /**
+   * Raw JSON schema served by GET /api/management/v1/permissions/schema. Drives validation and
+   * autocomplete in the Monaco JSON editor.
+   */
+  public readonly schema$: Observable<PermissionSchema> = this.accessControlService
+    .getPermissionSchema()
+    .pipe(shareReplay({bufferSize: 1, refCount: false}));
+
+  // The available actions per resource type come straight from the PBAC registry. The backend
+  // discovers every ResourceActionProvider on the classpath — not only the ones registered as
+  // Spring beans — so each resource's action list is complete.
+  public readonly actionsByResourceType$: Observable<Record<string, string[]>> =
+    this.resources$.pipe(
+      map(resources =>
+        resources.reduce<Record<string, string[]>>((acc, resource) => {
+          acc[resource.resourceType] = [...resource.actions];
+          return acc;
+        }, {})
+      )
+    );
+
+  public readonly allResourceTypes$: Observable<string[]> = this.resources$.pipe(
+    map(resources => resources.map(resource => resource.resourceType))
+  );
+
+  public readonly operators$: Observable<PbacOperatorDto[]> = this.registry$.pipe(
+    map(registry => registry.operators)
+  );
+
+  public readonly conditionTypes$: Observable<PbacConditionTypeDto[]> = this.registry$.pipe(
+    map(registry => registry.conditionTypes)
+  );
+
+  public readonly entityMappers$: Observable<PbacEntityMapperDto[]> = this.registry$.pipe(
+    map(registry => registry.entityMappers)
+  );
+
+  public readonly roles$: Observable<string[]> = this.registry$.pipe(
+    map(registry => registry.roles)
   );
 
   constructor(private readonly accessControlService: AccessControlService) {}
@@ -51,41 +113,17 @@ export class PermissionSchemaMetadataService {
     return this._fieldsByResourceType$.value[resourceType]?.has(field) ?? false;
   }
 
-  private extractActionsByResourceType(schema: PermissionSchema): Record<string, string[]> {
-    const branches = (schema as SchemaShape)?.items?.allOf ?? [];
-    const result: Record<string, string[]> = {};
-    for (const branch of branches) {
-      const resourceType = branch?.if?.properties?.resourceType?.const;
-      const actions = branch?.then?.properties?.action?.enum;
-      if (resourceType && Array.isArray(actions)) {
-        result[resourceType] = [...actions];
-      }
-    }
-    return result;
+  private extractKnownResourceTypes(registry: PbacRegistryDto): Set<string> {
+    return new Set(registry.resources.map(resource => resource.resourceType));
   }
 
-  private extractKnownResourceTypes(schema: PermissionSchema): Set<string> {
-    const entries = (schema as SchemaShape)?.items?.properties?.resourceType?.oneOf ?? [];
-    const result = new Set<string>();
-    for (const entry of entries) {
-      if (entry?.const) result.add(entry.const);
-    }
-    return result;
-  }
-
-  private extractFieldsByResourceType(schema: PermissionSchema): Record<string, Set<string>> {
-    const definitions = (schema as SchemaShape)?.definitions ?? {};
+  private extractFieldsByResourceType(registry: PbacRegistryDto): Record<string, Set<string>> {
     const result: Record<string, Set<string>> = {};
-    for (const [key, def] of Object.entries(definitions)) {
-      if (!key.startsWith('condList.')) continue;
-      const resourceType = key.substring('condList.'.length);
+    for (const resource of registry.resources) {
       const fields = new Set<string>();
-      for (const variant of def?.items?.oneOf ?? []) {
-        for (const part of variant?.allOf ?? []) {
-          for (const f of part?.properties?.field?.enum ?? []) fields.add(f);
-        }
-      }
-      result[resourceType] = fields;
+      for (const field of resource.fields) fields.add(field.name);
+      for (const alias of resource.fieldAliases) fields.add(alias.alias);
+      result[resource.resourceType] = fields;
     }
     return result;
   }

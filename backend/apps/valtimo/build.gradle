@@ -28,7 +28,7 @@ dependencies {
     implementation(project(":backend:dependencies:valtimo-dependencies"))
 
     implementation(project(":backend:document-generation:local-document-generation"))
-    implementation(project(":backend:resource:local-resource"))
+    implementation(project(":backend:aws:s3-resource"))
     implementation(project(":backend:mail:local-mail"))
     implementation(project(":backend:milestones"))
     implementation(project(":backend:zgw:object-management"))
@@ -55,4 +55,31 @@ springBoot {
     mainClass = "com.ritense.valtimo.ApplicationKt"
 }
 
+def localRunTaskNames = ["bootRun", "bootRunWithDocker"]
+def runningLocalApp = gradle.startParameter.taskNames.any { requested ->
+    localRunTaskNames.any { requested == it || requested.endsWith(":$it") }
+}
+def includeDevSources = (project.findProperty("includeDev")?.toString()?.toBoolean() ?: false) || runningLocalApp
+
+if (includeDevSources) {
+    extensions.configure(org.jetbrains.kotlin.gradle.dsl.KotlinJvmProjectExtension) { kotlinExt ->
+        kotlinExt.sourceSets.named("main") { kotlinSourceSet ->
+            kotlinSourceSet.kotlin.srcDir("src/dev/kotlin")
+        }
+    }
+    sourceSets {
+        main {
+            resources.srcDir("src/dev/resources")
+        }
+    }
+}
+
 apply from: "${rootProject.projectDir}/backend/gradle/valtimo-app.gradle"
+
+def sharedComposeFilePath = project(":backend:apps:dev").file("docker-compose.yaml").path
+def s3ComposeFilePath = file("docker-compose.yaml").path
+dockerCompose {
+    useComposeFiles = [sharedComposeFilePath, s3ComposeFilePath]
+}
+
+dockerCompose.isRequiredBy(tasks.named("bootRun"))

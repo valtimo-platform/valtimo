@@ -23,6 +23,7 @@ import {DropzoneModule, FileSizeModule} from '@valtimo/components';
 import {
   CASE_CONFIGURATION_EXTENSIONS_TOKEN,
   CASE_MANAGEMENT_TAB_TOKEN,
+  ConfigService,
   ZGW_DOCUMENTEN_API_DOCUMENTS_COMPONENT_TOKEN,
   ZGW_OBJECT_TYPE_COMPONENT_TOKEN,
 } from '@valtimo/shared';
@@ -57,12 +58,14 @@ import {CaseInspectionZgwTabComponent} from './case-inspection/zgw-tab.component
   providers: [
     {
       provide: CASE_MANAGEMENT_TAB_TOKEN,
-      useValue: {
+      useFactory: (configService: ConfigService) => ({
         translationKey: 'caseManagement.tabs.zgw',
         component: CaseManagementZgwComponent,
         tabRoute: 'zgw',
         issueTypes: ['zaak-type-link', 'zaakdetail-sync'],
-      },
+        enabled$: configService.getFeatureToggleObservable('enableZgwFeatures', true),
+      }),
+      deps: [ConfigService],
       multi: true,
     },
     {
