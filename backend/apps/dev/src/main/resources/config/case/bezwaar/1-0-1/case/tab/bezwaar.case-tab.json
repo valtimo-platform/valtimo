@@ -7,6 +7,12 @@
         "showTasks": true
     },
     {
+        "key": "afbeeldingen",
+        "name": "Afbeeldingen",
+        "type": "widgets",
+        "contentKey": "-"
+    },
+    {
         "name": "Summary",
         "key": "summary",
         "type": "standard",
