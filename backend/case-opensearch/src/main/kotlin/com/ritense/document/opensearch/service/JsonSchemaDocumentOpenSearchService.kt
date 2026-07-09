@@ -23,6 +23,7 @@ import com.fasterxml.jackson.databind.node.ArrayNode
 import com.ritense.authorization.Action
 import com.ritense.authorization.AuthorizationContext.Companion.runWithoutAuthorization
 import com.ritense.authorization.AuthorizationService
+import com.ritense.case.service.CaseDefinitionService
 import com.ritense.document.domain.impl.JsonSchemaDocument
 import com.ritense.document.domain.impl.JsonSchemaDocumentId
 import com.ritense.document.domain.search.AdvancedSearchRequest
@@ -76,6 +77,7 @@ class JsonSchemaDocumentOpenSearchService(
     private val searchFieldService: SearchFieldService,
     private val outboxService: OutboxService,
     private val objectMapper: ObjectMapper,
+    private val caseDefinitionService: CaseDefinitionService,
 ) : DocumentSearchService {
 
     override fun search(
@@ -99,19 +101,19 @@ class JsonSchemaDocumentOpenSearchService(
         }
         val globalFilter = searchRequest.globalSearchFilter?.takeIf { it.isNotEmpty() }
         if (globalFilter != null) {
-            val searchFields = if (!searchRequest.documentDefinitionName.isNullOrEmpty()) {
-                runWithoutAuthorization {
+            if (!searchRequest.documentDefinitionName.isNullOrEmpty()) {
+                val searchFields = runWithoutAuthorization {
                     searchFieldService.getSearchFields(searchRequest.documentDefinitionName)
                 }
+                if (searchFields.isNotEmpty()) {
+                    parts.add(buildGlobalSearchQuery(globalFilter.trim(), searchFields))
+                } else {
+                    val term = "*${globalFilter.trim()}*"
+                    parts.add(QueryBuilders.wildcardQuery("contentText.keyword", term).caseInsensitive(true))
+                }
             } else {
-                emptyList()
-            }
-
-            if (searchFields.isNotEmpty()) {
-                parts.add(buildGlobalSearchQuery(globalFilter.trim(), searchFields))
-            } else {
-                val term = "*${globalFilter.trim()}*"
-                parts.add(QueryBuilders.wildcardQuery("contentText.keyword", term).caseInsensitive(true))
+                val scopedQuery = buildGlobalSearchQueryForAllDefinitions(globalFilter.trim())
+                parts.add(scopedQuery)
             }
         }
         searchRequest.otherFilters?.forEach { sc ->
@@ -245,19 +247,19 @@ class JsonSchemaDocumentOpenSearchService(
 
         val globalFilter = searchRequest.globalSearchFilter?.takeIf { it.isNotEmpty() }
         if (globalFilter != null) {
-            val searchFields = if (!documentDefinitionName.isNullOrEmpty()) {
-                runWithoutAuthorization {
+            if (!documentDefinitionName.isNullOrEmpty()) {
+                val searchFields = runWithoutAuthorization {
                     searchFieldService.getSearchFields(documentDefinitionName)
                 }
+                if (searchFields.isNotEmpty()) {
+                    parts.add(buildGlobalSearchQuery(globalFilter.trim(), searchFields))
+                } else {
+                    val term = "*${globalFilter.trim()}*"
+                    parts.add(QueryBuilders.wildcardQuery("contentText.keyword", term).caseInsensitive(true))
+                }
             } else {
-                emptyList()
-            }
-
-            if (searchFields.isNotEmpty()) {
-                parts.add(buildGlobalSearchQuery(globalFilter.trim(), searchFields))
-            } else {
-                val term = "*${globalFilter.trim()}*"
-                parts.add(QueryBuilders.wildcardQuery("contentText.keyword", term).caseInsensitive(true))
+                val scopedQuery = buildGlobalSearchQueryForAllDefinitions(globalFilter.trim())
+                parts.add(scopedQuery)
             }
         }
 
@@ -531,6 +533,36 @@ class JsonSchemaDocumentOpenSearchService(
         }
 
         return boolQuery
+    }
+
+    private fun buildGlobalSearchQueryForAllDefinitions(query: String): QueryBuilder {
+        val matchNone = QueryBuilders.boolQuery().mustNot(QueryBuilders.matchAllQuery())
+
+        val accessibleDefinitions = caseDefinitionService.getCaseDefinitions(active = true)
+        if (accessibleDefinitions.isEmpty()) {
+            return matchNone
+        }
+
+        val contentTextQuery = QueryBuilders.wildcardQuery("contentText.keyword", "*${query}*").caseInsensitive(true)
+
+        val definitionQueries = accessibleDefinitions.map { definition ->
+            val searchFields = runWithoutAuthorization {
+                searchFieldService.getSearchFields(definition.id.key)
+            }
+            val searchQuery = if (searchFields.isEmpty()) {
+                contentTextQuery
+            } else {
+                buildGlobalSearchQuery(query, searchFields)
+            }
+            QueryBuilders.boolQuery()
+                .must(QueryBuilders.termQuery(DEFINITION_NAME_FIELD, definition.id.key))
+                .must(searchQuery)
+        }
+
+        return QueryBuilders.boolQuery().apply {
+            definitionQueries.forEach { should(it) }
+            minimumShouldMatch(1)
+        }
     }
 
     private data class ParsedTerm(

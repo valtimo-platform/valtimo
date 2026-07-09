@@ -56,6 +56,7 @@ import com.ritense.document.service.DocumentSearchService
 import com.ritense.document.service.impl.JsonSchemaDocumentDefinitionService
 import com.ritense.document.service.SearchFieldService
 import com.ritense.document.service.impl.JsonSchemaDocumentSearchService
+import com.ritense.case.service.CaseDefinitionService
 import com.ritense.valtimo.contract.database.QueryDialectHelper
 import com.ritense.outbox.OutboxService
 import com.ritense.valtimo.contract.authentication.TeamManagementService
@@ -248,10 +249,12 @@ class DocumentOpenSearchAutoConfiguration {
         searchFieldService: SearchFieldService,
         outboxService: OutboxService,
         objectMapper: ObjectMapper,
+        caseDefinitionService: CaseDefinitionService,
     ): JsonSchemaDocumentOpenSearchService =
         JsonSchemaDocumentOpenSearchService(
             elasticsearchOperations, translator, authorizationService,
             jpaRepository, userManagementService, searchFieldService, outboxService, objectMapper,
+            caseDefinitionService,
         )
 
     @Bean("jpaDocumentSearchService")

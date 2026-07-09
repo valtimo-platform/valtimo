@@ -1,17 +1,19 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
  *
- * Licensed under EUPL, Version 1.2 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ *  * Copyright 2015-2026 Ritense BV, the Netherlands.
+ *  *
+ *  * Licensed under EUPL, Version 1.2 (the "License");
+ *  * you may not use this file except in compliance with the License.
+ *  * You may obtain a copy of the License at
+ *  *
+ *  * https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+ *  *
+ *  * Unless required by applicable law or agreed to in writing, software
+ *  * distributed under the License is distributed on an "AS IS" basis,
+ *  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  * See the License for the specific language governing permissions and
+ *  * limitations under the License.
  *
- * https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
  */
 
 package com.ritense.document.opensearch.service
@@ -19,6 +21,9 @@ package com.ritense.document.opensearch.service
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.ritense.authorization.Action
 import com.ritense.authorization.AuthorizationService
+import com.ritense.case_.domain.definition.CaseDefinition
+import com.ritense.case.service.CaseDefinitionService
+import com.ritense.valtimo.contract.case_.CaseDefinitionId
 import com.ritense.authorization.permission.ConditionContainer
 import com.ritense.authorization.permission.Permission
 import com.ritense.authorization.role.Role
@@ -34,6 +39,7 @@ import com.ritense.document.opensearch.domain.JsonSchemaDocumentOsDocument
 import com.ritense.document.repository.impl.JsonSchemaDocumentRepository
 import com.ritense.document.service.JsonSchemaDocumentActionProvider
 import com.ritense.document.service.SearchFieldService
+import com.ritense.document.service.impl.SearchRequest
 import com.ritense.outbox.OutboxService
 import com.ritense.valtimo.contract.authentication.UserManagementService
 import com.ritense.valtimo.contract.blueprint.BlueprintType
@@ -63,6 +69,7 @@ class JsonSchemaDocumentOpenSearchServiceTest {
     private val searchFieldService: SearchFieldService = mock()
     private val outboxService: OutboxService = mock()
     private val objectMapper: ObjectMapper = ObjectMapper()
+    private val caseDefinitionService: CaseDefinitionService = mock()
 
     private lateinit var service: JsonSchemaDocumentOpenSearchService
 
@@ -82,6 +89,7 @@ class JsonSchemaDocumentOpenSearchServiceTest {
             searchFieldService = searchFieldService,
             outboxService = outboxService,
             objectMapper = objectMapper,
+            caseDefinitionService = caseDefinitionService,
         )
 
         val auth = UsernamePasswordAuthenticationToken(
@@ -283,6 +291,63 @@ class JsonSchemaDocumentOpenSearchServiceTest {
         val capturedQuery = queryCaptor.firstValue
         assertThat(capturedQuery.source).contains("content.city:amsterdam")
         assertThat(capturedQuery.source).contains("*urgent*")
+    }
+
+    @Test
+    fun `global search without definition name builds per-definition scoped query`() {
+        val queryCaptor = argumentCaptor<StringQuery>()
+        val emptySearchHits: SearchHits<JsonSchemaDocumentOsDocument> = mock()
+        whenever(emptySearchHits.searchHits).thenReturn(emptyList())
+        whenever(emptySearchHits.totalHits).thenReturn(0L)
+        whenever(elasticsearchOperations.search(queryCaptor.capture(), eq(JsonSchemaDocumentOsDocument::class.java))).thenReturn(emptySearchHits)
+
+        val houseDef = mock<CaseDefinition>()
+        val houseDefId = mock<CaseDefinitionId>()
+        whenever(houseDefId.key).thenReturn("house")
+        whenever(houseDef.id).thenReturn(houseDefId)
+
+        val carDef = mock<CaseDefinition>()
+        val carDefId = mock<CaseDefinitionId>()
+        whenever(carDefId.key).thenReturn("car")
+        whenever(carDef.id).thenReturn(carDefId)
+
+        whenever(caseDefinitionService.getCaseDefinitions(active = true)).thenReturn(listOf(houseDef, carDef))
+        whenever(searchFieldService.getSearchFields("house")).thenReturn(listOf(
+            SearchField("city", "doc:city", SearchFieldDataType.TEXT, SearchFieldFieldType.SINGLE, SearchFieldMatchType.LIKE, null, 0, "City")
+        ))
+        whenever(searchFieldService.getSearchFields("car")).thenReturn(listOf(
+            SearchField("brand", "doc:brand", SearchFieldDataType.TEXT, SearchFieldFieldType.SINGLE, SearchFieldMatchType.LIKE, null, 0, "Brand")
+        ))
+
+        val request = SearchRequest()
+        request.globalSearchFilter = "test"
+        service.search(request, BlueprintType.CASE, PageRequest.of(0, 10))
+
+        val capturedQuery = queryCaptor.firstValue
+        assertThat(capturedQuery.source).contains("definitionId.name")
+        assertThat(capturedQuery.source).contains("house")
+        assertThat(capturedQuery.source).contains("car")
+        assertThat(capturedQuery.source).contains("content.city")
+        assertThat(capturedQuery.source).contains("content.brand")
+    }
+
+    @Test
+    fun `global search without definition name and no accessible definitions adds matchNone query`() {
+        val queryCaptor = argumentCaptor<StringQuery>()
+        val emptySearchHits: SearchHits<JsonSchemaDocumentOsDocument> = mock()
+        whenever(emptySearchHits.searchHits).thenReturn(emptyList())
+        whenever(emptySearchHits.totalHits).thenReturn(0L)
+        whenever(elasticsearchOperations.search(queryCaptor.capture(), eq(JsonSchemaDocumentOsDocument::class.java))).thenReturn(emptySearchHits)
+
+        whenever(caseDefinitionService.getCaseDefinitions(active = true)).thenReturn(emptyList())
+
+        val request = SearchRequest()
+        request.globalSearchFilter = "test"
+        service.search(request, BlueprintType.CASE, PageRequest.of(0, 10))
+
+        val capturedQuery = queryCaptor.firstValue
+        assertThat(capturedQuery.source).contains("must_not")
+        assertThat(capturedQuery.source).contains("match_all")
     }
 
     companion object {
