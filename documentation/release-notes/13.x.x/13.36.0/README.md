@@ -40,8 +40,6 @@
 
 * Dashboard widgets can now group and filter on more case fields, such as the `case:internalStatus` and
   `case:definitionId.key`.
-* ZGW document actions such as **view** and **modify** could be incorrectly disabled for documents uploaded from a
-  building block process.
 
 * **Shared task list URLs now open on the correct tab**
 
