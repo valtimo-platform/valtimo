@@ -2,6 +2,14 @@
     {
         "resourceType": "com.ritense.objectenapi.security.Object",
         "actions": [
+            "view",
+            "view_list"
+        ],
+        "roleKey": "ROLE_USER"
+    },
+    {
+        "resourceType": "com.ritense.objectenapi.security.Object",
+        "actions": [
             "create",
             "modify",
             "view",

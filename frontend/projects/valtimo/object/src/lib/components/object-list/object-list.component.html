@@ -66,10 +66,12 @@
     [fields]="obs.fields"
     [header]="false"
     [pagination]="obs.pagination"
+    [sortState]="currentSort$ | async"
     paginationIdentifier="objectConfigurationList"
     (paginationClicked)="paginationClicked($event)"
     (paginationSet)="paginationSet($event)"
     (rowClicked)="redirectToDetails($event)"
+    (sortChanged)="sortChanged($event)"
   >
     <ng-container carbonToolbarContent>
       <button cdsButton="primary" (click)="openModal()">

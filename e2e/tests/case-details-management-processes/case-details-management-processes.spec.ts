@@ -39,7 +39,6 @@ test.describe('Case details - Processes tab', () => {
 
     processesPage = new CaseDetailsProcessesPage(page, request);
 
-    await page.goto('/');
     draftVersion = await processesPage.goToCaseDetailsProcesses(CASE_KEY);
 
     // Clean up stale test process from previous runs
@@ -76,7 +75,9 @@ test.describe('Case details - Processes tab', () => {
     });
 
     test('Process list shows the Bezwaar process', async () => {
-      const row = processesPage.carbonList.row('Bezwaar');
+      // Exact match: "Bezwaar" is a prefix of "Bezwaar ad-hoc FVM" and
+      // "Bezwaar ad-hoc UI component", so a substring match resolves to 3 rows.
+      const row = processesPage.carbonList.row(/^Bezwaar$/);
       await row.assertVisible();
     });
   });
@@ -171,6 +172,11 @@ test.describe('Case details - Processes tab', () => {
     });
 
     test('6.11 — Can save process with success notification and navigate back to list', async () => {
+      // The uploaded process has an unlinked start event (no process link or form),
+      // so a non-draft deploy is blocked by backend validation. Saving as a draft
+      // skips validation and lets the deploy succeed.
+      await processesPage.enableDraft();
+
       await processesPage.saveProcess();
       await expectNotificationMessage(page, 'deployed');
 

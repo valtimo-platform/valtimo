@@ -86,7 +86,8 @@ function formatValue(translate: TranslateService, value: unknown): string {
   if (Array.isArray(value)) {
     return value.map(item => formatValue(translate, item)).join(', ');
   }
-  return String(value);
+  // Objects (and any other non-primitive) are shown as JSON rather than "[object Object]".
+  return JSON.stringify(value);
 }
 
 function humanizeFieldPath(field: string): string {

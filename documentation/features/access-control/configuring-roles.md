@@ -16,7 +16,7 @@ There are different ways of configuring roles in Valtimo.
 * Go to the `Access Control` menu
 * Click on **Add new role**
 
-The "Add new role" modal opens and the new role name can be entered. Click create to add the role to the list. Each role name within Access control needs to be unique.
+The "Add new role" modal opens. The role key can be **selected from the roles available in Keycloak**, or typed by hand with **Enter manually** — roles that are already configured in Access Control are left out of the list. Click **Create** to add the role to the list. Each role name within Access control needs to be unique, and its key should mirror the corresponding role in Keycloak.
 
 <figure><img src="../../.gitbook/assets/image (1).png" alt=""><figcaption></figcaption></figure>
 {% endtab %}

@@ -56,6 +56,11 @@ interface GetInformatieobjecttypeConfig {
   processVariable: string;
 }
 
+interface GetInformatieobjecttypenConfig {
+  processVariable: string;
+  zaaktypeUrl?: string;
+}
+
 export {
   CatalogiApiConfig,
   GetBesluittypeConfig,
@@ -65,4 +70,5 @@ export {
   GetStatustypeConfig,
   GetEigenschapConfig,
   GetInformatieobjecttypeConfig,
+  GetInformatieobjecttypenConfig,
 };

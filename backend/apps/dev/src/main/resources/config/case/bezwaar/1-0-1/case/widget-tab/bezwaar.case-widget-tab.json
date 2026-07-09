@@ -364,5 +364,46 @@
                 }
             }
         ]
+    },
+    {
+        "key": "afbeeldingen",
+        "widgets": [
+            {
+                "type": "image",
+                "key": "enkele-afbeelding",
+                "title": "Enkele afbeelding",
+                "width": 2,
+                "highContrast": false,
+                "isCompact": null,
+                "properties": {
+                    "value": "doc:/enkeleAfbeelding",
+                    "displayAsCarousel": false
+                }
+            },
+            {
+                "type": "image",
+                "key": "meerdere-afbeeldingen",
+                "title": "Meerdere afbeeldingen",
+                "width": 2,
+                "highContrast": false,
+                "isCompact": null,
+                "properties": {
+                    "value": "doc:/afbeeldingen",
+                    "displayAsCarousel": false
+                }
+            },
+            {
+                "type": "image",
+                "key": "afbeeldingen-carrousel",
+                "title": "Afbeeldingen carrousel",
+                "width": 4,
+                "highContrast": false,
+                "isCompact": null,
+                "properties": {
+                    "value": "doc:/afbeeldingen",
+                    "displayAsCarousel": true
+                }
+            }
+        ]
     }
 ]

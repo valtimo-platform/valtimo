@@ -85,9 +85,3 @@ elements and displays an error panel. Clicking an error navigates to the element
   The standalone **Decision tables** overview listed every decision table deployed in the engine, including those
   belonging to a case definition or building block. It now shows only standalone decision tables — those not linked to a
   case or building block definition.
-
-* **Case list export now enforces the export permission**
-
-  The case list CSV export endpoint (`POST /api/v1/case/{caseDefinitionKey}/export`) now checks the `export` permission
-  before producing a file. A user without an applicable `export` permission for the case definition now receives a
-  403 (Forbidden) response instead of an empty CSV.
