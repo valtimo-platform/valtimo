@@ -90,6 +90,10 @@ class ObjectManagementResource(
         en = "List objects for configuration",
         nl = "Objecten voor configuratie ophalen",
     )
+    @Deprecated(
+        "To be removed in Valtimo 14. Use ObjectManagementConsumerResource: " +
+            "GET /api/v1/object-management/configuration/{id}/object."
+    )
     @GetMapping("/{id}/object")
     fun getObjects(
         @PathVariable id: UUID,
@@ -100,6 +104,10 @@ class ObjectManagementResource(
     @EndpointDescription(
         en = "Search objects with search fields",
         nl = "Objecten met zoekvelden ophalen",
+    )
+    @Deprecated(
+        "To be removed in Valtimo 14. Use ObjectManagementConsumerResource: " +
+            "POST /api/v1/object-management/configuration/{id}/object."
     )
     @PostMapping("/{id}/object")
     fun getObjectsWithSearchFields(
