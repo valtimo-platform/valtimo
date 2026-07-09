@@ -16,7 +16,7 @@
 
 package com.ritense.case_.domain.migration
 
-import com.ritense.valtimo.contract.case_.migration.CaseDefinitionMigrationId
+import com.ritense.valtimo.contract.blueprint.migration.BlueprintMigrationId
 import io.hypersistence.utils.hibernate.type.json.JsonType
 import jakarta.persistence.Column
 import jakarta.persistence.EmbeddedId
@@ -29,11 +29,11 @@ import org.hibernate.annotations.Type
  * independently from the plan skeleton so component ownership stays decoupled per module.
  */
 @Entity
-@Table(name = "case_definition_migration_data")
+@Table(name = "blueprint_migration_data")
 data class DataMigrationConfiguration(
 
     @EmbeddedId
-    val id: CaseDefinitionMigrationId,
+    val id: BlueprintMigrationId,
 
     @Type(JsonType::class)
     @Column(name = "patches", nullable = false)

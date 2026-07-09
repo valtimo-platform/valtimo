@@ -1,0 +1,14 @@
+[
+    {
+        "key": "progress",
+        "name": null,
+        "type": "standard",
+        "contentKey": "progress"
+    },
+    {
+        "key": "audit",
+        "name": null,
+        "type": "standard",
+        "contentKey": "audit"
+    }
+]

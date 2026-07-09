@@ -23,9 +23,10 @@ import com.ritense.case_.service.migration.MigrationExecutionStatusDto
 import com.ritense.case_.service.migration.MigrationPlanExporter
 import com.ritense.case_.service.migration.MigrationPlanImporter
 import com.ritense.case_.service.migration.MigrationPlanManagementDto
+import com.ritense.case_.service.migration.MigrationPlanSuggestionService
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import com.ritense.valtimo.contract.case_.CaseDefinitionId
-import com.ritense.valtimo.contract.case_.migration.CaseDefinitionMigrationId
+import com.ritense.valtimo.contract.blueprint.migration.BlueprintMigrationId
 import com.ritense.valtimo.contract.domain.ValtimoMediaType.APPLICATION_JSON_UTF8_VALUE
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
@@ -47,7 +48,19 @@ class CaseMigrationManagementResource(
     private val caseMigrationService: CaseMigrationService,
     private val migrationPlanImporter: MigrationPlanImporter,
     private val migrationPlanExporter: MigrationPlanExporter,
+    private val migrationPlanSuggestionService: MigrationPlanSuggestionService,
 ) {
+
+    /** A best-effort, pre-filled plan (source, target, dataMigration, processMigration) for a new plan. */
+    @RunWithoutAuthorization
+    @GetMapping("/suggestion")
+    fun suggestMigrationPlan(
+        @PathVariable caseDefinitionKey: String,
+        @PathVariable caseDefinitionVersionTag: String,
+    ): ResponseEntity<JsonNode> {
+        val target = CaseDefinitionId(caseDefinitionKey, caseDefinitionVersionTag)
+        return ResponseEntity.ok(migrationPlanSuggestionService.suggestPlan(target))
+    }
 
     /** All migration plans for the case definition version, with their configuration and status. */
     @RunWithoutAuthorization
@@ -121,5 +134,5 @@ class CaseMigrationManagementResource(
     }
 
     private fun migrationId(caseDefinitionKey: String, caseDefinitionVersionTag: String, migrationKey: String) =
-        CaseDefinitionMigrationId(CaseDefinitionId(caseDefinitionKey, caseDefinitionVersionTag), migrationKey)
+        BlueprintMigrationId.from(CaseDefinitionId(caseDefinitionKey, caseDefinitionVersionTag), migrationKey)
 }

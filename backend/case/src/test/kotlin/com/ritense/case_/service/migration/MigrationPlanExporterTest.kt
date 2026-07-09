@@ -24,8 +24,8 @@ import com.ritense.case_.domain.migration.MigrationTriggers
 import com.ritense.case_.repository.CaseDefinitionMigrationRepository
 import com.ritense.exporter.request.MigrationPlanExportRequest
 import com.ritense.valtimo.contract.case_.CaseDefinitionId
-import com.ritense.valtimo.contract.case_.migration.CaseDefinitionMigrationId
-import com.ritense.valtimo.contract.case_.migration.MigrationComponentDeployer
+import com.ritense.valtimo.contract.blueprint.migration.BlueprintMigrationId
+import com.ritense.valtimo.contract.blueprint.migration.MigrationComponentDeployer
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -62,7 +62,7 @@ class MigrationPlanExporterTest(
 
     @Test
     fun `should return empty result when no migration plans exist`() {
-        whenever(caseDefinitionMigrationRepository.findAllByIdCaseDefinitionId(caseDefinitionId))
+        whenever(caseDefinitionMigrationRepository.findAllByIdBlueprintTypeAndIdKeyAndIdVersionTag(caseDefinitionId.blueprintType(), caseDefinitionId.getIdKey(), caseDefinitionId.blueprintVersionTag()))
             .thenReturn(emptyList())
 
         val result = exporter.export(MigrationPlanExportRequest(caseDefinitionId))
@@ -72,8 +72,8 @@ class MigrationPlanExporterTest(
 
     @Test
     fun `should export plan with skeleton and each deployer's component`() {
-        val migrationId = CaseDefinitionMigrationId(caseDefinitionId, "aanvraag-indienen")
-        whenever(caseDefinitionMigrationRepository.findAllByIdCaseDefinitionId(caseDefinitionId))
+        val migrationId = BlueprintMigrationId.from(caseDefinitionId, "aanvraag-indienen")
+        whenever(caseDefinitionMigrationRepository.findAllByIdBlueprintTypeAndIdKeyAndIdVersionTag(caseDefinitionId.blueprintType(), caseDefinitionId.getIdKey(), caseDefinitionId.blueprintVersionTag()))
             .thenReturn(
                 listOf(
                     CaseDefinitionMigration(
@@ -107,8 +107,8 @@ class MigrationPlanExporterTest(
 
     @Test
     fun `should omit components with no data`() {
-        val migrationId = CaseDefinitionMigrationId(caseDefinitionId, "empty")
-        whenever(caseDefinitionMigrationRepository.findAllByIdCaseDefinitionId(caseDefinitionId))
+        val migrationId = BlueprintMigrationId.from(caseDefinitionId, "empty")
+        whenever(caseDefinitionMigrationRepository.findAllByIdBlueprintTypeAndIdKeyAndIdVersionTag(caseDefinitionId.blueprintType(), caseDefinitionId.getIdKey(), caseDefinitionId.blueprintVersionTag()))
             .thenReturn(listOf(CaseDefinitionMigration(id = migrationId, title = null)))
         whenever(dataMigrationComponentDeployer.componentKey()).thenReturn("dataMigration")
         whenever(dataMigrationComponentDeployer.getComponentToExport(any())).thenReturn(null)

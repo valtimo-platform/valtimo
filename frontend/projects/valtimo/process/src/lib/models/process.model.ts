@@ -159,6 +159,12 @@ interface ProcessDefinitionXml {
   systemProcess: boolean;
 }
 
+interface FlowNodeMigration {
+  sourceFlowNodeMap: {[activityId: string]: string};
+  targetFlowNodeMap: {[activityId: string]: string};
+  uniqueFlowNodeMap: {[activityId: string]: string};
+}
+
 export {
   ProcessStart,
   Process,
@@ -173,4 +179,5 @@ export {
   ProcessInstanceTaskAssignee,
   IdentityLink,
   ProcessDefinitionXml,
+  FlowNodeMigration,
 };

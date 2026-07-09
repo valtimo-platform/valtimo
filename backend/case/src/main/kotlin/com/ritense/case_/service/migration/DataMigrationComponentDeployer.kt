@@ -22,8 +22,8 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import com.ritense.case_.domain.migration.DataMigrationConfiguration
 import com.ritense.case_.domain.migration.DataMigrationPatch
 import com.ritense.case_.repository.DataMigrationConfigurationRepository
-import com.ritense.valtimo.contract.case_.migration.CaseDefinitionMigrationId
-import com.ritense.valtimo.contract.case_.migration.MigrationComponentDeployer
+import com.ritense.valtimo.contract.blueprint.migration.BlueprintMigrationId
+import com.ritense.valtimo.contract.blueprint.migration.MigrationComponentDeployer
 import org.springframework.transaction.annotation.Transactional
 
 /**
@@ -38,7 +38,7 @@ class DataMigrationComponentDeployer(
 
     override fun componentKey() = DATA_MIGRATION_COMPONENT_KEY
 
-    override fun deploy(migrationId: CaseDefinitionMigrationId, component: JsonNode) {
+    override fun deploy(migrationId: BlueprintMigrationId, component: JsonNode) {
         val patches: List<DataMigrationPatch> = objectMapper.convertValue(
             component,
             object : TypeReference<List<DataMigrationPatch>>() {}
@@ -46,13 +46,13 @@ class DataMigrationComponentDeployer(
         dataMigrationConfigurationRepository.save(DataMigrationConfiguration(migrationId, patches))
     }
 
-    override fun undeploy(migrationId: CaseDefinitionMigrationId) {
+    override fun undeploy(migrationId: BlueprintMigrationId) {
         dataMigrationConfigurationRepository.findById(migrationId).ifPresent {
             dataMigrationConfigurationRepository.delete(it)
         }
     }
 
-    override fun getComponentToExport(migrationId: CaseDefinitionMigrationId): Any? {
+    override fun getComponentToExport(migrationId: BlueprintMigrationId): Any? {
         return dataMigrationConfigurationRepository.findById(migrationId)
             .map { it.patches }
             .filter { it.isNotEmpty() }

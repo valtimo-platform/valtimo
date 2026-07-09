@@ -17,9 +17,11 @@
 package com.ritense.processdocument.migration
 
 import com.ritense.processdocument.repository.ProcessDefinitionCaseDefinitionRepository
+import com.ritense.valtimo.contract.BlueprintId
+import com.ritense.valtimo.contract.blueprint.BlueprintType
 import com.ritense.valtimo.contract.case_.CaseDefinitionId
-import com.ritense.valtimo.contract.case_.migration.CaseDefinitionMigrationId
-import com.ritense.valtimo.contract.case_.migration.MigrationComponentExecutor
+import com.ritense.valtimo.contract.blueprint.migration.BlueprintMigrationId
+import com.ritense.valtimo.contract.blueprint.migration.MigrationComponentExecutor
 import com.ritense.valtimo.migration.ProcessMigrationComponentDeployer
 import com.ritense.valtimo.migration.domain.ProcessMigrationInstruction
 import com.ritense.valtimo.migration.repository.ProcessMigrationConfigurationRepository
@@ -48,17 +50,25 @@ class ProcessMigrationComponentExecutor(
     private val processMigrationConfigurationRepository: ProcessMigrationConfigurationRepository,
     private val processDefinitionCaseDefinitionRepository: ProcessDefinitionCaseDefinitionRepository,
     private val runtimeService: RuntimeService,
+    private val processMigrationVariableResolver: ProcessMigrationVariableResolver,
 ) : MigrationComponentExecutor {
 
     override fun componentKey() = ProcessMigrationComponentDeployer.PROCESS_MIGRATION_COMPONENT_KEY
 
-    override fun execute(migrationId: CaseDefinitionMigrationId, caseId: UUID) {
+    override fun execute(migrationId: BlueprintMigrationId, target: BlueprintId, caseId: UUID) {
+        // Case-only path: building block process migration is handled by its own executor
+        // (it resolves the target process via the building-block ↔ process-definition link).
+        if (target.blueprintType() != BlueprintType.CASE) {
+            return
+        }
+
         val instructions = processMigrationConfigurationRepository.findById(migrationId)
             .map { it.instructions }
-            .orElse(emptyList())
+            .orElse(emptyList())!!
 
+        val targetCaseDefinitionId = target as CaseDefinitionId
         instructions.forEach { instruction ->
-            migrateInstruction(instruction, migrationId.caseDefinitionId, caseId)
+            migrateInstruction(instruction, targetCaseDefinitionId, caseId)
         }
     }
 
@@ -83,12 +93,12 @@ class ProcessMigrationComponentExecutor(
                 "found for case definition '$targetCaseDefinitionId'"
         )
 
-        // Migrate from the definition each instance actually runs on (grouped, so instances on
-        // different source versions are each migrated with a matching plan).
-        instances.groupBy { it.processDefinitionId }
-            .forEach { (sourceDefinitionId, group) ->
-                migrate(instruction, sourceDefinitionId, targetDefinitionId, group.map { it.processInstanceId })
-            }
+        // Migrate each instance from the definition it actually runs on, then set its process
+        // variables (resolved against that specific, now-migrated instance).
+        instances.forEach { instance ->
+            migrate(instruction, instance.processDefinitionId, targetDefinitionId, listOf(instance.processInstanceId))
+            processMigrationVariableResolver.apply(instance.processInstanceId, instruction.setProcessVariables)
+        }
     }
 
     private fun findTargetProcessDefinitionId(
@@ -128,10 +138,6 @@ class ProcessMigrationComponentExecutor(
         val builder = runtimeService.createMigrationPlan(sourceDefinitionId, targetDefinitionId)
             .mapEqualActivities()
         instruction.mapActivities.forEach { (source, target) -> builder.mapActivities(source, target) }
-        if (instruction.newProcessVariables.isNotEmpty()) {
-            // GZAC-layer addition, applied as part of the migration command itself.
-            builder.setVariables(instruction.newProcessVariables)
-        }
         return builder.build()
     }
 }

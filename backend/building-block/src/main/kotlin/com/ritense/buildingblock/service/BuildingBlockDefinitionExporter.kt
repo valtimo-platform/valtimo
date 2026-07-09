@@ -28,6 +28,7 @@ import com.ritense.exporter.request.BuildingBlockDocumentDefinitionExportRequest
 import com.ritense.exporter.request.BuildingBlockDecisionDefinitionExportRequest
 import com.ritense.exporter.request.BuildingBlockFormDefinitionExportRequest
 import com.ritense.exporter.request.ExportRequest
+import com.ritense.exporter.request.MigrationPlanExportRequest
 import com.ritense.form.repository.FormDefinitionRepository
 import com.ritense.valtimo.contract.blueprint.BlueprintType
 import com.ritense.valtimo.contract.buildingblock.BuildingBlockDefinitionId
@@ -73,6 +74,7 @@ class BuildingBlockDefinitionExporter(
         relatedExportRequests.addAll(createDocumentDefinitionExportRequest(definition.id))
         relatedExportRequests.addAll(createFormDefinitionExportRequests(definition.id))
         relatedExportRequests.addAll(createDecisionDefinitionExportRequests(definition.id))
+        relatedExportRequests.add(MigrationPlanExportRequest(definition.id))
 
         return ExportResult(definitionExport, relatedExportRequests)
     }

@@ -82,6 +82,13 @@ export const CASE_MANAGEMENT_MIGRATION_TEST_IDS = {
   addButton: 'caseMigrationAddButton',
   saveButton: 'caseMigrationSaveButton',
   cancelButton: 'caseMigrationCancelButton',
+  generalTab: 'caseMigrationGeneralTab',
+  processMigrationTab: 'caseMigrationProcessMigrationTab',
+  dataMigrationTab: 'caseMigrationDataMigrationTab',
+  jsonEditorTab: 'caseMigrationJsonEditorTab',
+  addPatchButton: 'caseMigrationAddPatchButton',
+  addInstructionButton: 'caseMigrationAddInstructionButton',
+  addConditionButton: 'caseMigrationAddConditionButton',
 } as const;
 
 export const CASE_MANAGEMENT_LIST_COLUMNS_TEST_IDS = {

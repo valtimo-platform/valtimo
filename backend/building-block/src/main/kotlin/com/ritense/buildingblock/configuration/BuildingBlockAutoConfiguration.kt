@@ -35,6 +35,17 @@ import com.ritense.buildingblock.repository.CaseDefinitionBuildingBlockLinkRepos
 import com.ritense.buildingblock.repository.JsonSchemaDocumentCaseDefinitionMapper
 import com.ritense.buildingblock.repository.ProcessDefinitionBuildingBlockDefinitionRepository
 import com.ritense.buildingblock.security.config.BuildingBlockHttpSecurityConfigurer
+import com.ritense.buildingblock.service.migration.BuildingBlockMigrationCandidateProvider
+import com.ritense.buildingblock.service.migration.BuildingBlockProcessDefinitionBlueprintResolver
+import com.ritense.buildingblock.service.migration.BuildingBlockProcessMigrationComponentExecutor
+import com.ritense.buildingblock.web.rest.BuildingBlockMigrationManagementResource
+import com.ritense.case_.service.migration.CaseMigrationService
+import com.ritense.case_.service.migration.MigrationPlanExporter
+import com.ritense.case_.service.migration.MigrationPlanImporter
+import com.ritense.case_.service.migration.MigrationPlanSuggestionService
+import com.ritense.processdocument.migration.ProcessMigrationVariableResolver
+import com.ritense.valtimo.migration.repository.ProcessMigrationConfigurationRepository
+import org.operaton.bpm.engine.RuntimeService
 import com.ritense.buildingblock.service.BuildingBlockCaseDefinitionFinalizationChecker
 import com.ritense.buildingblock.service.BuildingBlockCaseDocumentResolver
 import com.ritense.buildingblock.service.BuildingBlockCaseLogScopeContributor
@@ -878,4 +889,52 @@ class BuildingBlockAutoConfiguration {
     ): BuildingBlockDecisionDefinitionExporter {
         return BuildingBlockDecisionDefinitionExporter(repositoryService)
     }
+
+    @Bean
+    @ConditionalOnMissingBean(BuildingBlockMigrationCandidateProvider::class)
+    fun buildingBlockMigrationCandidateProvider(
+        buildingBlockInstanceRepository: BuildingBlockInstanceRepository,
+        buildingBlockDefinitionRepository: BuildingBlockDefinitionRepository,
+    ) = BuildingBlockMigrationCandidateProvider(
+        buildingBlockInstanceRepository,
+        buildingBlockDefinitionRepository,
+    )
+
+    @Bean
+    @ConditionalOnMissingBean(BuildingBlockProcessMigrationComponentExecutor::class)
+    fun buildingBlockProcessMigrationComponentExecutor(
+        processMigrationConfigurationRepository: ProcessMigrationConfigurationRepository,
+        processDefinitionBuildingBlockDefinitionRepository: ProcessDefinitionBuildingBlockDefinitionRepository,
+        buildingBlockInstanceRepository: BuildingBlockInstanceRepository,
+        runtimeService: RuntimeService,
+        processMigrationVariableResolver: ProcessMigrationVariableResolver,
+    ) = BuildingBlockProcessMigrationComponentExecutor(
+        processMigrationConfigurationRepository,
+        processDefinitionBuildingBlockDefinitionRepository,
+        buildingBlockInstanceRepository,
+        runtimeService,
+        processMigrationVariableResolver,
+    )
+
+    @Bean
+    @ConditionalOnMissingBean(BuildingBlockProcessDefinitionBlueprintResolver::class)
+    fun buildingBlockProcessDefinitionBlueprintResolver(
+        processDefinitionBuildingBlockDefinitionRepository: ProcessDefinitionBuildingBlockDefinitionRepository,
+    ) = BuildingBlockProcessDefinitionBlueprintResolver(
+        processDefinitionBuildingBlockDefinitionRepository,
+    )
+
+    @Bean
+    @ConditionalOnMissingBean(BuildingBlockMigrationManagementResource::class)
+    fun buildingBlockMigrationManagementResource(
+        caseMigrationService: CaseMigrationService,
+        migrationPlanImporter: MigrationPlanImporter,
+        migrationPlanExporter: MigrationPlanExporter,
+        migrationPlanSuggestionService: MigrationPlanSuggestionService,
+    ) = BuildingBlockMigrationManagementResource(
+        caseMigrationService,
+        migrationPlanImporter,
+        migrationPlanExporter,
+        migrationPlanSuggestionService,
+    )
 }

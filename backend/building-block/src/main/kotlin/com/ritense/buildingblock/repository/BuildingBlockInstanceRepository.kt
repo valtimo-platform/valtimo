@@ -17,7 +17,12 @@
 package com.ritense.buildingblock.repository
 
 import com.ritense.buildingblock.domain.instance.BuildingBlockInstance
+import com.ritense.valtimo.contract.buildingblock.BuildingBlockDefinitionId
+import org.springframework.data.domain.Pageable
+import org.springframework.data.domain.Slice
 import org.springframework.data.jpa.repository.JpaRepository
+import org.springframework.data.jpa.repository.Query
+import org.springframework.data.repository.query.Param
 import java.util.UUID
 
 interface BuildingBlockInstanceRepository :
@@ -25,4 +30,19 @@ interface BuildingBlockInstanceRepository :
     fun findByDocumentId(documentId: UUID): BuildingBlockInstance?
     fun findByProcessInstanceId(processInstanceId: String): BuildingBlockInstance?
     fun findAllByCaseDocumentId(caseDocumentId: UUID): List<BuildingBlockInstance>
+
+    /**
+     * The (BB-own) document ids of every instance of a specific building block definition version
+     * (key + version), paged in a stable order. Used by the migration engine to enumerate the
+     * instances a building block migration plan should consider; the plan's conditions do the
+     * further filtering.
+     */
+    @Query(
+        "SELECT b.documentId FROM BuildingBlockInstance b " +
+            "WHERE b.definition.id = :definitionId ORDER BY b.documentId"
+    )
+    fun findDocumentIdsByDefinitionId(
+        @Param("definitionId") definitionId: BuildingBlockDefinitionId,
+        pageable: Pageable,
+    ): Slice<UUID>
 }

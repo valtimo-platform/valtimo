@@ -16,7 +16,6 @@
 
 package com.ritense.case_.service.migration
 
-import com.ritense.authorization.AuthorizationContext.Companion.runWithoutAuthorization
 import com.ritense.case_.domain.migration.CaseDefinitionMigration
 import com.ritense.case_.domain.migration.CaseDefinitionMigrationExecution
 import com.ritense.case_.domain.migration.CaseMigrationCase
@@ -24,15 +23,21 @@ import com.ritense.case_.domain.migration.CaseMigrationCaseId
 import com.ritense.case_.domain.migration.CaseMigrationCaseStatus
 import com.ritense.case_.domain.migration.CaseMigrationStatus
 import com.ritense.case_.domain.migration.MigrationExecutionError
+import com.ritense.authorization.AuthorizationContext.Companion.runWithoutAuthorization
 import com.ritense.case_.repository.CaseDefinitionMigrationExecutionRepository
 import com.ritense.case_.repository.CaseDefinitionMigrationRepository
 import com.ritense.case_.repository.CaseMigrationCaseRepository
+import com.ritense.document.domain.impl.JsonSchemaDocumentDefinitionId
+import com.ritense.document.domain.impl.JsonSchemaDocumentId
 import com.ritense.document.repository.impl.JsonSchemaDocumentRepository
-import com.ritense.document.service.DocumentDefinitionService
+import com.ritense.valtimo.contract.BlueprintId
+import com.ritense.valtimo.contract.blueprint.BlueprintType
+import com.ritense.valtimo.contract.blueprint.migration.BlueprintMigrationId
+import com.ritense.valtimo.contract.blueprint.migration.MigrationCandidateProvider
+import com.ritense.valtimo.contract.blueprint.migration.MigrationComponentDeployer
+import com.ritense.valtimo.contract.blueprint.migration.MigrationComponentExecutor
+import com.ritense.valtimo.contract.buildingblock.BuildingBlockDefinitionId
 import com.ritense.valtimo.contract.case_.CaseDefinitionId
-import com.ritense.valtimo.contract.case_.migration.CaseDefinitionMigrationId
-import com.ritense.valtimo.contract.case_.migration.MigrationComponentDeployer
-import com.ritense.valtimo.contract.case_.migration.MigrationComponentExecutor
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.dao.DataIntegrityViolationException
 import org.springframework.dao.OptimisticLockingFailureException
@@ -64,8 +69,8 @@ class CaseMigrationService(
     private val executionRepository: CaseDefinitionMigrationExecutionRepository,
     private val caseMigrationCaseRepository: CaseMigrationCaseRepository,
     private val documentRepository: JsonSchemaDocumentRepository,
-    private val documentDefinitionService: DocumentDefinitionService,
     private val conditionEvaluator: MigrationConditionEvaluator,
+    private val candidateProviders: List<MigrationCandidateProvider>,
     private val componentExecutors: List<MigrationComponentExecutor>,
     private val componentDeployers: List<MigrationComponentDeployer>,
     private val transactionTemplate: TransactionTemplate,
@@ -73,7 +78,7 @@ class CaseMigrationService(
 ) {
 
     /** Delete a migration plan and everything derived from it (components, execution, per-case rows). */
-    fun deletePlan(migrationId: CaseDefinitionMigrationId) {
+    fun deletePlan(migrationId: BlueprintMigrationId) {
         transactionTemplate.executeWithoutResult {
             componentDeployers.forEach { it.undeploy(migrationId) }
             caseMigrationCaseRepository.deleteByIdMigrationId(migrationId)
@@ -84,9 +89,11 @@ class CaseMigrationService(
         }
     }
 
-    /** All migration plans for a case definition version, with their configuration and run status. */
-    fun getPlans(caseDefinitionId: CaseDefinitionId): List<MigrationPlanManagementDto> {
-        return caseDefinitionMigrationRepository.findAllByIdCaseDefinitionId(caseDefinitionId)
+    /** All migration plans for a blueprint version, with their configuration and run status. */
+    fun getPlans(blueprintId: BlueprintId): List<MigrationPlanManagementDto> {
+        return caseDefinitionMigrationRepository.findAllByIdBlueprintTypeAndIdKeyAndIdVersionTag(
+            blueprintId.blueprintType(), blueprintId.getIdKey(), blueprintId.blueprintVersionTag()
+        )
             .sortedBy { it.id.migrationKey }
             .map { plan ->
                 MigrationPlanManagementDto(
@@ -107,7 +114,7 @@ class CaseMigrationService(
      * migrated are skipped. Does nothing if the plan is already being executed elsewhere (a live lease),
      * and stops cleanly if this node is fenced by a takeover mid-run.
      */
-    fun startMigration(migrationId: CaseDefinitionMigrationId): CaseDefinitionMigrationExecution {
+    fun startMigration(migrationId: BlueprintMigrationId): CaseDefinitionMigrationExecution {
         val plan = caseDefinitionMigrationRepository.findById(migrationId).orElseThrow {
             NoSuchElementException("No migration plan found for '$migrationId'")
         }
@@ -128,7 +135,7 @@ class CaseMigrationService(
     }
 
     /** Assemble the current migration status (counts and errors come from the per-case table). */
-    fun getStatus(migrationId: CaseDefinitionMigrationId): MigrationExecutionStatusDto {
+    fun getStatus(migrationId: BlueprintMigrationId): MigrationExecutionStatusDto {
         val execution = executionRepository.findById(migrationId).orElse(null)
             ?: return notStartedStatus(migrationId)
         val casesMigrated = caseMigrationCaseRepository
@@ -153,7 +160,7 @@ class CaseMigrationService(
      * trigger sweep for plans that have not started yet; once a run starts, the execution's live count
      * is authoritative instead.
      */
-    fun refreshCaseCountEstimate(migrationId: CaseDefinitionMigrationId) {
+    fun refreshCaseCountEstimate(migrationId: BlueprintMigrationId) {
         val plan = caseDefinitionMigrationRepository.findById(migrationId).orElse(null) ?: return
         val estimate = countMatchingCases(migrationId, plan)
         transactionTemplate.executeWithoutResult {
@@ -164,7 +171,7 @@ class CaseMigrationService(
         }
     }
 
-    private fun notStartedStatus(migrationId: CaseDefinitionMigrationId): MigrationExecutionStatusDto {
+    private fun notStartedStatus(migrationId: BlueprintMigrationId): MigrationExecutionStatusDto {
         val estimate = caseDefinitionMigrationRepository.findById(migrationId).orElse(null)
             ?.estimatedCasesToMigrate ?: 0
         return MigrationExecutionStatusDto.NOT_STARTED.copy(casesToMigrate = estimate)
@@ -174,15 +181,14 @@ class CaseMigrationService(
      * Count the cases currently matching the plan's conditions, without migrating anything or writing
      * per-case rows. A case whose conditions cannot be evaluated is treated as not matching.
      */
-    private fun countMatchingCases(migrationId: CaseDefinitionMigrationId, plan: CaseDefinitionMigration): Int {
-        val documentDefinitionName = documentDefinitionName(migrationId) ?: return 0
+    private fun countMatchingCases(migrationId: BlueprintMigrationId, plan: CaseDefinitionMigration): Int {
+        val source = resolveSource(resolveTarget(migrationId, plan), plan)
+        val provider = candidateProvider(source.blueprintType()) ?: return 0
 
         var count = 0
         var pageable: Pageable = PageRequest.of(0, CANDIDATE_PAGE_SIZE)
         while (true) {
-            val page = runWithoutAuthorization {
-                documentRepository.findCaseIdsByDocumentDefinitionName(documentDefinitionName, pageable)
-            }
+            val page = provider.findCandidateIds(source, pageable)
             count += page.content.count { caseId -> matchesConditionsQuietly(plan, caseId) }
             if (!page.hasNext()) break
             pageable = page.nextPageable()
@@ -207,11 +213,13 @@ class CaseMigrationService(
      * plan is not mistaken for crashed while it is still working.
      */
     private fun migrateMatchingCases(
-        migrationId: CaseDefinitionMigrationId,
+        migrationId: BlueprintMigrationId,
         plan: CaseDefinitionMigration,
         runToken: String,
     ) {
-        val documentDefinitionName = documentDefinitionName(migrationId) ?: return
+        val target = resolveTarget(migrationId, plan)
+        val source = resolveSource(target, plan)
+        val provider = candidateProvider(source.blueprintType()) ?: return
 
         val renewInterval = leaseDuration.dividedBy(2)
         var leaseRenewedAt = LocalDateTime.now()
@@ -219,14 +227,12 @@ class CaseMigrationService(
         var pageable: Pageable = PageRequest.of(0, CANDIDATE_PAGE_SIZE)
 
         while (true) {
-            val page = runWithoutAuthorization {
-                documentRepository.findCaseIdsByDocumentDefinitionName(documentDefinitionName, pageable)
-            }
+            val page = provider.findCandidateIds(source, pageable)
 
             page.content.forEach { caseId ->
                 if (matchesConditions(migrationId, plan, caseId, runToken)) {
                     matchedCount++
-                    migrateCase(migrationId, caseId, runToken)
+                    migrateCase(migrationId, target, caseId, runToken)
                 }
                 if (Duration.between(leaseRenewedAt, LocalDateTime.now()) >= renewInterval) {
                     renewLease(migrationId, runToken)
@@ -245,7 +251,7 @@ class CaseMigrationService(
      * lease, unless another run holds it with a live lease. Returns the token, or null when it is
      * already owned or a concurrent claim won the optimistic-lock/insert race.
      */
-    private fun claim(migrationId: CaseDefinitionMigrationId): String? {
+    private fun claim(migrationId: BlueprintMigrationId): String? {
         var runToken: String? = null
         try {
             transactionTemplate.executeWithoutResult {
@@ -277,7 +283,7 @@ class CaseMigrationService(
      * conditions cannot be evaluated is recorded as a failure and treated as not matching.
      */
     private fun matchesConditions(
-        migrationId: CaseDefinitionMigrationId,
+        migrationId: BlueprintMigrationId,
         plan: CaseDefinitionMigration,
         caseId: UUID,
         runToken: String,
@@ -291,7 +297,7 @@ class CaseMigrationService(
         }
     }
 
-    private fun migrateCase(migrationId: CaseDefinitionMigrationId, caseId: UUID, runToken: String) {
+    private fun migrateCase(migrationId: BlueprintMigrationId, target: BlueprintId, caseId: UUID, runToken: String) {
         val caseRecordId = CaseMigrationCaseId(migrationId, caseId.toString())
         try {
             // One transaction per case: the case migration (dataMigration + processMigration) AND
@@ -301,7 +307,10 @@ class CaseMigrationService(
                 if (caseMigrationCaseRepository.existsByIdAndStatus(caseRecordId, CaseMigrationCaseStatus.MIGRATED)) {
                     return@executeWithoutResult // already migrated (idempotent re-run)
                 }
-                componentExecutors.forEach { it.execute(migrationId, caseId) }
+                // Re-home the case onto the target blueprint version first (independent of which
+                // components run), so component writes are validated against the target schema.
+                attachToTarget(caseId, target)
+                componentExecutors.forEach { it.execute(migrationId, target, caseId) }
                 caseMigrationCaseRepository.save(CaseMigrationCase(caseRecordId, CaseMigrationCaseStatus.MIGRATED))
             }
         } catch (e: MigrationOwnershipLostException) {
@@ -319,7 +328,7 @@ class CaseMigrationService(
     }
 
     private fun recordFailure(
-        migrationId: CaseDefinitionMigrationId,
+        migrationId: BlueprintMigrationId,
         caseId: UUID,
         message: String?,
         runToken: String,
@@ -332,12 +341,12 @@ class CaseMigrationService(
         }
     }
 
-    private fun renewLease(migrationId: CaseDefinitionMigrationId, runToken: String) {
+    private fun renewLease(migrationId: BlueprintMigrationId, runToken: String) {
         updateExecution(migrationId, runToken) { it.leaseExpiresAt = LocalDateTime.now().plus(leaseDuration) }
     }
 
     private fun finalize(
-        migrationId: CaseDefinitionMigrationId,
+        migrationId: BlueprintMigrationId,
         runToken: String,
     ): CaseDefinitionMigrationExecution {
         val hasErrors = caseMigrationCaseRepository
@@ -354,17 +363,64 @@ class CaseMigrationService(
         }
     }
 
-    private fun documentDefinitionName(migrationId: CaseDefinitionMigrationId): String? {
-        return runWithoutAuthorization {
-            documentDefinitionService.findByBlueprintId(migrationId.caseDefinitionId).orElse(null)?.id()?.name()
+    /**
+     * Detach the case document [caseId] from its source blueprint version and attach it to the
+     * [target] version: keep the document-definition name but point the `documentDefinitionId` at
+     * the target blueprint (case definition or building block definition), then persist it. Runs for
+     * every migrated case, independent of which plan components are configured.
+     */
+    private fun attachToTarget(caseId: UUID, target: BlueprintId) {
+        runWithoutAuthorization {
+            val document = documentRepository.findById(JsonSchemaDocumentId.existingId(caseId)).orElseThrow {
+                NoSuchElementException("No document found for case '$caseId' to migrate to the target blueprint")
+            }
+            val name = document.definitionId().name()
+            val targetDefinitionId = when (target) {
+                is CaseDefinitionId -> JsonSchemaDocumentDefinitionId.forCase(name, target)
+                is BuildingBlockDefinitionId -> JsonSchemaDocumentDefinitionId.forBuildingBlock(name, target)
+                else -> throw IllegalArgumentException("Unsupported target blueprint '$target' for migration")
+            }
+            document.setDefinitionId(targetDefinitionId)
+            documentRepository.save(document)
         }
+    }
+
+    /** The provider that enumerates candidate instances for a blueprint type, if any. */
+    private fun candidateProvider(blueprintType: BlueprintType): MigrationCandidateProvider? {
+        return candidateProviders.firstOrNull { it.supports(blueprintType) }
+    }
+
+    /**
+     * The blueprint version a plan migrates instances TO. Defaults each unset `target*` field to the
+     * plan's own id — i.e. the blueprint version the plan is deployed under.
+     */
+    private fun resolveTarget(migrationId: BlueprintMigrationId, plan: CaseDefinitionMigration): BlueprintId {
+        val targetType = plan.targetBlueprintType ?: migrationId.blueprintType
+        val targetKey = plan.targetKey ?: migrationId.key
+        val targetVersion = plan.targetVersionTag ?: migrationId.versionTag
+        return BlueprintMigrationId.blueprintIdOf(targetType, targetKey, targetVersion)
+    }
+
+    /**
+     * The blueprint version a plan migrates instances FROM. Defaults each unset `source*` field to
+     * the resolved [target]'s type / key, and the version to the target blueprint's
+     * `basedOnVersionTag` (falling back to the target version itself when there is no recorded
+     * predecessor).
+     */
+    private fun resolveSource(target: BlueprintId, plan: CaseDefinitionMigration): BlueprintId {
+        val sourceType = plan.sourceBlueprintType ?: target.blueprintType()
+        val sourceKey = plan.sourceKey ?: target.getIdKey()
+        val sourceVersion = plan.sourceVersionTag
+            ?: candidateProvider(target.blueprintType())?.basedOnVersionTag(target)
+            ?: target.blueprintVersionTag()
+        return BlueprintMigrationId.blueprintIdOf(sourceType, sourceKey, sourceVersion)
     }
 
     private fun isLeaseLive(execution: CaseDefinitionMigrationExecution): Boolean {
         return execution.leaseExpiresAt?.isAfter(LocalDateTime.now()) == true
     }
 
-    private fun assertOwnership(migrationId: CaseDefinitionMigrationId, runToken: String) {
+    private fun assertOwnership(migrationId: BlueprintMigrationId, runToken: String) {
         requireOwnership(executionRepository.findById(migrationId).orElseThrow(), runToken)
     }
 
@@ -380,7 +436,7 @@ class CaseMigrationService(
      * so the run stops cleanly.
      */
     private fun updateExecution(
-        migrationId: CaseDefinitionMigrationId,
+        migrationId: BlueprintMigrationId,
         runToken: String,
         mutate: (CaseDefinitionMigrationExecution) -> Unit,
     ): CaseDefinitionMigrationExecution {

@@ -1,0 +1,202 @@
+<!--
+  ~ Copyright 2015-2026 Ritense BV, the Netherlands.
+  ~
+  ~ Licensed under EUPL, Version 1.2 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~ https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" basis,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<div class="migration-tab" [formGroup]="form">
+  <p class="migration-tab__description">
+    {{ 'caseManagement.migration.editor.processMigration.description' | translate }}
+  </p>
+
+  <div class="migration-tab__items" formArrayName="instructions">
+    @for (instruction of instructionsArray.controls; track $index) {
+      <div class="migration-tab__card" [formGroupName]="$index">
+        <div class="migration-tab__card-header">
+          <span class="migration-tab__card-index">#{{ $index + 1 }}</span>
+
+          <button
+            cdsButton="danger--ghost"
+            size="sm"
+            [iconOnly]="true"
+            [title]="'interface.delete' | translate"
+            (click)="removeInstruction($index)"
+          >
+            <svg cdsIcon="trash-can" size="16" class="cds--btn__icon"></svg>
+          </button>
+        </div>
+
+        <div class="migration-tab__grid">
+          <cds-select
+            formControlName="sourceProcessDefinitionKey"
+            [label]="'caseManagement.migration.editor.processMigration.sourceProcess' | translate"
+          >
+            <option value="">
+              {{ 'caseManagement.migration.editor.processMigration.selectProcess' | translate }}
+            </option>
+            @for (key of processDefinitionKeys; track key) {
+              <option [value]="key">{{ key }}</option>
+            }
+          </cds-select>
+
+          <cds-select
+            formControlName="targetProcessDefinitionKey"
+            [label]="'caseManagement.migration.editor.processMigration.targetProcess' | translate"
+          >
+            <option value="">
+              {{ 'caseManagement.migration.editor.processMigration.selectProcess' | translate }}
+            </option>
+            @for (key of processDefinitionKeys; track key) {
+              <option [value]="key">{{ key }}</option>
+            }
+          </cds-select>
+        </div>
+
+        <!-- Activity mapping -->
+        <h5 class="migration-tab__subheading">
+          {{ 'caseManagement.migration.editor.processMigration.activityMapping' | translate }}
+        </h5>
+        <p class="migration-tab__hint">
+          {{ 'caseManagement.migration.editor.processMigration.activityMappingHint' | translate }}
+        </p>
+
+        @if (activitiesFor(instruction).loading) {
+          <p class="migration-tab__hint">{{ 'interface.loading' | translate }}</p>
+        }
+
+        <div class="migration-tab__mapping" formArrayName="mapActivities">
+          @for (mapping of mapActivitiesArray(instruction).controls; track $index) {
+            <div class="migration-tab__mapping-row" [formGroupName]="$index">
+              @if (activitiesFor(instruction).sourceNodes.length) {
+                <cds-select
+                  formControlName="source"
+                  [label]="'caseManagement.migration.editor.processMigration.sourceActivity' | translate"
+                >
+                  <option value="">–</option>
+                  @for (node of activitiesFor(instruction).sourceNodes; track node.id) {
+                    <option [value]="node.id">{{ node.label }}</option>
+                  }
+                </cds-select>
+              } @else {
+                <cds-text-label>
+                  {{ 'caseManagement.migration.editor.processMigration.sourceActivity' | translate }}
+                  <input cdsText formControlName="source" />
+                </cds-text-label>
+              }
+
+              <span class="migration-tab__mapping-arrow">→</span>
+
+              @if (activitiesFor(instruction).targetNodes.length) {
+                <cds-select
+                  formControlName="target"
+                  [label]="'caseManagement.migration.editor.processMigration.targetActivity' | translate"
+                >
+                  <option value="">–</option>
+                  @for (node of activitiesFor(instruction).targetNodes; track node.id) {
+                    <option [value]="node.id">{{ node.label }}</option>
+                  }
+                  <option [value]="SKIP_MIGRATION">
+                    {{ 'caseManagement.migration.editor.processMigration.skip' | translate }}
+                  </option>
+                </cds-select>
+              } @else {
+                <cds-text-label>
+                  {{ 'caseManagement.migration.editor.processMigration.targetActivity' | translate }}
+                  <input cdsText formControlName="target" />
+                </cds-text-label>
+              }
+
+              <button
+                cdsButton="danger--ghost"
+                size="sm"
+                [iconOnly]="true"
+                [title]="'interface.delete' | translate"
+                (click)="removeMapping(instruction, $index)"
+              >
+                <svg cdsIcon="trash-can" size="16" class="cds--btn__icon"></svg>
+              </button>
+            </div>
+          }
+        </div>
+
+        <button cdsButton="ghost" size="sm" (click)="addMapping(instruction)">
+          {{ 'caseManagement.migration.editor.processMigration.addMapping' | translate }}
+          <svg cdsIcon="add" size="16" class="cds--btn__icon"></svg>
+        </button>
+
+        <!-- New process variables -->
+        <h5 class="migration-tab__subheading">
+          {{ 'caseManagement.migration.editor.processMigration.newProcessVariables' | translate }}
+        </h5>
+
+        <div class="migration-tab__mapping" formArrayName="newProcessVariables">
+          @for (variable of newProcessVariablesArray(instruction).controls; track $index) {
+            <div class="migration-tab__mapping-row" [formGroupName]="$index">
+              <cds-text-label>
+                {{ 'caseManagement.migration.editor.processMigration.variableName' | translate }}
+                <input cdsText formControlName="name" />
+              </cds-text-label>
+
+              <span class="migration-tab__mapping-arrow">=</span>
+
+              <cds-text-label>
+                {{ 'caseManagement.migration.editor.processMigration.variableValue' | translate }}
+                <input cdsText formControlName="value" />
+              </cds-text-label>
+
+              <button
+                cdsButton="danger--ghost"
+                size="sm"
+                [iconOnly]="true"
+                [title]="'interface.delete' | translate"
+                (click)="removeVariable(instruction, $index)"
+              >
+                <svg cdsIcon="trash-can" size="16" class="cds--btn__icon"></svg>
+              </button>
+            </div>
+          }
+        </div>
+
+        <button cdsButton="ghost" size="sm" (click)="addVariable(instruction)">
+          {{ 'caseManagement.migration.editor.processMigration.addVariable' | translate }}
+          <svg cdsIcon="add" size="16" class="cds--btn__icon"></svg>
+        </button>
+
+        <!-- Options -->
+        <div class="migration-tab__toggles">
+          <cds-checkbox formControlName="skipCustomListeners">
+            {{ 'caseManagement.migration.editor.processMigration.skipCustomListeners' | translate }}
+          </cds-checkbox>
+
+          <cds-checkbox formControlName="skipIoMappings">
+            {{ 'caseManagement.migration.editor.processMigration.skipIoMappings' | translate }}
+          </cds-checkbox>
+        </div>
+      </div>
+    } @empty {
+      <p class="migration-tab__empty">
+        {{ 'caseManagement.migration.editor.processMigration.empty' | translate }}
+      </p>
+    }
+  </div>
+
+  <button
+    cdsButton="tertiary"
+    size="sm"
+    [attr.data-test-id]="testIds.addInstructionButton"
+    (click)="addInstruction()"
+  >
+    {{ 'caseManagement.migration.editor.processMigration.addInstruction' | translate }}
+    <svg cdsIcon="add" size="16" class="cds--btn__icon"></svg>
+  </button>
+</div>

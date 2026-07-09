@@ -89,6 +89,7 @@
   * [Actions](features/case/actions.md)
   * [Decision tables](features/case/decision-tables.md)
   * [Document](features/case/document-definition.md)
+  * [Migration](features/case/migration.md)
   * [Notes](features/case/notes.md)
   * [Statuses](features/case/statuses.md)
   * [Tags](features/case/tags.md)

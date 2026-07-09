@@ -21,17 +21,27 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.6.xsd">
 
     <!--
-        Plan-level skeleton of a migration plan. Component sections (dataMigration owned by the
-        case module, processMigration owned by the core module, ...) are stored in their own
-        tables. Composite-key VARCHAR lengths are kept within MySQL's 3072-byte index limit
-        (utf8mb4, 4 bytes per char).
+        A migration plan migrates the instances of a blueprint (a case definition version or a
+        building block definition version) from one version to the next. Every table is keyed by
+        the neutral composite id (blueprint_type, blueprint_key, blueprint_version_tag,
+        migration_key) so one engine serves both blueprint types. Component sections
+        (dataMigration owned by the case module, processMigration stored by the core module, ...)
+        live in their own tables. Composite-key VARCHAR lengths stay within MySQL's 3072-byte
+        index limit (utf8mb4, 4 bytes per char).
+
+        NOTE: this changeset is unreleased; it was rewritten in place when the feature was
+        generalized from case-only to blueprint (case + building block). Dev databases that
+        applied the earlier case_definition_migration* tables must be reset.
     -->
     <changeSet id="1" author="Ritense">
-        <createTable tableName="case_definition_migration">
-            <column name="case_definition_key" type="VARCHAR(128)">
+        <createTable tableName="blueprint_migration">
+            <column name="blueprint_type" type="VARCHAR(20)">
                 <constraints nullable="false"/>
             </column>
-            <column name="case_definition_version_tag" type="VARCHAR(100)">
+            <column name="blueprint_key" type="VARCHAR(128)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="blueprint_version_tag" type="VARCHAR(100)">
                 <constraints nullable="false"/>
             </column>
             <column name="migration_key" type="VARCHAR(128)">
@@ -44,18 +54,32 @@
             <column name="conditions" type="${jsonType}">
                 <constraints nullable="false"/>
             </column>
+            <column name="estimated_cases_to_migrate" type="${intType}"/>
+            <!-- Optional source the plan migrates FROM. When left null they default to the target's
+                 blueprint type / key and the target's based_on_version_tag. -->
+            <column name="source_blueprint_type" type="VARCHAR(20)"/>
+            <column name="source_key" type="VARCHAR(128)"/>
+            <column name="source_version_tag" type="VARCHAR(100)"/>
+            <!-- Optional target the plan migrates TO. When left null they default to the plan's own
+                 blueprint type / key / version (the version the plan is deployed under). -->
+            <column name="target_blueprint_type" type="VARCHAR(20)"/>
+            <column name="target_key" type="VARCHAR(128)"/>
+            <column name="target_version_tag" type="VARCHAR(100)"/>
         </createTable>
-        <addPrimaryKey tableName="case_definition_migration"
-                       columnNames="case_definition_key, case_definition_version_tag, migration_key"/>
+        <addPrimaryKey tableName="blueprint_migration"
+                       columnNames="blueprint_type, blueprint_key, blueprint_version_tag, migration_key"/>
     </changeSet>
 
     <!-- The 'dataMigration' component, owned by the case module. -->
     <changeSet id="2" author="Ritense">
-        <createTable tableName="case_definition_migration_data">
-            <column name="case_definition_key" type="VARCHAR(128)">
+        <createTable tableName="blueprint_migration_data">
+            <column name="blueprint_type" type="VARCHAR(20)">
                 <constraints nullable="false"/>
             </column>
-            <column name="case_definition_version_tag" type="VARCHAR(100)">
+            <column name="blueprint_key" type="VARCHAR(128)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="blueprint_version_tag" type="VARCHAR(100)">
                 <constraints nullable="false"/>
             </column>
             <column name="migration_key" type="VARCHAR(128)">
@@ -65,17 +89,20 @@
                 <constraints nullable="false"/>
             </column>
         </createTable>
-        <addPrimaryKey tableName="case_definition_migration_data"
-                       columnNames="case_definition_key, case_definition_version_tag, migration_key"/>
+        <addPrimaryKey tableName="blueprint_migration_data"
+                       columnNames="blueprint_type, blueprint_key, blueprint_version_tag, migration_key"/>
     </changeSet>
 
-    <!-- The 'processMigration' component, owned by the core module. -->
+    <!-- The 'processMigration' component, stored by the core module. -->
     <changeSet id="3" author="Ritense">
-        <createTable tableName="case_definition_migration_process">
-            <column name="case_definition_key" type="VARCHAR(128)">
+        <createTable tableName="blueprint_migration_process">
+            <column name="blueprint_type" type="VARCHAR(20)">
                 <constraints nullable="false"/>
             </column>
-            <column name="case_definition_version_tag" type="VARCHAR(100)">
+            <column name="blueprint_key" type="VARCHAR(128)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="blueprint_version_tag" type="VARCHAR(100)">
                 <constraints nullable="false"/>
             </column>
             <column name="migration_key" type="VARCHAR(128)">
@@ -85,17 +112,23 @@
                 <constraints nullable="false"/>
             </column>
         </createTable>
-        <addPrimaryKey tableName="case_definition_migration_process"
-                       columnNames="case_definition_key, case_definition_version_tag, migration_key"/>
+        <addPrimaryKey tableName="blueprint_migration_process"
+                       columnNames="blueprint_type, blueprint_key, blueprint_version_tag, migration_key"/>
     </changeSet>
 
-    <!-- Run state of a migration plan: powers the UI status and runAfter ordering. -->
+    <!--
+        Run state of a migration plan: powers the UI status and runAfter ordering, plus the
+        clustered single-runner guard (optimistic-lock version, lease expiry and fencing token).
+    -->
     <changeSet id="4" author="Ritense">
-        <createTable tableName="case_definition_migration_execution">
-            <column name="case_definition_key" type="VARCHAR(128)">
+        <createTable tableName="blueprint_migration_execution">
+            <column name="blueprint_type" type="VARCHAR(20)">
                 <constraints nullable="false"/>
             </column>
-            <column name="case_definition_version_tag" type="VARCHAR(100)">
+            <column name="blueprint_key" type="VARCHAR(128)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="blueprint_version_tag" type="VARCHAR(100)">
                 <constraints nullable="false"/>
             </column>
             <column name="migration_key" type="VARCHAR(128)">
@@ -107,50 +140,29 @@
             <column name="cases_to_migrate" type="${intType}" defaultValueNumeric="0">
                 <constraints nullable="false"/>
             </column>
-            <column name="migrated_case_ids" type="${jsonType}">
-                <constraints nullable="false"/>
-            </column>
-            <column name="errors" type="${jsonType}">
-                <constraints nullable="false"/>
-            </column>
-            <column name="started_on" type="datetime"/>
-            <column name="finished_on" type="datetime"/>
-        </createTable>
-        <addPrimaryKey tableName="case_definition_migration_execution"
-                       columnNames="case_definition_key, case_definition_version_tag, migration_key"/>
-    </changeSet>
-
-    <!-- Optimistic-locking version for the execution record (concurrency guard). -->
-    <changeSet id="5" author="Ritense">
-        <addColumn tableName="case_definition_migration_execution">
             <column name="version" type="BIGINT" defaultValueNumeric="0">
                 <constraints nullable="false"/>
             </column>
-        </addColumn>
-    </changeSet>
-
-    <!-- Lease expiry: a live node renews it while running; an expired lease may be taken over. -->
-    <changeSet id="6" author="Ritense">
-        <addColumn tableName="case_definition_migration_execution">
             <column name="lease_expires_at" type="datetime"/>
-        </addColumn>
-    </changeSet>
-
-    <!-- Fencing token: the running node stops if the token no longer matches (it was taken over). -->
-    <changeSet id="7" author="Ritense">
-        <addColumn tableName="case_definition_migration_execution">
             <column name="run_token" type="VARCHAR(64)"/>
-        </addColumn>
+            <column name="started_on" type="datetime"/>
+            <column name="finished_on" type="datetime"/>
+        </createTable>
+        <addPrimaryKey tableName="blueprint_migration_execution"
+                       columnNames="blueprint_type, blueprint_key, blueprint_version_tag, migration_key"/>
     </changeSet>
 
-    <!-- Per-case migration result: one row per (plan, case), so progress is O(1) per case instead
-         of a growing collection on the execution row. -->
-    <changeSet id="8" author="Ritense">
-        <createTable tableName="case_definition_migration_case">
-            <column name="case_definition_key" type="VARCHAR(128)">
+    <!-- Per-instance migration result: one row per (plan, instance), so progress is O(1) per
+         instance instead of a growing collection on the execution row. -->
+    <changeSet id="5" author="Ritense">
+        <createTable tableName="blueprint_migration_case">
+            <column name="blueprint_type" type="VARCHAR(20)">
                 <constraints nullable="false"/>
             </column>
-            <column name="case_definition_version_tag" type="VARCHAR(100)">
+            <column name="blueprint_key" type="VARCHAR(128)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="blueprint_version_tag" type="VARCHAR(100)">
                 <constraints nullable="false"/>
             </column>
             <column name="migration_key" type="VARCHAR(128)">
@@ -164,22 +176,8 @@
             </column>
             <column name="error_message" type="VARCHAR(2048)"/>
         </createTable>
-        <addPrimaryKey tableName="case_definition_migration_case"
-                       columnNames="case_definition_key, case_definition_version_tag, migration_key, case_id"/>
-    </changeSet>
-
-    <!-- Progress moved to case_definition_migration_case; drop the old per-execution collections. -->
-    <changeSet id="9" author="Ritense">
-        <dropColumn tableName="case_definition_migration_execution" columnName="migrated_case_ids"/>
-        <dropColumn tableName="case_definition_migration_execution" columnName="errors"/>
-    </changeSet>
-
-    <!-- Cached, approximate count of matching cases, refreshed by the trigger sweep so the UI can
-         show "cases to migrate" before a run starts. -->
-    <changeSet id="10" author="Ritense">
-        <addColumn tableName="case_definition_migration">
-            <column name="estimated_cases_to_migrate" type="${intType}"/>
-        </addColumn>
+        <addPrimaryKey tableName="blueprint_migration_case"
+                       columnNames="blueprint_type, blueprint_key, blueprint_version_tag, migration_key, case_id"/>
     </changeSet>
 
 </databaseChangeLog>

@@ -19,6 +19,7 @@ package com.ritense.processdocument.resolver
 import com.fasterxml.jackson.core.JsonPointer
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.databind.node.NullNode
 import com.fasterxml.jackson.databind.node.ObjectNode
 import com.jayway.jsonpath.InvalidPathException
 import com.jayway.jsonpath.JsonPath
@@ -323,7 +324,11 @@ class CaseDocumentJsonValueResolverFactory(
     }
 
     private fun toValueNode(value: Any?): JsonNode {
-        return objectMapper.valueToTree(value)
+        return if (value == null) {
+            NullNode.instance
+        } else {
+            objectMapper.valueToTree(value)
+        }
     }
 
     companion object {

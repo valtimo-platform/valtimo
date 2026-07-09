@@ -16,9 +16,9 @@
 
 package com.ritense.valtimo.migration.repository
 
-import com.ritense.valtimo.contract.case_.migration.CaseDefinitionMigrationId
+import com.ritense.valtimo.contract.blueprint.migration.BlueprintMigrationId
 import com.ritense.valtimo.migration.domain.ProcessMigrationConfiguration
 import org.springframework.data.jpa.repository.JpaRepository
 
 interface ProcessMigrationConfigurationRepository :
-    JpaRepository<ProcessMigrationConfiguration, CaseDefinitionMigrationId>
+    JpaRepository<ProcessMigrationConfiguration, BlueprintMigrationId>

@@ -25,13 +25,15 @@ import com.ritense.exporter.ExportPrettyPrinter
 import com.ritense.exporter.ExportResult
 import com.ritense.exporter.Exporter
 import com.ritense.exporter.request.MigrationPlanExportRequest
-import com.ritense.valtimo.contract.case_.migration.CaseDefinitionMigrationId
-import com.ritense.valtimo.contract.case_.migration.MigrationComponentDeployer
+import com.ritense.valtimo.contract.blueprint.BlueprintType
+import com.ritense.valtimo.contract.blueprint.migration.BlueprintMigrationId
+import com.ritense.valtimo.contract.blueprint.migration.MigrationComponentDeployer
 import org.springframework.transaction.annotation.Transactional
 
 /**
- * Reconstructs the `*.migration.json` file(s) for a case definition version from the plan
- * skeleton plus each [MigrationComponentDeployer]'s exported component.
+ * Reconstructs the migration plan file(s) for a blueprint version (case definition or building
+ * block definition) from the plan skeleton plus each [MigrationComponentDeployer]'s exported
+ * component.
  */
 @Transactional(readOnly = true)
 class MigrationPlanExporter(
@@ -43,15 +45,22 @@ class MigrationPlanExporter(
     override fun supports() = MigrationPlanExportRequest::class.java
 
     override fun export(request: MigrationPlanExportRequest): ExportResult {
-        val migrations = caseDefinitionMigrationRepository.findAllByIdCaseDefinitionId(request.caseDefinitionId)
+        val blueprintId = request.blueprintId
+        val migrations = caseDefinitionMigrationRepository.findAllByIdBlueprintTypeAndIdKeyAndIdVersionTag(
+            blueprintId.blueprintType(), blueprintId.getIdKey(), blueprintId.blueprintVersionTag()
+        )
         if (migrations.isEmpty()) return ExportResult()
 
-        val caseDefinitionKey = request.caseDefinitionId.key
-        val formattedVersion = request.caseDefinitionId.versionTag.let { "${it.major}-${it.minor}-${it.patch}" }
+        val key = blueprintId.getIdKey()
+        val formattedVersion = blueprintId.blueprintVersionTag().let { "${it.major}-${it.minor}-${it.patch}" }
+        val pathTemplate = when (blueprintId.blueprintType()) {
+            BlueprintType.CASE -> CASE_PATH
+            BlueprintType.BUILDING_BLOCK -> BUILDING_BLOCK_PATH
+        }
 
         val exportFiles = migrations.map { migration ->
             ExportFile(
-                PATH.format(caseDefinitionKey, formattedVersion, migration.id.migrationKey),
+                pathTemplate.format(key, formattedVersion, migration.id.migrationKey),
                 objectMapper.writer(ExportPrettyPrinter()).writeValueAsBytes(buildPlanJson(migration))
             )
         }.toSet()
@@ -61,7 +70,7 @@ class MigrationPlanExporter(
 
     /** The full `*.migration.json` for a single plan (skeleton + components), or null if absent. */
     @Transactional(readOnly = true)
-    fun getPlanJson(migrationId: CaseDefinitionMigrationId): ObjectNode? {
+    fun getPlanJson(migrationId: BlueprintMigrationId): ObjectNode? {
         return caseDefinitionMigrationRepository.findById(migrationId).map { buildPlanJson(it) }.orElse(null)
     }
 
@@ -69,6 +78,12 @@ class MigrationPlanExporter(
         val root = objectMapper.createObjectNode()
         root.put("title", migration.title)
         root.put("key", migration.id.migrationKey)
+        migration.sourceBlueprintType?.let { root.put("sourceBlueprintType", it.name) }
+        migration.sourceKey?.let { root.put("sourceKey", it) }
+        migration.sourceVersionTag?.let { root.put("sourceVersionTag", it.toString()) }
+        migration.targetBlueprintType?.let { root.put("targetBlueprintType", it.name) }
+        migration.targetKey?.let { root.put("targetKey", it) }
+        migration.targetVersionTag?.let { root.put("targetVersionTag", it.toString()) }
         root.set<ObjectNode>("migrationTriggers", objectMapper.valueToTree(migration.migrationTriggers))
         root.set<ObjectNode>("conditions", objectMapper.valueToTree(migration.conditions))
 
@@ -81,6 +96,8 @@ class MigrationPlanExporter(
     }
 
     companion object {
-        private const val PATH = "config/case/%s/%s/case-migration/%s.case-migration.json"
+        private const val CASE_PATH = "config/case/%s/%s/case-migration/%s.case-migration.json"
+        private const val BUILDING_BLOCK_PATH =
+            "config/building-block/%s/%s/building-block-migration/%s.building-block-migration.json"
     }
 }

@@ -16,7 +16,7 @@
 
 package com.ritense.case_.domain.migration
 
-import com.ritense.valtimo.contract.case_.migration.CaseDefinitionMigrationId
+import com.ritense.valtimo.contract.blueprint.migration.BlueprintMigrationId
 import jakarta.persistence.Column
 import jakarta.persistence.EmbeddedId
 import jakarta.persistence.Entity
@@ -32,11 +32,11 @@ import java.time.LocalDateTime
  * tens of thousands of cases does not grow or repeatedly rewrite a collection here.
  */
 @Entity
-@Table(name = "case_definition_migration_execution")
+@Table(name = "blueprint_migration_execution")
 data class CaseDefinitionMigrationExecution(
 
     @EmbeddedId
-    val id: CaseDefinitionMigrationId,
+    val id: BlueprintMigrationId,
 
     @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false)

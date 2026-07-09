@@ -30,7 +30,7 @@ import jakarta.persistence.Table
  * successful retry flips a previously FAILED row to MIGRATED.
  */
 @Entity
-@Table(name = "case_definition_migration_case")
+@Table(name = "blueprint_migration_case")
 data class CaseMigrationCase(
 
     @EmbeddedId

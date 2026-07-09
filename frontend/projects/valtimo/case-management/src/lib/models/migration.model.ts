@@ -52,11 +52,69 @@ interface MigrationPlanManagement {
   status: MigrationExecutionStatus;
 }
 
+/** A single value-resolver patch of the `dataMigration` block of a migration plan. */
+interface DataMigrationPatch {
+  /** Value-resolver path to copy from (mutually exclusive with `value`). */
+  source?: string | null;
+  /** Literal value to set on the target (mutually exclusive with `source`). */
+  value?: unknown;
+  /** Value-resolver path to write to. */
+  target: string;
+  /** Optional type coercion of the written value. */
+  targetType?: DataMigrationTargetType | null;
+}
+
+type DataMigrationTargetType = 'string' | 'integer' | 'long' | 'number' | 'double' | 'boolean';
+
+/** A single instruction of the `processMigration` block, translated 1:1 into an Operaton MigrationPlan. */
+interface ProcessMigrationInstruction {
+  sourceProcessDefinitionKey: string;
+  targetProcessDefinitionKey: string;
+  /** Source activity id -> target activity id (or `<SKIP_MIGRATION>`). */
+  mapActivities: {[sourceActivityId: string]: string};
+  /** GZAC-layer process variables set on the migrated instance. */
+  newProcessVariables: {[name: string]: unknown};
+  skipCustomListeners: boolean;
+  skipIoMappings: boolean;
+}
+
+type BlueprintType = 'CASE' | 'BUILDING_BLOCK';
+
+/** The full editable migration plan, matching the auto-deploy `*.migration.json` shape. */
+interface MigrationPlan {
+  title?: string;
+  key?: string;
+  /**
+   * Optional blueprint this plan migrates FROM. When omitted it defaults (at runtime) to the
+   * resolved target's blueprint type/key and the target blueprint's `basedOnVersionTag`.
+   */
+  sourceBlueprintType?: BlueprintType | null;
+  sourceKey?: string | null;
+  sourceVersionTag?: string | null;
+  /**
+   * Optional blueprint this plan migrates TO. When omitted it defaults (at runtime) to the
+   * blueprint version the plan is deployed under.
+   */
+  targetBlueprintType?: BlueprintType | null;
+  targetKey?: string | null;
+  targetVersionTag?: string | null;
+  migrationTriggers?: MigrationTriggers;
+  conditions?: MigrationCondition[];
+  dataMigration?: DataMigrationPatch[];
+  processMigration?: ProcessMigrationInstruction[];
+  [key: string]: unknown;
+}
+
 export {
   CaseMigrationStatus,
+  BlueprintType,
   MigrationTriggers,
   MigrationCondition,
   MigrationExecutionError,
   MigrationExecutionStatus,
   MigrationPlanManagement,
+  DataMigrationPatch,
+  DataMigrationTargetType,
+  ProcessMigrationInstruction,
+  MigrationPlan,
 };

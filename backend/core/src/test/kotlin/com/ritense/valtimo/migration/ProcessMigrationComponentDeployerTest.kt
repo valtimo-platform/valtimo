@@ -18,9 +18,10 @@ package com.ritense.valtimo.migration
 
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.ritense.valtimo.contract.case_.CaseDefinitionId
-import com.ritense.valtimo.contract.case_.migration.CaseDefinitionMigrationId
+import com.ritense.valtimo.contract.blueprint.migration.BlueprintMigrationId
 import com.ritense.valtimo.migration.domain.ProcessMigrationConfiguration
 import com.ritense.valtimo.migration.domain.ProcessMigrationInstruction
+import com.ritense.valtimo.migration.domain.ProcessVariablePatch
 import com.ritense.valtimo.migration.repository.ProcessMigrationConfigurationRepository
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
@@ -41,7 +42,7 @@ class ProcessMigrationComponentDeployerTest(
     private val objectMapper = jacksonObjectMapper()
     private lateinit var deployer: ProcessMigrationComponentDeployer
 
-    private val migrationId = CaseDefinitionMigrationId(CaseDefinitionId("bezwaar", "1.0.1"), "plan")
+    private val migrationId = BlueprintMigrationId.from(CaseDefinitionId("bezwaar", "1.0.1"), "plan")
 
     @BeforeEach
     fun setUp() {
@@ -62,7 +63,7 @@ class ProcessMigrationComponentDeployerTest(
                     "sourceProcessDefinitionKey": "bezwaar",
                     "targetProcessDefinitionKey": "bezwaar",
                     "mapActivities": { "Activity_A": "Activity_B" },
-                    "newProcessVariables": { "age": 31 },
+                    "setProcessVariables": [ { "value": 31, "target": "age" } ],
                     "skipCustomListeners": false,
                     "skipIoMappings": true
                 }
@@ -81,7 +82,7 @@ class ProcessMigrationComponentDeployerTest(
         assertThat(instruction.sourceProcessDefinitionKey).isEqualTo("bezwaar")
         assertThat(instruction.targetProcessDefinitionKey).isEqualTo("bezwaar")
         assertThat(instruction.mapActivities).containsEntry("Activity_A", "Activity_B")
-        assertThat(instruction.newProcessVariables).containsEntry("age", 31)
+        assertThat(instruction.setProcessVariables).containsExactly(ProcessVariablePatch(value = 31, target = "age"))
         assertThat(instruction.skipIoMappings).isTrue()
     }
 

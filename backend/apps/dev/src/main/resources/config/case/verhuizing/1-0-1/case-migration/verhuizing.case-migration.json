@@ -1,0 +1,48 @@
+{
+    "title": "Verhuizing migreren (1.0.0 → 1.0.1)",
+    "key": "verhuizing-gegevens",
+    "sourceVersionTag": "1.0.0",
+    "migrationTriggers": {
+        "triggeredByButton": true
+    },
+    "conditions": [
+        {
+            "path": "doc:/status",
+            "operator": "==",
+            "value": "ingediend"
+        }
+    ],
+    "dataMigration": [
+        {
+            "source": "doc:/aanvrager/emailadres",
+            "target": "doc:/aanvrager/email"
+        },
+        {
+            "value": "1.0.0",
+            "target": "doc:/migratedFrom",
+            "targetType": "string"
+        }
+    ],
+    "processMigration": [
+        {
+            "sourceProcessDefinitionKey": "verhuizing",
+            "targetProcessDefinitionKey": "verhuizing",
+            "mapActivities": {
+                "beoordelen": "beoordelen_verhuizing"
+            },
+            "setProcessVariables": [
+                {
+                    "value": "1.0.0",
+                    "target": "pv:migratedFrom",
+                    "targetType": "string"
+                },
+                {
+                    "source": "doc:/aanvrager/naam",
+                    "target": "pv:aanvragerNaam"
+                }
+            ],
+            "skipCustomListeners": false,
+            "skipIoMappings": false
+        }
+    ]
+}

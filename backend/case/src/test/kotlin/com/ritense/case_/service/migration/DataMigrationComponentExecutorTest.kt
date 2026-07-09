@@ -21,7 +21,7 @@ import com.ritense.case_.domain.migration.DataMigrationConfiguration
 import com.ritense.case_.domain.migration.DataMigrationPatch
 import com.ritense.case_.repository.DataMigrationConfigurationRepository
 import com.ritense.valtimo.contract.case_.CaseDefinitionId
-import com.ritense.valtimo.contract.case_.migration.CaseDefinitionMigrationId
+import com.ritense.valtimo.contract.blueprint.migration.BlueprintMigrationId
 import com.ritense.valueresolver.ValueResolverService
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
@@ -47,7 +47,7 @@ class DataMigrationComponentExecutorTest(
     private val objectMapper = jacksonObjectMapper()
     private lateinit var executor: DataMigrationComponentExecutor
 
-    private val migrationId = CaseDefinitionMigrationId(CaseDefinitionId("bezwaar", "1.0.1"), "plan")
+    private val migrationId = BlueprintMigrationId.from(CaseDefinitionId("bezwaar", "1.0.1"), "plan")
     private val caseId = UUID.randomUUID()
 
     @BeforeEach
@@ -66,7 +66,7 @@ class DataMigrationComponentExecutorTest(
         whenever(valueResolverService.resolveValues(eq(caseId.toString()), any()))
             .thenReturn(mapOf("doc:/emailadres" to "info@example.com"))
 
-        executor.execute(migrationId, caseId)
+        executor.execute(migrationId, migrationId.blueprintId(), caseId)
 
         assertThat(handledValues()).containsEntry("doc:/e-mailadres", "info@example.com")
     }
@@ -77,7 +77,7 @@ class DataMigrationComponentExecutorTest(
         whenever(valueResolverService.resolveValues(eq(caseId.toString()), any()))
             .thenReturn(mapOf("doc:/leeftijd" to "31"))
 
-        executor.execute(migrationId, caseId)
+        executor.execute(migrationId, migrationId.blueprintId(), caseId)
 
         assertThat(handledValues()["doc:/age"]).isEqualTo(31L)
     }
@@ -86,7 +86,7 @@ class DataMigrationComponentExecutorTest(
     fun `should coerce a set literal to the target type`() {
         stubPatches(DataMigrationPatch(value = 31, target = "doc:/communicatie", targetType = "string"))
 
-        executor.execute(migrationId, caseId)
+        executor.execute(migrationId, migrationId.blueprintId(), caseId)
 
         assertThat(handledValues()["doc:/communicatie"]).isEqualTo("31")
     }
@@ -99,7 +99,7 @@ class DataMigrationComponentExecutorTest(
             DataMigrationPatch(value = "Henk", target = "doc:/naam"),
         )
 
-        executor.execute(migrationId, caseId)
+        executor.execute(migrationId, migrationId.blueprintId(), caseId)
 
         val handled = handledValues()
         assertThat(handled["doc:/flag"]).isEqualTo("true")
@@ -112,7 +112,7 @@ class DataMigrationComponentExecutorTest(
         stubPatches(DataMigrationPatch(source = "doc:/missing", target = "doc:/target"))
         whenever(valueResolverService.resolveValues(eq(caseId.toString()), any())).thenReturn(emptyMap())
 
-        executor.execute(migrationId, caseId)
+        executor.execute(migrationId, migrationId.blueprintId(), caseId)
 
         verify(valueResolverService, never()).handleValues(any<UUID>(), any())
     }

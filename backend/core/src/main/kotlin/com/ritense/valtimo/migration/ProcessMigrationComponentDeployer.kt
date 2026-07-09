@@ -19,8 +19,8 @@ package com.ritense.valtimo.migration
 import com.fasterxml.jackson.core.type.TypeReference
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.ObjectMapper
-import com.ritense.valtimo.contract.case_.migration.CaseDefinitionMigrationId
-import com.ritense.valtimo.contract.case_.migration.MigrationComponentDeployer
+import com.ritense.valtimo.contract.blueprint.migration.BlueprintMigrationId
+import com.ritense.valtimo.contract.blueprint.migration.MigrationComponentDeployer
 import com.ritense.valtimo.migration.domain.ProcessMigrationConfiguration
 import com.ritense.valtimo.migration.domain.ProcessMigrationInstruction
 import com.ritense.valtimo.migration.repository.ProcessMigrationConfigurationRepository
@@ -39,7 +39,7 @@ class ProcessMigrationComponentDeployer(
 
     override fun componentKey() = PROCESS_MIGRATION_COMPONENT_KEY
 
-    override fun deploy(migrationId: CaseDefinitionMigrationId, component: JsonNode) {
+    override fun deploy(migrationId: BlueprintMigrationId, component: JsonNode) {
         val instructions: List<ProcessMigrationInstruction> = objectMapper.convertValue(
             component,
             object : TypeReference<List<ProcessMigrationInstruction>>() {}
@@ -47,13 +47,13 @@ class ProcessMigrationComponentDeployer(
         processMigrationConfigurationRepository.save(ProcessMigrationConfiguration(migrationId, instructions))
     }
 
-    override fun undeploy(migrationId: CaseDefinitionMigrationId) {
+    override fun undeploy(migrationId: BlueprintMigrationId) {
         processMigrationConfigurationRepository.findById(migrationId).ifPresent {
             processMigrationConfigurationRepository.delete(it)
         }
     }
 
-    override fun getComponentToExport(migrationId: CaseDefinitionMigrationId): Any? {
+    override fun getComponentToExport(migrationId: BlueprintMigrationId): Any? {
         return processMigrationConfigurationRepository.findById(migrationId)
             .map { it.instructions }
             .filter { it.isNotEmpty() }

@@ -21,12 +21,10 @@ import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.ritense.case_.domain.migration.CaseDefinitionMigration
 import com.ritense.case_.repository.CaseDefinitionMigrationRepository
 import com.ritense.importer.ImportRequest
-import com.ritense.importer.ValtimoImportTypes.Companion.CASE_DEFINITION
 import com.ritense.importer.ValtimoImportTypes.Companion.CASE_DEFINITION_MIGRATION
-import com.ritense.importer.ValtimoImportTypes.Companion.DOCUMENT_DEFINITION
 import com.ritense.valtimo.contract.case_.CaseDefinitionId
-import com.ritense.valtimo.contract.case_.migration.CaseDefinitionMigrationId
-import com.ritense.valtimo.contract.case_.migration.MigrationComponentDeployer
+import com.ritense.valtimo.contract.blueprint.migration.BlueprintMigrationId
+import com.ritense.valtimo.contract.blueprint.migration.MigrationComponentDeployer
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -67,13 +65,18 @@ class MigrationPlanImporterTest(
     }
 
     @Test
-    fun `should depend on case definition and document definition`() {
-        assertThat(importer.dependsOn()).containsExactlyInAnyOrder(CASE_DEFINITION, DOCUMENT_DEFINITION)
+    fun `should not declare dependencies so it works for both case and building block`() {
+        assertThat(importer.dependsOn()).isEmpty()
     }
 
     @Test
     fun `should be part of case definition`() {
         assertThat(importer.partOfCaseDefinition()).isTrue()
+    }
+
+    @Test
+    fun `should be part of building block definition`() {
+        assertThat(importer.partOfBuildingBlockDefinition()).isTrue()
     }
 
     @Test
@@ -116,7 +119,7 @@ class MigrationPlanImporterTest(
             )
         )
 
-        val expectedId = CaseDefinitionMigrationId(caseDefinitionId, "migration-plan-aanvraag-indienen")
+        val expectedId = BlueprintMigrationId.from(caseDefinitionId, "migration-plan-aanvraag-indienen")
 
         // idempotent re-deploy: components are cleaned before saving
         verify(dataMigrationComponentDeployer).undeploy(expectedId)

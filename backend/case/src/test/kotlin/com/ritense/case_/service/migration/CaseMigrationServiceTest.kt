@@ -25,13 +25,15 @@ import com.ritense.case_.domain.migration.CaseMigrationStatus
 import com.ritense.case_.domain.migration.MigrationTriggers
 import com.ritense.case_.repository.CaseDefinitionMigrationExecutionRepository
 import com.ritense.case_.repository.CaseDefinitionMigrationRepository
+import com.ritense.case_.repository.CaseDefinitionRepository
 import com.ritense.case_.repository.CaseMigrationCaseRepository
 import com.ritense.document.domain.DocumentDefinition
+import com.ritense.document.domain.impl.JsonSchemaDocument
 import com.ritense.document.repository.impl.JsonSchemaDocumentRepository
 import com.ritense.document.service.DocumentDefinitionService
 import com.ritense.valtimo.contract.case_.CaseDefinitionId
-import com.ritense.valtimo.contract.case_.migration.CaseDefinitionMigrationId
-import com.ritense.valtimo.contract.case_.migration.MigrationComponentExecutor
+import com.ritense.valtimo.contract.blueprint.migration.BlueprintMigrationId
+import com.ritense.valtimo.contract.blueprint.migration.MigrationComponentExecutor
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -66,6 +68,7 @@ class CaseMigrationServiceTest(
     @Mock private val caseRepository: CaseMigrationCaseRepository,
     @Mock private val documentRepository: JsonSchemaDocumentRepository,
     @Mock private val documentDefinitionService: DocumentDefinitionService,
+    @Mock private val caseDefinitionRepository: CaseDefinitionRepository,
     @Mock private val conditionEvaluator: MigrationConditionEvaluator,
     @Mock private val executor: MigrationComponentExecutor,
     @Mock private val transactionManager: PlatformTransactionManager,
@@ -74,7 +77,7 @@ class CaseMigrationServiceTest(
     private lateinit var service: CaseMigrationService
 
     private val caseDefinitionId = CaseDefinitionId("bezwaar", "1.0.1")
-    private val migrationId = CaseDefinitionMigrationId(caseDefinitionId, "plan")
+    private val migrationId = BlueprintMigrationId.from(caseDefinitionId, "plan")
     private val case1 = UUID.randomUUID()
     private val case2 = UUID.randomUUID()
 
@@ -90,8 +93,8 @@ class CaseMigrationServiceTest(
             executionRepository,
             caseRepository,
             documentRepository,
-            documentDefinitionService,
             conditionEvaluator,
+            listOf(CaseMigrationCandidateProvider(documentRepository, documentDefinitionService, caseDefinitionRepository)),
             listOf(executor),
             emptyList(),
             transactionTemplate,
@@ -105,6 +108,10 @@ class CaseMigrationServiceTest(
         whenever(caseRepository.save(any())).thenAnswer { it.getArgument(0) }
         whenever(caseRepository.existsByIdAndStatus(any(), any())).thenReturn(false)
         whenever(caseRepository.countByIdMigrationIdAndStatus(any(), any())).thenReturn(0L)
+        whenever(caseDefinitionRepository.findById(any())).thenReturn(Optional.empty())
+        val document = mock<JsonSchemaDocument>(defaultAnswer = Answers.RETURNS_DEEP_STUBS)
+        whenever(document.definitionId().name()).thenReturn("bezwaar")
+        whenever(documentRepository.findById(any())).thenReturn(Optional.of(document))
     }
 
     private fun plan() = CaseDefinitionMigration(
@@ -129,8 +136,8 @@ class CaseMigrationServiceTest(
 
         val result = service.startMigration(migrationId)
 
-        verify(executor).execute(migrationId, case1)
-        verify(executor).execute(migrationId, case2)
+        verify(executor).execute(migrationId, caseDefinitionId, case1)
+        verify(executor).execute(migrationId, caseDefinitionId, case2)
         verify(caseRepository).save(CaseMigrationCase(caseRecordId(case1), CaseMigrationCaseStatus.MIGRATED))
         verify(caseRepository).save(CaseMigrationCase(caseRecordId(case2), CaseMigrationCaseStatus.MIGRATED))
         assertThat(result.casesToMigrate).isEqualTo(2)
@@ -146,8 +153,8 @@ class CaseMigrationServiceTest(
 
         val result = service.startMigration(migrationId)
 
-        verify(executor).execute(migrationId, case1)
-        verify(executor, never()).execute(migrationId, case2)
+        verify(executor).execute(migrationId, caseDefinitionId, case1)
+        verify(executor, never()).execute(migrationId, caseDefinitionId, case2)
         verify(caseRepository, never()).save(CaseMigrationCase(caseRecordId(case2), CaseMigrationCaseStatus.MIGRATED))
         assertThat(result.casesToMigrate).isEqualTo(1)
         assertThat(result.status).isEqualTo(CaseMigrationStatus.COMPLETED)
@@ -157,7 +164,7 @@ class CaseMigrationServiceTest(
     fun `should record a failed case and complete with errors`() {
         stubCandidates(case1, case2)
         whenever(conditionEvaluator.matches(any(), any())).thenReturn(true)
-        whenever(executor.execute(migrationId, case2)).thenThrow(RuntimeException("boom"))
+        whenever(executor.execute(migrationId, caseDefinitionId, case2)).thenThrow(RuntimeException("boom"))
         whenever(caseRepository.countByIdMigrationIdAndStatus(migrationId, CaseMigrationCaseStatus.FAILED)).thenReturn(1L)
 
         val result = service.startMigration(migrationId)
@@ -177,8 +184,8 @@ class CaseMigrationServiceTest(
 
         val result = service.startMigration(migrationId)
 
-        verify(executor, never()).execute(migrationId, case1)
-        verify(executor).execute(migrationId, case2)
+        verify(executor, never()).execute(migrationId, caseDefinitionId, case1)
+        verify(executor).execute(migrationId, caseDefinitionId, case2)
         verify(caseRepository).save(CaseMigrationCase(caseRecordId(case2), CaseMigrationCaseStatus.MIGRATED))
         assertThat(result.status).isEqualTo(CaseMigrationStatus.COMPLETED)
     }
@@ -189,12 +196,12 @@ class CaseMigrationServiceTest(
         whenever(conditionEvaluator.matches(any(), any())).thenReturn(true)
         // Simulate another node taking the plan over (changing the fencing token) during case1.
         doAnswer { execution.runToken = "taken-over-by-another-node"; null }
-            .whenever(executor).execute(migrationId, case1)
+            .whenever(executor).execute(migrationId, caseDefinitionId, case1)
 
         val result = service.startMigration(migrationId)
 
-        verify(executor).execute(migrationId, case1)
-        verify(executor, never()).execute(migrationId, case2)
+        verify(executor).execute(migrationId, caseDefinitionId, case1)
+        verify(executor, never()).execute(migrationId, caseDefinitionId, case2)
         verify(caseRepository, never()).save(CaseMigrationCase(caseRecordId(case2), CaseMigrationCaseStatus.FAILED))
         assertThat(result.status).isEqualTo(CaseMigrationStatus.RUNNING)
     }
@@ -207,7 +214,7 @@ class CaseMigrationServiceTest(
         service.startMigration(migrationId)
 
         verify(documentDefinitionService, never()).findByBlueprintId(any())
-        verify(executor, never()).execute(any(), any())
+        verify(executor, never()).execute(any(), any(), any())
     }
 
     @Test
@@ -217,7 +224,7 @@ class CaseMigrationServiceTest(
         service.startMigration(migrationId)
 
         verify(documentDefinitionService, never()).findByBlueprintId(any())
-        verify(executor, never()).execute(any(), any())
+        verify(executor, never()).execute(any(), any(), any())
     }
 
     @Test

@@ -19,19 +19,19 @@ package com.ritense.case_.repository
 import com.ritense.case_.domain.migration.CaseMigrationCase
 import com.ritense.case_.domain.migration.CaseMigrationCaseId
 import com.ritense.case_.domain.migration.CaseMigrationCaseStatus
-import com.ritense.valtimo.contract.case_.migration.CaseDefinitionMigrationId
+import com.ritense.valtimo.contract.blueprint.migration.BlueprintMigrationId
 import org.springframework.data.jpa.repository.JpaRepository
 
 interface CaseMigrationCaseRepository : JpaRepository<CaseMigrationCase, CaseMigrationCaseId> {
 
     fun existsByIdAndStatus(id: CaseMigrationCaseId, status: CaseMigrationCaseStatus): Boolean
 
-    fun countByIdMigrationIdAndStatus(migrationId: CaseDefinitionMigrationId, status: CaseMigrationCaseStatus): Long
+    fun countByIdMigrationIdAndStatus(migrationId: BlueprintMigrationId, status: CaseMigrationCaseStatus): Long
 
     fun findByIdMigrationIdAndStatus(
-        migrationId: CaseDefinitionMigrationId,
+        migrationId: BlueprintMigrationId,
         status: CaseMigrationCaseStatus,
     ): List<CaseMigrationCase>
 
-    fun deleteByIdMigrationId(migrationId: CaseDefinitionMigrationId)
+    fun deleteByIdMigrationId(migrationId: BlueprintMigrationId)
 }

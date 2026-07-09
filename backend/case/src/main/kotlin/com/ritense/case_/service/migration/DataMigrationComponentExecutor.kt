@@ -18,8 +18,9 @@ package com.ritense.case_.service.migration
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.ritense.case_.repository.DataMigrationConfigurationRepository
-import com.ritense.valtimo.contract.case_.migration.CaseDefinitionMigrationId
-import com.ritense.valtimo.contract.case_.migration.MigrationComponentExecutor
+import com.ritense.valtimo.contract.BlueprintId
+import com.ritense.valtimo.contract.blueprint.migration.BlueprintMigrationId
+import com.ritense.valtimo.contract.blueprint.migration.MigrationComponentExecutor
 import com.ritense.valueresolver.ValueResolverService
 import org.springframework.transaction.annotation.Transactional
 import java.util.UUID
@@ -30,6 +31,10 @@ import kotlin.jvm.optionals.getOrNull
  * `resolveValues` reads the source paths and `handleValues` writes the target paths against the
  * case document. Reading/writing the document itself is delegated to the [ValueResolverService],
  * so this executor never touches the document store directly. Runs in the caller's transaction.
+ *
+ * The document is already re-homed to the target blueprint version by the migration engine before
+ * this runs (so `handleValues` writes/validates against the target schema); this executor only
+ * moves the values.
  */
 @Transactional
 class DataMigrationComponentExecutor(
@@ -40,7 +45,7 @@ class DataMigrationComponentExecutor(
 
     override fun componentKey() = DataMigrationComponentDeployer.DATA_MIGRATION_COMPONENT_KEY
 
-    override fun execute(migrationId: CaseDefinitionMigrationId, caseId: UUID) {
+    override fun execute(migrationId: BlueprintMigrationId, target: BlueprintId, caseId: UUID) {
         val patches = dataMigrationConfigurationRepository.findById(migrationId).getOrNull()?.patches
         if (patches.isNullOrEmpty()) {
             return

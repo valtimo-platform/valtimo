@@ -1,0 +1,209 @@
+<!--
+  ~ Copyright 2015-2026 Ritense BV, the Netherlands.
+  ~
+  ~ Licensed under EUPL, Version 1.2 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~ https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" basis,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<div class="migration-tab" [formGroup]="form">
+  <!-- Plan -->
+  <div class="migration-tab__grid">
+    <cds-text-label>
+      {{ 'caseManagement.migration.editor.general.title' | translate }}
+      <input
+        cdsText
+        formControlName="title"
+        [placeholder]="'caseManagement.migration.editor.general.titlePlaceholder' | translate"
+      />
+    </cds-text-label>
+
+    <cds-text-label>
+      {{ 'caseManagement.migration.editor.general.key' | translate }}
+      <input
+        cdsText
+        formControlName="key"
+        [placeholder]="'caseManagement.migration.editor.general.keyPlaceholder' | translate"
+      />
+    </cds-text-label>
+  </div>
+
+  <!-- Source -->
+  <h5 class="migration-tab__subheading">
+    {{ 'caseManagement.migration.editor.general.source' | translate }}
+  </h5>
+  <p class="migration-tab__hint">
+    {{ 'caseManagement.migration.editor.general.sourceHint' | translate }}
+  </p>
+
+  <div class="migration-tab__grid migration-tab__grid--three">
+    <cds-select
+      formControlName="sourceBlueprintType"
+      [label]="'caseManagement.migration.editor.general.blueprintType' | translate"
+    >
+      <option value="">
+        {{ 'caseManagement.migration.editor.general.blueprintTypeDefault' | translate }}
+      </option>
+      @for (type of BLUEPRINT_TYPES; track type) {
+        <option [value]="type">
+          {{ 'caseManagement.migration.editor.general.blueprintType_' + type | translate }}
+        </option>
+      }
+    </cds-select>
+
+    <v-select
+      formControlName="sourceKey"
+      [items]="sourceKeyItems()"
+      [titleTranslationKey]="'caseManagement.migration.editor.general.refKey'"
+      [placeholder]="'caseManagement.migration.editor.general.refKeyPlaceholder' | translate"
+      [clearable]="true"
+    ></v-select>
+
+    <cds-text-label>
+      {{ 'caseManagement.migration.editor.general.refVersionTag' | translate }}
+      <input
+        cdsText
+        formControlName="sourceVersionTag"
+        [placeholder]="'caseManagement.migration.editor.general.refVersionTagPlaceholder' | translate"
+      />
+    </cds-text-label>
+  </div>
+
+  <!-- Target -->
+  <h5 class="migration-tab__subheading">
+    {{ 'caseManagement.migration.editor.general.target' | translate }}
+  </h5>
+  <p class="migration-tab__hint">
+    {{ 'caseManagement.migration.editor.general.targetHint' | translate }}
+  </p>
+
+  <div class="migration-tab__grid migration-tab__grid--three">
+    <cds-select
+      formControlName="targetBlueprintType"
+      [label]="'caseManagement.migration.editor.general.blueprintType' | translate"
+    >
+      <option value="">
+        {{ 'caseManagement.migration.editor.general.blueprintTypeDefault' | translate }}
+      </option>
+      @for (type of BLUEPRINT_TYPES; track type) {
+        <option [value]="type">
+          {{ 'caseManagement.migration.editor.general.blueprintType_' + type | translate }}
+        </option>
+      }
+    </cds-select>
+
+    <v-select
+      formControlName="targetKey"
+      [items]="targetKeyItems()"
+      [titleTranslationKey]="'caseManagement.migration.editor.general.refKey'"
+      [placeholder]="'caseManagement.migration.editor.general.refKeyPlaceholder' | translate"
+      [clearable]="true"
+    ></v-select>
+
+    <cds-text-label>
+      {{ 'caseManagement.migration.editor.general.refVersionTag' | translate }}
+      <input
+        cdsText
+        formControlName="targetVersionTag"
+        [placeholder]="'caseManagement.migration.editor.general.refVersionTagPlaceholder' | translate"
+      />
+    </cds-text-label>
+  </div>
+
+  <!-- Triggers -->
+  <h5 class="migration-tab__subheading">
+    {{ 'caseManagement.migration.editor.general.triggers' | translate }}
+  </h5>
+  <p class="migration-tab__hint">
+    {{ 'caseManagement.migration.editor.general.triggersHint' | translate }}
+  </p>
+
+  <cds-checkbox formControlName="triggeredByButton">
+    {{ 'caseManagement.migration.editor.general.triggeredByButton' | translate }}
+  </cds-checkbox>
+
+  <div class="migration-tab__grid">
+    <cds-text-label>
+      {{ 'caseManagement.migration.editor.general.scheduledAtDate' | translate }}
+      <input cdsText formControlName="scheduledAtDate" type="datetime-local" />
+    </cds-text-label>
+
+    <v-select
+      formControlName="runAfter"
+      [items]="runAfterOptions"
+      [titleTranslationKey]="'caseManagement.migration.editor.general.runAfter'"
+      [placeholder]="'caseManagement.migration.editor.general.runAfterPlaceholder' | translate"
+      [notFoundText]="'caseManagement.migration.editor.general.runAfterEmpty' | translate"
+      [clearable]="true"
+    ></v-select>
+  </div>
+
+  <!-- Conditions -->
+  <h5 class="migration-tab__subheading">
+    {{ 'caseManagement.migration.editor.general.conditions' | translate }}
+  </h5>
+  <p class="migration-tab__hint">
+    {{ 'caseManagement.migration.editor.general.conditionsHint' | translate }}
+  </p>
+
+  <div class="migration-tab__mapping" formArrayName="conditions">
+    @for (condition of conditionsArray.controls; track $index) {
+      <div class="migration-tab__condition-row" [formGroupName]="$index">
+        <valtimo-value-path-selector
+          formControlName="path"
+          [caseDefinitionKey]="caseDefinitionKey"
+          [caseDefinitionVersionTag]="caseDefinitionVersionTag"
+          [label]="'caseManagement.migration.editor.general.conditionPath' | translate"
+          [prefixes]="CONDITION_PATH_PREFIXES"
+          [notation]="'slashes'"
+        ></valtimo-value-path-selector>
+
+        <cds-select
+          formControlName="operator"
+          [label]="'caseManagement.migration.editor.general.conditionOperator' | translate"
+        >
+          @for (operator of OPERATORS; track operator) {
+            <option [value]="operator">{{ operator }}</option>
+          }
+        </cds-select>
+
+        <cds-text-label>
+          {{ 'caseManagement.migration.editor.general.conditionValue' | translate }}
+          <input cdsText formControlName="value" />
+        </cds-text-label>
+
+        <button
+          cdsButton="danger--ghost"
+          size="sm"
+          [iconOnly]="true"
+          [title]="'interface.delete' | translate"
+          (click)="removeCondition($index)"
+        >
+          <svg cdsIcon="trash-can" size="16" class="cds--btn__icon"></svg>
+        </button>
+      </div>
+    } @empty {
+      <p class="migration-tab__empty">
+        {{ 'caseManagement.migration.editor.general.noConditions' | translate }}
+      </p>
+    }
+  </div>
+
+  <button
+    cdsButton="tertiary"
+    size="sm"
+    [attr.data-test-id]="testIds.addConditionButton"
+    (click)="addCondition()"
+  >
+    {{ 'caseManagement.migration.editor.general.addCondition' | translate }}
+    <svg cdsIcon="add" size="16" class="cds--btn__icon"></svg>
+  </button>
+</div>

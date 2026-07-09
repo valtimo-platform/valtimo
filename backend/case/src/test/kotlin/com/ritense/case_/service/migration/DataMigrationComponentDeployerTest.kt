@@ -21,7 +21,7 @@ import com.ritense.case_.domain.migration.DataMigrationConfiguration
 import com.ritense.case_.domain.migration.DataMigrationPatch
 import com.ritense.case_.repository.DataMigrationConfigurationRepository
 import com.ritense.valtimo.contract.case_.CaseDefinitionId
-import com.ritense.valtimo.contract.case_.migration.CaseDefinitionMigrationId
+import com.ritense.valtimo.contract.blueprint.migration.BlueprintMigrationId
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -41,7 +41,7 @@ class DataMigrationComponentDeployerTest(
     private val objectMapper = jacksonObjectMapper()
     private lateinit var deployer: DataMigrationComponentDeployer
 
-    private val migrationId = CaseDefinitionMigrationId(CaseDefinitionId("bezwaar", "1.0.1"), "plan")
+    private val migrationId = BlueprintMigrationId.from(CaseDefinitionId("bezwaar", "1.0.1"), "plan")
 
     @BeforeEach
     fun setUp() {

@@ -17,14 +17,14 @@
 package com.ritense.case_.repository
 
 import com.ritense.case_.domain.migration.CaseDefinitionMigrationExecution
-import com.ritense.valtimo.contract.case_.migration.CaseDefinitionMigrationId
+import com.ritense.valtimo.contract.blueprint.migration.BlueprintMigrationId
 import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.data.jpa.repository.Query
 import org.springframework.data.repository.query.Param
 import java.time.LocalDateTime
 
 interface CaseDefinitionMigrationExecutionRepository :
-    JpaRepository<CaseDefinitionMigrationExecution, CaseDefinitionMigrationId> {
+    JpaRepository<CaseDefinitionMigrationExecution, BlueprintMigrationId> {
 
     /**
      * Runs that were executing (RUNNING) but whose lease has expired (or is missing) — the owning

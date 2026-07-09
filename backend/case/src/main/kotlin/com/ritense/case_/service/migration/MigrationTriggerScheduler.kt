@@ -21,11 +21,13 @@ import com.ritense.case_.domain.migration.CaseDefinitionMigration
 import com.ritense.case_.repository.CaseDefinitionMigrationExecutionRepository
 import com.ritense.case_.repository.CaseDefinitionMigrationRepository
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
-import com.ritense.valtimo.contract.case_.migration.CaseDefinitionMigrationId
+import com.ritense.valtimo.contract.blueprint.migration.BlueprintMigrationId
+import com.ritense.valtimo.contract.event.ApplicationFullyReadyEvent
 import io.github.oshai.kotlinlogging.KotlinLogging
-import net.javacrumbs.shedlock.spring.annotation.SchedulerLock
-import org.springframework.scheduling.annotation.Scheduled
 import java.time.LocalDateTime
+import net.javacrumbs.shedlock.spring.annotation.SchedulerLock
+import org.springframework.context.event.EventListener
+import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Component
 
 /**
@@ -74,7 +76,19 @@ class MigrationTriggerScheduler(
         }
     }
 
-    private fun refreshEstimate(migrationId: CaseDefinitionMigrationId) {
+    @EventListener(ApplicationFullyReadyEvent::class)
+    fun refresh() {
+        runWithoutAuthorization {
+            val now = LocalDateTime.now()
+            caseDefinitionMigrationRepository.findAllWithoutExecution().forEach { plan ->
+                if (!isScheduledDue(plan, now) && !isRunAfterSatisfied(plan)) {
+                    refreshEstimate(plan.id)
+                }
+            }
+        }
+    }
+
+    private fun refreshEstimate(migrationId: BlueprintMigrationId) {
         try {
             caseMigrationService.refreshCaseCountEstimate(migrationId)
         } catch (e: Exception) {
@@ -82,7 +96,7 @@ class MigrationTriggerScheduler(
         }
     }
 
-    private fun runTrigger(migrationId: CaseDefinitionMigrationId) {
+    private fun runTrigger(migrationId: BlueprintMigrationId) {
         try {
             logger.debug { "Trigger fired for migration plan '$migrationId'" }
             caseMigrationService.startMigration(migrationId)
@@ -98,8 +112,8 @@ class MigrationTriggerScheduler(
 
     private fun isRunAfterSatisfied(plan: CaseDefinitionMigration): Boolean {
         val runAfter = plan.migrationTriggers.runAfter ?: return false
-        val predecessorId = CaseDefinitionMigrationId(plan.id.caseDefinitionId, runAfter)
-        return executionRepository.findById(predecessorId).map { it.status.isFinished() }.orElse(false)
+        val predecessorId = plan.id.copy(migrationKey = runAfter)
+        return executionRepository.findById(predecessorId).map { it.status.isFinished() }.orElse(false)!!
     }
 
     private companion object {

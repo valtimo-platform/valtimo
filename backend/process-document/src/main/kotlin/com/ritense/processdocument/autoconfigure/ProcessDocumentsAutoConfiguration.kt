@@ -40,9 +40,15 @@ import com.ritense.processdocument.repository.CaseDefinitionProcessLinkRepositor
 import com.ritense.processdocument.repository.OperatonExecutionCaseDefinitionMapper
 import com.ritense.processdocument.repository.OperatonExecutionJsonSchemaDocumentMapper
 import com.ritense.processdocument.repository.OperatonProcessDefinitionCaseDefinitionMapper
+import com.ritense.processdocument.migration.CaseProcessDefinitionBlueprintResolver
+import com.ritense.processdocument.migration.ProcessActivityMapper
+import com.ritense.processdocument.migration.ProcessDefinitionBlueprintResolver
 import com.ritense.processdocument.migration.ProcessMigrationComponentExecutor
+import com.ritense.processdocument.migration.ProcessMigrationComponentSuggester
+import com.ritense.processdocument.migration.ProcessMigrationVariableResolver
 import com.ritense.processdocument.repository.ProcessDefinitionCaseDefinitionRepository
 import com.ritense.valtimo.migration.repository.ProcessMigrationConfigurationRepository
+import com.ritense.valtimo.operaton.repository.OperatonExecutionRepository
 import com.ritense.processdocument.repository.ProcessDocumentInstanceRepository
 import com.ritense.processdocument.service.CaseDefinitionProcessLinkService
 import com.ritense.processdocument.repository.TaskQuickSearchRepository
@@ -421,12 +427,48 @@ class ProcessDocumentsAutoConfiguration {
         processMigrationConfigurationRepository: ProcessMigrationConfigurationRepository,
         processDefinitionCaseDefinitionRepository: ProcessDefinitionCaseDefinitionRepository,
         runtimeService: RuntimeService,
+        processMigrationVariableResolver: ProcessMigrationVariableResolver,
     ): ProcessMigrationComponentExecutor {
         return ProcessMigrationComponentExecutor(
             processMigrationConfigurationRepository,
             processDefinitionCaseDefinitionRepository,
             runtimeService,
+            processMigrationVariableResolver,
         )
+    }
+
+    @Bean
+    @ConditionalOnMissingBean(ProcessActivityMapper::class)
+    fun processActivityMapper(
+        repositoryService: RepositoryService,
+    ) = ProcessActivityMapper(repositoryService)
+
+    @Bean
+    @ConditionalOnMissingBean(CaseProcessDefinitionBlueprintResolver::class)
+    fun caseProcessDefinitionBlueprintResolver(
+        processDefinitionCaseDefinitionRepository: ProcessDefinitionCaseDefinitionRepository,
+    ) = CaseProcessDefinitionBlueprintResolver(processDefinitionCaseDefinitionRepository)
+
+    @Bean
+    @ConditionalOnMissingBean(ProcessMigrationComponentSuggester::class)
+    fun processMigrationComponentSuggester(
+        processDefinitionBlueprintResolvers: List<ProcessDefinitionBlueprintResolver>,
+        processActivityMapper: ProcessActivityMapper,
+    ): ProcessMigrationComponentSuggester {
+        return ProcessMigrationComponentSuggester(
+            processDefinitionBlueprintResolvers,
+            processActivityMapper,
+        )
+    }
+
+    @Bean
+    @ConditionalOnMissingBean(ProcessMigrationVariableResolver::class)
+    fun processMigrationVariableResolver(
+        valueResolverService: ValueResolverService,
+        objectMapper: ObjectMapper,
+        operatonExecutionRepository: OperatonExecutionRepository,
+    ): ProcessMigrationVariableResolver {
+        return ProcessMigrationVariableResolver(valueResolverService, objectMapper, operatonExecutionRepository)
     }
 
     @Bean

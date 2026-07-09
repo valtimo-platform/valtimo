@@ -26,7 +26,7 @@ import {
   ViewChild,
 } from '@angular/core';
 import {ActivatedRoute, Router} from '@angular/router';
-import {TranslateModule} from '@ngx-translate/core';
+import {TranslateModule, TranslateService} from '@ngx-translate/core';
 import {
   ActionItem,
   CarbonListModule,
@@ -40,7 +40,6 @@ import {
   BehaviorSubject,
   combineLatest,
   map,
-  merge,
   Observable,
   of,
   shareReplay,
@@ -48,8 +47,8 @@ import {
   Subject,
   Subscription,
   switchMap,
+  take,
   tap,
-  timer,
 } from 'rxjs';
 import {catchError} from 'rxjs/operators';
 import {CaseMigrationStatus, MigrationPlanManagement} from '../../../../models';
@@ -76,8 +75,6 @@ type MigrationPlanViewModel = MigrationPlanManagement & {name: string};
 })
 export class CaseManagementMigrationComponent implements AfterViewInit, OnDestroy {
   @ViewChild('statusColumn') public statusColumnTemplate!: TemplateRef<any>;
-  @ViewChild('triggersColumn') public triggersColumnTemplate!: TemplateRef<any>;
-  @ViewChild('componentsColumn') public componentsColumnTemplate!: TemplateRef<any>;
   @ViewChild('progressColumn') public progressColumnTemplate!: TemplateRef<any>;
 
   protected readonly testIds = CASE_MANAGEMENT_MIGRATION_TEST_IDS;
@@ -87,13 +84,18 @@ export class CaseManagementMigrationComponent implements AfterViewInit, OnDestro
   public readonly ACTION_ITEMS: ActionItem[] = [
     {label: 'caseManagement.migration.startNow', callback: this.onStartPlan.bind(this)},
     {label: 'interface.edit', callback: this.onEditPlan.bind(this)},
+    {label: 'interface.duplicate', callback: this.onDuplicatePlan.bind(this)},
     {label: 'interface.delete', callback: this.onDeletePlan.bind(this), type: 'danger'},
   ];
 
   public readonly $planToDelete = signal<MigrationPlanViewModel | null>(null);
+  public readonly $planToStart = signal<MigrationPlanViewModel | null>(null);
 
   private readonly _showDeleteModal$ = new BehaviorSubject<boolean>(false);
   public readonly showDeleteModal$ = this._showDeleteModal$.asObservable();
+
+  private readonly _showStartModal$ = new BehaviorSubject<boolean>(false);
+  public readonly showStartModal$ = this._showStartModal$.asObservable();
 
   private readonly _params$: Observable<CaseManagementParams | undefined> =
     getCaseManagementRouteParams(this.route).pipe(
@@ -110,7 +112,8 @@ export class CaseManagementMigrationComponent implements AfterViewInit, OnDestro
     switchMap(params =>
       !params
         ? of<MigrationPlanViewModel[]>([])
-        : merge(timer(0, this.POLL_INTERVAL_MS), this._refresh$).pipe(
+        : this._refresh$.pipe(
+            startWith(undefined),
             switchMap(() =>
               this.caseMigrationApiService.getPlans(params).pipe(catchError(() => of([])))
             ),
@@ -131,13 +134,13 @@ export class CaseManagementMigrationComponent implements AfterViewInit, OnDestro
 
   private _params: CaseManagementParams | undefined;
   private readonly _subscriptions = new Subscription();
-  private readonly POLL_INTERVAL_MS = 5000;
 
   constructor(
     private readonly cd: ChangeDetectorRef,
     private readonly route: ActivatedRoute,
     private readonly router: Router,
-    private readonly caseMigrationApiService: CaseMigrationApiService
+    private readonly caseMigrationApiService: CaseMigrationApiService,
+    private readonly translateService: TranslateService
   ) {}
 
   public ngAfterViewInit(): void {
@@ -160,13 +163,21 @@ export class CaseManagementMigrationComponent implements AfterViewInit, OnDestro
     this._selectedKey$.next(null);
   }
 
-  public onStartPlan(plan: MigrationPlanManagement): void {
-    if (!this._params) return;
+  public onStartPlan(plan: MigrationPlanViewModel): void {
+    this.$planToStart.set(plan);
+    this._showStartModal$.next(true);
+  }
+
+  public onStartConfirm(plan: MigrationPlanViewModel): void {
+    if (!this._params || !plan) return;
 
     this.caseMigrationApiService
       .startMigration(this._params, plan.migrationKey)
       .pipe(catchError(() => of(null)))
-      .subscribe(() => this._refresh$.next());
+      .subscribe(() => {
+        this._showStartModal$.next(false);
+        this._refresh$.next();
+      });
   }
 
   public onAddPlan(): void {
@@ -197,6 +208,29 @@ export class CaseManagementMigrationComponent implements AfterViewInit, OnDestro
     ]);
   }
 
+  public onDuplicatePlan(plan: MigrationPlanViewModel): void {
+    if (!this._params) return;
+    const params = this._params;
+
+    combineLatest([this.caseMigrationApiService.getPlanJson(params, plan.migrationKey), this.plans$])
+      .pipe(
+        take(1),
+        switchMap(([json, plans]) => {
+          const existingKeys = new Set(plans.map(existing => existing.migrationKey));
+          const baseKey = typeof json['key'] === 'string' ? (json['key'] as string) : plan.migrationKey;
+          const baseTitle = typeof json['title'] === 'string' ? (json['title'] as string) : plan.name;
+          const copy = {
+            ...json,
+            key: this.uniqueKey(baseKey, existingKeys),
+            title: `${baseTitle} (${this.translateService.instant('caseManagement.migration.duplicateSuffix')})`,
+          };
+          return this.caseMigrationApiService.savePlan(params, copy);
+        }),
+        catchError(() => of(null))
+      )
+      .subscribe(() => this._refresh$.next());
+  }
+
   public onDeletePlan(plan: MigrationPlanViewModel): void {
     this.$planToDelete.set(plan);
     this._showDeleteModal$.next(true);
@@ -215,6 +249,13 @@ export class CaseManagementMigrationComponent implements AfterViewInit, OnDestro
       });
   }
 
+  private uniqueKey(base: string, existingKeys: Set<string>): string {
+    let candidate = `${base}-copy`;
+    let counter = 2;
+    while (existingKeys.has(candidate)) candidate = `${base}-copy-${counter++}`;
+    return candidate;
+  }
+
   public statusTagType(status: CaseMigrationStatus): TagType {
     switch (status) {
       case 'RUNNING':
@@ -231,18 +272,6 @@ export class CaseManagementMigrationComponent implements AfterViewInit, OnDestro
   private setFields(): void {
     this.fields$.next([
       {key: 'name', label: 'caseManagement.migration.columns.plan', viewType: ViewType.TEXT},
-      {
-        key: '',
-        label: 'caseManagement.migration.columns.triggers',
-        viewType: ViewType.TEMPLATE,
-        template: this.triggersColumnTemplate,
-      },
-      {
-        key: '',
-        label: 'caseManagement.migration.columns.components',
-        viewType: ViewType.TEMPLATE,
-        template: this.componentsColumnTemplate,
-      },
       {
         key: '',
         label: 'caseManagement.migration.columns.status',

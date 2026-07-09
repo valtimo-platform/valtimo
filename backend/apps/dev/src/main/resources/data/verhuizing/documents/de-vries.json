@@ -1,0 +1,8 @@
+{
+    "aanvrager": {
+        "naam": "Petra de Vries",
+        "emailadres": "petra.devries@example.com"
+    },
+    "nieuwAdres": "Coolsingel 40, 3011 AD Rotterdam",
+    "status": "ingediend"
+}

@@ -206,29 +206,14 @@
   (confirmEvent)="onDeleteConfirm($event)"
 ></valtimo-confirmation-modal>
 
-<ng-template #triggersColumn let-data="data">
-  <div class="migration-tags">
-    @if (data.item.triggers.triggeredByButton) {
-      <cds-tag type="cyan">{{ 'caseManagement.migration.triggers.manual' | translate }}</cds-tag>
-    }
-    @if (data.item.triggers.scheduledAtDate) {
-      <cds-tag type="teal">{{ 'caseManagement.migration.triggers.scheduled' | translate }}</cds-tag>
-    }
-    @if (data.item.triggers.runAfter) {
-      <cds-tag type="magenta">{{ 'caseManagement.migration.triggers.runAfter' | translate }}</cds-tag>
-    }
-  </div>
-</ng-template>
-
-<ng-template #componentsColumn let-data="data">
-  <div class="migration-tags">
-    @for (component of data.item.components; track component) {
-      <cds-tag [type]="component === 'processMigration' ? 'purple' : 'teal'">
-        {{ 'caseManagement.migration.components.' + component | translate }}
-      </cds-tag>
-    }
-  </div>
-</ng-template>
+<valtimo-confirmation-modal
+  [titleTranslationKey]="'caseManagement.migration.startModal.title'"
+  [contentTranslationKey]="'caseManagement.migration.startModal.content'"
+  [confirmButtonTextTranslationKey]="'caseManagement.migration.startNow'"
+  [showModalSubject$]="showStartModal$"
+  [outputOnConfirm]="$planToStart()"
+  (confirmEvent)="onStartConfirm($event)"
+></valtimo-confirmation-modal>
 
 <ng-template #statusColumn let-data="data">
   <cds-tag [type]="statusTagType(data.item.status.status)" class="cds-tag--no-margin">

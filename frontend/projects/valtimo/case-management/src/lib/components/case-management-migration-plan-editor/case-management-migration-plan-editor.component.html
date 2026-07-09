@@ -39,7 +39,48 @@
   </div>
 
   <cds-tabs type="contained">
-    <cds-tab [heading]="'caseManagement.migration.editor.tabs.jsonEditor' | translate">
+    <cds-tab
+      [heading]="'caseManagement.migration.editor.tabs.general' | translate"
+      [attr.data-test-id]="testIds.generalTab"
+    >
+      <valtimo-migration-general-tab
+        [caseDefinitionKey]="$caseDefinitionKey()"
+        [caseDefinitionVersionTag]="$caseDefinitionVersionTag()"
+        [isEdit]="$isEdit()"
+        [plan]="$plan()"
+        [runAfterOptions]="$runAfterOptions()"
+        [caseDefinitionKeys]="$caseKeyOptions()"
+        [buildingBlockKeys]="$buildingBlockKeyOptions()"
+        (generalChange)="onGeneralChange($event)"
+      ></valtimo-migration-general-tab>
+    </cds-tab>
+
+    <cds-tab
+      [heading]="'caseManagement.migration.editor.tabs.dataMigration' | translate"
+      [attr.data-test-id]="testIds.dataMigrationTab"
+    >
+      <valtimo-migration-data-migration-tab
+        [caseDefinitionKey]="$caseDefinitionKey()"
+        [caseDefinitionVersionTag]="$caseDefinitionVersionTag()"
+        [patches]="$plan().dataMigration"
+        (patchesChange)="onDataMigrationChange($event)"
+      ></valtimo-migration-data-migration-tab>
+    </cds-tab>
+
+    <cds-tab
+      [heading]="'caseManagement.migration.editor.tabs.processMigration' | translate"
+      [attr.data-test-id]="testIds.processMigrationTab"
+    >
+      <valtimo-migration-process-migration-tab
+        [instructions]="$plan().processMigration"
+        (instructionsChange)="onProcessMigrationChange($event)"
+      ></valtimo-migration-process-migration-tab>
+    </cds-tab>
+
+    <cds-tab
+      [heading]="'caseManagement.migration.editor.tabs.jsonEditor' | translate"
+      [attr.data-test-id]="testIds.jsonEditorTab"
+    >
       @if ($model(); as model) {
         <valtimo-editor
           [model]="model"

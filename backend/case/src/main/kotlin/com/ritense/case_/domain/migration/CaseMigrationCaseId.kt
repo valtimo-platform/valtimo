@@ -16,7 +16,7 @@
 
 package com.ritense.case_.domain.migration
 
-import com.ritense.valtimo.contract.case_.migration.CaseDefinitionMigrationId
+import com.ritense.valtimo.contract.blueprint.migration.BlueprintMigrationId
 import jakarta.persistence.Column
 import jakarta.persistence.Embeddable
 import jakarta.persistence.Embedded
@@ -27,7 +27,7 @@ import java.io.Serializable
 data class CaseMigrationCaseId(
 
     @Embedded
-    val migrationId: CaseDefinitionMigrationId,
+    val migrationId: BlueprintMigrationId,
 
     @Column(name = "case_id", nullable = false)
     val caseId: String,

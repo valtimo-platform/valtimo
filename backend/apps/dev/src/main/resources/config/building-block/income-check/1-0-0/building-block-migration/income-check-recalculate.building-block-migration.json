@@ -1,0 +1,41 @@
+{
+    "title": "Migrate income-check building block instances (example)",
+    "key": "income-check-recalculate",
+    "migrationTriggers": {
+        "triggeredByButton": true
+    },
+    "conditions": [
+        {
+            "path": "doc:/checkStatus",
+            "operator": "==",
+            "value": "pending"
+        }
+    ],
+    "dataMigration": [
+        {
+            "value": "recalculated",
+            "target": "doc:/checkStatus",
+            "targetType": "string"
+        }
+    ],
+    "processMigration": [
+        {
+            "sourceProcessDefinitionKey": "income-check-process",
+            "targetProcessDefinitionKey": "income-check-process",
+            "mapActivities": {},
+            "setProcessVariables": [
+                {
+                    "value": "1.0.0",
+                    "target": "pv:migratedFrom",
+                    "targetType": "string"
+                },
+                {
+                    "source": "doc:/checkStatus",
+                    "target": "pv:previousCheckStatus"
+                }
+            ],
+            "skipCustomListeners": false,
+            "skipIoMappings": false
+        }
+    ]
+}

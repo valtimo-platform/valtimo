@@ -23,7 +23,7 @@ import com.ritense.case_.domain.migration.MigrationTriggers
 import com.ritense.case_.repository.CaseDefinitionMigrationExecutionRepository
 import com.ritense.case_.repository.CaseDefinitionMigrationRepository
 import com.ritense.valtimo.contract.case_.CaseDefinitionId
-import com.ritense.valtimo.contract.case_.migration.CaseDefinitionMigrationId
+import com.ritense.valtimo.contract.blueprint.migration.BlueprintMigrationId
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
@@ -57,7 +57,7 @@ class MigrationTriggerSchedulerTest(
         whenever(migrationRepository.findAllWithoutExecution()).thenReturn(emptyList())
     }
 
-    private fun migrationId(key: String) = CaseDefinitionMigrationId(caseDefinitionId, key)
+    private fun migrationId(key: String) = BlueprintMigrationId.from(caseDefinitionId, key)
 
     private fun plan(key: String, triggers: MigrationTriggers) =
         CaseDefinitionMigration(id = migrationId(key), title = key, migrationTriggers = triggers)

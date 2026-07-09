@@ -47,4 +47,6 @@ fun main(args: Array<String>) {
         ----------------------------------------------------------
         """.trimIndent()
     }
+
+    applicationContext.getBean(DemoDataService::class.java).deployVerhuizingDocuments()
 }

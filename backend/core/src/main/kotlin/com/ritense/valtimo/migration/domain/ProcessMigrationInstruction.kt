@@ -20,15 +20,16 @@ import com.fasterxml.jackson.annotation.JsonInclude
 
 /**
  * A single `processMigration` instruction from a migration plan. Translated 1:1 into an Operaton
- * MigrationPlan when the migration runs; [newProcessVariables] is a GZAC-layer addition applied
- * only when the plan's conditions hold.
+ * MigrationPlan when the migration runs; [setProcessVariables] is a GZAC-layer addition (its values
+ * are resolved against the migrating case and set on the migrated process instance) applied only
+ * when the plan's conditions hold.
  */
 @JsonInclude(JsonInclude.Include.NON_NULL)
 data class ProcessMigrationInstruction(
     val sourceProcessDefinitionKey: String,
     val targetProcessDefinitionKey: String,
     val mapActivities: Map<String, String> = emptyMap(),
-    val newProcessVariables: Map<String, Any?> = emptyMap(),
+    val setProcessVariables: List<ProcessVariablePatch> = emptyList(),
     val skipCustomListeners: Boolean = false,
     val skipIoMappings: Boolean = false,
 )

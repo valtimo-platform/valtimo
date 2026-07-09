@@ -1,32 +1,50 @@
 {
     "title": "Migrate bezwaar cases in behandeling (1.0.0 → 1.0.1)",
     "key": "bezwaar-aanvraag-indienen",
-
     "migrationTriggers": {
         "triggeredByButton": true
     },
-
     "conditions": [
-        { "path": "case:internalStatus", "operator": "==", "value": "in-behandeling" }
+        {
+            "path": "case:internalStatus",
+            "operator": "==",
+            "value": "in-behandeling"
+        }
     ],
-
     "dataMigration": [
-        { "source": "doc:/emailadres", "target": "doc:/e-mailadres" },
-        { "value": "e-mail", "target": "doc:/communicatie", "targetType": "string" }
+        {
+            "source": "doc:/emailadres",
+            "target": "doc:/e-mailadres"
+        },
+        {
+            "value": "e-mail",
+            "target": "doc:/communicatie",
+            "targetType": "string"
+        }
     ],
-
     "processMigration": [
         {
             "sourceProcessDefinitionKey": "bezwaar",
             "targetProcessDefinitionKey": "bezwaar",
             "mapActivities": {},
-            "newProcessVariables": { "migratedFrom": "1.0.0" },
+            "setProcessVariables": [
+                {
+                    "value": "1.0.0",
+                    "target": "pv:migratedFrom",
+                    "targetType": "string"
+                },
+                {
+                    "source": "doc:/emailadres",
+                    "target": "pv:e-mailadres"
+                }
+            ],
             "skipCustomListeners": false,
             "skipIoMappings": false
         }
     ],
-
     "customMigration": [
-        { "customBeanHandler": "HandleStatusVerwerkt" }
+        {
+            "customBeanHandler": "HandleStatusVerwerkt"
+        }
     ]
 }

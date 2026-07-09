@@ -17,17 +17,19 @@
 package com.ritense.case_.repository
 
 import com.ritense.case_.domain.migration.CaseDefinitionMigration
-import com.ritense.valtimo.contract.case_.CaseDefinitionId
-import com.ritense.valtimo.contract.case_.migration.CaseDefinitionMigrationId
+import com.ritense.valtimo.contract.blueprint.BlueprintType
+import com.ritense.valtimo.contract.blueprint.migration.BlueprintMigrationId
+import org.semver4j.Semver
 import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.data.jpa.repository.Query
 
 interface CaseDefinitionMigrationRepository :
-    JpaRepository<CaseDefinitionMigration, CaseDefinitionMigrationId> {
+    JpaRepository<CaseDefinitionMigration, BlueprintMigrationId> {
 
-    fun findAllByIdCaseDefinitionId(caseDefinitionId: CaseDefinitionId): List<CaseDefinitionMigration>
-
-    fun deleteAllByIdCaseDefinitionId(caseDefinitionId: CaseDefinitionId)
+    /** All migration plans that target the given blueprint (type + key + version). */
+    fun findAllByIdBlueprintTypeAndIdKeyAndIdVersionTag(
+        blueprintType: BlueprintType, key: String, versionTag: Semver
+    ): List<CaseDefinitionMigration>
 
     /**
      * Plans that have never been run (no execution row yet). Used by the trigger scheduler to find

@@ -1,0 +1,96 @@
+<!--
+  ~ Copyright 2015-2026 Ritense BV, the Netherlands.
+  ~
+  ~ Licensed under EUPL, Version 1.2 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~ https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" basis,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<div class="migration-tab" [formGroup]="form">
+  <p class="migration-tab__description">
+    {{ 'caseManagement.migration.editor.dataMigration.description' | translate }}
+  </p>
+
+  <div class="migration-tab__items" formArrayName="patches">
+    @for (patch of patchesArray.controls; track $index) {
+      <div class="migration-tab__card" [formGroupName]="$index">
+        <div class="migration-tab__card-header">
+          <span class="migration-tab__card-index">#{{ $index + 1 }}</span>
+
+          <button
+            cdsButton="danger--ghost"
+            size="sm"
+            [iconOnly]="true"
+            [title]="'interface.delete' | translate"
+            (click)="removePatch($index)"
+          >
+            <svg cdsIcon="trash-can" size="16" class="cds--btn__icon"></svg>
+          </button>
+        </div>
+
+        <div class="migration-tab__grid">
+          <valtimo-value-path-selector
+            formControlName="source"
+            [caseDefinitionKey]="caseDefinitionKey"
+            [caseDefinitionVersionTag]="caseDefinitionVersionTag"
+            [label]="'caseManagement.migration.editor.dataMigration.source' | translate"
+            [prefixes]="SOURCE_PREFIXES"
+            [notation]="'slashes'"
+          ></valtimo-value-path-selector>
+
+          <cds-text-label>
+            {{ 'caseManagement.migration.editor.dataMigration.value' | translate }}
+            <input
+              cdsText
+              formControlName="value"
+              [placeholder]="'caseManagement.migration.editor.dataMigration.valuePlaceholder' | translate"
+            />
+          </cds-text-label>
+
+          <valtimo-value-path-selector
+            formControlName="target"
+            [caseDefinitionKey]="caseDefinitionKey"
+            [caseDefinitionVersionTag]="caseDefinitionVersionTag"
+            [label]="'caseManagement.migration.editor.dataMigration.target' | translate"
+            [prefixes]="TARGET_PREFIXES"
+            [notation]="'slashes'"
+          ></valtimo-value-path-selector>
+
+          <cds-select
+            formControlName="targetType"
+            [label]="'caseManagement.migration.editor.dataMigration.targetType' | translate"
+          >
+            <option value="">
+              {{ 'caseManagement.migration.editor.dataMigration.targetTypeAuto' | translate }}
+            </option>
+            @for (type of TARGET_TYPES; track type) {
+              <option [value]="type">{{ type }}</option>
+            }
+          </cds-select>
+        </div>
+      </div>
+    } @empty {
+      <p class="migration-tab__empty">
+        {{ 'caseManagement.migration.editor.dataMigration.empty' | translate }}
+      </p>
+    }
+  </div>
+
+  <button
+    cdsButton="tertiary"
+    size="sm"
+    [attr.data-test-id]="testIds.addPatchButton"
+    (click)="addPatch()"
+  >
+    {{ 'caseManagement.migration.editor.dataMigration.addPatch' | translate }}
+    <svg cdsIcon="add" size="16" class="cds--btn__icon"></svg>
+  </button>
+</div>

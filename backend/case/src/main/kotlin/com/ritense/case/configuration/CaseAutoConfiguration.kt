@@ -72,12 +72,15 @@ import com.ritense.case_.repository.DataMigrationConfigurationRepository
 import com.ritense.case_.repository.HiddenCaseListColumnRepository
 import com.ritense.case_.rest.CaseMigrationManagementResource
 import com.ritense.case_.service.ActiveCaseDefinitionService
+import com.ritense.case_.service.migration.CaseMigrationCandidateProvider
 import com.ritense.case_.service.migration.CaseMigrationService
 import com.ritense.case_.service.migration.DataMigrationComponentDeployer
 import com.ritense.case_.service.migration.DataMigrationComponentExecutor
+import com.ritense.case_.service.migration.DataMigrationComponentSuggester
 import com.ritense.case_.service.migration.MigrationConditionEvaluator
 import com.ritense.case_.service.migration.MigrationPlanExporter
 import com.ritense.case_.service.migration.MigrationPlanImporter
+import com.ritense.case_.service.migration.MigrationPlanSuggestionService
 import com.ritense.case_.service.migration.MigrationTriggerScheduler
 import com.ritense.document.service.DocumentDefinitionService
 import com.ritense.document.service.DocumentSearchService
@@ -91,8 +94,10 @@ import com.ritense.outbox.OutboxService
 import com.ritense.valtimo.changelog.service.ChangelogDeployer
 import com.ritense.valtimo.contract.authentication.UserManagementService
 import com.ritense.valtimo.contract.case_.CaseDefinitionChecker
-import com.ritense.valtimo.contract.case_.migration.MigrationComponentDeployer
-import com.ritense.valtimo.contract.case_.migration.MigrationComponentExecutor
+import com.ritense.valtimo.contract.blueprint.migration.MigrationCandidateProvider
+import com.ritense.valtimo.contract.blueprint.migration.MigrationComponentDeployer
+import com.ritense.valtimo.contract.blueprint.migration.MigrationComponentExecutor
+import com.ritense.valtimo.contract.blueprint.migration.MigrationComponentSuggester
 import com.ritense.valtimo.contract.database.QueryDialectHelper
 import com.ritense.valtimo.contract.importer.ImportPreviewContributor
 import com.ritense.valtimo.contract.plugin.PluginConfigurationMappingResolver
@@ -588,10 +593,32 @@ class CaseAutoConfiguration {
     ) = DataMigrationComponentExecutor(objectMapper, dataMigrationConfigurationRepository, valueResolverService)
 
     @Bean
+    @ConditionalOnMissingBean(DataMigrationComponentSuggester::class)
+    fun dataMigrationComponentSuggester(
+        valueResolverService: ValueResolverService,
+    ) = DataMigrationComponentSuggester(valueResolverService)
+
+    @Bean
+    @ConditionalOnMissingBean(MigrationPlanSuggestionService::class)
+    fun migrationPlanSuggestionService(
+        objectMapper: ObjectMapper,
+        migrationCandidateProviders: List<MigrationCandidateProvider>,
+        migrationComponentSuggesters: List<MigrationComponentSuggester>,
+    ) = MigrationPlanSuggestionService(objectMapper, migrationCandidateProviders, migrationComponentSuggesters)
+
+    @Bean
     @ConditionalOnMissingBean(MigrationConditionEvaluator::class)
     fun migrationConditionEvaluator(
         valueResolverService: ValueResolverService,
     ) = MigrationConditionEvaluator(valueResolverService)
+
+    @Bean
+    @ConditionalOnMissingBean(CaseMigrationCandidateProvider::class)
+    fun caseMigrationCandidateProvider(
+        documentRepository: JsonSchemaDocumentRepository,
+        documentDefinitionService: DocumentDefinitionService,
+        caseDefinitionRepository: CaseDefinitionRepository,
+    ) = CaseMigrationCandidateProvider(documentRepository, documentDefinitionService, caseDefinitionRepository)
 
     @Bean
     @ConditionalOnMissingBean(CaseMigrationService::class)
@@ -600,8 +627,8 @@ class CaseAutoConfiguration {
         caseDefinitionMigrationExecutionRepository: CaseDefinitionMigrationExecutionRepository,
         caseMigrationCaseRepository: CaseMigrationCaseRepository,
         documentRepository: JsonSchemaDocumentRepository,
-        documentDefinitionService: DocumentDefinitionService,
         migrationConditionEvaluator: MigrationConditionEvaluator,
+        migrationCandidateProviders: List<MigrationCandidateProvider>,
         migrationComponentExecutors: List<MigrationComponentExecutor>,
         migrationComponentDeployers: List<MigrationComponentDeployer>,
         transactionTemplate: TransactionTemplate,
@@ -611,8 +638,8 @@ class CaseAutoConfiguration {
         caseDefinitionMigrationExecutionRepository,
         caseMigrationCaseRepository,
         documentRepository,
-        documentDefinitionService,
         migrationConditionEvaluator,
+        migrationCandidateProviders,
         migrationComponentExecutors,
         migrationComponentDeployers,
         transactionTemplate,
@@ -637,5 +664,11 @@ class CaseAutoConfiguration {
         caseMigrationService: CaseMigrationService,
         migrationPlanImporter: MigrationPlanImporter,
         migrationPlanExporter: MigrationPlanExporter,
-    ) = CaseMigrationManagementResource(caseMigrationService, migrationPlanImporter, migrationPlanExporter)
+        migrationPlanSuggestionService: MigrationPlanSuggestionService,
+    ) = CaseMigrationManagementResource(
+        caseMigrationService,
+        migrationPlanImporter,
+        migrationPlanExporter,
+        migrationPlanSuggestionService,
+    )
 }
