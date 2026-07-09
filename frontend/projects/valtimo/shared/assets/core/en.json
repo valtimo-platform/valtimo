@@ -46,6 +46,7 @@
     },
     "draftProcessConfirmation": {
       "title": "Start draft process",
+      "content": "Are you sure you want to start this draft process?",
       "warningTitle": "Warning: Draft process",
       "warningDescription": "This process definition is still in draft and may not work as expected.",
       "confirm": "Start anyway",
