@@ -1837,14 +1837,14 @@
     "canInitializeDocument": "Starts case",
     "startableByUser": "Startable by user",
     "expressionErrors": {
-      "MISSING_EL_MARKERS": "Expression must use ${...} or #{...} syntax",
-      "UNCLOSED_PARENTHESIS": "Expression has an unclosed parenthesis '('",
-      "UNCLOSED_BRACE": "Expression is missing a closing brace '}'",
-      "UNCLOSED_BRACKET": "Expression has an unclosed bracket '['",
-      "MISMATCHED_DELIMITER": "Expression has mismatched brackets or braces",
-      "INCOMPLETE_EXPRESSION": "Expression is incomplete",
-      "INVALID_SYNTAX": "Expression has invalid syntax",
-      "BEAN_NOT_FOUND": "Referenced bean does not exist"
+      "MISSING_EL_MARKERS": "Expression {{expression}} must use ${...} or #{...} syntax",
+      "UNCLOSED_PARENTHESIS": "Expression {{expression}} has an unclosed parenthesis '('",
+      "UNCLOSED_BRACE": "Expression {{expression}} is missing a closing brace '}'",
+      "UNCLOSED_BRACKET": "Expression {{expression}} has an unclosed bracket '['",
+      "MISMATCHED_DELIMITER": "Expression {{expression}} has mismatched brackets or braces",
+      "INCOMPLETE_EXPRESSION": "Expression {{expression}} is incomplete",
+      "INVALID_SYNTAX": "Expression {{expression}} has invalid syntax",
+      "BEAN_NOT_FOUND": "No bean found with this name: {{expression}}. If using a process variable, ensure it exists at runtime"
     },
     "warningConfirmation": {
       "title": "Process has warnings",
