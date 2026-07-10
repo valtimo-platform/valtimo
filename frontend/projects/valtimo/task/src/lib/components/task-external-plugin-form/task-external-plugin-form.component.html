@@ -36,5 +36,6 @@
     [pluginDataUrl]="$pluginDataUrl()"
     [userToken]="$userToken()"
     (taskCompletedEvent)="onTaskCompleted()"
+    (submitTaskEvent)="onSubmitTask($event)"
   ></valtimo-external-plugin-iframe>
 }

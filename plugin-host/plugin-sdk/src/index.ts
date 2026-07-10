@@ -18,6 +18,7 @@
 export { action } from "./actions.js";
 export { onEvent } from "./events.js";
 export { request, onRequest } from "./requests.js";
+export { submit } from "./submit.js";
 export { config } from "./config.js";
 export { log } from "./host-functions.js";
 export { gzacApi } from "./gzac-api.js";
@@ -26,10 +27,12 @@ export {
   handleAction,
   handleEvent,
   handleRequest,
+  handleSubmit,
   handleGetManifest,
   handle_action,
   handle_event,
   handle_request,
+  handle_submit,
 } from "./runtime.js";
 
 // Types
@@ -43,6 +46,9 @@ export type {
   RequestInput,
   RequestOutput,
   RequestHandler,
+  SubmitInput,
+  SubmitOutput,
+  SubmitHandler,
   PluginManifest,
   ManifestAction,
   ManifestActionProperty,
