@@ -35,7 +35,7 @@ class ExternalPluginCaseTabResolverImplTest {
     private val configurationRepository = mock<ExternalPluginConfigurationRepository>()
     private val definitionRepository = mock<ExternalPluginDefinitionRepository>()
     private val resolver = ExternalPluginCaseTabResolverImpl(
-        ExternalPluginFrontendBundleResolver(configurationRepository, definitionRepository)
+        ExternalPluginBundleUrlResolver(configurationRepository, definitionRepository)
     )
 
     @Test

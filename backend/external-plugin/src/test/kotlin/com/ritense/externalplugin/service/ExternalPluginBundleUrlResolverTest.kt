@@ -30,55 +30,42 @@ import org.mockito.kotlin.whenever
 import java.util.Optional
 import java.util.UUID
 
-class ExternalPluginFrontendBundleResolverTest {
+class ExternalPluginBundleUrlResolverTest {
 
     private val objectMapper = ObjectMapper()
     private val configurationRepository = mock<ExternalPluginConfigurationRepository>()
     private val definitionRepository = mock<ExternalPluginDefinitionRepository>()
-    private val resolver = ExternalPluginFrontendBundleResolver(configurationRepository, definitionRepository)
+    private val resolver = ExternalPluginBundleUrlResolver(configurationRepository, definitionRepository)
 
     @Test
-    fun `resolves the sole task-form bundle when no key is given`() {
+    fun `resolves the sole page bundle when no key is given`() {
         val configId = stub(
             """[ { "type":"config", "path":"/bundles/config.html" },
-                 { "type":"task-form", "key":"review", "path":"/bundles/task-form.html" } ]"""
+                 { "type":"page", "key":"overview", "path":"/bundles/page.html" } ]"""
         )
 
-        val url = resolver.resolveBundleUrl(configId, "task-form", null)
+        val url = resolver.resolve(configId, "page", null)
 
-        assertThat(url).isEqualTo("http://host:8090/plugins/case-summary/0.1.0/bundles/task-form.html")
+        assertThat(url).isEqualTo("http://host:8090/plugins/case-summary/0.1.0/bundles/page.html")
     }
 
     @Test
-    fun `resolves the matching task-form bundle by key when several exist`() {
+    fun `resolves the matching key when several bundles of a type exist`() {
         val configId = stub(
-            """[ { "type":"task-form", "key":"review", "path":"/bundles/review.html" },
-                 { "type":"task-form", "key":"approve", "path":"/bundles/approve.html" } ]"""
+            """[ { "type":"task-form", "key":"approval", "path":"/bundles/approval.html" },
+                 { "type":"task-form", "key":"review", "path":"/bundles/review.html" } ]"""
         )
 
-        val url = resolver.resolveBundleUrl(configId, "task-form", "approve")
+        val url = resolver.resolve(configId, "task-form", "review")
 
-        assertThat(url).isEqualTo("http://host:8090/plugins/case-summary/0.1.0/bundles/approve.html")
+        assertThat(url).isEqualTo("http://host:8090/plugins/case-summary/0.1.0/bundles/review.html")
     }
 
     @Test
-    fun `resolves each type independently from the same manifest`() {
-        val configId = stub(
-            """[ { "type":"case-tab", "key":"summary", "path":"/bundles/case-tab.html" },
-                 { "type":"task-form", "key":"review", "path":"/bundles/task-form.html" } ]"""
-        )
+    fun `returns null when no bundle of the requested type exists`() {
+        val configId = stub("""[ { "type":"case-tab", "path":"/bundles/case-tab.html" } ]""")
 
-        assertThat(resolver.resolveBundleUrl(configId, "task-form", null))
-            .isEqualTo("http://host:8090/plugins/case-summary/0.1.0/bundles/task-form.html")
-        assertThat(resolver.resolveBundleUrl(configId, "case-tab", null))
-            .isEqualTo("http://host:8090/plugins/case-summary/0.1.0/bundles/case-tab.html")
-    }
-
-    @Test
-    fun `returns null when there is no bundle of the requested type`() {
-        val configId = stub("""[ { "type":"case-tab", "key":"summary", "path":"/bundles/case-tab.html" } ]""")
-
-        assertThat(resolver.resolveBundleUrl(configId, "task-form", null)).isNull()
+        assertThat(resolver.resolve(configId, "page", null)).isNull()
     }
 
     @Test
@@ -86,7 +73,7 @@ class ExternalPluginFrontendBundleResolverTest {
         val configId = UUID.randomUUID()
         whenever(configurationRepository.findById(configId)).thenReturn(Optional.empty())
 
-        assertThat(resolver.resolveBundleUrl(configId, "task-form", null)).isNull()
+        assertThat(resolver.resolve(configId, "page", null)).isNull()
     }
 
     private fun stub(bundlesJson: String): UUID {

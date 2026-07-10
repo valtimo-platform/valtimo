@@ -22,19 +22,18 @@ import org.springframework.stereotype.Service
 import java.util.UUID
 
 /**
- * external-plugin's implementation of the case-module [ExternalPluginCaseTabResolver] SPI. Delegates
- * to the shared [ExternalPluginFrontendBundleResolver] with the `case-tab` bundle type, resolving a
- * plugin configuration's `case-tab` bundle to its absolute URL
- * (`${definition.baseUrl}/${definition.version}${bundle.path}`).
+ * external-plugin's implementation of the case-module [ExternalPluginCaseTabResolver] SPI. Resolves
+ * a plugin configuration's `case-tab` bundle to its absolute URL by delegating to the shared
+ * [ExternalPluginBundleUrlResolver] with the `case-tab` bundle type (behaviour-preserving).
  */
 @Service
 @SkipComponentScan
 class ExternalPluginCaseTabResolverImpl(
-    private val bundleResolver: ExternalPluginFrontendBundleResolver,
+    private val bundleUrlResolver: ExternalPluginBundleUrlResolver,
 ) : ExternalPluginCaseTabResolver {
 
     override fun resolveBundleUrl(configurationId: UUID, bundleKey: String?): String? =
-        bundleResolver.resolveBundleUrl(configurationId, CASE_TAB_TYPE, bundleKey)
+        bundleUrlResolver.resolve(configurationId, CASE_TAB_TYPE, bundleKey)
 
     companion object {
         private const val CASE_TAB_TYPE = "case-tab"
