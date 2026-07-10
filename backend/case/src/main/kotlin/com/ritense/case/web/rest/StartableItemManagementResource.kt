@@ -17,6 +17,7 @@
 package com.ritense.case.web.rest
 
 import com.fasterxml.jackson.databind.JsonNode
+import com.ritense.authorization.annotation.RunWithoutAuthorization
 import com.ritense.case.service.StartableItemManagementService
 import com.ritense.case.web.rest.dto.CreateStartableItemRequest
 import com.ritense.case.web.rest.dto.ManagementStartableItemDto
@@ -50,6 +51,7 @@ class StartableItemManagementResource(
     private val startableItemManagementService: StartableItemManagementService,
 ) {
 
+    @RunWithoutAuthorization
     @EndpointDescription(
         en = "List startable items",
         nl = "Startbare items ophalen",
@@ -63,6 +65,7 @@ class StartableItemManagementResource(
         return ResponseEntity.ok(startableItemManagementService.getStartableItems(caseDefinitionId))
     }
 
+    @RunWithoutAuthorization
     @EndpointDescription(
         en = "Create startable item",
         nl = "Startbaar item aanmaken",
@@ -82,6 +85,7 @@ class StartableItemManagementResource(
         return ResponseEntity.ok(item)
     }
 
+    @RunWithoutAuthorization
     @EndpointDescription(
         en = "Update startable item",
         nl = "Startbaar item bijwerken",
@@ -97,6 +101,7 @@ class StartableItemManagementResource(
         return doUpdateStartableItem(caseDefinitionKey, caseDefinitionVersionTag, itemKey, versionTag, request)
     }
 
+    @RunWithoutAuthorization
     @EndpointDescription(
         en = "Update startable item",
         nl = "Startbaar item bijwerken",
@@ -111,6 +116,7 @@ class StartableItemManagementResource(
         return doUpdateStartableItem(caseDefinitionKey, caseDefinitionVersionTag, itemKey, null, request)
     }
 
+    @RunWithoutAuthorization
     @EndpointDescription(
         en = "Get startable item properties",
         nl = "Eigenschappen startbaar item ophalen",
@@ -126,6 +132,7 @@ class StartableItemManagementResource(
         return doGetStartableItemProperties(caseDefinitionKey, caseDefinitionVersionTag, itemKey, versionTag, type)
     }
 
+    @RunWithoutAuthorization
     @EndpointDescription(
         en = "Get startable item properties",
         nl = "Eigenschappen startbaar item ophalen",
@@ -140,6 +147,7 @@ class StartableItemManagementResource(
         return doGetStartableItemProperties(caseDefinitionKey, caseDefinitionVersionTag, itemKey, null, type)
     }
 
+    @RunWithoutAuthorization
     @EndpointDescription(
         en = "Delete startable item",
         nl = "Startbaar item verwijderen",
@@ -154,6 +162,7 @@ class StartableItemManagementResource(
         return doDeleteStartableItem(caseDefinitionKey, caseDefinitionVersionTag, itemKey, versionTag)
     }
 
+    @RunWithoutAuthorization
     @EndpointDescription(
         en = "Delete startable item",
         nl = "Startbaar item verwijderen",

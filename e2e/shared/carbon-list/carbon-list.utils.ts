@@ -172,8 +172,12 @@ export class CarbonList {
 
   /**
    * Get a CarbonListRow scoped to the row containing a cell with the given text.
+   *
+   * Pass a string for substring matching (default) or a RegExp for exact
+   * matching — useful when one row's text is a prefix of another's
+   * (e.g. "Bezwaar" vs "Bezwaar ad-hoc FVM"): use `/^Bezwaar$/`.
    */
-  row(cellText: string): CarbonListRow {
+  row(cellText: string | RegExp): CarbonListRow {
     const locator = this.root.locator('tbody tr').filter({
       has: this.page.locator('td', {hasText: cellText}),
     });
@@ -265,6 +269,17 @@ export class CarbonList {
 
   /**
    * Drag a row from one position to another using mouse events.
+   *
+   * The carbon-list drag-and-drop service (carbon-list-drag-and-drop.service.ts)
+   * reorders rows live while dragging. On every `document` mousemove it:
+   *   1. derives the direction from the Y delta vs. the previous event, and
+   *   2. finds the row under the cursor via `document.querySelectorAll(':hover')`.
+   * A swap then runs `insertBefore(...)` and is throttled behind a double
+   * `requestAnimationFrame` (see `continueSwap`). If the mouse is moved in one
+   * fast Playwright hop the intermediate `:hover` states and animation frames
+   * never settle, so no swap is registered. We therefore move in small discrete
+   * hops with short waits so each `:hover` update and rAF-gated swap can apply.
+   *
    * @param sourceRow - The CarbonListRow to drag
    * @param targetRow - The CarbonListRow to drop onto
    */
@@ -278,28 +293,44 @@ export class CarbonList {
 
     const sourceX = sourceBounds.x + sourceBounds.width / 2;
     const sourceY = sourceBounds.y + sourceBounds.height / 2;
-    const targetX = targetBounds.x + targetBounds.width / 2;
     const targetY = targetBounds.y + targetBounds.height / 2;
+    const movingUp = targetY < sourceY;
 
-    await this.page.mouse.move(sourceX, sourceY);
+    // Use the locator's hover() (not mouse.move) to position over the drag
+    // handle: it applies actionability checks and scrolls into view, which
+    // reliably delivers the mousedown that starts the drag. A raw mouse.move to
+    // computed coordinates does not consistently trigger the handler.
+    await sourceRow.dragHandle.hover();
     await this.page.mouse.down();
 
-    // Pause to let the drag-start event initialize
-    await this.page.waitForTimeout(200);
+    // Pause to let the drag-start event initialize and the drag class apply.
+    await this.page.waitForTimeout(150);
 
-    // Small initial move to trigger drag recognition
-    await this.page.mouse.move(sourceX, sourceY + 5, {steps: 2});
+    // Small initial nudge in the direction of travel to trigger drag recognition
+    // and set the correct move direction on the first real move.
+    await this.page.mouse.move(sourceX, sourceY + (movingUp ? -3 : 3));
+    await this.page.waitForTimeout(50);
 
-    // Move to target position with enough steps for drag-over events
-    await this.page.mouse.move(targetX, targetY, {steps: 20});
+    // Incremental hops toward the target. Each hop is followed by a short wait so
+    // the browser updates `:hover` and the rAF-gated swap can run before the next.
+    const hops = 15;
+    for (let i = 1; i <= hops; i++) {
+      const y = sourceY + ((targetY - sourceY) * i) / hops;
+      await this.page.mouse.move(sourceX, y);
+      await this.page.waitForTimeout(30);
+    }
 
-    // Pause to let the drop target register
-    await this.page.waitForTimeout(100);
+    // Settle directly over the target, then a tiny extra move (keeping direction)
+    // to guarantee a final `:hover` + swap on the target row.
+    await this.page.mouse.move(sourceX, targetY);
+    await this.page.waitForTimeout(80);
+    await this.page.mouse.move(sourceX, targetY + (movingUp ? -2 : 2));
+    await this.page.waitForTimeout(80);
 
     await this.page.mouse.up();
 
-    // Wait for the UI to process the reorder
-    await this.page.waitForTimeout(300);
+    // Wait for the UI to process the reorder and persist.
+    await this.page.waitForTimeout(400);
   }
 
   // ─── Loading State ────────────────────────────────────────────────

@@ -87,7 +87,7 @@ Values within the `properties` attribute can be resolved by using the `${SOME_VA
 
 ```yaml
 valtimo:
-  imports:
+  import:
     whitelistedPaths:
       - "VALTIMO_.*"
       - "GZAC_.*"

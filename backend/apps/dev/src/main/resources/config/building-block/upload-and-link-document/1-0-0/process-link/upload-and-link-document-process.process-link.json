@@ -1,0 +1,38 @@
+[
+    {
+        "activityId" : "LinkToCaseTask",
+        "activityType" : "bpmn:ServiceTask:start",
+        "pluginConfigurationId" : null,
+        "pluginActionDefinitionKey" : "link-document-to-zaak",
+        "actionProperties" : {
+            "titel" : "doc:title",
+            "statusUrl" : null,
+            "documentUrl" : "pv:storedDocumentUrl",
+            "beschrijving" : "doc:description",
+            "vernietigingsdatum" : null
+        },
+        "referenceType" : "BUILDING_BLOCK",
+        "pluginDefinitionKey" : "zakenapi",
+        "processLinkType" : "plugin"
+    },
+    {
+        "activityId" : "UploadDocumentTask",
+        "activityType" : "bpmn:ServiceTask:start",
+        "pluginConfigurationId" : null,
+        "pluginActionDefinitionKey" : "store-temp-document",
+        "actionProperties" : {
+            "taal" : "doc:language",
+            "title" : "doc:title",
+            "status" : "doc:status",
+            "fileName" : "doc:fileName",
+            "description" : "doc:description",
+            "storedDocumentUrl" : "storedDocumentUrl",
+            "confidentialityLevel" : "doc:confidentialityLevel",
+            "informatieobjecttype" : "pv:informationObjectTypeUrl",
+            "localDocumentLocation" : "temporaryDocumentId"
+        },
+        "referenceType" : "BUILDING_BLOCK",
+        "pluginDefinitionKey" : "documentenapi",
+        "processLinkType" : "plugin"
+    }
+]

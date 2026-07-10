@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import {Injectable} from '@angular/core';
+import {Injectable, TemplateRef} from '@angular/core';
 import {FormDisplayType, FormSize, TaskWithProcessLink} from '@valtimo/process-link';
 import {BehaviorSubject, combineLatest, filter, map, Observable, startWith} from 'rxjs';
 import {
@@ -29,12 +29,18 @@ import {CaseDetailLayout} from '../models';
 import {CaseTabService} from './case-tab.service';
 import {PageHeaderService} from '@valtimo/components';
 
+export interface StartFormPanel {
+  template: TemplateRef<any>;
+  title: string;
+}
+
 @Injectable()
 export class CaseDetailLayoutService {
   private readonly _tabContentContainerWidth$ = new BehaviorSubject<number | null>(null);
   private readonly _showTaskList$ = this.caseTabService.showTaskList$;
   private readonly _taskAndProcessLinkOpenedInPanel$ =
     new BehaviorSubject<TaskWithProcessLink | null>(null);
+  private readonly _startFormPanel$ = new BehaviorSubject<StartFormPanel | null>(null);
   private readonly _formDisplayType$ = new BehaviorSubject<FormDisplayType>(
     CASE_DETAIL_DEFAULT_DISPLAY_TYPE
   );
@@ -55,6 +61,10 @@ export class CaseDetailLayoutService {
 
   public get taskAndProcessLinkOpenedInPanel$(): Observable<TaskWithProcessLink | null> {
     return this._taskAndProcessLinkOpenedInPanel$.asObservable();
+  }
+
+  public get startFormPanel$(): Observable<StartFormPanel | null> {
+    return this._startFormPanel$.asObservable();
   }
 
   public get formDisplaySize$(): Observable<FormSize> {
@@ -84,6 +94,7 @@ export class CaseDetailLayoutService {
     this.tabContentContainerWidth$,
     this._showTaskList$,
     this._taskAndProcessLinkOpenedInPanel$,
+    this._startFormPanel$,
     this._formDisplayType$,
     this._formDisplaySize$,
   ]).pipe(
@@ -92,11 +103,16 @@ export class CaseDetailLayoutService {
         tabContentContainerWidth,
         showTaskList,
         taskAndProcessLinkOpenedInPanel,
+        startFormPanel,
         formDisplayType,
         formDisplaySize,
       ]) => {
         if (!showTaskList) {
           return this.getInitialLayout();
+        }
+
+        if (startFormPanel) {
+          return this.getPanelLayout(tabContentContainerWidth ?? 0, formDisplaySize);
         }
 
         if (!taskAndProcessLinkOpenedInPanel) {
@@ -119,6 +135,16 @@ export class CaseDetailLayoutService {
 
   public setTaskAndProcessLinkOpenedInPanel(value: TaskWithProcessLink | null): void {
     this._taskAndProcessLinkOpenedInPanel$.next(value);
+  }
+
+  public openStartFormPanel(value: StartFormPanel, formSize: FormSize): void {
+    this.setFormDisplayType('panel');
+    this.setFormDisplaySize(formSize);
+    this._startFormPanel$.next(value);
+  }
+
+  public closeStartFormPanel(): void {
+    this._startFormPanel$.next(null);
   }
 
   public setFormDisplayType(type: FormDisplayType): void {

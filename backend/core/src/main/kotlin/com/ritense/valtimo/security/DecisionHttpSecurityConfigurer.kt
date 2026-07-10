@@ -29,7 +29,9 @@ class DecisionHttpSecurityConfigurer : HttpSecurityConfigurer {
     override fun configure(http: HttpSecurity) {
         try {
             http.authorizeHttpRequests { requests ->
-                requests.requestMatchers(antMatcher(GET, DECISION_MANAGEMENT_URL))
+                requests.requestMatchers(antMatcher(GET, GLOBAL_DECISION_MANAGEMENT_URL))
+                    .hasAuthority(ADMIN)
+                    .requestMatchers(antMatcher(GET, DECISION_MANAGEMENT_URL))
                     .hasAuthority(ADMIN)
                     .requestMatchers(antMatcher(POST, DECISION_MANAGEMENT_URL))
                     .hasAuthority(ADMIN)
@@ -43,5 +45,6 @@ class DecisionHttpSecurityConfigurer : HttpSecurityConfigurer {
 
     companion object {
         const val DECISION_MANAGEMENT_URL = "/api/management/v1/case-definition/{caseDefinitionKey}/version/{caseDefinitionVersionTag}/decision-definition"
+        const val GLOBAL_DECISION_MANAGEMENT_URL = "/api/management/v1/decision-definition"
     }
 }

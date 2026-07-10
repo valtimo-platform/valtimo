@@ -44,6 +44,13 @@
       "content": "Are you sure you want to change tabs? All selection will be lost.",
       "confirm": "Change tab"
     },
+    "draftProcessConfirmation": {
+      "title": "Start draft process",
+      "warningTitle": "Warning: Draft process",
+      "warningDescription": "This process definition is still in draft and may not work as expected.",
+      "confirm": "Start anyway",
+      "cancel": "Cancel"
+    },
     "noResults": {
       "ALL": {"description": "There is nothing to do here.", "title": "There are no cases"},
       "MINE": {"description": "Time for a short break.", "title": "No cases assigned to you"},
@@ -685,8 +692,25 @@
       "fileUploaderDescription": "Only files with the .dmn extension are allowed.",
       "fileUploaderButton": "Choose DMN file"
     },
+    "create": "Create DMN table",
+    "createModal": {
+      "title": "Create decision table",
+      "name": "Name",
+      "namePlaceholder": "e.g. Eligibility decision",
+      "nameRequired": "Name is required",
+      "inputVariables": "Input variables (optional)",
+      "inputVariablesHelper": "Input columns are optional - you can leave this empty. For every row you add, the process variable is required; the label is optional and the process variable name is used as the column header when it is left blank. You can add or change these later in the editor.",
+      "inputLabel": "Label (optional)",
+      "inputExpression": "Process variable (required)",
+      "inputExpressionRequired": "A process variable is required for each input column.",
+      "addInputVariable": "Add input variable"
+    },
+    "editModal": {
+      "title": "Edit decision table"
+    },
     "version": "Version",
     "deploy": "Save",
+    "readOnly": "Read-only",
     "loadFailure": "Something went wrong with loading your decision table.",
     "deploySuccess": "Decision table has been deployed successfully.",
     "deployFailure": "Something went wrong with deploying your decision table.",
@@ -699,6 +723,7 @@
   },
   "message": {"empty": "No result found"},
   "cta": {"close": "Close", "moreDetails": "More details"},
+  "carousel": {"previous": "Previous", "next": "Next", "goToSlide": "Go to slide"},
   "formManagement": {
     "noFormDefinitionFoundAdmin": "There is no form connected to the start event/user task. To configure this, click on the button below.",
     "noFormDefinitionFoundUser": "There is no form connected to the start event/user task. Ask an admin user for assistance.",
@@ -865,7 +890,8 @@
       "notFinalizableWarning": {
         "title": "This case definition cannot be finalized.",
         "BUILDING_BLOCK_NOT_FINAL": "The case definition makes use of draft building blocks. In order to finalize this case definition, make sure all the building blocks it uses are final.",
-        "CONFIGURATION_ISSUES": "The case definition contains unresolved configuration issues. Please review and fix all configuration warnings before finalizing."
+        "CONFIGURATION_ISSUES": "The case definition contains unresolved configuration issues. Please review and fix all configuration warnings before finalizing.",
+        "PROCESS_DEFINITION_IN_DRAFT": "The case definition contains process definitions that are still in draft. Finalize all process definitions before finalizing the case definition."
       }
     },
     "environmentConfig": {
@@ -1279,6 +1305,10 @@
         "title": "Highlight",
         "description": "A small widget that highlights a single value or a count"
       },
+      "image": {
+        "title": "Image",
+        "description": "Show an uploaded image"
+      },
       "generic": {
         "title": "Generic widgets",
         "description": "Broadly applicable — wire them up to any data structure (fields, tables, collections). More configuration, but no limits on what they can show."
@@ -1467,6 +1497,13 @@
         "valuePlaceholder": "Select or type a path",
         "valueHelper": "Shows the value at this path. If it resolves to an array, the count of items is shown instead.",
         "accentColor": "Accent color"
+      },
+      "image": {
+        "description": "",
+        "value": "Value",
+        "valuePlaceholder": "Select or type a path",
+        "valueHelper": "Shows the image stored at this path. The path must resolve to an uploaded file resource.",
+        "displayAsCarousel": "Display as carousel"
       }
     },
     "filters": {
@@ -1781,6 +1818,15 @@
     },
     "successNotification": "Process deployed successfully",
     "errorNotification": "Process failed to deploy",
+    "validate": "Validate",
+    "validationSuccessNotification": "Process definition is valid",
+    "validationWarningNotification": "Process definition has warnings",
+    "draft": "Draft",
+    "status": "Status",
+    "draftTooltip": "When enabled, the process definition is saved as a draft. Draft definitions are not validated and cannot be started.",
+    "validationErrors": "Validation errors",
+    "validationErrorsCount": "Validation errors ({{count}})",
+    "validationErrorNotification": "Process definition has validation errors. Check the highlighted elements.",
     "alreadyExistsNotification": "Process definition already exists",
     "deleteNotification": "Process deleted successfully",
     "upload": {
@@ -1797,7 +1843,22 @@
       "replaceConfirm": "Replace"
     },
     "canInitializeDocument": "Starts case",
-    "startableByUser": "Startable by user"
+    "startableByUser": "Startable by user",
+    "expressionErrors": {
+      "MISSING_EL_MARKERS": "Expression must use ${...} or #{...} syntax",
+      "UNCLOSED_PARENTHESIS": "Expression has an unclosed parenthesis '('",
+      "UNCLOSED_BRACE": "Expression is missing a closing brace '}'",
+      "UNCLOSED_BRACKET": "Expression has an unclosed bracket '['",
+      "MISMATCHED_DELIMITER": "Expression has mismatched brackets or braces",
+      "INCOMPLETE_EXPRESSION": "Expression is incomplete",
+      "INVALID_SYNTAX": "Expression has invalid syntax",
+      "BEAN_NOT_FOUND": "Referenced bean does not exist"
+    },
+    "warningConfirmation": {
+      "title": "Process has warnings",
+      "content": "The process definition contains warnings. Are you sure you want to save it without resolving the warnings?",
+      "confirm": "Save anyway"
+    }
   },
   "processCaseConnection": {
     "noProcessesTitle": "No processes",
@@ -2384,6 +2445,7 @@
     "defaultSort": "Default Sort",
     "defaultSortTitle": "Default Sort (optional)",
     "defaultSortTooltip": "If this field has a value, the table will be sorted by default on this property, in the direction specified. Only one column at a time can have this property. On creating a new column, if another column already has a default sort specified, this input field will be disabled.",
+    "defaultSortDisabledNotice": "Another column already has a default sort configured. Only one column can have a default sort at a time. Remove the existing default sort to enable this field.",
     "selectDefaultSort": "Select a default sort",
     "sortableYes": "Yes",
     "sortableNo": "No",
@@ -2624,8 +2686,8 @@
       "options": {"modal": "Modal", "panel": "Panel"}
     },
     "formSize": {
-      "label": "Select modal size",
-      "placeholder": "Select a modal size",
+      "label": "Select form size",
+      "placeholder": "Select a form size",
       "options": {
         "extraSmall": "Extra small",
         "small": "Small",
@@ -2661,6 +2723,9 @@
       "key": "Role key",
       "add": "Add new role",
       "name": "Role name",
+      "selectRole": "Select a role",
+      "chooseFromList": "Choose from list",
+      "enterManually": "Enter manually",
       "deleteModalContent": "Are you sure you want to delete these roles and all underlying permissions? This action cannot be undone.",
       "editMetadata": "Edit metadata",
       "editRole": "Edit Role",
@@ -2674,6 +2739,7 @@
       },
       "tabs": {
         "summary": "Summary",
+        "editor": "Editor",
         "jsonEditor": "JSON editor"
       }
     },
@@ -2700,22 +2766,109 @@
       "operatonTask": "Task"
     },
     "actions": {
-      "view": "view",
-      "view_list": "view list",
-      "create": "create",
-      "modify": "modify",
-      "delete": "delete",
-      "assign": "assign",
-      "assignable": "be assigned to",
-      "claim": "claim",
-      "complete": "complete",
-      "export": "export"
+      "view": "View",
+      "view_list": "View list",
+      "create": "Create",
+      "modify": "Modify",
+      "delete": "Delete",
+      "assign": "Assign",
+      "assignable": "Be assigned to",
+      "claim": "Claim",
+      "complete": "Complete",
+      "export": "Export",
+      "inspect": "Inspect",
+      "inspect_modify": "Inspect and modify"
+    },
+    "actionDescriptions": {
+      "view": "Open and read a single resource.",
+      "view_list": "See the resource in lists and search results.",
+      "create": "Create a new resource.",
+      "modify": "Change an existing resource.",
+      "delete": "Permanently remove a resource.",
+      "assign": "Assign the resource to a user.",
+      "assignable": "Be selectable as the assignee of the resource.",
+      "claim": "Claim the resource to work on it yourself.",
+      "complete": "Mark the resource as completed.",
+      "export": "Export the resource's data.",
+      "inspect": "View the resource's details without changing it.",
+      "inspect_modify": "View the resource's details and change it."
     },
     "filter": {
       "resourceType": "Resource type",
       "action": "Action",
       "allResourceTypes": "All resource types",
       "allActions": "All actions"
+    },
+    "editor": {
+      "permission": "Permission",
+      "permissions": "Permissions",
+      "newPermission": "New permission",
+      "hasConditions": "Conditions",
+      "hasContext": "Context",
+      "preview": {
+        "actions": "Actions",
+        "includes": "Includes"
+      },
+      "addPermission": "Add permission",
+      "removePermission": "Remove permission",
+      "removePermissionModal": {
+        "title": "Remove permission?",
+        "content": "This permission is removed from the list. It is not actually deleted until you save the whole set of permissions."
+      },
+      "resourceAndActions": "Resource & actions",
+      "resourceActionsHint": "Choose the resource this permission applies to and the actions it grants.",
+      "permissionsHint": "You're configuring a permission on {{resource}} for the {{role}} role. Only options the system supports can be selected.",
+      "permissionsHintNew": "You're configuring a permission for the {{role}} role. Only options the system supports can be selected.",
+      "resourceType": "Resource type",
+      "resourceTypePlaceholder": "Select a resource type",
+      "actions": "Allowed actions",
+      "noActions": "No actions are available for this resource type.",
+      "conditions": "Conditions",
+      "conditionsHint": "Access is only granted when all conditions are met. Leave empty to always grant access.",
+      "conditionType": "Condition type",
+      "conditionTypes": {
+        "field": "Field",
+        "expression": "JSON field",
+        "container": "Related resource"
+      },
+      "field": "Field to read from",
+      "fieldPlaceholder": "Select a field",
+      "operator": "Operator to compare with",
+      "value": "Value to compare to",
+      "valuePlaceholder": "e.g. null, true, 42, ${currentUserId} or [\"OPEN\", \"CLOSED\"]",
+      "path": "JSON path",
+      "pathPlaceholder": "e.g. /root/status",
+      "clazz": "Value type (class)",
+      "clazzPlaceholder": "e.g. java.lang.String",
+      "valueTypeFromList": "Choose from list",
+      "valueTypeManual": "Enter manually",
+      "relatedResource": "Related resource",
+      "relatedResourcePlaceholder": "Select a related resource",
+      "addCondition": "Add condition",
+      "contextSection": "Context",
+      "contextHint": "Choose whether and how context affects this permission.",
+      "contextModeNone": "No restriction",
+      "contextModeNoContext": "Only without context",
+      "contextModeSpecific": "Specific context",
+      "noContextHint": "This permission only applies when the resource is accessed on its own — not within any related resource.",
+      "contextResourceType": "Context resource",
+      "contextResourceTypePlaceholder": "Select a context resource",
+      "empty": {
+        "title": "No permissions yet",
+        "message": "Add a permission to start granting this role access to resources."
+      },
+      "tooltips": {
+        "resourceType": "The type of resource this permission grants access to. For example: a case definition, document or task.",
+        "actions": "What this role is allowed to do with the resource. For example: view, modify or delete. At least one must be selected.",
+        "conditionType": "Field compares a property of the resource. JSON field reads a value at a JSON path inside the field's JSON content. Related resource checks a linked resource (e.g. the document of a case).",
+        "field": "A property of the resource to check. For example: name, createdBy or active.",
+        "operator": "How the field is compared to the value. For example: equals, is one of, or contains.",
+        "value": "The value to compare against — e.g. text like OPEN, a number like 42, true/false, or one of the supported placeholders: ${currentUserId}, ${currentUsername}, ${currentUserEmail}, ${currentUserRoles}, ${currentUserTeams}. For the 'is one of' and 'contains' operators, enter a JSON array such as [\"OPEN\", \"CLOSED\"]. Type null for no value — the field may not be left empty.",
+        "path": "A JSON path into the content of the field chosen in 'Field to read from'. For example: /root/status or /aanvrager/bsn.",
+        "clazz": "The fully-qualified Java type of the value. For example: java.lang.String or java.lang.Boolean.",
+        "relatedResource": "The linked resource to evaluate the nested conditions against. For example: the document attached to a case.",
+        "contextResourceType": "Only grant this permission when the resource is accessed within another resource. For example: documents within a specific case definition."
+      }
     },
     "overview": {
       "canDo": "Can",
@@ -2729,7 +2882,7 @@
       "where": "where",
       "atJsonPath": "at JSON path",
       "inContextOf": "in the context of",
-      "noContext": "without context",
+      "noContext": "Without context",
       "customField": "(custom field)",
       "customResource": "(custom resource)",
       "noAccess": "No access",
@@ -3010,6 +3163,11 @@
     "noWidgetsDescription": "There are no widgets configured for this tab, or you don't have the rights to view them.",
     "noWidget": "Widget not found",
     "noCustomComponentDescription": "The custom component configured for this widget is not available.",
+    "image": {
+      "noImage": "No image found",
+      "openInNewTab": "Open in new tab",
+      "download": "Download"
+    },
     "map": {
       "title": "Map"
     },
@@ -3294,10 +3452,6 @@
           "title": "Application title as suffix",
           "description": "Append the application title as a suffix to the browser tab title."
         },
-        "experimentalDmnEditing": {
-          "title": "Experimental DMN editing",
-          "description": "Enable the experimental DMN decision table editor."
-        },
         "disableCaseCount": {
           "title": "Disable case count",
           "description": "Hide the case count badge in the menu sidebar."
@@ -3349,6 +3503,10 @@
         "enableIkoType": {
           "title": "Enable IKO type",
           "description": "Enable the IKO (Informatie Kanaal Objecten) integration type."
+        },
+        "menuCollapsedByDefault": {
+          "title": "Menu collapsed by default",
+          "description": "Start with the navigation menu collapsed instead of expanded."
         }
       }
     }

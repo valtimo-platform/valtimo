@@ -30,6 +30,7 @@
     yesNoInitialValues: yesNoInitialValues$ | async,
     viewTypeItems: viewTypeItems$ | async,
     sortItems: sortItems$ | async,
+    displaySortable: displaySortable$ | async,
   } as obs"
 >
   <cds-modal size="sm" [open]="obs.show" valtimoCdsModal (close)="closeModal()">
@@ -89,7 +90,10 @@
             ></v-tooltip-icon>
           </span>
 
-          <input cdsText cdsLayer formControlName="path" />
+          <valtimo-value-path-selector
+            formControlName="path"
+            [caseDefinitionKey]="caseDefinitionKey"
+          ></valtimo-value-path-selector>
         </cds-label>
       </div>
 
@@ -178,13 +182,13 @@
         </cds-label>
       </div>
 
-      <div class="cds--text-input__field-wrapper">
+      <div class="cds--text-input__field-wrapper" *ngIf="obs.displaySortable">
         <cds-checkbox formControlName="sortable" [disabled]="obs.disabled"
           >{{ 'listColumn.sortable' | translate }}
         </cds-checkbox>
       </div>
 
-      <div class="cds--text-input__field-wrapper">
+      <div class="cds--text-input__field-wrapper" *ngIf="obs.displaySortable">
         <cds-label [disabled]="obs.disabled || obs.disableDefaultSort">
           <span class="label-with-tooltip select-label">
             {{ 'listColumn.defaultSortTitle' | translate }}

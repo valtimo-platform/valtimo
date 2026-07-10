@@ -36,7 +36,7 @@ class SearchListColumnService(
     }
 
     fun update(column: SearchListColumn): SearchListColumn {
-        val existingColumn = findById(column.id).orElseThrow()
+        val existingColumn = findById(column.id).orElse(null)
             ?: findByOwnerIdAndKey(column.ownerId, column.key)
             ?: throw IllegalStateException("Search list column not found")
         return searchListColumnRepository.save(column.copy(id = existingColumn.id))

@@ -140,7 +140,33 @@ $darkThemeOverwriteVariables: (
   --vcds-color-10: #e9f6fd;
 }
 
+/* Extended tag colours, beyond Carbon's built-in tag types, matching the case-widget colour
+   palette. Registered globally so `<cds-tag [type]="'orange'">` (and periwinkle, yellow, light-green,
+   brown) can be used anywhere by classname. The light-background / dark-text pairing follows
+   Carbon's own tag styling. */
 .cds--tag--orange {
-  background-color: colors.$orange-40;
-  color: black;
+  background-color: colors.$orange-20;
+  color: colors.$orange-70;
+}
+
+.cds--tag--yellow {
+  background-color: colors.$yellow-20;
+  color: colors.$yellow-70;
+}
+
+.cds--tag--light-green {
+  background-color: colors.$green-20;
+  color: colors.$green-70;
+}
+
+.cds--tag--periwinkle {
+  background-color: colors.$purple-20;
+  color: colors.$purple-70;
+}
+
+/* Brown has no Carbon colour family; use the case-widget "brown" colour so the extended palette has
+   a warm, gray-free option. */
+.cds--tag--brown {
+  background-color: #ece4d7;
+  color: #6e5326;
 }

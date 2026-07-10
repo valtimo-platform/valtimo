@@ -62,7 +62,7 @@
         {{ 'objectManagement.tabs.searchFields' | translate }}
       </a>
     </li>
-    <li class="nav-item" *ngIf="caseListColumn">
+    <li class="nav-item" *ngIf="caseListColumn$ | async">
       <a
         id="list-tab"
         class="nav-link clickable"

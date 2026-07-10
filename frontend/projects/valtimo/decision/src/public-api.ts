@@ -25,5 +25,7 @@ export * from './lib/decision-modeler/decision-modeler.component';
 export * from './lib/decision-display/decision-display.component';
 export * from './lib/decision-list/decision-list.component';
 export * from './lib/decision-deploy/decision-deploy.component';
+export * from './lib/decision-form-modal/decision-form-modal.component';
 export * from './lib/constants';
 export * from './lib/utils/decision.utils';
+export * from './lib/utils/dmn-template';

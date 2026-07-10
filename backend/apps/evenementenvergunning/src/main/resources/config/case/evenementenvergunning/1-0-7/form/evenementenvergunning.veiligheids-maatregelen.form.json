@@ -1,0 +1,59 @@
+{
+  "type": "form",
+  "components": [
+    {
+      "key": "veiligheidsMaatregelen",
+      "type": "panel",
+      "title": "Veiligheidsmaatregelen",
+      "components": [
+        {
+          "key": "veiligheidsMaatregelen.beveiligingsPlan",
+          "type": "textfield",
+          "input": true,
+          "label": "Beveiligingsplan",
+          "attributes": {
+            "data-testid": "evenementenvergunning.veiligheids-maatregelen-beveiligingsPlan"
+          },
+          "defaultValue": "Er zijn beveiligingspersoneel en nooduitgangen."
+        },
+        {
+          "key": "veiligheidsMaatregelen.noodPlan",
+          "type": "textfield",
+          "input": true,
+          "label": "Noodplan",
+          "attributes": {
+            "data-testid": "evenementenvergunning.veiligheids-maatregelen-noodPlan"
+          },
+          "defaultValue": "Het noodplan omvat evacuatieprocedures en communicatielijnen."
+        },
+        {
+          "key": "veiligheidsMaatregelen.EHBO",
+          "type": "checkbox",
+          "input": true,
+          "label": "EHBO aanwezig?",
+          "attributes": {
+            "data-testid": "evenementenvergunning.veiligheids-maatregelen-EHBO"
+          },
+          "defaultValue": true
+        },
+        {
+          "key": "veiligheidsMaatregelen.beveiligingsPersoneel",
+          "type": "number",
+          "input": true,
+          "label": "Aantal beveiligingspersoneel",
+          "attributes": {
+            "data-testid": "evenementenvergunning.veiligheids-maatregelen-beveiligingsPersoneel"
+          },
+          "defaultValue": 20
+        },
+        {
+          "key": "submit",
+          "type": "button",
+          "label": "Submit",
+          "theme": "primary",
+          "action": "submit"
+        }
+      ]
+    }
+  ]
+}
