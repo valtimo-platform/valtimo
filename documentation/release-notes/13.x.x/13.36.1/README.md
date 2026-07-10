@@ -4,18 +4,6 @@
 **Release date 15-07-2026**
 {% endhint %}
 
-## New Features
-
-* **New feature title**
-
-  New feature explanation.
-
-## Enhancements
-
-* **New enhancement title**
-
-  New enhancement explanation.
-
 ## Bugfixes
 
 * **Draft process start confirmation now shows the correct message**
