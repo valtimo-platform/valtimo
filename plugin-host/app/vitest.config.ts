@@ -24,7 +24,18 @@ export default defineConfig({
       provider: "v8",
       include: ["src/**/*.ts"],
       // Exclude tests, generated output, and thin type/wiring modules that carry no logic.
-      exclude: ["src/**/*.test.ts", "dist/**", "src/models/**", "src/index.ts"],
+      exclude: [
+        "src/**/*.test.ts",
+        "dist/**",
+        "src/test-support/**",
+        // Type/re-export-only modules (app-config keeps real zod logic and stays counted).
+        "src/models/index.ts",
+        "src/models/host-logger.ts",
+        "src/models/plugin-configuration.ts",
+        "src/models/plugin-manifest.ts",
+        // Bootstrap wiring; buildHttpsOptions was extracted to https-options.ts for testing.
+        "src/index.ts",
+      ],
       reporter: ["text", "html"],
     },
   },
