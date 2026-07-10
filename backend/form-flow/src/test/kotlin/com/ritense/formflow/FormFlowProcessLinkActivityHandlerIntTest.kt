@@ -17,6 +17,8 @@
 package com.ritense.formflow
 
 import com.ritense.authorization.AuthorizationContext.Companion.runWithoutAuthorization
+import com.ritense.form.domain.FormDisplayType
+import com.ritense.form.domain.FormSizes
 import com.ritense.formflow.repository.FormFlowInstanceRepository
 import com.ritense.formflow.service.FormFlowService
 import com.ritense.processlink.domain.ActivityTypeWithEventName
@@ -148,7 +150,10 @@ internal class FormFlowProcessLinkActivityHandlerIntTest: BaseIntegrationTest() 
             processDefinitionId = processDefinition.id,
             activityId = "some_activity_id",
             activityType = ActivityTypeWithEventName.START_EVENT_START,
-            formFlowDefinitionKey = formFlowDefinition?.id?.key!!)
+            formFlowDefinitionKey = formFlowDefinition?.id?.key!!,
+            formDisplayType = FormDisplayType.modal,
+            formSize = FormSizes.large,
+            subtitles = listOf("subtitle-1"))
 
         val result = processLinkActivityHandler.getStartEventObject(
             processDefinition.id,
@@ -160,6 +165,9 @@ internal class FormFlowProcessLinkActivityHandlerIntTest: BaseIntegrationTest() 
         assertEquals(1, dbFormFlowInstances.size)
         assertEquals("form-flow",result.type)
         assertEquals(dbFormFlowInstances[0].id.id,result.properties.formFlowInstanceId)
+        assertEquals(FormDisplayType.modal, result.properties.formDisplayType)
+        assertEquals(FormSizes.large, result.properties.formSize)
+        assertEquals(listOf("subtitle-1"), result.properties.subtitles)
         val additionalProperties = dbFormFlowInstances[0].getAdditionalProperties()
         assertEquals(additionalProperties["documentDefinitionName"], "some-document")
         assertEquals(additionalProperties["processDefinitionKey"], "formflow-one-task-process")

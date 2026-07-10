@@ -22,6 +22,7 @@ import com.ritense.documentenapipreview.security.DocumentenApiPreviewHttpSecurit
 import com.ritense.documentenapipreview.service.DocumentenApiPreviewService
 import com.ritense.documentenapipreview.web.rest.DocumentenApiPreviewResource
 import com.ritense.plugin.service.PluginService
+import com.ritense.zakenapi.service.ZaakDocumentService
 import org.springframework.boot.autoconfigure.AutoConfiguration
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.context.annotation.Bean
@@ -52,9 +53,11 @@ open class DocumentenApiPreviewAutoConfiguration {
     @ConditionalOnMissingBean(DocumentenApiPreviewService::class)
     fun documentenPreviewApiService(
         pluginService: PluginService,
+        zaakDocumentService: ZaakDocumentService,
     ): DocumentenApiPreviewService {
         return DocumentenApiPreviewService(
-            pluginService
+            pluginService,
+            zaakDocumentService,
         )
     }
 
