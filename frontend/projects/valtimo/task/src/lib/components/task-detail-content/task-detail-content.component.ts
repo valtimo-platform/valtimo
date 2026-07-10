@@ -174,10 +174,11 @@ export class TaskDetailContentComponent implements OnInit, OnDestroy, AfterViewI
     map((type: string | null) => type === 'external-plugin-task-form')
   );
 
-  /** Bundle URL + configuration id + context for an external-plugin task-form, or null otherwise. */
+  /** Bundle URL + configuration id + process-link id + context for a task-form, or null otherwise. */
   public readonly externalPluginTaskForm$ = new BehaviorSubject<{
     bundleUrl: string;
     configurationId: string;
+    processLinkId: string;
     context: Record<string, unknown>;
   } | null>(null);
 
@@ -463,6 +464,7 @@ export class TaskDetailContentComponent implements OnInit, OnDestroy, AfterViewI
             this.externalPluginTaskForm$.next({
               bundleUrl: processLinkResult.properties.bundleUrl,
               configurationId: processLinkResult.properties.configurationId,
+              processLinkId: processLinkResult.processLinkId,
               context: (processLinkResult.properties.context ?? {}) as Record<string, unknown>,
             });
           } else {

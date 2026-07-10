@@ -161,6 +161,39 @@ class ExternalPluginHostClient(
         }
     }
 
+    /**
+     * Invokes a plugin's `handle_submit` export for a task-form submission (Level 1). Identical
+     * transport to [invokeAction] — HMAC-signed, service-token-authenticated — but routed to the
+     * host's submit endpoint. The plugin returns `{status, variables, documentContent}` or
+     * `{status: "error", …, fieldErrors}`; the caller decides how to complete or reject.
+     */
+    fun invokeSubmit(
+        baseUrl: String,
+        pluginId: String,
+        version: String,
+        submitKey: String,
+        payload: ObjectNode,
+        hostSecret: String,
+    ): ActionResponse {
+        val path = "/plugins/$pluginId/$version/submit/$submitKey"
+        val uri = buildUri(baseUrl, path)
+        val body = objectMapper.writeValueAsBytes(payload)
+
+        val headers = hmacHeaders(hostSecret, HttpMethod.POST.name(), path, body).apply {
+            contentType = MediaType.APPLICATION_JSON
+        }
+
+        return try {
+            val response = restTemplate.exchange(
+                RequestEntity(body, headers, HttpMethod.POST, uri),
+                JsonNode::class.java,
+            )
+            ActionResponse(status = response.statusCode.value(), body = response.body)
+        } catch (e: HttpClientErrorException) {
+            ActionResponse(status = e.statusCode.value(), body = parseBody(e.responseBodyAsByteArray))
+        }
+    }
+
     fun uploadPlugin(
         baseUrl: String,
         adminToken: String,

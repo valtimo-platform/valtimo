@@ -26,6 +26,7 @@
 import {getActionHandler} from "./actions.js";
 import {getEventHandlers} from "./events.js";
 import {getRequestHandler} from "./requests.js";
+import {getSubmitHandler} from "./submit.js";
 import {setCurrentConfig} from "./config.js";
 import {log} from "./host-functions.js";
 import type {
@@ -36,6 +37,8 @@ import type {
   PluginManifest,
   RequestInput,
   RequestOutput,
+  SubmitInput,
+  SubmitOutput,
 } from "./models/index.js";
 
 let pluginManifest: PluginManifest | null = null;
@@ -187,6 +190,42 @@ export function handleRequest(inputJson: string): string {
 }
 
 /**
+ * Called by the Plugin Host for a task-form submit hook (Level 1).
+ * Input: JSON string with SubmitInput shape.
+ * Output: JSON string with SubmitOutput shape.
+ *
+ * Looks up the handler by `submitKey` (the bundle key). An unknown key yields a `status: "error"`
+ * SubmitOutput rather than throwing, so GZAC surfaces a clear message instead of a 500.
+ */
+export function handleSubmit(inputJson: string): string {
+  try {
+    const input: SubmitInput = JSON.parse(inputJson);
+
+    setCurrentConfig(input.configuration || {});
+
+    const handler = getSubmitHandler(input.submitKey);
+    if (!handler) {
+      return JSON.stringify({
+        status: "error",
+        errorCode: "UNKNOWN_SUBMIT_HANDLER",
+        errorMessage: `No submit handler registered for key '${input.submitKey}'`,
+      } satisfies SubmitOutput);
+    }
+
+    const result = settleSync(handler(input));
+    return JSON.stringify(result);
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : String(err);
+    log.error(`Submit handling failed: ${message}`);
+    return JSON.stringify({
+      status: "error",
+      errorCode: "EXECUTION_ERROR",
+      errorMessage: message,
+    } satisfies SubmitOutput);
+  }
+}
+
+/**
  * Settles a possibly-async handler result synchronously. Under QuickJS-ng (Extism JS PDK) there is
  * no event loop, so a promise settles as the job queue drains. Surfaces a rejection as an error and
  * never returns a still-pending Promise.
@@ -315,6 +354,33 @@ export function handle_request(): number {
       JSON.stringify({
         status: 500,
         body: { error: message },
+      })
+    );
+    return 1;
+  }
+}
+
+/**
+ * Extism-exported function that reads a task-form submit request from the host, dispatches it to the
+ * registered submit handler, and writes the SubmitOutput back.
+ *
+ * Plugin usage — register handlers at module load; the build wires up the export:
+ *   import { submit } from "@valtimo/plugin-sdk";
+ *   submit("review", (input) => ({ status: "completed", variables: { ... } }));
+ */
+export function handle_submit(): number {
+  try {
+    const inputJson = Host.inputString();
+    const outputJson = handleSubmit(inputJson);
+    Host.outputString(outputJson);
+    return 0;
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : String(err);
+    Host.outputString(
+      JSON.stringify({
+        status: "error",
+        errorCode: "EXECUTION_ERROR",
+        errorMessage: message,
       })
     );
     return 1;

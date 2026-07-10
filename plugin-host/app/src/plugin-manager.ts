@@ -437,6 +437,76 @@ export class PluginManager {
   }
 
   /**
+   * Call the handle_submit exported function on a plugin — the task-form submit hook (Level 1)
+   * GZAC invokes during submission. Like {@link callAction}, `serviceToken` and `gzacBaseUrl` are
+   * passed via Extism's per-call host context so the hook *could* enrich via `gzac_api` (service
+   * token only — no user token is forwarded on this server-to-server path); they are never
+   * serialized into the Wasm input.
+   */
+  async callSubmit(
+    pluginId: string,
+    version: string,
+    submitKey: string,
+    input: {
+      configurationId: string;
+      configuration: Record<string, unknown>;
+      taskId?: string;
+      processInstanceId?: string;
+      documentId?: string;
+      submission: Record<string, unknown>;
+      serviceToken: string;
+      gzacBaseUrl: string;
+    }
+  ): Promise<{
+    status: string;
+    variables?: Record<string, unknown>;
+    documentContent?: Record<string, unknown>;
+    errorCode?: string;
+    errorMessage?: string;
+    fieldErrors?: Record<string, string>;
+  }> {
+    const k = this.key(pluginId, version);
+    const loaded = this.plugins.get(k);
+
+    if (!loaded) {
+      throw new Error(`Plugin not found: ${pluginId}@${version}`);
+    }
+
+    // Wasm input excludes serviceToken / gzacBaseUrl — they're host-only.
+    const { serviceToken, gzacBaseUrl, ...wasmFields } = input;
+    const wasmInput = JSON.stringify({
+      submitKey,
+      ...wasmFields,
+    });
+
+    const hostCtx: GzacApiCallContext = {
+      configurationId: input.configurationId,
+      pluginId,
+      pluginVersion: version,
+      serviceToken,
+      gzacBaseUrl,
+    };
+
+    this.logger.debug({ pluginId, version, submitKey }, "Calling handle_submit");
+
+    const output = await this.runExclusive(loaded, async () => {
+      const plugin = await this.getOrCreateExtismPlugin(loaded);
+      const result = await plugin.call("handle_submit", wasmInput, hostCtx);
+      if (!result) {
+        throw new Error(`handle_submit returned null for ${pluginId}@${version}`);
+      }
+      return JSON.parse(result.text());
+    });
+
+    this.logger.debug(
+      { pluginId, version, submitKey, status: output.status },
+      "handle_submit completed"
+    );
+
+    return output;
+  }
+
+  /**
    * Get the manifest for a loaded plugin.
    */
   getManifest(pluginId: string, version: string): PluginManifest | null {

@@ -2073,7 +2073,8 @@
     "dueDateRemovedNotificationContent": "Due date removed for task '{{task}}'",
     "externalPluginTaskForm": {
       "unavailable": "This task's plugin form could not be loaded. The plugin may be unavailable or no longer exposes a task-form.",
-      "tokenError": "Could not securely connect to the plugin to load this task's form."
+      "tokenError": "Could not securely connect to the plugin to load this task's form.",
+      "submitError": "The task could not be completed. Please try again or contact support."
     }
   },
   "assignTask": {

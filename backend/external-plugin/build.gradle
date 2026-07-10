@@ -16,6 +16,7 @@
 
 dependencies {
     implementation project(":backend:process-link")
+    implementation project(":backend:process-document")
     implementation project(":backend:value-resolver")
     implementation project(":backend:core")
     implementation project(":backend:contract")
