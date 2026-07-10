@@ -24,31 +24,35 @@ import org.springframework.transaction.annotation.Transactional
 import java.util.UUID
 
 /**
- * Resolves an external plugin configuration's frontend bundle to its absolute URL, shared by every
- * iframe surface (case tabs, task forms, …). The URL is
- * `${definition.baseUrl}/${definition.version}${bundle.path}`, where `definition.baseUrl` is
- * `{hostOrigin}/plugins/{pluginId}`. When [bundleKey] is null the sole bundle of the requested
- * [bundleType] is used (falling back to the first when a plugin ships several).
+ * Resolves an external-plugin configuration's frontend bundle of a given `type` to its absolute URL
+ * (`${definition.baseUrl}/${definition.version}${bundle.path}`, where `definition.baseUrl` is
+ * `{hostOrigin}/plugins/{pluginId}`).
+ *
+ * Generalises the original case-tab-only logic so every iframe-backed feature (case tabs, menu
+ * `page`s, user-task `task-form`s) shares one resolver. When [bundleKey] is null the sole bundle of
+ * that type is used (falling back to the first when several exist with no key); otherwise the bundle
+ * whose `key` matches is selected. Returns null when the configuration, definition, manifest or a
+ * matching bundle cannot be resolved.
  */
 @Service
 @SkipComponentScan
 @Transactional(readOnly = true)
-class ExternalPluginFrontendBundleResolver(
+class ExternalPluginBundleUrlResolver(
     private val configurationRepository: ExternalPluginConfigurationRepository,
     private val definitionRepository: ExternalPluginDefinitionRepository,
 ) {
 
-    fun resolveBundleUrl(configurationId: UUID, bundleType: String, bundleKey: String?): String? {
+    fun resolve(configurationId: UUID, bundleType: String, bundleKey: String?): String? {
         val configuration = configurationRepository.findById(configurationId).orElse(null) ?: return null
         val definition = definitionRepository.findById(configuration.definitionId).orElse(null) ?: return null
 
         val bundles = definition.manifestJson?.get("frontendBundles") ?: return null
         if (!bundles.isArray) return null
 
-        val matchingBundles = bundles.filter { it.get("type")?.asText() == bundleType }
+        val typedBundles = bundles.filter { it.get("type")?.asText() == bundleType }
         val bundle = when {
-            bundleKey != null -> matchingBundles.firstOrNull { it.get("key")?.asText() == bundleKey }
-            else -> matchingBundles.singleOrNull() ?: matchingBundles.firstOrNull()
+            bundleKey != null -> typedBundles.firstOrNull { it.get("key")?.asText() == bundleKey }
+            else -> typedBundles.singleOrNull() ?: typedBundles.firstOrNull()
         } ?: return null
 
         val path = bundle.get("path")?.asText() ?: return null

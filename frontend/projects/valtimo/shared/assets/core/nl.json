@@ -3370,11 +3370,66 @@
     "deleteHelperText": "Nadat je een snelzoekitem hebt gemaakt, kun je het verwijderen door er met de rechtermuisknop op te klikken",
     "duplicateError": "Er bestaat al een snelzoekitem met deze titel"
   },
+  "externalPluginPage": {
+    "loadError": "Deze pluginpagina kon niet worden geladen."
+  },
   "adminSettings": {
     "title": "Instellingen",
     "tabs": {
       "appearance": "Weergave",
+      "menuConfiguration": "Menuconfiguratie",
       "featureToggles": "Functie-instellingen"
+    },
+    "menuConfiguration": {
+      "intro": "Stel het linkermenu van de applicatie samen. Sleep items tussen de beschikbare items en de menustructuur, wijzig de volgorde en bewerk de titel, link of het pictogram van een item. Toegang tot elk item wordt beheerd via PBAC.",
+      "structureTitle": "Menustructuur",
+      "availableTitle": "Beschikbare items",
+      "save": "Menu opslaan",
+      "reset": "Herstellen",
+      "resetTooltip": "Maak niet-opgeslagen wijzigingen ongedaan en herstel de laatst opgeslagen menuconfiguratie.",
+      "savedTitle": "Menu opgeslagen",
+      "savedSubtitle": "De menuconfiguratie is opgeslagen en wordt toegepast na de volgende herlaadbeurt.",
+      "reloadModal": {
+        "title": "Menu opgeslagen",
+        "content": "De nieuwe menuconfiguratie is opgeslagen. Herlaad de applicatie om de wijzigingen meteen te zien, of sluit dit venster om verder te werken en later te herladen.",
+        "confirm": "Nu herladen",
+        "dismiss": "Sluiten"
+      },
+      "required": "Vereist",
+      "runtimeSubmenu": "Dynamisch submenu",
+      "runtimeSubmenuNote": "Het submenu van dit item wordt tijdens runtime gevuld (bijvoorbeeld vastgezette zaken) en kan hier niet worden bewerkt.",
+      "allPlaced": "Alle items staan al in het menu.",
+      "emptyStructure": "Sleep items hierheen om het menu samen te stellen.",
+      "emptySection": "Sleep items hierheen",
+      "add": "Toevoegen aan menu",
+      "dragHandle": "Sleep om te herordenen",
+      "categories": {
+        "generic": "Generiek",
+        "main": "Hoofdmenu-items",
+        "admin": "Beheerpagina's",
+        "development": "Ontwikkelpagina's",
+        "pluginPages": "Pluginpagina's"
+      },
+      "generic": {
+        "group": "Sectie",
+        "sectionHeader": "Sectiekop",
+        "customLink": "Aangepaste link"
+      },
+      "defaults": {
+        "group": "Nieuwe sectie",
+        "sectionHeader": "Nieuwe kop",
+        "customLink": "Nieuwe link"
+      },
+      "editor": {
+        "title": "Menu-item bewerken",
+        "titleHelper": "Voer een vertaalsleutel in om een vertaalde titel te tonen, of typ een vaste titel als er geen vertaalsleutel bestaat.",
+        "link": "Link (route of externe URL)",
+        "section": "Sectie",
+        "sectionRoot": "Hoofdniveau",
+        "includeFunction": "Include-functie",
+        "includeFunctionNone": "Geen",
+        "pbacNote": "Toegang tot dit item wordt beheerd via PBAC, niet hier."
+      }
     },
     "appearance": {
       "logo": {
@@ -3658,6 +3713,7 @@
     "mdi-folder-account": "Map Account",
     "mdi-folder-multiple": "Meerdere Mappen",
     "mdi-folder-star": "Map Ster",
+    "mdi-archive": "Archief",
     "mdi-file": "Bestand",
     "mdi-file-document": "Documentbestand",
     "mdi-file-cog": "Bestand Instellingen",
@@ -3705,7 +3761,9 @@
     "mdi-lightbulb": "Gloeilamp",
     "mdi-check": "Check",
     "mdi-check-circle": "Check Cirkel",
+    "mdi-check-all": "Alles Aangevinkt",
     "mdi-close": "Sluiten",
+    "mdi-dot-circle": "Punt Cirkel",
     "mdi-lock": "Slot",
     "mdi-lock-open": "Slot Open",
     "mdi-lock-check": "Slot Check",
@@ -3723,6 +3781,7 @@
     "mdi-view-dashboard": "Dashboard",
     "mdi-view-list": "Lijstweergave",
     "mdi-view-grid": "Rasterweergave",
+    "mdi-layers": "Lagen",
     "mdi-table": "Tafel",
     "mdi-chart-bar": "Staafdiagram",
     "mdi-chart-line": "Lijngrafiek",
@@ -3747,6 +3806,8 @@
     "mdi-lan": "LAN",
     "mdi-api": "API",
     "mdi-application-braces": "Applicatie Haakjes",
+    "mdi-xml": "XML",
+    "mdi-code": "Code",
     "mdi-cube": "Kubus",
     "mdi-view-module": "Moduleweergave",
     "mdi-puzzle": "Puzzel",

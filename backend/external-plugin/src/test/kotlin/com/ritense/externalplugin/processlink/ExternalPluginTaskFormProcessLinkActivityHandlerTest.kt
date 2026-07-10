@@ -18,7 +18,7 @@ package com.ritense.externalplugin.processlink
 
 import com.ritense.externalplugin.domain.ExternalPluginProcessLink
 import com.ritense.externalplugin.domain.ExternalPluginTaskFormProcessLink
-import com.ritense.externalplugin.service.ExternalPluginFrontendBundleResolver
+import com.ritense.externalplugin.service.ExternalPluginBundleUrlResolver
 import com.ritense.processlink.domain.ActivityTypeWithEventName
 import com.ritense.valtimo.operaton.domain.OperatonExecution
 import com.ritense.valtimo.operaton.domain.OperatonTask
@@ -31,7 +31,7 @@ import java.util.UUID
 
 class ExternalPluginTaskFormProcessLinkActivityHandlerTest {
 
-    private val bundleResolver = mock<ExternalPluginFrontendBundleResolver>()
+    private val bundleResolver = mock<ExternalPluginBundleUrlResolver>()
     private val handler = ExternalPluginTaskFormProcessLinkActivityHandler(bundleResolver)
 
     @Test
@@ -56,7 +56,7 @@ class ExternalPluginTaskFormProcessLinkActivityHandlerTest {
     fun `openTask returns the task-form render descriptor with task context`() {
         val configId = UUID.randomUUID()
         val processLink = taskFormLink(configurationId = configId, bundleKey = "review")
-        whenever(bundleResolver.resolveBundleUrl(configId, "task-form", "review"))
+        whenever(bundleResolver.resolve(configId, "task-form", "review"))
             .thenReturn("http://host:8090/plugins/case-summary/0.1.0/bundles/task-form.html")
 
         val due = LocalDateTime.now()
@@ -90,7 +90,7 @@ class ExternalPluginTaskFormProcessLinkActivityHandlerTest {
         val configId = UUID.randomUUID()
         val documentId = UUID.randomUUID()
         val processLink = taskFormLink(configurationId = configId, bundleKey = null)
-        whenever(bundleResolver.resolveBundleUrl(configId, "task-form", null))
+        whenever(bundleResolver.resolve(configId, "task-form", null))
             .thenReturn("http://host:8090/plugins/case-summary/0.1.0/bundles/task-form.html")
 
         val result = handler.getStartEventObject("pd-1", documentId, "some-case", processLink)
