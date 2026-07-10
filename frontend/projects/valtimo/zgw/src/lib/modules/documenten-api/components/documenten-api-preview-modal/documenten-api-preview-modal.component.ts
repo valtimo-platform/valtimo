@@ -139,12 +139,14 @@ export class DocumentenApiPreviewModalComponent implements OnInit, OnDestroy {
   }
 
   public onDownload(): void {
-    this.relatedFile$.pipe(take(1)).subscribe(document => {
-      this.downloadService.downloadFile(
-        `${this._valtimoEndpointUri}v1/zaken-api/${document.pluginConfigurationId}/case-document/${document.fileId}/files/${document.fileId}/download`,
-        document.bestandsnaam ?? '',
-        true
-      );
-    });
+    combineLatest([this.relatedFile$, this.caseDocumentId$])
+      .pipe(take(1))
+      .subscribe(([document, caseDocumentId]) => {
+        this.downloadService.downloadFile(
+          `${this._valtimoEndpointUri}v1/zaken-api/${document.pluginConfigurationId}/case-document/${caseDocumentId}/files/${document.fileId}/download`,
+          document.bestandsnaam ?? '',
+          true
+        );
+      });
   }
 }
