@@ -28,7 +28,8 @@
   }
 
   .page-title {
-    flex-shrink: 0;
+    flex-shrink: 1;
+    min-width: 0;
     font-weight: 300;
     white-space: nowrap;
     overflow: hidden;

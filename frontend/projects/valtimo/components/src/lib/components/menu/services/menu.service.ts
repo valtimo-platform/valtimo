@@ -152,7 +152,7 @@ export class MenuService implements OnDestroy {
     this.menuConfig.menuItems.forEach(menuItem => {
       if (menuItem.includeFunction !== undefined) {
         this.includeFunctionObservables[menuItem.title] =
-          this.menuIncludeService.getIncludeFunction(menuItem.includeFunction);
+          this.menuIncludeService.getIncludeFunctionObservable(menuItem.includeFunction);
       }
 
       menuItem.children?.forEach(child => {
@@ -168,6 +168,14 @@ export class MenuService implements OnDestroy {
         const filteredChildren = menuItem.children?.filter(
           child => !child.roles || child.roles.some(role => userRoles.includes(role))
         );
+
+        filteredChildren?.forEach(child => {
+          if (child.includeFunction !== undefined) {
+            this.includeFunctionObservables[child.title] =
+              this.menuIncludeService.getIncludeFunctionObservable(child.includeFunction);
+          }
+        });
+
         menuItems.push({...menuItem, ...(filteredChildren && {children: filteredChildren})});
       }
     });

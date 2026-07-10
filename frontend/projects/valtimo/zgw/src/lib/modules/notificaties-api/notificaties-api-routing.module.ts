@@ -17,7 +17,7 @@
 import {CommonModule} from '@angular/common';
 import {NgModule} from '@angular/core';
 import {RouterModule, Routes} from '@angular/router';
-import {ROLE_ADMIN} from '@valtimo/shared';
+import {ROLE_ADMIN, zgwFeaturesGuard} from '@valtimo/shared';
 import {AuthGuardService} from '@valtimo/security';
 import {FailedNotificationsPageComponent} from './components';
 
@@ -25,7 +25,7 @@ const routes: Routes = [
   {
     path: 'notifications-api/notifications/failed',
     component: FailedNotificationsPageComponent,
-    canActivate: [AuthGuardService],
+    canActivate: [AuthGuardService, zgwFeaturesGuard],
     data: {
       title: 'zgw.notifications.failed.pageTitle',
       roles: [ROLE_ADMIN],

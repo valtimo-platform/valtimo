@@ -45,7 +45,6 @@ test.describe('Case details management — ZGW Keywords (6S)', () => {
       await testPage.deleteKeywordViaApi(CASE_KEY, v);
     }
 
-    await page.goto('/');
     await testPage.goToCaseManagementForCase(CASE_KEY);
     await ensureDraftVersionSelected(page);
     await testPage.openKeywordsTab();

@@ -35,6 +35,8 @@ include(
     ":backend:apps:dev",
     ":backend:admin-settings",
     ":backend:audit",
+    ":backend:aws",
+    ":backend:aws:s3-resource",
     ":backend:authorization",
     ":backend:building-block",
     ":backend:case",

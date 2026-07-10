@@ -14,4 +14,6 @@
  * limitations under the License.
  */
 
+export * from './condition-value';
 export * from './format-condition';
+export * from './resource-name';
