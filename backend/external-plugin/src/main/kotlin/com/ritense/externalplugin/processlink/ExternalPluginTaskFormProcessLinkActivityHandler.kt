@@ -17,7 +17,7 @@
 package com.ritense.externalplugin.processlink
 
 import com.ritense.externalplugin.domain.ExternalPluginTaskFormProcessLink
-import com.ritense.externalplugin.service.ExternalPluginFrontendBundleResolver
+import com.ritense.externalplugin.service.ExternalPluginBundleUrlResolver
 import com.ritense.processlink.domain.ProcessLink
 import com.ritense.processlink.service.ProcessLinkActivityHandler
 import com.ritense.processlink.web.rest.dto.ProcessLinkActivityResult
@@ -32,7 +32,7 @@ import java.util.UUID
  * render descriptor, mirroring the URL/UI-component handlers rather than the service-task listener.
  */
 class ExternalPluginTaskFormProcessLinkActivityHandler(
-    private val bundleResolver: ExternalPluginFrontendBundleResolver,
+    private val bundleUrlResolver: ExternalPluginBundleUrlResolver,
 ) : ProcessLinkActivityHandler<ExternalPluginTaskFormResultProperties> {
 
     override fun supports(processLink: ProcessLink): Boolean {
@@ -85,7 +85,7 @@ class ExternalPluginTaskFormProcessLinkActivityHandler(
         processInstanceId: String?,
         documentId: String?,
     ): ExternalPluginTaskFormResultProperties {
-        val bundleUrl = bundleResolver.resolveBundleUrl(
+        val bundleUrl = bundleUrlResolver.resolve(
             processLink.externalPluginConfigurationId,
             TASK_FORM_BUNDLE_TYPE,
             processLink.bundleKey,

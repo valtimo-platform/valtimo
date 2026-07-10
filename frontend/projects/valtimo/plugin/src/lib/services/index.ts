@@ -19,3 +19,4 @@ export * from './plugin-translation.service';
 export * from './plugin-management.service';
 export * from './external-plugin.service';
 export * from './external-plugin-user-token.service';
+export * from './external-plugin-page.service';

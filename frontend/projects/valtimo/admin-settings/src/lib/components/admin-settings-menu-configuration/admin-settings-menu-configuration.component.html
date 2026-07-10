@@ -1,0 +1,344 @@
+<!--
+  ~ Copyright 2015-2026 Ritense BV, the Netherlands.
+  ~
+  ~ Licensed under EUPL, Version 1.2 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~ https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" basis,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+@if ($loading()) {
+  <div class="menu-configuration__status">
+    <cds-loading [isActive]="true" [overlay]="false" size="normal"></cds-loading>
+  </div>
+} @else {
+  <div class="menu-configuration">
+    @if ($saved()) {
+      <cds-inline-notification
+        [notificationObj]="{
+          type: 'success',
+          title: ('adminSettings.menuConfiguration.savedTitle' | translate),
+          message: ('adminSettings.menuConfiguration.savedSubtitle' | translate),
+          showClose: true,
+          lowContrast: true,
+        }"
+        (close)="onDismissSavedNotification()"
+      ></cds-inline-notification>
+    }
+
+    <div
+      fitPage
+      [disableOverflow]="true"
+      class="menu-configuration__panels"
+      [class.menu-configuration__panels--dragging]="$dragging()"
+    >
+      <!-- Left: the editable menu structure -->
+      <section cdkScrollable class="menu-configuration__panel">
+        <div class="menu-configuration__panel-header">
+          <h4 class="menu-configuration__panel-title">
+            {{ 'adminSettings.menuConfiguration.structureTitle' | translate }}
+          </h4>
+
+          <div class="menu-configuration__panel-actions">
+            <button
+              cdsButton="tertiary"
+              size="sm"
+              [onBottom]="true"
+              [vTooltip]="'adminSettings.menuConfiguration.resetTooltip' | translate"
+              (click)="onReset()"
+              [attr.data-test-id]="testIds.resetButton"
+            >
+              {{ 'adminSettings.menuConfiguration.reset' | translate }}
+            </button>
+
+            <button
+              cdsButton="primary"
+              size="sm"
+              [disabled]="$saving()"
+              (click)="onSave()"
+              [attr.data-test-id]="testIds.saveButton"
+            >
+              {{ 'adminSettings.menuConfiguration.save' | translate }}
+            </button>
+          </div>
+        </div>
+
+        <valtimo-drag-drop-list
+          [attr.data-test-id]="testIds.structureList"
+          [connectedTo]="$structureListIds()"
+          [enterPredicate]="topEnterPredicate"
+          [handleAriaLabel]="'adminSettings.menuConfiguration.dragHandle' | translate"
+          [items]="$structure()"
+          [itemTemplate]="structureItemTpl"
+          [expansionTemplate]="structureExpansionTpl"
+          [emptyTemplate]="structureEmptyTpl"
+          [wholeRowDraggable]="true"
+          listId="structure-root"
+          (dropped)="onDrop($event)"
+          (dragStarted)="onDragStarted()"
+          (dragEnded)="onDragEnded()"
+        ></valtimo-drag-drop-list>
+      </section>
+
+      <!-- Right: the available-items catalog -->
+      <section cdkScrollable class="menu-configuration__panel">
+        <div class="menu-configuration__panel-header">
+          <h4 class="menu-configuration__panel-title">
+            {{ 'adminSettings.menuConfiguration.availableTitle' | translate }}
+          </h4>
+        </div>
+
+        @for (group of $paletteGroups(); track group.categoryKey) {
+          <div class="menu-configuration__palette-group">
+            <h5 class="menu-configuration__palette-group-title">
+              {{ 'adminSettings.menuConfiguration.categories.' + group.categoryKey | translate }}
+            </h5>
+
+            @if (!group.items.length) {
+              <p class="menu-configuration__palette-empty">
+                {{ 'adminSettings.menuConfiguration.allPlaced' | translate }}
+              </p>
+            } @else {
+              <valtimo-drag-drop-list
+                [connectedTo]="$structureListIds()"
+                [enterPredicate]="paletteEnterPredicate"
+                [handleAriaLabel]="'adminSettings.menuConfiguration.dragHandle' | translate"
+                [items]="group.items"
+                [itemTemplate]="paletteItemTpl"
+                [listId]="'palette-' + group.categoryKey"
+                [sortingDisabled]="true"
+                [wholeRowDraggable]="true"
+                (dragStarted)="onDragStarted()"
+                (dragEnded)="onDragEnded()"
+              ></valtimo-drag-drop-list>
+            }
+          </div>
+        }
+      </section>
+    </div>
+  </div>
+}
+
+<!-- The header row of a menu-structure item (icon, title, actions). The sub-list, if any, is rendered
+     by structureExpansionTpl below the row — never inside it. -->
+<ng-template #structureItemTpl let-node>
+  <div class="menu-configuration__row">
+    <div class="menu-configuration__row-main">
+      @if (iconClassOf(node)) {
+        <i class="menu-configuration__row-icon" [ngClass]="iconClassOf(node)"></i>
+      }
+
+      <span
+        class="menu-configuration__row-title"
+        [class.menu-configuration__row-title--group]="isContainer(node)"
+        >{{ displayTitle(node) }}</span
+      >
+
+      @if (routeOf(node)) {
+        <span class="menu-configuration__row-route">{{ routeOf(node) }}</span>
+      }
+
+      @if (isRequired(node)) {
+        <cds-tag type="cool-gray" size="sm">
+          <svg cdsIcon="locked" size="16"></svg>
+          {{ 'adminSettings.menuConfiguration.required' | translate }}
+        </cds-tag>
+      }
+    </div>
+
+    <div class="menu-configuration__row-actions">
+      <button
+        cdsButton="ghost"
+        size="sm"
+        [iconOnly]="true"
+        (click)="openEditor(node)"
+        [title]="'interface.edit' | translate"
+      >
+        <svg cdsIcon="edit" size="16"></svg>
+      </button>
+
+      @if (!isRequired(node)) {
+        <button
+          cdsButton="ghost"
+          size="sm"
+          [iconOnly]="true"
+          (click)="onRemove(node)"
+          [title]="'interface.delete' | translate"
+        >
+          <svg cdsIcon="trash-can" size="16"></svg>
+        </button>
+      }
+    </div>
+  </div>
+</ng-template>
+
+<!-- The sub-list under a structure item, rendered below (and outside) the row (recursive). -->
+<ng-template #structureExpansionTpl let-node>
+  @if (isContainer(node)) {
+    <div class="menu-configuration__children">
+      <valtimo-drag-drop-list
+        [connectedTo]="$structureListIds()"
+        [emptyTemplate]="sectionEmptyTpl"
+        [enterPredicate]="containerEnterPredicate(node)"
+        [handleAriaLabel]="'adminSettings.menuConfiguration.dragHandle' | translate"
+        [items]="childrenOf(node)"
+        [itemTemplate]="structureItemTpl"
+        [expansionTemplate]="structureExpansionTpl"
+        [listId]="containerListId(node)"
+        [wholeRowDraggable]="true"
+        (dropped)="onDrop($event)"
+        (dragStarted)="onDragStarted()"
+        (dragEnded)="onDragEnded()"
+      ></valtimo-drag-drop-list>
+    </div>
+  }
+
+  <!-- Dynamic-submenu items (Cases, Objects) show a dummy submenu explaining it grows at runtime. -->
+  @if (hasRuntimeSubmenu(node)) {
+    <div class="menu-configuration__children menu-configuration__children--runtime">
+      <cds-inline-notification
+        [notificationObj]="{
+          type: 'info',
+          title: ('adminSettings.menuConfiguration.runtimeSubmenu' | translate),
+          message: ('adminSettings.menuConfiguration.runtimeSubmenuNote' | translate),
+          showClose: false,
+          lowContrast: true,
+        }"
+      ></cds-inline-notification>
+    </div>
+  }
+</ng-template>
+
+<!-- A row in the available-items palette -->
+<ng-template #paletteItemTpl let-item>
+  <div class="menu-configuration__palette-item">
+    @if (item.icon) {
+      <i class="menu-configuration__row-icon" [ngClass]="item.icon"></i>
+    }
+
+    <span class="menu-configuration__palette-label">{{ item.label }}</span>
+
+    <button
+      cdsButton="ghost"
+      size="sm"
+      [iconOnly]="true"
+      (click)="onAddPaletteItem(item)"
+      [title]="'adminSettings.menuConfiguration.add' | translate"
+    >
+      <svg cdsIcon="add" size="16"></svg>
+    </button>
+  </div>
+</ng-template>
+
+<ng-template #structureEmptyTpl>
+  <p class="menu-configuration__structure-empty">
+    {{ 'adminSettings.menuConfiguration.emptyStructure' | translate }}
+  </p>
+</ng-template>
+
+<ng-template #sectionEmptyTpl>
+  <p class="menu-configuration__structure-empty">
+    {{ 'adminSettings.menuConfiguration.emptySection' | translate }}
+  </p>
+</ng-template>
+
+<!-- Item editor -->
+<cds-modal [open]="$editorOpen()" (overlaySelected)="closeEditor()">
+  <cds-modal-header (closeSelect)="closeEditor()">
+    <h3 cdsModalHeaderHeading>{{ 'adminSettings.menuConfiguration.editor.title' | translate }}</h3>
+  </cds-modal-header>
+
+  <section
+    cdsModalContent
+    [cdsLayer]="1"
+    [formGroup]="editorForm"
+    class="menu-configuration__editor"
+  >
+    <cds-text-label [helperText]="'adminSettings.menuConfiguration.editor.titleHelper' | translate">
+      {{ 'interface.title' | translate }}
+      <input cdsText formControlName="title" [attr.data-test-id]="testIds.editorTitleInput" />
+    </cds-text-label>
+
+    @if ($editorKind() === 'custom-link') {
+      <cds-text-label>
+        {{ 'adminSettings.menuConfiguration.editor.link' | translate }}
+        <input cdsText formControlName="link" [attr.data-test-id]="testIds.editorLinkInput" />
+      </cds-text-label>
+    }
+
+    <!-- Gated on $editorOpen() so the icon selector (and its Carbon combobox) is recreated fresh each
+         time the editor opens — otherwise the reused combobox keeps the previous entry's filter state. -->
+    @if ($editorOpen() && $editorShowIcon()) {
+      <valtimo-mdi-icon-selector
+        [appendInline]="false"
+        [fullWidth]="true"
+        formControlName="icon"
+      ></valtimo-mdi-icon-selector>
+    }
+
+    @if ($editorShowSection()) {
+      <cds-select
+        formControlName="section"
+        [label]="'adminSettings.menuConfiguration.editor.section' | translate"
+      >
+        @for (option of $sectionOptions(); track option.value) {
+          <option [value]="option.value">{{ option.label }}</option>
+        }
+      </cds-select>
+    }
+
+    @if ($editorKind() === 'catalog' && !$editorRequired()) {
+      <cds-select
+        formControlName="includeFunction"
+        [label]="'adminSettings.menuConfiguration.editor.includeFunction' | translate"
+      >
+        <option value="">
+          {{ 'adminSettings.menuConfiguration.editor.includeFunctionNone' | translate }}
+        </option>
+        @for (key of includeFunctionKeys; track key) {
+          <option [value]="key">{{ key }}</option>
+        }
+      </cds-select>
+    }
+
+    <p class="menu-configuration__editor-note">
+      {{ 'adminSettings.menuConfiguration.editor.pbacNote' | translate }}
+    </p>
+  </section>
+
+  <cds-modal-footer>
+    <button
+      cdsButton="secondary"
+      (click)="closeEditor()"
+      [attr.data-test-id]="testIds.editorCancelButton"
+    >
+      {{ 'interface.cancel' | translate }}
+    </button>
+    <button
+      cdsButton="primary"
+      [disabled]="editorForm.invalid"
+      (click)="onEditorSave()"
+      [attr.data-test-id]="testIds.editorSaveButton"
+    >
+      {{ 'interface.save' | translate }}
+    </button>
+  </cds-modal-footer>
+</cds-modal>
+
+<!-- After a successful save, offer to reload so the new menu takes effect immediately. -->
+<valtimo-confirmation-modal
+  cancelButtonTextTranslationKey="adminSettings.menuConfiguration.reloadModal.dismiss"
+  confirmButtonTextTranslationKey="adminSettings.menuConfiguration.reloadModal.confirm"
+  contentTranslationKey="adminSettings.menuConfiguration.reloadModal.content"
+  titleTranslationKey="adminSettings.menuConfiguration.reloadModal.title"
+  [showModalSubject$]="reloadModalOpen$"
+  (cancelEvent)="onReloadDismiss()"
+  (confirmEvent)="onReloadConfirm()"
+></valtimo-confirmation-modal>

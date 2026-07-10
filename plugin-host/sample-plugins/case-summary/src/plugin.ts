@@ -38,6 +38,41 @@ request("/summary", (input: RequestInput) => {
   };
 });
 
+// Plugin-served data for the "Overview" menu page (a routed full-page iframe, not case-scoped).
+// Reached the same way as the case-tab data — `sdk.getPluginData("/overview")` -> host data route.
+// A page's context carries the plugin `configurationId` (no documentId), demonstrating that a page
+// is application-level rather than bound to a single case.
+request("/overview", (input: RequestInput) => {
+  const currency = (input.configuration.currency as string) ?? "EUR";
+  return {
+    status: 200,
+    body: {
+      message: "Hello from the case-summary plugin backend (overview page)",
+      configurationId: input.context?.configurationId ?? null,
+      stats: [
+        {label: "Open cases", value: "12"},
+        {label: "Closed this week", value: "5"},
+        {label: "Currency", value: currency},
+      ],
+    },
+  };
+});
+
+// Plugin-served data for the "Reports" menu page — a small tabular report the plugin computes
+// itself, showing a second, distinct page from the same plugin selected by its bundle key.
+request("/reports", () => {
+  return {
+    status: 200,
+    body: {
+      rows: [
+        {period: "2026-W24", created: 8, completed: 6},
+        {period: "2026-W25", created: 11, completed: 9},
+        {period: "2026-W26", created: 7, completed: 7},
+      ],
+    },
+  };
+});
+
 // Level 3 — tab -> plugin backend -> GZAC, authenticated with the **downscoped user token**.
 // Counts the cases of this type the call can see via `gzacApi.asUser`: row-level PBAC filters the
 // list to the logged-in user's accessible cases (∩ the plugin's allowlist).
