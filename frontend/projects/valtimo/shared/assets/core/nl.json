@@ -726,6 +726,7 @@
   },
   "message": {"empty": "Geen resultaat gevonden"},
   "cta": {"close": "Sluiten", "moreDetails": "Meer details"},
+  "carousel": {"previous": "Vorige", "next": "Volgende", "goToSlide": "Ga naar dia"},
   "formManagement": {
     "noFormDefinitionFoundAdmin": "Er is geen formulier gekoppeld aan de start event/user task. Druk op de knop om deze te configureren.",
     "noFormDefinitionFoundUser": "Er is geen formulier gekoppeld aan de start event/user task. Vraag een beheerder om hulp.",
@@ -1315,6 +1316,10 @@
         "title": "Markering",
         "description": "Een kleine widget die één waarde of een aantal benadrukt"
       },
+      "image": {
+        "title": "Afbeelding",
+        "description": "Toon een geüploade afbeelding"
+      },
       "generic": {
         "title": "Generieke widgets",
         "description": "Breed toepasbaar — koppel ze aan elke gegevensstructuur (velden, tabellen, collecties). Meer configuratie, maar geen beperkingen op wat ze kunnen tonen."
@@ -1509,6 +1514,13 @@
         "valuePlaceholder": "Selecteer of typ een pad",
         "valueHelper": "Toont de waarde op dit pad. Als het een array is, wordt het aantal elementen weergegeven.",
         "accentColor": "Accentkleur"
+      },
+      "image": {
+        "description": "",
+        "value": "Waarde",
+        "valuePlaceholder": "Selecteer of typ een pad",
+        "valueHelper": "Toont de afbeelding op dit pad. Het pad moet verwijzen naar een geüploade bestandsresource.",
+        "displayAsCarousel": "Weergeven als carrousel"
       }
     },
     "filters": {
@@ -1853,14 +1865,14 @@
     "canInitializeDocument": "Start een dossier",
     "startableByUser": "Door gebruiker te starten",
     "expressionErrors": {
-      "MISSING_EL_MARKERS": "Expressie moet ${...} of #{...} syntax gebruiken",
-      "UNCLOSED_PARENTHESIS": "Expressie heeft een niet-gesloten haakje '('",
-      "UNCLOSED_BRACE": "Expressie mist een sluitende accolade '}'",
-      "UNCLOSED_BRACKET": "Expressie heeft een niet-gesloten blokhaak '['",
-      "MISMATCHED_DELIMITER": "Expressie heeft niet-overeenkomende haakjes of accolades",
-      "INCOMPLETE_EXPRESSION": "Expressie is onvolledig",
-      "INVALID_SYNTAX": "Expressie heeft ongeldige syntax",
-      "BEAN_NOT_FOUND": "Gerefereerde bean bestaat niet"
+      "MISSING_EL_MARKERS": "Expressie {{expression}} moet ${...} of #{...} syntax gebruiken",
+      "UNCLOSED_PARENTHESIS": "Expressie {{expression}} heeft een niet-gesloten haakje '('",
+      "UNCLOSED_BRACE": "Expressie {{expression}} mist een sluitende accolade '}'",
+      "UNCLOSED_BRACKET": "Expressie {{expression}} heeft een niet-gesloten blokhaak '['",
+      "MISMATCHED_DELIMITER": "Expressie {{expression}} heeft niet-overeenkomende haakjes of accolades",
+      "INCOMPLETE_EXPRESSION": "Expressie {{expression}} is onvolledig",
+      "INVALID_SYNTAX": "Expressie {{expression}} heeft ongeldige syntax",
+      "BEAN_NOT_FOUND": "Geen bean gevonden met deze naam: {{expression}}. Als u een procesvariabele gebruikt, zorg dat deze tijdens runtime bestaat"
     },
     "warningConfirmation": {
       "title": "Proces bevat waarschuwingen",
@@ -3021,6 +3033,11 @@
     "noWidgetsDescription": "Er zijn geen widgets geconfigureerd voor dit tabblad, of je hebt niet de juiste rechten om deze te zien.",
     "noWidget": "Widget niet beschikbaar",
     "noCustomComponentDescription": "De component die geconfigureerd is voor deze widget kon niet gevonden worden.",
+    "image": {
+      "noImage": "Geen afbeelding gevonden",
+      "openInNewTab": "Openen in nieuw tabblad",
+      "download": "Downloaden"
+    },
     "map": {
       "title": "Kaart"
     },

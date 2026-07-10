@@ -723,6 +723,7 @@
   },
   "message": {"empty": "No result found"},
   "cta": {"close": "Close", "moreDetails": "More details"},
+  "carousel": {"previous": "Previous", "next": "Next", "goToSlide": "Go to slide"},
   "formManagement": {
     "noFormDefinitionFoundAdmin": "There is no form connected to the start event/user task. To configure this, click on the button below.",
     "noFormDefinitionFoundUser": "There is no form connected to the start event/user task. Ask an admin user for assistance.",
@@ -1296,6 +1297,10 @@
         "title": "Highlight",
         "description": "A small widget that highlights a single value or a count"
       },
+      "image": {
+        "title": "Image",
+        "description": "Show an uploaded image"
+      },
       "generic": {
         "title": "Generic widgets",
         "description": "Broadly applicable — wire them up to any data structure (fields, tables, collections). More configuration, but no limits on what they can show."
@@ -1484,6 +1489,13 @@
         "valuePlaceholder": "Select or type a path",
         "valueHelper": "Shows the value at this path. If it resolves to an array, the count of items is shown instead.",
         "accentColor": "Accent color"
+      },
+      "image": {
+        "description": "",
+        "value": "Value",
+        "valuePlaceholder": "Select or type a path",
+        "valueHelper": "Shows the image stored at this path. The path must resolve to an uploaded file resource.",
+        "displayAsCarousel": "Display as carousel"
       }
     },
     "filters": {
@@ -1825,14 +1837,14 @@
     "canInitializeDocument": "Starts case",
     "startableByUser": "Startable by user",
     "expressionErrors": {
-      "MISSING_EL_MARKERS": "Expression must use ${...} or #{...} syntax",
-      "UNCLOSED_PARENTHESIS": "Expression has an unclosed parenthesis '('",
-      "UNCLOSED_BRACE": "Expression is missing a closing brace '}'",
-      "UNCLOSED_BRACKET": "Expression has an unclosed bracket '['",
-      "MISMATCHED_DELIMITER": "Expression has mismatched brackets or braces",
-      "INCOMPLETE_EXPRESSION": "Expression is incomplete",
-      "INVALID_SYNTAX": "Expression has invalid syntax",
-      "BEAN_NOT_FOUND": "Referenced bean does not exist"
+      "MISSING_EL_MARKERS": "Expression {{expression}} must use ${...} or #{...} syntax",
+      "UNCLOSED_PARENTHESIS": "Expression {{expression}} has an unclosed parenthesis '('",
+      "UNCLOSED_BRACE": "Expression {{expression}} is missing a closing brace '}'",
+      "UNCLOSED_BRACKET": "Expression {{expression}} has an unclosed bracket '['",
+      "MISMATCHED_DELIMITER": "Expression {{expression}} has mismatched brackets or braces",
+      "INCOMPLETE_EXPRESSION": "Expression {{expression}} is incomplete",
+      "INVALID_SYNTAX": "Expression {{expression}} has invalid syntax",
+      "BEAN_NOT_FOUND": "No bean found with this name: {{expression}}. If using a process variable, ensure it exists at runtime"
     },
     "warningConfirmation": {
       "title": "Process has warnings",
@@ -2988,6 +3000,11 @@
     "noWidgetsDescription": "There are no widgets configured for this tab, or you don't have the rights to view them.",
     "noWidget": "Widget not found",
     "noCustomComponentDescription": "The custom component configured for this widget is not available.",
+    "image": {
+      "noImage": "No image found",
+      "openInNewTab": "Open in new tab",
+      "download": "Download"
+    },
     "map": {
       "title": "Map"
     },

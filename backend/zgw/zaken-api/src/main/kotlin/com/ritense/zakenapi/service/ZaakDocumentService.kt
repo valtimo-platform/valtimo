@@ -57,6 +57,7 @@ import org.springframework.data.domain.PageImpl
 import org.springframework.data.domain.Pageable
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import java.io.InputStream
 import java.net.URI
 import java.util.UUID
 import kotlin.math.min
@@ -420,6 +421,19 @@ class ZaakDocumentService(
         )
     }
 
+    /**
+     * Asserts that the given document is related to the given case, throwing when it is not.
+     * Use this from read/download paths (e.g. document preview) that would otherwise serve
+     * document content without verifying the case-document linkage.
+     */
+    fun verifyInformatieObjectRelatedToCase(
+        pluginConfigurationId: String,
+        caseDocumentId: UUID,
+        documentId: String,
+    ) {
+        getVerifiedInformatieObject(pluginConfigurationId, caseDocumentId, documentId)
+    }
+
     private fun getVerifiedInformatieObject(
         pluginConfigurationId: String,
         caseDocumentId: UUID,
@@ -447,9 +461,13 @@ class ZaakDocumentService(
         return Pair(documentenApiPlugin, informatieobjectUrl)
     }
 
-    fun downloadInformatieObject(pluginConfigurationId: String, caseDocumentId: UUID, documentId: String) =
-        documentenApiService.downloadInformatieObject(pluginConfigurationId, caseDocumentId, documentId)
+    fun downloadInformatieObject(pluginConfigurationId: String, caseDocumentId: UUID, documentId: String): InputStream {
+        getVerifiedInformatieObject(pluginConfigurationId, caseDocumentId, documentId)
+        return documentenApiService.downloadInformatieObject(pluginConfigurationId, caseDocumentId, documentId)
+    }
 
-    fun getInformatieObject(pluginConfigurationId: String, caseDocumentId: UUID, documentId: String) =
-        documentenApiService.getInformatieObject(pluginConfigurationId, caseDocumentId, documentId)
+    fun getInformatieObject(pluginConfigurationId: String, caseDocumentId: UUID, documentId: String): DocumentInformatieObject {
+        getVerifiedInformatieObject(pluginConfigurationId, caseDocumentId, documentId)
+        return documentenApiService.getInformatieObject(pluginConfigurationId, caseDocumentId, documentId)
+    }
 }
