@@ -1,0 +1,58 @@
+name: Plugin host & SDK - build and test
+
+permissions:
+  contents: read
+
+on:
+  push:
+    paths:
+      - "plugin-host/**"
+      - ".github/workflows/plugin_host_ci.yml"
+  pull_request:
+    paths:
+      - "plugin-host/**"
+      - ".github/workflows/plugin_host_ci.yml"
+  workflow_dispatch:
+
+jobs:
+  unit:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # Node 22 matches the host runtime requirement (Extism runInWorker needs Node >= 22, plan §7).
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: |
+            plugin-host/plugin-sdk/package-lock.json
+            plugin-host/app/package-lock.json
+
+      # The SDK is a file: dependency of the app and must be built first so the app's `tsc` can
+      # resolve @valtimo/plugin-sdk types.
+      - name: SDK - install
+        working-directory: plugin-host/plugin-sdk
+        run: npm ci
+
+      - name: SDK - build (tsc)
+        working-directory: plugin-host/plugin-sdk
+        run: npm run build
+
+      - name: SDK - test
+        working-directory: plugin-host/plugin-sdk
+        run: npm run test:cov
+
+      - name: App - install
+        working-directory: plugin-host/app
+        run: npm ci
+
+      - name: App - build (tsc)
+        working-directory: plugin-host/app
+        run: npm run build
+
+      - name: App - test
+        working-directory: plugin-host/app
+        run: npm run test:cov
