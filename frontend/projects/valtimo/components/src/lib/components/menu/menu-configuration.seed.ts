@@ -88,7 +88,12 @@ function seedCatalogNode(item: MenuItem, entry: MenuItemCatalogEntry): CatalogMe
   // Record title/icon only when they deviate from the catalog default, keeping the stored tree lean.
   if (item.title && item.title !== entry.defaultTitleKey) node.title = item.title;
   if (item.iconClass && item.iconClass !== entry.defaultIcon) node.icon = item.iconClass;
-  if (item.includeFunction !== undefined) node.includeFunction = item.includeFunction;
+  // The persisted config carries a single include function (the builder edits one); a runtime item
+  // may declare several, so keep the first when an array is supplied.
+  const includeFunction = Array.isArray(item.includeFunction)
+    ? item.includeFunction[0]
+    : item.includeFunction;
+  if (includeFunction !== undefined) node.includeFunction = includeFunction;
   if (item.roles) node.roles = item.roles;
   if (Array.isArray(item.children)) node.children = item.children.map(child => seedMenuItem(child));
 
