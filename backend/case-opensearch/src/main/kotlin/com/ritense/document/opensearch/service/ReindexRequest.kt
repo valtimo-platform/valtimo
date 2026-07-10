@@ -37,6 +37,7 @@ data class ReindexRequest(
     val documentIds: List<UUID>? = null,
     val pageSize: Int = DEFAULT_PAGE_SIZE,
     val resumeRunId: UUID? = null,
+    val pruneOrphans: Boolean = false,
 ) {
     fun effectivePageSize() = pageSize.coerceIn(1, MAX_PAGE_SIZE)
 

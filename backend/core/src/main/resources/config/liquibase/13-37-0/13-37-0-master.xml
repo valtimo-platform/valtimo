@@ -20,8 +20,9 @@ xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
 xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd">
 
-    <include file="20260605-add-dashboard-widget-layout-column.xml" relativeToChangelogFile="true"/>
-    <include file="20260605-add-case-widget-tab-widget-layout-column.xml" relativeToChangelogFile="true"/>
-    <include file="20260605-add-tab-widget-layout-column.xml" relativeToChangelogFile="true"/>
+    <include file="20260630-create-reindex-run-table.xml" relativeToChangelogFile="true"/>
+    <include file="20260701-create-reconcile-state-table.xml" relativeToChangelogFile="true"/>
+    <include file="20260701-create-pending-index-deletion-table.xml" relativeToChangelogFile="true"/>
+    <include file="20260710-add-reindex-run-pruned-count.xml" relativeToChangelogFile="true"/>
 
 </databaseChangeLog>

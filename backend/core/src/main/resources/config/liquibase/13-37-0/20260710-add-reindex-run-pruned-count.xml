@@ -16,12 +16,17 @@
   -->
 
 <databaseChangeLog
-xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
-xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd">
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd"
+    logicalFilePath="config/liquibase/changelog/20260710-add-reindex-run-pruned-count.xml">
 
-    <include file="20260605-add-dashboard-widget-layout-column.xml" relativeToChangelogFile="true"/>
-    <include file="20260605-add-case-widget-tab-widget-layout-column.xml" relativeToChangelogFile="true"/>
-    <include file="20260605-add-tab-widget-layout-column.xml" relativeToChangelogFile="true"/>
+    <changeSet author="Ritense" id="add_pruned_count_to_reindex_run">
+        <addColumn tableName="document_opensearch_reindex_run">
+            <column name="pruned_count" type="BIGINT" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
+        </addColumn>
+    </changeSet>
 
 </databaseChangeLog>

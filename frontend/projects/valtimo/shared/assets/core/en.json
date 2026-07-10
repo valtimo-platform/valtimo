@@ -3328,6 +3328,10 @@
         "finished": "Finished",
         "inProgress": "Reindexing in progress...",
         "errorTitle": "Error",
+        "pruneOrphans": "Prune orphaned documents from OpenSearch",
+        "documentDefinitionName": "Document definition",
+        "documentDefinitionPlaceholder": "All document definitions",
+        "modifiedBefore": "Modified before",
         "statuses": {
           "RUNNING": "Running",
           "COMPLETED": "Completed",

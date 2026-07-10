@@ -18,6 +18,7 @@ package com.ritense.document.opensearch.service
 
 import com.ritense.authorization.AuthorizationContext.Companion.runWithoutAuthorization
 import com.ritense.document.domain.impl.JsonSchemaDocument
+import com.ritense.document.domain.impl.JsonSchemaDocumentId
 import com.ritense.document.domain.impl.request.NewDocumentRequest
 import com.ritense.document.opensearch.BaseOpenSearchIntegrationTest
 import com.ritense.document.opensearch.domain.OpenSearchReindexRun
@@ -75,6 +76,9 @@ class DocumentOpenSearchReindexServiceIntTest : BaseOpenSearchIntegrationTest() 
 
     @Autowired
     lateinit var transactionManager: PlatformTransactionManager
+
+    @Autowired
+    lateinit var converter: JsonSchemaDocumentOsConverter
 
     @AfterEach
     fun cleanUp() {
@@ -268,6 +272,71 @@ class DocumentOpenSearchReindexServiceIntTest : BaseOpenSearchIntegrationTest() 
         )
 
         assertThat(reindexRunService.isReindexRunning(Duration.ofMinutes(5))).isFalse()
+    }
+
+    @Test
+    fun `reindex with pruneOrphans deletes orphans from OpenSearch`() {
+        val doc1 = createDocument("keep")
+        val doc2 = createDocument("orphan-1")
+        val doc3 = createDocument("orphan-2")
+        indexDocuments(doc1, doc2, doc3)
+        assertThat(openSearchRepository.count()).isEqualTo(3L)
+
+        deleteDocumentFromDatabaseOnly(doc2.id())
+        deleteDocumentFromDatabaseOnly(doc3.id())
+
+        val (runId, _) = reindex(ReindexRequest(pruneOrphans = true))
+
+        refreshIndex()
+        assertThat(openSearchRepository.count()).isEqualTo(1L)
+        assertThat(openSearchRepository.findById(doc1.id().toString())).isPresent
+        assertThat(openSearchRepository.findById(doc2.id().toString())).isEmpty
+        assertThat(openSearchRepository.findById(doc3.id().toString())).isEmpty
+
+        val run = reindexRunRepository.findById(runId).get()
+        assertThat(run.prunedCount).isEqualTo(2L)
+    }
+
+    @Test
+    fun `scoped reindex with pruneOrphans only prunes matching definition`() {
+        val houseDoc = createDocument("house-street")
+        indexDocuments(houseDoc)
+
+        deleteDocumentFromDatabaseOnly(houseDoc.id())
+
+        reindex(ReindexRequest(documentDefinitionName = "house", pruneOrphans = true))
+
+        refreshIndex()
+        assertThat(openSearchRepository.findById(houseDoc.id().toString())).isEmpty
+    }
+
+    @Test
+    fun `reindex without pruneOrphans leaves orphans in place`() {
+        val doc = createDocument("orphan")
+        indexDocuments(doc)
+
+        deleteDocumentFromDatabaseOnly(doc.id())
+
+        reindex(ReindexRequest(pruneOrphans = false))
+
+        refreshIndex()
+        assertThat(openSearchRepository.findById(doc.id().toString())).isPresent
+    }
+
+    private fun indexDocuments(vararg documents: JsonSchemaDocument) {
+        documents.forEach { doc ->
+            val osDoc = converter.toOsDocument(doc)
+            openSearchRepository.save(osDoc)
+        }
+        refreshIndex()
+    }
+
+    private fun deleteDocumentFromDatabaseOnly(documentId: JsonSchemaDocumentId) {
+        TransactionTemplate(transactionManager).execute {
+            entityManager.createNativeQuery(
+                "DELETE FROM json_schema_document WHERE json_schema_document_id = :id"
+            ).setParameter("id", documentId.id).executeUpdate()
+        }
     }
 
     /** Clears the OpenSearch index (and refreshes) so a subsequent assertion sees only the re-index output. */

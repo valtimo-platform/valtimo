@@ -49,6 +49,7 @@ open class DocumentOpenSearchIndexInitializer(
                 val dynamicTemplates = listOf(
                     mapOf("content_fields_as_text" to mapOf(
                         "path_match" to "content.*",
+                        "match_mapping_type" to "string",
                         "mapping" to mapOf(
                             "type" to "text",
                             "fields" to mapOf("keyword" to mapOf("type" to "keyword", "ignore_above" to 256))

@@ -63,6 +63,9 @@ class OpenSearchReindexRun(
     @Column(name = "skipped_count", nullable = false)
     var skippedCount: Long = 0,
 
+    @Column(name = "pruned_count", nullable = false)
+    var prunedCount: Long = 0,
+
     @Column(name = "started_on", nullable = false)
     val startedOn: LocalDateTime = LocalDateTime.now(),
 

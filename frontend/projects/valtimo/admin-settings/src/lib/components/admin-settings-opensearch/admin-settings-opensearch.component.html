@@ -1,19 +1,17 @@
 <!--
-  ~ /*
-  ~  * Copyright 2015-2026 Ritense BV, the Netherlands.
-  ~  *
-  ~  * Licensed under EUPL, Version 1.2 (the "License");
-  ~  * you may not use this file except in compliance with the License.
-  ~  * You may obtain a copy of the License at
-  ~  *
-  ~  * https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
-  ~  *
-  ~  * Unless required by applicable law or agreed to in writing, software
-  ~  * distributed under the License is distributed on an "AS IS" basis,
-  ~  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-  ~  * See the License for the specific language governing permissions and
-  ~  * limitations under the License.
-  ~  */
+  ~ Copyright 2015-2026 Ritense BV, the Netherlands.
+  ~
+  ~ Licensed under EUPL, Version 1.2 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~ https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" basis,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
   -->
 
 <div
@@ -21,7 +19,8 @@
   *ngIf="{
     status: reindexStatus$ | async,
     isRunning: isRunning$ | async,
-    starting: startingReindex$ | async
+    starting: startingReindex$ | async,
+    documentDefinitions: documentDefinitions$ | async
   } as obs"
 >
   <div class="opensearch-reindex__header">
@@ -31,6 +30,27 @@
     <p class="opensearch-reindex__description">
       {{ 'adminSettings.opensearch.reindex.description' | translate }}
     </p>
+  </div>
+
+  <div class="opensearch-reindex__options" [formGroup]="formGroup">
+    <cds-checkbox formControlName="pruneOrphans">
+      {{ 'adminSettings.opensearch.reindex.pruneOrphans' | translate }}
+    </cds-checkbox>
+
+    <cds-dropdown
+      [label]="'adminSettings.opensearch.reindex.documentDefinitionName' | translate"
+      [placeholder]="'adminSettings.opensearch.reindex.documentDefinitionPlaceholder' | translate"
+      formControlName="documentDefinitionName"
+    >
+      <cds-dropdown-list [items]="obs.documentDefinitions"></cds-dropdown-list>
+    </cds-dropdown>
+
+    <cds-date-picker
+      [label]="'adminSettings.opensearch.reindex.modifiedBefore' | translate"
+      placeholder="DD-MM-YYYY"
+      [dateFormat]="'d-m-Y'"
+      (valueChange)="onDateSelected($event)"
+    ></cds-date-picker>
   </div>
 
   @if (obs.status?.status) {

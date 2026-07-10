@@ -18,6 +18,7 @@ package com.ritense.document.opensearch.service
 
 import com.ritense.document.domain.impl.JsonSchemaDocument
 import com.ritense.document.opensearch.domain.JsonSchemaDocumentOsDocument
+import com.ritense.document.opensearch.repository.JsonSchemaDocumentOpenSearchRepository
 import io.github.oshai.kotlinlogging.KotlinLogging
 import jakarta.persistence.EntityManager
 import jakarta.persistence.criteria.JoinType
@@ -25,7 +26,12 @@ import jakarta.persistence.criteria.Predicate
 import net.javacrumbs.shedlock.core.LockConfiguration
 import net.javacrumbs.shedlock.core.LockProvider
 import org.springframework.beans.factory.DisposableBean
+import org.opensearch.index.query.BoolQueryBuilder
+import org.opensearch.index.query.QueryBuilders
+import org.springframework.data.domain.PageRequest
+import org.springframework.data.domain.Sort
 import org.springframework.data.elasticsearch.core.ElasticsearchOperations
+import org.springframework.data.elasticsearch.core.query.StringQuery
 import org.springframework.transaction.PlatformTransactionManager
 import org.springframework.transaction.support.TransactionTemplate
 import java.time.Duration
@@ -57,6 +63,7 @@ open class DocumentOpenSearchReindexService(
     private val transactionManager: PlatformTransactionManager,
     private val lockProvider: LockProvider,
     private val runService: OpenSearchReindexRunService,
+    private val openSearchRepository: JsonSchemaDocumentOpenSearchRepository,
 ) : DisposableBean {
 
     private val executor: ExecutorService = Executors.newSingleThreadExecutor { runnable ->
@@ -137,6 +144,11 @@ open class DocumentOpenSearchReindexService(
                 logger.info { "Re-index run $runId cancelled — marking STOPPED (processed=$processed, skipped=$skipped)" }
                 runService.stop(runId)
             } else {
+                if (scope.pruneOrphans) {
+                    val pruned = pruneOrphans(scope)
+                    runService.recordPruned(runId, pruned)
+                    logger.info { "Pruned $pruned orphan document(s) from OpenSearch" }
+                }
                 indexOps().refresh()
                 logger.info { "Re-index run $runId complete (processed=$processed, skipped=$skipped)" }
                 runService.complete(runId)
@@ -182,6 +194,64 @@ open class DocumentOpenSearchReindexService(
         return entityManager.createQuery(query).setMaxResults(pageSize).resultList
     }
 
+    /**
+     * Scans OpenSearch for documents matching [scope], checks each batch against PostgreSQL,
+     * and deletes orphans (documents in OpenSearch but not in PostgreSQL).
+     */
+    private fun pruneOrphans(scope: ReindexRequest): Long {
+        var pruned = 0L
+        var page = 0
+        val txTemplate = TransactionTemplate(transactionManager).apply { isReadOnly = true }
+
+        while (!cancelRequested) {
+            val osIds = fetchOpenSearchIds(scope, page, PRUNE_BATCH_SIZE)
+            if (osIds.isEmpty()) break
+
+            val existingIds = txTemplate.execute {
+                findExistingIds(osIds.map { UUID.fromString(it) })
+            }.orEmpty()
+
+            val orphans = osIds.filter { UUID.fromString(it) !in existingIds }
+            orphans.forEach { openSearchRepository.deleteById(it) }
+            pruned += orphans.size
+
+            page++
+        }
+        return pruned
+    }
+
+    private fun fetchOpenSearchIds(scope: ReindexRequest, page: Int, batchSize: Int): List<String> {
+        val boolQuery = BoolQueryBuilder()
+
+        scope.documentDefinitionName?.let {
+            boolQuery.filter(QueryBuilders.termQuery("definitionId.name", it))
+        }
+        scope.modifiedAfter?.let {
+            boolQuery.filter(QueryBuilders.rangeQuery("modifiedOn").gt(it))
+        }
+        scope.modifiedBefore?.let {
+            boolQuery.filter(QueryBuilders.rangeQuery("modifiedOn").lt(it))
+        }
+        scope.documentIds?.takeIf { it.isNotEmpty() }?.let { ids ->
+            boolQuery.filter(QueryBuilders.idsQuery().addIds(*ids.map { it.toString() }.toTypedArray()))
+        }
+
+        val pageable = PageRequest.of(page, batchSize, Sort.by(Sort.Direction.ASC, "_id"))
+        val query = StringQuery(boolQuery.toString(), pageable)
+
+        return elasticsearchOperations.search(query, JsonSchemaDocumentOsDocument::class.java)
+            .searchHits
+            .map { it.id }
+    }
+
+    private fun findExistingIds(ids: List<UUID>): Set<UUID> {
+        if (ids.isEmpty()) return emptySet()
+        return entityManager.createQuery(
+            "SELECT d.id.id FROM JsonSchemaDocument d WHERE d.id.id IN :ids",
+            UUID::class.java
+        ).setParameter("ids", ids).resultList.toSet()
+    }
+
     private fun indexOps() = elasticsearchOperations.indexOps(JsonSchemaDocumentOsDocument::class.java)
 
     /** Signals an in-flight run to stop gracefully and shuts the executor down on context close. */
@@ -211,5 +281,6 @@ open class DocumentOpenSearchReindexService(
         val LOCK_AT_MOST_FOR: Duration = Duration.ofHours(6)
 
         private const val SHUTDOWN_TIMEOUT_SECONDS = 30L
+        private const val PRUNE_BATCH_SIZE = 1000
     }
 }

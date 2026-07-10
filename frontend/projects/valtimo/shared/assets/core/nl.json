@@ -3361,6 +3361,10 @@
         "finished": "Voltooid",
         "inProgress": "Herindexering bezig...",
         "errorTitle": "Fout",
+        "pruneOrphans": "Verwijder orphan documenten uit OpenSearch",
+        "documentDefinitionName": "Documentdefinitie",
+        "documentDefinitionPlaceholder": "Alle documentdefinities",
+        "modifiedBefore": "Gewijzigd voor",
         "statuses": {
           "RUNNING": "Bezig",
           "COMPLETED": "Voltooid",
