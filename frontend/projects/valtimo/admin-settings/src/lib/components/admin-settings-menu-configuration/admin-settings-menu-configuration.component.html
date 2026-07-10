@@ -27,12 +27,15 @@
           title: ('adminSettings.menuConfiguration.savedTitle' | translate),
           message: ('adminSettings.menuConfiguration.savedSubtitle' | translate),
           showClose: true,
-          lowContrast: true
+          lowContrast: true,
         }"
+        (close)="onDismissSavedNotification()"
       ></cds-inline-notification>
     }
 
     <div
+      fitPage
+      [disableOverflow]="true"
       class="menu-configuration__panels"
       [class.menu-configuration__panels--dragging]="$dragging()"
     >
@@ -47,6 +50,8 @@
             <button
               cdsButton="tertiary"
               size="sm"
+              [onBottom]="true"
+              [vTooltip]="'adminSettings.menuConfiguration.resetTooltip' | translate"
               (click)="onReset()"
               [attr.data-test-id]="testIds.resetButton"
             >
@@ -204,7 +209,7 @@
           title: ('adminSettings.menuConfiguration.runtimeSubmenu' | translate),
           message: ('adminSettings.menuConfiguration.runtimeSubmenuNote' | translate),
           showClose: false,
-          lowContrast: true
+          lowContrast: true,
         }"
       ></cds-inline-notification>
     </div>
@@ -250,8 +255,13 @@
     <h3 cdsModalHeaderHeading>{{ 'adminSettings.menuConfiguration.editor.title' | translate }}</h3>
   </cds-modal-header>
 
-  <section cdsModalContent [formGroup]="editorForm" class="menu-configuration__editor">
-    <cds-text-label>
+  <section
+    cdsModalContent
+    [cdsLayer]="1"
+    [formGroup]="editorForm"
+    class="menu-configuration__editor"
+  >
+    <cds-text-label [helperText]="'adminSettings.menuConfiguration.editor.titleHelper' | translate">
       {{ 'interface.title' | translate }}
       <input cdsText formControlName="title" [attr.data-test-id]="testIds.editorTitleInput" />
     </cds-text-label>
@@ -265,8 +275,12 @@
 
     <!-- Gated on $editorOpen() so the icon selector (and its Carbon combobox) is recreated fresh each
          time the editor opens — otherwise the reused combobox keeps the previous entry's filter state. -->
-    @if ($editorOpen() && $editorKind() !== 'section-header') {
-      <valtimo-mdi-icon-selector formControlName="icon"></valtimo-mdi-icon-selector>
+    @if ($editorOpen() && $editorShowIcon()) {
+      <valtimo-mdi-icon-selector
+        [appendInline]="false"
+        [fullWidth]="true"
+        formControlName="icon"
+      ></valtimo-mdi-icon-selector>
     }
 
     @if ($editorShowSection()) {
@@ -300,7 +314,11 @@
   </section>
 
   <cds-modal-footer>
-    <button cdsButton="secondary" (click)="closeEditor()" [attr.data-test-id]="testIds.editorCancelButton">
+    <button
+      cdsButton="secondary"
+      (click)="closeEditor()"
+      [attr.data-test-id]="testIds.editorCancelButton"
+    >
       {{ 'interface.cancel' | translate }}
     </button>
     <button
@@ -313,3 +331,14 @@
     </button>
   </cds-modal-footer>
 </cds-modal>
+
+<!-- After a successful save, offer to reload so the new menu takes effect immediately. -->
+<valtimo-confirmation-modal
+  cancelButtonTextTranslationKey="adminSettings.menuConfiguration.reloadModal.dismiss"
+  confirmButtonTextTranslationKey="adminSettings.menuConfiguration.reloadModal.confirm"
+  contentTranslationKey="adminSettings.menuConfiguration.reloadModal.content"
+  titleTranslationKey="adminSettings.menuConfiguration.reloadModal.title"
+  [showModalSubject$]="reloadModalOpen$"
+  (cancelEvent)="onReloadDismiss()"
+  (confirmEvent)="onReloadConfirm()"
+></valtimo-confirmation-modal>

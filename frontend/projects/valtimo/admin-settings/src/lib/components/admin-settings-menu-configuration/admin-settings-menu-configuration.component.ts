@@ -24,13 +24,15 @@ import {
 } from '@angular/cdk/drag-drop';
 import {ScrollingModule} from '@angular/cdk/scrolling';
 import {ChangeDetectionStrategy, Component, computed, OnInit, signal} from '@angular/core';
-import {takeUntilDestroyed} from '@angular/core/rxjs-interop';
+import {takeUntilDestroyed, toObservable, toSignal} from '@angular/core/rxjs-interop';
 import {FormBuilder, ReactiveFormsModule, Validators} from '@angular/forms';
 import {TranslateModule, TranslateService} from '@ngx-translate/core';
 import {
   AdminSettingsService,
   buildMenuConfigurationFromRuntimeMenu,
+  ConfirmationModalModule,
   DragDropListComponent,
+  FitPageDirective,
   getMenuCatalogEntry,
   hasSavedMenuConfiguration,
   MdiIconSelectorComponent,
@@ -39,6 +41,7 @@ import {
   MenuConfiguration,
   MenuConfigurationItem,
   MenuItemPlacement,
+  TooltipModule,
 } from '@valtimo/components';
 import {ConfigService, IncludeFunction} from '@valtimo/shared';
 import {ExternalPluginMenuPage, ExternalPluginPageService} from '@valtimo/plugin';
@@ -47,6 +50,7 @@ import {
   IconModule,
   IconService,
   InputModule,
+  LayerModule,
   LoadingModule,
   ModalModule,
   NotificationModule,
@@ -86,10 +90,14 @@ type BuilderNode = MenuConfigurationItem & {_uid: string; children?: BuilderNode
     TranslateModule,
     ScrollingModule,
     DragDropListComponent,
+    FitPageDirective,
     MdiIconSelectorComponent,
+    ConfirmationModalModule,
+    TooltipModule,
     ButtonModule,
     IconModule,
     InputModule,
+    LayerModule,
     LoadingModule,
     ModalModule,
     NotificationModule,
@@ -104,6 +112,10 @@ export class AdminSettingsMenuConfigurationComponent implements OnInit {
   public readonly $saving = signal<boolean>(false);
   public readonly $saved = signal<boolean>(false);
   public readonly $structure = signal<BuilderNode[]>([]);
+
+  /** Drives the post-save "reload now?" confirmation modal. */
+  private readonly _$reloadModalOpen = signal<boolean>(false);
+  public readonly reloadModalOpen$ = toObservable(this._$reloadModalOpen);
   public readonly $pluginPages = signal<Array<ExternalPluginMenuPage>>([]);
 
   /** True while a drag is in progress, so the panels can desaturate the sections that cannot receive it. */
@@ -181,6 +193,19 @@ export class AdminSettingsMenuConfigurationComponent implements OnInit {
 
   public readonly $editorShowSection = computed<boolean>(() =>
     this.SECTION_CAPABLE_KINDS.includes(this.$editorKind())
+  );
+
+  /** Tracks the editor's currently selected section so the icon field can react to placement changes. */
+  private readonly $editorSection = toSignal(this.editorForm.controls.section.valueChanges, {
+    initialValue: this.editorForm.controls.section.value,
+  });
+
+  /**
+   * The icon only surfaces in the rendered menu for top-level entries, so the editor hides the icon
+   * field for section headers and for any item placed inside a section (a sub-menu item).
+   */
+  public readonly $editorShowIcon = computed<boolean>(
+    () => this.$editorKind() !== 'section-header' && this.$editorSection() === 'root'
   );
 
   private _editingUid: string | null = null;
@@ -344,10 +369,12 @@ export class AdminSettingsMenuConfigurationComponent implements OnInit {
       title: this._editableTitle(node),
       link: node.kind === 'custom-link' ? node.link : this._displayRoute(node),
       icon: this._mdiKeyFromIconClass(this._displayIconClass(node)),
+      // Empty string (not null) so the "Geen" option (value="") is selected on open when the item
+      // carries no include function — a null value would leave the native select blank.
       includeFunction:
         node.kind === 'catalog' && !this.isRequired(node) && node.includeFunction !== undefined
           ? IncludeFunction[node.includeFunction]
-          : null,
+          : '',
       section: this._findSectionOf(node._uid),
     });
 
@@ -374,7 +401,7 @@ export class AdminSettingsMenuConfigurationComponent implements OnInit {
       title: defaultTitle,
       link: item.paletteType === 'custom-link' ? '/' : '',
       icon: item.icon ? this._mdiKeyFromIconClass(item.icon) : null,
-      includeFunction: null,
+      includeFunction: '',
       section: 'root',
     });
 
@@ -473,10 +500,26 @@ export class AdminSettingsMenuConfigurationComponent implements OnInit {
     this.adminSettingsService.updateMenuConfiguration({configuration}).subscribe({
       next: () => {
         this.$saving.set(false);
-        this.$saved.set(true);
+        this._$reloadModalOpen.set(true);
       },
       error: () => this.$saving.set(false),
     });
+  }
+
+  /** Reload the app so the freshly saved menu takes effect. */
+  public onReloadConfirm(): void {
+    window.location.reload();
+  }
+
+  /** Dismiss the reload modal, leaving a persistent inline reminder that a reload is still pending. */
+  public onReloadDismiss(): void {
+    this._$reloadModalOpen.set(false);
+    this.$saved.set(true);
+  }
+
+  /** Dismiss the persistent "menu saved" reminder. */
+  public onDismissSavedNotification(): void {
+    this.$saved.set(false);
   }
 
   // ----- Display helpers (used by the template) -----
