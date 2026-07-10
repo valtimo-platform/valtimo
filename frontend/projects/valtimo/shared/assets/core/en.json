@@ -3337,11 +3337,66 @@
     "deleteHelperText": "After creating a quick search item, you can delete it by right-clicking on it",
     "duplicateError": "A quick search item with this title already exists"
   },
+  "externalPluginPage": {
+    "loadError": "This plugin page could not be loaded."
+  },
   "adminSettings": {
     "title": "Settings",
     "tabs": {
       "appearance": "Appearance",
+      "menuConfiguration": "Menu configuration",
       "featureToggles": "Feature toggles"
+    },
+    "menuConfiguration": {
+      "intro": "Build the application's left-hand menu. Drag items between the available items and the menu structure, reorder them, and edit an item's title, link or icon. Access to each item is managed via PBAC.",
+      "structureTitle": "Menu structure",
+      "availableTitle": "Available items",
+      "save": "Save menu",
+      "reset": "Reset",
+      "resetTooltip": "Discard unsaved changes and restore the last saved menu configuration.",
+      "savedTitle": "Menu saved",
+      "savedSubtitle": "The menu configuration has been saved and applies on the next reload.",
+      "reloadModal": {
+        "title": "Menu saved",
+        "content": "The new menu configuration has been saved. Reload the application to see the changes right away, or dismiss this dialog to keep working and reload later.",
+        "confirm": "Reload now",
+        "dismiss": "Dismiss"
+      },
+      "required": "Required",
+      "runtimeSubmenu": "Dynamic submenu",
+      "runtimeSubmenuNote": "This item's submenu is filled at runtime (for example pinned cases) and cannot be edited here.",
+      "allPlaced": "All items are already in the menu.",
+      "emptyStructure": "Drag items here to build the menu.",
+      "emptySection": "Drop items here",
+      "add": "Add to menu",
+      "dragHandle": "Drag to reorder",
+      "categories": {
+        "generic": "Generic",
+        "main": "Main menu items",
+        "admin": "Admin pages",
+        "development": "Development pages",
+        "pluginPages": "Plugin pages"
+      },
+      "generic": {
+        "group": "Section",
+        "sectionHeader": "Section header",
+        "customLink": "Custom link"
+      },
+      "defaults": {
+        "group": "New section",
+        "sectionHeader": "New header",
+        "customLink": "New link"
+      },
+      "editor": {
+        "title": "Edit menu item",
+        "titleHelper": "Enter a translation key to show a translated title, or type a fixed title if no translation key exists.",
+        "link": "Link (route or external URL)",
+        "section": "Section",
+        "sectionRoot": "Top level",
+        "includeFunction": "Include function",
+        "includeFunctionNone": "None",
+        "pbacNote": "Access to this item is managed via PBAC, not here."
+      }
     },
     "appearance": {
       "logo": {
@@ -3625,6 +3680,7 @@
     "mdi-folder-account": "Folder Account",
     "mdi-folder-multiple": "Folder Multiple",
     "mdi-folder-star": "Folder Star",
+    "mdi-archive": "Archive",
     "mdi-file": "File",
     "mdi-file-document": "File Document",
     "mdi-file-cog": "File Cog",
@@ -3672,7 +3728,9 @@
     "mdi-lightbulb": "Lightbulb",
     "mdi-check": "Check",
     "mdi-check-circle": "Check Circle",
+    "mdi-check-all": "Check All",
     "mdi-close": "Close",
+    "mdi-dot-circle": "Dot Circle",
     "mdi-lock": "Lock",
     "mdi-lock-open": "Lock Open",
     "mdi-lock-check": "Lock Check",
@@ -3690,6 +3748,7 @@
     "mdi-view-dashboard": "View Dashboard",
     "mdi-view-list": "View List",
     "mdi-view-grid": "View Grid",
+    "mdi-layers": "Layers",
     "mdi-table": "Table",
     "mdi-chart-bar": "Chart Bar",
     "mdi-chart-line": "Chart Line",
@@ -3714,6 +3773,8 @@
     "mdi-lan": "LAN",
     "mdi-api": "API",
     "mdi-application-braces": "Application Braces",
+    "mdi-xml": "XML",
+    "mdi-code": "Code",
     "mdi-cube": "Cube",
     "mdi-view-module": "View Module",
     "mdi-puzzle": "Puzzle",

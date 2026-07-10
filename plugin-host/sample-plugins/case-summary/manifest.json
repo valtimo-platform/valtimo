@@ -61,7 +61,20 @@
       "taskForm.completed.title": "Task completed",
       "taskForm.completed": "The plugin completed this task on your behalf.",
       "taskForm.forbidden": "You don't have permission to complete this task.",
-      "taskForm.error": "The plugin could not complete this task."
+      "taskForm.error": "The plugin could not complete this task.",
+      "page.loading": "Loading…",
+      "page.error": "Could not load page data.",
+      "page.overview.title": "Overview",
+      "page.overview.hello.title": "Overview page",
+      "page.overview.hello": "This full page is rendered by the case-summary plugin and placed in the menu by an admin.",
+      "page.overview.context.title": "Page context",
+      "page.overview.context.configuration": "Plugin configuration",
+      "page.overview.stats.title": "Plugin-served data",
+      "page.reports.title": "Reports",
+      "page.reports.intro": "A small report the plugin computes itself, served to this page.",
+      "page.reports.table.period": "Period",
+      "page.reports.table.created": "Created",
+      "page.reports.table.completed": "Completed"
     },
     "nl": {
       "name": "Zaaksamenvatting",
@@ -117,7 +130,20 @@
       "taskForm.completed.title": "Taak voltooid",
       "taskForm.completed": "De plugin heeft deze taak namens u voltooid.",
       "taskForm.forbidden": "U heeft geen rechten om deze taak te voltooien.",
-      "taskForm.error": "De plugin kon deze taak niet voltooien."
+      "taskForm.error": "De plugin kon deze taak niet voltooien.",
+      "page.loading": "Laden…",
+      "page.error": "Kon paginagegevens niet laden.",
+      "page.overview.title": "Overzicht",
+      "page.overview.hello.title": "Overzichtspagina",
+      "page.overview.hello": "Deze volledige pagina wordt weergegeven door de case-summary plugin en door een beheerder in het menu geplaatst.",
+      "page.overview.context.title": "Paginacontext",
+      "page.overview.context.configuration": "Pluginconfiguratie",
+      "page.overview.stats.title": "Door de plugin geleverde gegevens",
+      "page.reports.title": "Rapportages",
+      "page.reports.intro": "Een klein rapport dat de plugin zelf berekent en aan deze pagina levert.",
+      "page.reports.table.period": "Periode",
+      "page.reports.table.created": "Aangemaakt",
+      "page.reports.table.completed": "Afgerond"
     }
   },
   "configurationSchema": {
@@ -168,6 +194,20 @@
       "key": "review",
       "title": "Case Review",
       "path": "/bundles/task-form.html"
+    },
+    {
+      "type": "page",
+      "key": "overview",
+      "title": "page.overview.title",
+      "icon": "icon mdi mdi-view-dashboard",
+      "path": "/bundles/page-overview.html"
+    },
+    {
+      "type": "page",
+      "key": "reports",
+      "title": "page.reports.title",
+      "icon": "icon mdi mdi-chart-bar",
+      "path": "/bundles/page-reports.html"
     }
   ],
   "actions": [
