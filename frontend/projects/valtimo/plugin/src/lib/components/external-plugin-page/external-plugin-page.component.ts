@@ -19,7 +19,7 @@ import {ChangeDetectionStrategy, Component, OnDestroy, OnInit, signal} from '@an
 import {ActivatedRoute} from '@angular/router';
 import {TranslateModule} from '@ngx-translate/core';
 import {LoadingModule} from 'carbon-components-angular';
-import {map, Subscription, switchMap, throwError} from 'rxjs';
+import {map, Subscription, switchMap, tap, throwError} from 'rxjs';
 import {ExternalPluginIframeComponent} from '../external-plugin-iframe/external-plugin-iframe.component';
 import {ExternalPluginPageService} from '../../services';
 import {ExternalPluginMenuPage, ExternalPluginUserTokenResponse} from '../../models';
@@ -63,6 +63,13 @@ export class ExternalPluginPageComponent implements OnInit, OnDestroy {
             configurationId: params['configurationId'] as string,
             bundleKey: (params['bundleKey'] as string) ?? null,
           })),
+          // Navigating between two plugin pages reuses this component, so reset to the loading state
+          // on every param change. This tears down the previous `ready` view (and its iframe) so the
+          // freshly matched page is hosted in a new iframe instead of the reused one keeping its src.
+          tap(() => {
+            this.$state.set('loading');
+            this.$iframeReady.set(false);
+          }),
           switchMap(({configurationId, bundleKey}) =>
             this.pageService.getMenuPages().pipe(
               map(pages => this._matchPage(pages, configurationId, bundleKey)),
