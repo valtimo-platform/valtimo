@@ -18,6 +18,11 @@
 
 ## Bugfixes
 
+* **Draft process start confirmation now shows the correct message**
+
+  The confirmation dialog for starting a draft process or building block now shows a proper start message
+  instead of a delete confirmation message.
+ 
 * **Fixed modal size not persisted for form-flow process links on a start event**
 
 * Fixed the modal size not being saved for form-flow process links on a start event. When configuring a form-flow start
