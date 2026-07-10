@@ -16,11 +16,15 @@
 
 package com.ritense.documentenapipreview
 
+import com.ritense.zakenapi.config.ZakenApiAutoConfiguration
+import com.ritense.zakenapi.uploadprocess.UploadProcessAutoConfiguration
 import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.boot.runApplication
 import org.springframework.boot.test.context.TestConfiguration
 
-@SpringBootApplication
+// The zaken-api auto-configurations are excluded because the preview integration test only needs
+// ZaakDocumentService (mocked in BaseIntegrationTest) for the linkage check, not the full zaken-api bean graph.
+@SpringBootApplication(exclude = [ZakenApiAutoConfiguration::class, UploadProcessAutoConfiguration::class])
 class TestApplication {
 
     fun main(args: Array<String>) {
