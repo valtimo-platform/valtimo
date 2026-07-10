@@ -37,6 +37,7 @@ import com.ritense.processdocument.repository.CaseDefinitionProcessLinkRepositor
 import com.ritense.processdocument.repository.ProcessDocumentInstanceRepository;
 import com.ritense.processdocument.resolver.CaseDocumentJsonValueResolverFactory;
 import com.ritense.processdocument.resolver.DocumentTableValueResolver;
+import com.ritense.processdocument.resolver.TaskValueResolver;
 import com.ritense.processdocument.service.BuildingBlockProcessLookup;
 import com.ritense.processdocument.service.CaseDefinitionProcessLinkService;
 import com.ritense.processdocument.service.ProcessDefinitionCaseDefinitionService;
@@ -265,6 +266,12 @@ public class ProcessDocumentAutoConfiguration {
         DocumentService documentService
     ) {
         return new DocumentTableValueResolver(processDocumentService, documentService);
+    }
+
+    @Bean
+    @ConditionalOnMissingBean(TaskValueResolver.class)
+    public ValueResolverFactory taskValueResolver() {
+        return new TaskValueResolver();
     }
 
     @Bean

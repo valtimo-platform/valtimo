@@ -173,7 +173,9 @@ class CaseZaakdetailsInspectionService(
     }
 
     private fun DocumentObjectenApiSync.toDto(): ZaakdetailsSyncConfigDto {
-        val title = objectManagementConfigurationId?.let { objectManagementService.getById(it)?.title }
+        val title = objectManagementConfigurationId?.let {
+            runWithoutAuthorization { objectManagementService.getById(it)?.title }
+        }
         return ZaakdetailsSyncConfigDto(
             caseDefinitionKey = caseDefinitionId.key,
             caseDefinitionVersionTag = caseDefinitionId.versionTag.toString(),

@@ -33,3 +33,15 @@ export interface DecisionXml {
   id: string;
   dmnXml: string;
 }
+
+export interface DecisionInputVariable {
+  /** Human-readable column header shown in the decision table. */
+  label: string;
+  /** The process variable / FEEL expression the input column evaluates. */
+  expression: string;
+}
+
+export interface DecisionFormValue {
+  name: string;
+  inputVariables: DecisionInputVariable[];
+}

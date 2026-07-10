@@ -23,6 +23,7 @@ import com.ritense.valtimo.contract.domain.ValtimoMediaType.APPLICATION_JSON_UTF
 import com.ritense.valtimo.contract.endpoint.EndpointDescription
 import com.ritense.valtimo.decision.OperatonDecisionService
 import com.ritense.valtimo.service.OperatonProcessService
+import com.ritense.valtimo.web.rest.dto.DecisionDefinitionResponseDto
 import com.ritense.valtimo.web.rest.dto.DefinitionDeploymentResponseDto
 import org.operaton.bpm.engine.impl.persistence.entity.DeploymentEntity
 import org.operaton.bpm.engine.rest.dto.repository.DecisionDefinitionDto
@@ -51,6 +52,20 @@ class DecisionManagementResource(
         en = "List decision definitions for a case definition",
         nl = "Beslisdefinities voor een dossierdefinitie ophalen",
     )
+    @GetMapping(
+        value = ["/v1/decision-definition"],
+        produces = [MediaType.APPLICATION_JSON_VALUE]
+    )
+    fun listUnlinkedDecisionDefinitions(): ResponseEntity<List<DecisionDefinitionResponseDto>> {
+        val decisionDefinitions = runWithoutAuthorization {
+            operatonDecisionService.getUnlinkedDecisionDefinitions()
+        }
+
+        return ResponseEntity.ok(decisionDefinitions.map {
+            DecisionDefinitionResponseDto.from(it)
+        })
+    }
+
     @GetMapping(
         value = ["/v1/case-definition/{caseDefinitionKey}/version/{caseDefinitionVersionTag}/decision-definition"],
         produces = [MediaType.APPLICATION_JSON_VALUE]

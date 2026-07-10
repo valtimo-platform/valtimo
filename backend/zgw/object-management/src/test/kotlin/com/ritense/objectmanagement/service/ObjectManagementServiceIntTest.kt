@@ -296,7 +296,7 @@ internal class ObjectManagementServiceIntTest : BaseIntegrationTest() {
                 """.trimIndent()
             )
         )
-        val objectManagement = objectManagementService.getByTitle("My Object Management")!!
+        val objectManagement = objectManagementService.getByIdByTitle("My Object Management")!!
         val searchParameters = listOf(ObjectSearchParameter("property1", EQUAL_TO, "henk"))
 
         val objects = runWithoutAuthorization { objectManagementService.getObjectsWithSearchParams(

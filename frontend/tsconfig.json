@@ -17,8 +17,8 @@
     "lib": ["ES2022", "dom", "dom.iterable"],
     "useDefineForClassFields": false,
     "paths": {
-      "@src": ["src"],
-      "@src/*": ["src/*"],
+      "@src": ["apps/dev/src"],
+      "@src/*": ["apps/dev/src/*"],
       "@valtimo/access-control": ["./projects/valtimo/access-control/src/public-api.ts"],
       "@valtimo/access-control-management": ["./projects/valtimo/access-control-management/src/public-api.ts"],
       "@valtimo/account": ["./projects/valtimo/account/src/public_api.ts"],
@@ -67,10 +67,10 @@
   "files": [],
   "references": [
     {
-      "path": "./src/tsconfig.app.json"
+      "path": "./apps/dev/src/tsconfig.app.json"
     },
     {
-      "path": "./src/tsconfig.spec.json"
+      "path": "./apps/dev/src/tsconfig.spec.json"
     },
     {
       "path": "./e2e/tsconfig.e2e.json"
@@ -335,6 +335,24 @@
     },
     {
       "path": "./projects/valtimo/admin-settings/tsconfig.lib.json"
+    },
+    {
+      "path": "./apps/gzac/src/tsconfig.app.json"
+    },
+    {
+      "path": "./apps/gzac/src/tsconfig.spec.json"
+    },
+    {
+      "path": "./apps/valtimo/src/tsconfig.app.json"
+    },
+    {
+      "path": "./apps/valtimo/src/tsconfig.spec.json"
+    },
+    {
+      "path": "./apps/evenementenvergunning/src/tsconfig.app.json"
+    },
+    {
+      "path": "./apps/evenementenvergunning/src/tsconfig.spec.json"
     }
   ]
 }

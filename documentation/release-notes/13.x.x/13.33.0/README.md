@@ -14,8 +14,15 @@
   with a `view` action ensures only users authorized for the matching zaaktype can load a zaak. See
   [Load a zaak in a form flow](../../../features/zgw/load-zaak-in-form-flow.md) for details.
 
-
 ## Enhancements
+
+* **Configurable modal size for start forms**
+
+  The process link configuration of a start event now offers the **Modal size** option (Extra small, Small, Medium,
+  Large). When a case is created via the **Start case** button, the start form  modal opens in the configured size 
+  instead of always being small. If multiple processes can create the case, the modal opens in the size configured 
+  for the selected process. When no size is configured the modal keeps its previous
+  default.
 
 * **Value resolver support for Besluiten API plugin date fields**
 
@@ -27,6 +34,25 @@
 
   Input and output mappings on building block call activities can now reference nested paths in the case or building
   block document (e.g. `/person/name`), instead of only top-level properties.
+
+* **Selectable widget layout algorithm**
+
+  The algorithm used to arrange widgets can now be chosen per case widget tab, IKO tab and dashboard. Three options
+  are available:
+
+  * **Default (less gaps)** (`MUURI_GAP_FREE`) — Muuri masonry with gap filling. This is the original behaviour and is
+    used when nothing is configured, so existing configurations are unaffected.
+  * **Default** (`MUURI`) — plain Muuri masonry without gap filling.
+  * **Gap free** (`BEAUTIFUL`) — a new custom dense-packing algorithm that may reorder widgets within a section to
+    remove gaps, almost always producing a clean layout without holes.
+
+  *Default* and *Default (less gaps)* keep the widgets in their configured order as much as possible but can leave
+  empty space, while *Gap free* reorders widgets to eliminate gaps. The choice can be made in the admin UI (the
+  dashboard edit modal, the case **Edit widget tab** modal and the IKO tab modal) and via auto-deployment through the
+  optional `widgetLayout` property on the dashboard, case widget tab and IKO tab definitions. See the
+  [dashboard](../../../features/dashboard/README.md#layout-algorithm),
+  [case widget tab](../../../features/case/case-detail/tabs/widgets.md#layout-algorithm) and
+  [IKO tab](../../../features/iko/tabs.md#layout-algorithm) documentation for details.
 
 ## Bugfixes
 

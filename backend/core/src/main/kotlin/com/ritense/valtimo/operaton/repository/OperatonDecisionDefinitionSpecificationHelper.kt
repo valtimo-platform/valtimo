@@ -16,6 +16,7 @@
 
 package com.ritense.valtimo.operaton.repository
 
+import com.ritense.valtimo.contract.process.ProcessConstants.OPERATON_BUILDING_BLOCK_DEFINITION_VERSION_TAG_PREFIX
 import com.ritense.valtimo.contract.process.ProcessConstants.OPERATON_CASE_DEFINITION_VERSION_TAG_PREFIX
 import com.ritense.valtimo.operaton.domain.OperatonDecisionDefinition
 import org.springframework.data.jpa.domain.Specification
@@ -90,6 +91,24 @@ class OperatonDecisionDefinitionSpecificationHelper {
                             cb.literal(3)
                         ),
                         OPERATON_CASE_DEFINITION_VERSION_TAG_PREFIX
+                    )
+                )
+            )
+        }
+
+        @JvmStatic
+        fun byNotLinkedToBuildingBlock() = Specification<OperatonDecisionDefinition> { root, _, cb ->
+            cb.or(
+                cb.isNull(root.get<Any>(VERSION_TAG)),
+                cb.not(
+                    cb.equal(
+                        cb.function(
+                            "left",
+                            String::class.java,
+                            root.get<String>(VERSION_TAG),
+                            cb.literal(3)
+                        ),
+                        OPERATON_BUILDING_BLOCK_DEFINITION_VERSION_TAG_PREFIX
                     )
                 )
             )

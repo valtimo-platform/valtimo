@@ -39,7 +39,7 @@ export class ObjectService {
     params?: any
   ): Observable<ObjectConfiguration> {
     return this.http.get<ObjectConfiguration>(
-      `${this.valtimoEndpointUri}v1/object/management/configuration/${objectManagementId}/object`,
+      `${this.valtimoEndpointUri}v1/object-management/configuration/${objectManagementId}/object`,
       {params}
     );
   }
@@ -50,7 +50,7 @@ export class ObjectService {
     payload?: any
   ): Observable<ObjectConfiguration> {
     return this.http.post<ObjectConfiguration>(
-      `${this.valtimoEndpointUri}v1/object/management/configuration/${objectManagementId}/object`,
+      `${this.valtimoEndpointUri}v1/object-management/configuration/${objectManagementId}/object`,
       payload,
       {params}
     );

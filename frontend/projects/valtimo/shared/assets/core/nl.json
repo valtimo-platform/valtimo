@@ -44,6 +44,13 @@
       "content": "Weet je zeker dat je van tabblad wilt wisselen? Alle gemaakte selecties gaan verloren.",
       "confirm": "Tabblad wisselen"
     },
+    "draftProcessConfirmation": {
+      "title": "Concept-proces starten",
+      "warningTitle": "Waarschuwing: Concept-proces",
+      "warningDescription": "Deze procesdefinitie is nog in concept en werkt mogelijk niet zoals verwacht.",
+      "confirm": "Toch starten",
+      "cancel": "Annuleren"
+    },
     "noResults": {
       "ALL": {"description": "Er is hier niets te doen.", "title": "Er zijn geen dossiers"},
       "MINE": {"description": "Even pauze.", "title": "Er zijn geen dossiers aan jou toegewezen"},
@@ -688,8 +695,25 @@
       "fileUploaderDescription": "Alleen bestanden met de extensie .dmn zijn toegestaan.",
       "fileUploaderButton": "Kies DMN-bestand"
     },
+    "create": "Creëer DMN-tabel",
+    "createModal": {
+      "title": "Beslistabel aanmaken",
+      "name": "Naam",
+      "namePlaceholder": "bijv. Geschiktheidsbeslissing",
+      "nameRequired": "Naam is verplicht",
+      "inputVariables": "Inputvariabelen (optioneel)",
+      "inputVariablesHelper": "Inputkolommen zijn optioneel - je mag dit leeg laten. Voor elke rij die je toevoegt is de procesvariabele verplicht; het label is optioneel en de naam van de procesvariabele wordt als kolomkop gebruikt als je het leeg laat. Je kunt deze later in de editor aanpassen.",
+      "inputLabel": "Label (optioneel)",
+      "inputExpression": "Procesvariabele (verplicht)",
+      "inputExpressionRequired": "Een procesvariabele is verplicht voor elke inputkolom.",
+      "addInputVariable": "Inputvariabele toevoegen"
+    },
+    "editModal": {
+      "title": "Beslistabel bewerken"
+    },
     "version": "Versie",
     "deploy": "Opslaan",
+    "readOnly": "Alleen-lezen",
     "loadFailure": "Er is iets misgegaan bij het laden van de beslistabel.",
     "deploySuccess": "De beslistabel is succesvol opgeslagen.",
     "deployFailure": "Er is iets misgegaan bij het opslaan van de beslistabel.",
@@ -702,6 +726,7 @@
   },
   "message": {"empty": "Geen resultaat gevonden"},
   "cta": {"close": "Sluiten", "moreDetails": "Meer details"},
+  "carousel": {"previous": "Vorige", "next": "Volgende", "goToSlide": "Ga naar dia"},
   "formManagement": {
     "noFormDefinitionFoundAdmin": "Er is geen formulier gekoppeld aan de start event/user task. Druk op de knop om deze te configureren.",
     "noFormDefinitionFoundUser": "Er is geen formulier gekoppeld aan de start event/user task. Vraag een beheerder om hulp.",
@@ -872,7 +897,8 @@
       "notFinalizableWarning": {
         "title": "Deze dossierdefinitie kan niet definitief worden gemaakt.",
         "BUILDING_BLOCK_NOT_FINAL": "De dossierdefinitie maakt gebruik van concept-bouwblokken. Om deze dossierdefinitie definitief te kunnen maken, moeten alle bouwblokken die het gebruikt definitief zijn.",
-        "CONFIGURATION_ISSUES": "De dossierdefinitie bevat onopgeloste configuratieproblemen. Controleer en los alle configuratiewaarschuwingen op voordat u deze definitief maakt."
+        "CONFIGURATION_ISSUES": "De dossierdefinitie bevat onopgeloste configuratieproblemen. Controleer en los alle configuratiewaarschuwingen op voordat u deze definitief maakt.",
+        "PROCESS_DEFINITION_IN_DRAFT": "De dossierdefinitie bevat procesdefinities die nog in concept zijn. Maak alle procesdefinities definitief voordat u de dossierdefinitie definitief maakt."
       }
     },
     "environmentConfig": {
@@ -1298,6 +1324,10 @@
         "title": "Markering",
         "description": "Een kleine widget die één waarde of een aantal benadrukt"
       },
+      "image": {
+        "title": "Afbeelding",
+        "description": "Toon een geüploade afbeelding"
+      },
       "generic": {
         "title": "Generieke widgets",
         "description": "Breed toepasbaar — koppel ze aan elke gegevensstructuur (velden, tabellen, collecties). Meer configuratie, maar geen beperkingen op wat ze kunnen tonen."
@@ -1492,6 +1522,13 @@
         "valuePlaceholder": "Selecteer of typ een pad",
         "valueHelper": "Toont de waarde op dit pad. Als het een array is, wordt het aantal elementen weergegeven.",
         "accentColor": "Accentkleur"
+      },
+      "image": {
+        "description": "",
+        "value": "Waarde",
+        "valuePlaceholder": "Selecteer of typ een pad",
+        "valueHelper": "Toont de afbeelding op dit pad. Het pad moet verwijzen naar een geüploade bestandsresource.",
+        "displayAsCarousel": "Weergeven als carrousel"
       }
     },
     "filters": {
@@ -1809,6 +1846,15 @@
     },
     "successNotification": "Proces succesvol gepubliceerd",
     "errorNotification": "Er ging iets mis bij het publiceren van het proces",
+    "validate": "Valideren",
+    "validationSuccessNotification": "Procesdefinitie is geldig",
+    "validationWarningNotification": "Procesdefinitie bevat waarschuwingen",
+    "draft": "Concept",
+    "status": "Status",
+    "draftTooltip": "Wanneer ingeschakeld wordt de procesdefinitie opgeslagen als concept. Concepten worden niet gevalideerd en kunnen niet worden gestart.",
+    "validationErrors": "Validatiefouten",
+    "validationErrorsCount": "Validatiefouten ({{count}})",
+    "validationErrorNotification": "Procesdefinitie bevat validatiefouten. Controleer de gemarkeerde elementen.",
     "alreadyExistsNotification": "Procesdefinitie bestaat al",
     "deleteNotification": "Proces succesvol verwijderd",
     "upload": {
@@ -1825,7 +1871,22 @@
       "replaceConfirm": "Vervangen"
     },
     "canInitializeDocument": "Start een dossier",
-    "startableByUser": "Door gebruiker te starten"
+    "startableByUser": "Door gebruiker te starten",
+    "expressionErrors": {
+      "MISSING_EL_MARKERS": "Expressie moet ${...} of #{...} syntax gebruiken",
+      "UNCLOSED_PARENTHESIS": "Expressie heeft een niet-gesloten haakje '('",
+      "UNCLOSED_BRACE": "Expressie mist een sluitende accolade '}'",
+      "UNCLOSED_BRACKET": "Expressie heeft een niet-gesloten blokhaak '['",
+      "MISMATCHED_DELIMITER": "Expressie heeft niet-overeenkomende haakjes of accolades",
+      "INCOMPLETE_EXPRESSION": "Expressie is onvolledig",
+      "INVALID_SYNTAX": "Expressie heeft ongeldige syntax",
+      "BEAN_NOT_FOUND": "Gerefereerde bean bestaat niet"
+    },
+    "warningConfirmation": {
+      "title": "Proces bevat waarschuwingen",
+      "content": "De procesdefinitie bevat waarschuwingen. Weet u zeker dat u wilt opslaan zonder de waarschuwingen op te lossen?",
+      "confirm": "Toch opslaan"
+    }
   },
   "processCaseConnection": {
     "noProcessesTitle": "Geen processen",
@@ -2411,6 +2472,7 @@
     "defaultSort": "Standaardsortering",
     "defaultSortTitle": "Standaardsortering (optioneel)",
     "defaultSortTooltip": "Als dit veld een waarde heeft, wordt de tabel standaard gesorteerd op deze eigenschap, in de opgegeven richting. Slechts één kolom tegelijk kan deze eigenschap hebben. Bij het aanmaken van een nieuwe kolom, als voor een andere kolom al een standaardsortering is opgegeven, is dit invoerveld uitgeschakeld.",
+    "defaultSortDisabledNotice": "Voor een andere kolom is al een standaardsortering ingesteld. Slechts één kolom tegelijk kan een standaardsortering hebben. Verwijder de bestaande standaardsortering om dit veld in te kunnen vullen.",
     "selectDefaultSort": "Selecteer een standaard sortering",
     "sortableYes": "Ja",
     "sortableNo": "Nee",
@@ -2657,8 +2719,8 @@
       "options": {"modal": "Modaal", "panel": "Panel"}
     },
     "formSize": {
-      "label": "Selecteer modaal-grootte",
-      "placeholder": "Selecteer een modaal-grootte",
+      "label": "Selecteer formuliergrootte",
+      "placeholder": "Selecteer een formuliergrootte",
       "options": {
         "extraSmall": "Extra klein",
         "small": "Klein",
@@ -2694,6 +2756,9 @@
       "key": "Rol-key",
       "add": "Nieuwe rol toevoegen",
       "name": "Rol-naam",
+      "selectRole": "Selecteer een rol",
+      "chooseFromList": "Kies uit lijst",
+      "enterManually": "Handmatig invoeren",
       "deleteModalContent": "Weet u zeker dat u deze rollen en alle onderliggende machtigingen wilt verwijderen? Deze actie kan niet ongedaan worden gemaakt.",
       "editMetadata": "Metadata bewerken",
       "editRole": "Rol bewerken",
@@ -2707,6 +2772,7 @@
       },
       "tabs": {
         "summary": "Samenvatting",
+        "editor": "Editor",
         "jsonEditor": "JSON-editor"
       }
     },
@@ -2733,22 +2799,109 @@
       "operatonTask": "Taak"
     },
     "actions": {
-      "view": "bekijken",
-      "view_list": "lijst bekijken",
-      "create": "aanmaken",
-      "modify": "wijzigen",
-      "delete": "verwijderen",
-      "assign": "toewijzen",
-      "assignable": "toewijsbaar",
-      "claim": "claimen",
-      "complete": "afronden",
-      "export": "exporteren"
+      "view": "Bekijken",
+      "view_list": "Lijst bekijken",
+      "create": "Aanmaken",
+      "modify": "Wijzigen",
+      "delete": "Verwijderen",
+      "assign": "Toewijzen",
+      "assignable": "Toewijsbaar",
+      "claim": "Claimen",
+      "complete": "Afronden",
+      "export": "Exporteren",
+      "inspect": "Inspecteren",
+      "inspect_modify": "Inspecteren en wijzigen"
+    },
+    "actionDescriptions": {
+      "view": "Een enkele resource openen en bekijken.",
+      "view_list": "De resource in lijsten en zoekresultaten zien.",
+      "create": "Een nieuwe resource aanmaken.",
+      "modify": "Een bestaande resource wijzigen.",
+      "delete": "Een resource permanent verwijderen.",
+      "assign": "De resource aan een gebruiker toewijzen.",
+      "assignable": "Selecteerbaar zijn als behandelaar van de resource.",
+      "claim": "De resource claimen om er zelf aan te werken.",
+      "complete": "De resource als afgerond markeren.",
+      "export": "De gegevens van de resource exporteren.",
+      "inspect": "De details van de resource bekijken zonder te wijzigen.",
+      "inspect_modify": "De details van de resource bekijken en wijzigen."
     },
     "filter": {
       "resourceType": "Resource-type",
       "action": "Actie",
       "allResourceTypes": "Alle resource-types",
       "allActions": "Alle acties"
+    },
+    "editor": {
+      "permission": "Permissie",
+      "permissions": "Permissies",
+      "newPermission": "Nieuwe permissie",
+      "hasConditions": "Voorwaarden",
+      "hasContext": "Context",
+      "preview": {
+        "actions": "Acties",
+        "includes": "Bevat"
+      },
+      "addPermission": "Permissie toevoegen",
+      "removePermission": "Permissie verwijderen",
+      "removePermissionModal": {
+        "title": "Permissie verwijderen?",
+        "content": "Deze permissie wordt uit de lijst verwijderd. Ze wordt pas echt verwijderd wanneer je de volledige set permissies opslaat."
+      },
+      "resourceAndActions": "Resource & acties",
+      "resourceActionsHint": "Kies de resource waarop deze permissie van toepassing is en de acties die het verleent.",
+      "permissionsHint": "Je stelt een permissie op {{resource}} in voor de rol {{role}}. Alleen opties die het systeem ondersteunt kunnen worden geselecteerd.",
+      "permissionsHintNew": "Je stelt een permissie in voor de rol {{role}}. Alleen opties die het systeem ondersteunt kunnen worden geselecteerd.",
+      "resourceType": "Resource-type",
+      "resourceTypePlaceholder": "Selecteer een resource-type",
+      "actions": "Toegestane acties",
+      "noActions": "Er zijn geen acties beschikbaar voor dit resource-type.",
+      "conditions": "Voorwaarden",
+      "conditionsHint": "Toegang wordt alleen verleend wanneer aan alle voorwaarden wordt voldaan. Laat leeg om altijd toegang te verlenen.",
+      "conditionType": "Type voorwaarde",
+      "conditionTypes": {
+        "field": "Veld",
+        "expression": "JSON-veld",
+        "container": "Gerelateerde resource"
+      },
+      "field": "Veld om uit te lezen",
+      "fieldPlaceholder": "Selecteer een veld",
+      "operator": "Operator om te vergelijken",
+      "value": "Waarde om mee te vergelijken",
+      "valuePlaceholder": "bijv. null, true, 42, ${currentUserId} of [\"OPEN\", \"CLOSED\"]",
+      "path": "JSON-pad",
+      "pathPlaceholder": "bijv. /root/status",
+      "clazz": "Waardetype (class)",
+      "clazzPlaceholder": "bijv. java.lang.String",
+      "valueTypeFromList": "Kies uit lijst",
+      "valueTypeManual": "Handmatig invoeren",
+      "relatedResource": "Gerelateerde resource",
+      "relatedResourcePlaceholder": "Selecteer een gerelateerde resource",
+      "addCondition": "Voorwaarde toevoegen",
+      "contextSection": "Context",
+      "contextHint": "Bepaal of en hoe context invloed heeft op deze permissie.",
+      "contextModeNone": "Geen beperking",
+      "contextModeNoContext": "Alleen zonder context",
+      "contextModeSpecific": "Specifieke context",
+      "noContextHint": "Deze permissie geldt alleen wanneer de resource op zichzelf wordt benaderd — niet binnen een gerelateerde resource.",
+      "contextResourceType": "Context-resource",
+      "contextResourceTypePlaceholder": "Selecteer een context-resource",
+      "empty": {
+        "title": "Nog geen permissies",
+        "message": "Voeg een permissie toe om deze rol toegang tot resources te geven."
+      },
+      "tooltips": {
+        "resourceType": "Het type resource waarvoor deze permissie toegang geeft. Bijvoorbeeld: een zaakdefinitie, document of taak.",
+        "actions": "Wat deze rol met de resource mag doen. Bijvoorbeeld: bekijken, wijzigen of verwijderen. Er moet minstens één geselecteerd zijn.",
+        "conditionType": "Veld vergelijkt een eigenschap van de resource. JSON-veld leest een waarde op een JSON-pad in de JSON-inhoud van het veld. Gerelateerde resource controleert een gekoppelde resource (bijv. het document van een zaak).",
+        "field": "Een eigenschap van de resource om te controleren. Bijvoorbeeld: name, createdBy of active.",
+        "operator": "Hoe het veld met de waarde wordt vergeleken. Bijvoorbeeld: is gelijk aan, is een van, of bevat.",
+        "value": "De waarde om mee te vergelijken — bijv. tekst zoals OPEN, een getal zoals 42, true/false, of een van de ondersteunde placeholders: ${currentUserId}, ${currentUsername}, ${currentUserEmail}, ${currentUserRoles}, ${currentUserTeams}. Voor de operatoren 'is een van' en 'bevat' voer je een JSON-array in, zoals [\"OPEN\", \"CLOSED\"]. Typ null voor geen waarde — het veld mag niet leeg zijn.",
+        "path": "Een JSON-pad in de inhoud van het veld dat is gekozen bij 'Veld om uit te lezen'. Bijvoorbeeld: /root/status of /aanvrager/bsn.",
+        "clazz": "Het volledige Java-type van de waarde. Bijvoorbeeld: java.lang.String of java.lang.Boolean.",
+        "relatedResource": "De gekoppelde resource waartegen de geneste voorwaarden worden geëvalueerd. Bijvoorbeeld: het document dat aan een zaak hangt.",
+        "contextResourceType": "Verleen deze permissie alleen wanneer de resource binnen een andere resource wordt benaderd. Bijvoorbeeld: documenten binnen een specifieke zaakdefinitie."
+      }
     },
     "overview": {
       "canDo": "Kan",
@@ -2762,7 +2915,7 @@
       "where": "waar",
       "atJsonPath": "op JSON-pad",
       "inContextOf": "in de context van",
-      "noContext": "zonder context",
+      "noContext": "Zonder context",
       "customField": "(aangepast veld)",
       "customResource": "(aangepaste resource)",
       "noAccess": "Geen toegang",
@@ -3043,6 +3196,11 @@
     "noWidgetsDescription": "Er zijn geen widgets geconfigureerd voor dit tabblad, of je hebt niet de juiste rechten om deze te zien.",
     "noWidget": "Widget niet beschikbaar",
     "noCustomComponentDescription": "De component die geconfigureerd is voor deze widget kon niet gevonden worden.",
+    "image": {
+      "noImage": "Geen afbeelding gevonden",
+      "openInNewTab": "Openen in nieuw tabblad",
+      "download": "Downloaden"
+    },
     "map": {
       "title": "Kaart"
     },
@@ -3327,10 +3485,6 @@
           "title": "Applicatietitel als achtervoegsel",
           "description": "Voeg de applicatietitel toe als achtervoegsel aan de browsertabtitel."
         },
-        "experimentalDmnEditing": {
-          "title": "Experimentele DMN-bewerking",
-          "description": "Schakel de experimentele DMN-beslissingstabeleditor in."
-        },
         "disableCaseCount": {
           "title": "Dossiertelling uitschakelen",
           "description": "Verberg het aantal dossiers in het menu."
@@ -3382,6 +3536,10 @@
         "enableIkoType": {
           "title": "IKO-type inschakelen",
           "description": "Schakel het IKO (Informatie Kanaal Objecten) integratietype in."
+        },
+        "menuCollapsedByDefault": {
+          "title": "Menu standaard ingeklapt",
+          "description": "Start met het navigatiemenu ingeklapt in plaats van uitgeklapt."
         }
       }
     }

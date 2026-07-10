@@ -23,6 +23,7 @@ import com.ritense.externalplugin.client.ExternalPluginHostClient
 import com.ritense.externalplugin.domain.ExternalPluginConfiguration
 import com.ritense.externalplugin.domain.ExternalPluginDefinition
 import com.ritense.externalplugin.domain.ExternalPluginProcessLink
+import com.ritense.externalplugin.exception.ExternalPluginActionFailedException
 import com.ritense.externalplugin.repository.ExternalPluginProcessLinkRepository
 import com.ritense.externalplugin.service.ExternalPluginConfigurationService
 import com.ritense.externalplugin.service.ExternalPluginDefinitionService
@@ -33,7 +34,6 @@ import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import com.ritense.valtimo.event.OperatonExecutionEvent
 import com.ritense.valueresolver.ValueResolverService
 import io.github.oshai.kotlinlogging.KotlinLogging
-import org.operaton.bpm.engine.delegate.BpmnError
 import org.operaton.bpm.engine.delegate.DelegateExecution
 import org.springframework.context.event.EventListener
 import org.springframework.stereotype.Component
@@ -85,10 +85,7 @@ class ExternalPluginServiceTaskStartListener(
 
         when {
             response.status in 200..299 -> applySuccess(execution, response.body)
-            response.status in 400..499 -> throw bpmnError(response, definition, processLink)
-            else -> throw IllegalStateException(
-                "External plugin host returned status ${response.status} for plugin '${definition.pluginId}' action '${processLink.actionKey}'",
-            )
+            else -> throw actionFailed(response, definition, processLink)
         }
     }
 
@@ -138,17 +135,26 @@ class ExternalPluginServiceTaskStartListener(
         }
     }
 
-    private fun bpmnError(
+    /**
+     * Turns a non-2xx host response into a failure that surfaces on the job incident with the
+     * plugin's real error code and message. See [ExternalPluginActionFailedException] for why this
+     * is a plain exception and not a BpmnError.
+     */
+    private fun actionFailed(
         response: ExternalPluginHostClient.ActionResponse,
         definition: ExternalPluginDefinition,
         processLink: ExternalPluginProcessLink,
-    ): BpmnError {
+    ): ExternalPluginActionFailedException {
         val errorCode = response.body?.get("errorCode")?.asText()
             ?: "EXTERNAL_PLUGIN_${response.status}"
-        val message = (response.body?.get("errorMessage") ?: response.body?.get("message"))?.asText()
-            ?: "External plugin '${definition.pluginId}' action '${processLink.actionKey}' returned ${response.status}"
-        logger.warn { "External plugin returned 4xx: $message" }
-        return BpmnError(errorCode, message)
+        val detail = (response.body?.get("errorMessage") ?: response.body?.get("message"))?.asText()
+        val message = buildString {
+            append("External plugin '${definition.pluginId}' action '${processLink.actionKey}' ")
+            append("failed with status ${response.status} (code: $errorCode)")
+            if (!detail.isNullOrBlank()) append(": $detail")
+        }
+        logger.warn { message }
+        return ExternalPluginActionFailedException(errorCode, message)
     }
 
     companion object {

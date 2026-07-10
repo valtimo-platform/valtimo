@@ -122,7 +122,8 @@ class BuildingBlockDefinitionProcessDefinitionService(
                     key = pd.key,
                     name = pd.name,
                     versionTag = pd.versionTag,
-                    main = link.main
+                    main = link.main,
+                    draft = pd.isSuspended()
                 )
             }
         }
@@ -171,7 +172,8 @@ class BuildingBlockDefinitionProcessDefinitionService(
         return BuildingBlockProcessDefinitionWithLinksDto(
             processDefinition = processDto,
             processLinks = processLinks,
-            bpmn20Xml = bpmnXml
+            bpmn20Xml = bpmnXml,
+            draft = processDefinition.isSuspended()
         )
     }
 

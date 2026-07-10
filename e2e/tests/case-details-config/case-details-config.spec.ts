@@ -44,7 +44,6 @@ test.describe('Case details configuration', () => {
 
     caseDetailsConfigPage = new CaseDetailsConfigPage(page, request);
 
-    await page.goto('/');
     await caseDetailsConfigPage.goToCaseDetailsConfig(CASE_IDENTIFIER);
     draftVersion = await caseDetailsConfigPage.ensureDraftVersionSelected();
 
