@@ -1,4 +1,4 @@
-# 13.37.0
+# 13.36.1
 
 {% hint style="info" %}
 **Release date 15-07-2026**
