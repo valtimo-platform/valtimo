@@ -62,11 +62,20 @@ export class DragDropListComponent<T = unknown> {
   @Input() public orientation: 'vertical' | 'horizontal' = 'vertical';
   @Input() public handleAriaLabel = 'Drag to reorder';
   @Input() public itemTemplate!: TemplateRef<{$implicit: T; index: number}>;
+  /**
+   * Optional content rendered *below* the styled row (e.g. a nested sub-list). It sits inside the
+   * draggable element so it moves with the item, but outside the row surface — so the row's
+   * background, hover and drag handle cover only the header, not the whole subtree.
+   */
+  @Input() public expansionTemplate: TemplateRef<{$implicit: T; index: number}> | null = null;
   @Input() public emptyTemplate: TemplateRef<void> | null = null;
   @Input() public enterPredicate: (drag: CdkDrag, drop: CdkDropList) => boolean = () => true;
   @Input() public dragDisabled: (item: T, index: number) => boolean = () => false;
 
   @Output() public dropped = new EventEmitter<CdkDragDrop<T[]>>();
+  /** Emitted when a drag begins / ends anywhere in this list, so a host can reflect a global "dragging" state. */
+  @Output() public dragStarted = new EventEmitter<void>();
+  @Output() public dragEnded = new EventEmitter<void>();
 
   constructor(private readonly iconService: IconService) {
     this.iconService.registerAll([Draggable16]);
@@ -88,5 +97,14 @@ export class DragDropListComponent<T = unknown> {
     if (target?.closest('button, a, input, select, textarea, [role="button"], [data-no-drag]')) {
       event.stopPropagation();
     }
+  }
+
+  /**
+   * The expansion (nested sub-list) is never a drag surface for this row: swallow its pointer-downs so
+   * a drag can only start from the header row. Nested rows have their own drag surface and handle
+   * their own pointer-downs before the event reaches here.
+   */
+  public onExpansionPointerDown(event: Event): void {
+    if (this.wholeRowDraggable) event.stopPropagation();
   }
 }

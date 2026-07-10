@@ -26,24 +26,6 @@
     padding: var(--cds-spacing-07);
   }
 
-  &__toolbar {
-    display: flex;
-    align-items: flex-start;
-    justify-content: space-between;
-    gap: var(--cds-spacing-05);
-  }
-
-  &__intro {
-    color: var(--cds-text-secondary);
-    max-width: 640px;
-  }
-
-  &__toolbar-actions {
-    display: flex;
-    gap: var(--cds-spacing-03);
-    flex-shrink: 0;
-  }
-
   &__panels {
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -51,10 +33,26 @@
     align-items: start;
   }
 
+  // While dragging, recede the sections that cannot accept the dragged item. Dim only the *direct*
+  // rows (and dummy submenus) of a non-receiving list — never the list element itself, whose opacity
+  // would cascade onto nested lists, washing out a valid sub-list you are reordering within.
+  // ::ng-deep because .valtimo-drag-drop-list is a child component's host, out of reach of this
+  // component's emulated encapsulation — still scoped by the --dragging ancestor.
+  &__panels--dragging {
+    ::ng-deep
+      .valtimo-drag-drop-list:not(.cdk-drop-list-receiving):not(.cdk-drop-list-dragging)
+      > .valtimo-drag-drop-list__item {
+      > .valtimo-drag-drop-list__row,
+      > .valtimo-drag-drop-list__expansion > .menu-configuration__children--runtime {
+        opacity: 0.4;
+        transition: opacity 150ms ease;
+      }
+    }
+  }
+
   // Each panel is its own bounded scroll container, so the menu structure and the available-items
-  // catalog scroll independently (and CDK auto-scrolls the panel you drag into). The offset is an
-  // approximation of the chrome above the panels (topbar + page heading + tabs + toolbar). Top
-  // padding lives on the sticky title so it pins to the very top of the scroll area.
+  // catalog scroll independently (and CDK auto-scrolls the panel you drag into). The sticky header
+  // pins to the top of the scroll area and carries its own padding/background.
   &__panel {
     display: flex;
     flex-direction: column;
@@ -68,14 +66,29 @@
     overflow-y: auto;
   }
 
-  &__panel-title {
+  // Sticky panel header: title on the left, actions (Reset / Save) on the right for the structure panel.
+  &__panel-header {
     position: sticky;
     top: 0;
     z-index: 1;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--cds-spacing-05);
+    min-height: var(--cds-spacing-09);
     padding: var(--cds-spacing-05) 0 var(--cds-spacing-03);
     background-color: var(--cds-layer);
+  }
+
+  &__panel-title {
     color: var(--cds-text-primary);
     font-weight: 600;
+  }
+
+  &__panel-actions {
+    display: flex;
+    gap: var(--cds-spacing-03);
+    flex-shrink: 0;
   }
 
   &__row {
@@ -104,6 +117,11 @@
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+
+    // Container rows (Admin, Development, custom sections) read as section headers.
+    &--group {
+      font-weight: 600;
+    }
   }
 
   &__row-route {
@@ -112,26 +130,29 @@
     font-family: var(--cds-code-01-font-family, monospace);
   }
 
-  &__row-note {
-    color: var(--cds-text-helper);
-    font-style: italic;
-  }
-
   &__row-actions {
     display: flex;
     flex-shrink: 0;
   }
 
-  // An inset, clearly-bounded drop zone for a section's children, isolated from the root list so the
-  // target (including the top of the section) is unambiguous.
+  // A section's children read through indentation and a guide rail (not a boxed container). The drop
+  // affordance appears on the inner list only while dragging or when the section is empty (see
+  // valtimo-drag-drop-list).
   &__children {
     margin-top: var(--cds-spacing-03);
-    margin-left: var(--cds-spacing-07);
-    padding: var(--cds-spacing-03);
-    border: 1px dashed var(--cds-border-subtle);
-    border-radius: var(--cds-spacing-02);
-    background-color: var(--cds-layer-02);
-    min-height: var(--cds-spacing-09);
+    margin-left: var(--cds-spacing-06);
+    padding-left: var(--cds-spacing-04);
+    border-left: var(--cds-spacing-01) solid var(--cds-border-subtle);
+  }
+
+  // The dummy submenu under a dynamic item (Cases, Objects): the same indented rail, but holding an
+  // info notification instead of a droppable list — it never accepts items.
+  &__children--runtime {
+    cds-inline-notification,
+    .cds--inline-notification {
+      min-width: 0;
+      margin-block: 0;
+    }
   }
 
   &__structure-empty,
