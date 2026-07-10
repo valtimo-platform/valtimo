@@ -16,7 +16,7 @@
 
 import {Injectable} from '@angular/core';
 import {HttpClient} from '@angular/common/http';
-import {BehaviorSubject, Observable, of, switchMap, catchError, shareReplay, map, tap} from 'rxjs';
+import {BehaviorSubject, catchError, map, Observable, of, shareReplay, switchMap, tap} from 'rxjs';
 import {
   AdminSettingsLogosDto,
   BaseApiService,
@@ -24,6 +24,7 @@ import {
   ValtimoConfigFeatureToggles,
 } from '@valtimo/shared';
 import {AccentColorsResponse, FeatureToggleOverridesResponse} from '../models';
+import {MenuConfigurationDto} from '../components/menu/menu-configuration.model';
 
 @Injectable({
   providedIn: 'root',
@@ -47,9 +48,7 @@ export class AdminSettingsService extends BaseApiService {
     this._refreshToggles$.pipe(
       switchMap(() =>
         this.httpClient
-          .get<FeatureToggleOverridesResponse>(
-            this.getApiUrl('/v1/admin-settings/feature-toggles')
-          )
+          .get<FeatureToggleOverridesResponse>(this.getApiUrl('/v1/admin-settings/feature-toggles'))
           .pipe(
             map(response => response.overrides),
             catchError(() => of({}))
@@ -125,6 +124,19 @@ export class AdminSettingsService extends BaseApiService {
         root.style.setProperty(cssVar, value);
       }
     });
+  }
+
+  public getMenuConfiguration(): Observable<MenuConfigurationDto> {
+    return this.httpClient.get<MenuConfigurationDto>(
+      this.getApiUrl('/v1/admin-settings/menu-configuration')
+    );
+  }
+
+  public updateMenuConfiguration(dto: MenuConfigurationDto): Observable<MenuConfigurationDto> {
+    return this.httpClient.put<MenuConfigurationDto>(
+      this.getApiUrl('/management/v1/admin-settings/menu-configuration'),
+      dto
+    );
   }
 
   public getComputedAccentColor(cssVar: string): string {

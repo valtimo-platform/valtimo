@@ -14,10 +14,14 @@
  * limitations under the License.
  */
 
-const ADMIN_SETTINGS_TABS = {
-  APPEARANCE: 'appearance',
-  MENU_CONFIGURATION: 'menu-configuration',
-  FEATURE_TOGGLES: 'feature-toggles',
-} as const;
+package com.ritense.adminsettings.web.rest.dto
 
-export {ADMIN_SETTINGS_TABS};
+import com.fasterxml.jackson.databind.JsonNode
+
+/**
+ * Carries the menu structure as opaque JSON — the backend stores and returns it verbatim and never
+ * interprets it (the frontend owns the schema).
+ */
+data class MenuConfigurationDto(
+    val configuration: JsonNode
+)
