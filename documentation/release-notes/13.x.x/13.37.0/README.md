@@ -23,6 +23,12 @@
   The confirmation dialog for starting a draft process or building block now shows a proper start message
   instead of a delete confirmation message.
  
+* **Fixed modal size not persisted for form-flow process links on a start event**
+
+* Fixed the modal size not being saved for form-flow process links on a start event. When configuring a form-flow start
+  form, the chosen display type and modal size are now persisted and applied when the start form opens, instead of
+  reverting to the default medium size.
+  
 * **Long page titles are now truncated with an ellipsis**
 
   When a page title is too long to fit in the page header, it is now shown with an ellipsis and the full title
