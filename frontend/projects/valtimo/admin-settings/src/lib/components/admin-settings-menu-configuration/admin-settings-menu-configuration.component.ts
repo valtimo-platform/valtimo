@@ -15,9 +15,16 @@
  */
 
 import {CommonModule} from '@angular/common';
-import {CdkDrag, CdkDragDrop, moveItemInArray, transferArrayItem} from '@angular/cdk/drag-drop';
+import {
+  CdkDrag,
+  CdkDragDrop,
+  CdkDropList,
+  moveItemInArray,
+  transferArrayItem,
+} from '@angular/cdk/drag-drop';
 import {ScrollingModule} from '@angular/cdk/scrolling';
 import {ChangeDetectionStrategy, Component, computed, OnInit, signal} from '@angular/core';
+import {takeUntilDestroyed} from '@angular/core/rxjs-interop';
 import {FormBuilder, ReactiveFormsModule, Validators} from '@angular/forms';
 import {TranslateModule, TranslateService} from '@ngx-translate/core';
 import {
@@ -45,10 +52,9 @@ import {
   NotificationModule,
   SelectModule,
   TagModule,
-  TooltipModule,
 } from 'carbon-components-angular';
 import {Add16, Edit16, Locked16, TrashCan16} from '@carbon/icons';
-import {catchError, forkJoin, of} from 'rxjs';
+import {catchError, forkJoin, merge, of} from 'rxjs';
 import {MENU_CONFIGURATION_TEST_IDS} from '../../constants';
 
 /** A draggable entry in the right-hand "Available items" palette. */
@@ -89,7 +95,6 @@ type BuilderNode = MenuConfigurationItem & {_uid: string; children?: BuilderNode
     NotificationModule,
     SelectModule,
     TagModule,
-    TooltipModule,
   ],
 })
 export class AdminSettingsMenuConfigurationComponent implements OnInit {
@@ -101,12 +106,25 @@ export class AdminSettingsMenuConfigurationComponent implements OnInit {
   public readonly $structure = signal<BuilderNode[]>([]);
   public readonly $pluginPages = signal<Array<ExternalPluginMenuPage>>([]);
 
+  /** True while a drag is in progress, so the panels can desaturate the sections that cannot receive it. */
+  public readonly $dragging = signal<boolean>(false);
+
   public readonly $editorOpen = signal<boolean>(false);
   public readonly $editorKind = signal<MenuConfigurationItem['kind']>('catalog');
   /** True while editing a required item (Admin/Settings) — its Include-function field is suppressed. */
   public readonly $editorRequired = signal<boolean>(false);
 
-  public readonly $paletteGroups = computed<PaletteGroup[]>(() => this._buildPaletteGroups());
+  /**
+   * Bumped whenever ngx-translate (re)loads, so the translated palette/section labels — resolved
+   * imperatively via `translateService.instant` inside computeds — recompute once translations arrive
+   * (a plain computed would otherwise keep the raw keys captured on first, pre-load evaluation).
+   */
+  private readonly $translationTick = signal<number>(0);
+
+  public readonly $paletteGroups = computed<PaletteGroup[]>(() => {
+    this.$translationTick();
+    return this._buildPaletteGroups();
+  });
 
   /**
    * All structure drop-list ids (root + every container), so each list — including palette lists and
@@ -140,6 +158,7 @@ export class AdminSettingsMenuConfigurationComponent implements OnInit {
 
   /** Sections an item can be placed in via the editor: top level + each container present in the tree. */
   public readonly $sectionOptions = computed<Array<{value: string; label: string}>>(() => {
+    this.$translationTick();
     const options = [
       {
         value: 'root',
@@ -168,18 +187,50 @@ export class AdminSettingsMenuConfigurationComponent implements OnInit {
   private _pendingPaletteItem: PaletteItem | null = null;
   private _uidCounter = 0;
 
-  // Drop predicates — placement constraints. Palette lists reject all drops (you drag *out* of them).
-  public readonly topEnterPredicate = (drag: CdkDrag): boolean =>
-    ['top', 'any'].includes(this._placementOf(drag.data));
-  public readonly adminEnterPredicate = (drag: CdkDrag): boolean =>
-    this._containerAccepts('admin', drag.data);
-  public readonly developmentEnterPredicate = (drag: CdkDrag): boolean =>
-    this._containerAccepts('development', drag.data);
+  // Drop predicates — placement constraints. Every predicate also defers to a deeper nested list under
+  // the pointer (see `_pointerOverDeeperList`), so the innermost list always wins: without this, the
+  // root list — which geometrically encloses every nested list — would steal freely-placeable ('any')
+  // items (custom links, section headers, plugin pages) out of a section while you reorder inside it,
+  // because root accepts them (catalog items are protected only by their placement constraint).
+  // Palette lists reject all drops (you drag *out* of them).
+  public readonly topEnterPredicate = (drag: CdkDrag, drop: CdkDropList): boolean =>
+    !this._pointerOverDeeperList(drop) && ['top', 'any'].includes(this._placementOf(drag.data));
+  public readonly adminEnterPredicate = (drag: CdkDrag, drop: CdkDropList): boolean =>
+    !this._pointerOverDeeperList(drop) && this._containerAccepts('admin', drag.data);
+  public readonly developmentEnterPredicate = (drag: CdkDrag, drop: CdkDropList): boolean =>
+    !this._pointerOverDeeperList(drop) && this._containerAccepts('development', drag.data);
   // A custom section only accepts freely-placeable ('any') items — never another section or a
   // placement-constrained catalog page — so the menu never nests beyond the two levels it renders.
-  public readonly groupEnterPredicate = (drag: CdkDrag): boolean =>
-    this._placementOf(drag.data) === 'any';
+  public readonly groupEnterPredicate = (drag: CdkDrag, drop: CdkDropList): boolean =>
+    !this._pointerOverDeeperList(drop) && this._placementOf(drag.data) === 'any';
   public readonly paletteEnterPredicate = (): boolean => false;
+
+  /** Last known pointer position during a drag, used to resolve nested drop-list ambiguity. */
+  private _pointer = {x: 0, y: 0};
+  private readonly _trackPointer = (event: PointerEvent | TouchEvent): void => {
+    const point = 'touches' in event ? event.touches[0] : event;
+    if (point) this._pointer = {x: point.clientX, y: point.clientY};
+  };
+
+  /**
+   * True when a `.valtimo-drag-drop-list` nested *inside* `drop` currently sits under the pointer.
+   * Such a deeper list is the more specific target, so `drop` should decline the item — this keeps a
+   * reorder inside a section from being hijacked by the enclosing (ancestor) list.
+   */
+  private _pointerOverDeeperList(drop: CdkDropList): boolean {
+    const nested = (drop.element.nativeElement as HTMLElement).querySelectorAll(
+      '.valtimo-drag-drop-list'
+    );
+    return Array.from(nested).some(list => {
+      const r = list.getBoundingClientRect();
+      return (
+        this._pointer.x >= r.left &&
+        this._pointer.x <= r.right &&
+        this._pointer.y >= r.top &&
+        this._pointer.y <= r.bottom
+      );
+    });
+  }
 
   constructor(
     private readonly fb: FormBuilder,
@@ -190,6 +241,14 @@ export class AdminSettingsMenuConfigurationComponent implements OnInit {
     private readonly iconService: IconService
   ) {
     this.iconService.registerAll([Add16, Edit16, Locked16, TrashCan16]);
+
+    merge(
+      this.translateService.onLangChange,
+      this.translateService.onDefaultLangChange,
+      this.translateService.onTranslationChange
+    )
+      .pipe(takeUntilDestroyed())
+      .subscribe(() => this.$translationTick.update(tick => tick + 1));
   }
 
   public ngOnInit(): void {
@@ -221,6 +280,18 @@ export class AdminSettingsMenuConfigurationComponent implements OnInit {
   }
 
   // ----- Drag & drop -----
+
+  public onDragStarted(): void {
+    this.$dragging.set(true);
+    document.addEventListener('pointermove', this._trackPointer, true);
+    document.addEventListener('touchmove', this._trackPointer, true);
+  }
+
+  public onDragEnded(): void {
+    this.$dragging.set(false);
+    document.removeEventListener('pointermove', this._trackPointer, true);
+    document.removeEventListener('touchmove', this._trackPointer, true);
+  }
 
   public onDrop(event: CdkDragDrop<BuilderNode[]>): void {
     const isFromPalette = event.previousContainer.id.startsWith('palette-');
@@ -442,7 +513,7 @@ export class AdminSettingsMenuConfigurationComponent implements OnInit {
     return `structure-children-${node.kind === 'catalog' ? node.itemId : node._uid}`;
   }
 
-  public containerEnterPredicate(node: BuilderNode): (drag: CdkDrag) => boolean {
+  public containerEnterPredicate(node: BuilderNode): (drag: CdkDrag, drop: CdkDropList) => boolean {
     if (node.kind === 'group') return this.groupEnterPredicate;
     if (node.kind === 'catalog' && node.itemId === 'development')
       return this.developmentEnterPredicate;

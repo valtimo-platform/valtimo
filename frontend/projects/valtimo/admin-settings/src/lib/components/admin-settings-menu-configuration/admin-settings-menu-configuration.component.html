@@ -20,27 +20,6 @@
   </div>
 } @else {
   <div class="menu-configuration">
-    <div class="menu-configuration__toolbar">
-      <p class="menu-configuration__intro">
-        {{ 'adminSettings.menuConfiguration.intro' | translate }}
-      </p>
-
-      <div class="menu-configuration__toolbar-actions">
-        <button cdsButton="tertiary" (click)="onReset()" [attr.data-test-id]="testIds.resetButton">
-          {{ 'adminSettings.menuConfiguration.reset' | translate }}
-        </button>
-
-        <button
-          cdsButton="primary"
-          [disabled]="$saving()"
-          (click)="onSave()"
-          [attr.data-test-id]="testIds.saveButton"
-        >
-          {{ 'adminSettings.menuConfiguration.save' | translate }}
-        </button>
-      </div>
-    </div>
-
     @if ($saved()) {
       <cds-inline-notification
         [notificationObj]="{
@@ -53,12 +32,38 @@
       ></cds-inline-notification>
     }
 
-    <div class="menu-configuration__panels">
+    <div
+      class="menu-configuration__panels"
+      [class.menu-configuration__panels--dragging]="$dragging()"
+    >
       <!-- Left: the editable menu structure -->
       <section cdkScrollable class="menu-configuration__panel">
-        <h4 class="menu-configuration__panel-title">
-          {{ 'adminSettings.menuConfiguration.structureTitle' | translate }}
-        </h4>
+        <div class="menu-configuration__panel-header">
+          <h4 class="menu-configuration__panel-title">
+            {{ 'adminSettings.menuConfiguration.structureTitle' | translate }}
+          </h4>
+
+          <div class="menu-configuration__panel-actions">
+            <button
+              cdsButton="tertiary"
+              size="sm"
+              (click)="onReset()"
+              [attr.data-test-id]="testIds.resetButton"
+            >
+              {{ 'adminSettings.menuConfiguration.reset' | translate }}
+            </button>
+
+            <button
+              cdsButton="primary"
+              size="sm"
+              [disabled]="$saving()"
+              (click)="onSave()"
+              [attr.data-test-id]="testIds.saveButton"
+            >
+              {{ 'adminSettings.menuConfiguration.save' | translate }}
+            </button>
+          </div>
+        </div>
 
         <valtimo-drag-drop-list
           [attr.data-test-id]="testIds.structureList"
@@ -67,18 +72,23 @@
           [handleAriaLabel]="'adminSettings.menuConfiguration.dragHandle' | translate"
           [items]="$structure()"
           [itemTemplate]="structureItemTpl"
+          [expansionTemplate]="structureExpansionTpl"
           [emptyTemplate]="structureEmptyTpl"
           [wholeRowDraggable]="true"
           listId="structure-root"
           (dropped)="onDrop($event)"
+          (dragStarted)="onDragStarted()"
+          (dragEnded)="onDragEnded()"
         ></valtimo-drag-drop-list>
       </section>
 
       <!-- Right: the available-items catalog -->
       <section cdkScrollable class="menu-configuration__panel">
-        <h4 class="menu-configuration__panel-title">
-          {{ 'adminSettings.menuConfiguration.availableTitle' | translate }}
-        </h4>
+        <div class="menu-configuration__panel-header">
+          <h4 class="menu-configuration__panel-title">
+            {{ 'adminSettings.menuConfiguration.availableTitle' | translate }}
+          </h4>
+        </div>
 
         @for (group of $paletteGroups(); track group.categoryKey) {
           <div class="menu-configuration__palette-group">
@@ -100,6 +110,8 @@
                 [listId]="'palette-' + group.categoryKey"
                 [sortingDisabled]="true"
                 [wholeRowDraggable]="true"
+                (dragStarted)="onDragStarted()"
+                (dragEnded)="onDragEnded()"
               ></valtimo-drag-drop-list>
             }
           </div>
@@ -109,7 +121,8 @@
   </div>
 }
 
-<!-- A row in the menu structure (recursive: containers nest the same template) -->
+<!-- The header row of a menu-structure item (icon, title, actions). The sub-list, if any, is rendered
+     by structureExpansionTpl below the row — never inside it. -->
 <ng-template #structureItemTpl let-node>
   <div class="menu-configuration__row">
     <div class="menu-configuration__row-main">
@@ -117,7 +130,11 @@
         <i class="menu-configuration__row-icon" [ngClass]="iconClassOf(node)"></i>
       }
 
-      <span class="menu-configuration__row-title">{{ displayTitle(node) }}</span>
+      <span
+        class="menu-configuration__row-title"
+        [class.menu-configuration__row-title--group]="isContainer(node)"
+        >{{ displayTitle(node) }}</span
+      >
 
       @if (routeOf(node)) {
         <span class="menu-configuration__row-route">{{ routeOf(node) }}</span>
@@ -128,15 +145,6 @@
           <svg cdsIcon="locked" size="16"></svg>
           {{ 'adminSettings.menuConfiguration.required' | translate }}
         </cds-tag>
-      }
-
-      @if (hasRuntimeSubmenu(node)) {
-        <span
-          class="menu-configuration__row-note"
-          [cdsTooltip]="'adminSettings.menuConfiguration.runtimeSubmenuNote' | translate"
-        >
-          {{ 'adminSettings.menuConfiguration.runtimeSubmenu' | translate }}
-        </span>
       }
     </div>
 
@@ -164,7 +172,10 @@
       }
     </div>
   </div>
+</ng-template>
 
+<!-- The sub-list under a structure item, rendered below (and outside) the row (recursive). -->
+<ng-template #structureExpansionTpl let-node>
   @if (isContainer(node)) {
     <div class="menu-configuration__children">
       <valtimo-drag-drop-list
@@ -174,10 +185,28 @@
         [handleAriaLabel]="'adminSettings.menuConfiguration.dragHandle' | translate"
         [items]="childrenOf(node)"
         [itemTemplate]="structureItemTpl"
+        [expansionTemplate]="structureExpansionTpl"
         [listId]="containerListId(node)"
         [wholeRowDraggable]="true"
         (dropped)="onDrop($event)"
+        (dragStarted)="onDragStarted()"
+        (dragEnded)="onDragEnded()"
       ></valtimo-drag-drop-list>
+    </div>
+  }
+
+  <!-- Dynamic-submenu items (Cases, Objects) show a dummy submenu explaining it grows at runtime. -->
+  @if (hasRuntimeSubmenu(node)) {
+    <div class="menu-configuration__children menu-configuration__children--runtime">
+      <cds-inline-notification
+        [notificationObj]="{
+          type: 'info',
+          title: ('adminSettings.menuConfiguration.runtimeSubmenu' | translate),
+          message: ('adminSettings.menuConfiguration.runtimeSubmenuNote' | translate),
+          showClose: false,
+          lowContrast: true
+        }"
+      ></cds-inline-notification>
     </div>
   }
 </ng-template>
@@ -234,7 +263,9 @@
       </cds-text-label>
     }
 
-    @if ($editorKind() !== 'section-header') {
+    <!-- Gated on $editorOpen() so the icon selector (and its Carbon combobox) is recreated fresh each
+         time the editor opens — otherwise the reused combobox keeps the previous entry's filter state. -->
+    @if ($editorOpen() && $editorKind() !== 'section-header') {
       <valtimo-mdi-icon-selector formControlName="icon"></valtimo-mdi-icon-selector>
     }
 
