@@ -60,6 +60,7 @@
     [warn]="warn"
     [warnText]="warnText"
     (clear)="clear()"
+    (close)="onDropdownClose()"
     (selected)="setSelected($event)"
   >
     <cds-dropdown-list [items]="vars?.items || []"></cds-dropdown-list>

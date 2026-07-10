@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL"
+                  xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI"
+                  xmlns:dc="http://www.omg.org/spec/DD/20100524/DC"
+                  xmlns:camunda="http://camunda.org/schema/1.0/bpmn"
+                  xmlns:di="http://www.omg.org/spec/DD/20100524/DI"
+                  id="Definitions_s3_upload_test"
+                  targetNamespace="http://bpmn.io/schema/bpmn"
+                  exporter="Camunda Modeler"
+                  exporterVersion="4.6.0">
+    <bpmn:process id="s3-upload-test" name="S3 Upload Test Process" isExecutable="true">
+        <bpmn:startEvent id="start-event" name="Start">
+            <bpmn:outgoing>flow-start-to-upload</bpmn:outgoing>
+        </bpmn:startEvent>
+
+        <bpmn:userTask id="upload-task" name="Upload File" camunda:candidateGroups="ROLE_USER">
+            <bpmn:incoming>flow-start-to-upload</bpmn:incoming>
+            <bpmn:outgoing>flow-upload-to-end</bpmn:outgoing>
+        </bpmn:userTask>
+
+        <bpmn:endEvent id="end-event" name="End">
+            <bpmn:incoming>flow-upload-to-end</bpmn:incoming>
+        </bpmn:endEvent>
+
+        <bpmn:sequenceFlow id="flow-start-to-upload" sourceRef="start-event" targetRef="upload-task"/>
+        <bpmn:sequenceFlow id="flow-upload-to-end" sourceRef="upload-task" targetRef="end-event"/>
+    </bpmn:process>
+
+    <bpmndi:BPMNDiagram id="BPMNDiagram_1">
+        <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="s3-upload-test">
+            <bpmndi:BPMNShape id="start-event_di" bpmnElement="start-event">
+                <dc:Bounds x="152" y="102" width="36" height="36"/>
+                <bpmndi:BPMNLabel>
+                    <dc:Bounds x="158" y="145" width="24" height="14"/>
+                </bpmndi:BPMNLabel>
+            </bpmndi:BPMNShape>
+            <bpmndi:BPMNShape id="upload-task_di" bpmnElement="upload-task">
+                <dc:Bounds x="250" y="80" width="100" height="80"/>
+            </bpmndi:BPMNShape>
+            <bpmndi:BPMNShape id="end-event_di" bpmnElement="end-event">
+                <dc:Bounds x="412" y="102" width="36" height="36"/>
+                <bpmndi:BPMNLabel>
+                    <dc:Bounds x="420" y="145" width="20" height="14"/>
+                </bpmndi:BPMNLabel>
+            </bpmndi:BPMNShape>
+            <bpmndi:BPMNEdge id="flow-start-to-upload_di" bpmnElement="flow-start-to-upload">
+                <di:waypoint x="188" y="120"/>
+                <di:waypoint x="250" y="120"/>
+            </bpmndi:BPMNEdge>
+            <bpmndi:BPMNEdge id="flow-upload-to-end_di" bpmnElement="flow-upload-to-end">
+                <di:waypoint x="350" y="120"/>
+                <di:waypoint x="412" y="120"/>
+            </bpmndi:BPMNEdge>
+        </bpmndi:BPMNPlane>
+    </bpmndi:BPMNDiagram>
+</bpmn:definitions>

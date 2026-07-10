@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,7 +16,7 @@
 
 import {Injectable} from '@angular/core';
 import {HttpClient} from '@angular/common/http';
-import {Observable} from 'rxjs';
+import {Observable, of} from 'rxjs';
 import {map} from 'rxjs/operators';
 import {ConfigService, MenuItem} from '@valtimo/shared';
 
@@ -28,13 +28,19 @@ export class ObjectMenuService {
   ) {}
 
   public appendObjectMenuItems = (menuItems: MenuItem[]): Observable<MenuItem[]> => {
+    const featureToggles = this.configService.featureToggles;
+    const enabled = featureToggles?.enableObjectManagement && featureToggles?.enableZgwFeatures !== false;
+
+    if (!enabled) {
+      return of(menuItems);
+    }
+
     const apiBaseUrl = this.configService.config.valtimoApi.endpointUri;
 
     return this.getObjects(apiBaseUrl).pipe(
       map(objects => {
-        const visibleObjects = objects.filter(obj => obj?.showInDataMenu !== false);
-
-        const objectItems: MenuItem[] = visibleObjects.map((obj, index) => ({
+        // Backend already filters to menu-visible configs the user may view; no client-side filter needed.
+        const objectItems: MenuItem[] = objects.map((obj, index) => ({
           link: ['/objects/' + obj.id],
           title: obj.title,
           iconClass: 'icon mdi mdi-dot-circle',
@@ -54,7 +60,7 @@ export class ObjectMenuService {
   };
 
   private getObjects(apiBaseUrl: string): Observable<any[]> {
-    const url = `${apiBaseUrl}v1/object/management/configuration`;
+    const url = `${apiBaseUrl}v1/object-management/configuration`;
     return this.http.get<any[]>(url);
   }
 }

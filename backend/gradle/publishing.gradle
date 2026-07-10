@@ -16,8 +16,11 @@
 
 def sonatypeCentralStagingDir = "staging-deploy"
 def projectsExcludedFromDeploy = [
-    'app',
+    'apps',
+    'dev',
     'gzac',
+    'valtimo',
+    'evenementenvergunning',
     'gradle',
     'dependencies',
     'cve-report',

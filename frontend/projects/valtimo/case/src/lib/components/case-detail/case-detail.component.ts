@@ -416,7 +416,8 @@ export class CaseDetailComponent implements AfterViewInit, OnDestroy {
         item,
         this.documentId,
         this.caseDefinitionKey,
-        this.caseDefinitionVersionTag
+        this.caseDefinitionVersionTag,
+        showTaskList
       );
     });
   }

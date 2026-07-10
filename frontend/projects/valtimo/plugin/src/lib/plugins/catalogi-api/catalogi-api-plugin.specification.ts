@@ -23,6 +23,7 @@ import {GetResultaattypenConfigurationComponent} from './components/get-resultaa
 import {GetResultaattypeConfigurationComponent} from './components/get-resultaattype/get-resultaattype-configuration.component';
 import {GetEigenschapConfigurationComponent} from './components/get-eigenschap/get-eigenschap-configuration.component';
 import {GetInformatieobjecttypeConfigurationComponent} from './components/get-informatieobjecttype/get-informatieobjecttype-configuration.component';
+import {GetInformatieobjecttypenConfigurationComponent} from './components/get-informatieobjecttypen/get-informatieobjecttypen-configuration.component';
 import {CATALOGI_API_PLUGIN_LOGO_BASE64} from './assets';
 
 const catalogiApiPluginSpecification: PluginSpecification = {
@@ -37,6 +38,7 @@ const catalogiApiPluginSpecification: PluginSpecification = {
     'get-statustype': GetStatustypeConfigurationComponent,
     'get-eigenschap': GetEigenschapConfigurationComponent,
     'get-informatieobjecttype': GetInformatieobjecttypeConfigurationComponent,
+    'get-informatieobjecttypen': GetInformatieobjecttypenConfigurationComponent,
   },
   pluginTranslations: {
     nl: {
@@ -94,6 +96,9 @@ const catalogiApiPluginSpecification: PluginSpecification = {
       informatieobjecttypeTooltip: 'Omschrijving van het informatieobjecttype.',
       informatieobjecttypeProcessVariableTooltip:
         'Nadat het informatieobjecttype is opgehaald, wordt deze opgeslagen in een procesvariabele met deze naam.',
+      'get-informatieobjecttypen': 'Informatieobjecttypen opvragen',
+      getInformatieobjecttypenInformation:
+        'De Informatieobjecttypen behorende bij het Zaaktype worden opgehaald en daarna opgeslagen in een procesvariabele.',
     },
     en: {
       title: 'Catalogi API',
@@ -148,6 +153,9 @@ const catalogiApiPluginSpecification: PluginSpecification = {
       informatieobjecttypeTooltip: 'Description of the informatieobjecttype.',
       informatieobjecttypeProcessVariableTooltip:
         'After the informatieobjecttype is retrieved, it is stored in a process variable with this name.',
+      'get-informatieobjecttypen': 'Retrieve informatieobjecttypen',
+      getInformatieobjecttypenInformation:
+        'The Informatieobjecttypen belonging to the Zaaktype are retrieved and then stored in a process variable.',
     },
   },
 };

@@ -179,6 +179,7 @@ export class CaseProcessStartModalComponent implements OnInit, OnDestroy {
             case 'form-flow':
               this.formFlowInstanceId = startProcessResult.properties.formFlowInstanceId;
               this.isFormViewModel = false;
+              this.setModalSize(startProcessResult.properties.formSize);
               this.openCdsModal();
               break;
             case 'form-view-model':

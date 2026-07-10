@@ -181,6 +181,17 @@ valtimo:
     logging:
         deletionCron: 0 0 * * * ? # Every hour
         retentionInMinutes: 60
+    resource:
+        s3:
+            temp-upload-listener:
+                enabled: ${VALTIMO_RESOURCE_S3_TEMPUPLOADLISTENER_ENABLED:true}
+
+aws:
+    region: ${AWS_REGION:eu-west-1}
+    s3:
+        bucketRegion: ${AWS_S3_BUCKET_REGION:eu-west-1}
+        bucketName: ${AWS_S3_BUCKET_NAME:}
+        endpoint: ${AWS_S3_ENDPOINT:}
 
 spring-actuator:
     username: admin

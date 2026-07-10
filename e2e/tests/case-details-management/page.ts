@@ -129,12 +129,15 @@ export class CaseDetailsManagementPage {
   }
 
   // Navigation
+  // Navigate directly to the case-management list, then open the case.
+  // Avoids the Admin menu + chart-heavy dashboard load, which can hang the
+  // beforeAll hook or crash the Chromium renderer ("Target crashed").
   async goToCaseDetailsManagement(caseIdentifier: string) {
     console.log('Navigate to Case Details Management...');
-    await this.page.getByRole('button', {name: 'Admin'}).click();
-    await this.page.getByRole('link', {name: 'Cases'}).click();
+    await this.page.goto('/case-management');
     await this.page.waitForSelector('valtimo-carbon-list');
     await this.page.locator(`tr:has(td:has-text("${caseIdentifier}"))`).click();
+    await this.page.waitForURL(/\/case-management\/case\//);
   }
 
   async switchCaseVersionViaDropdown(caseVersion: string) {
@@ -191,15 +194,20 @@ export class CaseDetailsManagementPage {
   }
 
   async selectUploadProcess(processName: string) {
-    await expect(this.linkUploadProcessInput).toBeEnabled();
+    await expect(this.linkUploadProcessInput).toBeEnabled({timeout: 15_000});
     await this.linkUploadProcessMenuButton.click();
-    await this.linkUploadProcessListbox.getByRole('option', {name: processName}).click();
-    await expect(this.linkUploadProcessInput).toBeEnabled();
+    // Use exact matching: "Bezwaar" is a prefix of "Bezwaar ad-hoc FVM" etc.,
+    // so a non-exact name match resolves to multiple options.
+    await this.linkUploadProcessListbox
+      .getByRole('option', {name: processName, exact: true})
+      .click();
+    // Selecting triggers a save round-trip that briefly disables the combo box.
+    await expect(this.linkUploadProcessInput).toBeEnabled({timeout: 15_000});
   }
 
   async clearUploadProcess() {
-    await expect(this.linkUploadProcessInput).toBeEnabled();
+    await expect(this.linkUploadProcessInput).toBeEnabled({timeout: 15_000});
     await this.linkUploadProcessClearButton.click();
-    await expect(this.linkUploadProcessInput).toBeEnabled();
+    await expect(this.linkUploadProcessInput).toBeEnabled({timeout: 15_000});
   }
 }

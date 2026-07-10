@@ -49,7 +49,6 @@ test.describe('Case management', () => {
 
     testPage = new CaseDetailsManagementCaseListPage(page, request);
 
-    await page.goto('/');
     await testPage.goToCaseDetailsManagementCaseList('bezwaar');
     await ensureDraftVersionSelected(page);
   });
@@ -274,8 +273,13 @@ test.describe('Case management', () => {
           // Assert
           await testPage.assertColumnExists(UI_COLUMN_DEFAULT_SORT.key);
 
-          // Verify a second column cannot set default sort
+          // Verify a second column cannot set default sort. The default-sort
+          // dropdown only renders once a sortable (case:/doc:) path is set
+          // (*ngIf="displaySortable"), so give the form a valid path first.
           await testPage.addListColumnButton.click();
+          await testPage.keyInput.fill('uiTestSecondSort');
+          await testPage.valuePathSelectorToggle.click();
+          await testPage.valuePathSelectorInput.fill('case:createdBy');
           await testPage.assertDefaultSortDropdownDisabled();
           await testPage.listColumnCancelButton.click();
 

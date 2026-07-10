@@ -1,44 +1,64 @@
 {
-    "display": "form",
-    "components": [
-        {
-            "label": "HTML",
-            "content": "Klik start om Status en Resultaat typen op te halen bij de Catalogi API.",
-            "refreshOnChange": false,
-            "key": "html",
-            "type": "htmlelement",
-            "input": false,
-            "tableView": false
-        },
-        {
-            "label": "Proces variabele - Status typen",
-            "key": "pv.statusTypenPV",
-            "type": "textfield",
-            "input": true,
-            "validate": {
-                "required": true
-            },
-            "defaultValue": "statusTypen",
-            "disabled": true
-        },
-        {
-            "label": "Proces variabele - Resultaat typen",
-            "key": "pv.resultaatTypenPV",
-            "type": "textfield",
-            "input": true,
-            "validate": {
-                "required": true
-            },
-            "defaultValue": "resultaatTypen",
-            "disabled": true
-        },
-        {
-            "type": "button",
-            "label": "Start",
-            "key": "submit",
-            "disableOnInvalid": true,
-            "input": true,
-            "tableView": false
-        }
-    ]
+  "display" : "form",
+  "components" : [
+    {
+      "key" : "html",
+      "type" : "htmlelement",
+      "input" : false,
+      "label" : "HTML",
+      "content" : "Klik start om Status, Resultaat en Informatieobject typen op te halen bij de Catalogi API.",
+      "tableView" : false,
+      "refreshOnChange" : false
+    },
+    {
+      "key" : "pv.statusTypenPV",
+      "type" : "textfield",
+      "input" : true,
+      "label" : "Proces variabele - Status typen",
+      "disabled" : true,
+      "validate" : {
+        "required" : true
+      },
+      "attributes" : {
+        "data-testid" : "start-form-catalogi-get-typen-pv.statusTypenPV"
+      },
+      "defaultValue" : "statusTypen"
+    },
+    {
+      "key" : "pv.resultaatTypenPV",
+      "type" : "textfield",
+      "input" : true,
+      "label" : "Proces variabele - Resultaat typen",
+      "disabled" : true,
+      "validate" : {
+        "required" : true
+      },
+      "attributes" : {
+        "data-testid" : "start-form-catalogi-get-typen-pv.resultaatTypenPV"
+      },
+      "defaultValue" : "resultaatTypen"
+    },
+    {
+      "key" : "pv.informatieObjectTypenPV",
+      "type" : "textfield",
+      "input" : true,
+      "label" : "Proces variabele - Informatieobject typen",
+      "disabled" : true,
+      "validate" : {
+        "required" : true
+      },
+      "attributes" : {
+        "data-testid" : "start-form-catalogi-get-typen-pv.informatieObjectTypenPV"
+      },
+      "defaultValue" : "informatieObjectTypen"
+    },
+    {
+      "key" : "submit",
+      "type" : "button",
+      "input" : true,
+      "label" : "Start",
+      "tableView" : false,
+      "disableOnInvalid" : true
+    }
+  ]
 }
